@@ -118,8 +118,8 @@ const packageJson = JSON.parse(await readFile(resolve(repositoryRoot, 'package.j
 if (!packageJson.scripts?.['content:sync']?.includes('demo-content/runtime')) {
   violations.push('package.json: the default content source must be the tracked public demo');
 }
-if (!packageJson.scripts?.['content:sync:private']?.includes('private-content/runtime')) {
-  violations.push('package.json: the authorized private content mode must remain explicit');
+if (!packageJson.scripts?.['content:sync:private']?.includes('--external')) {
+  violations.push('package.json: the authorized external content mode must remain explicit');
 }
 for (const [dependency, approved] of Object.entries(packageJson.allowScripts ?? {})) {
   if (!/@\d+\.\d+\.\d+(?:[-+].*)?$/.test(dependency) || approved !== true) {

@@ -29,10 +29,12 @@ Browser
 | --- | --- | --- | --- |
 | Public demo | `demo-content/runtime/` | Human review of a clean clone | `npm start` |
 | Contract fixture | `test-fixtures/content/` | Minimal deterministic schema checks | `npm run validate:content:ci` |
-| Authorized private | `private-content/runtime/` | Full local product development | `npm run start:private` |
+| Authorized private | `../lookahead-learning-content/runtime/` | Full local product development | `npm run start:private` |
 | Generated staging | `public/content/` | Angular runtime assets | Never commit |
 
 Every mode uses the same catalog, course, module, and question contracts. The public demo discusses repository architecture only; it is not a reduced copy of the interview curriculum.
+
+The sibling path is the local convention, not a production dependency. Set `LOOKAHEAD_CONTENT_ROOT` to an authorized runtime directory when the private repository is checked out elsewhere.
 
 ## Frontend composition
 

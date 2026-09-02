@@ -37,7 +37,8 @@ Moving private material to a different file extension does not make it public-sa
 | `src/` | Public product source | Track |
 | `demo-content/runtime/` | Synthetic public demonstration | Track |
 | `test-fixtures/content/` | Synthetic contract fixtures | Track |
-| `private-content/` | Proprietary authoring and runtime assets | Ignore |
+| `../lookahead-learning-content/runtime/` | Proprietary runtime assets in a separate repository | Private repository only |
+| `private-content/` | Retired in-repository private-content location | Ignore and reject from publication |
 | `public/content/` | Generated runtime staging | Ignore |
 | `.local-previews/` | Local design review | Ignore |
 
@@ -48,7 +49,7 @@ Moving private material to a different file extension does not make it public-sa
 - known private, generated, build, IDE, and preview paths;
 - credential-shaped filenames and key/token markers;
 - absolute local user paths;
-- source imports from `private-content/`; and
+- source imports from an in-repository `private-content/` tree; and
 - symbolic links that could point outside the reviewed snapshot.
 
 The checks reduce publication risk but do not replace review. Before creating a public remote, inspect the complete fresh-history commit and test a clean clone.
