@@ -3,9 +3,14 @@ import { basename, dirname, extname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const repositoryRoot = fileURLToPath(new URL('../', import.meta.url));
+const requestedRoot = process.argv[2];
+const configuredRoot =
+  requestedRoot === '--external'
+    ? (process.env.LOOKAHEAD_CONTENT_ROOT ?? '../lookahead-learning-content/runtime')
+    : (requestedRoot ?? process.env.LOOKAHEAD_CONTENT_ROOT ?? 'demo-content/runtime');
 const contentRoot = resolve(
   repositoryRoot,
-  process.argv[2] ?? process.env.LOOKAHEAD_CONTENT_ROOT ?? 'demo-content/runtime',
+  configuredRoot,
 );
 const requiredQuestionFields = [
   'id',

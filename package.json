@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "content:sync": "node scripts/sync-runtime-content.mjs demo-content/runtime",
-    "content:sync:private": "node scripts/sync-runtime-content.mjs private-content/runtime",
+    "content:sync:private": "node scripts/sync-runtime-content.mjs --external",
     "content:sync:fixture": "node scripts/sync-runtime-content.mjs test-fixtures/content",
     "prestart": "npm run content:sync",
     "start": "ng serve",
@@ -22,13 +22,11 @@
     "watch:private": "ng build --watch --configuration development",
     "test": "ng test",
     "validate:content": "node scripts/validate-content.mjs demo-content/runtime",
-    "validate:content:private": "node scripts/validate-content.mjs private-content/runtime",
+    "validate:content:private": "node scripts/validate-content.mjs --external",
     "validate:content:fixture": "node scripts/validate-content.mjs test-fixtures/content",
     "validate:content:ci": "npm run validate:content:fixture",
     "validate:source-boundary": "node scripts/validate-source-boundary.mjs",
     "validate:public-readiness": "node scripts/verify-public-release.mjs",
-    "validate:solutions": "npm run validate:solutions:private",
-    "validate:solutions:private": "node scripts/run-private-solution-validation.mjs",
     "prepare:public-snapshot": "node scripts/prepare-public-snapshot.mjs"
   },
   "private": true,

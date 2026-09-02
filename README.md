@@ -354,7 +354,7 @@ npm run build:private
 npm run watch:private
 ```
 
-Those commands require the ignored `private-content/runtime/` directory. They fail closed when that source is unavailable; the application never substitutes public demo content for an explicitly requested private run.
+Those commands require the private `lookahead-learning-content` repository beside this repository and consume its `runtime/` directory. Set `LOOKAHEAD_CONTENT_ROOT` to an absolute runtime path when using a different checkout layout. Private commands fail when that source is unavailable; they never substitute public demo content.
 
 Open http://localhost:4200. Angular proxies `/api` requests to the Content API using `proxy.conf.json`.
 
@@ -373,11 +373,10 @@ npm test -- --watch=false
 npm run build
 ```
 
-Authorized maintainers can additionally validate the private curriculum and authored implementations:
+Authorized maintainers can additionally validate the private curriculum against the public content contract:
 
 ```shell
 npm run validate:content:private
-npm run validate:solutions:private
 npm test -- --watch=false
 npm run build:private
 ```
