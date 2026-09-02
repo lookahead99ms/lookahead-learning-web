@@ -232,12 +232,35 @@ export interface PatternWorkedExample {
   steps: string[];
 }
 
+export interface PatternMemoryAnchor {
+  phrase: string;
+  mentalModel: string;
+  retrievalCue: string;
+}
+
+export interface PatternInterviewRecall {
+  prompt: string;
+  answerFramework: string[];
+}
+
+export interface NamedAlgorithmReference {
+  name: string;
+  family: string;
+  useWhen: string;
+  invariant: string;
+  complexity: string;
+  memoryAnchor: string;
+}
+
 export interface PatternLessonV1 extends InterviewQuestion {
   schemaVersion: 'pattern-lesson/v1';
   /** Opts an upgraded lesson into non-overlapping guided and transfer problems. */
   practiceSetPolicy?: 'guided-plus-distinct-transfer';
   summary: string;
   learningOutcomes: string[];
+  memoryAnchor: PatternMemoryAnchor;
+  interviewRecall: PatternInterviewRecall;
+  namedAlgorithms?: NamedAlgorithmReference[];
   definition: { heading: string; body: string[]; maintainedState: string };
   motivation: { heading: string; body: string[]; avoidedWork: string };
   recognition: { heading: string; body: string[]; signals: string[]; falseFriends: string[] };

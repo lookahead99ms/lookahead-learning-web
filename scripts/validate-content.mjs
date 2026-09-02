@@ -365,6 +365,48 @@ for (const { lesson, moduleLabel } of patternLessons) {
     `${label} learningOutcomes must contain no more than five items`,
   );
   requireValue(
+    lesson.memoryAnchor?.phrase &&
+      lesson.memoryAnchor?.mentalModel &&
+      lesson.memoryAnchor?.retrievalCue,
+    `${label} has an incomplete memory anchor`,
+  );
+  requireValue(
+    lesson.interviewRecall?.prompt,
+    `${label} has no interview recall prompt`,
+  );
+  requireStringArray(
+    lesson.interviewRecall?.answerFramework,
+    `${label} interviewRecall.answerFramework`,
+    3,
+  );
+  requireValue(
+    lesson.interviewRecall.answerFramework.length <= 5,
+    `${label} interview recall framework must contain no more than five steps`,
+  );
+  if (lesson.namedAlgorithms !== undefined) {
+    requireValue(
+      Array.isArray(lesson.namedAlgorithms) && lesson.namedAlgorithms.length > 0,
+      `${label} namedAlgorithms must be a non-empty array when present`,
+    );
+    const names = new Set();
+    for (const algorithm of lesson.namedAlgorithms) {
+      requireValue(
+        algorithm?.name &&
+          algorithm?.family &&
+          algorithm?.useWhen &&
+          algorithm?.invariant &&
+          algorithm?.complexity &&
+          algorithm?.memoryAnchor,
+        `${label} has an incomplete named algorithm reference`,
+      );
+      requireValue(
+        !names.has(algorithm.name.toLowerCase()),
+        `${label} repeats named algorithm ${algorithm.name}`,
+      );
+      names.add(algorithm.name.toLowerCase());
+    }
+  }
+  requireValue(
     lesson.definition?.heading && lesson.definition?.maintainedState,
     `${label} has invalid definition`,
   );

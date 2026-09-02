@@ -5,9 +5,11 @@ import {
   PatternProblemFixture,
   PatternProblemV1,
 } from '../../content/content.models';
+import { CodeCopyButton } from '../code-copy-button/code-copy-button';
 
 @Component({
   selector: 'app-guided-algorithm-trace',
+  imports: [CodeCopyButton],
   template: `
     <section
       class="guided-trace"
@@ -82,8 +84,11 @@ import {
           aria-label="Selected source implementation"
         >
           <div class="pane-heading">
-            Source implementation
-            <span>{{ language().toUpperCase() }} · {{ themeLabel() }}</span>
+            <span>Source implementation</span>
+            <div class="pane-actions">
+              <span>{{ language().toUpperCase() }} · {{ themeLabel() }}</span>
+              <app-code-copy-button [code]="sourceText()" />
+            </div>
           </div>
           <pre
             tabindex="0"
@@ -307,9 +312,16 @@ import {
       }
       .pane-heading {
         display: flex;
+        align-items: center;
         justify-content: space-between;
+        gap: 12px;
         padding: 11px 15px;
         border-bottom: 1px solid #315569;
+      }
+      .pane-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
       }
       .source-panel pre {
         max-height: 560px;
@@ -711,6 +723,11 @@ export class GuidedAlgorithmTrace {
     () =>
       this.problem().implementations.find((item) => item.language === this.language()) ??
       this.problem().implementations[0],
+  );
+  protected readonly sourceText = computed(() =>
+    this.source()
+      .lines.map((line) => line.text)
+      .join('\n'),
   );
   protected readonly activeAnchor = computed(() => this.event().sourceAnchor[this.language()]);
   protected readonly themeLabel = computed(
