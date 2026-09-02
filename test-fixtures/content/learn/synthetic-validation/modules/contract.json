@@ -1,0 +1,17 @@
+[
+  {
+    "id": "synthetic-contract-question",
+    "moduleId": "contract",
+    "order": 1,
+    "title": "Synthetic contract question",
+    "difficulty": "Beginner",
+    "tags": ["synthetic-fixture"],
+    "contentType": "q-and-a",
+    "interviewAnswer": "This is synthetic validation data and not learning content.",
+    "explanation": [
+      "The fixture confirms that public CI can validate the content schema without private curriculum."
+    ],
+    "versionNotes": ["Synthetic fixture only."],
+    "followUps": []
+  }
+]

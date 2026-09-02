@@ -1,0 +1,69 @@
+[
+  {
+    "id": "runtime-content-boundaries",
+    "moduleId": "content-boundaries",
+    "order": 1,
+    "title": "Runtime Content Boundaries",
+    "difficulty": "Beginner",
+    "tags": ["public-demo", "architecture", "content-delivery"],
+    "contentType": "theory",
+    "interviewAnswer": "The tracked Angular shell loads a selected runtime content source through stable HTTP contracts, so proprietary curriculum does not need to live in the public source repository.",
+    "explanation": [
+      "The public demo, private authoring source, generated runtime staging, and future authenticated content origin have separate responsibilities."
+    ],
+    "summary": "This synthetic lesson demonstrates the same loading and navigation contracts as the full platform without publishing interview preparation material.",
+    "estimatedReadMinutes": 4,
+    "sections": [
+      {
+        "id": "separation",
+        "heading": "Separate the shell from the material",
+        "body": [
+          "Angular owns routing, interaction, accessibility, responsive layout, and rendering. A selected content source supplies catalogs, course manifests, modules, and lesson payloads at runtime.",
+          "That separation lets the public repository demonstrate engineering quality while the authored curriculum remains in an authorized private system."
+        ],
+        "callout": {
+          "type": "key-idea",
+          "title": "Public by construction",
+          "text": "A clean public clone starts with deliberately synthetic demo data. It does not fall back to or reconstruct private curriculum."
+        }
+      },
+      {
+        "id": "contract",
+        "heading": "Keep one runtime contract",
+        "body": [
+          "The application reads the same URL shape regardless of whether data came from the tracked demo, an authorized local directory, or a future authenticated origin.",
+          "Page components stay independent of storage details, which keeps a later S3 or API delivery change out of the presentation layer.",
+          "The stable routes are <code>/content/:path/:courseId/course.json</code> and <code>/content/:path/:courseId/modules/:moduleId.json</code>."
+        ]
+      },
+      {
+        "id": "verification",
+        "heading": "Fail closed before publication",
+        "body": [
+          "Public-readiness checks reject private directories, generated runtime assets, local absolute paths, credential-shaped files, and imports from private authoring code.",
+          "CI validates both the demo dataset and a minimal schema fixture before running unit tests and the production build."
+        ],
+        "callout": {
+          "type": "production",
+          "title": "Why two datasets?",
+          "text": "The demo supports human review; the smaller fixture isolates schema and loader contracts for deterministic CI diagnostics."
+        }
+      }
+    ],
+    "keyTakeaways": [
+      "The public repository contains product code and synthetic demo data, not proprietary curriculum.",
+      "All content modes satisfy one runtime HTTP contract.",
+      "Automated checks make the privacy boundary testable rather than aspirational."
+    ],
+    "versionNotes": [
+      "Synthetic public demonstration content; not part of the learning curriculum."
+    ],
+    "followUps": [
+      {
+        "question": "Where will production content come from?",
+        "answer": "The intended delivery boundary is an authenticated content origin. Storage and authorization can evolve without changing page components."
+      }
+    ],
+    "reviewStatus": "reviewed"
+  }
+]

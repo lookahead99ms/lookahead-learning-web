@@ -1,0 +1,18 @@
+{
+  "id": "public-platform-demo",
+  "path": "learn",
+  "title": "Public Platform Demo",
+  "description": "A safe walkthrough of the runtime content architecture without proprietary curriculum.",
+  "version": "public-demo/v1",
+  "modules": [
+    {
+      "id": "content-boundaries",
+      "order": 1,
+      "title": "Runtime Content Boundaries",
+      "description": "See how the Angular shell and separately delivered learning material stay independent.",
+      "reviewStatus": "reviewed"
+    }
+  ],
+  "questions": [],
+  "reviewStatus": "reviewed"
+}

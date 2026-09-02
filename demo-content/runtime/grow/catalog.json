@@ -1,0 +1,10 @@
+[
+  {
+    "id": "public-release-demo",
+    "title": "Public Release Demo",
+    "description": "Inspect the safety gates used to prepare a portfolio-ready source release.",
+    "entryContentId": "release-readiness-pipeline",
+    "available": true,
+    "reviewStatus": "reviewed"
+  }
+]

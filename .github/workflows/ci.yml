@@ -1,0 +1,51 @@
+name: Learning Web CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: learning-web-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Test and build Angular application
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify private-content boundary
+        run: npm run validate:source-boundary
+
+      - name: Verify public release candidate
+        run: npm run validate:public-readiness
+
+      - name: Validate public demo content
+        run: npm run validate:content
+
+      - name: Validate synthetic content contracts
+        run: npm run validate:content:ci
+
+      - name: Run unit tests
+        run: npm test -- --watch=false
+
+      - name: Build public demo application
+        run: npm run build:ci

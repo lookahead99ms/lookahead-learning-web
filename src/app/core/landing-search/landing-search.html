@@ -1,0 +1,27 @@
+<section class="landing-search" [class.open]="open()" aria-label="Search platform content">
+  <form class="landing-search-form" (ngSubmit)="submit()">
+    <svg class="landing-search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="m16 16 5 5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"/></svg>
+    <input class="landing-search-input" type="search" aria-label="Search the learning platform" placeholder="Look ahead for your interview answer..." [value]="query()" (focus)="activate()" (input)="update($any($event.target).value)" />
+    @if (query()) { <button class="landing-search-clear" type="button" aria-label="Clear search" (click)="clear()">×</button> }
+  </form>
+  @if (open()) {
+    <div class="landing-search-dropdown" role="listbox" aria-label="Search suggestions">
+      <div class="landing-search-stages">
+        <button class="landing-search-stage learn" type="button" (click)="navigate(['/learn'])">Learn</button>
+        <button class="landing-search-stage grow" type="button" (click)="navigate(['/grow'])">Grow</button>
+        <button class="landing-search-stage look-ahead" type="button" (click)="navigate(['/look-ahead'])">Look Ahead</button>
+        <button class="landing-search-stage search" type="button" (click)="submit()" aria-label="Search all content">⌕</button>
+      </div>
+      <div class="landing-search-results">
+        @for (suggestion of suggestions(); track suggestion.type + suggestion.label) {
+          <button class="landing-search-result" type="button" role="option" (click)="choose(suggestion)">
+            <span class="landing-search-result-type">{{ suggestion.type }}</span>
+            <strong class="landing-search-result-label">{{ suggestion.label }}</strong>
+            @if (suggestion.detail; as detail) { <span class="landing-search-result-detail">{{ detail }}</span> }
+          </button>
+        } @empty { <p class="landing-search-empty">Start typing to search all learning content.</p> }
+      </div>
+      <footer class="landing-search-hint"><span>Press <kbd>Esc</kbd> to close</span><span>Enter to search all results</span></footer>
+    </div>
+  }
+</section>

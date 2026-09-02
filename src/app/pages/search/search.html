@@ -1,0 +1,253 @@
+<app-platform-header />
+<main id="main-content" class="search-page">
+  <section class="search-hero">
+    <p class="eyebrow">Find your answer</p>
+    <h1>Find the right content.</h1>
+    <p class="search-intro">
+      Search across the platform by question, topic, tag, answer, explanation, or follow-up. Expand
+      a result to preview the answer, then open its detailed explanation.
+    </p>
+    <form class="search-form" (ngSubmit)="submitSearch()">
+      <input
+        class="search-input"
+        type="search"
+        aria-label="Search interview questions"
+        placeholder="Try Java, graphs, binary search, Kafka, caching, or CAP theorem..."
+        [value]="query()"
+        (input)="updateQuery($any($event.target).value)"
+        autofocus
+      />
+      <button class="search-submit" type="submit">Search</button>
+    </form>
+  </section>
+
+  <section class="search-workspace" aria-label="Search results">
+    <div class="search-toolbar">
+      <label class="control"
+        >Path
+        <select [value]="selectedPath()" (change)="updatePath($any($event.target).value)">
+          <option value="all">All available content</option>
+          <option value="learn">Learn</option>
+          <option value="grow">Grow</option>
+          <option value="look-ahead" disabled>Look Ahead (coming soon)</option>
+        </select>
+      </label>
+      <label class="control"
+        >Content type
+        <select
+          [value]="selectedContentType()"
+          (change)="updateContentType($any($event.target).value)"
+        >
+          <option value="all">All types</option>
+          <option value="q-and-a">Q&amp;A</option>
+          <option value="theory">Theory</option>
+          <option value="dsa-pattern">DSA patterns</option>
+          <option value="system-design">System design</option>
+          <option value="language-comparison">Java / Python / Go</option>
+          <option value="guide">Guides</option>
+        </select>
+      </label>
+      <label class="control"
+        >Sort by
+        <select [value]="sortBy()" (change)="updateSort($any($event.target).value)">
+          <option value="relevance">Relevance</option>
+          <option value="title">Title</option>
+          <option value="difficulty">Difficulty</option>
+        </select>
+      </label>
+      <label class="control"
+        >Group by
+        <select [value]="groupBy()" (change)="updateGroup($any($event.target).value)">
+          <option value="none">None</option>
+          <option value="path">Learn / Grow</option>
+          <option value="course">Course</option>
+          <option value="module">Module</option>
+          <option value="tag">Primary tag</option>
+          <option value="content-type">Content type</option>
+        </select>
+      </label>
+    </div>
+
+    <section class="tag-panel" aria-label="Content tags">
+      <p class="tag-panel-title">
+        Filter by tag <span>({{ selectedFilterCount() }} selected)</span>
+      </p>
+      <div class="tag-strip">
+        <button
+          class="tag-pill"
+          [class.active]="selectedTags().size === 0"
+          type="button"
+          (click)="selectTag('all')"
+        >
+          All tags
+        </button>
+        @for (tag of availableTags(); track tag) {
+          <button
+            class="tag-pill"
+            [class.active]="isTagSelected(tag)"
+            type="button"
+            (click)="selectTag(tag)"
+          >
+            {{ tag }}
+          </button>
+        } @empty {
+          <span class="no-tags">No tags match the current search.</span>
+        }
+      </div>
+    </section>
+
+    @if (loading()) {
+      <p class="loading-state">Loading the question index...</p>
+    } @else if (error()) {
+      <p class="empty-state">{{ error() }}</p>
+    } @else {
+      <section id="search-results" class="results-anchor" aria-live="polite">
+        <p class="result-summary">
+          {{ results().length }} matching item{{ results().length === 1 ? '' : 's' }}
+        </p>
+      </section>
+      @if (results().length) {
+        @for (group of groups(); track group.label) {
+          <section class="result-group">
+            @if (groupBy() !== 'none') {
+              <h2 class="group-title">{{ group.label }}</h2>
+            }
+            @for (result of group.results; track result.id) {
+              <article
+                class="result-card"
+                [class.expanded]="isExpanded(result)"
+                (click)="toggleResult(result)"
+              >
+                <div class="result-header">
+                  <nav
+                    class="result-breadcrumbs"
+                    aria-label="Question location"
+                    (click)="$event.stopPropagation()"
+                  >
+                    <a routerLink="/">Home</a><span>/</span>
+                    <a [routerLink]="pathLink(result)">{{ pathLabel(result.path) }}</a
+                    ><span>/</span>
+                    <a [routerLink]="courseLink(result)">{{ result.courseTitle }}</a>
+                    @if (result.contentType !== 'theory') {
+                      <span>/</span
+                      ><a [routerLink]="moduleLink(result)">{{ moduleLabel(result) }}</a>
+                    }
+                  </nav>
+                  <div class="result-meta-right" (click)="$event.stopPropagation()">
+                    @if (isTagSelected(contentTypeLabel(result.contentType))) {
+                      <span class="result-meta-filter active">{{
+                        contentTypeLabel(result.contentType)
+                      }}</span>
+                    } @else {
+                      <button
+                        class="result-meta-filter"
+                        type="button"
+                        (click)="selectTag(contentTypeLabel(result.contentType))"
+                      >
+                        {{ contentTypeLabel(result.contentType) }}
+                      </button>
+                    }
+                    @if (result.difficulty) {
+                      @if (isTagSelected(result.difficulty)) {
+                        <span class="result-meta-filter result-difficulty active">{{
+                          result.difficulty
+                        }}</span>
+                      } @else {
+                        <button
+                          class="result-meta-filter result-difficulty"
+                          type="button"
+                          (click)="selectTag(result.difficulty)"
+                        >
+                          {{ result.difficulty }}
+                        </button>
+                      }
+                    }
+                    @if (result.access.tier === 'premium') {
+                      <span class="premium-badge">Premium</span>
+                    }
+                  </div>
+                </div>
+                <button
+                  class="result-toggle"
+                  type="button"
+                  [attr.aria-expanded]="isExpanded(result)"
+                  [attr.aria-controls]="answerId(result)"
+                  (click)="$event.stopPropagation(); toggleResult(result)"
+                >
+                  <span class="result-title">{{ result.title }}</span>
+                  <span class="expand-indicator" aria-hidden="true">{{
+                    isExpanded(result) ? '−' : '+'
+                  }}</span>
+                </button>
+                <div
+                  class="result-tags"
+                  aria-label="Question filters"
+                  (click)="$event.stopPropagation()"
+                >
+                  @if (isTagSelected(pathLabel(result.path))) {
+                    <span class="result-tag active">{{ pathLabel(result.path) }}</span>
+                  } @else {
+                    <button
+                      class="result-tag"
+                      type="button"
+                      (click)="selectTag(pathLabel(result.path))"
+                    >
+                      {{ pathLabel(result.path) }}
+                    </button>
+                  }
+                  @for (tag of questionTags(result); track tag) {
+                    @if (isTagSelected(tag)) {
+                      <span class="result-tag active">{{ tag }}</span>
+                    } @else {
+                      <button class="result-tag" type="button" (click)="selectTag(tag)">
+                        {{ tag }}
+                      </button>
+                    }
+                  }
+                </div>
+                @if (isExpanded(result)) {
+                  <div
+                    class="result-answer"
+                    [id]="answerId(result)"
+                    (click)="$event.stopPropagation()"
+                  >
+                    @if (result.access.tier === 'premium') {
+                      <div class="premium-state">
+                        <strong>Premium answer</strong>
+                        <p>
+                          This answer requires
+                          {{ result.access.subscriptionIds?.join(', ') || 'a premium' }} access.
+                        </p>
+                      </div>
+                    } @else {
+                      <p class="result-answer-label">
+                        {{ result.contentType === 'q-and-a' ? 'Interview answer' : 'Preview' }}
+                      </p>
+                      <p class="result-preview">
+                        {{ preview(result) || 'More content is available in this guide.' }}
+                      </p>
+                      @if (result.route; as route) {
+                        <a class="detail-link" [routerLink]="route" [queryParams]="{ details: 1 }"
+                          >{{
+                            result.contentType === 'q-and-a'
+                              ? 'View detailed answer'
+                              : 'Open content'
+                          }}
+                          →</a
+                        >
+                      }
+                    }
+                  </div>
+                }
+              </article>
+            }
+          </section>
+        }
+      } @else {
+        <p class="empty-state">
+          No questions match those filters. Try a broader topic or remove the tag filter.
+        </p>
+      }
+    }
+  </section>
+</main>

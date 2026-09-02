@@ -1,0 +1,351 @@
+<app-platform-header />
+<main id="main-content" class="content-page reader-page">
+  @if (question(); as item) {
+    <article class="question-reader question-detail-reader" [attr.data-path]="pathId()">
+      <div class="question-sticky-utility">
+        <nav class="breadcrumbs" aria-label="Breadcrumb">
+          <a routerLink="/">Home</a><span>/</span>
+          <a [routerLink]="['/', pathId()]">{{ pathId() === 'grow' ? 'Grow' : 'Learn' }}</a
+          ><span>/</span>
+          <a [routerLink]="['/', pathId(), courseId()]">{{ courseTitle() }}</a>
+        </nav>
+        @if (scrolled() && item.contentType === 'theory' && visiblePillWindow(item).length) {
+          <div class="sticky-pill-strip" aria-label="Reading position">
+            <span class="sticky-pattern-name">{{ patternName(item.title) }}</span>
+            <span class="sticky-pill-sep" aria-hidden="true">:</span>
+            @for (link of visiblePillWindow(item); track link.label) {
+              <button
+                type="button"
+                class="sticky-pill"
+                [class.active]="link.position === 'active'"
+                [attr.aria-current]="link.position === 'active' ? 'location' : null"
+                (click)="scrollToSection(link.target)"
+              >
+                {{ link.label }}
+              </button>
+            }
+          </div>
+        }
+        <button class="reader-search-link search-trigger" type="button">
+          <svg class="search-icon" aria-hidden="true" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="6"></circle>
+            <path d="m16 16 4 4"></path></svg
+          ><span>Search</span><kbd>⌘K</kbd>
+        </button>
+      </div>
+      @if (item.contentType !== 'theory') {
+        <section class="question-context-panel">
+          <a class="reader-module" [routerLink]="parentContextRoute(item)">{{
+            parentContextTitle(item)
+          }}</a>
+        </section>
+      }
+      <section class="reader-question-panel">
+        @if (item.reviewStatus; as status) {
+          @if (status !== 'reviewed') {
+            <span class="review-status" [attr.data-review-status]="status">{{
+              reviewStatusLabel(status)
+            }}</span>
+          }
+        }
+        <div class="article-title-row">
+          <h1 class="reader-question-title">
+            <span>{{ patternName(item.title) }}</span>
+            @if (patternSubtitle(item.title); as subtitle) {
+              <span class="pattern-title-subtitle">: {{ subtitle }}</span>
+            }
+          </h1>
+          @if (item.contentType === 'theory' && item.estimatedReadMinutes; as minutes) {
+            <p class="article-read-time">{{ minutes }} min read</p>
+          }
+        </div>
+        <p class="eyebrow">{{ item.difficulty }}</p>
+        @if (hasTheoryExperience(item)) {
+          <nav class="pattern-navigation" aria-label="Article navigation">
+            @for (link of patternNavigation(item); track link.label) {
+              <button type="button" (click)="scrollToSection(link.target)">{{ link.label }}</button>
+            }
+          </nav>
+        }
+        <nav class="question-inner-navigation" aria-label="Adjacent question navigation">
+          @if (!isFirstQuestionInModule()) {
+            @if (previousQuestion(); as previous) {
+              <a
+                class="inner-navigation-link previous"
+                [routerLink]="['/', pathId(), courseId(), previous.id]"
+              >
+                <span>← Previous question:</span><strong>{{ previous.title }}</strong>
+              </a>
+            }
+          }
+          <div class="inner-navigation-actions">
+            @if (!isLastQuestionInModule()) {
+              @if (nextQuestion(); as next) {
+                <a
+                  class="inner-navigation-link next"
+                  [routerLink]="['/', pathId(), courseId(), next.id]"
+                >
+                  <span>Next question:</span><strong>{{ next.title }} →</strong>
+                </a>
+              }
+            } @else if (!isLastModuleInCompetency()) {
+              @if (item.contentType !== 'theory') {
+                <a class="module-catalog-link" [routerLink]="parentContextRoute(item)"
+                  >View all modules</a
+                >
+              }
+              @if (nextModule(); as nextModuleItem) {
+                <a
+                  class="inner-navigation-link next next-module"
+                  [routerLink]="nextModuleRoute(item, nextModuleItem)"
+                >
+                  <span>{{ nextModuleLabel(item) }}</span
+                  ><strong>{{ nextModuleItem.title.replace('Theory: ', '') }} »</strong>
+                </a>
+              }
+            } @else if (item.contentType !== 'theory') {
+              <a class="module-catalog-link" [routerLink]="parentContextRoute(item)"
+                >View all modules</a
+              >
+            }
+          </div>
+        </nav>
+      </section>
+      @if (patternLesson(item); as lesson) {
+        <app-pattern-lesson-shell
+          [lesson]="lesson"
+          [checks]="patternChecks(lesson)"
+          [practiceItems]="patternPractice(lesson)"
+          [pathId]="pathId()"
+          [courseId]="courseId()"
+        />
+      } @else if (item.contentType === 'theory' && item.sections?.length) {
+        <section class="theory-article" aria-label="Theory lesson">
+          @if (item.summary; as summary) {
+            <p class="theory-summary" [innerHTML]="summary"></p>
+          }
+          @for (section of mainSections(item); track section.id) {
+            <ng-container *ngTemplateOutlet="theorySection; context: { $implicit: section }" />
+          }
+          @if (item.visuals?.length) {
+            @for (visual of item.visuals; track visual.assetPath) {
+              <figure class="theory-visual theory-visual-wide">
+                @if (visual.type === 'interactive') {
+                  <app-interactive-theory-visual [visual]="visual" />
+                } @else {
+                  <img [src]="visual.assetPath" [alt]="visual.alt" />
+                }
+                @if (visual.caption; as caption) {
+                  <figcaption>{{ caption }}</figcaption>
+                }
+              </figure>
+            }
+          }
+          @if (item.keyTakeaways?.length) {
+            <section class="theory-takeaways">
+              <p class="panel-label">Key takeaways</p>
+              <ul>
+                @for (takeaway of item.keyTakeaways; track takeaway) {
+                  <li [innerHTML]="takeaway"></li>
+                }
+              </ul>
+            </section>
+          }
+          @if (item.languageNotes?.length) {
+            <section class="theory-language-notes">
+              <p class="panel-label">Language notes</p>
+              <ul>
+                @for (note of item.languageNotes; track note.language) {
+                  <li>
+                    <strong>{{ note.language }}:</strong> <span [innerHTML]="note.note"></span>
+                  </li>
+                }
+              </ul>
+            </section>
+          }
+          @if (understandSection(item); as section) {
+            <ng-container *ngTemplateOutlet="theorySection; context: { $implicit: section }" />
+          }
+          @if (embeddedUnderstanding(item); as questions) {
+            @if (questions.length) {
+              <app-inline-understanding-pager id="read-understand" [questions]="questions" />
+            }
+          }
+          @if (handsOnSection(item); as section) {
+            <ng-container *ngTemplateOutlet="theorySection; context: { $implicit: section }" />
+          }
+        </section>
+
+        <ng-template #theorySection let-section>
+          <section class="theory-section" [id]="section.id">
+            <h2>{{ section.heading }}</h2>
+            @for (paragraph of section.body; track paragraph) {
+              <p [innerHTML]="paragraph"></p>
+            }
+            @if (section.callout; as callout) {
+              <aside class="theory-callout" [attr.data-callout-type]="callout.type">
+                <strong>{{ callout.title }}</strong>
+                <p [innerHTML]="callout.text"></p>
+              </aside>
+            }
+            @if (section.code; as code) {
+              @if (!section.solutions?.length) {
+                <section class="theory-code">
+                  <div>
+                    <span>{{ code.title }}</span
+                    ><small>{{ code.language }}</small>
+                  </div>
+                  <pre><code [innerHTML]="formatTheoryCode(code.source)"></code></pre>
+                </section>
+              }
+            }
+            @if (section.solutions?.length) {
+              <app-coding-solution-tabs
+                [solutions]="section.solutions!"
+                [pseudocode]="section.code ?? null"
+                [showPractice]="section.showPractice !== false"
+                [useLanguageThemes]="section.useLanguageThemes === true"
+              />
+            }
+            @if (section.essentialProblems?.length) {
+              <app-pattern-essential-problems [problems]="section.essentialProblems!" />
+            }
+            @if (section.visual; as visual) {
+              <figure class="theory-visual">
+                @if (visual.type === 'interactive') {
+                  <app-interactive-theory-visual [visual]="visual" />
+                } @else {
+                  <img [src]="visual.assetPath" [alt]="visual.alt" />
+                }
+                @if (visual.caption; as caption) {
+                  <figcaption>{{ caption }}</figcaption>
+                }
+              </figure>
+            }
+            @if (isHandsOnSection(section)) {
+              @if (handsOnPractice(item); as practiceQuestions) {
+                @if (practiceQuestions.length) {
+                  <aside class="hands-on-panel" aria-label="Continue with practice">
+                    <span>Hands-on</span>
+                    <h3>Continue with these two practice problems</h3>
+                    <p>
+                      Use the same invariant with a new input, then compare your trace with the
+                      reference implementation.
+                    </p>
+                    <div>
+                      @for (practice of practiceQuestions; track practice.id) {
+                        <a [routerLink]="['/', pathId(), courseId(), practice.id]"
+                          >{{ practice.title }} <small>{{ practice.difficulty }}</small
+                          ><b aria-hidden="true">→</b></a
+                        >
+                      }
+                    </div>
+                  </aside>
+                }
+              }
+            }
+          </section>
+        </ng-template>
+      } @else if (isCodingPractice(item)) {
+        <app-coding-problem-detail
+          [item]="item"
+          [pathId]="pathId()"
+          [courseId]="courseId()"
+          [relatedArticleId]="item.relatedArticleId"
+          [leetcodeUrl]="leetcodeProblem(item)?.url ?? null"
+          [visual]="resolvedCodingVisual(item)"
+        />
+      } @else {
+        @if (item.relatedArticleId; as articleId) {
+          <a class="related-theory-link" [routerLink]="['/', pathId(), courseId(), articleId]"
+            >← Review theory: {{ relatedArticleTitle(item) }}</a
+          >
+        }
+        @if (shouldShowHint(item)) {
+          <details class="reader-hint">
+            <summary>Show hint <span aria-hidden="true">›</span></summary>
+            <p [innerHTML]="item.interviewAnswer"></p>
+          </details>
+        } @else {
+          <section class="quick-answer reader-interview-panel" aria-label="Interview answer">
+            <span>Interview answer</span>
+            <p [innerHTML]="item.interviewAnswer"></p>
+          </section>
+        }
+        @if (item.solutions?.length) {
+          <app-coding-solution-tabs
+            [solutions]="item.solutions!"
+            [complexity]="item.complexity"
+            [visual]="resolvedCodingVisual(item)"
+          />
+        }
+        <section class="details-content">
+          <div class="details-content-body">
+            <div class="answer-code-grid" [class.has-reference-code]="!!item.code">
+              <section class="explanation-panel">
+                <p class="panel-label">Detailed explanation</p>
+                @for (paragraph of item.explanation; track paragraph) {
+                  <p [innerHTML]="paragraph"></p>
+                }
+              </section>
+              @if (item.code; as code) {
+                <section class="code-panel">
+                  <div>
+                    <span>{{ code.title }}</span
+                    ><small>{{ code.language }}</small>
+                  </div>
+                  <pre><code>{{ code.source }}</code></pre>
+                  @if (item.compatibility; as requirements) {
+                    <section class="compatibility-notes" aria-label="Compatibility requirements">
+                      <strong>Compatibility</strong>
+                      @for (requirement of requirements; track requirement.technology) {
+                        <div>
+                          <span>{{ requirement.technology }}</span>
+                          <b>{{ requirement.version }}</b>
+                        </div>
+                      }
+                    </section>
+                  }
+                </section>
+              }
+            </div>
+            @if (!item.solutions?.length) {
+              @if (item.complexity; as complexity) {
+                <section class="resolution-panel">
+                  <p class="panel-label">Complexity and practical guidance</p>
+                  <div class="complexity-grid">
+                    <div>
+                      <strong>Time</strong>
+                      <p>{{ complexity.time }}</p>
+                    </div>
+                    <div>
+                      <strong>Space</strong>
+                      <p>{{ complexity.space }}</p>
+                    </div>
+                  </div>
+                  <p>{{ complexity.note }}</p>
+                </section>
+              }
+            }
+          </div>
+        </section>
+        <section class="main-followups">
+          <p class="panel-label">Likely follow-ups</p>
+          @for (followUp of item.followUps; track followUp.question) {
+            <details>
+              <summary>{{ followUp.question }}</summary>
+              <p>{{ followUp.answer }}</p>
+            </details>
+          }
+        </section>
+      }
+    </article>
+  } @else if (error()) {
+    <section class="page-message">
+      <h1>Content unavailable</h1>
+      <p>{{ error() }}</p>
+    </section>
+  } @else {
+    <section class="page-message"><p>Loading question…</p></section>
+  }
+</main>

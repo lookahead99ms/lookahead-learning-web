@@ -1,0 +1,107 @@
+<app-platform-header />
+<main id="main-content" class="content-page reader-page">
+  @if (course(); as currentCourse) {
+    @if (module(); as currentModule) {
+      <article class="question-reader module-reader" [attr.data-path]="pathId()">
+        <div class="module-sticky-utility">
+          <nav class="breadcrumbs" aria-label="Breadcrumb">
+            <a routerLink="/">Home</a><span>/</span>
+            <a [routerLink]="['/', pathId()]">{{ pathId() === 'grow' ? 'Grow' : 'Learn' }}</a
+            ><span>/</span>
+            <a [routerLink]="['/', pathId(), courseId()]">{{ currentCourse.title }}</a>
+          </nav>
+          <button class="reader-search-link search-trigger" type="button">
+            <svg class="search-icon" aria-hidden="true" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="6"></circle>
+              <path d="m16 16 4 4"></path></svg
+            ><span>Search</span><kbd>⌘K</kbd>
+          </button>
+        </div>
+        <section class="module-context-panel">
+          @if (parentSection(); as section) {
+            <a
+              class="reader-module"
+              [routerLink]="['/', pathId(), courseId(), 'section', section.id]"
+              >{{ section.title }}</a
+            >
+            <h1 class="module-context-title">{{ currentModule.title }}</h1>
+          } @else {
+            <a class="reader-module" [routerLink]="['/', pathId(), courseId()]">{{
+              currentCourse.title
+            }}</a>
+            <h1 class="module-context-title">{{ currentModule.title }}</h1>
+          }
+          <p class="module-description">{{ currentModule.description }}</p>
+        </section>
+        <nav class="module-navigation-bar" aria-label="Module navigation">
+          @if (!isFirstModuleInTrack()) {
+            @if (previousModule(); as previous) {
+              <a
+                class="module-previous-link"
+                [routerLink]="['/', pathId(), courseId(), 'module', previous.id]"
+              >
+                ← Previous module: <strong>{{ previous.title }}</strong>
+              </a>
+            }
+          }
+          <div class="module-action-group">
+            @if (!isLastModuleInTrack()) {
+              @if (nextModule(); as next) {
+                <a
+                  class="module-next-link"
+                  [routerLink]="['/', pathId(), courseId(), 'module', next.id]"
+                >
+                  Next module: {{ next.title }} »
+                </a>
+              }
+            } @else {
+              <a class="module-catalog-link" [routerLink]="catalogRoute()">📁 View all modules</a>
+            }
+          </div>
+        </nav>
+        <section class="question-list module-question-list" aria-label="Module questions">
+          <div class="course-grid module-question-grid">
+            @for (question of questions(); track question.id) {
+              <article class="question-card">
+                <div class="question-card-meta">
+                  <p class="eyebrow">{{ question.difficulty }}</p>
+                  @if (question.reviewStatus; as status) {
+                    @if (status !== 'reviewed') {
+                      <span class="review-status" [attr.data-review-status]="status">{{
+                        reviewStatusLabel(status)
+                      }}</span>
+                    }
+                  }
+                </div>
+                <h3>{{ question.title }}</h3>
+                <div class="question-filter-tags" aria-label="Question filters">
+                  @for (tag of questionFilterTags(question); track tag) {
+                    <a
+                      class="question-filter-tag"
+                      [routerLink]="['/search']"
+                      [queryParams]="{ tags: tag }"
+                      (click)="$event.stopPropagation()"
+                      >{{ tag }}</a
+                    >
+                  }
+                </div>
+                <button class="question-card-open" type="button" (click)="openQuestion(question)">
+                  Open question <span aria-hidden="true">→</span>
+                </button>
+              </article>
+            } @empty {
+              <p class="module-status">Content coming next</p>
+            }
+          </div>
+        </section>
+      </article>
+    }
+  } @else if (error()) {
+    <section class="page-message">
+      <h1>Content unavailable</h1>
+      <p>{{ error() }}</p>
+    </section>
+  } @else {
+    <section class="page-message"><p>Loading module…</p></section>
+  }
+</main>

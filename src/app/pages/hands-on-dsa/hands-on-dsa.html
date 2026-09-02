@@ -1,0 +1,168 @@
+<app-platform-header />
+<main id="main-content" class="content-page reader-page">
+  <article class="question-reader practice-reader">
+    <div class="reader-sticky-stack">
+      <section class="reader-sticky-context practice-breadcrumb-bar">
+        <nav class="breadcrumbs" aria-label="Breadcrumb">
+          <a routerLink="/">Home</a><span>/</span><a routerLink="/learn">Learn</a><span>/</span
+          ><a routerLink="/learn/algorithmic-patterns">Algorithmic Patterns</a><span>/</span
+          ><span aria-current="page">Hands-On DSA</span>
+        </nav>
+        <button class="reader-search-link search-trigger" type="button">
+          <svg class="search-icon" aria-hidden="true" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="6"></circle>
+            <path d="m16 16 4 4"></path></svg
+          ><span>Search</span><kbd>⌘K</kbd>
+        </button>
+      </section>
+    </div>
+
+    <header class="practice-hero">
+      <span class="review-status" data-review-status="evolving">Evolving topic</span>
+      <h1>Practice the invariant, not just the answer.</h1>
+      <p>
+        Start from the pattern you just learned, trace its state on a real input, then move to
+        problems that force you to adapt the same reasoning.
+      </p>
+      <div class="practice-proof" aria-label="Practice sequence">
+        <span>Recognize</span><span>Trace</span><span>Implement</span><span>Transfer</span>
+      </div>
+    </header>
+
+    @if (course()) {
+      <section class="practice-controls" aria-label="Filter practice problems">
+        <label>
+          Search problems and patterns
+          <input
+            type="search"
+            [value]="query()"
+            placeholder="Try palindrome, window, or graph"
+            (input)="updateQuery($any($event.target).value)"
+          />
+        </label>
+        <label>
+          Difficulty
+          <select [value]="difficulty()" (change)="updateDifficulty($any($event.target).value)">
+            @for (option of difficulties; track option) {
+              <option [value]="option">{{ option }}</option>
+            }
+          </select>
+        </label>
+      </section>
+
+      <nav class="pattern-filter" aria-label="Filter by algorithmic pattern">
+        <a routerLink="/learn/hands-on-dsa" [attr.aria-current]="!selectedGroup() ? 'page' : null"
+          >All patterns</a
+        >
+        @for (group of groups(); track group.id) {
+          <a
+            routerLink="/learn/hands-on-dsa"
+            [queryParams]="{ pattern: group.id }"
+            [attr.aria-current]="selectedGroup()?.id === group.id ? 'page' : null"
+            >{{ group.title }}</a
+          >
+        }
+      </nav>
+
+      @if (selectedGroup(); as group) {
+        @if (group.essentialProblems.length) {
+          <section class="active-practice" aria-labelledby="active-practice-heading">
+            <header>
+              <div>
+                <span class="experience-pill">Guided workbench</span>
+                <h2 id="active-practice-heading">{{ group.title }}</h2>
+                <p>{{ group.description }}</p>
+              </div>
+              <a
+                class="lesson-link"
+                [routerLink]="['/learn', 'algorithmic-patterns', group.lesson.id]"
+                >Review the lesson →</a
+              >
+            </header>
+            <div id="guided-workbench" class="workbench-wrap">
+              <app-pattern-problem-workbench
+                [problems]="group.essentialProblems"
+                [initialProblemId]="problemId()"
+                eyebrow="Guided practice"
+                ariaLabel="Guided practice problems"
+              />
+            </div>
+          </section>
+        }
+      }
+
+      <header class="practice-results-header">
+        <h2>{{ selectedGroup() ? selectedGroup()?.title + ' problem set' : 'Problem library' }}</h2>
+        <p aria-live="polite">
+          {{ visibleProblemCount() }} problems across {{ visibleGroups().length }}
+          {{ visibleGroups().length === 1 ? 'pattern' : 'patterns' }}
+        </p>
+      </header>
+
+      @if (visibleGroups().length) {
+        <div class="pattern-groups">
+          @for (group of visibleGroups(); track group.id) {
+            <section class="pattern-group" [attr.aria-labelledby]="'practice-group-' + group.id">
+              <header>
+                <div>
+                  <span class="experience-pill">{{
+                    group.goldenLesson ? 'Guided + transfer' : 'Practice set'
+                  }}</span>
+                  <h2 [id]="'practice-group-' + group.id">{{ group.title }}</h2>
+                  <p>{{ group.description }}</p>
+                </div>
+                <a
+                  class="lesson-link"
+                  routerLink="/learn/hands-on-dsa"
+                  [queryParams]="{ pattern: group.id }"
+                  >Focus this pattern →</a
+                >
+              </header>
+              <div class="problem-grid">
+                @for (problem of group.essentialProblems; track problem.id) {
+                  <a
+                    class="problem-card"
+                    routerLink="/learn/hands-on-dsa"
+                    [queryParams]="{ pattern: group.id, problem: problem.id }"
+                    fragment="guided-workbench"
+                  >
+                    <span>{{ problem.difficulty }} · Guided</span>
+                    <h3>{{ problem.title }}</h3>
+                    <p>{{ problem.variation }}</p>
+                    <b>Trace and implement →</b>
+                  </a>
+                }
+                @for (problem of group.continuationProblems; track problem.id) {
+                  <a
+                    class="problem-card"
+                    [routerLink]="['/learn', 'algorithmic-patterns', problem.id]"
+                  >
+                    <span>{{ problem.difficulty }} · Transfer</span>
+                    <h3>{{ problem.title }}</h3>
+                    <p>{{ problem.interviewAnswer }}</p>
+                    <b>Open problem →</b>
+                  </a>
+                }
+              </div>
+            </section>
+          }
+        </div>
+      } @else {
+        <section class="empty-state" aria-live="polite">
+          <h2>No matching practice yet</h2>
+          <p>
+            Try another keyword or difficulty. The catalog only shows problems backed by published
+            content.
+          </p>
+        </section>
+      }
+    } @else if (error()) {
+      <section class="empty-state" role="alert">
+        <h2>Content unavailable</h2>
+        <p>{{ error() }}</p>
+      </section>
+    } @else {
+      <section class="empty-state" aria-live="polite"><p>Loading the practice catalog…</p></section>
+    }
+  </article>
+</main>

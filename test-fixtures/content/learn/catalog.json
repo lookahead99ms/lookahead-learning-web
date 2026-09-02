@@ -1,0 +1,9 @@
+[
+  {
+    "id": "synthetic-validation",
+    "title": "Synthetic Contract Validation",
+    "description": "Non-production data used only by public-source verification.",
+    "available": true,
+    "reviewStatus": "reviewed"
+  }
+]

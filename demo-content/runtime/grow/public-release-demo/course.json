@@ -1,0 +1,18 @@
+{
+  "id": "public-release-demo",
+  "path": "grow",
+  "title": "Public Release Demo",
+  "description": "A synthetic operational walkthrough of repository publication checks.",
+  "version": "public-demo/v1",
+  "modules": [
+    {
+      "id": "release-safety",
+      "order": 1,
+      "title": "Release Safety",
+      "description": "Validate privacy, reproducibility, and reviewability before source publication.",
+      "reviewStatus": "reviewed"
+    }
+  ],
+  "questions": [],
+  "reviewStatus": "reviewed"
+}

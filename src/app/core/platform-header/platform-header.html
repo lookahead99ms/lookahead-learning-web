@@ -1,0 +1,145 @@
+<header class="content-header platform-header" [class.with-search]="showSearch">
+  <a class="brand" routerLink="/" aria-label="Look Ahead home" (click)="resetHomeScroll()">
+    <span class="brand-mark">LA</span>
+    <span
+      ><strong>Look Ahead</strong><small>Anticipate the Rubric. Advance Your Career.</small></span
+    >
+  </a>
+
+  @if (showSearch || paletteOpen()) {
+    @if (paletteOpen() && !showSearch) {
+      <button
+        class="search-palette-backdrop"
+        type="button"
+        aria-label="Close search"
+        (click)="closeSearchPalette()"
+      ></button>
+    }
+    <form
+      class="header-search-form"
+      [class.suggestions-open]="suggestionsOpen()"
+      [class.search-palette]="paletteOpen() && !showSearch"
+      (ngSubmit)="submitSearch()"
+      (mouseenter)="openSuggestions()"
+      (focusin)="openSuggestions()"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="header-search-field">
+        <svg class="header-search-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2" />
+          <path
+            d="m16 16 5 5"
+            fill="none"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-width="2"
+          />
+        </svg>
+        <input
+          class="header-search-input"
+          type="search"
+          aria-label="Search a specific interview answer"
+          placeholder="Look ahead for your interview answer..."
+          [value]="searchQuery()"
+          (input)="updateSearchQuery($any($event.target).value)"
+        />
+      </div>
+      @if (suggestionsOpen()) {
+        <div class="header-search-suggestions" role="listbox" aria-label="Search suggestions">
+          <div class="persistent-suggestions">
+            @for (suggestion of persistentSuggestions; track suggestion.label) {
+              <button
+                type="button"
+                role="option"
+                class="header-search-suggestion"
+                [attr.aria-label]="suggestion.style === 'search' ? suggestion.label : null"
+                [class.learn]="suggestion.style === 'learn'"
+                [class.grow]="suggestion.style === 'grow'"
+                [class.look-ahead]="suggestion.style === 'look-ahead'"
+                [class.search]="suggestion.style === 'search'"
+                (click)="selectSuggestion(suggestion)"
+              >
+                @if (suggestion.style === 'search') {
+                  <span class="suggestion-icon" aria-hidden="true">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <circle cx="11" cy="11" r="6.5" />
+                      <path d="m16 16 5 5" />
+                    </svg>
+                  </span>
+                } @else {
+                  <strong class="suggestion-label">{{ suggestion.label }}</strong>
+                }
+              </button>
+            }
+          </div>
+          <div class="dynamic-suggestions">
+            @for (suggestion of visibleSuggestions(); track suggestion.type + suggestion.label) {
+              <button
+                type="button"
+                role="option"
+                class="header-search-suggestion"
+                (click)="selectSuggestion(suggestion)"
+              >
+                <span class="suggestion-type">{{ suggestion.type }}</span>
+                <strong class="suggestion-label">{{ suggestion.label }}</strong>
+                @if (suggestion.detail; as detail) {
+                  <small>{{ detail }}</small>
+                }
+              </button>
+            } @empty {
+              <p class="header-search-empty">Press Enter to search all content.</p>
+            }
+          </div>
+          @if (paletteOpen() && !showSearch) {
+            <footer class="search-palette-hint">
+              <span>Press <kbd>Esc</kbd> or <kbd>⌘K</kbd> to close</span
+              ><span>Enter to search all results</span>
+            </footer>
+          }
+        </div>
+      }
+    </form>
+  }
+
+  <div class="profile-dropdown-container" (click)="$event.stopPropagation()">
+    <button
+      class="avatar-trigger-btn"
+      type="button"
+      aria-label="Account menu"
+      aria-controls="account-menu"
+      [attr.aria-expanded]="profileMenuOpen()"
+      (click)="toggleProfileMenu()"
+    >
+      <span class="user-avatar-img" aria-hidden="true">AE</span>
+      <span class="avatar-chevron" aria-hidden="true">▼</span>
+    </button>
+    @if (profileMenuOpen()) {
+      <div id="account-menu" class="profile-dropdown-menu">
+        <div class="menu-user-header">
+          <p class="user-display-name">Alex Engineer</p>
+          <p class="user-display-email">alex@engineering.com</p>
+        </div>
+        <div class="menu-divider"></div>
+        <div class="menu-section-group">
+          <span class="group-label">Account Status</span>
+          <span class="active-plan-badge">All-Access Pass</span>
+        </div>
+        <div class="menu-divider"></div>
+        <nav class="dropdown-links-list" aria-label="Account links">
+          <a href="#profile-settings" class="dropdown-item-link">View Profile Settings</a>
+          <a href="#subscriptions" class="dropdown-item-link">Manage Subscriptions</a>
+          <a href="#progress" class="dropdown-item-link">Track Roadmap Progress</a>
+          <div class="menu-divider"></div>
+          <a href="#sign-out" class="dropdown-item-link logout-trigger">Sign Out</a>
+        </nav>
+      </div>
+    }
+  </div>
+</header>

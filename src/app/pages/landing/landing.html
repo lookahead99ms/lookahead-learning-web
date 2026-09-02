@@ -1,0 +1,149 @@
+<app-platform-header />
+<main id="main-content" class="landing-page">
+  <section class="landing-hero">
+    <p class="hero-eyebrow">Crack Your Technical Interviews.</p>
+    <h1>Think Bigger. Build Better. Engineer for Tomorrow.</h1>
+    <p class="hero-support">
+      An all-in-one technical interview platform that combines an enterprise backend Q&A learning
+      path with a comprehensive algorithms curriculum and high-level system design training.
+    </p>
+    <app-landing-search />
+    <div class="hero-tagline-actions" aria-label="Choose a roadmap stage">
+      <button class="hero-tagline-btn learn" type="button" (click)="selectStageAndScroll('learn')">
+        Look Ahead to What’s Possible
+      </button>
+      <button class="hero-tagline-btn grow" type="button" (click)="selectStageAndScroll('grow')">
+        Look Ahead to New Opportunities
+      </button>
+      <button
+        class="hero-tagline-btn look-ahead"
+        type="button"
+        (click)="selectStageAndScroll('look-ahead')"
+      >
+        Look Ahead to Your Full Potential
+      </button>
+    </div>
+  </section>
+
+  <section id="roadmap" class="roadmap-container" aria-label="Learning roadmap">
+    <div class="bridge-container">
+      <h2 class="bridge-title">Start where you are. Build towards where you want to be.</h2>
+      <p class="bridge-subtext">
+        Go beyond simple coding puzzles.<br />Master core language internals, algorithmic patterns,
+        and system design in one structured path.<br />Deep-dive into production-grade Q&As and rich
+        code examples designed to land your next engineering role.
+      </p>
+    </div>
+
+    <nav class="tab-navigation" aria-label="Roadmap stages" role="tablist">
+      @for (stage of stages; track stage.id) {
+        <button
+          class="tab-btn"
+          [class.active]="selectedStage() === stage.id"
+          [class.learn]="stage.id === 'learn'"
+          [class.grow]="stage.id === 'grow'"
+          [class.look-ahead]="stage.id === 'look-ahead'"
+          type="button"
+          role="tab"
+          [id]="'tab-' + stage.id"
+          [attr.aria-selected]="selectedStage() === stage.id"
+          [attr.aria-controls]="'panel-' + stage.id"
+          (click)="selectStageAndScroll(stage.id)"
+          (keydown)="onTabKeydown($event, stage.id)"
+        >
+          <span class="tab-step">{{ stage.step }}</span>
+          <span class="tab-label">
+            <strong>{{ stage.title }}</strong>
+            @if (selectedStage() !== stage.id) {
+              <small>{{ stage.category }}</small>
+            }
+          </span>
+        </button>
+      }
+    </nav>
+
+    <section
+      class="tab-content-panel"
+      [id]="'panel-' + activeStage().id"
+      [class]="'tab-content-panel stage-' + activeStage().id"
+      [attr.aria-labelledby]="'tab-' + activeStage().id"
+      role="tabpanel"
+    >
+      <div class="stage-summary">
+        <p class="stage-subtitle">{{ activeStage().subtitle }}</p>
+        <a
+          class="stage-link"
+          [routerLink]="['/', activeStage().id]"
+          [attr.aria-label]="activeStage().category"
+          >{{ activeStage().category }} <span aria-hidden="true">→</span></a
+        >
+      </div>
+      <div class="skills-pill-grid">
+        @for (topic of activeStage().topics; track topic.id) {
+          @if (topic.learnGroupId) {
+            <a
+              class="skill-pill"
+              [routerLink]="['/learn']"
+              [queryParams]="{ group: topic.learnGroupId }"
+              >{{ topic.title }}</a
+            >
+          } @else if (topic.growGroupId) {
+            <a
+              class="skill-pill"
+              [routerLink]="['/grow']"
+              [queryParams]="{ group: topic.growGroupId }"
+              >{{ topic.title }}</a
+            >
+          } @else {
+            <a class="skill-pill" [routerLink]="['/', activeStage().id, topic.id]">{{
+              topic.title
+            }}</a>
+          }
+        }
+      </div>
+    </section>
+  </section>
+
+  <section class="landing-faq faq-bar" id="faq">
+    <details>
+      <summary>
+        <span>Frequently Asked Questions</span>
+        <small>View answers</small>
+      </summary>
+      <div class="faq-bar-content">
+        <details>
+          <summary>How is the roadmap organized?</summary>
+          <p>
+            The roadmap is organized into Learn competencies, Grow capabilities, and Look Ahead
+            practices. Each stage can be explored independently while still following the broader
+            progression.
+          </p>
+        </details>
+        <details>
+          <summary>How often is the curriculum updated?</summary>
+          <p>
+            Content can be refreshed as frameworks, language runtimes, cloud services, and interview
+            expectations evolve. The update cadence can be defined as the platform’s content release
+            process is finalized.
+          </p>
+        </details>
+        <details>
+          <summary>Which stage should I start with?</summary>
+          <p>
+            Start with Learn if you are building foundations, Grow if you are applying those
+            foundations in production systems, or Look Ahead if you are preparing for senior
+            engineering and architecture discussions.
+          </p>
+        </details>
+        <details>
+          <summary>Is the roadmap only for Java developers?</summary>
+          <p>
+            The current path has a strong Java and Spring focus, while the underlying data,
+            algorithms, API, distributed-systems, and platform concepts transfer across languages
+            and ecosystems.
+          </p>
+        </details>
+      </div>
+    </details>
+  </section>
+</main>

@@ -1,0 +1,64 @@
+[
+  {
+    "id": "synthetic-identity",
+    "title": "Synthetic identity trace",
+    "description": "Returns a synthetic value unchanged.",
+    "input": "value = 1",
+    "formula": "result = value",
+    "rows": [
+      {
+        "label": "VALUE",
+        "values": ["1"]
+      }
+    ],
+    "complexity": {
+      "time": "O(1)",
+      "space": "O(1)"
+    },
+    "idea": "Use a neutral identity operation to validate the trace contract.",
+    "code": {
+      "java": "static int identity(int value) { return value; }",
+      "python": "def identity(value): return value",
+      "go": "func identity(value int) int { return value }"
+    },
+    "steps": [
+      {
+        "lines": {
+          "java": 1,
+          "python": 1,
+          "go": 1
+        },
+        "phase": "input",
+        "what": "Read the synthetic input.",
+        "activeIndex": 0,
+        "completed": 0,
+        "variables": [
+          {
+            "name": "value",
+            "type": "int",
+            "value": "1"
+          }
+        ]
+      },
+      {
+        "lines": {
+          "java": 1,
+          "python": 1,
+          "go": 1
+        },
+        "phase": "return",
+        "what": "Return the synthetic input unchanged.",
+        "activeIndex": 0,
+        "completed": 1,
+        "returning": true,
+        "variables": [
+          {
+            "name": "result",
+            "type": "int",
+            "value": "1"
+          }
+        ]
+      }
+    ]
+  }
+]

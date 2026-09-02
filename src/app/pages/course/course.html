@@ -1,0 +1,156 @@
+<app-platform-header />
+<main id="main-content" class="content-page reader-page">
+  @if (course(); as currentCourse) {
+    <article class="question-reader course-reader" [attr.data-path]="pathId()">
+      <div class="reader-sticky-stack">
+        <section class="reader-sticky-context course-breadcrumb-bar">
+          <nav class="breadcrumbs" aria-label="Breadcrumb">
+            <a routerLink="/">Home</a><span>/</span
+            ><a [routerLink]="['/', pathId()]">{{ pathId() === 'grow' ? 'Grow' : 'Learn' }}</a
+            ><span>/</span>
+            @if (learningGroup(); as group) {
+              <a [routerLink]="['/', pathId()]" [queryParams]="{ group: group.id }">{{
+                group.title
+              }}</a>
+            } @else {
+              <span aria-current="page">{{ currentCourse.title }}</span>
+            }
+          </nav>
+          <button class="reader-search-link search-trigger" type="button">
+            <svg class="search-icon" aria-hidden="true" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="6"></circle>
+              <path d="m16 16 4 4"></path></svg
+            ><span>Search</span><kbd>⌘K</kbd>
+          </button>
+        </section>
+      </div>
+      <section class="course-page-intro">
+        <div class="course-intro-summary">
+          @if (currentCourse.reviewStatus; as status) {
+            @if (status !== 'reviewed') {
+              <span
+                class="review-status context-review-status"
+                [attr.data-review-status]="status"
+                >{{ reviewStatusLabel(status) }}</span
+              >
+            }
+          }
+          <h1 class="reader-question-title">{{ currentCourse.title }}</h1>
+          <p
+            class="eyebrow"
+            [innerHTML]="
+              pathId() === 'grow'
+                ? highlightGrow(currentCourse.description)
+                : highlightLearn(currentCourse.description)
+            "
+          ></p>
+          @if (currentCourse.chips?.length) {
+            <div class="course-chips" aria-label="Capability topics">
+              @for (chip of currentCourse.chips; track chip) {
+                <span>{{ chip }}</span>
+              }
+            </div>
+          }
+        </div>
+        @if (!isFirstCompetency() || !isLastCompetency()) {
+          <nav class="course-navigation-bar" aria-label="Adjacent course navigation">
+            @if (!isFirstCompetency()) {
+              @if (previousCompetency(); as previous) {
+                @if (previous.available) {
+                  <a class="reader-footer-link previous" [routerLink]="['/', pathId(), previous.id]"
+                    ><span>← Previous</span><strong>{{ previous.title }}</strong></a
+                  >
+                } @else {
+                  <span class="reader-footer-link unavailable"
+                    ><span>← Previous</span><strong>{{ previous.title }}</strong
+                    ><small>Coming next</small></span
+                  >
+                }
+              }
+            }
+            @if (!isLastCompetency()) {
+              @if (nextCompetency(); as next) {
+                @if (next.available) {
+                  <a
+                    class="reader-footer-link next competency-next-link"
+                    [routerLink]="['/', pathId(), next.id]"
+                    ><span>Next →</span><strong>{{ next.title }}</strong></a
+                  >
+                } @else {
+                  <span class="reader-footer-link next unavailable"
+                    ><span>Next →</span><strong>{{ next.title }}</strong
+                    ><small>Coming next</small></span
+                  >
+                }
+              }
+            }
+          </nav>
+        }
+      </section>
+      <section class="question-list module-question-list">
+        @if (currentCourse.layout === 'learning-map' && currentCourse.learningUnits?.length) {
+          <app-course-learning-map
+            [course]="currentCourse"
+            [pathId]="pathId()"
+            [courseId]="courseId()"
+            [units]="currentCourse.learningUnits"
+          />
+        } @else {
+          <div
+            class="course-grid module-grid"
+            [class.two-column-module-grid]="
+              currentCourse.sections?.length === 2 || currentCourse.modules.length === 2
+            "
+          >
+            @if (currentCourse.sections?.length) {
+              @for (section of currentCourse.sections; track section.id) {
+                <a
+                  class="course-card module-tile course-section-tile"
+                  [routerLink]="['/', pathId(), courseId(), 'section', section.id]"
+                >
+                  <p class="eyebrow">
+                    {{
+                      section.id === 'theory'
+                        ? 'Read first'
+                        : section.id === 'questions'
+                          ? 'Understand'
+                          : 'Practice'
+                    }}
+                  </p>
+                  <h3>{{ section.title }}</h3>
+                  <p>{{ section.description }}</p>
+                  <span class="course-section-action">Explore {{ section.title }} →</span>
+                </a>
+              }
+            } @else {
+              @for (module of currentCourse.modules; track module.id) {
+                <a
+                  class="course-card module-tile"
+                  [class.empty]="questionsFor(module.id).length === 0"
+                  [routerLink]="['/', pathId(), courseId(), 'module', module.id]"
+                >
+                  @if (module.reviewStatus; as status) {
+                    @if (status !== 'reviewed') {
+                      <span class="review-status" [attr.data-review-status]="status">{{
+                        reviewStatusLabel(status)
+                      }}</span>
+                    }
+                  }
+                  <h3>{{ module.title }}</h3>
+                  <p [innerHTML]="highlightGrow(module.description)"></p>
+                </a>
+              }
+            }
+          </div>
+        }
+      </section>
+    </article>
+  } @else if (error()) {
+    <section class="page-message">
+      <h1>Content unavailable</h1>
+      <p>{{ error() }}</p>
+    </section>
+  } @else {
+    <section class="page-message"><p>Loading course…</p></section>
+  }
+</main>

@@ -1,0 +1,61 @@
+[
+  {
+    "id": "release-readiness-pipeline",
+    "moduleId": "release-safety",
+    "order": 1,
+    "title": "Release Readiness Pipeline",
+    "difficulty": "Intermediate",
+    "tags": ["public-demo", "ci", "release-engineering"],
+    "contentType": "theory",
+    "interviewAnswer": "A public release is ready only when its candidate file set is privacy-checked, its demo contracts validate, tests pass, a production build succeeds, and a fresh clone reproduces those results.",
+    "explanation": ["Repository visibility is the final switch, not the first validation step."],
+    "summary": "This synthetic lesson shows the publication gates used for the public code showcase.",
+    "estimatedReadMinutes": 3,
+    "sections": [
+      {
+        "id": "candidate",
+        "heading": "Validate the candidate file set",
+        "body": [
+          "The verifier inspects tracked files plus unignored additions, matching what a release commit would contain instead of scanning only the current Git index.",
+          "It rejects ignored-product boundaries, local machine paths, credential-shaped files, and private-source imports before any remote operation occurs."
+        ]
+      },
+      {
+        "id": "reproduce",
+        "heading": "Prove a fresh clone works",
+        "body": [
+          "The default install, test, and build path uses tracked synthetic data. Authorized contributors opt into private content with explicit commands.",
+          "This makes public CI representative of the experience a recruiter or engineer receives after cloning the repository."
+        ],
+        "callout": {
+          "type": "production",
+          "title": "Publication rule",
+          "text": "Do not create the public remote until the sanitized candidate passes in a clean temporary directory."
+        }
+      },
+      {
+        "id": "transition",
+        "heading": "Keep rollback available",
+        "body": [
+          "The historical repository remains private and writable during the transition. The public repository starts with fresh history and receives only the reviewed source snapshot.",
+          "Archiving the private repository is optional and should happen only after the public repository, CI, and local private workflow are all proven."
+        ]
+      }
+    ],
+    "keyTakeaways": [
+      "Validate before changing repository visibility.",
+      "Create the public repository from a fresh sanitized history, never a fork or mirror.",
+      "Keep the private archive active until rollback is no longer needed."
+    ],
+    "versionNotes": [
+      "Synthetic public demonstration content; not part of the learning curriculum."
+    ],
+    "followUps": [
+      {
+        "question": "Why not archive the private repository immediately?",
+        "answer": "GitHub archives are read-only. Keeping the private repository active preserves a recovery and comparison point while the new public source is being verified."
+      }
+    ],
+    "reviewStatus": "reviewed"
+  }
+]

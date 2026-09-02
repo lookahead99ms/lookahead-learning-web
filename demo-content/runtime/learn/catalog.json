@@ -1,0 +1,10 @@
+[
+  {
+    "id": "public-platform-demo",
+    "title": "Public Platform Demo",
+    "description": "Explore the application shell and content boundary using synthetic, non-curriculum material.",
+    "entryContentId": "runtime-content-boundaries",
+    "available": true,
+    "reviewStatus": "reviewed"
+  }
+]

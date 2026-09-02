@@ -1,0 +1,16 @@
+{
+  "id": "synthetic-validation",
+  "path": "learn",
+  "title": "Synthetic Contract Validation",
+  "description": "Non-production data used only to validate public content contracts.",
+  "modules": [
+    {
+      "id": "contract",
+      "title": "Contract Fixture",
+      "description": "Exercises the minimum module and question contract.",
+      "order": 1,
+      "reviewStatus": "reviewed"
+    }
+  ],
+  "questions": []
+}
