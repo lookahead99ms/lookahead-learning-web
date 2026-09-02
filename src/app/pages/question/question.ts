@@ -25,6 +25,7 @@ import { CodingProblemDetail } from '../../core/coding-problem-detail/coding-pro
 import { InlineUnderstandingPager } from '../../core/inline-understanding-pager/inline-understanding-pager';
 import { PatternEssentialProblems } from '../../core/pattern-essential-problems/pattern-essential-problems';
 import { PatternLessonShell } from '../../core/pattern-lesson-shell/pattern-lesson-shell';
+import { CodeCopyButton } from '../../core/code-copy-button/code-copy-button';
 
 @Component({
   selector: 'app-question',
@@ -38,6 +39,7 @@ import { PatternLessonShell } from '../../core/pattern-lesson-shell/pattern-less
     InlineUnderstandingPager,
     PatternEssentialProblems,
     PatternLessonShell,
+    CodeCopyButton,
   ],
   templateUrl: './question.html',
   styles: [
@@ -86,13 +88,15 @@ import { PatternLessonShell } from '../../core/pattern-lesson-shell/pattern-less
         color: var(--search-hover);
       }
       .inner-navigation-link.next-module,
+      .inner-navigation-link.previous-module,
       .module-catalog-link {
         height: 32px;
         box-sizing: border-box;
         font-size: 0.75rem;
         line-height: 18px;
       }
-      .inner-navigation-link.next-module {
+      .inner-navigation-link.next-module,
+      .inner-navigation-link.previous-module {
         width: max-content;
         max-width: 100%;
         flex-direction: row;
@@ -110,6 +114,18 @@ import { PatternLessonShell } from '../../core/pattern-lesson-shell/pattern-less
         font-size: 0.65rem;
       }
       .inner-navigation-link.next-module strong {
+        min-width: 0;
+        margin-top: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .inner-navigation-link.previous-module span {
+        flex: 0 0 auto;
+        color: var(--search-primary);
+        font-size: 0.65rem;
+      }
+      .inner-navigation-link.previous-module strong {
         min-width: 0;
         margin-top: 0;
         overflow: hidden;
@@ -297,6 +313,12 @@ import { PatternLessonShell } from '../../core/pattern-lesson-shell/pattern-less
         font-size: 0.8rem;
         border-bottom: 1px solid var(--text-body);
       }
+      .theory-code-actions,
+      .reference-code-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
       .theory-code pre {
         margin: 0;
         padding: 18px 20px;
@@ -456,7 +478,7 @@ import { PatternLessonShell } from '../../core/pattern-lesson-shell/pattern-less
       }
       @media (max-width: 980px) {
         .question-inner-navigation {
-          grid-template-columns: 1fr;
+          grid-template-columns: minmax(0, 1fr);
         }
         .inner-navigation-actions {
           grid-column: auto;
@@ -466,7 +488,9 @@ import { PatternLessonShell } from '../../core/pattern-lesson-shell/pattern-less
           align-items: flex-start;
           text-align: left;
         }
-        .inner-navigation-link.next-module {
+        .inner-navigation-link.next-module,
+        .inner-navigation-link.previous-module {
+          width: 100%;
           align-self: flex-start;
         }
         .theory-section {
@@ -579,6 +603,7 @@ export class Question implements OnInit {
   protected readonly moduleTitle = signal('');
   protected readonly previousQuestion = signal<ReaderLink | null>(null);
   protected readonly nextQuestion = signal<ReaderLink | null>(null);
+  protected readonly previousModule = signal<CourseModule | null>(null);
   protected readonly nextModule = signal<CourseModule | null>(null);
   protected readonly nextModuleFirstQuestion = signal<ReaderLink | null>(null);
   protected readonly isFirstQuestionInModule = signal(false);
@@ -950,7 +975,9 @@ export class Question implements OnInit {
         : orderedModules
     ).filter((module) => modulesWithContent.has(module.id));
     const currentModuleIndex = trackModules.findIndex(({ id }) => id === question.moduleId);
+    const previousModule = trackModules[currentModuleIndex - 1] ?? null;
     const nextModule = trackModules[currentModuleIndex + 1] ?? null;
+    this.previousModule.set(previousModule);
     this.nextModule.set(nextModule);
     this.isLastModuleInCompetency.set(!nextModule);
 
@@ -1008,6 +1035,20 @@ export class Question implements OnInit {
       if (nextArticle) return ['/', this.pathId(), this.courseId(), nextArticle.id];
     }
     return ['/', this.pathId(), this.courseId(), 'module', nextModule.id];
+  }
+
+  protected previousModuleRoute(item: InterviewQuestion, previousModule: CourseModule): string[] {
+    if (item.contentType === 'theory') {
+      const previousArticle = this.course()
+        ?.questions.filter((question) => question.moduleId === previousModule.id)
+        .sort((left, right) => right.order - left.order)[0];
+      if (previousArticle) return ['/', this.pathId(), this.courseId(), previousArticle.id];
+    }
+    return ['/', this.pathId(), this.courseId(), 'module', previousModule.id];
+  }
+
+  protected previousModuleLabel(item: InterviewQuestion): string {
+    return item.contentType === 'theory' ? 'Previous article:' : 'Previous module:';
   }
 
   protected nextModuleLabel(item: InterviewQuestion): string {

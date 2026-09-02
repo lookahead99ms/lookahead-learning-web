@@ -1,8 +1,10 @@
 import { Component, computed, input, signal } from '@angular/core';
 import { PatternCodeBlock } from '../../content/content.models';
+import { CodeCopyButton } from '../code-copy-button/code-copy-button';
 
 @Component({
   selector: 'app-pattern-code-tabs',
+  imports: [CodeCopyButton],
   template: `
     <section class="code-tabs" aria-label="Core pattern template">
       <div class="tab-list" role="tablist" aria-label="Template language">
@@ -29,8 +31,11 @@ import { PatternCodeBlock } from '../../content/content.models';
           [attr.aria-labelledby]="tabId(selectedIndex())"
         >
           <div class="code-heading">
-            <strong>{{ block.title }}</strong
-            ><span>{{ label(block) }}</span>
+            <strong>{{ block.title }}</strong>
+            <div class="code-heading-actions">
+              <span>{{ label(block) }}</span>
+              <app-code-copy-button [code]="activeSource()" />
+            </div>
           </div>
           <pre
             tabindex="0"
@@ -96,6 +101,11 @@ import { PatternCodeBlock } from '../../content/content.models';
       .code-heading span {
         color: #7dd3fc;
       }
+      .code-heading-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
       .code-panel pre {
         max-height: 520px;
         margin: 0;
@@ -157,6 +167,11 @@ export class PatternCodeTabs {
   protected readonly blocks = computed(() => [this.pseudocode(), ...this.implementations()]);
   protected readonly activeBlock = computed(
     () => this.blocks()[this.selectedIndex()] ?? this.blocks()[0],
+  );
+  protected readonly activeSource = computed(() =>
+    this.activeBlock()
+      .lines.map((line) => line.text)
+      .join('\n'),
   );
 
   protected label(block: PatternCodeBlock): string {

@@ -85,6 +85,21 @@ export class ContentService {
         ...(isPatternLessonV1(question)
           ? [
               ...question.learningOutcomes,
+              question.memoryAnchor.phrase,
+              question.memoryAnchor.mentalModel,
+              question.memoryAnchor.retrievalCue,
+              question.interviewRecall.prompt,
+              ...question.interviewRecall.answerFramework,
+              ...(question.namedAlgorithms ?? []).flatMap(
+                ({ name, family, useWhen, invariant, complexity, memoryAnchor }) => [
+                  name,
+                  family,
+                  useWhen,
+                  invariant,
+                  complexity,
+                  memoryAnchor,
+                ],
+              ),
               question.definition.heading,
               ...question.definition.body,
               question.definition.maintainedState,

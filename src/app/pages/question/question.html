@@ -77,6 +77,14 @@
                 <span>← Previous question:</span><strong>{{ previous.title }}</strong>
               </a>
             }
+          } @else if (previousModule(); as previousModuleItem) {
+            <a
+              class="inner-navigation-link previous previous-module"
+              [routerLink]="previousModuleRoute(item, previousModuleItem)"
+            >
+              <span>← {{ previousModuleLabel(item) }}</span
+              ><strong>{{ previousModuleItem.title.replace('Theory: ', '') }}</strong>
+            </a>
           }
           <div class="inner-navigation-actions">
             @if (!isLastQuestionInModule()) {
@@ -192,8 +200,11 @@
               @if (!section.solutions?.length) {
                 <section class="theory-code">
                   <div>
-                    <span>{{ code.title }}</span
-                    ><small>{{ code.language }}</small>
+                    <span>{{ code.title }}</span>
+                    <div class="theory-code-actions">
+                      <small>{{ code.language }}</small>
+                      <app-code-copy-button [code]="code.source" />
+                    </div>
                   </div>
                   <pre><code [innerHTML]="formatTheoryCode(code.source)"></code></pre>
                 </section>
@@ -291,8 +302,11 @@
               @if (item.code; as code) {
                 <section class="code-panel">
                   <div>
-                    <span>{{ code.title }}</span
-                    ><small>{{ code.language }}</small>
+                    <span>{{ code.title }}</span>
+                    <div class="reference-code-actions">
+                      <small>{{ code.language }}</small>
+                      <app-code-copy-button [code]="code.source" />
+                    </div>
                   </div>
                   <pre><code>{{ code.source }}</code></pre>
                   @if (item.compatibility; as requirements) {

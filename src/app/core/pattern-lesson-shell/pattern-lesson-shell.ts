@@ -32,6 +32,12 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
             }
           </ul>
         </section>
+        <aside class="memory-anchor" aria-label="Memory anchor and interview retrieval cue">
+          <span>Memory anchor</span>
+          <strong>{{ lesson().memoryAnchor.phrase }}</strong>
+          <p>{{ lesson().memoryAnchor.mentalModel }}</p>
+          <p><b>Interview cue:</b> {{ lesson().memoryAnchor.retrievalCue }}</p>
+        </aside>
       </header>
 
       <section id="pattern-what" class="lesson-section" aria-labelledby="pattern-what-heading">
@@ -127,6 +133,23 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
             </article>
           }
         </div>
+        @if (lesson().namedAlgorithms?.length) {
+          <section class="named-algorithms" aria-labelledby="named-algorithms-heading">
+            <h3 id="named-algorithms-heading">Named algorithms in this family</h3>
+            <div>
+              @for (algorithm of lesson().namedAlgorithms; track algorithm.name) {
+                <article>
+                  <span>{{ algorithm.family }}</span>
+                  <h4>{{ algorithm.name }}</h4>
+                  <p><strong>Use when:</strong> {{ algorithm.useWhen }}</p>
+                  <p><strong>Invariant:</strong> {{ algorithm.invariant }}</p>
+                  <p><strong>Complexity:</strong> {{ algorithm.complexity }}</p>
+                  <p class="algorithm-anchor">{{ algorithm.memoryAnchor }}</p>
+                </article>
+              }
+            </div>
+          </section>
+        }
       </section>
 
       <section
@@ -318,6 +341,15 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
             </p>
           }
         </div>
+        <aside class="interview-recall" aria-labelledby="interview-recall-heading">
+          <span>Interview recall prompt</span>
+          <h3 id="interview-recall-heading">{{ lesson().interviewRecall.prompt }}</h3>
+          <ol>
+            @for (step of lesson().interviewRecall.answerFramework; track step) {
+              <li>{{ step }}</li>
+            }
+          </ol>
+        </aside>
       </section>
 
       <section
@@ -398,7 +430,26 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         border-radius: 13px;
         background: rgba(255, 255, 255, 0.78);
       }
+      .memory-anchor {
+        grid-column: 1/-1;
+        padding: 17px 19px;
+        border: 1px solid #91cbd5;
+        border-left: 5px solid #0d8192;
+        border-radius: 13px;
+        background: rgba(239, 251, 252, 0.9);
+      }
+      .memory-anchor strong {
+        display: block;
+        margin-top: 5px;
+        color: var(--lesson-ink);
+        font-size: 1.05rem;
+      }
+      .memory-anchor p {
+        margin: 6px 0 0;
+        line-height: 1.55;
+      }
       .lesson-intro span,
+      .memory-anchor span,
       .section-label,
       .lesson-section aside span,
       .model-grid span,
@@ -592,6 +643,50 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         margin: 5px 0;
         line-height: 1.5;
       }
+      .named-algorithms {
+        margin-top: 18px;
+        padding-top: 18px;
+        border-top: 1px solid #d5e2ea;
+      }
+      .named-algorithms > h3 {
+        margin: 0 0 12px;
+        color: var(--lesson-ink);
+        font-size: 1.05rem;
+      }
+      .named-algorithms > div {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+      .named-algorithms article {
+        padding: 15px;
+        border: 1px solid #c5dce5;
+        border-radius: 11px;
+        background: #f4fafb;
+      }
+      .named-algorithms article > span {
+        color: var(--lesson-teal);
+        font-size: 0.66rem;
+        font-weight: 850;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+      }
+      .named-algorithms h4 {
+        margin: 4px 0 9px;
+        color: var(--lesson-ink);
+        font-size: 1rem;
+      }
+      .named-algorithms p {
+        margin: 6px 0;
+        line-height: 1.5;
+      }
+      .named-algorithms .algorithm-anchor {
+        padding: 8px 10px;
+        border-left: 3px solid #e3a13a;
+        color: #684512;
+        background: #fff8e9;
+        font-weight: 750;
+      }
       .concept-visual {
         margin: 18px 0 0;
         padding: 0;
@@ -761,6 +856,29 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         font-size: 0.72rem;
         text-transform: uppercase;
       }
+      .interview-recall {
+        grid-column: 1/-1;
+        margin-top: 20px;
+        padding: 17px 19px;
+        border: 1px solid #b8d9cc;
+        border-radius: 12px;
+        background: #fff;
+      }
+      .interview-recall span {
+        color: #267054;
+        font-size: 0.68rem;
+        font-weight: 850;
+        letter-spacing: 0.075em;
+        text-transform: uppercase;
+      }
+      .interview-recall h3 {
+        margin: 5px 0 8px;
+        color: var(--lesson-ink);
+        font-size: 1.02rem;
+      }
+      .interview-recall ol {
+        margin: 0;
+      }
       .practice-section {
         border-top-color: #e39c31;
         background:
@@ -837,6 +955,9 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         .practice-grid {
           grid-template-columns: 1fr;
         }
+        .named-algorithms > div {
+          grid-template-columns: 1fr;
+        }
       }
       @media (prefers-reduced-motion: reduce) {
         * {
@@ -852,6 +973,9 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         .recognition-grid > section,
         .guidance-grid > section,
         .variation-grid article,
+        .named-algorithms article,
+        .memory-anchor,
+        .interview-recall,
         .pitfall-list article,
         .worked-example,
         .practice-grid a {
