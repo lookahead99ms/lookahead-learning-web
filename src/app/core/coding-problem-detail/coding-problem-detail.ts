@@ -16,7 +16,7 @@ import { CodingSolutionTabs } from '../coding-solution-tabs/coding-solution-tabs
         }
         @if (leetcodeUrl()) {
           <a [href]="leetcodeUrl()" target="_blank" rel="noopener noreferrer"
-            >Open the original LeetCode problem ↗</a
+            >Open the original problem source ↗</a
           >
         }
       </div>
@@ -29,13 +29,18 @@ import { CodingSolutionTabs } from '../coding-solution-tabs/coding-solution-tabs
             </div>
             <small [attr.data-status]="practice.implementationStatus">
               {{
-                practice.implementationStatus === 'complete'
-                  ? 'Reference solutions'
-                  : 'Starter code'
+                practice.implementationStatus === 'complete' ? 'Practice-ready' : 'Catalogued entry'
               }}
             </small>
           </div>
           <p>{{ practice.objective }}</p>
+          @if (practice.implementationStatus === 'starter') {
+            <p class="practice-readiness-warning" role="note">
+              <strong>Not yet self-contained.</strong> Confirm the exact statement, input/output
+              contract, constraints, and examples from the original source or interviewer before
+              implementing this catalogued problem.
+            </p>
+          }
           @if (practice.sourceSets.length) {
             <p class="source-sets">
               <strong>Coverage:</strong> {{ practice.sourceSets.join(' · ') }}
@@ -179,6 +184,13 @@ import { CodingSolutionTabs } from '../coding-solution-tabs/coding-solution-tabs
         border-color: #efc58e;
         color: #9a4d08;
         background: #fff9ef;
+      }
+      .practice-readiness-warning {
+        padding: 11px 13px;
+        border-left: 4px solid #b76b00;
+        color: #543a17;
+        background: #fff7e8;
+        line-height: 1.5;
       }
       .practice-brief > p {
         color: #334155;

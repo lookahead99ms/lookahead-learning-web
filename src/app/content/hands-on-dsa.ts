@@ -9,6 +9,13 @@ import {
 import { flattenLearningUnits } from './learning-units';
 
 export type HandsOnDifficulty = InterviewQuestion['difficulty'] | 'All';
+export type HandsOnReadiness = 'All' | 'Guided' | 'Practice-ready' | 'Catalogued';
+
+export interface HandsOnReadinessCounts {
+  guided: number;
+  practiceReady: number;
+  catalogued: number;
+}
 
 export interface HandsOnDsaGroup {
   id: string;
@@ -104,8 +111,17 @@ export function filterHandsOnDsaGroups(
   groups: HandsOnDsaGroup[],
   query: string,
   difficulty: HandsOnDifficulty,
+  readiness: HandsOnReadiness = 'All',
 ): HandsOnDsaGroup[] {
   const normalizedQuery = query.trim().toLowerCase();
+  const supportedTitles = new Set(
+    groups.flatMap((group) => [
+      ...group.essentialProblems.map(({ title }) => normalizeProblemTitle(title)),
+      ...group.continuationProblems
+        .filter((problem) => continuationReadiness(problem) === 'Practice-ready')
+        .map(({ title }) => normalizeProblemTitle(title)),
+    ]),
+  );
 
   return groups.flatMap((group) => {
     const groupMatches = [group.title, group.description, group.lesson.title, ...group.lesson.tags]
@@ -114,6 +130,7 @@ export function filterHandsOnDsaGroups(
       .includes(normalizedQuery);
     const essentialProblems = group.essentialProblems.filter(
       (problem) =>
+        (readiness === 'All' || readiness === 'Guided') &&
         (difficulty === 'All' || problem.difficulty === difficulty) &&
         (groupMatches ||
           [problem.title, problem.description, problem.variation, problem.invariantAdaptation]
@@ -123,6 +140,9 @@ export function filterHandsOnDsaGroups(
     );
     const continuationProblems = group.continuationProblems.filter(
       (problem) =>
+        (readiness === 'All' || continuationReadiness(problem) === readiness) &&
+        (readiness !== 'Catalogued' ||
+          !supportedTitles.has(normalizeProblemTitle(problem.title))) &&
         (difficulty === 'All' || problem.difficulty === difficulty) &&
         (groupMatches ||
           [problem.title, problem.interviewAnswer, ...problem.tags]
@@ -137,33 +157,46 @@ export function filterHandsOnDsaGroups(
   });
 }
 
+export function continuationReadiness(
+  problem: InterviewQuestion,
+): Exclude<HandsOnReadiness, 'All' | 'Guided'> {
+  return problem.practiceProblem?.implementationStatus === 'complete'
+    ? 'Practice-ready'
+    : 'Catalogued';
+}
+
+export function handsOnReadinessCounts(groups: HandsOnDsaGroup[]): HandsOnReadinessCounts {
+  const guided = new Set<string>();
+  const practiceReady = new Set<string>();
+  const catalogued = new Set<string>();
+
+  for (const group of groups) {
+    for (const problem of group.essentialProblems) guided.add(normalizeProblemTitle(problem.title));
+    for (const problem of group.continuationProblems) {
+      const key = normalizeProblemTitle(problem.title);
+      if (continuationReadiness(problem) === 'Practice-ready') practiceReady.add(key);
+      else catalogued.add(key);
+    }
+  }
+
+  // A problem may support both guided and independent practice, but a completed
+  // or guided experience must never also be presented as catalogue-only.
+  for (const key of practiceReady) catalogued.delete(key);
+  for (const key of guided) catalogued.delete(key);
+
+  return {
+    guided: guided.size,
+    practiceReady: practiceReady.size,
+    catalogued: catalogued.size,
+  };
+}
+
 export function uniqueHandsOnProblemCount(groups: HandsOnDsaGroup[]): number {
   const titles = groups.flatMap((group) => [
     ...group.essentialProblems.map(({ title }) => title),
     ...group.continuationProblems.map(({ title }) => title),
   ]);
   return new Set(titles.map(normalizeProblemTitle)).size;
-}
-
-export function limitHandsOnDsaGroups(
-  groups: HandsOnDsaGroup[],
-  placementLimit: number,
-): HandsOnDsaGroup[] {
-  let remaining = Math.max(0, placementLimit);
-  const limited: HandsOnDsaGroup[] = [];
-
-  for (const group of groups) {
-    if (remaining === 0) break;
-    const essentialProblems = group.essentialProblems.slice(0, remaining);
-    remaining -= essentialProblems.length;
-    const continuationProblems = group.continuationProblems.slice(0, remaining);
-    remaining -= continuationProblems.length;
-    if (essentialProblems.length || continuationProblems.length) {
-      limited.push({ ...group, essentialProblems, continuationProblems });
-    }
-  }
-
-  return limited;
 }
 
 function normalizeProblemTitle(title: string): string {

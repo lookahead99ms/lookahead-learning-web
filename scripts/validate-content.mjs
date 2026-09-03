@@ -314,6 +314,44 @@ for (const file of contentFiles) {
             ['complete', 'starter'].includes(question.practiceProblem.implementationStatus),
           `${moduleLabel}: ${question.id} has incomplete practice metadata`,
         );
+        if (question.practiceProblem.implementationStatus === 'complete') {
+          const practice = question.practiceProblem;
+          const languages = new Set(
+            (question.solutions ?? []).map((solution) => solution.language?.toLowerCase()),
+          );
+          requireValue(
+            Array.isArray(practice.constraints) && practice.constraints.length > 0,
+            `${moduleLabel}: practice-ready ${question.id} has no constraints`,
+          );
+          requireValue(
+            Array.isArray(practice.examples) &&
+              practice.examples.length > 0 &&
+              practice.examples.every((example) => example.input && example.output),
+            `${moduleLabel}: practice-ready ${question.id} has incomplete examples`,
+          );
+          requireValue(
+            Array.isArray(practice.testCases) &&
+              practice.testCases.length >= 3 &&
+              new Set(practice.testCases.map((testCase) => testCase.category)).size >= 3,
+            `${moduleLabel}: practice-ready ${question.id} needs representative, boundary, and failure tests`,
+          );
+          requireValue(
+            Array.isArray(practice.hints) && practice.hints.length >= 2,
+            `${moduleLabel}: practice-ready ${question.id} needs progressive hints`,
+          );
+          requireValue(
+            practice.externalUrl,
+            `${moduleLabel}: practice-ready ${question.id} has no original source link`,
+          );
+          requireValue(
+            question.complexity?.time && question.complexity?.space && question.complexity?.note,
+            `${moduleLabel}: practice-ready ${question.id} has incomplete complexity reasoning`,
+          );
+          requireValue(
+            [...patternLanguages].every((language) => languages.has(language)),
+            `${moduleLabel}: practice-ready ${question.id} needs Java, Python, and Go solutions`,
+          );
+        }
       }
       for (const assetPath of collectAssetPaths(question)) {
         const normalizedPath = assetPath.split(/[?#]/, 1)[0];

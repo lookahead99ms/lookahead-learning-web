@@ -122,8 +122,18 @@ export interface PracticeProblemMetadata {
   objective: string;
   constraints?: string[];
   examples?: { input: string; output: string; explanation?: string }[];
+  testCases?: {
+    name: string;
+    input: string;
+    expectedOutput: string;
+    category: 'representative' | 'boundary' | 'failure';
+  }[];
   hints?: string[];
   externalUrl?: string;
+  /**
+   * `complete` means the entry satisfies the self-contained practice contract.
+   * `starter` is catalogued for discovery but still depends on an external contract.
+   */
   implementationStatus: 'complete' | 'starter';
 }
 

@@ -59,6 +59,33 @@ import { EvidenceAnswerTabs } from '../../core/evidence-answer-tabs/evidence-ans
         padding-top: 10px;
         border-top: 1px solid var(--line);
       }
+      .surprise-challenge {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 12px;
+        align-items: center;
+        margin: 12px 0;
+        padding: 13px 16px;
+        border: 1px solid #e3b765;
+        border-left: 5px solid #bd7207;
+        border-radius: 12px;
+        color: #334b60;
+        background: #fffaf0;
+      }
+      .surprise-challenge span {
+        padding: 5px 9px;
+        border-radius: 999px;
+        color: #fff;
+        background: #9a5d07;
+        font-size: 0.67rem;
+        font-weight: 850;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .surprise-challenge p {
+        margin: 0;
+        line-height: 1.5;
+      }
       .inner-navigation-link {
         display: flex;
         min-width: 0;
@@ -624,6 +651,7 @@ export class Question implements OnInit {
   protected readonly isLastModuleInCompetency = signal(false);
   protected readonly nextCourse = signal<CatalogItem | null>(null);
   protected readonly error = signal('');
+  protected readonly surpriseMode = signal(false);
   protected readonly reviewStatusLabel = reviewStatusLabel;
 
   /** Coding practice is classified by its existing curriculum tags, not by the generic Q&A layout. */
@@ -635,6 +663,13 @@ export class Question implements OnInit {
 
   protected isCodingPractice(item: InterviewQuestion): boolean {
     return item.contentType === 'dsa-problem' || this.shouldShowHint(item);
+  }
+
+  protected handsOnPatternId(item: InterviewQuestion): string {
+    const unit = flattenLearningUnits(this.course()?.learningUnits ?? []).find(
+      (candidate) => candidate.practiceModuleId === item.moduleId,
+    );
+    return unit ? `${this.courseId()}:${unit.id}` : '';
   }
 
   protected patternLesson(item: InterviewQuestion): PatternLessonV1 | null {
@@ -1009,6 +1044,9 @@ export class Question implements OnInit {
   }
 
   ngOnInit(): void {
+    this.route.queryParamMap.subscribe((params) => {
+      this.surpriseMode.set(params.get('mode') === 'surprise');
+    });
     this.route.paramMap
       .pipe(
         switchMap((params) => {

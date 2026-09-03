@@ -175,6 +175,9 @@ describe('Search interview-question library', () => {
     const input = harness.routeNativeElement?.querySelector('.search-input') as HTMLInputElement;
     expect(input.value).toBe('counter');
 
+    input.value = 'counte';
+    input.dispatchEvent(new Event('input'));
+    await harness.fixture.whenStable();
     input.value = '';
     input.dispatchEvent(new Event('input'));
     await harness.fixture.whenStable();

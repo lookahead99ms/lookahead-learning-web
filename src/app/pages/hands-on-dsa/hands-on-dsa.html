@@ -26,6 +26,20 @@
       <div class="practice-proof" aria-label="Practice sequence">
         <span>Recognize</span><span>Trace</span><span>Implement</span><span>Transfer</span>
       </div>
+      <div class="practice-hero-actions">
+        <button
+          class="surprise-problem"
+          type="button"
+          [disabled]="!randomPracticeCount()"
+          (click)="surpriseMe()"
+        >
+          <span class="surprise-problem-mark" aria-hidden="true">?</span>
+          <span>
+            <strong>Surprise me</strong>
+            <small>Start a ready-to-solve problem without revealing its pattern.</small>
+          </span>
+        </button>
+      </div>
     </header>
 
     @if (courses()) {
@@ -47,6 +61,14 @@
             }
           </select>
         </label>
+        <label>
+          Practice format
+          <select [value]="readiness()" (change)="updateReadiness($any($event.target).value)">
+            @for (option of readinessOptions; track option) {
+              <option [value]="option">{{ readinessLabel(option) }}</option>
+            }
+          </select>
+        </label>
       </section>
 
       <nav class="pattern-filter" aria-label="Filter by algorithmic pattern">
@@ -56,15 +78,20 @@
         @for (group of groups(); track group.id) {
           <a
             routerLink="/learn/hands-on-dsa"
-            [queryParams]="{ pattern: group.id }"
+            [queryParams]="selectedGroup()?.id === group.id ? {} : { pattern: group.id }"
             [attr.aria-current]="selectedGroup()?.id === group.id ? 'page' : null"
+            [attr.aria-label]="
+              selectedGroup()?.id === group.id
+                ? 'Clear ' + group.title + ' filter'
+                : 'Show ' + group.title + ' problems'
+            "
             >{{ group.title }}</a
           >
         }
       </nav>
 
       @if (selectedGroup(); as group) {
-        @if (group.essentialProblems.length) {
+        @if (problemId() && group.essentialProblems.length) {
           <section class="active-practice" aria-labelledby="active-practice-heading">
             <header>
               <div>
@@ -74,7 +101,7 @@
                 <p>{{ group.description }}</p>
               </div>
               <a class="lesson-link" [routerLink]="['/learn', group.courseId, group.lesson.id]"
-                >Review the lesson →</a
+                >Review {{ group.title }} concept →</a
               >
             </header>
             <div id="guided-workbench" class="workbench-wrap">
@@ -89,23 +116,24 @@
         }
       }
 
-      <header class="practice-results-header">
+      <header id="practice-results" class="practice-results-header">
         <h2>{{ selectedGroup() ? selectedGroup()?.title + ' problem set' : 'Problem library' }}</h2>
         <p aria-live="polite">
-          {{ visibleUniqueProblemCount() }} unique problems · {{ visibleProblemCount() }} pattern
-          placements across {{ visibleGroups().length }}
+          {{ visibleUniqueProblemCount() }} distinct problems across {{ visibleGroups().length }}
           {{ visibleGroups().length === 1 ? 'pattern' : 'patterns' }}
-          @if (renderedProblemCount() < visibleProblemCount()) {
-            · showing {{ renderedProblemCount() }}
-          }
         </p>
       </header>
 
       @if (visibleGroups().length) {
-        <div class="pattern-groups">
-          @for (group of renderedGroups(); track group.id) {
-            <section class="pattern-group" [attr.aria-labelledby]="'practice-group-' + group.id">
-              <header>
+        <div class="pattern-groups" role="region" aria-label="Pattern problem sets">
+          @for (group of visibleGroups(); track group.id) {
+            <details
+              class="pattern-group"
+              [open]="isPatternOpen(group.id)"
+              (toggle)="handlePatternToggle(group.id, $event)"
+              [attr.aria-labelledby]="'practice-group-' + group.id"
+            >
+              <summary>
                 <div>
                   <span class="experience-pill">{{
                     group.goldenLesson ? 'Guided + transfer' : 'Practice set'
@@ -114,50 +142,53 @@
                   <span class="experience-pill">{{ group.courseTitle }}</span>
                   <p>{{ group.description }}</p>
                 </div>
-                <nav class="group-links" aria-label="Pattern actions">
+                <span class="pattern-group-count"
+                  >{{
+                    group.essentialProblems.length + group.continuationProblems.length
+                  }}
+                  problems</span
+                >
+                <span class="pattern-group-toggle" aria-hidden="true"></span>
+              </summary>
+              @if (isPatternOpen(group.id)) {
+                <nav class="group-links" [attr.aria-label]="group.title + ' actions'">
                   <a class="lesson-link" [routerLink]="['/learn', group.courseId, group.lesson.id]"
-                    >Review source lesson →</a
-                  >
-                  <a
-                    class="lesson-link"
-                    routerLink="/learn/hands-on-dsa"
-                    [queryParams]="{ pattern: group.id }"
-                    >Focus this pattern →</a
+                    >Review {{ group.title }} concept →</a
                   >
                 </nav>
-              </header>
-              <div class="problem-grid">
-                @for (problem of group.essentialProblems; track problem.id) {
-                  <a
-                    class="problem-card"
-                    routerLink="/learn/hands-on-dsa"
-                    [queryParams]="{ pattern: group.id, problem: problem.id }"
-                    fragment="guided-workbench"
-                  >
-                    <span>{{ problem.difficulty }} · Guided</span>
-                    <h3>{{ problem.title }}</h3>
-                    <p>{{ problem.variation }}</p>
-                    <b>Trace and implement →</b>
-                  </a>
-                }
-                @for (problem of group.continuationProblems; track problem.id) {
-                  <a class="problem-card" [routerLink]="['/learn', group.courseId, problem.id]">
-                    <span>{{ problem.difficulty }} · Transfer</span>
-                    <h3>{{ problem.title }}</h3>
-                    <p>{{ problem.interviewAnswer }}</p>
-                    <b>Open problem →</b>
-                  </a>
-                }
-              </div>
-            </section>
+                <div class="problem-grid">
+                  @for (problem of group.essentialProblems; track problem.id) {
+                    <a
+                      class="problem-card"
+                      routerLink="/learn/hands-on-dsa"
+                      [queryParams]="{ pattern: group.id, problem: problem.id }"
+                      fragment="guided-workbench"
+                    >
+                      <span>{{ problem.difficulty }} · Guided</span>
+                      <h3>{{ problem.title }}</h3>
+                      <p>{{ problem.variation }}</p>
+                      <b>Trace and implement →</b>
+                    </a>
+                  }
+                  @for (problem of group.continuationProblems; track problem.id) {
+                    <a class="problem-card" [routerLink]="['/learn', group.courseId, problem.id]">
+                      <span>{{ problem.difficulty }} · {{ problemReadinessLabel(problem) }}</span>
+                      <h3>{{ problem.title }}</h3>
+                      <p>{{ problem.interviewAnswer }}</p>
+                      <b>
+                        {{
+                          continuationReadiness(problem) === 'Practice-ready'
+                            ? 'Solve this problem →'
+                            : 'Review problem brief →'
+                        }}
+                      </b>
+                    </a>
+                  }
+                </div>
+              }
+            </details>
           }
         </div>
-        @if (renderedProblemCount() < visibleProblemCount()) {
-          <button class="show-more-problems" type="button" (click)="showMoreProblems()">
-            Show next {{ nextProblemBatchSize() }} problems
-            <span aria-hidden="true">↓</span>
-          </button>
-        }
       } @else {
         <section class="empty-state" aria-live="polite">
           <h2>No matching practice yet</h2>

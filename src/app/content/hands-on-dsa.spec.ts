@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildHandsOnDsaGroups,
   filterHandsOnDsaGroups,
-  limitHandsOnDsaGroups,
+  handsOnReadinessCounts,
   resolveHandsOnDsaGroup,
   uniqueHandsOnProblemCount,
 } from './hands-on-dsa';
@@ -130,22 +130,59 @@ describe('Hands-On DSA projection', () => {
     expect(filterHandsOnDsaGroups(groups, 'missing', 'All')).toEqual([]);
   });
 
+  it('separates exercise readiness from difficulty', () => {
+    const groups = buildHandsOnDsaGroups(course());
+
+    expect(filterHandsOnDsaGroups(groups, '', 'All', 'Guided')[0].essentialProblems).toHaveLength(
+      2,
+    );
+    expect(
+      filterHandsOnDsaGroups(groups, '', 'All', 'Catalogued')[0].continuationProblems,
+    ).toHaveLength(2);
+    expect(filterHandsOnDsaGroups(groups, '', 'All', 'Practice-ready')).toEqual([]);
+    expect(handsOnReadinessCounts(groups)).toEqual({
+      guided: 2,
+      practiceReady: 0,
+      catalogued: 2,
+    });
+  });
+
   it('counts repeated titles once across learning contexts', () => {
     const groups = buildHandsOnDsaGroups(course());
     const repeated = { ...groups[0], id: 'another-context' };
 
     expect(uniqueHandsOnProblemCount([...groups, repeated])).toBe(4);
+    expect(handsOnReadinessCounts([...groups, repeated])).toEqual({
+      guided: 2,
+      practiceReady: 0,
+      catalogued: 2,
+    });
   });
 
-  it('progressively limits placements while preserving their group context', () => {
+  it('counts guided and independent capabilities without calling a completed problem catalogued', () => {
     const groups = buildHandsOnDsaGroups(course());
-    const repeated = { ...groups[0], id: 'another-context' };
-    const limited = limitHandsOnDsaGroups([...groups, repeated], 5);
+    const completedPalindrome = {
+      ...groups[0].continuationProblems[0],
+      title: 'palindrome',
+      contentType: 'dsa-problem' as const,
+      practiceProblem: {
+        sourceSets: ['Interview core'],
+        tier: 'core' as const,
+        objective: 'Solve independently.',
+        implementationStatus: 'complete' as const,
+      },
+    };
+    const withOverlappingCapability = [
+      {
+        ...groups[0],
+        continuationProblems: [completedPalindrome, groups[0].continuationProblems[1]],
+      },
+    ];
 
-    expect(limited).toHaveLength(2);
-    expect(limited[0].essentialProblems).toHaveLength(2);
-    expect(limited[0].continuationProblems).toHaveLength(2);
-    expect(limited[1].essentialProblems).toHaveLength(1);
-    expect(limited[1].continuationProblems).toHaveLength(0);
+    expect(handsOnReadinessCounts(withOverlappingCapability)).toEqual({
+      guided: 2,
+      practiceReady: 1,
+      catalogued: 1,
+    });
   });
 });

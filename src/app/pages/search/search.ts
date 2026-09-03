@@ -896,12 +896,12 @@ export class Search implements OnInit {
     this.query.set(value);
     const normalizedQuery = this.normalize(value);
     const submittedQuery = this.submittedQuery();
-    if (normalizedQuery !== submittedQuery) {
+    if (!normalizedQuery) {
       this.submittedQuery.set('');
-      if (!normalizedQuery && submittedQuery) {
-        this.retainUnavailableTags();
-        this.syncUrl();
-      }
+      this.retainUnavailableTags();
+      this.syncUrl();
+    } else if (normalizedQuery !== submittedQuery) {
+      this.submittedQuery.set('');
     }
     this.resetVisibleResults();
   }

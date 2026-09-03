@@ -110,4 +110,23 @@ describe('CourseLearningMap', () => {
       'Practice family practice tracks',
     );
   });
+
+  it('routes Learn practice to the canonical filtered Hands-On DSA library', () => {
+    fixture.componentRef.setInput('units', [
+      {
+        id: 'hashing-lookup',
+        title: 'Hashing',
+        description: 'Remember relationships.',
+        theoryModuleId: 'theory-module',
+        practiceModuleId: 'practice-hashing',
+      },
+    ]);
+    fixture.detectChanges();
+
+    const link = fixture.nativeElement.querySelector(
+      '.learning-action.practice',
+    ) as HTMLAnchorElement;
+    expect(link.textContent?.replace(/\s+/g, ' ').trim()).toBe('Practice Hashing →');
+    expect(link.getAttribute('href')).toBe('/learn/hands-on-dsa?pattern=course:hashing-lookup');
+  });
 });
