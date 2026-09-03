@@ -23,18 +23,51 @@ Browser
 
 `ContentService` depends on HTTP resources, not an AWS SDK or local filesystem API. Local scripts stage a selected source under ignored `public/content/`; production can satisfy the same URL contract through an authenticated API or content origin.
 
+## Local process topology
+
+| Process                 | Default address          | Responsibility                                                 |
+| ----------------------- | ------------------------ | -------------------------------------------------------------- |
+| Active Angular frontend | `http://localhost:4300`  | The single learner and delivery-plan UI                        |
+| Local delivery editor   | Loopback, temporary port | Private development companion behind `/__local/delivery/`      |
+| Content API             | `http://localhost:8080`  | Future authenticated content and entitlement boundary          |
+| Archived frontend       | No default process       | Historical comparison only; do not use as a runtime dependency |
+
+The active frontend must not redirect into the archived frontend. During local development, relative `/content` requests resolve to synchronized, ignored runtime assets. The future deployment shape keeps one browser origin and routes `/api` and `/content` to their owning services through a reverse proxy or gateway.
+
+The Angular frontend can be packaged as static files in an Nginx or Caddy container. Private curriculum must not be baked into a public image; production content belongs behind the authenticated content boundary, while local container development may use a read-only content mount.
+
 ## Content modes
 
-| Mode | Source | Purpose | Command |
-| --- | --- | --- | --- |
-| Public demo | `demo-content/runtime/` | Human review of a clean clone | `npm start` |
-| Contract fixture | `test-fixtures/content/` | Minimal deterministic schema checks | `npm run validate:content:ci` |
-| Authorized private | `../lookahead-learning-content/runtime/` | Full local product development | `npm run start:private` |
-| Generated staging | `public/content/` | Angular runtime assets | Never commit |
+| Mode               | Source                                   | Purpose                             | Command                       |
+| ------------------ | ---------------------------------------- | ----------------------------------- | ----------------------------- |
+| Public demo        | `demo-content/runtime/`                  | Human review of a clean clone       | `npm start`                   |
+| Contract fixture   | `test-fixtures/content/`                 | Minimal deterministic schema checks | `npm run validate:content:ci` |
+| Authorized private | `../lookahead-learning-content/runtime/` | Full local product development      | `npm run start:private`       |
+| Generated staging  | `public/content/`                        | Angular runtime assets              | Never commit                  |
 
 Every mode uses the same catalog, course, module, and question contracts. The public demo discusses repository architecture only; it is not a reduced copy of the interview curriculum.
 
 The sibling path is the local convention, not a production dependency. Set `LOOKAHEAD_CONTENT_ROOT` to an authorized runtime directory when the private repository is checked out elsewhere.
+
+`npm run start:private` watches the private runtime directory and regenerates ignored runtime assets after curriculum changes. Delivery-plan changes are excluded from whole-app reloads: the board refreshes its private JSON snapshot every five seconds without discarding an open draft.
+
+## Delivery plan boundary
+
+`/delivery-plan` first probes `/__local/delivery/plan`. The private launcher starts a dependency-free Node HTTP companion bound to loopback and proxies this namespace through Angular. Workflow columns, priorities, stages, work items, decisions, and interruption rules remain data-defined. When no local companion exists, the route falls back to read-only `/content/delivery/delivery-plan.json` through `ContentService`.
+
+Humans can create and edit stories, tasks, epics, defects, research items, and decisions; change their delivery stage; and move cards across workflow columns by dragging or using the accessible Move selector. A work item of type Decision is not an architecture-decision record: the separate decisions and roadmap definitions are still edited in JSON.
+
+Save requests use a SHA-256 source revision. The companion serializes its writes, validates editable fields and relationships, rejects dependency cycles and stale revisions, writes a temporary sibling file, and atomically renames it over the fixed private plan file. IDs and timestamps are server-owned. Existing item metadata and the rest of the plan are preserved. There is no delete endpoint, arbitrary file endpoint, commit, push, or browser-storage database.
+
+The browser retains a failed or conflicting draft. Reloading the latest item requires an explicit discard action. A new item may refresh its base revision without discarding its text. External-editor changes are checked again immediately before rename; arbitrary tools that ignore this protocol still have a narrow check-to-rename race, so this is not a multi-process transactional database. Stop simultaneous file edits before bulk rewrites.
+
+Unsaved editor changes require confirmation before in-app navigation. Navigation is blocked while a save is pending, including a card move. Refreshing or closing the tab requests the browser's standard unsaved-changes warning; browsers can suppress that warning, and drafts are not persisted across reloads or crashes. Save explicitly to retain changes on disk.
+
+Board filters restore their displayed selections from the URL after the JSON options load. Column header counts describe visible matching cards; WIP counts and limit warnings always include all work in that workflow column across all stages, even when filters hide those cards.
+
+The generated proxy config and its per-process capability live under ignored `.angular/delivery-editor/`, not public assets. The companion requires that capability, a loopback client, an allowed local Origin, JSON content type, and a custom request header for mutations. It is only started by `start:private`, requires a fixed local HTTP port, and is not a production API or suitable for network sharing. Docker/public deployments must not expose it. The public demo contains synthetic data only; the real backlog remains in the private content repository.
+
+Run `npm run test:delivery-api` for persistence, validation, concurrency, and local-boundary checks using disposable synthetic data. Angular tests cover the editor, restored filters, unfiltered WIP limits, accessible moves, conflict retention, discard confirmation, navigation protection, and refresh-warning requests.
 
 ## Frontend composition
 
