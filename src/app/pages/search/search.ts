@@ -894,8 +894,14 @@ export class Search implements OnInit {
 
   protected updateQuery(value: string): void {
     this.query.set(value);
-    if (this.normalize(value) !== this.submittedQuery()) {
+    const normalizedQuery = this.normalize(value);
+    const submittedQuery = this.submittedQuery();
+    if (normalizedQuery !== submittedQuery) {
       this.submittedQuery.set('');
+      if (!normalizedQuery && submittedQuery) {
+        this.retainUnavailableTags();
+        this.syncUrl();
+      }
     }
     this.resetVisibleResults();
   }
@@ -974,8 +980,7 @@ export class Search implements OnInit {
       this.retainUnavailableTags();
     }
     this.resetVisibleResults();
-    this.syncUrl();
-    this.scrollToResults();
+    this.syncUrl(() => this.scrollToResults());
   }
 
   protected isTagSelected(tag: string): boolean {
@@ -1268,24 +1273,26 @@ export class Search implements OnInit {
       : 'none';
   }
 
-  private syncUrl(): void {
+  private syncUrl(afterNavigation?: () => void): void {
     const tags = [...this.selectedTags()];
-    void this.router.navigate([], {
-      relativeTo: this.route,
-      replaceUrl: true,
-      queryParams: {
-        q: this.submittedQuery() || null,
-        path: this.selectedPath() === 'all' ? null : this.selectedPath(),
-        course: this.selectedCourseId() === 'all' ? null : this.selectedCourseId(),
-        module: this.selectedModuleId() === 'all' ? null : this.selectedModuleId(),
-        difficulty: this.selectedDifficulty() === 'all' ? null : this.selectedDifficulty(),
-        language: this.selectedLanguage() === 'all' ? null : this.selectedLanguage(),
-        type: this.selectedContentType() === 'all' ? null : this.selectedContentType(),
-        tags: tags.length ? tags.join(',') : null,
-        sort: this.sortBy() === 'relevance' ? null : this.sortBy(),
-        group: this.groupBy() === 'none' ? null : this.groupBy(),
-      },
-    });
+    void this.router
+      .navigate([], {
+        relativeTo: this.route,
+        replaceUrl: true,
+        queryParams: {
+          q: this.submittedQuery() || null,
+          path: this.selectedPath() === 'all' ? null : this.selectedPath(),
+          course: this.selectedCourseId() === 'all' ? null : this.selectedCourseId(),
+          module: this.selectedModuleId() === 'all' ? null : this.selectedModuleId(),
+          difficulty: this.selectedDifficulty() === 'all' ? null : this.selectedDifficulty(),
+          language: this.selectedLanguage() === 'all' ? null : this.selectedLanguage(),
+          type: this.selectedContentType() === 'all' ? null : this.selectedContentType(),
+          tags: tags.length ? tags.join(',') : null,
+          sort: this.sortBy() === 'relevance' ? null : this.sortBy(),
+          group: this.groupBy() === 'none' ? null : this.groupBy(),
+        },
+      })
+      .then(() => afterNavigation?.());
   }
 
   private score(result: SearchDocument, query: string): number {

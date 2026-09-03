@@ -55,12 +55,13 @@ export class InteractiveTheoryVisual {
     if (event.source !== this.frame()?.nativeElement.contentWindow) return;
     const height = event.data?.type === 'algorithmic-visual-height' ? event.data.height : null;
     if (typeof height === 'number' && Number.isFinite(height)) {
-      // Static course visualizations may grow with their source code. Bound the
-      // value so an accidental postMessage cannot distort the reader layout.
+      // Narrow-screen teaching visuals can legitimately exceed 2,500px after
+      // their cards stack. Bound only extreme reports so mobile content is not
+      // clipped or forced into a nested scrollbar.
       // Apply the reported height exactly. Adding padding here causes a resize
       // feedback loop for documents whose scrollHeight is at least the iframe
       // viewport height: 280 becomes 288, then 296, until the safety cap.
-      this.frameHeight.set(Math.max(260, Math.min(Math.ceil(height), 1800)));
+      this.frameHeight.set(Math.max(260, Math.min(Math.ceil(height), 3200)));
     }
   }
 
@@ -69,7 +70,7 @@ export class InteractiveTheoryVisual {
     // Course JSON is authored content, but the renderer still accepts only
     // local, static HTML assets rather than arbitrary remote embeds.
     if (
-      !/^\/content\/.+\.html(?:\?v=[a-z0-9-]+|\?mode=[a-z0-9-]+|\?lang=(?:java|python|go)&input=(?:default|zero|negative)&problem=[a-z0-9-]+&source=[a-z0-9%+/_=-]+)?(?:#[a-z0-9-]+)?$/i.test(
+      !/^\/content\/.+\.html(?:\?v=[a-z0-9-]+|\?mode=[a-z0-9-]+|\?track=[a-z0-9-]+|\?lang=(?:java|python|go)&input=(?:default|zero|negative)&problem=[a-z0-9-]+&source=[a-z0-9%+/_=-]+)?(?:#[a-z0-9-]+)?$/i.test(
         path,
       )
     )
