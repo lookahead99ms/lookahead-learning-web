@@ -333,7 +333,32 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
 
       .profile-dropdown-container {
         position: relative;
+        margin-left: 8px;
+      }
+      .study-plan-link {
         margin-left: auto;
+        padding: 8px 11px;
+        border: 1px solid #c7d9e8;
+        border-radius: 999px;
+        color: #315f9d;
+        background: #f8fbfe;
+        font-size: 0.76rem;
+        font-weight: 800;
+        text-decoration: none;
+        white-space: nowrap;
+      }
+      .study-plan-link:hover,
+      .study-plan-link:focus-visible {
+        border-color: #168ca5;
+        color: #0d7183;
+        outline: 3px solid rgba(22, 140, 165, 0.18);
+        outline-offset: 2px;
+      }
+      @media (max-width: 760px) {
+        .study-plan-link {
+          padding-inline: 9px;
+          font-size: 0.7rem;
+        }
       }
       .avatar-trigger-btn {
         display: flex;

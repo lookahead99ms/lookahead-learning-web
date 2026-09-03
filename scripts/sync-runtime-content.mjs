@@ -5,30 +5,49 @@ import { generateSearchIndex } from './generate-search-index.mjs';
 
 const repositoryRoot = fileURLToPath(new URL('../', import.meta.url));
 const requestedRoot = process.argv[2];
-const configuredRoot =
-  requestedRoot === '--external'
-    ? (process.env.LOOKAHEAD_CONTENT_ROOT ?? '../lookahead-learning-content/runtime')
-    : (requestedRoot ?? process.env.LOOKAHEAD_CONTENT_ROOT ?? 'demo-content/runtime');
-const sourceRoot = resolve(repositoryRoot, configuredRoot);
+const demoRoot = resolve(repositoryRoot, 'demo-content/runtime');
+const externalRoot = resolve(
+  repositoryRoot,
+  process.env.LOOKAHEAD_CONTENT_ROOT ?? '../lookahead-learning-content/runtime',
+);
 const destinationRoot = resolve(repositoryRoot, 'public/content');
 
-async function requireContentSource() {
-  const requiredFiles = [
-    resolve(sourceRoot, 'learn/catalog.json'),
-    resolve(sourceRoot, 'grow/catalog.json'),
-  ];
+async function hasContentSource(root) {
+  const requiredFiles = [resolve(root, 'learn/catalog.json'), resolve(root, 'grow/catalog.json')];
 
   try {
     await Promise.all(requiredFiles.map((path) => access(path)));
+    return true;
   } catch {
-    throw new Error(
-      [
-        `Content source was not found at ${sourceRoot}.`,
-        'Use the tracked demo source or restore an authorized private source.',
-        'Do not commit the generated public/content directory.',
-      ].join('\n'),
-    );
+    return false;
   }
+}
+
+async function resolveContentSource() {
+  if (requestedRoot === '--external') {
+    return externalRoot;
+  }
+
+  if (requestedRoot === '--development') {
+    return (await hasContentSource(externalRoot)) ? externalRoot : demoRoot;
+  }
+
+  return resolve(
+    repositoryRoot,
+    requestedRoot ?? process.env.LOOKAHEAD_CONTENT_ROOT ?? 'demo-content/runtime',
+  );
+}
+
+const sourceRoot = await resolveContentSource();
+
+if (!(await hasContentSource(sourceRoot))) {
+  throw new Error(
+    [
+      `Content source was not found at ${sourceRoot}.`,
+      'Use the tracked demo source or restore an authorized private source.',
+      'Do not commit the generated public/content directory.',
+    ].join('\n'),
+  );
 }
 
 async function countFiles(directory) {
@@ -39,7 +58,6 @@ async function countFiles(directory) {
   return counts.reduce((total, count) => total + count, 0);
 }
 
-await requireContentSource();
 await rm(destinationRoot, { recursive: true, force: true });
 await mkdir(destinationRoot, { recursive: true });
 await cp(sourceRoot, destinationRoot, { recursive: true });

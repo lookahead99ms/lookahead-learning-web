@@ -30,6 +30,7 @@ import { PatternEssentialProblems } from '../../core/pattern-essential-problems/
 import { PatternLessonShell } from '../../core/pattern-lesson-shell/pattern-lesson-shell';
 import { CodeCopyButton } from '../../core/code-copy-button/code-copy-button';
 import { FoundationLessonShell } from '../../core/foundation-lesson-shell/foundation-lesson-shell';
+import { EvidenceAnswerTabs } from '../../core/evidence-answer-tabs/evidence-answer-tabs';
 
 @Component({
   selector: 'app-question',
@@ -45,6 +46,7 @@ import { FoundationLessonShell } from '../../core/foundation-lesson-shell/founda
     PatternLessonShell,
     FoundationLessonShell,
     CodeCopyButton,
+    EvidenceAnswerTabs,
   ],
   templateUrl: './question.html',
   styles: [
@@ -632,7 +634,7 @@ export class Question implements OnInit {
   }
 
   protected isCodingPractice(item: InterviewQuestion): boolean {
-    return this.shouldShowHint(item);
+    return item.contentType === 'dsa-problem' || this.shouldShowHint(item);
   }
 
   protected patternLesson(item: InterviewQuestion): PatternLessonV1 | null {
@@ -1106,6 +1108,14 @@ export class Question implements OnInit {
       return this.sectionRoute(section.id);
     }
     return ['/', this.pathId(), this.courseId(), 'module', item.moduleId];
+  }
+
+  protected pathLabel(): string {
+    return this.pathId() === 'grow'
+      ? 'Grow'
+      : this.pathId() === 'look-ahead'
+        ? 'Look Ahead'
+        : 'Learn';
   }
 
   protected parentContextTitle(item: InterviewQuestion): string {

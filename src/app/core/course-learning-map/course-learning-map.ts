@@ -10,7 +10,16 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
   template: `
     <section class="learning-map" [attr.data-path]="pathId()" aria-label="Learning map">
       <p class="learning-map-intro">
-        Choose one concept, then read the model, check your understanding, and practise it in code.
+        @if (pathId() === 'look-ahead') {
+          Choose one decision practice, study its model, retrieve the invariant, and defend it in a
+          scenario.
+        } @else if (pathId() === 'grow') {
+          Choose one capability, connect it to a production boundary, then rehearse the trade-off
+          and failure path.
+        } @else {
+          Choose one concept, then read the model, check your understanding, and practise it in
+          code.
+        }
       </p>
       @for (unit of visibleUnits(); track unit.id) {
         @if (unit.planned) {
@@ -158,6 +167,11 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
         --learning-accent: #b45309;
         --learning-surface: #fff6ed;
         --learning-glow: rgba(180, 83, 9, 0.12);
+      }
+      .learning-map[data-path='look-ahead'] {
+        --learning-accent: #2f6f8e;
+        --learning-surface: #eef7f8;
+        --learning-glow: rgba(47, 111, 142, 0.12);
       }
       .learning-map-intro {
         margin: 0 0 8px;

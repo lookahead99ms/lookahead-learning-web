@@ -1,7 +1,13 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, forkJoin, map, shareReplay, switchMap } from 'rxjs';
-import { CatalogItem, CourseContent, InterviewQuestion, SearchDocument } from './content.models';
+import {
+  CatalogItem,
+  CatalogOverviewItem,
+  CourseContent,
+  InterviewQuestion,
+  SearchDocument,
+} from './content.models';
 
 @Injectable({ providedIn: 'root' })
 export class ContentService {
@@ -72,5 +78,9 @@ export class ContentService {
 
   getCatalog(pathId: string): Observable<CatalogItem[]> {
     return this.http.get<CatalogItem[]>(`/content/${pathId}/catalog.json`);
+  }
+
+  getCatalogOverview(pathId: string): Observable<CatalogOverviewItem[]> {
+    return this.http.get<CatalogOverviewItem[]>(`/content/${pathId}/catalog-overview.json`);
   }
 }

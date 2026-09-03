@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   buildHandsOnDsaGroups,
   filterHandsOnDsaGroups,
+  limitHandsOnDsaGroups,
   resolveHandsOnDsaGroup,
+  uniqueHandsOnProblemCount,
 } from './hands-on-dsa';
 import {
   CourseContent,
@@ -75,7 +77,11 @@ function course(): CourseContent {
     description: 'Patterns',
     version: '1',
     modules: [],
-    questions: [lesson, practice('container', lesson.id, 'Intermediate')],
+    questions: [
+      lesson,
+      practice('container', lesson.id, 'Intermediate'),
+      { ...practice('independent-transfer', lesson.id, 'Advanced'), order: 2 },
+    ],
     learningUnits: [
       {
         id: 'pointer-patterns',
@@ -101,10 +107,17 @@ describe('Hands-On DSA projection', () => {
     const groups = buildHandsOnDsaGroups(course());
 
     expect(groups).toHaveLength(1);
-    expect(groups[0].id).toBe('two-pointers');
+    expect(groups[0].id).toBe('algorithmic-patterns:two-pointers');
+    expect(groups[0].courseId).toBe('algorithmic-patterns');
+    expect(groups[0].courseTitle).toBe('Algorithmic Patterns');
     expect(groups[0].essentialProblems.map(({ id }) => id)).toEqual(['palindrome', 'water']);
-    expect(groups[0].continuationProblems.map(({ id }) => id)).toEqual(['container']);
-    expect(resolveHandsOnDsaGroup(groups, 'algorithmic-two-pointers')?.id).toBe('two-pointers');
+    expect(groups[0].continuationProblems.map(({ id }) => id)).toEqual([
+      'container',
+      'independent-transfer',
+    ]);
+    expect(resolveHandsOnDsaGroup(groups, 'algorithmic-two-pointers')?.id).toBe(
+      'algorithmic-patterns:two-pointers',
+    );
   });
 
   it('filters by problem text and difficulty without duplicating groups', () => {
@@ -115,5 +128,24 @@ describe('Hands-On DSA projection', () => {
     ).toHaveLength(1);
     expect(filterHandsOnDsaGroups(groups, '', 'Beginner')[0].continuationProblems).toHaveLength(0);
     expect(filterHandsOnDsaGroups(groups, 'missing', 'All')).toEqual([]);
+  });
+
+  it('counts repeated titles once across learning contexts', () => {
+    const groups = buildHandsOnDsaGroups(course());
+    const repeated = { ...groups[0], id: 'another-context' };
+
+    expect(uniqueHandsOnProblemCount([...groups, repeated])).toBe(4);
+  });
+
+  it('progressively limits placements while preserving their group context', () => {
+    const groups = buildHandsOnDsaGroups(course());
+    const repeated = { ...groups[0], id: 'another-context' };
+    const limited = limitHandsOnDsaGroups([...groups, repeated], 5);
+
+    expect(limited).toHaveLength(2);
+    expect(limited[0].essentialProblems).toHaveLength(2);
+    expect(limited[0].continuationProblems).toHaveLength(2);
+    expect(limited[1].essentialProblems).toHaveLength(1);
+    expect(limited[1].continuationProblems).toHaveLength(0);
   });
 });

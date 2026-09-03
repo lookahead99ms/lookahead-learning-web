@@ -5,7 +5,7 @@
       <div class="question-sticky-utility">
         <nav class="breadcrumbs" aria-label="Breadcrumb">
           <a routerLink="/">Home</a><span>/</span>
-          <a [routerLink]="['/', pathId()]">{{ pathId() === 'grow' ? 'Grow' : 'Learn' }}</a
+          <a [routerLink]="['/', pathId()]">{{ pathLabel() }}</a
           ><span>/</span>
           <a [routerLink]="['/', pathId(), courseId()]">{{ courseTitle() }}</a>
         </nav>
@@ -301,7 +301,7 @@
           [pathId]="pathId()"
           [courseId]="courseId()"
           [relatedArticleId]="item.relatedArticleId"
-          [leetcodeUrl]="leetcodeProblem(item)?.url ?? null"
+          [leetcodeUrl]="item.practiceProblem?.externalUrl ?? leetcodeProblem(item)?.url ?? null"
           [visual]="resolvedCodingVisual(item)"
         />
       } @else {
@@ -327,6 +327,9 @@
             [complexity]="item.complexity"
             [visual]="resolvedCodingVisual(item)"
           />
+        }
+        @if (item.evidence; as evidence) {
+          <app-evidence-answer-tabs [evidence]="evidence" />
         }
         <section class="details-content">
           <div class="details-content-body">

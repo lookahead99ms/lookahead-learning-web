@@ -6,7 +6,7 @@
         <div class="module-sticky-utility">
           <nav class="breadcrumbs" aria-label="Breadcrumb">
             <a routerLink="/">Home</a><span>/</span>
-            <a [routerLink]="['/', pathId()]">{{ pathId() === 'grow' ? 'Grow' : 'Learn' }}</a
+            <a [routerLink]="['/', pathId()]">{{ pathLabel() }}</a
             ><span>/</span>
             <a [routerLink]="['/', pathId(), courseId()]">{{ currentCourse.title }}</a>
           </nav>

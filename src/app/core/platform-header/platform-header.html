@@ -109,6 +109,8 @@
     </form>
   }
 
+  <a class="study-plan-link" routerLink="/study-plan">Study plan</a>
+
   <div class="profile-dropdown-container" (click)="$event.stopPropagation()">
     <button
       class="avatar-trigger-btn"
@@ -136,7 +138,7 @@
         <nav class="dropdown-links-list" aria-label="Account links">
           <a href="#profile-settings" class="dropdown-item-link">View Profile Settings</a>
           <a href="#subscriptions" class="dropdown-item-link">Manage Subscriptions</a>
-          <a href="#progress" class="dropdown-item-link">Track Roadmap Progress</a>
+          <a routerLink="/study-plan" class="dropdown-item-link">View study plan</a>
           <div class="menu-divider"></div>
           <a href="#sign-out" class="dropdown-item-link logout-trigger">Sign Out</a>
         </nav>

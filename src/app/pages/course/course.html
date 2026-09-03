@@ -6,7 +6,7 @@
         <section class="reader-sticky-context course-breadcrumb-bar">
           <nav class="breadcrumbs" aria-label="Breadcrumb">
             <a routerLink="/">Home</a><span>/</span
-            ><a [routerLink]="['/', pathId()]">{{ pathId() === 'grow' ? 'Grow' : 'Learn' }}</a
+            ><a [routerLink]="['/', pathId()]">{{ pathLabel() }}</a
             ><span>/</span>
             @if (learningGroup(); as group) {
               <a [routerLink]="['/', pathId()]" [queryParams]="{ group: group.id }">{{
@@ -41,7 +41,9 @@
             [innerHTML]="
               pathId() === 'grow'
                 ? highlightGrow(currentCourse.description)
-                : highlightLearn(currentCourse.description)
+                : pathId() === 'learn'
+                  ? highlightLearn(currentCourse.description)
+                  : currentCourse.description
             "
           ></p>
           @if (currentCourse.chips?.length) {
