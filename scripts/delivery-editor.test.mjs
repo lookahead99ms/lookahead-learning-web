@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
 import { startDeliveryEditor } from './delivery-editor.mjs';
+import { JSDOM } from 'jsdom';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const source = JSON.parse(
@@ -14,7 +15,8 @@ async function fixture(t) {
   const base = resolve(root, '.angular/delivery-editor/tests');
   await mkdir(base, { recursive: true });
   const directory = await mkdtemp(`${base}/run-`);
-  const file = resolve(directory, 'delivery-plan.json');
+  await mkdir(resolve(directory, 'runtime/delivery'), { recursive: true });
+  const file = resolve(directory, 'runtime/delivery/delivery-plan.json');
   await writeFile(file, JSON.stringify(source));
   const api = await startDeliveryEditor({ file, origins: ['http://localhost:4300'] });
   t.after(async () => {
@@ -33,7 +35,13 @@ async function fixture(t) {
       headers: { ...headers, ...overrides },
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
     });
-    return { status: response.status, body: await response.json() };
+    return {
+      status: response.status,
+      headers: response.headers,
+      body: response.headers.get('content-type')?.includes('application/json')
+        ? await response.json()
+        : await response.text(),
+    };
   };
   const item = {
     title: 'Test a persisted story',
@@ -48,7 +56,7 @@ async function fixture(t) {
     blockedBy: [],
     notes: [],
   };
-  return { request, item, file };
+  return { request, item, file, directory };
 }
 
 test('creates, edits, moves status and stage, and persists while preserving plan metadata', async (t) => {
@@ -195,6 +203,7 @@ test('preserves review routes and unknown metadata when editing an existing item
   const plan = structuredClone(source);
   const existing = plan.workItems[0];
   existing.reviewRoutes = ['/delivery-plan'];
+  existing.evidence = [{ id: 'report', title: 'Review report', path: 'docs/evidence/report.md' }];
   existing.customMetadata = { owner: 'test' };
   await writeFile(file, JSON.stringify(plan));
   const snapshot = (await request()).body;
@@ -205,5 +214,161 @@ test('preserves review routes and unknown metadata when editing an existing item
   assert.equal(saved.status, 200);
   const updated = saved.body.plan.workItems.find((entry) => entry.id === existing.id);
   assert.deepEqual(updated.reviewRoutes, ['/delivery-plan']);
+  assert.deepEqual(updated.evidence, existing.evidence);
   assert.deepEqual(updated.customMetadata, { owner: 'test' });
+});
+
+async function evidenceFixture(t) {
+  const fixtureData = await fixture(t);
+  const { directory, file } = fixtureData;
+  await mkdir(resolve(directory, 'docs/evidence'), { recursive: true });
+  const markdown = '# Route report\n\n<script>not executable</script>\n';
+  await writeFile(resolve(directory, 'docs/evidence/report.md'), markdown);
+  const plan = structuredClone(source);
+  plan.workItems[0].evidence = [
+    { id: 'report', title: 'Review report', path: 'docs/evidence/report.md' },
+  ];
+  await writeFile(file, JSON.stringify(plan));
+  return {
+    ...fixtureData,
+    plan,
+    markdown,
+    path: `/evidence/${plan.workItems[0].id}/report`,
+  };
+}
+
+test('renders evidence, accepts the .md alias, and preserves original source downloads', async (t) => {
+  const { request, path, markdown } = await evidenceFixture(t);
+  const opened = await request('GET', path);
+  assert.equal(opened.status, 200);
+  assert.equal(opened.headers.get('content-type'), 'text/html; charset=utf-8');
+  const dom = new JSDOM(opened.body);
+  t.after(() => dom.window.close());
+  assert.equal(dom.window.document.querySelector('h1').textContent, 'Route report');
+  assert.equal(dom.window.document.querySelector('script'), null);
+  assert.match(
+    dom.window.document.querySelector('main').textContent,
+    /<script>not executable<\/script>/,
+  );
+  assert.equal(opened.headers.get('cache-control'), 'no-store');
+  assert.equal(opened.headers.get('x-content-type-options'), 'nosniff');
+  assert.match(opened.headers.get('content-security-policy'), /sandbox/);
+  assert.match(opened.headers.get('content-security-policy'), /default-src 'none'/);
+  assert.doesNotMatch(opened.headers.get('content-security-policy'), /allow-scripts|unsafe-inline/);
+  assert.equal(opened.headers.get('referrer-policy'), 'no-referrer');
+  const alias = await request('GET', `${path}.md`);
+  assert.equal(alias.status, 200);
+  assert.equal(alias.body, opened.body);
+  const raw = await request('GET', `${path}?raw=1`);
+  assert.equal(raw.body, markdown);
+  assert.equal(raw.headers.get('content-type'), 'text/plain; charset=utf-8');
+  const downloaded = await request('GET', `${path}?download=1`);
+  assert.equal(downloaded.body, markdown);
+  assert.equal(downloaded.headers.get('content-type'), 'text/plain; charset=utf-8');
+  assert.equal(downloaded.headers.get('content-disposition'), 'attachment; filename="report.md"');
+  assert.equal((await request('GET', '/evidence/unknown/report')).status, 404);
+  assert.equal((await request('GET', path.replace(/report$/, 'unknown'))).status, 404);
+});
+
+test('formats tables, lists, and code while keeping report-supplied HTML and unsafe links inert', async (t) => {
+  const { request, path, directory, plan, file } = await evidenceFixture(t);
+  plan.workItems[0].evidence[0].title = '<img src=x onerror=alert(1)>';
+  await writeFile(file, JSON.stringify(plan));
+  await writeFile(
+    resolve(directory, 'docs/evidence/report.md'),
+    [
+      '# Report',
+      '',
+      '| Case | Result |',
+      '| --- | --- |',
+      '| R01 | **Passed** |',
+      '',
+      '- One check',
+      '- Another check',
+      '',
+      '```html',
+      '<script>alert(1)</script>',
+      '```',
+      '',
+      '<img src="https://untrusted.example/pixel" onerror="alert(1)">',
+      '',
+      '<iframe src="https://untrusted.example"></iframe>',
+      '',
+      '<style>body { display: none }</style>',
+      '',
+      '![tracking](https://untrusted.example/image.png)',
+      '',
+      '[unsafe](javascript:alert%281%29)',
+      '[encoded](jav&#x61;script:alert%281%29)',
+      '[data](data:text/html,unsafe)',
+      '[relative](//untrusted.example/path)',
+      '[safe](https://example.com/report)',
+      '[local](/delivery-plan)',
+    ].join('\n'),
+  );
+  const response = await request('GET', path);
+  assert.equal(response.status, 200);
+  const dom = new JSDOM(response.body);
+  t.after(() => dom.window.close());
+  const document = dom.window.document;
+  assert.equal(document.querySelectorAll('table tbody tr').length, 1);
+  assert.equal(document.querySelector('td strong').textContent, 'Passed');
+  assert.equal(document.querySelectorAll('main ul li').length, 2);
+  assert.equal(document.querySelector('pre code').textContent.trim(), '<script>alert(1)</script>');
+  assert.equal(
+    document.querySelectorAll('script, img, iframe, object, embed, form, base').length,
+    0,
+  );
+  assert.equal(document.querySelectorAll('style').length, 1);
+  assert.equal(document.querySelectorAll('[onerror], [onclick], [onload]').length, 0);
+  assert.ok(document.querySelector('meta[name="viewport"]'));
+  const hrefs = [...document.querySelectorAll('a')].map((link) => link.getAttribute('href'));
+  assert.ok(hrefs.includes('https://example.com/report'));
+  assert.ok(hrefs.includes('/delivery-plan'));
+  assert.ok(!hrefs.some((href) => /javascript|data:|untrusted/.test(href)));
+});
+
+test('restricts evidence to local authorized requests and approved Markdown paths', async (t) => {
+  const { request, path, plan, file, directory } = await evidenceFixture(t);
+  for (const override of [
+    { 'x-delivery-token': '' },
+    { 'sec-fetch-site': 'cross-site' },
+    { origin: 'https://untrusted.example' },
+    { 'x-forwarded-for': '192.0.2.10' },
+  ]) {
+    assert.equal((await request('GET', path, undefined, override)).status, 403);
+  }
+  for (const invalid of [
+    '../../private.md',
+    'docs/evidence/../../private.md',
+    'docs/evidence/../evidence/report.md',
+    '/etc/passwd',
+    'docs/evidence/report.html',
+    'docs/evidence/%2e%2e/private.md',
+    'docs/evidence\\report.md',
+  ]) {
+    plan.workItems[0].evidence[0].path = invalid;
+    await writeFile(file, JSON.stringify(plan));
+    assert.equal((await request('GET', path)).status, 404, invalid);
+  }
+  await writeFile(resolve(directory, 'private.md'), 'Not attached');
+  await symlink(resolve(directory, 'private.md'), resolve(directory, 'docs/evidence/escape.md'));
+  plan.workItems[0].evidence[0].path = 'docs/evidence/escape.md';
+  await writeFile(file, JSON.stringify(plan));
+  assert.equal((await request('GET', path)).status, 404);
+  await symlink(directory, resolve(directory, 'docs/evidence/outside'));
+  plan.workItems[0].evidence[0].path = 'docs/evidence/outside/private.md';
+  await writeFile(file, JSON.stringify(plan));
+  assert.equal((await request('GET', path)).status, 404);
+});
+
+test('handles missing and oversized evidence without exposing private disk locations', async (t) => {
+  const { request, path, directory } = await evidenceFixture(t);
+  const file = resolve(directory, 'docs/evidence/report.md');
+  await rm(file);
+  const missing = await request('GET', path);
+  assert.equal(missing.status, 404);
+  assert.ok(!JSON.stringify(missing.body).includes(directory));
+  await writeFile(file, 'x'.repeat(1024 * 1024 + 1));
+  assert.equal((await request('GET', path)).status, 413);
 });

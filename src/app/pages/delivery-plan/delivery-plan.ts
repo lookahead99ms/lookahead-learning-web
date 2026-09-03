@@ -223,6 +223,10 @@ export class DeliveryPlanPage implements OnInit {
       });
   }
 
+  protected evidenceUrl(itemId: string, evidenceId: string): string {
+    return `/__local/delivery/evidence/${encodeURIComponent(itemId)}/${encodeURIComponent(evidenceId)}`;
+  }
+
   protected openEditor(item?: DeliveryWorkItem): void {
     if (!this.editable() || this.saving()) return;
     const plan = this.plan()!;

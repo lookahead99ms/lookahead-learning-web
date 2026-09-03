@@ -435,6 +435,34 @@
               </div>
             </section>
           }
+          @if (item.evidence?.length) {
+            <section class="evidence-section" aria-label="Work item evidence">
+              <h3>Evidence</h3>
+              <p>
+                Read the formatted report or download its original Markdown. Reports stay private.
+              </p>
+              <ul>
+                @for (report of item.evidence; track report.id) {
+                  <li>
+                    <strong>{{ report.title }}</strong>
+                    @if (editable()) {
+                      <div class="review-routes">
+                        <a
+                          [href]="evidenceUrl(item.id, report.id)"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          >View report (new tab)</a
+                        >
+                        <a [href]="evidenceUrl(item.id, report.id) + '?download=1'">Download .md</a>
+                      </div>
+                    } @else {
+                      <p>Start the private local app to open this report.</p>
+                    }
+                  </li>
+                }
+              </ul>
+            </section>
+          }
           @if (item.notes?.length) {
             <section>
               <h3>Notes</h3>

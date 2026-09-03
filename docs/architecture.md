@@ -67,7 +67,11 @@ Board filters restore their displayed selections from the URL after the JSON opt
 
 The generated proxy config and its per-process capability live under ignored `.angular/delivery-editor/`, not public assets. The companion requires that capability, a loopback client, an allowed local Origin, JSON content type, and a custom request header for mutations. It is only started by `start:private`, requires a fixed local HTTP port, and is not a production API or suitable for network sharing. Docker/public deployments must not expose it. The public demo contains synthetic data only; the real backlog remains in the private content repository.
 
-Run `npm run test:delivery-api` for persistence, validation, concurrency, and local-boundary checks using disposable synthetic data. Angular tests cover the editor, restored filters, unfiltered WIP limits, accessible moves, conflict retention, discard confirmation, navigation protection, and refresh-warning requests.
+Work items may attach Markdown reports through `evidence: [{ id, title, path }]` metadata maintained in the private JSON. Paths must remain under the content repository's `docs/evidence/` directory; files are not copied into public runtime assets. The local companion resolves `/__local/delivery/evidence/:itemId/:evidenceId` (also accepting a `.md` suffix) only for explicitly attached regular Markdown files, rejects traversal and symlink escapes, and limits reports to 1 MiB. The default response is a formatted, script-free report with responsive tables and navigation; `?raw=1` returns plain text and `?download=1` downloads the original Markdown. All responses remain non-cacheable. This is a private local viewing capability, not a file-upload or public document-hosting service. Restart `start:private` after changing companion code.
+
+The local-only renderer uses the pinned development dependency `marked`, following its [renderer extension API](https://marked.js.org/using_pro). Markdown parsing alone is not sanitization: raw HTML is escaped, images are omitted, link protocols are restricted, and a restrictive CSP permits only the hash of the viewer's fixed stylesheet, not scripts or arbitrary inline styles. The renderer is never imported into the Angular application bundle.
+
+Run `npm run test:delivery-api` for persistence, validation, concurrency, private report access, and local-boundary checks using disposable synthetic data. Angular tests cover the editor, restored filters, unfiltered WIP limits, accessible moves, conflict retention, discard confirmation, navigation protection, refresh-warning requests, and local-only evidence links.
 
 ## Frontend composition
 
@@ -81,6 +85,8 @@ Run `npm run test:delivery-api` for persistence, validation, concurrency, and lo
 The versioned `pattern-lesson/v1` and `guided-trace/v1` contracts let the UI evolve without treating arbitrary JSON as an implicit component API.
 
 ## Delivery controls
+
+Use [Critical route smoke checks](route-smoke-checks.md) to establish a reproducible rendered-route baseline before changing navigation. Concrete private-content results belong in the private content repository, not the public source tree.
 
 The public CI path is intentionally reproducible from tracked files:
 

@@ -262,6 +262,48 @@ describe('DeliveryPlanPage', () => {
     return harness;
   }
 
+  it('links private evidence by item and attachment identity, never by filesystem path', async () => {
+    const snapshot = structuredClone(plan);
+    snapshot.workItems[0].evidence = [
+      { id: 'report', title: 'Route inventory report', path: 'docs/evidence/report.md' },
+    ];
+    editor.load.mockReturnValue(of({ plan: snapshot, revision: 'revision-1' }));
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/delivery-plan', DeliveryPlanPage);
+    harness.detectChanges();
+    (harness.routeNativeElement!.querySelector('.work-item-card') as HTMLButtonElement).click();
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    const section = harness.routeNativeElement!.querySelector('.evidence-section')!;
+    expect(section.textContent).toContain('Route inventory report');
+    const links = section.querySelectorAll('a');
+    expect(links).toHaveLength(2);
+    expect(links[0].textContent).toContain('View report (new tab)');
+    expect(links[0].getAttribute('href')).toBe('/__local/delivery/evidence/TEST-1/report');
+    expect(links[0].getAttribute('target')).toBe('_blank');
+    expect(links[0].getAttribute('rel')).toContain('noopener');
+    expect(links[1].getAttribute('href')).toBe(
+      '/__local/delivery/evidence/TEST-1/report?download=1',
+    );
+  });
+
+  it('does not offer private evidence endpoints in a read-only public board', async () => {
+    const snapshot = structuredClone(plan);
+    snapshot.workItems[0].evidence = [
+      { id: 'report', title: 'Route inventory report', path: 'docs/evidence/report.md' },
+    ];
+    content.getDeliveryPlan.mockReturnValueOnce(of(snapshot));
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/delivery-plan', DeliveryPlanPage);
+    harness.detectChanges();
+    (harness.routeNativeElement!.querySelector('.work-item-card') as HTMLButtonElement).click();
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    const section = harness.routeNativeElement!.querySelector('.evidence-section')!;
+    expect(section.querySelector('a')).toBeNull();
+    expect(section.textContent).toContain('Start the private local app');
+  });
+
   async function fill(harness: RouterTestingHarness, name: string, value: string) {
     const input = harness.routeNativeElement!.querySelector(`[name="${name}"]`) as HTMLInputElement;
     input.value = value;

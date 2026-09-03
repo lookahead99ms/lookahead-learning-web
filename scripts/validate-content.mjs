@@ -151,6 +151,20 @@ function validateDeliveryPlan(plan, label) {
         `${label}: ${item.id} references unknown work item ${relationship}`,
       );
     }
+    if (item.evidence !== undefined) {
+      requireValue(Array.isArray(item.evidence), `${label}: ${item.id} evidence must be an array`);
+      uniqueIds(item.evidence, `${item.id} evidence`);
+      for (const report of item.evidence) {
+        requireValue(
+          /^[A-Za-z0-9_-]+$/.test(report.id) &&
+            typeof report.title === 'string' &&
+            report.title.trim() &&
+            typeof report.path === 'string' &&
+            /^docs\/evidence\/(?:[A-Za-z0-9_-]+\/)*[A-Za-z0-9_-]+\.md$/.test(report.path),
+          `${label}: ${item.id} has invalid evidence metadata`,
+        );
+      }
+    }
   }
   for (const decision of plan.decisions) {
     requireValue(
