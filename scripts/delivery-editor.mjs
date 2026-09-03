@@ -1,7 +1,9 @@
 import { createServer } from 'node:http';
 import { createHash, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
-import { lstat, open, readFile, rename, rm } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { constants } from 'node:fs';
+import { lstat, open, readFile, realpath, rename, rm } from 'node:fs/promises';
+import { basename, dirname, join, resolve, sep } from 'node:path';
+import { renderDeliveryReport, reportContentSecurityPolicy } from './delivery-report.mjs';
 
 const editableFields = [
   'title',
@@ -115,6 +117,47 @@ async function readBody(request) {
   }
 }
 
+async function readEvidence(file, itemId, evidenceId) {
+  const { plan } = await readPlan(file);
+  const evidence = plan.workItems
+    .find((item) => item.id === itemId)
+    ?.evidence?.find((report) => report.id === evidenceId);
+  if (
+    !evidence ||
+    typeof evidence.path !== 'string' ||
+    !/^docs\/evidence\/(?:[A-Za-z0-9_-]+\/)*[A-Za-z0-9_-]+\.md$/.test(evidence.path)
+  )
+    fail(404, 'Attached Markdown report not found.');
+
+  const contentRoot = resolve(dirname(file), '../..');
+  const root = resolve(contentRoot, 'docs/evidence');
+  const candidate = resolve(contentRoot, evidence.path);
+  try {
+    // Only attached Markdown under the private evidence directory is readable.
+    // Resolve parent symlinks as well as rejecting a symlink for the file itself.
+    if (
+      !(await lstat(candidate)).isFile() ||
+      !(await realpath(candidate)).startsWith(`${root}${sep}`)
+    )
+      fail(404, 'Attached Markdown report not found.');
+    const handle = await open(candidate, constants.O_RDONLY | constants.O_NOFOLLOW);
+    try {
+      const stat = await handle.stat();
+      if (!stat.isFile()) fail(404, 'Attached Markdown report not found.');
+      if (stat.size > 1024 * 1024) fail(413, 'The report exceeds the 1 MiB viewing limit.');
+      const bytes = await handle.readFile();
+      if (bytes.length > 1024 * 1024) fail(413, 'The report exceeds the 1 MiB viewing limit.');
+      return { bytes, filename: basename(candidate), title: evidence.title };
+    } finally {
+      await handle.close();
+    }
+  } catch (error) {
+    if (['ENOENT', 'ENOTDIR', 'ELOOP', 'EACCES'].includes(error.code))
+      fail(404, 'Attached Markdown report not found.');
+    throw error;
+  }
+}
+
 /** A loopback-only companion for start:private, never part of the published app. */
 export async function startDeliveryEditor({ file, origins }) {
   const token = randomBytes(32).toString('hex');
@@ -184,9 +227,46 @@ export async function startDeliveryEditor({ file, origins }) {
         .map((value) => value.trim());
       if (forwarded.some((address) => !['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(address)))
         fail(403, 'Only loopback clients may use the editor.');
-      const path = new URL(request.url, 'http://localhost').pathname;
+      const url = new URL(request.url, 'http://localhost');
+      const path = url.pathname;
       if (request.method === 'GET' && path === '/__local/delivery/plan') {
         response.end(JSON.stringify(await readPlan(file)));
+        return;
+      }
+      if (request.method === 'GET' && path.startsWith('/__local/delivery/evidence/')) {
+        if (
+          request.headers['sec-fetch-site'] === 'cross-site' ||
+          (request.headers.origin && !origins.includes(request.headers.origin))
+        )
+          fail(403, 'Reports must be opened from the local board.');
+        const match =
+          /^\/__local\/delivery\/evidence\/([A-Za-z0-9_-]+)\/([A-Za-z0-9_-]+)(?:\.md)?$/.exec(path);
+        if (!match) fail(404, 'Attached Markdown report not found.');
+        const report = await readEvidence(file, match[1], match[2]);
+        const download = url.searchParams.get('download') === '1';
+        const raw = download || url.searchParams.get('raw') === '1';
+        response.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
+        response.setHeader('Referrer-Policy', 'no-referrer');
+        if (raw) {
+          response.setHeader('Content-Type', 'text/plain; charset=utf-8');
+          response.setHeader(
+            'Content-Disposition',
+            `${download ? 'attachment' : 'inline'}; filename="${report.filename}"`,
+          );
+          response.setHeader('Content-Security-Policy', "default-src 'none'; sandbox");
+          response.end(report.bytes);
+        } else {
+          response.setHeader('Content-Type', 'text/html; charset=utf-8');
+          response.setHeader('Content-Security-Policy', reportContentSecurityPolicy);
+          response.end(
+            renderDeliveryReport({
+              markdown: report.bytes.toString('utf8'),
+              title: report.title,
+              itemId: match[1],
+              evidenceId: match[2],
+            }),
+          );
+        }
         return;
       }
       if (!['POST', 'PUT'].includes(request.method)) fail(405, 'Method not allowed.');

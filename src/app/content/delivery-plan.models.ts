@@ -40,6 +40,7 @@ export interface DeliveryWorkItem {
   dependencies: string[];
   blockedBy: string[];
   reviewRoutes?: string[];
+  evidence?: { id: string; title: string; path: string }[];
   notes?: string[];
   updatedAt: string;
 }
