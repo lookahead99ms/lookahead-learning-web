@@ -12,15 +12,51 @@
         ><span>Search</span><kbd>⌘K</kbd>
       </button>
     </div>
-    <section class="catalog-context-panel grow-catalog">
-      <h1 class="reader-question-title">Grow</h1>
-      <p>
-        <strong class="catalog-highlight">Applied capabilities</strong> to turn foundational
-        knowledge into secure, tested, production-ready applications.
-      </p>
-    </section>
     @if (capabilities(); as capabilities) {
       @if (capabilities.length) {
+        <section class="catalog-context-panel grow-catalog catalog-depth-hero">
+          <div class="catalog-depth-copy">
+            <p class="catalog-path-label">Production engineering curriculum</p>
+            <h1 class="reader-question-title">Grow</h1>
+            <p>
+              <strong class="catalog-highlight">Turn knowledge into production judgment.</strong>
+              Learn to design, deliver, diagnose, secure, and operate the systems a senior engineer
+              is trusted to own.
+            </p>
+            <div class="catalog-primary-actions" aria-label="Grow starting points">
+              <a class="catalog-primary-action" routerLink="/grow/spring-boot"
+                >Start with Spring Boot <span aria-hidden="true">→</span></a
+              >
+              <a
+                class="catalog-secondary-action"
+                routerLink="/interview-questions"
+                [queryParams]="{ path: 'grow' }"
+                >Practice Grow questions</a
+              >
+              <a class="catalog-secondary-action" routerLink="/study-plan">Build a study plan</a>
+            </div>
+          </div>
+          <dl class="catalog-scoreboard" aria-label="Grow curriculum depth">
+            <div>
+              <dt>{{ capabilities.length }}</dt>
+              <dd>capability courses</dd>
+            </div>
+            <div>
+              <dt>{{ totalLessons(capabilities) }}</dt>
+              <dd>deep-dive lessons</dd>
+            </div>
+            <div>
+              <dt>{{ totalQuestions(capabilities) }}</dt>
+              <dd>interview questions</dd>
+            </div>
+          </dl>
+        </section>
+        <nav class="catalog-jump-nav" aria-label="Grow capability paths">
+          <span>Jump to</span>
+          @for (group of capabilityGroups; track group.id) {
+            <a [attr.href]="'#grow-group-' + group.id">{{ group.title }}</a>
+          }
+        </nav>
         @for (group of capabilityGroups; track group.title) {
           <section
             class="catalog-group"
@@ -34,10 +70,16 @@
               [attr.aria-expanded]="isExpanded(group)"
               (click)="toggleGroup(group)"
             >
-              <span
-                ><span class="catalog-group-title">{{ group.title }}</span
-                ><span class="catalog-group-description">{{ group.description }}</span></span
-              ><span class="catalog-group-toggle" aria-hidden="true">›</span>
+              <span>
+                <span class="catalog-group-title">{{ group.title }}</span>
+                <span class="catalog-group-description">{{ group.description }}</span>
+                <span class="catalog-group-summary"
+                  >{{ capabilitiesFor(group, capabilities).length }} courses ·
+                  {{ lessonsFor(group, capabilities) }} lessons ·
+                  {{ questionsFor(group, capabilities) }} questions</span
+                >
+              </span>
+              <span class="catalog-group-toggle" aria-hidden="true">›</span>
             </button>
             @if (isExpanded(group)) {
               <div class="course-grid catalog-course-grid">
@@ -50,8 +92,24 @@
                         }}</span>
                       }
                     }
+                    <p class="catalog-card-kicker">
+                      {{ capability.moduleCount }} topics · {{ capability.lessonCount }} lessons ·
+                      {{ capability.questionCount }} Q&amp;As
+                    </p>
                     <h2>{{ capability.title }}</h2>
                     <p [innerHTML]="highlightGrow(growTagline(capability.description))"></p>
+                    @if (capability.topicPreview.length) {
+                      <ul class="catalog-topic-preview" aria-label="Topics covered">
+                        @for (topic of capability.topicPreview; track topic; let index = $index) {
+                          @if (index < 3) {
+                            <li>{{ topic }}</li>
+                          }
+                        }
+                      </ul>
+                    }
+                    <span class="catalog-card-action"
+                      >Open curriculum <span aria-hidden="true">→</span></span
+                    >
                   </a>
                 }
               </div>
@@ -65,11 +123,17 @@
         </section>
       }
     } @else if (error()) {
+      <section class="catalog-context-panel grow-catalog">
+        <h1 class="reader-question-title">Grow</h1>
+      </section>
       <section class="catalog-state catalog-state-error" role="alert">
         <h2>Content unavailable</h2>
         <p>{{ error() }}</p>
       </section>
     } @else {
+      <section class="catalog-context-panel grow-catalog">
+        <h1 class="reader-question-title">Grow</h1>
+      </section>
       <section class="catalog-state" aria-live="polite"><p>Loading Grow capabilities…</p></section>
     }
   </article>

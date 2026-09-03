@@ -1,12 +1,15 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { ContentService } from '../../content/content.service';
 import { CourseContent } from '../../content/content.models';
 import {
   HandsOnDifficulty,
   buildHandsOnDsaGroups,
   filterHandsOnDsaGroups,
+  limitHandsOnDsaGroups,
   resolveHandsOnDsaGroup,
+  uniqueHandsOnProblemCount,
 } from '../../content/hands-on-dsa';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { PatternProblemWorkbench } from '../../core/pattern-problem-workbench/pattern-problem-workbench';
@@ -183,6 +186,12 @@ import { PatternProblemWorkbench } from '../../core/pattern-problem-workbench/pa
         font-weight: 800;
         text-decoration: none;
       }
+      .group-links {
+        display: grid;
+        flex: 0 0 auto;
+        gap: 8px;
+        justify-items: end;
+      }
       .workbench-wrap {
         margin-top: 20px;
         padding-top: 20px;
@@ -275,12 +284,50 @@ import { PatternProblemWorkbench } from '../../core/pattern-problem-workbench/pa
         margin-top: 0;
         color: var(--practice-ink);
       }
+      .show-more-problems {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        width: min(420px, 100%);
+        min-height: 48px;
+        margin: 22px auto 0;
+        border: 1px solid #69a7bd;
+        border-radius: 10px;
+        color: #1f6277;
+        background: #fff;
+        cursor: pointer;
+        font: inherit;
+        font-weight: 820;
+      }
+      .show-more-problems:hover,
+      .show-more-problems:focus-visible {
+        color: #fff;
+        background: var(--practice-accent);
+        outline: 3px solid rgba(13, 129, 146, 0.2);
+        outline-offset: 3px;
+      }
       @media (max-width: 920px) {
         .problem-grid {
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
       }
       @media (max-width: 640px) {
+        .practice-breadcrumb-bar {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr);
+          align-items: start;
+        }
+        .practice-breadcrumb-bar .breadcrumbs {
+          width: 100%;
+          min-width: 0;
+          overflow-x: auto;
+          scrollbar-width: thin;
+        }
+        .practice-breadcrumb-bar .reader-search-link {
+          position: static;
+          justify-self: start;
+        }
         .practice-controls,
         .problem-grid {
           grid-template-columns: minmax(0, 1fr);
@@ -292,6 +339,9 @@ import { PatternProblemWorkbench } from '../../core/pattern-problem-workbench/pa
         }
         .lesson-link {
           justify-self: start;
+        }
+        .group-links {
+          justify-items: start;
         }
       }
       @media (prefers-reduced-motion: reduce) {
@@ -322,12 +372,13 @@ import { PatternProblemWorkbench } from '../../core/pattern-problem-workbench/pa
 export class HandsOnDsa implements OnInit {
   private readonly content = inject(ContentService);
   private readonly route = inject(ActivatedRoute);
-  protected readonly course = signal<CourseContent | null>(null);
+  protected readonly courses = signal<CourseContent[] | null>(null);
   protected readonly error = signal('');
   protected readonly query = signal('');
   protected readonly difficulty = signal<HandsOnDifficulty>('All');
   protected readonly patternId = signal('');
   protected readonly problemId = signal('');
+  protected readonly visibleLimit = signal(40);
   protected readonly difficulties: HandsOnDifficulty[] = [
     'All',
     'Beginner',
@@ -335,8 +386,8 @@ export class HandsOnDsa implements OnInit {
     'Advanced',
   ];
   protected readonly groups = computed(() => {
-    const course = this.course();
-    return course ? buildHandsOnDsaGroups(course) : [];
+    const courses = this.courses();
+    return courses ? courses.flatMap((course) => buildHandsOnDsaGroups(course)) : [];
   });
   protected readonly selectedGroup = computed(() =>
     resolveHandsOnDsaGroup(this.groups(), this.patternId()),
@@ -355,23 +406,49 @@ export class HandsOnDsa implements OnInit {
       0,
     ),
   );
+  protected readonly visibleUniqueProblemCount = computed(() =>
+    uniqueHandsOnProblemCount(this.visibleGroups()),
+  );
+  protected readonly renderedGroups = computed(() =>
+    limitHandsOnDsaGroups(this.visibleGroups(), this.visibleLimit()),
+  );
+  protected readonly renderedProblemCount = computed(() =>
+    this.renderedGroups().reduce(
+      (count, group) => count + group.essentialProblems.length + group.continuationProblems.length,
+      0,
+    ),
+  );
+  protected readonly nextProblemBatchSize = computed(() =>
+    Math.min(40, this.visibleProblemCount() - this.renderedProblemCount()),
+  );
 
   ngOnInit(): void {
-    this.content.getCourse('learn', 'algorithmic-patterns').subscribe({
-      next: (course) => this.course.set(course),
+    forkJoin([
+      this.content.getCourse('learn', 'algorithmic-patterns'),
+      this.content.getCourse('learn', 'core-data-structures'),
+      this.content.getCourse('learn', 'sorting-searching'),
+    ]).subscribe({
+      next: (courses) => this.courses.set(courses),
       error: () => this.error.set('The practice catalog could not be loaded. Please try again.'),
     });
     this.route.queryParamMap.subscribe((params) => {
       this.patternId.set(params.get('pattern') ?? '');
       this.problemId.set(params.get('problem') ?? '');
+      this.visibleLimit.set(40);
     });
   }
 
   protected updateQuery(value: string): void {
     this.query.set(value);
+    this.visibleLimit.set(40);
   }
 
   protected updateDifficulty(value: string): void {
     this.difficulty.set(value as HandsOnDifficulty);
+    this.visibleLimit.set(40);
+  }
+
+  protected showMoreProblems(): void {
+    this.visibleLimit.update((limit) => limit + 40);
   }
 }

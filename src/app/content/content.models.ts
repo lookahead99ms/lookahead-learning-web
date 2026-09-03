@@ -1,7 +1,13 @@
 export type ContentReviewStatus = 'reviewed' | 'needs-review' | 'evolving' | 'planned';
 export type ContentPath = 'learn' | 'grow' | 'look-ahead';
 export type ContentType =
-  'q-and-a' | 'theory' | 'dsa-pattern' | 'system-design' | 'language-comparison' | 'guide';
+  | 'q-and-a'
+  | 'theory'
+  | 'dsa-pattern'
+  | 'dsa-problem'
+  | 'system-design'
+  | 'language-comparison'
+  | 'guide';
 export type SubscriptionScope = 'platform' | 'path' | 'catalog' | 'module' | 'content-type';
 export type PatternLessonSchemaVersion = 'pattern-lesson/v1';
 export type FoundationLessonSchemaVersion = 'foundation-lesson/v1';
@@ -94,6 +100,33 @@ export interface CodeSolution {
   source: string;
 }
 
+export interface EvidenceResponse {
+  note: string;
+  carl: {
+    context: string;
+    action: string;
+    result: string;
+    learning: string;
+  };
+  star: {
+    situation: string;
+    task: string;
+    action: string;
+    result: string;
+  };
+}
+
+export interface PracticeProblemMetadata {
+  sourceSets: string[];
+  tier: 'guided' | 'core' | 'stretch';
+  objective: string;
+  constraints?: string[];
+  examples?: { input: string; output: string; explanation?: string }[];
+  hints?: string[];
+  externalUrl?: string;
+  implementationStatus: 'complete' | 'starter';
+}
+
 /** A selectable, fully worked problem within a pattern article. */
 export interface PatternEssentialProblem {
   id: string;
@@ -133,6 +166,10 @@ export interface InterviewQuestion {
   languageNotes?: { language: string; note: string }[];
   /** Canonical theory article for a Q&A or practice item. */
   relatedArticleId?: string;
+  /** Optional interview-evidence framing. Never presented as the learner's personal story. */
+  evidence?: EvidenceResponse;
+  /** Structured metadata for a Hands-On DSA problem. */
+  practiceProblem?: PracticeProblemMetadata;
   relatedQuestionIds?: string[];
   visual?: TheoryVisual;
   /** Versioned pattern lessons use the stricter PatternLessonV1 contract. */
@@ -445,4 +482,13 @@ export interface CatalogItem {
   available?: boolean;
   reviewStatus?: ContentReviewStatus;
   access?: ContentAccess;
+}
+
+/** Catalog metadata derived from the searchable curriculum, never hand-maintained. */
+export interface CatalogOverviewItem extends CatalogItem {
+  lessonCount: number;
+  questionCount: number;
+  moduleCount: number;
+  topicPreview: string[];
+  languages: PatternLanguage[];
 }

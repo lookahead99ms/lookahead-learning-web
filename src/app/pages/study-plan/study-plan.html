@@ -1,0 +1,232 @@
+<app-platform-header />
+<main id="main-content" class="study-plan-page">
+  <section class="planner-hero">
+    <div>
+      <a class="back-link" routerLink="/">← Home</a>
+      <span class="eyebrow">Preparation planner</span>
+      <h1>Build a plan your memory can keep.</h1>
+      <p>
+        Choose the time you have, the capabilities you need, and the curriculum you can access. The
+        planner mixes new learning, deliberate practice, and scheduled retrieval instead of filling
+        every hour with new material.
+      </p>
+    </div>
+    <aside aria-label="Planning principle">
+      <strong>Recall rhythm</strong>
+      <span>Today</span><i>→</i><span>+1 day</span><i>→</i><span>+2 days</span><i>→</i
+      ><span>+7</span><i>→</i><span>+14</span><i>→</i><span>+30</span>
+      <small>Weekly consolidation replaces fragile cramming with interview retrieval.</small>
+    </aside>
+  </section>
+
+  <section class="planner-builder" aria-labelledby="planner-builder-heading">
+    <header>
+      <span class="eyebrow">Your constraints</span>
+      <h2 id="planner-builder-heading">Plan from reality, not an ideal week</h2>
+      <p>Your selections stay in this page URL. They do not change billing or platform access.</p>
+    </header>
+
+    <div class="constraint-grid">
+      <label>
+        Interview or preparation window
+        <select [value]="days()" (change)="setDays($any($event.target).value)">
+          @for (option of durations; track option) {
+            <option [value]="option" [selected]="days() === option">{{ option }} days</option>
+          }
+        </select>
+      </label>
+      <label>
+        Time available each day
+        <select [value]="dailyHours()" (change)="setHours($any($event.target).value)">
+          @for (option of hours; track option) {
+            <option [value]="option" [selected]="dailyHours() === option">
+              {{ option }} {{ option === 1 ? 'hour' : 'hours' }}
+            </option>
+          }
+        </select>
+      </label>
+    </div>
+
+    <fieldset class="topic-fieldset">
+      <legend>What do you want to prepare?</legend>
+      <div class="fieldset-actions">
+        <button type="button" (click)="selectAllTopics()">Select all</button>
+        <button type="button" (click)="clearTopics()">Clear</button>
+      </div>
+      <div class="topic-grid">
+        @for (topic of topics; track topic.id) {
+          <label class="selection-card" [attr.data-path]="topic.path">
+            <input
+              type="checkbox"
+              [checked]="selectedTopicIds().has(topic.id)"
+              (change)="toggleTopic(topic, $any($event.target).checked)"
+            />
+            <span>
+              <small>{{ pathLabel(topic.path) }}</small>
+              <strong>{{ topic.title }}</strong>
+              <em>{{ topic.description }}</em>
+            </span>
+          </label>
+        }
+      </div>
+    </fieldset>
+
+    <fieldset class="access-fieldset">
+      <legend>Which topics are included in your access?</legend>
+      <p>
+        Planning-only entitlement filter. Use the path shortcuts, then adjust individual topics to
+        match your subscription.
+      </p>
+      <div class="access-shortcuts" aria-label="Topic access shortcuts">
+        <button type="button" (click)="setPathAccess('learn', true)">All Learn</button>
+        <button type="button" (click)="setPathAccess('grow', true)">All Grow</button>
+        <button type="button" (click)="setPathAccess('look-ahead', true)">All Look Ahead</button>
+        <button type="button" (click)="clearAccess()">Clear access</button>
+      </div>
+      <div class="access-grid">
+        @for (topic of topics; track topic.id) {
+          <label class="access-card" [attr.data-path]="topic.path">
+            <input
+              type="checkbox"
+              [checked]="accessTopicIds().has(topic.id)"
+              (change)="toggleTopicAccess(topic.id, $any($event.target).checked)"
+            />
+            <span
+              ><strong>{{ topic.title }}</strong
+              ><small>{{ pathLabel(topic.path) }}</small></span
+            >
+          </label>
+        }
+      </div>
+    </fieldset>
+
+    <div class="builder-submit">
+      <p>
+        @if (dailyHours() > 9) {
+          The plan uses 9 focused hours and protects {{ dailyHours() - 9 }} hours as meals,
+          movement, recovery, or optional buffer.
+        } @else {
+          Each focused block includes transition time; the plan intentionally leaves breathing room.
+        }
+      </p>
+      <button type="button" [disabled]="!hasAccessibleSelection()" (click)="generatePlan()">
+        Build and view my plan <span aria-hidden="true">→</span>
+      </button>
+    </div>
+  </section>
+
+  @if (loadingError()) {
+    <section class="planner-error" role="alert">
+      <h2>Plan unavailable</h2>
+      <p>{{ loadingError() }}</p>
+    </section>
+  }
+
+  @if (plan(); as activePlan) {
+    <section id="generated-plan" class="generated-plan" aria-labelledby="generated-plan-heading">
+      <header class="plan-heading">
+        <div>
+          <span class="eyebrow">Your generated plan</span>
+          <h2 id="generated-plan-heading">
+            {{ activePlan.config.days }} days of coherent repetition
+          </h2>
+          <p>
+            {{ activePlan.uniqueNewItems }} new curriculum items and
+            {{ activePlan.reviewAssignments }} scheduled retrievals across
+            {{ activePlan.includedTopics.length }} focus areas.
+          </p>
+        </div>
+        <div class="plan-metrics" aria-label="Plan summary">
+          <span
+            ><strong>{{ activePlan.focusedDailyHours }}h</strong> focused/day</span
+          >
+          <span
+            ><strong>{{ activePlan.weeks.length }}</strong> study weeks</span
+          >
+          <span><strong>1·2·7·14·30</strong> recall days</span>
+        </div>
+      </header>
+
+      @if (activePlan.excludedTopics.length) {
+        <aside class="access-note">
+          <strong>Not scheduled because access was not selected</strong>
+          <span class="excluded-topics">
+            @for (topic of activePlan.excludedTopics; track topic.id) {
+              <i>{{ topic.title }}</i>
+            }
+          </span>
+        </aside>
+      }
+
+      <div class="plan-rules">
+        <article>
+          <span>01</span><strong>Understand</strong>
+          <p>Build the model and say the invariant aloud.</p>
+        </article>
+        <article>
+          <span>02</span><strong>Apply</strong>
+          <p>Trace, code, design, or answer without copying.</p>
+        </article>
+        <article>
+          <span>03</span><strong>Retrieve</strong>
+          <p>Return after delay and explain from a blank page.</p>
+        </article>
+        <article>
+          <span>04</span><strong>Adapt</strong>
+          <p>Change one constraint and defend the new decision.</p>
+        </article>
+      </div>
+
+      <div class="week-list">
+        @for (week of activePlan.weeks; track week.number) {
+          <details class="plan-week" [open]="week.number === 1">
+            <summary>
+              <span>Week {{ week.number }}</span>
+              <strong>{{ week.label }}</strong>
+              <small>Days {{ week.days[0].day }}–{{ week.days[week.days.length - 1].day }}</small>
+            </summary>
+            <div class="day-list">
+              @for (day of week.days; track day.day) {
+                <article class="plan-day">
+                  <header>
+                    <div>
+                      <span>Day {{ day.day }}</span>
+                      <h3>{{ day.focus }}</h3>
+                    </div>
+                    <small
+                      >{{ day.newCount }} new · {{ day.reviewCount }} recall ·
+                      {{ day.focusedMinutes }} min</small
+                    >
+                  </header>
+                  <ol>
+                    @for (assignment of day.assignments; track assignment.id) {
+                      <li [class.review-assignment]="assignment.kind === 'review'">
+                        <span>{{
+                          assignment.kind === 'review' ? 'Recall' : assignment.activity
+                        }}</span>
+                        <div>
+                          <a [routerLink]="assignment.route">{{ assignment.title }}</a>
+                          <small>
+                            {{ assignment.topicTitle }} · {{ assignment.courseTitle }}
+                            @if (assignment.reviewFromDay) {
+                              · from day {{ assignment.reviewFromDay }}
+                            }
+                          </small>
+                        </div>
+                        <b>{{ assignment.minutes }}m</b>
+                      </li>
+                    } @empty {
+                      <li class="empty-assignment">
+                        Use this block to revisit weak recall or restore the selected access.
+                      </li>
+                    }
+                  </ol>
+                </article>
+              }
+            </div>
+          </details>
+        }
+      </div>
+    </section>
+  }
+</main>

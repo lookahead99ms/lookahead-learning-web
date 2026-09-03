@@ -12,6 +12,8 @@ export type HandsOnDifficulty = InterviewQuestion['difficulty'] | 'All';
 
 export interface HandsOnDsaGroup {
   id: string;
+  courseId: string;
+  courseTitle: string;
   title: string;
   description: string;
   unit: CourseLearningUnit;
@@ -32,10 +34,7 @@ export function buildHandsOnDsaGroups(course: CourseContent): HandsOnDsaGroup[] 
 
     const goldenLesson = isPatternLessonV1(lesson) ? lesson : null;
     const continuationProblems = goldenLesson
-      ? goldenLesson.practice.flatMap(({ questionId }) => {
-          const question = questionsById.get(questionId);
-          return question ? [question] : [];
-        })
+      ? allRelatedPractice(course.questions, goldenLesson, unit, questionsById)
       : course.questions
           .filter(
             (question) =>
@@ -49,7 +48,9 @@ export function buildHandsOnDsaGroups(course: CourseContent): HandsOnDsaGroup[] 
 
     return [
       {
-        id: unit.id,
+        id: `${course.id}:${unit.id}`,
+        courseId: course.id,
+        courseTitle: course.title,
         title: unit.title,
         description: unit.description,
         unit,
@@ -62,12 +63,41 @@ export function buildHandsOnDsaGroups(course: CourseContent): HandsOnDsaGroup[] 
   });
 }
 
+function allRelatedPractice(
+  questions: InterviewQuestion[],
+  lesson: PatternLessonV1,
+  unit: CourseLearningUnit,
+  questionsById: Map<string, InterviewQuestion>,
+): InterviewQuestion[] {
+  const guidedIds = lesson.practice.map(({ questionId }) => questionId);
+  const guided = guidedIds.flatMap((questionId) => {
+    const question = questionsById.get(questionId);
+    return question ? [question] : [];
+  });
+  const guidedIdSet = new Set(guidedIds);
+  const independent = questions
+    .filter(
+      (question) =>
+        question.moduleId === unit.practiceModuleId &&
+        question.relatedArticleId === lesson.id &&
+        !guidedIdSet.has(question.id),
+    )
+    .sort((left, right) => left.order - right.order);
+
+  return [...guided, ...independent];
+}
+
 export function resolveHandsOnDsaGroup(
   groups: HandsOnDsaGroup[],
   patternId: string,
 ): HandsOnDsaGroup | null {
   if (!patternId) return null;
-  return groups.find((group) => group.id === patternId || group.lesson.id === patternId) ?? null;
+  return (
+    groups.find((group) => group.id === patternId) ??
+    groups.find((group) => group.lesson.id === patternId) ??
+    groups.find((group) => group.unit.id === patternId) ??
+    null
+  );
 }
 
 export function filterHandsOnDsaGroups(
@@ -105,4 +135,46 @@ export function filterHandsOnDsaGroups(
       ? [{ ...group, essentialProblems, continuationProblems }]
       : [];
   });
+}
+
+export function uniqueHandsOnProblemCount(groups: HandsOnDsaGroup[]): number {
+  const titles = groups.flatMap((group) => [
+    ...group.essentialProblems.map(({ title }) => title),
+    ...group.continuationProblems.map(({ title }) => title),
+  ]);
+  return new Set(titles.map(normalizeProblemTitle)).size;
+}
+
+export function limitHandsOnDsaGroups(
+  groups: HandsOnDsaGroup[],
+  placementLimit: number,
+): HandsOnDsaGroup[] {
+  let remaining = Math.max(0, placementLimit);
+  const limited: HandsOnDsaGroup[] = [];
+
+  for (const group of groups) {
+    if (remaining === 0) break;
+    const essentialProblems = group.essentialProblems.slice(0, remaining);
+    remaining -= essentialProblems.length;
+    const continuationProblems = group.continuationProblems.slice(0, remaining);
+    remaining -= continuationProblems.length;
+    if (essentialProblems.length || continuationProblems.length) {
+      limited.push({ ...group, essentialProblems, continuationProblems });
+    }
+  }
+
+  return limited;
+}
+
+function normalizeProblemTitle(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/\([^)]*\)/g, ' ')
+    .replace(/\b(the|a|an|of|to|in|from|with|and|or|using|implementation|variant)\b/g, ' ')
+    .replace(/\bii\b/g, '2')
+    .replace(/\biii\b/g, '3')
+    .replace(/\biv\b/g, '4')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+    .replace(/\s+/g, ' ');
 }

@@ -8,9 +8,12 @@
       path with a comprehensive algorithms curriculum and high-level system design training.
     </p>
     <app-landing-search />
-    <a class="hero-question-library-link" routerLink="/interview-questions">
-      Or browse the complete interview question library <span aria-hidden="true">→</span>
-    </a>
+    <div class="hero-resource-links">
+      <a class="hero-plan-link" routerLink="/study-plan">Build my study plan</a>
+      <a class="hero-question-library-link" routerLink="/interview-questions">
+        Browse the interview question library <span aria-hidden="true">→</span>
+      </a>
+    </div>
     <div class="hero-tagline-actions" aria-label="Choose a roadmap stage">
       <button class="hero-tagline-btn learn" type="button" (click)="selectStageAndScroll('learn')">
         Look Ahead to What’s Possible

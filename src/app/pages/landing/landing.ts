@@ -163,6 +163,34 @@ type RoadmapStage = {
         text-decoration-thickness: 1px;
         text-underline-offset: 4px;
       }
+      .hero-resource-links {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 12px 18px;
+        margin-top: 12px;
+      }
+      .hero-resource-links .hero-question-library-link {
+        margin-top: 0;
+      }
+      .hero-plan-link {
+        display: inline-flex;
+        padding: 10px 15px;
+        border-radius: 9px;
+        color: #fff;
+        background: #0d8192;
+        font-size: 0.86rem;
+        font-weight: 800;
+        text-decoration: none;
+        box-shadow: 0 8px 18px rgba(13, 129, 146, 0.17);
+      }
+      .hero-plan-link:hover,
+      .hero-plan-link:focus-visible {
+        background: #096a78;
+        outline: 3px solid rgba(13, 129, 146, 0.2);
+        outline-offset: 2px;
+      }
       .hero-question-library-link:hover,
       .hero-question-library-link:focus-visible {
         color: #173f75;
@@ -655,7 +683,7 @@ export class Landing {
         { id: 'cloud-architecture', title: 'Cloud Architecture' },
         { id: 'ai-assisted-development', title: 'AI-Assisted Software Development' },
         { id: 'technical-leadership', title: 'Technical Leadership' },
-        { id: 'behavioral-star', title: 'Behavioral and STAR Stories' },
+        { id: 'behavioral-carl', title: 'Behavioral and CARL Stories' },
         { id: 'project-recruiter', title: 'Project and Recruiter Discussions' },
       ],
     },

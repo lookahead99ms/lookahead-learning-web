@@ -193,6 +193,14 @@ export class Module implements OnInit {
       : ['/', this.pathId(), this.courseId()];
   }
 
+  protected pathLabel(): string {
+    return this.pathId() === 'grow'
+      ? 'Grow'
+      : this.pathId() === 'look-ahead'
+        ? 'Look Ahead'
+        : 'Learn';
+  }
+
   protected questionFilterTags(question: InterviewQuestion): string[] {
     const contentType =
       question.contentType === 'q-and-a' || !question.contentType

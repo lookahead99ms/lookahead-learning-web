@@ -280,6 +280,41 @@ for (const file of contentFiles) {
           question.versionNotes.every((note) => typeof note === 'string' && note.trim()),
         `${moduleLabel}: ${question.id} has invalid version notes`,
       );
+      if (question.evidence !== undefined) {
+        const evidenceFields = [
+          question.evidence?.note,
+          question.evidence?.carl?.context,
+          question.evidence?.carl?.action,
+          question.evidence?.carl?.result,
+          question.evidence?.carl?.learning,
+          question.evidence?.star?.situation,
+          question.evidence?.star?.task,
+          question.evidence?.star?.action,
+          question.evidence?.star?.result,
+        ];
+        requireValue(
+          evidenceFields.every((field) => typeof field === 'string' && field.trim()),
+          `${moduleLabel}: ${question.id} has an incomplete CARL/STAR evidence framework`,
+        );
+        requireValue(
+          question.contentType !== 'theory' && question.contentType !== 'dsa-problem',
+          `${moduleLabel}: ${question.id} applies experience evidence to an unsuitable content type`,
+        );
+      }
+      if (question.practiceProblem !== undefined) {
+        requireValue(
+          question.contentType === 'dsa-problem',
+          `${moduleLabel}: ${question.id} has practice metadata without dsa-problem contentType`,
+        );
+        requireValue(
+          Array.isArray(question.practiceProblem.sourceSets) &&
+            question.practiceProblem.sourceSets.length > 0 &&
+            question.practiceProblem.objective &&
+            ['guided', 'core', 'stretch'].includes(question.practiceProblem.tier) &&
+            ['complete', 'starter'].includes(question.practiceProblem.implementationStatus),
+          `${moduleLabel}: ${question.id} has incomplete practice metadata`,
+        );
+      }
       for (const assetPath of collectAssetPaths(question)) {
         const normalizedPath = assetPath.split(/[?#]/, 1)[0];
         referencedAssetPaths.add(normalizedPath);

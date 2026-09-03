@@ -4,9 +4,10 @@
   "scripts": {
     "ng": "ng",
     "content:sync": "node scripts/sync-runtime-content.mjs demo-content/runtime",
+    "content:sync:dev": "node scripts/sync-runtime-content.mjs --development",
     "content:sync:private": "node scripts/sync-runtime-content.mjs --external",
     "content:sync:fixture": "node scripts/sync-runtime-content.mjs test-fixtures/content",
-    "prestart": "npm run content:sync",
+    "prestart": "npm run content:sync:dev",
     "start": "ng serve",
     "prestart:private": "npm run content:sync:private",
     "start:private": "ng serve",

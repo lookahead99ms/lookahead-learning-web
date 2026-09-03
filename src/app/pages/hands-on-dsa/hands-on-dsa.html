@@ -5,7 +5,6 @@
       <section class="reader-sticky-context practice-breadcrumb-bar">
         <nav class="breadcrumbs" aria-label="Breadcrumb">
           <a routerLink="/">Home</a><span>/</span><a routerLink="/learn">Learn</a><span>/</span
-          ><a routerLink="/learn/algorithmic-patterns">Algorithmic Patterns</a><span>/</span
           ><span aria-current="page">Hands-On DSA</span>
         </nav>
         <button class="reader-search-link search-trigger" type="button">
@@ -29,7 +28,7 @@
       </div>
     </header>
 
-    @if (course()) {
+    @if (courses()) {
       <section class="practice-controls" aria-label="Filter practice problems">
         <label>
           Search problems and patterns
@@ -71,11 +70,10 @@
               <div>
                 <span class="experience-pill">Guided workbench</span>
                 <h2 id="active-practice-heading">{{ group.title }}</h2>
+                <span class="experience-pill">{{ group.courseTitle }}</span>
                 <p>{{ group.description }}</p>
               </div>
-              <a
-                class="lesson-link"
-                [routerLink]="['/learn', 'algorithmic-patterns', group.lesson.id]"
+              <a class="lesson-link" [routerLink]="['/learn', group.courseId, group.lesson.id]"
                 >Review the lesson →</a
               >
             </header>
@@ -94,14 +92,18 @@
       <header class="practice-results-header">
         <h2>{{ selectedGroup() ? selectedGroup()?.title + ' problem set' : 'Problem library' }}</h2>
         <p aria-live="polite">
-          {{ visibleProblemCount() }} problems across {{ visibleGroups().length }}
+          {{ visibleUniqueProblemCount() }} unique problems · {{ visibleProblemCount() }} pattern
+          placements across {{ visibleGroups().length }}
           {{ visibleGroups().length === 1 ? 'pattern' : 'patterns' }}
+          @if (renderedProblemCount() < visibleProblemCount()) {
+            · showing {{ renderedProblemCount() }}
+          }
         </p>
       </header>
 
       @if (visibleGroups().length) {
         <div class="pattern-groups">
-          @for (group of visibleGroups(); track group.id) {
+          @for (group of renderedGroups(); track group.id) {
             <section class="pattern-group" [attr.aria-labelledby]="'practice-group-' + group.id">
               <header>
                 <div>
@@ -109,14 +111,20 @@
                     group.goldenLesson ? 'Guided + transfer' : 'Practice set'
                   }}</span>
                   <h2 [id]="'practice-group-' + group.id">{{ group.title }}</h2>
+                  <span class="experience-pill">{{ group.courseTitle }}</span>
                   <p>{{ group.description }}</p>
                 </div>
-                <a
-                  class="lesson-link"
-                  routerLink="/learn/hands-on-dsa"
-                  [queryParams]="{ pattern: group.id }"
-                  >Focus this pattern →</a
-                >
+                <nav class="group-links" aria-label="Pattern actions">
+                  <a class="lesson-link" [routerLink]="['/learn', group.courseId, group.lesson.id]"
+                    >Review source lesson →</a
+                  >
+                  <a
+                    class="lesson-link"
+                    routerLink="/learn/hands-on-dsa"
+                    [queryParams]="{ pattern: group.id }"
+                    >Focus this pattern →</a
+                  >
+                </nav>
               </header>
               <div class="problem-grid">
                 @for (problem of group.essentialProblems; track problem.id) {
@@ -133,10 +141,7 @@
                   </a>
                 }
                 @for (problem of group.continuationProblems; track problem.id) {
-                  <a
-                    class="problem-card"
-                    [routerLink]="['/learn', 'algorithmic-patterns', problem.id]"
-                  >
+                  <a class="problem-card" [routerLink]="['/learn', group.courseId, problem.id]">
                     <span>{{ problem.difficulty }} · Transfer</span>
                     <h3>{{ problem.title }}</h3>
                     <p>{{ problem.interviewAnswer }}</p>
@@ -147,6 +152,12 @@
             </section>
           }
         </div>
+        @if (renderedProblemCount() < visibleProblemCount()) {
+          <button class="show-more-problems" type="button" (click)="showMoreProblems()">
+            Show next {{ nextProblemBatchSize() }} problems
+            <span aria-hidden="true">↓</span>
+          </button>
+        }
       } @else {
         <section class="empty-state" aria-live="polite">
           <h2>No matching practice yet</h2>

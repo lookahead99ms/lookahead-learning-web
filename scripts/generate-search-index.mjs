@@ -27,6 +27,8 @@ function contentTypeLabel(type) {
       return 'Q&A';
     case 'dsa-pattern':
       return 'DSA pattern';
+    case 'dsa-problem':
+      return 'DSA problem';
     case 'system-design':
       return 'System design';
     case 'language-comparison':
@@ -65,6 +67,24 @@ function questionLanguages(question) {
   return uniqueLabels(candidates.map((candidate) => candidate?.toLowerCase() ?? '')).filter(
     (candidate) => languages.has(candidate),
   );
+}
+
+function catalogOverview(path, catalog, documents) {
+  const pathDocuments = documents.filter((document) => document.path === path);
+
+  return catalog.map((item) => {
+    const courseDocuments = pathDocuments.filter((document) => document.courseId === item.id);
+    return {
+      ...item,
+      lessonCount: courseDocuments.filter(
+        ({ contentType }) => contentType !== 'q-and-a' && contentType !== 'dsa-problem',
+      ).length,
+      questionCount: courseDocuments.filter(({ contentType }) => contentType === 'q-and-a').length,
+      moduleCount: new Set(courseDocuments.map(({ moduleId }) => moduleId)).size,
+      topicPreview: uniqueLabels(courseDocuments.map(({ moduleTitle }) => moduleTitle)),
+      languages: uniqueLabels(courseDocuments.flatMap(({ languages: values }) => values)),
+    };
+  });
 }
 
 async function documentsForCourse(contentRoot, path, catalogItem) {
@@ -136,6 +156,7 @@ async function documentsForCourse(contentRoot, path, catalogItem) {
 
 export async function generateSearchIndex(contentRoot) {
   const courseJobs = [];
+  const catalogs = new Map();
   for (const path of paths) {
     const catalogPath = join(contentRoot, path, 'catalog.json');
     try {
@@ -144,6 +165,7 @@ export async function generateSearchIndex(contentRoot) {
       continue;
     }
     const catalog = await readJson(catalogPath);
+    catalogs.set(path, catalog);
     for (const item of catalog) {
       if (item.id && item.available !== false) {
         const courseFile = join(contentRoot, path, item.id, 'course.json');
@@ -181,6 +203,12 @@ export async function generateSearchIndex(contentRoot) {
     writeFile(
       join(contentRoot, 'interview-question-index.json'),
       JSON.stringify(interviewQuestionDocuments),
+    ),
+    ...[...catalogs].map(([path, catalog]) =>
+      writeFile(
+        join(contentRoot, path, 'catalog-overview.json'),
+        JSON.stringify(catalogOverview(path, catalog, documents)),
+      ),
     ),
   ]);
   return {
