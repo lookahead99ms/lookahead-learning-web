@@ -55,14 +55,12 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
                 }
               }
             </div>
-            <div
-              class="learning-subunits"
-              role="list"
-              [attr.aria-label]="unit.title + ' subpatterns'"
-            >
+            <div class="learning-subunits" role="list" [attr.aria-label]="subUnitGroupLabel(unit)">
               @for (subUnit of unit.subUnits; track subUnit.id; let index = $index) {
                 <article class="learning-subunit" role="listitem">
-                  <span class="learning-subunit-label">Subpattern {{ index + 1 }}</span>
+                  <span class="learning-subunit-label"
+                    >{{ unit.subUnitLabel ?? 'Subpattern' }} {{ index + 1 }}</span
+                  >
                   <span class="learning-unit-copy"
                     ><strong>{{ subUnit.title }}</strong
                     ><span>{{ subUnit.description }}</span></span
@@ -407,5 +405,10 @@ export class CourseLearningMap {
 
   protected moduleRoute(moduleId: string): string[] {
     return ['/', this.pathId(), this.courseId(), 'module', moduleId];
+  }
+
+  protected subUnitGroupLabel(unit: CourseLearningUnit): string {
+    const label = unit.subUnitLabel?.toLowerCase() ?? 'subpattern';
+    return `${unit.title} ${label}s`;
   }
 }

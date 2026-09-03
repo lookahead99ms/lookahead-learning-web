@@ -49,4 +49,35 @@ describe('InteractiveTheoryVisual', () => {
 
     expect(frame.style.height).toBe('280px');
   });
+
+  it('fits a long mobile visual while bounding extreme height reports', () => {
+    window.dispatchEvent(
+      new MessageEvent('message', {
+        source: frame.contentWindow,
+        data: { type: 'algorithmic-visual-height', height: 2528 },
+      }),
+    );
+    fixture.detectChanges();
+    expect(frame.style.height).toBe('2528px');
+
+    window.dispatchEvent(
+      new MessageEvent('message', {
+        source: frame.contentWindow,
+        data: { type: 'algorithmic-visual-height', height: 5000 },
+      }),
+    );
+    fixture.detectChanges();
+    expect(frame.style.height).toBe('3200px');
+  });
+
+  it('allows a local visual scoped to a curriculum track', () => {
+    fixture.componentRef.setInput('visual', {
+      type: 'interactive',
+      assetPath: '/content/learn/course/visuals/model.html?track=lld-allocation-booking',
+      alt: 'Track model',
+    });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('iframe')).not.toBeNull();
+  });
 });

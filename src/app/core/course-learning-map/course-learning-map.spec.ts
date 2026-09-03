@@ -82,4 +82,32 @@ describe('CourseLearningMap', () => {
       '/interview-questions?path=learn&course=course&module=question-module',
     );
   });
+
+  it('uses a family-specific label for non-pattern subunits', () => {
+    fixture.componentRef.setInput('units', [
+      {
+        id: 'practice-family',
+        title: 'Practice family',
+        description: 'Practice progressively.',
+        theoryModuleId: 'theory-module',
+        subUnitLabel: 'Practice track',
+        subUnits: [
+          {
+            id: 'track',
+            title: 'Track',
+            description: 'Track description.',
+            theoryModuleId: 'theory-module',
+          },
+        ],
+      },
+    ]);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.learning-subunit-label').textContent.trim()).toBe(
+      'Practice track 1',
+    );
+    expect(fixture.nativeElement.querySelector('[role="list"]').getAttribute('aria-label')).toBe(
+      'Practice family practice tracks',
+    );
+  });
 });

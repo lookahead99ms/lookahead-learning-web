@@ -412,6 +412,8 @@ export interface CourseLearningUnit {
   practiceModuleId?: string;
   /** Related techniques can sit beneath one learner-facing concept family. */
   subUnits?: CourseLearningUnit[];
+  /** Replaces "Subpattern" when a family contains tracks, variants, or another unit type. */
+  subUnitLabel?: string;
 }
 
 export type CourseLayout = 'tiles' | 'learning-map';

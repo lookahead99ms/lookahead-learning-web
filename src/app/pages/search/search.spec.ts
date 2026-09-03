@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { of } from 'rxjs';
 import { ContentService } from '../../content/content.service';
@@ -53,7 +53,7 @@ describe('Search interview-question library', () => {
   };
 
   const content = {
-    getSearchIndex: vi.fn(() => of([])),
+    getSearchIndex: vi.fn(() => of([] as SearchDocument[])),
     getInterviewQuestionIndex: vi.fn(() => of([document])),
     getInterviewQuestion: vi.fn(() => of(question)),
   };
@@ -64,6 +64,10 @@ describe('Search interview-question library', () => {
       providers: [
         provideRouter([
           {
+            path: 'search',
+            component: Search,
+          },
+          {
             path: 'interview-questions',
             data: { experience: 'interview-questions' },
             component: Search,
@@ -72,6 +76,11 @@ describe('Search interview-question library', () => {
         { provide: ContentService, useValue: content },
       ],
     }).compileComponents();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   it('loads the interview index and hydrates the canonical answer only when expanded', async () => {
@@ -123,5 +132,70 @@ describe('Search interview-question library', () => {
 
     expect(harness.routeNativeElement?.querySelectorAll('.result-card')).toHaveLength(45);
     expect(harness.routeNativeElement?.querySelector('.show-more-results')).toBeNull();
+  });
+
+  it('applies a search and scrolls to its results on the first submission', async () => {
+    const eventOrder: string[] = [];
+    const scrollIntoView = vi.fn(() => {
+      eventOrder.push('scroll');
+    });
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/interview-questions', Search);
+    const router = TestBed.inject(Router);
+    const navigate = router.navigate.bind(router);
+    vi.spyOn(router, 'navigate').mockImplementation((commands, extras) =>
+      navigate(commands, extras).then((navigated) => {
+        eventOrder.push('navigation');
+        return navigated;
+      }),
+    );
+    vi.spyOn(window.document, 'getElementById').mockReturnValue({
+      scrollIntoView,
+    } as unknown as HTMLElement);
+    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+      callback(0);
+      return 1;
+    });
+    const input = harness.routeNativeElement?.querySelector('.search-input') as HTMLInputElement;
+    input.value = 'counter';
+    input.dispatchEvent(new Event('input'));
+    harness.routeNativeElement
+      ?.querySelector('.search-form')
+      ?.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    await harness.fixture.whenStable();
+
+    expect(router.url).toBe('/interview-questions?q=counter');
+    expect(scrollIntoView).toHaveBeenCalledOnce();
+    expect(eventOrder).toEqual(['navigation', 'scroll']);
+  });
+
+  it('removes the committed query from the URL when the search field is cleared', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/interview-questions?q=counter', Search);
+    const input = harness.routeNativeElement?.querySelector('.search-input') as HTMLInputElement;
+    expect(input.value).toBe('counter');
+
+    input.value = '';
+    input.dispatchEvent(new Event('input'));
+    await harness.fixture.whenStable();
+
+    expect(TestBed.inject(Router).url).toBe('/interview-questions');
+    expect(harness.routeNativeElement?.querySelector('.result-summary')?.textContent).toContain(
+      'Showing 1 of 1 matching interview question',
+    );
+  });
+
+  it('uses the same clear-query contract for platform-wide search', async () => {
+    content.getSearchIndex.mockReturnValueOnce(of([document]));
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/search?q=counter', Search);
+    const input = harness.routeNativeElement?.querySelector('.search-input') as HTMLInputElement;
+
+    input.value = '';
+    input.dispatchEvent(new Event('input'));
+    await harness.fixture.whenStable();
+
+    expect(TestBed.inject(Router).url).toBe('/search');
+    expect(input.value).toBe('');
   });
 });

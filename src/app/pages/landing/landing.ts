@@ -602,17 +602,20 @@ export class Landing {
       subtitle:
         'Build the Language, Data, Algorithm, and Tooling Foundation that Confident Engineering and Top-Tier Interview Performance depend on.',
       topics: [
-        { id: 'java-foundations', title: 'Java Foundations', learnGroupId: 'java-foundations' },
         {
-          id: 'programming-basics-java',
-          title: 'Programming Basics in Java',
-          learnGroupId: 'programming-basics-java',
+          id: 'language-foundations',
+          title: 'Java, Python & Go Foundations',
+          learnGroupId: 'language-foundations',
         },
-        { id: 'python-go', title: 'Python & Go', learnGroupId: 'python-go' },
         {
           id: 'data-structures-algorithms',
           title: 'Data Structures and Algorithms',
           learnGroupId: 'data-structures-algorithms',
+        },
+        {
+          id: 'object-design-lld',
+          title: 'Object Design & Low-Level Design',
+          learnGroupId: 'object-design-lld',
         },
         { id: 'engineering-tools', title: 'Engineering Tools', learnGroupId: 'engineering-tools' },
       ],

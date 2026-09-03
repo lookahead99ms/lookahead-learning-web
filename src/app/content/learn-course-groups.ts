@@ -7,23 +7,19 @@ export interface LearnCourseGroup {
 
 export const LEARN_COURSE_GROUPS: LearnCourseGroup[] = [
   {
-    id: 'java-foundations',
-    title: 'Java Foundations',
+    id: 'language-foundations',
+    title: 'Java, Python & Go Foundations',
     description:
-      'Build Java fluency from language mechanics and collections through runtime behavior.',
-    courseIds: ['core-java', 'java-data-structures', 'modern-java', 'garbage-collection'],
-  },
-  {
-    id: 'programming-basics-java',
-    title: 'Programming Basics in Java',
-    description: 'Model behavior clearly and design reliable, composable software.',
-    courseIds: ['oop', 'solid-design-patterns'],
-  },
-  {
-    id: 'python-go',
-    title: 'Python & Go',
-    description: 'Build fluency in Python and Go, then compare their trade-offs with Java.',
-    courseIds: ['python-fundamentals', 'go-fundamentals', 'language-comparative-analysis'],
+      'Build interview-ready foundations in Java, Python, and Go, then translate designs without carrying the wrong language assumptions.',
+    courseIds: [
+      'core-java',
+      'java-data-structures',
+      'modern-java',
+      'garbage-collection',
+      'python-fundamentals',
+      'go-fundamentals',
+      'language-comparative-analysis',
+    ],
   },
   {
     id: 'data-structures-algorithms',
@@ -36,6 +32,13 @@ export const LEARN_COURSE_GROUPS: LearnCourseGroup[] = [
       'algorithmic-patterns',
       'hands-on-dsa',
     ],
+  },
+  {
+    id: 'object-design-lld',
+    title: 'Object Design & Low-Level Design',
+    description:
+      'Model valid state, apply SOLID and design patterns, reason about concurrency, and practise frequently asked LLD interviews.',
+    courseIds: ['oop', 'solid-design-patterns'],
   },
   {
     id: 'engineering-tools',
