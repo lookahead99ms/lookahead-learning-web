@@ -160,7 +160,7 @@ describe('FoundationLessonShell golden lesson contract', () => {
     ) as HTMLAnchorElement;
     expect(normalizedText(questionBankLink)).toContain('Review all 7 interview questions');
     expect(questionBankLink.getAttribute('href')).toBe(
-      '/learn/core-data-structures/module/heap-questions',
+      '/interview-questions?path=learn&course=core-data-structures&module=heap-questions',
     );
   });
 });

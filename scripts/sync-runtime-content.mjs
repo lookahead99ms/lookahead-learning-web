@@ -1,6 +1,7 @@
 import { access, cp, mkdir, readdir, rm } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { generateSearchIndex } from './generate-search-index.mjs';
 
 const repositoryRoot = fileURLToPath(new URL('../', import.meta.url));
 const requestedRoot = process.argv[2];
@@ -8,10 +9,7 @@ const configuredRoot =
   requestedRoot === '--external'
     ? (process.env.LOOKAHEAD_CONTENT_ROOT ?? '../lookahead-learning-content/runtime')
     : (requestedRoot ?? process.env.LOOKAHEAD_CONTENT_ROOT ?? 'demo-content/runtime');
-const sourceRoot = resolve(
-  repositoryRoot,
-  configuredRoot,
-);
+const sourceRoot = resolve(repositoryRoot, configuredRoot);
 const destinationRoot = resolve(repositoryRoot, 'public/content');
 
 async function requireContentSource() {
@@ -45,7 +43,8 @@ await requireContentSource();
 await rm(destinationRoot, { recursive: true, force: true });
 await mkdir(destinationRoot, { recursive: true });
 await cp(sourceRoot, destinationRoot, { recursive: true });
+const { searchDocumentCount, interviewQuestionCount } = await generateSearchIndex(destinationRoot);
 
 console.log(
-  `Prepared ${await countFiles(destinationRoot)} runtime content asset(s) from ${sourceRoot}.`,
+  `Prepared ${await countFiles(destinationRoot)} runtime asset(s), ${searchDocumentCount} search document(s), and ${interviewQuestionCount} interview question(s) from ${sourceRoot}.`,
 );

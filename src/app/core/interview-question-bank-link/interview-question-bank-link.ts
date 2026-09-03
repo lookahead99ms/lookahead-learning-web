@@ -8,7 +8,8 @@ import { RouterLink } from '@angular/router';
     <a
       class="question-bank-link"
       [class.compact]="variant() === 'compact'"
-      [routerLink]="['/', pathId(), courseId(), 'module', moduleId()]"
+      routerLink="/interview-questions"
+      [queryParams]="{ path: pathId(), course: courseId(), module: moduleId() }"
       [attr.aria-label]="'Open all ' + questionCount() + ' interview questions for this topic'"
     >
       @if (variant() === 'compact') {
