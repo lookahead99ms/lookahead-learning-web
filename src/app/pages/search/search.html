@@ -1,18 +1,31 @@
 <app-platform-header />
 <main id="main-content" class="search-page">
   <section class="search-hero">
-    <p class="eyebrow">Find your answer</p>
-    <h1>Find the right content.</h1>
+    <p class="eyebrow">{{ libraryMode ? 'Interview practice' : 'Find your answer' }}</p>
+    <h1>{{ libraryMode ? 'Interview Question Library' : 'Find the right content.' }}</h1>
     <p class="search-intro">
-      Search across the platform by question, topic, tag, answer, explanation, or follow-up. Expand
-      a result to preview the answer, then open its detailed explanation.
+      @if (libraryMode) {
+        Retrieve a concise answer first, then expand the reasoning, code, trade-offs, and follow-up
+        questions. Filter the complete library to match the interview you are preparing for.
+      } @else {
+        Search across the platform by question, topic, tag, answer, explanation, or follow-up.
+        Expand a result to preview the answer, then open its detailed explanation.
+      }
     </p>
+    <a class="search-mode-switch" [routerLink]="libraryMode ? '/search' : '/interview-questions'">
+      {{ libraryMode ? 'Search all learning content' : 'Browse the interview question library' }}
+      <span aria-hidden="true">→</span>
+    </a>
     <form class="search-form" (ngSubmit)="submitSearch()">
       <input
         class="search-input"
         type="search"
         aria-label="Search interview questions"
-        placeholder="Try Java, graphs, binary search, Kafka, caching, or CAP theorem..."
+        [placeholder]="
+          libraryMode
+            ? 'Try Java concurrency, linked lists, transactions, or system design...'
+            : 'Try Java, graphs, binary search, Kafka, caching, or CAP theorem...'
+        "
         [value]="query()"
         (input)="updateQuery($any($event.target).value)"
         autofocus
@@ -22,34 +35,73 @@
   </section>
 
   <section class="search-workspace" aria-label="Search results">
-    <div class="search-toolbar">
+    <div class="search-toolbar" [class.library-toolbar]="libraryMode">
       <label class="control"
         >Path
-        <select [value]="selectedPath()" (change)="updatePath($any($event.target).value)">
+        <select [ngModel]="selectedPath()" (ngModelChange)="updatePath($event)">
           <option value="all">All available content</option>
           <option value="learn">Learn</option>
           <option value="grow">Grow</option>
           <option value="look-ahead" disabled>Look Ahead (coming soon)</option>
         </select>
       </label>
+      @if (libraryMode) {
+        <label class="control"
+          >Course
+          <select [ngModel]="selectedCourseId()" (ngModelChange)="updateCourse($event)">
+            <option value="all">All courses</option>
+            @for (course of availableCourses(); track course.id) {
+              <option [value]="course.id">{{ course.title }}</option>
+            }
+          </select>
+        </label>
+        <label class="control"
+          >Module
+          <select [ngModel]="selectedModuleId()" (ngModelChange)="updateModule($event)">
+            <option value="all">All modules</option>
+            @for (module of availableModules(); track module.id) {
+              <option [value]="module.id">{{ module.title }}</option>
+            }
+          </select>
+        </label>
+        <label class="control"
+          >Difficulty
+          <select [ngModel]="selectedDifficulty()" (ngModelChange)="updateDifficulty($event)">
+            <option value="all">All levels</option>
+            <option value="Beginner">Beginner</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+          </select>
+        </label>
+        <label class="control"
+          >Language
+          <select [ngModel]="selectedLanguage()" (ngModelChange)="updateLanguage($event)">
+            <option value="all">All languages</option>
+            <option value="java">Java</option>
+            <option value="python">Python</option>
+            <option value="go">Go</option>
+          </select>
+        </label>
+      }
       <label class="control"
-        >Content type
-        <select
-          [value]="selectedContentType()"
-          (change)="updateContentType($any($event.target).value)"
-        >
+        >{{ libraryMode ? 'Question type' : 'Content type' }}
+        <select [ngModel]="selectedContentType()" (ngModelChange)="updateContentType($event)">
           <option value="all">All types</option>
           <option value="q-and-a">Q&amp;A</option>
-          <option value="theory">Theory</option>
-          <option value="dsa-pattern">DSA patterns</option>
+          @if (!libraryMode) {
+            <option value="theory">Theory</option>
+            <option value="dsa-pattern">DSA patterns</option>
+          }
           <option value="system-design">System design</option>
           <option value="language-comparison">Java / Python / Go</option>
-          <option value="guide">Guides</option>
+          @if (!libraryMode) {
+            <option value="guide">Guides</option>
+          }
         </select>
       </label>
       <label class="control"
         >Sort by
-        <select [value]="sortBy()" (change)="updateSort($any($event.target).value)">
+        <select [ngModel]="sortBy()" (ngModelChange)="updateSort($event)">
           <option value="relevance">Relevance</option>
           <option value="title">Title</option>
           <option value="difficulty">Difficulty</option>
@@ -57,7 +109,7 @@
       </label>
       <label class="control"
         >Group by
-        <select [value]="groupBy()" (change)="updateGroup($any($event.target).value)">
+        <select [ngModel]="groupBy()" (ngModelChange)="updateGroup($event)">
           <option value="none">None</option>
           <option value="path">Learn / Grow</option>
           <option value="course">Course</option>
@@ -70,8 +122,20 @@
 
     <section class="tag-panel" aria-label="Content tags">
       <p class="tag-panel-title">
-        Filter by tag <span>({{ selectedFilterCount() }} selected)</span>
+        Filter by topic <span>({{ selectedFilterCount() }} active)</span>
       </p>
+      <div class="tag-tools">
+        <label>
+          <span>Find a topic</span>
+          <input
+            type="search"
+            placeholder="Filter topics…"
+            [value]="tagQuery()"
+            (input)="updateTagQuery($any($event.target).value)"
+          />
+        </label>
+        <small>{{ visibleTags().length }} of {{ availableTags().length }} topics shown</small>
+      </div>
       <div class="tag-strip">
         <button
           class="tag-pill"
@@ -81,7 +145,7 @@
         >
           All tags
         </button>
-        @for (tag of availableTags(); track tag) {
+        @for (tag of visibleTags(); track tag) {
           <button
             class="tag-pill"
             [class.active]="isTagSelected(tag)"
@@ -103,7 +167,8 @@
     } @else {
       <section id="search-results" class="results-anchor" aria-live="polite">
         <p class="result-summary">
-          {{ results().length }} matching item{{ results().length === 1 ? '' : 's' }}
+          Showing {{ visibleResults().length }} of {{ results().length }} matching
+          {{ libraryMode ? 'interview question' : 'item' }}{{ results().length === 1 ? '' : 's' }}
         </p>
       </section>
       @if (results().length) {
@@ -113,11 +178,7 @@
               <h2 class="group-title">{{ group.label }}</h2>
             }
             @for (result of group.results; track result.id) {
-              <article
-                class="result-card"
-                [class.expanded]="isExpanded(result)"
-                (click)="toggleResult(result)"
-              >
+              <article class="result-card" [class.expanded]="isExpanded(result)">
                 <div class="result-header">
                   <nav
                     class="result-breadcrumbs"
@@ -220,21 +281,79 @@
                         </p>
                       </div>
                     } @else {
-                      <p class="result-answer-label">
-                        {{ result.contentType === 'q-and-a' ? 'Interview answer' : 'Preview' }}
-                      </p>
-                      <p class="result-preview">
-                        {{ preview(result) || 'More content is available in this guide.' }}
-                      </p>
-                      @if (result.route; as route) {
-                        <a class="detail-link" [routerLink]="route" [queryParams]="{ details: 1 }"
-                          >{{
-                            result.contentType === 'q-and-a'
-                              ? 'View detailed answer'
-                              : 'Open content'
-                          }}
-                          →</a
-                        >
+                      @if (libraryMode && questionLoading(result)) {
+                        <p class="answer-loading" role="status">Loading the complete answer…</p>
+                      } @else if (libraryMode && questionError(result)) {
+                        <div class="answer-error" role="alert">
+                          <p>The complete answer could not be loaded.</p>
+                          <button type="button" (click)="loadQuestion(result)">Try again</button>
+                        </div>
+                      } @else if (libraryMode && resolvedQuestion(result); as question) {
+                        <section class="library-answer" aria-label="Reference answer">
+                          <p class="result-answer-label">Interview answer</p>
+                          <p class="reference-answer" [innerHTML]="question.interviewAnswer"></p>
+                          @if (question.explanation.length) {
+                            <section class="answer-explanation">
+                              <h3>Why this answer is strong</h3>
+                              @for (paragraph of question.explanation; track paragraph) {
+                                <p [innerHTML]="paragraph"></p>
+                              }
+                            </section>
+                          }
+                          @if (questionSolutions(question); as solutions) {
+                            @if (solutions.length) {
+                              <app-coding-solution-tabs
+                                [solutions]="solutions"
+                                [complexity]="question.complexity"
+                                [showPractice]="false"
+                                [useLanguageThemes]="true"
+                              />
+                            }
+                          }
+                          @if (question.followUps.length) {
+                            <section class="answer-follow-ups">
+                              <h3>Follow-up questions</h3>
+                              @for (followUp of question.followUps; track followUp.question) {
+                                <details>
+                                  <summary>{{ followUp.question }}</summary>
+                                  <p [innerHTML]="followUp.answer"></p>
+                                </details>
+                              }
+                            </section>
+                          }
+                          <div class="answer-actions">
+                            @if (relatedLessonLink(result, question); as lessonRoute) {
+                              <a class="lesson-link" [routerLink]="lessonRoute"
+                                >Read the related lesson</a
+                              >
+                            }
+                            @if (result.route; as route) {
+                              <a
+                                class="detail-link"
+                                [routerLink]="route"
+                                [queryParams]="{ details: 1 }"
+                                >Open full question <span aria-hidden="true">→</span></a
+                              >
+                            }
+                          </div>
+                        </section>
+                      } @else {
+                        <p class="result-answer-label">
+                          {{ result.contentType === 'q-and-a' ? 'Interview answer' : 'Preview' }}
+                        </p>
+                        <p class="result-preview">
+                          {{ preview(result) || 'More content is available in this guide.' }}
+                        </p>
+                        @if (result.route; as route) {
+                          <a class="detail-link" [routerLink]="route" [queryParams]="{ details: 1 }"
+                            >{{
+                              result.contentType === 'q-and-a'
+                                ? 'View detailed answer'
+                                : 'Open content'
+                            }}
+                            →</a
+                          >
+                        }
                       }
                     }
                   </div>
@@ -242,6 +361,11 @@
               </article>
             }
           </section>
+        }
+        @if (hasMoreResults()) {
+          <button class="show-more-results" type="button" (click)="showMoreResults()">
+            Show {{ nextResultCount() }} more questions
+          </button>
         }
       } @else {
         <p class="empty-state">

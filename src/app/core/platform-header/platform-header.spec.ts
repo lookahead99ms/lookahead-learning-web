@@ -54,4 +54,19 @@ describe('PlatformHeader account disclosure', () => {
     expect(trigger.getAttribute('aria-expanded')).toBe('false');
     expect(document.activeElement).toBe(trigger);
   });
+
+  it('keeps the interview question library discoverable in the search palette', () => {
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }),
+    );
+    fixture.detectChanges();
+
+    const labels = [...fixture.nativeElement.querySelectorAll('.persistent-suggestions strong')]
+      .map((element: Element) => element.textContent?.trim())
+      .filter(Boolean);
+    expect(labels).toContain('Interview questions');
+  });
 });

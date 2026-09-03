@@ -19,6 +19,17 @@
         engineering judgment and interview-ready problem-solving skills.
       </p>
     </section>
+    <a
+      class="question-library-callout"
+      routerLink="/interview-questions"
+      [queryParams]="{ path: 'learn' }"
+    >
+      <span>
+        <strong>Interview Question Library</strong>
+        <small>Retrieve concise answers, detailed reasoning, code, and follow-up questions.</small>
+      </span>
+      <span aria-hidden="true">Explore 1,000+ questions →</span>
+    </a>
     @if (courses(); as courses) {
       @if (courses.length) {
         @for (group of courseGroups; track group.title) {

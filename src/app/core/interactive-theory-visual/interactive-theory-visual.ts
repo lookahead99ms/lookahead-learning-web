@@ -57,7 +57,10 @@ export class InteractiveTheoryVisual {
     if (typeof height === 'number' && Number.isFinite(height)) {
       // Static course visualizations may grow with their source code. Bound the
       // value so an accidental postMessage cannot distort the reader layout.
-      this.frameHeight.set(Math.max(260, Math.min(Math.ceil(height) + 8, 1800)));
+      // Apply the reported height exactly. Adding padding here causes a resize
+      // feedback loop for documents whose scrollHeight is at least the iframe
+      // viewport height: 280 becomes 288, then 296, until the safety cap.
+      this.frameHeight.set(Math.max(260, Math.min(Math.ceil(height), 1800)));
     }
   }
 

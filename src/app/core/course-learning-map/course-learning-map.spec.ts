@@ -78,6 +78,8 @@ describe('CourseLearningMap', () => {
     expect(link.querySelector('strong')?.textContent).toBe('Interview questions');
     expect(link.querySelector('span')?.textContent).toBe('3');
     expect(link.getAttribute('aria-label')).toBe('Open all 3 interview questions for this topic');
-    expect(link.getAttribute('href')).toBe('/learn/course/module/question-module');
+    expect(link.getAttribute('href')).toBe(
+      '/interview-questions?path=learn&course=course&module=question-module',
+    );
   });
 });

@@ -46,16 +46,21 @@ const questionIds = new Set();
 const questionsById = new Map();
 const patternLessons = [];
 const foundationLessons = [];
+const referencedAssetPaths = new Set();
 let courseCount = 0;
 let questionCount = 0;
 let traceProblemCount = 0;
 
-async function jsonFiles(directory) {
+async function filesWithExtension(directory, extension) {
   const entries = await readdir(directory, { withFileTypes: true });
   const files = await Promise.all(
     entries.map((entry) => {
       const path = join(directory, entry.name);
-      return entry.isDirectory() ? jsonFiles(path) : extname(entry.name) === '.json' ? [path] : [];
+      return entry.isDirectory()
+        ? filesWithExtension(path, extension)
+        : extname(entry.name) === extension
+          ? [path]
+          : [];
     }),
   );
   return files.flat();
@@ -144,7 +149,7 @@ try {
   );
 }
 
-const contentFiles = await jsonFiles(contentRoot);
+const contentFiles = await filesWithExtension(contentRoot, '.json');
 
 for (const file of contentFiles) {
   const label = relative(contentRoot, file);
@@ -236,7 +241,19 @@ for (const file of contentFiles) {
         `${moduleLabel}: ${question.id} has no tags`,
       );
       requireValue(
-        Array.isArray(question.explanation) && question.explanation.length > 0,
+        question.tags.every((tag) => typeof tag === 'string' && tag.trim()),
+        `${moduleLabel}: ${question.id} has an empty or invalid tag`,
+      );
+      requireValue(
+        typeof question.interviewAnswer === 'string' && question.interviewAnswer.trim(),
+        `${moduleLabel}: ${question.id} has no interview answer`,
+      );
+      requireValue(
+        Array.isArray(question.explanation) &&
+          question.explanation.length > 0 &&
+          question.explanation.every(
+            (paragraph) => typeof paragraph === 'string' && paragraph.trim(),
+          ),
         `${moduleLabel}: ${question.id} has no explanation`,
       );
       if (question.code !== undefined) {
@@ -249,8 +266,23 @@ for (const file of contentFiles) {
         Array.isArray(question.followUps),
         `${moduleLabel}: ${question.id} followUps must be an array`,
       );
+      for (const followUp of question.followUps) {
+        requireValue(
+          typeof followUp?.question === 'string' &&
+            followUp.question.trim() &&
+            typeof followUp?.answer === 'string' &&
+            followUp.answer.trim(),
+          `${moduleLabel}: ${question.id} has an incomplete follow-up`,
+        );
+      }
+      requireValue(
+        Array.isArray(question.versionNotes) &&
+          question.versionNotes.every((note) => typeof note === 'string' && note.trim()),
+        `${moduleLabel}: ${question.id} has invalid version notes`,
+      );
       for (const assetPath of collectAssetPaths(question)) {
         const normalizedPath = assetPath.split(/[?#]/, 1)[0];
+        referencedAssetPaths.add(normalizedPath);
         requireValue(
           !forbiddenVisualAssets.has(normalizedPath),
           `${moduleLabel}: ${question.id} references retired pseudo-trace ${assetPath}`,
@@ -288,6 +320,40 @@ for (const file of contentFiles) {
         discoverableModuleIds.has(moduleId),
         `${label}: content module ${moduleId} is not reachable from a learning unit`,
       );
+    }
+  }
+}
+
+for (const assetPath of referencedAssetPaths) {
+  if (!assetPath.startsWith('/content/')) continue;
+  const assetFile = resolve(contentRoot, assetPath.slice('/content/'.length));
+  requireValue(
+    assetFile.startsWith(`${contentRoot}/`),
+    `Asset path escapes the content root: ${assetPath}`,
+  );
+  try {
+    await access(assetFile);
+  } catch {
+    throw new Error(`Referenced asset does not exist: ${assetPath}`);
+  }
+}
+
+for (const visualFile of await filesWithExtension(contentRoot, '.html')) {
+  const label = relative(contentRoot, visualFile);
+  const source = await readFile(visualFile, 'utf8');
+  requireValue(
+    source.includes('algorithmic-visual-height') || source.includes('visual-frame-resize.js'),
+    `${label}: interactive visual does not report its content height`,
+  );
+  requireValue(
+    !/(?:min-)?height\s*:\s*100vh/i.test(source),
+    `${label}: viewport height can create blank iframe space`,
+  );
+  if (source.includes('/content/visual-frame-resize.js')) {
+    try {
+      await access(join(contentRoot, 'visual-frame-resize.js'));
+    } catch {
+      throw new Error(`${label}: shared visual-frame-resize.js is missing`);
     }
   }
 }

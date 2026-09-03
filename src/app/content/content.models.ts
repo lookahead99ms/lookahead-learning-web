@@ -358,6 +358,7 @@ export function isFoundationLessonV1(item: InterviewQuestion): item is Foundatio
 
 export interface SearchDocument {
   id: string;
+  contentId: string;
   path: ContentPath;
   courseId: string;
   courseTitle: string;
@@ -367,6 +368,7 @@ export interface SearchDocument {
   contentType: ContentType;
   tags: string[];
   filterTags: string[];
+  languages: PatternLanguage[];
   difficulty?: InterviewQuestion['difficulty'];
   preview: string;
   access: ContentAccess;

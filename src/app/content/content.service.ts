@@ -1,30 +1,18 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, forkJoin, map, shareReplay, switchMap } from 'rxjs';
-import {
-  CatalogItem,
-  ContentAccess,
-  CourseContent,
-  InterviewQuestion,
-  SearchDocument,
-  isFoundationLessonV1,
-  isPatternLessonV1,
-} from './content.models';
-import { isTheoryArticle } from './question-discovery';
+import { CatalogItem, CourseContent, InterviewQuestion, SearchDocument } from './content.models';
 
 @Injectable({ providedIn: 'root' })
 export class ContentService {
   private readonly http = inject(HttpClient);
-  private readonly searchIndex$ = forkJoin({
-    learn: this.getCatalog('learn'),
-    grow: this.getCatalog('grow'),
-  }).pipe(
-    switchMap(({ learn, grow }) =>
-      forkJoin([...this.searchCourses('learn', learn), ...this.searchCourses('grow', grow)]),
-    ),
-    map((results) => results.flat()),
-    shareReplay({ bufferSize: 1, refCount: true }),
-  );
+  private readonly moduleQuestions = new Map<string, Observable<InterviewQuestion[]>>();
+  private readonly searchIndex$ = this.http
+    .get<SearchDocument[]>('/content/search-index.json')
+    .pipe(shareReplay({ bufferSize: 1, refCount: true }));
+  private readonly interviewQuestionIndex$ = this.http
+    .get<SearchDocument[]>('/content/interview-question-index.json')
+    .pipe(shareReplay({ bufferSize: 1, refCount: true }));
 
   getCourse(pathId: string, courseId: string): Observable<CourseContent> {
     const base = `/content/${pathId}/${courseId}`;
@@ -61,195 +49,28 @@ export class ContentService {
     return this.searchIndex$;
   }
 
-  private searchCourses(
-    pathId: 'learn' | 'grow',
-    catalog: CatalogItem[],
-  ): Observable<SearchDocument[]>[] {
-    return catalog
-      .filter(
-        (item): item is CatalogItem & { id: string } =>
-          Boolean(item.id) && item.available !== false,
-      )
-      .map((item) =>
-        this.getCourse(pathId, item.id).pipe(
-          map((course) => this.toSearchDocuments(pathId, course, item.access)),
-        ),
-      );
+  getInterviewQuestionIndex(): Observable<SearchDocument[]> {
+    return this.interviewQuestionIndex$;
   }
 
-  private toSearchDocuments(
-    path: 'learn' | 'grow',
-    course: CourseContent,
-    catalogAccess?: ContentAccess,
-  ): SearchDocument[] {
-    return course.questions.map((question) => {
-      const module = course.modules.find(({ id }) => id === question.moduleId);
-      const moduleTitle = module?.title ?? question.moduleId;
-      const access = question.access ??
-        module?.access ??
-        course.access ??
-        catalogAccess ?? { tier: 'free' as const };
-      const articleText = [
-        question.summary ?? '',
-        ...(question.sections ?? []).flatMap((section) => [
-          section.heading,
-          ...section.body,
-          section.callout?.title ?? '',
-          section.callout?.text ?? '',
-        ]),
-        ...(question.keyTakeaways ?? []),
-        ...(isPatternLessonV1(question)
-          ? [
-              ...question.learningOutcomes,
-              question.memoryAnchor.phrase,
-              question.memoryAnchor.mentalModel,
-              question.memoryAnchor.retrievalCue,
-              question.interviewRecall.prompt,
-              ...question.interviewRecall.answerFramework,
-              ...(question.namedAlgorithms ?? []).flatMap(
-                ({ name, family, useWhen, invariant, complexity, memoryAnchor }) => [
-                  name,
-                  family,
-                  useWhen,
-                  invariant,
-                  complexity,
-                  memoryAnchor,
-                ],
-              ),
-              question.definition.heading,
-              ...question.definition.body,
-              question.definition.maintainedState,
-              question.motivation.heading,
-              ...question.motivation.body,
-              question.motivation.avoidedWork,
-              question.recognition.heading,
-              ...question.recognition.body,
-              ...question.recognition.signals,
-              ...question.recognition.falseFriends,
-              question.model.heading,
-              question.model.state,
-              question.model.invariant,
-              question.model.decisionRule,
-              question.model.proof,
-              ...question.variations.flatMap(({ title, trigger, invariant }) => [
-                title,
-                trigger,
-                invariant,
-              ]),
-              ...question.template.introduction,
-              question.conceptVisual.heading,
-              ...question.conceptVisual.body,
-              question.complexity.note,
-              ...question.complexity.why,
-              ...question.complexity.tradeoffs,
-              ...question.pitfalls.flatMap(({ failedAssumption, symptom, correction }) => [
-                failedAssumption,
-                symptom,
-                correction,
-              ]),
-              ...question.guidance.useWhen,
-              ...question.guidance.avoidWhen,
-              ...question.workedExamples.flatMap(({ title, explanation, steps }) => [
-                title,
-                explanation,
-                ...steps,
-              ]),
-              ...question.keyTakeaways,
-            ]
-          : []),
-        ...(isFoundationLessonV1(question)
-          ? [
-              ...question.learningOutcomes,
-              question.memoryAnchor.phrase,
-              question.memoryAnchor.mentalModel,
-              question.memoryAnchor.retrievalCue,
-              question.foundationModel.heading,
-              question.foundationModel.representation,
-              question.foundationModel.invariant,
-              question.foundationModel.operationLens,
-              question.foundationModel.selectionRule,
-              ...question.pitfalls.flatMap(({ failedAssumption, symptom, correction }) => [
-                failedAssumption,
-                symptom,
-                correction,
-              ]),
-              question.interviewRecall.prompt,
-              ...question.interviewRecall.answerFramework,
-            ]
-          : []),
-      ];
-      const searchableParts = [
-        question.title,
-        question.tags.join(' '),
-        course.title,
-        moduleTitle,
-        ...articleText,
-      ];
-      if (access.tier === 'free') {
-        searchableParts.push(
-          question.interviewAnswer,
-          question.explanation.join(' '),
-          question.followUps.map(({ question: title, answer }) => `${title} ${answer}`).join(' '),
-        );
-      }
-      // Legacy Q&A entries may carry a `theory` label. Treat an item as an
-      // article only when it has article sections; otherwise it remains Q&A.
-      const contentType = isTheoryArticle(question)
-        ? 'theory'
-        : question.contentType === 'theory'
-          ? 'q-and-a'
-          : (question.contentType ?? 'q-and-a');
-      const contentTypeLabel =
-        contentType === 'q-and-a'
-          ? 'Q&A'
-          : contentType === 'dsa-pattern'
-            ? 'DSA pattern'
-            : contentType === 'system-design'
-              ? 'System design'
-              : contentType === 'language-comparison'
-                ? 'Language comparison'
-                : contentType === 'guide'
-                  ? 'Guide'
-                  : 'Theory';
-      const pathLabel = path[0].toUpperCase() + path.slice(1);
-      const filterTags = this.uniqueLabels([
-        pathLabel,
-        contentTypeLabel,
-        question.difficulty,
-        ...question.tags,
-      ]);
-      return {
-        id: `${path}:${course.id}:${question.id}`,
-        path,
-        courseId: course.id,
-        courseTitle: course.title,
-        moduleId: question.moduleId,
-        moduleTitle,
-        title: question.title,
-        contentType,
-        tags: question.tags,
-        filterTags,
-        difficulty: question.difficulty,
-        preview: access.tier === 'free' ? question.interviewAnswer : '',
-        access,
-        searchableText: searchableParts.join(' ').toLowerCase(),
-        route: ['/', path, course.id, question.id],
-        question,
-      };
-    });
+  getInterviewQuestion(
+    pathId: string,
+    courseId: string,
+    moduleId: string,
+    questionId: string,
+  ): Observable<InterviewQuestion | undefined> {
+    const modulePath = `/content/${pathId}/${courseId}/modules/${moduleId}.json`;
+    let questions = this.moduleQuestions.get(modulePath);
+    if (!questions) {
+      questions = this.http
+        .get<InterviewQuestion[]>(modulePath)
+        .pipe(shareReplay({ bufferSize: 1, refCount: true }));
+      this.moduleQuestions.set(modulePath, questions);
+    }
+    return questions.pipe(map((question) => question.find(({ id }) => id === questionId)));
   }
 
   getCatalog(pathId: string): Observable<CatalogItem[]> {
     return this.http.get<CatalogItem[]>(`/content/${pathId}/catalog.json`);
-  }
-
-  private uniqueLabels(labels: string[]): string[] {
-    const seen = new Set<string>();
-    return labels.filter((label) => {
-      const key = label.trim().toLowerCase();
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
   }
 }

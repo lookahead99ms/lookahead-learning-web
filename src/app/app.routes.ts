@@ -9,6 +9,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/search/search').then((page) => page.Search),
   },
   {
+    path: 'interview-questions',
+    data: { experience: 'interview-questions' },
+    loadComponent: () => import('./pages/search/search').then((page) => page.Search),
+  },
+  {
     path: 'grow/:courseId/module/:moduleId',
     data: { pathId: 'grow' },
     loadComponent: () => import('./pages/module/module').then((page) => page.Module),

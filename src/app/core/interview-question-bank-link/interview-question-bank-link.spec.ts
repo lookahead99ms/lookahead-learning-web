@@ -26,7 +26,7 @@ describe('InterviewQuestionBankLink', () => {
       'Review all 13 interview questions',
     );
     expect(link.getAttribute('href')).toBe(
-      '/learn/solid-design-patterns/module/creational-behavioral-patterns',
+      '/interview-questions?path=learn&course=solid-design-patterns&module=creational-behavioral-patterns',
     );
     expect(link.getAttribute('aria-label')).toBe('Open all 13 interview questions for this topic');
   });

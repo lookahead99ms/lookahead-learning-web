@@ -18,7 +18,7 @@ type HeaderSuggestion = {
   query: string;
   route?: string[];
   queryParams?: Record<string, string>;
-  style?: 'learn' | 'grow' | 'look-ahead' | 'search';
+  style?: 'learn' | 'grow' | 'look-ahead' | 'library' | 'search';
   detail?: string;
 };
 
@@ -31,6 +31,13 @@ const PERSISTENT_SUGGESTIONS: HeaderSuggestion[] = [
     query: 'Look Ahead',
     route: ['/look-ahead'],
     style: 'look-ahead',
+  },
+  {
+    type: 'Question',
+    label: 'Interview questions',
+    query: '',
+    route: ['/interview-questions'],
+    style: 'library',
   },
   { type: 'Search', label: 'Search all content', query: '', route: ['/search'], style: 'search' },
 ];
@@ -185,7 +192,7 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
       }
       .persistent-suggestions {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
         gap: 12px;
       }
       .persistent-suggestions .header-search-suggestion {
@@ -218,6 +225,10 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
       }
       .persistent-suggestions .header-search-suggestion.look-ahead {
         color: #334155;
+      }
+      .persistent-suggestions .header-search-suggestion.library {
+        color: #315f9d;
+        background: #eef5ff;
       }
       .persistent-suggestions .header-search-suggestion.search {
         color: #6699cc;

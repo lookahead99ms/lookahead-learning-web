@@ -65,5 +65,35 @@
       }
     ],
     "reviewStatus": "reviewed"
+  },
+  {
+    "id": "separate-public-code-private-content",
+    "moduleId": "content-boundaries",
+    "order": 2,
+    "title": "How do you separate a public application shell from private learning content?",
+    "difficulty": "Intermediate",
+    "tags": ["public-demo", "architecture", "content-delivery", "security"],
+    "contentType": "q-and-a",
+    "interviewAnswer": "Define one runtime content contract, keep the application independent of the storage provider, and publish only synthetic data with the source code. Authorized environments can supply private content through a local source today and an authenticated origin later.",
+    "explanation": [
+      "The application should own rendering, routing, accessibility, and interactions while the content source owns catalogs and lesson payloads.",
+      "Using the same URL and schema contract for demo, local private, and future remote sources avoids coupling UI components to S3, a filesystem, or a specific API.",
+      "Privacy must fail closed: the public build should remain functional when no private source exists, and release validation should reject private paths and generated runtime copies."
+    ],
+    "versionNotes": [
+      "Synthetic public demonstration question; not part of the proprietary interview curriculum."
+    ],
+    "followUps": [
+      {
+        "question": "Why not import the private repository as a build dependency?",
+        "answer": "That makes the public build depend on private source and increases the chance of accidental publication. A runtime contract keeps the dependency explicit and replaceable."
+      },
+      {
+        "question": "What changes when content moves to S3?",
+        "answer": "The delivery adapter and authorization model change. The page components and content schema should not."
+      }
+    ],
+    "relatedArticleId": "runtime-content-boundaries",
+    "reviewStatus": "reviewed"
   }
 ]
