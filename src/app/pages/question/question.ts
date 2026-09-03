@@ -7,11 +7,13 @@ import {
   CourseContent,
   CourseModule,
   CourseSection,
+  FoundationLessonV1,
   InterviewQuestion,
   PatternLessonV1,
   ResolvedPatternCheck,
   TheorySection,
   TheoryVisual,
+  isFoundationLessonV1,
   isPatternLessonV1,
   reviewStatusLabel,
 } from '../../content/content.models';
@@ -26,6 +28,7 @@ import { InlineUnderstandingPager } from '../../core/inline-understanding-pager/
 import { PatternEssentialProblems } from '../../core/pattern-essential-problems/pattern-essential-problems';
 import { PatternLessonShell } from '../../core/pattern-lesson-shell/pattern-lesson-shell';
 import { CodeCopyButton } from '../../core/code-copy-button/code-copy-button';
+import { FoundationLessonShell } from '../../core/foundation-lesson-shell/foundation-lesson-shell';
 
 @Component({
   selector: 'app-question',
@@ -39,6 +42,7 @@ import { CodeCopyButton } from '../../core/code-copy-button/code-copy-button';
     InlineUnderstandingPager,
     PatternEssentialProblems,
     PatternLessonShell,
+    FoundationLessonShell,
     CodeCopyButton,
   ],
   templateUrl: './question.html',
@@ -628,9 +632,14 @@ export class Question implements OnInit {
     return isPatternLessonV1(item) ? item : null;
   }
 
+  protected foundationLesson(item: InterviewQuestion): FoundationLessonV1 | null {
+    return isFoundationLessonV1(item) ? item : null;
+  }
+
   protected hasTheoryExperience(item: InterviewQuestion): boolean {
     return (
-      item.contentType === 'theory' && (isPatternLessonV1(item) || Boolean(item.sections?.length))
+      item.contentType === 'theory' &&
+      (isPatternLessonV1(item) || isFoundationLessonV1(item) || Boolean(item.sections?.length))
     );
   }
 
@@ -659,6 +668,36 @@ export class Question implements OnInit {
       (this.course()?.questions ?? []).map((question) => [question.id, question]),
     );
     return lesson.practice.flatMap((reference) => {
+      const question = questionsById.get(reference.questionId);
+      return question ? [question] : [];
+    });
+  }
+
+  protected foundationChecks(lesson: FoundationLessonV1): ResolvedPatternCheck[] {
+    const questionsById = new Map(
+      (this.course()?.questions ?? []).map((question) => [question.id, question]),
+    );
+    return lesson.checks.flatMap((reference) => {
+      const question = questionsById.get(reference.questionId);
+      return question
+        ? [
+            {
+              id: question.id,
+              category: reference.category,
+              prompt: question.title,
+              answer: question.interviewAnswer,
+              explanation: question.explanation,
+            },
+          ]
+        : [];
+    });
+  }
+
+  protected foundationPractice(lesson: FoundationLessonV1): InterviewQuestion[] {
+    const questionsById = new Map(
+      (this.course()?.questions ?? []).map((question) => [question.id, question]),
+    );
+    return (lesson.practice ?? []).flatMap((reference) => {
       const question = questionsById.get(reference.questionId);
       return question ? [question] : [];
     });
@@ -759,6 +798,22 @@ export class Question implements OnInit {
         { label: 'Understand', target: 'pattern-understand' },
         { label: 'Essential', target: 'pattern-essential' },
         { label: 'Continue', target: 'pattern-practice' },
+      ];
+    }
+
+    if (isFoundationLessonV1(item)) {
+      return [
+        { label: 'Model', target: 'foundation-model' },
+        ...item.sections.map((section) => ({
+          label: section.navLabel ?? section.heading,
+          target: section.id,
+        })),
+        { label: 'Pitfalls', target: 'foundation-pitfalls' },
+        { label: 'Understand', target: 'foundation-understand' },
+        { label: 'Recall', target: 'foundation-recall' },
+        ...((item.practice?.length ?? 0) > 0
+          ? [{ label: 'Continue', target: 'foundation-practice' }]
+          : []),
       ];
     }
 

@@ -1,4 +1,13 @@
-import { Component, ElementRef, HostListener, computed, inject, input, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  HostListener,
+  computed,
+  inject,
+  input,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { TheoryVisual } from '../../content/content.models';
 
@@ -18,15 +27,17 @@ import { TheoryVisual } from '../../content/content.models';
       ></iframe>
     }
   `,
-  styles: [`
-    .interactive-theory-frame {
-      display: block;
-      width: 100%;
-      min-height: 0;
-      border: 0;
-      background: #ffffff;
-    }
-  `],
+  styles: [
+    `
+      .interactive-theory-frame {
+        display: block;
+        width: 100%;
+        min-height: 0;
+        border: 0;
+        background: #ffffff;
+      }
+    `,
+  ],
 })
 export class InteractiveTheoryVisual {
   readonly visual = input.required<TheoryVisual>();
@@ -54,7 +65,12 @@ export class InteractiveTheoryVisual {
     const path = this.visual().assetPath;
     // Course JSON is authored content, but the renderer still accepts only
     // local, static HTML assets rather than arbitrary remote embeds.
-    if (!/^\/content\/.+\.html(?:\?v=[a-z0-9-]+|\?lang=(?:java|python|go)&input=(?:default|zero|negative)&problem=[a-z0-9-]+&source=[a-z0-9%+/_=-]+)?(?:#[a-z0-9-]+)?$/i.test(path)) return null;
+    if (
+      !/^\/content\/.+\.html(?:\?v=[a-z0-9-]+|\?mode=[a-z0-9-]+|\?lang=(?:java|python|go)&input=(?:default|zero|negative)&problem=[a-z0-9-]+&source=[a-z0-9%+/_=-]+)?(?:#[a-z0-9-]+)?$/i.test(
+        path,
+      )
+    )
+      return null;
     return this.sanitizer.bypassSecurityTrustResourceUrl(path);
   });
 }
