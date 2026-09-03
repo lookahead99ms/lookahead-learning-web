@@ -1,31 +1,122 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { forkJoin, switchMap } from 'rxjs';
-import { CatalogItem, CourseContent, CourseModule, CourseSection, InterviewQuestion, reviewStatusLabel } from '../../content/content.models';
+import {
+  CatalogItem,
+  CourseContent,
+  CourseModule,
+  CourseSection,
+  InterviewQuestion,
+  reviewStatusLabel,
+} from '../../content/content.models';
 import { ContentService } from '../../content/content.service';
+import { questionsForModule } from '../../content/question-discovery';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 
 @Component({
   selector: 'app-module',
   imports: [PlatformHeader, RouterLink],
   templateUrl: './module.html',
-  styles: [`
-    .module-navigation-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
-    .module-previous-link { min-width: 0; color: var(--muted); font-size: .75rem; line-height: 18px; text-decoration: none; }
-    .module-previous-link strong { font-weight: 600; }
-    .module-previous-link:hover, .module-previous-link:focus-visible { color: var(--search-hover); outline: none; }
-    .module-action-group { display: flex; align-items: center; justify-content: flex-end; gap: 8px; min-width: 0; margin-left: auto; }
-    .module-catalog-link, .module-next-link { display: inline-flex; align-items: center; justify-content: center; height: 32px; box-sizing: border-box; padding: 6px 12px; border-radius: 8px; font-size: .75rem; line-height: 18px; text-decoration: none; white-space: nowrap; }
-    .module-catalog-link { border: 1px solid var(--line); color: var(--text-strong); background: var(--surface); font-weight: 500; }
-    .module-next-link { display: inline; height: auto; padding: 0; border: 0; border-radius: 0; color: var(--muted); background: transparent; font-size: .75rem; font-weight: 600; line-height: 18px; text-decoration: none; white-space: normal; }
-    .module-catalog-link:hover, .module-catalog-link:focus-visible { background: var(--surface-subtle); outline: none; }
-    .module-next-link:hover, .module-next-link:focus-visible { color: var(--search-hover); background: transparent; outline: none; }
-    .module-context-title { margin: 0 0 6px; color: var(--text-strong); font-size: clamp(1.35rem, 2.1vw, 2rem); line-height: 1.2; letter-spacing: -0.025em; }
-    @media (max-width: 760px) {
-      .module-navigation-bar { align-items: flex-start; flex-direction: column; }
-      .module-action-group { width: 100%; justify-content: flex-start; flex-wrap: wrap; margin-left: 0; }
-    }
-  `],
+  styles: [
+    `
+      .module-navigation-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        width: 100%;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--line);
+      }
+      .module-previous-link {
+        min-width: 0;
+        color: var(--muted);
+        font-size: 0.75rem;
+        line-height: 18px;
+        text-decoration: none;
+      }
+      .module-previous-link strong {
+        font-weight: 600;
+      }
+      .module-previous-link:hover,
+      .module-previous-link:focus-visible {
+        color: var(--search-hover);
+        outline: none;
+      }
+      .module-action-group {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        min-width: 0;
+        margin-left: auto;
+      }
+      .module-catalog-link,
+      .module-next-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 32px;
+        box-sizing: border-box;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        line-height: 18px;
+        text-decoration: none;
+        white-space: nowrap;
+      }
+      .module-catalog-link {
+        border: 1px solid var(--line);
+        color: var(--text-strong);
+        background: var(--surface);
+        font-weight: 500;
+      }
+      .module-next-link {
+        display: inline;
+        height: auto;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        color: var(--muted);
+        background: transparent;
+        font-size: 0.75rem;
+        font-weight: 600;
+        line-height: 18px;
+        text-decoration: none;
+        white-space: normal;
+      }
+      .module-catalog-link:hover,
+      .module-catalog-link:focus-visible {
+        background: var(--surface-subtle);
+        outline: none;
+      }
+      .module-next-link:hover,
+      .module-next-link:focus-visible {
+        color: var(--search-hover);
+        background: transparent;
+        outline: none;
+      }
+      .module-context-title {
+        margin: 0 0 6px;
+        color: var(--text-strong);
+        font-size: clamp(1.35rem, 2.1vw, 2rem);
+        line-height: 1.2;
+        letter-spacing: -0.025em;
+      }
+      @media (max-width: 760px) {
+        .module-navigation-bar {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+        .module-action-group {
+          width: 100%;
+          justify-content: flex-start;
+          flex-wrap: wrap;
+          margin-left: 0;
+        }
+      }
+    `,
+  ],
 })
 export class Module implements OnInit {
   private readonly contentService = inject(ContentService);
@@ -74,7 +165,9 @@ export class Module implements OnInit {
     }
     this.course.set(course);
     this.module.set(selectedModule);
-    this.parentSection.set(course.sections?.find((section) => section.moduleIds.includes(selectedModule.id)) ?? null);
+    this.parentSection.set(
+      course.sections?.find((section) => section.moduleIds.includes(selectedModule.id)) ?? null,
+    );
     const trackModules = this.parentSection()
       ? course.modules.filter((module) => this.parentSection()!.moduleIds.includes(module.id))
       : course.modules;
@@ -83,11 +176,7 @@ export class Module implements OnInit {
     this.nextModule.set(trackModules[selectedIndex + 1] ?? null);
     this.isFirstModuleInTrack.set(selectedIndex === 0);
     this.isLastModuleInTrack.set(selectedIndex === trackModules.length - 1);
-    this.questions.set(
-      course.questions
-        .filter((question) => question.moduleId === selectedModule.id)
-        .sort((left, right) => left.order - right.order),
-    );
+    this.questions.set(questionsForModule(course, selectedModule.id));
 
     const currentCatalogIndex = catalog.findIndex(({ id }) => id === course.id);
     this.nextCourse.set(catalog[currentCatalogIndex + 1] ?? null);
@@ -105,16 +194,20 @@ export class Module implements OnInit {
   }
 
   protected questionFilterTags(question: InterviewQuestion): string[] {
-    const contentType = question.contentType === 'q-and-a' || !question.contentType
-      ? 'Q&A'
-      : question.contentType === 'dsa-pattern'
-        ? 'DSA pattern'
-        : question.contentType === 'system-design'
-          ? 'System design'
-          : question.contentType === 'language-comparison'
-            ? 'Language comparison'
-            : question.contentType === 'guide' ? 'Guide' : 'Theory';
-    const path = this.pathId() === 'grow' ? 'Grow' : this.pathId() === 'learn' ? 'Learn' : 'Look Ahead';
+    const contentType =
+      question.contentType === 'q-and-a' || !question.contentType
+        ? 'Q&A'
+        : question.contentType === 'dsa-pattern'
+          ? 'DSA pattern'
+          : question.contentType === 'system-design'
+            ? 'System design'
+            : question.contentType === 'language-comparison'
+              ? 'Language comparison'
+              : question.contentType === 'guide'
+                ? 'Guide'
+                : 'Theory';
+    const path =
+      this.pathId() === 'grow' ? 'Grow' : this.pathId() === 'learn' ? 'Learn' : 'Look Ahead';
     const seen = new Set<string>();
     return [path, contentType, question.difficulty, ...question.tags].filter((tag) => {
       const key = tag.toLowerCase();

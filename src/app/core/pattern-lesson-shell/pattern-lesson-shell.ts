@@ -6,6 +6,7 @@ import {
   ResolvedPatternCheck,
 } from '../../content/content.models';
 import { InteractiveTheoryVisual } from '../interactive-theory-visual/interactive-theory-visual';
+import { InterviewQuestionBankLink } from '../interview-question-bank-link/interview-question-bank-link';
 import { PatternCodeTabs } from '../pattern-code-tabs/pattern-code-tabs';
 import { PatternProblemWorkbench } from '../pattern-problem-workbench/pattern-problem-workbench';
 import { PatternUnderstandingChecks } from '../pattern-understanding-checks/pattern-understanding-checks';
@@ -15,6 +16,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
   imports: [
     RouterLink,
     InteractiveTheoryVisual,
+    InterviewQuestionBankLink,
     PatternCodeTabs,
     PatternProblemWorkbench,
     PatternUnderstandingChecks,
@@ -309,6 +311,16 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
           invariant, complexity, edge cases, and comparison.
         </p>
         <app-pattern-understanding-checks [checks]="checks()" />
+        @if (questionModuleId(); as moduleId) {
+          @if (questionCount() > 0) {
+            <app-interview-question-bank-link
+              [pathId]="pathId()"
+              [courseId]="courseId()"
+              [moduleId]="moduleId"
+              [questionCount]="questionCount()"
+            />
+          }
+        }
       </section>
 
       <section
@@ -1011,6 +1023,8 @@ export class PatternLessonShell {
   readonly practiceItems = input.required<InterviewQuestion[]>();
   readonly pathId = input.required<string>();
   readonly courseId = input.required<string>();
+  readonly questionModuleId = input<string | null>(null);
+  readonly questionCount = input(0);
   protected readonly workedExampleIndex = signal(0);
   protected readonly workedExample = computed(
     () =>

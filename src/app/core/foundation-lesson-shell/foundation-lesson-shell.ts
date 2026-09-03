@@ -8,6 +8,7 @@ import {
 import { CodeCopyButton } from '../code-copy-button/code-copy-button';
 import { CodingSolutionTabs } from '../coding-solution-tabs/coding-solution-tabs';
 import { InteractiveTheoryVisual } from '../interactive-theory-visual/interactive-theory-visual';
+import { InterviewQuestionBankLink } from '../interview-question-bank-link/interview-question-bank-link';
 import { PatternUnderstandingChecks } from '../pattern-understanding-checks/pattern-understanding-checks';
 
 @Component({
@@ -17,6 +18,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
     CodeCopyButton,
     CodingSolutionTabs,
     InteractiveTheoryVisual,
+    InterviewQuestionBankLink,
     PatternUnderstandingChecks,
   ],
   template: `
@@ -157,6 +159,16 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         <p class="section-label"><span>Retrieve</span>Answer before revealing</p>
         <h2 id="foundation-understand-heading">Check your understanding</h2>
         <app-pattern-understanding-checks [checks]="checks()" />
+        @if (questionModuleId(); as moduleId) {
+          @if (questionCount() > 0) {
+            <app-interview-question-bank-link
+              [pathId]="pathId()"
+              [courseId]="courseId()"
+              [moduleId]="moduleId"
+              [questionCount]="questionCount()"
+            />
+          }
+        }
       </section>
 
       <section
@@ -617,6 +629,8 @@ export class FoundationLessonShell {
   readonly practiceItems = input.required<InterviewQuestion[]>();
   readonly pathId = input.required<string>();
   readonly courseId = input.required<string>();
+  readonly questionModuleId = input<string | null>(null);
+  readonly questionCount = input(0);
 
   protected practiceReason(questionId: string): string {
     return this.lesson().practice?.find((item) => item.questionId === questionId)?.reason ?? '';

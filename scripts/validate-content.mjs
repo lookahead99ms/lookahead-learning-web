@@ -81,8 +81,28 @@ function collectAssetPaths(value, paths = []) {
   return paths;
 }
 
+function isTheoryArticle(item) {
+  return (
+    item?.contentType === 'theory' &&
+    (['pattern-lesson/v1', 'foundation-lesson/v1'].includes(item.schemaVersion) ||
+      (Array.isArray(item.sections) && item.sections.length > 0))
+  );
+}
+
+function isInterviewQuestion(item) {
+  return !isTheoryArticle(item) && item?.contentType !== 'dsa-pattern';
+}
+
+function isPracticeModule(module) {
+  return (
+    /^practice(?:-|:|\s)/i.test(module?.id ?? '') ||
+    /^practice(?:-|:|\s)/i.test(module?.title ?? '')
+  );
+}
+
 function validateLearningUnits(units, moduleIds, courseLabel) {
   const unitIds = new Set();
+  const discoverableModuleIds = new Set();
 
   function visit(unit, parentId = null) {
     const unitLabel = `${courseLabel}: learning unit ${unit?.id ?? 'unknown'}`;
@@ -99,6 +119,8 @@ function validateLearningUnits(units, moduleIds, courseLabel) {
     for (const moduleId of [unit.questionModuleId, unit.practiceModuleId].filter(Boolean)) {
       requireValue(moduleIds.has(moduleId), `${unitLabel} references missing module ${moduleId}`);
     }
+    if (unit.questionModuleId) discoverableModuleIds.add(unit.questionModuleId);
+    if (unit.practiceModuleId) discoverableModuleIds.add(unit.practiceModuleId);
     if (unit.subUnits !== undefined) {
       requireValue(
         Array.isArray(unit.subUnits) && unit.subUnits.length > 0,
@@ -111,6 +133,7 @@ function validateLearningUnits(units, moduleIds, courseLabel) {
 
   requireValue(Array.isArray(units) && units.length > 0, `${courseLabel}: no learning units`);
   for (const unit of units) visit(unit);
+  return discoverableModuleIds;
 }
 
 try {
@@ -144,6 +167,7 @@ for (const file of contentFiles) {
 
   const moduleIds = new Set();
   const moduleOrders = new Set();
+  const modulesWithInterviewQuestions = new Set();
   for (const module of manifest.modules) {
     requireValue(module.id && module.title && module.description, `${label}: invalid module`);
     requireValue(
@@ -170,6 +194,9 @@ for (const file of contentFiles) {
       Array.isArray(questions) && (questions.length > 0 || module.reviewStatus === 'planned'),
       `${moduleLabel}: no questions unless the module is planned`,
     );
+    if (!isPracticeModule(module) && questions.some(isInterviewQuestion)) {
+      modulesWithInterviewQuestions.add(module.id);
+    }
 
     const questionOrders = new Set();
     for (const question of questions) {
@@ -255,7 +282,13 @@ for (const file of contentFiles) {
     }
   }
   if (manifest.learningUnits !== undefined) {
-    validateLearningUnits(manifest.learningUnits, moduleIds, label);
+    const discoverableModuleIds = validateLearningUnits(manifest.learningUnits, moduleIds, label);
+    for (const moduleId of modulesWithInterviewQuestions) {
+      requireValue(
+        discoverableModuleIds.has(moduleId),
+        `${label}: content module ${moduleId} is not reachable from a learning unit`,
+      );
+    }
   }
 }
 

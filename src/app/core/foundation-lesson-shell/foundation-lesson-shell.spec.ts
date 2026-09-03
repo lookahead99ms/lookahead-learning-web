@@ -126,6 +126,8 @@ describe('FoundationLessonShell golden lesson contract', () => {
     fixture.componentRef.setInput('practiceItems', practiceItems);
     fixture.componentRef.setInput('pathId', 'learn');
     fixture.componentRef.setInput('courseId', 'core-data-structures');
+    fixture.componentRef.setInput('questionModuleId', 'heap-questions');
+    fixture.componentRef.setInput('questionCount', 7);
     fixture.detectChanges();
   });
 
@@ -152,5 +154,13 @@ describe('FoundationLessonShell golden lesson contract', () => {
     ) as HTMLAnchorElement;
     expect(normalizedText(practiceLink)).toContain('Kth Largest in a Stream');
     expect(practiceLink.getAttribute('href')).toBe('/learn/core-data-structures/heap-practice');
+
+    const questionBankLink = fixture.nativeElement.querySelector(
+      '.question-bank-link',
+    ) as HTMLAnchorElement;
+    expect(normalizedText(questionBankLink)).toContain('Review all 7 interview questions');
+    expect(questionBankLink.getAttribute('href')).toBe(
+      '/learn/core-data-structures/module/heap-questions',
+    );
   });
 });

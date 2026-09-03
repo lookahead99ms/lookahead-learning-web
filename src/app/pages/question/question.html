@@ -13,7 +13,7 @@
           <div class="sticky-pill-strip" aria-label="Reading position">
             <span class="sticky-pattern-name">{{ patternName(item.title) }}</span>
             <span class="sticky-pill-sep" aria-hidden="true">:</span>
-            @for (link of visiblePillWindow(item); track link.label) {
+            @for (link of visiblePillWindow(item); track link.target) {
               <button
                 type="button"
                 class="sticky-pill"
@@ -62,61 +62,87 @@
         <p class="eyebrow">{{ item.difficulty }}</p>
         @if (hasTheoryExperience(item)) {
           <nav class="pattern-navigation" aria-label="Article navigation">
-            @for (link of patternNavigation(item); track link.label) {
+            @for (link of patternNavigation(item); track link.target) {
               <button type="button" (click)="scrollToSection(link.target)">{{ link.label }}</button>
             }
           </nav>
         }
-        <nav class="question-inner-navigation" aria-label="Adjacent question navigation">
-          @if (!isFirstQuestionInModule()) {
-            @if (previousQuestion(); as previous) {
+        <nav
+          class="question-inner-navigation"
+          [attr.aria-label]="
+            item.contentType === 'theory'
+              ? 'Adjacent article navigation'
+              : 'Adjacent question navigation'
+          "
+        >
+          @if (item.contentType === 'theory') {
+            @if (previousArticle(); as previous) {
               <a
-                class="inner-navigation-link previous"
+                class="inner-navigation-link previous previous-module"
                 [routerLink]="['/', pathId(), courseId(), previous.id]"
               >
-                <span>← Previous question:</span><strong>{{ previous.title }}</strong>
+                <span>← Previous article:</span><strong>{{ previous.title }}</strong>
               </a>
             }
-          } @else if (previousModule(); as previousModuleItem) {
-            <a
-              class="inner-navigation-link previous previous-module"
-              [routerLink]="previousModuleRoute(item, previousModuleItem)"
-            >
-              <span>← {{ previousModuleLabel(item) }}</span
-              ><strong>{{ previousModuleItem.title.replace('Theory: ', '') }}</strong>
-            </a>
-          }
-          <div class="inner-navigation-actions">
-            @if (!isLastQuestionInModule()) {
-              @if (nextQuestion(); as next) {
+            <div class="inner-navigation-actions">
+              @if (nextArticle(); as next) {
                 <a
-                  class="inner-navigation-link next"
+                  class="inner-navigation-link next next-module"
                   [routerLink]="['/', pathId(), courseId(), next.id]"
                 >
-                  <span>Next question:</span><strong>{{ next.title }} →</strong>
+                  <span>Next article:</span><strong>{{ next.title }} »</strong>
                 </a>
               }
-            } @else if (!isLastModuleInCompetency()) {
-              @if (item.contentType !== 'theory') {
+            </div>
+          } @else {
+            @if (!isFirstQuestionInModule()) {
+              @if (previousQuestion(); as previous) {
+                <a
+                  class="inner-navigation-link previous"
+                  [routerLink]="['/', pathId(), courseId(), previous.id]"
+                >
+                  <span>← Previous question:</span><strong>{{ previous.title }}</strong>
+                </a>
+              }
+            } @else if (previousModule(); as previousModuleItem) {
+              <a
+                class="inner-navigation-link previous previous-module"
+                [routerLink]="previousModuleRoute(item, previousModuleItem)"
+              >
+                <span>← {{ previousModuleLabel(item) }}</span
+                ><strong>{{ previousModuleItem.title.replace('Theory: ', '') }}</strong>
+              </a>
+            }
+            <div class="inner-navigation-actions">
+              @if (!isLastQuestionInModule()) {
+                @if (nextQuestion(); as next) {
+                  <a
+                    class="inner-navigation-link next"
+                    [routerLink]="['/', pathId(), courseId(), next.id]"
+                  >
+                    <span>Next question:</span><strong>{{ next.title }} →</strong>
+                  </a>
+                }
+              } @else if (!isLastModuleInCompetency()) {
+                <a class="module-catalog-link" [routerLink]="parentContextRoute(item)"
+                  >View all modules</a
+                >
+                @if (nextModule(); as nextModuleItem) {
+                  <a
+                    class="inner-navigation-link next next-module"
+                    [routerLink]="nextModuleRoute(item, nextModuleItem)"
+                  >
+                    <span>{{ nextModuleLabel(item) }}</span
+                    ><strong>{{ nextModuleItem.title.replace('Theory: ', '') }} »</strong>
+                  </a>
+                }
+              } @else {
                 <a class="module-catalog-link" [routerLink]="parentContextRoute(item)"
                   >View all modules</a
                 >
               }
-              @if (nextModule(); as nextModuleItem) {
-                <a
-                  class="inner-navigation-link next next-module"
-                  [routerLink]="nextModuleRoute(item, nextModuleItem)"
-                >
-                  <span>{{ nextModuleLabel(item) }}</span
-                  ><strong>{{ nextModuleItem.title.replace('Theory: ', '') }} »</strong>
-                </a>
-              }
-            } @else if (item.contentType !== 'theory') {
-              <a class="module-catalog-link" [routerLink]="parentContextRoute(item)"
-                >View all modules</a
-              >
-            }
-          </div>
+            </div>
+          }
         </nav>
       </section>
       @if (patternLesson(item); as lesson) {
@@ -126,6 +152,8 @@
           [practiceItems]="patternPractice(lesson)"
           [pathId]="pathId()"
           [courseId]="courseId()"
+          [questionModuleId]="questionBankModuleId(item)"
+          [questionCount]="questionBankCount(item)"
         />
       } @else if (foundationLesson(item); as lesson) {
         <app-foundation-lesson-shell
@@ -134,6 +162,8 @@
           [practiceItems]="foundationPractice(lesson)"
           [pathId]="pathId()"
           [courseId]="courseId()"
+          [questionModuleId]="questionBankModuleId(item)"
+          [questionCount]="questionBankCount(item)"
         />
       } @else if (item.contentType === 'theory' && item.sections?.length) {
         <section class="theory-article" aria-label="Theory lesson">
