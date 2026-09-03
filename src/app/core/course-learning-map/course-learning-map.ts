@@ -92,9 +92,9 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
                     @if (subUnit.practiceModuleId) {
                       <a
                         class="learning-action practice"
-                        [routerLink]="['/', pathId(), 'hands-on-dsa']"
-                        [queryParams]="{ pattern: subUnit.id }"
-                        >Practice <span aria-hidden="true">→</span></a
+                        [routerLink]="practiceRoute(subUnit)"
+                        [queryParams]="practiceQueryParams(subUnit)"
+                        >Practice {{ subUnit.title }} <span aria-hidden="true">→</span></a
                       >
                     }
                   </div>
@@ -142,8 +142,9 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
               @if (unit.practiceModuleId) {
                 <a
                   class="learning-action practice"
-                  [routerLink]="moduleRoute(unit.practiceModuleId)"
-                  >Practice <span aria-hidden="true">→</span></a
+                  [routerLink]="practiceRoute(unit)"
+                  [queryParams]="practiceQueryParams(unit)"
+                  >Practice {{ unit.title }} <span aria-hidden="true">→</span></a
                 >
               }
             </div>
@@ -419,6 +420,16 @@ export class CourseLearningMap {
 
   protected moduleRoute(moduleId: string): string[] {
     return ['/', this.pathId(), this.courseId(), 'module', moduleId];
+  }
+
+  protected practiceRoute(unit: CourseLearningUnit): string[] {
+    return this.pathId() === 'learn'
+      ? ['/', 'learn', 'hands-on-dsa']
+      : this.moduleRoute(unit.practiceModuleId ?? unit.theoryModuleId);
+  }
+
+  protected practiceQueryParams(unit: CourseLearningUnit): { pattern: string } | null {
+    return this.pathId() === 'learn' ? { pattern: `${this.courseId()}:${unit.id}` } : null;
   }
 
   protected subUnitGroupLabel(unit: CourseLearningUnit): string {

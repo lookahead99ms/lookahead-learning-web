@@ -7,7 +7,13 @@
           <a routerLink="/">Home</a><span>/</span>
           <a [routerLink]="['/', pathId()]">{{ pathLabel() }}</a
           ><span>/</span>
-          <a [routerLink]="['/', pathId(), courseId()]">{{ courseTitle() }}</a>
+          @if (isCodingPractice(item) && pathId() === 'learn') {
+            <a routerLink="/learn/hands-on-dsa" [queryParams]="{ pattern: handsOnPatternId(item) }"
+              >Hands-On DSA</a
+            ><span>/</span><span aria-current="page">{{ item.title }}</span>
+          } @else {
+            <a [routerLink]="['/', pathId(), courseId()]">{{ courseTitle() }}</a>
+          }
         </nav>
         @if (scrolled() && item.contentType === 'theory' && visiblePillWindow(item).length) {
           <div class="sticky-pill-strip" aria-label="Reading position">
@@ -33,12 +39,21 @@
           ><span>Search</span><kbd>⌘K</kbd>
         </button>
       </div>
-      @if (item.contentType !== 'theory') {
+      @if (item.contentType !== 'theory' && !surpriseMode()) {
         <section class="question-context-panel">
           <a class="reader-module" [routerLink]="parentContextRoute(item)">{{
             parentContextTitle(item)
           }}</a>
         </section>
+      }
+      @if (surpriseMode()) {
+        <aside class="surprise-challenge" aria-label="Random interview challenge">
+          <span>Pattern hidden</span>
+          <p>
+            Before opening a hint, name the input shape, constraints, likely pattern, and invariant
+            you intend to maintain.
+          </p>
+        </aside>
       }
       <section class="reader-question-panel">
         @if (item.reviewStatus; as status) {
