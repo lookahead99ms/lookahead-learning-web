@@ -8,10 +8,7 @@ const configuredRoot =
   requestedRoot === '--external'
     ? (process.env.LOOKAHEAD_CONTENT_ROOT ?? '../lookahead-learning-content/runtime')
     : (requestedRoot ?? process.env.LOOKAHEAD_CONTENT_ROOT ?? 'demo-content/runtime');
-const contentRoot = resolve(
-  repositoryRoot,
-  configuredRoot,
-);
+const contentRoot = resolve(repositoryRoot, configuredRoot);
 const requiredQuestionFields = [
   'id',
   'moduleId',
@@ -48,6 +45,7 @@ const forbiddenVisualAssets = new Set([
 const questionIds = new Set();
 const questionsById = new Map();
 const patternLessons = [];
+const foundationLessons = [];
 let courseCount = 0;
 let questionCount = 0;
 let traceProblemCount = 0;
@@ -245,10 +243,14 @@ for (const file of contentFiles) {
       }
       if (question.schemaVersion !== undefined) {
         requireValue(
-          question.schemaVersion === 'pattern-lesson/v1',
+          ['pattern-lesson/v1', 'foundation-lesson/v1'].includes(question.schemaVersion),
           `${moduleLabel}: ${question.id} uses unsupported schemaVersion ${question.schemaVersion}`,
         );
-        patternLessons.push({ lesson: question, moduleLabel });
+        if (question.schemaVersion === 'pattern-lesson/v1') {
+          patternLessons.push({ lesson: question, moduleLabel });
+        } else {
+          foundationLessons.push({ lesson: question, moduleLabel });
+        }
       }
     }
   }
@@ -350,6 +352,167 @@ function validateCodeBlocks(blocks, label, expectedLanguages) {
   );
 }
 
+for (const { lesson, moduleLabel } of foundationLessons) {
+  const label = `${moduleLabel}: ${lesson.id}`;
+  requireValue(lesson.contentType === 'theory', `${label} must use contentType theory`);
+  requireValue(
+    lesson.visuals === undefined && lesson.relatedQuestionIds === undefined,
+    `${label} must not mix legacy relation fields with FoundationLessonV1`,
+  );
+  requireStringArray(lesson.learningOutcomes, `${label} learningOutcomes`, 3);
+  requireValue(
+    lesson.learningOutcomes.length <= 5,
+    `${label} learningOutcomes must contain no more than five items`,
+  );
+  requireValue(
+    lesson.memoryAnchor?.phrase &&
+      lesson.memoryAnchor?.mentalModel &&
+      lesson.memoryAnchor?.retrievalCue,
+    `${label} has an incomplete memory anchor`,
+  );
+  requireValue(
+    lesson.foundationModel?.heading &&
+      lesson.foundationModel?.representation &&
+      lesson.foundationModel?.invariant &&
+      lesson.foundationModel?.operationLens &&
+      lesson.foundationModel?.selectionRule,
+    `${label} has an incomplete foundation model`,
+  );
+  requireValue(
+    Array.isArray(lesson.sections) && lesson.sections.length >= 3,
+    `${label} needs at least three teaching sections`,
+  );
+  const navigationLabels = new Set();
+  let visualCount = 0;
+  let interactiveVisualCount = 0;
+  for (const section of lesson.sections) {
+    requireValue(section.navLabel, `${label} section ${section.id} is missing navLabel`);
+    const normalizedLabel = section.navLabel.trim().toLowerCase();
+    requireValue(
+      !navigationLabels.has(normalizedLabel),
+      `${label} repeats section navigation label ${section.navLabel}`,
+    );
+    navigationLabels.add(normalizedLabel);
+    if (section.visual) {
+      visualCount += 1;
+      if (section.visual.type === 'interactive') interactiveVisualCount += 1;
+      requireStringArray(
+        section.visualTranscript,
+        `${label} section ${section.id} visualTranscript`,
+        3,
+      );
+      const visualPath = section.visual.assetPath.split(/[?#]/, 1)[0].replace(/^\/content\//, '');
+      try {
+        await access(join(contentRoot, visualPath));
+      } catch {
+        throw new Error(`${label} references missing visual ${section.visual.assetPath}`);
+      }
+    }
+    if (section.solutions?.length) {
+      const languages = new Set(section.solutions.map(({ language }) => language.toLowerCase()));
+      requireValue(
+        languages.size === patternLanguages.size &&
+          [...patternLanguages].every((language) => languages.has(language)),
+        `${label} section ${section.id} must include Java, Python, and Go solutions`,
+      );
+    }
+  }
+  requireValue(visualCount > 0, `${label} needs at least one concept visual`);
+  if (lesson.visualDepth === 'enhanced') {
+    requireValue(
+      interactiveVisualCount > 0,
+      `${label} is an enhanced topic and needs an interactive visual`,
+    );
+  }
+  requireValue(
+    Array.isArray(lesson.pitfalls) && lesson.pitfalls.length >= 3,
+    `${label} needs at least three failure contrasts`,
+  );
+  for (const pitfall of lesson.pitfalls) {
+    requireValue(
+      pitfall?.failedAssumption && pitfall?.symptom && pitfall?.correction,
+      `${label} has an invalid pitfall`,
+    );
+  }
+  requireValue(lesson.interviewRecall?.prompt, `${label} has no interview recall prompt`);
+  requireStringArray(
+    lesson.interviewRecall?.answerFramework,
+    `${label} interviewRecall.answerFramework`,
+    3,
+  );
+  requireValue(
+    lesson.interviewRecall.answerFramework.length <= 5,
+    `${label} interview recall framework must contain no more than five steps`,
+  );
+  requireValue(
+    Array.isArray(lesson.checks) && lesson.checks.length >= 3 && lesson.checks.length <= 5,
+    `${label} must reference three to five understanding checks`,
+  );
+  const seenChecks = new Set();
+  for (const check of lesson.checks) {
+    requireValue(
+      checkCategories.has(check?.category),
+      `${label} has invalid check category ${check?.category}`,
+    );
+    requireValue(!seenChecks.has(check.questionId), `${label} repeats check ${check.questionId}`);
+    seenChecks.add(check.questionId);
+    const question = questionsById.get(check.questionId);
+    requireValue(question, `${label} references missing check ${check.questionId}`);
+    requireValue(
+      question.relatedArticleId === lesson.id,
+      `${label} check ${check.questionId} is not explicitly related to this lesson`,
+    );
+  }
+  if (lesson.practice !== undefined) {
+    requireValue(
+      Array.isArray(lesson.practice) && lesson.practice.length <= 5,
+      `${label} practice must contain no more than five references`,
+    );
+    const seenPractice = new Set();
+    for (const reference of lesson.practice) {
+      requireValue(
+        reference?.questionId && reference?.reason && reference?.variation,
+        `${label} has an invalid practice reference`,
+      );
+      requireValue(
+        !seenPractice.has(reference.questionId),
+        `${label} repeats practice ${reference.questionId}`,
+      );
+      seenPractice.add(reference.questionId);
+      const question = questionsById.get(reference.questionId);
+      requireValue(question, `${label} references missing practice ${reference.questionId}`);
+      requireValue(
+        question.relatedArticleId === lesson.id,
+        `${label} practice ${reference.questionId} is not explicitly related to this lesson`,
+      );
+    }
+  }
+  requireStringArray(lesson.keyTakeaways, `${label} keyTakeaways`, 3);
+  requireValue(
+    lesson.keyTakeaways.length <= 5,
+    `${label} keyTakeaways must contain no more than five items`,
+  );
+  requireValue(
+    Array.isArray(lesson.languageNotes) && lesson.languageNotes.length === 3,
+    `${label} must include Java, Python, and Go language notes`,
+  );
+  const noteLanguages = new Set(lesson.languageNotes.map(({ language }) => language.toLowerCase()));
+  requireValue(
+    noteLanguages.size === patternLanguages.size &&
+      [...patternLanguages].every((language) => noteLanguages.has(language)),
+    `${label} language notes must cover Java, Python, and Go exactly once`,
+  );
+  requireValue(lesson.reviewEvidence?.note, `${label} is missing review evidence`);
+  if (lesson.reviewStatus === 'reviewed') {
+    requireValue(
+      ['technical', 'editorial', 'ux', 'accessibility'].every(
+        (key) => lesson.reviewEvidence[key] === true,
+      ),
+      `${label} cannot be reviewed without complete review evidence`,
+    );
+  }
+}
+
 for (const { lesson, moduleLabel } of patternLessons) {
   const label = `${moduleLabel}: ${lesson.id}`;
   requireValue(lesson.contentType === 'theory', `${label} must use contentType theory`);
@@ -370,10 +533,7 @@ for (const { lesson, moduleLabel } of patternLessons) {
       lesson.memoryAnchor?.retrievalCue,
     `${label} has an incomplete memory anchor`,
   );
-  requireValue(
-    lesson.interviewRecall?.prompt,
-    `${label} has no interview recall prompt`,
-  );
+  requireValue(lesson.interviewRecall?.prompt, `${label} has no interview recall prompt`);
   requireStringArray(
     lesson.interviewRecall?.answerFramework,
     `${label} interviewRecall.answerFramework`,
@@ -704,5 +864,5 @@ for (const { lesson, moduleLabel } of patternLessons) {
 }
 
 console.log(
-  `Validated ${courseCount} course manifest(s), ${questionCount} question(s), ${patternLessons.length} versioned pattern lesson(s), and ${traceProblemCount} trace problem(s).`,
+  `Validated ${courseCount} course manifest(s), ${questionCount} question(s), ${patternLessons.length} versioned pattern lesson(s), ${foundationLessons.length} foundation lesson(s), and ${traceProblemCount} trace problem(s).`,
 );

@@ -1,8 +1,11 @@
 export type ContentReviewStatus = 'reviewed' | 'needs-review' | 'evolving' | 'planned';
 export type ContentPath = 'learn' | 'grow' | 'look-ahead';
-export type ContentType = 'q-and-a' | 'theory' | 'dsa-pattern' | 'system-design' | 'language-comparison' | 'guide';
+export type ContentType =
+  'q-and-a' | 'theory' | 'dsa-pattern' | 'system-design' | 'language-comparison' | 'guide';
 export type SubscriptionScope = 'platform' | 'path' | 'catalog' | 'module' | 'content-type';
 export type PatternLessonSchemaVersion = 'pattern-lesson/v1';
+export type FoundationLessonSchemaVersion = 'foundation-lesson/v1';
+export type LessonSchemaVersion = PatternLessonSchemaVersion | FoundationLessonSchemaVersion;
 export type PatternLanguage = 'java' | 'python' | 'go';
 
 export interface ContentAccess {
@@ -36,10 +39,14 @@ export function growTagline(text: string | undefined): string {
 
 export function reviewStatusLabel(status: ContentReviewStatus): string {
   switch (status) {
-    case 'reviewed': return 'Reviewed';
-    case 'needs-review': return 'Review pending';
-    case 'evolving': return 'Evolving topic';
-    case 'planned': return 'Planned';
+    case 'reviewed':
+      return 'Reviewed';
+    case 'needs-review':
+      return 'Review pending';
+    case 'evolving':
+      return 'Evolving topic';
+    case 'planned':
+      return 'Planned';
   }
 }
 
@@ -63,6 +70,8 @@ export interface TheoryVisual {
 
 export interface TheorySection {
   id: string;
+  /** Short learner-facing label used by the sticky article navigation. */
+  navLabel?: string;
   heading: string;
   body: string[];
   callout?: TheoryCallout;
@@ -75,6 +84,8 @@ export interface TheorySection {
   /** Three independently selectable, traceable pattern problems. */
   essentialProblems?: PatternEssentialProblem[];
   visual?: TheoryVisual;
+  /** Complete non-visual account of the visual's important states and transitions. */
+  visualTranscript?: string[];
 }
 
 export interface CodeSolution {
@@ -125,7 +136,7 @@ export interface InterviewQuestion {
   relatedQuestionIds?: string[];
   visual?: TheoryVisual;
   /** Versioned pattern lessons use the stricter PatternLessonV1 contract. */
-  schemaVersion?: PatternLessonSchemaVersion;
+  schemaVersion?: LessonSchemaVersion;
 }
 
 export interface PatternSourceLine {
@@ -139,7 +150,8 @@ export interface PatternCodeBlock {
   lines: PatternSourceLine[];
 }
 
-export type GuidedTraceCellState = 'active' | 'boundary' | 'changed' | 'discarded' | 'range' | 'related' | 'resolved';
+export type GuidedTraceCellState =
+  'active' | 'boundary' | 'changed' | 'discarded' | 'range' | 'related' | 'resolved';
 
 export interface GuidedTraceCell {
   value: string;
@@ -202,7 +214,8 @@ export interface PatternProblemV1 {
   trace: GuidedTraceV1;
 }
 
-export type UnderstandingCheckCategory = 'recognition' | 'invariant' | 'complexity' | 'edge-case' | 'comparison';
+export type UnderstandingCheckCategory =
+  'recognition' | 'invariant' | 'complexity' | 'edge-case' | 'comparison';
 
 export interface PatternCheckReference {
   questionId: string;
@@ -243,6 +256,53 @@ export interface PatternInterviewRecall {
   answerFramework: string[];
 }
 
+export interface LessonReviewEvidence {
+  technical: boolean;
+  editorial: boolean;
+  ux: boolean;
+  accessibility: boolean;
+  note: string;
+}
+
+export interface LessonPitfall {
+  failedAssumption: string;
+  symptom: string;
+  correction: string;
+}
+
+export interface FoundationLessonModel {
+  heading: string;
+  representation: string;
+  invariant: string;
+  operationLens: string;
+  selectionRule: string;
+}
+
+/**
+ * A compact golden contract for foundation topics. It preserves the same
+ * orientation, invariant, retrieval, and transfer loop as a pattern lesson
+ * without pretending every structure or complexity concept is a pattern.
+ */
+export interface FoundationLessonV1 extends InterviewQuestion {
+  schemaVersion: 'foundation-lesson/v1';
+  summary: string;
+  learningOutcomes: string[];
+  memoryAnchor: PatternMemoryAnchor;
+  foundationModel: FoundationLessonModel;
+  interviewRecall: PatternInterviewRecall;
+  pitfalls: LessonPitfall[];
+  checks: PatternCheckReference[];
+  practice?: PatternPracticeReference[];
+  keyTakeaways: string[];
+  languageNotes: { language: string; note: string }[];
+  reviewEvidence: LessonReviewEvidence;
+  /** Hard, high-frequency topics must use an interactive visual rather than prose alone. */
+  visualDepth?: 'standard' | 'enhanced';
+  sections: TheorySection[];
+  visuals?: never;
+  relatedQuestionIds?: never;
+}
+
 export interface NamedAlgorithmReference {
   name: string;
   family: string;
@@ -266,10 +326,15 @@ export interface PatternLessonV1 extends InterviewQuestion {
   recognition: { heading: string; body: string[]; signals: string[]; falseFriends: string[] };
   model: { heading: string; state: string; invariant: string; decisionRule: string; proof: string };
   variations: { id: string; title: string; trigger: string; invariant: string }[];
-  template: { heading: string; introduction: string[]; pseudocode: PatternCodeBlock; implementations: PatternCodeBlock[] };
+  template: {
+    heading: string;
+    introduction: string[];
+    pseudocode: PatternCodeBlock;
+    implementations: PatternCodeBlock[];
+  };
   conceptVisual: { heading: string; body: string[]; visual: TheoryVisual; transcript: string[] };
   complexity: { time: string; space: string; note: string; why: string[]; tradeoffs: string[] };
-  pitfalls: { failedAssumption: string; symptom: string; correction: string }[];
+  pitfalls: LessonPitfall[];
   guidance: { useWhen: string[]; avoidWhen: string[] };
   workedExamples: PatternWorkedExample[];
   essentialProblems: PatternProblemV1[];
@@ -277,7 +342,7 @@ export interface PatternLessonV1 extends InterviewQuestion {
   practice: PatternPracticeReference[];
   keyTakeaways: string[];
   languageNotes: { language: string; note: string }[];
-  reviewEvidence: { technical: boolean; editorial: boolean; ux: boolean; accessibility: boolean; note: string };
+  reviewEvidence: LessonReviewEvidence;
   sections?: never;
   visuals?: never;
   relatedQuestionIds?: never;
@@ -285,6 +350,10 @@ export interface PatternLessonV1 extends InterviewQuestion {
 
 export function isPatternLessonV1(item: InterviewQuestion): item is PatternLessonV1 {
   return item.schemaVersion === 'pattern-lesson/v1';
+}
+
+export function isFoundationLessonV1(item: InterviewQuestion): item is FoundationLessonV1 {
+  return item.schemaVersion === 'foundation-lesson/v1';
 }
 
 export interface SearchDocument {

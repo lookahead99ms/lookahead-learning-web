@@ -127,6 +127,14 @@
           [pathId]="pathId()"
           [courseId]="courseId()"
         />
+      } @else if (foundationLesson(item); as lesson) {
+        <app-foundation-lesson-shell
+          [lesson]="lesson"
+          [checks]="foundationChecks(lesson)"
+          [practiceItems]="foundationPractice(lesson)"
+          [pathId]="pathId()"
+          [courseId]="courseId()"
+        />
       } @else if (item.contentType === 'theory' && item.sections?.length) {
         <section class="theory-article" aria-label="Theory lesson">
           @if (item.summary; as summary) {
