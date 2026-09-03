@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import type { DeliveryPlanPage } from './pages/delivery-plan/delivery-plan';
 
 export const routes: Routes = [
   { path: '', loadComponent: () => import('./pages/landing/landing').then((page) => page.Landing) },
@@ -17,6 +18,13 @@ export const routes: Routes = [
     path: 'study-plan',
     loadComponent: () => import('./pages/study-plan/study-plan').then((page) => page.StudyPlanPage),
   },
+  {
+    path: 'delivery-plan',
+    canDeactivate: [(page: DeliveryPlanPage) => page.canDeactivate()],
+    loadComponent: () =>
+      import('./pages/delivery-plan/delivery-plan').then((page) => page.DeliveryPlanPage),
+  },
+  { path: 'delivery', redirectTo: 'delivery-plan', pathMatch: 'full' },
   {
     path: 'grow/:courseId/module/:moduleId',
     data: { pathId: 'grow' },

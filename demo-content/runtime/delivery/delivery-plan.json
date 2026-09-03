@@ -1,0 +1,223 @@
+{
+  "schemaVersion": "delivery-plan/v1",
+  "id": "public-demo-delivery",
+  "title": "A visible plan for deliberate delivery.",
+  "summary": "This synthetic board demonstrates the local JSON delivery contract without exposing the private product roadmap.",
+  "lastUpdated": "2026-09-03",
+  "sourceLabel": "Synthetic public demo JSON",
+  "currentStageId": "demo-foundation",
+  "workflow": [
+    {
+      "id": "backlog",
+      "label": "Backlog",
+      "description": "Triaged future work.",
+      "color": "#77858c"
+    },
+    {
+      "id": "ready",
+      "label": "Ready",
+      "description": "Scoped and dependency-clear.",
+      "color": "#3c83a1",
+      "wipLimit": 3
+    },
+    {
+      "id": "in-progress",
+      "label": "In progress",
+      "description": "The active delivery slice.",
+      "color": "#d18a26",
+      "wipLimit": 2
+    },
+    {
+      "id": "review",
+      "label": "Review",
+      "description": "Waiting for acceptance evidence.",
+      "color": "#8c63a8",
+      "wipLimit": 3
+    },
+    { "id": "done", "label": "Done", "description": "Accepted and delivered.", "color": "#2c8a67" }
+  ],
+  "priorities": [
+    {
+      "id": "P0",
+      "label": "Stop the line",
+      "description": "Unsafe or unavailable.",
+      "color": "#b63028",
+      "interrupt": true
+    },
+    {
+      "id": "P1",
+      "label": "Protect the stage",
+      "description": "Invalidates active work.",
+      "color": "#d66b24",
+      "interrupt": true
+    },
+    {
+      "id": "P2",
+      "label": "Schedule next",
+      "description": "Important, not blocking.",
+      "color": "#2e778a",
+      "interrupt": false
+    },
+    {
+      "id": "P3",
+      "label": "Explore later",
+      "description": "Optional improvement.",
+      "color": "#6d7780",
+      "interrupt": false
+    }
+  ],
+  "stages": [
+    {
+      "id": "demo-foundation",
+      "order": 1,
+      "title": "Establish the contract",
+      "goal": "Prove a small end-to-end slice before scaling delivery.",
+      "state": "active",
+      "reviewGate": "Review the contract and measurable evidence."
+    },
+    {
+      "id": "demo-scale",
+      "order": 2,
+      "title": "Scale with evidence",
+      "goal": "Expand only after the first slice is stable.",
+      "state": "planned",
+      "reviewGate": "Validate quality, accessibility, and performance."
+    }
+  ],
+  "workItems": [
+    {
+      "id": "DEMO-1",
+      "title": "Define the source of truth",
+      "summary": "Use one versioned JSON document for the board.",
+      "type": "decision",
+      "stageId": "demo-foundation",
+      "statusId": "done",
+      "priorityId": "P1",
+      "labels": ["contract", "demo"],
+      "acceptanceCriteria": [
+        "The page is data-driven.",
+        "The synthetic file contains no private roadmap."
+      ],
+      "dependencies": [],
+      "blockedBy": [],
+      "updatedAt": "2026-09-03"
+    },
+    {
+      "id": "DEMO-2",
+      "title": "Render the active delivery slice",
+      "summary": "Show workflow, priority, stage, and acceptance evidence.",
+      "type": "story",
+      "stageId": "demo-foundation",
+      "statusId": "in-progress",
+      "priorityId": "P1",
+      "labels": ["ui", "demo"],
+      "acceptanceCriteria": [
+        "Board and roadmap views agree.",
+        "Work-item details are keyboard reachable."
+      ],
+      "dependencies": ["DEMO-1"],
+      "blockedBy": [],
+      "reviewRoutes": ["/delivery-plan"],
+      "updatedAt": "2026-09-03"
+    },
+    {
+      "id": "DEMO-3",
+      "title": "Review the interaction",
+      "summary": "Check responsive layout and interruption guidance.",
+      "type": "task",
+      "stageId": "demo-foundation",
+      "statusId": "ready",
+      "priorityId": "P2",
+      "labels": ["accessibility", "responsive"],
+      "acceptanceCriteria": [
+        "The board remains usable at 320 pixels.",
+        "Reduced motion is honored."
+      ],
+      "dependencies": ["DEMO-2"],
+      "blockedBy": [],
+      "updatedAt": "2026-09-03"
+    },
+    {
+      "id": "DEMO-4",
+      "title": "Connect a future durable service",
+      "summary": "Replace JSON only when multi-user workflow justifies it.",
+      "type": "spike",
+      "stageId": "demo-scale",
+      "statusId": "backlog",
+      "priorityId": "P3",
+      "labels": ["future", "integration"],
+      "acceptanceCriteria": [
+        "Migration preserves canonical IDs.",
+        "The UI remains independent of storage implementation."
+      ],
+      "dependencies": ["DEMO-3"],
+      "blockedBy": [],
+      "updatedAt": "2026-09-03"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEMO-ADR-1",
+      "title": "Start local and data-driven",
+      "state": "accepted",
+      "decision": "Use JSON until collaboration needs justify a service.",
+      "rationale": "It proves the workflow with minimal infrastructure.",
+      "revisitWhen": "Concurrent edits, permissions, or notifications are required.",
+      "relatedWorkItemIds": ["DEMO-1", "DEMO-4"],
+      "updatedAt": "2026-09-03"
+    }
+  ],
+  "deliverySequence": {
+    "title": "From baseline to review",
+    "note": "Focused delivery days demonstrate the contract without publishing the private roadmap.",
+    "windows": [
+      {
+        "id": "demo-days-1-2",
+        "dayRange": "Days 1-2",
+        "title": "Demo delivery window",
+        "checkpoints": [
+          {
+            "id": "demo-day-1",
+            "day": "Day 1",
+            "outcome": "Verify the public shell and synthetic delivery data.",
+            "stageIds": ["demo-foundation"],
+            "reviewStop": false
+          },
+          {
+            "id": "demo-day-2",
+            "day": "Day 2",
+            "outcome": "Review the data-driven board and roadmap contract.",
+            "stageIds": ["demo-foundation"],
+            "reviewStop": true
+          }
+        ]
+      }
+    ]
+  },
+  "interruptionPolicy": {
+    "title": "Protect flow without ignoring reality",
+    "principle": "Capture every discovery, but interrupt active work only when continuing would be unsafe or invalidate acceptance evidence.",
+    "rules": [
+      {
+        "priorityId": "P0",
+        "action": "Stop and restore safety.",
+        "examples": ["Exposure", "Data loss"]
+      },
+      {
+        "priorityId": "P1",
+        "action": "Interrupt if active acceptance becomes invalid.",
+        "examples": ["Broken contract", "Blocked critical path"]
+      },
+      {
+        "priorityId": "P2",
+        "action": "Schedule at the next review.",
+        "examples": ["Important UX improvement"]
+      },
+      {
+        "priorityId": "P3",
+        "action": "Keep in future discovery.",
+        "examples": ["Optional experiment"]
+      }
+    ]
+  }
+}

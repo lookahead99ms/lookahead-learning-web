@@ -8,6 +8,7 @@ import {
   InterviewQuestion,
   SearchDocument,
 } from './content.models';
+import { DeliveryPlan } from './delivery-plan.models';
 
 @Injectable({ providedIn: 'root' })
 export class ContentService {
@@ -57,6 +58,10 @@ export class ContentService {
 
   getInterviewQuestionIndex(): Observable<SearchDocument[]> {
     return this.interviewQuestionIndex$;
+  }
+
+  getDeliveryPlan(): Observable<DeliveryPlan> {
+    return this.http.get<DeliveryPlan>('/content/delivery/delivery-plan.json');
   }
 
   getInterviewQuestion(

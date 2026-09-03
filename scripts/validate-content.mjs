@@ -50,6 +50,7 @@ const referencedAssetPaths = new Set();
 let courseCount = 0;
 let questionCount = 0;
 let traceProblemCount = 0;
+let deliveryPlanCount = 0;
 
 async function filesWithExtension(directory, extension) {
   const entries = await readdir(directory, { withFileTypes: true });
@@ -68,6 +69,142 @@ async function filesWithExtension(directory, extension) {
 
 function requireValue(condition, message) {
   if (!condition) throw new Error(message);
+}
+
+function validateDeliveryPlan(plan, label) {
+  requireValue(plan?.schemaVersion === 'delivery-plan/v1', `${label}: invalid schema version`);
+  requireValue(plan.id && plan.title && plan.summary, `${label}: incomplete plan identity`);
+  requireValue(Array.isArray(plan.workflow) && plan.workflow.length > 0, `${label}: no workflow`);
+  requireValue(
+    Array.isArray(plan.priorities) && plan.priorities.length > 0,
+    `${label}: no priorities`,
+  );
+  requireValue(Array.isArray(plan.stages) && plan.stages.length > 0, `${label}: no stages`);
+  requireValue(Array.isArray(plan.workItems), `${label}: workItems must be an array`);
+  requireValue(Array.isArray(plan.decisions), `${label}: decisions must be an array`);
+  requireValue(
+    plan.deliverySequence?.title &&
+      plan.deliverySequence?.note &&
+      Array.isArray(plan.deliverySequence?.windows) &&
+      plan.deliverySequence.windows.length > 0,
+    `${label}: delivery sequence is incomplete`,
+  );
+
+  const uniqueIds = (items, kind) => {
+    const ids = new Set();
+    for (const item of items) {
+      requireValue(item?.id, `${label}: ${kind} has no id`);
+      requireValue(!ids.has(item.id), `${label}: duplicate ${kind} id ${item.id}`);
+      ids.add(item.id);
+    }
+    return ids;
+  };
+
+  const workflowIds = uniqueIds(plan.workflow, 'workflow state');
+  const priorityIds = uniqueIds(plan.priorities, 'priority');
+  const stageIds = uniqueIds(plan.stages, 'stage');
+  const workItemIds = uniqueIds(plan.workItems, 'work item');
+  uniqueIds(plan.decisions, 'decision');
+  uniqueIds(plan.deliverySequence.windows, 'delivery window');
+
+  requireValue(stageIds.has(plan.currentStageId), `${label}: current stage does not exist`);
+  for (const stage of plan.stages) {
+    requireValue(
+      Number.isInteger(stage.order) &&
+        stage.order > 0 &&
+        stage.title &&
+        stage.goal &&
+        stage.reviewGate,
+      `${label}: stage ${stage.id} is incomplete`,
+    );
+  }
+  for (const item of plan.workItems) {
+    requireValue(
+      item.title && item.summary && item.type && item.updatedAt,
+      `${label}: work item ${item.id} is incomplete`,
+    );
+    requireValue(
+      stageIds.has(item.stageId),
+      `${label}: ${item.id} has unknown stage ${item.stageId}`,
+    );
+    requireValue(
+      workflowIds.has(item.statusId),
+      `${label}: ${item.id} has unknown workflow state ${item.statusId}`,
+    );
+    requireValue(
+      priorityIds.has(item.priorityId),
+      `${label}: ${item.id} has unknown priority ${item.priorityId}`,
+    );
+    requireValue(
+      Array.isArray(item.acceptanceCriteria) && item.acceptanceCriteria.length > 0,
+      `${label}: ${item.id} has no acceptance criteria`,
+    );
+    requireValue(
+      Array.isArray(item.labels) &&
+        Array.isArray(item.dependencies) &&
+        Array.isArray(item.blockedBy),
+      `${label}: ${item.id} has invalid labels or relationships`,
+    );
+    for (const relationship of [...item.dependencies, ...item.blockedBy]) {
+      requireValue(
+        workItemIds.has(relationship),
+        `${label}: ${item.id} references unknown work item ${relationship}`,
+      );
+    }
+  }
+  for (const decision of plan.decisions) {
+    requireValue(
+      decision.title && decision.decision && decision.rationale && decision.revisitWhen,
+      `${label}: decision ${decision.id} is incomplete`,
+    );
+    requireValue(
+      Array.isArray(decision.relatedWorkItemIds),
+      `${label}: decision ${decision.id} has invalid related work items`,
+    );
+    for (const itemId of decision.relatedWorkItemIds) {
+      requireValue(
+        workItemIds.has(itemId),
+        `${label}: decision ${decision.id} references unknown work item ${itemId}`,
+      );
+    }
+  }
+  const checkpointIds = new Set();
+  for (const window of plan.deliverySequence.windows) {
+    requireValue(
+      window.dayRange && window.title && Array.isArray(window.checkpoints),
+      `${label}: delivery window ${window.id} is incomplete`,
+    );
+    for (const checkpoint of window.checkpoints) {
+      requireValue(
+        checkpoint.id &&
+          !checkpointIds.has(checkpoint.id) &&
+          checkpoint.day &&
+          checkpoint.outcome &&
+          Array.isArray(checkpoint.stageIds) &&
+          typeof checkpoint.reviewStop === 'boolean',
+        `${label}: invalid or duplicate checkpoint in ${window.id}`,
+      );
+      checkpointIds.add(checkpoint.id);
+      for (const stageId of checkpoint.stageIds) {
+        requireValue(
+          stageIds.has(stageId),
+          `${label}: checkpoint ${checkpoint.id} references unknown stage ${stageId}`,
+        );
+      }
+    }
+  }
+  requireValue(
+    plan.interruptionPolicy?.title &&
+      plan.interruptionPolicy?.principle &&
+      Array.isArray(plan.interruptionPolicy?.rules),
+    `${label}: interruption policy is incomplete`,
+  );
+  for (const rule of plan.interruptionPolicy.rules) {
+    requireValue(
+      priorityIds.has(rule.priorityId) && rule.action && Array.isArray(rule.examples),
+      `${label}: invalid interruption rule for ${rule.priorityId}`,
+    );
+  }
 }
 
 function collectAssetPaths(value, paths = []) {
@@ -153,6 +290,11 @@ const contentFiles = await filesWithExtension(contentRoot, '.json');
 
 for (const file of contentFiles) {
   const label = relative(contentRoot, file);
+  if (label === 'delivery/delivery-plan.json') {
+    validateDeliveryPlan(JSON.parse(await readFile(file, 'utf8')), label);
+    deliveryPlanCount += 1;
+    continue;
+  }
   if (
     label.includes('/modules/') ||
     label.includes('/traces/') ||
@@ -1036,5 +1178,5 @@ for (const { lesson, moduleLabel } of patternLessons) {
 }
 
 console.log(
-  `Validated ${courseCount} course manifest(s), ${questionCount} question(s), ${patternLessons.length} versioned pattern lesson(s), ${foundationLessons.length} foundation lesson(s), and ${traceProblemCount} trace problem(s).`,
+  `Validated ${courseCount} course manifest(s), ${questionCount} question(s), ${patternLessons.length} versioned pattern lesson(s), ${foundationLessons.length} foundation lesson(s), ${traceProblemCount} trace problem(s), and ${deliveryPlanCount} delivery plan(s).`,
 );
