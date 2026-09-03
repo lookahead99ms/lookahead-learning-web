@@ -10,6 +10,7 @@ import {
   isFoundationLessonV1,
   isPatternLessonV1,
 } from './content.models';
+import { isTheoryArticle } from './question-discovery';
 
 @Injectable({ providedIn: 'root' })
 export class ContentService {
@@ -193,13 +194,11 @@ export class ContentService {
       }
       // Legacy Q&A entries may carry a `theory` label. Treat an item as an
       // article only when it has article sections; otherwise it remains Q&A.
-      const contentType =
-        question.contentType === 'theory' &&
-        (isPatternLessonV1(question) || isFoundationLessonV1(question) || question.sections?.length)
-          ? 'theory'
-          : question.contentType === 'theory'
-            ? 'q-and-a'
-            : (question.contentType ?? 'q-and-a');
+      const contentType = isTheoryArticle(question)
+        ? 'theory'
+        : question.contentType === 'theory'
+          ? 'q-and-a'
+          : (question.contentType ?? 'q-and-a');
       const contentTypeLabel =
         contentType === 'q-and-a'
           ? 'Q&A'

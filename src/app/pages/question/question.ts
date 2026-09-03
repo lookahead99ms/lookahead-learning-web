@@ -18,8 +18,9 @@ import {
   reviewStatusLabel,
 } from '../../content/content.models';
 import { ContentService } from '../../content/content.service';
-import { flattenLearningUnits } from '../../content/learning-units';
+import { flattenLearningUnits, orderedTheoryArticles } from '../../content/learning-units';
 import { authenticCodingVisual, relatedPracticeItems } from '../../content/pattern-experience';
+import { questionModuleIdForArticle, questionsForModule } from '../../content/question-discovery';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { InteractiveTheoryVisual } from '../../core/interactive-theory-visual/interactive-theory-visual';
 import { CodingSolutionTabs } from '../../core/coding-solution-tabs/coding-solution-tabs';
@@ -553,6 +554,10 @@ import { FoundationLessonShell } from '../../core/foundation-lesson-shell/founda
         opacity: 1;
       }
       @media (max-width: 760px) {
+        .pattern-navigation button,
+        .sticky-pill-strip .sticky-pill {
+          min-height: 44px;
+        }
         .sticky-pill-strip .sticky-pill:not(.active) {
           display: none;
         }
@@ -607,6 +612,8 @@ export class Question implements OnInit {
   protected readonly moduleTitle = signal('');
   protected readonly previousQuestion = signal<ReaderLink | null>(null);
   protected readonly nextQuestion = signal<ReaderLink | null>(null);
+  protected readonly previousArticle = signal<ReaderLink | null>(null);
+  protected readonly nextArticle = signal<ReaderLink | null>(null);
   protected readonly previousModule = signal<CourseModule | null>(null);
   protected readonly nextModule = signal<CourseModule | null>(null);
   protected readonly nextModuleFirstQuestion = signal<ReaderLink | null>(null);
@@ -733,6 +740,23 @@ export class Question implements OnInit {
     );
     if (!unit?.practiceModuleId) return [];
     return relatedPracticeItems(this.course()?.questions ?? [], item.id, unit.practiceModuleId);
+  }
+
+  protected questionBankModuleId(item: InterviewQuestion): string | null {
+    if (item.contentType !== 'theory') return null;
+    const course = this.course();
+    if (!course) return null;
+
+    const configuredModuleId = questionModuleIdForArticle(course, item);
+    if (configuredModuleId) return configuredModuleId;
+
+    return questionsForModule(course, item.moduleId).length > 0 ? item.moduleId : null;
+  }
+
+  protected questionBankCount(item: InterviewQuestion): number {
+    const course = this.course();
+    if (!course) return 0;
+    return questionsForModule(course, this.questionBankModuleId(item)).length;
   }
 
   protected isHandsOnSection(section: { id: string; heading: string }): boolean {
@@ -1044,6 +1068,22 @@ export class Question implements OnInit {
     this.isLastQuestionInModule.set(currentIndex === moduleQuestions.length - 1);
     this.previousQuestion.set(this.toReaderLink(moduleQuestions[currentIndex - 1]));
     this.nextQuestion.set(this.toReaderLink(moduleQuestions[currentIndex + 1]));
+
+    const theoryArticles = orderedTheoryArticles(
+      course,
+      trackModules.map(({ id }) => id),
+    );
+    const currentArticleIndex = theoryArticles.findIndex(({ id }) => id === question.id);
+    this.previousArticle.set(
+      question.contentType === 'theory'
+        ? this.toReaderLink(theoryArticles[currentArticleIndex - 1])
+        : null,
+    );
+    this.nextArticle.set(
+      question.contentType === 'theory'
+        ? this.toReaderLink(theoryArticles[currentArticleIndex + 1])
+        : null,
+    );
 
     const nextModuleQuestion = nextModule
       ? course.questions

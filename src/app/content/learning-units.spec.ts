@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { CourseLearningUnit } from './content.models';
-import { flattenLearningUnits } from './learning-units';
+import { CourseContent, CourseLearningUnit } from './content.models';
+import { flattenLearningUnits, orderedTheoryArticles } from './learning-units';
 
 describe('learning unit hierarchy', () => {
   it('preserves parent-first curriculum order across nested concept families', () => {
@@ -38,6 +38,25 @@ describe('learning unit hierarchy', () => {
       'fast-slow',
       'list-reversal',
       'trees',
+    ]);
+  });
+
+  it('orders theory articles by curriculum module and skips embedded Q&A', () => {
+    const course = {
+      modules: [
+        { id: 'errors', order: 2, title: 'Errors', description: 'Failure behavior.' },
+        { id: 'values', order: 1, title: 'Values', description: 'Value behavior.' },
+      ],
+      questions: [
+        { id: 'values-q', moduleId: 'values', order: 2, contentType: 'q-and-a' },
+        { id: 'errors-article', moduleId: 'errors', order: 1, contentType: 'theory' },
+        { id: 'values-article', moduleId: 'values', order: 1, contentType: 'theory' },
+      ],
+    } as CourseContent;
+
+    expect(orderedTheoryArticles(course).map(({ id }) => id)).toEqual([
+      'values-article',
+      'errors-article',
     ]);
   });
 });
