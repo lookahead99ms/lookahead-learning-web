@@ -29,7 +29,7 @@ import {
 } from '../../content/delivery-plan.models';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 
-type DeliveryView = 'board' | 'roadmap' | 'decisions';
+type DeliveryView = 'board' | 'backlog' | 'all-tickets' | 'roadmap' | 'decisions';
 type WorkItemDraft = Omit<
   DeliveryWorkItemInput,
   'labels' | 'acceptanceCriteria' | 'dependencies' | 'blockedBy' | 'notes'
@@ -81,6 +81,9 @@ export class DeliveryPlanPage implements OnInit {
   protected readonly priorityFilter = signal('all');
   protected readonly typeFilter = signal<'all' | DeliveryWorkItemType>('all');
   protected readonly selectedWorkItem = signal<DeliveryWorkItem | null>(null);
+  protected readonly workView = computed(() =>
+    ['board', 'backlog', 'all-tickets'].includes(this.view()),
+  );
   protected readonly workItemTypes: { id: DeliveryWorkItemType; label: string }[] = [
     { id: 'epic', label: 'Epic' },
     { id: 'story', label: 'Story' },
@@ -106,7 +109,8 @@ export class DeliveryPlanPage implements OnInit {
       const matchesPriority =
         this.priorityFilter() === 'all' || item.priorityId === this.priorityFilter();
       const matchesType = this.typeFilter() === 'all' || item.type === this.typeFilter();
-      return matchesQuery && matchesStage && matchesPriority && matchesType;
+      const matchesView = this.view() !== 'backlog' || item.statusId === 'backlog';
+      return matchesView && matchesQuery && matchesStage && matchesPriority && matchesType;
     });
   });
 
@@ -133,10 +137,15 @@ export class DeliveryPlanPage implements OnInit {
     this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const requestedView = params.get('view');
       this.view.set(
-        requestedView === 'roadmap' || requestedView === 'decisions' ? requestedView : 'board',
+        requestedView === 'roadmap' ||
+          requestedView === 'decisions' ||
+          requestedView === 'backlog' ||
+          requestedView === 'all-tickets'
+          ? requestedView
+          : 'board',
       );
       this.query.set(params.get('q') ?? '');
-      this.stageFilter.set(params.get('stage') ?? 'current');
+      this.stageFilter.set(params.get('stage') ?? this.defaultStageFilter());
       this.priorityFilter.set(params.get('priority') ?? 'all');
       const type = params.get('type');
       this.typeFilter.set(
@@ -190,7 +199,7 @@ export class DeliveryPlanPage implements OnInit {
       !['all', 'current'].includes(stage) &&
       !snapshot.plan.stages.some((entry) => entry.id === stage)
     ) {
-      this.stageFilter.set('current');
+      this.stageFilter.set(this.defaultStageFilter());
       this.syncUrl();
     }
   }
@@ -464,7 +473,12 @@ export class DeliveryPlanPage implements OnInit {
   }
 
   protected setView(view: DeliveryView): void {
+    if (this.view() === view) return;
     this.view.set(view);
+    if (this.workView()) {
+      this.resetView();
+      return;
+    }
     this.syncUrl();
   }
 
@@ -490,7 +504,7 @@ export class DeliveryPlanPage implements OnInit {
 
   protected resetView(): void {
     this.query.set('');
-    this.stageFilter.set('current');
+    this.stageFilter.set(this.defaultStageFilter());
     this.priorityFilter.set('all');
     this.typeFilter.set('all');
     this.syncUrl();
@@ -599,13 +613,19 @@ export class DeliveryPlanPage implements OnInit {
     void this.router.navigate([], {
       relativeTo: this.route,
       replaceUrl: true,
+      // Same-page controls update the URL without triggering the app-wide scroll-to-top.
+      scroll: 'manual',
       queryParams: {
         view: this.view() === 'board' ? null : this.view(),
         q: this.query().trim() || null,
-        stage: this.stageFilter() === 'current' ? null : this.stageFilter(),
+        stage: this.stageFilter() === this.defaultStageFilter() ? null : this.stageFilter(),
         priority: this.priorityFilter() === 'all' ? null : this.priorityFilter(),
         type: this.typeFilter() === 'all' ? null : this.typeFilter(),
       },
     });
+  }
+
+  private defaultStageFilter(): 'all' | 'current' {
+    return this.view() === 'backlog' || this.view() === 'all-tickets' ? 'all' : 'current';
   }
 }

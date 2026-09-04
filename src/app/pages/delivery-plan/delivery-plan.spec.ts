@@ -167,9 +167,7 @@ describe('DeliveryPlanPage', () => {
     expect(harness.routeNativeElement?.textContent).toContain('Render a data-driven board');
     expect(harness.routeNativeElement?.textContent).not.toContain('Keep another item');
 
-    (
-      harness.routeNativeElement?.querySelectorAll('.view-tabs button')[1] as HTMLButtonElement
-    ).click();
+    await switchView(harness, 'Roadmap');
     await harness.fixture.whenStable();
     harness.detectChanges();
 
@@ -261,6 +259,179 @@ describe('DeliveryPlanPage', () => {
     harness.detectChanges();
     return harness;
   }
+
+  async function switchView(harness: RouterTestingHarness, label: string) {
+    [...harness.routeNativeElement!.querySelectorAll<HTMLButtonElement>('.view-tabs button')]
+      .find((button) => button.textContent?.trim() === label)!
+      .click();
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+  }
+
+  it.each(['Board', 'Backlog', 'All tickets', 'Roadmap', 'Decisions'])(
+    'opts out of router scroll-to-top when switching to %s',
+    async (label) => {
+      const harness = await editableBoard();
+      if (label === 'Board') await switchView(harness, 'Backlog');
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigate');
+      await switchView(harness, label);
+      expect(navigate).toHaveBeenCalledOnce();
+      expect(navigate.mock.lastCall?.[0]).toEqual([]);
+      expect(navigate.mock.lastCall?.[1]?.replaceUrl).toBe(true);
+      expect(navigate.mock.lastCall?.[1]?.scroll).toBe('manual');
+    },
+  );
+
+  it('preserves scroll for search, dropdowns, and clearing delivery filters', async () => {
+    const harness = await editableBoard();
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate');
+    const input =
+      harness.routeNativeElement!.querySelector<HTMLInputElement>('.board-search input')!;
+    input.value = 'TEST';
+    input.dispatchEvent(new Event('input'));
+    await harness.fixture.whenStable();
+    const selects =
+      harness.routeNativeElement!.querySelectorAll<HTMLSelectElement>('.board-controls select');
+    for (const [index, value] of ['all', 'P1', 'task'].entries()) {
+      selects[index].value = value;
+      selects[index].dispatchEvent(new Event('change'));
+      await harness.fixture.whenStable();
+    }
+    harness.routeNativeElement!.querySelector<HTMLButtonElement>('.clear-filters')!.click();
+    await harness.fixture.whenStable();
+    expect(navigate).toHaveBeenCalledTimes(5);
+    for (const [commands, extras] of navigate.mock.calls) {
+      expect(commands).toEqual([]);
+      expect(extras?.scroll).toBe('manual');
+    }
+  });
+
+  it('preserves scroll when opening the active stage from another delivery view', async () => {
+    const harness = await editableBoard();
+    await switchView(harness, 'Roadmap');
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate');
+    harness
+      .routeNativeElement!.querySelector<HTMLButtonElement>('.active-stage-card button')!
+      .click();
+    await harness.fixture.whenStable();
+    expect(navigate).toHaveBeenCalledOnce();
+    expect(navigate.mock.lastCall?.[1]?.scroll).toBe('manual');
+  });
+
+  it('opens Backlog across all stages and returns to the current-stage board', async () => {
+    const harness = await editableBoard();
+    await switchView(harness, 'Backlog');
+    expect(TestBed.inject(Router).url).toBe('/delivery-plan?view=backlog');
+    expect(harness.routeNativeElement!.querySelectorAll('.ticket-row')).toHaveLength(1);
+    expect(harness.routeNativeElement!.querySelector('.ticket-row')!.textContent).toContain(
+      'TEST-2',
+    );
+    expect(harness.routeNativeElement!.querySelector('.delivery-board')).toBeNull();
+    expect(
+      harness.routeNativeElement!.querySelector<HTMLSelectElement>('.board-controls select')!.value,
+    ).toBe('all');
+    await switchView(harness, 'Board');
+    expect(TestBed.inject(Router).url).toBe('/delivery-plan');
+    expect(harness.routeNativeElement!.querySelector('.work-item-card')!.textContent).toContain(
+      'TEST-1',
+    );
+    expect(harness.routeNativeElement!.querySelector('.delivery-board')!.textContent).not.toContain(
+      'TEST-2',
+    );
+  });
+
+  it('shows all tickets including completed work and opens their details', async () => {
+    const snapshot = structuredClone(plan);
+    snapshot.workItems[0].statusId = 'done';
+    editor.load.mockReturnValue(of({ plan: snapshot, revision: 'revision-1' }));
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/delivery-plan', DeliveryPlanPage);
+    await switchView(harness, 'All tickets');
+    expect(TestBed.inject(Router).url).toBe('/delivery-plan?view=all-tickets');
+    expect(harness.routeNativeElement!.querySelectorAll('.ticket-row')).toHaveLength(2);
+    const row = harness.routeNativeElement!.querySelector<HTMLButtonElement>('.ticket-row')!;
+    expect(row.textContent).toContain('Done');
+    expect(row.textContent).toContain('Use configured workflow columns.');
+    row.click();
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    expect(
+      harness.routeNativeElement!.querySelector<HTMLDialogElement>('.work-item-dialog')!.open,
+    ).toBe(true);
+    expect(harness.routeNativeElement!.querySelector('.dialog-shell')!.textContent).toContain(
+      'TEST-1',
+    );
+    expect(
+      harness.routeNativeElement!.querySelector('.dialog-footer .editor-primary'),
+    ).not.toBeNull();
+    expect(editor.save).not.toHaveBeenCalled();
+  });
+
+  it.each(['backlog', 'all-tickets'])(
+    'restores the %s URL and clears filters without hiding future stages',
+    async (view) => {
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl(
+        `/delivery-plan?view=${view}&q=another&stage=future-stage&type=task`,
+        DeliveryPlanPage,
+      );
+      harness.detectChanges();
+      expect(harness.routeNativeElement!.querySelectorAll('.ticket-row')).toHaveLength(1);
+      expect(harness.routeNativeElement!.querySelector('.ticket-row')!.textContent).toContain(
+        'TEST-2',
+      );
+      const input =
+        harness.routeNativeElement!.querySelector<HTMLInputElement>('.board-search input')!;
+      input.value = '';
+      input.dispatchEvent(new Event('input'));
+      await harness.fixture.whenStable();
+      expect(TestBed.inject(Router).url).not.toContain('q=');
+      harness.routeNativeElement!.querySelector<HTMLButtonElement>('.clear-filters')!.click();
+      await harness.fixture.whenStable();
+      harness.detectChanges();
+      expect(TestBed.inject(Router).url).toBe(`/delivery-plan?view=${view}`);
+      expect(
+        harness.routeNativeElement!.querySelector<HTMLSelectElement>('.board-controls select')!
+          .value,
+      ).toBe('all');
+      expect(harness.routeNativeElement!.querySelectorAll('.ticket-row')).toHaveLength(
+        view === 'backlog' ? 1 : 2,
+      );
+    },
+  );
+
+  it('clears hidden board filters when opening All tickets', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl(
+      '/delivery-plan?q=no-match&stage=foundation&type=story',
+      DeliveryPlanPage,
+    );
+    await switchView(harness, 'All tickets');
+    expect(TestBed.inject(Router).url).toBe('/delivery-plan?view=all-tickets');
+    expect(harness.routeNativeElement!.querySelectorAll('.ticket-row')).toHaveLength(2);
+  });
+
+  it('refreshes the backlog without resetting its view or filters', async () => {
+    const harness = await editableBoard();
+    await switchView(harness, 'Backlog');
+    const snapshot = structuredClone(plan);
+    snapshot.workItems[1].title = 'Updated backlog title';
+    editor.load.mockReturnValue(of({ plan: snapshot, revision: 'revision-2' }));
+    harness
+      .routeNativeElement!.querySelector<HTMLButtonElement>('.editor-toolbar .editor-secondary')!
+      .click();
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    expect(harness.routeNativeElement!.querySelector('.ticket-row')!.textContent).toContain(
+      'Updated backlog title',
+    );
+    expect(harness.routeNativeElement!.textContent).toContain(
+      'Board refreshed from the private JSON.',
+    );
+    expect(harness.routeNativeElement!.textContent).toContain('automatically every 5 seconds');
+    expect(TestBed.inject(Router).url).toBe('/delivery-plan?view=backlog');
+    expect(editor.save).not.toHaveBeenCalled();
+  });
 
   it('links private evidence by item and attachment identity, never by filesystem path', async () => {
     const snapshot = structuredClone(plan);
