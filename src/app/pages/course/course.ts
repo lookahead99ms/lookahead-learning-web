@@ -1,6 +1,7 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { forkJoin, switchMap } from 'rxjs';
+import { EMPTY, catchError, forkJoin, switchMap } from 'rxjs';
 import { ContentService } from '../../content/content.service';
 import {
   CatalogItem,
@@ -145,6 +146,7 @@ import { CourseLearningMap } from '../../core/course-learning-map/course-learnin
 export class Course implements OnInit {
   private readonly contentService = inject(ContentService);
   private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
   protected readonly course = signal<CourseContent | null>(null);
   protected readonly courseId = signal('');
   protected readonly pathId = signal('learn');
@@ -172,6 +174,8 @@ export class Course implements OnInit {
     this.route.paramMap
       .pipe(
         switchMap((params) => {
+          this.course.set(null);
+          this.error.set('');
           const courseId = params.get('courseId') ?? 'core-java';
           const pathId = this.route.snapshot.data['pathId'] ?? 'learn';
           this.courseId.set(courseId);
@@ -179,8 +183,15 @@ export class Course implements OnInit {
           return forkJoin({
             course: this.contentService.getCourse(pathId, courseId),
             catalog: this.contentService.getCatalog(pathId),
-          });
+          }).pipe(
+            // Handle each request independently so later route changes can recover.
+            catchError(() => {
+              this.error.set('The learning content could not be loaded.');
+              return EMPTY;
+            }),
+          );
         }),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
         next: ({ course, catalog }) => {
@@ -208,7 +219,6 @@ export class Course implements OnInit {
           this.isFirstCompetency.set(currentIndex === 0);
           this.isLastCompetency.set(currentIndex === availableCompetencies.length - 1);
         },
-        error: () => this.error.set('The learning content could not be loaded.'),
       });
   }
 

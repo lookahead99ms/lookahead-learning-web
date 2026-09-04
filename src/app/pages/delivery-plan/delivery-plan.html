@@ -374,7 +374,13 @@
       }
     </section>
 
-    <dialog #workItemDialog class="work-item-dialog" (close)="selectedWorkItem.set(null)">
+    <dialog
+      #workItemDialog
+      class="work-item-dialog"
+      (close)="selectedWorkItem.set(null)"
+      (pointerdown)="rememberDialogPointerStart($event)"
+      (click)="dismissDialogBackdrop($event)"
+    >
       @if (selectedWorkItem(); as item) {
         <div class="dialog-shell">
           <header class="dialog-header">
@@ -496,6 +502,8 @@
       class="work-item-dialog editor-dialog"
       aria-labelledby="editor-title"
       (cancel)="cancelEditor($event)"
+      (pointerdown)="rememberDialogPointerStart($event)"
+      (click)="dismissDialogBackdrop($event, true)"
     >
       @if (draft; as form) {
         <form class="dialog-shell" (ngSubmit)="saveDraft()">

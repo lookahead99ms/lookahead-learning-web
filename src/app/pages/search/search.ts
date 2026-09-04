@@ -1,4 +1,5 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ContentService } from '../../content/content.service';
@@ -679,6 +680,8 @@ const VISIBLE_TAG_LIMIT = 60;
 export class Search implements OnInit {
   private readonly content = inject(ContentService);
   private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly urlSyncInfo = {};
   private readonly router = inject(Router);
   protected readonly libraryMode = this.route.snapshot.data['experience'] === 'interview-questions';
   protected readonly questions = signal<SearchDocument[]>([]);
@@ -819,32 +822,37 @@ export class Search implements OnInit {
   });
 
   ngOnInit(): void {
-    const params = this.route.snapshot.queryParamMap;
-    const initialQuery = params.get('q')?.trim().toLowerCase() ?? '';
-    const initialTags = [...params.getAll('tag'), ...(params.get('tags')?.split(',') ?? [])]
-      .map((tag) => tag.trim())
-      .filter(Boolean);
-    this.query.set(initialQuery);
-    this.submittedQuery.set(initialQuery);
-    const initialPath =
-      this.pathForFilter(params.get('path') ?? '') ??
-      initialTags
-        .map((tag) => this.pathForFilter(tag))
-        .find((path): path is ContentPath => path !== null);
-    this.selectedPath.set(initialPath ?? 'all');
-    this.selectedTags.set(new Set(initialTags.filter((tag) => this.pathForFilter(tag) === null)));
-    this.selectedCourseId.set(params.get('course') ?? 'all');
-    this.selectedModuleId.set(params.get('module') ?? 'all');
-    this.selectedDifficulty.set(this.difficultyFromValue(params.get('difficulty')));
-    this.selectedLanguage.set(this.languageFromValue(params.get('language')));
-    this.selectedContentType.set(this.contentTypeFromValue(params.get('type')));
-    this.sortBy.set(this.sortFromValue(params.get('sort')));
-    this.groupBy.set(this.groupFromValue(params.get('group')));
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
+      // Internal updates already changed the filters; keep any unsubmitted text.
+      // Navigation info is transient, unlike history state used by Back/Forward.
+      if (this.router.currentNavigation()?.extras.info === this.urlSyncInfo) return;
+      const initialQuery = params.get('q')?.trim().toLowerCase() ?? '';
+      const initialTags = [...params.getAll('tag'), ...(params.get('tags')?.split(',') ?? [])]
+        .map((tag) => tag.trim())
+        .filter(Boolean);
+      this.query.set(initialQuery);
+      this.submittedQuery.set(initialQuery);
+      const initialPath =
+        this.pathForFilter(params.get('path') ?? '') ??
+        initialTags
+          .map((tag) => this.pathForFilter(tag))
+          .find((path): path is ContentPath => path !== null);
+      this.selectedPath.set(initialPath ?? 'all');
+      this.selectedTags.set(new Set(initialTags.filter((tag) => this.pathForFilter(tag) === null)));
+      this.selectedCourseId.set(params.get('course') ?? 'all');
+      this.selectedModuleId.set(params.get('module') ?? 'all');
+      this.selectedDifficulty.set(this.difficultyFromValue(params.get('difficulty')));
+      this.selectedLanguage.set(this.languageFromValue(params.get('language')));
+      this.selectedContentType.set(this.contentTypeFromValue(params.get('type')));
+      this.sortBy.set(this.sortFromValue(params.get('sort')));
+      this.groupBy.set(this.groupFromValue(params.get('group')));
+      this.resetVisibleResults();
+    });
 
     const index = this.libraryMode
       ? this.content.getInterviewQuestionIndex()
       : this.content.getSearchIndex();
-    index.subscribe({
+    index.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (questions) => {
         this.questions.set(questions);
         this.retainUnavailableTags();
@@ -1279,6 +1287,7 @@ export class Search implements OnInit {
       .navigate([], {
         relativeTo: this.route,
         replaceUrl: true,
+        info: this.urlSyncInfo,
         queryParams: {
           q: this.submittedQuery() || null,
           path: this.selectedPath() === 'all' ? null : this.selectedPath(),

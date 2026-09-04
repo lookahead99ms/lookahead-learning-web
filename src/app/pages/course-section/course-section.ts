@@ -1,6 +1,7 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { switchMap } from 'rxjs';
+import { EMPTY, catchError, switchMap } from 'rxjs';
 import { CourseContent, CourseModule, CourseSection as ContentSection, reviewStatusLabel } from '../../content/content.models';
 import { ContentService } from '../../content/content.service';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
@@ -22,6 +23,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
 export class CourseSection implements OnInit {
   private readonly contentService = inject(ContentService);
   private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
   protected readonly course = signal<CourseContent | null>(null);
   protected readonly section = signal<ContentSection | null>(null);
   protected readonly modules = signal<CourseModule[]>([]);
@@ -30,15 +32,24 @@ export class CourseSection implements OnInit {
   protected readonly reviewStatusLabel = reviewStatusLabel;
 
   ngOnInit(): void {
-    this.route.paramMap.pipe(
-      switchMap((params) => {
-        this.courseId.set(params.get('courseId') ?? 'big-o-analysis');
-        return this.contentService.getCourse('learn', this.courseId());
-      }),
-    ).subscribe({
-      next: (course) => this.display(course),
-      error: () => this.error.set('The learning content could not be loaded.'),
-    });
+    this.route.paramMap
+      .pipe(
+        switchMap((params) => {
+          this.course.set(null);
+          this.section.set(null);
+          this.modules.set([]);
+          this.error.set('');
+          this.courseId.set(params.get('courseId') ?? 'big-o-analysis');
+          return this.contentService.getCourse('learn', this.courseId()).pipe(
+            catchError(() => {
+              this.error.set('The learning content could not be loaded.');
+              return EMPTY;
+            }),
+          );
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({ next: (course) => this.display(course) });
   }
 
   private display(course: CourseContent): void {

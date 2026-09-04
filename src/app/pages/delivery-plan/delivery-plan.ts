@@ -61,6 +61,7 @@ export class DeliveryPlanPage implements OnInit {
   private initialDraft = '';
   private refreshPending = false;
   private writeGeneration = 0;
+  private backdropPointerStart: HTMLDialogElement | null = null;
   protected readonly editable = signal(false);
   protected readonly saving = signal(false);
   protected readonly notice = signal('');
@@ -554,6 +555,33 @@ export class DeliveryPlanPage implements OnInit {
   protected closeWorkItem(): void {
     this.workItemDialog()?.nativeElement.close();
     this.selectedWorkItem.set(null);
+  }
+
+  protected rememberDialogPointerStart(event: PointerEvent): void {
+    this.backdropPointerStart =
+      event.button === 0 && this.isDialogBackdrop(event)
+        ? (event.currentTarget as HTMLDialogElement)
+        : null;
+  }
+
+  protected dismissDialogBackdrop(event: MouseEvent, editor = false): void {
+    const startedOutside = this.backdropPointerStart === event.currentTarget;
+    this.backdropPointerStart = null;
+    // Requiring both ends outside prevents text-selection drags from dismissing the ticket.
+    if (!startedOutside || !this.isDialogBackdrop(event)) return;
+    if (editor) this.closeEditor();
+    else this.closeWorkItem();
+  }
+
+  private isDialogBackdrop(event: MouseEvent): boolean {
+    if (event.target !== event.currentTarget) return false;
+    const bounds = (event.currentTarget as HTMLDialogElement).getBoundingClientRect();
+    return (
+      event.clientX < bounds.left ||
+      event.clientX > bounds.right ||
+      event.clientY < bounds.top ||
+      event.clientY > bounds.bottom
+    );
   }
 
   protected selectStage(stageId: string): void {

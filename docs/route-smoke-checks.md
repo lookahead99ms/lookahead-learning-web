@@ -64,7 +64,18 @@ Static paths, module paths, and section paths must take precedence over generic 
 
 ## Follow-on validation
 
-Route availability is only the baseline. Separate regression work must cover clearing searches, repeated filter selection, refresh and browser history, component reuse after route-parameter changes, malformed queries, unavailable content, and Surprise me. Content certification must cover technical correctness, source completeness, language coverage, traces, and editorial quality. Accessibility, small-screen behavior, performance budgets, production authorization, and code execution require their own evidence.
+Route availability is only the baseline. Automated regression coverage uses the production route configuration with synthetic content, so it runs without the private curriculum:
+
+| Test file | Protected behavior |
+| --- | --- |
+| `src/app/pages/content-route-regression.spec.ts` | Learn, Grow, and Look Ahead course/module/question route reuse; missing item IDs; failed-request recovery; stale content removal and superseded responses; legacy Learn sections |
+| `src/app/pages/search/search.spec.ts` | Search clearing, URL-driven visible state, Back/Forward, recreated-page state, repeated topic deselection, delayed filter options, first-submit scrolling, and on-demand answers |
+| `src/app/pages/hands-on-dsa/hands-on-dsa.spec.ts` | Practice-to-filter-to-problem-to-breadcrumb journey, repeated pattern deselection, collapsed defaults, deep links, catalog failures, and Surprise me eligibility/context |
+| `src/app/core/course-learning-map/course-learning-map.spec.ts` | Canonical Practice URLs and counted question-bank links |
+
+Run a real-browser check after the automated suite: clear a search using the keyboard, reload, select/deselect a topic, and use Back/Forward. The router tests simulate history and recreate components; they do not replace an actual browser reload. Verify a representative Practice journey and missing-content page on the identified running checkout.
+
+These checks do not certify curriculum completeness, all malformed query combinations, random-selection fairness, DSA scrolling geometry, performance, or the future unified practice modes. Content certification must cover technical correctness, source completeness, language coverage, traces, and editorial quality. Accessibility, small-screen behavior, production authorization, and code execution require their own evidence.
 
 Useful local checks:
 

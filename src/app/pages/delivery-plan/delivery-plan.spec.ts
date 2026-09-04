@@ -325,6 +325,109 @@ describe('DeliveryPlanPage', () => {
     await fill(harness, 'criteria', 'One check\nAnother check');
   }
 
+  function dialogBounds(dialog: HTMLDialogElement): void {
+    vi.spyOn(dialog, 'getBoundingClientRect').mockReturnValue({
+      left: 100,
+      right: 600,
+      top: 100,
+      bottom: 500,
+      x: 100,
+      y: 100,
+      width: 500,
+      height: 400,
+      toJSON: () => ({}),
+    });
+  }
+
+  function pointerEvent(target: Element, type: string, clientX: number, clientY: number): void {
+    target.dispatchEvent(new MouseEvent(type, { bubbles: true, clientX, clientY, button: 0 }));
+  }
+
+  function clickBackdrop(dialog: HTMLDialogElement): void {
+    dialogBounds(dialog);
+    pointerEvent(dialog, 'pointerdown', 20, 200);
+    pointerEvent(dialog, 'click', 20, 200);
+  }
+
+  async function openTicket(harness: RouterTestingHarness): Promise<HTMLDialogElement> {
+    harness.routeNativeElement!.querySelector<HTMLButtonElement>('.work-item-card')!.click();
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    return harness.routeNativeElement!.querySelector<HTMLDialogElement>('.work-item-dialog')!;
+  }
+
+  it('closes a ticket when a click starts and ends on its backdrop', async () => {
+    const harness = await editableBoard();
+    const dialog = await openTicket(harness);
+    expect(dialog.open).toBe(true);
+    clickBackdrop(dialog);
+    harness.detectChanges();
+    expect(dialog.open).toBe(false);
+    expect(dialog.querySelector('.dialog-shell')).toBeNull();
+    expect(editor.save).not.toHaveBeenCalled();
+  });
+
+  it.each(['content', 'padding', 'selection-drag', 'outside-to-inside'])(
+    'keeps the ticket open for a %s interaction',
+    async (interaction) => {
+      const harness = await editableBoard();
+      const dialog = await openTicket(harness);
+      dialogBounds(dialog);
+      const content = dialog.querySelector('.dialog-shell')!;
+      const startTarget =
+        interaction === 'content' || interaction === 'selection-drag' ? content : dialog;
+      const endTarget = interaction === 'content' ? content : dialog;
+      pointerEvent(startTarget, 'pointerdown', interaction === 'outside-to-inside' ? 20 : 200, 200);
+      pointerEvent(endTarget, 'click', interaction === 'selection-drag' ? 20 : 200, 200);
+      harness.detectChanges();
+      expect(dialog.open).toBe(true);
+    },
+  );
+
+  it('closes an unchanged editor from the backdrop without saving or prompting', async () => {
+    const harness = await editableBoard();
+    harness
+      .routeNativeElement!.querySelector<HTMLButtonElement>('.editor-toolbar .editor-primary')!
+      .click();
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    const dialog = harness.routeNativeElement!.querySelector<HTMLDialogElement>('.editor-dialog')!;
+    clickBackdrop(dialog);
+    harness.detectChanges();
+    expect(dialog.open).toBe(false);
+    expect(editor.save).not.toHaveBeenCalled();
+  });
+
+  it('protects an unsaved editor draft when the backdrop is clicked', async () => {
+    const harness = await editableBoard();
+    await newItem(harness);
+    const dialog = harness.routeNativeElement!.querySelector<HTMLDialogElement>('.editor-dialog')!;
+    clickBackdrop(dialog);
+    harness.detectChanges();
+    expect(dialog.open).toBe(true);
+    expect(dialog.textContent).toContain('Discard your unsaved changes?');
+    expect(dialog.querySelector<HTMLInputElement>('[name="title"]')!.value).toBe('A new story');
+    expect(editor.save).not.toHaveBeenCalled();
+  });
+
+  it('does not dismiss the editor while a save is in progress', async () => {
+    const harness = await editableBoard();
+    await newItem(harness);
+    const saved = new Subject<DeliverySnapshot>();
+    editor.save.mockReturnValue(saved);
+    harness
+      .routeNativeElement!.querySelector('form')!
+      .dispatchEvent(new Event('submit', { cancelable: true }));
+    harness.detectChanges();
+    const dialog = harness.routeNativeElement!.querySelector<HTMLDialogElement>('.editor-dialog')!;
+    clickBackdrop(dialog);
+    harness.detectChanges();
+    expect(dialog.open).toBe(true);
+    expect(dialog.textContent).not.toContain('Discard your unsaved changes?');
+    saved.next({ plan, revision: 'revision-2', workItemId: 'TEST-3' });
+    saved.complete();
+  });
+
   it('creates a story through the local service and only reports success after saving', async () => {
     const harness = await editableBoard();
     await newItem(harness);
