@@ -1,4 +1,5 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { ContentService } from '../../content/content.service';
@@ -447,6 +448,7 @@ import { PatternProblemWorkbench } from '../../core/pattern-problem-workbench/pa
 export class HandsOnDsa implements OnInit {
   private readonly content = inject(ContentService);
   private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
   protected readonly courses = signal<CourseContent[] | null>(null);
   protected readonly error = signal('');
@@ -512,11 +514,13 @@ export class HandsOnDsa implements OnInit {
       this.content.getCourse('learn', 'algorithmic-patterns'),
       this.content.getCourse('learn', 'core-data-structures'),
       this.content.getCourse('learn', 'sorting-searching'),
-    ]).subscribe({
-      next: (courses) => this.courses.set(courses),
-      error: () => this.error.set('The practice catalog could not be loaded. Please try again.'),
-    });
-    this.route.queryParamMap.subscribe((params) => {
+    ])
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (courses) => this.courses.set(courses),
+        error: () => this.error.set('The practice catalog could not be loaded. Please try again.'),
+      });
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       this.patternId.set(params.get('pattern') ?? '');
       this.problemId.set(params.get('problem') ?? '');
       this.resetView();

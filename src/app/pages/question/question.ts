@@ -1,7 +1,8 @@
-import { Component, HostListener, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, HostListener, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgTemplateOutlet } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { forkJoin, switchMap } from 'rxjs';
+import { EMPTY, catchError, forkJoin, switchMap } from 'rxjs';
 import {
   CatalogItem,
   CourseContent,
@@ -597,6 +598,7 @@ import { EvidenceAnswerTabs } from '../../core/evidence-answer-tabs/evidence-ans
 export class Question implements OnInit {
   private readonly contentService = inject(ContentService);
   private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
   /** Drives the "pattern : pills" strip shown in the sticky bar once the reader scrolls past the title. */
   protected readonly scrolled = signal(false);
   protected readonly activeSectionIndex = signal(0);
@@ -1044,12 +1046,17 @@ export class Question implements OnInit {
   }
 
   ngOnInit(): void {
-    this.route.queryParamMap.subscribe((params) => {
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       this.surpriseMode.set(params.get('mode') === 'surprise');
     });
     this.route.paramMap
       .pipe(
         switchMap((params) => {
+          this.course.set(null);
+          this.question.set(null);
+          this.error.set('');
+          this.activeSectionIndex.set(0);
+          this.scrolled.set(false);
           const courseId = params.get('courseId') ?? 'core-java';
           const pathId = this.route.snapshot.data['pathId'] ?? 'learn';
           this.courseId.set(courseId);
@@ -1057,12 +1064,17 @@ export class Question implements OnInit {
           return forkJoin({
             catalog: this.contentService.getCatalog(pathId),
             course: this.contentService.getCourse(pathId, courseId),
-          });
+          }).pipe(
+            catchError(() => {
+              this.error.set('The question content could not be loaded.');
+              return EMPTY;
+            }),
+          );
         }),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
         next: ({ catalog, course }) => this.displayQuestion(catalog, course),
-        error: () => this.error.set('The question content could not be loaded.'),
       });
   }
 

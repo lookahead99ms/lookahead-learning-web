@@ -1,6 +1,7 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { forkJoin, switchMap } from 'rxjs';
+import { EMPTY, catchError, forkJoin, switchMap } from 'rxjs';
 import {
   CatalogItem,
   CourseContent,
@@ -121,6 +122,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
 export class Module implements OnInit {
   private readonly contentService = inject(ContentService);
   private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
   protected readonly courseId = signal('');
   protected readonly pathId = signal('learn');
@@ -140,6 +142,10 @@ export class Module implements OnInit {
     this.route.paramMap
       .pipe(
         switchMap((params) => {
+          this.course.set(null);
+          this.module.set(null);
+          this.questions.set([]);
+          this.error.set('');
           const courseId = params.get('courseId') ?? 'core-java';
           const pathId = this.route.snapshot.data['pathId'] ?? 'learn';
           this.courseId.set(courseId);
@@ -147,12 +153,17 @@ export class Module implements OnInit {
           return forkJoin({
             catalog: this.contentService.getCatalog(pathId),
             course: this.contentService.getCourse(pathId, courseId),
-          });
+          }).pipe(
+            catchError(() => {
+              this.error.set('The learning content could not be loaded.');
+              return EMPTY;
+            }),
+          );
         }),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
         next: ({ catalog, course }) => this.displayModule(catalog, course),
-        error: () => this.error.set('The learning content could not be loaded.'),
       });
   }
 
