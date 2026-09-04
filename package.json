@@ -23,6 +23,8 @@
     "test": "ng test",
     "test:delivery-api": "node --test scripts/delivery-editor.test.mjs",
     "test:content-audit": "node --test scripts/audit-content.test.mjs",
+    "test:dsa-profile": "node --test scripts/profile-dsa-loading.test.mjs",
+    "profile:dsa": "node scripts/profile-dsa-loading.mjs",
     "audit:content": "node scripts/audit-content.mjs",
     "audit:content:private": "node scripts/audit-content.mjs --external",
     "validate:content": "node scripts/validate-content.mjs demo-content/runtime",
