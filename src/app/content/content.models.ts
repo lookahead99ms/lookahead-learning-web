@@ -184,6 +184,7 @@ export interface InterviewQuestion {
   visual?: TheoryVisual;
   /** Versioned pattern lessons use the stricter PatternLessonV1 contract. */
   schemaVersion?: LessonSchemaVersion;
+  canonicalProblemRef?: { lessonId: string; problemId: string };
 }
 
 export interface PatternSourceLine {
@@ -246,6 +247,8 @@ export interface PatternProblemFixture {
   label: string;
   input: string;
   expectedOutput: string;
+  category?: 'representative' | 'boundary' | 'failure';
+  explanation?: string;
 }
 
 export interface PatternProblemV1 {
@@ -255,10 +258,35 @@ export interface PatternProblemV1 {
   difficulty: InterviewQuestion['difficulty'];
   variation: string;
   invariantAdaptation: string;
-  complexity: { time: string; space: string; why: string };
+  complexity: {
+    time: string;
+    space: string;
+    why: string;
+    /** Important qualification such as hash-table worst case or a bounded alphabet. */
+    caveat?: string;
+  };
   fixtures: PatternProblemFixture[];
   implementations: PatternCodeBlock[];
   trace: GuidedTraceV1;
+  fixtureTraces?: GuidedTraceV1[];
+  practice?: PatternProblemPractice;
+  practiceQuestionId?: string;
+}
+
+export interface PatternProblemPractice {
+  statement: {
+    prompt: string;
+    inputs: string[];
+    output: string;
+    constraints: string[];
+    edgeCases: string[];
+  };
+  starters: Record<PatternLanguage, string>;
+  sourceUrl?: string;
+  hints: string[];
+  approaches: { title: string; explanation: string; complexity: string }[];
+  commonMistakes: string[];
+  checks: { kind: 'explain' | 'trace' | 'transfer'; prompt: string; expected: string }[];
 }
 
 export type UnderstandingCheckCategory =
@@ -281,6 +309,8 @@ export interface PatternPracticeReference {
   questionId: string;
   reason: string;
   variation: string;
+  /** Canonical theory lesson when this is an intentional cross-lesson transfer. */
+  sourceLessonId?: string;
 }
 
 export interface PatternWorkedExample {
@@ -363,6 +393,8 @@ export interface PatternLessonV1 extends InterviewQuestion {
   schemaVersion: 'pattern-lesson/v1';
   /** Opts an upgraded lesson into non-overlapping guided and transfer problems. */
   practiceSetPolicy?: 'guided-plus-distinct-transfer';
+  /** Temporary reviewer sequence; omit to preserve the curriculum-authored array order. */
+  essentialProblemReviewOrder?: string[];
   summary: string;
   learningOutcomes: string[];
   memoryAnchor: PatternMemoryAnchor;

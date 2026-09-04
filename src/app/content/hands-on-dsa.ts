@@ -82,6 +82,11 @@ function allRelatedPractice(
     return question ? [question] : [];
   });
   const guidedIdSet = new Set(guidedIds);
+  const canonicalPracticeIds = new Set(
+    lesson.essentialProblems.flatMap(({ practiceQuestionId }) =>
+      practiceQuestionId ? [practiceQuestionId] : [],
+    ),
+  );
   const independent = questions
     .filter(
       (question) =>
@@ -91,7 +96,7 @@ function allRelatedPractice(
     )
     .sort((left, right) => left.order - right.order);
 
-  return [...guided, ...independent];
+  return [...guided, ...independent].filter(({ id }) => !canonicalPracticeIds.has(id));
 }
 
 export function resolveHandsOnDsaGroup(

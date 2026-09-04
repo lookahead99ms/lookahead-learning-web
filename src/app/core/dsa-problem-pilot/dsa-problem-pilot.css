@@ -1,0 +1,330 @@
+.pilot {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  color: #213448;
+}
+.contract,
+.workspace,
+.learning-checks {
+  padding: clamp(13px, 1.6vw, 18px);
+  border: 1px solid #bfd9e5;
+  border-radius: 16px;
+  background: #fff;
+}
+.pilot-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 12px;
+  padding-bottom: 11px;
+  border-bottom: 1px solid #d8e5ec;
+}
+.pilot-heading > div > span,
+.section-heading > span,
+.learning-checks > span,
+.example-cases-heading > span,
+.example-cases article p span {
+  color: #087f91;
+  font-size: 0.69rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+h3,
+h4,
+h5 {
+  color: #172033;
+  font-family: 'Avenir Next', Avenir, sans-serif;
+}
+h3 {
+  margin: 5px 0 10px;
+  font-size: clamp(1.45rem, 2.5vw, 1.8rem);
+}
+h4 {
+  margin: 4px 0 12px;
+  font-size: 1.2rem;
+}
+h5 {
+  margin: 0 0 7px;
+  font-size: 1rem;
+}
+p,
+li {
+  line-height: 1.5;
+}
+.pilot-heading p {
+  max-width: 74ch;
+  margin: 0;
+}
+.source-link {
+  min-height: 42px;
+  box-sizing: border-box;
+  padding: 11px 8px;
+  color: #93610b;
+  font-size: 0.76rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.workspace {
+  overflow: hidden;
+  padding: 0;
+}
+.mode-tabs {
+  display: flex;
+  scroll-margin-top: 128px;
+  padding: 0 clamp(12px, 2vw, 20px);
+  border-bottom: 1px solid #bfd9e5;
+  background: linear-gradient(125deg, #effbfc, #fff8ea);
+}
+.mode-tabs button {
+  flex: 1 1 0;
+  min-height: 52px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  border-radius: 0;
+  background: transparent;
+}
+.mode-tabs button[aria-selected='true'] {
+  border-bottom-color: #0d8192;
+  color: #fff;
+  background: #0d8192;
+}
+.practice-pane,
+.guided-pane {
+  padding: clamp(16px, 2.4vw, 22px);
+  background: #fff;
+}
+button {
+  min-height: 42px;
+  padding: 9px 13px;
+  border: 1px solid #7faabd;
+  border-radius: 9px;
+  color: #25506d;
+  background: #fff;
+  cursor: pointer;
+  font:
+    800 0.78rem 'Avenir Next',
+    sans-serif;
+}
+button:focus-visible,
+summary:focus-visible,
+select:focus-visible {
+  outline: 3px solid rgba(13, 129, 146, 0.28);
+  outline-offset: 3px;
+}
+.contract-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.contract-grid > div,
+.approaches article,
+.mistakes {
+  padding: 10px 11px;
+  border: 1px solid #d8e5ec;
+  border-radius: 11px;
+  background: #f9fcfd;
+}
+.contract-grid strong {
+  color: #087f91;
+}
+.contract-grid p,
+.contract-grid ul,
+.mistakes ul {
+  margin: 5px 0 0;
+  padding-left: 20px;
+}
+.example-cases {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+  margin-top: 11px;
+}
+.example-cases-heading {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  color: #087f91;
+}
+.example-cases-heading > span {
+  color: #52657e;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.example-cases article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-content: start;
+  gap: 5px 10px;
+  min-width: 0;
+  padding: 8px 11px;
+  border: 1px solid #d8e5ec;
+  margin: 0;
+  border-radius: 9px;
+  background: #f2f7fa;
+}
+.example-cases article > strong {
+  grid-column: 1 / -1;
+  color: #087f91;
+}
+.example-cases article > code,
+.example-cases article > small {
+  grid-column: 1 / -1;
+}
+.example-cases code {
+  font:
+    700 0.8rem/1.55 'JetBrains Mono',
+    monospace;
+  overflow-wrap: anywhere;
+}
+.example-cases article p {
+  display: flex;
+  gap: 7px;
+  align-items: baseline;
+  margin: 0;
+}
+.example-cases article p span {
+  flex: 0 0 auto;
+}
+.example-cases article small {
+  color: #52657e;
+  line-height: 1.4;
+}
+.mode-reaction {
+  display: block;
+}
+.section-heading p {
+  margin: 0 0 18px;
+  color: #52657e;
+}
+.approaches {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 11px;
+  margin-bottom: 13px;
+}
+.approaches p {
+  margin: 0 0 8px;
+}
+.approaches strong {
+  color: #93610b;
+  font-size: 0.78rem;
+}
+.invariant {
+  padding: 13px 15px;
+  border-left: 5px solid #0d8192;
+  background: #eaf7f8;
+}
+.help-panel,
+.learning-checks details {
+  margin-top: 10px;
+  border: 1px solid #cadde6;
+  border-radius: 11px;
+  background: #f9fcfd;
+}
+.help-panel > summary,
+.learning-checks summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px;
+  cursor: pointer;
+  color: #25506d;
+  font-weight: 850;
+}
+.help-panel > summary span {
+  color: #6c7d8e;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.help-panel > details {
+  margin: 0 14px 9px;
+  border: 1px solid #d8e5ec;
+  border-radius: 8px;
+  background: #fff;
+}
+.help-panel > details summary {
+  padding: 10px;
+  cursor: pointer;
+  font-weight: 750;
+}
+.help-panel > details p,
+.learning-checks details p {
+  padding: 0 13px 11px;
+  margin: 0;
+}
+.help-panel > .approaches,
+.help-panel > .invariant,
+.help-panel > .mistakes,
+.help-panel > app-guided-algorithm-trace {
+  display: block;
+  margin: 14px;
+}
+.mistakes {
+  margin-top: 14px;
+}
+.learning-checks .expected {
+  color: #4a6478;
+}
+[hidden] {
+  display: none !important;
+}
+@media (max-width: 900px) {
+  .contract-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 720px) {
+  .pilot-heading,
+  .approaches,
+  .example-cases-heading {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  .example-cases {
+    grid-template-columns: 1fr;
+  }
+  .help-panel > summary {
+    display: grid;
+  }
+  .help-panel > app-guided-algorithm-trace {
+    margin: 8px;
+  }
+}
+@media (max-width: 520px) {
+  .contract-grid {
+    grid-template-columns: 1fr;
+  }
+  .mode-tabs {
+    padding: 0 8px;
+  }
+  .mode-tabs button {
+    padding-inline: 8px;
+  }
+}
+@media (forced-colors: active) {
+  .pilot-heading,
+  .contract,
+  .workspace,
+  .mode-tabs,
+  .practice-pane,
+  .guided-pane,
+  .learning-checks,
+  .contract-grid > div,
+  .approaches article,
+  .mistakes,
+  .help-panel,
+  .learning-checks details {
+    border-color: CanvasText;
+    color: CanvasText;
+    background: Canvas;
+  }
+  .invariant {
+    border-color: Highlight;
+    background: Canvas;
+  }
+}

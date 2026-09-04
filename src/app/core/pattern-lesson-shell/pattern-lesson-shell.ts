@@ -121,7 +121,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
 
       <section
         id="pattern-variations"
-        class="lesson-section"
+        class="lesson-section wide-section variation-section"
         aria-labelledby="pattern-variations-heading"
       >
         <p class="section-label"><span>05 / 14</span>Adapt</p>
@@ -329,12 +329,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         aria-labelledby="pattern-essential-heading"
       >
         <p class="section-label"><span>13 / 14</span>Transfer</p>
-        <h2 id="pattern-essential-heading">Three essential problems</h2>
-        <p>
-          Switch problems and inputs without leaving the lesson. Each trace is generated from the
-          same event contract and follows the real implementation control flow.
-        </p>
-        <app-pattern-problem-workbench [problems]="lesson().essentialProblems" />
+        <app-pattern-problem-workbench [problems]="essentialProblems()" />
       </section>
 
       <section class="lesson-section takeaways" aria-labelledby="pattern-takeaways-heading">
@@ -636,6 +631,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
       }
       .variation-grid {
         display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 12px;
       }
       .variation-grid article {
@@ -962,6 +958,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         .recognition-grid,
         .guidance-grid,
         .model-grid,
+        .variation-grid,
         .complexity-grid,
         .worked-example > div,
         .practice-grid {
@@ -1030,6 +1027,21 @@ export class PatternLessonShell {
     () =>
       this.lesson().workedExamples[this.workedExampleIndex()] ?? this.lesson().workedExamples[0],
   );
+  protected readonly essentialProblems = computed(() => {
+    const problems = this.lesson().essentialProblems;
+    const reviewOrder = this.lesson().essentialProblemReviewOrder;
+    if (!reviewOrder?.length) return problems;
+
+    const rank = new Map(reviewOrder.map((id, index) => [id, index]));
+    return problems
+      .map((problem, sourceIndex) => ({ problem, sourceIndex }))
+      .sort(
+        (left, right) =>
+          (rank.get(left.problem.id) ?? reviewOrder.length + left.sourceIndex) -
+          (rank.get(right.problem.id) ?? reviewOrder.length + right.sourceIndex),
+      )
+      .map(({ problem }) => problem);
+  });
 
   protected selectWorkedExample(value: string): void {
     this.workedExampleIndex.set(Number(value));

@@ -310,6 +310,12 @@
             }
           </section>
         </ng-template>
+      } @else if (canonicalProblem(item); as problem) {
+        <app-dsa-problem-pilot
+          [problem]="problem"
+          entryMode="practice"
+          [showProblemHeading]="false"
+        />
       } @else if (isCodingPractice(item)) {
         <app-coding-problem-detail
           [item]="item"

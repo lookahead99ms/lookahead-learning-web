@@ -1,20 +1,24 @@
 import { Component, computed, effect, input, signal } from '@angular/core';
-import { PatternProblemV1 } from '../../content/content.models';
+import { PatternProblemFixture, PatternProblemV1 } from '../../content/content.models';
 import { GuidedAlgorithmTrace } from '../guided-algorithm-trace/guided-algorithm-trace';
+import { DsaProblemPilot } from '../dsa-problem-pilot/dsa-problem-pilot';
 
 @Component({
   selector: 'app-pattern-problem-workbench',
-  imports: [GuidedAlgorithmTrace],
+  imports: [GuidedAlgorithmTrace, DsaProblemPilot],
   template: `
     <section class="problem-workbench" [attr.aria-label]="ariaLabel()">
-      <header>
+      <header class="workbench-overview">
         <div>
-          <span>{{ eyebrow() }}</span>
-          <h3>{{ activeProblem().title }}</h3>
-          <p>{{ activeProblem().description }}</p>
+          <h2 id="pattern-essential-heading">Three essential problems</h2>
+          <p>
+            Switch problems and inputs without leaving the lesson. Each trace follows the real
+            implementation control flow.
+          </p>
         </div>
         <label
-          >Problem<select
+          >Switch problem<select
+            aria-label="Switch essential problem"
             [value]="problemIndex()"
             (change)="chooseProblem($any($event.target).value)"
           >
@@ -24,29 +28,30 @@ import { GuidedAlgorithmTrace } from '../guided-algorithm-trace/guided-algorithm
           </select></label
         >
       </header>
-      <div class="problem-context">
-        <label
-          >Input fixture<select
-            [value]="fixtureIndex()"
-            (change)="chooseFixture($any($event.target).value)"
-          >
-            @for (fixture of activeProblem().fixtures; track fixture.id; let index = $index) {
-              <option [value]="index">{{ fixture.label }}</option>
-            }
-          </select></label
-        >
-        <p><span>Active input</span>{{ activeFixture().input }}</p>
-        <p><span>Expected output</span>{{ activeFixture().expectedOutput }}</p>
-      </div>
-      <div class="problem-model">
-        <p><span>Variation</span>{{ activeProblem().variation }}</p>
-        <p><span>Invariant adaptation</span>{{ activeProblem().invariantAdaptation }}</p>
-        <p>
-          <span>Complexity</span>{{ activeProblem().complexity.time }} time ·
-          {{ activeProblem().complexity.space }} space. {{ activeProblem().complexity.why }}
-        </p>
-      </div>
-      <app-guided-algorithm-trace [problem]="activeProblem()" [selectedFixture]="activeFixture()" />
+      @if (activeProblem().practice) {
+        <app-dsa-problem-pilot [problem]="activeProblem()" [entryMode]="entryMode()" />
+      } @else {
+        <header class="legacy-problem-heading">
+          <div>
+            <span>{{ eyebrow() }}</span>
+            <h3>{{ activeProblem().title }}</h3>
+            <p>{{ activeProblem().description }}</p>
+          </div>
+        </header>
+        <div class="problem-model">
+          <p><span>Variation</span>{{ activeProblem().variation }}</p>
+          <p><span>Invariant adaptation</span>{{ activeProblem().invariantAdaptation }}</p>
+          <p>
+            <span>Complexity</span>{{ activeProblem().complexity.time }} time ·
+            {{ activeProblem().complexity.space }} space. {{ activeProblem().complexity.why }}
+          </p>
+        </div>
+        <app-guided-algorithm-trace
+          [problem]="activeProblem()"
+          [selectedFixture]="activeFixture()"
+          (fixtureChange)="chooseFixture($event)"
+        />
+      }
     </section>
   `,
   styles: [
@@ -57,7 +62,29 @@ import { GuidedAlgorithmTrace } from '../guided-algorithm-trace/guided-algorithm
         grid-template-columns: minmax(0, 1fr);
         gap: 14px;
       }
-      .problem-workbench > header {
+      .workbench-overview {
+        display: flex;
+        min-width: 0;
+        align-items: start;
+        justify-content: space-between;
+        gap: 22px;
+      }
+      .workbench-overview h2 {
+        margin: 0 0 8px;
+        color: #172033;
+        font-size: clamp(1.3rem, 2.3vw, 1.72rem);
+        line-height: 1.25;
+      }
+      .workbench-overview p {
+        max-width: 76ch;
+        margin: 0;
+        color: #52657e;
+        line-height: 1.55;
+      }
+      .workbench-overview label {
+        flex: 0 1 290px;
+      }
+      .legacy-problem-heading {
         display: flex;
         min-width: 0;
         justify-content: space-between;
@@ -67,7 +94,7 @@ import { GuidedAlgorithmTrace } from '../guided-algorithm-trace/guided-algorithm
         border-radius: 14px;
         background: linear-gradient(120deg, #effbfc, #fff);
       }
-      header span,
+      .legacy-problem-heading span,
       .problem-context span,
       .problem-model span {
         display: block;
@@ -77,12 +104,12 @@ import { GuidedAlgorithmTrace } from '../guided-algorithm-trace/guided-algorithm
         letter-spacing: 0.07em;
         text-transform: uppercase;
       }
-      header h3 {
+      .legacy-problem-heading h3 {
         margin: 4px 0;
         color: #172033;
         font-size: 1.18rem;
       }
-      header p {
+      .legacy-problem-heading p {
         max-width: 680px;
         margin: 0;
         color: #52657e;
@@ -149,7 +176,8 @@ import { GuidedAlgorithmTrace } from '../guided-algorithm-trace/guided-algorithm
         background: #fff;
       }
       @media (max-width: 760px) {
-        .problem-workbench > header,
+        .workbench-overview,
+        .legacy-problem-heading,
         .problem-context,
         .problem-model {
           display: grid;
@@ -162,9 +190,13 @@ import { GuidedAlgorithmTrace } from '../guided-algorithm-trace/guided-algorithm
           min-width: 0;
           width: 100%;
         }
+        .workbench-overview label {
+          width: 100%;
+          max-width: none;
+        }
       }
       @media (forced-colors: active) {
-        .problem-workbench > header,
+        .legacy-problem-heading,
         .problem-context,
         .problem-model {
           border-color: CanvasText;
@@ -184,6 +216,7 @@ export class PatternProblemWorkbench {
   readonly initialProblemId = input('');
   readonly eyebrow = input('Three essential problems');
   readonly ariaLabel = input('Three essential pattern problems');
+  readonly entryMode = input<'guided' | 'practice'>('practice');
   protected readonly problemIndex = signal(0);
   protected readonly fixtureIndex = signal(0);
   protected readonly activeProblem = computed(
@@ -206,7 +239,8 @@ export class PatternProblemWorkbench {
     this.problemIndex.set(Number(value));
     this.fixtureIndex.set(0);
   }
-  protected chooseFixture(value: string): void {
-    this.fixtureIndex.set(Number(value));
+  protected chooseFixture(fixture: PatternProblemFixture): void {
+    const index = this.activeProblem().fixtures.findIndex(({ id }) => id === fixture.id);
+    if (index >= 0) this.fixtureIndex.set(index);
   }
 }
