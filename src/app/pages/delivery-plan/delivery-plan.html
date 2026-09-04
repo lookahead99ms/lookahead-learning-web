@@ -47,11 +47,10 @@
 
     <section class="delivery-workspace">
       <header class="workspace-toolbar">
-        <div class="view-tabs" role="tablist" aria-label="Delivery views">
+        <nav class="view-tabs" aria-label="Delivery views">
           <button
             type="button"
-            role="tab"
-            [attr.aria-selected]="view() === 'board'"
+            [attr.aria-pressed]="view() === 'board'"
             [class.active]="view() === 'board'"
             (click)="setView('board')"
           >
@@ -59,8 +58,23 @@
           </button>
           <button
             type="button"
-            role="tab"
-            [attr.aria-selected]="view() === 'roadmap'"
+            [attr.aria-pressed]="view() === 'backlog'"
+            [class.active]="view() === 'backlog'"
+            (click)="setView('backlog')"
+          >
+            Backlog
+          </button>
+          <button
+            type="button"
+            [attr.aria-pressed]="view() === 'all-tickets'"
+            [class.active]="view() === 'all-tickets'"
+            (click)="setView('all-tickets')"
+          >
+            All tickets
+          </button>
+          <button
+            type="button"
+            [attr.aria-pressed]="view() === 'roadmap'"
             [class.active]="view() === 'roadmap'"
             (click)="setView('roadmap')"
           >
@@ -68,17 +82,15 @@
           </button>
           <button
             type="button"
-            role="tab"
-            [attr.aria-selected]="view() === 'decisions'"
+            [attr.aria-pressed]="view() === 'decisions'"
             [class.active]="view() === 'decisions'"
             (click)="setView('decisions')"
           >
             Decisions
           </button>
-        </div>
+        </nav>
         <div class="editor-toolbar">
           @if (editable()) {
-            <span>Local editing enabled</span>
             <button
               type="button"
               class="editor-secondary"
@@ -103,18 +115,41 @@
           }
         </div>
       </header>
+      @if (editable()) {
+        <p class="refresh-help">
+          Local editing enabled. Saved changes appear automatically every 5 seconds. Use Refresh
+          board to check now.
+        </p>
+      }
       <p class="save-notice" role="status" aria-live="polite">
         {{ saving() ? 'Saving to private JSON...' : notice() }}
       </p>
 
-      @if (view() === 'board') {
+      @if (workView()) {
+        <header class="work-view-heading">
+          <h2>
+            {{
+              view() === 'backlog' ? 'Backlog' : view() === 'all-tickets' ? 'All tickets' : 'Board'
+            }}
+          </h2>
+          <p>
+            @if (view() === 'backlog') {
+              Work not yet ready to start, across all stages. Open a ticket to read or edit it.
+            } @else if (view() === 'all-tickets') {
+              Every ticket, including completed work. Use the filters to narrow this list.
+            } @else {
+              Work grouped by status. Start with the current stage, or use Backlog and All tickets
+              to look further ahead.
+            }
+          </p>
+        </header>
         <section class="board-controls" aria-label="Filter delivery work">
           <label class="board-search">
-            <span>Find work</span>
+            <span>Find a ticket</span>
             <input
               type="search"
               [value]="query()"
-              placeholder="Issue, label, outcome..."
+              placeholder="Ticket number, title, or keyword..."
               (input)="updateQuery($any($event.target).value)"
             />
           </label>
@@ -146,7 +181,7 @@
               }
             </select>
           </label>
-          <button class="clear-filters" type="button" (click)="resetView()">Reset view</button>
+          <button class="clear-filters" type="button" (click)="resetView()">Clear filters</button>
         </section>
 
         <details class="interruption-policy">
@@ -175,90 +210,127 @@
           Showing {{ filteredItems().length }} of {{ deliveryPlan.workItems.length }} work items
         </p>
 
-        <div class="delivery-board" role="region" aria-label="Delivery board" tabindex="0">
-          @for (status of deliveryPlan.workflow; track status.id) {
-            <section
-              class="board-column"
-              [style.--status-color]="status.color"
-              [class.drop-target]="dropTarget() === status.id"
-              (dragover)="dragOver($event, status.id)"
-              (drop)="dropItem($event, status.id)"
-            >
-              <header>
-                <div>
-                  <i aria-hidden="true"></i><strong>{{ status.label }}</strong>
-                </div>
-                <span>{{ itemsForStatus(status.id).length }}</span>
-              </header>
-              <p>{{ status.description }}</p>
-              @if (status.wipLimit) {
-                <small class="wip-limit" [class.exceeded]="columnExceedsLimit(status)">
-                  WIP {{ totalForStatus(status.id) }}/{{ status.wipLimit }} (all stages)
-                </small>
-              }
-              <div class="work-item-list">
-                @for (item of itemsForStatus(status.id); track item.id) {
-                  <div class="work-item-container" [class.dragging]="draggedItemId() === item.id">
-                    <button
-                      class="work-item-card"
-                      type="button"
-                      [attr.draggable]="editable() && !saving()"
-                      (dragstart)="startDrag($event, item)"
-                      (dragend)="endDrag()"
-                      [class.blocked]="item.blockedBy.length"
-                      [style.--priority-color]="priorityFor(item)?.color"
-                      (click)="openWorkItem(item)"
-                    >
-                      <span class="work-item-meta">
-                        <b>{{ item.id }}</b
-                        ><i>{{ typeLabel(item.type) }}</i>
-                      </span>
-                      <strong>{{ item.title }}</strong>
-                      <small>{{ stageFor(item)?.title }}</small>
-                      <span class="work-labels">
-                        @for (label of item.labels; track label; let index = $index) {
-                          @if (index < 3) {
-                            <i>{{ label }}</i>
-                          }
-                        }
-                      </span>
-                      <span class="card-footer">
-                        <b [attr.data-priority]="item.priorityId">{{ item.priorityId }}</b>
-                        @if (item.blockedBy.length) {
-                          <em>Blocked</em>
-                        } @else {
-                          <em>{{ item.acceptanceCriteria.length }} acceptance checks</em>
-                        }
-                      </span>
-                    </button>
-                    @if (editable()) {
-                      <label class="quick-move">
-                        <span>Move to</span>
-                        <select
-                          [attr.aria-label]="'Move ' + item.id + ' to workflow column'"
-                          [value]="item.statusId"
-                          [disabled]="saving()"
-                          (change)="moveFromSelect(item, $event)"
-                        >
-                          @for (destination of deliveryPlan.workflow; track destination.id) {
-                            <option
-                              [value]="destination.id"
-                              [selected]="destination.id === item.statusId"
-                            >
-                              {{ destination.label }}
-                            </option>
-                          }
-                        </select>
-                      </label>
-                    }
+        @if (view() === 'board') {
+          <div class="delivery-board" role="region" aria-label="Delivery board" tabindex="0">
+            @for (status of deliveryPlan.workflow; track status.id) {
+              <section
+                class="board-column"
+                [style.--status-color]="status.color"
+                [class.drop-target]="dropTarget() === status.id"
+                (dragover)="dragOver($event, status.id)"
+                (drop)="dropItem($event, status.id)"
+              >
+                <header>
+                  <div>
+                    <i aria-hidden="true"></i><strong>{{ status.label }}</strong>
                   </div>
-                } @empty {
-                  <div class="empty-column"><span>Clear</span><small>No matching work</small></div>
+                  <span>{{ itemsForStatus(status.id).length }}</span>
+                </header>
+                <p>{{ status.description }}</p>
+                @if (status.wipLimit) {
+                  <small class="wip-limit" [class.exceeded]="columnExceedsLimit(status)">
+                    WIP {{ totalForStatus(status.id) }}/{{ status.wipLimit }} (all stages)
+                  </small>
                 }
-              </div>
-            </section>
-          }
-        </div>
+                <div class="work-item-list">
+                  @for (item of itemsForStatus(status.id); track item.id) {
+                    <div class="work-item-container" [class.dragging]="draggedItemId() === item.id">
+                      <button
+                        class="work-item-card"
+                        type="button"
+                        [attr.draggable]="editable() && !saving()"
+                        (dragstart)="startDrag($event, item)"
+                        (dragend)="endDrag()"
+                        [class.blocked]="item.blockedBy.length"
+                        [style.--priority-color]="priorityFor(item)?.color"
+                        (click)="openWorkItem(item)"
+                      >
+                        <span class="work-item-meta">
+                          <b>{{ item.id }}</b
+                          ><i>{{ typeLabel(item.type) }}</i>
+                        </span>
+                        <strong>{{ item.title }}</strong>
+                        <small>{{ stageFor(item)?.title }}</small>
+                        <span class="work-labels">
+                          @for (label of item.labels; track label; let index = $index) {
+                            @if (index < 3) {
+                              <i>{{ label }}</i>
+                            }
+                          }
+                        </span>
+                        <span class="card-footer">
+                          <b [attr.data-priority]="item.priorityId">{{ item.priorityId }}</b>
+                          @if (item.blockedBy.length) {
+                            <em>Blocked</em>
+                          } @else {
+                            <em>{{ item.acceptanceCriteria.length }} acceptance checks</em>
+                          }
+                        </span>
+                      </button>
+                      @if (editable()) {
+                        <label class="quick-move">
+                          <span>Move to</span>
+                          <select
+                            [attr.aria-label]="'Move ' + item.id + ' to workflow column'"
+                            [value]="item.statusId"
+                            [disabled]="saving()"
+                            (change)="moveFromSelect(item, $event)"
+                          >
+                            @for (destination of deliveryPlan.workflow; track destination.id) {
+                              <option
+                                [value]="destination.id"
+                                [selected]="destination.id === item.statusId"
+                              >
+                                {{ destination.label }}
+                              </option>
+                            }
+                          </select>
+                        </label>
+                      }
+                    </div>
+                  } @empty {
+                    <div class="empty-column">
+                      <span>Clear</span><small>No matching work</small>
+                    </div>
+                  }
+                </div>
+              </section>
+            }
+          </div>
+        } @else {
+          <ul
+            class="ticket-results"
+            [attr.aria-label]="view() === 'backlog' ? 'Backlog tickets' : 'All tickets'"
+          >
+            @for (item of filteredItems(); track item.id) {
+              <li>
+                <button type="button" class="ticket-row" (click)="openWorkItem(item)">
+                  <span class="ticket-identity"
+                    ><b>{{ item.id }}</b
+                    ><small>{{ typeLabel(item.type) }}</small></span
+                  >
+                  <span class="ticket-copy">
+                    <strong>{{ item.title }}</strong>
+                    <span>{{ item.summary }}</span>
+                    <small>{{ stageFor(item)?.title }}</small>
+                  </span>
+                  <span class="ticket-state">
+                    <b>{{ workflowFor(item)?.label }}</b>
+                    <small>{{ item.priorityId }} · {{ priorityFor(item)?.label }}</small>
+                    @if (item.blockedBy.length) {
+                      <em>Blocked</em>
+                    }
+                    <span>Open ticket &rarr;</span>
+                  </span>
+                </button>
+              </li>
+            } @empty {
+              <li class="ticket-empty">
+                No tickets match these filters. Use Clear filters to start again.
+              </li>
+            }
+          </ul>
+        }
       }
 
       @if (view() === 'roadmap') {
