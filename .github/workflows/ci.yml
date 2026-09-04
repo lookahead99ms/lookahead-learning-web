@@ -50,5 +50,8 @@ jobs:
       - name: Test content inventory with synthetic fixtures
         run: npm run test:content-audit
 
+      - name: Test loading profiler with synthetic fixtures
+        run: npm run test:dsa-profile
+
       - name: Build public demo application
         run: npm run build:ci
