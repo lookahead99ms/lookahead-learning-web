@@ -108,6 +108,7 @@
               <app-pattern-problem-workbench
                 [problems]="group.essentialProblems"
                 [initialProblemId]="problemId()"
+                entryMode="practice"
                 eyebrow="Guided practice"
                 ariaLabel="Guided practice problems"
               />
@@ -158,17 +159,29 @@
                 </nav>
                 <div class="problem-grid">
                   @for (problem of group.essentialProblems; track problem.id) {
-                    <a
-                      class="problem-card"
-                      routerLink="/learn/hands-on-dsa"
-                      [queryParams]="{ pattern: group.id, problem: problem.id }"
-                      fragment="guided-workbench"
-                    >
-                      <span>{{ problem.difficulty }} · Guided</span>
-                      <h3>{{ problem.title }}</h3>
-                      <p>{{ problem.variation }}</p>
-                      <b>Trace and implement →</b>
-                    </a>
+                    @if (problem.practiceQuestionId) {
+                      <a
+                        class="problem-card"
+                        [routerLink]="['/learn', group.courseId, problem.practiceQuestionId]"
+                      >
+                        <span>{{ problem.difficulty }} · Guided + independent</span>
+                        <h3>{{ problem.title }}</h3>
+                        <p>{{ problem.practice?.statement?.prompt ?? problem.variation }}</p>
+                        <b>Read the problem and practise →</b>
+                      </a>
+                    } @else {
+                      <a
+                        class="problem-card"
+                        routerLink="/learn/hands-on-dsa"
+                        [queryParams]="{ pattern: group.id, problem: problem.id }"
+                        fragment="guided-workbench"
+                      >
+                        <span>{{ problem.difficulty }} · Guided</span>
+                        <h3>{{ problem.title }}</h3>
+                        <p>{{ problem.variation }}</p>
+                        <b>Trace and implement →</b>
+                      </a>
+                    }
                   }
                   @for (problem of group.continuationProblems; track problem.id) {
                     <a class="problem-card" [routerLink]="['/learn', group.courseId, problem.id]">

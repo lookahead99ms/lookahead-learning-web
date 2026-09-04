@@ -11,6 +11,7 @@ import {
   FoundationLessonV1,
   InterviewQuestion,
   PatternLessonV1,
+  PatternProblemV1,
   ResolvedPatternCheck,
   TheorySection,
   TheoryVisual,
@@ -32,6 +33,7 @@ import { PatternLessonShell } from '../../core/pattern-lesson-shell/pattern-less
 import { CodeCopyButton } from '../../core/code-copy-button/code-copy-button';
 import { FoundationLessonShell } from '../../core/foundation-lesson-shell/foundation-lesson-shell';
 import { EvidenceAnswerTabs } from '../../core/evidence-answer-tabs/evidence-answer-tabs';
+import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot';
 
 @Component({
   selector: 'app-question',
@@ -48,6 +50,7 @@ import { EvidenceAnswerTabs } from '../../core/evidence-answer-tabs/evidence-ans
     FoundationLessonShell,
     CodeCopyButton,
     EvidenceAnswerTabs,
+    DsaProblemPilot,
   ],
   templateUrl: './question.html',
   styles: [
@@ -665,6 +668,14 @@ export class Question implements OnInit {
 
   protected isCodingPractice(item: InterviewQuestion): boolean {
     return item.contentType === 'dsa-problem' || this.shouldShowHint(item);
+  }
+
+  protected canonicalProblem(item: InterviewQuestion): PatternProblemV1 | null {
+    const reference = item.canonicalProblemRef;
+    if (!reference) return null;
+    const lesson = this.course()?.questions.find(({ id }) => id === reference.lessonId);
+    if (!lesson || !isPatternLessonV1(lesson)) return null;
+    return lesson.essentialProblems.find(({ id }) => id === reference.problemId) ?? null;
   }
 
   protected handsOnPatternId(item: InterviewQuestion): string {

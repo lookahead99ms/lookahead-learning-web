@@ -17,41 +17,45 @@ type Language = 'java' | 'python' | 'go';
       [class.one-dark]="editorTheme() === 'one-dark'"
       [class.gerry-theme]="editorTheme() === 'gerry-theme'"
     >
-      <div class="coding-tabs" role="tablist" aria-label="Coding workspace tabs">
-        @if (showPractice()) {
-          <button
-            class="practice-tab"
-            type="button"
-            role="tab"
-            [attr.aria-selected]="selected() === 'practice'"
-            (click)="selected.set('practice')"
-          >
-            Practice it yourself
-          </button>
-        }
-        @if (pseudocode()) {
-          <button
-            class="pseudocode-tab"
-            type="button"
-            role="tab"
-            [attr.aria-selected]="selected() === 'pseudocode'"
-            (click)="selected.set('pseudocode')"
-          >
-            Pseudocode
-          </button>
-        }
-        @for (solution of solutions(); track solution.language; let index = $index) {
-          <button
-            class="language-tab"
-            type="button"
-            role="tab"
-            [attr.aria-selected]="selected() === index"
-            (click)="selected.set(index)"
-          >
-            {{ solution.language }}
-          </button>
-        }
-      </div>
+      @if (showReferences() || pseudocode()) {
+        <div class="coding-tabs" role="tablist" aria-label="Coding workspace tabs">
+          @if (showPractice()) {
+            <button
+              class="practice-tab"
+              type="button"
+              role="tab"
+              [attr.aria-selected]="selected() === 'practice'"
+              (click)="selected.set('practice')"
+            >
+              Practice it yourself
+            </button>
+          }
+          @if (pseudocode()) {
+            <button
+              class="pseudocode-tab"
+              type="button"
+              role="tab"
+              [attr.aria-selected]="selected() === 'pseudocode'"
+              (click)="selected.set('pseudocode')"
+            >
+              Pseudocode
+            </button>
+          }
+          @if (showReferences()) {
+            @for (solution of solutions(); track solution.language; let index = $index) {
+              <button
+                class="language-tab"
+                type="button"
+                role="tab"
+                [attr.aria-selected]="selected() === index"
+                (click)="selected.set(index)"
+              >
+                {{ solution.language }}
+              </button>
+            }
+          }
+        </div>
+      }
       @if (showPractice() && selected() === 'practice') {
         <section class="practice-view" role="tabpanel">
           <div class="workspace-toolbar">
@@ -88,7 +92,7 @@ type Language = 'java' | 'python' | 'go';
             </div>
             <textarea
               [value]="practiceCode()"
-              (input)="practiceCode.set($any($event.target).value)"
+              (input)="updatePracticeCode($any($event.target).value)"
               [attr.aria-label]="'Practice editor for ' + practiceLanguage()"
               spellcheck="false"
             ></textarea>
@@ -529,7 +533,9 @@ export class CodingSolutionTabs {
   readonly solutions = input.required<CodeSolution[]>();
   readonly complexity = input<InterviewQuestion['complexity']>();
   readonly practicePrompt = input<string>();
+  readonly practiceStarters = input<Partial<Record<Language, string>>>({});
   readonly showPractice = input(true);
+  readonly showReferences = input(true);
   readonly useLanguageThemes = input(false);
   readonly visual = input<TheoryVisual | null>(null);
   readonly pseudocode = input<{ title: string; source: string } | null>(null);
@@ -538,6 +544,7 @@ export class CodingSolutionTabs {
   protected readonly practiceLanguage = signal<Language>('java');
   protected readonly visualInput = signal('default');
   protected readonly practiceCode = signal(this.starter('java'));
+  private readonly practiceDrafts = new Map<Language, string>();
   protected readonly selectedSolutionIndex = computed<number>(() => {
     const selected = this.selected();
     return typeof selected === 'number' ? selected : 0;
@@ -804,6 +811,13 @@ export class CodingSolutionTabs {
     return examples[problem]?.[this.visualInput()] ?? 'Choose an example';
   });
   constructor() {
+    effect(() => {
+      const language = this.practiceLanguage();
+      const suppliedStarter = this.practiceStarters()[language];
+      if (suppliedStarter && !this.practiceDrafts.has(language)) {
+        this.practiceCode.set(suppliedStarter);
+      }
+    });
     // Reference-only Core Templates begin with their explanatory pseudocode.
     // Practice workspaces continue to open on the existing practice tab.
     effect(() => {
@@ -814,18 +828,28 @@ export class CodingSolutionTabs {
   }
   protected setPracticeLanguage(value: string): void {
     const language = value as Language;
+    this.practiceDrafts.set(this.practiceLanguage(), this.practiceCode());
     this.practiceLanguage.set(language);
-    this.practiceCode.set(this.starter(language));
+    this.practiceCode.set(this.practiceDrafts.get(language) ?? this.starter(language));
+  }
+  protected updatePracticeCode(value: string): void {
+    this.practiceCode.set(value);
+    this.practiceDrafts.set(this.practiceLanguage(), value);
   }
   protected resetPractice(): void {
-    this.practiceCode.set(this.starter(this.practiceLanguage()));
+    const starter = this.starter(this.practiceLanguage());
+    this.practiceCode.set(starter);
+    this.practiceDrafts.set(this.practiceLanguage(), starter);
   }
   private starter(language: Language): string {
-    return {
-      java: 'static int solve(int[] values) {\n  // State the invariant here.\n  // TODO: implement\n  return 0;\n}',
-      python: '# State the invariant here.\ndef solve(values):\n    # TODO: implement\n    pass',
-      go: 'func solve(values []int) int {\n    // State the invariant here.\n    // TODO: implement\n    return 0\n}',
-    }[language];
+    return (
+      this.practiceStarters()[language] ??
+      {
+        java: 'static int solve(int[] values) {\n  // State the invariant here.\n  // TODO: implement\n  return 0;\n}',
+        python: '# State the invariant here.\ndef solve(values):\n    # TODO: implement\n    pass',
+        go: 'func solve(values []int) int {\n    // State the invariant here.\n    // TODO: implement\n    return 0\n}',
+      }[language]
+    );
   }
   private highlight(source: string): string {
     const tokens =

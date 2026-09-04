@@ -1,0 +1,198 @@
+<section class="pilot" [attr.aria-label]="problem().title + ' complete practice experience'">
+  <section
+    class="contract"
+    [attr.aria-labelledby]="showProblemHeading() ? 'pilot-problem-title' : null"
+    [attr.aria-label]="showProblemHeading() ? null : problem().title + ' problem contract'"
+  >
+    <header class="pilot-heading">
+      <div>
+        @if (showProblemHeading()) {
+          <span>Selected problem</span>
+          <h3 id="pilot-problem-title">{{ problem().title }}</h3>
+        }
+        <p>{{ practice().statement.prompt }}</p>
+      </div>
+      @if (practice().sourceUrl) {
+        <a
+          class="source-link"
+          [href]="practice().sourceUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          >Original problem source ↗</a
+        >
+      }
+    </header>
+    <div class="contract-grid">
+      <div>
+        <strong>Inputs</strong>
+        <ul>
+          @for (item of practice().statement.inputs; track item) {
+            <li>{{ item }}</li>
+          }
+        </ul>
+      </div>
+      <div>
+        <strong>Return</strong>
+        <p>{{ practice().statement.output }}</p>
+      </div>
+      <div>
+        <strong>Constraints</strong>
+        <ul>
+          @for (item of practice().statement.constraints; track item) {
+            <li>{{ item }}</li>
+          }
+        </ul>
+      </div>
+      <div>
+        <strong>Edge cases</strong>
+        <ul>
+          @for (item of practice().statement.edgeCases; track item) {
+            <li>{{ item }}</li>
+          }
+        </ul>
+      </div>
+    </div>
+    <section class="example-cases" aria-labelledby="example-cases-heading">
+      <div class="example-cases-heading">
+        <strong id="example-cases-heading">Examples and expected outputs</strong>
+        <span>Use these cases to verify the contract before you start.</span>
+      </div>
+      @for (fixture of problem().fixtures; track fixture.id) {
+        <article>
+          <strong>{{ fixture.label }}</strong>
+          <code>{{ fixture.input }}</code>
+          <p>
+            <span>Expected</span><code>{{ fixture.expectedOutput }}</code>
+          </p>
+          <small>{{ fixture.explanation }}</small>
+        </article>
+      }
+    </section>
+  </section>
+
+  <section class="workspace" aria-label="Two Sum practice workspace">
+    <div class="mode-tabs" role="tablist" aria-label="Choose a practice mode">
+      <button
+        id="two-sum-practice-tab"
+        data-mode="practice"
+        type="button"
+        role="tab"
+        [attr.aria-selected]="mode() === 'practice'"
+        [attr.tabindex]="mode() === 'practice' ? 0 : -1"
+        aria-controls="two-sum-practice-pane"
+        (click)="selectMode('practice')"
+        (keydown)="handleModeKeydown($event)"
+      >
+        Practice independently
+      </button>
+      <button
+        id="two-sum-guided-tab"
+        data-mode="guided"
+        type="button"
+        role="tab"
+        [attr.aria-selected]="mode() === 'guided'"
+        [attr.tabindex]="mode() === 'guided' ? 0 : -1"
+        aria-controls="two-sum-guided-pane"
+        (click)="selectMode('guided')"
+        (keydown)="handleModeKeydown($event)"
+      >
+        Guided explanation
+      </button>
+    </div>
+
+    <section
+      id="two-sum-practice-pane"
+      class="practice-pane"
+      role="tabpanel"
+      aria-labelledby="two-sum-practice-tab"
+      [hidden]="mode() !== 'practice'"
+    >
+      <div class="mode-reaction practice-reaction">
+        <app-coding-solution-tabs
+          [solutions]="solutions()"
+          [complexity]="complexity()"
+          [practiceStarters]="practice().starters"
+          [showReferences]="false"
+          practicePrompt="Implement the stated contract without changing the inputs. No code runner is enabled in this pilot."
+        />
+      </div>
+      <details class="help-panel">
+        <summary>Need a hint? <span>Three progressive hints</span></summary>
+        @for (hint of practice().hints; track hint; let index = $index) {
+          <details>
+            <summary>Reveal hint {{ index + 1 }}</summary>
+            <p>{{ hint }}</p>
+          </details>
+        }
+      </details>
+      <details class="help-panel">
+        <summary>View solution <span>Java, Python, Go, and complexity</span></summary>
+        <app-coding-solution-tabs
+          [solutions]="solutions()"
+          [complexity]="complexity()"
+          [showPractice]="false"
+        />
+      </details>
+    </section>
+
+    <section
+      id="two-sum-guided-pane"
+      class="guided-pane"
+      role="tabpanel"
+      aria-labelledby="two-sum-guided-tab"
+      [hidden]="mode() !== 'guided'"
+    >
+      <div class="section-heading">
+        <h4>From pair search to one-pass lookup</h4>
+        <p>
+          Understand the proof, follow each state change beside the relevant code, then practise
+          without the guide.
+        </p>
+      </div>
+      <app-guided-algorithm-trace
+        class="mode-reaction"
+        [problem]="problem()"
+        [selectedFixture]="activeFixture()"
+        (fixtureChange)="chooseFixture($event)"
+      />
+      <div class="approaches">
+        @for (approach of practice().approaches; track approach.title) {
+          <article>
+            <h5>{{ approach.title }}</h5>
+            <p>{{ approach.explanation }}</p>
+            <strong>{{ approach.complexity }}</strong>
+          </article>
+        }
+      </div>
+      <p class="invariant"><strong>Invariant:</strong> {{ activeTrace().invariant }}</p>
+      <div class="mistakes">
+        <h5>Common mistakes</h5>
+        <ul>
+          @for (mistake of practice().commonMistakes; track mistake) {
+            <li>{{ mistake }}</li>
+          }
+        </ul>
+      </div>
+    </section>
+  </section>
+
+  <section class="learning-checks" aria-labelledby="learning-checks-heading">
+    <span>Retrieve and transfer</span>
+    <h4 id="learning-checks-heading">Check the reasoning without code</h4>
+    @for (check of practice().checks; track check.kind) {
+      <details>
+        <summary>
+          {{
+            check.kind === 'explain'
+              ? 'Explain it back'
+              : check.kind === 'trace'
+                ? 'Trace a new input'
+                : 'Transfer the idea'
+          }}
+        </summary>
+        <p>{{ check.prompt }}</p>
+        <p class="expected"><strong>Check:</strong> {{ check.expected }}</p>
+      </details>
+    }
+  </section>
+</section>

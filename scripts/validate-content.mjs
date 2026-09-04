@@ -567,6 +567,31 @@ for (const assetPath of referencedAssetPaths) {
   }
 }
 
+for (const question of questionsById.values()) {
+  if (!question.canonicalProblemRef) continue;
+  requireValue(
+    question.solutions === undefined &&
+      question.complexity === undefined &&
+      question.practiceProblem === undefined,
+    `${question.id} duplicates material owned by its canonical problem`,
+  );
+  const reference = question.canonicalProblemRef;
+  const lessonEntry = questionsById.get(reference.lessonId);
+  requireValue(
+    lessonEntry?.schemaVersion === 'pattern-lesson/v1',
+    `${question.id} references unknown pattern lesson ${reference.lessonId}`,
+  );
+  const problem = lessonEntry.essentialProblems?.find(({ id }) => id === reference.problemId);
+  requireValue(
+    problem?.practice,
+    `${question.id} references incomplete problem ${reference.problemId}`,
+  );
+  requireValue(
+    problem.practiceQuestionId === question.id,
+    `${question.id} and ${reference.problemId} do not link to each other`,
+  );
+}
+
 for (const visualFile of await filesWithExtension(contentRoot, '.html')) {
   const label = relative(contentRoot, visualFile);
   const source = await readFile(visualFile, 'utf8');
@@ -1026,78 +1051,162 @@ for (const { lesson, moduleLabel } of patternLessons) {
       `${problemLabel} implementations`,
       patternLanguages,
     );
-    const trace = problem.trace;
     requireValue(
-      trace?.schemaVersion === 'guided-trace/v1' && trace.id && trace.invariant,
-      `${problemLabel} has an invalid GuidedTraceV1`,
+      problem.fixtureTraces === undefined || Array.isArray(problem.fixtureTraces),
+      `${problemLabel} fixtureTraces must be an array`,
     );
-    requireValue(
-      fixtureIds.has(trace.fixtureId),
-      `${problemLabel} trace references unknown fixture ${trace.fixtureId}`,
-    );
-    requireValue(
-      Array.isArray(trace.legend) && trace.legend.length > 0,
-      `${problemLabel} trace has no legend`,
-    );
-    for (const legend of trace.legend) {
+    const traces = [
+      problem.trace,
+      ...(Array.isArray(problem.fixtureTraces) ? problem.fixtureTraces : []),
+    ];
+    const traceIds = new Set();
+    const tracedFixtureIds = new Set();
+    for (const trace of traces) {
       requireValue(
-        traceCellStates.has(legend?.state) && legend?.label,
-        `${problemLabel} trace has an invalid legend item`,
+        trace?.schemaVersion === 'guided-trace/v1' && trace.id && trace.invariant,
+        `${problemLabel} has an invalid GuidedTraceV1`,
       );
-    }
-    requireValue(
-      Array.isArray(trace.events) && trace.events.length > 1,
-      `${problemLabel} trace has too few events`,
-    );
-    const eventIds = new Set();
-    const sourceAnchorCounts = new Map();
-    for (const event of trace.events) {
+      requireValue(!traceIds.has(trace.id), `${problemLabel} repeats trace id ${trace.id}`);
+      traceIds.add(trace.id);
       requireValue(
-        event?.id && event?.label && event?.phase && ['before', 'after'].includes(event?.timing),
-        `${problemLabel} trace has an invalid event`,
-      );
-      requireValue(!eventIds.has(event.id), `${problemLabel} trace repeats event ${event.id}`);
-      eventIds.add(event.id);
-      requireValue(event.what && event.why, `${problemLabel} event ${event.id} needs what and why`);
-      requireValue(
-        Array.isArray(event.variables) && event.variables.length > 0,
-        `${problemLabel} event ${event.id} has no variables`,
+        fixtureIds.has(trace.fixtureId),
+        `${problemLabel} trace references unknown fixture ${trace.fixtureId}`,
       );
       requireValue(
-        Array.isArray(event.rows) && event.rows.length > 0,
-        `${problemLabel} event ${event.id} has no state rows`,
+        !tracedFixtureIds.has(trace.fixtureId),
+        `${problemLabel} has more than one trace for fixture ${trace.fixtureId}`,
       );
-      for (const language of patternLanguages) {
+      tracedFixtureIds.add(trace.fixtureId);
+      requireValue(
+        Array.isArray(trace.legend) && trace.legend.length > 0,
+        `${problemLabel} trace has no legend`,
+      );
+      for (const legend of trace.legend) {
         requireValue(
-          event.sourceAnchor?.[language] &&
-            anchorsByLanguage.get(language)?.has(event.sourceAnchor[language]),
-          `${problemLabel} event ${event.id} has unresolved ${language} source anchor`,
+          traceCellStates.has(legend?.state) && legend?.label,
+          `${problemLabel} trace has an invalid legend item`,
         );
-        const sourceKey = `${language}:${event.sourceAnchor[language]}`;
-        sourceAnchorCounts.set(sourceKey, (sourceAnchorCounts.get(sourceKey) ?? 0) + 1);
       }
-      for (const row of event.rows) {
+      requireValue(
+        Array.isArray(trace.events) && trace.events.length > 1,
+        `${problemLabel} trace has too few events`,
+      );
+      const eventIds = new Set();
+      const sourceAnchorCounts = new Map();
+      for (const event of trace.events) {
         requireValue(
-          row?.id && row?.label && Array.isArray(row.cells) && row.cells.length > 0,
-          `${problemLabel} event ${event.id} has an invalid state row`,
+          event?.id && event?.label && event?.phase && ['before', 'after'].includes(event?.timing),
+          `${problemLabel} trace has an invalid event`,
         );
-        for (const cell of row.cells) {
+        requireValue(!eventIds.has(event.id), `${problemLabel} trace repeats event ${event.id}`);
+        eventIds.add(event.id);
+        requireValue(
+          event.what && event.why,
+          `${problemLabel} event ${event.id} needs what and why`,
+        );
+        requireValue(
+          Array.isArray(event.variables) && event.variables.length > 0,
+          `${problemLabel} event ${event.id} has no variables`,
+        );
+        requireValue(
+          Array.isArray(event.rows) && event.rows.length > 0,
+          `${problemLabel} event ${event.id} has no state rows`,
+        );
+        for (const language of patternLanguages) {
           requireValue(
-            typeof cell?.value === 'string',
-            `${problemLabel} event ${event.id} has an invalid cell`,
+            event.sourceAnchor?.[language] &&
+              anchorsByLanguage.get(language)?.has(event.sourceAnchor[language]),
+            `${problemLabel} event ${event.id} has unresolved ${language} source anchor`,
           );
+          const sourceKey = `${language}:${event.sourceAnchor[language]}`;
+          sourceAnchorCounts.set(sourceKey, (sourceAnchorCounts.get(sourceKey) ?? 0) + 1);
+        }
+        for (const row of event.rows) {
           requireValue(
-            cell.states === undefined ||
-              (Array.isArray(cell.states) &&
-                cell.states.every((state) => traceCellStates.has(state))),
-            `${problemLabel} event ${event.id} uses an unknown cell state`,
+            row?.id && row?.label && Array.isArray(row.cells) && row.cells.length > 0,
+            `${problemLabel} event ${event.id} has an invalid state row`,
           );
+          for (const cell of row.cells) {
+            requireValue(
+              typeof cell?.value === 'string',
+              `${problemLabel} event ${event.id} has an invalid cell`,
+            );
+            requireValue(
+              cell.states === undefined ||
+                (Array.isArray(cell.states) &&
+                  cell.states.every((state) => traceCellStates.has(state))),
+              `${problemLabel} event ${event.id} uses an unknown cell state`,
+            );
+          }
         }
       }
+      requireValue(
+        [...sourceAnchorCounts.values()].some((count) => count > 1),
+        `${problemLabel} trace must demonstrate repeated source control flow`,
+      );
     }
+    if (problem.practice !== undefined) {
+      const practice = problem.practice;
+      requireValue(problem.practiceQuestionId, `${problemLabel} practice has no standalone route`);
+      requireValue(
+        new Set(problem.fixtures.map(({ category }) => category)).size === 3 &&
+          problem.fixtures.every(({ explanation }) => explanation?.trim()),
+        `${problemLabel} practice needs explained representative, boundary, and failure fixtures`,
+      );
+      requireValue(
+        problem.fixtures.every(({ id }) => tracedFixtureIds.has(id)),
+        `${problemLabel} practice needs a guided trace for every fixture`,
+      );
+      requireValue(
+        practice.statement?.prompt &&
+          Array.isArray(practice.statement.inputs) &&
+          practice.statement.inputs.length > 0 &&
+          practice.statement.output &&
+          Array.isArray(practice.statement.constraints) &&
+          practice.statement.constraints.length > 0 &&
+          Array.isArray(practice.statement.edgeCases) &&
+          practice.statement.edgeCases.length > 0,
+        `${problemLabel} has an incomplete independent statement`,
+      );
+      requireValue(practice.sourceUrl, `${problemLabel} practice has no original source link`);
+      requireValue(
+        [...patternLanguages].every((language) => practice.starters?.[language]?.trim()),
+        `${problemLabel} practice needs Java, Python, and Go starters`,
+      );
+      requireValue(
+        Array.isArray(practice.hints) && practice.hints.length >= 3,
+        `${problemLabel} practice needs at least three progressive hints`,
+      );
+      requireValue(
+        Array.isArray(practice.approaches) &&
+          practice.approaches.length >= 2 &&
+          practice.approaches.every(
+            (approach) => approach?.title && approach?.explanation && approach?.complexity,
+          ),
+        `${problemLabel} practice needs baseline and improved approaches`,
+      );
+      requireValue(
+        Array.isArray(practice.commonMistakes) && practice.commonMistakes.length >= 3,
+        `${problemLabel} practice needs common mistakes`,
+      );
+      requireValue(
+        Array.isArray(practice.checks) &&
+          new Set(practice.checks.map(({ kind }) => kind)).size === 3 &&
+          practice.checks.every((check) => check?.prompt && check?.expected),
+        `${problemLabel} practice needs explain, trace, and transfer checks`,
+      );
+    }
+  }
+  if (lesson.essentialProblemReviewOrder !== undefined) {
     requireValue(
-      [...sourceAnchorCounts.values()].some((count) => count > 1),
-      `${problemLabel} trace must demonstrate repeated source control flow`,
+      Array.isArray(lesson.essentialProblemReviewOrder) &&
+        lesson.essentialProblemReviewOrder.length === problemIds.size,
+      `${label} review order must list every essential problem exactly once`,
+    );
+    requireValue(
+      new Set(lesson.essentialProblemReviewOrder).size === problemIds.size &&
+        lesson.essentialProblemReviewOrder.every((id) => problemIds.has(id)),
+      `${label} review order must contain only its essential problem ids`,
     );
   }
 
@@ -1157,6 +1266,10 @@ for (const { lesson, moduleLabel } of patternLessons) {
     const normalizedTitle = question.title.trim().toLowerCase();
     if (lesson.practiceSetPolicy === 'guided-plus-distinct-transfer') {
       requireValue(
+        !problemIds.has(reference.questionId),
+        `${label} practice ${reference.questionId} repeats an essential problem id`,
+      );
+      requireValue(
         !essentialProblemTitles.has(normalizedTitle),
         `${label} practice ${reference.questionId} repeats a guided problem title`,
       );
@@ -1166,9 +1279,20 @@ for (const { lesson, moduleLabel } of patternLessons) {
       );
     }
     seenPracticeTitles.add(normalizedTitle);
+    const expectedRelatedArticleId = reference.sourceLessonId ?? lesson.id;
+    if (reference.sourceLessonId !== undefined) {
+      requireValue(
+        lesson.practiceSetPolicy === 'guided-plus-distinct-transfer',
+        `${label} practice ${reference.questionId} cannot declare a source lesson without the transfer policy`,
+      );
+      requireValue(
+        reference.sourceLessonId !== lesson.id && questionsById.has(reference.sourceLessonId),
+        `${label} practice ${reference.questionId} has invalid source lesson ${reference.sourceLessonId}`,
+      );
+    }
     requireValue(
-      question.relatedArticleId === lesson.id,
-      `${label} practice ${reference.questionId} is not explicitly related to this lesson`,
+      question.relatedArticleId === expectedRelatedArticleId,
+      `${label} practice ${reference.questionId} is not explicitly related to ${expectedRelatedArticleId}`,
     );
   }
   requireStringArray(lesson.keyTakeaways, `${label} keyTakeaways`, 3);
