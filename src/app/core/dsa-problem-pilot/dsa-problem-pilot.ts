@@ -71,6 +71,37 @@ export class DsaProblemPilot {
       this.mode.set(this.entryMode());
       this.fixtureIndex.set(0);
     });
+    effect((onCleanup) => {
+      const stage = this.focusDialog()?.nativeElement;
+      const stickyUtility = this.host.nativeElement
+        .closest<HTMLElement>('.question-reader')
+        ?.querySelector<HTMLElement>('.question-sticky-utility');
+      if (!stage || !stickyUtility) return;
+
+      const updateStickyOffset = () => {
+        const configuredTop = Number.parseFloat(window.getComputedStyle(stickyUtility).top);
+        const utilityHeight = Math.max(
+          stickyUtility.offsetHeight,
+          stickyUtility.getBoundingClientRect().height,
+        );
+        if (utilityHeight <= 0) return;
+
+        const stickyTop = Number.isFinite(configuredTop) ? configuredTop : 76;
+        const protectedOffset = `${Math.ceil(stickyTop + utilityHeight)}px`;
+        stage.style.setProperty('--debugger-sticky-top', protectedOffset);
+        stage.style.setProperty('--debugger-sticky-top-mobile', protectedOffset);
+      };
+
+      updateStickyOffset();
+      const observer =
+        typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(updateStickyOffset);
+      observer?.observe(stickyUtility);
+      window.addEventListener('resize', updateStickyOffset);
+      onCleanup(() => {
+        observer?.disconnect();
+        window.removeEventListener('resize', updateStickyOffset);
+      });
+    });
     this.destroyRef.onDestroy(() => this.releaseFocusMode(false));
   }
 

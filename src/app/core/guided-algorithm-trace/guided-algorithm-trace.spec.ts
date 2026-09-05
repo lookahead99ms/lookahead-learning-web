@@ -291,7 +291,9 @@ describe('GuidedAlgorithmTrace shared interaction contract', () => {
     expect(navigation.querySelector('.execution-readout')).toBeNull();
     expect(navigation.dataset['stickyControls']).toBe('true');
     expect(getComputedStyle(navigation).position).toBe('sticky');
-    expect(getComputedStyle(navigation).zIndex).toBe('45');
+    expect(getComputedStyle(navigation).zIndex).toBe('35');
+    expect(navigation.querySelector('.trace-controls')?.getAttribute('role')).toBe('group');
+    expect(getComputedStyle(navigation.querySelector('button')!).minHeight).toBe('44px');
   });
 
   it('uses the selected language execution path, including inserted source instructions', () => {

@@ -1,7 +1,21 @@
+import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi } from 'vitest';
 import { PatternProblemV1 } from '../../content/content.models';
 import { DsaProblemPilot } from './dsa-problem-pilot';
+
+@Component({
+  imports: [DsaProblemPilot],
+  template: `
+    <article class="question-reader">
+      <div class="question-sticky-utility" style="position: sticky; top: 76px"></div>
+      <app-dsa-problem-pilot [problem]="problem" entryMode="guided" />
+    </article>
+  `,
+})
+class StickyDebuggerHost {
+  readonly problem = twoSumProblem();
+}
 
 function twoSumProblem(): PatternProblemV1 {
   const implementation = (language: 'java' | 'python' | 'go') => ({
@@ -201,6 +215,34 @@ describe('DsaProblemPilot mode tabs', () => {
     expect(expand.getAttribute('aria-label')).toBe('Expand Two Sum debugger');
     expect(expand.getAttribute('aria-expanded')).toBe('false');
     expect(expand.querySelector('svg')).not.toBeNull();
+  });
+
+  it('keeps embedded debugger controls below the measured breadcrumb utility', async () => {
+    await TestBed.configureTestingModule({ imports: [StickyDebuggerHost] }).compileComponents();
+    const fixture = TestBed.createComponent(StickyDebuggerHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const root = fixture.nativeElement as HTMLElement;
+    const utility = root.querySelector<HTMLElement>('.question-sticky-utility')!;
+    const stage = root.querySelector<HTMLElement>('.guided-trace-stage')!;
+    vi.spyOn(utility, 'offsetHeight', 'get').mockReturnValue(74);
+    vi.spyOn(utility, 'getBoundingClientRect').mockReturnValue({
+      x: 0,
+      y: 76,
+      top: 76,
+      right: 760,
+      bottom: 150,
+      left: 0,
+      width: 760,
+      height: 74,
+      toJSON: () => ({}),
+    });
+
+    window.dispatchEvent(new Event('resize'));
+
+    expect(stage.style.getPropertyValue('--debugger-sticky-top')).toBe('150px');
+    expect(stage.style.getPropertyValue('--debugger-sticky-top-mobile')).toBe('150px');
   });
 
   it('lets the learner select the exact input used by the guided trace', async () => {

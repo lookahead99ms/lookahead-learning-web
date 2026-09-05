@@ -72,7 +72,7 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         <span class="step-status" aria-live="polite"
           >Step {{ stepIndex() + 1 }} of {{ events().length }} · {{ event().phase }}</span
         >
-        <div class="trace-controls" aria-label="Trace controls">
+        <div class="trace-controls" role="group" aria-label="Trace controls">
           <button
             type="button"
             (click)="previous()"
@@ -81,7 +81,7 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
           >
             Previous
           </button>
-          <button type="button" (click)="reset()">Reset</button>
+          <button type="button" class="reset-action" (click)="reset()">Reset</button>
           <button
             type="button"
             class="primary"
@@ -524,7 +524,7 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
       }
       .trace-navigation {
         position: sticky;
-        z-index: 45;
+        z-index: 35;
         top: var(--debugger-sticky-top, 76px);
         display: flex;
         align-items: center;
@@ -538,7 +538,7 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         backdrop-filter: blur(10px);
       }
       .trace-controls button {
-        min-height: 38px;
+        min-height: 44px;
         padding: 7px 12px;
         border: 1px solid #4d7789;
         border-radius: 7px;
@@ -1315,11 +1315,18 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
       }
       .guided-trace.focus-mode {
         display: grid;
+        grid-template-areas:
+          'toolbar'
+          'navigation'
+          'context'
+          'workspace';
+        grid-template-columns: minmax(0, 1fr);
         grid-template-rows: auto auto auto minmax(0, 1fr);
         height: 100%;
         border-radius: 12px;
       }
       .focus-mode .trace-toolbar {
+        grid-area: toolbar;
         grid-template-columns: minmax(180px, 1.1fr) minmax(190px, auto) auto;
         gap: 10px;
         padding: 8px 12px;
@@ -1328,12 +1335,14 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         display: none;
       }
       .focus-mode .trace-navigation {
+        grid-area: navigation;
         position: static;
         min-height: 46px;
         padding: 5px 12px;
         box-shadow: none;
       }
       .focus-mode .trace-context {
+        grid-area: context;
         padding: 6px 12px;
       }
       .focus-mode .trace-summary-values {
@@ -1345,6 +1354,7 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         display: none;
       }
       .focus-mode .ide-workspace {
+        grid-area: workspace;
         grid-template-areas:
           'source explanation'
           'dock dock';
@@ -1527,6 +1537,60 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         content: '> ';
         color: #71e1ba;
       }
+      @media (min-width: 1180px) {
+        .guided-trace.focus-mode {
+          grid-template-areas:
+            'toolbar toolbar'
+            'context navigation'
+            'workspace navigation';
+          grid-template-columns: minmax(0, 1fr) 124px;
+          grid-template-rows: auto auto minmax(0, 1fr);
+        }
+        .focus-mode .trace-navigation {
+          display: grid;
+          grid-template-rows: auto minmax(0, 1fr);
+          align-items: start;
+          align-content: start;
+          justify-content: stretch;
+          gap: 16px;
+          min-width: 0;
+          min-height: 0;
+          padding: 15px 10px 12px;
+          border-bottom: 0;
+          border-left: 1px solid #456c7b;
+          background: #0d2635;
+          box-shadow: -8px 0 18px rgba(5, 25, 35, 0.13);
+        }
+        .focus-mode .step-status {
+          overflow: visible;
+          color: #d7eaed;
+          text-align: center;
+          text-overflow: clip;
+          white-space: normal;
+        }
+        .focus-mode .trace-controls {
+          display: flex;
+          flex-direction: column;
+          align-self: stretch;
+          gap: 8px;
+          width: 100%;
+        }
+        .focus-mode .trace-controls button {
+          width: 100%;
+          min-height: 44px;
+          padding-inline: 7px;
+        }
+        .focus-mode .trace-controls .reset-action {
+          margin-block: 8px 4px;
+          border-color: #7f9aa6;
+          color: #dbeaec;
+          background: transparent;
+        }
+        .focus-mode .trace-controls .primary {
+          min-height: 56px;
+          font-size: 0.86rem;
+        }
+      }
       @media (max-width: 1060px) {
         .trace-toolbar {
           grid-template-columns: minmax(150px, 0.8fr) minmax(180px, 1fr) auto;
@@ -1677,6 +1741,7 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         }
         .focus-mode .trace-navigation {
           position: sticky;
+          z-index: 3;
           top: var(--debugger-focus-sticky-top, 52px);
         }
       }
