@@ -242,6 +242,11 @@ export interface GuidedTraceEvent {
   result?: string;
 }
 
+export interface GuidedTracePathStep {
+  sourceAnchor: string;
+  eventIndex: number;
+}
+
 export interface GuidedTraceV1 {
   schemaVersion: 'guided-trace/v1';
   id: string;
@@ -249,6 +254,7 @@ export interface GuidedTraceV1 {
   invariant: string;
   legend: { state: GuidedTraceCellState; label: string }[];
   events: GuidedTraceEvent[];
+  languagePaths?: Record<PatternLanguage, GuidedTracePathStep[]>;
 }
 
 export interface PatternProblemFixture {
@@ -292,6 +298,8 @@ export interface PatternProblemPractice {
     edgeCases: string[];
   };
   starters: Record<PatternLanguage, string>;
+  sourceAttribution?:
+    { kind: 'external'; label: string; url: string } | { kind: 'platform'; label: string };
   sourceUrl?: string;
   hints: string[];
   canonicalApproach: {
@@ -531,6 +539,7 @@ export function isFoundationLessonV1(item: InterviewQuestion): item is Foundatio
 export interface SearchDocument {
   id: string;
   contentId: string;
+  canonicalContentId?: string;
   path: ContentPath;
   courseId: string;
   courseTitle: string;

@@ -264,7 +264,7 @@ describe('GuidedAlgorithmTrace shared interaction contract', () => {
     expect(text).toContain('Result: Answer = 3');
   });
 
-  it('preserves the semantic step when language changes and supports keyboard tabs', () => {
+  it('resets to the selected language runtime entry and supports keyboard tabs', () => {
     const root = fixture.nativeElement.querySelector('.guided-trace') as HTMLElement;
     root.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
     fixture.detectChanges();
@@ -276,9 +276,83 @@ describe('GuidedAlgorithmTrace shared interaction contract', () => {
     tabs[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
     fixture.detectChanges();
     expect(tabs[1].getAttribute('aria-selected')).toBe('true');
-    expect(fixture.nativeElement.querySelector('.step-status').textContent).toContain('2 of 3');
+    expect(fixture.nativeElement.querySelector('.step-status').textContent).toContain('1 of 3');
     expect(fixture.nativeElement.querySelector('.sr-status').textContent).toContain(
-      'python selected. Still on Advance.',
+      'python selected. Trace reset to step 1.',
+    );
+  });
+
+  it('keeps full source text out of the compact navigation strip', () => {
+    fixture.detectChanges();
+
+    const navigation = fixture.nativeElement.querySelector('.trace-navigation') as HTMLElement;
+    expect(normalizedText(navigation)).toContain('Step 1 of 3');
+    expect(normalizedText(navigation)).not.toContain('initialize state');
+    expect(navigation.querySelector('.execution-readout')).toBeNull();
+    expect(navigation.dataset['stickyControls']).toBe('true');
+    expect(getComputedStyle(navigation).position).toBe('sticky');
+    expect(getComputedStyle(navigation).zIndex).toBe('45');
+  });
+
+  it('uses the selected language execution path, including inserted source instructions', () => {
+    const activeProblem = problem('language-path', 'Language Path', 'values');
+    activeProblem.trace.languagePaths = {
+      java: [
+        { sourceAnchor: 'initialize', eventIndex: 0 },
+        { sourceAnchor: 'insert', eventIndex: 0 },
+        { sourceAnchor: 'advance', eventIndex: 1 },
+        { sourceAnchor: 'return', eventIndex: 2 },
+      ],
+      python: [
+        { sourceAnchor: 'initialize', eventIndex: 0 },
+        { sourceAnchor: 'advance', eventIndex: 1 },
+        { sourceAnchor: 'return', eventIndex: 2 },
+      ],
+      go: [
+        { sourceAnchor: 'initialize', eventIndex: 0 },
+        { sourceAnchor: 'advance', eventIndex: 1 },
+        { sourceAnchor: 'return', eventIndex: 2 },
+      ],
+    };
+    fixture.componentInstance.activeProblem.set(activeProblem);
+    fixture.componentInstance.selectedFixture.set(activeProblem.fixtures[0]);
+    fixture.detectChanges();
+
+    const next = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
+      '.trace-controls .primary',
+    )!;
+    next.click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.step-status').textContent).toContain('2 of 4');
+    expect(normalizedText(fixture.nativeElement.querySelector('.source-line.active'))).toContain(
+      'insert current value',
+    );
+
+    (fixture.nativeElement as HTMLElement)
+      .querySelectorAll<HTMLButtonElement>('.language-tabs button')[1]
+      .click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.step-status').textContent).toContain('1 of 3');
+    expect(normalizedText(fixture.nativeElement.querySelector('.source-line.active'))).toContain(
+      'initialize state',
+    );
+  });
+
+  it('replaces Python-specific generated narration with the selected source line', () => {
+    const activeProblem = problem('generated-line', 'Generated Line', 'values');
+    activeProblem.trace.events[0].label = 'Line 1: seen = set()';
+    activeProblem.trace.events[0].what = 'Execute solve at source line 1: seen = set()';
+    activeProblem.implementations[0].lines[0].text = 'Set<Integer> seen = new HashSet<>();';
+    fixture.componentInstance.activeProblem.set(activeProblem);
+    fixture.componentInstance.selectedFixture.set(activeProblem.fixtures[0]);
+    fixture.componentInstance.focusMode.set(true);
+    fixture.detectChanges();
+
+    const explanation = fixture.nativeElement.querySelector('.focus-explanation') as HTMLElement;
+    expect(normalizedText(explanation)).toContain('Line 1: Set<Integer> seen = new HashSet<>();');
+    expect(normalizedText(explanation)).not.toContain('seen = set()');
+    expect(normalizedText(fixture.nativeElement.querySelector('.focus-terminal'))).not.toContain(
+      'seen = set()',
     );
   });
 
@@ -320,10 +394,10 @@ describe('GuidedAlgorithmTrace shared interaction contract', () => {
     expect(workspace.querySelector('.focus-explanation')?.textContent).toContain('Why');
     expect(workspace.querySelector('.debugger-shell')).toBeNull();
     expect([...dock.querySelectorAll('h3')].map(normalizedText)).toEqual([
-      'Variables',
       'State structure',
       'Array',
       'Observation',
+      'Variables',
       'Output',
     ]);
     expect(dock.querySelector('.focus-terminal')?.textContent).toContain('Terminal');
@@ -401,23 +475,27 @@ describe('GuidedAlgorithmTrace shared interaction contract', () => {
     },
   );
 
-  it('keeps pinned state and view controls visible while only the lower right pane changes', () => {
+  it('keeps view controls visible while only the lower right pane changes', () => {
     const buttons = (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLButtonElement>(
       '.debugger-view-tabs button',
     );
     const workspace = fixture.nativeElement.querySelector('.ide-workspace') as HTMLElement;
     const source = fixture.nativeElement.querySelector('.source-panel') as HTMLElement;
     const shell = fixture.nativeElement.querySelector('.debugger-shell') as HTMLElement;
-    const summary = shell.querySelector('.debugger-summary') as HTMLElement;
     const tabs = shell.querySelector('.debugger-view-tabs') as HTMLElement;
     const debuggerPanel = fixture.nativeElement.querySelector('.debugger-panel') as HTMLElement;
     expect(buttons).toHaveLength(4);
     expect(buttons[0].getAttribute('aria-selected')).toBe('true');
-    expect(shell.contains(summary)).toBe(true);
     expect(shell.contains(tabs)).toBe(true);
-    expect(debuggerPanel.contains(summary)).toBe(false);
     expect(debuggerPanel.contains(tabs)).toBe(false);
-    expect(debuggerPanel.querySelector('.variable-inspector')).not.toBeNull();
+    const stateView = debuggerPanel.querySelector('.state-view');
+    const variableInspector = debuggerPanel.querySelector('.variable-inspector');
+    expect(stateView).not.toBeNull();
+    expect(variableInspector).not.toBeNull();
+    expect(
+      stateView!.compareDocumentPosition(variableInspector!) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(shell.querySelector('.debugger-summary')).toBeNull();
 
     debuggerPanel.scrollTop = 120;
     buttons[1].click();
@@ -426,7 +504,6 @@ describe('GuidedAlgorithmTrace shared interaction contract', () => {
     expect(debuggerPanel.scrollTop).toBe(0);
     expect(debuggerPanel.querySelector('.why-view')).not.toBeNull();
     expect(debuggerPanel.querySelector('.variable-inspector')).toBeNull();
-    expect(shell.querySelector('.debugger-summary')).toBe(summary);
     expect(shell.querySelector('.debugger-view-tabs')).toBe(tabs);
     expect(fixture.nativeElement.querySelector('.source-panel')).toBe(source);
     expect(fixture.nativeElement.querySelector('.debugger-panel')).toBe(debuggerPanel);
@@ -755,9 +832,7 @@ describe('GuidedAlgorithmTrace shared interaction contract', () => {
     expect(normalizedText(fixture.nativeElement.querySelector('.debugger-output'))).toContain(
       '[0,2]',
     );
-    expect(normalizedText(fixture.nativeElement.querySelector('.debugger-summary'))).toContain(
-      'returned[0,2]',
-    );
+    expect(fixture.nativeElement.querySelector('.debugger-summary')).toBeNull();
     const predict = (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLButtonElement>(
       '.debugger-view-tabs button',
     )[2];

@@ -126,7 +126,7 @@ export function auditDsa(courses) {
       if (!lesson) continue;
       const isPattern = ['pattern-lesson/v1', 'pattern-lesson/v2'].includes(lesson.schemaVersion);
       const essentials = isPattern ? (lesson.essentialProblems ?? []) : [];
-      const linkedIds = isPattern ? (lesson.practice ?? []).map((item) => item.questionId) : [];
+      const linkedIds = (lesson.practice ?? []).map((item) => item.questionId);
       const continuation = [
         ...linkedIds.flatMap((id) => (byId.has(id) ? [byId.get(id)] : [])),
         ...course.questions.filter(

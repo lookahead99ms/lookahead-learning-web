@@ -747,7 +747,9 @@ for (const question of questionsById.values()) {
     `${question.id} references unknown canonical problem ${reference.problemId}`,
   );
   requireValue(
-    primaryPracticePlacement(problem)?.questionId === question.id,
+    problem.placements?.some(
+      (placement) => placement.role === 'practice' && placement.questionId === question.id,
+    ),
     `${question.id} and ${reference.problemId} do not link to each other`,
   );
 }
@@ -796,18 +798,19 @@ for (const [id, problem] of canonicalDsaProblems) {
       const link = navigation[direction];
       if (!link) continue;
       const target = canonicalDsaProblems.get(link.problemId);
-      const targetPlacement = target && primaryPracticePlacement(target);
+      const targetPlacement = target?.placements?.find(
+        (placement) =>
+          placement.role === 'practice' &&
+          placement.path === link.path &&
+          placement.courseId === link.courseId &&
+          placement.questionId === link.questionId,
+      );
       requireValue(target, `${id} navigation references unknown problem ${link.problemId}`);
       requireValue(
         target.title === link.title,
         `${id} navigation title is stale for ${link.problemId}`,
       );
-      requireValue(
-        targetPlacement?.path === link.path &&
-          targetPlacement?.courseId === link.courseId &&
-          targetPlacement?.questionId === link.questionId,
-        `${id} navigation route is stale for ${link.problemId}`,
-      );
+      requireValue(targetPlacement, `${id} navigation route is stale for ${link.problemId}`);
       const targetContext = navigationContexts(target).find(
         ({ handsOnPatternId }) => handsOnPatternId === navigation.handsOnPatternId,
       );
@@ -934,12 +937,19 @@ function validateCodeBlocks(blocks, label, expectedLanguages) {
 
 function isDebuggerInstruction(line, language) {
   const text = line.text.trim();
-  if (!text || /^}[;,]?$/.test(text) || /^}\s*else\b/.test(text) || /^else\b/.test(text)) {
-    return false;
+  if (!text || /^}[;,]?$/.test(text)) return false;
+  if (/^(?:#|\/\/|\/\*|\*\/|\*(?:\s|$))/.test(text)) return false;
+  if (language === 'python') {
+    // A nested def is an executable statement that creates the helper function.
+    if (/^def\s/.test(text) && /^\S/.test(line.text)) return false;
+    if (/^else:\s*$/.test(text)) return false;
+    return true;
   }
-  if (language === 'python') return !/^def\s/.test(text);
+  if (/^}\s*else\b/.test(text) || /^else\b/.test(text)) return false;
   if (language === 'go') return !/^func\s/.test(text);
-  return !/^static\s.+\([^)]*\)\s*{$/.test(text);
+  return !/^(?:(?:public|private|protected|static|final|synchronized)\s+)*[\w<>\[\],.?]+\s+\w+\s*\([^)]*\)\s*{$/.test(
+    text,
+  );
 }
 
 for (const { lesson, moduleLabel } of foundationLessons) {
@@ -1328,16 +1338,13 @@ for (const { lesson, moduleLabel } of patternLessons) {
           );
           const terminalLine = implementation.lines.find(({ id }) => id === terminalAnchor)?.text;
           requireValue(
-            /^\s*return\b/.test(terminalLine ?? ''),
+            /\breturn\b/.test(terminalLine ?? ''),
             `${problemLabel} ${language} terminal anchor ${terminalAnchor} is not a return`,
           );
         }
         for (const [sourceAnchor, targets] of Object.entries(controlFlow.transitions)) {
           requireValue(
-            anchors?.has(sourceAnchor) &&
-              !terminalAnchors.has(sourceAnchor) &&
-              Array.isArray(targets) &&
-              targets.length > 0,
+            anchors?.has(sourceAnchor) && Array.isArray(targets) && targets.length > 0,
             `${problemLabel} ${language} has an invalid transition from ${sourceAnchor}`,
           );
           requireValue(
@@ -1392,7 +1399,8 @@ for (const { lesson, moduleLabel } of patternLessons) {
         );
       }
       requireValue(
-        Array.isArray(trace.events) && trace.events.length > 1,
+        Array.isArray(trace.events) &&
+          trace.events.length >= (problem.traceSemantics === 'source-line/v1' ? 1 : 2),
         `${problemLabel} trace has too few events`,
       );
       const eventIds = new Set();
@@ -1424,26 +1432,6 @@ for (const { lesson, moduleLabel } of patternLessons) {
           );
           const sourceKey = `${language}:${event.sourceAnchor[language]}`;
           sourceAnchorCounts.set(sourceKey, (sourceAnchorCounts.get(sourceKey) ?? 0) + 1);
-          if (problem.traceSemantics === 'source-line/v1') {
-            const controlFlow = implementationsByLanguage.get(language).controlFlow;
-            const anchor = event.sourceAnchor[language];
-            if (eventIndex === 0) {
-              requireValue(
-                anchor === controlFlow.entryAnchor,
-                `${problemLabel} trace ${trace.id} must start at the ${language} entry anchor`,
-              );
-            } else {
-              const previousAnchor = trace.events[eventIndex - 1].sourceAnchor[language];
-              requireValue(
-                previousAnchor !== anchor,
-                `${problemLabel} trace ${trace.id} repeats ${language} anchor ${anchor} without advancing`,
-              );
-              requireValue(
-                controlFlow.transitions[previousAnchor]?.includes(anchor),
-                `${problemLabel} trace ${trace.id} has illegal ${language} transition ${previousAnchor} -> ${anchor}`,
-              );
-            }
-          }
         }
         for (const row of event.rows) {
           requireValue(
@@ -1462,6 +1450,63 @@ for (const { lesson, moduleLabel } of patternLessons) {
               `${problemLabel} event ${event.id} uses an unknown cell state`,
             );
           }
+        }
+      }
+      if (problem.traceSemantics === 'source-line/v1') {
+        requireValue(
+          trace.languagePaths && typeof trace.languagePaths === 'object',
+          `${problemLabel} trace ${trace.id} has no selected-language execution paths`,
+        );
+        for (const language of patternLanguages) {
+          const path = trace.languagePaths?.[language];
+          const implementation = implementationsByLanguage.get(language);
+          const controlFlow = implementation.controlFlow;
+          requireValue(
+            Array.isArray(path) && path.length > 0,
+            `${problemLabel} trace ${trace.id} has no ${language} execution path`,
+          );
+          for (const [pathIndex, step] of path.entries()) {
+            const sourceLine = implementation.lines.find(({ id }) => id === step?.sourceAnchor);
+            requireValue(
+              sourceLine && isDebuggerInstruction(sourceLine, language),
+              `${problemLabel} trace ${trace.id} has non-executable ${language} path anchor ${step?.sourceAnchor}`,
+            );
+            requireValue(
+              Number.isInteger(step?.eventIndex) &&
+                step.eventIndex >= 0 &&
+                step.eventIndex < trace.events.length,
+              `${problemLabel} trace ${trace.id} has invalid ${language} state event ${step?.eventIndex}`,
+            );
+            if (pathIndex === 0) {
+              requireValue(
+                step.sourceAnchor === controlFlow.entryAnchor,
+                `${problemLabel} trace ${trace.id} must start at the ${language} runtime entry anchor`,
+              );
+            } else {
+              const previousStep = path[pathIndex - 1];
+              const previousAnchor = path[pathIndex - 1].sourceAnchor;
+              requireValue(
+                previousAnchor !== step.sourceAnchor,
+                `${problemLabel} trace ${trace.id} repeats ${language} path anchor ${step.sourceAnchor} without advancing`,
+              );
+              requireValue(
+                step.eventIndex >= previousStep.eventIndex,
+                `${problemLabel} trace ${trace.id} moves ${language} state backward at ${step.sourceAnchor}`,
+              );
+              requireValue(
+                controlFlow.transitions[previousAnchor]?.includes(step.sourceAnchor),
+                `${problemLabel} trace ${trace.id} has illegal ${language} runtime transition ${previousAnchor} -> ${step.sourceAnchor}`,
+              );
+            }
+          }
+          requireValue(
+            controlFlow.terminalAnchors.includes(path.at(-1).sourceAnchor),
+            `${problemLabel} trace ${trace.id} does not end at a ${language} runtime return`,
+          );
+          requireValue(
+            path.at(-1).eventIndex === trace.events.length - 1,
+            `${problemLabel} trace ${trace.id} does not resolve its final ${language} state`,
+          );
         }
       }
       if (problem.traceSemantics !== 'source-line/v1') {
@@ -1529,7 +1574,14 @@ for (const { lesson, moduleLabel } of patternLessons) {
           practice.statement.edgeCases.length > 0,
         `${problemLabel} has an incomplete independent statement`,
       );
-      requireValue(practice.sourceUrl, `${problemLabel} practice has no original source link`);
+      requireValue(
+        practice.sourceUrl ||
+          (practice.sourceAttribution?.kind === 'platform' && practice.sourceAttribution?.label) ||
+          (practice.sourceAttribution?.kind === 'external' &&
+            practice.sourceAttribution?.label &&
+            practice.sourceAttribution?.url),
+        `${problemLabel} practice has no honest source attribution`,
+      );
       requireValue(
         [...patternLanguages].every((language) => practice.starters?.[language]?.trim()),
         `${problemLabel} practice needs Java, Python, and Go starters`,
@@ -1544,6 +1596,14 @@ for (const { lesson, moduleLabel } of patternLessons) {
           practice.canonicalApproach?.whenAssumptionChanges &&
           practice.approaches === undefined,
         `${problemLabel} practice needs one canonical approach rationale without an alternatives catalogue`,
+      );
+      const variantRationale = practice.canonicalApproach.whyThisApproach.trim();
+      requireValue(
+        variantRationale !== problem.variation.trim() &&
+          !variantRationale
+            .toLowerCase()
+            .includes('maintained invariant makes every discarded candidate provably irrelevant'),
+        `${problemLabel} practice must explain why the selected variant fits`,
       );
       requireValue(
         Array.isArray(practice.commonMistakes) && practice.commonMistakes.length >= 3,

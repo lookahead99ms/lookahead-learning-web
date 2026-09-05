@@ -17,15 +17,20 @@
     </div>
 
     <header class="practice-hero">
-      <span class="review-status" data-review-status="evolving">Evolving topic</span>
+      <span class="review-status practice-status" data-review-status="evolving"
+        >Curriculum status: Evolving</span
+      >
       <h1>Practice the invariant, not just the answer.</h1>
       <p>
         Start from the pattern you just learned, trace its state on a real input, then move to
         problems that force you to adapt the same reasoning.
       </p>
-      <div class="practice-proof" aria-label="Practice sequence">
-        <span>Recognize</span><span>Trace</span><span>Implement</span><span>Transfer</span>
-      </div>
+      <ol class="practice-proof" aria-label="Practice sequence">
+        <li>Recognize</li>
+        <li>Trace</li>
+        <li>Implement</li>
+        <li>Transfer</li>
+      </ol>
       <div class="practice-hero-actions">
         <button
           class="surprise-problem"
@@ -42,7 +47,7 @@
       </div>
     </header>
 
-    @if (courses()) {
+    @if (catalog()) {
       <section class="practice-controls" aria-label="Filter practice problems">
         <label>
           Search problems and patterns
@@ -58,14 +63,6 @@
           <select [value]="difficulty()" (change)="updateDifficulty($any($event.target).value)">
             @for (option of difficulties; track option) {
               <option [value]="option">{{ option }}</option>
-            }
-          </select>
-        </label>
-        <label>
-          Practice format
-          <select [value]="readiness()" (change)="updateReadiness($any($event.target).value)">
-            @for (option of readinessOptions; track option) {
-              <option [value]="option">{{ readinessLabel(option) }}</option>
             }
           </select>
         </label>
@@ -90,39 +87,23 @@
         }
       </nav>
 
-      @if (selectedGroup(); as group) {
-        @if (problemId() && group.essentialProblems.length) {
-          <section class="active-practice" aria-labelledby="active-practice-heading">
-            <header>
-              <div>
-                <span class="experience-pill">Guided workbench</span>
-                <h2 id="active-practice-heading">{{ group.title }}</h2>
-                <span class="experience-pill">{{ group.courseTitle }}</span>
-                <p>{{ group.description }}</p>
-              </div>
-              <a class="lesson-link" [routerLink]="['/learn', group.courseId, group.lesson.id]"
-                >Review {{ group.title }} concept →</a
-              >
-            </header>
-            <div id="guided-workbench" class="workbench-wrap">
-              <app-pattern-problem-workbench
-                [problems]="group.essentialProblems"
-                [initialProblemId]="problemId()"
-                entryMode="practice"
-                eyebrow="Guided practice"
-                ariaLabel="Guided practice problems"
-              />
-            </div>
-          </section>
-        }
-      }
-
       <header id="practice-results" class="practice-results-header">
         <h2>{{ selectedGroup() ? selectedGroup()?.title + ' problem set' : 'Problem library' }}</h2>
-        <p aria-live="polite">
-          {{ visibleUniqueProblemCount() }} distinct problems across {{ visibleGroups().length }}
-          {{ visibleGroups().length === 1 ? 'pattern' : 'patterns' }}
-        </p>
+        <div class="practice-results-meta">
+          <p aria-live="polite">
+            {{ visibleUniqueProblemCount() }} distinct problems across {{ visibleGroups().length }}
+            {{ visibleGroups().length === 1 ? 'pattern' : 'patterns' }}
+          </p>
+          @if (selectedGroup(); as selected) {
+            <a
+              class="clear-pattern-filter"
+              routerLink="/learn/hands-on-dsa"
+              [attr.aria-label]="'Clear ' + selected.title + ' pattern filter'"
+            >
+              <span aria-hidden="true">×</span> Clear filter
+            </a>
+          }
+        </div>
       </header>
 
       @if (visibleGroups().length) {
@@ -136,70 +117,34 @@
             >
               <summary>
                 <div>
-                  <span class="experience-pill">{{
-                    group.goldenLesson ? 'Guided + transfer' : 'Practice set'
-                  }}</span>
+                  <span class="experience-pill">Guided + independent</span>
                   <h2 [id]="'practice-group-' + group.id">{{ group.title }}</h2>
                   <span class="experience-pill">{{ group.courseTitle }}</span>
                   <p>{{ group.description }}</p>
                 </div>
-                <span class="pattern-group-count"
-                  >{{
-                    group.essentialProblems.length + group.continuationProblems.length
-                  }}
-                  problems</span
-                >
+                <span class="pattern-group-count">
+                  {{ group.problems.length }}
+                  {{ group.problems.length === 1 ? 'problem' : 'problems' }}
+                </span>
                 <span class="pattern-group-toggle" aria-hidden="true"></span>
               </summary>
               @if (isPatternOpen(group.id)) {
                 <nav class="group-links" [attr.aria-label]="group.title + ' actions'">
-                  <a class="lesson-link" [routerLink]="['/learn', group.courseId, group.lesson.id]"
+                  <a class="lesson-link" [routerLink]="['/learn', group.courseId, group.lessonId]"
                     >Review {{ group.title }} concept →</a
                   >
                 </nav>
                 <div class="problem-grid">
-                  @for (problem of group.essentialProblems; track problem.id) {
-                    @if (problem.practiceQuestionId) {
-                      <a
-                        class="problem-card"
-                        [routerLink]="problemRoute(problem, group.courseId)"
-                        [queryParams]="{ pattern: group.id }"
-                      >
-                        <span>{{ problem.difficulty }} · Guided + independent</span>
-                        <h3>{{ problem.title }}</h3>
-                        <p>{{ problem.practice?.statement?.prompt ?? problem.variation }}</p>
-                        <b>Read the problem and practise →</b>
-                      </a>
-                    } @else {
-                      <a
-                        class="problem-card"
-                        routerLink="/learn/hands-on-dsa"
-                        [queryParams]="{ pattern: group.id, problem: problem.id }"
-                        fragment="guided-workbench"
-                      >
-                        <span>{{ problem.difficulty }} · Guided</span>
-                        <h3>{{ problem.title }}</h3>
-                        <p>{{ problem.variation }}</p>
-                        <b>Trace and implement →</b>
-                      </a>
-                    }
-                  }
-                  @for (problem of group.continuationProblems; track problem.id) {
+                  @for (problem of group.problems; track problem.id) {
                     <a
                       class="problem-card"
-                      [routerLink]="['/learn', group.courseId, problem.id]"
+                      [routerLink]="problem.route"
                       [queryParams]="{ pattern: group.id }"
                     >
-                      <span>{{ problem.difficulty }} · {{ problemReadinessLabel(problem) }}</span>
+                      <span>{{ problem.difficulty }} · Guided + independent</span>
                       <h3>{{ problem.title }}</h3>
-                      <p>{{ problem.interviewAnswer }}</p>
-                      <b>
-                        {{
-                          continuationReadiness(problem) === 'Practice-ready'
-                            ? 'Solve this problem →'
-                            : 'Review problem brief →'
-                        }}
-                      </b>
+                      <p>{{ problem.description }}</p>
+                      <b>Read the problem and practise →</b>
                     </a>
                   }
                 </div>

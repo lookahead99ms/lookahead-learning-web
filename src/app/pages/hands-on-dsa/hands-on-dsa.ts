@@ -1,25 +1,19 @@
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { forkJoin } from 'rxjs';
 import { ContentService } from '../../content/content.service';
-import { CourseContent } from '../../content/content.models';
 import {
   HandsOnDifficulty,
-  HandsOnReadiness,
-  buildHandsOnDsaGroups,
-  continuationReadiness,
-  filterHandsOnDsaGroups,
-  handsOnProblemRoute,
-  resolveHandsOnDsaGroup,
-  uniqueHandsOnProblemCount,
+  HandsOnDsaIndex,
+  filterHandsOnDsaIndexGroups,
+  resolveHandsOnDsaIndexGroup,
+  uniqueHandsOnIndexProblemCount,
 } from '../../content/hands-on-dsa';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
-import { PatternProblemWorkbench } from '../../core/pattern-problem-workbench/pattern-problem-workbench';
 
 @Component({
   selector: 'app-hands-on-dsa',
-  imports: [PlatformHeader, PatternProblemWorkbench, RouterLink],
+  imports: [PlatformHeader, RouterLink],
   templateUrl: './hands-on-dsa.html',
   styles: [
     `
@@ -77,11 +71,56 @@ import { PatternProblemWorkbench } from '../../core/pattern-problem-workbench/pa
         font-size: clamp(1rem, 1vw + 0.72rem, 1.18rem);
         line-height: 1.65;
       }
+      .practice-hero .review-status.practice-status {
+        position: relative;
+        gap: 0;
+        padding: 0 0 0 28px;
+        border: 0;
+        border-radius: 0;
+        color: #587188;
+        background: transparent;
+        font-size: 0.66rem;
+        letter-spacing: 0.09em;
+        line-height: 1.25;
+      }
+      .practice-status::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        width: 20px;
+        height: 2px;
+        background: #c0780a;
+        transform: translateY(-50%);
+      }
       .practice-proof {
+        counter-reset: practice-step;
         display: flex;
-        gap: 8px;
+        gap: 14px 20px;
         flex-wrap: wrap;
         margin-top: 19px;
+        padding: 0;
+        list-style: none;
+      }
+      .practice-proof li {
+        counter-increment: practice-step;
+        display: inline-grid;
+        grid-template-columns: auto auto;
+        gap: 7px;
+        align-items: baseline;
+        color: var(--practice-accent);
+        font-size: 0.72rem;
+        font-weight: 850;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+      }
+      .practice-proof li::before {
+        content: '0' counter(practice-step);
+        color: #a86008;
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 0.78rem;
+        font-weight: 900;
+        letter-spacing: 0;
       }
       .practice-hero-actions {
         position: relative;
@@ -142,7 +181,6 @@ import { PatternProblemWorkbench } from '../../core/pattern-problem-workbench/pa
         font-size: 0.72rem;
         line-height: 1.35;
       }
-      .practice-proof span,
       .experience-pill,
       .problem-card > span {
         width: fit-content;
@@ -158,7 +196,7 @@ import { PatternProblemWorkbench } from '../../core/pattern-problem-workbench/pa
       }
       .practice-controls {
         display: grid;
-        grid-template-columns: minmax(220px, 1fr) repeat(2, minmax(180px, auto));
+        grid-template-columns: minmax(220px, 1fr) minmax(180px, auto);
         gap: 14px;
         align-items: end;
         margin: 18px 0;
@@ -282,6 +320,38 @@ import { PatternProblemWorkbench } from '../../core/pattern-problem-workbench/pa
         color: var(--muted);
         font-size: 0.82rem;
         font-weight: 700;
+      }
+      .practice-results-meta {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .clear-pattern-filter {
+        display: inline-flex;
+        min-height: 44px;
+        align-items: center;
+        gap: 7px;
+        padding: 7px 12px;
+        border: 1px solid #9dbdcd;
+        border-radius: 999px;
+        color: #315f9d;
+        background: #fff;
+        font-size: 0.76rem;
+        font-weight: 850;
+        text-decoration: none;
+      }
+      .clear-pattern-filter span {
+        color: var(--practice-accent);
+        font-size: 1.1rem;
+        line-height: 1;
+      }
+      .clear-pattern-filter:hover,
+      .clear-pattern-filter:focus-visible {
+        border-color: var(--practice-accent);
+        outline: 3px solid rgba(13, 129, 146, 0.15);
+        outline-offset: 2px;
       }
       .pattern-groups {
         display: grid;
@@ -409,6 +479,9 @@ import { PatternProblemWorkbench } from '../../core/pattern-problem-workbench/pa
         .practice-results-header {
           display: grid;
         }
+        .practice-results-meta {
+          justify-content: start;
+        }
         .lesson-link {
           justify-self: start;
         }
@@ -432,6 +505,7 @@ import { PatternProblemWorkbench } from '../../core/pattern-problem-workbench/pa
         .pattern-group,
         .problem-card,
         .pattern-filter a,
+        .clear-pattern-filter,
         .surprise-problem {
           border-color: CanvasText;
           color: CanvasText;
@@ -451,13 +525,11 @@ export class HandsOnDsa implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
-  protected readonly courses = signal<CourseContent[] | null>(null);
+  protected readonly catalog = signal<HandsOnDsaIndex | null>(null);
   protected readonly error = signal('');
   protected readonly query = signal('');
   protected readonly difficulty = signal<HandsOnDifficulty>('All');
-  protected readonly readiness = signal<HandsOnReadiness>('All');
   protected readonly patternId = signal('');
-  protected readonly problemId = signal('');
   protected readonly openGroupId = signal<string | null>(null);
   private readonly lastSurpriseProblemId = signal('');
   protected readonly difficulties: HandsOnDifficulty[] = [
@@ -466,52 +538,31 @@ export class HandsOnDsa implements OnInit {
     'Intermediate',
     'Advanced',
   ];
-  protected readonly readinessOptions: HandsOnReadiness[] = [
-    'All',
-    'Guided',
-    'Practice-ready',
-    'Catalogued',
-  ];
-  protected readonly continuationReadiness = continuationReadiness;
-  protected readonly problemRoute = handsOnProblemRoute;
-  protected readonly groups = computed(() => {
-    const courses = this.courses();
-    return courses ? courses.flatMap((course) => buildHandsOnDsaGroups(course)) : [];
-  });
+  protected readonly groups = computed(() => this.catalog()?.groups ?? []);
   protected readonly selectedGroup = computed(() =>
-    resolveHandsOnDsaGroup(this.groups(), this.patternId()),
+    resolveHandsOnDsaIndexGroup(this.groups(), this.patternId()),
   );
   protected readonly visibleGroups = computed(() => {
     const selected = this.selectedGroup();
-    return filterHandsOnDsaGroups(
+    return filterHandsOnDsaIndexGroups(
       selected ? [selected] : this.groups(),
       this.query(),
       this.difficulty(),
-      this.readiness(),
     );
   });
   protected readonly visibleUniqueProblemCount = computed(() =>
-    uniqueHandsOnProblemCount(this.visibleGroups()),
+    uniqueHandsOnIndexProblemCount(this.visibleGroups()),
   );
   private readonly randomPracticePool = computed(() => {
-    const candidates = new Map<string, { id: string; route: string[] }>();
+    const candidates = new Map<string, { id: string; route: string[]; version: string }>();
 
     for (const group of this.groups()) {
-      for (const problem of group.essentialProblems) {
-        if (problem.practiceQuestionId) {
-          candidates.set(problem.id, {
-            id: problem.id,
-            route: handsOnProblemRoute(problem, group.courseId),
-          });
-        }
-      }
-      for (const problem of group.continuationProblems) {
-        if (continuationReadiness(problem) === 'Practice-ready') {
-          candidates.set(problem.canonicalProblem?.id ?? problem.id, {
-            id: problem.canonicalProblem?.id ?? problem.id,
-            route: ['/learn', group.courseId, problem.id],
-          });
-        }
+      for (const problem of group.problems) {
+        candidates.set(problem.id, {
+          id: problem.id,
+          route: problem.route,
+          version: problem.version,
+        });
       }
     }
 
@@ -520,19 +571,15 @@ export class HandsOnDsa implements OnInit {
   protected readonly randomPracticeCount = computed(() => this.randomPracticePool().length);
 
   ngOnInit(): void {
-    forkJoin([
-      this.content.getCourse('learn', 'algorithmic-patterns'),
-      this.content.getCourse('learn', 'core-data-structures'),
-      this.content.getCourse('learn', 'sorting-searching'),
-    ])
+    this.content
+      .getHandsOnDsaIndex()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (courses) => this.courses.set(courses),
+        next: (catalog) => this.catalog.set(catalog),
         error: () => this.error.set('The practice catalog could not be loaded. Please try again.'),
       });
     this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       this.patternId.set(params.get('pattern') ?? '');
-      this.problemId.set(params.get('problem') ?? '');
       this.resetView();
     });
   }
@@ -545,27 +592,6 @@ export class HandsOnDsa implements OnInit {
   protected updateDifficulty(value: string): void {
     this.difficulty.set(value as HandsOnDifficulty);
     this.resetView();
-  }
-
-  protected updateReadiness(value: string): void {
-    this.readiness.set(value as HandsOnReadiness);
-    this.resetView();
-  }
-
-  protected readinessLabel(readiness: HandsOnReadiness): string {
-    if (readiness === 'Guided') return 'Guided walkthroughs';
-    if (readiness === 'Practice-ready') return 'Ready to solve';
-    if (readiness === 'Catalogued') return 'Source required';
-    return 'All experiences';
-  }
-
-  protected problemReadinessLabel(problem: CourseContent['questions'][number]): string {
-    if (problem.canonicalProblemRef || problem.canonicalProblem?.trace) {
-      return 'Guided + independent';
-    }
-    return continuationReadiness(problem) === 'Practice-ready'
-      ? 'Ready to solve'
-      : 'Source required';
   }
 
   protected handlePatternToggle(groupId: string, event: Event): void {

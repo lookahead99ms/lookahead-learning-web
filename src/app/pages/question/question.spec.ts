@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import { of } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { routes } from '../../app.routes';
 import {
   CourseContent,
@@ -10,6 +10,7 @@ import {
   InterviewQuestion,
 } from '../../content/content.models';
 import { ContentService } from '../../content/content.service';
+import { HandsOnDsaIndex } from '../../content/hands-on-dsa';
 import { Question } from './question';
 
 type CanonicalRouteCase = {
@@ -200,6 +201,53 @@ function courseFor(courseId: string): CourseContent {
   };
 }
 
+function indexFor(
+  testCase: CanonicalRouteCase,
+  version = 'fixture-version',
+  groupTitle = 'Hashing',
+): HandsOnDsaIndex {
+  return {
+    schemaVersion: 'hands-on-dsa-index/v1',
+    totals: { groups: 1, problemPlacements: 1, distinctProblems: 1 },
+    groups: [
+      {
+        id: 'algorithmic-patterns:hashing-lookup',
+        courseId: 'algorithmic-patterns',
+        courseTitle: 'Algorithmic Patterns',
+        title: groupTitle,
+        description: 'Use direct lookup state.',
+        unitId: 'hashing-lookup',
+        practiceModuleId: 'practice-hashing',
+        lessonId: 'algorithmic-hashing-lookup',
+        lessonTitle: 'Hashing',
+        tags: ['Hashing'],
+        hasGuidedLesson: true,
+        problems: [
+          {
+            id: testCase.problemId,
+            title: testCase.title,
+            description: `Practice ${testCase.title}.`,
+            difficulty: 'Beginner',
+            variation: 'Hashing variation',
+            invariantAdaptation: 'Retain only state justified by earlier input.',
+            version,
+            questionId: testCase.problemId,
+            route: ['/learn', testCase.courseId, testCase.problemId],
+          },
+        ],
+      },
+    ],
+  };
+}
+
+function emptyIndex(): HandsOnDsaIndex {
+  return {
+    schemaVersion: 'hands-on-dsa-index/v1',
+    totals: { groups: 0, problemPlacements: 0, distinctProblems: 0 },
+    groups: [],
+  };
+}
+
 function linkWithText(root: HTMLElement, text: string): HTMLAnchorElement | undefined {
   return [...root.querySelectorAll<HTMLAnchorElement>('a')].find((link) =>
     link.textContent?.includes(text),
@@ -210,13 +258,16 @@ describe('Question canonical DSA navigation', () => {
   const content = {
     getCatalog: vi.fn(() => of(routeCases.map(({ courseId, title }) => ({ id: courseId, title })))),
     getCourse: vi.fn((_: string, courseId: string) => of(courseFor(courseId))),
+    getHandsOnDsaIndex: vi.fn<() => Observable<HandsOnDsaIndex>>(() => of(emptyIndex())),
     getDsaProblem: vi.fn((problemId: string) =>
       of(canonicalProblem(routeCases.find((testCase) => testCase.problemId === problemId)!)),
     ),
   };
 
   beforeEach(async () => {
+    content.getCatalog.mockClear();
     content.getCourse.mockClear();
+    content.getHandsOnDsaIndex.mockReset().mockReturnValue(of(emptyIndex()));
     content.getDsaProblem.mockClear();
     await TestBed.configureTestingModule({
       providers: [provideRouter(routes), { provide: ContentService, useValue: content }],
@@ -236,7 +287,11 @@ describe('Question canonical DSA navigation', () => {
       expect(root.textContent).toContain('Guided explanation');
       expect(root.textContent).not.toContain('Legacy practice module');
 
-      expect(linkWithText(root, 'Hands-On DSA')?.getAttribute('href')).toBe(
+      expect(linkWithText(root, 'Hands-On DSA')?.getAttribute('href')).toBe('/learn/hands-on-dsa');
+      const patternBreadcrumb = [
+        ...root.querySelectorAll<HTMLAnchorElement>('.breadcrumbs a'),
+      ].find((link) => link.textContent.trim() === 'Hashing');
+      expect(patternBreadcrumb?.getAttribute('href')).toBe(
         '/learn/hands-on-dsa?pattern=algorithmic-patterns:hashing-lookup',
       );
       expect(linkWithText(root, 'Review Hashing concept')?.getAttribute('href')).toBe(
@@ -248,6 +303,7 @@ describe('Question canonical DSA navigation', () => {
       );
       const next = root.querySelector<HTMLAnchorElement>('.question-inner-navigation .next');
       if (testCase.previous) {
+        expect(previous?.classList.contains('problem-navigation-link')).toBe(true);
         expect(previous?.textContent).toContain(testCase.previous.title);
         expect(previous?.getAttribute('href')).toBe(
           `/learn/${testCase.previous.courseId}/${testCase.previous.questionId}?pattern=algorithmic-patterns:hashing-lookup`,
@@ -256,6 +312,7 @@ describe('Question canonical DSA navigation', () => {
         expect(previous).toBeNull();
       }
       if (testCase.next) {
+        expect(next?.classList.contains('problem-navigation-link')).toBe(true);
         expect(next?.textContent).toContain(testCase.next.title);
         expect(next?.getAttribute('href')).toBe(
           `/learn/${testCase.next.courseId}/${testCase.next.questionId}?pattern=algorithmic-patterns:hashing-lookup`,
@@ -263,9 +320,8 @@ describe('Question canonical DSA navigation', () => {
       } else {
         expect(next).toBeNull();
       }
-      expect(linkWithText(root, 'All Hashing problems')?.getAttribute('href')).toBe(
-        '/learn/hands-on-dsa?pattern=algorithmic-patterns:hashing-lookup',
-      );
+      expect(linkWithText(root, 'All Hashing problems')).toBeUndefined();
+      expect(root.querySelector('.canonical-problem-navigation .module-catalog-link')).toBeNull();
     },
   );
 
@@ -285,6 +341,55 @@ describe('Question canonical DSA navigation', () => {
     expect(harness.routeNativeElement?.textContent).toContain('Practice independently');
   });
 
+  it('loads a canonical route from the compact index without hydrating its course', async () => {
+    const selected = routeCases[1];
+    content.getHandsOnDsaIndex.mockReturnValueOnce(of(indexFor(selected)));
+    const harness = await RouterTestingHarness.create();
+
+    await harness.navigateByUrl(`/learn/${selected.courseId}/${selected.problemId}`, Question);
+
+    expect(content.getDsaProblem).toHaveBeenCalledOnce();
+    expect(content.getDsaProblem).toHaveBeenCalledWith(selected.problemId, 'fixture-version');
+    expect(content.getCourse).not.toHaveBeenCalled();
+    expect(content.getCatalog).not.toHaveBeenCalled();
+    expect(harness.routeNativeElement?.textContent).toContain('Practice independently');
+  });
+
+  it('uses the compact catalog pattern title in the canonical breadcrumb', async () => {
+    const selected = routeCases[1];
+    content.getHandsOnDsaIndex.mockReturnValueOnce(
+      of(indexFor(selected, 'fixture-version', 'Graphs')),
+    );
+    const harness = await RouterTestingHarness.create();
+
+    await harness.navigateByUrl(`/learn/${selected.courseId}/${selected.problemId}`, Question);
+
+    const breadcrumbs = [
+      ...harness.routeNativeElement!.querySelectorAll<HTMLAnchorElement>('.breadcrumbs a'),
+    ];
+    expect(breadcrumbs.find((link) => link.textContent.trim() === 'Hands-On DSA')?.href).toContain(
+      '/learn/hands-on-dsa',
+    );
+    expect(
+      breadcrumbs.find((link) => link.textContent.trim() === 'Graphs')?.getAttribute('href'),
+    ).toBe('/learn/hands-on-dsa?pattern=algorithmic-patterns:hashing-lookup');
+  });
+
+  it('does not fetch unrelated course modules when indexed problem detail loading fails', async () => {
+    const selected = routeCases[1];
+    content.getHandsOnDsaIndex.mockReturnValueOnce(of(indexFor(selected)));
+    content.getDsaProblem.mockReturnValueOnce(throwError(() => new Error('404')));
+    const harness = await RouterTestingHarness.create();
+
+    await harness.navigateByUrl(`/learn/${selected.courseId}/${selected.problemId}`, Question);
+
+    expect(content.getCourse).not.toHaveBeenCalled();
+    expect(content.getCatalog).not.toHaveBeenCalled();
+    expect(harness.routeNativeElement?.textContent).toContain(
+      'The question content could not be loaded.',
+    );
+  });
+
   it('uses the requested navigation context for a cross-pattern problem', async () => {
     const harness = await RouterTestingHarness.create();
 
@@ -294,15 +399,17 @@ describe('Question canonical DSA navigation', () => {
     );
     const root = harness.routeNativeElement!;
 
-    expect(linkWithText(root, 'Hands-On DSA')?.getAttribute('href')).toBe(
+    expect(linkWithText(root, 'Hands-On DSA')?.getAttribute('href')).toBe('/learn/hands-on-dsa');
+    const patternBreadcrumb = [...root.querySelectorAll<HTMLAnchorElement>('.breadcrumbs a')].find(
+      (link) => link.textContent.trim() === 'Prefix State',
+    );
+    expect(patternBreadcrumb?.getAttribute('href')).toBe(
       '/learn/hands-on-dsa?pattern=algorithmic-patterns:prefix-state',
     );
     expect(linkWithText(root, 'Review Prefix State concept')?.getAttribute('href')).toBe(
       '/learn/algorithmic-patterns/algorithmic-prefix-state',
     );
-    expect(linkWithText(root, 'All Prefix State problems')?.getAttribute('href')).toBe(
-      '/learn/hands-on-dsa?pattern=algorithmic-patterns:prefix-state',
-    );
+    expect(linkWithText(root, 'All Prefix State problems')).toBeUndefined();
     expect(root.querySelector('.question-inner-navigation .previous')).toBeNull();
     expect(root.querySelector('.question-inner-navigation .next')).toBeNull();
   });
