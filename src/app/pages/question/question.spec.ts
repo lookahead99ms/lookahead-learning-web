@@ -158,9 +158,11 @@ function canonicalProblem(testCase: CanonicalRouteCase): DsaProblemV2 {
       },
       starters: { java: 'return 0;', python: 'return 0', go: 'return 0' },
       hints: ['Track the required state.'],
-      approaches: [
-        { title: 'Hashing', explanation: 'Retain useful prior state.', complexity: 'O(n)' },
-      ],
+      canonicalApproach: {
+        whyThisApproach: 'Retain useful prior state.',
+        whyOptimal: 'Each input is inspected once.',
+        whenAssumptionChanges: 'A bounded domain may permit direct addressing.',
+      },
       commonMistakes: ['Using state from a later input.'],
       checks: [{ kind: 'explain', prompt: 'What is retained?', expected: 'Earlier state.' }],
     },

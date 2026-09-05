@@ -171,20 +171,19 @@
           <span>Invariant</span>
           <p>{{ activeTrace().invariant }}</p>
         </div>
-        <div class="reasoning-approaches">
-          <header>
-            <span>Start simple <b aria-hidden="true">→</b> improve</span>
-            <small>Compare the trade-offs before tracing the preferred implementation.</small>
-          </header>
-          <div class="approaches">
-            @for (approach of practice().approaches; track approach.title) {
-              <article>
-                <h5>{{ approach.title }}</h5>
-                <p>{{ approach.explanation }}</p>
-                <strong>{{ approach.complexity }}</strong>
-              </article>
-            }
-          </div>
+        <div class="canonical-rationale">
+          <article>
+            <span>Why this approach</span>
+            <p>{{ practice().canonicalApproach.whyThisApproach }}</p>
+          </article>
+          <article>
+            <span>Why it is optimal</span>
+            <p>{{ practice().canonicalApproach.whyOptimal }}</p>
+          </article>
+          <article>
+            <span>When this assumption changes</span>
+            <p>{{ practice().canonicalApproach.whenAssumptionChanges }}</p>
+          </article>
         </div>
       </section>
       <div
