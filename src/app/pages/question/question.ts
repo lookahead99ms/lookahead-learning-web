@@ -127,6 +127,43 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
       .inner-navigation-link:focus-visible strong {
         color: var(--search-hover);
       }
+      .canonical-problem-navigation {
+        gap: 12px;
+      }
+      .canonical-problem-navigation .inner-navigation-actions {
+        align-items: stretch;
+      }
+      .problem-navigation-link {
+        box-sizing: border-box;
+        width: 100%;
+        min-height: 68px;
+        justify-content: center;
+        padding: 11px 14px;
+        border: 1px solid #bfd2e2;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--surface), var(--surface-accent));
+        box-shadow: 0 7px 16px rgba(39, 76, 112, 0.06);
+        transition:
+          border-color 0.16s ease,
+          box-shadow 0.16s ease,
+          transform 0.16s ease;
+      }
+      .problem-navigation-link.previous {
+        border-left: 4px solid var(--search-primary);
+      }
+      .problem-navigation-link.next {
+        border-right: 4px solid var(--orange);
+      }
+      .problem-navigation-link:hover,
+      .problem-navigation-link:focus-visible {
+        border-color: var(--search-primary);
+        outline: none;
+        box-shadow: 0 10px 22px rgba(39, 76, 112, 0.12);
+        transform: translateY(-1px);
+      }
+      .problem-navigation-link.next span {
+        color: var(--orange);
+      }
       .inner-navigation-link.next-module,
       .inner-navigation-link.previous-module,
       .module-catalog-link {
@@ -528,6 +565,10 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
           align-items: flex-start;
           text-align: left;
         }
+        .problem-navigation-link.next {
+          border-right-width: 1px;
+          border-left: 4px solid var(--orange);
+        }
         .inner-navigation-link.next-module,
         .inner-navigation-link.previous-module {
           width: 100%;
@@ -597,6 +638,19 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
           display: none;
         }
       }
+      @media (prefers-reduced-motion: reduce) {
+        .problem-navigation-link {
+          transition: none;
+        }
+      }
+      @media (forced-colors: active) {
+        .problem-navigation-link {
+          border-color: CanvasText;
+          color: LinkText;
+          background: Canvas;
+          box-shadow: none;
+        }
+      }
     `,
   ],
 })
@@ -660,6 +714,7 @@ export class Question implements OnInit {
   protected readonly error = signal('');
   protected readonly surpriseMode = signal(false);
   protected readonly navigationContextId = signal('');
+  protected readonly handsOnPatternTitles = signal<Record<string, string>>({});
   protected readonly reviewStatusLabel = reviewStatusLabel;
 
   /** Coding practice is classified by its existing curriculum tags, not by the generic Q&A layout. */
@@ -705,6 +760,12 @@ export class Question implements OnInit {
       (candidate) => candidate.practiceModuleId === item.moduleId,
     );
     return unit ? `${this.courseId()}:${unit.id}` : '';
+  }
+
+  protected handsOnPatternTitle(item: InterviewQuestion): string {
+    const navigation = this.canonicalNavigation(item);
+    if (!navigation) return this.moduleTitle();
+    return this.handsOnPatternTitles()[navigation.handsOnPatternId] ?? navigation.lesson.title;
   }
 
   protected patternLesson(item: InterviewQuestion): PatternLesson | null {
@@ -1096,11 +1157,14 @@ export class Question implements OnInit {
           this.courseId.set(courseId);
           this.pathId.set(pathId);
           const questionId = params.get('questionId');
-          return forkJoin({
-            catalog: this.contentService.getCatalog(pathId),
-            course: this.contentService.getCourse(pathId, courseId),
-          }).pipe(
-            switchMap((result) => this.loadSelectedCanonicalProblem(result, questionId)),
+          return this.loadIndexedCanonicalProblem(pathId, courseId, questionId).pipe(
+            switchMap((indexed) => {
+              if (indexed) return of(indexed);
+              return forkJoin({
+                catalog: this.contentService.getCatalog(pathId),
+                course: this.contentService.getCourse(pathId, courseId),
+              }).pipe(switchMap((result) => this.loadSelectedCanonicalProblem(result, questionId)));
+            }),
             catchError(() => {
               this.error.set('The question content could not be loaded.');
               return EMPTY;
@@ -1112,6 +1176,73 @@ export class Question implements OnInit {
       .subscribe({
         next: ({ catalog, course }) => this.displayQuestion(catalog, course),
       });
+  }
+
+  private loadIndexedCanonicalProblem(pathId: string, courseId: string, questionId: string | null) {
+    if (pathId !== 'learn' || !questionId) return of(null);
+    return this.contentService.getHandsOnDsaIndex().pipe(
+      catchError(() => of(null)),
+      switchMap((index) => {
+        if (!index) return of(null);
+        this.handsOnPatternTitles.set(
+          Object.fromEntries(index.groups.map((group) => [group.id, group.title])),
+        );
+        const groups = [...index.groups].sort((left, right) => {
+          const requestedContext = this.navigationContextId();
+          return Number(right.id === requestedContext) - Number(left.id === requestedContext);
+        });
+        for (const group of groups) {
+          const summary = group.problems.find(
+            (problem) =>
+              problem.route[0] === `/${pathId}` &&
+              problem.route[1] === courseId &&
+              problem.route[2] === questionId,
+          );
+          if (!summary) continue;
+          return this.contentService.getDsaProblem(summary.id, summary.version).pipe(
+            map((problem) => {
+              const module: CourseModule = {
+                id: group.practiceModuleId,
+                order: 1,
+                title: `${group.title} Practice`,
+                description: group.description,
+              };
+              const question: InterviewQuestion = {
+                id: questionId,
+                moduleId: module.id,
+                order: 1,
+                title: problem.title,
+                difficulty: problem.difficulty,
+                tags: group.tags,
+                interviewAnswer: problem.practice.statement.prompt,
+                explanation: [],
+                versionNotes: [],
+                followUps: [],
+                reviewStatus: 'reviewed',
+                contentType: 'dsa-problem',
+                relatedArticleId: group.lessonId,
+                canonicalProblemRef: { problemId: problem.id, lessonId: group.lessonId },
+                canonicalProblem: problem,
+              };
+              const course: CourseContent = {
+                id: group.courseId,
+                path: pathId,
+                title: group.courseTitle,
+                description: group.description,
+                version: summary.version,
+                modules: [module],
+                questions: [question],
+              };
+              return {
+                catalog: [{ id: group.courseId, title: group.courseTitle }],
+                course,
+              };
+            }),
+          );
+        }
+        return of(null);
+      }),
+    );
   }
 
   private loadSelectedCanonicalProblem(

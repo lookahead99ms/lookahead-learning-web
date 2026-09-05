@@ -5,6 +5,7 @@ import { of, throwError } from 'rxjs';
 import { routes } from '../../app.routes';
 import { CourseContent, InterviewQuestion } from '../../content/content.models';
 import { ContentService } from '../../content/content.service';
+import { HandsOnDsaIndex } from '../../content/hands-on-dsa';
 import { Course } from '../course/course';
 import { Question } from '../question/question';
 import { HandsOnDsa } from './hands-on-dsa';
@@ -59,15 +60,60 @@ function practiceCourse(): CourseContent {
   };
 }
 
+function practiceIndex(): HandsOnDsaIndex {
+  const groups = ['hashing', 'two-pointers'].map((id) => ({
+    id: `algorithmic-patterns:${id}`,
+    courseId: 'algorithmic-patterns',
+    courseTitle: 'Pattern tests',
+    title: id,
+    description: 'Concept',
+    unitId: id,
+    practiceModuleId: `${id}-practice`,
+    lessonId: `${id}-lesson`,
+    lessonTitle: id,
+    tags: [],
+    hasGuidedLesson: true,
+    problems: [
+      {
+        id: `${id}-canonical`,
+        title: `${id}-complete`,
+        description: 'A complete canonical problem.',
+        difficulty: 'Beginner' as const,
+        variation: 'Canonical invariant',
+        invariantAdaptation: 'Preserve the invariant.',
+        version: 'fixture-version',
+        questionId: `${id}-complete`,
+        route: ['/learn', 'algorithmic-patterns', `${id}-complete`],
+      },
+    ],
+  }));
+  return {
+    schemaVersion: 'hands-on-dsa-index/v1',
+    totals: { groups: groups.length, problemPlacements: groups.length, distinctProblems: 2 },
+    groups,
+  };
+}
+
+function emptyPracticeIndex(): HandsOnDsaIndex {
+  return {
+    schemaVersion: 'hands-on-dsa-index/v1',
+    totals: { groups: 0, problemPlacements: 0, distinctProblems: 0 },
+    groups: [],
+  };
+}
+
 describe('Hands-On DSA route contracts', () => {
   let course: CourseContent;
+  let catalog: HandsOnDsaIndex;
   const content = {
     getCourse: vi.fn(),
+    getHandsOnDsaIndex: vi.fn(),
     getCatalog: vi.fn(() => of([{ id: 'algorithmic-patterns', title: 'Pattern tests' }])),
   };
 
   beforeEach(async () => {
     course = practiceCourse();
+    catalog = practiceIndex();
     content.getCourse
       .mockReset()
       .mockImplementation((_path, id) =>
@@ -77,12 +123,33 @@ describe('Hands-On DSA route contracts', () => {
             : { ...course, id, modules: [], questions: [], learningUnits: [] },
         ),
       );
+    content.getHandsOnDsaIndex.mockReset().mockImplementation(() => of(catalog));
     await TestBed.configureTestingModule({
       providers: [provideRouter(routes), { provide: ContentService, useValue: content }],
     }).compileComponents();
   });
 
   afterEach(() => vi.restoreAllMocks());
+
+  it('presents informational hero labels without interactive pill affordances', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/learn/hands-on-dsa', HandsOnDsa);
+
+    const status = harness.routeNativeElement!.querySelector<HTMLElement>('.practice-status')!;
+    const sequence =
+      harness.routeNativeElement!.querySelector<HTMLOListElement>('ol.practice-proof')!;
+
+    expect(status.textContent).toContain('Curriculum status: Evolving');
+    expect(sequence.querySelectorAll('li')).toHaveLength(4);
+    expect([...sequence.querySelectorAll('li')].map((item) => item.textContent?.trim())).toEqual([
+      'Recognize',
+      'Trace',
+      'Implement',
+      'Transfer',
+    ]);
+    expect(sequence.querySelector('a, button')).toBeNull();
+    expect(harness.routeNativeElement!.querySelectorAll('.pattern-filter a')).toHaveLength(3);
+  });
 
   it('takes Practice to its pattern, opens a problem, and returns via the DSA breadcrumb', async () => {
     const harness = await RouterTestingHarness.create();
@@ -102,40 +169,50 @@ describe('Hands-On DSA route contracts', () => {
     details.open = true;
     details.dispatchEvent(new Event('toggle'));
     harness.detectChanges();
+    // This test covers the legacy question shell after proving the indexed
+    // catalog route. Canonical fast-path behavior has focused tests below.
+    content.getHandsOnDsaIndex.mockReturnValueOnce(of(emptyPracticeIndex()));
     harness.routeNativeElement!.querySelector<HTMLAnchorElement>('a.problem-card')!.click();
     await harness.fixture.whenStable();
     harness.detectChanges();
     expect(TestBed.inject(Router).url).toBe(
       '/learn/algorithmic-patterns/hashing-complete?pattern=algorithmic-patterns:hashing',
     );
-    const breadcrumb = [
+    const breadcrumbs = [
       ...harness.routeNativeElement!.querySelectorAll<HTMLAnchorElement>('.breadcrumbs a'),
-    ].find((link) => link.textContent.trim() === 'Hands-On DSA')!;
-    expect(breadcrumb.getAttribute('href')).toBe(
+    ];
+    const libraryBreadcrumb = breadcrumbs.find(
+      (link) => link.textContent.trim() === 'Hands-On DSA',
+    )!;
+    const patternBreadcrumb = breadcrumbs.find((link) =>
+      link.getAttribute('href')?.includes('pattern=algorithmic-patterns:hashing'),
+    )!;
+    expect(libraryBreadcrumb.getAttribute('href')).toBe('/learn/hands-on-dsa');
+    expect(patternBreadcrumb.getAttribute('href')).toBe(
       '/learn/hands-on-dsa?pattern=algorithmic-patterns:hashing',
     );
     expect(
       harness.routeNativeElement!.querySelector('.breadcrumbs [aria-current="page"]')!.textContent,
     ).toBe('hashing-complete');
-    breadcrumb.click();
+    patternBreadcrumb.click();
     await harness.fixture.whenStable();
     expect(TestBed.inject(Router).url).toBe(
       '/learn/hands-on-dsa?pattern=algorithmic-patterns:hashing',
     );
   });
 
-  it('clears repeated pattern selection and restores all collapsed groups', async () => {
+  it('exposes a clear-filter action and restores all collapsed groups', async () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl(
       '/learn/hands-on-dsa?pattern=algorithmic-patterns:two-pointers',
       HandsOnDsa,
     );
     expect(harness.routeNativeElement!.querySelectorAll('details.pattern-group')).toHaveLength(1);
-    harness
-      .routeNativeElement!.querySelector<HTMLAnchorElement>(
-        '.pattern-filter a[aria-current="page"]',
-      )!
-      .click();
+    const clearFilter =
+      harness.routeNativeElement!.querySelector<HTMLAnchorElement>('.clear-pattern-filter')!;
+    expect(clearFilter.textContent).toContain('Clear filter');
+    expect(clearFilter.getAttribute('aria-label')).toBe('Clear two-pointers pattern filter');
+    clearFilter.click();
     await harness.fixture.whenStable();
     harness.detectChanges();
     expect(TestBed.inject(Router).url).toBe('/learn/hands-on-dsa');
@@ -183,9 +260,7 @@ describe('Hands-On DSA route contracts', () => {
   });
 
   it('disables Surprise me when the catalog has only unfinished entries', async () => {
-    course.questions = course.questions.filter(
-      (item) => item.practiceProblem?.implementationStatus !== 'complete',
-    );
+    catalog = emptyPracticeIndex();
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/learn/hands-on-dsa', HandsOnDsa);
     expect(
@@ -194,7 +269,7 @@ describe('Hands-On DSA route contracts', () => {
   });
 
   it('shows a failure state instead of claiming an empty practice catalog loaded successfully', async () => {
-    content.getCourse.mockReturnValueOnce(throwError(() => new Error('404')));
+    content.getHandsOnDsaIndex.mockReturnValueOnce(throwError(() => new Error('404')));
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/learn/hands-on-dsa', HandsOnDsa);
     expect(harness.routeNativeElement!.textContent).toContain(
@@ -207,6 +282,7 @@ describe('Hands-On DSA route contracts', () => {
   });
 
   it('hides the pattern context for a random challenge and restores it when that mode is removed', async () => {
+    content.getHandsOnDsaIndex.mockImplementation(() => of(emptyPracticeIndex()));
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl(
       '/learn/algorithmic-patterns/hashing-complete?mode=surprise',

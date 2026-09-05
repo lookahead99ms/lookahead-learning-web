@@ -1,10 +1,13 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { test } from 'node:test';
 import {
+  compareLoadingProfiles,
   loopbackOrigin,
   parseOptions,
   payloadShape,
   profileCourses,
+  profileIndexedCanonicalRoute,
   requirePrivateOutput,
   sampleHttp,
 } from './profile-dsa-loading.mjs';
@@ -23,6 +26,18 @@ const loader = (files) => async (path) => {
   assert.ok(path in files, `Unexpected path: ${path}`);
   return Buffer.from(JSON.stringify(files[path]));
 };
+
+function indexedFixture() {
+  const problem = { id: 'sample-problem', title: 'Sample problem', practice: { statement: {} } };
+  const version = createHash('sha256').update(JSON.stringify(problem)).digest('hex').slice(0, 16);
+  return {
+    'hands-on-dsa-index.json': {
+      schemaVersion: 'hands-on-dsa-index/v1',
+      groups: [{ problems: [{ id: problem.id, version }] }],
+    },
+    'learn/dsa-problems/sample-problem.json': problem,
+  };
+}
 
 test('profiles only hydrated modules and counts bytes independently of records', async () => {
   const files = fixture();
@@ -58,6 +73,51 @@ test('fingerprints are deterministic and detect changes', async () => {
   assert.notEqual(
     before.fingerprint,
     (await profileCourses(loader(files), ['learn/sample'])).fingerprint,
+  );
+});
+
+test('profiles the compact index and exactly one canonical problem detail', async () => {
+  const files = indexedFixture();
+  const result = await profileIndexedCanonicalRoute(loader(files), 'sample-problem');
+  assert.equal(result.problemId, 'sample-problem');
+  assert.equal(result.totals.requests, 2);
+  assert.deepEqual(
+    result.files.map(({ kind }) => kind),
+    ['compact-index', 'selected-detail'],
+  );
+  assert.equal(
+    result.totals.sourceBytes,
+    Object.values(files).reduce((sum, data) => sum + Buffer.byteLength(JSON.stringify(data)), 0),
+  );
+  assert.equal(result.browserHeapBytes, null);
+});
+
+test('rejects missing, mismatched and stale indexed canonical details', async () => {
+  await assert.rejects(
+    profileIndexedCanonicalRoute(loader(indexedFixture()), 'missing-problem'),
+    /absent/,
+  );
+  const wrongId = indexedFixture();
+  wrongId['learn/dsa-problems/sample-problem.json'].id = 'different-problem';
+  await assert.rejects(profileIndexedCanonicalRoute(loader(wrongId)), /does not match/);
+  const stale = indexedFixture();
+  stale['hands-on-dsa-index.json'].groups[0].problems[0].version = 'stale';
+  await assert.rejects(profileIndexedCanonicalRoute(loader(stale)), /index version/);
+});
+
+test('compares source-derived loading profiles without presenting browser measurements', () => {
+  assert.deepEqual(
+    compareLoadingProfiles(
+      { totals: { requests: 20, sourceBytes: 1000 } },
+      { totals: { requests: 2, sourceBytes: 250 } },
+    ),
+    {
+      interpretation:
+        'A source-derived comparison of application payload bodies. It is not a browser waterfall, heap snapshot, latency measurement, or compressed transfer observation.',
+      requestReduction: 18,
+      sourceByteReduction: 750,
+      sourceByteReductionPercent: 75,
+    },
   );
 });
 
@@ -140,6 +200,7 @@ test('requires an explicit source and validates sampling limits and arguments', 
   assert.throws(() => parseOptions(['--root']), /Missing value/);
   assert.throws(() => parseOptions(['--wat', 'x']), /Unknown option/);
   assert.throws(() => parseOptions(['--root', 'source', '--repeats', '0']), /between/);
+  assert.throws(() => parseOptions(['--root', 'source', '--problem', '../escape']), /problem ID/);
   assert.equal(parseOptions(['--root', 'source']).courses.length, 3);
   assert.deepEqual(parseOptions(['--root', 'source', '--course', 'learn/sample']).courses, [
     'learn/sample',

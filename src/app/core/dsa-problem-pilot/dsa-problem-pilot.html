@@ -20,6 +20,8 @@
           rel="noopener noreferrer"
           >Original problem source ↗</a
         >
+      } @else if (practice().sourceAttribution; as attribution) {
+        <span class="source-attribution">{{ attribution.label }}</span>
       }
     </header>
     <div class="contract-grid">
@@ -149,22 +151,6 @@
             Understand the reasoning first, then follow each executed source line and state change.
           </p>
         </div>
-        <button
-          #focusEntry
-          type="button"
-          class="focus-entry"
-          aria-haspopup="dialog"
-          [attr.aria-expanded]="focusMode()"
-          [attr.aria-label]="'Expand ' + problem().title + ' debugger'"
-          title="Expand debugger"
-          (click)="enterFocusMode($event)"
-        >
-          <span>Expand debugger</span>
-          <svg aria-hidden="true" viewBox="0 0 24 24">
-            <path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path>
-            <path d="m3 8 6-6M21 8l-6-6M3 16l6 6M21 16l-6 6"></path>
-          </svg>
-        </button>
       </div>
       <section class="reasoning-frame" aria-label="Reasoning frame">
         <div class="reasoning-invariant">
@@ -173,7 +159,8 @@
         </div>
         <div class="canonical-rationale">
           <article>
-            <span>Why this approach</span>
+            <span>Why this variant</span>
+            <strong>{{ problem().variation }}</strong>
             <p>{{ practice().canonicalApproach.whyThisApproach }}</p>
           </article>
           <article>
@@ -195,6 +182,24 @@
         [attr.aria-labelledby]="focusMode() ? focusDialogTitleId() : null"
         (keydown)="handleFocusKeydown($event)"
       >
+        <div class="debugger-frame-bar" [hidden]="focusMode()">
+          <span>Guided debugger workspace</span>
+          <button
+            #focusEntry
+            type="button"
+            class="focus-entry"
+            aria-haspopup="dialog"
+            [attr.aria-expanded]="focusMode()"
+            [attr.aria-label]="'Expand ' + problem().title + ' debugger'"
+            title="Expand debugger"
+            (click)="enterFocusMode($event)"
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path>
+              <path d="m3 8 6-6M21 8l-6-6M3 16l6 6M21 16l-6 6"></path>
+            </svg>
+          </button>
+        </div>
         @if (focusMode()) {
           <header class="focus-header">
             <div>

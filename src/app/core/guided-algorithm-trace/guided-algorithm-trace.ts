@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import {
   GuidedTraceCell,
+  GuidedTraceEvent,
   GuidedTraceVariable,
   PatternLanguage,
   PatternProblemFixture,
@@ -66,6 +67,11 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
             }
           </div>
         </div>
+      </header>
+      <div class="trace-navigation" data-sticky-controls="true">
+        <span class="step-status" aria-live="polite"
+          >Step {{ stepIndex() + 1 }} of {{ events().length }} · {{ event().phase }}</span
+        >
         <div class="trace-controls" aria-label="Trace controls">
           <button
             type="button"
@@ -86,14 +92,7 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
             Next
           </button>
         </div>
-        <div class="execution-readout" [class.complete]="isComplete()">
-          <span>Execution status</span>
-          <strong>{{ executionStatus() }}</strong>
-          <small class="step-status"
-            >Step {{ stepIndex() + 1 }} of {{ events().length }} · {{ event().phase }}</small
-          >
-        </div>
-      </header>
+      </div>
 
       <div class="trace-context">
         <div class="trace-summary-values">
@@ -130,11 +129,11 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
           <aside class="focus-explanation" aria-label="Current step explanation">
             <div class="focus-step-title">
               <span>Current step</span>
-              <strong>{{ event().phase }} · {{ event().label }}</strong>
+              <strong>{{ event().phase }} · {{ activeLineLabel() }}</strong>
             </div>
             <section>
               <span>What happened</span>
-              <p>{{ event().what }}</p>
+              <p>{{ activeStepExplanation() }}</p>
             </section>
             <section>
               <span>Why</span>
@@ -143,23 +142,6 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
           </aside>
 
           <section class="focus-state-dock" aria-label="Persistent execution state">
-            <section class="focus-dock-card focus-variables" aria-label="Variables">
-              <h3>Variables</h3>
-              <dl>
-                @for (variable of focusVariables(); track variable.name) {
-                  <div [class.changed]="variable.changed">
-                    <dt>
-                      {{ variable.name }}
-                      @if (variable.changed) {
-                        <em>changed</em>
-                      }
-                    </dt>
-                    <dd>{{ variable.value }}</dd>
-                  </div>
-                }
-              </dl>
-            </section>
-
             <section
               class="focus-dock-card focus-collection"
               [class.changed]="focusCollectionVariable()?.changed"
@@ -205,6 +187,23 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
               }
             </section>
 
+            <section class="focus-dock-card focus-variables" aria-label="Variables">
+              <h3>Variables</h3>
+              <dl>
+                @for (variable of focusVariables(); track variable.name) {
+                  <div [class.changed]="variable.changed">
+                    <dt>
+                      {{ variable.name }}
+                      @if (variable.changed) {
+                        <em>changed</em>
+                      }
+                    </dt>
+                    <dd>{{ variable.value }}</dd>
+                  </div>
+                }
+              </dl>
+            </section>
+
             <section class="focus-dock-card focus-output" aria-label="Output and terminal">
               <div>
                 <h3>Output</h3>
@@ -218,27 +217,6 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
           </section>
         } @else {
           <aside class="debugger-shell" aria-label="Guided debugger">
-            <section class="debugger-summary" aria-label="Pinned current state">
-              <header>
-                <span>Current state</span>
-                <strong [class.returned]="isComplete() && event().result">
-                  {{ isComplete() && event().result ? 'Returned' : 'Live' }}
-                </strong>
-              </header>
-              <dl>
-                @for (variable of summaryVariables(); track variable.name) {
-                  <div [class.changed]="variable.changed">
-                    <dt>{{ variable.name }}</dt>
-                    <dd>{{ variable.value }}</dd>
-                  </div>
-                }
-                <div class="summary-output" [class.changed]="!!event().result">
-                  <dt>output</dt>
-                  <dd>{{ event().result ?? 'Pending' }}</dd>
-                </div>
-              </dl>
-            </section>
-
             <div class="debugger-view-tabs" role="tablist" aria-label="Debugger views">
               <button
                 type="button"
@@ -300,23 +278,6 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
                 (window:resize)="measureDebuggerOverflow()"
               >
                 @if (activeView() === 'debugger') {
-                  <section class="variable-inspector" aria-label="Current variables">
-                    <h3>Variables</h3>
-                    <dl class="variables">
-                      @for (variable of visibleVariables(); track variable.name) {
-                        <div [class.changed]="variable.changed">
-                          <dt>
-                            {{ variable.name }} <small>{{ variable.type }}</small>
-                            @if (variable.changed) {
-                              <em>changed</em>
-                            }
-                          </dt>
-                          <dd>{{ variable.value }}</dd>
-                        </div>
-                      }
-                    </dl>
-                  </section>
-
                   <section class="state-view" aria-label="Complete data state">
                     <h3>Data state</h3>
                     @for (row of event().rows; track row.id) {
@@ -339,6 +300,23 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
                     }
                   </section>
 
+                  <section class="variable-inspector" aria-label="Current variables">
+                    <h3>Variables</h3>
+                    <dl class="variables">
+                      @for (variable of visibleVariables(); track variable.name) {
+                        <div [class.changed]="variable.changed">
+                          <dt>
+                            {{ variable.name }} <small>{{ variable.type }}</small>
+                            @if (variable.changed) {
+                              <em>changed</em>
+                            }
+                          </dt>
+                          <dd>{{ variable.value }}</dd>
+                        </div>
+                      }
+                    </dl>
+                  </section>
+
                   <section class="debugger-output" aria-label="Execution result">
                     <span>Returned output</span>
                     <strong>{{ event().result ?? 'Pending' }}</strong>
@@ -350,8 +328,8 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
                 } @else if (activeView() === 'why') {
                   <article class="learning-view why-view">
                     <span>Why this line exists</span>
-                    <h3>{{ event().label }}</h3>
-                    <p>{{ event().what }}</p>
+                    <h3>{{ activeLineLabel() }}</h3>
+                    <p>{{ activeStepExplanation() }}</p>
                     <p class="learning-detail">{{ event().why }}</p>
                   </article>
                 } @else if (activeView() === 'predict') {
@@ -500,7 +478,7 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
     `
       .guided-trace {
         position: relative;
-        overflow: clip;
+        overflow: visible;
         border: 1px solid #35566c;
         border-radius: 16px;
         color: #e6f4f6;
@@ -512,9 +490,7 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         z-index: 4;
         top: auto;
         display: grid;
-        grid-template-columns:
-          minmax(150px, 0.85fr) minmax(180px, 1.05fr) minmax(190px, auto)
-          auto minmax(165px, 0.8fr);
+        grid-template-columns: minmax(150px, 0.75fr) minmax(210px, 1.25fr) minmax(190px, auto);
         align-items: center;
         gap: 12px;
         padding: 11px 15px;
@@ -538,13 +514,28 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         color: #f4fbfc;
       }
       .toolbar-brand,
-      .language-control,
-      .execution-readout {
+      .language-control {
         min-width: 0;
       }
       .trace-controls {
         display: flex;
+        flex: 0 0 auto;
         gap: 7px;
+      }
+      .trace-navigation {
+        position: sticky;
+        z-index: 45;
+        top: var(--debugger-sticky-top, 76px);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        min-height: 52px;
+        padding: 7px 15px;
+        border-bottom: 1px solid #315569;
+        background: rgba(13, 38, 53, 0.97);
+        box-shadow: 0 8px 18px rgba(5, 25, 35, 0.16);
+        backdrop-filter: blur(10px);
       }
       .trace-controls button {
         min-height: 38px;
@@ -574,35 +565,12 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
       }
       .step-status {
         display: block;
-        margin-top: 3px;
+        min-width: 0;
         color: #a9c6ce;
         font:
           650 0.68rem/1.35 'JetBrains Mono',
           monospace;
-      }
-      .execution-readout {
-        padding: 7px 9px;
-        border: 1px solid #426878;
-        border-radius: 8px;
-        background: #102c3c;
-      }
-      .execution-readout::before {
-        content: '';
-        float: left;
-        width: 8px;
-        height: 8px;
-        margin: 6px 8px 0 0;
-        border-radius: 50%;
-        background: #f8c35a;
-        box-shadow: 0 0 0 3px rgba(248, 195, 90, 0.14);
-      }
-      .execution-readout.complete::before {
-        background: #71e1ba;
-        box-shadow: 0 0 0 3px rgba(113, 225, 186, 0.14);
-      }
-      .execution-readout strong {
         overflow: hidden;
-        font-size: 0.76rem;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
@@ -1019,85 +987,17 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
       }
       .debugger-shell {
         display: grid;
-        grid-template-rows: auto auto minmax(0, 1fr);
+        grid-template-rows: auto minmax(0, 1fr);
         min-width: 0;
         height: 520px;
         background: #0d2635;
       }
-      .debugger-summary {
-        position: relative;
-        z-index: 2;
-        border-bottom: 1px solid #315569;
-        background: #17394b;
-      }
-      .debugger-summary header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 9px 12px 6px;
-      }
-      .debugger-summary header span,
       .learning-view > span {
         color: #8fd9e3;
         font-size: 0.68rem;
         font-weight: 850;
         letter-spacing: 0.07em;
         text-transform: uppercase;
-      }
-      .debugger-summary header strong {
-        color: #71e1ba;
-        font-size: 0.68rem;
-        text-transform: uppercase;
-      }
-      .debugger-summary header strong::before {
-        content: '● ';
-      }
-      .debugger-summary header strong.returned {
-        color: #ffd17a;
-      }
-      .debugger-summary dl {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 5px;
-        margin: 0;
-        padding: 0 12px 10px;
-      }
-      .debugger-summary dl div {
-        min-width: 0;
-        padding: 6px 7px;
-        border: 1px solid #426878;
-        border-radius: 6px;
-        background: #102c3c;
-      }
-      .debugger-summary dl div.changed {
-        border-color: #24d2dd;
-        background: #17485a;
-      }
-      .debugger-summary dt {
-        overflow: hidden;
-        color: #9fbcc4;
-        font-size: 0.58rem;
-        font-weight: 800;
-        text-overflow: ellipsis;
-        text-transform: uppercase;
-        white-space: nowrap;
-      }
-      .debugger-summary dd {
-        margin: 3px 0 0;
-        display: -webkit-box;
-        overflow: hidden;
-        color: #fff;
-        font:
-          750 0.68rem 'JetBrains Mono',
-          monospace;
-        overflow-wrap: anywhere;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 2;
-        line-clamp: 2;
-      }
-      .debugger-summary .summary-output {
-        grid-column: 1 / -1;
       }
       .debugger-view-tabs {
         position: relative;
@@ -1415,22 +1315,23 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
       }
       .guided-trace.focus-mode {
         display: grid;
-        grid-template-rows: auto auto minmax(0, 1fr);
+        grid-template-rows: auto auto auto minmax(0, 1fr);
         height: 100%;
         border-radius: 12px;
       }
       .focus-mode .trace-toolbar {
-        grid-template-columns: minmax(180px, 1.1fr) minmax(190px, auto) auto minmax(190px, 1fr);
+        grid-template-columns: minmax(180px, 1.1fr) minmax(190px, auto) auto;
         gap: 10px;
         padding: 8px 12px;
       }
       .focus-mode .toolbar-brand {
         display: none;
       }
-      .focus-mode .execution-readout strong {
-        overflow: visible;
-        text-overflow: clip;
-        white-space: normal;
+      .focus-mode .trace-navigation {
+        position: static;
+        min-height: 46px;
+        padding: 5px 12px;
+        box-shadow: none;
       }
       .focus-mode .trace-context {
         padding: 6px 12px;
@@ -1628,28 +1529,10 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
       }
       @media (max-width: 1060px) {
         .trace-toolbar {
-          grid-template-columns: minmax(150px, 0.8fr) minmax(180px, 1fr) auto auto;
-        }
-        .execution-readout {
-          grid-column: 1 / -1;
-          display: grid;
-          grid-template-columns: auto minmax(0, 1fr) auto;
-          align-items: baseline;
-          gap: 8px;
-        }
-        .execution-readout::before {
-          display: none;
-        }
-        .execution-readout strong,
-        .step-status {
-          margin: 0;
+          grid-template-columns: minmax(150px, 0.8fr) minmax(180px, 1fr) auto;
         }
         .focus-mode .trace-toolbar {
-          grid-template-columns: minmax(170px, 1fr) minmax(185px, auto) auto minmax(180px, 1fr);
-        }
-        .focus-mode .execution-readout {
-          grid-column: auto;
-          display: block;
+          grid-template-columns: minmax(170px, 1fr) minmax(185px, auto) auto;
         }
       }
       @media (max-width: 850px) {
@@ -1660,9 +1543,6 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         .language-control,
         .trace-controls {
           align-self: end;
-        }
-        .execution-readout {
-          grid-column: 1 / -1;
         }
         .source-panel {
           border-right: 0;
@@ -1679,10 +1559,6 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         .focus-mode .trace-toolbar {
           grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         }
-        .focus-mode .execution-readout {
-          grid-column: 1 / -1;
-          display: grid;
-        }
       }
       @media (max-width: 560px) {
         .trace-toolbar {
@@ -1693,10 +1569,12 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         .focus-mode .trace-summary-values {
           grid-template-columns: 1fr;
         }
-        .execution-readout {
-          grid-column: auto;
-          grid-template-columns: 1fr;
-          gap: 2px;
+        .trace-navigation {
+          top: var(--debugger-sticky-top-mobile, 60px);
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+          padding: 7px 10px;
         }
         .toolbar-brand {
           display: none;
@@ -1797,6 +1675,10 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         .focus-dock-card + .focus-dock-card {
           border-top: 1px solid #315569;
         }
+        .focus-mode .trace-navigation {
+          position: sticky;
+          top: var(--debugger-focus-sticky-top, 52px);
+        }
       }
       @media (max-width: 560px) {
         .ide-workspace .source-panel {
@@ -1804,9 +1686,6 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         }
         .debugger-panel .variables {
           grid-template-columns: 1fr;
-        }
-        .debugger-summary dl {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
         }
         .debugger-view-tabs button {
           min-height: 44px;
@@ -1834,7 +1713,6 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         .trace-context,
         .source-panel,
         .debugger-shell,
-        .debugger-summary,
         .debugger-view-tabs,
         .debugger-detail-shell,
         .debugger-panel,
@@ -1925,7 +1803,34 @@ export class GuidedAlgorithmTrace {
       this.guidedFixtures().findIndex(({ id }) => id === this.selectedFixture().id),
     ),
   );
-  protected readonly events = computed(() => this.activeTrace().events);
+  protected readonly events = computed<GuidedTraceEvent[]>(() => {
+    const trace = this.activeTrace();
+    const language = this.language();
+    const path = trace.languagePaths?.[language];
+    if (!path?.length) return trace.events;
+    const terminalResult = trace.events.at(-1)?.result;
+    return path.map((step, pathIndex) => {
+      const baseEvent = trace.events[step.eventIndex] ?? trace.events[0];
+      const { result: _baseResult, ...eventWithoutResult } = baseEvent;
+      const sourceLineIndex = this.source().lines.findIndex(({ id }) => id === step.sourceAnchor);
+      const sourceLine = this.source().lines[sourceLineIndex];
+      const usesAuthoredAnchor = baseEvent.sourceAnchor[language] === step.sourceAnchor;
+      return {
+        ...eventWithoutResult,
+        id: `${baseEvent.id}-${language}-${pathIndex + 1}`,
+        label: usesAuthoredAnchor ? baseEvent.label : `Execute line ${sourceLineIndex + 1}`,
+        phase: usesAuthoredAnchor ? baseEvent.phase : 'Execute',
+        timing: 'after',
+        sourceAnchor: { ...baseEvent.sourceAnchor, [language]: step.sourceAnchor },
+        what: usesAuthoredAnchor
+          ? baseEvent.what
+          : `Execute ${sourceLine?.text.trim() || step.sourceAnchor} in the selected implementation.`,
+        ...(pathIndex === path.length - 1 && terminalResult !== undefined
+          ? { result: terminalResult }
+          : {}),
+      };
+    });
+  });
   protected readonly event = computed(() => this.events()[this.stepIndex()] ?? this.events()[0]);
   protected readonly isComplete = computed(() => this.stepIndex() === this.events().length - 1);
   protected readonly source = computed(
@@ -1980,17 +1885,6 @@ export class GuidedAlgorithmTrace {
       };
     });
   });
-  protected readonly summaryVariables = computed(() => {
-    const available = this.visibleVariables().filter(({ value }) => value !== '—');
-    const priority = (variable: GuidedTraceVariable): number => {
-      if (variable.name === 'returned') return 0;
-      if (variable.changed) return 1;
-      if (/^(seen|frequency|count|target)$/i.test(variable.name)) return 2;
-      if (/^(index|position|value|need|lookup)$/i.test(variable.name)) return 3;
-      return 4;
-    };
-    return [...available].sort((left, right) => priority(left) - priority(right)).slice(0, 4);
-  });
   protected readonly focusCollectionVariable = computed(() =>
     this.visibleVariables().find(({ type }) => /^(map|set)$/i.test(type)),
   );
@@ -2033,20 +1927,23 @@ export class GuidedAlgorithmTrace {
         complexity: 'Complexity prediction',
       })[this.activeView()],
   );
-  protected readonly activeLineSummary = computed(() => {
+  protected readonly activeLineLabel = computed(() => {
     const index = this.source().lines.findIndex(({ id }) => id === this.activeAnchor());
     const line = this.source().lines[index];
-    return line
-      ? `Current instruction is line ${index + 1}: ${line.text}`
-      : `Current instruction: ${this.event().label}`;
+    return line ? `Line ${index + 1}: ${line.text}` : this.event().label;
   });
-  protected readonly executionStatus = computed(() =>
-    this.isComplete()
-      ? this.event().result
-        ? `Returned ${this.event().result}`
-        : 'Trace complete'
-      : `Paused · ${this.event().label}`,
-  );
+  protected readonly activeLineSummary = computed(() => {
+    const label = this.activeLineLabel();
+    return label.startsWith('Line ')
+      ? `Current instruction is ${label.replace(/^Line /, 'line ')}`
+      : `Current instruction: ${label}`;
+  });
+  protected readonly activeStepExplanation = computed(() => {
+    const explanation = this.event().what;
+    return /^Execute .+ at source line \d+:/u.test(explanation)
+      ? `Follow the selected implementation's actual control flow through ${this.activeLineLabel()}.`
+      : explanation;
+  });
   protected readonly predictionPrompt = computed(() => {
     const next = this.events()[this.stepIndex() + 1];
     if (!next) return 'Execution has finished; there is no next instruction to predict.';
@@ -2113,7 +2010,7 @@ export class GuidedAlgorithmTrace {
     if (this.isComplete()) {
       return 'Execution reached the final traced instruction. Next is disabled because no later instruction is available.';
     }
-    return `Execution paused ${this.event().timing} ${this.event().label}. Select Next to execute the next meaningful step.`;
+    return `Execution paused ${this.event().timing} ${this.activeLineLabel()}. Select Next to execute the next meaningful step.`;
   });
   protected readonly solutionFileName = computed(
     () => ({ java: 'Solution.java', python: 'solution.py', go: 'solution.go' })[this.language()],
@@ -2185,12 +2082,14 @@ export class GuidedAlgorithmTrace {
   }
 
   protected selectLanguage(value: string): void {
+    if (this.language() === value) return;
+    this.stepIndex.set(0);
     this.language.set(value as PatternLanguage);
     this.activeView.set('debugger');
     this.resetPrediction();
     this.resetComplexity();
     this.announcement.set(
-      `${value} selected. Still on ${this.event().label}. ${this.assistiveStepSummary()}`,
+      `${value} selected. Trace reset to step 1. ${this.assistiveStepSummary()}`,
     );
   }
 
@@ -2363,7 +2262,7 @@ export class GuidedAlgorithmTrace {
           `${row.label}: ${row.cells.map((cell, index) => this.cellLabel(cell, index)).join('; ')}`,
       )
       .join('. ');
-    return `Step ${this.stepIndex() + 1} of ${this.events().length}: ${this.event().phase}, ${this.event().label}. ${this.activeLineSummary()}. Variables: ${this.transcriptState(this.event().variables)}. Data state: ${rows}. ${this.terminalMessage()}`;
+    return `Step ${this.stepIndex() + 1} of ${this.events().length}: ${this.event().phase}, ${this.activeLineLabel()}. Variables: ${this.transcriptState(this.event().variables)}. Data state: ${rows}. ${this.terminalMessage()}`;
   }
 
   private variableDisplayName(name: string): string | null {

@@ -1,6 +1,7 @@
 import { access, cp, mkdir, readdir, rm } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { generateHandsOnDsaIndex } from './generate-hands-on-dsa-index.mjs';
 import { generateSearchIndex } from './generate-search-index.mjs';
 
 const repositoryRoot = fileURLToPath(new URL('../', import.meta.url));
@@ -62,7 +63,8 @@ await rm(destinationRoot, { recursive: true, force: true });
 await mkdir(destinationRoot, { recursive: true });
 await cp(sourceRoot, destinationRoot, { recursive: true });
 const { searchDocumentCount, interviewQuestionCount } = await generateSearchIndex(destinationRoot);
+const handsOnDsa = await generateHandsOnDsaIndex(destinationRoot);
 
 console.log(
-  `Prepared ${await countFiles(destinationRoot)} runtime asset(s), ${searchDocumentCount} search document(s), and ${interviewQuestionCount} interview question(s) from ${sourceRoot}.`,
+  `Prepared ${await countFiles(destinationRoot)} runtime asset(s), ${searchDocumentCount} search document(s), ${interviewQuestionCount} interview question(s), and ${handsOnDsa.distinctProblems} canonical Hands-On DSA problem(s) from ${sourceRoot}.`,
 );

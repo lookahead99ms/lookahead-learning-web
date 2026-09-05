@@ -8,8 +8,11 @@
           <a [routerLink]="['/', pathId()]">{{ pathLabel() }}</a
           ><span>/</span>
           @if (isCodingPractice(item) && pathId() === 'learn') {
-            <a routerLink="/learn/hands-on-dsa" [queryParams]="{ pattern: handsOnPatternId(item) }"
-              >Hands-On DSA</a
+            <a routerLink="/learn/hands-on-dsa">Hands-On DSA</a><span>/</span>
+            <a
+              routerLink="/learn/hands-on-dsa"
+              [queryParams]="{ pattern: handsOnPatternId(item) }"
+              >{{ handsOnPatternTitle(item) }}</a
             ><span>/</span><span aria-current="page">{{ item.title }}</span>
           } @else {
             <a [routerLink]="['/', pathId(), courseId()]">{{ courseTitle() }}</a>
@@ -84,6 +87,7 @@
         }
         <nav
           class="question-inner-navigation"
+          [class.canonical-problem-navigation]="canonicalNavigation(item)"
           [attr.aria-label]="
             item.contentType === 'theory'
               ? 'Adjacent article navigation'
@@ -114,7 +118,7 @@
           } @else if (canonicalNavigation(item); as navigation) {
             @if (navigation.previous; as previous) {
               <a
-                class="inner-navigation-link previous"
+                class="inner-navigation-link problem-navigation-link previous"
                 [routerLink]="canonicalProblemRoute(previous)"
                 [queryParams]="{ pattern: navigation.handsOnPatternId }"
               >
@@ -122,15 +126,9 @@
               </a>
             }
             <div class="inner-navigation-actions">
-              <a
-                class="module-catalog-link"
-                routerLink="/learn/hands-on-dsa"
-                [queryParams]="{ pattern: navigation.handsOnPatternId }"
-                >All {{ navigation.lesson.title }} problems</a
-              >
               @if (navigation.next; as next) {
                 <a
-                  class="inner-navigation-link next"
+                  class="inner-navigation-link problem-navigation-link next"
                   [routerLink]="canonicalProblemRoute(next)"
                   [queryParams]="{ pattern: navigation.handsOnPatternId }"
                 >

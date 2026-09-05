@@ -187,7 +187,8 @@ describe('DsaProblemPilot mode tabs', () => {
     expect(reasoning.textContent).toContain(
       'Before checking an index, the map contains every earlier value and its index.',
     );
-    expect(reasoning.textContent).toContain('Why this approach');
+    expect(reasoning.textContent).toContain('Why this variant');
+    expect(reasoning.textContent).toContain('Complement lookup');
     expect(reasoning.textContent).toContain('Why it is optimal');
     expect(reasoning.textContent).toContain('When this assumption changes');
     expect(reasoning.textContent).toContain('Remember earlier values');
@@ -195,7 +196,8 @@ describe('DsaProblemPilot mode tabs', () => {
     expect(reasoning.textContent).not.toContain('Brute force');
     expect(reasoning.nextElementSibling).toBe(debuggerStage);
     expect(root.querySelector('.debugger-invariant')).toBeNull();
-    expect(expand.textContent).toContain('Expand debugger');
+    expect(expand.closest('.debugger-frame-bar')).not.toBeNull();
+    expect(root.querySelector('.guided-entry .focus-entry')).toBeNull();
     expect(expand.getAttribute('aria-label')).toBe('Expand Two Sum debugger');
     expect(expand.getAttribute('aria-expanded')).toBe('false');
     expect(expand.querySelector('svg')).not.toBeNull();

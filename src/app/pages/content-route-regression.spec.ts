@@ -64,6 +64,13 @@ describe.each(routeCases)(
     const content = {
       getCatalog: vi.fn(() => of([{ id: course.id, title: course.title }])),
       getCourse: vi.fn<(...args: string[]) => Observable<CourseContent>>(),
+      getHandsOnDsaIndex: vi.fn(() =>
+        of({
+          schemaVersion: 'hands-on-dsa-index/v1',
+          totals: { groups: 0, problemPlacements: 0, distinctProblems: 0 },
+          groups: [],
+        }),
+      ),
     };
 
     beforeEach(async () => {

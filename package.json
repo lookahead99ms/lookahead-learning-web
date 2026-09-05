@@ -23,6 +23,8 @@
     "test": "ng test",
     "test:delivery-api": "node --test scripts/delivery-editor.test.mjs",
     "test:content-contract": "node --test scripts/canonical-dsa-contract.test.mjs",
+    "test:dsa-index": "node --test scripts/generate-hands-on-dsa-index.test.mjs",
+    "test:search-index": "node --test scripts/generate-search-index.test.mjs",
     "test:content-audit": "node --test scripts/audit-content.test.mjs",
     "test:dsa-profile": "node --test scripts/profile-dsa-loading.test.mjs",
     "profile:dsa": "node scripts/profile-dsa-loading.mjs",

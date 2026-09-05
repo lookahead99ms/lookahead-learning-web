@@ -1,5 +1,6 @@
 import { access, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { readCanonicalDsaProblems } from './canonical-dsa-contract.mjs';
 
 const paths = ['learn', 'grow', 'look-ahead'];
 const languages = new Set(['java', 'python', 'go']);
@@ -89,7 +90,7 @@ function catalogOverview(path, catalog, documents) {
   });
 }
 
-async function documentsForCourse(contentRoot, path, catalogItem) {
+async function documentsForCourse(contentRoot, path, catalogItem, canonicalProblems) {
   const courseRoot = join(contentRoot, path, catalogItem.id);
   const course = await readJson(join(courseRoot, 'course.json'));
   const modules = course.modules.filter((module) => module.reviewStatus !== 'planned');
@@ -98,7 +99,7 @@ async function documentsForCourse(contentRoot, path, catalogItem) {
   );
   const moduleById = new Map(modules.map((module) => [module.id, module]));
 
-  return questionArrays.flat().map((question) => {
+  return questionArrays.flat().flatMap((question) => {
     const module = moduleById.get(question.moduleId);
     const moduleTitle = module?.title ?? question.moduleId;
     const access = question.access ??
@@ -106,20 +107,48 @@ async function documentsForCourse(contentRoot, path, catalogItem) {
       course.access ??
       catalogItem.access ?? { tier: 'free' };
     const contentType = normalizedContentType(question);
+    const canonicalProblemId = question.canonicalProblemRef?.problemId;
+    if (contentType === 'dsa-problem' && !canonicalProblemId) return [];
+    const canonicalProblem = canonicalProblemId
+      ? canonicalProblems.get(canonicalProblemId)
+      : undefined;
+    if (canonicalProblemId && !canonicalProblem) {
+      throw new Error(`${question.id}: unresolved canonical DSA problem ${canonicalProblemId}`);
+    }
     const pathLabel =
       path === 'look-ahead' ? 'Look Ahead' : `${path[0].toUpperCase()}${path.slice(1)}`;
-    const resolvedLanguages = questionLanguages(question);
+    const effectiveTitle = canonicalProblem?.title ?? question.title;
+    const effectiveDifficulty = canonicalProblem?.difficulty ?? question.difficulty;
+    const effectiveTags = uniqueLabels([
+      ...(canonicalProblem?.tags ?? []),
+      ...(question.tags ?? []),
+    ]);
+    const resolvedLanguages = canonicalProblem
+      ? uniqueLabels(
+          (canonicalProblem.implementations ?? []).map(({ language }) => language?.toLowerCase()),
+        ).filter((candidate) => languages.has(candidate))
+      : questionLanguages(question);
     const filterTags = uniqueLabels([
       pathLabel,
       contentTypeLabel(contentType),
-      question.difficulty,
+      effectiveDifficulty,
       ...resolvedLanguages.map((language) =>
         language === 'go' ? 'Go' : `${language[0].toUpperCase()}${language.slice(1)}`,
       ),
-      ...question.tags,
+      ...effectiveTags,
     ]);
-    const searchableParts = [question.title, course.title, moduleTitle, ...question.tags];
-    if (access.tier === 'free') {
+    const searchableParts = canonicalProblem
+      ? [
+          effectiveTitle,
+          canonicalProblem.practice.statement.prompt,
+          canonicalProblem.variation,
+          canonicalProblem.invariantAdaptation,
+          course.title,
+          moduleTitle,
+          ...effectiveTags,
+        ]
+      : [question.title, course.title, moduleTitle, ...effectiveTags];
+    if (access.tier === 'free' && !canonicalProblem) {
       searchableParts.push(
         question.interviewAnswer,
         question.summary,
@@ -134,31 +163,38 @@ async function documentsForCourse(contentRoot, path, catalogItem) {
       );
     }
 
-    return {
-      id: `${path}:${course.id}:${question.id}`,
-      contentId: question.id,
-      path,
-      courseId: course.id,
-      courseTitle: course.title,
-      moduleId: question.moduleId,
-      moduleTitle,
-      title: question.title,
-      contentType,
-      tags: question.tags,
-      filterTags,
-      languages: resolvedLanguages,
-      difficulty: question.difficulty,
-      preview: access.tier === 'free' ? question.interviewAnswer : '',
-      access,
-      searchableText: searchableParts.join(' ').toLowerCase(),
-      route: ['/', path, course.id, question.id],
-    };
+    return [
+      {
+        id: `${path}:${course.id}:${question.id}`,
+        contentId: question.id,
+        ...(canonicalProblem ? { canonicalContentId: canonicalProblem.id } : {}),
+        path,
+        courseId: course.id,
+        courseTitle: course.title,
+        moduleId: question.moduleId,
+        moduleTitle,
+        title: effectiveTitle,
+        contentType,
+        tags: effectiveTags,
+        filterTags,
+        languages: resolvedLanguages,
+        difficulty: effectiveDifficulty,
+        preview:
+          access.tier === 'free'
+            ? (canonicalProblem?.practice.statement.prompt ?? question.interviewAnswer)
+            : '',
+        access,
+        searchableText: searchableParts.join(' ').toLowerCase(),
+        route: ['/', path, course.id, question.id],
+      },
+    ];
   });
 }
 
 export async function generateSearchIndex(contentRoot) {
   const courseJobs = [];
   const catalogs = new Map();
+  const canonicalProblems = await readCanonicalDsaProblems(contentRoot);
   for (const path of paths) {
     const catalogPath = join(contentRoot, path, 'catalog.json');
     try {
@@ -173,7 +209,7 @@ export async function generateSearchIndex(contentRoot) {
         const courseFile = join(contentRoot, path, item.id, 'course.json');
         try {
           await access(courseFile);
-          courseJobs.push(documentsForCourse(contentRoot, path, item));
+          courseJobs.push(documentsForCourse(contentRoot, path, item, canonicalProblems));
         } catch {
           // Special catalog experiences such as Hands-on DSA do not hydrate as courses.
         }

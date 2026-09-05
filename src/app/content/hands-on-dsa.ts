@@ -18,6 +18,43 @@ export interface HandsOnReadinessCounts {
   catalogued: number;
 }
 
+export interface HandsOnDsaIndexProblem {
+  id: string;
+  title: string;
+  description: string;
+  difficulty: InterviewQuestion['difficulty'];
+  variation: string;
+  invariantAdaptation: string;
+  version: string;
+  questionId: string;
+  route: string[];
+}
+
+export interface HandsOnDsaIndexGroup {
+  id: string;
+  courseId: string;
+  courseTitle: string;
+  title: string;
+  description: string;
+  unitId: string;
+  practiceModuleId: string;
+  lessonId: string;
+  lessonTitle: string;
+  tags: string[];
+  hasGuidedLesson: boolean;
+  problems: HandsOnDsaIndexProblem[];
+}
+
+export interface HandsOnDsaIndex {
+  schemaVersion: 'hands-on-dsa-index/v1';
+  totals: {
+    groups: number;
+    problemPlacements: number;
+    distinctProblems: number;
+  };
+  groups: HandsOnDsaIndexGroup[];
+}
+
 export interface HandsOnDsaGroup {
   id: string;
   courseId: string;
@@ -31,10 +68,19 @@ export interface HandsOnDsaGroup {
   continuationProblems: InterviewQuestion[];
 }
 
-export function handsOnProblemRoute(problem: PatternProblemV1, fallbackCourseId: string): string[] {
-  const placement = (problem as Partial<DsaProblemV2>).placements?.find(
-    (candidate) => candidate.role === 'practice' && candidate.questionId,
-  );
+export function handsOnProblemRoute(
+  problem: PatternProblemV1,
+  fallbackCourseId: string,
+  practiceModuleId?: string,
+): string[] {
+  const placements = (problem as Partial<DsaProblemV2>).placements ?? [];
+  const placement =
+    placements.find(
+      (candidate) =>
+        candidate.role === 'practice' &&
+        candidate.questionId &&
+        candidate.moduleId === practiceModuleId,
+    ) ?? placements.find((candidate) => candidate.role === 'practice' && candidate.questionId);
   return placement?.questionId
     ? [`/${placement.path}`, placement.courseId, placement.questionId]
     : ['/learn', fallbackCourseId, problem.practiceQuestionId ?? problem.id];
@@ -222,6 +268,47 @@ export function uniqueHandsOnProblemCount(groups: HandsOnDsaGroup[]): number {
     ...group.continuationProblems.map(({ title }) => title),
   ]);
   return new Set(titles.map(normalizeProblemTitle)).size;
+}
+
+export function resolveHandsOnDsaIndexGroup(
+  groups: HandsOnDsaIndexGroup[],
+  patternId: string,
+): HandsOnDsaIndexGroup | null {
+  if (!patternId) return null;
+  return (
+    groups.find((group) => group.id === patternId) ??
+    groups.find((group) => group.lessonId === patternId) ??
+    groups.find((group) => group.unitId === patternId) ??
+    null
+  );
+}
+
+export function filterHandsOnDsaIndexGroups(
+  groups: HandsOnDsaIndexGroup[],
+  query: string,
+  difficulty: HandsOnDifficulty,
+): HandsOnDsaIndexGroup[] {
+  const normalizedQuery = query.trim().toLowerCase();
+  return groups.flatMap((group) => {
+    const groupMatches = [group.title, group.description, group.lessonTitle, ...group.tags]
+      .join(' ')
+      .toLowerCase()
+      .includes(normalizedQuery);
+    const problems = group.problems.filter(
+      (problem) =>
+        (difficulty === 'All' || problem.difficulty === difficulty) &&
+        (groupMatches ||
+          [problem.title, problem.description, problem.variation, problem.invariantAdaptation]
+            .join(' ')
+            .toLowerCase()
+            .includes(normalizedQuery)),
+    );
+    return problems.length ? [{ ...group, problems }] : [];
+  });
+}
+
+export function uniqueHandsOnIndexProblemCount(groups: HandsOnDsaIndexGroup[]): number {
+  return new Set(groups.flatMap((group) => group.problems.map(({ id }) => id))).size;
 }
 
 function normalizeProblemTitle(title: string): string {

@@ -157,6 +157,21 @@ test('canonical ids, not matching titles, own migrated problem identity', () => 
   );
 });
 
+test('explicit foundation lesson links count practice outside the paired module', () => {
+  const data = course();
+  data.questions[0].schemaVersion = 'foundation-lesson/v2';
+  data.questions[0].essentialProblems = [];
+  data.questions[0].practice = [{ questionId: 'fixture-problem' }];
+  data.questions[1].moduleId = 'practice-linked-elsewhere';
+  data.questions[1].relatedArticleId = 'another-lesson';
+
+  const result = auditDsa([data]);
+  assert.equal(result.summary.groupCount, 1);
+  assert.equal(result.summary.appearances, 1);
+  assert.equal(result.summary.practiceReady, 1);
+  assert.equal(result.summary.catalogOnly, 0);
+});
+
 test('a structurally incomplete complete-labelled problem is reported honestly', () => {
   const data = course();
   data.questions[1].solutions = [];

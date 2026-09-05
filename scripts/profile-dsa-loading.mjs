@@ -142,6 +142,75 @@ export async function profileCourses(loadBytes, coursePaths = dsaCourses) {
   };
 }
 
+export async function profileIndexedCanonicalRoute(loadBytes, requestedProblemId = null) {
+  if (requestedProblemId !== null && !segment.test(requestedProblemId)) {
+    throw new Error(`Invalid canonical problem ID: ${requestedProblemId}`);
+  }
+  const files = [];
+  async function load(path, kind) {
+    const bytes = Buffer.from(await loadBytes(path));
+    const value = JSON.parse(bytes.toString('utf8'));
+    files.push({
+      path,
+      kind,
+      bytes: bytes.length,
+      gzipEstimateBytes: gzipSync(bytes).length,
+      sha256: hash(bytes),
+    });
+    return value;
+  }
+
+  const index = await load('hands-on-dsa-index.json', 'compact-index');
+  if (index.schemaVersion !== 'hands-on-dsa-index/v1' || !Array.isArray(index.groups)) {
+    throw new Error('Invalid Hands-On DSA index');
+  }
+  const summaries = index.groups.flatMap((group) => group.problems ?? []);
+  const summary = requestedProblemId
+    ? summaries.find(({ id }) => id === requestedProblemId)
+    : summaries[0];
+  if (!summary || typeof summary.id !== 'string' || !segment.test(summary.id)) {
+    throw new Error(`Canonical problem is absent from the Hands-On DSA index`);
+  }
+  const problem = await load(`learn/dsa-problems/${summary.id}.json`, 'selected-detail');
+  if (problem.id !== summary.id) {
+    throw new Error(`Canonical problem response does not match ${summary.id}`);
+  }
+  const actualVersion = hash(Buffer.from(JSON.stringify(problem))).slice(0, 16);
+  if (summary.version !== actualVersion) {
+    throw new Error(`Canonical problem ${summary.id} does not match its index version`);
+  }
+
+  return {
+    schemaVersion: 'indexed-canonical-route-profile/v1',
+    interpretation:
+      'Source-derived model of the compact Hands-On index plus one selected canonical detail. Bytes and object counts are not measured browser heap or observed transfer.',
+    problemId: summary.id,
+    contentVersion: summary.version,
+    totals: {
+      requests: files.length,
+      sourceBytes: files.reduce((sum, file) => sum + file.bytes, 0),
+      gzipEstimateBytes: files.reduce((sum, file) => sum + file.gzipEstimateBytes, 0),
+      serializedActivatedBytes: Buffer.byteLength(JSON.stringify({ index, problem })),
+    },
+    activatedShape: payloadShape({ index, problem }),
+    browserHeapBytes: null,
+    files,
+  };
+}
+
+export function compareLoadingProfiles(baseline, indexedRoute) {
+  const sourceByteReduction = baseline.totals.sourceBytes - indexedRoute.totals.sourceBytes;
+  return {
+    interpretation:
+      'A source-derived comparison of application payload bodies. It is not a browser waterfall, heap snapshot, latency measurement, or compressed transfer observation.',
+    requestReduction: baseline.totals.requests - indexedRoute.totals.requests,
+    sourceByteReduction,
+    sourceByteReductionPercent: Number(
+      ((sourceByteReduction / baseline.totals.sourceBytes) * 100).toFixed(2),
+    ),
+  };
+}
+
 export async function sampleHttp(files, origin, { fetchImpl = fetch, concurrency = 6 } = {}) {
   origin = loopbackOrigin(origin);
   if (!Number.isInteger(concurrency) || concurrency < 1 || concurrency > 16) {
@@ -190,10 +259,17 @@ export async function sampleHttp(files, origin, { fetchImpl = fetch, concurrency
 }
 
 export function parseOptions(args) {
-  const options = { root: null, out: null, origin: null, repeats: 3, courses: [] };
+  const options = {
+    root: null,
+    out: null,
+    origin: null,
+    problem: null,
+    repeats: 3,
+    courses: [],
+  };
   for (let index = 0; index < args.length; index += 1) {
     const flag = args[index];
-    if (!['--root', '--out', '--origin', '--repeats', '--course'].includes(flag)) {
+    if (!['--root', '--out', '--origin', '--problem', '--repeats', '--course'].includes(flag)) {
       throw new Error(`Unknown option: ${flag}`);
     }
     const value = args[++index];
@@ -208,6 +284,9 @@ export function parseOptions(args) {
     throw new Error('--repeats must be between 1 and 10.');
   }
   if (options.origin) options.origin = loopbackOrigin(options.origin);
+  if (options.problem && !segment.test(options.problem)) {
+    throw new Error(`Invalid canonical problem ID: ${options.problem}`);
+  }
   if (!options.courses.length) options.courses = [...dsaCourses];
   return options;
 }
@@ -224,18 +303,28 @@ export function requirePrivateOutput(path, publicRoot = repositoryRoot) {
 async function main() {
   const options = parseOptions(process.argv.slice(2));
   const root = await realpath(resolve(options.root));
-  const report = await profileCourses(async (path) => {
+  const loadBytes = async (path) => {
     const file = await realpath(resolve(root, path));
     const local = relative(root, file);
     if (local === '..' || local.startsWith(`..${sep}`)) throw new Error('Source escapes root');
     return readFile(file);
-  }, options.courses);
+  };
+  const report = await profileCourses(loadBytes, options.courses);
+  report.schemaVersion = 'dsa-loading-profile/v2';
+  report.indexedCanonicalRoute = await profileIndexedCanonicalRoute(loadBytes, options.problem);
+  report.sourceDerivedComparison = compareLoadingProfiles(report, report.indexedCanonicalRoute);
   report.generatedAt = new Date().toISOString();
   report.nodeVersion = process.version;
   report.httpSamples = [];
   if (options.origin) {
     for (let run = 0; run < options.repeats; run += 1) {
       report.httpSamples.push(await sampleHttp(report.files, options.origin));
+    }
+    report.indexedCanonicalRoute.httpSamples = [];
+    for (let run = 0; run < options.repeats; run += 1) {
+      report.indexedCanonicalRoute.httpSamples.push(
+        await sampleHttp(report.indexedCanonicalRoute.files, options.origin),
+      );
     }
   }
   const json = `${JSON.stringify(report, null, 2)}\n`;

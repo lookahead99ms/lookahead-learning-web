@@ -1,6 +1,16 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, forkJoin, map, of, shareReplay, switchMap } from 'rxjs';
+import {
+  Observable,
+  catchError,
+  forkJoin,
+  map,
+  of,
+  shareReplay,
+  switchMap,
+  tap,
+  throwError,
+} from 'rxjs';
 import {
   CatalogItem,
   CatalogOverviewItem,
@@ -10,6 +20,15 @@ import {
   SearchDocument,
 } from './content.models';
 import { DeliveryPlan } from './delivery-plan.models';
+import type { HandsOnDsaIndex } from './hands-on-dsa';
+
+export const DSA_DETAIL_CACHE_MAX_ENTRIES = 8;
+export const DSA_DETAIL_CACHE_MAX_BYTES = 4 * 1024 * 1024;
+
+interface DsaProblemCacheEntry {
+  request: Observable<DsaProblemV2>;
+  bytes: number;
+}
 
 @Injectable({ providedIn: 'root' })
 export class ContentService {
@@ -21,6 +40,11 @@ export class ContentService {
   private readonly interviewQuestionIndex$ = this.http
     .get<SearchDocument[]>('/content/interview-question-index.json')
     .pipe(shareReplay({ bufferSize: 1, refCount: true }));
+  private readonly handsOnDsaIndex$ = this.http
+    .get<HandsOnDsaIndex>('/content/hands-on-dsa-index.json')
+    .pipe(shareReplay({ bufferSize: 1, refCount: true }));
+  private readonly dsaProblemCache = new Map<string, DsaProblemCacheEntry>();
+  private dsaProblemCacheBytes = 0;
 
   getCourse(pathId: string, courseId: string): Observable<CourseContent> {
     const base = `/content/${pathId}/${courseId}`;
@@ -55,13 +79,76 @@ export class ContentService {
     );
   }
 
-  getDsaProblem(problemId: string): Observable<DsaProblemV2> {
+  getDsaProblem(problemId: string, contentVersion?: string): Observable<DsaProblemV2> {
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(problemId)) {
       throw new Error(`Invalid canonical DSA problem id: ${problemId}`);
     }
-    // Do not retain canonical details for the app lifetime while local content can be
-    // replaced underneath ng serve. DLV-204 will introduce a bounded, version-aware cache.
-    return this.http.get<DsaProblemV2>(`/content/learn/dsa-problems/${problemId}.json`);
+    const url = `/content/learn/dsa-problems/${problemId}.json`;
+    if (!contentVersion) return this.http.get<DsaProblemV2>(url);
+    if (!/^[a-zA-Z0-9_-]{1,64}$/.test(contentVersion)) {
+      throw new Error(`Invalid canonical DSA content version: ${contentVersion}`);
+    }
+
+    const key = `${problemId}@${contentVersion}`;
+    const cached = this.dsaProblemCache.get(key);
+    if (cached) {
+      this.dsaProblemCache.delete(key);
+      this.dsaProblemCache.set(key, cached);
+      return cached.request;
+    }
+
+    const entry = {} as DsaProblemCacheEntry;
+    entry.bytes = 0;
+    entry.request = this.http.get<DsaProblemV2>(url).pipe(
+      tap((problem) => this.recordDsaProblemBytes(key, entry, problem)),
+      catchError((error) => {
+        this.removeDsaProblemCacheEntry(key, entry);
+        return throwError(() => error);
+      }),
+      shareReplay({ bufferSize: 1, refCount: false }),
+    );
+    this.dsaProblemCache.set(key, entry);
+    this.trimDsaProblemCache();
+    return entry.request;
+  }
+
+  getHandsOnDsaIndex(): Observable<HandsOnDsaIndex> {
+    return this.handsOnDsaIndex$;
+  }
+
+  private recordDsaProblemBytes(
+    key: string,
+    entry: DsaProblemCacheEntry,
+    problem: DsaProblemV2,
+  ): void {
+    if (this.dsaProblemCache.get(key) !== entry) return;
+    const bytes = new TextEncoder().encode(JSON.stringify(problem)).byteLength;
+    if (bytes > DSA_DETAIL_CACHE_MAX_BYTES) {
+      this.removeDsaProblemCacheEntry(key, entry);
+      return;
+    }
+    this.dsaProblemCacheBytes -= entry.bytes;
+    entry.bytes = bytes;
+    this.dsaProblemCacheBytes += bytes;
+    this.trimDsaProblemCache();
+  }
+
+  private trimDsaProblemCache(): void {
+    while (
+      this.dsaProblemCache.size > DSA_DETAIL_CACHE_MAX_ENTRIES ||
+      this.dsaProblemCacheBytes > DSA_DETAIL_CACHE_MAX_BYTES
+    ) {
+      const oldestKey = this.dsaProblemCache.keys().next().value as string | undefined;
+      if (!oldestKey) return;
+      this.removeDsaProblemCacheEntry(oldestKey, this.dsaProblemCache.get(oldestKey));
+    }
+  }
+
+  private removeDsaProblemCacheEntry(key: string, expected?: DsaProblemCacheEntry): void {
+    const current = this.dsaProblemCache.get(key);
+    if (!current || (expected && current !== expected)) return;
+    this.dsaProblemCache.delete(key);
+    this.dsaProblemCacheBytes -= current.bytes;
   }
 
   private hydrateEssentialCanonicalProblems(course: CourseContent): Observable<CourseContent> {
