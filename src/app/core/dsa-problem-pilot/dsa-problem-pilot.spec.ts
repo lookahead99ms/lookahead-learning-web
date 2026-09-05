@@ -178,6 +178,35 @@ describe('DsaProblemPilot mode tabs', () => {
     expect(root.querySelector('.trace-context')?.textContent).toContain('[2,3]');
   });
 
+  it('places the invariant and approach progression before the expandable debugger', async () => {
+    await TestBed.configureTestingModule({ imports: [DsaProblemPilot] }).compileComponents();
+    const fixture = TestBed.createComponent(DsaProblemPilot);
+    fixture.componentRef.setInput('problem', twoSumProblem());
+    fixture.componentRef.setInput('entryMode', 'guided');
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const root = fixture.nativeElement as HTMLElement;
+    const reasoning = root.querySelector<HTMLElement>('.reasoning-frame')!;
+    const debuggerStage = root.querySelector<HTMLElement>('.guided-trace-stage')!;
+    const expand = root.querySelector<HTMLButtonElement>('.focus-entry')!;
+
+    expect(reasoning.textContent).toContain(
+      'Before checking an index, the map contains every earlier value and its index.',
+    );
+    expect(reasoning.textContent).toContain('Start simple');
+    expect(reasoning.textContent).toContain('improve');
+    expect(
+      [...reasoning.querySelectorAll('.approaches article')].map((item) => item.textContent),
+    ).toEqual([expect.stringContaining('Brute force'), expect.stringContaining('Complement map')]);
+    expect(reasoning.nextElementSibling).toBe(debuggerStage);
+    expect(root.querySelector('.debugger-invariant')).toBeNull();
+    expect(expand.textContent).toContain('Expand debugger');
+    expect(expand.getAttribute('aria-label')).toBe('Expand Two Sum debugger');
+    expect(expand.getAttribute('aria-expanded')).toBe('false');
+    expect(expand.querySelector('svg')).not.toBeNull();
+  });
+
   it('lets the learner select the exact input used by the guided trace', async () => {
     await TestBed.configureTestingModule({ imports: [DsaProblemPilot] }).compileComponents();
     const fixture = TestBed.createComponent(DsaProblemPilot);
@@ -442,6 +471,8 @@ describe('DsaProblemPilot mode tabs', () => {
       expect(focusedStage.getAttribute('aria-modal')).toBe('true');
       expect(document.body.style.overflow).toBe('hidden');
       expect(document.activeElement).toBe(root.querySelector('.focus-exit'));
+      expect(focusEntry.getAttribute('aria-expanded')).toBe('true');
+      expect(root.querySelector('.focus-exit')?.textContent).toContain('Exit expanded view');
       expect(root.querySelector('app-guided-algorithm-trace')).toBe(trace);
       expect(root.querySelector('.guided-trace')?.getAttribute('data-language')).toBe('python');
       expect(root.querySelector('.focus-state-dock')).not.toBeNull();
@@ -466,6 +497,7 @@ describe('DsaProblemPilot mode tabs', () => {
       expect(root.querySelector('.guided-trace-stage.focused')).toBeNull();
       expect(document.body.style.overflow).toBe('clip');
       expect(document.activeElement).toBe(focusEntry);
+      expect(focusEntry.getAttribute('aria-expanded')).toBe('false');
       expect(scrollTo).toHaveBeenCalledOnce();
       expect(root.querySelector('app-guided-algorithm-trace')).toBe(trace);
       expect(root.querySelector('.step-status')?.textContent).toContain('2 of 2');

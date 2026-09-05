@@ -185,4 +185,23 @@ describe('Hands-On DSA projection', () => {
       catalogued: 1,
     });
   });
+
+  it('treats a canonical reference as ready without hydrating its detail payload', () => {
+    const groups = buildHandsOnDsaGroups(course());
+    const referenced = {
+      ...groups[0].continuationProblems[0],
+      contentType: 'dsa-problem' as const,
+      canonicalProblemRef: { problemId: 'canonical-container' },
+    };
+    const withReference = [{ ...groups[0], continuationProblems: [referenced] }];
+
+    expect(handsOnReadinessCounts(withReference)).toEqual({
+      guided: 3,
+      practiceReady: 1,
+      catalogued: 0,
+    });
+    expect(
+      filterHandsOnDsaGroups(withReference, '', 'All', 'Guided')[0].continuationProblems,
+    ).toEqual([referenced]);
+  });
 });

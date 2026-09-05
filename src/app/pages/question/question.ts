@@ -2,7 +2,7 @@ import { Component, DestroyRef, HostListener, OnInit, inject, signal } from '@an
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgTemplateOutlet } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { EMPTY, catchError, forkJoin, switchMap } from 'rxjs';
+import { EMPTY, catchError, forkJoin, map, of, switchMap } from 'rxjs';
 import {
   CatalogItem,
   CourseContent,
@@ -659,6 +659,7 @@ export class Question implements OnInit {
   protected readonly nextCourse = signal<CatalogItem | null>(null);
   protected readonly error = signal('');
   protected readonly surpriseMode = signal(false);
+  protected readonly navigationContextId = signal('');
   protected readonly reviewStatusLabel = reviewStatusLabel;
 
   /** Coding practice is classified by its existing curriculum tags, not by the generic Q&A layout. */
@@ -682,10 +683,15 @@ export class Question implements OnInit {
   }
 
   protected canonicalNavigation(item: InterviewQuestion): DsaProblemNavigation | null {
-    return (
-      (this.canonicalProblem(item) as { navigation?: DsaProblemNavigation } | null)?.navigation ??
-      null
-    );
+    const navigation = (this.canonicalProblem(item) as { navigation?: DsaProblemNavigation } | null)
+      ?.navigation;
+    if (!navigation) return null;
+    const requestedContext = this.navigationContextId();
+    return requestedContext
+      ? (navigation.alternates?.find(
+          ({ handsOnPatternId }) => handsOnPatternId === requestedContext,
+        ) ?? navigation)
+      : navigation;
   }
 
   protected canonicalProblemRoute(link: DsaProblemNavigationLink): string[] {
@@ -1075,6 +1081,7 @@ export class Question implements OnInit {
   ngOnInit(): void {
     this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       this.surpriseMode.set(params.get('mode') === 'surprise');
+      this.navigationContextId.set(params.get('pattern') ?? '');
     });
     this.route.paramMap
       .pipe(
@@ -1088,10 +1095,12 @@ export class Question implements OnInit {
           const pathId = this.route.snapshot.data['pathId'] ?? 'learn';
           this.courseId.set(courseId);
           this.pathId.set(pathId);
+          const questionId = params.get('questionId');
           return forkJoin({
             catalog: this.contentService.getCatalog(pathId),
             course: this.contentService.getCourse(pathId, courseId),
           }).pipe(
+            switchMap((result) => this.loadSelectedCanonicalProblem(result, questionId)),
             catchError(() => {
               this.error.set('The question content could not be loaded.');
               return EMPTY;
@@ -1103,6 +1112,27 @@ export class Question implements OnInit {
       .subscribe({
         next: ({ catalog, course }) => this.displayQuestion(catalog, course),
       });
+  }
+
+  private loadSelectedCanonicalProblem(
+    result: { catalog: CatalogItem[]; course: CourseContent },
+    questionId: string | null,
+  ) {
+    const selected = result.course.questions.find(({ id }) => id === questionId);
+    const problemId = selected?.canonicalProblemRef?.problemId;
+    if (!selected || !problemId || selected.canonicalProblem) return of(result);
+
+    return this.contentService.getDsaProblem(problemId).pipe(
+      map((problem) => ({
+        ...result,
+        course: {
+          ...result.course,
+          questions: result.course.questions.map((question) =>
+            question.id === selected.id ? { ...question, canonicalProblem: problem } : question,
+          ),
+        },
+      })),
+    );
   }
 
   private displayQuestion(catalog: CatalogItem[], course: CourseContent): void {

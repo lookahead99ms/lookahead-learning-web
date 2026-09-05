@@ -560,6 +560,9 @@ export class HandsOnDsa implements OnInit {
   }
 
   protected problemReadinessLabel(problem: CourseContent['questions'][number]): string {
+    if (problem.canonicalProblemRef || problem.canonicalProblem?.trace) {
+      return 'Guided + independent';
+    }
     return continuationReadiness(problem) === 'Practice-ready'
       ? 'Ready to solve'
       : 'Source required';

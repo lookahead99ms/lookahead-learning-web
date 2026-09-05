@@ -94,6 +94,21 @@ function canonicalProblem(testCase: CanonicalRouteCase): DsaProblemV2 {
       handsOnPatternId: 'algorithmic-patterns:hashing-lookup',
       previous: testCase.previous,
       next: testCase.next,
+      ...(testCase.problemId === 'algorithmic-two-sum'
+        ? {
+            alternates: [
+              {
+                lesson: {
+                  path: 'learn' as const,
+                  courseId: 'algorithmic-patterns',
+                  questionId: 'algorithmic-prefix-state',
+                  title: 'Prefix State',
+                },
+                handsOnPatternId: 'algorithmic-patterns:prefix-state',
+              },
+            ],
+          }
+        : {}),
     },
     fixtures: [
       {
@@ -193,10 +208,14 @@ describe('Question canonical DSA navigation', () => {
   const content = {
     getCatalog: vi.fn(() => of(routeCases.map(({ courseId, title }) => ({ id: courseId, title })))),
     getCourse: vi.fn((_: string, courseId: string) => of(courseFor(courseId))),
+    getDsaProblem: vi.fn((problemId: string) =>
+      of(canonicalProblem(routeCases.find((testCase) => testCase.problemId === problemId)!)),
+    ),
   };
 
   beforeEach(async () => {
     content.getCourse.mockClear();
+    content.getDsaProblem.mockClear();
     await TestBed.configureTestingModule({
       providers: [provideRouter(routes), { provide: ContentService, useValue: content }],
     }).compileComponents();
@@ -229,7 +248,7 @@ describe('Question canonical DSA navigation', () => {
       if (testCase.previous) {
         expect(previous?.textContent).toContain(testCase.previous.title);
         expect(previous?.getAttribute('href')).toBe(
-          `/learn/${testCase.previous.courseId}/${testCase.previous.questionId}`,
+          `/learn/${testCase.previous.courseId}/${testCase.previous.questionId}?pattern=algorithmic-patterns:hashing-lookup`,
         );
       } else {
         expect(previous).toBeNull();
@@ -237,7 +256,7 @@ describe('Question canonical DSA navigation', () => {
       if (testCase.next) {
         expect(next?.textContent).toContain(testCase.next.title);
         expect(next?.getAttribute('href')).toBe(
-          `/learn/${testCase.next.courseId}/${testCase.next.questionId}`,
+          `/learn/${testCase.next.courseId}/${testCase.next.questionId}?pattern=algorithmic-patterns:hashing-lookup`,
         );
       } else {
         expect(next).toBeNull();
@@ -247,4 +266,42 @@ describe('Question canonical DSA navigation', () => {
       );
     },
   );
+
+  it('loads only the selected canonical continuation detail', async () => {
+    const selected = routeCases[1];
+    const course = courseFor(selected.courseId);
+    course.questions = course.questions.map((question) =>
+      question.id === selected.problemId ? { ...question, canonicalProblem: undefined } : question,
+    );
+    content.getCourse.mockReturnValueOnce(of(course));
+    const harness = await RouterTestingHarness.create();
+
+    await harness.navigateByUrl(`/learn/${selected.courseId}/${selected.problemId}`, Question);
+
+    expect(content.getDsaProblem).toHaveBeenCalledOnce();
+    expect(content.getDsaProblem).toHaveBeenCalledWith(selected.problemId);
+    expect(harness.routeNativeElement?.textContent).toContain('Practice independently');
+  });
+
+  it('uses the requested navigation context for a cross-pattern problem', async () => {
+    const harness = await RouterTestingHarness.create();
+
+    await harness.navigateByUrl(
+      '/learn/algorithmic-patterns/algorithmic-two-sum?pattern=algorithmic-patterns:prefix-state',
+      Question,
+    );
+    const root = harness.routeNativeElement!;
+
+    expect(linkWithText(root, 'Hands-On DSA')?.getAttribute('href')).toBe(
+      '/learn/hands-on-dsa?pattern=algorithmic-patterns:prefix-state',
+    );
+    expect(linkWithText(root, 'Review Prefix State concept')?.getAttribute('href')).toBe(
+      '/learn/algorithmic-patterns/algorithmic-prefix-state',
+    );
+    expect(linkWithText(root, 'All Prefix State problems')?.getAttribute('href')).toBe(
+      '/learn/hands-on-dsa?pattern=algorithmic-patterns:prefix-state',
+    );
+    expect(root.querySelector('.question-inner-navigation .previous')).toBeNull();
+    expect(root.querySelector('.question-inner-navigation .next')).toBeNull();
+  });
 });

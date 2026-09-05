@@ -116,6 +116,7 @@
               <a
                 class="inner-navigation-link previous"
                 [routerLink]="canonicalProblemRoute(previous)"
+                [queryParams]="{ pattern: navigation.handsOnPatternId }"
               >
                 <span>← Previous problem:</span><strong>{{ previous.title }}</strong>
               </a>
@@ -128,7 +129,11 @@
                 >All {{ navigation.lesson.title }} problems</a
               >
               @if (navigation.next; as next) {
-                <a class="inner-navigation-link next" [routerLink]="canonicalProblemRoute(next)">
+                <a
+                  class="inner-navigation-link next"
+                  [routerLink]="canonicalProblemRoute(next)"
+                  [queryParams]="{ pattern: navigation.handsOnPatternId }"
+                >
                   <span>Next problem:</span><strong>{{ next.title }} →</strong>
                 </a>
               }

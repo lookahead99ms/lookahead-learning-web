@@ -160,7 +160,11 @@
                 <div class="problem-grid">
                   @for (problem of group.essentialProblems; track problem.id) {
                     @if (problem.practiceQuestionId) {
-                      <a class="problem-card" [routerLink]="problemRoute(problem, group.courseId)">
+                      <a
+                        class="problem-card"
+                        [routerLink]="problemRoute(problem, group.courseId)"
+                        [queryParams]="{ pattern: group.id }"
+                      >
                         <span>{{ problem.difficulty }} · Guided + independent</span>
                         <h3>{{ problem.title }}</h3>
                         <p>{{ problem.practice?.statement?.prompt ?? problem.variation }}</p>
@@ -181,7 +185,11 @@
                     }
                   }
                   @for (problem of group.continuationProblems; track problem.id) {
-                    <a class="problem-card" [routerLink]="['/learn', group.courseId, problem.id]">
+                    <a
+                      class="problem-card"
+                      [routerLink]="['/learn', group.courseId, problem.id]"
+                      [queryParams]="{ pattern: group.id }"
+                    >
                       <span>{{ problem.difficulty }} · {{ problemReadinessLabel(problem) }}</span>
                       <h3>{{ problem.title }}</h3>
                       <p>{{ problem.interviewAnswer }}</p>

@@ -284,9 +284,15 @@ describe('GuidedAlgorithmTrace shared interaction contract', () => {
 
   it('keeps the editor and complete debugger state side by side without a permanent explanation panel', () => {
     const workspace = fixture.nativeElement.querySelector('.ide-workspace') as HTMLElement;
-    expect(workspace.querySelector('.source-panel')).not.toBeNull();
+    const sourcePanel = workspace.querySelector('.source-panel') as HTMLElement;
+    expect(sourcePanel).not.toBeNull();
     expect(workspace.querySelector('.debugger-panel')).not.toBeNull();
     expect(workspace.querySelector('.explanation-panel')).toBeNull();
+    expect(sourcePanel.querySelector('.pane-heading')).toBeNull();
+    expect(sourcePanel.querySelector('.editor-file')?.textContent).toContain('.java');
+    expect(sourcePanel.querySelector('pre app-code-copy-button')).toBeNull();
+    expect(sourcePanel.querySelector('.editor-copy')).not.toBeNull();
+    expect(normalizedText(sourcePanel)).not.toContain('Current instruction is line');
     expect(getComputedStyle(workspace).gridTemplateColumns).toBe(
       'minmax(0, 7fr) minmax(300px, 3fr)',
     );
@@ -582,6 +588,66 @@ describe('GuidedAlgorithmTrace shared interaction contract', () => {
     expect(fixture.nativeElement.querySelector('.source-panel')).toBe(editor);
     expect(fixture.nativeElement.querySelector('.debugger-panel')).toBe(debuggerPanel);
     expect(fixture.nativeElement.querySelector('.step-status').textContent).toContain('2 of 3');
+  });
+
+  it('advances through loop and branch instructions before disabling Next at return', () => {
+    const activeProblem = problem('source-step', 'Source Step', 'values');
+    activeProblem.implementations = activeProblem.implementations.map((implementation) => ({
+      ...implementation,
+      lines: [
+        { id: 'initialize', text: 'initialize state' },
+        { id: 'loop', text: 'loop over values' },
+        { id: 'condition', text: 'check current value' },
+        { id: 'update', text: 'update state' },
+        { id: 'return', text: 'return result' },
+      ],
+    }));
+    const template = activeProblem.trace.events[1];
+    const anchoredEvent = (id: string, label: string, anchor: string) => ({
+      ...template,
+      id,
+      label,
+      sourceAnchor: { java: anchor, python: anchor, go: anchor },
+    });
+    activeProblem.trace.events = [
+      activeProblem.trace.events[0],
+      anchoredEvent('loop-0', 'Enter iteration 1', 'loop'),
+      anchoredEvent('condition-0', 'Condition is false', 'condition'),
+      anchoredEvent('update-0', 'Update state', 'update'),
+      anchoredEvent('loop-1', 'Enter iteration 2', 'loop'),
+      anchoredEvent('condition-1', 'Condition is true', 'condition'),
+      {
+        ...activeProblem.trace.events[2],
+        sourceAnchor: { java: 'return', python: 'return', go: 'return' },
+      },
+    ];
+    fixture.componentInstance.activeProblem.set(activeProblem);
+    fixture.componentInstance.selectedFixture.set(activeProblem.fixtures[0]);
+    fixture.detectChanges();
+
+    const next = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
+      '.trace-controls .primary',
+    )!;
+    const activeInstruction = () =>
+      normalizedText(fixture.nativeElement.querySelector('.source-line.active'));
+    const visited = [activeInstruction()];
+    while (!next.disabled) {
+      next.click();
+      fixture.detectChanges();
+      visited.push(activeInstruction());
+    }
+
+    expect(visited).toEqual([
+      '›1initialize state',
+      '›2loop over values',
+      '›3check current value',
+      '›4update state',
+      '›2loop over values',
+      '›3check current value',
+      '›5return result',
+    ]);
+    expect(fixture.nativeElement.querySelector('.step-status').textContent).toContain('7 of 7');
+    expect(next.disabled).toBe(true);
   });
 
   it('resets and announces an independently selected edge fixture', async () => {

@@ -118,13 +118,8 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
           role="tabpanel"
           aria-label="Selected source implementation"
         >
-          <div class="pane-heading">
-            <span>{{ solutionFileName() }}</span>
-            <div class="pane-actions">
-              <span>{{ activeLineSummary() }}</span>
-              <app-code-copy-button [code]="sourceText()" />
-            </div>
-          </div>
+          <span class="editor-file">{{ solutionFileName() }}</span>
+          <app-code-copy-button class="editor-copy" [code]="sourceText()" />
           <pre
             tabindex="0"
             [attr.aria-label]="'Source editor. ' + activeLineSummary()"
@@ -348,9 +343,6 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
                     <span>Returned output</span>
                     <strong>{{ event().result ?? 'Pending' }}</strong>
                   </section>
-                  <p class="debugger-invariant">
-                    <strong>Invariant:</strong> {{ activeTrace().invariant }}
-                  </p>
                   <div class="terminal" role="region" aria-label="Terminal output">
                     <span>Terminal</span>
                     <p>{{ terminalMessage() }}</p>
@@ -532,7 +524,7 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
       }
       .trace-toolbar span,
       .trace-context span,
-      .pane-heading {
+      .editor-file {
         display: block;
         color: #8fd9e3;
         font-size: 0.68rem;
@@ -698,27 +690,37 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         box-shadow: inset 0 -2px #2cd4da;
       }
       .source-panel {
+        position: relative;
         min-width: 0;
         border-right: 1px solid #315569;
         background: #282c34;
       }
-      .pane-heading {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 11px 15px;
-        border-bottom: 1px solid #315569;
+      .editor-file {
+        position: absolute;
+        z-index: 2;
+        top: 10px;
+        left: 12px;
+        max-width: calc(100% - 130px);
+        padding: 5px 9px;
+        overflow: hidden;
+        border: 1px solid #465568;
+        border-bottom-color: #61afef;
+        border-radius: 6px 6px 2px 2px;
+        background: #202938;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
-      .pane-actions {
-        display: flex;
-        align-items: center;
-        gap: 10px;
+      .editor-copy {
+        position: absolute;
+        z-index: 3;
+        top: 8px;
+        right: 10px;
       }
       .source-panel pre {
-        height: 286px;
+        box-sizing: border-box;
+        height: 340px;
         margin: 0;
-        padding: 12px 0;
+        padding: 51px 0 12px;
         overflow: auto;
         font:
           13px/1.7 'JetBrains Mono',
@@ -1407,13 +1409,6 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
           monospace;
         text-align: right;
       }
-      .debugger-invariant {
-        margin: 0;
-        padding: 10px 13px;
-        color: #bad0d7;
-        font-size: 0.72rem;
-        line-height: 1.45;
-      }
       .debugger-panel .terminal {
         grid-template-columns: 1fr;
         gap: 4px;
@@ -1806,9 +1801,6 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
       @media (max-width: 560px) {
         .ide-workspace .source-panel {
           min-height: 330px;
-        }
-        .pane-actions > span {
-          display: none;
         }
         .debugger-panel .variables {
           grid-template-columns: 1fr;

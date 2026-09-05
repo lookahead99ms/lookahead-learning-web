@@ -43,7 +43,7 @@ export class ContentService {
           ),
         ).pipe(
           switchMap((questionArrays) =>
-            this.hydrateCanonicalProblems({
+            this.hydrateEssentialCanonicalProblems({
               ...manifest,
               modules: publishedModules,
               sections: publishedSections,
@@ -64,12 +64,9 @@ export class ContentService {
     return this.http.get<DsaProblemV2>(`/content/learn/dsa-problems/${problemId}.json`);
   }
 
-  private hydrateCanonicalProblems(course: CourseContent): Observable<CourseContent> {
+  private hydrateEssentialCanonicalProblems(course: CourseContent): Observable<CourseContent> {
     const problemIds = new Set<string>();
     for (const item of course.questions) {
-      if (item.canonicalProblemRef?.problemId) {
-        problemIds.add(item.canonicalProblemRef.problemId);
-      }
       if (item.schemaVersion === 'pattern-lesson/v2') {
         for (const reference of item.essentialProblemRefs ?? []) {
           problemIds.add(reference.problemId);
