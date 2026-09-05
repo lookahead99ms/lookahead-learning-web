@@ -1,6 +1,11 @@
 import { access, readdir, readFile } from 'node:fs/promises';
 import { basename, dirname, extname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {
+  materializeCanonicalReferences,
+  primaryPracticePlacement,
+  readCanonicalDsaProblems,
+} from './canonical-dsa-contract.mjs';
 
 const repositoryRoot = fileURLToPath(new URL('../', import.meta.url));
 const requestedRoot = process.argv[2];
@@ -51,6 +56,7 @@ let courseCount = 0;
 let questionCount = 0;
 let traceProblemCount = 0;
 let deliveryPlanCount = 0;
+let canonicalDsaProblemCount = 0;
 
 async function filesWithExtension(directory, extension) {
   const entries = await readdir(directory, { withFileTypes: true });
@@ -240,8 +246,117 @@ function collectAssetPaths(value, paths = []) {
 function isTheoryArticle(item) {
   return (
     item?.contentType === 'theory' &&
-    (['pattern-lesson/v1', 'foundation-lesson/v1'].includes(item.schemaVersion) ||
+    (['pattern-lesson/v1', 'pattern-lesson/v2', 'foundation-lesson/v1'].includes(
+      item.schemaVersion,
+    ) ||
       (Array.isArray(item.sections) && item.sections.length > 0))
+  );
+}
+
+function validateCanonicalDsaProblem(problem, label) {
+  requireValue(problem.contentType === 'dsa-problem', `${label}: invalid contentType`);
+  requireValue(problem.title && difficulties.has(problem.difficulty), `${label}: invalid identity`);
+  requireValue(
+    Array.isArray(problem.aliases) &&
+      new Set(problem.aliases).size === problem.aliases.length &&
+      problem.aliases.every((alias) => alias && alias !== problem.id),
+    `${label}: aliases must be unique legacy ids and must not repeat the canonical id`,
+  );
+  requireValue(
+    Array.isArray(problem.tags) && problem.tags.length > 0 && problem.tags.every(Boolean),
+    `${label}: tags are incomplete`,
+  );
+  requireValue(
+    Array.isArray(problem.languages) &&
+      problem.languages.length === patternLanguages.size &&
+      [...patternLanguages].every((language) => problem.languages.includes(language)),
+    `${label}: languages must contain Java, Python, and Go exactly once`,
+  );
+  requireValue(
+    [...patternLanguages].every((language) => problem.contract?.entryPoints?.[language]),
+    `${label}: entry points must cover Java, Python, and Go`,
+  );
+  requireValue(
+    Array.isArray(problem.contract?.parameters) &&
+      problem.contract.parameters.length > 0 &&
+      problem.contract.parameters.every(
+        (parameter) => parameter?.name && parameter?.type && parameter?.description,
+      ) &&
+      problem.contract?.returns?.type &&
+      problem.contract?.returns?.description,
+    `${label}: callable contract is incomplete`,
+  );
+  requireValue(
+    Array.isArray(problem.placements) &&
+      problem.placements.length >= 2 &&
+      problem.placements.some((placement) => placement.role === 'essential') &&
+      primaryPracticePlacement(problem),
+    `${label}: essential and practice placements are required`,
+  );
+  for (const placement of problem.placements) {
+    requireValue(
+      placement?.path &&
+        placement?.courseId &&
+        ['essential', 'practice', 'transfer'].includes(placement?.role),
+      `${label}: invalid placement`,
+    );
+    if (placement.role === 'essential') {
+      requireValue(placement.lessonId, `${label}: essential placement has no lessonId`);
+    }
+    if (placement.role === 'practice') {
+      requireValue(
+        placement.moduleId && placement.questionId,
+        `${label}: practice placement needs moduleId and questionId`,
+      );
+    }
+  }
+  requireValue(
+    problem.navigation?.lesson?.path &&
+      problem.navigation?.lesson?.courseId &&
+      problem.navigation?.lesson?.questionId &&
+      problem.navigation?.lesson?.title &&
+      /^[a-z0-9]+(?:-[a-z0-9]+)*:[a-z0-9]+(?:-[a-z0-9]+)*$/.test(
+        problem.navigation?.handsOnPatternId ?? '',
+      ),
+    `${label}: canonical navigation context is incomplete`,
+  );
+  for (const direction of ['previous', 'next']) {
+    const link = problem.navigation[direction];
+    if (!link) continue;
+    requireValue(
+      link.problemId &&
+        link.problemId !== problem.id &&
+        link.path &&
+        link.courseId &&
+        link.questionId &&
+        link.title,
+      `${label}: invalid ${direction} problem link`,
+    );
+  }
+  requireValue(
+    Array.isArray(problem.fixtures) &&
+      problem.fixtures.length === 3 &&
+      new Set(problem.fixtures.map(({ category }) => category)).size === 3,
+    `${label}: fixtures must cover representative, boundary, and failure`,
+  );
+  for (const fixture of problem.fixtures) {
+    requireValue(
+      fixture?.id &&
+        fixture?.label &&
+        fixture?.input &&
+        fixture?.expectedOutput &&
+        fixture?.explanation &&
+        fixture.arguments &&
+        Object.hasOwn(fixture, 'expected'),
+      `${label}: fixture ${fixture?.id ?? 'unknown'} is incomplete`,
+    );
+  }
+  requireValue(problem.practice, `${label}: canonical DSA problem must be practice-ready`);
+  requireValue(
+    problem.reviewEvidence === undefined &&
+      problem.evidence === undefined &&
+      problem.reviewedPayloadVersion === undefined,
+    `${label}: private review evidence must not enter learner content`,
   );
 }
 
@@ -301,6 +416,16 @@ try {
 }
 
 const contentFiles = await filesWithExtension(contentRoot, '.json');
+const canonicalDsaProblems = await readCanonicalDsaProblems(contentRoot);
+canonicalDsaProblemCount = canonicalDsaProblems.size;
+const canonicalAliases = new Set();
+for (const [id, problem] of canonicalDsaProblems) {
+  validateCanonicalDsaProblem(problem, `learn/dsa-problems/${id}.json`);
+  for (const alias of problem.aliases) {
+    requireValue(!canonicalAliases.has(alias), `Duplicate canonical DSA alias ${alias}`);
+    canonicalAliases.add(alias);
+  }
+}
 
 for (const file of contentFiles) {
   const label = relative(contentRoot, file);
@@ -312,6 +437,7 @@ for (const file of contentFiles) {
   if (
     label.includes('/modules/') ||
     label.includes('/traces/') ||
+    label.startsWith('learn/dsa-problems/') ||
     basename(file) === 'catalog.json'
   ) {
     continue;
@@ -354,6 +480,13 @@ for (const file of contentFiles) {
     requireValue(
       Array.isArray(questions) && (questions.length > 0 || module.reviewStatus === 'planned'),
       `${moduleLabel}: no questions unless the module is planned`,
+    );
+    questions = questions.map((question) =>
+      materializeCanonicalReferences(
+        question,
+        canonicalDsaProblems,
+        `${moduleLabel}: ${question.id}`,
+      ),
     );
     if (!isPracticeModule(module) && questions.some(isInterviewQuestion)) {
       modulesWithInterviewQuestions.add(module.id);
@@ -531,10 +664,12 @@ for (const file of contentFiles) {
       }
       if (question.schemaVersion !== undefined) {
         requireValue(
-          ['pattern-lesson/v1', 'foundation-lesson/v1'].includes(question.schemaVersion),
+          ['pattern-lesson/v1', 'pattern-lesson/v2', 'foundation-lesson/v1'].includes(
+            question.schemaVersion,
+          ),
           `${moduleLabel}: ${question.id} uses unsupported schemaVersion ${question.schemaVersion}`,
         );
-        if (question.schemaVersion === 'pattern-lesson/v1') {
+        if (['pattern-lesson/v1', 'pattern-lesson/v2'].includes(question.schemaVersion)) {
           patternLessons.push({ lesson: question, moduleLabel });
         } else {
           foundationLessons.push({ lesson: question, moduleLabel });
@@ -576,20 +711,83 @@ for (const question of questionsById.values()) {
     `${question.id} duplicates material owned by its canonical problem`,
   );
   const reference = question.canonicalProblemRef;
-  const lessonEntry = questionsById.get(reference.lessonId);
+  if (reference.lessonId) {
+    const lessonEntry = questionsById.get(reference.lessonId);
+    requireValue(
+      lessonEntry?.schemaVersion === 'pattern-lesson/v1',
+      `${question.id} references unknown pattern lesson ${reference.lessonId}`,
+    );
+    const problem = lessonEntry.essentialProblems?.find(({ id }) => id === reference.problemId);
+    requireValue(
+      problem?.practice,
+      `${question.id} references incomplete problem ${reference.problemId}`,
+    );
+    requireValue(
+      problem.practiceQuestionId === question.id,
+      `${question.id} and ${reference.problemId} do not link to each other`,
+    );
+    continue;
+  }
+  const problem = canonicalDsaProblems.get(reference.problemId);
   requireValue(
-    lessonEntry?.schemaVersion === 'pattern-lesson/v1',
-    `${question.id} references unknown pattern lesson ${reference.lessonId}`,
+    problem,
+    `${question.id} references unknown canonical problem ${reference.problemId}`,
   );
-  const problem = lessonEntry.essentialProblems?.find(({ id }) => id === reference.problemId);
   requireValue(
-    problem?.practice,
-    `${question.id} references incomplete problem ${reference.problemId}`,
-  );
-  requireValue(
-    problem.practiceQuestionId === question.id,
+    primaryPracticePlacement(problem)?.questionId === question.id,
     `${question.id} and ${reference.problemId} do not link to each other`,
   );
+}
+
+for (const [id, problem] of canonicalDsaProblems) {
+  for (const placement of problem.placements) {
+    if (placement.role === 'essential') {
+      const lesson = questionsById.get(placement.lessonId);
+      requireValue(
+        lesson?.schemaVersion === 'pattern-lesson/v2' &&
+          lesson.essentialProblemRefs?.some(({ problemId }) => problemId === id),
+        `${id} has an unresolved essential placement ${placement.lessonId}`,
+      );
+    }
+    if (placement.role === 'practice') {
+      const route = questionsById.get(placement.questionId);
+      requireValue(
+        route?.moduleId === placement.moduleId && route?.canonicalProblemRef?.problemId === id,
+        `${id} has an unresolved practice placement ${placement.questionId}`,
+      );
+    }
+  }
+  const essentialPlacement = problem.placements.find((placement) => placement.role === 'essential');
+  requireValue(
+    essentialPlacement?.path === problem.navigation.lesson.path &&
+      essentialPlacement?.courseId === problem.navigation.lesson.courseId &&
+      essentialPlacement?.lessonId === problem.navigation.lesson.questionId,
+    `${id} navigation lesson does not match its essential placement`,
+  );
+  for (const [direction, reciprocal] of [
+    ['previous', 'next'],
+    ['next', 'previous'],
+  ]) {
+    const link = problem.navigation[direction];
+    if (!link) continue;
+    const target = canonicalDsaProblems.get(link.problemId);
+    const targetPlacement = target && primaryPracticePlacement(target);
+    requireValue(target, `${id} navigation references unknown problem ${link.problemId}`);
+    requireValue(
+      target.title === link.title,
+      `${id} navigation title is stale for ${link.problemId}`,
+    );
+    requireValue(
+      targetPlacement?.path === link.path &&
+        targetPlacement?.courseId === link.courseId &&
+        targetPlacement?.questionId === link.questionId,
+      `${id} navigation route is stale for ${link.problemId}`,
+    );
+    requireValue(
+      target.navigation?.[reciprocal]?.problemId === id,
+      `${id} and ${link.problemId} navigation links are not reciprocal`,
+    );
+  }
 }
 
 for (const visualFile of await filesWithExtension(contentRoot, '.html')) {
@@ -1144,6 +1342,19 @@ for (const { lesson, moduleLabel } of patternLessons) {
         [...sourceAnchorCounts.values()].some((count) => count > 1),
         `${problemLabel} trace must demonstrate repeated source control flow`,
       );
+      if (problem.schemaVersion === 'dsa-problem/v2') {
+        const terminalEvent = trace.events.at(-1);
+        requireValue(
+          Object.hasOwn(terminalEvent, 'result'),
+          `${problemLabel} canonical trace ${trace.id} must end with a result`,
+        );
+        requireValue(
+          terminalEvent.rows.some((row) =>
+            row.cells.some((cell) => cell.states?.includes('resolved')),
+          ),
+          `${problemLabel} canonical trace ${trace.id} must mark its resolved state`,
+        );
+      }
     }
     if (problem.practice !== undefined) {
       const practice = problem.practice;
@@ -1316,5 +1527,5 @@ for (const { lesson, moduleLabel } of patternLessons) {
 }
 
 console.log(
-  `Validated ${courseCount} course manifest(s), ${questionCount} question(s), ${patternLessons.length} versioned pattern lesson(s), ${foundationLessons.length} foundation lesson(s), ${traceProblemCount} trace problem(s), and ${deliveryPlanCount} delivery plan(s).`,
+  `Validated ${courseCount} course manifest(s), ${questionCount} question(s), ${canonicalDsaProblemCount} canonical DSA problem(s), ${patternLessons.length} versioned pattern lesson(s), ${foundationLessons.length} foundation lesson(s), ${traceProblemCount} trace problem(s), and ${deliveryPlanCount} delivery plan(s).`,
 );

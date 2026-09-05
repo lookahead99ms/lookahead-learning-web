@@ -134,6 +134,29 @@ test('guided and practice-ready titles overlap without inflating the total', () 
   assert.equal(result.summary.executableSolutionsVerifiedByThisAudit, 0);
 });
 
+test('canonical ids, not matching titles, own migrated problem identity', () => {
+  const data = course();
+  const first = {
+    ...guided(),
+    id: 'canonical-first',
+    schemaVersion: 'dsa-problem/v2',
+    practice: {},
+    placements: [],
+  };
+  const second = { ...first, id: 'canonical-second' };
+  data.questions[0].schemaVersion = 'pattern-lesson/v2';
+  data.questions[0].essentialProblems = [first, second];
+  const result = auditDsa([data]);
+  assert.equal(result.summary.normalizedTitles, 3);
+  assert.deepEqual(
+    result.problems
+      .flatMap(({ appearances }) => appearances.map(({ canonicalId }) => canonicalId))
+      .filter(Boolean)
+      .sort(),
+    ['canonical-first', 'canonical-second'],
+  );
+});
+
 test('a structurally incomplete complete-labelled problem is reported honestly', () => {
   const data = course();
   data.questions[1].solutions = [];

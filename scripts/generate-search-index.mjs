@@ -11,7 +11,9 @@ async function readJson(path) {
 function isTheoryArticle(item) {
   return (
     item?.contentType === 'theory' &&
-    (['pattern-lesson/v1', 'foundation-lesson/v1'].includes(item.schemaVersion) ||
+    (['pattern-lesson/v1', 'pattern-lesson/v2', 'foundation-lesson/v1'].includes(
+      item.schemaVersion,
+    ) ||
       (Array.isArray(item.sections) && item.sections.length > 0))
   );
 }

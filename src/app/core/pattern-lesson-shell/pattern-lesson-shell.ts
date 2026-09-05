@@ -2,7 +2,7 @@ import { Component, computed, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import {
   InterviewQuestion,
-  PatternLessonV1,
+  PatternLesson,
   ResolvedPatternCheck,
 } from '../../content/content.models';
 import { InteractiveTheoryVisual } from '../interactive-theory-visual/interactive-theory-visual';
@@ -1015,7 +1015,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
   ],
 })
 export class PatternLessonShell {
-  readonly lesson = input.required<PatternLessonV1>();
+  readonly lesson = input.required<PatternLesson>();
   readonly checks = input.required<ResolvedPatternCheck[]>();
   readonly practiceItems = input.required<InterviewQuestion[]>();
   readonly pathId = input.required<string>();
@@ -1028,7 +1028,7 @@ export class PatternLessonShell {
       this.lesson().workedExamples[this.workedExampleIndex()] ?? this.lesson().workedExamples[0],
   );
   protected readonly essentialProblems = computed(() => {
-    const problems = this.lesson().essentialProblems;
+    const problems = this.lesson().essentialProblems ?? [];
     const reviewOrder = this.lesson().essentialProblemReviewOrder;
     if (!reviewOrder?.length) return problems;
 

@@ -8,15 +8,17 @@ import {
   CourseContent,
   CourseModule,
   CourseSection,
+  DsaProblemNavigation,
+  DsaProblemNavigationLink,
   FoundationLessonV1,
   InterviewQuestion,
-  PatternLessonV1,
+  PatternLesson,
   PatternProblemV1,
   ResolvedPatternCheck,
   TheorySection,
   TheoryVisual,
   isFoundationLessonV1,
-  isPatternLessonV1,
+  isPatternLesson,
   reviewStatusLabel,
 } from '../../content/content.models';
 import { ContentService } from '../../content/content.service';
@@ -671,22 +673,36 @@ export class Question implements OnInit {
   }
 
   protected canonicalProblem(item: InterviewQuestion): PatternProblemV1 | null {
+    if (item.canonicalProblem) return item.canonicalProblem;
     const reference = item.canonicalProblemRef;
     if (!reference) return null;
     const lesson = this.course()?.questions.find(({ id }) => id === reference.lessonId);
-    if (!lesson || !isPatternLessonV1(lesson)) return null;
-    return lesson.essentialProblems.find(({ id }) => id === reference.problemId) ?? null;
+    if (!lesson || !isPatternLesson(lesson)) return null;
+    return lesson.essentialProblems?.find(({ id }) => id === reference.problemId) ?? null;
+  }
+
+  protected canonicalNavigation(item: InterviewQuestion): DsaProblemNavigation | null {
+    return (
+      (this.canonicalProblem(item) as { navigation?: DsaProblemNavigation } | null)?.navigation ??
+      null
+    );
+  }
+
+  protected canonicalProblemRoute(link: DsaProblemNavigationLink): string[] {
+    return ['/', link.path, link.courseId, link.questionId];
   }
 
   protected handsOnPatternId(item: InterviewQuestion): string {
+    const canonicalPatternId = this.canonicalNavigation(item)?.handsOnPatternId;
+    if (canonicalPatternId) return canonicalPatternId;
     const unit = flattenLearningUnits(this.course()?.learningUnits ?? []).find(
       (candidate) => candidate.practiceModuleId === item.moduleId,
     );
     return unit ? `${this.courseId()}:${unit.id}` : '';
   }
 
-  protected patternLesson(item: InterviewQuestion): PatternLessonV1 | null {
-    return isPatternLessonV1(item) ? item : null;
+  protected patternLesson(item: InterviewQuestion): PatternLesson | null {
+    return isPatternLesson(item) ? item : null;
   }
 
   protected foundationLesson(item: InterviewQuestion): FoundationLessonV1 | null {
@@ -696,11 +712,11 @@ export class Question implements OnInit {
   protected hasTheoryExperience(item: InterviewQuestion): boolean {
     return (
       item.contentType === 'theory' &&
-      (isPatternLessonV1(item) || isFoundationLessonV1(item) || Boolean(item.sections?.length))
+      (isPatternLesson(item) || isFoundationLessonV1(item) || Boolean(item.sections?.length))
     );
   }
 
-  protected patternChecks(lesson: PatternLessonV1): ResolvedPatternCheck[] {
+  protected patternChecks(lesson: PatternLesson): ResolvedPatternCheck[] {
     const questionsById = new Map(
       (this.course()?.questions ?? []).map((question) => [question.id, question]),
     );
@@ -720,7 +736,7 @@ export class Question implements OnInit {
     });
   }
 
-  protected patternPractice(lesson: PatternLessonV1): InterviewQuestion[] {
+  protected patternPractice(lesson: PatternLesson): InterviewQuestion[] {
     const questionsById = new Map(
       (this.course()?.questions ?? []).map((question) => [question.id, question]),
     );
@@ -856,7 +872,7 @@ export class Question implements OnInit {
   }
 
   protected patternNavigation(item: InterviewQuestion): { label: string; target: string }[] {
-    if (isPatternLessonV1(item)) {
+    if (isPatternLesson(item)) {
       return [
         { label: 'What', target: 'pattern-what' },
         { label: 'Why', target: 'pattern-why' },
@@ -1164,6 +1180,8 @@ export class Question implements OnInit {
   }
 
   protected parentContextRoute(item: InterviewQuestion): string[] {
+    const lesson = this.canonicalNavigation(item)?.lesson;
+    if (lesson) return ['/', lesson.path, lesson.courseId, lesson.questionId];
     const section = this.courseSection(item);
     if (section) {
       return this.sectionRoute(section.id);
@@ -1180,6 +1198,8 @@ export class Question implements OnInit {
   }
 
   protected parentContextTitle(item: InterviewQuestion): string {
+    const lesson = this.canonicalNavigation(item)?.lesson;
+    if (lesson) return `Review ${lesson.title} concept`;
     return this.courseSection(item)?.title ?? this.moduleTitle();
   }
 

@@ -1,4 +1,15 @@
-import { Component, computed, effect, ElementRef, inject, input, signal } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  ElementRef,
+  inject,
+  input,
+  signal,
+  viewChild,
+} from '@angular/core';
 import {
   CodeSolution,
   PatternProblemFixture,
@@ -15,10 +26,19 @@ import { GuidedAlgorithmTrace } from '../guided-algorithm-trace/guided-algorithm
 })
 export class DsaProblemPilot {
   private readonly host: ElementRef<HTMLElement> = inject(ElementRef);
+  private readonly document = inject(DOCUMENT);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly focusEntry = viewChild<ElementRef<HTMLButtonElement>>('focusEntry');
+  private readonly focusExit = viewChild<ElementRef<HTMLButtonElement>>('focusExit');
+  private readonly focusDialog = viewChild<ElementRef<HTMLElement>>('focusDialog');
+  private focusOrigin: HTMLElement | null = null;
+  private focusScrollY = 0;
+  private previousBodyOverflow = '';
   readonly problem = input.required<PatternProblemV1>();
   readonly entryMode = input<'guided' | 'practice'>('practice');
   readonly showProblemHeading = input(true);
   protected readonly mode = signal<'guided' | 'practice'>('practice');
+  protected readonly focusMode = signal(false);
   protected readonly fixtureIndex = signal(0);
   protected readonly practice = computed(() => this.problem().practice!);
   protected readonly activeFixture = computed(
@@ -51,6 +71,7 @@ export class DsaProblemPilot {
       this.mode.set(this.entryMode());
       this.fixtureIndex.set(0);
     });
+    this.destroyRef.onDestroy(() => this.releaseFocusMode(false));
   }
 
   protected chooseFixture(fixture: PatternProblemFixture): void {
@@ -59,8 +80,55 @@ export class DsaProblemPilot {
   }
 
   protected selectMode(mode: 'guided' | 'practice'): void {
+    if (mode !== 'guided') this.releaseFocusMode(false);
     this.mode.set(mode);
     this.revealModeContent(mode);
+  }
+
+  protected enterFocusMode(event: Event): void {
+    if (this.focusMode()) return;
+    this.focusOrigin =
+      (event.currentTarget as HTMLElement | null) ?? this.focusEntry()?.nativeElement ?? null;
+    this.focusScrollY = window.scrollY;
+    this.previousBodyOverflow = this.document.body.style.overflow;
+    this.document.body.style.overflow = 'hidden';
+    this.focusMode.set(true);
+    queueMicrotask(() => this.focusExit()?.nativeElement.focus());
+    window.requestAnimationFrame(() => this.focusExit()?.nativeElement.focus());
+  }
+
+  protected exitFocusMode(): void {
+    this.releaseFocusMode(true);
+  }
+
+  protected handleFocusKeydown(event: KeyboardEvent): void {
+    if (!this.focusMode()) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      event.stopPropagation();
+      this.exitFocusMode();
+      return;
+    }
+    if (event.key !== 'Tab') return;
+
+    const dialog = this.focusDialog()?.nativeElement;
+    if (!dialog) return;
+    const focusable = [
+      ...dialog.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), select:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])',
+      ),
+    ].filter((element) => !element.hasAttribute('hidden'));
+    if (focusable.length === 0) return;
+
+    const first = focusable[0];
+    const last = focusable.at(-1)!;
+    if (event.shiftKey && this.document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && this.document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
   }
 
   protected handleModeKeydown(event: KeyboardEvent): void {
@@ -81,12 +149,22 @@ export class DsaProblemPilot {
     tab?.focus();
   }
 
+  protected modeTabId(mode: 'guided' | 'practice'): string {
+    return `${this.problem().id}-${mode}-tab`;
+  }
+
+  protected modePaneId(mode: 'guided' | 'practice'): string {
+    return `${this.problem().id}-${mode}-pane`;
+  }
+
+  protected focusDialogTitleId(): string {
+    return `${this.problem().id}-focused-debugger-title`;
+  }
+
   private revealModeContent(mode: 'guided' | 'practice'): void {
     window.requestAnimationFrame(() => {
       const tablist = this.host.nativeElement.querySelector<HTMLElement>('.mode-tabs');
-      const panel = this.host.nativeElement.querySelector<HTMLElement>(
-        mode === 'practice' ? '#two-sum-practice-pane' : '#two-sum-guided-pane',
-      );
+      const panel = this.host.nativeElement.querySelector<HTMLElement>(`#${this.modePaneId(mode)}`);
       if (!tablist || !panel) return;
 
       const reaction = panel.querySelector<HTMLElement>('.mode-reaction') ?? panel;
@@ -105,5 +183,17 @@ export class DsaProblemPilot {
         block: 'start',
       });
     });
+  }
+
+  private releaseFocusMode(restorePosition: boolean): void {
+    if (!this.focusMode()) return;
+    const focusOrigin = this.focusOrigin;
+    this.focusMode.set(false);
+    this.document.body.style.overflow = this.previousBodyOverflow;
+    if (!restorePosition) return;
+
+    window.scrollTo({ top: this.focusScrollY, left: window.scrollX, behavior: 'auto' });
+    focusOrigin?.focus();
+    window.requestAnimationFrame(() => focusOrigin?.focus());
   }
 }

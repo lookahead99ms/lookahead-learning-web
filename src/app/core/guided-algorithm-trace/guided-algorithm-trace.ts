@@ -25,6 +25,7 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
   template: `
     <section
       class="guided-trace"
+      [class.focus-mode]="focusMode()"
       role="region"
       tabindex="0"
       [attr.data-language]="language()"
@@ -130,256 +131,348 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
           ><code>@for (line of source().lines; track line.id; let lineNumber = $index) {<span class="source-line" [class.active]="line.id === activeAnchor()" [class.executed]="isExecuted(line.id)" [class.unreachable]="isUnreachable(lineNumber)" [attr.aria-current]="line.id === activeAnchor() ? 'step' : null" [attr.aria-label]="sourceLineLabel(line.id, lineNumber, line.text)"><span class="line-gutter"><i class="current-line-arrow" aria-hidden="true">›</i><b aria-hidden="true">{{ lineNumber + 1 }}</b></span><span class="line-code">{{ line.text || ' ' }}</span></span>}</code></pre>
         </section>
 
-        <aside class="debugger-shell" aria-label="Guided debugger">
-          <section class="debugger-summary" aria-label="Pinned current state">
-            <header>
-              <span>Current state</span>
-              <strong [class.returned]="isComplete() && event().result">
-                {{ isComplete() && event().result ? 'Returned' : 'Live' }}
-              </strong>
-            </header>
-            <dl>
-              @for (variable of summaryVariables(); track variable.name) {
-                <div [class.changed]="variable.changed">
-                  <dt>{{ variable.name }}</dt>
-                  <dd>{{ variable.value }}</dd>
-                </div>
-              }
-              <div class="summary-output" [class.changed]="!!event().result">
-                <dt>output</dt>
-                <dd>{{ event().result ?? 'Pending' }}</dd>
-              </div>
-            </dl>
-          </section>
+        @if (focusMode()) {
+          <aside class="focus-explanation" aria-label="Current step explanation">
+            <div class="focus-step-title">
+              <span>Current step</span>
+              <strong>{{ event().phase }} · {{ event().label }}</strong>
+            </div>
+            <section>
+              <span>What happened</span>
+              <p>{{ event().what }}</p>
+            </section>
+            <section>
+              <span>Why</span>
+              <p>{{ event().why }}</p>
+            </section>
+          </aside>
 
-          <div class="debugger-view-tabs" role="tablist" aria-label="Debugger views">
-            <button
-              type="button"
-              role="tab"
-              [attr.aria-selected]="activeView() === 'debugger'"
-              [attr.tabindex]="activeView() === 'debugger' ? 0 : -1"
-              aria-controls="debugger-view-panel"
-              (click)="selectView('debugger', $event)"
-              (keydown)="moveViewTab($event, 0)"
-            >
-              Debugger
-            </button>
-            <button
-              type="button"
-              role="tab"
-              [attr.aria-selected]="activeView() === 'why'"
-              [attr.tabindex]="activeView() === 'why' ? 0 : -1"
-              aria-controls="debugger-view-panel"
-              (click)="selectView('why', $event)"
-              (keydown)="moveViewTab($event, 1)"
-            >
-              Why
-            </button>
-            <button
-              type="button"
-              role="tab"
-              [attr.aria-selected]="activeView() === 'predict'"
-              [attr.tabindex]="activeView() === 'predict' ? 0 : -1"
-              aria-controls="debugger-view-panel"
-              [disabled]="isComplete()"
-              (click)="selectView('predict', $event)"
-              (keydown)="moveViewTab($event, 2)"
-            >
-              Predict
-            </button>
-            <button
-              type="button"
-              role="tab"
-              [attr.aria-selected]="activeView() === 'complexity'"
-              [attr.tabindex]="activeView() === 'complexity' ? 0 : -1"
-              aria-controls="debugger-view-panel"
-              (click)="selectView('complexity', $event)"
-              (keydown)="moveViewTab($event, 3)"
-            >
-              Complexity
-            </button>
-          </div>
+          <section class="focus-state-dock" aria-label="Persistent execution state">
+            <section class="focus-dock-card focus-variables" aria-label="Variables">
+              <h3>Variables</h3>
+              <dl>
+                @for (variable of focusVariables(); track variable.name) {
+                  <div [class.changed]="variable.changed">
+                    <dt>
+                      {{ variable.name }}
+                      @if (variable.changed) {
+                        <em>changed</em>
+                      }
+                    </dt>
+                    <dd>{{ variable.value }}</dd>
+                  </div>
+                }
+              </dl>
+            </section>
 
-          <div class="debugger-detail-shell">
             <section
-              #debuggerPanel
-              id="debugger-view-panel"
-              class="debugger-panel"
-              [class.overflowing]="debuggerOverflow()"
-              role="tabpanel"
-              [attr.aria-label]="activeViewLabel()"
-              tabindex="0"
-              (scroll)="updateDebuggerOverflow($event)"
-              (window:resize)="measureDebuggerOverflow()"
+              class="focus-dock-card focus-collection"
+              [class.changed]="focusCollectionVariable()?.changed"
+              [attr.aria-label]="focusCollectionLabel()"
             >
-              @if (activeView() === 'debugger') {
-                <section class="variable-inspector" aria-label="Current variables">
-                  <h3>Variables</h3>
-                  <dl class="variables">
-                    @for (variable of visibleVariables(); track variable.name) {
-                      <div [class.changed]="variable.changed">
-                        <dt>
-                          {{ variable.name }} <small>{{ variable.type }}</small>
-                          @if (variable.changed) {
-                            <em>changed</em>
-                          }
-                        </dt>
-                        <dd>{{ variable.value }}</dd>
-                      </div>
-                    }
-                  </dl>
-                </section>
-
-                <section class="state-view" aria-label="Complete data state">
-                  <h3>Data state</h3>
-                  @for (row of event().rows; track row.id) {
-                    <div class="state-row">
-                      <strong>{{ row.label }}</strong>
-                      <div class="state-cells" role="list" [attr.aria-label]="row.label">
-                        @for (cell of row.cells; track $index) {
-                          <span
-                            role="listitem"
-                            [class]="cellClasses(cell)"
-                            [attr.aria-label]="cellLabel(cell, $index)"
-                            ><b>{{ cell.value }}</b>
-                            @if (cell.note) {
-                              <small>{{ cell.note }}</small>
-                            }
-                          </span>
-                        }
-                      </div>
-                    </div>
-                  }
-                </section>
-
-                <section class="debugger-output" aria-label="Execution result">
-                  <span>Returned output</span>
-                  <strong>{{ event().result ?? 'Pending' }}</strong>
-                </section>
-                <p class="debugger-invariant">
-                  <strong>Invariant:</strong> {{ activeTrace().invariant }}
-                </p>
-                <div class="terminal" role="region" aria-label="Terminal output">
-                  <span>Terminal</span>
-                  <p>{{ terminalMessage() }}</p>
-                </div>
-              } @else if (activeView() === 'why') {
-                <article class="learning-view why-view">
-                  <span>Why this line exists</span>
-                  <h3>{{ event().label }}</h3>
-                  <p>{{ event().what }}</p>
-                  <p class="learning-detail">{{ event().why }}</p>
-                </article>
-              } @else if (activeView() === 'predict') {
-                <section class="learning-view predict-view" aria-label="Predict the next step">
-                  <span>Predict before Next</span>
-                  <h3>{{ predictionPrompt() }}</h3>
-                  <div class="prediction-options">
-                    @for (option of predictionOptions(); track option.id) {
-                      <label [class.selected]="selectedPrediction() === option.id">
-                        <input
-                          type="radio"
-                          name="guided-next-prediction"
-                          [value]="option.id"
-                          [checked]="selectedPrediction() === option.id"
-                          (change)="selectPrediction(option.id)"
-                        />
-                        <span>{{ option.label }}</span>
-                      </label>
-                    }
-                  </div>
-                  <button
-                    type="button"
-                    class="learning-action"
-                    [disabled]="!selectedPrediction()"
-                    (click)="submitPrediction()"
-                  >
-                    Check prediction
-                  </button>
-                  @if (predictionSubmitted()) {
-                    <p class="prediction-feedback" aria-live="polite" aria-atomic="true">
-                      <strong>{{ predictionIsCorrect() ? 'Correct.' : 'Not quite.' }}</strong>
-                      {{ predictionFeedback() }}
-                    </p>
-                  }
-                </section>
-              } @else {
-                <section class="learning-view complexity-view" aria-label="Predict complexity">
-                  <span>Predict complexity</span>
-                  <h3>Choose the implementation's time and space bounds.</h3>
-                  <div class="complexity-questions">
-                    <fieldset>
-                      <legend>Time complexity</legend>
-                      @for (option of timeComplexityOptions(); track option) {
-                        <label>
-                          <input
-                            type="radio"
-                            name="guided-complexity-time"
-                            [value]="option"
-                            [checked]="selectedTimeComplexity() === option"
-                            (change)="selectComplexity('time', option)"
-                          />
-                          <span>{{ option }}</span>
-                        </label>
-                      }
-                    </fieldset>
-                    <fieldset>
-                      <legend>Space complexity</legend>
-                      @for (option of spaceComplexityOptions(); track option) {
-                        <label>
-                          <input
-                            type="radio"
-                            name="guided-complexity-space"
-                            [value]="option"
-                            [checked]="selectedSpaceComplexity() === option"
-                            (change)="selectComplexity('space', option)"
-                          />
-                          <span>{{ option }}</span>
-                        </label>
-                      }
-                    </fieldset>
-                  </div>
-                  <div class="complexity-actions">
-                    <button
-                      type="button"
-                      class="primary"
-                      [disabled]="!selectedTimeComplexity() || !selectedSpaceComplexity()"
-                      (click)="submitComplexity()"
-                    >
-                      Submit answer
-                    </button>
-                    <button type="button" (click)="revealComplexity()">Reveal answer</button>
-                  </div>
-                  @if (complexityRevealed()) {
-                    <section class="complexity-feedback" aria-live="polite" aria-atomic="true">
-                      <strong>{{ complexityFeedbackHeading() }}</strong>
-                      <p>
-                        <b>Time:</b> {{ problem().complexity.time }} · <b>Space:</b>
-                        {{ problem().complexity.space }}
-                      </p>
-                      <p>{{ problem().complexity.why }}</p>
-                      @if (problem().complexity.caveat; as caveat) {
-                        <p class="complexity-caveat">{{ caveat }}</p>
-                      }
-                    </section>
-                  }
-                </section>
+              <h3>{{ focusCollectionLabel() }}</h3>
+              <strong>{{ focusCollectionValue() }}</strong>
+              @if (focusCollectionVariable()?.changed) {
+                <small>changed this step</small>
               }
             </section>
-            @if (debuggerOverflow() && !debuggerAtBottom()) {
-              <div class="debugger-more">
-                <button
-                  type="button"
-                  [attr.aria-label]="'Show more ' + activeViewLabel().toLowerCase()"
-                  aria-controls="debugger-view-panel"
-                  (click)="showMoreDebuggerState()"
-                >
-                  <span aria-hidden="true">⌄</span>
-                </button>
+
+            <section class="focus-dock-card focus-array" aria-label="Array state">
+              <h3>Array</h3>
+              @for (row of event().rows; track row.id) {
+                <div class="state-cells" role="list" [attr.aria-label]="row.label">
+                  @for (cell of row.cells; track $index) {
+                    <span
+                      role="listitem"
+                      [class]="cellClasses(cell)"
+                      [attr.aria-label]="cellLabel(cell, $index)"
+                    >
+                      <b>{{ cell.value }}</b>
+                      <small>index {{ $index }}</small>
+                      @if (cell.states?.length) {
+                        <em>{{ cell.states?.join(' · ') }}</em>
+                      }
+                    </span>
+                  }
+                </div>
+              }
+            </section>
+
+            <section
+              class="focus-dock-card focus-observation"
+              [class.changed]="focusObservationVariable()?.changed"
+              [attr.aria-label]="focusObservationLabel()"
+            >
+              <h3>{{ focusObservationLabel() }}</h3>
+              <strong>{{ focusObservationValue() }}</strong>
+              @if (focusObservationVariable()?.changed) {
+                <small>changed this step</small>
+              }
+            </section>
+
+            <section class="focus-dock-card focus-output" aria-label="Output and terminal">
+              <div>
+                <h3>Output</h3>
+                <strong>{{ event().result ?? 'Pending' }}</strong>
               </div>
-            }
-          </div>
-        </aside>
+              <div class="focus-terminal">
+                <span>Terminal</span>
+                <p>{{ terminalMessage() }}</p>
+              </div>
+            </section>
+          </section>
+        } @else {
+          <aside class="debugger-shell" aria-label="Guided debugger">
+            <section class="debugger-summary" aria-label="Pinned current state">
+              <header>
+                <span>Current state</span>
+                <strong [class.returned]="isComplete() && event().result">
+                  {{ isComplete() && event().result ? 'Returned' : 'Live' }}
+                </strong>
+              </header>
+              <dl>
+                @for (variable of summaryVariables(); track variable.name) {
+                  <div [class.changed]="variable.changed">
+                    <dt>{{ variable.name }}</dt>
+                    <dd>{{ variable.value }}</dd>
+                  </div>
+                }
+                <div class="summary-output" [class.changed]="!!event().result">
+                  <dt>output</dt>
+                  <dd>{{ event().result ?? 'Pending' }}</dd>
+                </div>
+              </dl>
+            </section>
+
+            <div class="debugger-view-tabs" role="tablist" aria-label="Debugger views">
+              <button
+                type="button"
+                role="tab"
+                [attr.aria-selected]="activeView() === 'debugger'"
+                [attr.tabindex]="activeView() === 'debugger' ? 0 : -1"
+                aria-controls="debugger-view-panel"
+                (click)="selectView('debugger', $event)"
+                (keydown)="moveViewTab($event, 0)"
+              >
+                Debugger
+              </button>
+              <button
+                type="button"
+                role="tab"
+                [attr.aria-selected]="activeView() === 'why'"
+                [attr.tabindex]="activeView() === 'why' ? 0 : -1"
+                aria-controls="debugger-view-panel"
+                (click)="selectView('why', $event)"
+                (keydown)="moveViewTab($event, 1)"
+              >
+                Why
+              </button>
+              <button
+                type="button"
+                role="tab"
+                [attr.aria-selected]="activeView() === 'predict'"
+                [attr.tabindex]="activeView() === 'predict' ? 0 : -1"
+                aria-controls="debugger-view-panel"
+                [disabled]="isComplete()"
+                (click)="selectView('predict', $event)"
+                (keydown)="moveViewTab($event, 2)"
+              >
+                Predict
+              </button>
+              <button
+                type="button"
+                role="tab"
+                [attr.aria-selected]="activeView() === 'complexity'"
+                [attr.tabindex]="activeView() === 'complexity' ? 0 : -1"
+                aria-controls="debugger-view-panel"
+                (click)="selectView('complexity', $event)"
+                (keydown)="moveViewTab($event, 3)"
+              >
+                Complexity
+              </button>
+            </div>
+
+            <div class="debugger-detail-shell">
+              <section
+                #debuggerPanel
+                id="debugger-view-panel"
+                class="debugger-panel"
+                [class.overflowing]="debuggerOverflow()"
+                role="tabpanel"
+                [attr.aria-label]="activeViewLabel()"
+                tabindex="0"
+                (scroll)="updateDebuggerOverflow($event)"
+                (window:resize)="measureDebuggerOverflow()"
+              >
+                @if (activeView() === 'debugger') {
+                  <section class="variable-inspector" aria-label="Current variables">
+                    <h3>Variables</h3>
+                    <dl class="variables">
+                      @for (variable of visibleVariables(); track variable.name) {
+                        <div [class.changed]="variable.changed">
+                          <dt>
+                            {{ variable.name }} <small>{{ variable.type }}</small>
+                            @if (variable.changed) {
+                              <em>changed</em>
+                            }
+                          </dt>
+                          <dd>{{ variable.value }}</dd>
+                        </div>
+                      }
+                    </dl>
+                  </section>
+
+                  <section class="state-view" aria-label="Complete data state">
+                    <h3>Data state</h3>
+                    @for (row of event().rows; track row.id) {
+                      <div class="state-row">
+                        <strong>{{ row.label }}</strong>
+                        <div class="state-cells" role="list" [attr.aria-label]="row.label">
+                          @for (cell of row.cells; track $index) {
+                            <span
+                              role="listitem"
+                              [class]="cellClasses(cell)"
+                              [attr.aria-label]="cellLabel(cell, $index)"
+                              ><b>{{ cell.value }}</b>
+                              @if (cell.note) {
+                                <small>{{ cell.note }}</small>
+                              }
+                            </span>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </section>
+
+                  <section class="debugger-output" aria-label="Execution result">
+                    <span>Returned output</span>
+                    <strong>{{ event().result ?? 'Pending' }}</strong>
+                  </section>
+                  <p class="debugger-invariant">
+                    <strong>Invariant:</strong> {{ activeTrace().invariant }}
+                  </p>
+                  <div class="terminal" role="region" aria-label="Terminal output">
+                    <span>Terminal</span>
+                    <p>{{ terminalMessage() }}</p>
+                  </div>
+                } @else if (activeView() === 'why') {
+                  <article class="learning-view why-view">
+                    <span>Why this line exists</span>
+                    <h3>{{ event().label }}</h3>
+                    <p>{{ event().what }}</p>
+                    <p class="learning-detail">{{ event().why }}</p>
+                  </article>
+                } @else if (activeView() === 'predict') {
+                  <section class="learning-view predict-view" aria-label="Predict the next step">
+                    <span>Predict before Next</span>
+                    <h3>{{ predictionPrompt() }}</h3>
+                    <div class="prediction-options">
+                      @for (option of predictionOptions(); track option.id) {
+                        <label [class.selected]="selectedPrediction() === option.id">
+                          <input
+                            type="radio"
+                            name="guided-next-prediction"
+                            [value]="option.id"
+                            [checked]="selectedPrediction() === option.id"
+                            (change)="selectPrediction(option.id)"
+                          />
+                          <span>{{ option.label }}</span>
+                        </label>
+                      }
+                    </div>
+                    <button
+                      type="button"
+                      class="learning-action"
+                      [disabled]="!selectedPrediction()"
+                      (click)="submitPrediction()"
+                    >
+                      Check prediction
+                    </button>
+                    @if (predictionSubmitted()) {
+                      <p class="prediction-feedback" aria-live="polite" aria-atomic="true">
+                        <strong>{{ predictionIsCorrect() ? 'Correct.' : 'Not quite.' }}</strong>
+                        {{ predictionFeedback() }}
+                      </p>
+                    }
+                  </section>
+                } @else {
+                  <section class="learning-view complexity-view" aria-label="Predict complexity">
+                    <span>Predict complexity</span>
+                    <h3>Choose the implementation's time and space bounds.</h3>
+                    <div class="complexity-questions">
+                      <fieldset>
+                        <legend>Time complexity</legend>
+                        @for (option of timeComplexityOptions(); track option) {
+                          <label>
+                            <input
+                              type="radio"
+                              name="guided-complexity-time"
+                              [value]="option"
+                              [checked]="selectedTimeComplexity() === option"
+                              (change)="selectComplexity('time', option)"
+                            />
+                            <span>{{ option }}</span>
+                          </label>
+                        }
+                      </fieldset>
+                      <fieldset>
+                        <legend>Space complexity</legend>
+                        @for (option of spaceComplexityOptions(); track option) {
+                          <label>
+                            <input
+                              type="radio"
+                              name="guided-complexity-space"
+                              [value]="option"
+                              [checked]="selectedSpaceComplexity() === option"
+                              (change)="selectComplexity('space', option)"
+                            />
+                            <span>{{ option }}</span>
+                          </label>
+                        }
+                      </fieldset>
+                    </div>
+                    <div class="complexity-actions">
+                      <button
+                        type="button"
+                        class="primary"
+                        [disabled]="!selectedTimeComplexity() || !selectedSpaceComplexity()"
+                        (click)="submitComplexity()"
+                      >
+                        Submit answer
+                      </button>
+                      <button type="button" (click)="revealComplexity()">Reveal answer</button>
+                    </div>
+                    @if (complexityRevealed()) {
+                      <section class="complexity-feedback" aria-live="polite" aria-atomic="true">
+                        <strong>{{ complexityFeedbackHeading() }}</strong>
+                        <p>
+                          <b>Time:</b> {{ problem().complexity.time }} · <b>Space:</b>
+                          {{ problem().complexity.space }}
+                        </p>
+                        <p>{{ problem().complexity.why }}</p>
+                        @if (problem().complexity.caveat; as caveat) {
+                          <p class="complexity-caveat">{{ caveat }}</p>
+                        }
+                      </section>
+                    }
+                  </section>
+                }
+              </section>
+              @if (debuggerOverflow() && !debuggerAtBottom()) {
+                <div class="debugger-more">
+                  <button
+                    type="button"
+                    [attr.aria-label]="'Show more ' + activeViewLabel().toLowerCase()"
+                    aria-controls="debugger-view-panel"
+                    (click)="showMoreDebuggerState()"
+                  >
+                    <span aria-hidden="true">⌄</span>
+                  </button>
+                </div>
+              }
+            </div>
+          </aside>
+        }
       </div>
 
       <details class="trace-transcript">
@@ -1325,6 +1418,219 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         grid-template-columns: 1fr;
         gap: 4px;
       }
+      .guided-trace.focus-mode {
+        display: grid;
+        grid-template-rows: auto auto minmax(0, 1fr);
+        height: 100%;
+        border-radius: 12px;
+      }
+      .focus-mode .trace-toolbar {
+        grid-template-columns: minmax(180px, 1.1fr) minmax(190px, auto) auto minmax(190px, 1fr);
+        gap: 10px;
+        padding: 8px 12px;
+      }
+      .focus-mode .toolbar-brand {
+        display: none;
+      }
+      .focus-mode .execution-readout strong {
+        overflow: visible;
+        text-overflow: clip;
+        white-space: normal;
+      }
+      .focus-mode .trace-context {
+        padding: 6px 12px;
+      }
+      .focus-mode .trace-summary-values {
+        grid-template-columns: minmax(0, 1.7fr) minmax(130px, 0.45fr);
+      }
+      .focus-mode .fixture-explanation,
+      .focus-mode .trace-transcript,
+      .focus-mode .boundary-status {
+        display: none;
+      }
+      .focus-mode .ide-workspace {
+        grid-template-areas:
+          'source explanation'
+          'dock dock';
+        grid-template-columns: minmax(0, 7fr) minmax(280px, 3fr);
+        grid-template-rows: minmax(0, 1fr) 144px;
+        min-height: 0;
+        height: auto;
+      }
+      .focus-mode .ide-workspace .source-panel {
+        grid-area: source;
+        min-height: 0;
+      }
+      .focus-explanation {
+        grid-area: explanation;
+        min-width: 0;
+        overflow: auto;
+        color: #e6f4f6;
+        background: #0d2635;
+      }
+      .focus-step-title,
+      .focus-explanation section {
+        padding: 11px 13px;
+        border-bottom: 1px solid #315569;
+      }
+      .focus-step-title span,
+      .focus-explanation section > span,
+      .focus-dock-card h3,
+      .focus-terminal span {
+        display: block;
+        margin: 0;
+        color: #8fd9e3;
+        font-size: 0.64rem;
+        font-weight: 850;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+      }
+      .focus-step-title strong {
+        display: block;
+        margin-top: 4px;
+        color: #fff;
+        font-size: 0.82rem;
+        line-height: 1.4;
+      }
+      .focus-explanation section:last-child {
+        border-bottom: 0;
+        border-left: 4px solid #27c2d0;
+        background: #143445;
+      }
+      .focus-explanation p {
+        margin: 5px 0 0;
+        color: #d8ebee;
+        font-size: 0.76rem;
+        line-height: 1.45;
+      }
+      .focus-state-dock {
+        grid-area: dock;
+        display: grid;
+        grid-template-columns:
+          minmax(155px, 1.1fr) minmax(135px, 0.9fr) minmax(245px, 1.55fr)
+          minmax(125px, 0.8fr) minmax(240px, 1.65fr);
+        min-width: 0;
+        border-top: 1px solid #456c7b;
+        background: #315569;
+      }
+      .focus-dock-card {
+        min-width: 0;
+        padding: 9px 11px;
+        overflow: auto;
+        color: #e6f4f6;
+        background: #102b3a;
+      }
+      .focus-dock-card + .focus-dock-card {
+        border-left: 1px solid #315569;
+      }
+      .focus-dock-card.changed {
+        box-shadow: inset 0 3px #24d2dd;
+      }
+      .focus-dock-card > strong,
+      .focus-output > div > strong {
+        display: block;
+        margin-top: 9px;
+        color: #fff;
+        font:
+          800 0.8rem/1.4 'JetBrains Mono',
+          monospace;
+        overflow-wrap: anywhere;
+      }
+      .focus-dock-card > small {
+        display: block;
+        margin-top: 6px;
+        color: #ffd17a;
+        font-size: 0.62rem;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+      .focus-variables dl {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 5px 9px;
+        margin: 7px 0 0;
+      }
+      .focus-variables dl div {
+        min-width: 0;
+        border-left: 3px solid transparent;
+        padding-left: 6px;
+      }
+      .focus-variables dl div.changed {
+        border-left-color: #24d2dd;
+      }
+      .focus-variables dt {
+        color: #cda5f5;
+        font:
+          700 0.65rem 'JetBrains Mono',
+          monospace;
+      }
+      .focus-variables dt em {
+        display: block;
+        color: #ffd17a;
+        font:
+          800 0.52rem 'Avenir Next',
+          sans-serif;
+        text-transform: uppercase;
+      }
+      .focus-variables dd {
+        margin: 2px 0 0;
+        color: #fff;
+        font:
+          750 0.72rem 'JetBrains Mono',
+          monospace;
+        overflow-wrap: anywhere;
+      }
+      .focus-array .state-cells {
+        margin-top: 9px;
+      }
+      .focus-array .state-cells span {
+        min-width: 50px;
+        min-height: 51px;
+      }
+      .focus-array .state-cells small {
+        display: block;
+        font-size: 0.52rem;
+      }
+      .focus-array .state-cells em {
+        color: #fff0cf;
+        font-size: 0.48rem;
+        font-style: normal;
+        font-weight: 850;
+        text-transform: uppercase;
+      }
+      .focus-output {
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr);
+        gap: 8px;
+      }
+      .focus-output > div:first-child {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .focus-output > div > strong {
+        margin-top: 0;
+        text-align: right;
+      }
+      .focus-terminal {
+        min-height: 0;
+        padding: 7px 9px;
+        border: 1px solid #315569;
+        border-radius: 6px;
+        background: #081b27;
+      }
+      .focus-terminal p {
+        margin: 4px 0 0;
+        color: #d6e8ec;
+        font:
+          700 0.65rem/1.4 'JetBrains Mono',
+          monospace;
+      }
+      .focus-terminal p::before {
+        content: '> ';
+        color: #71e1ba;
+      }
       @media (max-width: 1060px) {
         .trace-toolbar {
           grid-template-columns: minmax(150px, 0.8fr) minmax(180px, 1fr) auto auto;
@@ -1342,6 +1648,13 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         .execution-readout strong,
         .step-status {
           margin: 0;
+        }
+        .focus-mode .trace-toolbar {
+          grid-template-columns: minmax(170px, 1fr) minmax(185px, auto) auto minmax(180px, 1fr);
+        }
+        .focus-mode .execution-readout {
+          grid-column: auto;
+          display: block;
         }
       }
       @media (max-width: 850px) {
@@ -1368,10 +1681,21 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         .variables {
           grid-template-columns: repeat(3, minmax(0, 1fr));
         }
+        .focus-mode .trace-toolbar {
+          grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        }
+        .focus-mode .execution-readout {
+          grid-column: 1 / -1;
+          display: grid;
+        }
       }
       @media (max-width: 560px) {
         .trace-toolbar {
           position: static;
+          grid-template-columns: 1fr;
+        }
+        .focus-mode .trace-toolbar,
+        .focus-mode .trace-summary-values {
           grid-template-columns: 1fr;
         }
         .execution-readout {
@@ -1411,6 +1735,12 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         }
       }
       @media (max-width: 850px) {
+        .guided-trace.focus-mode {
+          display: block;
+          height: auto;
+          border: 0;
+          border-radius: 0;
+        }
         .ide-workspace {
           display: grid;
           grid-template-areas: none;
@@ -1451,6 +1781,27 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
           margin-top: 4px;
           text-align: left;
         }
+        .focus-mode .ide-workspace {
+          grid-template-areas:
+            'source'
+            'explanation'
+            'dock';
+          grid-template-columns: 1fr;
+          grid-template-rows: auto;
+        }
+        .focus-mode .ide-workspace .source-panel {
+          min-height: 360px;
+        }
+        .focus-explanation,
+        .focus-dock-card {
+          overflow: visible;
+        }
+        .focus-state-dock {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .focus-dock-card + .focus-dock-card {
+          border-top: 1px solid #315569;
+        }
       }
       @media (max-width: 560px) {
         .ide-workspace .source-panel {
@@ -1468,6 +1819,12 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         .debugger-view-tabs button {
           min-height: 44px;
           font-size: 0.68rem;
+        }
+        .focus-state-dock {
+          grid-template-columns: 1fr;
+        }
+        .focus-dock-card + .focus-dock-card {
+          border-left: 0;
         }
       }
       @media (prefers-reduced-motion: reduce) {
@@ -1489,6 +1846,10 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         .debugger-view-tabs,
         .debugger-detail-shell,
         .debugger-panel,
+        .focus-explanation,
+        .focus-state-dock,
+        .focus-dock-card,
+        .focus-terminal,
         .learning-view,
         .debugger-output,
         .terminal,
@@ -1535,7 +1896,9 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
 export class GuidedAlgorithmTrace {
   readonly problem = input.required<PatternProblemV1>();
   readonly selectedFixture = input.required<PatternProblemFixture>();
+  readonly focusMode = input(false);
   readonly fixtureChange = output<PatternProblemFixture>();
+  readonly focusExitRequest = output<void>();
   protected readonly language = signal<PatternLanguage>('java');
   protected readonly stepIndex = signal(0);
   protected readonly announcement = signal('');
@@ -1635,6 +1998,39 @@ export class GuidedAlgorithmTrace {
       return 4;
     };
     return [...available].sort((left, right) => priority(left) - priority(right)).slice(0, 4);
+  });
+  protected readonly focusCollectionVariable = computed(() =>
+    this.visibleVariables().find(({ type }) => /^(map|set)$/i.test(type)),
+  );
+  protected readonly focusObservationVariable = computed(() => {
+    const collection = this.focusCollectionVariable();
+    return this.visibleVariables().find(
+      ({ name, type }) =>
+        name !== collection?.name &&
+        (/^(lookup|frequency)$/i.test(name) || /^(membership|optional index)$/i.test(type)),
+    );
+  });
+  protected readonly focusVariables = computed(() => {
+    const collection = this.focusCollectionVariable();
+    const observation = this.focusObservationVariable();
+    return this.visibleVariables().filter(
+      ({ name, value }) => value !== '—' && name !== collection?.name && name !== observation?.name,
+    );
+  });
+  protected readonly focusCollectionLabel = computed(() =>
+    this.focusVariableLabel(this.focusCollectionVariable(), 'State structure'),
+  );
+  protected readonly focusObservationLabel = computed(() =>
+    this.focusVariableLabel(this.focusObservationVariable(), 'Observation'),
+  );
+  protected readonly focusCollectionValue = computed(() => {
+    const value = this.focusCollectionVariable()?.value;
+    return !value || value === '—' ? 'Not initialized' : value;
+  });
+  protected readonly focusObservationValue = computed(() => {
+    const observation = this.focusObservationVariable();
+    if (!observation || observation.value === '—') return 'Not observed yet';
+    return observation.value;
   });
   protected readonly activeViewLabel = computed(
     () =>
@@ -1826,6 +2222,12 @@ export class GuidedAlgorithmTrace {
   }
 
   protected handleShortcut(event: KeyboardEvent): void {
+    if (event.key === 'Escape' && this.focusMode()) {
+      event.preventDefault();
+      event.stopPropagation();
+      this.focusExitRequest.emit();
+      return;
+    }
     if (event.key === 'Escape' && this.activeView() !== 'debugger') {
       event.preventDefault();
       this.selectView('debugger');
@@ -1978,6 +2380,10 @@ export class GuidedAlgorithmTrace {
     if (/^lookup result$/i.test(name)) return 'lookup';
     if (/^result$/i.test(name)) return 'returned';
     return name;
+  }
+
+  private focusVariableLabel(variable: GuidedTraceVariable | undefined, fallback: string): string {
+    return variable ? `${variable.name} · ${variable.type}` : fallback;
   }
 
   private complexityOptions(correct: string, distractors: string[]): string[] {
