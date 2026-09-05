@@ -44,6 +44,9 @@ jobs:
       - name: Validate synthetic content contracts
         run: npm run validate:content:ci
 
+      - name: Test canonical content contract
+        run: npm run test:content-contract
+
       - name: Run unit tests
         run: npm test -- --watch=false
 

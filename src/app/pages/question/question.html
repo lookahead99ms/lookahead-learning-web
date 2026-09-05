@@ -87,7 +87,9 @@
           [attr.aria-label]="
             item.contentType === 'theory'
               ? 'Adjacent article navigation'
-              : 'Adjacent question navigation'
+              : canonicalNavigation(item)
+                ? 'Adjacent problem navigation'
+                : 'Adjacent question navigation'
           "
         >
           @if (item.contentType === 'theory') {
@@ -106,6 +108,28 @@
                   [routerLink]="['/', pathId(), courseId(), next.id]"
                 >
                   <span>Next article:</span><strong>{{ next.title }} »</strong>
+                </a>
+              }
+            </div>
+          } @else if (canonicalNavigation(item); as navigation) {
+            @if (navigation.previous; as previous) {
+              <a
+                class="inner-navigation-link previous"
+                [routerLink]="canonicalProblemRoute(previous)"
+              >
+                <span>← Previous problem:</span><strong>{{ previous.title }}</strong>
+              </a>
+            }
+            <div class="inner-navigation-actions">
+              <a
+                class="module-catalog-link"
+                routerLink="/learn/hands-on-dsa"
+                [queryParams]="{ pattern: navigation.handsOnPatternId }"
+                >All {{ navigation.lesson.title }} problems</a
+              >
+              @if (navigation.next; as next) {
+                <a class="inner-navigation-link next" [routerLink]="canonicalProblemRoute(next)">
+                  <span>Next problem:</span><strong>{{ next.title }} →</strong>
                 </a>
               }
             </div>

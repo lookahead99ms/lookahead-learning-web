@@ -10,6 +10,7 @@ import {
   buildHandsOnDsaGroups,
   continuationReadiness,
   filterHandsOnDsaGroups,
+  handsOnProblemRoute,
   resolveHandsOnDsaGroup,
   uniqueHandsOnProblemCount,
 } from '../../content/hands-on-dsa';
@@ -472,6 +473,7 @@ export class HandsOnDsa implements OnInit {
     'Catalogued',
   ];
   protected readonly continuationReadiness = continuationReadiness;
+  protected readonly problemRoute = handsOnProblemRoute;
   protected readonly groups = computed(() => {
     const courses = this.courses();
     return courses ? courses.flatMap((course) => buildHandsOnDsaGroups(course)) : [];
@@ -492,15 +494,23 @@ export class HandsOnDsa implements OnInit {
     uniqueHandsOnProblemCount(this.visibleGroups()),
   );
   private readonly randomPracticePool = computed(() => {
-    const candidates = new Map<
-      string,
-      { courseId: string; problem: CourseContent['questions'][number] }
-    >();
+    const candidates = new Map<string, { id: string; route: string[] }>();
 
     for (const group of this.groups()) {
+      for (const problem of group.essentialProblems) {
+        if (problem.practiceQuestionId) {
+          candidates.set(problem.id, {
+            id: problem.id,
+            route: handsOnProblemRoute(problem, group.courseId),
+          });
+        }
+      }
       for (const problem of group.continuationProblems) {
         if (continuationReadiness(problem) === 'Practice-ready') {
-          candidates.set(problem.id, { courseId: group.courseId, problem });
+          candidates.set(problem.canonicalProblem?.id ?? problem.id, {
+            id: problem.canonicalProblem?.id ?? problem.id,
+            route: ['/learn', group.courseId, problem.id],
+          });
         }
       }
     }
@@ -586,15 +596,13 @@ export class HandsOnDsa implements OnInit {
     if (!pool.length) return;
 
     const alternatives =
-      pool.length > 1
-        ? pool.filter(({ problem }) => problem.id !== this.lastSurpriseProblemId())
-        : pool;
+      pool.length > 1 ? pool.filter(({ id }) => id !== this.lastSurpriseProblemId()) : pool;
     const randomValue = new Uint32Array(1);
     window.crypto.getRandomValues(randomValue);
     const candidate = alternatives[randomValue[0] % alternatives.length];
 
-    this.lastSurpriseProblemId.set(candidate.problem.id);
-    void this.router.navigate(['/learn', candidate.courseId, candidate.problem.id], {
+    this.lastSurpriseProblemId.set(candidate.id);
+    void this.router.navigate(candidate.route, {
       queryParams: { mode: 'surprise' },
     });
   }

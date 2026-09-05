@@ -2,6 +2,10 @@ import { createHash } from 'node:crypto';
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, isAbsolute, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {
+  materializeCanonicalReferences,
+  readCanonicalDsaProblems,
+} from './canonical-dsa-contract.mjs';
 
 const repositoryRoot = fileURLToPath(new URL('../', import.meta.url));
 const paths = ['learn', 'grow', 'look-ahead'];
@@ -120,7 +124,7 @@ export function auditDsa(courses) {
         (item) => item.moduleId === unit.theoryModuleId && item.contentType === 'theory',
       );
       if (!lesson) continue;
-      const isPattern = lesson.schemaVersion === 'pattern-lesson/v1';
+      const isPattern = ['pattern-lesson/v1', 'pattern-lesson/v2'].includes(lesson.schemaVersion);
       const essentials = isPattern ? (lesson.essentialProblems ?? []) : [];
       const linkedIds = isPattern ? (lesson.practice ?? []).map((item) => item.questionId) : [];
       const continuation = [
@@ -143,27 +147,44 @@ export function auditDsa(courses) {
       });
       for (const problem of [...essentials, ...continuation]) {
         const guided = essentials.includes(problem);
-        const complete = !guided && problem.practiceProblem?.implementationStatus === 'complete';
+        const canonical = problem.canonicalProblem;
+        const detail = guided ? problem : (canonical ?? problem);
+        const complete =
+          !guided &&
+          (canonical?.practice || problem.practiceProblem?.implementationStatus === 'complete');
+        const canonicalId = detail.schemaVersion === 'dsa-problem/v2' ? detail.id : null;
         appearances.push({
           groupId,
           lessonId: lesson.id,
           id: problem.id,
-          title: problem.title,
-          normalizedTitle: normalizeProblemTitle(problem.title),
-          difficulty: problem.difficulty,
+          canonicalId,
+          title: detail.title,
+          normalizedTitle: normalizeProblemTitle(detail.title),
+          identityKey: canonicalId
+            ? `canonical:${canonicalId}`
+            : normalizeProblemTitle(detail.title),
+          difficulty: detail.difficulty,
           declaredMode: guided ? 'guided' : complete ? 'practice-ready' : 'catalogued',
-          structuralGaps: guided ? guidedGaps(problem) : practiceContractGaps(problem),
-          languages: codeLanguages(guided ? problem.implementations : problem.solutions),
-          fixtures: (guided ? problem.fixtures : problem.practiceProblem?.testCases)?.length ?? 0,
-          traceEvents: problem.trace?.events?.length ?? 0,
+          structuralGaps: canonical
+            ? guidedGaps(detail)
+            : guided
+              ? guidedGaps(problem)
+              : practiceContractGaps(problem),
+          languages: codeLanguages(
+            canonical || guided ? detail.implementations : problem.solutions,
+          ),
+          fixtures:
+            (canonical || guided ? detail.fixtures : problem.practiceProblem?.testCases)?.length ??
+            0,
+          traceEvents: detail.trace?.events?.length ?? 0,
           sourceSets: problem.practiceProblem?.sourceSets ?? [],
         });
       }
     }
   }
-  const titles = [...new Set(appearances.map((item) => item.normalizedTitle))].sort();
+  const titles = [...new Set(appearances.map((item) => item.identityKey))].sort();
   const problems = titles.map((key) => {
-    const matching = appearances.filter((item) => item.normalizedTitle === key);
+    const matching = appearances.filter((item) => item.identityKey === key);
     const guided = matching.some((item) => item.declaredMode === 'guided');
     const practiceReady = matching.some((item) => item.declaredMode === 'practice-ready');
     return {
@@ -204,14 +225,13 @@ export function auditDsa(courses) {
 }
 
 function proseStats(item) {
-  const parts =
-    item.schemaVersion === 'pattern-lesson/v1'
-      ? [
-          ...(item.definition?.body ?? []),
-          ...(item.motivation?.body ?? []),
-          ...(item.recognition?.body ?? []),
-        ]
-      : (item.sections ?? []).flatMap((section) => section.body ?? []);
+  const parts = ['pattern-lesson/v1', 'pattern-lesson/v2'].includes(item.schemaVersion)
+    ? [
+        ...(item.definition?.body ?? []),
+        ...(item.motivation?.body ?? []),
+        ...(item.recognition?.body ?? []),
+      ]
+    : (item.sections ?? []).flatMap((section) => section.body ?? []);
   const normalized = parts
     .map((part) =>
       part
@@ -232,9 +252,11 @@ function measureItem(item, course, module, source) {
   // Match article discovery: older Q&As can carry a theory tag without a lesson.
   const theory =
     theoryTagged &&
-    (['pattern-lesson/v1', 'foundation-lesson/v1'].includes(item.schemaVersion) ||
+    (['pattern-lesson/v1', 'pattern-lesson/v2', 'foundation-lesson/v1'].includes(
+      item.schemaVersion,
+    ) ||
       !!item.sections?.length);
-  const ownContent = { ...item, essentialProblems: undefined };
+  const ownContent = { ...item, essentialProblems: undefined, canonicalProblem: undefined };
   const refs = visuals(item);
   const implementations = codeLanguages(item);
   const ownImplementations = codeLanguages(ownContent);
@@ -283,7 +305,9 @@ export function summarize(items) {
     lessons: lessons.length,
     theoryTaggedRecords: items.filter((item) => item.theoryTagged).length,
     theoryTagOnlyRecords: items.filter((item) => item.theoryTagged && !item.theory).length,
-    patternLessons: lessons.filter((item) => item.schemaVersion === 'pattern-lesson/v1').length,
+    patternLessons: lessons.filter((item) =>
+      ['pattern-lesson/v1', 'pattern-lesson/v2'].includes(item.schemaVersion),
+    ).length,
     foundationLessons: lessons.filter((item) => item.schemaVersion === 'foundation-lesson/v1')
       .length,
     types: countBy(items.map((item) => item.contentType)),
@@ -359,6 +383,7 @@ export async function auditContent(root) {
     }
   }
   if (!hashes.length) throw new Error('No learner content files found in the runtime root.');
+  const canonicalDsaProblems = await readCanonicalDsaProblems(root);
   const issues = [];
   const usedModules = new Set();
   const courses = [];
@@ -385,7 +410,13 @@ export async function auditContent(root) {
         issues.push({ kind: 'missing-module', file: moduleFile });
         continue;
       }
-      const content = JSON.parse(files.get(moduleFile));
+      const content = JSON.parse(files.get(moduleFile)).map((question) =>
+        materializeCanonicalReferences(
+          question,
+          canonicalDsaProblems,
+          `${moduleFile}: ${question.id}`,
+        ),
+      );
       if (!Array.isArray(content)) throw new Error(`${moduleFile}: expected array`);
       modules.push({
         path,
@@ -505,7 +536,7 @@ export async function auditContent(root) {
       lessons:
         'A lesson needs contentType theory plus a versioned lesson schema or nonempty sections, matching article discovery. Legacy tag-only records remain counted separately, not as lesson payloads.',
       dsaIdentity:
-        'UI-equivalent normalized titles, not canonical identity. Guided and practice-ready overlap; never add those counts without subtracting their intersection.',
+        'Canonical DSA ids are authoritative when present; legacy records retain UI-equivalent normalized-title grouping until migrated. Guided and practice-ready overlap; never add those counts without subtracting their intersection.',
       verification:
         'Zero solutions executed by this inventory, not a claim that prior verification never happened. Use the separately attached sampled review and validation evidence.',
     },
@@ -515,6 +546,7 @@ export async function auditContent(root) {
         .map((entry) => ({ path, id: entry.id })),
     ),
     paths: pathRows,
+    canonicalDsaProblems: canonicalDsaProblems.size,
     courses: courseRows,
     modules,
     items,

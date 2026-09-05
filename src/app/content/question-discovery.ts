@@ -2,7 +2,7 @@ import {
   CourseContent,
   InterviewQuestion,
   isFoundationLessonV1,
-  isPatternLessonV1,
+  isPatternLesson,
 } from './content.models';
 import { flattenLearningUnits } from './learning-units';
 
@@ -10,7 +10,7 @@ import { flattenLearningUnits } from './learning-units';
 export function isTheoryArticle(item: InterviewQuestion): boolean {
   return (
     item.contentType === 'theory' &&
-    (isPatternLessonV1(item) || isFoundationLessonV1(item) || Boolean(item.sections?.length))
+    (isPatternLesson(item) || isFoundationLessonV1(item) || Boolean(item.sections?.length))
   );
 }
 

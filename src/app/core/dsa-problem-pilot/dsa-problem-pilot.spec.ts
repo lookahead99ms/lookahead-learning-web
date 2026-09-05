@@ -28,9 +28,9 @@ function twoSumProblem(): PatternProblemV1 {
     fixtures: [
       {
         id: 'standard',
-        label: 'Standard pair',
-        input: 'nums = [2, 7, 11, 15], target = 9',
-        expectedOutput: '[0, 1]',
+        label: 'Representative case',
+        input: 'values = [2,7,11,15], target = 26',
+        expectedOutput: '[2,3]',
       },
       {
         id: 'duplicate',
@@ -61,7 +61,12 @@ function twoSumProblem(): PatternProblemV1 {
             {
               id: 'values',
               label: 'Values',
-              cells: [{ value: '2', states: ['active'] }, { value: '7' }],
+              cells: [
+                { value: '2', states: ['active'] },
+                { value: '7' },
+                { value: '11' },
+                { value: '15' },
+              ],
             },
           ],
         },
@@ -155,6 +160,24 @@ function twoSumProblem(): PatternProblemV1 {
 }
 
 describe('DsaProblemPilot mode tabs', () => {
+  it('opens Guided practice with the representative late-return fixture', async () => {
+    await TestBed.configureTestingModule({ imports: [DsaProblemPilot] }).compileComponents();
+    const fixture = TestBed.createComponent(DsaProblemPilot);
+    fixture.componentRef.setInput('problem', twoSumProblem());
+    fixture.componentRef.setInput('entryMode', 'guided');
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const root = fixture.nativeElement as HTMLElement;
+    expect(root.querySelector<HTMLSelectElement>('[aria-label="Guided trace input"]')?.value).toBe(
+      '0',
+    );
+    expect(root.querySelector('.trace-context')?.textContent).toContain(
+      'values = [2,7,11,15], target = 26',
+    );
+    expect(root.querySelector('.trace-context')?.textContent).toContain('[2,3]');
+  });
+
   it('lets the learner select the exact input used by the guided trace', async () => {
     await TestBed.configureTestingModule({ imports: [DsaProblemPilot] }).compileComponents();
     const fixture = TestBed.createComponent(DsaProblemPilot);
@@ -305,6 +328,152 @@ describe('DsaProblemPilot mode tabs', () => {
         Reflect.deleteProperty(HTMLElement.prototype, 'scrollIntoView');
       }
       requestAnimationFrame.mockRestore();
+    }
+  });
+
+  it('contains focus in the focused debugger and restores the page when Escape closes it', async () => {
+    const frames: FrameRequestCallback[] = [];
+    const requestAnimationFrame = vi
+      .spyOn(window, 'requestAnimationFrame')
+      .mockImplementation((callback) => {
+        frames.push(callback);
+        return frames.length;
+      });
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+    const previousOverflow = document.body.style.overflow;
+
+    try {
+      await TestBed.configureTestingModule({ imports: [DsaProblemPilot] }).compileComponents();
+      const fixture = TestBed.createComponent(DsaProblemPilot);
+      fixture.componentRef.setInput('problem', twoSumProblem());
+      fixture.componentRef.setInput('entryMode', 'guided');
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const root = fixture.nativeElement as HTMLElement;
+      const entry = root.querySelector<HTMLButtonElement>('.focus-entry')!;
+      entry.focus();
+      entry.click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      frames.shift()?.(0);
+
+      const dialog = root.querySelector<HTMLElement>('.guided-trace-stage.focused')!;
+      const exit = dialog.querySelector<HTMLButtonElement>('.focus-exit')!;
+      expect(dialog.getAttribute('role')).toBe('dialog');
+      expect(dialog.getAttribute('aria-modal')).toBe('true');
+      expect(dialog.getAttribute('aria-labelledby')).toBe('two-sum-focused-debugger-title');
+      expect(document.body.style.overflow).toBe('hidden');
+      expect(document.activeElement).toBe(exit);
+
+      const focusable = dialog.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), select:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])',
+      );
+      const last = focusable.item(focusable.length - 1);
+      last.focus();
+      last.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }));
+      expect(document.activeElement).toBe(focusable.item(0));
+
+      dialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      fixture.detectChanges();
+      frames.shift()?.(0);
+      expect(root.querySelector('.guided-trace-stage.focused')).toBeNull();
+      expect(document.body.style.overflow).toBe(previousOverflow);
+      expect(document.activeElement).toBe(entry);
+      expect(scrollTo).toHaveBeenCalledOnce();
+
+      const normalTabEvent = new KeyboardEvent('keydown', {
+        key: 'Tab',
+        bubbles: true,
+        cancelable: true,
+      });
+      entry.dispatchEvent(normalTabEvent);
+      expect(normalTabEvent.defaultPrevented).toBe(false);
+    } finally {
+      document.body.style.overflow = previousOverflow;
+      requestAnimationFrame.mockRestore();
+      scrollTo.mockRestore();
+    }
+  });
+
+  it('enters and exits Focus without losing debugger state, scrolling the page, or losing focus', async () => {
+    const animationFrames: FrameRequestCallback[] = [];
+    const requestAnimationFrame = vi
+      .spyOn(window, 'requestAnimationFrame')
+      .mockImplementation((callback) => {
+        animationFrames.push(callback);
+        return animationFrames.length;
+      });
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+    const previousBodyOverflow = document.body.style.overflow;
+
+    try {
+      document.body.style.overflow = 'clip';
+      await TestBed.configureTestingModule({ imports: [DsaProblemPilot] }).compileComponents();
+      const fixture = TestBed.createComponent(DsaProblemPilot);
+      fixture.componentRef.setInput('problem', twoSumProblem());
+      fixture.componentRef.setInput('entryMode', 'guided');
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const root = fixture.nativeElement as HTMLElement;
+      const trace = root.querySelector('app-guided-algorithm-trace')!;
+      const fixtureSelector = root.querySelector<HTMLSelectElement>(
+        '[aria-label="Guided trace input"]',
+      )!;
+      fixtureSelector.value = '1';
+      fixtureSelector.dispatchEvent(new Event('change'));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      root.querySelectorAll<HTMLButtonElement>('.language-tabs button')[1].click();
+      fixture.detectChanges();
+      const focusEntry = root.querySelector<HTMLButtonElement>('.focus-entry')!;
+      focusEntry.focus();
+      focusEntry.click();
+      fixture.detectChanges();
+      animationFrames.splice(0).forEach((callback) => callback(0));
+
+      const focusedStage = root.querySelector<HTMLElement>('.guided-trace-stage.focused')!;
+      expect(focusedStage.getAttribute('role')).toBe('dialog');
+      expect(focusedStage.getAttribute('aria-modal')).toBe('true');
+      expect(document.body.style.overflow).toBe('hidden');
+      expect(document.activeElement).toBe(root.querySelector('.focus-exit'));
+      expect(root.querySelector('app-guided-algorithm-trace')).toBe(trace);
+      expect(root.querySelector('.guided-trace')?.getAttribute('data-language')).toBe('python');
+      expect(root.querySelector('.focus-state-dock')).not.toBeNull();
+      expect(root.querySelector('.focus-terminal')?.textContent).toContain('Select Next');
+
+      root.querySelector<HTMLButtonElement>('.trace-controls .primary')!.click();
+      fixture.detectChanges();
+      expect(root.querySelector('app-guided-algorithm-trace')).toBe(trace);
+      expect(root.querySelector('.step-status')?.textContent).toContain('2 of 2');
+      expect(root.querySelector('.focus-output')?.textContent).toContain('[0, 1]');
+      expect(root.querySelector('.focus-terminal')?.textContent).toContain(
+        'successful return terminated execution',
+      );
+      expect(scrollTo).not.toHaveBeenCalled();
+
+      root
+        .querySelector<HTMLElement>('.guided-trace')!
+        .dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      fixture.detectChanges();
+      animationFrames.splice(0).forEach((callback) => callback(0));
+
+      expect(root.querySelector('.guided-trace-stage.focused')).toBeNull();
+      expect(document.body.style.overflow).toBe('clip');
+      expect(document.activeElement).toBe(focusEntry);
+      expect(scrollTo).toHaveBeenCalledOnce();
+      expect(root.querySelector('app-guided-algorithm-trace')).toBe(trace);
+      expect(root.querySelector('.step-status')?.textContent).toContain('2 of 2');
+      expect(root.querySelector('.guided-trace')?.getAttribute('data-language')).toBe('python');
+    } finally {
+      document.body.style.overflow = previousBodyOverflow;
+      requestAnimationFrame.mockRestore();
+      scrollTo.mockRestore();
     }
   });
 });

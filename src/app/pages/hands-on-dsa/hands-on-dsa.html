@@ -160,10 +160,7 @@
                 <div class="problem-grid">
                   @for (problem of group.essentialProblems; track problem.id) {
                     @if (problem.practiceQuestionId) {
-                      <a
-                        class="problem-card"
-                        [routerLink]="['/learn', group.courseId, problem.practiceQuestionId]"
-                      >
+                      <a class="problem-card" [routerLink]="problemRoute(problem, group.courseId)">
                         <span>{{ problem.difficulty }} · Guided + independent</span>
                         <h3>{{ problem.title }}</h3>
                         <p>{{ problem.practice?.statement?.prompt ?? problem.variation }}</p>

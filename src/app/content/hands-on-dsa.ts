@@ -1,10 +1,11 @@
 import {
   CourseContent,
   CourseLearningUnit,
+  DsaProblemV2,
   InterviewQuestion,
-  PatternLessonV1,
+  PatternLesson,
   PatternProblemV1,
-  isPatternLessonV1,
+  isPatternLesson,
 } from './content.models';
 import { flattenLearningUnits } from './learning-units';
 
@@ -25,9 +26,18 @@ export interface HandsOnDsaGroup {
   description: string;
   unit: CourseLearningUnit;
   lesson: InterviewQuestion;
-  goldenLesson: PatternLessonV1 | null;
+  goldenLesson: PatternLesson | null;
   essentialProblems: PatternProblemV1[];
   continuationProblems: InterviewQuestion[];
+}
+
+export function handsOnProblemRoute(problem: PatternProblemV1, fallbackCourseId: string): string[] {
+  const placement = (problem as Partial<DsaProblemV2>).placements?.find(
+    (candidate) => candidate.role === 'practice' && candidate.questionId,
+  );
+  return placement?.questionId
+    ? [`/${placement.path}`, placement.courseId, placement.questionId]
+    : ['/learn', fallbackCourseId, problem.practiceQuestionId ?? problem.id];
 }
 
 export function buildHandsOnDsaGroups(course: CourseContent): HandsOnDsaGroup[] {
@@ -39,7 +49,7 @@ export function buildHandsOnDsaGroups(course: CourseContent): HandsOnDsaGroup[] 
     );
     if (!lesson) return [];
 
-    const goldenLesson = isPatternLessonV1(lesson) ? lesson : null;
+    const goldenLesson = isPatternLesson(lesson) ? lesson : null;
     const continuationProblems = goldenLesson
       ? allRelatedPractice(course.questions, goldenLesson, unit, questionsById)
       : course.questions
@@ -72,7 +82,7 @@ export function buildHandsOnDsaGroups(course: CourseContent): HandsOnDsaGroup[] 
 
 function allRelatedPractice(
   questions: InterviewQuestion[],
-  lesson: PatternLessonV1,
+  lesson: PatternLesson,
   unit: CourseLearningUnit,
   questionsById: Map<string, InterviewQuestion>,
 ): InterviewQuestion[] {
@@ -83,7 +93,7 @@ function allRelatedPractice(
   });
   const guidedIdSet = new Set(guidedIds);
   const canonicalPracticeIds = new Set(
-    lesson.essentialProblems.flatMap(({ practiceQuestionId }) =>
+    (lesson.essentialProblems ?? []).flatMap(({ practiceQuestionId }) =>
       practiceQuestionId ? [practiceQuestionId] : [],
     ),
   );
@@ -165,7 +175,8 @@ export function filterHandsOnDsaGroups(
 export function continuationReadiness(
   problem: InterviewQuestion,
 ): Exclude<HandsOnReadiness, 'All' | 'Guided'> {
-  return problem.practiceProblem?.implementationStatus === 'complete'
+  return problem.canonicalProblem?.practice ||
+    problem.practiceProblem?.implementationStatus === 'complete'
     ? 'Practice-ready'
     : 'Catalogued';
 }

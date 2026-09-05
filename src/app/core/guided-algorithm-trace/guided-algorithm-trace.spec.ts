@@ -219,11 +219,15 @@ function signedTwoSumProblem(): PatternProblemV1 {
   template: `<app-guided-algorithm-trace
     [problem]="activeProblem()"
     [selectedFixture]="selectedFixture()"
+    [focusMode]="focusMode()"
+    (focusExitRequest)="focusExitCount.update((count) => count + 1)"
   />`,
 })
 class TraceHost {
   readonly activeProblem = signal(problem('prefix', 'Prefix Sums', 'prefix boundaries'));
   readonly selectedFixture = signal(this.activeProblem().fixtures[0]);
+  readonly focusMode = signal(false);
+  readonly focusExitCount = signal(0);
 }
 
 function normalizedText(element: Element): string {
@@ -294,6 +298,102 @@ describe('GuidedAlgorithmTrace shared interaction contract', () => {
     ]);
     expect(workspace.querySelector('.debugger-output')?.textContent).toContain('Pending');
   });
+
+  it('uses a stable one-screen Focus layout with explanation, state dock, terminal, and Escape', () => {
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+    const source = fixture.nativeElement.querySelector('.source-panel') as HTMLElement;
+    fixture.componentInstance.focusMode.set(true);
+    fixture.detectChanges();
+
+    const root = fixture.nativeElement.querySelector('.guided-trace') as HTMLElement;
+    const workspace = root.querySelector('.ide-workspace') as HTMLElement;
+    const dock = root.querySelector('.focus-state-dock') as HTMLElement;
+    expect(root.classList.contains('focus-mode')).toBe(true);
+    expect(workspace.querySelector('.source-panel')).toBe(source);
+    expect(workspace.querySelector('.focus-explanation')?.textContent).toContain('What happened');
+    expect(workspace.querySelector('.focus-explanation')?.textContent).toContain('Why');
+    expect(workspace.querySelector('.debugger-shell')).toBeNull();
+    expect([...dock.querySelectorAll('h3')].map(normalizedText)).toEqual([
+      'Variables',
+      'State structure',
+      'Array',
+      'Observation',
+      'Output',
+    ]);
+    expect(dock.querySelector('.focus-terminal')?.textContent).toContain('Terminal');
+    expect(getComputedStyle(workspace).gridTemplateRows).toBe('minmax(0, 1fr) 144px');
+
+    const next = root.querySelector<HTMLButtonElement>('.trace-controls .primary')!;
+    next.click();
+    fixture.detectChanges();
+    expect(root.querySelector('.source-panel')).toBe(source);
+    expect(root.querySelector('.ide-workspace')).toBe(workspace);
+    expect(root.querySelector('.focus-state-dock')).toBe(dock);
+    expect(root.querySelector('.step-status')?.textContent).toContain('2 of 3');
+    expect(normalizedText(root.querySelector('.focus-variables')!)).toContain('index changed1');
+    expect(scrollTo).not.toHaveBeenCalled();
+
+    root.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    expect(fixture.componentInstance.focusExitCount()).toBe(1);
+    scrollTo.mockRestore();
+  });
+
+  it.each([
+    ['two-sum', 'seen · map', 'lookup · optional index', 'seen', 'map', 'lookup', 'optional index'],
+    [
+      'contains-duplicate',
+      'seen · set',
+      'lookup · membership',
+      'seen',
+      'set',
+      'lookup',
+      'membership',
+    ],
+    [
+      'first-unique-character',
+      'count · map',
+      'frequency · int',
+      'count',
+      'map',
+      'frequency',
+      'int',
+    ],
+  ])(
+    'derives Focus state labels from %s trace metadata',
+    (
+      id,
+      expectedCollection,
+      expectedObservation,
+      collectionName,
+      collectionType,
+      observationName,
+      observationType,
+    ) => {
+      const activeProblem = problem(id, id, 'values');
+      activeProblem.trace.events = activeProblem.trace.events.map((event) => ({
+        ...event,
+        variables: [
+          ...event.variables,
+          { name: collectionName, type: collectionType, value: '{state}', changed: true },
+          { name: observationName, type: observationType, value: 'current', changed: true },
+        ],
+      }));
+      fixture.componentInstance.activeProblem.set(activeProblem);
+      fixture.componentInstance.selectedFixture.set(activeProblem.fixtures[0]);
+      fixture.componentInstance.focusMode.set(true);
+      fixture.detectChanges();
+
+      expect(normalizedText(fixture.nativeElement.querySelector('.focus-collection h3'))).toBe(
+        expectedCollection,
+      );
+      expect(normalizedText(fixture.nativeElement.querySelector('.focus-observation h3'))).toBe(
+        expectedObservation,
+      );
+      const scalarText = normalizedText(fixture.nativeElement.querySelector('.focus-variables'));
+      expect(scalarText).not.toContain(collectionName);
+      expect(scalarText).not.toContain(observationName);
+    },
+  );
 
   it('keeps pinned state and view controls visible while only the lower right pane changes', () => {
     const buttons = (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLButtonElement>(

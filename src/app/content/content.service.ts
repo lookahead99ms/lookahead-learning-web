@@ -1,10 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, forkJoin, map, shareReplay, switchMap } from 'rxjs';
+import { Observable, forkJoin, map, of, shareReplay, switchMap } from 'rxjs';
 import {
   CatalogItem,
   CatalogOverviewItem,
   CourseContent,
+  DsaProblemV2,
   InterviewQuestion,
   SearchDocument,
 } from './content.models';
@@ -41,13 +42,72 @@ export class ContentService {
             this.http.get<InterviewQuestion[]>(`${base}/modules/${module.id}.json`),
           ),
         ).pipe(
-          map((questionArrays) => ({
-            ...manifest,
-            modules: publishedModules,
-            sections: publishedSections,
-            questions: questionArrays.flat(),
-          })),
+          switchMap((questionArrays) =>
+            this.hydrateCanonicalProblems({
+              ...manifest,
+              modules: publishedModules,
+              sections: publishedSections,
+              questions: questionArrays.flat(),
+            }),
+          ),
         );
+      }),
+    );
+  }
+
+  getDsaProblem(problemId: string): Observable<DsaProblemV2> {
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(problemId)) {
+      throw new Error(`Invalid canonical DSA problem id: ${problemId}`);
+    }
+    // Do not retain canonical details for the app lifetime while local content can be
+    // replaced underneath ng serve. DLV-204 will introduce a bounded, version-aware cache.
+    return this.http.get<DsaProblemV2>(`/content/learn/dsa-problems/${problemId}.json`);
+  }
+
+  private hydrateCanonicalProblems(course: CourseContent): Observable<CourseContent> {
+    const problemIds = new Set<string>();
+    for (const item of course.questions) {
+      if (item.canonicalProblemRef?.problemId) {
+        problemIds.add(item.canonicalProblemRef.problemId);
+      }
+      if (item.schemaVersion === 'pattern-lesson/v2') {
+        for (const reference of item.essentialProblemRefs ?? []) {
+          problemIds.add(reference.problemId);
+        }
+      }
+    }
+    if (!problemIds.size) return of(course);
+
+    return forkJoin([...problemIds].map((id) => this.getDsaProblem(id))).pipe(
+      map((problems) => {
+        const byId = new Map(
+          problems.map((problem) => {
+            const practiceQuestionId = problem.placements.find(
+              (placement) => placement.role === 'practice' && placement.questionId,
+            )?.questionId;
+            return [problem.id, { ...problem, practiceQuestionId }] as const;
+          }),
+        );
+        return {
+          ...course,
+          questions: course.questions.map((item) => {
+            const canonicalProblem = item.canonicalProblemRef
+              ? byId.get(item.canonicalProblemRef.problemId)
+              : undefined;
+            if (item.schemaVersion === 'pattern-lesson/v2') {
+              return {
+                ...item,
+                essentialProblems: item.essentialProblemRefs?.map(({ problemId }) => {
+                  const problem = byId.get(problemId);
+                  if (!problem)
+                    throw new Error(`Canonical DSA problem ${problemId} was not loaded`);
+                  return problem;
+                }),
+              };
+            }
+            return canonicalProblem ? { ...item, canonicalProblem } : item;
+          }),
+        };
       }),
     );
   }

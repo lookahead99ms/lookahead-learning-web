@@ -9,7 +9,7 @@ export type ContentType =
   | 'language-comparison'
   | 'guide';
 export type SubscriptionScope = 'platform' | 'path' | 'catalog' | 'module' | 'content-type';
-export type PatternLessonSchemaVersion = 'pattern-lesson/v1';
+export type PatternLessonSchemaVersion = 'pattern-lesson/v1' | 'pattern-lesson/v2';
 export type FoundationLessonSchemaVersion = 'foundation-lesson/v1';
 export type LessonSchemaVersion = PatternLessonSchemaVersion | FoundationLessonSchemaVersion;
 export type PatternLanguage = 'java' | 'python' | 'go';
@@ -182,9 +182,13 @@ export interface InterviewQuestion {
   practiceProblem?: PracticeProblemMetadata;
   relatedQuestionIds?: string[];
   visual?: TheoryVisual;
-  /** Versioned pattern lessons use the stricter PatternLessonV1 contract. */
+  /** Versioned pattern lessons use the stricter pattern-lesson contract. */
   schemaVersion?: LessonSchemaVersion;
-  canonicalProblemRef?: { lessonId: string; problemId: string };
+  /** Canonical problem references used by pattern-lesson/v2 source records. */
+  essentialProblemRefs?: DsaProblemReference[];
+  canonicalProblemRef?: { problemId: string; lessonId?: string };
+  /** Runtime-only resolution of a canonical problem reference. */
+  canonicalProblem?: PatternProblemV1;
 }
 
 export interface PatternSourceLine {
@@ -287,6 +291,71 @@ export interface PatternProblemPractice {
   approaches: { title: string; explanation: string; complexity: string }[];
   commonMistakes: string[];
   checks: { kind: 'explain' | 'trace' | 'transfer'; prompt: string; expected: string }[];
+}
+
+export type DsaFixtureValue =
+  null | boolean | number | string | DsaFixtureValue[] | { [key: string]: DsaFixtureValue };
+
+export interface DsaProblemReference {
+  problemId: string;
+}
+
+export interface DsaProblemPlacement {
+  path: ContentPath;
+  courseId: string;
+  role: 'essential' | 'practice' | 'transfer';
+  lessonId?: string;
+  moduleId?: string;
+  questionId?: string;
+  order?: number;
+}
+
+export interface DsaContentRoute {
+  path: ContentPath;
+  courseId: string;
+  questionId: string;
+  title: string;
+}
+
+export interface DsaProblemNavigationLink extends DsaContentRoute {
+  problemId: string;
+}
+
+export interface DsaProblemNavigation {
+  lesson: DsaContentRoute;
+  handsOnPatternId: string;
+  previous?: DsaProblemNavigationLink;
+  next?: DsaProblemNavigationLink;
+}
+
+export interface DsaProblemContract {
+  entryPoints: Record<PatternLanguage, string>;
+  parameters: { name: string; type: string; description: string }[];
+  returns: { type: string; description: string };
+}
+
+export interface DsaProblemFixtureV2 extends PatternProblemFixture {
+  arguments: Record<string, DsaFixtureValue>;
+  expected: DsaFixtureValue;
+}
+
+/** Canonical, course-independent source for one complete DSA practice experience. */
+export interface DsaProblemV2 extends Omit<
+  PatternProblemV1,
+  'fixtures' | 'practice' | 'practiceQuestionId'
+> {
+  schemaVersion: 'dsa-problem/v2';
+  contentType: 'dsa-problem';
+  aliases: string[];
+  tags: string[];
+  languages: PatternLanguage[];
+  contract: DsaProblemContract;
+  placements: DsaProblemPlacement[];
+  navigation: DsaProblemNavigation;
+  fixtures: DsaProblemFixtureV2[];
+  practice: PatternProblemPractice;
+  /** Derived by the compatibility loader from the primary practice placement. */
+  practiceQuestionId?: string;
 }
 
 export type UnderstandingCheckCategory =
@@ -427,8 +496,17 @@ export interface PatternLessonV1 extends InterviewQuestion {
   relatedQuestionIds?: never;
 }
 
-export function isPatternLessonV1(item: InterviewQuestion): item is PatternLessonV1 {
-  return item.schemaVersion === 'pattern-lesson/v1';
+export type PatternLessonV2 = Omit<PatternLessonV1, 'schemaVersion' | 'essentialProblems'> & {
+  schemaVersion: 'pattern-lesson/v2';
+  essentialProblemRefs: DsaProblemReference[];
+  /** Populated in memory by ContentService; canonical source files contain only references. */
+  essentialProblems?: DsaProblemV2[];
+};
+
+export type PatternLesson = PatternLessonV1 | PatternLessonV2;
+
+export function isPatternLesson(item: InterviewQuestion): item is PatternLesson {
+  return item.schemaVersion === 'pattern-lesson/v1' || item.schemaVersion === 'pattern-lesson/v2';
 }
 
 export function isFoundationLessonV1(item: InterviewQuestion): item is FoundationLessonV1 {
