@@ -120,7 +120,7 @@ select:focus-visible {
   gap: 10px;
 }
 .contract-grid > div,
-.approaches article,
+.canonical-rationale article,
 .mistakes {
   padding: 10px 11px;
   border: 1px solid #d8e5ec;
@@ -263,22 +263,11 @@ select:focus-visible {
   padding: 4px 13px 4px 2px;
   border-right: 1px solid #c9dfe7;
 }
-.reasoning-approaches {
+.canonical-rationale {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
   min-width: 0;
-}
-.reasoning-approaches header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 14px;
-}
-.reasoning-approaches header b {
-  color: #ba5b08;
-}
-.reasoning-approaches header small {
-  color: #607286;
-  font-size: 0.7rem;
-  font-weight: 650;
 }
 .guided-trace-stage {
   min-width: 0;
@@ -346,27 +335,13 @@ select:focus-visible {
     700 0.65rem 'JetBrains Mono',
     monospace;
 }
-.approaches {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 8px;
-  margin-top: 8px;
-}
-.approaches article {
+.canonical-rationale article {
   padding: 8px 10px;
 }
-.approaches h5 {
-  margin-bottom: 4px;
-  font-size: 0.86rem;
-}
-.approaches p {
+.canonical-rationale p {
   margin: 0 0 5px;
   font-size: 0.76rem;
   line-height: 1.35;
-}
-.approaches strong {
-  color: #93610b;
-  font-size: 0.7rem;
 }
 .help-panel,
 .learning-checks details {
@@ -446,7 +421,7 @@ select:focus-visible {
   .example-cases-heading,
   .guided-entry,
   .reasoning-frame,
-  .reasoning-approaches header {
+  .canonical-rationale {
     display: grid;
     grid-template-columns: 1fr;
   }
@@ -488,7 +463,7 @@ select:focus-visible {
   .learning-checks,
   .contract-grid > div,
   .reasoning-frame,
-  .approaches article,
+  .canonical-rationale article,
   .mistakes,
   .help-panel,
   .learning-checks details {

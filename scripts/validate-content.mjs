@@ -1539,12 +1539,11 @@ for (const { lesson, moduleLabel } of patternLessons) {
         `${problemLabel} practice needs at least three progressive hints`,
       );
       requireValue(
-        Array.isArray(practice.approaches) &&
-          practice.approaches.length >= 2 &&
-          practice.approaches.every(
-            (approach) => approach?.title && approach?.explanation && approach?.complexity,
-          ),
-        `${problemLabel} practice needs baseline and improved approaches`,
+        practice.canonicalApproach?.whyThisApproach &&
+          practice.canonicalApproach?.whyOptimal &&
+          practice.canonicalApproach?.whenAssumptionChanges &&
+          practice.approaches === undefined,
+        `${problemLabel} practice needs one canonical approach rationale without an alternatives catalogue`,
       );
       requireValue(
         Array.isArray(practice.commonMistakes) && practice.commonMistakes.length >= 3,

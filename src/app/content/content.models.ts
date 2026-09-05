@@ -294,7 +294,11 @@ export interface PatternProblemPractice {
   starters: Record<PatternLanguage, string>;
   sourceUrl?: string;
   hints: string[];
-  approaches: { title: string; explanation: string; complexity: string }[];
+  canonicalApproach: {
+    whyThisApproach: string;
+    whyOptimal: string;
+    whenAssumptionChanges: string;
+  };
   commonMistakes: string[];
   checks: { kind: 'explain' | 'trace' | 'transfer'; prompt: string; expected: string }[];
 }

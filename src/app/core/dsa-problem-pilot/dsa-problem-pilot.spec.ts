@@ -135,18 +135,11 @@ function twoSumProblem(): PatternProblemV1 {
         go: 'func twoSum(nums []int, target int) []int {\n\treturn nil\n}',
       },
       hints: ['Ask what value would complete the current number.'],
-      approaches: [
-        {
-          title: 'Brute force',
-          explanation: 'Check each pair.',
-          complexity: 'O(n^2) time, O(1) space',
-        },
-        {
-          title: 'Complement map',
-          explanation: 'Remember values already seen.',
-          complexity: 'O(n) expected time, O(n) space',
-        },
-      ],
+      canonicalApproach: {
+        whyThisApproach: 'Remember earlier values so each complement is checked once.',
+        whyOptimal: 'One pass is O(n) expected time, matching the input-reading lower bound.',
+        whenAssumptionChanges: 'A tightly bounded value range could use direct addressing.',
+      },
       commonMistakes: ['Storing the current value before checking its complement.'],
       checks: [
         {
@@ -178,7 +171,7 @@ describe('DsaProblemPilot mode tabs', () => {
     expect(root.querySelector('.trace-context')?.textContent).toContain('[2,3]');
   });
 
-  it('places the invariant and approach progression before the expandable debugger', async () => {
+  it('places the invariant and canonical rationale before the expandable debugger', async () => {
     await TestBed.configureTestingModule({ imports: [DsaProblemPilot] }).compileComponents();
     const fixture = TestBed.createComponent(DsaProblemPilot);
     fixture.componentRef.setInput('problem', twoSumProblem());
@@ -194,11 +187,12 @@ describe('DsaProblemPilot mode tabs', () => {
     expect(reasoning.textContent).toContain(
       'Before checking an index, the map contains every earlier value and its index.',
     );
-    expect(reasoning.textContent).toContain('Start simple');
-    expect(reasoning.textContent).toContain('improve');
-    expect(
-      [...reasoning.querySelectorAll('.approaches article')].map((item) => item.textContent),
-    ).toEqual([expect.stringContaining('Brute force'), expect.stringContaining('Complement map')]);
+    expect(reasoning.textContent).toContain('Why this approach');
+    expect(reasoning.textContent).toContain('Why it is optimal');
+    expect(reasoning.textContent).toContain('When this assumption changes');
+    expect(reasoning.textContent).toContain('Remember earlier values');
+    expect(reasoning.querySelectorAll('.canonical-rationale article').length).toBe(3);
+    expect(reasoning.textContent).not.toContain('Brute force');
     expect(reasoning.nextElementSibling).toBe(debuggerStage);
     expect(root.querySelector('.debugger-invariant')).toBeNull();
     expect(expand.textContent).toContain('Expand debugger');
