@@ -77,6 +77,10 @@ function requireValue(condition, message) {
   if (!condition) throw new Error(message);
 }
 
+function navigationContexts(problem) {
+  return [problem.navigation, ...(problem.navigation?.alternates ?? [])].filter(Boolean);
+}
+
 function validateDeliveryPlan(plan, label) {
   requireValue(plan?.schemaVersion === 'delivery-plan/v1', `${label}: invalid schema version`);
   requireValue(plan.id && plan.title && plan.summary, `${label}: incomplete plan identity`);
@@ -289,9 +293,12 @@ function validateCanonicalDsaProblem(problem, label) {
   requireValue(
     Array.isArray(problem.placements) &&
       problem.placements.length >= 2 &&
-      problem.placements.some((placement) => placement.role === 'essential') &&
+      problem.placements.some(
+        (placement) =>
+          (placement.role === 'essential' || placement.role === 'transfer') && placement.lessonId,
+      ) &&
       primaryPracticePlacement(problem),
-    `${label}: essential and practice placements are required`,
+    `${label}: a lesson context and practice placement are required`,
   );
   for (const placement of problem.placements) {
     requireValue(
@@ -300,8 +307,8 @@ function validateCanonicalDsaProblem(problem, label) {
         ['essential', 'practice', 'transfer'].includes(placement?.role),
       `${label}: invalid placement`,
     );
-    if (placement.role === 'essential') {
-      requireValue(placement.lessonId, `${label}: essential placement has no lessonId`);
+    if (placement.role === 'essential' || placement.role === 'transfer') {
+      requireValue(placement.lessonId, `${label}: lesson placement has no lessonId`);
     }
     if (placement.role === 'practice') {
       requireValue(
@@ -310,28 +317,34 @@ function validateCanonicalDsaProblem(problem, label) {
       );
     }
   }
+  const contexts = navigationContexts(problem);
+  requireValue(contexts.length > 0, `${label}: canonical navigation context is incomplete`);
   requireValue(
-    problem.navigation?.lesson?.path &&
-      problem.navigation?.lesson?.courseId &&
-      problem.navigation?.lesson?.questionId &&
-      problem.navigation?.lesson?.title &&
-      /^[a-z0-9]+(?:-[a-z0-9]+)*:[a-z0-9]+(?:-[a-z0-9]+)*$/.test(
-        problem.navigation?.handsOnPatternId ?? '',
-      ),
-    `${label}: canonical navigation context is incomplete`,
+    new Set(contexts.map(({ handsOnPatternId }) => handsOnPatternId)).size === contexts.length,
+    `${label}: canonical navigation contexts must have unique pattern ids`,
   );
-  for (const direction of ['previous', 'next']) {
-    const link = problem.navigation[direction];
-    if (!link) continue;
+  for (const context of contexts) {
     requireValue(
-      link.problemId &&
-        link.problemId !== problem.id &&
-        link.path &&
-        link.courseId &&
-        link.questionId &&
-        link.title,
-      `${label}: invalid ${direction} problem link`,
+      context?.lesson?.path &&
+        context?.lesson?.courseId &&
+        context?.lesson?.questionId &&
+        context?.lesson?.title &&
+        /^[a-z0-9]+(?:-[a-z0-9]+)*:[a-z0-9]+(?:-[a-z0-9]+)*$/.test(context?.handsOnPatternId ?? ''),
+      `${label}: canonical navigation context is incomplete`,
     );
+    for (const direction of ['previous', 'next']) {
+      const link = context[direction];
+      if (!link) continue;
+      requireValue(
+        link.problemId &&
+          link.problemId !== problem.id &&
+          link.path &&
+          link.courseId &&
+          link.questionId &&
+          link.title,
+        `${label}: invalid ${direction} problem link`,
+      );
+    }
   }
   requireValue(
     Array.isArray(problem.fixtures) &&
@@ -756,37 +769,53 @@ for (const [id, problem] of canonicalDsaProblems) {
         `${id} has an unresolved practice placement ${placement.questionId}`,
       );
     }
+    if (placement.role === 'transfer') {
+      const lesson = questionsById.get(placement.lessonId);
+      requireValue(
+        lesson?.contentType === 'theory',
+        `${id} has an unresolved transfer placement ${placement.lessonId}`,
+      );
+    }
   }
-  const essentialPlacement = problem.placements.find((placement) => placement.role === 'essential');
-  requireValue(
-    essentialPlacement?.path === problem.navigation.lesson.path &&
-      essentialPlacement?.courseId === problem.navigation.lesson.courseId &&
-      essentialPlacement?.lessonId === problem.navigation.lesson.questionId,
-    `${id} navigation lesson does not match its essential placement`,
-  );
-  for (const [direction, reciprocal] of [
-    ['previous', 'next'],
-    ['next', 'previous'],
-  ]) {
-    const link = problem.navigation[direction];
-    if (!link) continue;
-    const target = canonicalDsaProblems.get(link.problemId);
-    const targetPlacement = target && primaryPracticePlacement(target);
-    requireValue(target, `${id} navigation references unknown problem ${link.problemId}`);
-    requireValue(
-      target.title === link.title,
-      `${id} navigation title is stale for ${link.problemId}`,
+  for (const navigation of navigationContexts(problem)) {
+    const lessonPlacement = problem.placements.find(
+      (placement) =>
+        (placement.role === 'essential' || placement.role === 'transfer') &&
+        placement.path === navigation.lesson.path &&
+        placement.courseId === navigation.lesson.courseId &&
+        placement.lessonId === navigation.lesson.questionId,
     );
     requireValue(
-      targetPlacement?.path === link.path &&
-        targetPlacement?.courseId === link.courseId &&
-        targetPlacement?.questionId === link.questionId,
-      `${id} navigation route is stale for ${link.problemId}`,
+      lessonPlacement,
+      `${id} navigation lesson ${navigation.lesson.questionId} has no matching placement`,
     );
-    requireValue(
-      target.navigation?.[reciprocal]?.problemId === id,
-      `${id} and ${link.problemId} navigation links are not reciprocal`,
-    );
+    for (const [direction, reciprocal] of [
+      ['previous', 'next'],
+      ['next', 'previous'],
+    ]) {
+      const link = navigation[direction];
+      if (!link) continue;
+      const target = canonicalDsaProblems.get(link.problemId);
+      const targetPlacement = target && primaryPracticePlacement(target);
+      requireValue(target, `${id} navigation references unknown problem ${link.problemId}`);
+      requireValue(
+        target.title === link.title,
+        `${id} navigation title is stale for ${link.problemId}`,
+      );
+      requireValue(
+        targetPlacement?.path === link.path &&
+          targetPlacement?.courseId === link.courseId &&
+          targetPlacement?.questionId === link.questionId,
+        `${id} navigation route is stale for ${link.problemId}`,
+      );
+      const targetContext = navigationContexts(target).find(
+        ({ handsOnPatternId }) => handsOnPatternId === navigation.handsOnPatternId,
+      );
+      requireValue(
+        targetContext?.[reciprocal]?.problemId === id,
+        `${id} and ${link.problemId} navigation links are not reciprocal in ${navigation.handsOnPatternId}`,
+      );
+    }
   }
 }
 
@@ -901,6 +930,16 @@ function validateCodeBlocks(blocks, label, expectedLanguages) {
   return new Map(
     blocks.map((block) => [block.language, new Set(block.lines.map((line) => line.id))]),
   );
+}
+
+function isDebuggerInstruction(line, language) {
+  const text = line.text.trim();
+  if (!text || /^}[;,]?$/.test(text) || /^}\s*else\b/.test(text) || /^else\b/.test(text)) {
+    return false;
+  }
+  if (language === 'python') return !/^def\s/.test(text);
+  if (language === 'go') return !/^func\s/.test(text);
+  return !/^static\s.+\([^)]*\)\s*{$/.test(text);
 }
 
 for (const { lesson, moduleLabel } of foundationLessons) {
@@ -1249,6 +1288,73 @@ for (const { lesson, moduleLabel } of patternLessons) {
       `${problemLabel} implementations`,
       patternLanguages,
     );
+    const implementationsByLanguage = new Map(
+      problem.implementations.map((implementation) => [implementation.language, implementation]),
+    );
+    if (problem.schemaVersion === 'dsa-problem/v2') {
+      requireValue(
+        problem.traceSemantics === 'source-line/v1',
+        `${problemLabel} canonical problems must use source-line/v1 trace semantics`,
+      );
+    }
+    if (problem.traceSemantics !== undefined) {
+      requireValue(
+        problem.traceSemantics === 'source-line/v1',
+        `${problemLabel} has unsupported trace semantics ${problem.traceSemantics}`,
+      );
+      for (const language of patternLanguages) {
+        const implementation = implementationsByLanguage.get(language);
+        const controlFlow = implementation?.controlFlow;
+        const anchors = anchorsByLanguage.get(language);
+        requireValue(controlFlow, `${problemLabel} ${language} has no debugger control flow`);
+        requireValue(
+          anchors?.has(controlFlow.entryAnchor),
+          `${problemLabel} ${language} has an unresolved debugger entry anchor`,
+        );
+        requireValue(
+          controlFlow.transitions && typeof controlFlow.transitions === 'object',
+          `${problemLabel} ${language} has no debugger transitions`,
+        );
+        requireValue(
+          Array.isArray(controlFlow.terminalAnchors) && controlFlow.terminalAnchors.length > 0,
+          `${problemLabel} ${language} has no debugger terminal anchors`,
+        );
+        const terminalAnchors = new Set(controlFlow.terminalAnchors);
+        const transitionAnchors = new Set(Object.keys(controlFlow.transitions));
+        for (const terminalAnchor of terminalAnchors) {
+          requireValue(
+            anchors?.has(terminalAnchor),
+            `${problemLabel} ${language} has unresolved terminal anchor ${terminalAnchor}`,
+          );
+          const terminalLine = implementation.lines.find(({ id }) => id === terminalAnchor)?.text;
+          requireValue(
+            /^\s*return\b/.test(terminalLine ?? ''),
+            `${problemLabel} ${language} terminal anchor ${terminalAnchor} is not a return`,
+          );
+        }
+        for (const [sourceAnchor, targets] of Object.entries(controlFlow.transitions)) {
+          requireValue(
+            anchors?.has(sourceAnchor) &&
+              !terminalAnchors.has(sourceAnchor) &&
+              Array.isArray(targets) &&
+              targets.length > 0,
+            `${problemLabel} ${language} has an invalid transition from ${sourceAnchor}`,
+          );
+          requireValue(
+            targets.every((target) => anchors?.has(target)),
+            `${problemLabel} ${language} transition from ${sourceAnchor} is unresolved`,
+          );
+        }
+        for (const line of implementation.lines) {
+          requireValue(
+            !isDebuggerInstruction(line, language) ||
+              transitionAnchors.has(line.id) ||
+              terminalAnchors.has(line.id),
+            `${problemLabel} ${language} omits executable source anchor ${line.id} from debugger control flow`,
+          );
+        }
+      }
+    }
     requireValue(
       problem.fixtureTraces === undefined || Array.isArray(problem.fixtureTraces),
       `${problemLabel} fixtureTraces must be an array`,
@@ -1291,7 +1397,7 @@ for (const { lesson, moduleLabel } of patternLessons) {
       );
       const eventIds = new Set();
       const sourceAnchorCounts = new Map();
-      for (const event of trace.events) {
+      for (const [eventIndex, event] of trace.events.entries()) {
         requireValue(
           event?.id && event?.label && event?.phase && ['before', 'after'].includes(event?.timing),
           `${problemLabel} trace has an invalid event`,
@@ -1318,6 +1424,26 @@ for (const { lesson, moduleLabel } of patternLessons) {
           );
           const sourceKey = `${language}:${event.sourceAnchor[language]}`;
           sourceAnchorCounts.set(sourceKey, (sourceAnchorCounts.get(sourceKey) ?? 0) + 1);
+          if (problem.traceSemantics === 'source-line/v1') {
+            const controlFlow = implementationsByLanguage.get(language).controlFlow;
+            const anchor = event.sourceAnchor[language];
+            if (eventIndex === 0) {
+              requireValue(
+                anchor === controlFlow.entryAnchor,
+                `${problemLabel} trace ${trace.id} must start at the ${language} entry anchor`,
+              );
+            } else {
+              const previousAnchor = trace.events[eventIndex - 1].sourceAnchor[language];
+              requireValue(
+                previousAnchor !== anchor,
+                `${problemLabel} trace ${trace.id} repeats ${language} anchor ${anchor} without advancing`,
+              );
+              requireValue(
+                controlFlow.transitions[previousAnchor]?.includes(anchor),
+                `${problemLabel} trace ${trace.id} has illegal ${language} transition ${previousAnchor} -> ${anchor}`,
+              );
+            }
+          }
         }
         for (const row of event.rows) {
           requireValue(
@@ -1338,10 +1464,12 @@ for (const { lesson, moduleLabel } of patternLessons) {
           }
         }
       }
-      requireValue(
-        [...sourceAnchorCounts.values()].some((count) => count > 1),
-        `${problemLabel} trace must demonstrate repeated source control flow`,
-      );
+      if (problem.traceSemantics !== 'source-line/v1') {
+        requireValue(
+          [...sourceAnchorCounts.values()].some((count) => count > 1),
+          `${problemLabel} trace must demonstrate repeated source control flow`,
+        );
+      }
       if (problem.schemaVersion === 'dsa-problem/v2') {
         const terminalEvent = trace.events.at(-1);
         requireValue(
@@ -1354,6 +1482,28 @@ for (const { lesson, moduleLabel } of patternLessons) {
           ),
           `${problemLabel} canonical trace ${trace.id} must mark its resolved state`,
         );
+        if (problem.traceSemantics === 'source-line/v1') {
+          requireValue(
+            trace.events.slice(0, -1).every((event) => !Object.hasOwn(event, 'result')),
+            `${problemLabel} trace ${trace.id} returns before its terminal event`,
+          );
+          requireValue(
+            terminalEvent.timing === 'after',
+            `${problemLabel} trace ${trace.id} terminal return must use after timing`,
+          );
+          for (const language of patternLanguages) {
+            const controlFlow = implementationsByLanguage.get(language).controlFlow;
+            requireValue(
+              controlFlow.terminalAnchors.includes(terminalEvent.sourceAnchor[language]),
+              `${problemLabel} trace ${trace.id} does not end at a ${language} return`,
+            );
+          }
+          const fixture = problem.fixtures.find(({ id }) => id === trace.fixtureId);
+          requireValue(
+            terminalEvent.result === fixture.expectedOutput,
+            `${problemLabel} trace ${trace.id} result does not match fixture ${fixture.id}`,
+          );
+        }
       }
     }
     if (problem.practice !== undefined) {

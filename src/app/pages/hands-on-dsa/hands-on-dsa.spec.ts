@@ -105,7 +105,9 @@ describe('Hands-On DSA route contracts', () => {
     harness.routeNativeElement!.querySelector<HTMLAnchorElement>('a.problem-card')!.click();
     await harness.fixture.whenStable();
     harness.detectChanges();
-    expect(TestBed.inject(Router).url).toBe('/learn/algorithmic-patterns/hashing-complete');
+    expect(TestBed.inject(Router).url).toBe(
+      '/learn/algorithmic-patterns/hashing-complete?pattern=algorithmic-patterns:hashing',
+    );
     const breadcrumb = [
       ...harness.routeNativeElement!.querySelectorAll<HTMLAnchorElement>('.breadcrumbs a'),
     ].find((link) => link.textContent.trim() === 'Hands-On DSA')!;

@@ -155,7 +155,10 @@ export function filterHandsOnDsaGroups(
     );
     const continuationProblems = group.continuationProblems.filter(
       (problem) =>
-        (readiness === 'All' || continuationReadiness(problem) === readiness) &&
+        (readiness === 'All' ||
+          (readiness === 'Guided'
+            ? continuationHasGuidance(problem)
+            : continuationReadiness(problem) === readiness)) &&
         (readiness !== 'Catalogued' ||
           !supportedTitles.has(normalizeProblemTitle(problem.title))) &&
         (difficulty === 'All' || problem.difficulty === difficulty) &&
@@ -175,10 +178,15 @@ export function filterHandsOnDsaGroups(
 export function continuationReadiness(
   problem: InterviewQuestion,
 ): Exclude<HandsOnReadiness, 'All' | 'Guided'> {
-  return problem.canonicalProblem?.practice ||
+  return problem.canonicalProblemRef ||
+    problem.canonicalProblem?.practice ||
     problem.practiceProblem?.implementationStatus === 'complete'
     ? 'Practice-ready'
     : 'Catalogued';
+}
+
+export function continuationHasGuidance(problem: InterviewQuestion): boolean {
+  return Boolean(problem.canonicalProblemRef || problem.canonicalProblem?.trace);
 }
 
 export function handsOnReadinessCounts(groups: HandsOnDsaGroup[]): HandsOnReadinessCounts {
@@ -190,6 +198,7 @@ export function handsOnReadinessCounts(groups: HandsOnDsaGroup[]): HandsOnReadin
     for (const problem of group.essentialProblems) guided.add(normalizeProblemTitle(problem.title));
     for (const problem of group.continuationProblems) {
       const key = normalizeProblemTitle(problem.title);
+      if (continuationHasGuidance(problem)) guided.add(key);
       if (continuationReadiness(problem) === 'Practice-ready') practiceReady.add(key);
       else catalogued.add(key);
     }

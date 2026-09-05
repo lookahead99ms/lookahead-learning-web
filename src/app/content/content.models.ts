@@ -200,6 +200,11 @@ export interface PatternCodeBlock {
   language: 'pseudocode' | PatternLanguage;
   title: string;
   lines: PatternSourceLine[];
+  controlFlow?: {
+    entryAnchor: string;
+    transitions: Record<string, string[]>;
+    terminalAnchors: string[];
+  };
 }
 
 export type GuidedTraceCellState =
@@ -271,6 +276,7 @@ export interface PatternProblemV1 {
   };
   fixtures: PatternProblemFixture[];
   implementations: PatternCodeBlock[];
+  traceSemantics?: 'source-line/v1';
   trace: GuidedTraceV1;
   fixtureTraces?: GuidedTraceV1[];
   practice?: PatternProblemPractice;
@@ -321,11 +327,16 @@ export interface DsaProblemNavigationLink extends DsaContentRoute {
   problemId: string;
 }
 
-export interface DsaProblemNavigation {
+export interface DsaProblemNavigationContext {
   lesson: DsaContentRoute;
   handsOnPatternId: string;
   previous?: DsaProblemNavigationLink;
   next?: DsaProblemNavigationLink;
+}
+
+export interface DsaProblemNavigation extends DsaProblemNavigationContext {
+  /** Alternate curriculum contexts for problems intentionally reused across patterns. */
+  alternates?: DsaProblemNavigationContext[];
 }
 
 export interface DsaProblemContract {

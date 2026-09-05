@@ -214,21 +214,70 @@ select:focus-visible {
   margin-bottom: 18px;
 }
 .focus-entry {
-  display: grid;
+  display: inline-flex;
   flex: 0 0 auto;
-  min-width: 210px;
+  align-items: center;
+  gap: 9px;
   margin-bottom: 18px;
   border-color: #0d8192;
   color: #fff;
   background: #0d8192;
-  text-align: left;
 }
 .focus-entry span {
   font-size: 0.82rem;
 }
-.focus-entry small {
-  color: #d7f4f6;
-  font-size: 0.68rem;
+.focus-entry svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+.reasoning-frame {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.72fr) minmax(0, 1.8fr);
+  gap: 14px;
+  margin-bottom: 13px;
+  padding: 11px 12px;
+  border: 1px solid #bddbe4;
+  border-left: 5px solid #0d8192;
+  border-radius: 11px;
+  background: linear-gradient(115deg, #eaf7f8, #f9fcfd 56%, #fff9ed);
+}
+.reasoning-frame span {
+  color: #087f91;
+  font-size: 0.69rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.reasoning-frame p {
+  margin: 5px 0 0;
+  color: #294257;
+  line-height: 1.4;
+}
+.reasoning-invariant {
+  align-self: stretch;
+  padding: 4px 13px 4px 2px;
+  border-right: 1px solid #c9dfe7;
+}
+.reasoning-approaches {
+  min-width: 0;
+}
+.reasoning-approaches header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+}
+.reasoning-approaches header b {
+  color: #ba5b08;
+}
+.reasoning-approaches header small {
+  color: #607286;
+  font-size: 0.7rem;
   font-weight: 650;
 }
 .guided-trace-stage {
@@ -299,21 +348,25 @@ select:focus-visible {
 }
 .approaches {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 11px;
-  margin-bottom: 13px;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+.approaches article {
+  padding: 8px 10px;
+}
+.approaches h5 {
+  margin-bottom: 4px;
+  font-size: 0.86rem;
 }
 .approaches p {
-  margin: 0 0 8px;
+  margin: 0 0 5px;
+  font-size: 0.76rem;
+  line-height: 1.35;
 }
 .approaches strong {
   color: #93610b;
-  font-size: 0.78rem;
-}
-.invariant {
-  padding: 13px 15px;
-  border-left: 5px solid #0d8192;
-  background: #eaf7f8;
+  font-size: 0.7rem;
 }
 .help-panel,
 .learning-checks details {
@@ -353,13 +406,6 @@ select:focus-visible {
   padding: 0 13px 11px;
   margin: 0;
 }
-.help-panel > .approaches,
-.help-panel > .invariant,
-.help-panel > .mistakes,
-.help-panel > app-guided-algorithm-trace {
-  display: block;
-  margin: 14px;
-}
 .mistakes {
   margin-top: 14px;
 }
@@ -397,11 +443,17 @@ select:focus-visible {
 }
 @media (max-width: 720px) {
   .pilot-heading,
-  .approaches,
   .example-cases-heading,
-  .guided-entry {
+  .guided-entry,
+  .reasoning-frame,
+  .reasoning-approaches header {
     display: grid;
     grid-template-columns: 1fr;
+  }
+  .reasoning-invariant {
+    padding: 2px 2px 10px;
+    border-right: 0;
+    border-bottom: 1px solid #c9dfe7;
   }
   .example-cases {
     grid-template-columns: 1fr;
@@ -409,12 +461,10 @@ select:focus-visible {
   .help-panel > summary {
     display: grid;
   }
-  .help-panel > app-guided-algorithm-trace {
-    margin: 8px;
-  }
   .focus-entry {
     width: 100%;
     min-width: 0;
+    justify-content: center;
   }
 }
 @media (max-width: 520px) {
@@ -437,6 +487,7 @@ select:focus-visible {
   .guided-pane,
   .learning-checks,
   .contract-grid > div,
+  .reasoning-frame,
   .approaches article,
   .mistakes,
   .help-panel,
@@ -445,9 +496,8 @@ select:focus-visible {
     color: CanvasText;
     background: Canvas;
   }
-  .invariant {
-    border-color: Highlight;
-    background: Canvas;
+  .reasoning-invariant {
+    border-color: CanvasText;
   }
   .guided-trace-stage.focused,
   .focus-header,

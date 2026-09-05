@@ -144,10 +144,9 @@
     >
       <div class="section-heading guided-entry">
         <div>
-          <h4>From pair search to one-pass lookup</h4>
+          <h4>Trace the preferred approach</h4>
           <p>
-            Understand the proof, follow each state change beside the relevant code, then practise
-            without the guide.
+            Understand the reasoning first, then follow each executed source line and state change.
           </p>
         </div>
         <button
@@ -155,12 +154,39 @@
           type="button"
           class="focus-entry"
           aria-haspopup="dialog"
+          [attr.aria-expanded]="focusMode()"
+          [attr.aria-label]="'Expand ' + problem().title + ' debugger'"
+          title="Expand debugger"
           (click)="enterFocusMode($event)"
         >
-          <span>Focus debugger</span>
-          <small>Open the one-screen workspace</small>
+          <span>Expand debugger</span>
+          <svg aria-hidden="true" viewBox="0 0 24 24">
+            <path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path>
+            <path d="m3 8 6-6M21 8l-6-6M3 16l6 6M21 16l-6 6"></path>
+          </svg>
         </button>
       </div>
+      <section class="reasoning-frame" aria-label="Reasoning frame">
+        <div class="reasoning-invariant">
+          <span>Invariant</span>
+          <p>{{ activeTrace().invariant }}</p>
+        </div>
+        <div class="reasoning-approaches">
+          <header>
+            <span>Start simple <b aria-hidden="true">→</b> improve</span>
+            <small>Compare the trade-offs before tracing the preferred implementation.</small>
+          </header>
+          <div class="approaches">
+            @for (approach of practice().approaches; track approach.title) {
+              <article>
+                <h5>{{ approach.title }}</h5>
+                <p>{{ approach.explanation }}</p>
+                <strong>{{ approach.complexity }}</strong>
+              </article>
+            }
+          </div>
+        </div>
+      </section>
       <div
         #focusDialog
         class="guided-trace-stage"
@@ -173,12 +199,12 @@
         @if (focusMode()) {
           <header class="focus-header">
             <div>
-              <span>Focused guided practice</span>
+              <span>Expanded guided practice</span>
               <strong [id]="focusDialogTitleId()">{{ problem().title }} debugger</strong>
             </div>
             <p>Step without moving the lesson. Your input, language, and progress stay intact.</p>
             <button #focusExit type="button" class="focus-exit" (click)="exitFocusMode()">
-              Exit focus <kbd>Esc</kbd>
+              Exit expanded view <kbd>Esc</kbd>
             </button>
           </header>
         }
@@ -191,16 +217,6 @@
           (focusExitRequest)="exitFocusMode()"
         />
       </div>
-      <div class="approaches">
-        @for (approach of practice().approaches; track approach.title) {
-          <article>
-            <h5>{{ approach.title }}</h5>
-            <p>{{ approach.explanation }}</p>
-            <strong>{{ approach.complexity }}</strong>
-          </article>
-        }
-      </div>
-      <p class="invariant"><strong>Invariant:</strong> {{ activeTrace().invariant }}</p>
       <div class="mistakes">
         <h5>Common mistakes</h5>
         <ul>
