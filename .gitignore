@@ -52,6 +52,7 @@ docs/platform-completion-plan.private.md
 /scripts/data/learn-source.json
 /.public-release/
 /public-release/
+/.codex-scratch/
 /.angular/cache
 /.angular/delivery-editor/
 .sass-cache/
