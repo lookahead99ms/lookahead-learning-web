@@ -94,7 +94,6 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         transform: translateY(-50%);
       }
       .practice-proof {
-        counter-reset: practice-step;
         display: flex;
         gap: 14px 20px;
         flex-wrap: wrap;
@@ -103,24 +102,11 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         list-style: none;
       }
       .practice-proof li {
-        counter-increment: practice-step;
-        display: inline-grid;
-        grid-template-columns: auto auto;
-        gap: 7px;
-        align-items: baseline;
         color: var(--practice-accent);
         font-size: 0.72rem;
         font-weight: 850;
         letter-spacing: 0.07em;
         text-transform: uppercase;
-      }
-      .practice-proof li::before {
-        content: '0' counter(practice-step);
-        color: #a86008;
-        font-family: Georgia, 'Times New Roman', serif;
-        font-size: 0.78rem;
-        font-weight: 900;
-        letter-spacing: 0;
       }
       .practice-hero-actions {
         position: relative;

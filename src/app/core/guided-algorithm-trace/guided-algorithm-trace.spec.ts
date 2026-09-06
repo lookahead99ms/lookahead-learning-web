@@ -340,6 +340,104 @@ describe('GuidedAlgorithmTrace shared interaction contract', () => {
     );
   });
 
+  it('reconstructs only the selected language runtime state and clears unavailable frames', () => {
+    const activeProblem = problem('target-state', 'Target State', 'values');
+    activeProblem.trace.stateSemantics = 'target-runtime/v1';
+    activeProblem.trace.stateTiming = 'after';
+    activeProblem.trace.events[0].variables = [{ name: 'pythonIndex', type: 'int', value: '7' }];
+    activeProblem.trace.languagePaths = {
+      java: [
+        {
+          sourceAnchor: 'initialize',
+          eventIndex: 0,
+          variables: [
+            { name: 'javaIndex', type: 'integer', value: '0' },
+            { name: 'javaValues', type: 'array', value: '[10,20]' },
+          ],
+        },
+        {
+          sourceAnchor: 'insert',
+          eventIndex: 0,
+          variables: [{ name: 'javaIndex', type: 'integer', value: '1', changed: true }],
+        },
+        {
+          sourceAnchor: 'return',
+          eventIndex: 2,
+          stateUnavailable: true,
+          result: '0',
+        },
+      ],
+      python: [
+        { sourceAnchor: 'initialize', eventIndex: 0 },
+        { sourceAnchor: 'return', eventIndex: 2, result: '0' },
+      ],
+      go: [
+        { sourceAnchor: 'initialize', eventIndex: 0 },
+        { sourceAnchor: 'return', eventIndex: 2, result: '0' },
+      ],
+    };
+    fixture.componentInstance.activeProblem.set(activeProblem);
+    fixture.componentInstance.selectedFixture.set(activeProblem.fixtures[0]);
+    fixture.detectChanges();
+
+    expect(normalizedText(fixture.nativeElement.querySelector('.variable-inspector'))).toContain(
+      'javaIndex integer0',
+    );
+    expect(
+      normalizedText(fixture.nativeElement.querySelector('.variable-inspector')),
+    ).not.toContain('index int0');
+    expect(normalizedText(fixture.nativeElement.querySelector('.state-view'))).toContain(
+      'javaValues1020',
+    );
+
+    const next = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
+      '.trace-controls .primary',
+    )!;
+    next.click();
+    next.click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.state-unavailable')).not.toBeNull();
+    expect(normalizedText(fixture.nativeElement.querySelector('.variable-inspector'))).toContain(
+      'javaIndex integer—',
+    );
+    expect(normalizedText(fixture.nativeElement.querySelector('.debugger-output'))).toContain('0');
+    expect(normalizedText(fixture.nativeElement.querySelector('.terminal'))).toContain(
+      'Execution returned 0',
+    );
+
+    (fixture.nativeElement as HTMLElement)
+      .querySelectorAll<HTMLButtonElement>('.language-tabs button')[1]
+      .click();
+    fixture.detectChanges();
+    expect(normalizedText(fixture.nativeElement.querySelector('.variable-inspector'))).toContain(
+      'pythonIndex int7',
+    );
+    expect(
+      normalizedText(fixture.nativeElement.querySelector('.variable-inspector')),
+    ).not.toContain('javaIndex');
+  });
+
+  it('retains the latest variables and data rows when compact traces omit unchanged state', () => {
+    const activeProblem = problem('compact-state', 'Compact State', 'values');
+    activeProblem.trace.events[1].variables = [];
+    activeProblem.trace.events[1].rows = [];
+    fixture.componentInstance.activeProblem.set(activeProblem);
+    fixture.componentInstance.selectedFixture.set(activeProblem.fixtures[0]);
+    fixture.detectChanges();
+
+    const next = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
+      '.trace-controls .primary',
+    )!;
+    next.click();
+    fixture.detectChanges();
+
+    expect(normalizedText(fixture.nativeElement.querySelector('.state-view'))).toContain('values1');
+    expect(normalizedText(fixture.nativeElement.querySelector('.variable-inspector'))).toContain(
+      'index int0',
+    );
+  });
+
   it('replaces Python-specific generated narration with the selected source line', () => {
     const activeProblem = problem('generated-line', 'Generated Line', 'values');
     activeProblem.trace.events[0].label = 'Line 1: seen = set()';

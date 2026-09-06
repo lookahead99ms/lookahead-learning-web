@@ -137,7 +137,7 @@ describe('Hands-On DSA route contracts', () => {
 
     const status = harness.routeNativeElement!.querySelector<HTMLElement>('.practice-status')!;
     const sequence =
-      harness.routeNativeElement!.querySelector<HTMLOListElement>('ol.practice-proof')!;
+      harness.routeNativeElement!.querySelector<HTMLUListElement>('ul.practice-proof')!;
 
     expect(status.textContent).toContain('Curriculum status: Evolving');
     expect(sequence.querySelectorAll('li')).toHaveLength(4);
