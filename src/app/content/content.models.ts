@@ -602,6 +602,8 @@ export interface CourseLearningUnit {
   planned?: boolean;
   questionModuleId?: string;
   practiceModuleId?: string;
+  /** Selects the shared practice surface; Learn defaults to Hands-On DSA for legacy pattern units. */
+  practiceExperience?: 'handsOnDsa' | 'questionBank';
   /** Related techniques can sit beneath one learner-facing concept family. */
   subUnits?: CourseLearningUnit[];
   /** Replaces "Subpattern" when a family contains tracks, variants, or another unit type. */
@@ -609,6 +611,15 @@ export interface CourseLearningUnit {
 }
 
 export type CourseLayout = 'tiles' | 'learning-map';
+
+export interface CourseLearningPath {
+  guidance: string;
+  preparation: {
+    requirement: 'none' | 'any' | 'all';
+    courseIds: string[];
+  };
+  nextCourseIds: string[];
+}
 
 export interface CourseContent {
   id: string;
@@ -622,6 +633,8 @@ export interface CourseContent {
   /** Defaults to tiles so existing courses retain their current presentation. */
   layout?: CourseLayout;
   learningUnits?: CourseLearningUnit[];
+  /** Explicit prerequisites and recommended continuations for this course. */
+  learningPath?: CourseLearningPath;
   questions: InterviewQuestion[];
   reviewStatus?: ContentReviewStatus;
   access?: ContentAccess;

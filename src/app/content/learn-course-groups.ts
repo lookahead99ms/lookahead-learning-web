@@ -8,18 +8,22 @@ export interface LearnCourseGroup {
 export const LEARN_COURSE_GROUPS: LearnCourseGroup[] = [
   {
     id: 'language-foundations',
-    title: 'Java, Python & Go Foundations',
+    title: 'Programming Language Foundations',
     description:
-      'Build interview-ready foundations in Java, Python, and Go, then translate designs without carrying the wrong language assumptions.',
+      'Start with the language you need, then compare Java, Python, and Go without treating one language as a prerequisite for another.',
     courseIds: [
       'core-java',
-      'java-data-structures',
-      'modern-java',
-      'garbage-collection',
       'python-fundamentals',
       'go-fundamentals',
       'language-comparative-analysis',
     ],
+  },
+  {
+    id: 'java-platform',
+    title: 'Java Platform and Runtime',
+    description:
+      'Build on Java foundations with collections, modern language features, JVM memory, garbage collection, diagnostics, and concurrency.',
+    courseIds: ['java-data-structures', 'modern-java', 'garbage-collection'],
   },
   {
     id: 'data-structures-algorithms',

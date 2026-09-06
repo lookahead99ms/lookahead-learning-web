@@ -11,7 +11,8 @@
             @if (learningGroup(); as group) {
               <a [routerLink]="['/', pathId()]" [queryParams]="{ group: group.id }">{{
                 group.title
-              }}</a>
+              }}</a
+              ><span>/</span><span aria-current="page">{{ currentCourse.title }}</span>
             } @else {
               <span aria-current="page">{{ currentCourse.title }}</span>
             }
@@ -46,12 +47,48 @@
                   : currentCourse.description
             "
           ></p>
-          @if (currentCourse.chips?.length) {
-            <div class="course-chips" aria-label="Capability topics">
-              @for (chip of currentCourse.chips; track chip) {
-                <span>{{ chip }}</span>
+          @if (currentCourse.learningPath; as learningPath) {
+            <section class="course-learning-path" aria-labelledby="course-learning-path-title">
+              <h2 id="course-learning-path-title">Learning path</h2>
+              <p>{{ learningPath.guidance }}</p>
+              <div class="course-learning-path-row">
+                <strong>Recommended preparation</strong>
+                @if (learningPath.preparation.requirement === 'none') {
+                  <span>No prerequisite course.</span>
+                } @else {
+                  <span>
+                    {{ learningPath.preparation.requirement === 'any' ? 'Complete any one: ' : '' }}
+                    @for (item of preparationCourses(); track item.id; let last = $last) {
+                      @if (item.available) {
+                        <a [routerLink]="['/', pathId(), item.id]">{{ item.title }}</a>
+                      } @else {
+                        <span>{{ item.title }} (coming next)</span>
+                      }
+                      @if (!last) {
+                        <span aria-hidden="true"> · </span>
+                      }
+                    }
+                  </span>
+                }
+              </div>
+              @if (continuationCourses().length) {
+                <div class="course-learning-path-row">
+                  <strong>Continue with</strong>
+                  <span>
+                    @for (item of continuationCourses(); track item.id; let last = $last) {
+                      @if (item.available) {
+                        <a [routerLink]="['/', pathId(), item.id]">{{ item.title }}</a>
+                      } @else {
+                        <span>{{ item.title }} (coming next)</span>
+                      }
+                      @if (!last) {
+                        <span aria-hidden="true"> · </span>
+                      }
+                    }
+                  </span>
+                </div>
               }
-            </div>
+            </section>
           }
         </div>
         @if (!isFirstCompetency() || !isLastCompetency()) {
@@ -60,11 +97,11 @@
               @if (previousCompetency(); as previous) {
                 @if (previous.available) {
                   <a class="reader-footer-link previous" [routerLink]="['/', pathId(), previous.id]"
-                    ><span>← Previous</span><strong>{{ previous.title }}</strong></a
+                    ><span>← Previous in group</span><strong>{{ previous.title }}</strong></a
                   >
                 } @else {
                   <span class="reader-footer-link unavailable"
-                    ><span>← Previous</span><strong>{{ previous.title }}</strong
+                    ><span>← Previous in group</span><strong>{{ previous.title }}</strong
                     ><small>Coming next</small></span
                   >
                 }
@@ -76,11 +113,11 @@
                   <a
                     class="reader-footer-link next competency-next-link"
                     [routerLink]="['/', pathId(), next.id]"
-                    ><span>Next →</span><strong>{{ next.title }}</strong></a
+                    ><span>Next in group →</span><strong>{{ next.title }}</strong></a
                   >
                 } @else {
                   <span class="reader-footer-link next unavailable"
-                    ><span>Next →</span><strong>{{ next.title }}</strong
+                    ><span>Next in group →</span><strong>{{ next.title }}</strong
                     ><small>Coming next</small></span
                   >
                 }

@@ -632,7 +632,7 @@ export class Landing {
       topics: [
         {
           id: 'language-foundations',
-          title: 'Java, Python & Go Foundations',
+          title: 'Programming Language Foundations',
           learnGroupId: 'language-foundations',
         },
         {

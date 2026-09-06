@@ -15,18 +15,25 @@ describe('LEARN_COURSE_GROUPS', () => {
     expect(new Set(courseIds).size).toBe(courseIds.length);
   });
 
-  it('keeps Java, Python, and Go in one language-foundations journey', () => {
+  it('keeps independent Java, Python, and Go foundations in one language journey', () => {
     const languages = LEARN_COURSE_GROUPS.find((group) => group.id === 'language-foundations');
 
-    expect(languages?.title).toBe('Java, Python & Go Foundations');
+    expect(languages?.title).toBe('Programming Language Foundations');
     expect(languages?.courseIds).toEqual([
       'core-java',
-      'java-data-structures',
-      'modern-java',
-      'garbage-collection',
       'python-fundamentals',
       'go-fundamentals',
       'language-comparative-analysis',
+    ]);
+  });
+
+  it('separates Java platform depth from general language foundations', () => {
+    const javaPlatform = LEARN_COURSE_GROUPS.find((group) => group.id === 'java-platform');
+
+    expect(javaPlatform?.courseIds).toEqual([
+      'java-data-structures',
+      'modern-java',
+      'garbage-collection',
     ]);
   });
 

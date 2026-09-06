@@ -129,4 +129,37 @@ describe('CourseLearningMap', () => {
     expect(link.textContent?.replace(/\s+/g, ' ').trim()).toBe('Practice Hashing →');
     expect(link.getAttribute('href')).toBe('/learn/hands-on-dsa?pattern=course:hashing-lookup');
   });
+
+  it('routes question-bank practice to its dedicated module with a visible count', () => {
+    const practiceQuestions = Array.from({ length: 4 }, (_, index) => ({
+      ...question(`practice-${index + 1}`, index + 1),
+      moduleId: 'practice-module',
+    }));
+    fixture.componentRef.setInput('course', {
+      ...course,
+      modules: [
+        ...course.modules,
+        { id: 'practice-module', order: 3, title: 'Practice', description: 'Practice.' },
+      ],
+      questions: [...course.questions, ...practiceQuestions],
+    });
+    fixture.componentRef.setInput('units', [
+      {
+        id: 'streams',
+        title: 'Streams',
+        description: 'Build pipelines.',
+        theoryModuleId: 'theory-module',
+        questionModuleId: 'question-module',
+        practiceModuleId: 'practice-module',
+        practiceExperience: 'questionBank',
+      },
+    ]);
+    fixture.detectChanges();
+
+    const link = fixture.nativeElement.querySelector(
+      '.learning-action.practice',
+    ) as HTMLAnchorElement;
+    expect(link.textContent?.replace(/\s+/g, ' ').trim()).toBe('Practice 4→');
+    expect(link.getAttribute('href')).toBe('/learn/course/module/practice-module');
+  });
 });

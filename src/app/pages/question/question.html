@@ -432,6 +432,20 @@
             }
           </div>
         </section>
+        @if (!item.solutions?.length) {
+          @if (resolvedCodingVisual(item); as visual) {
+            <figure class="theory-visual" aria-label="Interactive code explanation">
+              @if (visual.type === 'interactive') {
+                <app-interactive-theory-visual [visual]="visual" />
+              } @else {
+                <img [src]="visual.assetPath" [alt]="visual.alt" />
+              }
+              @if (visual.caption; as caption) {
+                <figcaption>{{ caption }}</figcaption>
+              }
+            </figure>
+          }
+        }
         <section class="main-followups">
           <p class="panel-label">Likely follow-ups</p>
           @for (followUp of item.followUps; track followUp.question) {

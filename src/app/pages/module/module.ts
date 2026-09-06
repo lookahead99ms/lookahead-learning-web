@@ -213,8 +213,13 @@ export class Module implements OnInit {
   }
 
   protected questionFilterTags(question: InterviewQuestion): string[] {
-    const contentType =
-      question.contentType === 'q-and-a' || !question.contentType
+    const isPracticeModule =
+      this.course()?.learningUnits?.some(
+        ({ practiceModuleId }) => practiceModuleId === this.module()?.id,
+      ) ?? false;
+    const contentType = isPracticeModule
+      ? 'Practice'
+      : question.contentType === 'q-and-a' || !question.contentType
         ? 'Q&A'
         : question.contentType === 'dsa-pattern'
           ? 'DSA pattern'
