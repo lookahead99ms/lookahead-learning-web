@@ -404,6 +404,16 @@ function validateLearningUnits(units, moduleIds, courseLabel) {
     for (const moduleId of [unit.questionModuleId, unit.practiceModuleId].filter(Boolean)) {
       requireValue(moduleIds.has(moduleId), `${unitLabel} references missing module ${moduleId}`);
     }
+    if (unit.practiceExperience !== undefined) {
+      requireValue(
+        ['handsOnDsa', 'questionBank'].includes(unit.practiceExperience),
+        `${unitLabel} has unsupported practiceExperience ${unit.practiceExperience}`,
+      );
+      requireValue(
+        Boolean(unit.practiceModuleId),
+        `${unitLabel} practiceExperience requires practiceModuleId`,
+      );
+    }
     if (unit.questionModuleId) discoverableModuleIds.add(unit.questionModuleId);
     if (unit.practiceModuleId) discoverableModuleIds.add(unit.practiceModuleId);
     if (unit.subUnits !== undefined) {
@@ -421,6 +431,61 @@ function validateLearningUnits(units, moduleIds, courseLabel) {
   return discoverableModuleIds;
 }
 
+function validateCourseLearningPath(learningPath, courseId, knownCourseIds, courseLabel) {
+  if (learningPath === undefined) return;
+
+  requireValue(
+    typeof learningPath?.guidance === 'string' && learningPath.guidance.trim(),
+    `${courseLabel}: learningPath guidance is required`,
+  );
+  requireValue(
+    ['none', 'any', 'all'].includes(learningPath?.preparation?.requirement),
+    `${courseLabel}: learningPath preparation requirement is invalid`,
+  );
+  requireValue(
+    Array.isArray(learningPath?.preparation?.courseIds),
+    `${courseLabel}: learningPath preparation courseIds must be an array`,
+  );
+  requireValue(
+    Array.isArray(learningPath?.nextCourseIds),
+    `${courseLabel}: learningPath nextCourseIds must be an array`,
+  );
+
+  const preparationIds = learningPath.preparation.courseIds;
+  const nextCourseIds = learningPath.nextCourseIds;
+  if (learningPath.preparation.requirement === 'none') {
+    requireValue(
+      preparationIds.length === 0,
+      `${courseLabel}: prerequisite-free learningPath cannot list preparation courses`,
+    );
+  } else {
+    requireValue(
+      preparationIds.length > 0,
+      `${courseLabel}: learningPath preparation requires at least one course`,
+    );
+  }
+
+  for (const [relationship, courseIds] of [
+    ['preparation', preparationIds],
+    ['continuation', nextCourseIds],
+  ]) {
+    requireValue(
+      new Set(courseIds).size === courseIds.length,
+      `${courseLabel}: duplicate learningPath ${relationship} course`,
+    );
+    for (const relatedCourseId of courseIds) {
+      requireValue(
+        relatedCourseId !== courseId,
+        `${courseLabel}: learningPath cannot reference itself`,
+      );
+      requireValue(
+        knownCourseIds.has(relatedCourseId),
+        `${courseLabel}: learningPath references missing course ${relatedCourseId}`,
+      );
+    }
+  }
+}
+
 try {
   await access(contentRoot);
 } catch {
@@ -430,6 +495,20 @@ try {
 }
 
 const contentFiles = await filesWithExtension(contentRoot, '.json');
+const courseIdsByPath = new Map();
+const catalogItemsByPath = new Map();
+for (const file of contentFiles) {
+  const label = relative(contentRoot, file);
+  if (basename(file) === 'course.json') {
+    const manifest = JSON.parse(await readFile(file, 'utf8'));
+    if (!courseIdsByPath.has(manifest.path)) courseIdsByPath.set(manifest.path, new Set());
+    courseIdsByPath.get(manifest.path).add(manifest.id);
+  } else if (basename(file) === 'catalog.json') {
+    const pathId = label.split('/')[0];
+    const catalog = JSON.parse(await readFile(file, 'utf8'));
+    catalogItemsByPath.set(pathId, new Map(catalog.map((item) => [item.id, item])));
+  }
+}
 const canonicalDsaProblems = await readCanonicalDsaProblems(contentRoot);
 canonicalDsaProblemCount = canonicalDsaProblems.size;
 const canonicalAliases = new Set();
@@ -464,6 +543,18 @@ for (const file of contentFiles) {
   const manifest = JSON.parse(await readFile(file, 'utf8'));
   courseCount += 1;
   requireValue(manifest.id && manifest.path && manifest.title, `${label}: missing course identity`);
+  const catalogItem = catalogItemsByPath.get(manifest.path)?.get(manifest.id);
+  requireValue(catalogItem, `${label}: course is missing from ${manifest.path}/catalog.json`);
+  requireValue(
+    catalogItem.title === manifest.title,
+    `${label}: title differs from ${manifest.path}/catalog.json`,
+  );
+  validateCourseLearningPath(
+    manifest.learningPath,
+    manifest.id,
+    courseIdsByPath.get(manifest.path) ?? new Set(),
+    label,
+  );
   requireValue(
     Array.isArray(manifest.modules) && manifest.modules.length > 0,
     `${label}: no modules`,

@@ -94,7 +94,11 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
                         class="learning-action practice"
                         [routerLink]="practiceRoute(subUnit)"
                         [queryParams]="practiceQueryParams(subUnit)"
-                        >Practice {{ subUnit.title }} <span aria-hidden="true">→</span></a
+                        >{{ practiceLabel(subUnit) }}
+                        @if (usesQuestionBankPractice(subUnit)) {
+                          <span class="learning-action-count">{{ practiceCount(subUnit) }}</span>
+                        }
+                        <span aria-hidden="true">→</span></a
                       >
                     }
                   </div>
@@ -144,7 +148,11 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
                   class="learning-action practice"
                   [routerLink]="practiceRoute(unit)"
                   [queryParams]="practiceQueryParams(unit)"
-                  >Practice {{ unit.title }} <span aria-hidden="true">→</span></a
+                  >{{ practiceLabel(unit) }}
+                  @if (usesQuestionBankPractice(unit)) {
+                    <span class="learning-action-count">{{ practiceCount(unit) }}</span>
+                  }
+                  <span aria-hidden="true">→</span></a
                 >
               }
             </div>
@@ -301,6 +309,16 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
         border-color: var(--learning-accent);
         background: var(--learning-surface);
       }
+      .learning-action-count {
+        display: grid;
+        min-width: 22px;
+        min-height: 22px;
+        place-items: center;
+        border-radius: 999px;
+        color: #fff;
+        background: var(--learning-accent);
+        font-size: 0.72rem;
+      }
       .learning-subunits {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -409,6 +427,10 @@ export class CourseLearningMap {
     return questionsForModule(this.course(), unit.questionModuleId).length;
   }
 
+  protected practiceCount(unit: CourseLearningUnit): number {
+    return questionsForModule(this.course(), unit.practiceModuleId).length;
+  }
+
   protected unitOrder(unit: CourseLearningUnit): string | null {
     if (unit.hideOrder) return null;
     const order =
@@ -423,13 +445,23 @@ export class CourseLearningMap {
   }
 
   protected practiceRoute(unit: CourseLearningUnit): string[] {
-    return this.pathId() === 'learn'
+    return this.pathId() === 'learn' && !this.usesQuestionBankPractice(unit)
       ? ['/', 'learn', 'hands-on-dsa']
       : this.moduleRoute(unit.practiceModuleId ?? unit.theoryModuleId);
   }
 
   protected practiceQueryParams(unit: CourseLearningUnit): { pattern: string } | null {
-    return this.pathId() === 'learn' ? { pattern: `${this.courseId()}:${unit.id}` } : null;
+    return this.pathId() === 'learn' && !this.usesQuestionBankPractice(unit)
+      ? { pattern: `${this.courseId()}:${unit.id}` }
+      : null;
+  }
+
+  protected usesQuestionBankPractice(unit: CourseLearningUnit): boolean {
+    return unit.practiceExperience === 'questionBank';
+  }
+
+  protected practiceLabel(unit: CourseLearningUnit): string {
+    return this.usesQuestionBankPractice(unit) ? 'Practice' : `Practice ${unit.title}`;
   }
 
   protected subUnitGroupLabel(unit: CourseLearningUnit): string {

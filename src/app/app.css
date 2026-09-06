@@ -897,21 +897,6 @@ a.reader-module:focus-visible {
 .catalog-context-panel .reader-question-title {
   margin: 0;
 }
-.course-chips {
-  margin-top: 14px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.course-chips span {
-  padding: 6px 10px;
-  border: 1px solid var(--border-strong);
-  border-radius: 999px;
-  color: var(--accent-link);
-  background: var(--surface-accent);
-  font-size: 0.8rem;
-  font-weight: 700;
-}
 .course-context-panel > .eyebrow,
 .catalog-context-panel > .eyebrow {
   margin: 5px 0 0;

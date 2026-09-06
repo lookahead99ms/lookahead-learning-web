@@ -414,4 +414,59 @@ describe('Question canonical DSA navigation', () => {
     expect(root.querySelector('.question-inner-navigation .previous')).toBeNull();
     expect(root.querySelector('.question-inner-navigation .next')).toBeNull();
   });
+
+  it('renders an authentic debugger for a code-answer question without solution tabs', async () => {
+    const streamQuestion: InterviewQuestion = {
+      id: 'stream-student-merit-names',
+      moduleId: 'streams',
+      order: 1,
+      title: 'Return merit student names',
+      difficulty: 'Beginner',
+      tags: ['Java Streams'],
+      interviewAnswer: 'Filter, sort, map, and collect.',
+      explanation: ['Trace the element shape after each stage.'],
+      code: {
+        language: 'java',
+        title: 'Merit students',
+        source: 'students.stream().filter(student -> student.merit() > 80).toList();',
+      },
+      visual: {
+        type: 'interactive',
+        assetPath: '/content/learn/modern-java/visuals/stream-practice-debugger.html#merit',
+        alt: 'Interactive merit student stream trace',
+        caption: 'Trace the practical pipeline.',
+      },
+      versionNotes: [],
+      followUps: [],
+      reviewStatus: 'reviewed',
+    };
+    const streamCourse: CourseContent = {
+      id: 'modern-java',
+      path: 'learn',
+      title: 'Modern Java',
+      description: 'Modern Java APIs.',
+      version: 'Java 21+',
+      modules: [
+        {
+          id: 'streams',
+          order: 1,
+          title: 'Streams: Filter, Map, Collect, and Reduce',
+          description: 'Build practical pipelines.',
+        },
+      ],
+      questions: [streamQuestion],
+    };
+    content.getCatalog.mockReturnValueOnce(of([{ id: 'modern-java', title: 'Modern Java' }]));
+    content.getCourse.mockReturnValueOnce(of(streamCourse));
+    const harness = await RouterTestingHarness.create();
+
+    await harness.navigateByUrl('/learn/modern-java/stream-student-merit-names', Question);
+
+    const visual = harness.routeNativeElement?.querySelector<HTMLIFrameElement>(
+      'iframe.interactive-theory-frame',
+    );
+    expect(visual?.title).toBe('Interactive merit student stream trace');
+    expect(visual?.getAttribute('src')).toContain('stream-practice-debugger.html#merit');
+    expect(harness.routeNativeElement?.textContent).toContain('Trace the practical pipeline.');
+  });
 });
