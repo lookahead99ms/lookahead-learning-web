@@ -3,7 +3,10 @@ import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { test } from 'node:test';
-import { buildHandsOnDsaIndex } from './generate-hands-on-dsa-index.mjs';
+import {
+  applyHandsOnPreparationPlan,
+  buildHandsOnDsaIndex,
+} from './generate-hands-on-dsa-index.mjs';
 
 async function writeJson(root, path, value) {
   const target = join(root, path);
@@ -79,6 +82,7 @@ test('builds a compact canonical-only Hands-On DSA index', async () => {
 
   assert.deepEqual(index.totals, { groups: 1, problemPlacements: 1, distinctProblems: 1 });
   assert.equal(index.groups[0].problems[0].id, 'sample');
+  assert.equal(index.groups[0].preparationOrder, 1);
   assert.deepEqual(index.groups[0].problems[0].route, [
     '/learn',
     'algorithmic-patterns',
@@ -88,6 +92,85 @@ test('builds a compact canonical-only Hands-On DSA index', async () => {
   assert.doesNotMatch(serialized, /unfinished-route/);
   assert.doesNotMatch(serialized, /FULL_SOLUTION/);
   assert.doesNotMatch(serialized, /FULL_TRACE/);
+});
+
+test('applies unique names and a contiguous preparation order without changing group ids', () => {
+  const groups = [
+    { id: 'algorithmic-patterns:linked-lists', title: 'Linked Lists' },
+    { id: 'core-data-structures:linked-lists', title: 'Linked Lists' },
+  ];
+  const plan = {
+    schemaVersion: 'hands-on-dsa-preparation/v1',
+    groups: [
+      {
+        groupId: 'core-data-structures:linked-lists',
+        preparationOrder: 1,
+        displayTitle: 'Linked List Fundamentals',
+      },
+      {
+        groupId: 'algorithmic-patterns:linked-lists',
+        preparationOrder: 2,
+        displayTitle: 'Linked List Interview Patterns',
+      },
+    ],
+  };
+
+  assert.deepEqual(
+    applyHandsOnPreparationPlan(groups, plan).map(({ id, title, preparationOrder }) => ({
+      id,
+      title,
+      preparationOrder,
+    })),
+    [
+      {
+        id: 'core-data-structures:linked-lists',
+        title: 'Linked List Fundamentals',
+        preparationOrder: 1,
+      },
+      {
+        id: 'algorithmic-patterns:linked-lists',
+        title: 'Linked List Interview Patterns',
+        preparationOrder: 2,
+      },
+    ],
+  );
+});
+
+test('rejects incomplete, duplicate, and non-contiguous preparation metadata', () => {
+  const groups = [
+    { id: 'one', title: 'Same' },
+    { id: 'two', title: 'Same' },
+  ];
+  assert.throws(
+    () =>
+      applyHandsOnPreparationPlan(groups, {
+        schemaVersion: 'hands-on-dsa-preparation/v1',
+        groups: [{ groupId: 'one', preparationOrder: 1, displayTitle: 'One' }],
+      }),
+    /missing group two/,
+  );
+  assert.throws(
+    () =>
+      applyHandsOnPreparationPlan(groups, {
+        schemaVersion: 'hands-on-dsa-preparation/v1',
+        groups: [
+          { groupId: 'one', preparationOrder: 1, displayTitle: 'One' },
+          { groupId: 'two', preparationOrder: 1, displayTitle: 'Two' },
+        ],
+      }),
+    /duplicate order 1/,
+  );
+  assert.throws(
+    () =>
+      applyHandsOnPreparationPlan(groups, {
+        schemaVersion: 'hands-on-dsa-preparation/v1',
+        groups: [
+          { groupId: 'one', preparationOrder: 1, displayTitle: 'One' },
+          { groupId: 'two', preparationOrder: 3, displayTitle: 'Two' },
+        ],
+      }),
+    /orders must be contiguous/,
+  );
 });
 
 test('rejects unresolved canonical references', async () => {

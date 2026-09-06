@@ -9,8 +9,83 @@ export const handsOnCoursePaths = [
   'learn/sorting-searching',
 ];
 
+const preparationPlanPath = 'learn/hands-on-dsa-preparation.json';
+
 async function readJson(path) {
   return JSON.parse(await readFile(path, 'utf8'));
+}
+
+async function readPreparationPlan(contentRoot) {
+  try {
+    return await readJson(join(contentRoot, preparationPlanPath));
+  } catch (error) {
+    if (error?.code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
+export function applyHandsOnPreparationPlan(groups, plan, { required = false } = {}) {
+  if (!plan) {
+    if (required) throw new Error(`${preparationPlanPath}: preparation sequence is required`);
+    return groups.map((group, index) => ({ ...group, preparationOrder: index + 1 }));
+  }
+  if (plan.schemaVersion !== 'hands-on-dsa-preparation/v1' || !Array.isArray(plan.groups)) {
+    throw new Error(`${preparationPlanPath}: invalid preparation sequence`);
+  }
+
+  const discoveredIds = new Set(groups.map(({ id }) => id));
+  const metadataById = new Map();
+  const orders = new Set();
+  const displayTitles = new Set();
+  for (const item of plan.groups) {
+    const displayTitle = item?.displayTitle?.trim();
+    if (!discoveredIds.has(item?.groupId)) {
+      throw new Error(`${preparationPlanPath}: unknown group ${item?.groupId ?? 'missing'}`);
+    }
+    if (metadataById.has(item.groupId)) {
+      throw new Error(`${preparationPlanPath}: duplicate group ${item.groupId}`);
+    }
+    if (!Number.isInteger(item.preparationOrder) || item.preparationOrder < 1) {
+      throw new Error(`${preparationPlanPath}: invalid order for ${item.groupId}`);
+    }
+    if (orders.has(item.preparationOrder)) {
+      throw new Error(`${preparationPlanPath}: duplicate order ${item.preparationOrder}`);
+    }
+    if (!displayTitle) {
+      throw new Error(`${preparationPlanPath}: missing display title for ${item.groupId}`);
+    }
+    const normalizedTitle = displayTitle.toLowerCase();
+    if (displayTitles.has(normalizedTitle)) {
+      throw new Error(`${preparationPlanPath}: duplicate display title ${displayTitle}`);
+    }
+    metadataById.set(item.groupId, { ...item, displayTitle });
+    orders.add(item.preparationOrder);
+    displayTitles.add(normalizedTitle);
+  }
+
+  for (const group of groups) {
+    if (!metadataById.has(group.id)) {
+      throw new Error(`${preparationPlanPath}: missing group ${group.id}`);
+    }
+  }
+  if (metadataById.size !== groups.length) {
+    throw new Error(`${preparationPlanPath}: expected ${groups.length} groups`);
+  }
+  const orderedRanks = [...orders].sort((left, right) => left - right);
+  if (orderedRanks.some((rank, index) => rank !== index + 1)) {
+    throw new Error(`${preparationPlanPath}: orders must be contiguous from 1`);
+  }
+
+  return groups
+    .map((group) => {
+      const metadata = metadataById.get(group.id);
+      return {
+        ...group,
+        title: metadata.displayTitle,
+        preparationOrder: metadata.preparationOrder,
+      };
+    })
+    .sort((left, right) => left.preparationOrder - right.preparationOrder);
 }
 
 function flattenUnits(units) {
@@ -31,7 +106,11 @@ function problemSummary(problem, placement) {
   };
 }
 
-export async function buildHandsOnDsaIndex(contentRoot, coursePaths = handsOnCoursePaths) {
+export async function buildHandsOnDsaIndex(
+  contentRoot,
+  coursePaths = handsOnCoursePaths,
+  options = {},
+) {
   const canonicalProblems = await readCanonicalDsaProblems(contentRoot);
   const groups = [];
 
@@ -135,15 +214,22 @@ export async function buildHandsOnDsaIndex(contentRoot, coursePaths = handsOnCou
     }
   }
 
-  const distinctProblems = new Set(groups.flatMap((group) => group.problems.map(({ id }) => id)));
+  const orderedGroups = applyHandsOnPreparationPlan(
+    groups,
+    await readPreparationPlan(contentRoot),
+    { required: options.requirePreparationPlan ?? false },
+  );
+  const distinctProblems = new Set(
+    orderedGroups.flatMap((group) => group.problems.map(({ id }) => id)),
+  );
   return {
     schemaVersion: 'hands-on-dsa-index/v1',
     totals: {
-      groups: groups.length,
-      problemPlacements: groups.reduce((sum, group) => sum + group.problems.length, 0),
+      groups: orderedGroups.length,
+      problemPlacements: orderedGroups.reduce((sum, group) => sum + group.problems.length, 0),
       distinctProblems: distinctProblems.size,
     },
-    groups,
+    groups: orderedGroups,
   };
 }
 

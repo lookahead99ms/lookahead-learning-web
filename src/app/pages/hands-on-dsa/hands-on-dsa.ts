@@ -226,7 +226,10 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent);
       }
       .pattern-filter a {
+        display: inline-flex;
         flex: 0 0 auto;
+        align-items: baseline;
+        gap: 6px;
         scroll-snap-align: center;
         padding: 8px 12px;
         border: 1px solid #c7d9e8;
@@ -241,6 +244,17 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         border-color: var(--practice-accent);
         color: #fff;
         background: var(--practice-accent);
+      }
+      .pattern-filter-order {
+        color: #a86008;
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 0.68rem;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0;
+      }
+      .pattern-filter a[aria-current='page'] .pattern-filter-order {
+        color: #fff;
+        opacity: 0.82;
       }
       .active-practice {
         margin: 0 0 26px;
@@ -262,6 +276,20 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         color: var(--practice-ink);
         font-family: 'Avenir Next', Avenir, 'Segoe UI', sans-serif;
         letter-spacing: -0.03em;
+      }
+      .pattern-group h2 {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+      }
+      .pattern-group-order {
+        flex: 0 0 auto;
+        color: #a86008;
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 0.86rem;
+        font-variant-numeric: tabular-nums;
+        font-weight: 900;
+        letter-spacing: 0;
       }
       .active-practice header p,
       .pattern-group summary p {
@@ -524,6 +552,9 @@ export class HandsOnDsa implements OnInit {
     'Intermediate',
     'Advanced',
   ];
+  protected preparationOrderLabel(order: number): string {
+    return order.toString().padStart(2, '0');
+  }
   protected readonly groups = computed(() => this.catalog()?.groups ?? []);
   protected readonly selectedGroup = computed(() =>
     resolveHandsOnDsaIndexGroup(this.groups(), this.patternId()),

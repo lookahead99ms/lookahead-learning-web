@@ -212,6 +212,7 @@ function indexFor(
     groups: [
       {
         id: 'algorithmic-patterns:hashing-lookup',
+        preparationOrder: 18,
         courseId: 'algorithmic-patterns',
         courseTitle: 'Algorithmic Patterns',
         title: groupTitle,

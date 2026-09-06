@@ -32,6 +32,7 @@ export interface HandsOnDsaIndexProblem {
 
 export interface HandsOnDsaIndexGroup {
   id: string;
+  preparationOrder: number;
   courseId: string;
   courseTitle: string;
   title: string;

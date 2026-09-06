@@ -6,6 +6,7 @@ import {
   primaryPracticePlacement,
   readCanonicalDsaProblems,
 } from './canonical-dsa-contract.mjs';
+import { buildHandsOnDsaIndex } from './generate-hands-on-dsa-index.mjs';
 
 const repositoryRoot = fileURLToPath(new URL('../', import.meta.url));
 const requestedRoot = process.argv[2];
@@ -447,6 +448,7 @@ for (const file of contentFiles) {
     deliveryPlanCount += 1;
     continue;
   }
+  if (label === 'learn/hands-on-dsa-preparation.json') continue;
   if (
     label.includes('/modules/') ||
     label.includes('/traces/') ||
@@ -700,6 +702,10 @@ for (const file of contentFiles) {
     }
   }
 }
+
+await buildHandsOnDsaIndex(contentRoot, undefined, {
+  requirePreparationPlan: requestedRoot === '--external',
+});
 
 for (const assetPath of referencedAssetPaths) {
   if (!assetPath.startsWith('/content/')) continue;
