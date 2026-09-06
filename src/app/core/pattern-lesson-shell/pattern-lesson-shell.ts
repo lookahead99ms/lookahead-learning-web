@@ -125,12 +125,12 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         aria-labelledby="pattern-variations-heading"
       >
         <p class="section-label"><span>05 / 14</span>Adapt</p>
-        <h2 id="pattern-variations-heading">Pattern variations</h2>
+        <h2 id="pattern-variations-heading">Choose the right pattern variant</h2>
         <div class="variation-grid">
           @for (variation of lesson().variations; track variation.id) {
             <article>
               <h3>{{ variation.title }}</h3>
-              <p><strong>Use it when:</strong> {{ variation.trigger }}</p>
+              <p><strong>Why this variant:</strong> {{ variation.trigger }}</p>
               <p><strong>Invariant:</strong> {{ variation.invariant }}</p>
             </article>
           }
@@ -143,7 +143,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
                 <article>
                   <span>{{ algorithm.family }}</span>
                   <h4>{{ algorithm.name }}</h4>
-                  <p><strong>Use when:</strong> {{ algorithm.useWhen }}</p>
+                  <p><strong>Why this algorithm:</strong> {{ algorithm.useWhen }}</p>
                   <p><strong>Invariant:</strong> {{ algorithm.invariant }}</p>
                   <p><strong>Complexity:</strong> {{ algorithm.complexity }}</p>
                   <p class="algorithm-anchor">{{ algorithm.memoryAnchor }}</p>
@@ -373,7 +373,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         <a
           class="practice-hub-link"
           routerLink="/learn/hands-on-dsa"
-          [queryParams]="{ pattern: lesson().id }"
+          [queryParams]="{ pattern: practicePatternId() }"
           >Open this pattern in Hands-On DSA <span aria-hidden="true">→</span></a
         >
         <div class="practice-grid">
@@ -519,15 +519,13 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         margin: 0 0 9px;
         display: inline-flex;
         align-items: center;
-        gap: 7px;
-        padding: 4px 9px;
-        border: 1px solid #b9dbe1;
-        border-radius: 999px;
-        background: #f1fafb;
-        line-height: 1;
+        gap: 9px;
+        padding-left: 11px;
+        border-left: 3px solid var(--lesson-teal);
+        line-height: 1.2;
       }
       .section-label > span {
-        padding-right: 7px;
+        padding-right: 9px;
         border-right: 1px solid #b9dbe1;
         color: #587387;
         font-variant-numeric: tabular-nums;
@@ -598,9 +596,8 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         color: #fff;
       }
       .model-section .section-label {
-        border-color: #3f7082;
+        border-left-color: #75d9df;
         color: #9be6ea;
-        background: #173b4b;
       }
       .model-section .section-label > span {
         border-right-color: #3f7082;
@@ -1002,7 +999,6 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         .section-label > span {
           border-color: CanvasText;
           color: CanvasText;
-          background: Canvas;
         }
         .practice-grid a:focus-visible,
         .example-picker select:focus-visible,
@@ -1020,6 +1016,7 @@ export class PatternLessonShell {
   readonly practiceItems = input.required<InterviewQuestion[]>();
   readonly pathId = input.required<string>();
   readonly courseId = input.required<string>();
+  readonly practicePatternId = input.required<string>();
   readonly questionModuleId = input<string | null>(null);
   readonly questionCount = input(0);
   protected readonly workedExampleIndex = signal(0);

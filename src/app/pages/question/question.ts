@@ -22,7 +22,11 @@ import {
   reviewStatusLabel,
 } from '../../content/content.models';
 import { ContentService } from '../../content/content.service';
-import { flattenLearningUnits, orderedTheoryArticles } from '../../content/learning-units';
+import {
+  flattenLearningUnits,
+  handsOnPatternIdForModule,
+  orderedTheoryArticles,
+} from '../../content/learning-units';
 import { authenticCodingVisual, relatedPracticeItems } from '../../content/pattern-experience';
 import { questionModuleIdForArticle, questionsForModule } from '../../content/question-discovery';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
@@ -756,10 +760,11 @@ export class Question implements OnInit {
   protected handsOnPatternId(item: InterviewQuestion): string {
     const canonicalPatternId = this.canonicalNavigation(item)?.handsOnPatternId;
     if (canonicalPatternId) return canonicalPatternId;
-    const unit = flattenLearningUnits(this.course()?.learningUnits ?? []).find(
-      (candidate) => candidate.practiceModuleId === item.moduleId,
+    return handsOnPatternIdForModule(
+      this.courseId(),
+      this.course()?.learningUnits ?? [],
+      item.moduleId,
     );
-    return unit ? `${this.courseId()}:${unit.id}` : '';
   }
 
   protected handsOnPatternTitle(item: InterviewQuestion): string {

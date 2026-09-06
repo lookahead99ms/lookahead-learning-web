@@ -135,7 +135,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
 
       <section
         id="foundation-pitfalls"
-        class="lesson-section"
+        class="lesson-section wide-section"
         aria-labelledby="foundation-pitfalls-heading"
       >
         <p class="section-label"><span>Debug</span>Failure contrasts</p>
@@ -340,16 +340,16 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
       .section-label {
         display: inline-flex;
         align-items: center;
-        gap: 7px;
+        gap: 9px;
         width: fit-content;
         margin: 0;
-        padding: 4px 9px;
-        border: 1px solid #b9dbe1;
-        border-radius: 999px;
-        background: #f1fafb;
-        line-height: 1;
+        padding-left: 11px;
+        border-left: 3px solid var(--lesson-teal);
+        line-height: 1.2;
       }
       .section-label span {
+        padding-right: 9px;
+        border-right: 1px solid #b9dbe1;
         color: #53697c;
       }
       .model-section {
@@ -462,6 +462,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
       }
       .pitfall-list {
         display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 10px;
       }
       .pitfall-list article {
@@ -590,6 +591,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
           padding: 18px;
         }
         .model-grid,
+        .pitfall-list,
         .practice-grid {
           grid-template-columns: 1fr;
         }
@@ -613,6 +615,11 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
           color: CanvasText;
           background: Canvas;
           box-shadow: none;
+        }
+        .section-label,
+        .section-label span {
+          border-color: CanvasText;
+          color: CanvasText;
         }
         .practice-grid a:focus-visible,
         .visual-transcript summary:focus-visible {

@@ -57,11 +57,7 @@
                     <a
                       class="course-card learn-course-card"
                       [id]="course.id"
-                      [routerLink]="
-                        course.entryContentId
-                          ? ['/learn', course.id, course.entryContentId]
-                          : ['/learn', course.id]
-                      "
+                      [routerLink]="['/learn', course.id]"
                     >
                       @if ((course.reviewStatus ?? 'needs-review') !== 'reviewed') {
                         <span
