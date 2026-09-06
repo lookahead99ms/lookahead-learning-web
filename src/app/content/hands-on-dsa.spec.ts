@@ -3,7 +3,9 @@ import {
   buildHandsOnDsaGroups,
   filterHandsOnDsaGroups,
   handsOnReadinessCounts,
+  rankedHandsOnDsaIndexProblems,
   resolveHandsOnDsaGroup,
+  type HandsOnDsaIndexGroup,
   uniqueHandsOnProblemCount,
 } from './hands-on-dsa';
 import {
@@ -157,6 +159,47 @@ describe('Hands-On DSA projection', () => {
       practiceReady: 0,
       catalogued: 2,
     });
+  });
+
+  it('orders ranked results in either difficulty direction', () => {
+    const difficultyGroup: HandsOnDsaIndexGroup = {
+      id: 'algorithmic-patterns:test',
+      preparationOrder: 1,
+      courseId: 'algorithmic-patterns',
+      courseTitle: 'Algorithmic Patterns',
+      title: 'Test pattern',
+      description: 'A ranking fixture.',
+      unitId: 'test',
+      practiceModuleId: 'test-practice',
+      lessonId: 'test-lesson',
+      lessonTitle: 'Test pattern',
+      tags: [],
+      hasGuidedLesson: true,
+      problems: (['Advanced', 'Beginner', 'Intermediate'] as const).map((difficulty, index) => ({
+        id: difficulty.toLowerCase(),
+        title: difficulty,
+        description: `${difficulty} fixture`,
+        difficulty,
+        variation: 'Canonical invariant',
+        invariantAdaptation: 'Preserve the invariant.',
+        version: 'fixture-version',
+        questionId: difficulty.toLowerCase(),
+        route: ['/learn', 'algorithmic-patterns', difficulty.toLowerCase()],
+        interviewRank: index + 1,
+        studyOrder: index + 1,
+      })),
+    };
+
+    expect(
+      rankedHandsOnDsaIndexProblems([difficultyGroup], 'difficulty-ascending').map(
+        ({ difficulty }) => difficulty,
+      ),
+    ).toEqual(['Beginner', 'Intermediate', 'Advanced']);
+    expect(
+      rankedHandsOnDsaIndexProblems([difficultyGroup], 'difficulty-descending').map(
+        ({ difficulty }) => difficulty,
+      ),
+    ).toEqual(['Advanced', 'Intermediate', 'Beginner']);
   });
 
   it('counts guided and independent capabilities without calling a completed problem catalogued', () => {

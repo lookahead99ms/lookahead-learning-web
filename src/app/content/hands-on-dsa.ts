@@ -13,7 +13,11 @@ export type HandsOnDifficulty = InterviewQuestion['difficulty'] | 'All';
 export type HandsOnReadiness = 'All' | 'Guided' | 'Practice-ready' | 'Catalogued';
 export type HandsOnTierScope = '150' | '365' | '600' | '730';
 export type HandsOnSort =
-  'pattern-order' | 'study-order' | 'interview-rank' | 'difficulty' | 'evidence-confidence';
+  | 'pattern-order'
+  | 'study-order'
+  | 'interview-rank'
+  | 'difficulty-ascending'
+  | 'difficulty-descending';
 export type HandsOnRankingTier =
   'universal-must-do' | 'interview-core' | 'pattern-depth' | 'advanced-specialized';
 export type HandsOnEvidenceConfidence = 'unranked' | 'low' | 'medium' | 'high';
@@ -362,12 +366,6 @@ function problemComparator(
   sort: HandsOnSort,
 ): (left: HandsOnDsaIndexProblem, right: HandsOnDsaIndexProblem) => number {
   const difficultyOrder = { Beginner: 1, Intermediate: 2, Advanced: 3 } as const;
-  const confidenceOrder: Record<HandsOnEvidenceConfidence, number> = {
-    high: 1,
-    medium: 2,
-    low: 3,
-    unranked: 4,
-  };
   return (left, right) => {
     let result = 0;
     if (sort === 'study-order') {
@@ -378,12 +376,10 @@ function problemComparator(
       result =
         (left.interviewRank ?? Number.MAX_SAFE_INTEGER) -
         (right.interviewRank ?? Number.MAX_SAFE_INTEGER);
-    } else if (sort === 'difficulty') {
+    } else if (sort === 'difficulty-ascending') {
       result = difficultyOrder[left.difficulty] - difficultyOrder[right.difficulty];
-    } else if (sort === 'evidence-confidence') {
-      result =
-        confidenceOrder[left.evidenceConfidence ?? 'unranked'] -
-        confidenceOrder[right.evidenceConfidence ?? 'unranked'];
+    } else if (sort === 'difficulty-descending') {
+      result = difficultyOrder[right.difficulty] - difficultyOrder[left.difficulty];
     }
     return (
       result ||

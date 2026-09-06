@@ -170,17 +170,19 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         font-size: 0.72rem;
         line-height: 1.35;
       }
-      .experience-pill {
-        width: fit-content;
-        padding: 6px 10px;
-        border: 1px solid #b9dce6;
-        border-radius: 999px;
+      .pattern-group-metadata {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
         color: var(--practice-accent);
-        background: rgba(255, 255, 255, 0.82);
-        font-size: 0.7rem;
+        font-size: 0.66rem;
         font-weight: 850;
         letter-spacing: 0.06em;
         text-transform: uppercase;
+      }
+      .pattern-group-metadata-separator {
+        color: #9ab4c1;
       }
       .practice-controls {
         display: grid;
@@ -265,8 +267,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         border-radius: 18px;
         background: #fff;
       }
-      .active-practice > header,
-      .pattern-group > summary {
+      .active-practice > header {
         display: flex;
         align-items: start;
         justify-content: space-between;
@@ -386,6 +387,10 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         box-shadow: 0 9px 25px rgba(54, 83, 119, 0.04);
       }
       .pattern-group > summary {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) max-content 14px;
+        align-items: start;
+        gap: 18px;
         padding: 16px 18px;
         cursor: pointer;
         list-style: none;
@@ -398,16 +403,17 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         box-shadow: 0 14px 32px rgba(31, 101, 122, 0.1);
       }
       .pattern-group-count {
-        flex: 0 0 auto;
+        justify-self: end;
         color: #587188;
         font-size: 0.76rem;
         font-weight: 800;
+        text-align: right;
         white-space: nowrap;
       }
       .pattern-group-toggle {
         width: 11px;
         height: 11px;
-        flex: 0 0 auto;
+        justify-self: end;
         margin: 8px 3px 0 0;
         border-right: 2px solid var(--practice-accent);
         border-bottom: 2px solid var(--practice-accent);
@@ -536,9 +542,6 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         margin-right: 10px;
         color: #9db7ca;
       }
-      .ranking-context {
-        font-variant-numeric: tabular-nums;
-      }
       .empty-state {
         padding: 34px;
         border: 1px dashed #b9ccda;
@@ -572,9 +575,12 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
           grid-template-columns: minmax(0, 1fr);
         }
         .active-practice > header,
-        .pattern-group > summary,
         .practice-results-header {
           display: grid;
+        }
+        .pattern-group > summary {
+          grid-template-columns: minmax(0, 1fr) max-content 14px;
+          gap: 10px;
         }
         .practice-results-meta {
           justify-content: start;
@@ -584,9 +590,6 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         }
         .group-links {
           justify-content: start;
-        }
-        .pattern-group-count {
-          white-space: normal;
         }
       }
       @media (min-width: 641px) and (max-width: 1050px) {
@@ -645,17 +648,17 @@ export class HandsOnDsa implements OnInit {
     'Advanced',
   ];
   protected readonly tierScopes: { value: HandsOnTierScope; label: string }[] = [
-    { value: '150', label: 'Universal must-do · 1–150' },
-    { value: '365', label: 'Interview core · 1–365' },
-    { value: '600', label: 'Pattern depth · 1–600' },
-    { value: '730', label: 'Full library · 1–730' },
+    { value: '150', label: 'Universal Must-Do · 150' },
+    { value: '365', label: 'Interview Core · 365' },
+    { value: '600', label: 'Pattern Depth · 600' },
+    { value: '730', label: 'Full Library' },
   ];
   protected readonly sortOptions: { value: HandsOnSort; label: string }[] = [
-    { value: 'pattern-order', label: 'Pattern study order' },
-    { value: 'study-order', label: 'Problem study order' },
-    { value: 'interview-rank', label: 'Interview importance' },
-    { value: 'difficulty', label: 'Difficulty' },
-    { value: 'evidence-confidence', label: 'Evidence confidence' },
+    { value: 'pattern-order', label: 'Pattern Ranking' },
+    { value: 'study-order', label: 'Problem Ranking' },
+    { value: 'interview-rank', label: 'Interview Importance' },
+    { value: 'difficulty-ascending', label: 'Difficulty · Beginner to Advanced' },
+    { value: 'difficulty-descending', label: 'Difficulty · Advanced to Beginner' },
   ];
   protected preparationOrderLabel(order: number): string {
     return order.toString().padStart(2, '0');
@@ -738,11 +741,15 @@ export class HandsOnDsa implements OnInit {
           ? (scope as HandsOnTierScope)
           : '730',
       );
-      const sort = params.get('sort');
+      const requestedSort = params.get('sort');
+      const sort = requestedSort === 'difficulty' ? 'difficulty-ascending' : requestedSort;
+      const selectedSort: HandsOnSort = this.sortOptions.some((option) => option.value === sort)
+        ? (sort as HandsOnSort)
+        : 'pattern-order';
       this.sort.set(
-        this.sortOptions.some((option) => option.value === sort)
-          ? (sort as HandsOnSort)
-          : 'pattern-order',
+        this.difficulty() !== 'All' && this.isDifficultySort(selectedSort)
+          ? 'pattern-order'
+          : selectedSort,
       );
       this.resetView();
     });
@@ -759,7 +766,12 @@ export class HandsOnDsa implements OnInit {
       ? (value as HandsOnDifficulty)
       : 'All';
     this.difficulty.set(difficulty);
-    this.updateCatalogParams({ difficulty: difficulty === 'All' ? null : difficulty });
+    const resetDifficultySort = difficulty !== 'All' && this.isDifficultySort(this.sort());
+    if (resetDifficultySort) this.sort.set('pattern-order');
+    this.updateCatalogParams({
+      difficulty: difficulty === 'All' ? null : difficulty,
+      ...(resetDifficultySort ? { sort: null } : {}),
+    });
     this.resetView();
   }
 
@@ -773,12 +785,17 @@ export class HandsOnDsa implements OnInit {
   }
 
   protected updateSort(value: string): void {
-    const sort = this.sortOptions.some((option) => option.value === value)
+    const requestedSort = this.sortOptions.some((option) => option.value === value)
       ? (value as HandsOnSort)
       : 'pattern-order';
+    const sort = this.sortOptionDisabled(requestedSort) ? 'pattern-order' : requestedSort;
     this.sort.set(sort);
     this.updateCatalogParams({ sort: sort === 'pattern-order' ? null : sort });
     this.resetView();
+  }
+
+  protected sortOptionDisabled(sort: HandsOnSort): boolean {
+    return this.difficulty() !== 'All' && this.isDifficultySort(sort);
   }
 
   protected tierLabel(tier: string | undefined): string {
@@ -845,6 +862,10 @@ export class HandsOnDsa implements OnInit {
   private resetView(): void {
     this.openGroupId.set(null);
     this.rankedProblemLimit.set(50);
+  }
+
+  private isDifficultySort(sort: HandsOnSort): boolean {
+    return sort === 'difficulty-ascending' || sort === 'difficulty-descending';
   }
 
   private updateCatalogParams(

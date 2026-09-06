@@ -59,7 +59,21 @@
           />
         </label>
         <label>
-          Difficulty
+          Order results
+          <select [value]="sort()" (change)="updateSort($any($event.target).value)">
+            @for (option of sortOptions; track option.value) {
+              <option
+                [value]="option.value"
+                [selected]="sort() === option.value"
+                [disabled]="sortOptionDisabled(option.value)"
+              >
+                {{ option.label }}
+              </option>
+            }
+          </select>
+        </label>
+        <label>
+          Filter by difficulty
           <select [value]="difficulty()" (change)="updateDifficulty($any($event.target).value)">
             @for (option of difficulties; track option) {
               <option [value]="option" [selected]="difficulty() === option">{{ option }}</option>
@@ -71,16 +85,6 @@
           <select [value]="tierScope()" (change)="updateTierScope($any($event.target).value)">
             @for (option of tierScopes; track option.value) {
               <option [value]="option.value" [selected]="tierScope() === option.value">
-                {{ option.label }}
-              </option>
-            }
-          </select>
-        </label>
-        <label>
-          Sort problems by
-          <select [value]="sort()" (change)="updateSort($any($event.target).value)">
-            @for (option of sortOptions; track option.value) {
-              <option [value]="option.value" [selected]="sort() === option.value">
                 {{ option.label }}
               </option>
             }
@@ -121,14 +125,12 @@
         <h2>{{ selectedGroup() ? selectedGroup()?.title + ' problem set' : 'Problem library' }}</h2>
         <div class="practice-results-meta">
           <p aria-live="polite">
-            {{ visibleUniqueProblemCount() }} distinct problems across {{ visibleGroups().length }}
+            Showing {{ visibleUniqueProblemCount() }}
+            {{ visibleUniqueProblemCount() === 1 ? 'practice problem' : 'practice problems' }}
+            across
+            {{ visibleGroups().length }}
             {{ visibleGroups().length === 1 ? 'pattern' : 'patterns' }}
           </p>
-          @if (catalog()?.ranking; as ranking) {
-            <p class="ranking-context">
-              Ranking {{ ranking.status }} · {{ ranking.rankingVersion }} · scope {{ tierScope() }}
-            </p>
-          }
           @if (selectedGroup(); as selected) {
             <a
               class="clear-pattern-filter"
@@ -159,7 +161,11 @@
             >
               <summary>
                 <div>
-                  <span class="experience-pill">Guided + independent</span>
+                  <div class="pattern-group-metadata">
+                    <span>Guided + independent</span>
+                    <span class="pattern-group-metadata-separator" aria-hidden="true">·</span>
+                    <span>{{ group.courseTitle }}</span>
+                  </div>
                   <h2
                     [id]="'practice-group-' + group.id"
                     [attr.aria-label]="
@@ -176,7 +182,6 @@
                     }}</span>
                     <span>{{ group.title }}</span>
                   </h2>
-                  <span class="experience-pill">{{ group.courseTitle }}</span>
                   <p>{{ group.description }}</p>
                 </div>
                 <span class="pattern-group-count">
