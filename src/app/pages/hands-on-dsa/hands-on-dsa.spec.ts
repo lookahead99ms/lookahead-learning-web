@@ -177,6 +177,30 @@ describe('Hands-On DSA route contracts', () => {
       '02two-pointers',
     ]);
     expect(headings[0].getAttribute('aria-label')).toBe('Pattern 1 of 2: hashing');
+
+    const metadata =
+      harness.routeNativeElement!.querySelector<HTMLElement>('.pattern-group-metadata')!;
+    expect([...metadata.querySelectorAll('span')].map((item) => item.textContent?.trim())).toEqual([
+      'Guided + independent',
+      '·',
+      'Pattern tests',
+    ]);
+    expect(
+      metadata.querySelector('.pattern-group-metadata-separator')?.getAttribute('aria-hidden'),
+    ).toBe('true');
+    expect(metadata.querySelector('a, button')).toBeNull();
+    expect(harness.routeNativeElement!.querySelector('.experience-pill')).toBeNull();
+
+    const groupSummary = harness.routeNativeElement!.querySelector<HTMLElement>(
+      '.pattern-group > summary',
+    )!;
+    const problemCount = groupSummary.querySelector<HTMLElement>('.pattern-group-count')!;
+    const toggle = groupSummary.querySelector<HTMLElement>('.pattern-group-toggle')!;
+    expect(getComputedStyle(groupSummary).display).toBe('grid');
+    expect(getComputedStyle(groupSummary).gridTemplateColumns).toContain('max-content');
+    expect(getComputedStyle(problemCount).justifySelf).toBe('end');
+    expect(getComputedStyle(problemCount).textAlign).toBe('right');
+    expect(getComputedStyle(toggle).justifySelf).toBe('end');
   });
 
   it('takes Practice to its pattern, opens a problem, and returns via the DSA breadcrumb', async () => {
@@ -277,17 +301,34 @@ describe('Hands-On DSA route contracts', () => {
         '.practice-controls select',
       ),
     ];
-    expect(controls.map(({ value }) => value)).toEqual(['Beginner', '150', 'interview-rank']);
+    expect(controls.map(({ value }) => value)).toEqual(['interview-rank', 'Beginner', '150']);
+    expect([...controls[2].options].map(({ text }) => text.trim())).toEqual([
+      'Universal Must-Do · 150',
+      'Interview Core · 365',
+      'Pattern Depth · 600',
+      'Full Library',
+    ]);
+    expect([...controls[0].options].map(({ text }) => text.trim())).toEqual([
+      'Pattern Ranking',
+      'Problem Ranking',
+      'Interview Importance',
+      'Difficulty · Beginner to Advanced',
+      'Difficulty · Advanced to Beginner',
+    ]);
+    expect(controls[0].options[3].disabled).toBe(true);
+    expect(controls[0].options[4].disabled).toBe(true);
+    expect(harness.routeNativeElement!.querySelector('.ranking-context')).toBeNull();
+    expect(harness.routeNativeElement!.textContent).not.toContain('Ranking candidate');
     expect(harness.routeNativeElement!.querySelectorAll('.ranked-problem-row')).toHaveLength(1);
     expect(harness.routeNativeElement!.textContent).toContain(
-      '1 distinct problems across 1 pattern',
+      'Showing 1 practice problem across 1 pattern',
     );
     expect(
       harness.routeNativeElement!.querySelector('.ranked-problem-row h3')!.textContent?.trim(),
     ).toBe('two-pointers-complete');
 
-    controls[1].value = '365';
-    controls[1].dispatchEvent(new Event('change'));
+    controls[2].value = '365';
+    controls[2].dispatchEvent(new Event('change'));
     await harness.fixture.whenStable();
     harness.detectChanges();
 
@@ -309,6 +350,41 @@ describe('Hands-On DSA route contracts', () => {
     harness.detectChanges();
     expect(TestBed.inject(Router).url).toBe('/learn/hands-on-dsa');
     expect(harness.routeNativeElement!.querySelectorAll('details.pattern-group')).toHaveLength(2);
+  });
+
+  it('maps the legacy difficulty sort URL to ascending difficulty', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/learn/hands-on-dsa?sort=difficulty', HandsOnDsa);
+
+    const controls = [
+      ...harness.routeNativeElement!.querySelectorAll<HTMLSelectElement>(
+        '.practice-controls select',
+      ),
+    ];
+    expect(controls[0].value).toBe('difficulty-ascending');
+    expect(controls[0].options[3].disabled).toBe(false);
+    expect(controls[0].options[4].disabled).toBe(false);
+  });
+
+  it('disables redundant difficulty orders and resets one when a difficulty is selected', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/learn/hands-on-dsa?sort=difficulty-descending', HandsOnDsa);
+    const controls = [
+      ...harness.routeNativeElement!.querySelectorAll<HTMLSelectElement>(
+        '.practice-controls select',
+      ),
+    ];
+
+    controls[1].value = 'Intermediate';
+    controls[1].dispatchEvent(new Event('change'));
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+
+    expect(controls[0].value).toBe('pattern-order');
+    expect(controls[0].options[3].disabled).toBe(true);
+    expect(controls[0].options[4].disabled).toBe(true);
+    expect(TestBed.inject(Router).url).toContain('difficulty=Intermediate');
+    expect(TestBed.inject(Router).url).not.toContain('sort=');
   });
 
   it('chooses only self-contained problems and requests the hidden-pattern mode', async () => {
