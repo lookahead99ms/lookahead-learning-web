@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { CourseContent, CourseLearningUnit } from './content.models';
-import { flattenLearningUnits, orderedTheoryArticles } from './learning-units';
+import {
+  flattenLearningUnits,
+  handsOnPatternIdForModule,
+  orderedTheoryArticles,
+} from './learning-units';
 
 describe('learning unit hierarchy', () => {
   it('preserves parent-first curriculum order across nested concept families', () => {
@@ -58,5 +62,24 @@ describe('learning unit hierarchy', () => {
       'values-article',
       'errors-article',
     ]);
+  });
+
+  it('resolves lesson and practice modules to the same canonical Hands-On filter', () => {
+    const units: CourseLearningUnit[] = [
+      {
+        id: 'tree-dfs-bfs',
+        title: 'Trees',
+        description: 'Choose the traversal order deliberately.',
+        theoryModuleId: 'theory-tree-dfs-bfs',
+        practiceModuleId: 'practice-tree-dfs-bfs',
+      },
+    ];
+
+    expect(handsOnPatternIdForModule('algorithmic-patterns', units, 'theory-tree-dfs-bfs')).toBe(
+      'algorithmic-patterns:tree-dfs-bfs',
+    );
+    expect(handsOnPatternIdForModule('algorithmic-patterns', units, 'practice-tree-dfs-bfs')).toBe(
+      'algorithmic-patterns:tree-dfs-bfs',
+    );
   });
 });

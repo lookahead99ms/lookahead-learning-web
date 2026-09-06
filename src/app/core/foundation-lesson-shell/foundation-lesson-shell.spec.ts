@@ -163,4 +163,11 @@ describe('FoundationLessonShell golden lesson contract', () => {
       '/interview-questions?path=learn&course=core-data-structures&module=heap-questions',
     );
   });
+
+  it('allocates failure modes to the full-width lesson grid', () => {
+    const pitfalls = fixture.nativeElement.querySelector('#foundation-pitfalls') as HTMLElement;
+
+    expect(pitfalls.classList.contains('wide-section')).toBe(true);
+    expect(pitfalls.querySelector('.pitfall-list')).not.toBeNull();
+  });
 });

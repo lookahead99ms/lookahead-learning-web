@@ -130,6 +130,44 @@ describe('CourseLearningMap', () => {
     expect(link.getAttribute('href')).toBe('/learn/hands-on-dsa?pattern=course:hashing-lookup');
   });
 
+  it('uses each nested learning-unit id for its canonical Hands-On DSA filter', () => {
+    fixture.componentRef.setInput('courseId', 'algorithmic-patterns');
+    fixture.componentRef.setInput('units', [
+      {
+        id: 'linked-lists',
+        title: 'Linked Lists',
+        description: 'Choose the list shape before selecting a traversal.',
+        theoryModuleId: 'theory-module',
+        subUnits: [
+          {
+            id: 'fast-slow-pointers',
+            title: 'Fast/Slow Pointers',
+            description: 'Use relative speed for cycles and midpoints.',
+            theoryModuleId: 'theory-module',
+            practiceModuleId: 'practice-fast-slow-pointers',
+          },
+          {
+            id: 'list-reversal',
+            title: 'List Reversal',
+            description: 'Rewire edges while preserving reachability.',
+            theoryModuleId: 'theory-module',
+            practiceModuleId: 'practice-list-reversal',
+          },
+        ],
+      },
+    ]);
+    fixture.detectChanges();
+
+    const links = Array.from(
+      fixture.nativeElement.querySelectorAll('.learning-subunit .learning-action.practice'),
+    ) as HTMLAnchorElement[];
+
+    expect(links.map((link) => link.getAttribute('href'))).toEqual([
+      '/learn/hands-on-dsa?pattern=algorithmic-patterns:fast-slow-pointers',
+      '/learn/hands-on-dsa?pattern=algorithmic-patterns:list-reversal',
+    ]);
+  });
+
   it('routes question-bank practice to its dedicated module with a visible count', () => {
     const practiceQuestions = Array.from({ length: 4 }, (_, index) => ({
       ...question(`practice-${index + 1}`, index + 1),

@@ -8,6 +8,18 @@ export function flattenLearningUnits(units: CourseLearningUnit[]): CourseLearnin
   return units.flatMap((unit) => [unit, ...flattenLearningUnits(unit.subUnits ?? [])]);
 }
 
+/** Resolves both lesson modules and practice modules to the same governed catalog filter. */
+export function handsOnPatternIdForModule(
+  courseId: string,
+  units: CourseLearningUnit[],
+  moduleId: string,
+): string {
+  const unit = flattenLearningUnits(units).find(
+    (candidate) => candidate.theoryModuleId === moduleId || candidate.practiceModuleId === moduleId,
+  );
+  return unit ? `${courseId}:${unit.id}` : '';
+}
+
 /**
  * Theory navigation follows the curriculum's module order while skipping
  * embedded retrieval questions and practice items.
