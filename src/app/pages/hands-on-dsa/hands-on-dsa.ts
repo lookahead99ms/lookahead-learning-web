@@ -5,7 +5,10 @@ import { ContentService } from '../../content/content.service';
 import {
   HandsOnDifficulty,
   HandsOnDsaIndex,
+  HandsOnSort,
+  HandsOnTierScope,
   filterHandsOnDsaIndexGroups,
+  rankedHandsOnDsaIndexProblems,
   resolveHandsOnDsaIndexGroup,
   uniqueHandsOnIndexProblemCount,
 } from '../../content/hands-on-dsa';
@@ -167,8 +170,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         font-size: 0.72rem;
         line-height: 1.35;
       }
-      .experience-pill,
-      .problem-card > span {
+      .experience-pill {
         width: fit-content;
         padding: 6px 10px;
         border: 1px solid #b9dce6;
@@ -182,7 +184,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
       }
       .practice-controls {
         display: grid;
-        grid-template-columns: minmax(220px, 1fr) minmax(180px, auto);
+        grid-template-columns: minmax(260px, 1.4fr) repeat(3, minmax(150px, 0.55fr));
         gap: 14px;
         align-items: end;
         margin: 18px 0;
@@ -342,7 +344,8 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         gap: 10px;
         flex-wrap: wrap;
       }
-      .clear-pattern-filter {
+      .clear-pattern-filter,
+      .clear-catalog-filters {
         display: inline-flex;
         min-height: 44px;
         align-items: center;
@@ -356,13 +359,16 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         font-weight: 850;
         text-decoration: none;
       }
-      .clear-pattern-filter span {
+      .clear-pattern-filter span,
+      .clear-catalog-filters span {
         color: var(--practice-accent);
         font-size: 1.1rem;
         line-height: 1;
       }
       .clear-pattern-filter:hover,
-      .clear-pattern-filter:focus-visible {
+      .clear-pattern-filter:focus-visible,
+      .clear-catalog-filters:hover,
+      .clear-catalog-filters:focus-visible {
         border-color: var(--practice-accent);
         outline: 3px solid rgba(13, 129, 146, 0.15);
         outline-offset: 2px;
@@ -417,6 +423,63 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         gap: 11px;
         padding: 0 20px 20px;
       }
+      .ranked-problem-list {
+        display: grid;
+        gap: 8px;
+      }
+      .ranked-problem-row {
+        display: grid;
+        grid-template-columns: minmax(190px, 0.7fr) minmax(260px, 1.6fr) minmax(240px, 1fr);
+        gap: 14px;
+        align-items: center;
+        min-height: 76px;
+        padding: 12px 15px;
+        border: 1px solid #d5e3eb;
+        border-radius: 12px;
+        color: var(--practice-body);
+        background: #fff;
+        text-decoration: none;
+        transition:
+          border-color 140ms ease,
+          transform 140ms ease,
+          box-shadow 140ms ease;
+      }
+      .ranked-problem-row:hover,
+      .ranked-problem-row:focus-visible {
+        border-color: #69a7bd;
+        transform: translateY(-1px);
+        box-shadow: 0 8px 18px rgba(31, 101, 122, 0.08);
+      }
+      .ranked-problem-row h3 {
+        margin: 0;
+        color: var(--practice-ink);
+        font-size: 0.95rem;
+      }
+      .ranked-problem-pattern {
+        color: #416b9e;
+        font-size: 0.76rem;
+        font-weight: 800;
+      }
+      .load-more-problems {
+        display: block;
+        min-height: 44px;
+        margin: 16px auto 0;
+        padding: 9px 18px;
+        border: 1px solid #347f91;
+        border-radius: 999px;
+        color: #183f4b;
+        background: #fff;
+        cursor: pointer;
+        font:
+          800 0.82rem 'Avenir Next',
+          Avenir,
+          sans-serif;
+      }
+      .load-more-problems:hover,
+      .load-more-problems:focus-visible {
+        outline: 3px solid rgba(13, 129, 146, 0.15);
+        outline-offset: 2px;
+      }
       .problem-card {
         display: flex;
         min-width: 0;
@@ -441,7 +504,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         box-shadow: 0 9px 20px rgba(31, 101, 122, 0.09);
       }
       .problem-card h3 {
-        margin: 11px 0 7px;
+        margin: 9px 0 7px;
         color: var(--practice-ink);
         font-size: 1rem;
       }
@@ -456,6 +519,25 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         padding-top: 13px;
         color: #315f9d;
         font-size: 0.78rem;
+      }
+      .problem-card-meta {
+        display: flex;
+        gap: 5px 10px;
+        flex-wrap: wrap;
+        color: #587188;
+        font-size: 0.68rem;
+        font-weight: 850;
+        letter-spacing: 0.045em;
+        line-height: 1.35;
+        text-transform: uppercase;
+      }
+      .problem-card-meta span + span::before {
+        content: '·';
+        margin-right: 10px;
+        color: #9db7ca;
+      }
+      .ranking-context {
+        font-variant-numeric: tabular-nums;
       }
       .empty-state {
         padding: 34px;
@@ -485,7 +567,8 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
           justify-self: start;
         }
         .practice-controls,
-        .problem-grid {
+        .problem-grid,
+        .ranked-problem-row {
           grid-template-columns: minmax(0, 1fr);
         }
         .active-practice > header,
@@ -506,6 +589,11 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
           white-space: normal;
         }
       }
+      @media (min-width: 641px) and (max-width: 1050px) {
+        .practice-controls {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
       @media (prefers-reduced-motion: reduce) {
         .problem-card,
         .pattern-group-toggle {
@@ -520,6 +608,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         .problem-card,
         .pattern-filter a,
         .clear-pattern-filter,
+        .clear-catalog-filters,
         .surprise-problem {
           border-color: CanvasText;
           color: CanvasText;
@@ -543,14 +632,30 @@ export class HandsOnDsa implements OnInit {
   protected readonly error = signal('');
   protected readonly query = signal('');
   protected readonly difficulty = signal<HandsOnDifficulty>('All');
+  protected readonly tierScope = signal<HandsOnTierScope>('730');
+  protected readonly sort = signal<HandsOnSort>('pattern-order');
   protected readonly patternId = signal('');
   protected readonly openGroupId = signal<string | null>(null);
+  protected readonly rankedProblemLimit = signal(50);
   private readonly lastSurpriseProblemId = signal('');
   protected readonly difficulties: HandsOnDifficulty[] = [
     'All',
     'Beginner',
     'Intermediate',
     'Advanced',
+  ];
+  protected readonly tierScopes: { value: HandsOnTierScope; label: string }[] = [
+    { value: '150', label: 'Universal must-do · 1–150' },
+    { value: '365', label: 'Interview core · 1–365' },
+    { value: '600', label: 'Pattern depth · 1–600' },
+    { value: '730', label: 'Full library · 1–730' },
+  ];
+  protected readonly sortOptions: { value: HandsOnSort; label: string }[] = [
+    { value: 'pattern-order', label: 'Pattern study order' },
+    { value: 'study-order', label: 'Problem study order' },
+    { value: 'interview-rank', label: 'Interview importance' },
+    { value: 'difficulty', label: 'Difficulty' },
+    { value: 'evidence-confidence', label: 'Evidence confidence' },
   ];
   protected preparationOrderLabel(order: number): string {
     return order.toString().padStart(2, '0');
@@ -565,10 +670,33 @@ export class HandsOnDsa implements OnInit {
       selected ? [selected] : this.groups(),
       this.query(),
       this.difficulty(),
+      this.tierScope(),
+      this.sort(),
     );
   });
   protected readonly visibleUniqueProblemCount = computed(() =>
     uniqueHandsOnIndexProblemCount(this.visibleGroups()),
+  );
+  protected readonly visibleRankedProblems = computed(() =>
+    this.sort() === 'pattern-order'
+      ? []
+      : rankedHandsOnDsaIndexProblems(
+          this.visibleGroups(),
+          this.sort() as Exclude<HandsOnSort, 'pattern-order'>,
+        ),
+  );
+  protected readonly displayedRankedProblems = computed(() =>
+    this.visibleRankedProblems().slice(0, this.rankedProblemLimit()),
+  );
+  protected readonly hasMoreRankedProblems = computed(
+    () => this.displayedRankedProblems().length < this.visibleRankedProblems().length,
+  );
+  protected readonly hasCatalogFilters = computed(
+    () =>
+      Boolean(this.query()) ||
+      this.difficulty() !== 'All' ||
+      this.tierScope() !== '730' ||
+      this.sort() !== 'pattern-order',
   );
   private readonly randomPracticePool = computed(() => {
     const candidates = new Map<string, { id: string; route: string[]; version: string }>();
@@ -597,18 +725,79 @@ export class HandsOnDsa implements OnInit {
       });
     this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       this.patternId.set(params.get('pattern') ?? '');
+      this.query.set(params.get('q') ?? '');
+      const difficulty = params.get('difficulty');
+      this.difficulty.set(
+        this.difficulties.includes(difficulty as HandsOnDifficulty)
+          ? (difficulty as HandsOnDifficulty)
+          : 'All',
+      );
+      const scope = params.get('scope');
+      this.tierScope.set(
+        this.tierScopes.some((option) => option.value === scope)
+          ? (scope as HandsOnTierScope)
+          : '730',
+      );
+      const sort = params.get('sort');
+      this.sort.set(
+        this.sortOptions.some((option) => option.value === sort)
+          ? (sort as HandsOnSort)
+          : 'pattern-order',
+      );
       this.resetView();
     });
   }
 
   protected updateQuery(value: string): void {
     this.query.set(value);
+    this.updateCatalogParams({ q: value || null }, true);
     this.resetView();
   }
 
   protected updateDifficulty(value: string): void {
-    this.difficulty.set(value as HandsOnDifficulty);
+    const difficulty = this.difficulties.includes(value as HandsOnDifficulty)
+      ? (value as HandsOnDifficulty)
+      : 'All';
+    this.difficulty.set(difficulty);
+    this.updateCatalogParams({ difficulty: difficulty === 'All' ? null : difficulty });
     this.resetView();
+  }
+
+  protected updateTierScope(value: string): void {
+    const scope = this.tierScopes.some((option) => option.value === value)
+      ? (value as HandsOnTierScope)
+      : '730';
+    this.tierScope.set(scope);
+    this.updateCatalogParams({ scope: scope === '730' ? null : scope });
+    this.resetView();
+  }
+
+  protected updateSort(value: string): void {
+    const sort = this.sortOptions.some((option) => option.value === value)
+      ? (value as HandsOnSort)
+      : 'pattern-order';
+    this.sort.set(sort);
+    this.updateCatalogParams({ sort: sort === 'pattern-order' ? null : sort });
+    this.resetView();
+  }
+
+  protected tierLabel(tier: string | undefined): string {
+    return (
+      {
+        'universal-must-do': 'Universal must-do',
+        'interview-core': 'Interview core',
+        'pattern-depth': 'Pattern depth',
+        'advanced-specialized': 'Advanced / specialized',
+      }[tier ?? ''] ?? 'Unranked'
+    );
+  }
+
+  protected loadMoreRankedProblems(): void {
+    this.rankedProblemLimit.update((limit) => limit + 50);
+  }
+
+  protected clearCatalogFilters(): void {
+    void this.router.navigate(['/learn/hands-on-dsa']);
   }
 
   protected handlePatternToggle(groupId: string, event: Event): void {
@@ -655,5 +844,18 @@ export class HandsOnDsa implements OnInit {
 
   private resetView(): void {
     this.openGroupId.set(null);
+    this.rankedProblemLimit.set(50);
+  }
+
+  private updateCatalogParams(
+    queryParams: Record<string, string | null>,
+    replaceUrl = false,
+  ): void {
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams,
+      queryParamsHandling: 'merge',
+      replaceUrl,
+    });
   }
 }

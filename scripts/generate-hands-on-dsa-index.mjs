@@ -10,6 +10,7 @@ export const handsOnCoursePaths = [
 ];
 
 const preparationPlanPath = 'learn/hands-on-dsa-preparation.json';
+const rankingPlanPath = 'learn/hands-on-dsa-ranking.json';
 
 async function readJson(path) {
   return JSON.parse(await readFile(path, 'utf8'));
@@ -22,6 +23,232 @@ async function readPreparationPlan(contentRoot) {
     if (error?.code === 'ENOENT') return null;
     throw error;
   }
+}
+
+async function readRankingPlan(contentRoot) {
+  try {
+    return await readJson(join(contentRoot, rankingPlanPath));
+  } catch (error) {
+    if (error?.code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
+function rankingTier(interviewRank) {
+  if (interviewRank <= 150) return 'universal-must-do';
+  if (interviewRank <= 365) return 'interview-core';
+  if (interviewRank <= 600) return 'pattern-depth';
+  return 'advanced-specialized';
+}
+
+function isNonEmptyString(value) {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function isIsoDate(value) {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  return new Date(`${value}T00:00:00.000Z`).toISOString().startsWith(value);
+}
+
+function fallbackRanking(groups) {
+  const rankById = new Map();
+  for (const group of groups) {
+    for (const problem of group.problems) {
+      if (!rankById.has(problem.id)) rankById.set(problem.id, rankById.size + 1);
+    }
+  }
+  return {
+    groups: groups.map((group) => ({
+      ...group,
+      problems: group.problems.map((problem) => {
+        const rank = rankById.get(problem.id);
+        return {
+          ...problem,
+          interviewRank: rank,
+          studyOrder: rank,
+          tier: rankingTier(rank),
+          evidenceConfidence: 'unranked',
+          rankingVersion: 'unranked',
+        };
+      }),
+    })),
+    ranking: {
+      status: 'unranked',
+      rankingVersion: 'unranked',
+      catalogTarget: rankById.size,
+      rankedProblems: rankById.size,
+      lastReviewedAt: null,
+    },
+  };
+}
+
+export function applyHandsOnRankingPlan(groups, plan, { required = false } = {}) {
+  if (!plan) {
+    if (required) throw new Error(`${rankingPlanPath}: ranking manifest is required`);
+    return fallbackRanking(groups);
+  }
+  if (
+    plan.schemaVersion !== 'hands-on-dsa-ranking/v1' ||
+    !['candidate', 'released'].includes(plan.status) ||
+    !Array.isArray(plan.sourceRegistry) ||
+    !Array.isArray(plan.problems)
+  ) {
+    throw new Error(`${rankingPlanPath}: invalid ranking manifest`);
+  }
+  if (!isNonEmptyString(plan.rankingVersion)) {
+    throw new Error(`${rankingPlanPath}: rankingVersion is required`);
+  }
+  if (!isIsoDate(plan.lastReviewedAt)) {
+    throw new Error(`${rankingPlanPath}: lastReviewedAt must use YYYY-MM-DD`);
+  }
+  if (plan.catalogTarget !== 730) {
+    throw new Error(`${rankingPlanPath}: catalogTarget must be 730`);
+  }
+  if (!isNonEmptyString(plan.methodology)) {
+    throw new Error(`${rankingPlanPath}: methodology is required`);
+  }
+
+  const sourceById = new Map();
+  for (const source of plan.sourceRegistry) {
+    if (!isNonEmptyString(source?.id) || sourceById.has(source.id)) {
+      throw new Error(`${rankingPlanPath}: source ids must be present and unique`);
+    }
+    if (
+      typeof source.includedInRanking !== 'boolean' ||
+      !isNonEmptyString(source.kind) ||
+      !isNonEmptyString(source.accessPolicy) ||
+      !isNonEmptyString(source.automationPolicy) ||
+      !isNonEmptyString(source.agePolicy) ||
+      !isNonEmptyString(source.limitations) ||
+      !isNonEmptyString(source.contribution) ||
+      !isNonEmptyString(source.description)
+    ) {
+      throw new Error(`${rankingPlanPath}: incomplete source registry entry ${source.id}`);
+    }
+    sourceById.set(source.id, source);
+  }
+
+  const discoveredProblems = new Map();
+  for (const group of groups) {
+    for (const problem of group.problems) discoveredProblems.set(problem.id, problem);
+  }
+  if (plan.publishedProblemCount !== discoveredProblems.size) {
+    throw new Error(
+      `${rankingPlanPath}: publishedProblemCount ${plan.publishedProblemCount} does not match ${discoveredProblems.size}`,
+    );
+  }
+  if (plan.catalogTarget < discoveredProblems.size) {
+    throw new Error(
+      `${rankingPlanPath}: catalogTarget cannot be below the published problem count`,
+    );
+  }
+
+  const rankingById = new Map();
+  const interviewRanks = new Set();
+  const studyOrders = new Set();
+  for (const item of plan.problems) {
+    if (!discoveredProblems.has(item?.problemId)) {
+      throw new Error(`${rankingPlanPath}: unknown problem ${item?.problemId ?? 'missing'}`);
+    }
+    if (rankingById.has(item.problemId)) {
+      throw new Error(`${rankingPlanPath}: duplicate problem ${item.problemId}`);
+    }
+    if (!Number.isInteger(item.interviewRank) || item.interviewRank < 1) {
+      throw new Error(`${rankingPlanPath}: invalid interviewRank for ${item.problemId}`);
+    }
+    if (!Number.isInteger(item.studyOrder) || item.studyOrder < 1) {
+      throw new Error(`${rankingPlanPath}: invalid studyOrder for ${item.problemId}`);
+    }
+    if (interviewRanks.has(item.interviewRank)) {
+      throw new Error(`${rankingPlanPath}: duplicate interviewRank ${item.interviewRank}`);
+    }
+    if (studyOrders.has(item.studyOrder)) {
+      throw new Error(`${rankingPlanPath}: duplicate studyOrder ${item.studyOrder}`);
+    }
+    if (!['low', 'medium', 'high'].includes(item.evidenceConfidence)) {
+      throw new Error(`${rankingPlanPath}: invalid evidenceConfidence for ${item.problemId}`);
+    }
+    if (
+      item.rankingVersion !== plan.rankingVersion ||
+      item.lastReviewedAt !== plan.lastReviewedAt
+    ) {
+      throw new Error(`${rankingPlanPath}: stale ranking metadata for ${item.problemId}`);
+    }
+    if (
+      !Array.isArray(item.rankingReasons) ||
+      !item.rankingReasons.length ||
+      item.rankingReasons.some((reason) => !isNonEmptyString(reason))
+    ) {
+      throw new Error(`${rankingPlanPath}: rankingReasons are required for ${item.problemId}`);
+    }
+    if (!Array.isArray(item.sourceSignals) || !item.sourceSignals.length) {
+      throw new Error(`${rankingPlanPath}: sourceSignals are required for ${item.problemId}`);
+    }
+    for (const signal of item.sourceSignals) {
+      const source = sourceById.get(signal?.sourceId);
+      if (!source) {
+        throw new Error(
+          `${rankingPlanPath}: unknown source ${signal?.sourceId ?? 'missing'} for ${item.problemId}`,
+        );
+      }
+      if (!source.includedInRanking) {
+        throw new Error(
+          `${rankingPlanPath}: excluded source ${source.id} cannot rank ${item.problemId}`,
+        );
+      }
+      if (
+        !isNonEmptyString(signal.signalType) ||
+        !isIsoDate(signal.observedAt) ||
+        !isNonEmptyString(signal.contribution)
+      ) {
+        throw new Error(`${rankingPlanPath}: invalid source signal for ${item.problemId}`);
+      }
+    }
+    rankingById.set(item.problemId, item);
+    interviewRanks.add(item.interviewRank);
+    studyOrders.add(item.studyOrder);
+  }
+
+  for (const problemId of discoveredProblems.keys()) {
+    if (!rankingById.has(problemId)) {
+      throw new Error(`${rankingPlanPath}: missing problem ${problemId}`);
+    }
+  }
+  if (rankingById.size !== discoveredProblems.size) {
+    throw new Error(`${rankingPlanPath}: expected ${discoveredProblems.size} ranked problems`);
+  }
+  for (let expected = 1; expected <= discoveredProblems.size; expected += 1) {
+    if (!interviewRanks.has(expected)) {
+      throw new Error(`${rankingPlanPath}: interviewRank values must be contiguous from 1`);
+    }
+    if (!studyOrders.has(expected)) {
+      throw new Error(`${rankingPlanPath}: studyOrder values must be contiguous from 1`);
+    }
+  }
+
+  return {
+    groups: groups.map((group) => ({
+      ...group,
+      problems: group.problems.map((problem) => {
+        const item = rankingById.get(problem.id);
+        return {
+          ...problem,
+          interviewRank: item.interviewRank,
+          studyOrder: item.studyOrder,
+          tier: rankingTier(item.interviewRank),
+          evidenceConfidence: item.evidenceConfidence,
+          rankingVersion: plan.rankingVersion,
+        };
+      }),
+    })),
+    ranking: {
+      status: plan.status,
+      rankingVersion: plan.rankingVersion,
+      catalogTarget: plan.catalogTarget,
+      rankedProblems: rankingById.size,
+      lastReviewedAt: plan.lastReviewedAt,
+    },
+  };
 }
 
 export function applyHandsOnPreparationPlan(groups, plan, { required = false } = {}) {
@@ -219,17 +446,24 @@ export async function buildHandsOnDsaIndex(
     await readPreparationPlan(contentRoot),
     { required: options.requirePreparationPlan ?? false },
   );
+  const rankedCatalog = applyHandsOnRankingPlan(orderedGroups, await readRankingPlan(contentRoot), {
+    required: options.requireRankingPlan ?? false,
+  });
   const distinctProblems = new Set(
-    orderedGroups.flatMap((group) => group.problems.map(({ id }) => id)),
+    rankedCatalog.groups.flatMap((group) => group.problems.map(({ id }) => id)),
   );
   return {
-    schemaVersion: 'hands-on-dsa-index/v1',
+    schemaVersion: 'hands-on-dsa-index/v2',
     totals: {
-      groups: orderedGroups.length,
-      problemPlacements: orderedGroups.reduce((sum, group) => sum + group.problems.length, 0),
+      groups: rankedCatalog.groups.length,
+      problemPlacements: rankedCatalog.groups.reduce(
+        (sum, group) => sum + group.problems.length,
+        0,
+      ),
       distinctProblems: distinctProblems.size,
     },
-    groups: orderedGroups,
+    ranking: rankedCatalog.ranking,
+    groups: rankedCatalog.groups,
   };
 }
 

@@ -62,20 +62,47 @@
           Difficulty
           <select [value]="difficulty()" (change)="updateDifficulty($any($event.target).value)">
             @for (option of difficulties; track option) {
-              <option [value]="option">{{ option }}</option>
+              <option [value]="option" [selected]="difficulty() === option">{{ option }}</option>
+            }
+          </select>
+        </label>
+        <label>
+          Preparation tier
+          <select [value]="tierScope()" (change)="updateTierScope($any($event.target).value)">
+            @for (option of tierScopes; track option.value) {
+              <option [value]="option.value" [selected]="tierScope() === option.value">
+                {{ option.label }}
+              </option>
+            }
+          </select>
+        </label>
+        <label>
+          Sort problems by
+          <select [value]="sort()" (change)="updateSort($any($event.target).value)">
+            @for (option of sortOptions; track option.value) {
+              <option [value]="option.value" [selected]="sort() === option.value">
+                {{ option.label }}
+              </option>
             }
           </select>
         </label>
       </section>
 
       <nav class="pattern-filter" aria-label="Filter by algorithmic pattern">
-        <a routerLink="/learn/hands-on-dsa" [attr.aria-current]="!selectedGroup() ? 'page' : null"
+        <a
+          routerLink="/learn/hands-on-dsa"
+          [queryParams]="{ pattern: null }"
+          queryParamsHandling="merge"
+          [attr.aria-current]="!selectedGroup() ? 'page' : null"
           >All patterns</a
         >
         @for (group of groups(); track group.id) {
           <a
             routerLink="/learn/hands-on-dsa"
-            [queryParams]="selectedGroup()?.id === group.id ? {} : { pattern: group.id }"
+            [queryParams]="{
+              pattern: selectedGroup()?.id === group.id ? null : group.id,
+            }"
+            queryParamsHandling="merge"
             [attr.aria-current]="selectedGroup()?.id === group.id ? 'page' : null"
             [attr.aria-label]="
               selectedGroup()?.id === group.id
@@ -97,19 +124,31 @@
             {{ visibleUniqueProblemCount() }} distinct problems across {{ visibleGroups().length }}
             {{ visibleGroups().length === 1 ? 'pattern' : 'patterns' }}
           </p>
+          @if (catalog()?.ranking; as ranking) {
+            <p class="ranking-context">
+              Ranking {{ ranking.status }} · {{ ranking.rankingVersion }} · scope {{ tierScope() }}
+            </p>
+          }
           @if (selectedGroup(); as selected) {
             <a
               class="clear-pattern-filter"
               routerLink="/learn/hands-on-dsa"
+              [queryParams]="{ pattern: null }"
+              queryParamsHandling="merge"
               [attr.aria-label]="'Clear ' + selected.title + ' pattern filter'"
             >
               <span aria-hidden="true">×</span> Clear filter
             </a>
           }
+          @if (hasCatalogFilters()) {
+            <button class="clear-catalog-filters" type="button" (click)="clearCatalogFilters()">
+              <span aria-hidden="true">×</span> Clear all filters
+            </button>
+          }
         </div>
       </header>
 
-      @if (visibleGroups().length) {
+      @if (visibleGroups().length && sort() === 'pattern-order') {
         <div class="pattern-groups" role="region" aria-label="Pattern problem sets">
           @for (group of visibleGroups(); track group.id) {
             <details
@@ -159,7 +198,19 @@
                       [routerLink]="problem.route"
                       [queryParams]="{ pattern: group.id }"
                     >
-                      <span>{{ problem.difficulty }} · Guided + independent</span>
+                      <span class="problem-card-meta">
+                        @if (problem.interviewRank; as rank) {
+                          <span>Interview #{{ rank }}</span>
+                        }
+                        @if (problem.studyOrder; as order) {
+                          <span>Study #{{ order }}</span>
+                        }
+                        <span>{{ problem.difficulty }}</span>
+                        <span>{{ tierLabel(problem.tier) }}</span>
+                        @if (problem.evidenceConfidence; as confidence) {
+                          <span>{{ confidence }} confidence</span>
+                        }
+                      </span>
                       <h3>{{ problem.title }}</h3>
                       <p>{{ problem.description }}</p>
                       <b>Read the problem and practise →</b>
@@ -170,6 +221,37 @@
             </details>
           }
         </div>
+      } @else if (visibleRankedProblems().length) {
+        <div class="ranked-problem-list" role="list" aria-label="Ranked practice problems">
+          @for (problem of displayedRankedProblems(); track problem.id) {
+            <a
+              class="ranked-problem-row"
+              role="listitem"
+              [routerLink]="problem.route"
+              [queryParams]="{ pattern: problem.patternId }"
+            >
+              <span class="problem-card-meta">
+                @if (problem.interviewRank; as rank) {
+                  <span>Interview #{{ rank }}</span>
+                }
+                @if (problem.studyOrder; as order) {
+                  <span>Study #{{ order }}</span>
+                }
+                <span>{{ problem.difficulty }}</span>
+              </span>
+              <h3>{{ problem.title }}</h3>
+              <span class="ranked-problem-pattern">
+                Pattern {{ preparationOrderLabel(problem.patternPreparationOrder) }} ·
+                {{ problem.patternTitle }}
+              </span>
+            </a>
+          }
+        </div>
+        @if (hasMoreRankedProblems()) {
+          <button class="load-more-problems" type="button" (click)="loadMoreRankedProblems()">
+            Show 50 more problems
+          </button>
+        }
       } @else {
         <section class="empty-state" aria-live="polite">
           <h2>No matching practice yet</h2>

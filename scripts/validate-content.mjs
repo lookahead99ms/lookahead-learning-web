@@ -448,7 +448,9 @@ for (const file of contentFiles) {
     deliveryPlanCount += 1;
     continue;
   }
-  if (label === 'learn/hands-on-dsa-preparation.json') continue;
+  if (['learn/hands-on-dsa-preparation.json', 'learn/hands-on-dsa-ranking.json'].includes(label)) {
+    continue;
+  }
   if (
     label.includes('/modules/') ||
     label.includes('/traces/') ||
@@ -705,6 +707,7 @@ for (const file of contentFiles) {
 
 await buildHandsOnDsaIndex(contentRoot, undefined, {
   requirePreparationPlan: requestedRoot === '--external',
+  requireRankingPlan: requestedRoot === '--external',
 });
 
 for (const assetPath of referencedAssetPaths) {

@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { test } from 'node:test';
 import {
   applyHandsOnPreparationPlan,
+  applyHandsOnRankingPlan,
   buildHandsOnDsaIndex,
 } from './generate-hands-on-dsa-index.mjs';
 
@@ -81,7 +82,11 @@ test('builds a compact canonical-only Hands-On DSA index', async () => {
   const index = await buildHandsOnDsaIndex(root, ['learn/algorithmic-patterns']);
 
   assert.deepEqual(index.totals, { groups: 1, problemPlacements: 1, distinctProblems: 1 });
+  assert.equal(index.schemaVersion, 'hands-on-dsa-index/v2');
+  assert.equal(index.ranking.status, 'unranked');
   assert.equal(index.groups[0].problems[0].id, 'sample');
+  assert.equal(index.groups[0].problems[0].interviewRank, 1);
+  assert.equal(index.groups[0].problems[0].studyOrder, 1);
   assert.equal(index.groups[0].preparationOrder, 1);
   assert.deepEqual(index.groups[0].problems[0].route, [
     '/learn',
@@ -92,6 +97,188 @@ test('builds a compact canonical-only Hands-On DSA index', async () => {
   assert.doesNotMatch(serialized, /unfinished-route/);
   assert.doesNotMatch(serialized, /FULL_SOLUTION/);
   assert.doesNotMatch(serialized, /FULL_TRACE/);
+});
+
+test('applies a complete ranking manifest as a compact problem projection', () => {
+  const groups = [
+    {
+      id: 'one',
+      problems: [{ id: 'alpha' }, { id: 'beta' }],
+    },
+  ];
+  const plan = {
+    schemaVersion: 'hands-on-dsa-ranking/v1',
+    rankingVersion: '2026.09-candidate.1',
+    status: 'candidate',
+    catalogTarget: 730,
+    publishedProblemCount: 2,
+    lastReviewedAt: '2026-09-06',
+    methodology: 'Synthetic test methodology.',
+    sourceRegistry: [
+      {
+        id: 'editorial',
+        kind: 'first-party-editorial',
+        includedInRanking: true,
+        accessPolicy: 'owned',
+        automationPolicy: 'allowed',
+        agePolicy: 'Review before release.',
+        limitations: 'Synthetic evidence only.',
+        contribution: 'Exercises validation.',
+        description: 'Owned evidence.',
+      },
+    ],
+    problems: [
+      {
+        problemId: 'alpha',
+        interviewRank: 2,
+        studyOrder: 1,
+        rankingVersion: '2026.09-candidate.1',
+        lastReviewedAt: '2026-09-06',
+        evidenceConfidence: 'low',
+        rankingReasons: ['Prerequisite order.'],
+        sourceSignals: [
+          {
+            sourceId: 'editorial',
+            signalType: 'curriculum-placement',
+            observedAt: '2026-09-06',
+            contribution: 'Exercises the projection.',
+          },
+        ],
+      },
+      {
+        problemId: 'beta',
+        interviewRank: 1,
+        studyOrder: 2,
+        rankingVersion: '2026.09-candidate.1',
+        lastReviewedAt: '2026-09-06',
+        evidenceConfidence: 'medium',
+        rankingReasons: ['Interview relevance.'],
+        sourceSignals: [
+          {
+            sourceId: 'editorial',
+            signalType: 'curriculum-placement',
+            observedAt: '2026-09-06',
+            contribution: 'Exercises the projection.',
+          },
+        ],
+      },
+    ],
+  };
+
+  const ranked = applyHandsOnRankingPlan(groups, plan);
+
+  assert.deepEqual(ranked.ranking, {
+    status: 'candidate',
+    rankingVersion: '2026.09-candidate.1',
+    catalogTarget: 730,
+    rankedProblems: 2,
+    lastReviewedAt: '2026-09-06',
+  });
+  assert.deepEqual(
+    ranked.groups[0].problems.map(
+      ({ id, interviewRank, studyOrder, tier, evidenceConfidence, rankingVersion }) => ({
+        id,
+        interviewRank,
+        studyOrder,
+        tier,
+        evidenceConfidence,
+        rankingVersion,
+      }),
+    ),
+    [
+      {
+        id: 'alpha',
+        interviewRank: 2,
+        studyOrder: 1,
+        tier: 'universal-must-do',
+        evidenceConfidence: 'low',
+        rankingVersion: '2026.09-candidate.1',
+      },
+      {
+        id: 'beta',
+        interviewRank: 1,
+        studyOrder: 2,
+        tier: 'universal-must-do',
+        evidenceConfidence: 'medium',
+        rankingVersion: '2026.09-candidate.1',
+      },
+    ],
+  );
+});
+
+test('rejects excluded evidence sources and incomplete rank sequences', () => {
+  const groups = [{ id: 'one', problems: [{ id: 'alpha' }, { id: 'beta' }] }];
+  const basePlan = {
+    schemaVersion: 'hands-on-dsa-ranking/v1',
+    rankingVersion: 'candidate',
+    status: 'candidate',
+    catalogTarget: 730,
+    publishedProblemCount: 2,
+    lastReviewedAt: '2026-09-06',
+    methodology: 'Synthetic test methodology.',
+    sourceRegistry: [
+      {
+        id: 'restricted',
+        kind: 'restricted-reference',
+        includedInRanking: false,
+        accessPolicy: 'personal-noncommercial',
+        automationPolicy: 'prohibited',
+        agePolicy: 'Never refresh.',
+        limitations: 'Excluded evidence.',
+        contribution: 'None.',
+        description: 'Excluded source.',
+      },
+    ],
+    problems: [
+      {
+        problemId: 'alpha',
+        interviewRank: 1,
+        studyOrder: 1,
+        rankingVersion: 'candidate',
+        lastReviewedAt: '2026-09-06',
+        evidenceConfidence: 'low',
+        rankingReasons: ['Reason.'],
+        sourceSignals: [
+          {
+            sourceId: 'restricted',
+            signalType: 'report-count',
+            observedAt: '2026-09-06',
+            contribution: 'Must be rejected.',
+          },
+        ],
+      },
+      {
+        problemId: 'beta',
+        interviewRank: 2,
+        studyOrder: 2,
+        rankingVersion: 'candidate',
+        lastReviewedAt: '2026-09-06',
+        evidenceConfidence: 'low',
+        rankingReasons: ['Reason.'],
+        sourceSignals: [
+          {
+            sourceId: 'restricted',
+            signalType: 'report-count',
+            observedAt: '2026-09-06',
+            contribution: 'Must be rejected.',
+          },
+        ],
+      },
+    ],
+  };
+
+  assert.throws(
+    () => applyHandsOnRankingPlan(groups, basePlan),
+    /excluded source restricted cannot rank alpha/,
+  );
+
+  const allowedPlan = structuredClone(basePlan);
+  allowedPlan.sourceRegistry[0].includedInRanking = true;
+  allowedPlan.problems[1].interviewRank = 3;
+  assert.throws(
+    () => applyHandsOnRankingPlan(groups, allowedPlan),
+    /interviewRank values must be contiguous from 1/,
+  );
 });
 
 test('applies unique names and a contiguous preparation order without changing group ids', () => {

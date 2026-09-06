@@ -85,12 +85,24 @@ function practiceIndex(): HandsOnDsaIndex {
         version: 'fixture-version',
         questionId: `${id}-complete`,
         route: ['/learn', 'algorithmic-patterns', `${id}-complete`],
+        interviewRank: index === 0 ? 151 : 1,
+        studyOrder: index + 1,
+        tier: index === 0 ? ('interview-core' as const) : ('universal-must-do' as const),
+        evidenceConfidence: 'low' as const,
+        rankingVersion: 'fixture-ranking',
       },
     ],
   }));
   return {
-    schemaVersion: 'hands-on-dsa-index/v1',
+    schemaVersion: 'hands-on-dsa-index/v2',
     totals: { groups: groups.length, problemPlacements: groups.length, distinctProblems: 2 },
+    ranking: {
+      status: 'candidate',
+      rankingVersion: 'fixture-ranking',
+      catalogTarget: 730,
+      rankedProblems: 2,
+      lastReviewedAt: '2026-09-06',
+    },
     groups,
   };
 }
@@ -251,6 +263,52 @@ describe('Hands-On DSA route contracts', () => {
     expect(selectedPattern.textContent?.replace(/\s/g, '')).toBe('02two-pointers');
     expect(selectedPattern.getAttribute('aria-label')).toBe('Clear pattern 2, two-pointers filter');
     expect(harness.routeNativeElement!.querySelectorAll('details.pattern-group')).toHaveLength(1);
+  });
+
+  it('restores tier and sort selections from the URL and preserves them across filters', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl(
+      '/learn/hands-on-dsa?scope=150&sort=interview-rank&difficulty=Beginner&q=complete',
+      HandsOnDsa,
+    );
+
+    const controls = [
+      ...harness.routeNativeElement!.querySelectorAll<HTMLSelectElement>(
+        '.practice-controls select',
+      ),
+    ];
+    expect(controls.map(({ value }) => value)).toEqual(['Beginner', '150', 'interview-rank']);
+    expect(harness.routeNativeElement!.querySelectorAll('.ranked-problem-row')).toHaveLength(1);
+    expect(harness.routeNativeElement!.textContent).toContain(
+      '1 distinct problems across 1 pattern',
+    );
+    expect(
+      harness.routeNativeElement!.querySelector('.ranked-problem-row h3')!.textContent?.trim(),
+    ).toBe('two-pointers-complete');
+
+    controls[1].value = '365';
+    controls[1].dispatchEvent(new Event('change'));
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+
+    expect(TestBed.inject(Router).url).toContain('scope=365');
+    expect(TestBed.inject(Router).url).toContain('sort=interview-rank');
+    expect(TestBed.inject(Router).url).toContain('difficulty=Beginner');
+    expect(TestBed.inject(Router).url).toContain('q=complete');
+    expect(harness.routeNativeElement!.querySelectorAll('.ranked-problem-row')).toHaveLength(2);
+    expect(
+      [
+        ...harness.routeNativeElement!.querySelectorAll<HTMLHeadingElement>(
+          '.ranked-problem-row h3',
+        ),
+      ].map((heading) => heading.textContent?.trim()),
+    ).toEqual(['two-pointers-complete', 'hashing-complete']);
+
+    harness.routeNativeElement!.querySelector<HTMLButtonElement>('.clear-catalog-filters')!.click();
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    expect(TestBed.inject(Router).url).toBe('/learn/hands-on-dsa');
+    expect(harness.routeNativeElement!.querySelectorAll('details.pattern-group')).toHaveLength(2);
   });
 
   it('chooses only self-contained problems and requests the hidden-pattern mode', async () => {
