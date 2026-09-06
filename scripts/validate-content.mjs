@@ -1405,6 +1405,8 @@ for (const { lesson, moduleLabel } of patternLessons) {
       );
       const eventIds = new Set();
       const sourceAnchorCounts = new Map();
+      const visibleVariables = new Map();
+      const visibleRows = new Map();
       for (const [eventIndex, event] of trace.events.entries()) {
         requireValue(
           event?.id && event?.label && event?.phase && ['before', 'after'].includes(event?.timing),
@@ -1417,12 +1419,23 @@ for (const { lesson, moduleLabel } of patternLessons) {
           `${problemLabel} event ${event.id} needs what and why`,
         );
         requireValue(
-          Array.isArray(event.variables) && event.variables.length > 0,
-          `${problemLabel} event ${event.id} has no variables`,
+          Array.isArray(event.variables),
+          `${problemLabel} event ${event.id} variables must be an array`,
         );
         requireValue(
-          Array.isArray(event.rows) && event.rows.length > 0,
-          `${problemLabel} event ${event.id} has no state rows`,
+          Array.isArray(event.rows),
+          `${problemLabel} event ${event.id} state rows must be an array`,
+        );
+        for (const variable of event.variables) {
+          requireValue(
+            variable?.name && variable?.type && typeof variable?.value === 'string',
+            `${problemLabel} event ${event.id} has an invalid variable`,
+          );
+          visibleVariables.set(variable.name, variable);
+        }
+        requireValue(
+          visibleVariables.size > 0,
+          `${problemLabel} event ${event.id} cannot reconstruct any variables`,
         );
         for (const language of patternLanguages) {
           requireValue(
@@ -1450,17 +1463,32 @@ for (const { lesson, moduleLabel } of patternLessons) {
               `${problemLabel} event ${event.id} uses an unknown cell state`,
             );
           }
+          visibleRows.set(row.label, row);
         }
+        requireValue(
+          visibleRows.size > 0,
+          `${problemLabel} event ${event.id} cannot reconstruct any state rows`,
+        );
       }
       if (problem.traceSemantics === 'source-line/v1') {
         requireValue(
           trace.languagePaths && typeof trace.languagePaths === 'object',
           `${problemLabel} trace ${trace.id} has no selected-language execution paths`,
         );
+        requireValue(
+          trace.stateSemantics === 'target-runtime/v1' && trace.stateTiming === 'after',
+          `${problemLabel} trace ${trace.id} must use after-line target-runtime state`,
+        );
+        requireValue(
+          trace.events.every((event) => event.timing === 'after'),
+          `${problemLabel} trace ${trace.id} must normalize Python events to after-line state`,
+        );
         for (const language of patternLanguages) {
           const path = trace.languagePaths?.[language];
           const implementation = implementationsByLanguage.get(language);
           const controlFlow = implementation.controlFlow;
+          const pathVariables = new Map();
+          const pathRows = new Map();
           requireValue(
             Array.isArray(path) && path.length > 0,
             `${problemLabel} trace ${trace.id} has no ${language} execution path`,
@@ -1477,6 +1505,59 @@ for (const { lesson, moduleLabel } of patternLessons) {
                 step.eventIndex < trace.events.length,
               `${problemLabel} trace ${trace.id} has invalid ${language} state event ${step?.eventIndex}`,
             );
+            requireValue(
+              step.stateUnavailable === undefined || typeof step.stateUnavailable === 'boolean',
+              `${problemLabel} trace ${trace.id} has invalid ${language} state availability`,
+            );
+            requireValue(
+              !step.stateUnavailable || (!step.variables && !step.rows),
+              `${problemLabel} trace ${trace.id} mixes unavailable and observed ${language} state`,
+            );
+            if (step.stateUnavailable) {
+              pathVariables.clear();
+              pathRows.clear();
+            } else {
+              requireValue(
+                step.variables === undefined || Array.isArray(step.variables),
+                `${problemLabel} trace ${trace.id} has invalid ${language} path variables`,
+              );
+              requireValue(
+                step.rows === undefined || Array.isArray(step.rows),
+                `${problemLabel} trace ${trace.id} has invalid ${language} path rows`,
+              );
+              requireValue(
+                language !== 'python' || (!step.variables && !step.rows),
+                `${problemLabel} trace ${trace.id} duplicates Python event state in its path`,
+              );
+              requireValue(
+                language === 'python' || !step.rows,
+                `${problemLabel} trace ${trace.id} duplicates ${language} arrays as path rows`,
+              );
+              for (const variable of step.variables ?? []) {
+                requireValue(
+                  variable?.name && variable?.type && typeof variable?.value === 'string',
+                  `${problemLabel} trace ${trace.id} has an invalid ${language} path variable`,
+                );
+                pathVariables.set(variable.name, variable);
+              }
+              for (const row of step.rows ?? []) {
+                requireValue(
+                  row?.id && row?.label && Array.isArray(row.cells),
+                  `${problemLabel} trace ${trace.id} has an invalid ${language} path row`,
+                );
+                for (const cell of row.cells) {
+                  requireValue(
+                    typeof cell?.value === 'string' &&
+                      (cell.states === undefined ||
+                        (Array.isArray(cell.states) &&
+                          cell.states.every((state) => traceCellStates.has(state)))),
+                    `${problemLabel} trace ${trace.id} has an invalid ${language} path cell`,
+                  );
+                }
+                if (row.cells.length) pathRows.set(row.label, row);
+                else pathRows.delete(row.label);
+              }
+            }
             if (pathIndex === 0) {
               requireValue(
                 step.sourceAnchor === controlFlow.entryAnchor,
@@ -1507,6 +1588,11 @@ for (const { lesson, moduleLabel } of patternLessons) {
             path.at(-1).eventIndex === trace.events.length - 1,
             `${problemLabel} trace ${trace.id} does not resolve its final ${language} state`,
           );
+          const fixture = problem.fixtures.find(({ id }) => id === trace.fixtureId);
+          requireValue(
+            path.at(-1).result === fixture.expectedOutput,
+            `${problemLabel} trace ${trace.id} ${language} result does not match fixture ${fixture.id}`,
+          );
         }
       }
       if (problem.traceSemantics !== 'source-line/v1') {
@@ -1522,10 +1608,10 @@ for (const { lesson, moduleLabel } of patternLessons) {
           `${problemLabel} canonical trace ${trace.id} must end with a result`,
         );
         requireValue(
-          terminalEvent.rows.some((row) =>
+          [...visibleRows.values()].some((row) =>
             row.cells.some((cell) => cell.states?.includes('resolved')),
           ),
-          `${problemLabel} canonical trace ${trace.id} must mark its resolved state`,
+          `${problemLabel} canonical trace ${trace.id} must reconstruct a resolved terminal state`,
         );
         if (problem.traceSemantics === 'source-line/v1') {
           requireValue(

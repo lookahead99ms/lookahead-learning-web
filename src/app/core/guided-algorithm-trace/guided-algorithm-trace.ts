@@ -10,7 +10,9 @@ import {
 } from '@angular/core';
 import {
   GuidedTraceCell,
+  GuidedTraceCellState,
   GuidedTraceEvent,
+  GuidedTraceRow,
   GuidedTraceVariable,
   PatternLanguage,
   PatternProblemFixture,
@@ -156,7 +158,7 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
 
             <section class="focus-dock-card focus-array" aria-label="Array state">
               <h3>Array</h3>
-              @for (row of event().rows; track row.id) {
+              @for (row of visibleRows(); track row.label) {
                 <div class="state-cells" role="list" [attr.aria-label]="row.label">
                   @for (cell of row.cells; track $index) {
                     <span
@@ -278,9 +280,15 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
                 (window:resize)="measureDebuggerOverflow()"
               >
                 @if (activeView() === 'debugger') {
+                  @if (event().stateUnavailable) {
+                    <p class="state-unavailable" role="status">
+                      Runtime state is unavailable for this selected-language instruction. No state
+                      from another language or execution point is shown.
+                    </p>
+                  }
                   <section class="state-view" aria-label="Complete data state">
                     <h3>Data state</h3>
-                    @for (row of event().rows; track row.id) {
+                    @for (row of visibleRows(); track row.label) {
                       <div class="state-row">
                         <strong>{{ row.label }}</strong>
                         <div class="state-cells" role="list" [attr.aria-label]="row.label">
@@ -1248,6 +1256,15 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         padding: 11px 12px;
         border-bottom: 1px solid #315569;
       }
+      .state-unavailable {
+        margin: 0;
+        padding: 11px 13px;
+        border-bottom: 1px solid #315569;
+        color: #d8e7eb;
+        background: #183647;
+        font-size: 0.72rem;
+        line-height: 1.5;
+      }
       .variable-inspector h3,
       .debugger-panel .state-view h3 {
         margin: 0 0 7px;
@@ -1885,13 +1902,25 @@ export class GuidedAlgorithmTrace {
         id: `${baseEvent.id}-${language}-${pathIndex + 1}`,
         label: usesAuthoredAnchor ? baseEvent.label : `Execute line ${sourceLineIndex + 1}`,
         phase: usesAuthoredAnchor ? baseEvent.phase : 'Execute',
-        timing: 'after',
+        timing: trace.stateTiming ?? 'after',
         sourceAnchor: { ...baseEvent.sourceAnchor, [language]: step.sourceAnchor },
         what: usesAuthoredAnchor
           ? baseEvent.what
           : `Execute ${sourceLine?.text.trim() || step.sourceAnchor} in the selected implementation.`,
-        ...(pathIndex === path.length - 1 && terminalResult !== undefined
-          ? { result: terminalResult }
+        variables:
+          trace.stateSemantics === 'target-runtime/v1' && language !== 'python'
+            ? (step.variables ?? [])
+            : baseEvent.variables,
+        rows:
+          trace.stateSemantics === 'target-runtime/v1' && language !== 'python'
+            ? (step.rows ?? [])
+            : baseEvent.rows,
+        ...(step.stateUnavailable ? { stateUnavailable: true } : {}),
+        ...(step.stateUnavailableReason
+          ? { stateUnavailableReason: step.stateUnavailableReason }
+          : {}),
+        ...(pathIndex === path.length - 1 && (step.result ?? terminalResult) !== undefined
+          ? { result: step.result ?? terminalResult }
           : {}),
       };
     });
@@ -1929,6 +1958,7 @@ export class GuidedAlgorithmTrace {
 
     const values = new Map<string, GuidedTraceVariable>();
     for (const traceEvent of this.events().slice(0, this.stepIndex() + 1)) {
+      if (traceEvent.stateUnavailable) values.clear();
       for (const variable of traceEvent.variables) {
         const name = this.variableDisplayName(variable.name);
         if (name) values.set(name, { ...variable, name });
@@ -1949,6 +1979,61 @@ export class GuidedAlgorithmTrace {
         changed: changed.has(definition.name),
       };
     });
+  });
+  protected readonly visibleRows = computed<GuidedTraceRow[]>(() => {
+    const rows = new Map<string, GuidedTraceRow>();
+    for (const traceEvent of this.events().slice(0, this.stepIndex() + 1)) {
+      if (traceEvent.stateUnavailable) rows.clear();
+      for (const row of traceEvent.rows) {
+        if (row.cells.length) rows.set(row.label, row);
+        else rows.delete(row.label);
+      }
+    }
+    if (rows.size) return [...rows.values()];
+
+    const activeIndexes = new Set(
+      this.visibleVariables()
+        .filter(
+          ({ name, type, value }) =>
+            /^(index|i|j|left|right|low|high|mid|position)$/i.test(name) &&
+            /^(int|integer)$/i.test(type) &&
+            value !== '—',
+        )
+        .map(({ value }) => Number(value))
+        .filter(Number.isInteger),
+    );
+    return this.visibleVariables()
+      .map((variable) => {
+        if (!/array|slice|\[\]/i.test(variable.type) || !variable.value.startsWith('[')) {
+          return null;
+        }
+        try {
+          const values = JSON.parse(variable.value);
+          if (!Array.isArray(values)) return null;
+          return {
+            id: `${this.problem().id}-${this.selectedFixture().id}-${this.language()}-${variable.name}-state`,
+            label: variable.name,
+            cells: (values.length ? values.slice(0, 32) : ['empty']).map((value, index) => {
+              const states: GuidedTraceCellState[] = [];
+              if (activeIndexes.has(index)) states.push('active');
+              if (
+                this.isComplete() &&
+                (activeIndexes.has(index) || (values.length === 1 && index === 0))
+              ) {
+                states.push('resolved');
+              }
+              return {
+                value: typeof value === 'string' ? value : JSON.stringify(value),
+                ...(states.length ? { states } : {}),
+              };
+            }),
+          } satisfies GuidedTraceRow;
+        } catch {
+          return null;
+        }
+      })
+      .filter((row): row is GuidedTraceRow => row !== null)
+      .slice(0, 3);
   });
   protected readonly focusCollectionVariable = computed(() =>
     this.visibleVariables().find(({ type }) => /^(map|set)$/i.test(type)),
@@ -2069,7 +2154,7 @@ export class GuidedAlgorithmTrace {
     return correct ? 'Correct: both bounds match' : 'Review these bounds';
   });
   protected readonly terminalMessage = computed(() => {
-    if (this.isComplete() && this.event().result) {
+    if (this.isComplete() && this.event().result !== undefined) {
       return `Execution returned ${this.event().result}. Next is disabled because the successful return terminated execution.`;
     }
     if (this.isComplete()) {
@@ -2292,7 +2377,7 @@ export class GuidedAlgorithmTrace {
   }
 
   protected isUnreachable(lineIndex: number): boolean {
-    if (!this.isComplete() || !this.event().result) return false;
+    if (!this.isComplete() || this.event().result === undefined) return false;
     const activeIndex = this.source().lines.findIndex(({ id }) => id === this.activeAnchor());
     return activeIndex >= 0 && lineIndex > activeIndex;
   }
@@ -2314,20 +2399,20 @@ export class GuidedAlgorithmTrace {
   }
 
   protected boundaryStatus(): string {
-    if (this.isComplete() && this.event().result) return this.terminalMessage();
+    if (this.isComplete() && this.event().result !== undefined) return this.terminalMessage();
     if (this.stepIndex() === 0) return 'At the first step. Previous is unavailable.';
     if (this.isComplete()) return 'Trace complete. Next is unavailable.';
     return 'Previous, Next, and Reset are available. Focus the trace region and use Left Arrow, Right Arrow, or Home as shortcuts.';
   }
 
   private assistiveStepSummary(): string {
-    const rows = this.event()
-      .rows.map(
+    const rows = this.visibleRows()
+      .map(
         (row) =>
           `${row.label}: ${row.cells.map((cell, index) => this.cellLabel(cell, index)).join('; ')}`,
       )
       .join('. ');
-    return `Step ${this.stepIndex() + 1} of ${this.events().length}: ${this.event().phase}, ${this.activeLineLabel()}. Variables: ${this.transcriptState(this.event().variables)}. Data state: ${rows}. ${this.terminalMessage()}`;
+    return `Step ${this.stepIndex() + 1} of ${this.events().length}: ${this.event().phase}, ${this.activeLineLabel()}. Variables: ${this.transcriptState(this.visibleVariables())}. Data state: ${rows}. ${this.terminalMessage()}`;
   }
 
   private variableDisplayName(name: string): string | null {

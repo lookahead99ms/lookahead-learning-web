@@ -240,11 +240,20 @@ export interface GuidedTraceEvent {
   variables: GuidedTraceVariable[];
   rows: GuidedTraceRow[];
   result?: string;
+  stateUnavailable?: boolean;
+  stateUnavailableReason?: string;
 }
 
 export interface GuidedTracePathStep {
   sourceAnchor: string;
   eventIndex: number;
+  /** Sparse target-runtime deltas. Python uses the canonical event state directly. */
+  variables?: GuidedTraceVariable[];
+  /** Optional curated state; array rows are normally derived from selected-language variables. */
+  rows?: GuidedTraceRow[];
+  result?: string;
+  stateUnavailable?: boolean;
+  stateUnavailableReason?: string;
 }
 
 export interface GuidedTraceV1 {
@@ -254,6 +263,8 @@ export interface GuidedTraceV1 {
   invariant: string;
   legend: { state: GuidedTraceCellState; label: string }[];
   events: GuidedTraceEvent[];
+  stateSemantics?: 'target-runtime/v1';
+  stateTiming?: 'after';
   languagePaths?: Record<PatternLanguage, GuidedTracePathStep[]>;
 }
 
