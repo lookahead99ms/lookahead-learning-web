@@ -161,7 +161,10 @@ export async function profileIndexedCanonicalRoute(loadBytes, requestedProblemId
   }
 
   const index = await load('hands-on-dsa-index.json', 'compact-index');
-  if (index.schemaVersion !== 'hands-on-dsa-index/v1' || !Array.isArray(index.groups)) {
+  if (
+    !['hands-on-dsa-index/v1', 'hands-on-dsa-index/v2'].includes(index.schemaVersion) ||
+    !Array.isArray(index.groups)
+  ) {
     throw new Error('Invalid Hands-On DSA index');
   }
   const summaries = index.groups.flatMap((group) => group.problems ?? []);

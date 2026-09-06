@@ -11,6 +11,12 @@ import { flattenLearningUnits } from './learning-units';
 
 export type HandsOnDifficulty = InterviewQuestion['difficulty'] | 'All';
 export type HandsOnReadiness = 'All' | 'Guided' | 'Practice-ready' | 'Catalogued';
+export type HandsOnTierScope = '150' | '365' | '600' | '730';
+export type HandsOnSort =
+  'pattern-order' | 'study-order' | 'interview-rank' | 'difficulty' | 'evidence-confidence';
+export type HandsOnRankingTier =
+  'universal-must-do' | 'interview-core' | 'pattern-depth' | 'advanced-specialized';
+export type HandsOnEvidenceConfidence = 'unranked' | 'low' | 'medium' | 'high';
 
 export interface HandsOnReadinessCounts {
   guided: number;
@@ -28,6 +34,11 @@ export interface HandsOnDsaIndexProblem {
   version: string;
   questionId: string;
   route: string[];
+  interviewRank?: number;
+  studyOrder?: number;
+  tier?: HandsOnRankingTier;
+  evidenceConfidence?: HandsOnEvidenceConfidence;
+  rankingVersion?: string;
 }
 
 export interface HandsOnDsaIndexGroup {
@@ -46,12 +57,25 @@ export interface HandsOnDsaIndexGroup {
   problems: HandsOnDsaIndexProblem[];
 }
 
+export interface HandsOnDsaIndexProblemResult extends HandsOnDsaIndexProblem {
+  patternId: string;
+  patternTitle: string;
+  patternPreparationOrder: number;
+}
+
 export interface HandsOnDsaIndex {
-  schemaVersion: 'hands-on-dsa-index/v1';
+  schemaVersion: 'hands-on-dsa-index/v1' | 'hands-on-dsa-index/v2';
   totals: {
     groups: number;
     problemPlacements: number;
     distinctProblems: number;
+  };
+  ranking?: {
+    status: 'unranked' | 'candidate' | 'released';
+    rankingVersion: string;
+    catalogTarget: number;
+    rankedProblems: number;
+    lastReviewedAt: string | null;
   };
   groups: HandsOnDsaIndexGroup[];
 }
@@ -288,9 +312,12 @@ export function filterHandsOnDsaIndexGroups(
   groups: HandsOnDsaIndexGroup[],
   query: string,
   difficulty: HandsOnDifficulty,
+  scope: HandsOnTierScope = '730',
+  sort: HandsOnSort = 'pattern-order',
 ): HandsOnDsaIndexGroup[] {
   const normalizedQuery = query.trim().toLowerCase();
-  return groups.flatMap((group) => {
+  const scopeLimit = Number(scope);
+  const filtered = groups.flatMap((group) => {
     const groupMatches = [group.title, group.description, group.lessonTitle, ...group.tags]
       .join(' ')
       .toLowerCase()
@@ -298,14 +325,74 @@ export function filterHandsOnDsaIndexGroups(
     const problems = group.problems.filter(
       (problem) =>
         (difficulty === 'All' || problem.difficulty === difficulty) &&
+        (problem.interviewRank === undefined || problem.interviewRank <= scopeLimit) &&
         (groupMatches ||
           [problem.title, problem.description, problem.variation, problem.invariantAdaptation]
             .join(' ')
             .toLowerCase()
             .includes(normalizedQuery)),
     );
-    return problems.length ? [{ ...group, problems }] : [];
+    return problems.length
+      ? [{ ...group, problems: [...problems].sort(problemComparator(sort)) }]
+      : [];
   });
+  return filtered;
+}
+
+export function rankedHandsOnDsaIndexProblems(
+  groups: HandsOnDsaIndexGroup[],
+  sort: Exclude<HandsOnSort, 'pattern-order'>,
+): HandsOnDsaIndexProblemResult[] {
+  const problemsById = new Map<string, HandsOnDsaIndexProblemResult>();
+  for (const group of groups) {
+    for (const problem of group.problems) {
+      if (problemsById.has(problem.id)) continue;
+      problemsById.set(problem.id, {
+        ...problem,
+        patternId: group.id,
+        patternTitle: group.title,
+        patternPreparationOrder: group.preparationOrder,
+      });
+    }
+  }
+  return [...problemsById.values()].sort(problemComparator(sort));
+}
+
+function problemComparator(
+  sort: HandsOnSort,
+): (left: HandsOnDsaIndexProblem, right: HandsOnDsaIndexProblem) => number {
+  const difficultyOrder = { Beginner: 1, Intermediate: 2, Advanced: 3 } as const;
+  const confidenceOrder: Record<HandsOnEvidenceConfidence, number> = {
+    high: 1,
+    medium: 2,
+    low: 3,
+    unranked: 4,
+  };
+  return (left, right) => {
+    let result = 0;
+    if (sort === 'study-order') {
+      result =
+        (left.studyOrder ?? Number.MAX_SAFE_INTEGER) -
+        (right.studyOrder ?? Number.MAX_SAFE_INTEGER);
+    } else if (sort === 'interview-rank') {
+      result =
+        (left.interviewRank ?? Number.MAX_SAFE_INTEGER) -
+        (right.interviewRank ?? Number.MAX_SAFE_INTEGER);
+    } else if (sort === 'difficulty') {
+      result = difficultyOrder[left.difficulty] - difficultyOrder[right.difficulty];
+    } else if (sort === 'evidence-confidence') {
+      result =
+        confidenceOrder[left.evidenceConfidence ?? 'unranked'] -
+        confidenceOrder[right.evidenceConfidence ?? 'unranked'];
+    }
+    return (
+      result ||
+      (left.studyOrder ?? Number.MAX_SAFE_INTEGER) -
+        (right.studyOrder ?? Number.MAX_SAFE_INTEGER) ||
+      left.title.localeCompare(right.title) ||
+      left.id.localeCompare(right.id)
+    );
+  };
 }
 
 export function uniqueHandsOnIndexProblemCount(groups: HandsOnDsaIndexGroup[]): number {
