@@ -49,6 +49,6 @@ export const LEARN_COURSE_GROUPS: LearnCourseGroup[] = [
     title: 'Engineering Tools',
     description:
       'Build a reliable workflow for debugging, source control, operating systems, data, containers, and continuous feedback.',
-    courseIds: ['developer-workflow', 'git', 'linux', 'sql', 'docker'],
+    courseIds: ['linux', 'git', 'developer-workflow', 'sql', 'docker'],
   },
 ];
