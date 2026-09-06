@@ -61,8 +61,9 @@ function practiceCourse(): CourseContent {
 }
 
 function practiceIndex(): HandsOnDsaIndex {
-  const groups = ['hashing', 'two-pointers'].map((id) => ({
+  const groups = ['hashing', 'two-pointers'].map((id, index) => ({
     id: `algorithmic-patterns:${id}`,
+    preparationOrder: index + 1,
     courseId: 'algorithmic-patterns',
     courseTitle: 'Pattern tests',
     title: id,
@@ -148,7 +149,22 @@ describe('Hands-On DSA route contracts', () => {
       'Transfer',
     ]);
     expect(sequence.querySelector('a, button')).toBeNull();
-    expect(harness.routeNativeElement!.querySelectorAll('.pattern-filter a')).toHaveLength(3);
+    const filters = [
+      ...harness.routeNativeElement!.querySelectorAll<HTMLAnchorElement>('.pattern-filter a'),
+    ];
+    expect(filters).toHaveLength(3);
+    expect(filters.slice(1).map((link) => link.textContent?.replace(/\s/g, ''))).toEqual([
+      '01hashing',
+      '02two-pointers',
+    ]);
+    const headings = [
+      ...harness.routeNativeElement!.querySelectorAll<HTMLHeadingElement>('.pattern-group h2'),
+    ];
+    expect(headings.map((heading) => heading.textContent?.replace(/\s/g, ''))).toEqual([
+      '01hashing',
+      '02two-pointers',
+    ]);
+    expect(headings[0].getAttribute('aria-label')).toBe('Pattern 1 of 2: hashing');
   });
 
   it('takes Practice to its pattern, opens a problem, and returns via the DSA breadcrumb', async () => {
@@ -229,10 +245,11 @@ describe('Hands-On DSA route contracts', () => {
       HandsOnDsa,
     );
     expect(reused).toBe(original);
-    expect(
-      harness.routeNativeElement!.querySelector('.pattern-filter [aria-current="page"]')!
-        .textContent,
-    ).toBe('two-pointers');
+    const selectedPattern = harness.routeNativeElement!.querySelector<HTMLAnchorElement>(
+      '.pattern-filter [aria-current="page"]',
+    )!;
+    expect(selectedPattern.textContent?.replace(/\s/g, '')).toBe('02two-pointers');
+    expect(selectedPattern.getAttribute('aria-label')).toBe('Clear pattern 2, two-pointers filter');
     expect(harness.routeNativeElement!.querySelectorAll('details.pattern-group')).toHaveLength(1);
   });
 

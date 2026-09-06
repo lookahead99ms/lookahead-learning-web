@@ -79,10 +79,13 @@
             [attr.aria-current]="selectedGroup()?.id === group.id ? 'page' : null"
             [attr.aria-label]="
               selectedGroup()?.id === group.id
-                ? 'Clear ' + group.title + ' filter'
-                : 'Show ' + group.title + ' problems'
+                ? 'Clear pattern ' + group.preparationOrder + ', ' + group.title + ' filter'
+                : 'Show pattern ' + group.preparationOrder + ', ' + group.title + ' problems'
             "
-            >{{ group.title }}</a
+            ><span class="pattern-filter-order" aria-hidden="true">{{
+              preparationOrderLabel(group.preparationOrder)
+            }}</span
+            ><span>{{ group.title }}</span></a
           >
         }
       </nav>
@@ -118,7 +121,22 @@
               <summary>
                 <div>
                   <span class="experience-pill">Guided + independent</span>
-                  <h2 [id]="'practice-group-' + group.id">{{ group.title }}</h2>
+                  <h2
+                    [id]="'practice-group-' + group.id"
+                    [attr.aria-label]="
+                      'Pattern ' +
+                      group.preparationOrder +
+                      ' of ' +
+                      catalog()?.totals?.groups +
+                      ': ' +
+                      group.title
+                    "
+                  >
+                    <span class="pattern-group-order" aria-hidden="true">{{
+                      preparationOrderLabel(group.preparationOrder)
+                    }}</span>
+                    <span>{{ group.title }}</span>
+                  </h2>
                   <span class="experience-pill">{{ group.courseTitle }}</span>
                   <p>{{ group.description }}</p>
                 </div>
