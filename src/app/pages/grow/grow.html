@@ -54,7 +54,12 @@
         <nav class="catalog-jump-nav" aria-label="Grow capability paths">
           <span>Jump to</span>
           @for (group of capabilityGroups; track group.id) {
-            <a [attr.href]="'#grow-group-' + group.id">{{ group.title }}</a>
+            <a
+              routerLink="/grow"
+              [queryParams]="{ group: group.id }"
+              (click)="repeatJump($event, group)"
+              >{{ group.title }}</a
+            >
           }
         </nav>
         @for (group of capabilityGroups; track group.title) {

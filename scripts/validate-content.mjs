@@ -7,6 +7,7 @@ import {
   readCanonicalDsaProblems,
 } from './canonical-dsa-contract.mjs';
 import { buildHandsOnDsaIndex } from './generate-hands-on-dsa-index.mjs';
+import { foundationLanguageNoteErrors } from './foundation-language-notes.mjs';
 
 const repositoryRoot = fileURLToPath(new URL('../', import.meta.url));
 const requestedRoot = process.argv[2];
@@ -1192,16 +1193,12 @@ for (const { lesson, moduleLabel } of foundationLessons) {
     lesson.keyTakeaways.length <= 5,
     `${label} keyTakeaways must contain no more than five items`,
   );
-  requireValue(
-    Array.isArray(lesson.languageNotes) && lesson.languageNotes.length === 3,
-    `${label} must include Java, Python, and Go language notes`,
-  );
-  const noteLanguages = new Set(lesson.languageNotes.map(({ language }) => language.toLowerCase()));
-  requireValue(
-    noteLanguages.size === patternLanguages.size &&
-      [...patternLanguages].every((language) => noteLanguages.has(language)),
-    `${label} language notes must cover Java, Python, and Go exactly once`,
-  );
+  for (const error of foundationLanguageNoteErrors(
+    lesson.languageNotes,
+    moduleLabel.split('/')[0],
+  )) {
+    requireValue(false, `${label} ${error}`);
+  }
   requireValue(lesson.reviewEvidence?.note, `${label} is missing review evidence`);
   if (lesson.reviewStatus === 'reviewed') {
     requireValue(
