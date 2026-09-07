@@ -48,99 +48,115 @@
             "
           ></p>
           @if (currentCourse.learningPath; as learningPath) {
-            <section class="course-learning-path" aria-labelledby="course-learning-path-title">
-              <h2 id="course-learning-path-title">Learning path</h2>
-              <p>{{ learningPath.guidance }}</p>
-              @if (!preparationIsPrevious()) {
-                <div class="course-learning-path-row">
-                  <strong>Recommended preparation</strong>
-                  @if (learningPath.preparation.requirement === 'none') {
-                    <span>No prerequisite course.</span>
-                  } @else {
-                    <span>
-                      {{
-                        learningPath.preparation.requirement === 'any' ? 'Complete any one: ' : ''
-                      }}
-                      @for (item of preparationCourses(); track item.id; let last = $last) {
-                        @if (item.available) {
-                          <a [routerLink]="['/', pathId(), item.id]">{{ item.title }}</a>
-                        } @else {
-                          <span>{{ item.title }} (coming next)</span>
+            @if (backgroundCourses().length || recommendedNextCourse()) {
+              <section class="course-learning-path" aria-labelledby="course-learning-path-title">
+                <h2 id="course-learning-path-title">Learning path</h2>
+                <p>{{ learningPath.guidance }}</p>
+                <div
+                  class="course-relationship-map"
+                  [class.background-only]="backgroundCourses().length && !recommendedNextCourse()"
+                  [class.next-only]="!backgroundCourses().length && recommendedNextCourse()"
+                >
+                  @if (backgroundCourses().length) {
+                    <section
+                      class="course-relationship-column course-background-column"
+                      aria-labelledby="helpful-background-title"
+                    >
+                      <h3 id="helpful-background-title">Helpful background</h3>
+                      <ul class="course-relationship-list">
+                        @for (item of backgroundCourses().slice(0, 3); track item.id) {
+                          <li>
+                            @if (item.available) {
+                              <a [routerLink]="['/', pathId(), item.id]">{{ item.title }}</a>
+                            } @else {
+                              <span class="unavailable">{{ item.title }} (coming next)</span>
+                            }
+                          </li>
                         }
-                        @if (!last) {
-                          <span aria-hidden="true"> · </span>
-                        }
+                      </ul>
+                      @if (backgroundCourses().length > 3) {
+                        <details class="course-relationship-more">
+                          <summary>
+                            {{ relationshipCountLabel(backgroundCourses().length - 3) }}
+                          </summary>
+                          <ul class="course-relationship-list">
+                            @for (item of backgroundCourses().slice(3); track item.id) {
+                              <li>
+                                @if (item.available) {
+                                  <a [routerLink]="['/', pathId(), item.id]">{{ item.title }}</a>
+                                } @else {
+                                  <span class="unavailable">{{ item.title }} (coming next)</span>
+                                }
+                              </li>
+                            }
+                          </ul>
+                        </details>
                       }
-                    </span>
+                      <p class="course-background-note">
+                        Review the relevant concepts; completing every linked course is not
+                        required.
+                      </p>
+                    </section>
+                    <span class="course-relationship-arrow" aria-hidden="true">→</span>
+                  }
+                  <section
+                    class="course-relationship-column course-current-column"
+                    aria-labelledby="current-course-map-title"
+                  >
+                    <h3 id="current-course-map-title">Current course</h3>
+                    <div class="course-current-node">
+                      <strong>{{ currentCourse.title }}</strong>
+                      @if (learningGroup(); as group) {
+                        <a
+                          class="course-group-return"
+                          [routerLink]="['/', pathId()]"
+                          [queryParams]="browseQueryParams()"
+                          >Browse {{ group.title }} →</a
+                        >
+                      }
+                    </div>
+                  </section>
+                  @if (recommendedNextCourse(); as item) {
+                    <span class="course-relationship-arrow" aria-hidden="true">→</span>
+                    <section
+                      class="course-relationship-column course-next-column"
+                      aria-labelledby="next-directions-title"
+                    >
+                      <h3 id="next-directions-title">Recommended next</h3>
+                      <ul class="course-relationship-list">
+                        <li>
+                          @if (item.available) {
+                            <a [routerLink]="['/', pathId(), item.id]">{{ item.title }}</a>
+                          } @else {
+                            <span class="unavailable">{{ item.title }} (coming next)</span>
+                          }
+                          <p class="course-direction-reason">{{ item.reason }}</p>
+                        </li>
+                      </ul>
+                      @if (otherDirectionCourses().length) {
+                        <details class="course-other-directions">
+                          <summary>Other directions ({{ otherDirectionCourses().length }})</summary>
+                          <ul class="course-relationship-list">
+                            @for (other of otherDirectionCourses(); track other.id) {
+                              <li>
+                                @if (other.available) {
+                                  <a [routerLink]="['/', pathId(), other.id]">{{ other.title }}</a>
+                                } @else {
+                                  <span class="unavailable">{{ other.title }} (coming next)</span>
+                                }
+                                <p class="course-direction-reason">{{ other.reason }}</p>
+                              </li>
+                            }
+                          </ul>
+                        </details>
+                      }
+                    </section>
                   }
                 </div>
-              }
-              @if (continuationCourses().length && !continuationIsNext()) {
-                <div class="course-learning-path-row">
-                  <strong>Continue with</strong>
-                  <span>
-                    @for (item of continuationCourses(); track item.id; let last = $last) {
-                      @if (item.available) {
-                        <a [routerLink]="['/', pathId(), item.id]">{{ item.title }}</a>
-                      } @else {
-                        <span>{{ item.title }} (coming next)</span>
-                      }
-                      @if (!last) {
-                        <span aria-hidden="true"> · </span>
-                      }
-                    }
-                  </span>
-                </div>
-              }
-            </section>
+              </section>
+            }
           }
         </div>
-        @if (!isFirstCompetency() || !isLastCompetency()) {
-          <nav class="course-navigation-bar" aria-label="Adjacent course navigation">
-            @if (!isFirstCompetency()) {
-              @if (previousCompetency(); as previous) {
-                @if (previous.available) {
-                  <a class="reader-footer-link previous" [routerLink]="['/', pathId(), previous.id]"
-                    ><span>← Previous in group</span><strong>{{ previous.title }}</strong>
-                    @if (preparationIsPrevious()) {
-                      <small>Recommended preparation</small>
-                    }
-                  </a>
-                } @else {
-                  <span class="reader-footer-link unavailable"
-                    ><span>← Previous in group</span><strong>{{ previous.title }}</strong>
-                    @if (preparationIsPrevious()) {
-                      <small>Recommended preparation</small>
-                    }
-                    <small>Coming next</small></span
-                  >
-                }
-              }
-            }
-            @if (!isLastCompetency()) {
-              @if (nextCompetency(); as next) {
-                @if (next.available) {
-                  <a
-                    class="reader-footer-link next competency-next-link"
-                    [routerLink]="['/', pathId(), next.id]"
-                    ><span>Next in group →</span><strong>{{ next.title }}</strong>
-                    @if (continuationIsNext()) {
-                      <small>Recommended continuation</small>
-                    }
-                  </a>
-                } @else {
-                  <span class="reader-footer-link next unavailable"
-                    ><span>Next in group →</span><strong>{{ next.title }}</strong>
-                    @if (continuationIsNext()) {
-                      <small>Recommended continuation</small>
-                    }
-                    <small>Coming next</small></span
-                  >
-                }
-              }
-            }
-          </nav>
-        }
       </section>
       <section class="question-list module-question-list">
         @if (currentCourse.layout === 'learning-map' && currentCourse.learningUnits?.length) {

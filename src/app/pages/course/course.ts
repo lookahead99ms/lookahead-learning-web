@@ -1,4 +1,4 @@
-import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { EMPTY, catchError, forkJoin, switchMap } from 'rxjs';
@@ -6,6 +6,7 @@ import { ContentService } from '../../content/content.service';
 import {
   CatalogItem,
   CourseContent,
+  CourseLearningDirection,
   InterviewQuestion,
   highlightGrow,
   highlightLearn,
@@ -26,46 +27,6 @@ import { CourseLearningMap } from '../../core/course-learning-map/course-learnin
   templateUrl: './course.html',
   styles: [
     `
-      .course-navigation-bar {
-        width: 100%;
-        margin: 24px 0 0;
-        padding: 16px 0 0;
-        display: flex;
-        align-items: flex-end;
-        justify-content: space-between;
-        gap: 24px;
-        border-top: 1px solid var(--line);
-      }
-      .course-navigation-bar .reader-footer-link {
-        flex: 0 1 44%;
-        width: auto;
-      }
-      .course-navigation-bar .reader-footer-link.next {
-        margin-left: auto;
-      }
-      .course-navigation-bar .reader-footer-link > span {
-        color: var(--search-primary);
-        font-size: 0.7rem;
-        font-weight: 850;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-      }
-      .course-navigation-bar .reader-footer-link:hover > strong,
-      .course-navigation-bar .reader-footer-link:focus-visible > strong {
-        color: var(--search-hover);
-      }
-      .course-navigation-bar .reader-footer-link.unavailable {
-        color: var(--text-subtle);
-        cursor: default;
-      }
-      .course-navigation-bar .reader-footer-link.unavailable > span {
-        color: var(--text-subtle);
-      }
-      .course-navigation-bar .reader-footer-link small {
-        margin-top: 4px;
-        color: var(--muted);
-        font-size: 0.72rem;
-      }
       .course-section-tile {
         min-height: 220px;
         display: flex;
@@ -114,10 +75,16 @@ import { CourseLearningMap } from '../../core/course-learning-map/course-learnin
         text-transform: uppercase;
       }
       .course-learning-path {
-        max-width: 880px;
+        max-width: 1120px;
         margin-top: 20px;
-        padding: 16px 0 2px 18px;
-        border-left: 3px solid var(--search-primary);
+        padding: 20px 22px;
+        border: 1px solid var(--line);
+        border-left: 4px solid var(--search-primary);
+        border-radius: 14px;
+        background: var(--surface);
+      }
+      .course-reader[data-path='grow'] .course-learning-path {
+        border-left-color: var(--grow-accent);
       }
       .course-learning-path h2 {
         margin: 0 0 6px;
@@ -128,29 +95,138 @@ import { CourseLearningMap } from '../../core/course-learning-map/course-learnin
         text-transform: uppercase;
       }
       .course-learning-path > p {
-        margin: 0 0 12px;
+        max-width: 880px;
+        margin: 0 0 16px;
         color: var(--muted);
       }
-      .course-learning-path-row {
+      .course-relationship-map {
         display: grid;
-        grid-template-columns: minmax(150px, 190px) minmax(0, 1fr);
-        gap: 6px 16px;
+        grid-template-columns: minmax(0, 1fr) auto minmax(180px, 0.8fr) auto minmax(0, 1fr);
+        align-items: start;
+        gap: 10px;
+      }
+      .course-relationship-map.background-only {
+        grid-template-columns: minmax(0, 1fr) auto minmax(180px, 0.8fr);
+      }
+      .course-relationship-map.next-only {
+        grid-template-columns: minmax(180px, 0.8fr) auto minmax(0, 1fr);
+      }
+      .course-relationship-column {
+        min-width: 0;
+      }
+      .course-relationship-column h3 {
+        display: block;
+        margin: 0 0 8px;
+        color: var(--muted);
+        font-size: 0.7rem;
+        font-weight: 850;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+      }
+      .course-background-note {
+        margin: 10px 0 0;
+        color: var(--muted);
+        font-size: 0.78rem;
+        line-height: 1.4;
+      }
+      .course-relationship-list {
+        display: grid;
+        gap: 8px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      .course-relationship-list a,
+      .course-relationship-list .unavailable {
+        display: block;
+        padding: 10px 12px;
+        border-left: 3px solid var(--line);
+        background: var(--surface-muted);
+        color: var(--text);
+        font-weight: 750;
+        text-decoration: none;
+      }
+      .course-relationship-list a {
+        color: var(--search-primary);
+      }
+      .course-relationship-list a:hover,
+      .course-relationship-list a:focus-visible {
+        border-left-color: var(--search-primary);
+        color: var(--search-hover);
+      }
+      .course-relationship-list .unavailable {
+        color: var(--text-subtle);
+      }
+      .course-direction-reason {
+        margin: 6px 12px 0;
+        color: var(--muted);
+        font-size: 0.78rem;
+        line-height: 1.4;
+      }
+      .course-other-directions {
+        margin-top: 12px;
+      }
+      .course-other-directions summary {
+        width: fit-content;
+        color: var(--search-primary);
+        cursor: pointer;
+        font-size: 0.8rem;
+        font-weight: 750;
+      }
+      .course-other-directions .course-relationship-list {
+        margin-top: 10px;
+      }
+      .course-relationship-more:not([open]) > .course-relationship-list,
+      .course-other-directions:not([open]) > .course-relationship-list {
+        display: none;
+      }
+      .course-current-node {
+        min-width: 180px;
+        display: flex;
+        flex-direction: column;
+        border-left: 4px solid var(--search-primary);
+        background: var(--surface-accent);
+      }
+      .course-reader[data-path='grow'] .course-current-node {
+        border-left-color: var(--grow-accent);
+      }
+      .course-current-node strong {
+        display: block;
+        padding: 10px 12px;
+        color: var(--text);
+      }
+      .course-relationship-arrow {
+        align-self: start;
+        margin-top: 28px;
+        color: var(--search-primary);
+        font-size: 1.35rem;
+        font-weight: 800;
+      }
+      .course-relationship-more {
         margin-top: 8px;
         color: var(--muted);
       }
-      .course-learning-path-row strong {
-        color: var(--text);
-      }
-      .course-learning-path-row a {
+      .course-relationship-more summary {
+        width: fit-content;
         color: var(--search-primary);
+        cursor: pointer;
+        font-size: 0.8rem;
+        font-weight: 750;
+      }
+      .course-relationship-more .course-relationship-list {
+        margin-top: 8px;
+      }
+      .course-group-return {
+        display: inline-flex;
+        align-self: flex-end;
+        margin: 0 12px 10px;
+        padding-top: 8px;
+        border-top: 1px solid var(--line);
+        color: var(--search-primary);
+        font-size: 0.76rem;
         font-weight: 750;
         text-decoration: underline;
-        text-decoration-thickness: 1px;
         text-underline-offset: 3px;
-      }
-      .course-learning-path-row a:hover,
-      .course-learning-path-row a:focus-visible {
-        color: var(--search-hover);
       }
       .course-breadcrumb-bar {
         display: flex;
@@ -167,22 +243,16 @@ import { CourseLearningMap } from '../../core/course-learning-map/course-learnin
         flex: 0 0 auto;
       }
       @media (max-width: 980px) {
-        .course-navigation-bar {
-          flex-direction: column;
-          align-items: stretch;
-          gap: 12px;
-        }
-        .course-navigation-bar .reader-footer-link {
-          flex-basis: auto;
-          width: 100%;
-        }
-        .course-navigation-bar .reader-footer-link.next {
-          margin-left: 0;
-          align-items: flex-start;
-          text-align: left;
-        }
-        .course-learning-path-row {
+        .course-relationship-map,
+        .course-relationship-map.background-only,
+        .course-relationship-map.next-only {
           grid-template-columns: 1fr;
+          align-items: start;
+        }
+        .course-relationship-arrow {
+          margin-top: 0;
+          transform: rotate(90deg);
+          text-align: center;
         }
       }
     `,
@@ -195,26 +265,12 @@ export class Course implements OnInit {
   protected readonly course = signal<CourseContent | null>(null);
   protected readonly courseId = signal('');
   protected readonly pathId = signal('learn');
-  protected readonly previousCompetency = signal<CourseNavigationItem | null>(null);
-  protected readonly nextCompetency = signal<CourseNavigationItem | null>(null);
-  protected readonly preparationCourses = signal<CourseNavigationItem[]>([]);
-  protected readonly continuationCourses = signal<CourseNavigationItem[]>([]);
-  // Keep multi-course requirements together so deduplication cannot change all/any semantics.
-  protected readonly preparationIsPrevious = computed(
-    () =>
-      this.preparationCourses().length === 1 &&
-      this.preparationCourses()[0].id === this.previousCompetency()?.id,
-  );
-  protected readonly continuationIsNext = computed(
-    () =>
-      this.continuationCourses().length === 1 &&
-      this.continuationCourses()[0].id === this.nextCompetency()?.id,
-  );
+  protected readonly backgroundCourses = signal<CourseNavigationItem[]>([]);
+  protected readonly recommendedNextCourse = signal<CourseNavigationItem | null>(null);
+  protected readonly otherDirectionCourses = signal<CourseNavigationItem[]>([]);
   protected readonly learningGroup = signal<
     LearnCourseGroup | GrowCourseGroup | LookAheadCourseGroup | null
   >(null);
-  protected readonly isFirstCompetency = signal(false);
-  protected readonly isLastCompetency = signal(false);
   protected readonly error = signal('');
   protected readonly reviewStatusLabel = reviewStatusLabel;
   protected readonly highlightGrow = highlightGrow;
@@ -234,10 +290,9 @@ export class Course implements OnInit {
         switchMap((params) => {
           this.course.set(null);
           this.learningGroup.set(null);
-          this.previousCompetency.set(null);
-          this.nextCompetency.set(null);
-          this.preparationCourses.set([]);
-          this.continuationCourses.set([]);
+          this.backgroundCourses.set([]);
+          this.recommendedNextCourse.set(null);
+          this.otherDirectionCourses.set([]);
           this.error.set('');
           const courseId = params.get('courseId') ?? 'core-java';
           const pathId = this.route.snapshot.data['pathId'] ?? 'learn';
@@ -264,47 +319,48 @@ export class Course implements OnInit {
           const catalogById = new Map(
             catalog.flatMap((item) => (item.id ? ([[item.id, item]] as const) : [])),
           );
-          this.preparationCourses.set(
-            this.learningPathItems(course.learningPath?.preparation.courseIds ?? [], catalogById),
+          this.backgroundCourses.set(
+            (course.learningPath?.backgroundCourseIds ?? []).map((id) =>
+              this.navigationItem(id, catalogById),
+            ),
           );
-          this.continuationCourses.set(
-            this.learningPathItems(course.learningPath?.nextCourseIds ?? [], catalogById),
+          this.recommendedNextCourse.set(
+            course.learningPath?.recommendedNext
+              ? this.directionItem(course.learningPath.recommendedNext, catalogById)
+              : null,
           );
-          const availableCompetencies: CourseNavigationItem[] = group
-            ? group.courseIds.map((id) => {
-                const item = catalogById.get(id);
-                return {
-                  id,
-                  title: item?.title ?? id,
-                  available: Boolean(item) && item?.available !== false,
-                };
-              })
-            : catalog.map(({ id, title, available }) => ({
-                id,
-                title,
-                available: available !== false,
-              }));
-          const currentIndex = availableCompetencies.findIndex(({ id }) => id === course.id);
-          this.previousCompetency.set(availableCompetencies[currentIndex - 1] ?? null);
-          this.nextCompetency.set(availableCompetencies[currentIndex + 1] ?? null);
-          this.isFirstCompetency.set(currentIndex === 0);
-          this.isLastCompetency.set(currentIndex === availableCompetencies.length - 1);
+          this.otherDirectionCourses.set(
+            (course.learningPath?.otherDirections ?? []).map((direction) =>
+              this.directionItem(direction, catalogById),
+            ),
+          );
         },
       });
   }
 
-  private learningPathItems(
-    courseIds: string[],
+  protected relationshipCountLabel(count: number): string {
+    return `View ${count} more ${count === 1 ? 'relationship' : 'relationships'}`;
+  }
+
+  protected browseQueryParams(): { group: string } | null {
+    const group = this.learningGroup();
+    return group ? { group: group.id } : null;
+  }
+
+  private directionItem(
+    direction: CourseLearningDirection,
     catalogById: Map<string, CatalogItem>,
-  ): CourseNavigationItem[] {
-    return courseIds.map((id) => {
-      const item = catalogById.get(id);
-      return {
-        id,
-        title: item?.title ?? id,
-        available: Boolean(item) && item?.available !== false,
-      };
-    });
+  ): CourseNavigationItem {
+    return { ...this.navigationItem(direction.courseId, catalogById), reason: direction.reason };
+  }
+
+  private navigationItem(id: string, catalogById: Map<string, CatalogItem>): CourseNavigationItem {
+    const item = catalogById.get(id);
+    return {
+      id,
+      title: item?.title ?? id,
+      available: Boolean(item) && item?.available !== false,
+    };
   }
 
   protected questionsFor(moduleId: string): InterviewQuestion[] {
@@ -327,4 +383,7 @@ export class Course implements OnInit {
   }
 }
 
-type CourseNavigationItem = Pick<CatalogItem, 'id' | 'title'> & { available: boolean };
+type CourseNavigationItem = Pick<CatalogItem, 'id' | 'title'> & {
+  available: boolean;
+  reason?: string;
+};

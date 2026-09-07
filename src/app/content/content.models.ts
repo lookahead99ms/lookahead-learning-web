@@ -612,13 +612,20 @@ export interface CourseLearningUnit {
 
 export type CourseLayout = 'tiles' | 'learning-map';
 
+export interface CourseLearningDirection {
+  courseId: string;
+  /** Explains why this direction is useful or when an alternative fits. */
+  reason: string;
+}
+
 export interface CourseLearningPath {
   guidance: string;
-  preparation: {
-    requirement: 'none' | 'any' | 'all';
-    courseIds: string[];
-  };
-  nextCourseIds: string[];
+  /** Courses containing useful concepts, not mandatory full-course prerequisites. */
+  backgroundCourseIds: string[];
+  /** The reviewed default progression; null means this course has no authored next step. */
+  recommendedNext: CourseLearningDirection | null;
+  /** Deliberate role- or skill-dependent branches, never inferred from array order. */
+  otherDirections: CourseLearningDirection[];
 }
 
 export interface CourseContent {
@@ -633,7 +640,7 @@ export interface CourseContent {
   /** Defaults to tiles so existing courses retain their current presentation. */
   layout?: CourseLayout;
   learningUnits?: CourseLearningUnit[];
-  /** Explicit prerequisites and recommended continuations for this course. */
+  /** Explicit helpful background and optional immediate directions for this course. */
   learningPath?: CourseLearningPath;
   questions: InterviewQuestion[];
   reviewStatus?: ContentReviewStatus;
