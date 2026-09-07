@@ -376,7 +376,8 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
       .avatar-trigger-btn:focus-visible {
         border-color: #cbd5e1;
         background: #f1f5f9;
-        outline: none;
+        outline: 3px solid rgba(22, 140, 165, 0.28);
+        outline-offset: 2px;
       }
       .user-avatar-img {
         width: 32px;
