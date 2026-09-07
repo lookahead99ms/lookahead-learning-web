@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink, Scroll } from '@angular/router';
-import { growTagline, highlightGrow, reviewStatusLabel } from '../../content/content.models';
+import { reviewStatusLabel } from '../../content/content.models';
 import { ContentService } from '../../content/content.service';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { CatalogOverviewItem } from '../../content/content.models';
@@ -36,8 +36,6 @@ export class Grow implements OnInit {
   protected readonly capabilities = signal<CatalogOverviewItem[] | null>(null);
   protected readonly error = signal('');
   protected readonly reviewStatusLabel = reviewStatusLabel;
-  protected readonly highlightGrow = highlightGrow;
-  protected readonly growTagline = growTagline;
   protected readonly expandedGroups = signal<Set<string>>(new Set(['Backend Engineering']));
   protected readonly capabilityGroups = GROW_COURSE_GROUPS;
 

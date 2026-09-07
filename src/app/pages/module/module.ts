@@ -1,6 +1,6 @@
 import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { EMPTY, catchError, forkJoin, switchMap } from 'rxjs';
 import {
   CatalogItem,
@@ -20,6 +20,38 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
   templateUrl: './module.html',
   styles: [
     `
+      .question-card {
+        position: relative;
+        isolation: isolate;
+        cursor: pointer;
+      }
+      .question-card-link {
+        color: inherit;
+        text-decoration: none;
+      }
+      .question-card-link::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        border-radius: 15px;
+      }
+      .question-card-link:focus-visible {
+        outline: none;
+      }
+      .question-card:has(.question-card-link:focus-visible) {
+        outline: 3px solid var(--cyan);
+        outline-offset: 4px;
+      }
+      .question-filter-tag {
+        /* Keep sibling filters above the primary link's full-card hit area. */
+        position: relative;
+        z-index: 2;
+      }
+      .question-filter-tag:focus-visible {
+        outline: 3px solid var(--cyan);
+        outline-offset: 3px;
+      }
       .module-navigation-bar {
         display: flex;
         align-items: center;
@@ -123,7 +155,6 @@ export class Module implements OnInit {
   private readonly contentService = inject(ContentService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly router = inject(Router);
   protected readonly courseId = signal('');
   protected readonly pathId = signal('learn');
   protected readonly course = signal<CourseContent | null>(null);
@@ -191,10 +222,6 @@ export class Module implements OnInit {
 
     const currentCatalogIndex = catalog.findIndex(({ id }) => id === course.id);
     this.nextCourse.set(catalog[currentCatalogIndex + 1] ?? null);
-  }
-
-  protected openQuestion(question: InterviewQuestion): void {
-    this.router.navigate(['/', this.pathId(), this.courseId(), question.id]);
   }
 
   protected catalogRoute(): string[] {

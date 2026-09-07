@@ -655,8 +655,11 @@ export interface CatalogItem {
 /** Catalog metadata derived from the searchable curriculum, never hand-maintained. */
 export interface CatalogOverviewItem extends CatalogItem {
   lessonCount: number;
+  /** Q&A records include both interview questions and question-bank practice exercises. */
   questionCount: number;
+  /** Internal content containers, including separate practice modules; not a topic count. */
   moduleCount: number;
+  /** Grow prefers curated course keywords; other catalogs retain module labels. */
   topicPreview: string[];
   languages: PatternLanguage[];
 }

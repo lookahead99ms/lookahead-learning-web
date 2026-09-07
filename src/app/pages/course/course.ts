@@ -1,4 +1,4 @@
-import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { EMPTY, catchError, forkJoin, switchMap } from 'rxjs';
@@ -61,7 +61,7 @@ import { CourseLearningMap } from '../../core/course-learning-map/course-learnin
       .course-navigation-bar .reader-footer-link.unavailable > span {
         color: var(--text-subtle);
       }
-      .course-navigation-bar .reader-footer-link.unavailable small {
+      .course-navigation-bar .reader-footer-link small {
         margin-top: 4px;
         color: var(--muted);
         font-size: 0.72rem;
@@ -199,6 +199,17 @@ export class Course implements OnInit {
   protected readonly nextCompetency = signal<CourseNavigationItem | null>(null);
   protected readonly preparationCourses = signal<CourseNavigationItem[]>([]);
   protected readonly continuationCourses = signal<CourseNavigationItem[]>([]);
+  // Keep multi-course requirements together so deduplication cannot change all/any semantics.
+  protected readonly preparationIsPrevious = computed(
+    () =>
+      this.preparationCourses().length === 1 &&
+      this.preparationCourses()[0].id === this.previousCompetency()?.id,
+  );
+  protected readonly continuationIsNext = computed(
+    () =>
+      this.continuationCourses().length === 1 &&
+      this.continuationCourses()[0].id === this.nextCompetency()?.id,
+  );
   protected readonly learningGroup = signal<
     LearnCourseGroup | GrowCourseGroup | LookAheadCourseGroup | null
   >(null);

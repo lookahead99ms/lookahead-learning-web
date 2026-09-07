@@ -9,8 +9,9 @@ export const GROW_COURSE_GROUPS: GrowCourseGroup[] = [
   {
     id: 'backend-engineering',
     title: 'Backend Engineering',
-    description: 'Build robust Spring applications, services, and persistence layers.',
-    courseIds: ['advanced-java', 'spring-framework', 'spring-boot', 'data-access'],
+    description:
+      'Build robust Java and Node.js services with explicit API and persistence contracts.',
+    courseIds: ['advanced-java', 'spring-framework', 'spring-boot', 'data-access', 'nodejs'],
   },
   {
     id: 'system-security',
@@ -22,7 +23,7 @@ export const GROW_COURSE_GROUPS: GrowCourseGroup[] = [
     id: 'frontend-engineering',
     title: 'Frontend Engineering',
     description: 'Build scalable, responsive client applications and integration boundaries.',
-    courseIds: ['angular'],
+    courseIds: ['angular', 'vue'],
   },
   {
     id: 'cloud-delivery',

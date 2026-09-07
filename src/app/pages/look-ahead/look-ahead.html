@@ -54,7 +54,7 @@
             </div>
             <div>
               <dt>{{ totalQuestions(practices) }}</dt>
-              <dd>interview questions</dd>
+              <dd>interview and practice questions</dd>
             </div>
           </dl>
         </section>
@@ -74,8 +74,10 @@
                     [routerLink]="['/look-ahead', practice.id]"
                   >
                     <p class="catalog-card-kicker">
-                      {{ practice.moduleCount }} topics · {{ practice.lessonCount }} lessons ·
-                      {{ practice.questionCount }} Q&amp;As
+                      {{ practice.lessonCount }}
+                      {{ practice.lessonCount === 1 ? 'lesson' : 'lessons' }} ·
+                      {{ practice.questionCount }}
+                      {{ practice.questionCount === 1 ? 'question' : 'questions' }}
                     </p>
                     <h2>{{ practice.title }}</h2>
                     <p>{{ practice.description }}</p>

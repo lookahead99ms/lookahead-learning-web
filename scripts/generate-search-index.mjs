@@ -72,11 +72,12 @@ function questionLanguages(question) {
   );
 }
 
-function catalogOverview(path, catalog, documents) {
+function catalogOverview(path, catalog, documents, courseTopics) {
   const pathDocuments = documents.filter((document) => document.path === path);
 
   return catalog.map((item) => {
     const courseDocuments = pathDocuments.filter((document) => document.courseId === item.id);
+    const keyTopics = courseTopics.get(`${path}/${item.id}`) ?? [];
     return {
       ...item,
       lessonCount: courseDocuments.filter(
@@ -84,15 +85,22 @@ function catalogOverview(path, catalog, documents) {
       ).length,
       questionCount: courseDocuments.filter(({ contentType }) => contentType === 'q-and-a').length,
       moduleCount: new Set(courseDocuments.map(({ moduleId }) => moduleId)).size,
-      topicPreview: uniqueLabels(courseDocuments.map(({ moduleTitle }) => moduleTitle)),
+      topicPreview:
+        path === 'grow' && keyTopics.length
+          ? keyTopics
+          : uniqueLabels(courseDocuments.map(({ moduleTitle }) => moduleTitle)),
       languages: uniqueLabels(courseDocuments.flatMap(({ languages: values }) => values)),
     };
   });
 }
 
-async function documentsForCourse(contentRoot, path, catalogItem, canonicalProblems) {
+async function documentsForCourse(contentRoot, path, catalogItem, canonicalProblems, courseTopics) {
   const courseRoot = join(contentRoot, path, catalogItem.id);
   const course = await readJson(join(courseRoot, 'course.json'));
+  courseTopics.set(
+    `${path}/${catalogItem.id}`,
+    uniqueLabels(Array.isArray(course.chips) ? course.chips : []).map((label) => label.trim()),
+  );
   const modules = course.modules.filter((module) => module.reviewStatus !== 'planned');
   const questionArrays = await Promise.all(
     modules.map((module) => readJson(join(courseRoot, 'modules', `${module.id}.json`))),
@@ -194,6 +202,7 @@ async function documentsForCourse(contentRoot, path, catalogItem, canonicalProbl
 export async function generateSearchIndex(contentRoot) {
   const courseJobs = [];
   const catalogs = new Map();
+  const courseTopics = new Map();
   const canonicalProblems = await readCanonicalDsaProblems(contentRoot);
   for (const path of paths) {
     const catalogPath = join(contentRoot, path, 'catalog.json');
@@ -209,7 +218,9 @@ export async function generateSearchIndex(contentRoot) {
         const courseFile = join(contentRoot, path, item.id, 'course.json');
         try {
           await access(courseFile);
-          courseJobs.push(documentsForCourse(contentRoot, path, item, canonicalProblems));
+          courseJobs.push(
+            documentsForCourse(contentRoot, path, item, canonicalProblems, courseTopics),
+          );
         } catch {
           // Special catalog experiences such as Hands-on DSA do not hydrate as courses.
         }
@@ -245,7 +256,7 @@ export async function generateSearchIndex(contentRoot) {
     ...[...catalogs].map(([path, catalog]) =>
       writeFile(
         join(contentRoot, path, 'catalog-overview.json'),
-        JSON.stringify(catalogOverview(path, catalog, documents)),
+        JSON.stringify(catalogOverview(path, catalog, documents, courseTopics)),
       ),
     ),
   ]);
