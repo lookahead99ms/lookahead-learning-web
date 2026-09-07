@@ -493,7 +493,16 @@ footer {
   flex: 0 0 auto;
 }
 .search-trigger { display: inline-flex; align-items: center; gap: 7px; min-height: 32px; box-sizing: border-box; padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px; color: var(--text-subtle) !important; background: var(--surface); font-size: .82rem !important; font-weight: 500 !important; line-height: 1; text-decoration: none !important; }
-.search-trigger:hover, .search-trigger:focus-visible { border-color: var(--search-primary); color: var(--accent-link) !important; background: #f8fbff; outline: none; }
+.search-trigger:hover,
+.search-trigger:focus-visible {
+  border-color: var(--search-primary);
+  color: var(--accent-link) !important;
+  background: #f8fbff;
+}
+.search-trigger:focus-visible {
+  outline: 3px solid rgba(22, 140, 165, 0.28);
+  outline-offset: 2px;
+}
 .search-icon { width: .95em; height: .95em; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-linecap: round; stroke-width: 2; }
 .search-trigger kbd { padding: 0; color: var(--muted); border: 0; background: transparent; font: inherit; font-size: .72rem; }
 .catalog-context-panel {
@@ -887,7 +896,8 @@ a.reader-module:focus-visible {
 .reader-search-link:focus-visible {
   color: var(--search-hover);
   text-decoration: underline;
-  outline: none;
+  outline: 3px solid rgba(22, 140, 165, 0.28);
+  outline-offset: 2px;
 }
 .course-context-panel .breadcrumbs,
 .catalog-context-panel .breadcrumbs {
