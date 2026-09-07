@@ -1,6 +1,6 @@
 <app-platform-header />
 <main id="main-content" class="content-page reader-page">
-  <article class="question-reader catalog-reader">
+  <article class="question-reader catalog-reader learn-catalog-reader">
     <div class="catalog-sticky-utility">
       <nav class="breadcrumbs" aria-label="Breadcrumb">
         <a routerLink="/">Home</a>
@@ -12,26 +12,60 @@
         ><span>Search</span><kbd>⌘K</kbd>
       </button>
     </div>
-    <section class="catalog-context-panel">
-      <h1 class="reader-question-title">Learn</h1>
-      <p>
-        <strong class="catalog-highlight">LEARN the foundations</strong> that build confident
-        engineering judgment and interview-ready problem-solving skills.
-      </p>
-    </section>
-    <a
-      class="question-library-callout"
-      routerLink="/interview-questions"
-      [queryParams]="{ path: 'learn' }"
-    >
-      <span>
-        <strong>Interview Question Library</strong>
-        <small>Retrieve concise answers, detailed reasoning, code, and follow-up questions.</small>
-      </span>
-      <span aria-hidden="true">Explore 1,000+ questions →</span>
-    </a>
     @if (courses(); as courses) {
       @if (courses.length) {
+        <section class="catalog-context-panel learn-catalog catalog-depth-hero">
+          <div class="catalog-depth-copy">
+            <p class="catalog-path-label">Engineering foundations curriculum</p>
+            <h1 class="reader-question-title">Learn</h1>
+            <p>
+              <strong class="catalog-highlight">Build durable engineering foundations.</strong>
+              Master languages, data structures, algorithms, object design, and engineering tools
+              before production and architecture decisions demand them.
+            </p>
+            <div class="catalog-primary-actions" aria-label="Learn starting points">
+              <a
+                class="catalog-primary-action"
+                routerLink="/learn"
+                [queryParams]="{ group: startingGroup.id }"
+                (click)="repeatJump($event, startingGroup)"
+                >Choose a starting foundation <span aria-hidden="true">→</span></a
+              >
+              <a
+                class="catalog-secondary-action"
+                routerLink="/interview-questions"
+                [queryParams]="{ path: 'learn' }"
+                >Practice Learn questions</a
+              >
+              <a class="catalog-secondary-action" routerLink="/study-plan">Build a study plan</a>
+            </div>
+          </div>
+          <dl class="catalog-scoreboard" aria-label="Learn curriculum depth">
+            <div>
+              <dt>{{ courses.length }}</dt>
+              <dd>foundation courses</dd>
+            </div>
+            <div>
+              <dt>{{ totalLessons(courses) }}</dt>
+              <dd>guided lessons</dd>
+            </div>
+            <div>
+              <dt>{{ totalQuestions(courses) }}</dt>
+              <dd>interview and practice questions</dd>
+            </div>
+          </dl>
+        </section>
+        <nav class="catalog-jump-nav" aria-label="Learn curriculum paths">
+          <span>Jump to</span>
+          @for (group of courseGroups; track group.id) {
+            <a
+              routerLink="/learn"
+              [queryParams]="{ group: group.id }"
+              (click)="repeatJump($event, group)"
+              >{{ group.title }}</a
+            >
+          }
+        </nav>
         @for (group of courseGroups; track group.title) {
           <section
             class="catalog-group"
@@ -45,10 +79,17 @@
               [attr.aria-expanded]="isExpanded(group)"
               (click)="toggleGroup(group)"
             >
-              <span
-                ><span class="catalog-group-title">{{ group.title }}</span
-                ><span class="catalog-group-description">{{ group.description }}</span></span
-              ><span class="catalog-group-toggle" aria-hidden="true">›</span>
+              <span>
+                <span class="catalog-group-title">{{ group.title }}</span>
+                <span class="catalog-group-description">{{ group.description }}</span>
+                <span class="catalog-group-summary"
+                  >{{ coursesFor(group, courses).length }}
+                  {{ coursesFor(group, courses).length === 1 ? 'course' : 'courses' }} ·
+                  {{ lessonsFor(group, courses) }} lessons ·
+                  {{ questionsFor(group, courses) }} questions</span
+                >
+              </span>
+              <span class="catalog-group-toggle" aria-hidden="true">›</span>
             </button>
             @if (isExpanded(group)) {
               <div class="course-grid catalog-course-grid">
@@ -66,8 +107,29 @@
                           >{{ reviewStatusLabel(course.reviewStatus ?? 'needs-review') }}</span
                         >
                       }
+                      @if (course.lessonCount || course.questionCount) {
+                        <p class="catalog-card-kicker">
+                          {{ course.lessonCount }}
+                          {{ course.lessonCount === 1 ? 'lesson' : 'lessons' }} ·
+                          {{ course.questionCount }}
+                          {{ course.questionCount === 1 ? 'question' : 'questions' }}
+                        </p>
+                      }
                       <h2>{{ course.title }}</h2>
                       <p [innerHTML]="highlightLearn(course.description)"></p>
+                      @if (course.topicPreview.length) {
+                        <div class="catalog-course-preview">
+                          <p class="catalog-course-preview-label">Inside this course</p>
+                          <ul class="catalog-topic-preview" role="list" aria-label="Course preview">
+                            @for (topic of course.topicPreview.slice(0, 3); track topic) {
+                              <li>{{ topic }}</li>
+                            }
+                          </ul>
+                        </div>
+                      }
+                      <span class="catalog-card-action"
+                        >Open curriculum <span aria-hidden="true">→</span></span
+                      >
                     </a>
                   } @else {
                     <article class="course-card learn-course-card unavailable" [id]="course.id">
@@ -95,11 +157,17 @@
         </section>
       }
     } @else if (error()) {
+      <section class="catalog-context-panel learn-catalog">
+        <h1 class="reader-question-title">Learn</h1>
+      </section>
       <section class="catalog-state catalog-state-error" role="alert">
         <h2>Content unavailable</h2>
         <p>{{ error() }}</p>
       </section>
     } @else {
+      <section class="catalog-context-panel learn-catalog">
+        <h1 class="reader-question-title">Learn</h1>
+      </section>
       <section class="catalog-state" aria-live="polite"><p>Loading Learn courses…</p></section>
     }
   </article>
