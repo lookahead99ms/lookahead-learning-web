@@ -15,8 +15,12 @@ const javaFoundations: CourseContent = {
   version: 'Java 21+',
   learningPath: {
     guidance: 'Start here when Java is your target language.',
-    preparation: { requirement: 'none', courseIds: [] },
-    nextCourseIds: ['java-data-structures'],
+    backgroundCourseIds: [],
+    recommendedNext: {
+      courseId: 'java-data-structures',
+      reason: 'Build fluency with Java collection contracts.',
+    },
+    otherDirections: [],
   },
   modules: [
     {
@@ -38,8 +42,12 @@ const modernJava: CourseContent = {
   version: 'Java 21+',
   learningPath: {
     guidance: 'Continue after Java Foundations.',
-    preparation: { requirement: 'all', courseIds: ['core-java'] },
-    nextCourseIds: ['garbage-collection'],
+    backgroundCourseIds: ['core-java'],
+    recommendedNext: {
+      courseId: 'garbage-collection',
+      reason: 'Connect modern APIs to JVM runtime behavior.',
+    },
+    otherDirections: [],
   },
   modules: [],
   questions: [],
@@ -53,8 +61,36 @@ const springFramework: CourseContent = {
   version: 'Spring',
   learningPath: {
     guidance: 'Understand Java and object lifecycle before tracing the container.',
-    preparation: { requirement: 'all', courseIds: ['advanced-java'] },
-    nextCourseIds: ['spring-boot'],
+    backgroundCourseIds: ['advanced-java'],
+    recommendedNext: {
+      courseId: 'spring-boot',
+      reason: 'Apply framework contracts in production-oriented services.',
+    },
+    otherDirections: [],
+  },
+  modules: [],
+  questions: [],
+};
+
+const springBoot: CourseContent = {
+  id: 'spring-boot',
+  path: 'grow',
+  title: 'Spring Boot',
+  description: 'Build observable, testable services.',
+  version: 'Spring',
+  learningPath: {
+    guidance: 'Combine framework, persistence and API contracts.',
+    backgroundCourseIds: ['spring-framework', 'data-access', 'api-design'],
+    recommendedNext: {
+      courseId: 'distributed-systems',
+      reason: 'Extend one service into distributed failure and consistency reasoning.',
+    },
+    otherDirections: [
+      {
+        courseId: 'quality-engineering',
+        reason: 'Choose this when test architecture is the immediate skill gap.',
+      },
+    ],
   },
   modules: [],
   questions: [],
@@ -65,8 +101,9 @@ describe('Course learning path', () => {
     const content = {
       getCourse: vi.fn((_pathId: string, courseId: string) =>
         of(
-          [javaFoundations, modernJava, springFramework].find((course) => course.id === courseId) ??
-            javaFoundations,
+          [javaFoundations, modernJava, springFramework, springBoot].find(
+            (course) => course.id === courseId,
+          ) ?? javaFoundations,
         ),
       ),
       getCatalog: vi.fn(() =>
@@ -81,6 +118,10 @@ describe('Course learning path', () => {
           { id: 'advanced-java', title: 'Advanced Java' },
           { id: 'spring-framework', title: 'Spring Framework' },
           { id: 'spring-boot', title: 'Spring Boot' },
+          { id: 'data-access', title: 'Data Access' },
+          { id: 'api-design', title: 'API Design and Security' },
+          { id: 'distributed-systems', title: 'Distributed Systems Engineering' },
+          { id: 'quality-engineering', title: 'Quality Engineering' },
         ]),
       ),
     };
@@ -100,13 +141,25 @@ describe('Course learning path', () => {
     );
   });
 
-  it('renders prerequisites and continuations as instructional links, not pills', async () => {
+  it('renders a next-only map without an empty background column', async () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/learn/core-java', Course);
 
     const learningPath = harness.routeNativeElement?.querySelector('.course-learning-path');
-    expect(learningPath?.textContent).toContain('No prerequisite course.');
-    expect(learningPath?.querySelector('a')?.textContent).toContain('Java Collections');
+    const map = learningPath?.querySelector('.course-relationship-map');
+    expect(map?.classList).toContain('next-only');
+    expect(map?.querySelector('.course-background-column')).toBeNull();
+    expect(map?.querySelector('.course-current-node')?.textContent).toContain('Java Foundations');
+    expect(map?.querySelector('.course-next-column a')?.textContent).toContain('Java Collections');
+    expect(map?.querySelector('.course-next-column')?.textContent).toContain(
+      'Build fluency with Java collection contracts.',
+    );
+    expect(learningPath?.textContent).not.toContain('No prerequisite');
+    expect(harness.routeNativeElement?.querySelector('.course-navigation-bar')).toBeNull();
+    expect(
+      map?.querySelector('.course-current-node .course-group-return')?.getAttribute('href'),
+    ).toBe('/learn?group=language-foundations');
+    expect(learningPath?.querySelector(':scope > .course-group-return')).toBeNull();
     expect(harness.routeNativeElement?.querySelector('.course-chips')).toBeNull();
   });
 
@@ -118,101 +171,91 @@ describe('Course learning path', () => {
     expect(harness.routeNativeElement?.textContent).not.toContain('Functional interfaces');
   });
 
-  it('places previous and next courses at opposite ends of a dedicated navigation row', async () => {
-    const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/learn/modern-java', Course);
-
-    const navigation = harness.routeNativeElement?.querySelector('.course-navigation-bar');
-    const links = navigation?.querySelectorAll('.reader-footer-link');
-
-    expect(navigation?.parentElement?.classList).toContain('course-page-intro');
-    expect(links?.length).toBe(2);
-    expect(links?.item(0).classList).toContain('previous');
-    expect(links?.item(0).textContent).toContain('Java Collections');
-    expect(links?.item(1).classList).toContain('next');
-    expect(links?.item(1).textContent).toContain('JVM Memory and Garbage Collection');
-  });
-
-  it('shows matching recommendations once in the adjacent navigation, preserving their meaning', async () => {
+  it('renders both direct relationship columns without catalog-order navigation', async () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/grow/spring-framework', Course);
 
-    const intro = harness.routeNativeElement!.querySelector('.course-page-intro')!;
-    expect(intro.querySelector('.course-learning-path')?.textContent).toContain(
+    const map = harness.routeNativeElement?.querySelector('.course-relationship-map');
+
+    expect(map?.closest('.course-learning-path')?.textContent).toContain(
       springFramework.learningPath!.guidance,
     );
-    expect(intro.querySelectorAll('.course-learning-path-row')).toHaveLength(0);
-    expect(intro.querySelectorAll('a[href="/grow/advanced-java"]')).toHaveLength(1);
-    expect(intro.querySelectorAll('a[href="/grow/spring-boot"]')).toHaveLength(1);
-    expect(intro.querySelector('.previous')?.textContent).toContain('Recommended preparation');
-    expect(intro.querySelector('.next')?.textContent).toContain('Recommended continuation');
+    expect(map?.querySelector('.course-background-column a')?.getAttribute('href')).toBe(
+      '/grow/advanced-java',
+    );
+    expect(map?.querySelector('.course-next-column a')?.getAttribute('href')).toBe(
+      '/grow/spring-boot',
+    );
+    expect(map?.textContent).toContain('completing every linked course is not required');
+    expect(harness.routeNativeElement?.textContent).not.toContain('Previous in group');
+    expect(harness.routeNativeElement?.textContent).not.toContain('Next in group');
   });
 
-  it('keeps a distinct prerequisite without treating the previous course as preparation', async () => {
+  it('separates the recommended next step from explained alternatives', async () => {
     const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/learn/modern-java', Course);
+    await harness.navigateByUrl('/grow/spring-boot', Course);
 
-    const intro = harness.routeNativeElement!.querySelector('.course-page-intro')!;
-    expect(intro.querySelector('.course-learning-path a')?.getAttribute('href')).toBe(
-      '/learn/core-java',
+    const background = harness.routeNativeElement!.querySelector('.course-background-column')!;
+    const next = harness.routeNativeElement!.querySelector('.course-next-column')!;
+    expect(
+      Array.from(background.querySelectorAll('a'), (link) => link.textContent?.trim()),
+    ).toEqual(['Spring Framework', 'Data Access', 'API Design and Security']);
+    expect(next.querySelector(':scope > .course-relationship-list a')?.textContent?.trim()).toBe(
+      'Distributed Systems Engineering',
     );
-    expect(intro.querySelectorAll('a[href="/learn/garbage-collection"]')).toHaveLength(1);
-    expect(intro.querySelector('.course-learning-path')?.textContent).not.toContain(
-      'Continue with',
+    expect(next.querySelector(':scope > .course-relationship-list')?.textContent).toContain(
+      'distributed failure and consistency reasoning',
     );
-    expect(intro.querySelector('.previous')?.textContent).not.toContain('Recommended preparation');
+    const alternatives = next.querySelector('.course-other-directions') as HTMLDetailsElement;
+    expect(alternatives.open).toBe(false);
+    expect(alternatives.querySelector('summary')?.textContent).toContain('Other directions (1)');
+    expect(alternatives.querySelector('a')?.textContent?.trim()).toBe('Quality Engineering');
+    expect(alternatives.textContent).toContain('test architecture is the immediate skill gap');
+    expect(next.textContent).not.toContain('Data Access');
   });
 
-  it.each(['any', 'all'] as const)(
-    'preserves the complete %s prerequisite set when one item is also the previous course',
-    async (requirement) => {
-      vi.spyOn(TestBed.inject(ContentService), 'getCourse').mockReturnValue(
-        of({
-          ...modernJava,
-          learningPath: {
-            ...modernJava.learningPath!,
-            preparation: { requirement, courseIds: ['core-java', 'java-data-structures'] },
-          },
-        }),
-      );
-      const harness = await RouterTestingHarness.create();
-      await harness.navigateByUrl('/learn/modern-java', Course);
-
-      const preparation = harness.routeNativeElement!.querySelector('.course-learning-path-row')!;
-      expect(
-        Array.from(preparation.querySelectorAll('a'), (link) => link.getAttribute('href')),
-      ).toEqual(['/learn/core-java', '/learn/java-data-structures']);
-      expect(preparation.textContent?.includes('Complete any one:')).toBe(requirement === 'any');
-      expect(harness.routeNativeElement!.querySelector('.previous')?.textContent).not.toContain(
-        'Recommended preparation',
-      );
-    },
-  );
-
-  it('preserves multiple recommended continuations rather than silently dropping an option', async () => {
+  it('keeps one recommendation visible and collapses all other directions', async () => {
     vi.spyOn(TestBed.inject(ContentService), 'getCourse').mockReturnValue(
       of({
-        ...modernJava,
+        ...javaFoundations,
         learningPath: {
-          ...modernJava.learningPath!,
-          nextCourseIds: ['garbage-collection', 'language-comparative-analysis'],
+          ...javaFoundations.learningPath!,
+          recommendedNext: {
+            courseId: 'java-data-structures',
+            reason: 'Build collection fluency first.',
+          },
+          otherDirections: [
+            { courseId: 'modern-java', reason: 'Choose modern APIs next.' },
+            { courseId: 'garbage-collection', reason: 'Choose JVM diagnostics next.' },
+            {
+              courseId: 'language-comparative-analysis',
+              reason: 'Choose language comparison next.',
+            },
+          ],
         },
       }),
     );
     const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/learn/modern-java', Course);
+    await harness.navigateByUrl('/learn/core-java', Course);
 
-    const continuation = harness.routeNativeElement!.querySelectorAll(
-      '.course-learning-path-row',
-    )[1];
-    expect(continuation.textContent).toContain('Continue with');
-    expect(continuation.querySelectorAll('a')).toHaveLength(2);
-    expect(harness.routeNativeElement!.querySelector('.next')?.textContent).not.toContain(
-      'Recommended continuation',
-    );
+    const next = harness.routeNativeElement!.querySelector('.course-next-column')!;
+    expect(
+      next.querySelector(':scope > .course-relationship-list')?.querySelectorAll('a'),
+    ).toHaveLength(1);
+    const alternatives = next.querySelector('.course-other-directions') as HTMLDetailsElement;
+    expect(alternatives.open).toBe(false);
+    expect(alternatives.querySelector('summary')?.textContent).toContain('Other directions (3)');
+    expect(
+      Array.from(alternatives.querySelectorAll('a'), (link) => link.textContent?.trim()),
+    ).toEqual([
+      'Modern Java',
+      'JVM Memory and Garbage Collection',
+      'Language Selection and Migration',
+    ]);
+    expect(alternatives.querySelectorAll('.course-direction-reason')).toHaveLength(3);
   });
 
-  it('keeps an unavailable matching recommendation noninteractive and displays it once', async () => {
+  it('keeps unavailable relationships visible but noninteractive', async () => {
     vi.spyOn(TestBed.inject(ContentService), 'getCatalog').mockReturnValue(
       of([
         { id: 'advanced-java', title: 'Advanced Java', available: false },
@@ -223,16 +266,57 @@ describe('Course learning path', () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/grow/spring-framework', Course);
 
-    const intro = harness.routeNativeElement!.querySelector('.course-page-intro')!;
-    expect(intro.querySelectorAll('.course-learning-path-row')).toHaveLength(0);
-    expect(intro.querySelectorAll('.course-navigation-bar a')).toHaveLength(0);
-    expect(intro.querySelectorAll('.course-navigation-bar .unavailable')).toHaveLength(2);
-    expect(intro.textContent?.match(/Coming next/g)).toHaveLength(2);
-    expect(intro.textContent).toContain('Recommended preparation');
-    expect(intro.textContent).toContain('Recommended continuation');
+    const map = harness.routeNativeElement!.querySelector('.course-relationship-map')!;
+    expect(map.querySelectorAll('.course-background-column a, .course-next-column a')).toHaveLength(
+      0,
+    );
+    expect(map.querySelectorAll('.course-current-node .course-group-return')).toHaveLength(1);
+    expect(map.querySelectorAll('.unavailable')).toHaveLength(2);
+    expect(map.textContent?.match(/coming next/g)).toHaveLength(2);
   });
 
-  it('recomputes recommendations on navigation to a course without learning-path metadata', async () => {
+  it('renders a background-only map without an empty next column', async () => {
+    vi.spyOn(TestBed.inject(ContentService), 'getCourse').mockReturnValue(
+      of({
+        ...modernJava,
+        learningPath: {
+          ...modernJava.learningPath!,
+          recommendedNext: null,
+          otherDirections: [],
+        },
+      }),
+    );
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/learn/modern-java', Course);
+
+    const map = harness.routeNativeElement!.querySelector('.course-relationship-map')!;
+    expect(map.classList).toContain('background-only');
+    expect(map.querySelector('.course-background-column')).not.toBeNull();
+    expect(map.querySelector('.course-next-column')).toBeNull();
+    expect(map.textContent).not.toContain('Recommended next');
+  });
+
+  it('hides the relationship map when neither side has authored relationships', async () => {
+    vi.spyOn(TestBed.inject(ContentService), 'getCourse').mockReturnValue(
+      of({
+        ...modernJava,
+        learningPath: {
+          ...modernJava.learningPath!,
+          backgroundCourseIds: [],
+          recommendedNext: null,
+          otherDirections: [],
+        },
+      }),
+    );
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/learn/modern-java', Course);
+
+    expect(harness.routeNativeElement!.querySelector('.course-learning-path')).toBeNull();
+    expect(harness.routeNativeElement!.textContent).not.toContain('Helpful background');
+    expect(harness.routeNativeElement!.textContent).not.toContain('Recommended next');
+  });
+
+  it('clears the local map when navigating to a course without learning-path metadata', async () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/grow/spring-framework', Course);
     vi.spyOn(TestBed.inject(ContentService), 'getCourse').mockReturnValue(
@@ -242,8 +326,9 @@ describe('Course learning path', () => {
 
     const intro = harness.routeNativeElement!.querySelector('.course-page-intro')!;
     expect(intro.querySelector('.course-learning-path')).toBeNull();
-    expect(intro.textContent).not.toContain('Recommended preparation');
-    expect(intro.textContent).not.toContain('Recommended continuation');
-    expect(intro.querySelector('.previous')?.getAttribute('href')).toBe('/grow/spring-framework');
+    expect(intro.textContent).not.toContain('Helpful background');
+    expect(intro.textContent).not.toContain('Recommended next');
+    expect(intro.textContent).not.toContain('Previous in group');
+    expect(intro.textContent).not.toContain('Next in group');
   });
 });

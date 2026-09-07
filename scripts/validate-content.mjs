@@ -440,50 +440,76 @@ function validateCourseLearningPath(learningPath, courseId, knownCourseIds, cour
     `${courseLabel}: learningPath guidance is required`,
   );
   requireValue(
-    ['none', 'any', 'all'].includes(learningPath?.preparation?.requirement),
-    `${courseLabel}: learningPath preparation requirement is invalid`,
+    learningPath?.preparation === undefined,
+    `${courseLabel}: legacy learningPath preparation metadata is not supported`,
   );
   requireValue(
-    Array.isArray(learningPath?.preparation?.courseIds),
-    `${courseLabel}: learningPath preparation courseIds must be an array`,
+    Array.isArray(learningPath?.backgroundCourseIds),
+    `${courseLabel}: learningPath backgroundCourseIds must be an array`,
   );
   requireValue(
-    Array.isArray(learningPath?.nextCourseIds),
-    `${courseLabel}: learningPath nextCourseIds must be an array`,
+    learningPath?.nextCourseIds === undefined,
+    `${courseLabel}: unranked learningPath nextCourseIds metadata is not supported`,
+  );
+  requireValue(
+    learningPath?.recommendedNext === null ||
+      (typeof learningPath?.recommendedNext === 'object' &&
+        !Array.isArray(learningPath.recommendedNext)),
+    `${courseLabel}: learningPath recommendedNext must be an object or null`,
+  );
+  requireValue(
+    Array.isArray(learningPath?.otherDirections),
+    `${courseLabel}: learningPath otherDirections must be an array`,
   );
 
-  const preparationIds = learningPath.preparation.courseIds;
-  const nextCourseIds = learningPath.nextCourseIds;
-  if (learningPath.preparation.requirement === 'none') {
+  const backgroundCourseIds = learningPath.backgroundCourseIds;
+  const directions = [
+    ...(learningPath.recommendedNext ? [learningPath.recommendedNext] : []),
+    ...learningPath.otherDirections,
+  ];
+  requireValue(
+    learningPath.otherDirections.length === 0 || learningPath.recommendedNext,
+    `${courseLabel}: alternative directions require an explicit recommendedNext`,
+  );
+
+  requireValue(
+    backgroundCourseIds.every((id) => typeof id === 'string' && id.trim()),
+    `${courseLabel}: learningPath backgroundCourseIds contains an invalid course id`,
+  );
+  requireValue(
+    new Set(backgroundCourseIds).size === backgroundCourseIds.length,
+    `${courseLabel}: duplicate learningPath background course`,
+  );
+
+  for (const direction of directions) {
     requireValue(
-      preparationIds.length === 0,
-      `${courseLabel}: prerequisite-free learningPath cannot list preparation courses`,
+      typeof direction?.courseId === 'string' && direction.courseId.trim(),
+      `${courseLabel}: learningPath direction requires a courseId`,
     );
-  } else {
     requireValue(
-      preparationIds.length > 0,
-      `${courseLabel}: learningPath preparation requires at least one course`,
+      typeof direction?.reason === 'string' && direction.reason.trim(),
+      `${courseLabel}: learningPath direction requires a reason`,
     );
   }
+  const directionIds = directions.map((direction) => direction.courseId);
+  requireValue(
+    new Set(directionIds).size === directionIds.length,
+    `${courseLabel}: duplicate learningPath direction course`,
+  );
+  requireValue(
+    backgroundCourseIds.every((id) => !directionIds.includes(id)),
+    `${courseLabel}: a course cannot be both background and a next direction`,
+  );
 
-  for (const [relationship, courseIds] of [
-    ['preparation', preparationIds],
-    ['continuation', nextCourseIds],
-  ]) {
+  for (const relatedCourseId of [...backgroundCourseIds, ...directionIds]) {
     requireValue(
-      new Set(courseIds).size === courseIds.length,
-      `${courseLabel}: duplicate learningPath ${relationship} course`,
+      relatedCourseId !== courseId,
+      `${courseLabel}: learningPath cannot reference itself`,
     );
-    for (const relatedCourseId of courseIds) {
-      requireValue(
-        relatedCourseId !== courseId,
-        `${courseLabel}: learningPath cannot reference itself`,
-      );
-      requireValue(
-        knownCourseIds.has(relatedCourseId),
-        `${courseLabel}: learningPath references missing course ${relatedCourseId}`,
-      );
-    }
+    requireValue(
+      knownCourseIds.has(relatedCourseId),
+      `${courseLabel}: learningPath references missing course ${relatedCourseId}`,
+    );
   }
 }
 
