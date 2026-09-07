@@ -26,7 +26,7 @@ const catalog: CatalogOverviewItem[] = GROW_COURSE_GROUPS.flatMap((group) =>
   })),
 );
 
-describe('Grow Jump to navigation', () => {
+describe('Grow catalog', () => {
   let loaded: Subject<CatalogOverviewItem[]>;
   let scrolled: string[];
   const originalScroll = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollIntoView');
@@ -108,6 +108,9 @@ describe('Grow Jump to navigation', () => {
         `#grow-group-${group.id}`,
       )!;
       expect(section.querySelector('button')?.getAttribute('aria-expanded')).toBe('true');
+      expect(section.querySelector('.catalog-group-summary')?.textContent).toContain(
+        `${group.courseIds.length} ${group.courseIds.length === 1 ? 'course' : 'courses'}`,
+      );
       expect(section.querySelector('.course-grid')).not.toBeNull();
       await vi.waitFor(() => expect(scrolled.at(-1)).toBe(section.id));
       expect(section.style.scrollMarginTop).toBeTruthy();
@@ -162,5 +165,96 @@ describe('Grow Jump to navigation', () => {
         block: 'start',
       }),
     );
+  });
+
+  it('shows key topics as a labelled curriculum highlight without nested controls', async () => {
+    const harness = await RouterTestingHarness.create('/grow');
+    finishRouterScroll();
+    loaded.next(
+      catalog.map((course, index) =>
+        index === 0
+          ? {
+              ...course,
+              description: 'Build services with explicit production contracts.',
+              topicPreview: ['REST', 'GraphQL', 'OAuth 2.0', 'CSRF', 'Rate limiting'],
+            }
+          : course,
+      ),
+    );
+    harness.detectChanges();
+    await harness.fixture.whenStable();
+    const card = harness.routeNativeElement!.querySelector<HTMLAnchorElement>('.course-card')!;
+    expect(card.textContent).toContain('Build services with explicit production contracts.');
+    expect(card.getAttribute('href')).toBe(`/grow/${catalog[0].id}`);
+    const topics = card.querySelector<HTMLElement>('ul[aria-label="Key topics"]')!;
+    const label = card.querySelector<HTMLElement>('.catalog-key-topics-label')!;
+    expect(label.textContent?.trim()).toBe('Key topics');
+    expect(label.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
+    expect(label.querySelector('svg')?.getAttribute('focusable')).toBe('false');
+    expect(topics.getAttribute('role')).toBe('list');
+    expect([...topics.querySelectorAll('li')].map((item) => item.textContent?.trim())).toEqual([
+      'REST',
+      'GraphQL',
+      'OAuth 2.0',
+      'CSRF',
+      'Rate limiting',
+    ]);
+    expect(
+      card
+        .querySelector('.catalog-key-topics')
+        ?.querySelector('a, button, [tabindex], .chip, .pill'),
+    ).toBeNull();
+    expect(card.querySelector('.catalog-topic-preview')).toBeNull();
+  });
+
+  it('bounds the topic preview and omits the section for courses without topics', async () => {
+    const harness = await RouterTestingHarness.create('/grow');
+    finishRouterScroll();
+    loaded.next(
+      catalog.map((course, index) =>
+        index === 0
+          ? {
+              ...course,
+              topicPreview: Array.from({ length: 12 }, (_, i) => `Topic ${i + 1}`),
+            }
+          : course,
+      ),
+    );
+    harness.detectChanges();
+    await harness.fixture.whenStable();
+    const cards = harness.routeNativeElement!.querySelectorAll('.course-card');
+    expect(cards[0].querySelectorAll('.catalog-key-topics li')).toHaveLength(8);
+    expect(cards[1].querySelector('.catalog-key-topics')).toBeNull();
+  });
+
+  for (const [courseId, groupId] of [
+    ['vue', 'frontend-engineering'],
+    ['nodejs', 'backend-engineering'],
+  ]) {
+    it(`links ${courseId} to its course overview in the correct group`, async () => {
+      const harness = await RouterTestingHarness.create(`/grow?group=${groupId}`);
+      await ready(harness);
+      const group = harness.routeNativeElement!.querySelector(`#grow-group-${groupId}`)!;
+      const card = group.querySelector<HTMLAnchorElement>(
+        `a.course-card[href="/grow/${courseId}"]`,
+      );
+      expect(card).not.toBeNull();
+      expect(card?.getAttribute('href')).toBe(`/grow/${courseId}`);
+    });
+  }
+
+  it('does not invent course cards when a deployment catalog lacks a course', async () => {
+    const harness = await RouterTestingHarness.create('/grow?group=frontend-engineering');
+    finishRouterScroll();
+    loaded.next(catalog.filter((course) => course.id !== 'vue' && course.id !== 'nodejs'));
+    harness.detectChanges();
+    await harness.fixture.whenStable();
+    expect(harness.routeNativeElement!.querySelector('a.course-card[href="/grow/vue"]')).toBeNull();
+    expect(
+      harness.routeNativeElement!.querySelector('a.course-card[href="/grow/nodejs"]'),
+    ).toBeNull();
+    expect(
+      harness.routeNativeElement!.querySelector('a.course-card[href="/grow/angular"]'),
+    ).not.toBeNull();
   });
 });

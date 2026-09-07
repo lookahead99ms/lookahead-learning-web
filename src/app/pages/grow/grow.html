@@ -47,7 +47,7 @@
             </div>
             <div>
               <dt>{{ totalQuestions(capabilities) }}</dt>
-              <dd>interview questions</dd>
+              <dd>interview and practice questions</dd>
             </div>
           </dl>
         </section>
@@ -79,7 +79,8 @@
                 <span class="catalog-group-title">{{ group.title }}</span>
                 <span class="catalog-group-description">{{ group.description }}</span>
                 <span class="catalog-group-summary"
-                  >{{ capabilitiesFor(group, capabilities).length }} courses ·
+                  >{{ capabilitiesFor(group, capabilities).length }}
+                  {{ capabilitiesFor(group, capabilities).length === 1 ? 'course' : 'courses' }} ·
                   {{ lessonsFor(group, capabilities) }} lessons ·
                   {{ questionsFor(group, capabilities) }} questions</span
                 >
@@ -98,19 +99,32 @@
                       }
                     }
                     <p class="catalog-card-kicker">
-                      {{ capability.moduleCount }} topics · {{ capability.lessonCount }} lessons ·
-                      {{ capability.questionCount }} Q&amp;As
+                      {{ capability.lessonCount }}
+                      {{ capability.lessonCount === 1 ? 'lesson' : 'lessons' }} ·
+                      {{ capability.questionCount }}
+                      {{ capability.questionCount === 1 ? 'question' : 'questions' }}
                     </p>
                     <h2>{{ capability.title }}</h2>
-                    <p [innerHTML]="highlightGrow(growTagline(capability.description))"></p>
+                    @if (capability.description) {
+                      <p>{{ capability.description }}</p>
+                    }
                     @if (capability.topicPreview.length) {
-                      <ul class="catalog-topic-preview" aria-label="Topics covered">
-                        @for (topic of capability.topicPreview; track topic; let index = $index) {
-                          @if (index < 3) {
+                      <div class="catalog-key-topics">
+                        <p class="catalog-key-topics-label">
+                          <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+                            <path
+                              d="M12 6c-3-2-6-2-9-1v14c3-1 6-1 9 1 3-2 6-2 9-1V5c-3-1-6-1-9 1Z"
+                            ></path>
+                            <path d="M12 6v14"></path>
+                          </svg>
+                          <span>Key topics</span>
+                        </p>
+                        <ul role="list" aria-label="Key topics">
+                          @for (topic of capability.topicPreview.slice(0, 8); track topic) {
                             <li>{{ topic }}</li>
                           }
-                        }
-                      </ul>
+                        </ul>
+                      </div>
                     }
                     <span class="catalog-card-action"
                       >Open curriculum <span aria-hidden="true">→</span></span

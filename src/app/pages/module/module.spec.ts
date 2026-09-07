@@ -1,11 +1,14 @@
+import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { of } from 'rxjs';
-import { routes } from '../../app.routes';
 import { CourseContent } from '../../content/content.models';
 import { ContentService } from '../../content/content.service';
 import { Module } from './module';
+
+@Component({ template: '' })
+class NavigationTarget {}
 
 const streamsCourse: CourseContent = {
   id: 'modern-java',
@@ -73,7 +76,18 @@ describe('Module question labels', () => {
       getCourse: vi.fn(() => of(streamsCourse)),
     };
     await TestBed.configureTestingModule({
-      providers: [provideRouter(routes), { provide: ContentService, useValue: content }],
+      providers: [
+        provideRouter([
+          ...['learn', 'grow', 'look-ahead'].map((path) => ({
+            path: `${path}/:courseId/module/:moduleId`,
+            component: Module,
+            data: { pathId: path },
+          })),
+          { path: 'search', component: NavigationTarget },
+          { path: ':pathId/:courseId/:questionId', component: NavigationTarget },
+        ]),
+        { provide: ContentService, useValue: content },
+      ],
     }).compileComponents();
   });
 
@@ -100,4 +114,74 @@ describe('Module question labels', () => {
     expect(labels).toContain('Q&A');
     expect(labels).not.toContain('Practice');
   });
+
+  for (const path of ['learn', 'grow', 'look-ahead']) {
+    for (const [moduleId, questionId] of [
+      ['streams', 'stream-concept'],
+      ['streams-practice', 'stream-practice'],
+    ]) {
+      it(`provides a native primary link for ${path}/${moduleId} without nesting filter links`, async () => {
+        const harness = await RouterTestingHarness.create();
+        await harness.navigateByUrl(`/${path}/modern-java/module/${moduleId}`, Module);
+        const card = harness.routeNativeElement!.querySelector('.question-card')!;
+        const primary = card.querySelector<HTMLAnchorElement>('h3 a.question-card-link');
+
+        expect(primary).not.toBeNull();
+        expect(primary?.getAttribute('href')).toBe(`/${path}/modern-java/${questionId}`);
+        expect(primary?.textContent?.trim()).toBe(
+          streamsCourse.questions.find((question) => question.id === questionId)!.title,
+        );
+        expect(card.querySelector('a a, a button, button a')).toBeNull();
+        expect(card.querySelector('button, .question-card-open')).toBeNull();
+        expect(card.textContent).not.toContain('Open question');
+        expect(card.getAttribute('tabindex')).toBeNull();
+        expect(card.querySelector('a')).toBe(primary);
+
+        primary!.click();
+        await harness.fixture.whenStable();
+        expect(TestBed.inject(Router).url).toBe(`/${path}/modern-java/${questionId}`);
+      });
+    }
+  }
+
+  it('keeps each pill as its own Search link rather than opening the card answer', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/grow/modern-java/module/streams-practice', Module);
+    const card = harness.routeNativeElement!.querySelector('.question-card')!;
+    const tags = Array.from(card.querySelectorAll<HTMLAnchorElement>('.question-filter-tag'));
+    for (const tag of tags) {
+      expect(tag.closest('.question-card-link')).toBeNull();
+      const url = TestBed.inject(Router).parseUrl(tag.getAttribute('href')!);
+      expect(url.queryParams['tags']).toBe(tag.textContent?.trim());
+    }
+    tags.find((tag) => tag.textContent?.trim() === 'Streams')!.click();
+    await harness.fixture.whenStable();
+    expect(TestBed.inject(Router).url).toBe('/search?tags=Streams');
+  });
+
+  it.each([{ ctrlKey: true }, { metaKey: true }, { shiftKey: true }, { button: 1 }])(
+    'preserves native modified-link behavior for %o',
+    async (modifier) => {
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl('/learn/modern-java/module/streams-practice', Module);
+      const primary =
+        harness.routeNativeElement!.querySelector<HTMLAnchorElement>('.question-card-link')!;
+      expect(primary).not.toBeNull();
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl');
+      const event = new MouseEvent('click', { bubbles: true, cancelable: true, ...modifier });
+      let handledByRouter = true;
+      primary.addEventListener(
+        'click',
+        (click) => {
+          handledByRouter = click.defaultPrevented;
+          // Suppress jsdom navigation only after observing RouterLink's native-link decision.
+          click.preventDefault();
+        },
+        { once: true },
+      );
+      primary.dispatchEvent(event);
+      expect(handledByRouter).toBe(false);
+      expect(navigate).not.toHaveBeenCalled();
+    },
+  );
 });

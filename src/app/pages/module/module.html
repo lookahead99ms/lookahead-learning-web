@@ -63,6 +63,13 @@
           <div class="course-grid module-question-grid">
             @for (question of questions(); track question.id) {
               <article class="question-card">
+                <h3>
+                  <a
+                    class="question-card-link"
+                    [routerLink]="['/', pathId(), courseId(), question.id]"
+                    >{{ question.title }}</a
+                  >
+                </h3>
                 <div class="question-card-meta">
                   <p class="eyebrow">{{ question.difficulty }}</p>
                   @if (question.reviewStatus; as status) {
@@ -73,21 +80,16 @@
                     }
                   }
                 </div>
-                <h3>{{ question.title }}</h3>
                 <div class="question-filter-tags" aria-label="Question filters">
                   @for (tag of questionFilterTags(question); track tag) {
                     <a
                       class="question-filter-tag"
                       [routerLink]="['/search']"
                       [queryParams]="{ tags: tag }"
-                      (click)="$event.stopPropagation()"
                       >{{ tag }}</a
                     >
                   }
                 </div>
-                <button class="question-card-open" type="button" (click)="openQuestion(question)">
-                  Open question <span aria-hidden="true">→</span>
-                </button>
               </article>
             } @empty {
               <p class="module-status">Content coming next</p>
