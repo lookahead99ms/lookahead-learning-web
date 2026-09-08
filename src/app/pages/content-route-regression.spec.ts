@@ -4,7 +4,7 @@ import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { Observable, Subject, of, throwError } from 'rxjs';
 import { routes } from '../app.routes';
-import { CourseContent } from '../content/content.models';
+import { CourseContent, CourseOutline } from '../content/content.models';
 import { ContentService } from '../content/content.service';
 import { Course } from './course/course';
 import { CourseSection } from './course-section/course-section';
@@ -38,6 +38,36 @@ const course: CourseContent = {
   ],
 };
 
+function outlineFor(path: string): CourseOutline {
+  return {
+    ...course,
+    path,
+    questions: course.questions.map((question) => ({
+      id: question.id,
+      moduleId: question.moduleId,
+      order: question.order,
+      title: question.title,
+      difficulty: question.difficulty,
+      tags: question.tags,
+      contentType: question.contentType ?? 'q-and-a',
+      isTheoryArticle: false,
+      detailRef: {
+        kind: 'content-item',
+        href: `/content/details/${path}/sample/module/question.json`,
+        version: 'test-v1',
+      },
+    })),
+    moduleDetailRefs: [
+      {
+        moduleId: 'module',
+        href: `/content/${path}/sample/modules/module.json`,
+        version: 'test-v1',
+        itemIds: ['question'],
+      },
+    ],
+  };
+}
+
 const surfaces: { name: string; component: Type<unknown>; suffix: string; title: string }[] = [
   { name: 'course', component: Course, suffix: '', title: course.title },
   { name: 'module', component: Module, suffix: '/module/module', title: 'Sample module' },
@@ -60,10 +90,14 @@ const routeCases = surfaces.flatMap((surface) =>
 describe.each(routeCases)(
   '$contentPath $name route recovery',
   ({ component, contentPath, suffix, title }) => {
-    let pending: Subject<CourseContent>;
+    let pending: Subject<CourseOutline>;
     const content = {
       getCatalog: vi.fn(() => of([{ id: course.id, title: course.title }])),
-      getCourse: vi.fn<(...args: string[]) => Observable<CourseContent>>(),
+      getCourseOutline: vi.fn<(...args: string[]) => Observable<CourseOutline>>(),
+      getModuleQuestions: vi.fn((_course: CourseOutline, moduleId: string) =>
+        of(moduleId === 'module' ? course.questions : []),
+      ),
+      getContentItem: vi.fn(() => of(course.questions[0])),
       getHandsOnDsaIndex: vi.fn(() =>
         of({
           schemaVersion: 'hands-on-dsa-index/v1',
@@ -74,11 +108,11 @@ describe.each(routeCases)(
     };
 
     beforeEach(async () => {
-      pending = new Subject<CourseContent>();
-      content.getCourse.mockReset().mockImplementation((_path, id) => {
+      pending = new Subject<CourseOutline>();
+      content.getCourseOutline.mockReset().mockImplementation((_path, id) => {
         if (id === 'missing') return throwError(() => new Error('404'));
         if (id === 'pending') return pending;
-        return of({ ...course, path: contentPath });
+        return of(outlineFor(contentPath));
       });
       await TestBed.configureTestingModule({
         providers: [provideRouter(routes), { provide: ContentService, useValue: content }],
@@ -88,7 +122,7 @@ describe.each(routeCases)(
     it('replaces previous content with an unavailable message after an HTTP failure', async () => {
       const harness = await RouterTestingHarness.create();
       const first = await harness.navigateByUrl(`/${contentPath}/sample${suffix}`, component);
-      expect(content.getCourse).toHaveBeenCalledWith(contentPath, 'sample');
+      expect(content.getCourseOutline).toHaveBeenCalledWith(contentPath, 'sample');
       expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toContain(title);
       const reused = await harness.navigateByUrl(`/${contentPath}/missing${suffix}`, component);
       expect(reused).toBe(first);
@@ -114,7 +148,7 @@ describe.each(routeCases)(
       await harness.navigateByUrl(`/${contentPath}/pending${suffix}`, component);
       expect(harness.routeNativeElement?.textContent).not.toContain(title);
       await harness.navigateByUrl(`/${contentPath}/missing${suffix}`, component);
-      pending.next(course);
+      pending.next(outlineFor(contentPath));
       pending.complete();
       harness.detectChanges();
       expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toContain(

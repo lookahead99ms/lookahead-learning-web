@@ -3,7 +3,12 @@ import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { of, throwError } from 'rxjs';
 import { routes } from '../../app.routes';
-import { CourseContent, InterviewQuestion } from '../../content/content.models';
+import {
+  ContentItemSummary,
+  CourseContent,
+  CourseOutline,
+  InterviewQuestion,
+} from '../../content/content.models';
 import { ContentService } from '../../content/content.service';
 import { HandsOnDsaIndex } from '../../content/hands-on-dsa';
 import { Course } from '../course/course';
@@ -57,6 +62,29 @@ function practiceCourse(): CourseContent {
         },
       })),
     ]),
+  };
+}
+
+function practiceOutline(course: CourseContent): CourseOutline {
+  return {
+    ...course,
+    questions: course.questions.map((item) => ({
+      id: item.id,
+      moduleId: item.moduleId,
+      order: item.order,
+      title: item.title,
+      difficulty: item.difficulty,
+      tags: item.tags,
+      contentType: item.contentType ?? 'q-and-a',
+      isTheoryArticle: item.contentType === 'theory',
+      detailRef: {
+        kind: 'content-item',
+        href: `/content/details/learn/${course.id}/${item.moduleId}/${item.id}.json`,
+        version: 'fixture-version',
+      },
+      ...(item.relatedArticleId ? { relatedArticleId: item.relatedArticleId } : {}),
+    })),
+    moduleDetailRefs: [],
   };
 }
 
@@ -119,7 +147,8 @@ describe('Hands-On DSA route contracts', () => {
   let course: CourseContent;
   let catalog: HandsOnDsaIndex;
   const content = {
-    getCourse: vi.fn(),
+    getCourseOutline: vi.fn(),
+    getContentItem: vi.fn(),
     getHandsOnDsaIndex: vi.fn(),
     getCatalog: vi.fn(() => of([{ id: 'algorithmic-patterns', title: 'Pattern tests' }])),
   };
@@ -127,14 +156,21 @@ describe('Hands-On DSA route contracts', () => {
   beforeEach(async () => {
     course = practiceCourse();
     catalog = practiceIndex();
-    content.getCourse
+    content.getCourseOutline
       .mockReset()
       .mockImplementation((_path, id) =>
         of(
-          id === course.id
-            ? course
-            : { ...course, id, modules: [], questions: [], learningUnits: [] },
+          practiceOutline(
+            id === course.id
+              ? course
+              : { ...course, id, modules: [], questions: [], learningUnits: [] },
+          ),
         ),
+      );
+    content.getContentItem
+      .mockReset()
+      .mockImplementation((summary: ContentItemSummary) =>
+        of(course.questions.find(({ id }) => id === summary.id)!),
       );
     content.getHandsOnDsaIndex.mockReset().mockImplementation(() => of(catalog));
     await TestBed.configureTestingModule({

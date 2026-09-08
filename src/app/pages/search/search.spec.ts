@@ -53,6 +53,11 @@ describe('Search interview-question library', () => {
     access: { tier: 'free' },
     searchableText: `${question.title} ${question.interviewAnswer}`.toLowerCase(),
     route: ['/', 'learn', 'solid-design-patterns', question.id],
+    detailRef: {
+      kind: 'content-item',
+      href: '/content/details/learn/solid-design-patterns/java-concurrency/safe-counter.json',
+      version: 'question-v1',
+    },
   };
 
   const content = {
@@ -87,20 +92,48 @@ describe('Search interview-question library', () => {
     );
     expect(content.getInterviewQuestionIndex).toHaveBeenCalledOnce();
     expect(content.getInterviewQuestion).not.toHaveBeenCalled();
+    expect(
+      [...harness.routeNativeElement!.querySelectorAll<HTMLOptionElement>('option')].some(
+        (option) => option.value === 'dsa-problem' && option.textContent.includes('Coding and DSA'),
+      ),
+    ).toBe(true);
 
     (harness.routeNativeElement?.querySelector('.result-toggle') as HTMLButtonElement).click();
     harness.detectChanges();
 
-    expect(content.getInterviewQuestion).toHaveBeenCalledWith(
-      'learn',
-      'solid-design-patterns',
-      'java-concurrency',
-      'safe-counter',
-    );
+    expect(content.getInterviewQuestion).toHaveBeenCalledWith(document);
     expect(harness.routeNativeElement?.querySelector('.reference-answer')?.textContent).toContain(
       'read-modify-write',
     );
     expect(harness.routeNativeElement?.querySelector('app-coding-solution-tabs')).not.toBeNull();
+  });
+
+  it('restores the canonical DSA problem filter from the URL', async () => {
+    const dsaDocument = {
+      ...document,
+      id: 'dsa:two-sum',
+      contentId: 'algorithmic-two-sum',
+      canonicalContentId: 'two-sum',
+      contentType: 'dsa-problem' as const,
+      detailRef: {
+        kind: 'canonical-dsa' as const,
+        href: '/content/learn/dsa-problems/two-sum.json',
+        version: 'dsa-v1',
+      },
+    };
+    content.getInterviewQuestionIndex.mockReturnValueOnce(of([document, dsaDocument]));
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/interview-questions?type=dsa-problem', Search);
+    harness.detectChanges();
+
+    const contentTypeSelect = [...harness.routeNativeElement!.querySelectorAll('select')].find(
+      (select) => [...select.options].some((option) => option.value === 'dsa-problem'),
+    );
+    expect(contentTypeSelect?.value).toBe('dsa-problem');
+    expect(harness.routeNativeElement?.querySelectorAll('.result-card')).toHaveLength(1);
+    expect(harness.routeNativeElement?.querySelector('.result-title')?.textContent).toContain(
+      dsaDocument.title,
+    );
   });
 
   it('renders a bounded first page and progressively reveals more results', async () => {

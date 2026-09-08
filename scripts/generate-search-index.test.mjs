@@ -27,7 +27,10 @@ test('uses canonical DSA identity and metadata without indexing stale placeholde
     id: 'algorithmic-patterns',
     path: 'learn',
     title: 'Algorithmic Patterns',
-    modules: [{ id: 'practice-sample', order: 1, title: 'Practice Sample' }],
+    modules: [
+      { id: 'practice-sample', order: 1, title: 'Practice Sample' },
+      { id: 'practice-transfer', order: 2, title: 'Practice Transfer' },
+    ],
   });
   await writeJson(root, 'learn/algorithmic-patterns/modules/practice-sample.json', [
     {
@@ -38,6 +41,17 @@ test('uses canonical DSA identity and metadata without indexing stale placeholde
       difficulty: 'Advanced',
       tags: ['Legacy Placement'],
       followUps: [{ question: 'STALE ALTERNATIVE QUESTION', answer: 'STALE ALTERNATIVE ANSWER' }],
+      canonicalProblemRef: { problemId: 'canonical-problem' },
+    },
+  ]);
+  await writeJson(root, 'learn/algorithmic-patterns/modules/practice-transfer.json', [
+    {
+      id: 'second-placement',
+      moduleId: 'practice-transfer',
+      title: 'Another stale placement title',
+      contentType: 'dsa-problem',
+      difficulty: 'Advanced',
+      tags: ['Another placement'],
       canonicalProblemRef: { problemId: 'canonical-problem' },
     },
   ]);
@@ -55,18 +69,32 @@ test('uses canonical DSA identity and metadata without indexing stale placeholde
   });
 
   await generateSearchIndex(root);
-  const documents = JSON.parse(await readFile(join(root, 'search-index.json'), 'utf8'));
-  const [document] = documents;
+  const manifest = JSON.parse(await readFile(join(root, 'content-index-manifest.json'), 'utf8'));
+  const shard = JSON.parse(await readFile(join(root, 'indexes/learn.json'), 'utf8'));
+  const [document] = shard.documents;
 
+  assert.equal(manifest.schemaVersion, 'content-index-manifest/v1');
+  assert.equal(manifest.totals.searchDocuments, 1);
+  assert.equal(manifest.totals.practiceDocuments, 1);
+  assert.equal(shard.schemaVersion, 'content-index-shard/v1');
+  assert.equal(document.id, 'dsa:canonical-problem');
   assert.equal(document.contentId, 'legacy-route');
   assert.equal(document.canonicalContentId, 'canonical-problem');
   assert.equal(document.title, 'Canonical Problem');
   assert.equal(document.difficulty, 'Beginner');
   assert.deepEqual(document.languages, ['java', 'python', 'go']);
-  assert.deepEqual(document.route, ['/', 'learn', 'algorithmic-patterns', 'legacy-route']);
-  assert.match(document.searchableText, /canonical complete prompt/);
-  assert.match(document.searchableText, /canonical invariant/);
-  assert.doesNotMatch(document.searchableText, /stale alternative/);
+  assert.equal(document.detailRef.kind, 'canonical-dsa');
+  assert.equal(document.searchableText, undefined);
+  assert.equal(document.filterTags, undefined);
+  assert.doesNotMatch(JSON.stringify(shard), /stale alternative/);
+  const locator = JSON.parse(
+    await readFile(join(root, 'learn/algorithmic-patterns/content-locator.json'), 'utf8'),
+  );
+  assert.equal(locator.schemaVersion, 'course-content-locator/v1');
+  assert.equal(locator.items.length, 2);
+  assert.equal(locator.items[0].canonicalProblemRef.problemId, 'canonical-problem');
+  const [overview] = JSON.parse(await readFile(join(root, 'learn/catalog-overview.json'), 'utf8'));
+  assert.equal(overview.moduleCount, 2);
 });
 
 async function addCourse(root, path, chips) {
@@ -105,6 +133,15 @@ test('Grow previews use normalized authored topics without fetching full courses
   assert.equal(course.moduleCount, 1);
   assert.equal(course.questionCount, 1);
   assert.deepEqual(unavailable.topicPreview, []);
+  const detail = JSON.parse(
+    await readFile(join(root, 'details/grow/sample/intro/sample-question.json'), 'utf8'),
+  );
+  assert.equal(detail.interviewAnswer, 'Describe the contract.');
+  const shardText = await readFile(join(root, 'indexes/grow.json'), 'utf8');
+  assert.match(shardText, /Describe the contract/);
+  assert.doesNotMatch(shardText, /followUps|explanation|solutions/);
+  await assert.rejects(readFile(join(root, 'search-index.json')), { code: 'ENOENT' });
+  await assert.rejects(readFile(join(root, 'interview-question-index.json')), { code: 'ENOENT' });
 });
 
 test('Grow falls back to real module titles when authored topics are absent', async (context) => {

@@ -1,6 +1,6 @@
 import { Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { CourseContent, CourseLearningUnit } from '../../content/content.models';
+import { CourseLearningUnit, CourseOutline } from '../../content/content.models';
 import { questionsForModule } from '../../content/question-discovery';
 import { InterviewQuestionBankLink } from '../interview-question-bank-link/interview-question-bank-link';
 
@@ -399,7 +399,7 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
   ],
 })
 export class CourseLearningMap {
-  readonly course = input.required<CourseContent>();
+  readonly course = input.required<CourseOutline>();
   readonly pathId = input.required<string>();
   readonly courseId = input.required<string>();
   readonly units = input.required<CourseLearningUnit[]>();

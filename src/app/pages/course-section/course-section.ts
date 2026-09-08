@@ -2,7 +2,12 @@ import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { EMPTY, catchError, switchMap } from 'rxjs';
-import { CourseContent, CourseModule, CourseSection as ContentSection, reviewStatusLabel } from '../../content/content.models';
+import {
+  CourseModule,
+  CourseOutline,
+  CourseSection as ContentSection,
+  reviewStatusLabel,
+} from '../../content/content.models';
 import { ContentService } from '../../content/content.service';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 
@@ -10,21 +15,51 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
   selector: 'app-course-section',
   imports: [PlatformHeader, RouterLink],
   templateUrl: './course-section.html',
-  styles: [`
-    .section-parent-link { margin: 0 0 3px; }
-    .section-title { font-size: clamp(1.35rem, 2.1vw, 2rem); }
-    .section-description { margin: 6px 0 0; max-width: 780px; color: var(--muted); font-size: .95rem; line-height: 1.55; }
-    .section-item { display: flex; min-height: 190px; flex-direction: column; }
-    .section-item h2 { margin: 0 0 12px; color: var(--text-strong); font-size: 1.22rem; }
-    .section-item p { margin: 0; color: var(--muted); line-height: 1.55; }
-    .section-item-action { margin-top: auto; padding-top: 18px; color: var(--search-primary); font-size: .84rem; font-weight: 800; }
-  `],
+  styles: [
+    `
+      .section-parent-link {
+        margin: 0 0 3px;
+      }
+      .section-title {
+        font-size: clamp(1.35rem, 2.1vw, 2rem);
+      }
+      .section-description {
+        margin: 6px 0 0;
+        max-width: 780px;
+        color: var(--muted);
+        font-size: 0.95rem;
+        line-height: 1.55;
+      }
+      .section-item {
+        display: flex;
+        min-height: 190px;
+        flex-direction: column;
+      }
+      .section-item h2 {
+        margin: 0 0 12px;
+        color: var(--text-strong);
+        font-size: 1.22rem;
+      }
+      .section-item p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+      .section-item-action {
+        margin-top: auto;
+        padding-top: 18px;
+        color: var(--search-primary);
+        font-size: 0.84rem;
+        font-weight: 800;
+      }
+    `,
+  ],
 })
 export class CourseSection implements OnInit {
   private readonly contentService = inject(ContentService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
-  protected readonly course = signal<CourseContent | null>(null);
+  protected readonly course = signal<CourseOutline | null>(null);
   protected readonly section = signal<ContentSection | null>(null);
   protected readonly modules = signal<CourseModule[]>([]);
   protected readonly courseId = signal('');
@@ -40,7 +75,7 @@ export class CourseSection implements OnInit {
           this.modules.set([]);
           this.error.set('');
           this.courseId.set(params.get('courseId') ?? 'big-o-analysis');
-          return this.contentService.getCourse('learn', this.courseId()).pipe(
+          return this.contentService.getCourseOutline('learn', this.courseId()).pipe(
             catchError(() => {
               this.error.set('The learning content could not be loaded.');
               return EMPTY;
@@ -52,7 +87,7 @@ export class CourseSection implements OnInit {
       .subscribe({ next: (course) => this.display(course) });
   }
 
-  private display(course: CourseContent): void {
+  private display(course: CourseOutline): void {
     const sectionId = this.route.snapshot.paramMap.get('sectionId');
     const section = course.sections?.find(({ id }) => id === sectionId);
     if (!section) {

@@ -4,7 +4,9 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { Observable, of, throwError } from 'rxjs';
 import { routes } from '../../app.routes';
 import {
+  ContentItemSummary,
   CourseContent,
+  CourseOutline,
   DsaProblemNavigationLink,
   DsaProblemV2,
   InterviewQuestion,
@@ -201,6 +203,33 @@ function courseFor(courseId: string): CourseContent {
   };
 }
 
+function outlineFor(course: CourseContent): CourseOutline {
+  return {
+    ...course,
+    questions: course.questions.map((question) => ({
+      id: question.id,
+      moduleId: question.moduleId,
+      order: question.order,
+      title: question.title,
+      difficulty: question.difficulty,
+      tags: question.tags,
+      contentType: question.contentType ?? 'q-and-a',
+      isTheoryArticle: question.contentType === 'theory',
+      detailRef: {
+        kind: question.canonicalProblemRef ? 'canonical-dsa' : 'content-item',
+        href: question.canonicalProblemRef
+          ? `/content/learn/dsa-problems/${question.canonicalProblemRef.problemId}.json`
+          : `/content/details/${course.path}/${course.id}/${question.moduleId}/${question.id}.json`,
+        version: 'fixture-version',
+      },
+      ...(question.canonicalProblemRef
+        ? { canonicalProblemRef: question.canonicalProblemRef }
+        : {}),
+    })),
+    moduleDetailRefs: [],
+  };
+}
+
 function indexFor(
   testCase: CanonicalRouteCase,
   version = 'fixture-version',
@@ -258,7 +287,14 @@ function linkWithText(root: HTMLElement, text: string): HTMLAnchorElement | unde
 describe('Question canonical DSA navigation', () => {
   const content = {
     getCatalog: vi.fn(() => of(routeCases.map(({ courseId, title }) => ({ id: courseId, title })))),
-    getCourse: vi.fn((_: string, courseId: string) => of(courseFor(courseId))),
+    getCourseOutline: vi.fn((_: string, courseId: string) => of(outlineFor(courseFor(courseId)))),
+    getContentItem: vi.fn((summary: ContentItemSummary) => {
+      for (const { courseId } of routeCases) {
+        const question = courseFor(courseId).questions.find(({ id }) => id === summary.id);
+        if (question) return of(question);
+      }
+      return throwError(() => new Error('404'));
+    }),
     getHandsOnDsaIndex: vi.fn<() => Observable<HandsOnDsaIndex>>(() => of(emptyIndex())),
     getDsaProblem: vi.fn((problemId: string) =>
       of(canonicalProblem(routeCases.find((testCase) => testCase.problemId === problemId)!)),
@@ -267,7 +303,8 @@ describe('Question canonical DSA navigation', () => {
 
   beforeEach(async () => {
     content.getCatalog.mockClear();
-    content.getCourse.mockClear();
+    content.getCourseOutline.mockClear();
+    content.getContentItem.mockClear();
     content.getHandsOnDsaIndex.mockReset().mockReturnValue(of(emptyIndex()));
     content.getDsaProblem.mockClear();
     await TestBed.configureTestingModule({
@@ -328,17 +365,12 @@ describe('Question canonical DSA navigation', () => {
 
   it('loads only the selected canonical continuation detail', async () => {
     const selected = routeCases[1];
-    const course = courseFor(selected.courseId);
-    course.questions = course.questions.map((question) =>
-      question.id === selected.problemId ? { ...question, canonicalProblem: undefined } : question,
-    );
-    content.getCourse.mockReturnValueOnce(of(course));
     const harness = await RouterTestingHarness.create();
 
     await harness.navigateByUrl(`/learn/${selected.courseId}/${selected.problemId}`, Question);
 
     expect(content.getDsaProblem).toHaveBeenCalledOnce();
-    expect(content.getDsaProblem).toHaveBeenCalledWith(selected.problemId);
+    expect(content.getDsaProblem).toHaveBeenCalledWith(selected.problemId, 'fixture-version');
     expect(harness.routeNativeElement?.textContent).toContain('Practice independently');
   });
 
@@ -351,7 +383,7 @@ describe('Question canonical DSA navigation', () => {
 
     expect(content.getDsaProblem).toHaveBeenCalledOnce();
     expect(content.getDsaProblem).toHaveBeenCalledWith(selected.problemId, 'fixture-version');
-    expect(content.getCourse).not.toHaveBeenCalled();
+    expect(content.getCourseOutline).not.toHaveBeenCalled();
     expect(content.getCatalog).not.toHaveBeenCalled();
     expect(harness.routeNativeElement?.textContent).toContain('Practice independently');
   });
@@ -384,7 +416,7 @@ describe('Question canonical DSA navigation', () => {
 
     await harness.navigateByUrl(`/learn/${selected.courseId}/${selected.problemId}`, Question);
 
-    expect(content.getCourse).not.toHaveBeenCalled();
+    expect(content.getCourseOutline).not.toHaveBeenCalled();
     expect(content.getCatalog).not.toHaveBeenCalled();
     expect(harness.routeNativeElement?.textContent).toContain(
       'The question content could not be loaded.',
@@ -457,7 +489,8 @@ describe('Question canonical DSA navigation', () => {
       questions: [streamQuestion],
     };
     content.getCatalog.mockReturnValueOnce(of([{ id: 'modern-java', title: 'Modern Java' }]));
-    content.getCourse.mockReturnValueOnce(of(streamCourse));
+    content.getCourseOutline.mockReturnValueOnce(of(outlineFor(streamCourse)));
+    content.getContentItem.mockReturnValueOnce(of(streamQuestion));
     const harness = await RouterTestingHarness.create();
 
     await harness.navigateByUrl('/learn/modern-java/stream-student-merit-names', Question);

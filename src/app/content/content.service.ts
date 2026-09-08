@@ -14,7 +14,15 @@ import {
 import {
   CatalogItem,
   CatalogOverviewItem,
-  CourseContent,
+  ContentDetailReference,
+  ContentIndexManifest,
+  ContentIndexRecord,
+  ContentIndexShard,
+  ContentItemSummary,
+  ContentPath,
+  ContentType,
+  CourseContentLocator,
+  CourseOutline,
   DsaProblemV2,
   InterviewQuestion,
   SearchDocument,
@@ -22,207 +30,181 @@ import {
 import { DeliveryPlan } from './delivery-plan.models';
 import type { HandsOnDsaIndex } from './hands-on-dsa';
 
-export const DSA_DETAIL_CACHE_MAX_ENTRIES = 8;
-export const DSA_DETAIL_CACHE_MAX_BYTES = 4 * 1024 * 1024;
+export const CONTENT_DETAIL_CACHE_MAX_ENTRIES = 8;
+export const CONTENT_DETAIL_CACHE_MAX_BYTES = 4 * 1024 * 1024;
+export const DSA_DETAIL_CACHE_MAX_ENTRIES = CONTENT_DETAIL_CACHE_MAX_ENTRIES;
+export const DSA_DETAIL_CACHE_MAX_BYTES = CONTENT_DETAIL_CACHE_MAX_BYTES;
 
-interface DsaProblemCacheEntry {
-  request: Observable<DsaProblemV2>;
+interface ContentDetailCacheEntry {
+  request: Observable<unknown>;
   bytes: number;
 }
 
 @Injectable({ providedIn: 'root' })
 export class ContentService {
   private readonly http = inject(HttpClient);
-  private readonly moduleQuestions = new Map<string, Observable<InterviewQuestion[]>>();
-  private readonly searchIndex$ = this.http
-    .get<SearchDocument[]>('/content/search-index.json')
+  private readonly contentIndexManifest$ = this.http
+    .get<ContentIndexManifest>('/content/content-index-manifest.json')
     .pipe(shareReplay({ bufferSize: 1, refCount: true }));
-  private readonly interviewQuestionIndex$ = this.http
-    .get<SearchDocument[]>('/content/interview-question-index.json')
-    .pipe(shareReplay({ bufferSize: 1, refCount: true }));
+  private readonly contentIndex$ = this.contentIndexManifest$.pipe(
+    switchMap((manifest) => {
+      if (!this.validIndexManifest(manifest)) {
+        return throwError(() => new Error('Invalid content index manifest'));
+      }
+      return forkJoin(
+        manifest.shards.map((reference) =>
+          this.http.get<ContentIndexShard>(reference.href).pipe(
+            map((shard) => {
+              if (
+                shard.schemaVersion !== 'content-index-shard/v1' ||
+                shard.path !== reference.path ||
+                !Array.isArray(shard.documents) ||
+                shard.documents.some((record) => !this.validDetailReference(record.detailRef)) ||
+                shard.documents.length !== reference.documentCount
+              ) {
+                throw new Error(`Invalid content index shard: ${reference.href}`);
+              }
+              return shard.documents.map((record) => this.expandIndexRecord(shard.path, record));
+            }),
+          ),
+        ),
+      ).pipe(
+        map((shards) => {
+          const documents = shards.flat();
+          if (documents.length !== manifest.totals.searchDocuments) {
+            throw new Error('Content index total does not match its manifest');
+          }
+          const practiceTypes = new Set(manifest.practiceContentTypes);
+          const practiceDocumentCount = documents.filter((document) =>
+            practiceTypes.has(document.contentType),
+          ).length;
+          if (practiceDocumentCount !== manifest.totals.practiceDocuments) {
+            throw new Error('Practice index total does not match its manifest');
+          }
+          return { documents, practiceTypes };
+        }),
+      );
+    }),
+    shareReplay({ bufferSize: 1, refCount: true }),
+  );
   private readonly handsOnDsaIndex$ = this.http
     .get<HandsOnDsaIndex>('/content/hands-on-dsa-index.json')
     .pipe(shareReplay({ bufferSize: 1, refCount: true }));
-  private readonly dsaProblemCache = new Map<string, DsaProblemCacheEntry>();
-  private dsaProblemCacheBytes = 0;
+  private readonly detailCache = new Map<string, ContentDetailCacheEntry>();
+  private detailCacheBytes = 0;
 
-  getCourse(pathId: string, courseId: string): Observable<CourseContent> {
-    const base = `/content/${pathId}/${courseId}`;
-    return this.http.get<CourseContent>(`${base}/course.json`).pipe(
-      switchMap((manifest) => {
-        // Planned modules are curriculum roadmap entries, not navigable lessons.
-        // Keeping them out of the hydrated course prevents empty cards and dead next links.
-        const publishedModules = manifest.modules.filter(
-          (module) => module.reviewStatus !== 'planned',
-        );
-        const publishedSections = manifest.sections?.map((section) => ({
-          ...section,
-          moduleIds: section.moduleIds.filter((moduleId) =>
-            publishedModules.some((module) => module.id === moduleId),
-          ),
-        }));
-        return forkJoin(
-          publishedModules.map((module) =>
-            this.http.get<InterviewQuestion[]>(`${base}/modules/${module.id}.json`),
-          ),
-        ).pipe(
-          switchMap((questionArrays) =>
-            this.hydrateEssentialCanonicalProblems({
-              ...manifest,
-              modules: publishedModules,
-              sections: publishedSections,
-              questions: questionArrays.flat(),
-            }),
-          ),
-        );
-      }),
+  getCourseOutline(pathId: string, courseId: string): Observable<CourseOutline> {
+    if (!this.validSlug(pathId) || !this.validSlug(courseId)) {
+      return throwError(() => new Error('Invalid course locator path'));
+    }
+    return this.http
+      .get<CourseContentLocator>(`/content/${pathId}/${courseId}/content-locator.json`)
+      .pipe(
+        map((locator) => {
+          const courseModules = locator.course?.modules;
+          const moduleIds = Array.isArray(courseModules)
+            ? courseModules.map((module) => module.id)
+            : [];
+          const locatorModuleIds = Array.isArray(locator.modules)
+            ? locator.modules.map((reference) => reference.moduleId)
+            : [];
+          const itemIds = Array.isArray(locator.items) ? locator.items.map((item) => item.id) : [];
+          if (
+            locator.schemaVersion !== 'course-content-locator/v1' ||
+            locator.course?.id !== courseId ||
+            locator.course?.path !== pathId ||
+            !Array.isArray(courseModules) ||
+            !Array.isArray(locator.modules) ||
+            !Array.isArray(locator.items) ||
+            this.hasDuplicates(moduleIds) ||
+            this.hasDuplicates(locatorModuleIds) ||
+            this.hasDuplicates(itemIds) ||
+            locator.modules.some(
+              (reference) =>
+                !this.validSlug(reference.moduleId) ||
+                !moduleIds.includes(reference.moduleId) ||
+                !this.validDetailReference({
+                  kind: 'content-item',
+                  href: reference.href,
+                  version: reference.version,
+                }),
+            ) ||
+            locator.items.some(
+              (item) =>
+                !moduleIds.includes(item.moduleId) || !this.validDetailReference(item.detailRef),
+            )
+          ) {
+            throw new Error(`Invalid course content locator: ${pathId}/${courseId}`);
+          }
+          return {
+            ...locator.course,
+            questions: locator.items,
+            moduleDetailRefs: locator.modules,
+          };
+        }),
+      );
+  }
+
+  getModuleQuestions(course: CourseOutline, moduleId: string): Observable<InterviewQuestion[]> {
+    const reference = course.moduleDetailRefs.find((candidate) => candidate.moduleId === moduleId);
+    if (!reference) return throwError(() => new Error(`Module detail not found: ${moduleId}`));
+    return this.getCachedDetail<InterviewQuestion[]>({
+      kind: 'content-item',
+      href: reference.href,
+      version: reference.version,
+    });
+  }
+
+  getContentItem(summary: ContentItemSummary): Observable<InterviewQuestion> {
+    if (summary.detailRef.kind !== 'content-item') {
+      return throwError(() => new Error(`Content item ${summary.id} uses canonical DSA detail`));
+    }
+    return this.getCachedDetail<InterviewQuestion>(summary.detailRef).pipe(
+      switchMap((question) => this.hydrateSelectedCanonicalProblems(question)),
     );
   }
 
   getDsaProblem(problemId: string, contentVersion?: string): Observable<DsaProblemV2> {
-    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(problemId)) {
+    if (!this.validSlug(problemId)) {
       throw new Error(`Invalid canonical DSA problem id: ${problemId}`);
     }
-    const url = `/content/learn/dsa-problems/${problemId}.json`;
-    if (!contentVersion) return this.http.get<DsaProblemV2>(url);
+    const href = `/content/learn/dsa-problems/${problemId}.json`;
+    if (!contentVersion) return this.http.get<DsaProblemV2>(href);
     if (!/^[a-zA-Z0-9_-]{1,64}$/.test(contentVersion)) {
       throw new Error(`Invalid canonical DSA content version: ${contentVersion}`);
     }
-
-    const key = `${problemId}@${contentVersion}`;
-    const cached = this.dsaProblemCache.get(key);
-    if (cached) {
-      this.dsaProblemCache.delete(key);
-      this.dsaProblemCache.set(key, cached);
-      return cached.request;
-    }
-
-    const entry = {} as DsaProblemCacheEntry;
-    entry.bytes = 0;
-    entry.request = this.http.get<DsaProblemV2>(url).pipe(
-      tap((problem) => this.recordDsaProblemBytes(key, entry, problem)),
-      catchError((error) => {
-        this.removeDsaProblemCacheEntry(key, entry);
-        return throwError(() => error);
-      }),
-      shareReplay({ bufferSize: 1, refCount: false }),
-    );
-    this.dsaProblemCache.set(key, entry);
-    this.trimDsaProblemCache();
-    return entry.request;
+    return this.getCachedDetail<DsaProblemV2>({
+      kind: 'canonical-dsa',
+      href,
+      version: contentVersion,
+    });
   }
 
   getHandsOnDsaIndex(): Observable<HandsOnDsaIndex> {
     return this.handsOnDsaIndex$;
   }
 
-  private recordDsaProblemBytes(
-    key: string,
-    entry: DsaProblemCacheEntry,
-    problem: DsaProblemV2,
-  ): void {
-    if (this.dsaProblemCache.get(key) !== entry) return;
-    const bytes = new TextEncoder().encode(JSON.stringify(problem)).byteLength;
-    if (bytes > DSA_DETAIL_CACHE_MAX_BYTES) {
-      this.removeDsaProblemCacheEntry(key, entry);
-      return;
-    }
-    this.dsaProblemCacheBytes -= entry.bytes;
-    entry.bytes = bytes;
-    this.dsaProblemCacheBytes += bytes;
-    this.trimDsaProblemCache();
-  }
-
-  private trimDsaProblemCache(): void {
-    while (
-      this.dsaProblemCache.size > DSA_DETAIL_CACHE_MAX_ENTRIES ||
-      this.dsaProblemCacheBytes > DSA_DETAIL_CACHE_MAX_BYTES
-    ) {
-      const oldestKey = this.dsaProblemCache.keys().next().value as string | undefined;
-      if (!oldestKey) return;
-      this.removeDsaProblemCacheEntry(oldestKey, this.dsaProblemCache.get(oldestKey));
-    }
-  }
-
-  private removeDsaProblemCacheEntry(key: string, expected?: DsaProblemCacheEntry): void {
-    const current = this.dsaProblemCache.get(key);
-    if (!current || (expected && current !== expected)) return;
-    this.dsaProblemCache.delete(key);
-    this.dsaProblemCacheBytes -= current.bytes;
-  }
-
-  private hydrateEssentialCanonicalProblems(course: CourseContent): Observable<CourseContent> {
-    const problemIds = new Set<string>();
-    for (const item of course.questions) {
-      if (item.schemaVersion === 'pattern-lesson/v2') {
-        for (const reference of item.essentialProblemRefs ?? []) {
-          problemIds.add(reference.problemId);
-        }
-      }
-    }
-    if (!problemIds.size) return of(course);
-
-    return forkJoin([...problemIds].map((id) => this.getDsaProblem(id))).pipe(
-      map((problems) => {
-        const byId = new Map(
-          problems.map((problem) => {
-            const practiceQuestionId = problem.placements.find(
-              (placement) => placement.role === 'practice' && placement.questionId,
-            )?.questionId;
-            return [problem.id, { ...problem, practiceQuestionId }] as const;
-          }),
-        );
-        return {
-          ...course,
-          questions: course.questions.map((item) => {
-            const canonicalProblem = item.canonicalProblemRef
-              ? byId.get(item.canonicalProblemRef.problemId)
-              : undefined;
-            if (item.schemaVersion === 'pattern-lesson/v2') {
-              return {
-                ...item,
-                essentialProblems: item.essentialProblemRefs?.map(({ problemId }) => {
-                  const problem = byId.get(problemId);
-                  if (!problem)
-                    throw new Error(`Canonical DSA problem ${problemId} was not loaded`);
-                  return problem;
-                }),
-              };
-            }
-            return canonicalProblem ? { ...item, canonicalProblem } : item;
-          }),
-        };
-      }),
-    );
-  }
-
   getSearchIndex(): Observable<SearchDocument[]> {
-    return this.searchIndex$;
+    return this.contentIndex$.pipe(map(({ documents }) => documents));
   }
 
   getInterviewQuestionIndex(): Observable<SearchDocument[]> {
-    return this.interviewQuestionIndex$;
+    return this.contentIndex$.pipe(
+      map(({ documents, practiceTypes }) =>
+        documents.filter((document) => practiceTypes.has(document.contentType)),
+      ),
+    );
   }
 
   getDeliveryPlan(): Observable<DeliveryPlan> {
     return this.http.get<DeliveryPlan>('/content/delivery/delivery-plan.json');
   }
 
-  getInterviewQuestion(
-    pathId: string,
-    courseId: string,
-    moduleId: string,
-    questionId: string,
-  ): Observable<InterviewQuestion | undefined> {
-    const modulePath = `/content/${pathId}/${courseId}/modules/${moduleId}.json`;
-    let questions = this.moduleQuestions.get(modulePath);
-    if (!questions) {
-      questions = this.http
-        .get<InterviewQuestion[]>(modulePath)
-        .pipe(shareReplay({ bufferSize: 1, refCount: true }));
-      this.moduleQuestions.set(modulePath, questions);
-    }
-    return questions.pipe(map((question) => question.find(({ id }) => id === questionId)));
+  getInterviewQuestion(result: SearchDocument): Observable<InterviewQuestion | undefined> {
+    if (result.detailRef.kind !== 'content-item') return of(undefined);
+    return this.getCachedDetail<InterviewQuestion>(result.detailRef).pipe(
+      map((question) => (question.id === result.contentId ? question : undefined)),
+    );
   }
 
   getCatalog(pathId: string): Observable<CatalogItem[]> {
@@ -231,5 +213,198 @@ export class ContentService {
 
   getCatalogOverview(pathId: string): Observable<CatalogOverviewItem[]> {
     return this.http.get<CatalogOverviewItem[]>(`/content/${pathId}/catalog-overview.json`);
+  }
+
+  private getCachedDetail<T>(reference: ContentDetailReference): Observable<T> {
+    if (!this.validDetailReference(reference)) {
+      return throwError(() => new Error(`Invalid content detail reference: ${reference.href}`));
+    }
+    const key = `${reference.kind}:${reference.href}@${reference.version}`;
+    const cached = this.detailCache.get(key);
+    if (cached) {
+      this.detailCache.delete(key);
+      this.detailCache.set(key, cached);
+      return cached.request as Observable<T>;
+    }
+
+    const entry = {} as ContentDetailCacheEntry;
+    entry.bytes = 0;
+    entry.request = this.http.get<T>(reference.href).pipe(
+      tap((detail) => this.recordDetailBytes(key, entry, detail)),
+      catchError((error) => {
+        this.removeDetailCacheEntry(key, entry);
+        return throwError(() => error);
+      }),
+      shareReplay({ bufferSize: 1, refCount: false }),
+    );
+    this.detailCache.set(key, entry);
+    this.trimDetailCache();
+    return entry.request as Observable<T>;
+  }
+
+  private recordDetailBytes(key: string, entry: ContentDetailCacheEntry, detail: unknown): void {
+    if (this.detailCache.get(key) !== entry) return;
+    const bytes = new TextEncoder().encode(JSON.stringify(detail)).byteLength;
+    if (bytes > CONTENT_DETAIL_CACHE_MAX_BYTES) {
+      this.removeDetailCacheEntry(key, entry);
+      return;
+    }
+    this.detailCacheBytes -= entry.bytes;
+    entry.bytes = bytes;
+    this.detailCacheBytes += bytes;
+    this.trimDetailCache();
+  }
+
+  private trimDetailCache(): void {
+    while (
+      this.detailCache.size > CONTENT_DETAIL_CACHE_MAX_ENTRIES ||
+      this.detailCacheBytes > CONTENT_DETAIL_CACHE_MAX_BYTES
+    ) {
+      const oldestKey = this.detailCache.keys().next().value as string | undefined;
+      if (!oldestKey) return;
+      this.removeDetailCacheEntry(oldestKey, this.detailCache.get(oldestKey));
+    }
+  }
+
+  private removeDetailCacheEntry(key: string, expected?: ContentDetailCacheEntry): void {
+    const current = this.detailCache.get(key);
+    if (!current || (expected && current !== expected)) return;
+    this.detailCache.delete(key);
+    this.detailCacheBytes -= current.bytes;
+  }
+
+  private expandIndexRecord(path: ContentPath, record: ContentIndexRecord): SearchDocument {
+    const pathLabel = path === 'look-ahead' ? 'Look Ahead' : this.titleCase(path);
+    const filterTags = this.uniqueLabels([
+      pathLabel,
+      this.contentTypeLabel(record.contentType),
+      record.difficulty,
+      ...record.languages.map((language) => (language === 'go' ? 'Go' : this.titleCase(language))),
+      ...record.tags,
+    ]);
+    const searchableText = [
+      record.title,
+      record.courseTitle,
+      record.moduleTitle,
+      record.preview,
+      ...record.tags,
+    ]
+      .join(' ')
+      .toLowerCase();
+    return {
+      ...record,
+      path,
+      filterTags,
+      searchableText,
+      route: ['/', path, record.courseId, record.contentId],
+    };
+  }
+
+  private contentTypeLabel(type: ContentType): string {
+    switch (type) {
+      case 'q-and-a':
+        return 'Q&A';
+      case 'dsa-pattern':
+        return 'DSA pattern';
+      case 'dsa-problem':
+        return 'DSA problem';
+      case 'system-design':
+        return 'System design';
+      case 'language-comparison':
+        return 'Language comparison';
+      case 'guide':
+        return 'Guide';
+      default:
+        return 'Theory';
+    }
+  }
+
+  private uniqueLabels(labels: (string | undefined)[]): string[] {
+    const seen = new Set<string>();
+    return labels.filter((label): label is string => {
+      if (!label?.trim()) return false;
+      const key = label.trim().toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
+  private titleCase(value: string): string {
+    return `${value[0].toUpperCase()}${value.slice(1)}`;
+  }
+
+  private validSlug(value: string): boolean {
+    return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value);
+  }
+
+  private validContentHref(value: string): boolean {
+    return /^\/content\/[A-Za-z0-9][A-Za-z0-9/_-]*\.json$/.test(value);
+  }
+
+  private validDetailReference(reference: ContentDetailReference | undefined): boolean {
+    return (
+      !!reference &&
+      this.validContentHref(reference.href) &&
+      /^[a-zA-Z0-9_-]{1,64}$/.test(reference.version)
+    );
+  }
+
+  private validIndexManifest(manifest: ContentIndexManifest): boolean {
+    if (
+      manifest.schemaVersion !== 'content-index-manifest/v1' ||
+      !Array.isArray(manifest.shards) ||
+      manifest.shards.length === 0 ||
+      !Array.isArray(manifest.practiceContentTypes) ||
+      !Number.isInteger(manifest.totals?.searchDocuments) ||
+      !Number.isInteger(manifest.totals?.practiceDocuments)
+    ) {
+      return false;
+    }
+    const paths = manifest.shards.map(({ path }) => path);
+    return (
+      !this.hasDuplicates(paths) &&
+      manifest.shards.every(
+        (reference) =>
+          this.validContentPath(reference.path) &&
+          reference.href === `/content/indexes/${reference.path}.json` &&
+          Number.isInteger(reference.documentCount) &&
+          reference.documentCount >= 0 &&
+          Number.isInteger(reference.practiceDocumentCount) &&
+          reference.practiceDocumentCount >= 0 &&
+          reference.practiceDocumentCount <= reference.documentCount,
+      )
+    );
+  }
+
+  private validContentPath(value: string): value is ContentPath {
+    return value === 'learn' || value === 'grow' || value === 'look-ahead';
+  }
+
+  private hasDuplicates(values: string[]): boolean {
+    return new Set(values).size !== values.length;
+  }
+
+  private hydrateSelectedCanonicalProblems(
+    question: InterviewQuestion,
+  ): Observable<InterviewQuestion> {
+    if (question.schemaVersion !== 'pattern-lesson/v2' || !question.essentialProblemRefs?.length) {
+      return of(question);
+    }
+    return this.handsOnDsaIndex$.pipe(
+      switchMap((index) => {
+        const versions = new Map(
+          index.groups.flatMap((group) =>
+            group.problems.map((problem) => [problem.id, problem.version] as const),
+          ),
+        );
+        return forkJoin(
+          question.essentialProblemRefs!.map(({ problemId }) =>
+            this.getDsaProblem(problemId, versions.get(problemId)),
+          ),
+        );
+      }),
+      map((essentialProblems) => ({ ...question, essentialProblems })),
+    );
   }
 }

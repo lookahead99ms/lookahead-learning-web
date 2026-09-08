@@ -8,8 +8,8 @@
         Retrieve a concise answer first, then expand the reasoning, code, trade-offs, and follow-up
         questions. Filter the complete library to match the interview you are preparing for.
       } @else {
-        Search across the platform by question, topic, tag, answer, explanation, or follow-up.
-        Expand a result to preview the answer, then open its detailed explanation.
+        Search across the platform by title, topic, tag, course, module, or concise preview. Expand
+        a result to preview the answer, then open its detailed explanation.
       }
     </p>
     <a class="search-mode-switch" [routerLink]="libraryMode ? '/search' : '/interview-questions'">
@@ -88,6 +88,7 @@
         <select [ngModel]="selectedContentType()" (ngModelChange)="updateContentType($event)">
           <option value="all">All types</option>
           <option value="q-and-a">Q&amp;A</option>
+          <option value="dsa-problem">Coding and DSA problems</option>
           @if (!libraryMode) {
             <option value="theory">Theory</option>
             <option value="dsa-pattern">DSA patterns</option>

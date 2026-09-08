@@ -1180,7 +1180,13 @@ export class Search implements OnInit {
     const expanded = new Set(this.expandedResults());
     expanded.has(key) ? expanded.delete(key) : expanded.add(key);
     this.expandedResults.set(expanded);
-    if (!expanded.has(key) || !this.libraryMode || result.access.tier === 'premium') return;
+    if (
+      !expanded.has(key) ||
+      !this.libraryMode ||
+      result.access.tier === 'premium' ||
+      result.detailRef.kind === 'canonical-dsa'
+    )
+      return;
     this.loadQuestion(result);
   }
 
@@ -1210,30 +1216,28 @@ export class Search implements OnInit {
       return next;
     });
     this.loadingQuestions.update((loading) => new Set(loading).add(key));
-    this.content
-      .getInterviewQuestion(result.path, result.courseId, result.moduleId, result.contentId)
-      .subscribe({
-        next: (question) => {
-          this.loadingQuestions.update((loading) => {
-            const next = new Set(loading);
-            next.delete(key);
-            return next;
-          });
-          if (question) {
-            this.loadedQuestions.update((questions) => new Map(questions).set(key, question));
-            return;
-          }
-          this.questionErrors.update((errors) => new Set(errors).add(key));
-        },
-        error: () => {
-          this.loadingQuestions.update((loading) => {
-            const next = new Set(loading);
-            next.delete(key);
-            return next;
-          });
-          this.questionErrors.update((errors) => new Set(errors).add(key));
-        },
-      });
+    this.content.getInterviewQuestion(result).subscribe({
+      next: (question) => {
+        this.loadingQuestions.update((loading) => {
+          const next = new Set(loading);
+          next.delete(key);
+          return next;
+        });
+        if (question) {
+          this.loadedQuestions.update((questions) => new Map(questions).set(key, question));
+          return;
+        }
+        this.questionErrors.update((errors) => new Set(errors).add(key));
+      },
+      error: () => {
+        this.loadingQuestions.update((loading) => {
+          const next = new Set(loading);
+          next.delete(key);
+          return next;
+        });
+        this.questionErrors.update((errors) => new Set(errors).add(key));
+      },
+    });
   }
 
   protected answerId(result: SearchDocument): string {
@@ -1260,6 +1264,7 @@ export class Search implements OnInit {
     return value === 'q-and-a' ||
       value === 'theory' ||
       value === 'dsa-pattern' ||
+      value === 'dsa-problem' ||
       value === 'system-design' ||
       value === 'language-comparison' ||
       value === 'guide'

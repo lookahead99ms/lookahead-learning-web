@@ -547,6 +547,30 @@ export function isFoundationLessonV1(item: InterviewQuestion): item is Foundatio
   return item.schemaVersion === 'foundation-lesson/v1';
 }
 
+export interface ContentDetailReference {
+  kind: 'content-item' | 'canonical-dsa';
+  href: string;
+  version: string;
+}
+
+/** Navigation metadata only; full answers, lesson bodies, code, and traces live in detail assets. */
+export interface ContentItemSummary {
+  id: string;
+  moduleId: string;
+  order: number;
+  title: string;
+  difficulty: InterviewQuestion['difficulty'];
+  tags: string[];
+  contentType: ContentType;
+  isTheoryArticle: boolean;
+  detailRef: ContentDetailReference;
+  reviewStatus?: ContentReviewStatus;
+  access?: ContentAccess;
+  relatedArticleId?: string;
+  schemaVersion?: LessonSchemaVersion;
+  canonicalProblemRef?: { problemId: string; lessonId?: string };
+}
+
 export interface SearchDocument {
   id: string;
   contentId: string;
@@ -566,7 +590,39 @@ export interface SearchDocument {
   access: ContentAccess;
   searchableText: string;
   route?: string[];
+  detailRef: ContentDetailReference;
   question?: InterviewQuestion;
+}
+
+export type ContentIndexRecord = Omit<
+  SearchDocument,
+  'path' | 'filterTags' | 'searchableText' | 'route' | 'question'
+>;
+
+export interface ContentIndexShard {
+  schemaVersion: 'content-index-shard/v1';
+  path: ContentPath;
+  documents: ContentIndexRecord[];
+}
+
+export interface ContentIndexShardReference {
+  path: ContentPath;
+  href: string;
+  documentCount: number;
+  practiceDocumentCount: number;
+  courses: {
+    courseId: string;
+    locatorHref: string;
+    documentCount: number;
+    practiceDocumentCount: number;
+  }[];
+}
+
+export interface ContentIndexManifest {
+  schemaVersion: 'content-index-manifest/v1';
+  totals: { searchDocuments: number; practiceDocuments: number };
+  practiceContentTypes: ContentType[];
+  shards: ContentIndexShardReference[];
 }
 
 export interface CourseModule {
@@ -646,6 +702,27 @@ export interface CourseContent {
   reviewStatus?: ContentReviewStatus;
   access?: ContentAccess;
   accessPlaceholder?: AccessPlaceholder;
+}
+
+export type CourseManifest = Omit<CourseContent, 'questions'>;
+
+export interface CourseModuleDetailReference {
+  moduleId: string;
+  href: string;
+  version: string;
+  itemIds: string[];
+}
+
+export interface CourseContentLocator {
+  schemaVersion: 'course-content-locator/v1';
+  course: CourseManifest;
+  items: ContentItemSummary[];
+  modules: CourseModuleDetailReference[];
+}
+
+export interface CourseOutline extends CourseManifest {
+  questions: ContentItemSummary[];
+  moduleDetailRefs: CourseModuleDetailReference[];
 }
 
 export interface CatalogItem {
