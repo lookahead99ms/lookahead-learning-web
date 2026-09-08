@@ -242,9 +242,14 @@ export function parseBrowserProfileOptions(args) {
     chrome: defaultChrome,
     cycles: 30,
     budgets: null,
+    requireApprovedBudgets: false,
   };
   for (let index = 0; index < args.length; index += 1) {
     const flag = args[index];
+    if (flag === '--require-approved-budgets') {
+      options.requireApprovedBudgets = true;
+      continue;
+    }
     if (!['--origin', '--output', '--chrome', '--cycles', '--budgets'].includes(flag)) {
       throw new Error(`Unknown option: ${flag}`);
     }
@@ -261,6 +266,18 @@ export function parseBrowserProfileOptions(args) {
   }
   return options;
 }
+
+const requiredBrowserBudgetKeys = [
+  'maximumColdContentRequests',
+  'maximumColdContentDecodedBytes',
+  'maximumSelectedDetailDecodedBytes',
+  'warmCachedDetailContentRequests',
+  'warmedInteractionP95Ms',
+  'reducedMotionInteractionP95Ms',
+  'throttledInteractionP95Ms',
+  'retainedHeapGrowthBytes',
+  'retainedHeapSlopeBytesPerCycle',
+];
 
 function budgetMeasurement(report, key) {
   const values = {
@@ -295,19 +312,37 @@ function budgetMeasurement(report, key) {
   return values[key];
 }
 
-export function evaluatePerformanceBudgets(report, budgets) {
+export function evaluatePerformanceBudgets(report, budgets, requireApproved = false) {
   if (!budgets) {
     return {
       status: 'not-configured',
       enforced: false,
+      required: requireApproved,
+      gatePassed: !requireApproved,
       blockers: ['Numerical budgets have not been supplied or approved.'],
       checks: [],
+      warnings: [],
     };
   }
   if (!['proposed-not-approved', 'approved'].includes(budgets.status)) {
     throw new Error('Performance budgets must be proposed-not-approved or approved');
   }
-  const checks = Object.entries(budgets.limits ?? {}).map(([key, maximum]) => {
+  if (budgets.status === 'approved' && budgets.approval?.approved !== true) {
+    throw new Error('Approved performance budgets require approval.approved to be true');
+  }
+  const configuredLimits = budgets.limits ?? {};
+  if (budgets.status === 'approved') {
+    const missing = requiredBrowserBudgetKeys.filter(
+      (key) => !Object.hasOwn(configuredLimits, key),
+    );
+    if (missing.length) {
+      throw new Error(`Approved performance budgets omit required limits: ${missing.join(', ')}`);
+    }
+  }
+  const checks = Object.entries(configuredLimits).map(([key, maximum]) => {
+    if (!Number.isFinite(maximum) || maximum < 0) {
+      throw new Error(`Performance budget ${key} must be a non-negative number`);
+    }
     const measured = budgetMeasurement(report, key);
     return {
       key,
@@ -317,14 +352,48 @@ export function evaluatePerformanceBudgets(report, budgets) {
     };
   });
   const failures = checks.filter(({ status }) => status === 'failed');
+  const enforced = budgets.status === 'approved';
+  const utilizationRatio = budgets.reviewTriggers?.ceilingUtilizationRatio;
+  const byteMeasurements = new Set([
+    'maximumColdContentDecodedBytes',
+    'maximumSelectedDetailDecodedBytes',
+  ]);
+  const warnings =
+    typeof utilizationRatio === 'number' && utilizationRatio > 0 && utilizationRatio < 1
+      ? checks
+          .filter(
+            ({ key, measured, maximum, status }) =>
+              status === 'passed' &&
+              byteMeasurements.has(key) &&
+              maximum > 0 &&
+              measured >= maximum * utilizationRatio,
+          )
+          .map(({ key, measured, maximum }) => ({
+            key,
+            measured,
+            maximum,
+            utilizationRatio: Number((measured / maximum).toFixed(4)),
+            triggerRatio: utilizationRatio,
+            status: 'review',
+          }))
+      : [];
+  const approvalBlocker =
+    requireApproved && !enforced
+      ? ['Release profiling requires an explicitly approved budget contract.']
+      : [];
   return {
     status: budgets.status,
-    enforced: budgets.status === 'approved',
-    blockers:
-      budgets.status === 'approved'
-        ? failures.map(({ key, measured, maximum }) => `${key}: ${measured} exceeds ${maximum}`)
-        : ['Numerical budgets are proposals and are not enforced until explicitly approved.'],
+    enforced,
+    required: requireApproved,
+    gatePassed: approvalBlocker.length === 0 && (!enforced || failures.length === 0),
+    blockers: enforced
+      ? failures.map(({ key, measured, maximum }) => `${key}: ${measured} exceeds ${maximum}`)
+      : [
+          ...approvalBlocker,
+          'Numerical budgets are proposals and are not enforced until explicitly approved.',
+        ],
     checks,
+    warnings,
   };
 }
 
@@ -954,7 +1023,11 @@ async function captureReport(options) {
     const budgets = options.budgets
       ? JSON.parse(await readFile(resolve(options.budgets), 'utf8'))
       : null;
-    report.budgetEvaluation = evaluatePerformanceBudgets(report, budgets);
+    report.budgetEvaluation = evaluatePerformanceBudgets(
+      report,
+      budgets,
+      options.requireApprovedBudgets,
+    );
     return report;
   } finally {
     connection?.close();
@@ -968,8 +1041,7 @@ async function main() {
   const report = await captureReport(options);
   await writeFile(output, `${JSON.stringify(report, null, 2)}\n`);
   process.stdout.write(`Browser content-delivery profile written to ${output}\n`);
-  if (report.budgetEvaluation.enforced && report.budgetEvaluation.blockers.length)
-    process.exitCode = 1;
+  if (!report.budgetEvaluation.gatePassed) process.exitCode = 1;
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

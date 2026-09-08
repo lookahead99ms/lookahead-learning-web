@@ -56,5 +56,8 @@ jobs:
       - name: Test loading profiler with synthetic fixtures
         run: npm run test:dsa-profile
 
+      - name: Test browser budget evaluator
+        run: npm run test:browser-profile
+
       - name: Build public demo application
         run: npm run build:ci

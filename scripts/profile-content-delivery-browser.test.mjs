@@ -28,7 +28,18 @@ test('validates a loopback-only browser profiling command', () => {
       chrome: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
       cycles: 30,
       budgets: null,
+      requireApprovedBudgets: false,
     },
+  );
+  assert.equal(
+    parseBrowserProfileOptions([
+      '--origin',
+      origin,
+      '--output',
+      '../private/report.json',
+      '--require-approved-budgets',
+    ]).requireApprovedBudgets,
+    true,
   );
   assert.throws(
     () => parseBrowserProfileOptions(['--origin', 'https://example.com', '--output', 'x']),
@@ -174,19 +185,56 @@ function reportFixture() {
 }
 
 test('does not enforce absent or proposed budgets', () => {
-  assert.equal(evaluatePerformanceBudgets(reportFixture(), null).enforced, false);
+  const absent = evaluatePerformanceBudgets(reportFixture(), null);
+  assert.equal(absent.enforced, false);
+  assert.equal(absent.gatePassed, true);
   const result = evaluatePerformanceBudgets(reportFixture(), {
     status: 'proposed-not-approved',
     limits: { maximumColdContentRequests: 2 },
   });
   assert.equal(result.checks[0].status, 'passed');
   assert.equal(result.enforced, false);
+  assert.equal(result.gatePassed, true);
   assert.match(result.blockers[0], /proposals/);
+});
+
+test('release mode fails closed without explicitly approved budgets', () => {
+  const absent = evaluatePerformanceBudgets(reportFixture(), null, true);
+  assert.equal(absent.gatePassed, false);
+  const proposed = evaluatePerformanceBudgets(
+    reportFixture(),
+    {
+      status: 'proposed-not-approved',
+      limits: { maximumColdContentRequests: 2 },
+    },
+    true,
+  );
+  assert.equal(proposed.gatePassed, false);
+  assert.match(proposed.blockers[0], /requires an explicitly approved/);
+  assert.throws(
+    () =>
+      evaluatePerformanceBudgets(reportFixture(), {
+        status: 'approved',
+        approval: { approved: false },
+        limits: {},
+      }),
+    /approval\.approved/,
+  );
+  assert.throws(
+    () =>
+      evaluatePerformanceBudgets(reportFixture(), {
+        status: 'approved',
+        approval: { approved: true },
+        limits: { maximumColdContentRequests: 2 },
+      }),
+    /omit required limits/,
+  );
 });
 
 test('enforces every approved budget independently', () => {
   const result = evaluatePerformanceBudgets(reportFixture(), {
     status: 'approved',
+    approval: { approved: true },
     limits: {
       maximumColdContentRequests: 1,
       maximumColdContentDecodedBytes: 100,
@@ -200,9 +248,34 @@ test('enforces every approved budget independently', () => {
     },
   });
   assert.equal(result.enforced, true);
+  assert.equal(result.gatePassed, false);
   assert.deepEqual(
     result.checks.filter(({ status }) => status === 'failed').map(({ key }) => key),
     ['maximumColdContentRequests', 'throttledInteractionP95Ms'],
   );
   assert.equal(result.blockers.length, 2);
+});
+
+test('reports near-ceiling decoded bytes as review warnings without failing', () => {
+  const result = evaluatePerformanceBudgets(reportFixture(), {
+    status: 'approved',
+    approval: { approved: true },
+    limits: {
+      maximumColdContentRequests: 2,
+      maximumColdContentDecodedBytes: 110,
+      maximumSelectedDetailDecodedBytes: 110,
+      warmCachedDetailContentRequests: 0,
+      warmedInteractionP95Ms: 100,
+      reducedMotionInteractionP95Ms: 100,
+      throttledInteractionP95Ms: 150,
+      retainedHeapGrowthBytes: 2000,
+      retainedHeapSlopeBytesPerCycle: 10,
+    },
+    reviewTriggers: { ceilingUtilizationRatio: 0.9 },
+  });
+  assert.equal(result.gatePassed, true);
+  assert.deepEqual(
+    result.warnings.map(({ key }) => key),
+    ['maximumColdContentDecodedBytes', 'maximumSelectedDetailDecodedBytes'],
+  );
 });
