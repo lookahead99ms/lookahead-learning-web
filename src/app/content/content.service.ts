@@ -46,47 +46,7 @@ export class ContentService {
   private readonly contentIndexManifest$ = this.http
     .get<ContentIndexManifest>('/content/content-index-manifest.json')
     .pipe(shareReplay({ bufferSize: 1, refCount: true }));
-  private readonly contentIndex$ = this.contentIndexManifest$.pipe(
-    switchMap((manifest) => {
-      if (!this.validIndexManifest(manifest)) {
-        return throwError(() => new Error('Invalid content index manifest'));
-      }
-      return forkJoin(
-        manifest.shards.map((reference) =>
-          this.http.get<ContentIndexShard>(reference.href).pipe(
-            map((shard) => {
-              if (
-                shard.schemaVersion !== 'content-index-shard/v1' ||
-                shard.path !== reference.path ||
-                !Array.isArray(shard.documents) ||
-                shard.documents.some((record) => !this.validDetailReference(record.detailRef)) ||
-                shard.documents.length !== reference.documentCount
-              ) {
-                throw new Error(`Invalid content index shard: ${reference.href}`);
-              }
-              return shard.documents.map((record) => this.expandIndexRecord(shard.path, record));
-            }),
-          ),
-        ),
-      ).pipe(
-        map((shards) => {
-          const documents = shards.flat();
-          if (documents.length !== manifest.totals.searchDocuments) {
-            throw new Error('Content index total does not match its manifest');
-          }
-          const practiceTypes = new Set(manifest.practiceContentTypes);
-          const practiceDocumentCount = documents.filter((document) =>
-            practiceTypes.has(document.contentType),
-          ).length;
-          if (practiceDocumentCount !== manifest.totals.practiceDocuments) {
-            throw new Error('Practice index total does not match its manifest');
-          }
-          return { documents, practiceTypes };
-        }),
-      );
-    }),
-    shareReplay({ bufferSize: 1, refCount: true }),
-  );
+  private readonly contentIndexShards = new Map<ContentPath, Observable<SearchDocument[]>>();
   private readonly handsOnDsaIndex$ = this.http
     .get<HandsOnDsaIndex>('/content/hands-on-dsa-index.json')
     .pipe(shareReplay({ bufferSize: 1, refCount: true }));
@@ -184,12 +144,12 @@ export class ContentService {
     return this.handsOnDsaIndex$;
   }
 
-  getSearchIndex(): Observable<SearchDocument[]> {
-    return this.contentIndex$.pipe(map(({ documents }) => documents));
+  getSearchIndex(path?: ContentPath): Observable<SearchDocument[]> {
+    return this.getContentIndex(path).pipe(map(({ documents }) => documents));
   }
 
-  getInterviewQuestionIndex(): Observable<SearchDocument[]> {
-    return this.contentIndex$.pipe(
+  getInterviewQuestionIndex(path?: ContentPath): Observable<SearchDocument[]> {
+    return this.getContentIndex(path).pipe(
       map(({ documents, practiceTypes }) =>
         documents.filter((document) => practiceTypes.has(document.contentType)),
       ),
@@ -348,6 +308,74 @@ export class ContentService {
       this.validContentHref(reference.href) &&
       /^[a-zA-Z0-9_-]{1,64}$/.test(reference.version)
     );
+  }
+
+  private getContentIndex(
+    path?: ContentPath,
+  ): Observable<{ documents: SearchDocument[]; practiceTypes: Set<ContentType> }> {
+    return this.contentIndexManifest$.pipe(
+      switchMap((manifest) => {
+        if (!this.validIndexManifest(manifest)) {
+          return throwError(() => new Error('Invalid content index manifest'));
+        }
+        const references = path
+          ? manifest.shards.filter((reference) => reference.path === path)
+          : manifest.shards;
+        if (path && references.length !== 1) {
+          return throwError(() => new Error(`Content index shard is missing for ${path}`));
+        }
+        return forkJoin(references.map((reference) => this.getContentIndexShard(reference))).pipe(
+          map((shards) => {
+            const documents = shards.flat();
+            const expectedDocuments = path
+              ? references[0].documentCount
+              : manifest.totals.searchDocuments;
+            if (documents.length !== expectedDocuments) {
+              throw new Error('Content index total does not match its manifest');
+            }
+            const practiceTypes = new Set(manifest.practiceContentTypes);
+            const practiceDocumentCount = documents.filter((document) =>
+              practiceTypes.has(document.contentType),
+            ).length;
+            const expectedPracticeDocuments = path
+              ? references[0].practiceDocumentCount
+              : manifest.totals.practiceDocuments;
+            if (practiceDocumentCount !== expectedPracticeDocuments) {
+              throw new Error('Practice index total does not match its manifest');
+            }
+            return { documents, practiceTypes };
+          }),
+        );
+      }),
+    );
+  }
+
+  private getContentIndexShard(
+    reference: ContentIndexManifest['shards'][number],
+  ): Observable<SearchDocument[]> {
+    const cached = this.contentIndexShards.get(reference.path);
+    if (cached) return cached;
+    const request = this.http.get<ContentIndexShard>(reference.href).pipe(
+      map((shard) => {
+        if (
+          shard.schemaVersion !== 'content-index-shard/v1' ||
+          shard.path !== reference.path ||
+          !Array.isArray(shard.documents) ||
+          shard.documents.some((record) => !this.validDetailReference(record.detailRef)) ||
+          shard.documents.length !== reference.documentCount
+        ) {
+          throw new Error(`Invalid content index shard: ${reference.href}`);
+        }
+        return shard.documents.map((record) => this.expandIndexRecord(shard.path, record));
+      }),
+      catchError((error) => {
+        this.contentIndexShards.delete(reference.path);
+        return throwError(() => error);
+      }),
+      shareReplay({ bufferSize: 1, refCount: false }),
+    );
+    this.contentIndexShards.set(reference.path, request);
+    return request;
   }
 
   private validIndexManifest(manifest: ContentIndexManifest): boolean {
