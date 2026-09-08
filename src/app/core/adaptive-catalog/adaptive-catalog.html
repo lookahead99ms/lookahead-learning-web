@@ -1,0 +1,196 @@
+<main id="main-content" class="content-page reader-page">
+  <article class="question-reader catalog-reader" [class]="config().path + '-catalog-reader'">
+    <div class="catalog-sticky-utility">
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a routerLink="/">Home</a>
+      </nav>
+      <button class="catalog-search-link search-trigger" type="button">
+        <svg class="search-icon" aria-hidden="true" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="6"></circle>
+          <path d="m16 16 4 4"></path>
+        </svg>
+        <span>Search</span><kbd>⌘K</kbd>
+      </button>
+    </div>
+
+    @if (catalog(); as items) {
+      @if (items.length) {
+        <section
+          class="catalog-context-panel catalog-depth-hero"
+          [class]="config().path + '-catalog'"
+        >
+          <div class="catalog-depth-copy">
+            <p class="catalog-path-label">{{ config().eyebrow }}</p>
+            <h1 class="reader-question-title">{{ config().title }}</h1>
+            <p>
+              <strong class="catalog-highlight">{{ config().highlight }}</strong>
+              {{ config().description }}
+            </p>
+            <div class="catalog-primary-actions" [attr.aria-label]="config().actionsLabel">
+              <a
+                class="catalog-primary-action"
+                [class.look-ahead-action]="config().path === 'look-ahead'"
+                [routerLink]="config().primaryAction.routerLink"
+                [queryParams]="config().primaryAction.queryParams"
+                (click)="repeatJump($event, config().primaryAction.groupId)"
+              >
+                {{ config().primaryAction.label }} <span aria-hidden="true">→</span>
+              </a>
+              @for (action of config().secondaryActions; track action.label) {
+                <a
+                  class="catalog-secondary-action"
+                  [routerLink]="action.routerLink"
+                  [queryParams]="action.queryParams"
+                >
+                  {{ action.label }}
+                </a>
+              }
+            </div>
+          </div>
+          <dl
+            class="catalog-scoreboard"
+            [class.look-ahead-scoreboard]="config().path === 'look-ahead'"
+            [attr.aria-label]="config().metricsLabel"
+          >
+            <div>
+              <dt>{{ items.length }}</dt>
+              <dd>{{ config().courseMetricLabel }}</dd>
+            </div>
+            <div>
+              <dt>{{ totalLessons(items) }}</dt>
+              <dd>{{ config().lessonMetricLabel }}</dd>
+            </div>
+            <div>
+              <dt>{{ totalQuestions(items) }}</dt>
+              <dd>{{ config().questionMetricLabel }}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <nav class="catalog-jump-nav" [attr.aria-label]="config().jumpLabel">
+          <span>Jump to</span>
+          @for (group of groups(); track group.id) {
+            <a
+              [routerLink]="'/' + config().path"
+              [queryParams]="{ group: group.id }"
+              (click)="repeatJump($event, group.id)"
+            >
+              {{ group.title }}
+            </a>
+          }
+        </nav>
+
+        @for (group of groups(); track group.id) {
+          <section
+            class="catalog-path-section"
+            [id]="config().path + '-group-' + group.id"
+            [attr.aria-labelledby]="config().path + '-group-' + group.id + '-heading'"
+          >
+            <header class="catalog-path-heading">
+              <div class="catalog-path-heading-copy">
+                <p>{{ config().sectionEyebrow }}</p>
+                <h2
+                  class="catalog-path-title"
+                  tabindex="-1"
+                  [id]="config().path + '-group-' + group.id + '-heading'"
+                >
+                  {{ group.title }}
+                </h2>
+                <span>{{ group.description }}</span>
+              </div>
+              <p class="catalog-path-summary">
+                {{ itemsFor(group, items).length }}
+                {{ itemsFor(group, items).length === 1 ? 'course' : 'courses' }} ·
+                {{ lessonsFor(group, items) }} lessons · {{ questionsFor(group, items) }} questions
+              </p>
+            </header>
+
+            <div class="course-grid catalog-course-grid adaptive-catalog-course-grid">
+              @for (item of itemsFor(group, items); track item.id) {
+                @if (item.available !== false) {
+                  <a
+                    class="course-card"
+                    [class]="cardClass()"
+                    [class.featured-catalog-card]="group.featuredCourseId === item.id"
+                    [id]="item.id"
+                    [routerLink]="['/', config().path, item.id]"
+                  >
+                    @if ((item.reviewStatus ?? 'reviewed') !== 'reviewed') {
+                      <span
+                        class="review-status"
+                        [attr.data-review-status]="item.reviewStatus ?? 'needs-review'"
+                      >
+                        {{ reviewStatusLabel(item.reviewStatus ?? 'needs-review') }}
+                      </span>
+                    }
+                    @if (group.featuredCourseId === item.id && group.featuredLabel) {
+                      <span class="catalog-featured-label">{{ group.featuredLabel }}</span>
+                    }
+                    <p class="catalog-card-kicker">
+                      {{ item.lessonCount }} {{ item.lessonCount === 1 ? 'lesson' : 'lessons' }} ·
+                      {{ item.questionCount }}
+                      {{ item.questionCount === 1 ? 'question' : 'questions' }}
+                    </p>
+                    <h3>{{ item.title }}</h3>
+                    @if (item.description) {
+                      <p [innerHTML]="descriptionFor(item)"></p>
+                    }
+                    @if (item.topicPreview.length) {
+                      <div class="catalog-course-preview">
+                        <p class="catalog-course-preview-label">{{ config().previewLabel }}</p>
+                        <ul
+                          class="catalog-topic-preview"
+                          role="list"
+                          [attr.aria-label]="config().previewAriaLabel"
+                        >
+                          @for (topic of item.topicPreview.slice(0, 3); track topic) {
+                            <li>{{ topic }}</li>
+                          }
+                        </ul>
+                      </div>
+                    }
+                    <span class="catalog-card-action">
+                      Explore course <span aria-hidden="true">→</span>
+                    </span>
+                  </a>
+                } @else {
+                  <article class="course-card unavailable" [class]="cardClass()" [id]="item.id">
+                    <span
+                      class="review-status"
+                      [attr.data-review-status]="item.reviewStatus ?? 'planned'"
+                    >
+                      {{ reviewStatusLabel(item.reviewStatus ?? 'planned') }}
+                    </span>
+                    <h3>{{ item.title }}</h3>
+                    <p>{{ item.description || 'Content is being prepared for this course.' }}</p>
+                    <small>Coming next</small>
+                  </article>
+                }
+              }
+            </div>
+          </section>
+        }
+      } @else {
+        <section class="catalog-state" aria-live="polite">
+          <h2>{{ config().emptyTitle }}</h2>
+          <p>{{ config().emptyDescription }}</p>
+        </section>
+      }
+    } @else if (error()) {
+      <section class="catalog-context-panel" [class]="config().path + '-catalog'">
+        <h1 class="reader-question-title">{{ config().title }}</h1>
+      </section>
+      <section class="catalog-state catalog-state-error" role="alert">
+        <h2>Content unavailable</h2>
+        <p>{{ error() }}</p>
+      </section>
+    } @else {
+      <section class="catalog-context-panel" [class]="config().path + '-catalog'">
+        <h1 class="reader-question-title">{{ config().title }}</h1>
+      </section>
+      <section class="catalog-state" aria-live="polite">
+        <p>{{ config().loadingDescription }}</p>
+      </section>
+    }
+  </article>
+</main>

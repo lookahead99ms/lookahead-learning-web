@@ -1,9 +1,6 @@
-export interface LookAheadCourseGroup {
-  id: string;
-  title: string;
-  description: string;
-  courseIds: string[];
-}
+import { CatalogCourseGroup } from './catalog-course-groups';
+
+export type LookAheadCourseGroup = CatalogCourseGroup;
 
 export const LOOK_AHEAD_COURSE_GROUPS: LookAheadCourseGroup[] = [
   {
@@ -18,6 +15,8 @@ export const LOOK_AHEAD_COURSE_GROUPS: LookAheadCourseGroup[] = [
       'resilience-production',
       'cloud-architecture',
     ],
+    featuredCourseId: 'system-design',
+    featuredLabel: 'Recommended starting point',
   },
   {
     id: 'leadership-future',

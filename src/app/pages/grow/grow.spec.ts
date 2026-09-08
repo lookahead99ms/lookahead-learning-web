@@ -18,6 +18,9 @@ const catalog: CatalogOverviewItem[] = GROW_COURSE_GROUPS.flatMap((group) =>
   group.courseIds.map((id) => ({
     id,
     title: id,
+    description: `Build ${id} capabilities.`,
+    available: true,
+    reviewStatus: 'reviewed',
     lessonCount: 1,
     questionCount: 3,
     moduleCount: 1,
@@ -74,15 +77,14 @@ describe('Grow catalog', () => {
     vi.unstubAllGlobals();
   });
 
-  async function ready(harness: RouterTestingHarness) {
+  async function ready(harness: RouterTestingHarness, courses = catalog) {
     finishRouterScroll();
-    loaded.next(catalog);
+    loaded.next(courses);
     harness.detectChanges();
     await harness.fixture.whenStable();
   }
 
   function finishRouterScroll() {
-    // The harness does not bootstrap RouterScroller; model its public post-navigation event.
     const router = TestBed.inject(Router);
     (router.events as Subject<Event>).next(
       new Scroll(new NavigationEnd(1, router.url, router.url), null, null),
@@ -90,14 +92,14 @@ describe('Grow catalog', () => {
   }
 
   for (const group of GROW_COURSE_GROUPS) {
-    it(`routes ${group.title} to Grow, expands it and reveals the heading`, async () => {
+    it(`routes ${group.title} to a visible Grow section and reveals its heading`, async () => {
       const harness = await RouterTestingHarness.create('/grow');
       await ready(harness);
-      const link = harness.routeNativeElement!.querySelector<HTMLAnchorElement>(
-        `.catalog-jump-nav a[href="/grow?group=${group.id}"]`,
-      )!;
-      expect(link).not.toBeNull();
-      link.click();
+      harness
+        .routeNativeElement!.querySelector<HTMLAnchorElement>(
+          `.catalog-jump-nav a[href="/grow?group=${group.id}"]`,
+        )!
+        .click();
       await harness.fixture.whenStable();
       expect(scrolled).toEqual([]);
       finishRouterScroll();
@@ -107,11 +109,12 @@ describe('Grow catalog', () => {
       const section = harness.routeNativeElement!.querySelector<HTMLElement>(
         `#grow-group-${group.id}`,
       )!;
-      expect(section.querySelector('button')?.getAttribute('aria-expanded')).toBe('true');
-      expect(section.querySelector('.catalog-group-summary')?.textContent).toContain(
+      expect(section.querySelector('button')).toBeNull();
+      expect(section.querySelector('.catalog-path-title')?.textContent).toContain(group.title);
+      expect(section.querySelector('.catalog-path-summary')?.textContent).toContain(
         `${group.courseIds.length} ${group.courseIds.length === 1 ? 'course' : 'courses'}`,
       );
-      expect(section.querySelector('.course-grid')).not.toBeNull();
+      expect(section.querySelector('.catalog-course-grid')).not.toBeNull();
       await vi.waitFor(() => expect(scrolled.at(-1)).toBe(section.id));
       expect(section.style.scrollMarginTop).toBeTruthy();
     });
@@ -124,24 +127,16 @@ describe('Grow catalog', () => {
     await vi.waitFor(() => expect(scrolled).toEqual(['grow-group-cloud-delivery']));
   });
 
-  it('opens a manually collapsed group on a repeated jump to the same URL', async () => {
+  it('reveals a section again when its current Jump to link is repeated', async () => {
     const harness = await RouterTestingHarness.create('/grow?group=system-security');
     await ready(harness);
     await vi.waitFor(() => expect(scrolled).toEqual(['grow-group-system-security']));
-    const section = harness.routeNativeElement!.querySelector<HTMLElement>(
-      '#grow-group-system-security',
-    )!;
-    section.querySelector<HTMLButtonElement>('button')!.click();
-    harness.detectChanges();
-    expect(section.querySelector('button')?.getAttribute('aria-expanded')).toBe('false');
     harness
       .routeNativeElement!.querySelector<HTMLAnchorElement>(
         '.catalog-jump-nav a[href="/grow?group=system-security"]',
       )!
       .click();
     await harness.fixture.whenStable();
-    harness.detectChanges();
-    expect(section.querySelector('button')?.getAttribute('aria-expanded')).toBe('true');
     expect(scrolled).toEqual(['grow-group-system-security', 'grow-group-system-security']);
   });
 
@@ -167,64 +162,39 @@ describe('Grow catalog', () => {
     );
   });
 
-  it('shows key topics as a labelled curriculum highlight without nested controls', async () => {
+  it('shows every production capability without accordion disclosure', async () => {
     const harness = await RouterTestingHarness.create('/grow');
-    finishRouterScroll();
-    loaded.next(
+    await ready(harness);
+    expect(harness.routeNativeElement!.querySelectorAll('.catalog-path-section')).toHaveLength(
+      GROW_COURSE_GROUPS.length,
+    );
+    expect(harness.routeNativeElement!.querySelectorAll('.catalog-group-heading')).toHaveLength(0);
+  });
+
+  it('shows key topics as a styled, bounded curriculum preview without nested controls', async () => {
+    const harness = await RouterTestingHarness.create('/grow');
+    await ready(
+      harness,
       catalog.map((course, index) =>
         index === 0
           ? {
               ...course,
-              description: 'Build services with explicit production contracts.',
               topicPreview: ['REST', 'GraphQL', 'OAuth 2.0', 'CSRF', 'Rate limiting'],
             }
           : course,
       ),
     );
-    harness.detectChanges();
-    await harness.fixture.whenStable();
     const card = harness.routeNativeElement!.querySelector<HTMLAnchorElement>('.course-card')!;
-    expect(card.textContent).toContain('Build services with explicit production contracts.');
-    expect(card.getAttribute('href')).toBe(`/grow/${catalog[0].id}`);
-    const topics = card.querySelector<HTMLElement>('ul[aria-label="Key topics"]')!;
-    const label = card.querySelector<HTMLElement>('.catalog-key-topics-label')!;
-    expect(label.textContent?.trim()).toBe('Key topics');
-    expect(label.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
-    expect(label.querySelector('svg')?.getAttribute('focusable')).toBe('false');
-    expect(topics.getAttribute('role')).toBe('list');
-    expect([...topics.querySelectorAll('li')].map((item) => item.textContent?.trim())).toEqual([
-      'REST',
-      'GraphQL',
-      'OAuth 2.0',
-      'CSRF',
-      'Rate limiting',
-    ]);
-    expect(
-      card
-        .querySelector('.catalog-key-topics')
-        ?.querySelector('a, button, [tabindex], .chip, .pill'),
-    ).toBeNull();
-    expect(card.querySelector('.catalog-topic-preview')).toBeNull();
-  });
-
-  it('bounds the topic preview and omits the section for courses without topics', async () => {
-    const harness = await RouterTestingHarness.create('/grow');
-    finishRouterScroll();
-    loaded.next(
-      catalog.map((course, index) =>
-        index === 0
-          ? {
-              ...course,
-              topicPreview: Array.from({ length: 12 }, (_, i) => `Topic ${i + 1}`),
-            }
-          : course,
-      ),
+    const preview = card.querySelector<HTMLElement>('.catalog-course-preview')!;
+    expect(preview.querySelector('.catalog-course-preview-label')?.textContent?.trim()).toBe(
+      'Key topics',
     );
-    harness.detectChanges();
-    await harness.fixture.whenStable();
-    const cards = harness.routeNativeElement!.querySelectorAll('.course-card');
-    expect(cards[0].querySelectorAll('.catalog-key-topics li')).toHaveLength(8);
-    expect(cards[1].querySelector('.catalog-key-topics')).toBeNull();
+    expect(
+      [...preview.querySelectorAll('ul[aria-label="Key topics"] li')].map((item) =>
+        item.textContent?.trim(),
+      ),
+    ).toEqual(['REST', 'GraphQL', 'OAuth 2.0']);
+    expect(preview.querySelector('a, button, [tabindex], .chip, .pill')).toBeNull();
   });
 
   for (const [courseId, groupId] of [
@@ -235,26 +205,18 @@ describe('Grow catalog', () => {
       const harness = await RouterTestingHarness.create(`/grow?group=${groupId}`);
       await ready(harness);
       const group = harness.routeNativeElement!.querySelector(`#grow-group-${groupId}`)!;
-      const card = group.querySelector<HTMLAnchorElement>(
-        `a.course-card[href="/grow/${courseId}"]`,
-      );
-      expect(card).not.toBeNull();
-      expect(card?.getAttribute('href')).toBe(`/grow/${courseId}`);
+      expect(group.querySelector(`a.course-card[href="/grow/${courseId}"]`)).not.toBeNull();
     });
   }
 
   it('does not invent course cards when a deployment catalog lacks a course', async () => {
     const harness = await RouterTestingHarness.create('/grow?group=frontend-engineering');
-    finishRouterScroll();
-    loaded.next(catalog.filter((course) => course.id !== 'vue' && course.id !== 'nodejs'));
-    harness.detectChanges();
-    await harness.fixture.whenStable();
-    expect(harness.routeNativeElement!.querySelector('a.course-card[href="/grow/vue"]')).toBeNull();
-    expect(
-      harness.routeNativeElement!.querySelector('a.course-card[href="/grow/nodejs"]'),
-    ).toBeNull();
-    expect(
-      harness.routeNativeElement!.querySelector('a.course-card[href="/grow/angular"]'),
-    ).not.toBeNull();
+    await ready(
+      harness,
+      catalog.filter((course) => course.id !== 'vue' && course.id !== 'nodejs'),
+    );
+    expect(harness.routeNativeElement!.querySelector('a[href="/grow/vue"]')).toBeNull();
+    expect(harness.routeNativeElement!.querySelector('a[href="/grow/nodejs"]')).toBeNull();
+    expect(harness.routeNativeElement!.querySelector('a[href="/grow/angular"]')).not.toBeNull();
   });
 });

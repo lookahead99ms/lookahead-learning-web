@@ -1,9 +1,6 @@
-export interface LearnCourseGroup {
-  id: string;
-  title: string;
-  description: string;
-  courseIds: string[];
-}
+import { CatalogCourseGroup } from './catalog-course-groups';
+
+export type LearnCourseGroup = CatalogCourseGroup;
 
 export const LEARN_COURSE_GROUPS: LearnCourseGroup[] = [
   {
