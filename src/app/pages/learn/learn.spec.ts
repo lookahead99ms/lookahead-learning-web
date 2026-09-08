@@ -86,7 +86,6 @@ describe('Learn catalog', () => {
   }
 
   function finishRouterScroll() {
-    // The harness does not bootstrap RouterScroller; model its public post-navigation event.
     const router = TestBed.inject(Router);
     (router.events as Subject<Event>).next(
       new Scroll(new NavigationEnd(1, router.url, router.url), null, null),
@@ -94,13 +93,12 @@ describe('Learn catalog', () => {
   }
 
   for (const group of LEARN_COURSE_GROUPS) {
-    it(`routes ${group.title} to Learn, expands it and reveals the heading`, async () => {
+    it(`routes ${group.title} to a visible Learn section and reveals its heading`, async () => {
       const harness = await RouterTestingHarness.create('/learn');
       await ready(harness);
       const link = harness.routeNativeElement!.querySelector<HTMLAnchorElement>(
         `.catalog-jump-nav a[href="/learn?group=${group.id}"]`,
       )!;
-      expect(link).not.toBeNull();
       link.click();
       await harness.fixture.whenStable();
       expect(scrolled).toEqual([]);
@@ -111,11 +109,12 @@ describe('Learn catalog', () => {
       const section = harness.routeNativeElement!.querySelector<HTMLElement>(
         `#learn-group-${group.id}`,
       )!;
-      expect(section.querySelector('button')?.getAttribute('aria-expanded')).toBe('true');
-      expect(section.querySelector('.catalog-group-summary')?.textContent).toContain(
+      expect(section.querySelector('button')).toBeNull();
+      expect(section.querySelector('.catalog-path-title')?.textContent).toContain(group.title);
+      expect(section.querySelector('.catalog-path-summary')?.textContent).toContain(
         `${group.courseIds.length} ${group.courseIds.length === 1 ? 'course' : 'courses'}`,
       );
-      expect(section.querySelector('.course-grid')).not.toBeNull();
+      expect(section.querySelector('.catalog-course-grid')).not.toBeNull();
       await vi.waitFor(() => expect(scrolled.at(-1)).toBe(section.id));
       expect(section.style.scrollMarginTop).toBeTruthy();
     });
@@ -128,24 +127,16 @@ describe('Learn catalog', () => {
     await vi.waitFor(() => expect(scrolled).toEqual(['learn-group-engineering-tools']));
   });
 
-  it('opens a manually collapsed group on a repeated jump to the same URL', async () => {
+  it('reveals a section again when its current Jump to link is repeated', async () => {
     const harness = await RouterTestingHarness.create('/learn?group=java-platform');
     await ready(harness);
     await vi.waitFor(() => expect(scrolled).toEqual(['learn-group-java-platform']));
-    const section = harness.routeNativeElement!.querySelector<HTMLElement>(
-      '#learn-group-java-platform',
-    )!;
-    section.querySelector<HTMLButtonElement>('button')!.click();
-    harness.detectChanges();
-    expect(section.querySelector('button')?.getAttribute('aria-expanded')).toBe('false');
     harness
       .routeNativeElement!.querySelector<HTMLAnchorElement>(
         '.catalog-jump-nav a[href="/learn?group=java-platform"]',
       )!
       .click();
     await harness.fixture.whenStable();
-    harness.detectChanges();
-    expect(section.querySelector('button')?.getAttribute('aria-expanded')).toBe('true');
     expect(scrolled).toEqual(['learn-group-java-platform', 'learn-group-java-platform']);
   });
 
@@ -171,7 +162,7 @@ describe('Learn catalog', () => {
     );
   });
 
-  it('shows curriculum depth, starting actions and the default foundation group', async () => {
+  it('shows shared depth and actions while keeping every foundation section visible', async () => {
     const harness = await RouterTestingHarness.create('/learn');
     await ready(harness);
     const hero = harness.routeNativeElement!.querySelector<HTMLElement>('.catalog-depth-hero')!;
@@ -182,11 +173,18 @@ describe('Learn catalog', () => {
     ).toContain('Choose a starting foundation');
     expect(hero.querySelector('a[href="/interview-questions?path=learn"]')).not.toBeNull();
     expect(hero.querySelector('a[href="/study-plan"]')).not.toBeNull();
-    expect(
-      harness
-        .routeNativeElement!.querySelector('#learn-group-language-foundations button')
-        ?.getAttribute('aria-expanded'),
-    ).toBe('true');
+    expect(harness.routeNativeElement!.querySelectorAll('.catalog-path-section')).toHaveLength(
+      LEARN_COURSE_GROUPS.length,
+    );
+    expect(harness.routeNativeElement!.querySelectorAll('.catalog-group-heading')).toHaveLength(0);
+  });
+
+  it('uses h2 section headings and h3 course titles', async () => {
+    const harness = await RouterTestingHarness.create('/learn');
+    await ready(harness);
+    expect(harness.routeNativeElement!.querySelector('.catalog-path-heading h2')).not.toBeNull();
+    expect(harness.routeNativeElement!.querySelector('.course-card h3')).not.toBeNull();
+    expect(harness.routeNativeElement!.querySelector('.course-card h2')).toBeNull();
   });
 
   it('labels generated module names as a bounded course preview without nested controls', async () => {
@@ -195,10 +193,7 @@ describe('Learn catalog', () => {
       harness,
       catalog.map((course, index) =>
         index === 0
-          ? {
-              ...course,
-              topicPreview: ['Syntax', 'Types', 'Exceptions', 'Generics', 'Concurrency'],
-            }
+          ? { ...course, topicPreview: ['Syntax', 'Types', 'Exceptions', 'Generics'] }
           : course,
       ),
     );
@@ -215,12 +210,12 @@ describe('Learn catalog', () => {
     expect(preview.querySelector('a, button, [tabindex], .chip, .pill')).toBeNull();
   });
 
-  it('opens a course overview even when the catalog provides a direct entry lesson', async () => {
+  it('opens the course overview instead of a direct entry lesson', async () => {
     const harness = await RouterTestingHarness.create('/learn?group=data-structures-algorithms');
     await ready(harness);
     const card = harness.routeNativeElement!.querySelector<HTMLAnchorElement>('#sorting-searching');
     expect(card?.getAttribute('href')).toBe('/learn/sorting-searching');
-    expect(card?.textContent).toContain('Open curriculum');
+    expect(card?.textContent).toContain('Explore course');
   });
 
   it('does not invent course cards when a deployment catalog lacks a course', async () => {
@@ -229,11 +224,7 @@ describe('Learn catalog', () => {
       harness,
       catalog.filter((course) => course.id !== 'docker'),
     );
-    expect(
-      harness.routeNativeElement!.querySelector('a.course-card[href="/learn/docker"]'),
-    ).toBeNull();
-    expect(
-      harness.routeNativeElement!.querySelector('a.course-card[href="/learn/git"]'),
-    ).not.toBeNull();
+    expect(harness.routeNativeElement!.querySelector('a[href="/learn/docker"]')).toBeNull();
+    expect(harness.routeNativeElement!.querySelector('a[href="/learn/git"]')).not.toBeNull();
   });
 });

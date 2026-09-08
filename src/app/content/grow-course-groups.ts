@@ -1,9 +1,6 @@
-export interface GrowCourseGroup {
-  id: string;
-  title: string;
-  description: string;
-  courseIds: string[];
-}
+import { CatalogCourseGroup } from './catalog-course-groups';
+
+export type GrowCourseGroup = CatalogCourseGroup;
 
 export const GROW_COURSE_GROUPS: GrowCourseGroup[] = [
   {

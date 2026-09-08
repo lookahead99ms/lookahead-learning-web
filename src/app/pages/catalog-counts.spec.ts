@@ -4,6 +4,7 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { of } from 'rxjs';
 import { CatalogOverviewItem } from '../content/content.models';
 import { ContentService } from '../content/content.service';
+import { LOOK_AHEAD_COURSE_GROUPS } from '../content/look-ahead-course-groups';
 import { Grow } from './grow/grow';
 import { LookAhead } from './look-ahead/look-ahead';
 
@@ -60,3 +61,47 @@ for (const { path, courseId, component } of [
     });
   });
 }
+
+describe('adaptive Look Ahead catalog', () => {
+  it('keeps every section visible and features only the explicitly authored course', async () => {
+    const catalog: CatalogOverviewItem[] = LOOK_AHEAD_COURSE_GROUPS.flatMap((group) =>
+      group.courseIds.map((id) => ({
+        id,
+        title: id,
+        description: `Prepare with ${id}.`,
+        available: true,
+        reviewStatus: 'reviewed',
+        lessonCount: 2,
+        questionCount: 5,
+        moduleCount: 2,
+        topicPreview: ['Model', 'Trade-offs', 'Recovery', 'Operations'],
+        languages: [],
+      })),
+    );
+    await TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: 'look-ahead', component: LookAhead }]),
+        { provide: ContentService, useValue: { getCatalogOverview: () => of(catalog) } },
+      ],
+    }).compileComponents();
+    const harness = await RouterTestingHarness.create('/look-ahead');
+    const root = harness.routeNativeElement!;
+
+    expect(root.querySelectorAll('.catalog-path-section')).toHaveLength(
+      LOOK_AHEAD_COURSE_GROUPS.length,
+    );
+    expect(root.querySelectorAll('.catalog-jump-nav a')).toHaveLength(
+      LOOK_AHEAD_COURSE_GROUPS.length,
+    );
+    expect(root.querySelectorAll('.featured-catalog-card')).toHaveLength(1);
+    const featured = root.querySelector<HTMLElement>('#system-design')!;
+    expect(featured.classList.contains('featured-catalog-card')).toBe(true);
+    expect(featured.querySelector('.catalog-featured-label')?.textContent?.trim()).toBe(
+      'Recommended starting point',
+    );
+    expect(
+      root.querySelector('#distributed-systems')?.classList.contains('featured-catalog-card'),
+    ).toBe(false);
+    expect(featured.querySelectorAll('.catalog-topic-preview li')).toHaveLength(3);
+  });
+});
