@@ -20,7 +20,14 @@ export const GROW_COURSE_GROUPS: GrowCourseGroup[] = [
     id: 'frontend-engineering',
     title: 'Frontend Engineering',
     description: 'Build scalable, responsive client applications and integration boundaries.',
-    courseIds: ['angular', 'vue'],
+    courseIds: ['angular', 'react', 'vue'],
+  },
+  {
+    id: 'ai-engineering',
+    title: 'AI Engineering',
+    description:
+      'Build bounded AI capabilities with explicit evidence, evaluation, security, and operational ownership.',
+    courseIds: ['ai-assisted-development'],
   },
   {
     id: 'cloud-delivery',

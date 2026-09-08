@@ -61,7 +61,12 @@
               <dd>{{ config().lessonMetricLabel }}</dd>
             </div>
             <div>
-              <dt>{{ totalQuestions(items) }}</dt>
+              <dt
+                [attr.title]="questionCountTitle(totalQuestions(items))"
+                [attr.aria-label]="questionCountAriaLabel(totalQuestions(items))"
+              >
+                {{ questionCountText(totalQuestions(items), false) }}
+              </dt>
               <dd>{{ config().questionMetricLabel }}</dd>
             </div>
           </dl>
@@ -101,7 +106,14 @@
               <p class="catalog-path-summary">
                 {{ itemsFor(group, items).length }}
                 {{ itemsFor(group, items).length === 1 ? 'course' : 'courses' }} ·
-                {{ lessonsFor(group, items) }} lessons · {{ questionsFor(group, items) }} questions
+                {{ lessonsFor(group, items) }} lessons ·
+                <span
+                  [attr.title]="questionCountTitle(questionsFor(group, items))"
+                  [attr.aria-label]="questionCountAriaLabel(questionsFor(group, items))"
+                >
+                  {{ questionCountText(questionsFor(group, items)) }}
+                  {{ questionCountLabel(questionsFor(group, items)) }}
+                </span>
               </p>
             </header>
 
@@ -128,8 +140,13 @@
                     }
                     <p class="catalog-card-kicker">
                       {{ item.lessonCount }} {{ item.lessonCount === 1 ? 'lesson' : 'lessons' }} ·
-                      {{ item.questionCount }}
-                      {{ item.questionCount === 1 ? 'question' : 'questions' }}
+                      <span
+                        [attr.title]="questionCountTitle(item.questionCount)"
+                        [attr.aria-label]="questionCountAriaLabel(item.questionCount)"
+                      >
+                        {{ questionCountText(item.questionCount) }}
+                        {{ questionCountLabel(item.questionCount) }}
+                      </span>
                     </p>
                     <h3>{{ item.title }}</h3>
                     @if (item.description) {

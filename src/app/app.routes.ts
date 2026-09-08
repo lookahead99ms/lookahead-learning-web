@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import type { DeliveryPlanPage } from './pages/delivery-plan/delivery-plan';
+import { legacyAiItemRedirect, legacyAiModuleRedirect } from './content/ai-route-compatibility';
 
 export const routes: Routes = [
   { path: '', loadComponent: () => import('./pages/landing/landing').then((page) => page.Landing) },
@@ -43,6 +44,19 @@ export const routes: Routes = [
   {
     path: 'look-ahead',
     loadComponent: () => import('./pages/look-ahead/look-ahead').then((page) => page.LookAhead),
+  },
+  {
+    path: 'look-ahead/ai-assisted-development/module/:moduleId',
+    redirectTo: legacyAiModuleRedirect,
+  },
+  {
+    path: 'look-ahead/ai-assisted-development/:questionId',
+    redirectTo: legacyAiItemRedirect,
+  },
+  {
+    path: 'look-ahead/ai-assisted-development',
+    redirectTo: 'grow/ai-assisted-development',
+    pathMatch: 'full',
   },
   {
     path: 'look-ahead/:courseId/module/:moduleId',

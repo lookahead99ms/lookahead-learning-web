@@ -199,7 +199,9 @@ describe('Grow catalog', () => {
 
   for (const [courseId, groupId] of [
     ['vue', 'frontend-engineering'],
+    ['react', 'frontend-engineering'],
     ['nodejs', 'backend-engineering'],
+    ['ai-assisted-development', 'ai-engineering'],
   ]) {
     it(`links ${courseId} to its course overview in the correct group`, async () => {
       const harness = await RouterTestingHarness.create(`/grow?group=${groupId}`);
@@ -213,9 +215,16 @@ describe('Grow catalog', () => {
     const harness = await RouterTestingHarness.create('/grow?group=frontend-engineering');
     await ready(
       harness,
-      catalog.filter((course) => course.id !== 'vue' && course.id !== 'nodejs'),
+      catalog.filter(
+        (course) =>
+          course.id !== 'vue' &&
+          course.id !== 'react' &&
+          course.id !== 'nodejs' &&
+          course.id !== 'ai-assisted-development',
+      ),
     );
     expect(harness.routeNativeElement!.querySelector('a[href="/grow/vue"]')).toBeNull();
+    expect(harness.routeNativeElement!.querySelector('a[href="/grow/react"]')).toBeNull();
     expect(harness.routeNativeElement!.querySelector('a[href="/grow/nodejs"]')).toBeNull();
     expect(harness.routeNativeElement!.querySelector('a[href="/grow/angular"]')).not.toBeNull();
   });

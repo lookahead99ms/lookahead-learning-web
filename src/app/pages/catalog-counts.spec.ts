@@ -5,8 +5,30 @@ import { of } from 'rxjs';
 import { CatalogOverviewItem } from '../content/content.models';
 import { ContentService } from '../content/content.service';
 import { LOOK_AHEAD_COURSE_GROUPS } from '../content/look-ahead-course-groups';
+import { catalogQuestionCountDisplay } from '../core/adaptive-catalog/adaptive-catalog';
 import { Grow } from './grow/grow';
 import { LookAhead } from './look-ahead/look-ahead';
+
+describe('catalog question count display', () => {
+  it.each([
+    [24, 20, true],
+    [26, 25, true],
+    [31, 30, true],
+    [36, 36, false],
+    [37, 36, true],
+    [52, 50, true],
+    [73, 70, true],
+    [79, 75, true],
+    [82, 80, true],
+    [131, 125, true],
+    [147, 125, true],
+    [150, 150, false],
+    [659, 650, true],
+    [1471, 1450, true],
+  ] as const)('presents %i as the %i minimum with qualifier %s', (exact, value, minimum) => {
+    expect(catalogQuestionCountDisplay(exact)).toEqual({ value, minimum });
+  });
+});
 
 for (const { path, courseId, component } of [
   { path: 'grow', courseId: 'advanced-java', component: Grow },
@@ -33,7 +55,7 @@ for (const { path, courseId, component } of [
     }
 
     it.each([
-      [13, 131, '13 lessons · 131 questions'],
+      [13, 131, '13 lessons · 125+ questions'],
       [1, 1, '1 lesson · 1 question'],
       [0, 0, '0 lessons · 0 questions'],
     ] as const)(
@@ -51,10 +73,16 @@ for (const { path, courseId, component } of [
       },
     );
 
-    it('explains that the question total includes interview and practice questions', async () => {
+    it('uses a minimum claim while preserving the exact published count as context', async () => {
       const harness = await render(13, 131);
       const metric = harness.routeNativeElement!.querySelectorAll('.catalog-scoreboard > div')[2];
-      expect(metric.querySelector('dt')?.textContent?.trim()).toBe('131');
+      expect(metric.querySelector('dt')?.textContent?.trim()).toBe('125');
+      expect(metric.querySelector('dt')?.getAttribute('title')).toBe(
+        'Exact published total: 131 questions',
+      );
+      expect(metric.querySelector('dt')?.getAttribute('aria-label')).toBe(
+        'More than 125 questions; exact published total 131 questions',
+      );
       expect(metric.querySelector('dd')?.textContent?.trim()).toBe(
         'interview and practice questions',
       );

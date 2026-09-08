@@ -167,7 +167,11 @@ describe('Learn catalog', () => {
     await ready(harness);
     const hero = harness.routeNativeElement!.querySelector<HTMLElement>('.catalog-depth-hero')!;
     expect(hero.textContent).toContain(`${catalog.length}`);
-    expect(hero.textContent).toContain(`${catalog.length * 3}`);
+    const questionMetric = hero.querySelectorAll('.catalog-scoreboard > div')[2];
+    expect(questionMetric.querySelector('dt')?.textContent?.trim()).toBe('55');
+    expect(questionMetric.querySelector('dt')?.getAttribute('aria-label')).toContain(
+      `exact published total ${catalog.length * 3} questions`,
+    );
     expect(
       hero.querySelector('a[href="/learn?group=language-foundations"]')?.textContent,
     ).toContain('Choose a starting foundation');
