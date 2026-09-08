@@ -32,6 +32,7 @@
     "test:review-eligibility": "node --test scripts/review-eligibility.test.mjs",
     "profile:dsa": "node scripts/profile-dsa-loading.mjs",
     "profile:browser": "node scripts/profile-content-delivery-browser.mjs",
+    "profile:browser:release": "node scripts/profile-content-delivery-browser.mjs --require-approved-budgets",
     "review:eligibility": "node scripts/evaluate-review-eligibility.mjs",
     "audit:content": "node scripts/audit-content.mjs",
     "audit:content:private": "node scripts/audit-content.mjs --external",
