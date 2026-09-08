@@ -67,7 +67,7 @@
                         @for (item of backgroundCourses().slice(0, 3); track item.id) {
                           <li>
                             @if (item.available) {
-                              <a [routerLink]="['/', pathId(), item.id]">{{ item.title }}</a>
+                              <a [routerLink]="['/', item.path, item.id]">{{ item.title }}</a>
                             } @else {
                               <span class="unavailable">{{ item.title }} (coming next)</span>
                             }
@@ -83,7 +83,7 @@
                             @for (item of backgroundCourses().slice(3); track item.id) {
                               <li>
                                 @if (item.available) {
-                                  <a [routerLink]="['/', pathId(), item.id]">{{ item.title }}</a>
+                                  <a [routerLink]="['/', item.path, item.id]">{{ item.title }}</a>
                                 } @else {
                                   <span class="unavailable">{{ item.title }} (coming next)</span>
                                 }
@@ -126,7 +126,7 @@
                       <ul class="course-relationship-list">
                         <li>
                           @if (item.available) {
-                            <a [routerLink]="['/', pathId(), item.id]">{{ item.title }}</a>
+                            <a [routerLink]="['/', item.path, item.id]">{{ item.title }}</a>
                           } @else {
                             <span class="unavailable">{{ item.title }} (coming next)</span>
                           }
@@ -140,7 +140,9 @@
                             @for (other of otherDirectionCourses(); track other.id) {
                               <li>
                                 @if (other.available) {
-                                  <a [routerLink]="['/', pathId(), other.id]">{{ other.title }}</a>
+                                  <a [routerLink]="['/', other.path, other.id]">{{
+                                    other.title
+                                  }}</a>
                                 } @else {
                                   <span class="unavailable">{{ other.title }} (coming next)</span>
                                 }

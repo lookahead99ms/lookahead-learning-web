@@ -6,6 +6,7 @@ import { ContentService } from '../../content/content.service';
 import {
   CatalogItem,
   ContentItemSummary,
+  CourseLearningBackgroundLink,
   CourseLearningDirection,
   CourseOutline,
   highlightGrow,
@@ -319,11 +320,14 @@ export class Course implements OnInit {
           const catalogById = new Map(
             catalog.flatMap((item) => (item.id ? ([[item.id, item]] as const) : [])),
           );
-          this.backgroundCourses.set(
-            (course.learningPath?.backgroundCourseIds ?? []).map((id) =>
+          this.backgroundCourses.set([
+            ...(course.learningPath?.backgroundCourseIds ?? []).map((id) =>
               this.navigationItem(id, catalogById),
             ),
-          );
+            ...(course.learningPath?.backgroundCourseLinks ?? []).map((link) =>
+              this.backgroundLinkItem(link),
+            ),
+          ]);
           this.recommendedNextCourse.set(
             course.learningPath?.recommendedNext
               ? this.directionItem(course.learningPath.recommendedNext, catalogById)
@@ -360,6 +364,16 @@ export class Course implements OnInit {
       id,
       title: item?.title ?? id,
       available: Boolean(item) && item?.available !== false,
+      path: this.pathId(),
+    };
+  }
+
+  private backgroundLinkItem(link: CourseLearningBackgroundLink): CourseNavigationItem {
+    return {
+      id: link.courseId,
+      title: link.title,
+      available: true,
+      path: link.path,
     };
   }
 
@@ -385,5 +399,6 @@ export class Course implements OnInit {
 
 type CourseNavigationItem = Pick<CatalogItem, 'id' | 'title'> & {
   available: boolean;
+  path: string;
   reason?: string;
 };

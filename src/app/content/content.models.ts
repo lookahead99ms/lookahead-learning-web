@@ -674,10 +674,18 @@ export interface CourseLearningDirection {
   reason: string;
 }
 
+export interface CourseLearningBackgroundLink {
+  path: ContentPath;
+  courseId: string;
+  title: string;
+}
+
 export interface CourseLearningPath {
   guidance: string;
   /** Courses containing useful concepts, not mandatory full-course prerequisites. */
   backgroundCourseIds: string[];
+  /** Helpful courses in another stage, with an explicit route and learner-facing title. */
+  backgroundCourseLinks?: CourseLearningBackgroundLink[];
   /** The reviewed default progression; null means this course has no authored next step. */
   recommendedNext: CourseLearningDirection | null;
   /** Deliberate role- or skill-dependent branches, never inferred from array order. */
