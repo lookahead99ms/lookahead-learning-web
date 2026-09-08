@@ -72,8 +72,17 @@ export const STUDY_PLAN_TOPICS: StudyPlanTopic[] = [
     id: 'frontend-production',
     path: 'grow',
     title: 'Frontend production engineering',
-    description: 'Accessible, responsive, testable Angular and browser-facing delivery.',
-    courseIds: ['angular'],
+    description:
+      'Accessible, responsive, testable Angular, React, Vue, and browser-facing delivery.',
+    courseIds: ['angular', 'react', 'vue'],
+  },
+  {
+    id: 'ai-engineering',
+    path: 'grow',
+    title: 'Practical AI engineering',
+    description:
+      'AI foundations, bounded collaboration, prompt and context engineering, tools, evaluation, security, and operations.',
+    courseIds: ['ai-assisted-development'],
   },
   {
     id: 'cloud-delivery',
@@ -103,11 +112,12 @@ export const STUDY_PLAN_TOPICS: StudyPlanTopic[] = [
     ],
   },
   {
-    id: 'ai-engineering',
+    id: 'ai-systems-architecture',
     path: 'look-ahead',
-    title: 'AI-assisted and AI/ML engineering',
-    description: 'Verified AI collaboration, RAG, agents, MLOps, structured data, and LLM apps.',
-    courseIds: ['ai-assisted-development'],
+    title: 'AI systems architecture and projects',
+    description:
+      'Production RAG, validated extraction, full-stack AI products, and architecture trade-offs.',
+    courseIds: ['ai-systems-architecture'],
   },
   {
     id: 'leadership-interviews',

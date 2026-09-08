@@ -51,6 +51,33 @@ export interface AdaptiveCatalogConfig {
   loadingDescription: string;
 }
 
+export interface CatalogQuestionCountDisplay {
+  value: number;
+  minimum: boolean;
+}
+
+/**
+ * Keep catalog promises conservative without changing the published inventory.
+ * Clean totals stay exact; irregular totals use a lower milestone so the learner
+ * always receives more questions than the catalog promises.
+ */
+export function catalogQuestionCountDisplay(questionCount: number): CatalogQuestionCountDisplay {
+  const exactCount = Math.max(0, Math.round(questionCount));
+  if (exactCount <= 10 || exactCount % 5 === 0 || exactCount === 36) {
+    return { value: exactCount, minimum: false };
+  }
+
+  if (exactCount === 37) {
+    return { value: 36, minimum: true };
+  }
+
+  const milestoneSize = exactCount < 100 ? 5 : exactCount < 250 ? 25 : 50;
+  return {
+    value: Math.floor(exactCount / milestoneSize) * milestoneSize,
+    minimum: true,
+  };
+}
+
 @Component({
   selector: 'app-adaptive-catalog',
   imports: [RouterLink],
@@ -124,6 +151,29 @@ export class AdaptiveCatalog implements OnInit {
 
   protected questionsFor(group: CatalogCourseGroup, catalog: CatalogOverviewItem[]): number {
     return this.itemsFor(group, catalog).reduce((total, item) => total + item.questionCount, 0);
+  }
+
+  protected questionCountText(questionCount: number, showMinimumMarker = true): string {
+    const display = catalogQuestionCountDisplay(questionCount);
+    return `${display.value}${display.minimum && showMinimumMarker ? '+' : ''}`;
+  }
+
+  protected questionCountLabel(questionCount: number): string {
+    const display = catalogQuestionCountDisplay(questionCount);
+    return `${display.value === 1 ? 'question' : 'questions'}`;
+  }
+
+  protected questionCountTitle(questionCount: number): string | null {
+    return catalogQuestionCountDisplay(questionCount).minimum
+      ? `Exact published total: ${questionCount} questions`
+      : null;
+  }
+
+  protected questionCountAriaLabel(questionCount: number): string | null {
+    const display = catalogQuestionCountDisplay(questionCount);
+    return display.minimum
+      ? `More than ${display.value} questions; exact published total ${questionCount} questions`
+      : null;
   }
 
   protected descriptionFor(item: CatalogOverviewItem): string {

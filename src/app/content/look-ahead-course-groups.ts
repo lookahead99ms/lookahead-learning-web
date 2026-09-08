@@ -22,9 +22,9 @@ export const LOOK_AHEAD_COURSE_GROUPS: LookAheadCourseGroup[] = [
     id: 'leadership-future',
     title: 'Lead, Communicate, and Evolve',
     description:
-      'Demonstrate senior judgment through responsible AI delivery, technical leadership, evidence-led stories, and clear project communication.',
+      'Demonstrate senior judgment through AI systems architecture, technical leadership, evidence-led stories, and clear project communication.',
     courseIds: [
-      'ai-assisted-development',
+      'ai-systems-architecture',
       'technical-leadership',
       'behavioral-carl',
       'project-recruiter',
