@@ -8,6 +8,7 @@ import {
 } from './canonical-dsa-contract.mjs';
 import { buildHandsOnDsaIndex } from './generate-hands-on-dsa-index.mjs';
 import { foundationLanguageNoteErrors } from './foundation-language-notes.mjs';
+import { includesBaselineSolutionLanguages } from './solution-language-contract.mjs';
 
 const repositoryRoot = fileURLToPath(new URL('../', import.meta.url));
 const requestedRoot = process.argv[2];
@@ -1183,10 +1184,8 @@ for (const { lesson, moduleLabel } of foundationLessons) {
       }
     }
     if (section.solutions?.length) {
-      const languages = new Set(section.solutions.map(({ language }) => language.toLowerCase()));
       requireValue(
-        languages.size === patternLanguages.size &&
-          [...patternLanguages].every((language) => languages.has(language)),
+        includesBaselineSolutionLanguages(section.solutions),
         `${label} section ${section.id} must include Java, Python, and Go solutions`,
       );
     }
