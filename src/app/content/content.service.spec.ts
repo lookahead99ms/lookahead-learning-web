@@ -258,6 +258,88 @@ describe('ContentService compact indexes and selected details', () => {
     http.verify();
   });
 
+  it('loads only the requested path shard and reuses it for a later full index', () => {
+    const { service, http } = setup();
+    const scopedIds: string[][] = [];
+    const fullIds: string[][] = [];
+
+    service
+      .getInterviewQuestionIndex('grow')
+      .subscribe((documents) => scopedIds.push(documents.map(({ id }) => id)));
+    http.expectOne('/content/content-index-manifest.json').flush({
+      schemaVersion: 'content-index-manifest/v1',
+      totals: { searchDocuments: 3, practiceDocuments: 2 },
+      practiceContentTypes: ['q-and-a', 'dsa-problem'],
+      shards: [
+        {
+          path: 'learn',
+          href: '/content/indexes/learn.json',
+          documentCount: 1,
+          practiceDocumentCount: 1,
+        },
+        {
+          path: 'grow',
+          href: '/content/indexes/grow.json',
+          documentCount: 1,
+          practiceDocumentCount: 1,
+        },
+        {
+          path: 'look-ahead',
+          href: '/content/indexes/look-ahead.json',
+          documentCount: 1,
+          practiceDocumentCount: 0,
+        },
+      ],
+    });
+    http.expectOne('/content/indexes/grow.json').flush({
+      schemaVersion: 'content-index-shard/v1',
+      path: 'grow',
+      documents: [record('grow-question', 'q-and-a')],
+    });
+    http.expectNone('/content/indexes/learn.json');
+    http.expectNone('/content/indexes/look-ahead.json');
+    expect(scopedIds).toEqual([['grow-question']]);
+
+    service.getSearchIndex().subscribe((documents) => fullIds.push(documents.map(({ id }) => id)));
+    http.expectOne('/content/indexes/learn.json').flush({
+      schemaVersion: 'content-index-shard/v1',
+      path: 'learn',
+      documents: [record('learn-question', 'q-and-a')],
+    });
+    http.expectOne('/content/indexes/look-ahead.json').flush({
+      schemaVersion: 'content-index-shard/v1',
+      path: 'look-ahead',
+      documents: [record('look-ahead-lesson', 'theory')],
+    });
+    http.expectNone('/content/indexes/grow.json');
+    expect(fullIds).toEqual([['learn-question', 'grow-question', 'look-ahead-lesson']]);
+    http.verify();
+  });
+
+  it('fails closed when the requested path has no manifest shard', () => {
+    const { service, http } = setup();
+    let error: Error | undefined;
+
+    service.getSearchIndex('grow').subscribe({ error: (cause) => (error = cause) });
+    http.expectOne('/content/content-index-manifest.json').flush({
+      schemaVersion: 'content-index-manifest/v1',
+      totals: { searchDocuments: 0, practiceDocuments: 0 },
+      practiceContentTypes: ['q-and-a'],
+      shards: [
+        {
+          path: 'learn',
+          href: '/content/indexes/learn.json',
+          documentCount: 0,
+          practiceDocumentCount: 0,
+        },
+      ],
+    });
+
+    expect(error?.message).toBe('Content index shard is missing for grow');
+    http.expectNone('/content/indexes/learn.json');
+    http.verify();
+  });
+
   it('rejects a practice total that disagrees with the manifest', () => {
     const { service, http } = setup();
     let error: Error | undefined;

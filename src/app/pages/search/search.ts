@@ -688,6 +688,8 @@ export class Search implements OnInit {
   protected readonly query = signal('');
   protected readonly submittedQuery = signal('');
   protected readonly selectedPath = signal<'all' | ContentPath>('all');
+  private indexRequestVersion = 0;
+  private indexPath: 'uninitialized' | 'all' | ContentPath = 'uninitialized';
   protected readonly selectedTags = signal(new Set<string>());
   protected readonly tagQuery = signal('');
   protected readonly selectedContentType = signal<SearchContentType>('all');
@@ -837,7 +839,8 @@ export class Search implements OnInit {
         initialTags
           .map((tag) => this.pathForFilter(tag))
           .find((path): path is ContentPath => path !== null);
-      this.selectedPath.set(initialPath ?? 'all');
+      const nextPath = initialPath ?? 'all';
+      this.selectedPath.set(nextPath);
       this.selectedTags.set(new Set(initialTags.filter((tag) => this.pathForFilter(tag) === null)));
       this.selectedCourseId.set(params.get('course') ?? 'all');
       this.selectedModuleId.set(params.get('module') ?? 'all');
@@ -847,25 +850,7 @@ export class Search implements OnInit {
       this.sortBy.set(this.sortFromValue(params.get('sort')));
       this.groupBy.set(this.groupFromValue(params.get('group')));
       this.resetVisibleResults();
-    });
-
-    const index = this.libraryMode
-      ? this.content.getInterviewQuestionIndex()
-      : this.content.getSearchIndex();
-    index.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (questions) => {
-        this.questions.set(questions);
-        this.retainUnavailableTags();
-        this.loading.set(false);
-      },
-      error: () => {
-        this.error.set(
-          this.libraryMode
-            ? 'The interview-question library could not be loaded.'
-            : 'The search index could not be loaded.',
-        );
-        this.loading.set(false);
-      },
+      this.loadIndex(nextPath);
     });
   }
 
@@ -919,11 +904,12 @@ export class Search implements OnInit {
   }
 
   protected updatePath(value: string): void {
-    this.setPathFilter(value as 'all' | ContentPath);
+    const path = value as 'all' | ContentPath;
+    this.setPathFilter(path);
     this.selectedCourseId.set('all');
     this.selectedModuleId.set('all');
-    this.retainUnavailableTags();
     this.resetVisibleResults();
+    this.loadIndex(path);
     this.syncUrl();
   }
 
@@ -1011,9 +997,10 @@ export class Search implements OnInit {
     const wasSelected = tag !== 'all' && this.isTagSelected(tag);
     const path = this.pathForFilter(tag);
     if (path) {
-      this.setPathFilter(this.selectedPath() === path ? 'all' : path);
-      this.retainUnavailableTags();
+      const nextPath = this.selectedPath() === path ? 'all' : path;
+      this.setPathFilter(nextPath);
       this.resetVisibleResults();
+      this.loadIndex(nextPath);
       this.syncUrl();
       if (!wasSelected) this.scrollToResults();
       return;
@@ -1023,8 +1010,10 @@ export class Search implements OnInit {
       (value) => this.normalize(value) === this.normalize(tag),
     );
     if (tag === 'all') {
+      const hadPathFilter = this.selectedPath() !== 'all';
       selectedTags.clear();
       this.selectedPath.set('all');
+      if (hadPathFilter) this.loadIndex('all');
     } else if (selectedTag) selectedTags.delete(selectedTag);
     else selectedTags.add(tag);
     this.selectedTags.set(selectedTags);
@@ -1039,6 +1028,36 @@ export class Search implements OnInit {
 
   private resetVisibleResults(): void {
     this.visibleResultLimit.set(RESULT_PAGE_SIZE);
+  }
+
+  private loadIndex(path: 'all' | ContentPath): void {
+    if (this.indexPath === path) return;
+    this.indexPath = path;
+    const requestVersion = ++this.indexRequestVersion;
+    const scopedPath = path === 'all' ? undefined : path;
+    this.loading.set(true);
+    this.error.set('');
+    const index = this.libraryMode
+      ? this.content.getInterviewQuestionIndex(scopedPath)
+      : this.content.getSearchIndex(scopedPath);
+    index.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (questions) => {
+        if (requestVersion !== this.indexRequestVersion) return;
+        this.questions.set(questions);
+        this.retainUnavailableTags();
+        this.loading.set(false);
+      },
+      error: () => {
+        if (requestVersion !== this.indexRequestVersion) return;
+        this.indexPath = 'uninitialized';
+        this.error.set(
+          this.libraryMode
+            ? 'The interview-question library could not be loaded.'
+            : 'The search index could not be loaded.',
+        );
+        this.loading.set(false);
+      },
+    });
   }
 
   private setPathFilter(path: 'all' | ContentPath): void {

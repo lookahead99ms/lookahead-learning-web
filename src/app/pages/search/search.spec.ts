@@ -6,7 +6,7 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { Subject, of } from 'rxjs';
 import { routes } from '../../app.routes';
 import { ContentService } from '../../content/content.service';
-import { InterviewQuestion, SearchDocument } from '../../content/content.models';
+import { ContentPath, InterviewQuestion, SearchDocument } from '../../content/content.models';
 import { Search } from './search';
 
 describe('Search interview-question library', () => {
@@ -61,8 +61,8 @@ describe('Search interview-question library', () => {
   };
 
   const content = {
-    getSearchIndex: vi.fn(() => of([] as SearchDocument[])),
-    getInterviewQuestionIndex: vi.fn(() => of([document])),
+    getSearchIndex: vi.fn((_path?: ContentPath) => of([] as SearchDocument[])),
+    getInterviewQuestionIndex: vi.fn((_path?: ContentPath) => of([document])),
     getInterviewQuestion: vi.fn(() => of(question)),
   };
 
@@ -91,6 +91,7 @@ describe('Search interview-question library', () => {
       'Interview Question Library',
     );
     expect(content.getInterviewQuestionIndex).toHaveBeenCalledOnce();
+    expect(content.getInterviewQuestionIndex).toHaveBeenCalledWith('learn');
     expect(content.getInterviewQuestion).not.toHaveBeenCalled();
     expect(
       [...harness.routeNativeElement!.querySelectorAll<HTMLOptionElement>('option')].some(
@@ -106,6 +107,39 @@ describe('Search interview-question library', () => {
       'read-modify-write',
     );
     expect(harness.routeNativeElement?.querySelector('app-coding-solution-tabs')).not.toBeNull();
+  });
+
+  it('loads the selected path shard when the path filter changes', async () => {
+    const growDocument: SearchDocument = {
+      ...document,
+      id: 'grow:spring-framework:dependency-injection',
+      contentId: 'dependency-injection',
+      path: 'grow',
+      courseId: 'spring-framework',
+      courseTitle: 'Spring Framework',
+      title: 'How does dependency injection improve testability?',
+      filterTags: ['Grow', 'Q&A', 'Spring', 'Intermediate'],
+      route: ['/', 'grow', 'spring-framework', 'dependency-injection'],
+    };
+    content.getInterviewQuestionIndex.mockImplementation((path?: ContentPath) =>
+      of(path === 'grow' ? [growDocument] : [document]),
+    );
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/interview-questions?path=learn', Search);
+    const pathSelect = [...harness.routeNativeElement!.querySelectorAll('select')].find((select) =>
+      [...select.options].some((option) => option.value === 'grow'),
+    )!;
+
+    pathSelect.value = 'grow';
+    pathSelect.dispatchEvent(new Event('change'));
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+
+    expect(content.getInterviewQuestionIndex).toHaveBeenCalledWith('grow');
+    expect(TestBed.inject(Router).url).toBe('/interview-questions?path=grow');
+    expect(harness.routeNativeElement?.querySelector('.result-title')?.textContent).toContain(
+      growDocument.title,
+    );
   });
 
   it('restores the canonical DSA problem filter from the URL', async () => {
