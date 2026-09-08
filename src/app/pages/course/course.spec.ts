@@ -195,6 +195,37 @@ describe('Course learning path', () => {
     expect(harness.routeNativeElement?.textContent).not.toContain('Next in group');
   });
 
+  it('routes explicit cross-stage background links to their owning stage', async () => {
+    vi.spyOn(TestBed.inject(ContentService), 'getCourseOutline').mockReturnValue(
+      of({
+        ...springFramework,
+        id: 'angular',
+        title: 'Angular Production Engineering',
+        learningPath: {
+          ...springFramework.learningPath!,
+          backgroundCourseIds: [],
+          backgroundCourseLinks: [
+            {
+              path: 'learn',
+              courseId: 'typescript-foundations',
+              title: 'TypeScript Foundations',
+            },
+          ],
+          recommendedNext: null,
+          otherDirections: [],
+        },
+      }),
+    );
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/grow/angular', Course);
+
+    const link = harness.routeNativeElement?.querySelector<HTMLAnchorElement>(
+      '.course-background-column a',
+    );
+    expect(link?.textContent?.trim()).toBe('TypeScript Foundations');
+    expect(link?.getAttribute('href')).toBe('/learn/typescript-foundations');
+  });
+
   it('separates the recommended next step from explained alternatives', async () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/grow/spring-boot', Course);

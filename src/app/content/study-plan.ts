@@ -27,6 +27,14 @@ export const STUDY_PLAN_TOPICS: StudyPlanTopic[] = [
     courseIds: ['python-fundamentals', 'go-fundamentals', 'language-comparative-analysis'],
   },
   {
+    id: 'javascript-web-foundations',
+    path: 'learn',
+    title: 'Web Foundations',
+    description:
+      'JavaScript, TypeScript, and browser fundamentals for frontend and Node.js development.',
+    courseIds: ['javascript-foundations', 'typescript-foundations', 'web-platform-foundations'],
+  },
+  {
     id: 'lld',
     path: 'learn',
     title: 'OOP, SOLID, design patterns, and LLD',

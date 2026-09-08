@@ -636,6 +636,11 @@ export class Landing {
           learnGroupId: 'language-foundations',
         },
         {
+          id: 'javascript-web-foundations',
+          title: 'Web Foundations',
+          learnGroupId: 'javascript-web-foundations',
+        },
+        {
           id: 'data-structures-algorithms',
           title: 'Data Structures and Algorithms',
           learnGroupId: 'data-structures-algorithms',

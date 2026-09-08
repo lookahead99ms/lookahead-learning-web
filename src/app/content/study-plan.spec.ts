@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SearchDocument } from './content.models';
-import { buildStudyPlan } from './study-plan';
+import { buildStudyPlan, STUDY_PLAN_TOPICS } from './study-plan';
 
 function document(
   id: string,
@@ -34,6 +34,21 @@ function document(
 }
 
 describe('study plan generator', () => {
+  it('offers the connected Web Foundations path', () => {
+    const topic = STUDY_PLAN_TOPICS.find(({ id }) => id === 'javascript-web-foundations');
+
+    expect(topic?.path).toBe('learn');
+    expect(topic?.title).toBe('Web Foundations');
+    expect(topic?.description).toBe(
+      'JavaScript, TypeScript, and browser fundamentals for frontend and Node.js development.',
+    );
+    expect(topic?.courseIds).toEqual([
+      'javascript-foundations',
+      'typescript-foundations',
+      'web-platform-foundations',
+    ]);
+  });
+
   it('schedules only selected topics covered by the learner access', () => {
     const plan = buildStudyPlan(
       [

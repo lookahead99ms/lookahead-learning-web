@@ -12,6 +12,7 @@ import { Subject } from 'rxjs';
 import { CatalogOverviewItem } from '../../content/content.models';
 import { ContentService } from '../../content/content.service';
 import { LEARN_COURSE_GROUPS } from '../../content/learn-course-groups';
+import { catalogQuestionCountDisplay } from '../../core/adaptive-catalog/adaptive-catalog';
 import { Learn } from './learn';
 
 const catalog: CatalogOverviewItem[] = LEARN_COURSE_GROUPS.flatMap((group) =>
@@ -168,7 +169,9 @@ describe('Learn catalog', () => {
     const hero = harness.routeNativeElement!.querySelector<HTMLElement>('.catalog-depth-hero')!;
     expect(hero.textContent).toContain(`${catalog.length}`);
     const questionMetric = hero.querySelectorAll('.catalog-scoreboard > div')[2];
-    expect(questionMetric.querySelector('dt')?.textContent?.trim()).toBe('55');
+    expect(questionMetric.querySelector('dt')?.textContent?.trim()).toBe(
+      `${catalogQuestionCountDisplay(catalog.length * 3).value}`,
+    );
     expect(questionMetric.querySelector('dt')?.getAttribute('aria-label')).toContain(
       `exact published total ${catalog.length * 3} questions`,
     );

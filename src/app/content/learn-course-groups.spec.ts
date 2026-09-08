@@ -37,6 +37,22 @@ describe('LEARN_COURSE_GROUPS', () => {
     ]);
   });
 
+  it('keeps the Web Foundations courses together', () => {
+    const webFoundations = LEARN_COURSE_GROUPS.find(
+      (group) => group.id === 'javascript-web-foundations',
+    );
+
+    expect(webFoundations?.title).toBe('Web Foundations');
+    expect(webFoundations?.description).toBe(
+      'JavaScript, TypeScript, and browser fundamentals for frontend and Node.js development.',
+    );
+    expect(webFoundations?.courseIds).toEqual([
+      'javascript-foundations',
+      'typescript-foundations',
+      'web-platform-foundations',
+    ]);
+  });
+
   it('places object modeling, SOLID, patterns, concurrency, and LLD together', () => {
     const objectDesign = LEARN_COURSE_GROUPS.find((group) => group.id === 'object-design-lld');
 

@@ -23,6 +23,13 @@ export const LEARN_COURSE_GROUPS: LearnCourseGroup[] = [
     courseIds: ['java-data-structures', 'modern-java', 'garbage-collection'],
   },
   {
+    id: 'javascript-web-foundations',
+    title: 'Web Foundations',
+    description:
+      'JavaScript, TypeScript, and browser fundamentals for frontend and Node.js development.',
+    courseIds: ['javascript-foundations', 'typescript-foundations', 'web-platform-foundations'],
+  },
+  {
     id: 'data-structures-algorithms',
     title: 'Data Structures and Algorithms',
     description: 'Choose representations, reason about cost, and apply repeatable algorithms.',

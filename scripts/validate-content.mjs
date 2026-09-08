@@ -432,7 +432,14 @@ function validateLearningUnits(units, moduleIds, courseLabel) {
   return discoverableModuleIds;
 }
 
-function validateCourseLearningPath(learningPath, courseId, knownCourseIds, courseLabel) {
+function validateCourseLearningPath(
+  learningPath,
+  courseId,
+  knownCourseIds,
+  catalogItemsByPath,
+  currentPath,
+  courseLabel,
+) {
   if (learningPath === undefined) return;
 
   requireValue(
@@ -446,6 +453,11 @@ function validateCourseLearningPath(learningPath, courseId, knownCourseIds, cour
   requireValue(
     Array.isArray(learningPath?.backgroundCourseIds),
     `${courseLabel}: learningPath backgroundCourseIds must be an array`,
+  );
+  requireValue(
+    learningPath?.backgroundCourseLinks === undefined ||
+      Array.isArray(learningPath.backgroundCourseLinks),
+    `${courseLabel}: learningPath backgroundCourseLinks must be an array when provided`,
   );
   requireValue(
     learningPath?.nextCourseIds === undefined,
@@ -463,6 +475,7 @@ function validateCourseLearningPath(learningPath, courseId, knownCourseIds, cour
   );
 
   const backgroundCourseIds = learningPath.backgroundCourseIds;
+  const backgroundCourseLinks = learningPath.backgroundCourseLinks ?? [];
   const directions = [
     ...(learningPath.recommendedNext ? [learningPath.recommendedNext] : []),
     ...learningPath.otherDirections,
@@ -480,6 +493,38 @@ function validateCourseLearningPath(learningPath, courseId, knownCourseIds, cour
     new Set(backgroundCourseIds).size === backgroundCourseIds.length,
     `${courseLabel}: duplicate learningPath background course`,
   );
+
+  const linkedBackgroundKeys = new Set();
+  for (const link of backgroundCourseLinks) {
+    requireValue(
+      typeof link?.path === 'string' && link.path.trim(),
+      `${courseLabel}: cross-stage background course requires a path`,
+    );
+    requireValue(
+      typeof link?.courseId === 'string' && link.courseId.trim(),
+      `${courseLabel}: cross-stage background course requires a courseId`,
+    );
+    requireValue(
+      typeof link?.title === 'string' && link.title.trim(),
+      `${courseLabel}: cross-stage background course requires a title`,
+    );
+    const key = `${link.path}:${link.courseId}`;
+    requireValue(
+      !linkedBackgroundKeys.has(key),
+      `${courseLabel}: duplicate cross-stage background course ${key}`,
+    );
+    linkedBackgroundKeys.add(key);
+    requireValue(
+      link.path !== currentPath || link.courseId !== courseId,
+      `${courseLabel}: learningPath cannot reference itself`,
+    );
+    const catalogItem = catalogItemsByPath.get(link.path)?.get(link.courseId);
+    requireValue(catalogItem, `${courseLabel}: learningPath references missing course ${key}`);
+    requireValue(
+      catalogItem.title === link.title,
+      `${courseLabel}: cross-stage background title differs for ${key}`,
+    );
+  }
 
   for (const direction of directions) {
     requireValue(
@@ -580,6 +625,8 @@ for (const file of contentFiles) {
     manifest.learningPath,
     manifest.id,
     courseIdsByPath.get(manifest.path) ?? new Set(),
+    catalogItemsByPath,
+    manifest.path,
     label,
   );
   requireValue(
