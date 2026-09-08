@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { of } from 'rxjs';
-import { CourseContent } from '../../content/content.models';
+import { CourseContent, CourseOutline } from '../../content/content.models';
 import { ContentService } from '../../content/content.service';
 import { Module } from './module';
 
@@ -69,11 +69,41 @@ const streamsCourse: CourseContent = {
   ],
 };
 
+const streamsOutline: CourseOutline = {
+  ...streamsCourse,
+  questions: streamsCourse.questions.map((question) => ({
+    id: question.id,
+    moduleId: question.moduleId,
+    order: question.order,
+    title: question.title,
+    difficulty: question.difficulty,
+    tags: question.tags,
+    contentType: question.contentType ?? 'q-and-a',
+    isTheoryArticle: false,
+    detailRef: {
+      kind: 'content-item',
+      href: `/content/details/learn/modern-java/${question.moduleId}/${question.id}.json`,
+      version: 'test-v1',
+    },
+  })),
+  moduleDetailRefs: streamsCourse.modules.map((module) => ({
+    moduleId: module.id,
+    href: `/content/learn/modern-java/modules/${module.id}.json`,
+    version: 'test-v1',
+    itemIds: streamsCourse.questions
+      .filter((question) => question.moduleId === module.id)
+      .map((question) => question.id),
+  })),
+};
+
 describe('Module question labels', () => {
   beforeEach(async () => {
     const content = {
       getCatalog: vi.fn(() => of([{ id: streamsCourse.id, title: streamsCourse.title }])),
-      getCourse: vi.fn(() => of(streamsCourse)),
+      getCourseOutline: vi.fn(() => of(streamsOutline)),
+      getModuleQuestions: vi.fn((_course: CourseOutline, moduleId: string) =>
+        of(streamsCourse.questions.filter((question) => question.moduleId === moduleId)),
+      ),
     };
     await TestBed.configureTestingModule({
       providers: [

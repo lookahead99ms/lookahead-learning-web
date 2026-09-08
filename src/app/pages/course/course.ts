@@ -5,9 +5,9 @@ import { EMPTY, catchError, forkJoin, switchMap } from 'rxjs';
 import { ContentService } from '../../content/content.service';
 import {
   CatalogItem,
-  CourseContent,
+  ContentItemSummary,
   CourseLearningDirection,
-  InterviewQuestion,
+  CourseOutline,
   highlightGrow,
   highlightLearn,
   reviewStatusLabel,
@@ -262,7 +262,7 @@ export class Course implements OnInit {
   private readonly contentService = inject(ContentService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
-  protected readonly course = signal<CourseContent | null>(null);
+  protected readonly course = signal<CourseOutline | null>(null);
   protected readonly courseId = signal('');
   protected readonly pathId = signal('learn');
   protected readonly backgroundCourses = signal<CourseNavigationItem[]>([]);
@@ -299,7 +299,7 @@ export class Course implements OnInit {
           this.courseId.set(courseId);
           this.pathId.set(pathId);
           return forkJoin({
-            course: this.contentService.getCourse(pathId, courseId),
+            course: this.contentService.getCourseOutline(pathId, courseId),
             catalog: this.contentService.getCatalog(pathId),
           }).pipe(
             // Handle each request independently so later route changes can recover.
@@ -363,7 +363,7 @@ export class Course implements OnInit {
     };
   }
 
-  protected questionsFor(moduleId: string): InterviewQuestion[] {
+  protected questionsFor(moduleId: string): ContentItemSummary[] {
     return (this.course()?.questions ?? [])
       .filter((question) => question.moduleId === moduleId)
       .sort((left, right) => left.order - right.order);

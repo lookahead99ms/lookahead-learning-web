@@ -1,12 +1,29 @@
-import { access, readFile, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { createHash } from 'node:crypto';
+import { access, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
 import { readCanonicalDsaProblems } from './canonical-dsa-contract.mjs';
 
 const paths = ['learn', 'grow', 'look-ahead'];
 const languages = new Set(['java', 'python', 'go']);
+const practiceContentTypes = new Set([
+  'q-and-a',
+  'dsa-problem',
+  'system-design',
+  'language-comparison',
+]);
+const previewCharacterLimit = 280;
 
 async function readJson(path) {
   return JSON.parse(await readFile(path, 'utf8'));
+}
+
+async function writeJson(path, value) {
+  await mkdir(dirname(path), { recursive: true });
+  await writeFile(path, JSON.stringify(value));
+}
+
+function contentVersion(value) {
+  return createHash('sha256').update(JSON.stringify(value)).digest('hex').slice(0, 16);
 }
 
 function isTheoryArticle(item) {
@@ -72,6 +89,105 @@ function questionLanguages(question) {
   );
 }
 
+function compactPreview(value) {
+  const plainText = String(value ?? '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return plainText.length <= previewCharacterLimit
+    ? plainText
+    : `${plainText.slice(0, previewCharacterLimit - 1).trimEnd()}…`;
+}
+
+function isPracticeDocument(document) {
+  return practiceContentTypes.has(document.contentType);
+}
+
+function summaryFor(question, contentType, access, detailRef, canonicalProblem) {
+  return {
+    id: question.id,
+    moduleId: question.moduleId,
+    order: question.order,
+    title: canonicalProblem?.title ?? question.title,
+    difficulty: canonicalProblem?.difficulty ?? question.difficulty,
+    tags: uniqueLabels([...(canonicalProblem?.tags ?? []), ...(question.tags ?? [])]),
+    contentType,
+    isTheoryArticle: isTheoryArticle(question),
+    detailRef,
+    ...(question.reviewStatus ? { reviewStatus: question.reviewStatus } : {}),
+    ...(access ? { access } : {}),
+    ...(question.relatedArticleId ? { relatedArticleId: question.relatedArticleId } : {}),
+    ...(question.schemaVersion ? { schemaVersion: question.schemaVersion } : {}),
+    ...(question.canonicalProblemRef ? { canonicalProblemRef: question.canonicalProblemRef } : {}),
+  };
+}
+
+function documentFor(question, context) {
+  const { path, course, moduleTitle, access, contentType, canonicalProblem, detailRef } = context;
+  const pathLabel =
+    path === 'look-ahead' ? 'Look Ahead' : `${path[0].toUpperCase()}${path.slice(1)}`;
+  const title = canonicalProblem?.title ?? question.title;
+  const difficulty = canonicalProblem?.difficulty ?? question.difficulty;
+  const tags = uniqueLabels([...(canonicalProblem?.tags ?? []), ...(question.tags ?? [])]);
+  const resolvedLanguages = canonicalProblem
+    ? uniqueLabels(
+        (canonicalProblem.implementations ?? []).map(({ language }) => language?.toLowerCase()),
+      ).filter((candidate) => languages.has(candidate))
+    : questionLanguages(question);
+
+  return {
+    id: canonicalProblem ? `dsa:${canonicalProblem.id}` : `${path}:${course.id}:${question.id}`,
+    contentId: question.id,
+    ...(canonicalProblem ? { canonicalContentId: canonicalProblem.id } : {}),
+    path,
+    courseId: course.id,
+    courseTitle: course.title,
+    moduleId: question.moduleId,
+    moduleTitle,
+    title,
+    contentType,
+    tags,
+    filterTags: uniqueLabels([
+      pathLabel,
+      contentTypeLabel(contentType),
+      difficulty,
+      ...resolvedLanguages.map((language) =>
+        language === 'go' ? 'Go' : `${language[0].toUpperCase()}${language.slice(1)}`,
+      ),
+      ...tags,
+    ]),
+    languages: resolvedLanguages,
+    difficulty,
+    preview:
+      access.tier === 'free'
+        ? compactPreview(canonicalProblem?.practice.statement.prompt ?? question.interviewAnswer)
+        : '',
+    access,
+    searchableText: '',
+    route: ['/', path, course.id, question.id],
+    detailRef,
+  };
+}
+
+function indexRecord(document) {
+  const {
+    path: _path,
+    filterTags: _filterTags,
+    searchableText: _searchableText,
+    route: _route,
+    ...record
+  } = document;
+  return record;
+}
+
+function deduplicateCanonicalDocuments(documents) {
+  const byId = new Map();
+  for (const document of documents) {
+    if (!byId.has(document.id)) byId.set(document.id, document);
+  }
+  return [...byId.values()];
+}
+
 function catalogOverview(path, catalog, documents, courseTopics) {
   const pathDocuments = documents.filter((document) => document.path === path);
 
@@ -94,7 +210,7 @@ function catalogOverview(path, catalog, documents, courseTopics) {
   });
 }
 
-async function documentsForCourse(contentRoot, path, catalogItem, canonicalProblems, courseTopics) {
+async function contentForCourse(contentRoot, path, catalogItem, canonicalProblems, courseTopics) {
   const courseRoot = join(contentRoot, path, catalogItem.id);
   const course = await readJson(join(courseRoot, 'course.json'));
   courseTopics.set(
@@ -102,104 +218,87 @@ async function documentsForCourse(contentRoot, path, catalogItem, canonicalProbl
     uniqueLabels(Array.isArray(course.chips) ? course.chips : []).map((label) => label.trim()),
   );
   const modules = course.modules.filter((module) => module.reviewStatus !== 'planned');
-  const questionArrays = await Promise.all(
-    modules.map((module) => readJson(join(courseRoot, 'modules', `${module.id}.json`))),
-  );
   const moduleById = new Map(modules.map((module) => [module.id, module]));
+  const documents = [];
+  const items = [];
+  const moduleRefs = [];
 
-  return questionArrays.flat().flatMap((question) => {
-    const module = moduleById.get(question.moduleId);
-    const moduleTitle = module?.title ?? question.moduleId;
-    const access = question.access ??
-      module?.access ??
-      course.access ??
-      catalogItem.access ?? { tier: 'free' };
-    const contentType = normalizedContentType(question);
-    const canonicalProblemId = question.canonicalProblemRef?.problemId;
-    if (contentType === 'dsa-problem' && !canonicalProblemId) return [];
-    const canonicalProblem = canonicalProblemId
-      ? canonicalProblems.get(canonicalProblemId)
-      : undefined;
-    if (canonicalProblemId && !canonicalProblem) {
-      throw new Error(`${question.id}: unresolved canonical DSA problem ${canonicalProblemId}`);
-    }
-    const pathLabel =
-      path === 'look-ahead' ? 'Look Ahead' : `${path[0].toUpperCase()}${path.slice(1)}`;
-    const effectiveTitle = canonicalProblem?.title ?? question.title;
-    const effectiveDifficulty = canonicalProblem?.difficulty ?? question.difficulty;
-    const effectiveTags = uniqueLabels([
-      ...(canonicalProblem?.tags ?? []),
-      ...(question.tags ?? []),
-    ]);
-    const resolvedLanguages = canonicalProblem
-      ? uniqueLabels(
-          (canonicalProblem.implementations ?? []).map(({ language }) => language?.toLowerCase()),
-        ).filter((candidate) => languages.has(candidate))
-      : questionLanguages(question);
-    const filterTags = uniqueLabels([
-      pathLabel,
-      contentTypeLabel(contentType),
-      effectiveDifficulty,
-      ...resolvedLanguages.map((language) =>
-        language === 'go' ? 'Go' : `${language[0].toUpperCase()}${language.slice(1)}`,
-      ),
-      ...effectiveTags,
-    ]);
-    const searchableParts = canonicalProblem
-      ? [
-          effectiveTitle,
-          canonicalProblem.practice.statement.prompt,
-          canonicalProblem.variation,
-          canonicalProblem.invariantAdaptation,
-          course.title,
-          moduleTitle,
-          ...effectiveTags,
-        ]
-      : [question.title, course.title, moduleTitle, ...effectiveTags];
-    if (access.tier === 'free' && !canonicalProblem) {
-      searchableParts.push(
-        question.interviewAnswer,
-        question.summary,
-        ...(question.keyTakeaways ?? []),
-        ...(question.sections ?? []).flatMap((section) => [
-          section.heading,
-          ...section.body,
-          section.callout?.title,
-          section.callout?.text,
-        ]),
-        ...question.followUps.flatMap((followUp) => [followUp.question, followUp.answer]),
+  for (const module of modules) {
+    const modulePath = join(courseRoot, 'modules', `${module.id}.json`);
+    const questions = await readJson(modulePath);
+    moduleRefs.push({
+      moduleId: module.id,
+      href: `/content/${path}/${course.id}/modules/${module.id}.json`,
+      version: contentVersion(questions),
+      itemIds: questions.map(({ id }) => id),
+    });
+
+    for (const question of questions) {
+      const contentType = normalizedContentType(question);
+      const canonicalProblemId = question.canonicalProblemRef?.problemId;
+      if (contentType === 'dsa-problem' && !canonicalProblemId) continue;
+      const canonicalProblem = canonicalProblemId
+        ? canonicalProblems.get(canonicalProblemId)
+        : undefined;
+      if (canonicalProblemId && !canonicalProblem) {
+        throw new Error(`${question.id}: unresolved canonical DSA problem ${canonicalProblemId}`);
+      }
+      const access = question.access ??
+        module.access ??
+        course.access ??
+        catalogItem.access ?? { tier: 'free' };
+      const detailRef = canonicalProblem
+        ? {
+            kind: 'canonical-dsa',
+            href: `/content/learn/dsa-problems/${canonicalProblem.id}.json`,
+            version: contentVersion(canonicalProblem),
+          }
+        : {
+            kind: 'content-item',
+            href: `/content/details/${path}/${course.id}/${module.id}/${question.id}.json`,
+            version: contentVersion(question),
+          };
+
+      if (!canonicalProblem) {
+        await writeJson(
+          join(contentRoot, 'details', path, course.id, module.id, `${question.id}.json`),
+          question,
+        );
+      }
+      items.push(summaryFor(question, contentType, access, detailRef, canonicalProblem));
+      documents.push(
+        documentFor(question, {
+          path,
+          course,
+          moduleTitle: moduleById.get(question.moduleId)?.title ?? question.moduleId,
+          access,
+          contentType,
+          canonicalProblem,
+          detailRef,
+        }),
       );
     }
+  }
 
-    return [
-      {
-        id: `${path}:${course.id}:${question.id}`,
-        contentId: question.id,
-        ...(canonicalProblem ? { canonicalContentId: canonicalProblem.id } : {}),
-        path,
-        courseId: course.id,
-        courseTitle: course.title,
-        moduleId: question.moduleId,
-        moduleTitle,
-        title: effectiveTitle,
-        contentType,
-        tags: effectiveTags,
-        filterTags,
-        languages: resolvedLanguages,
-        difficulty: effectiveDifficulty,
-        preview:
-          access.tier === 'free'
-            ? (canonicalProblem?.practice.statement.prompt ?? question.interviewAnswer)
-            : '',
-        access,
-        searchableText: searchableParts.join(' ').toLowerCase(),
-        route: ['/', path, course.id, question.id],
-      },
-    ];
-  });
+  const { questions: _questions, modules: _sourceModules, ...courseFields } = course;
+  const locator = {
+    schemaVersion: 'course-content-locator/v1',
+    course: { ...courseFields, modules },
+    items,
+    modules: moduleRefs,
+  };
+  await writeJson(join(courseRoot, 'content-locator.json'), locator);
+  return { documents };
 }
 
 export async function generateSearchIndex(contentRoot) {
+  await Promise.all([
+    rm(join(contentRoot, 'indexes'), { recursive: true, force: true }),
+    rm(join(contentRoot, 'details'), { recursive: true, force: true }),
+    rm(join(contentRoot, 'search-index.json'), { force: true }),
+    rm(join(contentRoot, 'interview-question-index.json'), { force: true }),
+  ]);
+
   const courseJobs = [];
   const catalogs = new Map();
   const courseTopics = new Map();
@@ -214,54 +313,89 @@ export async function generateSearchIndex(contentRoot) {
     const catalog = await readJson(catalogPath);
     catalogs.set(path, catalog);
     for (const item of catalog) {
-      if (item.id && item.available !== false) {
-        const courseFile = join(contentRoot, path, item.id, 'course.json');
-        try {
-          await access(courseFile);
-          courseJobs.push(
-            documentsForCourse(contentRoot, path, item, canonicalProblems, courseTopics),
-          );
-        } catch {
-          // Special catalog experiences such as Hands-on DSA do not hydrate as courses.
-        }
+      if (!item.id || item.available === false) continue;
+      try {
+        await access(join(contentRoot, path, item.id, 'course.json'));
+        courseJobs.push({
+          path,
+          courseId: item.id,
+          job: contentForCourse(contentRoot, path, item, canonicalProblems, courseTopics),
+        });
+      } catch {
+        // Special catalog experiences such as Hands-On DSA do not hydrate as courses.
       }
     }
   }
-  const documents = (await Promise.all(courseJobs)).flat();
+
+  const courseResults = await Promise.all(
+    courseJobs.map(async ({ path, courseId, job }) => ({ path, courseId, ...(await job) })),
+  );
+  const placementDocuments = courseResults.flatMap(
+    ({ documents: courseDocuments }) => courseDocuments,
+  );
+  const documents = deduplicateCanonicalDocuments(placementDocuments);
   const documentIds = new Set();
   for (const document of documents) {
     if (documentIds.has(document.id)) {
       throw new Error(`Search index contains duplicate document id ${document.id}`);
     }
     documentIds.add(document.id);
-    if (
-      !document.contentId ||
-      !document.courseId ||
-      !document.moduleId ||
-      !document.title ||
-      !document.searchableText
-    ) {
+    if (!document.contentId || !document.courseId || !document.moduleId || !document.title) {
       throw new Error(`Search index document ${document.id} is incomplete`);
     }
   }
-  const interviewQuestionDocuments = documents.filter(({ contentType }) =>
-    ['q-and-a', 'system-design', 'language-comparison'].includes(contentType),
-  );
-  await Promise.all([
-    writeFile(join(contentRoot, 'search-index.json'), JSON.stringify(documents)),
-    writeFile(
-      join(contentRoot, 'interview-question-index.json'),
-      JSON.stringify(interviewQuestionDocuments),
-    ),
-    ...[...catalogs].map(([path, catalog]) =>
-      writeFile(
+
+  const shardReferences = [];
+  for (const path of paths) {
+    if (!catalogs.has(path)) continue;
+    const pathDocuments = documents.filter((document) => document.path === path);
+    const href = `/content/indexes/${path}.json`;
+    await writeJson(join(contentRoot, 'indexes', `${path}.json`), {
+      schemaVersion: 'content-index-shard/v1',
+      path,
+      documents: pathDocuments.map(indexRecord),
+    });
+    shardReferences.push({
+      path,
+      href,
+      documentCount: pathDocuments.length,
+      practiceDocumentCount: pathDocuments.filter(isPracticeDocument).length,
+      courses: courseResults
+        .filter((result) => result.path === path)
+        .map(({ courseId }) => {
+          const courseDocuments = pathDocuments.filter(
+            (document) => document.courseId === courseId,
+          );
+          return {
+            courseId,
+            locatorHref: `/content/${path}/${courseId}/content-locator.json`,
+            documentCount: courseDocuments.length,
+            practiceDocumentCount: courseDocuments.filter(isPracticeDocument).length,
+          };
+        }),
+    });
+  }
+
+  const practiceDocuments = documents.filter(isPracticeDocument);
+  await writeJson(join(contentRoot, 'content-index-manifest.json'), {
+    schemaVersion: 'content-index-manifest/v1',
+    totals: {
+      searchDocuments: documents.length,
+      practiceDocuments: practiceDocuments.length,
+    },
+    practiceContentTypes: [...practiceContentTypes],
+    shards: shardReferences,
+  });
+  await Promise.all(
+    [...catalogs].map(([path, catalog]) =>
+      writeJson(
         join(contentRoot, path, 'catalog-overview.json'),
-        JSON.stringify(catalogOverview(path, catalog, documents, courseTopics)),
+        catalogOverview(path, catalog, placementDocuments, courseTopics),
       ),
     ),
-  ]);
+  );
   return {
     searchDocumentCount: documents.length,
-    interviewQuestionCount: interviewQuestionDocuments.length,
+    interviewQuestionCount: practiceDocuments.length,
   };
 }

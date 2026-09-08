@@ -1,17 +1,17 @@
 import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { EMPTY, catchError, forkJoin, switchMap } from 'rxjs';
+import { EMPTY, catchError, forkJoin, map, switchMap } from 'rxjs';
 import {
   CatalogItem,
-  CourseContent,
+  CourseOutline,
   CourseModule,
   CourseSection,
   InterviewQuestion,
   reviewStatusLabel,
 } from '../../content/content.models';
 import { ContentService } from '../../content/content.service';
-import { questionsForModule } from '../../content/question-discovery';
+import { isTheoryArticle } from '../../content/question-discovery';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 
 @Component({
@@ -157,7 +157,7 @@ export class Module implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   protected readonly courseId = signal('');
   protected readonly pathId = signal('learn');
-  protected readonly course = signal<CourseContent | null>(null);
+  protected readonly course = signal<CourseOutline | null>(null);
   protected readonly module = signal<CourseModule | null>(null);
   protected readonly parentSection = signal<CourseSection | null>(null);
   protected readonly questions = signal<InterviewQuestion[]>([]);
@@ -183,8 +183,15 @@ export class Module implements OnInit {
           this.pathId.set(pathId);
           return forkJoin({
             catalog: this.contentService.getCatalog(pathId),
-            course: this.contentService.getCourse(pathId, courseId),
+            course: this.contentService.getCourseOutline(pathId, courseId),
           }).pipe(
+            switchMap((result) => {
+              const moduleId = params.get('moduleId');
+              if (!moduleId) throw new Error('Module not found');
+              return this.contentService
+                .getModuleQuestions(result.course, moduleId)
+                .pipe(map((questions) => ({ ...result, questions })));
+            }),
             catchError(() => {
               this.error.set('The learning content could not be loaded.');
               return EMPTY;
@@ -194,11 +201,15 @@ export class Module implements OnInit {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
-        next: ({ catalog, course }) => this.displayModule(catalog, course),
+        next: ({ catalog, course, questions }) => this.displayModule(catalog, course, questions),
       });
   }
 
-  private displayModule(catalog: CatalogItem[], course: CourseContent): void {
+  private displayModule(
+    catalog: CatalogItem[],
+    course: CourseOutline,
+    questions: InterviewQuestion[],
+  ): void {
     const moduleId = this.route.snapshot.paramMap.get('moduleId');
     const selectedModule = course.modules.find(({ id }) => id === moduleId);
     if (!selectedModule) {
@@ -218,7 +229,11 @@ export class Module implements OnInit {
     this.nextModule.set(trackModules[selectedIndex + 1] ?? null);
     this.isFirstModuleInTrack.set(selectedIndex === 0);
     this.isLastModuleInTrack.set(selectedIndex === trackModules.length - 1);
-    this.questions.set(questionsForModule(course, selectedModule.id));
+    this.questions.set(
+      questions
+        .filter((question) => !isTheoryArticle(question))
+        .sort((left, right) => left.order - right.order),
+    );
 
     const currentCatalogIndex = catalog.findIndex(({ id }) => id === course.id);
     this.nextCourse.set(catalog[currentCatalogIndex + 1] ?? null);

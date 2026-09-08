@@ -2,11 +2,12 @@ import { Component, DestroyRef, HostListener, OnInit, inject, signal } from '@an
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgTemplateOutlet } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { EMPTY, catchError, forkJoin, map, of, switchMap } from 'rxjs';
+import { EMPTY, catchError, forkJoin, map, of, switchMap, throwError } from 'rxjs';
 import {
   CatalogItem,
-  CourseContent,
+  ContentItemSummary,
   CourseModule,
+  CourseOutline,
   CourseSection,
   DsaProblemNavigation,
   DsaProblemNavigationLink,
@@ -700,9 +701,10 @@ export class Question implements OnInit {
 
   protected readonly courseId = signal('');
   protected readonly pathId = signal('learn');
-  protected readonly course = signal<CourseContent | null>(null);
+  protected readonly course = signal<CourseOutline | null>(null);
   protected readonly courseTitle = signal('');
   protected readonly question = signal<InterviewQuestion | null>(null);
+  protected readonly relatedQuestions = signal(new Map<string, InterviewQuestion>());
   protected readonly moduleTitle = signal('');
   protected readonly previousQuestion = signal<ReaderLink | null>(null);
   protected readonly nextQuestion = signal<ReaderLink | null>(null);
@@ -736,7 +738,9 @@ export class Question implements OnInit {
     if (item.canonicalProblem) return item.canonicalProblem;
     const reference = item.canonicalProblemRef;
     if (!reference) return null;
-    const lesson = this.course()?.questions.find(({ id }) => id === reference.lessonId);
+    const lesson = [this.question(), ...this.relatedQuestions().values()].find(
+      (candidate) => candidate?.id === reference.lessonId,
+    );
     if (!lesson || !isPatternLesson(lesson)) return null;
     return lesson.essentialProblems?.find(({ id }) => id === reference.problemId) ?? null;
   }
@@ -789,9 +793,7 @@ export class Question implements OnInit {
   }
 
   protected patternChecks(lesson: PatternLesson): ResolvedPatternCheck[] {
-    const questionsById = new Map(
-      (this.course()?.questions ?? []).map((question) => [question.id, question]),
-    );
+    const questionsById = this.relatedQuestions();
     return lesson.checks.flatMap((reference) => {
       const question = questionsById.get(reference.questionId);
       return question
@@ -809,9 +811,7 @@ export class Question implements OnInit {
   }
 
   protected patternPractice(lesson: PatternLesson): InterviewQuestion[] {
-    const questionsById = new Map(
-      (this.course()?.questions ?? []).map((question) => [question.id, question]),
-    );
+    const questionsById = this.relatedQuestions();
     return lesson.practice.flatMap((reference) => {
       const question = questionsById.get(reference.questionId);
       return question ? [question] : [];
@@ -819,9 +819,7 @@ export class Question implements OnInit {
   }
 
   protected foundationChecks(lesson: FoundationLessonV1): ResolvedPatternCheck[] {
-    const questionsById = new Map(
-      (this.course()?.questions ?? []).map((question) => [question.id, question]),
-    );
+    const questionsById = this.relatedQuestions();
     return lesson.checks.flatMap((reference) => {
       const question = questionsById.get(reference.questionId);
       return question
@@ -839,9 +837,7 @@ export class Question implements OnInit {
   }
 
   protected foundationPractice(lesson: FoundationLessonV1): InterviewQuestion[] {
-    const questionsById = new Map(
-      (this.course()?.questions ?? []).map((question) => [question.id, question]),
-    );
+    const questionsById = this.relatedQuestions();
     return (lesson.practice ?? []).flatMap((reference) => {
       const question = questionsById.get(reference.questionId);
       return question ? [question] : [];
@@ -866,7 +862,11 @@ export class Question implements OnInit {
         : moduleQuestions.length === 1
           ? moduleQuestions
           : [];
-    return questionsForArticle;
+    const resolved = this.relatedQuestions();
+    return questionsForArticle.flatMap((question) => {
+      const detail = resolved.get(question.id);
+      return detail ? [detail] : [];
+    });
   }
 
   /** The two dedicated practice questions remain visible from the article,
@@ -877,7 +877,11 @@ export class Question implements OnInit {
       (candidate) => candidate.theoryModuleId === item.moduleId,
     );
     if (!unit?.practiceModuleId) return [];
-    return relatedPracticeItems(this.course()?.questions ?? [], item.id, unit.practiceModuleId);
+    return relatedPracticeItems(
+      [...this.relatedQuestions().values()],
+      item.id,
+      unit.practiceModuleId,
+    );
   }
 
   protected questionBankModuleId(item: InterviewQuestion): string | null {
@@ -1154,6 +1158,7 @@ export class Question implements OnInit {
         switchMap((params) => {
           this.course.set(null);
           this.question.set(null);
+          this.relatedQuestions.set(new Map());
           this.error.set('');
           this.activeSectionIndex.set(0);
           this.scrolled.set(false);
@@ -1167,8 +1172,8 @@ export class Question implements OnInit {
               if (indexed) return of(indexed);
               return forkJoin({
                 catalog: this.contentService.getCatalog(pathId),
-                course: this.contentService.getCourse(pathId, courseId),
-              }).pipe(switchMap((result) => this.loadSelectedCanonicalProblem(result, questionId)));
+                course: this.contentService.getCourseOutline(pathId, courseId),
+              }).pipe(switchMap((result) => this.loadSelectedQuestion(result, questionId)));
             }),
             catchError(() => {
               this.error.set('The question content could not be loaded.');
@@ -1179,7 +1184,14 @@ export class Question implements OnInit {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
-        next: ({ catalog, course }) => this.displayQuestion(catalog, course),
+        next: ({ catalog, course, question, relatedQuestions }) => {
+          this.relatedQuestions.set(
+            new Map(
+              relatedQuestions.map((relatedQuestion) => [relatedQuestion.id, relatedQuestion]),
+            ),
+          );
+          this.displayQuestion(catalog, course, question);
+        },
       });
   }
 
@@ -1229,18 +1241,38 @@ export class Question implements OnInit {
                 canonicalProblemRef: { problemId: problem.id, lessonId: group.lessonId },
                 canonicalProblem: problem,
               };
-              const course: CourseContent = {
+              const course: CourseOutline = {
                 id: group.courseId,
                 path: pathId,
                 title: group.courseTitle,
                 description: group.description,
                 version: summary.version,
                 modules: [module],
-                questions: [question],
+                questions: [
+                  {
+                    id: question.id,
+                    moduleId: question.moduleId,
+                    order: question.order,
+                    title: question.title,
+                    difficulty: question.difficulty,
+                    tags: question.tags,
+                    contentType: 'dsa-problem',
+                    isTheoryArticle: false,
+                    detailRef: {
+                      kind: 'canonical-dsa',
+                      href: `/content/learn/dsa-problems/${problem.id}.json`,
+                      version: summary.version,
+                    },
+                    canonicalProblemRef: question.canonicalProblemRef,
+                  },
+                ],
+                moduleDetailRefs: [],
               };
               return {
                 catalog: [{ id: group.courseId, title: group.courseTitle }],
                 course,
+                question,
+                relatedQuestions: [],
               };
             }),
           );
@@ -1250,36 +1282,95 @@ export class Question implements OnInit {
     );
   }
 
-  private loadSelectedCanonicalProblem(
-    result: { catalog: CatalogItem[]; course: CourseContent },
+  private loadSelectedQuestion(
+    result: { catalog: CatalogItem[]; course: CourseOutline },
     questionId: string | null,
   ) {
     const selected = result.course.questions.find(({ id }) => id === questionId);
-    const problemId = selected?.canonicalProblemRef?.problemId;
-    if (!selected || !problemId || selected.canonicalProblem) return of(result);
-
-    return this.contentService.getDsaProblem(problemId).pipe(
-      map((problem) => ({
-        ...result,
-        course: {
-          ...result.course,
-          questions: result.course.questions.map((question) =>
-            question.id === selected.id ? { ...question, canonicalProblem: problem } : question,
+    if (!selected) return throwError(() => new Error('Question not found'));
+    if (selected.detailRef.kind === 'canonical-dsa') {
+      return this.contentService
+        .getDsaProblem(selected.canonicalProblemRef?.problemId ?? '', selected.detailRef.version)
+        .pipe(
+          map((problem) => ({
+            ...result,
+            question: {
+              id: selected.id,
+              moduleId: selected.moduleId,
+              order: selected.order,
+              title: problem.title,
+              difficulty: problem.difficulty,
+              tags: selected.tags,
+              interviewAnswer: problem.practice.statement.prompt,
+              explanation: [],
+              versionNotes: [],
+              followUps: [],
+              reviewStatus: selected.reviewStatus,
+              contentType: 'dsa-problem' as const,
+              relatedArticleId: selected.relatedArticleId,
+              canonicalProblemRef: selected.canonicalProblemRef,
+              canonicalProblem: problem,
+            },
+            relatedQuestions: [],
+          })),
+        );
+    }
+    return this.contentService
+      .getContentItem(selected)
+      .pipe(
+        switchMap((question) =>
+          this.loadRelatedQuestions(result.course, question).pipe(
+            map((relatedQuestions) => ({ ...result, question, relatedQuestions })),
           ),
-        },
-      })),
+        ),
+      );
+  }
+
+  private loadRelatedQuestions(course: CourseOutline, question: InterviewQuestion) {
+    const ids = new Set<string>();
+    if (isPatternLesson(question) || isFoundationLessonV1(question)) {
+      for (const reference of question.checks) ids.add(reference.questionId);
+      for (const reference of question.practice ?? []) ids.add(reference.questionId);
+    }
+    if (question.contentType === 'theory') {
+      const unit = flattenLearningUnits(course.learningUnits ?? []).find(
+        (candidate) => candidate.theoryModuleId === question.moduleId,
+      );
+      for (const summary of course.questions) {
+        if (
+          summary.moduleId === unit?.questionModuleId ||
+          summary.moduleId === unit?.practiceModuleId ||
+          summary.relatedArticleId === question.id
+        ) {
+          ids.add(summary.id);
+        }
+      }
+    }
+    const summaries = course.questions.filter(
+      (summary) =>
+        ids.has(summary.id) &&
+        summary.id !== question.id &&
+        summary.detailRef.kind === 'content-item',
+    );
+    if (!summaries.length) return of([] as InterviewQuestion[]);
+    return forkJoin(
+      summaries.map((summary) =>
+        this.contentService.getContentItem(summary).pipe(catchError(() => of(null))),
+      ),
+    ).pipe(
+      map((questions) =>
+        questions.filter((candidate): candidate is InterviewQuestion => candidate !== null),
+      ),
     );
   }
 
-  private displayQuestion(catalog: CatalogItem[], course: CourseContent): void {
+  private displayQuestion(
+    catalog: CatalogItem[],
+    course: CourseOutline,
+    question: InterviewQuestion,
+  ): void {
     this.course.set(course);
     this.courseTitle.set(course.title);
-    const questionId = this.route.snapshot.paramMap.get('questionId');
-    const question = course.questions.find(({ id }) => id === questionId);
-    if (!question) {
-      this.error.set('Question not found.');
-      return;
-    }
     this.question.set(question);
     this.moduleTitle.set(
       course.modules.find(({ id }) => id === question.moduleId)?.title ?? course.title,
@@ -1338,7 +1429,7 @@ export class Question implements OnInit {
     this.nextModuleFirstQuestion.set(this.toReaderLink(nextModuleQuestion));
   }
 
-  private toReaderLink(question: InterviewQuestion | undefined): ReaderLink | null {
+  private toReaderLink(question: ContentItemSummary | undefined): ReaderLink | null {
     if (!question) return null;
     const moduleTitle =
       this.course()?.modules.find(({ id }) => id === question.moduleId)?.title ?? question.moduleId;

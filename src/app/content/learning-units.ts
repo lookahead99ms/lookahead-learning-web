@@ -1,4 +1,10 @@
-import { CourseContent, CourseLearningUnit, InterviewQuestion } from './content.models';
+import {
+  ContentItemSummary,
+  CourseContent,
+  CourseLearningUnit,
+  CourseOutline,
+  InterviewQuestion,
+} from './content.models';
 
 /**
  * Returns every navigable unit while preserving the curriculum's parent-first order.
@@ -27,7 +33,15 @@ export function handsOnPatternIdForModule(
 export function orderedTheoryArticles(
   course: CourseContent,
   moduleIds?: string[],
-): InterviewQuestion[] {
+): InterviewQuestion[];
+export function orderedTheoryArticles(
+  course: CourseOutline,
+  moduleIds?: string[],
+): ContentItemSummary[];
+export function orderedTheoryArticles(
+  course: CourseContent | CourseOutline,
+  moduleIds?: string[],
+): (InterviewQuestion | ContentItemSummary)[] {
   const orderedModuleIds =
     moduleIds ??
     [...course.modules].sort((left, right) => left.order - right.order).map(({ id }) => id);

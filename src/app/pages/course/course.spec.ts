@@ -3,11 +3,11 @@ import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { of } from 'rxjs';
 import { routes } from '../../app.routes';
-import { CourseContent } from '../../content/content.models';
+import { CourseOutline } from '../../content/content.models';
 import { ContentService } from '../../content/content.service';
 import { Course } from './course';
 
-const javaFoundations: CourseContent = {
+const javaFoundations: CourseOutline = {
   id: 'core-java',
   path: 'learn',
   title: 'Java Foundations',
@@ -31,9 +31,10 @@ const javaFoundations: CourseContent = {
     },
   ],
   questions: [],
+  moduleDetailRefs: [],
 };
 
-const modernJava: CourseContent = {
+const modernJava: CourseOutline = {
   id: 'modern-java',
   path: 'learn',
   title: 'Modern Java',
@@ -51,9 +52,10 @@ const modernJava: CourseContent = {
   },
   modules: [],
   questions: [],
+  moduleDetailRefs: [],
 };
 
-const springFramework: CourseContent = {
+const springFramework: CourseOutline = {
   id: 'spring-framework',
   path: 'grow',
   title: 'Spring Framework',
@@ -70,9 +72,10 @@ const springFramework: CourseContent = {
   },
   modules: [],
   questions: [],
+  moduleDetailRefs: [],
 };
 
-const springBoot: CourseContent = {
+const springBoot: CourseOutline = {
   id: 'spring-boot',
   path: 'grow',
   title: 'Spring Boot',
@@ -94,12 +97,13 @@ const springBoot: CourseContent = {
   },
   modules: [],
   questions: [],
+  moduleDetailRefs: [],
 };
 
 describe('Course learning path', () => {
   beforeEach(async () => {
     const content = {
-      getCourse: vi.fn((_pathId: string, courseId: string) =>
+      getCourseOutline: vi.fn((_pathId: string, courseId: string) =>
         of(
           [javaFoundations, modernJava, springFramework, springBoot].find(
             (course) => course.id === courseId,
@@ -215,7 +219,7 @@ describe('Course learning path', () => {
   });
 
   it('keeps one recommendation visible and collapses all other directions', async () => {
-    vi.spyOn(TestBed.inject(ContentService), 'getCourse').mockReturnValue(
+    vi.spyOn(TestBed.inject(ContentService), 'getCourseOutline').mockReturnValue(
       of({
         ...javaFoundations,
         learningPath: {
@@ -276,7 +280,7 @@ describe('Course learning path', () => {
   });
 
   it('renders a background-only map without an empty next column', async () => {
-    vi.spyOn(TestBed.inject(ContentService), 'getCourse').mockReturnValue(
+    vi.spyOn(TestBed.inject(ContentService), 'getCourseOutline').mockReturnValue(
       of({
         ...modernJava,
         learningPath: {
@@ -297,7 +301,7 @@ describe('Course learning path', () => {
   });
 
   it('hides the relationship map when neither side has authored relationships', async () => {
-    vi.spyOn(TestBed.inject(ContentService), 'getCourse').mockReturnValue(
+    vi.spyOn(TestBed.inject(ContentService), 'getCourseOutline').mockReturnValue(
       of({
         ...modernJava,
         learningPath: {
@@ -319,7 +323,7 @@ describe('Course learning path', () => {
   it('clears the local map when navigating to a course without learning-path metadata', async () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/grow/spring-framework', Course);
-    vi.spyOn(TestBed.inject(ContentService), 'getCourse').mockReturnValue(
+    vi.spyOn(TestBed.inject(ContentService), 'getCourseOutline').mockReturnValue(
       of({ ...springFramework, id: 'spring-boot', title: 'Spring Boot', learningPath: undefined }),
     );
     await harness.navigateByUrl('/grow/spring-boot', Course);

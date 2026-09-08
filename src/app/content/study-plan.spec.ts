@@ -25,6 +25,11 @@ function document(
     access: { tier: 'free' },
     searchableText: id,
     route: ['/', path, courseId, id],
+    detailRef: {
+      kind: 'content-item',
+      href: `/content/details/${path}/${courseId}/module/${id}.json`,
+      version: 'test-v1',
+    },
   };
 }
 
