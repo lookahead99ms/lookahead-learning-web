@@ -138,6 +138,57 @@ export interface PracticeProblemMetadata {
   implementationStatus: 'complete' | 'starter';
 }
 
+export type AnswerSlideKind =
+  | 'interview-question'
+  | 'real-world-scenario'
+  | 'mental-model'
+  | 'visual-comparison'
+  | 'code-and-execution'
+  | 'trade-offs-and-failure-modes'
+  | 'interview-answer'
+  | 'practice-and-follow-ups';
+
+export type AnswerSlideContentField =
+  | 'title'
+  | 'summary'
+  | 'interviewAnswer'
+  | 'explanation'
+  | 'code'
+  | 'solutions'
+  | 'complexity'
+  | 'versionNotes'
+  | 'followUps'
+  | 'sections'
+  | 'visuals'
+  | 'keyTakeaways'
+  | 'languageNotes'
+  | 'evidence'
+  | 'practiceProblem'
+  | 'visual';
+
+export type AnswerSlideAudience = 'beginner' | 'sde' | 'fde' | 'leadership';
+
+export interface AnswerSlideReviewedAnnotation {
+  kind: 'scenario' | 'comparison';
+  reviewStatus: 'reviewed';
+  text: string;
+}
+
+export interface AnswerSlidePlanItem {
+  id: string;
+  kind: AnswerSlideKind;
+  contentRefs?: { field: AnswerSlideContentField }[];
+  audienceEmphasis?: AnswerSlideAudience[];
+  annotation?: AnswerSlideReviewedAnnotation;
+}
+
+/** Optional reviewed ordering metadata; canonical answer fields remain the content authority. */
+export interface AnswerSlidePlanV1 {
+  schemaVersion: 'answer-slide-plan/v1';
+  audienceEmphasis?: AnswerSlideAudience[];
+  slides: AnswerSlidePlanItem[];
+}
+
 /** A selectable, fully worked problem within a pattern article. */
 export interface PatternEssentialProblem {
   id: string;
@@ -168,6 +219,8 @@ export interface InterviewQuestion {
   contentType?: ContentType;
   /** Learner action represented by this item; independent from its technical subject. */
   practiceFormat?: PracticeFormat;
+  /** Optional curated projection metadata. Ordinary answers receive a deterministic derived deck. */
+  answerSlides?: AnswerSlidePlanV1;
   access?: ContentAccess;
   accessPlaceholder?: AccessPlaceholder;
   summary?: string;
@@ -556,6 +609,33 @@ export interface ContentDetailReference {
   version: string;
 }
 
+export interface AnswerSlideDeckReference {
+  kind: 'answer-slides';
+  href: string;
+  version: string;
+  sourceVersion: string;
+}
+
+export interface AnswerSlideV1 {
+  id: string;
+  order: number;
+  kind: AnswerSlideKind;
+  contentRefs: { contentId: string; field: AnswerSlideContentField }[];
+  audienceEmphasis?: AnswerSlideAudience[];
+  annotation?: AnswerSlideReviewedAnnotation;
+}
+
+/** Lightweight presentation projection; all learner-facing material resolves from `source`. */
+export interface AnswerSlideDeckV1 {
+  schemaVersion: 'answer-slides/v1';
+  id: string;
+  mode: 'derived' | 'curated';
+  sourceContentId: string;
+  source: ContentDetailReference;
+  audienceEmphasis?: AnswerSlideAudience[];
+  slides: AnswerSlideV1[];
+}
+
 export type DiscoveryKind = 'course' | 'topic' | 'lesson' | 'practice' | 'tool';
 
 /** Navigation metadata only; full answers, lesson bodies, code, and traces live in detail assets. */
@@ -570,6 +650,7 @@ export interface ContentItemSummary {
   practiceFormat?: PracticeFormat;
   isTheoryArticle: boolean;
   detailRef: ContentDetailReference;
+  answerSlidesRef?: AnswerSlideDeckReference;
   reviewStatus?: ContentReviewStatus;
   access?: ContentAccess;
   relatedArticleId?: string;
@@ -600,6 +681,7 @@ export interface SearchDocument {
   searchableText: string;
   route?: string[];
   detailRef?: ContentDetailReference;
+  answerSlidesRef?: AnswerSlideDeckReference;
   question?: InterviewQuestion;
 }
 

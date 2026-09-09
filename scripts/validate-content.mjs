@@ -6,6 +6,7 @@ import {
   primaryPracticePlacement,
   readCanonicalDsaProblems,
 } from './canonical-dsa-contract.mjs';
+import { validateAnswerSlidePlan } from './answer-slide-contract.mjs';
 import { buildHandsOnDsaIndex } from './generate-hands-on-dsa-index.mjs';
 import { foundationLanguageNoteErrors } from './foundation-language-notes.mjs';
 import { includesBaselineSolutionLanguages } from './solution-language-contract.mjs';
@@ -684,6 +685,7 @@ for (const file of contentFiles) {
           `${moduleLabel}: ${question.id ?? 'question'} missing ${field}`,
         );
       }
+      validateAnswerSlidePlan(question);
       requireValue(
         !questionIds.has(question.id),
         `${moduleLabel}: duplicate question id ${question.id}`,

@@ -89,6 +89,7 @@ test('uses canonical DSA identity and metadata without indexing stale placeholde
   assert.equal(document.difficulty, 'Beginner');
   assert.deepEqual(document.languages, ['java', 'python', 'go']);
   assert.equal(document.detailRef.kind, 'canonical-dsa');
+  assert.equal(document.answerSlidesRef, undefined);
   assert.equal(document.practiceFormat, 'solve');
   assert.deepEqual(document.route, ['/', 'learn', 'algorithmic-patterns', 'legacy-route']);
   assert.equal(document.searchableText, undefined);
@@ -143,7 +144,7 @@ test('indexes special catalog experiences as tools and classifies every practice
     { ...base, id: 'rehearse', title: 'Tell a STAR experience story', tags: ['Behavioral'] },
   ]);
 
-  await generateSearchIndex(root);
+  const result = await generateSearchIndex(root);
   const shard = JSON.parse(await readFile(join(root, 'indexes/grow.json'), 'utf8'));
   const practice = shard.documents.filter(({ discoveryKind }) => discoveryKind === 'practice');
   assert.deepEqual(
@@ -158,6 +159,20 @@ test('indexes special catalog experiences as tools and classifies every practice
     locator.items.map(({ practiceFormat }) => practiceFormat),
     ['explain', 'solve', 'design', 'debug', 'rehearse'],
   );
+  assert.equal(result.answerSlideDeckCount, 5);
+  assert.ok(
+    locator.items.every(({ answerSlidesRef }) => answerSlidesRef?.kind === 'answer-slides'),
+  );
+  const deck = JSON.parse(
+    await readFile(join(root, 'answer-slides/grow/sample/practice/explain.json'), 'utf8'),
+  );
+  assert.equal(deck.schemaVersion, 'answer-slides/v1');
+  assert.equal(deck.source.href, '/content/details/grow/sample/practice/explain.json');
+  assert.deepEqual(
+    deck.slides.map(({ kind }) => kind),
+    ['interview-question', 'interview-answer'],
+  );
+  assert.doesNotMatch(JSON.stringify(deck), /Reference answer/);
   const tool = shard.documents.find(({ discoveryKind }) => discoveryKind === 'tool');
   assert.equal(tool.id, 'tool:grow:scenario-lab');
   assert.deepEqual(tool.route, ['/', 'grow', 'scenario-lab']);
@@ -344,10 +359,17 @@ test('counts lessons and questions separately from lesson/practice module contai
       moduleId: 'intro',
       title: 'Explain the invariant',
       contentType: 'q-and-a',
+      interviewAnswer: 'State the invariant and its boundary.',
     },
   ]);
   await writeJson(root, 'grow/sample/modules/intro-practice.json', [
-    { ...base, id: 'practice', moduleId: 'intro-practice', title: 'Apply the invariant' },
+    {
+      ...base,
+      id: 'practice',
+      moduleId: 'intro-practice',
+      title: 'Apply the invariant',
+      interviewAnswer: 'Apply the invariant at the production boundary.',
+    },
   ]);
   await generateSearchIndex(root);
   const [course] = JSON.parse(await readFile(join(root, 'grow/catalog-overview.json')));
