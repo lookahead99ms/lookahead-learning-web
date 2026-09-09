@@ -786,7 +786,7 @@ export class Search implements OnInit {
   protected readonly availableCourses = computed(() => {
     const path = this.selectedPath();
     const courses = new Map<string, string>();
-    for (const result of this.questions()) {
+    for (const result of this.questions().flatMap((item) => item.practicePlacements ?? [item])) {
       if (path === 'all' || result.path === path) courses.set(result.courseId, result.courseTitle);
     }
     return [...courses.entries()]
@@ -798,7 +798,7 @@ export class Search implements OnInit {
     const path = this.selectedPath();
     const courseId = this.selectedCourseId();
     const modules = new Map<string, string>();
-    for (const result of this.questions()) {
+    for (const result of this.questions().flatMap((item) => item.practicePlacements ?? [item])) {
       if (path !== 'all' && result.path !== path) continue;
       if (courseId !== 'all' && result.courseId !== courseId) continue;
       modules.set(result.moduleId, result.moduleTitle);
@@ -812,6 +812,15 @@ export class Search implements OnInit {
     const path = this.selectedPath();
     const contentType = this.selectedContentType();
     return this.questions()
+      .map((result) => {
+        const placement = result.practicePlacements?.find(
+          (item) =>
+            (path === 'all' || item.path === path) &&
+            (this.selectedCourseId() === 'all' || item.courseId === this.selectedCourseId()) &&
+            (this.selectedModuleId() === 'all' || item.moduleId === this.selectedModuleId()),
+        );
+        return placement ? { ...result, ...placement } : result;
+      })
       .filter((result) => path === 'all' || result.path === path)
       .filter(
         (result) =>
@@ -966,15 +975,26 @@ export class Search implements OnInit {
   protected updateQuery(value: string): void {
     this.query.set(value);
     const normalizedQuery = this.normalize(value);
-    const submittedQuery = this.submittedQuery();
-    if (!normalizedQuery) {
-      this.submittedQuery.set('');
-      this.retainUnavailableTags();
-      this.syncUrl();
-    } else if (normalizedQuery !== submittedQuery) {
-      this.submittedQuery.set('');
-    }
+    if (normalizedQuery === this.submittedQuery()) return;
+
+    const hadScopedPath = this.selectedPath() !== 'all';
+    this.submittedQuery.set(normalizedQuery);
+    this.selectedPath.set('all');
+    this.selectedCourseId.set('all');
+    this.selectedModuleId.set('all');
+    this.selectedDifficulty.set('all');
+    this.selectedLanguage.set('all');
+    this.selectedContentType.set('all');
+    this.selectedDiscoveryKind.set('all');
+    this.selectedPracticeFormat.set('all');
+    this.selectedTags.set(new Set());
+    this.tagQuery.set('');
+    this.sortBy.set('relevance');
+    this.groupBy.set('none');
+    this.expandedResults.set(new Set());
     this.resetVisibleResults();
+    if (hadScopedPath) this.loadIndex('all');
+    this.syncUrl();
   }
 
   protected updateTagQuery(value: string): void {
@@ -1092,21 +1112,10 @@ export class Search implements OnInit {
 
   protected submitSearch(): void {
     const query = this.normalize(this.query());
-    this.submittedQuery.set(query);
-    const selectedTags = this.selectedTags();
-    const matchingTags = new Set(
-      this.scopeResults()
-        .filter((result) => [...selectedTags].every((tag) => this.hasFilter(result, tag)))
-        .flatMap((result) => this.subjectLabels(result))
-        .filter((tag) => query.length > 0 && this.normalize(tag) === query),
-    );
-    if (matchingTags.size) {
-      this.selectedTags.update((tags) => new Set([...tags, ...matchingTags]));
-    } else {
-      this.retainUnavailableTags();
+    if (query !== this.submittedQuery()) {
+      this.updateQuery(this.query());
     }
-    this.resetVisibleResults();
-    this.syncUrl(() => this.scrollToResults());
+    this.scrollToResults();
   }
 
   protected isTagSelected(tag: string): boolean {
@@ -1271,6 +1280,11 @@ export class Search implements OnInit {
 
   protected questionLink(result: SearchDocument): string[] {
     return result.route ?? [];
+  }
+
+  protected questionQueryParams(result: SearchDocument): Record<string, string> | null {
+    if (!['practice', 'lesson'].includes(this.discoveryKind(result))) return null;
+    return { returnTo: this.router.url };
   }
 
   protected pathLink(result: SearchDocument): string[] {

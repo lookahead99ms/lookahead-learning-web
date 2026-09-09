@@ -1,7 +1,7 @@
 import { Component, DestroyRef, HostListener, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgTemplateOutlet } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink, UrlTree } from '@angular/router';
 import { EMPTY, catchError, forkJoin, map, of, switchMap, throwError } from 'rxjs';
 import {
   CatalogItem,
@@ -62,6 +62,38 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
   templateUrl: './question.html',
   styles: [
     `
+      .practice-return {
+        margin: 0 0 16px;
+      }
+      .practice-return a {
+        color: var(--search-primary);
+        font-weight: 700;
+      }
+      .practice-return a:focus-visible,
+      .practice-reference > summary:focus-visible {
+        outline: 3px solid var(--search-primary);
+        outline-offset: 4px;
+      }
+      .practice-instructions {
+        margin: 20px 0;
+        padding: 20px;
+        border: 1px solid var(--line);
+        background: var(--surface);
+      }
+      .practice-instructions h2 {
+        margin: 0 0 12px;
+        font-size: 1.15rem;
+      }
+      .practice-instructions li {
+        margin: 8px 0;
+        line-height: 1.6;
+      }
+      .practice-reference > summary {
+        cursor: pointer;
+        padding: 12px 0;
+        font-weight: 700;
+        color: var(--search-primary);
+      }
       .question-inner-navigation {
         display: grid;
         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -662,6 +694,50 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
 export class Question implements OnInit {
   private readonly contentService = inject(ContentService);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  protected readonly returnDestination = signal<UrlTree | null>(null);
+  protected readonly returnLabel = signal('Return to interview practice');
+  protected readonly referenceExpanded = signal(false);
+
+  protected returnQueryParams(pattern?: string): Record<string, string> {
+    const destination = this.returnDestination();
+    return {
+      ...(pattern ? { pattern } : {}),
+      ...(destination ? { returnTo: this.router.serializeUrl(destination) } : {}),
+    };
+  }
+
+  protected practiceInstructions(item: InterviewQuestion): string[] {
+    if (item.contentType === 'theory' || this.isCodingPractice(item)) return [];
+    switch (item.practiceFormat) {
+      case 'design':
+        return [
+          'Clarify the requirements, constraints, and success criteria.',
+          'Sketch the components, data flow, interfaces, and ownership boundaries.',
+          'Compare a credible alternative, identify failure modes, and explain how you would test the design.',
+        ];
+      case 'debug':
+        return [
+          'State what is failing and which observations would distinguish your hypotheses.',
+          'Choose the next investigation step and a safe mitigation with a rollback condition.',
+          'Explain how you would verify recovery and prevent recurrence.',
+        ];
+      case 'rehearse':
+        return [
+          'Answer aloud using a real example when the prompt asks about your experience.',
+          'Separate your actions from the team’s work and use only outcomes you can support.',
+          'Explain the decision, its result, and what you learned before comparing the reference.',
+        ];
+      case 'solve':
+        return [
+          'Write down the input, expected output, constraints, and edge cases.',
+          'Implement or outline the requested exercise and explain the state it maintains.',
+          'Check the result against concrete cases before opening the reference code and explanation.',
+        ];
+      default:
+        return [];
+    }
+  }
   private readonly destroyRef = inject(DestroyRef);
   /** Drives the "pattern : pills" strip shown in the sticky bar once the reader scrolls past the title. */
   protected readonly scrolled = signal(false);
@@ -755,6 +831,14 @@ export class Question implements OnInit {
           ({ handsOnPatternId }) => handsOnPatternId === requestedContext,
         ) ?? navigation)
       : navigation;
+  }
+
+  protected isCoursePracticePlacement(item: InterviewQuestion): boolean {
+    return Boolean(
+      item.canonicalProblem &&
+      item.relatedArticleId &&
+      this.course()?.questions.some((question) => question.id === item.relatedArticleId),
+    );
   }
 
   protected canonicalProblemRoute(link: DsaProblemNavigationLink): string[] {
@@ -1156,12 +1240,34 @@ export class Question implements OnInit {
     this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       this.surpriseMode.set(params.get('mode') === 'surprise');
       this.navigationContextId.set(params.get('pattern') ?? '');
+      const returnTo = params.get('returnTo') ?? '';
+      this.returnDestination.set(null);
+      if (/^\/(search|interview-questions)(?:\?|$)/.test(returnTo)) {
+        try {
+          const destination = this.router.parseUrl(returnTo);
+          const segments = destination.root.children['primary']?.segments;
+          if (
+            segments?.length === 1 &&
+            ['search', 'interview-questions'].includes(segments[0].path)
+          ) {
+            this.returnDestination.set(destination);
+            this.returnLabel.set(
+              segments[0].path === 'search'
+                ? 'Return to search results'
+                : 'Return to interview practice',
+            );
+          }
+        } catch {
+          /* Ignore malformed return context; the canonical route still works. */
+        }
+      }
     });
     this.route.paramMap
       .pipe(
         switchMap((params) => {
           this.course.set(null);
           this.question.set(null);
+          this.referenceExpanded.set(false);
           this.relatedQuestions.set(new Map());
           this.error.set('');
           this.activeSectionIndex.set(0);
@@ -1319,15 +1425,17 @@ export class Question implements OnInit {
           })),
         );
     }
-    return this.contentService
-      .getContentItem(selected)
-      .pipe(
-        switchMap((question) =>
-          this.loadRelatedQuestions(result.course, question).pipe(
-            map((relatedQuestions) => ({ ...result, question, relatedQuestions })),
-          ),
+    return this.contentService.getContentItem(selected).pipe(
+      switchMap((question) =>
+        this.loadRelatedQuestions(result.course, question).pipe(
+          map((relatedQuestions) => ({
+            ...result,
+            question: { ...question, practiceFormat: selected.practiceFormat },
+            relatedQuestions,
+          })),
         ),
-      );
+      ),
+    );
   }
 
   private loadRelatedQuestions(course: CourseOutline, question: InterviewQuestion) {
@@ -1351,15 +1459,20 @@ export class Question implements OnInit {
       }
     }
     const summaries = course.questions.filter(
-      (summary) =>
-        ids.has(summary.id) &&
-        summary.id !== question.id &&
-        summary.detailRef.kind === 'content-item',
+      (summary) => ids.has(summary.id) && summary.id !== question.id,
     );
     if (!summaries.length) return of([] as InterviewQuestion[]);
     return forkJoin(
       summaries.map((summary) =>
-        this.contentService.getContentItem(summary).pipe(catchError(() => of(null))),
+        summary.detailRef.kind === 'canonical-dsa'
+          ? of({
+              ...summary,
+              interviewAnswer: '',
+              explanation: [],
+              versionNotes: [],
+              followUps: [],
+            } as InterviewQuestion)
+          : this.contentService.getContentItem(summary).pipe(catchError(() => of(null))),
       ),
     ).pipe(
       map((questions) =>
@@ -1441,6 +1554,8 @@ export class Question implements OnInit {
   }
 
   protected parentContextRoute(item: InterviewQuestion): string[] {
+    if (this.isCoursePracticePlacement(item))
+      return ['/', this.pathId(), this.courseId(), item.relatedArticleId!];
     const lesson = this.canonicalNavigation(item)?.lesson;
     if (lesson) return ['/', lesson.path, lesson.courseId, lesson.questionId];
     const section = this.courseSection(item);
@@ -1459,6 +1574,7 @@ export class Question implements OnInit {
   }
 
   protected parentContextTitle(item: InterviewQuestion): string {
+    if (this.isCoursePracticePlacement(item)) return `Review ${this.moduleTitle()} concept`;
     const lesson = this.canonicalNavigation(item)?.lesson;
     if (lesson) return `Review ${lesson.title} concept`;
     return this.courseSection(item)?.title ?? this.moduleTitle();

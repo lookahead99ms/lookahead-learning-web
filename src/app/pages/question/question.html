@@ -1,5 +1,10 @@
 <app-platform-header />
 <main id="main-content" class="content-page reader-page">
+  @if (returnDestination(); as destination) {
+    <nav class="practice-return" aria-label="Discovery return navigation">
+      <a [routerLink]="destination">{{ returnLabel() }}</a>
+    </nav>
+  }
   @if (question(); as item) {
     <article class="question-reader question-detail-reader" [attr.data-path]="pathId()">
       <div class="question-sticky-utility">
@@ -7,7 +12,7 @@
           <a routerLink="/">Home</a><span>/</span>
           <a [routerLink]="['/', pathId()]">{{ pathLabel() }}</a
           ><span>/</span>
-          @if (isCodingPractice(item) && pathId() === 'learn') {
+          @if (isCodingPractice(item) && pathId() === 'learn' && !isCoursePracticePlacement(item)) {
             <a routerLink="/learn/hands-on-dsa">Hands-On DSA</a><span>/</span>
             <a
               routerLink="/learn/hands-on-dsa"
@@ -44,9 +49,12 @@
       </div>
       @if (item.contentType !== 'theory' && !surpriseMode()) {
         <section class="question-context-panel">
-          <a class="reader-module" [routerLink]="parentContextRoute(item)">{{
-            parentContextTitle(item)
-          }}</a>
+          <a
+            class="reader-module"
+            [routerLink]="parentContextRoute(item)"
+            [queryParams]="returnQueryParams()"
+            >{{ parentContextTitle(item) }}</a
+          >
         </section>
       }
       @if (surpriseMode()) {
@@ -101,6 +109,7 @@
               <a
                 class="inner-navigation-link previous previous-module"
                 [routerLink]="['/', pathId(), courseId(), previous.id]"
+                [queryParams]="returnQueryParams()"
               >
                 <span>← Previous article:</span><strong>{{ previous.title }}</strong>
               </a>
@@ -110,6 +119,7 @@
                 <a
                   class="inner-navigation-link next next-module"
                   [routerLink]="['/', pathId(), courseId(), next.id]"
+                  [queryParams]="returnQueryParams()"
                 >
                   <span>Next article:</span><strong>{{ next.title }} »</strong>
                 </a>
@@ -120,7 +130,7 @@
               <a
                 class="inner-navigation-link problem-navigation-link previous"
                 [routerLink]="canonicalProblemRoute(previous)"
-                [queryParams]="{ pattern: navigation.handsOnPatternId }"
+                [queryParams]="returnQueryParams(navigation.handsOnPatternId)"
               >
                 <span>← Previous problem:</span><strong>{{ previous.title }}</strong>
               </a>
@@ -130,7 +140,7 @@
                 <a
                   class="inner-navigation-link problem-navigation-link next"
                   [routerLink]="canonicalProblemRoute(next)"
-                  [queryParams]="{ pattern: navigation.handsOnPatternId }"
+                  [queryParams]="returnQueryParams(navigation.handsOnPatternId)"
                 >
                   <span>Next problem:</span><strong>{{ next.title }} →</strong>
                 </a>
@@ -142,6 +152,7 @@
                 <a
                   class="inner-navigation-link previous"
                   [routerLink]="['/', pathId(), courseId(), previous.id]"
+                  [queryParams]="returnQueryParams()"
                 >
                   <span>← Previous question:</span><strong>{{ previous.title }}</strong>
                 </a>
@@ -161,12 +172,16 @@
                   <a
                     class="inner-navigation-link next"
                     [routerLink]="['/', pathId(), courseId(), next.id]"
+                    [queryParams]="returnQueryParams()"
                   >
                     <span>Next question:</span><strong>{{ next.title }} →</strong>
                   </a>
                 }
               } @else if (!isLastModuleInCompetency()) {
-                <a class="module-catalog-link" [routerLink]="parentContextRoute(item)"
+                <a
+                  class="module-catalog-link"
+                  [routerLink]="parentContextRoute(item)"
+                  [queryParams]="returnQueryParams()"
                   >View all modules</a
                 >
                 @if (nextModule(); as nextModuleItem) {
@@ -179,7 +194,10 @@
                   </a>
                 }
               } @else {
-                <a class="module-catalog-link" [routerLink]="parentContextRoute(item)"
+                <a
+                  class="module-catalog-link"
+                  [routerLink]="parentContextRoute(item)"
+                  [queryParams]="returnQueryParams()"
                   >View all modules</a
                 >
               }
@@ -345,6 +363,7 @@
           [problem]="problem"
           entryMode="practice"
           [showProblemHeading]="false"
+          [initialLanguage]="courseId() === 'python-fundamentals' ? 'python' : 'java'"
         />
       } @else if (isCodingPractice(item)) {
         <app-coding-problem-detail
@@ -356,108 +375,140 @@
           [visual]="resolvedCodingVisual(item)"
         />
       } @else {
-        @if (item.relatedArticleId; as articleId) {
-          <a class="related-theory-link" [routerLink]="['/', pathId(), courseId(), articleId]"
-            >← Review theory: {{ relatedArticleTitle(item) }}</a
-          >
-        }
-        @if (shouldShowHint(item)) {
-          <details class="reader-hint">
-            <summary>Show hint <span aria-hidden="true">›</span></summary>
-            <p [innerHTML]="item.interviewAnswer"></p>
-          </details>
-        } @else {
-          <section class="quick-answer reader-interview-panel" aria-label="Interview answer">
-            <span>Interview answer</span>
-            <p [innerHTML]="item.interviewAnswer"></p>
+        @if (practiceInstructions(item).length) {
+          <section class="practice-instructions" aria-label="Prepare your response">
+            <h2>Try it before reading the reference</h2>
+            <ol>
+              @for (instruction of practiceInstructions(item); track instruction) {
+                <li>{{ instruction }}</li>
+              }
+            </ol>
           </section>
         }
-        @if (item.solutions?.length) {
-          <app-coding-solution-tabs
-            [solutions]="item.solutions!"
-            [complexity]="item.complexity"
-            [visual]="resolvedCodingVisual(item)"
-          />
+        @if (practiceInstructions(item).length) {
+          <details
+            #reference
+            class="practice-reference"
+            [open]="referenceExpanded()"
+            (toggle)="referenceExpanded.set(reference.open)"
+          >
+            <summary [attr.aria-expanded]="referenceExpanded()">
+              {{ referenceExpanded() ? 'Hide reference answer' : 'Show reference answer' }}
+            </summary>
+            <ng-container *ngTemplateOutlet="referenceAnswer" />
+          </details>
+        } @else {
+          <ng-container *ngTemplateOutlet="referenceAnswer" />
         }
-        @if (item.evidence; as evidence) {
-          <app-evidence-answer-tabs [evidence]="evidence" />
-        }
-        <section class="details-content">
-          <div class="details-content-body">
-            <div class="answer-code-grid" [class.has-reference-code]="!!item.code">
-              <section class="explanation-panel">
-                <p class="panel-label">Detailed explanation</p>
-                @for (paragraph of item.explanation; track paragraph) {
-                  <p [innerHTML]="paragraph"></p>
-                }
-              </section>
-              @if (item.code; as code) {
-                <section class="code-panel">
-                  <div>
-                    <span>{{ code.title }}</span>
-                    <div class="reference-code-actions">
-                      <small>{{ code.language }}</small>
-                      <app-code-copy-button [code]="code.source" />
-                    </div>
-                  </div>
-                  <pre><code>{{ code.source }}</code></pre>
-                  @if (item.compatibility; as requirements) {
-                    <section class="compatibility-notes" aria-label="Compatibility requirements">
-                      <strong>Compatibility</strong>
-                      @for (requirement of requirements; track requirement.technology) {
-                        <div>
-                          <span>{{ requirement.technology }}</span>
-                          <b>{{ requirement.version }}</b>
-                        </div>
-                      }
-                    </section>
+        <ng-template #referenceAnswer>
+          @if (item.relatedArticleId; as articleId) {
+            <a
+              class="related-theory-link"
+              [routerLink]="['/', pathId(), courseId(), articleId]"
+              [queryParams]="returnQueryParams()"
+              >← Review theory: {{ relatedArticleTitle(item) }}</a
+            >
+          }
+          @if (shouldShowHint(item)) {
+            <details class="reader-hint">
+              <summary>Show hint <span aria-hidden="true">›</span></summary>
+              <p [innerHTML]="item.interviewAnswer"></p>
+            </details>
+          } @else {
+            <section class="quick-answer reader-interview-panel" aria-label="Interview answer">
+              <span>Interview answer</span>
+              <p [innerHTML]="item.interviewAnswer"></p>
+            </section>
+          }
+          @if (item.solutions?.length) {
+            <app-coding-solution-tabs
+              [solutions]="item.solutions!"
+              [complexity]="item.complexity"
+              [visual]="resolvedCodingVisual(item)"
+            />
+          }
+          @if (item.evidence; as evidence) {
+            <app-evidence-answer-tabs [evidence]="evidence" />
+          }
+          <section class="details-content">
+            <div class="details-content-body">
+              <div class="answer-code-grid" [class.has-reference-code]="!!item.code">
+                <section class="explanation-panel">
+                  <p class="panel-label">Detailed explanation</p>
+                  @for (paragraph of item.explanation; track paragraph) {
+                    <p [innerHTML]="paragraph"></p>
                   }
                 </section>
+                @if (item.code; as code) {
+                  <section class="code-panel">
+                    <div>
+                      <span>{{ code.title }}</span>
+                      <div class="reference-code-actions">
+                        <small>{{ code.language }}</small>
+                        <app-code-copy-button [code]="code.source" />
+                      </div>
+                    </div>
+                    <pre><code>{{ code.source }}</code></pre>
+                    @if (item.compatibility; as requirements) {
+                      <section class="compatibility-notes" aria-label="Compatibility requirements">
+                        <strong>Compatibility</strong>
+                        @for (requirement of requirements; track requirement.technology) {
+                          <div>
+                            <span>{{ requirement.technology }}</span>
+                            <b>{{ requirement.version }}</b>
+                          </div>
+                        }
+                      </section>
+                    }
+                  </section>
+                }
+              </div>
+              @if (!item.solutions?.length) {
+                @if (item.complexity; as complexity) {
+                  <section class="resolution-panel">
+                    <p class="panel-label">Complexity and practical guidance</p>
+                    <div class="complexity-grid">
+                      <div>
+                        <strong>Time</strong>
+                        <p>{{ complexity.time }}</p>
+                      </div>
+                      <div>
+                        <strong>Space</strong>
+                        <p>{{ complexity.space }}</p>
+                      </div>
+                    </div>
+                    <p>{{ complexity.note }}</p>
+                  </section>
+                }
               }
             </div>
-            @if (!item.solutions?.length) {
-              @if (item.complexity; as complexity) {
-                <section class="resolution-panel">
-                  <p class="panel-label">Complexity and practical guidance</p>
-                  <div class="complexity-grid">
-                    <div>
-                      <strong>Time</strong>
-                      <p>{{ complexity.time }}</p>
-                    </div>
-                    <div>
-                      <strong>Space</strong>
-                      <p>{{ complexity.space }}</p>
-                    </div>
-                  </div>
-                  <p>{{ complexity.note }}</p>
-                </section>
-              }
+          </section>
+          @if (!item.solutions?.length) {
+            @if (resolvedCodingVisual(item); as visual) {
+              <figure class="theory-visual" aria-label="Interactive code explanation">
+                @if (visual.type === 'interactive') {
+                  <app-interactive-theory-visual [visual]="visual" />
+                } @else {
+                  <img [src]="visual.assetPath" [alt]="visual.alt" />
+                }
+                @if (visual.caption; as caption) {
+                  <figcaption>{{ caption }}</figcaption>
+                }
+              </figure>
             }
-          </div>
-        </section>
-        @if (!item.solutions?.length) {
-          @if (resolvedCodingVisual(item); as visual) {
-            <figure class="theory-visual" aria-label="Interactive code explanation">
-              @if (visual.type === 'interactive') {
-                <app-interactive-theory-visual [visual]="visual" />
-              } @else {
-                <img [src]="visual.assetPath" [alt]="visual.alt" />
-              }
-              @if (visual.caption; as caption) {
-                <figcaption>{{ caption }}</figcaption>
-              }
-            </figure>
           }
-        }
-        <section class="main-followups">
-          <p class="panel-label">Likely follow-ups</p>
-          @for (followUp of item.followUps; track followUp.question) {
-            <details>
-              <summary>{{ followUp.question }}</summary>
-              <p>{{ followUp.answer }}</p>
-            </details>
+          @if (item.followUps.length) {
+            <section class="main-followups">
+              <p class="panel-label">Likely follow-ups</p>
+              @for (followUp of item.followUps; track followUp.question) {
+                <details>
+                  <summary>{{ followUp.question }}</summary>
+                  <p>{{ followUp.answer }}</p>
+                </details>
+              }
+            </section>
           }
-        </section>
+        </ng-template>
       }
     </article>
   } @else if (error()) {

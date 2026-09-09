@@ -123,6 +123,13 @@ function practiceFormatFor(question, contentType, moduleTitle) {
     return question.practiceFormat;
   }
   if (contentType === 'dsa-problem') return 'solve';
+  if (contentType === 'system-design') return 'design';
+  // A topic such as behavioral patterns or failure recovery does not turn a
+  // conceptual question into a personal story or an incident simulation.
+  if (/^(what|why|when)\b|^how (does\b|do (?!you\b))/i.test(question.title.trim())) {
+    return 'explain';
+  }
+  if (/^design\s*:/i.test(question.title.trim())) return 'design';
   const directEvidence = [question.title, ...(question.tags ?? [])].join(' ').toLowerCase();
   const contextualEvidence = [directEvidence, moduleTitle].join(' ').toLowerCase();
   if (
@@ -335,10 +342,37 @@ function indexRecord(document) {
   return record;
 }
 
-function deduplicateCanonicalDocuments(documents) {
+function deduplicateCanonicalDocuments(documents, canonicalProblems) {
   const byId = new Map();
   for (const document of documents) {
-    if (!byId.has(document.id)) byId.set(document.id, document);
+    const existing = byId.get(document.id);
+    if (!existing) {
+      byId.set(document.id, document);
+      continue;
+    }
+    if (!document.canonicalContentId) continue;
+    const placement = ({
+      path,
+      courseId,
+      courseTitle,
+      moduleId,
+      moduleTitle,
+      contentId,
+      route,
+    }) => ({ path, courseId, courseTitle, moduleId, moduleTitle, contentId, route });
+    existing.practicePlacements ??= [placement(existing)];
+    existing.practicePlacements.push(placement(document));
+    existing.subjects = uniqueLabels([...existing.subjects, ...document.subjects]);
+    const primary = canonicalProblems
+      .get(document.canonicalContentId)
+      ?.placements?.find((item) => item.role === 'practice');
+    if (primary?.courseId === document.courseId && primary.questionId === document.contentId) {
+      byId.set(document.id, {
+        ...document,
+        practicePlacements: existing.practicePlacements,
+        subjects: existing.subjects,
+      });
+    }
   }
   return [...byId.values()];
 }
@@ -528,7 +562,7 @@ export async function generateSearchIndex(contentRoot) {
     ...courseResults.flatMap(({ documents: courseDocuments }) => courseDocuments),
     ...specialDocuments,
   ];
-  const documents = deduplicateCanonicalDocuments(placementDocuments);
+  const documents = deduplicateCanonicalDocuments(placementDocuments, canonicalProblems);
   const documentIds = new Set();
   for (const document of documents) {
     if (documentIds.has(document.id)) {

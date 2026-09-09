@@ -91,6 +91,10 @@ test('uses canonical DSA identity and metadata without indexing stale placeholde
   assert.equal(document.detailRef.kind, 'canonical-dsa');
   assert.equal(document.answerSlidesRef, undefined);
   assert.equal(document.practiceFormat, 'solve');
+  assert.deepEqual(
+    document.practicePlacements.map(({ moduleId }) => moduleId),
+    ['practice-sample', 'practice-transfer'],
+  );
   assert.deepEqual(document.route, ['/', 'learn', 'algorithmic-patterns', 'legacy-route']);
   assert.equal(document.searchableText, undefined);
   assert.equal(document.filterTags, undefined);
@@ -221,7 +225,7 @@ test('keeps interrogative implementation questions in knowledge review', async (
       moduleId: 'questions',
       title: 'How does heapq implement priority queues over lists?',
       difficulty: 'Intermediate',
-      tags: ['Heap'],
+      tags: ['Heap', 'Failure recovery', 'Behavioral patterns', 'Architecture'],
       interviewAnswer: 'Explain the heap invariant.',
       followUps: [],
     },

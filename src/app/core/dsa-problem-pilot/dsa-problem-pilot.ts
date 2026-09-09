@@ -14,6 +14,7 @@ import {
   CodeSolution,
   PatternProblemFixture,
   PatternProblemV1,
+  PatternLanguage,
 } from '../../content/content.models';
 import { CodingSolutionTabs } from '../coding-solution-tabs/coding-solution-tabs';
 import { GuidedAlgorithmTrace } from '../guided-algorithm-trace/guided-algorithm-trace';
@@ -37,6 +38,7 @@ export class DsaProblemPilot {
   readonly problem = input.required<PatternProblemV1>();
   readonly entryMode = input<'guided' | 'practice'>('practice');
   readonly showProblemHeading = input(true);
+  readonly initialLanguage = input<PatternLanguage>('java');
   protected readonly mode = signal<'guided' | 'practice'>('practice');
   protected readonly focusMode = signal(false);
   protected readonly fixtureIndex = signal(0);

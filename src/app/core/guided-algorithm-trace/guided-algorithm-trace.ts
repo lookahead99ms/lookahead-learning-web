@@ -1849,6 +1849,7 @@ export class GuidedAlgorithmTrace {
   readonly problem = input.required<PatternProblemV1>();
   readonly selectedFixture = input.required<PatternProblemFixture>();
   readonly focusMode = input(false);
+  readonly initialLanguage = input<PatternLanguage>('java');
   readonly fixtureChange = output<PatternProblemFixture>();
   readonly focusExitRequest = output<void>();
   protected readonly language = signal<PatternLanguage>('java');
@@ -2172,6 +2173,7 @@ export class GuidedAlgorithmTrace {
   );
 
   constructor() {
+    effect(() => this.language.set(this.initialLanguage()));
     let previousProblem = '';
     let previousFixture = '';
     effect(() => {

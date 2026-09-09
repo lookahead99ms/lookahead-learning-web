@@ -662,6 +662,10 @@ export interface SearchDocument {
   id: string;
   contentId: string;
   canonicalContentId?: string;
+  practicePlacements?: Pick<
+    SearchDocument,
+    'path' | 'courseId' | 'courseTitle' | 'moduleId' | 'moduleTitle' | 'contentId' | 'route'
+  >[];
   path: ContentPath;
   courseId: string;
   courseTitle: string;

@@ -3,6 +3,33 @@ import { describe, expect, it } from 'vitest';
 import { CodingSolutionTabs } from './coding-solution-tabs';
 
 describe('CodingSolutionTabs practice drafts', () => {
+  it('opens the requested language and keeps learner language changes and drafts', async () => {
+    await TestBed.configureTestingModule({ imports: [CodingSolutionTabs] }).compileComponents();
+    const fixture = TestBed.createComponent(CodingSolutionTabs);
+    fixture.componentRef.setInput('solutions', [
+      { language: 'python', title: 'Python', source: 'pass' },
+    ]);
+    fixture.componentRef.setInput('initialLanguage', 'python');
+    fixture.componentRef.setInput('practiceStarters', {
+      python: 'python starter',
+      java: 'java starter',
+    });
+    fixture.detectChanges();
+    const editor = fixture.nativeElement.querySelector('textarea') as HTMLTextAreaElement;
+    const language = fixture.nativeElement.querySelector('select') as HTMLSelectElement;
+    expect(language.value).toBe('python');
+    expect(editor.value).toBe('python starter');
+    editor.value = 'my Python solution';
+    editor.dispatchEvent(new Event('input'));
+    language.value = 'java';
+    language.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    expect(language.value).toBe('java');
+    language.value = 'python';
+    language.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    expect(editor.value).toBe('my Python solution');
+  });
   it('uses problem starters and preserves edits when languages change', async () => {
     await TestBed.configureTestingModule({ imports: [CodingSolutionTabs] }).compileComponents();
     const fixture = TestBed.createComponent(CodingSolutionTabs);
