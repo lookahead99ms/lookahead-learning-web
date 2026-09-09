@@ -62,9 +62,10 @@ async function countFiles(directory) {
 await rm(destinationRoot, { recursive: true, force: true });
 await mkdir(destinationRoot, { recursive: true });
 await cp(sourceRoot, destinationRoot, { recursive: true });
-const { searchDocumentCount, interviewQuestionCount } = await generateSearchIndex(destinationRoot);
+const { searchDocumentCount, interviewQuestionCount, answerSlideDeckCount } =
+  await generateSearchIndex(destinationRoot);
 const handsOnDsa = await generateHandsOnDsaIndex(destinationRoot);
 
 console.log(
-  `Prepared ${await countFiles(destinationRoot)} runtime asset(s), ${searchDocumentCount} search document(s), ${interviewQuestionCount} interview question(s), and ${handsOnDsa.distinctProblems} canonical Hands-On DSA problem(s) from ${sourceRoot}.`,
+  `Prepared ${await countFiles(destinationRoot)} runtime asset(s), ${searchDocumentCount} search document(s), ${interviewQuestionCount} interview question(s), ${answerSlideDeckCount} answer slide deck(s), and ${handsOnDsa.distinctProblems} canonical Hands-On DSA problem(s) from ${sourceRoot}.`,
 );

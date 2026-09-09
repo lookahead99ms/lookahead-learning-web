@@ -1,6 +1,10 @@
-import { createHash } from 'node:crypto';
 import { access, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
+import {
+  answerSlideDeckReference,
+  buildAnswerSlideDeck,
+  contentVersion,
+} from './answer-slide-contract.mjs';
 import { readCanonicalDsaProblems } from './canonical-dsa-contract.mjs';
 
 const paths = ['learn', 'grow', 'look-ahead'];
@@ -21,10 +25,6 @@ async function readJson(path) {
 async function writeJson(path, value) {
   await mkdir(dirname(path), { recursive: true });
   await writeFile(path, JSON.stringify(value));
-}
-
-function contentVersion(value) {
-  return createHash('sha256').update(JSON.stringify(value)).digest('hex').slice(0, 16);
 }
 
 function isTheoryArticle(item) {
@@ -148,7 +148,15 @@ function practiceFormatFor(question, contentType, moduleTitle) {
   return 'explain';
 }
 
-function summaryFor(question, contentType, access, detailRef, canonicalProblem, practiceFormat) {
+function summaryFor(
+  question,
+  contentType,
+  access,
+  detailRef,
+  canonicalProblem,
+  practiceFormat,
+  answerSlidesRef,
+) {
   return {
     id: question.id,
     moduleId: question.moduleId,
@@ -158,6 +166,7 @@ function summaryFor(question, contentType, access, detailRef, canonicalProblem, 
     tags: uniqueLabels([...(canonicalProblem?.tags ?? []), ...(question.tags ?? [])]),
     contentType,
     ...(practiceFormat ? { practiceFormat } : {}),
+    ...(answerSlidesRef ? { answerSlidesRef } : {}),
     isTheoryArticle: isTheoryArticle(question),
     detailRef,
     ...(question.reviewStatus ? { reviewStatus: question.reviewStatus } : {}),
@@ -178,6 +187,7 @@ function documentFor(question, context) {
     canonicalProblem,
     detailRef,
     practiceFormat,
+    answerSlidesRef,
   } = context;
   const pathLabel =
     path === 'look-ahead' ? 'Look Ahead' : `${path[0].toUpperCase()}${path.slice(1)}`;
@@ -210,6 +220,7 @@ function documentFor(question, context) {
     contentType,
     discoveryKind,
     ...(practiceFormat ? { practiceFormat } : {}),
+    ...(answerSlidesRef ? { answerSlidesRef } : {}),
     subjects,
     tags,
     filterTags: uniqueLabels([
@@ -370,6 +381,7 @@ async function contentForCourse(contentRoot, path, catalogItem, canonicalProblem
   const documents = [courseDocument(path, catalogItem, course)];
   const items = [];
   const moduleRefs = [];
+  let answerSlideDeckCount = 0;
 
   for (const module of modules) {
     documents.push(topicDocument(path, course, module));
@@ -414,6 +426,17 @@ async function contentForCourse(contentRoot, path, catalogItem, canonicalProblem
         discoveryKind === 'practice'
           ? practiceFormatFor(question, contentType, moduleTitle)
           : undefined;
+      let answerSlidesRef;
+      if (discoveryKind === 'practice' && detailRef.kind === 'content-item') {
+        const answerSlidesHref = `/content/answer-slides/${path}/${course.id}/${module.id}/${question.id}.json`;
+        const deck = buildAnswerSlideDeck(question, { detailRef, practiceFormat });
+        answerSlidesRef = answerSlideDeckReference(deck, answerSlidesHref);
+        await writeJson(
+          join(contentRoot, 'answer-slides', path, course.id, module.id, `${question.id}.json`),
+          deck,
+        );
+        answerSlideDeckCount += 1;
+      }
 
       if (!canonicalProblem) {
         await writeJson(
@@ -422,7 +445,15 @@ async function contentForCourse(contentRoot, path, catalogItem, canonicalProblem
         );
       }
       items.push(
-        summaryFor(question, contentType, access, detailRef, canonicalProblem, practiceFormat),
+        summaryFor(
+          question,
+          contentType,
+          access,
+          detailRef,
+          canonicalProblem,
+          practiceFormat,
+          answerSlidesRef,
+        ),
       );
       documents.push(
         documentFor(question, {
@@ -434,6 +465,7 @@ async function contentForCourse(contentRoot, path, catalogItem, canonicalProblem
           canonicalProblem,
           detailRef,
           practiceFormat,
+          answerSlidesRef,
         }),
       );
     }
@@ -447,13 +479,14 @@ async function contentForCourse(contentRoot, path, catalogItem, canonicalProblem
     modules: moduleRefs,
   };
   await writeJson(join(courseRoot, 'content-locator.json'), locator);
-  return { documents };
+  return { documents, answerSlideDeckCount };
 }
 
 export async function generateSearchIndex(contentRoot) {
   await Promise.all([
     rm(join(contentRoot, 'indexes'), { recursive: true, force: true }),
     rm(join(contentRoot, 'details'), { recursive: true, force: true }),
+    rm(join(contentRoot, 'answer-slides'), { recursive: true, force: true }),
     rm(join(contentRoot, 'search-index.json'), { force: true }),
     rm(join(contentRoot, 'interview-question-index.json'), { force: true }),
   ]);
@@ -566,5 +599,9 @@ export async function generateSearchIndex(contentRoot) {
   return {
     searchDocumentCount: documents.length,
     interviewQuestionCount: practiceDocuments.length,
+    answerSlideDeckCount: courseResults.reduce(
+      (total, result) => total + result.answerSlideDeckCount,
+      0,
+    ),
   };
 }

@@ -12,6 +12,8 @@ import {
   throwError,
 } from 'rxjs';
 import {
+  AnswerSlideDeckReference,
+  AnswerSlideDeckV1,
   CatalogItem,
   CatalogOverviewItem,
   ContentDetailReference,
@@ -27,6 +29,7 @@ import {
   InterviewQuestion,
   SearchDocument,
 } from './content.models';
+import { validateAnswerSlideDeck } from './answer-slide-contract';
 import { DeliveryPlan } from './delivery-plan.models';
 import type { HandsOnDsaIndex } from './hands-on-dsa';
 
@@ -39,6 +42,8 @@ interface ContentDetailCacheEntry {
   request: Observable<unknown>;
   bytes: number;
 }
+
+type VersionedContentReference = ContentDetailReference | AnswerSlideDeckReference;
 
 @Injectable({ providedIn: 'root' })
 export class ContentService {
@@ -93,6 +98,7 @@ export class ContentService {
               (item) =>
                 !moduleIds.includes(item.moduleId) ||
                 !this.validDetailReference(item.detailRef) ||
+                !this.validAnswerSlideReference(item.answerSlidesRef, item.detailRef) ||
                 !this.validPracticeFormat(item.practiceFormat),
             )
           ) {
@@ -167,6 +173,24 @@ export class ContentService {
     );
   }
 
+  getAnswerSlideDeck(
+    summary: Pick<ContentItemSummary, 'id' | 'detailRef' | 'answerSlidesRef'>,
+    question: InterviewQuestion,
+  ): Observable<AnswerSlideDeckV1 | undefined> {
+    const reference = summary.answerSlidesRef;
+    if (!reference) return of(undefined);
+    if (
+      summary.id !== question.id ||
+      !this.validDetailReference(summary.detailRef) ||
+      !this.validAnswerSlideReference(reference, summary.detailRef)
+    ) {
+      return throwError(() => new Error(`Invalid answer slide reference for ${summary.id}`));
+    }
+    return this.getCachedDetail<AnswerSlideDeckV1>(reference).pipe(
+      map((deck) => validateAnswerSlideDeck(deck, reference, summary.detailRef, question)),
+    );
+  }
+
   getCatalog(pathId: string): Observable<CatalogItem[]> {
     return this.http.get<CatalogItem[]>(`/content/${pathId}/catalog.json`);
   }
@@ -175,8 +199,8 @@ export class ContentService {
     return this.http.get<CatalogOverviewItem[]>(`/content/${pathId}/catalog-overview.json`);
   }
 
-  private getCachedDetail<T>(reference: ContentDetailReference): Observable<T> {
-    if (!this.validDetailReference(reference)) {
+  private getCachedDetail<T>(reference: VersionedContentReference): Observable<T> {
+    if (!this.validVersionedReference(reference)) {
       return throwError(() => new Error(`Invalid content detail reference: ${reference.href}`));
     }
     const key = `${reference.kind}:${reference.href}@${reference.version}`;
@@ -323,8 +347,31 @@ export class ContentService {
   private validDetailReference(reference: ContentDetailReference | undefined): boolean {
     return (
       !!reference &&
+      (reference.kind === 'content-item' || reference.kind === 'canonical-dsa') &&
+      this.validVersionedReference(reference)
+    );
+  }
+
+  private validVersionedReference(reference: VersionedContentReference | undefined): boolean {
+    return (
+      !!reference &&
       this.validContentHref(reference.href) &&
       /^[a-zA-Z0-9_-]{1,64}$/.test(reference.version)
+    );
+  }
+
+  private validAnswerSlideReference(
+    reference: AnswerSlideDeckReference | undefined,
+    detailRef: ContentDetailReference | undefined,
+  ): boolean {
+    if (reference === undefined) return true;
+    return (
+      reference.kind === 'answer-slides' &&
+      detailRef?.kind === 'content-item' &&
+      reference.href.startsWith('/content/answer-slides/') &&
+      this.validVersionedReference(reference) &&
+      /^[a-zA-Z0-9_-]{1,64}$/.test(reference.sourceVersion) &&
+      reference.sourceVersion === detailRef.version
     );
   }
 
@@ -410,6 +457,7 @@ export class ContentService {
             return (
               !this.validDiscoveryKind(record.discoveryKind) ||
               !this.validPracticeFormat(record.practiceFormat) ||
+              !this.validAnswerSlideReference(record.answerSlidesRef, record.detailRef) ||
               (record.subjects !== undefined && !Array.isArray(record.subjects)) ||
               ((discoveryKind === 'lesson' || discoveryKind === 'practice') &&
                 !this.validDetailReference(record.detailRef))

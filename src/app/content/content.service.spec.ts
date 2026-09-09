@@ -162,6 +162,114 @@ describe('ContentService canonical DSA details', () => {
   });
 });
 
+describe('ContentService answer slide details', () => {
+  function setup() {
+    TestBed.configureTestingModule({
+      providers: [ContentService, provideHttpClient(), provideHttpClientTesting()],
+    });
+    return {
+      service: TestBed.inject(ContentService),
+      http: TestBed.inject(HttpTestingController),
+    };
+  }
+
+  const question = {
+    id: 'sample-question',
+    title: 'What is the contract?',
+    interviewAnswer: 'The canonical answer remains in the detail record.',
+    explanation: ['The projection references this explanation.'],
+  } as any;
+  const detailRef = {
+    kind: 'content-item' as const,
+    href: '/content/details/learn/sample/intro/sample-question.json',
+    version: 'source-v1',
+  };
+  const answerSlidesRef = {
+    kind: 'answer-slides' as const,
+    href: '/content/answer-slides/learn/sample/intro/sample-question.json',
+    version: 'deck-v1',
+    sourceVersion: 'source-v1',
+  };
+  const summary = { id: question.id, detailRef, answerSlidesRef } as any;
+  const deck = {
+    schemaVersion: 'answer-slides/v1',
+    id: 'sample-question-answer',
+    mode: 'derived',
+    sourceContentId: question.id,
+    source: detailRef,
+    slides: [
+      {
+        id: 'sample-question-answer-question',
+        order: 1,
+        kind: 'interview-question',
+        contentRefs: [{ contentId: question.id, field: 'title' }],
+      },
+      {
+        id: 'sample-question-answer-answer',
+        order: 2,
+        kind: 'interview-answer',
+        contentRefs: [{ contentId: question.id, field: 'interviewAnswer' }],
+      },
+    ],
+  };
+
+  it('uses the existing full-answer path when legacy content has no deck reference', () => {
+    const { service, http } = setup();
+    let result: unknown = 'not-set';
+
+    service
+      .getAnswerSlideDeck({ id: question.id, detailRef } as any, question)
+      .subscribe((value) => (result = value));
+
+    expect(result).toBeUndefined();
+    http.expectNone(answerSlidesRef.href);
+    http.verify();
+  });
+
+  it('loads, validates, and reuses a version-matched answer slide deck', () => {
+    const { service, http } = setup();
+    const ids: string[] = [];
+
+    service.getAnswerSlideDeck(summary, question).subscribe((value) => ids.push(value!.id));
+    http.expectOne(answerSlidesRef.href).flush(deck);
+    service.getAnswerSlideDeck(summary, question).subscribe((value) => ids.push(value!.id));
+    http.expectNone(answerSlidesRef.href);
+
+    expect(ids).toEqual(['sample-question-answer', 'sample-question-answer']);
+    http.verify();
+  });
+
+  it('rejects a stale source reference before requesting the deck', () => {
+    const { service, http } = setup();
+    let error: Error | undefined;
+
+    service
+      .getAnswerSlideDeck(
+        { ...summary, answerSlidesRef: { ...answerSlidesRef, sourceVersion: 'source-v0' } },
+        question,
+      )
+      .subscribe({ error: (cause) => (error = cause) });
+
+    expect(error?.message).toContain('Invalid answer slide reference');
+    http.expectNone(answerSlidesRef.href);
+    http.verify();
+  });
+
+  it('rejects a fetched deck with duplicate stable slide IDs', () => {
+    const { service, http } = setup();
+    let error: Error | undefined;
+
+    service.getAnswerSlideDeck(summary, question).subscribe({ error: (cause) => (error = cause) });
+    http.expectOne(answerSlidesRef.href).flush({
+      ...deck,
+      slides: [deck.slides[0], { ...deck.slides[1], id: deck.slides[0].id }],
+    });
+
+    expect(error?.message).toContain('duplicate slide id');
+    http.verify();
+  });
+});
+
 describe('ContentService compact indexes and selected details', () => {
   function setup() {
     TestBed.configureTestingModule({
