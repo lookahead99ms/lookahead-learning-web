@@ -1,4 +1,4 @@
-import { Component, computed, effect, input, signal } from '@angular/core';
+import { Component, computed, effect, input, signal, untracked } from '@angular/core';
 import { CodeSolution, InterviewQuestion, TheoryVisual } from '../../content/content.models';
 import { InteractiveTheoryVisual } from '../interactive-theory-visual/interactive-theory-visual';
 import { CodeCopyButton } from '../code-copy-button/code-copy-button';
@@ -544,6 +544,7 @@ export class CodingSolutionTabs {
   readonly complexity = input<InterviewQuestion['complexity']>();
   readonly practicePrompt = input<string>();
   readonly practiceStarters = input<Partial<Record<Language, string>>>({});
+  readonly initialLanguage = input<Language>('java');
   readonly showPractice = input(true);
   readonly showReferences = input(true);
   readonly useLanguageThemes = input(false);
@@ -836,6 +837,13 @@ export class CodingSolutionTabs {
     return examples[problem]?.[this.visualInput()] ?? 'Choose an example';
   });
   constructor() {
+    effect(() => {
+      const language = this.initialLanguage();
+      untracked(() => {
+        this.practiceLanguage.set(language);
+        this.practiceCode.set(this.practiceDrafts.get(language) ?? this.starter(language));
+      });
+    });
     effect(() => {
       const language = this.practiceLanguage();
       const suppliedStarter = this.practiceStarters()[language];

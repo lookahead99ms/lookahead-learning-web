@@ -368,7 +368,7 @@ describe('Search interview-question library', () => {
     expect(harness.routeNativeElement?.querySelector('.show-more-results')).toBeNull();
   });
 
-  it('applies a search and scrolls to its results on the first submission', async () => {
+  it('applies a search as text changes and scrolls to its results on submission', async () => {
     const eventOrder: string[] = [];
     const scrollIntoView = vi.fn(() => {
       eventOrder.push('scroll');
@@ -393,6 +393,8 @@ describe('Search interview-question library', () => {
     const input = harness.routeNativeElement?.querySelector('.search-input') as HTMLInputElement;
     input.value = 'counter';
     input.dispatchEvent(new Event('input'));
+    await harness.fixture.whenStable();
+    expect(router.url).toBe('/interview-questions?q=counter');
     harness.routeNativeElement
       ?.querySelector('.search-form')
       ?.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
@@ -521,9 +523,142 @@ describe('Search interview-question library', () => {
     expect(tag.classList.contains('active')).toBe(false);
   });
 
-  it('does not erase an unsubmitted search draft when a topic changes', async () => {
+  it('finds a canonical problem through a secondary course placement without duplicating it', async () => {
+    const canonical: SearchDocument = {
+      ...document,
+      id: 'dsa:shared-problem',
+      canonicalContentId: 'shared-problem',
+      contentType: 'dsa-problem',
+      practiceFormat: 'solve',
+      practicePlacements: [
+        {
+          path: 'learn',
+          courseId: document.courseId,
+          courseTitle: document.courseTitle,
+          moduleId: document.moduleId,
+          moduleTitle: document.moduleTitle,
+          contentId: document.contentId,
+          route: document.route,
+        },
+        {
+          path: 'learn',
+          courseId: 'python-fundamentals',
+          courseTitle: 'Python Foundations',
+          moduleId: 'python-dsa-mechanics',
+          moduleTitle: 'Python for Coding Interviews',
+          contentId: 'python-shared-problem',
+          route: ['/', 'learn', 'python-fundamentals', 'python-shared-problem'],
+        },
+      ],
+    };
+    content.getInterviewQuestionIndex.mockReturnValue(of([canonical]));
     const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/interview-questions?q=counter', Search);
+    const returnUrl =
+      '/interview-questions?path=learn&course=python-fundamentals&module=python-dsa-mechanics&format=solve';
+    await harness.navigateByUrl(returnUrl, Search);
+    expect(harness.routeNativeElement?.querySelectorAll('.result-card')).toHaveLength(1);
+    const link = harness.routeNativeElement!.querySelector<HTMLAnchorElement>('.detail-link')!;
+    const url = new URL(link.href);
+    expect(url.pathname).toBe('/learn/python-fundamentals/python-shared-problem');
+    expect(url.searchParams.get('returnTo')).toBe(returnUrl);
+    await harness.navigateByUrl('/interview-questions', Search);
+    expect(harness.routeNativeElement?.querySelectorAll('.result-card')).toHaveLength(1);
+  });
+
+  it('clears inherited scope when a new text search starts', async () => {
+    const growDocument: SearchDocument = {
+      ...document,
+      id: 'grow:spring-framework:dependency-injection',
+      contentId: 'dependency-injection',
+      path: 'grow',
+      courseId: 'spring-framework',
+      courseTitle: 'Spring Framework',
+      moduleId: 'spring-core',
+      moduleTitle: 'Spring Core and IoC Container',
+      title: 'How does dependency injection improve testability?',
+      subjects: ['Spring', 'Dependency injection'],
+      tags: ['Spring', 'Dependency injection'],
+      filterTags: ['Grow', 'Q&A', 'Spring', 'Intermediate'],
+      searchableText: 'dependency injection spring testability',
+      route: ['/', 'grow', 'spring-framework', 'dependency-injection'],
+    };
+    const pythonDocument: SearchDocument = {
+      ...document,
+      id: 'learn:python-foundations:bisect',
+      contentId: 'bisect',
+      courseId: 'python-foundations',
+      courseTitle: 'Python Foundations',
+      moduleId: 'python-coding-interviews',
+      moduleTitle: 'Python for Coding Interviews',
+      title: 'How does binary search find an insertion point?',
+      subjects: ['Python', 'Binary search'],
+      tags: ['Python', 'Binary search'],
+      filterTags: ['Learn', 'Q&A', 'Python', 'Intermediate'],
+      languages: ['python'],
+      searchableText: 'binary search insertion point python',
+      route: ['/', 'learn', 'python-foundations', 'bisect'],
+    };
+    content.getInterviewQuestionIndex.mockImplementation((path?: ContentPath) =>
+      of(path === 'grow' ? [growDocument] : [growDocument, pythonDocument]),
+    );
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl(
+      '/interview-questions?path=grow&course=spring-framework&module=spring-core&difficulty=Intermediate&language=java&type=q-and-a&format=explain&tags=Spring&sort=title&group=course',
+      Search,
+    );
+    const subjectInput =
+      harness.routeNativeElement!.querySelector<HTMLInputElement>('.tag-tools input')!;
+    subjectInput.value = 'spring';
+    subjectInput.dispatchEvent(new Event('input'));
+    harness.detectChanges();
+    const input = harness.routeNativeElement!.querySelector<HTMLInputElement>('.search-input')!;
+    input.value = 'binary search';
+    input.dispatchEvent(new Event('input'));
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+
+    expect(content.getInterviewQuestionIndex).toHaveBeenLastCalledWith(undefined);
+    expect(TestBed.inject(Router).url).toBe('/interview-questions?q=binary%20search');
+    expect(subjectInput.value).toBe('');
+    expect(harness.routeNativeElement?.querySelectorAll('.result-card')).toHaveLength(1);
+    expect(harness.routeNativeElement?.querySelector('.result-title')?.textContent).toContain(
+      pythonDocument.title,
+    );
+    expect(
+      [...harness.routeNativeElement!.querySelectorAll<HTMLSelectElement>('select')].every(
+        (select) =>
+          select.value === 'all' || select.value === 'relevance' || select.value === 'none',
+      ),
+    ).toBe(true);
+  });
+
+  it('applies the same text-search precedence to platform-wide Search', async () => {
+    content.getSearchIndex.mockImplementation((_path?: ContentPath) => of([document]));
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl(
+      '/search?path=learn&type=q-and-a&kind=practice&tags=Java&sort=title&group=course',
+      Search,
+    );
+    const input = harness.routeNativeElement!.querySelector<HTMLInputElement>('.search-input')!;
+
+    input.value = 'thread safety';
+    input.dispatchEvent(new Event('input'));
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+
+    expect(content.getSearchIndex).toHaveBeenLastCalledWith(undefined);
+    expect(TestBed.inject(Router).url).toBe('/search?q=thread%20safety');
+    expect(
+      [...harness.routeNativeElement!.querySelectorAll<HTMLSelectElement>('select')].every(
+        (select) =>
+          select.value === 'all' || select.value === 'relevance' || select.value === 'none',
+      ),
+    ).toBe(true);
+  });
+
+  it('uses a subject selected after text search as an explicit refinement', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/interview-questions?path=learn&difficulty=Intermediate', Search);
     vi.spyOn(window.document, 'getElementById').mockReturnValue({
       scrollIntoView: vi.fn(),
     } as unknown as HTMLElement);
@@ -532,21 +667,23 @@ describe('Search interview-question library', () => {
       return 1;
     });
     const input = harness.routeNativeElement!.querySelector<HTMLInputElement>('.search-input')!;
-    input.value = 'thread';
+    input.value = 'counter';
     input.dispatchEvent(new Event('input'));
+    await harness.fixture.whenStable();
     harness.detectChanges();
     const tag = [
       ...harness.routeNativeElement!.querySelectorAll<HTMLButtonElement>('.tag-pill'),
     ].find((button) => button.textContent.trim() === 'Java')!;
     tag.click();
     await harness.fixture.whenStable();
-    expect(input.value).toBe('thread');
-    expect(TestBed.inject(Router).url).toBe('/interview-questions?tags=Java');
-    harness
-      .routeNativeElement!.querySelector('.search-form')!
-      .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+
+    expect(input.value).toBe('counter');
+    expect(TestBed.inject(Router).url).toBe('/interview-questions?q=counter&tags=Java');
+
+    input.value = 'thread';
+    input.dispatchEvent(new Event('input'));
     await harness.fixture.whenStable();
-    expect(TestBed.inject(Router).url).toBe('/interview-questions?q=thread&tags=Java');
+    expect(TestBed.inject(Router).url).toBe('/interview-questions?q=thread');
   });
 
   it.each(['search', 'interview-questions'])(
@@ -559,13 +696,13 @@ describe('Search interview-question library', () => {
       input.dispatchEvent(new Event('input'));
       await harness.fixture.whenStable();
       const savedUrl = TestBed.inject(Router).url;
-      expect(savedUrl).toBe(`/${path}?path=learn`);
+      expect(savedUrl).toBe(`/${path}`);
       await harness.navigateByUrl(path === 'search' ? '/interview-questions' : '/search', Search);
       await harness.navigateByUrl(savedUrl, Search);
       expect(
         harness.routeNativeElement!.querySelector<HTMLInputElement>('.search-input')!.value,
       ).toBe('');
-      expect(harness.routeNativeElement!.querySelector('select')!.value).toBe('learn');
+      expect(harness.routeNativeElement!.querySelector('select')!.value).toBe('all');
     },
   );
 });

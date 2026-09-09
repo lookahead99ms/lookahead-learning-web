@@ -260,7 +260,11 @@
                   </div>
                 </div>
                 <h2 class="result-title">
-                  <a [routerLink]="questionLink(result)">{{ result.title }}</a>
+                  <a
+                    [routerLink]="questionLink(result)"
+                    [queryParams]="questionQueryParams(result)"
+                    >{{ result.title }}</a
+                  >
                 </h2>
                 @if (preview(result); as previewText) {
                   <p class="result-preview">{{ previewText }}</p>
@@ -279,7 +283,11 @@
                   }
                 </div>
                 <div class="result-actions">
-                  <a class="detail-link" [routerLink]="questionLink(result)">
+                  <a
+                    class="detail-link"
+                    [routerLink]="questionLink(result)"
+                    [queryParams]="questionQueryParams(result)"
+                  >
                     {{ resultActionLabel(result) }}
                   </a>
                   @if (canPreviewAnswer(result)) {

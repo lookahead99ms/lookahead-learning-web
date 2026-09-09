@@ -312,6 +312,78 @@ describe('Question canonical DSA navigation', () => {
     }).compileComponents();
   });
 
+  it('retains a filtered discovery return link after a direct load', async () => {
+    const harness = await RouterTestingHarness.create();
+    const returnUrl = '/interview-questions?q=lookup&language=python&format=solve&sort=title';
+    await harness.navigateByUrl(
+      '/learn/algorithmic-patterns/algorithmic-two-sum?returnTo=' + encodeURIComponent(returnUrl),
+      Question,
+    );
+    expect(
+      linkWithText(harness.routeNativeElement!, 'Return to interview practice')?.getAttribute(
+        'href',
+      ),
+    ).toBe(returnUrl);
+  });
+
+  it.each([
+    'https://example.com',
+    '//example.com',
+    '/delivery-plan',
+    '/search/other',
+    '/search(aux:other)',
+  ])('ignores unsupported discovery return targets: %s', async (returnUrl) => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl(
+      '/learn/algorithmic-patterns/algorithmic-two-sum?returnTo=' + encodeURIComponent(returnUrl),
+      Question,
+    );
+    expect(harness.routeNativeElement!.querySelector('.practice-return')).toBeNull();
+  });
+
+  it.each(['design', 'debug', 'rehearse', 'solve'] as const)(
+    'keeps %s practice instructions visible and its canonical reference collapsed',
+    async (practiceFormat) => {
+      const question: InterviewQuestion = {
+        id: 'scenario',
+        moduleId: 'practice',
+        order: 1,
+        title: 'A concrete practice prompt',
+        difficulty: 'Intermediate',
+        tags: ['Practice'],
+        contentType: 'q-and-a',
+        practiceFormat,
+        interviewAnswer: 'Canonical reference',
+        explanation: ['Detailed reasoning'],
+        versionNotes: [],
+        followUps: [{ question: 'What changes under load?', answer: 'Measure the bottleneck.' }],
+      };
+      const course: CourseContent = {
+        id: 'sample',
+        path: 'grow',
+        title: 'Sample',
+        description: '',
+        version: '1',
+        modules: [{ id: 'practice', title: 'Practice', description: '', order: 1 }],
+        questions: [question],
+      };
+      const outline = outlineFor(course);
+      outline.questions[0].practiceFormat = practiceFormat;
+      content.getCourseOutline.mockReturnValueOnce(of(outline));
+      content.getContentItem.mockReturnValueOnce(of(question));
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl('/grow/sample/scenario', Question);
+      const root = harness.routeNativeElement!;
+      expect(root.querySelector('.practice-instructions')?.textContent).toContain('Try it before');
+      const reference = root.querySelector<HTMLDetailsElement>('.practice-reference')!;
+      expect(reference.open).toBe(false);
+      expect(reference.textContent).toContain('Canonical reference');
+      expect(reference.textContent).toContain('What changes under load?');
+      reference.querySelector('summary')!.click();
+      expect(reference.open).toBe(true);
+    },
+  );
+
   it.each(routeCases)(
     'renders the complete framework and Hashing sequence for $title',
     async (testCase) => {

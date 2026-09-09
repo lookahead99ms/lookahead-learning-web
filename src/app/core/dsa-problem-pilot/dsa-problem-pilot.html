@@ -114,6 +114,7 @@
           [solutions]="solutions()"
           [complexity]="complexity()"
           [practiceStarters]="practice().starters"
+          [initialLanguage]="initialLanguage()"
           [showReferences]="false"
           practicePrompt="Implement the stated contract without changing the inputs. No code runner is enabled in this pilot."
         />
@@ -216,6 +217,7 @@
           class="mode-reaction"
           [problem]="problem()"
           [selectedFixture]="activeFixture()"
+          [initialLanguage]="initialLanguage()"
           [focusMode]="focusMode()"
           (fixtureChange)="chooseFixture($event)"
           (focusExitRequest)="exitFocusMode()"
