@@ -91,7 +91,9 @@ export class ContentService {
             ) ||
             locator.items.some(
               (item) =>
-                !moduleIds.includes(item.moduleId) || !this.validDetailReference(item.detailRef),
+                !moduleIds.includes(item.moduleId) ||
+                !this.validDetailReference(item.detailRef) ||
+                !this.validPracticeFormat(item.practiceFormat),
             )
           ) {
             throw new Error(`Invalid course content locator: ${pathId}/${courseId}`);
@@ -150,9 +152,7 @@ export class ContentService {
 
   getInterviewQuestionIndex(path?: ContentPath): Observable<SearchDocument[]> {
     return this.getContentIndex(path).pipe(
-      map(({ documents, practiceTypes }) =>
-        documents.filter((document) => practiceTypes.has(document.contentType)),
-      ),
+      map(({ documents }) => documents.filter((document) => document.discoveryKind === 'practice')),
     );
   }
 
@@ -161,7 +161,7 @@ export class ContentService {
   }
 
   getInterviewQuestion(result: SearchDocument): Observable<InterviewQuestion | undefined> {
-    if (result.detailRef.kind !== 'content-item') return of(undefined);
+    if (!result.detailRef || result.detailRef.kind !== 'content-item') return of(undefined);
     return this.getCachedDetail<InterviewQuestion>(result.detailRef).pipe(
       map((question) => (question.id === result.contentId ? question : undefined)),
     );
@@ -235,28 +235,46 @@ export class ContentService {
 
   private expandIndexRecord(path: ContentPath, record: ContentIndexRecord): SearchDocument {
     const pathLabel = path === 'look-ahead' ? 'Look Ahead' : this.titleCase(path);
+    const discoveryKind =
+      record.discoveryKind ??
+      (record.contentType === 'theory' || record.contentType === 'dsa-pattern'
+        ? 'lesson'
+        : 'practice');
+    const practiceFormat =
+      record.practiceFormat ??
+      (discoveryKind !== 'practice'
+        ? undefined
+        : record.contentType === 'dsa-problem'
+          ? 'solve'
+          : record.contentType === 'system-design'
+            ? 'design'
+            : 'explain');
+    const subjects = record.subjects ?? record.tags;
     const filterTags = this.uniqueLabels([
       pathLabel,
       this.contentTypeLabel(record.contentType),
       record.difficulty,
       ...record.languages.map((language) => (language === 'go' ? 'Go' : this.titleCase(language))),
-      ...record.tags,
+      ...subjects,
     ]);
     const searchableText = [
       record.title,
       record.courseTitle,
       record.moduleTitle,
       record.preview,
-      ...record.tags,
+      ...subjects,
     ]
       .join(' ')
       .toLowerCase();
     return {
       ...record,
       path,
+      discoveryKind,
+      ...(practiceFormat ? { practiceFormat } : {}),
+      subjects,
       filterTags,
       searchableText,
-      route: ['/', path, record.courseId, record.contentId],
+      route: record.route ?? ['/', path, record.courseId, record.contentId],
     };
   }
 
@@ -310,6 +328,28 @@ export class ContentService {
     );
   }
 
+  private validDiscoveryKind(value: string | undefined): boolean {
+    return (
+      value === undefined ||
+      value === 'course' ||
+      value === 'topic' ||
+      value === 'lesson' ||
+      value === 'practice' ||
+      value === 'tool'
+    );
+  }
+
+  private validPracticeFormat(value: string | undefined): boolean {
+    return (
+      value === undefined ||
+      value === 'explain' ||
+      value === 'solve' ||
+      value === 'design' ||
+      value === 'debug' ||
+      value === 'rehearse'
+    );
+  }
+
   private getContentIndex(
     path?: ContentPath,
   ): Observable<{ documents: SearchDocument[]; practiceTypes: Set<ContentType> }> {
@@ -334,8 +374,8 @@ export class ContentService {
               throw new Error('Content index total does not match its manifest');
             }
             const practiceTypes = new Set(manifest.practiceContentTypes);
-            const practiceDocumentCount = documents.filter((document) =>
-              practiceTypes.has(document.contentType),
+            const practiceDocumentCount = documents.filter(
+              (document) => document.discoveryKind === 'practice',
             ).length;
             const expectedPracticeDocuments = path
               ? references[0].practiceDocumentCount
@@ -361,7 +401,20 @@ export class ContentService {
           shard.schemaVersion !== 'content-index-shard/v1' ||
           shard.path !== reference.path ||
           !Array.isArray(shard.documents) ||
-          shard.documents.some((record) => !this.validDetailReference(record.detailRef)) ||
+          shard.documents.some((record) => {
+            const discoveryKind =
+              record.discoveryKind ??
+              (record.contentType === 'theory' || record.contentType === 'dsa-pattern'
+                ? 'lesson'
+                : 'practice');
+            return (
+              !this.validDiscoveryKind(record.discoveryKind) ||
+              !this.validPracticeFormat(record.practiceFormat) ||
+              (record.subjects !== undefined && !Array.isArray(record.subjects)) ||
+              ((discoveryKind === 'lesson' || discoveryKind === 'practice') &&
+                !this.validDetailReference(record.detailRef))
+            );
+          }) ||
           shard.documents.length !== reference.documentCount
         ) {
           throw new Error(`Invalid content index shard: ${reference.href}`);
@@ -384,6 +437,7 @@ export class ContentService {
       !Array.isArray(manifest.shards) ||
       manifest.shards.length === 0 ||
       !Array.isArray(manifest.practiceContentTypes) ||
+      (manifest.practiceFormats !== undefined && !Array.isArray(manifest.practiceFormats)) ||
       !Number.isInteger(manifest.totals?.searchDocuments) ||
       !Number.isInteger(manifest.totals?.practiceDocuments)
     ) {

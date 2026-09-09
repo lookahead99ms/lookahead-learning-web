@@ -1,27 +1,32 @@
-import { Component, input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import {
+  PracticePresentationItem,
+  practicePresentation,
+} from '../../content/practice-presentation';
 
 @Component({
   selector: 'app-interview-question-bank-link',
   imports: [RouterLink],
   template: `
-    <a
-      class="question-bank-link"
-      [class.compact]="variant() === 'compact'"
-      routerLink="/interview-questions"
-      [queryParams]="{ path: pathId(), course: courseId(), module: moduleId() }"
-      [attr.aria-label]="'Open all ' + questionCount() + ' interview questions for this topic'"
-    >
-      @if (variant() === 'compact') {
-        <strong>Interview questions</strong>
-        <span>{{ questionCount() }}</span>
-        <b aria-hidden="true">→</b>
-      } @else {
-        <span>Complete question bank</span>
-        <strong>Review all {{ questionCount() }} interview questions</strong>
-        <b>Open question bank <span aria-hidden="true">→</span></b>
-      }
-    </a>
+    @if (presentation().count > 0) {
+      <a
+        class="question-bank-link"
+        [class.compact]="variant() === 'compact'"
+        routerLink="/interview-questions"
+        [queryParams]="{ path: pathId(), course: courseId(), module: moduleId() }"
+        [attr.aria-label]="presentation().ariaLabel"
+      >
+        @if (variant() === 'compact') {
+          <strong>{{ presentation().compactLabel }}</strong>
+          <span>{{ presentation().count }}</span>
+        } @else {
+          <span>{{ presentation().eyebrow }}</span>
+          <strong>{{ presentation().detailLabel }}</strong>
+          <b>{{ presentation().actionLabel }}</b>
+        }
+      </a>
+    }
   `,
   styles: [
     `
@@ -132,5 +137,9 @@ export class InterviewQuestionBankLink {
   readonly courseId = input.required<string>();
   readonly moduleId = input.required<string>();
   readonly questionCount = input.required<number>();
+  readonly practiceItems = input<readonly PracticePresentationItem[]>([]);
   readonly variant = input<'bar' | 'compact'>('bar');
+  protected readonly presentation = computed(() =>
+    practicePresentation(this.practiceItems(), this.questionCount()),
+  );
 }

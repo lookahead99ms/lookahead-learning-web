@@ -55,7 +55,7 @@ describe('PlatformHeader account disclosure', () => {
     expect(document.activeElement).toBe(trigger);
   });
 
-  it('keeps the interview question library discoverable in the search palette', () => {
+  it('keeps interview practice discoverable in the search palette', () => {
     const fixture = TestBed.createComponent(PlatformHeader);
     fixture.detectChanges();
 
@@ -67,6 +67,6 @@ describe('PlatformHeader account disclosure', () => {
     const labels = [...fixture.nativeElement.querySelectorAll('.persistent-suggestions strong')]
       .map((element: Element) => element.textContent?.trim())
       .filter(Boolean);
-    expect(labels).toContain('Interview questions');
+    expect(labels).toContain('Interview practice');
   });
 });

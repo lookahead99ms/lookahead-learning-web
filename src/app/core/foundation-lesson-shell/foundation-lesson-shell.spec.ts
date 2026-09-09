@@ -128,6 +128,13 @@ describe('FoundationLessonShell golden lesson contract', () => {
     fixture.componentRef.setInput('courseId', 'core-data-structures');
     fixture.componentRef.setInput('questionModuleId', 'heap-questions');
     fixture.componentRef.setInput('questionCount', 7);
+    fixture.componentRef.setInput(
+      'questionItems',
+      Array.from({ length: 7 }, (_, index) => ({
+        id: `question-${index + 1}`,
+        practiceFormat: 'explain' as const,
+      })),
+    );
     fixture.detectChanges();
   });
 
@@ -158,7 +165,7 @@ describe('FoundationLessonShell golden lesson contract', () => {
     const questionBankLink = fixture.nativeElement.querySelector(
       '.question-bank-link',
     ) as HTMLAnchorElement;
-    expect(normalizedText(questionBankLink)).toContain('Review all 7 interview questions');
+    expect(normalizedText(questionBankLink)).toContain('Review all 7 questions');
     expect(questionBankLink.getAttribute('href')).toBe(
       '/interview-questions?path=learn&course=core-data-structures&module=heap-questions',
     );

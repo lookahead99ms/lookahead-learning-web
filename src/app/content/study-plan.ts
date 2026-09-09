@@ -276,7 +276,12 @@ function prioritizedDocuments(
   const seen = new Set<string>();
   return documents
     .filter(
-      (document) => document.path === topic.path && topic.courseIds.includes(document.courseId),
+      (document) =>
+        document.path === topic.path &&
+        topic.courseIds.includes(document.courseId) &&
+        (document.discoveryKind === undefined ||
+          document.discoveryKind === 'lesson' ||
+          document.discoveryKind === 'practice'),
     )
     .sort(
       (left, right) =>

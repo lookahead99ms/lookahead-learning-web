@@ -1,6 +1,7 @@
 import { Component, computed, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import {
+  ContentItemSummary,
   InterviewQuestion,
   PatternLesson,
   ResolvedPatternCheck,
@@ -318,6 +319,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
               [courseId]="courseId()"
               [moduleId]="moduleId"
               [questionCount]="questionCount()"
+              [practiceItems]="questionItems()"
             />
           }
         }
@@ -1019,6 +1021,7 @@ export class PatternLessonShell {
   readonly practicePatternId = input.required<string>();
   readonly questionModuleId = input<string | null>(null);
   readonly questionCount = input(0);
+  readonly questionItems = input<ContentItemSummary[]>([]);
   protected readonly workedExampleIndex = signal(0);
   protected readonly workedExample = computed(
     () =>

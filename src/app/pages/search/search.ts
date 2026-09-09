@@ -7,8 +7,10 @@ import {
   CodeSolution,
   ContentPath,
   ContentType,
+  DiscoveryKind,
   InterviewQuestion,
   PatternLanguage,
+  PracticeFormat,
   SearchDocument,
 } from '../../content/content.models';
 import { CodingSolutionTabs } from '../../core/coding-solution-tabs/coding-solution-tabs';
@@ -17,6 +19,8 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
 type SearchSort = 'relevance' | 'title' | 'difficulty';
 type SearchGroup = 'none' | 'path' | 'course' | 'module' | 'tag' | 'content-type';
 type SearchContentType = 'all' | ContentType;
+type SearchDiscoveryKind = 'all' | DiscoveryKind;
+type SearchPracticeFormat = 'all' | PracticeFormat;
 type SearchDifficulty = 'all' | 'Beginner' | 'Intermediate' | 'Advanced';
 type SearchLanguage = 'all' | PatternLanguage;
 const RESULT_PAGE_SIZE = 40;
@@ -173,6 +177,23 @@ const VISIBLE_TAG_LIMIT = 60;
       .search-toolbar.library-toolbar {
         grid-template-columns: repeat(4, minmax(0, 1fr));
       }
+      .clear-filters {
+        min-height: 42px;
+        padding: 9px 12px;
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        color: var(--search-primary);
+        background: var(--surface);
+        cursor: pointer;
+        font: inherit;
+        font-weight: 750;
+      }
+      .clear-filters:hover,
+      .clear-filters:focus-visible {
+        border-color: var(--search-primary);
+        background: var(--surface-accent);
+        outline: none;
+      }
       .control {
         display: grid;
         gap: 6px;
@@ -283,7 +304,6 @@ const VISIBLE_TAG_LIMIT = 60;
         border-color: var(--search-primary);
         color: var(--text-strong);
         background: var(--surface-accent);
-        cursor: default;
       }
       .no-tags {
         padding: 7px 0;
@@ -334,20 +354,6 @@ const VISIBLE_TAG_LIMIT = 60;
         font-size: 0.78rem;
         font-weight: 700;
       }
-      .result-toggle {
-        width: 100%;
-        padding: 8px 0 0;
-        border: 0;
-        color: inherit;
-        background: transparent;
-        cursor: pointer;
-        font: inherit;
-        text-align: left;
-      }
-      .result-toggle:focus-visible {
-        outline: 3px solid rgba(137, 207, 240, 0.28);
-        outline-offset: 4px;
-      }
       .result-meta {
         display: contents;
       }
@@ -375,6 +381,13 @@ const VISIBLE_TAG_LIMIT = 60;
         align-items: center;
         margin-left: auto;
       }
+      .result-kind {
+        color: var(--search-primary);
+        font-size: 0.72rem;
+        font-weight: 850;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
       .result-meta-filter {
         padding: 4px 8px;
         border: 0;
@@ -394,7 +407,7 @@ const VISIBLE_TAG_LIMIT = 60;
         outline: none;
       }
       .result-meta-filter.active {
-        cursor: default;
+        cursor: pointer;
       }
       .result-difficulty {
         padding: 4px 8px;
@@ -403,17 +416,20 @@ const VISIBLE_TAG_LIMIT = 60;
         background: var(--surface-muted);
       }
       .result-title {
-        display: inline;
-        margin: 8px 0;
-        color: var(--text-strong);
+        margin: 10px 0 6px;
         font-size: 1.08rem;
         font-weight: 750;
       }
-      .expand-indicator {
-        float: right;
+      .result-title a {
+        color: var(--text-strong);
+        text-decoration: none;
+      }
+      .result-title a:hover,
+      .result-title a:focus-visible {
         color: var(--search-primary);
-        font-size: 1.2rem;
-        font-weight: 500;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        outline: none;
       }
       .result-tags {
         display: flex;
@@ -441,7 +457,46 @@ const VISIBLE_TAG_LIMIT = 60;
         outline: none;
       }
       .result-tag.active {
-        cursor: default;
+        cursor: pointer;
+      }
+      .result-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        margin-top: 16px;
+      }
+      .answer-toggle {
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+        min-height: 38px;
+        padding: 8px 12px;
+        border: 1px solid var(--search-primary);
+        border-radius: 9px;
+        color: var(--search-primary);
+        background: var(--surface);
+        cursor: pointer;
+        font: inherit;
+        font-size: 0.86rem;
+        font-weight: 750;
+      }
+      .answer-toggle-chevron {
+        width: 0.46rem;
+        height: 0.46rem;
+        border-right: 2px solid currentColor;
+        border-bottom: 2px solid currentColor;
+        transform: translateY(-2px) rotate(45deg);
+        transition: transform 160ms ease;
+      }
+      .answer-toggle[aria-expanded='true'] .answer-toggle-chevron {
+        transform: translateY(2px) rotate(225deg);
+      }
+      .answer-toggle:hover,
+      .answer-toggle:focus-visible {
+        color: var(--surface);
+        background: var(--search-primary);
+        outline: none;
       }
       .result-answer {
         margin-top: 16px;
@@ -599,6 +654,11 @@ const VISIBLE_TAG_LIMIT = 60;
         background: var(--search-hover);
         outline: none;
       }
+      @media (prefers-reduced-motion: reduce) {
+        .answer-toggle-chevron {
+          transition: none;
+        }
+      }
       .premium-state {
         display: grid;
         gap: 5px;
@@ -693,6 +753,8 @@ export class Search implements OnInit {
   protected readonly selectedTags = signal(new Set<string>());
   protected readonly tagQuery = signal('');
   protected readonly selectedContentType = signal<SearchContentType>('all');
+  protected readonly selectedDiscoveryKind = signal<SearchDiscoveryKind>('all');
+  protected readonly selectedPracticeFormat = signal<SearchPracticeFormat>('all');
   protected readonly selectedCourseId = signal('all');
   protected readonly selectedModuleId = signal('all');
   protected readonly selectedDifficulty = signal<SearchDifficulty>('all');
@@ -712,6 +774,8 @@ export class Search implements OnInit {
       [
         this.selectedPath(),
         this.selectedContentType(),
+        this.selectedDiscoveryKind(),
+        this.selectedPracticeFormat(),
         this.selectedCourseId(),
         this.selectedModuleId(),
         this.selectedDifficulty(),
@@ -766,7 +830,17 @@ export class Search implements OnInit {
           this.selectedLanguage() === 'all' ||
           result.languages.includes(this.selectedLanguage() as PatternLanguage),
       )
-      .filter((result) => contentType === 'all' || result.contentType === contentType);
+      .filter((result) => contentType === 'all' || result.contentType === contentType)
+      .filter(
+        (result) =>
+          this.selectedDiscoveryKind() === 'all' ||
+          this.discoveryKind(result) === this.selectedDiscoveryKind(),
+      )
+      .filter(
+        (result) =>
+          this.selectedPracticeFormat() === 'all' ||
+          this.practiceFormat(result) === this.selectedPracticeFormat(),
+      );
   });
 
   protected readonly scopeResults = computed(() => {
@@ -785,7 +859,7 @@ export class Search implements OnInit {
     if (!candidates.length) candidates = this.unqueriedScopeResults();
     const labels = new Map<string, { label: string; count: number }>();
     for (const result of candidates) {
-      for (const label of this.uniqueLabels(result.filterTags)) {
+      for (const label of this.subjectLabels(result)) {
         const key = this.normalize(label);
         const current = labels.get(key);
         labels.set(key, {
@@ -847,6 +921,10 @@ export class Search implements OnInit {
       this.selectedDifficulty.set(this.difficultyFromValue(params.get('difficulty')));
       this.selectedLanguage.set(this.languageFromValue(params.get('language')));
       this.selectedContentType.set(this.contentTypeFromValue(params.get('type')));
+      this.selectedDiscoveryKind.set(
+        this.libraryMode ? 'all' : this.discoveryKindFromValue(params.get('kind')),
+      );
+      this.selectedPracticeFormat.set(this.practiceFormatFromValue(params.get('format')));
       this.sortBy.set(this.sortFromValue(params.get('sort')));
       this.groupBy.set(this.groupFromValue(params.get('group')));
       this.resetVisibleResults();
@@ -949,6 +1027,20 @@ export class Search implements OnInit {
     this.syncUrl();
   }
 
+  protected updateDiscoveryKind(value: string): void {
+    this.selectedDiscoveryKind.set(this.discoveryKindFromValue(value));
+    this.retainUnavailableTags();
+    this.resetVisibleResults();
+    this.syncUrl();
+  }
+
+  protected updatePracticeFormat(value: string): void {
+    this.selectedPracticeFormat.set(this.practiceFormatFromValue(value));
+    this.retainUnavailableTags();
+    this.resetVisibleResults();
+    this.syncUrl();
+  }
+
   protected updateSort(value: string): void {
     this.sortBy.set(this.sortFromValue(value));
     this.syncUrl();
@@ -958,6 +1050,46 @@ export class Search implements OnInit {
     this.groupBy.set(this.groupFromValue(value));
     this.syncUrl();
   }
+
+  protected clearFilters(): void {
+    const hadScopedPath = this.selectedPath() !== 'all';
+    this.query.set('');
+    this.submittedQuery.set('');
+    this.selectedPath.set('all');
+    this.selectedCourseId.set('all');
+    this.selectedModuleId.set('all');
+    this.selectedDifficulty.set('all');
+    this.selectedLanguage.set('all');
+    this.selectedContentType.set('all');
+    this.selectedDiscoveryKind.set('all');
+    this.selectedPracticeFormat.set('all');
+    this.selectedTags.set(new Set());
+    this.sortBy.set('relevance');
+    this.groupBy.set('none');
+    this.resetVisibleResults();
+    if (hadScopedPath) this.loadIndex('all');
+    this.syncUrl();
+  }
+
+  protected modeQueryParams(): Record<string, string> {
+    const tags = [...this.selectedTags()];
+    return Object.fromEntries(
+      Object.entries({
+        q: this.submittedQuery(),
+        path: this.selectedPath() === 'all' ? '' : this.selectedPath(),
+        course: this.selectedCourseId() === 'all' ? '' : this.selectedCourseId(),
+        module: this.selectedModuleId() === 'all' ? '' : this.selectedModuleId(),
+        difficulty: this.selectedDifficulty() === 'all' ? '' : this.selectedDifficulty(),
+        language: this.selectedLanguage() === 'all' ? '' : this.selectedLanguage(),
+        type: this.selectedContentType() === 'all' ? '' : this.selectedContentType(),
+        format: this.selectedPracticeFormat() === 'all' ? '' : this.selectedPracticeFormat(),
+        tags: tags.length ? tags.join(',') : '',
+        sort: this.sortBy() === 'relevance' ? '' : this.sortBy(),
+        group: this.groupBy() === 'none' ? '' : this.groupBy(),
+      }).filter(([, value]) => value),
+    );
+  }
+
   protected submitSearch(): void {
     const query = this.normalize(this.query());
     this.submittedQuery.set(query);
@@ -965,7 +1097,7 @@ export class Search implements OnInit {
     const matchingTags = new Set(
       this.scopeResults()
         .filter((result) => [...selectedTags].every((tag) => this.hasFilter(result, tag)))
-        .flatMap(({ filterTags }) => filterTags)
+        .flatMap((result) => this.subjectLabels(result))
         .filter((tag) => query.length > 0 && this.normalize(tag) === query),
     );
     if (matchingTags.size) {
@@ -1052,7 +1184,7 @@ export class Search implements OnInit {
         this.indexPath = 'uninitialized';
         this.error.set(
           this.libraryMode
-            ? 'The interview-question library could not be loaded.'
+            ? 'The interview practice library could not be loaded.'
             : 'The search index could not be loaded.',
         );
         this.loading.set(false);
@@ -1070,7 +1202,9 @@ export class Search implements OnInit {
 
   private retainUnavailableTags(): void {
     const available = new Set(
-      this.scopeResults().flatMap(({ filterTags }) => filterTags.map((tag) => this.normalize(tag))),
+      this.scopeResults().flatMap((result) =>
+        this.subjectLabels(result).map((tag) => this.normalize(tag)),
+      ),
     );
     this.selectedTags.update(
       (selectedTags) =>
@@ -1083,7 +1217,18 @@ export class Search implements OnInit {
   }
 
   private hasFilter(result: SearchDocument, tag: string): boolean {
-    return result.filterTags.some((value) => this.normalize(value) === this.normalize(tag));
+    return this.subjectLabels(result).some(
+      (value) => this.normalize(value) === this.normalize(tag),
+    );
+  }
+
+  private subjectLabels(result: SearchDocument): string[] {
+    return this.uniqueLabels([
+      ...(result.subjects ?? result.tags),
+      ...result.languages.map((language) =>
+        language === 'go' ? 'Go' : `${language[0].toUpperCase()}${language.slice(1)}`,
+      ),
+    ]);
   }
 
   private pathForFilter(tag: string): ContentPath | null {
@@ -1144,6 +1289,66 @@ export class Search implements OnInit {
     return result.moduleTitle;
   }
 
+  protected discoveryKind(result: SearchDocument): DiscoveryKind {
+    return (
+      result.discoveryKind ??
+      (result.contentType === 'theory' || result.contentType === 'dsa-pattern'
+        ? 'lesson'
+        : 'practice')
+    );
+  }
+
+  protected practiceFormat(result: SearchDocument): PracticeFormat | undefined {
+    if (this.discoveryKind(result) !== 'practice') return undefined;
+    return (
+      result.practiceFormat ??
+      (result.contentType === 'dsa-problem'
+        ? 'solve'
+        : result.contentType === 'system-design'
+          ? 'design'
+          : 'explain')
+    );
+  }
+
+  protected resultTypeLabel(result: SearchDocument): string {
+    const kind = this.discoveryKind(result);
+    if (kind === 'practice' && this.practiceFormat(result)) {
+      const format = this.practiceFormat(result)!;
+      return `${format[0].toUpperCase()}${format.slice(1)} practice`;
+    }
+    return kind === 'tool' ? 'Learning tool' : `${kind[0].toUpperCase()}${kind.slice(1)}`;
+  }
+
+  protected resultActionLabel(result: SearchDocument): string {
+    const kind = this.discoveryKind(result);
+    if (kind === 'course') return 'Explore course';
+    if (kind === 'topic') return 'Explore topic';
+    if (kind === 'lesson') return 'Read lesson';
+    if (kind === 'tool') return 'Open tool';
+    switch (this.practiceFormat(result)) {
+      case 'solve':
+        return 'Practise problem';
+      case 'design':
+        return 'Practise design';
+      case 'debug':
+        return 'Debug scenario';
+      case 'rehearse':
+        return 'Rehearse response';
+      default:
+        return 'Read full answer';
+    }
+  }
+
+  protected canPreviewAnswer(result: SearchDocument): boolean {
+    return (
+      this.libraryMode &&
+      result.contentType === 'q-and-a' &&
+      this.practiceFormat(result) === 'explain' &&
+      result.access.tier === 'free' &&
+      result.detailRef?.kind === 'content-item'
+    );
+  }
+
   protected questionSolutions(question: InterviewQuestion): CodeSolution[] {
     if (question.solutions?.length) return question.solutions;
     return question.code
@@ -1187,7 +1392,9 @@ export class Search implements OnInit {
         .filter(Boolean)
         .map((value) => this.normalize(value!)),
     );
-    return result.tags.filter((tag) => !excluded.has(this.normalize(tag)));
+    return (result.subjects ?? result.tags)
+      .filter((tag) => !excluded.has(this.normalize(tag)))
+      .slice(0, 8);
   }
 
   protected isExpanded(result: SearchDocument): boolean {
@@ -1203,7 +1410,7 @@ export class Search implements OnInit {
       !expanded.has(key) ||
       !this.libraryMode ||
       result.access.tier === 'premium' ||
-      result.detailRef.kind === 'canonical-dsa'
+      result.detailRef?.kind !== 'content-item'
     )
       return;
     this.loadQuestion(result);
@@ -1291,6 +1498,26 @@ export class Search implements OnInit {
       : 'all';
   }
 
+  private practiceFormatFromValue(value: string | null): SearchPracticeFormat {
+    return value === 'explain' ||
+      value === 'solve' ||
+      value === 'design' ||
+      value === 'debug' ||
+      value === 'rehearse'
+      ? value
+      : 'all';
+  }
+
+  private discoveryKindFromValue(value: string | null): SearchDiscoveryKind {
+    return value === 'course' ||
+      value === 'topic' ||
+      value === 'lesson' ||
+      value === 'practice' ||
+      value === 'tool'
+      ? value
+      : 'all';
+  }
+
   private sortFromValue(value: string | null): SearchSort {
     return value === 'title' || value === 'difficulty' ? value : 'relevance';
   }
@@ -1320,6 +1547,8 @@ export class Search implements OnInit {
           difficulty: this.selectedDifficulty() === 'all' ? null : this.selectedDifficulty(),
           language: this.selectedLanguage() === 'all' ? null : this.selectedLanguage(),
           type: this.selectedContentType() === 'all' ? null : this.selectedContentType(),
+          kind: this.selectedDiscoveryKind() === 'all' ? null : this.selectedDiscoveryKind(),
+          format: this.selectedPracticeFormat() === 'all' ? null : this.selectedPracticeFormat(),
           tags: tags.length ? tags.join(',') : null,
           sort: this.sortBy() === 'relevance' ? null : this.sortBy(),
           group: this.groupBy() === 'none' ? null : this.groupBy(),

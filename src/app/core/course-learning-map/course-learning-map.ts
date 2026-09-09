@@ -1,6 +1,11 @@
 import { Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { CourseLearningUnit, CourseOutline } from '../../content/content.models';
+import {
+  ContentItemSummary,
+  CourseLearningUnit,
+  CourseOutline,
+} from '../../content/content.models';
+import { practicePresentation } from '../../content/practice-presentation';
 import { questionsForModule } from '../../content/question-discovery';
 import { InterviewQuestionBankLink } from '../interview-question-bank-link/interview-question-bank-link';
 
@@ -60,6 +65,7 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
                     [courseId]="courseId()"
                     [moduleId]="questionModuleId"
                     [questionCount]="count"
+                    [practiceItems]="questionItems(unit)"
                   />
                 }
               }
@@ -86,10 +92,11 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
                           [courseId]="courseId()"
                           [moduleId]="questionModuleId"
                           [questionCount]="count"
+                          [practiceItems]="questionItems(subUnit)"
                         />
                       }
                     }
-                    @if (subUnit.practiceModuleId) {
+                    @if (subUnit.practiceModuleId && hasPractice(subUnit)) {
                       <a
                         class="learning-action practice"
                         [routerLink]="practiceRoute(subUnit)"
@@ -140,10 +147,11 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
                     [courseId]="courseId()"
                     [moduleId]="questionModuleId"
                     [questionCount]="count"
+                    [practiceItems]="questionItems(unit)"
                   />
                 }
               }
-              @if (unit.practiceModuleId) {
+              @if (unit.practiceModuleId && hasPractice(unit)) {
                 <a
                   class="learning-action practice"
                   [routerLink]="practiceRoute(unit)"
@@ -424,11 +432,19 @@ export class CourseLearningMap {
   }
 
   protected questionCount(unit: CourseLearningUnit): number {
-    return questionsForModule(this.course(), unit.questionModuleId).length;
+    return this.questionItems(unit).length;
   }
 
   protected practiceCount(unit: CourseLearningUnit): number {
-    return questionsForModule(this.course(), unit.practiceModuleId).length;
+    return this.practiceItems(unit).length;
+  }
+
+  protected questionItems(unit: CourseLearningUnit): ContentItemSummary[] {
+    return questionsForModule(this.course(), unit.questionModuleId);
+  }
+
+  protected practiceItems(unit: CourseLearningUnit): ContentItemSummary[] {
+    return questionsForModule(this.course(), unit.practiceModuleId);
   }
 
   protected unitOrder(unit: CourseLearningUnit): string | null {
@@ -460,8 +476,14 @@ export class CourseLearningMap {
     return unit.practiceExperience === 'questionBank';
   }
 
+  protected hasPractice(unit: CourseLearningUnit): boolean {
+    return !this.usesQuestionBankPractice(unit) || this.practiceCount(unit) > 0;
+  }
+
   protected practiceLabel(unit: CourseLearningUnit): string {
-    return this.usesQuestionBankPractice(unit) ? 'Practice' : `Practice ${unit.title}`;
+    const items = this.practiceItems(unit);
+    if (items.length > 0) return practicePresentation(items).compactLabel;
+    return this.usesQuestionBankPractice(unit) ? 'Browse practice' : `Practice ${unit.title}`;
   }
 
   protected subUnitGroupLabel(unit: CourseLearningUnit): string {

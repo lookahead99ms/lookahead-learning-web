@@ -13,7 +13,7 @@ import { ContentService } from '../../content/content.service';
 import { SearchDocument } from '../../content/content.models';
 
 type HeaderSuggestion = {
-  type: 'Question' | 'Topic' | 'Course' | 'Module' | 'Theory' | 'DSA' | 'Path' | 'Search';
+  type: 'Question' | 'Topic' | 'Course' | 'Module' | 'Theory' | 'DSA' | 'Tool' | 'Path' | 'Search';
   label: string;
   query: string;
   route?: string[];
@@ -34,7 +34,7 @@ const PERSISTENT_SUGGESTIONS: HeaderSuggestion[] = [
   },
   {
     type: 'Question',
-    label: 'Interview questions',
+    label: 'Interview practice',
     query: '',
     route: ['/interview-questions'],
     style: 'library',
@@ -611,31 +611,33 @@ export class PlatformHeader {
   private diverseSuggestions(documents: SearchDocument[]): HeaderSuggestion[] {
     const candidates: HeaderSuggestion[] = [
       ...documents.map((document) => ({
-        type:
-          document.contentType === 'theory'
-            ? ('Theory' as const)
-            : document.contentType === 'dsa-pattern'
-              ? ('DSA' as const)
-              : ('Question' as const),
+        type: this.documentType(document),
         label: document.title,
-        detail: `${document.courseTitle} · ${document.moduleTitle}`,
+        detail:
+          document.discoveryKind === 'course' || document.discoveryKind === 'tool'
+            ? this.pathLabel(document.path)
+            : `${document.courseTitle} · ${document.moduleTitle}`,
         query: document.title,
         route: document.route,
       })),
-      ...documents.map((document) => ({
-        type: 'Module' as const,
-        label: document.moduleTitle,
-        detail: document.courseTitle,
-        query: document.moduleTitle,
-        route: ['/', document.path, document.courseId, 'module', document.moduleId],
-      })),
-      ...documents.map((document) => ({
-        type: 'Course' as const,
-        label: document.courseTitle,
-        detail: document.path === 'grow' ? 'Grow capability' : 'Learn competency',
-        query: document.courseTitle,
-        route: ['/', document.path, document.courseId],
-      })),
+      ...documents
+        .filter((document) => !document.discoveryKind)
+        .map((document) => ({
+          type: 'Module' as const,
+          label: document.moduleTitle,
+          detail: document.courseTitle,
+          query: document.moduleTitle,
+          route: ['/', document.path, document.courseId, 'module', document.moduleId],
+        })),
+      ...documents
+        .filter((document) => !document.discoveryKind)
+        .map((document) => ({
+          type: 'Course' as const,
+          label: document.courseTitle,
+          detail: document.path === 'grow' ? 'Grow capability' : 'Learn competency',
+          query: document.courseTitle,
+          route: ['/', document.path, document.courseId],
+        })),
       ...documents.flatMap((document) =>
         document.tags.map((tag) => ({
           type: 'Topic' as const,
@@ -652,7 +654,15 @@ export class PlatformHeader {
     const available = [...unique.values()];
     const result: HeaderSuggestion[] = [];
     const usedCourses = new Set<string>();
-    for (const type of ['Theory', 'Question', 'DSA', 'Module', 'Course', 'Topic'] as const) {
+    for (const type of [
+      'Course',
+      'Topic',
+      'Theory',
+      'Question',
+      'DSA',
+      'Tool',
+      'Module',
+    ] as const) {
       const matching = available.filter((item) => item.type === type);
       const candidate =
         matching.find((item) => {
@@ -670,6 +680,20 @@ export class PlatformHeader {
       if (!result.includes(candidate)) result.push(candidate);
     }
     return result;
+  }
+
+  private documentType(document: SearchDocument): HeaderSuggestion['type'] {
+    if (document.discoveryKind === 'course') return 'Course';
+    if (document.discoveryKind === 'topic') return 'Topic';
+    if (document.discoveryKind === 'tool') return 'Tool';
+    if (document.contentType === 'theory') return 'Theory';
+    if (document.contentType === 'dsa-pattern' || document.contentType === 'dsa-problem')
+      return 'DSA';
+    return 'Question';
+  }
+
+  private pathLabel(path: SearchDocument['path']): string {
+    return path === 'look-ahead' ? 'Look Ahead' : `${path[0].toUpperCase()}${path.slice(1)}`;
   }
 
   private suggestionCourse(suggestion: HeaderSuggestion): string | null {

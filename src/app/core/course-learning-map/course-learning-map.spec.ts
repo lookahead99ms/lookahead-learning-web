@@ -16,6 +16,7 @@ function question(id: string, order: number): InterviewQuestion {
     versionNotes: [],
     followUps: [],
     contentType: 'q-and-a',
+    practiceFormat: 'explain',
   };
 }
 
@@ -75,9 +76,9 @@ describe('CourseLearningMap', () => {
       'app-interview-question-bank-link a',
     ) as HTMLAnchorElement;
 
-    expect(link.querySelector('strong')?.textContent).toBe('Interview questions');
+    expect(link.querySelector('strong')?.textContent).toBe('Review questions');
     expect(link.querySelector('span')?.textContent).toBe('3');
-    expect(link.getAttribute('aria-label')).toBe('Open all 3 interview questions for this topic');
+    expect(link.getAttribute('aria-label')).toBe('Review questions for this topic: 3 questions');
     expect(link.getAttribute('href')).toBe(
       '/interview-questions?path=learn&course=course&module=question-module',
     );
@@ -172,6 +173,7 @@ describe('CourseLearningMap', () => {
     const practiceQuestions = Array.from({ length: 4 }, (_, index) => ({
       ...question(`practice-${index + 1}`, index + 1),
       moduleId: 'practice-module',
+      practiceFormat: 'solve' as const,
     }));
     fixture.componentRef.setInput('course', {
       ...course,
@@ -197,7 +199,30 @@ describe('CourseLearningMap', () => {
     const link = fixture.nativeElement.querySelector(
       '.learning-action.practice',
     ) as HTMLAnchorElement;
-    expect(link.textContent?.replace(/\s+/g, ' ').trim()).toBe('Practice 4→');
+    expect(link.textContent?.replace(/\s+/g, ' ').trim()).toBe('Solve problems 4→');
     expect(link.getAttribute('href')).toBe('/learn/course/module/practice-module');
+  });
+
+  it('omits an empty question-bank practice action', () => {
+    fixture.componentRef.setInput('course', {
+      ...course,
+      modules: [
+        ...course.modules,
+        { id: 'empty-practice', order: 3, title: 'Practice', description: 'Practice.' },
+      ],
+    });
+    fixture.componentRef.setInput('units', [
+      {
+        id: 'empty',
+        title: 'Empty practice',
+        description: 'No published practice yet.',
+        theoryModuleId: 'theory-module',
+        practiceModuleId: 'empty-practice',
+        practiceExperience: 'questionBank',
+      },
+    ]);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.learning-action.practice')).toBeNull();
   });
 });

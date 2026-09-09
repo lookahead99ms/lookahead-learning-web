@@ -896,9 +896,13 @@ export class Question implements OnInit {
   }
 
   protected questionBankCount(item: InterviewQuestion): number {
+    return this.questionBankItems(item).length;
+  }
+
+  protected questionBankItems(item: InterviewQuestion): ContentItemSummary[] {
     const course = this.course();
-    if (!course) return 0;
-    return questionsForModule(course, this.questionBankModuleId(item)).length;
+    if (!course) return [];
+    return questionsForModule(course, this.questionBankModuleId(item));
   }
 
   protected isHandsOnSection(section: { id: string; heading: string }): boolean {
