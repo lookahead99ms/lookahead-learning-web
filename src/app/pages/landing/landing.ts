@@ -689,7 +689,7 @@ export class Landing {
         { id: 'cloud-architecture', title: 'Cloud Architecture' },
         { id: 'ai-systems-architecture', title: 'AI Systems Architecture and Projects' },
         { id: 'technical-leadership', title: 'Technical Leadership' },
-        { id: 'behavioral-carl', title: 'Behavioral and CARL Stories' },
+        { id: 'behavioral-carl', title: 'Behavioral Interview Preparation' },
         { id: 'project-recruiter', title: 'Project and Recruiter Discussions' },
       ],
     },
