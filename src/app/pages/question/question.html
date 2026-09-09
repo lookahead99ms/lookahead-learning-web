@@ -428,7 +428,10 @@
             />
           }
           @if (item.evidence; as evidence) {
-            <app-evidence-answer-tabs [evidence]="evidence" />
+            <app-evidence-answer-tabs
+              [evidence]="evidence"
+              [recommendStar]="courseId() === 'behavioral-carl'"
+            />
           }
           <section class="details-content">
             <div class="details-content-body">

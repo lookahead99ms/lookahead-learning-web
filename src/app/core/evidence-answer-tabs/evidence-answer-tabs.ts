@@ -1,4 +1,4 @@
-import { Component, input, signal } from '@angular/core';
+import { Component, input, linkedSignal } from '@angular/core';
 import { EvidenceResponse } from '../../content/content.models';
 
 type EvidenceView = 'carl' | 'star';
@@ -10,7 +10,7 @@ type EvidenceView = 'carl' | 'star';
       <div class="evidence-heading-row">
         <div>
           <span class="evidence-eyebrow">Experience evidence</span>
-          <h2 id="evidence-heading">Structure the same truthful example two ways</h2>
+          <h2 id="evidence-heading">Structure one evidence record two ways</h2>
         </div>
         <div class="evidence-tablist" role="tablist" aria-label="Answer framework">
           <button
@@ -114,6 +114,15 @@ type EvidenceView = 'carl' | 'star';
               <p>{{ evidence().star.result }}</p>
             </div>
           </article>
+          @if (recommendStar()) {
+            <article>
+              <span>L</span>
+              <div>
+                <h3>Learning close</h3>
+                <p>{{ evidence().carl.learning }}</p>
+              </div>
+            </article>
+          }
         </div>
       }
     </section>
@@ -247,7 +256,10 @@ type EvidenceView = 'carl' | 'star';
 })
 export class EvidenceAnswerTabs {
   readonly evidence = input.required<EvidenceResponse>();
-  protected readonly activeView = signal<EvidenceView>('carl');
+  readonly recommendStar = input(false);
+  protected readonly activeView = linkedSignal<EvidenceView>(() =>
+    this.recommendStar() ? 'star' : 'carl',
+  );
 
   protected moveView(event: KeyboardEvent): void {
     const next: EvidenceView | null =
