@@ -2,25 +2,28 @@
 <main id="main-content" class="search-page">
   <section class="search-hero">
     <p class="eyebrow">{{ libraryMode ? 'Interview practice' : 'Find your answer' }}</p>
-    <h1>{{ libraryMode ? 'Interview Question Library' : 'Find the right content.' }}</h1>
+    <h1>{{ libraryMode ? 'Interview Practice Library' : 'Find the right content.' }}</h1>
     <p class="search-intro">
       @if (libraryMode) {
-        Retrieve a concise answer first, then expand the reasoning, code, trade-offs, and follow-up
-        questions. Filter the complete library to match the interview you are preparing for.
+        Practise explaining, solving, designing, debugging, and rehearsing across every learning
+        path. Filter by subject and practice format, then open the experience built for that task.
       } @else {
-        Search across the platform by title, topic, tag, course, module, or concise preview. Expand
-        a result to preview the answer, then open its detailed explanation.
+        Search courses, topics, lessons, practice, and learning tools by title, subject, path, or
+        concise preview. Each result takes you directly to its canonical destination.
       }
     </p>
-    <a class="search-mode-switch" [routerLink]="libraryMode ? '/search' : '/interview-questions'">
-      {{ libraryMode ? 'Search all learning content' : 'Browse the interview question library' }}
-      <span aria-hidden="true">→</span>
+    <a
+      class="search-mode-switch"
+      [routerLink]="libraryMode ? '/search' : '/interview-questions'"
+      [queryParams]="modeQueryParams()"
+    >
+      {{ libraryMode ? 'Search all learning content' : 'Browse interview practice' }}
     </a>
     <form class="search-form" (ngSubmit)="submitSearch()">
       <input
         class="search-input"
         type="search"
-        aria-label="Search interview questions"
+        [attr.aria-label]="libraryMode ? 'Search interview practice' : 'Search all content'"
         [placeholder]="
           libraryMode
             ? 'Try Java concurrency, linked lists, transactions, or system design...'
@@ -82,9 +85,36 @@
             <option value="go">Go</option>
           </select>
         </label>
+        <label class="control"
+          >Practice format
+          <select
+            [ngModel]="selectedPracticeFormat()"
+            (ngModelChange)="updatePracticeFormat($event)"
+          >
+            <option value="all">All formats</option>
+            <option value="explain">Explain</option>
+            <option value="solve">Solve</option>
+            <option value="design">Design</option>
+            <option value="debug">Debug</option>
+            <option value="rehearse">Rehearse</option>
+          </select>
+        </label>
+      }
+      @if (!libraryMode) {
+        <label class="control"
+          >Result type
+          <select [ngModel]="selectedDiscoveryKind()" (ngModelChange)="updateDiscoveryKind($event)">
+            <option value="all">All results</option>
+            <option value="course">Courses</option>
+            <option value="topic">Topics</option>
+            <option value="lesson">Lessons</option>
+            <option value="practice">Practice</option>
+            <option value="tool">Learning tools</option>
+          </select>
+        </label>
       }
       <label class="control"
-        >{{ libraryMode ? 'Question type' : 'Content type' }}
+        >{{ libraryMode ? 'Practice family' : 'Content type' }}
         <select [ngModel]="selectedContentType()" (ngModelChange)="updateContentType($event)">
           <option value="all">All types</option>
           <option value="q-and-a">Q&amp;A</option>
@@ -119,23 +149,24 @@
           <option value="content-type">Content type</option>
         </select>
       </label>
+      <button class="clear-filters" type="button" (click)="clearFilters()">Clear filters</button>
     </div>
 
-    <section class="tag-panel" aria-label="Content tags">
+    <section class="tag-panel" aria-label="Subject filters">
       <p class="tag-panel-title">
-        Filter by topic <span>({{ selectedFilterCount() }} active)</span>
+        Filter by subject <span>({{ selectedFilterCount() }} active)</span>
       </p>
       <div class="tag-tools">
         <label>
-          <span>Find a topic</span>
+          <span>Find a subject</span>
           <input
             type="search"
-            placeholder="Filter topics…"
+            placeholder="Filter subjects…"
             [value]="tagQuery()"
             (input)="updateTagQuery($any($event.target).value)"
           />
         </label>
-        <small>{{ visibleTags().length }} of {{ availableTags().length }} topics shown</small>
+        <small>{{ visibleTags().length }} of {{ availableTags().length }} subjects shown</small>
       </div>
       <div class="tag-strip">
         <button
@@ -144,7 +175,7 @@
           type="button"
           (click)="selectTag('all')"
         >
-          All tags
+          All subjects
         </button>
         @for (tag of visibleTags(); track tag) {
           <button
@@ -156,7 +187,7 @@
             {{ tag }}
           </button>
         } @empty {
-          <span class="no-tags">No tags match the current search.</span>
+          <span class="no-tags">No subjects match the current search.</span>
         }
       </div>
     </section>
@@ -169,7 +200,7 @@
       <section id="search-results" class="results-anchor" aria-live="polite">
         <p class="result-summary">
           Showing {{ visibleResults().length }} of {{ results().length }} matching
-          {{ libraryMode ? 'interview question' : 'item' }}{{ results().length === 1 ? '' : 's' }}
+          {{ libraryMode ? 'practice item' : 'result' }}{{ results().length === 1 ? '' : 's' }}
         </p>
       </section>
       @if (results().length) {
@@ -181,21 +212,20 @@
             @for (result of group.results; track result.id) {
               <article class="result-card" [class.expanded]="isExpanded(result)">
                 <div class="result-header">
-                  <nav
-                    class="result-breadcrumbs"
-                    aria-label="Question location"
-                    (click)="$event.stopPropagation()"
-                  >
+                  <nav class="result-breadcrumbs" aria-label="Result location">
                     <a routerLink="/">Home</a><span>/</span>
-                    <a [routerLink]="pathLink(result)">{{ pathLabel(result.path) }}</a
-                    ><span>/</span>
-                    <a [routerLink]="courseLink(result)">{{ result.courseTitle }}</a>
-                    @if (result.contentType !== 'theory') {
+                    <a [routerLink]="pathLink(result)">{{ pathLabel(result.path) }}</a>
+                    @if (discoveryKind(result) !== 'course' && discoveryKind(result) !== 'tool') {
+                      <span>/</span>
+                      <a [routerLink]="courseLink(result)">{{ result.courseTitle }}</a>
+                    }
+                    @if (discoveryKind(result) === 'practice') {
                       <span>/</span
                       ><a [routerLink]="moduleLink(result)">{{ moduleLabel(result) }}</a>
                     }
                   </nav>
-                  <div class="result-meta-right" (click)="$event.stopPropagation()">
+                  <div class="result-meta-right">
+                    <span class="result-kind">{{ resultTypeLabel(result) }}</span>
                     @if (isTagSelected(contentTypeLabel(result.contentType))) {
                       <span class="result-meta-filter active">{{
                         contentTypeLabel(result.contentType)
@@ -229,37 +259,18 @@
                     }
                   </div>
                 </div>
-                <button
-                  class="result-toggle"
-                  type="button"
-                  [attr.aria-expanded]="isExpanded(result)"
-                  [attr.aria-controls]="answerId(result)"
-                  (click)="$event.stopPropagation(); toggleResult(result)"
-                >
-                  <span class="result-title">{{ result.title }}</span>
-                  <span class="expand-indicator" aria-hidden="true">{{
-                    isExpanded(result) ? '−' : '+'
-                  }}</span>
-                </button>
-                <div
-                  class="result-tags"
-                  aria-label="Question filters"
-                  (click)="$event.stopPropagation()"
-                >
-                  @if (isTagSelected(pathLabel(result.path))) {
-                    <span class="result-tag active">{{ pathLabel(result.path) }}</span>
-                  } @else {
-                    <button
-                      class="result-tag"
-                      type="button"
-                      (click)="selectTag(pathLabel(result.path))"
-                    >
-                      {{ pathLabel(result.path) }}
-                    </button>
-                  }
+                <h2 class="result-title">
+                  <a [routerLink]="questionLink(result)">{{ result.title }}</a>
+                </h2>
+                @if (preview(result); as previewText) {
+                  <p class="result-preview">{{ previewText }}</p>
+                }
+                <div class="result-tags" aria-label="Subject filters">
                   @for (tag of questionTags(result); track tag) {
                     @if (isTagSelected(tag)) {
-                      <span class="result-tag active">{{ tag }}</span>
+                      <button class="result-tag active" type="button" (click)="selectTag(tag)">
+                        {{ tag }}
+                      </button>
                     } @else {
                       <button class="result-tag" type="button" (click)="selectTag(tag)">
                         {{ tag }}
@@ -267,95 +278,71 @@
                     }
                   }
                 </div>
+                <div class="result-actions">
+                  <a class="detail-link" [routerLink]="questionLink(result)">
+                    {{ resultActionLabel(result) }}
+                  </a>
+                  @if (canPreviewAnswer(result)) {
+                    <button
+                      class="answer-toggle"
+                      type="button"
+                      [attr.aria-expanded]="isExpanded(result)"
+                      [attr.aria-controls]="answerId(result)"
+                      (click)="toggleResult(result)"
+                    >
+                      <span>{{ isExpanded(result) ? 'Hide preview' : 'Preview answer' }}</span>
+                      <span class="answer-toggle-chevron" aria-hidden="true"></span>
+                    </button>
+                  }
+                </div>
                 @if (isExpanded(result)) {
-                  <div
-                    class="result-answer"
-                    [id]="answerId(result)"
-                    (click)="$event.stopPropagation()"
-                  >
-                    @if (result.access.tier === 'premium') {
-                      <div class="premium-state">
-                        <strong>Premium answer</strong>
-                        <p>
-                          This answer requires
-                          {{ result.access.subscriptionIds?.join(', ') || 'a premium' }} access.
-                        </p>
+                  <div class="result-answer" [id]="answerId(result)">
+                    @if (questionLoading(result)) {
+                      <p class="answer-loading" role="status">Loading the answer preview…</p>
+                    } @else if (questionError(result)) {
+                      <div class="answer-error" role="alert">
+                        <p>The answer preview could not be loaded.</p>
+                        <button type="button" (click)="loadQuestion(result)">Try again</button>
                       </div>
-                    } @else {
-                      @if (libraryMode && questionLoading(result)) {
-                        <p class="answer-loading" role="status">Loading the complete answer…</p>
-                      } @else if (libraryMode && questionError(result)) {
-                        <div class="answer-error" role="alert">
-                          <p>The complete answer could not be loaded.</p>
-                          <button type="button" (click)="loadQuestion(result)">Try again</button>
-                        </div>
-                      } @else if (libraryMode && resolvedQuestion(result); as question) {
-                        <section class="library-answer" aria-label="Reference answer">
-                          <p class="result-answer-label">Interview answer</p>
-                          <p class="reference-answer" [innerHTML]="question.interviewAnswer"></p>
-                          @if (question.explanation.length) {
-                            <section class="answer-explanation">
-                              <h3>Why this answer is strong</h3>
-                              @for (paragraph of question.explanation; track paragraph) {
-                                <p [innerHTML]="paragraph"></p>
-                              }
-                            </section>
-                          }
-                          @if (questionSolutions(question); as solutions) {
-                            @if (solutions.length) {
-                              <app-coding-solution-tabs
-                                [solutions]="solutions"
-                                [complexity]="question.complexity"
-                                [showPractice]="false"
-                                [useLanguageThemes]="true"
-                              />
+                    } @else if (resolvedQuestion(result); as question) {
+                      <section class="library-answer" aria-label="Answer preview">
+                        <p class="result-answer-label">Interview answer</p>
+                        <p class="reference-answer" [innerHTML]="question.interviewAnswer"></p>
+                        @if (question.explanation.length) {
+                          <section class="answer-explanation">
+                            <h3>Why this answer is strong</h3>
+                            @for (paragraph of question.explanation; track paragraph) {
+                              <p [innerHTML]="paragraph"></p>
                             }
+                          </section>
+                        }
+                        @if (questionSolutions(question); as solutions) {
+                          @if (solutions.length) {
+                            <app-coding-solution-tabs
+                              [solutions]="solutions"
+                              [complexity]="question.complexity"
+                              [showPractice]="false"
+                              [useLanguageThemes]="true"
+                            />
                           }
-                          @if (question.followUps.length) {
-                            <section class="answer-follow-ups">
-                              <h3>Follow-up questions</h3>
-                              @for (followUp of question.followUps; track followUp.question) {
-                                <details>
-                                  <summary>{{ followUp.question }}</summary>
-                                  <p [innerHTML]="followUp.answer"></p>
-                                </details>
-                              }
-                            </section>
-                          }
-                          <div class="answer-actions">
-                            @if (relatedLessonLink(result, question); as lessonRoute) {
-                              <a class="lesson-link" [routerLink]="lessonRoute"
-                                >Read the related lesson</a
-                              >
+                        }
+                        @if (question.followUps.length) {
+                          <section class="answer-follow-ups">
+                            <h3>Follow-up questions</h3>
+                            @for (followUp of question.followUps; track followUp.question) {
+                              <details>
+                                <summary>{{ followUp.question }}</summary>
+                                <p [innerHTML]="followUp.answer"></p>
+                              </details>
                             }
-                            @if (result.route; as route) {
-                              <a
-                                class="detail-link"
-                                [routerLink]="route"
-                                [queryParams]="{ details: 1 }"
-                                >View question page <span aria-hidden="true">→</span></a
-                              >
-                            }
-                          </div>
-                        </section>
-                      } @else {
-                        <p class="result-answer-label">
-                          {{ result.contentType === 'q-and-a' ? 'Interview answer' : 'Preview' }}
-                        </p>
-                        <p class="result-preview">
-                          {{ preview(result) || 'More content is available in this guide.' }}
-                        </p>
-                        @if (result.route; as route) {
-                          <a class="detail-link" [routerLink]="route" [queryParams]="{ details: 1 }"
-                            >{{
-                              result.contentType === 'q-and-a'
-                                ? 'View detailed answer'
-                                : 'Open content'
-                            }}
-                            →</a
+                          </section>
+                        }
+                        @if (relatedLessonLink(result, question); as lessonRoute) {
+                          <a class="lesson-link" [routerLink]="lessonRoute"
+                            >Read the related lesson</a
                           >
                         }
-                      }
+                      </section>
                     }
                   </div>
                 }
@@ -365,12 +352,13 @@
         }
         @if (hasMoreResults()) {
           <button class="show-more-results" type="button" (click)="showMoreResults()">
-            Show {{ nextResultCount() }} more questions
+            Show {{ nextResultCount() }} more {{ libraryMode ? 'practice items' : 'results' }}
           </button>
         }
       } @else {
         <p class="empty-state">
-          No questions match those filters. Try a broader topic or remove the tag filter.
+          No {{ libraryMode ? 'practice items' : 'results' }} match those filters. Try a broader
+          subject or clear the filters.
         </p>
       }
     }

@@ -1,6 +1,7 @@
 import { Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import {
+  ContentItemSummary,
   FoundationLessonV1,
   InterviewQuestion,
   ResolvedPatternCheck,
@@ -166,6 +167,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
               [courseId]="courseId()"
               [moduleId]="moduleId"
               [questionCount]="questionCount()"
+              [practiceItems]="questionItems()"
             />
           }
         }
@@ -638,6 +640,7 @@ export class FoundationLessonShell {
   readonly courseId = input.required<string>();
   readonly questionModuleId = input<string | null>(null);
   readonly questionCount = input(0);
+  readonly questionItems = input<ContentItemSummary[]>([]);
 
   protected practiceReason(questionId: string): string {
     return this.lesson().practice?.find((item) => item.questionId === questionId)?.reason ?? '';

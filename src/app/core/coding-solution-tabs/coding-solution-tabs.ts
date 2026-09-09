@@ -92,6 +92,7 @@ type Language = 'java' | 'python' | 'go';
             </div>
             <textarea
               [value]="practiceCode()"
+              [attr.rows]="practiceEditorRows()"
               (input)="updatePracticeCode($any($event.target).value)"
               [attr.aria-label]="'Practice editor for ' + practiceLanguage()"
               spellcheck="false"
@@ -110,7 +111,9 @@ type Language = 'java' | 'python' | 'go';
               <span>Pseudocode</span><app-code-copy-button [code]="pseudo.source" />
             </div>
           </div>
-          <pre><code [innerHTML]="highlightedPseudocode()"></code></pre>
+          <pre
+            [style.--visible-code-rows]="pseudocodeCodeRows()"
+          ><code [innerHTML]="highlightedPseudocode()"></code></pre>
         </section>
       } @else if (activeSolution(); as solution) {
         <section class="solution-view" role="tabpanel">
@@ -142,7 +145,9 @@ type Language = 'java' | 'python' | 'go';
                 ><app-code-copy-button [code]="solution.source" />
               </div>
             </div>
-            <pre><code [innerHTML]="highlightedSource()"></code></pre>
+            <pre
+              [style.--visible-code-rows]="referenceCodeRows()"
+            ><code [innerHTML]="highlightedSource()"></code></pre>
           }
           @if (complexity(); as costs) {
             <div class="solution-complexity">
@@ -311,8 +316,8 @@ type Language = 'java' | 'python' | 'go';
       textarea,
       pre {
         display: block;
+        box-sizing: border-box;
         width: 100%;
-        min-height: 290px;
         margin: 0;
         padding: 18px;
         border: 0;
@@ -326,11 +331,16 @@ type Language = 'java' | 'python' | 'go';
         tab-size: 2;
       }
       textarea {
+        min-height: 0;
+        max-height: min(520px, 70vh);
+        overflow: auto;
         resize: vertical;
         outline: none;
       }
       pre {
-        overflow: visible;
+        min-height: calc((var(--visible-code-rows, 3) * 1.65em) + 36px);
+        max-height: min(520px, 70vh);
+        overflow: auto;
         white-space: pre-wrap;
         overflow-wrap: anywhere;
       }
@@ -583,12 +593,27 @@ export class CodingSolutionTabs {
   protected readonly highlightedPseudocode = computed(() =>
     this.highlightPseudocode(this.pseudocode()?.source ?? ''),
   );
+  protected readonly practiceEditorRows = computed(() =>
+    this.visibleCodeRows(this.practiceCode(), 6, 20),
+  );
+  protected readonly referenceCodeRows = computed(() =>
+    this.visibleCodeRows(this.activeSolution()?.source ?? '', 3, 18),
+  );
+  protected readonly pseudocodeCodeRows = computed(() =>
+    this.visibleCodeRows(this.pseudocode()?.source ?? '', 3, 18),
+  );
   protected readonly editorFilename = computed(
     () =>
       ({ java: 'Solution.java', python: 'solution.py', go: 'solution.go' })[
         this.practiceLanguage()
       ],
   );
+
+  private visibleCodeRows(source: string, minimum: number, maximum: number): number {
+    const lines = source.replace(/\n$/, '').split('\n');
+    const rows = lines.reduce((total, line) => total + Math.max(1, Math.ceil(line.length / 96)), 0);
+    return Math.min(maximum, Math.max(minimum, rows));
+  }
   protected readonly visualWithLanguage = computed<TheoryVisual | null>(() => {
     const visual = this.visual();
     const solution = this.activeSolution();

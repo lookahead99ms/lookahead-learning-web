@@ -173,7 +173,7 @@ describe('ContentService compact indexes and selected details', () => {
     };
   }
 
-  function record(id: string, contentType: 'theory' | 'q-and-a' | 'dsa-problem') {
+  function record(id: string, contentType: 'theory' | 'q-and-a' | 'dsa-problem' | 'guide') {
     return {
       id,
       contentId: id,
@@ -316,6 +316,58 @@ describe('ContentService compact indexes and selected details', () => {
     http.verify();
   });
 
+  it('accepts navigation-only discovery records and excludes them from interview practice', () => {
+    const { service, http } = setup();
+    const searchKinds: string[][] = [];
+    const practiceIds: string[][] = [];
+
+    service
+      .getSearchIndex('learn')
+      .subscribe((documents) =>
+        searchKinds.push(documents.map(({ discoveryKind }) => discoveryKind ?? 'legacy')),
+      );
+    service
+      .getInterviewQuestionIndex('learn')
+      .subscribe((documents) => practiceIds.push(documents.map(({ id }) => id)));
+    http.expectOne('/content/content-index-manifest.json').flush({
+      schemaVersion: 'content-index-manifest/v1',
+      totals: { searchDocuments: 2, practiceDocuments: 1 },
+      practiceContentTypes: ['q-and-a'],
+      practiceFormats: ['explain', 'solve', 'design', 'debug', 'rehearse'],
+      shards: [
+        {
+          path: 'learn',
+          href: '/content/indexes/learn.json',
+          documentCount: 2,
+          practiceDocumentCount: 1,
+        },
+      ],
+    });
+    http.expectOne('/content/indexes/learn.json').flush({
+      schemaVersion: 'content-index-shard/v1',
+      path: 'learn',
+      documents: [
+        {
+          ...record('course:learn:sample', 'guide'),
+          contentId: 'sample',
+          discoveryKind: 'course',
+          subjects: ['Contracts'],
+          route: ['/', 'learn', 'sample'],
+          detailRef: undefined,
+        },
+        {
+          ...record('question', 'q-and-a'),
+          discoveryKind: 'practice',
+          practiceFormat: 'explain',
+        },
+      ],
+    });
+
+    expect(searchKinds).toEqual([['course', 'practice']]);
+    expect(practiceIds).toEqual([['question']]);
+    http.verify();
+  });
+
   it('fails closed when the requested path has no manifest shard', () => {
     const { service, http } = setup();
     let error: Error | undefined;
@@ -430,6 +482,50 @@ describe('ContentService compact indexes and selected details', () => {
     service.getModuleQuestions(outline, 'intro').subscribe();
     http.expectNone('/content/learn/sample/modules/intro.json');
     expect(questions[0].id).toBe('selected-item');
+    http.verify();
+  });
+
+  it('rejects invalid practice formats in compact course metadata', () => {
+    const { service, http } = setup();
+    let error: Error | undefined;
+    service.getCourseOutline('learn', 'sample').subscribe({ error: (cause) => (error = cause) });
+    http.expectOne('/content/learn/sample/content-locator.json').flush({
+      schemaVersion: 'course-content-locator/v1',
+      course: {
+        id: 'sample',
+        path: 'learn',
+        title: 'Sample course',
+        modules: [{ id: 'questions', title: 'Questions', order: 1 }],
+      },
+      items: [
+        {
+          id: 'question',
+          moduleId: 'questions',
+          order: 1,
+          title: 'Question',
+          difficulty: 'Beginner',
+          tags: [],
+          contentType: 'q-and-a',
+          isTheoryArticle: false,
+          practiceFormat: 'quiz',
+          detailRef: {
+            kind: 'content-item',
+            href: '/content/details/learn/sample/questions/question.json',
+            version: 'v1',
+          },
+        },
+      ],
+      modules: [
+        {
+          moduleId: 'questions',
+          href: '/content/learn/sample/modules/questions.json',
+          version: 'v1',
+          itemIds: ['question'],
+        },
+      ],
+    });
+
+    expect(error?.message).toBe('Invalid course content locator: learn/sample');
     http.verify();
   });
 

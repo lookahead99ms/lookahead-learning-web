@@ -45,11 +45,14 @@ describe('Search interview-question library', () => {
     moduleTitle: 'Java Concurrency',
     title: question.title,
     contentType: 'q-and-a',
+    discoveryKind: 'practice',
+    practiceFormat: 'explain',
+    subjects: question.tags,
     tags: question.tags,
     filterTags: ['Learn', 'Q&A', 'Java', 'Concurrency', 'Intermediate'],
     languages: ['java'],
     difficulty: question.difficulty,
-    preview: question.interviewAnswer,
+    preview: '',
     access: { tier: 'free' },
     searchableText: `${question.title} ${question.interviewAnswer}`.toLowerCase(),
     route: ['/', 'learn', 'solid-design-patterns', question.id],
@@ -82,13 +85,13 @@ describe('Search interview-question library', () => {
     vi.unstubAllGlobals();
   });
 
-  it('loads the interview index and hydrates the canonical answer only when expanded', async () => {
+  it('loads interview practice and hydrates an explanatory answer only on request', async () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/interview-questions?path=learn', Search);
     harness.detectChanges();
 
     expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toContain(
-      'Interview Question Library',
+      'Interview Practice Library',
     );
     expect(content.getInterviewQuestionIndex).toHaveBeenCalledOnce();
     expect(content.getInterviewQuestionIndex).toHaveBeenCalledWith('learn');
@@ -99,12 +102,30 @@ describe('Search interview-question library', () => {
       ),
     ).toBe(true);
 
-    (harness.routeNativeElement?.querySelector('.result-toggle') as HTMLButtonElement).click();
+    expect(harness.routeNativeElement?.querySelector('.detail-link')?.textContent?.trim()).toBe(
+      'Read full answer',
+    );
+    expect(harness.routeNativeElement?.querySelector('.result-preview')).toBeNull();
+    expect(harness.routeNativeElement?.textContent).not.toContain(question.interviewAnswer);
+    const answerToggle = harness.routeNativeElement?.querySelector(
+      '.answer-toggle',
+    ) as HTMLButtonElement;
+    expect(answerToggle.getAttribute('aria-expanded')).toBe('false');
+    expect(answerToggle.textContent?.trim()).toBe('Preview answer');
+    expect(answerToggle.querySelector('.answer-toggle-chevron')?.getAttribute('aria-hidden')).toBe(
+      'true',
+    );
+    answerToggle.click();
     harness.detectChanges();
 
+    expect(answerToggle.getAttribute('aria-expanded')).toBe('true');
+    expect(answerToggle.textContent?.trim()).toBe('Hide preview');
     expect(content.getInterviewQuestion).toHaveBeenCalledWith(document);
     expect(harness.routeNativeElement?.querySelector('.reference-answer')?.textContent).toContain(
       'read-modify-write',
+    );
+    expect(harness.routeNativeElement?.textContent?.split(question.interviewAnswer)).toHaveLength(
+      2,
     );
     expect(harness.routeNativeElement?.querySelector('app-coding-solution-tabs')).not.toBeNull();
   });
@@ -139,6 +160,158 @@ describe('Search interview-question library', () => {
     expect(TestBed.inject(Router).url).toBe('/interview-questions?path=grow');
     expect(harness.routeNativeElement?.querySelector('.result-title')?.textContent).toContain(
       growDocument.title,
+    );
+  });
+
+  it('renders first-class discovery results with type-appropriate actions', async () => {
+    const courseDocument: SearchDocument = {
+      ...document,
+      id: 'course:learn:solid-design-patterns',
+      contentId: 'solid-design-patterns',
+      moduleId: 'solid-design-patterns',
+      moduleTitle: document.courseTitle,
+      title: document.courseTitle,
+      contentType: 'guide',
+      discoveryKind: 'course',
+      practiceFormat: undefined,
+      detailRef: undefined,
+      route: ['/', 'learn', 'solid-design-patterns'],
+    };
+    const lessonDocument: SearchDocument = {
+      ...document,
+      id: 'learn:solid-design-patterns:thread-safety',
+      contentId: 'thread-safety',
+      title: 'Thread safety foundations',
+      contentType: 'theory',
+      discoveryKind: 'lesson',
+      practiceFormat: undefined,
+      route: ['/', 'learn', 'solid-design-patterns', 'thread-safety'],
+    };
+    const topicDocument: SearchDocument = {
+      ...courseDocument,
+      id: 'topic:learn:solid-design-patterns:java-concurrency',
+      contentId: 'java-concurrency',
+      moduleId: 'java-concurrency',
+      moduleTitle: 'Java Concurrency',
+      title: 'Java Concurrency',
+      discoveryKind: 'topic',
+      route: ['/', 'learn', 'solid-design-patterns', 'module', 'java-concurrency'],
+    };
+    const toolDocument: SearchDocument = {
+      ...courseDocument,
+      id: 'tool:learn:hands-on-dsa',
+      contentId: 'hands-on-dsa',
+      courseId: 'hands-on-dsa',
+      courseTitle: 'Hands-on DSA Practice',
+      moduleId: 'hands-on-dsa',
+      moduleTitle: 'Hands-on DSA Practice',
+      title: 'Hands-on DSA Practice',
+      discoveryKind: 'tool',
+      route: ['/', 'learn', 'hands-on-dsa'],
+    };
+    content.getSearchIndex.mockReturnValueOnce(
+      of([courseDocument, topicDocument, lessonDocument, toolDocument]),
+    );
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/search', Search);
+    harness.detectChanges();
+
+    const actions = [...harness.routeNativeElement!.querySelectorAll('.detail-link')].map((link) =>
+      link.textContent.trim(),
+    );
+    expect(actions.sort()).toEqual(['Explore course', 'Explore topic', 'Open tool', 'Read lesson']);
+    expect(harness.routeNativeElement?.querySelector('.answer-toggle')).toBeNull();
+  });
+
+  it('filters practice format independently from subject and content family', async () => {
+    const debugDocument: SearchDocument = {
+      ...document,
+      id: 'grow:technical-scenarios:failed-release',
+      path: 'grow',
+      courseId: 'technical-scenarios',
+      courseTitle: 'Production Scenario Practice',
+      moduleId: 'failure-practice',
+      moduleTitle: 'Production Failure Practice',
+      title: 'Diagnose a failed release',
+      practiceFormat: 'debug',
+      tags: ['Java', 'Production'],
+      subjects: ['Java', 'Production'],
+      filterTags: ['Grow', 'Q&A', 'Java', 'Production', 'Intermediate'],
+      route: ['/', 'grow', 'technical-scenarios', 'failed-release'],
+    };
+    content.getInterviewQuestionIndex.mockReturnValueOnce(of([document, debugDocument]));
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/interview-questions?format=debug&tags=Java', Search);
+    harness.detectChanges();
+
+    expect(harness.routeNativeElement?.querySelectorAll('.result-card')).toHaveLength(1);
+    expect(harness.routeNativeElement?.querySelector('.result-title')?.textContent).toContain(
+      debugDocument.title,
+    );
+    expect(harness.routeNativeElement?.querySelector('.detail-link')?.textContent).toContain(
+      'Debug scenario',
+    );
+    expect(TestBed.inject(Router).url).toBe('/interview-questions?format=debug&tags=Java');
+  });
+
+  it('uses a distinct action for every supported practice format', async () => {
+    const documents: SearchDocument[] = [
+      ['explain', 'Explain concurrency', 'q-and-a'],
+      ['solve', 'Implement a bounded queue', 'dsa-problem'],
+      ['design', 'Design a notification service', 'system-design'],
+      ['debug', 'Diagnose a failed release', 'q-and-a'],
+      ['rehearse', 'Rehearse an ownership story', 'q-and-a'],
+    ].map(([practiceFormat, title, contentType], index) => ({
+      ...document,
+      id: `practice-${practiceFormat}`,
+      contentId: `practice-${index}`,
+      title,
+      contentType: contentType as SearchDocument['contentType'],
+      practiceFormat: practiceFormat as SearchDocument['practiceFormat'],
+      detailRef:
+        contentType === 'dsa-problem'
+          ? {
+              kind: 'canonical-dsa',
+              href: `/content/learn/dsa-problems/practice-${index}.json`,
+              version: 'practice-v1',
+            }
+          : document.detailRef,
+    }));
+    content.getInterviewQuestionIndex.mockReturnValueOnce(of(documents));
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/interview-questions', Search);
+    harness.detectChanges();
+
+    const actions = [...harness.routeNativeElement!.querySelectorAll('.detail-link')].map((link) =>
+      link.textContent.trim(),
+    );
+    expect(actions.sort()).toEqual(
+      [
+        'Debug scenario',
+        'Practise design',
+        'Read full answer',
+        'Practise problem',
+        'Rehearse response',
+      ].sort(),
+    );
+    expect(harness.routeNativeElement?.querySelectorAll('.answer-toggle')).toHaveLength(1);
+  });
+
+  it('preserves compatible URL filters when switching between Search and Practice', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl(
+      '/interview-questions?q=counter&path=learn&difficulty=Intermediate&tags=Java',
+      Search,
+    );
+    const switchLink = harness.routeNativeElement?.querySelector(
+      '.search-mode-switch',
+    ) as HTMLAnchorElement;
+    expect(switchLink.textContent?.trim()).toBe('Search all learning content');
+    switchLink.click();
+    await harness.fixture.whenStable();
+
+    expect(TestBed.inject(Router).url).toBe(
+      '/search?q=counter&path=learn&difficulty=Intermediate&tags=Java',
     );
   });
 
@@ -186,7 +359,7 @@ describe('Search interview-question library', () => {
     const showMore = harness.routeNativeElement?.querySelector(
       '.show-more-results',
     ) as HTMLButtonElement;
-    expect(showMore.textContent).toContain('Show 5 more questions');
+    expect(showMore.textContent).toContain('Show 5 more practice items');
 
     showMore.click();
     harness.detectChanges();
@@ -245,7 +418,7 @@ describe('Search interview-question library', () => {
 
     expect(TestBed.inject(Router).url).toBe('/interview-questions');
     expect(harness.routeNativeElement?.querySelector('.result-summary')?.textContent).toContain(
-      'Showing 1 of 1 matching interview question',
+      'Showing 1 of 1 matching practice item',
     );
   });
 

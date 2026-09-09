@@ -197,6 +197,7 @@
           [practicePatternId]="handsOnPatternId(item)"
           [questionModuleId]="questionBankModuleId(item)"
           [questionCount]="questionBankCount(item)"
+          [questionItems]="questionBankItems(item)"
         />
       } @else if (foundationLesson(item); as lesson) {
         <app-foundation-lesson-shell
@@ -207,6 +208,7 @@
           [courseId]="courseId()"
           [questionModuleId]="questionBankModuleId(item)"
           [questionCount]="questionBankCount(item)"
+          [questionItems]="questionBankItems(item)"
         />
       } @else if (item.contentType === 'theory' && item.sections?.length) {
         <section class="theory-article" aria-label="Theory lesson">

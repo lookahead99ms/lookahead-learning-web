@@ -71,12 +71,17 @@ test('uses canonical DSA identity and metadata without indexing stale placeholde
   await generateSearchIndex(root);
   const manifest = JSON.parse(await readFile(join(root, 'content-index-manifest.json'), 'utf8'));
   const shard = JSON.parse(await readFile(join(root, 'indexes/learn.json'), 'utf8'));
-  const [document] = shard.documents;
+  const document = shard.documents.find(({ id }) => id === 'dsa:canonical-problem');
 
   assert.equal(manifest.schemaVersion, 'content-index-manifest/v1');
-  assert.equal(manifest.totals.searchDocuments, 1);
+  assert.equal(manifest.totals.searchDocuments, 4);
   assert.equal(manifest.totals.practiceDocuments, 1);
+  assert.deepEqual(manifest.practiceFormats, ['explain', 'solve', 'design', 'debug', 'rehearse']);
   assert.equal(shard.schemaVersion, 'content-index-shard/v1');
+  assert.deepEqual(
+    shard.documents.map(({ discoveryKind }) => discoveryKind),
+    ['course', 'topic', 'practice', 'topic'],
+  );
   assert.equal(document.id, 'dsa:canonical-problem');
   assert.equal(document.contentId, 'legacy-route');
   assert.equal(document.canonicalContentId, 'canonical-problem');
@@ -84,6 +89,8 @@ test('uses canonical DSA identity and metadata without indexing stale placeholde
   assert.equal(document.difficulty, 'Beginner');
   assert.deepEqual(document.languages, ['java', 'python', 'go']);
   assert.equal(document.detailRef.kind, 'canonical-dsa');
+  assert.equal(document.practiceFormat, 'solve');
+  assert.deepEqual(document.route, ['/', 'learn', 'algorithmic-patterns', 'legacy-route']);
   assert.equal(document.searchableText, undefined);
   assert.equal(document.filterTags, undefined);
   assert.doesNotMatch(JSON.stringify(shard), /stale alternative/);
@@ -95,6 +102,121 @@ test('uses canonical DSA identity and metadata without indexing stale placeholde
   assert.equal(locator.items[0].canonicalProblemRef.problemId, 'canonical-problem');
   const [overview] = JSON.parse(await readFile(join(root, 'learn/catalog-overview.json'), 'utf8'));
   assert.equal(overview.moduleCount, 2);
+});
+
+test('indexes special catalog experiences as tools and classifies every practice format', async (context) => {
+  const root = await testRoot(context);
+  await writeJson(root, 'grow/catalog.json', [
+    { id: 'sample', title: 'Sample course', available: true },
+    {
+      id: 'scenario-lab',
+      title: 'Scenario lab',
+      description: 'Open a guided production lab.',
+      available: true,
+    },
+  ]);
+  await writeJson(root, 'grow/sample/course.json', {
+    id: 'sample',
+    path: 'grow',
+    title: 'Sample course',
+    description: 'A representative course.',
+    chips: ['Java', 'AI/ML'],
+    modules: [{ id: 'practice', title: 'Applied Practice', order: 1 }],
+  });
+  const base = {
+    moduleId: 'practice',
+    difficulty: 'Intermediate',
+    interviewAnswer: 'Reference answer.',
+    followUps: [],
+  };
+  await writeJson(root, 'grow/sample/modules/practice.json', [
+    {
+      ...base,
+      id: 'explain',
+      title: 'Implement a model-drift explanation',
+      tags: ['AI/ML'],
+      practiceFormat: 'explain',
+    },
+    { ...base, id: 'solve', title: 'Implement a bounded evaluator', tags: ['Exercise'] },
+    { ...base, id: 'design', title: 'Design a low-level cache', tags: ['LLD'] },
+    { ...base, id: 'debug', title: 'Diagnose a production failure', tags: ['Incident'] },
+    { ...base, id: 'rehearse', title: 'Tell a STAR experience story', tags: ['Behavioral'] },
+  ]);
+
+  await generateSearchIndex(root);
+  const shard = JSON.parse(await readFile(join(root, 'indexes/grow.json'), 'utf8'));
+  const practice = shard.documents.filter(({ discoveryKind }) => discoveryKind === 'practice');
+  assert.deepEqual(
+    practice.map(({ practiceFormat }) => practiceFormat),
+    ['explain', 'solve', 'design', 'debug', 'rehearse'],
+  );
+  assert.ok(practice.every(({ subjects }) => subjects.includes('Java')));
+  const locator = JSON.parse(
+    await readFile(join(root, 'grow/sample/content-locator.json'), 'utf8'),
+  );
+  assert.deepEqual(
+    locator.items.map(({ practiceFormat }) => practiceFormat),
+    ['explain', 'solve', 'design', 'debug', 'rehearse'],
+  );
+  const tool = shard.documents.find(({ discoveryKind }) => discoveryKind === 'tool');
+  assert.equal(tool.id, 'tool:grow:scenario-lab');
+  assert.deepEqual(tool.route, ['/', 'grow', 'scenario-lab']);
+  assert.equal(tool.detailRef, undefined);
+});
+
+test('rejects invalid authored practice formats rather than guessing a CTA', async (context) => {
+  const root = await testRoot(context);
+  await writeJson(root, 'learn/catalog.json', [
+    { id: 'sample', title: 'Sample course', available: true },
+  ]);
+  await writeJson(root, 'learn/sample/course.json', {
+    id: 'sample',
+    path: 'learn',
+    title: 'Sample course',
+    modules: [{ id: 'questions', title: 'Questions', order: 1 }],
+  });
+  await writeJson(root, 'learn/sample/modules/questions.json', [
+    {
+      id: 'invalid-format',
+      moduleId: 'questions',
+      title: 'Explain the contract',
+      difficulty: 'Beginner',
+      tags: [],
+      interviewAnswer: 'Explain it.',
+      followUps: [],
+      practiceFormat: 'quiz',
+    },
+  ]);
+
+  await assert.rejects(() => generateSearchIndex(root), /invalid practice format quiz/);
+});
+
+test('keeps interrogative implementation questions in knowledge review', async (context) => {
+  const root = await testRoot(context);
+  await writeJson(root, 'learn/catalog.json', [{ id: 'python', title: 'Python', available: true }]);
+  await writeJson(root, 'learn/python/course.json', {
+    id: 'python',
+    path: 'learn',
+    title: 'Python',
+    modules: [{ id: 'questions', title: 'Coding interview questions', order: 1 }],
+  });
+  await writeJson(root, 'learn/python/modules/questions.json', [
+    {
+      id: 'heapq-implementation',
+      moduleId: 'questions',
+      title: 'How does heapq implement priority queues over lists?',
+      difficulty: 'Intermediate',
+      tags: ['Heap'],
+      interviewAnswer: 'Explain the heap invariant.',
+      followUps: [],
+    },
+  ]);
+
+  await generateSearchIndex(root);
+  const locator = JSON.parse(
+    await readFile(join(root, 'learn/python/content-locator.json'), 'utf8'),
+  );
+  assert.equal(locator.items[0].practiceFormat, 'explain');
 });
 
 async function addCourse(root, path, chips) {
@@ -138,10 +260,51 @@ test('Grow previews use normalized authored topics without fetching full courses
   );
   assert.equal(detail.interviewAnswer, 'Describe the contract.');
   const shardText = await readFile(join(root, 'indexes/grow.json'), 'utf8');
-  assert.match(shardText, /Describe the contract/);
+  const shard = JSON.parse(shardText);
+  const question = shard.documents.find(({ id }) => id === 'grow:sample:sample-question');
+  assert.equal(question.preview, '');
+  assert.doesNotMatch(shardText, /Describe the contract/);
   assert.doesNotMatch(shardText, /followUps|explanation|solutions/);
   await assert.rejects(readFile(join(root, 'search-index.json')), { code: 'ENOENT' });
   await assert.rejects(readFile(join(root, 'interview-question-index.json')), { code: 'ENOENT' });
+});
+
+test('uses authored summaries without repeating a reference answer in discovery', async (context) => {
+  const root = await testRoot(context);
+  await addCourse(root, 'learn');
+  await writeJson(root, 'learn/sample/modules/intro.json', [
+    {
+      id: 'distinct-summary',
+      moduleId: 'intro',
+      title: 'Explain the contract',
+      difficulty: 'Beginner',
+      tags: [],
+      summary: 'Reason about the public behavior before opening the reference response.',
+      interviewAnswer: 'The reference answer stays in the detail payload.',
+      followUps: [],
+    },
+    {
+      id: 'duplicate-summary',
+      moduleId: 'intro',
+      title: 'Explain another contract',
+      difficulty: 'Beginner',
+      tags: [],
+      summary: 'Do not repeat this answer.',
+      interviewAnswer: 'Do not repeat this answer.',
+      followUps: [],
+    },
+  ]);
+
+  await generateSearchIndex(root);
+  const shard = JSON.parse(await readFile(join(root, 'indexes/learn.json'), 'utf8'));
+  const distinct = shard.documents.find(({ contentId }) => contentId === 'distinct-summary');
+  const duplicate = shard.documents.find(({ contentId }) => contentId === 'duplicate-summary');
+  assert.equal(
+    distinct.preview,
+    'Reason about the public behavior before opening the reference response.',
+  );
+  assert.equal(duplicate.preview, '');
+  assert.doesNotMatch(JSON.stringify(shard), /The reference answer stays in the detail payload/);
 });
 
 test('Grow falls back to real module titles when authored topics are absent', async (context) => {
@@ -194,13 +357,15 @@ test('counts lessons and questions separately from lesson/practice module contai
   assert.deepEqual(course.topicPreview, ['Contracts', 'State', 'Recovery']);
 });
 
-test('Learn and Look Ahead keep their existing module previews', async (context) => {
+test('Learn uses authored important topics while Look Ahead retains its module preview', async (context) => {
   const root = await testRoot(context);
-  for (const path of ['learn', 'look-ahead'])
-    await addCourse(root, path, ['Do not replace modules']);
+  await addCourse(root, 'learn', [' Runtime contracts ', 'Exceptions', 'runtime contracts']);
+  await addCourse(root, 'look-ahead', ['Do not replace modules']);
   await generateSearchIndex(root);
-  for (const path of ['learn', 'look-ahead']) {
-    const [course] = JSON.parse(await readFile(join(root, path, 'catalog-overview.json')));
-    assert.deepEqual(course.topicPreview, ['Introduction']);
-  }
+  const [learnCourse] = JSON.parse(await readFile(join(root, 'learn/catalog-overview.json')));
+  const [lookAheadCourse] = JSON.parse(
+    await readFile(join(root, 'look-ahead/catalog-overview.json')),
+  );
+  assert.deepEqual(learnCourse.topicPreview, ['Runtime contracts', 'Exceptions']);
+  assert.deepEqual(lookAheadCourse.topicPreview, ['Introduction']);
 });

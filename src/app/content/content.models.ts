@@ -8,6 +8,7 @@ export type ContentType =
   | 'system-design'
   | 'language-comparison'
   | 'guide';
+export type PracticeFormat = 'explain' | 'solve' | 'design' | 'debug' | 'rehearse';
 export type SubscriptionScope = 'platform' | 'path' | 'catalog' | 'module' | 'content-type';
 export type PatternLessonSchemaVersion = 'pattern-lesson/v1' | 'pattern-lesson/v2';
 export type FoundationLessonSchemaVersion = 'foundation-lesson/v1';
@@ -165,6 +166,8 @@ export interface InterviewQuestion {
   followUps: { question: string; answer: string }[];
   reviewStatus?: ContentReviewStatus;
   contentType?: ContentType;
+  /** Learner action represented by this item; independent from its technical subject. */
+  practiceFormat?: PracticeFormat;
   access?: ContentAccess;
   accessPlaceholder?: AccessPlaceholder;
   summary?: string;
@@ -553,6 +556,8 @@ export interface ContentDetailReference {
   version: string;
 }
 
+export type DiscoveryKind = 'course' | 'topic' | 'lesson' | 'practice' | 'tool';
+
 /** Navigation metadata only; full answers, lesson bodies, code, and traces live in detail assets. */
 export interface ContentItemSummary {
   id: string;
@@ -562,6 +567,7 @@ export interface ContentItemSummary {
   difficulty: InterviewQuestion['difficulty'];
   tags: string[];
   contentType: ContentType;
+  practiceFormat?: PracticeFormat;
   isTheoryArticle: boolean;
   detailRef: ContentDetailReference;
   reviewStatus?: ContentReviewStatus;
@@ -582,6 +588,9 @@ export interface SearchDocument {
   moduleTitle: string;
   title: string;
   contentType: ContentType;
+  discoveryKind?: DiscoveryKind;
+  practiceFormat?: PracticeFormat;
+  subjects?: string[];
   tags: string[];
   filterTags: string[];
   languages: PatternLanguage[];
@@ -590,13 +599,13 @@ export interface SearchDocument {
   access: ContentAccess;
   searchableText: string;
   route?: string[];
-  detailRef: ContentDetailReference;
+  detailRef?: ContentDetailReference;
   question?: InterviewQuestion;
 }
 
 export type ContentIndexRecord = Omit<
   SearchDocument,
-  'path' | 'filterTags' | 'searchableText' | 'route' | 'question'
+  'path' | 'filterTags' | 'searchableText' | 'question'
 >;
 
 export interface ContentIndexShard {
@@ -622,6 +631,7 @@ export interface ContentIndexManifest {
   schemaVersion: 'content-index-manifest/v1';
   totals: { searchDocuments: number; practiceDocuments: number };
   practiceContentTypes: ContentType[];
+  practiceFormats?: PracticeFormat[];
   shards: ContentIndexShardReference[];
 }
 
@@ -751,7 +761,7 @@ export interface CatalogOverviewItem extends CatalogItem {
   questionCount: number;
   /** Internal content containers, including separate practice modules; not a topic count. */
   moduleCount: number;
-  /** Grow prefers curated course keywords; other catalogs retain module labels. */
+  /** Learn and Grow prefer curated course highlights; other catalogs retain module labels. */
   topicPreview: string[];
   languages: PatternLanguage[];
 }

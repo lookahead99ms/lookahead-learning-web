@@ -11,6 +11,7 @@ const practiceContentTypes = new Set([
   'system-design',
   'language-comparison',
 ]);
+const practiceFormats = ['explain', 'solve', 'design', 'debug', 'rehearse'];
 const previewCharacterLimit = 280;
 
 async function readJson(path) {
@@ -99,11 +100,55 @@ function compactPreview(value) {
     : `${plainText.slice(0, previewCharacterLimit - 1).trimEnd()}…`;
 }
 
-function isPracticeDocument(document) {
-  return practiceContentTypes.has(document.contentType);
+function discoveryPreview(question, canonicalProblem, access) {
+  if (access.tier !== 'free') return '';
+
+  const preview = compactPreview(canonicalProblem?.practice.statement.prompt ?? question.summary);
+  const answer = compactPreview(question.interviewAnswer);
+  return preview && preview !== answer ? preview : '';
 }
 
-function summaryFor(question, contentType, access, detailRef, canonicalProblem) {
+function isPracticeDocument(document) {
+  return (
+    document.discoveryKind === 'practice' ||
+    (!document.discoveryKind && practiceContentTypes.has(document.contentType))
+  );
+}
+
+function practiceFormatFor(question, contentType, moduleTitle) {
+  if (question.practiceFormat !== undefined) {
+    if (!practiceFormats.includes(question.practiceFormat)) {
+      throw new Error(`${question.id}: invalid practice format ${question.practiceFormat}`);
+    }
+    return question.practiceFormat;
+  }
+  if (contentType === 'dsa-problem') return 'solve';
+  const directEvidence = [question.title, ...(question.tags ?? [])].join(' ').toLowerCase();
+  const contextualEvidence = [directEvidence, moduleTitle].join(' ').toLowerCase();
+  if (
+    contentType === 'system-design' ||
+    /\b(system design|low-level design|lld|architecture)\b/.test(contextualEvidence)
+  )
+    return 'design';
+  if (
+    /\b(behavioral|behavioural|carl|star|leadership story|experience story)\b/.test(
+      contextualEvidence,
+    )
+  )
+    return 'rehearse';
+  if (
+    /\b(debug|diagnos|incident|failure|recover|production issue|troubleshoot)\w*/.test(
+      contextualEvidence,
+    )
+  )
+    return 'debug';
+  // A conceptual question can mention implementation without promising a coding workspace.
+  if (question.title.trim().endsWith('?')) return 'explain';
+  if (/\b(implement|write|build|code|exercise|hands-on)\b/.test(directEvidence)) return 'solve';
+  return 'explain';
+}
+
+function summaryFor(question, contentType, access, detailRef, canonicalProblem, practiceFormat) {
   return {
     id: question.id,
     moduleId: question.moduleId,
@@ -112,6 +157,7 @@ function summaryFor(question, contentType, access, detailRef, canonicalProblem) 
     difficulty: canonicalProblem?.difficulty ?? question.difficulty,
     tags: uniqueLabels([...(canonicalProblem?.tags ?? []), ...(question.tags ?? [])]),
     contentType,
+    ...(practiceFormat ? { practiceFormat } : {}),
     isTheoryArticle: isTheoryArticle(question),
     detailRef,
     ...(question.reviewStatus ? { reviewStatus: question.reviewStatus } : {}),
@@ -123,12 +169,28 @@ function summaryFor(question, contentType, access, detailRef, canonicalProblem) 
 }
 
 function documentFor(question, context) {
-  const { path, course, moduleTitle, access, contentType, canonicalProblem, detailRef } = context;
+  const {
+    path,
+    course,
+    moduleTitle,
+    access,
+    contentType,
+    canonicalProblem,
+    detailRef,
+    practiceFormat,
+  } = context;
   const pathLabel =
     path === 'look-ahead' ? 'Look Ahead' : `${path[0].toUpperCase()}${path.slice(1)}`;
   const title = canonicalProblem?.title ?? question.title;
   const difficulty = canonicalProblem?.difficulty ?? question.difficulty;
   const tags = uniqueLabels([...(canonicalProblem?.tags ?? []), ...(question.tags ?? [])]);
+  const discoveryKind =
+    isTheoryArticle(question) || contentType === 'dsa-pattern' ? 'lesson' : 'practice';
+  const subjects = uniqueLabels([
+    ...(Array.isArray(course.chips) ? course.chips : []),
+    ...(canonicalProblem?.tags ?? []),
+    moduleTitle,
+  ]);
   const resolvedLanguages = canonicalProblem
     ? uniqueLabels(
         (canonicalProblem.implementations ?? []).map(({ language }) => language?.toLowerCase()),
@@ -146,6 +208,9 @@ function documentFor(question, context) {
     moduleTitle,
     title,
     contentType,
+    discoveryKind,
+    ...(practiceFormat ? { practiceFormat } : {}),
+    subjects,
     tags,
     filterTags: uniqueLabels([
       pathLabel,
@@ -154,18 +219,98 @@ function documentFor(question, context) {
       ...resolvedLanguages.map((language) =>
         language === 'go' ? 'Go' : `${language[0].toUpperCase()}${language.slice(1)}`,
       ),
-      ...tags,
+      ...subjects,
     ]),
     languages: resolvedLanguages,
     difficulty,
-    preview:
-      access.tier === 'free'
-        ? compactPreview(canonicalProblem?.practice.statement.prompt ?? question.interviewAnswer)
-        : '',
+    preview: discoveryPreview(question, canonicalProblem, access),
     access,
     searchableText: '',
     route: ['/', path, course.id, question.id],
     detailRef,
+  };
+}
+
+function courseDocument(path, catalogItem, course) {
+  const pathLabel =
+    path === 'look-ahead' ? 'Look Ahead' : `${path[0].toUpperCase()}${path.slice(1)}`;
+  const subjects = uniqueLabels(Array.isArray(course.chips) ? course.chips : []);
+  const access = course.access ?? catalogItem.access ?? { tier: 'free' };
+  return {
+    id: `course:${path}:${course.id}`,
+    contentId: course.id,
+    path,
+    courseId: course.id,
+    courseTitle: course.title,
+    moduleId: course.id,
+    moduleTitle: course.title,
+    title: course.title,
+    contentType: 'guide',
+    discoveryKind: 'course',
+    subjects,
+    tags: subjects,
+    filterTags: uniqueLabels([pathLabel, 'Course', ...subjects]),
+    languages: [],
+    preview: compactPreview(course.description ?? catalogItem.description),
+    access,
+    searchableText: '',
+    route: ['/', path, course.id],
+  };
+}
+
+function topicDocument(path, course, module) {
+  const pathLabel =
+    path === 'look-ahead' ? 'Look Ahead' : `${path[0].toUpperCase()}${path.slice(1)}`;
+  const subjects = uniqueLabels([
+    module.title,
+    ...(Array.isArray(course.chips) ? course.chips : []),
+  ]);
+  const access = module.access ?? course.access ?? { tier: 'free' };
+  return {
+    id: `topic:${path}:${course.id}:${module.id}`,
+    contentId: module.id,
+    path,
+    courseId: course.id,
+    courseTitle: course.title,
+    moduleId: module.id,
+    moduleTitle: module.title,
+    title: module.title,
+    contentType: 'guide',
+    discoveryKind: 'topic',
+    subjects,
+    tags: subjects,
+    filterTags: uniqueLabels([pathLabel, 'Topic', ...subjects]),
+    languages: [],
+    preview: compactPreview(module.description),
+    access,
+    searchableText: '',
+    route: ['/', path, course.id, 'module', module.id],
+  };
+}
+
+function toolDocument(path, catalogItem) {
+  const pathLabel =
+    path === 'look-ahead' ? 'Look Ahead' : `${path[0].toUpperCase()}${path.slice(1)}`;
+  const access = catalogItem.access ?? { tier: 'free' };
+  return {
+    id: `tool:${path}:${catalogItem.id}`,
+    contentId: catalogItem.id,
+    path,
+    courseId: catalogItem.id,
+    courseTitle: catalogItem.title,
+    moduleId: catalogItem.id,
+    moduleTitle: catalogItem.title,
+    title: catalogItem.title,
+    contentType: 'guide',
+    discoveryKind: 'tool',
+    subjects: [],
+    tags: [],
+    filterTags: [pathLabel, 'Tool'],
+    languages: [],
+    preview: compactPreview(catalogItem.description),
+    access,
+    searchableText: '',
+    route: ['/', path, catalogItem.id],
   };
 }
 
@@ -174,7 +319,6 @@ function indexRecord(document) {
     path: _path,
     filterTags: _filterTags,
     searchableText: _searchableText,
-    route: _route,
     ...record
   } = document;
   return record;
@@ -192,7 +336,11 @@ function catalogOverview(path, catalog, documents, courseTopics) {
   const pathDocuments = documents.filter((document) => document.path === path);
 
   return catalog.map((item) => {
-    const courseDocuments = pathDocuments.filter((document) => document.courseId === item.id);
+    const courseDocuments = pathDocuments.filter(
+      (document) =>
+        document.courseId === item.id &&
+        (document.discoveryKind === 'lesson' || document.discoveryKind === 'practice'),
+    );
     const keyTopics = courseTopics.get(`${path}/${item.id}`) ?? [];
     return {
       ...item,
@@ -202,7 +350,7 @@ function catalogOverview(path, catalog, documents, courseTopics) {
       questionCount: courseDocuments.filter(({ contentType }) => contentType === 'q-and-a').length,
       moduleCount: new Set(courseDocuments.map(({ moduleId }) => moduleId)).size,
       topicPreview:
-        path === 'grow' && keyTopics.length
+        (path === 'learn' || path === 'grow') && keyTopics.length
           ? keyTopics
           : uniqueLabels(courseDocuments.map(({ moduleTitle }) => moduleTitle)),
       languages: uniqueLabels(courseDocuments.flatMap(({ languages: values }) => values)),
@@ -219,11 +367,12 @@ async function contentForCourse(contentRoot, path, catalogItem, canonicalProblem
   );
   const modules = course.modules.filter((module) => module.reviewStatus !== 'planned');
   const moduleById = new Map(modules.map((module) => [module.id, module]));
-  const documents = [];
+  const documents = [courseDocument(path, catalogItem, course)];
   const items = [];
   const moduleRefs = [];
 
   for (const module of modules) {
+    documents.push(topicDocument(path, course, module));
     const modulePath = join(courseRoot, 'modules', `${module.id}.json`);
     const questions = await readJson(modulePath);
     moduleRefs.push({
@@ -258,6 +407,13 @@ async function contentForCourse(contentRoot, path, catalogItem, canonicalProblem
             href: `/content/details/${path}/${course.id}/${module.id}/${question.id}.json`,
             version: contentVersion(question),
           };
+      const moduleTitle = moduleById.get(question.moduleId)?.title ?? question.moduleId;
+      const discoveryKind =
+        isTheoryArticle(question) || contentType === 'dsa-pattern' ? 'lesson' : 'practice';
+      const practiceFormat =
+        discoveryKind === 'practice'
+          ? practiceFormatFor(question, contentType, moduleTitle)
+          : undefined;
 
       if (!canonicalProblem) {
         await writeJson(
@@ -265,16 +421,19 @@ async function contentForCourse(contentRoot, path, catalogItem, canonicalProblem
           question,
         );
       }
-      items.push(summaryFor(question, contentType, access, detailRef, canonicalProblem));
+      items.push(
+        summaryFor(question, contentType, access, detailRef, canonicalProblem, practiceFormat),
+      );
       documents.push(
         documentFor(question, {
           path,
           course,
-          moduleTitle: moduleById.get(question.moduleId)?.title ?? question.moduleId,
+          moduleTitle,
           access,
           contentType,
           canonicalProblem,
           detailRef,
+          practiceFormat,
         }),
       );
     }
@@ -302,6 +461,7 @@ export async function generateSearchIndex(contentRoot) {
   const courseJobs = [];
   const catalogs = new Map();
   const courseTopics = new Map();
+  const specialDocuments = [];
   const canonicalProblems = await readCanonicalDsaProblems(contentRoot);
   for (const path of paths) {
     const catalogPath = join(contentRoot, path, 'catalog.json');
@@ -323,6 +483,7 @@ export async function generateSearchIndex(contentRoot) {
         });
       } catch {
         // Special catalog experiences such as Hands-On DSA do not hydrate as courses.
+        specialDocuments.push(toolDocument(path, item));
       }
     }
   }
@@ -330,9 +491,10 @@ export async function generateSearchIndex(contentRoot) {
   const courseResults = await Promise.all(
     courseJobs.map(async ({ path, courseId, job }) => ({ path, courseId, ...(await job) })),
   );
-  const placementDocuments = courseResults.flatMap(
-    ({ documents: courseDocuments }) => courseDocuments,
-  );
+  const placementDocuments = [
+    ...courseResults.flatMap(({ documents: courseDocuments }) => courseDocuments),
+    ...specialDocuments,
+  ];
   const documents = deduplicateCanonicalDocuments(placementDocuments);
   const documentIds = new Set();
   for (const document of documents) {
@@ -342,6 +504,12 @@ export async function generateSearchIndex(contentRoot) {
     documentIds.add(document.id);
     if (!document.contentId || !document.courseId || !document.moduleId || !document.title) {
       throw new Error(`Search index document ${document.id} is incomplete`);
+    }
+    if (
+      (document.discoveryKind === 'lesson' || document.discoveryKind === 'practice') &&
+      !document.detailRef
+    ) {
+      throw new Error(`Search index content document ${document.id} has no detail reference`);
     }
   }
 
@@ -384,6 +552,7 @@ export async function generateSearchIndex(contentRoot) {
       practiceDocuments: practiceDocuments.length,
     },
     practiceContentTypes: [...practiceContentTypes],
+    practiceFormats,
     shards: shardReferences,
   });
   await Promise.all(

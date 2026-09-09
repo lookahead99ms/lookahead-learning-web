@@ -59,4 +59,37 @@ describe('CodingSolutionTabs practice drafts', () => {
     expect(tabLabels).toEqual([]);
     expect(fixture.nativeElement.querySelector('textarea')).toBeTruthy();
   });
+
+  it('sizes editable and reference code to content within readable bounds', async () => {
+    await TestBed.configureTestingModule({ imports: [CodingSolutionTabs] }).compileComponents();
+    const fixture = TestBed.createComponent(CodingSolutionTabs);
+    fixture.componentRef.setInput('solutions', [
+      { language: 'python', title: 'Short example', source: 'one\ntwo\nthree' },
+    ]);
+    fixture.componentRef.setInput('practiceStarters', { java: 'one\ntwo' });
+    fixture.detectChanges();
+
+    const editor = fixture.nativeElement.querySelector('textarea') as HTMLTextAreaElement;
+    expect(editor.rows).toBe(6);
+
+    editor.value = Array.from({ length: 30 }, (_, index) => `line ${index}`).join('\n');
+    editor.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    expect(editor.rows).toBe(20);
+
+    fixture.componentRef.setInput('showPractice', false);
+    fixture.detectChanges();
+    const reference = fixture.nativeElement.querySelector('pre') as HTMLPreElement;
+    expect(reference.style.getPropertyValue('--visible-code-rows')).toBe('3');
+
+    fixture.componentRef.setInput('solutions', [
+      {
+        language: 'python',
+        title: 'Long example',
+        source: Array.from({ length: 30 }, (_, index) => `line ${index}`).join('\n'),
+      },
+    ]);
+    fixture.detectChanges();
+    expect(reference.style.getPropertyValue('--visible-code-rows')).toBe('18');
+  });
 });
