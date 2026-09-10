@@ -169,17 +169,17 @@ type Language = 'java' | 'python' | 'go';
       .coding-workspace {
         margin: 24px 0;
         overflow: hidden;
-        border: 1px solid #c8d9e9;
+        border: 1px solid var(--line);
         border-radius: 14px;
-        background: #fff;
-        box-shadow: 0 10px 28px rgba(26, 50, 80, 0.08);
+        background: var(--surface);
+        box-shadow: 0 10px 28px var(--shadow);
       }
       .coding-tabs {
         display: flex;
         overflow-x: auto;
         padding: 0 10px;
-        border-bottom: 1px solid #d8e3ee;
-        background: #f8fafc;
+        border-bottom: 1px solid var(--line);
+        background: var(--surface);
       }
       .coding-tabs button {
         flex: 0 0 auto;
@@ -187,7 +187,7 @@ type Language = 'java' | 'python' | 'go';
         padding: 0 17px;
         border: 0;
         border-bottom: 3px solid transparent;
-        color: #64748b;
+        color: var(--text-subtle);
         background: transparent;
         cursor: pointer;
         font:
@@ -197,20 +197,20 @@ type Language = 'java' | 'python' | 'go';
           sans-serif;
       }
       .coding-tabs .practice-tab {
-        color: #168ca5;
+        color: var(--accent-link);
       }
       .coding-tabs .pseudocode-tab {
-        color: #0f766e;
+        color: var(--accent-link);
       }
       .coding-tabs .language-tab {
-        color: #b45309;
+        color: var(--warning);
       }
       .coding-tabs button[aria-selected='true'] {
-        background: #fff;
+        background: var(--surface);
         border-bottom-color: currentColor;
       }
       .coding-tabs button:focus-visible {
-        outline: 3px solid rgba(52, 126, 205, 0.28);
+        outline: 3px solid var(--accent-focus);
         outline-offset: -3px;
       }
       .workspace-toolbar,
@@ -220,16 +220,16 @@ type Language = 'java' | 'python' | 'go';
         justify-content: space-between;
         gap: 16px;
         padding: 15px 18px;
-        background: linear-gradient(110deg, #f7fcfe, #fffaf6);
-        color: #334155;
+        background: linear-gradient(110deg, var(--surface), var(--surface));
+        color: var(--text-strong);
       }
       .workspace-toolbar strong {
-        color: #172033;
+        color: var(--text-strong);
       }
       .workspace-toolbar p {
         display: block;
         margin: 4px 0 0;
-        color: #64748b;
+        color: var(--text-subtle);
         font-size: 0.82rem;
         line-height: 1.45;
       }
@@ -237,7 +237,7 @@ type Language = 'java' | 'python' | 'go';
       .debug-toolbar label {
         display: grid;
         gap: 4px;
-        color: #64748b;
+        color: var(--text-subtle);
         font-size: 0.68rem;
         font-weight: 800;
         letter-spacing: 0.06em;
@@ -247,7 +247,7 @@ type Language = 'java' | 'python' | 'go';
         display: grid !important;
         gap: 3px;
         margin: 0 !important;
-        color: #172033 !important;
+        color: var(--text-strong) !important;
         font:
           700 0.9rem/1.35 'JetBrains Mono',
           'SFMono-Regular',
@@ -255,7 +255,7 @@ type Language = 'java' | 'python' | 'go';
           monospace !important;
       }
       .debug-input-example span {
-        color: #64748b;
+        color: var(--text-subtle);
         font:
           800 0.68rem Inter,
           ui-sans-serif,
@@ -267,10 +267,10 @@ type Language = 'java' | 'python' | 'go';
       select {
         min-width: 145px;
         padding: 6px 24px 6px 8px;
-        border: 1px solid #b9c9db;
+        border: 1px solid var(--line);
         border-radius: 7px;
-        color: #172033;
-        background: #fff;
+        color: var(--text-strong);
+        background: var(--surface);
         font:
           700 0.8rem Inter,
           ui-sans-serif,
@@ -280,7 +280,7 @@ type Language = 'java' | 'python' | 'go';
       .editor-shell,
       .solution-view {
         overflow: hidden;
-        background: #0d1117;
+        background: var(--code-bg);
       }
       .editor-chrome,
       .solution-heading {
@@ -289,9 +289,9 @@ type Language = 'java' | 'python' | 'go';
         justify-content: space-between;
         gap: 12px;
         padding: 10px 14px;
-        border-bottom: 1px solid #30363d;
-        color: #8b949e;
-        background: #161b22;
+        border-bottom: 1px solid var(--code-line);
+        color: var(--code-muted);
+        background: var(--code-bg);
         font:
           700 0.75rem 'JetBrains Mono',
           'SFMono-Regular',
@@ -306,10 +306,10 @@ type Language = 'java' | 'python' | 'go';
       .editor-chrome > button,
       .editor-actions > button {
         padding: 4px 8px;
-        border: 1px solid #30363d;
+        border: 1px solid var(--code-line);
         border-radius: 6px;
-        color: #c9d1d9;
-        background: #21262d;
+        color: var(--code-ink);
+        background: var(--code-bg);
         cursor: pointer;
         font: inherit;
       }
@@ -321,8 +321,8 @@ type Language = 'java' | 'python' | 'go';
         margin: 0;
         padding: 18px;
         border: 0;
-        color: #d8e1ef;
-        background: #0d1117;
+        color: var(--code-ink);
+        background: var(--code-bg);
         font:
           14px/1.65 'JetBrains Mono',
           'SFMono-Regular',
@@ -345,27 +345,27 @@ type Language = 'java' | 'python' | 'go';
         overflow-wrap: anywhere;
       }
       .solution-heading strong {
-        color: #c9d1d9;
+        color: var(--code-ink);
       }
       .solution-heading span {
-        color: #58a6ff;
+        color: var(--code-keyword);
       }
       :host ::ng-deep .coding-workspace code .token-keyword {
-        color: #ff7b72;
+        color: var(--code-keyword);
         font-weight: 700;
       }
       :host ::ng-deep .coding-workspace code .token-string {
-        color: #a5d6ff;
+        color: var(--code-string);
       }
       :host ::ng-deep .coding-workspace code .token-number {
-        color: #d2a8ff;
+        color: var(--code-number);
       }
       :host ::ng-deep .coding-workspace code .token-comment {
-        color: #8b949e;
+        color: var(--code-muted);
         font-style: italic;
       }
       :host ::ng-deep .coding-workspace code .token-type {
-        color: #ffa657;
+        color: var(--code-number);
         font-weight: 650;
       }
       .material-theme .solution-view {
@@ -470,8 +470,8 @@ type Language = 'java' | 'python' | 'go';
       .workspace-note {
         margin: 0;
         padding: 11px 18px;
-        color: #64748b;
-        background: #f8fafc;
+        color: var(--text-subtle);
+        background: var(--surface);
         font-size: 0.78rem;
         line-height: 1.5;
       }
@@ -481,33 +481,33 @@ type Language = 'java' | 'python' | 'go';
         gap: 20px;
         align-items: center;
         padding: 13px 16px;
-        color: #334155;
-        background: #f8fafc;
+        color: var(--text-strong);
+        background: var(--surface);
       }
       .solution-complexity div {
         display: grid;
         gap: 2px;
       }
       .solution-complexity span {
-        color: #64748b;
+        color: var(--text-subtle);
         font-size: 0.68rem;
         font-weight: 800;
         letter-spacing: 0.06em;
         text-transform: uppercase;
       }
       .solution-complexity strong {
-        color: #172033;
+        color: var(--text-strong);
         font-size: 0.88rem;
       }
       .solution-complexity p {
         margin: 0;
-        color: #64748b;
+        color: var(--text-subtle);
         font-size: 0.78rem;
         line-height: 1.45;
       }
       .solution-view app-interactive-theory-visual {
         display: block;
-        border-top: 1px solid #d8e3ee;
+        border-top: 1px solid var(--code-keyword);
       }
       @media (max-width: 760px) {
         .workspace-toolbar,

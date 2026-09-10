@@ -34,7 +34,7 @@ import { TheoryVisual } from '../../content/content.models';
         width: 100%;
         min-height: 0;
         border: 0;
-        background: #ffffff;
+        background: var(--surface);
       }
     `,
   ],

@@ -2,15 +2,15 @@
   display: grid;
   gap: 14px;
   min-width: 0;
-  color: #213448;
+  color: var(--text-strong);
 }
 .contract,
 .workspace,
 .learning-checks {
   padding: clamp(13px, 1.6vw, 18px);
-  border: 1px solid #bfd9e5;
+  border: 1px solid var(--line);
   border-radius: 16px;
-  background: #fff;
+  background: var(--surface);
 }
 .pilot-heading {
   display: flex;
@@ -19,14 +19,14 @@
   gap: 24px;
   margin-bottom: 12px;
   padding-bottom: 11px;
-  border-bottom: 1px solid #d8e5ec;
+  border-bottom: 1px solid var(--line);
 }
 .pilot-heading > div > span,
 .section-heading > span,
 .learning-checks > span,
 .example-cases-heading > span,
 .example-cases article p span {
-  color: #087f91;
+  color: var(--accent-link);
   font-size: 0.69rem;
   font-weight: 850;
   letter-spacing: 0.08em;
@@ -35,7 +35,7 @@
 h3,
 h4,
 h5 {
-  color: #172033;
+  color: var(--text-strong);
   font-family: 'Avenir Next', Avenir, sans-serif;
 }
 h3 {
@@ -62,14 +62,14 @@ li {
   min-height: 42px;
   box-sizing: border-box;
   padding: 11px 8px;
-  color: #93610b;
+  color: var(--warning);
   font-size: 0.76rem;
   font-weight: 800;
   white-space: nowrap;
 }
 .source-attribution {
   padding: 11px 8px;
-  color: #65778b;
+  color: var(--text-subtle);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -84,9 +84,9 @@ li {
   display: flex;
   scroll-margin-top: 128px;
   padding: 0 clamp(12px, 2vw, 20px);
-  border-bottom: 1px solid #bfd9e5;
+  border-bottom: 1px solid var(--line);
   border-radius: 16px 16px 0 0;
-  background: linear-gradient(125deg, #effbfc, #fff8ea);
+  background: linear-gradient(125deg, var(--surface-accent), var(--warning-surface));
 }
 .mode-tabs button {
   flex: 1 1 0;
@@ -97,23 +97,23 @@ li {
   background: transparent;
 }
 .mode-tabs button[aria-selected='true'] {
-  border-bottom-color: #0d8192;
-  color: #fff;
-  background: #0d8192;
+  border-bottom-color: var(--accent-strong);
+  color: var(--accent-on-primary);
+  background: var(--accent-strong);
 }
 .practice-pane,
 .guided-pane {
   padding: clamp(16px, 2.4vw, 22px);
   border-radius: 0 0 16px 16px;
-  background: #fff;
+  background: var(--surface);
 }
 button {
   min-height: 42px;
   padding: 9px 13px;
-  border: 1px solid #7faabd;
+  border: 1px solid var(--accent-strong);
   border-radius: 9px;
-  color: #25506d;
-  background: #fff;
+  color: var(--accent-link);
+  background: var(--surface);
   cursor: pointer;
   font:
     800 0.78rem 'Avenir Next',
@@ -122,7 +122,7 @@ button {
 button:focus-visible,
 summary:focus-visible,
 select:focus-visible {
-  outline: 3px solid rgba(13, 129, 146, 0.28);
+  outline: 3px solid var(--accent-focus);
   outline-offset: 3px;
 }
 .contract-grid {
@@ -134,12 +134,12 @@ select:focus-visible {
 .canonical-rationale article,
 .mistakes {
   padding: 10px 11px;
-  border: 1px solid #d8e5ec;
+  border: 1px solid var(--line);
   border-radius: 11px;
-  background: #f9fcfd;
+  background: var(--surface);
 }
 .contract-grid strong {
-  color: #087f91;
+  color: var(--accent-link);
 }
 .contract-grid p,
 .contract-grid ul,
@@ -159,10 +159,10 @@ select:focus-visible {
   align-items: baseline;
   justify-content: space-between;
   gap: 16px;
-  color: #087f91;
+  color: var(--accent-link);
 }
 .example-cases-heading > span {
-  color: #52657e;
+  color: var(--text-subtle);
   letter-spacing: 0;
   text-transform: none;
 }
@@ -173,14 +173,14 @@ select:focus-visible {
   gap: 5px 10px;
   min-width: 0;
   padding: 8px 11px;
-  border: 1px solid #d8e5ec;
+  border: 1px solid var(--line);
   margin: 0;
   border-radius: 9px;
-  background: #f2f7fa;
+  background: var(--surface-accent);
 }
 .example-cases article > strong {
   grid-column: 1 / -1;
-  color: #087f91;
+  color: var(--accent-link);
 }
 .example-cases article > code,
 .example-cases article > small {
@@ -202,7 +202,7 @@ select:focus-visible {
   flex: 0 0 auto;
 }
 .example-cases article small {
-  color: #52657e;
+  color: var(--text-subtle);
   line-height: 1.4;
 }
 .mode-reaction {
@@ -210,7 +210,7 @@ select:focus-visible {
 }
 .section-heading p {
   margin: 0 0 18px;
-  color: #52657e;
+  color: var(--text-subtle);
 }
 .guided-entry > div {
   min-width: 0;
@@ -224,11 +224,11 @@ select:focus-visible {
   justify-content: space-between;
   min-height: 38px;
   padding: 5px 7px 5px 13px;
-  border: 1px solid #35566c;
+  border: 1px solid var(--code-line);
   border-bottom: 0;
   border-radius: 12px 12px 0 0;
-  color: #8fd9e3;
-  background: #102333;
+  color: var(--code-keyword);
+  background: var(--code-bg);
 }
 .debugger-frame-bar > span {
   font-size: 0.68rem;
@@ -243,9 +243,9 @@ select:focus-visible {
   min-width: 32px;
   min-height: 30px;
   padding: 5px;
-  border-color: #4d7789;
-  color: #dff7f8;
-  background: #1a4556;
+  border-color: var(--code-line);
+  color: var(--code-ink);
+  background: var(--code-panel);
 }
 .focus-entry svg {
   width: 16px;
@@ -262,13 +262,13 @@ select:focus-visible {
   gap: 14px;
   margin-bottom: 13px;
   padding: 11px 12px;
-  border: 1px solid #bddbe4;
-  border-left: 5px solid #0d8192;
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--accent-strong);
   border-radius: 11px;
-  background: linear-gradient(115deg, #eaf7f8, #f9fcfd 56%, #fff9ed);
+  background: linear-gradient(115deg, var(--surface-accent), var(--surface) 56%, var(--warning-surface));
 }
 .reasoning-frame span {
-  color: #087f91;
+  color: var(--accent-link);
   font-size: 0.69rem;
   font-weight: 850;
   letter-spacing: 0.08em;
@@ -276,13 +276,13 @@ select:focus-visible {
 }
 .reasoning-frame p {
   margin: 5px 0 0;
-  color: #294257;
+  color: var(--text-strong);
   line-height: 1.4;
 }
 .reasoning-invariant {
   align-self: stretch;
   padding: 4px 13px 4px 2px;
-  border-right: 1px solid #c9dfe7;
+  border-right: 1px solid var(--line);
 }
 .canonical-rationale {
   display: grid;
@@ -310,7 +310,7 @@ select:focus-visible {
   gap: 8px;
   padding: 8px 10px 10px;
   overflow: hidden;
-  background: #e6f0f3;
+  background: var(--surface-subtle);
 }
 .guided-trace-stage.focused app-guided-algorithm-trace {
   display: block;
@@ -324,42 +324,42 @@ select:focus-visible {
   gap: 20px;
   min-height: 46px;
   padding: 5px 8px 5px 14px;
-  border: 1px solid #aac8d3;
+  border: 1px solid var(--line);
   border-radius: 10px;
-  background: #fff;
-  box-shadow: 0 8px 24px rgba(22, 67, 82, 0.12);
+  background: var(--surface);
+  box-shadow: 0 8px 24px var(--shadow);
 }
 .focus-header div > span {
   display: block;
-  color: #087f91;
+  color: var(--accent-link);
   font-size: 0.63rem;
   font-weight: 850;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 .focus-header strong {
-  color: #172033;
+  color: var(--text-strong);
   font-size: 0.9rem;
 }
 .focus-header p {
   margin: 0;
-  color: #52657e;
+  color: var(--text-subtle);
   font-size: 0.76rem;
   text-align: center;
 }
 .focus-exit {
   min-height: 36px;
   padding-block: 6px;
-  border-color: #9b6a16;
-  color: #704a08;
-  background: #fff8ea;
+  border-color: var(--warning);
+  color: var(--warning);
+  background: var(--warning-surface);
 }
 .focus-exit kbd {
   margin-left: 6px;
   padding: 2px 5px;
-  border: 1px solid #caa96c;
+  border: 1px solid var(--warning);
   border-radius: 4px;
-  background: #fff;
+  background: var(--surface);
   font:
     700 0.65rem 'JetBrains Mono',
     monospace;
@@ -370,7 +370,7 @@ select:focus-visible {
 .canonical-rationale strong {
   display: block;
   margin-top: 5px;
-  color: #172033;
+  color: var(--text-strong);
   font-size: 0.78rem;
   line-height: 1.35;
 }
@@ -382,9 +382,9 @@ select:focus-visible {
 .help-panel,
 .learning-checks details {
   margin-top: 10px;
-  border: 1px solid #cadde6;
+  border: 1px solid var(--line);
   border-radius: 11px;
-  background: #f9fcfd;
+  background: var(--surface);
 }
 .help-panel > summary,
 .learning-checks summary {
@@ -393,19 +393,19 @@ select:focus-visible {
   gap: 12px;
   padding: 14px;
   cursor: pointer;
-  color: #25506d;
+  color: var(--accent-link);
   font-weight: 850;
 }
 .help-panel > summary span {
-  color: #6c7d8e;
+  color: var(--text-subtle);
   font-size: 0.72rem;
   font-weight: 700;
 }
 .help-panel > details {
   margin: 0 14px 9px;
-  border: 1px solid #d8e5ec;
+  border: 1px solid var(--line);
   border-radius: 8px;
-  background: #fff;
+  background: var(--surface);
 }
 .help-panel > details summary {
   padding: 10px;
@@ -421,7 +421,7 @@ select:focus-visible {
   margin-top: 14px;
 }
 .learning-checks .expected {
-  color: #4a6478;
+  color: var(--text-body);
 }
 [hidden] {
   display: none !important;
@@ -436,7 +436,7 @@ select:focus-visible {
     display: block;
     padding: 0;
     overflow-y: auto;
-    background: #102333;
+    background: var(--code-bg);
   }
   .guided-trace-stage.focused app-guided-algorithm-trace {
     height: auto;
@@ -464,7 +464,7 @@ select:focus-visible {
   .reasoning-invariant {
     padding: 2px 2px 10px;
     border-right: 0;
-    border-bottom: 1px solid #c9dfe7;
+    border-bottom: 1px solid var(--line);
   }
   .example-cases {
     grid-template-columns: 1fr;

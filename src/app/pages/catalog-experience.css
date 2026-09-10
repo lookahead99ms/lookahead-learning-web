@@ -9,19 +9,19 @@
   border: 1px solid var(--line);
   border-radius: 22px;
   background:
-    radial-gradient(circle at 96% 6%, rgba(22, 140, 165, 0.12), transparent 34%),
+    radial-gradient(circle at 96% 6%, color-mix(in srgb, var(--accent-strong) 12%, transparent), transparent 34%),
     linear-gradient(135deg, var(--surface), var(--surface-accent));
 }
 
 .grow-catalog.catalog-depth-hero {
   background:
-    radial-gradient(circle at 96% 6%, rgba(180, 83, 9, 0.13), transparent 34%),
-    linear-gradient(135deg, var(--surface), #fff8ef);
+    radial-gradient(circle at 96% 6%, color-mix(in srgb, var(--grow-accent) 13%, transparent), transparent 34%),
+    linear-gradient(135deg, var(--surface), color-mix(in srgb, var(--grow-accent) 7%, var(--surface)));
 }
 
 .learn-catalog.catalog-depth-hero {
   background:
-    radial-gradient(circle at 96% 6%, rgba(22, 140, 165, 0.14), transparent 34%),
+    radial-gradient(circle at 96% 6%, color-mix(in srgb, var(--accent-strong) 14%, transparent), transparent 34%),
     linear-gradient(135deg, var(--surface), var(--surface-accent));
 }
 
@@ -95,36 +95,40 @@
 .catalog-primary-action {
   gap: 8px;
   padding: 10px 15px;
-  color: #fff;
+  color: var(--catalog-action-ink, var(--accent-on-secondary));
   background: var(--grow-accent);
-  box-shadow: 0 9px 22px rgba(180, 83, 9, 0.19);
+  box-shadow: 0 9px 22px var(--shadow);
 }
 
 .catalog-primary-action.look-ahead-action {
-  background: var(--text-strong);
-  box-shadow: 0 9px 22px rgba(15, 23, 42, 0.18);
+  --catalog-action-ink: var(--accent-on-primary);
+  color: var(--catalog-action-ink);
+  background: var(--search-primary);
+  box-shadow: 0 9px 22px var(--shadow);
 }
 
 .learn-catalog-reader .catalog-primary-action {
+  --catalog-action-ink: var(--accent-on-primary);
+  color: var(--catalog-action-ink);
   background: var(--search-primary);
-  box-shadow: 0 9px 22px rgba(22, 140, 165, 0.19);
+  box-shadow: 0 9px 22px var(--shadow);
 }
 
 .catalog-primary-action:hover,
 .catalog-primary-action:focus-visible {
-  color: #fff;
+  color: var(--catalog-action-ink, var(--accent-on-secondary));
   filter: brightness(0.92);
-  outline: 3px solid rgba(180, 83, 9, 0.2);
+  outline: 3px solid var(--accent-focus);
   outline-offset: 3px;
 }
 
 .catalog-primary-action.look-ahead-action:focus-visible {
-  outline-color: rgba(15, 23, 42, 0.2);
+  outline-color: var(--accent-focus);
 }
 
 .learn-catalog-reader .catalog-primary-action:hover,
 .learn-catalog-reader .catalog-primary-action:focus-visible {
-  outline-color: rgba(22, 140, 165, 0.24);
+  outline-color: var(--accent-focus);
 }
 
 .catalog-secondary-action {
@@ -147,20 +151,20 @@
   padding: 5px;
   display: grid;
   grid-template-columns: 1fr;
-  border: 1px solid rgba(180, 83, 9, 0.22);
+  border: 1px solid var(--border-strong);
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.82);
-  box-shadow: 0 18px 44px rgba(72, 48, 24, 0.09);
+  background: var(--surface);
+  box-shadow: 0 18px 44px var(--shadow);
 }
 
 .catalog-scoreboard.look-ahead-scoreboard {
-  border-color: rgba(51, 65, 85, 0.2);
-  box-shadow: 0 18px 44px rgba(30, 41, 59, 0.09);
+  border-color: var(--border-strong);
+  box-shadow: 0 18px 44px var(--shadow);
 }
 
 .learn-catalog .catalog-scoreboard {
-  border-color: rgba(22, 140, 165, 0.24);
-  box-shadow: 0 18px 44px rgba(22, 86, 101, 0.09);
+  border-color: var(--accent-focus);
+  box-shadow: 0 18px 44px var(--shadow);
 }
 
 .catalog-scoreboard > div {
@@ -386,7 +390,7 @@
 
 .catalog-path-title:focus-visible {
   border-radius: 4px;
-  outline: 3px solid color-mix(in srgb, var(--accent-link) 30%, transparent);
+  outline: 3px solid var(--accent-focus);
   outline-offset: 5px;
 }
 
@@ -416,8 +420,8 @@
 .adaptive-catalog-course-grid .featured-catalog-card {
   grid-column: span 2;
   background:
-    radial-gradient(circle at 94% 12%, rgba(56, 122, 204, 0.15), transparent 30%),
-    linear-gradient(145deg, var(--surface), #eef5ff) !important;
+    radial-gradient(circle at 94% 12%, color-mix(in srgb, var(--accent-strong) 15%, transparent), transparent 30%),
+    linear-gradient(145deg, var(--surface), var(--surface-accent)) !important;
 }
 
 .adaptive-catalog-course-grid .featured-catalog-card h3 {

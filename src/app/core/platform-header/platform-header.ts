@@ -124,7 +124,7 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         width: 100vw;
         height: 100vh;
         border: 0;
-        background: rgba(226, 232, 240, 0.46);
+        background: var(--surface-subtle);
         backdrop-filter: blur(8px);
         cursor: default;
       }
@@ -177,7 +177,7 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
       }
       .header-search-input:focus {
         border-color: var(--accent-focus);
-        outline: 3px solid rgba(137, 207, 240, 0.3);
+        outline: 3px solid var(--accent-focus);
       }
       .header-search-suggestions {
         position: absolute;
@@ -190,7 +190,7 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         border-top: 0;
         border-radius: 0 0 14px 14px;
         background: var(--surface-page);
-        box-shadow: 0 16px 34px rgba(15, 23, 42, 0.14);
+        box-shadow: 0 16px 34px var(--shadow);
       }
       .persistent-suggestions {
         display: grid;
@@ -220,10 +220,10 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         outline: none;
       }
       .persistent-suggestions .header-search-suggestion.learn {
-        color: #168ca5;
+        color: var(--accent-link);
       }
       .persistent-suggestions .header-search-suggestion.grow {
-        color: #b45309;
+        color: var(--warning);
       }
       .persistent-suggestions .header-search-suggestion.look-ahead {
         color: var(--text-body);
@@ -325,9 +325,9 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
       }
       .search-palette-hint kbd {
         padding: 1px 4px;
-        border: 1px solid #cbd5e1;
+        border: 1px solid var(--line);
         border-radius: 4px;
-        color: #475569;
+        color: var(--text-body);
         background: var(--surface-subtle);
         font: inherit;
         font-size: 0.68rem;
@@ -340,10 +340,10 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
       .study-plan-link {
         margin-left: auto;
         padding: 8px 11px;
-        border: 1px solid #c7d9e8;
+        border: 1px solid var(--line);
         border-radius: 999px;
         color: var(--accent-link);
-        background: #f8fbfe;
+        background: var(--surface);
         font-size: 0.76rem;
         font-weight: 800;
         text-decoration: none;
@@ -351,9 +351,9 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
       }
       .study-plan-link:hover,
       .study-plan-link:focus-visible {
-        border-color: #168ca5;
-        color: #0d7183;
-        outline: 3px solid rgba(22, 140, 165, 0.18);
+        border-color: var(--accent-strong);
+        color: var(--accent-link);
+        outline: 3px solid var(--accent-focus);
         outline-offset: 2px;
       }
       @media (max-width: 760px) {
@@ -376,9 +376,9 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
       }
       .avatar-trigger-btn:hover,
       .avatar-trigger-btn:focus-visible {
-        border-color: #cbd5e1;
+        border-color: var(--line);
         background: var(--surface-muted);
-        outline: 3px solid rgba(22, 140, 165, 0.28);
+        outline: 3px solid var(--accent-focus);
         outline-offset: 2px;
       }
       .user-avatar-img {
@@ -386,7 +386,7 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         height: 32px;
         display: grid;
         place-items: center;
-        border: 1px solid #f97316;
+        border: 1px solid var(--warning);
         border-radius: 50%;
         color: var(--surface-page);
         background: var(--accent-link);
@@ -406,7 +406,7 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         border: 1px solid var(--line);
         border-radius: 14px;
         background: var(--surface-page);
-        box-shadow: 0 16px 36px rgba(15, 23, 42, 0.14);
+        box-shadow: 0 16px 36px var(--shadow);
       }
       .menu-user-header,
       .menu-section-group {
@@ -434,7 +434,7 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
       .group-label {
         display: block;
         margin-bottom: 6px;
-        color: #94a3b8;
+        color: var(--text-subtle);
         font-size: 0.72rem;
         font-weight: 800;
         letter-spacing: 0.08em;
@@ -459,16 +459,16 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
       }
       .dropdown-item-link:hover,
       .dropdown-item-link:focus-visible {
-        color: #0066cc;
+        color: var(--accent-link);
         background: var(--surface-subtle);
         outline: none;
       }
       .dropdown-item-link.logout-trigger {
-        color: #ef4444;
+        color: var(--danger);
       }
       .dropdown-item-link.logout-trigger:hover {
-        color: #b91c1c;
-        background: #fef2f2;
+        color: var(--danger);
+        background: var(--surface-accent);
         outline: none;
       }
       @media (max-width: 760px) {

@@ -130,13 +130,13 @@ import { CodingSolutionTabs } from '../coding-solution-tabs/coding-solution-tabs
         margin: 0 0 12px;
       }
       .coding-problem-links a {
-        color: #168ca5;
+        color: var(--accent-link);
         font-size: 0.82rem;
         font-weight: 800;
         text-decoration: none;
       }
       .coding-problem-links a:last-child {
-        color: #b45309;
+        color: var(--warning);
       }
       .coding-problem-links a:hover,
       .coding-problem-links a:focus-visible {
@@ -146,9 +146,9 @@ import { CodingSolutionTabs } from '../coding-solution-tabs/coding-solution-tabs
       .practice-brief {
         margin: 0 0 14px;
         padding: 20px;
-        border: 1px solid #bcdbe3;
+        border: 1px solid var(--line);
         border-radius: 14px;
-        background: linear-gradient(135deg, #f1fbfb, #fff);
+        background: linear-gradient(135deg, var(--surface-accent), var(--surface));
       }
       .practice-brief-heading {
         display: flex;
@@ -157,7 +157,7 @@ import { CodingSolutionTabs } from '../coding-solution-tabs/coding-solution-tabs
         gap: 12px;
       }
       .practice-brief-heading span {
-        color: #0d8192;
+        color: var(--accent-link);
         font-size: 0.68rem;
         font-weight: 850;
         letter-spacing: 0.07em;
@@ -165,7 +165,7 @@ import { CodingSolutionTabs } from '../coding-solution-tabs/coding-solution-tabs
       }
       .practice-brief h2 {
         margin: 4px 0 0;
-        color: #192b3d;
+        color: var(--text-strong);
         font:
           800 1.18rem 'Avenir Next',
           Avenir,
@@ -173,33 +173,33 @@ import { CodingSolutionTabs } from '../coding-solution-tabs/coding-solution-tabs
       }
       .practice-brief-heading small {
         padding: 5px 9px;
-        border: 1px solid #c7d9e8;
+        border: 1px solid var(--line);
         border-radius: 999px;
-        color: #49637a;
-        background: #fff;
+        color: var(--text-body);
+        background: var(--surface);
         font-weight: 800;
         text-transform: capitalize;
       }
       .practice-brief-heading small[data-status='starter'] {
-        border-color: #efc58e;
-        color: #9a4d08;
-        background: #fff9ef;
+        border-color: var(--line);
+        color: var(--warning);
+        background: var(--warning-surface);
       }
       .practice-readiness-warning {
         padding: 11px 13px;
-        border-left: 4px solid #b76b00;
-        color: #543a17;
-        background: #fff7e8;
+        border-left: 4px solid var(--warning);
+        color: var(--warning);
+        background: var(--warning-surface);
         line-height: 1.5;
       }
       .practice-brief > p {
-        color: #334155;
+        color: var(--text-strong);
         line-height: 1.68;
       }
       .practice-brief ul {
         margin: 10px 0 0;
         padding-left: 20px;
-        color: #475569;
+        color: var(--text-body);
         line-height: 1.65;
       }
       .source-sets {
@@ -213,16 +213,16 @@ import { CodingSolutionTabs } from '../coding-solution-tabs/coding-solution-tabs
       }
       .practice-examples article {
         padding: 14px;
-        border: 1px solid #dbe3ee;
+        border: 1px solid var(--line);
         border-radius: 12px;
-        background: #fff;
+        background: var(--surface);
       }
       .practice-examples p {
         display: grid;
         grid-template-columns: 55px minmax(0, 1fr);
         gap: 8px;
         margin: 0 0 7px;
-        color: #475569;
+        color: var(--text-body);
       }
       .practice-examples span {
         font-size: 0.68rem;
@@ -234,7 +234,7 @@ import { CodingSolutionTabs } from '../coding-solution-tabs/coding-solution-tabs
         overflow-wrap: anywhere;
       }
       .practice-examples small {
-        color: #64748b;
+        color: var(--text-subtle);
         line-height: 1.5;
       }
       .coding-sample-input {
@@ -243,10 +243,10 @@ import { CodingSolutionTabs } from '../coding-solution-tabs/coding-solution-tabs
         gap: 8px;
         align-items: baseline;
         margin: 0 0 12px;
-        color: #334155;
+        color: var(--text-strong);
       }
       .coding-sample-input span {
-        color: #64748b;
+        color: var(--text-subtle);
         font-size: 0.68rem;
         font-weight: 850;
         letter-spacing: 0.06em;
@@ -258,17 +258,17 @@ import { CodingSolutionTabs } from '../coding-solution-tabs/coding-solution-tabs
       .coding-hint {
         margin: 0 0 8px;
         overflow: hidden;
-        border: 1px solid #cbdcec;
-        border-left: 5px solid #168ca5;
+        border: 1px solid var(--line);
+        border-left: 5px solid var(--accent-strong);
         border-radius: 12px;
-        background: #f0f7ff;
+        background: var(--surface-accent);
       }
       .coding-hint summary {
         display: flex;
         align-items: center;
         justify-content: space-between;
         padding: 13px 16px;
-        color: #315f9d;
+        color: var(--accent-link);
         cursor: pointer;
         font-size: 0.8rem;
         font-weight: 850;
@@ -288,7 +288,7 @@ import { CodingSolutionTabs } from '../coding-solution-tabs/coding-solution-tabs
       .coding-hint p {
         margin: 0;
         padding: 0 16px 15px;
-        color: #334155;
+        color: var(--text-strong);
         line-height: 1.72;
       }
       .progressive-hints {
@@ -297,13 +297,13 @@ import { CodingSolutionTabs } from '../coding-solution-tabs/coding-solution-tabs
         margin: 10px 0 18px;
       }
       .progressive-hints details {
-        border: 1px solid #d8e3eb;
+        border: 1px solid var(--line);
         border-radius: 9px;
-        background: #fff;
+        background: var(--surface);
       }
       .progressive-hints summary {
         padding: 10px 13px;
-        color: #315f9d;
+        color: var(--accent-link);
         cursor: pointer;
         font-size: 0.78rem;
         font-weight: 800;
@@ -311,19 +311,19 @@ import { CodingSolutionTabs } from '../coding-solution-tabs/coding-solution-tabs
       .progressive-hints p {
         margin: 0;
         padding: 0 13px 12px;
-        color: #475569;
+        color: var(--text-body);
         line-height: 1.6;
       }
       .coding-explanation,
       .coding-followups {
         margin: 24px 0 0;
         padding: 24px;
-        border: 1px solid #dbe3ee;
+        border: 1px solid var(--line);
         border-radius: 14px;
-        background: #fff;
+        background: var(--surface);
       }
       .coding-explanation p:not(.panel-label) {
-        color: #334155;
+        color: var(--text-strong);
         line-height: 1.72;
       }
       .coding-explanation p:not(.panel-label):last-child {
@@ -334,12 +334,12 @@ import { CodingSolutionTabs } from '../coding-solution-tabs/coding-solution-tabs
       }
       .coding-followups summary {
         cursor: pointer;
-        color: #172033;
+        color: var(--text-strong);
         font-weight: 750;
       }
       .coding-followups details p {
         margin: 8px 0 0;
-        color: #475569;
+        color: var(--text-body);
         line-height: 1.65;
       }
       @media (max-width: 640px) {

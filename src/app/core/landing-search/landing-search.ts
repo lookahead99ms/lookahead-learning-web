@@ -34,7 +34,7 @@ type LandingSuggestion = {
         left: 20px;
         width: 20px;
         height: 20px;
-        color: #5f96d1;
+        color: var(--accent-link);
         pointer-events: none;
         transform: translateY(-50%);
       }
@@ -43,11 +43,11 @@ type LandingSuggestion = {
         width: 100%;
         height: 50px;
         padding: 0 48px 0 48px;
-        border: 1px solid #cbd8e8;
+        border: 1px solid var(--line);
         border-radius: 999px;
-        color: #172033;
-        background: rgba(255, 255, 255, 0.96);
-        box-shadow: 0 10px 28px rgba(30, 64, 102, 0.1);
+        color: var(--text-strong);
+        background: var(--surface);
+        box-shadow: 0 10px 28px var(--shadow);
         font: inherit;
         font-size: 0.95rem;
         transition:
@@ -56,9 +56,9 @@ type LandingSuggestion = {
           border-radius 160ms ease;
       }
       .landing-search-input:focus {
-        border-color: #65bfe4;
-        outline: 3px solid rgba(101, 191, 228, 0.22);
-        box-shadow: 0 14px 34px rgba(30, 64, 102, 0.14);
+        border-color: var(--accent-strong);
+        outline: 3px solid var(--accent-focus);
+        box-shadow: 0 14px 34px var(--shadow);
       }
       .landing-search.open .landing-search-input {
         border-radius: 18px 18px 0 0;
@@ -75,7 +75,7 @@ type LandingSuggestion = {
         padding: 0;
         border: 0;
         border-radius: 50%;
-        color: #4771a8;
+        color: var(--text-subtle);
         background: transparent;
         cursor: pointer;
         font: inherit;
@@ -85,8 +85,8 @@ type LandingSuggestion = {
       }
       .landing-search-clear:hover,
       .landing-search-clear:focus-visible {
-        color: #172033;
-        background: #eef5fb;
+        color: var(--text-strong);
+        background: var(--surface-accent);
         outline: none;
       }
       .landing-search-dropdown {
@@ -96,26 +96,26 @@ type LandingSuggestion = {
         width: 100%;
         box-sizing: border-box;
         overflow: hidden;
-        border: 1px solid #cbd8e8;
+        border: 1px solid var(--line);
         border-top: 0;
         border-radius: 0 0 18px 18px;
-        background: rgba(255, 255, 255, 0.98);
-        box-shadow: 0 18px 40px rgba(30, 64, 102, 0.18);
+        background: var(--surface);
+        box-shadow: 0 18px 40px var(--shadow);
       }
       .landing-search-stages {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         gap: 10px;
         padding: 14px;
-        border-bottom: 1px solid #e1e9f2;
+        border-bottom: 1px solid var(--line);
       }
       .landing-search-stage {
         min-height: 38px;
         padding: 8px 10px;
         border: 0;
         border-radius: 8px;
-        color: #334155;
-        background: #f7f9fc;
+        color: var(--text-strong);
+        background: var(--surface-accent);
         cursor: pointer;
         font: inherit;
         font-size: 0.84rem;
@@ -123,20 +123,20 @@ type LandingSuggestion = {
       }
       .landing-search-stage:hover,
       .landing-search-stage:focus-visible {
-        background: #e7f4fb;
+        background: var(--surface-accent);
         outline: none;
       }
       .landing-search-stage.learn {
-        color: #168ca5;
+        color: var(--accent-link);
       }
       .landing-search-stage.grow {
-        color: #b45309;
+        color: var(--warning);
       }
       .landing-search-stage.look-ahead {
-        color: #334155;
+        color: var(--text-strong);
       }
       .landing-search-stage.search {
-        color: #5f96d1;
+        color: var(--accent-link);
       }
       .landing-search-results {
         max-height: 360px;
@@ -150,7 +150,7 @@ type LandingSuggestion = {
         width: 100%;
         padding: 11px 18px;
         border: 0;
-        color: #172033;
+        color: var(--text-strong);
         background: transparent;
         cursor: pointer;
         font: inherit;
@@ -158,12 +158,12 @@ type LandingSuggestion = {
       }
       .landing-search-result:hover,
       .landing-search-result:focus-visible {
-        background: #edf7fc;
+        background: var(--surface-accent);
         outline: none;
       }
       .landing-search-result-type {
         padding-top: 2px;
-        color: #5f96d1;
+        color: var(--accent-link);
         font-size: 0.66rem;
         font-weight: 850;
         letter-spacing: 0.06em;
@@ -180,7 +180,7 @@ type LandingSuggestion = {
         grid-column: 2;
         overflow: hidden;
         margin-top: 2px;
-        color: #65758b;
+        color: var(--text-subtle);
         text-overflow: ellipsis;
         white-space: nowrap;
         font-size: 0.76rem;
@@ -188,7 +188,7 @@ type LandingSuggestion = {
       .landing-search-empty {
         margin: 0;
         padding: 26px 18px;
-        color: #64748b;
+        color: var(--text-subtle);
         text-align: center;
         font-size: 0.9rem;
       }
@@ -197,16 +197,16 @@ type LandingSuggestion = {
         justify-content: space-between;
         gap: 14px;
         padding: 11px 18px;
-        border-top: 1px solid #e1e9f2;
-        color: #64748b;
+        border-top: 1px solid var(--line);
+        color: var(--text-subtle);
         font-size: 0.75rem;
       }
       .landing-search-hint kbd {
         padding: 1px 5px;
-        border: 1px solid #cbd5e1;
+        border: 1px solid var(--line);
         border-radius: 4px;
-        color: #475569;
-        background: #f8fafc;
+        color: var(--text-body);
+        background: var(--surface);
         font: inherit;
         font-size: 0.7rem;
       }

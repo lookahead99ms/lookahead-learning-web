@@ -133,9 +133,9 @@ type EvidenceView = 'carl' | 'star';
         max-width: 1120px;
         margin: 24px auto;
         padding: clamp(18px, 3vw, 28px);
-        border: 1px solid #bed8e4;
+        border: 1px solid var(--line);
         border-radius: 16px;
-        background: linear-gradient(145deg, #f4fbfc, #fffaf1);
+        background: linear-gradient(145deg, var(--surface-accent), var(--warning-surface));
       }
       .evidence-heading-row {
         display: flex;
@@ -144,7 +144,7 @@ type EvidenceView = 'carl' | 'star';
         gap: 16px;
       }
       .evidence-eyebrow {
-        color: #0d8192;
+        color: var(--accent-link);
         font-size: 0.7rem;
         font-weight: 850;
         letter-spacing: 0.08em;
@@ -152,23 +152,23 @@ type EvidenceView = 'carl' | 'star';
       }
       h2 {
         margin: 5px 0 0;
-        color: #192b3d;
+        color: var(--text-strong);
         font-family: 'Avenir Next', Avenir, sans-serif;
         font-size: clamp(1.15rem, 2vw, 1.45rem);
       }
       .evidence-tablist {
         display: inline-flex;
         padding: 4px;
-        border: 1px solid #b9d0df;
+        border: 1px solid var(--line);
         border-radius: 10px;
-        background: #fff;
+        background: var(--surface);
       }
       .evidence-tablist button {
         min-width: 70px;
         padding: 8px 12px;
         border: 0;
         border-radius: 7px;
-        color: #49637a;
+        color: var(--text-body);
         background: transparent;
         cursor: pointer;
         font:
@@ -178,16 +178,16 @@ type EvidenceView = 'carl' | 'star';
         letter-spacing: 0.06em;
       }
       .evidence-tablist button[aria-selected='true'] {
-        color: #fff;
-        background: #0d8192;
+        color: var(--accent-on-primary);
+        background: var(--accent-strong);
       }
       .evidence-tablist button:focus-visible {
-        outline: 3px solid #f59e0b;
+        outline: 3px solid var(--accent-focus);
         outline-offset: 2px;
       }
       .evidence-note {
         margin: 14px 0 18px;
-        color: #52697d;
+        color: var(--text-subtle);
         font-size: 0.84rem;
         line-height: 1.55;
       }
@@ -201,9 +201,9 @@ type EvidenceView = 'carl' | 'star';
         grid-template-columns: 34px minmax(0, 1fr);
         gap: 10px;
         padding: 14px;
-        border: 1px solid #d9e6ec;
+        border: 1px solid var(--line);
         border-radius: 12px;
-        background: rgba(255, 255, 255, 0.88);
+        background: var(--surface);
       }
       article > span {
         display: grid;
@@ -211,20 +211,20 @@ type EvidenceView = 'carl' | 'star';
         height: 32px;
         place-items: center;
         border-radius: 9px;
-        color: #fff;
-        background: #be6708;
+        color: var(--accent-on-secondary);
+        background: var(--accent-secondary-strong);
         font-weight: 900;
       }
       h3 {
         margin: 0 0 5px;
-        color: #192b3d;
+        color: var(--text-strong);
         font-size: 0.82rem;
         letter-spacing: 0.05em;
         text-transform: uppercase;
       }
       article p {
         margin: 0;
-        color: #40566a;
+        color: var(--text-body);
         line-height: 1.62;
       }
       @media (max-width: 640px) {
