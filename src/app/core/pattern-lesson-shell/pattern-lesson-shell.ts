@@ -397,10 +397,10 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         display: block;
       }
       .golden-lesson {
-        --lesson-ink: #192b3d;
-        --lesson-body: #344a5f;
-        --lesson-teal: #0d8192;
-        --lesson-line: #cadce7;
+        --lesson-ink: var(--text-strong);
+        --lesson-body: var(--text-body);
+        --lesson-teal: var(--accent-link);
+        --lesson-line: var(--line);
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 18px;
@@ -418,12 +418,12 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         grid-template-columns: minmax(0, 1.15fr) minmax(300px, 0.85fr);
         gap: 24px;
         padding: 25px;
-        border: 1px solid #b9dce6;
+        border: 1px solid var(--line);
         border-radius: 18px;
         background:
-          radial-gradient(circle at 92% 5%, rgba(255, 190, 85, 0.18), transparent 29%),
-          linear-gradient(135deg, #effbfc, #fff);
-        box-shadow: 0 12px 30px rgba(28, 78, 96, 0.07);
+          radial-gradient(circle at 92% 5%, color-mix(in srgb, var(--accent-secondary) 18%, transparent), transparent 29%),
+          linear-gradient(135deg, var(--surface-accent), var(--surface));
+        box-shadow: 0 12px 30px var(--shadow);
       }
       .lesson-intro > p {
         align-self: center;
@@ -435,17 +435,17 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
       }
       .lesson-intro section {
         padding: 17px 19px;
-        border: 1px solid #c8e1e6;
+        border: 1px solid var(--line);
         border-radius: 13px;
-        background: rgba(255, 255, 255, 0.78);
+        background: var(--surface);
       }
       .memory-anchor {
         grid-column: 1/-1;
         padding: 17px 19px;
-        border: 1px solid #91cbd5;
-        border-left: 5px solid #0d8192;
+        border: 1px solid var(--line);
+        border-left: 5px solid var(--accent-strong);
         border-radius: 13px;
-        background: rgba(239, 251, 252, 0.9);
+        background: var(--surface-accent);
       }
       .memory-anchor strong {
         display: block;
@@ -480,7 +480,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         padding: 9px 13px;
         border: 1px solid var(--lesson-teal);
         border-radius: 999px;
-        color: #fff;
+        color: var(--accent-on-primary);
         background: var(--lesson-teal);
         font-size: 0.79rem;
         font-weight: 850;
@@ -488,7 +488,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
       }
       .practice-hub-link:hover,
       .practice-hub-link:focus-visible {
-        background: #096b79;
+        background: var(--accent-strong);
       }
       .lesson-intro h2 {
         margin: 4px 0 9px;
@@ -508,8 +508,8 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         border: 1px solid var(--lesson-line);
         border-top: 4px solid var(--lesson-teal);
         border-radius: 14px;
-        background: #fff;
-        box-shadow: 0 8px 22px rgba(41, 72, 101, 0.045);
+        background: var(--surface);
+        box-shadow: 0 8px 22px var(--shadow);
       }
       .lesson-section.wide-section,
       .takeaways,
@@ -528,8 +528,8 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
       }
       .section-label > span {
         padding-right: 9px;
-        border-right: 1px solid #b9dbe1;
-        color: #587387;
+        border-right: 1px solid var(--line);
+        color: var(--text-subtle);
         font-variant-numeric: tabular-nums;
       }
       .lesson-section h2 {
@@ -551,9 +551,9 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
       .decision-card {
         margin-top: 17px;
         padding: 14px 16px;
-        border-left: 4px solid #eea93b;
+        border-left: 4px solid var(--warning);
         border-radius: 0 10px 10px 0;
-        background: #fff8e9;
+        background: var(--warning-surface);
       }
       .lesson-section aside p {
         margin: 5px 0 0;
@@ -571,14 +571,14 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
       .recognition-grid > section,
       .guidance-grid > section {
         padding: 17px;
-        border: 1px solid #bde0e3;
+        border: 1px solid var(--line);
         border-radius: 12px;
-        background: #f1fbfb;
+        background: var(--surface-accent);
       }
       .recognition-grid .false-friends,
       .guidance-grid .avoid {
-        border-color: #ead3bb;
-        background: #fff8ef;
+        border-color: var(--line);
+        background: var(--warning-surface);
       }
       .recognition-grid h3,
       .guidance-grid h3 {
@@ -587,23 +587,23 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         font-size: 0.94rem;
       }
       .signal-list li::marker {
-        color: #0a9c8b;
+        color: var(--accent-link);
       }
       .model-section {
-        background: linear-gradient(145deg, #173244, #102433);
-        color: #dcebee;
-        border-color: #274e63;
+        background: linear-gradient(145deg, var(--code-panel), var(--code-bg));
+        color: var(--code-ink);
+        border-color: var(--code-line);
       }
       .model-section h2 {
-        color: #fff;
+        color: var(--code-ink);
       }
       .model-section .section-label {
-        border-left-color: #75d9df;
-        color: #9be6ea;
+        border-left-color: var(--code-keyword);
+        color: var(--code-keyword);
       }
       .model-section .section-label > span {
-        border-right-color: #3f7082;
-        color: #c0e7e9;
+        border-right-color: var(--code-line);
+        color: var(--code-ink);
       }
       .model-grid {
         display: grid;
@@ -612,20 +612,20 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
       }
       .model-grid article {
         padding: 15px;
-        border: 1px solid #315b6e;
+        border: 1px solid var(--code-line);
         border-radius: 10px;
-        background: #18394b;
+        background: var(--code-panel);
       }
       .model-grid .model-invariant {
-        border-color: #32bec8;
-        background: #164858;
+        border-color: var(--code-line);
+        background: var(--code-panel);
       }
       .model-grid span {
-        color: #83e1e6;
+        color: var(--code-keyword);
       }
       .model-grid p {
         margin: 5px 0 0;
-        color: #e9f5f6;
+        color: var(--code-ink);
         line-height: 1.55;
       }
       .variation-grid {
@@ -635,9 +635,9 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
       }
       .variation-grid article {
         padding: 16px;
-        border: 1px solid #d5e2ea;
+        border: 1px solid var(--line);
         border-radius: 11px;
-        background: #f8fbfd;
+        background: var(--surface);
       }
       .variation-grid h3,
       .pitfall-list h3 {
@@ -653,7 +653,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
       .named-algorithms {
         margin-top: 18px;
         padding-top: 18px;
-        border-top: 1px solid #d5e2ea;
+        border-top: 1px solid var(--line);
       }
       .named-algorithms > h3 {
         margin: 0 0 12px;
@@ -667,9 +667,9 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
       }
       .named-algorithms article {
         padding: 15px;
-        border: 1px solid #c5dce5;
+        border: 1px solid var(--line);
         border-radius: 11px;
-        background: #f4fafb;
+        background: var(--surface-accent);
       }
       .named-algorithms article > span {
         color: var(--lesson-teal);
@@ -689,9 +689,9 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
       }
       .named-algorithms .algorithm-anchor {
         padding: 8px 10px;
-        border-left: 3px solid #e3a13a;
-        color: #684512;
-        background: #fff8e9;
+        border-left: 3px solid var(--warning);
+        color: var(--warning);
+        background: var(--warning-surface);
         font-weight: 750;
       }
       .concept-visual {
@@ -700,19 +700,19 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         overflow: hidden;
         border: 1px solid var(--lesson-line);
         border-radius: 14px;
-        background: #f7fbfc;
+        background: var(--surface-accent);
       }
       .concept-visual figcaption {
         padding: 10px 14px;
-        color: #5b6e80;
+        color: var(--text-subtle);
         font-size: 0.82rem;
         line-height: 1.5;
       }
       .visual-transcript {
         margin-top: 12px;
-        border: 1px solid #c8dae5;
+        border: 1px solid var(--line);
         border-radius: 10px;
-        background: #f8fbfc;
+        background: var(--surface);
       }
       .visual-transcript summary {
         padding: 13px 15px;
@@ -721,7 +721,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         font-weight: 800;
       }
       .visual-transcript summary:focus-visible {
-        outline: 3px solid rgba(13, 129, 146, 0.35);
+        outline: 3px solid var(--accent-focus);
         outline-offset: -3px;
       }
       .visual-transcript ol {
@@ -738,9 +738,9 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
       }
       .complexity-grid article {
         padding: 15px;
-        border: 1px solid #b8dce1;
+        border: 1px solid var(--line);
         border-radius: 10px;
-        background: #f0fbfc;
+        background: var(--surface-accent);
       }
       .complexity-grid strong {
         display: block;
@@ -758,8 +758,8 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
       .tradeoff-list p {
         margin: 0;
         padding: 10px 12px;
-        border-left: 3px solid #e5a341;
-        background: #fff8eb;
+        border-left: 3px solid var(--warning);
+        background: var(--warning-surface);
         line-height: 1.5;
       }
       .pitfall-list {
@@ -768,9 +768,9 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
       }
       .pitfall-list article {
         padding: 15px;
-        border: 1px solid #ebd2c2;
+        border: 1px solid var(--line);
         border-radius: 10px;
-        background: #fff8f3;
+        background: var(--warning-surface);
       }
       .guidance-grid ul {
         margin-top: 9px;
@@ -781,7 +781,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         gap: 5px;
         width: 100%;
         max-width: 420px;
-        color: #607387;
+        color: var(--text-subtle);
         font-size: 0.7rem;
         font-weight: 850;
         letter-spacing: 0.06em;
@@ -793,24 +793,24 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         width: 100%;
         max-width: 100%;
         padding: 9px 12px;
-        border: 1px solid #9db7ca;
+        border: 1px solid var(--line);
         border-radius: 8px;
         color: var(--lesson-ink);
-        background: #fff;
+        background: var(--surface);
         font:
           750 0.84rem 'Avenir Next',
           sans-serif;
       }
       .example-picker select:focus-visible {
-        outline: 3px solid rgba(13, 129, 146, 0.3);
+        outline: 3px solid var(--accent-focus);
         outline-offset: 2px;
       }
       .worked-example {
         margin-top: 14px;
         padding: 18px;
-        border: 1px solid #cedee7;
+        border: 1px solid var(--line);
         border-radius: 12px;
-        background: #f8fbfd;
+        background: var(--surface);
       }
       .worked-example > div {
         display: grid;
@@ -821,7 +821,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         margin: 0;
         padding: 10px;
         border-radius: 8px;
-        background: #eef5f8;
+        background: var(--surface-accent);
         font:
           700 0.8rem/1.5 'JetBrains Mono',
           monospace;
@@ -835,8 +835,8 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         display: grid;
         grid-template-columns: minmax(0, 1fr) minmax(280px, 0.8fr);
         gap: 0 28px;
-        border-top-color: #289b73;
-        background: linear-gradient(145deg, #f1fbf6, #fff);
+        border-top-color: var(--accent-strong);
+        background: linear-gradient(145deg, var(--success-surface), var(--surface));
       }
       .takeaways .section-label,
       .takeaways h2 {
@@ -852,14 +852,14 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
       .language-notes p {
         margin: 0;
         padding: 10px 12px;
-        border: 1px solid #cfe2d9;
+        border: 1px solid var(--line);
         border-radius: 8px;
-        background: #fff;
+        background: var(--surface);
         line-height: 1.45;
       }
       .language-notes strong {
         display: block;
-        color: #267054;
+        color: var(--success);
         font-size: 0.72rem;
         text-transform: uppercase;
       }
@@ -867,12 +867,12 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         grid-column: 1/-1;
         margin-top: 20px;
         padding: 17px 19px;
-        border: 1px solid #b8d9cc;
+        border: 1px solid var(--line);
         border-radius: 12px;
-        background: #fff;
+        background: var(--surface);
       }
       .interview-recall span {
-        color: #267054;
+        color: var(--success);
         font-size: 0.68rem;
         font-weight: 850;
         letter-spacing: 0.075em;
@@ -887,9 +887,9 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         margin: 0;
       }
       .practice-section {
-        border-top-color: #e39c31;
+        border-top-color: var(--warning);
         background:
-          radial-gradient(circle at 100% 0, rgba(250, 192, 83, 0.17), transparent 32%), #fff;
+          radial-gradient(circle at 100% 0, color-mix(in srgb, var(--accent-secondary) 17%, transparent), transparent 32%), var(--surface);
       }
       .practice-grid {
         display: grid;
@@ -902,16 +902,16 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         min-width: 0;
         flex-direction: column;
         padding: 18px;
-        border: 1px solid #d6c29c;
+        border: 1px solid var(--line);
         border-radius: 12px;
         color: var(--lesson-body);
-        background: #fffdf8;
+        background: var(--surface);
         text-decoration: none;
       }
       .practice-grid a:hover,
       .practice-grid a:focus-visible {
-        border-color: #b97818;
-        box-shadow: 0 8px 20px rgba(118, 82, 24, 0.1);
+        border-color: var(--warning);
+        box-shadow: 0 8px 20px var(--shadow);
         outline: none;
       }
       .practice-grid strong {
@@ -926,7 +926,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
       }
       .practice-grid b {
         margin-top: 13px;
-        color: #9a5d09;
+        color: var(--warning);
         font-size: 0.8rem;
       }
       @media (max-width: 850px) {

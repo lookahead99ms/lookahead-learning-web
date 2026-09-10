@@ -21,9 +21,9 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
   styles: [
     `
       .practice-reader {
-        --practice-ink: #192b3d;
-        --practice-body: #465c72;
-        --practice-accent: #0d8192;
+        --practice-ink: var(--text-strong);
+        --practice-body: var(--text-body);
+        --practice-accent: var(--accent-strong);
       }
       .practice-breadcrumb-bar {
         display: flex;
@@ -40,13 +40,17 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         overflow: hidden;
         margin: 22px 0 18px;
         padding: clamp(24px, 4vw, 46px);
-        border: 1px solid #b9dce6;
+        border: 1px solid var(--line);
         border-radius: 20px;
         color: var(--practice-body);
         background:
-          radial-gradient(circle at 92% 10%, rgba(241, 167, 57, 0.2), transparent 28%),
-          linear-gradient(135deg, #edfafa 0%, #fff 64%);
-        box-shadow: 0 16px 38px rgba(28, 78, 96, 0.08);
+          radial-gradient(
+            circle at 92% 10%,
+            color-mix(in srgb, var(--accent-secondary) 20%, transparent),
+            transparent 28%
+          ),
+          linear-gradient(135deg, var(--surface-accent) 0%, var(--surface) 64%);
+        box-shadow: 0 16px 38px var(--shadow);
       }
       .practice-hero::after {
         content: '';
@@ -55,7 +59,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         bottom: -75px;
         width: 220px;
         height: 220px;
-        border: 28px solid rgba(13, 129, 146, 0.08);
+        border: 28px solid color-mix(in srgb, var(--accent-strong) 8%, transparent);
         border-radius: 50%;
         pointer-events: none;
       }
@@ -80,7 +84,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         padding: 0 0 0 28px;
         border: 0;
         border-radius: 0;
-        color: #587188;
+        color: var(--text-subtle);
         background: transparent;
         font-size: 0.66rem;
         letter-spacing: 0.09em;
@@ -93,7 +97,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         left: 0;
         width: 20px;
         height: 2px;
-        background: #c0780a;
+        background: var(--accent-secondary);
         transform: translateY(-50%);
       }
       .practice-proof {
@@ -124,19 +128,19 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         align-items: center;
         gap: 12px;
         padding: 10px 16px 10px 10px;
-        border: 1px solid #347f91;
+        border: 1px solid var(--accent-strong);
         border-radius: 14px;
-        color: #183f4b;
-        background: rgba(255, 255, 255, 0.9);
-        box-shadow: 0 8px 20px rgba(31, 101, 122, 0.09);
+        color: var(--text-strong);
+        background: var(--surface);
+        box-shadow: 0 8px 20px var(--shadow);
         cursor: pointer;
         font: inherit;
         text-align: left;
       }
       .surprise-problem:hover,
       .surprise-problem:focus-visible {
-        border-color: #c0780a;
-        outline: 3px solid rgba(192, 120, 10, 0.16);
+        border-color: var(--accent-secondary-strong);
+        outline: 3px solid var(--accent-focus);
         outline-offset: 3px;
       }
       .surprise-problem:disabled {
@@ -150,8 +154,8 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         flex: 0 0 auto;
         place-items: center;
         border-radius: 10px;
-        color: #fff;
-        background: #c0780a;
+        color: var(--accent-on-secondary);
+        background: var(--accent-secondary-strong);
         font-family: Georgia, 'Times New Roman', serif;
         font-size: 1.2rem;
         font-weight: 900;
@@ -182,7 +186,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         text-transform: uppercase;
       }
       .pattern-group-metadata-separator {
-        color: #9ab4c1;
+        color: var(--text-subtle);
       }
       .practice-controls {
         display: grid;
@@ -193,7 +197,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         padding: 17px;
         border: 1px solid var(--line);
         border-radius: 14px;
-        background: #fff;
+        background: var(--surface);
       }
       .practice-controls label {
         display: grid;
@@ -209,10 +213,10 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         width: 100%;
         min-height: 44px;
         padding: 9px 12px;
-        border: 1px solid #9db7ca;
+        border: 1px solid var(--border-strong);
         border-radius: 8px;
         color: var(--practice-ink);
-        background: #fff;
+        background: var(--surface);
         font:
           700 0.9rem 'Avenir Next',
           Avenir,
@@ -236,36 +240,36 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         gap: 6px;
         scroll-snap-align: center;
         padding: 8px 12px;
-        border: 1px solid #c7d9e8;
+        border: 1px solid var(--line);
         border-radius: 999px;
-        color: #416b9e;
-        background: #fff;
+        color: var(--accent-link);
+        background: var(--surface);
         font-size: 0.78rem;
         font-weight: 800;
         text-decoration: none;
       }
       .pattern-filter a[aria-current='page'] {
         border-color: var(--practice-accent);
-        color: #fff;
+        color: var(--accent-on-primary);
         background: var(--practice-accent);
       }
       .pattern-filter-order {
-        color: #a86008;
+        color: var(--accent-secondary-strong);
         font-family: Georgia, 'Times New Roman', serif;
         font-size: 0.68rem;
         font-variant-numeric: tabular-nums;
         letter-spacing: 0;
       }
       .pattern-filter a[aria-current='page'] .pattern-filter-order {
-        color: #fff;
+        color: var(--accent-on-primary);
         opacity: 0.82;
       }
       .active-practice {
         margin: 0 0 26px;
         padding: clamp(18px, 3vw, 28px);
-        border: 1px solid #bfd9e5;
+        border: 1px solid var(--line);
         border-radius: 18px;
-        background: #fff;
+        background: var(--surface);
       }
       .active-practice > header {
         display: flex;
@@ -287,7 +291,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
       }
       .pattern-group-order {
         flex: 0 0 auto;
-        color: #a86008;
+        color: var(--accent-secondary-strong);
         font-family: Georgia, 'Times New Roman', serif;
         font-size: 0.86rem;
         font-variant-numeric: tabular-nums;
@@ -302,7 +306,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
       }
       .lesson-link {
         flex: 0 0 auto;
-        color: #315f9d;
+        color: var(--accent-link);
         font-size: 0.8rem;
         font-weight: 800;
         text-decoration: none;
@@ -352,10 +356,10 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         align-items: center;
         gap: 7px;
         padding: 7px 12px;
-        border: 1px solid #9dbdcd;
+        border: 1px solid var(--border-strong);
         border-radius: 999px;
-        color: #315f9d;
-        background: #fff;
+        color: var(--accent-link);
+        background: var(--surface);
         font-size: 0.76rem;
         font-weight: 850;
         text-decoration: none;
@@ -371,7 +375,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
       .clear-catalog-filters:hover,
       .clear-catalog-filters:focus-visible {
         border-color: var(--practice-accent);
-        outline: 3px solid rgba(13, 129, 146, 0.15);
+        outline: 3px solid var(--accent-focus);
         outline-offset: 2px;
       }
       .pattern-groups {
@@ -383,8 +387,8 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         overflow: hidden;
         border: 1px solid var(--line);
         border-radius: 16px;
-        background: #fff;
-        box-shadow: 0 9px 25px rgba(54, 83, 119, 0.04);
+        background: var(--surface);
+        box-shadow: 0 9px 25px var(--shadow);
       }
       .pattern-group > summary {
         display: grid;
@@ -399,12 +403,12 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         display: none;
       }
       .pattern-group[open] {
-        border-color: #9bc4d1;
-        box-shadow: 0 14px 32px rgba(31, 101, 122, 0.1);
+        border-color: var(--accent-strong);
+        box-shadow: 0 14px 32px var(--shadow);
       }
       .pattern-group-count {
         justify-self: end;
-        color: #587188;
+        color: var(--text-subtle);
         font-size: 0.76rem;
         font-weight: 800;
         text-align: right;
@@ -440,10 +444,10 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         align-items: center;
         min-height: 76px;
         padding: 12px 15px;
-        border: 1px solid #d5e3eb;
+        border: 1px solid var(--line);
         border-radius: 12px;
         color: var(--practice-body);
-        background: #fff;
+        background: var(--surface);
         text-decoration: none;
         transition:
           border-color 140ms ease,
@@ -452,9 +456,9 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
       }
       .ranked-problem-row:hover,
       .ranked-problem-row:focus-visible {
-        border-color: #69a7bd;
+        border-color: var(--accent-strong);
         transform: translateY(-1px);
-        box-shadow: 0 8px 18px rgba(31, 101, 122, 0.08);
+        box-shadow: 0 8px 18px var(--shadow);
       }
       .ranked-problem-row h3 {
         margin: 0;
@@ -462,7 +466,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         font-size: 0.95rem;
       }
       .ranked-problem-pattern {
-        color: #416b9e;
+        color: var(--accent-link);
         font-size: 0.76rem;
         font-weight: 800;
       }
@@ -471,10 +475,10 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         min-height: 44px;
         margin: 16px auto 0;
         padding: 9px 18px;
-        border: 1px solid #347f91;
+        border: 1px solid var(--accent-strong);
         border-radius: 999px;
-        color: #183f4b;
-        background: #fff;
+        color: var(--text-strong);
+        background: var(--surface);
         cursor: pointer;
         font:
           800 0.82rem 'Avenir Next',
@@ -483,7 +487,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
       }
       .load-more-problems:hover,
       .load-more-problems:focus-visible {
-        outline: 3px solid rgba(13, 129, 146, 0.15);
+        outline: 3px solid var(--accent-focus);
         outline-offset: 2px;
       }
       .problem-card {
@@ -493,10 +497,10 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         flex-direction: column;
         align-items: flex-start;
         padding: 15px;
-        border: 1px solid #d5e3eb;
+        border: 1px solid var(--line);
         border-radius: 12px;
         color: var(--practice-body);
-        background: #fbfdfe;
+        background: var(--surface-subtle);
         text-decoration: none;
         transition:
           border-color 140ms ease,
@@ -505,9 +509,9 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
       }
       .problem-card:hover,
       .problem-card:focus-visible {
-        border-color: #69a7bd;
+        border-color: var(--accent-strong);
         transform: translateY(-2px);
-        box-shadow: 0 9px 20px rgba(31, 101, 122, 0.09);
+        box-shadow: 0 9px 20px var(--shadow);
       }
       .problem-card h3 {
         margin: 9px 0 7px;
@@ -523,14 +527,14 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
       .problem-card b {
         margin-top: auto;
         padding-top: 13px;
-        color: #315f9d;
+        color: var(--accent-link);
         font-size: 0.78rem;
       }
       .problem-card-meta {
         display: flex;
         gap: 5px 10px;
         flex-wrap: wrap;
-        color: #587188;
+        color: var(--text-subtle);
         font-size: 0.68rem;
         font-weight: 850;
         letter-spacing: 0.045em;
@@ -540,14 +544,14 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
       .problem-card-meta span + span::before {
         content: '·';
         margin-right: 10px;
-        color: #9db7ca;
+        color: var(--border-strong);
       }
       .empty-state {
         padding: 34px;
-        border: 1px dashed #b9ccda;
+        border: 1px dashed var(--border-strong);
         border-radius: 14px;
         text-align: center;
-        background: #fff;
+        background: var(--surface);
       }
       .empty-state h2 {
         margin-top: 0;

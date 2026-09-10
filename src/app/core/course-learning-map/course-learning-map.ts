@@ -172,35 +172,35 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
   styles: [
     `
       .learning-map {
-        --learning-accent: #168ca5;
-        --learning-surface: #f1fbfc;
-        --learning-glow: rgba(22, 140, 165, 0.12);
+        --learning-accent: var(--accent-link);
+        --learning-surface: var(--surface-accent);
+        --learning-glow: var(--shadow);
         display: grid;
         gap: 10px;
         max-width: 1040px;
         margin: 0 auto;
       }
       .learning-map[data-path='grow'] {
-        --learning-accent: #b45309;
-        --learning-surface: #fff6ed;
-        --learning-glow: rgba(180, 83, 9, 0.12);
+        --learning-accent: var(--grow-accent);
+        --learning-surface: var(--warning-surface);
+        --learning-glow: var(--shadow);
       }
       .learning-map[data-path='look-ahead'] {
-        --learning-accent: #2f6f8e;
-        --learning-surface: #eef7f8;
-        --learning-glow: rgba(47, 111, 142, 0.12);
+        --learning-accent: var(--accent-link);
+        --learning-surface: var(--surface-accent);
+        --learning-glow: var(--shadow);
       }
       .learning-map-intro {
         margin: 0 0 8px;
-        color: #62748d;
+        color: var(--text-subtle);
         line-height: 1.55;
       }
       .learning-unit {
         overflow: hidden;
-        border: 1px solid #d5e1ef;
+        border: 1px solid var(--line);
         border-left: 5px solid transparent;
         border-radius: 14px;
-        background: #fff;
+        background: var(--surface);
         transition:
           border-color 0.16s ease,
           border-left-color 0.16s ease,
@@ -210,9 +210,9 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
       .learning-unit:hover,
       .learning-unit:focus-within,
       .learning-unit[open] {
-        border-color: #dbe3ee;
+        border-color: var(--line);
         border-left-color: var(--learning-accent);
-        background: linear-gradient(145deg, #fff 20%, var(--learning-surface));
+        background: linear-gradient(145deg, var(--surface) 20%, var(--learning-surface));
         box-shadow: 0 12px 30px var(--learning-glow);
         transform: translateY(-2px);
       }
@@ -234,15 +234,15 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
         text-decoration: none;
       }
       .learning-unit-planned {
-        border-left-color: #cbd5e1;
-        background: #f8fafc;
+        border-left-color: var(--line);
+        background: var(--surface);
       }
       .learning-unit-planned:hover {
         transform: none;
         box-shadow: none;
-        border-color: #dbe3ee;
-        border-left-color: #cbd5e1;
-        background: #f8fafc;
+        border-color: var(--line);
+        border-left-color: var(--line);
+        background: var(--surface);
       }
       .learning-unit summary::-webkit-details-marker {
         display: none;
@@ -259,16 +259,16 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
         min-width: 0;
       }
       .learning-unit-copy strong {
-        color: #172033;
+        color: var(--text-strong);
         font-size: 1.08rem;
       }
       .learning-unit-copy span {
-        color: #66778f;
+        color: var(--text-subtle);
         line-height: 1.45;
       }
       .learning-unit-status {
         margin-left: auto;
-        color: #64748b;
+        color: var(--text-subtle);
         font-size: 0.76rem;
         font-weight: 800;
         white-space: nowrap;
@@ -290,7 +290,7 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
         flex-wrap: wrap;
         gap: 10px;
         padding: 0 22px 20px 72px;
-        border-top: 1px solid #e5edf5;
+        border-top: 1px solid var(--line);
       }
       .learning-unit-actions.family-actions {
         padding-bottom: 16px;
@@ -303,10 +303,10 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
         gap: 6px;
         margin-top: 16px;
         padding: 9px 13px;
-        border: 1px solid #c7d9ec;
+        border: 1px solid var(--line);
         border-radius: 8px;
         color: var(--learning-accent);
-        background: #fff;
+        background: var(--surface);
         font-size: 0.82rem;
         font-weight: 800;
         text-decoration: none;
@@ -323,7 +323,7 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
         min-height: 22px;
         place-items: center;
         border-radius: 999px;
-        color: #fff;
+        color: var(--accent-on-primary);
         background: var(--learning-accent);
         font-size: 0.72rem;
       }
@@ -339,9 +339,9 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
         gap: 10px;
         min-width: 0;
         padding: 17px;
-        border: 1px solid #dce8f2;
+        border: 1px solid var(--line);
         border-radius: 12px;
-        background: rgba(255, 255, 255, 0.82);
+        background: var(--surface);
       }
       .learning-subunit-label {
         color: var(--learning-accent);

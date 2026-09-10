@@ -74,22 +74,22 @@ type Language = 'java' | 'python' | 'go';
       .essential-workspace {
         overflow: hidden;
         margin-top: 22px;
-        border: 1px solid #b9dce6;
+        border: 1px solid var(--line);
         border-radius: 14px;
-        background: #fff;
-        box-shadow: 0 10px 26px rgba(22, 140, 165, 0.09);
+        background: var(--surface);
+        box-shadow: 0 10px 26px var(--shadow);
       }
       header {
         display: flex;
         justify-content: space-between;
         gap: 18px;
         padding: 18px;
-        background: linear-gradient(115deg, #effbfc, #fff);
+        background: linear-gradient(115deg, var(--surface-accent), var(--surface));
       }
       header span,
       .problem-controls span {
         display: block;
-        color: #168ca5;
+        color: var(--accent-link);
         font-size: 0.68rem;
         font-weight: 850;
         letter-spacing: 0.07em;
@@ -97,13 +97,13 @@ type Language = 'java' | 'python' | 'go';
       }
       header h3 {
         margin: 4px 0;
-        color: #172033;
+        color: var(--text-strong);
         font-size: 1.12rem;
       }
       header p {
         max-width: 680px;
         margin: 0;
-        color: #52657e;
+        color: var(--text-subtle);
         font-size: 0.88rem;
         line-height: 1.5;
       }
@@ -111,7 +111,7 @@ type Language = 'java' | 'python' | 'go';
         display: grid;
         align-content: start;
         gap: 5px;
-        color: #52657e;
+        color: var(--text-subtle);
         font-size: 0.68rem;
         font-weight: 850;
         letter-spacing: 0.06em;
@@ -120,10 +120,10 @@ type Language = 'java' | 'python' | 'go';
       select {
         min-width: 178px;
         padding: 7px 25px 7px 8px;
-        border: 1px solid #b9c9db;
+        border: 1px solid var(--line);
         border-radius: 7px;
-        color: #172033;
-        background: #fff;
+        color: var(--text-strong);
+        background: var(--surface);
         font:
           700 0.8rem Inter,
           ui-sans-serif,
@@ -136,14 +136,14 @@ type Language = 'java' | 'python' | 'go';
         gap: 18px;
         align-items: end;
         padding: 13px 18px;
-        border-top: 1px solid #d8e8ee;
-        border-bottom: 1px solid #d8e8ee;
-        background: #f8fcfd;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        background: var(--surface);
       }
       .problem-controls p {
         min-width: 0;
         margin: 0;
-        color: #172033;
+        color: var(--text-strong);
         font:
           700 0.82rem/1.45 'JetBrains Mono',
           Consolas,
@@ -158,15 +158,15 @@ type Language = 'java' | 'python' | 'go';
         display: flex;
         gap: 0;
         padding: 0 12px;
-        border-bottom: 1px solid #334155;
-        background: #172033;
+        border-bottom: 1px solid var(--code-line);
+        background: var(--code-bg);
       }
       nav button {
         min-height: 46px;
         padding: 0 16px;
         border: 0;
         border-bottom: 3px solid transparent;
-        color: #cbd5e1;
+        color: var(--code-muted);
         background: transparent;
         cursor: pointer;
         font:
@@ -176,9 +176,9 @@ type Language = 'java' | 'python' | 'go';
           sans-serif;
       }
       nav button[aria-selected='true'] {
-        border-bottom-color: #4bb7ca;
-        color: #fff;
-        background: #24354a;
+        border-bottom-color: var(--code-line);
+        color: var(--code-ink);
+        background: var(--code-panel);
       }
       .code-fallback > div {
         display: flex;
@@ -186,9 +186,9 @@ type Language = 'java' | 'python' | 'go';
         justify-content: space-between;
         gap: 12px;
         padding: 9px 14px;
-        border-bottom: 1px solid #334155;
-        color: #8fd9e3;
-        background: #1e293b;
+        border-bottom: 1px solid var(--code-line);
+        color: var(--code-keyword);
+        background: var(--code-panel);
         font:
           700 0.72rem 'JetBrains Mono',
           Consolas,
@@ -199,8 +199,8 @@ type Language = 'java' | 'python' | 'go';
         min-height: 310px;
         margin: 0;
         padding: 18px;
-        color: #dbeafe;
-        background: #172033;
+        color: var(--code-ink);
+        background: var(--code-bg);
         white-space: pre-wrap;
         font:
           13px/1.65 'JetBrains Mono',
@@ -212,12 +212,12 @@ type Language = 'java' | 'python' | 'go';
         gap: 20px;
         align-items: center;
         padding: 12px 18px;
-        color: #52657e;
-        background: #f8fcfd;
+        color: var(--text-subtle);
+        background: var(--surface);
         font-size: 0.8rem;
       }
       footer strong {
-        color: #172033;
+        color: var(--text-strong);
       }
       @media (max-width: 700px) {
         header,

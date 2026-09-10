@@ -487,11 +487,11 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
       .guided-trace {
         position: relative;
         overflow: visible;
-        border: 1px solid #35566c;
+        border: 1px solid var(--code-line);
         border-radius: 16px;
-        color: #e6f4f6;
-        background: #102333;
-        box-shadow: 0 14px 34px rgba(15, 49, 62, 0.14);
+        color: var(--code-ink);
+        background: var(--code-bg);
+        box-shadow: 0 14px 34px var(--shadow);
       }
       .trace-toolbar {
         position: relative;
@@ -502,15 +502,15 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         align-items: center;
         gap: 12px;
         padding: 11px 15px;
-        border-bottom: 1px solid #315569;
-        background: rgba(23, 51, 70, 0.97);
+        border-bottom: 1px solid var(--code-line);
+        background: var(--code-panel);
         backdrop-filter: blur(10px);
       }
       .trace-toolbar span,
       .trace-context span,
       .editor-file {
         display: block;
-        color: #8fd9e3;
+        color: var(--code-keyword);
         font-size: 0.68rem;
         font-weight: 850;
         letter-spacing: 0.07em;
@@ -519,7 +519,7 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
       .trace-toolbar strong {
         display: block;
         margin-top: 2px;
-        color: #f4fbfc;
+        color: var(--code-ink);
       }
       .toolbar-brand,
       .language-control {
@@ -540,26 +540,27 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         gap: 12px;
         min-height: 52px;
         padding: 7px 15px;
-        border-bottom: 1px solid #315569;
-        background: rgba(13, 38, 53, 0.97);
-        box-shadow: 0 8px 18px rgba(5, 25, 35, 0.16);
+        border-bottom: 1px solid var(--code-line);
+        background: var(--code-bg);
+        box-shadow: 0 8px 18px var(--shadow);
         backdrop-filter: blur(10px);
       }
       .trace-controls button {
         min-height: 44px;
         padding: 7px 12px;
-        border: 1px solid #4d7789;
+        border: 1px solid var(--code-line);
         border-radius: 7px;
-        color: #edf9fa;
-        background: #2d5267;
+        color: var(--code-ink);
+        background: var(--code-panel);
         cursor: pointer;
         font:
           750 0.78rem 'Avenir Next',
           sans-serif;
       }
       .trace-controls .primary {
-        border-color: #24c2cd;
-        background: #168a9b;
+        border-color: var(--code-action);
+        color: var(--code-on-primary);
+        background: var(--code-action);
       }
       .trace-controls button:disabled {
         opacity: 0.45;
@@ -568,13 +569,13 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
       .trace-controls button:focus-visible,
       .language-tabs button:focus-visible,
       .guided-trace:focus-visible {
-        outline: 3px solid #8de7ed;
+        outline: 3px solid var(--code-focus);
         outline-offset: 2px;
       }
       .step-status {
         display: block;
         min-width: 0;
-        color: #a9c6ce;
+        color: var(--code-muted);
         font:
           650 0.68rem/1.35 'JetBrains Mono',
           monospace;
@@ -588,12 +589,12 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         align-items: center;
         gap: 8px 18px;
         padding: 9px 15px;
-        border-bottom: 1px solid #315569;
-        background: #143041;
+        border-bottom: 1px solid var(--code-line);
+        background: var(--code-panel);
       }
       .trace-context p {
         margin: 0;
-        color: #f1fafa;
+        color: var(--code-ink);
         font:
           700 0.78rem/1.5 'JetBrains Mono',
           monospace;
@@ -614,45 +615,45 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         min-height: 40px;
         width: 100%;
         padding: 7px 30px 7px 9px;
-        border: 1px solid #4d7789;
+        border: 1px solid var(--code-line);
         border-radius: 7px;
-        color: #f1fafa;
-        background: #102333;
+        color: var(--code-ink);
+        background: var(--code-bg);
         font:
           700 0.78rem 'Avenir Next',
           sans-serif;
       }
       .trace-fixture-picker select:focus-visible {
-        outline: 3px solid #8de7ed;
+        outline: 3px solid var(--code-focus);
         outline-offset: 2px;
       }
       .trace-context .fixture-explanation {
         grid-column: 1 / -1;
-        color: #bdd2d9;
+        color: var(--code-muted);
         font-family: 'Avenir Next', Avenir, sans-serif;
         font-weight: 650;
       }
       .trace-context .fixture-note {
         grid-column: 1/-1;
         padding: 8px 10px;
-        border-left: 3px solid #f8c35a;
-        color: #ffe6a8;
-        background: #3d3526;
+        border-left: 3px solid var(--code-warning);
+        color: var(--code-ink);
+        background: var(--code-panel);
       }
       .language-tabs {
         display: flex;
         margin-top: 4px;
         padding: 2px;
-        border: 1px solid #456c7b;
+        border: 1px solid var(--code-line);
         border-radius: 8px;
-        background: #102b3a;
+        background: var(--code-bg);
       }
       .language-tabs button {
         min-width: 58px;
         min-height: 34px;
         border: 0;
         border-radius: 5px;
-        color: #aac8cf;
+        color: var(--code-muted);
         background: transparent;
         cursor: pointer;
         font:
@@ -661,15 +662,15 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         text-transform: capitalize;
       }
       .language-tabs button[aria-selected='true'] {
-        color: #fff;
-        background: #1a4556;
-        box-shadow: inset 0 -2px #2cd4da;
+        color: var(--code-ink);
+        background: var(--code-panel);
+        box-shadow: inset 0 -2px var(--code-action);
       }
       .source-panel {
         position: relative;
         min-width: 0;
-        border-right: 1px solid #315569;
-        background: #282c34;
+        border-right: 1px solid var(--code-line);
+        background: var(--code-panel);
       }
       .editor-file {
         position: absolute;
@@ -679,10 +680,10 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         max-width: calc(100% - 130px);
         padding: 5px 9px;
         overflow: hidden;
-        border: 1px solid #465568;
-        border-bottom-color: #61afef;
+        border: 1px solid var(--code-line);
+        border-bottom-color: var(--code-keyword);
         border-radius: 6px 6px 2px 2px;
-        background: #202938;
+        background: var(--code-panel);
         text-overflow: ellipsis;
         white-space: nowrap;
       }
@@ -708,42 +709,42 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         min-height: 1.7em;
         padding-right: 14px;
         border-left: 4px solid transparent;
-        color: #cadce3;
+        color: var(--code-ink);
         white-space: pre;
       }
       .source-panel code > span.active {
-        border-left-color: #61afef;
-        color: #fff;
-        background: #3a506c;
+        border-left-color: var(--code-keyword);
+        color: var(--code-ink);
+        background: var(--code-highlight);
       }
       .source-panel code > span.unreachable {
-        color: #71818a;
+        color: var(--code-muted);
         opacity: 0.5;
       }
       .source-panel code > span.unreachable .line-code {
         text-decoration: line-through;
-        text-decoration-color: rgba(151, 171, 179, 0.5);
+        text-decoration-color: var(--code-keyword);
       }
       .guided-trace[data-language='python'] .source-panel {
-        background: #282a36;
+        background: var(--code-panel);
       }
       .guided-trace[data-language='python'] .source-panel code > span.active {
-        border-left-color: #ff79c6;
-        background: #4b3e5d;
+        border-left-color: var(--code-keyword);
+        background: var(--code-highlight);
       }
       .guided-trace[data-language='go'] .source-panel {
-        background: #292d3e;
+        background: var(--code-panel);
       }
       .guided-trace[data-language='go'] .source-panel code > span.active {
-        border-left-color: #89ddff;
-        background: #3d4565;
+        border-left-color: var(--code-keyword);
+        background: var(--code-highlight);
       }
       .line-gutter {
         display: grid;
         grid-template-columns: 15px 1fr;
         align-items: center;
         padding-right: 9px;
-        color: #6f91a1;
+        color: var(--code-muted);
         text-align: right;
       }
       .line-gutter b {
@@ -751,7 +752,7 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
       }
       .current-line-arrow {
         visibility: hidden;
-        color: #82d8ff;
+        color: var(--code-keyword);
         font-size: 1rem;
         font-style: normal;
         font-weight: 900;
@@ -773,25 +774,25 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
       .variables div {
         min-width: 0;
         padding: 7px 8px;
-        border: 1px solid #315569;
+        border: 1px solid var(--code-line);
         border-radius: 7px;
-        background: #143041;
+        background: var(--code-panel);
       }
       .variables div.changed {
-        border-color: #f8c35a;
+        border-color: var(--code-warning);
       }
       .variables dt {
-        color: #cda5f5;
+        color: var(--code-ink);
         font:
           700 0.75rem 'JetBrains Mono',
           monospace;
       }
       .variables dt small {
-        color: #91abb5;
+        color: var(--code-muted);
       }
       .variables dt em {
         margin-left: 6px;
-        color: #ffd17a;
+        color: var(--code-warning);
         font:
           800 0.62rem 'Avenir Next',
           sans-serif;
@@ -799,21 +800,21 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
       }
       .variables dd {
         margin: 5px 0 0;
-        color: #fff;
+        color: var(--code-ink);
         font:
           700 0.75rem 'JetBrains Mono',
           monospace;
         overflow-wrap: anywhere;
       }
       .terminal > span {
-        color: #8fd9e3;
+        color: var(--code-keyword);
         font-size: 0.68rem;
         font-weight: 850;
         letter-spacing: 0.07em;
         text-transform: uppercase;
       }
       .state-view {
-        background: #112b3b;
+        background: var(--code-bg);
       }
       .state-row {
         display: grid;
@@ -823,7 +824,7 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         margin-top: 9px;
       }
       .state-row > strong {
-        color: #8bdfe7;
+        color: var(--code-keyword);
         font:
           800 0.7rem 'JetBrains Mono',
           monospace;
@@ -840,10 +841,10 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         min-height: 43px;
         place-items: center;
         padding: 4px;
-        border: 1px solid #456c7b;
+        border: 1px solid var(--code-line);
         border-right: 0;
-        color: #d9e8ed;
-        background: #183344;
+        color: var(--code-ink);
+        background: var(--code-panel);
         font:
           700 0.82rem 'JetBrains Mono',
           monospace;
@@ -852,32 +853,32 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         border-radius: 6px 0 0 6px;
       }
       .state-cells span:last-child {
-        border-right: 1px solid #456c7b;
+        border-right: 1px solid var(--code-line);
         border-radius: 0 6px 6px 0;
       }
       .state-cells span.active,
       .state-cells span.changed {
-        border-color: #24d2dd;
-        color: #fff;
-        background: #157082;
+        border-color: var(--code-line);
+        color: var(--code-ink);
+        background: var(--code-panel);
       }
       .state-cells span.boundary,
       .state-cells span.related {
-        border-color: #f8c35a;
-        color: #fff0cf;
-        background: #6a4f25;
+        border-color: var(--code-warning);
+        color: var(--code-ink);
+        background: var(--code-panel);
       }
       .state-cells span.range {
-        background: #24546a;
+        background: var(--code-panel);
       }
       .state-cells span.resolved {
-        background: #22634f;
+        background: var(--code-panel);
       }
       .state-cells span.discarded {
         opacity: 0.5;
       }
       .state-cells small {
-        color: #a9c2ca;
+        color: var(--code-muted);
         font-size: 0.6rem;
       }
       .terminal {
@@ -887,9 +888,9 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         gap: 12px;
         min-height: 48px;
         padding: 9px 15px;
-        border-top: 1px solid #315569;
-        color: #d6e8ec;
-        background: #081b27;
+        border-top: 1px solid var(--code-line);
+        color: var(--code-ink);
+        background: var(--code-bg);
       }
       .terminal p {
         margin: 0;
@@ -899,21 +900,21 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
       }
       .terminal p::before {
         content: '> ';
-        color: #71e1ba;
+        color: var(--code-success);
       }
       .trace-transcript {
-        border-top: 1px solid #315569;
-        background: #f8fcfd;
-        color: #26384c;
+        border-top: 1px solid var(--accent-strong);
+        background: var(--surface);
+        color: var(--text-strong);
       }
       .trace-transcript summary {
         padding: 14px 17px;
         cursor: pointer;
-        color: #116f82;
+        color: var(--accent-link);
         font-weight: 800;
       }
       .trace-transcript summary:focus-visible {
-        outline: 3px solid #168ca5;
+        outline: 3px solid var(--accent-focus);
         outline-offset: -3px;
       }
       .trace-transcript > p,
@@ -929,15 +930,15 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
       .transcript-context p {
         margin: 0;
         padding: 9px 11px;
-        border: 1px solid #d4e2e8;
+        border: 1px solid var(--line);
         border-radius: 8px;
-        background: #fff;
+        background: var(--surface);
         overflow-wrap: anywhere;
       }
       .transcript-context strong {
         display: block;
         margin-bottom: 3px;
-        color: #116f82;
+        color: var(--accent-link);
         font-size: 0.7rem;
         text-transform: uppercase;
       }
@@ -957,8 +958,8 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
       .boundary-status {
         margin: 0;
         padding: 8px 17px;
-        color: #9fbcc4;
-        background: #173346;
+        color: var(--code-muted);
+        background: var(--code-panel);
         font-size: 0.72rem;
       }
       .sr-status {
@@ -982,7 +983,7 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         display: grid;
         grid-template-rows: auto minmax(0, 1fr);
         min-height: 520px;
-        border-right: 1px solid #315569;
+        border-right: 1px solid var(--code-line);
         border-bottom: 0;
       }
       .ide-workspace .source-panel pre {
@@ -991,17 +992,17 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         max-height: none;
       }
       .ide-workspace .source-line.executed:not(.active):not(.unreachable) {
-        color: #b9ccd4;
+        color: var(--code-muted);
       }
       .debugger-shell {
         display: grid;
         grid-template-rows: auto minmax(0, 1fr);
         min-width: 0;
         height: 520px;
-        background: #0d2635;
+        background: var(--code-bg);
       }
       .learning-view > span {
-        color: #8fd9e3;
+        color: var(--code-keyword);
         font-size: 0.68rem;
         font-weight: 850;
         letter-spacing: 0.07em;
@@ -1012,17 +1013,17 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         z-index: 2;
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
-        border-bottom: 1px solid #315569;
-        background: #102333;
+        border-bottom: 1px solid var(--code-line);
+        background: var(--code-bg);
       }
       .debugger-view-tabs button {
         min-width: 0;
         min-height: 42px;
         padding: 8px 5px;
         border: 0;
-        border-right: 1px solid #315569;
+        border-right: 1px solid var(--code-line);
         border-bottom: 3px solid transparent;
-        color: #9fbcc4;
+        color: var(--code-muted);
         background: transparent;
         cursor: pointer;
         font:
@@ -1033,9 +1034,9 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         border-right: 0;
       }
       .debugger-view-tabs button[aria-selected='true'] {
-        border-bottom-color: #2cd4da;
-        color: #fff;
-        background: #1a4556;
+        border-bottom-color: var(--code-line);
+        color: var(--code-ink);
+        background: var(--code-panel);
       }
       .debugger-view-tabs button:disabled {
         opacity: 0.45;
@@ -1045,7 +1046,7 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
       .learning-view button:focus-visible {
         position: relative;
         z-index: 1;
-        outline: 3px solid #8de7ed;
+        outline: 3px solid var(--code-focus);
         outline-offset: -3px;
       }
       .debugger-detail-shell {
@@ -1057,7 +1058,7 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         min-width: 0;
         height: 100%;
         overflow: auto;
-        background: #0d2635;
+        background: var(--code-bg);
       }
       .debugger-panel.overflowing {
         padding-bottom: 52px;
@@ -1065,12 +1066,12 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
       .learning-view {
         min-height: 100%;
         padding: 16px;
-        color: #e6f4f6;
-        background: #102b3a;
+        color: var(--code-ink);
+        background: var(--code-bg);
       }
       .learning-view h3 {
         margin: 8px 0 10px;
-        color: #fff;
+        color: var(--code-ink);
         font-size: 0.92rem;
         line-height: 1.45;
       }
@@ -1080,14 +1081,14 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         line-height: 1.55;
       }
       .why-view {
-        border-left: 4px solid #27c2d0;
-        background: linear-gradient(135deg, #153849, #102b3a);
+        border-left: 4px solid var(--code-line);
+        background: linear-gradient(135deg, var(--code-panel), var(--code-bg));
       }
       .learning-detail {
         padding: 10px;
         border-radius: 8px;
-        color: #d8ebee;
-        background: #173f52;
+        color: var(--code-ink);
+        background: var(--code-panel);
       }
       .prediction-options {
         display: grid;
@@ -1099,34 +1100,34 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         align-items: flex-start;
         gap: 9px;
         padding: 9px;
-        border: 1px solid #426878;
+        border: 1px solid var(--code-line);
         border-radius: 8px;
-        color: #dbecef;
+        color: var(--code-ink);
         cursor: pointer;
         font-size: 0.78rem;
         line-height: 1.45;
       }
       .prediction-options label.selected,
       .prediction-options label:has(input:focus-visible) {
-        border-color: #2cd4da;
-        background: #17485a;
+        border-color: var(--code-line);
+        background: var(--code-panel);
       }
       .prediction-options input {
         flex: 0 0 auto;
         width: 17px;
         height: 17px;
         margin: 1px 0 0;
-        accent-color: #2cd4da;
+        accent-color: var(--code-keyword);
       }
       .learning-action,
       .complexity-actions button {
         min-height: 36px;
         margin-top: 11px;
         padding: 7px 11px;
-        border: 1px solid #24c2cd;
+        border: 1px solid var(--code-line);
         border-radius: 7px;
-        color: #fff;
-        background: #168a9b;
+        color: var(--code-ink);
+        background: var(--code-highlight);
         cursor: pointer;
         font:
           750 0.74rem 'Avenir Next',
@@ -1139,12 +1140,12 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
       }
       .prediction-feedback {
         padding: 10px;
-        border-left: 4px solid #71e1ba;
+        border-left: 4px solid var(--code-success);
         border-radius: 0 8px 8px 0;
-        background: #102c3c;
+        background: var(--code-bg);
       }
       .prediction-feedback strong {
-        color: #71e1ba;
+        color: var(--code-success);
       }
       .complexity-questions {
         display: grid;
@@ -1159,12 +1160,12 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         min-width: 0;
         margin: 0;
         padding: 9px;
-        border: 1px solid #527789;
+        border: 1px solid var(--code-line);
         border-radius: 8px;
       }
       .complexity-questions legend {
         padding: 0 5px;
-        color: #8fd9e3;
+        color: var(--code-keyword);
         font-size: 0.7rem;
         font-weight: 800;
         text-transform: uppercase;
@@ -1176,23 +1177,23 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         min-height: 31px;
         padding: 4px 6px;
         border-radius: 6px;
-        color: #edf9fa;
+        color: var(--code-ink);
         cursor: pointer;
         font:
           700 0.75rem 'JetBrains Mono',
           monospace;
       }
       .complexity-questions label:has(input:checked) {
-        background: #24546a;
+        background: var(--code-panel);
       }
       .complexity-questions input {
         width: 17px;
         height: 17px;
         margin: 0;
-        accent-color: #2cd4da;
+        accent-color: var(--code-keyword);
       }
       .complexity-questions input:focus-visible {
-        outline: 3px solid #8de7ed;
+        outline: 3px solid var(--code-focus);
         outline-offset: 2px;
       }
       .complexity-actions {
@@ -1203,18 +1204,18 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
       .complexity-feedback {
         margin-top: 11px;
         padding: 10px;
-        border-left: 4px solid #71e1ba;
+        border-left: 4px solid var(--code-success);
         border-radius: 0 8px 8px 0;
-        background: #102c3c;
+        background: var(--code-bg);
       }
       .complexity-feedback > strong {
-        color: #71e1ba;
+        color: var(--code-success);
       }
       .complexity-feedback p {
         margin-top: 5px;
       }
       .complexity-feedback .complexity-caveat {
-        color: #ffd991;
+        color: var(--code-warning);
       }
       .debugger-more {
         pointer-events: none;
@@ -1227,7 +1228,7 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         min-height: 58px;
         place-items: end center;
         padding-bottom: 8px;
-        background: linear-gradient(transparent, rgba(8, 27, 39, 0.98) 70%);
+        background: linear-gradient(transparent, color-mix(in srgb, var(--code-bg) 98%, transparent) 70%);
       }
       .debugger-more button {
         pointer-events: auto;
@@ -1235,15 +1236,15 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         width: 38px;
         height: 38px;
         place-items: center;
-        border: 1px solid #69c8d2;
+        border: 1px solid var(--code-keyword);
         border-radius: 50%;
-        color: #edf9fa;
-        background: #116f82;
-        box-shadow: 0 4px 14px rgba(4, 18, 27, 0.42);
+        color: var(--code-ink);
+        background: var(--code-panel);
+        box-shadow: 0 4px 14px var(--shadow);
         cursor: pointer;
       }
       .debugger-more button:focus-visible {
-        outline: 3px solid #8de7ed;
+        outline: 3px solid var(--code-focus);
         outline-offset: 2px;
       }
       .debugger-more span {
@@ -1254,21 +1255,21 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
       .variable-inspector,
       .debugger-panel .state-view {
         padding: 11px 12px;
-        border-bottom: 1px solid #315569;
+        border-bottom: 1px solid var(--code-line);
       }
       .state-unavailable {
         margin: 0;
         padding: 11px 13px;
-        border-bottom: 1px solid #315569;
-        color: #d8e7eb;
-        background: #183647;
+        border-bottom: 1px solid var(--code-line);
+        color: var(--code-ink);
+        background: var(--code-panel);
         font-size: 0.72rem;
         line-height: 1.5;
       }
       .variable-inspector h3,
       .debugger-panel .state-view h3 {
         margin: 0 0 7px;
-        color: #8fd9e3;
+        color: var(--code-keyword);
         font-size: 0.68rem;
         letter-spacing: 0.07em;
         text-transform: uppercase;
@@ -1284,14 +1285,14 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         gap: 10px;
         padding: 7px 8px;
         border: 0;
-        border-bottom: 1px solid #294a5d;
+        border-bottom: 1px solid var(--code-line);
         border-left: 3px solid transparent;
         border-radius: 0;
         background: transparent;
       }
       .debugger-panel .variables div.changed {
-        border-left-color: #24d2dd;
-        background: #173f52;
+        border-left-color: var(--code-line);
+        background: var(--code-panel);
       }
       .debugger-panel .variables dd {
         margin: 0;
@@ -1310,17 +1311,17 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         justify-content: space-between;
         gap: 14px;
         padding: 11px 13px;
-        border-bottom: 1px solid #315569;
-        background: #112b3b;
+        border-bottom: 1px solid var(--code-line);
+        background: var(--code-bg);
       }
       .debugger-output span {
-        color: #9fbcc4;
+        color: var(--code-muted);
         font-size: 0.66rem;
         font-weight: 800;
         text-transform: uppercase;
       }
       .debugger-output strong {
-        color: #fff;
+        color: var(--code-ink);
         font:
           800 0.78rem 'JetBrains Mono',
           monospace;
@@ -1388,13 +1389,13 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         grid-area: explanation;
         min-width: 0;
         overflow: auto;
-        color: #e6f4f6;
-        background: #0d2635;
+        color: var(--code-ink);
+        background: var(--code-bg);
       }
       .focus-step-title,
       .focus-explanation section {
         padding: 11px 13px;
-        border-bottom: 1px solid #315569;
+        border-bottom: 1px solid var(--code-line);
       }
       .focus-step-title span,
       .focus-explanation section > span,
@@ -1402,7 +1403,7 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
       .focus-terminal span {
         display: block;
         margin: 0;
-        color: #8fd9e3;
+        color: var(--code-keyword);
         font-size: 0.64rem;
         font-weight: 850;
         letter-spacing: 0.07em;
@@ -1411,18 +1412,18 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
       .focus-step-title strong {
         display: block;
         margin-top: 4px;
-        color: #fff;
+        color: var(--code-ink);
         font-size: 0.82rem;
         line-height: 1.4;
       }
       .focus-explanation section:last-child {
         border-bottom: 0;
-        border-left: 4px solid #27c2d0;
-        background: #143445;
+        border-left: 4px solid var(--code-line);
+        background: var(--code-panel);
       }
       .focus-explanation p {
         margin: 5px 0 0;
-        color: #d8ebee;
+        color: var(--code-ink);
         font-size: 0.76rem;
         line-height: 1.45;
       }
@@ -1433,27 +1434,27 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
           minmax(155px, 1.1fr) minmax(135px, 0.9fr) minmax(245px, 1.55fr)
           minmax(125px, 0.8fr) minmax(240px, 1.65fr);
         min-width: 0;
-        border-top: 1px solid #456c7b;
-        background: #315569;
+        border-top: 1px solid var(--code-line);
+        background: var(--code-highlight);
       }
       .focus-dock-card {
         min-width: 0;
         padding: 9px 11px;
         overflow: auto;
-        color: #e6f4f6;
-        background: #102b3a;
+        color: var(--code-ink);
+        background: var(--code-bg);
       }
       .focus-dock-card + .focus-dock-card {
-        border-left: 1px solid #315569;
+        border-left: 1px solid var(--code-line);
       }
       .focus-dock-card.changed {
-        box-shadow: inset 0 3px #24d2dd;
+        box-shadow: inset 0 3px var(--code-warning);
       }
       .focus-dock-card > strong,
       .focus-output > div > strong {
         display: block;
         margin-top: 9px;
-        color: #fff;
+        color: var(--code-ink);
         font:
           800 0.8rem/1.4 'JetBrains Mono',
           monospace;
@@ -1462,7 +1463,7 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
       .focus-dock-card > small {
         display: block;
         margin-top: 6px;
-        color: #ffd17a;
+        color: var(--code-warning);
         font-size: 0.62rem;
         font-weight: 800;
         text-transform: uppercase;
@@ -1479,17 +1480,17 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         padding-left: 6px;
       }
       .focus-variables dl div.changed {
-        border-left-color: #24d2dd;
+        border-left-color: var(--code-line);
       }
       .focus-variables dt {
-        color: #cda5f5;
+        color: var(--code-ink);
         font:
           700 0.65rem 'JetBrains Mono',
           monospace;
       }
       .focus-variables dt em {
         display: block;
-        color: #ffd17a;
+        color: var(--code-warning);
         font:
           800 0.52rem 'Avenir Next',
           sans-serif;
@@ -1497,7 +1498,7 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
       }
       .focus-variables dd {
         margin: 2px 0 0;
-        color: #fff;
+        color: var(--code-ink);
         font:
           750 0.72rem 'JetBrains Mono',
           monospace;
@@ -1515,7 +1516,7 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         font-size: 0.52rem;
       }
       .focus-array .state-cells em {
-        color: #fff0cf;
+        color: var(--code-ink);
         font-size: 0.48rem;
         font-style: normal;
         font-weight: 850;
@@ -1539,20 +1540,20 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
       .focus-terminal {
         min-height: 0;
         padding: 7px 9px;
-        border: 1px solid #315569;
+        border: 1px solid var(--code-line);
         border-radius: 6px;
-        background: #081b27;
+        background: var(--code-bg);
       }
       .focus-terminal p {
         margin: 4px 0 0;
-        color: #d6e8ec;
+        color: var(--code-ink);
         font:
           700 0.65rem/1.4 'JetBrains Mono',
           monospace;
       }
       .focus-terminal p::before {
         content: '> ';
-        color: #71e1ba;
+        color: var(--code-success);
       }
       @media (min-width: 1180px) {
         .guided-trace.focus-mode {
@@ -1574,13 +1575,13 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
           min-height: 0;
           padding: 15px 10px 12px;
           border-bottom: 0;
-          border-left: 1px solid #456c7b;
-          background: #0d2635;
-          box-shadow: -8px 0 18px rgba(5, 25, 35, 0.13);
+          border-left: 1px solid var(--code-line);
+          background: var(--code-bg);
+          box-shadow: -8px 0 18px var(--shadow);
         }
         .focus-mode .step-status {
           overflow: visible;
-          color: #d7eaed;
+          color: var(--code-ink);
           text-align: center;
           text-overflow: clip;
           white-space: normal;
@@ -1599,8 +1600,8 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         }
         .focus-mode .trace-controls .reset-action {
           margin-block: 8px 4px;
-          border-color: #7f9aa6;
-          color: #dbeaec;
+          border-color: var(--code-keyword);
+          color: var(--code-ink);
           background: transparent;
         }
         .focus-mode .trace-controls .primary {
@@ -1627,7 +1628,7 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         }
         .source-panel {
           border-right: 0;
-          border-bottom: 1px solid #315569;
+          border-bottom: 1px solid var(--code-line);
         }
         .source-panel pre {
           height: auto;
@@ -1704,7 +1705,7 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         .ide-workspace .source-panel {
           min-height: 360px;
           border-right: 0;
-          border-bottom: 1px solid #315569;
+          border-bottom: 1px solid var(--code-line);
         }
         .debugger-shell,
         .debugger-panel {
@@ -1723,13 +1724,13 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         }
         .debugger-panel .variables div {
           display: block;
-          border: 1px solid #315569;
+          border: 1px solid var(--code-line);
           border-left: 3px solid transparent;
           border-radius: 7px;
-          background: #143041;
+          background: var(--code-panel);
         }
         .debugger-panel .variables div.changed {
-          border-color: #24d2dd;
+          border-color: var(--code-line);
         }
         .debugger-panel .variables dd {
           margin-top: 4px;
@@ -1754,7 +1755,7 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
         .focus-dock-card + .focus-dock-card {
-          border-top: 1px solid #315569;
+          border-top: 1px solid var(--code-line);
         }
         .focus-mode .trace-navigation {
           position: sticky;

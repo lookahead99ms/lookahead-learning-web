@@ -109,17 +109,17 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
         align-items: center;
         margin: 12px 0;
         padding: 13px 16px;
-        border: 1px solid #e3b765;
-        border-left: 5px solid #bd7207;
+        border: 1px solid var(--warning);
+        border-left: 5px solid var(--warning);
         border-radius: 12px;
-        color: #334b60;
-        background: #fffaf0;
+        color: var(--text-body);
+        background: var(--warning-surface);
       }
       .surprise-challenge span {
         padding: 5px 9px;
         border-radius: 999px;
-        color: #fff;
-        background: #9a5d07;
+        color: var(--accent-on-secondary);
+        background: var(--accent-secondary-strong);
         font-size: 0.67rem;
         font-weight: 850;
         letter-spacing: 0.06em;
@@ -176,10 +176,10 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
         min-height: 68px;
         justify-content: center;
         padding: 11px 14px;
-        border: 1px solid #bfd2e2;
+        border: 1px solid var(--line);
         border-radius: 12px;
         background: linear-gradient(135deg, var(--surface), var(--surface-accent));
-        box-shadow: 0 7px 16px rgba(39, 76, 112, 0.06);
+        box-shadow: 0 7px 16px var(--shadow);
         transition:
           border-color 0.16s ease,
           box-shadow 0.16s ease,
@@ -195,7 +195,7 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
       .problem-navigation-link:focus-visible {
         border-color: var(--search-primary);
         outline: none;
-        box-shadow: 0 10px 22px rgba(39, 76, 112, 0.12);
+        box-shadow: 0 10px 22px var(--shadow);
         transform: translateY(-1px);
       }
       .problem-navigation-link.next span {
@@ -280,7 +280,7 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
       }
       .theory-summary {
         margin: 24px 0 8px;
-        color: #2c3b50;
+        color: var(--text-body);
         font-size: clamp(1.06rem, 1vw + 0.72rem, 1.18rem);
         font-weight: 500;
         line-height: 1.72;
@@ -300,7 +300,7 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
       }
       .pattern-navigation button {
         padding: 6px 10px;
-        border: 1px solid #c7d9ec;
+        border: 1px solid var(--line);
         border-radius: 999px;
         color: var(--search-primary);
         background: var(--surface);
@@ -316,7 +316,7 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
         outline: none;
       }
       .reader-question-title .pattern-title-subtitle {
-        color: #52657e;
+        color: var(--text-subtle);
         font-family: 'Avenir Next', Avenir, 'Segoe UI', sans-serif;
         font-weight: 500;
         letter-spacing: -0.035em;
@@ -345,7 +345,7 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
         border-left: 4px solid var(--search-primary);
         border-radius: 12px;
         background: var(--surface);
-        box-shadow: 0 8px 20px rgba(54, 83, 119, 0.04);
+        box-shadow: 0 8px 20px var(--shadow);
         scroll-margin-top: 148px;
       }
       app-inline-understanding-pager {
@@ -362,7 +362,7 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
       }
       .theory-section > p {
         margin: 0 0 12px;
-        color: #2d3d53;
+        color: var(--text-body);
         font-size: clamp(1rem, 0.2vw + 0.94rem, 1.06rem);
         font-weight: 450;
         line-height: 1.65;
@@ -372,8 +372,8 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
       .theory-section > p > code {
         padding: 0.08em 0.32em;
         border-radius: 4px;
-        color: #164b72;
-        background: #edf4fa;
+        color: var(--accent-link);
+        background: var(--surface-accent);
         font-family: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
         font-size: 0.84em;
         font-weight: 650;
@@ -383,10 +383,10 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
         align-items: center;
         margin: 5px 5px 0 0;
         padding: 3px 9px;
-        border: 1px solid #9fd4dd;
+        border: 1px solid var(--line);
         border-radius: 999px;
-        color: #087f8c;
-        background: #edfafa;
+        color: var(--accent-strong);
+        background: var(--surface-accent);
         font-size: 0.8em;
         font-weight: 800;
         line-height: 1.35;
@@ -396,11 +396,11 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
         padding: 16px 18px;
         border-left: 4px solid var(--search-primary);
         border-radius: 0 10px 10px 0;
-        background: #eef7fb;
+        background: var(--surface-accent);
       }
       .theory-callout[data-callout-type='production'] {
         border-left-color: var(--orange);
-        background: #fff7ed;
+        background: var(--warning-surface);
       }
       .theory-callout strong {
         color: var(--text-strong);
@@ -415,17 +415,17 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
         overflow: hidden;
         border: 1px solid var(--line);
         border-radius: 12px;
-        background: var(--text-strong);
-        color: #eef2ff;
+        background: var(--code-bg);
+        color: var(--code-ink);
       }
       .theory-code > div {
         display: flex;
         justify-content: space-between;
         gap: 16px;
         padding: 10px 14px;
-        color: var(--line);
+        color: var(--code-muted);
         font-size: 0.8rem;
-        border-bottom: 1px solid var(--text-body);
+        border-bottom: 1px solid var(--code-line);
       }
       .theory-code-actions,
       .reference-code-actions {
@@ -448,17 +448,17 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
         min-width: max-content;
       }
       :host ::ng-deep .theory-code .syntax-name {
-        color: #77c7d5;
+        color: var(--code-keyword);
       }
       :host ::ng-deep .theory-code .syntax-function {
-        color: #77c69c;
+        color: var(--code-string);
       }
       :host ::ng-deep .theory-code .syntax-number {
-        color: #b69ad0;
+        color: var(--code-number);
       }
       :host ::ng-deep .theory-code .syntax-operator,
       :host ::ng-deep .theory-code .syntax-keyword {
-        color: #dc85b7;
+        color: var(--code-keyword);
       }
       .theory-visual {
         margin: 22px 0 0;
@@ -485,10 +485,10 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
       .hands-on-panel {
         margin: 24px 0 0;
         padding: 18px;
-        border: 1px solid #b9dce6;
+        border: 1px solid var(--line);
         border-left: 4px solid var(--search-primary);
         border-radius: 12px;
-        background: linear-gradient(135deg, #f1fbfc, var(--surface));
+        background: linear-gradient(135deg, var(--surface-accent), var(--surface));
       }
       .hands-on-panel > span {
         color: var(--search-primary);
@@ -504,7 +504,7 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
       }
       .hands-on-panel p {
         margin: 0;
-        color: #52657e;
+        color: var(--text-subtle);
         font-size: 0.88rem;
         line-height: 1.55;
       }
@@ -519,7 +519,7 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
         align-items: center;
         gap: 9px;
         padding: 11px 12px;
-        border: 1px solid #c7d9ec;
+        border: 1px solid var(--line);
         border-radius: 8px;
         color: var(--text-strong);
         background: var(--surface);
@@ -546,7 +546,7 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
         margin: 36px 0 8px;
         padding: 20px 22px;
         border-radius: 12px;
-        background: #f0fdf4;
+        background: var(--success-surface);
       }
       .theory-takeaways ul {
         margin: 10px 0 0;
@@ -558,7 +558,7 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
         margin: 20px 0 8px;
         padding: 20px 22px;
         border-radius: 12px;
-        background: #f5f3ff;
+        background: var(--surface-accent);
       }
       .theory-language-notes ul {
         margin: 10px 0 0;
@@ -571,7 +571,7 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
         margin: 0 0 6px;
       }
       .theory-language-notes li strong {
-        color: #5b21b6;
+        color: var(--accent-strong);
       }
       .theory-language-notes li:last-child {
         margin-bottom: 0;

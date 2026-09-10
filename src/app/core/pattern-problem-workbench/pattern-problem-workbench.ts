@@ -71,14 +71,14 @@ import { DsaProblemPilot } from '../dsa-problem-pilot/dsa-problem-pilot';
       }
       .workbench-overview h2 {
         margin: 0 0 8px;
-        color: #172033;
+        color: var(--text-strong);
         font-size: clamp(1.3rem, 2.3vw, 1.72rem);
         line-height: 1.25;
       }
       .workbench-overview p {
         max-width: 76ch;
         margin: 0;
-        color: #52657e;
+        color: var(--text-subtle);
         line-height: 1.55;
       }
       .workbench-overview label {
@@ -90,15 +90,15 @@ import { DsaProblemPilot } from '../dsa-problem-pilot/dsa-problem-pilot';
         justify-content: space-between;
         gap: 20px;
         padding: 18px;
-        border: 1px solid #b9dce6;
+        border: 1px solid var(--line);
         border-radius: 14px;
-        background: linear-gradient(120deg, #effbfc, #fff);
+        background: linear-gradient(120deg, var(--surface-accent), var(--surface));
       }
       .legacy-problem-heading span,
       .problem-context span,
       .problem-model span {
         display: block;
-        color: #168ca5;
+        color: var(--accent-link);
         font-size: 0.68rem;
         font-weight: 850;
         letter-spacing: 0.07em;
@@ -106,20 +106,20 @@ import { DsaProblemPilot } from '../dsa-problem-pilot/dsa-problem-pilot';
       }
       .legacy-problem-heading h3 {
         margin: 4px 0;
-        color: #172033;
+        color: var(--text-strong);
         font-size: 1.18rem;
       }
       .legacy-problem-heading p {
         max-width: 680px;
         margin: 0;
-        color: #52657e;
+        color: var(--text-subtle);
         line-height: 1.5;
       }
       label {
         display: grid;
         align-content: start;
         gap: 5px;
-        color: #52657e;
+        color: var(--text-subtle);
         font-size: 0.68rem;
         font-weight: 850;
         letter-spacing: 0.06em;
@@ -130,16 +130,16 @@ import { DsaProblemPilot } from '../dsa-problem-pilot/dsa-problem-pilot';
         max-width: 100%;
         min-width: 220px;
         padding: 8px 28px 8px 9px;
-        border: 1px solid #9db7ca;
+        border: 1px solid var(--line);
         border-radius: 7px;
-        color: #172033;
-        background: #fff;
+        color: var(--text-strong);
+        background: var(--surface);
         font:
           700 0.8rem 'Avenir Next',
           sans-serif;
       }
       select:focus-visible {
-        outline: 3px solid rgba(22, 140, 165, 0.3);
+        outline: 3px solid var(--accent-focus);
         outline-offset: 2px;
       }
       .problem-context {
@@ -148,14 +148,14 @@ import { DsaProblemPilot } from '../dsa-problem-pilot/dsa-problem-pilot';
         gap: 16px;
         align-items: end;
         padding: 13px 17px;
-        border: 1px solid #d8e8ee;
+        border: 1px solid var(--line);
         border-radius: 12px;
-        background: #f8fcfd;
+        background: var(--surface);
       }
       .problem-context p,
       .problem-model p {
         margin: 0;
-        color: #172033;
+        color: var(--text-strong);
         font:
           700 0.8rem/1.5 'JetBrains Mono',
           monospace;
@@ -171,9 +171,9 @@ import { DsaProblemPilot } from '../dsa-problem-pilot/dsa-problem-pilot';
         grid-template-columns: 0.7fr 1.4fr 1fr;
         gap: 13px;
         padding: 14px 17px;
-        border: 1px solid #d8e8ee;
+        border: 1px solid var(--line);
         border-radius: 12px;
-        background: #fff;
+        background: var(--surface);
       }
       @media (max-width: 760px) {
         .workbench-overview,

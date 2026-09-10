@@ -1,29 +1,103 @@
 :root {
-  --bg: #f7f9fc;
-  --text: #172033;
-  --muted: #65758b;
-  --line: #dbe3ee;
-  --violet: #625cff;
-  --cyan: #168ca5;
-  --orange: #f97316;
-  --red: #e5484d;
-  --search-primary: #6699cc;
-  --search-hover: #5579b0;
+  color-scheme: light;
+  --surface-page: #f4f9f8;
   --surface: #ffffff;
-  --surface-page: #f7f9fc;
-  --surface-subtle: #f8fafc;
-  --surface-muted: #f1f5f9;
-  --surface-accent: #eaf5fa;
-  --text-strong: #172033;
-  --text-body: #334155;
-  --text-subtle: #64748b;
-  --border-strong: #cbdcec;
-  --accent-strong: #0e8096;
-  --accent-link: #315f9d;
-  --accent-focus: #89cff0;
-  --grow-accent: #b45309;
-  --grow-deep: #92400e;
-  /* Look Ahead brand reference palette — retained for future logo, illustration, and premium-theme work. */
+  --surface-muted: #eaf3f1;
+  --text-strong: #102a33;
+  --text-body: #28434a;
+  --text-subtle: #536970;
+  --line: #c6d8d6;
+  --accent-strong: #006c73;
+  --accent-on-primary: #ffffff;
+  --accent-link: #245a88;
+  --accent-secondary: #c95632;
+  --accent-secondary-strong: #bc4d2c;
+  --surface-accent: #dcefed;
+  --accent-focus: #9a4f00;
+  --success: #24755c;
+  --warning: #8c6100;
+  --danger: #ac3f45;
+  --code-bg: #0c2027;
+  --code-panel: #143039;
+  --code-ink: #effbf7;
+  --code-muted: #a7c2bf;
+  --code-keyword: #74d9d0;
+  --code-string: #b7dc8c;
+  --code-number: #ffc078;
+  --code-highlight: #1d4650;
+  --shadow: #0f39451f;
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --surface-page: #07171c;
+  --surface: #10242b;
+  --surface-muted: #19323a;
+  --text-strong: #eef8f5;
+  --text-body: #d4e5e1;
+  --text-subtle: #a5c0bd;
+  --line: #31515a;
+  --accent-strong: #70d6cd;
+  --accent-on-primary: #062321;
+  --accent-link: #9dc9ff;
+  --accent-secondary: #ff9873;
+  --accent-secondary-strong: #ff9873;
+  --surface-accent: #173b3b;
+  --accent-focus: #ffc36e;
+  --success: #75d8af;
+  --warning: #f4c66f;
+  --danger: #ff9ea4;
+  --code-bg: #041115;
+  --code-panel: #0c2228;
+  --code-ink: #effbf7;
+  --code-muted: #9dbab6;
+  --code-keyword: #70d6cd;
+  --code-string: #b9e38f;
+  --code-number: #ffc078;
+  --code-highlight: #17404a;
+  --shadow: #0000004a;
+}
+
+/* Harbor Signal: one semantic palette for every learner surface. Named editor
+   themes remain component-owned; the private comparison previews are preserved. */
+:root {
+  --bg: var(--surface-page);
+  --text: var(--text-strong);
+  --muted: var(--text-subtle);
+  --surface-subtle: var(--surface-muted);
+  --border-strong: color-mix(in srgb, var(--text-subtle) 65%, var(--line));
+  --search-primary: var(--accent-strong);
+  --search-hover: color-mix(in srgb, var(--accent-strong) 90%, var(--text-strong));
+  --cyan: var(--accent-strong);
+  --violet: var(--accent-link);
+  --orange: var(--accent-secondary-strong);
+  --red: var(--danger);
+  --grow-accent: var(--accent-secondary-strong);
+  --grow-deep: var(--accent-secondary-strong);
+  --accent-on-secondary: var(--accent-on-primary);
+  --text-on-inverse: var(--surface-page);
+  --success-surface: color-mix(in srgb, var(--success) 10%, var(--surface));
+  --warning-surface: color-mix(in srgb, var(--warning) 10%, var(--surface));
+  --danger-surface: color-mix(in srgb, var(--danger) 10%, var(--surface));
+  --hero-panel: var(--code-panel);
+  --hero-panel-ink: var(--code-ink);
+  --hero-panel-muted: var(--code-muted);
+  --hero-panel-line: var(--code-line);
+  --hero-shadow: var(--surface-accent);
+  --media-panel: var(--code-panel);
+  --media-ink: var(--code-ink);
+  --media-muted: var(--code-muted);
+  --code-accent: var(--code-keyword);
+  --code-line: #31515a;
+  --code-success: #75d8af;
+  --code-warning: #f4c66f;
+  --code-danger: #ff9ea4;
+  --code-focus: #ffc36e;
+  --code-action: #70d6cd;
+  --code-on-primary: #062321;
+  /* Typography and geometry do not change when switching color modes. */
+  --hero-font-family: system-ui, sans-serif;
+  --hero-font-weight: 750;
+  /* Original logo reference colors are retained; palette selection is not a logo replacement. */
   --brand-teal: #165b65;
   --brand-teal-shadow: #0e3f47;
   --brand-orange: #f06523;
@@ -32,10 +106,8 @@
   --brand-gold-deep: #a4771b;
   --brand-silver: #dce4e8;
   --brand-chrome: #b2bcc2;
-  color-scheme: light;
   font-family:
-    Inter,
-    ui-sans-serif,
+    system-ui,
     -apple-system,
     BlinkMacSystemFont,
     'Segoe UI',
@@ -58,7 +130,6 @@ button,
 a {
   -webkit-tap-highlight-color: transparent;
 }
-
 .skip-link {
   position: fixed;
   z-index: 1000;
@@ -67,93 +138,16 @@ a {
   padding: 10px 14px;
   transform: translateY(-160%);
   border-radius: 8px;
-  color: #fff;
-  background: var(--text);
+  color: var(--accent-on-primary);
+  background: var(--accent-strong);
   font-weight: 700;
   text-decoration: none;
   transition: transform 160ms ease;
 }
-
 .skip-link:focus-visible {
   transform: translateY(0);
-  outline: 3px solid var(--cyan);
-  outline-offset: 3px;
-}
-
-:where(a, button, input, select, summary, [tabindex]):focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--cyan) 72%, white);
-  outline-offset: 3px;
-}
-
-/* Selected platform palette. Central tokens remain replaceable after color review. */
-:root {
-  --bg: #fffefa;
-  --surface-page: #fffefa;
-  --surface: #f1f5f2;
-  --surface-subtle: #f7f8f4;
-  --surface-muted: #e8eee9;
-  --surface-accent: #e2ece7;
-  --text: #152a30;
-  --text-strong: #152a30;
-  --text-body: #344e53;
-  --text-subtle: #5c7077;
-  --muted: #5c7077;
-  --line: #ccd1c9;
-  --border-strong: #a9b4ab;
-  --accent-strong: #1f555d;
-  --accent-link: #1f555d;
-  --accent-focus: #b65a14;
-  --accent-on-primary: #ffffff;
-  --search-primary: #1f555d;
-  --search-hover: #163f46;
-  --cyan: #1f555d;
-  --hero-font-family: system-ui, sans-serif;
-  --hero-font-weight: 750;
-  --hero-panel: #182c26;
-  --hero-panel-ink: #edf4e9;
-  --hero-panel-muted: #b7cbbf;
-  --hero-panel-line: #577366;
-  --hero-shadow: #dde3d5;
-  --media-panel: #203831;
-  --media-ink: #ffffff;
-  --media-muted: #d1ddd6;
-  --code-accent: #d8e7a0;
-  font-family:
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    sans-serif;
-}
-:root[data-theme='dark'] {
-  color-scheme: dark;
-  --bg: #10191e;
-  --surface-page: #10191e;
-  --surface: #17252c;
-  --surface-subtle: #1b2c33;
-  --surface-muted: #203239;
-  --surface-accent: #273e34;
-  --text: #edf4ee;
-  --text-strong: #edf4ee;
-  --text-body: #d0dcd8;
-  --text-subtle: #a9b8bd;
-  --muted: #a9b8bd;
-  --line: #3a4b52;
-  --border-strong: #677c81;
-  --accent-strong: #9cdd83;
-  --accent-link: #aee499;
-  --accent-focus: #f4b36c;
-  --accent-on-primary: #102017;
-  --search-primary: #9cdd83;
-  --search-hover: #b2e89e;
-  --cyan: #9cdd83;
-  --grow-accent: #efba83;
-  --grow-deep: #f4cb9e;
-  --hero-font-family: Georgia, serif;
-  --hero-font-weight: 500;
-  --hero-panel: #203239;
-  --hero-shadow: #273e34;
 }
 :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
-  outline-color: var(--accent-focus);
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 3px;
 }

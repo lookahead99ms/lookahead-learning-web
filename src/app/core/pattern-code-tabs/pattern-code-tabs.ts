@@ -48,17 +48,17 @@ import { CodeCopyButton } from '../code-copy-button/code-copy-button';
     `
       .code-tabs {
         overflow: hidden;
-        border: 1px solid #c8d9e9;
+        border: 1px solid var(--line);
         border-radius: 14px;
-        background: #fff;
-        box-shadow: 0 10px 28px rgba(26, 50, 80, 0.08);
+        background: var(--surface);
+        box-shadow: 0 10px 28px var(--shadow);
       }
       .tab-list {
         display: flex;
         overflow-x: auto;
         padding: 0 10px;
-        border-bottom: 1px solid #334155;
-        background: #172033;
+        border-bottom: 1px solid var(--code-line);
+        background: var(--code-bg);
       }
       .tab-list button {
         flex: 0 0 auto;
@@ -66,7 +66,7 @@ import { CodeCopyButton } from '../code-copy-button/code-copy-button';
         padding: 0 16px;
         border: 0;
         border-bottom: 3px solid transparent;
-        color: #cbd5e1;
+        color: var(--code-ink);
         background: transparent;
         cursor: pointer;
         font:
@@ -75,31 +75,31 @@ import { CodeCopyButton } from '../code-copy-button/code-copy-button';
         text-transform: capitalize;
       }
       .tab-list button[aria-selected='true'] {
-        border-bottom-color: #4bb7ca;
-        color: #fff;
-        background: #24354a;
+        border-bottom-color: var(--code-line);
+        color: var(--code-ink);
+        background: var(--code-panel);
       }
       .tab-list button:focus-visible {
-        outline: 3px solid #8bd8e6;
+        outline: 3px solid var(--code-focus);
         outline-offset: -3px;
       }
       .code-panel {
-        background: #111827;
+        background: var(--code-bg);
       }
       .code-heading {
         display: flex;
         justify-content: space-between;
         gap: 12px;
         padding: 10px 14px;
-        border-bottom: 1px solid #334155;
-        color: #cbd5e1;
-        background: #1e293b;
+        border-bottom: 1px solid var(--code-line);
+        color: var(--code-ink);
+        background: var(--code-panel);
         font:
           700 0.75rem 'JetBrains Mono',
           monospace;
       }
       .code-heading span {
-        color: #7dd3fc;
+        color: var(--code-keyword);
       }
       .code-heading-actions {
         display: flex;
@@ -111,8 +111,8 @@ import { CodeCopyButton } from '../code-copy-button/code-copy-button';
         margin: 0;
         padding: 18px;
         overflow: auto;
-        color: #dbeafe;
-        background: #111827;
+        color: var(--code-ink);
+        background: var(--code-bg);
         font:
           14px/1.7 'JetBrains Mono',
           monospace;

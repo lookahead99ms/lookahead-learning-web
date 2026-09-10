@@ -29,10 +29,10 @@ import { Component, DestroyRef, inject, input, signal } from '@angular/core';
         align-items: center;
         gap: 6px;
         padding: 5px 9px;
-        border: 1px solid #465568;
+        border: 1px solid var(--code-line);
         border-radius: 7px;
-        color: #d7e1ee;
-        background: #202938;
+        color: var(--code-ink);
+        background: var(--code-panel);
         cursor: pointer;
         font:
           700 0.7rem 'JetBrains Mono',
@@ -41,12 +41,12 @@ import { Component, DestroyRef, inject, input, signal } from '@angular/core';
           monospace;
       }
       button:hover {
-        border-color: #66c7d4;
-        color: #fff;
-        background: #29374a;
+        border-color: var(--code-keyword);
+        color: var(--code-ink);
+        background: var(--code-panel);
       }
       button:focus-visible {
-        outline: 3px solid #8de7ed;
+        outline: 3px solid var(--code-focus);
         outline-offset: 2px;
       }
       svg {

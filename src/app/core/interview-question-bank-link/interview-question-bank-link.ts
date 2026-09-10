@@ -40,16 +40,16 @@ import {
         gap: 4px 18px;
         align-items: center;
         padding: 16px 18px;
-        border: 1px solid #9fcbd5;
-        border-left: 5px solid #0d8192;
+        border: 1px solid var(--line);
+        border-left: 5px solid var(--accent-strong);
         border-radius: 12px;
-        color: #263b4d;
-        background: #effbfc;
+        color: var(--text-strong);
+        background: var(--surface-accent);
         text-decoration: none;
       }
       .question-bank-link > span {
         grid-column: 1;
-        color: #0d7181;
+        color: var(--accent-link);
         font-size: 0.7rem;
         font-weight: 850;
         letter-spacing: 0.08em;
@@ -57,18 +57,18 @@ import {
       }
       .question-bank-link > strong {
         grid-column: 1;
-        color: #182a3b;
+        color: var(--text-strong);
       }
       .question-bank-link > b {
         grid-column: 2;
         grid-row: 1 / span 2;
-        color: #0d7181;
+        color: var(--accent-link);
         font-size: 0.8rem;
       }
       .question-bank-link:hover,
       .question-bank-link:focus-visible {
-        border-color: #0d8192;
-        box-shadow: 0 8px 20px rgba(13, 129, 146, 0.12);
+        border-color: var(--accent-strong);
+        box-shadow: 0 8px 20px var(--shadow);
         outline: none;
       }
       :host:has(.compact) {
@@ -81,10 +81,10 @@ import {
         box-sizing: border-box;
         gap: 7px;
         padding: 9px 13px;
-        border: 1px solid #c7d9ec;
+        border: 1px solid var(--line);
         border-radius: 8px;
-        color: #168ca5;
-        background: #fff;
+        color: var(--accent-link);
+        background: var(--surface);
         font-size: 0.82rem;
         font-weight: 800;
       }
@@ -105,8 +105,8 @@ import {
         min-height: 22px;
         place-items: center;
         border-radius: 999px;
-        color: #fff;
-        background: #168ca5;
+        color: var(--accent-on-primary);
+        background: var(--accent-strong);
         font-size: 0.72rem;
       }
       @media (max-width: 420px) {
