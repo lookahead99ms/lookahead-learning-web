@@ -189,7 +189,7 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
         border-left: 4px solid var(--search-primary);
       }
       .problem-navigation-link.next {
-        border-right: 4px solid var(--orange);
+        border-right: 4px solid var(--accent-strong);
       }
       .problem-navigation-link:hover,
       .problem-navigation-link:focus-visible {
@@ -199,7 +199,7 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
         transform: translateY(-1px);
       }
       .problem-navigation-link.next span {
-        color: var(--orange);
+        color: var(--accent-link);
       }
       .inner-navigation-link.next-module,
       .inner-navigation-link.previous-module,
@@ -399,8 +399,8 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
         background: var(--surface-accent);
       }
       .theory-callout[data-callout-type='production'] {
-        border-left-color: var(--orange);
-        background: var(--warning-surface);
+        border-left-color: var(--path-grow);
+        background: var(--surface-muted);
       }
       .theory-callout strong {
         color: var(--text-strong);
@@ -604,7 +604,7 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
         }
         .problem-navigation-link.next {
           border-right-width: 1px;
-          border-left: 4px solid var(--orange);
+          border-left: 4px solid var(--accent-strong);
         }
         .inner-navigation-link.next-module,
         .inner-navigation-link.previous-module {

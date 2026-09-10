@@ -1,6 +1,6 @@
 import { DOCUMENT } from '@angular/common';
-import { Component, HostListener, ViewEncapsulation, inject } from '@angular/core';
-import { Router, RouterOutlet } from '@angular/router';
+import { Component, ViewEncapsulation, inject } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
 import { PlatformThemeService } from './core/platform-theme';
 
 @Component({
@@ -13,7 +13,6 @@ import { PlatformThemeService } from './core/platform-theme';
 export class App {
   private readonly theme = inject(PlatformThemeService);
   private readonly document = inject(DOCUMENT);
-  private readonly router = inject(Router);
 
   protected skipLinkHref(): string {
     const { pathname, search } = this.document.location;
@@ -34,14 +33,5 @@ export class App {
     main.scrollIntoView?.({ block: 'start' });
     const view = this.document.defaultView;
     view?.history.replaceState(view.history.state, '', this.skipLinkHref());
-  }
-
-  @HostListener('window:keydown', ['$event'])
-  protected openSearchShortcut(event: KeyboardEvent): void {
-    if (event.key.toLowerCase() !== 'k' || (!event.metaKey && !event.ctrlKey)) return;
-    const target = event.target as HTMLElement | null;
-    if (target?.matches('input, textarea, select, [contenteditable="true"]')) return;
-    event.preventDefault();
-    void this.router.navigate(['/search']);
   }
 }

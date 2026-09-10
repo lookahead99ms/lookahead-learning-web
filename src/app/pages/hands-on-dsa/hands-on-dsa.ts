@@ -139,7 +139,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
       }
       .surprise-problem:hover,
       .surprise-problem:focus-visible {
-        border-color: var(--accent-secondary-strong);
+        border-color: var(--accent-strong);
         outline: 3px solid var(--accent-focus);
         outline-offset: 3px;
       }
@@ -154,8 +154,8 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         flex: 0 0 auto;
         place-items: center;
         border-radius: 10px;
-        color: var(--accent-on-secondary);
-        background: var(--accent-secondary-strong);
+        color: var(--accent-on-primary);
+        background: var(--accent-strong);
         font-family: Georgia, 'Times New Roman', serif;
         font-size: 1.2rem;
         font-weight: 900;

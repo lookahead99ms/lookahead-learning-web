@@ -172,23 +172,13 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
   styles: [
     `
       .learning-map {
-        --learning-accent: var(--accent-link);
+        --learning-accent: var(--accent-strong);
         --learning-surface: var(--surface-accent);
         --learning-glow: var(--shadow);
         display: grid;
         gap: 10px;
         max-width: 1040px;
         margin: 0 auto;
-      }
-      .learning-map[data-path='grow'] {
-        --learning-accent: var(--grow-accent);
-        --learning-surface: var(--warning-surface);
-        --learning-glow: var(--shadow);
-      }
-      .learning-map[data-path='look-ahead'] {
-        --learning-accent: var(--accent-link);
-        --learning-surface: var(--surface-accent);
-        --learning-glow: var(--shadow);
       }
       .learning-map-intro {
         margin: 0 0 8px;
@@ -305,7 +295,7 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
         padding: 9px 13px;
         border: 1px solid var(--line);
         border-radius: 8px;
-        color: var(--learning-accent);
+        color: var(--accent-link);
         background: var(--surface);
         font-size: 0.82rem;
         font-weight: 800;
@@ -313,7 +303,8 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
       }
       .learning-action:hover,
       .learning-action:focus-visible {
-        outline: none;
+        outline: 3px solid var(--accent-focus);
+        outline-offset: 3px;
         border-color: var(--learning-accent);
         background: var(--learning-surface);
       }
