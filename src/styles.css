@@ -7,7 +7,7 @@
   --cyan: #168ca5;
   --orange: #f97316;
   --red: #e5484d;
-  --search-primary: #6699CC;
+  --search-primary: #6699cc;
   --search-hover: #5579b0;
   --surface: #ffffff;
   --surface-page: #f7f9fc;
@@ -83,4 +83,77 @@ a {
 :where(a, button, input, select, summary, [tabindex]):focus-visible {
   outline: 3px solid color-mix(in srgb, var(--cyan) 72%, white);
   outline-offset: 3px;
+}
+
+/* Selected platform palette. Central tokens remain replaceable after color review. */
+:root {
+  --bg: #fffefa;
+  --surface-page: #fffefa;
+  --surface: #f1f5f2;
+  --surface-subtle: #f7f8f4;
+  --surface-muted: #e8eee9;
+  --surface-accent: #e2ece7;
+  --text: #152a30;
+  --text-strong: #152a30;
+  --text-body: #344e53;
+  --text-subtle: #5c7077;
+  --muted: #5c7077;
+  --line: #ccd1c9;
+  --border-strong: #a9b4ab;
+  --accent-strong: #1f555d;
+  --accent-link: #1f555d;
+  --accent-focus: #b65a14;
+  --accent-on-primary: #ffffff;
+  --search-primary: #1f555d;
+  --search-hover: #163f46;
+  --cyan: #1f555d;
+  --hero-font-family: system-ui, sans-serif;
+  --hero-font-weight: 750;
+  --hero-panel: #182c26;
+  --hero-panel-ink: #edf4e9;
+  --hero-panel-muted: #b7cbbf;
+  --hero-panel-line: #577366;
+  --hero-shadow: #dde3d5;
+  --media-panel: #203831;
+  --media-ink: #ffffff;
+  --media-muted: #d1ddd6;
+  --code-accent: #d8e7a0;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #10191e;
+  --surface-page: #10191e;
+  --surface: #17252c;
+  --surface-subtle: #1b2c33;
+  --surface-muted: #203239;
+  --surface-accent: #273e34;
+  --text: #edf4ee;
+  --text-strong: #edf4ee;
+  --text-body: #d0dcd8;
+  --text-subtle: #a9b8bd;
+  --muted: #a9b8bd;
+  --line: #3a4b52;
+  --border-strong: #677c81;
+  --accent-strong: #9cdd83;
+  --accent-link: #aee499;
+  --accent-focus: #f4b36c;
+  --accent-on-primary: #102017;
+  --search-primary: #9cdd83;
+  --search-hover: #b2e89e;
+  --cyan: #9cdd83;
+  --grow-accent: #efba83;
+  --grow-deep: #f4cb9e;
+  --hero-font-family: Georgia, serif;
+  --hero-font-weight: 500;
+  --hero-panel: #203239;
+  --hero-shadow: #273e34;
+}
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline-color: var(--accent-focus);
 }

@@ -1,156 +1,269 @@
 <app-platform-header />
 <main id="main-content" class="landing-page">
-  <section class="landing-hero">
-    <p class="hero-eyebrow">Crack Your Technical Interviews.</p>
-    <h1>Think Bigger. Build Better. Engineer for Tomorrow.</h1>
-    <p class="hero-support">
-      An all-in-one technical interview platform that combines an enterprise backend Q&A learning
-      path with a comprehensive algorithms curriculum and high-level system design training.
-    </p>
-    <app-landing-search />
-    <div class="hero-resource-links">
-      <a class="hero-plan-link" routerLink="/study-plan">Build my study plan</a>
-      <a class="hero-question-library-link" routerLink="/interview-questions">
-        Browse interview practice <span aria-hidden="true">→</span>
-      </a>
-      <a class="hero-plan-link" routerLink="/delivery-plan">Delivery plan</a>
-    </div>
-    <div class="hero-tagline-actions" aria-label="Choose a roadmap stage">
-      <button class="hero-tagline-btn learn" type="button" (click)="selectStageAndScroll('learn')">
-        Look Ahead to What’s Possible
-      </button>
-      <button class="hero-tagline-btn grow" type="button" (click)="selectStageAndScroll('grow')">
-        Look Ahead to New Opportunities
-      </button>
-      <button
-        class="hero-tagline-btn look-ahead"
-        type="button"
-        (click)="selectStageAndScroll('look-ahead')"
-      >
-        Look Ahead to Your Full Potential
-      </button>
-    </div>
-  </section>
-
-  <section id="roadmap" class="roadmap-container" aria-label="Learning roadmap">
-    <div class="bridge-container">
-      <h2 class="bridge-title">Start where you are. Build towards where you want to be.</h2>
-      <p class="bridge-subtext">
-        Go beyond simple coding puzzles.<br />Master core language internals, algorithmic patterns,
-        and system design in one structured path.<br />Deep-dive into production-grade Q&As and rich
-        code examples designed to land your next engineering role.
-      </p>
-    </div>
-
-    <nav class="tab-navigation" aria-label="Roadmap stages" role="tablist">
-      @for (stage of stages; track stage.id) {
-        <button
-          class="tab-btn"
-          [class.active]="selectedStage() === stage.id"
-          [class.learn]="stage.id === 'learn'"
-          [class.grow]="stage.id === 'grow'"
-          [class.look-ahead]="stage.id === 'look-ahead'"
-          type="button"
-          role="tab"
-          [id]="'tab-' + stage.id"
-          [attr.aria-selected]="selectedStage() === stage.id"
-          [attr.aria-controls]="'panel-' + stage.id"
-          (click)="selectStageAndScroll(stage.id)"
-          (keydown)="onTabKeydown($event, stage.id)"
+  <section
+    class="hero-carousel"
+    aria-label="Five ways to grow as an engineer"
+    aria-roledescription="carousel"
+    (focusin)="focusHero($event)"
+  >
+    <div class="hero-slides">
+      @for (slide of slides; track slide.name; let i = $index) {
+        <article
+          class="hero-slide"
+          [class.active]="activeSlide() === i"
+          [attr.aria-hidden]="activeSlide() !== i"
+          [attr.inert]="activeSlide() === i ? null : ''"
+          [attr.aria-label]="i + 1 + ' of 5: ' + slide.name"
+          aria-roledescription="slide"
         >
-          <span class="tab-step">{{ stage.step }}</span>
-          <span class="tab-label">
-            <strong>{{ stage.title }}</strong>
-            @if (selectedStage() !== stage.id) {
-              <small>{{ stage.category }}</small>
+          <div class="hero-copy">
+            <p class="eyebrow">{{ slide.eyebrow }}</p>
+            <h1>
+              @for (line of slide.lines; track line) {
+                <span>{{ line }} </span>
+              }
+            </h1>
+            <p class="lead">{{ slide.description }}</p>
+            <a
+              class="primary-action"
+              [routerLink]="slide.route"
+              [fragment]="slide.fragment"
+              [queryParams]="slide.query"
+              (click)="choosePath($event, slide.fragment)"
+              >{{ slide.action }}</a
+            >
+          </div>
+          <div class="hero-visual" [class.soft-panel]="i === 2 || i === 4">
+            @switch (i) {
+              @case (0) {
+                <p class="chapter">Your next chapter</p>
+                <h2>Start where you are.<br />Build what comes next.</h2>
+                <div class="detail-line">
+                  <span>Understand the fundamentals</span><span>Learn</span>
+                </div>
+                <div class="detail-line">
+                  <span>Handle production reality</span><span>Grow</span>
+                </div>
+                <div class="detail-line">
+                  <span>Lead the larger decision</span><span>Look Ahead</span>
+                </div>
+              }
+              @case (1) {
+                <p class="chapter">Today's discussion</p>
+                <h2>Your service is slowing down.<br />What do you check first?</h2>
+                <p>
+                  State your hypothesis. Choose a signal. Explain the trade-off. Revisit the
+                  decision when the evidence changes.
+                </p>
+                <div class="detail-line"><span>Production diagnosis</span><span>Grow</span></div>
+                <div class="detail-line">
+                  <span>Architecture review</span><span>Look Ahead</span>
+                </div>
+              }
+              @case (2) {
+                <p class="chapter">A connected learning journey</p>
+                <h2>When does a simple queue stop being enough?</h2>
+                <p>
+                  Follow one question from data structures to production reliability to
+                  system-design judgment.
+                </p>
+                <p class="small">
+                  Queue fundamentals. Failure and retry behavior. Architecture trade-offs.
+                </p>
+              }
+              @case (3) {
+                <p class="chapter">Canonical DSA / reasoning in code</p>
+                <h2>See the invariant, not just the answer.</h2>
+                <pre><code>{{ windowExample }}</code></pre>
+                <p class="small">
+                  An illustration of the reasoning. Open a problem to run its guided debugger.
+                </p>
+              }
+              @case (4) {
+                <p class="chapter">One plan / several kinds of growth</p>
+                <div class="journey">
+                  <span>01</span>
+                  <div>
+                    <h2>Choose your direction</h2>
+                    <p>Goals, scope, and accessible topics.</p>
+                  </div>
+                </div>
+                <div class="journey">
+                  <span>02</span>
+                  <div>
+                    <h2>Make room for practice</h2>
+                    <p>A feasible schedule with review time.</p>
+                  </div>
+                </div>
+                <div class="journey">
+                  <span>03</span>
+                  <div>
+                    <h2>Keep your progress</h2>
+                    <p>Resume, reflect, and adjust your week.</p>
+                  </div>
+                </div>
+              }
             }
-          </span>
-        </button>
+          </div>
+        </article>
       }
-    </nav>
-
-    <section
-      class="tab-content-panel"
-      [id]="'panel-' + activeStage().id"
-      [class]="'tab-content-panel stage-' + activeStage().id"
-      [attr.aria-labelledby]="'tab-' + activeStage().id"
-      role="tabpanel"
-    >
-      <div class="stage-summary">
-        <p class="stage-subtitle">{{ activeStage().subtitle }}</p>
-        <a
-          class="stage-link"
-          [routerLink]="['/', activeStage().id]"
-          [attr.aria-label]="activeStage().category"
-          >{{ activeStage().category }} <span aria-hidden="true">→</span></a
-        >
-      </div>
-      <div class="skills-pill-grid">
-        @for (topic of activeStage().topics; track topic.id) {
-          @if (topic.learnGroupId) {
-            <a
-              class="skill-pill"
-              [routerLink]="['/learn']"
-              [queryParams]="{ group: topic.learnGroupId }"
-              >{{ topic.title }}</a
-            >
-          } @else if (topic.growGroupId) {
-            <a
-              class="skill-pill"
-              [routerLink]="['/grow']"
-              [queryParams]="{ group: topic.growGroupId }"
-              >{{ topic.title }}</a
-            >
-          } @else {
-            <a class="skill-pill" [routerLink]="['/', activeStage().id, topic.id]">{{
-              topic.title
-            }}</a>
-          }
+    </div>
+    <div class="hero-controls">
+      <div class="hero-dots" role="group" aria-label="Hero slides">
+        @for (slide of slides; track slide.name; let i = $index) {
+          <button
+            type="button"
+            [attr.aria-label]="'Show slide ' + (i + 1) + ': ' + slide.name"
+            [attr.aria-pressed]="activeSlide() === i"
+            (click)="showSlide(i)"
+          >
+            <span aria-hidden="true"></span>
+          </button>
         }
       </div>
-    </section>
-  </section>
-
-  <section class="landing-faq faq-bar" id="faq">
-    <details>
-      <summary>
-        <span>Frequently Asked Questions</span>
-        <small>View answers</small>
-      </summary>
-      <div class="faq-bar-content">
-        <details>
-          <summary>How is the roadmap organized?</summary>
-          <p>
-            The roadmap is organized into Learn competencies, Grow capabilities, and Look Ahead
-            practices. Each stage can be explored independently while still following the broader
-            progression.
-          </p>
-        </details>
-        <details>
-          <summary>How often is the curriculum updated?</summary>
-          <p>
-            Content can be refreshed as frameworks, language runtimes, cloud services, and interview
-            expectations evolve. The update cadence can be defined as the platform’s content release
-            process is finalized.
-          </p>
-        </details>
-        <details>
-          <summary>Which stage should I start with?</summary>
-          <p>
-            Start with Learn if you are building foundations, Grow if you are applying those
-            foundations in production systems, or Look Ahead if you are preparing for senior
-            engineering and architecture discussions.
-          </p>
-        </details>
-        <details>
-          <summary>Is the roadmap only for Java developers?</summary>
-          <p>
-            The current path has a strong Java and Spring focus, while the underlying data,
-            algorithms, API, distributed-systems, and platform concepts transfer across languages
-            and ecosystems.
-          </p>
-        </details>
+      <div class="hero-arrows">
+        <button
+          type="button"
+          [attr.aria-label]="paused() ? 'Play slideshow' : 'Pause slideshow'"
+          (click)="toggleRotation()"
+        >
+          <span aria-hidden="true">{{ paused() ? '▶' : 'Ⅱ' }}</span>
+        </button>
+        <button
+          type="button"
+          aria-label="Previous hero slide"
+          (click)="showSlide(activeSlide() - 1)"
+        >
+          <span aria-hidden="true">←</span>
+        </button>
+        <button type="button" aria-label="Next hero slide" (click)="showSlide(activeSlide() + 1)">
+          <span aria-hidden="true">→</span>
+        </button>
       </div>
-    </details>
+    </div>
+    <p class="screen-reader-only" [attr.aria-live]="paused() ? 'polite' : 'off'">
+      Slide {{ activeSlide() + 1 }} of {{ slides.length }}: {{ slides[activeSlide()].name }}
+    </p>
   </section>
+  <section id="paths" class="section" tabindex="-1" aria-labelledby="paths-title">
+    <p class="eyebrow">A complete engineering practice</p>
+    <h2 id="paths-title">Foundations. Production. What comes next.</h2>
+    <div class="three-columns">
+      <article class="card">
+        <p class="number">01 / LEARN</p>
+        <h3>Build the mental model.</h3>
+        <p>
+          Language foundations, theoretical interview questions, and canonical DSA practice. Read
+          the reasoning, write code, and step through a visual debugger.
+        </p>
+        <a routerLink="/learn">Explore foundations</a>
+      </article>
+      <article class="card">
+        <p class="number">02 / GROW</p>
+        <h3>Make it work in production.</h3>
+        <p>
+          Develop senior-engineer judgment through implementation, operational failures, diagnosis,
+          security, and delivery scenarios.
+        </p>
+        <a routerLink="/grow">Explore production practice</a>
+      </article>
+      <article class="card">
+        <p class="number">03 / LOOK AHEAD</p>
+        <h3>Explain the bigger decisions.</h3>
+        <p>
+          System design, leadership, behavioral reasoning, and AI engineering. Connect decisions to
+          constraints and their consequences.
+        </p>
+        <a routerLink="/look-ahead">Explore advanced topics</a>
+      </article>
+    </div>
+  </section>
+  <section class="section split" aria-labelledby="system-design-title">
+    <div>
+      <p class="eyebrow">Watch the reasoning unfold</p>
+      <h2 id="system-design-title">Understand why, as well as how.</h2>
+      <p>
+        Explore system-design walkthroughs that connect constraints to choices, trade-offs, and
+        failure modes. Practice explaining the reasoning behind the design.
+      </p>
+      <a class="primary-action" routerLink="/look-ahead/system-design">Explore system design</a>
+      <p class="small">
+        Interview-style audio and video explanations are planned. Written walkthroughs are available
+        now.
+      </p>
+    </div>
+    <div class="media-panel">
+      <h3>Design a reliable feed</h3>
+      <p>Constraints · Trade-offs · Failure modes</p>
+      <a routerLink="/look-ahead/system-design/module/case-feed-messaging"
+        >Read the design walkthrough</a
+      >
+    </div>
+  </section>
+  <section class="section split" aria-labelledby="topic-search-title">
+    <div>
+      <p class="eyebrow">One subject. Several ways to learn.</p>
+      <h2 id="topic-search-title">Your topic stays in focus.</h2>
+      <p>
+        Read an explanation, rehearse an interview answer or put an idea into practice. Topic
+        Workbench brings them together with one search and useful filters.
+      </p>
+      <a class="primary-action" routerLink="/search">Open Topic Workbench</a>
+    </div>
+    <div class="card">
+      <p class="eyebrow">Follow your question</p>
+      <h3>Start with architecture.</h3>
+      <p>
+        Compare an explanation, an interview question and practical reasoning around the same
+        subject.
+      </p>
+      <a routerLink="/search" [queryParams]="{ q: 'architecture' }">Explore architecture</a>
+    </div>
+  </section>
+  <section class="section split" aria-labelledby="study-plan-title">
+    <div>
+      <p class="eyebrow">Preparation that fits your week</p>
+      <h2 id="study-plan-title">A plan that bends with your week.</h2>
+      <p>
+        Choose your scope from one checklist and build a realistic plan around your time. Revisit
+        difficult work and adjust when your week changes.
+      </p>
+      <a class="primary-action" routerLink="/study-plan">Open Adaptive Compass</a>
+    </div>
+    <div class="card">
+      <p class="chapter">A rhythm to make your own</p>
+      <h3>Practice with purpose.</h3>
+      <div class="detail-line"><span>Review an invariant</span><span>Recall</span></div>
+      <div class="detail-line"><span>Solve and explain</span><span>Practice</span></div>
+      <div class="detail-line"><span>Revisit a difficult decision</span><span>Reflect</span></div>
+      <p class="small">Completing a task and demonstrating mastery are different milestones.</p>
+    </div>
+  </section>
+  <section class="section" aria-labelledby="projects-title">
+    <p class="eyebrow">Build beyond the lesson</p>
+    <h2 id="projects-title">Complete projects. Your own decisions.</h2>
+    <div class="split">
+      <div>
+        <p class="lead">
+          Trace AI applications from architecture to implementation, tests, and operating decisions.
+          Understand the flow, then make the design your own.
+        </p>
+        <a class="primary-action" routerLink="/look-ahead/ai-systems-architecture"
+          >Explore AI project guides</a
+        >
+      </div>
+      <div class="card">
+        <h3>Understand the whole system.</h3>
+        <p>Explore the five-project curriculum and its design and implementation walkthroughs.</p>
+        <p class="small">
+          Standalone clone-and-run project repositories are in preparation. The curriculum guides
+          are available now.
+        </p>
+      </div>
+    </div>
+  </section>
+  <footer class="landing-footer">
+    <p>Learn. Grow. Look Ahead.</p>
+    <a routerLink="/delivery-plan">Delivery plan</a>
+  </footer>
 </main>

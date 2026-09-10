@@ -185,6 +185,29 @@ describe('DsaProblemPilot mode tabs', () => {
     expect(root.querySelector('.trace-context')?.textContent).toContain('[2,3]');
   });
 
+  it('renders multiple transfer checks without duplicate tracking keys', async () => {
+    await TestBed.configureTestingModule({ imports: [DsaProblemPilot] }).compileComponents();
+    const fixture = TestBed.createComponent(DsaProblemPilot);
+    const problem = twoSumProblem();
+    problem.practice!.checks = [
+      { kind: 'transfer', prompt: 'What changes for streaming input?', expected: 'Retain past state.' },
+      { kind: 'transfer', prompt: 'What changes with a memory bound?', expected: 'Revisit storage.' },
+    ];
+    const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      fixture.componentRef.setInput('problem', problem);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const checks = fixture.nativeElement.querySelectorAll('.learning-checks details');
+      expect(checks.length).toBe(2);
+      expect(checks[0].textContent).toContain('streaming input');
+      expect(checks[1].textContent).toContain('memory bound');
+      expect(warning.mock.calls.flat().join(' ')).not.toContain('NG0955');
+    } finally {
+      warning.mockRestore();
+    }
+  });
+
   it('places the invariant and canonical rationale before the expandable debugger', async () => {
     await TestBed.configureTestingModule({ imports: [DsaProblemPilot] }).compileComponents();
     const fixture = TestBed.createComponent(DsaProblemPilot);

@@ -20,7 +20,6 @@ export type HandsOnSort =
   | 'difficulty-descending';
 export type HandsOnRankingTier =
   'universal-must-do' | 'interview-core' | 'pattern-depth' | 'advanced-specialized';
-export type HandsOnEvidenceConfidence = 'unranked' | 'low' | 'medium' | 'high';
 
 export interface HandsOnReadinessCounts {
   guided: number;
@@ -41,7 +40,6 @@ export interface HandsOnDsaIndexProblem {
   interviewRank?: number;
   studyOrder?: number;
   tier?: HandsOnRankingTier;
-  evidenceConfidence?: HandsOnEvidenceConfidence;
   rankingVersion?: string;
 }
 

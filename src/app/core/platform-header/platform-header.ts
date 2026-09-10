@@ -8,7 +8,8 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { PlatformThemeService } from '../platform-theme';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { ContentService } from '../../content/content.service';
 import { SearchDocument } from '../../content/content.models';
 
@@ -36,7 +37,8 @@ const PERSISTENT_SUGGESTIONS: HeaderSuggestion[] = [
     type: 'Question',
     label: 'Interview practice',
     query: '',
-    route: ['/interview-questions'],
+    route: ['/search'],
+    queryParams: { kind: 'practice' },
     style: 'library',
   },
   { type: 'Search', label: 'Search all content', query: '', route: ['/search'], style: 'search' },
@@ -83,7 +85,7 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
 
 @Component({
   selector: 'app-platform-header',
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, RouterLinkActive],
   templateUrl: './platform-header.html',
   styles: [
     `
@@ -91,7 +93,7 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         position: sticky;
         top: 0;
         z-index: 50;
-        background: #ffffff;
+        background: var(--surface-page);
         transform: translate3d(0, 0, 0);
         will-change: transform;
         backface-visibility: hidden;
@@ -155,7 +157,7 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         left: 14px;
         width: 15px;
         height: 15px;
-        color: #6699cc;
+        color: var(--accent-link);
         pointer-events: none;
         transform: translateY(-50%);
       }
@@ -163,10 +165,10 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         width: 100%;
         height: 42px;
         padding: 0 14px 0 38px;
-        border: 1px solid #dbe3ee;
+        border: 1px solid var(--line);
         border-radius: 999px;
-        color: #172033;
-        background: #ffffff;
+        color: var(--text-strong);
+        background: var(--surface-page);
         font: inherit;
         font-size: 0.86rem;
         transition:
@@ -174,7 +176,7 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
           border-radius 160ms ease;
       }
       .header-search-input:focus {
-        border-color: #89cff0;
+        border-color: var(--accent-focus);
         outline: 3px solid rgba(137, 207, 240, 0.3);
       }
       .header-search-suggestions {
@@ -184,10 +186,10 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         z-index: 25;
         width: 100%;
         padding: 12px;
-        border: 1px solid #d2dae4;
+        border: 1px solid var(--line);
         border-top: 0;
         border-radius: 0 0 14px 14px;
-        background: #ffffff;
+        background: var(--surface-page);
         box-shadow: 0 16px 34px rgba(15, 23, 42, 0.14);
       }
       .persistent-suggestions {
@@ -205,8 +207,8 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         padding: 9px 12px;
         border: 1px solid transparent;
         border-radius: 8px;
-        color: #172033;
-        background: #f7f9fc;
+        color: var(--text-strong);
+        background: var(--surface-subtle);
         cursor: pointer;
         font: inherit;
         text-align: center;
@@ -214,7 +216,7 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
       }
       .persistent-suggestions .header-search-suggestion:hover,
       .persistent-suggestions .header-search-suggestion:focus-visible {
-        background: #eaf5fa;
+        background: var(--surface-accent);
         outline: none;
       }
       .persistent-suggestions .header-search-suggestion.learn {
@@ -224,20 +226,20 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         color: #b45309;
       }
       .persistent-suggestions .header-search-suggestion.look-ahead {
-        color: #334155;
+        color: var(--text-body);
       }
       .persistent-suggestions .header-search-suggestion.library {
-        color: #315f9d;
-        background: #eef5ff;
+        color: var(--accent-link);
+        background: var(--surface-accent);
       }
       .persistent-suggestions .header-search-suggestion.search {
-        color: #6699cc;
+        color: var(--accent-link);
       }
       .dynamic-suggestions {
         display: block;
         margin-top: 10px;
         padding-top: 10px;
-        border-top: 1px solid #dbe3ee;
+        border-top: 1px solid var(--line);
       }
       .dynamic-suggestions .header-search-suggestion {
         display: grid;
@@ -249,7 +251,7 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         padding: 10px 4px;
         border: 0;
         border-radius: 0;
-        color: #172033;
+        color: var(--text-strong);
         background: transparent;
         cursor: pointer;
         font: inherit;
@@ -257,8 +259,8 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
       }
       .dynamic-suggestions .header-search-suggestion:hover,
       .dynamic-suggestions .header-search-suggestion:focus-visible {
-        background: #eaf5fa;
-        color: #172033;
+        background: var(--surface-accent);
+        color: var(--text-strong);
         outline: none;
       }
       .header-search-suggestion .suggestion-icon {
@@ -281,7 +283,7 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
       }
       .dynamic-suggestions .suggestion-type {
         padding-top: 2px;
-        color: #6699cc;
+        color: var(--accent-link);
         font-size: 0.64rem;
         font-weight: 800;
         letter-spacing: 0.04em;
@@ -300,7 +302,7 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         grid-column: 2;
         overflow: hidden;
         margin-top: 2px;
-        color: #65758b;
+        color: var(--muted);
         text-overflow: ellipsis;
         white-space: nowrap;
         font-size: 0.72rem;
@@ -308,7 +310,7 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
       .header-search-empty {
         padding: 10px 4px;
         margin: 0;
-        color: #65758b;
+        color: var(--muted);
         font-size: 0.82rem;
       }
       .search-palette-hint {
@@ -317,8 +319,8 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         gap: 12px;
         margin: 10px -14px -14px;
         padding: 12px 14px;
-        border-top: 1px solid #dbe3ee;
-        color: #64748b;
+        border-top: 1px solid var(--line);
+        color: var(--text-subtle);
         font-size: 0.72rem;
       }
       .search-palette-hint kbd {
@@ -326,7 +328,7 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         border: 1px solid #cbd5e1;
         border-radius: 4px;
         color: #475569;
-        background: #f8fafc;
+        background: var(--surface-subtle);
         font: inherit;
         font-size: 0.68rem;
       }
@@ -340,7 +342,7 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         padding: 8px 11px;
         border: 1px solid #c7d9e8;
         border-radius: 999px;
-        color: #315f9d;
+        color: var(--accent-link);
         background: #f8fbfe;
         font-size: 0.76rem;
         font-weight: 800;
@@ -365,17 +367,17 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         align-items: center;
         gap: 8px;
         padding: 5px 10px 5px 5px;
-        border: 1px solid #e2e8f0;
+        border: 1px solid var(--line);
         border-radius: 999px;
-        color: #64748b;
-        background: #f8fafc;
+        color: var(--text-subtle);
+        background: var(--surface-subtle);
         cursor: pointer;
         font: inherit;
       }
       .avatar-trigger-btn:hover,
       .avatar-trigger-btn:focus-visible {
         border-color: #cbd5e1;
-        background: #f1f5f9;
+        background: var(--surface-muted);
         outline: 3px solid rgba(22, 140, 165, 0.28);
         outline-offset: 2px;
       }
@@ -386,8 +388,8 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         place-items: center;
         border: 1px solid #f97316;
         border-radius: 50%;
-        color: #ffffff;
-        background: #315f9d;
+        color: var(--surface-page);
+        background: var(--accent-link);
         font-size: 0.72rem;
         font-weight: 850;
       }
@@ -401,9 +403,9 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         z-index: 20;
         width: 260px;
         padding: 16px 0;
-        border: 1px solid #e2e8f0;
+        border: 1px solid var(--line);
         border-radius: 14px;
-        background: #ffffff;
+        background: var(--surface-page);
         box-shadow: 0 16px 36px rgba(15, 23, 42, 0.14);
       }
       .menu-user-header,
@@ -415,19 +417,19 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         margin: 0;
       }
       .user-display-name {
-        color: #172033;
+        color: var(--text-strong);
         font-size: 0.95rem;
         font-weight: 750;
       }
       .user-display-email {
         margin-top: 2px;
-        color: #64748b;
+        color: var(--text-subtle);
         font-size: 0.8rem;
       }
       .menu-divider {
         height: 1px;
         margin: 12px 0;
-        background: #f1f5f9;
+        background: var(--surface-muted);
       }
       .group-label {
         display: block;
@@ -440,10 +442,7 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
       }
       .active-plan-badge {
         display: inline-block;
-        padding: 4px 10px;
-        border-radius: 6px;
-        color: #f97316;
-        background: rgba(249, 115, 22, 0.08);
+        color: var(--text-subtle);
         font-size: 0.75rem;
         font-weight: 750;
       }
@@ -453,7 +452,7 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
       }
       .dropdown-item-link {
         padding: 10px 20px;
-        color: #334155;
+        color: var(--text-body);
         font-size: 0.88rem;
         font-weight: 650;
         text-decoration: none;
@@ -461,7 +460,7 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
       .dropdown-item-link:hover,
       .dropdown-item-link:focus-visible {
         color: #0066cc;
-        background: #f8fafc;
+        background: var(--surface-subtle);
         outline: none;
       }
       .dropdown-item-link.logout-trigger {
@@ -489,10 +488,96 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
           left: 10px;
         }
       }
+      .platform-header {
+        gap: 16px;
+        padding: 18px 4%;
+        min-height: 76px;
+      }
+      .platform-header .brand {
+        font-size: 24px;
+        font-weight: 800;
+        letter-spacing: -1px;
+      }
+      .platform-header .brand span {
+        color: var(--accent-strong);
+      }
+      .platform-navigation {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-left: auto;
+      }
+      .platform-navigation a {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .platform-navigation a[aria-current='page'] {
+        color: var(--text-strong);
+        font-weight: 700;
+      }
+      .theme-switch {
+        display: flex;
+        gap: 3px;
+        padding: 3px;
+        border: 1px solid var(--line);
+        flex-shrink: 0;
+      }
+      .theme-switch button {
+        border: 0;
+        padding: 8px 10px;
+        background: transparent;
+        color: var(--muted);
+        font: inherit;
+        font-size: 12px;
+        cursor: pointer;
+        min-height: 36px;
+      }
+      .theme-switch button[aria-pressed='true'] {
+        color: var(--accent-on-primary);
+        background: var(--accent-strong);
+      }
+      .platform-header.with-search .header-search-form:not(.search-palette) {
+        position: relative;
+        left: auto;
+        top: auto;
+        transform: none;
+        width: min(340px, 30vw);
+      }
+      @media (max-width: 1100px) {
+        .platform-header {
+          flex-wrap: wrap;
+        }
+        .platform-navigation {
+          order: 3;
+          width: 100%;
+          margin: 0;
+          gap: 18px;
+        }
+        .theme-switch {
+          margin-left: auto;
+        }
+      }
+      @media (max-width: 600px) {
+        .platform-header {
+          padding: 12px 5%;
+          gap: 10px;
+        }
+        .platform-navigation {
+          gap: 16px;
+        }
+        .platform-header.with-search .header-search-form:not(.search-palette) {
+          order: 4;
+          width: 100%;
+        }
+        .profile-dropdown-container {
+          display: none;
+        }
+      }
     `,
   ],
 })
 export class PlatformHeader {
+  protected readonly theme = inject(PlatformThemeService);
   @Input() showSearch = false;
   private readonly router = inject(Router);
   private readonly content = inject(ContentService);

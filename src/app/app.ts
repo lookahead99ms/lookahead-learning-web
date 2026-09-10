@@ -1,6 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { Component, HostListener, ViewEncapsulation, inject } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
+import { PlatformThemeService } from './core/platform-theme';
 
 @Component({
   selector: 'app-root',
@@ -10,6 +11,7 @@ import { Router, RouterOutlet } from '@angular/router';
   encapsulation: ViewEncapsulation.None,
 })
 export class App {
+  private readonly theme = inject(PlatformThemeService);
   private readonly document = inject(DOCUMENT);
   private readonly router = inject(Router);
 

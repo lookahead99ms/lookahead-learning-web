@@ -1,160 +1,17 @@
 <app-platform-header />
 <main id="main-content" class="search-page">
-  <section class="search-hero">
-    <p class="eyebrow">{{ libraryMode ? 'Interview practice' : 'Find your answer' }}</p>
-    <h1>{{ libraryMode ? 'Interview Practice Library' : 'Find the right content.' }}</h1>
-    <p class="search-intro">
-      @if (libraryMode) {
-        Practise explaining, solving, designing, debugging, and rehearsing across every learning
-        path. Filter by subject and practice format, then open the experience built for that task.
-      } @else {
-        Search courses, topics, lessons, practice, and learning tools by title, subject, path, or
-        concise preview. Each result takes you directly to its canonical destination.
-      }
-    </p>
-    <a
-      class="search-mode-switch"
-      [routerLink]="libraryMode ? '/search' : '/interview-questions'"
-      [queryParams]="modeQueryParams()"
-    >
-      {{ libraryMode ? 'Search all learning content' : 'Browse interview practice' }}
-    </a>
-    <form class="search-form" (ngSubmit)="submitSearch()">
-      <input
-        class="search-input"
-        type="search"
-        [attr.aria-label]="libraryMode ? 'Search interview practice' : 'Search all content'"
-        [placeholder]="
-          libraryMode
-            ? 'Try Java concurrency, linked lists, transactions, or system design...'
-            : 'Try Java, graphs, binary search, Kafka, caching, or CAP theorem...'
-        "
-        [value]="query()"
-        (input)="updateQuery($any($event.target).value)"
-        autofocus
-      />
-      <button class="search-submit" type="submit">Search</button>
-    </form>
-  </section>
-
-  <section class="search-workspace" aria-label="Search results">
-    <div class="search-toolbar" [class.library-toolbar]="libraryMode">
-      <label class="control"
-        >Path
-        <select [ngModel]="selectedPath()" (ngModelChange)="updatePath($event)">
-          <option value="all">All available content</option>
-          <option value="learn">Learn</option>
-          <option value="grow">Grow</option>
-          <option value="look-ahead">Look Ahead</option>
-        </select>
-      </label>
-      @if (libraryMode) {
-        <label class="control"
-          >Course
-          <select [ngModel]="selectedCourseId()" (ngModelChange)="updateCourse($event)">
-            <option value="all">All courses</option>
-            @for (course of availableCourses(); track course.id) {
-              <option [value]="course.id">{{ course.title }}</option>
-            }
-          </select>
-        </label>
-        <label class="control"
-          >Module
-          <select [ngModel]="selectedModuleId()" (ngModelChange)="updateModule($event)">
-            <option value="all">All modules</option>
-            @for (module of availableModules(); track module.id) {
-              <option [value]="module.id">{{ module.title }}</option>
-            }
-          </select>
-        </label>
-        <label class="control"
-          >Difficulty
-          <select [ngModel]="selectedDifficulty()" (ngModelChange)="updateDifficulty($event)">
-            <option value="all">All levels</option>
-            <option value="Beginner">Beginner</option>
-            <option value="Intermediate">Intermediate</option>
-            <option value="Advanced">Advanced</option>
-          </select>
-        </label>
-        <label class="control"
-          >Language
-          <select [ngModel]="selectedLanguage()" (ngModelChange)="updateLanguage($event)">
-            <option value="all">All languages</option>
-            <option value="java">Java</option>
-            <option value="python">Python</option>
-            <option value="go">Go</option>
-          </select>
-        </label>
-        <label class="control"
-          >Practice format
-          <select
-            [ngModel]="selectedPracticeFormat()"
-            (ngModelChange)="updatePracticeFormat($event)"
-          >
-            <option value="all">All formats</option>
-            <option value="explain">Explain</option>
-            <option value="solve">Solve</option>
-            <option value="design">Design</option>
-            <option value="debug">Debug</option>
-            <option value="rehearse">Rehearse</option>
-          </select>
-        </label>
-      }
-      @if (!libraryMode) {
-        <label class="control"
-          >Result type
-          <select [ngModel]="selectedDiscoveryKind()" (ngModelChange)="updateDiscoveryKind($event)">
-            <option value="all">All results</option>
-            <option value="course">Courses</option>
-            <option value="topic">Topics</option>
-            <option value="lesson">Lessons</option>
-            <option value="practice">Practice</option>
-            <option value="tool">Learning tools</option>
-          </select>
-        </label>
-      }
-      <label class="control"
-        >{{ libraryMode ? 'Practice family' : 'Content type' }}
-        <select [ngModel]="selectedContentType()" (ngModelChange)="updateContentType($event)">
-          <option value="all">All types</option>
-          <option value="q-and-a">Q&amp;A</option>
-          <option value="dsa-problem">Coding and DSA problems</option>
-          @if (!libraryMode) {
-            <option value="theory">Theory</option>
-            <option value="dsa-pattern">DSA patterns</option>
-          }
-          <option value="system-design">System design</option>
-          <option value="language-comparison">Java / Python / Go</option>
-          @if (!libraryMode) {
-            <option value="guide">Guides</option>
-          }
-        </select>
-      </label>
-      <label class="control"
-        >Sort by
-        <select [ngModel]="sortBy()" (ngModelChange)="updateSort($event)">
-          <option value="relevance">Relevance</option>
-          <option value="title">Title</option>
-          <option value="difficulty">Difficulty</option>
-        </select>
-      </label>
-      <label class="control"
-        >Group by
-        <select [ngModel]="groupBy()" (ngModelChange)="updateGroup($event)">
-          <option value="none">None</option>
-          <option value="path">Learn / Grow</option>
-          <option value="course">Course</option>
-          <option value="module">Module</option>
-          <option value="tag">Primary tag</option>
-          <option value="content-type">Content type</option>
-        </select>
-      </label>
-      <button class="clear-filters" type="button" (click)="clearFilters()">Clear filters</button>
-    </div>
-
-    <section class="tag-panel" aria-label="Subject filters">
+  <header class="search-hero">
+    <p class="eyebrow">One subject. Three ways to learn.</p>
+    <h1>See the whole topic.</h1>
+    <p class="search-intro">Read the idea, explain the reasoning, then put it to work.</p>
+  </header>
+  <section class="search-workspace" aria-label="Topic workbench">
+    <aside class="tag-panel" aria-label="Subject filters">
+      <p class="eyebrow">Explore a subject</p>
+      <h2>Choose your focus</h2>
+      <p class="rail-copy">Keep the topic steady. Change how you learn.</p>
       <p class="tag-panel-title">
-        Filter by subject <span>({{ selectedFilterCount() }} active)</span>
+        Filter by subject <span>({{ selectedTags().size }} active)</span>
       </p>
       <div class="tag-tools">
         <label>
@@ -172,8 +29,9 @@
         <button
           class="tag-pill"
           [class.active]="selectedTags().size === 0"
+          [attr.aria-pressed]="selectedTags().size === 0"
           type="button"
-          (click)="selectTag('all')"
+          (click)="clearSubjects()"
         >
           All subjects
         </button>
@@ -181,6 +39,7 @@
           <button
             class="tag-pill"
             [class.active]="isTagSelected(tag)"
+            [attr.aria-pressed]="isTagSelected(tag)"
             type="button"
             (click)="selectTag(tag)"
           >
@@ -190,185 +49,337 @@
           <span class="no-tags">No subjects match the current search.</span>
         }
       </div>
-    </section>
+    </aside>
 
-    @if (loading()) {
-      <p class="loading-state">Loading the question index...</p>
-    } @else if (error()) {
-      <p class="empty-state">{{ error() }}</p>
-    } @else {
-      <section id="search-results" class="results-anchor" aria-live="polite">
-        <p class="result-summary">
-          Showing {{ visibleResults().length }} of {{ results().length }} matching
-          {{ libraryMode ? 'practice item' : 'result' }}{{ results().length === 1 ? '' : 's' }}
-        </p>
-      </section>
-      @if (results().length) {
-        @for (group of groups(); track group.label) {
-          <section class="result-group">
-            @if (groupBy() !== 'none') {
-              <h2 class="group-title">{{ group.label }}</h2>
-            }
-            @for (result of group.results; track result.id) {
-              <article class="result-card" [class.expanded]="isExpanded(result)">
-                <div class="result-header">
-                  <nav class="result-breadcrumbs" aria-label="Result location">
-                    <a routerLink="/">Home</a><span>/</span>
-                    <a [routerLink]="pathLink(result)">{{ pathLabel(result.path) }}</a>
-                    @if (discoveryKind(result) !== 'course' && discoveryKind(result) !== 'tool') {
-                      <span>/</span>
-                      <a [routerLink]="courseLink(result)">{{ result.courseTitle }}</a>
-                    }
-                    @if (discoveryKind(result) === 'practice') {
-                      <span>/</span
-                      ><a [routerLink]="moduleLink(result)">{{ moduleLabel(result) }}</a>
-                    }
-                  </nav>
-                  <div class="result-meta-right">
-                    <span class="result-kind">{{ resultTypeLabel(result) }}</span>
-                    @if (isTagSelected(contentTypeLabel(result.contentType))) {
-                      <span class="result-meta-filter active">{{
-                        contentTypeLabel(result.contentType)
-                      }}</span>
-                    } @else {
+    <div class="main-column">
+      <form class="search-form" role="search" (ngSubmit)="submitSearch()">
+        <input
+          class="search-input"
+          type="search"
+          aria-label="Search the learning library"
+          placeholder="Try Java, graphs, caching, or system design…"
+          [value]="query()"
+          (input)="updateQuery($any($event.target).value)"
+        />
+        <button class="search-submit" type="submit">Search</button>
+      </form>
+      <div class="activity-filters" role="group" aria-label="Learning activity">
+        @for (activity of activityOptions; track activity.id) {
+          <button
+            type="button"
+            [attr.aria-pressed]="activitySelected(activity.id)"
+            (click)="selectActivity(activity.id)"
+          >
+            {{ activity.label }}
+          </button>
+        }
+      </div>
+      <details class="filter-details">
+        <summary>
+          Refine results <span>{{ selectedFilterCount() }} active filters</span>
+        </summary>
+        <div class="search-toolbar">
+          <label class="control"
+            >Path
+            <select [ngModel]="selectedPath()" (ngModelChange)="updatePath($event)">
+              <option value="all">All available content</option>
+              <option value="learn">Learn</option>
+              <option value="grow">Grow</option>
+              <option value="look-ahead">Look Ahead</option>
+            </select>
+          </label>
+          <label class="control"
+            >Course
+            <select [ngModel]="selectedCourseId()" (ngModelChange)="updateCourse($event)">
+              <option value="all">All courses</option>
+              @for (course of availableCourses(); track course.id) {
+                <option [value]="course.id">{{ course.title }}</option>
+              }
+            </select>
+          </label>
+          <label class="control"
+            >Module
+            <select [ngModel]="selectedModuleId()" (ngModelChange)="updateModule($event)">
+              <option value="all">All modules</option>
+              @for (module of availableModules(); track module.id) {
+                <option [value]="module.id">{{ module.title }}</option>
+              }
+            </select>
+          </label>
+          <label class="control"
+            >Difficulty
+            <select [ngModel]="selectedDifficulty()" (ngModelChange)="updateDifficulty($event)">
+              <option value="all">All levels</option>
+              <option value="Beginner">Beginner</option>
+              <option value="Intermediate">Intermediate</option>
+              <option value="Advanced">Advanced</option>
+            </select>
+          </label>
+          <label class="control"
+            >Language
+            <select [ngModel]="selectedLanguage()" (ngModelChange)="updateLanguage($event)">
+              <option value="all">All languages</option>
+              <option value="java">Java</option>
+              <option value="python">Python</option>
+              <option value="go">Go</option>
+            </select>
+          </label>
+          <label class="control"
+            >Practice format
+            <select
+              [ngModel]="selectedPracticeFormat()"
+              (ngModelChange)="updatePracticeFormat($event)"
+            >
+              <option value="all">All formats</option>
+              <option value="explain">Explain</option>
+              <option value="solve">Solve</option>
+              <option value="design">Design</option>
+              <option value="debug">Debug</option>
+              <option value="rehearse">Rehearse</option>
+            </select>
+          </label>
+          <label class="control"
+            >Result type
+            <select
+              [ngModel]="selectedDiscoveryKind()"
+              (ngModelChange)="updateDiscoveryKind($event)"
+            >
+              <option value="all">All results</option>
+              <option value="course">Courses</option>
+              <option value="topic">Topics</option>
+              <option value="lesson">Lessons</option>
+              <option value="practice">Practice</option>
+              <option value="tool">Learning tools</option>
+            </select>
+          </label>
+          <label class="control"
+            >Content type
+            <select [ngModel]="selectedContentType()" (ngModelChange)="updateContentType($event)">
+              <option value="all">All types</option>
+              <option value="q-and-a">Q&amp;A</option>
+              <option value="dsa-problem">Coding and DSA problems</option>
+              <option value="theory">Theory</option>
+              <option value="dsa-pattern">DSA patterns</option>
+              <option value="system-design">System design</option>
+              <option value="language-comparison">Java / Python / Go</option>
+              <option value="guide">Guides</option>
+            </select>
+          </label>
+          <label class="control"
+            >Sort by
+            <select [ngModel]="sortBy()" (ngModelChange)="updateSort($event)">
+              <option value="relevance">Relevance</option>
+              <option value="title">Title</option>
+              <option value="difficulty">Difficulty</option>
+            </select>
+          </label>
+          <label class="control"
+            >Group by
+            <select [ngModel]="groupBy()" (ngModelChange)="updateGroup($event)">
+              <option value="none">None</option>
+              <option value="path">Learn / Grow / Look Ahead</option>
+              <option value="course">Course</option>
+              <option value="module">Module</option>
+              <option value="tag">Primary tag</option>
+              <option value="content-type">Content type</option>
+            </select>
+          </label>
+          <button class="clear-filters" type="button" (click)="clearFilters()">
+            Clear filters
+          </button>
+        </div>
+      </details>
+      @if (loading()) {
+        <p class="loading-state" role="status">Loading the learning library…</p>
+      } @else if (error()) {
+        <div class="empty-state" role="alert">
+          <p>{{ error() }}</p>
+          <button class="clear-filters" type="button" (click)="retrySearch()">Try again</button>
+        </div>
+      } @else {
+        <section id="search-results" class="results-anchor" aria-live="polite">
+          <p class="result-summary">
+            Showing {{ visibleResults().length }} of {{ results().length }} matching result{{
+              results().length === 1 ? '' : 's'
+            }}
+          </p>
+        </section>
+        @if (results().length) {
+          @for (group of groups(); track group.label) {
+            <section class="result-group">
+              @if (groupBy() !== 'none') {
+                <h2 class="group-title">{{ group.label }}</h2>
+              }
+              @for (result of group.results; track result.id) {
+                <article class="result-card" [class.expanded]="isExpanded(result)">
+                  <div class="result-header">
+                    <nav class="result-breadcrumbs" aria-label="Result location">
+                      <a routerLink="/">Home</a><span>/</span>
+                      <a [routerLink]="pathLink(result)">{{ pathLabel(result.path) }}</a>
+                      @if (discoveryKind(result) !== 'course' && discoveryKind(result) !== 'tool') {
+                        <span>/</span>
+                        <a [routerLink]="courseLink(result)">{{ result.courseTitle }}</a>
+                      }
+                      @if (discoveryKind(result) === 'practice') {
+                        <span>/</span
+                        ><a [routerLink]="moduleLink(result)">{{ moduleLabel(result) }}</a>
+                      }
+                    </nav>
+                    <div class="result-meta-right">
+                      <span class="result-kind">{{ resultTypeLabel(result) }}</span>
                       <button
                         class="result-meta-filter"
                         type="button"
-                        (click)="selectTag(contentTypeLabel(result.contentType))"
+                        [attr.aria-pressed]="selectedContentType() === result.contentType"
+                        (click)="
+                          updateContentType(
+                            selectedContentType() === result.contentType
+                              ? 'all'
+                              : result.contentType
+                          )
+                        "
                       >
                         {{ contentTypeLabel(result.contentType) }}
                       </button>
-                    }
-                    @if (result.difficulty) {
-                      @if (isTagSelected(result.difficulty)) {
-                        <span class="result-meta-filter result-difficulty active">{{
-                          result.difficulty
-                        }}</span>
-                      } @else {
+                      @if (result.difficulty) {
                         <button
-                          class="result-meta-filter result-difficulty"
+                          class="result-meta-filter"
                           type="button"
-                          (click)="selectTag(result.difficulty)"
+                          [attr.aria-pressed]="selectedDifficulty() === result.difficulty"
+                          (click)="
+                            updateDifficulty(
+                              selectedDifficulty() === result.difficulty ? 'all' : result.difficulty
+                            )
+                          "
                         >
                           {{ result.difficulty }}
                         </button>
                       }
-                    }
-                    @if (result.access.tier === 'premium') {
-                      <span class="premium-badge">Premium</span>
-                    }
+                      @if (result.access.tier === 'premium') {
+                        <span class="premium-badge">Premium</span>
+                      }
+                    </div>
                   </div>
-                </div>
-                <h2 class="result-title">
-                  <a
-                    [routerLink]="questionLink(result)"
-                    [queryParams]="questionQueryParams(result)"
-                    >{{ result.title }}</a
-                  >
-                </h2>
-                @if (preview(result); as previewText) {
-                  <p class="result-preview">{{ previewText }}</p>
-                }
-                <div class="result-tags" aria-label="Subject filters">
-                  @for (tag of questionTags(result); track tag) {
-                    @if (isTagSelected(tag)) {
-                      <button class="result-tag active" type="button" (click)="selectTag(tag)">
-                        {{ tag }}
-                      </button>
-                    } @else {
-                      <button class="result-tag" type="button" (click)="selectTag(tag)">
-                        {{ tag }}
-                      </button>
-                    }
-                  }
-                </div>
-                <div class="result-actions">
-                  <a
-                    class="detail-link"
-                    [routerLink]="questionLink(result)"
-                    [queryParams]="questionQueryParams(result)"
-                  >
-                    {{ resultActionLabel(result) }}
-                  </a>
-                  @if (canPreviewAnswer(result)) {
-                    <button
-                      class="answer-toggle"
-                      type="button"
-                      [attr.aria-expanded]="isExpanded(result)"
-                      [attr.aria-controls]="answerId(result)"
-                      (click)="toggleResult(result)"
+                  <h2 class="result-title">
+                    <a
+                      [routerLink]="questionLink(result)"
+                      [queryParams]="questionQueryParams(result)"
+                      >{{ result.title }}</a
                     >
-                      <span>{{ isExpanded(result) ? 'Hide preview' : 'Preview answer' }}</span>
-                      <span class="answer-toggle-chevron" aria-hidden="true"></span>
-                    </button>
+                  </h2>
+                  @if (preview(result); as previewText) {
+                    <p class="result-preview">{{ previewText }}</p>
                   }
-                </div>
-                @if (isExpanded(result)) {
-                  <div class="result-answer" [id]="answerId(result)">
-                    @if (questionLoading(result)) {
-                      <p class="answer-loading" role="status">Loading the answer preview…</p>
-                    } @else if (questionError(result)) {
-                      <div class="answer-error" role="alert">
-                        <p>The answer preview could not be loaded.</p>
-                        <button type="button" (click)="loadQuestion(result)">Try again</button>
-                      </div>
-                    } @else if (resolvedQuestion(result); as question) {
-                      <section class="library-answer" aria-label="Answer preview">
-                        <p class="result-answer-label">Interview answer</p>
-                        <p class="reference-answer" [innerHTML]="question.interviewAnswer"></p>
-                        @if (question.explanation.length) {
-                          <section class="answer-explanation">
-                            <h3>Why this answer is strong</h3>
-                            @for (paragraph of question.explanation; track paragraph) {
-                              <p [innerHTML]="paragraph"></p>
-                            }
-                          </section>
-                        }
-                        @if (questionSolutions(question); as solutions) {
-                          @if (solutions.length) {
-                            <app-coding-solution-tabs
-                              [solutions]="solutions"
-                              [complexity]="question.complexity"
-                              [showPractice]="false"
-                              [useLanguageThemes]="true"
-                            />
-                          }
-                        }
-                        @if (question.followUps.length) {
-                          <section class="answer-follow-ups">
-                            <h3>Follow-up questions</h3>
-                            @for (followUp of question.followUps; track followUp.question) {
-                              <details>
-                                <summary>{{ followUp.question }}</summary>
-                                <p [innerHTML]="followUp.answer"></p>
-                              </details>
-                            }
-                          </section>
-                        }
-                        @if (relatedLessonLink(result, question); as lessonRoute) {
-                          <a class="lesson-link" [routerLink]="lessonRoute"
-                            >Read the related lesson</a
-                          >
-                        }
-                      </section>
+                  <div class="result-tags" aria-label="Subject filters">
+                    @for (tag of questionTags(result); track tag) {
+                      @if (isTagSelected(tag)) {
+                        <button
+                          class="result-tag active"
+                          aria-pressed="true"
+                          type="button"
+                          (click)="selectTag(tag)"
+                        >
+                          {{ tag }}
+                        </button>
+                      } @else {
+                        <button
+                          class="result-tag"
+                          aria-pressed="false"
+                          type="button"
+                          (click)="selectTag(tag)"
+                        >
+                          {{ tag }}
+                        </button>
+                      }
                     }
                   </div>
-                }
-              </article>
-            }
-          </section>
+                  <div class="result-actions">
+                    <a
+                      class="detail-link"
+                      [routerLink]="questionLink(result)"
+                      [queryParams]="questionQueryParams(result)"
+                    >
+                      {{ resultActionLabel(result) }}
+                    </a>
+                    @if (canPreviewAnswer(result)) {
+                      <button
+                        class="answer-toggle"
+                        type="button"
+                        [attr.aria-expanded]="isExpanded(result)"
+                        [attr.aria-controls]="answerId(result)"
+                        (click)="toggleResult(result)"
+                      >
+                        <span>{{ isExpanded(result) ? 'Hide preview' : 'Preview answer' }}</span>
+                        <span class="answer-toggle-chevron" aria-hidden="true"></span>
+                      </button>
+                    }
+                  </div>
+                  @if (isExpanded(result)) {
+                    <div class="result-answer" [id]="answerId(result)">
+                      @if (questionLoading(result)) {
+                        <p class="answer-loading" role="status">Loading the answer preview…</p>
+                      } @else if (questionError(result)) {
+                        <div class="answer-error" role="alert">
+                          <p>The answer preview could not be loaded.</p>
+                          <button type="button" (click)="loadQuestion(result)">Try again</button>
+                        </div>
+                      } @else if (resolvedQuestion(result); as question) {
+                        <section class="library-answer" aria-label="Answer preview">
+                          <p class="result-answer-label">Interview answer</p>
+                          <p class="reference-answer" [innerHTML]="question.interviewAnswer"></p>
+                          @if (question.explanation.length) {
+                            <section class="answer-explanation">
+                              <h3>Why this answer is strong</h3>
+                              @for (paragraph of question.explanation; track paragraph) {
+                                <p [innerHTML]="paragraph"></p>
+                              }
+                            </section>
+                          }
+                          @if (questionSolutions(question); as solutions) {
+                            @if (solutions.length) {
+                              <app-coding-solution-tabs
+                                [solutions]="solutions"
+                                [complexity]="question.complexity"
+                                [showPractice]="false"
+                                [useLanguageThemes]="true"
+                              />
+                            }
+                          }
+                          @if (question.followUps.length) {
+                            <section class="answer-follow-ups">
+                              <h3>Follow-up questions</h3>
+                              @for (followUp of question.followUps; track followUp.question) {
+                                <details>
+                                  <summary>{{ followUp.question }}</summary>
+                                  <p [innerHTML]="followUp.answer"></p>
+                                </details>
+                              }
+                            </section>
+                          }
+                          @if (relatedLessonLink(result, question); as lessonRoute) {
+                            <a class="lesson-link" [routerLink]="lessonRoute"
+                              >Read the related lesson</a
+                            >
+                          }
+                        </section>
+                      }
+                    </div>
+                  }
+                </article>
+              }
+            </section>
+          }
+          @if (hasMoreResults()) {
+            <button class="show-more-results" type="button" (click)="showMoreResults()">
+              Show {{ nextResultCount() }} more results
+            </button>
+          }
+        } @else {
+          <p class="empty-state">
+            No results match those filters. Try a broader subject or clear the filters.
+          </p>
         }
-        @if (hasMoreResults()) {
-          <button class="show-more-results" type="button" (click)="showMoreResults()">
-            Show {{ nextResultCount() }} more {{ libraryMode ? 'practice items' : 'results' }}
-          </button>
-        }
-      } @else {
-        <p class="empty-state">
-          No {{ libraryMode ? 'practice items' : 'results' }} match those filters. Try a broader
-          subject or clear the filters.
-        </p>
       }
-    }
+    </div>
   </section>
 </main>

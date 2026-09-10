@@ -116,7 +116,6 @@ function practiceIndex(): HandsOnDsaIndex {
         interviewRank: index === 0 ? 151 : 1,
         studyOrder: index + 1,
         tier: index === 0 ? ('interview-core' as const) : ('universal-must-do' as const),
-        evidenceConfidence: 'low' as const,
         rankingVersion: 'fixture-ranking',
       },
     ],

@@ -4,12 +4,11 @@ import { provideLocationMocks } from '@angular/common/testing';
 import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { Subject, of } from 'rxjs';
-import { routes } from '../../app.routes';
 import { ContentService } from '../../content/content.service';
 import { ContentPath, InterviewQuestion, SearchDocument } from '../../content/content.models';
 import { Search } from './search';
 
-describe('Search interview-question library', () => {
+describe('Unified Search topic workbench', () => {
   const question: InterviewQuestion = {
     id: 'safe-counter',
     moduleId: 'java-concurrency',
@@ -64,16 +63,16 @@ describe('Search interview-question library', () => {
   };
 
   const content = {
-    getSearchIndex: vi.fn((_path?: ContentPath) => of([] as SearchDocument[])),
-    getInterviewQuestionIndex: vi.fn((_path?: ContentPath) => of([document])),
+    getSearchIndex: vi.fn((_path?: ContentPath) => of([document])),
     getInterviewQuestion: vi.fn(() => of(question)),
   };
 
   beforeEach(async () => {
     vi.clearAllMocks();
+    content.getSearchIndex.mockReset().mockReturnValue(of([document]));
     await TestBed.configureTestingModule({
       providers: [
-        provideRouter(routes),
+        provideRouter([{ path: 'search', component: Search }]),
         provideLocationMocks(),
         { provide: ContentService, useValue: content },
       ],
@@ -87,14 +86,14 @@ describe('Search interview-question library', () => {
 
   it('loads interview practice and hydrates an explanatory answer only on request', async () => {
     const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/interview-questions?path=learn', Search);
+    await harness.navigateByUrl('/search?path=learn', Search);
     harness.detectChanges();
 
     expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toContain(
-      'Interview Practice Library',
+      'See the whole topic.',
     );
-    expect(content.getInterviewQuestionIndex).toHaveBeenCalledOnce();
-    expect(content.getInterviewQuestionIndex).toHaveBeenCalledWith('learn');
+    expect(content.getSearchIndex).toHaveBeenCalledOnce();
+    expect(content.getSearchIndex).toHaveBeenCalledWith('learn');
     expect(content.getInterviewQuestion).not.toHaveBeenCalled();
     expect(
       [...harness.routeNativeElement!.querySelectorAll<HTMLOptionElement>('option')].some(
@@ -142,11 +141,11 @@ describe('Search interview-question library', () => {
       filterTags: ['Grow', 'Q&A', 'Spring', 'Intermediate'],
       route: ['/', 'grow', 'spring-framework', 'dependency-injection'],
     };
-    content.getInterviewQuestionIndex.mockImplementation((path?: ContentPath) =>
+    content.getSearchIndex.mockImplementation((path?: ContentPath) =>
       of(path === 'grow' ? [growDocument] : [document]),
     );
     const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/interview-questions?path=learn', Search);
+    await harness.navigateByUrl('/search?path=learn', Search);
     const pathSelect = [...harness.routeNativeElement!.querySelectorAll('select')].find((select) =>
       [...select.options].some((option) => option.value === 'grow'),
     )!;
@@ -156,8 +155,8 @@ describe('Search interview-question library', () => {
     await harness.fixture.whenStable();
     harness.detectChanges();
 
-    expect(content.getInterviewQuestionIndex).toHaveBeenCalledWith('grow');
-    expect(TestBed.inject(Router).url).toBe('/interview-questions?path=grow');
+    expect(content.getSearchIndex).toHaveBeenCalledWith('grow');
+    expect(TestBed.inject(Router).url).toBe('/search?path=grow');
     expect(harness.routeNativeElement?.querySelector('.result-title')?.textContent).toContain(
       growDocument.title,
     );
@@ -239,9 +238,9 @@ describe('Search interview-question library', () => {
       filterTags: ['Grow', 'Q&A', 'Java', 'Production', 'Intermediate'],
       route: ['/', 'grow', 'technical-scenarios', 'failed-release'],
     };
-    content.getInterviewQuestionIndex.mockReturnValueOnce(of([document, debugDocument]));
+    content.getSearchIndex.mockReturnValueOnce(of([document, debugDocument]));
     const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/interview-questions?format=debug&tags=Java', Search);
+    await harness.navigateByUrl('/search?format=debug&tags=Java', Search);
     harness.detectChanges();
 
     expect(harness.routeNativeElement?.querySelectorAll('.result-card')).toHaveLength(1);
@@ -251,7 +250,7 @@ describe('Search interview-question library', () => {
     expect(harness.routeNativeElement?.querySelector('.detail-link')?.textContent).toContain(
       'Debug scenario',
     );
-    expect(TestBed.inject(Router).url).toBe('/interview-questions?format=debug&tags=Java');
+    expect(TestBed.inject(Router).url).toBe('/search?format=debug&tags=Java');
   });
 
   it('uses a distinct action for every supported practice format', async () => {
@@ -277,9 +276,9 @@ describe('Search interview-question library', () => {
             }
           : document.detailRef,
     }));
-    content.getInterviewQuestionIndex.mockReturnValueOnce(of(documents));
+    content.getSearchIndex.mockReturnValueOnce(of(documents));
     const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/interview-questions', Search);
+    await harness.navigateByUrl('/search', Search);
     harness.detectChanges();
 
     const actions = [...harness.routeNativeElement!.querySelectorAll('.detail-link')].map((link) =>
@@ -297,22 +296,33 @@ describe('Search interview-question library', () => {
     expect(harness.routeNativeElement?.querySelectorAll('.answer-toggle')).toHaveLength(1);
   });
 
-  it('preserves compatible URL filters when switching between Search and Practice', async () => {
+  it('changes learning activity within Search while preserving topic and URL filters', async () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl(
-      '/interview-questions?q=counter&path=learn&difficulty=Intermediate&tags=Java',
+      '/search?q=counter&path=learn&difficulty=Intermediate&tags=Java',
       Search,
     );
-    const switchLink = harness.routeNativeElement?.querySelector(
-      '.search-mode-switch',
-    ) as HTMLAnchorElement;
-    expect(switchLink.textContent?.trim()).toBe('Search all learning content');
-    switchLink.click();
+    const buttons = [
+      ...harness.routeNativeElement!.querySelectorAll<HTMLButtonElement>(
+        '.activity-filters button',
+      ),
+    ];
+    buttons.find((button) => button.textContent?.trim() === 'Interview questions')!.click();
     await harness.fixture.whenStable();
-
-    expect(TestBed.inject(Router).url).toBe(
-      '/search?q=counter&path=learn&difficulty=Intermediate&tags=Java',
-    );
+    harness.detectChanges();
+    const url = TestBed.inject(Router).url;
+    expect(url).toContain('kind=practice');
+    expect(url).toContain('format=explain');
+    expect(url).toContain('q=counter');
+    expect(url).toContain('tags=Java');
+    expect(url).toContain('difficulty=Intermediate');
+    expect(harness.routeNativeElement!.querySelector('.search-mode-switch')).toBeNull();
+    expect(
+      buttons
+        .find((button) => button.textContent?.trim() === 'Interview questions')!
+        .getAttribute('aria-pressed'),
+    ).toBe('true');
+    expect(content.getSearchIndex).toHaveBeenCalledOnce();
   });
 
   it('restores the canonical DSA problem filter from the URL', async () => {
@@ -328,9 +338,9 @@ describe('Search interview-question library', () => {
         version: 'dsa-v1',
       },
     };
-    content.getInterviewQuestionIndex.mockReturnValueOnce(of([document, dsaDocument]));
+    content.getSearchIndex.mockReturnValueOnce(of([document, dsaDocument]));
     const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/interview-questions?type=dsa-problem', Search);
+    await harness.navigateByUrl('/search?type=dsa-problem', Search);
     harness.detectChanges();
 
     const contentTypeSelect = [...harness.routeNativeElement!.querySelectorAll('select')].find(
@@ -350,16 +360,16 @@ describe('Search interview-question library', () => {
       contentId: `${document.contentId}-${index}`,
       title: `${document.title} ${index + 1}`,
     }));
-    content.getInterviewQuestionIndex.mockReturnValueOnce(of(documents));
+    content.getSearchIndex.mockReturnValueOnce(of(documents));
     const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/interview-questions', Search);
+    await harness.navigateByUrl('/search', Search);
     harness.detectChanges();
 
     expect(harness.routeNativeElement?.querySelectorAll('.result-card')).toHaveLength(40);
     const showMore = harness.routeNativeElement?.querySelector(
       '.show-more-results',
     ) as HTMLButtonElement;
-    expect(showMore.textContent).toContain('Show 5 more practice items');
+    expect(showMore.textContent).toContain('Show 5 more results');
 
     showMore.click();
     harness.detectChanges();
@@ -374,7 +384,7 @@ describe('Search interview-question library', () => {
       eventOrder.push('scroll');
     });
     const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/interview-questions', Search);
+    await harness.navigateByUrl('/search', Search);
     const router = TestBed.inject(Router);
     const navigate = router.navigate.bind(router);
     vi.spyOn(router, 'navigate').mockImplementation((commands, extras) =>
@@ -394,20 +404,20 @@ describe('Search interview-question library', () => {
     input.value = 'counter';
     input.dispatchEvent(new Event('input'));
     await harness.fixture.whenStable();
-    expect(router.url).toBe('/interview-questions?q=counter');
+    expect(router.url).toBe('/search?q=counter');
     harness.routeNativeElement
       ?.querySelector('.search-form')
       ?.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
     await harness.fixture.whenStable();
 
-    expect(router.url).toBe('/interview-questions?q=counter');
+    expect(router.url).toBe('/search?q=counter');
     expect(scrollIntoView).toHaveBeenCalledOnce();
     expect(eventOrder).toEqual(['navigation', 'scroll']);
   });
 
   it('removes the committed query from the URL when the search field is cleared', async () => {
     const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/interview-questions?q=counter', Search);
+    await harness.navigateByUrl('/search?q=counter', Search);
     const input = harness.routeNativeElement?.querySelector('.search-input') as HTMLInputElement;
     expect(input.value).toBe('counter');
 
@@ -418,9 +428,9 @@ describe('Search interview-question library', () => {
     input.dispatchEvent(new Event('input'));
     await harness.fixture.whenStable();
 
-    expect(TestBed.inject(Router).url).toBe('/interview-questions');
+    expect(TestBed.inject(Router).url).toBe('/search');
     expect(harness.routeNativeElement?.querySelector('.result-summary')?.textContent).toContain(
-      'Showing 1 of 1 matching practice item',
+      'Showing 1 of 1 matching result',
     );
   });
 
@@ -438,63 +448,57 @@ describe('Search interview-question library', () => {
     expect(input.value).toBe('');
   });
 
-  it.each(['search', 'interview-questions'])(
-    'restores visible URL state on a reused /%s component',
-    async (path) => {
-      content.getSearchIndex.mockReturnValueOnce(of([document]));
-      const harness = await RouterTestingHarness.create();
-      const first = await harness.navigateByUrl(`/${path}?q=absent`, Search);
-      expect(harness.routeNativeElement?.querySelectorAll('.result-card')).toHaveLength(0);
-      const reused = await harness.navigateByUrl(
-        `/${path}?q=counter&tags=Java&difficulty=Intermediate`,
-        Search,
-      );
-      expect(reused).toBe(first);
-      expect(
-        (harness.routeNativeElement?.querySelector('.search-input') as HTMLInputElement).value,
-      ).toBe('counter');
-      expect(harness.routeNativeElement?.querySelectorAll('.result-card')).toHaveLength(1);
-      await harness.navigateByUrl(`/${path}`, Search);
-      expect(
-        (harness.routeNativeElement?.querySelector('.search-input') as HTMLInputElement).value,
-      ).toBe('');
-      expect(harness.routeNativeElement?.querySelectorAll('.result-card')).toHaveLength(1);
-    },
-  );
+  it.each(['search'])('restores visible URL state on a reused /%s component', async (path) => {
+    content.getSearchIndex.mockReturnValueOnce(of([document]));
+    const harness = await RouterTestingHarness.create();
+    const first = await harness.navigateByUrl(`/${path}?q=absent`, Search);
+    expect(harness.routeNativeElement?.querySelectorAll('.result-card')).toHaveLength(0);
+    const reused = await harness.navigateByUrl(
+      `/${path}?q=counter&tags=Java&difficulty=Intermediate`,
+      Search,
+    );
+    expect(reused).toBe(first);
+    expect(
+      (harness.routeNativeElement?.querySelector('.search-input') as HTMLInputElement).value,
+    ).toBe('counter');
+    expect(harness.routeNativeElement?.querySelectorAll('.result-card')).toHaveLength(1);
+    await harness.navigateByUrl(`/${path}`, Search);
+    expect(
+      (harness.routeNativeElement?.querySelector('.search-input') as HTMLInputElement).value,
+    ).toBe('');
+    expect(harness.routeNativeElement?.querySelectorAll('.result-card')).toHaveLength(1);
+  });
 
-  it.each(['search', 'interview-questions'])(
-    'restores /%s query state on browser back and forward',
-    async (path) => {
-      const harness = await RouterTestingHarness.create();
-      TestBed.inject(Router).setUpLocationChangeListener();
-      await harness.navigateByUrl(`/${path}?q=first`, Search);
-      await harness.navigateByUrl(`/${path}?q=second`, Search);
-      const location = TestBed.inject(Location);
-      location.back();
-      await vi.waitFor(() => {
-        harness.detectChanges();
-        expect(TestBed.inject(Router).url).toBe(`/${path}?q=first`);
-        expect(
-          (harness.routeNativeElement?.querySelector('.search-input') as HTMLInputElement).value,
-        ).toBe('first');
-      });
-      location.forward();
-      await vi.waitFor(() => {
-        harness.detectChanges();
-        expect(TestBed.inject(Router).url).toBe(`/${path}?q=second`);
-        expect(
-          (harness.routeNativeElement?.querySelector('.search-input') as HTMLInputElement).value,
-        ).toBe('second');
-      });
-    },
-  );
+  it.each(['search'])('restores /%s query state on browser back and forward', async (path) => {
+    const harness = await RouterTestingHarness.create();
+    TestBed.inject(Router).setUpLocationChangeListener();
+    await harness.navigateByUrl(`/${path}?q=first`, Search);
+    await harness.navigateByUrl(`/${path}?q=second`, Search);
+    const location = TestBed.inject(Location);
+    location.back();
+    await vi.waitFor(() => {
+      harness.detectChanges();
+      expect(TestBed.inject(Router).url).toBe(`/${path}?q=first`);
+      expect(
+        (harness.routeNativeElement?.querySelector('.search-input') as HTMLInputElement).value,
+      ).toBe('first');
+    });
+    location.forward();
+    await vi.waitFor(() => {
+      harness.detectChanges();
+      expect(TestBed.inject(Router).url).toBe(`/${path}?q=second`);
+      expect(
+        (harness.routeNativeElement?.querySelector('.search-input') as HTMLInputElement).value,
+      ).toBe('second');
+    });
+  });
 
   it('restores course and module selectors when URL options arrive after the index request', async () => {
     const index = new Subject<SearchDocument[]>();
-    content.getInterviewQuestionIndex.mockReturnValueOnce(index);
+    content.getSearchIndex.mockReturnValueOnce(index);
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl(
-      '/interview-questions?course=solid-design-patterns&module=java-concurrency&language=java',
+      '/search?course=solid-design-patterns&module=java-concurrency&language=java',
       Search,
     );
     index.next([document]);
@@ -512,14 +516,14 @@ describe('Search interview-question library', () => {
 
   it('deselects a repeated topic and removes the tag from the URL', async () => {
     const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/interview-questions?tags=Java', Search);
+    await harness.navigateByUrl('/search?tags=Java', Search);
     const tag = [
       ...harness.routeNativeElement!.querySelectorAll<HTMLButtonElement>('.tag-pill'),
     ].find((button) => button.textContent.trim() === 'Java')!;
     expect(tag.classList.contains('active')).toBe(true);
     tag.click();
     await harness.fixture.whenStable();
-    expect(TestBed.inject(Router).url).toBe('/interview-questions');
+    expect(TestBed.inject(Router).url).toBe('/search');
     expect(tag.classList.contains('active')).toBe(false);
   });
 
@@ -551,17 +555,17 @@ describe('Search interview-question library', () => {
         },
       ],
     };
-    content.getInterviewQuestionIndex.mockReturnValue(of([canonical]));
+    content.getSearchIndex.mockReturnValue(of([canonical]));
     const harness = await RouterTestingHarness.create();
     const returnUrl =
-      '/interview-questions?path=learn&course=python-fundamentals&module=python-dsa-mechanics&format=solve';
+      '/search?path=learn&course=python-fundamentals&module=python-dsa-mechanics&format=solve';
     await harness.navigateByUrl(returnUrl, Search);
     expect(harness.routeNativeElement?.querySelectorAll('.result-card')).toHaveLength(1);
     const link = harness.routeNativeElement!.querySelector<HTMLAnchorElement>('.detail-link')!;
     const url = new URL(link.href);
     expect(url.pathname).toBe('/learn/python-fundamentals/python-shared-problem');
     expect(url.searchParams.get('returnTo')).toBe(returnUrl);
-    await harness.navigateByUrl('/interview-questions', Search);
+    await harness.navigateByUrl('/search', Search);
     expect(harness.routeNativeElement?.querySelectorAll('.result-card')).toHaveLength(1);
   });
 
@@ -598,12 +602,12 @@ describe('Search interview-question library', () => {
       searchableText: 'binary search insertion point python',
       route: ['/', 'learn', 'python-foundations', 'bisect'],
     };
-    content.getInterviewQuestionIndex.mockImplementation((path?: ContentPath) =>
+    content.getSearchIndex.mockImplementation((path?: ContentPath) =>
       of(path === 'grow' ? [growDocument] : [growDocument, pythonDocument]),
     );
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl(
-      '/interview-questions?path=grow&course=spring-framework&module=spring-core&difficulty=Intermediate&language=java&type=q-and-a&format=explain&tags=Spring&sort=title&group=course',
+      '/search?path=grow&course=spring-framework&module=spring-core&difficulty=Intermediate&language=java&type=q-and-a&format=explain&tags=Spring&sort=title&group=course',
       Search,
     );
     const subjectInput =
@@ -617,8 +621,8 @@ describe('Search interview-question library', () => {
     await harness.fixture.whenStable();
     harness.detectChanges();
 
-    expect(content.getInterviewQuestionIndex).toHaveBeenLastCalledWith(undefined);
-    expect(TestBed.inject(Router).url).toBe('/interview-questions?q=binary%20search');
+    expect(content.getSearchIndex).toHaveBeenLastCalledWith(undefined);
+    expect(TestBed.inject(Router).url).toBe('/search?q=binary%20search');
     expect(subjectInput.value).toBe('');
     expect(harness.routeNativeElement?.querySelectorAll('.result-card')).toHaveLength(1);
     expect(harness.routeNativeElement?.querySelector('.result-title')?.textContent).toContain(
@@ -658,7 +662,7 @@ describe('Search interview-question library', () => {
 
   it('uses a subject selected after text search as an explicit refinement', async () => {
     const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/interview-questions?path=learn&difficulty=Intermediate', Search);
+    await harness.navigateByUrl('/search?path=learn&difficulty=Intermediate', Search);
     vi.spyOn(window.document, 'getElementById').mockReturnValue({
       scrollIntoView: vi.fn(),
     } as unknown as HTMLElement);
@@ -678,15 +682,15 @@ describe('Search interview-question library', () => {
     await harness.fixture.whenStable();
 
     expect(input.value).toBe('counter');
-    expect(TestBed.inject(Router).url).toBe('/interview-questions?q=counter&tags=Java');
+    expect(TestBed.inject(Router).url).toBe('/search?q=counter&tags=Java');
 
     input.value = 'thread';
     input.dispatchEvent(new Event('input'));
     await harness.fixture.whenStable();
-    expect(TestBed.inject(Router).url).toBe('/interview-questions?q=thread');
+    expect(TestBed.inject(Router).url).toBe('/search?q=thread');
   });
 
-  it.each(['search', 'interview-questions'])(
+  it.each(['search'])(
     'keeps a cleared query cleared when /%s is recreated from its URL',
     async (path) => {
       const harness = await RouterTestingHarness.create();
@@ -697,7 +701,7 @@ describe('Search interview-question library', () => {
       await harness.fixture.whenStable();
       const savedUrl = TestBed.inject(Router).url;
       expect(savedUrl).toBe(`/${path}`);
-      await harness.navigateByUrl(path === 'search' ? '/interview-questions' : '/search', Search);
+      await harness.navigateByUrl(path === 'search' ? '/search' : '/search', Search);
       await harness.navigateByUrl(savedUrl, Search);
       expect(
         harness.routeNativeElement!.querySelector<HTMLInputElement>('.search-input')!.value,
@@ -705,4 +709,46 @@ describe('Search interview-question library', () => {
       expect(harness.routeNativeElement!.querySelector('select')!.value).toBe('all');
     },
   );
+  it('keeps subject context when changing activity and can clear only subjects', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/search?tags=Java&kind=practice&format=explain', Search);
+    const theory = [
+      ...harness.routeNativeElement!.querySelectorAll<HTMLButtonElement>(
+        '.activity-filters button',
+      ),
+    ].find((button) => button.textContent?.trim() === 'Theory & lessons')!;
+    theory.click();
+    await harness.fixture.whenStable();
+    expect(TestBed.inject(Router).url).toContain('tags=Java');
+    expect(TestBed.inject(Router).url).toContain('kind=lesson');
+    harness.detectChanges();
+    expect(
+      harness
+        .routeNativeElement!.querySelector('.tag-pill[aria-pressed="true"]')
+        ?.textContent?.trim(),
+    ).toBe('Java');
+    const allSubjects = [
+      ...harness.routeNativeElement!.querySelectorAll<HTMLButtonElement>('.tag-pill'),
+    ].find((button) => button.textContent?.trim() === 'All subjects')!;
+    allSubjects.click();
+    await harness.fixture.whenStable();
+    expect(TestBed.inject(Router).url).toBe('/search?kind=lesson');
+  });
+
+  it('uses result metadata controls as content and difficulty filters', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/search', Search);
+    const controls = [
+      ...harness.routeNativeElement!.querySelectorAll<HTMLButtonElement>('.result-meta-filter'),
+    ];
+    controls.find((button) => button.textContent?.trim() === 'Intermediate')!.click();
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    expect(TestBed.inject(Router).url).toBe('/search?difficulty=Intermediate');
+    controls.find((button) => button.textContent?.trim() === 'Q&A')!.click();
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    expect(TestBed.inject(Router).url).toContain('type=q-and-a');
+    expect(controls.every((button) => button.getAttribute('aria-pressed') === 'true')).toBe(true);
+  });
 });

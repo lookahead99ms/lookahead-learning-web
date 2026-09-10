@@ -167,6 +167,10 @@ test('applies a complete ranking manifest as a compact problem projection', () =
 
   const ranked = applyHandsOnRankingPlan(groups, plan);
 
+  const published = JSON.stringify(ranked);
+  for (const privateField of ['evidenceConfidence', 'rankingReasons', 'sourceSignals', 'editorialEvaluation', 'semanticFamily']) {
+    assert(!published.includes(privateField), `Private field leaked: ${privateField}`);
+  }
   assert.deepEqual(ranked.ranking, {
     status: 'candidate',
     rankingVersion: '2026.09-candidate.1',
@@ -176,12 +180,11 @@ test('applies a complete ranking manifest as a compact problem projection', () =
   });
   assert.deepEqual(
     ranked.groups[0].problems.map(
-      ({ id, interviewRank, studyOrder, tier, evidenceConfidence, rankingVersion }) => ({
+      ({ id, interviewRank, studyOrder, tier, rankingVersion }) => ({
         id,
         interviewRank,
         studyOrder,
         tier,
-        evidenceConfidence,
         rankingVersion,
       }),
     ),
@@ -191,7 +194,6 @@ test('applies a complete ranking manifest as a compact problem projection', () =
         interviewRank: 2,
         studyOrder: 1,
         tier: 'universal-must-do',
-        evidenceConfidence: 'low',
         rankingVersion: '2026.09-candidate.1',
       },
       {
@@ -199,7 +201,6 @@ test('applies a complete ranking manifest as a compact problem projection', () =
         interviewRank: 1,
         studyOrder: 2,
         tier: 'universal-must-do',
-        evidenceConfidence: 'medium',
         rankingVersion: '2026.09-candidate.1',
       },
     ],

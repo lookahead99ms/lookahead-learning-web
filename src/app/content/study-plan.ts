@@ -9,6 +9,7 @@ export interface StudyPlanTopic {
   title: string;
   description: string;
   courseIds: string[];
+  contentTypes?: ContentType[];
 }
 
 export const STUDY_PLAN_TOPICS: StudyPlanTopic[] = [
@@ -187,8 +188,13 @@ export interface StudyPlan {
 
 const REVIEW_OFFSETS = [1, 2, 7, 14, 30];
 
-export function buildStudyPlan(documents: SearchDocument[], config: StudyPlanConfig): StudyPlan {
-  const selectedTopics = STUDY_PLAN_TOPICS.filter((topic) => config.topicIds.includes(topic.id));
+export function buildStudyPlan(
+  documents: SearchDocument[],
+  config: StudyPlanConfig,
+  topics: StudyPlanTopic[] = STUDY_PLAN_TOPICS,
+  studyOrder: ReadonlyMap<string, number> = new Map(),
+): StudyPlan {
+  const selectedTopics = topics.filter((topic) => config.topicIds.includes(topic.id));
   const includedTopics = selectedTopics.filter((topic) => config.accessTopicIds.includes(topic.id));
   const excludedTopics = selectedTopics.filter(
     (topic) => !config.accessTopicIds.includes(topic.id),
@@ -199,7 +205,9 @@ export function buildStudyPlan(documents: SearchDocument[], config: StudyPlanCon
   const pools = new Map(
     includedTopics.map((topic) => [
       topic.id,
-      prioritizedDocuments(documents, topic).map((document) => assignmentFor(document, topic)),
+      prioritizedDocuments(documents, topic, studyOrder).map((document) =>
+        assignmentFor(document, topic),
+      ),
     ]),
   );
   const cursors = new Map(includedTopics.map((topic) => [topic.id, 0]));
@@ -209,13 +217,11 @@ export function buildStudyPlan(documents: SearchDocument[], config: StudyPlanCon
   let topicCursor = 0;
 
   for (let day = 1; day <= config.days; day += 1) {
-    const reviewLimit = Math.min(5, Math.max(0, Math.floor(dailySlots * 0.35)));
+    const reviewLimit = Math.min(5, Math.max(1, Math.floor(dailySlots * 0.35)));
     const reviews = reviewAssignments(history, day, reviewLimit);
     const consolidationDay = day % 7 === 0;
-    const requestedNewSlots = Math.max(1, dailySlots - reviews.length);
-    const newLimit = consolidationDay
-      ? Math.max(1, Math.ceil(requestedNewSlots / 2))
-      : requestedNewSlots;
+    const requestedNewSlots = Math.max(0, dailySlots - reviews.length);
+    const newLimit = consolidationDay ? Math.ceil(requestedNewSlots / 2) : requestedNewSlots;
     const newAssignments: StudyPlanAssignment[] = [];
 
     let attempts = 0;
@@ -263,6 +269,7 @@ export function buildStudyPlan(documents: SearchDocument[], config: StudyPlanCon
 function prioritizedDocuments(
   documents: SearchDocument[],
   topic: StudyPlanTopic,
+  studyOrder: ReadonlyMap<string, number>,
 ): SearchDocument[] {
   const priority: Record<ContentType, number> = {
     theory: 0,
@@ -274,24 +281,22 @@ function prioritizedDocuments(
     guide: 3,
   };
   const seen = new Set<string>();
+  // Generated search shards retain the published course/module/item sequence.
+  // Use it instead of alphabetizing lesson titles when no released rank applies.
+  const sourceOrder = new Map(documents.map((item, index) => [item.id, index]));
   return documents
-    .filter(
-      (document) =>
-        document.path === topic.path &&
-        topic.courseIds.includes(document.courseId) &&
-        (document.discoveryKind === undefined ||
-          document.discoveryKind === 'lesson' ||
-          document.discoveryKind === 'practice'),
-    )
+    .filter((document) => studyPlanMatchesTopic(document, topic))
     .sort(
       (left, right) =>
         priority[left.contentType] - priority[right.contentType] ||
-        left.courseTitle.localeCompare(right.courseTitle) ||
-        left.moduleTitle.localeCompare(right.moduleTitle) ||
-        left.title.localeCompare(right.title),
+        (studyOrder.get(left.canonicalContentId ?? left.contentId) ?? Infinity) -
+          (studyOrder.get(right.canonicalContentId ?? right.contentId) ?? Infinity) ||
+        (sourceOrder.get(left.id) ?? 0) - (sourceOrder.get(right.id) ?? 0),
     )
     .filter((document) => {
-      const key = `${document.courseId}:${document.contentId}`;
+      const key =
+        document.canonicalContentId ??
+        `${document.path}:${document.courseId}:${document.contentId}`;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
@@ -301,7 +306,7 @@ function prioritizedDocuments(
 function assignmentFor(document: SearchDocument, topic: StudyPlanTopic): StudyPlanAssignment {
   const activity = activityFor(document.contentType);
   return {
-    id: document.id,
+    id: document.canonicalContentId ?? document.id,
     kind: 'new',
     activity,
     topicId: topic.id,
@@ -381,4 +386,49 @@ function chunkWeeks(days: StudyPlanDay[]): StudyPlanWeek[] {
     });
   }
   return weeks;
+}
+
+/** One checklist entry per published course, without private answer bodies. */
+export function studyPlanOfferings(documents: SearchDocument[]): StudyPlanTopic[] {
+  const offerings = new Map<string, StudyPlanTopic>();
+  for (const item of documents) {
+    const id = `${item.path}:${item.courseId}`;
+    if (!offerings.has(id))
+      offerings.set(id, {
+        id,
+        path: item.path,
+        title: item.courseTitle,
+        description: '',
+        courseIds: [item.courseId],
+      });
+  }
+  const handsOn = offerings.get('learn:hands-on-dsa');
+  if (handsOn) {
+    handsOn.courseIds = [
+      ...new Set(
+        documents
+          .filter((item) => item.path === 'learn' && item.contentType === 'dsa-problem')
+          .map((item) => item.courseId),
+      ),
+    ];
+    handsOn.contentTypes = ['dsa-problem'];
+    handsOn.description =
+      'Canonical coding problems across the published DSA curriculum. Shared selections are scheduled only once.';
+  }
+  const paths: ContentPath[] = ['learn', 'grow', 'look-ahead'];
+  return [...offerings.values()].sort(
+    (a, b) => paths.indexOf(a.path) - paths.indexOf(b.path) || a.title.localeCompare(b.title),
+  );
+}
+
+/** A tool offering can project real sessions without cloning canonical records. */
+export function studyPlanMatchesTopic(document: SearchDocument, topic: StudyPlanTopic): boolean {
+  return (
+    document.path === topic.path &&
+    topic.courseIds.includes(document.courseId) &&
+    (!topic.contentTypes || topic.contentTypes.includes(document.contentType)) &&
+    (document.discoveryKind === undefined ||
+      document.discoveryKind === 'lesson' ||
+      document.discoveryKind === 'practice')
+  );
 }

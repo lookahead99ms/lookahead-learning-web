@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import type { DeliveryPlanPage } from './pages/delivery-plan/delivery-plan';
 import { legacyAiItemRedirect, legacyAiModuleRedirect } from './content/ai-route-compatibility';
+import { legacyInterviewSearchRedirect } from './content/search-route-compatibility';
 
 export const routes: Routes = [
   { path: '', loadComponent: () => import('./pages/landing/landing').then((page) => page.Landing) },
@@ -12,8 +13,8 @@ export const routes: Routes = [
   },
   {
     path: 'interview-questions',
-    data: { experience: 'interview-questions' },
-    loadComponent: () => import('./pages/search/search').then((page) => page.Search),
+    pathMatch: 'full',
+    redirectTo: legacyInterviewSearchRedirect,
   },
   {
     path: 'study-plan',
