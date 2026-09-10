@@ -2,6 +2,7 @@ import { access, readdir, readFile } from 'node:fs/promises';
 import { basename, dirname, extname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
+  canonicalFixtureCoverageErrors,
   materializeCanonicalReferences,
   primaryPracticePlacement,
   readCanonicalDsaProblems,
@@ -350,12 +351,8 @@ function validateCanonicalDsaProblem(problem, label) {
       );
     }
   }
-  requireValue(
-    Array.isArray(problem.fixtures) &&
-      problem.fixtures.length === 3 &&
-      new Set(problem.fixtures.map(({ category }) => category)).size === 3,
-    `${label}: fixtures must cover representative, boundary, and failure`,
-  );
+  const fixtureCoverageErrors = canonicalFixtureCoverageErrors(problem);
+  requireValue(fixtureCoverageErrors.length === 0, `${label}: ${fixtureCoverageErrors.join('; ')}`);
   for (const fixture of problem.fixtures) {
     requireValue(
       fixture?.id &&
@@ -1452,8 +1449,8 @@ for (const { lesson, moduleLabel } of patternLessons) {
       `${problemLabel} has incomplete complexity`,
     );
     requireValue(
-      Array.isArray(problem.fixtures) && problem.fixtures.length === 3,
-      `${problemLabel} must contain exactly three fixtures`,
+      Array.isArray(problem.fixtures) && problem.fixtures.length >= 3,
+      `${problemLabel} must contain at least three fixtures`,
     );
     const fixtureIds = new Set();
     for (const fixture of problem.fixtures) {
@@ -1813,6 +1810,9 @@ for (const { lesson, moduleLabel } of patternLessons) {
       requireValue(problem.practiceQuestionId, `${problemLabel} practice has no standalone route`);
       requireValue(
         new Set(problem.fixtures.map(({ category }) => category)).size === 3 &&
+          ['representative', 'boundary', 'failure'].every((category) =>
+            problem.fixtures.some((fixture) => fixture.category === category),
+          ) &&
           problem.fixtures.every(({ explanation }) => explanation?.trim()),
         `${problemLabel} practice needs explained representative, boundary, and failure fixtures`,
       );

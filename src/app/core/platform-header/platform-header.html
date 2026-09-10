@@ -1,10 +1,34 @@
 <header class="content-header platform-header" [class.with-search]="showSearch">
-  <a class="brand" routerLink="/" aria-label="Look Ahead home" (click)="resetHomeScroll()">
-    <span class="brand-mark">LA</span>
-    <span
-      ><strong>Look Ahead</strong><small>Anticipate the Rubric. Advance Your Career.</small></span
+  <a class="brand" routerLink="/" aria-label="Look Ahead home"
+    >look ahead<span aria-hidden="true">.</span></a
+  >
+  <nav class="platform-navigation" aria-label="Main navigation">
+    <a routerLink="/learn" routerLinkActive="active" ariaCurrentWhenActive="page">Learn</a>
+    <a routerLink="/grow" routerLinkActive="active" ariaCurrentWhenActive="page">Grow</a>
+    <a routerLink="/look-ahead" routerLinkActive="active" ariaCurrentWhenActive="page"
+      >Look Ahead</a
     >
-  </a>
+    <a routerLink="/search" routerLinkActive="active" ariaCurrentWhenActive="page">Search</a>
+    <a routerLink="/study-plan" routerLinkActive="active" ariaCurrentWhenActive="page"
+      >Study Plan</a
+    >
+  </nav>
+  <div class="theme-switch" role="group" aria-label="Color theme">
+    <button
+      type="button"
+      [attr.aria-pressed]="theme.selected() === 'light'"
+      (click)="theme.setTheme('light')"
+    >
+      Light
+    </button>
+    <button
+      type="button"
+      [attr.aria-pressed]="theme.selected() === 'dark'"
+      (click)="theme.setTheme('dark')"
+    >
+      Dark
+    </button>
+  </div>
 
   @if (showSearch || paletteOpen()) {
     @if (paletteOpen() && !showSearch) {
@@ -38,8 +62,8 @@
         <input
           class="header-search-input"
           type="search"
-          aria-label="Search a specific interview answer"
-          placeholder="Look ahead for your interview answer..."
+          aria-label="Search learning content"
+          placeholder="Search learning content..."
           [value]="searchQuery()"
           (input)="updateSearchQuery($any($event.target).value)"
         />
@@ -109,8 +133,6 @@
     </form>
   }
 
-  <a class="study-plan-link" routerLink="/study-plan">Study plan</a>
-
   <div class="profile-dropdown-container" (click)="$event.stopPropagation()">
     <button
       class="avatar-trigger-btn"
@@ -120,27 +142,25 @@
       [attr.aria-expanded]="profileMenuOpen()"
       (click)="toggleProfileMenu()"
     >
-      <span class="user-avatar-img" aria-hidden="true">AE</span>
+      <span class="user-avatar-img" aria-hidden="true">…</span>
       <span class="avatar-chevron" aria-hidden="true">▼</span>
     </button>
     @if (profileMenuOpen()) {
       <div id="account-menu" class="profile-dropdown-menu">
         <div class="menu-user-header">
-          <p class="user-display-name">Alex Engineer</p>
-          <p class="user-display-email">alex@engineering.com</p>
+          <p class="user-display-name">Your learning</p>
+          <p class="user-display-email">Account sign-in is not available yet.</p>
         </div>
         <div class="menu-divider"></div>
         <div class="menu-section-group">
           <span class="group-label">Account Status</span>
-          <span class="active-plan-badge">All-Access Pass</span>
+          <span class="active-plan-badge">No account connected</span>
         </div>
         <div class="menu-divider"></div>
         <nav class="dropdown-links-list" aria-label="Account links">
-          <a href="#profile-settings" class="dropdown-item-link">View Profile Settings</a>
-          <a href="#subscriptions" class="dropdown-item-link">Manage Subscriptions</a>
           <a routerLink="/study-plan" class="dropdown-item-link">View study plan</a>
           <div class="menu-divider"></div>
-          <a href="#sign-out" class="dropdown-item-link logout-trigger">Sign Out</a>
+          <a routerLink="/delivery-plan" class="dropdown-item-link">Delivery plan</a>
         </nav>
       </div>
     }

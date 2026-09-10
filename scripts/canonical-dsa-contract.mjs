@@ -3,6 +3,41 @@ import { basename, resolve } from 'node:path';
 
 const kebabCase = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
+export function canonicalFixtureCoverageErrors(problem) {
+  const fixtures = problem.fixtures;
+  if (!Array.isArray(fixtures) || fixtures.length < 3) {
+    return ['fixtures must contain at least three entries'];
+  }
+  const errors = [];
+  const requiredCategories = ['representative', 'boundary', 'failure'];
+  const categories = new Set(fixtures.map((fixture) => fixture?.category));
+  if (
+    categories.size !== requiredCategories.length ||
+    !requiredCategories.every((category) => categories.has(category))
+  ) {
+    errors.push('fixtures must use all and only representative, boundary, and failure categories');
+  }
+  const fixtureIds = fixtures.map((fixture) => fixture?.id);
+  if (
+    fixtureIds.some((id) => typeof id !== 'string' || !id.trim()) ||
+    new Set(fixtureIds).size !== fixtureIds.length
+  ) {
+    errors.push('fixture ids must be nonempty and unique');
+  }
+  const traces = [problem.trace, ...(problem.fixtureTraces ?? [])].filter(Boolean);
+  if (
+    traces.length !== fixtures.length ||
+    fixtureIds.some(
+      (fixtureId) => traces.filter((trace) => trace.fixtureId === fixtureId).length !== 1,
+    )
+  ) {
+    errors.push(
+      'each fixture needs exactly one guided trace, including additional boundary fixtures',
+    );
+  }
+  return errors;
+}
+
 export async function readCanonicalDsaProblems(contentRoot) {
   const directory = resolve(contentRoot, 'learn/dsa-problems');
   let names;

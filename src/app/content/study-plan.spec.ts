@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SearchDocument } from './content.models';
-import { buildStudyPlan, STUDY_PLAN_TOPICS } from './study-plan';
+import { buildStudyPlan, STUDY_PLAN_TOPICS, studyPlanOfferings } from './study-plan';
 
 function document(
   id: string,
@@ -87,5 +87,84 @@ describe('study plan generator', () => {
     expect(plan.days[1].assignments.some(({ reviewFromDay }) => reviewFromDay === 1)).toBe(true);
     expect(plan.days[7].assignments.some(({ reviewFromDay }) => reviewFromDay === 1)).toBe(true);
     expect(plan.weeks).toHaveLength(2);
+  });
+});
+
+describe('adaptive planning contracts', () => {
+  it('schedules recall within a one-hour budget', () => {
+    const plan = buildStudyPlan(
+      Array.from({ length: 20 }, (_, index) => document(`item-${index}`, 'learn', 'core-java')),
+      {
+        days: 14,
+        dailyHours: 1,
+        topicIds: ['java-foundations'],
+        accessTopicIds: ['java-foundations'],
+      },
+    );
+    expect(plan.reviewAssignments).toBeGreaterThan(0);
+    expect(plan.days.every((day) => day.focusedMinutes <= 60)).toBe(true);
+  });
+  it('creates a complete course checklist and pins deterministic canonical order', () => {
+    const first = {
+      ...document('placement-a', 'learn', 'algorithmic-patterns', 'dsa-problem'),
+      canonicalContentId: 'canonical-a',
+    };
+    const second = {
+      ...document('placement-b', 'learn', 'algorithmic-patterns', 'dsa-problem'),
+      canonicalContentId: 'canonical-b',
+    };
+    const docs = [first, second, { ...first, id: 'another-placement', contentId: 'other' }];
+    const topics = studyPlanOfferings(docs);
+    const config = {
+      days: 7,
+      dailyHours: 2,
+      topicIds: [topics[0].id],
+      accessTopicIds: [topics[0].id],
+    };
+    const plan = buildStudyPlan(
+      docs,
+      config,
+      topics,
+      new Map([
+        ['canonical-b', 1],
+        ['canonical-a', 2],
+      ]),
+    );
+    expect(topics).toHaveLength(1);
+    expect(plan.days[0].assignments.map((item) => item.id)).toEqual(['canonical-b', 'canonical-a']);
+    expect(plan.uniqueNewItems).toBe(2);
+    expect(
+      buildStudyPlan(
+        [...docs].reverse(),
+        config,
+        topics,
+        new Map([
+          ['canonical-b', 1],
+          ['canonical-a', 2],
+        ]),
+      ).days,
+    ).toEqual(plan.days);
+  });
+});
+
+describe('published curriculum sequence', () => {
+  it('keeps a foundations lesson before an alphabetically earlier advanced lesson', () => {
+    const foundations = {
+      ...document('foundations', 'learn', 'algorithmic-patterns'),
+      title: 'Recognizing patterns',
+      moduleTitle: 'Start here',
+    };
+    const advanced = {
+      ...document('advanced', 'learn', 'algorithmic-patterns'),
+      title: 'Backtracking',
+      moduleTitle: 'Backtracking',
+    };
+    const plan = buildStudyPlan([foundations, advanced], {
+      days: 7,
+      dailyHours: 1,
+      topicIds: ['dsa'],
+      accessTopicIds: ['dsa'],
+    });
+    expect(plan.days[0].assignments[0].id).toBe('foundations');
   });
 });

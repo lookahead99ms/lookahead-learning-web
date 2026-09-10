@@ -212,9 +212,6 @@
                         }
                         <span>{{ problem.difficulty }}</span>
                         <span>{{ tierLabel(problem.tier) }}</span>
-                        @if (problem.evidenceConfidence; as confidence) {
-                          <span>{{ confidence }} confidence</span>
-                        }
                       </span>
                       <h3>{{ problem.title }}</h3>
                       <p>{{ problem.description }}</p>

@@ -1,232 +1,306 @@
 <app-platform-header />
 <main id="main-content" class="study-plan-page">
-  <section class="planner-hero">
-    <div>
-      <a class="back-link" routerLink="/">← Home</a>
-      <span class="eyebrow">Preparation planner</span>
-      <h1>Build a plan your memory can keep.</h1>
-      <p>
-        Choose the time you have, the capabilities you need, and the curriculum you can access. The
-        planner mixes new learning, deliberate practice, and scheduled retrieval instead of filling
-        every hour with new material.
-      </p>
-    </div>
-    <aside aria-label="Planning principle">
-      <strong>Recall rhythm</strong>
-      <span>Today</span><i>→</i><span>+1 day</span><i>→</i><span>+2 days</span><i>→</i
-      ><span>+7</span><i>→</i><span>+14</span><i>→</i><span>+30</span>
-      <small>Weekly consolidation replaces fragile cramming with interview retrieval.</small>
-    </aside>
+  <section class="intro">
+    <p class="eyebrow">Adaptive Compass / Study plans</p>
+    <h1>A plan that bends with your week.</h1>
+    <p class="lede">Keep your direction when time and priorities change.</p>
+    <p class="storage-note">
+      Your plan and progress are saved on this browser. Account sync across devices is not available
+      yet.
+    </p>
   </section>
-
-  <section class="planner-builder" aria-labelledby="planner-builder-heading">
-    <header>
-      <span class="eyebrow">Your constraints</span>
-      <h2 id="planner-builder-heading">Plan from reality, not an ideal week</h2>
-      <p>Your selections stay in this page URL. They do not change billing or platform access.</p>
-    </header>
-
-    <div class="constraint-grid">
-      <label>
-        Interview or preparation window
-        <select [value]="days()" (change)="setDays($any($event.target).value)">
-          @for (option of durations; track option) {
-            <option [value]="option" [selected]="days() === option">{{ option }} days</option>
-          }
-        </select>
+  <div class="workspace">
+    <section class="setup-panel panel" aria-labelledby="setup-heading">
+      <p class="eyebrow">Your direction</p>
+      <h2 id="setup-heading">Plan from your week.</h2>
+      <label class="field"
+        >What are you working toward?
+        <input
+          type="text"
+          maxlength="160"
+          [value]="goal()"
+          (input)="goal.set($any($event.target).value)"
+        />
       </label>
-      <label>
-        Time available each day
-        <select [value]="dailyHours()" (change)="setHours($any($event.target).value)">
-          @for (option of hours; track option) {
-            <option [value]="option" [selected]="dailyHours() === option">
-              {{ option }} {{ option === 1 ? 'hour' : 'hours' }}
-            </option>
-          }
-        </select>
-      </label>
-    </div>
-
-    <fieldset class="topic-fieldset">
-      <legend>What do you want to prepare?</legend>
-      <div class="fieldset-actions">
-        <button type="button" (click)="selectAllTopics()">Select all</button>
-        <button type="button" (click)="clearTopics()">Clear</button>
-      </div>
-      <div class="topic-grid">
-        @for (topic of topics; track topic.id) {
-          <label class="selection-card" [attr.data-path]="topic.path">
-            <input
-              type="checkbox"
-              [checked]="selectedTopicIds().has(topic.id)"
-              (change)="toggleTopic(topic, $any($event.target).checked)"
-            />
-            <span>
-              <small>{{ pathLabel(topic.path) }}</small>
-              <strong>{{ topic.title }}</strong>
-              <em>{{ topic.description }}</em>
-            </span>
-          </label>
-        }
-      </div>
-    </fieldset>
-
-    <fieldset class="access-fieldset">
-      <legend>Which topics are included in your access?</legend>
-      <p>
-        Planning-only entitlement filter. Use the path shortcuts, then adjust individual topics to
-        match your subscription.
-      </p>
-      <div class="access-shortcuts" aria-label="Topic access shortcuts">
-        <button type="button" (click)="setPathAccess('learn', true)">All Learn</button>
-        <button type="button" (click)="setPathAccess('grow', true)">All Grow</button>
-        <button type="button" (click)="setPathAccess('look-ahead', true)">All Look Ahead</button>
-        <button type="button" (click)="clearAccess()">Clear access</button>
-      </div>
-      <div class="access-grid">
-        @for (topic of topics; track topic.id) {
-          <label class="access-card" [attr.data-path]="topic.path">
-            <input
-              type="checkbox"
-              [checked]="accessTopicIds().has(topic.id)"
-              (change)="toggleTopicAccess(topic.id, $any($event.target).checked)"
-            />
-            <span
-              ><strong>{{ topic.title }}</strong
-              ><small>{{ pathLabel(topic.path) }}</small></span
-            >
-          </label>
-        }
-      </div>
-    </fieldset>
-
-    <div class="builder-submit">
-      <p>
-        @if (dailyHours() > 9) {
-          The plan uses 9 focused hours and protects {{ dailyHours() - 9 }} hours as meals,
-          movement, recovery, or optional buffer.
-        } @else {
-          Each focused block includes transition time; the plan intentionally leaves breathing room.
-        }
-      </p>
-      <button type="button" [disabled]="!hasAccessibleSelection()" (click)="generatePlan()">
-        Build and view my plan <span aria-hidden="true">→</span>
-      </button>
-    </div>
-  </section>
-
-  @if (loadingError()) {
-    <section class="planner-error" role="alert">
-      <h2>Plan unavailable</h2>
-      <p>{{ loadingError() }}</p>
-    </section>
-  }
-
-  @if (plan(); as activePlan) {
-    <section id="generated-plan" class="generated-plan" aria-labelledby="generated-plan-heading">
-      <header class="plan-heading">
-        <div>
-          <span class="eyebrow">Your generated plan</span>
-          <h2 id="generated-plan-heading">
-            {{ activePlan.config.days }} days of coherent repetition
-          </h2>
-          <p>
-            {{ activePlan.uniqueNewItems }} new curriculum items and
-            {{ activePlan.reviewAssignments }} scheduled retrievals across
-            {{ activePlan.includedTopics.length }} focus areas.
-          </p>
-        </div>
-        <div class="plan-metrics" aria-label="Plan summary">
-          <span
-            ><strong>{{ activePlan.focusedDailyHours }}h</strong> focused/day</span
-          >
-          <span
-            ><strong>{{ activePlan.weeks.length }}</strong> study weeks</span
-          >
-          <span><strong>1·2·7·14·30</strong> recall days</span>
-        </div>
-      </header>
-
-      @if (activePlan.excludedTopics.length) {
-        <aside class="access-note">
-          <strong>Not scheduled because access was not selected</strong>
-          <span class="excluded-topics">
-            @for (topic of activePlan.excludedTopics; track topic.id) {
-              <i>{{ topic.title }}</i>
+      <div class="field-pair">
+        <label class="field"
+          >Preparation window
+          <select [value]="days()" (change)="setDays($any($event.target).value)">
+            @for (option of durations; track option) {
+              <option [value]="option" [selected]="days() === option">{{ option }} days</option>
             }
-          </span>
-        </aside>
-      }
-
-      <div class="plan-rules">
-        <article>
-          <span>01</span><strong>Understand</strong>
-          <p>Build the model and say the invariant aloud.</p>
-        </article>
-        <article>
-          <span>02</span><strong>Apply</strong>
-          <p>Trace, code, design, or answer without copying.</p>
-        </article>
-        <article>
-          <span>03</span><strong>Retrieve</strong>
-          <p>Return after delay and explain from a blank page.</p>
-        </article>
-        <article>
-          <span>04</span><strong>Adapt</strong>
-          <p>Change one constraint and defend the new decision.</p>
-        </article>
+          </select>
+        </label>
+        <label class="field"
+          >Hours each day
+          <select [value]="dailyHours()" (change)="setHours($any($event.target).value)">
+            @for (option of hours; track option) {
+              <option [value]="option" [selected]="dailyHours() === option">
+                {{ option }} {{ option === 1 ? 'hour' : 'hours' }}
+              </option>
+            }
+          </select>
+        </label>
       </div>
-
-      <div class="week-list">
-        @for (week of activePlan.weeks; track week.number) {
-          <details class="plan-week" [open]="week.number === 1">
-            <summary>
-              <span>Week {{ week.number }}</span>
-              <strong>{{ week.label }}</strong>
-              <small>Days {{ week.days[0].day }}–{{ week.days[week.days.length - 1].day }}</small>
-            </summary>
-            <div class="day-list">
-              @for (day of week.days; track day.day) {
-                <article class="plan-day">
-                  <header>
-                    <div>
-                      <span>Day {{ day.day }}</span>
-                      <h3>{{ day.focus }}</h3>
-                    </div>
-                    <small
-                      >{{ day.newCount }} new · {{ day.reviewCount }} recall ·
-                      {{ day.focusedMinutes }} min</small
-                    >
-                  </header>
-                  <ol>
-                    @for (assignment of day.assignments; track assignment.id) {
-                      <li [class.review-assignment]="assignment.kind === 'review'">
-                        <span>{{
-                          assignment.kind === 'review' ? 'Recall' : assignment.activity
-                        }}</span>
-                        <div>
-                          <a [routerLink]="assignment.route">{{ assignment.title }}</a>
-                          <small>
-                            {{ assignment.topicTitle }} · {{ assignment.courseTitle }}
-                            @if (assignment.reviewFromDay) {
-                              · from day {{ assignment.reviewFromDay }}
-                            }
-                          </small>
-                        </div>
-                        <b>{{ assignment.minutes }}m</b>
-                      </li>
-                    } @empty {
-                      <li class="empty-assignment">
-                        Use this block to revisit weak recall or restore the selected access.
-                      </li>
+      <details class="offering-details" open>
+        <summary>
+          Choose your focus
+          <span
+            >{{ selectedTopicIds().size }} selected · {{ topics().length }} published
+            offerings</span
+          >
+        </summary>
+        <p class="access-message">{{ access.description }}</p>
+        @if (loadingError()) {
+          <div role="alert">
+            <p>{{ loadingError() }}</p>
+            <button type="button" (click)="loadContent()">Try again</button>
+          </div>
+        } @else if (!documents() || access.status() === 'loading') {
+          <p role="status">Loading available offerings…</p>
+        } @else if (access.status() === 'error') {
+          <p role="alert">
+            Access could not be checked. Your saved plan is preserved; new sessions are unavailable
+            until access returns.
+          </p>
+        } @else {
+          <div class="fieldset-actions">
+            <button type="button" (click)="selectAllTopics()">Select available</button
+            ><button type="button" (click)="clearTopics()">Clear</button>
+          </div>
+        }
+        <fieldset
+          class="offering-checklist"
+          [disabled]="access.status() !== 'ready' || !documents()"
+        >
+          <legend class="visually-hidden">Published offerings</legend>
+          @for (path of paths; track path) {
+            <div class="offering-group">
+              <h3>{{ pathLabel(path) }}</h3>
+              @for (topic of topicsFor(path); track topic.id) {
+                <label class="offering" [class.unavailable]="!availableTopicIds().has(topic.id)">
+                  <input
+                    type="checkbox"
+                    [checked]="selectedTopicIds().has(topic.id)"
+                    [disabled]="!availableTopicIds().has(topic.id)"
+                    (change)="toggleTopic(topic, $any($event.target).checked)"
+                  />
+                  <span
+                    >{{ topic.title }}
+                    @if (topic.description) {
+                      <small>{{ topic.description }}</small>
                     }
-                  </ol>
-                </article>
+                    @if (!availableTopicIds().has(topic.id)) {
+                      <small>{{ unavailableReason(topic) }}</small>
+                    }
+                  </span>
+                </label>
               }
             </div>
-          </details>
-        }
-      </div>
+          }
+        </fieldset>
+      </details>
+      <p class="budget-note">
+        {{
+          dailyHours() > 9
+            ? 'Focused work is capped at nine hours; the rest is recovery time.'
+            : 'Learning, practice and recall stay within your daily budget.'
+        }}
+      </p>
+      <button
+        class="primary"
+        type="button"
+        [disabled]="!hasAccessibleSelection()"
+        (click)="generatePlan()"
+      >
+        {{ saved() ? 'Update my plan' : 'Build my plan' }}
+      </button>
+      @if (saved()) {
+        <p class="budget-note">
+          Updates preserve completed work. Changes above apply when you update.
+        </p>
+      }
     </section>
-  }
+
+    <section class="active-plan" aria-labelledby="active-heading">
+      @if (plan(); as activePlan) {
+        <header class="active-heading">
+          <div>
+            <p class="eyebrow">Your active plan · Revision {{ saved()!.revision }}</p>
+            <h2 id="active-heading">{{ saved()!.goal }}</h2>
+            <p>
+              {{ activePlan.config.days }} study days
+              @if (saved()!.shiftedDays) {
+                · {{ saved()!.shiftedDays }} recovery
+                {{ saved()!.shiftedDays === 1 ? 'day' : 'days' }} added
+              }
+            </p>
+          </div>
+          <span class="local-state">Saved on this browser</span>
+        </header>
+        <section class="compass-panel panel" aria-label="First week allocation">
+          <div
+            class="compass-ring"
+            [style.--learning-end]="weekAllocation().learningEnd + '%'"
+            [style.--practice-end]="weekAllocation().practiceEnd + '%'"
+          >
+            <div>
+              <strong>{{ weekAllocation().total }}</strong
+              ><span>minutes in your first week</span>
+            </div>
+          </div>
+          <div>
+            <p class="eyebrow">Direction, not pressure</p>
+            <h2>Protect the time you have.</h2>
+            <dl class="allocation">
+              <div>
+                <dt>Learn</dt>
+                <dd>{{ weekAllocation().understand }}m</dd>
+              </div>
+              <div>
+                <dt>Practice</dt>
+                <dd>{{ weekAllocation().practice }}m</dd>
+              </div>
+              <div>
+                <dt>Recall</dt>
+                <dd>{{ weekAllocation().recall }}m</dd>
+              </div>
+            </dl>
+            <p>Allocation follows your selected curriculum and available time.</p>
+          </div>
+        </section>
+        <div class="metrics">
+          <div>
+            <span>Completed sessions</span
+            ><strong
+              >{{ completion().done }} <small>/ {{ completion().total }}</small></strong
+            ><progress
+              [value]="completion().done"
+              [max]="completion().total || 1"
+              aria-label="Completed sessions"
+            ></progress>
+          </div>
+          <div>
+            <span>New curriculum items</span><strong>{{ activePlan.uniqueNewItems }}</strong>
+            <p>{{ activePlan.reviewAssignments }} scheduled retrievals</p>
+          </div>
+          <div>
+            <span>Daily focus budget</span
+            ><strong
+              >{{ activePlan.focusedDailyHours }}
+              <small>{{ activePlan.focusedDailyHours === 1 ? 'hour' : 'hours' }}</small></strong
+            >
+            <p>Completing a session does not establish mastery.</p>
+          </div>
+        </div>
+        <section class="panel recovery">
+          <p class="eyebrow">Make room for real life</p>
+          <h2>Missed a day? Keep your direction.</h2>
+          <p>
+            Add a recovery day without doubling the next session. Your session order and completed
+            work stay in place.
+          </p>
+          <button type="button" (click)="shiftSchedule()">Add one recovery day</button>
+        </section>
+        <section class="panel revision-panel">
+          <p class="eyebrow">Continuity</p>
+          <h2>Your plan can change. Your completed work stays.</h2>
+          <p>
+            {{
+              saved()!.rankingVersion
+                ? 'This plan keeps the DSA ranking version it started with.'
+                : 'This plan uses a saved curriculum order. A released DSA ranking was not available when it was created.'
+            }}
+          </p>
+          <details>
+            <summary>Plan revision history</summary>
+            <ol>
+              @for (change of saved()!.history; track $index) {
+                <li>Revision {{ change.revision }} · {{ change.reason }}</li>
+              }
+            </ol>
+          </details>
+        </section>
+        <div class="session-heading">
+          <h2>Your sessions</h2>
+          <label class="field"
+            >Choose a study day<select
+              [value]="selectedDay()"
+              (change)="selectedDay.set(+$any($event.target).value)"
+            >
+              @for (day of activePlan.days; track day.day) {
+                <option [value]="day.day" [selected]="selectedDay() === day.day">
+                  Day {{ day.day }}
+                </option>
+              }
+            </select></label
+          >
+        </div>
+        @if (currentDay(); as day) {
+          <p class="day-focus">{{ day.focus }} · {{ day.focusedMinutes }} scheduled minutes</p>
+          <div class="compass-sessions">
+            @for (assignment of day.assignments; track assignment.id) {
+              <article class="session-card" [class.is-done]="completedIds().has(assignment.id)">
+                <div class="session-meta">
+                  <span>{{ assignment.activity }}</span
+                  ><span>{{ assignment.minutes }} minutes</span>
+                </div>
+                <h3>{{ assignment.title }}</h3>
+                <p>
+                  {{ assignment.courseTitle }}
+                  @if (assignment.reviewFromDay) {
+                    · Recall from day {{ assignment.reviewFromDay }}
+                  }
+                </p>
+                @if (canOpen(assignment)) {
+                  <a [routerLink]="currentRoute(assignment)"
+                    >Open {{ assignment.activity === 'Recall' ? 'for recall' : 'session' }}</a
+                  >
+                  <div class="session-footer">
+                    <span>{{
+                      completedIds().has(assignment.id) ? 'Completed' : 'Ready when you are'
+                    }}</span
+                    ><button
+                      type="button"
+                      [attr.aria-label]="
+                        (completedIds().has(assignment.id)
+                          ? 'Mark incomplete: '
+                          : 'Mark complete: ') + assignment.title
+                      "
+                      (click)="toggleCompletion(assignment)"
+                    >
+                      {{ completedIds().has(assignment.id) ? 'Mark incomplete' : 'Mark complete' }}
+                    </button>
+                  </div>
+                } @else {
+                  <p class="unavailable">
+                    Currently unavailable. Your history is preserved; this session cannot be opened
+                    or completed.
+                  </p>
+                }
+              </article>
+            } @empty {
+              <p class="panel">
+                No new sessions are scheduled for this day. Revisit earlier work, or update your
+                focus to include more available curriculum.
+              </p>
+            }
+          </div>
+        }
+      } @else {
+        <div class="empty-plan panel">
+          <p class="eyebrow">Direction, not pressure</p>
+          <h2 id="active-heading">Start with the time you actually have.</h2>
+          <p>
+            Choose your focus and build a plan. Your next session, recall rhythm and progress will
+            appear here.
+          </p>
+          <p>
+            We schedule available published material. Opening an answer never marks it complete.
+          </p>
+        </div>
+      }
+    </section>
+  </div>
+  <p class="live-status" role="status">{{ status() }}</p>
 </main>

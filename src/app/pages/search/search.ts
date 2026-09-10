@@ -30,712 +30,7 @@ const VISIBLE_TAG_LIMIT = 60;
   selector: 'app-search',
   imports: [PlatformHeader, FormsModule, RouterLink, CodingSolutionTabs],
   templateUrl: './search.html',
-  styles: [
-    `
-      .search-page {
-        min-height: 100vh;
-        padding-bottom: 80px;
-        background: var(--surface-page);
-        color: var(--text-strong);
-      }
-      .search-header {
-        position: sticky;
-        top: 0;
-        z-index: 5;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 24px;
-        padding: 18px 5vw;
-        border-bottom: 1px solid var(--line);
-        background: var(--surface);
-      }
-      .search-header .brand {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        color: var(--text-strong);
-        text-decoration: none;
-      }
-      .brand-mark {
-        width: 42px;
-        height: 42px;
-        display: grid;
-        place-items: center;
-        border-radius: 13px;
-        color: white;
-        background: linear-gradient(135deg, #625cff, var(--search-primary));
-        font-weight: 800;
-      }
-      .brand strong,
-      .brand small {
-        display: block;
-      }
-      .brand small {
-        margin-top: 2px;
-        color: var(--muted);
-      }
-      .home-link {
-        color: var(--search-primary);
-        font-weight: 700;
-        text-decoration: none;
-      }
-      .search-hero {
-        max-width: 1120px;
-        margin: 0 auto;
-        padding: 52px 5vw 24px;
-      }
-      .eyebrow {
-        margin: 0 0 10px;
-        color: var(--search-primary);
-        font-size: 0.76rem;
-        font-weight: 800;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
-      }
-      h1 {
-        margin: 0;
-        font-size: clamp(1.9rem, 3.5vw, 3.2rem);
-        font-weight: 650;
-        line-height: 1.08;
-        letter-spacing: -0.035em;
-      }
-      .search-intro {
-        max-width: 680px;
-        margin: 18px 0 28px;
-        color: var(--muted);
-        font-size: 1.08rem;
-        line-height: 1.65;
-      }
-      .search-mode-switch {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        margin: -12px 0 24px;
-        color: var(--search-primary);
-        font-size: 0.9rem;
-        font-weight: 750;
-        text-underline-offset: 4px;
-      }
-      .search-mode-switch:hover,
-      .search-mode-switch:focus-visible {
-        color: var(--search-hover);
-        outline: none;
-      }
-      .search-form {
-        display: flex;
-        gap: 10px;
-        align-items: stretch;
-      }
-      .search-input {
-        width: 100%;
-        padding: 16px 20px;
-        border: 1px solid var(--line);
-        border-radius: 14px;
-        color: var(--text-strong);
-        background: var(--surface);
-        font: inherit;
-        font-size: 1.08rem;
-        box-shadow: 0 10px 30px rgba(102, 153, 204, 0.08);
-        transition: border-color 160ms ease;
-      }
-      .search-input:focus {
-        border-color: var(--accent-focus);
-        outline: 3px solid rgba(137, 207, 240, 0.28);
-      }
-      .search-submit {
-        padding: 0 20px;
-        border: 0;
-        border-radius: 12px;
-        color: var(--surface);
-        background: var(--search-primary);
-        cursor: pointer;
-        font: inherit;
-        font-weight: 750;
-        white-space: nowrap;
-      }
-      .search-submit:hover,
-      .search-submit:focus-visible {
-        background: var(--search-hover);
-        outline: none;
-      }
-      .search-workspace {
-        max-width: 1120px;
-        margin: 0 auto;
-        padding: 0 5vw;
-      }
-      .search-toolbar {
-        display: grid;
-        grid-template-columns: 1fr repeat(3, minmax(150px, 190px));
-        gap: 12px;
-        align-items: end;
-        padding: 18px;
-        border: 1px solid var(--line);
-        border-radius: 16px;
-        background: var(--surface);
-      }
-      .search-toolbar.library-toolbar {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-      }
-      .clear-filters {
-        min-height: 42px;
-        padding: 9px 12px;
-        border: 1px solid var(--line);
-        border-radius: 9px;
-        color: var(--search-primary);
-        background: var(--surface);
-        cursor: pointer;
-        font: inherit;
-        font-weight: 750;
-      }
-      .clear-filters:hover,
-      .clear-filters:focus-visible {
-        border-color: var(--search-primary);
-        background: var(--surface-accent);
-        outline: none;
-      }
-      .control {
-        display: grid;
-        gap: 6px;
-        color: var(--muted);
-        font-size: 0.78rem;
-        font-weight: 800;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-      }
-      select {
-        width: 100%;
-        padding: 10px 12px;
-        border: 1px solid var(--line);
-        border-radius: 9px;
-        color: var(--text-strong);
-        background: var(--surface);
-        font: inherit;
-        transition: border-color 160ms ease;
-      }
-      select:hover,
-      select:focus {
-        border-color: var(--accent-focus);
-        outline: 3px solid rgba(137, 207, 240, 0.18);
-      }
-      .tag-panel {
-        margin: 18px 0;
-        padding: 14px 16px;
-        border: 1px solid var(--line);
-        border-radius: 16px;
-        background: var(--surface);
-      }
-      .tag-panel-title {
-        margin: 0 0 10px;
-        color: var(--muted);
-        font-size: 0.78rem;
-        font-weight: 800;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-      }
-      .tag-panel-title span {
-        color: var(--search-primary);
-        letter-spacing: normal;
-        text-transform: none;
-      }
-      .tag-tools {
-        display: flex;
-        align-items: end;
-        justify-content: space-between;
-        gap: 16px;
-        margin-bottom: 10px;
-      }
-      .tag-tools label {
-        width: min(340px, 100%);
-        display: grid;
-        gap: 5px;
-        color: var(--muted);
-        font-size: 0.7rem;
-        font-weight: 800;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-      }
-      .tag-tools input {
-        min-height: 40px;
-        padding: 8px 12px;
-        border: 1px solid var(--line);
-        border-radius: 9px;
-        color: var(--text-strong);
-        background: var(--surface);
-        font: inherit;
-      }
-      .tag-tools input:focus {
-        border-color: var(--accent-focus);
-        outline: 3px solid rgba(137, 207, 240, 0.2);
-      }
-      .tag-tools small {
-        color: var(--muted);
-        font-size: 0.76rem;
-        white-space: nowrap;
-      }
-      .tag-strip {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        max-height: 184px;
-        overflow-y: auto;
-        padding: 2px 4px 4px 0;
-        align-content: flex-start;
-        scrollbar-gutter: stable;
-      }
-      .tag-pill {
-        padding: 7px 11px;
-        border: 1px solid transparent;
-        border-radius: 999px;
-        color: var(--muted);
-        background: var(--surface-muted);
-        cursor: pointer;
-        font: inherit;
-        font-size: 0.82rem;
-        font-weight: 700;
-      }
-      .tag-pill:hover,
-      .tag-pill:focus-visible {
-        background: var(--surface-accent);
-        color: var(--text-strong);
-        outline: none;
-      }
-      .tag-pill.active {
-        border-color: var(--search-primary);
-        color: var(--text-strong);
-        background: var(--surface-accent);
-      }
-      .no-tags {
-        padding: 7px 0;
-        color: var(--muted);
-        font-size: 0.84rem;
-      }
-      .results-anchor {
-        scroll-margin-top: 24px;
-      }
-      .result-summary {
-        margin: 22px 0 12px;
-        color: var(--muted);
-      }
-      .result-group {
-        margin-top: 28px;
-      }
-      .group-title {
-        margin: 0 0 10px;
-        color: var(--search-primary);
-        font-size: 1.05rem;
-      }
-      .result-card {
-        margin-bottom: 10px;
-        padding: 18px 20px;
-        border: 1px solid var(--line);
-        border-left: 3px solid transparent;
-        border-radius: 14px;
-        color: inherit;
-        background: var(--surface);
-        transition:
-          border-color 160ms ease,
-          box-shadow 160ms ease;
-      }
-      .result-card.expanded,
-      .result-card:hover,
-      .result-card:focus-within {
-        border-color: var(--line);
-        border-left-color: var(--search-primary);
-        box-shadow: 0 10px 24px rgba(102, 153, 204, 0.1);
-      }
-      .result-header {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        align-items: center;
-        justify-content: space-between;
-        color: var(--muted);
-        font-size: 0.78rem;
-        font-weight: 700;
-      }
-      .result-meta {
-        display: contents;
-      }
-      .result-breadcrumbs {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        align-items: center;
-        color: var(--muted);
-      }
-      .result-breadcrumbs a {
-        color: var(--muted);
-        text-decoration: none;
-      }
-      .result-breadcrumbs a:hover,
-      .result-breadcrumbs a:focus-visible {
-        color: var(--search-primary);
-        text-decoration: underline;
-        outline: none;
-      }
-      .result-meta-right {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        align-items: center;
-        margin-left: auto;
-      }
-      .result-kind {
-        color: var(--search-primary);
-        font-size: 0.72rem;
-        font-weight: 850;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-      }
-      .result-meta-filter {
-        padding: 4px 8px;
-        border: 0;
-        border-radius: 999px;
-        color: var(--muted);
-        background: var(--surface-muted);
-        cursor: pointer;
-        font: inherit;
-        font-size: 0.78rem;
-        font-weight: 700;
-      }
-      .result-meta-filter:hover,
-      .result-meta-filter:focus-visible,
-      .result-meta-filter.active {
-        color: var(--surface);
-        background: var(--search-primary);
-        outline: none;
-      }
-      .result-meta-filter.active {
-        cursor: pointer;
-      }
-      .result-difficulty {
-        padding: 4px 8px;
-        border-radius: 999px;
-        color: var(--muted);
-        background: var(--surface-muted);
-      }
-      .result-title {
-        margin: 10px 0 6px;
-        font-size: 1.08rem;
-        font-weight: 750;
-      }
-      .result-title a {
-        color: var(--text-strong);
-        text-decoration: none;
-      }
-      .result-title a:hover,
-      .result-title a:focus-visible {
-        color: var(--search-primary);
-        text-decoration: underline;
-        text-underline-offset: 3px;
-        outline: none;
-      }
-      .result-tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        margin-top: 12px;
-      }
-      .result-tag {
-        padding: 4px 8px;
-        border: 1px solid transparent;
-        border-radius: 999px;
-        color: var(--muted);
-        background: var(--surface-muted);
-        cursor: pointer;
-        font: inherit;
-        font-size: 0.74rem;
-        font-weight: 700;
-      }
-      .result-tag:hover,
-      .result-tag:focus-visible,
-      .result-tag.active {
-        border-color: var(--search-primary);
-        color: var(--surface);
-        background: var(--search-primary);
-        outline: none;
-      }
-      .result-tag.active {
-        cursor: pointer;
-      }
-      .result-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        align-items: center;
-        margin-top: 16px;
-      }
-      .answer-toggle {
-        display: inline-flex;
-        gap: 8px;
-        align-items: center;
-        min-height: 38px;
-        padding: 8px 12px;
-        border: 1px solid var(--search-primary);
-        border-radius: 9px;
-        color: var(--search-primary);
-        background: var(--surface);
-        cursor: pointer;
-        font: inherit;
-        font-size: 0.86rem;
-        font-weight: 750;
-      }
-      .answer-toggle-chevron {
-        width: 0.46rem;
-        height: 0.46rem;
-        border-right: 2px solid currentColor;
-        border-bottom: 2px solid currentColor;
-        transform: translateY(-2px) rotate(45deg);
-        transition: transform 160ms ease;
-      }
-      .answer-toggle[aria-expanded='true'] .answer-toggle-chevron {
-        transform: translateY(2px) rotate(225deg);
-      }
-      .answer-toggle:hover,
-      .answer-toggle:focus-visible {
-        color: var(--surface);
-        background: var(--search-primary);
-        outline: none;
-      }
-      .result-answer {
-        margin-top: 16px;
-        padding-top: 16px;
-        border-top: 1px solid var(--line);
-      }
-      .result-answer-label {
-        margin: 0 0 6px;
-        color: var(--muted);
-        font-size: 0.75rem;
-        font-weight: 800;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-      }
-      .result-preview {
-        margin: 0 0 14px;
-        color: var(--muted);
-        line-height: 1.55;
-      }
-      .library-answer {
-        display: grid;
-        gap: 18px;
-      }
-      .library-answer p {
-        margin: 0;
-        line-height: 1.65;
-      }
-      .reference-answer {
-        padding: 16px 18px;
-        border-left: 4px solid var(--search-primary);
-        color: var(--text-strong);
-        background: var(--surface-accent);
-        font-size: 1rem;
-        font-weight: 650;
-      }
-      .answer-explanation,
-      .answer-follow-ups {
-        display: grid;
-        gap: 10px;
-      }
-      .answer-explanation h3,
-      .answer-follow-ups h3 {
-        margin: 0;
-        color: var(--text-strong);
-        font-size: 1rem;
-      }
-      .answer-explanation p {
-        color: var(--muted);
-      }
-      .answer-follow-ups details {
-        border: 1px solid var(--line);
-        border-radius: 10px;
-        background: var(--surface);
-      }
-      .answer-follow-ups summary {
-        padding: 12px 14px;
-        color: var(--text-strong);
-        cursor: pointer;
-        font-weight: 700;
-      }
-      .answer-follow-ups details p {
-        padding: 0 14px 14px;
-        color: var(--muted);
-      }
-      .answer-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        align-items: center;
-      }
-      .lesson-link {
-        display: inline-block;
-        padding: 8px 12px;
-        border: 1px solid var(--search-primary);
-        border-radius: 9px;
-        color: var(--search-primary);
-        font-size: 0.86rem;
-        font-weight: 750;
-        text-decoration: none;
-      }
-      .lesson-link:hover,
-      .lesson-link:focus-visible {
-        color: var(--surface);
-        background: var(--search-primary);
-        outline: none;
-      }
-      .answer-loading,
-      .answer-error {
-        margin: 0;
-        padding: 16px;
-        border-radius: 10px;
-        color: var(--muted);
-        background: var(--surface-muted);
-      }
-      .answer-error {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-      }
-      .answer-error p {
-        margin: 0;
-      }
-      .answer-error button {
-        min-height: 40px;
-        padding: 8px 12px;
-        border: 1px solid var(--search-primary);
-        border-radius: 8px;
-        color: var(--search-primary);
-        background: var(--surface);
-        cursor: pointer;
-        font: inherit;
-        font-weight: 750;
-      }
-      .answer-error button:hover,
-      .answer-error button:focus-visible {
-        color: var(--surface);
-        background: var(--search-primary);
-        outline: none;
-      }
-      :host ::ng-deep .library-answer .coding-workspace {
-        margin: 0;
-      }
-      .show-more-results {
-        display: block;
-        min-height: 44px;
-        margin: 22px auto 0;
-        padding: 10px 18px;
-        border: 1px solid var(--search-primary);
-        border-radius: 999px;
-        color: var(--search-primary);
-        background: var(--surface);
-        cursor: pointer;
-        font: inherit;
-        font-weight: 800;
-      }
-      .show-more-results:hover,
-      .show-more-results:focus-visible {
-        color: var(--surface);
-        background: var(--search-primary);
-        outline: none;
-      }
-      .detail-link {
-        display: inline-block;
-        padding: 9px 13px;
-        border-radius: 9px;
-        color: var(--surface);
-        background: var(--search-primary);
-        font-size: 0.86rem;
-        font-weight: 750;
-        text-decoration: none;
-      }
-      .detail-link:hover,
-      .detail-link:focus-visible {
-        background: var(--search-hover);
-        outline: none;
-      }
-      @media (prefers-reduced-motion: reduce) {
-        .answer-toggle-chevron {
-          transition: none;
-        }
-      }
-      .premium-state {
-        display: grid;
-        gap: 5px;
-        padding: 14px;
-        border-radius: 10px;
-        color: #7a5510;
-        background: #fff8e7;
-      }
-      .premium-state strong {
-        color: #6b4907;
-      }
-      .premium-state p {
-        margin: 0;
-        color: #8b6a27;
-        font-size: 0.9rem;
-      }
-      .premium-badge {
-        padding: 4px 8px;
-        border-radius: 999px;
-        color: #8b5e00;
-        background: #fff0bd;
-        font-size: 0.72rem;
-        font-weight: 800;
-        text-transform: uppercase;
-      }
-      .empty-state,
-      .loading-state {
-        padding: 38px 20px;
-        border: 1px dashed #d2dae4;
-        border-radius: 14px;
-        color: var(--muted);
-        text-align: center;
-        background: var(--surface);
-      }
-      @media (max-width: 960px) {
-        .search-toolbar.library-toolbar {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-      }
-      @media (max-width: 760px) {
-        .search-header {
-          padding: 14px 5vw;
-        }
-        .search-toolbar,
-        .search-toolbar.library-toolbar {
-          grid-template-columns: 1fr;
-        }
-        .search-hero {
-          padding-top: 44px;
-        }
-        .search-form {
-          flex-direction: column;
-        }
-        .search-submit {
-          min-height: 44px;
-        }
-        .tag-tools {
-          align-items: flex-start;
-          flex-direction: column;
-          gap: 8px;
-        }
-        .tag-tools small {
-          white-space: normal;
-        }
-        .result-card {
-          padding: 16px;
-        }
-        .result-meta-right {
-          margin-left: 0;
-        }
-        .answer-error {
-          align-items: flex-start;
-          flex-direction: column;
-        }
-      }
-    `,
-  ],
+  styleUrl: './search.css',
 })
 export class Search implements OnInit {
   private readonly content = inject(ContentService);
@@ -743,7 +38,6 @@ export class Search implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly urlSyncInfo = {};
   private readonly router = inject(Router);
-  protected readonly libraryMode = this.route.snapshot.data['experience'] === 'interview-questions';
   protected readonly questions = signal<SearchDocument[]>([]);
   protected readonly query = signal('');
   protected readonly submittedQuery = signal('');
@@ -877,6 +171,11 @@ export class Search implements OnInit {
         });
       }
     }
+    // Keep active subjects visible even when another filter has no matches.
+    for (const label of selectedTags) {
+      const key = this.normalize(label);
+      if (!labels.has(key)) labels.set(key, { label, count: 0 });
+    }
     return [...labels.values()]
       .sort((left, right) => {
         const leftSelected = this.isTagSelected(left.label) ? 1 : 0;
@@ -930,9 +229,7 @@ export class Search implements OnInit {
       this.selectedDifficulty.set(this.difficultyFromValue(params.get('difficulty')));
       this.selectedLanguage.set(this.languageFromValue(params.get('language')));
       this.selectedContentType.set(this.contentTypeFromValue(params.get('type')));
-      this.selectedDiscoveryKind.set(
-        this.libraryMode ? 'all' : this.discoveryKindFromValue(params.get('kind')),
-      );
+      this.selectedDiscoveryKind.set(this.discoveryKindFromValue(params.get('kind')));
       this.selectedPracticeFormat.set(this.practiceFormatFromValue(params.get('format')));
       this.sortBy.set(this.sortFromValue(params.get('sort')));
       this.groupBy.set(this.groupFromValue(params.get('group')));
@@ -1054,6 +351,45 @@ export class Search implements OnInit {
     this.syncUrl();
   }
 
+  protected readonly activityOptions = [
+    { id: 'all', label: 'Everything' },
+    { id: 'theory', label: 'Theory & lessons' },
+    { id: 'interview', label: 'Interview questions' },
+    { id: 'practice', label: 'Practice' },
+  ] as const;
+
+  protected activitySelected(activity: string): boolean {
+    const kind = this.selectedDiscoveryKind();
+    const format = this.selectedPracticeFormat();
+    return activity === 'all'
+      ? kind === 'all' && format === 'all'
+      : activity === 'theory'
+        ? kind === 'lesson' && format === 'all'
+        : activity === 'interview'
+          ? kind === 'practice' && format === 'explain'
+          : kind === 'practice' && format === 'all';
+  }
+
+  protected selectActivity(activity: string): void {
+    this.selectedDiscoveryKind.set(
+      activity === 'all' ? 'all' : activity === 'theory' ? 'lesson' : 'practice',
+    );
+    this.selectedPracticeFormat.set(activity === 'interview' ? 'explain' : 'all');
+    this.resetVisibleResults();
+    this.syncUrl();
+  }
+
+  protected clearSubjects(): void {
+    this.selectedTags.set(new Set());
+    this.tagQuery.set('');
+    this.resetVisibleResults();
+    this.syncUrl();
+  }
+
+  protected retrySearch(): void {
+    this.loadIndex(this.selectedPath());
+  }
+
   protected updatePracticeFormat(value: string): void {
     this.selectedPracticeFormat.set(this.practiceFormatFromValue(value));
     this.retainUnavailableTags();
@@ -1089,25 +425,6 @@ export class Search implements OnInit {
     this.resetVisibleResults();
     if (hadScopedPath) this.loadIndex('all');
     this.syncUrl();
-  }
-
-  protected modeQueryParams(): Record<string, string> {
-    const tags = [...this.selectedTags()];
-    return Object.fromEntries(
-      Object.entries({
-        q: this.submittedQuery(),
-        path: this.selectedPath() === 'all' ? '' : this.selectedPath(),
-        course: this.selectedCourseId() === 'all' ? '' : this.selectedCourseId(),
-        module: this.selectedModuleId() === 'all' ? '' : this.selectedModuleId(),
-        difficulty: this.selectedDifficulty() === 'all' ? '' : this.selectedDifficulty(),
-        language: this.selectedLanguage() === 'all' ? '' : this.selectedLanguage(),
-        type: this.selectedContentType() === 'all' ? '' : this.selectedContentType(),
-        format: this.selectedPracticeFormat() === 'all' ? '' : this.selectedPracticeFormat(),
-        tags: tags.length ? tags.join(',') : '',
-        sort: this.sortBy() === 'relevance' ? '' : this.sortBy(),
-        group: this.groupBy() === 'none' ? '' : this.groupBy(),
-      }).filter(([, value]) => value),
-    );
   }
 
   protected submitSearch(): void {
@@ -1178,9 +495,7 @@ export class Search implements OnInit {
     const scopedPath = path === 'all' ? undefined : path;
     this.loading.set(true);
     this.error.set('');
-    const index = this.libraryMode
-      ? this.content.getInterviewQuestionIndex(scopedPath)
-      : this.content.getSearchIndex(scopedPath);
+    const index = this.content.getSearchIndex(scopedPath);
     index.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (questions) => {
         if (requestVersion !== this.indexRequestVersion) return;
@@ -1191,11 +506,7 @@ export class Search implements OnInit {
       error: () => {
         if (requestVersion !== this.indexRequestVersion) return;
         this.indexPath = 'uninitialized';
-        this.error.set(
-          this.libraryMode
-            ? 'The interview practice library could not be loaded.'
-            : 'The search index could not be loaded.',
-        );
+        this.error.set('The search index could not be loaded.');
         this.loading.set(false);
       },
     });
@@ -1355,7 +666,6 @@ export class Search implements OnInit {
 
   protected canPreviewAnswer(result: SearchDocument): boolean {
     return (
-      this.libraryMode &&
       result.contentType === 'q-and-a' &&
       this.practiceFormat(result) === 'explain' &&
       result.access.tier === 'free' &&
@@ -1387,13 +697,15 @@ export class Search implements OnInit {
   protected contentTypeLabel(contentType: ContentType): string {
     return contentType === 'q-and-a'
       ? 'Q&A'
-      : contentType === 'dsa-pattern'
-        ? 'DSA pattern'
-        : contentType === 'system-design'
-          ? 'System design'
-          : contentType === 'language-comparison'
-            ? 'Language comparison'
-            : contentType[0].toUpperCase() + contentType.slice(1);
+      : contentType === 'dsa-problem'
+        ? 'DSA problem'
+        : contentType === 'dsa-pattern'
+          ? 'DSA pattern'
+          : contentType === 'system-design'
+            ? 'System design'
+            : contentType === 'language-comparison'
+              ? 'Language comparison'
+              : contentType[0].toUpperCase() + contentType.slice(1);
   }
 
   protected pathLabel(path: ContentPath): string {
@@ -1422,7 +734,6 @@ export class Search implements OnInit {
     this.expandedResults.set(expanded);
     if (
       !expanded.has(key) ||
-      !this.libraryMode ||
       result.access.tier === 'premium' ||
       result.detailRef?.kind !== 'content-item'
     )

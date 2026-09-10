@@ -4,9 +4,65 @@ import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { test } from 'node:test';
 import {
+  canonicalFixtureCoverageErrors,
   materializeCanonicalReferences,
   readCanonicalDsaProblems,
 } from './canonical-dsa-contract.mjs';
+
+function fixtureCoverageProblem(categories = ['representative', 'boundary', 'failure']) {
+  const fixtures = categories.map((category, index) => ({ id: `fixture-${index}`, category }));
+  const traces = fixtures.map((fixture) => ({ fixtureId: fixture.id }));
+  return { fixtures, trace: traces[0], fixtureTraces: traces.slice(1) };
+}
+
+test('canonical fixture coverage accepts additional fully traced boundary cases', () => {
+  assert.deepEqual(canonicalFixtureCoverageErrors(fixtureCoverageProblem()), []);
+  assert.deepEqual(
+    canonicalFixtureCoverageErrors(
+      fixtureCoverageProblem(['representative', 'boundary', 'failure', 'boundary', 'boundary']),
+    ),
+    [],
+  );
+});
+
+test('canonical fixture coverage rejects missing or invented categories', () => {
+  assert.match(
+    canonicalFixtureCoverageErrors(fixtureCoverageProblem(['representative', 'boundary']))[0],
+    /at least three/,
+  );
+  assert.match(
+    canonicalFixtureCoverageErrors(
+      fixtureCoverageProblem(['representative', 'boundary', 'invented']),
+    )[0],
+    /all and only/,
+  );
+  assert.match(
+    canonicalFixtureCoverageErrors(
+      fixtureCoverageProblem(['representative', 'boundary', 'boundary']),
+    )[0],
+    /all and only/,
+  );
+});
+
+test('canonical fixture coverage rejects duplicate identities and missing extra traces', () => {
+  const duplicate = fixtureCoverageProblem();
+  duplicate.fixtures[2].id = duplicate.fixtures[1].id;
+  assert.match(canonicalFixtureCoverageErrors(duplicate).join('; '), /nonempty and unique/);
+  const missingTrace = fixtureCoverageProblem([
+    'representative',
+    'boundary',
+    'failure',
+    'boundary',
+  ]);
+  missingTrace.fixtureTraces.pop();
+  assert.match(canonicalFixtureCoverageErrors(missingTrace).join('; '), /exactly one guided trace/);
+  const repeatedTrace = fixtureCoverageProblem();
+  repeatedTrace.fixtureTraces.push(repeatedTrace.fixtureTraces[0]);
+  assert.match(
+    canonicalFixtureCoverageErrors(repeatedTrace).join('; '),
+    /exactly one guided trace/,
+  );
+});
 
 const problem = (id = 'sample-problem') => ({
   schemaVersion: 'dsa-problem/v2',

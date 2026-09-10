@@ -67,7 +67,6 @@ function fallbackRanking(groups) {
           interviewRank: rank,
           studyOrder: rank,
           tier: rankingTier(rank),
-          evidenceConfidence: 'unranked',
           rankingVersion: 'unranked',
         };
       }),
@@ -236,7 +235,6 @@ export function applyHandsOnRankingPlan(groups, plan, { required = false } = {})
           interviewRank: item.interviewRank,
           studyOrder: item.studyOrder,
           tier: rankingTier(item.interviewRank),
-          evidenceConfidence: item.evidenceConfidence,
           rankingVersion: plan.rankingVersion,
         };
       }),

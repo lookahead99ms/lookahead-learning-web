@@ -237,7 +237,7 @@
   <section class="learning-checks" aria-labelledby="learning-checks-heading">
     <span>Retrieve and transfer</span>
     <h4 id="learning-checks-heading">Check the reasoning without code</h4>
-    @for (check of practice().checks; track check.kind) {
+    @for (check of practice().checks; track $index) {
       <details>
         <summary>
           {{
