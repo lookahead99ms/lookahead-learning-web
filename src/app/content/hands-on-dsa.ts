@@ -14,6 +14,10 @@ export type HandsOnReadiness = 'All' | 'Guided' | 'Practice-ready' | 'Catalogued
 export type HandsOnTierScope = '150' | '365' | '600' | '730';
 export type HandsOnSort =
   | 'pattern-order'
+  | 'title-ascending'
+  | 'title-descending'
+  | 'study-order-descending'
+  | 'interview-rank-descending'
   | 'study-order'
   | 'interview-rank'
   | 'difficulty-ascending'
@@ -366,14 +370,26 @@ function problemComparator(
   const difficultyOrder = { Beginner: 1, Intermediate: 2, Advanced: 3 } as const;
   return (left, right) => {
     let result = 0;
-    if (sort === 'study-order') {
+    if (sort === 'title-ascending' || sort === 'title-descending') {
+      result = left.title.localeCompare(right.title) * (sort === 'title-descending' ? -1 : 1);
+    } else if (
+      sort === 'study-order' ||
+      sort === 'study-order-descending' ||
+      sort === 'interview-rank' ||
+      sort === 'interview-rank-descending'
+    ) {
+      const field = sort.startsWith('study-order') ? 'studyOrder' : 'interviewRank';
+      const leftOrder = left[field];
+      const rightOrder = right[field];
+      // Unranked problems remain last in either direction.
       result =
-        (left.studyOrder ?? Number.MAX_SAFE_INTEGER) -
-        (right.studyOrder ?? Number.MAX_SAFE_INTEGER);
-    } else if (sort === 'interview-rank') {
-      result =
-        (left.interviewRank ?? Number.MAX_SAFE_INTEGER) -
-        (right.interviewRank ?? Number.MAX_SAFE_INTEGER);
+        leftOrder == null
+          ? rightOrder == null
+            ? 0
+            : 1
+          : rightOrder == null
+            ? -1
+            : (leftOrder - rightOrder) * (sort.endsWith('-descending') ? -1 : 1);
     } else if (sort === 'difficulty-ascending') {
       result = difficultyOrder[left.difficulty] - difficultyOrder[right.difficulty];
     } else if (sort === 'difficulty-descending') {

@@ -1,22 +1,23 @@
-import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
+import { Component, DestroyRef, ElementRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink, Scroll } from '@angular/router';
 import { ContentService } from '../../content/content.service';
 import {
   HandsOnDifficulty,
   HandsOnDsaIndex,
+  HandsOnDsaIndexProblemResult,
   HandsOnSort,
   HandsOnTierScope,
   filterHandsOnDsaIndexGroups,
   rankedHandsOnDsaIndexProblems,
   resolveHandsOnDsaIndexGroup,
-  uniqueHandsOnIndexProblemCount,
 } from '../../content/hands-on-dsa';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 
 @Component({
   selector: 'app-hands-on-dsa',
-  imports: [PlatformHeader, RouterLink],
+  imports: [PlatformHeader, RouterLink, NgTemplateOutlet],
   templateUrl: './hands-on-dsa.html',
   styles: [
     `
@@ -190,7 +191,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
       }
       .practice-controls {
         display: grid;
-        grid-template-columns: minmax(260px, 1.4fr) repeat(3, minmax(150px, 0.55fr));
+        grid-template-columns: minmax(260px, 1.4fr) repeat(2, minmax(150px, 0.55fr));
         gap: 14px;
         align-items: end;
         margin: 18px 0;
@@ -390,161 +391,191 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         background: var(--surface);
         box-shadow: 0 9px 25px var(--shadow);
       }
-      .pattern-group > summary {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) max-content 14px;
-        align-items: start;
-        gap: 18px;
-        padding: 16px 18px;
-        cursor: pointer;
-        list-style: none;
+      .pattern-group-header {
+        padding: 18px;
       }
-      .pattern-group > summary::-webkit-details-marker {
-        display: none;
-      }
-      .pattern-group[open] {
-        border-color: var(--accent-strong);
-        box-shadow: 0 14px 32px var(--shadow);
-      }
-      .pattern-group-count {
-        justify-self: end;
+      .pattern-group-header p {
         color: var(--text-subtle);
-        font-size: 0.76rem;
-        font-weight: 800;
-        text-align: right;
-        white-space: nowrap;
+        margin: 8px 0;
       }
-      .pattern-group-toggle {
-        width: 11px;
-        height: 11px;
-        justify-self: end;
-        margin: 8px 3px 0 0;
-        border-right: 2px solid var(--practice-accent);
-        border-bottom: 2px solid var(--practice-accent);
-        transform: rotate(45deg);
-        transition: transform 160ms ease;
-      }
-      .pattern-group[open] .pattern-group-toggle {
-        transform: rotate(225deg);
-      }
-      .problem-grid {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr);
-        gap: 11px;
-        padding: 0 20px 20px;
-      }
-      .ranked-problem-list {
-        display: grid;
-        gap: 8px;
-      }
-      .ranked-problem-row {
-        display: grid;
-        grid-template-columns: minmax(190px, 0.7fr) minmax(260px, 1.6fr) minmax(240px, 1fr);
-        gap: 14px;
-        align-items: center;
-        min-height: 76px;
-        padding: 12px 15px;
-        border: 1px solid var(--line);
-        border-radius: 12px;
+      .problem-table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
         color: var(--practice-body);
         background: var(--surface);
-        text-decoration: none;
-        transition:
-          border-color 140ms ease,
-          transform 140ms ease,
-          box-shadow 140ms ease;
       }
-      .ranked-problem-row:hover,
-      .ranked-problem-row:focus-visible {
-        border-color: var(--accent-strong);
-        transform: translateY(-1px);
-        box-shadow: 0 8px 18px var(--shadow);
+      .problem-table th,
+      .problem-table td {
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--line);
+        text-align: start;
+        vertical-align: middle;
+        overflow-wrap: anywhere;
       }
-      .ranked-problem-row h3 {
-        margin: 0;
-        color: var(--practice-ink);
-        font-size: 0.95rem;
-      }
-      .ranked-problem-pattern {
-        color: var(--accent-link);
-        font-size: 0.76rem;
+      .problem-table th {
+        background: var(--surface-muted);
+        color: var(--text-strong);
+        font-size: 0.8rem;
         font-weight: 800;
       }
-      .load-more-problems {
-        display: block;
-        min-height: 44px;
-        margin: 16px auto 0;
-        padding: 9px 18px;
-        border: 1px solid var(--accent-strong);
-        border-radius: 999px;
-        color: var(--text-strong);
-        background: var(--surface);
-        cursor: pointer;
-        font:
-          800 0.82rem 'Avenir Next',
-          Avenir,
-          sans-serif;
+      .problem-table th:first-child {
+        width: 52%;
       }
-      .load-more-problems:hover,
-      .load-more-problems:focus-visible {
+      .problem-table th:not(:first-child),
+      .problem-table td:not(:first-child) {
+        text-align: end;
+        font-variant-numeric: tabular-nums;
+        font-size: 0.8rem;
+      }
+      .column-sort,
+      .group-patterns {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 44px;
+        padding: 4px 0;
+        border: 0;
+        background: transparent;
+        color: var(--accent-strong);
+        font: inherit;
+        font-weight: 700;
+        text-align: inherit;
+        cursor: pointer;
+      }
+      .column-sort span {
+        flex-shrink: 0;
+      }
+      .column-sort:hover {
+        text-decoration: underline;
+      }
+      .column-sort:disabled {
+        color: var(--text-subtle);
+        cursor: default;
+        text-decoration: none;
+      }
+      .column-sort:focus-visible,
+      .group-patterns:focus-visible {
+        outline: 2px solid var(--accent-focus);
+        outline-offset: 2px;
+      }
+      .group-patterns {
+        padding: 6px 12px;
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        font-size: 0.8rem;
+      }
+      .group-patterns[aria-pressed='true'] {
+        background: var(--surface-muted);
+        border-color: var(--accent-strong);
+      }
+      .problem-link {
+        display: flex;
+        align-items: center;
+        min-height: 44px;
+        color: var(--accent-link);
+        font-weight: 800;
+        text-decoration: none;
+      }
+      .problem-link:hover {
+        text-decoration: underline;
+      }
+      .problem-link:focus-visible {
         outline: 3px solid var(--accent-focus);
         outline-offset: 2px;
       }
-      .problem-card {
-        display: flex;
-        min-width: 0;
-        min-height: 132px;
-        flex-direction: column;
-        align-items: flex-start;
-        padding: 15px;
-        border: 1px solid var(--line);
-        border-radius: 12px;
-        color: var(--practice-body);
-        background: var(--surface-subtle);
-        text-decoration: none;
-        transition:
-          border-color 140ms ease,
-          transform 140ms ease,
-          box-shadow 140ms ease;
-      }
-      .problem-card:hover,
-      .problem-card:focus-visible {
-        border-color: var(--accent-strong);
-        transform: translateY(-2px);
-        box-shadow: 0 9px 20px var(--shadow);
-      }
-      .problem-card h3 {
-        margin: 9px 0 7px;
-        color: var(--practice-ink);
-        font-size: 1rem;
-      }
-      .problem-card p {
-        max-width: 82ch;
-        margin: 0;
-        font-size: 0.82rem;
-        line-height: 1.5;
-      }
-      .problem-card b {
-        margin-top: auto;
-        padding-top: 13px;
-        color: var(--accent-link);
-        font-size: 0.78rem;
-      }
-      .problem-card-meta {
-        display: flex;
-        gap: 5px 10px;
-        flex-wrap: wrap;
+      .problem-pattern {
+        display: block;
         color: var(--text-subtle);
-        font-size: 0.68rem;
-        font-weight: 850;
-        letter-spacing: 0.045em;
-        line-height: 1.35;
-        text-transform: uppercase;
+        font-size: 0.76rem;
       }
-      .problem-card-meta span + span::before {
-        content: '·';
-        margin-right: 10px;
-        color: var(--border-strong);
+      @media (max-width: 700px) {
+        .problem-table,
+        .problem-table tbody {
+          display: block;
+        }
+        .problem-table thead {
+          display: block;
+        }
+        .problem-table thead tr {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .problem-table th,
+        .problem-table th:first-child {
+          width: auto;
+          padding: 4px 8px;
+        }
+        .problem-table th:not(:first-child) {
+          text-align: start;
+        }
+        .problem-table-row {
+          display: block;
+          padding: 12px 16px;
+          border-bottom: 1px solid var(--line);
+        }
+        .problem-table td {
+          display: block;
+          padding: 4px 0;
+          border: 0;
+        }
+        .problem-table td[data-label] {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+          gap: 12px;
+        }
+        .problem-table td[data-label]::before {
+          content: attr(data-label);
+          text-align: start;
+          color: var(--text-subtle);
+        }
+        .problem-title-cell {
+          padding-bottom: 10px !important;
+        }
+      }
+      .problem-pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 20px;
+      }
+      .problem-pagination a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 44px;
+        min-height: 44px;
+        padding: 4px 9px;
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        color: var(--accent-link);
+        background: var(--surface);
+        text-decoration: none;
+        font-weight: 700;
+      }
+      .problem-pagination a[aria-current='page'] {
+        color: var(--accent-on-primary);
+        background: var(--accent-strong);
+      }
+      .problem-pagination a:focus-visible {
+        outline: 3px solid var(--accent-focus);
+        outline-offset: 2px;
+      }
+      .practice-results-header {
+        scroll-margin-top: calc(var(--platform-header-height, 76px) + 100px);
+      }
+      @media (max-width: 440px) {
+        .pagination-direction {
+          flex-basis: 40%;
+        }
+        .pagination-previous {
+          order: 1;
+        }
+        .pagination-next {
+          order: 2;
+        }
       }
       .empty-state {
         padding: 34px;
@@ -573,18 +604,12 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
           position: static;
           justify-self: start;
         }
-        .practice-controls,
-        .problem-grid,
-        .ranked-problem-row {
+        .practice-controls {
           grid-template-columns: minmax(0, 1fr);
         }
         .active-practice > header,
         .practice-results-header {
           display: grid;
-        }
-        .pattern-group > summary {
-          grid-template-columns: minmax(0, 1fr) max-content 14px;
-          gap: 10px;
         }
         .practice-results-meta {
           justify-content: start;
@@ -601,18 +626,11 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
       }
-      @media (prefers-reduced-motion: reduce) {
-        .problem-card,
-        .pattern-group-toggle {
-          transition: none;
-        }
-      }
       @media (forced-colors: active) {
         .practice-hero,
         .practice-controls,
         .active-practice,
         .pattern-group,
-        .problem-card,
         .pattern-filter a,
         .clear-pattern-filter,
         .clear-catalog-filters,
@@ -635,15 +653,18 @@ export class HandsOnDsa implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
+  private readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
+  private focusResultsAfterPaging = false;
+  private focusColumnAfterSorting: string | null = null;
   protected readonly catalog = signal<HandsOnDsaIndex | null>(null);
   protected readonly error = signal('');
   protected readonly query = signal('');
   protected readonly difficulty = signal<HandsOnDifficulty>('All');
   protected readonly tierScope = signal<HandsOnTierScope>('730');
-  protected readonly sort = signal<HandsOnSort>('pattern-order');
+  protected readonly sort = signal<HandsOnSort>('study-order');
   protected readonly patternId = signal('');
-  protected readonly openGroupId = signal<string | null>(null);
-  protected readonly rankedProblemLimit = signal(50);
+  protected readonly pageSize = 25;
+  private readonly requestedPage = signal(1);
   private readonly lastSurpriseProblemId = signal('');
   protected readonly difficulties: HandsOnDifficulty[] = [
     'All',
@@ -658,12 +679,62 @@ export class HandsOnDsa implements OnInit {
     { value: '730', label: 'Full Library' },
   ];
   protected readonly sortOptions: { value: HandsOnSort; label: string }[] = [
-    { value: 'pattern-order', label: 'Pattern Ranking' },
-    { value: 'study-order', label: 'Problem Ranking' },
-    { value: 'interview-rank', label: 'Interview Importance' },
-    { value: 'difficulty-ascending', label: 'Difficulty · Beginner to Advanced' },
-    { value: 'difficulty-descending', label: 'Difficulty · Advanced to Beginner' },
+    { value: 'title-ascending', label: 'Problem: A to Z' },
+    { value: 'title-descending', label: 'Problem: Z to A' },
+    { value: 'study-order-descending', label: 'Learning order: descending' },
+    { value: 'interview-rank-descending', label: 'Interview priority: descending' },
+    { value: 'pattern-order', label: 'Pattern' },
+    { value: 'study-order', label: 'Learning order' },
+    { value: 'interview-rank', label: 'Interview priority' },
+    { value: 'difficulty-ascending', label: 'Difficulty: Beginner first' },
+    { value: 'difficulty-descending', label: 'Difficulty: Advanced first' },
   ];
+  protected readonly sortColumns = [
+    { id: 'title', label: 'Problem', ascending: 'title-ascending', descending: 'title-descending' },
+    {
+      id: 'difficulty',
+      label: 'Difficulty',
+      ascending: 'difficulty-ascending',
+      descending: 'difficulty-descending',
+    },
+    {
+      id: 'interview',
+      label: 'Interview priority',
+      ascending: 'interview-rank',
+      descending: 'interview-rank-descending',
+    },
+    {
+      id: 'learning',
+      label: 'Learning order',
+      ascending: 'study-order',
+      descending: 'study-order-descending',
+    },
+  ] as const;
+
+  protected columnSortDirection(id: string): 'ascending' | 'descending' | 'none' {
+    const column = this.sortColumns.find((item) => item.id === id)!;
+    return this.sort() === column.ascending
+      ? 'ascending'
+      : this.sort() === column.descending
+        ? 'descending'
+        : 'none';
+  }
+
+  protected columnSortLabel(id: string, label: string): string {
+    if (id === 'difficulty' && this.difficulty() !== 'All')
+      return 'Difficulty: sorting unavailable while filtered to one difficulty';
+    const direction = this.columnSortDirection(id) === 'ascending' ? 'descending' : 'ascending';
+    return `Sort by ${label.toLowerCase()}, ${direction}`;
+  }
+
+  protected sortColumn(id: string): void {
+    const column = this.sortColumns.find((item) => item.id === id)!;
+    this.focusColumnAfterSorting = column.id;
+    this.updateSort(
+      this.columnSortDirection(id) === 'ascending' ? column.descending : column.ascending,
+    );
+  }
+
   protected preparationOrderLabel(order: number): string {
     return order.toString().padStart(2, '0');
   }
@@ -681,9 +752,6 @@ export class HandsOnDsa implements OnInit {
       this.sort(),
     );
   });
-  protected readonly visibleUniqueProblemCount = computed(() =>
-    uniqueHandsOnIndexProblemCount(this.visibleGroups()),
-  );
   protected readonly visibleRankedProblems = computed(() =>
     this.sort() === 'pattern-order'
       ? []
@@ -692,18 +760,69 @@ export class HandsOnDsa implements OnInit {
           this.sort() as Exclude<HandsOnSort, 'pattern-order'>,
         ),
   );
+  // Group order remains authored; deduplicate before slicing so each page owns 25 problems.
+  protected readonly orderedProblems = computed(() => {
+    if (this.sort() !== 'pattern-order') return this.visibleRankedProblems();
+    const problems = new Map<string, HandsOnDsaIndexProblemResult>();
+    for (const group of this.visibleGroups()) {
+      for (const problem of group.problems) {
+        if (!problems.has(problem.id))
+          problems.set(problem.id, {
+            ...problem,
+            patternId: group.id,
+            patternTitle: group.title,
+            patternPreparationOrder: group.preparationOrder,
+          });
+      }
+    }
+    return [...problems.values()];
+  });
+  protected readonly pageCount = computed(() =>
+    Math.ceil(this.orderedProblems().length / this.pageSize),
+  );
+  protected readonly currentPage = computed(() =>
+    Math.min(this.requestedPage(), Math.max(1, this.pageCount())),
+  );
+  protected readonly pageOffset = computed(() => (this.currentPage() - 1) * this.pageSize);
   protected readonly displayedRankedProblems = computed(() =>
-    this.visibleRankedProblems().slice(0, this.rankedProblemLimit()),
+    this.orderedProblems().slice(this.pageOffset(), this.pageOffset() + this.pageSize),
   );
-  protected readonly hasMoreRankedProblems = computed(
-    () => this.displayedRankedProblems().length < this.visibleRankedProblems().length,
-  );
+  protected readonly displayedGroups = computed(() => {
+    const pageProblems = this.displayedRankedProblems();
+    return this.visibleGroups()
+      .map((group) => ({
+        ...group,
+        problems: pageProblems.filter((problem) => problem.patternId === group.id),
+      }))
+      .filter((group) => group.problems.length > 0);
+  });
+  protected readonly resultRange = computed(() => {
+    const count = this.orderedProblems().length;
+    if (!count) return '0 problems';
+    return `${this.pageOffset() + 1}–${Math.min(this.pageOffset() + this.pageSize, count)} of ${count} ${count === 1 ? 'problem' : 'problems'}`;
+  });
+  protected readonly pageLinks = computed(() => {
+    const current = this.currentPage();
+    const last = this.pageCount();
+    const pages = [...new Set([1, current - 1, current, current + 1, last])]
+      .filter((page) => page >= 1 && page <= last)
+      .sort((a, b) => a - b);
+    const links: (number | 'gap-before' | 'gap-after')[] = [];
+    for (const page of pages) {
+      const previous = links.at(-1);
+      if (typeof previous === 'number' && page - previous > 1) {
+        links.push(page <= current ? 'gap-before' : 'gap-after');
+      }
+      links.push(page);
+    }
+    return links;
+  });
   protected readonly hasCatalogFilters = computed(
     () =>
       Boolean(this.query()) ||
       this.difficulty() !== 'All' ||
       this.tierScope() !== '730' ||
-      this.sort() !== 'pattern-order',
+      this.sort() !== 'study-order',
   );
   private readonly randomPracticePool = computed(() => {
     const candidates = new Map<string, { id: string; route: string[]; version: string }>();
@@ -727,10 +846,16 @@ export class HandsOnDsa implements OnInit {
       .getHandsOnDsaIndex()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (catalog) => this.catalog.set(catalog),
+        next: (catalog) => {
+          this.catalog.set(catalog);
+          queueMicrotask(() => this.canonicalizePage());
+        },
         error: () => this.error.set('The practice catalog could not be loaded. Please try again.'),
       });
     this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
+      const page = params.get('page') ?? '';
+      const parsedPage = /^[1-9]\d*$/.test(page) ? Number(page) : 1;
+      this.requestedPage.set(Number.isSafeInteger(parsedPage) ? parsedPage : 1);
       this.patternId.set(params.get('pattern') ?? '');
       this.query.set(params.get('q') ?? '');
       const difficulty = params.get('difficulty');
@@ -749,20 +874,36 @@ export class HandsOnDsa implements OnInit {
       const sort = requestedSort === 'difficulty' ? 'difficulty-ascending' : requestedSort;
       const selectedSort: HandsOnSort = this.sortOptions.some((option) => option.value === sort)
         ? (sort as HandsOnSort)
-        : 'pattern-order';
+        : 'study-order';
       this.sort.set(
         this.difficulty() !== 'All' && this.isDifficultySort(selectedSort)
-          ? 'pattern-order'
+          ? 'study-order'
           : selectedSort,
       );
-      this.resetView();
+      queueMicrotask(() => this.canonicalizePage());
+    });
+    this.router.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
+      if (!(event instanceof Scroll) || !this.focusResultsAfterPaging) return;
+      this.focusResultsAfterPaging = false;
+      const sortedColumn = this.focusColumnAfterSorting;
+      this.focusColumnAfterSorting = null;
+      window.requestAnimationFrame(() => {
+        if (this.destroyRef.destroyed) return;
+        const results = this.element.nativeElement.querySelector<HTMLElement>('#practice-results');
+        const focusTarget = sortedColumn
+          ? this.element.nativeElement.querySelector<HTMLElement>(
+              `[data-sort-column="${sortedColumn}"]`,
+            )
+          : results;
+        focusTarget?.focus({ preventScroll: true });
+        results?.scrollIntoView({ block: 'start', behavior: 'auto' });
+      });
     });
   }
 
   protected updateQuery(value: string): void {
     this.query.set(value);
     this.updateCatalogParams({ q: value || null }, true);
-    this.resetView();
   }
 
   protected updateDifficulty(value: string): void {
@@ -771,12 +912,11 @@ export class HandsOnDsa implements OnInit {
       : 'All';
     this.difficulty.set(difficulty);
     const resetDifficultySort = difficulty !== 'All' && this.isDifficultySort(this.sort());
-    if (resetDifficultySort) this.sort.set('pattern-order');
+    if (resetDifficultySort) this.sort.set('study-order');
     this.updateCatalogParams({
       difficulty: difficulty === 'All' ? null : difficulty,
       ...(resetDifficultySort ? { sort: null } : {}),
     });
-    this.resetView();
   }
 
   protected updateTierScope(value: string): void {
@@ -785,66 +925,58 @@ export class HandsOnDsa implements OnInit {
       : '730';
     this.tierScope.set(scope);
     this.updateCatalogParams({ scope: scope === '730' ? null : scope });
-    this.resetView();
   }
 
   protected updateSort(value: string): void {
     const requestedSort = this.sortOptions.some((option) => option.value === value)
       ? (value as HandsOnSort)
-      : 'pattern-order';
-    const sort = this.sortOptionDisabled(requestedSort) ? 'pattern-order' : requestedSort;
+      : 'study-order';
+    const sort = this.sortOptionDisabled(requestedSort) ? 'study-order' : requestedSort;
+    this.focusResultsAfterPaging = true;
     this.sort.set(sort);
-    this.updateCatalogParams({ sort: sort === 'pattern-order' ? null : sort });
-    this.resetView();
+    this.updateCatalogParams({ sort: sort === 'study-order' ? null : sort });
   }
 
   protected sortOptionDisabled(sort: HandsOnSort): boolean {
     return this.difficulty() !== 'All' && this.isDifficultySort(sort);
   }
 
-  protected tierLabel(tier: string | undefined): string {
-    return (
-      {
-        'universal-must-do': 'Universal must-do',
-        'interview-core': 'Interview core',
-        'pattern-depth': 'Pattern depth',
-        'advanced-specialized': 'Advanced / specialized',
-      }[tier ?? ''] ?? 'Unranked'
-    );
+  protected pageQueryParams(page: number | string): Record<string, string | number | null> {
+    return { page: page === 1 ? null : page };
   }
 
-  protected loadMoreRankedProblems(): void {
-    this.rankedProblemLimit.update((limit) => limit + 50);
+  protected preparePageNavigation(event: MouseEvent): void {
+    if ((event.currentTarget as HTMLAnchorElement).getAttribute('aria-current') === 'page') return;
+    if (
+      event.button === 0 &&
+      !event.ctrlKey &&
+      !event.metaKey &&
+      !event.shiftKey &&
+      !event.altKey
+    ) {
+      this.focusResultsAfterPaging = true;
+    }
+  }
+
+  protected problemQueryParams(pattern: string): Record<string, string> {
+    return { pattern, returnTo: this.router.url };
+  }
+
+  private canonicalizePage(): void {
+    if (!this.catalog() || this.destroyRef.destroyed) return;
+    const params = this.route.snapshot.queryParamMap;
+    const canonical = this.currentPage() === 1 ? null : String(this.currentPage());
+    if (params.get('page') === canonical && params.getAll('page').length <= 1) return;
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { page: canonical },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
   }
 
   protected clearCatalogFilters(): void {
     void this.router.navigate(['/learn/hands-on-dsa']);
-  }
-
-  protected handlePatternToggle(groupId: string, event: Event): void {
-    const details = event.currentTarget as HTMLDetailsElement;
-    if (details.open) {
-      const summary = details.querySelector('summary');
-      const previousTop = summary?.getBoundingClientRect().top;
-      this.openGroupId.set(groupId);
-      if (summary && previousTop !== undefined) {
-        window.requestAnimationFrame(() => {
-          window.requestAnimationFrame(() => {
-            const offset = summary.getBoundingClientRect().top - previousTop;
-            if (Math.abs(offset) > 1) window.scrollBy({ top: offset, behavior: 'auto' });
-          });
-        });
-      }
-      return;
-    }
-
-    if (this.openGroupId() === groupId) {
-      this.openGroupId.set(null);
-    }
-  }
-
-  protected isPatternOpen(groupId: string): boolean {
-    return this.openGroupId() === groupId;
   }
 
   protected surpriseMe(): void {
@@ -863,11 +995,6 @@ export class HandsOnDsa implements OnInit {
     });
   }
 
-  private resetView(): void {
-    this.openGroupId.set(null);
-    this.rankedProblemLimit.set(50);
-  }
-
   private isDifficultySort(sort: HandsOnSort): boolean {
     return sort === 'difficulty-ascending' || sort === 'difficulty-descending';
   }
@@ -878,7 +1005,7 @@ export class HandsOnDsa implements OnInit {
   ): void {
     void this.router.navigate([], {
       relativeTo: this.route,
-      queryParams,
+      queryParams: { ...queryParams, page: null },
       queryParamsHandling: 'merge',
       replaceUrl,
     });

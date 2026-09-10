@@ -1242,19 +1242,25 @@ export class Question implements OnInit {
       this.navigationContextId.set(params.get('pattern') ?? '');
       const returnTo = params.get('returnTo') ?? '';
       this.returnDestination.set(null);
-      if (/^\/(search|interview-questions)(?:\?|$)/.test(returnTo)) {
+      if (/^\/(search|interview-questions|learn\/hands-on-dsa)(?:\?|$)/.test(returnTo)) {
         try {
           const destination = this.router.parseUrl(returnTo);
           const segments = destination.root.children['primary']?.segments;
+          const isDsaCatalog =
+            segments?.length === 2 &&
+            segments[0].path === 'learn' &&
+            segments[1].path === 'hands-on-dsa';
           if (
-            segments?.length === 1 &&
-            ['search', 'interview-questions'].includes(segments[0].path)
+            isDsaCatalog ||
+            (segments?.length === 1 && ['search', 'interview-questions'].includes(segments[0].path))
           ) {
             this.returnDestination.set(destination);
             this.returnLabel.set(
-              segments[0].path === 'search'
-                ? 'Return to search results'
-                : 'Return to interview practice',
+              isDsaCatalog
+                ? 'Return to DSA problems'
+                : segments![0].path === 'search'
+                  ? 'Return to search results'
+                  : 'Return to interview practice',
             );
           }
         } catch {
