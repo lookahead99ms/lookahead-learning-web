@@ -217,6 +217,9 @@ function documentFor(question, context) {
   return {
     id: canonicalProblem ? `dsa:${canonicalProblem.id}` : `${path}:${course.id}:${question.id}`,
     contentId: question.id,
+    ...(question.relatedArticleId
+      ? { studyRelatedLessonIds: [`${path}:${course.id}:${question.relatedArticleId}`] }
+      : {}),
     ...(canonicalProblem ? { canonicalContentId: canonicalProblem.id } : {}),
     path,
     courseId: course.id,
@@ -502,6 +505,31 @@ async function contentForCourse(contentRoot, path, catalogItem, canonicalProblem
           answerSlidesRef,
         }),
       );
+    }
+  }
+
+  // Project existing authored learning-unit relationships; never infer prerequisites from tags.
+  const flattenUnits = (units) =>
+    (units ?? []).flatMap((unit) => [unit, ...flattenUnits(unit.subUnits)]);
+  const units = flattenUnits(course.learningUnits);
+  for (const document of documents) {
+    const unitIndex = units.findIndex((unit) =>
+      [unit.theoryModuleId, unit.practiceModuleId, unit.questionModuleId].includes(
+        document.moduleId,
+      ),
+    );
+    if (unitIndex < 0) continue;
+    const unit = units[unitIndex];
+    const lessons = documents.filter(
+      (item) => item.moduleId === unit.theoryModuleId && item.discoveryKind === 'lesson',
+    );
+    document.studySequence = unitIndex;
+    if (
+      document.discoveryKind === 'practice' &&
+      lessons.length &&
+      !document.studyRelatedLessonIds?.length
+    ) {
+      document.studyRelatedLessonIds = lessons.map((item) => item.canonicalContentId ?? item.id);
     }
   }
 

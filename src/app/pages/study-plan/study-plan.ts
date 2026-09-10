@@ -25,6 +25,10 @@ interface SavedPlan {
   snapshot: StudyPlan;
   completedIds: string[];
   shiftedDays: number;
+  sessionOutcomes?: Record<string, 'attempted' | 'needs-review' | 'completed'>;
+  reviewNotes?: Record<string, string>;
+  attemptedContentIds?: string[];
+  needsReviewContentIds?: string[];
   history: { revision: number; changedAt: string; reason: string }[];
 }
 const STORAGE_KEY = 'look-ahead.study-plan.v1';
@@ -46,6 +50,8 @@ export class StudyPlanPage implements OnInit {
   protected readonly paths: ContentPath[] = ['learn', 'grow', 'look-ahead'];
   protected readonly days = signal(30);
   protected readonly dailyHours = signal(1);
+  protected readonly goalType = signal<'learning' | 'interview'>('interview');
+  protected readonly familiarity = signal<Record<string, 'familiar' | 'refresh' | 'new'>>({});
   protected readonly goal = signal('Build reliable engineering foundations');
   protected readonly selectedTopicIds = signal(new Set<string>());
   protected readonly documents = signal<SearchDocument[] | null>(null);
@@ -54,7 +60,9 @@ export class StudyPlanPage implements OnInit {
   protected readonly saved = signal<SavedPlan | null>(null);
   protected readonly selectedDay = signal(1);
   private rankingVersion: string | null = null;
+  protected readonly rankingStatus = signal<'loading' | 'ready' | 'error'>('loading');
   private studyOrder = new Map<string, number>();
+  private interviewOrder = new Map<string, number>();
   protected readonly topics = computed(() => studyPlanOfferings(this.documents() ?? []));
   protected readonly availableDocuments = computed(() =>
     this.access.status() === 'ready'
@@ -80,14 +88,56 @@ export class StudyPlanPage implements OnInit {
   protected readonly hasAccessibleSelection = computed(() =>
     [...this.selectedTopicIds()].some((id) => this.availableTopicIds().has(id)),
   );
+  protected readonly needsDsaRanking = computed(() =>
+    this.topics().some(
+      (topic) =>
+        this.selectedTopicIds().has(topic.id) &&
+        this.availableDocuments().some(
+          (item) => item.contentType === 'dsa-problem' && studyPlanMatchesTopic(item, topic),
+        ),
+    ),
+  );
+  protected readonly canGenerate = computed(
+    () =>
+      this.hasAccessibleSelection() &&
+      !this.loadingError() &&
+      (!this.needsDsaRanking() || this.rankingStatus() === 'ready'),
+  );
   protected readonly plan = computed(() => this.saved()?.snapshot ?? null);
+  protected readonly requiredFoundations = computed(() => {
+    const ids = new Set((this.plan()?.blockedItems ?? []).flatMap((item) => item.prerequisiteIds));
+    return [...ids].map((id) => {
+      const document = this.availableDocuments().find(
+        (item) => (item.canonicalContentId ?? item.id) === id,
+      );
+      const topic = document
+        ? this.topics().find(
+            (item) =>
+              item.path === document.path &&
+              item.courseIds.length === 1 &&
+              item.courseIds[0] === document.courseId,
+          )
+        : undefined;
+      return {
+        id,
+        title: document?.title ?? 'An unavailable or unresolved foundation lesson',
+        topic,
+        selectable:
+          !!topic &&
+          !this.selectedTopicIds().has(topic.id) &&
+          this.availableTopicIds().has(topic.id),
+      };
+    });
+  });
   protected readonly currentDay = computed(
     () => this.plan()?.days.find(({ day }) => day === this.selectedDay()) ?? null,
   );
   protected readonly completedIds = computed(() => new Set(this.saved()?.completedIds ?? []));
   protected readonly completion = computed(() => {
     const assignments = this.plan()?.days.flatMap(({ assignments }) => assignments) ?? [];
-    const done = assignments.filter(({ id }) => this.completedIds().has(id)).length;
+    const done = assignments.filter(
+      ({ id }) => this.completedIds().has(id) || this.saved()?.sessionOutcomes?.[id],
+    ).length;
     return {
       done,
       total: assignments.length,
@@ -97,7 +147,7 @@ export class StudyPlanPage implements OnInit {
   protected readonly weekAllocation = computed(() => {
     const assignments = this.plan()?.weeks[0]?.days.flatMap(({ assignments }) => assignments) ?? [];
     const understand = assignments
-      .filter(({ activity }) => activity === 'Understand')
+      .filter(({ activity }) => activity === 'Understand' || activity === 'Refresh')
       .reduce((total, item) => total + item.minutes, 0);
     const recall = assignments
       .filter(({ kind }) => kind === 'review')
@@ -116,12 +166,31 @@ export class StudyPlanPage implements OnInit {
   ngOnInit(): void {
     this.restore();
     this.loadContent();
+    this.loadRanking();
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
+      const days = Number(params.get('days'));
+      const hours = Number(params.get('hours'));
+      if (this.durations.some((value) => value === days)) this.days.set(days);
+      if (this.hours.some((value) => value === hours)) this.dailyHours.set(hours);
+      if (params.get('approach') === 'learning' || params.get('approach') === 'interview')
+        this.goalType.set(params.get('approach') as 'learning' | 'interview');
+      if (params.has('topics'))
+        this.selectedTopicIds.set(new Set((params.get('topics') ?? '').split(',')));
+      // Legacy access URL values never grant access or authorize a plan.
+    });
+  }
+
+  protected loadRanking(): void {
+    this.rankingStatus.set('loading');
     this.content
       .getHandsOnDsaIndex()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (index) => {
-          if (index.ranking?.status !== 'released') return;
+          if (index.ranking?.status !== 'released') {
+            this.rankingStatus.set('error');
+            return;
+          }
           this.rankingVersion = index.ranking.rankingVersion;
           this.studyOrder = new Map(
             index.groups.flatMap((group) =>
@@ -131,20 +200,20 @@ export class StudyPlanPage implements OnInit {
               ),
             ),
           );
+          this.interviewOrder = new Map(
+            index.groups.flatMap((group) =>
+              group.problems.map(
+                (item) =>
+                  [item.id, item.interviewRank ?? item.studyOrder ?? Infinity] as [string, number],
+              ),
+            ),
+          );
+          this.rankingStatus.set('ready');
         },
         error: () => {
-          /* Existing plans remain pinned; new plans use stable curriculum order. */
+          this.rankingStatus.set('error');
         },
       });
-    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
-      const days = Number(params.get('days'));
-      const hours = Number(params.get('hours'));
-      if (this.durations.some((value) => value === days)) this.days.set(days);
-      if (this.hours.some((value) => value === hours)) this.dailyHours.set(hours);
-      if (params.has('topics'))
-        this.selectedTopicIds.set(new Set((params.get('topics') ?? '').split(',')));
-      // Legacy access URL values never grant access or authorize a plan.
-    });
   }
 
   protected loadContent(): void {
@@ -181,6 +250,82 @@ export class StudyPlanPage implements OnInit {
       });
   }
 
+  protected setFamiliarity(id: string, value: string): void {
+    if (value === 'familiar' || value === 'refresh' || value === 'new')
+      this.familiarity.update((current) => ({ ...current, [id]: value }));
+  }
+  protected readonly selectedTopics = computed(() =>
+    this.topics().filter((t) => this.selectedTopicIds().has(t.id)),
+  );
+  protected readonly revisionProgress = computed(() => ({
+    attempted: new Set(this.saved()?.attemptedContentIds ?? []).size,
+    needsReview: new Set(this.saved()?.needsReviewContentIds ?? []).size,
+    completed: new Set(
+      (this.plan()?.days.flatMap((d) => d.assignments) ?? [])
+        .filter((a) => this.completedIds().has(this.sourceId(a)))
+        .map((a) => this.sourceId(a)),
+    ).size,
+  }));
+  protected reviewNote(assignment: StudyPlanAssignment): string {
+    return this.saved()?.reviewNotes?.[this.sourceId(assignment)] ?? '';
+  }
+  protected saveReviewNote(assignment: StudyPlanAssignment, note: string): void {
+    const saved = this.saved();
+    if (!saved) return;
+    this.saved.set({
+      ...saved,
+      reviewNotes: { ...saved.reviewNotes, [this.sourceId(assignment)]: note.slice(0, 1000) },
+    });
+    this.persist('Review note saved on this browser.');
+  }
+  protected outcome(assignment: StudyPlanAssignment): string {
+    const value = this.saved()?.sessionOutcomes?.[assignment.id];
+    return value === 'needs-review'
+      ? 'Needs review'
+      : value === 'attempted'
+        ? 'Attempt / refresh recorded'
+        : value === 'completed'
+          ? 'Full content completion recorded'
+          : '';
+  }
+  protected refreshLinks(assignment: StudyPlanAssignment): { title: string; route: string[] }[] {
+    return (assignment.relatedLessonIds ?? []).flatMap((id) => {
+      const doc = this.availableDocuments().find((d) => (d.canonicalContentId ?? d.id) === id);
+      return doc
+        ? [{ title: doc.title, route: doc.route ?? ['/', doc.path, doc.courseId, doc.contentId] }]
+        : [];
+    });
+  }
+  protected recordOutcome(
+    assignment: StudyPlanAssignment,
+    outcome: 'attempted' | 'needs-review' | 'completed',
+  ): void {
+    if (!this.canOpen(assignment)) return;
+    const saved = this.saved();
+    if (!saved) return;
+    const source = this.sourceId(assignment);
+    const attempted = new Set(saved.attemptedContentIds ?? []);
+    attempted.add(source);
+    const needsReview = new Set(saved.needsReviewContentIds ?? []);
+    const completed = new Set(saved.completedIds);
+    if (outcome === 'needs-review') needsReview.add(source);
+    if (outcome === 'completed') {
+      completed.add(source);
+      needsReview.delete(source);
+    }
+    this.saved.set({
+      ...saved,
+      completedIds: [...completed],
+      attemptedContentIds: [...attempted],
+      needsReviewContentIds: [...needsReview],
+      sessionOutcomes: { ...saved.sessionOutcomes, [assignment.id]: outcome },
+    });
+    this.persist(
+      outcome === 'completed'
+        ? 'Content completion recorded explicitly. This does not establish mastery.'
+        : 'Timebox recorded. The full content has not been marked complete.',
+    );
+  }
   protected setDays(value: string): void {
     this.days.set(Number(value));
   }
@@ -213,31 +358,97 @@ export class StudyPlanPage implements OnInit {
       ? 'Not available with current access'
       : 'No published study sessions yet';
   }
+  private sourceId(assignment: StudyPlanAssignment): string {
+    return assignment.sourceContentId ?? assignment.id.replace(/:review:(?:v2:)?\d+$/, '');
+  }
   protected canOpen(assignment: StudyPlanAssignment): boolean {
-    return this.availableDocuments().some(
-      (item) => (item.canonicalContentId ?? item.id) === assignment.id.replace(/:review:\d+$/, ''),
-    );
+    return !this.assignmentUnavailableReason(assignment);
+  }
+  protected assignmentUnavailableReason(assignment: StudyPlanAssignment): string {
+    if (
+      !this.availableDocuments().some(
+        (item) => (item.canonicalContentId ?? item.id) === this.sourceId(assignment),
+      )
+    )
+      return 'Currently unavailable with your access. Your history is preserved.';
+    if (assignment.requiredSessionId) {
+      const original = this.plan()
+        ?.days.flatMap((d) => d.assignments)
+        .find((a) => a.id === assignment.requiredSessionId);
+      const attempted =
+        original?.timebox && !!this.saved()?.sessionOutcomes?.[assignment.requiredSessionId];
+      if (!attempted && !this.completedIds().has(this.sourceId(assignment)))
+        return 'Record the earlier attempt or complete the original learning session before this revisit.';
+    }
+    if (
+      assignment.kind === 'review' &&
+      !assignment.requiredSessionId &&
+      !this.completedIds().has(this.sourceId(assignment))
+    )
+      return 'Complete the original session before starting this recall.';
+    if ((assignment.prerequisiteIds ?? []).some((id) => !this.completedIds().has(id)))
+      return 'Complete the linked foundation lessons before starting this session.';
+    return '';
   }
   protected currentRoute(assignment: StudyPlanAssignment): string[] {
     const item = this.availableDocuments().find(
-      (document) =>
-        (document.canonicalContentId ?? document.id) === assignment.id.replace(/:review:\d+$/, ''),
+      (document) => (document.canonicalContentId ?? document.id) === this.sourceId(assignment),
     );
     return item?.route ?? (item ? ['/', item.path, item.courseId, item.contentId] : []);
   }
+  protected readonly pendingSessions = computed(() => {
+    const plan = this.plan();
+    if (!plan) return [];
+    const sessions = [
+      ...plan.days.filter((day) => day.day < this.selectedDay()).flatMap((day) => day.assignments),
+      ...(plan.futureReviews ?? []).filter(
+        (item) => (item.reviewDueDay ?? Infinity) <= this.selectedDay(),
+      ),
+    ];
+    const seen = new Set<string>();
+    return sessions.filter((item) => {
+      if (this.completedIds().has(item.id) || this.outcome(item) || !this.canOpen(item))
+        return false;
+      const source = this.sourceId(item);
+      if (seen.has(source)) return false;
+      seen.add(source);
+      return true;
+    });
+  });
+
   protected async generatePlan(): Promise<void> {
-    if (!this.hasAccessibleSelection()) return;
+    if (!this.canGenerate()) return;
+    const selectedDsa = this.availableDocuments().filter(
+      (item) =>
+        item.contentType === 'dsa-problem' &&
+        this.topics().some(
+          (topic) => this.selectedTopicIds().has(topic.id) && studyPlanMatchesTopic(item, topic),
+        ),
+    );
+    if (
+      selectedDsa.some(
+        (item) => !Number.isFinite(this.studyOrder.get(item.canonicalContentId ?? item.contentId)),
+      )
+    ) {
+      this.rankingStatus.set('error');
+      return;
+    }
     const topicIds = [...this.selectedTopicIds()].filter((id) => this.availableTopicIds().has(id));
     const snapshot = buildStudyPlan(
       this.availableDocuments(),
       {
         days: this.days(),
+        goalType: this.goalType(),
+        familiarity: { ...this.familiarity() },
+        completedContentIds: [...this.completedIds()],
+        needsReviewContentIds: this.saved()?.needsReviewContentIds ?? [],
         dailyHours: this.dailyHours(),
         topicIds,
         accessTopicIds: [...this.availableTopicIds()],
       },
       this.topics(),
       this.studyOrder,
+      this.interviewOrder,
     );
     const previous = this.saved();
     const revision = (previous?.revision ?? 0) + 1;
@@ -248,6 +459,10 @@ export class StudyPlanPage implements OnInit {
       rankingVersion: this.rankingVersion,
       snapshot,
       completedIds: previous?.completedIds ?? [],
+      sessionOutcomes: previous?.sessionOutcomes ?? {},
+      attemptedContentIds: previous?.attemptedContentIds ?? [],
+      reviewNotes: previous?.reviewNotes ?? {},
+      needsReviewContentIds: previous?.needsReviewContentIds ?? [],
       shiftedDays: 0,
       history: [
         ...(previous?.history ?? []),
@@ -262,7 +477,12 @@ export class StudyPlanPage implements OnInit {
     this.persist('Plan ready. Saved on this browser.');
     await this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { days: this.days(), hours: this.dailyHours(), topics: topicIds.join(',') },
+      queryParams: {
+        days: this.days(),
+        hours: this.dailyHours(),
+        topics: topicIds.join(','),
+        approach: this.goalType(),
+      },
     });
   }
   protected toggleCompletion(assignment: StudyPlanAssignment): void {
@@ -272,6 +492,10 @@ export class StudyPlanPage implements OnInit {
     const completedIds = new Set(saved.completedIds);
     if (completedIds.has(assignment.id)) completedIds.delete(assignment.id);
     else completedIds.add(assignment.id);
+    if (assignment.sourceContentId && assignment.timebox === false) {
+      if (completedIds.has(assignment.id)) completedIds.add(assignment.sourceContentId);
+      else completedIds.delete(assignment.sourceContentId);
+    }
     this.saved.set({ ...saved, completedIds: [...completedIds] });
     this.persist('Progress saved on this browser. Completion records practice, not mastery.');
   }
@@ -352,10 +576,44 @@ export class StudyPlanPage implements OnInit {
         const days = value.snapshot.days.slice(index, index + 7);
         value.snapshot.weeks.push({
           number: value.snapshot.weeks.length + 1,
-          label: days[0]?.phase ?? '',
+          label:
+            value.snapshot.mode === 'interview-revision'
+              ? 'Interview revision sprint'
+              : (days[0]?.phase ?? ''),
           days,
         });
       }
+      if (
+        value.sessionOutcomes &&
+        (typeof value.sessionOutcomes !== 'object' ||
+          Array.isArray(value.sessionOutcomes) ||
+          Object.values(value.sessionOutcomes).some(
+            (outcome) => !['attempted', 'needs-review', 'completed'].includes(outcome),
+          ))
+      )
+        throw new Error('Invalid session outcome');
+      for (const ids of [value.attemptedContentIds, value.needsReviewContentIds])
+        if (ids && (!Array.isArray(ids) || ids.some((id) => typeof id !== 'string')))
+          throw new Error('Invalid progress');
+      if (
+        value.reviewNotes &&
+        (typeof value.reviewNotes !== 'object' ||
+          Array.isArray(value.reviewNotes) ||
+          Object.values(value.reviewNotes).some(
+            (note) => typeof note !== 'string' || note.length > 1000,
+          ))
+      )
+        throw new Error('Invalid review notes');
+      const familiarity = value.snapshot.config.familiarity;
+      if (
+        familiarity &&
+        (typeof familiarity !== 'object' ||
+          Array.isArray(familiarity) ||
+          Object.values(familiarity).some((v) => !['familiar', 'refresh', 'new'].includes(v)))
+      )
+        throw new Error('Invalid familiarity');
+      this.familiarity.set(familiarity ?? {});
+      this.goalType.set(value.snapshot.config.goalType ?? 'learning');
       this.saved.set(value);
       this.days.set(value.snapshot.config.days);
       this.dailyHours.set(value.snapshot.config.dailyHours);

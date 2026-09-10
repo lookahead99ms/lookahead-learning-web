@@ -342,6 +342,7 @@ test('counts lessons and questions separately from lesson/practice module contai
     path: 'grow',
     title: 'Sample course',
     chips: ['Contracts', 'State', 'Recovery'],
+    learningUnits: [{ id: 'intro', theoryModuleId: 'intro', practiceModuleId: 'intro-practice' }],
     modules: [
       { id: 'intro', title: 'Introduction', order: 1 },
       { id: 'intro-practice', title: 'Introduction Practice', order: 2 },
@@ -377,6 +378,12 @@ test('counts lessons and questions separately from lesson/practice module contai
   ]);
   await generateSearchIndex(root);
   const [course] = JSON.parse(await readFile(join(root, 'grow/catalog-overview.json')));
+  const shard = JSON.parse(await readFile(join(root, 'indexes/grow.json'), 'utf8'));
+  const lesson = shard.documents.find((item) => item.contentId === 'lesson');
+  const practice = shard.documents.find((item) => item.contentId === 'practice');
+  assert.deepEqual(practice.studyRelatedLessonIds, ['grow:sample:lesson']);
+  assert.equal(practice.studySequence, lesson.studySequence);
+  assert.equal(lesson.studyRelatedLessonIds, undefined);
   assert.equal(course.lessonCount, 1);
   assert.equal(course.questionCount, 2);
   assert.equal(course.moduleCount, 2);

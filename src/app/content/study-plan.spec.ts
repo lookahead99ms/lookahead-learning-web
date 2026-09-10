@@ -85,7 +85,11 @@ describe('study plan generator', () => {
     expect(plan.focusedDailyHours).toBe(9);
     expect(plan.bufferHours).toBe(6);
     expect(plan.days[1].assignments.some(({ reviewFromDay }) => reviewFromDay === 1)).toBe(true);
-    expect(plan.days[7].assignments.some(({ reviewFromDay }) => reviewFromDay === 1)).toBe(true);
+    expect(
+      [...plan.days.flatMap((day) => day.assignments), ...(plan.futureReviews ?? [])].some(
+        (item) => item.reviewFromDay === 1 && item.id.endsWith(':review:v2:7'),
+      ),
+    ).toBe(true);
     expect(plan.weeks).toHaveLength(2);
   });
 });
@@ -166,5 +170,57 @@ describe('published curriculum sequence', () => {
       accessTopicIds: ['dsa'],
     });
     expect(plan.days[0].assignments[0].id).toBe('foundations');
+  });
+});
+
+describe('bounded prerequisite and retrieval scheduling', () => {
+  const config = {
+    days: 30,
+    dailyHours: 2,
+    topicIds: ['java-foundations'],
+    accessTopicIds: ['java-foundations'],
+  };
+  it('interleaves an authored lesson with its practice before the next unit', () => {
+    const lesson = { ...document('lesson-a', 'learn', 'core-java'), studySequence: 0 };
+    const nextLesson = { ...document('lesson-b', 'learn', 'core-java'), studySequence: 1 };
+    const practice = {
+      ...document('practice-a', 'learn', 'core-java', 'q-and-a'),
+      studySequence: 0,
+      studyPrerequisiteIds: ['lesson-a'],
+    };
+    const plan = buildStudyPlan([lesson, nextLesson, practice], config);
+    expect(plan.days[0].assignments.map((item) => item.id)).toEqual(['lesson-a', 'practice-a']);
+  });
+  it('reports missing dependencies and cycles without enrolling unselected content', () => {
+    const a = { ...document('a', 'learn', 'core-java'), studyPrerequisiteIds: ['b'] };
+    const b = { ...document('b', 'learn', 'core-java'), studyPrerequisiteIds: ['a'] };
+    const missing = {
+      ...document('missing', 'learn', 'core-java'),
+      studyPrerequisiteIds: ['not-selected'],
+    };
+    const plan = buildStudyPlan([a, b, missing], config);
+    expect(plan.uniqueNewItems).toBe(0);
+    expect(plan.blockedItems?.map((item) => item.id)).toEqual(['a', 'b', 'missing']);
+    expect(plan.remainingNewItems).toBe(0);
+  });
+  it('retains every projected review through a short time window, with no daily review storms', () => {
+    const docs = Array.from({ length: 30 }, (_, i) =>
+      document(`lesson-${i}`, 'learn', 'core-java'),
+    );
+    const plan = buildStudyPlan(docs, { ...config, days: 7, dailyHours: 1 });
+    const reviews = plan.days.flatMap((day) =>
+      day.assignments.filter((item) => item.kind === 'review'),
+    );
+    expect(reviews.length + plan.futureReviews!.length).toBe(plan.uniqueNewItems * 5);
+    expect(plan.uniqueNewItems).toBeGreaterThan(2);
+    expect(plan.remainingNewItems).toBe(30 - plan.uniqueNewItems);
+    for (const day of plan.days) {
+      expect(day.focusedMinutes).toBeLessThanOrEqual(60);
+      const sources = day.assignments
+        .filter((item) => item.kind === 'review')
+        .map((item) => item.sourceContentId);
+      expect(new Set(sources).size).toBe(sources.length);
+    }
+    expect(buildStudyPlan(docs, { ...config, days: 7, dailyHours: 1 })).toEqual(plan);
   });
 });
