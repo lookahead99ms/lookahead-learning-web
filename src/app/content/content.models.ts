@@ -659,6 +659,10 @@ export interface ContentItemSummary {
 }
 
 export interface SearchDocument {
+  /** Explicit hard dependencies only; related lessons are optional refresh references. */
+  studyPrerequisiteIds?: string[];
+  studyRelatedLessonIds?: string[];
+  studySequence?: number;
   id: string;
   contentId: string;
   canonicalContentId?: string;

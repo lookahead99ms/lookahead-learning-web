@@ -76,12 +76,14 @@ p {
   min-width: 0;
 }
 input,
+textarea,
 select,
 button {
   font: inherit;
   color: inherit;
 }
 input[type='text'],
+textarea,
 select {
   min-width: 0;
   width: 100%;
@@ -131,6 +133,7 @@ a {
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
+textarea:focus-visible,
 select:focus-visible,
 summary:focus-visible {
   outline: 3px solid var(--accent-focus);
@@ -374,6 +377,7 @@ summary {
 }
 .session-footer {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
@@ -482,4 +486,16 @@ summary {
   .local-state {
     white-space: normal;
   }
+}
+
+textarea {
+  resize: vertical;
+  max-width: 100%;
+}
+
+.session-card details {
+  margin-bottom: 12px;
+}
+.session-card > a {
+  margin-block: 10px 14px;
 }

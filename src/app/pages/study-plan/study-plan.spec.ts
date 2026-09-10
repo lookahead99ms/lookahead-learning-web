@@ -3,7 +3,7 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import { BehaviorSubject, of, throwError } from 'rxjs';
+import { BehaviorSubject, Subject, of, throwError } from 'rxjs';
 import { ContentService } from '../../content/content.service';
 import { SearchDocument } from '../../content/content.models';
 import { StudyPlanPage } from './study-plan';
@@ -203,7 +203,15 @@ describe('StudyPlanPage', () => {
       discoveryKind: 'practice',
     };
     TestBed.overrideProvider(ContentService, {
-      useValue: { ...service, getSearchIndex: () => of([tool, problem]) },
+      useValue: {
+        ...service,
+        getSearchIndex: () => of([tool, problem]),
+        getHandsOnDsaIndex: () =>
+          of({
+            groups: [{ problems: [{ id: 'canonical-array', studyOrder: 1 }] }],
+            ranking: { status: 'released', rankingVersion: 'rank-v1' },
+          }),
+      },
     });
     const harness = await RouterTestingHarness.create();
     const page = await harness.navigateByUrl(
@@ -218,6 +226,90 @@ describe('StudyPlanPage', () => {
     await (page as any).generatePlan();
     expect((page as any).plan().uniqueNewItems).toBe(1);
     expect((page as any).plan().days[0].assignments[0].id).toBe('canonical-array');
+  });
+
+  it('waits for the released DSA ordering and supports retry without changing an existing plan', async () => {
+    const ranking = new Subject<any>();
+    const problem = {
+      ...document('canonical-array', 'algorithmic-patterns', 'free'),
+      contentType: 'dsa-problem',
+      discoveryKind: 'practice',
+    };
+    const getIndex = vi
+      .fn()
+      .mockReturnValueOnce(ranking)
+      .mockReturnValue(
+        of({
+          groups: [{ problems: [{ id: 'canonical-array', studyOrder: 1 }] }],
+          ranking: { status: 'released', rankingVersion: 'rank-v2' },
+        }),
+      );
+    TestBed.overrideProvider(ContentService, {
+      useValue: { ...service, getSearchIndex: () => of([problem]), getHandsOnDsaIndex: getIndex },
+    });
+    const harness = await RouterTestingHarness.create();
+    const page = await harness.navigateByUrl(
+      '/study-plan?topics=learn:algorithmic-patterns',
+      StudyPlanPage,
+    );
+    await (page as any).generatePlan();
+    expect((page as any).saved()).toBeNull();
+    expect((page as any).canGenerate()).toBe(false);
+    ranking.error(new Error('offline'));
+    harness.detectChanges();
+    expect(harness.routeNativeElement!.textContent).toContain('Retry DSA order');
+    (page as any).loadRanking();
+    await (page as any).generatePlan();
+    expect((page as any).saved().rankingVersion).toBe('rank-v2');
+    expect((page as any).plan().days[0].assignments[0].id).toBe('canonical-array');
+  });
+
+  it('rejects an incomplete released order for selected DSA instead of silently using fallback order', async () => {
+    const problem = {
+      ...document('missing-rank', 'algorithmic-patterns', 'free'),
+      contentType: 'dsa-problem',
+      discoveryKind: 'practice',
+    };
+    TestBed.overrideProvider(ContentService, {
+      useValue: { ...service, getSearchIndex: () => of([problem]) },
+    });
+    const harness = await RouterTestingHarness.create();
+    const page = await harness.navigateByUrl(
+      '/study-plan?topics=learn:algorithmic-patterns',
+      StudyPlanPage,
+    );
+    await (page as any).generatePlan();
+    expect((page as any).saved()).toBeNull();
+    expect((page as any).rankingStatus()).toBe('error');
+  });
+
+  it('requires explicit source completion for recall and prerequisite completion for practice', async () => {
+    const lesson = document('lesson', 'core-java', 'free');
+    const practice = {
+      ...document('practice', 'core-java', 'free'),
+      contentType: 'q-and-a',
+      studyPrerequisiteIds: ['lesson'],
+      discoveryKind: 'practice',
+    };
+    TestBed.overrideProvider(ContentService, {
+      useValue: { ...service, getSearchIndex: () => of([lesson, practice]) },
+    });
+    const harness = await RouterTestingHarness.create();
+    const page = await harness.navigateByUrl(
+      '/study-plan?topics=learn:core-java&hours=2',
+      StudyPlanPage,
+    );
+    await (page as any).generatePlan();
+    const assignments = (page as any).plan().days.flatMap((day: any) => day.assignments);
+    const recall = assignments.find(
+      (item: any) => item.kind === 'review' && item.sourceContentId === 'lesson',
+    );
+    const exercise = assignments.find((item: any) => item.id === 'practice');
+    expect((page as any).canOpen(recall)).toBe(false);
+    expect((page as any).canOpen(exercise)).toBe(false);
+    (page as any).toggleCompletion(assignments.find((item: any) => item.id === 'lesson'));
+    expect((page as any).canOpen(recall)).toBe(true);
+    expect((page as any).canOpen(exercise)).toBe(true);
   });
 
   it('does not describe a catalog-only offering as an entitlement restriction', async () => {
@@ -258,5 +350,84 @@ describe('StudyPlanPage', () => {
         (item) => item.textContent === 'Try again',
       ),
     ).toBe(true);
+  });
+  it('keeps revision attempts separate from canonical completion and restores the same sprint', async () => {
+    const lesson = document('foundation', 'core-java', 'free');
+    const practice = {
+      ...document('exercise', 'core-java', 'free'),
+      contentType: 'q-and-a',
+      discoveryKind: 'practice',
+      studyRelatedLessonIds: ['foundation'],
+    };
+    TestBed.overrideProvider(ContentService, {
+      useValue: { ...service, getSearchIndex: () => of([lesson, practice]) },
+    });
+    const harness = await RouterTestingHarness.create();
+    let page: any = await harness.navigateByUrl(
+      '/study-plan?days=7&hours=1&topics=learn:core-java&approach=interview',
+      StudyPlanPage,
+    );
+    await page.generatePlan();
+    const original = JSON.stringify(page.plan());
+    const exercise = page
+      .plan()
+      .days.flatMap((d: any) => d.assignments)
+      .find((a: any) => a.kind === 'new' && a.sourceContentId === 'exercise');
+    const recall = page
+      .plan()
+      .days.flatMap((d: any) => d.assignments)
+      .find((a: any) => a.kind === 'review' && a.sourceContentId === 'exercise');
+    expect(exercise.timebox).toBe(true);
+    expect(page.canOpen(exercise)).toBe(true);
+    expect(page.canOpen(recall)).toBe(false);
+    page.recordOutcome(exercise, 'needs-review');
+    harness.detectChanges();
+    const noteField = harness.routeNativeElement!.querySelector('textarea')!;
+    noteField.value = 'Check duplicate-key behavior.';
+    noteField.dispatchEvent(new Event('input'));
+    expect(page.reviewNote(exercise)).toBe('Check duplicate-key behavior.');
+    expect(page.completedIds().has('exercise')).toBe(false);
+    expect(page.saved().needsReviewContentIds).toEqual(['exercise']);
+    expect(page.canOpen(recall)).toBe(true);
+    page.shiftSchedule();
+    expect(JSON.stringify(page.plan())).toBe(original);
+    await harness.navigateByUrl('/exit');
+    page = await harness.navigateByUrl('/study-plan', StudyPlanPage);
+    expect(JSON.stringify(page.plan())).toBe(original);
+    expect(page.saved().needsReviewContentIds).toEqual(['exercise']);
+    expect(page.saved().rankingVersion).toBe('rank-v1');
+    expect(page.reviewNote(exercise)).toBe('Check duplicate-key behavior.');
+    page.recordOutcome(exercise, 'completed');
+    expect(page.completedIds().has('exercise')).toBe(true);
+    expect(page.saved().needsReviewContentIds).toEqual([]);
+  });
+
+  it('requires explicit learning completion for a novice and keeps related refresh separate from a hard prerequisite', async () => {
+    const lesson = document('foundation', 'core-java', 'free');
+    const practice = {
+      ...document('exercise', 'core-java', 'free'),
+      contentType: 'q-and-a',
+      discoveryKind: 'practice',
+      studyRelatedLessonIds: ['foundation'],
+    };
+    TestBed.overrideProvider(ContentService, {
+      useValue: { ...service, getSearchIndex: () => of([lesson, practice]) },
+    });
+    const harness = await RouterTestingHarness.create();
+    const page: any = await harness.navigateByUrl(
+      '/study-plan?days=7&topics=learn:core-java&approach=interview',
+      StudyPlanPage,
+    );
+    page.setFamiliarity('learn:core-java', 'new');
+    await page.generatePlan();
+    const items = page.plan().days.flatMap((d: any) => d.assignments);
+    const foundation = items.find(
+      (a: any) => a.kind === 'new' && a.sourceContentId === 'foundation',
+    );
+    const exercise = items.find((a: any) => a.kind === 'new' && a.sourceContentId === 'exercise');
+    expect(page.canOpen(exercise)).toBe(false);
+    page.toggleCompletion(foundation);
+    expect(page.completedIds().has('foundation')).toBe(true);
+    expect(page.canOpen(exercise)).toBe(true);
   });
 });

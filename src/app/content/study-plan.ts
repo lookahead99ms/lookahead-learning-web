@@ -1,4 +1,5 @@
 import { ContentPath, ContentType, SearchDocument } from './content.models';
+import { buildInterviewSprint } from './study-plan-sprint';
 
 export const STUDY_PLAN_DURATIONS = [7, 14, 21, 30, 50, 90, 120, 150, 180] as const;
 export const STUDY_PLAN_HOURS = [15, 12, 10, 9, 6, 5, 3, 2, 1] as const;
@@ -142,12 +143,16 @@ export interface StudyPlanConfig {
   dailyHours: number;
   topicIds: string[];
   accessTopicIds: string[];
+  goalType?: 'learning' | 'interview';
+  familiarity?: Record<string, 'familiar' | 'refresh' | 'new'>;
+  completedContentIds?: string[];
+  needsReviewContentIds?: string[];
 }
 
 export interface StudyPlanAssignment {
   id: string;
   kind: 'new' | 'review';
-  activity: 'Understand' | 'Practice' | 'Apply' | 'Recall';
+  activity: 'Understand' | 'Practice' | 'Apply' | 'Recall' | 'Attempt' | 'Refresh' | 'Rehearse';
   topicId: string;
   topicTitle: string;
   title: string;
@@ -156,6 +161,14 @@ export interface StudyPlanAssignment {
   route: string[];
   minutes: number;
   reviewFromDay?: number;
+  sourceContentId?: string;
+  prerequisiteIds?: string[];
+  reviewDueDay?: number;
+  relatedLessonIds?: string[];
+  timebox?: boolean;
+  instructions?: string;
+  requiredSessionId?: string;
+  coverageKey?: string;
 }
 
 export interface StudyPlanDay {
@@ -166,6 +179,7 @@ export interface StudyPlanDay {
   newCount: number;
   reviewCount: number;
   focusedMinutes: number;
+  bufferMinutes?: number;
 }
 
 export interface StudyPlanWeek {
@@ -184,6 +198,21 @@ export interface StudyPlan {
   weeks: StudyPlanWeek[];
   uniqueNewItems: number;
   reviewAssignments: number;
+  schedulingVersion?: string;
+  eligibleNewItems?: number;
+  remainingNewItems?: number;
+  blockedItems?: { id: string; title: string; prerequisiteIds: string[] }[];
+  futureReviews?: StudyPlanAssignment[];
+  overdueReviewCount?: number;
+  mode?: 'learning' | 'interview-revision';
+  topicCoverage?: {
+    id: string;
+    title: string;
+    scheduledItems: number;
+    availableItems: number;
+    minutes: number;
+    representedOutcomes: number;
+  }[];
 }
 
 const REVIEW_OFFSETS = [1, 2, 7, 14, 30];
@@ -193,7 +222,10 @@ export function buildStudyPlan(
   config: StudyPlanConfig,
   topics: StudyPlanTopic[] = STUDY_PLAN_TOPICS,
   studyOrder: ReadonlyMap<string, number> = new Map(),
+  interviewOrder: ReadonlyMap<string, number> = studyOrder,
 ): StudyPlan {
+  if (config.days === 7 && config.goalType === 'interview')
+    return buildInterviewSprint(documents, config, topics, interviewOrder);
   const selectedTopics = topics.filter((topic) => config.topicIds.includes(topic.id));
   const includedTopics = selectedTopics.filter((topic) => config.accessTopicIds.includes(topic.id));
   const excludedTopics = selectedTopics.filter(
@@ -201,7 +233,7 @@ export function buildStudyPlan(
   );
   const focusedDailyHours = Math.min(9, Math.max(1, config.dailyHours));
   const bufferHours = Math.max(0, config.dailyHours - focusedDailyHours);
-  const dailySlots = Math.min(10, Math.max(1, Math.floor((focusedDailyHours * 60) / 50)));
+  const dailyMinutes = focusedDailyHours * 60;
   const pools = new Map(
     includedTopics.map((topic) => [
       topic.id,
@@ -210,48 +242,141 @@ export function buildStudyPlan(
       ),
     ]),
   );
-  const cursors = new Map(includedTopics.map((topic) => [topic.id, 0]));
-  const history: StudyPlanAssignment[][] = [];
+  const allItems = new Map<string, StudyPlanAssignment>();
+  for (const pool of pools.values())
+    for (const item of pool) if (!allItems.has(item.id)) allItems.set(item.id, item);
+  const blocked = new Set<string>();
+  const visiting = new Set<string>();
+  const visited = new Set<string>();
+  const checkBlocked = (id: string): boolean => {
+    if (visiting.has(id)) {
+      blocked.add(id);
+      return true;
+    }
+    if (visited.has(id)) return blocked.has(id);
+    const item = allItems.get(id);
+    if (!item) return true;
+    visiting.add(id);
+    for (const dependency of item.prerequisiteIds ?? [])
+      if (checkBlocked(dependency)) blocked.add(id);
+    visiting.delete(id);
+    visited.add(id);
+    return blocked.has(id);
+  };
+  for (const id of allItems.keys()) checkBlocked(id);
   const usedIds = new Set<string>();
   const days: StudyPlanDay[] = [];
+  const reviewQueue: {
+    source: StudyPlanAssignment;
+    sourceDay: number;
+    interval: number;
+    dueDay: number;
+  }[] = [];
   let topicCursor = 0;
+  let lastNewDay = 0;
 
   for (let day = 1; day <= config.days; day += 1) {
-    const reviewLimit = Math.min(5, Math.max(1, Math.floor(dailySlots * 0.35)));
-    const reviews = reviewAssignments(history, day, reviewLimit);
     const consolidationDay = day % 7 === 0;
-    const requestedNewSlots = Math.max(0, dailySlots - reviews.length);
-    const newLimit = consolidationDay ? Math.ceil(requestedNewSlots / 2) : requestedNewSlots;
-    const newAssignments: StudyPlanAssignment[] = [];
-
+    const assignments: StudyPlanAssignment[] = [];
+    let minutesLeft = dailyMinutes;
+    const ready = (item: StudyPlanAssignment) =>
+      !usedIds.has(item.id) &&
+      !blocked.has(item.id) &&
+      (item.prerequisiteIds ?? []).every((id) => usedIds.has(id));
+    const nextNew = [...allItems.values()].find(
+      (item) => ready(item) && item.minutes <= minutesLeft,
+    );
+    // On small budgets, alternate a fitting new session with due recall rather than starving new work.
+    // This deterministic planning default is an estimate, not an optimized learning prescription.
+    const reserveNew = nextNew && !consolidationDay && day - lastNewDay > 1 ? nextNew.minutes : 0;
+    const reviewBudget = nextNew ? Math.max(20, Math.floor(dailyMinutes * 0.35)) : dailyMinutes;
+    let reviewMinutes = 0;
+    const reviewedToday = new Set<string>();
+    reviewQueue.sort(
+      (a, b) =>
+        a.dueDay - b.dueDay || a.sourceDay - b.sourceDay || a.source.id.localeCompare(b.source.id),
+    );
+    const scheduleReviews = (budget: number, reserve: number) => {
+      for (const due of reviewQueue) {
+        if (
+          due.dueDay > day ||
+          reviewedToday.has(due.source.id) ||
+          minutesLeft - reserve < 20 ||
+          reviewMinutes + 20 > budget
+        )
+          continue;
+        const interval = REVIEW_OFFSETS[due.interval];
+        assignments.push({
+          ...due.source,
+          id: `${due.source.id}:review:v2:${interval}`,
+          sourceContentId: due.source.id,
+          kind: 'review',
+          activity: 'Recall',
+          minutes: 20,
+          reviewFromDay: due.sourceDay,
+          reviewDueDay: due.dueDay,
+        });
+        reviewedToday.add(due.source.id);
+        minutesLeft -= 20;
+        reviewMinutes += 20;
+        due.interval += 1;
+        due.dueDay =
+          due.interval < REVIEW_OFFSETS.length
+            ? Math.max(day + 1, due.sourceDay + REVIEW_OFFSETS[due.interval])
+            : Infinity;
+      }
+    };
+    scheduleReviews(reviewBudget, reserveNew);
     let attempts = 0;
-    while (newAssignments.length < newLimit && attempts < includedTopics.length * dailySlots * 3) {
-      attempts += 1;
-      if (includedTopics.length === 0) break;
+    const newLimit = consolidationDay ? 5 : 10;
+    let newCount = 0;
+    while (newCount < newLimit && attempts < includedTopics.length) {
       const topic = includedTopics[topicCursor % includedTopics.length];
       topicCursor += 1;
-      const pool = pools.get(topic.id) ?? [];
-      let cursor = cursors.get(topic.id) ?? 0;
-      while (cursor < pool.length && usedIds.has(pool[cursor].id)) cursor += 1;
-      cursors.set(topic.id, cursor + 1);
-      const assignment = pool[cursor];
-      if (!assignment) continue;
-      usedIds.add(assignment.id);
-      newAssignments.push(assignment);
+      const item = (pools.get(topic.id) ?? []).find(
+        (candidate) => ready(candidate) && candidate.minutes <= minutesLeft,
+      );
+      if (!item) {
+        attempts += 1;
+        continue;
+      }
+      attempts = 0;
+      usedIds.add(item.id);
+      assignments.push(item);
+      minutesLeft -= item.minutes;
+      newCount += 1;
+      lastNewDay = day;
+      reviewQueue.push({
+        source: item,
+        sourceDay: day,
+        interval: 0,
+        dueDay: day + REVIEW_OFFSETS[0],
+      });
     }
-
-    const assignments = [...reviews, ...newAssignments];
-    history.push(assignments);
+    // Use otherwise idle minutes for overdue retrieval without exceeding the daily budget.
+    scheduleReviews(dailyMinutes, 0);
     days.push({
       day,
       phase: phaseFor(day, config.days),
       focus: focusFor(assignments, consolidationDay),
       assignments,
-      newCount: newAssignments.length,
-      reviewCount: reviews.length,
-      focusedMinutes: assignments.reduce((sum, assignment) => sum + assignment.minutes, 0),
+      newCount,
+      reviewCount: assignments.length - newCount,
+      focusedMinutes: dailyMinutes - minutesLeft,
     });
   }
+  const futureReviews = reviewQueue.flatMap((due) =>
+    REVIEW_OFFSETS.slice(due.interval).map((offset, index) => ({
+      ...due.source,
+      id: `${due.source.id}:review:v2:${offset}`,
+      sourceContentId: due.source.id,
+      kind: 'review' as const,
+      activity: 'Recall' as const,
+      minutes: 20,
+      reviewFromDay: due.sourceDay,
+      reviewDueDay: index === 0 ? due.dueDay : Math.max(due.dueDay + index, due.sourceDay + offset),
+    })),
+  );
 
   return {
     config,
@@ -262,6 +387,16 @@ export function buildStudyPlan(
     days,
     weeks: chunkWeeks(days),
     uniqueNewItems: usedIds.size,
+    schedulingVersion: 'study-schedule/v2',
+    eligibleNewItems: allItems.size,
+    remainingNewItems: allItems.size - usedIds.size - blocked.size,
+    blockedItems: [...blocked].map((id) => ({
+      id,
+      title: allItems.get(id)!.title,
+      prerequisiteIds: allItems.get(id)!.prerequisiteIds ?? [],
+    })),
+    futureReviews,
+    overdueReviewCount: futureReviews.filter((item) => item.reviewDueDay! <= config.days).length,
     reviewAssignments: days.reduce((sum, day) => sum + day.reviewCount, 0),
   };
 }
@@ -271,24 +406,31 @@ function prioritizedDocuments(
   topic: StudyPlanTopic,
   studyOrder: ReadonlyMap<string, number>,
 ): SearchDocument[] {
-  const priority: Record<ContentType, number> = {
-    theory: 0,
-    'dsa-pattern': 1,
-    'dsa-problem': 2,
-    'system-design': 2,
-    'language-comparison': 2,
-    'q-and-a': 3,
-    guide: 3,
-  };
   const seen = new Set<string>();
   // Generated search shards retain the published course/module/item sequence.
   // Use it instead of alphabetizing lesson titles when no released rank applies.
   const sourceOrder = new Map(documents.map((item, index) => [item.id, index]));
-  return documents
-    .filter((document) => studyPlanMatchesTopic(document, topic))
+  const matching = documents.filter((document) => studyPlanMatchesTopic(document, topic));
+  const dsaOnly = matching.every((document) => document.contentType === 'dsa-problem');
+  return matching
     .sort(
       (left, right) =>
-        priority[left.contentType] - priority[right.contentType] ||
+        (dsaOnly
+          ? (studyOrder.get(left.canonicalContentId ?? left.contentId) ?? Infinity) -
+            (studyOrder.get(right.canonicalContentId ?? right.contentId) ?? Infinity)
+          : 0) ||
+        (left.studySequence ?? sourceOrder.get(left.id) ?? 0) -
+          (right.studySequence ?? sourceOrder.get(right.id) ?? 0) ||
+        Number(
+          left.discoveryKind !== 'lesson' &&
+            left.contentType !== 'theory' &&
+            left.contentType !== 'dsa-pattern',
+        ) -
+          Number(
+            right.discoveryKind !== 'lesson' &&
+              right.contentType !== 'theory' &&
+              right.contentType !== 'dsa-pattern',
+          ) ||
         (studyOrder.get(left.canonicalContentId ?? left.contentId) ?? Infinity) -
           (studyOrder.get(right.canonicalContentId ?? right.contentId) ?? Infinity) ||
         (sourceOrder.get(left.id) ?? 0) - (sourceOrder.get(right.id) ?? 0),
@@ -308,6 +450,13 @@ function assignmentFor(document: SearchDocument, topic: StudyPlanTopic): StudyPl
   return {
     id: document.canonicalContentId ?? document.id,
     kind: 'new',
+    prerequisiteIds: [
+      ...new Set([
+        ...(document.studyPrerequisiteIds ?? []),
+        ...(document.studyRelatedLessonIds ?? []),
+      ]),
+    ],
+    relatedLessonIds: document.studyRelatedLessonIds ?? [],
     activity,
     topicId: topic.id,
     topicTitle: topic.title,
@@ -325,39 +474,6 @@ function activityFor(contentType: ContentType): StudyPlanAssignment['activity'] 
   return 'Apply';
 }
 
-function reviewAssignments(
-  history: StudyPlanAssignment[][],
-  day: number,
-  limit: number,
-): StudyPlanAssignment[] {
-  const reviews: StudyPlanAssignment[] = [];
-  const seen = new Set<string>();
-  const addFromDay = (sourceDay: number, sourceIndex = -1) => {
-    const source = history[sourceDay - 1]?.filter((assignment) => assignment.kind === 'new') ?? [];
-    const assignment = source.at(sourceIndex);
-    if (!assignment || seen.has(assignment.id) || reviews.length >= limit) return;
-    seen.add(assignment.id);
-    reviews.push({
-      ...assignment,
-      id: `${assignment.id}:review:${day}`,
-      kind: 'review',
-      activity: 'Recall',
-      minutes: 20,
-      reviewFromDay: sourceDay,
-    });
-  };
-
-  // Give every due interval one retrieval before using spare capacity on a second next-day item.
-  for (const offset of REVIEW_OFFSETS) {
-    if (reviews.length >= limit) break;
-    const sourceDay = day - offset;
-    if (sourceDay < 1) continue;
-    addFromDay(sourceDay);
-  }
-  if (reviews.length < limit && day > 1) addFromDay(day - 1, -2);
-  return reviews;
-}
-
 function phaseFor(day: number, totalDays: number): string {
   const progress = day / totalDays;
   if (progress <= 0.12) return 'Orient and diagnose';
@@ -372,7 +488,7 @@ function focusFor(assignments: StudyPlanAssignment[], consolidationDay: boolean)
   const topics = [...new Set(assignments.map(({ topicTitle }) => topicTitle))];
   return topics.length
     ? topics.slice(0, 2).join(' + ')
-    : 'Review the current plan and restore access';
+    : 'No additional work fits this day; review your coverage and available time';
 }
 
 function chunkWeeks(days: StudyPlanDay[]): StudyPlanWeek[] {

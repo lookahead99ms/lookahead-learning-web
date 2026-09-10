@@ -42,6 +42,36 @@
           </select>
         </label>
       </div>
+      <label class="field"
+        >Plan approach
+        <select [value]="goalType()" (change)="goalType.set($any($event.target).value)">
+          <option value="interview">Interview preparation</option>
+          <option value="learning">Learn foundations and build depth</option>
+        </select>
+      </label>
+      @if (days() === 7 && goalType() === 'interview') {
+        <p class="budget-note">
+          Interview revision sprint: refresh familiar ideas, attempt representative tasks and
+          revisit gaps. A short deadline does not establish prior knowledge.
+        </p>
+        @for (topic of selectedTopics(); track topic.id) {
+          <label class="field"
+            >{{ topic.title }} — your starting point
+            <select
+              [value]="familiarity()[topic.id] || 'refresh'"
+              (change)="setFamiliarity(topic.id, $any($event.target).value)"
+            >
+              <option value="refresh">Needs a refresh</option>
+              <option value="familiar">Familiar — practise and explain</option>
+              <option value="new">New to me — learn foundations</option>
+            </select>
+          </label>
+        }
+        <p class="budget-note">
+          These are your own starting-point estimates, separate from recorded completion. New
+          subjects need more time; choose foundation learning for a full learning sequence.
+        </p>
+      }
       <details class="offering-details" open>
         <summary>
           Choose your focus
@@ -107,12 +137,15 @@
             : 'Learning, practice and recall stay within your daily budget.'
         }}
       </p>
-      <button
-        class="primary"
-        type="button"
-        [disabled]="!hasAccessibleSelection()"
-        (click)="generatePlan()"
-      >
+      @if (needsDsaRanking() && rankingStatus() === 'loading') {
+        <p role="status">Loading the reviewed DSA order before building your plan…</p>
+      } @else if (needsDsaRanking() && rankingStatus() === 'error') {
+        <div role="alert">
+          <p>The reviewed DSA order could not be loaded. Your saved plan is unchanged.</p>
+          <button type="button" (click)="loadRanking()">Retry DSA order</button>
+        </div>
+      }
+      <button class="primary" type="button" [disabled]="!canGenerate()" (click)="generatePlan()">
         {{ saved() ? 'Update my plan' : 'Build my plan' }}
       </button>
       @if (saved()) {
@@ -127,12 +160,22 @@
         <header class="active-heading">
           <div>
             <p class="eyebrow">Your active plan · Revision {{ saved()!.revision }}</p>
-            <h2 id="active-heading">{{ saved()!.goal }}</h2>
+            <h2 id="active-heading">
+              {{
+                activePlan.mode === 'interview-revision'
+                  ? 'Interview revision sprint'
+                  : saved()!.goal
+              }}
+            </h2>
+            @if (activePlan.mode === 'interview-revision') {
+              <p>{{ saved()!.goal }}</p>
+            }
             <p>
               {{ activePlan.config.days }} study days
               @if (saved()!.shiftedDays) {
                 · {{ saved()!.shiftedDays }} recovery
-                {{ saved()!.shiftedDays === 1 ? 'day' : 'days' }} added
+                {{ saved()!.shiftedDays === 1 ? 'day' : 'days' }} added ·
+                {{ activePlan.config.days + saved()!.shiftedDays }} days including recovery
               }
             </p>
           </div>
@@ -166,22 +209,36 @@
                 <dd>{{ weekAllocation().recall }}m</dd>
               </div>
             </dl>
-            <p>Allocation follows your selected curriculum and available time.</p>
+            <p>
+              Session times are estimates. Revision timeboxes record an attempt or refresh, not full
+              content completion. Revisits wait for the earlier attempt or learning session.
+            </p>
           </div>
         </section>
         <div class="metrics">
           <div>
-            <span>Completed sessions</span
+            <span>{{
+              activePlan.mode === 'interview-revision' ? 'Recorded sessions' : 'Completed sessions'
+            }}</span
             ><strong
               >{{ completion().done }} <small>/ {{ completion().total }}</small></strong
             ><progress
               [value]="completion().done"
               [max]="completion().total || 1"
-              aria-label="Completed sessions"
+              [attr.aria-label]="
+                activePlan.mode === 'interview-revision'
+                  ? 'Recorded sessions'
+                  : 'Completed sessions'
+              "
             ></progress>
           </div>
           <div>
-            <span>New curriculum items</span><strong>{{ activePlan.uniqueNewItems }}</strong>
+            <span>{{
+              activePlan.mode === 'interview-revision'
+                ? 'Distinct planned items'
+                : 'New curriculum items'
+            }}</span
+            ><strong>{{ activePlan.uniqueNewItems }}</strong>
             <p>{{ activePlan.reviewAssignments }} scheduled retrievals</p>
           </div>
           <div>
@@ -193,6 +250,79 @@
             <p>Completing a session does not establish mastery.</p>
           </div>
         </div>
+        @if (activePlan.eligibleNewItems !== undefined) {
+          <section class="panel" aria-label="Plan coverage">
+            <h2>What fits your window</h2>
+            <p>
+              {{ activePlan.uniqueNewItems }} of {{ activePlan.eligibleNewItems }} selected
+              curriculum items are scheduled.
+            </p>
+            <p>
+              {{ activePlan.remainingNewItems }} remain outside this window;
+              {{ activePlan.blockedItems?.length || 0 }} are blocked by required foundations outside
+              your selection or an unresolved dependency.
+            </p>
+            @if (activePlan.mode === 'interview-revision') {
+              <p>
+                {{ activePlan.futureReviews?.length || 0 }} next-revisit suggestions are retained.
+                These are forecasts, not overdue obligations; completion and recorded gaps determine
+                what you revisit.
+              </p>
+              <p>
+                Attempted items: {{ revisionProgress().attempted }} ·
+                {{ revisionProgress().completed }} explicitly completed ·
+                {{ revisionProgress().needsReview }} marked for review. Attempt and review history
+                is retained when you replan.
+              </p>
+              <ul>
+                @for (topic of activePlan.topicCoverage || []; track topic.id) {
+                  <li>
+                    {{ topic.title }}: {{ topic.scheduledItems }} of
+                    {{ topic.availableItems }} eligible items ·
+                    {{ topic.representedOutcomes }} curriculum areas · {{ topic.minutes }} scheduled
+                    minutes.
+                    @if (!topic.scheduledItems) {
+                      <strong>Not represented in this window.</strong>
+                    }
+                  </li>
+                }
+              </ul>
+              <p>
+                Selected subjects share one budget. These are representative sessions, not complete
+                topic coverage or an interview-readiness guarantee. Remaining daily time is catch-up
+                or rest.
+              </p>
+            } @else {
+              <p>
+                {{ activePlan.futureReviews?.length || 0 }} projected recalls remain beyond this
+                schedule, including {{ activePlan.overdueReviewCount || 0 }} carried over because of
+                limited time.
+              </p>
+            }
+            <p>
+              Choose more time, a longer window, or a smaller focus to change coverage. Future
+              recalls are planned opportunities, not completed work.
+            </p>
+            @if (activePlan.blockedItems?.length) {
+              <details>
+                <summary>See required foundation lessons</summary>
+                <ul>
+                  @for (item of requiredFoundations(); track item.id) {
+                    <li>
+                      {{ item.title }}
+                      @if (item.selectable && item.topic) {
+                        <button type="button" (click)="toggleTopic(item.topic, true)">
+                          Select {{ item.topic.title }}
+                        </button>
+                      }
+                    </li>
+                  }
+                </ul>
+                <p>Selections apply only when you choose Update my plan.</p>
+              </details>
+            }
+          </section>
+        }
         <section class="panel recovery">
           <p class="eyebrow">Make room for real life</p>
           <h2>Missed a day? Keep your direction.</h2>
@@ -236,14 +366,50 @@
             </select></label
           >
         </div>
+        @if (pendingSessions().length) {
+          <section class="panel" aria-label="Unfinished earlier sessions">
+            <h3>{{ pendingSessions().length }} earlier sessions are still waiting</h3>
+            <p>
+              They stay in your plan. Use an earlier study day or add recovery time; no work has
+              been marked complete automatically.
+            </p>
+            @for (item of pendingSessions().slice(0, 5); track item.id) {
+              <p>{{ item.title }} · {{ item.minutes }} estimated minutes</p>
+              <a [routerLink]="currentRoute(item)"
+                >Open {{ item.activity === 'Recall' ? 'recall' : 'session' }}</a
+              >
+              @if (item.timebox) {
+                <button type="button" (click)="recordOutcome(item, 'attempted')">
+                  Record attempt / refresh
+                </button>
+                <button type="button" (click)="recordOutcome(item, 'needs-review')">
+                  Needs review
+                </button>
+              } @else {
+                <button
+                  type="button"
+                  (click)="toggleCompletion(item)"
+                  [attr.aria-label]="'Mark complete: ' + item.title"
+                >
+                  Mark complete
+                </button>
+              }
+            }
+          </section>
+        }
         @if (currentDay(); as day) {
-          <p class="day-focus">{{ day.focus }} · {{ day.focusedMinutes }} scheduled minutes</p>
+          <p class="day-focus">
+            {{ day.focus }} · {{ day.focusedMinutes }} scheduled minutes
+            @if (day.bufferMinutes !== undefined) {
+              · {{ day.bufferMinutes }} minutes for catch-up / notes / rest
+            }
+          </p>
           <div class="compass-sessions">
             @for (assignment of day.assignments; track assignment.id) {
               <article class="session-card" [class.is-done]="completedIds().has(assignment.id)">
                 <div class="session-meta">
                   <span>{{ assignment.activity }}</span
-                  ><span>{{ assignment.minutes }} minutes</span>
+                  ><span>{{ assignment.minutes }} estimated minutes</span>
                 </div>
                 <h3>{{ assignment.title }}</h3>
                 <p>
@@ -252,30 +418,72 @@
                     · Recall from day {{ assignment.reviewFromDay }}
                   }
                 </p>
+                @if (assignment.instructions) {
+                  <p>{{ assignment.instructions }}</p>
+                }
+                @if (refreshLinks(assignment).length) {
+                  <details>
+                    <summary>Related lesson for targeted refresh</summary>
+                    <p>
+                      Optional reference; this link alone is not a prerequisite or a completed
+                      lesson.
+                    </p>
+                    @for (link of refreshLinks(assignment); track link.title) {
+                      <p>
+                        <a [routerLink]="link.route">{{ link.title }}</a>
+                      </p>
+                    }
+                  </details>
+                }
                 @if (canOpen(assignment)) {
                   <a [routerLink]="currentRoute(assignment)"
                     >Open {{ assignment.activity === 'Recall' ? 'for recall' : 'session' }}</a
                   >
-                  <div class="session-footer">
-                    <span>{{
-                      completedIds().has(assignment.id) ? 'Completed' : 'Ready when you are'
-                    }}</span
-                    ><button
-                      type="button"
-                      [attr.aria-label]="
-                        (completedIds().has(assignment.id)
-                          ? 'Mark incomplete: '
-                          : 'Mark complete: ') + assignment.title
-                      "
-                      (click)="toggleCompletion(assignment)"
-                    >
-                      {{ completedIds().has(assignment.id) ? 'Mark incomplete' : 'Mark complete' }}
-                    </button>
-                  </div>
+                  @if (assignment.timebox) {
+                    <label class="field"
+                      >What needs another look?
+                      <textarea
+                        rows="3"
+                        maxlength="1000"
+                        [value]="reviewNote(assignment)"
+                        (input)="saveReviewNote(assignment, $any($event.target).value)"
+                      ></textarea>
+                    </label>
+                    <p>{{ outcome(assignment) || 'Not yet recorded' }}</p>
+                    <div class="session-footer">
+                      <button type="button" (click)="recordOutcome(assignment, 'attempted')">
+                        Record attempt / refresh
+                      </button>
+                      <button type="button" (click)="recordOutcome(assignment, 'needs-review')">
+                        Needs review
+                      </button>
+                      <button type="button" (click)="recordOutcome(assignment, 'completed')">
+                        I completed the full content
+                      </button>
+                    </div>
+                  } @else {
+                    <div class="session-footer">
+                      <span>{{
+                        completedIds().has(assignment.id) ? 'Completed' : 'Ready when you are'
+                      }}</span
+                      ><button
+                        type="button"
+                        [attr.aria-label]="
+                          (completedIds().has(assignment.id)
+                            ? 'Mark incomplete: '
+                            : 'Mark complete: ') + assignment.title
+                        "
+                        (click)="toggleCompletion(assignment)"
+                      >
+                        {{
+                          completedIds().has(assignment.id) ? 'Mark incomplete' : 'Mark complete'
+                        }}
+                      </button>
+                    </div>
+                  }
                 } @else {
                   <p class="unavailable">
-                    Currently unavailable. Your history is preserved; this session cannot be opened
-                    or completed.
+                    {{ assignmentUnavailableReason(assignment) }}
                   </p>
                 }
               </article>
