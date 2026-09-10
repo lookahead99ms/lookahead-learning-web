@@ -1,3 +1,4 @@
+import { TopicShortcuts } from '../../core/topic-shortcuts';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -28,7 +29,7 @@ const VISIBLE_TAG_LIMIT = 60;
 
 @Component({
   selector: 'app-search',
-  imports: [PlatformHeader, FormsModule, RouterLink, CodingSolutionTabs],
+  imports: [TopicShortcuts, PlatformHeader, FormsModule, RouterLink, CodingSolutionTabs],
   templateUrl: './search.html',
   styleUrl: './search.css',
 })

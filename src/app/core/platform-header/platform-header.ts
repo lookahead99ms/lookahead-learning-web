@@ -1,12 +1,17 @@
 import {
   Component,
+  AfterViewInit,
+  OnDestroy,
   ElementRef,
   HostListener,
   Input,
+  ViewChild,
   computed,
   inject,
   signal,
 } from '@angular/core';
+import { HeaderNavigation } from './header-navigation';
+import { TopicShortcuts } from '../topic-shortcuts';
 import { FormsModule } from '@angular/forms';
 import { PlatformThemeService } from '../platform-theme';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
@@ -19,30 +24,8 @@ type HeaderSuggestion = {
   query: string;
   route?: string[];
   queryParams?: Record<string, string>;
-  style?: 'learn' | 'grow' | 'look-ahead' | 'library' | 'search';
   detail?: string;
 };
-
-const PERSISTENT_SUGGESTIONS: HeaderSuggestion[] = [
-  { type: 'Path', label: 'Learn', query: 'Learn', route: ['/learn'], style: 'learn' },
-  { type: 'Path', label: 'Grow', query: 'Grow', route: ['/grow'], style: 'grow' },
-  {
-    type: 'Path',
-    label: 'Look Ahead',
-    query: 'Look Ahead',
-    route: ['/look-ahead'],
-    style: 'look-ahead',
-  },
-  {
-    type: 'Question',
-    label: 'Interview practice',
-    query: '',
-    route: ['/search'],
-    queryParams: { kind: 'practice' },
-    style: 'library',
-  },
-  { type: 'Search', label: 'Search all content', query: '', route: ['/search'], style: 'search' },
-];
 
 const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
   {
@@ -85,7 +68,7 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
 
 @Component({
   selector: 'app-platform-header',
-  imports: [FormsModule, RouterLink, RouterLinkActive],
+  imports: [HeaderNavigation, TopicShortcuts, FormsModule, RouterLink, RouterLinkActive],
   templateUrl: './platform-header.html',
   styles: [
     `
@@ -137,26 +120,22 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         transform: translateX(-50%);
       }
       .header-search-form.search-palette .header-search-input {
-        height: 52px;
+        height: 44px;
         font-size: 1rem;
       }
       .header-search-form.search-palette .header-search-suggestions {
         max-height: calc(100dvh - 180px);
         overflow-y: auto;
-        top: 52px;
+        top: calc(100% - 1px);
         padding: 14px;
       }
       .header-search-field {
         position: relative;
       }
-      .header-search-form.suggestions-open .header-search-input {
-        border-radius: 999px 999px 0 0;
-        border-bottom-color: transparent;
-      }
       .header-search-icon {
         position: absolute;
         top: 50%;
-        left: 14px;
+        inset-inline-start: 14px;
         width: 15px;
         height: 15px;
         color: var(--accent-link);
@@ -166,11 +145,11 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
       .header-search-input {
         width: 100%;
         height: 42px;
-        padding: 0 14px 0 38px;
-        border: 1px solid var(--line);
-        border-radius: 999px;
+        padding: 0 6px 0 32px;
+        border: 0;
+        border-radius: 3px;
         color: var(--text-strong);
-        background: var(--surface-page);
+        background: transparent;
         font: inherit;
         font-size: 0.86rem;
         transition:
@@ -178,8 +157,7 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
           border-radius 160ms ease;
       }
       .header-search-input:focus {
-        border-color: var(--accent-focus);
-        outline: 3px solid var(--accent-focus);
+        outline: none;
       }
       .header-search-suggestions {
         position: absolute;
@@ -193,49 +171,6 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         border-radius: 0 0 14px 14px;
         background: var(--surface-page);
         box-shadow: 0 16px 34px var(--shadow);
-      }
-      .persistent-suggestions {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
-        gap: 12px;
-      }
-      .persistent-suggestions .header-search-suggestion {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-        max-width: none;
-        min-height: 34px;
-        padding: 9px 12px;
-        border: 1px solid transparent;
-        border-radius: 8px;
-        color: var(--text-strong);
-        background: var(--surface-subtle);
-        cursor: pointer;
-        font: inherit;
-        text-align: center;
-        white-space: nowrap;
-      }
-      .persistent-suggestions .header-search-suggestion:hover,
-      .persistent-suggestions .header-search-suggestion:focus-visible {
-        background: var(--surface-accent);
-        outline: none;
-      }
-      .persistent-suggestions .header-search-suggestion.learn {
-        color: var(--accent-link);
-      }
-      .persistent-suggestions .header-search-suggestion.grow {
-        color: var(--warning);
-      }
-      .persistent-suggestions .header-search-suggestion.look-ahead {
-        color: var(--text-body);
-      }
-      .persistent-suggestions .header-search-suggestion.library {
-        color: var(--accent-link);
-        background: var(--surface-accent);
-      }
-      .persistent-suggestions .header-search-suggestion.search {
-        color: var(--accent-link);
       }
       .dynamic-suggestions {
         display: block;
@@ -257,31 +192,14 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         background: transparent;
         cursor: pointer;
         font: inherit;
-        text-align: left;
+        text-align: start;
+        text-decoration: none;
       }
       .dynamic-suggestions .header-search-suggestion:hover,
       .dynamic-suggestions .header-search-suggestion:focus-visible {
         background: var(--surface-accent);
         color: var(--text-strong);
         outline: none;
-      }
-      .header-search-suggestion .suggestion-icon {
-        display: inline-grid;
-        place-items: center;
-        width: 18px;
-        height: 18px;
-      }
-      .header-search-suggestion .suggestion-icon svg {
-        width: 14px;
-        height: 14px;
-      }
-      .persistent-suggestions .suggestion-label {
-        display: inline-block;
-        max-width: 100%;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        font-size: 0.82rem;
-        font-weight: 700;
       }
       .dynamic-suggestions .suggestion-type {
         padding-top: 2px;
@@ -645,9 +563,76 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         }
       }
     `,
+    `
+      .platform-navigation {
+        gap: 12px;
+      }
+      .header-search-field {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px;
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        background: var(--surface);
+      }
+      .header-search-field:focus-within {
+        border-color: var(--accent-strong);
+        outline: 2px solid var(--accent-strong);
+        outline-offset: 2px;
+      }
+      .header-search-field .header-search-input {
+        min-width: 0;
+        width: 100%;
+        padding-inline: 32px 6px;
+      }
+      .search-submit {
+        flex-shrink: 0;
+        min-height: 44px;
+        padding: 10px 26px;
+        border-radius: 3px;
+        font-size: 14px;
+        background: var(--accent-strong);
+        color: var(--accent-on-primary);
+        border: 0;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .search-submit:focus-visible {
+        outline: 2px solid var(--accent-strong);
+        outline-offset: 3px;
+      }
+      @media (max-width: 600px) {
+        .platform-navigation {
+          gap: 6px;
+        }
+        .search-submit {
+          padding: 10px 14px;
+        }
+      }
+    `,
   ],
 })
-export class PlatformHeader {
+export class PlatformHeader implements AfterViewInit, OnDestroy {
+  private headerResizeObserver?: ResizeObserver;
+  ngAfterViewInit(): void {
+    const header = this.elementRef.nativeElement.querySelector<HTMLElement>('.platform-header');
+    const page = this.elementRef.nativeElement.parentElement;
+    if (!header || !page) return;
+    const updateHeight = () => {
+      const height = header.getBoundingClientRect().height;
+      if (height > 0) page.style.setProperty('--platform-header-height', `${height}px`);
+    };
+    updateHeight();
+    if (typeof ResizeObserver !== 'undefined') {
+      this.headerResizeObserver = new ResizeObserver(updateHeight);
+      this.headerResizeObserver.observe(header);
+    }
+  }
+  ngOnDestroy(): void {
+    this.headerResizeObserver?.disconnect();
+  }
+
   protected readonly theme = inject(PlatformThemeService);
   @Input() showSearch = false;
   private readonly router = inject(Router);
@@ -660,7 +645,11 @@ export class PlatformHeader {
   )
     ? '⌘K'
     : 'Ctrl K';
-  protected readonly persistentSuggestions = PERSISTENT_SUGGESTIONS;
+  @ViewChild(HeaderNavigation) private navigation?: HeaderNavigation;
+  protected closeForNavigation(): void {
+    this.closeSearchPalette(false);
+    this.profileMenuOpen.set(false);
+  }
   protected readonly profileMenuOpen = signal(false);
   protected readonly searchQuery = signal('');
   protected readonly suggestionsOpen = signal(false);
@@ -760,6 +749,7 @@ export class PlatformHeader {
   }
 
   private openSearchPalette(): void {
+    this.navigation?.close();
     this.searchReturnFocus = this.elementRef.nativeElement.ownerDocument
       .activeElement as HTMLElement | null;
     this.profileMenuOpen.set(false);
@@ -937,6 +927,8 @@ export class PlatformHeader {
   }
 
   protected toggleProfileMenu(): void {
+    this.navigation?.close();
+    this.closeSearchPalette(false);
     this.profileMenuOpen.update((open) => !open);
   }
 

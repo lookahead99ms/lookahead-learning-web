@@ -1,3 +1,4 @@
+import { provideHttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
@@ -10,6 +11,7 @@ describe('PlatformHeader account disclosure', () => {
       imports: [PlatformHeader],
       providers: [
         provideRouter([]),
+        provideHttpClient(),
         {
           provide: ContentService,
           useValue: { getSearchIndex: () => of([]) },
@@ -55,7 +57,7 @@ describe('PlatformHeader account disclosure', () => {
     expect(document.activeElement).toBe(trigger);
   });
 
-  it('keeps interview practice discoverable in the search palette', () => {
+  it('provides five direct native topic links instead of redundant Search entries', () => {
     const fixture = TestBed.createComponent(PlatformHeader);
     fixture.detectChanges();
 
@@ -64,10 +66,19 @@ describe('PlatformHeader account disclosure', () => {
     );
     fixture.detectChanges();
 
-    const labels = [...fixture.nativeElement.querySelectorAll('.persistent-suggestions strong')]
-      .map((element: Element) => element.textContent?.trim())
-      .filter(Boolean);
-    expect(labels).toContain('Interview practice');
+    const links = [
+      ...fixture.nativeElement.querySelectorAll('app-topic-shortcuts a'),
+    ] as HTMLAnchorElement[];
+    expect(links.map((link) => link.getAttribute('href'))).toEqual([
+      '/learn/hands-on-dsa',
+      '/look-ahead/system-design',
+      '/grow/ai-assisted-development',
+      '/learn/core-java',
+      '/look-ahead/behavioral-carl',
+    ]);
+    expect(fixture.nativeElement.querySelectorAll('.search-submit').length).toBe(1);
+    expect(fixture.nativeElement.textContent).not.toContain('View all search results');
+    expect(fixture.nativeElement.textContent).not.toContain('Interview practice');
   });
   it('opens one quick search entry without navigating and restores focus on Escape', async () => {
     const fixture = TestBed.createComponent(PlatformHeader);
@@ -141,7 +152,7 @@ describe('PlatformHeader account disclosure', () => {
     },
   );
 
-  it('keeps keyboard focus inside quick search and exposes a native full-results link', async () => {
+  it('keeps keyboard focus inside quick search after removing the redundant footer link', async () => {
     const fixture = TestBed.createComponent(PlatformHeader);
     fixture.detectChanges();
     (fixture.nativeElement.querySelector('.header-search-trigger') as HTMLButtonElement).click();
@@ -150,8 +161,9 @@ describe('PlatformHeader account disclosure', () => {
     input.value = 'spring transactions';
     input.dispatchEvent(new Event('input'));
     fixture.detectChanges();
-    const link = fixture.nativeElement.querySelector('.search-palette-hint a') as HTMLAnchorElement;
-    expect(link.getAttribute('href')).toBe('/search?q=spring%20transactions');
+    const links = fixture.nativeElement.querySelectorAll('.search-palette a');
+    const link = links[links.length - 1] as HTMLAnchorElement;
+    expect(link.getAttribute('href')).toBe('/look-ahead/behavioral-carl');
     input.focus();
     input.dispatchEvent(
       new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true }),
@@ -179,5 +191,48 @@ describe('PlatformHeader account disclosure', () => {
       queryParams: { q: 'transactions' },
     });
     expect(fixture.nativeElement.querySelector('[role="dialog"]')).toBeNull();
+  });
+});
+
+describe('PlatformHeader sticky context sizing', () => {
+  it('updates breadcrumb offset after responsive header resizing and disconnects on teardown', async () => {
+    let resize: () => void = () => {};
+    let height = 76;
+    const disconnect = vi.fn();
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(callback: () => void) {
+          resize = callback;
+        }
+        observe() {}
+        disconnect = disconnect;
+      },
+    );
+    const measure = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(() => ({ height }) as DOMRect);
+    try {
+      await TestBed.configureTestingModule({
+        imports: [PlatformHeader],
+        providers: [
+          provideRouter([]),
+          provideHttpClient(),
+          { provide: ContentService, useValue: { getSearchIndex: () => of([]) } },
+        ],
+      }).compileComponents();
+      const fixture = TestBed.createComponent(PlatformHeader);
+      fixture.detectChanges();
+      const page = fixture.nativeElement.parentElement as HTMLElement;
+      expect(page.style.getPropertyValue('--platform-header-height')).toBe('76px');
+      height = 140;
+      resize();
+      expect(page.style.getPropertyValue('--platform-header-height')).toBe('140px');
+      fixture.destroy();
+      expect(disconnect).toHaveBeenCalledOnce();
+    } finally {
+      measure.mockRestore();
+      vi.unstubAllGlobals();
+    }
   });
 });

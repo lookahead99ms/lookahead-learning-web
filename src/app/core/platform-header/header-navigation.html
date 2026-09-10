@@ -1,0 +1,103 @@
+@for (path of paths; track path.id) {
+  <span
+    class="path-entry"
+    (pointerenter)="hoverPath($event, path.id)"
+    (pointerleave)="leaveSurface($event)"
+  >
+    <a
+      [href]="'/' + path.id"
+      [id]="'browse-' + path.id"
+      [attr.aria-current]="currentPath(path.id) ? 'page' : null"
+      [attr.aria-expanded]="activePath() === path.id"
+      [attr.aria-controls]="'navigation-' + path.id"
+      aria-describedby="navigation-help"
+      (pointerdown)="rememberPointer($event)"
+      (click)="activateLink($event, path.id)"
+      (keydown)="openWithKeyboard($event, path.id)"
+      >{{ path.label }}</a
+    >
+  </span>
+  @if (activePath() === path.id) {
+    <section
+      class="navigation-panel"
+      (pointerenter)="keepOpen()"
+      (pointerleave)="leaveSurface($event)"
+      [id]="'navigation-' + path.id"
+      [attr.aria-label]="'Browse ' + path.label"
+    >
+      <div class="panel-heading">
+        <a class="panel-action panel-explore" [routerLink]="'/' + path.id">Explore all {{ path.label }}</a>
+        <button class="panel-action panel-close" type="button" (click)="close(true)">Close navigation</button>
+      </div>
+      @if (loading()) {
+        <p role="status">Loading courses…</p>
+      }
+      @if (error()) {
+        <p role="status">Course shortcuts could not load. Use the catalog link above.</p>
+      }
+      <div class="navigation-groups">
+        @for (group of groups(); track group.id) {
+          <section class="navigation-group">
+            <h2>
+              <a [routerLink]="'/' + path.id" [queryParams]="group.id ? { group: group.id } : {}">{{
+                group.title
+              }}</a>
+            </h2>
+            <ul>
+              @for (course of group.courses; track course.id) {
+                <li (pointerenter)="hoverCourse($event, course)" (pointerleave)="cancelOpening()">
+                  <div class="course-row">
+                    <a
+                      [href]="'/' + path.id + '/' + course.id"
+                      [attr.aria-current]="currentCourse(path.id, course.id) ? 'page' : null"
+                      [attr.aria-expanded]="
+                        course.hasHighlights ? selectedCourse() === course.id : null
+                      "
+                      [attr.aria-controls]="course.hasHighlights ? 'highlights-' + course.id : null"
+                      [attr.aria-describedby]="course.hasHighlights ? 'navigation-help' : null"
+                      (pointerdown)="rememberPointer($event)"
+                      (click)="activateLink($event, path.id, course)"
+                      (keydown)="openWithKeyboard($event, path.id, course)"
+                      >{{ course.title }}</a
+                    >
+                  </div>
+                  @if (selectedCourse() === course.id) {
+                    <div
+                      class="course-highlights"
+                      tabindex="-1"
+                      [attr.aria-label]="course.title + ' highlights'"
+                      [id]="'highlights-' + course.id"
+                    >
+                      <p class="highlights-label">Course highlights</p>
+                      @if (highlightLoading()) {
+                        <p role="status">Loading highlights…</p>
+                      }
+                      @if (highlightError()) {
+                        <p role="status">
+                          Highlights could not load. Open the course above to continue.
+                        </p>
+                      }
+                      <ul aria-label="Course highlights">
+                        @for (highlight of highlights(); track highlight) {
+                          <li>{{ highlight }}</li>
+                        }
+                      </ul>
+                      @if (!highlightLoading() && !highlightError() && !highlights().length) {
+                        <p>No highlights available. Open the course to explore.</p>
+                      }
+                    </div>
+                  }
+                </li>
+              }
+            </ul>
+          </section>
+        }
+      </div>
+    </section>
+  }
+}
+
+<span id="navigation-help" class="navigation-help"
+  >Hover to browse. With a keyboard, press Down Arrow or Space to expand, or Enter to open the
+  overview. On touch screens, tap once to expand and again to open the overview.</span
+>

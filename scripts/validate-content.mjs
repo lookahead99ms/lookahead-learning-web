@@ -598,7 +598,7 @@ for (const file of contentFiles) {
     deliveryPlanCount += 1;
     continue;
   }
-  if (['learn/hands-on-dsa-preparation.json', 'learn/hands-on-dsa-ranking.json'].includes(label)) {
+  if (['learn/hands-on-dsa-preparation.json', 'learn/hands-on-dsa-ranking.json', 'learn/hands-on-dsa-ranking-current.json'].includes(label) || label.startsWith('learn/dsa-ranking-releases/')) {
     continue;
   }
   if (

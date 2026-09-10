@@ -513,6 +513,10 @@ async function contentForCourse(contentRoot, path, catalogItem, canonicalProblem
     modules: moduleRefs,
   };
   await writeJson(join(courseRoot, 'content-locator.json'), locator);
+  // Navigation carries labels and routes only, never question summaries or answers.
+  await writeJson(join(courseRoot, 'navigation-highlights.json'), {
+    highlights: uniqueLabels(Array.isArray(course.chips) ? course.chips : []).slice(0, 4),
+  });
   return { documents, answerSlideDeckCount };
 }
 
@@ -628,6 +632,21 @@ export async function generateSearchIndex(contentRoot) {
         join(contentRoot, path, 'catalog-overview.json'),
         catalogOverview(path, catalog, placementDocuments, courseTopics),
       ),
+    ),
+  );
+  await Promise.all(
+    [...catalogs].map(([path, catalog]) =>
+      writeJson(join(contentRoot, path, 'navigation.json'), {
+        courses: catalog
+          .filter((item) => item.available !== false && item.reviewStatus !== 'planned')
+          .map((item) => ({
+            id: item.id,
+            title: item.title,
+            hasHighlights: courseResults.some(
+              (result) => result.path === path && result.courseId === item.id,
+            ),
+          })),
+      }),
     ),
   );
   return {

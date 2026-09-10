@@ -53,20 +53,6 @@
           />
         </label>
         <label>
-          Order results
-          <select [value]="sort()" (change)="updateSort($any($event.target).value)">
-            @for (option of sortOptions; track option.value) {
-              <option
-                [value]="option.value"
-                [selected]="sort() === option.value"
-                [disabled]="sortOptionDisabled(option.value)"
-              >
-                {{ option.label }}
-              </option>
-            }
-          </select>
-        </label>
-        <label>
           Filter by difficulty
           <select [value]="difficulty()" (change)="updateDifficulty($any($event.target).value)">
             @for (option of difficulties; track option) {
@@ -89,7 +75,7 @@
       <nav class="pattern-filter" aria-label="Filter by algorithmic pattern">
         <a
           routerLink="/learn/hands-on-dsa"
-          [queryParams]="{ pattern: null }"
+          [queryParams]="{ pattern: null, page: null }"
           queryParamsHandling="merge"
           [attr.aria-current]="!selectedGroup() ? 'page' : null"
           >All patterns</a
@@ -99,6 +85,7 @@
             routerLink="/learn/hands-on-dsa"
             [queryParams]="{
               pattern: selectedGroup()?.id === group.id ? null : group.id,
+              page: null,
             }"
             queryParamsHandling="merge"
             [attr.aria-current]="selectedGroup()?.id === group.id ? 'page' : null"
@@ -115,21 +102,30 @@
         }
       </nav>
 
-      <header id="practice-results" class="practice-results-header">
+      <header
+        id="practice-results"
+        class="practice-results-header"
+        tabindex="-1"
+        aria-label="Practice results"
+      >
         <h2>{{ selectedGroup() ? selectedGroup()?.title + ' problem set' : 'Problem library' }}</h2>
+        <button
+          class="group-patterns"
+          type="button"
+          [attr.aria-pressed]="sort() === 'pattern-order'"
+          (click)="updateSort(sort() === 'pattern-order' ? 'study-order' : 'pattern-order')"
+        >
+          Group by pattern
+        </button>
         <div class="practice-results-meta">
           <p aria-live="polite">
-            Showing {{ visibleUniqueProblemCount() }}
-            {{ visibleUniqueProblemCount() === 1 ? 'practice problem' : 'practice problems' }}
-            across
-            {{ visibleGroups().length }}
-            {{ visibleGroups().length === 1 ? 'pattern' : 'patterns' }}
+            {{ resultRange() }}
           </p>
           @if (selectedGroup(); as selected) {
             <a
               class="clear-pattern-filter"
               routerLink="/learn/hands-on-dsa"
-              [queryParams]="{ pattern: null }"
+              [queryParams]="{ pattern: null, page: null }"
               queryParamsHandling="merge"
               [attr.aria-label]="'Clear ' + selected.title + ' pattern filter'"
             >
@@ -144,111 +140,91 @@
         </div>
       </header>
 
+      <ng-template #problemTable let-problems>
+        <table class="problem-table" aria-label="Practice problem orders" role="table">
+          <thead role="rowgroup">
+            <tr role="row">
+              @for (column of sortColumns; track column.id) {
+                <th
+                  scope="col"
+                  role="columnheader"
+                  [attr.aria-sort]="columnSortDirection(column.id)"
+                >
+                  <button
+                    type="button"
+                    class="column-sort"
+                    [attr.data-sort-column]="column.id"
+                    [disabled]="column.id === 'difficulty' && difficulty() !== 'All'"
+                    [attr.aria-label]="columnSortLabel(column.id, column.label)"
+                    (click)="sortColumn(column.id)"
+                  >
+                    {{ column.label
+                    }}<span aria-hidden="true">{{
+                      columnSortDirection(column.id) === 'ascending'
+                        ? '↑'
+                        : columnSortDirection(column.id) === 'descending'
+                          ? '↓'
+                          : '↕'
+                    }}</span>
+                  </button>
+                </th>
+              }
+            </tr>
+          </thead>
+          <tbody role="rowgroup">
+            @for (problem of problems; track problem.id) {
+              <tr class="problem-table-row" role="row">
+                <td class="problem-title-cell" role="cell">
+                  <a
+                    class="problem-link"
+                    [routerLink]="problem.route"
+                    [queryParams]="problemQueryParams(problem.patternId)"
+                    >{{ problem.title }}</a
+                  >
+                  <span class="problem-pattern">{{ problem.patternTitle }}</span>
+                </td>
+                <td class="problem-difficulty" data-label="Difficulty" role="cell">
+                  {{ problem.difficulty }}
+                </td>
+                <td class="problem-interview-order" data-label="Interview priority" role="cell">
+                  {{ problem.interviewRank ?? '—' }}
+                </td>
+                <td class="problem-learning-order" data-label="Learning order" role="cell">
+                  {{ problem.studyOrder ?? '—' }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </ng-template>
       @if (visibleGroups().length && sort() === 'pattern-order') {
         <div class="pattern-groups" role="region" aria-label="Pattern problem sets">
-          @for (group of visibleGroups(); track group.id) {
-            <details
-              class="pattern-group"
-              [open]="isPatternOpen(group.id)"
-              (toggle)="handlePatternToggle(group.id, $event)"
-              [attr.aria-labelledby]="'practice-group-' + group.id"
-            >
-              <summary>
-                <div>
-                  <div class="pattern-group-metadata">
-                    <span>Guided + independent</span>
-                    <span class="pattern-group-metadata-separator" aria-hidden="true">·</span>
-                    <span>{{ group.courseTitle }}</span>
-                  </div>
-                  <h2
-                    [id]="'practice-group-' + group.id"
-                    [attr.aria-label]="
-                      'Pattern ' +
-                      group.preparationOrder +
-                      ' of ' +
-                      catalog()?.totals?.groups +
-                      ': ' +
-                      group.title
-                    "
-                  >
-                    <span class="pattern-group-order" aria-hidden="true">{{
-                      preparationOrderLabel(group.preparationOrder)
-                    }}</span>
-                    <span>{{ group.title }}</span>
-                  </h2>
-                  <p>{{ group.description }}</p>
-                </div>
-                <span class="pattern-group-count">
-                  {{ group.problems.length }}
-                  {{ group.problems.length === 1 ? 'problem' : 'problems' }}
-                </span>
-                <span class="pattern-group-toggle" aria-hidden="true"></span>
-              </summary>
-              @if (isPatternOpen(group.id)) {
-                <nav class="group-links" [attr.aria-label]="group.title + ' actions'">
-                  <a class="lesson-link" [routerLink]="['/learn', group.courseId, group.lessonId]"
-                    >Review {{ group.title }} concept →</a
-                  >
-                </nav>
-                <div class="problem-grid">
-                  @for (problem of group.problems; track problem.id) {
-                    <a
-                      class="problem-card"
-                      [routerLink]="problem.route"
-                      [queryParams]="{ pattern: group.id }"
-                    >
-                      <span class="problem-card-meta">
-                        @if (problem.interviewRank; as rank) {
-                          <span>Interview #{{ rank }}</span>
-                        }
-                        @if (problem.studyOrder; as order) {
-                          <span>Study #{{ order }}</span>
-                        }
-                        <span>{{ problem.difficulty }}</span>
-                        <span>{{ tierLabel(problem.tier) }}</span>
-                      </span>
-                      <h3>{{ problem.title }}</h3>
-                      <p>{{ problem.description }}</p>
-                      <b>Read the problem and practise →</b>
-                    </a>
-                  }
-                </div>
-              }
-            </details>
+          @for (group of displayedGroups(); track group.id) {
+            <section class="pattern-group" [attr.aria-labelledby]="'practice-group-' + group.id">
+              <header class="pattern-group-header">
+                <h2 [id]="'practice-group-' + group.id">{{ group.title }}</h2>
+                <p>{{ group.description }}</p>
+                <a class="lesson-link" [routerLink]="['/learn', group.courseId, group.lessonId]"
+                  >Review {{ group.title }} concept</a
+                >
+              </header>
+              <ng-container
+                [ngTemplateOutlet]="problemTable"
+                [ngTemplateOutletContext]="{ $implicit: group.problems }"
+              />
+            </section>
           }
         </div>
-      } @else if (visibleRankedProblems().length) {
-        <div class="ranked-problem-list" role="list" aria-label="Ranked practice problems">
-          @for (problem of displayedRankedProblems(); track problem.id) {
-            <a
-              class="ranked-problem-row"
-              role="listitem"
-              [routerLink]="problem.route"
-              [queryParams]="{ pattern: problem.patternId }"
-            >
-              <span class="problem-card-meta">
-                @if (problem.interviewRank; as rank) {
-                  <span>Interview #{{ rank }}</span>
-                }
-                @if (problem.studyOrder; as order) {
-                  <span>Study #{{ order }}</span>
-                }
-                <span>{{ problem.difficulty }}</span>
-              </span>
-              <h3>{{ problem.title }}</h3>
-              <span class="ranked-problem-pattern">
-                Pattern {{ preparationOrderLabel(problem.patternPreparationOrder) }} ·
-                {{ problem.patternTitle }}
-              </span>
-            </a>
-          }
-        </div>
-        @if (hasMoreRankedProblems()) {
-          <button class="load-more-problems" type="button" (click)="loadMoreRankedProblems()">
-            Show 50 more problems
-          </button>
-        }
+      } @else if (displayedRankedProblems().length) {
+        <ng-container
+          [ngTemplateOutlet]="problemTable"
+          [ngTemplateOutletContext]="{ $implicit: displayedRankedProblems() }"
+        />
       } @else {
+        <ng-container
+          [ngTemplateOutlet]="problemTable"
+          [ngTemplateOutletContext]="{ $implicit: [] }"
+        />
         <section class="empty-state" aria-live="polite">
           <h2>No matching practice yet</h2>
           <p>
@@ -256,6 +232,47 @@
             content.
           </p>
         </section>
+      }
+      @if (pageCount() > 1) {
+        <nav class="problem-pagination" aria-label="Problem pages">
+          @if (currentPage() > 1) {
+            <a
+              class="pagination-direction pagination-previous"
+              routerLink="/learn/hands-on-dsa"
+              [queryParams]="pageQueryParams(currentPage() - 1)"
+              queryParamsHandling="merge"
+              (click)="preparePageNavigation($event)"
+              aria-label="Previous page of problems"
+              >Previous</a
+            >
+          }
+          @for (page of pageLinks(); track page) {
+            @if (page === 'gap-before' || page === 'gap-after') {
+              <span aria-hidden="true">…</span>
+            } @else {
+              <a
+                routerLink="/learn/hands-on-dsa"
+                [queryParams]="pageQueryParams(page)"
+                queryParamsHandling="merge"
+                (click)="preparePageNavigation($event)"
+                [attr.aria-label]="'Page ' + page + ' of ' + pageCount()"
+                [attr.aria-current]="page === currentPage() ? 'page' : null"
+                >{{ page }}</a
+              >
+            }
+          }
+          @if (currentPage() < pageCount()) {
+            <a
+              class="pagination-direction pagination-next"
+              routerLink="/learn/hands-on-dsa"
+              [queryParams]="pageQueryParams(currentPage() + 1)"
+              queryParamsHandling="merge"
+              (click)="preparePageNavigation($event)"
+              aria-label="Next page of problems"
+              >Next</a
+            >
+          }
+        </nav>
       }
     } @else if (error()) {
       <section class="empty-state" role="alert">

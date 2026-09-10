@@ -200,6 +200,15 @@ describe('Hands-On DSA projection', () => {
         ({ difficulty }) => difficulty,
       ),
     ).toEqual(['Advanced', 'Intermediate', 'Beginner']);
+    difficultyGroup.problems[1].interviewRank = undefined;
+    difficultyGroup.problems[1].studyOrder = undefined;
+    for (const sort of ['interview-rank-descending', 'study-order-descending'] as const) {
+      expect(rankedHandsOnDsaIndexProblems([difficultyGroup], sort).map(({ id }) => id)).toEqual([
+        'intermediate',
+        'advanced',
+        'beginner',
+      ]);
+    }
   });
 
   it('counts guided and independent capabilities without calling a completed problem catalogued', () => {

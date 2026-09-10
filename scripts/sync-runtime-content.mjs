@@ -1,3 +1,4 @@
+import { removePrivateRankingAssets } from './ranking-release.mjs';
 import { access, cp, mkdir, mkdtemp, readdir, rm } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -76,7 +77,7 @@ await withRuntimePublicationLock(resolve(scratchRoot, 'publication.lock'), async
     const handsOnDsa = await generateHandsOnDsaIndex(stageRoot);
     // Only the compact learner-facing ranks belong in served assets. The
     // authoring manifest contains internal evidence, confidence and sources.
-    await rm(resolve(stageRoot, 'learn/hands-on-dsa-ranking.json'), { force: true });
+    await removePrivateRankingAssets(stageRoot);
     const fileCount = await countFiles(stageRoot);
     await publishRuntimeDirectory(stageRoot, destinationRoot, backupRoot);
     console.log(

@@ -5,6 +5,20 @@
     <h1>See the whole topic.</h1>
     <p class="search-intro">Read the idea, explain the reasoning, then put it to work.</p>
   </header>
+  @if (
+    !submittedQuery() &&
+    selectedTags().size === 0 &&
+    selectedPath() === 'all' &&
+    selectedCourseId() === 'all' &&
+    selectedDiscoveryKind() === 'all'
+  ) {
+    <app-topic-shortcuts />
+  } @else {
+    <details class="topic-shortcuts-disclosure">
+      <summary>Explore another topic</summary>
+      <app-topic-shortcuts />
+    </details>
+  }
   <section class="search-workspace" aria-label="Topic workbench">
     <aside class="tag-panel" aria-label="Subject filters">
       <p class="eyebrow">Explore a subject</p>

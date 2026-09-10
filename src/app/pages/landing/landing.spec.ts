@@ -15,7 +15,32 @@ describe('Landing', () => {
       ],
     }).compileComponents();
   });
-  afterEach(() => vi.useRealTimers());
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it('starts paused for reduced motion and removes its preference listener on teardown', async () => {
+    vi.useFakeTimers();
+    const listeners = new Set<(event: MediaQueryListEvent) => void>();
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      matches: query === '(prefers-reduced-motion: reduce)',
+      addEventListener: (_type: string, listener: (event: MediaQueryListEvent) => void) =>
+        listeners.add(listener),
+      removeEventListener: (_type: string, listener: (event: MediaQueryListEvent) => void) =>
+        listeners.delete(listener),
+    }));
+    const fixture = TestBed.createComponent(Landing);
+    fixture.detectChanges();
+    await vi.advanceTimersByTimeAsync(12000);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.hero-slide.active').getAttribute('aria-label'))
+      .toBe('1 of 5: Pathfinder');
+    expect(fixture.nativeElement.querySelector('[aria-label="Pause slideshow"]')).toBeNull();
+    expect(listeners.size).toBe(1);
+    fixture.destroy();
+    expect(listeners.size).toBe(0);
+  });
 
   it('starts automatically at six seconds, pauses, and keeps inactive slides inert', async () => {
     vi.useFakeTimers();

@@ -395,3 +395,36 @@ test('Learn uses authored important topics while Look Ahead retains its module p
   assert.deepEqual(learnCourse.topicPreview, ['Runtime contracts', 'Exceptions']);
   assert.deepEqual(lookAheadCourse.topicPreview, ['Introduction']);
 });
+
+test('generates only four authored course highlights and available course links', async (context) => {
+  const root = await testRoot(context);
+  await writeJson(root, 'learn/catalog.json', [
+    { id: 'core-java', title: 'Java Foundations', available: true },
+    { id: 'hands-on-dsa', title: 'Hands-On DSA', available: true },
+    { id: 'unavailable', title: 'Not published', available: false },
+  ]);
+  await writeJson(root, 'learn/core-java/course.json', {
+    id: 'core-java',
+    path: 'learn',
+    title: 'Java Foundations',
+    chips: ['Time complexity', 'Amortized analysis', 'Recurrences', 'Fourth topic', 'Fifth topic'],
+    modules: [
+      { id: 'intro', title: 'Introduction', description: 'Do not include body' },
+      { id: 'later', title: 'Unpublished module', reviewStatus: 'planned' },
+    ],
+  });
+  await writeJson(root, 'learn/core-java/modules/intro.json', []);
+  await generateSearchIndex(root);
+  assert.deepEqual(JSON.parse(await readFile(join(root, 'learn/navigation.json'), 'utf8')), {
+    courses: [
+      { id: 'core-java', title: 'Java Foundations', hasHighlights: true },
+      { id: 'hands-on-dsa', title: 'Hands-On DSA', hasHighlights: false },
+    ],
+  });
+  assert.deepEqual(
+    JSON.parse(await readFile(join(root, 'learn/core-java/navigation-highlights.json'), 'utf8')),
+    {
+      highlights: ['Time complexity', 'Amortized analysis', 'Recurrences', 'Fourth topic'],
+    },
+  );
+});

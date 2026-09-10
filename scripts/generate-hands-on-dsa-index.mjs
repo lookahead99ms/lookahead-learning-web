@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { access, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { readCanonicalDsaProblems } from './canonical-dsa-contract.mjs';
+import { readRankingPlan } from './ranking-release.mjs';
 
 export const handsOnCoursePaths = [
   'learn/algorithmic-patterns',
@@ -19,15 +20,6 @@ async function readJson(path) {
 async function readPreparationPlan(contentRoot) {
   try {
     return await readJson(join(contentRoot, preparationPlanPath));
-  } catch (error) {
-    if (error?.code === 'ENOENT') return null;
-    throw error;
-  }
-}
-
-async function readRankingPlan(contentRoot) {
-  try {
-    return await readJson(join(contentRoot, rankingPlanPath));
   } catch (error) {
     if (error?.code === 'ENOENT') return null;
     throw error;

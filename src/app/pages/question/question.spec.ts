@@ -326,11 +326,28 @@ describe('Question canonical DSA navigation', () => {
     ).toBe(returnUrl);
   });
 
+  it('retains the exact DSA page, filters, and ordering in a safe return link', async () => {
+    const harness = await RouterTestingHarness.create();
+    const returnUrl =
+      '/learn/hands-on-dsa?sort=study-order&scope=365&difficulty=Beginner&q=array&page=7';
+    await harness.navigateByUrl(
+      '/learn/algorithmic-patterns/algorithmic-two-sum?returnTo=' + encodeURIComponent(returnUrl),
+      Question,
+    );
+    expect(
+      linkWithText(harness.routeNativeElement!, 'Return to DSA problems')?.getAttribute('href'),
+    ).toBe(returnUrl);
+  });
+
   it.each([
     'https://example.com',
     '//example.com',
     '/delivery-plan',
     '/search/other',
+    '/learn/hands-on-dsa/other',
+    '/learn/hands-on-dsa;extra=true',
+    '/learn/hands-on-dsa(aux:other)',
+    '/learn/other',
     '/search(aux:other)',
   ])('ignores unsupported discovery return targets: %s', async (returnUrl) => {
     const harness = await RouterTestingHarness.create();
