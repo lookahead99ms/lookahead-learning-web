@@ -7,6 +7,7 @@ const css = postcss.parse(readFileSync(new URL('../src/styles.css', import.meta.
 const palette = (theme) => {
   const tokens = {};
   css.walkRules((rule) => {
+    if (rule.parent.type === 'atrule') return;
     if (
       rule.selector !== ':root' &&
       !(theme === 'dark' && rule.selector === ":root[data-theme='dark']")
@@ -43,7 +44,7 @@ for (const theme of ['light', 'dark']) {
         `${theme} ${fg}/${bg}: ${contrast(resolve(fg), resolve(bg)).toFixed(2)} < ${min}`,
       );
     for (const bg of ['--surface-page', '--surface', '--surface-muted', '--surface-accent']) {
-      for (const fg of ['--text-strong', '--text-body', '--text-subtle', '--accent-link'])
+      for (const fg of ['--text-strong', '--text-body', '--text-subtle', '--accent-link', '--path-learn', '--path-grow', '--path-look-ahead'])
         check(fg, bg);
       check('--accent-focus', bg, 3);
     }
@@ -73,4 +74,13 @@ test('theme switching changes colors without changing hero typography', () => {
   for (const key of ['--hero-font-family', '--hero-font-weight'])
     assert.equal(light.resolve(key), dark.resolve(key));
   assert.notEqual(light.resolve('--surface-page'), dark.resolve('--surface-page'));
+});
+
+test('forced colors retain system identity and focus colors', () => {
+  const forced = css.nodes.find(node => node.type === 'atrule' && node.params === '(forced-colors: active)');
+  assert.ok(forced);
+  const tokens = {};
+  forced.walkDecls(decl => { tokens[decl.prop] = decl.value; });
+  for (const path of ['learn', 'grow', 'look-ahead']) assert.equal(tokens[`--path-${path}`], 'CanvasText');
+  assert.equal(tokens['--accent-focus'], 'Highlight');
 });

@@ -42,7 +42,7 @@ import { CourseLearningMap } from '../../core/course-learning-map/course-learnin
       .course-section-action {
         margin-top: auto;
         padding-top: 20px;
-        color: var(--search-primary);
+        color: var(--accent-link);
         font-size: 0.84rem;
         font-weight: 800;
       }
@@ -65,7 +65,7 @@ import { CourseLearningMap } from '../../core/course-learning-map/course-learnin
       }
       .course-reader[data-path='grow'] .course-page-intro .course-intro-summary > .eyebrow {
         padding-left: 12px;
-        border-left: 3px solid var(--grow-accent);
+        border-left: 2px solid var(--path-grow);
       }
       .course-reader[data-path='grow'] .course-page-intro .grow-highlight {
         display: block;
@@ -80,12 +80,9 @@ import { CourseLearningMap } from '../../core/course-learning-map/course-learnin
         margin-top: 20px;
         padding: 20px 22px;
         border: 1px solid var(--line);
-        border-left: 4px solid var(--search-primary);
+        border-left: 2px solid var(--line);
         border-radius: 14px;
         background: var(--surface);
-      }
-      .course-reader[data-path='grow'] .course-learning-path {
-        border-left-color: var(--grow-accent);
       }
       .course-learning-path h2 {
         margin: 0 0 6px;
@@ -148,11 +145,11 @@ import { CourseLearningMap } from '../../core/course-learning-map/course-learnin
         text-decoration: none;
       }
       .course-relationship-list a {
-        color: var(--search-primary);
+        color: var(--accent-link);
       }
       .course-relationship-list a:hover,
       .course-relationship-list a:focus-visible {
-        border-left-color: var(--search-primary);
+        border-left-color: var(--accent-link);
         color: var(--search-hover);
       }
       .course-relationship-list .unavailable {
@@ -169,7 +166,7 @@ import { CourseLearningMap } from '../../core/course-learning-map/course-learnin
       }
       .course-other-directions summary {
         width: fit-content;
-        color: var(--search-primary);
+        color: var(--accent-link);
         cursor: pointer;
         font-size: 0.8rem;
         font-weight: 750;
@@ -185,11 +182,8 @@ import { CourseLearningMap } from '../../core/course-learning-map/course-learnin
         min-width: 180px;
         display: flex;
         flex-direction: column;
-        border-left: 4px solid var(--search-primary);
+        border-left: 2px solid var(--line);
         background: var(--surface-accent);
-      }
-      .course-reader[data-path='grow'] .course-current-node {
-        border-left-color: var(--grow-accent);
       }
       .course-current-node strong {
         display: block;
@@ -199,7 +193,7 @@ import { CourseLearningMap } from '../../core/course-learning-map/course-learnin
       .course-relationship-arrow {
         align-self: start;
         margin-top: 28px;
-        color: var(--search-primary);
+        color: var(--accent-link);
         font-size: 1.35rem;
         font-weight: 800;
       }
@@ -209,7 +203,7 @@ import { CourseLearningMap } from '../../core/course-learning-map/course-learnin
       }
       .course-relationship-more summary {
         width: fit-content;
-        color: var(--search-primary);
+        color: var(--accent-link);
         cursor: pointer;
         font-size: 0.8rem;
         font-weight: 750;
@@ -223,7 +217,7 @@ import { CourseLearningMap } from '../../core/course-learning-map/course-learnin
         margin: 0 12px 10px;
         padding-top: 8px;
         border-top: 1px solid var(--line);
-        color: var(--search-primary);
+        color: var(--accent-link);
         font-size: 0.76rem;
         font-weight: 750;
         text-decoration: underline;

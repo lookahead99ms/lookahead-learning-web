@@ -142,10 +142,10 @@ h1 {
   color: var(--cyan);
 }
 .hero-stage:nth-child(2) strong {
-  color: var(--orange);
+  color: var(--text-strong);
 }
 .hero-stage:nth-child(3) strong {
-  color: var(--accent-secondary-strong);
+  color: var(--text-strong);
 }
 .hero-stage small {
   color: var(--muted);
@@ -181,8 +181,8 @@ h1 {
   border: 0;
   border-radius: 12px;
   padding: 15px 20px;
-  color: var(--accent-on-secondary);
-  background: var(--accent-secondary-strong);
+  color: var(--accent-on-primary);
+  background: var(--accent-strong);
   font: inherit;
   font-weight: 750;
   box-shadow: 0 12px 32px var(--shadow);
@@ -191,7 +191,7 @@ h1 {
     box-shadow 160ms ease;
 }
 .hero-actions .primary-action:hover {
-  color: var(--accent-on-secondary);
+  color: var(--accent-on-primary);
   box-shadow: 0 15px 36px var(--shadow);
   transform: translateY(-2px);
 }
@@ -321,7 +321,7 @@ h1 {
 .path-card:hover,
 .path-card:focus-within {
   border-color: var(--border-strong);
-  border-left-color: var(--area-accent);
+  border-left-color: var(--accent-strong);
   box-shadow: 0 20px 44px var(--shadow);
   transform: translateY(-3px);
 }
@@ -338,9 +338,9 @@ h1 {
   right: -40px;
 }
 .path-card.grow {
-  --area-accent: var(--orange);
-  --area-surface: color-mix(in srgb, var(--grow-accent) 9%, var(--surface));
-  --area-glow: color-mix(in srgb, var(--grow-accent) 15%, transparent);
+  --area-accent: var(--path-grow);
+  --area-surface: var(--surface-accent);
+  --area-glow: color-mix(in srgb, var(--accent-strong) 13%, transparent);
 }
 .path-card.look-ahead {
   --area-accent: var(--text-body);
@@ -399,7 +399,7 @@ h1 {
 }
 .path-card li a:hover,
 .path-card li a:focus-visible {
-  color: var(--area-accent);
+  color: var(--accent-link);
   text-decoration: none;
 }
 .path-card li::before {
@@ -630,7 +630,7 @@ footer {
 .course-card a,
 .course-card small {
   margin: 0;
-  color: var(--orange);
+  color: var(--accent-link);
   font-weight: 750;
   text-decoration: none;
 }
@@ -639,7 +639,7 @@ footer {
 }
 .grow-catalog .eyebrow,
 .grow-course-card .course-number {
-  color: var(--grow-accent);
+  color: var(--path-grow);
 }
 .look-ahead-catalog .eyebrow,
 .look-ahead-course-card .course-number {
@@ -677,12 +677,12 @@ footer {
 .catalog-course-grid > a.grow-course-card:hover,
 .catalog-course-grid > a.grow-course-card:focus-visible {
   border-color: var(--line);
-  border-left-color: var(--grow-accent);
+  border-left-color: var(--accent-strong);
 }
 .catalog-course-grid > a.look-ahead-course-card:hover,
 .catalog-course-grid > a.look-ahead-course-card:focus-visible {
   border-color: var(--line);
-  border-left-color: var(--text-body);
+  border-left-color: var(--accent-strong);
 }
 .catalog-course-grid > a.course-card h2 {
   color: var(--text);
@@ -697,7 +697,7 @@ footer {
   color: var(--text);
 }
 .catalog-course-grid > a.course-card small {
-  color: var(--orange);
+  color: var(--accent-link);
 }
 .look-ahead-course-card {
   border-left-color: transparent;
@@ -737,7 +737,7 @@ footer {
 .module-open {
   display: block;
   margin-top: auto;
-  color: var(--orange);
+  color: var(--accent-link);
   font-weight: 800;
 }
 .course-card.module-tile p,
@@ -778,7 +778,7 @@ footer {
   color: var(--muted);
 }
 .question-row b {
-  color: var(--orange);
+  color: var(--accent-link);
 }
 .reader-page {
   background: linear-gradient(180deg, var(--surface-page), var(--surface) 45%);
@@ -804,7 +804,7 @@ footer {
 .reader-module {
   display: inline-block;
   margin-bottom: 12px;
-  color: var(--orange);
+  color: var(--accent-link);
   font-size: 0.88rem;
   font-weight: 800;
   text-decoration: none;
@@ -910,7 +910,7 @@ a.reader-module:focus-visible {
   font-weight: 850;
 }
 .grow-highlight {
-  color: var(--orange);
+  color: var(--accent-link);
   font-weight: inherit;
 }
 .learn-highlight {
@@ -920,7 +920,7 @@ a.reader-module:focus-visible {
 
 .course-reader[data-path="grow"] .course-context-panel > .eyebrow {
   padding-left: 12px;
-  border-left: 3px solid var(--grow-accent);
+  border-left: 2px solid var(--path-grow);
 }
 .course-reader[data-path="grow"] .course-context-panel .grow-highlight {
   display: block;
@@ -931,7 +931,7 @@ a.reader-module:focus-visible {
   text-transform: uppercase;
 }
 .grow-catalog .catalog-highlight {
-  color: var(--grow-accent);
+  color: var(--path-grow);
 }
 .look-ahead-catalog .catalog-highlight {
   color: var(--text-body);
@@ -983,7 +983,7 @@ a.reader-module:focus-visible {
 .question-card:hover,
 .question-card:focus-within {
   border-color: var(--border-strong);
-  border-left-color: var(--grow-accent);
+  border-left-color: var(--accent-strong);
   box-shadow: 0 12px 25px var(--shadow);
   transform: translateY(-2px);
 }
@@ -1058,7 +1058,7 @@ a.reader-module:focus-visible {
 .quick-answer {
   margin: 36px 0 22px;
   padding: 26px;
-  border-left: 5px solid var(--orange);
+  border-left: 3px solid var(--accent-strong);
 }
 .reader-interview-panel {
   margin: 0;
@@ -1072,7 +1072,7 @@ a.reader-module:focus-visible {
   margin: 6px 0 8px;
   overflow: hidden;
   border: 1px solid var(--border-strong);
-  border-left: 5px solid var(--orange);
+  border-left: 3px solid var(--accent-strong);
   border-radius: 12px;
   background: var(--surface-accent);
 }
@@ -1310,7 +1310,7 @@ a.reader-module:focus-visible {
   text-align: right;
 }
 .reader-footer-link > span {
-  color: var(--orange);
+  color: var(--accent-link);
   font-size: 0.7rem;
   font-weight: 850;
   letter-spacing: 0.06em;
@@ -1344,19 +1344,19 @@ a.reader-module:focus-visible {
 .module-reader[data-path="grow"] .question-card:hover,
 .module-reader[data-path="grow"] .question-card:focus-within {
   border-color: var(--border-strong);
-  border-left-color: var(--grow-accent);
+  border-left-color: var(--accent-strong);
 }
 .module-reader[data-path="look-ahead"] .question-card:hover,
 .module-reader[data-path="look-ahead"] .question-card:focus-within {
   border-color: var(--line);
-  border-left-color: var(--text-body);
+  border-left-color: var(--accent-strong);
 }
 .course-reader[data-path="learn"] .module-open,
 .course-reader[data-path="learn"] .reader-footer-link > span,
 .module-reader[data-path="learn"] .reader-footer-link > span,
 .course-reader[data-path="learn"] .reader-module,
 .module-reader[data-path="learn"] .reader-module {
-  color: var(--cyan);
+  color: var(--accent-link);
 }
 .course-reader[data-path="learn"] .eyebrow,
 .module-reader[data-path="learn"] .eyebrow {
@@ -1365,7 +1365,7 @@ a.reader-module:focus-visible {
 .question-reader[data-path="learn"] .reader-module,
 .question-reader[data-path="learn"] .reader-footer-link > span,
 .question-reader[data-path="learn"] .eyebrow {
-  color: var(--cyan);
+  color: var(--accent-link);
 }
 .question-reader[data-path="learn"] .quick-answer {
   border-left-color: var(--cyan);
@@ -1378,7 +1378,7 @@ a.reader-module:focus-visible {
 .course-reader[data-path="grow"] .course-card.module-tile:hover,
 .course-reader[data-path="grow"] .course-card.module-tile:focus-visible {
   border-color: var(--border-strong);
-  border-left-color: var(--grow-deep);
+  border-left-color: var(--accent-strong);
   box-shadow: 0 12px 30px var(--shadow);
 }
 .course-reader[data-path="look-ahead"] .course-card.module-tile {
@@ -1387,7 +1387,7 @@ a.reader-module:focus-visible {
 .course-reader[data-path="look-ahead"] .course-card.module-tile:hover,
 .course-reader[data-path="look-ahead"] .course-card.module-tile:focus-visible {
   border-color: var(--line);
-  border-left-color: var(--text-body);
+  border-left-color: var(--accent-strong);
   box-shadow: 0 12px 30px var(--shadow);
 }
 
@@ -1558,19 +1558,19 @@ a.reader-module:focus-visible {
 }
 
 [data-path="learn"] .level-change-button strong {
-  color: var(--cyan);
+  color: var(--accent-link);
 }
 
 [data-path="grow"] .level-change-button strong {
-  color: var(--grow-accent);
+  color: var(--accent-link);
 }
 
 .next-stack .cta-button {
   padding: 8px 16px;
   border: 0;
   border-radius: 10px;
-  background: var(--accent-secondary-strong);
-  color: var(--accent-on-secondary);
+  background: var(--accent-strong);
+  color: var(--accent-on-primary);
   font: inherit;
   font-weight: 700;
   text-decoration: none;
@@ -1582,5 +1582,5 @@ a.reader-module:focus-visible {
 }
 
 [data-path="grow"] .next-stack .cta-button {
-  background: var(--grow-accent);
+  background: var(--accent-strong);
 }

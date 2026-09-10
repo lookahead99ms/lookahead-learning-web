@@ -12,6 +12,7 @@
   --accent-link: #245a88;
   --accent-secondary: #c95632;
   --accent-secondary-strong: #bc4d2c;
+  --path-grow: #a84328; /* Small identity text: readable on tinted surfaces. */
   --surface-accent: #dcefed;
   --accent-focus: #9a4f00;
   --success: #24755c;
@@ -41,6 +42,7 @@
   --accent-link: #9dc9ff;
   --accent-secondary: #ff9873;
   --accent-secondary-strong: #ff9873;
+  --path-grow: var(--accent-secondary-strong);
   --surface-accent: #173b3b;
   --accent-focus: #ffc36e;
   --success: #75d8af;
@@ -71,8 +73,12 @@
   --violet: var(--accent-link);
   --orange: var(--accent-secondary-strong);
   --red: var(--danger);
-  --grow-accent: var(--accent-secondary-strong);
-  --grow-deep: var(--accent-secondary-strong);
+  /* Path identity only: plain labels, small markers and thin structural rules.
+     Actions, focus, selection and status must use shared semantic tokens. */
+  --path-learn: var(--accent-strong);
+  --path-look-ahead: var(--text-body);
+  --grow-accent: var(--path-grow);
+  --grow-deep: var(--path-grow);
   --accent-on-secondary: var(--accent-on-primary);
   --text-on-inverse: var(--surface-page);
   --success-surface: color-mix(in srgb, var(--success) 10%, var(--surface));
@@ -150,4 +156,14 @@ a {
 :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
   outline: 3px solid var(--accent-focus);
   outline-offset: 3px;
+}
+
+/* Preserve readable identity and interaction outlines in forced-color themes. */
+@media (forced-colors: active) {
+  :root {
+    --path-learn: CanvasText;
+    --path-grow: CanvasText;
+    --path-look-ahead: CanvasText;
+    --accent-focus: Highlight;
+  }
 }

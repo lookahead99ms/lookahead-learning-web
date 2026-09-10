@@ -141,6 +141,8 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         font-size: 1rem;
       }
       .header-search-form.search-palette .header-search-suggestions {
+        max-height: calc(100dvh - 180px);
+        overflow-y: auto;
         top: 52px;
         padding: 14px;
       }
@@ -489,52 +491,94 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         }
       }
       .platform-header {
-        gap: 16px;
-        padding: 18px 4%;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        align-items: center;
+        gap: 24px;
+        padding: 12px 4%;
         min-height: 76px;
       }
       .platform-header .brand {
+        justify-self: start;
         font-size: 24px;
         font-weight: 800;
         letter-spacing: -1px;
+        white-space: nowrap;
       }
       .platform-header .brand span {
         color: var(--accent-strong);
       }
       .platform-navigation {
         display: flex;
-        gap: 20px;
-        flex-wrap: wrap;
-        margin-left: auto;
+        align-items: center;
+        justify-content: center;
+        gap: 26px;
+        margin: 0;
+        white-space: nowrap;
       }
-      .platform-navigation a {
+      .platform-navigation a,
+      .header-utilities > a,
+      .header-search-trigger {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
         color: var(--muted);
-        font-size: 13px;
+        font:
+          500 13px/1.2 system-ui,
+          sans-serif;
+        text-decoration: none;
+        white-space: nowrap;
       }
-      .platform-navigation a[aria-current='page'] {
+      .platform-navigation a[aria-current='page'],
+      .header-utilities > a[aria-current='page'] {
         color: var(--text-strong);
         font-weight: 700;
       }
+      .header-utilities {
+        justify-self: end;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .header-search-trigger {
+        gap: 7px;
+        border: 0;
+        padding: 0;
+        background: transparent;
+        cursor: pointer;
+      }
+      .header-search-trigger kbd {
+        font-family: inherit;
+        font-size: 11px;
+        line-height: 1.2;
+        color: var(--muted);
+      }
       .theme-switch {
         display: flex;
-        gap: 3px;
-        padding: 3px;
-        border: 1px solid var(--line);
+        gap: 2px;
+        padding: 2px;
         flex-shrink: 0;
+        border: 1px solid var(--line);
+        border-radius: 5px;
       }
       .theme-switch button {
         border: 0;
-        padding: 8px 10px;
+        border-radius: 3px;
+        padding: 4px 7px;
+        min-height: 28px;
         background: transparent;
         color: var(--muted);
-        font: inherit;
-        font-size: 12px;
+        font:
+          500 11px/1.2 system-ui,
+          sans-serif;
         cursor: pointer;
-        min-height: 36px;
       }
       .theme-switch button[aria-pressed='true'] {
         color: var(--accent-on-primary);
         background: var(--accent-strong);
+      }
+      .header-utilities .profile-dropdown-container {
+        margin: 0;
       }
       .platform-header.with-search .header-search-form:not(.search-palette) {
         position: relative;
@@ -543,34 +587,61 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         transform: none;
         width: min(340px, 30vw);
       }
-      @media (max-width: 1100px) {
+      @media (max-width: 1199px) {
         .platform-header {
-          flex-wrap: wrap;
+          grid-template-columns: auto minmax(0, 1fr);
+          gap: 4px 20px;
         }
         .platform-navigation {
-          order: 3;
-          width: 100%;
-          margin: 0;
-          gap: 18px;
+          grid-row: 2;
+          grid-column: 1 / -1;
         }
-        .theme-switch {
-          margin-left: auto;
+        .header-utilities {
+          grid-column: 2;
+          grid-row: 1;
         }
       }
       @media (max-width: 600px) {
         .platform-header {
-          padding: 12px 5%;
-          gap: 10px;
+          padding: 8px 5%;
+          gap: 2px 10px;
+        }
+        .platform-header .brand {
+          font-size: 21px;
+        }
+        .header-utilities {
+          display: contents;
         }
         .platform-navigation {
-          gap: 16px;
+          grid-row: 2;
+          gap: 22px;
         }
-        .platform-header.with-search .header-search-form:not(.search-palette) {
-          order: 4;
-          width: 100%;
+        .header-search-trigger {
+          grid-column: 1;
+          grid-row: 3;
+          justify-self: start;
         }
-        .profile-dropdown-container {
+        .header-search-trigger kbd {
           display: none;
+        }
+        .header-utilities > a {
+          grid-column: 2;
+          grid-row: 3;
+          justify-self: end;
+        }
+        .theme-switch {
+          grid-column: 2;
+          grid-row: 1;
+          justify-self: end;
+        }
+        .header-utilities .profile-dropdown-container {
+          display: none;
+        }
+      }
+      @media (pointer: coarse) {
+        .theme-switch button {
+          min-height: 40px;
+          min-width: 44px;
         }
       }
     `,
@@ -581,8 +652,14 @@ export class PlatformHeader {
   @Input() showSearch = false;
   private readonly router = inject(Router);
   private readonly content = inject(ContentService);
-  private readonly elementRef = inject(ElementRef<HTMLElement>);
+  private readonly elementRef: ElementRef<HTMLElement> = inject(ElementRef);
   private searchIndexLoaded = false;
+  private searchReturnFocus: HTMLElement | null = null;
+  protected readonly searchShortcut = /Mac|iPhone|iPad/.test(
+    this.elementRef.nativeElement.ownerDocument.defaultView?.navigator.platform ?? '',
+  )
+    ? '⌘K'
+    : 'Ctrl K';
   protected readonly persistentSuggestions = PERSISTENT_SUGGESTIONS;
   protected readonly profileMenuOpen = signal(false);
   protected readonly searchQuery = signal('');
@@ -635,34 +712,77 @@ export class PlatformHeader {
     requestAnimationFrame(() => window.scrollTo({ top: 0, left: 0, behavior: 'auto' }));
   }
 
+  protected toggleSearch(event: MouseEvent): void {
+    event.stopPropagation();
+    if (this.paletteOpen()) this.closeSearchPalette();
+    else this.openSearchPalette();
+  }
+
   @HostListener('document:keydown', ['$event'])
   protected toggleSearchPalette(event: KeyboardEvent): void {
-    if (event.key.toLowerCase() !== 'k' || (!event.metaKey && !event.ctrlKey)) return;
-    event.preventDefault();
-    if (this.paletteOpen()) {
-      this.closeSearchPalette();
+    if (this.paletteOpen() && event.key === 'Tab') {
+      const controls = [
+        ...this.elementRef.nativeElement.querySelectorAll<HTMLElement>(
+          '.search-palette input, .search-palette button:not([disabled]), .search-palette a[href]',
+        ),
+      ];
+      const first = controls[0];
+      const last = controls[controls.length - 1];
+      const active = this.elementRef.nativeElement.ownerDocument.activeElement;
+      if (event.shiftKey && active === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first?.focus();
+      }
       return;
     }
-    this.openSearchPalette();
+    if (
+      event.defaultPrevented ||
+      event.repeat ||
+      event.altKey ||
+      event.key.toLowerCase() !== 'k' ||
+      (!event.metaKey && !event.ctrlKey)
+    )
+      return;
+    const target = event.target instanceof Element ? event.target : null;
+    if (
+      !this.paletteOpen() &&
+      target?.closest(
+        'input, textarea, select, [contenteditable]:not([contenteditable="false"]), [role="textbox"]',
+      )
+    )
+      return;
+    event.preventDefault();
+    if (this.paletteOpen()) this.closeSearchPalette();
+    else this.openSearchPalette();
   }
 
   private openSearchPalette(): void {
+    this.searchReturnFocus = this.elementRef.nativeElement.ownerDocument
+      .activeElement as HTMLElement | null;
+    this.profileMenuOpen.set(false);
     this.loadSearchIndex();
     this.paletteOpen.set(true);
     this.suggestionsOpen.set(true);
     requestAnimationFrame(() =>
-      (
-        this.elementRef.nativeElement.querySelector(
-          '.header-search-input',
-        ) as HTMLInputElement | null
-      )?.focus(),
+      this.elementRef.nativeElement
+        .querySelector<HTMLInputElement>('.header-search-input')
+        ?.focus(),
     );
   }
 
-  protected closeSearchPalette(): void {
+  protected closeSearchPalette(restoreFocus = true): void {
+    const wasOpen = this.paletteOpen();
     this.suggestionsOpen.set(false);
     this.paletteOpen.set(false);
-    this.blurSearchInput();
+    if (wasOpen && restoreFocus) {
+      const target = this.searchReturnFocus;
+      requestAnimationFrame(() => {
+        if (target?.isConnected) target.focus({ preventScroll: true });
+      });
+    }
   }
 
   private closeInlineSearch(): void {
@@ -844,10 +964,6 @@ export class PlatformHeader {
   @HostListener('document:click', ['$event'])
   protected closeOverlaysOnOutsideClick(event: MouseEvent): void {
     const path = event.composedPath();
-    if ((event.target as HTMLElement | null)?.closest('.search-trigger')) {
-      this.openSearchPalette();
-      return;
-    }
     const profileContainer = this.elementRef.nativeElement.querySelector(
       '.profile-dropdown-container',
     );
