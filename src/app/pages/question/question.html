@@ -430,7 +430,7 @@
           @if (item.evidence; as evidence) {
             <app-evidence-answer-tabs
               [evidence]="evidence"
-              [recommendStar]="courseId() === 'behavioral-carl'"
+              [recommendStar]="courseId() === 'behavioral-carl' || courseId() === 'technical-scenarios'"
             />
           }
           <section class="details-content">
