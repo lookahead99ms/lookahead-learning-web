@@ -1,3 +1,4 @@
+import { variedTopics } from './study-plan-variation';
 import { ContentPath, ContentType, SearchDocument } from './content.models';
 import { buildInterviewSprint } from './study-plan-sprint';
 
@@ -143,6 +144,7 @@ export interface StudyPlanConfig {
   dailyHours: number;
   topicIds: string[];
   accessTopicIds: string[];
+  variationKey?: string;
   goalType?: 'learning' | 'interview';
   familiarity?: Record<string, 'familiar' | 'refresh' | 'new'>;
   completedContentIds?: string[];
@@ -227,7 +229,10 @@ export function buildStudyPlan(
   if (config.days === 7 && config.goalType === 'interview')
     return buildInterviewSprint(documents, config, topics, interviewOrder);
   const selectedTopics = topics.filter((topic) => config.topicIds.includes(topic.id));
-  const includedTopics = selectedTopics.filter((topic) => config.accessTopicIds.includes(topic.id));
+  const includedTopics = variedTopics(
+    selectedTopics.filter((topic) => config.accessTopicIds.includes(topic.id)),
+    config.variationKey,
+  );
   const excludedTopics = selectedTopics.filter(
     (topic) => !config.accessTopicIds.includes(topic.id),
   );

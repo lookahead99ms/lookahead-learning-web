@@ -1,499 +1,588 @@
 <app-platform-header />
-<main id="main-content" class="study-plan-page">
+<main id="main-content" class="study-plan-page" [class.progress-page]="progressVisible()">
   <section class="intro">
+    @if (accountStore.account()?.authorPreview) {
+      <p><a routerLink="/author">Author views</a></p>
+    }
     <p class="eyebrow">Adaptive Compass / Study plans</p>
-    <h1>A plan that bends with your week.</h1>
+    <h1>{{ progressVisible() ? 'Your study progress' : 'A plan that bends with your week.' }}</h1>
     <p class="lede">Keep your direction when time and priorities change.</p>
-    <p class="storage-note">
-      Your plan and progress are saved on this browser. Account sync across devices is not available
-      yet.
-    </p>
+    @if (progressVisible()) {
+      <p class="storage-note">
+        {{ accountMode() ? 'Saved to your account.' : 'Saved on this browser.' }}
+      </p>
+    }
   </section>
-  <div class="workspace">
-    <section class="setup-panel panel" aria-labelledby="setup-heading">
-      <p class="eyebrow">Your direction</p>
-      <h2 id="setup-heading">Plan from your week.</h2>
-      <label class="field"
-        >What are you working toward?
-        <input
-          type="text"
-          maxlength="160"
-          [value]="goal()"
-          (input)="goal.set($any($event.target).value)"
-        />
-      </label>
-      <div class="field-pair">
-        <label class="field"
-          >Preparation window
-          <select [value]="days()" (change)="setDays($any($event.target).value)">
-            @for (option of durations; track option) {
-              <option [value]="option" [selected]="days() === option">{{ option }} days</option>
-            }
-          </select>
-        </label>
-        <label class="field"
-          >Hours each day
-          <select [value]="dailyHours()" (change)="setHours($any($event.target).value)">
-            @for (option of hours; track option) {
-              <option [value]="option" [selected]="dailyHours() === option">
-                {{ option }} {{ option === 1 ? 'hour' : 'hours' }}
-              </option>
-            }
-          </select>
-        </label>
-      </div>
-      <label class="field"
-        >Plan approach
-        <select [value]="goalType()" (change)="goalType.set($any($event.target).value)">
-          <option value="interview">Interview preparation</option>
-          <option value="learning">Learn foundations and build depth</option>
-        </select>
-      </label>
-      @if (days() === 7 && goalType() === 'interview') {
-        <p class="budget-note">
-          Interview revision sprint: refresh familiar ideas, attempt representative tasks and
-          revisit gaps. A short deadline does not establish prior knowledge.
-        </p>
-        @for (topic of selectedTopics(); track topic.id) {
+  @if (
+    accountStore.enabled &&
+    accountMode() &&
+    (accountStore.plans().length || importAvailable() || accountStore.error())
+  ) {
+    <section class="account-panel panel" aria-labelledby="account-heading">
+      <h2 id="account-heading">Your saved plans</h2>
+      @if (accountMode() && !accountStore.sessionExpired()) {
+        <div class="account-actions">
+          @if (saved()) {
+            <button type="button" [disabled]="editsLocked()" (click)="newAccountPlan()">
+              Create a new plan
+            </button>
+          }
+        </div>
+        @if (accountStore.plans().length) {
           <label class="field"
-            >{{ topic.title }} — your starting point
+            >Open a saved plan
             <select
-              [value]="familiarity()[topic.id] || 'refresh'"
-              (change)="setFamiliarity(topic.id, $any($event.target).value)"
+              [disabled]="editsLocked()"
+              [value]="accountStore.active()?.planId ?? ''"
+              (change)="openAccountPlan($any($event.target).value)"
             >
-              <option value="refresh">Needs a refresh</option>
-              <option value="familiar">Familiar — practise and explain</option>
-              <option value="new">New to me — learn foundations</option>
+              <option value="" disabled>Choose a plan</option>
+              @for (item of accountStore.plans(); track item.planId) {
+                <option [value]="item.planId">
+                  {{ item.goal }} · Revision {{ item.revision }}
+                </option>
+              }
             </select>
           </label>
         }
-        <p class="budget-note">
-          These are your own starting-point estimates, separate from recorded completion. New
-          subjects need more time; choose foundation learning for a full learning sequence.
-        </p>
+        @if (importAvailable() && !progressVisible()) {
+          <details>
+            <summary>Bring your browser plan into this account</summary>
+            <p>
+              This creates a separate account plan with its saved progress and notes. The original
+              browser copy stays unchanged. Historical details that were never recorded remain
+              unknown.
+            </p>
+            <button type="button" [disabled]="editsLocked()" (click)="importBrowserPlan()">
+              Import browser plan
+            </button>
+          </details>
+        }
+      } @else {
+        <a routerLink="/account" [queryParams]="{ returnTo: '/study-plan' }"
+          >Sign in to continue this plan</a
+        >
       }
-      <details class="offering-details" open>
-        <summary>
-          Choose your focus
-          <span
-            >{{ selectedTopicIds().size }} selected · {{ topics().length }} published
-            offerings</span
-          >
-        </summary>
-        <p class="access-message">{{ access.description }}</p>
-        @if (loadingError()) {
-          <div role="alert">
-            <p>{{ loadingError() }}</p>
-            <button type="button" (click)="loadContent()">Try again</button>
-          </div>
-        } @else if (!documents() || access.status() === 'loading') {
-          <p role="status">Loading available offerings…</p>
-        } @else if (access.status() === 'error') {
-          <p role="alert">
-            Access could not be checked. Your saved plan is preserved; new sessions are unavailable
-            until access returns.
-          </p>
-        } @else {
-          <div class="fieldset-actions">
-            <button type="button" (click)="selectAllTopics()">Select available</button
-            ><button type="button" (click)="clearTopics()">Clear</button>
+      @if (accountStore.busy()) {
+        <p role="status">Connecting to your account…</p>
+      }
+      @if (accountStore.error()) {
+        <p role="alert">{{ accountStore.error() }}</p>
+        @if (accountStore.pending()) {
+          <div class="account-actions">
+            <button
+              type="button"
+              [disabled]="accountStore.busy() || accountStore.sessionExpired()"
+              (click)="retryAccountSave()"
+            >
+              Retry same request
+            </button>
+            <button type="button" [disabled]="accountStore.busy()" (click)="reloadAccountPlan()">
+              Discard pending request and reload
+            </button>
           </div>
         }
-        <fieldset
-          class="offering-checklist"
-          [disabled]="access.status() !== 'ready' || !documents()"
-        >
-          <legend class="visually-hidden">Published offerings</legend>
-          @for (path of paths; track path) {
-            <div class="offering-group">
-              <h3>{{ pathLabel(path) }}</h3>
-              @for (topic of topicsFor(path); track topic.id) {
-                <label class="offering" [class.unavailable]="!availableTopicIds().has(topic.id)">
-                  <input
-                    type="checkbox"
-                    [checked]="selectedTopicIds().has(topic.id)"
-                    [disabled]="!availableTopicIds().has(topic.id)"
-                    (change)="toggleTopic(topic, $any($event.target).checked)"
-                  />
-                  <span
-                    >{{ topic.title }}
-                    @if (topic.description) {
-                      <small>{{ topic.description }}</small>
-                    }
-                    @if (!availableTopicIds().has(topic.id)) {
-                      <small>{{ unavailableReason(topic) }}</small>
-                    }
-                  </span>
-                </label>
-              }
-            </div>
-          }
-        </fieldset>
-      </details>
-      <p class="budget-note">
-        {{
-          dailyHours() > 9
-            ? 'Focused work is capped at nine hours; the rest is recovery time.'
-            : 'Learning, practice and recall stay within your daily budget.'
-        }}
-      </p>
-      @if (needsDsaRanking() && rankingStatus() === 'loading') {
-        <p role="status">Loading the reviewed DSA order before building your plan…</p>
-      } @else if (needsDsaRanking() && rankingStatus() === 'error') {
-        <div role="alert">
-          <p>The reviewed DSA order could not be loaded. Your saved plan is unchanged.</p>
-          <button type="button" (click)="loadRanking()">Retry DSA order</button>
-        </div>
-      }
-      <button class="primary" type="button" [disabled]="!canGenerate()" (click)="generatePlan()">
-        {{ saved() ? 'Update my plan' : 'Build my plan' }}
-      </button>
-      @if (saved()) {
-        <p class="budget-note">
-          Updates preserve completed work. Changes above apply when you update.
-        </p>
       }
     </section>
-
-    <section class="active-plan" aria-labelledby="active-heading">
-      @if (plan(); as activePlan) {
-        <header class="active-heading">
-          <div>
-            <p class="eyebrow">Your active plan · Revision {{ saved()!.revision }}</p>
-            <h2 id="active-heading">
-              {{
-                activePlan.mode === 'interview-revision'
-                  ? 'Interview revision sprint'
-                  : saved()!.goal
-              }}
-            </h2>
-            @if (activePlan.mode === 'interview-revision') {
-              <p>{{ saved()!.goal }}</p>
-            }
-            <p>
-              {{ activePlan.config.days }} study days
-              @if (saved()!.shiftedDays) {
-                · {{ saved()!.shiftedDays }} recovery
-                {{ saved()!.shiftedDays === 1 ? 'day' : 'days' }} added ·
-                {{ activePlan.config.days + saved()!.shiftedDays }} days including recovery
-              }
-            </p>
-          </div>
-          <span class="local-state">Saved on this browser</span>
-        </header>
-        <section class="compass-panel panel" aria-label="First week allocation">
-          <div
-            class="compass-ring"
-            [style.--learning-end]="weekAllocation().learningEnd + '%'"
-            [style.--practice-end]="weekAllocation().practiceEnd + '%'"
+  }
+  @if (!accountReady()) {
+    <p role="status">Restoring your saved plans…</p>
+  }
+  @if (access.status() === 'error') {
+    <p role="alert">Access could not be checked. Your saved history is preserved.</p>
+  }
+  @if (setupVisible()) {
+    <section class="preset-panel panel" aria-labelledby="preset-heading">
+      <div>
+        <p class="eyebrow">A head start</p>
+        <h2 id="preset-heading">Start with a ready-made plan</h2>
+        <p>Choose a career goal, then make the topics and time your own.</p>
+      </div>
+      <div class="preset-controls">
+        <div class="field">
+          <label for="plan-starting-point">Your starting point</label>
+          <select
+            id="plan-starting-point"
+            [value]="selectedPresetId()"
+            (change)="selectedPresetId.set($any($event.target).value)"
           >
-            <div>
-              <strong>{{ weekAllocation().total }}</strong
-              ><span>minutes in your first week</span>
+            <option value="">Build my own plan</option>
+            @for (preset of presets; track preset.id) {
+              <option [value]="preset.id">{{ preset.title }}</option>
+            }
+          </select>
+        </div>
+        @if (selectedPreset(); as preset) {
+          <p>{{ preset.summary }}</p>
+          <p class="budget-note">
+            {{ preset.days }} days · {{ preset.dailyHours }}
+            {{ preset.dailyHours === 1 ? 'hour' : 'hours' }} a day · Editable starting point
+          </p>
+          @if (presetAvailability(); as availability) {
+            @if (availability.unavailableIds.length) {
+              <p class="budget-note">
+                {{ availability.selectedIds.length }} of {{ preset.topicIds.length }} focus areas
+                have sessions available with your current access. You can review the available
+                selection below.
+              </p>
+            }
+            <button
+              type="button"
+              [disabled]="!availability.selectedIds.length || editsLocked()"
+              (click)="applyPreset()"
+            >
+              Use this starting point
+            </button>
+          }
+        }
+      </div>
+    </section>
+  }
+  <div class="workspace" [class.has-active-plan]="progressVisible()">
+    @if (setupVisible()) {
+      <section class="setup-panel panel" aria-labelledby="setup-heading">
+        <p class="eyebrow">Your direction</p>
+        <h2 id="setup-heading">Create your study plan</h2>
+        <label class="field"
+          >What are you working toward?
+          <input
+            type="text"
+            maxlength="160"
+            [value]="goal()"
+            (input)="goal.set($any($event.target).value)"
+          />
+        </label>
+        <div class="field-pair">
+          <label class="field"
+            >Preparation window
+            <select [value]="days()" (change)="setDays($any($event.target).value)">
+              @if (!isPresetDuration()) {
+                <option [value]="days()">{{ days() }} days (extended)</option>
+              }
+              @for (option of durations; track option) {
+                <option [value]="option" [selected]="days() === option">{{ option }} days</option>
+              }
+            </select>
+          </label>
+          <label class="field"
+            >Hours each day
+            <select [value]="dailyHours()" (change)="setHours($any($event.target).value)">
+              @for (option of hours; track option) {
+                <option [value]="option" [selected]="dailyHours() === option">
+                  {{ option }} {{ option === 1 ? 'hour' : 'hours' }}
+                </option>
+              }
+            </select>
+          </label>
+        </div>
+        <label class="field"
+          >Plan approach
+          <select [value]="goalType()" (change)="goalType.set($any($event.target).value)">
+            <option value="interview">Interview preparation</option>
+            <option value="learning">Learn foundations and build depth</option>
+          </select>
+        </label>
+        @if (days() === 7 && goalType() === 'interview') {
+          <p class="budget-note">
+            Interview revision sprint: refresh familiar ideas, attempt representative tasks and
+            revisit gaps. A short deadline does not establish prior knowledge.
+          </p>
+          @for (topic of selectedTopics(); track topic.id) {
+            <label class="field"
+              >{{ topic.title }} — your starting point
+              <select
+                [value]="familiarity()[topic.id] || 'refresh'"
+                (change)="setFamiliarity(topic.id, $any($event.target).value)"
+              >
+                <option value="refresh">Needs a refresh</option>
+                <option value="familiar">Familiar — practise and explain</option>
+                <option value="new">New to me — learn foundations</option>
+              </select>
+            </label>
+          }
+          <p class="budget-note">
+            These are your own starting-point estimates, separate from recorded completion. New
+            subjects need more time; choose foundation learning for a full learning sequence.
+          </p>
+        }
+        <details class="offering-details" open>
+          <summary>
+            Choose your focus
+            <span
+              >{{ selectedTopicIds().size }} selected · {{ topics().length }} published
+              offerings</span
+            >
+          </summary>
+          <p class="access-message">{{ access.description }}</p>
+          @if (loadingError()) {
+            <div role="alert">
+              <p>{{ loadingError() }}</p>
+              <button type="button" (click)="loadContent()">Try again</button>
             </div>
-          </div>
-          <div>
-            <p class="eyebrow">Direction, not pressure</p>
-            <h2>Protect the time you have.</h2>
-            <dl class="allocation">
-              <div>
-                <dt>Learn</dt>
-                <dd>{{ weekAllocation().understand }}m</dd>
-              </div>
-              <div>
-                <dt>Practice</dt>
-                <dd>{{ weekAllocation().practice }}m</dd>
-              </div>
-              <div>
-                <dt>Recall</dt>
-                <dd>{{ weekAllocation().recall }}m</dd>
-              </div>
-            </dl>
-            <p>
-              Session times are estimates. Revision timeboxes record an attempt or refresh, not full
-              content completion. Revisits wait for the earlier attempt or learning session.
+          } @else if (!documents() || access.status() === 'loading') {
+            <p role="status">Loading available offerings…</p>
+          } @else if (access.status() === 'error') {
+            <p role="alert">
+              Access could not be checked. Your saved plan is preserved; new sessions are
+              unavailable until access returns.
             </p>
+          } @else {
+            <div class="fieldset-actions">
+              <button type="button" (click)="selectAllTopics()">Select available</button
+              ><button type="button" (click)="clearTopics()">Clear</button>
+            </div>
+          }
+          <fieldset
+            class="offering-checklist"
+            [disabled]="access.status() !== 'ready' || !documents()"
+          >
+            <legend class="visually-hidden">Published offerings</legend>
+            @for (path of paths; track path) {
+              <div class="offering-group">
+                <h3>{{ pathLabel(path) }}</h3>
+                @for (topic of topicsFor(path); track topic.id) {
+                  <label class="offering" [class.unavailable]="!availableTopicIds().has(topic.id)">
+                    <input
+                      type="checkbox"
+                      [checked]="selectedTopicIds().has(topic.id)"
+                      [disabled]="!availableTopicIds().has(topic.id)"
+                      (change)="toggleTopic(topic, $any($event.target).checked)"
+                    />
+                    <span
+                      >{{ topic.title }}
+                      @if (topic.description) {
+                        <small>{{ topic.description }}</small>
+                      }
+                      @if (!availableTopicIds().has(topic.id)) {
+                        <small>{{ unavailableReason(topic) }}</small>
+                      }
+                    </span>
+                  </label>
+                }
+              </div>
+            }
+          </fieldset>
+        </details>
+        <p class="budget-note">
+          {{
+            dailyHours() > 9
+              ? 'Focused work is capped at nine hours; the rest is recovery time.'
+              : 'Learning, practice and recall stay within your daily budget.'
+          }}
+        </p>
+        @if (needsDsaRanking() && rankingStatus() === 'loading') {
+          <p role="status">Loading the reviewed DSA order before building your plan…</p>
+        } @else if (needsDsaRanking() && rankingStatus() === 'error') {
+          <div role="alert">
+            <p>The reviewed DSA order could not be loaded. Your saved plan is unchanged.</p>
+            <button type="button" (click)="loadRanking()">Retry DSA order</button>
           </div>
-        </section>
-        <div class="metrics">
-          <div>
-            <span>{{
-              activePlan.mode === 'interview-revision' ? 'Recorded sessions' : 'Completed sessions'
-            }}</span
-            ><strong
-              >{{ completion().done }} <small>/ {{ completion().total }}</small></strong
-            ><progress
-              [value]="completion().done"
-              [max]="completion().total || 1"
-              [attr.aria-label]="
+        }
+        <button class="primary" type="button" [disabled]="!canGenerate()" (click)="generatePlan()">
+          Review my plan
+        </button>
+        @if (saved()) {
+          <p class="budget-note">
+            Updates preserve completed work. Changes above apply when you update.
+          </p>
+        }
+      </section>
+    }
+    <section class="active-plan" aria-labelledby="active-heading">
+      @if (progressVisible()) {
+        @if (plan(); as activePlan) {
+          <header class="active-heading">
+            <div>
+              <p class="eyebrow">Your active plan · Revision {{ saved()!.revision }}</p>
+              <h2 id="active-heading">
+                {{
+                  activePlan.mode === 'interview-revision'
+                    ? 'Interview revision sprint'
+                    : saved()!.goal
+                }}
+              </h2>
+              @if (activePlan.mode === 'interview-revision') {
+                <p>{{ saved()!.goal }}</p>
+              }
+              <p>
+                {{ activePlan.config.days }} study days
+                @if (saved()!.shiftedDays) {
+                  · {{ saved()!.shiftedDays }} recovery
+                  {{ saved()!.shiftedDays === 1 ? 'day' : 'days' }} added ·
+                  {{ activePlan.config.days + saved()!.shiftedDays }} days including recovery
+                }
+              </p>
+            </div>
+            <span class="local-state">{{
+              accountMode() ? 'Saved to your account' : 'Saved on this browser'
+            }}</span>
+          </header>
+          <section class="compass-panel panel" aria-label="First week allocation">
+            <div
+              class="compass-ring"
+              [style.--learning-end]="weekAllocation().learningEnd + '%'"
+              [style.--practice-end]="weekAllocation().practiceEnd + '%'"
+            >
+              <div>
+                <strong>{{ weekAllocation().total }}</strong
+                ><span>minutes in your first week</span>
+              </div>
+            </div>
+            <div>
+              <p class="eyebrow">Direction, not pressure</p>
+              <h2>Protect the time you have.</h2>
+              <div class="allocation-actions">
+                <dl class="allocation">
+                  <div>
+                    <dt>Learn</dt>
+                    <dd>{{ weekAllocation().understand }}m</dd>
+                  </div>
+                  <div>
+                    <dt>Practice</dt>
+                    <dd>{{ weekAllocation().practice }}m</dd>
+                  </div>
+                  <div>
+                    <dt>Recall</dt>
+                    <dd>{{ weekAllocation().recall }}m</dd>
+                  </div>
+                </dl>
+                <div class="progress-actions">
+                  <button type="button" aria-haspopup="dialog" (click)="openSchedule()">
+                    Your complete schedule
+                  </button>
+                  <button
+                    type="button"
+                    class="recovery-toggle"
+                    aria-haspopup="dialog"
+                    (click)="openRecovery()"
+                  >
+                    Make Room for Real Life
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+          <div class="metrics">
+            <div>
+              <span>{{
                 activePlan.mode === 'interview-revision'
                   ? 'Recorded sessions'
                   : 'Completed sessions'
-              "
-            ></progress>
-          </div>
-          <div>
-            <span>{{
-              activePlan.mode === 'interview-revision'
-                ? 'Distinct planned items'
-                : 'New curriculum items'
-            }}</span
-            ><strong>{{ activePlan.uniqueNewItems }}</strong>
-            <p>{{ activePlan.reviewAssignments }} scheduled retrievals</p>
-          </div>
-          <div>
-            <span>Daily focus budget</span
-            ><strong
-              >{{ activePlan.focusedDailyHours }}
-              <small>{{ activePlan.focusedDailyHours === 1 ? 'hour' : 'hours' }}</small></strong
-            >
-            <p>Completing a session does not establish mastery.</p>
-          </div>
-        </div>
-        @if (activePlan.eligibleNewItems !== undefined) {
-          <section class="panel" aria-label="Plan coverage">
-            <h2>What fits your window</h2>
-            <p>
-              {{ activePlan.uniqueNewItems }} of {{ activePlan.eligibleNewItems }} selected
-              curriculum items are scheduled.
-            </p>
-            <p>
-              {{ activePlan.remainingNewItems }} remain outside this window;
-              {{ activePlan.blockedItems?.length || 0 }} are blocked by required foundations outside
-              your selection or an unresolved dependency.
-            </p>
-            @if (activePlan.mode === 'interview-revision') {
-              <p>
-                {{ activePlan.futureReviews?.length || 0 }} next-revisit suggestions are retained.
-                These are forecasts, not overdue obligations; completion and recorded gaps determine
-                what you revisit.
-              </p>
-              <p>
-                Attempted items: {{ revisionProgress().attempted }} ·
-                {{ revisionProgress().completed }} explicitly completed ·
-                {{ revisionProgress().needsReview }} marked for review. Attempt and review history
-                is retained when you replan.
-              </p>
-              <ul>
-                @for (topic of activePlan.topicCoverage || []; track topic.id) {
-                  <li>
-                    {{ topic.title }}: {{ topic.scheduledItems }} of
-                    {{ topic.availableItems }} eligible items ·
-                    {{ topic.representedOutcomes }} curriculum areas · {{ topic.minutes }} scheduled
-                    minutes.
-                    @if (!topic.scheduledItems) {
-                      <strong>Not represented in this window.</strong>
-                    }
-                  </li>
-                }
-              </ul>
-              <p>
-                Selected subjects share one budget. These are representative sessions, not complete
-                topic coverage or an interview-readiness guarantee. Remaining daily time is catch-up
-                or rest.
-              </p>
-            } @else {
-              <p>
-                {{ activePlan.futureReviews?.length || 0 }} projected recalls remain beyond this
-                schedule, including {{ activePlan.overdueReviewCount || 0 }} carried over because of
-                limited time.
-              </p>
-            }
-            <p>
-              Choose more time, a longer window, or a smaller focus to change coverage. Future
-              recalls are planned opportunities, not completed work.
-            </p>
-            @if (activePlan.blockedItems?.length) {
-              <details>
-                <summary>See required foundation lessons</summary>
-                <ul>
-                  @for (item of requiredFoundations(); track item.id) {
-                    <li>
-                      {{ item.title }}
-                      @if (item.selectable && item.topic) {
-                        <button type="button" (click)="toggleTopic(item.topic, true)">
-                          Select {{ item.topic.title }}
-                        </button>
-                      }
-                    </li>
-                  }
-                </ul>
-                <p>Selections apply only when you choose Update my plan.</p>
-              </details>
-            }
-          </section>
-        }
-        <section class="panel recovery">
-          <p class="eyebrow">Make room for real life</p>
-          <h2>Missed a day? Keep your direction.</h2>
-          <p>
-            Add a recovery day without doubling the next session. Your session order and completed
-            work stay in place.
-          </p>
-          <button type="button" (click)="shiftSchedule()">Add one recovery day</button>
-        </section>
-        <section class="panel revision-panel">
-          <p class="eyebrow">Continuity</p>
-          <h2>Your plan can change. Your completed work stays.</h2>
-          <p>
-            {{
-              saved()!.rankingVersion
-                ? 'This plan keeps the DSA ranking version it started with.'
-                : 'This plan uses a saved curriculum order. A released DSA ranking was not available when it was created.'
-            }}
-          </p>
-          <details>
-            <summary>Plan revision history</summary>
-            <ol>
-              @for (change of saved()!.history; track $index) {
-                <li>Revision {{ change.revision }} · {{ change.reason }}</li>
-              }
-            </ol>
-          </details>
-        </section>
-        <div class="session-heading">
-          <h2>Your sessions</h2>
-          <label class="field"
-            >Choose a study day<select
-              [value]="selectedDay()"
-              (change)="selectedDay.set(+$any($event.target).value)"
-            >
-              @for (day of activePlan.days; track day.day) {
-                <option [value]="day.day" [selected]="selectedDay() === day.day">
-                  Day {{ day.day }}
-                </option>
-              }
-            </select></label
-          >
-        </div>
-        @if (pendingSessions().length) {
-          <section class="panel" aria-label="Unfinished earlier sessions">
-            <h3>{{ pendingSessions().length }} earlier sessions are still waiting</h3>
-            <p>
-              They stay in your plan. Use an earlier study day or add recovery time; no work has
-              been marked complete automatically.
-            </p>
-            @for (item of pendingSessions().slice(0, 5); track item.id) {
-              <p>{{ item.title }} · {{ item.minutes }} estimated minutes</p>
-              <a [routerLink]="currentRoute(item)"
-                >Open {{ item.activity === 'Recall' ? 'recall' : 'session' }}</a
+              }}</span
+              ><strong
+                >{{ completion().done }} <small>/ {{ completion().total }}</small></strong
+              ><progress
+                [value]="completion().done"
+                [max]="completion().total || 1"
+                [attr.aria-label]="
+                  activePlan.mode === 'interview-revision'
+                    ? 'Recorded sessions'
+                    : 'Completed sessions'
+                "
+              ></progress>
+            </div>
+            <div>
+              <span>{{
+                activePlan.mode === 'interview-revision'
+                  ? 'Distinct planned items'
+                  : 'New curriculum items'
+              }}</span
+              ><strong>{{ activePlan.uniqueNewItems }}</strong>
+              <p>{{ activePlan.reviewAssignments }} scheduled retrievals</p>
+            </div>
+            <div>
+              <span>Daily focus budget</span
+              ><strong
+                >{{ activePlan.focusedDailyHours }}
+                <small>{{ activePlan.focusedDailyHours === 1 ? 'hour' : 'hours' }}</small></strong
               >
-              @if (item.timebox) {
-                <button type="button" (click)="recordOutcome(item, 'attempted')">
-                  Record attempt / refresh
-                </button>
-                <button type="button" (click)="recordOutcome(item, 'needs-review')">
-                  Needs review
-                </button>
-              } @else {
-                <button
-                  type="button"
-                  (click)="toggleCompletion(item)"
-                  [attr.aria-label]="'Mark complete: ' + item.title"
+            </div>
+          </div>
+          <section class="today-panel panel" aria-labelledby="today-heading">
+            <div class="session-heading">
+              <h2 #sessionHeading id="today-heading" tabindex="-1">Today’s Session</h2>
+              <label class="field"
+                >Choose a study day<select
+                  [value]="selectedDay()"
+                  (change)="selectedDay.set(+$any($event.target).value)"
                 >
-                  Mark complete
-                </button>
-              }
-            }
-          </section>
-        }
-        @if (currentDay(); as day) {
-          <p class="day-focus">
-            {{ day.focus }} · {{ day.focusedMinutes }} scheduled minutes
-            @if (day.bufferMinutes !== undefined) {
-              · {{ day.bufferMinutes }} minutes for catch-up / notes / rest
-            }
-          </p>
-          <div class="compass-sessions">
-            @for (assignment of day.assignments; track assignment.id) {
-              <article class="session-card" [class.is-done]="completedIds().has(assignment.id)">
-                <div class="session-meta">
-                  <span>{{ assignment.activity }}</span
-                  ><span>{{ assignment.minutes }} estimated minutes</span>
-                </div>
-                <h3>{{ assignment.title }}</h3>
-                <p>
-                  {{ assignment.courseTitle }}
-                  @if (assignment.reviewFromDay) {
-                    · Recall from day {{ assignment.reviewFromDay }}
+                  @for (day of activePlan.days; track day.day) {
+                    <option [value]="day.day" [selected]="selectedDay() === day.day">
+                      Day {{ day.day }}
+                    </option>
                   }
-                </p>
-                @if (assignment.instructions) {
-                  <p>{{ assignment.instructions }}</p>
+                </select></label
+              >
+            </div>
+            @if (currentDay(); as day) {
+              <p class="day-focus">
+                {{ day.focus }} · {{ dailyQueue()?.minutes ?? day.focusedMinutes }} minutes planned
+                today
+                @if (day.bufferMinutes !== undefined) {
+                  · {{ day.bufferMinutes }} minutes for catch-up / notes / rest
                 }
-                @if (refreshLinks(assignment).length) {
-                  <details>
-                    <summary>Related lesson for targeted refresh</summary>
-                    <p>
-                      Optional reference; this link alone is not a prerequisite or a completed
-                      lesson.
-                    </p>
-                    @for (link of refreshLinks(assignment); track link.title) {
+              </p>
+              <ng-template #sessionCards let-assignments>
+                <div class="compass-sessions">
+                  @for (assignment of assignments; track assignment.id) {
+                    <article
+                      class="session-card"
+                      [attr.data-session-id]="assignment.id"
+                      [class.is-done]="completedIds().has(assignment.id)"
+                    >
+                      <div class="session-meta">
+                        <span>{{ assignment.activity }}</span
+                        ><span>{{ assignment.minutes }} estimated minutes</span>
+                      </div>
+                      <h4>{{ assignment.title }}</h4>
                       <p>
-                        <a [routerLink]="link.route">{{ link.title }}</a>
+                        {{ assignment.courseTitle }}
+                        @if (assignment.reviewFromDay) {
+                          · Recall from day {{ assignment.reviewFromDay }}
+                        }
+                      </p>
+                      @if (assignment.instructions) {
+                        <p>{{ assignment.instructions }}</p>
+                      }
+                      @if (refreshLinks(assignment).length) {
+                        <details>
+                          <summary>Related lesson for targeted refresh</summary>
+                          <p>
+                            Optional reference; this link alone is not a prerequisite or a completed
+                            lesson.
+                          </p>
+                          @for (link of refreshLinks(assignment); track link.title) {
+                            <p>
+                              <a [routerLink]="link.route">{{ link.title }}</a>
+                            </p>
+                          }
+                        </details>
+                      }
+                      @if (canOpen(assignment)) {
+                        <a
+                          [routerLink]="currentRoute(assignment)"
+                          [queryParams]="planLink(assignment)"
+                          >Open {{ assignment.activity === 'Recall' ? 'for recall' : 'session' }}</a
+                        >
+                        @if (assignment.timebox) {
+                          <label class="field"
+                            >What needs another look?
+                            <textarea
+                              [disabled]="editsLocked()"
+                              rows="3"
+                              maxlength="1000"
+                              [value]="reviewNote(assignment)"
+                              (input)="
+                                !accountMode() &&
+                                  saveReviewNote(assignment, $any($event.target).value)
+                              "
+                              (blur)="
+                                accountMode() &&
+                                  saveReviewNote(assignment, $any($event.target).value)
+                              "
+                            ></textarea>
+                          </label>
+                          <p>{{ outcome(assignment) || 'Not yet recorded' }}</p>
+                          <div class="session-footer">
+                            <button
+                              type="button"
+                              [disabled]="editsLocked()"
+                              (click)="recordOutcome(assignment, 'attempted')"
+                            >
+                              Record attempt / refresh
+                            </button>
+                            <button
+                              type="button"
+                              [disabled]="editsLocked()"
+                              (click)="recordOutcome(assignment, 'needs-review')"
+                            >
+                              Needs review
+                            </button>
+                            <button
+                              type="button"
+                              [disabled]="editsLocked()"
+                              (click)="recordOutcome(assignment, 'completed')"
+                            >
+                              I completed the full content
+                            </button>
+                          </div>
+                        } @else {
+                          <div class="session-footer">
+                            <span>{{
+                              completedIds().has(assignment.id) ? 'Completed' : 'Ready when you are'
+                            }}</span
+                            ><button
+                              type="button"
+                              [attr.aria-label]="
+                                (completedIds().has(assignment.id)
+                                  ? 'Mark incomplete: '
+                                  : 'Mark complete: ') + assignment.title
+                              "
+                              [disabled]="editsLocked()"
+                              (click)="toggleCompletion(assignment)"
+                            >
+                              {{
+                                isDailyRecall(assignment)
+                                  ? 'Record recall complete'
+                                  : completedIds().has(assignment.id)
+                                    ? 'Mark incomplete'
+                                    : 'Mark complete'
+                              }}
+                            </button>
+                          </div>
+                        }
+                      } @else {
+                        <p class="unavailable">
+                          {{ assignmentUnavailableReason(assignment) }}
+                        </p>
+                      }
+                    </article>
+                  }
+                </div>
+              </ng-template>
+              @for (section of currentDaySections(); track section.id) {
+                @if (section.id === 'unfinished') {
+                  <details class="panel pending-panel">
+                    <summary>
+                      {{ section.title }} · {{ section.assignments.length }} sessions
+                    </summary>
+                    <p>
+                      These sessions need prerequisites or more room in your daily budget. They
+                      remain in your plan. Preview recovery to see what fits before changing it.
+                    </p>
+                    <ng-container
+                      [ngTemplateOutlet]="sessionCards"
+                      [ngTemplateOutletContext]="{ $implicit: section.assignments }"
+                    />
+                  </details>
+                } @else {
+                  <section
+                    class="day-session-group"
+                    [class.recall-panel]="section.id === 'recall'"
+                    [attr.aria-labelledby]="'day-sessions-' + section.id"
+                  >
+                    <h3 class="day-session-title" [id]="'day-sessions-' + section.id">
+                      {{ section.title }}
+                    </h3>
+                    @if (section.id === 'recall') {
+                      <p class="recall-intro">
+                        Bring earlier learning back to mind before your next session.
                       </p>
                     }
-                  </details>
+                    <ng-container
+                      [ngTemplateOutlet]="sessionCards"
+                      [ngTemplateOutletContext]="{ $implicit: section.assignments }"
+                    />
+                  </section>
                 }
-                @if (canOpen(assignment)) {
-                  <a [routerLink]="currentRoute(assignment)"
-                    >Open {{ assignment.activity === 'Recall' ? 'for recall' : 'session' }}</a
-                  >
-                  @if (assignment.timebox) {
-                    <label class="field"
-                      >What needs another look?
-                      <textarea
-                        rows="3"
-                        maxlength="1000"
-                        [value]="reviewNote(assignment)"
-                        (input)="saveReviewNote(assignment, $any($event.target).value)"
-                      ></textarea>
-                    </label>
-                    <p>{{ outcome(assignment) || 'Not yet recorded' }}</p>
-                    <div class="session-footer">
-                      <button type="button" (click)="recordOutcome(assignment, 'attempted')">
-                        Record attempt / refresh
-                      </button>
-                      <button type="button" (click)="recordOutcome(assignment, 'needs-review')">
-                        Needs review
-                      </button>
-                      <button type="button" (click)="recordOutcome(assignment, 'completed')">
-                        I completed the full content
-                      </button>
-                    </div>
-                  } @else {
-                    <div class="session-footer">
-                      <span>{{
-                        completedIds().has(assignment.id) ? 'Completed' : 'Ready when you are'
-                      }}</span
-                      ><button
-                        type="button"
-                        [attr.aria-label]="
-                          (completedIds().has(assignment.id)
-                            ? 'Mark incomplete: '
-                            : 'Mark complete: ') + assignment.title
-                        "
-                        (click)="toggleCompletion(assignment)"
-                      >
-                        {{
-                          completedIds().has(assignment.id) ? 'Mark incomplete' : 'Mark complete'
-                        }}
-                      </button>
-                    </div>
-                  }
-                } @else {
-                  <p class="unavailable">
-                    {{ assignmentUnavailableReason(assignment) }}
-                  </p>
-                }
-              </article>
-            } @empty {
-              <p class="panel">
-                No new sessions are scheduled for this day. Revisit earlier work, or update your
-                focus to include more available curriculum.
-              </p>
+              } @empty {
+                <p class="panel">
+                  No further sessions fit today’s recommendation. You can review your complete
+                  schedule or adjust your focus and available time.
+                </p>
+              }
             }
-          </div>
+          </section>
         }
       } @else {
         <div class="empty-plan panel">
@@ -503,12 +592,251 @@
             Choose your focus and build a plan. Your next session, recall rhythm and progress will
             appear here.
           </p>
-          <p>
-            We schedule available published material. Opening an answer never marks it complete.
-          </p>
+          <p>Preview a schedule built around your available time and chosen topics.</p>
         </div>
       }
     </section>
   </div>
   <p class="live-status" role="status">{{ status() }}</p>
 </main>
+
+<dialog
+  #draftDialog
+  class="plan-review-dialog"
+  aria-labelledby="draft-heading"
+  (cancel)="accountStore.busy() || accountStore.pending() ? $event.preventDefault() : closeDraft()"
+>
+  @if (draft(); as review) {
+    <p class="eyebrow">Temporary draft</p>
+    <h2 id="draft-heading">Review your plan</h2>
+    <p>
+      {{ review.goal }} · {{ review.snapshot.config.days }} days ·
+      {{ review.snapshot.focusedDailyHours }} hours a day
+    </p>
+    <p>
+      {{
+        accountMode()
+          ? 'Your account changes only when you save.'
+          : accountStore.enabled
+            ? 'Sign in to save this plan to your account.'
+            : 'Save keeps this plan on this browser.'
+      }}
+    </p>
+    @for (day of review.snapshot.days; track day.day) {
+      <details [open]="day.day === 1">
+        <summary>Day {{ day.day }} · {{ day.focusedMinutes }} min</summary>
+        <ol>
+          @for (item of day.assignments; track item.id) {
+            <li>{{ item.activity }} · {{ item.title }} · {{ item.minutes }} min</li>
+          }
+        </ol>
+      </details>
+    }
+    @if (accountStore.error()) {
+      <p role="alert">{{ accountStore.error() }}</p>
+    }
+    <div class="draft-actions">
+      @if (accountStore.pending()) {
+        <button type="button" [disabled]="accountStore.busy()" (click)="retryAccountSave()">
+          Retry same save
+        </button>
+        <button
+          type="button"
+          [disabled]="accountStore.busy()"
+          (click)="accountStore.discardPending()"
+        >
+          Discard pending request
+        </button>
+      } @else if (accountStore.enabled && !accountMode()) {
+        <button type="button" class="primary" (click)="continueToSignIn()">
+          Continue to sign in
+        </button>
+      } @else {
+        <button type="button" class="primary" [disabled]="editsLocked()" (click)="saveDraft()">
+          {{ accountMode() ? 'Save to my account' : 'Save on this browser' }}
+        </button>
+      }
+      <button type="button" [disabled]="editsLocked()" (click)="closeDraft()">
+        Edit selections
+      </button>
+    </div>
+  }
+</dialog>
+
+<dialog
+  #recoveryDialog
+  class="plan-review-dialog"
+  aria-labelledby="recovery-heading"
+  (cancel)="
+    accountStore.busy() || accountStore.pending() ? $event.preventDefault() : closeRecovery()
+  "
+>
+  @if (plan(); as activePlan) {
+    <section class="recovery" aria-labelledby="recovery-heading">
+      <p class="eyebrow">Make room for real life</p>
+      <h2 id="recovery-heading">Make Room for Real Life</h2>
+      <p>
+        Keep your deadline and daily budget. Preview what fits in the remaining days before applying
+        a change.
+      </p>
+      <label class="field"
+        >First day available to study again
+        <input
+          type="number"
+          [min]="minimumRecoveryDay()"
+          [max]="activePlan.config.days + 1"
+          [value]="recoveryDay()"
+          (input)="recoveryDay.set(+$any($event.target).value); recoveryPreview.set(null)"
+        />
+      </label>
+      <div class="account-actions">
+        <button type="button" [disabled]="editsLocked()" (click)="previewRecovery()">
+          Preview recovery within my deadline
+        </button>
+        <button
+          type="button"
+          [disabled]="editsLocked()"
+          (click)="extensionRequested.set(true); recoveryPreview.set(null)"
+        >
+          Extend my deadline instead
+        </button>
+      </div>
+      @if (extensionRequested()) {
+        <p>
+          This moves your deadline one day later. Session order and recorded work stay unchanged.
+        </p>
+        <button type="button" [disabled]="editsLocked()" (click)="shiftSchedule()">
+          Confirm one-day extension
+        </button>
+        <button type="button" (click)="extensionRequested.set(false)">Cancel</button>
+      }
+      @if (recoveryPreview(); as preview) {
+        <h3>Review your recovery</h3>
+        <p>
+          {{ preview.moved.length }} sessions move. {{ preview.deferred.length }} sessions stay
+          outside the remaining window. Your daily limit stays at
+          {{ activePlan.focusedDailyHours }}
+          {{ activePlan.focusedDailyHours === 1 ? 'hour' : 'hours' }}.
+        </p>
+        @if (preview.deferred.length) {
+          <details open>
+            <summary>Sessions deferred from this window</summary>
+            <ul>
+              @for (item of preview.deferred; track item.assignment.id) {
+                <li>
+                  {{ item.assignment.title }} · {{ item.assignment.activity }} ·
+                  {{
+                    item.originalDay === null
+                      ? 'Future revisit'
+                      : 'Originally day ' + item.originalDay
+                  }}
+                  — {{ item.reason.replaceAll('-', ' ') }}
+                </li>
+              }
+            </ul>
+          </details>
+        }
+        <button type="button" [disabled]="editsLocked()" (click)="confirmRecovery()">
+          Apply this recovery
+        </button>
+        <button type="button" (click)="recoveryPreview.set(null)">Keep my current plan</button>
+      }
+      @if (saved()!.deferredSessions?.length) {
+        <details>
+          <summary>Deferred sessions from your last recovery</summary>
+          <ul>
+            @for (item of saved()!.deferredSessions; track item.assignment.id) {
+              <li>
+                {{ item.assignment.title }} · {{ item.assignment.activity }} ·
+                {{
+                  item.originalDay === null
+                    ? 'Future revisit'
+                    : 'Originally day ' + item.originalDay
+                }}
+                — {{ item.reason.replaceAll('-', ' ') }}
+              </li>
+            }
+          </ul>
+        </details>
+      } @else if (accountStore.active()?.recovery?.deferredContentIds?.length) {
+        <p>
+          {{ accountStore.active()!.recovery.deferredContentIds.length }} content items were
+          deferred from the last recovery. Earlier plan versions preserve their original schedule.
+        </p>
+      }
+    </section>
+    <details class="adjustment-history">
+      <summary>Previous plan changes</summary>
+      <ol>
+        @for (change of saved()!.history; track $index) {
+          <li>{{ change.reason }}</li>
+        }
+      </ol>
+    </details>
+    @if (accountStore.error()) {
+      <p role="alert">{{ accountStore.error() }}</p>
+    }
+    @if (accountStore.pending()) {
+      <button type="button" [disabled]="accountStore.busy()" (click)="retryAccountSave()">
+        Retry same request
+      </button>
+      <button
+        type="button"
+        [disabled]="accountStore.busy()"
+        (click)="accountStore.discardPending()"
+      >
+        Discard pending request
+      </button>
+    }
+    <button type="button" [disabled]="editsLocked()" (click)="closeRecovery()">
+      Close adjustments
+    </button>
+  }
+</dialog>
+
+<dialog
+  #scheduleDialog
+  class="plan-review-dialog schedule-dialog"
+  aria-labelledby="schedule-heading"
+  (cancel)="closeSchedule()"
+>
+  <header class="dialog-heading">
+    <div>
+      <p class="eyebrow">One week at a time</p>
+      <h2 id="schedule-heading">Your complete schedule</h2>
+    </div>
+    <button type="button" (click)="closeSchedule()" autofocus>Close schedule</button>
+  </header>
+  <nav class="schedule-pagination" aria-label="Schedule weeks">
+    <button type="button" [disabled]="schedulePage() === 0" (click)="changeSchedulePage(-1)">
+      Previous week
+    </button>
+    <p role="status">
+      Week {{ schedulePage() + 1 }} of {{ schedulePageCount()
+      }}<span
+        >Days {{ scheduleDays()[0]?.day }}–{{
+          scheduleDays()[scheduleDays().length - 1]?.day
+        }}</span
+      >
+    </p>
+    <button
+      type="button"
+      [disabled]="schedulePage() >= schedulePageCount() - 1"
+      (click)="changeSchedulePage(1)"
+    >
+      Next week
+    </button>
+  </nav>
+  @for (day of scheduleDays(); track day.day) {
+    <details class="schedule-day">
+      <summary>Day {{ day.day }} · {{ dayStatus(day) }} · {{ day.focusedMinutes }} min</summary>
+      <p>{{ day.focus }}</p>
+      <ol>
+        @for (item of day.assignments; track item.id) {
+          <li>{{ item.activity }} · {{ item.title }} · {{ item.minutes }} min</li>
+        }
+      </ol>
+      <button type="button" (click)="openScheduleDay(day.day)">Open day {{ day.day }}</button>
+    </details>
+  }
+</dialog>

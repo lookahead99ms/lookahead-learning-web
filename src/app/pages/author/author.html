@@ -1,0 +1,75 @@
+<app-platform-header />
+<main id="main-content" class="author-page">
+  <header>
+    <p class="eyebrow">Local author workspace</p>
+    <h1>See the platform as it takes shape.</h1>
+    <p class="lede">Browse all published content and open the Study Plan views directly.</p>
+    <p class="local-note">
+      Signed in as Author. Account and content access are local development features. Sample plans
+      belong to this account; edits stay with these samples.
+    </p>
+  </header>
+  <section class="panel" aria-labelledby="study-views-heading">
+    <h2 id="study-views-heading">Study Plan views</h2>
+    <p>Use the real pages with author-owned examples. Draft review opens without saving.</p>
+    <nav class="view-grid" aria-label="Study Plan author views">
+      <a routerLink="/study-plan" [queryParams]="{ create: 1 }"
+        ><strong>Create a plan</strong
+        ><span>Career starting points, topics and daily budget.</span></a
+      >
+      <a
+        routerLink="/study-plan"
+        [queryParams]="{
+          create: 1,
+          authorView: 'draft',
+          topics: 'learn:core-java',
+          days: 30,
+          hours: 1,
+          approach: 'learning',
+        }"
+        ><strong>Review a draft</strong><span>A temporary plan ready for review.</span></a
+      >
+      @if (savedPlan(); as saved) {
+        <a routerLink="/study-plan" [queryParams]="{ plan: saved.planId, day: 1 }"
+          ><strong>Saved plan</strong
+          ><span>Progress, today’s session and account save state.</span></a
+        >
+        <a
+          routerLink="/study-plan"
+          [queryParams]="{ plan: saved.planId, authorView: 'schedule', day: 1 }"
+          ><strong>Weekly schedule</strong
+          ><span>The complete schedule, seven days at a time.</span></a
+        >
+      }
+      @if (revisedPlan(); as revised) {
+        <a routerLink="/study-plan" [queryParams]="{ plan: revised.planId, day: 2 }"
+          ><strong>Revised plan and recall</strong
+          ><span>Completed learning, recall and a revised deadline.</span></a
+        >
+        <a
+          routerLink="/study-plan"
+          [queryParams]="{ plan: revised.planId, authorView: 'recovery', day: 2 }"
+          ><strong>Recovery and revision history</strong
+          ><span>Make Room for Real Life and inspect past changes.</span></a
+        >
+      }
+    </nav>
+    @if (!savedPlan() || !revisedPlan()) {
+      <p class="local-note">
+        Some sample plans are unavailable. You can create a plan above; saved examples appear here
+        when prepared for this local author account.
+      </p>
+    }
+  </section>
+  <section aria-labelledby="platform-views-heading">
+    <h2 id="platform-views-heading">Explore the platform</h2>
+    <nav class="view-grid" aria-label="Platform author views">
+      @for (surface of surfaces; track surface.route) {
+        <a [routerLink]="surface.route"
+          ><strong>{{ surface.title }}</strong
+          ><span>{{ surface.description }}</span></a
+        >
+      }
+    </nav>
+  </section>
+</main>

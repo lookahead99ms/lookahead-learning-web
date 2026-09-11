@@ -1,0 +1,161 @@
+<app-platform-header />
+<main id="main-content" class="account-page">
+  <section class="account-card" aria-labelledby="account-heading">
+    <p class="eyebrow">Your learning account</p>
+    <h1 id="account-heading">
+      {{ authenticated() ? 'Your account' : signup() ? 'Create your account' : 'Welcome back' }}
+    </h1>
+    @if (authenticated()) {
+      <p>Signed in as {{ store.account()!.displayName }}.</p>
+      <div class="account-actions">
+        <a [routerLink]="returnTo()">Continue learning</a>
+        <button type="button" [disabled]="store.busy() || store.pending()" (click)="signOut()">
+          Sign out
+        </button>
+      </div>
+    } @else if (store.enabled) {
+      <p>
+        {{
+          signup()
+            ? 'Create an account to save your plans and learning progress.'
+            : 'Sign in to continue your learning.'
+        }}
+      </p>
+      <button type="button" class="google-button" disabled aria-describedby="google-status">
+        {{ signup() ? 'Sign up with Google' : 'Sign in with Google' }}
+      </button>
+      <p id="google-status" class="field-hint">Google sign-in is not connected yet.</p>
+      <div class="auth-divider"><span>or use email</span></div>
+      <form (submit)="$event.preventDefault(); submit()" [attr.aria-busy]="store.busy()">
+        @if (signup()) {
+          <div class="name-fields">
+            <label
+              >First name<input
+                name="firstName"
+                autocomplete="given-name"
+                required
+                maxlength="79"
+                [value]="firstName()"
+                (input)="firstName.set($any($event.target).value)"
+            /></label>
+            <label
+              >Last name<input
+                name="lastName"
+                autocomplete="family-name"
+                required
+                maxlength="79"
+                [value]="lastName()"
+                (input)="lastName.set($any($event.target).value)"
+            /></label>
+          </div>
+        }
+        <label
+          >Email<input
+            name="email"
+            type="email"
+            autocomplete="username"
+            required
+            maxlength="254"
+            autocapitalize="none"
+            spellcheck="false"
+            [value]="email()"
+            (input)="email.set($any($event.target).value)"
+        /></label>
+        <label
+          >Password<input
+            name="password"
+            type="password"
+            [attr.autocomplete]="signup() ? 'new-password' : 'current-password'"
+            required
+            [attr.minlength]="signup() ? 12 : null"
+            maxlength="128"
+            [attr.aria-describedby]="signup() ? 'password-hint' : null"
+            [value]="password()"
+            (input)="password.set($any($event.target).value)"
+        /></label>
+        @if (signup()) {
+          <p id="password-hint" class="field-hint">
+            Use 12 to 128 characters. Spaces and password managers are welcome.
+          </p>
+          <label
+            >Confirm password<input
+              name="confirmPassword"
+              type="password"
+              autocomplete="new-password"
+              required
+              minlength="12"
+              maxlength="128"
+              [value]="confirmPassword()"
+              (input)="confirmPassword.set($any($event.target).value)"
+          /></label>
+          <label
+            >Country of residence<input
+              name="country"
+              list="registration-countries"
+              autocomplete="country-name"
+              required
+              maxlength="100"
+              placeholder="Search for your country"
+              aria-describedby="country-hint"
+              [value]="countryName()"
+              (input)="countryName.set($any($event.target).value)"
+          /></label>
+          <datalist id="registration-countries">
+            @for (country of countries; track country.code) {
+              <option [value]="country.name"></option>
+            }
+          </datalist>
+          <p id="country-hint" class="field-hint">Choose the country where you live.</p>
+        }
+        @if (formError() || store.error()) {
+          <p class="form-error" role="alert">{{ formError() || store.error() }}</p>
+        }
+        <button
+          class="primary-action"
+          type="submit"
+          [disabled]="
+            store.busy() ||
+            store.pending() ||
+            (signup() && store.authOptions()?.registration !== true)
+          "
+        >
+          {{
+            store.busy()
+              ? signup()
+                ? 'Creating account…'
+                : 'Signing in…'
+              : signup()
+                ? 'Create account'
+                : 'Sign in'
+          }}
+        </button>
+        @if (signup() && store.authOptions()?.registration !== true) {
+          <p class="field-hint" role="status">Registration is unavailable on this service.</p>
+        }
+      </form>
+      <p class="auth-switch">
+        @if (signup()) {
+          Already have an account?
+          <a
+            routerLink="/sign-in"
+            [queryParams]="{ returnTo: returnTo(), oauth: oauthContinuation() }"
+            >Sign in</a
+          >
+        } @else {
+          Don’t have an account?
+          <a
+            routerLink="/sign-up"
+            [queryParams]="{ returnTo: returnTo(), oauth: oauthContinuation() }"
+            >Sign up</a
+          >
+        }
+      </p>
+    } @else {
+      <p>
+        This standalone demo saves learning plans on this browser. Account sign-in is unavailable.
+      </p>
+      <a routerLink="/study-plan">Open Study Plan</a>
+    }
+    <p class="return-link"><a [routerLink]="returnTo()">Return to learning</a></p>
+  </section>
+</main>

@@ -129,37 +129,64 @@
       </form>
     }
 
-    <div class="profile-dropdown-container" (click)="$event.stopPropagation()">
-      <button
-        class="avatar-trigger-btn"
-        type="button"
-        aria-label="Account menu"
-        aria-controls="account-menu"
-        [attr.aria-expanded]="profileMenuOpen()"
-        (click)="toggleProfileMenu()"
+    @if (!accounts.account() || accounts.sessionExpired()) {
+      <a class="sign-in-button" routerLink="/sign-in" [queryParams]="{ returnTo: accountReturn() }"
+        >Sign in</a
       >
-        <span class="user-avatar-img" aria-hidden="true">…</span>
-        <span class="avatar-chevron" aria-hidden="true">▼</span>
-      </button>
-      @if (profileMenuOpen()) {
-        <div id="account-menu" class="profile-dropdown-menu">
-          <div class="menu-user-header">
-            <p class="user-display-name">Your learning</p>
-            <p class="user-display-email">Account sign-in is not available yet.</p>
-          </div>
-          <div class="menu-divider"></div>
-          <div class="menu-section-group">
-            <span class="group-label">Account Status</span>
-            <span class="active-plan-badge">No account connected</span>
-          </div>
-          <div class="menu-divider"></div>
-          <nav class="dropdown-links-list" aria-label="Account links">
-            <a routerLink="/study-plan" class="dropdown-item-link">View study plan</a>
+    } @else {
+      <div class="profile-dropdown-container" (click)="$event.stopPropagation()">
+        <button
+          class="avatar-trigger-btn"
+          type="button"
+          aria-label="Account menu"
+          aria-controls="account-menu"
+          [attr.aria-expanded]="profileMenuOpen()"
+          (click)="toggleProfileMenu()"
+        >
+          <span class="user-avatar-img" aria-hidden="true">…</span>
+          <span class="avatar-chevron" aria-hidden="true">▼</span>
+        </button>
+        @if (profileMenuOpen()) {
+          <div id="account-menu" class="profile-dropdown-menu">
+            <div class="menu-user-header">
+              <p class="user-display-name">
+                {{ accounts.account()?.displayName ?? 'Your learning' }}
+              </p>
+              <p class="user-display-email">
+                {{
+                  accounts.account()
+                    ? 'Your study plans and progress'
+                    : accounts.enabled
+                      ? 'Sign in to save account progress.'
+                      : 'Your study plan is saved on this browser.'
+                }}
+              </p>
+            </div>
             <div class="menu-divider"></div>
-            <a routerLink="/delivery-plan" class="dropdown-item-link">Delivery plan</a>
-          </nav>
-        </div>
-      }
-    </div>
+            <div class="menu-section-group">
+              <span class="group-label">Account Status</span>
+              <span class="active-plan-badge">{{
+                accounts.account()
+                  ? accounts.sessionExpired()
+                    ? 'Session expired'
+                    : 'Account connected'
+                  : 'Browser plan'
+              }}</span>
+            </div>
+            <div class="menu-divider"></div>
+            <nav class="dropdown-links-list" aria-label="Account links">
+              @if (accounts.account()?.authorPreview) {
+                <a routerLink="/author" class="dropdown-item-link">Author views</a>
+              }
+              <a routerLink="/study-plan" class="dropdown-item-link">View study plan</a>
+              <a routerLink="/account" class="dropdown-item-link">Manage account</a>
+              <a routerLink="/support" class="dropdown-item-link">Support and feedback</a>
+              <div class="menu-divider"></div>
+              <a routerLink="/delivery-plan" class="dropdown-item-link">Delivery plan</a>
+            </nav>
+          </div>
+        }
+      </div>
+    }
   </div>
 </header>

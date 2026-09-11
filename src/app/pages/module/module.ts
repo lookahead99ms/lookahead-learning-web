@@ -1,13 +1,13 @@
 import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { EMPTY, catchError, forkJoin, map, switchMap } from 'rxjs';
+import { EMPTY, catchError, forkJoin, of, switchMap } from 'rxjs';
 import {
   CatalogItem,
   CourseOutline,
   CourseModule,
   CourseSection,
-  InterviewQuestion,
+  ContentItemSummary,
   reviewStatusLabel,
 } from '../../content/content.models';
 import { ContentService } from '../../content/content.service';
@@ -160,7 +160,7 @@ export class Module implements OnInit {
   protected readonly course = signal<CourseOutline | null>(null);
   protected readonly module = signal<CourseModule | null>(null);
   protected readonly parentSection = signal<CourseSection | null>(null);
-  protected readonly questions = signal<InterviewQuestion[]>([]);
+  protected readonly questions = signal<ContentItemSummary[]>([]);
   protected readonly previousModule = signal<CourseModule | null>(null);
   protected readonly nextModule = signal<CourseModule | null>(null);
   protected readonly nextCourse = signal<CatalogItem | null>(null);
@@ -188,9 +188,10 @@ export class Module implements OnInit {
             switchMap((result) => {
               const moduleId = params.get('moduleId');
               if (!moduleId) throw new Error('Module not found');
-              return this.contentService
-                .getModuleQuestions(result.course, moduleId)
-                .pipe(map((questions) => ({ ...result, questions })));
+              return of({
+                ...result,
+                questions: result.course.questions.filter((item) => item.moduleId === moduleId),
+              });
             }),
             catchError(() => {
               this.error.set('The learning content could not be loaded.');
@@ -208,7 +209,7 @@ export class Module implements OnInit {
   private displayModule(
     catalog: CatalogItem[],
     course: CourseOutline,
-    questions: InterviewQuestion[],
+    questions: ContentItemSummary[],
   ): void {
     const moduleId = this.route.snapshot.paramMap.get('moduleId');
     const selectedModule = course.modules.find(({ id }) => id === moduleId);
@@ -254,7 +255,7 @@ export class Module implements OnInit {
         : 'Learn';
   }
 
-  protected questionFilterTags(question: InterviewQuestion): string[] {
+  protected questionFilterTags(question: ContentItemSummary): string[] {
     const isPracticeModule =
       this.course()?.learningUnits?.some(
         ({ practiceModuleId }) => practiceModuleId === this.module()?.id,

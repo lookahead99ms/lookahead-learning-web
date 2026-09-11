@@ -50,7 +50,9 @@ Moving private material to a different file extension does not make it public-sa
 - credential-shaped filenames and key/token markers;
 - absolute local user paths;
 - source imports from an in-repository `private-content/` tree; and
-- symbolic links that could point outside the reviewed snapshot.
+- symbolic links that could point outside the reviewed snapshot;
+- tracked files that now match ignore rules (ignoring does not remove them from Git); and
+- a default startup configuration that discovers private content or enables the account API.
 
 The checks reduce publication risk but do not replace review. Before creating a public remote, inspect the complete fresh-history commit and test a clean clone.
 
@@ -59,3 +61,9 @@ The checks reduce publication risk but do not replace review. Before creating a 
 Production content should be versioned independently and delivered through an authenticated origin. A deployment process may copy authorized assets to protected object storage, but those assets must never pass through the public Git repository or its Actions artifacts.
 
 If private material is ever published, stop distribution, make the repository private, rotate any exposed credentials, remove the material from public history, and treat existing clones and caches as compromised copies.
+
+## Container build context
+
+`.dockerignore` uses an allowlist for application source, scripts, synthetic demos, fixtures, package/lockfiles and build configuration. It excludes local dependencies, Git history, previews, private documentation, evidence, secrets and generated runtime assets. No frontend Dockerfile or image deployment is introduced by this policy. A future builder must generate its runtime assets from `demo-content/runtime` inside the image; never copy an existing private `public/content` tree.
+
+Ignore files do not remove already tracked files or certify historical commits. Review the Git candidate with the release gates before committing, and inspect history separately before changing repository visibility. Existing private working files should remain ignored and preserved on disk.

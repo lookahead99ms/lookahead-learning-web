@@ -4,6 +4,7 @@ import { Router, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { ContentService } from '../../content/content.service';
 import { PlatformHeader } from './platform-header';
+import { StudyPlanAccount } from '../../pages/study-plan/study-plan-account';
 
 describe('PlatformHeader account disclosure', () => {
   beforeEach(async () => {
@@ -18,9 +19,42 @@ describe('PlatformHeader account disclosure', () => {
         },
       ],
     }).compileComponents();
+    vi.spyOn(TestBed.inject(StudyPlanAccount), 'initialize').mockResolvedValue();
+  });
+
+  it('shows only Sign in when signed out or expired and only the account control when authenticated', () => {
+    const store = TestBed.inject(StudyPlanAccount);
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.avatar-trigger-btn')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.sign-in-button').textContent.trim()).toBe(
+      'Sign in',
+    );
+    expect(fixture.nativeElement.querySelector('.sign-in-button').getAttribute('href')).toContain(
+      '/sign-in',
+    );
+    store.account.set({
+      accountId: 'test',
+      username: 'test@example.test',
+      displayName: 'Test Learner',
+      topicGrants: [],
+    });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.sign-in-button')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.avatar-trigger-btn')).not.toBeNull();
+    store.sessionExpired.set(true);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.avatar-trigger-btn')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.sign-in-button')).not.toBeNull();
   });
 
   it('exposes the account panel as a labelled disclosure', () => {
+    TestBed.inject(StudyPlanAccount).account.set({
+      accountId: 'test',
+      username: 'test@example.test',
+      displayName: 'Test Learner',
+      topicGrants: [],
+    });
     const fixture = TestBed.createComponent(PlatformHeader);
     fixture.detectChanges();
 
@@ -39,7 +73,33 @@ describe('PlatformHeader account disclosure', () => {
     expect(fixture.nativeElement.querySelector('[role="menuitem"]')).toBeNull();
   });
 
+  it('shows Author views only for the server-provided capability', () => {
+    const accounts = TestBed.inject(StudyPlanAccount);
+    accounts.account.set({
+      accountId: 'test',
+      username: 'author@lookahead.test',
+      displayName: 'Author',
+      topicGrants: [],
+    });
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    fixture.nativeElement.querySelector('.avatar-trigger-btn').click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('a[href="/author"]')).toBeNull();
+    accounts.account.update((account) => ({ ...account!, authorPreview: true }));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('a[href="/author"]')?.textContent).toContain(
+      'Author views',
+    );
+  });
+
   it('returns focus to the account trigger when Escape closes the panel', async () => {
+    TestBed.inject(StudyPlanAccount).account.set({
+      accountId: 'test',
+      username: 'test@example.test',
+      displayName: 'Test Learner',
+      topicGrants: [],
+    });
     const fixture = TestBed.createComponent(PlatformHeader);
     fixture.detectChanges();
     const trigger = fixture.nativeElement.querySelector('.avatar-trigger-btn') as HTMLButtonElement;
@@ -221,6 +281,7 @@ describe('PlatformHeader sticky context sizing', () => {
           { provide: ContentService, useValue: { getSearchIndex: () => of([]) } },
         ],
       }).compileComponents();
+      vi.spyOn(TestBed.inject(StudyPlanAccount), 'initialize').mockResolvedValue();
       const fixture = TestBed.createComponent(PlatformHeader);
       fixture.detectChanges();
       const page = fixture.nativeElement.parentElement as HTMLElement;

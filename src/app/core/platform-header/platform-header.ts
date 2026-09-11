@@ -11,6 +11,7 @@ import {
   signal,
 } from '@angular/core';
 import { HeaderNavigation } from './header-navigation';
+import { StudyPlanAccount } from '../../pages/study-plan/study-plan-account';
 import { TopicShortcuts } from '../topic-shortcuts';
 import { FormsModule } from '@angular/forms';
 import { PlatformThemeService } from '../platform-theme';
@@ -253,6 +254,20 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         font-size: 0.68rem;
       }
 
+      .header-utilities > .sign-in-button {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 18px;
+        border-radius: 8px;
+        background: var(--accent-strong);
+        color: var(--accent-on-primary);
+        font-size: 0.85rem;
+        font-weight: 700;
+        white-space: nowrap;
+        text-decoration: none;
+      }
       .profile-dropdown-container {
         position: relative;
         margin-left: 8px;
@@ -417,6 +432,7 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         min-height: 76px;
       }
       .platform-header .brand {
+        display: inline-block;
         justify-self: start;
         font-size: 24px;
         font-weight: 800;
@@ -435,7 +451,7 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         white-space: nowrap;
       }
       .platform-navigation a,
-      .header-utilities > a,
+      .header-utilities > a:not(.sign-in-button),
       .header-search-trigger {
         display: inline-flex;
         align-items: center;
@@ -521,10 +537,13 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
       }
       @media (max-width: 600px) {
         .platform-header {
+          grid-template-columns: minmax(0, 1fr) auto auto;
           padding: 8px 5%;
           gap: 2px 10px;
         }
         .platform-header .brand {
+          grid-column: 1 / 3;
+          grid-row: 1;
           font-size: 21px;
         }
         .header-utilities {
@@ -543,17 +562,24 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
           display: none;
         }
         .header-utilities > a {
-          grid-column: 2;
+          grid-column: 3;
           grid-row: 3;
           justify-self: end;
         }
         .theme-switch {
           grid-column: 2;
+          grid-row: 3;
+          justify-self: center;
+        }
+        .header-utilities > .sign-in-button,
+        .header-utilities .profile-dropdown-container {
+          display: block;
+          grid-column: 3;
           grid-row: 1;
           justify-self: end;
         }
-        .header-utilities .profile-dropdown-container {
-          display: none;
+        .header-utilities > .sign-in-button {
+          display: inline-flex;
         }
       }
       @media (pointer: coarse) {
@@ -614,8 +640,13 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
   ],
 })
 export class PlatformHeader implements AfterViewInit, OnDestroy {
+  protected readonly accounts = inject(StudyPlanAccount);
+  protected accountReturn(): string {
+    return this.router.url;
+  }
   private headerResizeObserver?: ResizeObserver;
   ngAfterViewInit(): void {
+    void this.accounts.initialize();
     const header = this.elementRef.nativeElement.querySelector<HTMLElement>('.platform-header');
     const page = this.elementRef.nativeElement.parentElement;
     if (!header || !page) return;

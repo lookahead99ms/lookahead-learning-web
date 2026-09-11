@@ -355,9 +355,17 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         color: var(--text-subtle);
       }
       .model-section {
+        --lesson-ink: var(--code-ink);
+        --lesson-body: var(--code-ink);
+        --lesson-teal: var(--code-keyword);
         grid-column: 1 / -1;
+        color: var(--lesson-body);
         border-top-color: var(--code-line);
         background: var(--code-highlight);
+      }
+      .model-section .section-label span {
+        color: var(--code-muted);
+        border-right-color: var(--code-keyword);
       }
       .model-grid {
         display: grid;

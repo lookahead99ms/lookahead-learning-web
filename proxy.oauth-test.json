@@ -1,0 +1,47 @@
+{
+  "/bff/**": {
+    "target": "http://127.0.0.1:4333",
+    "secure": false,
+    "changeOrigin": false
+  },
+  "/oauth2/authorization/**": {
+    "target": "http://127.0.0.1:4333",
+    "secure": false,
+    "changeOrigin": false
+  },
+  "/login/oauth2/code/**": {
+    "target": "http://127.0.0.1:4333",
+    "secure": false,
+    "changeOrigin": false
+  },
+  "/content/**": {
+    "target": "http://127.0.0.1:4333",
+    "secure": false,
+    "changeOrigin": false
+  },
+  "/api/**": {
+    "target": "http://127.0.0.1:4332",
+    "secure": false,
+    "changeOrigin": false
+  },
+  "/oauth2/**": {
+    "target": "http://127.0.0.1:4332",
+    "secure": false,
+    "changeOrigin": false
+  },
+  "/userinfo": {
+    "target": "http://127.0.0.1:4332",
+    "secure": false,
+    "changeOrigin": false
+  },
+  "/connect/**": {
+    "target": "http://127.0.0.1:4332",
+    "secure": false,
+    "changeOrigin": false
+  },
+  "/.well-known/**": {
+    "target": "http://127.0.0.1:4332",
+    "secure": false,
+    "changeOrigin": false
+  }
+}
