@@ -1,0 +1,129 @@
+.account-page {
+  max-width: 608px;
+  margin: 48px auto;
+  padding: 0 24px 48px;
+  color: var(--text-strong);
+}
+.account-card {
+  padding: 32px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+}
+h1 {
+  margin: 12px 0;
+  font-size: clamp(1.8rem, 5vw, 2.2rem);
+  letter-spacing: -0.035em;
+}
+p {
+  line-height: 1.6;
+}
+form,
+label {
+  display: grid;
+  gap: 9px;
+}
+form {
+  gap: 20px;
+  margin: 24px 0;
+}
+label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  min-width: 0;
+}
+input,
+button {
+  min-height: 46px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font: inherit;
+  color: var(--text-strong);
+  background: var(--surface);
+}
+input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+button {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+.primary-action {
+  background: var(--accent-strong);
+  color: var(--accent-on-primary);
+  font-weight: 700;
+}
+.google-button {
+  width: 100%;
+  margin-top: 16px;
+}
+.name-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.field-hint {
+  margin: -10px 0 0;
+  color: var(--text-subtle);
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+.google-button + .field-hint {
+  margin: 8px 0 20px;
+  text-align: center;
+}
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: var(--text-subtle);
+  font-size: 0.8rem;
+}
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  border-top: 1px solid var(--line);
+}
+.auth-switch,
+.return-link {
+  text-align: center;
+}
+.return-link {
+  margin-top: 24px;
+  font-size: 0.85rem;
+}
+.form-error {
+  margin: 0;
+  padding: 12px;
+  border-inline-start: 3px solid var(--accent-strong);
+  background: var(--surface-muted);
+  font-size: 0.9rem;
+}
+.account-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 20px;
+}
+a {
+  color: var(--accent-link);
+}
+@media (max-width: 480px) {
+  .account-page {
+    padding: 0 16px 32px;
+    margin: 24px auto;
+  }
+  .account-card {
+    padding: 24px 18px;
+  }
+  .name-fields {
+    grid-template-columns: 1fr;
+  }
+}

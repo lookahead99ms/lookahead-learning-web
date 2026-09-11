@@ -1,5 +1,9 @@
 <app-platform-header />
-<main id="main-content" class="content-page reader-page">
+<main
+  id="main-content"
+  class="content-page reader-page"
+  [class.harbor-learn]="pathId() === 'learn'"
+>
   @if (course(); as currentCourse) {
     @if (module(); as currentModule) {
       <article class="question-reader module-reader" [attr.data-path]="pathId()">

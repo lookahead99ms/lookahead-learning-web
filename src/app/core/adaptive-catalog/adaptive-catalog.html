@@ -1,4 +1,8 @@
-<main id="main-content" class="content-page reader-page">
+<main
+  id="main-content"
+  class="content-page reader-page"
+  [class.harbor-learn]="config().path === 'learn'"
+>
   <article class="question-reader catalog-reader" [class]="config().path + '-catalog-reader'">
     <div class="catalog-sticky-utility">
       <nav class="breadcrumbs" aria-label="Breadcrumb">
@@ -27,7 +31,10 @@
                 [queryParams]="config().primaryAction.queryParams"
                 (click)="repeatJump($event, config().primaryAction.groupId)"
               >
-                {{ config().primaryAction.label }} <span aria-hidden="true">→</span>
+                {{ config().primaryAction.label }}
+                @if (config().path !== 'learn') {
+                  <span aria-hidden="true">→</span>
+                }
               </a>
               @for (action of config().secondaryActions; track action.label) {
                 <a

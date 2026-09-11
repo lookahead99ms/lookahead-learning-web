@@ -27,7 +27,6 @@ yarn-error.log
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
-!.vscode/mcp.json
 .history/*
 
 # Miscellaneous
@@ -41,6 +40,12 @@ AGENTS.md
 *.pfx
 *.jks
 *.keystore
+*.iml
+.npmrc
+.codex/
+.agents/
+docs/evidence/
+*.private.*
 docs/product-blueprint.md
 docs/product-delivery-handoff.md
 docs/algorithm-pattern-audit.md

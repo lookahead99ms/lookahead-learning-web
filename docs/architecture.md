@@ -27,9 +27,9 @@ Browser
 
 | Process                 | Default address          | Responsibility                                                 |
 | ----------------------- | ------------------------ | -------------------------------------------------------------- |
-| Active Angular frontend | `http://localhost:4300`  | The single learner and delivery-plan UI                        |
+| Active Angular frontend | `http://localhost:4300`  | Standalone synthetic demo, no API dependency                        |
 | Local delivery editor   | Loopback, temporary port | Private development companion behind `/__local/delivery/`      |
-| Content API             | `http://localhost:8080`  | Future authenticated content and entitlement boundary          |
+| Content API             | `http://127.0.0.1:4320`  | Optional local account API, via connected-mode proxy          |
 | Archived frontend       | No default process       | Historical comparison only; do not use as a runtime dependency |
 
 The active frontend must not redirect into the archived frontend. During local development, relative `/content` requests resolve to synchronized, ignored runtime assets. The future deployment shape keeps one browser origin and routes `/api` and `/content` to their owning services through a reverse proxy or gateway.
@@ -48,6 +48,8 @@ The Angular frontend can be packaged as static files in an Nginx or Caddy contai
 Every mode uses the same catalog, course, module, and question contracts. The public demo discusses repository architecture only; it is not a reduced copy of the interview curriculum.
 
 The sibling path is the local convention, not a production dependency. Set `LOOKAHEAD_CONTENT_ROOT` to an authorized runtime directory when the private repository is checked out elsewhere.
+
+`npm start` always stages synthetic demo assets and disables the account integration panel and API proxy. `npm run start:connected -- --port 4316` (alias of `start:private`) selects the development account integration configuration explicitly; production authentication is a separate capability.
 
 `npm run start:private` watches the private runtime directory and regenerates ignored runtime assets after curriculum changes. Delivery-plan changes are excluded from whole-app reloads: the board refreshes its private JSON snapshot every five seconds without discarding an open draft.
 

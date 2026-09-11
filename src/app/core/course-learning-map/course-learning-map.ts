@@ -30,6 +30,7 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
         @if (unit.planned) {
           <article
             class="learning-unit learning-unit-planned"
+            [id]="'unit-' + unit.id"
             aria-label="{{ unit.title }} coming next"
           >
             @if (unitOrder(unit); as order) {
@@ -42,7 +43,7 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
             <span class="learning-unit-status">Coming next</span>
           </article>
         } @else if (unit.subUnits?.length) {
-          <details class="learning-unit learning-unit-family">
+          <details class="learning-unit learning-unit-family" [id]="'unit-' + unit.id">
             <summary>
               @if (unitOrder(unit); as order) {
                 <span class="learning-unit-number">{{ order }}</span>
@@ -114,7 +115,11 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
             </div>
           </details>
         } @else if (isReadOnly(unit)) {
-          <a class="learning-unit learning-unit-direct" [routerLink]="articleRoute(unit)">
+          <a
+            class="learning-unit learning-unit-direct"
+            [id]="'unit-' + unit.id"
+            [routerLink]="articleRoute(unit)"
+          >
             @if (unitOrder(unit); as order) {
               <span class="learning-unit-number">{{ order }}</span>
             }
@@ -124,7 +129,7 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
             >
           </a>
         } @else {
-          <details class="learning-unit">
+          <details class="learning-unit" [id]="'unit-' + unit.id">
             <summary>
               @if (unitOrder(unit); as order) {
                 <span class="learning-unit-number">{{ order }}</span>

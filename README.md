@@ -21,7 +21,37 @@ npm ci
 npm start
 ```
 
-Open http://localhost:4200. The default command loads tracked synthetic material from `demo-content/runtime`; it does not require or reconstruct private curriculum.
+Open http://localhost:4300. The default command always loads tracked synthetic material from `demo-content/runtime`, even when a private sibling checkout exists. No API, database, credentials, Docker, or private content repository is required. To use another free port: `npm start -- --host 127.0.0.1 --port 4317`.
+
+Try `/learn` → **Public Platform Demo**, `/grow` → **Public Release Demo**, `/search`, and `/study-plan`. The demo includes seven synthetic search records to demonstrate the reader, search, and planning flow. Plans and notes stay in this browser; the demo does not provide account synchronization or production authentication.
+
+### Development modes and feedback
+
+Use the browser-local demo above for frontend work. It uses synthetic content,
+keeps plans in this browser and makes no account API calls. A private curriculum
+checkout can use the following command on an available port for the same
+browser-local account behavior:
+
+```shell
+npm run start:private -- --configuration demo --host 127.0.0.1 --port 4318
+```
+
+That mode serves private content locally and is not a public distribution build.
+
+The optional connected preview uses real local API/database persistence and local
+account/content authorization. Its checks establish local behavior, not deployed
+cross-device service availability or production security readiness. Mocked API
+fixtures must be identified as simulated. Keep an existing connected service
+available when the screen being changed requires it; AWS is not required for
+frontend development.
+
+For a frontend-only change, run the affected unit/component tests, build and a
+targeted browser check. When the UI uses a changed API contract, authentication
+state, saved progress, sync or recovery, add focused contract and cross-service
+checks. Backend changes need affected backend/API/database tests; infrastructure
+changes need affected smoke checks. Use the full integration/browser suite at an
+explicit release or stage gate, or when broader impact justifies it. Documentation
+and delivery bookkeeping need only relevant reference/schema/diff checks.
 
 Run the complete public verification path with:
 
@@ -186,7 +216,7 @@ Source: `src/app/pages/look-ahead/look-ahead.html` and `src/app/pages/look-ahead
 | **Specialized practice card** | `.look-ahead-course-card` | Currently unavailable/planned cards; shows `Coming next`. |
 | **Practice status badge** | `.review-status` | Shows planned or review status. |
 
-Look Ahead practice cards are currently presentation-only. There are no Look Ahead course, module, or question routes yet.
+The shared course, module, and question routes also support Look Ahead. Availability reflects the selected content source; the public demo does not contain the private Look Ahead curriculum.
 
 ### Course page — `/learn/:courseId` or `/grow/:courseId`
 
@@ -319,8 +349,8 @@ The question reader's dialog is controlled by the `detailsOpen` signal. The `Esc
 - The application shell is `src/app/app.html`, which contains the router outlet.
 - Route definitions are in `src/app/app.routes.ts`.
 - Shared layout styles are in `src/app/app.css` and `src/styles.css`; landing-page-specific styles are in `landing.ts`.
-- `ContentService` loads curriculum from `/content/`; local development stages that route from ignored private source files.
-- Learn and Grow course pages link into modules and interview questions. Look Ahead currently exposes planned practice cards only.
+- `ContentService` loads content from `/content/`; default development stages synthetic demo files, while explicit private commands stage authorized private content.
+- All three paths share course, module, and reader components. The small public demo intentionally leaves most offerings unavailable.
 - Preview pages and preview routes are not part of the production application and should not be added to commits unless explicitly requested.
 
 ## Technology
@@ -356,7 +386,13 @@ npm run watch:private
 
 Those commands require the private `lookahead-learning-content` repository beside this repository and consume its `runtime/` directory. Set `LOOKAHEAD_CONTENT_ROOT` to an absolute runtime path when using a different checkout layout. Private commands fail when that source is unavailable; they never substitute public demo content.
 
-Open http://localhost:4200. Angular proxies `/api` requests to the Content API using `proxy.conf.json`.
+For authorized local account integration, use `npm run start:connected -- --host 127.0.0.1 --port 4316` (an alias of `start:private`). This uses the protected content build and `proxy.conf.json` to reach the OAuth gateway on `http://127.0.0.1:4330` and authorization server on `http://127.0.0.1:4320`. Use the canonical browser origin `http://127.0.0.1:4316` for exact OAuth callbacks. Start the separately owned API/database stack using its runbook first. The existing integrated service may already own 4316; inspect it before starting another process.
+
+The shared header shows Sign in when signed out and the account menu when authenticated. Dedicated `/sign-in` and `/sign-up` routes provide email/password login and explicit profile registration when the API advertises registration availability. Registration requires first name, last name, email, matching passwords, and an explicitly selected country of residence. Google is visibly unavailable until its provider integration is connected. The standalone public demo leaves account integration disabled. When the account API cannot confirm a save or sign-in, the UI reports the failure and preserves the browser plan; it does not claim that a browser-only save reached an account.
+
+The integrated local stack can enable an author account through its API seed configuration. Sign in with `author@lookahead.test` and the locally generated synthetic seed password, then use **Account menu → Author views** or `/author`. This workspace links the existing catalogs, tools and Study Plan states. Saved and revised examples belong to that account; opening a preview does not save it. The server supplies the author capability and ordinary content grants. A URL parameter, display name or browser flag cannot grant author access, and the author cannot read another learner's private plans. The public demo has no seeded author account.
+
+`content:sync:dev` is an optional maintainer command that discovers a private sibling; it is never run by default demo startup. Each checkout has one `public/content/` staging directory. Use separate checkouts for simultaneous public-demo and private servers so one content sync cannot replace the other server’s assets.
 
 Production will replace local runtime staging with an authenticated content origin. Keep `ContentService` independent of AWS-specific SDKs so the delivery implementation can move to S3 and CloudFront without coupling content storage to page components.
 
@@ -382,3 +418,5 @@ npm run build:private
 ```
 
 Files under `demo-content/runtime/` are deliberately synthetic and support human review of the public application. Files under `test-fixtures/content/` are smaller contract fixtures used for deterministic CI diagnostics. Neither directory contains production curriculum.
+
+First-party OAuth is available through `npm run start:oauth -- --host 127.0.0.1 --port 4316` after starting the infra OAuth stack. Access and refresh tokens remain in the server gateway; browser calls use same-origin `/bff/api/v1/**` with an HttpOnly cookie and CSRF tokens. Google federation remains separately configured. For this mode, do not use a development/static build containing private curriculum.

@@ -13,6 +13,9 @@ const contentRoot = resolve(
 const syncScript = resolve(repositoryRoot, 'scripts/sync-runtime-content.mjs');
 const angularCli = resolve(repositoryRoot, 'node_modules/@angular/cli/bin/ng.js');
 const forwardedArguments = process.argv.slice(2);
+if (!forwardedArguments.some((argument) => /^(--configuration|-c)(=|$)/.test(argument))) {
+  forwardedArguments.push('--configuration', 'development');
+}
 
 function argumentValue(name, fallback) {
   const index = forwardedArguments.indexOf(name);

@@ -49,10 +49,33 @@
               ],
               "outputHashing": "all"
             },
+            "demo": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.demo.ts"
+                }
+              ]
+            },
             "development": {
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "protected": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.protected.ts"
+                }
+              ],
+              "assets": [
+                {
+                  "glob": "**/*",
+                  "input": "public",
+                  "ignore": ["content/**", "local-previews/**"]
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -63,15 +86,22 @@
             "port": 4300
           },
           "configurations": {
+            "demo": {
+              "buildTarget": "lookahead-learning-web:build:development,demo"
+            },
             "production": {
               "buildTarget": "lookahead-learning-web:build:production"
             },
             "development": {
               "buildTarget": "lookahead-learning-web:build:development",
               "proxyConfig": "proxy.conf.json"
+            },
+            "protected": {
+              "buildTarget": "lookahead-learning-web:build:development,protected",
+              "proxyConfig": "proxy.protected.json"
             }
           },
-          "defaultConfiguration": "development"
+          "defaultConfiguration": "demo"
         },
         "test": {
           "builder": "@angular/build:unit-test"

@@ -167,3 +167,313 @@ a {
     --accent-focus: Highlight;
   }
 }
+
+/* DLV-802: Harbor Signal composition pilot, intentionally limited to Learn. */
+main.harbor-learn {
+  --harbor-panel-gap: clamp(20px, 3vw, 40px);
+}
+main.harbor-learn.content-page {
+  max-width: 1440px;
+  margin-inline: auto;
+  padding-inline: clamp(16px, 4vw, 64px);
+}
+main.harbor-learn .question-reader {
+  max-width: none;
+}
+main.harbor-learn .reader-question-title,
+main.harbor-learn .module-context-title {
+  font-size: clamp(2rem, 4.2vw, 4rem);
+  line-height: 1.08;
+  letter-spacing: -0.045em;
+  font-weight: 780;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+main.harbor-learn .catalog-depth-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(260px, 0.6fr);
+  gap: var(--harbor-panel-gap);
+  padding: 48px 0 36px;
+  background: transparent;
+  border: 0;
+}
+main.harbor-learn .catalog-depth-copy {
+  max-width: 740px;
+}
+main.harbor-learn .catalog-depth-copy > p {
+  max-width: 62ch;
+  line-height: 1.7;
+}
+main.harbor-learn .catalog-scoreboard {
+  align-self: end;
+  padding: 28px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-inline-start: 3px solid var(--path-learn);
+  border-radius: 0;
+}
+main.harbor-learn .catalog-jump-nav {
+  gap: 20px;
+  padding: 20px 0;
+  border-block: 1px solid var(--line);
+}
+main.harbor-learn .catalog-path-section {
+  margin-top: 48px;
+}
+main.harbor-learn .catalog-path-title {
+  font-size: clamp(1.6rem, 2.5vw, 2.2rem);
+  letter-spacing: -0.025em;
+}
+main.harbor-learn .catalog-path-heading {
+  margin-bottom: 24px;
+  align-items: end;
+}
+main.harbor-learn .course-card {
+  padding: 26px;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--text-strong) 6%, transparent);
+}
+main.harbor-learn .course-card h3 {
+  font-size: 1.3rem;
+  letter-spacing: -0.02em;
+}
+main.harbor-learn .course-page-intro {
+  padding: 40px 0;
+}
+main.harbor-learn .course-intro-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+  gap: 12px 36px;
+  align-items: start;
+}
+main.harbor-learn .course-intro-summary > .reader-question-title,
+main.harbor-learn .course-intro-summary > .eyebrow {
+  grid-column: 1;
+}
+main.harbor-learn .course-intro-summary > .eyebrow {
+  font-size: 1rem;
+  line-height: 1.7;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text-body);
+}
+main.harbor-learn .course-learning-path {
+  grid-column: 2;
+  grid-row: 1 / span 4;
+  margin: 0;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-inline-start: 3px solid var(--path-learn);
+}
+main.harbor-learn .course-relationship-map {
+  display: block;
+}
+main.harbor-learn .course-relationship-arrow {
+  display: none;
+}
+main.harbor-learn .course-relationship-column {
+  padding: 12px 0;
+  border: 0;
+  background: transparent;
+}
+main.harbor-learn .harbor-course-layout {
+  display: grid;
+  grid-template-columns: minmax(230px, 0.65fr) minmax(0, 1.35fr);
+  gap: var(--harbor-panel-gap);
+  align-items: start;
+}
+main.harbor-learn .harbor-course-map {
+  padding: 26px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+main.harbor-learn .harbor-course-map h2 {
+  font-size: 1.3rem;
+  margin: 8px 0 20px;
+}
+main.harbor-learn .harbor-course-map ol {
+  list-style: decimal-leading-zero;
+  padding-inline-start: 28px;
+}
+main.harbor-learn .harbor-course-map li {
+  border-bottom: 1px solid var(--line);
+  padding: 12px 0;
+}
+main.harbor-learn .harbor-course-map a {
+  display: block;
+  color: var(--accent-link);
+  text-decoration: none;
+}
+main.harbor-learn .learning-map {
+  padding: 0;
+}
+main.harbor-learn .learning-unit {
+  margin-bottom: 12px;
+  border-radius: 3px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  scroll-margin-top: 160px;
+}
+main.harbor-learn .learning-unit > summary,
+main.harbor-learn .learning-unit-direct {
+  min-height: 92px;
+  padding: 22px;
+}
+main.harbor-learn .learning-unit-number {
+  font-family: var(--font-mono, monospace);
+  color: var(--text-subtle);
+}
+main.harbor-learn .learning-unit-copy strong {
+  font-size: 1.05rem;
+}
+main.harbor-learn .module-grid,
+main.harbor-learn .module-question-grid {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+main.harbor-learn .module-context-panel,
+main.harbor-learn .reader-question-panel {
+  padding: 30px 0;
+  background: transparent;
+  border: 0;
+}
+main.harbor-learn .harbor-answer-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.65fr);
+  gap: 24px;
+  align-items: start;
+}
+main.harbor-learn .harbor-answer-layout > * {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+main.harbor-learn .harbor-answer-layout > .quick-answer,
+main.harbor-learn .harbor-answer-layout > .reader-hint {
+  grid-column: 2;
+  grid-row: 1;
+  padding: 26px;
+  border: 1px solid var(--line);
+  border-inline-start: 3px solid var(--path-learn);
+  background: var(--surface-subtle);
+}
+main.harbor-learn .harbor-answer-layout > .details-content {
+  grid-column: 1;
+  grid-row: 1;
+  margin: 0;
+}
+main.harbor-learn .explanation-panel {
+  padding: 26px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+main.harbor-learn .explanation-panel p {
+  line-height: 1.8;
+  max-width: 75ch;
+}
+main.harbor-learn .foundation-lesson .lesson-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(260px, 0.7fr);
+  gap: 24px;
+}
+main.harbor-learn .foundation-lesson .lesson-intro > p,
+main.harbor-learn .foundation-lesson .lesson-intro > section {
+  grid-column: 1;
+}
+main.harbor-learn .foundation-lesson .memory-anchor {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  margin: 0;
+  border-radius: 2px;
+}
+main.harbor-learn .foundation-lesson .lesson-section {
+  margin-top: 36px;
+}
+main.harbor-learn .guided-trace:not(.focus-mode) .ide-workspace {
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr);
+}
+main.harbor-learn .guided-trace .source-panel,
+main.harbor-learn .guided-trace .debugger-shell {
+  min-width: 0;
+}
+main.harbor-learn .guided-trace .editor-file {
+  font-size: 0.9rem;
+}
+main.harbor-learn .reasoning-frame {
+  border-radius: 2px;
+  border-inline-start: 3px solid var(--path-learn);
+}
+main.harbor-learn .guided-trace:not(.focus-mode) .source-panel pre {
+  min-height: 400px;
+}
+@media (max-width: 960px) {
+  main.harbor-learn .catalog-depth-hero,
+  main.harbor-learn .course-intro-summary,
+  main.harbor-learn .harbor-course-layout,
+  main.harbor-learn .harbor-answer-layout,
+  main.harbor-learn .foundation-lesson .lesson-intro,
+  main.harbor-learn .guided-trace:not(.focus-mode) .ide-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  main.harbor-learn .course-intro-summary > *,
+  main.harbor-learn .harbor-answer-layout > *,
+  main.harbor-learn .foundation-lesson .lesson-intro > *,
+  main.harbor-learn .foundation-lesson .memory-anchor {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  main.harbor-learn .course-learning-path {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  main.harbor-learn .catalog-depth-hero {
+    padding-top: 28px;
+  }
+  main.harbor-learn .catalog-scoreboard {
+    width: 100%;
+  }
+  main.harbor-learn .harbor-course-map {
+    padding: 20px;
+  }
+  main.harbor-learn .guided-trace:not(.focus-mode) .source-panel pre {
+    min-height: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  main.harbor-learn * {
+    scroll-behavior: auto;
+  }
+}
+
+main.harbor-learn.search-page {
+  max-width: 1440px;
+  margin-inline: auto;
+  padding-inline: clamp(16px, 4vw, 64px);
+}
+main.harbor-learn .search-hero h1 {
+  font-size: clamp(2rem, 4.2vw, 4rem);
+  line-height: 1.1;
+  letter-spacing: -0.045em;
+}
+main.harbor-learn .search-workspace {
+  gap: 28px;
+}
+main.harbor-learn .tag-panel {
+  padding: 24px;
+  border-radius: 3px;
+  background: var(--surface);
+}
+main.harbor-learn .search-form {
+  padding: 20px;
+  border-radius: 3px;
+  background: var(--surface);
+}
+
+main.harbor-learn .harbor-course-layout > .module-question-list,
+main.harbor-learn .harbor-course-layout .learning-map {
+  width: 100%;
+  min-width: 0;
+  margin-inline: 0;
+}

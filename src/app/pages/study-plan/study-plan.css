@@ -11,7 +11,8 @@
 }
 h1,
 h2,
-h3 {
+h3,
+h4 {
   color: var(--text-strong);
   letter-spacing: -0.035em;
   margin: 0 0 14px;
@@ -24,7 +25,8 @@ h1 {
 h2 {
   font-size: 25px;
 }
-h3 {
+h3,
+h4 {
   font-size: 18px;
 }
 p {
@@ -50,6 +52,41 @@ p {
 }
 .intro {
   margin-bottom: 36px;
+}
+.account-panel {
+  margin-bottom: 28px;
+}
+.account-actions,
+.account-login {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 16px;
+}
+.account-actions {
+  align-items: center;
+  margin-bottom: 14px;
+}
+.account-actions p,
+.account-login .field {
+  margin-bottom: 0;
+}
+.account-login {
+  margin-bottom: 12px;
+}
+.account-login .field {
+  flex: 1 1 220px;
+}
+.account-login input[type='password'] {
+  width: 100%;
+  padding: 11px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--text-strong);
+}
+.account-panel details p {
+  margin-top: 12px;
 }
 .workspace {
   display: grid;
@@ -261,10 +298,18 @@ summary {
   font-size: 10px;
   color: var(--text-subtle);
 }
+.allocation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px 32px;
+  margin: 20px 0;
+}
 .allocation {
   display: flex;
   gap: 24px;
-  margin: 20px 0;
+  margin: 0;
 }
 .allocation dt {
   font-size: 12px;
@@ -341,6 +386,104 @@ summary {
 .day-focus {
   color: var(--text-subtle);
   font-size: 13px;
+}
+.day-session-group {
+  margin-bottom: 24px;
+}
+.day-session-title {
+  font-size: 15px;
+  letter-spacing: 0;
+  margin-bottom: 12px;
+}
+.unfinished-recalls {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+.unfinished-recalls > h4 {
+  font-size: 14px;
+}
+.unfinished-recalls > p {
+  font-size: 12px;
+  color: var(--text-subtle);
+}
+.pending-panel {
+  margin-bottom: 20px;
+}
+.pending-panel > p {
+  font-size: 13px;
+  color: var(--text-subtle);
+}
+.pending-session-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.pending-session {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px 20px;
+  padding-block: 16px;
+  border-top: 1px solid var(--line);
+}
+.pending-session-info h4 {
+  margin: 0 0 5px;
+  color: var(--text-strong);
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.pending-session-info > span,
+.pending-disclosure > span {
+  font-size: 12px;
+  color: var(--text-subtle);
+}
+.pending-session-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  max-width: 320px;
+}
+.pending-session-actions a,
+.pending-session-actions button,
+.pending-disclosure button {
+  font-size: 12px;
+  min-height: 40px;
+}
+.pending-session-actions a {
+  display: inline-flex;
+  align-items: center;
+}
+.pending-session-actions button,
+.pending-disclosure button {
+  padding: 8px 12px;
+}
+.pending-disclosure {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+.pending-disclosure button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+@media (max-width: 1100px) {
+  .pending-session {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pending-session-actions {
+    justify-content: flex-start;
+    max-width: none;
+  }
 }
 .compass-sessions {
   display: grid;
@@ -453,6 +596,7 @@ summary {
   .compass-panel {
     text-align: center;
   }
+  .allocation-actions,
   .allocation {
     justify-content: center;
   }
@@ -498,4 +642,242 @@ textarea {
 }
 .session-card > a {
   margin-block: 10px 14px;
+}
+
+.workspace.has-active-plan {
+  grid-template-columns: minmax(0, 1fr);
+}
+.plan-review-dialog {
+  width: min(760px, calc(100vw - 32px));
+  max-height: 85dvh;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface-page);
+  color: var(--text-strong);
+  padding: clamp(18px, 4vw, 32px);
+}
+.plan-review-dialog::backdrop {
+  background: rgb(8 25 31 / 0.55);
+  backdrop-filter: blur(6px);
+}
+.plan-review-dialog details,
+.complete-schedule details {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+.plan-review-dialog summary,
+.complete-schedule summary {
+  cursor: pointer;
+  min-height: 44px;
+  align-content: center;
+}
+.draft-actions {
+  position: sticky;
+  bottom: -32px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 20px 0;
+  background: var(--surface-page);
+}
+.recovery-toggle {
+  min-height: 48px;
+  width: fit-content;
+}
+
+/* Shared Harbor Signal typography and a distinct recall area inside Today's Session. */
+.study-plan-page {
+  font-size: 15px;
+  line-height: 1.55;
+}
+.active-plan h2 {
+  font-size: clamp(24px, 2.3vw, 32px);
+}
+.active-plan h3 {
+  font-size: 19px;
+  letter-spacing: -0.02em;
+}
+.active-plan h4 {
+  font-size: 19px;
+  line-height: 1.35;
+}
+.active-plan .panel {
+  border-radius: 16px;
+}
+.progress-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.progress-actions button {
+  min-height: 44px;
+  font-size: 13px;
+}
+.today-panel {
+  margin-top: 28px;
+}
+.today-panel .session-heading {
+  margin-top: 0;
+}
+.today-panel .day-focus {
+  font-size: 13px;
+  color: var(--text-subtle);
+}
+.today-panel .session-card {
+  padding: 20px;
+  border-radius: 10px;
+}
+.today-panel .session-card h4 {
+  margin-block: 16px 8px;
+}
+.today-panel .session-card p {
+  font-size: 14px;
+}
+.today-panel .session-meta {
+  font-size: 12px;
+}
+.today-panel .session-footer {
+  margin-top: 22px;
+}
+.recall-panel {
+  background: var(--surface-muted);
+  border: 1px solid var(--line);
+  border-inline-start: 3px solid var(--accent-strong);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 28px;
+}
+.recall-panel .recall-intro {
+  color: var(--text-subtle);
+  font-size: 14px;
+}
+.today-panel .recall-panel .session-card {
+  background: var(--surface);
+}
+.dialog-heading {
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  align-items: start;
+}
+.dialog-heading button {
+  flex: none;
+}
+.schedule-pagination {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding-block: 16px;
+  border-bottom: 1px solid var(--line);
+}
+.schedule-pagination p {
+  margin: 0;
+  text-align: center;
+  font-weight: 700;
+}
+.schedule-pagination span {
+  display: block;
+  font-weight: 400;
+  font-size: 13px;
+  color: var(--text-subtle);
+}
+.schedule-day summary {
+  font-size: 15px;
+}
+.schedule-day p {
+  margin-top: 12px;
+}
+.schedule-day li {
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+@media (max-width: 760px) {
+  .progress-actions {
+    justify-content: center;
+  }
+  .today-panel {
+    padding: 18px;
+  }
+  .recall-panel {
+    padding: 14px;
+  }
+  .dialog-heading {
+    flex-wrap: wrap;
+  }
+  .schedule-pagination {
+    gap: 8px;
+  }
+  .schedule-pagination button {
+    padding: 9px;
+    font-size: 12px;
+  }
+  .schedule-pagination p {
+    font-size: 13px;
+  }
+}
+.progress-page .intro {
+  margin-bottom: 24px;
+}
+.progress-page .intro h1 {
+  font-size: clamp(30px, 3vw, 42px);
+  max-width: none;
+}
+.progress-page .intro .storage-note {
+  display: none;
+}
+.account-panel {
+  display: flex;
+  gap: 16px 24px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 18px 24px;
+  border-radius: 12px;
+}
+.account-panel h2 {
+  font-size: 17px;
+  margin: 0;
+}
+.account-panel .field {
+  flex: 1 1 300px;
+  margin: 0;
+}
+.account-panel .account-actions {
+  order: 2;
+  margin: 0;
+}
+.account-panel > details,
+.account-panel > [role='alert'] {
+  flex-basis: 100%;
+}
+.preset-panel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+.preset-panel h2 {
+  font-size: 24px;
+}
+.preset-panel p {
+  font-size: 14px;
+}
+.preset-panel .budget-note {
+  font-size: 12px;
+}
+.preset-controls {
+  min-width: 0;
+}
+@media (max-width: 760px) {
+  .preset-panel {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+.today-panel .session-meta {
+  margin-bottom: 4px;
+}
+.today-panel .session-footer {
+  padding-top: 10px;
 }

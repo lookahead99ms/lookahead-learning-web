@@ -1,3 +1,5 @@
+import { StudyPlanAccount } from '../pages/study-plan/study-plan-account';
+import { PROTECTED_CONTENT } from './content-delivery';
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import {
@@ -48,6 +50,24 @@ type VersionedContentReference = ContentDetailReference | AnswerSlideDeckReferen
 @Injectable({ providedIn: 'root' })
 export class ContentService {
   private readonly http = inject(HttpClient);
+  private readonly protectedContent = inject(PROTECTED_CONTENT);
+  private readonly accounts = inject(StudyPlanAccount);
+
+  private protectedRequest<T>(href: string): Observable<T> {
+    const identity = this.accounts.account()?.accountId ?? null;
+    const expired = this.accounts.sessionExpired();
+    return this.http.get<T>(href).pipe(
+      map((body) => {
+        if (
+          identity !== (this.accounts.account()?.accountId ?? null) ||
+          expired !== this.accounts.sessionExpired()
+        ) {
+          throw new Error('Account changed while content was loading. Open the content again.');
+        }
+        return body;
+      }),
+    );
+  }
   private readonly contentIndexManifest$ = this.http
     .get<ContentIndexManifest>('/content/content-index-manifest.json')
     .pipe(shareReplay({ bufferSize: 1, refCount: true }));
@@ -137,7 +157,10 @@ export class ContentService {
       throw new Error(`Invalid canonical DSA problem id: ${problemId}`);
     }
     const href = `/content/learn/dsa-problems/${problemId}.json`;
-    if (!contentVersion) return this.http.get<DsaProblemV2>(href);
+    if (!contentVersion)
+      return this.protectedContent
+        ? this.protectedRequest<DsaProblemV2>(href)
+        : this.http.get<DsaProblemV2>(href);
     if (!/^[a-zA-Z0-9_-]{1,64}$/.test(contentVersion)) {
       throw new Error(`Invalid canonical DSA content version: ${contentVersion}`);
     }
@@ -203,6 +226,8 @@ export class ContentService {
     if (!this.validVersionedReference(reference)) {
       return throwError(() => new Error(`Invalid content detail reference: ${reference.href}`));
     }
+    // Reauthorize every protected read, including after grant expiry or revocation.
+    if (this.protectedContent) return this.protectedRequest<T>(reference.href);
     const key = `${reference.kind}:${reference.href}@${reference.version}`;
     const cached = this.detailCache.get(key);
     if (cached) {

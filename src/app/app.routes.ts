@@ -1,9 +1,33 @@
 import { Routes } from '@angular/router';
+import { authorGuard } from './core/author-access';
 import type { DeliveryPlanPage } from './pages/delivery-plan/delivery-plan';
 import { legacyAiItemRedirect, legacyAiModuleRedirect } from './content/ai-route-compatibility';
 import { legacyInterviewSearchRedirect } from './content/search-route-compatibility';
 
 export const routes: Routes = [
+  {
+    path: 'author',
+    canActivate: [authorGuard],
+    loadComponent: () => import('./pages/author/author').then((page) => page.AuthorPage),
+  },
+  {
+    path: 'sign-in',
+    data: { accountMode: 'signin' },
+    loadComponent: () => import('./pages/account/account').then((page) => page.AccountPage),
+  },
+  {
+    path: 'sign-up',
+    data: { accountMode: 'signup' },
+    loadComponent: () => import('./pages/account/account').then((page) => page.AccountPage),
+  },
+  {
+    path: 'support',
+    loadComponent: () => import('./pages/support/support').then((page) => page.SupportPage),
+  },
+  {
+    path: 'account',
+    loadComponent: () => import('./pages/account/account').then((page) => page.AccountPage),
+  },
   { path: '', loadComponent: () => import('./pages/landing/landing').then((page) => page.Landing) },
   { path: 'learn', loadComponent: () => import('./pages/learn/learn').then((page) => page.Learn) },
   { path: 'grow', loadComponent: () => import('./pages/grow/grow').then((page) => page.Grow) },

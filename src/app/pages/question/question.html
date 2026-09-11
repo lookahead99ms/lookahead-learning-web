@@ -1,5 +1,10 @@
 <app-platform-header />
-<main id="main-content" class="content-page reader-page">
+<main
+  id="main-content"
+  class="content-page reader-page"
+  [class.harbor-learn]="pathId() === 'learn'"
+>
+  <app-study-plan-reader-navigation #planNavigation />
   @if (returnDestination(); as destination) {
     <nav class="practice-return" aria-label="Discovery return navigation">
       <a [routerLink]="destination">{{ returnLabel() }}</a>
@@ -87,117 +92,119 @@
             }
           </nav>
         }
-        <nav
-          class="question-inner-navigation"
-          [class.canonical-problem-navigation]="canonicalNavigation(item)"
-          [attr.aria-label]="
-            item.contentType === 'theory'
-              ? 'Adjacent article navigation'
-              : canonicalNavigation(item)
-                ? 'Adjacent problem navigation'
-                : 'Adjacent question navigation'
-          "
-        >
-          @if (item.contentType === 'theory') {
-            @if (previousArticle(); as previous) {
-              <a
-                class="inner-navigation-link previous previous-module"
-                [routerLink]="['/', pathId(), courseId(), previous.id]"
-                [queryParams]="returnQueryParams()"
-              >
-                <span>← Previous article:</span><strong>{{ previous.title }}</strong>
-              </a>
-            }
-            <div class="inner-navigation-actions">
-              @if (nextArticle(); as next) {
+        @if (!planNavigation.valid()) {
+          <nav
+            class="question-inner-navigation"
+            [class.canonical-problem-navigation]="canonicalNavigation(item)"
+            [attr.aria-label]="
+              item.contentType === 'theory'
+                ? 'Adjacent article navigation'
+                : canonicalNavigation(item)
+                  ? 'Adjacent problem navigation'
+                  : 'Adjacent question navigation'
+            "
+          >
+            @if (item.contentType === 'theory') {
+              @if (previousArticle(); as previous) {
                 <a
-                  class="inner-navigation-link next next-module"
-                  [routerLink]="['/', pathId(), courseId(), next.id]"
-                  [queryParams]="returnQueryParams()"
-                >
-                  <span>Next article:</span><strong>{{ next.title }} »</strong>
-                </a>
-              }
-            </div>
-          } @else if (canonicalNavigation(item); as navigation) {
-            @if (navigation.previous; as previous) {
-              <a
-                class="inner-navigation-link problem-navigation-link previous"
-                [routerLink]="canonicalProblemRoute(previous)"
-                [queryParams]="returnQueryParams(navigation.handsOnPatternId)"
-              >
-                <span>← Previous problem:</span><strong>{{ previous.title }}</strong>
-              </a>
-            }
-            <div class="inner-navigation-actions">
-              @if (navigation.next; as next) {
-                <a
-                  class="inner-navigation-link problem-navigation-link next"
-                  [routerLink]="canonicalProblemRoute(next)"
-                  [queryParams]="returnQueryParams(navigation.handsOnPatternId)"
-                >
-                  <span>Next problem:</span><strong>{{ next.title }} →</strong>
-                </a>
-              }
-            </div>
-          } @else {
-            @if (!isFirstQuestionInModule()) {
-              @if (previousQuestion(); as previous) {
-                <a
-                  class="inner-navigation-link previous"
+                  class="inner-navigation-link previous previous-module"
                   [routerLink]="['/', pathId(), courseId(), previous.id]"
                   [queryParams]="returnQueryParams()"
                 >
-                  <span>← Previous question:</span><strong>{{ previous.title }}</strong>
+                  <span>← Previous article:</span><strong>{{ previous.title }}</strong>
                 </a>
               }
-            } @else if (previousModule(); as previousModuleItem) {
-              <a
-                class="inner-navigation-link previous previous-module"
-                [routerLink]="previousModuleRoute(item, previousModuleItem)"
-              >
-                <span>← {{ previousModuleLabel(item) }}</span
-                ><strong>{{ previousModuleItem.title.replace('Theory: ', '') }}</strong>
-              </a>
-            }
-            <div class="inner-navigation-actions">
-              @if (!isLastQuestionInModule()) {
-                @if (nextQuestion(); as next) {
+              <div class="inner-navigation-actions">
+                @if (nextArticle(); as next) {
                   <a
-                    class="inner-navigation-link next"
+                    class="inner-navigation-link next next-module"
                     [routerLink]="['/', pathId(), courseId(), next.id]"
                     [queryParams]="returnQueryParams()"
                   >
-                    <span>Next question:</span><strong>{{ next.title }} →</strong>
+                    <span>Next article:</span><strong>{{ next.title }} »</strong>
                   </a>
                 }
-              } @else if (!isLastModuleInCompetency()) {
+              </div>
+            } @else if (canonicalNavigation(item); as navigation) {
+              @if (navigation.previous; as previous) {
                 <a
-                  class="module-catalog-link"
-                  [routerLink]="parentContextRoute(item)"
-                  [queryParams]="returnQueryParams()"
-                  >View all modules</a
+                  class="inner-navigation-link problem-navigation-link previous"
+                  [routerLink]="canonicalProblemRoute(previous)"
+                  [queryParams]="returnQueryParams(navigation.handsOnPatternId)"
                 >
-                @if (nextModule(); as nextModuleItem) {
-                  <a
-                    class="inner-navigation-link next next-module"
-                    [routerLink]="nextModuleRoute(item, nextModuleItem)"
-                  >
-                    <span>{{ nextModuleLabel(item) }}</span
-                    ><strong>{{ nextModuleItem.title.replace('Theory: ', '') }} »</strong>
-                  </a>
-                }
-              } @else {
-                <a
-                  class="module-catalog-link"
-                  [routerLink]="parentContextRoute(item)"
-                  [queryParams]="returnQueryParams()"
-                  >View all modules</a
-                >
+                  <span>← Previous problem:</span><strong>{{ previous.title }}</strong>
+                </a>
               }
-            </div>
-          }
-        </nav>
+              <div class="inner-navigation-actions">
+                @if (navigation.next; as next) {
+                  <a
+                    class="inner-navigation-link problem-navigation-link next"
+                    [routerLink]="canonicalProblemRoute(next)"
+                    [queryParams]="returnQueryParams(navigation.handsOnPatternId)"
+                  >
+                    <span>Next problem:</span><strong>{{ next.title }} →</strong>
+                  </a>
+                }
+              </div>
+            } @else {
+              @if (!isFirstQuestionInModule()) {
+                @if (previousQuestion(); as previous) {
+                  <a
+                    class="inner-navigation-link previous"
+                    [routerLink]="['/', pathId(), courseId(), previous.id]"
+                    [queryParams]="returnQueryParams()"
+                  >
+                    <span>← Previous question:</span><strong>{{ previous.title }}</strong>
+                  </a>
+                }
+              } @else if (previousModule(); as previousModuleItem) {
+                <a
+                  class="inner-navigation-link previous previous-module"
+                  [routerLink]="previousModuleRoute(item, previousModuleItem)"
+                >
+                  <span>← {{ previousModuleLabel(item) }}</span
+                  ><strong>{{ previousModuleItem.title.replace('Theory: ', '') }}</strong>
+                </a>
+              }
+              <div class="inner-navigation-actions">
+                @if (!isLastQuestionInModule()) {
+                  @if (nextQuestion(); as next) {
+                    <a
+                      class="inner-navigation-link next"
+                      [routerLink]="['/', pathId(), courseId(), next.id]"
+                      [queryParams]="returnQueryParams()"
+                    >
+                      <span>Next question:</span><strong>{{ next.title }} →</strong>
+                    </a>
+                  }
+                } @else if (!isLastModuleInCompetency()) {
+                  <a
+                    class="module-catalog-link"
+                    [routerLink]="parentContextRoute(item)"
+                    [queryParams]="returnQueryParams()"
+                    >View all modules</a
+                  >
+                  @if (nextModule(); as nextModuleItem) {
+                    <a
+                      class="inner-navigation-link next next-module"
+                      [routerLink]="nextModuleRoute(item, nextModuleItem)"
+                    >
+                      <span>{{ nextModuleLabel(item) }}</span
+                      ><strong>{{ nextModuleItem.title.replace('Theory: ', '') }} »</strong>
+                    </a>
+                  }
+                } @else {
+                  <a
+                    class="module-catalog-link"
+                    [routerLink]="parentContextRoute(item)"
+                    [queryParams]="returnQueryParams()"
+                    >View all modules</a
+                  >
+                }
+              </div>
+            }
+          </nav>
+        }
       </section>
       @if (patternLesson(item); as lesson) {
         <app-pattern-lesson-shell
@@ -395,6 +402,15 @@
           <ng-container *ngTemplateOutlet="referenceAnswer" />
         }
         <ng-template #referenceAnswer>
+          @if (pathId() === 'learn') {
+            <div class="harbor-answer-layout">
+              <ng-container *ngTemplateOutlet="answerContent" />
+            </div>
+          } @else {
+            <ng-container *ngTemplateOutlet="answerContent" />
+          }
+        </ng-template>
+        <ng-template #answerContent>
           @if (item.relatedArticleId; as articleId) {
             <a
               class="related-theory-link"
@@ -513,7 +529,15 @@
   } @else if (error()) {
     <section class="page-message">
       <h1>Content unavailable</h1>
-      <p>{{ error() }}</p>
+      <p role="status">{{ error() }}</p>
+      @if (accessFailure() === 401) {
+        <a routerLink="/account" [queryParams]="{ returnTo: accountReturnTo }"
+          >Sign in to continue</a
+        >
+      } @else if (accessFailure() === 403) {
+        <a routerLink="/account" [queryParams]="{ returnTo: accountReturnTo }">View your account</a>
+      }
+      <p><a [routerLink]="['/', pathId(), courseId()]">Return to the course</a></p>
     </section>
   } @else {
     <section class="page-message"><p>Loading question…</p></section>

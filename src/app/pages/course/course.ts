@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -24,7 +25,7 @@ import { CourseLearningMap } from '../../core/course-learning-map/course-learnin
 
 @Component({
   selector: 'app-course',
-  imports: [PlatformHeader, RouterLink, CourseLearningMap],
+  imports: [PlatformHeader, RouterLink, CourseLearningMap, NgTemplateOutlet],
   templateUrl: './course.html',
   styles: [
     `

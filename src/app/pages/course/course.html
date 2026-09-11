@@ -1,5 +1,9 @@
 <app-platform-header />
-<main id="main-content" class="content-page reader-page">
+<main
+  id="main-content"
+  class="content-page reader-page"
+  [class.harbor-learn]="pathId() === 'learn'"
+>
   @if (course(); as currentCourse) {
     <article class="question-reader course-reader" [attr.data-path]="pathId()">
       <div class="reader-sticky-stack">
@@ -105,8 +109,11 @@
                           class="course-group-return"
                           [routerLink]="['/', pathId()]"
                           [queryParams]="browseQueryParams()"
-                          >Browse {{ group.title }} →</a
-                        >
+                          >Browse {{ group.title }}
+                          @if (pathId() !== 'learn') {
+                            →
+                          }
+                        </a>
                       }
                     </div>
                   </section>
@@ -154,63 +161,100 @@
           }
         </div>
       </section>
-      <section class="question-list module-question-list">
-        @if (currentCourse.layout === 'learning-map' && currentCourse.learningUnits?.length) {
-          <app-course-learning-map
-            [course]="currentCourse"
-            [pathId]="pathId()"
-            [courseId]="courseId()"
-            [units]="currentCourse.learningUnits"
-          />
-        } @else {
-          <div
-            class="course-grid module-grid"
-            [class.two-column-module-grid]="
-              currentCourse.sections?.length === 2 || currentCourse.modules.length === 2
-            "
-          >
-            @if (currentCourse.sections?.length) {
-              @for (section of currentCourse.sections; track section.id) {
-                <a
-                  class="course-card module-tile course-section-tile"
-                  [routerLink]="['/', pathId(), courseId(), 'section', section.id]"
-                >
-                  <p class="eyebrow">
-                    {{
-                      section.id === 'theory'
-                        ? 'Read first'
-                        : section.id === 'questions'
-                          ? 'Understand'
-                          : 'Practice'
-                    }}
-                  </p>
-                  <h3>{{ section.title }}</h3>
-                  <p>{{ section.description }}</p>
-                  <span class="course-section-action">Explore {{ section.title }} →</span>
-                </a>
-              }
-            } @else {
-              @for (module of currentCourse.modules; track module.id) {
-                <a
-                  class="course-card module-tile"
-                  [class.empty]="questionsFor(module.id).length === 0"
-                  [routerLink]="['/', pathId(), courseId(), 'module', module.id]"
-                >
-                  @if (module.reviewStatus; as status) {
-                    @if (status !== 'reviewed') {
-                      <span class="review-status" [attr.data-review-status]="status">{{
-                        reviewStatusLabel(status)
-                      }}</span>
-                    }
+      @if (pathId() === 'learn') {
+        <div class="harbor-course-layout">
+          <aside class="harbor-course-map" aria-label="Course contents">
+            <p class="eyebrow">Course contents</p>
+            <h2>Build your foundation</h2>
+            <nav aria-label="Course units">
+              <ol>
+                @if (currentCourse.learningUnits?.length) {
+                  @for (unit of currentCourse.learningUnits; track unit.id) {
+                    <li>
+                      <a [href]="'#unit-' + unit.id">{{ unit.title }}</a>
+                    </li>
                   }
-                  <h3>{{ module.title }}</h3>
-                  <p [innerHTML]="highlightGrow(module.description)"></p>
-                </a>
+                } @else {
+                  @for (module of currentCourse.modules; track module.id) {
+                    <li>
+                      <a [routerLink]="['/', pathId(), courseId(), 'module', module.id]">{{
+                        module.title
+                      }}</a>
+                    </li>
+                  }
+                }
+              </ol>
+            </nav>
+          </aside>
+          <ng-container *ngTemplateOutlet="courseModules" />
+        </div>
+      } @else {
+        <ng-container *ngTemplateOutlet="courseModules" />
+      }
+      <ng-template #courseModules>
+        <section class="question-list module-question-list">
+          @if (currentCourse.layout === 'learning-map' && currentCourse.learningUnits?.length) {
+            <app-course-learning-map
+              [course]="currentCourse"
+              [pathId]="pathId()"
+              [courseId]="courseId()"
+              [units]="currentCourse.learningUnits"
+            />
+          } @else {
+            <div
+              class="course-grid module-grid"
+              [class.two-column-module-grid]="
+                currentCourse.sections?.length === 2 || currentCourse.modules.length === 2
+              "
+            >
+              @if (currentCourse.sections?.length) {
+                @for (section of currentCourse.sections; track section.id) {
+                  <a
+                    class="course-card module-tile course-section-tile"
+                    [routerLink]="['/', pathId(), courseId(), 'section', section.id]"
+                  >
+                    <p class="eyebrow">
+                      {{
+                        section.id === 'theory'
+                          ? 'Read first'
+                          : section.id === 'questions'
+                            ? 'Understand'
+                            : 'Practice'
+                      }}
+                    </p>
+                    <h3>{{ section.title }}</h3>
+                    <p>{{ section.description }}</p>
+                    <span class="course-section-action"
+                      >Explore {{ section.title }}
+                      @if (pathId() !== 'learn') {
+                        →
+                      }
+                    </span>
+                  </a>
+                }
+              } @else {
+                @for (module of currentCourse.modules; track module.id) {
+                  <a
+                    class="course-card module-tile"
+                    [class.empty]="questionsFor(module.id).length === 0"
+                    [routerLink]="['/', pathId(), courseId(), 'module', module.id]"
+                  >
+                    @if (module.reviewStatus; as status) {
+                      @if (status !== 'reviewed') {
+                        <span class="review-status" [attr.data-review-status]="status">{{
+                          reviewStatusLabel(status)
+                        }}</span>
+                      }
+                    }
+                    <h3>{{ module.title }}</h3>
+                    <p [innerHTML]="highlightGrow(module.description)"></p>
+                  </a>
+                }
               }
-            }
-          </div>
-        }
-      </section>
+            </div>
+          }
+        </section>
+      </ng-template>
     </article>
   } @else if (error()) {
     <section class="page-message">

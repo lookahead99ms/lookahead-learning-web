@@ -1,8 +1,11 @@
+import { PROTECTED_CONTENT } from '../../content/content-delivery';
+import { StudyPlanAccount } from '../study-plan/study-plan-account';
+import { StudyPlanReaderNavigation } from '../../core/study-plan-reader-navigation';
 import { Component, DestroyRef, HostListener, OnInit, inject, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { NgTemplateOutlet } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink, UrlTree } from '@angular/router';
-import { EMPTY, catchError, forkJoin, map, of, switchMap, throwError } from 'rxjs';
+import { EMPTY, merge, catchError, forkJoin, map, of, switchMap, throwError } from 'rxjs';
 import {
   CatalogItem,
   ContentItemSummary,
@@ -45,6 +48,7 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
 @Component({
   selector: 'app-question',
   imports: [
+    StudyPlanReaderNavigation,
     PlatformHeader,
     RouterLink,
     NgTemplateOutlet,
@@ -695,6 +699,14 @@ export class Question implements OnInit {
   private readonly contentService = inject(ContentService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly accounts = inject(StudyPlanAccount);
+  private readonly protectedContent = inject(PROTECTED_CONTENT);
+  private readonly accountChanges = toObservable(this.accounts.account);
+  private readonly expiryChanges = toObservable(this.accounts.sessionExpired);
+  protected readonly accessFailure = signal<401 | 403 | null>(null);
+  protected get accountReturnTo(): string {
+    return this.router.url;
+  }
   protected readonly returnDestination = signal<UrlTree | null>(null);
   protected readonly returnLabel = signal('Return to interview practice');
   protected readonly referenceExpanded = signal(false);
@@ -1268,7 +1280,14 @@ export class Question implements OnInit {
         }
       }
     });
-    this.route.paramMap
+    (this.protectedContent
+      ? merge(
+          this.route.paramMap,
+          this.accountChanges.pipe(map(() => this.route.snapshot.paramMap)),
+          this.expiryChanges.pipe(map(() => this.route.snapshot.paramMap)),
+        )
+      : this.route.paramMap
+    )
       .pipe(
         switchMap((params) => {
           this.course.set(null);
@@ -1276,6 +1295,7 @@ export class Question implements OnInit {
           this.referenceExpanded.set(false);
           this.relatedQuestions.set(new Map());
           this.error.set('');
+          this.accessFailure.set(null);
           this.activeSectionIndex.set(0);
           this.scrolled.set(false);
           const courseId = params.get('courseId') ?? 'core-java';
@@ -1291,8 +1311,17 @@ export class Question implements OnInit {
                 course: this.contentService.getCourseOutline(pathId, courseId),
               }).pipe(switchMap((result) => this.loadSelectedQuestion(result, questionId)));
             }),
-            catchError(() => {
-              this.error.set('The question content could not be loaded.');
+            catchError((error) => {
+              this.accessFailure.set(
+                error?.status === 401 || error?.status === 403 ? error.status : null,
+              );
+              this.error.set(
+                error?.status === 401
+                  ? 'Sign in to read this free lesson and save your progress.'
+                  : error?.status === 403
+                    ? 'This lesson requires Pro access for its course. Your saved work is still available.'
+                    : 'The question content could not be loaded.',
+              );
               return EMPTY;
             }),
           );

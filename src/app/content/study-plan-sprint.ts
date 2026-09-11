@@ -1,3 +1,4 @@
+import { variedTopics } from './study-plan-variation';
 import type { SearchDocument } from './content.models';
 import type {
   StudyPlan,
@@ -14,8 +15,9 @@ export function buildInterviewSprint(
   topics: StudyPlanTopic[],
   priorities: ReadonlyMap<string, number>,
 ): StudyPlan {
-  const includedTopics = topics.filter(
-    (t) => config.topicIds.includes(t.id) && config.accessTopicIds.includes(t.id),
+  const includedTopics = variedTopics(
+    topics.filter((t) => config.topicIds.includes(t.id) && config.accessTopicIds.includes(t.id)),
+    config.variationKey,
   );
   const excludedTopics = topics.filter(
     (t) => config.topicIds.includes(t.id) && !config.accessTopicIds.includes(t.id),
@@ -99,6 +101,9 @@ export function buildInterviewSprint(
             Number(isLesson(b.doc) && familiarity(b.topic) !== 'new') ||
           (priorities.get(idFor(a.doc)) ?? a.doc.studySequence ?? a.ordinal) -
             (priorities.get(idFor(b.doc)) ?? b.doc.studySequence ?? b.ordinal) ||
+          (config.variationKey
+            ? includedTopics.indexOf(a.topic) - includedTopics.indexOf(b.topic)
+            : 0) ||
           a.ordinal - b.ordinal,
       );
   }

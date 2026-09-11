@@ -17,6 +17,8 @@ export type PatternLanguage = 'java' | 'python' | 'go';
 
 export interface ContentAccess {
   tier: 'free' | 'premium';
+  public?: boolean;
+  scopes?: string[];
   subscriptionIds?: string[];
   scope?: SubscriptionScope;
   resourceId?: string;
