@@ -39,6 +39,16 @@ const documents = [
 ];
 const service = {
   getSearchIndex: () => of(documents),
+  getReadyMadeStudyPlans: () =>
+    of({
+      schemaVersion: 'study-plan-picker/v1',
+      catalogVersion: 'test-v1',
+      availabilityUnit: 'hours-per-day',
+      durationOptions: [],
+      paths: [],
+      pendingOptions: [],
+    }),
+  getReadyMadeStudyPlan: () => throwError(() => new Error('No ready-made test template')),
   getHandsOnDsaIndex: () =>
     of({ groups: [], ranking: { status: 'released', rankingVersion: 'rank-v1' } }),
 };
@@ -80,13 +90,569 @@ describe('StudyPlanPage', () => {
     }).compileComponents();
   });
 
+  it('shows a scroll cue only while review content remains and keeps the draft temporary', async () => {
+    const harness = await RouterTestingHarness.create();
+    const page: any = await harness.navigateByUrl('/study-plan?days=7&hours=1', StudyPlanPage);
+    await page.generatePlan();
+    harness.detectChanges();
+    const body = harness.routeNativeElement!.querySelector<HTMLElement>('.draft-scroll-body')!;
+    const firstDay = body.querySelector<HTMLElement>('[data-draft-day="1"]')!;
+    Object.defineProperties(body, {
+      clientHeight: { configurable: true, value: 300 },
+      scrollHeight: { configurable: true, value: 900 },
+      scrollTop: { configurable: true, writable: true, value: 0 },
+    });
+    vi.spyOn(body, 'getBoundingClientRect').mockReturnValue({ top: 100, bottom: 400 } as DOMRect);
+    vi.spyOn(firstDay, 'getBoundingClientRect').mockReturnValue({ top: 700 } as DOMRect);
+    const draftBefore = JSON.stringify(page.draft());
+    body.dispatchEvent(new Event('scroll'));
+    harness.detectChanges();
+    expect(
+      harness.routeNativeElement!.querySelector('.draft-scroll-button')!.textContent,
+    ).toContain('View daily schedule');
+    expect(harness.routeNativeElement!.querySelector('.has-more-below')).not.toBeNull();
+
+    body.scrollTop = 300;
+    vi.mocked(firstDay.getBoundingClientRect).mockReturnValue({ top: 100 } as DOMRect);
+    body.dispatchEvent(new Event('scroll'));
+    harness.detectChanges();
+    expect(
+      harness.routeNativeElement!.querySelector('.draft-scroll-button')!.textContent,
+    ).toContain('Continue reviewing');
+
+    body.scrollTop = 600;
+    body.dispatchEvent(new Event('scroll'));
+    harness.detectChanges();
+    expect(harness.routeNativeElement!.querySelector('.draft-scroll-button')).toBeNull();
+    expect(harness.routeNativeElement!.querySelector('.has-more-below')).toBeNull();
+
+    // Expanding a day at the end reveals more content and restores the cue.
+    Object.defineProperty(body, 'scrollHeight', { value: 1200 });
+    firstDay.parentElement!.dispatchEvent(new Event('toggle'));
+    harness.detectChanges();
+    expect(harness.routeNativeElement!.querySelector('.draft-scroll-button')).not.toBeNull();
+    expect(JSON.stringify(page.draft())).toBe(draftBefore);
+    expect(page.saved()).toBeNull();
+    expect(localStorage.getItem('look-ahead.study-plan.v1')).toBeNull();
+  });
+
+  it('scrolls to the schedule with keyboard focus and honors reduced motion', async () => {
+    const harness = await RouterTestingHarness.create();
+    const page: any = await harness.navigateByUrl('/study-plan?days=7&hours=1', StudyPlanPage);
+    await page.generatePlan();
+    harness.detectChanges();
+    const body = harness.routeNativeElement!.querySelector<HTMLElement>('.draft-scroll-body')!;
+    const firstDay = body.querySelector<HTMLElement>('[data-draft-day="1"]')!;
+    Object.defineProperties(body, {
+      clientHeight: { configurable: true, value: 300 },
+      scrollHeight: { configurable: true, value: 900 },
+      scrollTo: { configurable: true, value: vi.fn() },
+    });
+    vi.spyOn(body, 'getBoundingClientRect').mockReturnValue({ top: 100, bottom: 400 } as DOMRect);
+    vi.spyOn(firstDay, 'getBoundingClientRect').mockReturnValue({ top: 700 } as DOMRect);
+    const focus = vi.spyOn(firstDay, 'focus');
+    const motion = vi.fn().mockReturnValue({ matches: true });
+    vi.stubGlobal('matchMedia', motion);
+    page.updateDraftScroll();
+    harness.detectChanges();
+    harness.routeNativeElement!.querySelector<HTMLButtonElement>('.draft-scroll-button')!.click();
+    expect(body.scrollTo).toHaveBeenCalledWith({ top: 600, behavior: 'instant' });
+    expect(focus).toHaveBeenCalledWith({ preventScroll: true });
+    expect(motion).toHaveBeenCalledWith('(prefers-reduced-motion: reduce)');
+    vi.unstubAllGlobals();
+    expect(page.saved()).toBeNull();
+  });
+
+  async function adjustmentPage() {
+    TestBed.overrideProvider(ContentService, {
+      useValue: {
+        ...service,
+        getSearchIndex: () =>
+          of([document('execution', 'core-java', 'free'), document('java', 'core-java', 'free')]),
+      },
+    });
+    await TestBed.inject(StudyPlanAccount).initialize();
+    const harness = await RouterTestingHarness.create();
+    const page: any = await harness.navigateByUrl(
+      '/study-plan?hours=1&days=7&day=4',
+      StudyPlanPage,
+    );
+    await page.generatePlan();
+    await page.saveDraft();
+    const saved = page.saved();
+    const original = saved.snapshot.days
+      .flatMap((day: any) => day.assignments)
+      .find((a: any) => a.kind === 'new');
+    const execution = { ...original, id: 'execution', title: 'Execution', minutes: 45 };
+    const java = { ...original, id: 'java', title: 'Java practice', minutes: 50 };
+    const recall = (a: any, from: number, interval: number) => ({
+      ...a,
+      id: `${a.id}:review:v2:${interval}`,
+      sourceContentId: a.id,
+      requiredSessionId: a.id,
+      activity: 'Recall',
+      kind: 'review',
+      minutes: 20,
+      reviewFromDay: from,
+      reviewDueDay: from + interval,
+    });
+    const slots = [
+      [execution],
+      [recall(execution, 1, 1)],
+      [recall(execution, 1, 2), java],
+      [recall(java, 3, 1)],
+      [],
+      [],
+      [],
+    ];
+    const days = slots.map((assignments, i) => ({
+      ...saved.snapshot.days[0],
+      day: i + 1,
+      assignments,
+      focusedMinutes: assignments.reduce((sum, a) => sum + a.minutes, 0),
+    }));
+    const snapshot = {
+      ...saved.snapshot,
+      config: { ...saved.snapshot.config, days: 7 },
+      focusedDailyHours: 1,
+      futureReviews: [],
+      days,
+      weeks: [{ number: 1, label: 'Learn', days }],
+    };
+    page.saved.set({ ...saved, snapshot, completedIds: ['execution'], studyLog: [] });
+    page.selectedDay.set(4);
+    window.localStorage.setItem('look-ahead.study-plan.v1', JSON.stringify(page.saved()));
+    harness.detectChanges();
+    return { page, harness, account: TestBed.inject(StudyPlanAccount) };
+  }
+
+  for (const method of ['Close', 'Escape']) {
+    it(`${method} closes the review without declining or changing saved work, including after reload`, async () => {
+      const { page, harness } = await adjustmentPage();
+      const before = JSON.stringify(page.saved());
+      page.reviewAdjustment();
+      harness.detectChanges();
+      const dialog = harness.routeNativeElement!.querySelector('.recovery-dialog')!;
+      if (method === 'Escape') dialog.dispatchEvent(new Event('cancel', { cancelable: true }));
+      else
+        [...dialog.querySelectorAll('button')]
+          .find((button) => button.textContent?.trim() === 'Close adjustments')!
+          .click();
+      harness.detectChanges();
+      expect(page.recoveryPreview()).toBeNull();
+      expect(page.adjustmentNotice()).toBe(true);
+      expect(page.visibleStatus()).not.toContain('Plan retained');
+      expect(JSON.stringify(page.saved())).toBe(before);
+      expect(localStorage.getItem('look-ahead.study-plan.v1')).toBe(before);
+      await harness.navigateByUrl('/exit', PlannerExit);
+      const restored: any = await harness.navigateByUrl('/study-plan?day=4', StudyPlanPage);
+      harness.detectChanges();
+      expect(restored.adjustmentNotice()).toBe(true);
+    });
+  }
+
+  it('does not retain a stale proposal or announce an earlier decision for a changed plan', async () => {
+    const { page } = await adjustmentPage();
+    page.reviewAdjustment();
+    const original = page.saved();
+    page.saved.set({ ...original, revision: original.revision + 1 });
+    page.keepCurrentPlan();
+    expect(page.adjustmentNotice()).toBe(true);
+    expect(page.visibleStatus()).not.toContain('Plan retained');
+    page.keepCurrentPlan();
+    expect(page.visibleStatus()).toContain('Plan retained');
+    page.selectedDay.set(5);
+    expect(page.visibleStatus()).toBe('');
+  });
+
+  it('places one plan-and-day notice below the day selector and keeps retained status there', async () => {
+    const { page, harness, account } = await adjustmentPage();
+    Object.defineProperty(account, 'enabled', { value: true });
+    page.accountMode.set(true);
+    account.account.set({
+      accountId: 'a',
+      username: 'a',
+      displayName: 'A',
+      topicGrants: ['learn:core-java'],
+    });
+    account.active.set({ planId: 'plan-a', versionId: 'v1', revision: 1 } as any);
+    account.plans.set([{ planId: 'plan-a', goal: 'My plan', revision: 1 }] as any);
+    harness.detectChanges();
+    const root = harness.routeNativeElement!;
+    expect(root.querySelectorAll('.adjustment-notice')).toHaveLength(1);
+    expect(
+      root
+        .querySelector('.session-heading')!
+        .nextElementSibling?.classList.contains('adjustment-notice'),
+    ).toBe(true);
+    expect(root.querySelector('.adjustment-notice')?.textContent).toContain('Day 4');
+    page.keepCurrentPlan();
+    harness.detectChanges();
+    expect(root.querySelector('.adjustment-notice [role="status"]')?.textContent).toContain(
+      'Plan retained',
+    );
+    account.active.set({ planId: 'plan-b', versionId: 'v1', revision: 1 } as any);
+    harness.detectChanges();
+    expect(root.querySelector('.adjustment-notice')?.textContent).not.toContain('Plan retained');
+  });
+
+  it('gates author tools and opens repeated scenarios without writes', async () => {
+    const { page, harness, account } = await adjustmentPage();
+    const original = page.saved();
+    const open = vi.spyOn(account, 'open');
+    await page.openAuthorScenario('saved');
+    expect(open).not.toHaveBeenCalled();
+    expect(harness.routeNativeElement!.querySelector('.author-preview-tools')).toBeNull();
+    page.accountMode.set(true);
+    account.account.set({
+      accountId: 'author',
+      username: 'author',
+      displayName: 'Author',
+      authorPreview: true,
+      topicGrants: ['learn:core-java'],
+    });
+    const fixture = (id: string, adjusted = false) =>
+      ({
+        planId: id,
+        versionId: 'v1',
+        revision: 3,
+        goal: id === 'saved' ? 'Author sample · Saved plan' : 'Author sample · Adjusted plan',
+        snapshot: original.snapshot,
+        provenance: { algorithmVersion: null, catalogVersion: null, rankingVersion: null },
+        progress: {
+          completedContentIds: [],
+          completedSessionIds: [],
+          attemptedContentIds: [],
+          needsReviewContentIds: [],
+          notes: {},
+          sessionOutcomes: {},
+        },
+        recovery: {
+          strategy: adjusted ? 'fixed-window' : 'none',
+          elapsedDays: adjusted ? 2 : 0,
+          deadlineDays: 7,
+          deferredContentIds: [],
+        },
+        createdAt: '',
+        updatedAt: '',
+      }) as any;
+    const samples = [fixture('saved'), fixture('adjusted', true)];
+    const snapshots = JSON.stringify(samples);
+    account.plans.set(samples);
+    open.mockImplementation(async (id) => {
+      const plan = samples.find((item) => item.planId === id)!;
+      account.active.set(plan);
+      return plan;
+    });
+    const save = vi.spyOn(account, 'save');
+    await page.openAuthorScenario('missed');
+    expect(page.selectedDay()).toBe(2);
+    page.reviewSchedule();
+    expect(page.selectedDay()).toBe(2);
+    page.closeRecovery();
+    await page.openAuthorScenario('adjusted');
+    expect(page.selectedDay()).toBe(3);
+    expect(page.saved().recovery.strategy).toBe('fixed-window');
+    await page.openAuthorScenario('create');
+    expect(page.saved()).toBeNull();
+    expect(page.days()).toBe(30);
+    expect(page.goal()).toBe('Build reliable engineering foundations');
+    harness.detectChanges();
+    expect(harness.routeNativeElement!.querySelector('.account-panel')).toBeNull();
+    expect(harness.routeNativeElement!.querySelector('.creation-intro')).not.toBeNull();
+    page.goal.set('My unfinished draft');
+    page.days.set(60);
+    await page.openAuthorScenario('saved');
+    expect(page.saved().goal).toBe('Author sample · Saved plan');
+    expect(page.selectedDay()).toBe(1);
+    await page.openAuthorScenario('create');
+    expect(page.goal()).toBe('My unfinished draft');
+    expect(page.days()).toBe(60);
+    await page.openAuthorScenario('saved');
+    expect(JSON.stringify(samples)).toBe(snapshots);
+    expect(save).not.toHaveBeenCalled();
+    harness.detectChanges();
+    expect(
+      harness.routeNativeElement!.querySelector('.author-preview-tools button[disabled]')
+        ?.textContent,
+    ).toContain('Delete plan');
+    samples[1].recovery.strategy = 'explicit-extension';
+    await page.openAuthorScenario('adjusted');
+    expect(page.saved().goal).toBe('Author sample · Saved plan');
+    expect(page.authorScenarioStatus()).toContain('does not contain');
+  });
+
+  it('renders every owned card without selecting a plan or inferring progress from dates', async () => {
+    const { page, harness, account } = await adjustmentPage();
+    page.accountMode.set(true);
+    account.account.set({ accountId: 'a', username: 'a', displayName: 'A', topicGrants: [] });
+    const original = account.active();
+    const open = vi.spyOn(account, 'open');
+    account.plans.set(
+      Array.from({ length: 5 }, (_, index) => ({
+        planId: 'p' + index,
+        goal: 'Plan ' + index,
+        revision: 1,
+        updatedAt: '2099-01-01',
+        card: index
+          ? undefined
+          : {
+              schemaVersion: 'plan-card/v1',
+              metadataStatus: 'available',
+              selectedTopicIds: ['learn:core-java'],
+              durationDays: 30,
+              configuredDailyMinutes: 120,
+              completedSessionCount: 3,
+              totalSessionCount: 20,
+              nextScheduledActivity: { title: 'Next saved session' },
+              lifecycleState: null,
+              reservation: null,
+            },
+      })) as any,
+    );
+    await page.showAllPlans();
+    harness.detectChanges();
+    expect(page.setupVisible()).toBe(false);
+    expect(page.progressVisible()).toBe(false);
+    expect(harness.routeNativeElement!.querySelectorAll('.plan-card')).toHaveLength(5);
+    expect(harness.routeNativeElement!.querySelector('.plan-card')?.textContent).toContain(
+      '3 / 20',
+    );
+    expect(harness.routeNativeElement!.querySelector('.plan-card')?.textContent).toContain(
+      '2 hours configured',
+    );
+    expect(harness.routeNativeElement!.textContent).not.toContain('2099');
+    expect(account.active()).toBe(original);
+    expect(open).not.toHaveBeenCalled();
+  });
+
+  it('always exposes Review schedule and does not offer Apply for a no-op diagnostic', async () => {
+    const { page, harness } = await adjustmentPage();
+    page.selectedDay.set(1);
+    harness.detectChanges();
+    expect(harness.routeNativeElement!.querySelector('.session-heading')?.textContent).toContain(
+      'Review schedule',
+    );
+    const before = JSON.stringify(page.saved());
+    page.reviewSchedule();
+    harness.detectChanges();
+    expect(page.scheduleDiagnostic()?.kind).toBe('no-unfinished-work');
+    const dialog = harness.routeNativeElement!.querySelector('.recovery-dialog')!;
+    expect(dialog.textContent).toContain('No unfinished work needs rescheduling');
+    expect(dialog.textContent).not.toContain('Apply adjustment');
+    expect(page.recoveryPreview()).toBeNull();
+    expect(JSON.stringify(page.saved())).toBe(before);
+    page.closeRecovery();
+  });
+
+  it('offers only a temporary adjustment on entry and remembers Keep current plan across reload', async () => {
+    const { page, harness } = await adjustmentPage();
+    const before = JSON.stringify(page.saved());
+    expect(page.adjustmentNotice()).toBe(true);
+    expect(harness.routeNativeElement!.querySelector('dialog[open]')).toBeNull();
+    page.reviewAdjustment();
+    harness.detectChanges();
+    expect(page.recoveryPreview().moved).toContainEqual({
+      assignmentId: 'java',
+      fromDay: 3,
+      toDay: 6,
+    });
+    expect(harness.routeNativeElement!.textContent).toContain('Day 3 to day 6');
+    expect(JSON.stringify(page.saved())).toBe(before);
+    page.keepCurrentPlan();
+    expect(page.adjustmentNotice()).toBe(false);
+    expect(page.visibleStatus()).toContain('Plan retained');
+    expect(globalThis.document.activeElement?.id).toBe('today-heading');
+    expect(localStorage.getItem('look-ahead.study-plan.v1')).toBe(before);
+    await harness.navigateByUrl('/exit', PlannerExit);
+    const restored: any = await harness.navigateByUrl('/study-plan?day=4', StudyPlanPage);
+    harness.detectChanges();
+    expect(restored.saved()).not.toBeNull();
+    expect(restored.adjustmentNotice()).toBe(false);
+    expect(harness.routeNativeElement!.querySelector('.recovery-toggle')).not.toBeNull();
+    restored.saved.set({ ...restored.saved(), revision: restored.saved().revision + 1 });
+    expect(restored.adjustmentNotice()).toBe(true);
+    restored.dismissAdjustment();
+    restored.saved.set({ ...restored.saved(), revision: restored.saved().revision - 1 });
+    expect(restored.adjustmentNotice()).toBe(false);
+  });
+
+  it('isolates dismissal by owner and plan and invalidates a review after progress changes', async () => {
+    const { page, account } = await adjustmentPage();
+    page.accountMode.set(true);
+    account.account.set({
+      accountId: 'a',
+      username: 'a',
+      displayName: 'A',
+      topicGrants: ['learn:core-java'],
+    });
+    account.active.set({ planId: 'plan-a', versionId: 'v1', revision: 1 } as any);
+    page.dismissAdjustment();
+    expect(page.adjustmentNotice()).toBe(false);
+    account.account.set({
+      accountId: 'b',
+      username: 'b',
+      displayName: 'B',
+      topicGrants: ['learn:core-java'],
+    });
+    expect(page.adjustmentNotice()).toBe(true);
+    account.active.set({ planId: 'plan-b', versionId: 'v1', revision: 1 } as any);
+    page.reviewAdjustment();
+    const save = vi.spyOn(account, 'save').mockResolvedValue(null);
+    page.saved.set({
+      ...page.saved(),
+      completedIds: [...page.saved().completedIds, 'execution:review:v2:1'],
+    });
+    expect(page.adjustmentStale()).toBe(true);
+    await page.confirmRecovery();
+    expect(save).not.toHaveBeenCalled();
+    expect(page.status()).toContain('Review a fresh adjustment');
+  });
+
+  it('applies a reviewed local adjustment once and preserves the current plan on storage failure', async () => {
+    const { page } = await adjustmentPage();
+    page.reviewAdjustment();
+    const before = JSON.stringify(page.saved());
+    const persist = vi.spyOn(window.localStorage, 'setItem').mockImplementation(() => {
+      throw new Error('full');
+    });
+    await page.confirmRecovery();
+    expect(JSON.stringify(page.saved())).toBe(before);
+    expect(page.recoveryPreview()).not.toBeNull();
+    expect(page.status()).not.toContain('Plan updated');
+    persist.mockRestore();
+    const revision = page.saved().revision;
+    await page.confirmRecovery();
+    await page.confirmRecovery();
+    expect(page.saved().revision).toBe(revision + 1);
+    expect(
+      page
+        .saved()
+        .snapshot.days[5].assignments.some((a: any) => a.id === 'java' && a.minutes === 50),
+    ).toBe(true);
+    expect(page.saved().completedIds).toEqual(['execution']);
+    expect(page.status()).toContain('Plan updated');
+    expect(JSON.parse(localStorage.getItem('look-ahead.study-plan.v1')!).revision).toBe(
+      revision + 1,
+    );
+  });
+
+  it('keeps an uncertain account proposal and blocks conflict retry until reload and review', async () => {
+    const { page, account } = await adjustmentPage();
+    page.accountMode.set(true);
+    account.account.set({
+      accountId: 'a',
+      username: 'a',
+      displayName: 'A',
+      topicGrants: ['learn:core-java'],
+    });
+    page.reviewAdjustment();
+    const before = JSON.stringify(page.saved());
+    const proposal = page.recoveryPreview();
+    const save = vi.spyOn(account, 'save').mockImplementation(async () => {
+      account.pending.set(true);
+      account.errorStatus.set(409);
+      account.error.set('Changed elsewhere');
+      return null;
+    });
+    const retry = vi.spyOn(account, 'retry').mockResolvedValue(null);
+    await page.confirmRecovery();
+    await page.confirmRecovery();
+    await page.retryAccountSave();
+    expect(save).toHaveBeenCalledTimes(1);
+    expect(retry).not.toHaveBeenCalled();
+    expect(JSON.stringify(page.saved())).toBe(before);
+    expect(page.recoveryPreview()).toBe(proposal);
+    expect(page.status()).not.toContain('Plan updated');
+    account.discardPending();
+    page.reviewAdjustment();
+    await page.confirmRecovery();
+    expect(save).toHaveBeenCalledTimes(1);
+    expect(page.adjustmentStale()).toBe(true);
+  });
+
+  it('waits for the account acknowledgement before refreshing the plan or reporting success', async () => {
+    const { page, account } = await adjustmentPage();
+    page.accountMode.set(true);
+    account.account.set({
+      accountId: 'a',
+      username: 'a',
+      displayName: 'A',
+      topicGrants: ['learn:core-java'],
+    });
+    page.reviewAdjustment();
+    const original = page.saved(),
+      proposed = page.recoveryPreview().snapshot;
+    let acknowledge!: (value: any) => void;
+    const save = vi.spyOn(account, 'save').mockImplementation(() => {
+      account.busy.set(true);
+      return new Promise((resolve) => {
+        acknowledge = resolve;
+      });
+    });
+    const applying = page.confirmRecovery();
+    await page.confirmRecovery();
+    expect(save).toHaveBeenCalledTimes(1);
+    expect(page.saved()).toBe(original);
+    expect(page.status()).not.toContain('Plan updated');
+    account.busy.set(false);
+    acknowledge({
+      planId: 'plan-a',
+      versionId: 'v2',
+      revision: original.revision + 1,
+      goal: original.goal,
+      snapshot: proposed,
+      provenance: {
+        algorithmVersion: proposed.schedulingVersion ?? null,
+        catalogVersion: null,
+        rankingVersion: null,
+      },
+      progress: {
+        completedContentIds: ['execution'],
+        completedSessionIds: ['execution'],
+        attemptedContentIds: [],
+        needsReviewContentIds: [],
+        notes: {},
+        sessionOutcomes: {},
+        studyLog: [],
+      },
+      recovery: {
+        strategy: 'fixed-window',
+        elapsedDays: 3,
+        deadlineDays: 7,
+        deferredContentIds: [],
+        deferredSessions: [],
+      },
+      createdAt: '2026-09-11T12:00:00Z',
+      updatedAt: '2026-09-11T13:00:00Z',
+    });
+    await applying;
+    expect(page.saved().revision).toBe(original.revision + 1);
+    expect(page.saved().snapshot).toEqual(proposed);
+    expect(page.status()).toBe('Plan updated. Your adjustment is saved.');
+    expect(page.recoveryPreview()).toBeNull();
+  });
+
+  it('does not suggest during loading, access failure or an unavailable account', async () => {
+    const { page, account } = await adjustmentPage();
+    page.accountReady.set(false);
+    expect(page.adjustmentNotice()).toBe(false);
+    page.accountReady.set(true);
+    page.loadingError.set('Content unavailable');
+    expect(page.adjustmentNotice()).toBe(false);
+    page.loadingError.set('');
+    account.error.set('Account unavailable');
+    expect(page.adjustmentNotice()).toBe(false);
+  });
+
   it('starts with a realistic hour and a single published-offering checklist', async () => {
     await TestBed.inject(StudyPlanAccount).initialize();
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/study-plan', StudyPlanPage);
     harness.detectChanges();
-    const controls =
-      harness.routeNativeElement!.querySelectorAll<HTMLSelectElement>('.setup-panel select');
+    const controls = harness.routeNativeElement!.querySelectorAll<HTMLSelectElement>(
+      '.setup-panel .field-pair select',
+    );
     expect(controls[0].value).toBe('30');
     expect(controls[1].value).toBe('1');
     expect(harness.routeNativeElement!.querySelectorAll('fieldset')).toHaveLength(1);
@@ -119,7 +685,7 @@ describe('StudyPlanPage', () => {
     const panel = harness.routeNativeElement!.querySelector<HTMLElement>('.pending-panel')!;
     const count = (page as any).pendingSessions().length;
     expect(count).toBeGreaterThan(0);
-    expect((panel as HTMLDetailsElement).open).toBe(false);
+    expect((panel as HTMLDetailsElement).open).toBe(true);
     expect(panel.querySelectorAll('.session-card')).toHaveLength(count);
     (panel as HTMLDetailsElement).open = true;
     expect((page as any).completedIds().size).toBe(0);
@@ -149,8 +715,9 @@ describe('StudyPlanPage', () => {
       StudyPlanPage,
     );
     harness.detectChanges();
-    const controls =
-      harness.routeNativeElement!.querySelectorAll<HTMLSelectElement>('.setup-panel select');
+    const controls = harness.routeNativeElement!.querySelectorAll<HTMLSelectElement>(
+      '.setup-panel .field-pair select',
+    );
     expect(controls[0].value).toBe('120');
     expect(controls[1].value).toBe('3');
     const build = harness.routeNativeElement!.querySelector<HTMLButtonElement>('button.primary')!;
@@ -528,16 +1095,135 @@ describe('StudyPlanPage', () => {
       'Record the earlier attempt or complete the original learning session',
     );
     expect(blockedCard.querySelectorAll('a, button')).toHaveLength(0);
-    for (const assignment of [overlap, independent, blocked, current]) {
+    for (const assignment of [overlap, blocked, current]) {
       expect(root.querySelectorAll(`[data-session-id="${assignment.id}"]`)).toHaveLength(1);
     }
     expect(
       [...root.querySelectorAll('.session-card h4, .pending-session h4')].filter(
         (node) => node.textContent === 'Shared visible title',
       ),
-    ).toHaveLength(2);
+    ).toHaveLength(1);
+    expect(root.querySelector(`[data-session-id="${independent.id}"]`)).toBeNull();
+    expect(page.dailyQueue().deferred).toContainEqual(independent);
+    expect(page.dailyQueue().allDue).toContainEqual(independent);
+    expect(root.querySelector<HTMLDetailsElement>('.pending-panel')?.open).toBe(true);
     expect(JSON.stringify(page.saved())).toBe(before);
     expect(page.completedIds().has(unfinished.id)).toBe(false);
+  });
+
+  it('keeps Day 4 within budget while hiding only redundant recalls for today', async () => {
+    const docs = ['execution', 'java', 'different-source'].map((id) =>
+      document(id, 'core-java', 'free'),
+    );
+    TestBed.overrideProvider(ContentService, {
+      useValue: { ...service, getSearchIndex: () => of(docs) },
+    });
+    await TestBed.inject(StudyPlanAccount).initialize();
+    const harness = await RouterTestingHarness.create();
+    const page: any = await harness.navigateByUrl('/study-plan?hours=1', StudyPlanPage);
+    await page.generatePlan();
+    await page.saveDraft();
+    const saved = page.saved();
+    const originals = saved.snapshot.days.flatMap((day: any) => day.assignments);
+    const execution = { ...originals.find((a: any) => a.id === 'execution'), minutes: 45 };
+    const java = { ...originals.find((a: any) => a.id === 'java'), minutes: 50 };
+    const recall = (original: any, interval: number, from: number) => ({
+      ...original,
+      id: `${original.id}:review:v2:${interval}`,
+      sourceContentId: original.id,
+      requiredSessionId: original.id,
+      kind: 'review',
+      activity: 'Recall',
+      minutes: 20,
+      reviewFromDay: from,
+      reviewDueDay: from + interval,
+    });
+    const first = recall(execution, 1, 1);
+    const later = recall(execution, 2, 1);
+    const blocked = recall(java, 1, 3);
+    const day = saved.snapshot.days[0];
+    page.saved.set({
+      ...saved,
+      completedIds: [execution.id],
+      studyLog: [],
+      snapshot: {
+        ...saved.snapshot,
+        focusedDailyHours: 1,
+        futureReviews: [later],
+        days: [[execution], [first], [java, later], [blocked], []].map((assignments, i) => ({
+          ...day,
+          day: i + 1,
+          assignments,
+          focusedMinutes: assignments.reduce((sum, a) => sum + a.minutes, 0),
+        })),
+      },
+    });
+    page.selectedDay.set(4);
+    const before = JSON.stringify(page.saved());
+    const storageBefore = window.localStorage.getItem('look-ahead.study-plan.v1');
+    harness.detectChanges();
+    const root = harness.routeNativeElement!;
+    expect(page.dailyQueue()).toMatchObject({ budget: 60, spent: 0, minutes: 20, remaining: 40 });
+    expect(page.dailyQueue().selected.map((a: any) => a.id)).toEqual([first.id]);
+    expect(page.dailyQueue().deferred.map((a: any) => a.id)).toEqual([
+      later.id,
+      java.id,
+      blocked.id,
+    ]);
+    expect(
+      [...root.querySelectorAll('[data-session-id]')].map((e) => e.getAttribute('data-session-id')),
+    ).toEqual([first.id, java.id, blocked.id]);
+    const pending = root.querySelector<HTMLDetailsElement>('.pending-panel')!;
+    expect(pending.open).toBe(true);
+    expect(pending.querySelector('summary')?.textContent).toContain('2 sessions');
+    expect(pending.textContent).toContain('daily budget');
+    expect(root.querySelector(`[data-session-id="${blocked.id}"] a`)).toBeNull();
+    expect(page.canOpen(blocked)).toBe(false);
+    expect(JSON.stringify(page.saved())).toBe(before);
+    expect(window.localStorage.getItem('look-ahead.study-plan.v1')).toBe(storageBefore);
+
+    // Same title is not identity: a different source must remain visible.
+    const other = {
+      ...later,
+      id: 'different-source:review:v2:1',
+      sourceContentId: 'different-source',
+      requiredSessionId: 'different-source',
+    };
+    const originalState = page.saved();
+    page.saved.set({
+      ...originalState,
+      snapshot: { ...originalState.snapshot, futureReviews: [later, other] },
+    });
+    harness.detectChanges();
+    expect(root.querySelector(`[data-session-id="${other.id}"]`)).not.toBeNull();
+    page.saved.set(originalState);
+
+    // Completing one occurrence never completes another; it reappears on a later day.
+    page.saved.set({
+      ...originalState,
+      completedIds: [execution.id, first.id],
+      studyLog: [
+        {
+          assignmentId: first.id,
+          day: 4,
+          minutes: 20,
+          recordedAt: '2026-09-11T12:00:00Z',
+        },
+      ],
+    });
+    harness.detectChanges();
+    expect(page.dailyQueue().spent).toBe(20);
+    expect(root.querySelector(`[data-session-id="${later.id}"]`)).toBeNull();
+    expect(root.querySelector('[aria-labelledby="day-sessions-recorded"]')?.textContent).toContain(
+      execution.title,
+    );
+    expect(page.completedIds().has(later.id)).toBe(false);
+    page.selectedDay.set(5);
+    harness.detectChanges();
+    expect(page.dailyQueue().selected.map((a: any) => a.id)).toContain(later.id);
+    expect(root.querySelector(`[data-session-id="${later.id}"]`)).not.toBeNull();
+    expect(JSON.stringify(page.saved().snapshot)).toBe(JSON.stringify(originalState.snapshot));
+    expect(window.localStorage.getItem('look-ahead.study-plan.v1')).toBe(storageBefore);
   });
 
   it('does not describe a catalog-only offering as an entitlement restriction', async () => {
@@ -785,7 +1471,7 @@ describe('StudyPlanPage', () => {
     expect(page.recoveryPreview()).toBe(preview);
   });
 
-  it('keeps creation visible but prevents saving when the account service is unavailable', async () => {
+  it('does not mistake an unavailable account service for an empty plan', async () => {
     const account = TestBed.inject(StudyPlanAccount);
     vi.spyOn(account, 'initialize').mockImplementation(async () => {
       account.error.set('Account unavailable');
@@ -794,7 +1480,8 @@ describe('StudyPlanPage', () => {
     const page: any = await harness.navigateByUrl('/study-plan', StudyPlanPage);
     await Promise.resolve();
     harness.detectChanges();
-    expect(page.setupVisible()).toBe(true);
+    expect(page.setupVisible()).toBe(false);
+    expect(harness.routeNativeElement!.querySelector('.empty-plan')).toBeNull();
     expect(page.canGenerate()).toBe(false);
   });
   it('keeps a browser plan private and shows Create while signed out in account mode', async () => {
@@ -873,11 +1560,30 @@ describe('StudyPlanPage', () => {
       createdAt: '',
       updatedAt: '',
     });
+    accounts.plans.set([{ planId: 'owned', goal: saved.goal, revision: 1, updatedAt: '' }]);
     page = await harness.navigateByUrl('/study-plan?day=8', StudyPlanPage);
     await Promise.resolve();
     harness.detectChanges();
     expect(page.progressVisible()).toBe(true);
     expect(page.setupVisible()).toBe(false);
+    expect(page.selectedDay()).toBe(8);
+    await harness.navigateByUrl('/exit', PlannerExit);
+    accounts.plans.update((plans) => [
+      ...plans,
+      { planId: 'owned-two', goal: 'Second plan', revision: 1, updatedAt: '' },
+    ]);
+    page = await harness.navigateByUrl('/study-plan', StudyPlanPage);
+    await Promise.resolve();
+    harness.detectChanges();
+    expect(page.dashboardVisible()).toBe(true);
+    expect(page.progressVisible()).toBe(false);
+    expect(harness.routeNativeElement!.querySelectorAll('.plan-card')).toHaveLength(2);
+    await harness.navigateByUrl('/exit', PlannerExit);
+    page = await harness.navigateByUrl('/study-plan?plan=owned&day=8', StudyPlanPage);
+    await Promise.resolve();
+    harness.detectChanges();
+    expect(page.progressVisible()).toBe(true);
+    expect(page.dashboardVisible()).toBe(false);
     expect(page.selectedDay()).toBe(8);
     accounts.sessionExpired.set(true);
     harness.detectChanges();
@@ -987,25 +1693,287 @@ describe('StudyPlanPage', () => {
     expect(importPlan).not.toHaveBeenCalled();
     sessionStorage.removeItem('look-ahead.study-plan-draft-intent.v1');
   });
-  it('applies a career starting point as editable input without creating or saving a plan', async () => {
+  it('loads an authored variant through three dependent controls and keeps it temporary until save', async () => {
+    const variant = {
+      templateId: 'java-d7-h1',
+      templateVersion: 'template-v1',
+      durationDays: 7,
+      dailyHours: 1,
+      intensive: false,
+      intendedUse: 'Interview revision and targeted gaps',
+      href: '/content/study-plans/templates/java-d7-h1.json',
+      sha256: 'sha-test',
+      scheduledMinutes: 20,
+      selectedContentCount: 1,
+      availableContentCount: 1,
+      topicIds: ['learn:core-java'],
+    };
+    const catalog = {
+      schemaVersion: 'study-plan-picker/v1',
+      catalogVersion: 'picker-v1',
+      availabilityUnit: 'hours-per-day',
+      durationOptions: [7, 21],
+      pendingOptions: [],
+      paths: [
+        {
+          id: 'java',
+          title: 'Java preparation',
+          summary: 'Focused Java revision.',
+          roleLevel: 'Engineer',
+          startingKnowledge: ['Can read Java.'],
+          outcomes: ['Explain one Java contract.'],
+          uncoveredScope: ['Does not cover every Java course.'],
+          topics: [
+            { id: 'learn:core-java', title: 'Core Java' },
+            { id: 'learn:modern-java', title: 'Modern Java' },
+          ],
+          recommendedVariantId: variant.templateId,
+          variants: [
+            variant,
+            { ...variant, templateId: 'java-d7-h6', dailyHours: 6, intensive: true },
+            { ...variant, templateId: 'java-d7-h9', dailyHours: 9, intensive: true },
+            { ...variant, templateId: 'java-d21-h1', durationDays: 21 },
+          ],
+        },
+      ],
+    };
+    const days = Array.from({ length: 7 }, (_, index) => ({
+      day: index + 1,
+      phase: index ? 'open' : 'revision',
+      sessions:
+        index === 0
+          ? [
+              {
+                id: 'refresh-1',
+                kind: 'review',
+                activity: 'Refresh',
+                contentId: 'available-lesson',
+                minutes: 20,
+                instructions: 'Recall the lesson.',
+                prerequisiteIds: [],
+                requiredSessionIds: [],
+                review: {
+                  basis: 'declared-familiarity',
+                  sourceSessionId: null,
+                  sourceDay: null,
+                  dueDay: 1,
+                },
+              },
+            ]
+          : [],
+      scheduledMinutes: index ? 0 : 20,
+      focusedMinutes: index ? 0 : 20,
+      recoveryMinutes: 0,
+      unallocatedMinutes: index ? 60 : 40,
+    }));
+    const template = {
+      schemaVersion: 'study-plan-template/v1',
+      templateId: variant.templateId,
+      templateVersion: variant.templateVersion,
+      pathId: 'java',
+      durationDays: 7,
+      dailyHours: 1,
+      availabilityUnit: 'hours-per-day',
+      intensive: false,
+      intendedUse: variant.intendedUse,
+      provenance: {
+        algorithmVersion: 'ready-made-schedule/v1',
+        catalogVersion: 'content-v1',
+        rankingVersion: null,
+        blueprintVersion: 'blueprint-v1',
+        sourceContentVersion: 'source-v1',
+      },
+      startingKnowledge: [],
+      assumedPrerequisiteIds: [],
+      topicIds: ['learn:core-java'],
+      references: [
+        {
+          contentId: 'available-lesson',
+          topicId: 'learn:core-java',
+          title: 'Available lesson',
+          courseTitle: 'Core Java',
+          contentType: 'theory',
+          route: ['/', 'learn', 'core-java', 'available-lesson'],
+          contentVersion: 'v1',
+          prerequisiteIds: [],
+        },
+      ],
+      days,
+      coverage: {
+        selectedContentCount: 1,
+        availableContentCount: 1,
+        scheduledMinutes: 20,
+        unallocatedMinutes: 400,
+        uncoveredContentIds: [],
+        uncoveredScope: [],
+      },
+      futureReviews: [
+        {
+          ...days[0].sessions[0],
+          id: 'recall-after-window',
+          activity: 'Recall',
+          requiredSessionIds: ['refresh-1'],
+          review: {
+            basis: 'scheduled-session',
+            sourceSessionId: 'refresh-1',
+            sourceDay: 1,
+            dueDay: 10,
+          },
+        },
+      ],
+    };
+    TestBed.overrideProvider(ContentService, {
+      useValue: {
+        ...service,
+        getReadyMadeStudyPlans: () => of(catalog),
+        getReadyMadeStudyPlan: () => of(template),
+      },
+    });
     const harness = await RouterTestingHarness.create();
     const page: any = await harness.navigateByUrl('/study-plan', StudyPlanPage);
-    const before = page.goal();
-    page.selectedPresetId.set('college-grad');
     harness.detectChanges();
-    expect(page.goal()).toBe(before);
-    expect(page.presetAvailability().unavailableIds.length).toBeGreaterThan(0);
-    page.applyPreset();
+    expect(
+      harness.routeNativeElement!.querySelectorAll('.ready-made-controls select'),
+    ).toHaveLength(3);
+    page.chooseReadyMadePath('java');
+    page.chooseReadyMadeDays('7');
+    expect(page.selectedReadyMadeHours()).toBeNull();
+    page.chooseReadyMadeHours('9');
+    expect(page.readyMadeMessage()).toContain('intensive daily schedule');
+    page.chooseReadyMadeHours('6');
+    expect(page.readyMadeMessage()).toContain('intensive daily schedule');
+    page.chooseReadyMadeDays('21');
+    expect(page.selectedReadyMadeHours()).toBeNull();
+    expect(page.readyMadeMessage()).toContain('Choose hours per day again');
+    page.chooseReadyMadeDays('7');
+    page.chooseReadyMadeHours('1');
+    expect(page.readyMadeSelectedCourses()).toEqual([
+      { id: 'learn:core-java', title: 'Core Java' },
+    ]);
+    page.previewReadyMadePlan();
     harness.detectChanges();
-    expect(page.goal()).toBe('College graduate preparation');
-    expect(page.days()).toBe(90);
-    expect([...page.selectedTopicIds()]).toEqual(['learn:core-java']);
+    expect(page.draft().goal).toBe('Java preparation');
+    expect(page.draft().readyMade).toMatchObject({
+      templateId: 'java-d7-h1',
+      templateVersion: 'template-v1',
+      templateSha256: 'sha-test',
+      pickerCatalogVersion: 'picker-v1',
+      adapterVersion: 'ready-made-to-study-plan/v1',
+    });
+    expect(page.saved()).toBeNull();
+    expect(localStorage.getItem('look-ahead.study-plan.v1')).toBeNull();
+    const preview = harness.routeNativeElement!.querySelector('.plan-review-dialog')!;
+    expect(preview.textContent).toContain('1 hour available a day');
+    expect(preview.querySelector('.authored-review-summary')!.textContent).toContain(
+      'Selected courses: Core Java',
+    );
+    expect(page.authoredDraftSummary()).toMatchObject({
+      focusedMinutes: 20,
+      recoveryMinutes: 0,
+      unallocatedMinutes: 400,
+    });
+    expect(preview.querySelector('.authored-future-reviews')!.textContent).toContain('Day 10');
+    expect(preview.textContent).toContain('Assumes prior familiarity');
+    await page.saveDraft();
+    expect(page.saved().completedIds).toEqual([]);
+    expect(page.saved().snapshot.schedulingVersion).toBe('ready-made-schedule/v1');
+    expect(page.saved().readyMade.templateId).toBe('java-d7-h1');
+    expect(page.saved().snapshot.template).toEqual(template);
+    harness.detectChanges();
+    expect(page.dailyQueue().selected.map((item: any) => item.id)).toEqual(['refresh-1']);
+    expect(page.weekAllocation()).toMatchObject({
+      total: 20,
+      understand: 0,
+      recall: 20,
+      practice: 0,
+    });
+    const refresh = page.dailyQueue().selected[0];
+    page.toggleCompletion(refresh);
+    expect(page.saved().completedIds).toEqual(['refresh-1']);
+    expect(page.saved().snapshot.template).toEqual(template);
+    expect(page.dailyQueue().selected).toEqual([]);
+
+    const original = page.saved();
+    const practice = {
+      ...refresh,
+      id: 'practice',
+      templateKind: 'practice',
+      activity: 'Practice',
+      reviewBasis: undefined,
+      requiredSessionId: 'refresh-1',
+      requiredSessionIds: ['refresh-1', 'second'],
+    };
+    const second = {
+      ...refresh,
+      id: 'second',
+      kind: 'new',
+      templateKind: 'new',
+      activity: 'Understand',
+      reviewBasis: undefined,
+    };
+    page.saved.set({
+      ...original,
+      completedIds: ['refresh-1', 'available-lesson'],
+      snapshot: {
+        ...original.snapshot,
+        days: [
+          { ...original.snapshot.days[0], assignments: [refresh, second, practice] },
+          ...original.snapshot.days.slice(1),
+        ],
+      },
+    });
+    expect(page.canOpen(practice)).toBe(false);
+    page.saved.set({ ...page.saved(), completedIds: ['refresh-1'] });
+    page.toggleCompletion(second);
+    expect(page.saved().completedIds).toContain('second');
+    expect(page.saved().completedIds).toContain('available-lesson');
+    expect(page.canOpen(practice)).toBe(true);
+    expect(
+      page.currentDaySections().find((section: any) => section.id === 'current').assignments,
+    ).toContainEqual(practice);
+  });
+
+  it('preserves an authored draft and prevents account save when adoption is unavailable', async () => {
+    const accounts = TestBed.inject(StudyPlanAccount);
+    await accounts.initialize();
+    const harness = await RouterTestingHarness.create();
+    const page: any = await harness.navigateByUrl('/study-plan', StudyPlanPage);
+    await page.generatePlan();
+    expect(page.draft()?.snapshot.days.length).toBeGreaterThan(0);
+    const draft = { ...page.draft(), readyMade: { templateId: 'sample-d7-h1' } };
+    page.draft.set(draft);
+    Object.defineProperty(accounts, 'enabled', { value: true });
+    page.accountMode.set(true);
+    accounts.account.set({
+      accountId: 'synthetic',
+      username: 'synthetic',
+      displayName: 'Synthetic',
+      topicGrants: [],
+    });
+    const save = vi.spyOn(accounts, 'save');
+
+    await page.saveDraft();
+
+    expect(save).not.toHaveBeenCalled();
+    expect(page.draft()).toBe(draft);
+    expect(page.saved()).toBeNull();
+    expect(accounts.error()).toContain('Your draft is preserved');
+  });
+
+  it('shows catalog and access failures without replacing or truncating the current draft', async () => {
+    TestBed.overrideProvider(ContentService, {
+      useValue: {
+        ...service,
+        getReadyMadeStudyPlans: () => throwError(() => new Error('offline')),
+      },
+    });
+    const harness = await RouterTestingHarness.create();
+    const page: any = await harness.navigateByUrl('/study-plan', StudyPlanPage);
+    harness.detectChanges();
+    expect(page.readyMadeStatus()).toBe('error');
+    expect(harness.routeNativeElement!.textContent).toContain('could not be loaded');
+    expect(harness.routeNativeElement!.textContent).toContain('Create your study plan');
     expect(page.saved()).toBeNull();
     expect(page.draft()).toBeNull();
-    expect(localStorage.getItem('look-ahead.study-plan.v1')).toBeNull();
-    page.goal.set('My own goal');
-    page.dailyHours.set(2);
-    expect(page.goal()).toBe('My own goal');
-    expect(page.dailyHours()).toBe(2);
   });
 });

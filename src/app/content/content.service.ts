@@ -2,6 +2,7 @@ import { StudyPlanAccount } from '../pages/study-plan/study-plan-account';
 import { PROTECTED_CONTENT } from './content-delivery';
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
+import { isReadyMadeCatalog, ReadyMadeCatalog, ReadyMadeTemplate } from './study-plan-ready-made';
 import {
   Observable,
   catchError,
@@ -173,6 +174,24 @@ export class ContentService {
 
   getHandsOnDsaIndex(): Observable<HandsOnDsaIndex> {
     return this.handsOnDsaIndex$;
+  }
+
+  getReadyMadeStudyPlans(): Observable<ReadyMadeCatalog> {
+    return this.http.get<unknown>('/content/study-plans/index.json').pipe(
+      map((catalog) => {
+        if (!isReadyMadeCatalog(catalog))
+          throw new Error('The ready-made plan catalog version is unavailable.');
+        return catalog;
+      }),
+    );
+  }
+
+  getReadyMadeStudyPlan(href: string): Observable<ReadyMadeTemplate> {
+    if (!/^\/content\/study-plans\/templates\/[a-zA-Z0-9_-]{1,160}\.json$/.test(href))
+      return throwError(() => new Error('Invalid ready-made plan reference.'));
+    return this.protectedContent
+      ? this.protectedRequest<ReadyMadeTemplate>(href)
+      : this.http.get<ReadyMadeTemplate>(href);
   }
 
   getSearchIndex(path?: ContentPath): Observable<SearchDocument[]> {

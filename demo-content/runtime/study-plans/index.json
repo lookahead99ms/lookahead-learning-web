@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "study-plan-picker/v1",
+  "catalogVersion": "synthetic-ready-made/v1",
+  "availabilityUnit": "hours-per-day",
+  "durationOptions": [7],
+  "paths": [
+    {
+      "id": "synthetic-platform-revision",
+      "title": "Public platform revision",
+      "summary": "A small synthetic plan that demonstrates the ready-made schedule contract.",
+      "roleLevel": "Public demo",
+      "startingKnowledge": ["You can describe a web request and response."],
+      "outcomes": ["Explain why product code and protected learning material use separate delivery boundaries."],
+      "uncoveredScope": ["This demonstration does not include private curriculum or establish interview readiness."],
+      "topics": [{ "id": "learn:public-platform-demo", "title": "Public Platform Demo" }],
+      "recommendedVariantId": "synthetic-platform-revision-d7-h1",
+      "variants": [
+        {
+          "templateId": "synthetic-platform-revision-d7-h1",
+          "templateVersion": "synthetic-template/v1",
+          "durationDays": 7,
+          "dailyHours": 1,
+          "intensive": false,
+          "intendedUse": "Revision and one targeted gap",
+          "href": "/content/study-plans/templates/synthetic-platform-revision-d7-h1.json",
+          "sha256": "03145b1dd0d24f3c918b3f6416c1c7b1716077bfad68bf02fd0daae306628ee5",
+          "scheduledMinutes": 50,
+          "selectedContentCount": 1,
+          "availableContentCount": 1,
+          "topicIds": ["learn:public-platform-demo"]
+        }
+      ]
+    }
+  ],
+  "pendingOptions": []
+}

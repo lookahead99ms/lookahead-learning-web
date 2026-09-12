@@ -115,7 +115,10 @@ describe('StudyPlanAccount transport and isolation', () => {
   });
 
   it('creates an account with explicit profile data and CSRF without importing browser plans', async () => {
-    const originalTransport = fetcher.getMockImplementation() as (path: string, options: RequestInit) => Promise<Response>;
+    const originalTransport = fetcher.getMockImplementation() as (
+      path: string,
+      options: RequestInit,
+    ) => Promise<Response>;
     fetcher.mockImplementation(async (path: string, options: RequestInit) =>
       path.endsWith('/auth/register')
         ? json({
@@ -147,7 +150,10 @@ describe('StudyPlanAccount transport and isolation', () => {
   });
 
   it('does not authenticate or report a plan conflict when registration is rejected', async () => {
-    const originalTransport = fetcher.getMockImplementation() as (path: string, options: RequestInit) => Promise<Response>;
+    const originalTransport = fetcher.getMockImplementation() as (
+      path: string,
+      options: RequestInit,
+    ) => Promise<Response>;
     fetcher.mockImplementation(async (path: string, options: RequestInit) =>
       path.endsWith('/auth/register')
         ? new Response(null, { status: 409 })
@@ -181,7 +187,10 @@ describe('StudyPlanAccount transport and isolation', () => {
   });
 
   it('uses the gateway after OAuth discovery and keeps identity login separate until the redirect completes', async () => {
-    const transport = fetcher.getMockImplementation() as (path: string, options: RequestInit) => Promise<Response>;
+    const transport = fetcher.getMockImplementation() as (
+      path: string,
+      options: RequestInit,
+    ) => Promise<Response>;
     fetcher.mockImplementation((path: string, options: RequestInit) =>
       path === '/api/v1/auth/options'
         ? Promise.resolve(json({ registration: true, google: false, oauth: true }))
@@ -198,7 +207,10 @@ describe('StudyPlanAccount transport and isolation', () => {
   });
 
   it('restores an OAuth gateway session without placing bearer credentials on browser requests', async () => {
-    const transport = fetcher.getMockImplementation() as (path: string, options: RequestInit) => Promise<Response>;
+    const transport = fetcher.getMockImplementation() as (
+      path: string,
+      options: RequestInit,
+    ) => Promise<Response>;
     me = true;
     fetcher.mockImplementation((path: string, options: RequestInit) =>
       path === '/api/v1/auth/options'
@@ -244,6 +256,25 @@ describe('StudyPlanAccount transport and isolation', () => {
     expect(mutations[0].options.body).toBe(mutations[1].options.body);
     expect(mutations[0].options.headers).toEqual(mutations[1].options.headers);
     expect(store.pending()).toBe(false);
+  });
+
+  it('reports a failed account-data restore after identity succeeds instead of implying no saved plans', async () => {
+    me = true;
+    const originalFetch = fetcher.getMockImplementation() as (
+      path: string,
+      options: RequestInit,
+    ) => Promise<Response>;
+    fetcher.mockImplementation(async (path: string, options: RequestInit) =>
+      path.endsWith('/account-catalog')
+        ? new Response(null, { status: 401 })
+        : originalFetch(path, options),
+    );
+    await store.initialize();
+    expect(store.account()).not.toBeNull();
+    expect(store.sessionExpired()).toBe(true);
+    expect(store.errorStatus()).toBe(401);
+    expect(store.error()).toContain('session expired');
+    expect(store.active()).toBeNull();
   });
 
   it('uses the latest server revision for activity and does not overwrite a conflict', async () => {

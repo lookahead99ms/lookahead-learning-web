@@ -1,4 +1,10 @@
 import { StudyPlan, StudyPlanAssignment } from './study-plan';
+import {
+  assumedStudyPrerequisiteIds,
+  isStudyReview,
+  requiredStudySessionIds,
+  studySessionDependencySatisfied,
+} from './study-plan-dependencies';
 
 export interface StudyLogEntry {
   assignmentId: string;
@@ -92,15 +98,16 @@ export function studyDayQueue(
   canAccess: (item: StudyPlanAssignment) => boolean = () => true,
 ) {
   const all = assignments(plan);
+  const assumedPrerequisites = assumedStudyPrerequisiteIds(plan);
   const scheduledDay = (a: StudyPlanAssignment) =>
     plan.days.find((d) => d.assignments.some((item) => item.id === a.id))?.day ??
     a.reviewDueDay ??
     Infinity;
   const original = (a: StudyPlanAssignment) =>
-    all.find(
-      (item) =>
-        item.kind === 'new' &&
-        (a.requiredSessionId ? item.id === a.requiredSessionId : source(item) === source(a)),
+    all.find((item) =>
+      a.reviewSourceSessionId || a.requiredSessionId
+        ? item.id === (a.reviewSourceSessionId ?? a.requiredSessionId)
+        : item.kind === 'new' && source(item) === source(a),
     );
   const finished = (a: StudyPlanAssignment) => completed.has(a.id) || !!outcomes[a.id];
   const latestDay = (id: string) =>
@@ -111,42 +118,58 @@ export function studyDayQueue(
   };
   const eligible = (a: StudyPlanAssignment) => {
     if (!canAccess(a)) return false;
-    if ((a.prerequisiteIds ?? []).some((id) => !completed.has(id))) return false;
-    if (a.kind !== 'review') return true;
+    if ((a.prerequisiteIds ?? []).some((id) => !completed.has(id) && !assumedPrerequisites.has(id)))
+      return false;
+    if (
+      !requiredStudySessionIds(a).every((id) =>
+        studySessionDependencySatisfied(id, all, completed, outcomes),
+      )
+    )
+      return false;
+    if (!isStudyReview(a) || a.reviewBasis === 'declared-familiarity') return true;
     const first = original(a);
+    if (a.reviewBasis === 'scheduled-session')
+      return (
+        !!first &&
+        studySessionDependencySatisfied(first.id, all, completed, outcomes) &&
+        (!completionDays || originalDay(a) < day)
+      );
     if (a.requiredSessionId && first?.timebox && outcomes[first.id]) return originalDay(a) < day;
     return completed.has(source(a)) && (!completionDays || originalDay(a) < day);
   };
   const dueDay = (a: StudyPlanAssignment) => {
     const scheduled = a.reviewDueDay ?? scheduledDay(a);
-    if (!completionDays || a.kind !== 'review') return scheduledDay(a);
+    const preserveAuthoredDay = (due: number) =>
+      plan.template ? Math.max(scheduledDay(a), due) : due;
+    if (!completionDays || !isStudyReview(a)) return scheduledDay(a);
     const first = original(a),
       actualDay = first ? latestDay(first.id) : 0;
-    if (!actualDay) return scheduled;
+    if (!actualDay) return preserveAuthoredDay(scheduled);
     const interval = Math.max(1, scheduled - (a.reviewFromDay ?? scheduledDay(first!)));
-    return actualDay + interval;
+    return preserveAuthoredDay(actualDay + interval);
   };
   const current = plan.days.find((d) => d.day === day)?.assignments ?? [];
   const unique = [...new Map(all.map((a) => [a.id, a])).values()];
   const pending = unique.filter((a) => !finished(a) && dueDay(a) <= day);
   const recalls = pending
-    .filter((a) => a.kind === 'review' && eligible(a))
+    .filter((a) => isStudyReview(a) && eligible(a))
     .sort((a, b) => dueDay(a) - dueDay(b) || a.id.localeCompare(b.id));
   const reviewedToday = new Set(
     log
       .filter((e) => e.day === day)
       .flatMap((e) => {
         const item = findStudyActivity(plan, e.assignmentId, day);
-        return item?.kind === 'review' ? [source(item)] : [];
+        return item && isStudyReview(item) ? [source(item)] : [];
       }),
   );
   // A short daily recall fills days without an eligible interval review. Rotate least-recently recalled originals.
   let daily: StudyPlanAssignment | null = null;
   if (
+    !plan.template &&
     completionDays &&
     !recalls.length &&
     !reviewedToday.size &&
-    !current.some((a) => a.kind === 'review' && finished(a))
+    !current.some((a) => isStudyReview(a) && finished(a))
   ) {
     const candidates = unique.filter(
       (a) =>
@@ -172,10 +195,12 @@ export function studyDayQueue(
   const ordered = [
     ...recalls,
     ...(daily ? [daily] : []),
-    ...pending.filter((a) => a.kind !== 'review' && scheduledDay(a) < day),
-    ...pending.filter((a) => a.kind !== 'review' && scheduledDay(a) === day),
+    ...pending.filter((a) => !isStudyReview(a) && scheduledDay(a) < day),
+    ...pending.filter((a) => !isStudyReview(a) && scheduledDay(a) === day),
   ];
-  const budget = Math.round(plan.focusedDailyHours * 60);
+  const recoveryMinutes =
+    plan.template?.days.find((entry) => entry.day === day)?.recoveryMinutes ?? 0;
+  const budget = Math.max(0, Math.round(plan.focusedDailyHours * 60) - recoveryMinutes);
   const loggedIds = new Set(log.map((e) => e.assignmentId));
   const spent =
     log.filter((e) => e.day === day).reduce((n, e) => n + e.minutes, 0) +
@@ -188,14 +213,14 @@ export function studyDayQueue(
     if (
       eligible(item) &&
       item.minutes <= remaining &&
-      (item.kind !== 'review' || !recalledSources.has(source(item)))
+      (!isStudyReview(item) || !recalledSources.has(source(item)))
     ) {
       selected.push(item);
       remaining -= item.minutes;
-      if (item.kind === 'review') recalledSources.add(source(item));
+      if (isStudyReview(item)) recalledSources.add(source(item));
     } else deferred.push(item);
   }
-  const blocked = pending.filter((a) => a.kind === 'review' && !eligible(a));
+  const blocked = pending.filter((a) => isStudyReview(a) && !eligible(a));
   return {
     selected,
     deferred: [...deferred, ...blocked],

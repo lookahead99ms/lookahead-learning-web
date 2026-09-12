@@ -3,6 +3,50 @@ import { describe, expect, it } from 'vitest';
 import { CodingSolutionTabs } from './coding-solution-tabs';
 
 describe('CodingSolutionTabs practice drafts', () => {
+  it('submits the active draft to the Two Sum preview without editing code or revealing references', async () => {
+    await TestBed.configureTestingModule({ imports: [CodingSolutionTabs] }).compileComponents();
+    const fixture = TestBed.createComponent(CodingSolutionTabs);
+    fixture.componentRef.setInput('solutions', [
+      { language: 'python', title: 'Reference', source: 'SECRET_REFERENCE' },
+    ]);
+    fixture.componentRef.setInput('initialLanguage', 'python');
+    fixture.componentRef.setInput('showReferences', false);
+    fixture.componentRef.setInput('tutorProblem', {
+      id: 'algorithmic-two-sum',
+      title: 'Two Sum',
+      prompt: 'Find distinct indices.',
+    });
+    fixture.detectChanges();
+    const editor = fixture.nativeElement.querySelector('textarea') as HTMLTextAreaElement;
+    editor.value = 'my own Python draft';
+    editor.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    const question = fixture.nativeElement.querySelector(
+      'app-editor-tutor textarea',
+    ) as HTMLTextAreaElement;
+    question.value = 'Can you help explain my approach?';
+    question.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    fixture.nativeElement
+      .querySelector('app-editor-tutor form')
+      .dispatchEvent(new Event('submit', { cancelable: true }));
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(editor.value).toBe('my own Python draft');
+    expect(fixture.nativeElement.querySelector('app-editor-tutor code').textContent).toBe(
+      editor.value,
+    );
+    expect(fixture.nativeElement.textContent).not.toContain('SECRET_REFERENCE');
+    expect(fixture.nativeElement.textContent).not.toContain('Run examples');
+    fixture.componentRef.setInput('tutorProblem', {
+      id: 'other-problem',
+      title: 'Other',
+      prompt: 'Other contract.',
+    });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-editor-tutor')).toBeNull();
+  });
+
   it('opens the requested language and keeps learner language changes and drafts', async () => {
     await TestBed.configureTestingModule({ imports: [CodingSolutionTabs] }).compileComponents();
     const fixture = TestBed.createComponent(CodingSolutionTabs);

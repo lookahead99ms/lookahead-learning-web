@@ -1,5 +1,23 @@
 import { variationRank } from '../../content/study-plan-variation';
+import {
+  assumedStudyPrerequisiteIds,
+  isStudyReview,
+  requiredStudySessionIds,
+  studySessionDependencySatisfied,
+} from '../../content/study-plan-dependencies';
+import {
+  adjustmentFingerprint,
+  evaluateStudyPlanAdjustment,
+  AdjustmentEvaluation,
+  suggestStudyPlanAdjustment,
+} from '../../content/study-plan-adjustment';
 import { STUDY_PLAN_PRESETS, resolveStudyPlanPreset } from '../../content/study-plan-presets';
+import {
+  ReadyMadeCatalog,
+  ReadyMadeDuration,
+  ReadyMadeVariantSummary,
+  readyMadePlan,
+} from '../../content/study-plan-ready-made';
 import {
   studyDayQueue,
   recordStudyLog,
@@ -70,6 +88,167 @@ export class StudyPlanPage implements OnInit {
   protected readonly importAvailable = signal(false);
   protected readonly accountMode = signal(false);
   private browserPlan: SavedPlan | null = null;
+  @ViewChild('pageHeading') private pageHeading?: ElementRef<HTMLElement>;
+  protected readonly authorScenarioStatus = signal('');
+  protected async openAuthorScenario(
+    view: 'create' | 'saved' | 'missed' | 'adjusted',
+  ): Promise<void> {
+    if (!this.accountMode() || !this.accountStore.account()?.authorPreview || this.editsLocked())
+      return;
+    this.authorScenarioStatus.set('');
+    if (view === 'create') {
+      this.newAccountPlan();
+      await this.router.navigate(['/study-plan'], { queryParams: { create: 1 } });
+      this.pageHeading?.nativeElement.focus();
+      this.authorScenarioStatus.set('Create plan is open. Nothing has been saved.');
+      return;
+    }
+    const names =
+      view === 'adjusted'
+        ? ['Author sample · Adjusted plan', 'DLV-714 adjustment verification']
+        : ['Author sample · Saved plan'];
+    const sample = this.accountStore.plans().find((plan) => names.includes(plan.goal));
+    if (!sample) {
+      this.authorScenarioStatus.set(
+        'This author example is unavailable. Your current plan is unchanged.',
+      );
+      return;
+    }
+    this.rememberCreationSetup();
+    const owner = this.accountStore.account()?.accountId;
+    const previous = this.accountStore.active();
+    const result = await this.accountStore.open(sample.planId);
+    if (
+      !result ||
+      owner !== this.accountStore.account()?.accountId ||
+      !this.accountStore.account()?.authorPreview
+    )
+      return;
+    const completed = new Set([
+      ...result.progress.completedContentIds,
+      ...result.progress.completedSessionIds,
+    ]);
+    const missed = result.snapshot.days.find(
+      (day) =>
+        day.day > 1 &&
+        result.snapshot.days.some(
+          (prior) =>
+            prior.day < day.day && prior.assignments.some((item) => !completed.has(item.id)),
+        ),
+    );
+    if (
+      (view === 'adjusted' &&
+        (result.recovery.strategy !== 'fixed-window' || result.recovery.elapsedDays < 1)) ||
+      (view === 'missed' && !missed)
+    ) {
+      this.accountStore.active.set(previous);
+      this.authorScenarioStatus.set(
+        'The saved example does not contain this scenario. Your current plan is unchanged.',
+      );
+      return;
+    }
+    this.acceptAccountPlan(result);
+    this.selectedDay.set(
+      view === 'missed' ? missed!.day : view === 'adjusted' ? result.recovery.elapsedDays + 1 : 1,
+    );
+    await this.router.navigate(['/study-plan'], {
+      queryParams: { plan: result.planId, day: this.selectedDay() },
+    });
+    this.authorScenarioStatus.set(
+      view === 'adjusted'
+        ? 'Showing a saved Make Room for Real Life adjustment. No new adjustment was applied.'
+        : view === 'missed'
+          ? 'Showing unfinished earlier sessions. Use Review schedule to inspect the current result without changing study days.'
+          : 'Showing the saved author example. No progress was changed.',
+    );
+    setTimeout(() => {
+      if (!this.destroyRef.destroyed) this.sessionHeading?.nativeElement.focus();
+    }, 0);
+  }
+  private creationSetup: {
+    goal: string;
+    days: number;
+    hours: number;
+    type: 'learning' | 'interview';
+    topics: string[];
+    familiarity: Record<string, 'familiar' | 'refresh' | 'new'>;
+    preset: string;
+  } | null = null;
+  private rememberCreationSetup(): void {
+    if (this.saved()) return;
+    this.creationSetup = {
+      goal: this.goal(),
+      days: this.days(),
+      hours: this.dailyHours(),
+      type: this.goalType(),
+      topics: [...this.selectedTopicIds()],
+      familiarity: { ...this.familiarity() },
+      preset: this.selectedPresetId(),
+    };
+  }
+  protected readonly dashboardVisible = signal(false);
+  protected readonly planCards = computed(() =>
+    this.accountStore.plans().map((summary) => {
+      const card = summary.card;
+      return {
+        ...summary,
+        loaded: card?.metadataStatus === 'available',
+        completed: card?.completedSessionCount ?? 0,
+        total: card?.totalSessionCount ?? 0,
+        subjects: (card?.selectedTopicIds ?? [])
+          .map((id) => STUDY_PLAN_TOPICS.find((topic) => topic.id === id)?.title ?? id)
+          .join(', '),
+        hours: card?.configuredDailyMinutes == null ? null : card.configuredDailyMinutes / 60,
+        next: card?.nextScheduledActivity?.title ?? null,
+      };
+    }),
+  );
+  protected async showAllPlans(): Promise<void> {
+    if (!this.accountMode() || this.editsLocked()) return;
+    this.rememberCreationSetup();
+    this.dashboardVisible.set(true);
+    this.status.set('Choose a saved plan to continue.');
+    await this.router.navigate(['/study-plan']);
+  }
+  protected async continuePlan(planId: string): Promise<void> {
+    if (this.editsLocked() || !this.accountStore.plans().some((plan) => plan.planId === planId))
+      return;
+    await this.openAccountPlan(planId);
+    if (!this.accountStore.error() && this.accountStore.active()?.planId === planId) {
+      this.dashboardVisible.set(false);
+      this.selectedDay.set(1);
+      await this.router.navigate(['/study-plan'], { queryParams: { plan: planId } });
+      this.pageHeading?.nativeElement.focus();
+    }
+  }
+  protected readonly scheduleDiagnostic = signal<AdjustmentEvaluation | null>(null);
+  protected reviewSchedule(): void {
+    if (this.editsLocked() || !this.saved() || !this.dailyQueue()) return;
+    const saved = this.saved()!;
+    this.scheduleDiagnostic.set(null);
+    const result = evaluateStudyPlanAdjustment(
+      saved.snapshot,
+      {
+        currentDay: Math.max(this.selectedDay(), this.minimumRecoveryDay()),
+        completedAssignmentIds: saved.completedIds,
+        completedContentIds: this.canonicalCompletedIds(),
+        sessionOutcomes: saved.sessionOutcomes,
+        deferredSessions: saved.deferredSessions,
+      },
+      this.dailyQueue()!,
+      new Set(
+        this.dailyQueue()!
+          .deferred.filter((item) => this.canOpen(item))
+          .map((item) => item.id),
+      ),
+    );
+    if (result.kind === 'proposal') {
+      this.reviewAdjustment();
+      return;
+    }
+    this.openRecovery();
+    this.scheduleDiagnostic.set(result);
+  }
   private authorViewOpened = false;
   private queueAuthorView(): void {
     if (
@@ -94,11 +273,55 @@ export class StudyPlanPage implements OnInit {
     }, 0);
   }
   @ViewChild('draftDialog') private draftDialog?: ElementRef<HTMLDialogElement>;
+  private draftScrollElement?: HTMLElement;
+  private draftResizeObserver?: ResizeObserver;
+  protected readonly draftHasMoreBelow = signal(false);
+  protected readonly draftScheduleBelow = signal(false);
+  @ViewChild('draftScrollBody') private set draftScrollBody(
+    reference: ElementRef<HTMLElement> | undefined,
+  ) {
+    this.draftResizeObserver?.disconnect();
+    this.draftScrollElement = reference?.nativeElement;
+    if (!reference || typeof ResizeObserver === 'undefined') return;
+    this.draftResizeObserver = new ResizeObserver(() => this.updateDraftScroll());
+    this.draftResizeObserver.observe(reference.nativeElement);
+    const content = reference.nativeElement.firstElementChild;
+    if (content) this.draftResizeObserver.observe(content);
+  }
+  protected updateDraftScroll(): void {
+    const body = this.draftScrollElement;
+    if (!body) return;
+    this.draftHasMoreBelow.set(body.scrollHeight - body.clientHeight - body.scrollTop > 2);
+    const firstDay = body.querySelector<HTMLElement>('[data-draft-day="1"]');
+    this.draftScheduleBelow.set(
+      !!firstDay &&
+        firstDay.getBoundingClientRect().top >= body.getBoundingClientRect().bottom - 44,
+    );
+  }
+  protected scrollDraft(): void {
+    const body = this.draftScrollElement;
+    if (!body) return;
+    const firstDay = body.querySelector<HTMLElement>('[data-draft-day="1"]');
+    const target = this.draftScheduleBelow() && firstDay ? firstDay : body;
+    // Move focus into the review so keyboard scrolling can continue when the cue disappears.
+    target.focus({ preventScroll: true });
+    const top =
+      target === firstDay
+        ? body.scrollTop + target.getBoundingClientRect().top - body.getBoundingClientRect().top
+        : body.scrollTop + body.clientHeight * 0.8;
+    body.scrollTo?.({
+      top,
+      behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+        ? 'instant'
+        : 'smooth',
+    });
+  }
   protected readonly draft = signal<SavedPlan | null>(null);
   protected readonly accountReady = signal(false);
   protected readonly progressVisible = computed(
     () =>
       this.accountReady() &&
+      !this.dashboardVisible() &&
       !!this.saved() &&
       (!this.accountStore.enabled ||
         (this.accountMode() &&
@@ -136,15 +359,28 @@ export class StudyPlanPage implements OnInit {
   }
   @ViewChild('recoveryDialog') private recoveryDialog?: ElementRef<HTMLDialogElement>;
   protected openRecovery(): void {
+    this.scheduleDiagnostic.set(null);
+    this.adjustmentReview.set(null);
+    this.recoveryDay.set(Math.max(this.selectedDay(), this.minimumRecoveryDay()));
     this.recoveryDialog?.nativeElement.showModal?.();
   }
   protected closeRecovery(): void {
     if (this.editsLocked()) return;
+    this.scheduleDiagnostic.set(null);
+    this.adjustmentReview.set(null);
     this.recoveryDialog?.nativeElement.close?.();
     this.recoveryPreview.set(null);
     this.extensionRequested.set(false);
   }
-  protected readonly setupVisible = computed(() => !this.progressVisible() && this.accountReady());
+  protected readonly setupVisible = computed(
+    () =>
+      !this.progressVisible() &&
+      !this.dashboardVisible() &&
+      this.accountReady() &&
+      !this.accountStore.error() &&
+      !this.loadingError() &&
+      !this.accountStore.busy(),
+  );
   protected dayStatus(day: { assignments: StudyPlanAssignment[] }): string {
     const done = day.assignments.filter(
       (item) => this.completedIds().has(item.id) || !!this.saved()?.sessionOutcomes?.[item.id],
@@ -159,10 +395,18 @@ export class StudyPlanPage implements OnInit {
     if (this.accountStore.busy() || this.accountStore.pending()) return;
     this.draftDialog?.nativeElement.close?.();
     this.draft.set(null);
+    this.draftHasMoreBelow.set(false);
+    this.draftScheduleBelow.set(false);
   }
   protected async saveDraft(): Promise<void> {
     const draft = this.draft();
     if (!draft || this.editsLocked()) return;
+    if (draft.readyMade && this.accountMode() && !this.readyMadeAdoptionAvailable()) {
+      this.accountStore.error.set(
+        'Saving authored schedules is not available yet. Your draft is preserved.',
+      );
+      return;
+    }
     if (this.accountStore.enabled && !this.accountMode()) {
       this.continueToSignIn();
       return;
@@ -229,6 +473,171 @@ export class StudyPlanPage implements OnInit {
     }
   }
   protected readonly recoveryPreview = signal<StudyPlanRecoveryPreview | null>(null);
+  protected readonly adjustmentReview = signal<{ key: string; fingerprint: string } | null>(null);
+  protected readonly adjustmentConflict = signal(false);
+  private readonly dismissedAdjustments = signal<ReadonlySet<string>>(new Set());
+  private storedDismissals(key: string): string[] {
+    try {
+      const raw = window.localStorage.getItem(key);
+      if (!raw) return [];
+      try {
+        const parsed: unknown = JSON.parse(raw);
+        return Array.isArray(parsed)
+          ? parsed.filter((value): value is string => typeof value === 'string')
+          : [];
+      } catch {
+        return [raw];
+      }
+    } catch {
+      return [];
+    }
+  }
+  private readonly adjustmentContext = computed(() => {
+    const saved = this.saved();
+    if (!saved) return null;
+    const account = this.accountStore.account();
+    const active = this.accountStore.active();
+    const { weeks: _derivedWeeks, ...schedule } = saved.snapshot;
+    const key = `look-ahead.adjustment-dismissal.v1:${this.accountMode() ? `${account?.accountId}:${active?.planId}` : 'browser'}`;
+    return {
+      key,
+      fingerprint: adjustmentFingerprint([
+        active?.versionId,
+        saved.revision,
+        this.selectedDay(),
+        schedule,
+        [...saved.completedIds].sort(),
+        saved.sessionOutcomes ?? {},
+        saved.studyLog ?? [],
+        saved.deferredSessions ?? [],
+      ]),
+    };
+  });
+  protected readonly adjustmentStale = computed(() => {
+    const review = this.adjustmentReview(),
+      current = this.adjustmentContext();
+    return (
+      this.adjustmentConflict() ||
+      (!!review &&
+        (!current || review.key !== current.key || review.fingerprint !== current.fingerprint))
+    );
+  });
+  protected readonly suggestedAdjustment = computed(() => {
+    const saved = this.saved(),
+      queue = this.dailyQueue();
+    if (
+      !saved ||
+      !queue ||
+      this.adjustmentConflict() ||
+      this.selectedDay() < this.minimumRecoveryDay() ||
+      !this.progressVisible() ||
+      this.editsLocked() ||
+      this.accountStore.error() ||
+      this.loadingError() ||
+      !this.documents() ||
+      this.access.status() !== 'ready'
+    )
+      return null;
+    return suggestStudyPlanAdjustment(
+      saved.snapshot,
+      {
+        currentDay: Math.max(this.selectedDay(), this.minimumRecoveryDay()),
+        completedAssignmentIds: saved.completedIds,
+        completedContentIds: this.canonicalCompletedIds(),
+        sessionOutcomes: saved.sessionOutcomes,
+        deferredSessions: saved.deferredSessions,
+      },
+      queue,
+      new Set(queue.deferred.filter((item) => this.canOpen(item)).map((item) => item.id)),
+    );
+  });
+  protected readonly adjustmentNotice = computed(() => {
+    const context = this.adjustmentContext();
+    if (!context || !this.suggestedAdjustment()) return false;
+    if (this.dismissedAdjustments().has(`${context.key}:${context.fingerprint}`)) return false;
+    return !this.storedDismissals(context.key).includes(context.fingerprint);
+  });
+  protected reviewAdjustment(): void {
+    const preview = this.suggestedAdjustment(),
+      context = this.adjustmentContext();
+    if (!preview || !context || this.editsLocked() || this.adjustmentConflict()) return;
+    this.adjustmentReview.set(context);
+    this.recoveryDay.set(preview.currentDay);
+    this.recoveryPreview.set(preview);
+    this.extensionRequested.set(false);
+    this.recoveryDialog?.nativeElement.showModal?.();
+  }
+  protected dismissAdjustment(context = this.adjustmentContext()): void {
+    if (!context) return;
+    this.dismissedAdjustments.update(
+      (values) => new Set([...values, `${context.key}:${context.fingerprint}`]),
+    );
+    try {
+      window.localStorage.setItem(
+        context.key,
+        JSON.stringify([...new Set([...this.storedDismissals(context.key), context.fingerprint])]),
+      );
+    } catch {
+      /* This tab still remembers the choice. */
+    }
+  }
+  protected keepCurrentPlan(): void {
+    if (this.editsLocked()) return;
+    const reviewed = this.adjustmentReview() ?? this.adjustmentContext();
+    const current = this.adjustmentContext();
+    if (
+      !reviewed ||
+      !current ||
+      reviewed.key !== current.key ||
+      reviewed.fingerprint !== current.fingerprint ||
+      this.adjustmentStale()
+    ) {
+      this.closeRecovery();
+      this.status.set('Your plan changed. Review the current suggestion before deciding.');
+      return;
+    }
+    this.dismissAdjustment(reviewed);
+    this.closeRecovery();
+    this.announceAdjustment('Plan retained. Your saved schedule is unchanged.');
+    this.sessionHeading?.nativeElement.focus();
+  }
+  private readonly adjustmentAnnouncement = signal<{
+    key: string;
+    fingerprint: string;
+    message: string;
+  } | null>(null);
+  private announceAdjustment(message: string): void {
+    const context = this.adjustmentContext();
+    if (context) this.adjustmentAnnouncement.set({ ...context, message });
+    this.status.set(message);
+  }
+  protected readonly visibleStatus = computed(() => {
+    const announcement = this.adjustmentAnnouncement(),
+      current = this.adjustmentContext();
+    if (
+      announcement?.message === this.status() &&
+      (!current ||
+        current.key !== announcement.key ||
+        current.fingerprint !== announcement.fingerprint)
+    )
+      return '';
+    return this.status();
+  });
+  protected readonly adjustmentStatus = computed(() =>
+    this.adjustmentAnnouncement()?.message === this.visibleStatus() ? this.visibleStatus() : '',
+  );
+  protected readonly recoveryMoves = computed(() => {
+    const preview = this.recoveryPreview();
+    if (!preview) return [];
+    const assignments = preview.snapshot.days.flatMap((day) => day.assignments);
+    return preview.moved.map((move) => ({
+      ...move,
+      assignment: assignments.find((item) => item.id === move.assignmentId)!,
+      beforeMinutes: this.plan()?.days.find((day) => day.day === move.toDay)?.focusedMinutes ?? 0,
+      afterMinutes:
+        preview.snapshot.days.find((day) => day.day === move.toDay)?.focusedMinutes ?? 0,
+    }));
+  });
   protected readonly recoveryDay = signal(2);
   protected readonly minimumRecoveryDay = computed(
     () => (this.saved()?.recovery?.elapsedDays ?? 0) + 1,
@@ -260,6 +669,193 @@ export class StudyPlanPage implements OnInit {
     this.familiarity.set({});
     this.selectedTopicIds.set(new Set(availability.selectedIds));
     this.status.set('Starting point applied. Edit your focus and time, then review your plan.');
+  }
+  protected readonly readyMadeCatalog = signal<ReadyMadeCatalog | null>(null);
+  protected readonly readyMadeStatus = signal<'loading' | 'ready' | 'error'>('loading');
+  protected readonly readyMadeMessage = signal('');
+  protected readonly selectedReadyMadePathId = signal('');
+  protected readonly selectedReadyMadeDays = signal<ReadyMadeDuration | null>(null);
+  protected readonly selectedReadyMadeHours = signal<number | null>(null);
+  protected readonly readyMadePath = computed(() =>
+    this.readyMadeCatalog()?.paths.find((path) => path.id === this.selectedReadyMadePathId()),
+  );
+  protected readonly readyMadeDurations = computed(() => [
+    ...new Set((this.readyMadePath()?.variants ?? []).map((variant) => variant.durationDays)),
+  ]);
+  protected readonly readyMadeHours = computed(() => [
+    ...new Set(
+      (this.readyMadePath()?.variants ?? [])
+        .filter((variant) => variant.durationDays === this.selectedReadyMadeDays())
+        .map((variant) => variant.dailyHours),
+    ),
+  ]);
+  protected readonly readyMadeVariant = computed<ReadyMadeVariantSummary | undefined>(() =>
+    this.readyMadePath()?.variants.find(
+      (variant) =>
+        variant.durationDays === this.selectedReadyMadeDays() &&
+        variant.dailyHours === this.selectedReadyMadeHours(),
+    ),
+  );
+  protected readonly readyMadeSelectedCourses = computed(() => {
+    const path = this.readyMadePath();
+    const topicIds = this.readyMadeVariant()?.topicIds;
+    return topicIds
+      ? (path?.topics.filter((topic) => topicIds.includes(topic.id)) ?? [])
+      : (path?.topics ?? []);
+  });
+  protected readonly authoredDraftSummary = computed(() => {
+    const template = this.draft()?.snapshot.template;
+    if (!template) return null;
+    return {
+      focusedMinutes: template.days.reduce((sum, day) => sum + day.focusedMinutes, 0),
+      recoveryMinutes: template.days.reduce((sum, day) => sum + day.recoveryMinutes, 0),
+      unallocatedMinutes: template.days.reduce((sum, day) => sum + day.unallocatedMinutes, 0),
+      contentTitles: Object.fromEntries(
+        template.references.map((item) => [item.contentId, item.title]),
+      ),
+    };
+  });
+  protected readonly readyMadeAdoptionAvailable = computed(
+    () =>
+      !this.accountStore.enabled ||
+      !this.accountMode() ||
+      !!this.accountStore.catalog()?.readyMadePlanPolicies?.includes('ready-made-template-v1'),
+  );
+  protected chooseReadyMadePath(pathId: string): void {
+    this.selectedReadyMadePathId.set(pathId);
+    this.selectedReadyMadeDays.set(null);
+    this.selectedReadyMadeHours.set(null);
+    this.readyMadeMessage.set('');
+  }
+  protected chooseReadyMadeDays(value: string): void {
+    const days = Number(value) as ReadyMadeDuration;
+    const compatible = this.readyMadeDurations().includes(days);
+    this.selectedReadyMadeDays.set(compatible ? days : null);
+    if (
+      this.selectedReadyMadeHours() !== null &&
+      !this.readyMadePath()?.variants.some(
+        (variant) =>
+          variant.durationDays === days && variant.dailyHours === this.selectedReadyMadeHours(),
+      )
+    ) {
+      this.selectedReadyMadeHours.set(null);
+      this.readyMadeMessage.set('Choose hours per day again for this preparation window.');
+    } else this.readyMadeMessage.set('');
+  }
+  protected chooseReadyMadeHours(value: string): void {
+    const hours = Number(value);
+    this.selectedReadyMadeHours.set(this.readyMadeHours().includes(hours) ? hours : null);
+    this.readyMadeMessage.set(
+      hours >= 6
+        ? 'This is an intensive daily schedule. Availability is a ceiling; breaks and unused time remain valid.'
+        : '',
+    );
+  }
+  protected loadReadyMadeCatalog(): void {
+    this.readyMadeStatus.set('loading');
+    this.readyMadeMessage.set('');
+    this.content
+      .getReadyMadeStudyPlans()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (catalog) => {
+          this.readyMadeCatalog.set(catalog);
+          this.readyMadeStatus.set('ready');
+        },
+        error: () => {
+          this.readyMadeCatalog.set(null);
+          this.readyMadeStatus.set('error');
+          this.readyMadeMessage.set(
+            'Ready-made plans could not be loaded. Your current selections are unchanged.',
+          );
+        },
+      });
+  }
+  protected previewReadyMadePlan(): void {
+    const variant = this.readyMadeVariant();
+    const path = this.readyMadePath();
+    if (!variant || !path || this.editsLocked()) return;
+    this.readyMadeStatus.set('loading');
+    this.readyMadeMessage.set('Loading the authored schedule…');
+    this.content
+      .getReadyMadeStudyPlan(variant.href)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (template) => {
+          if (
+            template.templateId !== variant.templateId ||
+            template.templateVersion !== variant.templateVersion ||
+            template.pathId !== path.id ||
+            template.durationDays !== variant.durationDays ||
+            template.dailyHours !== variant.dailyHours
+          ) {
+            this.readyMadeStatus.set('error');
+            this.readyMadeMessage.set(
+              'This authored schedule no longer matches the selected catalog version. Reload the catalog.',
+            );
+            return;
+          }
+          const available = new Set(
+            this.availableDocuments().map((document) => document.canonicalContentId ?? document.id),
+          );
+          const unavailable = template.references.filter(
+            (reference) => !available.has(reference.contentId),
+          );
+          if (unavailable.length) {
+            this.readyMadeStatus.set('ready');
+            this.readyMadeMessage.set(
+              `${unavailable.length} of ${template.references.length} referenced items are unavailable with your current access. The authored schedule was not changed or applied.`,
+            );
+            return;
+          }
+          try {
+            const snapshot = readyMadePlan(template);
+            this.draft.set({
+              schemaVersion: 'study-plan-local/v1',
+              revision: 0,
+              goal: path.title,
+              rankingVersion: template.provenance.rankingVersion,
+              catalogVersion: template.provenance.catalogVersion,
+              snapshot,
+              completedIds: [],
+              shiftedDays: 0,
+              history: [],
+              readyMade: {
+                templateId: template.templateId,
+                templateVersion: template.templateVersion,
+                templateSha256: variant.sha256,
+                pathId: template.pathId,
+                pickerCatalogVersion: this.readyMadeCatalog()!.catalogVersion,
+                blueprintVersion: template.provenance.blueprintVersion,
+                sourceContentVersion: template.provenance.sourceContentVersion,
+                adapterVersion: 'ready-made-to-study-plan/v1',
+              },
+            });
+            this.readyMadeStatus.set('ready');
+            this.readyMadeMessage.set(
+              'Authored schedule loaded for review. Your account changes only when you save.',
+            );
+            this.draftDialog?.nativeElement.showModal?.();
+          } catch {
+            this.readyMadeStatus.set('error');
+            this.readyMadeMessage.set(
+              'This authored schedule could not be read. Your current selections are unchanged.',
+            );
+          }
+        },
+        error: (error: { status?: number }) => {
+          this.readyMadeStatus.set('ready');
+          this.readyMadeMessage.set(
+            error.status === 401
+              ? 'Sign in to open this authored schedule.'
+              : error.status === 403
+                ? 'This authored schedule is unavailable with your current access.'
+                : error.status === 404
+                  ? 'This authored schedule is no longer in the selected catalog version.'
+                  : 'The authored schedule could not be loaded. Try again; your current selections are unchanged.',
+          );
+        },
+      });
   }
   protected readonly paths: ContentPath[] = ['learn', 'grow', 'look-ahead'];
   protected readonly days = signal(30);
@@ -402,22 +998,29 @@ export class StudyPlanPage implements OnInit {
         ].map((item) => [item.id, item]),
       ).values(),
     ];
+    // Keep every interval in the queue and saved schedule, but show only one
+    // recall for a source already recommended or recorded on this study day.
+    const recalledSources = new Set(
+      [...queue.selected, ...recorded].filter(isStudyReview).map((item) => this.sourceId(item)),
+    );
     return [
       {
         id: 'recall',
         title: 'Recall first',
-        assignments: queue.selected.filter((item) => item.kind === 'review'),
+        assignments: queue.selected.filter(isStudyReview),
       },
       {
         id: 'current',
         title: 'Continue learning',
-        assignments: queue.selected.filter((item) => item.kind !== 'review'),
+        assignments: queue.selected.filter((item) => !isStudyReview(item)),
       },
       { id: 'recorded', title: 'Recorded today', assignments: recorded },
       {
         id: 'unfinished',
         title: 'Work beyond today’s recommendation',
-        assignments: queue.deferred,
+        assignments: queue.deferred.filter(
+          (item) => !isStudyReview(item) || !recalledSources.has(this.sourceId(item)),
+        ),
       },
     ].filter((section) => section.assignments.length > 0);
   });
@@ -436,10 +1039,13 @@ export class StudyPlanPage implements OnInit {
   protected readonly weekAllocation = computed(() => {
     const assignments = this.plan()?.weeks[0]?.days.flatMap(({ assignments }) => assignments) ?? [];
     const understand = assignments
-      .filter(({ activity }) => activity === 'Understand' || activity === 'Refresh')
+      .filter(
+        (item) =>
+          !isStudyReview(item) && (item.activity === 'Understand' || item.activity === 'Refresh'),
+      )
       .reduce((total, item) => total + item.minutes, 0);
     const recall = assignments
-      .filter(({ kind }) => kind === 'review')
+      .filter(isStudyReview)
       .reduce((total, item) => total + item.minutes, 0);
     const total = assignments.reduce((sum, item) => sum + item.minutes, 0);
     return {
@@ -453,6 +1059,7 @@ export class StudyPlanPage implements OnInit {
   });
 
   ngOnInit(): void {
+    this.destroyRef.onDestroy(() => this.draftResizeObserver?.disconnect());
     this.restore();
     this.browserPlan = this.saved();
     this.importAvailable.set(!!this.browserPlan);
@@ -461,6 +1068,7 @@ export class StudyPlanPage implements OnInit {
     void this.initializeAccount();
     this.loadContent();
     this.loadRanking();
+    this.loadReadyMadeCatalog();
     this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const days = Number(params.get('days'));
       const hours = Number(params.get('hours'));
@@ -715,22 +1323,33 @@ export class StudyPlanPage implements OnInit {
       )
     )
       return 'Currently unavailable with your access. Your history is preserved.';
-    if (assignment.requiredSessionId) {
-      const original = this.plan()
-        ?.days.flatMap((d) => d.assignments)
-        .find((a) => a.id === assignment.requiredSessionId);
-      const attempted =
-        original?.timebox && !!this.saved()?.sessionOutcomes?.[assignment.requiredSessionId];
-      if (!attempted && !this.completedIds().has(this.sourceId(assignment)))
+    const requiredSessions = requiredStudySessionIds(assignment);
+    if (requiredSessions.length) {
+      const scheduled = this.plan()?.days.flatMap((day) => day.assignments) ?? [];
+      const incomplete = requiredSessions.some((requiredId) => {
+        return !studySessionDependencySatisfied(
+          requiredId,
+          scheduled,
+          this.completedIds(),
+          this.saved()?.sessionOutcomes ?? {},
+        );
+      });
+      if (incomplete)
         return 'Record the earlier attempt or complete the original learning session before this revisit.';
     }
     if (
-      assignment.kind === 'review' &&
-      !assignment.requiredSessionId &&
+      isStudyReview(assignment) &&
+      assignment.reviewBasis !== 'declared-familiarity' &&
+      !requiredSessions.length &&
       !this.completedIds().has(this.sourceId(assignment))
     )
       return 'Complete the original session before starting this recall.';
-    if ((assignment.prerequisiteIds ?? []).some((id) => !this.completedIds().has(id)))
+    const assumedPrerequisites = assumedStudyPrerequisiteIds(this.plan());
+    if (
+      (assignment.prerequisiteIds ?? []).some(
+        (id) => !this.completedIds().has(id) && !assumedPrerequisites.has(id),
+      )
+    )
       return 'Complete the linked foundation lessons before starting this session.';
     return '';
   }
@@ -858,7 +1477,7 @@ export class StudyPlanPage implements OnInit {
     const completedIds = new Set(saved.completedIds);
     if (completedIds.has(assignment.id)) completedIds.delete(assignment.id);
     else completedIds.add(assignment.id);
-    if (assignment.kind === 'new' && assignment.sourceContentId && assignment.timebox === false) {
+    if (assignment.kind === 'new' && assignment.sourceContentId && !assignment.timebox) {
       if (completedIds.has(assignment.id)) completedIds.add(assignment.sourceContentId);
       else completedIds.delete(assignment.sourceContentId);
     }
@@ -905,6 +1524,11 @@ export class StudyPlanPage implements OnInit {
     const preview = this.recoveryPreview();
     const saved = this.saved();
     if (!preview || !saved || this.editsLocked()) return;
+    if (this.adjustmentStale()) {
+      this.status.set('Your plan changed. Review a fresh adjustment before applying it.');
+      return;
+    }
+    const isAdjustment = !!this.adjustmentReview();
     const metadata: RecoveryMetadata = {
       strategy: 'fixed-window',
       elapsedDays: preview.currentDay - 1,
@@ -939,15 +1563,33 @@ export class StudyPlanPage implements OnInit {
     };
     if (this.accountMode()) {
       const result = await this.accountStore.save(draft, 'recovery', metadata);
-      if (!result) return;
+      if (!result) {
+        if (isAdjustment && this.accountStore.errorStatus() === 409)
+          this.adjustmentConflict.set(true);
+        return;
+      }
+      this.adjustmentReview.set(null);
       this.acceptAccountPlan(result);
     } else {
+      if (isAdjustment) {
+        try {
+          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(draft));
+        } catch {
+          this.status.set(
+            'The adjustment could not be saved. Your current plan and proposal are preserved.',
+          );
+          return;
+        }
+      }
+      this.adjustmentReview.set(null);
       this.saved.set(draft);
-      this.persist(
-        'Recovery applied. Your deadline and daily budget are unchanged; deferred sessions are listed below.',
-      );
+      if (!isAdjustment)
+        this.persist(
+          'Recovery applied. Your deadline and daily budget are unchanged; deferred sessions are listed below.',
+        );
     }
     this.closeRecovery();
+    if (isAdjustment) this.announceAdjustment('Plan updated. Your adjustment is saved.');
   }
   protected shiftSchedule(): void {
     if (this.editsLocked()) return;
@@ -1052,11 +1694,19 @@ export class StudyPlanPage implements OnInit {
     const active = this.accountStore.active();
     const requested = this.route.snapshot.queryParamMap.get('plan');
     const match = this.accountStore.plans().find((plan) => plan.planId === requested);
-    if (match && match.planId !== active?.planId) await this.openAccountPlan(match.planId);
-    else if (active) this.acceptAccountPlan(active);
-    else if (this.accountStore.plans()[0]) {
-      await this.openAccountPlan((match ?? this.accountStore.plans()[0]).planId);
-    }
+    if (match) {
+      if (match.planId === active?.planId) this.acceptAccountPlan(active);
+      else await this.openAccountPlan(match.planId);
+    } else if (requested) {
+      this.accountStore.error.set('This plan is unavailable in your account.');
+    } else if (this.accountStore.plans().length > 1) {
+      await this.showAllPlans();
+    } else if (this.accountStore.plans()[0]) {
+      const only = this.accountStore.plans()[0];
+      if (active?.planId === only.planId && active.revision === only.revision)
+        this.acceptAccountPlan(active);
+      else await this.openAccountPlan(only.planId);
+    } else this.accountStore.newPlan();
   }
   protected async logout(): Promise<void> {
     if (await this.accountStore.logout()) {
@@ -1079,12 +1729,25 @@ export class StudyPlanPage implements OnInit {
   }
   protected newAccountPlan(): void {
     if (this.editsLocked()) return;
+    this.dashboardVisible.set(false);
+    if (this.saved()) {
+      const setup = this.creationSetup;
+      this.goal.set(setup?.goal ?? 'Build reliable engineering foundations');
+      this.days.set(setup?.days ?? 30);
+      this.dailyHours.set(setup?.hours ?? 1);
+      this.goalType.set(setup?.type ?? 'interview');
+      this.familiarity.set({ ...(setup?.familiarity ?? {}) });
+      this.selectedTopicIds.set(new Set(setup?.topics ?? []));
+      this.selectedPresetId.set(setup?.preset ?? '');
+    }
     this.accountStore.newPlan();
     this.saved.set(null);
     this.selectedDay.set(1);
+    void this.router.navigate(['/study-plan'], { queryParams: { create: 1 } });
     this.status.set('Choose the focus for a new plan. Progress in your other plans is unchanged.');
   }
   protected async openAccountPlan(planId: string): Promise<void> {
+    this.rememberCreationSetup();
     const result = await this.accountStore.open(planId);
     if (result) this.acceptAccountPlan(result);
   }
@@ -1097,6 +1760,8 @@ export class StudyPlanPage implements OnInit {
     }
   }
   private acceptAccountPlan(plan: AccountPlan): void {
+    this.dashboardVisible.set(false);
+    this.adjustmentConflict.set(false);
     const saved = savedAccountPlan(plan);
     this.saved.set(saved);
     if (this.route.snapshot.queryParamMap.has('create')) {
@@ -1129,10 +1794,20 @@ export class StudyPlanPage implements OnInit {
     if (result) this.acceptAccountPlan(result);
   }
   protected async retryAccountSave(): Promise<void> {
+    if (
+      this.adjustmentReview() &&
+      (this.adjustmentStale() || this.accountStore.errorStatus() === 409)
+    )
+      return;
+    const isAdjustment = !!this.adjustmentReview();
     const result = await this.accountStore.retry();
+    if (!result && isAdjustment && this.accountStore.errorStatus() === 409)
+      this.adjustmentConflict.set(true);
     if (result) {
+      this.adjustmentReview.set(null);
       this.acceptAccountPlan(result);
       this.closeDraft();
+      if (isAdjustment) this.announceAdjustment('Plan updated. Your adjustment is saved.');
     }
   }
   protected async reloadAccountPlan(): Promise<void> {
