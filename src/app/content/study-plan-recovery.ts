@@ -1,4 +1,9 @@
 import { StudyPlan, StudyPlanAssignment, StudyPlanDay } from './study-plan';
+import {
+  assumedStudyPrerequisiteIds,
+  isStudyReview,
+  requiredStudySessionIds,
+} from './study-plan-dependencies';
 
 export interface StudyPlanRecoveryProgress {
   /** First day available for recovery, 1-based. days + 1 means the window has ended. */
@@ -51,6 +56,13 @@ export function previewStudyPlanRecovery(
   if (!Number.isFinite(budget) || budget <= 0 || plan.days.length !== plan.config.days) {
     throw new Error('Recovery requires a valid fixed plan window and daily budget.');
   }
+  plan = structuredClone(plan);
+  const assumedPrerequisites = assumedStudyPrerequisiteIds(plan);
+  const dayBudget = (day: number) =>
+    Math.max(
+      0,
+      budget - (plan.template?.days.find((entry) => entry.day === day)?.recoveryMinutes ?? 0),
+    );
   const completedAssignments = new Set(progress.completedAssignmentIds ?? []);
   const completedContent = new Set([
     ...(plan.config.completedContentIds ?? []),
@@ -78,7 +90,7 @@ export function previewStudyPlanRecovery(
       else entries.push({ assignment: { ...assignment }, originalDay: day.day });
     }
     const retainedMinutes = retained.reduce((sum, item) => sum + item.minutes, 0);
-    if (day.day >= currentDay && retainedMinutes > budget) {
+    if (day.day >= currentDay && retainedMinutes > dayBudget(day.day)) {
       throw new Error('Recorded work already exceeds this day’s budget; it cannot be moved.');
     }
     return { ...day, assignments: retained };
@@ -86,7 +98,7 @@ export function previewStudyPlanRecovery(
   for (const assignment of plan.futureReviews ?? []) {
     if (seenIds.has(assignment.id)) continue;
     if (
-      assignment.kind !== 'review' ||
+      !isStudyReview(assignment) ||
       !Number.isFinite(assignment.minutes) ||
       assignment.minutes <= 0
     ) {
@@ -109,7 +121,8 @@ export function previewStudyPlanRecovery(
     }
     seenIds.add(assignment.id);
     if (originalDay !== null) originalSessionDays.set(assignment.id, originalDay);
-    if (!recorded(assignment)) entries.push({ assignment: { ...assignment }, originalDay });
+    if (!recorded(assignment))
+      entries.push({ assignment: structuredClone(assignment), originalDay });
   }
 
   const sessionDays = new Map<string, number>();
@@ -117,7 +130,7 @@ export function previewStudyPlanRecovery(
   const lastReviewDay = new Map<string, number>();
   const remember = (item: StudyPlanAssignment, day: number) => {
     sessionDays.set(item.id, day);
-    if (item.kind === 'review') {
+    if (isStudyReview(item)) {
       lastReviewDay.set(sourceId(item), day);
     } else if (
       !item.timebox &&
@@ -135,12 +148,20 @@ export function previewStudyPlanRecovery(
   // retrieval timing. Known recorded sessions are seeded as their day is visited.
   const moved: StudyPlanRecoveryPreview['moved'] = [];
   const pending = [...entries];
+  const reviewParentId = (item: StudyPlanAssignment) =>
+    item.reviewSourceSessionId ??
+    item.requiredSessionId ??
+    requiredStudySessionIds(item)[0] ??
+    sourceId(item);
   const minimumDay = (entry: RecoveryEntry): number => {
     const item = entry.assignment;
     let earliest = Math.max(currentDay, entry.originalDay ?? item.reviewDueDay ?? currentDay);
-    if (item.kind === 'review') {
-      const parentId = item.requiredSessionId ?? sourceId(item);
-      const parentDay = sessionDays.get(parentId) ?? contentDays.get(sourceId(item));
+    if (isStudyReview(item)) {
+      const parentId = reviewParentId(item);
+      const parentDay =
+        item.reviewBasis === 'declared-familiarity'
+          ? undefined
+          : (sessionDays.get(parentId) ?? contentDays.get(sourceId(item)));
       if (parentDay !== undefined) {
         const originalParentDay = originalSessionDays.get(parentId) ?? item.reviewFromDay;
         const originalDueDay = item.reviewDueDay ?? entry.originalDay;
@@ -155,30 +176,35 @@ export function previewStudyPlanRecovery(
     return earliest;
   };
   const dependenciesReady = (item: StudyPlanAssignment): boolean =>
-    (item.prerequisiteIds ?? []).every((id) => contentDays.has(id));
-  const sessionReady = (item: StudyPlanAssignment): boolean =>
-    item.kind !== 'review' ||
-    (item.requiredSessionId
-      ? sessionDays.has(item.requiredSessionId)
-      : sessionDays.has(sourceId(item)) || contentDays.has(sourceId(item)));
+    (item.prerequisiteIds ?? []).every((id) => contentDays.has(id) || assumedPrerequisites.has(id));
+  const sessionReady = (item: StudyPlanAssignment): boolean => {
+    const required = requiredStudySessionIds(item);
+    if (!required.every((id) => sessionDays.has(id))) return false;
+    return (
+      !isStudyReview(item) ||
+      item.reviewBasis === 'declared-familiarity' ||
+      required.length > 0 ||
+      sessionDays.has(sourceId(item)) ||
+      contentDays.has(sourceId(item))
+    );
+  };
 
   for (const day of days) {
     // Retained recorded work can unlock its dependent work on this day, but cannot
     // retroactively unlock earlier days when a learner completed ahead of schedule.
     for (const item of day.assignments) remember(item, day.day);
     if (day.day < currentDay) continue;
-    let left = budget - day.assignments.reduce((sum, item) => sum + item.minutes, 0);
+    let left = dayBudget(day.day) - day.assignments.reduce((sum, item) => sum + item.minutes, 0);
     for (let index = 0; index < pending.length;) {
       const entry = pending[index];
       const item = entry.assignment;
       const earlierReviewPending =
-        item.kind === 'review' &&
+        isStudyReview(item) &&
         pending
           .slice(0, index)
           .some(
             (earlier) =>
-              earlier.assignment.kind === 'review' &&
-              sourceId(earlier.assignment) === sourceId(item),
+              isStudyReview(earlier.assignment) && sourceId(earlier.assignment) === sourceId(item),
           );
       if (
         item.minutes > left ||
@@ -191,8 +217,8 @@ export function previewStudyPlanRecovery(
         continue;
       }
       const scheduled = { ...item };
-      if (scheduled.kind === 'review') {
-        const parentDay = sessionDays.get(scheduled.requiredSessionId ?? sourceId(scheduled));
+      if (isStudyReview(scheduled)) {
+        const parentDay = sessionDays.get(reviewParentId(scheduled));
         if (scheduled.reviewFromDay !== undefined && parentDay !== undefined)
           scheduled.reviewFromDay = parentDay;
         scheduled.reviewDueDay = minimumDay(entry);
@@ -242,10 +268,10 @@ export function previewStudyPlanRecovery(
   const uniqueNewItems = new Set(assignments.filter((item) => item.kind === 'new').map(sourceId))
     .size;
   const futureReviews = deferred
-    .filter(({ assignment }) => assignment.kind === 'review')
+    .filter(({ assignment }) => isStudyReview(assignment))
     .map((entry) => {
       const assignment = entry.assignment;
-      const parentDay = sessionDays.get(assignment.requiredSessionId ?? sourceId(assignment));
+      const parentDay = sessionDays.get(reviewParentId(assignment));
       return {
         ...assignment,
         reviewDueDay: minimumDay(entry),

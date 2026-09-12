@@ -1,4 +1,5 @@
 import { access, readdir, readFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { basename, dirname, extname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -80,6 +81,243 @@ async function filesWithExtension(directory, extension) {
 
 function requireValue(condition, message) {
   if (!condition) throw new Error(message);
+}
+
+function validateReadyMadeSession(session, references, seenSessionIds, label) {
+  const kinds = new Set(['new', 'review', 'practice', 'recovery']);
+  const activities = new Set([
+    'Understand',
+    'Refresh',
+    'Practice',
+    'Attempt',
+    'Apply',
+    'Rehearse',
+    'Recall',
+    'Recover',
+  ]);
+  requireValue(session?.id && !seenSessionIds.has(session.id), `${label}: invalid session id`);
+  requireValue(kinds.has(session.kind), `${label}: invalid session kind ${session.kind}`);
+  requireValue(activities.has(session.activity), `${label}: invalid activity ${session.activity}`);
+  requireValue(
+    Number.isInteger(session.minutes) && session.minutes > 0,
+    `${label}: invalid minutes`,
+  );
+  requireValue(
+    typeof session.instructions === 'string' && session.instructions.trim(),
+    `${label}: instructions are required`,
+  );
+  requireValue(
+    Array.isArray(session.prerequisiteIds) && Array.isArray(session.requiredSessionIds),
+    `${label}: invalid prerequisites`,
+  );
+  requireValue(
+    session.requiredSessionIds.every((id) => seenSessionIds.has(id)),
+    `${label}: required sessions must precede ${session.id}`,
+  );
+  if (session.kind === 'recovery') {
+    requireValue(
+      session.contentId === null && session.activity === 'Recover',
+      `${label}: recovery must be non-completion time`,
+    );
+  } else {
+    requireValue(
+      typeof session.contentId === 'string' && references.has(session.contentId),
+      `${label}: session ${session.id} has an unknown content reference`,
+    );
+  }
+  if (session.kind === 'review') {
+    requireValue(
+      ['declared-familiarity', 'scheduled-session'].includes(session.review?.basis),
+      `${label}: review ${session.id} has invalid basis`,
+    );
+    requireValue(
+      Number.isInteger(session.review?.dueDay) && session.review.dueDay > 0,
+      `${label}: review ${session.id} has invalid due day`,
+    );
+    if (session.review.basis === 'scheduled-session') {
+      requireValue(
+        seenSessionIds.has(session.review.sourceSessionId) &&
+          Number.isInteger(session.review.sourceDay) &&
+          session.review.sourceDay > 0,
+        `${label}: review ${session.id} has an invalid source session`,
+      );
+    } else {
+      requireValue(
+        session.review.sourceSessionId === null && session.review.sourceDay === null,
+        `${label}: familiarity review ${session.id} must not claim completed work`,
+      );
+    }
+  }
+  seenSessionIds.add(session.id);
+}
+
+function validateReadyMadeTemplate(template, label) {
+  requireValue(template?.schemaVersion === 'study-plan-template/v1', `${label}: invalid schema`);
+  requireValue(
+    template.templateId && template.templateVersion && template.pathId,
+    `${label}: incomplete template identity`,
+  );
+  requireValue(
+    Number.isInteger(template.durationDays) && template.durationDays > 0,
+    `${label}: invalid duration`,
+  );
+  requireValue(
+    Number.isInteger(template.dailyHours) && template.dailyHours > 0,
+    `${label}: invalid daily hours`,
+  );
+  requireValue(
+    template.availabilityUnit === 'hours-per-day' &&
+      template.provenance?.algorithmVersion === 'ready-made-schedule/v1',
+    `${label}: unsupported schedule contract`,
+  );
+  requireValue(Array.isArray(template.references), `${label}: references must be an array`);
+  const references = new Map();
+  for (const reference of template.references) {
+    requireValue(
+      reference?.contentId &&
+        reference.topicId &&
+        reference.title &&
+        reference.courseTitle &&
+        Array.isArray(reference.route) &&
+        Array.isArray(reference.prerequisiteIds) &&
+        !references.has(reference.contentId),
+      `${label}: invalid or duplicate content reference`,
+    );
+    references.set(reference.contentId, reference);
+  }
+  requireValue(
+    Array.isArray(template.days) && template.days.length === template.durationDays,
+    `${label}: days must cover the complete preparation window`,
+  );
+  const seenSessionIds = new Set();
+  let scheduledMinutes = 0;
+  let unallocatedMinutes = 0;
+  template.days.forEach((day, index) => {
+    const dayLabel = `${label} day ${index + 1}`;
+    requireValue(day?.day === index + 1 && Array.isArray(day.sessions), `${dayLabel}: invalid day`);
+    requireValue(
+      ['scheduledMinutes', 'focusedMinutes', 'recoveryMinutes', 'unallocatedMinutes'].every(
+        (field) => Number.isInteger(day[field]) && day[field] >= 0,
+      ),
+      `${dayLabel}: minute totals must be non-negative integers`,
+    );
+    const sessionMinutes = day.sessions.reduce((sum, session) => sum + session.minutes, 0);
+    const recoveryMinutes = day.sessions
+      .filter((session) => session.kind === 'recovery')
+      .reduce((sum, session) => sum + session.minutes, 0);
+    requireValue(
+      sessionMinutes === day.scheduledMinutes &&
+        recoveryMinutes === day.recoveryMinutes &&
+        day.focusedMinutes + day.recoveryMinutes === day.scheduledMinutes &&
+        day.scheduledMinutes + day.unallocatedMinutes === template.dailyHours * 60,
+      `${dayLabel}: minute totals do not match availability`,
+    );
+    for (const session of day.sessions)
+      validateReadyMadeSession(session, references, seenSessionIds, dayLabel);
+    scheduledMinutes += day.scheduledMinutes;
+    unallocatedMinutes += day.unallocatedMinutes;
+  });
+  requireValue(Array.isArray(template.futureReviews), `${label}: futureReviews must be an array`);
+  for (const session of template.futureReviews) {
+    requireValue(session.kind === 'review', `${label}: future work must be a review`);
+    validateReadyMadeSession(session, references, seenSessionIds, `${label} futureReviews`);
+    requireValue(
+      session.review.dueDay > template.durationDays,
+      `${label}: future review must fall after the plan window`,
+    );
+  }
+  requireValue(
+    template.coverage?.scheduledMinutes === scheduledMinutes &&
+      template.coverage?.unallocatedMinutes === unallocatedMinutes &&
+      Number.isInteger(template.coverage?.selectedContentCount) &&
+      Number.isInteger(template.coverage?.availableContentCount) &&
+      template.coverage.selectedContentCount <= template.coverage.availableContentCount &&
+      Array.isArray(template.coverage?.uncoveredContentIds) &&
+      Array.isArray(template.coverage?.uncoveredScope),
+    `${label}: coverage totals are invalid`,
+  );
+}
+
+async function validateReadyMadeCatalog(files) {
+  const indexFile = files.find((file) => relative(contentRoot, file) === 'study-plans/index.json');
+  const templateFiles = files.filter((file) =>
+    /^study-plans\/templates\/[a-z0-9-]+\.json$/.test(relative(contentRoot, file)),
+  );
+  if (!indexFile && templateFiles.length === 0) return 0;
+  requireValue(indexFile, 'study-plans: templates require index.json');
+  const catalog = JSON.parse(await readFile(indexFile, 'utf8'));
+  requireValue(
+    catalog?.schemaVersion === 'study-plan-picker/v1',
+    'study-plans/index.json: invalid schema',
+  );
+  requireValue(
+    catalog.catalogVersion &&
+      catalog.availabilityUnit === 'hours-per-day' &&
+      Array.isArray(catalog.durationOptions) &&
+      Array.isArray(catalog.paths) &&
+      Array.isArray(catalog.pendingOptions),
+    'study-plans/index.json: incomplete picker contract',
+  );
+  const templates = new Map();
+  const templateHashes = new Map();
+  for (const file of templateFiles) {
+    const label = relative(contentRoot, file);
+    const bytes = await readFile(file);
+    const template = JSON.parse(bytes.toString('utf8'));
+    validateReadyMadeTemplate(template, label);
+    requireValue(!templates.has(template.templateId), `${label}: duplicate template id`);
+    requireValue(
+      label === `study-plans/templates/${template.templateId}.json`,
+      `${label}: filename must match template id`,
+    );
+    templates.set(template.templateId, template);
+    templateHashes.set(template.templateId, createHash('sha256').update(bytes).digest('hex'));
+  }
+  const seenPaths = new Set();
+  const seenVariants = new Set();
+  for (const path of catalog.paths) {
+    requireValue(
+      path?.id && path.title && !seenPaths.has(path.id),
+      'study-plans/index.json: invalid path',
+    );
+    seenPaths.add(path.id);
+    requireValue(
+      Array.isArray(path.startingKnowledge) &&
+        Array.isArray(path.outcomes) &&
+        Array.isArray(path.uncoveredScope) &&
+        Array.isArray(path.topics) &&
+        Array.isArray(path.variants) &&
+        path.variants.length > 0,
+      `study-plans/index.json: incomplete path ${path.id}`,
+    );
+    for (const variant of path.variants) {
+      const template = templates.get(variant.templateId);
+      requireValue(
+        template &&
+          !seenVariants.has(variant.templateId) &&
+          variant.href === `/content/study-plans/templates/${variant.templateId}.json` &&
+          variant.templateVersion === template.templateVersion &&
+          variant.sha256 === templateHashes.get(variant.templateId) &&
+          variant.durationDays === template.durationDays &&
+          variant.dailyHours === template.dailyHours &&
+          variant.scheduledMinutes === template.coverage.scheduledMinutes &&
+          variant.selectedContentCount === template.coverage.selectedContentCount &&
+          variant.availableContentCount === template.coverage.availableContentCount &&
+          template.pathId === path.id,
+        `study-plans/index.json: variant ${variant.templateId} does not match its template`,
+      );
+      seenVariants.add(variant.templateId);
+    }
+    requireValue(
+      path.variants.some((variant) => variant.templateId === path.recommendedVariantId),
+      `study-plans/index.json: invalid recommended variant for ${path.id}`,
+    );
+  }
+  requireValue(
+    seenVariants.size === templates.size,
+    'study-plans/index.json: every template must appear exactly once',
+  );
+  return templates.size;
 }
 
 function navigationContexts(problem) {
@@ -566,6 +804,15 @@ try {
 }
 
 const contentFiles = await filesWithExtension(contentRoot, '.json');
+for (const file of contentFiles) {
+  const label = relative(contentRoot, file);
+  if (!label.startsWith('study-plans/')) continue;
+  requireValue(
+    label === 'study-plans/index.json' || /^study-plans\/templates\/[a-z0-9-]+\.json$/.test(label),
+    `${label}: unexpected content file`,
+  );
+}
+const readyMadeTemplateCount = await validateReadyMadeCatalog(contentFiles);
 const courseIdsByPath = new Map();
 const catalogItemsByPath = new Map();
 for (const file of contentFiles) {
@@ -598,7 +845,19 @@ for (const file of contentFiles) {
     deliveryPlanCount += 1;
     continue;
   }
-  if (['learn/hands-on-dsa-preparation.json', 'learn/hands-on-dsa-ranking.json', 'learn/hands-on-dsa-ranking-current.json'].includes(label) || label.startsWith('learn/dsa-ranking-releases/')) {
+  if (
+    label === 'study-plans/index.json' ||
+    /^study-plans\/templates\/[a-z0-9-]+\.json$/.test(label)
+  )
+    continue;
+  if (
+    [
+      'learn/hands-on-dsa-preparation.json',
+      'learn/hands-on-dsa-ranking.json',
+      'learn/hands-on-dsa-ranking-current.json',
+    ].includes(label) ||
+    label.startsWith('learn/dsa-ranking-releases/')
+  ) {
     continue;
   }
   if (
@@ -1993,5 +2252,5 @@ for (const { lesson, moduleLabel } of patternLessons) {
 }
 
 console.log(
-  `Validated ${courseCount} course manifest(s), ${questionCount} question(s), ${canonicalDsaProblemCount} canonical DSA problem(s), ${patternLessons.length} versioned pattern lesson(s), ${foundationLessons.length} foundation lesson(s), ${traceProblemCount} trace problem(s), and ${deliveryPlanCount} delivery plan(s).`,
+  `Validated ${courseCount} course manifest(s), ${questionCount} question(s), ${canonicalDsaProblemCount} canonical DSA problem(s), ${patternLessons.length} versioned pattern lesson(s), ${foundationLessons.length} foundation lesson(s), ${traceProblemCount} trace problem(s), ${deliveryPlanCount} delivery plan(s), and ${readyMadeTemplateCount} ready-made study-plan template(s).`,
 );

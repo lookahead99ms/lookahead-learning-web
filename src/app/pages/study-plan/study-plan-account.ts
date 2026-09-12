@@ -21,6 +21,7 @@ export interface SavedPlan {
   attemptedContentIds?: string[];
   needsReviewContentIds?: string[];
   history: { revision: number; changedAt: string; reason: string }[];
+  readyMade?: import('../../content/study-plan-ready-made').ReadyMadePins;
 }
 export interface StudyAccount {
   accountId: string;
@@ -36,6 +37,7 @@ export interface PlanProvenance {
   algorithmVersion: string | null;
   catalogVersion: string | null;
   rankingVersion: string | null;
+  template?: import('../../content/study-plan-ready-made').ReadyMadePins;
 }
 export interface AccountRegistration {
   firstName: string;
@@ -84,6 +86,26 @@ export type PlanActivity =
   | { type: 'setContentCompletion'; canonicalContentId: string; completed: boolean }
   | { type: 'setNote'; canonicalContentId: string; text: string };
 export interface PlanSummary {
+  card?: {
+    schemaVersion: 'plan-card/v1';
+    metadataStatus: 'available' | 'unavailable';
+    selectedTopicIds: string[] | null;
+    durationDays: number | null;
+    configuredDailyMinutes: number | null;
+    completedSessionCount: number | null;
+    totalSessionCount: number | null;
+    nextScheduledActivity: {
+      assignmentId: string;
+      sourceContentId: string;
+      title: string;
+      kind: string;
+      minutes: number;
+      route: string[];
+      studyDay: number;
+    } | null;
+    lifecycleState: null;
+    reservation: null;
+  };
   planId: string;
   goal: string;
   revision: number;
@@ -96,6 +118,7 @@ interface CatalogPins {
   algorithmVersions: string[];
   rankingVersions: string[];
   topicIds: string[];
+  readyMadePlanPolicies?: string[];
 }
 export const ACCOUNT_FETCH = new InjectionToken<typeof fetch>('Account API transport', {
   providedIn: 'root',
@@ -120,6 +143,7 @@ export class StudyPlanAccount {
   readonly active = signal<AccountPlan | null>(null);
   readonly busy = signal(false);
   readonly error = signal('');
+  readonly errorStatus = signal<number | null>(null);
   readonly sessionExpired = signal(false);
   readonly pending = signal(false);
   readonly catalog = signal<CatalogPins | null>(null);
@@ -196,7 +220,10 @@ export class StudyPlanAccount {
       this.account.set(await this.request<StudyAccount>('/auth/me'));
       await this.loadAccount();
     } catch (error) {
-      if (!(error instanceof AccountApiError && error.status === 401)) this.showError(error);
+      // Only the initial identity check may mean signed out. A later catalog or
+      // plan-list failure must not masquerade as an account with no saved plans.
+      if (this.account() || !(error instanceof AccountApiError && error.status === 401))
+        this.showError(error);
     } finally {
       this.busy.set(false);
     }
@@ -358,6 +385,9 @@ export class StudyPlanAccount {
       algorithmVersion: saved.snapshot.schedulingVersion ?? null,
       catalogVersion: saved.catalogVersion ?? null,
       rankingVersion: saved.rankingVersion ?? null,
+      ...(saved.readyMade
+        ? { origin: 'ready-made-template' as const, template: saved.readyMade }
+        : { origin: 'generated' as const }),
     };
   }
   private async mutate(path: string, body: unknown): Promise<AccountPlan | null> {
@@ -378,6 +408,7 @@ export class StudyPlanAccount {
     if (!mutation || this.busy() || mutation.owner !== this.account()?.accountId) return null;
     this.busy.set(true);
     this.error.set('');
+    this.errorStatus.set(null);
     try {
       await this.refreshCsrf();
       const result = await this.request<AccountPlan>(mutation.path, {
@@ -415,6 +446,7 @@ export class StudyPlanAccount {
     this.mutation = null;
     this.pending.set(false);
     this.error.set('');
+    this.errorStatus.set(null);
   }
   private async refreshCsrf(identity = false): Promise<void> {
     this.csrf = await this.request('/auth/csrf', {}, identity);
@@ -443,6 +475,7 @@ export class StudyPlanAccount {
   }
   private showError(error: unknown, login = false): void {
     const status = error instanceof AccountApiError ? error.status : 0;
+    this.errorStatus.set(status);
     if (status === 401 && !login) this.sessionExpired.set(true);
     this.error.set(
       status === 401
@@ -491,5 +524,6 @@ export function savedAccountPlan(plan: AccountPlan): SavedPlan {
         reason: 'Loaded account plan; prior snapshots are retained by the account service',
       },
     ],
+    ...(plan.provenance.template ? { readyMade: plan.provenance.template } : {}),
   };
 }

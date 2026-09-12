@@ -170,6 +170,10 @@ export interface StudyPlanAssignment {
   timebox?: boolean;
   instructions?: string;
   requiredSessionId?: string;
+  requiredSessionIds?: string[];
+  templateKind?: 'new' | 'review' | 'practice';
+  reviewBasis?: 'declared-familiarity' | 'scheduled-session';
+  reviewSourceSessionId?: string;
   coverageKey?: string;
 }
 
@@ -191,6 +195,7 @@ export interface StudyPlanWeek {
 }
 
 export interface StudyPlan {
+  template?: import('./study-plan-ready-made').ReadyMadeTemplate;
   config: StudyPlanConfig;
   focusedDailyHours: number;
   bufferHours: number;

@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi } from 'vitest';
 import { PatternProblemV1 } from '../../content/content.models';
 import { DsaProblemPilot } from './dsa-problem-pilot';
+import { StudyPlanAccount } from '../../pages/study-plan/study-plan-account';
+import { EXECUTION_FETCH } from '../dsa-run-examples/dsa-execution-client';
 
 @Component({
   imports: [DsaProblemPilot],
@@ -167,6 +169,44 @@ function twoSumProblem(): PatternProblemV1 {
 }
 
 describe('DsaProblemPilot mode tabs', () => {
+  it('keeps author practice disconnected from execution while retaining drafts and references', async () => {
+    const executionFetch = vi.fn();
+    await TestBed.configureTestingModule({
+      imports: [DsaProblemPilot],
+      providers: [
+        {
+          provide: StudyPlanAccount,
+          useValue: {
+            account: signal({ accountId: 'author-fixture', authorPreview: true }),
+            sessionExpired: signal(false),
+          },
+        },
+        { provide: EXECUTION_FETCH, useValue: executionFetch },
+      ],
+    }).compileComponents();
+    const fixture = TestBed.createComponent(DsaProblemPilot);
+    fixture.componentRef.setInput('problem', { ...twoSumProblem(), id: 'algorithmic-two-sum' });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const root = fixture.nativeElement as HTMLElement;
+    const editor = root.querySelector('textarea')!;
+    editor.value = 'my local draft';
+    editor.dispatchEvent(new Event('input'));
+    const language = root.querySelector<HTMLSelectElement>('app-coding-solution-tabs select')!;
+    language.value = 'python';
+    language.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    language.value = 'java';
+    language.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(editor.value).toBe('my local draft');
+    expect(root.querySelector('app-dsa-run-examples')).toBeNull();
+    expect(root.textContent).not.toContain('Run examples');
+    expect(root.textContent).toContain('View solution');
+    expect(root.textContent).toContain('No code runner is enabled');
+    expect(executionFetch).not.toHaveBeenCalled();
+  });
   it('opens Guided practice with the representative late-return fixture', async () => {
     await TestBed.configureTestingModule({ imports: [DsaProblemPilot] }).compileComponents();
     const fixture = TestBed.createComponent(DsaProblemPilot);
@@ -190,8 +230,16 @@ describe('DsaProblemPilot mode tabs', () => {
     const fixture = TestBed.createComponent(DsaProblemPilot);
     const problem = twoSumProblem();
     problem.practice!.checks = [
-      { kind: 'transfer', prompt: 'What changes for streaming input?', expected: 'Retain past state.' },
-      { kind: 'transfer', prompt: 'What changes with a memory bound?', expected: 'Revisit storage.' },
+      {
+        kind: 'transfer',
+        prompt: 'What changes for streaming input?',
+        expected: 'Retain past state.',
+      },
+      {
+        kind: 'transfer',
+        prompt: 'What changes with a memory bound?',
+        expected: 'Revisit storage.',
+      },
     ];
     const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
     try {

@@ -704,4 +704,31 @@ describe('ContentService compact indexes and selected details', () => {
     http.expectNone('/content/../private.json');
     http.verify();
   });
+
+  it('loads and validates the ready-made picker index', () => {
+    const { service, http } = setup();
+    let version = '';
+    service.getReadyMadeStudyPlans().subscribe((catalog) => (version = catalog.catalogVersion));
+    http.expectOne('/content/study-plans/index.json').flush({
+      schemaVersion: 'study-plan-picker/v1',
+      catalogVersion: 'picker-v1',
+      availabilityUnit: 'hours-per-day',
+      durationOptions: [7],
+      paths: [],
+      pendingOptions: [],
+    });
+    expect(version).toBe('picker-v1');
+    http.verify();
+  });
+
+  it('rejects unsafe ready-made template references before issuing a request', () => {
+    const { service, http } = setup();
+    let error: Error | undefined;
+    service
+      .getReadyMadeStudyPlan('/content/study-plans/templates/../private.json')
+      .subscribe({ error: (cause) => (error = cause) });
+    expect(error?.message).toContain('Invalid ready-made plan reference');
+    http.expectNone('/content/study-plans/templates/../private.json');
+    http.verify();
+  });
 });

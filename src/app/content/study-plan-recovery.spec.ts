@@ -61,6 +61,55 @@ function ids(plan: StudyPlan): string[][] {
 }
 
 describe('fixed-window recovery preview', () => {
+  it('waits for every required practice session and does not move a dependent ahead of a missing prerequisite', () => {
+    const dependent = item('practice', 20, {
+      kind: 'review',
+      templateKind: 'practice',
+      activity: 'Practice',
+      sourceContentId: 'content',
+      requiredSessionId: 'first',
+      requiredSessionIds: ['first', 'second'],
+    });
+    const original = planFor([[item('first', 60)], [item('second', 60)], [dependent], []]);
+    const preview = previewStudyPlanRecovery(original, { currentDay: 2 });
+    expect(ids(preview.snapshot)).toEqual([[], ['first'], ['second'], ['practice']]);
+    expect(preview.deferred).toEqual([]);
+    expect(preview.snapshot.days[3].assignments[0].requiredSessionIds).toEqual(['first', 'second']);
+    const missing = planFor([[item('first', 20)], [dependent]]);
+    const blocked = previewStudyPlanRecovery(missing, {
+      currentDay: 2,
+      completedContentIds: ['content'],
+    });
+    expect(ids(blocked.snapshot)).toEqual([[], ['first']]);
+    expect(blocked.deferred[0]).toMatchObject({
+      assignment: { id: 'practice' },
+      reason: 'review-session',
+    });
+    expect(blocked.snapshot.futureReviews).toEqual([]);
+  });
+
+  it('uses the explicit review source for spacing after all required sessions have been scheduled', () => {
+    const review = item('recall', 20, {
+      kind: 'review',
+      templateKind: 'review',
+      sourceContentId: 'content',
+      requiredSessionId: 'first',
+      requiredSessionIds: ['first', 'second'],
+      reviewBasis: 'scheduled-session',
+      reviewSourceSessionId: 'second',
+      reviewFromDay: 2,
+      reviewDueDay: 4,
+    });
+    const original = planFor([[item('first', 60)], [item('second', 60)], [], [review], []]);
+    const preview = previewStudyPlanRecovery(original, { currentDay: 2 });
+    expect(ids(preview.snapshot)).toEqual([[], ['first'], ['second'], [], ['recall']]);
+    expect(preview.snapshot.days[4].assignments[0]).toMatchObject({
+      reviewFromDay: 3,
+      reviewDueDay: 5,
+      requiredSessionIds: ['first', 'second'],
+    });
+  });
+
   it('fits missed work into remaining days and discloses displaced work without changing the window or input', () => {
     const original = planFor([[item('a', 60)], [item('b', 60)], [item('c', 60)]]);
     const before = JSON.stringify(original);

@@ -1,0 +1,110 @@
+<details #panel class="tutor-panel" (toggle)="expanded.set(panel.open)">
+  <summary [attr.aria-expanded]="expanded()">
+    <span>{{ expanded() ? 'Hide tutor' : 'Discuss your attempt' }}</span
+    ><span class="preview-label">Scripted tutor preview</span>
+  </summary>
+  <div class="tutor-content">
+    <p class="disclosure">
+      Two Sum only. Replies are scripted examples, not live Codex or an analysis of arbitrary code.
+      Nothing is sent to a provider, compiled, or run.
+    </p>
+    <p class="session-note">
+      This conversation stays on this page and clears when you leave the problem or reload. Up to
+      {{ limits.exchanges }} exchanges; your editor is never changed by the tutor.
+    </p>
+    @if (exchanges().length) {
+      <ol class="exchanges" aria-label="Tutor conversation">
+        @for (exchange of exchanges(); track exchange.snapshot.id) {
+          <li>
+            <p class="question"><strong>You</strong>{{ exchange.question }}</p>
+            <p class="response"><strong>Scripted example</strong>{{ exchange.response }}</p>
+            <p class="snapshot-status" [class.stale]="isStale(exchange.snapshot)">
+              {{ exchange.snapshot.problem.title }} · {{ exchange.snapshot.language }} · Snapshot
+              {{ exchange.snapshot.id }} —
+              {{
+                isStale(exchange.snapshot)
+                  ? 'Editor changed since submission. This response belongs to the earlier snapshot.'
+                  : 'Matches the current editor.'
+              }}
+            </p>
+            <details class="snapshot">
+              <summary>View submitted snapshot {{ exchange.snapshot.id }}</summary>
+              <p>{{ exchange.snapshot.problem.prompt }}</p>
+              <pre><code>{{ exchange.snapshot.code }}</code></pre>
+            </details>
+          </li>
+        }
+      </ol>
+    }
+    <form (submit)="submit($event)" [attr.aria-busy]="pending()">
+      <label
+        >Help with<select [value]="help()" (change)="setHelp($any($event.target).value)">
+          @for (option of helpOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select></label
+      >
+      @if (help() === 'deeper') {
+        <p class="deeper-note">
+          Submitting with this choice reveals a worked approach. It does not open or replace the
+          canonical reference.
+        </p>
+      }
+      <label
+        >Your question<textarea
+          rows="3"
+          [maxLength]="limits.question"
+          [value]="question()"
+          (input)="question.set($any($event.target).value)"
+          placeholder="Explain your approach or ask about a line in your attempt."
+        ></textarea>
+      </label>
+      <p class="snapshot-status">
+        Next submission: {{ problem().title }} · {{ language() }} · {{ code().length }} /
+        {{ limits.code }} code characters. {{ exchanges().length }} /
+        {{ limits.exchanges }} exchanges used.
+      </p>
+      @if (code().length > limits.code) {
+        <p role="alert">
+          The editor exceeds the preview's {{ limits.code }}-character limit. Shorten it before
+          submitting; no code will be truncated.
+        </p>
+      }
+      @if (error()) {
+        <p class="error" role="alert">{{ error() }}</p>
+      }
+      <div class="tutor-actions">
+        <button
+          class="primary"
+          type="submit"
+          [disabled]="
+            pending() ||
+            !question().trim() ||
+            code().length > limits.code ||
+            exchanges().length >= limits.exchanges
+          "
+        >
+          {{ pending() ? 'Preparing scripted reply…' : 'Submit snapshot and question' }}
+        </button>
+        <button
+          type="button"
+          (click)="clearConversation()"
+          [disabled]="!exchanges().length && !pending() && !error()"
+        >
+          Clear conversation
+        </button>
+      </div>
+      <p class="session-note" role="status">
+        {{
+          pending()
+            ? 'Preparing a scripted example for the submitted snapshot.'
+            : exchanges().length
+              ? 'Scripted reply ' +
+                exchanges().length +
+                ' available. No code was executed or validated.'
+              : 'Submit explicitly to receive a scripted example.'
+        }}
+      </p>
+    </form>
+  </div>
+</details>

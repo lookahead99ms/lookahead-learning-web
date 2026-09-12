@@ -145,3 +145,44 @@ it('does not allocate the daily budget to content whose access was removed', () 
   expect(queue.deferred.map((item) => item.id)).toEqual(['restricted']);
   expect(queue.remaining).toBe(30);
 });
+
+it('requires every authored practice dependency and never substitutes source completion', () => {
+  const practice = item('practice', 20, {
+    kind: 'review',
+    templateKind: 'practice',
+    activity: 'Practice',
+    sourceContentId: 'content',
+    requiredSessionId: 'first',
+    requiredSessionIds: ['first', 'second'],
+  });
+  const plan = make([[item('first', 20), item('second', 20)], [practice]]);
+  const blocked = studyDayQueue(plan, 2, new Set(['first', 'content']), {}, [], false);
+  expect(blocked.selected.map((item) => item.id)).not.toContain('practice');
+  expect(blocked.deferred.map((item) => item.id)).toContain('practice');
+  expect(
+    studyDayQueue(plan, 2, new Set(['first', 'second']), {}, [], false).selected.map(
+      (item) => item.id,
+    ),
+  ).toEqual(['practice']);
+});
+
+it('keeps ordinary review completion gating when declared familiarity is absent', () => {
+  const review = item('review', 20, {
+    kind: 'review',
+    sourceContentId: 'content',
+    requiredSessionIds: ['first', 'second'],
+    requiredSessionId: 'first',
+  });
+  const plan = make([[item('first', 20), item('second', 20)], [review]]);
+  expect(studyDayQueue(plan, 2, new Set(['first', 'second']), {}, [], false).selected).toEqual([]);
+  expect(
+    studyDayQueue(plan, 2, new Set(['first', 'content']), {}, [], false).selected.map(
+      (item) => item.id,
+    ),
+  ).not.toContain('review');
+  expect(
+    studyDayQueue(plan, 2, new Set(['first', 'second', 'content']), {}, [], false).selected.map(
+      (item) => item.id,
+    ),
+  ).toEqual(['review']);
+});

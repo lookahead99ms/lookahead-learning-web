@@ -43,6 +43,15 @@ export class DsaProblemPilot {
   protected readonly focusMode = signal(false);
   protected readonly fixtureIndex = signal(0);
   protected readonly practice = computed(() => this.problem().practice!);
+  protected readonly tutorProblem = computed(() =>
+    this.problem().id === 'algorithmic-two-sum'
+      ? {
+          id: this.problem().id,
+          title: this.problem().title,
+          prompt: this.practice().statement.prompt,
+        }
+      : null,
+  );
   protected readonly activeFixture = computed(
     () => this.problem().fixtures[this.fixtureIndex()] ?? this.problem().fixtures[0],
   );

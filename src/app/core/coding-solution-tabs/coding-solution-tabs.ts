@@ -2,13 +2,15 @@ import { Component, computed, effect, input, signal, untracked } from '@angular/
 import { CodeSolution, InterviewQuestion, TheoryVisual } from '../../content/content.models';
 import { InteractiveTheoryVisual } from '../interactive-theory-visual/interactive-theory-visual';
 import { CodeCopyButton } from '../code-copy-button/code-copy-button';
+import { EditorTutor } from '../editor-tutor/editor-tutor';
+import { TutorProblem } from '../editor-tutor/tutor-provider';
 
 type Tab = 'practice' | 'pseudocode' | number;
 type Language = 'java' | 'python' | 'go';
 
 @Component({
   selector: 'app-coding-solution-tabs',
-  imports: [InteractiveTheoryVisual, CodeCopyButton],
+  imports: [InteractiveTheoryVisual, CodeCopyButton, EditorTutor],
   template: `
     <section
       class="coding-workspace"
@@ -102,6 +104,11 @@ type Language = 'java' | 'python' | 'go';
             This local editor keeps your work on the page. Compare it with a reference solution when
             you are ready.
           </p>
+          @if (tutorProblem(); as problem) {
+            @if (problem.id === 'algorithmic-two-sum') {
+              <app-editor-tutor [problem]="problem" [code]="practiceCode()" [language]="practiceLanguage()" />
+            }
+          }
         </section>
       } @else if (selected() === 'pseudocode' && pseudocode(); as pseudo) {
         <section class="solution-view pseudocode-view" role="tabpanel">
@@ -543,6 +550,7 @@ export class CodingSolutionTabs {
   readonly solutions = input.required<CodeSolution[]>();
   readonly complexity = input<InterviewQuestion['complexity']>();
   readonly practicePrompt = input<string>();
+  readonly tutorProblem = input<TutorProblem | null>(null);
   readonly practiceStarters = input<Partial<Record<Language, string>>>({});
   readonly initialLanguage = input<Language>('java');
   readonly showPractice = input(true);
