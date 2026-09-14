@@ -37,7 +37,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         border-radius: 15px;
       }
       .question-card-link:focus-visible {
-        outline: none;
+
       }
       .question-card:has(.question-card-link:focus-visible) {
         outline: 3px solid var(--cyan);
@@ -74,7 +74,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
       .module-previous-link:hover,
       .module-previous-link:focus-visible {
         color: var(--search-hover);
-        outline: none;
+
       }
       .module-action-group {
         display: flex;
@@ -121,13 +121,13 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
       .module-catalog-link:hover,
       .module-catalog-link:focus-visible {
         background: var(--surface-subtle);
-        outline: none;
+
       }
       .module-next-link:hover,
       .module-next-link:focus-visible {
         color: var(--search-hover);
         background: transparent;
-        outline: none;
+
       }
       .module-context-title {
         margin: 0 0 6px;

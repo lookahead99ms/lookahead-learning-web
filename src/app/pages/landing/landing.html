@@ -6,11 +6,14 @@
     aria-roledescription="carousel"
     (focusin)="focusHero($event)"
   >
-    <div class="hero-slides">
+    <div #heroSlides class="hero-slides">
       @for (slide of slides; track slide.name; let i = $index) {
         <article
           class="hero-slide"
           [class.active]="activeSlide() === i"
+          [class.transitioning]="
+            outgoingSlide() !== null && (activeSlide() === i || outgoingSlide() === i)
+          "
           [attr.aria-hidden]="activeSlide() !== i"
           [attr.inert]="activeSlide() === i ? null : ''"
           [attr.aria-label]="i + 1 + ' of 5: ' + slide.name"
@@ -33,7 +36,7 @@
               >{{ slide.action }}</a
             >
           </div>
-          <div class="hero-visual" [class.soft-panel]="i === 2 || i === 4">
+          <div class="hero-visual" [attr.data-panel-tone]="panelTones()[i]">
             @switch (i) {
               @case (0) {
                 <p class="chapter">Your next chapter</p>
@@ -125,6 +128,7 @@
         <button
           type="button"
           [attr.aria-label]="paused() ? 'Play slideshow' : 'Pause slideshow'"
+          [disabled]="reducedMotion()"
           (click)="toggleRotation()"
         >
           <span aria-hidden="true">{{ paused() ? '▶' : 'Ⅱ' }}</span>
@@ -141,6 +145,7 @@
         </button>
       </div>
     </div>
+    <p class="hero-guidance">Explore at your pace. Pause to read.</p>
     <p class="screen-reader-only" [attr.aria-live]="paused() ? 'polite' : 'off'">
       Slide {{ activeSlide() + 1 }} of {{ slides.length }}: {{ slides[activeSlide()].name }}
     </p>
@@ -192,7 +197,7 @@
         now.
       </p>
     </div>
-    <div class="media-panel">
+    <div class="media-panel feature-panel" data-panel-tone="dark">
       <h3>Design a reliable feed</h3>
       <p>Constraints · Trade-offs · Failure modes</p>
       <a routerLink="/look-ahead/system-design/module/case-feed-messaging"
@@ -210,7 +215,7 @@
       </p>
       <a class="primary-action" routerLink="/search">Open Topic Workbench</a>
     </div>
-    <div class="card">
+    <div class="card feature-panel" data-panel-tone="light">
       <p class="eyebrow">Follow your question</p>
       <h3>Start with architecture.</h3>
       <p>
@@ -230,7 +235,7 @@
       </p>
       <a class="primary-action" routerLink="/study-plan">Open Adaptive Compass</a>
     </div>
-    <div class="card">
+    <div class="card feature-panel" data-panel-tone="dark">
       <p class="chapter">A rhythm to make your own</p>
       <h3>Practice with purpose.</h3>
       <div class="detail-line"><span>Review an invariant</span><span>Recall</span></div>
@@ -252,7 +257,7 @@
           >Explore AI project guides</a
         >
       </div>
-      <div class="card">
+      <div class="card feature-panel" data-panel-tone="light">
         <h3>Understand the whole system.</h3>
         <p>Explore the five-project curriculum and its design and implementation walkthroughs.</p>
         <p class="small">

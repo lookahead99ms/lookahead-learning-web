@@ -226,6 +226,90 @@ describe('StudyPlanPage', () => {
     return { page, harness, account: TestBed.inject(StudyPlanAccount) };
   }
 
+  it('dismisses only a backdrop click while preserving the draft, selections, saved work and opener focus', async () => {
+    const harness = await RouterTestingHarness.create();
+    const page: any = await harness.navigateByUrl('/study-plan?days=7&hours=1', StudyPlanPage);
+    harness.detectChanges();
+    const opener = [
+      ...harness.routeNativeElement!.querySelectorAll<HTMLButtonElement>('button'),
+    ].find((button) => button.textContent?.includes('Review my plan'))!;
+    opener.focus();
+    await page.generatePlan();
+    harness.detectChanges();
+    const dialog =
+      harness.routeNativeElement!.querySelector<HTMLDialogElement>('.draft-review-dialog')!;
+    Object.defineProperty(dialog, 'close', { configurable: true, value: vi.fn() });
+    vi.spyOn(dialog, 'getBoundingClientRect').mockReturnValue({
+      left: 100,
+      right: 700,
+      top: 100,
+      bottom: 700,
+    } as DOMRect);
+    const draft = page.draft();
+    const selected = [...page.selectedTopicIds()];
+    const save = vi.spyOn(TestBed.inject(StudyPlanAccount), 'save');
+    const persist = vi.spyOn(window.localStorage, 'setItem');
+    const clickAt = (target: Element, x: number, y: number) => {
+      target.dispatchEvent(
+        new MouseEvent('pointerdown', { bubbles: true, clientX: x, clientY: y }),
+      );
+      target.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: x, clientY: y }));
+    };
+    clickAt(dialog.querySelector('.draft-scroll-body')!, 200, 200);
+    clickAt(dialog, 110, 110); // Padding inside the dialog is not the backdrop.
+    expect(dialog.close).not.toHaveBeenCalled();
+    dialog.dispatchEvent(
+      new MouseEvent('pointerdown', { bubbles: true, clientX: 200, clientY: 200 }),
+    );
+    dialog.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: 20, clientY: 20 }));
+    expect(dialog.close).not.toHaveBeenCalled(); // Dragging out must not dismiss.
+    clickAt(dialog, 20, 20);
+    expect(dialog.close).toHaveBeenCalledOnce();
+    expect(page.draft()).toBe(draft);
+    expect([...page.selectedTopicIds()]).toEqual(selected);
+    expect(page.days()).toBe(7);
+    expect(page.dailyHours()).toBe(1);
+    expect(page.saved()).toBeNull();
+    expect(save).not.toHaveBeenCalled();
+    expect(persist).not.toHaveBeenCalled();
+    expect(dialog.ownerDocument.activeElement).toBe(opener);
+    const cancel = new Event('cancel', { cancelable: true });
+    dialog.dispatchEvent(cancel);
+    expect(cancel.defaultPrevented).toBe(true);
+    expect(page.draft()).toBe(draft);
+    page.goal.set('Revised direction');
+    await page.generatePlan();
+    expect(page.draft().goal).toBe('Revised direction');
+    expect(page.saved()).toBeNull();
+  });
+
+  it('keeps saved progress and the draft intact during dismissal and saving locks', async () => {
+    const { page, harness, account } = await adjustmentPage();
+    const saved = page.saved();
+    const serialized = window.localStorage.getItem('look-ahead.study-plan.v1');
+    await page.generatePlan();
+    harness.detectChanges();
+    const draft = page.draft();
+    const dialog =
+      harness.routeNativeElement!.querySelector<HTMLDialogElement>('.draft-review-dialog')!;
+    Object.defineProperty(dialog, 'close', { configurable: true, value: vi.fn() });
+    account.busy.set(true);
+    page.closeDraft();
+    expect(dialog.close).not.toHaveBeenCalled();
+    account.busy.set(false);
+    account.pending.set(true);
+    dialog.dispatchEvent(new Event('cancel', { cancelable: true }));
+    expect(dialog.close).not.toHaveBeenCalled();
+    account.pending.set(false);
+    [...dialog.querySelectorAll<HTMLButtonElement>('button')]
+      .find((button) => button.textContent?.trim() === 'Edit selections')!
+      .click();
+    expect(dialog.close).toHaveBeenCalledOnce();
+    expect(page.draft()).toBe(draft);
+    expect(page.saved()).toBe(saved);
+    expect(window.localStorage.getItem('look-ahead.study-plan.v1')).toBe(serialized);
+  });
+
   for (const method of ['Close', 'Escape']) {
     it(`${method} closes the review without declining or changing saved work, including after reload`, async () => {
       const { page, harness } = await adjustmentPage();
@@ -276,9 +360,25 @@ describe('StudyPlanPage', () => {
       topicGrants: ['learn:core-java'],
     });
     account.active.set({ planId: 'plan-a', versionId: 'v1', revision: 1 } as any);
-    account.plans.set([{ planId: 'plan-a', goal: 'My plan', revision: 1 }] as any);
+    account.plans.set([
+      { planId: 'plan-a', goal: 'My plan', revision: 1 },
+      { planId: 'plan-b', goal: 'Another plan', revision: 1 },
+    ] as any);
     harness.detectChanges();
     const root = harness.routeNativeElement!;
+    const actions = root.querySelector('.account-panel .account-actions')!;
+    expect(actions.textContent).toContain('Create another plan');
+    expect(actions.textContent).toContain('All study plans');
+    expect(root.querySelector('.page-plan-actions')).toBeNull();
+    expect(root.textContent).not.toContain('Create new plan');
+    expect(root.textContent).not.toContain('View saved plans');
+    const create = vi.spyOn(page, 'newAccountPlan').mockImplementation(() => {});
+    const savedPlans = vi.spyOn(page, 'showAllPlans').mockResolvedValue(undefined);
+    const actionButtons = actions.querySelectorAll<HTMLButtonElement>('button');
+    actionButtons[0].click();
+    actionButtons[1].click();
+    expect(create).toHaveBeenCalledOnce();
+    expect(savedPlans).toHaveBeenCalledOnce();
     expect(root.querySelectorAll('.adjustment-notice')).toHaveLength(1);
     expect(
       root

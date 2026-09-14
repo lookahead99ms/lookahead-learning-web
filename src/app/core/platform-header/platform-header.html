@@ -7,7 +7,7 @@
   </nav>
   <div class="header-utilities">
     <button
-      class="header-search-trigger"
+      class="header-search-trigger navigation-utility"
       type="button"
       aria-label="Search"
       aria-controls="header-search-palette"
@@ -16,10 +16,15 @@
       aria-keyshortcuts="Meta+K Control+K"
       (click)="toggleSearch($event)"
     >
-      <span>Search</span><kbd aria-hidden="true">{{ searchShortcut }}</kbd>
+      <span class="navigation-utility-label">Search</span>
+      <kbd aria-hidden="true">{{ searchShortcut }}</kbd>
     </button>
-    <a routerLink="/study-plan" routerLinkActive="active" ariaCurrentWhenActive="page"
-      >Study Plan</a
+    <a
+      class="navigation-utility"
+      routerLink="/study-plan"
+      routerLinkActive="active"
+      ariaCurrentWhenActive="page"
+      ><span class="navigation-utility-label">Study Plan</span></a
     >
     <div class="theme-switch" role="group" aria-label="Color theme">
       <button

@@ -1,3 +1,7 @@
+:host(.focus-studio-host) {
+  display: block;
+  min-width: 0;
+}
 .pilot {
   display: grid;
   gap: 14px;
@@ -265,7 +269,12 @@ select:focus-visible {
   border: 1px solid var(--line);
   border-left: 5px solid var(--accent-strong);
   border-radius: 11px;
-  background: linear-gradient(115deg, var(--surface-accent), var(--surface) 56%, var(--warning-surface));
+  background: linear-gradient(
+    115deg,
+    var(--surface-accent),
+    var(--surface) 56%,
+    var(--warning-surface)
+  );
 }
 .reasoning-frame span {
   color: var(--accent-link);

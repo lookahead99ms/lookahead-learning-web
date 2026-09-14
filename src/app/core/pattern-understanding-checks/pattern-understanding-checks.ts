@@ -156,7 +156,7 @@ import { ResolvedPatternCheck } from '../../content/content.models';
         cursor: pointer;
         font-weight: 800;
       }
-      footer > button:disabled {
+footer > button:disabled {
         color: var(--text-subtle);
         cursor: not-allowed;
       }

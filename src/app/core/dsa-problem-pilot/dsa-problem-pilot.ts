@@ -1,4 +1,4 @@
-import { DOCUMENT } from '@angular/common';
+import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import {
   Component,
   computed,
@@ -21,9 +21,10 @@ import { GuidedAlgorithmTrace } from '../guided-algorithm-trace/guided-algorithm
 
 @Component({
   selector: 'app-dsa-problem-pilot',
-  imports: [CodingSolutionTabs, GuidedAlgorithmTrace],
+  host: { '[class.focus-studio-host]': 'focusStudio()' },
+  imports: [CodingSolutionTabs, GuidedAlgorithmTrace, NgTemplateOutlet],
   templateUrl: './dsa-problem-pilot.html',
-  styleUrl: './dsa-problem-pilot.css',
+  styleUrls: ['./dsa-problem-pilot.css', './focus-studio.css'],
 })
 export class DsaProblemPilot {
   private readonly host: ElementRef<HTMLElement> = inject(ElementRef);
@@ -39,7 +40,9 @@ export class DsaProblemPilot {
   readonly entryMode = input<'guided' | 'practice'>('practice');
   readonly showProblemHeading = input(true);
   readonly initialLanguage = input<PatternLanguage>('java');
-  protected readonly mode = signal<'guided' | 'practice'>('practice');
+  readonly focusStudio = input(false);
+  protected readonly mode = signal<'guided' | 'practice' | 'recall'>('practice');
+  protected readonly briefHidden = signal(false);
   protected readonly focusMode = signal(false);
   protected readonly fixtureIndex = signal(0);
   protected readonly practice = computed(() => this.problem().practice!);
@@ -78,9 +81,16 @@ export class DsaProblemPilot {
 
   constructor() {
     effect(() => {
+      if (!this.focusStudio()) {
+        this.briefHidden.set(false);
+        if (this.mode() === 'recall') this.mode.set('practice');
+      }
+    });
+    effect(() => {
       this.problem().id;
       this.mode.set(this.entryMode());
       this.fixtureIndex.set(0);
+      this.briefHidden.set(false);
     });
     effect((onCleanup) => {
       const stage = this.focusDialog()?.nativeElement;
@@ -121,10 +131,26 @@ export class DsaProblemPilot {
     if (index >= 0) this.fixtureIndex.set(index);
   }
 
-  protected selectMode(mode: 'guided' | 'practice'): void {
+  protected selectMode(mode: 'guided' | 'practice' | 'recall'): void {
     if (mode !== 'guided') this.releaseFocusMode(false);
     this.mode.set(mode);
     this.revealModeContent(mode);
+  }
+
+  protected toggleBrief(event: Event): void {
+    this.briefHidden.update((hidden) => !hidden);
+    // The control and both workspaces stay mounted; preserve caret, drafts,
+    // fixture and trace state, and keep keyboard focus on the same control.
+    (event.currentTarget as HTMLElement).focus({ preventScroll: true });
+  }
+
+  protected selectBriefFixture(id: string): void {
+    const fixture = this.problem().fixtures.find((candidate) => candidate.id === id);
+    if (fixture) this.chooseFixture(fixture);
+  }
+
+  protected briefId(): string {
+    return `${this.problem().id}-problem-brief`;
   }
 
   protected enterFocusMode(event: Event): void {
@@ -159,7 +185,7 @@ export class DsaProblemPilot {
       ...dialog.querySelectorAll<HTMLElement>(
         'button:not([disabled]), select:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])',
       ),
-    ].filter((element) => !element.hasAttribute('hidden'));
+    ].filter((element) => element.tabIndex >= 0 && !element.closest('[hidden], [inert]'));
     if (focusable.length === 0) return;
 
     const first = focusable[0];
@@ -174,6 +200,29 @@ export class DsaProblemPilot {
   }
 
   protected handleModeKeydown(event: KeyboardEvent): void {
+    if (this.focusStudio()) {
+      const modes = ['practice', 'guided', 'recall'] as const;
+      const currentIndex = modes.indexOf(this.mode());
+      const nextIndex =
+        event.key === 'Home'
+          ? 0
+          : event.key === 'End'
+            ? 2
+            : event.key === 'ArrowRight'
+              ? (currentIndex + 1) % modes.length
+              : event.key === 'ArrowLeft'
+                ? (currentIndex + modes.length - 1) % modes.length
+                : -1;
+      if (nextIndex < 0) return;
+      event.preventDefault();
+      const nextMode = modes[nextIndex];
+      this.selectMode(nextMode);
+      (event.currentTarget as HTMLElement)
+        .closest('[role="tablist"]')
+        ?.querySelector<HTMLElement>(`[data-mode="${nextMode}"]`)
+        ?.focus({ preventScroll: true });
+      return;
+    }
     const keyToMode: Partial<Record<string, 'guided' | 'practice'>> = {
       ArrowLeft: 'practice',
       ArrowRight: 'guided',
@@ -191,11 +240,11 @@ export class DsaProblemPilot {
     tab?.focus();
   }
 
-  protected modeTabId(mode: 'guided' | 'practice'): string {
+  protected modeTabId(mode: 'guided' | 'practice' | 'recall'): string {
     return `${this.problem().id}-${mode}-tab`;
   }
 
-  protected modePaneId(mode: 'guided' | 'practice'): string {
+  protected modePaneId(mode: 'guided' | 'practice' | 'recall'): string {
     return `${this.problem().id}-${mode}-pane`;
   }
 
@@ -203,7 +252,8 @@ export class DsaProblemPilot {
     return `${this.problem().id}-focused-debugger-title`;
   }
 
-  private revealModeContent(mode: 'guided' | 'practice'): void {
+  private revealModeContent(mode: 'guided' | 'practice' | 'recall'): void {
+    if (this.focusStudio()) return;
     window.requestAnimationFrame(() => {
       const tablist = this.host.nativeElement.querySelector<HTMLElement>('.mode-tabs');
       const panel = this.host.nativeElement.querySelector<HTMLElement>(`#${this.modePaneId(mode)}`);

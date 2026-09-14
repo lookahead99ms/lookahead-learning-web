@@ -200,7 +200,6 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
       .dynamic-suggestions .header-search-suggestion:focus-visible {
         background: var(--surface-accent);
         color: var(--text-strong);
-        outline: none;
       }
       .dynamic-suggestions .suggestion-type {
         padding-top: 2px;
@@ -396,7 +395,6 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
       .dropdown-item-link:focus-visible {
         color: var(--accent-link);
         background: var(--surface-subtle);
-        outline: none;
       }
       .dropdown-item-link.logout-trigger {
         color: var(--danger);

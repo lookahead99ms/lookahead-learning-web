@@ -141,7 +141,7 @@ import { CodingSolutionTabs } from '../coding-solution-tabs/coding-solution-tabs
       .coding-problem-links a:hover,
       .coding-problem-links a:focus-visible {
         text-decoration: underline;
-        outline: none;
+
       }
       .practice-brief {
         margin: 0 0 14px;

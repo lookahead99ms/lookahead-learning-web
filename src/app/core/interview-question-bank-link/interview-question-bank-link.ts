@@ -69,7 +69,7 @@ import {
       .question-bank-link:focus-visible {
         border-color: var(--accent-strong);
         box-shadow: 0 8px 20px var(--shadow);
-        outline: none;
+
       }
       :host:has(.compact) {
         display: inline-block;

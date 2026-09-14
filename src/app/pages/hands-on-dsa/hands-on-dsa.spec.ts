@@ -319,12 +319,79 @@ describe('Hands-On DSA route contracts', () => {
       HandsOnDsa,
     );
     expect(reused).toBe(original);
-    const selectedPattern = harness.routeNativeElement!.querySelector<HTMLAnchorElement>(
-      '.pattern-filter [aria-current="page"]',
-    )!;
-    expect(selectedPattern.textContent?.replace(/\s/g, '')).toBe('02two-pointers');
-    expect(selectedPattern.getAttribute('aria-label')).toBe('Clear pattern 2, two-pointers filter');
+    const selectedPattern =
+      harness.routeNativeElement!.querySelector<HTMLSelectElement>('#practice-pattern')!;
+    expect(selectedPattern.value).toBe('algorithmic-patterns:two-pointers');
+    expect(selectedPattern.selectedOptions[0].textContent?.trim()).toBe('02 · two-pointers');
+    expect(
+      harness.routeNativeElement!.querySelector('.pattern-selection-context p')?.textContent,
+    ).toBe('two-pointers');
     expect(harness.routeNativeElement!.querySelectorAll('.problem-table-row')).toHaveLength(1);
+  });
+
+  it('exposes the full pattern catalog in one labeled native selector, including its last entry', async () => {
+    const template = catalog.groups[0];
+    catalog.groups = Array.from({ length: 44 }, (_, index) => ({
+      ...template,
+      id: `algorithmic-patterns:pattern-${index + 1}`,
+      title: `Pattern ${index + 1}`,
+      preparationOrder: index + 1,
+    }));
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl(
+      '/learn/hands-on-dsa?pattern=algorithmic-patterns:pattern-44',
+      HandsOnDsa,
+    );
+    const select =
+      harness.routeNativeElement!.querySelector<HTMLSelectElement>('#practice-pattern')!;
+    expect(select.labels?.[0].textContent).toContain('Practice pattern');
+    expect(select.options).toHaveLength(45);
+    expect(select.options[0].textContent).toBe('All patterns');
+    expect([...select.options].slice(1).map((option) => option.value)).toEqual(
+      catalog.groups.map((group) => group.id),
+    );
+    expect(select.value).toBe(catalog.groups[43].id);
+    expect(select.selectedOptions[0].textContent?.trim()).toBe('44 · Pattern 44');
+    expect(
+      harness.routeNativeElement!.querySelector('.pattern-selection-context p')?.textContent,
+    ).toBe('Pattern 44');
+  });
+
+  it('changes and clears the pattern while retaining the other filters and resetting pagination', async () => {
+    catalog = paginatedIndex(80);
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl(
+      '/learn/hands-on-dsa?sort=interview-rank&scope=365&difficulty=Beginner&q=Problem&page=2',
+      HandsOnDsa,
+    );
+    const select =
+      harness.routeNativeElement!.querySelector<HTMLSelectElement>('#practice-pattern')!;
+    select.focus();
+    select.value = catalog.groups[0].id;
+    select.dispatchEvent(new Event('change'));
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    let params = new URL('http://localhost' + TestBed.inject(Router).url).searchParams;
+    expect(params.get('pattern')).toBe(catalog.groups[0].id);
+    expect(params.has('page')).toBe(false);
+    expect(document.activeElement).toBe(select);
+    const allPatterns = harness.routeNativeElement!.querySelector<HTMLAnchorElement>(
+      '.pattern-selection-context a',
+    )!;
+    expect(allPatterns.textContent?.trim()).toBe('All patterns');
+    allPatterns.click();
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    params = new URL('http://localhost' + TestBed.inject(Router).url).searchParams;
+    expect(params.has('pattern')).toBe(false);
+    expect(params.has('page')).toBe(false);
+    expect(Object.fromEntries(params)).toEqual({
+      sort: 'interview-rank',
+      scope: '365',
+      difficulty: 'Beginner',
+      q: 'Problem',
+    });
+    expect(select.value).toBe('');
   });
 
   it('restores tier and sort selections from the URL and preserves them across filters', async () => {

@@ -244,6 +244,7 @@
               type="button"
               class="primary"
               [disabled]="!readyMadeVariant() || readyMadeStatus() === 'loading' || editsLocked()"
+              [attr.aria-busy]="readyMadeStatus() === 'loading'"
               (click)="previewReadyMadePlan()"
             >
               Preview authored schedule
@@ -482,12 +483,7 @@
                   </div>
                 </dl>
                 <div class="progress-actions">
-                  <button
-                    type="button"
-                    class="schedule-action"
-                    aria-haspopup="dialog"
-                    (click)="openSchedule()"
-                  >
+                  <button type="button" aria-haspopup="dialog" (click)="openSchedule()">
                     Your complete schedule
                   </button>
                   <button
@@ -543,7 +539,6 @@
               <h2 #sessionHeading id="today-heading" tabindex="-1">Today’s Session</h2>
               <button
                 type="button"
-                class="schedule-action"
                 [disabled]="editsLocked()"
                 (click)="reviewSchedule()"
                 aria-haspopup="dialog"
@@ -802,7 +797,9 @@
   #draftDialog
   class="plan-review-dialog draft-review-dialog"
   aria-labelledby="draft-heading"
-  (cancel)="accountStore.busy() || accountStore.pending() ? $event.preventDefault() : closeDraft()"
+  (pointerdown)="startDraftPointer($event)"
+  (click)="dismissDraftBackdrop($event)"
+  (cancel)="$event.preventDefault(); closeDraft()"
 >
   @if (draft(); as review) {
     <header class="draft-heading">
@@ -991,6 +988,7 @@
             type="button"
             class="primary"
             [disabled]="editsLocked() || (!!review.readyMade && !readyMadeAdoptionAvailable())"
+            [attr.aria-busy]="accountStore.busy()"
             (click)="saveDraft()"
           >
             {{ accountMode() ? 'Save to my account' : 'Save on this browser' }}

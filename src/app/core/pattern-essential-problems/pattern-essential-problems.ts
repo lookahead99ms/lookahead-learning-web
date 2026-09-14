@@ -176,7 +176,7 @@ type Language = 'java' | 'python' | 'go';
           sans-serif;
       }
       nav button[aria-selected='true'] {
-        border-bottom-color: var(--code-line);
+        border-bottom-color: var(--code-action);
         color: var(--code-ink);
         background: var(--code-panel);
       }

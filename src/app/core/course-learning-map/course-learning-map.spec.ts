@@ -127,7 +127,7 @@ describe('CourseLearningMap', () => {
     const link = fixture.nativeElement.querySelector(
       '.learning-action.practice',
     ) as HTMLAnchorElement;
-    expect(link.textContent?.replace(/\s+/g, ' ').trim()).toBe('Practice Hashing →');
+    expect(link.textContent?.replace(/\s+/g, ' ').trim()).toBe('Practice Hashing');
     expect(link.getAttribute('href')).toBe('/learn/hands-on-dsa?pattern=course:hashing-lookup');
   });
 
@@ -199,7 +199,7 @@ describe('CourseLearningMap', () => {
     const link = fixture.nativeElement.querySelector(
       '.learning-action.practice',
     ) as HTMLAnchorElement;
-    expect(link.textContent?.replace(/\s+/g, ' ').trim()).toBe('Solve problems 4→');
+    expect(link.textContent?.replace(/\s+/g, ' ').trim()).toBe('Solve problems 4');
     expect(link.getAttribute('href')).toBe('/learn/course/module/practice-module');
   });
 

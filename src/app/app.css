@@ -227,7 +227,6 @@ footer {
 .catalog-search-link:focus-visible {
   color: var(--search-hover);
   text-decoration: underline;
-  outline: none;
 }
 .catalog-hero,
 .question-reader,
@@ -728,7 +727,6 @@ a.reader-module:focus-visible {
 .question-filter-tag:focus-visible {
   color: var(--accent-on-primary);
   background: var(--search-primary);
-  outline: none;
 }
 .reader-question-title {
   max-width: none;

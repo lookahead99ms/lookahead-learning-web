@@ -213,7 +213,10 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
               </div>
               <div class="focus-terminal">
                 <span>Terminal</span>
-                <p>{{ terminalMessage() }}</p>
+                <p>
+                  <span class="terminal-prompt" aria-hidden="true">&gt; </span
+                  >{{ terminalMessage() }}
+                </p>
               </div>
             </section>
           </section>
@@ -331,7 +334,10 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
                   </section>
                   <div class="terminal" role="region" aria-label="Terminal output">
                     <span>Terminal</span>
-                    <p>{{ terminalMessage() }}</p>
+                    <p>
+                      <span class="terminal-prompt" aria-hidden="true">&gt; </span
+                      >{{ terminalMessage() }}
+                    </p>
                   </div>
                 } @else if (activeView() === 'why') {
                   <article class="learning-view why-view">
@@ -898,9 +904,12 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
           700 0.75rem/1.45 'JetBrains Mono',
           monospace;
       }
-      .terminal p::before {
-        content: '> ';
+      .terminal .terminal-prompt,
+      .focus-terminal .terminal-prompt {
         color: var(--code-success);
+        font: inherit;
+        letter-spacing: 0;
+        text-transform: none;
       }
       .trace-transcript {
         border-top: 1px solid var(--accent-strong);
@@ -996,6 +1005,7 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
       }
       .debugger-shell {
         display: grid;
+        grid-template-columns: minmax(0, 1fr);
         grid-template-rows: auto minmax(0, 1fr);
         min-width: 0;
         height: 520px;
@@ -1228,7 +1238,10 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         min-height: 58px;
         place-items: end center;
         padding-bottom: 8px;
-        background: linear-gradient(transparent, color-mix(in srgb, var(--code-bg) 98%, transparent) 70%);
+        background: linear-gradient(
+          transparent,
+          color-mix(in srgb, var(--code-bg) 98%, transparent) 70%
+        );
       }
       .debugger-more button {
         pointer-events: auto;
@@ -1550,10 +1563,6 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
         font:
           700 0.65rem/1.4 'JetBrains Mono',
           monospace;
-      }
-      .focus-terminal p::before {
-        content: '> ';
-        color: var(--code-success);
       }
       @media (min-width: 1180px) {
         .guided-trace.focus-mode {

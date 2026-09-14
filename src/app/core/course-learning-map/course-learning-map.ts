@@ -55,9 +55,7 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
               <span class="learning-unit-toggle" aria-hidden="true"></span>
             </summary>
             <div class="learning-unit-actions family-actions">
-              <a class="learning-action read" [routerLink]="articleRoute(unit)"
-                >Read foundation <span aria-hidden="true">→</span></a
-              >
+              <a class="learning-action read" [routerLink]="articleRoute(unit)">Read foundation</a>
               @if (unit.questionModuleId; as questionModuleId) {
                 @if (questionCount(unit); as count) {
                   <app-interview-question-bank-link
@@ -83,7 +81,7 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
                   >
                   <div class="learning-subunit-actions">
                     <a class="learning-action read" [routerLink]="articleRoute(subUnit)"
-                      >Read lesson <span aria-hidden="true">→</span></a
+                      >Read lesson</a
                     >
                     @if (subUnit.questionModuleId; as questionModuleId) {
                       @if (questionCount(subUnit); as count) {
@@ -106,8 +104,7 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
                         @if (usesQuestionBankPractice(subUnit)) {
                           <span class="learning-action-count">{{ practiceCount(subUnit) }}</span>
                         }
-                        <span aria-hidden="true">→</span></a
-                      >
+                      </a>
                     }
                   </div>
                 </article>
@@ -141,9 +138,7 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
               <span class="learning-unit-toggle" aria-hidden="true"></span>
             </summary>
             <div class="learning-unit-actions">
-              <a class="learning-action read" [routerLink]="articleRoute(unit)"
-                >Read lesson <span aria-hidden="true">→</span></a
-              >
+              <a class="learning-action read" [routerLink]="articleRoute(unit)">Read lesson</a>
               @if (unit.questionModuleId; as questionModuleId) {
                 @if (questionCount(unit); as count) {
                   <app-interview-question-bank-link
@@ -165,8 +160,7 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
                   @if (usesQuestionBankPractice(unit)) {
                     <span class="learning-action-count">{{ practiceCount(unit) }}</span>
                   }
-                  <span aria-hidden="true">→</span></a
-                >
+                </a>
               }
             </div>
           </details>
@@ -314,14 +308,9 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
         background: var(--learning-surface);
       }
       .learning-action-count {
-        display: grid;
-        min-width: 22px;
-        min-height: 22px;
-        place-items: center;
-        border-radius: 999px;
-        color: var(--accent-on-primary);
-        background: var(--learning-accent);
-        font-size: 0.72rem;
+        color: inherit;
+        font-size: 0.8rem;
+        font-variant-numeric: tabular-nums;
       }
       .learning-subunits {
         display: grid;

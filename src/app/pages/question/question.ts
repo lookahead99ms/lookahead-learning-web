@@ -1,7 +1,15 @@
 import { PROTECTED_CONTENT } from '../../content/content-delivery';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import { StudyPlanReaderNavigation } from '../../core/study-plan-reader-navigation';
-import { Component, DestroyRef, HostListener, OnInit, inject, signal } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  HostListener,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { NgTemplateOutlet } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink, UrlTree } from '@angular/router';
@@ -26,6 +34,7 @@ import {
   reviewStatusLabel,
 } from '../../content/content.models';
 import { ContentService } from '../../content/content.service';
+import { rankedHandsOnDsaIndexProblems } from '../../content/hands-on-dsa';
 import {
   flattenLearningUnits,
   handsOnPatternIdForModule,
@@ -44,6 +53,7 @@ import { CodeCopyButton } from '../../core/code-copy-button/code-copy-button';
 import { FoundationLessonShell } from '../../core/foundation-lesson-shell/foundation-lesson-shell';
 import { EvidenceAnswerTabs } from '../../core/evidence-answer-tabs/evidence-answer-tabs';
 import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot';
+import { FOCUS_STUDIO_PATTERN, usesFocusStudio } from '../../content/focus-studio-scope';
 
 @Component({
   selector: 'app-question',
@@ -66,6 +76,54 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
   templateUrl: './question.html',
   styles: [
     `
+      main.harbor-learn.focus-studio-page {
+        max-width: 1600px;
+        padding-inline: clamp(16px, 3vw, 44px);
+      }
+      .focus-studio-page .question-reader {
+        width: 100%;
+        min-width: 0;
+      }
+      .focus-studio-page .reader-question-panel {
+        margin-block: 24px;
+        padding: 0 0 24px;
+        border: 0;
+        border-bottom: 1px solid var(--line);
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+      .focus-studio-page .reader-question-title {
+        margin: 0;
+        font:
+          500 clamp(30px, 3vw, 42px) / 1.15 Georgia,
+          serif;
+        letter-spacing: -0.03em;
+        text-wrap: pretty;
+      }
+      .focus-studio-page .reader-question-panel > .eyebrow {
+        margin-top: 12px;
+        font-size: 14px;
+        font-weight: 500;
+        letter-spacing: 0;
+        text-transform: none;
+        color: var(--text-subtle);
+      }
+      .focus-studio-page .question-inner-navigation {
+        margin-top: 16px;
+      }
+      .focus-studio-page .question-sticky-utility {
+        position: static;
+      }
+      @media (max-width: 600px) {
+        .focus-studio-page .reader-question-panel {
+          margin-block: 18px;
+          padding-bottom: 18px;
+        }
+        .focus-studio-page .question-inner-navigation {
+          gap: 12px;
+        }
+      }
       .practice-return {
         margin: 0 0 16px;
       }
@@ -198,7 +256,7 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
       .problem-navigation-link:hover,
       .problem-navigation-link:focus-visible {
         border-color: var(--search-primary);
-        outline: none;
+
         box-shadow: 0 10px 22px var(--shadow);
         transform: translateY(-1px);
       }
@@ -266,7 +324,6 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
       .module-catalog-link:focus-visible {
         border-color: var(--search-primary);
         color: var(--search-hover);
-        outline: none;
       }
       .theory-article {
         max-width: none;
@@ -317,7 +374,6 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
       .pattern-navigation button:focus-visible {
         border-color: var(--search-primary);
         background: var(--surface-accent);
-        outline: none;
       }
       .reader-question-title .pattern-title-subtitle {
         color: var(--text-subtle);
@@ -535,7 +591,6 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
       .hands-on-panel a:focus-visible {
         border-color: var(--search-primary);
         color: var(--search-primary);
-        outline: none;
       }
       .hands-on-panel small {
         color: var(--text-subtle);
@@ -592,7 +647,6 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
       .related-theory-link:focus-visible {
         color: var(--search-hover);
         text-decoration: underline;
-        outline: none;
       }
       @media (max-width: 980px) {
         .question-inner-navigation {
@@ -656,14 +710,14 @@ import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot'
         cursor: pointer;
         white-space: nowrap;
         text-overflow: ellipsis;
-        opacity: 0.45;
+        opacity: 1;
         transition:
           opacity 0.2s ease,
           color 0.2s ease,
           background 0.2s ease;
       }
       .sticky-pill-strip .sticky-pill:hover {
-        opacity: 0.8;
+        opacity: 1;
       }
       .sticky-pill-strip .sticky-pill.active {
         color: var(--search-primary);
@@ -710,6 +764,16 @@ export class Question implements OnInit {
   protected readonly returnDestination = signal<UrlTree | null>(null);
   protected readonly returnLabel = signal('Return to interview practice');
   protected readonly referenceExpanded = signal(false);
+  protected readonly focusStudio = computed(() => {
+    const item = this.question();
+    return item
+      ? usesFocusStudio(
+          this.canonicalProblem(item),
+          { path: this.pathId(), courseId: this.courseId(), questionId: item.id },
+          this.navigationContextId(),
+        )
+      : false;
+  });
 
   protected returnQueryParams(pattern?: string): Record<string, string> {
     const destination = this.returnDestination();
@@ -809,6 +873,9 @@ export class Question implements OnInit {
   protected readonly surpriseMode = signal(false);
   protected readonly navigationContextId = signal('');
   protected readonly handsOnPatternTitles = signal<Record<string, string>>({});
+  private readonly focusStudioNeighbors = signal<
+    Record<string, Pick<DsaProblemNavigation, 'previous' | 'next'>>
+  >({});
   protected readonly reviewStatusLabel = reviewStatusLabel;
 
   /** Coding practice is classified by its existing curriculum tags, not by the generic Q&A layout. */
@@ -837,12 +904,16 @@ export class Question implements OnInit {
     const navigation = (this.canonicalProblem(item) as { navigation?: DsaProblemNavigation } | null)
       ?.navigation;
     if (!navigation) return null;
-    const requestedContext = this.navigationContextId();
-    return requestedContext
-      ? (navigation.alternates?.find(
-          ({ handsOnPatternId }) => handsOnPatternId === requestedContext,
-        ) ?? navigation)
-      : navigation;
+    const contexts = [navigation, ...(navigation.alternates ?? [])];
+    const context =
+      contexts.find(({ handsOnPatternId }) => handsOnPatternId === this.navigationContextId()) ??
+      (this.focusStudio()
+        ? contexts.find(({ handsOnPatternId }) => handsOnPatternId === FOCUS_STUDIO_PATTERN)
+        : null) ??
+      navigation;
+    if (!this.focusStudio()) return context;
+    const problemId = this.canonicalProblem(item)?.id ?? '';
+    return { ...context, ...this.focusStudioNeighbors()[problemId] };
   }
 
   protected isCoursePracticePlacement(item: InterviewQuestion): boolean {
@@ -1348,6 +1419,32 @@ export class Question implements OnInit {
         if (!index) return of(null);
         this.handsOnPatternTitles.set(
           Object.fromEntries(index.groups.map((group) => [group.id, group.title])),
+        );
+        const studioGroup = index.groups.find(({ id }) => id === FOCUS_STUDIO_PATTERN);
+        const studioLink = (
+          problem: NonNullable<typeof studioGroup>['problems'][number] | undefined,
+        ): DsaProblemNavigationLink | undefined =>
+          problem
+            ? {
+                problemId: problem.id,
+                title: problem.title,
+                path: 'learn',
+                courseId: problem.route[1],
+                questionId: problem.route[2],
+              }
+            : undefined;
+        this.focusStudioNeighbors.set(
+          Object.fromEntries(
+            rankedHandsOnDsaIndexProblems(studioGroup ? [studioGroup] : [], 'study-order').map(
+              (problem, position, problems) => [
+                problem.id,
+                {
+                  previous: studioLink(problems[position - 1]),
+                  next: studioLink(problems[position + 1]),
+                },
+              ],
+            ),
+          ),
         );
         const groups = [...index.groups].sort((left, right) => {
           const requestedContext = this.navigationContextId();

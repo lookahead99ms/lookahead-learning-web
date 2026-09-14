@@ -536,6 +536,85 @@ describe('Question canonical DSA navigation', () => {
     expect(root.querySelector('.question-inner-navigation .next')).toBeNull();
   });
 
+  it('scopes Focus Studio to an authored Arrays context while preserving discovery and adjacent links', async () => {
+    const selected = routeCases[1];
+    const problem = canonicalProblem(selected);
+    const arrays = {
+      ...problem.navigation,
+      handsOnPatternId: 'core-data-structures:arrays',
+      lesson: {
+        path: 'learn' as const,
+        courseId: 'core-data-structures',
+        questionId: 'arrays-lesson',
+        title: 'Arrays',
+      },
+    };
+    problem.navigation.alternates = [arrays];
+    content.getHandsOnDsaIndex.mockReturnValue(of(indexFor(selected)));
+    content.getDsaProblem.mockReturnValueOnce(of(problem));
+    const harness = await RouterTestingHarness.create();
+    const returnTo = '/learn/hands-on-dsa?pattern=core-data-structures%3Aarrays&page=2';
+    await harness.navigateByUrl(
+      '/learn/algorithmic-patterns/algorithmic-two-sum?pattern=core-data-structures:arrays&returnTo=' +
+        encodeURIComponent(returnTo),
+      Question,
+    );
+    const root = harness.routeNativeElement!;
+    expect(root.querySelector('.focus-studio-page')).not.toBeNull();
+    expect(root.querySelector('.brief-toggle')?.textContent).toContain('Focus on code');
+    const returnLink = new URL(
+      linkWithText(root, 'Return to DSA problems')!.getAttribute('href')!,
+      'http://localhost',
+    );
+    expect(returnLink.pathname).toBe('/learn/hands-on-dsa');
+    expect(returnLink.searchParams.get('pattern')).toBe('core-data-structures:arrays');
+    expect(returnLink.searchParams.get('page')).toBe('2');
+    expect(root.querySelector<HTMLAnchorElement>('.problem-navigation-link.next')?.href).toContain(
+      'pattern=core-data-structures:arrays',
+    );
+    expect(root.querySelectorAll('.mode-tabs [role="tab"]')).toHaveLength(3);
+    await harness.navigateByUrl(
+      '/learn/algorithmic-patterns/algorithmic-two-sum?pattern=algorithmic-patterns:hashing-lookup',
+      Question,
+    );
+    expect(harness.routeNativeElement!.querySelector('.focus-studio-page')).toBeNull();
+    expect(harness.routeNativeElement!.querySelector('.brief-toggle')).toBeNull();
+  });
+
+  it('derives Arrays neighbors from the catalog when a canonical record only names its lesson', async () => {
+    const selected = routeCases[1];
+    const problem = canonicalProblem(selected);
+    problem.navigation = {
+      lesson: problem.navigation.lesson,
+      handsOnPatternId: 'core-data-structures:arrays',
+    };
+    const index = indexFor(selected);
+    index.groups[0].id = 'core-data-structures:arrays';
+    index.groups[0].problems = routeCases
+      .map((item, position) => ({
+        ...indexFor(item).groups[0].problems[0],
+        studyOrder: position + 1,
+      }))
+      .reverse();
+    content.getHandsOnDsaIndex.mockReturnValue(of(index));
+    content.getDsaProblem.mockReturnValue(of(problem));
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl(
+      '/learn/algorithmic-patterns/algorithmic-two-sum?pattern=core-data-structures:arrays',
+      Question,
+    );
+    const root = harness.routeNativeElement!;
+    expect(root.querySelector('.problem-navigation-link.previous')?.textContent).toContain(
+      containsDuplicate.title,
+    );
+    expect(root.querySelector('.problem-navigation-link.next')?.textContent).toContain(
+      firstUnique.title,
+    );
+    expect(root.querySelector<HTMLAnchorElement>('.problem-navigation-link.next')?.href).toContain(
+      'pattern=core-data-structures:arrays',
+    );
+  });
+
   it('renders an authentic debugger for a code-answer question without solution tabs', async () => {
     const streamQuestion: InterviewQuestion = {
       id: 'stream-student-merit-names',

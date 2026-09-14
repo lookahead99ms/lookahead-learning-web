@@ -119,61 +119,59 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
       .practice-hero-actions {
         position: relative;
         z-index: 1;
-        display: flex;
+        display: grid;
+        justify-items: start;
+        gap: 10px;
         margin-top: 22px;
       }
       .surprise-problem {
         display: inline-flex;
-        max-width: 470px;
-        min-height: 58px;
+        min-height: 48px;
         align-items: center;
-        gap: 12px;
-        padding: 10px 16px 10px 10px;
+        gap: 10px;
+        padding: 12px 18px;
         border: 1px solid var(--accent-strong);
-        border-radius: 14px;
+        border-radius: 10px;
         color: var(--text-strong);
         background: var(--surface);
-        box-shadow: 0 8px 20px var(--shadow);
         cursor: pointer;
         font: inherit;
-        text-align: left;
+        text-align: start;
       }
-      .surprise-problem:hover,
+      .surprise-problem:hover:not(:disabled) {
+        background: var(--surface-accent);
+      }
       .surprise-problem:focus-visible {
-        border-color: var(--accent-strong);
         outline: 3px solid var(--accent-focus);
         outline-offset: 3px;
       }
       .surprise-problem:disabled {
+        color: var(--text-subtle);
         cursor: not-allowed;
         opacity: 0.5;
       }
       .surprise-problem-mark {
         display: grid;
-        width: 38px;
-        height: 38px;
+        width: 20px;
         flex: 0 0 auto;
         place-items: center;
-        border-radius: 10px;
-        color: var(--accent-on-primary);
-        background: var(--accent-strong);
+        color: inherit;
         font-family: Georgia, 'Times New Roman', serif;
         font-size: 1.2rem;
-        font-weight: 900;
-      }
-      .surprise-problem strong,
-      .surprise-problem small {
-        display: block;
+        font-weight: 700;
       }
       .surprise-problem strong {
-        color: var(--practice-ink);
-        font-size: 0.9rem;
+        color: inherit;
+        font-size: 1rem;
+        font-weight: 700;
       }
-      .surprise-problem small {
-        margin-top: 2px;
-        color: var(--practice-body);
-        font-size: 0.72rem;
-        line-height: 1.35;
+      .practice-hero-actions > p {
+        max-width: 52ch;
+        margin: 0;
+        color: var(--text-subtle);
+        font-size: 0.875rem;
+        font-weight: 400;
+        line-height: 1.5;
       }
       .pattern-group-metadata {
         display: flex;
@@ -200,7 +198,8 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         border-radius: 14px;
         background: var(--surface);
       }
-      .practice-controls label {
+      .practice-controls label,
+      .pattern-filter label {
         display: grid;
         gap: 6px;
         color: var(--practice-body);
@@ -210,8 +209,10 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         text-transform: uppercase;
       }
       .practice-controls input,
-      .practice-controls select {
+      .practice-controls select,
+      .pattern-filter select {
         width: 100%;
+        min-width: 0;
         min-height: 44px;
         padding: 9px 12px;
         border: 1px solid var(--border-strong);
@@ -224,46 +225,39 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
           sans-serif;
       }
       .pattern-filter {
-        display: flex;
-        gap: 8px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        align-items: end;
+        gap: 12px 24px;
         margin: 0 0 22px;
-        padding: 4px 3px 10px;
-        overflow-x: auto;
-        scroll-padding-inline: 12%;
-        scroll-snap-type: x proximity;
-        scrollbar-width: thin;
-        mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent);
+        padding: 0 17px 17px;
       }
-      .pattern-filter a {
+      .pattern-filter label {
+        min-width: 0;
+      }
+      .pattern-selection-context {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px 16px;
+        min-width: 0;
+      }
+      .pattern-selection-context p {
+        flex: 1 1 160px;
+        margin: 0;
+        color: var(--text-subtle);
+        font-size: 0.875rem;
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+      }
+      .pattern-selection-context a {
         display: inline-flex;
-        flex: 0 0 auto;
-        align-items: baseline;
-        gap: 6px;
-        scroll-snap-align: center;
-        padding: 8px 12px;
-        border: 1px solid var(--line);
-        border-radius: 999px;
-        color: var(--accent-link);
-        background: var(--surface);
-        font-size: 0.78rem;
-        font-weight: 800;
-        text-decoration: none;
-      }
-      .pattern-filter a[aria-current='page'] {
-        border-color: var(--practice-accent);
-        color: var(--accent-on-primary);
-        background: var(--practice-accent);
-      }
-      .pattern-filter-order {
-        color: var(--accent-secondary-strong);
-        font-family: Georgia, 'Times New Roman', serif;
-        font-size: 0.68rem;
-        font-variant-numeric: tabular-nums;
-        letter-spacing: 0;
-      }
-      .pattern-filter a[aria-current='page'] .pattern-filter-order {
-        color: var(--accent-on-primary);
-        opacity: 0.82;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        padding: 9px 14px;
+        font-size: 0.875rem;
       }
       .active-practice {
         margin: 0 0 26px;
@@ -607,6 +601,9 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         .practice-controls {
           grid-template-columns: minmax(0, 1fr);
         }
+        .pattern-filter {
+          grid-template-columns: minmax(0, 1fr);
+        }
         .active-practice > header,
         .practice-results-header {
           display: grid;
@@ -632,6 +629,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         .active-practice,
         .pattern-group,
         .pattern-filter a,
+        .pattern-filter select,
         .clear-pattern-filter,
         .clear-catalog-filters,
         .surprise-problem {
@@ -639,10 +637,6 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
           color: CanvasText;
           background: Canvas;
           box-shadow: none;
-        }
-        .pattern-filter a[aria-current='page'] {
-          color: HighlightText;
-          background: Highlight;
         }
       }
     `,
@@ -904,6 +898,12 @@ export class HandsOnDsa implements OnInit {
   protected updateQuery(value: string): void {
     this.query.set(value);
     this.updateCatalogParams({ q: value || null }, true);
+  }
+
+  protected updatePattern(value: string): void {
+    const pattern = this.groups().find((group) => group.id === value)?.id ?? '';
+    this.patternId.set(pattern);
+    this.updateCatalogParams({ pattern: pattern || null });
   }
 
   protected updateDifficulty(value: string): void {
