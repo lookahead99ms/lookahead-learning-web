@@ -68,7 +68,7 @@ describe('Header curriculum navigation', () => {
     http.expectNone(() => true);
     expect(button('Show highlights for Java Foundations')).not.toBeNull();
   });
-  it('cancels stale requests when switching paths and preserves a catalog fallback on error', () => {
+  it('cancels stale requests and falls back to the published catalog during version skew', () => {
     const { fixture, http, button } = setup();
     expand(button('Browse Learn'));
     const stale = http.expectOne('/content/learn/navigation.json');
@@ -77,11 +77,41 @@ describe('Header curriculum navigation', () => {
     http
       .expectOne('/content/grow/navigation.json')
       .flush({}, { status: 500, statusText: 'Unavailable' });
+    http.expectOne('/content/grow/catalog.json').flush([
+      { id: 'spring-framework', title: 'Spring Framework' },
+      { id: 'api-design', title: 'API Design and Security' },
+    ]);
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.panel-heading a').getAttribute('href')).toBe(
       '/grow',
     );
-    expect(fixture.nativeElement.textContent).toContain('could not load');
+    expect(fixture.nativeElement.textContent).toContain('Spring Framework');
+    expect(fixture.nativeElement.textContent).not.toContain('temporarily unavailable');
+    expect(
+      fixture.nativeElement.querySelector('.course-row a').getAttribute('aria-expanded'),
+    ).toBeNull();
+    fixture.componentInstance.close();
+    fixture.detectChanges();
+    expand(button('Browse Grow'));
+    fixture.detectChanges();
+    http.expectNone(() => true);
+    expect(button('Show highlights for Spring Framework')).not.toBeNull();
+  });
+  it('keeps a compact catalog action when both navigation sources are unavailable', () => {
+    const { fixture, http, button } = setup();
+    expand(button('Browse Grow'));
+    http
+      .expectOne('/content/grow/navigation.json')
+      .flush({}, { status: 404, statusText: 'Not found' });
+    http
+      .expectOne('/content/grow/catalog.json')
+      .flush({}, { status: 503, statusText: 'Unavailable' });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.navigation-panel-error')).not.toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('Course list is temporarily unavailable.');
+    expect(fixture.nativeElement.querySelector('.panel-heading a').getAttribute('href')).toBe(
+      '/grow',
+    );
     fixture.componentInstance.close();
     fixture.detectChanges();
     expand(button('Browse Grow'));

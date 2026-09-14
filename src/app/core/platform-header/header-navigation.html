@@ -20,6 +20,7 @@
   @if (activePath() === path.id) {
     <section
       class="navigation-panel"
+      [class.navigation-panel-error]="error() && !groups().length"
       (pointerenter)="keepOpen()"
       (pointerleave)="leaveSurface($event)"
       [id]="'navigation-' + path.id"
@@ -33,7 +34,7 @@
         <p role="status">Loading courses…</p>
       }
       @if (error()) {
-        <p role="status">Course shortcuts could not load. Use the catalog link above.</p>
+        <p class="navigation-error" role="status">Course list is temporarily unavailable.</p>
       }
       <div class="navigation-groups">
         @for (group of groups(); track group.id) {

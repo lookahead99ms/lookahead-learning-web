@@ -51,6 +51,13 @@ button:focus-visible {
   box-shadow: 0 12px 24px #0002;
   white-space: normal;
 }
+.navigation-panel-error {
+  max-height: none;
+  overflow: visible;
+}
+.navigation-error {
+  margin: 16px 0 0;
+}
 .panel-heading {
   display: flex;
   align-items: center;
@@ -90,9 +97,10 @@ button:focus-visible {
 }
 .navigation-groups {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 24px;
-  padding-top: 24px;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  align-items: start;
+  gap: 18px 24px;
+  padding-top: 20px;
   text-align: start;
 }
 h2 {
@@ -101,8 +109,8 @@ h2 {
   line-height: 1.5;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  margin: 0 0 10px;
-  padding-bottom: 10px;
+  margin: 0 0 6px;
+  padding-bottom: 6px;
   border-bottom: 2px solid var(--line);
 }
 h2 a {
@@ -124,7 +132,7 @@ ul {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 3px 0;
+  padding: 1px 0;
 }
 .course-row > a {
   display: flex;
@@ -168,7 +176,17 @@ p {
   font-size: 14px;
   line-height: 1.5;
 }
-@media (max-width: 900px) {
+@media (max-width: 1400px) {
+  .navigation-groups {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (max-width: 1050px) {
+  .navigation-groups {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 760px) {
   .navigation-groups {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, catchError, shareReplay, throwError } from 'rxjs';
+import { Observable, catchError, map, shareReplay, throwError } from 'rxjs';
 
 export interface NavigationCourse {
   id: string;
@@ -11,8 +11,27 @@ export interface NavigationCourse {
 export class NavigationService {
   private readonly http = inject(HttpClient);
   private readonly cache = new Map<string, Observable<unknown>>();
+  private readonly courseCache = new Map<string, Observable<{ courses: NavigationCourse[] }>>();
   courses(path: string): Observable<{ courses: NavigationCourse[] }> {
-    return this.load(`/content/${path}/navigation.json`);
+    let request = this.courseCache.get(path);
+    if (!request) {
+      request = this.load<{ courses: NavigationCourse[] }>(`/content/${path}/navigation.json`).pipe(
+        catchError(() =>
+          this.load<Array<{ id: string; title: string }>>(`/content/${path}/catalog.json`).pipe(
+            map((courses) => ({
+              courses: courses.map(({ id, title }) => ({ id, title, hasHighlights: false })),
+            })),
+          ),
+        ),
+        catchError((error) => {
+          this.courseCache.delete(path);
+          return throwError(() => error);
+        }),
+        shareReplay({ bufferSize: 1, refCount: true }),
+      );
+      this.courseCache.set(path, request);
+    }
+    return request;
   }
   highlights(path: string, course: string): Observable<{ highlights: string[] }> {
     return this.load(`/content/${path}/${course}/navigation-highlights.json`);

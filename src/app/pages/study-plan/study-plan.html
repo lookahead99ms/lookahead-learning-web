@@ -482,7 +482,12 @@
                   </div>
                 </dl>
                 <div class="progress-actions">
-                  <button type="button" aria-haspopup="dialog" (click)="openSchedule()">
+                  <button
+                    type="button"
+                    class="schedule-action"
+                    aria-haspopup="dialog"
+                    (click)="openSchedule()"
+                  >
                     Your complete schedule
                   </button>
                   <button
@@ -538,6 +543,7 @@
               <h2 #sessionHeading id="today-heading" tabindex="-1">Today’s Session</h2>
               <button
                 type="button"
+                class="schedule-action"
                 [disabled]="editsLocked()"
                 (click)="reviewSchedule()"
                 aria-haspopup="dialog"

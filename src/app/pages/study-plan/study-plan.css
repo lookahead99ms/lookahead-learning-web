@@ -827,6 +827,28 @@ textarea {
   min-height: 44px;
   font-size: 13px;
 }
+
+.schedule-action {
+  border-color: var(--accent-strong);
+  background: color-mix(in srgb, var(--accent-strong) 8%, var(--surface));
+  color: var(--accent-strong);
+}
+
+.schedule-action:hover:not(:disabled) {
+  border-color: var(--accent-strong);
+  background: color-mix(in srgb, var(--accent-strong) 15%, var(--surface));
+}
+
+.progress-actions .recovery-toggle {
+  border-color: var(--search-primary);
+  background: var(--search-primary);
+  color: var(--accent-on-primary);
+}
+
+.progress-actions .recovery-toggle:hover:not(:disabled) {
+  border-color: var(--search-hover);
+  background: var(--search-hover);
+}
 .today-panel {
   margin-top: 28px;
 }
