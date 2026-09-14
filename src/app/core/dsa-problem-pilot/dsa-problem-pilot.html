@@ -1,6 +1,27 @@
-<section class="pilot" [attr.aria-label]="problem().title + ' complete practice experience'">
+<section
+  class="pilot"
+  [class.focus-studio]="focusStudio()"
+  [class.code-focused]="focusStudio() && briefHidden()"
+  [attr.aria-label]="problem().title + ' complete practice experience'"
+>
+  @if (focusStudio()) {
+    <div class="studio-toolbar">
+      <span>Practice at your pace</span>
+      <button
+        type="button"
+        class="brief-toggle"
+        [attr.aria-controls]="briefId()"
+        [attr.aria-expanded]="!briefHidden()"
+        (click)="toggleBrief($event)"
+      >
+        {{ briefHidden() ? 'Show problem brief' : 'Focus on code' }}
+      </button>
+    </div>
+  }
   <section
     class="contract"
+    [id]="briefId()"
+    [hidden]="focusStudio() && briefHidden()"
     [attr.aria-labelledby]="showProblemHeading() ? 'pilot-problem-title' : null"
     [attr.aria-label]="showProblemHeading() ? null : problem().title + ' problem contract'"
   >
@@ -9,6 +30,9 @@
         @if (showProblemHeading()) {
           <span>Selected problem</span>
           <h3 id="pilot-problem-title">{{ problem().title }}</h3>
+        }
+        @if (focusStudio()) {
+          <h2 class="brief-heading">The problem</h2>
         }
         <p>{{ practice().statement.prompt }}</p>
       </div>
@@ -59,8 +83,21 @@
         <strong id="example-cases-heading">Examples and expected outputs</strong>
         <span>Use these cases to verify the contract before you start.</span>
       </div>
+      @if (focusStudio()) {
+        <label class="brief-fixture-picker"
+          >Choose an example
+          <select
+            [value]="activeFixture().id"
+            (change)="selectBriefFixture($any($event.target).value)"
+          >
+            @for (fixture of problem().fixtures; track fixture.id) {
+              <option [value]="fixture.id">{{ fixture.label }}</option>
+            }
+          </select>
+        </label>
+      }
       @for (fixture of problem().fixtures; track fixture.id) {
-        <article>
+        <article [hidden]="focusStudio() && fixture.id !== activeFixture().id">
           <strong>{{ fixture.label }}</strong>
           <code>{{ fixture.input }}</code>
           <p>
@@ -85,7 +122,7 @@
         (click)="selectMode('practice')"
         (keydown)="handleModeKeydown($event)"
       >
-        Practice independently
+        {{ focusStudio() ? 'Try it yourself' : 'Practice independently' }}
       </button>
       <button
         [id]="modeTabId('guided')"
@@ -98,8 +135,23 @@
         (click)="selectMode('guided')"
         (keydown)="handleModeKeydown($event)"
       >
-        Guided explanation
+        {{ focusStudio() ? 'Guided walkthrough' : 'Guided explanation' }}
       </button>
+      @if (focusStudio()) {
+        <button
+          [id]="modeTabId('recall')"
+          data-mode="recall"
+          type="button"
+          role="tab"
+          [attr.aria-selected]="mode() === 'recall'"
+          [attr.tabindex]="mode() === 'recall' ? 0 : -1"
+          [attr.aria-controls]="modePaneId('recall')"
+          (click)="selectMode('recall')"
+          (keydown)="handleModeKeydown($event)"
+        >
+          Recall
+        </button>
+      }
     </div>
 
     <section
@@ -116,8 +168,13 @@
           [practiceStarters]="practice().starters"
           [initialLanguage]="initialLanguage()"
           [showReferences]="false"
+          [studioLayout]="focusStudio()"
           [tutorProblem]="tutorProblem()"
-          practicePrompt="Implement the stated contract without changing the inputs. No code runner is enabled in this pilot."
+          [practicePrompt]="
+            focusStudio()
+              ? 'Work from the contract. Reveal hints and the reference when you need them.'
+              : 'Implement the stated contract without changing the inputs. No code runner is enabled in this pilot.'
+          "
         />
       </div>
       <details class="help-panel">
@@ -233,9 +290,25 @@
         </ul>
       </div>
     </section>
+    @if (focusStudio()) {
+      <section
+        [id]="modePaneId('recall')"
+        class="learning-checks recall-pane"
+        role="tabpanel"
+        [attr.aria-labelledby]="modeTabId('recall')"
+        [hidden]="mode() !== 'recall'"
+      >
+        <ng-container [ngTemplateOutlet]="learningChecks" />
+      </section>
+    }
   </section>
 
-  <section class="learning-checks" aria-labelledby="learning-checks-heading">
+  @if (!focusStudio()) {
+    <section class="learning-checks" aria-labelledby="learning-checks-heading">
+      <ng-container [ngTemplateOutlet]="learningChecks" />
+    </section>
+  }
+  <ng-template #learningChecks>
     <span>Retrieve and transfer</span>
     <h4 id="learning-checks-heading">Check the reasoning without code</h4>
     @for (check of practice().checks; track $index) {
@@ -253,5 +326,5 @@
         <p class="expected"><strong>Check:</strong> {{ check.expected }}</p>
       </details>
     }
-  </section>
+  </ng-template>
 </section>

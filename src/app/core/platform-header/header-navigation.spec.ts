@@ -3,6 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { HeaderNavigation } from './header-navigation';
+import { LEARN_COURSE_GROUPS } from '../../content/learn-course-groups';
 
 function expand(link: HTMLElement) {
   link.dispatchEvent(
@@ -133,6 +134,70 @@ describe('Header curriculum navigation', () => {
     );
     expect(fixture.nativeElement.querySelector('[role="menu"]')).toBeNull();
   });
+  it.each([0, 1, 2, 5, 6])('sizes the directory from %i nonempty authored groups', (count) => {
+    const { fixture, http, button } = setup();
+    const selectedGroups = LEARN_COURSE_GROUPS.slice(0, count);
+    const courses = selectedGroups.map((group, index) => ({
+      id: group.courseIds[0],
+      title: `Course ${index + 1}`,
+      hasHighlights: false,
+    }));
+    expand(button('Browse Learn'));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.navigation-groups')).toBeNull();
+    expect(fixture.nativeElement.querySelector('[role="status"]').textContent).toContain('Loading');
+    http.expectOne('/content/learn/navigation.json').flush({ courses });
+    fixture.detectChanges();
+    const panel = fixture.nativeElement.querySelector('.navigation-panel') as HTMLElement;
+    expect(panel.getAttribute('data-group-count')).toBe(String(count));
+    expect(panel.style.getPropertyValue('--navigation-group-count')).toBe(String(count));
+    expect(
+      [...panel.querySelectorAll('.navigation-group h2')].map((h) => h.textContent?.trim()),
+    ).toEqual(selectedGroups.map((group) => group.title));
+    expect([...panel.querySelectorAll('.course-row a')].map((a) => a.getAttribute('href'))).toEqual(
+      courses.map((course) => '/learn/' + course.id),
+    );
+    if (count === 0) {
+      expect(panel.querySelector('.navigation-groups')).toBeNull();
+      expect(panel.querySelector('[role="status"]')?.textContent).toContain('No courses');
+    } else {
+      expect(panel.querySelectorAll('.navigation-groups').length).toBe(1);
+    }
+    fixture.destroy();
+  });
+  it('keeps long course names, unassigned destinations and current-location semantics', () => {
+    const { fixture, http, button } = setup();
+    const longTitle =
+      'Understanding browser lifecycle, rendering, accessibility and exceptionallyLongUnbrokenCourseIdentifiers';
+    vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue('/learn/core-java/lesson');
+    expand(button('Browse Learn'));
+    http.expectOne('/content/learn/navigation.json').flush({
+      courses: [
+        { id: 'extra-course', title: 'New authored course', hasHighlights: false },
+        { id: 'core-java', title: longTitle, hasHighlights: false },
+      ],
+    });
+    fixture.detectChanges();
+    const panel = fixture.nativeElement.querySelector('.navigation-panel');
+    const links = [...panel.querySelectorAll('.course-row a')] as HTMLAnchorElement[];
+    expect(links.map((a) => a.getAttribute('href'))).toEqual([
+      '/learn/core-java',
+      '/learn/extra-course',
+    ]);
+    expect(links[0].textContent?.trim()).toBe(longTitle);
+    expect(links[0].getAttribute('aria-current')).toBe('page');
+    expect(links[1].hasAttribute('aria-current')).toBe(false);
+    expect(panel.textContent).toContain('More to explore');
+    expect(panel.getAttribute('data-group-count')).toBe('2');
+    const close = panel.querySelector('.panel-close') as HTMLButtonElement;
+    expect(close.textContent?.replace(/\s+/g, ' ').trim()).toBe('× Close');
+    expect(close.querySelector('span')?.getAttribute('aria-hidden')).toBe('true');
+    close.click();
+    fixture.detectChanges();
+    expect(document.activeElement).toBe(button('Browse Learn'));
+    expect(fixture.nativeElement.querySelector('.navigation-panel')).toBeNull();
+    fixture.destroy();
+  });
 });
 
 describe('Header hover and touch behavior', () => {
@@ -221,5 +286,34 @@ describe('Header hover and touch behavior', () => {
     expect(navigate).not.toHaveBeenCalled();
     expect(modified.defaultPrevented).toBe(false);
     expect(link.getAttribute('href')).toBe('/learn');
+  });
+  it('preserves course highlight expansion on first touch and navigation on the second', () => {
+    const { fixture, http, link } = setup();
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    expand(link);
+    http
+      .expectOne('/content/learn/navigation.json')
+      .flush({ courses: [{ id: 'core-java', title: 'Java Foundations', hasHighlights: true }] });
+    fixture.detectChanges();
+    const course = fixture.nativeElement.querySelector('.course-row a') as HTMLAnchorElement;
+    const tap = () => {
+      course.dispatchEvent(
+        new PointerEvent('pointerdown', { pointerType: 'touch', bubbles: true }),
+      );
+      course.dispatchEvent(new MouseEvent('click', { detail: 1, bubbles: true, cancelable: true }));
+    };
+    tap();
+    http
+      .expectOne('/content/learn/core-java/navigation-highlights.json')
+      .flush({ highlights: ['Values and references'] });
+    fixture.detectChanges();
+    expect(navigate).not.toHaveBeenCalled();
+    expect(course.getAttribute('aria-expanded')).toBe('true');
+    expect(fixture.nativeElement.querySelector('.course-highlights')?.textContent).toContain(
+      'Values and references',
+    );
+    tap();
+    expect(navigate).toHaveBeenCalledWith(['/', 'learn', 'core-java']);
+    fixture.destroy();
   });
 });

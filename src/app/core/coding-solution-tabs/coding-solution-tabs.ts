@@ -14,6 +14,7 @@ type Language = 'java' | 'python' | 'go';
   template: `
     <section
       class="coding-workspace"
+      [class.studio-layout]="studioLayout()"
       aria-label="Practice and reference solutions"
       [class.material-theme]="editorTheme() === 'material-theme'"
       [class.one-dark]="editorTheme() === 'one-dark'"
@@ -62,7 +63,9 @@ type Language = 'java' | 'python' | 'go';
         <section class="practice-view" role="tabpanel">
           <div class="workspace-toolbar">
             <div>
-              <strong>Start with your own solution</strong>
+              @if (!studioLayout()) {
+                <strong>Start with your own solution</strong>
+              }
               <p>
                 {{
                   practicePrompt() || 'Write the invariant first, then dry-run a small edge case.'
@@ -106,7 +109,11 @@ type Language = 'java' | 'python' | 'go';
           </p>
           @if (tutorProblem(); as problem) {
             @if (problem.id === 'algorithmic-two-sum') {
-              <app-editor-tutor [problem]="problem" [code]="practiceCode()" [language]="practiceLanguage()" />
+              <app-editor-tutor
+                [problem]="problem"
+                [code]="practiceCode()"
+                [language]="practiceLanguage()"
+              />
             }
           }
         </section>
@@ -173,6 +180,66 @@ type Language = 'java' | 'python' | 'go';
   `,
   styles: [
     `
+      .coding-workspace.studio-layout {
+        margin: 0 0 20px;
+        border-radius: 8px;
+        box-shadow: none;
+      }
+      .studio-layout .workspace-toolbar {
+        padding: 16px;
+        gap: 16px;
+        align-items: center;
+      }
+      .studio-layout .workspace-toolbar p {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.7;
+      }
+      .studio-layout .workspace-toolbar label {
+        font-size: 12px;
+        text-transform: none;
+        letter-spacing: 0;
+      }
+      .studio-layout select {
+        min-height: 44px;
+        min-width: 110px;
+      }
+      .studio-layout .editor-chrome {
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 12px 16px;
+      }
+      .studio-layout .editor-actions {
+        flex-wrap: wrap;
+      }
+      .studio-layout textarea {
+        min-height: 365px;
+        height: 44vh;
+        max-height: 720px;
+        padding: 22px;
+        font-size: 14px;
+        line-height: 1.9;
+      }
+      .studio-layout .workspace-note {
+        font-size: 13px;
+        line-height: 1.6;
+      }
+      @media (max-width: 600px) {
+        .studio-layout .workspace-toolbar {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .studio-layout textarea {
+          min-height: 295px;
+          padding: 16px 12px;
+        }
+        .studio-layout .editor-chrome {
+          padding-inline: 12px;
+        }
+        .studio-layout .editor-actions > button {
+          min-height: 44px;
+        }
+      }
       .coding-workspace {
         margin: 24px 0;
         overflow: hidden;
@@ -555,6 +622,7 @@ export class CodingSolutionTabs {
   readonly initialLanguage = input<Language>('java');
   readonly showPractice = input(true);
   readonly showReferences = input(true);
+  readonly studioLayout = input(false);
   readonly useLanguageThemes = input(false);
   readonly visual = input<TheoryVisual | null>(null);
   readonly pseudocode = input<{ title: string; source: string } | null>(null);

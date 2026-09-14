@@ -111,6 +111,7 @@
           <p class="form-error" role="alert">{{ formError() || store.error() }}</p>
         }
         <button
+          [attr.aria-busy]="store.busy()"
           class="primary-action"
           type="submit"
           [disabled]="

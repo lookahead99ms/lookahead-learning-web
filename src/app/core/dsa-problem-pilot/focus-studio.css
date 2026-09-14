@@ -1,0 +1,222 @@
+/* The Arrays pilot reuses the live editor and source-line debugger. */
+.focus-studio {
+  display: grid;
+  grid-template-columns: minmax(340px, 0.9fr) minmax(0, 1.65fr);
+  gap: 20px 24px;
+  align-items: start;
+  font-size: 15px;
+}
+.studio-toolbar {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.studio-toolbar > span {
+  color: var(--text-subtle);
+  font-size: 14px;
+}
+.studio-toolbar .brief-toggle {
+  min-height: 44px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.focus-studio .contract,
+.focus-studio .workspace {
+  min-width: 0;
+  border-radius: 10px;
+  background: var(--surface);
+}
+.focus-studio .contract {
+  padding: 24px;
+}
+.focus-studio .pilot-heading {
+  display: block;
+  padding: 0 0 24px;
+  margin: 0 0 24px;
+}
+.focus-studio .brief-heading {
+  margin: 0 0 14px;
+  color: var(--text-strong);
+  font:
+    500 27px/1.25 Georgia,
+    serif;
+  letter-spacing: -0.025em;
+}
+.focus-studio .pilot-heading p,
+.focus-studio .contract-grid p,
+.focus-studio .contract-grid li {
+  font-size: 15px;
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+.focus-studio .source-link,
+.focus-studio .source-attribution {
+  display: inline-block;
+  margin-top: 12px;
+  padding-inline: 0;
+  white-space: normal;
+  font-size: 12px;
+  color: var(--text-subtle);
+}
+.focus-studio .source-link {
+  color: var(--accent-link);
+}
+.focus-studio .contract-grid {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+}
+.focus-studio .contract-grid > div {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+}
+.focus-studio .contract-grid strong,
+.focus-studio .example-cases-heading strong {
+  color: var(--text-strong);
+  font-size: 15px;
+  font-weight: 650;
+}
+.focus-studio .contract-grid p {
+  padding-left: 0;
+}
+.focus-studio .example-cases {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+  margin-top: 24px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+.focus-studio .example-cases-heading {
+  display: block;
+}
+.focus-studio .example-cases-heading > span {
+  display: none;
+}
+.brief-fixture-picker {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  color: var(--text-subtle);
+  font-size: 13px;
+}
+.brief-fixture-picker select {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  color: var(--text-strong);
+  background: var(--surface);
+  font: inherit;
+}
+.focus-studio .example-cases article {
+  display: block;
+  padding: 16px;
+  border-radius: 6px;
+  background: var(--surface-subtle);
+}
+.focus-studio .example-cases article > code {
+  display: block;
+  margin-block: 12px;
+}
+.focus-studio .example-cases article p {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.focus-studio .example-cases article small {
+  font-size: 13px;
+  line-height: 1.65;
+}
+.focus-studio .mode-tabs {
+  padding: 0 20px;
+  gap: 20px;
+  background: var(--surface);
+  border-radius: 10px 10px 0 0;
+}
+.focus-studio .mode-tabs button {
+  flex: 0 1 auto;
+  min-height: 56px;
+  padding: 12px 0;
+  color: var(--text-subtle);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.focus-studio .mode-tabs button[aria-selected='true'] {
+  color: var(--accent-link);
+  background: transparent;
+  border-bottom-color: var(--accent-strong);
+}
+.focus-studio .practice-pane,
+.focus-studio .guided-pane,
+.focus-studio .recall-pane {
+  padding: 22px;
+}
+.focus-studio .learning-checks {
+  margin: 0;
+  border: 0;
+  border-radius: 0 0 10px 10px;
+}
+.focus-studio .reasoning-frame,
+.focus-studio .canonical-rationale {
+  grid-template-columns: minmax(0, 1fr);
+}
+.focus-studio .reasoning-invariant {
+  padding: 0 0 14px;
+  border-right: 0;
+  border-bottom: 1px solid var(--line);
+}
+.focus-studio .canonical-rationale p,
+.focus-studio .canonical-rationale strong {
+  font-size: 14px;
+  line-height: 1.65;
+}
+.focus-studio .help-panel > summary,
+.focus-studio .learning-checks summary {
+  font-size: 14px;
+  font-weight: 600;
+  flex-wrap: wrap;
+}
+.focus-studio .help-panel p,
+.focus-studio .learning-checks p {
+  line-height: 1.7;
+}
+.focus-studio.code-focused {
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (max-width: 1050px) {
+  .focus-studio {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 600px) {
+  .focus-studio {
+    gap: 16px;
+  }
+  .focus-studio .contract,
+  .focus-studio .practice-pane,
+  .focus-studio .guided-pane,
+  .focus-studio .recall-pane {
+    padding: 18px 14px;
+  }
+  .focus-studio .mode-tabs {
+    gap: 14px;
+    padding-inline: 14px;
+  }
+  .focus-studio .mode-tabs button {
+    flex: 1 1 0;
+    font-size: 13px;
+  }
+  .studio-toolbar > span {
+    display: none;
+  }
+  .studio-toolbar {
+    justify-content: flex-end;
+  }
+}

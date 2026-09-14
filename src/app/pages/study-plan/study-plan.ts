@@ -273,6 +273,34 @@ export class StudyPlanPage implements OnInit {
     }, 0);
   }
   @ViewChild('draftDialog') private draftDialog?: ElementRef<HTMLDialogElement>;
+  private draftOpener?: HTMLElement;
+  private draftPointerStartedOutside = false;
+  private openDraftDialog(): void {
+    const dialog = this.draftDialog?.nativeElement;
+    const activeElement = dialog?.ownerDocument.activeElement;
+    if (activeElement instanceof HTMLElement && activeElement !== dialog) {
+      this.draftOpener = activeElement;
+    }
+    dialog?.showModal?.();
+  }
+  private outsideDraft(event: MouseEvent): boolean {
+    const dialog = this.draftDialog?.nativeElement;
+    if (!dialog || event.target !== dialog) return false;
+    const bounds = dialog.getBoundingClientRect();
+    return (
+      event.clientX < bounds.left ||
+      event.clientX > bounds.right ||
+      event.clientY < bounds.top ||
+      event.clientY > bounds.bottom
+    );
+  }
+  protected startDraftPointer(event: PointerEvent): void {
+    this.draftPointerStartedOutside = this.outsideDraft(event);
+  }
+  protected dismissDraftBackdrop(event: MouseEvent): void {
+    if (this.draftPointerStartedOutside && this.outsideDraft(event)) this.closeDraft();
+    this.draftPointerStartedOutside = false;
+  }
   private draftScrollElement?: HTMLElement;
   private draftResizeObserver?: ResizeObserver;
   protected readonly draftHasMoreBelow = signal(false);
@@ -394,9 +422,9 @@ export class StudyPlanPage implements OnInit {
   protected closeDraft(): void {
     if (this.accountStore.busy() || this.accountStore.pending()) return;
     this.draftDialog?.nativeElement.close?.();
-    this.draft.set(null);
     this.draftHasMoreBelow.set(false);
     this.draftScheduleBelow.set(false);
+    if (this.draftOpener?.isConnected) this.draftOpener.focus({ preventScroll: true });
   }
   protected async saveDraft(): Promise<void> {
     const draft = this.draft();
@@ -420,6 +448,7 @@ export class StudyPlanPage implements OnInit {
       this.persist('Plan saved on this browser.');
     }
     this.closeDraft();
+    this.draft.set(null);
   }
   protected continueToSignIn(): void {
     try {
@@ -835,7 +864,7 @@ export class StudyPlanPage implements OnInit {
             this.readyMadeMessage.set(
               'Authored schedule loaded for review. Your account changes only when you save.',
             );
-            this.draftDialog?.nativeElement.showModal?.();
+            this.openDraftDialog();
           } catch {
             this.readyMadeStatus.set('error');
             this.readyMadeMessage.set(
@@ -1444,7 +1473,7 @@ export class StudyPlanPage implements OnInit {
       ],
     });
     this.selectedDay.set(1);
-    this.draftDialog?.nativeElement.showModal?.();
+    this.openDraftDialog();
     this.status.set('Review your temporary draft. Save when you are ready.');
     await this.router.navigate([], {
       relativeTo: this.route,
@@ -1677,6 +1706,7 @@ export class StudyPlanPage implements OnInit {
   }
   private async enterAccount(): Promise<void> {
     this.closeDraft();
+    this.draft.set(null);
     if (!this.accountMode() && this.saved()) this.browserPlan = this.saved();
     this.importAvailable.set(!!this.browserPlan);
     this.accountMode.set(true);
@@ -1807,6 +1837,7 @@ export class StudyPlanPage implements OnInit {
       this.adjustmentReview.set(null);
       this.acceptAccountPlan(result);
       this.closeDraft();
+      this.draft.set(null);
       if (isAdjustment) this.announceAdjustment('Plan updated. Your adjustment is saved.');
     }
   }

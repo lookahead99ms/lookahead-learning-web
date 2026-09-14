@@ -44,7 +44,6 @@ h1 {
 .search-mode-switch:hover,
 .search-mode-switch:focus-visible {
   color: var(--search-hover);
-  outline: none;
 }
 .search-form {
   display: flex;
@@ -81,7 +80,6 @@ h1 {
 .search-submit:hover,
 .search-submit:focus-visible {
   background: var(--search-hover);
-  outline: none;
 }
 .search-workspace {
   max-width: 1120px;
@@ -116,7 +114,6 @@ h1 {
 .clear-filters:focus-visible {
   border-color: var(--search-primary);
   background: var(--surface-accent);
-  outline: none;
 }
 .control {
   display: grid;
@@ -222,7 +219,6 @@ select:focus {
 .tag-pill:focus-visible {
   background: var(--surface-accent);
   color: var(--text-strong);
-  outline: none;
 }
 .tag-pill.active {
   border-color: var(--search-primary);
@@ -296,7 +292,6 @@ select:focus {
 .result-breadcrumbs a:focus-visible {
   color: var(--search-primary);
   text-decoration: underline;
-  outline: none;
 }
 .result-meta-right {
   display: flex;
@@ -328,16 +323,15 @@ select:focus {
 .result-meta-filter.active {
   color: var(--accent-on-primary);
   background: var(--search-primary);
-  outline: none;
 }
 .result-meta-filter.active {
   cursor: pointer;
 }
 .result-difficulty {
-  padding: 4px 8px;
-  border-radius: 999px;
-  color: var(--muted);
-  background: var(--surface-muted);
+  padding: 0;
+  color: var(--text-subtle);
+  background: transparent;
+  border-radius: 0;
 }
 .result-title {
   margin: 10px 0 6px;
@@ -353,7 +347,6 @@ select:focus {
   color: var(--search-primary);
   text-decoration: underline;
   text-underline-offset: 3px;
-  outline: none;
 }
 .result-tags {
   display: flex;
@@ -378,7 +371,6 @@ select:focus {
   border-color: var(--search-primary);
   color: var(--accent-on-primary);
   background: var(--search-primary);
-  outline: none;
 }
 .result-tag.active {
   cursor: pointer;
@@ -420,7 +412,6 @@ select:focus {
 .answer-toggle:focus-visible {
   color: var(--accent-on-primary);
   background: var(--search-primary);
-  outline: none;
 }
 .result-answer {
   margin-top: 16px;
@@ -505,7 +496,6 @@ select:focus {
 .lesson-link:focus-visible {
   color: var(--accent-on-primary);
   background: var(--search-primary);
-  outline: none;
 }
 .answer-loading,
 .answer-error {
@@ -539,7 +529,6 @@ select:focus {
 .answer-error button:focus-visible {
   color: var(--accent-on-primary);
   background: var(--search-primary);
-  outline: none;
 }
 :host ::ng-deep .library-answer .coding-workspace {
   margin: 0;
@@ -561,7 +550,6 @@ select:focus {
 .show-more-results:focus-visible {
   color: var(--accent-on-primary);
   background: var(--search-primary);
-  outline: none;
 }
 .detail-link {
   display: inline-block;
@@ -576,7 +564,6 @@ select:focus {
 .detail-link:hover,
 .detail-link:focus-visible {
   background: var(--search-hover);
-  outline: none;
 }
 @media (prefers-reduced-motion: reduce) {
   .answer-toggle-chevron {

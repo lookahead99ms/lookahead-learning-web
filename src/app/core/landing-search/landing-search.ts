@@ -87,7 +87,7 @@ type LandingSuggestion = {
       .landing-search-clear:focus-visible {
         color: var(--text-strong);
         background: var(--surface-accent);
-        outline: none;
+
       }
       .landing-search-dropdown {
         position: absolute;
@@ -124,13 +124,13 @@ type LandingSuggestion = {
       .landing-search-stage:hover,
       .landing-search-stage:focus-visible {
         background: var(--surface-accent);
-        outline: none;
+
       }
       .landing-search-stage.learn {
         color: var(--accent-link);
       }
       .landing-search-stage.grow {
-        color: var(--warning);
+        color: var(--accent-link);
       }
       .landing-search-stage.look-ahead {
         color: var(--text-strong);
@@ -159,7 +159,7 @@ type LandingSuggestion = {
       .landing-search-result:hover,
       .landing-search-result:focus-visible {
         background: var(--surface-accent);
-        outline: none;
+
       }
       .landing-search-result-type {
         padding-top: 2px;

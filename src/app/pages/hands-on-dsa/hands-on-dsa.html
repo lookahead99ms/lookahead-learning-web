@@ -29,15 +29,16 @@
         <button
           class="surprise-problem"
           type="button"
+          aria-describedby="surprise-problem-description"
           [disabled]="!randomPracticeCount()"
           (click)="surpriseMe()"
         >
           <span class="surprise-problem-mark" aria-hidden="true">?</span>
-          <span>
-            <strong>Surprise me</strong>
-            <small>Start a ready-to-solve problem without revealing its pattern.</small>
-          </span>
+          <strong>Surprise me</strong>
         </button>
+        <p id="surprise-problem-description">
+          Start a ready-to-solve problem without revealing its pattern.
+        </p>
       </div>
     </header>
 
@@ -72,35 +73,34 @@
         </label>
       </section>
 
-      <nav class="pattern-filter" aria-label="Filter by algorithmic pattern">
-        <a
-          routerLink="/learn/hands-on-dsa"
-          [queryParams]="{ pattern: null, page: null }"
-          queryParamsHandling="merge"
-          [attr.aria-current]="!selectedGroup() ? 'page' : null"
-          >All patterns</a
-        >
-        @for (group of groups(); track group.id) {
-          <a
-            routerLink="/learn/hands-on-dsa"
-            [queryParams]="{
-              pattern: selectedGroup()?.id === group.id ? null : group.id,
-              page: null,
-            }"
-            queryParamsHandling="merge"
-            [attr.aria-current]="selectedGroup()?.id === group.id ? 'page' : null"
-            [attr.aria-label]="
-              selectedGroup()?.id === group.id
-                ? 'Clear pattern ' + group.preparationOrder + ', ' + group.title + ' filter'
-                : 'Show pattern ' + group.preparationOrder + ', ' + group.title + ' problems'
-            "
-            ><span class="pattern-filter-order" aria-hidden="true">{{
-              preparationOrderLabel(group.preparationOrder)
-            }}</span
-            ><span>{{ group.title }}</span></a
+      <section class="pattern-filter" aria-label="Filter by algorithmic pattern">
+        <label for="practice-pattern">
+          Practice pattern
+          <select
+            id="practice-pattern"
+            [value]="selectedGroup()?.id ?? ''"
+            (change)="updatePattern($any($event.target).value)"
           >
-        }
-      </nav>
+            <option value="" [selected]="!selectedGroup()">All patterns</option>
+            @for (group of groups(); track group.id) {
+              <option [value]="group.id" [selected]="selectedGroup()?.id === group.id">
+                {{ preparationOrderLabel(group.preparationOrder) }} · {{ group.title }}
+              </option>
+            }
+          </select>
+        </label>
+        <div class="pattern-selection-context">
+          <p>{{ selectedGroup()?.title ?? groups().length + ' patterns to explore' }}</p>
+          @if (selectedGroup()) {
+            <a
+              routerLink="/learn/hands-on-dsa"
+              [queryParams]="{ pattern: null, page: null }"
+              queryParamsHandling="merge"
+              >All patterns</a
+            >
+          }
+        </div>
+      </section>
 
       <header
         id="practice-results"

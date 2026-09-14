@@ -136,7 +136,7 @@
 .catalog-secondary-action:hover,
 .catalog-secondary-action:focus-visible {
   color: var(--search-hover);
-  outline: none;
+
   text-decoration-color: currentColor;
 }
 

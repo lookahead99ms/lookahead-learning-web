@@ -62,14 +62,22 @@ import { ACCOUNT_FETCH, StudyPlanAccount } from '../study-plan/study-plan-accoun
                 <figure>
                   <img [src]="image.url" [alt]="image.file.name" />
                   <figcaption>{{ image.file.name }}</figcaption>
-                  <button type="button" [disabled]="busy()" (click)="remove(image.url)">
+                  <button
+                    type="button"
+                    [disabled]="busy()"
+                    (click)="remove(image.url)"
+                  >
                     Remove image
                   </button>
                 </figure>
               }
             </div>
           </fieldset>
-          <button type="submit" [disabled]="busy() || !!receipt()">
+          <button
+            [attr.aria-busy]="busy()"
+            type="submit"
+            [disabled]="busy() || !!receipt()"
+          >
             {{
               receipt()
                 ? 'Request recorded'

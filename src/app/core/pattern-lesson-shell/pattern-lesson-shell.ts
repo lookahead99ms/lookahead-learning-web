@@ -912,7 +912,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
       .practice-grid a:focus-visible {
         border-color: var(--warning);
         box-shadow: 0 8px 20px var(--shadow);
-        outline: none;
+
       }
       .practice-grid strong {
         margin: 5px 0;

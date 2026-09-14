@@ -123,10 +123,12 @@ h3 {
 }
 .hero-carousel {
   position: relative;
-  padding: 45px 0 64px;
+  padding: 45px 0 88px;
 }
 .hero-slides {
   display: grid;
+  overflow: clip;
+  overflow-clip-margin: 16px;
 }
 .hero-slide {
   grid-area: 1/1;
@@ -140,6 +142,13 @@ h3 {
 .hero-slide.active {
   visibility: visible;
   pointer-events: auto;
+}
+.hero-slide.transitioning {
+  visibility: visible;
+  will-change: opacity;
+}
+.hero-slide.transitioning .hero-visual {
+  will-change: transform;
 }
 .hero-copy {
   display: flex;
@@ -158,11 +167,17 @@ h3 {
   font-size: var(--title-size);
   line-height: 1.08;
   letter-spacing: -0.035em;
-  min-height: calc(var(--title-size) * 3.24);
+  flex: none;
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 0;
+  width: 100%;
   margin: 16px 0 20px;
 }
 .hero-copy h1 span {
   display: block;
+  flex: none;
+  line-height: inherit;
   white-space: nowrap;
 }
 .hero-copy .lead {
@@ -171,13 +186,24 @@ h3 {
 .hero-copy .primary-action {
   margin-top: auto;
 }
+.hero-visual,
+.feature-panel {
+  --panel-background: var(--hero-panel);
+  --panel-ink: var(--hero-panel-ink);
+  --panel-muted: var(--hero-panel-muted);
+  --panel-line: var(--hero-panel-line);
+  --panel-accent: var(--code-accent);
+  --panel-border: color-mix(in srgb, var(--hero-panel-muted) 65%, var(--hero-panel-line));
+  --panel-shadow: var(--hero-shadow);
+  background: var(--panel-background);
+  color: var(--panel-ink);
+}
 .hero-visual {
   min-width: 0;
   align-self: stretch;
   padding: 30px;
-  background: var(--hero-panel);
-  color: var(--hero-panel-ink);
-  box-shadow: 14px 14px 0 var(--hero-shadow);
+  border: 2px solid var(--panel-border);
+  box-shadow: 14px 14px 0 var(--panel-shadow);
 }
 .hero-visual h2 {
   font:
@@ -185,26 +211,41 @@ h3 {
     sans-serif;
   letter-spacing: normal;
 }
-.hero-visual p {
-  color: var(--hero-panel-muted);
+.hero-visual p,
+.feature-panel p {
+  color: var(--panel-muted);
 }
 .hero-visual .chapter {
   margin-top: 0;
 }
-.hero-visual.soft-panel {
-  background: var(--surface);
-  color: var(--text-strong);
-  border: 1px solid var(--line);
-  box-shadow: none;
+.hero-visual[data-panel-tone='light'],
+.feature-panel[data-panel-tone='light'] {
+  /* The selected teal palette is independent of the surrounding page theme. */
+  --panel-background: #213a3b;
+  --panel-ink: #e6f3ed;
+  --panel-muted: #aec9bf;
+  --panel-line: #3c5f55;
+  --panel-accent: #83d8b9;
+  --panel-border: var(--hero-panel);
+  --panel-shadow: var(--hero-panel);
 }
-.hero-visual.soft-panel p {
-  color: var(--muted);
+.feature-panel .eyebrow {
+  color: var(--panel-accent);
+}
+.feature-panel a {
+  color: var(--panel-ink);
+}
+.feature-panel a:hover {
+  color: var(--panel-accent);
+}
+.feature-panel a:focus-visible {
+  outline-color: var(--code-focus);
 }
 .hero-visual pre {
   margin: 18px 0;
 }
 .hero-visual code {
-  color: var(--code-accent);
+  color: var(--panel-accent);
   background: transparent;
   font:
     14px/1.9 ui-monospace,
@@ -220,8 +261,10 @@ h3 {
   padding: 14px 0;
   border-bottom: 1px solid var(--line);
 }
-.hero-visual:not(.soft-panel) .detail-line {
-  border-color: var(--hero-panel-line);
+.hero-visual .detail-line,
+.hero-visual .journey,
+.feature-panel .detail-line {
+  border-color: var(--panel-line);
 }
 .journey {
   display: grid;
@@ -231,7 +274,7 @@ h3 {
   border-bottom: 1px solid var(--line);
 }
 .journey > span {
-  color: var(--accent-strong);
+  color: var(--panel-accent);
   font:
     25px/1.4 Georgia,
     serif;
@@ -246,7 +289,7 @@ h3 {
 }
 .hero-controls {
   position: absolute;
-  bottom: 8px;
+  bottom: 32px;
   inset-inline: 0;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -299,6 +342,29 @@ h3 {
 .hero-arrows button:hover {
   color: var(--accent-strong);
 }
+.hero-arrows button:disabled {
+  color: var(--muted);
+  cursor: not-allowed;
+}
+.hero-guidance {
+  position: absolute;
+  inset-inline-end: 0;
+  bottom: 0;
+  margin: 0;
+  font-size: 12px;
+  line-height: 20px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-slide.transitioning:not(.active) {
+    visibility: hidden;
+  }
+  .hero-slide,
+  .hero-visual {
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+}
 .screen-reader-only {
   position: absolute;
   width: 1px;
@@ -338,7 +404,7 @@ h3 {
     gap: 25px;
   }
   .hero-visual {
-    box-shadow: 7px 7px 0 var(--hero-shadow);
+    box-shadow: 7px 7px 0 var(--panel-shadow);
   }
 }
 @media (max-width: 480px) {

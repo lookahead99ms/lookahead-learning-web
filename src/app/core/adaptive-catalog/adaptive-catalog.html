@@ -32,9 +32,6 @@
                 (click)="repeatJump($event, config().primaryAction.groupId)"
               >
                 {{ config().primaryAction.label }}
-                @if (config().path !== 'learn') {
-                  <span aria-hidden="true">→</span>
-                }
               </a>
               @for (action of config().secondaryActions; track action.label) {
                 <a
@@ -166,9 +163,7 @@
                         </ul>
                       </div>
                     }
-                    <span class="catalog-card-action">
-                      Explore course <span aria-hidden="true">→</span>
-                    </span>
+                    <span class="catalog-card-action"> Explore course </span>
                   </a>
                 } @else {
                   <article class="course-card unavailable" [class]="cardClass()" [id]="item.id">

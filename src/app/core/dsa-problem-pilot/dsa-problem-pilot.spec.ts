@@ -510,9 +510,21 @@ describe('DsaProblemPilot mode tabs', () => {
         'button:not([disabled]), select:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])',
       );
       const last = focusable.item(focusable.length - 1);
+      // The embedded Expand control remains mounted inside a hidden ancestor.
+      // It must not become either end of the expanded dialog's keyboard loop.
+      expect(entry.closest('[hidden]')).not.toBeNull();
       last.focus();
       last.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }));
-      expect(document.activeElement).toBe(focusable.item(0));
+      expect(document.activeElement).toBe(exit);
+      const reverseTab = new KeyboardEvent('keydown', {
+        key: 'Tab',
+        shiftKey: true,
+        bubbles: true,
+        cancelable: true,
+      });
+      exit.dispatchEvent(reverseTab);
+      expect(reverseTab.defaultPrevented).toBe(true);
+      expect(document.activeElement).toBe(last);
 
       dialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
       fixture.detectChanges();
@@ -616,5 +628,120 @@ describe('DsaProblemPilot mode tabs', () => {
       requestAnimationFrame.mockRestore();
       scrollTo.mockRestore();
     }
+  });
+});
+
+describe('Focus Studio state retention', () => {
+  async function studio() {
+    await TestBed.configureTestingModule({ imports: [DsaProblemPilot] }).compileComponents();
+    const fixture = TestBed.createComponent(DsaProblemPilot);
+    fixture.componentRef.setInput('problem', twoSumProblem());
+    fixture.componentRef.setInput('focusStudio', true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    return fixture;
+  }
+
+  it('keeps the same editor, draft, selection and language while the brief is hidden and restored', async () => {
+    const fixture = await studio();
+    const root = fixture.nativeElement as HTMLElement;
+    const brief = root.querySelector<HTMLElement>('.contract')!;
+    const toggle = root.querySelector<HTMLButtonElement>('.brief-toggle')!;
+    const language = root.querySelector<HTMLSelectElement>('app-coding-solution-tabs select')!;
+    language.value = 'go';
+    language.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    const editor = root.querySelector<HTMLTextAreaElement>('textarea')!;
+    editor.value = 'func retainedDraft() {}';
+    editor.dispatchEvent(new Event('input'));
+    editor.setSelectionRange(5, 13);
+    fixture.detectChanges();
+    expect(brief.hidden).toBe(false);
+    for (const hidden of [true, false]) {
+      toggle.click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(brief.hidden).toBe(hidden);
+      expect(toggle.getAttribute('aria-expanded')).toBe(String(!hidden));
+      expect(toggle.getAttribute('aria-controls')).toBe(brief.id);
+      expect(document.activeElement).toBe(toggle);
+      expect(root.querySelector('textarea')).toBe(editor);
+      expect(editor.value).toBe('func retainedDraft() {}');
+      expect([editor.selectionStart, editor.selectionEnd]).toEqual([5, 13]);
+      expect(language.value).toBe('go');
+    }
+    expect(root.querySelector('app-editor-tutor')).toBeNull();
+    expect(root.querySelector('app-dsa-run-examples')).toBeNull();
+  });
+
+  it('preserves the chosen canonical fixture, source step and trace language through focus and modes', async () => {
+    const fixture = await studio();
+    const root = fixture.nativeElement as HTMLElement;
+    const example = root.querySelector<HTMLSelectElement>('.brief-fixture-picker select')!;
+    example.value = 'duplicate';
+    example.dispatchEvent(new Event('change'));
+    root.querySelector<HTMLButtonElement>('[data-mode="guided"]')!.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const trace = root.querySelector<HTMLElement>('app-guided-algorithm-trace')!;
+    const python = [
+      ...trace.querySelectorAll<HTMLButtonElement>('[aria-label="Trace language"] button'),
+    ].find((e) => e.textContent.trim() === 'python')!;
+    python.click();
+    fixture.detectChanges();
+    const next = [...trace.querySelectorAll<HTMLButtonElement>('button')].find(
+      (e) => e.textContent.trim() === 'Next',
+    )!;
+    next.click();
+    fixture.detectChanges();
+    const anchor = trace.querySelector('[aria-current="step"]')?.textContent;
+    const status = trace.querySelector('.step-status')?.textContent;
+    root.querySelector<HTMLButtonElement>('.brief-toggle')!.click();
+    root.querySelector<HTMLButtonElement>('[data-mode="recall"]')!.click();
+    fixture.detectChanges();
+    expect(root.querySelector<HTMLElement>('.recall-pane')!.hidden).toBe(false);
+    expect(root.querySelector('.recall-pane')?.textContent).toContain(
+      'Why do we check before inserting?',
+    );
+    root.querySelector<HTMLButtonElement>('[data-mode="guided"]')!.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(root.querySelector('app-guided-algorithm-trace')).toBe(trace);
+    expect(trace.querySelector('.guided-trace')?.getAttribute('data-language')).toBe('python');
+    expect(trace.querySelector('[aria-current="step"]')?.textContent).toBe(anchor);
+    expect(trace.querySelector('.step-status')?.textContent).toBe(status);
+    expect(example.value).toBe('duplicate');
+    expect(trace.querySelector<HTMLSelectElement>('[aria-label="Guided trace input"]')?.value).toBe(
+      '1',
+    );
+    expect(root.querySelector('.reasoning-invariant')?.textContent).toContain(
+      'only earlier indices',
+    );
+  });
+
+  it('uses one three-mode navigator with roving focus and no automatic mode-change scrolling', async () => {
+    const fixture = await studio();
+    const root = fixture.nativeElement as HTMLElement;
+    const scroll = vi.fn();
+    root.querySelector<HTMLElement>('.mode-tabs')!.scrollIntoView = scroll;
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('.mode-tabs [role="tab"]')];
+    expect(tabs.map((tab) => tab.textContent.trim())).toEqual([
+      'Try it yourself',
+      'Guided walkthrough',
+      'Recall',
+    ]);
+    tabs[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }));
+    fixture.detectChanges();
+    expect(tabs[2].getAttribute('aria-selected')).toBe('true');
+    expect(document.activeElement).toBe(tabs[2]);
+    tabs[2].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    fixture.detectChanges();
+    expect(tabs[0].getAttribute('aria-selected')).toBe('true');
+    expect(tabs.filter((tab) => tab.tabIndex === 0)).toHaveLength(1);
+    expect(scroll).not.toHaveBeenCalled();
+    fixture.componentRef.setInput('focusStudio', false);
+    fixture.detectChanges();
+    expect(root.querySelector('.brief-toggle')).toBeNull();
+    expect(root.querySelectorAll('.mode-tabs [role="tab"]')).toHaveLength(2);
   });
 });

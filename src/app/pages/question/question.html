@@ -3,6 +3,7 @@
   id="main-content"
   class="content-page reader-page"
   [class.harbor-learn]="pathId() === 'learn'"
+  [class.focus-studio-page]="focusStudio()"
 >
   <app-study-plan-reader-navigation #planNavigation />
   @if (returnDestination(); as destination) {
@@ -46,7 +47,7 @@
           </div>
         }
       </div>
-      @if (item.contentType !== 'theory' && !surpriseMode()) {
+      @if (item.contentType !== 'theory' && !surpriseMode() && !focusStudio()) {
         <section class="question-context-panel">
           <a
             class="reader-module"
@@ -362,6 +363,7 @@
       } @else if (canonicalProblem(item); as problem) {
         <app-dsa-problem-pilot
           [problem]="problem"
+          [focusStudio]="focusStudio()"
           entryMode="practice"
           [showProblemHeading]="false"
           [initialLanguage]="courseId() === 'python-fundamentals' ? 'python' : 'java'"
