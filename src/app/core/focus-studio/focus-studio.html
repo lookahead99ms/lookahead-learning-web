@@ -1,0 +1,506 @@
+<section
+  class="studio"
+  [attr.data-mode]="mode()"
+  [class.debugger-active]="current().debugger"
+  [class.problem-pinned]="problemPinned()"
+  [class.problem-peek]="peek() && !problemPinned()"
+  [style.--rail-share]="railShare() + '%'"
+  [style.--reference-share]="effectiveShare() + '%'"
+  [style.--peek-top]="peekTop() + 'px'"
+  [attr.aria-label]="problem().title + ' Focus Studio'"
+>
+  <header class="studio-heading">
+    <button
+      #problemButton
+      type="button"
+      class="problem-toggle"
+      [attr.aria-expanded]="problemPinned() || peek()"
+      [attr.aria-pressed]="problemPinned()"
+      [attr.aria-controls]="problem().id + '-studio-problem'"
+      (click)="toggleProblem()"
+      (pointerenter)="showPeek($event)"
+      (pointerleave)="leavePeek()"
+      (keydown)="problemKeys($event)"
+    >
+      Problem
+    </button>
+    <h2>Workspace</h2>
+  </header>
+  <aside
+    #problemRail
+    class="problem-rail"
+    tabindex="-1"
+    [id]="problem().id + '-studio-problem'"
+    aria-label="Full problem contract"
+    [hidden]="!problemPinned() && !peek()"
+    (pointerenter)="showPeek($event)"
+    (pointerleave)="leavePeek()"
+    (keydown.escape)="closePeek()"
+  >
+    <p class="eyebrow">The problem</p>
+    <h2>{{ problem().title }}</h2>
+    <p>{{ problem().difficulty }} · Java, Python &amp; Go</p>
+    <p>{{ problem().practice.statement.prompt }}</p>
+    <h3>Input</h3>
+    <ul>
+      @for (input of problem().practice.statement.inputs; track $index) {
+        <li>{{ input }}</li>
+      }
+    </ul>
+    <h3>Return / output</h3>
+    <p>{{ problem().practice.statement.output }}</p>
+    <h3>Constraints</h3>
+    <ul>
+      @for (constraint of problem().practice.statement.constraints; track $index) {
+        <li>{{ constraint }}</li>
+      }
+    </ul>
+    <h3>Boundary cases</h3>
+    <ul>
+      @for (edge of problem().practice.statement.edgeCases; track $index) {
+        <li>{{ edge }}</li>
+      }
+    </ul>
+    <section class="problem-example">
+      <h3>Examples</h3>
+      <label
+        >Choose an example<select
+          [value]="fixture().id"
+          (change)="selectFixture($any($event.target).value)"
+        >
+          @for (example of problem().fixtures; track example.id) {
+            <option [value]="example.id" [selected]="example.id === fixture().id">
+              {{ fixtureLabel(example.input) }}
+            </option>
+          }
+        </select></label
+      >
+      <p>
+        <strong>Input:</strong> <code>{{ fixture().input }}</code>
+      </p>
+      <p>
+        <strong>Expected:</strong> <code>{{ fixture().expectedOutput }}</code>
+      </p>
+      <p>{{ fixture().explanation }}</p>
+    </section>
+    @if (problem().practice.sourceUrl; as url) {
+      <a [href]="url" target="_blank" rel="noopener noreferrer"
+        >Original problem source (opens in a new tab)</a
+      >
+    }
+  </aside>
+  <div
+    class="panel-divider rail-divider"
+    [hidden]="!problemPinned()"
+    role="separator"
+    tabindex="0"
+    aria-label="Resize problem panel"
+    aria-orientation="vertical"
+    aria-valuemin="18"
+    aria-valuemax="32"
+    [attr.aria-valuenow]="railShare()"
+    (keydown)="resizeKeys($event, 'problem')"
+    (pointerdown)="resizePointer($event, 'problem')"
+  ></div>
+  <div class="right-workspace" [attr.data-composition]="composition()">
+    <div class="workspace-toolbar">
+      <div role="tablist" class="mode-tabs" aria-label="Practice mode">
+        @for (item of modes; track item.id) {
+          <button
+            type="button"
+            role="tab"
+            [id]="problem().id + '-studio-tab-' + item.id"
+            [attr.data-studio-mode]="item.id"
+            [attr.aria-selected]="mode() === item.id"
+            [attr.tabindex]="mode() === item.id ? 0 : -1"
+            [attr.aria-controls]="problem().id + '-studio-panel-' + item.id"
+            (click)="selectMode(item.id)"
+            (keydown)="modeKeys($event)"
+          >
+            {{ item.label }}
+          </button>
+        }
+      </div>
+      <div class="workspace-actions" role="group" aria-label="Solution and debugger">
+        <button
+          type="button"
+          [hidden]="current().debugger || mode() === 'visual' || mode() === 'recall'"
+          [attr.aria-expanded]="current().revealed"
+          (click)="toggleSolution()"
+        >
+          <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+          {{ current().revealed ? 'Close solution' : 'Show solution' }}
+        </button>
+        <button
+          type="button"
+          class="primary"
+          [hidden]="mode() === 'practice' || mode() === 'recall'"
+          [attr.aria-pressed]="current().debugger"
+          (click)="toggleDebugger()"
+        >
+          <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <rect x="4" y="4" width="16" height="16" rx="2" />
+            <path d="M9 4v16M12 8h5M12 12h5M12 16h3" />
+          </svg>
+          {{
+            linked()
+              ? 'Close visualization'
+              : current().debugger
+                ? 'Close guided debugger'
+                : 'Open guided debugger'
+          }}
+        </button>
+        <button
+          type="button"
+          class="primary"
+          [hidden]="mode() !== 'approach' && mode() !== 'recall'"
+          (click)="visualize()"
+        >
+          <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <rect x="9" y="2" width="6" height="5" rx="1" />
+            <path d="M12 7v5M5 17v-5h14v5" />
+            <rect x="2" y="17" width="6" height="5" rx="1" />
+            <rect x="16" y="17" width="6" height="5" rx="1" />
+          </svg>
+          Visualize solution
+        </button>
+      </div>
+    </div>
+    <section
+      [id]="problem().id + '-studio-panel-approach'"
+      role="tabpanel"
+      [attr.aria-labelledby]="problem().id + '-studio-tab-approach'"
+      [hidden]="mode() !== 'approach' || current().debugger"
+    >
+      <app-studio-approach [problem]="problem()" />
+    </section>
+    @if (mode() === 'visual' && !current().debugger) {
+      <nav class="visual-controls" aria-label="Visual walkthrough playback">
+        <button
+          type="button"
+          aria-label="Previous conceptual step"
+          [disabled]="visualIndex() === 0"
+          (click)="visualStep(-1)"
+        >
+          Previous
+        </button>
+        <button
+          type="button"
+          aria-label="Next conceptual step"
+          [disabled]="visualIndex() >= visualLength() - 1"
+          class="primary"
+          (click)="visualStep(1)"
+        >
+          Next
+        </button>
+        <span role="status">Visual step {{ visualIndex() + 1 }} of {{ visualLength() }}</span>
+        <button type="button" aria-label="Restart walkthrough" (click)="restartVisual()">
+          Restart
+        </button>
+      </nav>
+    }
+    <div
+      class="working-grid"
+      [hidden]="mode() === 'approach' && !current().revealed"
+      [class.editor-only]="!contextVisible()"
+      [class.compare]="mode() === 'practice' && current().revealed"
+      [class.contextual]="mode() !== 'practice'"
+    >
+      <header class="draft-header" [hidden]="mode() !== 'practice'">
+        <div>
+          <h3>Your code <small>Editable</small></h3>
+          <p>Draft / {{ filename() }}</p>
+        </div>
+        <div class="code-controls">
+          <label
+            >Language<select
+              [value]="draftLanguage()"
+              (change)="selectDraftLanguage($any($event.target).value)"
+            >
+              @for (language of languages; track language) {
+                <option [value]="language" [selected]="language === draftLanguage()">
+                  {{ language === 'java' ? 'Java' : language === 'go' ? 'Go' : 'Python' }}
+                </option>
+              }
+            </select></label
+          >
+          <div role="group" aria-label="Your code actions">
+            <app-code-copy-button [code]="draft()" [workspace]="true" /><button
+              type="button"
+              (click)="formatDraft()"
+            >
+              Format code</button
+            ><button type="button" (click)="resetDraft()">Reset starter</button>
+          </div>
+          @if (!hintsVisible() && !current().revealed) {
+            <button type="button" (click)="toggleHints()" aria-label="Show hints panel">
+              Hints
+            </button>
+          }
+        </div>
+      </header>
+      <div class="mode-content">
+        <section
+          [id]="problem().id + '-studio-panel-practice'"
+          role="tabpanel"
+          [attr.aria-labelledby]="problem().id + '-studio-tab-practice'"
+          [hidden]="mode() !== 'practice'"
+          class="draft-panel"
+        >
+          <app-coding-solution-tabs
+            [solutions]="solutions()"
+            [studioDraft]="draft()"
+            [studioDraftKey]="draftKey()"
+            [studioLanguage]="draftLanguage()"
+            [tutorProblem]="tutorProblem()"
+            (studioDraftChange)="updateDraft($event)"
+          />
+        </section>
+        <section
+          [id]="problem().id + '-studio-panel-visual'"
+          role="tabpanel"
+          [attr.aria-labelledby]="problem().id + '-studio-tab-visual'"
+          [hidden]="mode() !== 'visual'"
+        >
+          @if (visualFrame(); as frame) {
+            <app-studio-pattern-diagram
+              [problem]="problem()"
+              [fixture]="fixture()"
+              [frame]="frame"
+              [linked]="linked()"
+              (fixtureChange)="selectFixture($event)"
+            />
+          } @else {
+            <app-studio-diagram
+              [problem]="problem()"
+              [pattern]="pattern()"
+              [fixture]="fixture()"
+              [language]="position().language"
+              [snapshot]="snapshot()"
+              [linked]="linked()"
+              (fixtureChange)="selectFixture($event)"
+            />
+          }
+        </section>
+        <section
+          class="recall-panel"
+          [id]="problem().id + '-studio-panel-recall'"
+          role="tabpanel"
+          [attr.aria-labelledby]="problem().id + '-studio-tab-recall'"
+          [hidden]="mode() !== 'recall'"
+        >
+          <p class="eyebrow">Retrieve and transfer</p>
+          <h3>Explain the reasoning in your words.</h3>
+          @for (check of problem().practice.checks; track $index; let index = $index) {
+            <label
+              >{{ check.prompt
+              }}<textarea rows="4" [attr.aria-label]="'Your answer ' + (index + 1)"></textarea>
+            </label>
+          }
+        </section>
+      </div>
+      <div
+        class="panel-divider reference-divider"
+        [hidden]="!contextVisible()"
+        role="separator"
+        tabindex="0"
+        aria-label="Resize reference panel"
+        aria-orientation="vertical"
+        aria-valuemin="35"
+        aria-valuemax="72"
+        [attr.aria-valuenow]="effectiveShare()"
+        (keydown)="resizeKeys($event, 'reference')"
+        (pointerdown)="resizePointer($event, 'reference')"
+      ></div>
+      <aside
+        class="studio-context"
+        [hidden]="!contextVisible()"
+        aria-label="Help, solution and debugger"
+      >
+        @if (mode() === 'practice' && !current().revealed) {
+          <section class="hints-panel">
+            <header>
+              <h3>A little help. Your pace.</h3>
+              <button
+                type="button"
+                aria-label="Hide hints panel"
+                aria-expanded="true"
+                (click)="toggleHints()"
+              >
+                Hints
+              </button>
+            </header>
+            <p>Try your approach. Compare when you are ready.</p>
+            <button
+              type="button"
+              [disabled]="hintCount() >= problem().practice.hints.length"
+              (click)="hintCount.set(hintCount() + 1)"
+            >
+              {{
+                hintCount() >= problem().practice.hints.length
+                  ? 'All hints revealed'
+                  : 'Reveal hint'
+              }}
+            </button>
+            <div aria-live="polite">
+              @for (hint of problem().practice.hints.slice(0, hintCount()); track $index) {
+                <p class="hint">
+                  <strong>Hint {{ $index + 1 }}</strong
+                  >{{ hint }}
+                </p>
+              }
+            </div>
+          </section>
+        }
+        @if (mode() !== 'practice' && mode() !== 'approach' && !current().debugger) {
+          <details class="context-disclosure" [open]="!current().debugger">
+            <summary>
+              {{ mode() === 'visual' ? 'What changed, and why' : 'Check yourself' }}
+            </summary>
+            @if (mode() === 'visual') {
+              @if (visualFrame(); as frame) {
+                <h3>{{ frame.phase }}</h3>
+                <p aria-live="polite">{{ frame.why }}</p>
+                <p>Conceptual teaching values. These are not native Java, Python or Go locals.</p>
+                <dl class="teaching-metrics">
+                  @for (metric of visualMetrics(); track metric.name) {
+                    <div>
+                      <dt>{{ metric.name }}</dt>
+                      <dd>{{ metric.value }}</dd>
+                    </div>
+                  }
+                </dl>
+              } @else {
+                <h3>{{ snapshot().event?.label }}</h3>
+                <p>{{ snapshot().event?.what }}</p>
+                <p>{{ snapshot().event?.why }}</p>
+              }
+              <h4>The invariant</h4>
+              <p>{{ trace()?.invariant }}</p>
+            } @else {
+              @for (check of problem().practice.checks; track $index) {
+                <details class="recall-check">
+                  <summary>Check answer {{ $index + 1 }}</summary>
+                  <p>{{ check.expected }}</p>
+                </details>
+              }
+            }
+          </details>
+        }
+        @if (current().revealed) {
+          <section class="reference-panel" (keydown.escape)="closeReference()">
+            <header class="reference-header">
+              <ng-container [ngTemplateOutlet]="referenceHeader" />
+            </header>
+            @if (current().debugger) {
+              <nav class="reference-navigation" aria-label="Guided debugger controls">
+                <span role="status"
+                  >Instruction {{ snapshot().events.length ? snapshot().step + 1 : 0 }} of
+                  {{ snapshot().events.length }} · {{ position().language }}</span
+                >
+                <div>
+                  <button
+                    type="button"
+                    aria-label="Previous instruction"
+                    [disabled]="snapshot().step === 0"
+                    (click)="setStep(snapshot().step - 1, $event)"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Next instruction"
+                    [disabled]="snapshot().step >= snapshot().events.length - 1"
+                    class="primary"
+                    (click)="setStep(snapshot().step + 1, $event)"
+                  >
+                    Next
+                  </button>
+                  <button type="button" aria-label="Restart trace" (click)="setStep(0, $event)">
+                    Restart
+                  </button>
+                </div>
+              </nav>
+            }
+            <app-guided-algorithm-trace
+              [problem]="problem()"
+              [selectedFixture]="fixture()"
+              [initialLanguage]="position().language"
+              [studio]="true"
+              [studioSnapshot]="snapshot()"
+              [studioDebugger]="current().debugger"
+              [studioContextual]="mode() !== 'practice'"
+              [studioFollow]="follow()"
+            />
+            <div class="reference-rationale">
+              <p>
+                <strong>Time</strong> {{ problem().complexity.time }} · <strong>Space</strong>
+                {{ problem().complexity.space }}
+              </p>
+              <details>
+                <summary>Why this approach</summary>
+                <p>{{ problem().practice.canonicalApproach.whyThisApproach }}</p>
+                <p>{{ problem().practice.canonicalApproach.whyOptimal }}</p>
+                <p>{{ problem().practice.canonicalApproach.whenAssumptionChanges }}</p>
+              </details>
+              <details>
+                <summary>Common mistakes</summary>
+                <ul>
+                  @for (mistake of problem().practice.commonMistakes; track $index) {
+                    <li>{{ mistake }}</li>
+                  }
+                </ul>
+              </details>
+            </div>
+          </section>
+        }
+      </aside>
+    </div>
+  </div>
+</section>
+<ng-template #referenceHeader>
+  <div class="reference-identity">
+    <h3>Reference solution</h3>
+    <p>Read-only · {{ current().debugger ? 'Guided debugger' : 'Not your code' }}</p>
+  </div>
+  <div class="code-controls">
+    <label
+      >Reference language<select
+        [value]="position().language"
+        (change)="selectLanguage($any($event.target).value)"
+      >
+        @for (language of languages; track language) {
+          <option [value]="language" [selected]="language === position().language">
+            {{ language === 'java' ? 'Java' : language === 'go' ? 'Go' : 'Python' }}
+          </option>
+        }
+      </select></label
+    >
+    <app-code-copy-button [code]="referenceSource()" [workspace]="true" />
+    <label class="reference-example"
+      >Example<select
+        [value]="fixture().id"
+        [style.width.ch]="Math.min(44, fixtureLabel(fixture().input).length + 4)"
+        (change)="selectFixture($any($event.target).value)"
+      >
+        @for (example of problem().fixtures; track example.id) {
+          <option [value]="example.id" [selected]="example.id === fixture().id">
+            {{ fixtureLabel(example.input) }}
+          </option>
+        }
+      </select></label
+    >
+  </div>
+  @if (current().debugger) {
+    <label class="follow-control"
+      ><input
+        type="checkbox"
+        [checked]="follow()"
+        (change)="follow.set($any($event.target).checked)"
+      />Follow active line</label
+    >
+  }
+</ng-template>

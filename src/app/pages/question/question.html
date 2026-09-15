@@ -3,7 +3,8 @@
   id="main-content"
   class="content-page reader-page"
   [class.harbor-learn]="pathId() === 'learn'"
-  [class.focus-studio-page]="focusStudio()"
+  [class.focus-studio-page]="focusStudio() || studioPilot()"
+  [class.studio-pilot-page]="studioPilot()"
 >
   <app-study-plan-reader-navigation #planNavigation />
   @if (returnDestination(); as destination) {
@@ -404,13 +405,9 @@
           <ng-container *ngTemplateOutlet="referenceAnswer" />
         }
         <ng-template #referenceAnswer>
-          @if (pathId() === 'learn') {
-            <div class="harbor-answer-layout">
-              <ng-container *ngTemplateOutlet="answerContent" />
-            </div>
-          } @else {
+          <div class="non-dsa-answer-layout">
             <ng-container *ngTemplateOutlet="answerContent" />
-          }
+          </div>
         </ng-template>
         <ng-template #answerContent>
           @if (item.relatedArticleId; as articleId) {
@@ -418,7 +415,7 @@
               class="related-theory-link"
               [routerLink]="['/', pathId(), courseId(), articleId]"
               [queryParams]="returnQueryParams()"
-              >← Review theory: {{ relatedArticleTitle(item) }}</a
+              >Review theory: {{ relatedArticleTitle(item) }}</a
             >
           }
           @if (shouldShowHint(item)) {
@@ -428,7 +425,7 @@
             </details>
           } @else {
             <section class="quick-answer reader-interview-panel" aria-label="Interview answer">
-              <span>Interview answer</span>
+              <h2 class="panel-label">Interview answer</h2>
               <p [innerHTML]="item.interviewAnswer"></p>
             </section>
           }
@@ -451,7 +448,7 @@
             <div class="details-content-body">
               <div class="answer-code-grid" [class.has-reference-code]="!!item.code">
                 <section class="explanation-panel">
-                  <p class="panel-label">Detailed explanation</p>
+                  <h2 class="panel-label">Detailed explanation</h2>
                   @for (paragraph of item.explanation; track paragraph) {
                     <p [innerHTML]="paragraph"></p>
                   }
@@ -465,7 +462,7 @@
                         <app-code-copy-button [code]="code.source" />
                       </div>
                     </div>
-                    <pre><code>{{ code.source }}</code></pre>
+                    <pre tabindex="0" aria-label="Example code"><code>{{ code.source }}</code></pre>
                     @if (item.compatibility; as requirements) {
                       <section class="compatibility-notes" aria-label="Compatibility requirements">
                         <strong>Compatibility</strong>
@@ -514,13 +511,23 @@
               </figure>
             }
           }
+          @if (item.versionNotes.length) {
+            <details class="answer-version-notes">
+              <summary>Version and context notes</summary>
+              <ul>
+                @for (note of item.versionNotes; track note) {
+                  <li [innerHTML]="note"></li>
+                }
+              </ul>
+            </details>
+          }
           @if (item.followUps.length) {
             <section class="main-followups">
-              <p class="panel-label">Likely follow-ups</p>
+              <h2 class="panel-label">Likely follow-ups</h2>
               @for (followUp of item.followUps; track followUp.question) {
                 <details>
                   <summary>{{ followUp.question }}</summary>
-                  <p>{{ followUp.answer }}</p>
+                  <p [innerHTML]="followUp.answer"></p>
                 </details>
               }
             </section>

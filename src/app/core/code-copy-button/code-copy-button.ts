@@ -6,6 +6,7 @@ import { Component, DestroyRef, inject, input, signal } from '@angular/core';
   template: `
     <button
       type="button"
+      [class.workspace]="workspace()"
       [attr.aria-label]="buttonLabel()"
       [attr.title]="buttonLabel()"
       (click)="copyCode()"
@@ -67,6 +68,21 @@ import { Component, DestroyRef, inject, input, signal } from '@angular/core';
         white-space: nowrap;
         border: 0;
       }
+      button.workspace {
+        min-height: 36px;
+        padding: 8px 10px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        color: var(--text-strong);
+        background: var(--surface);
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 1.4;
+        font-family: inherit;
+      }
+      button.workspace:hover {
+        background: var(--surface-subtle);
+      }
       @media (forced-colors: active) {
         button {
           border-color: ButtonText;
@@ -82,6 +98,7 @@ import { Component, DestroyRef, inject, input, signal } from '@angular/core';
 })
 export class CodeCopyButton {
   readonly code = input.required<string>();
+  readonly workspace = input(false);
 
   private readonly document = inject(DOCUMENT);
   private resetTimer: ReturnType<typeof setTimeout> | undefined;
@@ -92,7 +109,13 @@ export class CodeCopyButton {
   }
 
   protected visibleLabel(): string {
-    return this.status() === 'copied' ? 'Copied' : this.status() === 'failed' ? 'Retry' : 'Copy';
+    return this.status() === 'copied'
+      ? 'Copied'
+      : this.status() === 'failed'
+        ? 'Retry'
+        : this.workspace()
+          ? 'Copy code'
+          : 'Copy';
   }
 
   protected buttonLabel(): string {

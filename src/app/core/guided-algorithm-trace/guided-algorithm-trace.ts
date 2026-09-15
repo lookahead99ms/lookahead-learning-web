@@ -9,6 +9,7 @@ import {
   viewChild,
 } from '@angular/core';
 import {
+  DsaProblemFixtureV2,
   GuidedTraceCell,
   GuidedTraceCellState,
   GuidedTraceEvent,
@@ -18,475 +19,490 @@ import {
   PatternProblemFixture,
   PatternProblemV1,
 } from '../../content/content.models';
+import { StudioTraceBody } from '../focus-studio/studio-trace-body';
+import { TraceSnapshot } from './trace-model';
+import { languageTraceEvents } from './trace-model';
 import { CodeCopyButton } from '../code-copy-button/code-copy-button';
 
 type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
 
 @Component({
   selector: 'app-guided-algorithm-trace',
-  imports: [CodeCopyButton],
+  imports: [CodeCopyButton, StudioTraceBody],
   template: `
-    <section
-      class="guided-trace"
-      [class.focus-mode]="focusMode()"
-      role="region"
-      tabindex="0"
-      [attr.data-language]="language()"
-      [attr.aria-label]="problem().title + ' guided trace'"
-      (keydown)="handleShortcut($event)"
-    >
-      <header class="trace-toolbar">
-        <div class="toolbar-brand">
-          <span>Guided debugger</span><strong>{{ problem().title }}</strong>
-        </div>
-        <label class="trace-fixture-picker">
-          <span>Guided input</span>
-          <select
-            aria-label="Guided trace input"
-            [value]="selectedFixtureIndex()"
-            (change)="chooseFixture($any($event.target).value)"
+    @if (studio()) {
+      <app-studio-trace-body
+        [problem]="problem()"
+        [fixture]="studioFixture()"
+        [language]="initialLanguage()"
+        [snapshot]="studioSnapshot()"
+        [debugger]="studioDebugger()"
+        [contextual]="studioContextual()"
+        [follow]="studioFollow()"
+      />
+    } @else {
+      <section
+        class="guided-trace"
+        [class.focus-mode]="focusMode()"
+        role="region"
+        tabindex="0"
+        [attr.data-language]="language()"
+        [attr.aria-label]="problem().title + ' guided trace'"
+        (keydown)="handleShortcut($event)"
+      >
+        <header class="trace-toolbar">
+          <div class="toolbar-brand">
+            <span>Guided debugger</span><strong>{{ problem().title }}</strong>
+          </div>
+          <label class="trace-fixture-picker">
+            <span>Guided input</span>
+            <select
+              aria-label="Guided trace input"
+              [value]="selectedFixtureIndex()"
+              (change)="chooseFixture($any($event.target).value)"
+            >
+              @for (fixture of guidedFixtures(); track fixture.id; let index = $index) {
+                <option [value]="index">{{ fixture.label }}</option>
+              }
+            </select>
+          </label>
+          <div class="language-control">
+            <span>Language</span>
+            <div class="language-tabs" role="tablist" aria-label="Trace language">
+              @for (code of problem().implementations; track code.language; let index = $index) {
+                <button
+                  type="button"
+                  role="tab"
+                  [attr.aria-selected]="language() === code.language"
+                  [attr.tabindex]="language() === code.language ? 0 : -1"
+                  [attr.aria-controls]="'guided-source-panel'"
+                  (click)="selectLanguage(code.language)"
+                  (keydown)="moveLanguageTab($event, index)"
+                >
+                  {{ code.language }}
+                </button>
+              }
+            </div>
+          </div>
+        </header>
+        <div class="trace-navigation" data-sticky-controls="true">
+          <span class="step-status" aria-live="polite"
+            >Step {{ stepIndex() + 1 }} of {{ events().length }} · {{ event().phase }}</span
           >
-            @for (fixture of guidedFixtures(); track fixture.id; let index = $index) {
-              <option [value]="index">{{ fixture.label }}</option>
-            }
-          </select>
-        </label>
-        <div class="language-control">
-          <span>Language</span>
-          <div class="language-tabs" role="tablist" aria-label="Trace language">
-            @for (code of problem().implementations; track code.language; let index = $index) {
-              <button
-                type="button"
-                role="tab"
-                [attr.aria-selected]="language() === code.language"
-                [attr.tabindex]="language() === code.language ? 0 : -1"
-                [attr.aria-controls]="'guided-source-panel'"
-                (click)="selectLanguage(code.language)"
-                (keydown)="moveLanguageTab($event, index)"
-              >
-                {{ code.language }}
-              </button>
-            }
+          <div class="trace-controls" role="group" aria-label="Trace controls">
+            <button
+              type="button"
+              (click)="previous()"
+              [disabled]="stepIndex() === 0"
+              aria-describedby="trace-boundary-status"
+            >
+              Previous
+            </button>
+            <button type="button" class="reset-action" (click)="reset()">Reset</button>
+            <button
+              type="button"
+              class="primary"
+              (click)="next()"
+              [disabled]="stepIndex() === events().length - 1"
+              aria-describedby="trace-boundary-status"
+            >
+              Next
+            </button>
           </div>
         </div>
-      </header>
-      <div class="trace-navigation" data-sticky-controls="true">
-        <span class="step-status" aria-live="polite"
-          >Step {{ stepIndex() + 1 }} of {{ events().length }} · {{ event().phase }}</span
-        >
-        <div class="trace-controls" role="group" aria-label="Trace controls">
-          <button
-            type="button"
-            (click)="previous()"
-            [disabled]="stepIndex() === 0"
-            aria-describedby="trace-boundary-status"
-          >
-            Previous
-          </button>
-          <button type="button" class="reset-action" (click)="reset()">Reset</button>
-          <button
-            type="button"
-            class="primary"
-            (click)="next()"
-            [disabled]="stepIndex() === events().length - 1"
-            aria-describedby="trace-boundary-status"
-          >
-            Next
-          </button>
+
+        <div class="trace-context">
+          <div class="trace-summary-values">
+            <p><span>Selected input</span>{{ tracedFixture().input }}</p>
+            <p><span>Expected output</span>{{ tracedFixture().expectedOutput }}</p>
+          </div>
+          @if (tracedFixture().explanation; as explanation) {
+            <p class="fixture-explanation"><span>Why this case matters</span>{{ explanation }}</p>
+          }
+          @if (selectedFixture().id !== tracedFixture().id) {
+            <p class="fixture-note">
+              <span>Selected edge case</span>The trace remains on {{ tracedFixture().label }};
+              {{ selectedFixture().label }} is available for independent dry-run practice.
+            </p>
+          }
         </div>
-      </div>
 
-      <div class="trace-context">
-        <div class="trace-summary-values">
-          <p><span>Selected input</span>{{ tracedFixture().input }}</p>
-          <p><span>Expected output</span>{{ tracedFixture().expectedOutput }}</p>
-        </div>
-        @if (tracedFixture().explanation; as explanation) {
-          <p class="fixture-explanation"><span>Why this case matters</span>{{ explanation }}</p>
-        }
-        @if (selectedFixture().id !== tracedFixture().id) {
-          <p class="fixture-note">
-            <span>Selected edge case</span>The trace remains on {{ tracedFixture().label }};
-            {{ selectedFixture().label }} is available for independent dry-run practice.
-          </p>
-        }
-      </div>
-
-      <div class="trace-workspace ide-workspace">
-        <section
-          class="source-panel"
-          id="guided-source-panel"
-          role="tabpanel"
-          aria-label="Selected source implementation"
-        >
-          <span class="editor-file">{{ solutionFileName() }}</span>
-          <app-code-copy-button class="editor-copy" [code]="sourceText()" />
-          <pre
-            tabindex="0"
-            [attr.aria-label]="'Source editor. ' + activeLineSummary()"
-          ><code>@for (line of source().lines; track line.id; let lineNumber = $index) {<span class="source-line" [class.active]="line.id === activeAnchor()" [class.executed]="isExecuted(line.id)" [class.unreachable]="isUnreachable(lineNumber)" [attr.aria-current]="line.id === activeAnchor() ? 'step' : null" [attr.aria-label]="sourceLineLabel(line.id, lineNumber, line.text)"><span class="line-gutter"><i class="current-line-arrow" aria-hidden="true">›</i><b aria-hidden="true">{{ lineNumber + 1 }}</b></span><span class="line-code">{{ line.text || ' ' }}</span></span>}</code></pre>
-        </section>
-
-        @if (focusMode()) {
-          <aside class="focus-explanation" aria-label="Current step explanation">
-            <div class="focus-step-title">
-              <span>Current step</span>
-              <strong>{{ event().phase }} · {{ activeLineLabel() }}</strong>
-            </div>
-            <section>
-              <span>What happened</span>
-              <p>{{ activeStepExplanation() }}</p>
-            </section>
-            <section>
-              <span>Why</span>
-              <p>{{ event().why }}</p>
-            </section>
-          </aside>
-
-          <section class="focus-state-dock" aria-label="Persistent execution state">
-            <section
-              class="focus-dock-card focus-collection"
-              [class.changed]="focusCollectionVariable()?.changed"
-              [attr.aria-label]="focusCollectionLabel()"
-            >
-              <h3>{{ focusCollectionLabel() }}</h3>
-              <strong>{{ focusCollectionValue() }}</strong>
-              @if (focusCollectionVariable()?.changed) {
-                <small>changed this step</small>
-              }
-            </section>
-
-            <section class="focus-dock-card focus-array" aria-label="Array state">
-              <h3>Array</h3>
-              @for (row of visibleRows(); track row.label) {
-                <div class="state-cells" role="list" [attr.aria-label]="row.label">
-                  @for (cell of row.cells; track $index) {
-                    <span
-                      role="listitem"
-                      [class]="cellClasses(cell)"
-                      [attr.aria-label]="cellLabel(cell, $index)"
-                    >
-                      <b>{{ cell.value }}</b>
-                      <small>index {{ $index }}</small>
-                      @if (cell.states?.length) {
-                        <em>{{ cell.states?.join(' · ') }}</em>
-                      }
-                    </span>
-                  }
-                </div>
-              }
-            </section>
-
-            <section
-              class="focus-dock-card focus-observation"
-              [class.changed]="focusObservationVariable()?.changed"
-              [attr.aria-label]="focusObservationLabel()"
-            >
-              <h3>{{ focusObservationLabel() }}</h3>
-              <strong>{{ focusObservationValue() }}</strong>
-              @if (focusObservationVariable()?.changed) {
-                <small>changed this step</small>
-              }
-            </section>
-
-            <section class="focus-dock-card focus-variables" aria-label="Variables">
-              <h3>Variables</h3>
-              <dl>
-                @for (variable of focusVariables(); track variable.name) {
-                  <div [class.changed]="variable.changed">
-                    <dt>
-                      {{ variable.name }}
-                      @if (variable.changed) {
-                        <em>changed</em>
-                      }
-                    </dt>
-                    <dd>{{ variable.value }}</dd>
-                  </div>
-                }
-              </dl>
-            </section>
-
-            <section class="focus-dock-card focus-output" aria-label="Output and terminal">
-              <div>
-                <h3>Output</h3>
-                <strong>{{ event().result ?? 'Pending' }}</strong>
-              </div>
-              <div class="focus-terminal">
-                <span>Terminal</span>
-                <p>
-                  <span class="terminal-prompt" aria-hidden="true">&gt; </span
-                  >{{ terminalMessage() }}
-                </p>
-              </div>
-            </section>
+        <div class="trace-workspace ide-workspace">
+          <section
+            class="source-panel"
+            id="guided-source-panel"
+            role="tabpanel"
+            aria-label="Selected source implementation"
+          >
+            <span class="editor-file">{{ solutionFileName() }}</span>
+            <app-code-copy-button class="editor-copy" [code]="sourceText()" />
+            <pre
+              tabindex="0"
+              [attr.aria-label]="'Source editor. ' + activeLineSummary()"
+            ><code>@for (line of source().lines; track line.id; let lineNumber = $index) {<span class="source-line" [class.active]="line.id === activeAnchor()" [class.executed]="isExecuted(line.id)" [class.unreachable]="isUnreachable(lineNumber)" [attr.aria-current]="line.id === activeAnchor() ? 'step' : null" [attr.aria-label]="sourceLineLabel(line.id, lineNumber, line.text)"><span class="line-gutter"><i class="current-line-arrow" aria-hidden="true">›</i><b aria-hidden="true">{{ lineNumber + 1 }}</b></span><span class="line-code">{{ line.text || ' ' }}</span></span>}</code></pre>
           </section>
-        } @else {
-          <aside class="debugger-shell" aria-label="Guided debugger">
-            <div class="debugger-view-tabs" role="tablist" aria-label="Debugger views">
-              <button
-                type="button"
-                role="tab"
-                [attr.aria-selected]="activeView() === 'debugger'"
-                [attr.tabindex]="activeView() === 'debugger' ? 0 : -1"
-                aria-controls="debugger-view-panel"
-                (click)="selectView('debugger', $event)"
-                (keydown)="moveViewTab($event, 0)"
-              >
-                Debugger
-              </button>
-              <button
-                type="button"
-                role="tab"
-                [attr.aria-selected]="activeView() === 'why'"
-                [attr.tabindex]="activeView() === 'why' ? 0 : -1"
-                aria-controls="debugger-view-panel"
-                (click)="selectView('why', $event)"
-                (keydown)="moveViewTab($event, 1)"
-              >
-                Why
-              </button>
-              <button
-                type="button"
-                role="tab"
-                [attr.aria-selected]="activeView() === 'predict'"
-                [attr.tabindex]="activeView() === 'predict' ? 0 : -1"
-                aria-controls="debugger-view-panel"
-                [disabled]="isComplete()"
-                (click)="selectView('predict', $event)"
-                (keydown)="moveViewTab($event, 2)"
-              >
-                Predict
-              </button>
-              <button
-                type="button"
-                role="tab"
-                [attr.aria-selected]="activeView() === 'complexity'"
-                [attr.tabindex]="activeView() === 'complexity' ? 0 : -1"
-                aria-controls="debugger-view-panel"
-                (click)="selectView('complexity', $event)"
-                (keydown)="moveViewTab($event, 3)"
-              >
-                Complexity
-              </button>
-            </div>
 
-            <div class="debugger-detail-shell">
+          @if (focusMode()) {
+            <aside class="focus-explanation" aria-label="Current step explanation">
+              <div class="focus-step-title">
+                <span>Current step</span>
+                <strong>{{ event().phase }} · {{ activeLineLabel() }}</strong>
+              </div>
+              <section>
+                <span>What happened</span>
+                <p>{{ activeStepExplanation() }}</p>
+              </section>
+              <section>
+                <span>Why</span>
+                <p>{{ event().why }}</p>
+              </section>
+            </aside>
+
+            <section class="focus-state-dock" aria-label="Persistent execution state">
               <section
-                #debuggerPanel
-                id="debugger-view-panel"
-                class="debugger-panel"
-                [class.overflowing]="debuggerOverflow()"
-                role="tabpanel"
-                [attr.aria-label]="activeViewLabel()"
-                tabindex="0"
-                (scroll)="updateDebuggerOverflow($event)"
-                (window:resize)="measureDebuggerOverflow()"
+                class="focus-dock-card focus-collection"
+                [class.changed]="focusCollectionVariable()?.changed"
+                [attr.aria-label]="focusCollectionLabel()"
               >
-                @if (activeView() === 'debugger') {
-                  @if (event().stateUnavailable) {
-                    <p class="state-unavailable" role="status">
-                      Runtime state is unavailable for this selected-language instruction. No state
-                      from another language or execution point is shown.
-                    </p>
-                  }
-                  <section class="state-view" aria-label="Complete data state">
-                    <h3>Data state</h3>
-                    @for (row of visibleRows(); track row.label) {
-                      <div class="state-row">
-                        <strong>{{ row.label }}</strong>
-                        <div class="state-cells" role="list" [attr.aria-label]="row.label">
-                          @for (cell of row.cells; track $index) {
-                            <span
-                              role="listitem"
-                              [class]="cellClasses(cell)"
-                              [attr.aria-label]="cellLabel(cell, $index)"
-                              ><b>{{ cell.value }}</b>
-                              @if (cell.note) {
-                                <small>{{ cell.note }}</small>
-                              }
-                            </span>
-                          }
-                        </div>
-                      </div>
-                    }
-                  </section>
-
-                  <section class="variable-inspector" aria-label="Current variables">
-                    <h3>Variables</h3>
-                    <dl class="variables">
-                      @for (variable of visibleVariables(); track variable.name) {
-                        <div [class.changed]="variable.changed">
-                          <dt>
-                            {{ variable.name }} <small>{{ variable.type }}</small>
-                            @if (variable.changed) {
-                              <em>changed</em>
-                            }
-                          </dt>
-                          <dd>{{ variable.value }}</dd>
-                        </div>
-                      }
-                    </dl>
-                  </section>
-
-                  <section class="debugger-output" aria-label="Execution result">
-                    <span>Returned output</span>
-                    <strong>{{ event().result ?? 'Pending' }}</strong>
-                  </section>
-                  <div class="terminal" role="region" aria-label="Terminal output">
-                    <span>Terminal</span>
-                    <p>
-                      <span class="terminal-prompt" aria-hidden="true">&gt; </span
-                      >{{ terminalMessage() }}
-                    </p>
-                  </div>
-                } @else if (activeView() === 'why') {
-                  <article class="learning-view why-view">
-                    <span>Why this line exists</span>
-                    <h3>{{ activeLineLabel() }}</h3>
-                    <p>{{ activeStepExplanation() }}</p>
-                    <p class="learning-detail">{{ event().why }}</p>
-                  </article>
-                } @else if (activeView() === 'predict') {
-                  <section class="learning-view predict-view" aria-label="Predict the next step">
-                    <span>Predict before Next</span>
-                    <h3>{{ predictionPrompt() }}</h3>
-                    <div class="prediction-options">
-                      @for (option of predictionOptions(); track option.id) {
-                        <label [class.selected]="selectedPrediction() === option.id">
-                          <input
-                            type="radio"
-                            name="guided-next-prediction"
-                            [value]="option.id"
-                            [checked]="selectedPrediction() === option.id"
-                            (change)="selectPrediction(option.id)"
-                          />
-                          <span>{{ option.label }}</span>
-                        </label>
-                      }
-                    </div>
-                    <button
-                      type="button"
-                      class="learning-action"
-                      [disabled]="!selectedPrediction()"
-                      (click)="submitPrediction()"
-                    >
-                      Check prediction
-                    </button>
-                    @if (predictionSubmitted()) {
-                      <p class="prediction-feedback" aria-live="polite" aria-atomic="true">
-                        <strong>{{ predictionIsCorrect() ? 'Correct.' : 'Not quite.' }}</strong>
-                        {{ predictionFeedback() }}
-                      </p>
-                    }
-                  </section>
-                } @else {
-                  <section class="learning-view complexity-view" aria-label="Predict complexity">
-                    <span>Predict complexity</span>
-                    <h3>Choose the implementation's time and space bounds.</h3>
-                    <div class="complexity-questions">
-                      <fieldset>
-                        <legend>Time complexity</legend>
-                        @for (option of timeComplexityOptions(); track option) {
-                          <label>
-                            <input
-                              type="radio"
-                              name="guided-complexity-time"
-                              [value]="option"
-                              [checked]="selectedTimeComplexity() === option"
-                              (change)="selectComplexity('time', option)"
-                            />
-                            <span>{{ option }}</span>
-                          </label>
-                        }
-                      </fieldset>
-                      <fieldset>
-                        <legend>Space complexity</legend>
-                        @for (option of spaceComplexityOptions(); track option) {
-                          <label>
-                            <input
-                              type="radio"
-                              name="guided-complexity-space"
-                              [value]="option"
-                              [checked]="selectedSpaceComplexity() === option"
-                              (change)="selectComplexity('space', option)"
-                            />
-                            <span>{{ option }}</span>
-                          </label>
-                        }
-                      </fieldset>
-                    </div>
-                    <div class="complexity-actions">
-                      <button
-                        type="button"
-                        class="primary"
-                        [disabled]="!selectedTimeComplexity() || !selectedSpaceComplexity()"
-                        (click)="submitComplexity()"
-                      >
-                        Submit answer
-                      </button>
-                      <button type="button" (click)="revealComplexity()">Reveal answer</button>
-                    </div>
-                    @if (complexityRevealed()) {
-                      <section class="complexity-feedback" aria-live="polite" aria-atomic="true">
-                        <strong>{{ complexityFeedbackHeading() }}</strong>
-                        <p>
-                          <b>Time:</b> {{ problem().complexity.time }} · <b>Space:</b>
-                          {{ problem().complexity.space }}
-                        </p>
-                        <p>{{ problem().complexity.why }}</p>
-                        @if (problem().complexity.caveat; as caveat) {
-                          <p class="complexity-caveat">{{ caveat }}</p>
-                        }
-                      </section>
-                    }
-                  </section>
+                <h3>{{ focusCollectionLabel() }}</h3>
+                <strong>{{ focusCollectionValue() }}</strong>
+                @if (focusCollectionVariable()?.changed) {
+                  <small>changed this step</small>
                 }
               </section>
-              @if (debuggerOverflow() && !debuggerAtBottom()) {
-                <div class="debugger-more">
-                  <button
-                    type="button"
-                    [attr.aria-label]="'Show more ' + activeViewLabel().toLowerCase()"
-                    aria-controls="debugger-view-panel"
-                    (click)="showMoreDebuggerState()"
-                  >
-                    <span aria-hidden="true">⌄</span>
-                  </button>
-                </div>
-              }
-            </div>
-          </aside>
-        }
-      </div>
 
-      <details class="trace-transcript">
-        <summary>Read the full trace transcript</summary>
-        <div class="transcript-context">
-          <p><strong>Input:</strong> {{ tracedFixture().input }}</p>
-          <p><strong>Expected output:</strong> {{ tracedFixture().expectedOutput }}</p>
-          <p>
-            <strong>Complexity:</strong> {{ problem().complexity.time }} time ·
-            {{ problem().complexity.space }} space
-          </p>
-        </div>
-        <p><strong>Invariant:</strong> {{ activeTrace().invariant }}</p>
-        <ol>
-          @for (step of events(); track step.id) {
-            <li>
-              <strong>{{ step.phase }} · {{ step.label }}</strong
-              ><span>{{ step.what }}</span
-              ><span><b>Why:</b> {{ step.why }}</span
-              ><span><b>State:</b> {{ transcriptState(step.variables) }}</span>
-              @if (step.result) {
-                <span><b>Result:</b> {{ step.result }}</span>
-              }
-            </li>
+              <section class="focus-dock-card focus-array" aria-label="Array state">
+                <h3>Array</h3>
+                @for (row of visibleRows(); track row.label) {
+                  <div class="state-cells" role="list" [attr.aria-label]="row.label">
+                    @for (cell of row.cells; track $index) {
+                      <span
+                        role="listitem"
+                        [class]="cellClasses(cell)"
+                        [attr.aria-label]="cellLabel(cell, $index)"
+                      >
+                        <b>{{ cell.value }}</b>
+                        <small>index {{ $index }}</small>
+                        @if (cell.states?.length) {
+                          <em>{{ cell.states?.join(' · ') }}</em>
+                        }
+                      </span>
+                    }
+                  </div>
+                }
+              </section>
+
+              <section
+                class="focus-dock-card focus-observation"
+                [class.changed]="focusObservationVariable()?.changed"
+                [attr.aria-label]="focusObservationLabel()"
+              >
+                <h3>{{ focusObservationLabel() }}</h3>
+                <strong>{{ focusObservationValue() }}</strong>
+                @if (focusObservationVariable()?.changed) {
+                  <small>changed this step</small>
+                }
+              </section>
+
+              <section class="focus-dock-card focus-variables" aria-label="Variables">
+                <h3>Variables</h3>
+                <dl>
+                  @for (variable of focusVariables(); track variable.name) {
+                    <div [class.changed]="variable.changed">
+                      <dt>
+                        {{ variable.name }}
+                        @if (variable.changed) {
+                          <em>changed</em>
+                        }
+                      </dt>
+                      <dd>{{ variable.value }}</dd>
+                    </div>
+                  }
+                </dl>
+              </section>
+
+              <section class="focus-dock-card focus-output" aria-label="Output and terminal">
+                <div>
+                  <h3>Output</h3>
+                  <strong>{{ event().result ?? 'Pending' }}</strong>
+                </div>
+                <div class="focus-terminal">
+                  <span>Terminal</span>
+                  <p>
+                    <span class="terminal-prompt" aria-hidden="true">&gt; </span
+                    >{{ terminalMessage() }}
+                  </p>
+                </div>
+              </section>
+            </section>
+          } @else {
+            <aside class="debugger-shell" aria-label="Guided debugger">
+              <div class="debugger-view-tabs" role="tablist" aria-label="Debugger views">
+                <button
+                  type="button"
+                  role="tab"
+                  [attr.aria-selected]="activeView() === 'debugger'"
+                  [attr.tabindex]="activeView() === 'debugger' ? 0 : -1"
+                  aria-controls="debugger-view-panel"
+                  (click)="selectView('debugger', $event)"
+                  (keydown)="moveViewTab($event, 0)"
+                >
+                  Debugger
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  [attr.aria-selected]="activeView() === 'why'"
+                  [attr.tabindex]="activeView() === 'why' ? 0 : -1"
+                  aria-controls="debugger-view-panel"
+                  (click)="selectView('why', $event)"
+                  (keydown)="moveViewTab($event, 1)"
+                >
+                  Why
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  [attr.aria-selected]="activeView() === 'predict'"
+                  [attr.tabindex]="activeView() === 'predict' ? 0 : -1"
+                  aria-controls="debugger-view-panel"
+                  [disabled]="isComplete()"
+                  (click)="selectView('predict', $event)"
+                  (keydown)="moveViewTab($event, 2)"
+                >
+                  Predict
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  [attr.aria-selected]="activeView() === 'complexity'"
+                  [attr.tabindex]="activeView() === 'complexity' ? 0 : -1"
+                  aria-controls="debugger-view-panel"
+                  (click)="selectView('complexity', $event)"
+                  (keydown)="moveViewTab($event, 3)"
+                >
+                  Complexity
+                </button>
+              </div>
+
+              <div class="debugger-detail-shell">
+                <section
+                  #debuggerPanel
+                  id="debugger-view-panel"
+                  class="debugger-panel"
+                  [class.overflowing]="debuggerOverflow()"
+                  role="tabpanel"
+                  [attr.aria-label]="activeViewLabel()"
+                  tabindex="0"
+                  (scroll)="updateDebuggerOverflow($event)"
+                  (window:resize)="measureDebuggerOverflow()"
+                >
+                  @if (activeView() === 'debugger') {
+                    @if (event().stateUnavailable) {
+                      <p class="state-unavailable" role="status">
+                        Runtime state is unavailable for this selected-language instruction. No
+                        state from another language or execution point is shown.
+                      </p>
+                    }
+                    <section class="state-view" aria-label="Complete data state">
+                      <h3>Data state</h3>
+                      @for (row of visibleRows(); track row.label) {
+                        <div class="state-row">
+                          <strong>{{ row.label }}</strong>
+                          <div class="state-cells" role="list" [attr.aria-label]="row.label">
+                            @for (cell of row.cells; track $index) {
+                              <span
+                                role="listitem"
+                                [class]="cellClasses(cell)"
+                                [attr.aria-label]="cellLabel(cell, $index)"
+                                ><b>{{ cell.value }}</b>
+                                @if (cell.note) {
+                                  <small>{{ cell.note }}</small>
+                                }
+                              </span>
+                            }
+                          </div>
+                        </div>
+                      }
+                    </section>
+
+                    <section class="variable-inspector" aria-label="Current variables">
+                      <h3>Variables</h3>
+                      <dl class="variables">
+                        @for (variable of visibleVariables(); track variable.name) {
+                          <div [class.changed]="variable.changed">
+                            <dt>
+                              {{ variable.name }} <small>{{ variable.type }}</small>
+                              @if (variable.changed) {
+                                <em>changed</em>
+                              }
+                            </dt>
+                            <dd>{{ variable.value }}</dd>
+                          </div>
+                        }
+                      </dl>
+                    </section>
+
+                    <section class="debugger-output" aria-label="Execution result">
+                      <span>Returned output</span>
+                      <strong>{{ event().result ?? 'Pending' }}</strong>
+                    </section>
+                    <div class="terminal" role="region" aria-label="Terminal output">
+                      <span>Terminal</span>
+                      <p>
+                        <span class="terminal-prompt" aria-hidden="true">&gt; </span
+                        >{{ terminalMessage() }}
+                      </p>
+                    </div>
+                  } @else if (activeView() === 'why') {
+                    <article class="learning-view why-view">
+                      <span>Why this line exists</span>
+                      <h3>{{ activeLineLabel() }}</h3>
+                      <p>{{ activeStepExplanation() }}</p>
+                      <p class="learning-detail">{{ event().why }}</p>
+                    </article>
+                  } @else if (activeView() === 'predict') {
+                    <section class="learning-view predict-view" aria-label="Predict the next step">
+                      <span>Predict before Next</span>
+                      <h3>{{ predictionPrompt() }}</h3>
+                      <div class="prediction-options">
+                        @for (option of predictionOptions(); track option.id) {
+                          <label [class.selected]="selectedPrediction() === option.id">
+                            <input
+                              type="radio"
+                              name="guided-next-prediction"
+                              [value]="option.id"
+                              [checked]="selectedPrediction() === option.id"
+                              (change)="selectPrediction(option.id)"
+                            />
+                            <span>{{ option.label }}</span>
+                          </label>
+                        }
+                      </div>
+                      <button
+                        type="button"
+                        class="learning-action"
+                        [disabled]="!selectedPrediction()"
+                        (click)="submitPrediction()"
+                      >
+                        Check prediction
+                      </button>
+                      @if (predictionSubmitted()) {
+                        <p class="prediction-feedback" aria-live="polite" aria-atomic="true">
+                          <strong>{{ predictionIsCorrect() ? 'Correct.' : 'Not quite.' }}</strong>
+                          {{ predictionFeedback() }}
+                        </p>
+                      }
+                    </section>
+                  } @else {
+                    <section class="learning-view complexity-view" aria-label="Predict complexity">
+                      <span>Predict complexity</span>
+                      <h3>Choose the implementation's time and space bounds.</h3>
+                      <div class="complexity-questions">
+                        <fieldset>
+                          <legend>Time complexity</legend>
+                          @for (option of timeComplexityOptions(); track option) {
+                            <label>
+                              <input
+                                type="radio"
+                                name="guided-complexity-time"
+                                [value]="option"
+                                [checked]="selectedTimeComplexity() === option"
+                                (change)="selectComplexity('time', option)"
+                              />
+                              <span>{{ option }}</span>
+                            </label>
+                          }
+                        </fieldset>
+                        <fieldset>
+                          <legend>Space complexity</legend>
+                          @for (option of spaceComplexityOptions(); track option) {
+                            <label>
+                              <input
+                                type="radio"
+                                name="guided-complexity-space"
+                                [value]="option"
+                                [checked]="selectedSpaceComplexity() === option"
+                                (change)="selectComplexity('space', option)"
+                              />
+                              <span>{{ option }}</span>
+                            </label>
+                          }
+                        </fieldset>
+                      </div>
+                      <div class="complexity-actions">
+                        <button
+                          type="button"
+                          class="primary"
+                          [disabled]="!selectedTimeComplexity() || !selectedSpaceComplexity()"
+                          (click)="submitComplexity()"
+                        >
+                          Submit answer
+                        </button>
+                        <button type="button" (click)="revealComplexity()">Reveal answer</button>
+                      </div>
+                      @if (complexityRevealed()) {
+                        <section class="complexity-feedback" aria-live="polite" aria-atomic="true">
+                          <strong>{{ complexityFeedbackHeading() }}</strong>
+                          <p>
+                            <b>Time:</b> {{ problem().complexity.time }} · <b>Space:</b>
+                            {{ problem().complexity.space }}
+                          </p>
+                          <p>{{ problem().complexity.why }}</p>
+                          @if (problem().complexity.caveat; as caveat) {
+                            <p class="complexity-caveat">{{ caveat }}</p>
+                          }
+                        </section>
+                      }
+                    </section>
+                  }
+                </section>
+                @if (debuggerOverflow() && !debuggerAtBottom()) {
+                  <div class="debugger-more">
+                    <button
+                      type="button"
+                      [attr.aria-label]="'Show more ' + activeViewLabel().toLowerCase()"
+                      aria-controls="debugger-view-panel"
+                      (click)="showMoreDebuggerState()"
+                    >
+                      <span aria-hidden="true">⌄</span>
+                    </button>
+                  </div>
+                }
+              </div>
+            </aside>
           }
-        </ol>
-      </details>
-      <p id="trace-boundary-status" class="boundary-status">{{ boundaryStatus() }}</p>
-      <p class="sr-status" aria-live="polite" aria-atomic="true">{{ announcement() }}</p>
-    </section>
+        </div>
+
+        <details class="trace-transcript">
+          <summary>Read the full trace transcript</summary>
+          <div class="transcript-context">
+            <p><strong>Input:</strong> {{ tracedFixture().input }}</p>
+            <p><strong>Expected output:</strong> {{ tracedFixture().expectedOutput }}</p>
+            <p>
+              <strong>Complexity:</strong> {{ problem().complexity.time }} time ·
+              {{ problem().complexity.space }} space
+            </p>
+          </div>
+          <p><strong>Invariant:</strong> {{ activeTrace().invariant }}</p>
+          <ol>
+            @for (step of events(); track step.id) {
+              <li>
+                <strong>{{ step.phase }} · {{ step.label }}</strong
+                ><span>{{ step.what }}</span
+                ><span><b>Why:</b> {{ step.why }}</span
+                ><span><b>State:</b> {{ transcriptState(step.variables) }}</span>
+                @if (step.result) {
+                  <span><b>Result:</b> {{ step.result }}</span>
+                }
+              </li>
+            }
+          </ol>
+        </details>
+        <p id="trace-boundary-status" class="boundary-status">{{ boundaryStatus() }}</p>
+        <p class="sr-status" aria-live="polite" aria-atomic="true">{{ announcement() }}</p>
+      </section>
+    }
   `,
   styles: [
     `
@@ -1856,8 +1872,15 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
   ],
 })
 export class GuidedAlgorithmTrace {
+  readonly studio = input(false);
+  readonly studioSnapshot = input<TraceSnapshot | null>(null);
+  readonly studioDebugger = input(false);
+  readonly studioContextual = input(false);
+  readonly studioFollow = input(true);
+
   readonly problem = input.required<PatternProblemV1>();
   readonly selectedFixture = input.required<PatternProblemFixture>();
+  protected readonly studioFixture = computed(() => this.selectedFixture() as DsaProblemFixtureV2);
   readonly focusMode = input(false);
   readonly initialLanguage = input<PatternLanguage>('java');
   readonly fixtureChange = output<PatternProblemFixture>();
@@ -1896,46 +1919,9 @@ export class GuidedAlgorithmTrace {
       this.guidedFixtures().findIndex(({ id }) => id === this.selectedFixture().id),
     ),
   );
-  protected readonly events = computed<GuidedTraceEvent[]>(() => {
-    const trace = this.activeTrace();
-    const language = this.language();
-    const path = trace.languagePaths?.[language];
-    if (!path?.length) return trace.events;
-    const terminalResult = trace.events.at(-1)?.result;
-    return path.map((step, pathIndex) => {
-      const baseEvent = trace.events[step.eventIndex] ?? trace.events[0];
-      const { result: _baseResult, ...eventWithoutResult } = baseEvent;
-      const sourceLineIndex = this.source().lines.findIndex(({ id }) => id === step.sourceAnchor);
-      const sourceLine = this.source().lines[sourceLineIndex];
-      const usesAuthoredAnchor = baseEvent.sourceAnchor[language] === step.sourceAnchor;
-      return {
-        ...eventWithoutResult,
-        id: `${baseEvent.id}-${language}-${pathIndex + 1}`,
-        label: usesAuthoredAnchor ? baseEvent.label : `Execute line ${sourceLineIndex + 1}`,
-        phase: usesAuthoredAnchor ? baseEvent.phase : 'Execute',
-        timing: trace.stateTiming ?? 'after',
-        sourceAnchor: { ...baseEvent.sourceAnchor, [language]: step.sourceAnchor },
-        what: usesAuthoredAnchor
-          ? baseEvent.what
-          : `Execute ${sourceLine?.text.trim() || step.sourceAnchor} in the selected implementation.`,
-        variables:
-          trace.stateSemantics === 'target-runtime/v1' && language !== 'python'
-            ? (step.variables ?? [])
-            : baseEvent.variables,
-        rows:
-          trace.stateSemantics === 'target-runtime/v1' && language !== 'python'
-            ? (step.rows ?? [])
-            : baseEvent.rows,
-        ...(step.stateUnavailable ? { stateUnavailable: true } : {}),
-        ...(step.stateUnavailableReason
-          ? { stateUnavailableReason: step.stateUnavailableReason }
-          : {}),
-        ...(pathIndex === path.length - 1 && (step.result ?? terminalResult) !== undefined
-          ? { result: step.result ?? terminalResult }
-          : {}),
-      };
-    });
-  });
+  protected readonly events = computed<GuidedTraceEvent[]>(() =>
+    languageTraceEvents(this.problem(), this.activeTrace(), this.language()),
+  );
   protected readonly event = computed(() => this.events()[this.stepIndex()] ?? this.events()[0]);
   protected readonly isComplete = computed(() => this.stepIndex() === this.events().length - 1);
   protected readonly source = computed(

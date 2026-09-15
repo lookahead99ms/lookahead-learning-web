@@ -23,9 +23,31 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "*.wasm",
+                "input": "node_modules/@wasm-fmt/ruff_fmt",
+                "output": "formatters"
+              },
+              {
+                "glob": "*.wasm",
+                "input": "node_modules/@wasm-fmt/gofmt",
+                "output": "formatters"
+              },
+              {
+                "glob": "*.wasm",
+                "input": "node_modules/web-tree-sitter",
+                "output": "/"
+              },
+              {
+                "glob": "*.wasm",
+                "input": "node_modules/prettier-plugin-java/dist",
+                "output": "/"
               }
             ],
-            "styles": ["src/styles.css"]
+            "styles": ["src/styles.css"],
+            "webWorkerTsConfig": "tsconfig.worker.json",
+            "externalDependencies": ["fs/promises", "module", "node:fs/promises", "node:module"]
           },
           "configurations": {
             "production": {
@@ -74,6 +96,26 @@
                   "glob": "**/*",
                   "input": "public",
                   "ignore": ["content/**", "local-previews/**"]
+                },
+                {
+                  "glob": "*.wasm",
+                  "input": "node_modules/@wasm-fmt/ruff_fmt",
+                  "output": "formatters"
+                },
+                {
+                  "glob": "*.wasm",
+                  "input": "node_modules/@wasm-fmt/gofmt",
+                  "output": "formatters"
+                },
+                {
+                  "glob": "*.wasm",
+                  "input": "node_modules/web-tree-sitter",
+                  "output": "/"
+                },
+                {
+                  "glob": "*.wasm",
+                  "input": "node_modules/prettier-plugin-java/dist",
+                  "output": "/"
                 }
               ]
             }

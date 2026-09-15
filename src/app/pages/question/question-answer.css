@@ -1,0 +1,148 @@
+/* The non-DSA branch alone owns this surface. DSA and theory keep their shells. */
+.non-dsa-answer-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+.non-dsa-answer-layout > * {
+  min-width: 0;
+}
+.non-dsa-answer-layout .reader-interview-panel {
+  margin: 0;
+  padding: 24px 28px;
+  border: 1px solid var(--line);
+  border-inline-start: 3px solid var(--accent-strong);
+  border-radius: 12px;
+  background: var(--surface-muted);
+}
+.non-dsa-answer-layout .panel-label {
+  margin: 0 0 14px;
+}
+.non-dsa-answer-layout .reader-interview-panel p {
+  max-width: 112ch;
+  margin: 0;
+  line-height: 1.8;
+}
+.non-dsa-answer-layout .details-content {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.non-dsa-answer-layout .details-content-body {
+  padding: 24px;
+}
+.non-dsa-answer-layout .answer-code-grid {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 28px;
+}
+.non-dsa-answer-layout .explanation-panel {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow: visible;
+}
+.non-dsa-answer-layout .explanation-panel p:not(.panel-label) {
+  margin: 0 0 20px;
+  max-width: 90ch;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+.non-dsa-answer-layout .explanation-panel p:last-child {
+  margin-bottom: 0;
+}
+.non-dsa-answer-layout .has-reference-code .explanation-panel {
+  padding-block-end: 24px;
+  border-block-end: 1px solid var(--line);
+}
+.non-dsa-answer-layout .code-panel {
+  position: static;
+  min-width: 0;
+  max-height: none;
+  border: 1px solid var(--code-line);
+  border-radius: 12px;
+}
+.non-dsa-answer-layout .code-panel > div {
+  gap: 16px;
+  align-items: center;
+}
+.non-dsa-answer-layout .code-panel > div > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.non-dsa-answer-layout .reference-code-actions {
+  flex-shrink: 0;
+}
+.non-dsa-answer-layout .code-panel pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 0.8125rem;
+  line-height: 1.8;
+  tab-size: 4;
+}
+.non-dsa-answer-layout .main-followups {
+  display: block;
+  margin: 0;
+  padding: 24px 0 0;
+  border: 0;
+  border-block-start: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+}
+.non-dsa-answer-layout .main-followups details,
+.non-dsa-answer-layout .answer-version-notes {
+  padding: 0;
+  border: 0;
+  border-block-end: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+}
+.non-dsa-answer-layout summary {
+  padding: 17px 0;
+  color: var(--accent-link);
+  cursor: pointer;
+  font-weight: 650;
+}
+.non-dsa-answer-layout .main-followups details p,
+.non-dsa-answer-layout .answer-version-notes li {
+  max-width: 90ch;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+.non-dsa-answer-layout summary:focus-visible,
+.non-dsa-answer-layout pre:focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 4px;
+}
+@media (min-width: 1280px) {
+  .non-dsa-answer-layout .answer-code-grid.has-reference-code {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  }
+  .non-dsa-answer-layout .has-reference-code .explanation-panel {
+    padding: 4px 26px 4px 0;
+    border-block-end: 0;
+    border-inline-end: 1px solid var(--line);
+  }
+}
+@media (max-width: 700px) {
+  .non-dsa-answer-layout {
+    gap: 20px;
+  }
+  .non-dsa-answer-layout .reader-interview-panel {
+    padding: 20px;
+  }
+  .non-dsa-answer-layout .details-content-body {
+    padding: 18px;
+  }
+  .non-dsa-answer-layout .code-panel > div {
+    flex-wrap: wrap;
+    padding: 16px;
+  }
+  .non-dsa-answer-layout .code-panel pre {
+    padding: 16px;
+    font-size: 0.75rem;
+  }
+}
