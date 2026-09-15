@@ -431,6 +431,24 @@ export interface DsaProblemFixtureV2 extends PatternProblemFixture {
   expected: DsaFixtureValue;
 }
 
+/** Optional authored teaching; never inferred from a problem ID or reference source. */
+export interface DsaTeachingV1 {
+  schemaVersion: 'dsa-teaching/v1';
+  problemFraming: string;
+  startingApproach: DsaTeachingApproach;
+  selectedApproach: DsaTeachingApproach;
+  keyDifference: string;
+  workedTransition?: { input: string; steps: string[]; outcome: string };
+}
+
+export interface DsaTeachingApproach {
+  title: string;
+  theory: string[];
+  /** Language-neutral teaching; the canonical implementation remains the solution. */
+  pseudocode: string[];
+  complexity: { time: string; space: string };
+}
+
 /** Canonical, course-independent source for one complete DSA practice experience. */
 export interface DsaProblemV2 extends Omit<
   PatternProblemV1,
@@ -446,6 +464,7 @@ export interface DsaProblemV2 extends Omit<
   navigation: DsaProblemNavigation;
   fixtures: DsaProblemFixtureV2[];
   practice: PatternProblemPractice;
+  teaching?: DsaTeachingV1;
   /** Derived by the compatibility loader from the primary practice placement. */
   practiceQuestionId?: string;
 }

@@ -1,330 +1,335 @@
-<section
-  class="pilot"
-  [class.focus-studio]="focusStudio()"
-  [class.code-focused]="focusStudio() && briefHidden()"
-  [attr.aria-label]="problem().title + ' complete practice experience'"
->
-  @if (focusStudio()) {
-    <div class="studio-toolbar">
-      <span>Practice at your pace</span>
-      <button
-        type="button"
-        class="brief-toggle"
-        [attr.aria-controls]="briefId()"
-        [attr.aria-expanded]="!briefHidden()"
-        (click)="toggleBrief($event)"
-      >
-        {{ briefHidden() ? 'Show problem brief' : 'Focus on code' }}
-      </button>
-    </div>
-  }
+@if (studioProblem(); as selectedProblem) {
+  <app-focus-studio [problem]="selectedProblem" [initialLanguage]="initialLanguage()" />
+} @else {
   <section
-    class="contract"
-    [id]="briefId()"
-    [hidden]="focusStudio() && briefHidden()"
-    [attr.aria-labelledby]="showProblemHeading() ? 'pilot-problem-title' : null"
-    [attr.aria-label]="showProblemHeading() ? null : problem().title + ' problem contract'"
+    class="pilot"
+    [class.focus-studio]="focusStudio()"
+    [class.code-focused]="focusStudio() && briefHidden()"
+    [attr.aria-label]="problem().title + ' complete practice experience'"
   >
-    <header class="pilot-heading">
-      <div>
-        @if (showProblemHeading()) {
-          <span>Selected problem</span>
-          <h3 id="pilot-problem-title">{{ problem().title }}</h3>
-        }
-        @if (focusStudio()) {
-          <h2 class="brief-heading">The problem</h2>
-        }
-        <p>{{ practice().statement.prompt }}</p>
-      </div>
-      @if (practice().sourceUrl) {
-        <a
-          class="source-link"
-          [href]="practice().sourceUrl"
-          target="_blank"
-          rel="noopener noreferrer"
-          >Original problem source ↗</a
-        >
-      } @else if (practice().sourceAttribution; as attribution) {
-        <span class="source-attribution">{{ attribution.label }}</span>
-      }
-    </header>
-    <div class="contract-grid">
-      <div>
-        <strong>Inputs</strong>
-        <ul>
-          @for (item of practice().statement.inputs; track $index) {
-            <li>{{ item }}</li>
-          }
-        </ul>
-      </div>
-      <div>
-        <strong>Return</strong>
-        <p>{{ practice().statement.output }}</p>
-      </div>
-      <div>
-        <strong>Constraints</strong>
-        <ul>
-          @for (item of practice().statement.constraints; track $index) {
-            <li>{{ item }}</li>
-          }
-        </ul>
-      </div>
-      <div>
-        <strong>Edge cases</strong>
-        <ul>
-          @for (item of practice().statement.edgeCases; track $index) {
-            <li>{{ item }}</li>
-          }
-        </ul>
-      </div>
-    </div>
-    <section class="example-cases" aria-labelledby="example-cases-heading">
-      <div class="example-cases-heading">
-        <strong id="example-cases-heading">Examples and expected outputs</strong>
-        <span>Use these cases to verify the contract before you start.</span>
-      </div>
-      @if (focusStudio()) {
-        <label class="brief-fixture-picker"
-          >Choose an example
-          <select
-            [value]="activeFixture().id"
-            (change)="selectBriefFixture($any($event.target).value)"
-          >
-            @for (fixture of problem().fixtures; track fixture.id) {
-              <option [value]="fixture.id">{{ fixture.label }}</option>
-            }
-          </select>
-        </label>
-      }
-      @for (fixture of problem().fixtures; track fixture.id) {
-        <article [hidden]="focusStudio() && fixture.id !== activeFixture().id">
-          <strong>{{ fixture.label }}</strong>
-          <code>{{ fixture.input }}</code>
-          <p>
-            <span>Expected</span><code>{{ fixture.expectedOutput }}</code>
-          </p>
-          <small>{{ fixture.explanation }}</small>
-        </article>
-      }
-    </section>
-  </section>
-
-  <section class="workspace" [attr.aria-label]="problem().title + ' practice workspace'">
-    <div class="mode-tabs" role="tablist" aria-label="Choose a practice mode">
-      <button
-        [id]="modeTabId('practice')"
-        data-mode="practice"
-        type="button"
-        role="tab"
-        [attr.aria-selected]="mode() === 'practice'"
-        [attr.tabindex]="mode() === 'practice' ? 0 : -1"
-        [attr.aria-controls]="modePaneId('practice')"
-        (click)="selectMode('practice')"
-        (keydown)="handleModeKeydown($event)"
-      >
-        {{ focusStudio() ? 'Try it yourself' : 'Practice independently' }}
-      </button>
-      <button
-        [id]="modeTabId('guided')"
-        data-mode="guided"
-        type="button"
-        role="tab"
-        [attr.aria-selected]="mode() === 'guided'"
-        [attr.tabindex]="mode() === 'guided' ? 0 : -1"
-        [attr.aria-controls]="modePaneId('guided')"
-        (click)="selectMode('guided')"
-        (keydown)="handleModeKeydown($event)"
-      >
-        {{ focusStudio() ? 'Guided walkthrough' : 'Guided explanation' }}
-      </button>
-      @if (focusStudio()) {
+    @if (focusStudio()) {
+      <div class="studio-toolbar">
+        <span>Practice at your pace</span>
         <button
-          [id]="modeTabId('recall')"
-          data-mode="recall"
+          type="button"
+          class="brief-toggle"
+          [attr.aria-controls]="briefId()"
+          [attr.aria-expanded]="!briefHidden()"
+          (click)="toggleBrief($event)"
+        >
+          {{ briefHidden() ? 'Show problem brief' : 'Focus on code' }}
+        </button>
+      </div>
+    }
+    <section
+      class="contract"
+      [id]="briefId()"
+      [hidden]="focusStudio() && briefHidden()"
+      [attr.aria-labelledby]="showProblemHeading() ? 'pilot-problem-title' : null"
+      [attr.aria-label]="showProblemHeading() ? null : problem().title + ' problem contract'"
+    >
+      <header class="pilot-heading">
+        <div>
+          @if (showProblemHeading()) {
+            <span>Selected problem</span>
+            <h3 id="pilot-problem-title">{{ problem().title }}</h3>
+          }
+          @if (focusStudio()) {
+            <h2 class="brief-heading">The problem</h2>
+          }
+          <p>{{ practice().statement.prompt }}</p>
+        </div>
+        @if (practice().sourceUrl) {
+          <a
+            class="source-link"
+            [href]="practice().sourceUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Original problem source ↗</a
+          >
+        } @else if (practice().sourceAttribution; as attribution) {
+          <span class="source-attribution">{{ attribution.label }}</span>
+        }
+      </header>
+      <div class="contract-grid">
+        <div>
+          <strong>Inputs</strong>
+          <ul>
+            @for (item of practice().statement.inputs; track $index) {
+              <li>{{ item }}</li>
+            }
+          </ul>
+        </div>
+        <div>
+          <strong>Return</strong>
+          <p>{{ practice().statement.output }}</p>
+        </div>
+        <div>
+          <strong>Constraints</strong>
+          <ul>
+            @for (item of practice().statement.constraints; track $index) {
+              <li>{{ item }}</li>
+            }
+          </ul>
+        </div>
+        <div>
+          <strong>Edge cases</strong>
+          <ul>
+            @for (item of practice().statement.edgeCases; track $index) {
+              <li>{{ item }}</li>
+            }
+          </ul>
+        </div>
+      </div>
+      <section class="example-cases" aria-labelledby="example-cases-heading">
+        <div class="example-cases-heading">
+          <strong id="example-cases-heading">Examples and expected outputs</strong>
+          <span>Use these cases to verify the contract before you start.</span>
+        </div>
+        @if (focusStudio()) {
+          <label class="brief-fixture-picker"
+            >Choose an example
+            <select
+              [value]="activeFixture().id"
+              (change)="selectBriefFixture($any($event.target).value)"
+            >
+              @for (fixture of problem().fixtures; track fixture.id) {
+                <option [value]="fixture.id">{{ fixture.label }}</option>
+              }
+            </select>
+          </label>
+        }
+        @for (fixture of problem().fixtures; track fixture.id) {
+          <article [hidden]="focusStudio() && fixture.id !== activeFixture().id">
+            <strong>{{ fixture.label }}</strong>
+            <code>{{ fixture.input }}</code>
+            <p>
+              <span>Expected</span><code>{{ fixture.expectedOutput }}</code>
+            </p>
+            <small>{{ fixture.explanation }}</small>
+          </article>
+        }
+      </section>
+    </section>
+
+    <section class="workspace" [attr.aria-label]="problem().title + ' practice workspace'">
+      <div class="mode-tabs" role="tablist" aria-label="Choose a practice mode">
+        <button
+          [id]="modeTabId('practice')"
+          data-mode="practice"
           type="button"
           role="tab"
-          [attr.aria-selected]="mode() === 'recall'"
-          [attr.tabindex]="mode() === 'recall' ? 0 : -1"
-          [attr.aria-controls]="modePaneId('recall')"
-          (click)="selectMode('recall')"
+          [attr.aria-selected]="mode() === 'practice'"
+          [attr.tabindex]="mode() === 'practice' ? 0 : -1"
+          [attr.aria-controls]="modePaneId('practice')"
+          (click)="selectMode('practice')"
           (keydown)="handleModeKeydown($event)"
         >
-          Recall
+          {{ focusStudio() ? 'Try it yourself' : 'Practice independently' }}
         </button>
-      }
-    </div>
-
-    <section
-      [id]="modePaneId('practice')"
-      class="practice-pane"
-      role="tabpanel"
-      [attr.aria-labelledby]="modeTabId('practice')"
-      [hidden]="mode() !== 'practice'"
-    >
-      <div class="mode-reaction practice-reaction">
-        <app-coding-solution-tabs
-          [solutions]="solutions()"
-          [complexity]="complexity()"
-          [practiceStarters]="practice().starters"
-          [initialLanguage]="initialLanguage()"
-          [showReferences]="false"
-          [studioLayout]="focusStudio()"
-          [tutorProblem]="tutorProblem()"
-          [practicePrompt]="
-            focusStudio()
-              ? 'Work from the contract. Reveal hints and the reference when you need them.'
-              : 'Implement the stated contract without changing the inputs. No code runner is enabled in this pilot.'
-          "
-        />
-      </div>
-      <details class="help-panel">
-        <summary>Need a hint? <span>Three progressive hints</span></summary>
-        @for (hint of practice().hints; track $index; let index = $index) {
-          <details>
-            <summary>Reveal hint {{ index + 1 }}</summary>
-            <p>{{ hint }}</p>
-          </details>
+        <button
+          [id]="modeTabId('guided')"
+          data-mode="guided"
+          type="button"
+          role="tab"
+          [attr.aria-selected]="mode() === 'guided'"
+          [attr.tabindex]="mode() === 'guided' ? 0 : -1"
+          [attr.aria-controls]="modePaneId('guided')"
+          (click)="selectMode('guided')"
+          (keydown)="handleModeKeydown($event)"
+        >
+          {{ focusStudio() ? 'Guided walkthrough' : 'Guided explanation' }}
+        </button>
+        @if (focusStudio()) {
+          <button
+            [id]="modeTabId('recall')"
+            data-mode="recall"
+            type="button"
+            role="tab"
+            [attr.aria-selected]="mode() === 'recall'"
+            [attr.tabindex]="mode() === 'recall' ? 0 : -1"
+            [attr.aria-controls]="modePaneId('recall')"
+            (click)="selectMode('recall')"
+            (keydown)="handleModeKeydown($event)"
+          >
+            Recall
+          </button>
         }
-      </details>
-      <details class="help-panel">
-        <summary>View solution <span>Java, Python, Go, and complexity</span></summary>
-        <app-coding-solution-tabs
-          [solutions]="solutions()"
-          [complexity]="complexity()"
-          [showPractice]="false"
-        />
-      </details>
-    </section>
-
-    <section
-      [id]="modePaneId('guided')"
-      class="guided-pane"
-      role="tabpanel"
-      [attr.aria-labelledby]="modeTabId('guided')"
-      [hidden]="mode() !== 'guided'"
-    >
-      <div class="section-heading guided-entry">
-        <div>
-          <h4>Trace the preferred approach</h4>
-          <p>
-            Understand the reasoning first, then follow each executed source line and state change.
-          </p>
-        </div>
       </div>
-      <section class="reasoning-frame" aria-label="Reasoning frame">
-        <div class="reasoning-invariant">
-          <span>Invariant</span>
-          <p>{{ activeTrace().invariant }}</p>
+
+      <section
+        [id]="modePaneId('practice')"
+        class="practice-pane"
+        role="tabpanel"
+        [attr.aria-labelledby]="modeTabId('practice')"
+        [hidden]="mode() !== 'practice'"
+      >
+        <div class="mode-reaction practice-reaction">
+          <app-coding-solution-tabs
+            [solutions]="solutions()"
+            [complexity]="complexity()"
+            [practiceStarters]="practice().starters"
+            [initialLanguage]="initialLanguage()"
+            [showReferences]="false"
+            [studioLayout]="focusStudio()"
+            [tutorProblem]="tutorProblem()"
+            [practicePrompt]="
+              focusStudio()
+                ? 'Work from the contract. Reveal hints and the reference when you need them.'
+                : 'Implement the stated contract without changing the inputs. No code runner is enabled in this pilot.'
+            "
+          />
         </div>
-        <div class="canonical-rationale">
-          <article>
-            <span>Why this variant</span>
-            <strong>{{ problem().variation }}</strong>
-            <p>{{ practice().canonicalApproach.whyThisApproach }}</p>
-          </article>
-          <article>
-            <span>Why it is optimal</span>
-            <p>{{ practice().canonicalApproach.whyOptimal }}</p>
-          </article>
-          <article>
-            <span>When this assumption changes</span>
-            <p>{{ practice().canonicalApproach.whenAssumptionChanges }}</p>
-          </article>
+        <details class="help-panel">
+          <summary>Need a hint? <span>Three progressive hints</span></summary>
+          @for (hint of practice().hints; track $index; let index = $index) {
+            <details>
+              <summary>Reveal hint {{ index + 1 }}</summary>
+              <p>{{ hint }}</p>
+            </details>
+          }
+        </details>
+        <details class="help-panel">
+          <summary>View solution <span>Java, Python, Go, and complexity</span></summary>
+          <app-coding-solution-tabs
+            [solutions]="solutions()"
+            [complexity]="complexity()"
+            [showPractice]="false"
+          />
+        </details>
+      </section>
+
+      <section
+        [id]="modePaneId('guided')"
+        class="guided-pane"
+        role="tabpanel"
+        [attr.aria-labelledby]="modeTabId('guided')"
+        [hidden]="mode() !== 'guided'"
+      >
+        <div class="section-heading guided-entry">
+          <div>
+            <h4>Trace the preferred approach</h4>
+            <p>
+              Understand the reasoning first, then follow each executed source line and state
+              change.
+            </p>
+          </div>
+        </div>
+        <section class="reasoning-frame" aria-label="Reasoning frame">
+          <div class="reasoning-invariant">
+            <span>Invariant</span>
+            <p>{{ activeTrace().invariant }}</p>
+          </div>
+          <div class="canonical-rationale">
+            <article>
+              <span>Why this variant</span>
+              <strong>{{ problem().variation }}</strong>
+              <p>{{ practice().canonicalApproach.whyThisApproach }}</p>
+            </article>
+            <article>
+              <span>Why it is optimal</span>
+              <p>{{ practice().canonicalApproach.whyOptimal }}</p>
+            </article>
+            <article>
+              <span>When this assumption changes</span>
+              <p>{{ practice().canonicalApproach.whenAssumptionChanges }}</p>
+            </article>
+          </div>
+        </section>
+        <div
+          #focusDialog
+          class="guided-trace-stage"
+          [class.focused]="focusMode()"
+          [attr.role]="focusMode() ? 'dialog' : null"
+          [attr.aria-modal]="focusMode() ? 'true' : null"
+          [attr.aria-labelledby]="focusMode() ? focusDialogTitleId() : null"
+          (keydown)="handleFocusKeydown($event)"
+        >
+          <div class="debugger-frame-bar" [hidden]="focusMode()">
+            <span>Guided debugger workspace</span>
+            <button
+              #focusEntry
+              type="button"
+              class="focus-entry"
+              aria-haspopup="dialog"
+              [attr.aria-expanded]="focusMode()"
+              [attr.aria-label]="'Expand ' + problem().title + ' debugger'"
+              title="Expand debugger"
+              (click)="enterFocusMode($event)"
+            >
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path>
+                <path d="m3 8 6-6M21 8l-6-6M3 16l6 6M21 16l-6 6"></path>
+              </svg>
+            </button>
+          </div>
+          @if (focusMode()) {
+            <header class="focus-header">
+              <div>
+                <span>Expanded guided practice</span>
+                <strong [id]="focusDialogTitleId()">{{ problem().title }} debugger</strong>
+              </div>
+              <p>Step without moving the lesson. Your input, language, and progress stay intact.</p>
+              <button #focusExit type="button" class="focus-exit" (click)="exitFocusMode()">
+                Exit expanded view <kbd>Esc</kbd>
+              </button>
+            </header>
+          }
+          <app-guided-algorithm-trace
+            class="mode-reaction"
+            [problem]="problem()"
+            [selectedFixture]="activeFixture()"
+            [initialLanguage]="initialLanguage()"
+            [focusMode]="focusMode()"
+            (fixtureChange)="chooseFixture($event)"
+            (focusExitRequest)="exitFocusMode()"
+          />
+        </div>
+        <div class="mistakes">
+          <h5>Common mistakes</h5>
+          <ul>
+            @for (mistake of practice().commonMistakes; track $index) {
+              <li>{{ mistake }}</li>
+            }
+          </ul>
         </div>
       </section>
-      <div
-        #focusDialog
-        class="guided-trace-stage"
-        [class.focused]="focusMode()"
-        [attr.role]="focusMode() ? 'dialog' : null"
-        [attr.aria-modal]="focusMode() ? 'true' : null"
-        [attr.aria-labelledby]="focusMode() ? focusDialogTitleId() : null"
-        (keydown)="handleFocusKeydown($event)"
-      >
-        <div class="debugger-frame-bar" [hidden]="focusMode()">
-          <span>Guided debugger workspace</span>
-          <button
-            #focusEntry
-            type="button"
-            class="focus-entry"
-            aria-haspopup="dialog"
-            [attr.aria-expanded]="focusMode()"
-            [attr.aria-label]="'Expand ' + problem().title + ' debugger'"
-            title="Expand debugger"
-            (click)="enterFocusMode($event)"
-          >
-            <svg aria-hidden="true" viewBox="0 0 24 24">
-              <path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path>
-              <path d="m3 8 6-6M21 8l-6-6M3 16l6 6M21 16l-6 6"></path>
-            </svg>
-          </button>
-        </div>
-        @if (focusMode()) {
-          <header class="focus-header">
-            <div>
-              <span>Expanded guided practice</span>
-              <strong [id]="focusDialogTitleId()">{{ problem().title }} debugger</strong>
-            </div>
-            <p>Step without moving the lesson. Your input, language, and progress stay intact.</p>
-            <button #focusExit type="button" class="focus-exit" (click)="exitFocusMode()">
-              Exit expanded view <kbd>Esc</kbd>
-            </button>
-          </header>
-        }
-        <app-guided-algorithm-trace
-          class="mode-reaction"
-          [problem]="problem()"
-          [selectedFixture]="activeFixture()"
-          [initialLanguage]="initialLanguage()"
-          [focusMode]="focusMode()"
-          (fixtureChange)="chooseFixture($event)"
-          (focusExitRequest)="exitFocusMode()"
-        />
-      </div>
-      <div class="mistakes">
-        <h5>Common mistakes</h5>
-        <ul>
-          @for (mistake of practice().commonMistakes; track $index) {
-            <li>{{ mistake }}</li>
-          }
-        </ul>
-      </div>
+      @if (focusStudio()) {
+        <section
+          [id]="modePaneId('recall')"
+          class="learning-checks recall-pane"
+          role="tabpanel"
+          [attr.aria-labelledby]="modeTabId('recall')"
+          [hidden]="mode() !== 'recall'"
+        >
+          <ng-container [ngTemplateOutlet]="learningChecks" />
+        </section>
+      }
     </section>
-    @if (focusStudio()) {
-      <section
-        [id]="modePaneId('recall')"
-        class="learning-checks recall-pane"
-        role="tabpanel"
-        [attr.aria-labelledby]="modeTabId('recall')"
-        [hidden]="mode() !== 'recall'"
-      >
+
+    @if (!focusStudio()) {
+      <section class="learning-checks" aria-labelledby="learning-checks-heading">
         <ng-container [ngTemplateOutlet]="learningChecks" />
       </section>
     }
+    <ng-template #learningChecks>
+      <span>Retrieve and transfer</span>
+      <h4 id="learning-checks-heading">Check the reasoning without code</h4>
+      @for (check of practice().checks; track $index) {
+        <details>
+          <summary>
+            {{
+              check.kind === 'explain'
+                ? 'Explain it back'
+                : check.kind === 'trace'
+                  ? 'Trace a new input'
+                  : 'Transfer the idea'
+            }}
+          </summary>
+          <p>{{ check.prompt }}</p>
+          <p class="expected"><strong>Check:</strong> {{ check.expected }}</p>
+        </details>
+      }
+    </ng-template>
   </section>
-
-  @if (!focusStudio()) {
-    <section class="learning-checks" aria-labelledby="learning-checks-heading">
-      <ng-container [ngTemplateOutlet]="learningChecks" />
-    </section>
-  }
-  <ng-template #learningChecks>
-    <span>Retrieve and transfer</span>
-    <h4 id="learning-checks-heading">Check the reasoning without code</h4>
-    @for (check of practice().checks; track $index) {
-      <details>
-        <summary>
-          {{
-            check.kind === 'explain'
-              ? 'Explain it back'
-              : check.kind === 'trace'
-                ? 'Trace a new input'
-                : 'Transfer the idea'
-          }}
-        </summary>
-        <p>{{ check.prompt }}</p>
-        <p class="expected"><strong>Check:</strong> {{ check.expected }}</p>
-      </details>
-    }
-  </ng-template>
-</section>
+}

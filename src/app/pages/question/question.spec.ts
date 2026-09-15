@@ -408,10 +408,16 @@ describe('Question canonical DSA navigation', () => {
       await harness.navigateByUrl(`/learn/${testCase.courseId}/${testCase.problemId}`, Question);
       const root = harness.routeNativeElement!;
 
-      expect(root.textContent).toContain('Inputs');
-      expect(root.textContent).toContain('Examples and expected outputs');
-      expect(root.textContent).toContain('Practice independently');
-      expect(root.textContent).toContain('Guided explanation');
+      const pilot = testCase.problemId === 'algorithmic-two-sum';
+      expect(root.textContent).toContain(pilot ? 'Input' : 'Inputs');
+      expect(root.textContent).toContain(pilot ? 'Expected:' : 'Examples and expected outputs');
+      expect(root.textContent).toContain(pilot ? 'Try it yourself' : 'Practice independently');
+      expect(root.textContent).toContain(pilot ? 'Visual walkthrough' : 'Guided explanation');
+      if (pilot) {
+        expect(root.querySelector('app-focus-studio')).not.toBeNull();
+        expect(root.querySelector('.reference-panel')).toBeNull();
+        expect(root.querySelector('.problem-rail')?.textContent).toContain('Constraints');
+      }
       expect(root.textContent).not.toContain('Legacy practice module');
 
       expect(linkWithText(root, 'Hands-On DSA')?.getAttribute('href')).toBe('/learn/hands-on-dsa');
@@ -460,7 +466,7 @@ describe('Question canonical DSA navigation', () => {
 
     expect(content.getDsaProblem).toHaveBeenCalledOnce();
     expect(content.getDsaProblem).toHaveBeenCalledWith(selected.problemId, 'fixture-version');
-    expect(harness.routeNativeElement?.textContent).toContain('Practice independently');
+    expect(harness.routeNativeElement?.textContent).toContain('Try it yourself');
   });
 
   it('loads a canonical route from the compact index without hydrating its course', async () => {
@@ -474,7 +480,7 @@ describe('Question canonical DSA navigation', () => {
     expect(content.getDsaProblem).toHaveBeenCalledWith(selected.problemId, 'fixture-version');
     expect(content.getCourseOutline).not.toHaveBeenCalled();
     expect(content.getCatalog).not.toHaveBeenCalled();
-    expect(harness.routeNativeElement?.textContent).toContain('Practice independently');
+    expect(harness.routeNativeElement?.textContent).toContain('Try it yourself');
   });
 
   it('uses the compact catalog pattern title in the canonical breadcrumb', async () => {
@@ -536,7 +542,7 @@ describe('Question canonical DSA navigation', () => {
     expect(root.querySelector('.question-inner-navigation .next')).toBeNull();
   });
 
-  it('scopes Focus Studio to an authored Arrays context while preserving discovery and adjacent links', async () => {
+  it('preserves authored Arrays context, discovery and adjacent links in the selected V12 pilot', async () => {
     const selected = routeCases[1];
     const problem = canonicalProblem(selected);
     const arrays = {
@@ -561,7 +567,8 @@ describe('Question canonical DSA navigation', () => {
     );
     const root = harness.routeNativeElement!;
     expect(root.querySelector('.focus-studio-page')).not.toBeNull();
-    expect(root.querySelector('.brief-toggle')?.textContent).toContain('Focus on code');
+    expect(root.querySelector('.problem-toggle')?.textContent).toContain('Problem');
+    expect(root.querySelector('.problem-toggle')?.getAttribute('aria-expanded')).toBe('true');
     const returnLink = new URL(
       linkWithText(root, 'Return to DSA problems')!.getAttribute('href')!,
       'http://localhost',
@@ -572,13 +579,16 @@ describe('Question canonical DSA navigation', () => {
     expect(root.querySelector<HTMLAnchorElement>('.problem-navigation-link.next')?.href).toContain(
       'pattern=core-data-structures:arrays',
     );
-    expect(root.querySelectorAll('.mode-tabs [role="tab"]')).toHaveLength(3);
+    expect(root.querySelectorAll('.mode-tabs [role="tab"]')).toHaveLength(4);
     await harness.navigateByUrl(
       '/learn/algorithmic-patterns/algorithmic-two-sum?pattern=algorithmic-patterns:hashing-lookup',
       Question,
     );
-    expect(harness.routeNativeElement!.querySelector('.focus-studio-page')).toBeNull();
-    expect(harness.routeNativeElement!.querySelector('.brief-toggle')).toBeNull();
+    expect(harness.routeNativeElement!.querySelector('.studio-pilot-page')).not.toBeNull();
+    expect(harness.routeNativeElement!.querySelector('.problem-toggle')).not.toBeNull();
+    expect(
+      linkWithText(harness.routeNativeElement!, 'Review Hashing concept')?.getAttribute('href'),
+    ).toBe('/learn/algorithmic-patterns/algorithmic-hashing-lookup');
   });
 
   it('derives Arrays neighbors from the catalog when a canonical record only names its lesson', async () => {

@@ -1,182 +1,209 @@
-import { Component, computed, effect, input, signal, untracked } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  input,
+  output,
+  signal,
+  untracked,
+  viewChild,
+} from '@angular/core';
 import { CodeSolution, InterviewQuestion, TheoryVisual } from '../../content/content.models';
 import { InteractiveTheoryVisual } from '../interactive-theory-visual/interactive-theory-visual';
 import { CodeCopyButton } from '../code-copy-button/code-copy-button';
 import { EditorTutor } from '../editor-tutor/editor-tutor';
 import { TutorProblem } from '../editor-tutor/tutor-provider';
 
+import { StudioEditor } from '../focus-studio/studio-editor';
+
 type Tab = 'practice' | 'pseudocode' | number;
 type Language = 'java' | 'python' | 'go';
 
 @Component({
   selector: 'app-coding-solution-tabs',
-  imports: [InteractiveTheoryVisual, CodeCopyButton, EditorTutor],
+  imports: [InteractiveTheoryVisual, CodeCopyButton, EditorTutor, StudioEditor],
   template: `
-    <section
-      class="coding-workspace"
-      [class.studio-layout]="studioLayout()"
-      aria-label="Practice and reference solutions"
-      [class.material-theme]="editorTheme() === 'material-theme'"
-      [class.one-dark]="editorTheme() === 'one-dark'"
-      [class.gerry-theme]="editorTheme() === 'gerry-theme'"
-    >
-      @if (showReferences() || pseudocode()) {
-        <div class="coding-tabs" role="tablist" aria-label="Coding workspace tabs">
-          @if (showPractice()) {
-            <button
-              class="practice-tab"
-              type="button"
-              role="tab"
-              [attr.aria-selected]="selected() === 'practice'"
-              (click)="selected.set('practice')"
-            >
-              Practice it yourself
-            </button>
-          }
-          @if (pseudocode()) {
-            <button
-              class="pseudocode-tab"
-              type="button"
-              role="tab"
-              [attr.aria-selected]="selected() === 'pseudocode'"
-              (click)="selected.set('pseudocode')"
-            >
-              Pseudocode
-            </button>
-          }
-          @if (showReferences()) {
-            @for (solution of solutions(); track solution.language; let index = $index) {
+    @if (studioDraft() !== null) {
+      <app-studio-editor
+        [code]="studioDraft()!"
+        [language]="studioLanguage()"
+        [draftKey]="studioDraftKey()"
+        (codeChange)="studioDraftChange.emit($event)"
+      />
+      @if (tutorProblem(); as problem) {
+        <app-editor-tutor
+          [problem]="problem"
+          [code]="studioDraft()!"
+          [language]="studioLanguage()"
+        />
+      }
+    } @else {
+      <section
+        class="coding-workspace"
+        [class.studio-layout]="studioLayout()"
+        aria-label="Practice and reference solutions"
+        [class.material-theme]="editorTheme() === 'material-theme'"
+        [class.one-dark]="editorTheme() === 'one-dark'"
+        [class.gerry-theme]="editorTheme() === 'gerry-theme'"
+      >
+        @if (showReferences() || pseudocode()) {
+          <div class="coding-tabs" role="tablist" aria-label="Coding workspace tabs">
+            @if (showPractice()) {
               <button
-                class="language-tab"
+                class="practice-tab"
                 type="button"
                 role="tab"
-                [attr.aria-selected]="selected() === index"
-                (click)="selected.set(index)"
+                [attr.aria-selected]="selected() === 'practice'"
+                (click)="selected.set('practice')"
               >
-                {{ solution.language }}
+                Practice it yourself
               </button>
             }
-          }
-        </div>
-      }
-      @if (showPractice() && selected() === 'practice') {
-        <section class="practice-view" role="tabpanel">
-          <div class="workspace-toolbar">
-            <div>
-              @if (!studioLayout()) {
-                <strong>Start with your own solution</strong>
-              }
-              <p>
-                {{
-                  practicePrompt() || 'Write the invariant first, then dry-run a small edge case.'
-                }}
-              </p>
-            </div>
-            <label
-              >Language<select
-                [value]="practiceLanguage()"
-                (change)="setPracticeLanguage($any($event.target).value)"
+            @if (pseudocode()) {
+              <button
+                class="pseudocode-tab"
+                type="button"
+                role="tab"
+                [attr.aria-selected]="selected() === 'pseudocode'"
+                (click)="selected.set('pseudocode')"
               >
-                <option value="java">Java</option>
-                <option value="python">Python</option>
-                <option value="go">Go</option>
-              </select></label
-            >
-          </div>
-          <div class="editor-shell">
-            <div class="editor-chrome">
-              <span>{{ editorFilename() }}</span>
-              <div class="editor-actions">
-                <app-code-copy-button [code]="practiceCode()" /><button
-                  type="button"
-                  (click)="resetPractice()"
-                >
-                  Reset starter
-                </button>
-              </div>
-            </div>
-            <textarea
-              [value]="practiceCode()"
-              [attr.rows]="practiceEditorRows()"
-              (input)="updatePracticeCode($any($event.target).value)"
-              [attr.aria-label]="'Practice editor for ' + practiceLanguage()"
-              spellcheck="false"
-            ></textarea>
-          </div>
-          <p class="workspace-note">
-            This local editor keeps your work on the page. Compare it with a reference solution when
-            you are ready.
-          </p>
-          @if (tutorProblem(); as problem) {
-            @if (problem.id === 'algorithmic-two-sum') {
-              <app-editor-tutor
-                [problem]="problem"
-                [code]="practiceCode()"
-                [language]="practiceLanguage()"
-              />
+                Pseudocode
+              </button>
             }
-          }
-        </section>
-      } @else if (selected() === 'pseudocode' && pseudocode(); as pseudo) {
-        <section class="solution-view pseudocode-view" role="tabpanel">
-          <div class="solution-heading">
-            <strong>{{ pseudo.title }}</strong>
-            <div class="editor-actions">
-              <span>Pseudocode</span><app-code-copy-button [code]="pseudo.source" />
-            </div>
-          </div>
-          <pre
-            [style.--visible-code-rows]="pseudocodeCodeRows()"
-          ><code [innerHTML]="highlightedPseudocode()"></code></pre>
-        </section>
-      } @else if (activeSolution(); as solution) {
-        <section class="solution-view" role="tabpanel">
-          @if (visualWithLanguage(); as activeVisual) {
-            <div class="debug-toolbar">
-              <p class="debug-input-example">
-                <span>{{
-                  visualInput() === 'default' ? 'LeetCode sample input' : 'Platform test input'
-                }}</span
-                >{{ visualInputExample() }}
-              </p>
-              <label
-                >Example<select
-                  [value]="visualInput()"
-                  (change)="visualInput.set($any($event.target).value)"
+            @if (showReferences()) {
+              @for (solution of solutions(); track solution.language; let index = $index) {
+                <button
+                  class="language-tab"
+                  type="button"
+                  role="tab"
+                  [attr.aria-selected]="selected() === index"
+                  (click)="selected.set(index)"
                 >
-                  <option value="default">Standard example</option>
-                  <option value="zero">Platform: contains zero</option>
-                  <option value="negative">Platform: negative values</option>
+                  {{ solution.language }}
+                </button>
+              }
+            }
+          </div>
+        }
+        @if (showPractice() && selected() === 'practice') {
+          <section class="practice-view" role="tabpanel">
+            <div class="workspace-toolbar">
+              <div>
+                @if (!studioLayout()) {
+                  <strong>Start with your own solution</strong>
+                }
+                <p>
+                  {{
+                    practicePrompt() || 'Write the invariant first, then dry-run a small edge case.'
+                  }}
+                </p>
+              </div>
+              <label
+                >Language<select
+                  [value]="practiceLanguage()"
+                  (change)="setPracticeLanguage($any($event.target).value)"
+                >
+                  <option value="java">Java</option>
+                  <option value="python">Python</option>
+                  <option value="go">Go</option>
                 </select></label
               >
             </div>
-            <app-interactive-theory-visual [visual]="activeVisual" />
-          } @else {
+            <div class="editor-shell">
+              <div class="editor-chrome">
+                <span>{{ editorFilename() }}</span>
+                <div class="editor-actions">
+                  <app-code-copy-button [code]="practiceCode()" /><button
+                    type="button"
+                    (click)="resetPractice()"
+                  >
+                    Reset starter
+                  </button>
+                </div>
+              </div>
+              <textarea
+                [value]="practiceCode()"
+                [attr.rows]="practiceEditorRows()"
+                (input)="updatePracticeCode($any($event.target).value)"
+                [attr.aria-label]="'Practice editor for ' + practiceLanguage()"
+                spellcheck="false"
+              ></textarea>
+            </div>
+            <p class="workspace-note">
+              This local editor keeps your work on the page. Compare it with a reference solution
+              when you are ready.
+            </p>
+            @if (tutorProblem(); as problem) {
+              @if (problem.id === 'algorithmic-two-sum') {
+                <app-editor-tutor
+                  [problem]="problem"
+                  [code]="practiceCode()"
+                  [language]="practiceLanguage()"
+                />
+              }
+            }
+          </section>
+        } @else if (selected() === 'pseudocode' && pseudocode(); as pseudo) {
+          <section class="solution-view pseudocode-view" role="tabpanel">
             <div class="solution-heading">
-              <strong>{{ solution.title }}</strong>
+              <strong>{{ pseudo.title }}</strong>
               <div class="editor-actions">
-                <span>{{ editorThemeLabel() || solution.language }}</span
-                ><app-code-copy-button [code]="solution.source" />
+                <span>Pseudocode</span><app-code-copy-button [code]="pseudo.source" />
               </div>
             </div>
             <pre
-              [style.--visible-code-rows]="referenceCodeRows()"
-            ><code [innerHTML]="highlightedSource()"></code></pre>
-          }
-          @if (complexity(); as costs) {
-            <div class="solution-complexity">
-              <div>
-                <span>Time</span><strong>{{ costs.time }}</strong>
+              [style.--visible-code-rows]="pseudocodeCodeRows()"
+            ><code [innerHTML]="highlightedPseudocode()"></code></pre>
+          </section>
+        } @else if (activeSolution(); as solution) {
+          <section class="solution-view" role="tabpanel">
+            @if (visualWithLanguage(); as activeVisual) {
+              <div class="debug-toolbar">
+                <p class="debug-input-example">
+                  <span>{{
+                    visualInput() === 'default' ? 'LeetCode sample input' : 'Platform test input'
+                  }}</span
+                  >{{ visualInputExample() }}
+                </p>
+                <label
+                  >Example<select
+                    [value]="visualInput()"
+                    (change)="visualInput.set($any($event.target).value)"
+                  >
+                    <option value="default">Standard example</option>
+                    <option value="zero">Platform: contains zero</option>
+                    <option value="negative">Platform: negative values</option>
+                  </select></label
+                >
               </div>
-              <div>
-                <span>Space</span><strong>{{ costs.space }}</strong>
+              <app-interactive-theory-visual [visual]="activeVisual" />
+            } @else {
+              <div class="solution-heading">
+                <strong>{{ solution.title }}</strong>
+                <div class="editor-actions">
+                  <span>{{ editorThemeLabel() || solution.language }}</span
+                  ><app-code-copy-button [code]="solution.source" />
+                </div>
               </div>
-              <p>{{ costs.note }}</p>
-            </div>
-          }
-        </section>
-      }
-    </section>
+              <pre
+                [style.--visible-code-rows]="referenceCodeRows()"
+              ><code [innerHTML]="highlightedSource()"></code></pre>
+            }
+            @if (complexity(); as costs) {
+              <div class="solution-complexity">
+                <div>
+                  <span>Time</span><strong>{{ costs.time }}</strong>
+                </div>
+                <div>
+                  <span>Space</span><strong>{{ costs.space }}</strong>
+                </div>
+                <p>{{ costs.note }}</p>
+              </div>
+            }
+          </section>
+        }
+      </section>
+    }
   `,
   styles: [
     `
@@ -614,6 +641,15 @@ type Language = 'java' | 'python' | 'go';
   ],
 })
 export class CodingSolutionTabs {
+  readonly studioDraft = input<string | null>(null);
+  readonly studioDraftKey = input('');
+  readonly studioLanguage = input<Language>('java');
+  readonly studioDraftChange = output<string>();
+  private readonly studioEditor = viewChild(StudioEditor);
+  formatStudioCode(): void {
+    void this.studioEditor()?.format();
+  }
+
   readonly solutions = input.required<CodeSolution[]>();
   readonly complexity = input<InterviewQuestion['complexity']>();
   readonly practicePrompt = input<string>();

@@ -1,3 +1,4 @@
+import { focusStudioPattern } from '../../content/focus-studio-pilot';
 import { PROTECTED_CONTENT } from '../../content/content-delivery';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import { StudyPlanReaderNavigation } from '../../core/study-plan-reader-navigation';
@@ -74,8 +75,63 @@ import { FOCUS_STUDIO_PATTERN, usesFocusStudio } from '../../content/focus-studi
     DsaProblemPilot,
   ],
   templateUrl: './question.html',
+  styleUrl: './question-answer.css',
   styles: [
     `
+      main.harbor-learn.focus-studio-page.studio-pilot-page {
+        max-width: 2100px;
+        padding-inline: clamp(12px, 2vw, 32px);
+      }
+      .studio-pilot-page .reader-question-panel {
+        margin-block: 14px;
+      }
+      .studio-pilot-page.focus-studio-page .reader-question-panel {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px 20px;
+        margin-block: 10px 12px;
+        padding-bottom: 8px;
+      }
+      .studio-pilot-page .reader-question-panel .article-title-row {
+        flex: 1 1 420px;
+      }
+      .studio-pilot-page .reader-question-panel .reader-question-title {
+        font-size: clamp(26px, 2vw, 32px);
+      }
+      .studio-pilot-page .reader-question-panel .question-inner-navigation {
+        flex: 1 1 580px;
+      }
+      .studio-pilot-page.focus-studio-page .reader-question-panel > .eyebrow {
+        margin: 6px 0;
+      }
+      .studio-pilot-page .question-context-panel {
+        margin-block: 6px 10px;
+      }
+      .studio-pilot-page.focus-studio-page .question-inner-navigation {
+        margin-top: 8px;
+        padding-block: 8px 0;
+        gap: 12px;
+        border: 0;
+      }
+      .studio-pilot-page .question-inner-navigation .inner-navigation-link {
+        min-height: 0;
+        padding: 6px 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+        gap: 5px;
+        flex-direction: row;
+        align-items: baseline;
+        flex-wrap: wrap;
+      }
+      .studio-pilot-page .question-inner-navigation .inner-navigation-link span {
+        font-size: 11px;
+      }
+      .studio-pilot-page .question-inner-navigation .inner-navigation-link strong {
+        font-size: 12px;
+      }
       main.harbor-learn.focus-studio-page {
         max-width: 1600px;
         padding-inline: clamp(16px, 3vw, 44px);
@@ -764,6 +820,10 @@ export class Question implements OnInit {
   protected readonly returnDestination = signal<UrlTree | null>(null);
   protected readonly returnLabel = signal('Return to interview practice');
   protected readonly referenceExpanded = signal(false);
+  protected readonly studioPilot = computed(() => {
+    const item = this.question();
+    return !!(item && focusStudioPattern(this.canonicalProblem(item)?.id ?? ''));
+  });
   protected readonly focusStudio = computed(() => {
     const item = this.question();
     return item

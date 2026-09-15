@@ -12,17 +12,20 @@ import {
 } from '@angular/core';
 import {
   CodeSolution,
+  DsaProblemV2,
   PatternProblemFixture,
   PatternProblemV1,
   PatternLanguage,
 } from '../../content/content.models';
+import { FocusStudio } from '../focus-studio/focus-studio';
+import { focusStudioPattern } from '../../content/focus-studio-pilot';
 import { CodingSolutionTabs } from '../coding-solution-tabs/coding-solution-tabs';
 import { GuidedAlgorithmTrace } from '../guided-algorithm-trace/guided-algorithm-trace';
 
 @Component({
   selector: 'app-dsa-problem-pilot',
   host: { '[class.focus-studio-host]': 'focusStudio()' },
-  imports: [CodingSolutionTabs, GuidedAlgorithmTrace, NgTemplateOutlet],
+  imports: [CodingSolutionTabs, GuidedAlgorithmTrace, NgTemplateOutlet, FocusStudio],
   templateUrl: './dsa-problem-pilot.html',
   styleUrls: ['./dsa-problem-pilot.css', './focus-studio.css'],
 })
@@ -41,6 +44,14 @@ export class DsaProblemPilot {
   readonly showProblemHeading = input(true);
   readonly initialLanguage = input<PatternLanguage>('java');
   readonly focusStudio = input(false);
+  protected readonly studioProblem = computed(() => {
+    const problem = this.problem();
+    return 'schemaVersion' in problem &&
+      problem.schemaVersion === 'dsa-problem/v2' &&
+      focusStudioPattern(problem.id)
+      ? (problem as DsaProblemV2)
+      : null;
+  });
   protected readonly mode = signal<'guided' | 'practice' | 'recall'>('practice');
   protected readonly briefHidden = signal(false);
   protected readonly focusMode = signal(false);
