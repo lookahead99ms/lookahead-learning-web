@@ -1,4 +1,3 @@
-import { focusStudioPattern } from '../../content/focus-studio-pilot';
 import { PROTECTED_CONTENT } from '../../content/content-delivery';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import { StudyPlanReaderNavigation } from '../../core/study-plan-reader-navigation';
@@ -822,7 +821,13 @@ export class Question implements OnInit {
   protected readonly referenceExpanded = signal(false);
   protected readonly studioPilot = computed(() => {
     const item = this.question();
-    return !!(item && focusStudioPattern(this.canonicalProblem(item)?.id ?? ''));
+    const problem = item ? this.canonicalProblem(item) : null;
+    return !!(
+      problem &&
+      'schemaVersion' in problem &&
+      problem.schemaVersion === 'dsa-problem/v2' &&
+      problem.practice
+    );
   });
   protected readonly focusStudio = computed(() => {
     const item = this.question();

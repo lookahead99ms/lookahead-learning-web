@@ -408,16 +408,13 @@ describe('Question canonical DSA navigation', () => {
       await harness.navigateByUrl(`/learn/${testCase.courseId}/${testCase.problemId}`, Question);
       const root = harness.routeNativeElement!;
 
-      const pilot = testCase.problemId === 'algorithmic-two-sum';
-      expect(root.textContent).toContain(pilot ? 'Input' : 'Inputs');
-      expect(root.textContent).toContain(pilot ? 'Expected:' : 'Examples and expected outputs');
-      expect(root.textContent).toContain(pilot ? 'Try it yourself' : 'Practice independently');
-      expect(root.textContent).toContain(pilot ? 'Visual walkthrough' : 'Guided explanation');
-      if (pilot) {
-        expect(root.querySelector('app-focus-studio')).not.toBeNull();
-        expect(root.querySelector('.reference-panel')).toBeNull();
-        expect(root.querySelector('.problem-rail')?.textContent).toContain('Constraints');
-      }
+      expect(root.textContent).toContain('Input');
+      expect(root.textContent).toContain('Expected:');
+      expect(root.textContent).toContain('Try it yourself');
+      expect(root.textContent).toContain('Visual walkthrough');
+      expect(root.querySelector('app-focus-studio')).not.toBeNull();
+      expect(root.querySelector('.reference-panel')).toBeNull();
+      expect(root.querySelector('.problem-rail')?.textContent).toContain('Constraints');
       expect(root.textContent).not.toContain('Legacy practice module');
 
       expect(linkWithText(root, 'Hands-On DSA')?.getAttribute('href')).toBe('/learn/hands-on-dsa');

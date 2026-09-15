@@ -18,7 +18,6 @@ import {
   PatternLanguage,
 } from '../../content/content.models';
 import { FocusStudio } from '../focus-studio/focus-studio';
-import { focusStudioPattern } from '../../content/focus-studio-pilot';
 import { CodingSolutionTabs } from '../coding-solution-tabs/coding-solution-tabs';
 import { GuidedAlgorithmTrace } from '../guided-algorithm-trace/guided-algorithm-trace';
 
@@ -48,7 +47,7 @@ export class DsaProblemPilot {
     const problem = this.problem();
     return 'schemaVersion' in problem &&
       problem.schemaVersion === 'dsa-problem/v2' &&
-      focusStudioPattern(problem.id)
+      problem.practice
       ? (problem as DsaProblemV2)
       : null;
   });

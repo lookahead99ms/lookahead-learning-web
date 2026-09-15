@@ -27,6 +27,7 @@ const diagramNames: Record<FocusStudioPattern, string[]> = {
   intervals: ['merged'],
   'prefix-sum': ['frequencies'],
   lru: ['cache'],
+  generic: ['state'],
 };
 const diagramLabels: Record<FocusStudioPattern, string> = {
   arrays: 'Matrix and traversal',
@@ -41,6 +42,7 @@ const diagramLabels: Record<FocusStudioPattern, string> = {
   intervals: 'Merged intervals',
   'prefix-sum': 'Prefix frequencies',
   lru: 'Recorded cache state',
+  generic: 'Recorded algorithm state',
 };
 
 @Component({
@@ -635,6 +637,7 @@ export class StudioDiagram {
         intervals: 'Order the ranges. Combine the overlap.',
         'prefix-sum': 'Track the total. Count the matching prefixes.',
         lru: 'Keep the recent work within reach.',
+        generic: 'Follow the executed state. Explain each change.',
       })[this.pattern()],
   );
   protected exampleLabel(example: DsaProblemFixtureV2): string {

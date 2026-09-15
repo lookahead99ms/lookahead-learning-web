@@ -10,11 +10,27 @@ import {
 } from './workspace-state';
 
 describe('Focus Studio mode memory', () => {
-  it('limits the rollout to the original twelve representatives', () => {
+  it('preserves the reviewed twelve mappings and classifies catalog metadata', () => {
     expect(Object.keys(FOCUS_STUDIO_PILOT)).toHaveLength(12);
     expect(focusStudioPattern('algorithmic-kth-largest-element-array')).toBe('heaps');
     expect(focusStudioPattern('algorithmic-binary-search')).toBeNull();
     expect(focusStudioPattern('toString')).toBeNull();
+    expect(
+      focusStudioPattern({
+        id: 'algorithmic-binary-search',
+        title: 'Binary Search',
+        variation: 'Boundary search',
+        tags: ['Binary Search'],
+      }),
+    ).toBe('generic');
+    expect(
+      focusStudioPattern({
+        id: 'algorithmic-find-minimum-interval',
+        title: 'Minimum Interval',
+        variation: 'Sorted interval sweep',
+        tags: ['Intervals'],
+      }),
+    ).toBe('intervals');
   });
   it('keeps first visits independent and answer-hidden', () => {
     const initial = createStudioState('first', 'java');
