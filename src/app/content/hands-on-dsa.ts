@@ -11,7 +11,7 @@ import { flattenLearningUnits } from './learning-units';
 
 export type HandsOnDifficulty = InterviewQuestion['difficulty'] | 'All';
 export type HandsOnReadiness = 'All' | 'Guided' | 'Practice-ready' | 'Catalogued';
-export type HandsOnTierScope = '150' | '365' | '600' | '730';
+export type HandsOnTierScope = '150' | '365' | '600' | '730' | '782';
 export type HandsOnSort =
   | 'pattern-order'
   | 'title-ascending'
@@ -318,11 +318,11 @@ export function filterHandsOnDsaIndexGroups(
   groups: HandsOnDsaIndexGroup[],
   query: string,
   difficulty: HandsOnDifficulty,
-  scope: HandsOnTierScope = '730',
+  scope: HandsOnTierScope = '782',
   sort: HandsOnSort = 'pattern-order',
 ): HandsOnDsaIndexGroup[] {
   const normalizedQuery = query.trim().toLowerCase();
-  const scopeLimit = Number(scope);
+  const scopeLimit = scope === '730' ? 782 : Number(scope);
   const filtered = groups.flatMap((group) => {
     const groupMatches = [group.title, group.description, group.lessonTitle, ...group.tags]
       .join(' ')

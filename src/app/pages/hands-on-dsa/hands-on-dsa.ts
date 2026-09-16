@@ -654,7 +654,7 @@ export class HandsOnDsa implements OnInit {
   protected readonly error = signal('');
   protected readonly query = signal('');
   protected readonly difficulty = signal<HandsOnDifficulty>('All');
-  protected readonly tierScope = signal<HandsOnTierScope>('730');
+  protected readonly tierScope = signal<HandsOnTierScope>('782');
   protected readonly sort = signal<HandsOnSort>('study-order');
   protected readonly patternId = signal('');
   protected readonly pageSize = 25;
@@ -670,7 +670,7 @@ export class HandsOnDsa implements OnInit {
     { value: '150', label: 'Universal Must-Do · 150' },
     { value: '365', label: 'Interview Core · 365' },
     { value: '600', label: 'Pattern Depth · 600' },
-    { value: '730', label: 'Full Library' },
+    { value: '782', label: 'Full Library' },
   ];
   protected readonly sortOptions: { value: HandsOnSort; label: string }[] = [
     { value: 'title-ascending', label: 'Problem: A to Z' },
@@ -815,7 +815,7 @@ export class HandsOnDsa implements OnInit {
     () =>
       Boolean(this.query()) ||
       this.difficulty() !== 'All' ||
-      this.tierScope() !== '730' ||
+      this.tierScope() !== '782' ||
       this.sort() !== 'study-order',
   );
   private readonly randomPracticePool = computed(() => {
@@ -862,7 +862,7 @@ export class HandsOnDsa implements OnInit {
       this.tierScope.set(
         this.tierScopes.some((option) => option.value === scope)
           ? (scope as HandsOnTierScope)
-          : '730',
+          : '782',
       );
       const requestedSort = params.get('sort');
       const sort = requestedSort === 'difficulty' ? 'difficulty-ascending' : requestedSort;
@@ -922,9 +922,9 @@ export class HandsOnDsa implements OnInit {
   protected updateTierScope(value: string): void {
     const scope = this.tierScopes.some((option) => option.value === value)
       ? (value as HandsOnTierScope)
-      : '730';
+      : '782';
     this.tierScope.set(scope);
-    this.updateCatalogParams({ scope: scope === '730' ? null : scope });
+    this.updateCatalogParams({ scope: scope === '782' ? null : scope });
   }
 
   protected updateSort(value: string): void {

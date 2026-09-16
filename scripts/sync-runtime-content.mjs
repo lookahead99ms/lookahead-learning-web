@@ -17,6 +17,7 @@ const externalRoot = resolve(
   process.env.LOOKAHEAD_CONTENT_ROOT ?? '../lookahead-learning-content/runtime',
 );
 const destinationRoot = resolve(repositoryRoot, 'public/content');
+const useCandidateRanking = process.env.LOOKAHEAD_DSA_RANKING_CANDIDATE === '1';
 
 async function hasContentSource(root) {
   const requiredFiles = [resolve(root, 'learn/catalog.json'), resolve(root, 'grow/catalog.json')];
@@ -72,6 +73,12 @@ await withRuntimePublicationLock(resolve(scratchRoot, 'publication.lock'), async
   const backupRoot = resolve(transactionRoot, 'previous');
   try {
     await cp(sourceRoot, stageRoot, { recursive: true });
+    if (useCandidateRanking) {
+      // Candidate review must never mutate or promote the immutable released
+      // pointer. Removing only the staged copy makes readRankingPlan select the
+      // authored candidate for this local publication transaction.
+      await rm(resolve(stageRoot, 'learn/hands-on-dsa-ranking-current.json'), { force: true });
+    }
     const { searchDocumentCount, interviewQuestionCount, answerSlideDeckCount } =
       await generateSearchIndex(stageRoot);
     const handsOnDsa = await generateHandsOnDsaIndex(stageRoot);
