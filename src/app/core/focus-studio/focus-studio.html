@@ -22,6 +22,10 @@
       (pointerleave)="leavePeek()"
       (keydown)="problemKeys($event)"
     >
+      <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <rect x="3" y="4" width="18" height="16" rx="2" />
+        <path d="M9 4v16" />
+      </svg>
       Problem
     </button>
     <h2>Workspace</h2>
@@ -124,6 +128,8 @@
       <div class="workspace-actions" role="group" aria-label="Solution and debugger">
         <button
           type="button"
+          class="reveal"
+          [class.action-close]="current().revealed"
           [hidden]="current().debugger || mode() === 'visual' || mode() === 'recall'"
           [attr.aria-expanded]="current().revealed"
           (click)="toggleSolution()"
@@ -136,7 +142,8 @@
         </button>
         <button
           type="button"
-          class="primary"
+          class="primary action-debugger"
+          [class.action-close]="current().debugger"
           [hidden]="mode() === 'practice' || mode() === 'recall'"
           [attr.aria-pressed]="current().debugger"
           (click)="toggleDebugger()"
@@ -155,7 +162,7 @@
         </button>
         <button
           type="button"
-          class="primary"
+          class="primary action-visualize"
           [hidden]="mode() !== 'approach' && mode() !== 'recall'"
           (click)="visualize()"
         >
@@ -233,10 +240,21 @@
               (click)="formatDraft()"
             >
               Format code</button
-            ><button type="button" (click)="resetDraft()">Reset starter</button>
+            ><button type="button" class="action-reset" (click)="resetDraft()">
+              Reset starter
+            </button>
           </div>
           @if (!hintsVisible() && !current().revealed) {
-            <button type="button" (click)="toggleHints()" aria-label="Show hints panel">
+            <button
+              type="button"
+              (click)="toggleHints()"
+              aria-label="Show hints panel"
+              class="action-hint"
+              aria-expanded="false"
+            >
+              <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M9 18h6M10 21h4M8 14a6 6 0 1 1 8 0l-1 2H9Z" />
+              </svg>
               Hints
             </button>
           }
@@ -292,13 +310,39 @@
           [attr.aria-labelledby]="problem().id + '-studio-tab-recall'"
           [hidden]="mode() !== 'recall'"
         >
-          <p class="eyebrow">Retrieve and transfer</p>
-          <h3>Explain the reasoning in your words.</h3>
-          @for (check of problem().practice.checks; track $index; let index = $index) {
-            <label
-              >{{ check.prompt
-              }}<textarea rows="4" [attr.aria-label]="'Your answer ' + (index + 1)"></textarea>
-            </label>
+          <p class="eyebrow">Interview revision</p>
+          <h3>Recall the reasoning.</h3>
+          <p>Try answering aloud, then expand the explanation to check your reasoning.</p>
+          @if (problem().teaching?.recall; as questions) {
+            @for (question of questions; track question.id) {
+              <article class="recall-question">
+                <p class="eyebrow">{{ question.label }}</p>
+                <h4>{{ question.question }}</h4>
+                <details class="recall-answer">
+                  <summary>Review answer: {{ question.label }}</summary>
+                  @for (paragraph of question.answer; track $index) {
+                    <p>{{ paragraph }}</p>
+                  }
+                  @if (question.steps?.length) {
+                    <ol>
+                      @for (step of question.steps; track $index) {
+                        <li>{{ step }}</li>
+                      }
+                    </ol>
+                  }
+                </details>
+              </article>
+            }
+          } @else {
+            @for (check of problem().practice.checks; track $index) {
+              <article class="recall-question">
+                <h4>{{ check.prompt }}</h4>
+                <details class="recall-answer">
+                  <summary>Review answer: {{ check.prompt }}</summary>
+                  <p>{{ check.expected }}</p>
+                </details>
+              </article>
+            }
           }
         </section>
       </div>
@@ -323,28 +367,38 @@
         @if (mode() === 'practice' && !current().revealed) {
           <section class="hints-panel">
             <header>
-              <h3>A little help. Your pace.</h3>
+              <h3>
+                <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M9 18h6M10 21h4M8 14a6 6 0 1 1 8 0l-1 2H9Z" />
+                </svg>
+                A little help. Your pace.
+              </h3>
               <button
                 type="button"
-                aria-label="Hide hints panel"
+                aria-label="Close hints"
+                class="action-close"
                 aria-expanded="true"
                 (click)="toggleHints()"
               >
-                Hints
+                <span aria-hidden="true">×</span> Close hints
               </button>
             </header>
             <p>Try your approach. Compare when you are ready.</p>
-            <button
-              type="button"
-              [disabled]="hintCount() >= problem().practice.hints.length"
-              (click)="hintCount.set(hintCount() + 1)"
-            >
-              {{
-                hintCount() >= problem().practice.hints.length
-                  ? 'All hints revealed'
-                  : 'Reveal hint'
-              }}
-            </button>
+            @if (hintCount() < problem().practice.hints.length) {
+              <button
+                type="button"
+                class="action-hint"
+                [attr.aria-label]="hintCount() === 0 ? 'Reveal hint' : 'Show next hint'"
+                (click)="hintCount.set(hintCount() + 1)"
+              >
+                <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M9 18h6M10 21h4M8 14a6 6 0 1 1 8 0l-1 2H9Z" />
+                </svg>
+                {{ hintCount() === 0 ? 'Reveal hint' : 'Show next hint' }}
+              </button>
+            } @else {
+              <p class="hints-complete" role="status">All hints revealed</p>
+            }
             <div aria-live="polite">
               @for (hint of problem().practice.hints.slice(0, hintCount()); track $index) {
                 <p class="hint">
@@ -358,7 +412,7 @@
         @if (mode() !== 'practice' && mode() !== 'approach' && !current().debugger) {
           <details class="context-disclosure" [open]="!current().debugger">
             <summary>
-              {{ mode() === 'visual' ? 'What changed, and why' : 'Check yourself' }}
+              {{ mode() === 'visual' ? 'What changed, and why' : 'Keep these ideas connected' }}
             </summary>
             @if (mode() === 'visual') {
               @if (visualFrame(); as frame) {
@@ -374,19 +428,25 @@
                   }
                 </dl>
               } @else {
-                <h3>{{ snapshot().event?.label }}</h3>
-                <p>{{ snapshot().event?.what }}</p>
-                <p>{{ snapshot().event?.why }}</p>
+                <h3>{{ walkthroughEvent()?.label }}</h3>
+                <p>{{ walkthroughEvent()?.what }}</p>
+                <p>{{ walkthroughEvent()?.why }}</p>
               }
               <h4>The invariant</h4>
               <p>{{ trace()?.invariant }}</p>
             } @else {
-              @for (check of problem().practice.checks; track $index) {
-                <details class="recall-check">
-                  <summary>Check answer {{ $index + 1 }}</summary>
-                  <p>{{ check.expected }}</p>
-                </details>
-              }
+              <h4>The invariant</h4>
+              <p>{{ problem().trace.invariant }}</p>
+              <h4>Why this approach fits</h4>
+              <p>{{ problem().practice.canonicalApproach.whyThisApproach }}</p>
+              <h4>Cost and its reason</h4>
+              <p>
+                <strong>Time:</strong> {{ problem().complexity.time }} ·
+                <strong>Extra space:</strong> {{ problem().complexity.space }}
+              </p>
+              <p>{{ problem().practice.canonicalApproach.whyOptimal }}</p>
+              <h4>When the contract changes</h4>
+              <p>{{ problem().practice.canonicalApproach.whenAssumptionChanges }}</p>
             }
           </details>
         }

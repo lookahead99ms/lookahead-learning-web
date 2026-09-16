@@ -439,6 +439,16 @@ export interface DsaTeachingV1 {
   selectedApproach: DsaTeachingApproach;
   keyDifference: string;
   workedTransition?: { input: string; steps: string[]; outcome: string };
+  recall?: DsaTeachingRecall[];
+}
+
+export interface DsaTeachingRecall {
+  id: string;
+  label: string;
+  question: string;
+  answer: string[];
+  steps?: string[];
+  fixtureId?: string;
 }
 
 export interface DsaTeachingApproach {
@@ -446,6 +456,7 @@ export interface DsaTeachingApproach {
   theory: string[];
   /** Language-neutral teaching; the canonical implementation remains the solution. */
   pseudocode: string[];
+  implementationShape?: string[];
   complexity: { time: string; space: string };
 }
 

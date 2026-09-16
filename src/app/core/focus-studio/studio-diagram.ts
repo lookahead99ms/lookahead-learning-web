@@ -1,3 +1,4 @@
+import { StudioIntervalComparison } from './studio-interval-comparison';
 import { Component, computed, input, output } from '@angular/core';
 import {
   DsaFixtureValue,
@@ -6,8 +7,14 @@ import {
   PatternLanguage,
 } from '../../content/content.models';
 import { FocusStudioPattern } from '../../content/focus-studio-pilot';
-import { currentInputIndices, recordedValue } from './studio-state-view';
+import {
+  currentInputIndices,
+  parseRecordedValue,
+  recordedMapEntries,
+  recordedValue,
+} from './studio-state-view';
 import { StudioStateValues } from './studio-state-values';
+import { StudioSemanticDiagram } from './studio-semantic-diagram';
 import { traceSnapshot, TraceSnapshot } from '../guided-algorithm-trace/trace-model';
 
 type DisplayValue = { label: string; value: string; changed?: boolean };
@@ -47,7 +54,7 @@ const diagramLabels: Record<FocusStudioPattern, string> = {
 
 @Component({
   selector: 'app-studio-diagram',
-  imports: [StudioStateValues],
+  imports: [StudioStateValues, StudioSemanticDiagram, StudioIntervalComparison],
   template: `<section class="diagram" [attr.aria-label]="title()">
     @if (linked()) {
       <p class="link-notice">
@@ -79,15 +86,24 @@ const diagramLabels: Record<FocusStudioPattern, string> = {
     >
     <section class="input-data" aria-label="Selected example input">
       @for (entry of inputs(); track entry.label) {
-        <app-studio-state-values
-          [name]="entry.label"
-          [value]="entry.value"
-          [active]="entry.active"
-          [showCurrentLabel]="false"
-        />
+        <section class="input-entry">
+          <h4>
+            Input <code>{{ entry.label }}</code>
+          </h4>
+          <app-studio-state-values
+            [name]="entry.label"
+            [value]="entry.value"
+            [active]="entry.active"
+            [showCurrentLabel]="false"
+          />
+        </section>
       }
     </section>
-    <div class="diagram-stage" [class.heap-stage]="pattern() === 'heaps'">
+    <div
+      class="diagram-stage"
+      [class.heap-stage]="pattern() === 'heaps'"
+      [class.tree-stage]="pattern() === 'trees'"
+    >
       <p class="phase">
         {{ language() }} / published instruction {{ snapshot().step + 1 }} of
         {{ snapshot().events.length }}
@@ -95,7 +111,20 @@ const diagramLabels: Record<FocusStudioPattern, string> = {
       @if (snapshot().unavailable; as reason) {
         <p class="state-note" role="status">{{ reason }}</p>
       } @else {
-        @if (matrix(); as rows) {
+        @if (problem().id === 'algorithmic-meeting-rooms') {
+          <app-studio-interval-comparison
+            [problem]="problem()"
+            [fixture]="fixture()"
+            [snapshot]="snapshot()"
+            [language]="language()"
+          />
+        } @else if (problem().id !== 'algorithmic-print-all-nodes-distance-k') {
+          <app-studio-semantic-diagram
+            [problem]="problem()"
+            [snapshot]="snapshot()"
+            [language]="language()"
+          />
+        } @else if (matrix(); as rows) {
           <div class="matrix" role="group" aria-label="Recorded matrix">
             @for (row of rows; track $index; let rowIndex = $index) {
               <div class="matrix-row">
@@ -157,14 +186,81 @@ const diagramLabels: Record<FocusStudioPattern, string> = {
               />
             }
             @for (node of tree.nodes; track node.index) {
-              <circle [attr.cx]="node.x" [attr.cy]="node.y" r="22" />
+              <circle
+                [attr.cx]="node.x"
+                [attr.cy]="node.y"
+                r="22"
+                [class.target]="treeNodeHas(node.value, treeRuntime()?.target)"
+                [class.start]="treeNodeHas(node.value, treeRuntime()?.start)"
+                [class.seen]="treeNodeIn(node.value, treeRuntime()?.seen)"
+                [class.queued]="treeNodeIn(node.value, treeRuntime()?.queue)"
+                [class.current]="treeNodeHas(node.value, treeRuntime()?.current)"
+              />
               <text [attr.x]="node.x" [attr.y]="node.y">{{ node.value }}</text>
             }
           </svg>
-          <p class="state-note">
-            Example input tree. The inspector shows the recorded queue and completed levels;
-            unrecorded traversal links are not inferred.
-          </p>
+          @if (treeRuntime(); as state) {
+            <section class="tree-runtime" aria-label="Recorded tree traversal state">
+              <div class="tree-phase">
+                <span>{{ state.phase }}</span>
+                <strong>Distance {{ state.distance }} / {{ state.k }}</strong>
+              </div>
+              <div class="tree-legend" aria-label="Tree state legend">
+                <span class="target-key">target</span><span class="start-key">start</span
+                ><span class="current-key">current node</span><span class="queue-key">queued</span
+                ><span class="seen-key">seen</span>
+              </div>
+              <section class="queue-view" aria-label="Recorded FIFO queue">
+                <h4>
+                  {{
+                    state.phase === 'Build parent links' ? 'Tree scan queue' : 'Distance BFS queue'
+                  }}
+                </h4>
+                @if (state.queue.length) {
+                  <ol>
+                    @for (item of state.queue; track $index; let first = $first; let last = $last) {
+                      <li>
+                        <small>{{ first ? 'front' : last ? 'back' : 'queued' }}</small
+                        ><strong>{{ item }}</strong>
+                      </li>
+                    }
+                  </ol>
+                } @else {
+                  <p>Queue is empty at this instruction.</p>
+                }
+              </section>
+              <dl class="tree-facts">
+                <div>
+                  <dt>Current node</dt>
+                  <dd>{{ state.current ?? 'Not assigned' }}</dd>
+                </div>
+                <div>
+                  <dt>Start / target node</dt>
+                  <dd>{{ state.start ?? 'Not found yet' }}</dd>
+                </div>
+                <div>
+                  <dt>Neighbor under review</dt>
+                  <dd>{{ state.neighbor ?? 'Not active' }}</dd>
+                </div>
+                <div>
+                  <dt>Seen nodes</dt>
+                  <dd>{{ state.seen.length ? state.seen.join(', ') : 'None yet' }}</dd>
+                </div>
+              </dl>
+              @if (state.parents.length) {
+                <details class="parent-links" open>
+                  <summary>Recorded parent map · {{ state.parents.length }} links</summary>
+                  <div>
+                    @for (link of state.parents; track link.child) {
+                      <span
+                        ><b>{{ link.child }}</b> → {{ link.parent }}</span
+                      >
+                    }
+                  </div>
+                </details>
+              }
+            </section>
+          }
         } @else if (graph(); as graph) {
           <svg
             class="parent-graph"
@@ -211,12 +307,19 @@ const diagramLabels: Record<FocusStudioPattern, string> = {
         } @else {
           <p class="state-note">This structure has not been recorded at this instruction.</p>
         }
-        @if (truncated(); as message) {
+        @if (problem().id === 'algorithmic-print-all-nodes-distance-k' && truncated(); as message) {
           <p class="state-note">
             {{ message }} The complete recorded value remains in the inspector.
           </p>
         }
-        <dl class="scalars" [hidden]="pattern() === 'heaps' || pattern() === 'trees'">
+        <dl
+          class="scalars"
+          [hidden]="
+            problem().id !== 'algorithmic-print-all-nodes-distance-k' ||
+            pattern() === 'heaps' ||
+            pattern() === 'trees'
+          "
+        >
           @for (value of scalars(); track value.label) {
             <div [class.changed]="value.changed">
               <dt>{{ value.label }}</dt>
@@ -501,12 +604,18 @@ const diagramLabels: Record<FocusStudioPattern, string> = {
         padding: 0;
         margin-bottom: 12px;
       }
+      .input-entry {
+        margin-bottom: 10px;
+      }
+      .input-entry h4 {
+        margin-bottom: 4px;
+      }
       .diagram-stage {
         border: 1px solid var(--line);
         border-radius: 8px;
         padding: 12px;
-        height: 310px;
-        overflow: auto;
+        min-height: 160px;
+        overflow: visible;
         box-sizing: border-box;
       }
       .phase {
@@ -524,7 +633,10 @@ const diagramLabels: Record<FocusStudioPattern, string> = {
         height: 180px;
       }
       .heap-stage {
-        height: 245px;
+        min-height: 245px;
+      }
+      .tree-stage {
+        min-height: 310px;
       }
       .heap-stage .heap-svg {
         height: 140px;
@@ -543,6 +655,28 @@ const diagramLabels: Record<FocusStudioPattern, string> = {
         stroke: var(--accent);
         stroke-width: 4;
       }
+      .heap-svg circle.seen {
+        fill: var(--surface-subtle);
+      }
+      .heap-svg circle.queued {
+        stroke: var(--accent);
+        stroke-width: 3;
+      }
+      .heap-svg circle.target {
+        stroke-dasharray: 4 3;
+      }
+      .heap-svg circle.start {
+        fill: var(--surface-accent);
+      }
+      .heap-svg circle.current {
+        fill: var(--accent);
+        stroke: var(--ink);
+        stroke-width: 4;
+      }
+      .heap-svg circle.current + text {
+        fill: var(--surface);
+        font-weight: 800;
+      }
       .heap-svg text {
         fill: var(--ink);
         text-anchor: middle;
@@ -552,6 +686,128 @@ const diagramLabels: Record<FocusStudioPattern, string> = {
       .heap-svg .index {
         fill: var(--muted);
         font-size: 11px;
+      }
+      .tree-runtime {
+        border-top: 1px solid var(--line);
+        padding-top: 12px;
+      }
+      .tree-phase,
+      .tree-legend,
+      .tree-facts,
+      .parent-links > div {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 14px;
+      }
+      .tree-phase {
+        justify-content: space-between;
+        align-items: baseline;
+        font-size: 12px;
+      }
+      .tree-phase span {
+        color: var(--accent);
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .tree-legend {
+        margin: 10px 0;
+        font-size: 10px;
+        color: var(--muted);
+      }
+      .tree-legend span::before {
+        content: '';
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        margin-right: 5px;
+        border: 2px solid var(--line);
+        border-radius: 50%;
+        vertical-align: -2px;
+      }
+      .tree-legend .target-key::before {
+        border-style: dashed;
+      }
+      .tree-legend .start-key::before {
+        background: var(--surface-accent);
+      }
+      .tree-legend .current-key::before {
+        background: var(--accent);
+        border-color: var(--ink);
+      }
+      .tree-legend .queue-key::before {
+        border-color: var(--accent);
+      }
+      .tree-legend .seen-key::before {
+        background: var(--surface-subtle);
+      }
+      .queue-view h4 {
+        margin: 8px 0 6px;
+      }
+      .queue-view ol {
+        display: flex;
+        gap: 5px;
+        margin: 0;
+        padding: 0;
+        overflow: auto;
+        list-style: none;
+      }
+      .queue-view li {
+        flex: 0 0 auto;
+        min-width: 54px;
+        padding: 7px 9px;
+        text-align: center;
+        border: 2px solid var(--accent);
+        background: var(--surface);
+      }
+      .queue-view small {
+        display: block;
+        color: var(--muted);
+        font-size: 9px;
+      }
+      .queue-view strong {
+        display: block;
+        margin-top: 3px;
+        font:
+          700 16px/1.3 ui-monospace,
+          monospace;
+      }
+      .queue-view p {
+        margin: 0;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .tree-facts {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        margin: 12px 0;
+      }
+      .tree-facts > div {
+        min-width: 0;
+        padding: 7px;
+        background: var(--surface-soft);
+      }
+      .tree-facts dt,
+      .tree-facts dd {
+        overflow-wrap: anywhere;
+      }
+      .tree-facts dd {
+        margin: 3px 0 0;
+        font:
+          700 13px/1.4 ui-monospace,
+          monospace;
+      }
+      .parent-links {
+        font-size: 11px;
+      }
+      .parent-links summary {
+        cursor: pointer;
+        font-weight: 700;
+        margin-bottom: 7px;
+      }
+      .parent-links span {
+        padding: 5px 7px;
+        background: var(--surface-soft);
       }
       .provenance {
         margin-bottom: 0;
@@ -590,21 +846,19 @@ export class StudioDiagram {
   readonly language = input.required<PatternLanguage>();
   readonly snapshot = input.required<TraceSnapshot>();
   readonly linked = input(false);
-  protected readonly title = computed(() => diagramLabels[this.pattern()]);
+  protected readonly title = computed(() => this.problem().id === 'algorithmic-meeting-rooms' ? 'Meeting interval comparison' : diagramLabels[this.pattern()]);
   protected readonly inputs = computed(() =>
-    Object.entries(this.fixture().arguments ?? {})
-      .filter(([label]) => this.pattern() !== 'heaps' || label === 'nums')
-      .map(([label, value]) => ({
+    Object.entries(this.fixture().arguments ?? {}).map(([label, value]) => ({
+      label,
+      value,
+      active: currentInputIndices(
+        this.problem(),
+        this.fixture(),
+        this.snapshot(),
+        this.language(),
         label,
-        value,
-        active: currentInputIndices(
-          this.problem(),
-          this.fixture(),
-          this.snapshot(),
-          this.language(),
-          label,
-        ),
-      })),
+      ),
+    })),
   );
   private readonly value = computed(() =>
     recordedValue(this.snapshot(), diagramNames[this.pattern()]),
@@ -622,23 +876,26 @@ export class StudioDiagram {
         )
       : null,
   );
-  protected readonly heading = computed(
-    () =>
-      ({
-        arrays: 'Follow the coordinates. Keep the order.',
-        maps: 'Remember what you have already seen.',
-        trees: 'One level. Then the next.',
-        graphs: 'Connect nodes. Track the components.',
-        heaps: 'A small heap. The largest candidates.',
-        stacks: 'Keep the next match in reach.',
-        'sliding-window': 'Move the window. Update what changes.',
-        'two-pointers': 'Two boundaries. One decision at a time.',
-        'dynamic-programming': 'Build the next answer from known results.',
-        intervals: 'Order the ranges. Combine the overlap.',
-        'prefix-sum': 'Track the total. Count the matching prefixes.',
-        lru: 'Keep the recent work within reach.',
-        generic: 'Follow the executed state. Explain each change.',
-      })[this.pattern()],
+  protected readonly heading = computed(() =>
+    this.problem().id === 'algorithmic-meeting-rooms'
+      ? 'Compare neighboring meetings. Allow touching endpoints.'
+      : this.problem().id !== 'algorithmic-print-all-nodes-distance-k'
+        ? 'Track the structures used by this solution.'
+        : {
+            arrays: 'Follow the coordinates. Keep the order.',
+            maps: 'Remember what you have already seen.',
+            trees: 'One level. Then the next.',
+            graphs: 'Connect nodes. Track the components.',
+            heaps: 'A small heap. The largest candidates.',
+            stacks: 'Keep the next match in reach.',
+            'sliding-window': 'Move the window. Update what changes.',
+            'two-pointers': 'Two boundaries. One decision at a time.',
+            'dynamic-programming': 'Build the next answer from known results.',
+            intervals: 'Order the ranges. Combine the overlap.',
+            'prefix-sum': 'Track the total. Count the matching prefixes.',
+            lru: 'Keep the recent work within reach.',
+            generic: 'Follow the executed state. Explain each change.',
+          }[this.pattern()],
   );
   protected exampleLabel(example: DsaProblemFixtureV2): string {
     if (this.pattern() === 'heaps' && Array.isArray(example.arguments['nums']))
@@ -731,6 +988,94 @@ export class StudioDiagram {
         .map((node) => ({ key: String(node.index), from: nodes[node.parent], to: node })),
     };
   });
+  protected readonly treeRuntime = computed(() => {
+    if (this.pattern() !== 'trees' || this.snapshot().unavailable) return null;
+    const recorded = (names: string[]) => {
+      const item = this.snapshot().variables.find(
+        (variable) => names.includes(variable.name) && variable.value !== '—',
+      );
+      return item ? parseRecordedValue(item.value) : undefined;
+    };
+    const currentLine =
+      this.problem()
+        .implementations.find((source) => source.language === this.language())
+        ?.lines.find((line) => line.id === this.snapshot().event?.sourceAnchor[this.language()])
+        ?.text ?? '';
+    const distance = recorded(['distance', 'level']);
+    const seen = recorded(['seen', 'visited']);
+    const preparingDistanceBfs = /queue.*(?:start|target)|(?:start|target).*queue/i.test(
+      currentLine,
+    );
+    const distanceMode = distance !== undefined || seen !== undefined || preparingDistanceBfs;
+    const queueValue = distanceMode
+      ? recorded(['queue', 'frontier'])
+      : recorded(['scan', 'queue', 'frontier']);
+    const queue = Array.isArray(queueValue)
+      ? queueValue.map((item) => this.nodeLabel(item)).filter((item): item is string => !!item)
+      : [];
+    const seenValues = Array.isArray(seen)
+      ? seen.map((item) => this.nodeLabel(item)).filter((item): item is string => !!item)
+      : [];
+    const parentLinks = new Map<string, string>();
+    const history = this.problem().trace
+      ? Array.from({ length: this.snapshot().step + 1 }, (_, step) =>
+          traceSnapshot(this.problem(), this.fixture().id, this.language(), step),
+        )
+      : [this.snapshot()];
+    for (const prior of history) {
+      const parent = prior.variables.find(
+        (variable) => ['parent', 'parents'].includes(variable.name) && variable.value !== '—',
+      );
+      if (!parent) continue;
+      for (const entry of recordedMapEntries(parent.value)) {
+        const child = this.nodeLabel(entry.key);
+        const parentLabel = this.nodeLabel(entry.value);
+        if (child && parentLabel && child !== '<cycle>' && parentLabel !== '<cycle>') {
+          parentLinks.set(child, parentLabel);
+        }
+      }
+    }
+    const parents = [...parentLinks].map(([child, parent]) => ({ child, parent }));
+    const target = this.nodeLabel(this.fixture().arguments['target']);
+    const k = this.nodeLabel(this.fixture().arguments['k']) ?? '—';
+    return {
+      phase: distanceMode ? 'Expand from target' : 'Build parent links',
+      queue,
+      seen: seenValues,
+      parents,
+      target,
+      k,
+      distance: distanceMode ? (this.nodeLabel(distance) ?? '0') : '—',
+      current: this.nodeLabel(recorded(['node', 'current'])),
+      start: this.nodeLabel(recorded(['start'])),
+      neighbor: this.nodeLabel(recorded(['neighbor', 'next'])),
+    };
+  });
+  protected treeNodeHas(value: string, candidate: string | null | undefined): boolean {
+    return candidate != null && value === candidate;
+  }
+  protected treeNodeIn(value: string, candidates: string[] | undefined): boolean {
+    return candidates?.includes(value) ?? false;
+  }
+  private nodeLabel(value: unknown): string | null {
+    if (value === null || value === undefined || value === '—') return null;
+    if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+    if (typeof value === 'string') {
+      const treeNode = value.match(/(?:TreeNode|Node)\(value=(-?\d+)\)/);
+      if (treeNode) return treeNode[1];
+      try {
+        return this.nodeLabel(JSON.parse(value));
+      } catch {
+        const embedded = value.match(/"(?:value|val|Val)"\s*:\s*(-?\d+)/);
+        return embedded?.[1] ?? (value === '<cycle>' ? value : null);
+      }
+    }
+    if (typeof value === 'object' && !Array.isArray(value)) {
+      const record = value as Record<string, unknown>;
+      return this.nodeLabel(record['value'] ?? record['val'] ?? record['Val']);
+    }
+    return null;
+  }
   protected readonly bars = computed(() => {
     const value = this.value();
     return ['two-pointers', 'sliding-window'].includes(this.pattern()) &&

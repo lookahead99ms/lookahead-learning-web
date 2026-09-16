@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { DsaProblemFixtureV2, PatternProblemV1 } from '../../content/content.models';
 import { TraceSnapshot } from '../guided-algorithm-trace/trace-model';
-import { currentInputIndices, parseRecordedValue, sourceOrderedLocals } from './studio-state-view';
+import {
+  currentInputIndices,
+  parseRecordedValue,
+  recordedMapEntries,
+  sourceOrderedLocals,
+} from './studio-state-view';
 
 const problem = {
   id: 'algorithmic-kth-largest-element-array',
@@ -82,5 +87,15 @@ describe('recorded state presentation', () => {
     expect(parseRecordedValue('{2: 0, 3: 1}')).toEqual({ '2': 0, '3': 1 });
     expect(parseRecordedValue('{2=0, 3=1}')).toEqual({ '2': 0, '3': 1 });
     expect(parseRecordedValue('{2: execute()}')).toBe('{2: execute()}');
+  });
+  it('parses runtime maps with recorded node objects as keys', () => {
+    expect(
+      recordedMapEntries(
+        '{{"value":5,"left":"<Node>"}:{"value":3,"left":"<cycle>"},{"value":1}:{"value":3}}',
+      ),
+    ).toEqual([
+      { key: { value: 5, left: '<Node>' }, value: { value: 3, left: '<cycle>' } },
+      { key: { value: 1 }, value: { value: 3 } },
+    ]);
   });
 });

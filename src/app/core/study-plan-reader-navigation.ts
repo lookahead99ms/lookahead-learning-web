@@ -1,5 +1,5 @@
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, input, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   StudyPlanAccount,
@@ -15,12 +15,16 @@ import { studyDayQueue, findStudyActivity, validStudyLog } from '../content/stud
       <a routerLink="/study-plan" [queryParams]="{ day: day(), plan: planId }"
         >Back to Study Plan · Day {{ day() }}</a
       >
-      @if (next(); as item) {
-        <a [routerLink]="item.route" [queryParams]="{ day: day(), plan: planId, activity: item.id }"
-          >Next in plan: {{ item.title }} →</a
-        >
-      } @else {
-        <span>Return to your plan to record progress and choose the next session.</span>
+      @if (!problemRows()) {
+        @if (next(); as item) {
+          <a
+            [routerLink]="item.route"
+            [queryParams]="{ day: day(), plan: planId, activity: item.id }"
+            >Next in plan: {{ item.title }} →</a
+          >
+        } @else {
+          <span>Return to your plan to record progress and choose the next session.</span>
+        }
       }
     </nav>
   }`,
@@ -49,6 +53,7 @@ export class StudyPlanReaderNavigation implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly account = inject(StudyPlanAccount);
+  readonly problemRows = input(false);
   readonly planId = this.route.snapshot.queryParamMap.get('plan') ?? '';
   readonly day = signal(Number(this.route.snapshot.queryParamMap.get('day')));
   private readonly saved = signal<SavedPlan | null>(null);
@@ -74,6 +79,36 @@ export class StudyPlanReaderNavigation implements OnInit {
         this.router.url.split('?')[0]
       ? item
       : null;
+  });
+  readonly problemNeighbors = computed(() => {
+    const current = this.current(),
+      saved = this.saved();
+    if (!current || !saved || current.contentType !== 'dsa-problem') return null;
+    const seen = new Set<string>();
+    const ordered = saved.snapshot.days.flatMap((day) =>
+      day.assignments.flatMap((item) => {
+        const id = item.sourceContentId ?? item.id;
+        if (item.contentType !== 'dsa-problem' || seen.has(id)) return [];
+        seen.add(id);
+        return [
+          {
+            id,
+            title: item.title,
+            route: item.route,
+            query: {
+              plan: this.planId,
+              day: String(day.day),
+              activity: item.id,
+            },
+          },
+        ];
+      }),
+    );
+    const numbered = ordered.map((entry, index) => ({ ...entry, position: index + 1 }));
+    const position = ordered.findIndex(
+      (item) => item.id === (current.sourceContentId ?? current.id),
+    );
+    return position < 0 ? null : { previous: numbered[position - 1], next: numbered[position + 1] };
   });
   readonly next = computed(() => {
     const current = this.current(),

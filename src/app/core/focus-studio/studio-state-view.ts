@@ -24,6 +24,54 @@ export function parseRecordedValue(value: string): unknown {
   }
 }
 
+/** Parse recorded maps whose object keys are runtime objects rather than JSON property names. */
+export function recordedMapEntries(value: string): Array<{ key: unknown; value: unknown }> {
+  const parsed = parseRecordedValue(value);
+  if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+    return Object.entries(parsed as Record<string, unknown>).map(([key, item]) => ({
+      key,
+      value: item,
+    }));
+  }
+  if (typeof parsed !== 'string') return [];
+  const source = parsed.trim();
+  if (!source.startsWith('{') || !source.endsWith('}')) return [];
+  return splitRecordedMap(source.slice(1, -1), ',').flatMap((entry) => {
+    const pair = splitRecordedMap(entry, ':');
+    if (pair.length < 2) return [];
+    const key = pair.shift()!;
+    const item = pair.join(':');
+    return [{ key: parseRecordedValue(key.trim()), value: parseRecordedValue(item.trim()) }];
+  });
+}
+
+function splitRecordedMap(source: string, separator: ',' | ':'): string[] {
+  const parts: string[] = [];
+  let start = 0;
+  let depth = 0;
+  let quoted = false;
+  let escaped = false;
+  for (let index = 0; index < source.length; index += 1) {
+    const character = source[index];
+    if (quoted) {
+      if (escaped) escaped = false;
+      else if (character === '\\') escaped = true;
+      else if (character === '"') quoted = false;
+      continue;
+    }
+    if (character === '"') quoted = true;
+    else if ('{[('.includes(character)) depth += 1;
+    else if ('}])'.includes(character)) depth -= 1;
+    else if (character === separator && depth === 0) {
+      parts.push(source.slice(start, index));
+      start = index + 1;
+      if (separator === ':') break;
+    }
+  }
+  parts.push(source.slice(start));
+  return parts;
+}
+
 export function recordedValue(snapshot: TraceSnapshot, names: string[]): unknown {
   if (snapshot.unavailable) return undefined;
   const variable = snapshot.variables.find((item) => names.includes(item.name));
@@ -86,6 +134,7 @@ export function sourceOrderedLocals(
   fixture: DsaProblemFixtureV2,
   snapshot: TraceSnapshot,
   language: PatternLanguage,
+  includeInputs = false,
 ) {
   if (snapshot.unavailable) return [];
   const source =
@@ -99,6 +148,8 @@ export function sourceOrderedLocals(
     return index < 0 ? Number.MAX_SAFE_INTEGER : index;
   };
   return snapshot.variables
-    .filter((variable) => !inputs.has(variable.name) && variable.value !== '"module"')
+    .filter(
+      (variable) => (includeInputs || !inputs.has(variable.name)) && variable.value !== '"module"',
+    )
     .sort((a, b) => position(a.name) - position(b.name));
 }

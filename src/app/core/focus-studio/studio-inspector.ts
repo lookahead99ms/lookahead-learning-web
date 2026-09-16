@@ -203,7 +203,7 @@ export class StudioInspector {
     })),
   );
   protected readonly locals = computed(() =>
-    sourceOrderedLocals(this.problem(), this.fixture(), this.snapshot(), this.language()),
+    sourceOrderedLocals(this.problem(), this.fixture(), this.snapshot(), this.language(), true),
   );
   protected readonly currentLine = computed(
     () =>
@@ -230,7 +230,16 @@ export class StudioInspector {
           heap: this.language() === 'java' ? 'Priority queue snapshot' : 'Heap array',
           value: 'Current number',
           v: 'Current number',
-          queue: 'Queue',
+          queue: 'Queue / frontier',
+          scan: 'Tree scan queue',
+          parent: 'Parent map',
+          start: 'Start node',
+          current: 'Current node',
+          distance: 'Distance from target',
+          neighbor: 'Neighbor under review',
+          next: 'Next node',
+          visited: 'Visited nodes',
+          size: 'Current level size',
           levels: 'Completed levels',
           level: 'Current level',
           node: 'Current node',

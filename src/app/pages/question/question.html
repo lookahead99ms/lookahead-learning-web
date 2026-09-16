@@ -6,7 +6,10 @@
   [class.focus-studio-page]="focusStudio() || studioPilot()"
   [class.studio-pilot-page]="studioPilot()"
 >
-  <app-study-plan-reader-navigation #planNavigation />
+  <app-study-plan-reader-navigation
+    #planNavigation
+    [problemRows]="studioPilot() || focusStudio()"
+  />
   @if (returnDestination(); as destination) {
     <nav class="practice-return" aria-label="Discovery return navigation">
       <a [routerLink]="destination">{{ returnLabel() }}</a>
@@ -19,13 +22,16 @@
           <a routerLink="/">Home</a><span>/</span>
           <a [routerLink]="['/', pathId()]">{{ pathLabel() }}</a
           ><span>/</span>
-          @if (isCodingPractice(item) && pathId() === 'learn' && !isCoursePracticePlacement(item)) {
+          @if (isCodingPractice(item) && pathId() === 'learn' && (!isCoursePracticePlacement(item) || studioPilot() || focusStudio())) {
             <a routerLink="/learn/hands-on-dsa">Hands-On DSA</a><span>/</span>
+            @if (!(studioPilot() || focusStudio()) || patternRevealed()) {
             <a
               routerLink="/learn/hands-on-dsa"
               [queryParams]="{ pattern: handsOnPatternId(item) }"
               >{{ handsOnPatternTitle(item) }}</a
-            ><span>/</span><span aria-current="page">{{ item.title }}</span>
+            ><span>/</span>
+            }
+            <span aria-current="page">{{ item.title }}</span>
           } @else {
             <a [routerLink]="['/', pathId(), courseId()]">{{ courseTitle() }}</a>
           }
@@ -48,7 +54,7 @@
           </div>
         }
       </div>
-      @if (item.contentType !== 'theory' && !surpriseMode() && !focusStudio()) {
+      @if (item.contentType !== 'theory' && !surpriseMode() && !focusStudio() && !studioPilot()) {
         <section class="question-context-panel">
           <a
             class="reader-module"
@@ -58,7 +64,7 @@
           >
         </section>
       }
-      @if (surpriseMode()) {
+      @if (surpriseMode() && !patternRevealed()) {
         <aside class="surprise-challenge" aria-label="Random interview challenge">
           <span>Pattern hidden</span>
           <p>
@@ -76,7 +82,12 @@
           }
         }
         <div class="article-title-row">
-          <h1 class="reader-question-title">
+          <h1 class="reader-question-title" [attr.aria-label]="numberedTitle(item)">
+            @if (releaseInfo(item)?.studyOrder; as number) {
+              <span [attr.title]="'Learning order ' + number + ' of ' + releaseTotal()"
+                >{{ number }}.
+              </span>
+            }
             <span>{{ patternName(item.title) }}</span>
             @if (patternSubtitle(item.title); as subtitle) {
               <span class="pattern-title-subtitle">: {{ subtitle }}</span>
@@ -85,8 +96,43 @@
           @if (item.contentType === 'theory' && item.estimatedReadMinutes; as minutes) {
             <p class="article-read-time">{{ minutes }} min read</p>
           }
+          @if (studioPilot() || focusStudio()) {
+            <p class="problem-title-metadata">
+              <span
+                [attr.title]="'Difficulty: ' + item.difficulty"
+                [attr.aria-label]="'Difficulty: ' + item.difficulty"
+                >Difficulty: {{ item.difficulty }}</span
+              >
+              @if (releaseInfo(item)?.interviewRank; as rank) {
+                <span
+                  class="problem-rank"
+                  [attr.title]="'Interview priority ' + rank + ' of ' + releaseTotal()"
+                  [attr.aria-label]="'Rank: ' + rank + ' of ' + releaseTotal() + ' in interview priority'"
+                  >Rank: {{ rank }}</span
+                >
+              }
+            </p>
+          }
         </div>
-        <p class="eyebrow">{{ item.difficulty }}</p>
+        @if (studioPilot() || focusStudio()) {
+          <div class="problem-pattern-disclosure">
+            <button
+              type="button"
+              class="pattern-reveal-toggle"
+              [attr.aria-expanded]="patternRevealed()"
+              aria-controls="problem-pattern-review"
+              (click)="patternRevealed.set(!patternRevealed())"
+            >{{ patternRevealed() ? 'Hide Pattern' : 'Show Pattern' }}</button>
+            <div id="problem-pattern-review" [hidden]="!patternRevealed()">
+              @if (patternRevealed()) {
+                <a class="problem-pattern-link" [routerLink]="parentContextRoute(item)" [queryParams]="returnQueryParams()">Review the {{ patternName(conceptReviewTitle(item)) }} pattern</a>
+              }
+            </div>
+          </div>
+        }
+        @if (!(studioPilot() || focusStudio())) {
+          <p class="eyebrow">{{ item.difficulty }}</p>
+        }
         @if (hasTheoryExperience(item)) {
           <nav class="pattern-navigation" aria-label="Article navigation">
             @for (link of patternNavigation(item); track link.target) {
@@ -94,7 +140,54 @@
             }
           </nav>
         }
-        @if (!planNavigation.valid()) {
+        @if ((studioPilot() || focusStudio()) && canonicalProblem(item)) {
+          <div class="source-navigation-rows">
+            @for (row of problemNavigationRows(item, planNavigation); track row.label) {
+              <nav
+                class="question-inner-navigation canonical-problem-navigation"
+                [attr.aria-label]="row.label + ' problem navigation'"
+                [attr.title]="row.label + ' problem navigation'"
+              >
+                @if (row.previous; as previous) {
+                  <a
+                    class="inner-navigation-link problem-navigation-link previous"
+                    [routerLink]="previous.route"
+                    [queryParams]="previous.query"
+                    [attr.aria-label]="'Previous: ' + previous.title + '. ' + previous.meaning"
+                  >
+                    <span><span aria-hidden="true">← </span>Previous:</span
+                    ><strong>
+                      @if (previous.number) {
+                        {{ previous.number }}.
+                      }
+                      {{ previous.title }}</strong
+                    >
+                  </a>
+                } @else {
+                  <span class="boundary">First problem</span>
+                }
+                @if (row.next; as next) {
+                  <a
+                    class="inner-navigation-link problem-navigation-link next"
+                    [routerLink]="next.route"
+                    [queryParams]="next.query"
+                    [attr.aria-label]="'Next: ' + next.title + '. ' + next.meaning"
+                  >
+                    <span>Next:<span aria-hidden="true"> →</span></span
+                    ><strong>
+                      @if (next.number) {
+                        {{ next.number }}.
+                      }
+                      {{ next.title }}</strong
+                    >
+                  </a>
+                } @else {
+                  <span class="boundary boundary-end">Last problem</span>
+                }
+              </nav>
+            }
+          </div>
+        } @else if (!planNavigation.valid()) {
           <nav
             class="question-inner-navigation"
             [class.canonical-problem-navigation]="canonicalNavigation(item)"
@@ -132,7 +225,7 @@
                 <a
                   class="inner-navigation-link problem-navigation-link previous"
                   [routerLink]="canonicalProblemRoute(previous)"
-                  [queryParams]="returnQueryParams(navigation.handsOnPatternId)"
+                  [queryParams]="canonicalProblemQueryParams(previous, navigation.handsOnPatternId)"
                 >
                   <span>← Previous problem:</span><strong>{{ previous.title }}</strong>
                 </a>
@@ -142,7 +235,7 @@
                   <a
                     class="inner-navigation-link problem-navigation-link next"
                     [routerLink]="canonicalProblemRoute(next)"
-                    [queryParams]="returnQueryParams(navigation.handsOnPatternId)"
+                    [queryParams]="canonicalProblemQueryParams(next, navigation.handsOnPatternId)"
                   >
                     <span>Next problem:</span><strong>{{ next.title }} →</strong>
                   </a>

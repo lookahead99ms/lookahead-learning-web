@@ -5,8 +5,9 @@ import {
   PatternProblemV1,
 } from '../../content/content.models';
 import { TraceSnapshot } from '../guided-algorithm-trace/trace-model';
-import { sourceOrderedLocals } from './studio-state-view';
+import { parseRecordedValue, recordedMapEntries, sourceOrderedLocals } from './studio-state-view';
 import { linkedWalkthrough, walkthroughKind } from './studio-walkthrough';
+import { semanticState, displayRecorded } from './studio-semantic-state';
 
 @Component({
   selector: 'app-studio-essential-state',
@@ -106,6 +107,9 @@ import { linkedWalkthrough, walkthroughKind } from './studio-walkthrough';
         overflow-wrap: anywhere;
         min-height: 20px;
       }
+      .current-instruction code {
+        margin-inline-start: 0.5em;
+      }
       .current-instruction {
         font-size: 11px;
         margin: 8px 0 0;
@@ -142,29 +146,132 @@ export class StudioEssentialState {
       value: JSON.stringify(value),
     })),
   );
-  protected readonly fields = computed(() =>
-    this.snapshot().unavailable
-      ? []
-      : sourceOrderedLocals(this.problem(), this.fixture(), this.snapshot(), this.language())
-          .filter((field) => /^-?\d+(\.\d+)?$|^(true|false|null)$/.test(field.value))
-          .slice(0, 8)
-          .map((field) => {
-            if (field.name !== 'best' || walkthroughKind(this.problem().id) !== 'window')
-              return field;
-            const frame = linkedWalkthrough(
-              'window',
-              this.problem(),
-              this.fixture(),
-              this.snapshot(),
-              this.language(),
-            );
-            return {
-              ...field,
-              name: 'Best valid sum',
-              value: frame.best === null ? 'Not yet' : String(frame.best),
-            };
-          }),
-  );
+  protected readonly fields = computed(() => {
+    if (this.snapshot().unavailable) return [];
+    if (this.problem().id !== 'algorithmic-print-all-nodes-distance-k') {
+      return semanticState(this.problem(), this.snapshot(), this.language()).map((field) => {
+        if (field.name === 'best' && walkthroughKind(this.problem().id) === 'window') {
+          const frame = linkedWalkthrough(
+            'window',
+            this.problem(),
+            this.fixture(),
+            this.snapshot(),
+            this.language(),
+          );
+          return {
+            name: 'Best valid sum',
+            value: frame.best === null ? 'Not yet' : String(frame.best),
+            changed: field.changed,
+          };
+        }
+        const raw = displayRecorded(field.value);
+        const compact = raw.length > 140 ? `${raw.slice(0, 140)}… · full value below` : raw;
+        return {
+          name: field.name,
+          value: field.kind === 'opaque' ? 'Contents not recorded' : compact,
+          changed: field.changed,
+        };
+      });
+    }
+    const locals = sourceOrderedLocals(
+      this.problem(),
+      this.fixture(),
+      this.snapshot(),
+      this.language(),
+    );
+    const names = new Set(locals.map(({ name }) => name));
+    const activeLocals =
+      names.has('distance') || names.has('seen') || names.has('visited')
+        ? locals.filter(({ name }) => name !== 'scan')
+        : locals;
+    return activeLocals
+      .filter(
+        (field) =>
+          /^-?\d+(\.\d+)?$|^(true|false|null)$/.test(field.value) ||
+          [
+            'queue',
+            'scan',
+            'stack',
+            'heap',
+            'parent',
+            'start',
+            'node',
+            'current',
+            'seen',
+            'visited',
+            'distance',
+            'level',
+            'neighbor',
+            'next',
+            'size',
+          ].includes(field.name),
+      )
+      .slice(0, 8)
+      .map((field) => {
+        if (field.name !== 'best' || walkthroughKind(this.problem().id) !== 'window') {
+          return {
+            ...field,
+            name: this.fieldLabel(field.name),
+            value: this.fieldValue(field.name, field.value),
+          };
+        }
+        const frame = linkedWalkthrough(
+          'window',
+          this.problem(),
+          this.fixture(),
+          this.snapshot(),
+          this.language(),
+        );
+        return {
+          ...field,
+          name: 'Best valid sum',
+          value: frame.best === null ? 'Not yet' : String(frame.best),
+        };
+      });
+  });
+  private fieldLabel(name: string): string {
+    return (
+      (
+        {
+          queue: 'Queue / frontier',
+          scan: 'Tree scan queue',
+          stack: 'Stack',
+          heap: 'Heap',
+          parent: 'Parent map',
+          start: 'Start node',
+          node: 'Current node',
+          current: 'Current node',
+          seen: 'Seen nodes',
+          visited: 'Visited nodes',
+          distance: 'Distance',
+          level: 'Level',
+          neighbor: 'Neighbor',
+          next: 'Next node',
+          size: 'Nodes remaining at this level',
+        } as Record<string, string>
+      )[name] ?? name
+    );
+  }
+  private fieldValue(name: string, raw: string): string {
+    const value = parseRecordedValue(raw);
+    if (value === null || value === '—') return 'Not assigned';
+    if (name === 'parent') {
+      const count = recordedMapEntries(raw).length;
+      return count ? `${count} recorded ${count === 1 ? 'link' : 'links'}` : 'No links yet';
+    }
+    if (Array.isArray(value)) {
+      const values = value.map((item) => this.nodeValue(item));
+      return values.length ? `[${values.join(', ')}]` : 'Empty';
+    }
+    if (value && typeof value === 'object') return this.nodeValue(value);
+    return String(value);
+  }
+  private nodeValue(value: unknown): string {
+    if (value === null || value === undefined) return '—';
+    if (typeof value !== 'object') return String(value);
+    const record = value as Record<string, unknown>;
+    return String(record['value'] ?? record['val'] ?? record['Val'] ?? JSON.stringify(value));
+  }
   protected readonly currentLine = computed(
     () =>
       this.problem()

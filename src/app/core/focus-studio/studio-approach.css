@@ -49,6 +49,16 @@ p {
 .approach-cards[data-layout='paired'] {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
+/* Authored paired cards share four content-sized tracks. Narrow cards keep
+   their single disclosure in natural flow, with no shared empty tracks. */
+.approach-cards[data-layout='paired'] .authored-approach {
+  grid-row: span 4;
+}
+.approach-implementation-band .implementation-label {
+  margin: 0 0 8px;
+  border: 0;
+  padding: 0;
+}
 .approach-cards[data-layout='stacked'] .approach-card {
   grid-row: auto;
   grid-template-rows: auto auto auto;
@@ -140,4 +150,54 @@ li {
   .approach-code-band {
     padding: 12px;
   }
+}
+
+.implementation-label {
+  margin-top: 22px;
+  font-weight: 700;
+}
+.approach-code-band pre {
+  background: var(--code-bg);
+  color: var(--code-fg, #d9eeee);
+  border-radius: 6px;
+  tab-size: 2;
+}
+
+.implementation-shape {
+  max-height: min(24rem, 50dvh);
+  overflow: auto;
+  scrollbar-gutter: stable;
+  scrollbar-color: var(--accent) var(--code-bg);
+}
+.implementation-shape:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.teaching-pseudocode {
+  margin: 0;
+  padding: 14px 16px 14px 38px;
+  background: var(--surface-accent);
+  color: var(--text);
+  border-inline-start: 3px solid var(--accent);
+}
+.teaching-pseudocode li {
+  padding: 4px 0 4px 6px;
+}
+.teaching-pseudocode li::marker {
+  color: var(--accent);
+  font-weight: 700;
+}
+.teaching-pseudocode code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: inherit;
+}
+.implementation-label {
+  border-top: 1px solid var(--line);
+  padding-top: 20px;
+}
+.approach-code-band .implementation-shape {
+  white-space: pre;
+  overflow-wrap: normal;
 }

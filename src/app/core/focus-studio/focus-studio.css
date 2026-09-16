@@ -1038,3 +1038,104 @@ summary {
   overflow-wrap: anywhere;
   margin: 5px 0 0;
 }
+
+/* Reveal is deliberately distinct from primary navigation and debugger actions. */
+.workspace-actions .reveal {
+  background: #fff2d9;
+  color: #704000;
+  border-color: #b66b0a;
+  font-weight: 700;
+}
+.workspace-actions .reveal:hover {
+  background: #ffe5b3;
+  color: #563100;
+}
+:host-context([data-theme='dark']) .workspace-actions .reveal {
+  background: #3b2b17;
+  color: #ffdb9e;
+  border-color: #d59948;
+}
+:host-context([data-theme='dark']) .workspace-actions .reveal:hover {
+  background: #513a1b;
+  color: #ffe6bd;
+}
+.problem-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.recall-question {
+  border-top: 1px solid var(--line);
+  padding: 20px 0;
+}
+.recall-question h4 {
+  font-size: 17px;
+  line-height: 1.5;
+  margin: 4px 0 12px;
+}
+.recall-answer summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 700;
+}
+.recall-answer summary:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 4px;
+}
+.recall-answer p,
+.recall-answer li {
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+
+/* Action roles are scoped to the studio; dimensions stay shared. */
+button.action-hint {
+  background: var(--surface-accent);
+  color: var(--accent);
+  border-color: var(--line);
+}
+.workspace-actions button.action-visualize {
+  background: var(--surface);
+  color: var(--accent-link);
+  border: 1px solid currentColor;
+}
+button.action-close,
+.workspace-actions button.action-close {
+  background: var(--surface);
+  color: var(--muted);
+  border: 1px solid var(--line);
+}
+button[aria-label^='Previous'] {
+  background: var(--surface);
+  color: var(--accent-link);
+  border-color: var(--line);
+}
+button[aria-label^='Next'] {
+  background: var(--accent);
+  color: var(--accent-on-primary);
+}
+button.action-reset,
+button[aria-label^='Restart'] {
+  background: var(--surface-accent);
+  color: var(--text);
+  border-style: dashed;
+}
+.hints-complete {
+  font-size: 12px;
+  color: var(--muted);
+}
+.hints-panel h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+:host-context([data-theme='dark']) .workspace-actions button.action-close,
+.workspace-actions button.action-close:hover {
+  background: var(--surface);
+  color: var(--muted);
+  border-color: var(--line);
+}
+:host-context([data-theme='dark']) .workspace-actions button.action-close:hover,
+.workspace-actions button.action-visualize:hover {
+  background: var(--surface-accent);
+}
