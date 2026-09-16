@@ -3,7 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { ContentService } from '../../content/content.service';
-import { PlatformHeader } from './platform-header';
+import { PlatformHeader, accountTriggerLabel } from './platform-header';
+import { AUTHOR_PREVIEWS_BASE_URL } from '../author-preview-config';
 import { StudyPlanAccount } from '../../pages/study-plan/study-plan-account';
 
 describe('PlatformHeader account disclosure', () => {
@@ -13,6 +14,7 @@ describe('PlatformHeader account disclosure', () => {
       providers: [
         provideRouter([]),
         provideHttpClient(),
+        { provide: AUTHOR_PREVIEWS_BASE_URL, useValue: '/bff/author/previews/' },
         {
           provide: ContentService,
           useValue: { getSearchIndex: () => of([]) },
@@ -48,6 +50,16 @@ describe('PlatformHeader account disclosure', () => {
     expect(fixture.nativeElement.querySelector('.sign-in-button')).not.toBeNull();
   });
 
+  it('preserves an existing protected return path on the sign-in page', () => {
+    const router = TestBed.inject(Router);
+    vi.spyOn(router, 'url', 'get').mockReturnValue('/sign-in?returnTo=%2Fauthor');
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.sign-in-button').getAttribute('href')).toBe(
+      '/sign-in?returnTo=%2Fauthor',
+    );
+  });
+
   it('exposes the account panel as a labelled disclosure', () => {
     TestBed.inject(StudyPlanAccount).account.set({
       accountId: 'test',
@@ -59,7 +71,7 @@ describe('PlatformHeader account disclosure', () => {
     fixture.detectChanges();
 
     const trigger = fixture.nativeElement.querySelector('.avatar-trigger-btn') as HTMLButtonElement;
-    expect(trigger.getAttribute('aria-label')).toBe('Account menu');
+    expect(trigger.getAttribute('aria-label')).toBe('Test account menu');
     expect(trigger.getAttribute('aria-controls')).toBe('account-menu');
     expect(trigger.getAttribute('aria-expanded')).toBe('false');
     expect(trigger.hasAttribute('aria-haspopup')).toBe(false);
@@ -73,7 +85,115 @@ describe('PlatformHeader account disclosure', () => {
     expect(fixture.nativeElement.querySelector('[role="menuitem"]')).toBeNull();
   });
 
-  it('shows Author views only for the server-provided capability', () => {
+  function signedInHeader() {
+    const store = TestBed.inject(StudyPlanAccount);
+    store.account.set({
+      accountId: 'test',
+      username: 'test@example.test',
+      displayName: 'Test Learner',
+      topicGrants: [],
+    });
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    const trigger = fixture.nativeElement.querySelector('.avatar-trigger-btn') as HTMLButtonElement;
+    expect(trigger.textContent).toContain('Test');
+    trigger.click();
+    fixture.detectChanges();
+    return {
+      store,
+      fixture,
+      button: fixture.nativeElement.querySelector('.account-sign-out') as HTMLButtonElement,
+    };
+  }
+
+  it('offers Sign out directly in Account and preserves the current return path', async () => {
+    const { store, fixture, button } = signedInHeader();
+    const router = TestBed.inject(Router);
+    vi.spyOn(router, 'url', 'get').mockReturnValue('/learn/example/problem?mode=surprise');
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const logout = vi.spyOn(store, 'logout').mockImplementation(async () => {
+      store.account.set(null);
+      return true;
+    });
+    expect(button.textContent?.trim()).toBe('Sign out');
+    button.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(logout).toHaveBeenCalledOnce();
+    expect(navigate).toHaveBeenCalledWith(['/sign-in'], {
+      queryParams: { returnTo: '/learn/example/problem?mode=surprise' },
+    });
+    expect(fixture.nativeElement.querySelector('#account-menu')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.sign-in-button')).not.toBeNull();
+  });
+
+  it('leaves the account panel available with an actionable error when logout fails', async () => {
+    const { store, fixture, button } = signedInHeader();
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate');
+    vi.spyOn(store, 'logout').mockImplementation(async () => {
+      store.error.set('Connection lost. Please try again.');
+      return false;
+    });
+    button.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(navigate).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.querySelector('#account-menu')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('[role="alert"]').textContent).toContain(
+      'Connection lost',
+    );
+    expect(button.disabled).toBe(false);
+  });
+
+  it('prevents duplicate logout requests and disables the action during account work', async () => {
+    const { store, fixture, button } = signedInHeader();
+    let finish!: (value: boolean) => void;
+    const logout = vi.spyOn(store, 'logout').mockReturnValue(
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+    );
+    store.busy.set(true);
+    fixture.detectChanges();
+    expect(button.disabled).toBe(true);
+    button.click();
+    expect(logout).not.toHaveBeenCalled();
+    store.busy.set(false);
+    fixture.detectChanges();
+    button.click();
+    button.click();
+    fixture.detectChanges();
+    expect(button.getAttribute('aria-busy')).toBe('true');
+    expect(button.textContent).toContain('Signing out');
+    expect(logout).toHaveBeenCalledOnce();
+    finish(false);
+    await fixture.whenStable();
+  });
+
+  it('lets the existing OAuth logout own its revocation redirect', async () => {
+    const { store, fixture, button } = signedInHeader();
+    store.authOptions.set({ registration: false, google: false, oauth: true });
+    store.logoutRedirectPending.set(true);
+    vi.spyOn(store, 'logout').mockResolvedValue(true);
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate');
+    button.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(navigate).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.querySelector('#account-menu')).toBeNull();
+  });
+
+  it('returns to sign in when OAuth logout succeeds without a further redirect', async () => {
+    const { store, fixture, button } = signedInHeader();
+    store.authOptions.set({ registration: false, google: false, oauth: true });
+    vi.spyOn(store, 'logout').mockResolvedValue(true);
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    button.click();
+    await fixture.whenStable();
+    expect(navigate).toHaveBeenCalledWith(['/sign-in'], { queryParams: { returnTo: '/' } });
+  });
+
+  it('shows Author previews only for the server-provided capability', () => {
     const accounts = TestBed.inject(StudyPlanAccount);
     accounts.account.set({
       accountId: 'test',
@@ -85,12 +205,73 @@ describe('PlatformHeader account disclosure', () => {
     fixture.detectChanges();
     fixture.nativeElement.querySelector('.avatar-trigger-btn').click();
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('a[href="/author"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.author-account-links')).toBeNull();
     accounts.account.update((account) => ({ ...account!, authorPreview: true }));
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('a[href="/author"]')?.textContent).toContain(
-      'Author views',
+    expect(fixture.nativeElement.querySelector('.author-account-links')?.textContent).toContain(
+      'Author previews',
     );
+  });
+
+  it('uses the display name without granting author access and keeps learner actions ordered', () => {
+    const { store, fixture } = signedInHeader();
+    store.account.update((account) => ({
+      ...account!,
+      displayName: 'Author',
+      authorPreview: false,
+    }));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.account-trigger-name').textContent).toBe('Author');
+    expect(fixture.nativeElement.querySelector('.author-account-links')).toBeNull();
+    expect(fixture.nativeElement.querySelector('a[href="/delivery-plan"]')).toBeNull();
+    const actions = [
+      ...fixture.nativeElement.querySelector('[aria-label="Account links"]').children,
+    ].map((item: any) => item.textContent.trim());
+    expect(actions).toEqual([
+      'View study plan',
+      'Manage account',
+      'Subscription Not available yet',
+      'Support and feedback',
+    ]);
+    expect(
+      fixture.nativeElement
+        .querySelector('#account-menu')
+        .lastElementChild.classList.contains('account-session-actions'),
+    ).toBe(true);
+    store.account.update((account) => ({ ...account!, displayName: '   ' }));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.account-trigger-name').textContent).toBe(
+      'Account',
+    );
+    expect(
+      fixture.nativeElement.querySelector('.avatar-trigger-btn').getAttribute('aria-label'),
+    ).toBe('Account menu');
+  });
+
+  it('places capability-gated author tools after learner actions and before Sign out', () => {
+    const { store, fixture } = signedInHeader();
+    store.account.update((account) => ({ ...account!, authorPreview: true }));
+    fixture.detectChanges();
+    const menu = fixture.nativeElement.querySelector('#account-menu') as HTMLElement;
+    const sectionLabel = menu.querySelector('a[href="/author/previews"]')!;
+    expect(sectionLabel.textContent?.trim()).toBe('Author previews');
+    expect(sectionLabel.tagName).toBe('A');
+    expect(menu.querySelector('.author-account-links')?.getAttribute('aria-label')).toBe(
+      'Author tools',
+    );
+    expect(menu.textContent!.indexOf('Support and feedback')).toBeLessThan(
+      menu.textContent!.indexOf('Author previews'),
+    );
+    expect(menu.textContent!.indexOf('Architecture')).toBeLessThan(
+      menu.textContent!.indexOf('Sign out'),
+    );
+    expect(menu.querySelector('.author-account-links a[href="/delivery-plan"]')).not.toBeNull();
+    expect(
+      menu.querySelector('a[href="/author/architecture"]'),
+    ).not.toBeNull();
+    expect(menu.textContent).not.toContain('Mock interviews');
+    expect(menu.textContent).not.toContain('Previews/unpublished work');
+    expect(menu.querySelectorAll('a[href*="localhost"], a[href*="127.0.0.1"]')).toHaveLength(0);
   });
 
   it('returns focus to the account trigger when Escape closes the panel', async () => {
@@ -115,6 +296,18 @@ describe('PlatformHeader account disclosure', () => {
 
     expect(trigger.getAttribute('aria-expanded')).toBe('false');
     expect(document.activeElement).toBe(trigger);
+  });
+
+  it('ignores a synthetic keydown without a key value', () => {
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    const event = new Event('keydown', { bubbles: true, cancelable: true });
+    expect(() =>
+      fixture.componentInstance['toggleSearchPalette'](event as KeyboardEvent),
+    ).not.toThrow();
+    fixture.detectChanges();
+    expect(event.defaultPrevented).toBe(false);
+    expect(fixture.nativeElement.querySelector('.search-palette')).toBeNull();
   });
 
   it('provides five direct native topic links instead of redundant Search entries', () => {
@@ -296,4 +489,19 @@ describe('PlatformHeader sticky context sizing', () => {
       vi.unstubAllGlobals();
     }
   });
+});
+
+it.each([
+  ['Author', 'Author'],
+  ['Ada Lovelace', 'Ada'],
+  ['  Ada   Lovelace  ', 'Ada'],
+  ['Learner 01', 'Learner 01'],
+  ['Synthetic Learner 01', 'Learner 01'],
+  ['  Learner   01 ', 'Learner 01'],
+  ['  ', 'Account'],
+  [null, 'Account'],
+  [undefined, 'Account'],
+  ['person@example.test', 'Account'],
+])('formats account trigger %s as %s without exposing an email', (name, expected) => {
+  expect(accountTriggerLabel(name)).toBe(expected);
 });

@@ -4,6 +4,7 @@ import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { startDeliveryEditor } from './delivery-editor.mjs';
+import { loadLocalBaseProxy } from './local-base-proxy.mjs';
 
 const repositoryRoot = fileURLToPath(new URL('../', import.meta.url));
 const contentRoot = resolve(
@@ -72,6 +73,7 @@ async function syncPrivateContent() {
   await run(process.execPath, [syncScript, '--external'], 'Private content sync');
 }
 
+const proxy = await loadLocalBaseProxy(repositoryRoot, process.env.LOOKAHEAD_BASE_PROXY_CONFIG);
 await syncPrivateContent();
 
 const editor = await startDeliveryEditor({
@@ -81,7 +83,6 @@ const editor = await startDeliveryEditor({
 const proxyDirectory = resolve(repositoryRoot, '.angular/delivery-editor');
 const proxyFile = resolve(proxyDirectory, `proxy-${process.pid}.json`);
 await mkdir(proxyDirectory, { recursive: true, mode: 0o700 });
-const proxy = JSON.parse(await readFile(resolve(repositoryRoot, 'proxy.conf.json'), 'utf8'));
 proxy['/__local/delivery/**'] = {
   target: editor.target,
   changeOrigin: true,

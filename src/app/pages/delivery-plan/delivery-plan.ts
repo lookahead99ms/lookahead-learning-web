@@ -28,6 +28,7 @@ import {
   DeliveryWorkflowState,
 } from '../../content/delivery-plan.models';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
+import { StudyPlanAccount } from '../study-plan/study-plan-account';
 
 type DeliveryView = 'board' | 'backlog' | 'all-tickets' | 'roadmap' | 'decisions';
 type WorkItemDraft = Omit<
@@ -49,6 +50,10 @@ type WorkItemDraft = Omit<
   host: { '(window:beforeunload)': 'onBeforeUnload($event)' },
 })
 export class DeliveryPlanPage implements OnInit {
+  private readonly accounts = inject(StudyPlanAccount);
+  protected readonly authorAccess = computed(
+    () => this.accounts.account()?.authorPreview === true && !this.accounts.sessionExpired(),
+  );
   private readonly content = inject(ContentService);
   private readonly editor = inject(DeliveryEditorService);
   private readonly destroyRef = inject(DestroyRef);
@@ -134,6 +139,7 @@ export class DeliveryPlanPage implements OnInit {
   });
 
   ngOnInit(): void {
+    if (!this.authorAccess()) return;
     this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const requestedView = params.get('view');
       this.view.set(
@@ -205,6 +211,7 @@ export class DeliveryPlanPage implements OnInit {
   }
 
   protected refreshPlan(quiet = false): void {
+    if (!this.authorAccess()) return;
     if (!this.editable() || this.saving() || this.refreshPending) return;
     this.refreshPending = true;
     const generation = this.writeGeneration;
@@ -336,6 +343,7 @@ export class DeliveryPlanPage implements OnInit {
   }
 
   protected saveDraft(): void {
+    if (!this.authorAccess()) return;
     if (!this.draft || this.saving()) return;
     const split = (text: string, delimiter: string) => [
       ...new Set(
@@ -384,6 +392,7 @@ export class DeliveryPlanPage implements OnInit {
   }
 
   protected moveItem(item: DeliveryWorkItem, statusId: string): void {
+    if (!this.authorAccess()) return;
     if (!this.editable() || this.saving() || item.statusId === statusId) return;
     const {
       title,

@@ -260,7 +260,7 @@ describe('Landing', () => {
     const root: HTMLElement = fixture.nativeElement;
     expect(root.querySelectorAll('.hero-dots button').length).toBe(5);
     expect(root.querySelector('#hero-count')).toBeNull();
-    expect(root.querySelector('.landing-footer a')?.getAttribute('href')).toBe('/delivery-plan');
+    expect(root.querySelector('.landing-footer a[href="/delivery-plan"]')).toBeNull();
     expect(root.querySelector('.media-panel a')?.getAttribute('href')).toBe(
       '/look-ahead/system-design/module/case-feed-messaging',
     );

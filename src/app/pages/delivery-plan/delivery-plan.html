@@ -4,7 +4,12 @@
     <a routerLink="/">Home</a><span>/</span><span aria-current="page">Delivery plan</span>
   </nav>
 
-  @if (plan(); as deliveryPlan) {
+  @if (!authorAccess()) {
+    <section class="delivery-state" role="status">
+      <h1>Author access required</h1>
+      <p>Sign in with an account that has author access to view the delivery plan.</p>
+    </section>
+  } @else if (plan(); as deliveryPlan) {
     <header class="delivery-hero">
       <div class="hero-copy">
         <span class="hero-kicker">Local delivery control room</span>

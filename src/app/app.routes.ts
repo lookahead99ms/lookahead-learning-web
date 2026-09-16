@@ -6,6 +6,19 @@ import { legacyInterviewSearchRedirect } from './content/search-route-compatibil
 
 export const routes: Routes = [
   {
+    path: 'author/previews',
+    canActivate: [authorGuard],
+    loadComponent: () =>
+      import('./pages/author-previews/author-previews').then((page) => page.AuthorPreviewsPage),
+  },
+  {
+    path: 'author/architecture',
+    canActivate: [authorGuard],
+    data: { architectureOnly: true },
+    loadComponent: () =>
+      import('./pages/author-previews/author-previews').then((page) => page.AuthorPreviewsPage),
+  },
+  {
     path: 'author',
     canActivate: [authorGuard],
     loadComponent: () => import('./pages/author/author').then((page) => page.AuthorPage),
@@ -46,6 +59,7 @@ export const routes: Routes = [
   },
   {
     path: 'delivery-plan',
+    canActivate: [authorGuard],
     canDeactivate: [(page: DeliveryPlanPage) => page.canDeactivate()],
     loadComponent: () =>
       import('./pages/delivery-plan/delivery-plan').then((page) => page.DeliveryPlanPage),

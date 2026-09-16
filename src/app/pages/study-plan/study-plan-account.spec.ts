@@ -312,6 +312,57 @@ describe('StudyPlanAccount transport and isolation', () => {
     expect(store.plans()).toEqual([]);
   });
 
+  it('signs out through the unchanged CSRF-protected gateway contract', async () => {
+    await store.login('demo-a', 'test');
+    store.authOptions.set({ registration: true, google: false, oauth: true });
+    expect(await store.logout()).toBe(true);
+    const request = fetcher.mock.calls.find(([path]) => path === '/bff/api/v1/auth/logout');
+    expect(store.logoutRedirectPending()).toBe(false);
+    expect(request?.[1]).toMatchObject({
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'X-CSRF-TOKEN': 'test-csrf' },
+    });
+    expect(store.account()).toBeNull();
+    expect(store.plans()).toEqual([]);
+  });
+
+  it('preserves the validated server-directed OAuth logout and rejects an external redirect', async () => {
+    await store.login('demo-a', 'test');
+    store.authOptions.set({ registration: false, google: false, oauth: true });
+    const transport = fetcher.getMockImplementation() as (
+      path: string,
+      options: RequestInit,
+    ) => Promise<Response>;
+    let destination = new URL('/connect/logout?request=synthetic', window.location.origin).href;
+    fetcher.mockImplementation((path: string, options: RequestInit) =>
+      path.endsWith('/auth/logout')
+        ? Promise.resolve(json({ logoutUrl: destination }))
+        : transport(path, options),
+    );
+    expect(await store.logout()).toBe(true);
+    expect(store.logoutRedirectPending()).toBe(true);
+    destination = 'https://external.example/connect/logout';
+    expect(await store.logout()).toBe(false);
+    expect(store.logoutRedirectPending()).toBe(false);
+  });
+
+  it('treats an already-expired logout session as signed out', async () => {
+    await store.login('demo-a', 'test');
+    const transport = fetcher.getMockImplementation() as (
+      path: string,
+      options: RequestInit,
+    ) => Promise<Response>;
+    fetcher.mockImplementation((path: string, options: RequestInit) =>
+      path.endsWith('/auth/logout')
+        ? Promise.resolve(new Response(null, { status: 401 }))
+        : transport(path, options),
+    );
+    expect(await store.logout()).toBe(true);
+    expect(store.account()).toBeNull();
+    expect(store.sessionExpired()).toBe(false);
+  });
+
   it('does not attribute a session-expired save to another account', async () => {
     await store.login('demo-a', 'test');
     await store.open('plan-a');

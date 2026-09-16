@@ -18,6 +18,15 @@ import { PlatformThemeService } from '../platform-theme';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { ContentService } from '../../content/content.service';
 import { SearchDocument } from '../../content/content.models';
+import { AUTHOR_PREVIEWS_BASE_URL, architecturePreviewUrl } from '../author-preview-config';
+
+export function accountTriggerLabel(displayName: string | null | undefined): string {
+  const name = displayName?.trim().replace(/\s+/g, ' ');
+  if (!name || name.includes('@')) return 'Account';
+  const learnerName = name.match(/^(?:Synthetic )?(Learner \d+)$/i);
+  if (learnerName) return learnerName[1];
+  return name.split(' ')[0];
+}
 
 type HeaderSuggestion = {
   type: 'Question' | 'Topic' | 'Course' | 'Module' | 'Theory' | 'DSA' | 'Tool' | 'Path' | 'Search';
@@ -300,7 +309,8 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         display: flex;
         align-items: center;
         gap: 8px;
-        padding: 5px 10px 5px 5px;
+        min-height: 44px;
+        padding: 8px 12px;
         border: 1px solid var(--line);
         border-radius: 999px;
         color: var(--text-subtle);
@@ -315,17 +325,54 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         outline: 3px solid var(--accent-focus);
         outline-offset: 2px;
       }
-      .user-avatar-img {
-        width: 32px;
-        height: 32px;
-        display: grid;
-        place-items: center;
-        border: 1px solid var(--warning);
-        border-radius: 50%;
-        color: var(--surface-page);
-        background: var(--accent-link);
-        font-size: 0.72rem;
-        font-weight: 850;
+      .account-trigger-name {
+        max-width: 14ch;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .account-session-actions {
+        margin-top: 12px;
+        padding: 12px 16px 0;
+        border-top: 1px solid var(--line);
+      }
+      .account-sign-out {
+        width: 100%;
+        min-height: 44px;
+        padding: 10px 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border: 0;
+        border-radius: 6px;
+        color: var(--danger);
+        background: color-mix(in srgb, var(--danger) 9%, var(--surface));
+        font: inherit;
+        font-size: 0.88rem;
+        font-weight: 650;
+        text-align: start;
+        cursor: pointer;
+      }
+      .account-sign-out svg {
+        width: 18px;
+        height: 18px;
+        flex: 0 0 auto;
+      }
+      .account-sign-out:hover:not(:disabled) {
+        background: color-mix(in srgb, var(--danger) 16%, var(--surface));
+      }
+      .account-sign-out:focus-visible {
+        outline: 3px solid var(--accent-focus);
+        outline-offset: 2px;
+      }
+      .account-sign-out:disabled {
+        opacity: 0.65;
+        cursor: wait;
+      }
+      .account-sign-out-error {
+        margin: 10px 0 0;
+        color: var(--danger);
+        font-size: 0.85rem;
       }
       .avatar-chevron {
         font-size: 0.62rem;
@@ -335,7 +382,9 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         top: calc(100% + 10px);
         right: 0;
         z-index: 20;
-        width: 260px;
+        width: min(280px, calc(100vw - 32px));
+        max-height: calc(100dvh - 100px);
+        overflow-y: auto;
         padding: 16px 0;
         border: 1px solid var(--line);
         border-radius: 14px;
@@ -383,6 +432,29 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
       .dropdown-links-list {
         display: flex;
         flex-direction: column;
+        gap: 0;
+      }
+      .dropdown-item-unavailable {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 4px 8px;
+        padding: 10px 20px;
+        color: var(--text-subtle);
+        font-size: 0.88rem;
+      }
+      .dropdown-item-unavailable small {
+        font-size: 0.72rem;
+      }
+      .author-section-title {
+        padding: 8px 20px;
+        color: var(--text-subtle);
+        font-size: 0.78rem;
+        font-weight: 750;
+      }
+      .user-display-name {
+        overflow-wrap: anywhere;
       }
       .dropdown-item-link {
         padding: 10px 20px;
@@ -638,8 +710,17 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
   ],
 })
 export class PlatformHeader implements AfterViewInit, OnDestroy {
+  protected readonly architectureHref = architecturePreviewUrl(inject(AUTHOR_PREVIEWS_BASE_URL));
   protected readonly accounts = inject(StudyPlanAccount);
+  protected readonly accountLabel = computed(() =>
+    accountTriggerLabel(this.accounts.account()?.displayName),
+  );
   protected accountReturn(): string {
+    const route = this.router.url.split(/[?#]/)[0];
+    if (['/sign-in', '/sign-up', '/account'].includes(route)) {
+      const returnTo = this.router.parseUrl(this.router.url).queryParams['returnTo'];
+      return typeof returnTo === 'string' ? returnTo : '/study-plan';
+    }
     return this.router.url;
   }
   private headerResizeObserver?: ResizeObserver;
@@ -680,6 +761,28 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
     this.profileMenuOpen.set(false);
   }
   protected readonly profileMenuOpen = signal(false);
+  protected readonly signingOut = signal(false);
+  protected readonly signOutError = signal('');
+
+  protected async signOut(): Promise<void> {
+    if (this.signingOut() || this.accounts.busy() || this.accounts.pending()) return;
+    const returnTo = this.accountReturn();
+    this.signingOut.set(true);
+    this.signOutError.set('');
+    try {
+      if (await this.accounts.logout()) {
+        this.profileMenuOpen.set(false);
+        // OAuth logout owns its full-page revocation redirect.
+        if (!this.accounts.logoutRedirectPending()) {
+          await this.router.navigate(['/sign-in'], { queryParams: { returnTo } });
+        }
+      } else {
+        this.signOutError.set(this.accounts.error() || 'Could not sign out. Please try again.');
+      }
+    } finally {
+      this.signingOut.set(false);
+    }
+  }
   protected readonly searchQuery = signal('');
   protected readonly suggestionsOpen = signal(false);
   protected readonly paletteOpen = signal(false);
@@ -760,7 +863,7 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
       event.defaultPrevented ||
       event.repeat ||
       event.altKey ||
-      event.key.toLowerCase() !== 'k' ||
+      (event.key ?? '').toLowerCase() !== 'k' ||
       (!event.metaKey && !event.ctrlKey)
     )
       return;

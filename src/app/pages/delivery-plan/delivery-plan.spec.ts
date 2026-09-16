@@ -3,7 +3,8 @@ import { Component } from '@angular/core';
 import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { of, throwError, Observable, Subject } from 'rxjs';
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
+import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import { ContentService } from '../../content/content.service';
 import { DeliveryPlan } from '../../content/delivery-plan.models';
 import { DeliveryEditorService, DeliverySnapshot } from '../../content/delivery-editor.service';
@@ -141,6 +142,7 @@ describe('DeliveryPlanPage', () => {
     };
     await TestBed.configureTestingModule({
       providers: [
+        provideHttpClient(),
         provideRouter([
           {
             ...routes.find((route) => route.path === 'delivery-plan')!,
@@ -153,6 +155,30 @@ describe('DeliveryPlanPage', () => {
         { provide: DeliveryEditorService, useValue: editor },
       ],
     }).compileComponents();
+    const accounts = TestBed.inject(StudyPlanAccount);
+    accounts.account.set({
+      accountId: 'author-test',
+      username: 'author@test.invalid',
+      displayName: 'Author',
+      topicGrants: [],
+      authorPreview: true,
+    });
+    vi.spyOn(accounts, 'initialize').mockResolvedValue();
+  });
+
+  it('hides a loaded board and stops refresh after author access is lost', async () => {
+    const harness = await RouterTestingHarness.create();
+    const page = await harness.navigateByUrl('/delivery-plan', DeliveryPlanPage);
+    harness.detectChanges();
+    expect(harness.routeNativeElement?.textContent).toContain('Deliver deliberately');
+    TestBed.inject(StudyPlanAccount).account.set(null);
+    harness.detectChanges();
+    const reads = editor.load.mock.calls.length;
+    page['refreshPlan']();
+    expect(editor.load.mock.calls.length).toBe(reads);
+    expect(harness.routeNativeElement?.textContent).toContain('Author access required');
+    expect(harness.routeNativeElement?.textContent).not.toContain('Deliver deliberately');
+    expect(harness.routeNativeElement?.querySelector('.board-column')).toBeNull();
   });
 
   it('renders workflow columns and arbitrary stages from JSON', async () => {
