@@ -437,7 +437,10 @@ export async function buildHandsOnDsaIndex(
     await readPreparationPlan(contentRoot),
     { required: options.requirePreparationPlan ?? false },
   );
-  const rankedCatalog = applyHandsOnRankingPlan(orderedGroups, await readRankingPlan(contentRoot), {
+  const rankingPlan = Object.hasOwn(options, 'rankingPlan')
+    ? options.rankingPlan
+    : await readRankingPlan(contentRoot);
+  const rankedCatalog = applyHandsOnRankingPlan(orderedGroups, rankingPlan, {
     required: options.requireRankingPlan ?? false,
   });
   const distinctProblems = new Set(
