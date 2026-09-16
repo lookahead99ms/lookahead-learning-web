@@ -364,7 +364,7 @@
       } @else if (canonicalProblem(item); as problem) {
         <app-dsa-problem-pilot
           [problem]="problem"
-          [focusStudio]="focusStudio()"
+          [focusStudio]="focusStudio() || studioPilot()"
           entryMode="practice"
           [showProblemHeading]="false"
           [initialLanguage]="courseId() === 'python-fundamentals' ? 'python' : 'java'"

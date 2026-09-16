@@ -66,7 +66,7 @@ export class FocusStudio {
       this.position().step,
     ),
   );
-  protected readonly pattern = computed(() => focusStudioPattern(this.problem().id)!);
+  protected readonly pattern = computed(() => focusStudioPattern(this.problem()) ?? 'generic');
   protected readonly linked = computed(() => this.mode() === 'visual' && this.current().debugger);
   protected readonly problemPinned = computed(() =>
     this.current().debugger ? this.current().debuggerProblem : this.current().normalProblem,
