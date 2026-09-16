@@ -461,7 +461,7 @@ describe('Hands-On DSA route contracts', () => {
     expect(harness.routeNativeElement!.querySelectorAll('.problem-table-row')).toHaveLength(2);
   });
 
-  it.each([0, 1, 25, 26, 730])('pages %i problems without phantom rows', async (count) => {
+  it.each([0, 1, 25, 26, 782])('pages %i problems without phantom rows', async (count) => {
     catalog = paginatedIndex(count);
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/learn/hands-on-dsa?sort=study-order', HandsOnDsa);
@@ -480,8 +480,8 @@ describe('Hands-On DSA route contracts', () => {
     else expect(harness.routeNativeElement!.textContent).toContain('0 problems');
   });
 
-  it('visits 730 unique problems across 30 replacement pages, ending with five', async () => {
-    catalog = paginatedIndex(730);
+  it('visits 782 unique problems across 32 replacement pages, ending with seven', async () => {
+    catalog = paginatedIndex(782);
     // The same canonical problem may be placed in another pattern; it must not consume another slot.
     catalog.groups.push({
       ...catalog.groups[0],
@@ -491,7 +491,7 @@ describe('Hands-On DSA route contracts', () => {
     });
     const harness = await RouterTestingHarness.create();
     const ids: string[] = [];
-    for (let page = 1; page <= 30; page++) {
+    for (let page = 1; page <= 32; page++) {
       await harness.navigateByUrl(
         `/learn/hands-on-dsa?sort=study-order${page === 1 ? '' : '&page=' + page}`,
         HandsOnDsa,
@@ -499,7 +499,7 @@ describe('Hands-On DSA route contracts', () => {
       const rows = [
         ...harness.routeNativeElement!.querySelectorAll<HTMLAnchorElement>('.problem-table-row'),
       ];
-      expect(rows).toHaveLength(page === 30 ? 5 : 25);
+      expect(rows).toHaveLength(page === 32 ? 7 : 25);
       expect(rows[0].querySelector('.problem-learning-order')!.textContent?.trim()).toBe(
         String((page - 1) * 25 + 1),
       );
@@ -517,16 +517,16 @@ describe('Hands-On DSA route contracts', () => {
         harness.routeNativeElement!.querySelectorAll('.problem-pagination a').length,
       ).toBeLessThanOrEqual(7);
     }
-    expect(new Set(ids).size).toBe(730);
-    expect(harness.routeNativeElement!.textContent).toContain('726–730 of 730 problems');
+    expect(new Set(ids).size).toBe(782);
+    expect(harness.routeNativeElement!.textContent).toContain('776–782 of 782 problems');
     expect(harness.routeNativeElement!.querySelector('.pagination-next')).toBeNull();
     const previous =
       harness.routeNativeElement!.querySelector<HTMLAnchorElement>('.pagination-previous')!;
-    expect(previous.getAttribute('href')).toContain('page=29');
+    expect(previous.getAttribute('href')).toContain('page=31');
     previous.click();
     await harness.fixture.whenStable();
     harness.detectChanges();
-    expect(harness.routeNativeElement!.textContent).toContain('701–725 of 730 problems');
+    expect(harness.routeNativeElement!.textContent).toContain('751–775 of 782 problems');
     expect(harness.routeNativeElement!.querySelectorAll('.problem-table-row')).toHaveLength(25);
   });
 

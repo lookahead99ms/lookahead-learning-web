@@ -34,7 +34,16 @@ import {
   reviewStatusLabel,
 } from '../../content/content.models';
 import { ContentService } from '../../content/content.service';
-import { rankedHandsOnDsaIndexProblems } from '../../content/hands-on-dsa';
+import {
+  HandsOnDifficulty,
+  HandsOnDsaIndex,
+  HandsOnDsaIndexProblemResult,
+  HandsOnSort,
+  HandsOnTierScope,
+  filterHandsOnDsaIndexGroups,
+  rankedHandsOnDsaIndexProblems,
+  resolveHandsOnDsaIndexGroup,
+} from '../../content/hands-on-dsa';
 import {
   flattenLearningUnits,
   handsOnPatternIdForModule,
@@ -94,6 +103,12 @@ import { FOCUS_STUDIO_PATTERN, usesFocusStudio } from '../../content/focus-studi
       }
       .studio-pilot-page .reader-question-panel .article-title-row {
         flex: 1 1 420px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: flex-start;
+        gap: 6px;
+        text-align: start;
       }
       .studio-pilot-page .reader-question-panel .reader-question-title {
         font-size: clamp(26px, 2vw, 32px);
@@ -210,6 +225,88 @@ import { FOCUS_STUDIO_PATTERN, usesFocusStudio } from '../../content/focus-studi
         padding: 12px 0;
         font-weight: 700;
         color: var(--search-primary);
+      }
+      .studio-pilot-page .article-title-row {
+        min-width: 0;
+      }
+      .problem-title-metadata {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        column-gap: 16px;
+        row-gap: 8px;
+        font-size: 13px;
+        margin: 0;
+        color: var(--muted);
+      }
+      .problem-title-metadata > span {
+        white-space: nowrap;
+      }
+      .problem-rank {
+        padding-inline-start: 16px;
+        border-inline-start: 1px solid var(--muted);
+      }
+      .problem-pattern-disclosure {
+        margin-inline-start: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+        text-align: end;
+        max-width: 100%;
+      }
+      .pattern-reveal-toggle {
+        padding: 8px 12px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: var(--surface);
+        color: var(--search-primary);
+        font: inherit;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      .problem-pattern-link {
+        font-size: 13px;
+        overflow-wrap: anywhere;
+      }
+      @media (max-width: 700px) {
+        .problem-pattern-disclosure {
+          flex-basis: 100%;
+        }
+      }
+      .source-navigation-rows {
+        flex: 1 0 100%;
+        min-width: 0;
+      }
+      .source-navigation-rows .question-inner-navigation {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .studio-pilot-page .source-navigation-rows .question-inner-navigation {
+        margin-top: 0;
+        padding-block: 0;
+      }
+      .source-navigation-rows .problem-navigation-link.previous {
+        justify-content: flex-start;
+        text-align: start;
+      }
+      .source-navigation-rows .problem-navigation-link.next {
+        justify-content: flex-end;
+        text-align: end;
+      }
+      .source-navigation-rows .boundary {
+        color: var(--muted);
+        font-size: 12px;
+        align-self: center;
+        justify-self: start;
+        text-align: start;
+      }
+      .source-navigation-rows .next,
+      .source-navigation-rows .boundary-end {
+        justify-self: end;
+        text-align: end;
       }
       .question-inner-navigation {
         display: grid;
@@ -817,6 +914,98 @@ export class Question implements OnInit {
     return this.router.url;
   }
   protected readonly returnDestination = signal<UrlTree | null>(null);
+  private navigationIndex: HandsOnDsaIndex | null = null;
+  protected readonly sourceOrderLabel = signal('Learning order');
+  private readonly learningNeighbors = signal<
+    Record<string, { previous?: DsaProblemNavigationLink; next?: DsaProblemNavigationLink }>
+  >({});
+
+  private readonly releaseProblems = signal<Record<string, HandsOnDsaIndexProblemResult>>({});
+  protected readonly releaseTotal = signal(0);
+  private readonly patternPositions = signal<Record<string, Record<string, number>>>({});
+  private readonly sourcePositions = signal<Record<string, number>>({});
+  protected releaseInfo(item: InterviewQuestion) {
+    return this.releaseProblems()[this.canonicalProblem(item)?.id ?? ''];
+  }
+  protected numberedTitle(item: InterviewQuestion): string | null {
+    const info = this.releaseInfo(item);
+    return info?.studyOrder
+      ? `${item.title}. Learning order ${info.studyOrder} of ${this.releaseTotal()}`
+      : null;
+  }
+
+  protected problemNavigationRows(item: InterviewQuestion, plan: StudyPlanReaderNavigation) {
+    const problem = this.canonicalProblem(item);
+    if (!problem) return [];
+    const context = this.canonicalNavigation(item);
+    const learning = this.learningNeighbors()[problem.id] ?? context;
+    const toEntry = (link: DsaProblemNavigationLink | undefined, label: string) => {
+      if (!link) return undefined;
+      const info = this.releaseProblems()[link.problemId];
+      const pattern =
+        this.catalogPatternByProblemId()[link.problemId] ?? context?.handsOnPatternId ?? '';
+      const number = label.startsWith('Learning order')
+        ? info?.studyOrder
+        : label.startsWith('Interview priority')
+          ? info?.interviewRank
+          : label === 'Pattern order'
+            ? this.patternPositions()[pattern]?.[link.problemId]
+            : this.sourcePositions()[link.problemId];
+      const meaning = number
+        ? label === 'Pattern order'
+          ? `Pattern order ${number} in ${this.patternRevealed() ? this.handsOnPatternTitles()[pattern] ?? 'this pattern' : 'this practice sequence'}`
+          : `${label.split(' · ')[0]} ${number} of ${this.releaseTotal()}`
+        : label;
+      return {
+        title: link.title,
+        number,
+        meaning,
+        route: this.canonicalProblemRoute(link),
+        query: this.canonicalProblemQueryParams(link, context?.handsOnPatternId ?? ''),
+      };
+    };
+    const row = (
+      label: string,
+      neighbors: { previous?: DsaProblemNavigationLink; next?: DsaProblemNavigationLink },
+    ) => ({
+      label,
+      previous: toEntry(neighbors.previous, label),
+      next: toEntry(neighbors.next, label),
+    });
+    const planNeighbors = plan.problemNeighbors();
+    const planEntry = (entry: NonNullable<typeof planNeighbors>['next']) =>
+      entry
+        ? {
+            ...entry,
+            number: entry.position,
+            meaning: `Study plan step ${entry.position}, day ${entry.query.day}`,
+          }
+        : undefined;
+    const primary = planNeighbors
+      ? {
+          label: 'Study plan',
+          previous: planEntry(planNeighbors.previous),
+          next: planEntry(planNeighbors.next),
+        }
+      : this.catalogNeighbors()[problem.id]
+        ? row(this.sourceOrderLabel(), this.catalogNeighbors()[problem.id])
+        : !this.returnDestination() && this.navigationContextId() && context
+          ? row('Pattern order', context)
+          : null;
+    const secondary = learning ? row('Learning order', learning) : null;
+    const sameNeighbors =
+      primary &&
+      secondary &&
+      ['previous', 'next'].every((direction) => {
+        const key = direction as 'previous' | 'next';
+        return primary[key]?.route.join('/') === secondary[key]?.route.join('/');
+      });
+    return [
+      ...(primary ? [primary] : []),
+      ...(secondary && primary?.label !== 'Learning order' && !sameNeighbors ? [secondary] : []),
+    ];
+  }
+
   protected readonly returnLabel = signal('Return to interview practice');
   protected readonly referenceExpanded = signal(false);
   protected readonly studioPilot = computed(() => {
@@ -936,11 +1125,16 @@ export class Question implements OnInit {
   protected readonly nextCourse = signal<CatalogItem | null>(null);
   protected readonly error = signal('');
   protected readonly surpriseMode = signal(false);
+  protected readonly patternRevealed = signal(false);
   protected readonly navigationContextId = signal('');
   protected readonly handsOnPatternTitles = signal<Record<string, string>>({});
   private readonly focusStudioNeighbors = signal<
     Record<string, Pick<DsaProblemNavigation, 'previous' | 'next'>>
   >({});
+  private readonly catalogNeighbors = signal<
+    Record<string, Pick<DsaProblemNavigation, 'previous' | 'next'>>
+  >({});
+  private readonly catalogPatternByProblemId = signal<Record<string, string>>({});
   protected readonly reviewStatusLabel = reviewStatusLabel;
 
   /** Coding practice is classified by its existing curriculum tags, not by the generic Q&A layout. */
@@ -976,8 +1170,8 @@ export class Question implements OnInit {
         ? contexts.find(({ handsOnPatternId }) => handsOnPatternId === FOCUS_STUDIO_PATTERN)
         : null) ??
       navigation;
-    if (!this.focusStudio()) return context;
     const problemId = this.canonicalProblem(item)?.id ?? '';
+    if (!this.focusStudio()) return context;
     return { ...context, ...this.focusStudioNeighbors()[problemId] };
   }
 
@@ -991,6 +1185,15 @@ export class Question implements OnInit {
 
   protected canonicalProblemRoute(link: DsaProblemNavigationLink): string[] {
     return ['/', link.path, link.courseId, link.questionId];
+  }
+
+  protected canonicalProblemQueryParams(
+    link: DsaProblemNavigationLink,
+    fallbackPattern: string,
+  ): Record<string, string> {
+    return this.returnQueryParams(
+      this.catalogPatternByProblemId()[link.problemId] ?? fallbackPattern,
+    );
   }
 
   protected handsOnPatternId(item: InterviewQuestion): string {
@@ -1415,6 +1618,7 @@ export class Question implements OnInit {
           /* Ignore malformed return context; the canonical route still works. */
         }
       }
+      if (this.navigationIndex) this.buildCatalogNavigation(this.navigationIndex);
     });
     (this.protectedContent
       ? merge(
@@ -1429,6 +1633,7 @@ export class Question implements OnInit {
           this.course.set(null);
           this.question.set(null);
           this.referenceExpanded.set(false);
+          this.patternRevealed.set(false);
           this.relatedQuestions.set(new Map());
           this.error.set('');
           this.accessFailure.set(null);
@@ -1485,6 +1690,7 @@ export class Question implements OnInit {
         this.handsOnPatternTitles.set(
           Object.fromEntries(index.groups.map((group) => [group.id, group.title])),
         );
+        this.buildCatalogNavigation(index);
         const studioGroup = index.groups.find(({ id }) => id === FOCUS_STUDIO_PATTERN);
         const studioLink = (
           problem: NonNullable<typeof studioGroup>['problems'][number] | undefined,
@@ -1635,6 +1841,169 @@ export class Question implements OnInit {
     );
   }
 
+  private buildCatalogNavigation(index: HandsOnDsaIndex): void {
+    this.navigationIndex = index;
+    const all = rankedHandsOnDsaIndexProblems(
+      filterHandsOnDsaIndexGroups(index.groups, '', 'All', '782', 'study-order'),
+      'study-order',
+    );
+    const learningLink = (
+      problem: HandsOnDsaIndexProblemResult | undefined,
+    ): DsaProblemNavigationLink | undefined =>
+      problem
+        ? {
+            problemId: problem.id,
+            title: problem.title,
+            path: problem.route[0].replace(/^\//, '') as DsaProblemNavigationLink['path'],
+            courseId: problem.route[1],
+            questionId: problem.route[2],
+          }
+        : undefined;
+    this.learningNeighbors.set(
+      Object.fromEntries(
+        all.map((problem, position) => [
+          problem.id,
+          {
+            previous: learningLink(all[position - 1]),
+            next: learningLink(all[position + 1]),
+          },
+        ]),
+      ),
+    );
+    this.releaseProblems.set(Object.fromEntries(all.map((problem) => [problem.id, problem])));
+    this.releaseTotal.set(index.totals.distinctProblems);
+    this.patternPositions.set(
+      Object.fromEntries(
+        index.groups.map((group) => [
+          group.id,
+          Object.fromEntries(
+            (
+              filterHandsOnDsaIndexGroups([group], '', 'All', '782', 'pattern-order')[0]
+                ?.problems ?? []
+            ).map((problem, position) => [problem.id, position + 1]),
+          ),
+        ]),
+      ),
+    );
+    const destination = this.returnDestination();
+    const segments = destination?.root.children['primary']?.segments;
+    if (
+      !destination ||
+      segments?.length !== 2 ||
+      segments[0].path !== 'learn' ||
+      segments[1].path !== 'hands-on-dsa'
+    ) {
+      this.catalogNeighbors.set({});
+      this.catalogPatternByProblemId.set({});
+      return;
+    }
+
+    const queryValue = (name: string): string => {
+      const value = destination.queryParams[name];
+      return Array.isArray(value) ? String(value.at(-1) ?? '') : String(value ?? '');
+    };
+    const pattern = queryValue('pattern');
+    const query = queryValue('q');
+    const requestedDifficulty = queryValue('difficulty');
+    const difficulty: HandsOnDifficulty = ['All', 'Beginner', 'Intermediate', 'Advanced'].includes(
+      requestedDifficulty,
+    )
+      ? (requestedDifficulty as HandsOnDifficulty)
+      : 'All';
+    const requestedScope = queryValue('scope');
+    const scope: HandsOnTierScope = ['150', '365', '600', '730', '782'].includes(requestedScope)
+      ? (requestedScope as HandsOnTierScope)
+      : '782';
+    const requestedSort =
+      queryValue('sort') === 'difficulty' ? 'difficulty-ascending' : queryValue('sort');
+    const validSorts: HandsOnSort[] = [
+      'pattern-order',
+      'title-ascending',
+      'title-descending',
+      'study-order-descending',
+      'interview-rank-descending',
+      'study-order',
+      'interview-rank',
+      'difficulty-ascending',
+      'difficulty-descending',
+    ];
+    let sort: HandsOnSort = validSorts.includes(requestedSort as HandsOnSort)
+      ? (requestedSort as HandsOnSort)
+      : 'study-order';
+    if (difficulty !== 'All' && sort.startsWith('difficulty-')) sort = 'study-order';
+
+    this.sourceOrderLabel.set(
+      {
+        'interview-rank': 'Interview priority',
+        'interview-rank-descending': 'Interview priority · descending',
+        'study-order': 'Learning order',
+        'study-order-descending': 'Learning order · descending',
+        'pattern-order': 'Pattern order',
+        'title-ascending': 'Title · A–Z',
+        'title-descending': 'Title · Z–A',
+        'difficulty-ascending': 'Difficulty · ascending',
+        'difficulty-descending': 'Difficulty · descending',
+      }[sort],
+    );
+    const selected = resolveHandsOnDsaIndexGroup(index.groups, pattern);
+    const visibleGroups = filterHandsOnDsaIndexGroups(
+      selected ? [selected] : index.groups,
+      query,
+      difficulty,
+      scope,
+      sort,
+    );
+    let ordered: HandsOnDsaIndexProblemResult[];
+    if (sort === 'pattern-order') {
+      const byId = new Map<string, HandsOnDsaIndexProblemResult>();
+      for (const group of visibleGroups) {
+        for (const problem of group.problems) {
+          if (!byId.has(problem.id)) {
+            byId.set(problem.id, {
+              ...problem,
+              patternId: group.id,
+              patternTitle: group.title,
+              patternPreparationOrder: group.preparationOrder,
+            });
+          }
+        }
+      }
+      ordered = [...byId.values()];
+    } else {
+      ordered = rankedHandsOnDsaIndexProblems(visibleGroups, sort);
+    }
+
+    const toLink = (
+      problem: HandsOnDsaIndexProblemResult | undefined,
+    ): DsaProblemNavigationLink | undefined =>
+      problem
+        ? {
+            problemId: problem.id,
+            title: problem.title,
+            path: problem.route[0].replace(/^\//, '') as DsaProblemNavigationLink['path'],
+            courseId: problem.route[1],
+            questionId: problem.route[2],
+          }
+        : undefined;
+    this.sourcePositions.set(
+      Object.fromEntries(ordered.map((problem, position) => [problem.id, position + 1])),
+    );
+    this.catalogPatternByProblemId.set(
+      Object.fromEntries(ordered.map((problem) => [problem.id, problem.patternId])),
+    );
+    this.catalogNeighbors.set(
+      Object.fromEntries(
+        ordered.map((problem, position) => [
+          problem.id,
+          {
+            previous: toLink(ordered[position - 1]),
+            next: toLink(ordered[position + 1]),
+          },
+        ]),
+      ),
+    );
+  }
+
   private loadRelatedQuestions(course: CourseOutline, question: InterviewQuestion) {
     const ids = new Set<string>();
     if (isPatternLesson(question) || isFoundationLessonV1(question)) {
@@ -1768,6 +2137,10 @@ export class Question implements OnInit {
       : this.pathId() === 'look-ahead'
         ? 'Look Ahead'
         : 'Learn';
+  }
+
+  protected conceptReviewTitle(item: InterviewQuestion): string {
+    return this.canonicalNavigation(item)?.lesson.title ?? this.moduleTitle();
   }
 
   protected parentContextTitle(item: InterviewQuestion): string {

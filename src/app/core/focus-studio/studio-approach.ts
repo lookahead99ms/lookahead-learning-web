@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
   Component,
@@ -13,6 +14,7 @@ import { DsaProblemV2 } from '../../content/content.models';
 /** Teaching is read from the protected problem; the UI never embeds curriculum. */
 @Component({
   selector: 'app-studio-approach',
+  imports: [NgTemplateOutlet],
   template: `<article class="approach-overview" aria-label="Understand the approach">
     <p class="eyebrow">Understand the question first</p>
     <h2>{{ problem().title }}</h2>
@@ -36,7 +38,7 @@ import { DsaProblemV2 } from '../../content/content.models';
           track $index;
           let index = $index
         ) {
-          <section class="approach-card" [class.selected-approach]="index === 1">
+          <section class="approach-card authored-approach" [class.selected-approach]="index === 1">
             <div class="approach-explanation-band">
               <p class="eyebrow">
                 {{ index === 0 ? 'Learning starting point' : 'Selected solution' }}
@@ -52,15 +54,43 @@ import { DsaProblemV2 } from '../../content/content.models';
                 {{ card.complexity.space }}
               </p>
             </div>
-            <details class="approach-code-band" [open]="codeOpen(index)">
-              <summary (click)="rememberDisclosure(index, $event)">
-                {{ codeOpen(index) ? 'Hide' : 'Show' }} teaching pseudocode:
-                {{ index === 0 ? 'starting approach' : 'selected solution' }}
-              </summary>
+            <ng-template #teachingPseudocode>
               <p class="pseudocode-label">Teaching pseudocode</p>
-              <pre><code>{{ card.pseudocode.join('
-') }}</code></pre>
-            </details>
+              <ol class="teaching-pseudocode" aria-label="Teaching pseudocode steps">
+                @for (step of card.pseudocode; track $index) {
+                  <li>
+                    <code>{{ step }}</code>
+                  </li>
+                }
+              </ol>
+            </ng-template>
+            <ng-template #implementationShape>
+              @if (card.implementationShape?.length) {
+                <p class="pseudocode-label implementation-label">Implementation shape</p>
+                <pre
+                  class="implementation-shape"
+                  tabindex="0"
+                  [attr.aria-label]="card.title + ': implementation shape'"
+                ><code>{{ formatLines(card.implementationShape!) }}</code></pre>
+              }
+            </ng-template>
+            @if (paired()) {
+              <div class="approach-code-band approach-teaching-band">
+                <ng-container [ngTemplateOutlet]="teachingPseudocode" />
+              </div>
+              <div class="approach-code-band approach-implementation-band">
+                <ng-container [ngTemplateOutlet]="implementationShape" />
+              </div>
+            } @else {
+              <details class="approach-code-band" [open]="codeOpen(index)">
+                <summary (click)="rememberDisclosure(index, $event)">
+                  {{ codeOpen(index) ? 'Hide' : 'Show' }} teaching pseudocode:
+                  {{ index === 0 ? 'starting approach' : 'selected solution' }}
+                </summary>
+                <ng-container [ngTemplateOutlet]="teachingPseudocode" />
+                <ng-container [ngTemplateOutlet]="implementationShape" />
+              </details>
+            }
           </section>
         }
       } @else {
@@ -117,6 +147,12 @@ import { DsaProblemV2 } from '../../content/content.models';
     }
     <details>
       <summary>Why it works and when the rules change</summary>
+      <h3>Preserve the invariant</h3>
+      <p>{{ problem().trace.invariant }}</p>
+      <p>{{ problem().practice.canonicalApproach.whyThisApproach }}</p>
+      <h3>Why the cost fits</h3>
+      <p>{{ problem().practice.canonicalApproach.whyOptimal }}</p>
+      <h3>Changed assumptions</h3>
       <p>{{ problem().practice.canonicalApproach.whenAssumptionChanges }}</p>
     </details>
   </article>`,
@@ -143,8 +179,7 @@ export class StudioApproach {
         this.compact.set(width < 560 || scale >= 1.5);
         this.paired.set(width >= 880);
       };
-      const observer =
-        typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure);
+      const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure);
       observer?.observe(group);
       window.addEventListener('resize', measure);
       measure();
@@ -153,6 +188,9 @@ export class StudioApproach {
         window.removeEventListener('resize', measure);
       });
     });
+  }
+  protected formatLines(lines: string[]): string {
+    return lines.join('\n');
   }
   protected codeOpen(index: number): boolean {
     return !this.compact() || this.remembered()[index] === true;

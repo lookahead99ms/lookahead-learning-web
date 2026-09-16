@@ -66,11 +66,18 @@ export class FocusStudio {
       this.position().step,
     ),
   );
+  protected readonly walkthroughEvent = computed(() => {
+    const event = this.snapshot().event;
+    if (this.problem().id !== 'algorithmic-meeting-rooms' || !event) return event;
+    const language = this.position().language;
+    const lines = this.problem().implementations.find(item => item.language === language)?.lines ?? [];
+    const index = lines.findIndex(line => line.id === event.sourceAnchor[language]);
+    return { ...event, label: `${language} instruction ${index + 1}`, what: lines[index]?.text.trim() ?? event.what,
+      why: event.result !== undefined ? `The selected runtime returned ${event.result}.` : 'Observe the recorded state after this instruction, then predict the next comparison.' };
+  });
   protected readonly pattern = computed(() => focusStudioPattern(this.problem()) ?? 'generic');
   protected readonly linked = computed(() => this.mode() === 'visual' && this.current().debugger);
-  protected readonly problemPinned = computed(() =>
-    this.current().debugger ? this.current().debuggerProblem : this.current().normalProblem,
-  );
+  protected readonly problemPinned = computed(() => this.state().problemExpanded);
   protected readonly peek = signal(false);
   protected readonly peekTop = signal(160);
   protected readonly hintCount = signal(0);
@@ -124,6 +131,7 @@ export class FocusStudio {
   protected readonly visualSteps = computed(() => {
     const events = this.snapshot().events;
     return events.flatMap((event, index) =>
+      this.problem().id === 'algorithmic-meeting-rooms' ||
       index === 0 ||
       index === events.length - 1 ||
       event.stateUnavailable ||
@@ -389,19 +397,13 @@ export class FocusStudio {
     requestAnimationFrame(() =>
       this.host.nativeElement
         .querySelector<HTMLButtonElement>(
-          this.hintsVisible()
-            ? '[aria-label="Hide hints panel"]'
-            : '[aria-label="Show hints panel"]',
+          this.hintsVisible() ? '[aria-label="Close hints"]' : '[aria-label="Show hints panel"]',
         )
         ?.focus({ preventScroll: true }),
     );
   }
   protected toggleProblem(): void {
-    this.patch(
-      this.current().debugger
-        ? { debuggerProblem: !this.problemPinned() }
-        : { normalProblem: !this.problemPinned() },
-    );
+    this.state.update((state) => ({ ...state, problemExpanded: !state.problemExpanded }));
     this.peek.set(false);
   }
   protected showPeek(event?: PointerEvent): void {

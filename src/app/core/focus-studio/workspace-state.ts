@@ -13,11 +13,10 @@ export interface StudioModeState {
   revealed: boolean;
   debugger: boolean;
   support: boolean;
-  normalProblem: boolean;
-  debuggerProblem: boolean;
 }
 export interface StudioState {
   mode: StudioMode;
+  problemExpanded: boolean;
   modes: Record<StudioMode, StudioModeState>;
   visualizationOrigin: StudioMode | null;
 }
@@ -29,11 +28,10 @@ export function createStudioState(fixtureId: string, language: PatternLanguage):
     revealed: false,
     debugger: false,
     support: true,
-    normalProblem: true,
-    debuggerProblem: false,
   });
   return {
     mode: 'practice',
+    problemExpanded: true,
     modes: { practice: mode(), approach: mode(), visual: mode(), recall: mode() },
     visualizationOrigin: null,
   };

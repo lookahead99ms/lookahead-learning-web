@@ -118,12 +118,32 @@ describe('production Focus Studio controls', () => {
     expect(root.querySelector('.hints-panel')).toBeNull();
     await click('Close solution');
     expect(root.querySelector('.hints-panel')).not.toBeNull();
-    await click('Hints');
+    await click('Close hints');
     expect(root.querySelector('.studio-context')?.hasAttribute('hidden')).toBe(true);
     await click('Show solution');
     await click('Close solution');
     expect(root.querySelector('.studio-context')?.hasAttribute('hidden')).toBe(true);
     expect(root.querySelector('[aria-label="Show hints panel"]')).not.toBeNull();
+  });
+  it('reveals one hint at a time and retains the count after closing', async () => {
+    const { root, click } = await setup();
+    await click('Reveal hint');
+    expect(root.querySelectorAll('.hint')).toHaveLength(1);
+    expect(root.querySelector('.hints-panel')?.textContent).toContain('Show next hint');
+    await click('Close hints');
+    await click('Show hints panel');
+    expect(root.querySelectorAll('.hint')).toHaveLength(1);
+    await click('Show next hint');
+    expect(root.querySelectorAll('.hint')).toHaveLength(2);
+    expect(root.querySelector('.hints-complete')?.getAttribute('role')).toBe('status');
+    expect(root.querySelector('.hints-complete')?.textContent).toBe('All hints revealed');
+    expect(root.querySelectorAll('.hints-panel button')).toHaveLength(1);
+    expect(root.querySelector('.hints-panel button')?.getAttribute('aria-label')).toBe(
+      'Close hints',
+    );
+    await click('Close hints');
+    await click('Show hints panel');
+    expect(root.querySelectorAll('.hint')).toHaveLength(2);
   });
   it('keeps instruction controls with the reference and returns from a visual handoff', async () => {
     const { root, click } = await setup();
@@ -246,6 +266,77 @@ describe('production Focus Studio controls', () => {
     selected().dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
     fixture.detectChanges();
     expect(selected().textContent).toContain('Try it yourself');
+  });
+  it('retains the shared Problem state across tabs, debugger and visual handoffs', async () => {
+    const { root, click } = await setup();
+    const button = root.querySelector<HTMLButtonElement>('.problem-toggle')!;
+    expect(button.querySelector('svg[aria-hidden="true"]')).not.toBeNull();
+    await click('Approach');
+    await click('Problem');
+    for (const tab of ['Visual walkthrough', 'Recall', 'Try it yourself', 'Approach']) {
+      await click(tab);
+      expect(button.getAttribute('aria-expanded')).toBe('false');
+      expect(root.querySelector<HTMLElement>('.problem-rail')!.hidden).toBe(true);
+    }
+    await click('Open guided debugger');
+    expect(button.getAttribute('aria-expanded')).toBe('false');
+    await click('Problem');
+    await click('Visualize solution');
+    await click('Close visualization');
+    await click('Recall');
+    expect(button.getAttribute('aria-expanded')).toBe('true');
+    expect(root.querySelector<HTMLElement>('.problem-rail')!.hidden).toBe(false);
+  });
+  it('keeps a semantic reveal style on the solution disclosure', async () => {
+    const { root, click } = await setup();
+    const reveal = root.querySelector<HTMLButtonElement>('.workspace-actions .reveal')!;
+    expect(reveal.textContent).toContain('Show solution');
+    expect(reveal.getAttribute('aria-expanded')).toBe('false');
+    await click('Show solution');
+    expect(reveal.getAttribute('aria-expanded')).toBe('true');
+    expect(reveal.classList.contains('reveal')).toBe(true);
+  });
+  it('pairs authored recall questions with descriptive expandable answers', async () => {
+    const { fixture, root, click } = await setup();
+    fixture.componentRef.setInput('problem', {
+      ...structuredClone(sample),
+      teaching: {
+        schemaVersion: 'dsa-teaching/v1',
+        problemFraming: 'Synthetic framing',
+        startingApproach: {
+          title: 'Starting idea',
+          theory: ['Synthetic explanation'],
+          pseudocode: ['inspect input'],
+          complexity: { time: 'O(n)', space: 'O(1)' },
+        },
+        selectedApproach: {
+          title: 'Selected idea',
+          theory: ['Synthetic explanation'],
+          pseudocode: ['inspect input'],
+          complexity: { time: 'O(n)', space: 'O(1)' },
+        },
+        keyDifference: 'Synthetic distinction',
+        recall: [
+          {
+            id: 'invariant',
+            label: 'Preserve the invariant',
+            question: 'What must stay true?',
+            answer: ['The recorded condition holds.'],
+            steps: ['Initialize the condition.', 'Preserve it during the update.'],
+          },
+        ],
+      },
+    });
+    fixture.detectChanges();
+    await click('Recall');
+    const question = root.querySelector('.recall-question')!;
+    expect(question.querySelector('h4')?.textContent).toBe('What must stay true?');
+    const answer = question.querySelector<HTMLDetailsElement>('details')!;
+    expect(answer.open).toBe(false);
+    expect(answer.querySelector('summary')?.textContent).toContain('Preserve the invariant');
+    expect(answer.textContent).toContain('The recorded condition holds.');
+    expect(answer.querySelectorAll('li')).toHaveLength(2);
+    expect(root.textContent).not.toContain('Check answer 1');
   });
   it('allows keyboard resizing within each panel boundary', async () => {
     const { fixture, root } = await setup();

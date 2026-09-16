@@ -86,6 +86,50 @@ describe('Study Plan reader navigation', () => {
       expect(nav.valid()).toBe(false);
     }
   });
+  it('uses pinned canonical problem order across days and retains plan context', async () => {
+    const plan = saved();
+    const dsa = (id: string) => ({ ...assignment(id), contentType: 'dsa-problem' });
+    plan.snapshot.days = [
+      { day: 1, assignments: [dsa('last-ranked'), dsa('current')] },
+      {
+        day: 2,
+        assignments: [
+          dsa('first-ranked'),
+          { ...dsa('recall'), sourceContentId: 'last-ranked', kind: 'review' },
+        ],
+      },
+    ];
+    Object.defineProperty(window, 'localStorage', {
+      configurable: true,
+      value: { getItem: () => JSON.stringify(plan) },
+    });
+    const harness = await RouterTestingHarness.create();
+    const nav = await harness.navigateByUrl(
+      '/learn/course/current?plan=browser&day=1&activity=current',
+      StudyPlanReaderNavigation,
+    );
+    await TestBed.inject(StudyPlanAccount).initialize();
+    harness.detectChanges();
+    expect(nav.problemNeighbors()?.previous?.title).toBe('last-ranked');
+    expect(nav.problemNeighbors()?.next?.title).toBe('first-ranked');
+    expect(nav.problemNeighbors()?.next?.query).toEqual({
+      plan: 'browser',
+      day: '2',
+      activity: 'first-ranked',
+    });
+    await harness.navigateByUrl(
+      '/learn/course/first-ranked?plan=browser&day=2&activity=first-ranked',
+      StudyPlanReaderNavigation,
+    );
+    expect(nav.problemNeighbors()?.next).toBeUndefined();
+    await harness.navigateByUrl(
+      '/learn/course/last-ranked?plan=browser&day=1&activity=last-ranked',
+      StudyPlanReaderNavigation,
+    );
+    expect(nav.problemNeighbors()?.previous).toBeUndefined();
+    await harness.navigateByUrl('/learn/course/current', StudyPlanReaderNavigation);
+    expect(nav.problemNeighbors()).toBeNull();
+  });
   it('ignores corrupt local plan data instead of breaking the reader', async () => {
     Object.defineProperty(window, 'localStorage', {
       configurable: true,

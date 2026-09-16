@@ -64,15 +64,16 @@ describe('Focus Studio mode memory', () => {
     expect(returned.modes.visual.positions['first/python']).toBe(13);
     expect(returned.visualizationOrigin).toBeNull();
   });
-  it('returns to Recall and retains normal/debug problem pin preferences', () => {
-    const state = updateStudioMode(
-      { ...createStudioState('first', 'go'), mode: 'recall' },
-      { normalProblem: false, debuggerProblem: true },
-    );
+  it('returns to Recall with the page-level Problem preference intact', () => {
+    const state = {
+      ...createStudioState('first', 'go'),
+      mode: 'recall' as const,
+      problemExpanded: false,
+    };
     const returned = closeStudioReference(visualizeStudio(state));
     expect(returned.mode).toBe('recall');
-    expect(returned.modes.recall.normalProblem).toBe(false);
-    expect(returned.modes.recall.debuggerProblem).toBe(true);
+    expect(returned.problemExpanded).toBe(false);
+    expect(visualizeStudio({ ...state, problemExpanded: true }).problemExpanded).toBe(true);
   });
   it('stays in Visual when visualization started there', () => {
     const state = { ...createStudioState('first', 'python'), mode: 'visual' as const };

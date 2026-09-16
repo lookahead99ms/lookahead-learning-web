@@ -10,6 +10,13 @@ export const validRankingVersion = (version) =>
   typeof version === 'string' && /^[a-zA-Z0-9][a-zA-Z0-9._-]{0,99}$/.test(version);
 
 export async function readRankingPlan(contentRoot) {
+  if (process.env.LOOKAHEAD_DSA_RANKING_CANDIDATE === '1') {
+    const candidate = JSON.parse(await readFile(join(contentRoot, rankingCandidatePath), 'utf8'));
+    if (candidate.status !== 'candidate') {
+      throw new Error('Candidate ranking preview requires an authored candidate');
+    }
+    return candidate;
+  }
   let pointerBytes;
   try {
     pointerBytes = await readFile(join(contentRoot, rankingPointerPath));

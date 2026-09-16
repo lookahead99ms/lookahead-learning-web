@@ -12,6 +12,7 @@ export const handsOnCoursePaths = [
 
 const preparationPlanPath = 'learn/hands-on-dsa-preparation.json';
 const rankingPlanPath = 'learn/hands-on-dsa-ranking.json';
+const supportedCatalogTargets = new Set([730, 782]);
 
 async function readJson(path) {
   return JSON.parse(await readFile(path, 'utf8'));
@@ -92,8 +93,8 @@ export function applyHandsOnRankingPlan(groups, plan, { required = false } = {})
   if (!isIsoDate(plan.lastReviewedAt)) {
     throw new Error(`${rankingPlanPath}: lastReviewedAt must use YYYY-MM-DD`);
   }
-  if (plan.catalogTarget !== 730) {
-    throw new Error(`${rankingPlanPath}: catalogTarget must be 730`);
+  if (!supportedCatalogTargets.has(plan.catalogTarget)) {
+    throw new Error(`${rankingPlanPath}: catalogTarget must be one of 730 or 782`);
   }
   if (!isNonEmptyString(plan.methodology)) {
     throw new Error(`${rankingPlanPath}: methodology is required`);
@@ -436,7 +437,10 @@ export async function buildHandsOnDsaIndex(
     await readPreparationPlan(contentRoot),
     { required: options.requirePreparationPlan ?? false },
   );
-  const rankedCatalog = applyHandsOnRankingPlan(orderedGroups, await readRankingPlan(contentRoot), {
+  const rankingPlan = Object.hasOwn(options, 'rankingPlan')
+    ? options.rankingPlan
+    : await readRankingPlan(contentRoot);
+  const rankedCatalog = applyHandsOnRankingPlan(orderedGroups, rankingPlan, {
     required: options.requireRankingPlan ?? false,
   });
   const distinctProblems = new Set(
