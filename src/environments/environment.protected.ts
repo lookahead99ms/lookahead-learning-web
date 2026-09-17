@@ -3,5 +3,6 @@ export const environment = {
   production: true,
   protectedContent: true,
   apiBaseUrl: '/api',
+  authorPreviewsBaseUrl: '/bff/author/previews/',
   accountPlansEnabled: true,
 };

@@ -145,6 +145,7 @@ export class StudyPlanAccount {
   readonly error = signal('');
   readonly errorStatus = signal<number | null>(null);
   readonly sessionExpired = signal(false);
+  readonly logoutRedirectPending = signal(false);
   readonly pending = signal(false);
   readonly catalog = signal<CatalogPins | null>(null);
   readonly authOptions = signal<{ registration: boolean; google: boolean; oauth?: boolean } | null>(
@@ -265,6 +266,7 @@ export class StudyPlanAccount {
   }
   async logout(): Promise<boolean> {
     if (this.busy() || this.pending()) return false;
+    this.logoutRedirectPending.set(false);
     this.busy.set(true);
     this.error.set('');
     try {
@@ -278,10 +280,12 @@ export class StudyPlanAccount {
         const target = new URL(result.logoutUrl);
         if (target.origin !== window.location.origin || target.pathname !== '/connect/logout')
           throw new Error('Invalid logout destination');
+        this.logoutRedirectPending.set(true);
         window.location.assign(target.href);
       }
       return true;
     } catch (error) {
+      this.logoutRedirectPending.set(false);
       if (error instanceof AccountApiError && error.status === 401) {
         this.clearAccount();
         return true;

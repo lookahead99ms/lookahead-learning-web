@@ -25,7 +25,9 @@
         {{ signup() ? 'Sign up with Google' : 'Sign in with Google' }}
       </button>
       <p id="google-status" class="field-hint">Google sign-in is not connected yet.</p>
-      <div class="auth-divider"><span>or use email</span></div>
+      <div class="auth-divider">
+        <span>{{ signup() ? 'or use email' : 'or use email or username' }}</span>
+      </div>
       <form (submit)="$event.preventDefault(); submit()" [attr.aria-busy]="store.busy()">
         @if (signup()) {
           <div class="name-fields">
@@ -50,9 +52,10 @@
           </div>
         }
         <label
-          >Email<input
+          >{{ signup() ? 'Email' : 'Email or username'
+          }}<input
             name="email"
-            type="email"
+            [type]="signup() ? 'email' : 'text'"
             autocomplete="username"
             required
             maxlength="254"

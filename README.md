@@ -153,6 +153,67 @@ See `lookahead-learning-infra/docs/local-accounts.md` and
 `lookahead-learning-infra/docs/oauth-local.md` for service startup and shutdown.
 Do not start a second stack for a frontend-only styling change.
 
+### Isolated local delivery editor
+
+Use `start:private` when the author Delivery Plan needs its local editor. Plain
+`ng serve` does not provide `/__local/delivery` and can show Plan unavailable.
+`LOOKAHEAD_BASE_PROXY_CONFIG` selects a JSON base proxy before the startup script
+adds its token-protected local editor route. Targets must be HTTP loopback
+services; the selected file cannot override `/__local` or dynamic proxy routing.
+Omitting the variable preserves the checked-in `proxy.conf.json` defaults.
+
+For a working UI on4301 connected to the isolated4321/4331 development stack:
+
+```sh
+LOOKAHEAD_CONTENT_ROOT=/absolute/path/to/private-content/runtime \
+LOOKAHEAD_BASE_PROXY_CONFIG=/absolute/path/to/infra/environments/local/proxy.development.json \
+npm run start:private -- --configuration protected --host 127.0.0.1 --port 4301
+```
+
+The content root stays outside the public repository. Generated content and proxy
+files are ignored; the proxy carrying the local editor token is owner-readable
+only and removed on shutdown. Keep other running UI instances on their own ports.
+Delivery Plan is guarded by the server-provided author capability, including its
+legacy `/delivery` redirect, and is absent from the public landing footer.
+
+### Local author previews
+
+The account menu exposes **Author previews**, **Delivery plan**, and **Architecture**
+only when the authenticated account has the server-provided `authorPreview`
+capability. `/author/previews` and `/author/architecture` use the same author guard.
+
+The protected environment sets `authorPreviewsBaseUrl` to `/bff/author/previews/`;
+the default, demo, and public production environments leave it empty. An empty
+configuration shows an unavailable state and makes no inventory request.
+Use the connected stack's existing `/bff/**` proxy to its OAuth gateway. The
+working development stack uses gateway4331; select its matching proxy JSON when
+starting the UI. Do not add a direct static-server proxy or start the preview
+service from the UI.
+
+The page reads `preview-directory/manifest.json` under the configured mount. It
+expects `schemaVersion: "author-previews/v1"`, `urlBase: "manifest-directory"`,
+and entries with `id`, `group`, `title`, `status`, `note`, `available`,
+and `links` (`label`, `href`, optional `theme`). Relative links resolve against
+the manifest URL. A single-leading-slash link refers to the private tree root
+and is rebased under the configured mount; already-prefixed links are preserved.
+Every resolved link must stay inside that mount. Preserve the whole
+preview tree so sibling assets and query strings continue to work. Private HTML,
+the inventory, and curriculum are never copied into the public application.
+
+The gateway contract checks the authenticated server author capability and current
+trusted catalog grants for each manifest and asset request. It returns 401 when
+signed out and 403 for a learner. The Angular guard controls page navigation;
+the gateway owns authorization for the actual files. Public production builds
+leave this configuration empty. Service failures and incompatible inventories
+show an explicit retry state. The account-menu Architecture link opens the canonical
+document directly; its existing tabs provide the data model and end-to-end views.
+
+The collections contract supplies explicit `order`, `featuredEntryId` and
+`historyEntryIds`. The page displays one featured card per collection, in curated
+review order, and compact collapsed links for earlier versions and alternatives.
+Featuring a preview does not imply selection or approval. Search also matches
+history entries and expands matching collections so those links can be found.
+
 ## Main source areas
 
 ```text

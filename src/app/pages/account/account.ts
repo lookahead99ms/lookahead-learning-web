@@ -94,7 +94,7 @@ export class AccountPage {
     }
   }
   protected async signOut(): Promise<void> {
-    if ((await this.store.logout()) && !this.store.authOptions()?.oauth)
+    if ((await this.store.logout()) && !this.store.logoutRedirectPending())
       await this.router.navigate(['/sign-in'], { queryParams: { returnTo: this.returnTo() } });
   }
 }
