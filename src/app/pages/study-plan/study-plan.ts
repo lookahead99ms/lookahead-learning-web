@@ -1782,7 +1782,15 @@ export class StudyPlanPage implements OnInit {
     if (result) this.acceptAccountPlan(result);
   }
   protected async importBrowserPlan(): Promise<void> {
-    if (!this.browserPlan) return;
+    if (
+      !this.browserPlan ||
+      !this.importAvailable() ||
+      !this.accountStore.enabled ||
+      !this.accountMode() ||
+      !this.accountStore.account() ||
+      this.editsLocked()
+    )
+      return;
     const result = await this.accountStore.importLocal(this.browserPlan);
     if (result) {
       this.acceptAccountPlan(result);

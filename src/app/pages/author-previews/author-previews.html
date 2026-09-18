@@ -1,22 +1,32 @@
 <app-platform-header />
-<main id="main-content" class="preview-page">
-  <header>
-    <p class="eyebrow">Local author workspace</p>
-    <h1>{{ title }}</h1>
-    <p class="lede">
-      {{
-        architectureOnly
-          ? 'Explore the platform’s content model and architecture.'
-          : 'Revisit the latest design work, compare themes, and explore earlier iterations.'
-      }}
-    </p>
-    <p class="context-note">
-      Private local review · Opening a preview does not change the live application.
-    </p>
-    @if (architectureOnly) {
-      <a routerLink="/author/previews">Browse all author previews</a>
-    }
-  </header>
+<main id="main-content" class="preview-page" [class.architecture-layout]="architectureOnly">
+  @if (architectureOnly) {
+    <header class="architecture-toolbar">
+      <div>
+        <p class="eyebrow">Local author workspace</p>
+        <h1>Architecture</h1>
+      </div>
+      <nav aria-label="Architecture workspace actions">
+        <a routerLink="/author/previews">All author previews</a>
+        @if (architectureDocumentHref(); as documentHref) {
+          <a class="open-document" [href]="documentHref" target="_blank" rel="noopener noreferrer">
+            Open full-page document <span>(new tab)</span>
+          </a>
+        }
+      </nav>
+    </header>
+  } @else {
+    <header>
+      <p class="eyebrow">Local author workspace</p>
+      <h1>{{ title }}</h1>
+      <p class="lede">
+        Revisit the latest design work, compare themes, and explore earlier iterations.
+      </p>
+      <p class="context-note">
+        Private local review · Opening a preview does not change the live application.
+      </p>
+    </header>
+  }
   @if (!accounts.account()?.authorPreview || accounts.sessionExpired()) {
     <section class="state-panel">
       <h2>Author access required</h2>
@@ -138,10 +148,12 @@
       @if (architectureDocumentUrl(); as documentUrl) {
         <section class="architecture-workspace" aria-label="Canonical platform architecture">
           <iframe
+            #architectureFrame
             class="architecture-frame"
             [src]="documentUrl"
             title="Canonical content model and platform architecture"
             sandbox="allow-scripts"
+            (load)="connectDocument(architectureFrame)"
           ></iframe>
         </section>
       } @else {
@@ -150,3 +162,12 @@
     }
   }
 </main>
+@if (architectureDocumentHref(); as documentHref) {
+  @if (expandedDiagram(); as diagramId) {
+    <app-architecture-diagram-viewer
+      [documentHref]="documentHref"
+      [diagramId]="diagramId"
+      (dismissed)="closeDiagram()"
+    />
+  }
+}

@@ -1,9 +1,11 @@
 import { Component, signal } from '@angular/core';
+import { vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ActivatedRoute, provideRouter } from '@angular/router';
 import { AuthorPreviewsPage } from './author-previews';
+import { ArchitectureDiagramViewer } from './architecture-diagram-viewer';
 import {
   AUTHOR_PREVIEWS_BASE_URL,
   parsePreviewInventory,
@@ -12,6 +14,7 @@ import {
 } from './preview-inventory';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
+import { PlatformThemeService } from '../../core/platform-theme';
 import { routes } from '../../app.routes';
 import { authorGuard } from '../../core/author-access';
 import { environment as publicEnvironment } from '../../../environments/environment.production';
@@ -19,6 +22,13 @@ import { environment as demoEnvironment } from '../../../environments/environmen
 
 @Component({ selector: 'app-platform-header', template: '' })
 class HeaderStub {}
+
+@Component({
+  selector: 'app-architecture-diagram-viewer',
+  template: 'Expanded diagram',
+  inputs: ['documentHref', 'diagramId'],
+})
+class DiagramViewerStub {}
 
 const base = '/bff/author/previews/';
 const manifestUrl = `${base}preview-directory/manifest.json`;
@@ -123,9 +133,11 @@ describe('private preview inventory contract', () => {
 describe('Author previews page', () => {
   const account = signal<any>({ authorPreview: true });
   const sessionExpired = signal(false);
+  const selectedTheme = signal<'light' | 'dark'>('light');
   beforeEach(() => {
     account.set({ authorPreview: true });
     sessionExpired.set(false);
+    selectedTheme.set('light');
     TestBed.configureTestingModule({
       imports: [AuthorPreviewsPage],
       providers: [
@@ -134,6 +146,7 @@ describe('Author previews page', () => {
         provideHttpClientTesting(),
         { provide: AUTHOR_PREVIEWS_BASE_URL, useValue: base },
         { provide: StudyPlanAccount, useValue: { account, sessionExpired } },
+        { provide: PlatformThemeService, useValue: { selected: selectedTheme } },
         { provide: ActivatedRoute, useValue: { snapshot: { data: {} } } },
       ],
     }).overrideComponent(AuthorPreviewsPage, {
@@ -154,10 +167,59 @@ describe('Author previews page', () => {
     fixture.detectChanges();
     return fixture;
   }
+
+  it('destroys the viewer and disconnects its source when author capability is revoked', async () => {
+    TestBed.overrideProvider(ActivatedRoute, {
+      useValue: { snapshot: { data: { architectureOnly: true } } },
+    });
+    TestBed.overrideComponent(AuthorPreviewsPage, {
+      remove: { imports: [ArchitectureDiagramViewer] },
+      add: { imports: [DiagramViewerStub] },
+    });
+    const port = {
+      onmessage: null as ((event: { data: unknown }) => void) | null,
+      start: vi.fn(),
+      close: vi.fn(),
+    };
+    vi.stubGlobal(
+      'MessageChannel',
+      class {
+        port1 = port;
+        port2 = {};
+      },
+    );
+    try {
+      const fixture = await loaded();
+      const frame = fixture.nativeElement.querySelector('iframe') as HTMLIFrameElement;
+      vi.spyOn(frame.contentWindow!, 'postMessage').mockImplementation(() => {});
+      frame.dispatchEvent(new Event('load'));
+      port.onmessage!({
+        data: { type: 'lookahead:architecture:expand', version: 1, diagramId: 'content-model' },
+      });
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('app-architecture-diagram-viewer')).not.toBeNull();
+      account.set({ authorPreview: false });
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('app-architecture-diagram-viewer')).toBeNull();
+      expect(fixture.nativeElement.querySelector('iframe')).toBeNull();
+      expect(port.close).toHaveBeenCalled();
+      port.onmessage!({
+        data: { type: 'lookahead:architecture:expand', version: 1, diagramId: 'repo-flow' },
+      });
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('app-architecture-diagram-viewer')).toBeNull();
+      fixture.destroy();
+    } finally {
+      vi.unstubAllGlobals();
+      vi.restoreAllMocks();
+    }
+  });
   it('loads grouped previews with explicit new-tab links and filters by title/category', async () => {
     const fixture = await loaded();
     const root = fixture.nativeElement as HTMLElement;
     expect(root.querySelectorAll('.preview-group')).toHaveLength(2);
+    expect(root.querySelector('.architecture-layout')).toBeNull();
+    expect(root.querySelector('.open-document')).toBeNull();
     expect(root.textContent).toContain('Mock Interview');
     const link = root.querySelector('.preview-links a')!;
     expect(link.getAttribute('target')).toBe('_blank');
@@ -245,5 +307,76 @@ describe('Author previews page', () => {
       '/bff/author/previews/architecture/index.html?theme=light&layout=shared',
     );
     expect(frame.getAttribute('sandbox')).toBe('allow-scripts');
+    expect(fixture.nativeElement.classList.contains('architecture-page')).toBe(true);
+    const fullPageLink = fixture.nativeElement.querySelector('.open-document') as HTMLAnchorElement;
+    expect(fullPageLink.getAttribute('href')).toBe(frame.getAttribute('src'));
+    expect(fullPageLink.getAttribute('target')).toBe('_blank');
+    expect(fullPageLink.getAttribute('rel')).toBe('noopener noreferrer');
+    expect(fullPageLink.textContent).toContain('new tab');
+
+    selectedTheme.set('dark');
+    fixture.detectChanges();
+    expect(frame.getAttribute('src')).toBe(
+      '/bff/author/previews/architecture/index.html?theme=dark&layout=shared',
+    );
+    expect(fullPageLink.getAttribute('href')).toBe(frame.getAttribute('src'));
+
+    account.set({ authorPreview: false });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('iframe')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.open-document')).toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('Author access required');
+  });
+  it('preserves canonical query parameters and anchors and hides document actions on expiry', async () => {
+    TestBed.overrideProvider(ActivatedRoute, {
+      useValue: { snapshot: { data: { architectureOnly: true } } },
+    });
+    const fixture = create();
+    const architecture = entry('architecture', 'Architecture');
+    architecture.links[0].href = '../architecture/index.html?layout=standalone&view=model#schema';
+    TestBed.inject(HttpTestingController)
+      .expectOne(manifestUrl)
+      .flush(manifest([architecture]));
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.open-document').getAttribute('href')).toBe(
+      '/bff/author/previews/architecture/index.html?layout=standalone&view=model&theme=light#schema',
+    );
+    expect(fixture.nativeElement.querySelector('iframe').getAttribute('src')).toBe(
+      '/bff/author/previews/architecture/index.html?layout=shared&view=model&theme=light#schema',
+    );
+    sessionExpired.set(true);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('iframe')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.open-document')).toBeNull();
+  });
+  it('embeds the real manifest URL in shared layout while keeping the full-page document standalone', async () => {
+    TestBed.overrideProvider(ActivatedRoute, {
+      useValue: { snapshot: { data: { architectureOnly: true } } },
+    });
+    const fixture = create();
+    const architecture = entry('architecture', 'Architecture');
+    architecture.links[0].href = '../architecture/index.html';
+    TestBed.inject(HttpTestingController)
+      .expectOne(manifestUrl)
+      .flush(manifest([architecture]));
+    await fixture.whenStable();
+    fixture.detectChanges();
+    const frame = fixture.nativeElement.querySelector('iframe');
+    const link = fixture.nativeElement.querySelector('.open-document');
+    expect(frame.getAttribute('src')).toBe(
+      '/bff/author/previews/architecture/index.html?theme=light&layout=shared',
+    );
+    expect(link.getAttribute('href')).toBe(
+      '/bff/author/previews/architecture/index.html?theme=light',
+    );
+    selectedTheme.set('dark');
+    fixture.detectChanges();
+    expect(frame.getAttribute('src')).toBe(
+      '/bff/author/previews/architecture/index.html?theme=dark&layout=shared',
+    );
+    expect(link.getAttribute('href')).toBe(
+      '/bff/author/previews/architecture/index.html?theme=dark',
+    );
   });
 });

@@ -1,0 +1,171 @@
+:host {
+  display: contents;
+}
+dialog {
+  position: fixed;
+  inset: 0;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+  height: 100vh;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: var(--text-body);
+  background: var(--surface-page);
+  overflow: hidden;
+}
+dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+dialog::backdrop {
+  background: var(--surface-page);
+}
+.viewer-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  flex: 0 0 auto;
+  gap: 8px 20px;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  max-height: 55dvh;
+  overflow: auto;
+}
+.viewer-heading p {
+  margin: 0 0 4px;
+  color: var(--text-subtle);
+  font-size: 12px;
+}
+h2 {
+  color: var(--text-strong);
+  font-size: 20px;
+  line-height: 1.25;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+button {
+  font: inherit;
+  font-size: 14px;
+  font-weight: 650;
+  min-height: 44px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  padding: 8px 12px;
+  background: var(--surface);
+  color: var(--text-strong);
+  cursor: pointer;
+}
+button:hover:not(:disabled) {
+  background: var(--surface-page);
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+button:focus-visible,
+summary:focus-visible,
+.diagram-viewport:focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: -3px;
+}
+.close-button {
+  align-self: start;
+  background: var(--accent-strong);
+  color: var(--accent-on-primary);
+}
+.close-button:hover {
+  color: var(--text-strong);
+}
+.zoom-controls {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+output {
+  min-width: 52px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+.viewer-help {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-subtle);
+  line-height: 1.5;
+}
+.text-alternative {
+  grid-column: 1 / -1;
+  font-size: 14px;
+}
+summary {
+  cursor: pointer;
+  padding: 6px 0;
+  font-weight: 650;
+}
+.description-copy {
+  max-width: 85ch;
+  line-height: 1.6;
+}
+.diagram-viewport {
+  position: relative;
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-x pan-y pinch-zoom;
+  cursor: grab;
+  scrollbar-gutter: stable;
+}
+.diagram-viewport.dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+.diagram-viewport.loading {
+  cursor: default;
+}
+.diagram-stage {
+  position: relative;
+}
+.diagram-stage.pending {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  visibility: hidden;
+}
+iframe {
+  position: absolute;
+  display: block;
+  border: 0;
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+.status {
+  padding: 28px;
+  margin: 0;
+  max-width: 64ch;
+  line-height: 1.6;
+}
+@media (max-width: 600px) {
+  .viewer-header {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+  h2 {
+    font-size: 16px;
+  }
+  button {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+  .zoom-controls {
+    gap: 6px;
+  }
+}
