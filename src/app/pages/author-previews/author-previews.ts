@@ -1,10 +1,13 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, ElementRef, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { firstValueFrom, timeout } from 'rxjs';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
+import { PlatformThemeService } from '../../core/platform-theme';
+import { ArchitectureDiagramViewer } from './architecture-diagram-viewer';
+import { ArchitectureDiagramId, connectArchitectureFrame } from './architecture-diagram-protocol';
 import {
   AUTHOR_PREVIEWS_BASE_URL,
   parsePreviewInventory,
@@ -16,15 +19,17 @@ import {
 
 @Component({
   selector: 'app-author-previews',
-  imports: [PlatformHeader, RouterLink],
+  imports: [PlatformHeader, RouterLink, ArchitectureDiagramViewer],
   templateUrl: './author-previews.html',
   styleUrl: './author-previews.css',
+  host: { '[class.architecture-page]': 'architectureOnly' },
 })
 export class AuthorPreviewsPage {
   protected readonly accounts = inject(StudyPlanAccount);
   private readonly http = inject(HttpClient);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly base = inject(AUTHOR_PREVIEWS_BASE_URL);
+  private readonly theme = inject(PlatformThemeService);
   protected readonly architectureOnly =
     inject(ActivatedRoute).snapshot.data['architectureOnly'] === true;
   protected readonly title = this.architectureOnly ? 'Architecture' : 'Author previews';
@@ -37,11 +42,73 @@ export class AuthorPreviewsPage {
       ? this.entries().filter((entry) => entry.id === 'architecture')
       : this.entries(),
   );
-  protected readonly architectureDocumentUrl = computed<SafeResourceUrl | null>(() => {
-    if (!this.architectureOnly) return null;
+  protected readonly architectureDocumentHref = computed(() => {
+    if (
+      !this.architectureOnly ||
+      !this.accounts.account()?.authorPreview ||
+      this.accounts.sessionExpired()
+    )
+      return null;
     const href = this.availableEntries()[0]?.links[0]?.href;
+    if (!href) return null;
+    // The inventory parser has already restricted this URL to the private mount.
+    const url = new URL(href, 'https://preview.invalid');
+    url.searchParams.set('theme', this.theme.selected());
+    return `${url.pathname}${url.search}${url.hash}`;
+  });
+  protected readonly architectureFrameHref = computed(() => {
+    const href = this.architectureDocumentHref();
+    if (!href) return null;
+    const url = new URL(href, 'https://preview.invalid');
+    url.searchParams.set('layout', 'shared');
+    return `${url.pathname}${url.search}${url.hash}`;
+  });
+  protected readonly architectureDocumentUrl = computed<SafeResourceUrl | null>(() => {
+    const href = this.architectureFrameHref();
     return href ? this.sanitizer.bypassSecurityTrustResourceUrl(href) : null;
   });
+  protected readonly expandedDiagram = signal<ArchitectureDiagramId | null>(null);
+  private readonly architectureFrame =
+    viewChild<ElementRef<HTMLIFrameElement>>('architectureFrame');
+  private documentPort: MessagePort | null = null;
+
+  constructor() {
+    effect(() => {
+      // Every source/capability change invalidates its port and any open viewer.
+      this.architectureFrameHref();
+      this.documentPort?.close();
+      this.documentPort = null;
+      this.expandedDiagram.set(null);
+    });
+  }
+
+  protected connectDocument(frame: HTMLIFrameElement) {
+    this.documentPort?.close();
+    this.documentPort = null;
+    const href = this.architectureFrameHref();
+    if (!href) return;
+    this.documentPort = connectArchitectureFrame(frame, href, null, (message) => {
+      if (!this.architectureDocumentHref() || this.accounts.sessionExpired()) return;
+      if (message.type === 'lookahead:architecture:expand')
+        this.expandedDiagram.set(message.diagramId);
+    });
+  }
+
+  protected closeDiagram() {
+    const diagramId = this.expandedDiagram();
+    this.expandedDiagram.set(null);
+    if (!diagramId || !this.architectureDocumentHref()) return;
+    this.architectureFrame()?.nativeElement.focus({ preventScroll: true });
+    this.documentPort?.postMessage({
+      type: 'lookahead:architecture:restore-focus',
+      version: 1,
+      diagramId,
+    });
+  }
+
+  ngOnDestroy() {
+    this.documentPort?.close();
+  }
   protected readonly collections = signal<PreviewCollection[]>([]);
   protected readonly groupNames = computed(() =>
     this.collections().map((collection) => collection.title),

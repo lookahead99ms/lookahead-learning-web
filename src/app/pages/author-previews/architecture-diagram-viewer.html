@@ -1,0 +1,89 @@
+<dialog
+  #dialog
+  aria-labelledby="diagram-viewer-title"
+  aria-describedby="diagram-viewer-help"
+  (cancel)="close($event)"
+  (keydown)="trapFocus($event)"
+>
+  <header class="viewer-header">
+    <div class="viewer-heading">
+      <p>Architecture diagram</p>
+      <h2 id="diagram-viewer-title">{{ title() }}</h2>
+    </div>
+    <button type="button" class="close-button" (click)="close()" autofocus>Close diagram</button>
+    <div class="zoom-controls" role="group" aria-label="Diagram zoom">
+      <button
+        type="button"
+        (click)="changeZoom(zoom() / 1.25)"
+        [disabled]="status() !== 'ready' || zoom() <= 0.01"
+      >
+        Zoom out
+      </button>
+      <output aria-label="Diagram zoom percentage" aria-live="polite">{{ zoomPercent() }}%</output>
+      <button
+        type="button"
+        (click)="changeZoom(zoom() * 1.25)"
+        [disabled]="status() !== 'ready' || zoom() >= 4"
+      >
+        Zoom in
+      </button>
+      <button type="button" (click)="fit()" [disabled]="status() !== 'ready'">Fit diagram</button>
+      <button type="button" (click)="changeZoom(1)" [disabled]="status() !== 'ready'">100%</button>
+      <button type="button" (click)="fit()" [disabled]="status() !== 'ready'">Reset</button>
+    </div>
+    <p class="viewer-help" id="diagram-viewer-help">
+      Drag or scroll to pan. Focus the diagram and use arrow keys to move, + or − to zoom. Escape
+      closes.
+    </p>
+  </header>
+  <div
+    #viewport
+    class="diagram-viewport"
+    [class.dragging]="dragging()"
+    [class.loading]="status() !== 'ready'"
+    tabindex="0"
+    role="region"
+    aria-label="Diagram pan and zoom area"
+    aria-describedby="diagram-viewer-help"
+    (pointerdown)="pointerDown($event)"
+    (pointermove)="pointerMove($event)"
+    (pointerup)="pointerEnd($event)"
+    (pointercancel)="pointerEnd($event)"
+    (lostpointercapture)="pointerEnd($event)"
+    (keydown)="keydown($event)"
+  >
+    @if (status() === 'loading') {
+      <p class="status" role="status">Loading diagram…</p>
+    }
+    @if (status() === 'error') {
+      <section class="status" role="alert">
+        <h3>Diagram unavailable</h3>
+        <p>Try loading it again, or close this view to return to the architecture document.</p>
+        <button type="button" (click)="retry()">Try again</button>
+      </section>
+    }
+    <div
+      class="diagram-stage"
+      [style.width.px]="stageWidth()"
+      [style.height.px]="stageHeight()"
+      [class.pending]="status() !== 'ready'"
+    >
+      @for (generation of [frameGeneration()]; track generation) {
+        <iframe
+          #diagramFrame
+          [src]="safeHref()"
+          [title]="title() + ' diagram'"
+          sandbox="allow-scripts"
+          tabindex="-1"
+          [style.width.px]="size().width"
+          [style.height.px]="size().height"
+          [style.left.px]="offsetX()"
+          [style.top.px]="offsetY()"
+          [style.transform]="'scale(' + zoom() + ')'"
+          (load)="frameLoaded(diagramFrame)"
+          (error)="fail()"
+        ></iframe>
+      }
+    </div>
+  </div>
+</dialog>

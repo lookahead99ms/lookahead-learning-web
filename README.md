@@ -24,20 +24,44 @@ delivery evidence, credentials, and learner data are kept outside this Git histo
 
 ## Architecture
 
+The current connected local stack uses a separate Java/Spring Gateway process
+and a combined Java/Spring API containing both authorization-server and product
+responsibilities. A separate candidate splits these into three Java/Spring Boot
+applications and two independently owned databases. The candidate has not
+replaced the current stack or migrated its data.
+
 ```mermaid
 flowchart LR
   Browser[Browser] --> Web["Angular web<br/>this repository"]
   Web --> Demo["Synthetic demo runtime<br/>tracked here"]
-  Web -. connected mode .-> Gateway["OAuth gateway<br/>4330"]
-  Gateway --> API["Account/content API<br/>4320"]
-  Web -. account and content routes .-> API
-  API --> DB[(PostgreSQL)]
+  subgraph Current["Current connected local stack"]
+    Gateway["Java Gateway/BFF"] --> API["Combined Java API<br/>Identity, OAuth and product resources"]
+    API --> DB[(PostgreSQL)]
+  end
+  Web -. same-origin connected requests .-> Gateway
   Content["Private content repository"] -->|validated runtime assets| Web
   Content -->|protected immutable publication| API
-  Infra[Infrastructure repository] -->|local lifecycle| Gateway
-  Infra -->|local lifecycle| API
-  Infra -->|local lifecycle| DB
+  Infra[Infrastructure repository] -. local lifecycle .-> Current
 ```
+
+```mermaid
+flowchart LR
+  Client["Candidate client"] --> Gateway["Java Gateway/BFF<br/>Browser sessions and server-held tokens"]
+  Gateway -->|Sign-in and OAuth| Identity["Java Identity<br/>Authorization server"]
+  Gateway -->|Authorized product requests| Platform["Java Platform<br/>Modular resource API"]
+  Platform -->|Current token and enabled-account check| Identity
+  Identity --> IdentityDB[(Identity database)]
+  Platform --> PlatformDB[(Platform database)]
+  Build["Backend repository<br/>Maven parent and plain contracts"] -. build .-> Gateway
+  Build -. build .-> Identity
+  Build -. build .-> Platform
+```
+
+The candidate Gateway has no database credentials. Identity owns credentials,
+OAuth state and signing keys; Platform owns product permissions, protected
+content, plans, progress and support state. Plan/version/activity/receipt writes
+remain one Platform transaction. Backend supplies shared build tooling and
+transport contracts; it is not another running application.
 
 Route-level pages are lazy-loaded. Content services translate versioned JSON
 contracts into view models; reusable components own recurring learning behavior.
@@ -45,16 +69,31 @@ Pages must not infer authorization or repair invalid private content.
 
 ## Repository relationships
 
-| Repository | Responsibility | Independent local use |
+| Local repository folder | Source boundary | Responsibility |
 | --- | --- | --- |
-| **`lookahead-learning-web-public`** | Angular product, public demo, UI contracts, accessibility and browser integration | Runs with tracked synthetic content; no service required |
-| **`lookahead-learning-api`** | Authentication, authorization, protected reads, plans, progress and recovery | Runs with its synthetic fixtures; PostgreSQL is needed only for account mode |
-| **`lookahead-learning-infra`** | Local PostgreSQL/API/gateway/mail orchestration and future AWS definitions | Runs infrastructure tests and standalone PostgreSQL; integrated mode uses the API checkout |
-| **`lookahead-learning-content`** | Private curriculum, ranking, Study Plan templates, publication tools and evidence | Runs private validation; must remain private |
+| **`lookahead-learning-web-public`** | Public web source (`lookahead-learning-web`) | Angular product, synthetic standalone demo, UI contracts and browser integration |
+| **`lookahead-learning-api`** | Public compatibility baseline (`lookahead-content-api`) | Current combined Spring API and separately launched Gateway profile, existing schemas and migrations |
+| **`lookahead-learning-gateway`** | Private candidate | Browser sessions, server-held OAuth tokens and fixed Identity/Platform routing |
+| **`lookahead-learning-identity`** | Private candidate | Credentials, enabled identities, OAuth clients/authorizations, signing keys and Identity database migrations |
+| **`lookahead-learning-platform`** | Private candidate | Product capabilities/grants, plans/progress, protected content, support state and Platform database migrations |
+| **`lookahead-learning-backend`** | Private shared build | Maven parent, plain transport contracts, application image build and verification tooling |
+| **`lookahead-learning-infra`** | Private infrastructure | Local lifecycle, separate database roles, Compose, environment configuration and deferred AWS definitions |
+| **`lookahead-learning-content`** | Private content | Curriculum, rankings, Study Plan templates, publication tools, private architecture previews and evidence |
+
+The four candidate application/build repositories are sibling checkouts with
+these exact folder names. Their Maven build resolves local sibling sources;
+reproducible builds need compatible revisions of all four. Candidate startup and
+database provisioning belong to Infra. Existing-state migration, rollback,
+production hosting and a live cutover remain separate work.
 
 The public web and API demonstrations never require the private repository.
 Private review builds copy only validated runtime assets into an ignored staging
 directory; those files must never be committed here.
+
+Node-based frontend and author/delivery handlers, the key-protected Python preview
+source, SMTP capture and lifecycle/probe scripts are local development and
+verification tools. They are separate from the Java/Spring product applications.
+They do not define production hosting or activate learner code execution.
 
 ## Learner flows
 
@@ -72,21 +111,23 @@ sequenceDiagram
   W-->>L: Render a frontend-only flow
 ```
 
-Connected local mode:
+Current connected OAuth mode:
 
 ```mermaid
 sequenceDiagram
   participant L as Learner
-  participant W as UI on 4316
-  participant G as Gateway on 4330
-  participant A as API on 4320
+  participant W as Angular UI
+  participant G as Gateway/BFF
+  participant A as Combined API and authorization server
   participant P as PostgreSQL
   L->>W: Sign in or open protected content
   W->>G: Same-origin authentication request
   G->>A: OAuth/API exchange
-  W->>A: Account or protected-content request
+  W->>G: Same-origin account or protected-content request
+  G->>A: Server-held access token
   A->>P: Read or write account-owned state
-  A-->>W: Authorized response with revision metadata
+  A-->>G: Authorized response with revision metadata
+  G-->>W: Browser response; tokens remain server-side
   W-->>L: Refresh plan, progress, or content state
 ```
 
@@ -144,8 +185,10 @@ npm ci
 npm run start:connected -- --host 127.0.0.1 --port 4316
 ```
 
-Open http://127.0.0.1:4316. Checked-in proxy contracts send authentication routes
-through gateway4330 and account/protected-content routes to API4320. Private
+Open http://127.0.0.1:4316. Checked-in proxy contracts send `/bff/**`, `/content/**`
+and OAuth client callback routes through gateway4330. `/api/**` and
+authorization-server routes target the combined API on4320. The connected OAuth
+account flow uses the BFF so access tokens stay server-side. Private
 content appears only after an authorized immutable publication has been prepared
 and mounted by the local infrastructure workflow.
 

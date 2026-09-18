@@ -1614,6 +1614,87 @@ describe('StudyPlanPage', () => {
     );
   });
 
+  it.each([false, true])(
+    'offers an explicit browser-plan import with an account plan selected: %s',
+    async (selectedPlan) => {
+      const accounts = TestBed.inject(StudyPlanAccount);
+      const harness = await RouterTestingHarness.create();
+      const local: any = await harness.navigateByUrl('/study-plan', StudyPlanPage);
+      await local.generatePlan();
+      await local.saveDraft();
+      const saved = local.saved();
+      const original = localStorage.getItem('look-ahead.study-plan.v1');
+      const owned = {
+        planId: 'owned',
+        versionId: 'v1',
+        revision: 1,
+        goal: saved.goal,
+        snapshot: saved.snapshot,
+        provenance: { algorithmVersion: null, catalogVersion: null, rankingVersion: null },
+        progress: {
+          completedContentIds: [],
+          completedSessionIds: [],
+          attemptedContentIds: [],
+          needsReviewContentIds: [],
+          notes: {},
+          sessionOutcomes: {},
+        },
+        recovery: {
+          strategy: 'none' as const,
+          elapsedDays: 0,
+          deadlineDays: 30,
+          deferredContentIds: [],
+        },
+        createdAt: '',
+        updatedAt: '',
+      };
+      await harness.navigateByUrl('/exit', PlannerExit);
+      Object.defineProperty(accounts, 'enabled', { value: true });
+      accounts.account.set({
+        accountId: 'synthetic',
+        username: 'synthetic',
+        displayName: 'Synthetic',
+        topicGrants: [],
+      });
+      accounts.active.set(selectedPlan ? owned : null);
+      accounts.plans.set(
+        selectedPlan ? [{ planId: 'owned', goal: owned.goal, revision: 1, updatedAt: '' }] : [],
+      );
+      vi.spyOn(accounts, 'initialize').mockResolvedValue();
+      const importPlan = vi
+        .spyOn(accounts, 'importLocal')
+        .mockResolvedValue({ ...owned, planId: 'imported' });
+      const page: any = await harness.navigateByUrl('/study-plan', StudyPlanPage);
+      await Promise.resolve();
+      harness.detectChanges();
+      expect(page.progressVisible()).toBe(selectedPlan);
+      expect(importPlan).not.toHaveBeenCalled();
+      const section = harness.routeNativeElement!.querySelector(
+        '[aria-label="Import a browser plan"]',
+      )!;
+      expect(section).not.toBeNull();
+      expect(section.querySelector('details')!.open).toBe(false);
+      expect(section.textContent?.replace(/\s+/g, ' ')).toContain(
+        'original browser copy stays unchanged',
+      );
+      const button = section.querySelector('button')!;
+      accounts.pending.set(true);
+      harness.detectChanges();
+      expect(button.disabled).toBe(true);
+      accounts.pending.set(false);
+      harness.detectChanges();
+      button.click();
+      await Promise.resolve();
+      harness.detectChanges();
+      expect(importPlan).toHaveBeenCalledExactlyOnceWith(saved);
+      expect(page.saved()).not.toBeNull();
+      expect(localStorage.getItem('look-ahead.study-plan.v1')).toBe(original);
+      expect(
+        harness.routeNativeElement!.querySelector('[aria-label="Import a browser plan"]'),
+      ).toBeNull();
+    },
+  );
+
   it('shows Create for an empty signed-in account, then Progress only after loading its saved plan', async () => {
     const accounts = TestBed.inject(StudyPlanAccount);
     const harness = await RouterTestingHarness.create();

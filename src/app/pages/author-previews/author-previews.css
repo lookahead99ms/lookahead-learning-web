@@ -9,15 +9,73 @@
   margin: auto;
   padding: 40px 32px 72px;
 }
+:host(.architecture-page) {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+}
+.architecture-layout {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: none;
+  min-height: 0;
+  margin: 0;
+  padding: 12px 24px 16px;
+  box-sizing: border-box;
+}
+.architecture-layout .architecture-toolbar {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  max-width: none;
+  margin: 0;
+}
+.architecture-toolbar .eyebrow {
+  margin: 0;
+  font-size: 11px;
+}
+.architecture-toolbar h1 {
+  margin: 4px 0 0;
+  font-size: 24px;
+}
+.architecture-toolbar nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+}
+.architecture-toolbar a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 14px;
+  font-weight: 650;
+}
+.architecture-toolbar .open-document {
+  flex-wrap: wrap;
+  gap: 0 6px;
+}
+.open-document span {
+  font-weight: 400;
+}
 .architecture-workspace {
-  overflow: hidden;
+  flex: 1;
+  min-height: 0;
   border: 1px solid var(--line);
   background: var(--surface);
 }
 .architecture-frame {
   display: block;
   width: 100%;
-  min-height: max(760px, calc(100vh - 290px));
+  height: 100%;
   border: 0;
   background: var(--surface-page);
 }
@@ -181,8 +239,15 @@ button:focus-visible {
   .preview-links {
     gap: 24px;
   }
-  .architecture-frame {
-    min-height: calc(100vh - 260px);
+  .architecture-layout {
+    padding: 10px 8px 8px;
+    gap: 8px;
+  }
+  .architecture-toolbar nav {
+    gap: 0 16px;
+  }
+  .architecture-toolbar h1 {
+    font-size: 22px;
   }
 }
 

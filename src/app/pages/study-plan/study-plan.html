@@ -66,6 +66,28 @@
   }
   @if (
     accountStore.enabled &&
+    accountReady() &&
+    accountMode() &&
+    accountStore.account() &&
+    !accountStore.sessionExpired() &&
+    importAvailable()
+  ) {
+    <section class="account-panel panel" aria-label="Import a browser plan">
+      <details>
+        <summary>Bring your browser plan into this account</summary>
+        <p>
+          This creates a separate account plan with its saved progress and notes. The original
+          browser copy stays unchanged. Historical details that were never recorded remain
+          unknown.
+        </p>
+        <button type="button" [disabled]="editsLocked()" (click)="importBrowserPlan()">
+          Import browser plan
+        </button>
+      </details>
+    </section>
+  }
+  @if (
+    accountStore.enabled &&
     accountMode() &&
     progressVisible() &&
     (accountStore.plans().length || importAvailable() || accountStore.error())
@@ -83,19 +105,6 @@
             </button>
           }
         </div>
-        @if (importAvailable() && !progressVisible()) {
-          <details>
-            <summary>Bring your browser plan into this account</summary>
-            <p>
-              This creates a separate account plan with its saved progress and notes. The original
-              browser copy stays unchanged. Historical details that were never recorded remain
-              unknown.
-            </p>
-            <button type="button" [disabled]="editsLocked()" (click)="importBrowserPlan()">
-              Import browser plan
-            </button>
-          </details>
-        }
       } @else {
         <a routerLink="/account" [queryParams]="{ returnTo: '/study-plan' }"
           >Sign in to continue this plan</a
