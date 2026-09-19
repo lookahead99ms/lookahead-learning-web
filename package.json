@@ -64,7 +64,7 @@
     "@angular/forms": "^22.1.0",
     "@angular/platform-browser": "^22.1.0",
     "@angular/router": "^22.1.0",
-    "@codemirror/commands": "^6.11.0",
+    "@codemirror/commands": "^6.11.1",
     "@codemirror/lang-go": "^6.0.1",
     "@codemirror/lang-java": "^6.0.2",
     "@codemirror/lang-python": "^6.2.1",
