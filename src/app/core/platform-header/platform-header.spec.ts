@@ -224,6 +224,7 @@ describe('PlatformHeader account disclosure', () => {
     expect(fixture.nativeElement.querySelector('.account-trigger-name').textContent).toBe('Author');
     expect(fixture.nativeElement.querySelector('.author-account-links')).toBeNull();
     expect(fixture.nativeElement.querySelector('a[href="/delivery-plan"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('a[href="/author/api"]')).toBeNull();
     const actions = [
       ...fixture.nativeElement.querySelector('[aria-label="Account links"]').children,
     ].map((item: any) => item.textContent.trim());
@@ -266,9 +267,8 @@ describe('PlatformHeader account disclosure', () => {
       menu.textContent!.indexOf('Sign out'),
     );
     expect(menu.querySelector('.author-account-links a[href="/delivery-plan"]')).not.toBeNull();
-    expect(
-      menu.querySelector('a[href="/author/architecture"]'),
-    ).not.toBeNull();
+    expect(menu.querySelector('.author-account-links a[href="/author/api"]')).not.toBeNull();
+    expect(menu.querySelector('a[href="/author/architecture"]')).not.toBeNull();
     expect(menu.textContent).not.toContain('Mock interviews');
     expect(menu.textContent).not.toContain('Previews/unpublished work');
     expect(menu.querySelectorAll('a[href*="localhost"], a[href*="127.0.0.1"]')).toHaveLength(0);

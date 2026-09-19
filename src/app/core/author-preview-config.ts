@@ -14,3 +14,7 @@ export function previewManifestUrl(base: string): string | null {
 export function architecturePreviewUrl(base: string): string | null {
   return previewManifestUrl(base) ? `${base}preview-directory/architecture/index.html` : null;
 }
+
+export function apiReferencePreviewUrl(base: string): string | null {
+  return previewManifestUrl(base) ? `${base}preview-directory/api/index.html` : null;
+}

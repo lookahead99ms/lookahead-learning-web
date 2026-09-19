@@ -23,6 +23,11 @@ export class AuthorPage {
   );
   protected readonly surfaces = [
     {
+      title: 'API reference',
+      description: 'Inspect backend endpoints, authentication, request examples and OpenAPI files.',
+      route: '/author/api',
+    },
+    {
       title: 'Learn',
       description: 'Language foundations, DSA, object design and engineering tools.',
       route: '/learn',

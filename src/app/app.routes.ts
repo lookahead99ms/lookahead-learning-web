@@ -19,6 +19,11 @@ export const routes: Routes = [
       import('./pages/author-previews/author-previews').then((page) => page.AuthorPreviewsPage),
   },
   {
+    path: 'author/api',
+    canActivate: [authorGuard],
+    loadComponent: () => import('./pages/author-api/author-api').then((page) => page.AuthorApiPage),
+  },
+  {
     path: 'author',
     canActivate: [authorGuard],
     loadComponent: () => import('./pages/author/author').then((page) => page.AuthorPage),
