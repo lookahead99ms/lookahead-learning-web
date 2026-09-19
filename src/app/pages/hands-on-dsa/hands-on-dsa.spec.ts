@@ -262,11 +262,7 @@ describe('Hands-On DSA route contracts', () => {
     await harness.fixture.whenStable();
     harness.detectChanges();
     expect(TestBed.inject(Router).url).toBe(
-      '/learn/algorithmic-patterns/hashing-complete?pattern=algorithmic-patterns:hashing&returnTo=' +
-        encodeURIComponent('/learn/hands-on-dsa?pattern=algorithmic-patterns:hashing').replace(
-          '%3A',
-          ':',
-        ),
+      '/learn/algorithmic-patterns/hashing-complete?pattern=algorithmic-patterns:hashing&returnTo=%2Flearn%2Fhands-on-dsa%3Fpattern%3Dalgorithmic-patterns:hashing',
     );
     const breadcrumbs = [
       ...harness.routeNativeElement!.querySelectorAll<HTMLAnchorElement>('.breadcrumbs a'),

@@ -17,20 +17,64 @@ jobs:
   verify:
     name: Test and build Angular application
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
 
     steps:
       - name: Check out source
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+          fetch-depth: 0
 
       - name: Set up Node.js 24
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version: 24
-          cache: npm
+          package-manager-cache: false
+
+      - name: Use the declared npm version
+        run: npm install --global npm@11.17.0 --ignore-scripts --no-audit --no-fund
+
+      - name: Test security gates with synthetic pass and fail reports
+        run: npm run test:security-gates
+
+      - name: Install the verified secret scanner
+        run: npm run security:install-secret-scanner
+
+      - name: Verify secret detection and safe reporting
+        run: npm run test:secret-scanner
+
+      - name: Scan source and reachable history for secrets
+        env:
+          SECURITY_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          SECURITY_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.sha || '' }}
+        run: npm run security:secrets
+
+      - name: Verify dependency vulnerabilities and SBOM coverage
+        run: npm run security:dependencies
+
+      - name: Initialize JavaScript and TypeScript analysis
+        uses: github/codeql-action/init@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4
+        with:
+          languages: javascript-typescript
+          tools: linked
+          build-mode: none
+          queries: security-extended
+          config-file: .github/codeql.yml
+          dependency-caching: false
+
+      - name: Analyze JavaScript and TypeScript
+        uses: github/codeql-action/analyze@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4
+        with:
+          output: .codex-scratch/security/codeql
+          upload: never
+          upload-database: false
+
+      - name: Enforce CodeQL severity and analysis completion
+        run: npm run security:sarif -- .codex-scratch/security/codeql
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --include=prod --include=dev --include=optional --include=peer --no-audit --no-fund
 
       - name: Verify private-content boundary
         run: npm run validate:source-boundary

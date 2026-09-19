@@ -584,10 +584,8 @@ export class Search implements OnInit {
   }
 
   protected preview(result: SearchDocument): string {
-    return result.preview
-      .replace(/<[^>]*>/g, '')
-      .replace(/\s+/g, ' ')
-      .trim();
+    const parsed = new DOMParser().parseFromString(result.preview, 'text/html');
+    return (parsed.body.textContent ?? '').replace(/\s+/g, ' ').trim();
   }
 
   protected questionLink(result: SearchDocument): string[] {

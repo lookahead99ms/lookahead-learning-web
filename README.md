@@ -196,6 +196,27 @@ See `lookahead-learning-infra/docs/local-accounts.md` and
 `lookahead-learning-infra/docs/oauth-local.md` for service startup and shutdown.
 Do not start a second stack for a frontend-only styling change.
 
+### Manage account
+
+Open **Manage account** from the signed-in account menu to review your profile,
+edit your display name, or change your password. Password changes require your
+current password and sign you out of every supported session after confirmation.
+
+The read-only **Learning summary** lists the account's saved study plans using
+the already-loaded account API data. Each plan links to `/study-plan?plan=<id>`.
+Session progress is displayed only when the API supplies available, valid counts;
+missing metadata is not treated as zero progress. Duration, daily time and the
+last-updated date are shown when supplied. Loading and failed requests remain
+distinct from an account with no saved plans. The current plan-card contract has
+no lifecycle status, so this view does not infer an active plan from dates.
+
+**Continue learning**, **Study Plan**, and **Search** are native navigation links
+styled as actions. Continue learning preserves its validated return route,
+including query parameters and fragments; identical destinations are not repeated
+within the action group. Viewing this page does not create, select, or modify a plan.
+These account features require connected mode; the standalone public demo retains
+its browser-local behavior.
+
 ### Isolated local delivery editor
 
 Use `start:private` when the author Delivery Plan needs its local editor. Plain

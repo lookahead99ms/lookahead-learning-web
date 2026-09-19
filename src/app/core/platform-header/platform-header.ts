@@ -724,7 +724,7 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
     const route = this.router.url.split(/[?#]/)[0];
     if (['/sign-in', '/sign-up', '/account'].includes(route)) {
       const returnTo = this.router.parseUrl(this.router.url).queryParams['returnTo'];
-      return typeof returnTo === 'string' ? returnTo : '/study-plan';
+      return typeof returnTo === 'string' ? returnTo : '/';
     }
     return this.router.url;
   }

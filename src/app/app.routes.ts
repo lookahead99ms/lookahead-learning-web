@@ -46,7 +46,11 @@ export const routes: Routes = [
     path: 'account',
     loadComponent: () => import('./pages/account/account').then((page) => page.AccountPage),
   },
-  { path: '', loadComponent: () => import('./pages/landing/landing').then((page) => page.Landing) },
+  {
+    path: '',
+    pathMatch: 'full',
+    loadComponent: () => import('./pages/landing/landing').then((page) => page.Landing),
+  },
   { path: 'learn', loadComponent: () => import('./pages/learn/learn').then((page) => page.Learn) },
   { path: 'grow', loadComponent: () => import('./pages/grow/grow').then((page) => page.Grow) },
   {

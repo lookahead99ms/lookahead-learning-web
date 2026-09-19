@@ -1,5 +1,5 @@
-import { mkdir, open, readFile, rename, rm } from 'node:fs/promises';
-import { unlinkSync } from 'node:fs';
+import { mkdir, open, rename, rm } from 'node:fs/promises';
+import { constants, unlinkSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 
@@ -15,7 +15,7 @@ export async function withRuntimePublicationLock(lockPath, action, { timeoutMs =
     } catch (error) {
       if (error.code !== 'EEXIST') throw error;
       if (Date.now() - startedAt >= timeoutMs) {
-        const owner = await readFile(lockPath, 'utf8').catch(() => 'owner unavailable');
+        const owner = await readLockOwner(lockPath);
         throw new Error(
           `Runtime sync is still locked at ${lockPath} (${owner.trim()}). Check that owner before removing a stale lock.`,
         );
@@ -58,6 +58,18 @@ export async function withRuntimePublicationLock(lockPath, action, { timeoutMs =
     process.removeListener('SIGINT', interrupt);
     process.removeListener('SIGTERM', terminate);
     await rm(lockPath, { force: true });
+  }
+}
+
+async function readLockOwner(lockPath) {
+  let existing;
+  try {
+    existing = await open(lockPath, constants.O_RDONLY | constants.O_NOFOLLOW);
+    return await existing.readFile('utf8');
+  } catch {
+    return 'owner unavailable';
+  } finally {
+    await existing?.close().catch(() => {});
   }
 }
 

@@ -1,7 +1,7 @@
 import { createServer } from 'node:http';
 import { createHash, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 import { constants } from 'node:fs';
-import { lstat, open, readFile, realpath, rename, rm } from 'node:fs/promises';
+import { open, realpath, rename, rm } from 'node:fs/promises';
 import { basename, dirname, join, resolve, sep } from 'node:path';
 import { renderDeliveryReport, reportContentSecurityPolicy } from './delivery-report.mjs';
 
@@ -83,9 +83,15 @@ function validateItem(item, plan, id) {
 }
 
 async function readPlan(file) {
-  if (!(await lstat(file)).isFile())
-    fail(500, 'The delivery plan must be a regular file, not a symlink.');
-  const bytes = await readFile(file);
+  const handle = await open(file, constants.O_RDONLY | constants.O_NOFOLLOW);
+  let bytes;
+  try {
+    if (!(await handle.stat()).isFile())
+      fail(500, 'The delivery plan must be a regular file, not a symlink.');
+    bytes = await handle.readFile();
+  } finally {
+    await handle.close();
+  }
   let plan;
   try {
     plan = JSON.parse(bytes.toString('utf8'));
@@ -134,13 +140,13 @@ async function readEvidence(file, itemId, evidenceId) {
   const candidate = resolve(contentRoot, evidence.path);
   try {
     // Only attached Markdown under the private evidence directory is readable.
-    // Resolve parent symlinks as well as rejecting a symlink for the file itself.
-    if (
-      !(await lstat(candidate)).isFile() ||
-      !(await realpath(candidate)).startsWith(`${root}${sep}`)
-    )
+    // Resolve the allowlisted file first, then open that canonical target without
+    // following a replacement final-component symlink.
+    const openedRoot = await realpath(root);
+    const openedPath = await realpath(candidate);
+    if (!openedPath.startsWith(`${openedRoot}${sep}`))
       fail(404, 'Attached Markdown report not found.');
-    const handle = await open(candidate, constants.O_RDONLY | constants.O_NOFOLLOW);
+    const handle = await open(openedPath, constants.O_RDONLY | constants.O_NOFOLLOW);
     try {
       const stat = await handle.stat();
       if (!stat.isFile()) fail(404, 'Attached Markdown report not found.');

@@ -60,6 +60,18 @@ describe('PlatformHeader account disclosure', () => {
     );
   });
 
+  it.each(['/sign-in', '/sign-up', '/account'])(
+    'uses the homepage when %s has no explicit return destination',
+    (url) => {
+      vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue(url);
+      const fixture = TestBed.createComponent(PlatformHeader);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.sign-in-button').getAttribute('href')).toBe(
+        '/sign-in?returnTo=%2F',
+      );
+    },
+  );
+
   it('exposes the account panel as a labelled disclosure', () => {
     TestBed.inject(StudyPlanAccount).account.set({
       accountId: 'test',
@@ -228,12 +240,7 @@ describe('PlatformHeader account disclosure', () => {
     const actions = [
       ...fixture.nativeElement.querySelector('[aria-label="Account links"]').children,
     ].map((item: any) => item.textContent.trim());
-    expect(actions).toEqual([
-      'View study plan',
-      'Manage account',
-      'Subscription Not available yet',
-      'Support and feedback',
-    ]);
+    expect(actions).toEqual(['View study plan', 'Manage account', 'Support and feedback']);
     expect(
       fixture.nativeElement
         .querySelector('#account-menu')

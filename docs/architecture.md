@@ -86,6 +86,23 @@ Run `npm run test:delivery-api` for persistence, validation, concurrency, privat
 
 The versioned `pattern-lesson/v1` and `guided-trace/v1` contracts let the UI evolve without treating arbitrary JSON as an implicit component API.
 
+## Connected account summary
+
+`AccountStudyPlans` projects the existing `StudyPlanAccount.plans` list into a
+read-only Manage account section. It starts no requests and never selects or
+mutates a plan. `planSummariesState` distinguishes idle, loading, ready and error;
+ready means the catalog and every page of the existing plan-list request completed.
+
+The `plan-card/v1` metadata flag governs session counts and schedule fields. The
+UI accepts non-negative integer progress with completed no greater than total;
+unknown or invalid progress remains unavailable rather than becoming zero.
+Supplied timestamps are display metadata, never evidence of progress or lifecycle.
+The current contract has no lifecycle state. Native plan links pass the authoritative
+plan identifier to the existing Study Plan route, which checks account ownership.
+Continue learning preserves its validated URL, while Study Plan and Search share
+one accessible navigation group. Profile and security mutations retain their
+separate account-settings boundary.
+
 ## Delivery controls
 
 Use [Critical route smoke checks](route-smoke-checks.md) to establish a reproducible rendered-route baseline before changing navigation. Concrete private-content results belong in the private content repository, not the public source tree.
