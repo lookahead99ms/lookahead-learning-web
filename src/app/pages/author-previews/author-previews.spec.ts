@@ -125,7 +125,7 @@ describe('private preview inventory contract', () => {
     expect(demoEnvironment.authorPreviewsBaseUrl).toBe('');
   });
   it('uses the server-capability guard on both author routes', () => {
-    for (const path of ['author/previews', 'author/architecture', 'delivery-plan'])
+    for (const path of ['author/previews', 'author/architecture', 'author/api', 'delivery-plan'])
       expect(routes.find((route) => route.path === path)?.canActivate).toContain(authorGuard);
   });
 });

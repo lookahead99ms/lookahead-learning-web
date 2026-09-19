@@ -64,18 +64,36 @@
             [value]="email()"
             (input)="email.set($any($event.target).value)"
         /></label>
-        <label
-          >Password<input
-            name="password"
-            type="password"
-            [attr.autocomplete]="signup() ? 'new-password' : 'current-password'"
-            required
-            [attr.minlength]="signup() ? 12 : null"
-            maxlength="128"
-            [attr.aria-describedby]="signup() ? 'password-hint' : null"
-            [value]="password()"
-            (input)="password.set($any($event.target).value)"
-        /></label>
+        <div class="password-field">
+          <label for="account-password">Password</label>
+          <div class="password-input">
+            <input
+              id="account-password"
+              name="password"
+              [type]="!signup() && passwordVisible() ? 'text' : 'password'"
+              [attr.autocomplete]="signup() ? 'new-password' : 'current-password'"
+              autocapitalize="none"
+              spellcheck="false"
+              required
+              [attr.minlength]="signup() ? 12 : null"
+              maxlength="128"
+              [attr.aria-describedby]="signup() ? 'password-hint' : null"
+              [value]="password()"
+              (input)="password.set($any($event.target).value)"
+            />
+            @if (!signup()) {
+              <button
+                type="button"
+                class="password-visibility"
+                aria-controls="account-password"
+                [attr.aria-label]="passwordVisible() ? 'Hide password' : 'Show password'"
+                (click)="passwordVisible.set(!passwordVisible())"
+              >
+                {{ passwordVisible() ? 'Hide' : 'Show' }}
+              </button>
+            }
+          </div>
+        </div>
         @if (signup()) {
           <p id="password-hint" class="field-hint">
             Use 12 to 128 characters. Spaces and password managers are welcome.

@@ -90,3 +90,54 @@ it('accepts an existing local username when signing in', () => {
   expect(field.validity.valid).toBe(true);
   expect(field.labels?.[0].textContent).toContain('Email or username');
 });
+
+it('reveals and masks the entered password without submitting, then masks on sign-in', async () => {
+  TestBed.configureTestingModule({
+    imports: [AccountPage],
+    providers: [
+      provideRouter([]),
+      provideHttpClient(),
+      { provide: ContentService, useValue: { getSearchIndex: () => of([]) } },
+    ],
+  });
+  const store = TestBed.inject(StudyPlanAccount);
+  vi.spyOn(store, 'initialize').mockResolvedValue();
+  vi.spyOn(store, 'loadAuthOptions').mockResolvedValue();
+  const login = vi.spyOn(store, 'login').mockResolvedValue(false);
+  const fixture = TestBed.createComponent(AccountPage);
+  fixture.detectChanges();
+  const form: HTMLFormElement = fixture.nativeElement.querySelector('form');
+  const username = form.querySelector<HTMLInputElement>('input[name="email"]')!;
+  const password = form.querySelector<HTMLInputElement>('input[name="password"]')!;
+  const toggle = form.querySelector<HTMLButtonElement>('.password-visibility')!;
+  username.value = 'learner01';
+  username.dispatchEvent(new Event('input'));
+  password.value = 'Synthetic example @ 123';
+  password.dispatchEvent(new Event('input'));
+  fixture.detectChanges();
+
+  expect(password.type).toBe('password');
+  expect(password.autocomplete).toBe('current-password');
+  expect(toggle.getAttribute('aria-label')).toBe('Show password');
+  expect(toggle.getAttribute('aria-controls')).toBe(password.id);
+  toggle.click();
+  fixture.detectChanges();
+  expect(password.type).toBe('text');
+  expect(password.value).toBe('Synthetic example @ 123');
+  expect(toggle.getAttribute('aria-label')).toBe('Hide password');
+  expect(login).not.toHaveBeenCalled();
+
+  toggle.click();
+  fixture.detectChanges();
+  expect(password.type).toBe('password');
+  expect(password.value).toBe('Synthetic example @ 123');
+  toggle.click();
+  fixture.detectChanges();
+  form.requestSubmit();
+  await fixture.whenStable();
+  fixture.detectChanges();
+  expect(login).toHaveBeenCalledExactlyOnceWith('learner01', 'Synthetic example @ 123');
+  expect(password.type).toBe('password');
+  expect(password.value).toBe('');
+  expect(toggle.getAttribute('aria-label')).toBe('Show password');
+});

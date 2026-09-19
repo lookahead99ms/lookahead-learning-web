@@ -37,6 +37,7 @@ export class AccountPage {
   );
   protected readonly email = signal('');
   protected readonly password = signal('');
+  protected readonly passwordVisible = signal(false);
   protected readonly confirmPassword = signal('');
   protected readonly firstName = signal('');
   protected readonly lastName = signal('');
@@ -54,6 +55,7 @@ export class AccountPage {
     void this.store.loadAuthOptions();
   }
   protected async submit(): Promise<void> {
+    this.passwordVisible.set(false);
     this.formError.set('');
     const password = this.password();
     if (this.signup()) {

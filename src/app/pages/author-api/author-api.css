@@ -1,0 +1,122 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  color: var(--text-body);
+  background: var(--surface-page);
+}
+.api-page {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  padding: 12px 24px 16px;
+}
+.api-toolbar,
+.api-toolbar nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+}
+.api-toolbar {
+  justify-content: space-between;
+}
+.eyebrow {
+  margin: 0;
+  color: var(--accent-strong);
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+h1 {
+  margin: 4px 0 0;
+  font-size: 24px;
+}
+.api-toolbar a,
+.downloads a {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0 6px;
+  min-height: 44px;
+  font-size: 14px;
+  font-weight: 650;
+}
+.api-toolbar a span {
+  font-weight: 400;
+}
+.downloads {
+  flex: 0 0 auto;
+  border-block: 1px solid var(--line);
+}
+summary {
+  padding: 12px 0;
+  cursor: pointer;
+  font-weight: 650;
+}
+.download-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+  gap: 20px 24px;
+  max-height: 35dvh;
+  overflow: auto;
+  padding: 0 6px 12px;
+}
+.download-groups h2 {
+  margin: 6px 0 8px;
+  color: var(--text-body);
+  font-size: 14px;
+  font-weight: 750;
+}
+.download-links {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.download-links a {
+  line-height: 1.45;
+}
+.api-workspace {
+  flex: 1;
+  min-height: 180px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.state-panel {
+  padding: 24px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+.state-panel h2 {
+  margin-top: 0;
+}
+.state-panel p {
+  line-height: 1.6;
+}
+.state-panel button {
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text-body);
+  cursor: pointer;
+}
+@media (max-width: 600px) {
+  .api-page {
+    padding: 12px;
+  }
+  .api-toolbar nav {
+    gap: 4px 16px;
+  }
+}

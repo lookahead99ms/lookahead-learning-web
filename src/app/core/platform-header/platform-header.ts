@@ -18,7 +18,11 @@ import { PlatformThemeService } from '../platform-theme';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { ContentService } from '../../content/content.service';
 import { SearchDocument } from '../../content/content.models';
-import { AUTHOR_PREVIEWS_BASE_URL, architecturePreviewUrl } from '../author-preview-config';
+import {
+  AUTHOR_PREVIEWS_BASE_URL,
+  architecturePreviewUrl,
+  apiReferencePreviewUrl,
+} from '../author-preview-config';
 
 export function accountTriggerLabel(displayName: string | null | undefined): string {
   const name = displayName?.trim().replace(/\s+/g, ' ');
@@ -711,6 +715,7 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
 })
 export class PlatformHeader implements AfterViewInit, OnDestroy {
   protected readonly architectureHref = architecturePreviewUrl(inject(AUTHOR_PREVIEWS_BASE_URL));
+  protected readonly apiReferenceHref = apiReferencePreviewUrl(inject(AUTHOR_PREVIEWS_BASE_URL));
   protected readonly accounts = inject(StudyPlanAccount);
   protected readonly accountLabel = computed(() =>
     accountTriggerLabel(this.accounts.account()?.displayName),

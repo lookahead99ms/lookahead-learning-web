@@ -211,6 +211,18 @@
                     >Architecture <small>Not connected</small></span
                   >
                 }
+                @if (apiReferenceHref) {
+                  <a
+                    routerLink="/author/api"
+                    class="dropdown-item-link"
+                    (click)="closeForNavigation()"
+                    >API reference</a
+                  >
+                } @else {
+                  <span class="dropdown-item-unavailable"
+                    >API reference <small>Not connected</small></span
+                  >
+                }
               </nav>
             }
             <div class="account-session-actions">

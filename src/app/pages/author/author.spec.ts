@@ -30,7 +30,10 @@ describe('AuthorPage', () => {
     const fixture = TestBed.createComponent(AuthorPage);
     fixture.detectChanges();
     const links = [...fixture.nativeElement.querySelectorAll('main a')] as HTMLAnchorElement[];
-    expect(links).toHaveLength(14);
+    expect(links).toHaveLength(15);
+    expect(links.find((a) => a.textContent?.includes('API reference'))?.getAttribute('href')).toBe(
+      '/author/api',
+    );
     expect(
       links.find((a) => a.textContent?.includes('Revised plan and recall'))?.getAttribute('href'),
     ).toContain('plan=revised');
