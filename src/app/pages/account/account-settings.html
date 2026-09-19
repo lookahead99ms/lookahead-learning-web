@@ -1,0 +1,193 @@
+<section class="settings-section" aria-labelledby="profile-heading">
+  <div class="section-heading">
+    <h2 id="profile-heading">Profile</h2>
+    @if (profile() && !editingName()) {
+      <button #editNameButton type="button" (click)="editName()" [disabled]="savingPassword()">
+        Edit name
+      </button>
+    }
+  </div>
+  @if (loading()) {
+    <p role="status">Loading your account details…</p>
+  } @else if (loadError()) {
+    <p class="form-error" role="alert">{{ loadError() }}</p>
+    <button type="button" (click)="loadProfile()">Try again</button>
+  }
+  @if (profile(); as details) {
+    @if (editingName()) {
+      <form
+        (submit)="$event.preventDefault(); saveName()"
+        [attr.aria-busy]="savingName()"
+        novalidate
+      >
+        <label for="display-name">Display name</label>
+        <input
+          #nameInput
+          id="display-name"
+          name="displayName"
+          autocomplete="name"
+          required
+          [value]="nameDraft()"
+          (input)="nameDraft.set($any($event.target).value)"
+          [readOnly]="savingName()"
+          [attr.aria-invalid]="nameInvalid() ? true : null"
+          [attr.aria-describedby]="profileError() ? 'profile-error' : null"
+        />
+        @if (profileError()) {
+          <p #profileErrorElement id="profile-error" class="form-error" role="alert" tabindex="-1">
+            {{ profileError() }}
+          </p>
+        }
+        <div class="form-actions">
+          <button
+            type="submit"
+            class="primary-action"
+            [disabled]="savingName() || savingPassword() || store.busy() || store.pending()"
+          >
+            {{ savingName() ? 'Saving…' : 'Save name' }}
+          </button>
+          <button type="button" (click)="cancelName()" [disabled]="savingName()">Cancel</button>
+        </div>
+      </form>
+    } @else {
+      <dl class="profile-details">
+        <div>
+          <dt>Display name</dt>
+          <dd>{{ details.displayName }}</dd>
+        </div>
+      </dl>
+    }
+    <dl class="profile-details">
+      <div>
+        <dt>Sign-in email or username</dt>
+        <dd>{{ details.username }}</dd>
+      </div>
+      @if (details.signInMethod) {
+        <div>
+          <dt>Sign-in method</dt>
+          <dd>{{ details.signInMethod }}</dd>
+        </div>
+      }
+    </dl>
+  }
+  <p class="status" role="status" aria-live="polite" aria-atomic="true">{{ profileStatus() }}</p>
+</section>
+
+<section class="settings-section" aria-labelledby="security-heading">
+  <div class="section-heading">
+    <h2 id="security-heading">Security</h2>
+  </div>
+  @if (profile()) {
+    @if (!changingPassword()) {
+      <div class="security-row">
+        <div>
+          <h3>Password</h3>
+          <p>Use a unique password to protect your account.</p>
+        </div>
+        <button
+          #changePasswordButton
+          type="button"
+          (click)="openPassword()"
+          [disabled]="savingName()"
+        >
+          Change password
+        </button>
+      </div>
+    } @else {
+      <form
+        #passwordForm
+        (submit)="$event.preventDefault(); savePassword()"
+        [attr.aria-busy]="savingPassword()"
+        aria-labelledby="password-heading"
+        [attr.aria-describedby]="
+          passwordError() ? 'password-effect password-change-error' : 'password-effect'
+        "
+        novalidate
+      >
+        <h3 id="password-heading">Change password</h3>
+        <p id="password-effect" class="password-effect">
+          Changing your password signs you out on all devices. Sign in again with your new password.
+        </p>
+        <p id="new-password-policy" class="field-hint">
+          Use 15 to 128 characters. A longer passphrase is welcome. You can paste or use a password
+          manager.
+        </p>
+        @for (field of passwordFields; track field.key) {
+          <div class="password-field">
+            <label [for]="'settings-' + field.key">{{ field.label }}</label>
+            <div class="password-input">
+              <input
+                [id]="'settings-' + field.key"
+                [name]="field.key"
+                [type]="visible()[field.key] ? 'text' : 'password'"
+                [attr.autocomplete]="field.autocomplete"
+                autocapitalize="none"
+                spellcheck="false"
+                required
+                [attr.aria-describedby]="
+                  field.key === 'currentPassword' ? null : 'new-password-policy'
+                "
+                [value]="passwords[field.key]()"
+                (input)="passwords[field.key].set($any($event.target).value)"
+                [readOnly]="savingPassword()"
+              />
+              <button
+                type="button"
+                class="password-visibility"
+                [attr.aria-controls]="'settings-' + field.key"
+                [attr.aria-label]="
+                  (visible()[field.key] ? 'Hide ' : 'Show ') + field.label.toLowerCase()
+                "
+                (click)="togglePassword(field.key)"
+                [disabled]="savingPassword()"
+              >
+                {{ visible()[field.key] ? 'Hide' : 'Show' }}
+              </button>
+            </div>
+          </div>
+        }
+        @if (passwordError()) {
+          <p
+            #passwordErrorElement
+            id="password-change-error"
+            class="form-error"
+            role="alert"
+            tabindex="-1"
+          >
+            {{ passwordError() }}
+          </p>
+        }
+        <div class="form-actions">
+          <button
+            type="submit"
+            class="primary-action"
+            [disabled]="savingPassword() || savingName() || store.busy() || store.pending()"
+          >
+            {{ savingPassword() ? 'Changing password…' : 'Save new password' }}
+          </button>
+          <button type="button" (click)="cancelPassword()" [disabled]="savingPassword()">
+            Cancel
+          </button>
+        </div>
+      </form>
+    }
+  }
+  <div class="security-row sign-out-row">
+    <div>
+      <h3>This session</h3>
+      <p>Sign out of this browser.</p>
+    </div>
+    <div class="account-actions">
+      <button
+        type="button"
+        (click)="signOut()"
+        [disabled]="store.busy() || store.pending() || savingName() || savingPassword()"
+      >
+        Sign out
+      </button>
+    </div>
+  </div>
+  @if (signOutError()) {
+    <p class="form-error" role="alert">{{ signOutError() }}</p>
+  }
+</section>

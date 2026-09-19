@@ -1,0 +1,193 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+.settings-section {
+  padding-block: 24px;
+  border-block-start: 1px solid var(--line);
+}
+.settings-section:first-child {
+  margin-block-start: 24px;
+}
+.section-heading,
+.security-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+.section-heading {
+  align-items: center;
+  margin-block-end: 20px;
+}
+h2,
+h3,
+p {
+  margin: 0;
+}
+h2 {
+  font-size: 1.25rem;
+  line-height: 1.4;
+}
+h3 {
+  font-size: 1rem;
+  line-height: 1.5;
+}
+p {
+  color: var(--text-subtle);
+  line-height: 1.6;
+}
+.security-row p {
+  margin-block-start: 4px;
+}
+.security-row button {
+  flex-shrink: 0;
+}
+.sign-out-row {
+  margin-block-start: 24px;
+  padding-block-start: 24px;
+  border-block-start: 1px solid var(--line);
+}
+.profile-details {
+  margin: 0;
+  display: grid;
+  gap: 18px;
+}
+.profile-details + .profile-details,
+form + .profile-details {
+  margin-block-start: 18px;
+}
+dt {
+  margin-block-end: 4px;
+  color: var(--text-subtle);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+dd {
+  margin: 0;
+  font-weight: 600;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+form {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+}
+label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+input,
+button {
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font: inherit;
+  color: var(--text-strong);
+  background: var(--surface);
+}
+input {
+  width: 100%;
+  min-width: 0;
+}
+button {
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+button:hover:not(:disabled) {
+  background: var(--surface-muted);
+}
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+button:focus-visible,
+input:focus-visible,
+[tabindex='-1']:focus {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 3px;
+}
+.primary-action {
+  background: var(--accent-strong);
+  color: var(--accent-on-primary);
+}
+.primary-action:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent-strong) 90%, var(--text-strong));
+  color: var(--accent-on-primary);
+}
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-block-start: 4px;
+}
+.password-effect {
+  padding: 14px;
+  border-inline-start: 3px solid var(--accent-strong);
+  background: var(--surface-muted);
+  color: var(--text-strong);
+}
+.field-hint {
+  font-size: 0.85rem;
+}
+.password-field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.password-input {
+  display: flex;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+.password-input input {
+  flex: 1;
+  border: 0;
+}
+.password-visibility {
+  flex: none;
+  min-width: 64px;
+  border: 0;
+  border-inline-start: 1px solid var(--line);
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+  color: var(--accent-strong);
+}
+.form-error {
+  padding: 12px;
+  border-inline-start: 3px solid var(--danger);
+  background: var(--danger-surface);
+  color: var(--text-strong);
+  font-size: 0.9rem;
+}
+.status {
+  margin-block-start: 16px;
+  font-size: 0.9rem;
+  color: var(--text-strong);
+}
+.status:empty {
+  margin: 0;
+}
+@media (max-width: 480px) {
+  .section-heading {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .security-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .settings-section {
+    padding-block: 20px;
+  }
+  .form-actions > button {
+    flex: 1 1 auto;
+  }
+}

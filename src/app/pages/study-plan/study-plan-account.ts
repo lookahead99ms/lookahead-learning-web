@@ -3,6 +3,12 @@ import { Injectable, InjectionToken, inject, signal } from '@angular/core';
 import { StudyPlanRecoveryPreview } from '../../content/study-plan-recovery';
 import { environment } from '../../../environments/environment';
 import { StudyPlan } from '../../content/study-plan';
+import {
+  AccountSettingsClient,
+  AccountSettingsError,
+  ManagedAccountProfile,
+  PasswordChange,
+} from '../account/account-settings-client';
 
 export interface SavedPlan {
   schemaVersion: 'study-plan-local/v1';
@@ -128,18 +134,22 @@ export const ACCOUNT_FETCH = new InjectionToken<typeof fetch>('Account API trans
       fetch(...args),
 });
 class AccountApiError extends Error {
-  constructor(readonly status: number) {
+  constructor(
+    readonly status: number,
+    readonly code?: string,
+  ) {
     super(`Account request failed (${status})`);
   }
 }
 
 /** Account state stays in memory; anonymous browser storage is never repurposed. */
 @Injectable({ providedIn: 'root' })
-export class StudyPlanAccount {
+export class StudyPlanAccount implements AccountSettingsClient {
   readonly enabled = environment.accountPlansEnabled;
   private readonly transport = inject(ACCOUNT_FETCH);
   readonly account = signal<StudyAccount | null>(null);
   readonly plans = signal<PlanSummary[]>([]);
+  readonly planSummariesState = signal<'idle' | 'loading' | 'ready' | 'error'>('idle');
   readonly active = signal<AccountPlan | null>(null);
   readonly busy = signal(false);
   readonly error = signal('');
@@ -154,6 +164,134 @@ export class StudyPlanAccount {
   private csrf: { token: string; headerName: string } | null = null;
   private mutation: { path: string; body: unknown; key: string; owner: string } | null = null;
   private initialization: Promise<void> | null = null;
+
+  async loadProfile(): Promise<ManagedAccountProfile> {
+    const owner = this.settingsOwner();
+    try {
+      const profile = await this.request<ManagedAccountProfile & { accountId: string }>(
+        '/account/profile',
+        {},
+        true,
+      );
+      this.verifyProfileOwner(profile, owner);
+      this.account.update((account) =>
+        account ? { ...account, displayName: profile.displayName } : null,
+      );
+      return { displayName: profile.displayName, username: profile.username };
+    } catch (error) {
+      throw this.settingsFailure(error, owner);
+    }
+  }
+
+  async updateDisplayName(displayName: string): Promise<ManagedAccountProfile> {
+    const owner = this.settingsOwner();
+    if (this.busy() || this.pending()) throw new AccountSettingsError('unconfirmed');
+    this.busy.set(true);
+    try {
+      await this.refreshCsrf(true);
+      const profile = await this.request<ManagedAccountProfile & { accountId: string }>(
+        '/account/profile',
+        {
+          method: 'POST',
+          headers: { ...this.csrfHeaders(), 'Content-Type': 'application/json' },
+          body: JSON.stringify({ displayName }),
+        },
+        true,
+      );
+      this.verifyProfileOwner(profile, owner);
+      // Identity's response is authoritative; cached OIDC claims may have the old name.
+      this.account.update((account) =>
+        account ? { ...account, displayName: profile.displayName } : null,
+      );
+      const composed = await this.request<StudyAccount>('/auth/me');
+      this.verifyProfileOwner(composed, owner);
+      this.account.set({ ...composed, displayName: profile.displayName });
+      return { displayName: profile.displayName, username: profile.username };
+    } catch (error) {
+      throw this.settingsFailure(error, owner);
+    } finally {
+      this.busy.set(false);
+    }
+  }
+
+  async changePassword(change: PasswordChange): Promise<void> {
+    const owner = this.settingsOwner();
+    if (this.busy() || this.pending()) throw new AccountSettingsError('unconfirmed');
+    this.busy.set(true);
+    try {
+      await this.refreshCsrf(true);
+      const result = await this.request<{ reauthenticationRequired: boolean }>(
+        '/account/password',
+        {
+          method: 'POST',
+          headers: { ...this.csrfHeaders(), 'Content-Type': 'application/json' },
+          body: JSON.stringify(change),
+        },
+        true,
+      );
+      if (result?.reauthenticationRequired !== true) throw new AccountSettingsError('unconfirmed');
+      if (this.account() && this.account()?.accountId !== owner)
+        throw new AccountSettingsError('session-expired');
+      this.clearAccount();
+      this.mutation = null;
+      this.pending.set(false);
+      this.error.set('');
+      this.errorStatus.set(null);
+      this.logoutRedirectPending.set(false);
+      this.initialization = null;
+    } catch (error) {
+      throw this.settingsFailure(error, owner);
+    } finally {
+      this.busy.set(false);
+    }
+  }
+
+  private settingsOwner(): string {
+    const account = this.account();
+    if (!this.enabled || !account || this.sessionExpired())
+      throw new AccountSettingsError('session-expired');
+    return account.accountId;
+  }
+
+  private verifyProfileOwner(
+    profile: ManagedAccountProfile & { accountId: string },
+    owner: string,
+  ): void {
+    if (this.account()?.accountId !== owner) throw new AccountSettingsError('session-expired');
+    if (profile?.accountId !== owner) {
+      this.clearAccount();
+      this.error.set('Your session changed. Sign in again to manage your account.');
+      throw new AccountSettingsError('session-expired');
+    }
+    if (typeof profile.displayName !== 'string' || typeof profile.username !== 'string')
+      throw new AccountSettingsError('unconfirmed');
+  }
+
+  private settingsFailure(error: unknown, owner: string): AccountSettingsError {
+    if (error instanceof AccountSettingsError) return error;
+    if (!(error instanceof AccountApiError)) return new AccountSettingsError('unconfirmed');
+    if (error.code === 'INVALID_CURRENT_PASSWORD')
+      return new AccountSettingsError('change-rejected');
+    if (error.status === 401 || error.code === 'CSRF_INVALID') {
+      if (this.account()?.accountId === owner) {
+        this.clearAccount();
+        this.error.set('Your session expired. Sign in again to manage your account.');
+      }
+      return new AccountSettingsError('session-expired');
+    }
+    if (error.code === 'INVALID_PROFILE') return new AccountSettingsError('invalid-name');
+    if (error.code === 'INVALID_PASSWORD') return new AccountSettingsError('password-policy');
+    if (error.code === 'PASSWORD_TOO_COMMON') return new AccountSettingsError('password-common');
+    if (error.code === 'PASSWORD_UNCHANGED') return new AccountSettingsError('password-unchanged');
+    if (error.status === 429) return new AccountSettingsError('rate-limited');
+    if (
+      error.code === 'ACCOUNT_STORAGE_UNAVAILABLE' ||
+      error.code === 'SERVICE_UNAVAILABLE' ||
+      error.status === 503
+    )
+      return new AccountSettingsError('storage-unavailable');
+    return new AccountSettingsError('unconfirmed');
+  }
 
   async loadAuthOptions(): Promise<void> {
     if (!this.enabled) return;
@@ -181,6 +319,7 @@ export class StudyPlanAccount {
       );
       this.active.set(null);
       this.plans.set([]);
+      this.planSummariesState.set('idle');
       this.catalog.set(null);
       this.account.set(this.authOptions()?.oauth ? null : account);
       this.sessionExpired.set(false);
@@ -246,6 +385,7 @@ export class StudyPlanAccount {
       );
       this.active.set(null);
       this.plans.set([]);
+      this.planSummariesState.set('idle');
       this.catalog.set(null);
       this.account.set(this.authOptions()?.oauth ? null : account);
       this.sessionExpired.set(false);
@@ -300,13 +440,21 @@ export class StudyPlanAccount {
     this.account.set(null);
     this.active.set(null);
     this.plans.set([]);
+    this.planSummariesState.set('idle');
     this.catalog.set(null);
     this.csrf = null;
     this.sessionExpired.set(false);
   }
   private async loadAccount(): Promise<void> {
-    this.catalog.set(await this.request<CatalogPins>('/account-catalog'));
-    await this.refreshPlans();
+    this.planSummariesState.set('loading');
+    try {
+      this.catalog.set(await this.request<CatalogPins>('/account-catalog'));
+      await this.refreshPlans();
+      this.planSummariesState.set('ready');
+    } catch (error) {
+      this.planSummariesState.set('error');
+      throw error;
+    }
   }
   private async refreshPlans(): Promise<void> {
     // Follow server pagination: no account plan silently disappears after the first page.
@@ -474,7 +622,16 @@ export class StudyPlanAccount {
       cache: 'no-store',
       signal: AbortSignal.timeout(10000),
     });
-    if (!response.ok) throw new AccountApiError(response.status);
+    if (!response.ok) {
+      let code: string | undefined;
+      try {
+        const body = await response.json();
+        if (typeof body?.code === 'string') code = body.code;
+      } catch {
+        // Status-only responses remain valid errors; do not expose transport bodies.
+      }
+      throw new AccountApiError(response.status, code);
+    }
     return response.status === 204 ? (undefined as T) : (await response.json()).data;
   }
   private showError(error: unknown, login = false): void {

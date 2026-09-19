@@ -1,0 +1,75 @@
+<section class="learning-summary" aria-labelledby="learning-summary-heading">
+  <h2 id="learning-summary-heading">Learning summary</h2>
+  @switch (store.planSummariesState()) {
+    @case ('idle') {
+      <p role="status">Your saved study plans have not loaded yet.</p>
+    }
+    @case ('loading') {
+      <p role="status">Loading your saved study plans…</p>
+    }
+    @case ('error') {
+      <p role="status">We couldn’t load your saved study plans. Refresh the page to try again.</p>
+    }
+    @case ('ready') {
+      @if (plans().length === 0) {
+        <p>No saved study plans yet. Open Study Plan to choose your goals and make a plan.</p>
+      } @else {
+        <p>{{ plans().length }} saved study {{ plans().length === 1 ? 'plan' : 'plans' }}</p>
+      }
+    }
+  }
+  @if (plans().length) {
+    @if (store.planSummariesState() === 'error') {
+      <p>Showing the last loaded details.</p>
+    }
+    <ul class="plan-list">
+      @for (plan of plans(); track plan.planId) {
+        <li>
+          <div class="plan-heading">
+            <h3>{{ plan.name }}</h3>
+            <a
+              [routerLink]="['/study-plan']"
+              [queryParams]="{ plan: plan.planId }"
+              [attr.aria-label]="'Open plan: ' + plan.name"
+              >Open plan</a
+            >
+          </div>
+          @if (plan.progress; as progress) {
+            <p class="plan-progress">
+              {{ progress.completed }} of {{ progress.total }}
+              {{ progress.total === 1 ? 'session' : 'sessions' }} completed
+            </p>
+          } @else {
+            <p class="plan-progress unavailable">Session progress is not available yet.</p>
+          }
+          @if (plan.durationDays || plan.dailyMinutes || plan.updatedAt) {
+            <dl class="plan-details">
+              @if (plan.durationDays) {
+                <div>
+                  <dt>Duration</dt>
+                  <dd>{{ plan.durationDays }} {{ plan.durationDays === 1 ? 'day' : 'days' }}</dd>
+                </div>
+              }
+              @if (plan.dailyMinutes) {
+                <div>
+                  <dt>Daily time</dt>
+                  <dd>{{ plan.dailyMinutes }} min</dd>
+                </div>
+              }
+              @if (plan.updatedAt) {
+                <div>
+                  <dt>Last updated</dt>
+                  <dd>
+                    <time [attr.datetime]="plan.updatedAt">{{
+                      plan.updatedAt | date: 'mediumDate'
+                    }}</time>
+                  </dd>
+                </div>
+              }
+            </dl>
+          }
+        </li>
+      }
+    </ul>
+  }
+</section>

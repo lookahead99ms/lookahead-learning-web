@@ -275,6 +275,52 @@ describe('StudyPlanAccount transport and isolation', () => {
     expect(store.errorStatus()).toBe(401);
     expect(store.error()).toContain('session expired');
     expect(store.active()).toBeNull();
+    expect(store.planSummariesState()).toBe('error');
+  });
+
+  it('marks the plan summary ready only after all pages load', async () => {
+    me = true;
+    const originalFetch = fetcher.getMockImplementation() as (
+      path: string,
+      options: RequestInit,
+    ) => Promise<Response>;
+    let finishSecondPage!: (response: Response) => void;
+    const secondPage = new Promise<Response>((resolve) => {
+      finishSecondPage = resolve;
+    });
+    fetcher.mockImplementation(async (path: string, options: RequestInit) => {
+      if (path.includes('/plans?')) {
+        return path.includes('after=')
+          ? secondPage
+          : json({ plans: [{ planId: 'first' }], nextCursor: 'next cursor' });
+      }
+      return originalFetch(path, options);
+    });
+    const loading = store.initialize();
+    await vi.waitFor(() =>
+      expect(fetcher.mock.calls.some(([path]) => path.includes('after=next%20cursor'))).toBe(true),
+    );
+    expect(store.planSummariesState()).toBe('loading');
+    expect(store.plans()).toEqual([]);
+    finishSecondPage(json({ plans: [{ planId: 'second' }], nextCursor: null }));
+    await loading;
+    expect(store.planSummariesState()).toBe('ready');
+    expect(store.plans().map((plan) => plan.planId)).toEqual(['first', 'second']);
+  });
+
+  it('does not treat a failed plan-list request as an empty account', async () => {
+    me = true;
+    const originalFetch = fetcher.getMockImplementation() as (
+      path: string,
+      options: RequestInit,
+    ) => Promise<Response>;
+    fetcher.mockImplementation(async (path: string, options: RequestInit) =>
+      path.includes('/plans?') ? new Response(null, { status: 503 }) : originalFetch(path, options),
+    );
+    await store.initialize();
+    expect(store.account()).not.toBeNull();
+    expect(store.plans()).toEqual([]);
+    expect(store.planSummariesState()).toBe('error');
   });
 
   it('uses the latest server revision for activity and does not overwrite a conflict', async () => {
@@ -310,6 +356,7 @@ describe('StudyPlanAccount transport and isolation', () => {
     expect(store.active()).toBeNull();
     expect(store.catalog()).toBeNull();
     expect(store.plans()).toEqual([]);
+    expect(store.planSummariesState()).toBe('idle');
   });
 
   it('signs out through the unchanged CSRF-protected gateway contract', async () => {

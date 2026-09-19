@@ -1,0 +1,5 @@
+name: Frontend JavaScript and TypeScript security
+paths:
+  - src
+  - scripts
+  - vitest.config.ts

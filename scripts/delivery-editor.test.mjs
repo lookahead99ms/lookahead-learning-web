@@ -323,9 +323,17 @@ test('formats tables, lists, and code while keeping report-supplied HTML and uns
   assert.equal(document.querySelectorAll('[onerror], [onclick], [onload]').length, 0);
   assert.ok(document.querySelector('meta[name="viewport"]'));
   const hrefs = [...document.querySelectorAll('a')].map((link) => link.getAttribute('href'));
-  assert.ok(hrefs.includes('https://example.com/report'));
-  assert.ok(hrefs.includes('/delivery-plan'));
-  assert.ok(!hrefs.some((href) => /javascript|data:|untrusted/.test(href)));
+  assert.deepEqual(
+    hrefs.sort(),
+    [
+      '#report',
+      '/__local/delivery/evidence/DEMO-1/report?download=1',
+      '/__local/delivery/evidence/DEMO-1/report?raw=1',
+      '/delivery-plan',
+      '/delivery-plan?q=DEMO-1&stage=all',
+      'https://example.com/report',
+    ].sort(),
+  );
 });
 
 test('restricts evidence to local authorized requests and approved Markdown paths', async (t) => {

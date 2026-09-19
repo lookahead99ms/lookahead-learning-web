@@ -2,6 +2,12 @@
   "name": "lookahead-learning-web",
   "version": "0.0.0",
   "scripts": {
+    "test:security-gates": "node --test scripts/security/*.test.mjs",
+    "security:dependencies": "node scripts/security/scan-dependencies.mjs",
+    "security:sarif": "node scripts/security/check-sarif.mjs",
+    "security:install-secret-scanner": "node scripts/security/install-gitleaks.mjs",
+    "security:secrets": "node scripts/security/scan-secrets.mjs",
+    "test:secret-scanner": "node scripts/security/secret-fixtures.mjs",
     "ng": "ng",
     "content:sync": "node scripts/sync-runtime-content.mjs demo-content/runtime",
     "content:sync:dev": "node scripts/sync-runtime-content.mjs --development",
