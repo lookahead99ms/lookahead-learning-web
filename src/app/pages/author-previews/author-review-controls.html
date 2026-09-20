@@ -1,0 +1,161 @@
+@if (authorized()) {
+  <section
+    class="review-controls"
+    aria-labelledby="review-decision-heading"
+    [attr.aria-busy]="state() === 'saving'"
+  >
+    <h2 id="review-decision-heading">Your review decision</h2>
+    <p>
+      A recorded decision waits for Main to reconcile it with the delivery ticket. It does not mark
+      work Done or authorize Git changes or deployment.
+    </p>
+    @if (!connected) {
+      <p class="connection-note" role="status">
+        Decision recording is not connected yet. You can read the exact review packet and its
+        evidence below.
+      </p>
+    } @else {
+      @if (historyState() === 'loading') {
+        <p role="status">Loading your recorded reviews…</p>
+      }
+      @if (historyError()) {
+        <p role="alert">{{ historyError() }}</p>
+        <button type="button" (click)="loadHistory()">Reload review history</button>
+      }
+      @if (conflict() && historyState() === 'ready') {
+        <p>
+          Your previous request conflicted with the recorded history. Review the latest decision
+          above before preparing its replacement.
+        </p>
+        <button type="button" (click)="reviewConflict()">
+          Prepare replacement from latest review
+        </button>
+      }
+      @if (history().length) {
+        <details class="review-history">
+          <summary>Your review history ({{ history().length }})</summary>
+          <ol>
+            @for (event of history(); track event.recordId) {
+              <li>
+                <strong>{{ decisionLabel(event.decision) }}</strong> ·
+                {{ event.recordedAt | date: 'medium' }}
+                <p>{{ event.artifactVersion }} · {{ event.recordedBy }}</p>
+                @if (event.comment) {
+                  <p class="saved-comment">{{ event.comment }}</p>
+                }
+              </li>
+            }
+          </ol>
+          @if (nextCursor()) {
+            <button type="button" [disabled]="loadingMore()" (click)="loadHistory(true)">
+              {{ loadingMore() ? 'Loading…' : 'Load earlier reviews' }}
+            </button>
+          }
+        </details>
+      }
+      @if (history().length && state() !== 'recorded') {
+        <p>
+          This decision will replace your most recent recorded review:
+          <strong>{{ decisionLabel(history()[0].decision) }}</strong
+          >.
+        </p>
+      }
+      <form (submit)="submit($event)">
+        <fieldset
+          #choices
+          [disabled]="
+            historyState() !== 'ready' ||
+            locked() ||
+            state() === 'saving' ||
+            state() === 'recorded' ||
+            state() === 'stale'
+          "
+        >
+          <legend>Decision for {{ artifact().version }}</legend>
+          <div class="choices">
+            <label
+              ><input
+                type="radio"
+                name="review-decision"
+                value="approve"
+                [checked]="decision() === 'approve'"
+                (change)="choose('approve')"
+              />Approve</label
+            >
+            <label
+              ><input
+                type="radio"
+                name="review-decision"
+                value="decline"
+                [checked]="decision() === 'decline'"
+                (change)="choose('decline')"
+              />Decline</label
+            >
+            <label
+              ><input
+                type="radio"
+                name="review-decision"
+                value="need-more"
+                [checked]="decision() === 'need-more'"
+                (change)="choose('need-more')"
+              />Need more</label
+            >
+          </div>
+          <label class="comment-label" for="review-comment"
+            >Comment
+            <span>{{
+              decision() === 'approve' ? '(optional)' : '(required for Decline or Need more)'
+            }}</span></label
+          >
+          <textarea
+            id="review-comment"
+            rows="4"
+            [value]="comment()"
+            (input)="comment.set($any($event.target).value)"
+            aria-describedby="review-comment-help"
+          ></textarea>
+          <p id="review-comment-help">
+            Describe missing evidence, a concern, or a scenario that needs another pass. Up to 2,000
+            characters.
+            {{ commentLength() }} of 2,000 used.
+          </p>
+        </fieldset>
+        @if (state() !== 'recorded' && state() !== 'stale') {
+          <button
+            type="submit"
+            [disabled]="state() === 'saving' || historyState() !== 'ready' || conflict()"
+          >
+            {{
+              state() === 'saving'
+                ? 'Saving…'
+                : locked()
+                  ? 'Retry same submission'
+                  : history().length
+                    ? 'Record replacement decision'
+                    : 'Record decision'
+            }}
+          </button>
+        }
+      </form>
+      <div
+        #result
+        tabindex="-1"
+        [attr.role]="state() === 'failed' || state() === 'stale' ? 'alert' : 'status'"
+      >
+        @if (state() === 'recorded' && receipt(); as record) {
+          <p><strong>Recorded</strong> · Pending Main reconciliation.</p>
+          <p>{{ decisionLabel(record.decision) }} · {{ record.artifactVersion }}</p>
+          <p>{{ record.recordedBy }} · {{ record.recordedAt | date: 'medium' }}</p>
+        } @else if (failure()) {
+          <p>
+            <strong>{{ state() === 'stale' ? 'Review changed' : 'Failed to confirm' }}</strong> ·
+            {{ failure() }}
+          </p>
+        }
+      </div>
+      @if (state() === 'recorded') {
+        <button type="button" (click)="revise()">Review a different decision</button>
+      }
+    }
+  </section>
+}

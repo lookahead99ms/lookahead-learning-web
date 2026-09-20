@@ -1,0 +1,192 @@
+<section
+  class="sign-ins-section"
+  aria-labelledby="active-sign-ins-heading"
+  [attr.aria-busy]="loading() || pending()"
+>
+  <div class="section-heading">
+    <h2 #heading id="active-sign-ins-heading" tabindex="-1">Active sign-ins</h2>
+    <button type="button" (click)="load()" [disabled]="loading() || pending()">Refresh list</button>
+  </div>
+  <p class="explanation">
+    Tabs in the same browser session share a sign-in. A separate browser profile or private session
+    usually uses another. Browser and device descriptions are approximate.
+  </p>
+  @if (loading()) {
+    <p role="status">Loading active sign-ins…</p>
+  }
+  @if (error()) {
+    <p #errorElement class="error" role="alert" tabindex="-1">{{ error() }}</p>
+  }
+  @if (inventory(); as inventory) {
+    <p class="inventory-count">
+      {{ inventory.signIns.length }} of {{ inventory.limit }} active sign-ins
+    </p>
+    <ul class="sign-in-list">
+      @for (signIn of inventory.signIns; track signIn.id) {
+        <li>
+          <div class="sign-in-heading">
+            <div>
+              <h3>{{ name(signIn) }}</h3>
+              @if (signIn.current) {
+                <p class="current-marker">This sign-in</p>
+              }
+              @if (signIn.label) {
+                <p>{{ signIn.clientDescription }}</p>
+              }
+            </div>
+            <div class="row-actions">
+              @if (inventory.labelsEditable && signIn.current) {
+                <button
+                  #editButton
+                  type="button"
+                  [disabled]="pending()"
+                  (click)="edit(signIn, editButton)"
+                  [attr.aria-label]="'Edit label for ' + name(signIn)"
+                >
+                  Edit label
+                </button>
+              }
+              <button
+                #signOutButton
+                type="button"
+                [disabled]="pending()"
+                (click)="confirm(signIn, signOutButton)"
+                [attr.aria-label]="'Sign out ' + (signIn.current ? 'this sign-in' : name(signIn))"
+              >
+                Sign out
+              </button>
+            </div>
+          </div>
+          <dl>
+            <div>
+              <dt>Created</dt>
+              <dd>
+                <time [attr.datetime]="signIn.createdAt">{{
+                  signIn.createdAt | date: 'medium'
+                }}</time>
+              </dd>
+            </div>
+            <div>
+              <dt>Last active</dt>
+              <dd>
+                <time [attr.datetime]="signIn.lastActiveAt">{{
+                  signIn.lastActiveAt | date: 'medium'
+                }}</time>
+              </dd>
+            </div>
+          </dl>
+          @if (editing()?.id === signIn.id) {
+            <form (submit)="$event.preventDefault(); saveLabel()">
+              <label for="sign-in-label">Sign-in label (optional)</label>
+              <input
+                #labelInput
+                id="sign-in-label"
+                name="signInLabel"
+                autocomplete="off"
+                [value]="labelDraft()"
+                (input)="labelDraft.set($any($event.target).value)"
+                [disabled]="pending()"
+                aria-describedby="sign-in-label-help"
+              />
+              <p id="sign-in-label-help">
+                Use a name you recognize, up to 80 characters. Leave blank to remove your label.
+              </p>
+              <div class="form-actions">
+                <button class="primary-action" type="submit" [disabled]="pending()">
+                  {{ pending() ? 'Saving…' : 'Save label' }}
+                </button>
+                <button type="button" (click)="cancel()" [disabled]="pending()">Cancel</button>
+              </div>
+            </form>
+          }
+        </li>
+      }
+    </ul>
+    @if (hasOtherSignIns()) {
+      <button
+        #othersButton
+        type="button"
+        (click)="confirm('others', othersButton)"
+        [disabled]="pending()"
+      >
+        Sign out other sign-ins
+      </button>
+    }
+  }
+  @if (confirmation(); as target) {
+    <div class="confirmation" role="group" aria-labelledby="sign-out-confirm-heading">
+      <h3 id="sign-out-confirm-heading">
+        {{
+          target === 'others'
+            ? 'Sign out other sign-ins?'
+            : target.current
+              ? 'Sign out here?'
+              : 'Sign out ' + name(target) + '?'
+        }}
+      </h3>
+      <p>
+        {{
+          target === 'others'
+            ? 'All other sign-ins will end. This sign-in stays active.'
+            : target.current
+              ? 'This browser session will end. Your other sign-in stays active.'
+              : 'The selected browser session will end. This sign-in stays active.'
+        }}
+        Saved plans and progress are preserved.
+      </p>
+      <div class="form-actions">
+        <button
+          #confirmButton
+          type="button"
+          class="primary-action"
+          (click)="signOut()"
+          [disabled]="pending()"
+        >
+          {{
+            pending()
+              ? 'Signing out…'
+              : target === 'others'
+                ? 'Confirm sign out of others'
+                : 'Confirm sign out'
+          }}
+        </button>
+        <button type="button" (click)="cancel()" [disabled]="pending()">Cancel</button>
+      </div>
+    </div>
+  }
+  <p class="status" role="status" aria-live="polite">{{ status() }}</p>
+  @if (reauthenticationRequired()) {
+    <form (submit)="$event.preventDefault(); reauthenticate()" aria-label="Confirm your identity">
+      <label for="sign-in-current-password">Current password</label>
+      <div class="password-input">
+        <input
+          #passwordInput
+          id="sign-in-current-password"
+          name="currentSignInPassword"
+          autocomplete="current-password"
+          [type]="passwordVisible() ? 'text' : 'password'"
+          [value]="currentPassword()"
+          (input)="currentPassword.set($any($event.target).value)"
+          required
+          [disabled]="pending()"
+        />
+        <button
+          type="button"
+          (click)="passwordVisible.set(!passwordVisible())"
+          aria-controls="sign-in-current-password"
+          [attr.aria-label]="passwordVisible() ? 'Hide current password' : 'Show current password'"
+          [disabled]="pending()"
+        >
+          {{ passwordVisible() ? 'Hide' : 'Show' }}
+        </button>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="primary-action" [disabled]="pending() || !currentPassword()">
+          {{ pending() ? 'Confirming…' : 'Confirm identity' }}
+        </button>
+        <button type="button" (click)="cancel()" [disabled]="pending()">Cancel</button>
+      </div>
+      <p>Confirmation keeps this sign-in. You will review and submit your change again.</p>
+    </form>
+  }
+</section>

@@ -1,0 +1,108 @@
+<header class="restricted-header">
+  <span class="wordmark" aria-label="Look Ahead">look ahead.</span>
+  <div role="group" aria-label="Color theme">
+    <button
+      type="button"
+      [attr.aria-pressed]="theme.selected() === 'light'"
+      (click)="theme.setTheme('light')"
+    >
+      Light
+    </button>
+    <button
+      type="button"
+      [attr.aria-pressed]="theme.selected() === 'dark'"
+      (click)="theme.setTheme('dark')"
+    >
+      Dark
+    </button>
+  </div>
+</header>
+<main id="main-content" class="challenge-page">
+  <section aria-labelledby="challenge-heading" [attr.aria-busy]="busy()">
+    <p class="eyebrow">Finish signing in</p>
+    <h1 #heading id="challenge-heading" tabindex="-1">Choose a sign-in to end</h1>
+    <p>
+      You can keep up to two active sign-ins. Choose one to end before continuing here. Your saved
+      plans and progress stay with your account.
+    </p>
+    <p class="detail">
+      Browser and device descriptions are approximate. Tabs in the same browser session share one
+      sign-in.
+    </p>
+    @if (state() === 'loading') {
+      <p role="status">Loading your active sign-ins…</p>
+    }
+    @if (error()) {
+      <p #errorElement class="error" role="alert" tabindex="-1">{{ error() }}</p>
+    }
+    @if (challenge(); as challenge) {
+      <form (submit)="$event.preventDefault(); replace()">
+        <fieldset [disabled]="busy()">
+          <legend>{{ challenge.signIns.length }} of {{ challenge.limit }} active sign-ins</legend>
+          @for (signIn of challenge.signIns; track signIn.id; let index = $index) {
+            <label class="sign-in-choice" [for]="'replace-sign-in-' + index">
+              <input
+                type="radio"
+                [id]="'replace-sign-in-' + index"
+                name="signInToEnd"
+                [checked]="selected() === signIn.id"
+                (change)="selected.set(signIn.id)"
+              />
+              <span>
+                <strong>{{ signIn.label || signIn.clientDescription }}</strong>
+                @if (signIn.label) {
+                  <span>{{ signIn.clientDescription }}</span>
+                }
+                <span
+                  >Created
+                  <time [attr.datetime]="signIn.createdAt">{{
+                    signIn.createdAt | date: 'medium'
+                  }}</time></span
+                >
+                <span
+                  >Last active
+                  <time [attr.datetime]="signIn.lastActiveAt">{{
+                    signIn.lastActiveAt | date: 'medium'
+                  }}</time></span
+                >
+              </span>
+            </label>
+          }
+        </fieldset>
+        <p class="detail">
+          This request expires
+          <time [attr.datetime]="challenge.expiresAt">{{
+            challenge.expiresAt | date: 'shortTime'
+          }}</time
+          >.
+        </p>
+        <div class="form-actions">
+          <button class="primary-action" type="submit" [disabled]="busy() || !selected()">
+            {{
+              state() === 'replacing' ? 'Finishing sign-in…' : 'End selected sign-in and continue'
+            }}
+          </button>
+          <button type="button" (click)="cancel()" [disabled]="busy()">
+            {{ state() === 'canceling' ? 'Canceling…' : 'Cancel sign-in' }}
+          </button>
+        </div>
+        <p class="detail">Cancel keeps both existing sign-ins.</p>
+      </form>
+    }
+    @if (state() === 'error') {
+      <button type="button" (click)="load()">Refresh list</button>
+    }
+    @if (state() === 'expired') {
+      <a routerLink="/sign-in" [queryParams]="{ returnTo }">Start sign-in again</a>
+    }
+    <p class="status" role="status" aria-live="polite">
+      {{
+        state() === 'replacing'
+          ? 'Ending the selected sign-in and admitting this one…'
+          : state() === 'canceling'
+            ? 'Canceling this sign-in request…'
+            : ''
+      }}
+    </p>
+  </section>
+</main>

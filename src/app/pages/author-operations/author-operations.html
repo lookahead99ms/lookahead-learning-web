@@ -1,0 +1,95 @@
+<app-platform-header />
+<main id="main-content" class="operations-page">
+  <header>
+    <div>
+      <p class="eyebrow">Local author workspace</p>
+      <h1>Operations</h1>
+      <p class="context">
+        Read-only reference · Documented topology and procedures, not live service health.
+      </p>
+    </div>
+    <nav aria-label="Author workspace">
+      <a routerLink="/author/previews">Author previews</a>
+      <a routerLink="/author/architecture">Architecture</a>
+      <a routerLink="/author/api">API reference</a>
+    </nav>
+  </header>
+  @if (!authorized() || state() === 'forbidden') {
+    <section class="state-panel" role="alert">
+      <h2>Author access required</h2>
+      <p>This reference requires the server-provided author capability.</p>
+    </section>
+  } @else if (state() === 'unauthorized') {
+    <section class="state-panel" role="alert">
+      <h2>Sign in again</h2>
+      <p>Your sign-in could not be confirmed.</p>
+      <a routerLink="/sign-in" [queryParams]="{ returnTo: '/author/operations' }"
+        >Sign in to view Operations</a
+      >
+    </section>
+  } @else if (state() === 'loading') {
+    <p class="state-panel" role="status">Loading Operations reference…</p>
+  } @else if (state() === 'unpublished') {
+    <section class="state-panel">
+      <h2>Reference is not published yet</h2>
+      <p>The private source has no published Operations document.</p>
+      <button type="button" (click)="load()">Reload reference</button>
+    </section>
+  } @else if (state() !== 'ready') {
+    <section class="state-panel" role="alert">
+      <h2>Operations reference is unavailable</h2>
+      <p>The private publication could not be verified or loaded.</p>
+      <button type="button" (click)="load()">Try again</button>
+    </section>
+  } @else if (documentHref(); as href) {
+    <div class="document-meta">
+      <p>Reference version: {{ document()!.version }}</p>
+      <a [href]="href" target="_blank" rel="noopener noreferrer"
+        >Open full reference <span>(new tab)</span></a
+      >
+    </div>
+    <nav class="section-navigation" aria-label="Operations sections">
+      @for (section of document()!.sections; track section.anchor) {
+        <a [href]="href + '#' + section.anchor" target="operations-reference">{{
+          section.title
+        }}</a>
+      }
+    </nav>
+    @if (document()!.references.length) {
+      <details class="reference-links">
+        <summary>Repository and runbook links</summary>
+        <ul>
+          @for (link of document()!.references; track link.href) {
+            <li>
+              <a [href]="link.href" target="_blank" rel="noopener noreferrer"
+                >{{ link.label }} <span>(new tab)</span></a
+              >
+            </li>
+          }
+        </ul>
+      </details>
+    }
+    @if (document()!.evidence.length) {
+      <details class="reference-links">
+        <summary>Supporting references</summary>
+        <ul>
+          @for (link of document()!.evidence; track link.href) {
+            <li>
+              <a [href]="link.href" target="_blank" rel="noopener noreferrer"
+                >{{ link.label }} <span>(new tab)</span></a
+              >
+            </li>
+          }
+        </ul>
+      </details>
+    }
+    <section class="document-panel" aria-label="Private Operations reference">
+      <iframe
+        name="operations-reference"
+        [src]="documentUrl()"
+        title="Repositories, topology, deployment sequence and operator runbooks"
+        sandbox="allow-scripts"
+      ></iframe>
+    </section>
+  }
+</main>

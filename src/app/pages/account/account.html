@@ -8,12 +8,19 @@
     @if (authenticated()) {
       @for (account of [store.account()!]; track account.accountId) {
         <app-account-settings [returnTo]="returnTo()" />
+        <app-active-sign-ins />
         <app-account-study-plans />
       }
     } @else if (store.enabled) {
+      @if (signInCanceled) {
+        <p class="success-status" role="status">
+          Sign-in canceled. Your existing sign-ins are unchanged.
+        </p>
+      }
       @if (passwordChanged) {
         <p class="success-status" role="status">
-          Password changed. You have been signed out on all devices. Sign in with your new password.
+          Password changed. All sign-ins have ended, including this one. Sign in with your new
+          password.
         </p>
       }
       <p>
@@ -179,11 +186,7 @@
       <a routerLink="/study-plan">Open Study Plan</a>
     }
     <nav class="account-footer" aria-label="Learning actions">
-      <a
-        class="return-action"
-        [class.primary-action]="authenticated()"
-        [routerLink]="returnUrl()"
-      >
+      <a class="return-action" [class.primary-action]="authenticated()" [routerLink]="returnUrl()">
         {{ authenticated() ? 'Continue learning' : 'Return to learning' }}
       </a>
       @if (authenticated()) {

@@ -7,30 +7,20 @@ import { registrationCountries, registrationCountryCode } from './countries';
 import { AccountSettings } from './account-settings';
 import { ACCOUNT_SETTINGS_CLIENT } from './account-settings-client';
 import { AccountStudyPlans } from './account-study-plans';
+import { ActiveSignIns } from './active-sign-ins';
+import { ACTIVE_SIGN_INS_CLIENT } from './active-sign-ins-client';
+import { SignInManagementApi } from './sign-in-management-api';
 
-export function safeAccountReturn(value: string | null): string {
-  if (!value?.startsWith('/') || /[\\\u0000-\u0020\u007f-\u009f]/.test(value)) return '/';
-  try {
-    const path = decodeURIComponent(value.split(/[?#]/, 1)[0]);
-    // Check the original path before navigation can normalize traversal segments.
-    if (
-      /[\\\u0000-\u001f\u007f-\u009f]/.test(decodeURIComponent(value)) ||
-      /(?:^|\/)\.{1,2}(?:\/|$)/.test(path)
-    )
-      return '/';
-    return path === '/' ||
-      path === '/account' ||
-      /^\/(?:study-plan|learn|grow|look-ahead|search|support|author)(?:\/.*)?$/.test(path)
-      ? value
-      : '/';
-  } catch {
-    return '/';
-  }
-}
+import { safeAccountReturn } from './account-navigation';
+export { safeAccountReturn } from './account-navigation';
+
 @Component({
   selector: 'app-account',
-  imports: [PlatformHeader, RouterLink, AccountSettings, AccountStudyPlans],
-  providers: [{ provide: ACCOUNT_SETTINGS_CLIENT, useExisting: StudyPlanAccount }],
+  imports: [PlatformHeader, RouterLink, AccountSettings, AccountStudyPlans, ActiveSignIns],
+  providers: [
+    { provide: ACCOUNT_SETTINGS_CLIENT, useExisting: StudyPlanAccount },
+    { provide: ACTIVE_SIGN_INS_CLIENT, useExisting: SignInManagementApi },
+  ],
   templateUrl: './account.html',
   styleUrl: './account.css',
 })
@@ -70,6 +60,8 @@ export class AccountPage {
   protected readonly countries = registrationCountries;
   protected readonly passwordChanged =
     this.router.currentNavigation()?.extras.state?.['passwordChanged'] === true;
+  protected readonly signInCanceled =
+    this.router.currentNavigation()?.extras.state?.['signInCanceled'] === true;
   constructor() {
     void this.store.loadAuthOptions();
   }
@@ -106,6 +98,10 @@ export class AccountPage {
       if (await this.store.register(details)) await this.finishSignIn();
     } else {
       if (await this.store.login(this.email().trim(), password)) await this.finishSignIn();
+      else if (this.store.signInLimit())
+        await this.router.navigate(['/sign-in/choose'], {
+          queryParams: { returnTo: this.returnTo(), oauth: this.oauthContinuation() },
+        });
     }
   }
   private async finishSignIn(): Promise<void> {

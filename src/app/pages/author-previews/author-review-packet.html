@@ -1,0 +1,63 @@
+@if (authorized()) {
+  <section class="review-packet" aria-label="Study Plan review">
+    @if (state() === 'loading') {
+      <p role="status">Loading Study Plan review…</p>
+    } @else if (document(); as packet) {
+      <header>
+        <p class="eyebrow">Versioned review · {{ packet.owningTicket }}</p>
+        <h2>{{ packet.title }}</h2>
+        <p class="version">{{ packet.version }}</p>
+        <p>{{ packet.scope }}</p>
+      </header>
+      @if (packet.remainingDecisions.length) {
+        <h3>Remaining decisions</h3>
+        <ul>
+          @for (decision of packet.remainingDecisions; track decision) {
+            <li>{{ decision }}</li>
+          }
+        </ul>
+      }
+      @if (packet.evidence.length) {
+        <h3>Review evidence</h3>
+        <ul>
+          @for (link of packet.evidence; track link.href) {
+            <li>
+              <a [href]="link.href" target="_blank" rel="noopener noreferrer"
+                >{{ link.label }} (new tab)</a
+              >
+            </li>
+          }
+        </ul>
+      }
+      @if (!expanded()) {
+        <a class="review-link" routerLink="/author/previews/study-plan">Open Study Plan review</a>
+      } @else {
+        <div class="document-actions">
+          <a [href]="href()" target="_blank" rel="noopener noreferrer"
+            >Open full review packet (new tab)</a
+          >
+        </div>
+        <app-author-review-controls [artifact]="packet" />
+        <p class="reading-note">
+          Read the review scope, evidence and remaining decisions in the packet. Opening it does not
+          change a learner’s plan.
+        </p>
+        <iframe
+          [src]="frameUrl()"
+          title="Versioned Study Plan review packet"
+          sandbox="allow-scripts"
+        ></iframe>
+      }
+    } @else {
+      <h2>Study Plan review</h2>
+      <p [attr.role]="state() === 'unpublished' ? 'status' : 'alert'">
+        {{
+          state() === 'unpublished'
+            ? 'The review packet is not published yet.'
+            : 'The protected review packet is unavailable. Sign-in and author access must be confirmed.'
+        }}
+      </p>
+      <button type="button" (click)="load()">Reload review</button>
+    }
+  </section>
+}

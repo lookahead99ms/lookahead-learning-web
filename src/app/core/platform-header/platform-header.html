@@ -185,6 +185,12 @@
               <div class="menu-divider"></div>
               <nav class="dropdown-links-list author-account-links" aria-label="Author tools">
                 <a
+                  routerLink="/author/operations"
+                  class="dropdown-item-link"
+                  (click)="closeForNavigation()"
+                  >Operations</a
+                >
+                <a
                   routerLink="/author/previews"
                   class="dropdown-item-link"
                   (click)="closeForNavigation()"

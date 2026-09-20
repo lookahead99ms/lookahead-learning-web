@@ -155,6 +155,7 @@ export class StudyPlanAccount implements AccountSettingsClient {
   readonly error = signal('');
   readonly errorStatus = signal<number | null>(null);
   readonly sessionExpired = signal(false);
+  readonly signInLimit = signal(false);
   readonly logoutRedirectPending = signal(false);
   readonly pending = signal(false);
   readonly catalog = signal<CatalogPins | null>(null);
@@ -372,6 +373,7 @@ export class StudyPlanAccount implements AccountSettingsClient {
     if (!this.enabled || this.busy() || this.pending()) return false;
     this.busy.set(true);
     this.error.set('');
+    this.signInLimit.set(false);
     try {
       await this.refreshCsrf(true);
       const account = await this.request<StudyAccount>(
@@ -398,6 +400,11 @@ export class StudyPlanAccount implements AccountSettingsClient {
       }
       return true;
     } catch (error) {
+      if (error instanceof AccountApiError && error.code === 'SIGN_IN_LIMIT') {
+        this.clearAccount();
+        this.signInLimit.set(true);
+        return false;
+      }
       this.showError(error, true);
       return false;
     } finally {
@@ -444,6 +451,17 @@ export class StudyPlanAccount implements AccountSettingsClient {
     this.catalog.set(null);
     this.csrf = null;
     this.sessionExpired.set(false);
+    this.signInLimit.set(false);
+  }
+  clearAfterSignOut(owner: string): void {
+    if (this.account()?.accountId !== owner) return;
+    this.clearAccount();
+    this.mutation = null;
+    this.pending.set(false);
+    this.error.set('');
+    this.errorStatus.set(null);
+    this.logoutRedirectPending.set(false);
+    this.initialization = null;
   }
   private async loadAccount(): Promise<void> {
     this.planSummariesState.set('loading');

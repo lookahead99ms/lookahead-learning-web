@@ -1,10 +1,38 @@
+import { AUTHOR_DOCUMENTS_CLIENT } from './core/author-documents-client';
+import { AuthorDocumentsApi } from './core/author-documents-api';
+import { AUTHOR_REVIEW_CLIENT } from './pages/author-previews/author-review-client';
+import { AuthorReviewApi } from './pages/author-previews/author-review-api';
 import { Routes } from '@angular/router';
 import { authorGuard } from './core/author-access';
+import { SIGN_IN_CHALLENGE_CLIENT } from './pages/account/sign-in-challenge-client';
+import { SignInManagementApi } from './pages/account/sign-in-management-api';
 import type { DeliveryPlanPage } from './pages/delivery-plan/delivery-plan';
 import { legacyAiItemRedirect, legacyAiModuleRedirect } from './content/ai-route-compatibility';
 import { legacyInterviewSearchRedirect } from './content/search-route-compatibility';
 
 export const routes: Routes = [
+  {
+    path: 'author/operations',
+    canActivate: [authorGuard],
+    providers: [{ provide: AUTHOR_DOCUMENTS_CLIENT, useExisting: AuthorDocumentsApi }],
+    loadComponent: () =>
+      import('./pages/author-operations/author-operations').then(
+        (page) => page.AuthorOperationsPage,
+      ),
+  },
+  {
+    path: 'author/previews/study-plan',
+    canActivate: [authorGuard],
+    providers: [{ provide: AUTHOR_REVIEW_CLIENT, useExisting: AuthorReviewApi }],
+    loadComponent: () =>
+      import('./pages/author-previews/author-review').then((page) => page.AuthorReviewPage),
+  },
+  {
+    path: 'sign-in/choose',
+    providers: [{ provide: SIGN_IN_CHALLENGE_CLIENT, useExisting: SignInManagementApi }],
+    loadComponent: () =>
+      import('./pages/account/sign-in-challenge').then((page) => page.SignInChallengePage),
+  },
   {
     path: 'author/previews',
     canActivate: [authorGuard],

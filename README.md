@@ -217,6 +217,36 @@ within the action group. Viewing this page does not create, select, or modify a 
 These account features require connected mode; the standalone public demo retains
 its browser-local behavior.
 
+### Active sign-ins (connected Identity contract)
+
+Manage account includes an authoritative inventory of up to two active logical
+sign-ins. Tabs sharing one browser session count once; another browser profile or
+private session generally counts separately. Browser/device descriptions are
+approximate. The current sign-in can have an optional label. Individual Sign out
+and Sign out other sign-ins require explicit confirmation and preserve saved work.
+Changing a password retains the stronger behavior of ending every sign-in.
+
+This slice requires the DLV-920 Identity/Gateway contract. It uses the same-origin
+Identity routes under `/api/v1/account/sign-ins` and does not derive authorization
+from client labels or identifiers. A recent-authentication rejection preserves the
+current account and draft. Confirming the current password uses the existing login
+flow; the learner must then explicitly resubmit the requested change.
+
+A third successful password proof returns `SIGN_IN_LIMIT`. The frontend opens the
+restricted `/sign-in/choose` page, which has no learner navigation or account-data
+initialization. The learner selects a sign-in to end or cancels. Only acknowledged
+replacement proceeds through the normal OAuth/BFF continuation. Cancel returns to
+sign-in while keeping existing sign-ins, and validated return URLs reject external
+or sign-in-loop destinations. Expired challenges require a fresh sign-in. A failed
+or lost response is not presented as successful admission or revocation.
+
+Frontend tests exercise these contract responses with synthetic data. A disposable
+Local integration check also verified third-sign-in cancellation/replacement,
+current and other-session revocation, label updates and unrelated-account
+continuity through the browser and independent HTTP clients. Admission concurrency,
+token/code revocation and service recovery remain service-owned protocol gates.
+This is Local development verification, not production or native-zoom certification.
+
 ### Isolated local delivery editor
 
 Use `start:private` when the author Delivery Plan needs its local editor. Plain
@@ -333,3 +363,19 @@ See [Architecture](docs/architecture.md),
 
 No open-source license has been selected. Public visibility does not grant reuse
 or redistribution rights.
+
+
+## Private author review
+
+Author Previews includes a versioned Study Plan review entry and the `/author/previews/study-plan` route. Private scope, version, evidence and decisions come from the capability-protected author-documents publication, not the public bundle. The embedded HTML uses a scripts-only sandbox; review controls belong to Angular outside the document.
+
+The review adapter uses the BFF-protected Domain artifact registry and account-scoped review-event history. Decisions bind the canonical artifact ID, artifact version, owning ticket and source hash; the rendered HTML hash is separate display provenance. Writes use BFF CSRF and a header-only idempotency key. Decline and Need more require an explanation; comments are limited to 2,000 Unicode codepoints. Replacing a prior decision is explicit and supersedes the latest event for that account. A conflicting change requires reloading history and reviewing the new replacement target.
+
+Uncertain submissions preserve the draft and exact retry key. A later page load reads authoritative history instead of inventing a local result. A recorded decision remains pending Main reconciliation, not ticket completion or authorization for Git changes or deployment. A disposable Local author fixture verified recording, refresh and Domain restart persistence, and a real two-tab supersession conflict. These checks supplement unit/component tests; they do not establish production durability. If publication, artifact binding or history cannot be confirmed, recording stays disabled.
+
+
+## Private Operations reference
+
+The author-only `/author/operations` route reads the protected, immutable author-documents publication through the Gateway. It shows documented repositories, topology, deployment order and runbooks; it is not a service-health dashboard and exposes no execution or deployment controls. The public demo has no publication configured. The source documents remain outside this repository.
+
+The manifest uses `schemaVersion: 1` with `documents[]`. HTML URLs must match the published document ID and content SHA-256 under `/bff/author/previews/preview-directory/author-documents/`. The iframe allows scripts for theme selection only; external references are ordinary labeled new-tab links in the Angular parent. HTTP authentication, authorization, missing publication and service failures remain distinct.
