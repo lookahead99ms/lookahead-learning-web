@@ -1,0 +1,154 @@
+.restricted-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  border-block-end: 1px solid var(--line);
+}
+.wordmark {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.06em;
+}
+.restricted-header [role='group'] {
+  display: flex;
+  gap: 4px;
+}
+.restricted-header [aria-pressed='true'] {
+  background: var(--accent-strong);
+  color: var(--accent-on-primary);
+}
+.challenge-page {
+  max-width: 720px;
+  margin: 48px auto;
+  padding: 0 24px 48px;
+  color: var(--text-strong);
+}
+section {
+  padding: 32px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface);
+}
+h1 {
+  font-size: clamp(1.75rem, 5vw, 2.2rem);
+  line-height: 1.2;
+  letter-spacing: -0.035em;
+  margin: 12px 0 20px;
+}
+p {
+  line-height: 1.6;
+}
+.detail {
+  color: var(--text-subtle);
+  font-size: 0.85rem;
+}
+fieldset {
+  border: 0;
+  padding: 0;
+  margin: 24px 0 16px;
+  min-width: 0;
+}
+legend {
+  font-weight: 700;
+  margin-block-end: 12px;
+}
+.sign-in-choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 0;
+  border-block-end: 1px solid var(--line);
+  cursor: pointer;
+}
+.sign-in-choice > span {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.sign-in-choice span span {
+  color: var(--text-subtle);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+.sign-in-choice strong {
+  line-height: 1.5;
+}
+input {
+  accent-color: var(--accent-strong);
+  margin-block-start: 5px;
+  min-width: 20px;
+  width: 20px;
+  height: 20px;
+}
+button {
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text-strong);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+button:hover:not(:disabled) {
+  background: var(--surface-muted);
+}
+button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+.primary-action {
+  background: var(--accent-strong);
+  color: var(--accent-on-primary);
+}
+.primary-action:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent-strong) 90%, var(--text-strong));
+}
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+button:focus-visible,
+input:focus-visible,
+a:focus-visible,
+[tabindex='-1']:focus {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 3px;
+}
+a {
+  display: inline-block;
+  min-height: 44px;
+  align-content: center;
+  color: var(--accent-link);
+}
+.error {
+  padding: 12px;
+  border-inline-start: 3px solid var(--danger);
+  background: var(--danger-surface);
+}
+.status:empty {
+  margin: 0;
+}
+@media (max-width: 480px) {
+  .restricted-header {
+    padding: 16px;
+    flex-wrap: wrap;
+  }
+  .challenge-page {
+    margin-block-start: 24px;
+    padding-inline: 16px;
+  }
+  section {
+    padding: 24px 18px;
+  }
+  .form-actions button {
+    width: 100%;
+  }
+}

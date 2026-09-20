@@ -103,7 +103,58 @@ Continue learning preserves its validated URL, while Study Plan and Search share
 one accessible navigation group. Profile and security mutations retain their
 separate account-settings boundary.
 
+## Active sign-in boundary
+
+Identity owns the registry and two-sign-in invariant. `SignInManagementApi` is a
+same-origin adapter for the Identity-owned inventory, optional current label,
+selective revocation and restricted challenge routes. It sends CSRF-protected
+mutations, maps safe error codes, and retains current account data after a recent-
+authentication rejection. It never submits an account owner chosen by the browser.
+
+The restricted chooser is a separate page without `PlatformHeader` or account
+initialization. A `SIGN_IN_LIMIT` response clears cached learner state before
+navigation. Challenge reads reveal only the service's safe sign-in descriptions.
+Replacement acknowledges admission, refreshes Identity CSRF and then re-enters the
+normal OAuth/BFF exchange; it does not turn an Identity response into frontend
+learner access. Cancellation requires acknowledgement. Safe return routing rejects
+external URLs and chooser/sign-in loops. No challenge/session token is placed in
+browser storage or route parameters.
+
+Selective current-session revocation clears client account, plan and pending state
+only after explicit acknowledgement. Other-session revocation reloads the inventory
+and leaves the caller active. DLV-919 password change continues to invalidate all
+sessions. The service boundary, not screenshots or frontend mocks, proves admission
+concurrency, token/code invalidation and durability.
+
 ## Delivery controls
+
+### Protected author publications and review events
+
+The author views use the server-provided author capability. `AuthorDocumentsApi`
+loads a private manifest through the Gateway and validates each document's ID,
+version, hash-bound same-origin HTML URL, sections and supporting links. The
+standalone public demo has no private publication configured. Curriculum, review
+scope, operational runbooks and rendered documents stay outside the public bundle.
+
+The Gateway serves two separate boundaries: private immutable publications for
+document reading, and the Learning Domain API for account-owned review events.
+Angular renders the document in an iframe and owns the review controls outside it.
+
+`/author/previews/study-plan` binds review submissions to the canonical artifact
+ID, version, owning ticket and source hash. The rendered HTML hash is separate
+publication provenance. `AuthorReviewApi` uses BFF CSRF and a UUID idempotency
+header; the server supplies actor and recording time. History remains in server
+sequence order. Replacement names the most recent event explicitly. Conflicts
+preserve the draft and require history reload plus an explicit replacement action.
+Uncertain retries reuse the same body and key. A successful receipt means recorded
+and pending reconciliation; it does not change delivery status or authorize Git.
+
+`/author/operations` displays a read-only document with parent-owned section and
+reference links. Its documented topology is not a live service-health claim.
+Both embedded documents use `sandbox="allow-scripts"`; they have no authority to
+submit decisions, access parent storage or execute operational actions. Theme
+selection is an explicit document query parameter. Authorization loss removes
+private frames and links and discards late responses for the previous account.
 
 Use [Critical route smoke checks](route-smoke-checks.md) to establish a reproducible rendered-route baseline before changing navigation. Concrete private-content results belong in the private content repository, not the public source tree.
 

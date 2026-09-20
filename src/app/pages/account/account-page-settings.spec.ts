@@ -20,6 +20,7 @@ describe('Account page management integration', () => {
   let signedIn: boolean;
   let oauth: boolean;
   let passwordRejected: boolean;
+  let signInLimit: boolean;
   let requests: { path: string; body?: unknown }[];
   let profile: { accountId: string; username: string; displayName: string };
 
@@ -28,6 +29,7 @@ describe('Account page management integration', () => {
     signedIn = true;
     oauth = true;
     passwordRejected = false;
+    signInLimit = false;
     requests = [];
     profile = {
       accountId: 'synthetic-account',
@@ -37,6 +39,7 @@ describe('Account page management integration', () => {
     const transport = vi.fn(async (path: string, options: RequestInit) => {
       const body = typeof options.body === 'string' ? JSON.parse(options.body) : undefined;
       requests.push({ path, body });
+      if (path.endsWith('/auth/login') && signInLimit) return error(409, 'SIGN_IN_LIMIT');
       if (path.endsWith('/auth/options')) return json({ registration: true, google: false, oauth });
       if (path.endsWith('/auth/csrf'))
         return json({ token: 'synthetic-csrf', headerName: 'X-CSRF-TOKEN' });
@@ -136,6 +139,27 @@ describe('Account page management integration', () => {
     expect(summary.textContent).not.toContain('completed');
   });
 
+  it('routes a third login to the restricted chooser and clears the entered password', async () => {
+    signedIn = false;
+    signInLimit = true;
+    await mount('/sign-in?returnTo=%2Flearn%23courses');
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    fill('email', 'sample@example.test');
+    fill('password', 'synthetic password');
+    harness
+      .routeNativeElement!.querySelector('form')!
+      .dispatchEvent(new Event('submit', { cancelable: true }));
+    await settle();
+    expect(navigate).toHaveBeenCalledExactlyOnceWith(['/sign-in/choose'], {
+      queryParams: { returnTo: '/learn#courses', oauth: null },
+    });
+    expect(
+      harness.routeNativeElement!.querySelector<HTMLInputElement>('input[name="password"]')!.value,
+    ).toBe('');
+    expect(harness.routeNativeElement!.querySelector('app-account-study-plans')).toBeNull();
+    expect(TestBed.inject(StudyPlanAccount).account()).toBeNull();
+  });
+
   it('loads the production settings provider, edits the name and updates the shared account/header', async () => {
     await mount();
     expect(harness.routeNativeElement!.querySelector('h1')?.textContent).toContain(
@@ -172,7 +196,7 @@ describe('Account page management integration', () => {
     expect(TestBed.inject(Router).url).toBe('/sign-in');
     expect(TestBed.inject(StudyPlanAccount).account()).toBeNull();
     expect(harness.routeNativeElement!.textContent).toContain(
-      'Password changed. You have been signed out on all devices.',
+      'Password changed. All sign-ins have ended, including this one.',
     );
     expect(
       harness.routeNativeElement!.querySelector<HTMLInputElement>('input[name="password"]')?.value,

@@ -7,6 +7,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import { PlatformThemeService } from '../../core/platform-theme';
 import { ArchitectureDiagramViewer } from './architecture-diagram-viewer';
+import { AuthorReviewPacket } from './author-review-packet';
 import { ArchitectureDiagramId, connectArchitectureFrame } from './architecture-diagram-protocol';
 import {
   AUTHOR_PREVIEWS_BASE_URL,
@@ -19,7 +20,7 @@ import {
 
 @Component({
   selector: 'app-author-previews',
-  imports: [PlatformHeader, RouterLink, ArchitectureDiagramViewer],
+  imports: [PlatformHeader, RouterLink, ArchitectureDiagramViewer, AuthorReviewPacket],
   templateUrl: './author-previews.html',
   styleUrl: './author-previews.css',
   host: { '[class.architecture-page]': 'architectureOnly' },

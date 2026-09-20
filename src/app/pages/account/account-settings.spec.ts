@@ -171,7 +171,7 @@ describe('Manage account', () => {
     openPassword();
     enterPasswords();
     expect(fixture.nativeElement.textContent).toContain(
-      'Changing your password signs you out on all devices. Sign in again with your new password.',
+      'Changing your password ends all sign-ins, including this one. Sign in again with your new password.',
     );
     for (const [name, label, autocomplete] of [
       ['currentPassword', 'current password', 'current-password'],

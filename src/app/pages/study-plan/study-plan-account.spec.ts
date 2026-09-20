@@ -258,6 +258,28 @@ describe('StudyPlanAccount transport and isolation', () => {
     expect(store.pending()).toBe(false);
   });
 
+  it('treats SIGN_IN_LIMIT as a restricted challenge without loading learner data', async () => {
+    const originalFetch = fetcher.getMockImplementation() as (
+      path: string,
+      options: RequestInit,
+    ) => Promise<Response>;
+    fetcher.mockImplementation(async (path: string, options: RequestInit) =>
+      path.endsWith('/auth/login')
+        ? new Response(
+            JSON.stringify({ code: 'SIGN_IN_LIMIT', expiresAt: '2026-09-19T12:00:00Z' }),
+            { status: 409 },
+          )
+        : originalFetch(path, options),
+    );
+    expect(await store.login('sample', 'synthetic')).toBe(false);
+    expect(store.signInLimit()).toBe(true);
+    expect(store.account()).toBeNull();
+    expect(store.active()).toBeNull();
+    expect(store.plans()).toEqual([]);
+    expect(store.error()).toBe('');
+    expect(fetcher.mock.calls.some(([path]) => /account-catalog|plans\?/.test(path))).toBe(false);
+  });
+
   it('reports a failed account-data restore after identity succeeds instead of implying no saved plans', async () => {
     me = true;
     const originalFetch = fetcher.getMockImplementation() as (

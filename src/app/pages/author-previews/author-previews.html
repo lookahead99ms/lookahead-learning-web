@@ -27,6 +27,9 @@
       </p>
     </header>
   }
+  @if (!architectureOnly && accounts.account()?.authorPreview && !accounts.sessionExpired()) {
+    <app-author-review-packet />
+  }
   @if (!accounts.account()?.authorPreview || accounts.sessionExpired()) {
     <section class="state-panel">
       <h2>Author access required</h2>

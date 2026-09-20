@@ -6,6 +6,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ActivatedRoute, provideRouter } from '@angular/router';
 import { AuthorPreviewsPage } from './author-previews';
 import { ArchitectureDiagramViewer } from './architecture-diagram-viewer';
+import { AuthorReviewPacket } from './author-review-packet';
 import {
   AUTHOR_PREVIEWS_BASE_URL,
   parsePreviewInventory,
@@ -22,6 +23,9 @@ import { environment as demoEnvironment } from '../../../environments/environmen
 
 @Component({ selector: 'app-platform-header', template: '' })
 class HeaderStub {}
+
+@Component({ selector: 'app-author-review-packet', template: 'Study Plan review entry' })
+class ReviewPacketStub {}
 
 @Component({
   selector: 'app-architecture-diagram-viewer',
@@ -150,8 +154,8 @@ describe('Author previews page', () => {
         { provide: ActivatedRoute, useValue: { snapshot: { data: {} } } },
       ],
     }).overrideComponent(AuthorPreviewsPage, {
-      remove: { imports: [PlatformHeader] },
-      add: { imports: [HeaderStub] },
+      remove: { imports: [PlatformHeader, AuthorReviewPacket] },
+      add: { imports: [HeaderStub, ReviewPacketStub] },
     });
   });
   afterEach(() => TestBed.inject(HttpTestingController).verify());
