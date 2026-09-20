@@ -33,8 +33,17 @@ export class AuthorReviewPacket {
       ? this.document()!.href + '?theme=' + this.theme.selected()
       : null,
   );
+  protected readonly experienceHref = computed(() => {
+    if (!this.authorized()) return null;
+    const preview = this.document()?.evidence.find((link) =>
+      link.label.toLowerCase().includes('learner-style'),
+    );
+    return preview ? preview.href + '?theme=' + this.theme.selected() : this.href();
+  });
   protected readonly frameUrl = computed(() =>
-    this.href() ? this.sanitizer.bypassSecurityTrustResourceUrl(this.href()!) : null,
+    this.experienceHref()
+      ? this.sanitizer.bypassSecurityTrustResourceUrl(this.experienceHref()!)
+      : null,
   );
 
   constructor() {

@@ -16,7 +16,13 @@ const packet = {
   scope: 'The published review scope',
   decisionDependencies: ['DLV-921'],
   remainingDecisions: ['Review the published recovery evidence'],
-  evidence: [{ label: 'Review evidence', href: 'https://example.test/evidence' }],
+  evidence: [
+    {
+      label: 'Learner-style Study Plan scenarios',
+      href: '/bff/author/previews/preview-directory/author-documents/evidence/test/study-plan-experience.html',
+    },
+    { label: 'Review evidence', href: 'https://example.test/evidence' },
+  ],
   sections: [],
   references: [],
 };
@@ -52,7 +58,8 @@ describe('Study Plan review packet', () => {
     const fixture = await create();
     expect(fixture.nativeElement.textContent).toContain(packet.version);
     expect(fixture.nativeElement.textContent).toContain(packet.scope);
-    expect(fixture.nativeElement.textContent).toContain(packet.remainingDecisions[0]);
+    expect(fixture.nativeElement.textContent).toContain('1open decisions');
+    expect(fixture.nativeElement.textContent).not.toContain(packet.remainingDecisions[0]);
     expect(
       fixture.nativeElement.querySelector('a[href="/author/previews/study-plan"]'),
     ).not.toBeNull();
@@ -62,8 +69,11 @@ describe('Study Plan review packet', () => {
   it('keeps trusted controls outside the scripts-only document and follows the selected theme', async () => {
     const fixture = await create(true);
     const frame = fixture.nativeElement.querySelector('iframe');
-    expect(frame.getAttribute('sandbox')).toBe('allow-scripts');
+    expect(frame.getAttribute('sandbox')).toBe(
+      'allow-scripts allow-top-navigation-by-user-activation',
+    );
     expect(frame.src).toContain('?theme=light');
+    expect(frame.src).toContain('study-plan-experience.html');
     expect(fixture.nativeElement.querySelector('app-author-review-controls')).not.toBeNull();
     expect(fixture.nativeElement.textContent).toContain('not connected yet');
     theme.set('dark');
