@@ -9,7 +9,11 @@ import { AuthorReviewPacket } from './author-review-packet';
   template: `<app-platform-header />
     <main id="main-content">
       <a routerLink="/author/previews">All author previews</a>
-      <h1>Study Plan review</h1>
+      <p class="eyebrow">Author review workspace</p>
+      <h1>Study Plan experience</h1>
+      <p class="lede">
+        Review the learner-facing schedule first, then inspect its evidence and record a decision.
+      </p>
       <app-author-review-packet [expanded]="true" />
     </main>`,
   styles: `
@@ -20,7 +24,7 @@ import { AuthorReviewPacket } from './author-review-packet';
       color: var(--text-strong);
     }
     main {
-      max-width: 1200px;
+      max-width: 1480px;
       margin: auto;
       padding: 24px clamp(12px, 3vw, 32px);
     }
@@ -32,6 +36,21 @@ import { AuthorReviewPacket } from './author-review-packet';
     }
     h1 {
       font-size: clamp(28px, 4vw, 40px);
+      margin: 8px 0;
+    }
+    .eyebrow {
+      margin: 28px 0 0;
+      color: var(--accent-strong);
+      font-size: 12px;
+      font-weight: 750;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .lede {
+      max-width: 72ch;
+      color: var(--text-subtle);
+      font-size: 17px;
+      line-height: 1.55;
     }
   `,
 })

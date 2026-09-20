@@ -3,50 +3,87 @@
     @if (state() === 'loading') {
       <p role="status">Loading Study Plan review…</p>
     } @else if (document(); as packet) {
-      <header>
-        <p class="eyebrow">Versioned review · {{ packet.owningTicket }}</p>
-        <h2>{{ packet.title }}</h2>
-        <p class="version">{{ packet.version }}</p>
-        <p>{{ packet.scope }}</p>
+      <header class="packet-header">
+        <div>
+          <p class="eyebrow">Versioned review · {{ packet.owningTicket }}</p>
+          <h2>{{ packet.title }}</h2>
+          <p class="scope">{{ packet.scope }}</p>
+        </div>
+        <div class="version-block">
+          <span>Review version</span>
+          <strong>{{ packet.version }}</strong>
+        </div>
       </header>
-      @if (packet.remainingDecisions.length) {
-        <h3>Remaining decisions</h3>
-        <ul>
-          @for (decision of packet.remainingDecisions; track decision) {
-            <li>{{ decision }}</li>
-          }
-        </ul>
-      }
-      @if (packet.evidence.length) {
-        <h3>Review evidence</h3>
-        <ul>
-          @for (link of packet.evidence; track link.href) {
-            <li>
-              <a [href]="link.href" target="_blank" rel="noopener noreferrer"
-                >{{ link.label }} (new tab)</a
-              >
-            </li>
-          }
-        </ul>
-      }
+
       @if (!expanded()) {
+        <div class="packet-summary" aria-label="Review summary">
+          <p>
+            <strong>{{ packet.evidence.length }}</strong
+            ><span>evidence sources</span>
+          </p>
+          <p>
+            <strong>{{ packet.remainingDecisions.length }}</strong
+            ><span>open decisions</span>
+          </p>
+        </div>
         <a class="review-link" routerLink="/author/previews/study-plan">Open Study Plan review</a>
       } @else {
-        <div class="document-actions">
-          <a [href]="href()" target="_blank" rel="noopener noreferrer"
-            >Open full review packet (new tab)</a
-          >
-        </div>
+        <nav class="document-actions" aria-label="Study Plan review documents">
+          @if (experienceHref(); as previewHref) {
+            <a class="primary-link" [href]="previewHref" target="_blank" rel="noopener noreferrer">
+              Open learner-style plan preview <span>(new tab)</span>
+            </a>
+          }
+          <a [href]="href()" target="_blank" rel="noopener noreferrer">
+            Open review packet <span>(new tab)</span>
+          </a>
+        </nav>
+
+        <section class="experience" aria-labelledby="experience-heading">
+          <div class="experience-heading">
+            <div>
+              <p class="eyebrow">Experience preview</p>
+              <h3 id="experience-heading">See the schedule a learner would use</h3>
+            </div>
+            <p>
+              Expand a day to inspect its sessions. This is read-only and does not change a saved
+              plan.
+            </p>
+          </div>
+          <iframe
+            [src]="frameUrl()"
+            title="Learner-style Study Plan scenarios"
+            sandbox="allow-scripts allow-top-navigation-by-user-activation"
+          ></iframe>
+        </section>
+
+        <details class="review-details">
+          <summary>Review scope, decisions and source evidence</summary>
+          @if (packet.remainingDecisions.length) {
+            <section aria-labelledby="remaining-decisions-heading">
+              <h3 id="remaining-decisions-heading">Remaining decisions</h3>
+              <ul>
+                @for (decision of packet.remainingDecisions; track decision) {
+                  <li>{{ decision }}</li>
+                }
+              </ul>
+            </section>
+          }
+          @if (packet.evidence.length) {
+            <section aria-labelledby="review-evidence-heading">
+              <h3 id="review-evidence-heading">Review evidence</h3>
+              <div class="evidence-grid">
+                @for (link of packet.evidence; track link.href) {
+                  <a [href]="link.href" target="_blank" rel="noopener noreferrer">
+                    {{ link.label }} <span>(new tab)</span>
+                  </a>
+                }
+              </div>
+            </section>
+          }
+        </details>
+
         <app-author-review-controls [artifact]="packet" />
-        <p class="reading-note">
-          Read the review scope, evidence and remaining decisions in the packet. Opening it does not
-          change a learner’s plan.
-        </p>
-        <iframe
-          [src]="frameUrl()"
-          title="Versioned Study Plan review packet"
-          sandbox="allow-scripts"
-        ></iframe>
       }
     } @else {
       <h2>Study Plan review</h2>

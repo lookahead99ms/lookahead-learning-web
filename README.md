@@ -308,6 +308,11 @@ review order, and compact collapsed links for earlier versions and alternatives.
 Featuring a preview does not imply selection or approval. Search also matches
 history entries and expands matching collections so those links can be found.
 
+Version-bound Study Plan reviews embed the protected learner-style schedule as
+their primary preview. The canonical packet, decisions, and technical evidence
+remain secondary actions. Review controls stay in trusted Angular outside the
+sandboxed iframe; opening a preview never records a plan or review decision.
+
 ## Main source areas
 
 ```text
