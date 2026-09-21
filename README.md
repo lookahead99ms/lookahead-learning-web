@@ -219,9 +219,10 @@ its browser-local behavior.
 
 ### Active sign-ins (connected Identity contract)
 
-Manage account includes an authoritative inventory of up to two active logical
-sign-ins. Tabs sharing one browser session count once; another browser profile or
-private session generally counts separately. Browser/device descriptions are
+Manage account includes an authoritative inventory of active logical sign-ins.
+Local development has no admission cap; DEV and PROD permit at most two. Tabs
+sharing one browser session count once; another browser profile or private session
+generally counts separately. Browser/device descriptions are
 approximate. The current sign-in can have an optional label. Individual Sign out
 and Sign out other sign-ins require explicit confirmation and preserve saved work.
 Changing a password retains the stronger behavior of ending every sign-in.
@@ -232,7 +233,7 @@ from client labels or identifiers. A recent-authentication rejection preserves t
 current account and draft. Confirming the current password uses the existing login
 flow; the learner must then explicitly resubmit the requested change.
 
-A third successful password proof returns `SIGN_IN_LIMIT`. The frontend opens the
+A third successful password proof in DEV or PROD returns `SIGN_IN_LIMIT`. The frontend opens the
 restricted `/sign-in/choose` page, which has no learner navigation or account-data
 initialization. The learner selects a sign-in to end or cancels. Only acknowledged
 replacement proceeds through the normal OAuth/BFF continuation. Cancel returns to

@@ -19,7 +19,11 @@
   }
   @if (inventory(); as inventory) {
     <p class="inventory-count">
-      {{ inventory.signIns.length }} of {{ inventory.limit }} active sign-ins
+      @if (inventory.limit === null) {
+        {{ inventory.signIns.length }} active sign-ins · no Local development limit
+      } @else {
+        {{ inventory.signIns.length }} of {{ inventory.limit }} active sign-ins
+      }
     </p>
     <ul class="sign-in-list">
       @for (signIn of inventory.signIns; track signIn.id) {

@@ -105,7 +105,8 @@ separate account-settings boundary.
 
 ## Active sign-in boundary
 
-Identity owns the registry and two-sign-in invariant. `SignInManagementApi` is a
+Identity owns the registry, the DEV/PROD two-sign-in invariant, and unlimited
+Local admission. `SignInManagementApi` is a
 same-origin adapter for the Identity-owned inventory, optional current label,
 selective revocation and restricted challenge routes. It sends CSRF-protected
 mutations, maps safe error codes, and retains current account data after a recent-

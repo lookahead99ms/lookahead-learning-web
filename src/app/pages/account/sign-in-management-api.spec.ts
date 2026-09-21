@@ -21,10 +21,12 @@ describe('Identity sign-in management contract', () => {
   let accounts: StudyPlanAccount;
   let transport: ReturnType<typeof vi.fn>;
   let entries: (typeof first)[];
+  let limit: 2 | null;
   let postFailure: Response | null;
   let malformedAck: boolean;
   beforeEach(() => {
     entries = [{ ...first }, { ...second }];
+    limit = 2;
     postFailure = null;
     malformedAck = false;
     transport = vi.fn(async (path: string, options: RequestInit) => {
@@ -62,7 +64,7 @@ describe('Identity sign-in management contract', () => {
       }
       if (path.endsWith('/sign-in-challenge'))
         return json({ limit: 2, entries, expiresAt: '2026-09-19T12:05:00Z' });
-      if (path.endsWith('/sign-ins')) return json({ limit: 2, entries });
+      if (path.endsWith('/sign-ins')) return json({ limit, entries });
       throw new Error('Unexpected synthetic request');
     });
     TestBed.configureTestingModule({
@@ -89,6 +91,17 @@ describe('Identity sign-in management contract', () => {
     });
     expect(transport).toHaveBeenCalledTimes(1);
     expect(accounts.account()?.accountId).toBe('owner');
+  });
+  it('accepts an unlimited Local inventory with more than two independent sign-ins', async () => {
+    limit = null;
+    entries = Array.from({ length: 5 }, (_, index) => ({
+      ...first,
+      signInId: `local-${index}`,
+      current: index === 0,
+    }));
+    const result = await api.load();
+    expect(result.limit).toBeNull();
+    expect(result.signIns).toHaveLength(5);
   });
   it('labels only the current sign-in and reloads the authoritative inventory', async () => {
     expect((await api.rename('current-id', 'Work')).signIns[0].label).toBe('Work');

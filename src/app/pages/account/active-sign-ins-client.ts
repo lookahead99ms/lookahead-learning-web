@@ -11,7 +11,8 @@ export interface ActiveSignIn {
 }
 
 export interface ActiveSignInInventory {
-  limit: number;
+  /** Null means Local development has no admission cap. */
+  limit: number | null;
   signIns: ActiveSignIn[];
   labelsEditable: boolean;
 }
