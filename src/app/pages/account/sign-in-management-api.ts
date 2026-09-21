@@ -38,7 +38,11 @@ function validDate(value: unknown): value is string {
   );
 }
 function inventory(value: any): ActiveSignInInventory {
-  if (value?.limit !== 2 || !Array.isArray(value.entries) || value.entries.length > 2)
+  if (
+    (value?.limit !== 2 && value?.limit !== null) ||
+    !Array.isArray(value.entries) ||
+    (value.limit === 2 && value.entries.length > 2)
+  )
     throw new SignInManagementError('unconfirmed');
   const signIns = value.entries.map(entry);
   if (new Set(signIns.map((signIn: ActiveSignIn) => signIn.id)).size !== signIns.length)
@@ -111,7 +115,8 @@ export class SignInManagementApi implements ActiveSignInsClient, SignInChallenge
   async loadChallenge(): Promise<SignInChallenge> {
     const result = await this.request('/auth/sign-in-challenge');
     const list = inventory(result);
-    if (!validDate(result?.expiresAt)) throw new SignInManagementError('unconfirmed');
+    if (list.limit !== 2 || !validDate(result?.expiresAt))
+      throw new SignInManagementError('unconfirmed');
     return { limit: list.limit, signIns: list.signIns, expiresAt: result.expiresAt };
   }
 

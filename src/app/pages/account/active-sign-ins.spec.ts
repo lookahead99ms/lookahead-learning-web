@@ -104,6 +104,15 @@ describe('Active sign-in inventory', () => {
     expect(client.revoke).not.toHaveBeenCalled();
     expect(client.revokeOthers).not.toHaveBeenCalled();
   });
+  it('labels Local inventory as unlimited without a misleading capacity count', async () => {
+    client.load.mockResolvedValue({ ...structuredClone(initial), limit: null });
+    button('Refresh list').click();
+    await settle();
+    expect(fixture.nativeElement.textContent).toContain(
+      '2 active sign-ins · no Local development limit',
+    );
+    expect(fixture.nativeElement.textContent).not.toContain('2 of 2 active sign-ins');
+  });
   it('limits label editing to the current sign-in and restores focus when canceled', async () => {
     const trigger = button('Edit label for My browser');
     expect(fixture.nativeElement.querySelectorAll('[aria-label^="Edit label"]')).toHaveLength(1);
