@@ -105,11 +105,14 @@
                 <ul>
                   <li><strong>Completion</strong> records your practice, not mastery.</li>
                   <li>
-                    <strong>{{ accountMode() ? 'Saved to your account.' : 'Saved on this browser.' }}</strong>
+                    <strong>{{
+                      accountMode() ? 'Saved to your account.' : 'Saved on this browser.'
+                    }}</strong>
                     Progress belongs to this plan.
                   </li>
                   <li>
-                    <strong>Based on saved progress.</strong> Exploring topics does not move your place.
+                    <strong>Based on saved progress.</strong> Exploring topics does not move your
+                    place.
                   </li>
                   <li><strong>Learn, practice, and recall</strong> within the time you set.</li>
                 </ul>
@@ -166,6 +169,9 @@
           </article>
         }
       </div>
+      @if (visibleStatus() && !adjustmentStatus()) {
+        <p class="context-status" role="status">{{ visibleStatus() }}</p>
+      }
     </section>
   }
   @if (
@@ -233,25 +239,65 @@
   @if (access.status() === 'error') {
     <p role="alert">Access could not be checked. Your saved history is preserved.</p>
   }
-  @if (setupVisible()) {
+  @if (setupVisible() && creationMode() === 'choice') {
+    <section class="plan-type-panel panel" aria-labelledby="plan-type-heading">
+      <p class="eyebrow">Create a study plan</p>
+      <h2 id="plan-type-heading">How would you like to begin?</h2>
+      <p>Choose a reviewed preparation path or build a plan from your own course selections.</p>
+      <div class="plan-type-grid">
+        <button type="button" class="plan-type-card" (click)="selectCreationMode('authored')">
+          <span class="eyebrow">Authored</span>
+          <strong>Start with a prepared path</strong>
+          <span
+            >Choose a preparation path, review its Learn, Grow, and Look Ahead courses, then save or
+            customize it.</span
+          >
+        </button>
+        <button type="button" class="plan-type-card" (click)="selectCreationMode('custom')">
+          <span class="eyebrow">Custom</span>
+          <strong>Create your own study plan</strong>
+          <span
+            >Set your time and choose the exact Learn, Grow, and Look Ahead courses you want.</span
+          >
+        </button>
+      </div>
+      @if (visibleStatus() && !adjustmentStatus()) {
+        <p class="context-status" role="status">{{ visibleStatus() }}</p>
+      }
+    </section>
+  }
+  @if (setupVisible() && creationMode() === 'authored') {
     <section class="ready-made-panel panel" aria-labelledby="ready-made-heading">
-      <header>
-        <p class="eyebrow">A head start</p>
-        <h2 id="ready-made-heading">Start with an authored study plan</h2>
-        <p>Choose a preparation path, a window in days, and your available hours per day.</p>
+      <header class="creation-path-heading">
+        <div>
+          <p class="eyebrow">Authored study plan</p>
+          <h2 id="ready-made-heading">
+            {{
+              authoredPlanStep() === 'review'
+                ? 'Review the selected path'
+                : 'Choose a preparation path'
+            }}
+          </h2>
+          <p>
+            {{
+              authoredPlanStep() === 'review'
+                ? 'Confirm the selected courses, preview the schedule, or copy everything into a custom plan.'
+                : 'Choose a path, a preparation window, and your available hours per day.'
+            }}
+          </p>
+        </div>
+        <button type="button" (click)="backToPlanTypes()">Back to plan types</button>
       </header>
       @if (readyMadeStatus() === 'loading' && !readyMadeCatalog()) {
-        <p role="status">Loading ready-made plans…</p>
+        <p role="status">Loading authored plans…</p>
       } @else if (readyMadeStatus() === 'error' && !readyMadeCatalog()) {
         <div role="alert">
           <p>{{ readyMadeMessage() }}</p>
           <button type="button" (click)="loadReadyMadeCatalog()">Try loading plans again</button>
         </div>
       } @else if (!readyMadeCatalog()?.paths?.length) {
-        <p role="status">
-          No ready-made plans are available. You can still build your own plan below.
-        </p>
-      } @else {
+        <p role="status">No authored plans are available. You can create a custom plan instead.</p>
+      } @else if (authoredPlanStep() === 'select') {
         <div class="ready-made-controls">
           <div class="ready-made-field">
             <label class="field" for="ready-made-path">Preparation path</label>
@@ -317,20 +363,10 @@
                 </p>
               }
             } @else if (selectedReadyMadeDays()) {
-              <p class="intended-use">
-                Choose a compatible number of hours per day for this window.
-              </p>
+              <p class="intended-use">Choose a compatible number of hours per day.</p>
             }
             <details>
               <summary>Review path scope and limits</summary>
-              <p>
-                <strong>{{
-                  readyMadeVariant()?.topicIds ? 'Selected courses:' : 'Path courses:'
-                }}</strong>
-                @for (topic of readyMadeSelectedCourses(); track topic.id; let last = $last) {
-                  {{ topic.title }}{{ last ? '' : ', ' }}
-                }
-              </p>
               <p><strong>Starting knowledge:</strong> {{ path.startingKnowledge.join(' ') }}</p>
               <p><strong>Expected outcomes:</strong> {{ path.outcomes.join(' ') }}</p>
               <p><strong>Not covered:</strong> {{ path.uncoveredScope.join(' ') }}</p>
@@ -339,43 +375,109 @@
               type="button"
               class="primary"
               [disabled]="!readyMadeVariant() || readyMadeStatus() === 'loading' || editsLocked()"
-              [attr.aria-busy]="readyMadeStatus() === 'loading'"
-              (click)="previewReadyMadePlan()"
+              (click)="reviewAuthoredPlan()"
             >
-              Preview authored schedule
+              Review authored plan
             </button>
           </div>
         }
         @for (option of readyMadeCatalog()!.pendingOptions; track option.value) {
           <p class="pending-option">{{ option.value }} hours per day: {{ option.reason }}</p>
         }
-        <p
-          class="ready-made-message"
-          [attr.role]="readyMadeStatus() === 'error' ? 'alert' : 'status'"
-        >
-          {{ readyMadeMessage() }}
-        </p>
+      } @else if (readyMadePath(); as path) {
+        @if (readyMadeVariant(); as variant) {
+          <section class="authored-plan-review" aria-labelledby="authored-review-heading">
+            <h3 id="authored-review-heading">{{ path.title }}</h3>
+            <p>{{ path.summary }}</p>
+            <dl class="builder-setup-summary">
+              <div>
+                <dt>Preparation window</dt>
+                <dd>{{ variant.durationDays }} days</dd>
+              </div>
+              <div>
+                <dt>Availability</dt>
+                <dd>
+                  {{ variant.dailyHours }} {{ variant.dailyHours === 1 ? 'hour' : 'hours' }} a day
+                </dd>
+              </div>
+              <div>
+                <dt>Scheduled work</dt>
+                <dd>{{ variant.scheduledMinutes }} minutes</dd>
+              </div>
+              <div>
+                <dt>Selected content</dt>
+                <dd>{{ variant.selectedContentCount }} items</dd>
+              </div>
+            </dl>
+            <div class="authored-path-review">
+              @for (planPath of paths; track planPath) {
+                <section [attr.aria-labelledby]="'authored-' + planPath">
+                  <p class="eyebrow">{{ pathLabel(planPath) }}</p>
+                  <h4 [id]="'authored-' + planPath">Selected courses</h4>
+                  @if (readyMadeCoursesFor(planPath).length) {
+                    <ul>
+                      @for (course of readyMadeCoursesFor(planPath); track course.id) {
+                        <li>{{ course.title }}</li>
+                      }
+                    </ul>
+                  } @else {
+                    <p>No courses selected.</p>
+                  }
+                </section>
+              }
+            </div>
+            <details>
+              <summary>Review path scope and limits</summary>
+              <p><strong>Starting knowledge:</strong> {{ path.startingKnowledge.join(' ') }}</p>
+              <p><strong>Expected outcomes:</strong> {{ path.outcomes.join(' ') }}</p>
+              <p><strong>Not covered:</strong> {{ path.uncoveredScope.join(' ') }}</p>
+            </details>
+            <div class="authored-review-actions">
+              <button type="button" (click)="editAuthoredSelection()">Back to path options</button>
+              <div>
+                <button type="button" (click)="customizeAuthoredPlan()">Customize this plan</button>
+                <button
+                  type="button"
+                  class="primary"
+                  [disabled]="readyMadeStatus() === 'loading' || editsLocked()"
+                  [attr.aria-busy]="readyMadeStatus() === 'loading'"
+                  (click)="previewReadyMadePlan()"
+                >
+                  Preview authored schedule
+                </button>
+              </div>
+            </div>
+          </section>
+        }
+      }
+      <p
+        class="ready-made-message"
+        [attr.role]="readyMadeStatus() === 'error' ? 'alert' : 'status'"
+      >
+        {{ readyMadeMessage() }}
+      </p>
+      @if (visibleStatus() && !adjustmentStatus()) {
+        <p class="context-status" role="status">{{ visibleStatus() }}</p>
       }
     </section>
   }
   <div
     class="workspace"
     [class.has-active-plan]="progressVisible()"
-    [class.creation-workspace]="setupVisible()"
+    [class.creation-workspace]="setupVisible() && creationMode() === 'custom'"
   >
-    @if (setupVisible()) {
-      <section class="creation-intro" aria-label="Planning guidance">
-        <p class="eyebrow">Direction, not pressure</p>
-        <h2>Start with the time you actually have.</h2>
-        <p>Choose your focus and daily budget, then preview your schedule before saving.</p>
-      </section>
-    }
-    @if (setupVisible()) {
+    @if (setupVisible() && creationMode() === 'custom') {
       <section class="plan-builder panel" aria-labelledby="builder-heading">
         <header class="builder-header">
-          <p class="eyebrow">Build your own plan</p>
-          <h2 id="builder-heading">Choose one part at a time.</h2>
-          <p>Your choices remain a temporary draft until you review the schedule and save it.</p>
+          <div>
+            <p class="eyebrow">Build your own plan</p>
+            <h2 id="builder-heading">Start with the time you actually have.</h2>
+            <p>
+              Choose one part at a time. Your selections remain a temporary draft until you review
+              the schedule and save it.
+            </p>
+          </div>
+          <button type="button" (click)="backToPlanTypes()">Back to plan types</button>
         </header>
 
         <nav class="builder-progress" aria-label="Study plan creation steps">
@@ -386,7 +488,7 @@
                   type="button"
                   [attr.aria-current]="wizardStep() === step.id ? 'step' : null"
                   [disabled]="index > 0 && !setupStepValid()"
-                  (click)="goToWizardStep(step.id)"
+                  (click)="goToWizardStep(step.id, false)"
                 >
                   <span>Step {{ index + 1 }}</span>
                   <strong>{{ step.shortLabel }}</strong>
@@ -406,24 +508,24 @@
                 <p class="eyebrow">Step 1 of 5</p>
                 <h3 #wizardHeading id="wizard-step-heading" tabindex="-1">Plan setup</h3>
                 <p>Start with the outcome and time you can realistically protect.</p>
-                <label class="field">
-                  What are you working toward?
-                  <input
-                    type="text"
-                    maxlength="160"
-                    required
-                    [value]="goal()"
-                    (input)="setGoal($any($event.target).value)"
-                  />
-                </label>
-                <label class="field">
-                  Plan approach
-                  <select [value]="goalType()" (change)="setGoalType($any($event.target).value)">
-                    <option value="interview">Interview preparation</option>
-                    <option value="learning">Learn foundations and build depth</option>
-                  </select>
-                </label>
-                <div class="field-pair">
+                <div class="setup-fields">
+                  <label class="field setup-goal">
+                    What are you working toward?
+                    <input
+                      type="text"
+                      maxlength="160"
+                      required
+                      [value]="goal()"
+                      (input)="setGoal($any($event.target).value)"
+                    />
+                  </label>
+                  <label class="field setup-approach">
+                    Plan approach
+                    <select [value]="goalType()" (change)="setGoalType($any($event.target).value)">
+                      <option value="interview">Interview preparation</option>
+                      <option value="learning">Learn foundations and build depth</option>
+                    </select>
+                  </label>
                   <label class="field">
                     Preparation window
                     <select [value]="days()" (change)="setDays($any($event.target).value)">
@@ -451,7 +553,7 @@
                 @if (!goal().trim()) {
                   <p class="builder-validation" role="alert">Add a goal before continuing.</p>
                 }
-                <p class="budget-note">
+                <p class="setup-guidance">
                   {{
                     dailyHours() > 9
                       ? 'Focused work is capped at nine hours; the rest is recovery time.'
@@ -540,14 +642,6 @@
                     <button type="button" (click)="loadRanking()">Retry DSA order</button>
                   </div>
                 }
-                <button
-                  class="primary"
-                  type="button"
-                  [disabled]="!canGenerate()"
-                  (click)="generatePlan()"
-                >
-                  Review complete schedule
-                </button>
                 @if (saved()) {
                   <p class="budget-note">
                     Updates preserve completed work. Changes apply only when you save.
@@ -571,8 +665,20 @@
             >
               Continue to {{ wizardSteps[wizardStepIndex() + 1].shortLabel }}
             </button>
+          } @else {
+            <button
+              class="primary"
+              type="button"
+              [disabled]="!canGenerate()"
+              (click)="generatePlan()"
+            >
+              Review complete schedule
+            </button>
           }
         </div>
+        @if (visibleStatus() && !adjustmentStatus()) {
+          <p class="context-status" role="status">{{ visibleStatus() }}</p>
+        }
       </section>
 
       <ng-template #pathSelections let-path="path" let-stepNumber="stepNumber">
@@ -669,10 +775,12 @@
             (selectDay)="selectedDay.set($event)"
           />
         }
+        @if (visibleStatus() && !adjustmentStatus()) {
+          <p class="context-status" role="status">{{ visibleStatus() }}</p>
+        }
       }
     </section>
   </div>
-  <p class="live-status" role="status">{{ adjustmentStatus() ? '' : visibleStatus() }}</p>
   @if (accountMode() && accountStore.account()?.authorPreview && !accountStore.sessionExpired()) {
     <section class="author-preview-tools panel" aria-labelledby="author-preview-heading">
       <h2 id="author-preview-heading">Author preview tools</h2>

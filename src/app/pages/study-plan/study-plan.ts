@@ -72,6 +72,8 @@ import {
 const STORAGE_KEY = 'look-ahead.study-plan.v1';
 const DRAFT_INTENT_KEY = 'look-ahead.study-plan-draft-intent.v1';
 type StudyPlanWizardStep = 'setup' | 'learn' | 'grow' | 'look-ahead' | 'review';
+type StudyPlanCreationMode = 'choice' | 'authored' | 'custom';
+type AuthoredPlanStep = 'select' | 'review';
 
 @Component({
   selector: 'app-study-plan',
@@ -193,6 +195,8 @@ export class StudyPlanPage implements OnInit {
     };
   }
   protected readonly dashboardVisible = signal(false);
+  protected readonly creationMode = signal<StudyPlanCreationMode>('custom');
+  protected readonly authoredPlanStep = signal<AuthoredPlanStep>('select');
   protected readonly planCards = computed(() =>
     this.accountStore.plans().map((summary) => {
       const card = summary.card;
@@ -211,10 +215,22 @@ export class StudyPlanPage implements OnInit {
   );
   protected async showAllPlans(): Promise<void> {
     if (!this.accountMode() || this.editsLocked()) return;
+    this.displayPlanDashboard();
+    await this.router.navigate(['/study-plan'], { queryParams: { view: 'plans' } });
+  }
+  private displayPlanDashboard(): void {
     this.rememberCreationSetup();
-    this.dashboardVisible.set(true);
-    this.status.set('Choose a saved plan to continue.');
-    await this.router.navigate(['/study-plan']);
+    this.closeDraft();
+    if (this.accountStore.plans().length) {
+      this.dashboardVisible.set(true);
+      this.status.set('Choose a saved plan to continue.');
+      return;
+    }
+    this.dashboardVisible.set(false);
+    this.accountStore.newPlan();
+    this.saved.set(null);
+    this.creationMode.set('choice');
+    this.status.set('Choose how you want to create your first study plan.');
   }
   protected async continuePlan(planId: string): Promise<void> {
     if (this.editsLocked() || !this.accountStore.plans().some((plan) => plan.planId === planId))
@@ -732,6 +748,119 @@ export class StudyPlanPage implements OnInit {
       ? (path?.topics.filter((topic) => topicIds.includes(topic.id)) ?? [])
       : (path?.topics ?? []);
   });
+  protected readyMadeCoursesFor(path: ContentPath): { id: string; title: string }[] {
+    const topics = new Map(this.topics().map((topic) => [topic.id, topic]));
+    return this.readyMadeSelectedCourses().filter((course) => {
+      const topic = topics.get(course.id);
+      return topic ? topic.path === path : course.id.startsWith(`${path}:`);
+    });
+  }
+  protected async selectCreationMode(
+    mode: Exclude<StudyPlanCreationMode, 'choice'>,
+  ): Promise<void> {
+    if (this.editsLocked()) return;
+    this.creationMode.set(mode);
+    this.dashboardVisible.set(false);
+    this.authoredPlanStep.set('select');
+    if (mode === 'custom') this.wizardStep.set('setup');
+    await this.router.navigate(['/study-plan'], {
+      queryParams: {
+        create: 1,
+        creation: mode,
+        builderStep: mode === 'custom' ? 'setup' : null,
+        authoredStep: mode === 'authored' ? 'select' : null,
+      },
+    });
+    this.pageHeading?.nativeElement.focus();
+  }
+  protected async backToPlanTypes(): Promise<void> {
+    if (this.editsLocked()) return;
+    this.rememberCreationSetup();
+    this.creationMode.set('choice');
+    this.authoredPlanStep.set('select');
+    await this.router.navigate(['/study-plan'], {
+      queryParams: { create: 1, creation: 'choice' },
+    });
+    this.pageHeading?.nativeElement.focus();
+  }
+  protected async reviewAuthoredPlan(): Promise<void> {
+    const variant = this.readyMadeVariant();
+    const path = this.readyMadePath();
+    if (!variant || !path || this.editsLocked()) return;
+    this.authoredPlanStep.set('review');
+    await this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        create: 1,
+        creation: 'authored',
+        authoredStep: 'review',
+        authoredPath: path.id,
+        authoredDays: variant.durationDays,
+        authoredHours: variant.dailyHours,
+      },
+      queryParamsHandling: 'merge',
+    });
+    this.pageHeading?.nativeElement.focus();
+  }
+  protected async editAuthoredSelection(): Promise<void> {
+    if (this.editsLocked()) return;
+    this.authoredPlanStep.set('select');
+    await this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { authoredStep: 'select' },
+      queryParamsHandling: 'merge',
+    });
+  }
+  protected async customizeAuthoredPlan(): Promise<void> {
+    const variant = this.readyMadeVariant();
+    const path = this.readyMadePath();
+    if (!variant || !path || this.editsLocked()) return;
+    const available = this.availableTopicIds();
+    const topicIds = this.readyMadeSelectedCourses()
+      .map((topic) => topic.id)
+      .filter((id) => available.has(id));
+    this.goal.set(path.title);
+    this.days.set(variant.durationDays);
+    this.dailyHours.set(variant.dailyHours);
+    this.goalType.set('interview');
+    this.familiarity.set({});
+    this.selectedTopicIds.set(new Set(topicIds));
+    this.creationMode.set('custom');
+    this.authoredPlanStep.set('select');
+    this.wizardStep.set('learn');
+    this.persistWizardDraft();
+    await this.router.navigate(['/study-plan'], {
+      queryParams: {
+        create: 1,
+        creation: 'custom',
+        builderStep: 'learn',
+        days: variant.durationDays,
+        hours: variant.dailyHours,
+        topics: topicIds.join(','),
+        approach: 'interview',
+      },
+    });
+    this.status.set(
+      'Authored selections copied into a custom draft. Review each path before saving.',
+    );
+    this.focusWizardStep();
+  }
+  private restoreReadyMadeSelectionFromRoute(): void {
+    const catalog = this.readyMadeCatalog();
+    if (!catalog) return;
+    const params = this.route.snapshot.queryParamMap;
+    const path = catalog.paths.find((candidate) => candidate.id === params.get('authoredPath'));
+    if (!path) return;
+    const days = Number(params.get('authoredDays')) as ReadyMadeDuration;
+    const hours = Number(params.get('authoredHours'));
+    const variant = path.variants.find(
+      (candidate) => candidate.durationDays === days && candidate.dailyHours === hours,
+    );
+    if (!variant) return;
+    this.selectedReadyMadePathId.set(path.id);
+    this.selectedReadyMadeDays.set(variant.durationDays);
+    this.selectedReadyMadeHours.set(variant.dailyHours);
+  }
   protected readonly authoredDraftSummary = computed(() => {
     const template = this.draft()?.snapshot.template;
     if (!template) return null;
@@ -754,12 +883,14 @@ export class StudyPlanPage implements OnInit {
     this.selectedReadyMadePathId.set(pathId);
     this.selectedReadyMadeDays.set(null);
     this.selectedReadyMadeHours.set(null);
+    this.authoredPlanStep.set('select');
     this.readyMadeMessage.set('');
   }
   protected chooseReadyMadeDays(value: string): void {
     const days = Number(value) as ReadyMadeDuration;
     const compatible = this.readyMadeDurations().includes(days);
     this.selectedReadyMadeDays.set(compatible ? days : null);
+    this.authoredPlanStep.set('select');
     if (
       this.selectedReadyMadeHours() !== null &&
       !this.readyMadePath()?.variants.some(
@@ -774,6 +905,7 @@ export class StudyPlanPage implements OnInit {
   protected chooseReadyMadeHours(value: string): void {
     const hours = Number(value);
     this.selectedReadyMadeHours.set(this.readyMadeHours().includes(hours) ? hours : null);
+    this.authoredPlanStep.set('select');
     this.readyMadeMessage.set(
       hours >= 6
         ? 'This is an intensive daily schedule. Availability is a ceiling; breaks and unused time remain valid.'
@@ -790,6 +922,7 @@ export class StudyPlanPage implements OnInit {
         next: (catalog) => {
           this.readyMadeCatalog.set(catalog);
           this.readyMadeStatus.set('ready');
+          this.restoreReadyMadeSelectionFromRoute();
         },
         error: () => {
           this.readyMadeCatalog.set(null);
@@ -1195,13 +1328,31 @@ export class StudyPlanPage implements OnInit {
         this.goalType.set(params.get('approach') as 'learning' | 'interview');
       if (params.has('topics'))
         this.selectedTopicIds.set(new Set((params.get('topics') ?? '').split(',')));
+      const requestedCreation = params.get('creation');
+      const creationMode: StudyPlanCreationMode =
+        requestedCreation === 'choice' ||
+        requestedCreation === 'authored' ||
+        requestedCreation === 'custom'
+          ? requestedCreation
+          : params.get('create') === '1' && !params.has('builderStep') && !params.has('topics')
+            ? 'choice'
+            : 'custom';
+      this.creationMode.set(creationMode);
+      this.authoredPlanStep.set(params.get('authoredStep') === 'review' ? 'review' : 'select');
+      if (creationMode === 'authored') this.restoreReadyMadeSelectionFromRoute();
       const requestedStep = params.get('builderStep');
       const nextStep = this.wizardSteps.some((step) => step.id === requestedStep)
         ? (requestedStep as StudyPlanWizardStep)
         : 'setup';
-      const changed = nextStep !== this.wizardStep();
       this.wizardStep.set(nextStep);
-      if (changed) this.focusWizardStep();
+      if (
+        params.get('view') === 'plans' &&
+        this.accountReady() &&
+        this.accountMode() &&
+        !this.editsLocked()
+      )
+        this.displayPlanDashboard();
+      else if (params.get('create') === '1') this.dashboardVisible.set(false);
       // Legacy access URL values never grant access or authorize a plan.
     });
   }
@@ -1309,7 +1460,8 @@ export class StudyPlanPage implements OnInit {
     this.goalType.set(value);
     this.persistWizardDraft();
   }
-  protected async goToWizardStep(step: StudyPlanWizardStep): Promise<void> {
+  protected async goToWizardStep(step: StudyPlanWizardStep, focusHeading = false): Promise<void> {
+    const viewport = focusHeading ? null : { x: window.scrollX, y: window.scrollY };
     if (step !== 'setup' && !this.setupStepValid()) {
       this.status.set('Complete the plan setup before choosing courses.');
       step = 'setup';
@@ -1320,14 +1472,23 @@ export class StudyPlanPage implements OnInit {
       queryParams: { create: 1, builderStep: step },
       queryParamsHandling: 'merge',
     });
+    if (focusHeading) this.focusWizardStep();
+    else if (viewport)
+      setTimeout(() => {
+        if (this.destroyRef.destroyed) return;
+        document.documentElement.scrollLeft = viewport.x;
+        document.documentElement.scrollTop = viewport.y;
+        document.body.scrollLeft = viewport.x;
+        document.body.scrollTop = viewport.y;
+      }, 0);
   }
   protected async continueWizard(): Promise<void> {
     const next = this.wizardSteps[this.wizardStepIndex() + 1];
-    if (next) await this.goToWizardStep(next.id);
+    if (next) await this.goToWizardStep(next.id, true);
   }
   protected async backWizard(): Promise<void> {
     const previous = this.wizardSteps[this.wizardStepIndex() - 1];
-    if (previous) await this.goToWizardStep(previous.id);
+    if (previous) await this.goToWizardStep(previous.id, true);
   }
   private focusWizardStep(): void {
     setTimeout(() => {
@@ -1335,7 +1496,7 @@ export class StudyPlanPage implements OnInit {
     }, 0);
   }
   private persistWizardDraft(): void {
-    if (!this.setupVisible()) return;
+    if (!this.setupVisible() || this.creationMode() !== 'custom') return;
     try {
       window.sessionStorage.setItem(
         DRAFT_INTENT_KEY,
@@ -1894,6 +2055,10 @@ export class StudyPlanPage implements OnInit {
     this.selectedDay.set(
       Number.isInteger(requestedDay) && requestedDay >= 1 && requestedDay <= 180 ? requestedDay : 1,
     );
+    if (this.route.snapshot.queryParamMap.get('view') === 'plans') {
+      this.displayPlanDashboard();
+      return;
+    }
     if (this.route.snapshot.queryParamMap.get('create') === '1') {
       this.accountStore.newPlan();
       this.restoreDraftIntent();
@@ -1951,11 +2116,13 @@ export class StudyPlanPage implements OnInit {
     this.accountStore.newPlan();
     this.saved.set(null);
     this.selectedDay.set(1);
+    this.creationMode.set('choice');
+    this.authoredPlanStep.set('select');
     this.wizardStep.set('setup');
     void this.router.navigate(['/study-plan'], {
-      queryParams: { create: 1, builderStep: 'setup' },
+      queryParams: { create: 1, creation: 'choice' },
     });
-    this.status.set('Choose the focus for a new plan. Progress in your other plans is unchanged.');
+    this.status.set('Choose an authored plan or create your own. Other plans are unchanged.');
   }
   protected async openAccountPlan(planId: string): Promise<void> {
     this.rememberCreationSetup();

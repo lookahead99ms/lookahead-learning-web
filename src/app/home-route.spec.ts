@@ -57,7 +57,9 @@ describe('canonical homepage', () => {
         ?.getAttribute('href'),
     ).toBe('/');
     expect(
-      harness.routeNativeElement?.querySelector('a.navigation-utility[href="/study-plan"]'),
+      harness.routeNativeElement?.querySelector(
+        'a.navigation-utility[href="/study-plan?view=plans"]',
+      ),
     ).not.toBeNull();
   });
 

@@ -22,6 +22,7 @@
     <a
       class="navigation-utility"
       routerLink="/study-plan"
+      [queryParams]="{ view: 'plans' }"
       routerLinkActive="active"
       ariaCurrentWhenActive="page"
       ><span class="navigation-utility-label">Study Plan</span></a
@@ -171,7 +172,11 @@
             </div>
             <div class="menu-divider"></div>
             <nav class="dropdown-links-list" aria-label="Account links">
-              <a routerLink="/study-plan" class="dropdown-item-link" (click)="closeForNavigation()"
+              <a
+                routerLink="/study-plan"
+                [queryParams]="{ view: 'plans' }"
+                class="dropdown-item-link"
+                (click)="closeForNavigation()"
                 >View study plan</a
               >
               <a routerLink="/account" class="dropdown-item-link" (click)="closeForNavigation()"
