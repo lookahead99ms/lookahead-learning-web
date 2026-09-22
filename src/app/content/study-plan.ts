@@ -460,12 +460,9 @@ function assignmentFor(document: SearchDocument, topic: StudyPlanTopic): StudyPl
   return {
     id: document.canonicalContentId ?? document.id,
     kind: 'new',
-    prerequisiteIds: [
-      ...new Set([
-        ...(document.studyPrerequisiteIds ?? []),
-        ...(document.studyRelatedLessonIds ?? []),
-      ]),
-    ],
+    // Related lessons support optional refresh links. Only explicitly authored
+    // prerequisites may block a selected practice item from the schedule.
+    prerequisiteIds: [...new Set(document.studyPrerequisiteIds ?? [])],
     relatedLessonIds: document.studyRelatedLessonIds ?? [],
     activity,
     topicId: topic.id,

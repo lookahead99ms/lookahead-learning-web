@@ -129,9 +129,7 @@ describe('StudyPlanPage', () => {
       .deskEntries()
       .find((entry: any) => entry.assignment.id === selectedId);
     expect(page.selectedDay()).toBe(selectedEntry.query.day);
-    root
-      .querySelector<HTMLButtonElement>(`[data-desk-action="complete-${selectedId}"]`)!
-      .click();
+    root.querySelector<HTMLButtonElement>(`[data-desk-action="complete-${selectedId}"]`)!.click();
     harness.detectChanges();
     expect(page.saved().completedIds).toContain(selectedId);
     expect(page.saved().studyLog.at(-1).day).toBe(selectedEntry.query.day);
@@ -523,7 +521,7 @@ describe('StudyPlanPage', () => {
     expect(page.goal()).toBe('Build reliable engineering foundations');
     harness.detectChanges();
     expect(harness.routeNativeElement!.querySelector('.account-panel')).toBeNull();
-    expect(harness.routeNativeElement!.querySelector('.creation-intro')).not.toBeNull();
+    expect(harness.routeNativeElement!.querySelector('.plan-type-panel')).not.toBeNull();
     page.goal.set('My unfinished draft');
     page.days.set(60);
     await page.openAuthorScenario('saved');
@@ -606,7 +604,9 @@ describe('StudyPlanPage', () => {
     expect(overview.querySelector('.active-plan-context')).not.toBeNull();
     expect(overview.querySelector('.compass-panel')).not.toBeNull();
     expect(harness.routeNativeElement!.querySelector('.active-plan > .compass-panel')).toBeNull();
-    expect(overview.querySelector('.plan-guidance-heading')?.textContent).toContain('About this plan');
+    expect(overview.querySelector('.plan-guidance-heading')?.textContent).toContain(
+      'About this plan',
+    );
     const guidance = [...overview.querySelectorAll('.plan-guidance li')].map((item) =>
       item.textContent?.replace(/\s+/g, ' ').trim(),
     );
@@ -836,12 +836,35 @@ describe('StudyPlanPage', () => {
     await harness.navigateByUrl('/study-plan', StudyPlanPage);
     harness.detectChanges();
     const controls = harness.routeNativeElement!.querySelectorAll<HTMLSelectElement>(
-      '.builder-step .field-pair select',
+      '.builder-step .setup-fields select',
     );
-    expect(controls[0].value).toBe('30');
-    expect(controls[1].value).toBe('1');
+    expect(controls[1].value).toBe('30');
+    expect(controls[2].value).toBe('1');
     expect(harness.routeNativeElement!.querySelectorAll('fieldset')).toHaveLength(0);
     expect(harness.routeNativeElement!.textContent).toContain('Continue to Learn');
+  });
+
+  it('keeps the current viewport when a learner selects a wizard step directly', async () => {
+    const harness = await RouterTestingHarness.create();
+    const page: any = await harness.navigateByUrl('/study-plan', StudyPlanPage);
+    harness.detectChanges();
+    const focus = vi.spyOn(HTMLElement.prototype, 'focus');
+    const stepButtons = harness.routeNativeElement!.querySelectorAll<HTMLButtonElement>(
+      '.builder-progress button',
+    );
+
+    stepButtons[1].click();
+    await harness.fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(page.wizardStep()).toBe('learn');
+    expect(focus).not.toHaveBeenCalled();
+
+    await page.backWizard();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(page.wizardStep()).toBe('setup');
+    expect(focus).toHaveBeenCalled();
+    focus.mockRestore();
   });
 
   it('keeps waiting work out of the selected-day grid until it is explicitly recorded', async () => {
@@ -891,10 +914,10 @@ describe('StudyPlanPage', () => {
     );
     harness.detectChanges();
     const controls = harness.routeNativeElement!.querySelectorAll<HTMLSelectElement>(
-      '.builder-step .field-pair select',
+      '.builder-step .setup-fields select',
     );
-    expect(controls[0].value).toBe('120');
-    expect(controls[1].value).toBe('3');
+    expect(controls[1].value).toBe('120');
+    expect(controls[2].value).toBe('3');
     expect(
       (harness.routeNativeElement!.querySelector('button[aria-current="step"]') as HTMLElement)
         .textContent,
@@ -1028,7 +1051,7 @@ describe('StudyPlanPage', () => {
     await TestBed.inject(StudyPlanAccount).initialize();
     const harness = await RouterTestingHarness.create();
     const page = await harness.navigateByUrl(
-      '/study-plan?topics=learn:hands-on-dsa,learn:algorithmic-patterns',
+      '/study-plan?topics=learn:hands-on-dsa',
       StudyPlanPage,
     );
     await (page as any).goToWizardStep('learn');
@@ -1631,8 +1654,9 @@ describe('StudyPlanPage', () => {
     expect(harness.routeNativeElement!.querySelector('.setup-panel')).toBeNull();
     expect(harness.routeNativeElement!.querySelector('.revision-panel')).toBeNull();
     expect(
-      harness.routeNativeElement!.querySelector('.plan-level-actions [aria-haspopup="dialog"]:nth-child(2)')
-        ?.textContent,
+      harness.routeNativeElement!.querySelector(
+        '.plan-level-actions [aria-haspopup="dialog"]:nth-child(2)',
+      )?.textContent,
     ).toContain('Make Room for Real Life');
   });
 
@@ -1840,6 +1864,19 @@ describe('StudyPlanPage', () => {
     expect(page.dashboardVisible()).toBe(true);
     expect(page.progressVisible()).toBe(false);
     expect(harness.routeNativeElement!.querySelectorAll('.plan-card')).toHaveLength(2);
+    page = await harness.navigateByUrl(
+      '/study-plan?create=1&creation=custom&builderStep=review',
+      StudyPlanPage,
+    );
+    await Promise.resolve();
+    harness.detectChanges();
+    expect(page.dashboardVisible()).toBe(false);
+    expect(page.creationMode()).toBe('custom');
+    page = await harness.navigateByUrl('/study-plan?view=plans', StudyPlanPage);
+    await Promise.resolve();
+    harness.detectChanges();
+    expect(page.dashboardVisible()).toBe(true);
+    expect(harness.routeNativeElement!.querySelectorAll('.plan-card')).toHaveLength(2);
     await harness.navigateByUrl('/exit', PlannerExit);
     page = await harness.navigateByUrl('/study-plan?plan=owned&day=8', StudyPlanPage);
     await Promise.resolve();
@@ -2020,6 +2057,11 @@ describe('StudyPlanPage', () => {
     expect(review.textContent).toContain('core-java');
     expect(page.draft()).toBeNull();
     expect(window.localStorage.getItem('look-ahead.study-plan.v1')).toBeNull();
+    const actions = harness.routeNativeElement!.querySelector('.builder-actions')!;
+    const actionLabels = [...actions.querySelectorAll('button')].map((button) =>
+      button.textContent!.replace(/\s+/g, ' ').trim(),
+    );
+    expect(actionLabels).toEqual(['Back', 'Review complete schedule']);
 
     await page.generatePlan();
     harness.detectChanges();
@@ -2080,6 +2122,120 @@ describe('StudyPlanPage', () => {
     );
     expect(save).not.toHaveBeenCalled();
     expect(window.localStorage.getItem('look-ahead.study-plan.v1')).toBeNull();
+  });
+
+  it('offers authored and custom entry points and copies an authored review into the custom builder', async () => {
+    const crossPathDocuments: SearchDocument[] = [
+      { ...document('java-lesson', 'core-java', 'free'), courseTitle: 'Core Java' },
+      {
+        ...document('spring-lesson', 'spring-boot', 'free'),
+        path: 'grow',
+        courseTitle: 'Spring Boot',
+        route: ['/', 'grow', 'spring-boot', 'spring-lesson'],
+      },
+      {
+        ...document('design-lesson', 'system-design', 'free'),
+        path: 'look-ahead',
+        courseTitle: 'System Design',
+        route: ['/', 'look-ahead', 'system-design', 'design-lesson'],
+      },
+    ];
+    const variant = {
+      templateId: 'backend-d30-h2',
+      templateVersion: 'template-v1',
+      durationDays: 30,
+      dailyHours: 2,
+      intensive: false,
+      intendedUse: 'Backend interview preparation',
+      href: '/content/study-plans/templates/backend-d30-h2.json',
+      sha256: 'sha-test',
+      scheduledMinutes: 900,
+      selectedContentCount: 3,
+      availableContentCount: 3,
+      topicIds: ['learn:core-java', 'grow:spring-boot', 'look-ahead:system-design'],
+    };
+    TestBed.overrideProvider(ContentService, {
+      useValue: {
+        ...service,
+        getSearchIndex: () => of(crossPathDocuments),
+        getReadyMadeStudyPlans: () =>
+          of({
+            schemaVersion: 'study-plan-picker/v1',
+            catalogVersion: 'picker-v1',
+            availabilityUnit: 'hours-per-day',
+            durationOptions: [30],
+            pendingOptions: [],
+            paths: [
+              {
+                id: 'backend',
+                title: 'Backend interview path',
+                summary: 'A reviewed path across the platform.',
+                roleLevel: 'Engineer',
+                startingKnowledge: ['Can write production code.'],
+                outcomes: ['Explain implementation and architecture decisions.'],
+                uncoveredScope: ['Does not cover every published course.'],
+                topics: [
+                  { id: 'learn:core-java', title: 'Core Java' },
+                  { id: 'grow:spring-boot', title: 'Spring Boot' },
+                  { id: 'look-ahead:system-design', title: 'System Design' },
+                ],
+                recommendedVariantId: variant.templateId,
+                variants: [variant],
+              },
+            ],
+          }),
+      },
+    });
+    const harness = await RouterTestingHarness.create();
+    const page: any = await harness.navigateByUrl(
+      '/study-plan?create=1&creation=choice',
+      StudyPlanPage,
+    );
+    harness.detectChanges();
+    const chooser = harness.routeNativeElement!.querySelector('.plan-type-panel')!;
+    const choices = [...chooser.querySelectorAll<HTMLButtonElement>('.plan-type-card')];
+    expect(choices).toHaveLength(2);
+    expect(choices.map((choice) => choice.textContent)).toEqual([
+      expect.stringContaining('Authored'),
+      expect.stringContaining('Custom'),
+    ]);
+
+    await page.selectCreationMode('authored');
+    page.chooseReadyMadePath('backend');
+    page.chooseReadyMadeDays('30');
+    page.chooseReadyMadeHours('2');
+    await page.reviewAuthoredPlan();
+    harness.detectChanges();
+
+    const review = harness.routeNativeElement!.querySelector('.authored-plan-review')!;
+    const pathGroups = [...review.querySelectorAll<HTMLElement>('.authored-path-review section')];
+    expect(pathGroups.map((group) => group.textContent)).toEqual([
+      expect.stringContaining('Core Java'),
+      expect.stringContaining('Spring Boot'),
+      expect.stringContaining('System Design'),
+    ]);
+    expect(TestBed.inject(Router).url).toContain('authoredStep=review');
+    expect(page.saved()).toBeNull();
+    expect(page.draft()).toBeNull();
+
+    const save = vi.spyOn(TestBed.inject(StudyPlanAccount), 'save');
+    await page.customizeAuthoredPlan();
+    harness.detectChanges();
+
+    expect(page.creationMode()).toBe('custom');
+    expect(page.wizardStep()).toBe('learn');
+    expect(page.goal()).toBe('Backend interview path');
+    expect(page.days()).toBe(30);
+    expect(page.dailyHours()).toBe(2);
+    expect([...page.selectedTopicIds()]).toEqual([
+      'learn:core-java',
+      'grow:spring-boot',
+      'look-ahead:system-design',
+    ]);
+    expect(TestBed.inject(Router).url).toContain('creation=custom');
+    expect(TestBed.inject(Router).url).toContain('builderStep=learn');
+    expect(save).not.toHaveBeenCalled();
+    expect(page.saved()).toBeNull();
   });
 
   it('loads an authored variant through three dependent controls and keeps it temporary until save', async () => {
@@ -2220,6 +2376,7 @@ describe('StudyPlanPage', () => {
     });
     const harness = await RouterTestingHarness.create();
     const page: any = await harness.navigateByUrl('/study-plan', StudyPlanPage);
+    await page.selectCreationMode('authored');
     harness.detectChanges();
     expect(
       harness.routeNativeElement!.querySelectorAll('.ready-made-controls select'),
@@ -2358,10 +2515,11 @@ describe('StudyPlanPage', () => {
     });
     const harness = await RouterTestingHarness.create();
     const page: any = await harness.navigateByUrl('/study-plan', StudyPlanPage);
+    await page.selectCreationMode('authored');
     harness.detectChanges();
     expect(page.readyMadeStatus()).toBe('error');
     expect(harness.routeNativeElement!.textContent).toContain('could not be loaded');
-    expect(harness.routeNativeElement!.textContent).toContain('Choose one part at a time');
+    expect(harness.routeNativeElement!.textContent).toContain('Choose a preparation path');
     expect(page.saved()).toBeNull();
     expect(page.draft()).toBeNull();
   });

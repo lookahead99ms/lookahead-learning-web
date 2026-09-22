@@ -191,6 +191,39 @@ describe('bounded prerequisite and retrieval scheduling', () => {
     const plan = buildStudyPlan([lesson, nextLesson, practice], config);
     expect(plan.days[0].assignments.map((item) => item.id)).toEqual(['lesson-a', 'practice-a']);
   });
+  it('schedules Hands-on DSA problems when related lessons are outside the selected offering', () => {
+    const tool = {
+      ...document('tool:learn:hands-on-dsa', 'learn', 'hands-on-dsa', 'guide'),
+      discoveryKind: 'tool' as const,
+      courseTitle: 'Hands-on DSA Practice',
+    };
+    const problem = {
+      ...document('placement', 'learn', 'algorithmic-patterns', 'dsa-problem'),
+      canonicalContentId: 'canonical-problem',
+      discoveryKind: 'practice' as const,
+      studyRelatedLessonIds: ['pattern-foundation'],
+    };
+    const topics = studyPlanOfferings([tool, problem]);
+    const handsOn = topics.find((topic) => topic.id === 'learn:hands-on-dsa')!;
+    const plan = buildStudyPlan(
+      [tool, problem],
+      {
+        days: 30,
+        dailyHours: 1,
+        topicIds: [handsOn.id],
+        accessTopicIds: [handsOn.id],
+      },
+      topics,
+      new Map([['canonical-problem', 1]]),
+    );
+
+    const scheduled = plan.days.flatMap((day) => day.assignments);
+    expect(scheduled.some((item) => item.id === 'canonical-problem')).toBe(true);
+    expect(scheduled.find((item) => item.id === 'canonical-problem')?.relatedLessonIds).toEqual([
+      'pattern-foundation',
+    ]);
+    expect(plan.blockedItems).toEqual([]);
+  });
   it('reports missing dependencies and cycles without enrolling unselected content', () => {
     const a = { ...document('a', 'learn', 'core-java'), studyPrerequisiteIds: ['b'] };
     const b = { ...document('b', 'learn', 'core-java'), studyPrerequisiteIds: ['a'] };

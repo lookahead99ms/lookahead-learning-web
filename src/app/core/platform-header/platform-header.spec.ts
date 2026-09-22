@@ -97,6 +97,17 @@ describe('PlatformHeader account disclosure', () => {
     expect(fixture.nativeElement.querySelector('[role="menuitem"]')).toBeNull();
   });
 
+  it('routes both Study Plan entry points to the saved-plan chooser', () => {
+    const { fixture } = signedInHeader();
+    const element = fixture.nativeElement as HTMLElement;
+    const links = [...element.querySelectorAll<HTMLAnchorElement>('a[href^="/study-plan"]')];
+    expect(links).toHaveLength(2);
+    expect(links.map((link) => link.getAttribute('href'))).toEqual([
+      '/study-plan?view=plans',
+      '/study-plan?view=plans',
+    ]);
+  });
+
   function signedInHeader() {
     const store = TestBed.inject(StudyPlanAccount);
     store.account.set({
