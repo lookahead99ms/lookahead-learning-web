@@ -312,42 +312,36 @@ export class Search implements OnInit {
   protected updateCourse(value: string): void {
     this.selectedCourseId.set(value);
     this.selectedModuleId.set('all');
-    this.retainUnavailableTags();
     this.resetVisibleResults();
     this.syncUrl();
   }
 
   protected updateModule(value: string): void {
     this.selectedModuleId.set(value);
-    this.retainUnavailableTags();
     this.resetVisibleResults();
     this.syncUrl();
   }
 
   protected updateDifficulty(value: string): void {
     this.selectedDifficulty.set(this.difficultyFromValue(value));
-    this.retainUnavailableTags();
     this.resetVisibleResults();
     this.syncUrl();
   }
 
   protected updateLanguage(value: string): void {
     this.selectedLanguage.set(this.languageFromValue(value));
-    this.retainUnavailableTags();
     this.resetVisibleResults();
     this.syncUrl();
   }
 
   protected updateContentType(value: string): void {
     this.selectedContentType.set(this.contentTypeFromValue(value));
-    this.retainUnavailableTags();
     this.resetVisibleResults();
     this.syncUrl();
   }
 
   protected updateDiscoveryKind(value: string): void {
     this.selectedDiscoveryKind.set(this.discoveryKindFromValue(value));
-    this.retainUnavailableTags();
     this.resetVisibleResults();
     this.syncUrl();
   }
@@ -393,7 +387,6 @@ export class Search implements OnInit {
 
   protected updatePracticeFormat(value: string): void {
     this.selectedPracticeFormat.set(this.practiceFormatFromValue(value));
-    this.retainUnavailableTags();
     this.resetVisibleResults();
     this.syncUrl();
   }
@@ -501,7 +494,6 @@ export class Search implements OnInit {
       next: (questions) => {
         if (requestVersion !== this.indexRequestVersion) return;
         this.questions.set(questions);
-        this.retainUnavailableTags();
         this.loading.set(false);
       },
       error: () => {
@@ -518,22 +510,6 @@ export class Search implements OnInit {
     this.selectedTags.update(
       (selectedTags) =>
         new Set([...selectedTags].filter((tag) => this.pathForFilter(tag) === null)),
-    );
-  }
-
-  private retainUnavailableTags(): void {
-    const available = new Set(
-      this.scopeResults().flatMap((result) =>
-        this.subjectLabels(result).map((tag) => this.normalize(tag)),
-      ),
-    );
-    this.selectedTags.update(
-      (selectedTags) =>
-        new Set(
-          [...selectedTags].filter(
-            (tag) => this.pathForFilter(tag) !== null || available.has(this.normalize(tag)),
-          ),
-        ),
     );
   }
 

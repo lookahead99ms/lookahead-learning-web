@@ -15,10 +15,10 @@ import {
         [class.compact]="variant() === 'compact'"
         routerLink="/interview-questions"
         [queryParams]="{ path: pathId(), course: courseId(), module: moduleId() }"
-        [attr.aria-label]="presentation().ariaLabel"
+        [attr.aria-label]="accessibleLabel()"
       >
         @if (variant() === 'compact') {
-          <strong>{{ presentation().compactLabel }}</strong>
+          <strong>{{ label() || presentation().compactLabel }}</strong>
           <span>{{ presentation().count }}</span>
         } @else {
           <span>{{ presentation().eyebrow }}</span>
@@ -69,7 +69,6 @@ import {
       .question-bank-link:focus-visible {
         border-color: var(--accent-strong);
         box-shadow: 0 8px 20px var(--shadow);
-
       }
       :host:has(.compact) {
         display: inline-block;
@@ -139,7 +138,13 @@ export class InterviewQuestionBankLink {
   readonly questionCount = input.required<number>();
   readonly practiceItems = input<readonly PracticePresentationItem[]>([]);
   readonly variant = input<'bar' | 'compact'>('bar');
+  readonly label = input('');
   protected readonly presentation = computed(() =>
     practicePresentation(this.practiceItems(), this.questionCount()),
+  );
+  protected readonly accessibleLabel = computed(() =>
+    this.label()
+      ? `${this.label()}: ${this.presentation().count} items`
+      : this.presentation().ariaLabel,
   );
 }

@@ -953,7 +953,7 @@ export class Question implements OnInit {
             : this.sourcePositions()[link.problemId];
       const meaning = number
         ? label === 'Pattern order'
-          ? `Pattern order ${number} in ${this.patternRevealed() ? this.handsOnPatternTitles()[pattern] ?? 'this pattern' : 'this practice sequence'}`
+          ? `Pattern order ${number} in ${this.patternRevealed() ? (this.handsOnPatternTitles()[pattern] ?? 'this pattern') : 'this practice sequence'}`
           : `${label.split(' · ')[0]} ${number} of ${this.releaseTotal()}`
         : label;
       return {
@@ -2080,7 +2080,13 @@ export class Question implements OnInit {
     this.isLastModuleInCompetency.set(!nextModule);
 
     const moduleQuestions = course.questions
-      .filter(({ moduleId }) => moduleId === question.moduleId)
+      .filter(
+        (candidate) =>
+          candidate.moduleId === question.moduleId &&
+          (question.contentType === 'theory'
+            ? candidate.contentType === 'theory'
+            : candidate.contentType !== 'theory'),
+      )
       .sort((left, right) => left.order - right.order);
     const currentIndex = moduleQuestions.findIndex(({ id }) => id === question.id);
     this.isFirstQuestionInModule.set(currentIndex === 0);

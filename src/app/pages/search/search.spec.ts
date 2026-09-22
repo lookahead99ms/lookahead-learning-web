@@ -527,6 +527,27 @@ describe('Unified Search topic workbench', () => {
     expect(tag.classList.contains('active')).toBe(false);
   });
 
+  it('keeps an unsupported legacy subject visible instead of silently showing all results', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/search?tags=URL%20Shortener', Search);
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+
+    const activeSubjects = [
+      ...harness.routeNativeElement!.querySelectorAll<HTMLButtonElement>(
+        '.tag-pill[aria-pressed="true"]',
+      ),
+    ].map((button) => button.textContent.trim());
+    expect(activeSubjects).toContain('URL Shortener');
+    expect(harness.routeNativeElement?.querySelector('.tag-panel-title')?.textContent).toContain(
+      '1 active',
+    );
+    expect(harness.routeNativeElement?.querySelector('.result-summary')?.textContent).toContain(
+      'Showing 0 of 0 matching results',
+    );
+    expect(TestBed.inject(Router).url).toBe('/search?tags=URL%20Shortener');
+  });
+
   it('finds a canonical problem through a secondary course placement without duplicating it', async () => {
     const canonical: SearchDocument = {
       ...document,
