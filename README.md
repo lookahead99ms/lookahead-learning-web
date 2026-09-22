@@ -196,6 +196,62 @@ See `lookahead-learning-infra/docs/local-accounts.md` and
 `lookahead-learning-infra/docs/oauth-local.md` for service startup and shutdown.
 Do not start a second stack for a frontend-only styling change.
 
+### Custom Study Plan builder
+
+Open `/study-plan?create=1` to build a custom plan through five progressive
+steps: setup, Learn, Grow, Look Ahead, and review. Setup must be valid before the
+course steps open; each path may be left empty as long as at least one accessible
+course is selected across the whole plan. The current step is URL-owned for
+Back/Forward navigation, while unsaved choices use session-scoped draft intent so
+a reload or sign-in continuation does not create a saved plan. The final Review
+step summarizes the setup and all three paths before generating the existing
+temporary schedule. Save remains an explicit action inside that schedule review.
+
+Course choices use a three-column desktop grid, two columns on tablet and one on
+narrow mobile. Ready-made plans keep their separate picker and adoption guard;
+the custom builder does not impose ready-made foundation policy on learner-selected
+plans.
+
+### Active Study Plan
+
+Open `/study-plan?plan=<id>` to continue a saved account plan. The page uses
+**Study Plan** as its learner-facing title, presents the saved goal as the tagline,
+and keeps duration, recovery, saved state and plan actions together near the page
+heading. The same active-plan card continues into the always-visible
+**Protect the time you have.** first-week allocation above the activity desk.
+Beside the time summary, a compact 2×2 editorial grid presents four page-description
+statements: browsing follows saved progress without moving it, completion records
+practice rather than mastery, progress belongs to this plan, and Learn/Practice/Recall
+fit within the learner's chosen time. Account mode identifies the saved account;
+browser-local mode identifies the current browser honestly.
+**Topics in your plan** and its stateful Hide/Show control
+share the left rail. Browse a topic,
+activity, or recall without changing progress. The former standalone next-activity
+and Resume strip is removed; the underlying eligible daily queue and recorded
+study-day selection remain the source of recommendations. No separate reading
+bookmark is persisted. Returning from a contextual reader restores the viewed
+activity independently of that recommendation.
+
+The selected study day renders its actual scheduled activities as responsive
+cards. Each card carries the canonical Open action, its explicit progress control,
+and the item's complete scheduled strategy sequence. Understand, Practice and
+Recall occurrences are clickable compact controls that move to the occurrence's
+real study day without recording progress.
+
+The former **Plan overview and time allocation** and **Daily schedule and
+adjustments** disclosure sections are removed from the active view. Their useful
+entry points remain in the heading-level plan actions and the visible allocation
+summary, avoiding a second copy of the day activities below the card grid.
+
+Progress changes only through explicit completion, attempt, review-note, or
+recovery controls. Every available activity has a content-aware link to its
+canonical lesson, question, or problem; opening content never records completion.
+Completion can be undone where the existing activity contract supports it. The
+complete schedule, daily adjustments, revision history, source pins and access
+checks remain available. No learner-code execution is enabled.
+Connected mode uses the existing account activity API; the standalone demo saves
+only in the current browser and does not synchronize across devices.
+
 ### Manage account
 
 Open **Manage account** from the signed-in account menu to review your profile,
@@ -226,6 +282,10 @@ generally counts separately. Browser/device descriptions are
 approximate. The current sign-in can have an optional label. Individual Sign out
 and Sign out other sign-ins require explicit confirmation and preserve saved work.
 Changing a password retains the stronger behavior of ending every sign-in.
+
+Refresh list restores focus to its control after loading or failure and announces
+the result. The Local count uses singular or plural text, and current-session
+confirmation describes the actual number of other active sign-ins.
 
 This slice requires the DLV-920 Identity/Gateway contract. It uses the same-origin
 Identity routes under `/api/v1/account/sign-ins` and does not derive authorization

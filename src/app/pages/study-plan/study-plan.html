@@ -5,20 +5,124 @@
       <p><a routerLink="/author">Author views</a></p>
     }
     <p class="eyebrow">Adaptive Compass / Study plans</p>
-    <h1 #pageHeading tabindex="-1">
-      {{
-        dashboardVisible()
-          ? 'Your study plans'
-          : progressVisible()
-            ? 'Your study progress'
-            : 'A plan that bends with your week.'
-      }}
-    </h1>
-    <p class="lede">Keep your direction when time and priorities change.</p>
     @if (progressVisible()) {
-      <p class="storage-note">
-        {{ accountMode() ? 'Saved to your account.' : 'Saved on this browser.' }}
-      </p>
+      <div class="progress-title-row">
+        <div>
+          <h1 #pageHeading tabindex="-1">Study Plan</h1>
+          <p class="plan-tagline">{{ saved()?.goal }}</p>
+        </div>
+        @if (accountMode() && !accountStore.sessionExpired()) {
+          <div class="progress-heading-actions">
+            @if (accountStore.plans().length > 1) {
+              <button type="button" [disabled]="editsLocked()" (click)="showAllPlans()">
+                All study plans
+              </button>
+            }
+            <button type="button" [disabled]="editsLocked()" (click)="newAccountPlan()">
+              Create another plan
+            </button>
+          </div>
+        }
+      </div>
+      @if (plan(); as headerPlan) {
+        <section class="active-plan-overview panel" aria-label="Your active plan">
+          <div class="active-plan-context">
+            <div>
+              <p class="eyebrow">Your active plan · Revision {{ saved()!.revision }}</p>
+              <p class="plan-summary">
+                {{ headerPlan.config.days }} study days
+                @if (saved()!.shiftedDays) {
+                  · {{ saved()!.shiftedDays }} recovery
+                  {{ saved()!.shiftedDays === 1 ? 'day' : 'days' }} added ·
+                  {{ headerPlan.config.days + saved()!.shiftedDays }} days including recovery
+                }
+              </p>
+            </div>
+            <label class="active-day-selector">
+              Study day
+              <select
+                [value]="selectedDay()"
+                (change)="selectedDay.set(+$any($event.target).value)"
+              >
+                @for (day of headerPlan.days; track day.day) {
+                  <option [value]="day.day" [selected]="selectedDay() === day.day">
+                    Day {{ day.day }}
+                  </option>
+                }
+              </select>
+            </label>
+            <div class="plan-level-actions" aria-label="Plan actions">
+              <button type="button" aria-haspopup="dialog" (click)="openSchedule()">
+                Your complete schedule
+              </button>
+              <button
+                type="button"
+                aria-haspopup="dialog"
+                [disabled]="editsLocked()"
+                (click)="openRecovery()"
+              >
+                Make Room for Real Life
+              </button>
+              <button
+                type="button"
+                [disabled]="editsLocked()"
+                (click)="openScheduleDay(selectedDay())"
+              >
+                Review study day {{ selectedDay() }}
+              </button>
+            </div>
+          </div>
+          <section class="compass-panel" aria-labelledby="time-protection-heading">
+            <div
+              class="compass-ring"
+              [style.--learning-end]="weekAllocation().learningEnd + '%'"
+              [style.--practice-end]="weekAllocation().practiceEnd + '%'"
+            >
+              <div>
+                <strong>{{ weekAllocation().total }}</strong
+                ><span>minutes in your first week</span>
+              </div>
+            </div>
+            <div class="compass-summary">
+              <p class="eyebrow">Direction, not pressure</p>
+              <h2 id="time-protection-heading">Protect the time you have.</h2>
+              <dl class="allocation">
+                <div>
+                  <dt>Learn</dt>
+                  <dd>{{ weekAllocation().understand }}m</dd>
+                </div>
+                <div>
+                  <dt>Practice</dt>
+                  <dd>{{ weekAllocation().practice }}m</dd>
+                </div>
+                <div>
+                  <dt>Recall</dt>
+                  <dd>{{ weekAllocation().recall }}m</dd>
+                </div>
+              </dl>
+              <aside class="plan-guidance" aria-labelledby="plan-guidance-heading">
+                <p class="plan-guidance-heading" id="plan-guidance-heading">About this plan</p>
+                <ul>
+                  <li><strong>Completion</strong> records your practice, not mastery.</li>
+                  <li>
+                    <strong>{{ accountMode() ? 'Saved to your account.' : 'Saved on this browser.' }}</strong>
+                    Progress belongs to this plan.
+                  </li>
+                  <li>
+                    <strong>Based on saved progress.</strong> Exploring topics does not move your place.
+                  </li>
+                  <li><strong>Learn, practice, and recall</strong> within the time you set.</li>
+                </ul>
+              </aside>
+            </div>
+          </section>
+        </section>
+      }
+    } @else {
+      <h1 #pageHeading tabindex="-1">
+        {{ dashboardVisible() ? 'Your study plans' : 'A plan that bends with your week.' }}
+      </h1>
+      <p class="lede">Keep your direction when time and priorities change.</p>
     }
   </section>
   @if (dashboardVisible() && accountMode() && !accountStore.sessionExpired()) {
@@ -77,8 +181,7 @@
         <summary>Bring your browser plan into this account</summary>
         <p>
           This creates a separate account plan with its saved progress and notes. The original
-          browser copy stays unchanged. Historical details that were never recorded remain
-          unknown.
+          browser copy stays unchanged. Historical details that were never recorded remain unknown.
         </p>
         <button type="button" [disabled]="editsLocked()" (click)="importBrowserPlan()">
           Import browser plan
@@ -90,26 +193,9 @@
     accountStore.enabled &&
     accountMode() &&
     progressVisible() &&
-    (accountStore.plans().length || importAvailable() || accountStore.error())
+    (accountStore.busy() || accountStore.error())
   ) {
-    <section class="account-panel panel" aria-labelledby="account-heading">
-      <h2 id="account-heading">{{ saved()?.goal }}</h2>
-      @if (accountMode() && !accountStore.sessionExpired()) {
-        <div class="account-actions">
-          <button type="button" [disabled]="editsLocked()" (click)="newAccountPlan()">
-            Create another plan
-          </button>
-          @if (accountStore.plans().length > 1) {
-            <button type="button" [disabled]="editsLocked()" (click)="showAllPlans()">
-              All study plans
-            </button>
-          }
-        </div>
-      } @else {
-        <a routerLink="/account" [queryParams]="{ returnTo: '/study-plan' }"
-          >Sign in to continue this plan</a
-        >
-      }
+    <section class="account-status" aria-label="Account plan status">
       @if (accountStore.busy()) {
         <p role="status">Connecting to your account…</p>
       }
@@ -285,79 +371,219 @@
       </section>
     }
     @if (setupVisible()) {
-      <section class="setup-panel panel" aria-labelledby="setup-heading">
-        <p class="eyebrow">Your direction</p>
-        <h2 id="setup-heading">Create your study plan</h2>
-        <label class="field"
-          >What are you working toward?
-          <input
-            type="text"
-            maxlength="160"
-            [value]="goal()"
-            (input)="goal.set($any($event.target).value)"
-          />
-        </label>
-        <label class="field"
-          >Plan approach
-          <select [value]="goalType()" (change)="goalType.set($any($event.target).value)">
-            <option value="interview">Interview preparation</option>
-            <option value="learning">Learn foundations and build depth</option>
-          </select>
-        </label>
-        <div class="field-pair">
-          <label class="field"
-            >Preparation window
-            <select [value]="days()" (change)="setDays($any($event.target).value)">
-              @if (!isPresetDuration()) {
-                <option [value]="days()">{{ days() }} days (extended)</option>
-              }
-              @for (option of durations; track option) {
-                <option [value]="option" [selected]="days() === option">{{ option }} days</option>
-              }
-            </select>
-          </label>
-          <label class="field"
-            >Hours each day
-            <select [value]="dailyHours()" (change)="setHours($any($event.target).value)">
-              @for (option of hours; track option) {
-                <option [value]="option" [selected]="dailyHours() === option">
-                  {{ option }} {{ option === 1 ? 'hour' : 'hours' }}
-                </option>
-              }
-            </select>
-          </label>
-        </div>
-        @if (days() === 7 && goalType() === 'interview') {
-          <p class="budget-note">
-            Interview revision sprint: refresh familiar ideas, attempt representative tasks and
-            revisit gaps. A short deadline does not establish prior knowledge.
-          </p>
-          @for (topic of selectedTopics(); track topic.id) {
-            <label class="field"
-              >{{ topic.title }} — your starting point
-              <select
-                [value]="familiarity()[topic.id] || 'refresh'"
-                (change)="setFamiliarity(topic.id, $any($event.target).value)"
-              >
-                <option value="refresh">Needs a refresh</option>
-                <option value="familiar">Familiar — practise and explain</option>
-                <option value="new">New to me — learn foundations</option>
-              </select>
-            </label>
+      <section class="plan-builder panel" aria-labelledby="builder-heading">
+        <header class="builder-header">
+          <p class="eyebrow">Build your own plan</p>
+          <h2 id="builder-heading">Choose one part at a time.</h2>
+          <p>Your choices remain a temporary draft until you review the schedule and save it.</p>
+        </header>
+
+        <nav class="builder-progress" aria-label="Study plan creation steps">
+          <ol>
+            @for (step of wizardSteps; track step.id; let index = $index) {
+              <li [attr.data-state]="wizardStepState(index)">
+                <button
+                  type="button"
+                  [attr.aria-current]="wizardStep() === step.id ? 'step' : null"
+                  [disabled]="index > 0 && !setupStepValid()"
+                  (click)="goToWizardStep(step.id)"
+                >
+                  <span>Step {{ index + 1 }}</span>
+                  <strong>{{ step.shortLabel }}</strong>
+                  @if (wizardStepState(index) === 'complete') {
+                    <span class="visually-hidden">completed</span>
+                  }
+                </button>
+              </li>
+            }
+          </ol>
+        </nav>
+
+        <div class="builder-step">
+          @switch (wizardStep()) {
+            @case ('setup') {
+              <div>
+                <p class="eyebrow">Step 1 of 5</p>
+                <h3 #wizardHeading id="wizard-step-heading" tabindex="-1">Plan setup</h3>
+                <p>Start with the outcome and time you can realistically protect.</p>
+                <label class="field">
+                  What are you working toward?
+                  <input
+                    type="text"
+                    maxlength="160"
+                    required
+                    [value]="goal()"
+                    (input)="setGoal($any($event.target).value)"
+                  />
+                </label>
+                <label class="field">
+                  Plan approach
+                  <select [value]="goalType()" (change)="setGoalType($any($event.target).value)">
+                    <option value="interview">Interview preparation</option>
+                    <option value="learning">Learn foundations and build depth</option>
+                  </select>
+                </label>
+                <div class="field-pair">
+                  <label class="field">
+                    Preparation window
+                    <select [value]="days()" (change)="setDays($any($event.target).value)">
+                      @if (!isPresetDuration()) {
+                        <option [value]="days()">{{ days() }} days (extended)</option>
+                      }
+                      @for (option of durations; track option) {
+                        <option [value]="option" [selected]="days() === option">
+                          {{ option }} days
+                        </option>
+                      }
+                    </select>
+                  </label>
+                  <label class="field">
+                    Hours each day
+                    <select [value]="dailyHours()" (change)="setHours($any($event.target).value)">
+                      @for (option of hours; track option) {
+                        <option [value]="option" [selected]="dailyHours() === option">
+                          {{ option }} {{ option === 1 ? 'hour' : 'hours' }}
+                        </option>
+                      }
+                    </select>
+                  </label>
+                </div>
+                @if (!goal().trim()) {
+                  <p class="builder-validation" role="alert">Add a goal before continuing.</p>
+                }
+                <p class="budget-note">
+                  {{
+                    dailyHours() > 9
+                      ? 'Focused work is capped at nine hours; the rest is recovery time.'
+                      : 'Learning, practice and recall stay within your daily budget.'
+                  }}
+                </p>
+              </div>
+            }
+            @case ('learn') {
+              <ng-container
+                [ngTemplateOutlet]="pathSelections"
+                [ngTemplateOutletContext]="{ path: 'learn', stepNumber: 2 }"
+              />
+            }
+            @case ('grow') {
+              <ng-container
+                [ngTemplateOutlet]="pathSelections"
+                [ngTemplateOutletContext]="{ path: 'grow', stepNumber: 3 }"
+              />
+            }
+            @case ('look-ahead') {
+              <ng-container
+                [ngTemplateOutlet]="pathSelections"
+                [ngTemplateOutletContext]="{ path: 'look-ahead', stepNumber: 4 }"
+              />
+            }
+            @case ('review') {
+              <div class="builder-review">
+                <p class="eyebrow">Step 5 of 5</p>
+                <h3 #wizardHeading id="wizard-step-heading" tabindex="-1">Review and save</h3>
+                <p>
+                  Check the direction and course mix. Reviewing creates a temporary schedule; saving
+                  remains a separate final action.
+                </p>
+                <dl class="builder-setup-summary">
+                  <div>
+                    <dt>Goal</dt>
+                    <dd>{{ goal() }}</dd>
+                  </div>
+                  <div>
+                    <dt>Approach</dt>
+                    <dd>
+                      {{
+                        goalType() === 'interview' ? 'Interview preparation' : 'Foundation learning'
+                      }}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Window</dt>
+                    <dd>{{ days() }} days</dd>
+                  </div>
+                  <div>
+                    <dt>Availability</dt>
+                    <dd>{{ dailyHours() }} {{ dailyHours() === 1 ? 'hour' : 'hours' }} a day</dd>
+                  </div>
+                </dl>
+                <div class="builder-path-review">
+                  @for (path of paths; track path) {
+                    <section [attr.aria-labelledby]="'review-' + path">
+                      <div>
+                        <h4 [id]="'review-' + path">{{ pathLabel(path) }}</h4>
+                        <button type="button" (click)="goToWizardStep(path)">Edit</button>
+                      </div>
+                      @if (selectedTopicsFor(path).length) {
+                        <ul>
+                          @for (topic of selectedTopicsFor(path); track topic.id) {
+                            <li>{{ topic.title }}</li>
+                          }
+                        </ul>
+                      } @else {
+                        <p>No courses selected.</p>
+                      }
+                    </section>
+                  }
+                </div>
+                @if (!hasAccessibleSelection()) {
+                  <p class="builder-validation" role="alert">
+                    Select at least one available course across Learn, Grow, or Look Ahead.
+                  </p>
+                }
+                @if (needsDsaRanking() && rankingStatus() === 'loading') {
+                  <p role="status">Loading the reviewed DSA order before building your plan…</p>
+                } @else if (needsDsaRanking() && rankingStatus() === 'error') {
+                  <div role="alert">
+                    <p>The reviewed DSA order could not be loaded. Your saved plan is unchanged.</p>
+                    <button type="button" (click)="loadRanking()">Retry DSA order</button>
+                  </div>
+                }
+                <button
+                  class="primary"
+                  type="button"
+                  [disabled]="!canGenerate()"
+                  (click)="generatePlan()"
+                >
+                  Review complete schedule
+                </button>
+                @if (saved()) {
+                  <p class="budget-note">
+                    Updates preserve completed work. Changes apply only when you save.
+                  </p>
+                }
+              </div>
+            }
           }
-          <p class="budget-note">
-            These are your own starting-point estimates, separate from recorded completion. New
-            subjects need more time; choose foundation learning for a full learning sequence.
-          </p>
-        }
-        <details class="offering-details" open>
-          <summary>
-            Choose your focus
-            <span
-              >{{ selectedTopicIds().size }} selected · {{ topics().length }} published
-              offerings</span
+        </div>
+
+        <div class="builder-actions" aria-label="Study plan step navigation">
+          <button type="button" [disabled]="wizardStepIndex() === 0" (click)="backWizard()">
+            Back
+          </button>
+          @if (wizardStep() !== 'review') {
+            <button
+              class="primary"
+              type="button"
+              [disabled]="wizardStep() === 'setup' && !setupStepValid()"
+              (click)="continueWizard()"
             >
-          </summary>
+              Continue to {{ wizardSteps[wizardStepIndex() + 1].shortLabel }}
+            </button>
+          }
+        </div>
+      </section>
+
+      <ng-template #pathSelections let-path="path" let-stepNumber="stepNumber">
+        <div>
+          <p class="eyebrow">Step {{ stepNumber }} of 5</p>
+          <h3 #wizardHeading id="wizard-step-heading" tabindex="-1">
+            Choose {{ pathLabel(path) }} courses
+          </h3>
+          <p>
+            {{ selectedCountFor(path) }} selected. You can leave this section empty and continue.
+          </p>
           <p class="access-message">{{ access.description }}</p>
           @if (loadingError()) {
             <div role="alert">
@@ -373,396 +599,75 @@
             </p>
           } @else {
             <div class="fieldset-actions">
-              <button type="button" (click)="selectAllTopics()">Select available</button
-              ><button type="button" (click)="clearTopics()">Clear</button>
+              <button type="button" (click)="selectAllTopicsFor(path)">Select available</button>
+              <button type="button" (click)="clearTopicsFor(path)">Clear this section</button>
             </div>
           }
           <fieldset
             class="offering-checklist"
             [disabled]="access.status() !== 'ready' || !documents()"
           >
-            <legend class="visually-hidden">Published offerings</legend>
-            @for (path of paths; track path) {
-              <div class="offering-group">
-                <h3>{{ pathLabel(path) }}</h3>
-                @for (topic of topicsFor(path); track topic.id) {
-                  <label class="offering" [class.unavailable]="!availableTopicIds().has(topic.id)">
-                    <input
-                      type="checkbox"
-                      [checked]="selectedTopicIds().has(topic.id)"
-                      [disabled]="!availableTopicIds().has(topic.id)"
-                      (change)="toggleTopic(topic, $any($event.target).checked)"
-                    />
-                    <span
-                      >{{ topic.title }}
-                      @if (topic.description) {
-                        <small>{{ topic.description }}</small>
-                      }
-                      @if (!availableTopicIds().has(topic.id)) {
-                        <small>{{ unavailableReason(topic) }}</small>
-                      }
-                    </span>
-                  </label>
-                }
-              </div>
+            <legend class="visually-hidden">{{ pathLabel(path) }} published offerings</legend>
+            @for (topic of topicsFor(path); track topic.id) {
+              <label class="offering" [class.unavailable]="!availableTopicIds().has(topic.id)">
+                <input
+                  type="checkbox"
+                  [checked]="selectedTopicIds().has(topic.id)"
+                  [disabled]="!availableTopicIds().has(topic.id)"
+                  (change)="toggleTopic(topic, $any($event.target).checked)"
+                />
+                <span>
+                  {{ topic.title }}
+                  @if (topic.description) {
+                    <small>{{ topic.description }}</small>
+                  }
+                  @if (!availableTopicIds().has(topic.id)) {
+                    <small>{{ unavailableReason(topic) }}</small>
+                  }
+                </span>
+              </label>
             }
           </fieldset>
-        </details>
-        <p class="budget-note">
-          {{
-            dailyHours() > 9
-              ? 'Focused work is capped at nine hours; the rest is recovery time.'
-              : 'Learning, practice and recall stay within your daily budget.'
-          }}
-        </p>
-        @if (needsDsaRanking() && rankingStatus() === 'loading') {
-          <p role="status">Loading the reviewed DSA order before building your plan…</p>
-        } @else if (needsDsaRanking() && rankingStatus() === 'error') {
-          <div role="alert">
-            <p>The reviewed DSA order could not be loaded. Your saved plan is unchanged.</p>
-            <button type="button" (click)="loadRanking()">Retry DSA order</button>
-          </div>
-        }
-        <button class="primary" type="button" [disabled]="!canGenerate()" (click)="generatePlan()">
-          Review my plan
-        </button>
-        @if (saved()) {
-          <p class="budget-note">
-            Updates preserve completed work. Changes above apply when you update.
-          </p>
-        }
-      </section>
+          @if (days() === 7 && goalType() === 'interview' && selectedTopicsFor(path).length) {
+            <section class="starting-point" aria-labelledby="starting-point-heading">
+              <h4 id="starting-point-heading">Your starting point</h4>
+              <p class="budget-note">
+                A short interview sprint revises familiar material. These estimates do not mark work
+                complete.
+              </p>
+              @for (topic of selectedTopicsFor(path); track topic.id) {
+                <label class="field">
+                  {{ topic.title }}
+                  <select
+                    [value]="familiarity()[topic.id] || 'refresh'"
+                    (change)="setFamiliarity(topic.id, $any($event.target).value)"
+                  >
+                    <option value="refresh">Needs a refresh</option>
+                    <option value="familiar">Familiar — practise and explain</option>
+                    <option value="new">New to me — learn foundations</option>
+                  </select>
+                </label>
+              }
+            </section>
+          }
+        </div>
+      </ng-template>
     }
-    <section class="active-plan" [hidden]="!progressVisible()" aria-labelledby="active-heading">
+    <section class="active-plan" [hidden]="!progressVisible()" aria-label="Plan activities">
       @if (progressVisible()) {
-        @if (plan(); as activePlan) {
-          <header class="active-heading">
-            <div>
-              <p class="eyebrow">Your active plan · Revision {{ saved()!.revision }}</p>
-              <h2 id="active-heading">
-                {{
-                  activePlan.mode === 'interview-revision'
-                    ? 'Interview revision sprint'
-                    : saved()!.goal
-                }}
-              </h2>
-              @if (activePlan.mode === 'interview-revision') {
-                <p>{{ saved()!.goal }}</p>
-              }
-              <p>
-                {{ activePlan.config.days }} study days
-                @if (saved()!.shiftedDays) {
-                  · {{ saved()!.shiftedDays }} recovery
-                  {{ saved()!.shiftedDays === 1 ? 'day' : 'days' }} added ·
-                  {{ activePlan.config.days + saved()!.shiftedDays }} days including recovery
-                }
-              </p>
-            </div>
-            <span class="local-state">{{
-              accountMode() ? 'Saved to your account' : 'Saved on this browser'
-            }}</span>
-          </header>
-          <section class="compass-panel panel" aria-label="First week allocation">
-            <div
-              class="compass-ring"
-              [style.--learning-end]="weekAllocation().learningEnd + '%'"
-              [style.--practice-end]="weekAllocation().practiceEnd + '%'"
-            >
-              <div>
-                <strong>{{ weekAllocation().total }}</strong
-                ><span>minutes in your first week</span>
-              </div>
-            </div>
-            <div>
-              <p class="eyebrow">Direction, not pressure</p>
-              <h2>Protect the time you have.</h2>
-              <div class="allocation-actions">
-                <dl class="allocation">
-                  <div>
-                    <dt>Learn</dt>
-                    <dd>{{ weekAllocation().understand }}m</dd>
-                  </div>
-                  <div>
-                    <dt>Practice</dt>
-                    <dd>{{ weekAllocation().practice }}m</dd>
-                  </div>
-                  <div>
-                    <dt>Recall</dt>
-                    <dd>{{ weekAllocation().recall }}m</dd>
-                  </div>
-                </dl>
-                <div class="progress-actions">
-                  <button type="button" aria-haspopup="dialog" (click)="openSchedule()">
-                    Your complete schedule
-                  </button>
-                  <button
-                    type="button"
-                    class="recovery-toggle"
-                    aria-haspopup="dialog"
-                    (click)="openRecovery()"
-                  >
-                    Make Room for Real Life
-                  </button>
-                </div>
-              </div>
-            </div>
-          </section>
-          <div class="metrics">
-            <div>
-              <span>{{
-                activePlan.mode === 'interview-revision'
-                  ? 'Recorded sessions'
-                  : 'Completed sessions'
-              }}</span
-              ><strong
-                >{{ completion().done }} <small>/ {{ completion().total }}</small></strong
-              ><progress
-                [value]="completion().done"
-                [max]="completion().total || 1"
-                [attr.aria-label]="
-                  activePlan.mode === 'interview-revision'
-                    ? 'Recorded sessions'
-                    : 'Completed sessions'
-                "
-              ></progress>
-            </div>
-            <div>
-              <span>{{
-                activePlan.mode === 'interview-revision'
-                  ? 'Distinct planned items'
-                  : 'New curriculum items'
-              }}</span
-              ><strong>{{ activePlan.uniqueNewItems }}</strong>
-              <p>{{ activePlan.reviewAssignments }} scheduled retrievals</p>
-            </div>
-            <div>
-              <span>Daily focus budget</span
-              ><strong
-                >{{ activePlan.focusedDailyHours }}
-                <small>{{ activePlan.focusedDailyHours === 1 ? 'hour' : 'hours' }}</small></strong
-              >
-            </div>
-          </div>
-          <section class="today-panel panel" aria-labelledby="today-heading">
-            <div class="session-heading">
-              <h2 #sessionHeading id="today-heading" tabindex="-1">Today’s Session</h2>
-              <button
-                type="button"
-                [disabled]="editsLocked()"
-                (click)="reviewSchedule()"
-                aria-haspopup="dialog"
-              >
-                Review schedule
-              </button>
-              <label class="field"
-                >Choose a study day<select
-                  [value]="selectedDay()"
-                  (change)="selectedDay.set(+$any($event.target).value)"
-                >
-                  @for (day of activePlan.days; track day.day) {
-                    <option [value]="day.day" [selected]="selectedDay() === day.day">
-                      Day {{ day.day }}
-                    </option>
-                  }
-                </select></label
-              >
-            </div>
-            @if (adjustmentNotice() || adjustmentStatus()) {
-              <aside class="adjustment-notice" aria-label="Plan adjustment">
-                <div class="adjustment-copy">
-                  <p class="adjustment-plan">{{ saved()?.goal }} · Day {{ selectedDay() }}</p>
-                  @if (adjustmentNotice()) {
-                    <p>
-                      Some unfinished work no longer fits your schedule. Review what can move while
-                      keeping your deadline and daily budget.
-                    </p>
-                  }
-                  <p class="adjustment-status" role="status">{{ adjustmentStatus() }}</p>
-                </div>
-                @if (adjustmentNotice()) {
-                  <div class="account-actions">
-                    <button
-                      type="button"
-                      class="primary"
-                      aria-haspopup="dialog"
-                      (click)="reviewAdjustment()"
-                    >
-                      Review adjustment
-                    </button>
-                    <button type="button" (click)="keepCurrentPlan()">Keep current plan</button>
-                  </div>
-                }
-              </aside>
-            }
-            @if (currentDay(); as day) {
-              <p class="day-focus">
-                {{ day.focus }} · {{ dailyQueue()?.minutes ?? day.focusedMinutes }} minutes planned
-                today
-                @if (day.bufferMinutes !== undefined) {
-                  · {{ day.bufferMinutes }} minutes for catch-up / notes / rest
-                }
-              </p>
-              <ng-template #sessionCards let-assignments>
-                <div class="compass-sessions">
-                  @for (assignment of assignments; track assignment.id) {
-                    <article
-                      class="session-card"
-                      [attr.data-session-id]="assignment.id"
-                      [class.is-done]="completedIds().has(assignment.id)"
-                    >
-                      <div class="session-meta">
-                        <span>{{ assignment.activity }}</span
-                        ><span>{{ assignment.minutes }} estimated minutes</span>
-                      </div>
-                      <h4>{{ assignment.title }}</h4>
-                      <p>
-                        {{ assignment.courseTitle }}
-                        @if (assignment.reviewFromDay) {
-                          · Recall from day {{ assignment.reviewFromDay }}
-                        }
-                      </p>
-                      @if (assignment.instructions) {
-                        <p>{{ assignment.instructions }}</p>
-                      }
-                      @if (refreshLinks(assignment).length) {
-                        <details>
-                          <summary>Related lesson for targeted refresh</summary>
-                          <p>
-                            Optional reference; this link alone is not a prerequisite or a completed
-                            lesson.
-                          </p>
-                          @for (link of refreshLinks(assignment); track link.title) {
-                            <p>
-                              <a [routerLink]="link.route">{{ link.title }}</a>
-                            </p>
-                          }
-                        </details>
-                      }
-                      @if (canOpen(assignment)) {
-                        <a
-                          [routerLink]="currentRoute(assignment)"
-                          [queryParams]="planLink(assignment)"
-                          >Open {{ assignment.activity === 'Recall' ? 'for recall' : 'session' }}</a
-                        >
-                        @if (assignment.timebox) {
-                          <label class="field"
-                            >What needs another look?
-                            <textarea
-                              [disabled]="editsLocked()"
-                              rows="3"
-                              maxlength="1000"
-                              [value]="reviewNote(assignment)"
-                              (input)="
-                                !accountMode() &&
-                                  saveReviewNote(assignment, $any($event.target).value)
-                              "
-                              (blur)="
-                                accountMode() &&
-                                  saveReviewNote(assignment, $any($event.target).value)
-                              "
-                            ></textarea>
-                          </label>
-                          <p>{{ outcome(assignment) || 'Not yet recorded' }}</p>
-                          <div class="session-footer">
-                            <button
-                              type="button"
-                              [disabled]="editsLocked()"
-                              (click)="recordOutcome(assignment, 'attempted')"
-                            >
-                              Record attempt / refresh
-                            </button>
-                            <button
-                              type="button"
-                              [disabled]="editsLocked()"
-                              (click)="recordOutcome(assignment, 'needs-review')"
-                            >
-                              Needs review
-                            </button>
-                            <button
-                              type="button"
-                              [disabled]="editsLocked()"
-                              (click)="recordOutcome(assignment, 'completed')"
-                            >
-                              I completed the full content
-                            </button>
-                          </div>
-                        } @else {
-                          <div class="session-footer">
-                            <span>{{
-                              completedIds().has(assignment.id) ? 'Completed' : 'Ready when you are'
-                            }}</span
-                            ><button
-                              type="button"
-                              [attr.aria-label]="
-                                (completedIds().has(assignment.id)
-                                  ? 'Mark incomplete: '
-                                  : 'Mark complete: ') + assignment.title
-                              "
-                              [disabled]="editsLocked()"
-                              (click)="toggleCompletion(assignment)"
-                            >
-                              {{
-                                isDailyRecall(assignment)
-                                  ? 'Record recall complete'
-                                  : completedIds().has(assignment.id)
-                                    ? 'Mark incomplete'
-                                    : 'Mark complete'
-                              }}
-                            </button>
-                          </div>
-                        }
-                      } @else {
-                        <p class="unavailable">
-                          {{ assignmentUnavailableReason(assignment) }}
-                        </p>
-                      }
-                    </article>
-                  }
-                </div>
-              </ng-template>
-              @for (section of currentDaySections(); track section.id) {
-                @if (section.id === 'unfinished') {
-                  <details class="panel pending-panel" open>
-                    <summary>
-                      {{ section.title }} · {{ section.assignments.length }} sessions
-                    </summary>
-                    <p>
-                      These sessions need prerequisites or more room in your daily budget. They
-                      remain in your plan. Preview recovery to see what fits before changing it.
-                    </p>
-                    <ng-container
-                      [ngTemplateOutlet]="sessionCards"
-                      [ngTemplateOutletContext]="{ $implicit: section.assignments }"
-                    />
-                  </details>
-                } @else {
-                  <section
-                    class="day-session-group"
-                    [class.recall-panel]="section.id === 'recall'"
-                    [attr.aria-labelledby]="'day-sessions-' + section.id"
-                  >
-                    <h3 class="day-session-title" [id]="'day-sessions-' + section.id">
-                      {{ section.title }}
-                    </h3>
-                    @if (section.id === 'recall') {
-                      <p class="recall-intro">
-                        Bring earlier learning back to mind before your next session.
-                      </p>
-                    }
-                    <ng-container
-                      [ngTemplateOutlet]="sessionCards"
-                      [ngTemplateOutletContext]="{ $implicit: section.assignments }"
-                    />
-                  </section>
-                }
-              } @empty {
-                <p class="panel">
-                  No further sessions fit today’s recommendation. You can review your complete
-                  schedule or adjust your focus and available time.
-                </p>
-              }
-            }
-          </section>
+        @if (plan()) {
+          <app-study-desk
+            [entries]="deskEntries()"
+            [resume]="deskResume()"
+            [planKey]="deskPlanKey()"
+            [locked]="editsLocked()"
+            [initialActivity]="deskInitialActivity()"
+            [selectedDay]="selectedDay()"
+            (complete)="completeDeskActivity($event)"
+            (record)="recordDeskActivity($event)"
+            (note)="saveReviewNote($event.entry.assignment, $event.text)"
+            (selectDay)="selectedDay.set($event)"
+          />
         }
       }
     </section>

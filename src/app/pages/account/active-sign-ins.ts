@@ -62,17 +62,45 @@ export class ActiveSignIns implements OnDestroy {
     return this.inventory()?.signIns.some((signIn) => !signIn.current) ?? false;
   }
 
-  protected async load(): Promise<void> {
+  protected currentSignOutMessage(): string {
+    const others = this.inventory()?.signIns.filter((signIn) => !signIn.current).length ?? 0;
+    const remaining =
+      others === 0
+        ? 'You have no other active sign-ins.'
+        : others === 1
+          ? 'Your other sign-in stays active.'
+          : `Your other ${others} sign-ins stay active.`;
+    return `This browser session will end. ${remaining}`;
+  }
+
+  protected async load(trigger?: HTMLButtonElement): Promise<void> {
     if (this.pending()) return;
     this.loading.set(true);
     this.error.set('');
+    if (trigger) this.status.set('');
     try {
       const inventory = await this.client.load();
-      if (this.currentOwner()) this.inventory.set(inventory);
+      if (this.currentOwner()) {
+        this.inventory.set(inventory);
+        if (trigger) this.status.set('Active sign-ins refreshed.');
+      }
     } catch (error) {
       if (this.currentOwner()) this.error.set(this.message(error));
     } finally {
-      if (!this.destroyed) this.loading.set(false);
+      if (!this.destroyed) {
+        this.loading.set(false);
+        if (trigger && this.currentOwner()) {
+          // Disabling the focused button can send focus to the document body.
+          // Restore it after the enabled control has rendered, including on failure.
+          this.focus(() =>
+            this.currentOwner()
+              ? trigger.isConnected
+                ? trigger
+                : this.heading()?.nativeElement
+              : null,
+          );
+        }
+      }
     }
   }
 

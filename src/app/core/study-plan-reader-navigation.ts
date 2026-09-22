@@ -12,7 +12,7 @@ import { studyDayQueue, findStudyActivity, validStudyLog } from '../content/stud
   imports: [RouterLink],
   template: `@if (valid()) {
     <nav class="plan-reader-navigation" aria-label="Study Plan navigation">
-      <a routerLink="/study-plan" [queryParams]="{ day: day(), plan: planId }"
+      <a routerLink="/study-plan" [queryParams]="{ day: day(), plan: planId, activity: activity() }"
         >Back to Study Plan · Day {{ day() }}</a
       >
       @if (!problemRows()) {
@@ -59,7 +59,7 @@ export class StudyPlanReaderNavigation implements OnInit {
   private readonly saved = signal<SavedPlan | null>(null);
   private owner: string | null = null;
   readonly valid = computed(() => !!this.current());
-  private readonly activity = signal(this.route.snapshot.queryParamMap.get('activity') ?? '');
+  protected readonly activity = signal(this.route.snapshot.queryParamMap.get('activity') ?? '');
   private readonly contextPlan = signal(this.planId);
   private readonly current = computed(() => {
     const saved = this.saved();
