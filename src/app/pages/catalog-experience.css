@@ -404,6 +404,24 @@
   white-space: nowrap;
 }
 
+.catalog-recovery-action {
+  min-height: 44px;
+  margin-top: 8px;
+  padding: 10px 16px;
+  border: 1px solid var(--accent-strong);
+  border-radius: 8px;
+  color: var(--accent-on-primary);
+  background: var(--accent-strong);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.catalog-recovery-action:hover,
+.catalog-recovery-action:focus-visible {
+  box-shadow: 0 8px 20px var(--shadow);
+}
+
 .adaptive-catalog-course-grid {
   margin-top: 0;
 }

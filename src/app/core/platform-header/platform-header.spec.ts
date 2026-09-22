@@ -6,6 +6,7 @@ import { ContentService } from '../../content/content.service';
 import { PlatformHeader, accountTriggerLabel } from './platform-header';
 import { AUTHOR_PREVIEWS_BASE_URL } from '../author-preview-config';
 import { StudyPlanAccount } from '../../pages/study-plan/study-plan-account';
+import { SearchDocument } from '../../content/content.models';
 
 describe('PlatformHeader account disclosure', () => {
   beforeEach(async () => {
@@ -462,6 +463,65 @@ describe('PlatformHeader account disclosure', () => {
       queryParams: { q: 'transactions' },
     });
     expect(fixture.nativeElement.querySelector('[role="dialog"]')).toBeNull();
+  });
+
+  it('builds Topic links from curated subjects instead of broad document tags', async () => {
+    const urlShortener: SearchDocument = {
+      id: 'learn:solid-design-patterns:lld-url-shortener',
+      contentId: 'lld-url-shortener',
+      path: 'learn',
+      courseId: 'solid-design-patterns',
+      courseTitle: 'Object-Oriented Design and SOLID',
+      moduleId: 'lld-practice',
+      moduleTitle: 'Low-Level Design Practice',
+      title: 'Design a URL Shortener at the LLD Level',
+      contentType: 'q-and-a',
+      discoveryKind: 'practice',
+      practiceFormat: 'explain',
+      subjects: ['Reusable Platform Components LLD'],
+      tags: ['Low-Level Design', 'URL Shortener', 'Repository'],
+      filterTags: ['Learn', 'Q&A'],
+      languages: ['java'],
+      difficulty: 'Intermediate',
+      preview: '',
+      access: { tier: 'free' },
+      searchableText: 'design a url shortener at the lld level url shortener repository',
+      route: ['/', 'learn', 'solid-design-patterns', 'lld-url-shortener'],
+    };
+    vi.spyOn(TestBed.inject(ContentService), 'getSearchIndex').mockReturnValue(of([urlShortener]));
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    (fixture.nativeElement.querySelector('.header-search-trigger') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    const input = fixture.nativeElement.querySelector('.header-search-input') as HTMLInputElement;
+    input.value = 'URL Shortener';
+    input.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const suggestions = [
+      ...(fixture.nativeElement.querySelectorAll(
+        '.header-search-suggestion',
+      ) as NodeListOf<HTMLAnchorElement>),
+    ].map((link) => ({
+      type: link.querySelector('.suggestion-type')?.textContent?.trim(),
+      label: link.querySelector('.suggestion-label')?.textContent?.trim(),
+      href: link.getAttribute('href'),
+    }));
+    expect(suggestions).toContainEqual({
+      type: 'Topic',
+      label: 'Reusable Platform Components LLD',
+      href: '/search?tags=Reusable%20Platform%20Components%20LLD',
+    });
+    expect(suggestions).not.toContainEqual(
+      expect.objectContaining({ type: 'Topic', label: 'URL Shortener' }),
+    );
+    expect(suggestions).toContainEqual(
+      expect.objectContaining({
+        label: 'Design a URL Shortener at the LLD Level',
+        href: '/learn/solid-design-patterns/lld-url-shortener',
+      }),
+    );
   });
 });
 

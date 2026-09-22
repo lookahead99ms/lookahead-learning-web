@@ -971,7 +971,7 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
           route: ['/', document.path, document.courseId],
         })),
       ...documents.flatMap((document) =>
-        document.tags.map((tag) => ({
+        (document.subjects ?? document.tags).map((tag) => ({
           type: 'Topic' as const,
           label: tag,
           query: tag,

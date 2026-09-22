@@ -65,6 +65,7 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
                     [moduleId]="questionModuleId"
                     [questionCount]="count"
                     [practiceItems]="questionItems(unit)"
+                    [label]="questionBankLabel(unit)"
                   />
                 }
               }
@@ -92,6 +93,7 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
                           [moduleId]="questionModuleId"
                           [questionCount]="count"
                           [practiceItems]="questionItems(subUnit)"
+                          [label]="questionBankLabel(subUnit)"
                         />
                       }
                     }
@@ -148,6 +150,7 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
                     [moduleId]="questionModuleId"
                     [questionCount]="count"
                     [practiceItems]="questionItems(unit)"
+                    [label]="questionBankLabel(unit)"
                   />
                 }
               }
@@ -469,6 +472,10 @@ export class CourseLearningMap {
     const items = this.practiceItems(unit);
     if (items.length > 0) return practicePresentation(items).compactLabel;
     return this.usesQuestionBankPractice(unit) ? 'Browse practice' : `Practice ${unit.title}`;
+  }
+
+  protected questionBankLabel(unit: CourseLearningUnit): string {
+    return unit.practiceModuleId && this.hasPractice(unit) ? 'Interview questions' : '';
   }
 
   protected subUnitGroupLabel(unit: CourseLearningUnit): string {

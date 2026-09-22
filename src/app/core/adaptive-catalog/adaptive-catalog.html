@@ -195,6 +195,9 @@
       <section class="catalog-state catalog-state-error" role="alert">
         <h2>Content unavailable</h2>
         <p>{{ error() }}</p>
+        <button type="button" class="catalog-recovery-action" (click)="retryCatalog()">
+          Try again
+        </button>
       </section>
     } @else {
       <section class="catalog-context-panel" [class]="config().path + '-catalog'">

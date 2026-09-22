@@ -109,11 +109,8 @@
                           class="course-group-return"
                           [routerLink]="['/', pathId()]"
                           [queryParams]="browseQueryParams()"
-                          >Browse {{ group.title }}
-                          @if (pathId() !== 'learn') {
-                            →
-                          }
-                        </a>
+                          >Browse {{ group.title }}</a
+                        >
                       }
                     </div>
                   </section>
@@ -224,12 +221,7 @@
                     </p>
                     <h3>{{ section.title }}</h3>
                     <p>{{ section.description }}</p>
-                    <span class="course-section-action"
-                      >Explore {{ section.title }}
-                      @if (pathId() !== 'learn') {
-                        →
-                      }
-                    </span>
+                    <span class="course-section-action">Explore {{ section.title }}</span>
                   </a>
                 }
               } @else {
@@ -260,6 +252,9 @@
     <section class="page-message">
       <h1>Content unavailable</h1>
       <p>{{ error() }}</p>
+      <p>
+        <a [routerLink]="['/', pathId()]">Return to {{ pathLabel() }}</a>
+      </p>
     </section>
   } @else {
     <section class="page-message"><p>Loading course…</p></section>
