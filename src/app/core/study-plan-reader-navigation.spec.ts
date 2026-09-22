@@ -67,7 +67,7 @@ describe('Study Plan reader navigation', () => {
     const links = Array.from(harness.routeNativeElement!.querySelectorAll('a')).map((a) =>
       a.getAttribute('href'),
     );
-    expect(links[0]).toContain('/study-plan?day=2&plan=browser');
+    expect(links[0]).toBe('/study-plan?day=2&plan=browser&activity=recall');
     expect(links[1]).toContain('/learn/course/current?day=2&plan=browser&activity=current');
     expired.set(true);
     harness.detectChanges();

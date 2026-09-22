@@ -1,7 +1,7 @@
 import { afterEach, vi } from 'vitest';
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { BehaviorSubject, Subject, of, throwError } from 'rxjs';
 import { ContentService } from '../../content/content.service';
@@ -59,6 +59,7 @@ describe('StudyPlanPage', () => {
     if (storageDescriptor) Object.defineProperty(window, 'localStorage', storageDescriptor);
   });
   beforeEach(async () => {
+    window.sessionStorage.clear();
     storageDescriptor = Object.getOwnPropertyDescriptor(window, 'localStorage');
     const values = new Map<string, string>();
     Object.defineProperty(window, 'localStorage', {
@@ -83,11 +84,71 @@ describe('StudyPlanPage', () => {
         },
         provideRouter([
           { path: 'study-plan', component: StudyPlanPage },
+          { path: 'sign-in', component: PlannerExit },
           { path: 'exit', component: PlannerExit },
         ]),
         { provide: ContentService, useValue: service },
       ],
     }).compileComponents();
+  });
+
+  it('keeps Study Desk browsing independent from saved progress and records the activity day', async () => {
+    TestBed.overrideProvider(ContentService, {
+      useValue: {
+        ...service,
+        getSearchIndex: () =>
+          of([
+            document('first-lesson', 'core-java', 'free'),
+            document('second-lesson', 'core-java', 'free'),
+          ]),
+      },
+    });
+    const harness = await RouterTestingHarness.create();
+    const page: any = await harness.navigateByUrl(
+      '/study-plan?days=7&hours=1&approach=learning',
+      StudyPlanPage,
+    );
+    await page.generatePlan();
+    await page.saveDraft();
+    harness.detectChanges();
+    const root = harness.routeNativeElement!;
+    const before = JSON.stringify(page.saved());
+    const snapshot = JSON.stringify(page.saved().snapshot);
+    const resumeId = page.deskResume().assignment.id;
+    const items = root.querySelectorAll<HTMLButtonElement>('app-study-desk .item-link');
+    expect(items.length).toBe(2);
+    items[1].click();
+    harness.detectChanges();
+    await harness.fixture.whenStable();
+    expect(JSON.stringify(page.saved())).toBe(before);
+    expect(page.deskResume().assignment.id).toBe(resumeId);
+    const selectedId = root
+      .querySelector('.activity-card.current')!
+      .getAttribute('data-desk-activity');
+    const selectedEntry = page
+      .deskEntries()
+      .find((entry: any) => entry.assignment.id === selectedId);
+    expect(page.selectedDay()).toBe(selectedEntry.query.day);
+    root
+      .querySelector<HTMLButtonElement>(`[data-desk-action="complete-${selectedId}"]`)!
+      .click();
+    harness.detectChanges();
+    expect(page.saved().completedIds).toContain(selectedId);
+    expect(page.saved().studyLog.at(-1).day).toBe(selectedEntry.query.day);
+    expect(JSON.stringify(page.saved().snapshot)).toBe(snapshot);
+    const savedProgress = JSON.stringify(page.saved());
+    await harness.navigateByUrl('/exit', PlannerExit);
+    const restored: any = await harness.navigateByUrl(
+      `/study-plan?plan=browser&day=${selectedEntry.query.day}&activity=${selectedId}`,
+      StudyPlanPage,
+    );
+    harness.detectChanges();
+    expect(JSON.stringify(restored.saved())).toBe(savedProgress);
+    expect(
+      harness
+        .routeNativeElement!.querySelector('.activity-card.current')!
+        .getAttribute('data-desk-activity'),
+    ).toBe(selectedId);
   });
 
   it('shows a scroll cue only while review content remains and keeps the draft temporary', async () => {
@@ -229,10 +290,11 @@ describe('StudyPlanPage', () => {
   it('dismisses only a backdrop click while preserving the draft, selections, saved work and opener focus', async () => {
     const harness = await RouterTestingHarness.create();
     const page: any = await harness.navigateByUrl('/study-plan?days=7&hours=1', StudyPlanPage);
+    await page.goToWizardStep('review');
     harness.detectChanges();
     const opener = [
       ...harness.routeNativeElement!.querySelectorAll<HTMLButtonElement>('button'),
-    ].find((button) => button.textContent?.includes('Review my plan'))!;
+    ].find((button) => button.textContent?.includes('Review complete schedule'))!;
     opener.focus();
     await page.generatePlan();
     harness.detectChanges();
@@ -349,7 +411,7 @@ describe('StudyPlanPage', () => {
     expect(page.visibleStatus()).toBe('');
   });
 
-  it('places one plan-and-day notice below the day selector and keeps retained status there', async () => {
+  it('keeps plan adjustment actions at the top without restoring the removed notice panel', async () => {
     const { page, harness, account } = await adjustmentPage();
     Object.defineProperty(account, 'enabled', { value: true });
     page.accountMode.set(true);
@@ -366,7 +428,13 @@ describe('StudyPlanPage', () => {
     ] as any);
     harness.detectChanges();
     const root = harness.routeNativeElement!;
-    const actions = root.querySelector('.account-panel .account-actions')!;
+    const actions = root.querySelector('.progress-heading-actions')!;
+    expect(root.querySelector('h1')?.textContent).toContain('Study Plan');
+    expect(root.querySelector('.plan-tagline')?.textContent).toContain(
+      'Build reliable engineering foundations',
+    );
+    expect(root.querySelector('.account-panel')).toBeNull();
+    expect(root.querySelector('.active-plan-context')?.textContent).toContain('Your active plan');
     expect(actions.textContent).toContain('Create another plan');
     expect(actions.textContent).toContain('All study plans');
     expect(root.querySelector('.page-plan-actions')).toBeNull();
@@ -374,26 +442,22 @@ describe('StudyPlanPage', () => {
     expect(root.textContent).not.toContain('View saved plans');
     const create = vi.spyOn(page, 'newAccountPlan').mockImplementation(() => {});
     const savedPlans = vi.spyOn(page, 'showAllPlans').mockResolvedValue(undefined);
-    const actionButtons = actions.querySelectorAll<HTMLButtonElement>('button');
-    actionButtons[0].click();
-    actionButtons[1].click();
+    const actionButtons = [...actions.querySelectorAll<HTMLButtonElement>('button')];
+    actionButtons.find((button) => button.textContent?.includes('Create another plan'))!.click();
+    actionButtons.find((button) => button.textContent?.includes('All study plans'))!.click();
     expect(create).toHaveBeenCalledOnce();
     expect(savedPlans).toHaveBeenCalledOnce();
-    expect(root.querySelectorAll('.adjustment-notice')).toHaveLength(1);
-    expect(
-      root
-        .querySelector('.session-heading')!
-        .nextElementSibling?.classList.contains('adjustment-notice'),
-    ).toBe(true);
-    expect(root.querySelector('.adjustment-notice')?.textContent).toContain('Day 4');
+    expect(root.querySelectorAll('.adjustment-notice')).toHaveLength(0);
+    expect(root.querySelector('.plan-level-actions')?.textContent).toContain(
+      'Make Room for Real Life',
+    );
+    expect(root.querySelector('.plan-level-actions')?.textContent).toContain('Review study day 4');
     page.keepCurrentPlan();
     harness.detectChanges();
-    expect(root.querySelector('.adjustment-notice [role="status"]')?.textContent).toContain(
-      'Plan retained',
-    );
+    expect(page.visibleStatus()).toContain('Plan retained');
     account.active.set({ planId: 'plan-b', versionId: 'v1', revision: 1 } as any);
     harness.detectChanges();
-    expect(root.querySelector('.adjustment-notice')?.textContent).not.toContain('Plan retained');
+    expect(root.querySelector('.adjustment-notice')).toBeNull();
   });
 
   it('gates author tools and opens repeated scenarios without writes', async () => {
@@ -530,9 +594,30 @@ describe('StudyPlanPage', () => {
     const { page, harness } = await adjustmentPage();
     page.selectedDay.set(1);
     harness.detectChanges();
-    expect(harness.routeNativeElement!.querySelector('.session-heading')?.textContent).toContain(
-      'Review schedule',
+    expect(harness.routeNativeElement!.querySelector('.plan-level-actions')?.textContent).toContain(
+      'Review study day',
     );
+    expect(harness.routeNativeElement!.querySelector('.plan-overview')).toBeNull();
+    expect(harness.routeNativeElement!.querySelector('.study-day-review')).toBeNull();
+    expect(harness.routeNativeElement!.querySelector('#time-protection-heading')?.textContent).toBe(
+      'Protect the time you have.',
+    );
+    const overview = harness.routeNativeElement!.querySelector('.active-plan-overview')!;
+    expect(overview.querySelector('.active-plan-context')).not.toBeNull();
+    expect(overview.querySelector('.compass-panel')).not.toBeNull();
+    expect(harness.routeNativeElement!.querySelector('.active-plan > .compass-panel')).toBeNull();
+    expect(overview.querySelector('.plan-guidance-heading')?.textContent).toContain('About this plan');
+    const guidance = [...overview.querySelectorAll('.plan-guidance li')].map((item) =>
+      item.textContent?.replace(/\s+/g, ' ').trim(),
+    );
+    expect(guidance).toEqual([
+      'Completion records your practice, not mastery.',
+      'Saved on this browser. Progress belongs to this plan.',
+      'Based on saved progress. Exploring topics does not move your place.',
+      'Learn, practice, and recall within the time you set.',
+    ]);
+    expect(harness.routeNativeElement!.querySelector('.resume-row')).toBeNull();
+    expect(harness.routeNativeElement!.querySelector('.completion-note')).toBeNull();
     const before = JSON.stringify(page.saved());
     page.reviewSchedule();
     harness.detectChanges();
@@ -562,14 +647,14 @@ describe('StudyPlanPage', () => {
     page.keepCurrentPlan();
     expect(page.adjustmentNotice()).toBe(false);
     expect(page.visibleStatus()).toContain('Plan retained');
-    expect(globalThis.document.activeElement?.id).toBe('today-heading');
+    expect(globalThis.document.activeElement?.id).toBe('desk-day-heading');
     expect(localStorage.getItem('look-ahead.study-plan.v1')).toBe(before);
     await harness.navigateByUrl('/exit', PlannerExit);
     const restored: any = await harness.navigateByUrl('/study-plan?day=4', StudyPlanPage);
     harness.detectChanges();
     expect(restored.saved()).not.toBeNull();
     expect(restored.adjustmentNotice()).toBe(false);
-    expect(harness.routeNativeElement!.querySelector('.recovery-toggle')).not.toBeNull();
+    expect(harness.routeNativeElement!.querySelector('.plan-level-actions')).not.toBeNull();
     restored.saved.set({ ...restored.saved(), revision: restored.saved().revision + 1 });
     expect(restored.adjustmentNotice()).toBe(true);
     restored.dismissAdjustment();
@@ -745,25 +830,21 @@ describe('StudyPlanPage', () => {
     expect(page.adjustmentNotice()).toBe(false);
   });
 
-  it('starts with a realistic hour and a single published-offering checklist', async () => {
+  it('starts with realistic setup values before revealing the path checklists', async () => {
     await TestBed.inject(StudyPlanAccount).initialize();
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/study-plan', StudyPlanPage);
     harness.detectChanges();
     const controls = harness.routeNativeElement!.querySelectorAll<HTMLSelectElement>(
-      '.setup-panel .field-pair select',
+      '.builder-step .field-pair select',
     );
     expect(controls[0].value).toBe('30');
     expect(controls[1].value).toBe('1');
-    expect(harness.routeNativeElement!.querySelectorAll('fieldset')).toHaveLength(1);
-    const checkboxes =
-      harness.routeNativeElement!.querySelectorAll<HTMLInputElement>('input[type=checkbox]');
-    expect(checkboxes).toHaveLength(2);
-    expect(checkboxes[0].disabled).toBe(false);
-    expect(checkboxes[1].disabled).toBe(true);
+    expect(harness.routeNativeElement!.querySelectorAll('fieldset')).toHaveLength(0);
+    expect(harness.routeNativeElement!.textContent).toContain('Continue to Learn');
   });
 
-  it('discloses every waiting session without completing work until explicitly requested', async () => {
+  it('keeps waiting work out of the selected-day grid until it is explicitly recorded', async () => {
     TestBed.overrideProvider(ContentService, {
       useValue: {
         ...service,
@@ -782,18 +863,12 @@ describe('StudyPlanPage', () => {
     await (page as any).saveDraft();
     (page as any).selectedDay.set(30);
     harness.detectChanges();
-    const panel = harness.routeNativeElement!.querySelector<HTMLElement>('.pending-panel')!;
     const count = (page as any).pendingSessions().length;
     expect(count).toBeGreaterThan(0);
-    expect((panel as HTMLDetailsElement).open).toBe(true);
-    expect(panel.querySelectorAll('.session-card')).toHaveLength(count);
-    (panel as HTMLDetailsElement).open = true;
+    expect(harness.routeNativeElement!.querySelector('.pending-panel')).toBeNull();
     expect((page as any).completedIds().size).toBe(0);
-    const complete = panel.querySelector<HTMLButtonElement>(
-      'button[aria-label^="Mark complete:"]',
-    )!;
     const completedSessionId = (page as any).pendingSessions()[0].id;
-    complete.click();
+    (page as any).toggleCompletion((page as any).pendingSessions()[0]);
     harness.detectChanges();
     expect((page as any).completedIds().has(completedSessionId)).toBe(true);
     expect(
@@ -810,18 +885,21 @@ describe('StudyPlanPage', () => {
   it('restores URL settings without granting access from a forged access parameter', async () => {
     await TestBed.inject(StudyPlanAccount).initialize();
     const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl(
+    const page: any = await harness.navigateByUrl(
       '/study-plan?days=120&hours=3&topics=learn:modern-java&access=learn:modern-java',
       StudyPlanPage,
     );
     harness.detectChanges();
     const controls = harness.routeNativeElement!.querySelectorAll<HTMLSelectElement>(
-      '.setup-panel .field-pair select',
+      '.builder-step .field-pair select',
     );
     expect(controls[0].value).toBe('120');
     expect(controls[1].value).toBe('3');
-    const build = harness.routeNativeElement!.querySelector<HTMLButtonElement>('button.primary')!;
-    expect(build.disabled).toBe(true);
+    expect(
+      (harness.routeNativeElement!.querySelector('button[aria-current="step"]') as HTMLElement)
+        .textContent,
+    ).toContain('Setup');
+    expect((page as any).canGenerate()).toBe(false);
     expect(window.localStorage.getItem('look-ahead.study-plan.v1')).toBeNull();
   });
 
@@ -864,10 +942,9 @@ describe('StudyPlanPage', () => {
     await TestBed.inject(StudyPlanAccount).initialize();
     const harness = await RouterTestingHarness.create();
     const page = await harness.navigateByUrl('/study-plan?topics=learn:modern-java', StudyPlanPage);
+    await (page as any).goToWizardStep('learn');
     harness.detectChanges();
-    expect(
-      harness.routeNativeElement!.querySelector<HTMLButtonElement>('button.primary')!.disabled,
-    ).toBe(true);
+    expect((page as any).canGenerate()).toBe(false);
     accessStatus.set('ready');
     harness.detectChanges();
     await (page as any).generatePlan();
@@ -954,6 +1031,7 @@ describe('StudyPlanPage', () => {
       '/study-plan?topics=learn:hands-on-dsa,learn:algorithmic-patterns',
       StudyPlanPage,
     );
+    await (page as any).goToWizardStep('learn');
     harness.detectChanges();
     const handsOn = [...harness.routeNativeElement!.querySelectorAll('label.offering')].find(
       (label) => label.textContent?.includes('Hands-on DSA Practice'),
@@ -995,6 +1073,7 @@ describe('StudyPlanPage', () => {
     expect((page as any).saved()).toBeNull();
     expect((page as any).canGenerate()).toBe(false);
     ranking.error(new Error('offline'));
+    await (page as any).goToWizardStep('review');
     harness.detectChanges();
     expect(harness.routeNativeElement!.textContent).toContain('Retry DSA order');
     (page as any).loadRanking();
@@ -1095,15 +1174,14 @@ describe('StudyPlanPage', () => {
     const beforeStorage = window.localStorage.getItem('look-ahead.study-plan.v1');
     harness.detectChanges();
     const root = harness.routeNativeElement!;
-    const sections = [...root.querySelectorAll('.day-session-group, .pending-panel')];
-    expect(sections[0].querySelector('h3')?.textContent?.trim()).toBe('Continue learning');
-    const pending = root.querySelector('.pending-panel')!;
-    expect(pending.textContent).toContain(
+    const cards = [...root.querySelectorAll<HTMLElement>('[data-desk-activity]')];
+    expect(cards.map((card) => card.dataset['deskActivity'])).toEqual([current.id, recall.id]);
+    const recallCard = root.querySelector(`[data-desk-activity="${recall.id}"]`)!;
+    expect(recallCard.textContent).toContain(
       'Complete the original session before starting this recall.',
     );
-    expect(pending.querySelectorAll('a, button')).toHaveLength(0);
-    expect(root.querySelector('#day-sessions-recall')).toBeNull();
-    expect(sections[0].querySelector('h4')?.textContent).toContain('recall-source');
+    expect(recallCard.querySelector('.activity-actions')).toBeNull();
+    expect(page.deskResume()?.assignment.id).toBe(original.id);
     expect(page.canOpen(recall)).toBe(false);
     expect(JSON.stringify(page.saved())).toBe(beforeRender);
     expect(window.localStorage.getItem('look-ahead.study-plan.v1')).toBe(beforeStorage);
@@ -1113,7 +1191,7 @@ describe('StudyPlanPage', () => {
     ]);
     page.toggleCompletion(original);
     harness.detectChanges();
-    expect(root.querySelector('#day-sessions-recall')).toBeNull();
+    expect(root.querySelector(`[data-desk-activity="${recall.id}"]`)).not.toBeNull();
     expect(page.saved().studyLog[0].day).toBe(2);
     page.selectedDay.set(3);
     harness.detectChanges();
@@ -1184,29 +1262,33 @@ describe('StudyPlanPage', () => {
     const before = JSON.stringify(page.saved());
     harness.detectChanges();
     const root = harness.routeNativeElement!;
-    const sections = [...root.querySelectorAll('.day-session-group, .pending-panel')];
-    expect(sections[0].querySelector('h3')?.textContent?.trim()).toBe('Recall first');
-    expect(sections[1].querySelector('h3')?.textContent?.trim()).toBe('Continue learning');
+    const cards = [...root.querySelectorAll<HTMLElement>('[data-desk-activity]')];
+    expect(cards.map((card) => card.dataset['deskActivity'])).toEqual([
+      current.id,
+      overlap.id,
+      independent.id,
+      blocked.id,
+    ]);
     expect(page.dailyQueue().selected.filter((item: any) => item.kind === 'review')).toHaveLength(
       1,
     );
-    const blockedCard = root.querySelector(`[data-session-id="${blocked.id}"]`)!;
+    const blockedCard = root.querySelector(`[data-desk-activity="${blocked.id}"]`)!;
     expect(blockedCard.textContent).toContain(
       'Record the earlier attempt or complete the original learning session',
     );
-    expect(blockedCard.querySelectorAll('a, button')).toHaveLength(0);
+    expect(blockedCard.querySelector('.activity-actions')).toBeNull();
     for (const assignment of [overlap, blocked, current]) {
-      expect(root.querySelectorAll(`[data-session-id="${assignment.id}"]`)).toHaveLength(1);
+      expect(root.querySelectorAll(`[data-desk-activity="${assignment.id}"]`)).toHaveLength(1);
     }
     expect(
-      [...root.querySelectorAll('.session-card h4, .pending-session h4')].filter(
+      [...root.querySelectorAll('.activity-card h4')].filter(
         (node) => node.textContent === 'Shared visible title',
       ),
-    ).toHaveLength(1);
-    expect(root.querySelector(`[data-session-id="${independent.id}"]`)).toBeNull();
+    ).toHaveLength(2);
+    expect(root.querySelector(`[data-desk-activity="${independent.id}"]`)).not.toBeNull();
     expect(page.dailyQueue().deferred).toContainEqual(independent);
     expect(page.dailyQueue().allDue).toContainEqual(independent);
-    expect(root.querySelector<HTMLDetailsElement>('.pending-panel')?.open).toBe(true);
+    expect(root.querySelector('.pending-panel')).toBeNull();
     expect(JSON.stringify(page.saved())).toBe(before);
     expect(page.completedIds().has(unfinished.id)).toBe(false);
   });
@@ -1271,13 +1353,12 @@ describe('StudyPlanPage', () => {
       blocked.id,
     ]);
     expect(
-      [...root.querySelectorAll('[data-session-id]')].map((e) => e.getAttribute('data-session-id')),
-    ).toEqual([first.id, java.id, blocked.id]);
-    const pending = root.querySelector<HTMLDetailsElement>('.pending-panel')!;
-    expect(pending.open).toBe(true);
-    expect(pending.querySelector('summary')?.textContent).toContain('2 sessions');
-    expect(pending.textContent).toContain('daily budget');
-    expect(root.querySelector(`[data-session-id="${blocked.id}"] a`)).toBeNull();
+      [...root.querySelectorAll('[data-desk-activity]')].map((element) =>
+        element.getAttribute('data-desk-activity'),
+      ),
+    ).toEqual([blocked.id]);
+    expect(root.querySelector('.pending-panel')).toBeNull();
+    expect(root.querySelector(`[data-desk-activity="${blocked.id}"] a`)).toBeNull();
     expect(page.canOpen(blocked)).toBe(false);
     expect(JSON.stringify(page.saved())).toBe(before);
     expect(window.localStorage.getItem('look-ahead.study-plan.v1')).toBe(storageBefore);
@@ -1295,7 +1376,7 @@ describe('StudyPlanPage', () => {
       snapshot: { ...originalState.snapshot, futureReviews: [later, other] },
     });
     harness.detectChanges();
-    expect(root.querySelector(`[data-session-id="${other.id}"]`)).not.toBeNull();
+    expect(root.querySelector(`[data-desk-activity="${other.id}"]`)).toBeNull();
     page.saved.set(originalState);
 
     // Completing one occurrence never completes another; it reappears on a later day.
@@ -1313,15 +1394,14 @@ describe('StudyPlanPage', () => {
     });
     harness.detectChanges();
     expect(page.dailyQueue().spent).toBe(20);
-    expect(root.querySelector(`[data-session-id="${later.id}"]`)).toBeNull();
-    expect(root.querySelector('[aria-labelledby="day-sessions-recorded"]')?.textContent).toContain(
-      execution.title,
-    );
+    expect(root.querySelector(`[data-desk-activity="${later.id}"]`)).toBeNull();
+    expect(page.deskResume()?.assignment.id).toBe(later.id);
     expect(page.completedIds().has(later.id)).toBe(false);
     page.selectedDay.set(5);
     harness.detectChanges();
     expect(page.dailyQueue().selected.map((a: any) => a.id)).toContain(later.id);
-    expect(root.querySelector(`[data-session-id="${later.id}"]`)).not.toBeNull();
+    expect(root.querySelector(`[data-desk-activity="${later.id}"]`)).toBeNull();
+    expect(page.deskResume()?.assignment.id).toBe(later.id);
     expect(JSON.stringify(page.saved().snapshot)).toBe(JSON.stringify(originalState.snapshot));
     expect(window.localStorage.getItem('look-ahead.study-plan.v1')).toBe(storageBefore);
   });
@@ -1336,7 +1416,8 @@ describe('StudyPlanPage', () => {
     });
     await TestBed.inject(StudyPlanAccount).initialize();
     const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/study-plan', StudyPlanPage);
+    const page: any = await harness.navigateByUrl('/study-plan', StudyPlanPage);
+    await page.goToWizardStep('learn');
     harness.detectChanges();
     expect(harness.routeNativeElement!.textContent).toContain('No published study sessions yet');
     expect(harness.routeNativeElement!.textContent).not.toContain(
@@ -1402,10 +1483,10 @@ describe('StudyPlanPage', () => {
     page.recordOutcome(exercise, 'needs-review');
     harness.detectChanges();
     const noteField = harness.routeNativeElement!.querySelector<HTMLTextAreaElement>(
-      `[data-session-id="${exercise.id}"] textarea`,
+      `[data-desk-activity="${exercise.id}"] textarea`,
     )!;
     noteField.value = 'Check duplicate-key behavior.';
-    noteField.dispatchEvent(new Event('input'));
+    noteField.dispatchEvent(new Event('blur'));
     expect(page.reviewNote(exercise)).toBe('Check duplicate-key behavior.');
     expect(page.completedIds().has('exercise')).toBe(false);
     expect(page.saved().needsReviewContentIds).toEqual(['exercise']);
@@ -1550,7 +1631,7 @@ describe('StudyPlanPage', () => {
     expect(harness.routeNativeElement!.querySelector('.setup-panel')).toBeNull();
     expect(harness.routeNativeElement!.querySelector('.revision-panel')).toBeNull();
     expect(
-      harness.routeNativeElement!.querySelector('.recovery-toggle[aria-haspopup="dialog"]')
+      harness.routeNativeElement!.querySelector('.plan-level-actions [aria-haspopup="dialog"]:nth-child(2)')
         ?.textContent,
     ).toContain('Make Room for Real Life');
   });
@@ -1796,7 +1877,7 @@ describe('StudyPlanPage', () => {
     expect(
       harness.routeNativeElement!.querySelector('dialog.schedule-dialog')?.hasAttribute('open'),
     ).toBe(false);
-    expect(harness.routeNativeElement!.querySelector('.compass-panel')?.textContent).toContain(
+    expect(harness.routeNativeElement!.querySelector('.plan-level-actions')?.textContent).toContain(
       'Your complete schedule',
     );
     expect(harness.routeNativeElement!.querySelector('details.complete-schedule')).toBeNull();
@@ -1874,6 +1955,133 @@ describe('StudyPlanPage', () => {
     expect(importPlan).not.toHaveBeenCalled();
     sessionStorage.removeItem('look-ahead.study-plan-draft-intent.v1');
   });
+
+  it('walks through five draft-only steps, retains choices and reviews before generating', async () => {
+    await TestBed.inject(StudyPlanAccount).initialize();
+    const harness = await RouterTestingHarness.create();
+    const page: any = await harness.navigateByUrl(
+      '/study-plan?create=1&builderStep=setup',
+      StudyPlanPage,
+    );
+    harness.detectChanges();
+
+    const steps = [
+      ...harness.routeNativeElement!.querySelectorAll<HTMLButtonElement>(
+        '.builder-progress button',
+      ),
+    ];
+    expect(steps.map((button) => button.textContent!.replace(/\s+/g, ' ').trim())).toEqual([
+      'Step 1Setup',
+      'Step 2Learn',
+      'Step 3Grow',
+      'Step 4Look Ahead',
+      'Step 5Review',
+    ]);
+    expect(steps[0].getAttribute('aria-current')).toBe('step');
+
+    page.setGoal('');
+    await page.continueWizard();
+    expect(page.wizardStep()).toBe('setup');
+    expect(page.status()).toContain('Complete the plan setup');
+
+    page.setGoal('Prepare for an SDE II interview');
+    page.setGoalType('interview');
+    page.setDays('7');
+    page.setHours('2');
+    page.clearTopics();
+    await page.continueWizard();
+    await new Promise((resolve) => setTimeout(resolve));
+    harness.detectChanges();
+    expect(page.wizardStep()).toBe('learn');
+    expect(harness.routeNativeElement!.ownerDocument.activeElement?.textContent).toContain(
+      'Choose Learn courses',
+    );
+
+    const learnCheckbox = harness.routeNativeElement!.querySelector<HTMLInputElement>(
+      '.builder-step input[type="checkbox"]:not(:disabled)',
+    )!;
+    learnCheckbox.click();
+    harness.detectChanges();
+    const selectedId = [...page.selectedTopicIds()][0];
+    expect(selectedId).toBeTruthy();
+
+    await page.continueWizard();
+    await page.backWizard();
+    harness.detectChanges();
+    expect(page.wizardStep()).toBe('learn');
+    expect(page.selectedTopicIds().has(selectedId)).toBe(true);
+
+    await page.goToWizardStep('review');
+    harness.detectChanges();
+    const review = harness.routeNativeElement!.querySelector('.builder-review')!;
+    expect(review.textContent).toContain('Prepare for an SDE II interview');
+    expect(review.textContent).toContain('7 days');
+    expect(review.textContent).toContain('2 hours a day');
+    expect(review.textContent).toContain('core-java');
+    expect(page.draft()).toBeNull();
+    expect(window.localStorage.getItem('look-ahead.study-plan.v1')).toBeNull();
+
+    await page.generatePlan();
+    harness.detectChanges();
+    expect(page.draft()).not.toBeNull();
+    expect(window.localStorage.getItem('look-ahead.study-plan.v1')).toBeNull();
+    expect(harness.routeNativeElement!.querySelector('.draft-review-dialog')).not.toBeNull();
+  });
+
+  it('keeps the wizard step in browser history and restores unsaved setup after remount', async () => {
+    await TestBed.inject(StudyPlanAccount).initialize();
+    const router = TestBed.inject(Router);
+    const harness = await RouterTestingHarness.create();
+    let page: any = await harness.navigateByUrl(
+      '/study-plan?create=1&builderStep=setup',
+      StudyPlanPage,
+    );
+    page.setGoal('Reload-safe interview plan');
+    page.setHours('3');
+    page.clearTopics();
+    await page.goToWizardStep('learn');
+    expect(router.url).toContain('builderStep=learn');
+    await page.goToWizardStep('grow');
+    expect(router.url).toContain('builderStep=grow');
+
+    await router.navigateByUrl('/study-plan?create=1&builderStep=learn');
+    harness.detectChanges();
+    expect(page.wizardStep()).toBe('learn');
+    await router.navigateByUrl('/study-plan?create=1&builderStep=grow');
+    harness.detectChanges();
+    expect(page.wizardStep()).toBe('grow');
+
+    await harness.navigateByUrl('/exit', PlannerExit);
+    page = await harness.navigateByUrl('/study-plan?create=1&builderStep=grow', StudyPlanPage);
+    harness.detectChanges();
+    expect(page.goal()).toBe('Reload-safe interview plan');
+    expect(page.dailyHours()).toBe(3);
+    expect(page.wizardStep()).toBe('grow');
+    expect(page.saved()).toBeNull();
+    expect(window.localStorage.getItem('look-ahead.study-plan.v1')).toBeNull();
+  });
+
+  it('returns from sign-in to the same wizard step without saving the plan', async () => {
+    const accounts = TestBed.inject(StudyPlanAccount);
+    Object.defineProperty(accounts, 'enabled', { value: true });
+    vi.spyOn(accounts, 'initialize').mockResolvedValue();
+    const save = vi.spyOn(accounts, 'save');
+    const harness = await RouterTestingHarness.create();
+    const page: any = await harness.navigateByUrl(
+      '/study-plan?create=1&builderStep=review',
+      StudyPlanPage,
+    );
+    page.setGoal('Sign-in continuation');
+    page.continueToSignIn();
+    await harness.fixture.whenStable();
+    expect(TestBed.inject(Router).url).toContain('/sign-in?returnTo=');
+    expect(decodeURIComponent(TestBed.inject(Router).url)).toContain(
+      '/study-plan?create=1&builderStep=review',
+    );
+    expect(save).not.toHaveBeenCalled();
+    expect(window.localStorage.getItem('look-ahead.study-plan.v1')).toBeNull();
+  });
+
   it('loads an authored variant through three dependent controls and keeps it temporary until save', async () => {
     const variant = {
       templateId: 'java-d7-h1',
@@ -2153,7 +2361,7 @@ describe('StudyPlanPage', () => {
     harness.detectChanges();
     expect(page.readyMadeStatus()).toBe('error');
     expect(harness.routeNativeElement!.textContent).toContain('could not be loaded');
-    expect(harness.routeNativeElement!.textContent).toContain('Create your study plan');
+    expect(harness.routeNativeElement!.textContent).toContain('Choose one part at a time');
     expect(page.saved()).toBeNull();
     expect(page.draft()).toBeNull();
   });

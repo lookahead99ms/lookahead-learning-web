@@ -1,3 +1,5 @@
+import { StudyDesk } from './study-desk';
+import { StudyDeskActivity, StudyDeskEntry, studyDeskActivities } from './study-desk-model';
 import { variationRank } from '../../content/study-plan-variation';
 import {
   assumedStudyPrerequisiteIds,
@@ -69,10 +71,11 @@ import {
 
 const STORAGE_KEY = 'look-ahead.study-plan.v1';
 const DRAFT_INTENT_KEY = 'look-ahead.study-plan-draft-intent.v1';
+type StudyPlanWizardStep = 'setup' | 'learn' | 'grow' | 'look-ahead' | 'review';
 
 @Component({
   selector: 'app-study-plan',
-  imports: [PlatformHeader, RouterLink, NgTemplateOutlet],
+  imports: [PlatformHeader, RouterLink, NgTemplateOutlet, StudyDesk],
   templateUrl: './study-plan.html',
   styleUrl: './study-plan.css',
 })
@@ -89,6 +92,7 @@ export class StudyPlanPage implements OnInit {
   protected readonly accountMode = signal(false);
   private browserPlan: SavedPlan | null = null;
   @ViewChild('pageHeading') private pageHeading?: ElementRef<HTMLElement>;
+  @ViewChild('wizardHeading') private wizardHeading?: ElementRef<HTMLElement>;
   protected readonly authorScenarioStatus = signal('');
   protected async openAuthorScenario(
     view: 'create' | 'saved' | 'missed' | 'adjusted',
@@ -162,7 +166,9 @@ export class StudyPlanPage implements OnInit {
           : 'Showing the saved author example. No progress was changed.',
     );
     setTimeout(() => {
-      if (!this.destroyRef.destroyed) this.sessionHeading?.nativeElement.focus();
+      if (!this.destroyRef.destroyed) {
+        this.studyDesk?.focusDayHeading();
+      }
     }, 0);
   }
   private creationSetup: {
@@ -357,7 +363,7 @@ export class StudyPlanPage implements OnInit {
           !this.accountStore.sessionExpired())),
   );
   @ViewChild('scheduleDialog') private scheduleDialog?: ElementRef<HTMLDialogElement>;
-  @ViewChild('sessionHeading') private sessionHeading?: ElementRef<HTMLElement>;
+  @ViewChild(StudyDesk) private studyDesk?: StudyDesk;
   protected readonly schedulePage = signal(0);
   protected readonly schedulePageCount = computed(() =>
     Math.ceil((this.plan()?.days.length ?? 0) / 7),
@@ -382,8 +388,7 @@ export class StudyPlanPage implements OnInit {
   protected openScheduleDay(day: number): void {
     this.selectedDay.set(day);
     this.closeSchedule();
-    this.sessionHeading?.nativeElement.focus();
-    this.sessionHeading?.nativeElement.scrollIntoView?.({ block: 'start' });
+    this.studyDesk?.focusDayHeading();
   }
   @ViewChild('recoveryDialog') private recoveryDialog?: ElementRef<HTMLDialogElement>;
   protected openRecovery(): void {
@@ -452,22 +457,17 @@ export class StudyPlanPage implements OnInit {
   }
   protected continueToSignIn(): void {
     try {
-      window.sessionStorage.setItem(
-        DRAFT_INTENT_KEY,
-        JSON.stringify({
-          goal: this.goal(),
-          days: this.days(),
-          dailyHours: this.dailyHours(),
-          goalType: this.goalType(),
-          topicIds: [...this.selectedTopicIds()],
-          familiarity: this.familiarity(),
-        }),
-      );
+      this.persistWizardDraft();
+      if (!window.sessionStorage.getItem(DRAFT_INTENT_KEY)) throw new Error('Unavailable');
     } catch {
       this.status.set('Browser storage is unavailable. Your selections remain in this tab.');
       return;
     }
-    void this.router.navigate(['/sign-in'], { queryParams: { returnTo: '/study-plan?create=1' } });
+    void this.router.navigate(['/sign-in'], {
+      queryParams: {
+        returnTo: `/study-plan?create=1&builderStep=${encodeURIComponent(this.wizardStep())}`,
+      },
+    });
   }
   private restoreDraftIntent(): void {
     if (this.route.snapshot.queryParamMap.get('create') !== '1') return;
@@ -628,7 +628,7 @@ export class StudyPlanPage implements OnInit {
     this.dismissAdjustment(reviewed);
     this.closeRecovery();
     this.announceAdjustment('Plan retained. Your saved schedule is unchanged.');
-    this.sessionHeading?.nativeElement.focus();
+    this.studyDesk?.focusDayHeading();
   }
   private readonly adjustmentAnnouncement = signal<{
     key: string;
@@ -896,6 +896,31 @@ export class StudyPlanPage implements OnInit {
   protected readonly familiarity = signal<Record<string, 'familiar' | 'refresh' | 'new'>>({});
   protected readonly goal = signal('Build reliable engineering foundations');
   protected readonly selectedTopicIds = signal(new Set<string>());
+  protected readonly wizardSteps: ReadonlyArray<{
+    id: StudyPlanWizardStep;
+    label: string;
+    shortLabel: string;
+  }> = [
+    { id: 'setup', label: 'Plan setup', shortLabel: 'Setup' },
+    { id: 'learn', label: 'Learn selections', shortLabel: 'Learn' },
+    { id: 'grow', label: 'Grow selections', shortLabel: 'Grow' },
+    { id: 'look-ahead', label: 'Look Ahead selections', shortLabel: 'Look Ahead' },
+    { id: 'review', label: 'Review and save', shortLabel: 'Review' },
+  ];
+  protected readonly wizardStep = signal<StudyPlanWizardStep>('setup');
+  protected readonly wizardStepIndex = computed(() =>
+    this.wizardSteps.findIndex((step) => step.id === this.wizardStep()),
+  );
+  protected readonly wizardPath = computed<ContentPath | null>(() => {
+    const step = this.wizardStep();
+    return step === 'learn' || step === 'grow' || step === 'look-ahead' ? step : null;
+  });
+  protected readonly setupStepValid = computed(
+    () =>
+      !!this.goal().trim() &&
+      this.durations.includes(this.days() as (typeof this.durations)[number]) &&
+      this.hours.includes(this.dailyHours() as (typeof this.hours)[number]),
+  );
   protected readonly documents = signal<SearchDocument[] | null>(null);
   protected readonly loadingError = signal('');
   protected readonly status = signal('');
@@ -999,10 +1024,70 @@ export class StudyPlanPage implements OnInit {
         )
       : null,
   );
-  protected planLink(item: StudyPlanAssignment): Record<string, string | number> {
+  protected readonly deskInitialActivity = signal('');
+  protected readonly deskModel = computed(() => {
+    const saved = this.saved();
+    if (!saved) return null;
+    return studyDeskActivities(
+      saved.snapshot,
+      this.completedIds(),
+      saved.sessionOutcomes ?? {},
+      saved.studyLog ?? [],
+      (saved.recovery?.elapsedDays ?? 0) + 1,
+      this.studyActivitySupported(),
+      (item) =>
+        this.availableDocuments().some(
+          (doc) => (doc.canonicalContentId ?? doc.id) === this.sourceId(item),
+        ),
+    );
+  });
+  protected readonly deskEntries = computed(() =>
+    (this.deskModel()?.entries ?? []).map((entry) => this.deskEntry(entry)),
+  );
+  protected readonly deskResume = computed(() => {
+    const entry = this.deskModel()?.resume;
+    return entry ? this.deskEntry(entry) : null;
+  });
+  protected readonly deskPlanKey = computed(
+    () =>
+      `${this.accountStore.account()?.accountId ?? 'local'}:${this.accountStore.active()?.planId ?? 'browser'}`,
+  );
+  private deskEntry(entry: StudyDeskActivity): StudyDeskEntry {
+    const assignment = entry.assignment;
+    const studyDay = entry.outsideWindow
+      ? (this.deskModel()?.anchorDay ?? 1)
+      : Math.max(entry.day, this.deskModel()?.anchorDay ?? 1);
+    return {
+      ...entry,
+      sourceId: this.sourceId(assignment),
+      route: this.currentRoute(assignment),
+      query: this.planLink(assignment, studyDay),
+      unavailableReason: this.assignmentUnavailableReason(assignment),
+      completed:
+        this.completedIds().has(assignment.id) ||
+        this.saved()?.sessionOutcomes?.[assignment.id] === 'completed',
+      outcome: this.outcome(assignment),
+      note: this.reviewNote(assignment),
+      refreshLinks: this.refreshLinks(assignment),
+    };
+  }
+  protected completeDeskActivity(entry: StudyDeskEntry): void {
+    if (!entry.outsideWindow) this.toggleCompletion(entry.assignment, Number(entry.query['day']));
+  }
+  protected recordDeskActivity(event: {
+    entry: StudyDeskEntry;
+    outcome: 'attempted' | 'needs-review' | 'completed';
+  }): void {
+    if (!event.entry.outsideWindow)
+      this.recordOutcome(event.entry.assignment, event.outcome, Number(event.entry.query['day']));
+  }
+  protected planLink(
+    item: StudyPlanAssignment,
+    studyDay = this.selectedDay(),
+  ): Record<string, string | number> {
     return {
       plan: this.accountStore.active()?.planId ?? 'browser',
-      day: this.selectedDay(),
+      day: studyDay,
       activity: item.id,
     };
   }
@@ -1102,6 +1187,7 @@ export class StudyPlanPage implements OnInit {
       const days = Number(params.get('days'));
       const hours = Number(params.get('hours'));
       const day = Number(params.get('day'));
+      this.deskInitialActivity.set(params.get('activity') ?? '');
       if (Number.isInteger(day) && day >= 1 && day <= 180) this.selectedDay.set(day);
       if (this.durations.some((value) => value === days)) this.days.set(days);
       if (this.hours.some((value) => value === hours)) this.dailyHours.set(hours);
@@ -1109,6 +1195,13 @@ export class StudyPlanPage implements OnInit {
         this.goalType.set(params.get('approach') as 'learning' | 'interview');
       if (params.has('topics'))
         this.selectedTopicIds.set(new Set((params.get('topics') ?? '').split(',')));
+      const requestedStep = params.get('builderStep');
+      const nextStep = this.wizardSteps.some((step) => step.id === requestedStep)
+        ? (requestedStep as StudyPlanWizardStep)
+        : 'setup';
+      const changed = nextStep !== this.wizardStep();
+      this.wizardStep.set(nextStep);
+      if (changed) this.focusWizardStep();
       // Legacy access URL values never grant access or authorize a plan.
     });
   }
@@ -1189,12 +1282,76 @@ export class StudyPlanPage implements OnInit {
   }
 
   protected setFamiliarity(id: string, value: string): void {
-    if (value === 'familiar' || value === 'refresh' || value === 'new')
+    if (value === 'familiar' || value === 'refresh' || value === 'new') {
       this.familiarity.update((current) => ({ ...current, [id]: value }));
+      this.persistWizardDraft();
+    }
   }
   protected readonly selectedTopics = computed(() =>
     this.topics().filter((t) => this.selectedTopicIds().has(t.id)),
   );
+  protected selectedTopicsFor(path: ContentPath): StudyPlanTopic[] {
+    return this.selectedTopics().filter((topic) => topic.path === path);
+  }
+  protected selectedCountFor(path: ContentPath): number {
+    return this.selectedTopicsFor(path).length;
+  }
+  protected wizardStepState(index: number): 'current' | 'complete' | 'upcoming' {
+    const current = this.wizardStepIndex();
+    return index === current ? 'current' : index < current ? 'complete' : 'upcoming';
+  }
+  protected setGoal(value: string): void {
+    this.goal.set(value);
+    this.persistWizardDraft();
+  }
+  protected setGoalType(value: string): void {
+    if (value !== 'learning' && value !== 'interview') return;
+    this.goalType.set(value);
+    this.persistWizardDraft();
+  }
+  protected async goToWizardStep(step: StudyPlanWizardStep): Promise<void> {
+    if (step !== 'setup' && !this.setupStepValid()) {
+      this.status.set('Complete the plan setup before choosing courses.');
+      step = 'setup';
+    }
+    this.persistWizardDraft();
+    await this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { create: 1, builderStep: step },
+      queryParamsHandling: 'merge',
+    });
+  }
+  protected async continueWizard(): Promise<void> {
+    const next = this.wizardSteps[this.wizardStepIndex() + 1];
+    if (next) await this.goToWizardStep(next.id);
+  }
+  protected async backWizard(): Promise<void> {
+    const previous = this.wizardSteps[this.wizardStepIndex() - 1];
+    if (previous) await this.goToWizardStep(previous.id);
+  }
+  private focusWizardStep(): void {
+    setTimeout(() => {
+      if (!this.destroyRef.destroyed) this.wizardHeading?.nativeElement.focus();
+    }, 0);
+  }
+  private persistWizardDraft(): void {
+    if (!this.setupVisible()) return;
+    try {
+      window.sessionStorage.setItem(
+        DRAFT_INTENT_KEY,
+        JSON.stringify({
+          goal: this.goal(),
+          days: this.days(),
+          dailyHours: this.dailyHours(),
+          goalType: this.goalType(),
+          topicIds: [...this.selectedTopicIds()],
+          familiarity: this.familiarity(),
+        }),
+      );
+    } catch {
+      /* The wizard remains usable in memory when session storage is unavailable. */
+    }
+  }
   protected readonly revisionProgress = computed(() => ({
     attempted: new Set(this.saved()?.attemptedContentIds ?? []).size,
     needsReview: new Set(this.saved()?.needsReviewContentIds ?? []).size,
@@ -1249,6 +1406,7 @@ export class StudyPlanPage implements OnInit {
   protected recordOutcome(
     assignment: StudyPlanAssignment,
     outcome: 'attempted' | 'needs-review' | 'completed',
+    studyDay = this.selectedDay(),
   ): void {
     if (this.editsLocked() || !this.canOpen(assignment)) return;
     const saved = this.saved();
@@ -1269,7 +1427,7 @@ export class StudyPlanPage implements OnInit {
                 outcome,
               },
             ];
-      void this.saveAccountActivity(operations);
+      void this.saveAccountActivity(operations, studyDay);
       return;
     }
     const attempted = new Set(saved.attemptedContentIds ?? []);
@@ -1287,7 +1445,7 @@ export class StudyPlanPage implements OnInit {
       attemptedContentIds: [...attempted],
       needsReviewContentIds: [...needsReview],
       sessionOutcomes: { ...saved.sessionOutcomes, [assignment.id]: outcome },
-      studyLog: recordStudyLog(saved.studyLog, assignment, this.selectedDay()),
+      studyLog: recordStudyLog(saved.studyLog, assignment, studyDay),
     });
     this.persist(
       outcome === 'completed'
@@ -1309,9 +1467,11 @@ export class StudyPlanPage implements OnInit {
   }
   protected setDays(value: string): void {
     this.days.set(Number(value));
+    this.persistWizardDraft();
   }
   protected setHours(value: string): void {
     this.dailyHours.set(Number(value));
+    this.persistWizardDraft();
   }
   protected toggleTopic(topic: StudyPlanTopic, checked: boolean): void {
     if (!this.availableTopicIds().has(topic.id)) return;
@@ -1319,12 +1479,27 @@ export class StudyPlanPage implements OnInit {
     if (checked) next.add(topic.id);
     else next.delete(topic.id);
     this.selectedTopicIds.set(next);
+    this.persistWizardDraft();
   }
   protected selectAllTopics(): void {
     this.selectedTopicIds.set(new Set(this.availableTopicIds()));
+    this.persistWizardDraft();
   }
   protected clearTopics(): void {
     this.selectedTopicIds.set(new Set());
+    this.persistWizardDraft();
+  }
+  protected selectAllTopicsFor(path: ContentPath): void {
+    const next = new Set(this.selectedTopicIds());
+    for (const topic of this.topicsFor(path))
+      if (this.availableTopicIds().has(topic.id)) next.add(topic.id);
+    this.selectedTopicIds.set(next);
+    this.persistWizardDraft();
+  }
+  protected clearTopicsFor(path: ContentPath): void {
+    const ids = new Set(this.topicsFor(path).map((topic) => topic.id));
+    this.selectedTopicIds.set(new Set([...this.selectedTopicIds()].filter((id) => !ids.has(id))));
+    this.persistWizardDraft();
   }
   protected pathLabel(path: ContentPath): string {
     return path === 'look-ahead' ? 'Look Ahead' : path === 'grow' ? 'Grow' : 'Learn';
@@ -1478,14 +1653,17 @@ export class StudyPlanPage implements OnInit {
     await this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {
+        create: 1,
+        builderStep: 'review',
         days: this.days(),
         hours: this.dailyHours(),
         topics: topicIds.join(','),
         approach: this.goalType(),
       },
+      queryParamsHandling: 'merge',
     });
   }
-  protected toggleCompletion(assignment: StudyPlanAssignment): void {
+  protected toggleCompletion(assignment: StudyPlanAssignment, studyDay = this.selectedDay()): void {
     if (this.editsLocked() || !this.canOpen(assignment)) return;
     const saved = this.saved();
     if (!saved) return;
@@ -1500,7 +1678,7 @@ export class StudyPlanPage implements OnInit {
           canonicalContentId: this.sourceId(assignment),
           completed,
         });
-      void this.saveAccountActivity(operations);
+      void this.saveAccountActivity(operations, studyDay);
       return;
     }
     const completedIds = new Set(saved.completedIds);
@@ -1514,7 +1692,7 @@ export class StudyPlanPage implements OnInit {
       ...saved,
       completedIds: [...completedIds],
       studyLog: completedIds.has(assignment.id)
-        ? recordStudyLog(saved.studyLog, assignment, this.selectedDay())
+        ? recordStudyLog(saved.studyLog, assignment, studyDay)
         : saved.studyLog,
     });
     this.persist('Progress saved on this browser. Completion records practice, not mastery.');
@@ -1773,7 +1951,10 @@ export class StudyPlanPage implements OnInit {
     this.accountStore.newPlan();
     this.saved.set(null);
     this.selectedDay.set(1);
-    void this.router.navigate(['/study-plan'], { queryParams: { create: 1 } });
+    this.wizardStep.set('setup');
+    void this.router.navigate(['/study-plan'], {
+      queryParams: { create: 1, builderStep: 'setup' },
+    });
     this.status.set('Choose the focus for a new plan. Progress in your other plans is unchanged.');
   }
   protected async openAccountPlan(planId: string): Promise<void> {
@@ -1825,10 +2006,13 @@ export class StudyPlanPage implements OnInit {
     this.familiarity.set(saved.snapshot.config.familiarity ?? {});
     this.selectedTopicIds.set(new Set(saved.snapshot.config.topicIds));
     this.closeRecovery();
-    this.status.set('Saved to your account. Progress belongs to this plan.');
+    this.status.set('Plan saved.');
   }
-  private async saveAccountActivity(operations: PlanActivity[]): Promise<void> {
-    const result = await this.accountStore.activity(operations, this.selectedDay());
+  private async saveAccountActivity(
+    operations: PlanActivity[],
+    studyDay = this.selectedDay(),
+  ): Promise<void> {
+    const result = await this.accountStore.activity(operations, studyDay);
     if (result) this.acceptAccountPlan(result);
   }
   protected async retryAccountSave(): Promise<void> {

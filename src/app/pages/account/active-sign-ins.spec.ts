@@ -93,6 +93,13 @@ describe('Active sign-in inventory', () => {
     input.dispatchEvent(new Event('input'));
     fixture.detectChanges();
   }
+  function loseControlFocus() {
+    // jsdom does not perform the browser's automatic blur on a disabled button.
+    const host = fixture.nativeElement as HTMLElement;
+    host.tabIndex = -1;
+    host.focus();
+    expect(document.activeElement).toBe(host);
+  }
   it('shows the authoritative count, approximate descriptions, current marker and dates without raw IDs', () => {
     expect(fixture.nativeElement.textContent).toContain('2 of 2 active sign-ins');
     expect(fixture.nativeElement.textContent).toContain('This sign-in');
@@ -112,6 +119,104 @@ describe('Active sign-in inventory', () => {
       '2 active sign-ins · no Local development limit',
     );
     expect(fixture.nativeElement.textContent).not.toContain('2 of 2 active sign-ins');
+  });
+  it.each([0, 1, 2, 5])('uses the correct Local count label for %i sign-ins', async (count) => {
+    client.load.mockResolvedValue({
+      ...initial,
+      limit: null,
+      signIns: Array.from({ length: count }, (_, index) => ({
+        ...initial.signIns[0],
+        id: `entry-${index}`,
+        current: index === 0,
+      })),
+    });
+    button('Refresh list').click();
+    await settle();
+    expect(fixture.nativeElement.querySelector('.inventory-count').textContent.trim()).toBe(
+      `${count} active ${count === 1 ? 'sign-in' : 'sign-ins'} · no Local development limit`,
+    );
+  });
+  it.each([
+    [0, 'You have no other active sign-ins.'],
+    [1, 'Your other sign-in stays active.'],
+    [4, 'Your other 4 sign-ins stay active.'],
+  ])('describes current sign-out with %i other sign-ins', async (others, message) => {
+    client.load.mockResolvedValue({
+      ...initial,
+      limit: null,
+      signIns: [
+        initial.signIns[0],
+        ...Array.from({ length: others as number }, (_, index) => ({
+          ...initial.signIns[1],
+          id: `other-${index}`,
+        })),
+      ],
+    });
+    button('Refresh list').click();
+    await settle();
+    button('Sign out this sign-in').click();
+    await settle();
+    expect(fixture.nativeElement.querySelector('.confirmation p').textContent.trim()).toBe(
+      `This browser session will end. ${message} Saved plans and progress are preserved.`,
+    );
+    expect(client.revoke).not.toHaveBeenCalled();
+  });
+  it('restores the refresh trigger after a delayed response and announces completion', async () => {
+    let resolve!: (value: ActiveSignInInventory) => void;
+    client.load.mockReturnValue(new Promise((done) => (resolve = done)));
+    const trigger = button('Refresh list');
+    trigger.focus();
+    trigger.click();
+    fixture.detectChanges();
+    expect(trigger.disabled).toBe(true);
+    expect(fixture.nativeElement.querySelector('[role="status"]').textContent).toContain('Loading');
+    // Model the native focus loss observed when the loading state disables the button.
+    loseControlFocus();
+    resolve(structuredClone(initial));
+    await settle();
+    expect(trigger.disabled).toBe(false);
+    expect(document.activeElement).toBe(trigger);
+    expect(fixture.nativeElement.querySelector('.status').textContent).toBe(
+      'Active sign-ins refreshed.',
+    );
+  });
+  it('restores refresh focus on failure without announcing a successful refresh', async () => {
+    let reject!: (reason: unknown) => void;
+    client.load.mockReturnValue(new Promise((_done, fail) => (reject = fail)));
+    const trigger = button('Refresh list');
+    trigger.focus();
+    trigger.click();
+    fixture.detectChanges();
+    expect(trigger.disabled).toBe(true);
+    loseControlFocus();
+    reject(new SignInManagementError('unavailable'));
+    await settle();
+    expect(document.activeElement).toBe(trigger);
+    expect(fixture.nativeElement.querySelector('[role="alert"]').textContent).toContain(
+      'unavailable',
+    );
+    expect(fixture.nativeElement.querySelector('.status').textContent).toBe('');
+    expect(fixture.nativeElement.textContent).toContain('2 of 2 active sign-ins');
+  });
+  it('does not restore refresh focus or announce a late response after an owner change', async () => {
+    let resolve!: (value: ActiveSignInInventory) => void;
+    client.load.mockReturnValue(new Promise((done) => (resolve = done)));
+    const trigger = button('Refresh list');
+    trigger.focus();
+    trigger.click();
+    fixture.detectChanges();
+    loseControlFocus();
+    store.account.set({
+      accountId: 'other',
+      username: 'other',
+      displayName: 'Other',
+      topicGrants: [],
+    });
+    resolve({ ...initial, signIns: [] });
+    await settle();
+    expect(document.activeElement).not.toBe(trigger);
+    expect(fixture.nativeElement.querySelector('.status').textContent).toBe('');
+    expect(fixture.nativeElement.textContent).toContain('2 of 2 active sign-ins');
   });
   it('limits label editing to the current sign-in and restores focus when canceled', async () => {
     const trigger = button('Edit label for My browser');

@@ -1,0 +1,216 @@
+<section class="study-desk" aria-label="Study day activities">
+  <div class="desk-layout" [class.path-hidden]="!pathOpen()">
+    <aside class="learning-path" [class.path-collapsed]="!pathOpen()">
+      <div class="path-heading">
+        @if (pathOpen()) {
+          <h2 id="desk-topics-heading">Topics in your plan</h2>
+        }
+        <button
+          type="button"
+          class="path-toggle"
+          (click)="pathOpen.set(!pathOpen())"
+          [attr.aria-expanded]="pathOpen()"
+          [attr.aria-label]="pathOpen() ? 'Hide topics in your plan' : 'Show topics in your plan'"
+          [attr.data-tooltip]="pathOpen() ? null : 'Show topics in your plan'"
+          aria-controls="desk-plan-topics"
+        >
+          @if (pathOpen()) {
+            <span>Hide</span>
+          }
+          <span class="disclosure-chevron" [class.expanded]="pathOpen()" aria-hidden="true">⌄</span>
+        </button>
+      </div>
+      @if (pathOpen()) {
+        <p class="small">Explore saved topics without changing your progress.</p>
+      }
+      <nav
+        id="desk-plan-topics"
+        class="topic-list"
+        aria-labelledby="desk-topics-heading"
+        [hidden]="!pathOpen()"
+      >
+        @for (topic of topics(); track topic.id; let index = $index) {
+          <section class="path-topic">
+            <button
+              type="button"
+              class="topic-toggle"
+              [attr.aria-expanded]="topicOpen(topic.id)"
+              [attr.aria-controls]="'desk-topic-' + index"
+              (click)="toggleTopic(topic.id)"
+            >
+              <span class="topic-number">{{ index + 1 }}</span><strong>{{ topic.title }}</strong>
+              <span aria-hidden="true">{{ topicOpen(topic.id) ? '⌃' : '⌄' }}</span>
+            </button>
+            <ul [id]="'desk-topic-' + index" [hidden]="!topicOpen(topic.id)">
+              @for (item of topic.items; track item.id) {
+                <li>
+                  <button
+                    type="button"
+                    class="item-link"
+                    (click)="browse(item.entries[0], true, true)"
+                    [attr.aria-current]="selected()?.sourceId === item.id ? 'true' : null"
+                  >
+                    {{ item.title }}
+                  </button>
+                </li>
+              }
+            </ul>
+          </section>
+        }
+        <p class="path-note small">Exploring a topic never marks earlier work complete.</p>
+      </nav>
+    </aside>
+
+    <div class="desk-work">
+      <header class="day-heading">
+        <p class="eyebrow">Study day {{ selectedDay() }}</p>
+        <h3 id="desk-day-heading" tabindex="-1">
+          {{ dayEntries().length }}
+          {{ dayEntries().length === 1 ? 'scheduled activity' : 'scheduled activities' }}
+        </h3>
+      </header>
+
+      @if (dayEntries().length) {
+        <div class="activity-card-grid" aria-labelledby="desk-day-heading">
+          @for (entry of dayEntries(); track entry.assignment.id; let index = $index) {
+            <article
+              class="activity-card"
+              [class.current]="selected()?.assignment?.id === entry.assignment.id"
+              [attr.data-desk-activity]="entry.assignment.id"
+              [attr.aria-labelledby]="'desk-activity-' + index"
+              tabindex="-1"
+            >
+              <div class="activity-meta">
+                <span class="eyebrow">{{ entry.assignment.activity }} · Day {{ entry.day }}</span>
+                <span class="small">
+                  {{ entry.assignment.minutes }}
+                  {{ entry.assignment.timebox ? 'minute timebox' : 'estimated minutes' }}
+                </span>
+              </div>
+              <h4 [id]="'desk-activity-' + index">{{ entry.assignment.title }}</h4>
+              <p class="offering-name">{{ offeringLabel(entry) }}</p>
+
+              @if (entry.assignment.instructions) {
+                <p>{{ entry.assignment.instructions }}</p>
+              }
+              <p class="small">
+                {{
+                  entry.completed
+                    ? 'Completed. You can revisit this material.'
+                    : entry.outcome === 'needs-review'
+                      ? 'Marked for another review.'
+                      : entry.outcome === 'attempted'
+                        ? 'Attempt recorded. Full-content completion is separate.'
+                        : 'Opening the material does not mark it complete.'
+                }}
+              </p>
+
+              <nav
+                class="strategy-sequence"
+                [attr.aria-label]="'Study strategy for ' + entry.assignment.title"
+              >
+                @for (occurrence of sequenceFor(entry); track occurrence.assignment.id) {
+                  <button
+                    type="button"
+                    class="occurrence-link"
+                    [attr.aria-current]="
+                      selected()?.assignment?.id === occurrence.assignment.id ? 'true' : null
+                    "
+                    (click)="browse(occurrence, true, true)"
+                  >
+                    {{ occurrence.assignment.activity }} · Day {{ occurrence.day }}
+                  </button>
+                }
+              </nav>
+
+              @if (entry.unavailableReason) {
+                <p class="unavailable">{{ entry.unavailableReason }}</p>
+              } @else {
+                <div class="activity-actions">
+                  <a
+                    class="primary content-action"
+                    [routerLink]="entry.route"
+                    [queryParams]="entry.query"
+                    [attr.aria-label]="openMaterialLabel(entry) + ': ' + entry.assignment.title"
+                    >{{ openMaterialLabel(entry) }}</a
+                  >
+                  @if (!entry.outsideWindow) {
+                    @if (!entry.assignment.timebox) {
+                      <button
+                        type="button"
+                        [disabled]="locked()"
+                        [attr.data-desk-action]="'complete-' + entry.assignment.id"
+                        (click)="toggleComplete(entry)"
+                        [attr.aria-label]="
+                          (entry.completed ? 'Mark incomplete: ' : 'Mark complete: ') +
+                          entry.assignment.title +
+                          ', day ' +
+                          entry.day
+                        "
+                      >
+                        {{ entry.completed ? 'Undo completion' : 'Mark complete' }}
+                      </button>
+                    } @else {
+                      <button
+                        type="button"
+                        [disabled]="locked()"
+                        [attr.data-desk-action]="'attempted-' + entry.assignment.id"
+                        (click)="recordOutcome(entry, 'attempted')"
+                      >Record attempt / refresh</button>
+                      <button
+                        type="button"
+                        [disabled]="locked()"
+                        [attr.data-desk-action]="'needs-review-' + entry.assignment.id"
+                        (click)="recordOutcome(entry, 'needs-review')"
+                      >Needs review</button>
+                      <button
+                        type="button"
+                        [disabled]="locked()"
+                        [attr.data-desk-action]="'completed-' + entry.assignment.id"
+                        (click)="recordOutcome(entry, 'completed')"
+                      >I completed the full content</button>
+                    }
+                  }
+                </div>
+                @if (entry.assignment.timebox && !entry.outsideWindow) {
+                  <label class="note-label" [for]="'desk-review-note-' + index">
+                    What needs another look?
+                  </label>
+                  <textarea
+                    [id]="'desk-review-note-' + index"
+                    rows="3"
+                    maxlength="1000"
+                    [disabled]="locked()"
+                    [value]="entry.note"
+                    (blur)="note.emit({ entry, text: $any($event.target).value })"
+                  ></textarea>
+                }
+              }
+
+              @if (entry.outsideWindow) {
+                <p class="small">
+                  This recall is scheduled after the current plan window. It is not added to your
+                  daily budget.
+                </p>
+              }
+              @if (selected()?.assignment?.id === entry.assignment.id && browsing()) {
+                <p class="browsing-note">You are browsing this occurrence. Progress has not changed.</p>
+              }
+              @if (entry.refreshLinks.length) {
+                <details class="references">
+                  <summary>Related lessons for a targeted refresh</summary>
+                  @for (link of entry.refreshLinks; track link.title) {
+                    <p><a [routerLink]="link.route">{{ link.title }}</a></p>
+                  }
+                </details>
+              }
+            </article>
+          }
+        </div>
+      } @else {
+        <p class="day-empty" role="status">No activities are scheduled for this study day.</p>
+      }
+    </div>
+  </div>
+
+</section>

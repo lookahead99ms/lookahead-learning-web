@@ -5,7 +5,14 @@
 >
   <div class="section-heading">
     <h2 #heading id="active-sign-ins-heading" tabindex="-1">Active sign-ins</h2>
-    <button type="button" (click)="load()" [disabled]="loading() || pending()">Refresh list</button>
+    <button
+      #refreshButton
+      type="button"
+      (click)="load(refreshButton)"
+      [disabled]="loading() || pending()"
+    >
+      Refresh list
+    </button>
   </div>
   <p class="explanation">
     Tabs in the same browser session share a sign-in. A separate browser profile or private session
@@ -20,7 +27,8 @@
   @if (inventory(); as inventory) {
     <p class="inventory-count">
       @if (inventory.limit === null) {
-        {{ inventory.signIns.length }} active sign-ins · no Local development limit
+        {{ inventory.signIns.length }} active
+        {{ inventory.signIns.length === 1 ? 'sign-in' : 'sign-ins' }} · no Local development limit
       } @else {
         {{ inventory.signIns.length }} of {{ inventory.limit }} active sign-ins
       }
@@ -133,7 +141,7 @@
           target === 'others'
             ? 'All other sign-ins will end. This sign-in stays active.'
             : target.current
-              ? 'This browser session will end. Your other sign-in stays active.'
+              ? currentSignOutMessage()
               : 'The selected browser session will end. This sign-in stays active.'
         }}
         Saved plans and progress are preserved.
