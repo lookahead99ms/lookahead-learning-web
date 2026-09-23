@@ -12,8 +12,8 @@ delivery evidence, credentials, and learner data are kept outside this Git histo
 
 - Learn foundations, Grow production practice, and Look Ahead architecture,
   leadership, and engineering judgment.
-- Unified Search, lessons, interview questions, hands-on practice, guided
-  algorithm traces, and adaptive Study Plans.
+- Unified Search with an optional selected-result preview, lessons, interview
+  questions, hands-on practice, guided algorithm traces, and adaptive Study Plans.
 - A private catalog with 730 ranked canonical DSA problems and 450 validated
   ready-made Study Plan templates. This repository includes only safe examples
   of the same versioned contracts.
@@ -69,16 +69,16 @@ Pages must not infer authorization or repair invalid private content.
 
 ## Repository relationships
 
-| Local repository folder | Source boundary | Responsibility |
-| --- | --- | --- |
-| **`lookahead-learning-web-public`** | Public web source (`lookahead-learning-web`) | Angular product, synthetic standalone demo, UI contracts and browser integration |
-| **`lookahead-learning-api`** | Public compatibility baseline (`lookahead-content-api`) | Current combined Spring API and separately launched Gateway profile, existing schemas and migrations |
-| **`lookahead-learning-gateway`** | Private candidate | Browser sessions, server-held OAuth tokens and fixed Identity/Platform routing |
-| **`lookahead-learning-identity`** | Private candidate | Credentials, enabled identities, OAuth clients/authorizations, signing keys and Identity database migrations |
-| **`lookahead-learning-platform`** | Private candidate | Product capabilities/grants, plans/progress, protected content, support state and Platform database migrations |
-| **`lookahead-learning-backend`** | Private shared build | Maven parent, plain transport contracts, application image build and verification tooling |
-| **`lookahead-learning-infra`** | Private infrastructure | Local lifecycle, separate database roles, Compose, environment configuration and deferred AWS definitions |
-| **`lookahead-learning-content`** | Private content | Curriculum, rankings, Study Plan templates, publication tools, private architecture previews and evidence |
+| Local repository folder             | Source boundary                                         | Responsibility                                                                                                 |
+| ----------------------------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| **`lookahead-learning-web-public`** | Public web source (`lookahead-learning-web`)            | Angular product, synthetic standalone demo, UI contracts and browser integration                               |
+| **`lookahead-learning-api`**        | Public compatibility baseline (`lookahead-content-api`) | Current combined Spring API and separately launched Gateway profile, existing schemas and migrations           |
+| **`lookahead-learning-gateway`**    | Private candidate                                       | Browser sessions, server-held OAuth tokens and fixed Identity/Platform routing                                 |
+| **`lookahead-learning-identity`**   | Private candidate                                       | Credentials, enabled identities, OAuth clients/authorizations, signing keys and Identity database migrations   |
+| **`lookahead-learning-platform`**   | Private candidate                                       | Product capabilities/grants, plans/progress, protected content, support state and Platform database migrations |
+| **`lookahead-learning-backend`**    | Private shared build                                    | Maven parent, plain transport contracts, application image build and verification tooling                      |
+| **`lookahead-learning-infra`**      | Private infrastructure                                  | Local lifecycle, separate database roles, Compose, environment configuration and deferred AWS definitions      |
+| **`lookahead-learning-content`**    | Private content                                         | Curriculum, rankings, Study Plan templates, publication tools, private architecture previews and evidence      |
 
 The four candidate application/build repositories are sibling checkouts with
 these exact folder names. Their Maven build resolves local sibling sources;
@@ -146,17 +146,53 @@ credentials, or private content. Plans and notes stay in this browser.
 
 Useful routes:
 
-| Route | Experience |
-| --- | --- |
-| `/` | Landing and platform overview |
-| `/learn` | Foundation catalog |
-| `/grow` | Production-practice catalog |
-| `/look-ahead` | Architecture and leadership catalog |
-| `/search` | Unified topic and learning-mode discovery |
-| `/learn/hands-on-dsa` | Ranked DSA practice catalog |
-| `/study-plan` | Study Plan creation, review and progress |
-| `/sign-in`, `/sign-up`, `/account` | Account entry and profile surfaces |
-| `/support` | Support and feedback surface |
+| Route                              | Experience                                                               |
+| ---------------------------------- | ------------------------------------------------------------------------ |
+| `/`                                | Landing and platform overview                                            |
+| `/learn`                           | Foundation catalog                                                       |
+| `/grow`                            | Production-practice catalog                                              |
+| `/look-ahead`                      | Architecture and leadership catalog                                      |
+| `/search`                          | Unified topic and learning-mode discovery with optional result summaries |
+| `/learn/hands-on-dsa`              | Ranked DSA practice catalog                                              |
+| `/study-plan`                      | Study Plan creation, review and progress                                 |
+| `/sign-in`, `/sign-up`, `/account` | Account entry and profile surfaces                                       |
+| `/support`                         | Support and feedback surface                                             |
+
+The approved DLV-801 Search refinement uses compact, full-title result rows.
+Results occupy the full desktop width until a row is selected through its native
+button. Selection opens a companion beside the list and presents that result in
+a separate sticky slot above the remaining rows. A visible Close preview control
+returns to the full-width list. Sticky positions follow the measured Search
+controls, keeping the companion title and action visible during desktop scroll.
+The remaining rows retain their rank and group order, and closing the preview
+restores the original list. At
+800 CSS pixels and below, one preview opens directly beneath its row without
+moving the row. Short desktop viewports use normal flow instead of sticky pinning.
+Path, course and difficulty links remain separate controls. Hover, keyboard
+focus and persistent selection have distinct visible states; the page uses
+normal document scrolling without a mobile dialog or duplicate answer tree.
+Result rows omit a synopsis when it only repeats the displayed title.
+
+The selected result is shareable as `previewItem` in the Search URL. Selection
+replaces the current history entry; reload and Back/Forward navigation restore
+valid URL context without a new history entry per click. A new query clears the
+selection, while sorting, grouping and loading more preserve it when valid.
+Filters clear an excluded selection. The Filters popover closes on an outside
+click or Escape; Escape returns focus to its summary. The preview shows a full
+title, an existing indexed summary where
+available, one canonical full-content action and a Details disclosure with
+course, module, difficulty, available languages and actionable subject filters.
+Missing preview content is described honestly. Empty Languages metadata is
+omitted; `language=unspecified` remains a usable Search filter. Premium is
+passive metadata, not an access grant. Explain-format interview questions load
+only the canonical short `interviewAnswer` through the existing access-checked
+route; **Read full answer** opens the complete question. Previewing makes no
+account, Study Plan or progress write.
+
+The approved heading, exact result counts, learning modes, filters, query
+precedence and canonical routes remain in place. The local integrated preview
+is development behavior and does not claim production deployment or a new API
+contract.
 
 Choose another free port when needed:
 
@@ -430,7 +466,6 @@ See [Architecture](docs/architecture.md),
 No open-source license has been selected. Public visibility does not grant reuse
 or redistribution rights.
 
-
 ## Private author review
 
 Author Previews includes a versioned Study Plan review entry and the `/author/previews/study-plan` route. Private scope, version, evidence and decisions come from the capability-protected author-documents publication, not the public bundle. The embedded HTML uses a scripts-only sandbox; review controls belong to Angular outside the document.
@@ -438,7 +473,6 @@ Author Previews includes a versioned Study Plan review entry and the `/author/pr
 The review adapter uses the BFF-protected Domain artifact registry and account-scoped review-event history. Decisions bind the canonical artifact ID, artifact version, owning ticket and source hash; the rendered HTML hash is separate display provenance. Writes use BFF CSRF and a header-only idempotency key. Decline and Need more require an explanation; comments are limited to 2,000 Unicode codepoints. Replacing a prior decision is explicit and supersedes the latest event for that account. A conflicting change requires reloading history and reviewing the new replacement target.
 
 Uncertain submissions preserve the draft and exact retry key. A later page load reads authoritative history instead of inventing a local result. A recorded decision remains pending Main reconciliation, not ticket completion or authorization for Git changes or deployment. A disposable Local author fixture verified recording, refresh and Domain restart persistence, and a real two-tab supersession conflict. These checks supplement unit/component tests; they do not establish production durability. If publication, artifact binding or history cannot be confirmed, recording stays disabled.
-
 
 ## Private Operations reference
 

@@ -4,7 +4,7 @@ import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { startDeliveryEditor } from './delivery-editor.mjs';
-import { loadLocalBaseProxy } from './local-base-proxy.mjs';
+import { assertWorkingGatewayProxy, loadLocalBaseProxy } from './local-base-proxy.mjs';
 
 const repositoryRoot = fileURLToPath(new URL('../', import.meta.url));
 const contentRoot = resolve(
@@ -73,7 +73,16 @@ async function syncPrivateContent() {
   await run(process.execPath, [syncScript, '--external'], 'Private content sync');
 }
 
-const proxy = await loadLocalBaseProxy(repositoryRoot, process.env.LOOKAHEAD_BASE_PROXY_CONFIG);
+const protectedWorking =
+  port === 4301 && argumentValue('--configuration', '').split(',').includes('protected');
+const baseProxyConfig = process.env.LOOKAHEAD_BASE_PROXY_CONFIG;
+if (protectedWorking && !baseProxyConfig) {
+  throw new Error(
+    'Protected working frontend on 4301 requires LOOKAHEAD_BASE_PROXY_CONFIG for local Gateway 4350.',
+  );
+}
+const proxy = await loadLocalBaseProxy(repositoryRoot, baseProxyConfig);
+if (protectedWorking) assertWorkingGatewayProxy(proxy);
 await syncPrivateContent();
 
 const editor = await startDeliveryEditor({
