@@ -197,6 +197,27 @@ export class StudyPlanPage implements OnInit {
   protected readonly dashboardVisible = signal(false);
   protected readonly creationMode = signal<StudyPlanCreationMode>('custom');
   protected readonly authoredPlanStep = signal<AuthoredPlanStep>('select');
+  private planFocusTitle(id: string): string {
+    const title =
+      this.topics().find((topic) => topic.id === id)?.title ??
+      STUDY_PLAN_TOPICS.find((topic) => topic.id === id)?.title;
+    if (title) return title;
+    const names: Record<string, string> = {
+      api: 'API',
+      aws: 'AWS',
+      dsa: 'DSA',
+      go: 'Go',
+      java: 'Java',
+      javascript: 'JavaScript',
+      jvm: 'JVM',
+      sql: 'SQL',
+      typescript: 'TypeScript',
+    };
+    return (id.split(':').at(-1) ?? id)
+      .split('-')
+      .map((word) => names[word] ?? `${word.charAt(0).toUpperCase()}${word.slice(1)}`)
+      .join(' ');
+  }
   protected readonly planCards = computed(() =>
     this.accountStore.plans().map((summary) => {
       const card = summary.card;
@@ -205,9 +226,7 @@ export class StudyPlanPage implements OnInit {
         loaded: card?.metadataStatus === 'available',
         completed: card?.completedSessionCount ?? 0,
         total: card?.totalSessionCount ?? 0,
-        subjects: (card?.selectedTopicIds ?? [])
-          .map((id) => STUDY_PLAN_TOPICS.find((topic) => topic.id === id)?.title ?? id)
-          .join(', '),
+        focusAreas: (card?.selectedTopicIds ?? []).map((id) => this.planFocusTitle(id)),
         hours: card?.configuredDailyMinutes == null ? null : card.configuredDailyMinutes / 60,
         next: card?.nextScheduledActivity?.title ?? null,
       };
