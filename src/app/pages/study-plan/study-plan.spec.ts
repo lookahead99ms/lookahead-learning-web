@@ -561,7 +561,12 @@ describe('StudyPlanPage', () => {
           : {
               schemaVersion: 'plan-card/v1',
               metadataStatus: 'available',
-              selectedTopicIds: ['learn:core-java'],
+              selectedTopicIds: [
+                'learn:core-java',
+                'grow:advanced-java',
+                'grow:api-design',
+                'grow:distributed-systems',
+              ],
               durationDays: 30,
               configuredDailyMinutes: 120,
               completedSessionCount: 3,
@@ -583,6 +588,11 @@ describe('StudyPlanPage', () => {
     expect(harness.routeNativeElement!.querySelector('.plan-card')?.textContent).toContain(
       '2 hours configured',
     );
+    const focus = harness.routeNativeElement!.querySelector('.plan-card-focus')!;
+    expect(focus.textContent).not.toContain('grow:advanced-java');
+    expect(focus.textContent).toContain('Advanced Java');
+    expect(focus.querySelectorAll('li')).toHaveLength(4);
+    expect(focus.querySelector('summary')?.textContent).toContain('Show 1 more focus area');
     expect(harness.routeNativeElement!.textContent).not.toContain('2099');
     expect(account.active()).toBe(original);
     expect(open).not.toHaveBeenCalled();
@@ -614,7 +624,7 @@ describe('StudyPlanPage', () => {
       'Completion records your practice, not mastery.',
       'Saved on this browser. Progress belongs to this plan.',
       'Based on saved progress. Exploring topics does not move your place.',
-      'Learn, practice, and recall within the time you set.',
+      'Your plan organizes learning, practice, and recall around the time you set.',
     ]);
     expect(harness.routeNativeElement!.querySelector('.resume-row')).toBeNull();
     expect(harness.routeNativeElement!.querySelector('.completion-note')).toBeNull();

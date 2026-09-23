@@ -114,7 +114,10 @@
                     <strong>Based on saved progress.</strong> Exploring topics does not move your
                     place.
                   </li>
-                  <li><strong>Learn, practice, and recall</strong> within the time you set.</li>
+                  <li>
+                    <strong>Your plan organizes</strong> learning, practice, and recall around the
+                    time you set.
+                  </li>
                 </ul>
               </aside>
             </div>
@@ -139,24 +142,59 @@
       <div class="plan-card-grid">
         @for (card of planCards(); track card.planId) {
           <article class="plan-card panel">
-            <h3>{{ card.goal }}</h3>
+            <div class="plan-card-heading">
+              <p class="eyebrow">Saved study plan</p>
+              <h3>{{ card.goal }}</h3>
+            </div>
             @if (card.loaded) {
-              <p>{{ card.subjects || 'No scheduled focus areas' }}</p>
-              <p>
-                <strong>{{ card.completed }} / {{ card.total }}</strong> sessions completed
-              </p>
+              <section class="plan-card-focus" aria-label="Plan focus areas">
+                <h4>Focus areas</h4>
+                @if (card.focusAreas.length) {
+                  <ul>
+                    @for (area of card.focusAreas.slice(0, 3); track $index) {
+                      <li>{{ area }}</li>
+                    }
+                  </ul>
+                  @if (card.focusAreas.length > 3) {
+                    <details #moreFocus>
+                      <summary>
+                        {{ moreFocus.open ? 'Hide' : 'Show' }}
+                        {{ card.focusAreas.length - 3 }} more focus
+                        {{ card.focusAreas.length - 3 === 1 ? 'area' : 'areas' }}
+                      </summary>
+                      <ul>
+                        @for (area of card.focusAreas.slice(3); track $index) {
+                          <li>{{ area }}</li>
+                        }
+                      </ul>
+                    </details>
+                  }
+                } @else {
+                  <p>No scheduled focus areas</p>
+                }
+              </section>
+              <div class="plan-card-stats">
+                <p>
+                  <strong>{{ card.completed }} / {{ card.total }}</strong> sessions completed
+                </p>
+                <p>
+                  <strong>{{ card.hours == null ? 'Not set' : card.hours + ' hours' }}</strong>
+                  {{ card.hours == null ? 'daily time' : 'configured per day' }}
+                </p>
+              </div>
               <progress
                 [value]="card.completed"
                 [max]="card.total || 1"
                 [attr.aria-label]="card.goal + ' completed sessions'"
               ></progress>
-              <p>{{ card.hours }} hours configured per day</p>
-              <p>
-                <strong>Next unfinished session:</strong>
-                {{ card.next || 'All scheduled sessions completed' }}
-              </p>
+              <div class="plan-card-next">
+                <span class="eyebrow">Up next</span>
+                <p>{{ card.next || 'All scheduled sessions completed' }}</p>
+              </div>
             } @else {
-              <p>Progress and schedule details are not available yet.</p>
+              <p class="plan-card-unavailable">
+                Progress and schedule details are not available yet.
+              </p>
             }
             <button
               type="button"
