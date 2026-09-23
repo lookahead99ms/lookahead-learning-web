@@ -318,6 +318,44 @@ describe('Question canonical DSA navigation', () => {
     }).compileComponents();
   });
 
+  it('keeps theory articles out of previous and next question navigation', () => {
+    const theory: InterviewQuestion = {
+      id: 'ownership-guide', moduleId: 'ownership', order: 1,
+      title: 'Production Ownership Guide', difficulty: 'Beginner', tags: ['Ownership'],
+      interviewAnswer: '', explanation: [], versionNotes: [], followUps: [],
+      contentType: 'theory', schemaVersion: 'foundation-lesson/v1',
+      sections: [{ id: 'model', heading: 'Model', body: ['Own the outcome.'] }],
+    };
+    const firstQuestion: InterviewQuestion = {
+      ...theory, id: 'ownership-question-1', order: 2,
+      title: 'How do you handle a production incident?', contentType: 'q-and-a',
+      interviewAnswer: 'Stabilize, communicate, and learn.',
+      schemaVersion: undefined, sections: undefined,
+    };
+    const secondQuestion: InterviewQuestion = {
+      ...firstQuestion, id: 'ownership-question-2', order: 3,
+      title: 'How do you prevent recurrence?',
+    };
+    const mixedCourse: CourseContent = {
+      id: 'technical-scenarios', path: 'grow', title: 'Production Scenarios',
+      description: 'Practice ownership decisions.', version: '1',
+      modules: [{ id: 'ownership', order: 1, title: 'Production ownership', description: 'Own it.' }],
+      questions: [theory, firstQuestion, secondQuestion],
+    };
+    const fixture = TestBed.createComponent(Question);
+    const page = fixture.componentInstance as any;
+    page.pathId.set('grow');
+    page.courseId.set(mixedCourse.id);
+    page.displayQuestion(
+      [{ id: mixedCourse.id, title: mixedCourse.title }],
+      mixedCourse,
+      firstQuestion,
+    );
+
+    expect(page.previousQuestion()).toBeNull();
+    expect(page.nextQuestion()?.title).toBe(secondQuestion.title);
+  });
+
   it('retains a filtered discovery return link after a direct load', async () => {
     const harness = await RouterTestingHarness.create();
     const returnUrl = '/interview-questions?q=lookup&language=python&format=solve&sort=title';

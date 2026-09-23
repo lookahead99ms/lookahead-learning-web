@@ -1,9 +1,24 @@
-import { TopicShortcuts } from '../../core/topic-shortcuts';
-import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
+import {
+  Component,
+  DestroyRef,
+  ElementRef,
+  HostListener,
+  AfterViewInit,
+  OnInit,
+  ViewChild,
+  computed,
+  effect,
+  inject,
+  signal,
+  untracked,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ContentService } from '../../content/content.service';
+import { PROTECTED_CONTENT } from '../../content/content-delivery';
+import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import {
   CodeSolution,
   ContentPath,
@@ -14,7 +29,6 @@ import {
   PracticeFormat,
   SearchDocument,
 } from '../../content/content.models';
-import { CodingSolutionTabs } from '../../core/coding-solution-tabs/coding-solution-tabs';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 
 type SearchSort = 'relevance' | 'title' | 'difficulty';
@@ -23,18 +37,24 @@ type SearchContentType = 'all' | ContentType;
 type SearchDiscoveryKind = 'all' | DiscoveryKind;
 type SearchPracticeFormat = 'all' | PracticeFormat;
 type SearchDifficulty = 'all' | 'Beginner' | 'Intermediate' | 'Advanced';
-type SearchLanguage = 'all' | PatternLanguage;
+type SearchLanguage = 'all' | PatternLanguage | 'unspecified';
 const RESULT_PAGE_SIZE = 40;
 const VISIBLE_TAG_LIMIT = 60;
 
 @Component({
   selector: 'app-search',
-  imports: [TopicShortcuts, PlatformHeader, FormsModule, RouterLink, CodingSolutionTabs],
+  imports: [PlatformHeader, FormsModule, RouterLink, NgTemplateOutlet],
   templateUrl: './search.html',
   styleUrl: './search.css',
 })
-export class Search implements OnInit {
+export class Search implements OnInit, AfterViewInit {
+  @ViewChild('searchPage') private searchPage?: ElementRef<HTMLElement>;
+  @ViewChild('searchHeading') private searchHeading?: ElementRef<HTMLElement>;
+  @ViewChild('modeFilterRow') private modeFilterRow?: ElementRef<HTMLElement>;
+  @ViewChild('filterDetails') private filterDetails?: ElementRef<HTMLDetailsElement>;
   private readonly content = inject(ContentService);
+  private readonly protectedContent = inject(PROTECTED_CONTENT);
+  private readonly accounts = inject(StudyPlanAccount);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly urlSyncInfo = {};
@@ -58,11 +78,24 @@ export class Search implements OnInit {
   protected readonly groupBy = signal<SearchGroup>('none');
   protected readonly expandedResults = signal(new Set<string>());
   protected readonly visibleResultLimit = signal(RESULT_PAGE_SIZE);
+  protected readonly selectedPreviewId = signal<string | null>(null);
+  protected readonly detailsOpen = signal(false);
+  protected readonly compactPreview = signal(this.isCompactViewport());
   protected readonly loadedQuestions = signal(new Map<string, InterviewQuestion>());
   protected readonly loadingQuestions = signal(new Set<string>());
-  protected readonly questionErrors = signal(new Set<string>());
+  protected readonly questionErrors = signal(new Map<string, 'sign-in' | 'unavailable'>());
   protected readonly loading = signal(true);
   protected readonly error = signal('');
+  private readonly selectedAnswerRequest = effect(() => {
+    const selected = this.selectedPreview();
+    if (
+      !selected ||
+      this.loading() ||
+      !this.canPreviewAnswer(selected)
+    )
+      return;
+    untracked(() => this.loadQuestion(selected));
+  });
   protected readonly selectedFilterCount = computed(
     () =>
       this.selectedTags().size +
@@ -132,6 +165,7 @@ export class Search implements OnInit {
       .filter(
         (result) =>
           this.selectedLanguage() === 'all' ||
+          (this.selectedLanguage() === 'unspecified' && result.languages.length === 0) ||
           result.languages.includes(this.selectedLanguage() as PatternLanguage),
       )
       .filter((result) => contentType === 'all' || result.contentType === contentType)
@@ -206,6 +240,18 @@ export class Search implements OnInit {
     return [...grouped.entries()].map(([label, results]) => ({ label, results }));
   });
 
+  // Pinning changes only the presentation. The ranked results and their count stay intact.
+  protected readonly remainingGroups = computed(() => {
+    const selected = this.compactPreview() ? null : this.selectedPreview();
+    if (!selected) return this.groups();
+    return this.groups()
+      .map((group) => ({
+        ...group,
+        results: group.results.filter((result) => this.resultKey(result) !== this.resultKey(selected)),
+      }))
+      .filter((group) => group.results.length > 0);
+  });
+
   ngOnInit(): void {
     this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       // Internal updates already changed the filters; keep any unsubmitted text.
@@ -235,8 +281,29 @@ export class Search implements OnInit {
       this.sortBy.set(this.sortFromValue(params.get('sort')));
       this.groupBy.set(this.groupFromValue(params.get('group')));
       this.resetVisibleResults();
+      this.selectedPreviewId.set(params.get('previewItem'));
       this.loadIndex(nextPath);
+      this.validatePreviewSelection();
     });
+  }
+
+  ngAfterViewInit(): void {
+    this.updateStickyOffsets();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(() => this.updateStickyOffsets());
+    if (this.searchHeading) observer.observe(this.searchHeading.nativeElement);
+    if (this.modeFilterRow) observer.observe(this.modeFilterRow.nativeElement);
+    this.destroyRef.onDestroy(() => observer.disconnect());
+  }
+
+  private updateStickyOffsets(): void {
+    const page = this.searchPage?.nativeElement;
+    const heading = this.searchHeading?.nativeElement;
+    const filters = this.modeFilterRow?.nativeElement;
+    if (!page || !heading || !filters) return;
+    const headingMargin = Number.parseFloat(getComputedStyle(heading).marginBottom) || 0;
+    page.style.setProperty('--search-heading-stack', `${Math.ceil(heading.getBoundingClientRect().height + headingMargin)}px`);
+    page.style.setProperty('--search-filter-height', `${Math.ceil(filters.getBoundingClientRect().height)}px`);
   }
 
   protected readonly results = computed(() => {
@@ -261,6 +328,11 @@ export class Search implements OnInit {
   protected readonly visibleResults = computed(() =>
     this.results().slice(0, this.visibleResultLimit()),
   );
+
+  protected readonly selectedPreview = computed(() => {
+    const id = this.selectedPreviewId();
+    return id ? (this.visibleResults().find((result) => this.resultKey(result) === id) ?? null) : null;
+  });
 
   protected readonly hasMoreResults = computed(
     () => this.visibleResults().length < this.results().length,
@@ -290,6 +362,7 @@ export class Search implements OnInit {
     this.sortBy.set('relevance');
     this.groupBy.set('none');
     this.expandedResults.set(new Set());
+    this.selectedPreviewId.set(null);
     this.resetVisibleResults();
     if (hadScopedPath) this.loadIndex('all');
     this.syncUrl();
@@ -312,42 +385,36 @@ export class Search implements OnInit {
   protected updateCourse(value: string): void {
     this.selectedCourseId.set(value);
     this.selectedModuleId.set('all');
-    this.retainUnavailableTags();
     this.resetVisibleResults();
     this.syncUrl();
   }
 
   protected updateModule(value: string): void {
     this.selectedModuleId.set(value);
-    this.retainUnavailableTags();
     this.resetVisibleResults();
     this.syncUrl();
   }
 
   protected updateDifficulty(value: string): void {
     this.selectedDifficulty.set(this.difficultyFromValue(value));
-    this.retainUnavailableTags();
     this.resetVisibleResults();
     this.syncUrl();
   }
 
   protected updateLanguage(value: string): void {
     this.selectedLanguage.set(this.languageFromValue(value));
-    this.retainUnavailableTags();
     this.resetVisibleResults();
     this.syncUrl();
   }
 
   protected updateContentType(value: string): void {
     this.selectedContentType.set(this.contentTypeFromValue(value));
-    this.retainUnavailableTags();
     this.resetVisibleResults();
     this.syncUrl();
   }
 
   protected updateDiscoveryKind(value: string): void {
     this.selectedDiscoveryKind.set(this.discoveryKindFromValue(value));
-    this.retainUnavailableTags();
     this.resetVisibleResults();
     this.syncUrl();
   }
@@ -393,7 +460,6 @@ export class Search implements OnInit {
 
   protected updatePracticeFormat(value: string): void {
     this.selectedPracticeFormat.set(this.practiceFormatFromValue(value));
-    this.retainUnavailableTags();
     this.resetVisibleResults();
     this.syncUrl();
   }
@@ -487,6 +553,106 @@ export class Search implements OnInit {
 
   private resetVisibleResults(): void {
     this.visibleResultLimit.set(RESULT_PAGE_SIZE);
+    if (this.selectedPreviewId() && !this.selectedPreview()) this.selectedPreviewId.set(null);
+  }
+
+  protected previewSelected(result: SearchDocument): boolean {
+    return this.selectedPreview()
+      ? this.resultKey(this.selectedPreview()!) === this.resultKey(result)
+      : false;
+  }
+
+  protected previewExpanded(result: SearchDocument): boolean {
+    return this.previewSelected(result);
+  }
+
+  protected previewControlsId(): string {
+    return 'search-preview-pane';
+  }
+
+  @HostListener('window:resize')
+  protected onViewportResize(): void {
+    this.compactPreview.set(this.isCompactViewport());
+    this.updateStickyOffsets();
+  }
+
+  @HostListener('document:pointerdown', ['$event'])
+  protected onDocumentPointerDown(event: PointerEvent): void {
+    const details = this.filterDetails?.nativeElement;
+    if (details?.open && event.target instanceof Node && !details.contains(event.target)) {
+      details.open = false;
+    }
+  }
+
+  @HostListener('document:keydown.escape')
+  protected onFilterEscape(): void {
+    const details = this.filterDetails?.nativeElement;
+    if (!details?.open) return;
+    details.open = false;
+    details.querySelector<HTMLElement>('summary')?.focus();
+  }
+
+  protected openPreview(result: SearchDocument, event: Event): void {
+    if (this.previewSelected(result)) {
+      this.closePreview();
+      return;
+    }
+    this.previewTrigger = event.currentTarget instanceof HTMLElement ? event.currentTarget : null;
+    this.previewScrollY = window.scrollY;
+    this.detailsOpen.set(false);
+    const id = this.resultKey(result);
+    this.selectedPreviewId.set(id);
+    this.writeSelectionUrl(id);
+    if (!this.compactPreview()) {
+      requestAnimationFrame(() => {
+        const pinned = document.querySelector<HTMLElement>('.pinned-selection');
+        pinned?.scrollIntoView?.({ block: 'start', behavior: 'instant' });
+        pinned?.querySelector<HTMLElement>('.summary-toggle')?.focus({ preventScroll: true });
+      });
+    }
+  }
+
+  protected closePreview(restoreFocus = true): void {
+    const selectedId = this.selectedPreviewId();
+    if (!selectedId) return;
+    this.selectedPreviewId.set(null);
+    this.detailsOpen.set(false);
+    this.writeSelectionUrl(null);
+    if (!restoreFocus) return;
+    const scrollY = this.previewScrollY;
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: scrollY, behavior: 'auto' });
+      const trigger = [...document.querySelectorAll<HTMLElement>('.result-group .summary-toggle')]
+        .find((button) => button.dataset['resultId'] === selectedId) ?? this.previewTrigger;
+      trigger?.focus({ preventScroll: true });
+    });
+  }
+
+  private previewTrigger: HTMLElement | null = null;
+  private previewScrollY = 0;
+
+  private isCompactViewport(): boolean {
+    return typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(max-width: 800px)').matches;
+  }
+
+  private writeSelectionUrl(id: string | null, replaceUrl = true): void {
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParamsHandling: 'merge',
+      queryParams: { previewItem: id },
+      replaceUrl,
+      info: this.urlSyncInfo,
+    });
+  }
+
+  private validatePreviewSelection(): void {
+    const selectedId = this.selectedPreviewId();
+    if (this.loading() || !selectedId) return;
+    if (this.visibleResults().some((result) => this.resultKey(result) === selectedId)) return;
+    this.selectedPreviewId.set(null);
+    this.writeSelectionUrl(null, true);
   }
 
   private loadIndex(path: 'all' | ContentPath): void {
@@ -501,8 +667,8 @@ export class Search implements OnInit {
       next: (questions) => {
         if (requestVersion !== this.indexRequestVersion) return;
         this.questions.set(questions);
-        this.retainUnavailableTags();
         this.loading.set(false);
+        this.validatePreviewSelection();
       },
       error: () => {
         if (requestVersion !== this.indexRequestVersion) return;
@@ -518,22 +684,6 @@ export class Search implements OnInit {
     this.selectedTags.update(
       (selectedTags) =>
         new Set([...selectedTags].filter((tag) => this.pathForFilter(tag) === null)),
-    );
-  }
-
-  private retainUnavailableTags(): void {
-    const available = new Set(
-      this.scopeResults().flatMap((result) =>
-        this.subjectLabels(result).map((tag) => this.normalize(tag)),
-      ),
-    );
-    this.selectedTags.update(
-      (selectedTags) =>
-        new Set(
-          [...selectedTags].filter(
-            (tag) => this.pathForFilter(tag) !== null || available.has(this.normalize(tag)),
-          ),
-        ),
     );
   }
 
@@ -576,16 +726,39 @@ export class Search implements OnInit {
   }
 
   private scrollToResults(): void {
-    requestAnimationFrame(() =>
-      document
-        .getElementById('search-results')
-        ?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
-    );
+    requestAnimationFrame(() => {
+      const resultList = document.querySelector<HTMLElement>('.result-list-area');
+      if (resultList) resultList.scrollTop = 0;
+    });
   }
 
   protected preview(result: SearchDocument): string {
     const parsed = new DOMParser().parseFromString(result.preview, 'text/html');
     return (parsed.body.textContent ?? '').replace(/\s+/g, ' ').trim();
+  }
+
+  protected resultRowSummary(result: SearchDocument): string {
+    if (result.contentType === 'q-and-a') return '';
+    const description = this.preview(result);
+    return description.localeCompare(this.resultCardTitle(result).replace(/\s+/g, ' ').trim(), undefined, {
+      sensitivity: 'base',
+    }) === 0 ? '' : description;
+  }
+
+  protected summaryText(result: SearchDocument): string {
+    if (result.contentType !== 'q-and-a' || this.practiceFormat(result) !== 'explain') {
+      return this.preview(result) || 'Open this item to see its full content.';
+    }
+    if (!result.detailRef || result.detailRef.kind !== 'content-item')
+      return 'Open the full question to read the interview answer.';
+    if (!this.canPreviewAnswer(result)) return 'Sign in to view the interview answer.';
+    const question = this.resolvedQuestion(result);
+    if (question)
+      return question.interviewAnswer?.trim() || 'Interview answer unavailable for this question.';
+    if (this.questionError(result) === 'sign-in') return 'Sign in to view the interview answer.';
+    if (this.questionError(result))
+      return 'Interview answer unavailable here. Open the full question to check access.';
+    return 'Loading interview answer…';
   }
 
   protected questionLink(result: SearchDocument): string[] {
@@ -601,16 +774,54 @@ export class Search implements OnInit {
     return ['/', result.path];
   }
 
-  protected courseLink(result: SearchDocument): string[] {
-    return ['/', result.path, result.courseId];
+  protected courseLink(result: SearchDocument): string[] | null {
+    return result.path && result.courseId ? ['/', result.path, result.courseId] : null;
   }
 
-  protected moduleLink(result: SearchDocument): string[] {
-    return ['/', result.path, result.courseId, 'module', result.moduleId];
+  protected moduleLink(result: SearchDocument): string[] | null {
+    return result.path && result.courseId && result.moduleId
+      ? ['/', result.path, result.courseId, 'module', result.moduleId]
+      : null;
   }
 
   protected moduleLabel(result: SearchDocument): string {
     return result.moduleTitle;
+  }
+
+  protected difficultyFilter(result: SearchDocument): Record<string, string> | null {
+    return result.difficulty ? this.metadataFilter({ difficulty: result.difficulty }) : null;
+  }
+
+  protected languageFilter(language: PatternLanguage): Record<string, string> {
+    return this.metadataFilter({ language });
+  }
+
+  protected subjectFilter(subject: string): Record<string, string> {
+    const {
+      tag: _tag,
+      tags: _tags,
+      ...current
+    } = this.router.parseUrl(this.router.url).queryParams;
+    return { ...current, tags: subject };
+  }
+
+  protected activityFilter(result: SearchDocument): Record<string, string> {
+    const {
+      kind: _kind,
+      format: _format,
+      ...current
+    } = this.router.parseUrl(this.router.url).queryParams;
+    const kind = this.discoveryKind(result);
+    const format = kind === 'practice' ? this.practiceFormat(result) : undefined;
+    return { ...current, kind, ...(format ? { format } : {}) };
+  }
+
+  protected languageLabel(language: PatternLanguage): string {
+    return language === 'go' ? 'Go' : `${language[0].toUpperCase()}${language.slice(1)}`;
+  }
+
+  private metadataFilter(patch: Record<string, string>): Record<string, string> {
+    return { ...this.router.parseUrl(this.router.url).queryParams, ...patch };
   }
 
   protected discoveryKind(result: SearchDocument): DiscoveryKind {
@@ -636,11 +847,32 @@ export class Search implements OnInit {
 
   protected resultTypeLabel(result: SearchDocument): string {
     const kind = this.discoveryKind(result);
-    if (kind === 'practice' && this.practiceFormat(result)) {
-      const format = this.practiceFormat(result)!;
-      return `${format[0].toUpperCase()}${format.slice(1)} practice`;
+    if (kind === 'practice') {
+      switch (this.practiceFormat(result)) {
+        case 'explain': return result.contentType === 'q-and-a' ? 'Interview question' : 'Practice question';
+        case 'solve': return 'Coding practice';
+        case 'design': return 'Design practice';
+        case 'debug': return 'Debug scenario';
+        case 'rehearse': return 'Rehearsal';
+        default: return 'Practice';
+      }
     }
     return kind === 'tool' ? 'Learning tool' : `${kind[0].toUpperCase()}${kind.slice(1)}`;
+  }
+
+  protected resultCardTitle(result: SearchDocument): string {
+    return result.contentType === 'dsa-problem' && result.preview.trim()
+      ? result.preview.trim()
+      : result.title;
+  }
+
+  protected resultHeadingLines(result: SearchDocument): string[] {
+    const title = this.resultCardTitle(result);
+    if (result.contentType !== 'dsa-problem') return [title];
+    const sentenceBreak = /[.!?]\s+(?=[A-Z])/.exec(title);
+    if (!sentenceBreak) return [title];
+    const splitAt = sentenceBreak.index + 1;
+    return [title.slice(0, splitAt), title.slice(splitAt).trimStart()];
   }
 
   protected resultActionLabel(result: SearchDocument): string {
@@ -667,7 +899,8 @@ export class Search implements OnInit {
     return (
       result.contentType === 'q-and-a' &&
       this.practiceFormat(result) === 'explain' &&
-      result.access.tier === 'free' &&
+      (result.access.tier === 'free' ||
+        (this.protectedContent && !!this.accounts.account() && !this.accounts.sessionExpired())) &&
       result.detailRef?.kind === 'content-item'
     );
   }
@@ -741,27 +974,31 @@ export class Search implements OnInit {
   }
 
   protected resolvedQuestion(result: SearchDocument): InterviewQuestion | undefined {
-    return result.question ?? this.loadedQuestions().get(this.resultKey(result));
+    return (
+      this.loadedQuestions().get(this.answerCacheKey(result)) ??
+      (!this.protectedContent && result.access.tier === 'free' ? result.question : undefined)
+    );
   }
 
   protected questionLoading(result: SearchDocument): boolean {
-    return this.loadingQuestions().has(this.resultKey(result));
+    return this.loadingQuestions().has(this.answerCacheKey(result));
   }
 
-  protected questionError(result: SearchDocument): boolean {
-    return this.questionErrors().has(this.resultKey(result));
+  protected questionError(result: SearchDocument): 'sign-in' | 'unavailable' | undefined {
+    return this.questionErrors().get(this.answerCacheKey(result));
   }
 
   protected loadQuestion(result: SearchDocument): void {
-    const key = this.resultKey(result);
+    const key = this.answerCacheKey(result);
     if (
       this.resolvedQuestion(result) ||
       this.loadingQuestions().has(key) ||
-      result.access.tier === 'premium'
+      this.questionErrors().has(key) ||
+      !this.canPreviewAnswer(result)
     )
       return;
     this.questionErrors.update((errors) => {
-      const next = new Set(errors);
+      const next = new Map(errors);
       next.delete(key);
       return next;
     });
@@ -777,15 +1014,19 @@ export class Search implements OnInit {
           this.loadedQuestions.update((questions) => new Map(questions).set(key, question));
           return;
         }
-        this.questionErrors.update((errors) => new Set(errors).add(key));
+        this.questionErrors.update((errors) => new Map(errors).set(key, 'unavailable'));
       },
-      error: () => {
+      error: (error: unknown) => {
         this.loadingQuestions.update((loading) => {
           const next = new Set(loading);
           next.delete(key);
           return next;
         });
-        this.questionErrors.update((errors) => new Set(errors).add(key));
+        const status =
+          error && typeof error === 'object' && 'status' in error ? error.status : null;
+        this.questionErrors.update((errors) =>
+          new Map(errors).set(key, status === 401 ? 'sign-in' : 'unavailable'),
+        );
       },
     });
   }
@@ -798,6 +1039,10 @@ export class Search implements OnInit {
     return result.id;
   }
 
+  private answerCacheKey(result: SearchDocument): string {
+    return `${this.accounts.account()?.accountId ?? 'anonymous'}:${this.resultKey(result)}`;
+  }
+
   private normalize(value: string): string {
     return value.trim().toLowerCase().replace(/\s+/g, ' ');
   }
@@ -807,7 +1052,9 @@ export class Search implements OnInit {
   }
 
   private languageFromValue(value: string | null): SearchLanguage {
-    return value === 'java' || value === 'python' || value === 'go' ? value : 'all';
+    return value === 'java' || value === 'python' || value === 'go' || value === 'unspecified'
+      ? value
+      : 'all';
   }
 
   private contentTypeFromValue(value: string | null): SearchContentType {
@@ -876,6 +1123,7 @@ export class Search implements OnInit {
           tags: tags.length ? tags.join(',') : null,
           sort: this.sortBy() === 'relevance' ? null : this.sortBy(),
           group: this.groupBy() === 'none' ? null : this.groupBy(),
+          previewItem: this.selectedPreview()?.id ?? null,
         },
       })
       .then(() => afterNavigation?.());

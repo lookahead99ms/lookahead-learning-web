@@ -89,7 +89,7 @@ const routeCases = surfaces.flatMap((surface) =>
 
 describe.each(routeCases)(
   '$contentPath $name route recovery',
-  ({ component, contentPath, suffix, title }) => {
+  ({ name, component, contentPath, suffix, title }) => {
     let pending: Subject<CourseOutline>;
     const content = {
       getCatalog: vi.fn(() => of([{ id: course.id, title: course.title }])),
@@ -130,6 +130,20 @@ describe.each(routeCases)(
         'Content unavailable',
       );
       expect(harness.routeNativeElement?.textContent).not.toContain(title);
+      if (name === 'course') {
+        expect(
+          harness.routeNativeElement
+            ?.querySelector<HTMLAnchorElement>('.page-message a')
+            ?.getAttribute('href'),
+        ).toBe(`/${contentPath}`);
+      }
+      if (name === 'module') {
+        expect(
+          harness.routeNativeElement
+            ?.querySelector<HTMLAnchorElement>('.page-message a')
+            ?.getAttribute('href'),
+        ).toBe(`/${contentPath}/missing`);
+      }
     });
 
     it('recovers on the same component after a failed request', async () => {

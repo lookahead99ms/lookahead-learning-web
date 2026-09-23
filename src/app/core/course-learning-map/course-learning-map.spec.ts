@@ -203,6 +203,47 @@ describe('CourseLearningMap', () => {
     expect(link.getAttribute('href')).toBe('/learn/course/module/practice-module');
   });
 
+  it('distinguishes interview questions from a separate practice destination', () => {
+    const practiceQuestions = [
+      {
+        ...question('practice-1', 1),
+        moduleId: 'practice-module',
+        practiceFormat: 'solve' as const,
+      },
+    ];
+    fixture.componentRef.setInput('course', {
+      ...course,
+      modules: [
+        ...course.modules,
+        { id: 'practice-module', order: 3, title: 'Practice', description: 'Practice.' },
+      ],
+      questions: [...course.questions, ...practiceQuestions],
+    });
+    fixture.componentRef.setInput('units', [
+      {
+        id: 'streams',
+        title: 'Streams',
+        description: 'Build pipelines.',
+        theoryModuleId: 'theory-module',
+        questionModuleId: 'question-module',
+        practiceModuleId: 'practice-module',
+        practiceExperience: 'questionBank',
+      },
+    ]);
+    fixture.detectChanges();
+
+    const questionBank = fixture.nativeElement.querySelector(
+      'app-interview-question-bank-link a',
+    ) as HTMLAnchorElement;
+    const practice = fixture.nativeElement.querySelector(
+      '.learning-action.practice',
+    ) as HTMLAnchorElement;
+    expect(questionBank.querySelector('strong')?.textContent).toBe('Interview questions');
+    expect(questionBank.querySelector('span')?.textContent).toBe('3');
+    expect(questionBank.getAttribute('aria-label')).toBe('Interview questions: 3 items');
+    expect(practice.textContent?.replace(/\s+/g, ' ').trim()).toBe('Solve problems 1');
+  });
+
   it('omits an empty question-bank practice action', () => {
     fixture.componentRef.setInput('course', {
       ...course,

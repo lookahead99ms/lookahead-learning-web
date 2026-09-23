@@ -87,7 +87,6 @@ type LandingSuggestion = {
       .landing-search-clear:focus-visible {
         color: var(--text-strong);
         background: var(--surface-accent);
-
       }
       .landing-search-dropdown {
         position: absolute;
@@ -124,7 +123,6 @@ type LandingSuggestion = {
       .landing-search-stage:hover,
       .landing-search-stage:focus-visible {
         background: var(--surface-accent);
-
       }
       .landing-search-stage.learn {
         color: var(--accent-link);
@@ -159,7 +157,6 @@ type LandingSuggestion = {
       .landing-search-result:hover,
       .landing-search-result:focus-visible {
         background: var(--surface-accent);
-
       }
       .landing-search-result-type {
         padding-top: 2px;
@@ -339,7 +336,7 @@ export class LandingSearch {
           route: ['/', document.path, document.courseId],
         })),
       ...spread.flatMap((document) =>
-        document.tags.map((tag) => ({
+        (document.subjects ?? document.tags).map((tag) => ({
           type: 'Topic' as const,
           label: tag,
           detail: `${document.courseTitle} · ${document.moduleTitle}`,

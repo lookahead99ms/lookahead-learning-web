@@ -3,9 +3,11 @@ import { Location } from '@angular/common';
 import { provideLocationMocks } from '@angular/common/testing';
 import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import { Subject, of } from 'rxjs';
+import { Subject, of, throwError } from 'rxjs';
 import { ContentService } from '../../content/content.service';
+import { PROTECTED_CONTENT } from '../../content/content-delivery';
 import { ContentPath, InterviewQuestion, SearchDocument } from '../../content/content.models';
+import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import { Search } from './search';
 
 describe('Unified Search topic workbench', () => {
@@ -84,17 +86,35 @@ describe('Unified Search topic workbench', () => {
     vi.unstubAllGlobals();
   });
 
-  it('loads interview practice and hydrates an explanatory answer only on request', async () => {
+  function openFirstResult(harness: RouterTestingHarness): HTMLButtonElement {
+    const button = harness.routeNativeElement!.querySelector<HTMLButtonElement>('.summary-toggle')!;
+    button.click();
+    harness.detectChanges();
+    return button;
+  }
+
+  it('renders only the selected question’s short answer in the compact split', async () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/search?path=learn', Search);
     harness.detectChanges();
 
     expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toContain(
-      'See the whole topic.',
+      'Search topics and questions.',
+    );
+    expect(
+      harness.routeNativeElement?.querySelector<HTMLInputElement>('.search-input')?.ariaLabel,
+    ).toBe('Search across the platform');
+    expect(harness.routeNativeElement?.querySelector('.eyebrow')?.textContent?.trim()).toBe(
+      'Across Learn, Grow, and Look Ahead',
+    );
+    expect(harness.routeNativeElement?.querySelector('.search-intro')?.textContent?.trim()).toBe(
+      'Find courses, lessons, interview questions, and practice in one place.',
     );
     expect(content.getSearchIndex).toHaveBeenCalledOnce();
     expect(content.getSearchIndex).toHaveBeenCalledWith('learn');
-    expect(content.getInterviewQuestion).not.toHaveBeenCalled();
+    expect(harness.routeNativeElement?.querySelector('.summary-pane')).toBeNull();
+    openFirstResult(harness);
+    expect(content.getInterviewQuestion).toHaveBeenCalledOnce();
     expect(
       [...harness.routeNativeElement!.querySelectorAll<HTMLOptionElement>('option')].some(
         (option) => option.value === 'dsa-problem' && option.textContent.includes('Coding and DSA'),
@@ -104,29 +124,365 @@ describe('Unified Search topic workbench', () => {
     expect(harness.routeNativeElement?.querySelector('.detail-link')?.textContent?.trim()).toBe(
       'Read full answer',
     );
-    expect(harness.routeNativeElement?.querySelector('.result-preview')).toBeNull();
-    expect(harness.routeNativeElement?.textContent).not.toContain(question.interviewAnswer);
-    const answerToggle = harness.routeNativeElement?.querySelector(
-      '.answer-toggle',
-    ) as HTMLButtonElement;
-    expect(answerToggle.getAttribute('aria-expanded')).toBe('false');
-    expect(answerToggle.textContent?.trim()).toBe('Preview answer');
-    expect(answerToggle.querySelector('.answer-toggle-chevron')?.getAttribute('aria-hidden')).toBe(
-      'true',
+    expect(harness.routeNativeElement?.querySelector('.summary-pane .detail-link')).not.toBeNull();
+    expect(harness.routeNativeElement?.querySelector('.preview-dialog')).toBeNull();
+    expect(harness.routeNativeElement?.querySelector('.summary-pane')).not.toBeNull();
+    expect(
+      harness.routeNativeElement?.querySelector('.summary-pane .summary-copy')?.textContent?.trim(),
+    ).toBe(question.interviewAnswer);
+    expect(harness.routeNativeElement?.textContent).not.toContain(question.explanation[0]);
+    expect(harness.routeNativeElement?.textContent).not.toContain(question.followUps[0].answer);
+    expect(harness.routeNativeElement?.textContent).not.toContain(question.code?.source);
+    expect(harness.routeNativeElement?.querySelector('.summary-boundary')).toBeNull();
+    expect(harness.routeNativeElement?.querySelector('.answer-toggle')).toBeNull();
+    expect(content.getInterviewQuestion).toHaveBeenCalledOnce();
+  });
+
+  it('uses the canonical short answer instead of an authored index preview for Q&A', async () => {
+    content.getSearchIndex.mockReturnValueOnce(
+      of([{ ...document, preview: '<p>Compare atomicity, visibility, and coordination.</p>' }]),
     );
-    answerToggle.click();
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/search', Search);
+    harness.detectChanges();
+    openFirstResult(harness);
+
+    expect(harness.routeNativeElement!.querySelector('.result-title a')).toBeNull();
+    const trigger =
+      harness.routeNativeElement!.querySelector<HTMLButtonElement>('.summary-toggle')!;
+    expect(trigger.textContent).toContain('Interview question');
+    expect(trigger.textContent).toContain(question.title);
+    expect(trigger.textContent).not.toContain('Preview summary');
+    expect(trigger.getAttribute('aria-expanded')).toBe('true');
+    expect(
+      harness.routeNativeElement!.querySelector('.summary-pane .summary-copy')?.textContent,
+    ).toContain(question.interviewAnswer);
+    expect(harness.routeNativeElement!.querySelector('.summary-pane')?.textContent).not.toContain(
+      'Compare atomicity, visibility, and coordination.',
+    );
+    expect(harness.routeNativeElement!.querySelector('.summary-pane')?.textContent).toContain(
+      document.courseTitle,
+    );
+    expect(content.getInterviewQuestion).toHaveBeenCalledOnce();
+  });
+
+  it('uses result types that match the learning activity tabs', async () => {
+    content.getSearchIndex.mockReturnValueOnce(
+      of([
+        document,
+        {
+          ...document,
+          id: 'lesson-result',
+          discoveryKind: 'lesson',
+          contentType: 'theory',
+          practiceFormat: undefined,
+          title: 'Understand object state',
+        },
+        {
+          ...document,
+          id: 'solve-result',
+          discoveryKind: 'practice',
+          practiceFormat: 'solve',
+          contentType: 'dsa-problem',
+          title: 'Solve a coding problem',
+        },
+        {
+          ...document,
+          id: 'design-result',
+          discoveryKind: 'practice',
+          practiceFormat: 'design',
+          contentType: 'system-design',
+          title: 'Design a service',
+        },
+      ]),
+    );
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/search', Search);
     harness.detectChanges();
 
-    expect(answerToggle.getAttribute('aria-expanded')).toBe('true');
-    expect(answerToggle.textContent?.trim()).toBe('Hide preview');
-    expect(content.getInterviewQuestion).toHaveBeenCalledWith(document);
-    expect(harness.routeNativeElement?.querySelector('.reference-answer')?.textContent).toContain(
-      'read-modify-write',
+    const kinds = [...harness.routeNativeElement!.querySelectorAll('.result-kind')].map((element) =>
+      element.textContent?.trim(),
     );
-    expect(harness.routeNativeElement?.textContent?.split(question.interviewAnswer)).toHaveLength(
-      2,
+    expect(kinds).toEqual(expect.arrayContaining(['Lesson', 'Interview question', 'Coding practice', 'Design practice']));
+    expect(kinds).not.toContain('Solve practice');
+  });
+
+  it('opens the preview from the title or card whitespace while metadata stays a separate action', async () => {
+    content.getSearchIndex.mockReturnValueOnce(
+      of([
+        document,
+        {
+          ...document,
+          id: 'another-result',
+          contentId: 'another-result',
+          title: 'Another question',
+        },
+      ]),
     );
-    expect(harness.routeNativeElement?.querySelector('app-coding-solution-tabs')).not.toBeNull();
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/search', Search);
+    harness.detectChanges();
+
+    const cards = harness.routeNativeElement!.querySelectorAll<HTMLElement>('.result-card');
+    const otherCard = [...cards].find((card) => card.textContent?.includes('Another question'))!;
+    const firstCard = [...cards].find((card) => card.textContent?.includes(question.title))!;
+    const secondAction = otherCard.querySelector<HTMLButtonElement>('.summary-toggle')!;
+    expect(secondAction.tagName).toBe('BUTTON');
+    expect(secondAction.querySelector('a')).toBeNull();
+    expect(otherCard.querySelector('.result-title a')).toBeNull();
+    expect(otherCard.querySelectorAll('.result-context a').length).toBeGreaterThanOrEqual(3);
+    expect(harness.routeNativeElement?.textContent).not.toContain('Selected result');
+
+    secondAction.querySelector<HTMLElement>('.result-title-text')!.click();
+    harness.detectChanges();
+    expect(harness.routeNativeElement?.querySelector('.summary-pane h2')?.textContent).toContain(
+      'Another question',
+    );
+
+    firstCard.querySelector<HTMLButtonElement>('.summary-toggle')!.click();
+    harness.detectChanges();
+    expect(harness.routeNativeElement?.querySelector('.summary-pane h2')?.textContent).toContain(
+      question.title,
+    );
+    expect(otherCard.querySelector('.result-context a')?.closest('button')).toBeNull();
+  });
+
+  it('shows DSA problem statements on result cards without mistaking numeric titles for rank labels', async () => {
+    const matrixPrompt =
+      'Given a binary matrix, find the nearest zero for each cell. Do not mutate the input.';
+    const patternPrompt =
+      'Given an integer array, find a subsequence whose values follow the pattern.';
+    content.getSearchIndex.mockReturnValueOnce(
+      of([
+        {
+          ...document,
+          id: 'dsa-matrix',
+          contentId: 'dsa-matrix',
+          title: '01 Matrix',
+          preview: matrixPrompt,
+          contentType: 'dsa-problem',
+          practiceFormat: 'solve',
+          subjects: ['Graphs', 'Breadth-first search', 'Matrix'],
+          tags: ['Graphs', 'Breadth-first search', 'Matrix'],
+        },
+        {
+          ...document,
+          id: 'dsa-pattern',
+          contentId: 'dsa-pattern',
+          title: '132 Pattern',
+          preview: patternPrompt,
+          contentType: 'dsa-problem',
+          practiceFormat: 'solve',
+        },
+      ]),
+    );
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/search', Search);
+    harness.detectChanges();
+    openFirstResult(harness);
+
+    const cards = [...harness.routeNativeElement!.querySelectorAll<HTMLElement>('.result-card')];
+    expect(cards).toHaveLength(2);
+    expect(
+      cards.map((card) => card.querySelector('.result-title-text')?.textContent?.trim()),
+    ).toEqual([matrixPrompt, patternPrompt]);
+    expect(cards[0].textContent).not.toContain('01 Matrix');
+    expect(cards[1].textContent).not.toContain('132 Pattern');
+    expect(cards[0].querySelectorAll('.result-context a').length).toBeGreaterThanOrEqual(3);
+    expect(harness.routeNativeElement?.querySelector('.summary-pane h2')?.textContent).toBe(matrixPrompt);
+    expect(harness.routeNativeElement?.querySelector('.preview-dialog')).toBeNull();
+  });
+
+  it('renders reviewed inline answer formatting without copying full-answer fields', async () => {
+    content.getInterviewQuestion.mockReturnValueOnce(
+      of({ ...question, interviewAnswer: 'Keep <strong>one</strong> clear contract.' }),
+    );
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/search', Search);
+    harness.detectChanges();
+    openFirstResult(harness);
+
+    const copy = harness.routeNativeElement!.querySelector('.summary-pane .summary-copy')!;
+    expect(copy.textContent?.trim()).toBe('Keep one clear contract.');
+    expect(copy.querySelector('strong')?.textContent).toBe('one');
+    expect(copy.textContent).not.toContain(question.explanation[0]);
+    expect(harness.routeNativeElement?.textContent).not.toContain(question.followUps[0].answer);
+  });
+
+  it('keeps a valid selection through sorting and clears it for a new query', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/search', Search);
+    harness.detectChanges();
+    harness.routeNativeElement!.querySelector<HTMLButtonElement>('.summary-toggle')!.click();
+    harness.detectChanges();
+    expect(harness.routeNativeElement!.querySelector('.summary-pane')).not.toBeNull();
+
+    const sort = [
+      ...harness.routeNativeElement!.querySelectorAll<HTMLSelectElement>('select'),
+    ].find((select) => [...select.options].some((option) => option.value === 'title'))!;
+    sort.value = 'title';
+    sort.dispatchEvent(new Event('change'));
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    expect(harness.routeNativeElement!.querySelector('.summary-pane')).not.toBeNull();
+    expect(harness.routeNativeElement!.querySelector('.pinned-selection .summary-toggle')?.getAttribute('aria-expanded')).toBe('true');
+
+    const input = harness.routeNativeElement!.querySelector<HTMLInputElement>('.search-input')!;
+    input.value = 'no matching record';
+    input.dispatchEvent(new Event('input'));
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    expect(harness.routeNativeElement!.querySelector('.summary-pane')).toBeNull();
+    expect(harness.routeNativeElement!.querySelector('.empty-state')?.textContent).toContain(
+      'No results match',
+    );
+  });
+
+  it('keeps the selected result while loading more without duplicate cards', async () => {
+    content.getSearchIndex.mockReturnValueOnce(
+      of(
+        Array.from({ length: 41 }, (_, index) => ({
+          ...document,
+          id: `${document.id}-${index}`,
+          contentId: `${document.contentId}-${index}`,
+          title: `${document.title} ${index}`,
+          route: [...(document.route ?? []), String(index)],
+        })),
+      ),
+    );
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/search', Search);
+    harness.detectChanges();
+    harness.routeNativeElement!.querySelector<HTMLButtonElement>('.summary-toggle')!.click();
+    harness.detectChanges();
+    expect(harness.routeNativeElement!.querySelector('.summary-pane')).not.toBeNull();
+
+    harness.routeNativeElement!.querySelector<HTMLButtonElement>('.show-more-results')!.click();
+    harness.detectChanges();
+
+    expect(harness.routeNativeElement!.querySelector('.summary-pane')).not.toBeNull();
+    expect(harness.routeNativeElement!.querySelectorAll('.pinned-selection .result-card')).toHaveLength(1);
+    expect(harness.routeNativeElement!.querySelectorAll('.result-card')).toHaveLength(41);
+  });
+
+  it('pins the selected item without changing relevance order or result count', async () => {
+    content.getSearchIndex.mockReturnValueOnce(of(
+      ['A', 'B', 'C', 'D', 'E'].map((letter) => ({
+        ...document,
+        id: letter,
+        title: letter,
+        contentType: 'theory' as const,
+        discoveryKind: 'lesson' as const,
+        preview: `${letter} preview`,
+      })),
+    ));
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/search', Search);
+    harness.detectChanges();
+    const ids = (selector: string) => [...harness.routeNativeElement!.querySelectorAll<HTMLElement>(selector)]
+      .map((item) => item.dataset['resultId']);
+    expect(ids('.result-group .summary-toggle')).toEqual(['A', 'B', 'C', 'D', 'E']);
+    expect(harness.routeNativeElement!.querySelector('.summary-pane')).toBeNull();
+
+    harness.routeNativeElement!.querySelector<HTMLButtonElement>('[data-result-id="D"]')!.click();
+    harness.detectChanges();
+    expect(ids('.pinned-selection .summary-toggle')).toEqual(['D']);
+    expect(ids('.result-group .summary-toggle')).toEqual(['A', 'B', 'C', 'E']);
+    expect(harness.routeNativeElement!.querySelectorAll('.result-card')).toHaveLength(5);
+
+    harness.routeNativeElement!.querySelector<HTMLButtonElement>('[data-result-id="B"]')!.click();
+    harness.detectChanges();
+    expect(ids('.pinned-selection .summary-toggle')).toEqual(['B']);
+    expect(ids('.result-group .summary-toggle')).toEqual(['A', 'C', 'D', 'E']);
+
+    harness.routeNativeElement!.querySelector<HTMLButtonElement>('.pinned-close')!.click();
+    harness.detectChanges();
+    expect(ids('.result-group .summary-toggle')).toEqual(['A', 'B', 'C', 'D', 'E']);
+    expect(harness.routeNativeElement!.querySelector('.pinned-selection')).toBeNull();
+  });
+
+  it('omits a row description when it only repeats the displayed title', async () => {
+    content.getSearchIndex.mockReturnValueOnce(of([
+      { ...document, id: 'same', title: 'Trace an invariant', preview: 'Trace an invariant', contentType: 'theory', discoveryKind: 'lesson' },
+      { ...document, id: 'different', title: 'Review an invariant', preview: 'Try a concrete input.', contentType: 'theory', discoveryKind: 'lesson' },
+    ]));
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/search', Search);
+    harness.detectChanges();
+    const same = harness.routeNativeElement!.querySelector('[data-result-id="same"]')!;
+    const different = harness.routeNativeElement!.querySelector('[data-result-id="different"]')!;
+    expect(same.querySelector('.result-row-summary')).toBeNull();
+    expect(different.querySelector('.result-row-summary')?.textContent).toBe('Try a concrete input.');
+  });
+
+  it('uses one inline mobile preview and restores the exact row trigger on close', async () => {
+    vi.stubGlobal('matchMedia', () => ({ matches: true }));
+    let frameCallback: FrameRequestCallback | undefined;
+    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+      frameCallback = callback;
+      return 1;
+    });
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/search', Search);
+    harness.detectChanges();
+    const trigger =
+      harness.routeNativeElement!.querySelector<HTMLButtonElement>('.summary-toggle')!;
+
+    expect(harness.routeNativeElement!.querySelector('.inline-preview')).toBeNull();
+    trigger.click();
+    harness.detectChanges();
+    expect(harness.routeNativeElement!.querySelectorAll('.inline-preview')).toHaveLength(1);
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    expect(harness.routeNativeElement!.querySelector('.inline-preview .summary-copy')?.textContent?.trim()).toBe(
+      question.interviewAnswer,
+    );
+    expect(harness.routeNativeElement!.querySelector('.preview-dialog')).toBeNull();
+
+    harness
+      .routeNativeElement!.querySelector<HTMLButtonElement>('.inline-preview .summary-close')!
+      .click();
+    harness.detectChanges();
+    frameCallback?.(0);
+    expect(harness.routeNativeElement!.querySelector('.inline-preview')).toBeNull();
+    expect(window.document.activeElement).toBe(trigger);
+    expect(scrollTo).toHaveBeenCalled();
+  });
+
+  it('restores a selected result from the URL and removes an invalid selection', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl(`/search?previewItem=${encodeURIComponent(document.id)}`, Search);
+    harness.detectChanges();
+    expect(harness.routeNativeElement?.querySelector('.summary-pane .preview-title')?.textContent).toContain(question.title);
+    expect(harness.routeNativeElement?.querySelector('.summary-toggle')?.getAttribute('aria-expanded')).toBe('true');
+
+    await harness.navigateByUrl('/search?previewItem=missing-result', Search);
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    expect(harness.routeNativeElement?.querySelector('.summary-pane')).toBeNull();
+    expect(TestBed.inject(Router).url).not.toContain('previewItem');
+  });
+
+  it('closes Filters on outside pointer and Escape while preserving inside controls', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/search', Search);
+    harness.detectChanges();
+    const details = harness.routeNativeElement!.querySelector<HTMLDetailsElement>('.filter-details')!;
+    const summary = details.querySelector<HTMLElement>('summary')!;
+    summary.click();
+    expect(details.open).toBe(true);
+
+    details.querySelector('select')!.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+    expect(details.open).toBe(true);
+    harness.routeNativeElement!.querySelector('.result-card')!.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+    expect(details.open).toBe(false);
+
+    summary.click();
+    details.querySelector('select')!.focus();
+    window.document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    expect(details.open).toBe(false);
+    expect(window.document.activeElement).toBe(summary);
   });
 
   it('loads the selected path shard when the path filter changes', async () => {
@@ -215,9 +571,20 @@ describe('Unified Search topic workbench', () => {
     await harness.navigateByUrl('/search', Search);
     harness.detectChanges();
 
-    const actions = [...harness.routeNativeElement!.querySelectorAll('.detail-link')].map((link) =>
-      link.textContent.trim(),
-    );
+    expect(harness.routeNativeElement?.querySelectorAll('.result-title button')).toHaveLength(4);
+    expect(harness.routeNativeElement?.querySelectorAll('.summary-toggle')).toHaveLength(4);
+    const actions: string[] = [];
+    for (const trigger of harness.routeNativeElement!.querySelectorAll<HTMLButtonElement>(
+      '.summary-toggle',
+    )) {
+      trigger.click();
+      harness.detectChanges();
+      actions.push(
+        harness
+          .routeNativeElement!.querySelector<HTMLAnchorElement>('.summary-pane .detail-link')!
+          .textContent.trim(),
+      );
+    }
     expect(actions.sort()).toEqual(['Explore course', 'Explore topic', 'Open tool', 'Read lesson']);
     expect(harness.routeNativeElement?.querySelector('.answer-toggle')).toBeNull();
   });
@@ -242,6 +609,7 @@ describe('Unified Search topic workbench', () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/search?format=debug&tags=Java', Search);
     harness.detectChanges();
+    openFirstResult(harness);
 
     expect(harness.routeNativeElement?.querySelectorAll('.result-card')).toHaveLength(1);
     expect(harness.routeNativeElement?.querySelector('.result-title')?.textContent).toContain(
@@ -281,9 +649,18 @@ describe('Unified Search topic workbench', () => {
     await harness.navigateByUrl('/search', Search);
     harness.detectChanges();
 
-    const actions = [...harness.routeNativeElement!.querySelectorAll('.detail-link')].map((link) =>
-      link.textContent.trim(),
-    );
+    const actions: string[] = [];
+    for (const trigger of harness.routeNativeElement!.querySelectorAll<HTMLButtonElement>(
+      '.summary-toggle',
+    )) {
+      trigger.click();
+      harness.detectChanges();
+      actions.push(
+        harness
+          .routeNativeElement!.querySelector<HTMLAnchorElement>('.summary-pane .detail-link')!
+          .textContent.trim(),
+      );
+    }
     expect(actions.sort()).toEqual(
       [
         'Debug scenario',
@@ -293,7 +670,7 @@ describe('Unified Search topic workbench', () => {
         'Rehearse response',
       ].sort(),
     );
-    expect(harness.routeNativeElement?.querySelectorAll('.answer-toggle')).toHaveLength(1);
+    expect(harness.routeNativeElement?.querySelector('.answer-toggle')).toBeNull();
   });
 
   it('changes learning activity within Search while preserving topic and URL filters', async () => {
@@ -378,24 +755,10 @@ describe('Unified Search topic workbench', () => {
     expect(harness.routeNativeElement?.querySelector('.show-more-results')).toBeNull();
   });
 
-  it('applies a search as text changes and scrolls to its results on submission', async () => {
-    const eventOrder: string[] = [];
-    const scrollIntoView = vi.fn(() => {
-      eventOrder.push('scroll');
-    });
+  it('applies a search and resets only the results scroller on submission', async () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/search', Search);
     const router = TestBed.inject(Router);
-    const navigate = router.navigate.bind(router);
-    vi.spyOn(router, 'navigate').mockImplementation((commands, extras) =>
-      navigate(commands, extras).then((navigated) => {
-        eventOrder.push('navigation');
-        return navigated;
-      }),
-    );
-    vi.spyOn(window.document, 'getElementById').mockReturnValue({
-      scrollIntoView,
-    } as unknown as HTMLElement);
     vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
       callback(0);
       return 1;
@@ -405,14 +768,17 @@ describe('Unified Search topic workbench', () => {
     input.dispatchEvent(new Event('input'));
     await harness.fixture.whenStable();
     expect(router.url).toBe('/search?q=counter');
+    const resultList = harness.routeNativeElement?.querySelector(
+      '.result-list-area',
+    ) as HTMLElement;
+    resultList.scrollTop = 123;
     harness.routeNativeElement
       ?.querySelector('.search-form')
       ?.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
     await harness.fixture.whenStable();
 
     expect(router.url).toBe('/search?q=counter');
-    expect(scrollIntoView).toHaveBeenCalledOnce();
-    expect(eventOrder).toEqual(['navigation', 'scroll']);
+    expect(resultList.scrollTop).toBe(0);
   });
 
   it('removes the committed query from the URL when the search field is cleared', async () => {
@@ -527,6 +893,27 @@ describe('Unified Search topic workbench', () => {
     expect(tag.classList.contains('active')).toBe(false);
   });
 
+  it('keeps an unsupported legacy subject visible instead of silently showing all results', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/search?tags=URL%20Shortener', Search);
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+
+    const activeSubjects = [
+      ...harness.routeNativeElement!.querySelectorAll<HTMLButtonElement>(
+        '.tag-pill[aria-pressed="true"]',
+      ),
+    ].map((button) => button.textContent.trim());
+    expect(activeSubjects).toContain('URL Shortener');
+    expect(harness.routeNativeElement?.querySelector('.tag-panel-title')?.textContent).toContain(
+      '1 active',
+    );
+    expect(harness.routeNativeElement?.querySelector('.result-summary')?.textContent).toContain(
+      'Showing 0 of 0 matching results',
+    );
+    expect(TestBed.inject(Router).url).toBe('/search?tags=URL%20Shortener');
+  });
+
   it('finds a canonical problem through a secondary course placement without duplicating it', async () => {
     const canonical: SearchDocument = {
       ...document,
@@ -561,10 +948,11 @@ describe('Unified Search topic workbench', () => {
       '/search?path=learn&course=python-fundamentals&module=python-dsa-mechanics&format=solve';
     await harness.navigateByUrl(returnUrl, Search);
     expect(harness.routeNativeElement?.querySelectorAll('.result-card')).toHaveLength(1);
+    openFirstResult(harness);
     const link = harness.routeNativeElement!.querySelector<HTMLAnchorElement>('.detail-link')!;
     const url = new URL(link.href);
     expect(url.pathname).toBe('/learn/python-fundamentals/python-shared-problem');
-    expect(url.searchParams.get('returnTo')).toBe(returnUrl);
+    expect(url.searchParams.get('returnTo')).toContain(returnUrl);
     await harness.navigateByUrl('/search', Search);
     expect(harness.routeNativeElement?.querySelectorAll('.result-card')).toHaveLength(1);
   });
@@ -611,7 +999,7 @@ describe('Unified Search topic workbench', () => {
       Search,
     );
     const subjectInput =
-      harness.routeNativeElement!.querySelector<HTMLInputElement>('.tag-tools input')!;
+      harness.routeNativeElement!.querySelector<HTMLInputElement>('.subject-search input')!;
     subjectInput.value = 'spring';
     subjectInput.dispatchEvent(new Event('input'));
     harness.detectChanges();
@@ -735,20 +1123,148 @@ describe('Unified Search topic workbench', () => {
     expect(TestBed.inject(Router).url).toBe('/search?kind=lesson');
   });
 
-  it('uses result metadata controls as content and difficulty filters', async () => {
+  it('routes every meaningful selected-result value with native links', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/search?path=learn', Search);
+    harness.detectChanges();
+    openFirstResult(harness);
+    await harness.fixture.whenStable();
+
+    const pane = harness.routeNativeElement!.querySelector('.summary-pane')!;
+    const link = (kind: string, index = 0) =>
+      pane.querySelectorAll<HTMLAnchorElement>(`a[data-metadata="${kind}"]`)[index];
+    expect(link('result-title')).toBeUndefined();
+    expect(link('path').getAttribute('href')).toBe('/learn');
+    expect(pane.querySelector('.summary-kind')?.textContent).toContain('Interview question');
+    expect(link('course').tagName).toBe('A');
+    expect(link('course').getAttribute('href')).toBe('/learn/solid-design-patterns');
+    expect(link('module').getAttribute('href')).toBe(
+      '/learn/solid-design-patterns/module/java-concurrency',
+    );
+
+    const difficulty = new URL(link('difficulty').href);
+    expect(difficulty.pathname).toBe('/search');
+    expect(difficulty.searchParams.get('path')).toBe('learn');
+    expect(difficulty.searchParams.get('difficulty')).toBe('Intermediate');
+    const language = new URL(link('language').href);
+    expect(language.pathname).toBe('/search');
+    expect(language.searchParams.get('language')).toBe('java');
+    const subjects = pane.querySelectorAll<HTMLAnchorElement>('a[data-metadata="subject"]');
+    expect([...subjects].map((subject) => subject.textContent?.trim())).toEqual([
+      'Java',
+      'Concurrency',
+    ]);
+    expect(new URL(subjects[0].href).searchParams.get('tags')).toBe('Java');
+    expect(subjects[0].tabIndex).toBe(0);
+
+    const primary = pane.querySelector<HTMLAnchorElement>('.detail-link')!;
+    const primaryUrl = new URL(primary.href);
+    expect(primaryUrl.pathname).toBe('/learn/solid-design-patterns/safe-counter');
+    expect(primaryUrl.searchParams.get('returnTo')).toContain('/search?path=learn');
+  });
+
+  it('restores the shareable language-neutral filter while hiding an empty Languages row', async () => {
+    content.getSearchIndex.mockReturnValueOnce(of([{ ...document, languages: [] }]));
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/search?language=unspecified', Search);
+    harness.detectChanges();
+    openFirstResult(harness);
+
+    expect(harness.routeNativeElement!.querySelectorAll('.result-card')).toHaveLength(1);
+    const select = [
+      ...harness.routeNativeElement!.querySelectorAll<HTMLSelectElement>('select'),
+    ].find((candidate) => [...candidate.options].some((option) => option.value === 'unspecified'))!;
+    expect(select.value).toBe('unspecified');
+    const metadata = harness.routeNativeElement!.querySelector('.summary-pane .summary-metadata')!;
+    expect(metadata.textContent).not.toContain('Languages');
+    expect(metadata.querySelector('a[data-metadata="language"]')).toBeNull();
+  });
+
+  it('keeps premium interview answers behind the current account and server read', async () => {
+    content.getSearchIndex.mockReturnValueOnce(of([{ ...document, access: { tier: 'premium' } }]));
+    TestBed.overrideProvider(PROTECTED_CONTENT, { useValue: true });
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/search', Search);
-    const controls = [
-      ...harness.routeNativeElement!.querySelectorAll<HTMLButtonElement>('.result-meta-filter'),
-    ];
-    controls.find((button) => button.textContent?.trim() === 'Intermediate')!.click();
+    harness.detectChanges();
+    openFirstResult(harness);
+
+    const copy = () =>
+      harness.routeNativeElement?.querySelector('.summary-pane .summary-copy')?.textContent?.trim();
+    expect(copy()).toBe('Sign in to view the interview answer.');
+    expect(content.getInterviewQuestion).not.toHaveBeenCalled();
+
+    const accounts = TestBed.inject(StudyPlanAccount);
+    accounts.account.set({ accountId: 'author-account' } as never);
     await harness.fixture.whenStable();
     harness.detectChanges();
-    expect(TestBed.inject(Router).url).toBe('/search?difficulty=Intermediate');
-    controls.find((button) => button.textContent?.trim() === 'Q&A')!.click();
-    await harness.fixture.whenStable();
+    expect(content.getInterviewQuestion).toHaveBeenCalledOnce();
+    expect(copy()).toBe(question.interviewAnswer);
+
+    accounts.account.set(null);
     harness.detectChanges();
-    expect(TestBed.inject(Router).url).toContain('type=q-and-a');
-    expect(controls.every((button) => button.getAttribute('aria-pressed') === 'true')).toBe(true);
+    expect(copy()).toBe('Sign in to view the interview answer.');
+    expect(harness.routeNativeElement?.textContent).not.toContain(question.interviewAnswer);
+  });
+
+  it('shows an unavailable state when the selected detail request is denied', async () => {
+    content.getInterviewQuestion.mockReturnValueOnce(throwError(() => ({ status: 403 })));
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/search', Search);
+    harness.detectChanges();
+    openFirstResult(harness);
+
+    expect(
+      harness.routeNativeElement?.querySelector('.summary-pane .summary-copy')?.textContent?.trim(),
+    ).toBe('Interview answer unavailable here. Open the full question to check access.');
+    expect(harness.routeNativeElement?.textContent).not.toContain(question.interviewAnswer);
+    expect(harness.routeNativeElement?.querySelector('.summary-pane .detail-link')).not.toBeNull();
+  });
+
+  it('distinguishes a protected sign-in requirement from unavailable detail', async () => {
+    content.getInterviewQuestion.mockReturnValueOnce(throwError(() => ({ status: 401 })));
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/search', Search);
+    harness.detectChanges();
+    openFirstResult(harness);
+
+    expect(
+      harness.routeNativeElement?.querySelector('.summary-pane .summary-copy')?.textContent?.trim(),
+    ).toBe('Sign in to view the interview answer.');
+    expect(harness.routeNativeElement?.textContent).not.toContain(question.interviewAnswer);
+  });
+
+  it('uses the authored indexed description for non-Q&A without fetching a question', async () => {
+    content.getSearchIndex.mockReturnValueOnce(
+      of([
+        {
+          ...document,
+          contentType: 'theory',
+          discoveryKind: 'lesson',
+          practiceFormat: undefined,
+          preview: '<p>A concise lesson overview.</p>',
+        },
+      ]),
+    );
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/search', Search);
+    harness.detectChanges();
+    openFirstResult(harness);
+
+    expect(
+      harness.routeNativeElement?.querySelector('.summary-pane .summary-copy')?.textContent?.trim(),
+    ).toBe('A concise lesson overview.');
+    expect(content.getInterviewQuestion).not.toHaveBeenCalled();
+  });
+
+  it('keeps absent difficulty non-interactive because Search has no unknown-difficulty filter', async () => {
+    content.getSearchIndex.mockReturnValueOnce(of([{ ...document, difficulty: undefined }]));
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/search', Search);
+    harness.detectChanges();
+    openFirstResult(harness);
+
+    const pane = harness.routeNativeElement!.querySelector('.summary-pane')!;
+    expect(pane.querySelector('a[data-metadata="difficulty"]')).toBeNull();
+    expect(pane.querySelector('.summary-metadata')?.textContent).toContain('Not specified');
   });
 });

@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { CatalogOverviewItem } from '../content/content.models';
 import { ContentService } from '../content/content.service';
 import { LOOK_AHEAD_COURSE_GROUPS } from '../content/look-ahead-course-groups';
@@ -131,5 +131,41 @@ describe('adaptive Look Ahead catalog', () => {
       root.querySelector('#distributed-systems')?.classList.contains('featured-catalog-card'),
     ).toBe(false);
     expect(featured.querySelectorAll('.catalog-topic-preview li')).toHaveLength(3);
+  });
+});
+
+describe('adaptive catalog recovery', () => {
+  it('retries the same catalog after a transient load failure', async () => {
+    const course: CatalogOverviewItem = {
+      id: 'advanced-java',
+      title: 'Advanced Java',
+      lessonCount: 1,
+      questionCount: 1,
+      moduleCount: 1,
+      topicPreview: ['Concurrency'],
+      languages: ['java'],
+    };
+    const getCatalogOverview = vi
+      .fn()
+      .mockReturnValueOnce(throwError(() => new Error('temporary outage')))
+      .mockReturnValueOnce(of([course]));
+    await TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: 'grow', component: Grow }]),
+        { provide: ContentService, useValue: { getCatalogOverview } },
+      ],
+    }).compileComponents();
+    const harness = await RouterTestingHarness.create('/grow');
+    const retry = harness.routeNativeElement!.querySelector<HTMLButtonElement>(
+      '.catalog-recovery-action',
+    )!;
+
+    expect(harness.routeNativeElement?.textContent).toContain('Content unavailable');
+    retry.click();
+    harness.detectChanges();
+
+    expect(getCatalogOverview).toHaveBeenCalledTimes(2);
+    expect(harness.routeNativeElement?.textContent).toContain('Advanced Java');
+    expect(harness.routeNativeElement?.textContent).not.toContain('Content unavailable');
   });
 });

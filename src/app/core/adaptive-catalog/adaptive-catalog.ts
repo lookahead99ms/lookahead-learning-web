@@ -103,16 +103,7 @@ export class AdaptiveCatalog implements OnInit {
   protected readonly reviewStatusLabel = reviewStatusLabel;
 
   ngOnInit(): void {
-    this.content
-      .getCatalogOverview(this.config().path)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (catalog) => {
-          this.catalog.set(catalog);
-          if (this.pendingGroupId) this.scrollToGroup(this.pendingGroupId);
-        },
-        error: () => this.error.set(this.config().errorDescription),
-      });
+    this.loadCatalog();
 
     this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const groupId = params.get('group');
@@ -127,6 +118,25 @@ export class AdaptiveCatalog implements OnInit {
       this.navigationScrollPending = false;
       if (this.pendingGroupId) this.scrollToGroup(this.pendingGroupId);
     });
+  }
+
+  protected retryCatalog(): void {
+    this.loadCatalog();
+  }
+
+  private loadCatalog(): void {
+    this.catalog.set(null);
+    this.error.set('');
+    this.content
+      .getCatalogOverview(this.config().path)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (catalog) => {
+          this.catalog.set(catalog);
+          if (this.pendingGroupId) this.scrollToGroup(this.pendingGroupId);
+        },
+        error: () => this.error.set(this.config().errorDescription),
+      });
   }
 
   protected itemsFor(

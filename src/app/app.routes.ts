@@ -176,5 +176,8 @@ export const routes: Routes = [
     path: 'learn/:courseId',
     loadComponent: () => import('./pages/course/course').then((page) => page.Course),
   },
-  { path: '**', redirectTo: '' },
+  {
+    path: '**',
+    loadComponent: () => import('./pages/not-found/not-found').then((page) => page.NotFoundPage),
+  },
 ];

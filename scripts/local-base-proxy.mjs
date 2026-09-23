@@ -10,8 +10,8 @@ export async function loadLocalBaseProxy(repositoryRoot, configuredPath) {
   }
   for (const [path, options] of Object.entries(proxy)) {
     if (
-      !path.startsWith('/') ||
-      path.startsWith('/__local') ||
+      !(path.startsWith('/') || path.startsWith('^/')) ||
+      /^\^?\/__local(?:\/|$)/.test(path) ||
       !options ||
       Array.isArray(options) ||
       typeof options !== 'object' ||
@@ -33,6 +33,27 @@ export async function loadLocalBaseProxy(repositoryRoot, configuredPath) {
       throw new Error(
         'Local base proxy targets must be HTTP loopback services without credentials.',
       );
+    }
+  }
+  return proxy;
+}
+
+export function assertWorkingGatewayProxy(proxy) {
+  const gateway = 'http://127.0.0.1:4350';
+  const browserRoutes = [
+    '/bff/**',
+    '/oauth2/authorization/**',
+    '/login/oauth2/code/**',
+    '/content/**',
+    '/api/**',
+    '/oauth2/**',
+    '/userinfo',
+    '/connect/**',
+    '/.well-known/**',
+  ];
+  for (const route of browserRoutes) {
+    if (proxy[route]?.target !== gateway) {
+      throw new Error(`Protected working frontend requires ${route} to use local Gateway 4350.`);
     }
   }
   return proxy;

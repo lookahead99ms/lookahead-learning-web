@@ -442,10 +442,9 @@
                     </p>
                     <div>
                       @for (practice of practiceQuestions; track practice.id) {
-                        <a [routerLink]="['/', pathId(), courseId(), practice.id]"
-                          >{{ practice.title }} <small>{{ practice.difficulty }}</small
-                          ><b aria-hidden="true">→</b></a
-                        >
+                        <a [routerLink]="['/', pathId(), courseId(), practice.id]">
+                          {{ practice.title }} <small>{{ practice.difficulty }}</small>
+                        </a>
                       }
                     </div>
                   </aside>
