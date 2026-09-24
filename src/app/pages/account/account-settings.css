@@ -1,21 +1,26 @@
 :host {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(28px, 4vw, 56px);
+  gap: clamp(18px, 2vw, 28px);
   min-width: 0;
 }
 .settings-section {
   position: relative;
-  padding-block: 24px;
-  border-block-start: 1px solid var(--line);
+  min-width: 0;
+  padding: clamp(24px, 2.5vw, 32px);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: 0 12px 36px color-mix(in srgb, var(--text-strong) 4%, transparent);
 }
 .settings-section::before {
   content: '';
   position: absolute;
-  inset-block-start: -1px;
-  inset-inline-start: 0;
-  inline-size: 48px;
-  block-size: 2px;
+  inset-block-start: 0;
+  inset-inline-start: clamp(24px, 2.5vw, 32px);
+  inline-size: 52px;
+  block-size: 3px;
+  border-radius: 0 0 3px 3px;
   background: var(--accent-strong);
 }
 .settings-section:first-child {
@@ -73,12 +78,15 @@ form + .profile-details {
 dt {
   margin-block-end: 4px;
   color: var(--text-subtle);
-  font-size: 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
   line-height: 1.5;
 }
 dd {
   margin: 0;
-  font-weight: 600;
+  font-size: 1.05rem;
+  font-weight: 700;
   line-height: 1.5;
   overflow-wrap: anywhere;
 }
@@ -192,6 +200,9 @@ input:focus-visible,
   :host {
     display: block;
   }
+  .settings-section + .settings-section {
+    margin-block-start: 20px;
+  }
 }
 @media (max-width: 480px) {
   .section-heading {
@@ -203,7 +214,7 @@ input:focus-visible,
     gap: 12px;
   }
   .settings-section {
-    padding-block: 20px;
+    padding: 24px 20px;
   }
   .form-actions > button {
     flex: 1 1 auto;
