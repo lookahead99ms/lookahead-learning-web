@@ -158,6 +158,9 @@ Useful routes:
 | `/sign-in`, `/sign-up`, `/account` | Account entry and profile surfaces                                       |
 | `/support`                         | Support and feedback surface                                             |
 
+The three Learn, Grow, and Look Ahead cards on `/` are full-area native links to
+their catalog routes, including keyboard focus and normal browser new-tab actions.
+
 The approved DLV-801 Search refinement uses compact, full-title result rows.
 Results occupy the full desktop width until a row is selected through its native
 button. Selection opens a companion beside the list and presents that result in
@@ -289,6 +292,10 @@ Connected mode uses the existing account activity API; the standalone demo saves
 only in the current browser and does not synchronize across devices.
 
 ### Manage account
+
+The account page groups Profile, Security, Active sign-ins, and Learning summary
+into separate panels. At narrow widths the panels stack with space between them;
+their existing profile, password, session, and saved-plan actions are unchanged.
 
 Open **Manage account** from the signed-in account menu to review your profile,
 edit your display name, or change your password. Password changes require your

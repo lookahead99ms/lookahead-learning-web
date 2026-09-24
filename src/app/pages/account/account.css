@@ -5,8 +5,8 @@
   color: var(--text-strong);
 }
 .account-page.manage-account {
-  max-width: 1180px;
-  margin-block: clamp(32px, 4vw, 64px);
+  max-width: 1280px;
+  margin-block: clamp(28px, 3.5vw, 56px);
   padding-block-end: 80px;
 }
 .account-card {
@@ -17,8 +17,8 @@
 }
 .manage-account .account-card {
   display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(300px, 0.9fr);
-  column-gap: clamp(28px, 4vw, 56px);
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+  gap: clamp(18px, 2vw, 28px);
   align-items: start;
   padding: 0;
   border: 0;
@@ -31,14 +31,40 @@
   grid-column: 1 / -1;
 }
 .manage-account .account-intro {
-  margin-block-end: clamp(28px, 4vw, 48px);
-  padding: clamp(28px, 4vw, 44px);
-  border-inline-start: 4px solid var(--accent-strong);
-  background: linear-gradient(
-    110deg,
-    color-mix(in srgb, var(--accent-strong) 13%, var(--surface)) 0%,
-    color-mix(in srgb, var(--accent-strong) 3%, var(--surface)) 72%
-  );
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  min-block-size: 176px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(32px, 4vw, 56px);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 88% 18%, color-mix(in srgb, var(--accent-strong) 19%, transparent), transparent 36%),
+    linear-gradient(112deg, color-mix(in srgb, var(--accent-strong) 11%, var(--surface)), var(--surface) 75%);
+}
+.manage-account .account-intro::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: 5px;
+  background: var(--accent-strong);
+}
+.manage-account .account-intro::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inline-size: clamp(200px, 24vw, 340px);
+  aspect-ratio: 1;
+  inset-block-start: -95%;
+  inset-inline-end: -5%;
+  border: 1px solid color-mix(in srgb, var(--accent-strong) 25%, transparent);
+  border-radius: 50%;
+  box-shadow: 0 0 0 42px color-mix(in srgb, var(--accent-strong) 5%, transparent),
+    0 0 0 85px color-mix(in srgb, var(--accent-strong) 4%, transparent);
 }
 .manage-account .account-intro .eyebrow {
   margin: 0;
@@ -50,7 +76,7 @@
 }
 .manage-account h1 {
   margin-block: 12px 8px;
-  font-size: clamp(2.3rem, 4vw, 3.25rem);
+  font-size: clamp(2.3rem, 4vw, 3.6rem);
 }
 .account-intro-copy {
   max-width: 60ch;
@@ -189,8 +215,8 @@ button:disabled {
   border-block-start: 1px solid var(--line);
 }
 .manage-account .account-footer {
-  margin-block-start: clamp(32px, 4vw, 52px);
-  padding-block-start: 28px;
+  margin-block-start: 8px;
+  padding-block-start: 26px;
 }
 a {
   color: var(--accent-link);
@@ -250,7 +276,23 @@ a {
     padding-block-end: 48px;
   }
   .manage-account .account-intro {
-    margin-block-end: 24px;
-    padding: 24px;
+    min-block-size: 0;
+    margin-block-end: 20px;
+    padding: 32px;
+  }
+  .manage-account app-account-settings,
+  .manage-account app-active-sign-ins,
+  .manage-account app-account-study-plans {
+    display: block;
+    margin-block-end: 20px;
+  }
+}
+@media (max-width: 480px) {
+  .manage-account .account-intro {
+    padding: 28px 24px;
+    border-radius: 18px;
+  }
+  .manage-account .account-intro::after {
+    display: none;
   }
 }
