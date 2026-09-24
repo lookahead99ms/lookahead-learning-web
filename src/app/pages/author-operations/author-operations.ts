@@ -24,7 +24,12 @@ import {
 } from '../../core/author-workspace-nav/author-workspace-nav';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { PlatformThemeService } from '../../core/platform-theme';
-import { embeddedAnchor, embeddedAnchorPosition, requestEmbeddedAnchor, scrollToEmbeddedAnchor } from '../../core/author-embedded-anchor';
+import {
+  embeddedAnchor,
+  embeddedAnchorPosition,
+  requestEmbeddedAnchor,
+  scrollToEmbeddedAnchor,
+} from '../../core/author-embedded-anchor';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 
 @Component({
@@ -39,11 +44,17 @@ export class AuthorOperationsPage implements OnDestroy {
   private readonly documents = inject(AUTHOR_DOCUMENTS_CLIENT);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly theme = inject(PlatformThemeService);
-  protected readonly documentId = inject(ActivatedRoute).snapshot.data['authorDocument'] === 'local-development'
-    ? 'local-development' : 'operations-reference';
+  protected readonly documentId =
+    inject(ActivatedRoute).snapshot.data['authorDocument'] === 'local-development'
+      ? 'local-development'
+      : 'operations-reference';
   protected readonly isLocalDevelopment = this.documentId === 'local-development';
-  protected readonly pageTitle = this.isLocalDevelopment ? 'Local setup & development' : 'Operations';
-  protected readonly pageRoute = this.isLocalDevelopment ? '/author/local-development' : '/author/operations';
+  protected readonly pageTitle = this.isLocalDevelopment
+    ? 'Local setup & development'
+    : 'Operations';
+  protected readonly pageRoute = this.isLocalDevelopment
+    ? '/author/local-development'
+    : '/author/operations';
   private readonly documentFrame = viewChild<ElementRef<HTMLIFrameElement>>('documentFrame');
   private destroyed = false;
   private request = 0;
@@ -81,24 +92,24 @@ export class AuthorOperationsPage implements OnDestroy {
     if (!href) return null;
     return this.sanitizer.bypassSecurityTrustResourceUrl(href);
   });
-  protected readonly runbookLinks = computed(() =>
-    (this.isLocalDevelopment ? [] : this.document()?.references ?? []).filter(
-      (link) => link.href.includes('/blob/') && link.href.includes('/docs/'),
-    ),
+  protected readonly referenceLinks = computed(() =>
+    this.isLocalDevelopment ? [] : (this.document()?.references ?? []),
   );
   protected readonly outline = computed<AuthorOutlineItem[]>(() => {
     const href = this.documentFrameHref();
     const document = this.document();
     if (!href || !document) return [];
     return [
-      ...document.sections.filter((section) => section.anchor !== 'local-development-workflow').map((section) => ({
-        label: section.title,
-        href: `${this.pageRoute}#${section.anchor}`,
-      })),
-      ...(this.runbookLinks().length
+      ...document.sections
+        .filter((section) => section.anchor !== 'local-development-workflow')
+        .map((section) => ({
+          label: section.title,
+          href: `${this.pageRoute}#${section.anchor}`,
+        })),
+      ...(this.referenceLinks().length
         ? [
             {
-              label: 'Runbooks',
+              label: 'Repository and runbook links',
               href: '/author/operations#runbooks-links',
             },
           ]
@@ -156,8 +167,16 @@ export class AuthorOperationsPage implements OnDestroy {
     if (!frame || event.source !== frame.contentWindow || event.origin !== 'null') return;
     if (!this.authorized() || this.state() !== 'ready') return;
     const data = event.data;
-    const anchor = embeddedAnchor(this.pendingAnchor, this.document()?.sections.map((section) => section.anchor) ?? []);
-    const position = embeddedAnchorPosition(data, this.documentId, anchor, this.documentHeight() ?? 30_000);
+    const anchor = embeddedAnchor(
+      this.pendingAnchor,
+      this.document()?.sections.map((section) => section.anchor) ?? [],
+    );
+    const position = embeddedAnchorPosition(
+      data,
+      this.documentId,
+      anchor,
+      this.documentHeight() ?? 30_000,
+    );
     if (position !== null) {
       const hostWindow = this.hostDocument.defaultView;
       if (hostWindow) scrollToEmbeddedAnchor(frame, position, hostWindow);
@@ -191,7 +210,10 @@ export class AuthorOperationsPage implements OnDestroy {
     requestEmbeddedAnchor(
       this.documentFrame()?.nativeElement,
       this.documentId,
-      embeddedAnchor(this.pendingAnchor, this.document()?.sections.map((section) => section.anchor) ?? []),
+      embeddedAnchor(
+        this.pendingAnchor,
+        this.document()?.sections.map((section) => section.anchor) ?? [],
+      ),
     );
   }
 

@@ -4,6 +4,15 @@
     <a routerLink="/">Home</a><span>/</span><span aria-current="page">Delivery plan</span>
   </nav>
 
+  <aside class="delivery-outline">
+    <app-author-workspace-nav
+      pageTitle="Delivery plan"
+      pageId="delivery"
+      [headingLevel]="2"
+      [outline]="plan() ? outline : []"
+    />
+  </aside>
+
   @if (!authorAccess()) {
     <section class="delivery-state" role="status">
       <h1>Author access required</h1>
@@ -31,14 +40,6 @@
       }
     </header>
 
-    <aside class="delivery-outline">
-      <app-author-workspace-nav
-        pageTitle="Delivery plan"
-        pageId="delivery"
-        [headingLevel]="2"
-        [outline]="outline"
-      />
-    </aside>
     <section class="delivery-metrics" id="delivery-summary" aria-label="Delivery summary">
       <article>
         <span>Completion</span><strong>{{ completionPercent() }}%</strong>

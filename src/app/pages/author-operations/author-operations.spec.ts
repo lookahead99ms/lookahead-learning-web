@@ -96,7 +96,11 @@ describe('Operations author view', () => {
     expect(fixture.nativeElement.querySelector('iframe').getAttribute('src')).toBe(
       localReference.href + '?theme=light&layout=shared',
     );
-    expect(fixture.nativeElement.querySelector('a[href="/author/local-development"][aria-current="page"]')).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector(
+        'a[href="/author/local-development"][aria-current="page"]',
+      ),
+    ).not.toBeNull();
   });
   it('keeps a section deep link on the protected parent page', async () => {
     const previousUrl = location.pathname + location.search + location.hash;
@@ -122,10 +126,15 @@ describe('Operations author view', () => {
       const postMessage = vi.spyOn(frame.contentWindow!, 'postMessage');
       const link = fixture.nativeElement.querySelector('.heading-outline a') as HTMLAnchorElement;
       link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
-      expect(postMessage).toHaveBeenCalledWith({
-        type: 'lookahead:author-document:anchor-request', version: 1,
-        documentId: 'operations-reference', anchor: 'repositories',
-      }, '*');
+      expect(postMessage).toHaveBeenCalledWith(
+        {
+          type: 'lookahead:author-document:anchor-request',
+          version: 1,
+          documentId: 'operations-reference',
+          anchor: 'repositories',
+        },
+        '*',
+      );
     } finally {
       history.replaceState(null, '', previousUrl);
     }
@@ -139,7 +148,10 @@ describe('Operations author view', () => {
     expect(fixture.nativeElement.querySelector('#runbooks-links')).not.toBeNull();
     expect(
       fixture.nativeElement.querySelector('a[href="https://github.com/example/repository"]'),
-    ).toBeNull();
+    ).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('#runbooks-heading').textContent).toBe(
+      'Repository and runbook links',
+    );
     expect(fixture.nativeElement.querySelector('#supporting-references')).not.toBeNull();
     expect(
       fixture.nativeElement.querySelector('a[href="/author/operations#runbooks-links"]'),

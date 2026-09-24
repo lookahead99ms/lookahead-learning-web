@@ -5,26 +5,27 @@
   min-height: 100vh;
 }
 .preview-page {
-  max-width: 1600px;
-  margin: auto;
-  padding: 24px 32px 72px;
+  width: 100%;
+  padding: 0;
 }
 .preview-page:not(.architecture-layout) {
   display: grid;
-  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+  grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
   align-items: start;
-  gap: 32px;
+  gap: 0;
 }
 .preview-outline {
   position: sticky;
-  top: calc(var(--platform-header-height, 76px) + 12px);
-  max-height: calc(100dvh - var(--platform-header-height, 76px) - 24px);
+  top: var(--platform-header-height, 76px);
+  max-height: calc(100dvh - var(--platform-header-height, 76px));
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding-right: 4px;
+  padding: 24px;
+  border-inline-end: 1px solid var(--line);
 }
 .preview-content {
   min-width: 0;
+  padding: 24px clamp(24px, 4vw, 72px) 64px;
 }
 #study-plan-review,
 #preview-filters,
@@ -45,17 +46,18 @@
   max-width: none;
   min-height: calc(100dvh - var(--platform-header-height, 76px));
   margin: 0;
-  gap: 24px;
-  padding: 12px 24px 16px;
+  gap: 0;
+  padding: 0;
   box-sizing: border-box;
 }
 .architecture-layout .workspace-sidebar {
   position: sticky;
-  top: calc(var(--platform-header-height, 76px) + 12px);
-  max-height: calc(100dvh - var(--platform-header-height, 76px) - 24px);
+  top: var(--platform-header-height, 76px);
+  max-height: calc(100dvh - var(--platform-header-height, 76px));
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding-right: 4px;
+  padding: 24px;
+  border-inline-end: 1px solid var(--line);
 }
 .reference-toolbar {
   display: flex;
@@ -87,6 +89,7 @@
   flex-direction: column;
   min-width: 0;
   gap: 16px;
+  padding: 24px clamp(24px, 4vw, 72px) 64px;
 }
 .architecture-workspace {
   min-height: 480px;
@@ -255,24 +258,29 @@ button:focus-visible {
     position: static;
     max-height: min(55dvh, 520px);
     overflow-y: auto;
+    border-inline-end: 0;
+    border-bottom: 1px solid var(--line);
   }
   .architecture-layout {
     grid-template-columns: 1fr;
-    padding: 10px 8px 8px;
-    gap: 8px;
   }
   .architecture-layout .workspace-sidebar {
     position: static;
     max-height: min(55dvh, 520px);
     overflow-y: auto;
+    border-inline-end: 0;
+    border-bottom: 1px solid var(--line);
   }
   .architecture-layout .architecture-frame {
     height: 70dvh;
   }
 }
 @media (max-width: 640px) {
-  .preview-page {
-    padding: 28px 20px 48px;
+  .preview-outline,
+  .preview-content,
+  .architecture-layout .workspace-sidebar,
+  .architecture-layout .workspace-content {
+    padding: 16px;
   }
   .filters,
   li {

@@ -208,6 +208,27 @@ describe('DeliveryPlanPage', () => {
     expect(TestBed.inject(Router).url).toBe('/delivery-plan?view=roadmap');
   });
 
+  it('keeps author navigation available when private delivery data is unavailable', async () => {
+    content.getDeliveryPlan.mockReturnValueOnce(
+      throwError(() => new HttpErrorResponse({ status: 404 })),
+    );
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/delivery-plan', DeliveryPlanPage);
+    harness.detectChanges();
+
+    expect(harness.routeNativeElement?.textContent).toContain(
+      'The delivery control room needs its local data.',
+    );
+    expect(
+      harness.routeNativeElement?.querySelector(
+        '.delivery-outline nav[aria-label="Author workspace navigation"]',
+      ),
+    ).not.toBeNull();
+    expect(
+      harness.routeNativeElement?.querySelector('.delivery-outline .heading-outline'),
+    ).toBeNull();
+  });
+
   it('keeps board filters in the URL and filters work items', async () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/delivery-plan', DeliveryPlanPage);

@@ -492,7 +492,7 @@ Uncertain submissions preserve the draft and exact retry key. A later page load 
 The author-only `/author/operations` and `/author/local-development` routes read protected, immutable author-documents through the Gateway. Operations covers documented topology, deployment, diagnostics and recovery. Local setup & development covers worktrees, builds, Docker, ports and verification. Neither executes commands or reports live service health. The public demo has no publication configured. The source documents remain outside this repository.
 
 Author, Previews, Delivery Plan, Architecture, Local setup & development, API Reference and Operations use a
-shared left navigation. “On this page” lists headings in the current view;
+shared left navigation, including while the Delivery Plan is loading or unavailable. “On this page” lists headings in the current view;
 Author Previews and Delivery Plan are direct links followed by an expandable Documentation
 group with direct links to the four reference pages. Narrow viewports stack this navigation above the content. The
 desktop sidebar stays beside the article as the page scrolls. It scrolls independently only when its links are
@@ -500,11 +500,15 @@ taller than the available viewport; narrow viewports stack it in the page flow w
 Document outline links retain the protected Author URL and scroll the parent
 page to the chosen embedded section; the raw reference remains available only
 through its explicit full-page link.
-Operations shows the published reference version above the document and a focused
-Runbooks section below it. Repository links are not repeated in that section.
+Operations shows the published reference version above the document. Its
+Repository and runbook links and Supporting references are regular sections in
+the main reading flow with matching links in the heading outline.
 The shared Operations, Local setup, API and Architecture documents report their content heights to the
 parent, so their references flow with the page rather than inside a fixed-height
-viewer. Operations keeps the Runbooks and Supporting references sections below
-its document.
+viewer. The Author pages use a continuous two-column reading layout; the
+document frame keeps its script-only sandbox without adding a second visual page.
+The working `/delivery-plan` requires an active author session. Signed-out
+visitors go to sign-in and return to the plan afterward; its public JSON fallback
+is intentionally unavailable on the protected working origin.
 
 The manifest uses `schemaVersion: 1` with `documents[]`. HTML URLs must match the published document ID and content SHA-256 under `/bff/author/previews/preview-directory/author-documents/`. The iframe allows scripts for theme selection and the shared Operations height report; the parent accepts that report only from its active sandboxed frame with the expected document ID and bounded size. External references are ordinary labeled new-tab links in the Angular parent. HTTP authentication, authorization, missing publication and service failures remain distinct.
