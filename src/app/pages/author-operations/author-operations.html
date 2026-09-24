@@ -1,7 +1,12 @@
 <app-platform-header />
 <main id="main-content" class="operations-page">
   <aside class="workspace-sidebar">
-    <app-author-workspace-nav [pageTitle]="pageTitle" [pageId]="documentId === 'local-development' ? 'local-development' : 'operations'" [outline]="outline()" (embeddedSectionSelected)="onEmbeddedSectionSelected($event)">
+    <app-author-workspace-nav
+      [pageTitle]="pageTitle"
+      [pageId]="documentId === 'local-development' ? 'local-development' : 'operations'"
+      [outline]="outline()"
+      (embeddedSectionSelected)="onEmbeddedSectionSelected($event)"
+    >
       <p description>
         @if (isLocalDevelopment) {
           Read-only guide · Worktrees, builds, Docker, ports, and verification.
@@ -51,18 +56,23 @@
           #documentFrame
           [src]="documentUrl()"
           [style.height.px]="documentHeight()"
-          [title]="isLocalDevelopment ? 'Worktrees, builds, Docker, ports and verification' : 'Repositories, topology, deployment sequence and operator runbooks'"
+          [title]="
+            isLocalDevelopment
+              ? 'Worktrees, builds, Docker, ports and verification'
+              : 'Repositories, topology, deployment sequence and operator runbooks'
+          "
           sandbox="allow-scripts"
         ></iframe>
       </section>
-      @if (runbookLinks().length) {
+      @if (referenceLinks().length) {
         <section class="resource-section" id="runbooks-links" aria-labelledby="runbooks-heading">
-          <h2 id="runbooks-heading">Runbooks</h2>
+          <h2 id="runbooks-heading">Repository and runbook links</h2>
           <p>
-            Open the maintained procedures for local setup, verification, handoff, and recovery.
+            Open the source repositories and maintained procedures for local setup, verification,
+            handoff, and recovery.
           </p>
           <ul>
-            @for (link of runbookLinks(); track link.href) {
+            @for (link of referenceLinks(); track link.href) {
               <li>
                 <a [href]="link.href" target="_blank" rel="noopener noreferrer"
                   >{{ link.label }} <span>(new tab)</span></a

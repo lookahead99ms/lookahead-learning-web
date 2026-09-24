@@ -151,7 +151,10 @@ Uncertain retries reuse the same body and key. A successful receipt means record
 and pending reconciliation; it does not change delivery status or authorize Git.
 
 `/author/operations` displays a read-only document with parent-owned section and
-reference links. Its documented topology is not a live service-health claim.
+reference links. Repository and runbook links and supporting references remain
+in the main reading flow and appear in the heading outline. The Author pages
+share a continuous two-column layout while keeping protected HTML in its
+sandboxed frame. The documented topology is not a live service-health claim.
 Both embedded documents use `sandbox="allow-scripts"`; they have no authority to
 submit decisions, access parent storage or execute operational actions. Theme
 selection is an explicit document query parameter. Authorization loss removes

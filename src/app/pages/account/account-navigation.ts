@@ -10,6 +10,7 @@ export function safeAccountReturn(value: string | null): string {
       return '/';
     return path === '/' ||
       path === '/account' ||
+      path === '/delivery-plan' ||
       /^\/(?:study-plan|learn|grow|look-ahead|search|support|author)(?:\/.*)?$/.test(path)
       ? value
       : '/';

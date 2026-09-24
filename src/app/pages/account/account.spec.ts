@@ -5,6 +5,8 @@ it('keeps account navigation inside recognized learner routes', () => {
   expect(safeAccountReturn('/support')).toBe('/support');
   expect(safeAccountReturn('/author')).toBe('/author');
   expect(safeAccountReturn('/account')).toBe('/account');
+  expect(safeAccountReturn('/delivery-plan')).toBe('/delivery-plan');
+  expect(safeAccountReturn('/delivery-plan?view=roadmap')).toBe('/delivery-plan?view=roadmap');
   expect(safeAccountReturn('/')).toBe('/');
   expect(safeAccountReturn('/#paths')).toBe('/#paths');
   expect(safeAccountReturn('/?source=welcome#paths')).toBe('/?source=welcome#paths');
@@ -20,6 +22,7 @@ it('keeps account navigation inside recognized learner routes', () => {
     '///evil.example',
     'https://evil.example',
     '/account/unknown',
+    '/delivery-plan/unknown',
     '/learn\\evil',
     '/learn\nwrong',
     '/?next=\twrong',
@@ -144,6 +147,7 @@ it.each([
   ['/#paths', '/#paths'],
   ['/study-plan?plan=example', '/study-plan?plan=example'],
   ['/author/architecture', '/author/architecture'],
+  ['/delivery-plan', '/delivery-plan'],
   ['/account', '/account'],
   ['https://outside.example', '/'],
 ])('completes sign-in with returnTo=%s at %s', async (requested, expected) => {
