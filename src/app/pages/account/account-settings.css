@@ -1,13 +1,25 @@
 :host {
-  display: block;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(28px, 4vw, 56px);
   min-width: 0;
 }
 .settings-section {
+  position: relative;
   padding-block: 24px;
   border-block-start: 1px solid var(--line);
 }
+.settings-section::before {
+  content: '';
+  position: absolute;
+  inset-block-start: -1px;
+  inset-inline-start: 0;
+  inline-size: 48px;
+  block-size: 2px;
+  background: var(--accent-strong);
+}
 .settings-section:first-child {
-  margin-block-start: 24px;
+  margin-block-start: 0;
 }
 .section-heading,
 .security-row {
@@ -26,7 +38,8 @@ p {
   margin: 0;
 }
 h2 {
-  font-size: 1.25rem;
+  font-size: 1.35rem;
+  letter-spacing: -0.025em;
   line-height: 1.4;
 }
 h3 {
@@ -174,6 +187,11 @@ input:focus-visible,
 }
 .status:empty {
   margin: 0;
+}
+@media (max-width: 850px) {
+  :host {
+    display: block;
+  }
 }
 @media (max-width: 480px) {
   .section-heading {

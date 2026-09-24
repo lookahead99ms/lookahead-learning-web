@@ -28,6 +28,10 @@ import {
   DeliveryWorkflowState,
 } from '../../content/delivery-plan.models';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
+import {
+  AuthorOutlineItem,
+  AuthorWorkspaceNav,
+} from '../../core/author-workspace-nav/author-workspace-nav';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 
 type DeliveryView = 'board' | 'backlog' | 'all-tickets' | 'roadmap' | 'decisions';
@@ -44,12 +48,17 @@ type WorkItemDraft = Omit<
 
 @Component({
   selector: 'app-delivery-plan',
-  imports: [PlatformHeader, RouterLink, FormsModule],
+  imports: [PlatformHeader, AuthorWorkspaceNav, RouterLink, FormsModule],
   templateUrl: './delivery-plan.html',
   styleUrl: './delivery-plan.css',
   host: { '(window:beforeunload)': 'onBeforeUnload($event)' },
 })
 export class DeliveryPlanPage implements OnInit {
+  protected readonly outline: readonly AuthorOutlineItem[] = [
+    { label: 'Plan overview', href: '#delivery-overview' },
+    { label: 'Delivery summary', href: '#delivery-summary' },
+    { label: 'Work and decisions', href: '#delivery-workspace' },
+  ];
   private readonly accounts = inject(StudyPlanAccount);
   protected readonly authorAccess = computed(
     () => this.accounts.account()?.authorPreview === true && !this.accounts.sessionExpired(),

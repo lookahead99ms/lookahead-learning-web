@@ -135,11 +135,11 @@
       </form>
     }
 
-    @if (!accounts.account() || accounts.sessionExpired()) {
+    @if ((!accounts.account() || accounts.sessionExpired()) && !onAuthenticationPage()) {
       <a class="sign-in-button" routerLink="/sign-in" [queryParams]="{ returnTo: accountReturn() }"
         >Sign in</a
       >
-    } @else {
+    } @else if (accounts.account() && !accounts.sessionExpired()) {
       <div class="profile-dropdown-container" (click)="$event.stopPropagation()">
         <button
           class="avatar-trigger-btn"
@@ -189,48 +189,61 @@
             @if (accounts.account()?.authorPreview) {
               <div class="menu-divider"></div>
               <nav class="dropdown-links-list author-account-links" aria-label="Author tools">
-                <a
-                  routerLink="/author/operations"
-                  class="dropdown-item-link"
-                  (click)="closeForNavigation()"
-                  >Operations</a
-                >
-                <a
-                  routerLink="/author/previews"
-                  class="dropdown-item-link"
-                  (click)="closeForNavigation()"
-                  >Author previews</a
-                >
-                <a
-                  routerLink="/delivery-plan"
-                  class="dropdown-item-link"
-                  (click)="closeForNavigation()"
-                  >Delivery plan</a
-                >
-                @if (architectureHref) {
+                @for (page of authorWorkspaceLinks; track page.id) {
                   <a
-                    routerLink="/author/architecture"
+                    [routerLink]="page.href"
                     class="dropdown-item-link"
                     (click)="closeForNavigation()"
-                    >Architecture</a
-                  >
-                } @else {
-                  <span class="dropdown-item-unavailable"
-                    >Architecture <small>Not connected</small></span
+                    >{{ page.label }}</a
                   >
                 }
-                @if (apiReferenceHref) {
-                  <a
-                    routerLink="/author/api"
-                    class="dropdown-item-link"
-                    (click)="closeForNavigation()"
-                    >API reference</a
+                <div
+                  class="author-documentation-group"
+                  (keydown.escape)="closeAccountDocumentationOnEscape($event)"
+                >
+                  <button
+                    id="account-documentation-toggle"
+                    type="button"
+                    class="dropdown-item-link author-documentation-toggle"
+                    aria-controls="account-documentation-links"
+                    [attr.aria-expanded]="accountDocumentationOpen()"
+                    (click)="toggleAccountDocumentation()"
                   >
-                } @else {
-                  <span class="dropdown-item-unavailable"
-                    >API reference <small>Not connected</small></span
+                    <span
+                      >Documentation
+                      @if (onDocumentationPage()) {
+                        <small>Current section</small>
+                      }
+                    </span>
+                    <span class="author-documentation-chevron" aria-hidden="true"></span>
+                  </button>
+                  <ul
+                    id="account-documentation-links"
+                    class="author-documentation-links"
+                    [hidden]="!accountDocumentationOpen()"
                   >
-                }
+                    @for (page of authorDocumentationLinks; track page.id) {
+                      <li>
+                        @if (
+                          (page.id === 'architecture' && !architectureHref) ||
+                          (page.id === 'api' && !apiReferenceHref)
+                        ) {
+                          <span class="dropdown-item-unavailable"
+                            >{{ page.label }} <small>Not connected</small></span
+                          >
+                        } @else {
+                          <a
+                            [routerLink]="page.href"
+                            class="dropdown-item-link"
+                            [attr.aria-current]="isCurrentAuthorDocument(page.href) ? 'page' : null"
+                            (click)="closeForNavigation()"
+                            >{{ page.label }}</a
+                          >
+                        }
+                      </li>
+                    }
+                  </ul>
+                </div>
               </nav>
             }
             <div class="account-session-actions">

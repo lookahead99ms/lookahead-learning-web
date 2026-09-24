@@ -1,75 +1,59 @@
 :host {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  height: 100dvh;
+  min-height: 100dvh;
   color: var(--text-body);
   background: var(--surface-page);
 }
 .api-page {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 12px;
-  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+  align-items: start;
+  flex: 1 0 auto;
+  min-height: calc(100dvh - var(--platform-header-height, 76px));
+  gap: 24px;
   padding: 12px 24px 16px;
 }
-.api-toolbar,
-.api-toolbar nav {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px 24px;
+.workspace-sidebar {
+  position: sticky;
+  top: calc(var(--platform-header-height, 76px) + 12px);
+  max-height: calc(100dvh - var(--platform-header-height, 76px) - 24px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 4px;
 }
-.api-toolbar {
-  justify-content: space-between;
-}
-.eyebrow {
-  margin: 0;
-  color: var(--accent-strong);
-  font-size: 11px;
-  font-weight: 750;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-h1 {
-  margin: 4px 0 0;
-  font-size: 24px;
-}
-.api-toolbar a,
-.downloads a {
+a {
   display: inline-flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 0 6px;
   min-height: 44px;
+  color: var(--accent-link);
   font-size: 14px;
   font-weight: 650;
 }
-.api-toolbar a span {
+a span {
   font-weight: 400;
 }
 .downloads {
-  flex: 0 0 auto;
-  border-block: 1px solid var(--line);
+  scroll-margin-top: calc(var(--platform-header-height, 76px) + 16px);
+  margin-top: 8px;
+  padding-block: 20px;
+  border-top: 1px solid var(--line);
 }
-summary {
-  padding: 12px 0;
-  cursor: pointer;
-  font-weight: 650;
+.downloads h2 {
+  margin: 0 0 18px;
+  font-size: 1.2rem;
 }
 .download-groups {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
-  gap: 20px 24px;
-  max-height: 35dvh;
-  overflow: auto;
-  padding: 0 6px 12px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 24px;
 }
-.download-groups h2 {
+.download-groups h3 {
   margin: 6px 0 8px;
   color: var(--text-body);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 750;
 }
 .download-links {
@@ -80,19 +64,39 @@ summary {
 .download-links a {
   line-height: 1.45;
 }
+.workspace-content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 16px;
+}
+.reference-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  color: var(--text-subtle);
+  font-size: 0.85rem;
+}
+.reference-toolbar p {
+  margin: 0;
+}
 .api-workspace {
-  flex: 1;
-  min-height: 180px;
-  border: 1px solid var(--line);
-  background: var(--surface);
+  min-height: 480px;
 }
 iframe {
   display: block;
   width: 100%;
-  height: 100%;
+  height: calc(100dvh - var(--platform-header-height, 76px) - 150px);
+  min-height: 480px;
   border: 0;
 }
 .state-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   padding: 24px;
   border: 1px solid var(--line);
   background: var(--surface);
@@ -104,6 +108,7 @@ iframe {
   line-height: 1.6;
 }
 .state-panel button {
+  align-self: start;
   min-height: 44px;
   padding: 10px 16px;
   border: 1px solid var(--line);
@@ -112,11 +117,22 @@ iframe {
   color: var(--text-body);
   cursor: pointer;
 }
+@media (max-width: 900px) {
+  .api-page {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .workspace-sidebar {
+    position: static;
+    max-height: min(55dvh, 520px);
+    overflow-y: auto;
+    padding-right: 0;
+  }
+  iframe {
+    height: 70dvh;
+  }
+}
 @media (max-width: 600px) {
   .api-page {
     padding: 12px;
-  }
-  .api-toolbar nav {
-    gap: 4px 16px;
   }
 }

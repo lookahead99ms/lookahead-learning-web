@@ -5,13 +5,58 @@
   color: var(--text-strong);
 }
 .account-page.manage-account {
-  max-width: 680px;
+  max-width: 1180px;
+  margin-block: clamp(32px, 4vw, 64px);
+  padding-block-end: 80px;
 }
 .account-card {
   padding: 32px;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 20px;
+}
+.manage-account .account-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(300px, 0.9fr);
+  column-gap: clamp(28px, 4vw, 56px);
+  align-items: start;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.manage-account .account-intro,
+.manage-account app-account-settings,
+.manage-account .account-footer {
+  grid-column: 1 / -1;
+}
+.manage-account .account-intro {
+  margin-block-end: clamp(28px, 4vw, 48px);
+  padding: clamp(28px, 4vw, 44px);
+  border-inline-start: 4px solid var(--accent-strong);
+  background: linear-gradient(
+    110deg,
+    color-mix(in srgb, var(--accent-strong) 13%, var(--surface)) 0%,
+    color-mix(in srgb, var(--accent-strong) 3%, var(--surface)) 72%
+  );
+}
+.manage-account .account-intro .eyebrow {
+  margin: 0;
+  color: var(--accent-strong);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+}
+.manage-account h1 {
+  margin-block: 12px 8px;
+  font-size: clamp(2.3rem, 4vw, 3.25rem);
+}
+.account-intro-copy {
+  max-width: 60ch;
+  margin: 0;
+  color: var(--text-body);
+  font-size: clamp(1rem, 1.4vw, 1.1rem);
 }
 h1 {
   margin: 12px 0;
@@ -143,6 +188,10 @@ button:disabled {
   padding-block-start: 20px;
   border-block-start: 1px solid var(--line);
 }
+.manage-account .account-footer {
+  margin-block-start: clamp(32px, 4vw, 52px);
+  padding-block-start: 28px;
+}
 a {
   color: var(--accent-link);
 }
@@ -191,5 +240,17 @@ a {
   }
   .return-action {
     width: 100%;
+  }
+}
+@media (max-width: 850px) {
+  .manage-account .account-card {
+    display: block;
+  }
+  .account-page.manage-account {
+    padding-block-end: 48px;
+  }
+  .manage-account .account-intro {
+    margin-block-end: 24px;
+    padding: 24px;
   }
 }

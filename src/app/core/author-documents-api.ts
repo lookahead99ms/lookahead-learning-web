@@ -10,7 +10,7 @@ import {
 import { StudyPlanAccount } from '../pages/study-plan/study-plan-account';
 
 const publicationRoot = '/bff/author/previews/preview-directory/author-documents/';
-const documentIds = new Set(['study-plan-review', 'operations-reference']);
+const documentIds = new Set(['study-plan-review', 'operations-reference', 'local-development']);
 type RecordValue = Record<string, unknown>;
 function object(value: unknown): RecordValue {
   if (!value || typeof value !== 'object' || Array.isArray(value))

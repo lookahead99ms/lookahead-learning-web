@@ -5,9 +5,28 @@
   color: var(--text-body);
 }
 .author-page {
-  max-width: 1200px;
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+  align-items: start;
+  gap: 32px;
+  max-width: 1600px;
   margin: auto;
-  padding: 42px 4vw 64px;
+  padding: 24px 4vw 64px;
+}
+.author-outline {
+  position: sticky;
+  top: calc(var(--platform-header-height, 76px) + 12px);
+  max-height: calc(100dvh - var(--platform-header-height, 76px) - 24px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 4px;
+}
+.author-content {
+  min-width: 0;
+}
+section[id],
+section h2[id] {
+  scroll-margin-top: calc(var(--platform-header-height, 76px) + 16px);
 }
 header {
   max-width: 850px;
@@ -23,6 +42,11 @@ h1 {
   line-height: 1.15;
   letter-spacing: -0.035em;
   margin: 10px 0 18px;
+}
+.intro-heading {
+  font-size: clamp(30px, 3.5vw, 42px);
+  line-height: 1.15;
+  letter-spacing: -0.035em;
 }
 h2 {
   font-size: 24px;
@@ -88,6 +112,15 @@ section {
   color: var(--text-subtle);
 }
 @media (max-width: 900px) {
+  .author-outline {
+    position: static;
+    max-height: min(55dvh, 520px);
+    overflow-y: auto;
+    padding-right: 0;
+  }
+  .author-page {
+    grid-template-columns: 1fr;
+  }
   .view-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

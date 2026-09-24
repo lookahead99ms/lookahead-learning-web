@@ -1,15 +1,20 @@
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { AuthorWorkspaceNav } from '../../core/author-workspace-nav/author-workspace-nav';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 
 @Component({
   selector: 'app-author',
-  imports: [PlatformHeader, RouterLink],
+  imports: [PlatformHeader, RouterLink, AuthorWorkspaceNav],
   templateUrl: './author.html',
   styleUrl: './author.css',
 })
 export class AuthorPage {
+  protected readonly outline = [
+    { label: 'Study Plan views', href: '#study-views-heading' },
+    { label: 'Explore the platform', href: '#platform-views-heading' },
+  ];
   protected readonly accounts = inject(StudyPlanAccount);
   protected readonly savedPlan = computed(
     () =>

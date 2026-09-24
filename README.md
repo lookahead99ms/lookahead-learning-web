@@ -293,6 +293,9 @@ only in the current browser and does not synchronize across devices.
 Open **Manage account** from the signed-in account menu to review your profile,
 edit your display name, or change your password. Password changes require your
 current password and sign you out of every supported session after confirmation.
+The signed-in account view uses a full page layout with responsive account sections;
+the sign-in and sign-up forms remain compact. Authentication pages omit the
+redundant header Sign in link while session restoration is in progress.
 
 The read-only **Learning summary** lists the account's saved study plans using
 the already-loaded account API data. Each plan links to `/study-plan?plan=<id>`.
@@ -353,7 +356,7 @@ adds its token-protected local editor route. Targets must be HTTP loopback
 services; the selected file cannot override `/__local` or dynamic proxy routing.
 Omitting the variable preserves the checked-in `proxy.conf.json` defaults.
 
-For a working UI on4301 connected to the isolated4321/4331 development stack:
+For the protected working UI on4301 connected to Gateway4350:
 
 ```sh
 LOOKAHEAD_CONTENT_ROOT=/absolute/path/to/private-content/runtime \
@@ -363,15 +366,22 @@ npm run start:private -- --configuration protected --host 127.0.0.1 --port 4301
 
 The content root stays outside the public repository. Generated content and proxy
 files are ignored; the proxy carrying the local editor token is owner-readable
-only and removed on shutdown. Keep other running UI instances on their own ports.
+only and removed on shutdown. On protected4301, each editor request also checks
+the current server-held author capability through Gateway4350; the local token
+alone does not grant browser access. Keep other running UI instances on their own ports.
 Delivery Plan is guarded by the server-provided author capability, including its
 legacy `/delivery` redirect, and is absent from the public landing footer.
 
 ### Local author previews
 
-The account menu exposes **Author previews**, **Delivery plan**, and **Architecture**
-only when the authenticated account has the server-provided `authorPreview`
-capability. `/author/previews` and `/author/architecture` use the same author guard.
+For an account with the server-provided `authorPreview` capability, the Author
+portion of the account menu has **Author Previews**, **Delivery Plan**, and a
+**Documentation** disclosure. It reveals direct links to Architecture, Local
+setup & development, API reference and Operations. The shared Author sidebar
+uses the same order and grouping. Documentation opens by default on one of its
+four routes and can be collapsed; it starts closed on other Author routes. The
+existing `/author` route remains available by direct URL, while every Author
+destination retains its author guard.
 
 The protected environment sets `authorPreviewsBaseUrl` to `/bff/author/previews/`;
 the default, demo, and public production environments leave it empty. An empty
@@ -396,8 +406,11 @@ trusted catalog grants for each manifest and asset request. It returns 401 when
 signed out and 403 for a learner. The Angular guard controls page navigation;
 the gateway owns authorization for the actual files. Public production builds
 leave this configuration empty. Service failures and incompatible inventories
-show an explicit retry state. The account-menu Architecture link opens the canonical
+show an explicit retry state. The Documentation Architecture link opens the canonical
 document directly; its existing tabs provide the data model and end-to-end views.
+The private Architecture source also includes a Local development workflow tab;
+the Author page outline keeps the protected route and selects that tab when its
+section is chosen.
 
 The collections contract supplies explicit `order`, `featuredEntryId` and
 `historyEntryIds`. The page displays one featured card per collection, in curated
@@ -476,6 +489,22 @@ Uncertain submissions preserve the draft and exact retry key. A later page load 
 
 ## Private Operations reference
 
-The author-only `/author/operations` route reads the protected, immutable author-documents publication through the Gateway. It shows documented repositories, topology, deployment order and runbooks; it is not a service-health dashboard and exposes no execution or deployment controls. The public demo has no publication configured. The source documents remain outside this repository.
+The author-only `/author/operations` and `/author/local-development` routes read protected, immutable author-documents through the Gateway. Operations covers documented topology, deployment, diagnostics and recovery. Local setup & development covers worktrees, builds, Docker, ports and verification. Neither executes commands or reports live service health. The public demo has no publication configured. The source documents remain outside this repository.
 
-The manifest uses `schemaVersion: 1` with `documents[]`. HTML URLs must match the published document ID and content SHA-256 under `/bff/author/previews/preview-directory/author-documents/`. The iframe allows scripts for theme selection only; external references are ordinary labeled new-tab links in the Angular parent. HTTP authentication, authorization, missing publication and service failures remain distinct.
+Author, Previews, Delivery Plan, Architecture, Local setup & development, API Reference and Operations use a
+shared left navigation. “On this page” lists headings in the current view;
+Author Previews and Delivery Plan are direct links followed by an expandable Documentation
+group with direct links to the four reference pages. Narrow viewports stack this navigation above the content. The
+desktop sidebar stays beside the article as the page scrolls. It scrolls independently only when its links are
+taller than the available viewport; narrow viewports stack it in the page flow with a bounded height.
+Document outline links retain the protected Author URL and scroll the parent
+page to the chosen embedded section; the raw reference remains available only
+through its explicit full-page link.
+Operations shows the published reference version above the document and a focused
+Runbooks section below it. Repository links are not repeated in that section.
+The shared Operations, Local setup, API and Architecture documents report their content heights to the
+parent, so their references flow with the page rather than inside a fixed-height
+viewer. Operations keeps the Runbooks and Supporting references sections below
+its document.
+
+The manifest uses `schemaVersion: 1` with `documents[]`. HTML URLs must match the published document ID and content SHA-256 under `/bff/author/previews/preview-directory/author-documents/`. The iframe allows scripts for theme selection and the shared Operations height report; the parent accepts that report only from its active sandboxed frame with the expected document ID and bounded size. External references are ordinary labeled new-tab links in the Angular parent. HTTP authentication, authorization, missing publication and service failures remain distinct.
