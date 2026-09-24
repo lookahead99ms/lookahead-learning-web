@@ -46,6 +46,14 @@ describe('Private author-document boundary', () => {
     absolute.documents[0].content.href = value.href;
     expect(parseAuthorDocument(absolute, 'operations-reference')).toEqual(value);
   });
+  it('accepts the immutable Local setup document in the protected manifest', () => {
+    const publication = manifest();
+    publication.documents[0].id = 'local-development';
+    publication.documents[0].content.href = `${root}local-development/${sha}/index.html`;
+    expect(parseAuthorDocument(publication, 'local-development').href).toBe(
+      `${root}local-development/${sha}/index.html`,
+    );
+  });
   it.each([
     'https://outside.test/index.html',
     '//outside.test/index.html',

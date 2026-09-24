@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { AuthorOperationsPage } from './author-operations';
 import {
   AUTHOR_DOCUMENTS_CLIENT,
@@ -24,9 +25,15 @@ const reference: AuthorDocument = {
   scope: 'Read-only reference',
   decisionDependencies: [],
   remainingDecisions: [],
-  evidence: [],
+  evidence: [{ label: 'Evidence', href: 'https://example.test/evidence' }],
   sections: [{ title: 'Repositories', anchor: 'repositories' }],
-  references: [{ label: 'Repository', href: 'https://example.test/repository' }],
+  references: [
+    { label: 'Repository', href: 'https://github.com/example/repository' },
+    {
+      label: 'Startup runbook',
+      href: 'https://github.com/example/infra/blob/main/docs/startup.md',
+    },
+  ],
 };
 describe('Operations author view', () => {
   const account = signal<any>({ accountId: 'author', authorPreview: true });
@@ -62,20 +69,113 @@ describe('Operations author view', () => {
     const fixture = await create();
     const frame = fixture.nativeElement.querySelector('iframe');
     expect(frame.getAttribute('sandbox')).toBe('allow-scripts');
-    expect(frame.getAttribute('src')).toBe(reference.href + '?theme=light');
+    expect(frame.getAttribute('src')).toBe(reference.href + '?theme=light&layout=shared');
     theme.set('dark');
     fixture.detectChanges();
-    expect(frame.getAttribute('src')).toBe(reference.href + '?theme=dark');
+    expect(frame.getAttribute('src')).toBe(reference.href + '?theme=dark&layout=shared');
     expect(fixture.nativeElement.textContent).toContain('not live service health');
-    expect(fixture.nativeElement.querySelectorAll('button')).toHaveLength(0);
+    expect(fixture.nativeElement.textContent).toContain('Reference version: operations/test.1');
+    expect(fixture.nativeElement.querySelector('.reference-toolbar a').textContent).toContain(
+      'Open full reference (new tab)',
+    );
+    expect(fixture.nativeElement.querySelectorAll('.workspace-content button')).toHaveLength(0);
+  });
+  it('loads the dedicated Local setup document through the same protected reader', async () => {
+    TestBed.overrideProvider(ActivatedRoute, {
+      useValue: { snapshot: { data: { authorDocument: 'local-development' } } },
+    });
+    const localReference = {
+      ...reference,
+      id: 'local-development',
+      href: reference.href.replaceAll('operations-reference', 'local-development'),
+    };
+    load.mockResolvedValue(localReference);
+    const fixture = await create();
+    expect(load).toHaveBeenCalledWith('local-development');
+    expect(fixture.nativeElement.querySelector('h1').textContent).toBe('Local setup & development');
+    expect(fixture.nativeElement.querySelector('iframe').getAttribute('src')).toBe(
+      localReference.href + '?theme=light&layout=shared',
+    );
+    expect(fixture.nativeElement.querySelector('a[href="/author/local-development"][aria-current="page"]')).not.toBeNull();
+  });
+  it('keeps a section deep link on the protected parent page', async () => {
+    const previousUrl = location.pathname + location.search + location.hash;
+    history.replaceState(null, '', '/author/operations#repositories');
+    try {
+      const fixture = await create();
+      expect(fixture.nativeElement.querySelector('iframe').getAttribute('src')).toBe(
+        reference.href + '?theme=light&layout=shared',
+      );
+      const link = fixture.nativeElement.querySelector('.heading-outline a');
+      expect(link.getAttribute('href')).toBe('/author/operations#repositories');
+      expect(link.getAttribute('target')).toBeNull();
+    } finally {
+      history.replaceState(null, '', previousUrl);
+    }
+  });
+  it('sends an outline selection to the embedded document without opening another window', async () => {
+    const previousUrl = location.pathname + location.search + location.hash;
+    history.replaceState(null, '', '/author/operations');
+    try {
+      const fixture = await create();
+      const frame = fixture.nativeElement.querySelector('iframe') as HTMLIFrameElement;
+      const postMessage = vi.spyOn(frame.contentWindow!, 'postMessage');
+      const link = fixture.nativeElement.querySelector('.heading-outline a') as HTMLAnchorElement;
+      link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+      expect(postMessage).toHaveBeenCalledWith({
+        type: 'lookahead:author-document:anchor-request', version: 1,
+        documentId: 'operations-reference', anchor: 'repositories',
+      }, '*');
+    } finally {
+      history.replaceState(null, '', previousUrl);
+    }
   });
   it('keeps external references in the trusted parent with explicit new-tab labels', async () => {
     const fixture = await create();
-    const link = fixture.nativeElement.querySelector('a[href="https://example.test/repository"]');
+    const link = fixture.nativeElement.querySelector('a[href$="/docs/startup.md"]');
     expect(link.target).toBe('_blank');
     expect(link.rel).toBe('noopener noreferrer');
     expect(link.textContent).toContain('(new tab)');
-    expect(fixture.nativeElement.querySelector('details').open).toBe(false);
+    expect(fixture.nativeElement.querySelector('#runbooks-links')).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('a[href="https://github.com/example/repository"]'),
+    ).toBeNull();
+    expect(fixture.nativeElement.querySelector('#supporting-references')).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('a[href="/author/operations#runbooks-links"]'),
+    ).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('a[href="/author/operations#supporting-references"]'),
+    ).not.toBeNull();
+  });
+  it('sizes the shared document from a validated sandbox message', async () => {
+    const fixture = await create();
+    const frame = fixture.nativeElement.querySelector('iframe') as HTMLIFrameElement;
+    const sendHeight = (
+      origin: string,
+      data: unknown,
+      source: MessageEventSource | null = frame.contentWindow,
+    ) => {
+      window.dispatchEvent(new MessageEvent('message', { origin, source, data }));
+      fixture.detectChanges();
+    };
+    const height = {
+      type: 'lookahead:author-document:height',
+      version: 1,
+      documentId: 'operations-reference',
+      height: 1824.2,
+    };
+    sendHeight('null', height, window);
+    sendHeight('https://example.test', height);
+    sendHeight('null', { ...height, documentId: 'other-document' });
+    sendHeight('null', { ...height, height: 50_000 });
+    expect(frame.style.height).toBe('');
+    sendHeight('null', height);
+    expect(frame.style.height).toBe('1825px');
+    account.set({ accountId: 'author', authorPreview: false });
+    fixture.detectChanges();
+    sendHeight('null', { ...height, height: 2500 });
+    expect(fixture.nativeElement.querySelector('iframe')).toBeNull();
   });
   it.each(['expired', 'revoked'] as const)(
     'removes the iframe and links when access is %s',
@@ -101,7 +201,7 @@ describe('Operations author view', () => {
     const fixture = await create();
     expect(load).toHaveBeenCalledTimes(1);
     expect(fixture.nativeElement.textContent).toContain('not published yet');
-    fixture.nativeElement.querySelector('button').click();
+    fixture.nativeElement.querySelector('.workspace-content button').click();
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();

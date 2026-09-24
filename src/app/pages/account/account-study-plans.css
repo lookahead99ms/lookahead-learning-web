@@ -3,8 +3,18 @@
   min-width: 0;
 }
 .learning-summary {
+  position: relative;
   padding-block: 24px;
   border-block-start: 1px solid var(--line);
+}
+.learning-summary::before {
+  content: '';
+  position: absolute;
+  inset-block-start: -1px;
+  inset-inline-start: 0;
+  inline-size: 48px;
+  block-size: 2px;
+  background: var(--accent-strong);
 }
 h2,
 h3,
@@ -12,7 +22,8 @@ p {
   margin: 0;
 }
 h2 {
-  font-size: 1.25rem;
+  font-size: 1.35rem;
+  letter-spacing: -0.025em;
   line-height: 1.4;
 }
 h3 {

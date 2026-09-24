@@ -1,10 +1,15 @@
 <app-platform-header />
 <main id="main-content" class="account-page" [class.manage-account]="authenticated()">
   <section class="account-card" aria-labelledby="account-heading">
-    <p class="eyebrow">Your learning account</p>
-    <h1 id="account-heading">
-      {{ authenticated() ? 'Manage account' : signup() ? 'Create your account' : 'Welcome back' }}
-    </h1>
+    <header class="account-intro">
+      <p class="eyebrow">Your learning account</p>
+      <h1 id="account-heading">
+        {{ authenticated() ? 'Manage account' : signup() ? 'Create your account' : 'Welcome back' }}
+      </h1>
+      @if (authenticated()) {
+        <p class="account-intro-copy">Your profile, sign-ins, and learning plans in one place.</p>
+      }
+    </header>
     @if (authenticated()) {
       @for (account of [store.account()!]; track account.accountId) {
         <app-account-settings [returnTo]="returnTo()" />

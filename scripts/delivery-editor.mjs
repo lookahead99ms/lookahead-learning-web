@@ -165,7 +165,7 @@ async function readEvidence(file, itemId, evidenceId) {
 }
 
 /** A loopback-only companion for start:private, never part of the published app. */
-export async function startDeliveryEditor({ file, origins }) {
+export async function startDeliveryEditor({ file, origins, authorize }) {
   const token = randomBytes(32).toString('hex');
   let pending = Promise.resolve();
   async function mutate(payload, requestedId) {
@@ -233,6 +233,11 @@ export async function startDeliveryEditor({ file, origins }) {
         .map((value) => value.trim());
       if (forwarded.some((address) => !['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(address)))
         fail(403, 'Only loopback clients may use the editor.');
+      if (authorize) {
+        const status = await authorize(request);
+        if (status !== 200)
+          fail([401, 403].includes(status) ? status : 503, 'Local author access required.');
+      }
       const url = new URL(request.url, 'http://localhost');
       const path = url.pathname;
       if (request.method === 'GET' && path === '/__local/delivery/plan') {

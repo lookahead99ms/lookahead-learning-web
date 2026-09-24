@@ -144,29 +144,35 @@ export class Landing {
     animations.forEach((animation) => animation.cancel());
   }
 
+  // A naturally finished dissolve leaves the outgoing slide at opacity zero.
+  // Cancelling it here would briefly restore opacity one before that slide is
+  // hidden, producing a visible flash. Clear tracking without cancelling.
+  private completeTransition(transitionId: number): void {
+    if (transitionId !== this.transitionId) return;
+    this.outgoingSlide.set(null);
+    this.animations = [];
+  }
+
+  // direction is unused while the dissolve transition is active. Restore the
+  // translateX keyframes below (using `direction`) to bring back the
+  // slide-from-right/left motion.
   private animateTransition(previous: number, next: number, direction: number): void {
+    void direction;
     if (this.reducedMotion() || this.document.hidden) return;
     const slides = this.heroSlides?.nativeElement.querySelectorAll<HTMLElement>('.hero-slide');
     const outgoing = slides?.[previous];
     const incoming = slides?.[next];
-    const panel = incoming?.querySelector<HTMLElement>('.hero-visual');
-    if (!outgoing?.animate || !incoming?.animate || !panel?.animate) return;
+    if (!outgoing?.animate || !incoming?.animate) return;
     const transitionId = this.transitionId;
-    const timing = { duration: 420, easing: 'cubic-bezier(.22,.61,.36,1)', fill: 'both' as const };
+    const timing = { duration: 920, easing: 'cubic-bezier(.22,.61,.36,1)', fill: 'both' as const };
     this.outgoingSlide.set(previous);
     this.animations = [
       outgoing.animate([{ opacity: 1 }, { opacity: 0 }], timing),
       incoming.animate([{ opacity: 0 }, { opacity: 1 }], timing),
-      panel.animate(
-        [{ transform: `translateX(${direction * 16}px)` }, { transform: 'translateX(0)' }],
-        { ...timing, easing: 'ease-out' },
-      ),
     ];
     // A cancelled transition must never settle a newer navigation.
     void Promise.all(this.animations.map((animation) => animation.finished))
-      .then(() => {
-        if (transitionId === this.transitionId) this.settleTransition();
-      })
+      .then(() => this.completeTransition(transitionId))
       .catch(() => {});
   }
 

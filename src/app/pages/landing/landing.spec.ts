@@ -14,7 +14,7 @@ describe('Landing', () => {
       finish: () => void;
       cancel: ReturnType<typeof vi.fn>;
     }> = [];
-    root.querySelectorAll<HTMLElement>('.hero-slide, .hero-visual').forEach((element) => {
+    root.querySelectorAll<HTMLElement>('.hero-slide').forEach((element) => {
       Object.defineProperty(element, 'animate', {
         value: (frames: Keyframe[], options: KeyframeAnimationOptions) => {
           let finish!: () => void;
@@ -81,7 +81,7 @@ describe('Landing', () => {
     expect(listeners.size).toBe(0);
   });
 
-  it('cross-dissolves slides and shifts only the incoming panel by the approved 16 pixels', async () => {
+  it('dissolves between slides without cancelling a naturally finished transition', async () => {
     vi.useFakeTimers();
     const fixture = TestBed.createComponent(Landing);
     fixture.detectChanges();
@@ -89,17 +89,12 @@ describe('Landing', () => {
     const animations = captureAnimations(root);
     root.querySelector<HTMLButtonElement>('[aria-label="Next hero slide"]')!.click();
     fixture.detectChanges();
-    expect(animations).toHaveLength(3);
-    expect(animations.slice(0, 2).map((item) => item.frames)).toEqual([
+    expect(animations).toHaveLength(2);
+    expect(animations.map((item) => item.frames)).toEqual([
       [{ opacity: 1 }, { opacity: 0 }],
       [{ opacity: 0 }, { opacity: 1 }],
     ]);
-    expect(animations[2].element.classList.contains('hero-visual')).toBe(true);
-    expect(animations[2].frames).toEqual([
-      { transform: 'translateX(16px)' },
-      { transform: 'translateX(0)' },
-    ]);
-    expect(animations.every((item) => item.options.duration === 420)).toBe(true);
+    expect(animations.every((item) => item.options.duration === 920)).toBe(true);
     expect(root.querySelectorAll('.hero-slide.transitioning')).toHaveLength(2);
     expect(root.querySelectorAll('.hero-slide:not([inert])')).toHaveLength(1);
     expect(
@@ -109,10 +104,17 @@ describe('Landing', () => {
     await vi.advanceTimersByTimeAsync(0);
     fixture.detectChanges();
     expect(root.querySelectorAll('.hero-slide.transitioning')).toHaveLength(0);
+    // A naturally finished transition is never cancelled: cancelling it would
+    // snap the outgoing panel's opacity back to 1 a frame before it is
+    // hidden, which is exactly the flicker this behavior avoids.
+    expect(animations.slice(0, 2).every((item) => item.cancel.mock.calls.length === 0)).toBe(
+      true,
+    );
     root.querySelector<HTMLButtonElement>('[aria-label="Previous hero slide"]')!.click();
-    expect(animations[5].frames[0]['transform']).toBe('translateX(-16px)');
+    expect(animations[2].frames).toEqual([{ opacity: 1 }, { opacity: 0 }]);
+    expect(animations[3].frames).toEqual([{ opacity: 0 }, { opacity: 1 }]);
     fixture.destroy();
-    expect(animations.every((item) => item.cancel.mock.calls.length === 1)).toBe(true);
+    expect(animations.slice(2).every((item) => item.cancel.mock.calls.length === 1)).toBe(true);
   });
 
   it('cancels rapid navigation without allowing stale completion to settle the current transition', async () => {
@@ -130,13 +132,13 @@ describe('Landing', () => {
       '3 of 5: Fieldnotes',
     );
     expect(root.querySelectorAll('.hero-slide.transitioning')).toHaveLength(2);
-    expect(animations.slice(3).every((item) => item.cancel.mock.calls.length === 0)).toBe(true);
+    expect(animations.slice(2).every((item) => item.cancel.mock.calls.length === 0)).toBe(true);
     root.querySelector<HTMLButtonElement>('[aria-label="Show slide 5: Journey Atlas"]')!.click();
     fixture.detectChanges();
     expect(root.querySelectorAll('.hero-slide:not([inert])')).toHaveLength(1);
     expect(root.querySelectorAll('.hero-slide.transitioning')).toHaveLength(2);
-    expect(animations.slice(0, 6).every((item) => item.cancel.mock.calls.length === 1)).toBe(true);
-    animations.slice(6).forEach((item) => item.finish());
+    expect(animations.slice(0, 4).every((item) => item.cancel.mock.calls.length === 1)).toBe(true);
+    animations.slice(4).forEach((item) => item.finish());
     await vi.advanceTimersByTimeAsync(0);
     fixture.detectChanges();
     expect(root.querySelectorAll('.hero-slide.transitioning')).toHaveLength(0);
@@ -166,12 +168,12 @@ describe('Landing', () => {
     fixture.detectChanges();
     expect(root.querySelectorAll('.hero-slide.transitioning')).toHaveLength(0);
     await vi.advanceTimersByTimeAsync(12000);
-    expect(animations).toHaveLength(3);
+    expect(animations).toHaveLength(2);
     hidden.mockReturnValue(false);
     document.dispatchEvent(new Event('visibilitychange'));
     await vi.advanceTimersByTimeAsync(6000);
     fixture.detectChanges();
-    expect(animations).toHaveLength(6);
+    expect(animations).toHaveLength(4);
     motionChanged({ matches: true } as MediaQueryListEvent);
     fixture.detectChanges();
     expect(root.querySelectorAll('.hero-slide.transitioning')).toHaveLength(0);
@@ -185,7 +187,7 @@ describe('Landing', () => {
     fixture.detectChanges();
     expect(root.querySelector('[aria-label="Play slideshow"]')).not.toBeNull();
     await vi.advanceTimersByTimeAsync(6000);
-    expect(animations).toHaveLength(6);
+    expect(animations).toHaveLength(4);
     hidden.mockRestore();
     fixture.destroy();
   });

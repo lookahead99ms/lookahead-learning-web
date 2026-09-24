@@ -188,6 +188,12 @@ describe('DeliveryPlanPage', () => {
 
     expect(content.getDeliveryPlan).toHaveBeenCalledOnce();
     expect(harness.routeNativeElement?.textContent).toContain('Read-only view');
+    expect(
+      harness.routeNativeElement?.querySelectorAll('.delivery-outline .heading-outline a'),
+    ).toHaveLength(3);
+    expect(
+      harness.routeNativeElement?.querySelector('.delivery-outline a[href$="#delivery-workspace"]'),
+    ).not.toBeNull();
     expect(harness.routeNativeElement?.querySelector('.editor-toolbar .editor-primary')).toBeNull();
     expect(harness.routeNativeElement?.querySelectorAll('.board-column')).toHaveLength(3);
     expect(harness.routeNativeElement?.textContent).toContain('Render a data-driven board');

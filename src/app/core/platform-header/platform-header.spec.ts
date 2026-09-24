@@ -51,27 +51,39 @@ describe('PlatformHeader account disclosure', () => {
     expect(fixture.nativeElement.querySelector('.sign-in-button')).not.toBeNull();
   });
 
-  it('preserves an existing protected return path on the sign-in page', () => {
+  it('does not repeat Sign in on authentication pages, including while restoring a session', () => {
     const router = TestBed.inject(Router);
     vi.spyOn(router, 'url', 'get').mockReturnValue('/sign-in?returnTo=%2Fauthor');
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.sign-in-button')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.avatar-trigger-btn')).toBeNull();
+    TestBed.inject(StudyPlanAccount).account.set({
+      accountId: 'test', username: 'test@example.test', displayName: 'Test Learner', topicGrants: [],
+    });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.sign-in-button')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.avatar-trigger-btn')).not.toBeNull();
+  });
+
+  it.each(['/sign-in/choose', '/sign-up'])(
+    'does not repeat authentication actions in the header on %s',
+    (url) => {
+      vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue(url);
+      const fixture = TestBed.createComponent(PlatformHeader);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.sign-in-button')).toBeNull();
+    },
+  );
+
+  it('preserves a protected return path when the header Sign in link appears elsewhere', () => {
+    vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue('/account?returnTo=%2Fauthor');
     const fixture = TestBed.createComponent(PlatformHeader);
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.sign-in-button').getAttribute('href')).toBe(
       '/sign-in?returnTo=%2Fauthor',
     );
   });
-
-  it.each(['/sign-in', '/sign-up', '/account'])(
-    'uses the homepage when %s has no explicit return destination',
-    (url) => {
-      vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue(url);
-      const fixture = TestBed.createComponent(PlatformHeader);
-      fixture.detectChanges();
-      expect(fixture.nativeElement.querySelector('.sign-in-button').getAttribute('href')).toBe(
-        '/sign-in?returnTo=%2F',
-      );
-    },
-  );
 
   it('exposes the account panel as a labelled disclosure', () => {
     TestBed.inject(StudyPlanAccount).account.set({
@@ -233,7 +245,7 @@ describe('PlatformHeader account disclosure', () => {
     accounts.account.update((account) => ({ ...account!, authorPreview: true }));
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.author-account-links')?.textContent).toContain(
-      'Author previews',
+      'Author Previews',
     );
   });
 
@@ -274,23 +286,86 @@ describe('PlatformHeader account disclosure', () => {
     fixture.detectChanges();
     const menu = fixture.nativeElement.querySelector('#account-menu') as HTMLElement;
     const sectionLabel = menu.querySelector('a[href="/author/previews"]')!;
-    expect(sectionLabel.textContent?.trim()).toBe('Author previews');
+    expect(sectionLabel.textContent?.trim()).toBe('Author Previews');
     expect(sectionLabel.tagName).toBe('A');
     expect(menu.querySelector('.author-account-links')?.getAttribute('aria-label')).toBe(
       'Author tools',
     );
     expect(menu.textContent!.indexOf('Support and feedback')).toBeLessThan(
-      menu.textContent!.indexOf('Author previews'),
+      menu.textContent!.indexOf('Author Previews'),
     );
-    expect(menu.textContent!.indexOf('Architecture')).toBeLessThan(
-      menu.textContent!.indexOf('Sign out'),
-    );
+    const authorLinks = menu.querySelector('.author-account-links')!;
+    expect(
+      [
+        ...authorLinks.querySelectorAll(
+          ':scope > a, :scope > .author-documentation-group > button',
+        ),
+      ].map((item) => item.textContent?.trim()),
+    ).toEqual(['Author Previews', 'Delivery Plan', 'Documentation']);
+    expect(menu.querySelector('.author-account-links a[href="/author"]')).toBeNull();
     expect(menu.querySelector('.author-account-links a[href="/delivery-plan"]')).not.toBeNull();
-    expect(menu.querySelector('.author-account-links a[href="/author/api"]')).not.toBeNull();
-    expect(menu.querySelector('a[href="/author/architecture"]')).not.toBeNull();
+    const documentation = menu.querySelector('#account-documentation-toggle') as HTMLButtonElement;
+    expect(documentation.getAttribute('aria-expanded')).toBe('false');
+    expect(menu.querySelector('#account-documentation-links')?.hasAttribute('hidden')).toBe(true);
+    documentation.click();
+    fixture.detectChanges();
+    expect(documentation.getAttribute('aria-expanded')).toBe('true');
+    expect(
+      [...menu.querySelectorAll('#account-documentation-links a')].map((link) =>
+        link.getAttribute('href'),
+      ),
+    ).toEqual([
+      '/author/architecture',
+      '/author/local-development',
+      '/author/api',
+      '/author/operations',
+    ]);
     expect(menu.textContent).not.toContain('Mock interviews');
     expect(menu.textContent).not.toContain('Previews/unpublished work');
     expect(menu.querySelectorAll('a[href*="localhost"], a[href*="127.0.0.1"]')).toHaveLength(0);
+  });
+
+  it('opens Documentation on document routes and gives inner Escape priority', async () => {
+    vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue('/author/operations');
+    const store = TestBed.inject(StudyPlanAccount);
+    store.account.set({
+      accountId: 'test',
+      username: 'author@example.test',
+      displayName: 'Author',
+      authorPreview: true,
+      topicGrants: [],
+    });
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    const accountTrigger = fixture.nativeElement.querySelector(
+      '.avatar-trigger-btn',
+    ) as HTMLButtonElement;
+    accountTrigger.click();
+    fixture.detectChanges();
+    const documentation = fixture.nativeElement.querySelector(
+      '#account-documentation-toggle',
+    ) as HTMLButtonElement;
+    expect(documentation.getAttribute('aria-expanded')).toBe('true');
+    expect(documentation.textContent).toContain('Current section');
+    const current = fixture.nativeElement.querySelector(
+      '#account-documentation-links a[aria-current="page"]',
+    ) as HTMLAnchorElement;
+    expect(current.getAttribute('href')).toBe('/author/operations');
+    current.focus();
+    current.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
+    );
+    fixture.detectChanges();
+    expect(documentation.getAttribute('aria-expanded')).toBe('false');
+    expect(fixture.nativeElement.querySelector('#account-menu')).not.toBeNull();
+    expect(document.activeElement).toBe(documentation);
+    documentation.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
+    );
+    fixture.detectChanges();
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    expect(fixture.nativeElement.querySelector('#account-menu')).toBeNull();
+    expect(document.activeElement).toBe(accountTrigger);
   });
 
   it('returns focus to the account trigger when Escape closes the panel', async () => {

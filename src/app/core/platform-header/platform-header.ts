@@ -23,6 +23,11 @@ import {
   architecturePreviewUrl,
   apiReferencePreviewUrl,
 } from '../author-preview-config';
+import {
+  authorDocumentationLinks,
+  authorWorkspaceLinks,
+  isAuthorDocumentationRoute,
+} from '../author-workspace-nav/author-workspace-links';
 
 export function accountTriggerLabel(displayName: string | null | undefined): string {
   const name = displayName?.trim().replace(/\s+/g, ' ');
@@ -451,11 +456,46 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
       .dropdown-item-unavailable small {
         font-size: 0.72rem;
       }
-      .author-section-title {
-        padding: 8px 20px;
+      .author-documentation-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        width: 100%;
+        border: 0;
+        background: transparent;
+        text-align: start;
+        font: inherit;
+        cursor: pointer;
+      }
+      .author-documentation-toggle small {
         color: var(--text-subtle);
-        font-size: 0.78rem;
-        font-weight: 750;
+        font-size: 0.7rem;
+        font-weight: 650;
+      }
+      .author-documentation-links {
+        display: flex;
+        flex-direction: column;
+        margin: 0;
+        padding: 0 0 0 12px;
+        list-style: none;
+      }
+      .author-documentation-links[hidden] {
+        display: none;
+      }
+      .author-documentation-links .dropdown-item-link {
+        display: block;
+      }
+      .author-documentation-chevron {
+        width: 8px;
+        height: 8px;
+        flex: 0 0 auto;
+        border-inline-end: 2px solid currentColor;
+        border-bottom: 2px solid currentColor;
+        transform: rotate(45deg);
+      }
+      .author-documentation-toggle[aria-expanded='true'] .author-documentation-chevron {
+        transform: rotate(225deg);
       }
       .user-display-name {
         overflow-wrap: anywhere;
@@ -716,10 +756,17 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
 export class PlatformHeader implements AfterViewInit, OnDestroy {
   protected readonly architectureHref = architecturePreviewUrl(inject(AUTHOR_PREVIEWS_BASE_URL));
   protected readonly apiReferenceHref = apiReferencePreviewUrl(inject(AUTHOR_PREVIEWS_BASE_URL));
+  protected readonly authorWorkspaceLinks = authorWorkspaceLinks;
+  protected readonly authorDocumentationLinks = authorDocumentationLinks;
   protected readonly accounts = inject(StudyPlanAccount);
   protected readonly accountLabel = computed(() =>
     accountTriggerLabel(this.accounts.account()?.displayName),
   );
+  protected onAuthenticationPage(): boolean {
+    return ['/sign-in', '/sign-in/choose', '/sign-up'].includes(
+      this.router.url.split(/[?#]/, 1)[0],
+    );
+  }
   protected accountReturn(): string {
     const route = this.router.url.split(/[?#]/)[0];
     if (['/sign-in', '/sign-up', '/account'].includes(route)) {
@@ -766,6 +813,25 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
     this.profileMenuOpen.set(false);
   }
   protected readonly profileMenuOpen = signal(false);
+  protected readonly accountDocumentationOpen = signal(false);
+  protected readonly onDocumentationPage = () => isAuthorDocumentationRoute(this.router.url);
+  protected isCurrentAuthorDocument(href: string): boolean {
+    return this.router.url.split(/[?#]/, 1)[0] === href;
+  }
+
+  protected toggleAccountDocumentation(): void {
+    this.accountDocumentationOpen.update((open) => !open);
+  }
+
+  protected closeAccountDocumentationOnEscape(event: Event): void {
+    if (!this.accountDocumentationOpen()) return;
+    event.preventDefault();
+    event.stopPropagation();
+    this.accountDocumentationOpen.set(false);
+    this.elementRef.nativeElement
+      .querySelector<HTMLButtonElement>('#account-documentation-toggle')
+      ?.focus();
+  }
   protected readonly signingOut = signal(false);
   protected readonly signOutError = signal('');
 
@@ -1066,7 +1132,9 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
   protected toggleProfileMenu(): void {
     this.navigation?.close();
     this.closeSearchPalette(false);
-    this.profileMenuOpen.update((open) => !open);
+    const willOpen = !this.profileMenuOpen();
+    if (willOpen) this.accountDocumentationOpen.set(this.onDocumentationPage());
+    this.profileMenuOpen.set(willOpen);
   }
 
   @HostListener('document:keydown.escape')

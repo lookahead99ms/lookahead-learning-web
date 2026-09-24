@@ -83,6 +83,10 @@ describe('Author API reference', () => {
     );
     expect(frame.getAttribute('sandbox')).toBe('allow-scripts');
     expect(frame.title).toBe('Backend API reference');
+    expect(root.querySelector('.workspace-sidebar h1')?.textContent).toBe('API reference');
+    expect(root.querySelector('.workspace-sidebar')).not.toBeNull();
+    expect(root.querySelector('a[href="/author/api#start-testing"]')).not.toBeNull();
+    expect(root.querySelector('a[href="/author/api#start-testing"]')?.getAttribute('target')).toBeNull();
     const fullPage = root.querySelector<HTMLAnchorElement>('a[target="_blank"]')!;
     expect(fullPage.getAttribute('href')).toBe(
       `${base}preview-directory/api/index.html?theme=light`,
@@ -94,6 +98,55 @@ describe('Author API reference', () => {
     expect(frame.getAttribute('src')).toBe(
       `${base}preview-directory/api/index.html?theme=dark&layout=shared`,
     );
+  });
+
+  it('accepts a bounded height only from the active sandboxed API document', async () => {
+    const fixture = await loaded();
+    const frame = fixture.nativeElement.querySelector('iframe') as HTMLIFrameElement;
+    const height = {
+      type: 'lookahead:author-document:height',
+      version: 1,
+      documentId: 'api-reference',
+      height: 4210.4,
+    };
+    const send = (
+      origin: string,
+      data: unknown,
+      source: MessageEventSource | null = frame.contentWindow,
+    ) => {
+      window.dispatchEvent(new MessageEvent('message', { origin, source, data }));
+      fixture.detectChanges();
+    };
+    send('null', height, window);
+    send('https://example.test', height);
+    send('null', { ...height, height: 50001 });
+    expect(frame.style.height).toBe('');
+    send('null', height);
+    expect(frame.style.height).toBe('4211px');
+    send('null', { ...height, height: 37467 });
+    expect(frame.style.height).toBe('37467px');
+  });
+
+  it('routes a known in-article link through the parent page', async () => {
+    const fixture = await loaded();
+    const frame = fixture.nativeElement.querySelector('iframe') as HTMLIFrameElement;
+    const originalUrl = location.pathname + location.search + location.hash;
+    const postMessage = vi.spyOn(frame.contentWindow!, 'postMessage');
+    try {
+      history.replaceState(null, '', '/author/api');
+      window.dispatchEvent(new MessageEvent('message', {
+        origin: 'null', source: frame.contentWindow,
+        data: { type: 'lookahead:author-document:navigate', version: 1,
+          documentId: 'api-reference', anchor: 'start-testing' },
+      }));
+      expect(location.pathname + location.hash).toBe('/author/api#start-testing');
+      expect(postMessage).toHaveBeenCalledWith({
+        type: 'lookahead:author-document:anchor-request', version: 1,
+        documentId: 'api-reference', anchor: 'start-testing',
+      }, '*');
+    } finally {
+      history.replaceState(null, '', originalUrl);
+    }
   });
 
   it('keeps downloads in the authenticated parent and within the API directory', async () => {
@@ -114,7 +167,7 @@ describe('Author API reference', () => {
       `${base}preview-directory/api/http/identity.http`,
       `${base}preview-directory/api/credentials.md`,
     ]);
-    expect(fixture.nativeElement.querySelector('details').open).toBe(false);
+    expect(fixture.nativeElement.querySelector('#api-downloads')).not.toBeNull();
   });
 
   it('groups the complete client kit and preserves all existing reference downloads', async () => {
@@ -148,7 +201,7 @@ describe('Author API reference', () => {
     expect(root.querySelectorAll('a[download]')).toHaveLength(16);
     expect(
       [...root.querySelectorAll('.download-groups section')].map((section) => ({
-        title: section.querySelector('h2')?.textContent?.trim(),
+        title: section.querySelector('h3')?.textContent?.trim(),
         count: section.querySelectorAll('a[download]').length,
       })),
     ).toEqual([

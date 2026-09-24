@@ -29,8 +29,13 @@ describe('AuthorPage', () => {
     }).compileComponents();
     const fixture = TestBed.createComponent(AuthorPage);
     fixture.detectChanges();
-    const links = [...fixture.nativeElement.querySelectorAll('main a')] as HTMLAnchorElement[];
+    const links = [
+      ...fixture.nativeElement.querySelectorAll('.author-content a'),
+    ] as HTMLAnchorElement[];
     expect(links).toHaveLength(15);
+    expect(
+      fixture.nativeElement.querySelectorAll('.author-outline .heading-outline a'),
+    ).toHaveLength(2);
     expect(links.find((a) => a.textContent?.includes('API reference'))?.getAttribute('href')).toBe(
       '/author/api',
     );

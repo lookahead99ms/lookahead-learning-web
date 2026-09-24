@@ -1,159 +1,46 @@
 <app-platform-header />
 <main id="main-content" class="preview-page" [class.architecture-layout]="architectureOnly">
   @if (architectureOnly) {
-    <header class="architecture-toolbar">
-      <div>
-        <p class="eyebrow">Local author workspace</p>
-        <h1>Architecture</h1>
-      </div>
-      <nav aria-label="Architecture workspace actions">
-        <a routerLink="/author/previews">All author previews</a>
-        @if (architectureDocumentHref(); as documentHref) {
-          <a class="open-document" [href]="documentHref" target="_blank" rel="noopener noreferrer">
-            Open full-page document <span>(new tab)</span>
-          </a>
-        }
-      </nav>
-    </header>
-  } @else {
-    <header>
-      <p class="eyebrow">Local author workspace</p>
-      <h1>{{ title }}</h1>
-      <p class="lede">
-        Revisit the latest design work, compare themes, and explore earlier iterations.
-      </p>
-      <p class="context-note">
-        Private local review · Opening a preview does not change the live application.
-      </p>
-    </header>
-  }
-  @if (!architectureOnly && accounts.account()?.authorPreview && !accounts.sessionExpired()) {
-    <app-author-review-packet />
-  }
-  @if (!accounts.account()?.authorPreview || accounts.sessionExpired()) {
-    <section class="state-panel">
-      <h2>Author access required</h2>
-      <p>Sign in with an account that has author access.</p>
-    </section>
-  } @else if (state() === 'disabled') {
-    <section class="state-panel">
-      <h2>Previews are not connected</h2>
-      <p>This application has no private preview service configured.</p>
-    </section>
-  } @else if (state() === 'loading') {
-    <p role="status" class="state-panel">Loading author previews…</p>
-  } @else if (state() === 'error') {
-    <section class="state-panel" role="alert">
-      <h2>Previews are unavailable</h2>
-      <p>The private preview service could not be loaded. Try again when it is available.</p>
-      <button type="button" (click)="load()">Try again</button>
-    </section>
-  } @else {
-    @if (!architectureOnly) {
-      <div class="filters">
-        <label
-          >Find a preview<input
-            type="search"
-            [value]="query()"
-            (input)="query.set($any($event.target).value)"
-            placeholder="Search collections or versions"
-        /></label>
-        <label
-          >Collection<select
-            [value]="groupFilter()"
-            (change)="groupFilter.set($any($event.target).value)"
-          >
-            <option value="">All collections</option>
-            @for (group of groupNames(); track group) {
-              <option [value]="group">{{ group }}</option>
-            }
-          </select></label
-        >
-      </div>
-      <p class="result-count" role="status">
-        {{ resultCount() }} of {{ collections().length }} collections ·
-        {{ entries().length }} preserved previews
-      </p>
-      <p class="context-note">
-        Featured means current review focus. Selection status is shown separately. Preview links
-        open in a new tab.
-      </p>
-      @for (collection of visibleCollections(); track collection.id) {
-        <section class="preview-group" [attr.aria-label]="collection.title">
-          <div class="collection-heading">
-            <h2>{{ collection.title }}</h2>
-            <p>{{ collection.summary }}</p>
-          </div>
-          <article class="featured-preview">
-            <p class="eyebrow">Featured for review</p>
-            <h3>{{ collection.featured.title }}</h3>
-            <p class="featured-reason">{{ collection.featuredReason }}</p>
-            <p class="review-status">Selection: {{ collection.featured.selectionLabel }}</p>
-            @if (collection.featured.note) {
-              <p class="context-note">{{ collection.featured.note }}</p>
-            }
-            <div class="preview-links">
-              @for (link of collection.featured.links; track link.href) {
-                <a
-                  [href]="link.href"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  [attr.aria-label]="
-                    collection.featured.title + ': ' + link.label + ' (opens in a new tab)'
-                  "
-                  >{{ link.label }}</a
-                >
-              }
-              @if (!collection.featured.available || !collection.featured.links.length) {
-                <span>Preview unavailable</span>
-              }
-            </div>
-          </article>
-          @if (collection.history.length) {
-            <details class="collection-history" [open]="!!query()">
-              <summary>
-                Earlier versions and alternatives <span>{{ collection.history.length }}</span>
-              </summary>
-              <p class="context-note">{{ collection.chronologyNote }}</p>
-              <ul>
-                @for (entry of collection.history; track entry.id) {
-                  <li>
-                    <div class="entry-copy">
-                      <h3>{{ entry.title }}</h3>
-                      <p>Selection: {{ entry.selectionLabel }}</p>
-                    </div>
-                    <div class="preview-links">
-                      @for (link of entry.links; track link.href) {
-                        <a
-                          [href]="link.href"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          [attr.aria-label]="
-                            entry.title + ': ' + link.label + ' (opens in a new tab)'
-                          "
-                          >{{ link.label }}</a
-                        >
-                      }
-                      @if (!entry.available || !entry.links.length) {
-                        <span>Preview unavailable</span>
-                      }
-                    </div>
-                  </li>
-                }
-              </ul>
-            </details>
-          }
+    <aside class="workspace-sidebar">
+      <app-author-workspace-nav
+        pageTitle="Architecture"
+        pageId="architecture"
+        [outline]="architectureOutline()"
+        (embeddedSectionSelected)="onEmbeddedSectionSelected($event)"
+      />
+    </aside>
+    <div class="workspace-content">
+      @if (!accounts.account()?.authorPreview || accounts.sessionExpired()) {
+        <section class="state-panel">
+          <h2>Author access required</h2>
+          <p>Sign in with an account that has author access.</p>
         </section>
-      } @empty {
-        <p class="state-panel">No previews match your search.</p>
-      }
-    } @else {
-      @if (architectureDocumentUrl(); as documentUrl) {
+      } @else if (state() === 'disabled') {
+        <section class="state-panel">
+          <h2>Previews are not connected</h2>
+          <p>This application has no private preview service configured.</p>
+        </section>
+      } @else if (state() === 'loading') {
+        <p role="status" class="state-panel">Loading author previews…</p>
+      } @else if (state() === 'error') {
+        <section class="state-panel" role="alert">
+          <h2>Previews are unavailable</h2>
+          <p>The private preview service could not be loaded. Try again when it is available.</p>
+          <button type="button" (click)="load()">Try again</button>
+        </section>
+      } @else if (architectureDocumentUrl(); as documentUrl) {
+        <div class="reference-toolbar">
+          <p>Platform structure and current local boundaries</p>
+          <a [href]="architectureDocumentHref()!" target="_blank" rel="noopener noreferrer"
+            >Open full-page document <span>(new tab)</span></a
+          >
+        </div>
         <section class="architecture-workspace" aria-label="Canonical platform architecture">
           <iframe
             #architectureFrame
             class="architecture-frame"
             [src]="documentUrl"
+            [style.height.px]="architectureFrameHeight()"
             title="Canonical content model and platform architecture"
             sandbox="allow-scripts"
             (load)="connectDocument(architectureFrame)"
@@ -162,7 +49,151 @@
       } @else {
         <p class="state-panel">The architecture preview is not available in this inventory.</p>
       }
-    }
+    </div>
+  } @else {
+    <aside class="preview-outline">
+      <app-author-workspace-nav
+        pageTitle="Author previews"
+        pageId="previews"
+        [outline]="previewOutline()"
+      />
+    </aside>
+    <div class="preview-content">
+      <header>
+        <p class="eyebrow">Private design review</p>
+        <h2 class="preview-intro-heading">Explore the current work.</h2>
+        <p class="lede">
+          Revisit the latest design work, compare themes, and explore earlier iterations.
+        </p>
+        <p class="context-note">
+          Private local review · Opening a preview does not change the live application.
+        </p>
+      </header>
+      @if (accounts.account()?.authorPreview && !accounts.sessionExpired()) {
+        <div id="study-plan-review"><app-author-review-packet /></div>
+      }
+      @if (!accounts.account()?.authorPreview || accounts.sessionExpired()) {
+        <section class="state-panel">
+          <h2>Author access required</h2>
+          <p>Sign in with an account that has author access.</p>
+        </section>
+      } @else if (state() === 'disabled') {
+        <section class="state-panel">
+          <h2>Previews are not connected</h2>
+          <p>This application has no private preview service configured.</p>
+        </section>
+      } @else if (state() === 'loading') {
+        <p role="status" class="state-panel">Loading author previews…</p>
+      } @else if (state() === 'error') {
+        <section class="state-panel" role="alert">
+          <h2>Previews are unavailable</h2>
+          <p>The private preview service could not be loaded. Try again when it is available.</p>
+          <button type="button" (click)="load()">Try again</button>
+        </section>
+      } @else {
+        <div class="filters" id="preview-filters">
+          <label
+            >Find a preview<input
+              type="search"
+              [value]="query()"
+              (input)="query.set($any($event.target).value)"
+              placeholder="Search collections or versions"
+          /></label>
+          <label
+            >Collection<select
+              [value]="groupFilter()"
+              (change)="groupFilter.set($any($event.target).value)"
+            >
+              <option value="">All collections</option>
+              @for (group of groupNames(); track group) {
+                <option [value]="group">{{ group }}</option>
+              }
+            </select></label
+          >
+        </div>
+        <p class="result-count" role="status">
+          {{ resultCount() }} of {{ collections().length }} collections ·
+          {{ entries().length }} preserved previews
+        </p>
+        <p class="context-note">
+          Featured means current review focus. Selection status is shown separately. Preview links
+          open in a new tab.
+        </p>
+        @for (collection of visibleCollections(); track collection.id) {
+          <section
+            class="preview-group"
+            [id]="'preview-' + collection.id"
+            [attr.aria-label]="collection.title"
+          >
+            <div class="collection-heading">
+              <h2>{{ collection.title }}</h2>
+              <p>{{ collection.summary }}</p>
+            </div>
+            <article class="featured-preview">
+              <p class="eyebrow">Featured for review</p>
+              <h3>{{ collection.featured.title }}</h3>
+              <p class="featured-reason">{{ collection.featuredReason }}</p>
+              <p class="review-status">Selection: {{ collection.featured.selectionLabel }}</p>
+              @if (collection.featured.note) {
+                <p class="context-note">{{ collection.featured.note }}</p>
+              }
+              <div class="preview-links">
+                @for (link of collection.featured.links; track link.href) {
+                  <a
+                    [href]="link.href"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    [attr.aria-label]="
+                      collection.featured.title + ': ' + link.label + ' (opens in a new tab)'
+                    "
+                    >{{ link.label }}</a
+                  >
+                }
+                @if (!collection.featured.available || !collection.featured.links.length) {
+                  <span>Preview unavailable</span>
+                }
+              </div>
+            </article>
+            @if (collection.history.length) {
+              <details class="collection-history" [open]="!!query()">
+                <summary>
+                  Earlier versions and alternatives <span>{{ collection.history.length }}</span>
+                </summary>
+                <p class="context-note">{{ collection.chronologyNote }}</p>
+                <ul>
+                  @for (entry of collection.history; track entry.id) {
+                    <li>
+                      <div class="entry-copy">
+                        <h3>{{ entry.title }}</h3>
+                        <p>Selection: {{ entry.selectionLabel }}</p>
+                      </div>
+                      <div class="preview-links">
+                        @for (link of entry.links; track link.href) {
+                          <a
+                            [href]="link.href"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            [attr.aria-label]="
+                              entry.title + ': ' + link.label + ' (opens in a new tab)'
+                            "
+                            >{{ link.label }}</a
+                          >
+                        }
+                        @if (!entry.available || !entry.links.length) {
+                          <span>Preview unavailable</span>
+                        }
+                      </div>
+                    </li>
+                  }
+                </ul>
+              </details>
+            }
+          </section>
+        } @empty {
+          <p class="state-panel">No previews match your search.</p>
+        }
+      }
+    </div>
   }
 </main>
 @if (architectureDocumentHref(); as documentHref) {

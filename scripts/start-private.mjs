@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process';
+import { request as httpRequest } from 'node:http';
 import { watch } from 'node:fs';
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
@@ -85,9 +86,28 @@ const proxy = await loadLocalBaseProxy(repositoryRoot, baseProxyConfig);
 if (protectedWorking) assertWorkingGatewayProxy(proxy);
 await syncPrivateContent();
 
+function authorizeWorkingAuthor(request) {
+  return new Promise((resolveStatus) => {
+    const check = httpRequest({
+      hostname: '127.0.0.1',
+      port: 4350,
+      method: 'HEAD',
+      path: '/bff/author/previews/preview-directory/manifest.json',
+      headers: { host: '127.0.0.1:4301', cookie: request.headers.cookie ?? '' },
+    }, (response) => {
+      response.resume();
+      resolveStatus(response.statusCode);
+    });
+    check.setTimeout(10000, () => check.destroy());
+    check.on('error', () => resolveStatus(503));
+    check.end();
+  });
+}
+
 const editor = await startDeliveryEditor({
   file: resolve(contentRoot, 'delivery/delivery-plan.json'),
   origins: [`http://localhost:${port}`, `http://127.0.0.1:${port}`],
+  authorize: protectedWorking ? authorizeWorkingAuthor : undefined,
 });
 const proxyDirectory = resolve(repositoryRoot, '.angular/delivery-editor');
 const proxyFile = resolve(proxyDirectory, `proxy-${process.pid}.json`);

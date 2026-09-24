@@ -1,64 +1,66 @@
 <app-platform-header />
 <main id="main-content" class="api-page">
-  <header class="api-toolbar">
-    <div>
-      <p class="eyebrow">Local author workspace</p>
-      <h1>API reference</h1>
-    </div>
-    <nav aria-label="API workspace actions">
-      <a routerLink="/author/previews">All author previews</a>
-      <a routerLink="/author/architecture">Architecture</a>
-      @if (documentHref(); as href) {
-        <a [href]="href" target="_blank" rel="noopener noreferrer">
-          Open full-page reference <span>(new tab)</span>
-        </a>
+  <aside class="workspace-sidebar">
+    <app-author-workspace-nav pageTitle="API reference" pageId="api" [outline]="outline()" (embeddedSectionSelected)="onEmbeddedSectionSelected($event)" />
+  </aside>
+  <div class="workspace-content">
+    @if (!authorized()) {
+      <section class="state-panel">
+        <h2>Author access required</h2>
+        <p>Sign in with an account that has author access.</p>
+      </section>
+    } @else if (state() === 'disabled') {
+      <section class="state-panel">
+        <h2>API reference is not connected</h2>
+        <p>This application has no private preview service configured.</p>
+      </section>
+    } @else if (state() === 'loading') {
+      <p class="state-panel" role="status">Loading API reference…</p>
+    } @else if (state() === 'error') {
+      <section class="state-panel" role="alert">
+        <h2>API reference is unavailable</h2>
+        <p>The private preview inventory could not be loaded.</p>
+        <button type="button" (click)="load()">Try again</button>
+      </section>
+    } @else if (documentUrl(); as url) {
+      <div class="reference-toolbar">
+        <p>Backend contracts and local request workflows</p>
+        <a [href]="documentHref()!" target="_blank" rel="noopener noreferrer"
+          >Open full-page reference <span>(new tab)</span></a
+        >
+      </div>
+      <section class="api-workspace" aria-label="Backend API reference">
+        <iframe
+          #documentFrame
+          [src]="url"
+          [style.height.px]="documentHeight()"
+          title="Backend API reference"
+          sandbox="allow-scripts"
+        ></iframe>
+      </section>
+      @if (downloads().length) {
+        <section class="downloads" id="api-downloads" aria-labelledby="api-downloads-heading">
+          <h2 id="api-downloads-heading">Files and downloads</h2>
+          <nav class="download-groups" aria-label="API reference downloads">
+            @for (group of downloadGroups(); track group.id) {
+              <section [attr.aria-labelledby]="'downloads-' + group.id">
+                <h3 [id]="'downloads-' + group.id">{{ group.title }}</h3>
+                <div class="download-links">
+                  @for (link of group.links; track link.href) {
+                    <a [href]="link.href" download>{{ link.label }}</a>
+                  }
+                </div>
+              </section>
+            }
+          </nav>
+        </section>
       }
-    </nav>
-  </header>
-  @if (!authorized()) {
-    <section class="state-panel">
-      <h2>Author access required</h2>
-      <p>Sign in with an account that has author access.</p>
-    </section>
-  } @else if (state() === 'disabled') {
-    <section class="state-panel">
-      <h2>API reference is not connected</h2>
-      <p>This application has no private preview service configured.</p>
-    </section>
-  } @else if (state() === 'loading') {
-    <p class="state-panel" role="status">Loading API reference…</p>
-  } @else if (state() === 'error') {
-    <section class="state-panel" role="alert">
-      <h2>API reference is unavailable</h2>
-      <p>The private preview inventory could not be loaded.</p>
-      <button type="button" (click)="load()">Try again</button>
-    </section>
-  } @else if (documentUrl(); as url) {
-    @if (downloads().length) {
-      <details class="downloads">
-        <summary>Download API files</summary>
-        <nav class="download-groups" aria-label="API reference downloads">
-          @for (group of downloadGroups(); track group.id) {
-            <section [attr.aria-labelledby]="'downloads-' + group.id">
-              <h2 [id]="'downloads-' + group.id">{{ group.title }}</h2>
-              <div class="download-links">
-                @for (link of group.links; track link.href) {
-                  <a [href]="link.href" download>{{ link.label }}</a>
-                }
-              </div>
-            </section>
-          }
-        </nav>
-      </details>
+    } @else {
+      <section class="state-panel">
+        <h2>API reference is not available yet</h2>
+        <p>The private preview inventory has no published API reference.</p>
+        <button type="button" (click)="load()">Reload inventory</button>
+      </section>
     }
-    <section class="api-workspace" aria-label="Backend API reference">
-      <iframe [src]="url" title="Backend API reference" sandbox="allow-scripts"></iframe>
-    </section>
-  } @else {
-    <section class="state-panel">
-      <h2>API reference is not available yet</h2>
-      <p>The private preview inventory has no published API reference.</p>
-      <button type="button" (click)="load()">Reload inventory</button>
-    </section>
-  }
+  </div>
 </main>

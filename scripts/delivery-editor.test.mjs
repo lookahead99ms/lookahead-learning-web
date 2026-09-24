@@ -11,14 +11,14 @@ const source = JSON.parse(
   await readFile(resolve(root, 'demo-content/runtime/delivery/delivery-plan.json'), 'utf8'),
 );
 
-async function fixture(t) {
+async function fixture(t, authorize) {
   const base = resolve(root, '.angular/delivery-editor/tests');
   await mkdir(base, { recursive: true });
   const directory = await mkdtemp(`${base}/run-`);
   await mkdir(resolve(directory, 'runtime/delivery'), { recursive: true });
   const file = resolve(directory, 'runtime/delivery/delivery-plan.json');
   await writeFile(file, JSON.stringify(source));
-  const api = await startDeliveryEditor({ file, origins: ['http://localhost:4300'] });
+  const api = await startDeliveryEditor({ file, origins: ['http://localhost:4300'], authorize });
   t.after(async () => {
     await api.close();
     await rm(directory, { recursive: true, force: true });
@@ -58,6 +58,20 @@ async function fixture(t) {
   };
   return { request, item, file, directory };
 }
+
+test('protected editor checks the current author session for reads and writes', async (t) => {
+  let status = 401;
+  const { request, item, file } = await fixture(t, async () => status);
+  assert.equal((await request()).status, 401);
+  status = 403;
+  assert.equal((await request()).status, 403);
+  status = 200;
+  const initial = await request();
+  assert.equal(initial.status, 200);
+  status = 401;
+  assert.equal((await request('POST', '/work-items', { revision: initial.body.revision, item })).status, 401);
+  assert.equal(JSON.parse(await readFile(file, 'utf8')).workItems.length, source.workItems.length);
+});
 
 test('creates, edits, moves status and stage, and persists while preserving plan metadata', async (t) => {
   const { request, item, file } = await fixture(t);

@@ -272,7 +272,7 @@ describe('Author previews page', () => {
     expect(fixture.nativeElement.querySelector('[role="alert"]').textContent).toContain(
       'Previews are unavailable',
     );
-    fixture.nativeElement.querySelector('button').click();
+    fixture.nativeElement.querySelector('.state-panel button').click();
     http.expectOne(manifestUrl).flush(manifest());
     await fixture.whenStable();
     fixture.detectChanges();
@@ -311,9 +311,16 @@ describe('Author previews page', () => {
       '/bff/author/previews/architecture/index.html?theme=light&layout=shared',
     );
     expect(frame.getAttribute('sandbox')).toBe('allow-scripts');
+    const outlineLink = fixture.nativeElement.querySelector('.heading-outline a') as HTMLAnchorElement;
+    expect(outlineLink.getAttribute('href')).toBe('/author/architecture#platform-panel');
+    expect(outlineLink.getAttribute('target')).toBeNull();
     expect(fixture.nativeElement.classList.contains('architecture-page')).toBe(true);
-    const fullPageLink = fixture.nativeElement.querySelector('.open-document') as HTMLAnchorElement;
-    expect(fullPageLink.getAttribute('href')).toBe(frame.getAttribute('src'));
+    const fullPageLink = fixture.nativeElement.querySelector(
+      '.reference-toolbar a',
+    ) as HTMLAnchorElement;
+    expect(fullPageLink.getAttribute('href')).toBe(
+      '/bff/author/previews/architecture/index.html?theme=light',
+    );
     expect(fullPageLink.getAttribute('target')).toBe('_blank');
     expect(fullPageLink.getAttribute('rel')).toBe('noopener noreferrer');
     expect(fullPageLink.textContent).toContain('new tab');
@@ -323,13 +330,39 @@ describe('Author previews page', () => {
     expect(frame.getAttribute('src')).toBe(
       '/bff/author/previews/architecture/index.html?theme=dark&layout=shared',
     );
-    expect(fullPageLink.getAttribute('href')).toBe(frame.getAttribute('src'));
+    expect(fullPageLink.getAttribute('href')).toBe(
+      '/bff/author/previews/architecture/index.html?theme=dark',
+    );
 
     account.set({ authorPreview: false });
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('iframe')).toBeNull();
-    expect(fixture.nativeElement.querySelector('.open-document')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.reference-toolbar')).toBeNull();
     expect(fixture.nativeElement.textContent).toContain('Author access required');
+  });
+  it('uses only a bounded height report from the active Architecture frame', async () => {
+    TestBed.overrideProvider(ActivatedRoute, {
+      useValue: { snapshot: { data: { architectureOnly: true } } },
+    });
+    const fixture = await loaded();
+    const frame = fixture.nativeElement.querySelector('iframe') as HTMLIFrameElement;
+    const report = (origin: string, source: MessageEventSource | null, height: number) => {
+      window.dispatchEvent(new MessageEvent('message', {
+        origin,
+        source,
+        data: { type: 'lookahead:architecture:height', version: 1, height },
+      }));
+      fixture.detectChanges();
+    };
+    report('null', window, 2400);
+    report('https://outside.test', frame.contentWindow, 2400);
+    report('null', frame.contentWindow, 150_000);
+    expect(frame.style.height).toBe('');
+    report('null', frame.contentWindow, 2400.2);
+    expect(frame.style.height).toBe('2401px');
+    sessionExpired.set(true);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('iframe')).toBeNull();
   });
   it('preserves canonical query parameters and anchors and hides document actions on expiry', async () => {
     TestBed.overrideProvider(ActivatedRoute, {
@@ -343,7 +376,7 @@ describe('Author previews page', () => {
       .flush(manifest([architecture]));
     await fixture.whenStable();
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.open-document').getAttribute('href')).toBe(
+    expect(fixture.nativeElement.querySelector('.reference-toolbar a').getAttribute('href')).toBe(
       '/bff/author/previews/architecture/index.html?layout=standalone&view=model&theme=light#schema',
     );
     expect(fixture.nativeElement.querySelector('iframe').getAttribute('src')).toBe(
@@ -352,7 +385,7 @@ describe('Author previews page', () => {
     sessionExpired.set(true);
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('iframe')).toBeNull();
-    expect(fixture.nativeElement.querySelector('.open-document')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.reference-toolbar')).toBeNull();
   });
   it('embeds the real manifest URL in shared layout while keeping the full-page document standalone', async () => {
     TestBed.overrideProvider(ActivatedRoute, {
@@ -367,7 +400,7 @@ describe('Author previews page', () => {
     await fixture.whenStable();
     fixture.detectChanges();
     const frame = fixture.nativeElement.querySelector('iframe');
-    const link = fixture.nativeElement.querySelector('.open-document');
+    const link = fixture.nativeElement.querySelector('.reference-toolbar a');
     expect(frame.getAttribute('src')).toBe(
       '/bff/author/previews/architecture/index.html?theme=light&layout=shared',
     );

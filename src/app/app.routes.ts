@@ -21,6 +21,16 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'author/local-development',
+    canActivate: [authorGuard],
+    data: { authorDocument: 'local-development' },
+    providers: [{ provide: AUTHOR_DOCUMENTS_CLIENT, useExisting: AuthorDocumentsApi }],
+    loadComponent: () =>
+      import('./pages/author-operations/author-operations').then(
+        (page) => page.AuthorOperationsPage,
+      ),
+  },
+  {
     path: 'author/previews/study-plan',
     canActivate: [authorGuard],
     providers: [{ provide: AUTHOR_REVIEW_CLIENT, useExisting: AuthorReviewApi }],

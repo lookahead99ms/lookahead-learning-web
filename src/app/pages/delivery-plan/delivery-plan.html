@@ -10,7 +10,7 @@
       <p>Sign in with an account that has author access to view the delivery plan.</p>
     </section>
   } @else if (plan(); as deliveryPlan) {
-    <header class="delivery-hero">
+    <header class="delivery-hero" id="delivery-overview">
       <div class="hero-copy">
         <span class="hero-kicker">Local delivery control room</span>
         <h1>{{ deliveryPlan.title }}</h1>
@@ -31,7 +31,15 @@
       }
     </header>
 
-    <section class="delivery-metrics" aria-label="Delivery summary">
+    <aside class="delivery-outline">
+      <app-author-workspace-nav
+        pageTitle="Delivery plan"
+        pageId="delivery"
+        [headingLevel]="2"
+        [outline]="outline"
+      />
+    </aside>
+    <section class="delivery-metrics" id="delivery-summary" aria-label="Delivery summary">
       <article>
         <span>Completion</span><strong>{{ completionPercent() }}%</strong>
         <i><b [style.width.%]="completionPercent()"></b></i>
@@ -50,7 +58,7 @@
       </article>
     </section>
 
-    <section class="delivery-workspace">
+    <section class="delivery-workspace" id="delivery-workspace">
       <header class="workspace-toolbar">
         <nav class="view-tabs" aria-label="Delivery views">
           <button

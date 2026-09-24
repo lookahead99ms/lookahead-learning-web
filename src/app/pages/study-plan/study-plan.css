@@ -1697,8 +1697,8 @@ textarea {
 }
 .plan-card-focus ul {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
-  gap: 8px 20px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr));
+  gap: 10px 16px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1707,7 +1707,7 @@ textarea {
   position: relative;
   padding-inline-start: 16px;
   line-height: 1.4;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 .plan-card-focus li::before {
   position: absolute;

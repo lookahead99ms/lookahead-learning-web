@@ -3,6 +3,10 @@
 }
 
 .delivery-page {
+  display: grid;
+  grid-template-columns: minmax(210px, 240px) minmax(0, 1fr);
+  column-gap: 24px;
+  align-items: start;
   --delivery-ink: var(--text-strong);
   --delivery-body: var(--text-body);
   --delivery-line: var(--line);
@@ -29,6 +33,7 @@
 }
 
 .delivery-breadcrumbs {
+  grid-column: 1 / -1;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -49,8 +54,57 @@
 .delivery-metrics,
 .delivery-workspace {
   max-width: 1680px;
+  width: 100%;
   margin-right: auto;
   margin-left: auto;
+}
+
+.delivery-hero,
+.delivery-state {
+  grid-column: 1 / -1;
+}
+
+.delivery-hero,
+.delivery-metrics,
+.delivery-workspace {
+  scroll-margin-top: calc(var(--platform-header-height, 76px) + 16px);
+}
+
+.delivery-outline {
+  grid-column: 1;
+  grid-row: 3 / span 2;
+  align-self: start;
+  position: sticky;
+  top: calc(var(--platform-header-height, 76px) + 12px);
+  max-height: calc(100dvh - var(--platform-header-height, 76px) - 24px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.delivery-metrics,
+.delivery-workspace {
+  grid-column: 2;
+  max-width: none;
+}
+
+@media (max-width: 1100px) {
+  .delivery-page {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .delivery-outline,
+  .delivery-metrics,
+  .delivery-workspace {
+    grid-column: 1;
+  }
+
+  .delivery-outline {
+    grid-row: auto;
+    position: static;
+    max-height: min(55dvh, 520px);
+    overflow-y: auto;
+    margin-block: 16px;
+  }
 }
 
 .delivery-hero {
