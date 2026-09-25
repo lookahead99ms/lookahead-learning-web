@@ -1,6 +1,7 @@
 <app-platform-header />
 <main
   id="main-content"
+  [pageSidebarContext]="sidebarContext()"
   class="content-page reader-page"
   [class.harbor-learn]="pathId() === 'learn'"
   [class.focus-studio-page]="focusStudio() || studioPilot()"

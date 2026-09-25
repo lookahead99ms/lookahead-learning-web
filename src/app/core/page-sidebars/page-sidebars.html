@@ -1,0 +1,108 @@
+@if (enabled()) {
+  @if (overlay()) {
+    <button
+      class="sidebar-backdrop"
+      type="button"
+      aria-label="Close sidebar"
+      (click)="closeOverlay()"
+    ></button>
+  }
+  @if (showLeft()) {
+    <aside
+      id="page-sidebar-left"
+      class="page-sidebar left"
+      [class.open]="leftOpen()"
+      [class.docked]="leftDocked()"
+      [style.top.px]="headerBottom()"
+      [style.max-height]="'calc(100dvh - ' + (headerBottom() + 8) + 'px)'"
+      [attr.role]="leftOpen() && !leftDocked() ? 'dialog' : null"
+      [attr.aria-modal]="leftOpen() && !leftDocked() ? true : null"
+      aria-label="Page sections"
+    >
+      <app-sidebar-toggle
+        side="left"
+        [open]="leftOpen()"
+        controls="page-sidebar-left-content"
+        [label]="leftOpen() ? 'Close left sidebar' : 'Open left sidebar'"
+        (toggled)="toggle('left', $event)"
+      />
+      <div
+        id="page-sidebar-left-content"
+        class="sidebar-content"
+        [hidden]="!leftOpen()"
+        [attr.inert]="leftOpen() ? null : ''"
+      >
+        @if (!homepage()) {
+          <p class="platform-signature"><app-platform-signature /></p>
+          <p class="sidebar-title">{{ title() }}</p>
+        }
+        <nav aria-label="Page sections">
+          @for (section of sections(); track section.id) {
+            <a
+              [href]="href(section)"
+              [attr.aria-current]="currentId() === section.id ? 'location' : null"
+              (click)="follow($event, section)"
+              >{{ section.label }}</a
+            >
+          }
+        </nav>
+      </div>
+    </aside>
+  }
+  @if (showRight()) {
+    <aside
+      id="page-sidebar-right"
+      class="page-sidebar right"
+      [class.open]="rightOpen()"
+      [class.docked]="rightDocked()"
+      [style.top.px]="headerBottom()"
+      [style.max-height]="'calc(100dvh - ' + (headerBottom() + 8) + 'px)'"
+      [attr.role]="rightOpen() && !rightDocked() ? 'dialog' : null"
+      [attr.aria-modal]="rightOpen() && !rightDocked() ? true : null"
+      aria-label="Practice with this page"
+    >
+      <app-sidebar-toggle
+        side="right"
+        [open]="rightOpen()"
+        controls="page-sidebar-right-content"
+        [label]="rightOpen() ? 'Close right sidebar' : 'Open right sidebar'"
+        (toggled)="toggle('right', $event)"
+      />
+      <div
+        id="page-sidebar-right-content"
+        class="sidebar-content"
+        [hidden]="!rightOpen()"
+        [attr.inert]="rightOpen() ? null : ''"
+      >
+        <p class="sidebar-eyebrow">With this page</p>
+        @if (currentRecall(); as check) {
+          <h2>Quick recall</h2>
+          <p>{{ check.prompt }}</p>
+          <button
+            class="recall-reveal"
+            type="button"
+            [attr.aria-expanded]="answerOpen()"
+            aria-controls="sidebar-recall-answer"
+            (click)="answerOpen.set(!answerOpen())"
+          >
+            {{ answerOpen() ? 'Hide answer' : 'Reveal answer' }}
+          </button>
+          <div id="sidebar-recall-answer" [hidden]="!answerOpen()" [innerHTML]="check.answer"></div>
+          @if (recall().length > 1) {
+            <div class="recall-navigation">
+              <span>{{ recallIndex() + 1 }} of {{ recall().length }}</span
+              ><button type="button" (click)="nextRecall()">Next question</button>
+            </div>
+          }
+        }
+        @if (support().length) {
+          <nav aria-label="Practice on this page">
+            @for (section of support(); track section.id) {
+              <a [href]="href(section)" (click)="follow($event, section)">{{ section.label }}</a>
+            }
+          </nav>
+        }
+      </div>
+    </aside>
+  }
+}

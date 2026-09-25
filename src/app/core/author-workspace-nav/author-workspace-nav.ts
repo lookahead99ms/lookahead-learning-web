@@ -1,3 +1,4 @@
+import { PlatformSignature } from '../platform-signature/platform-signature';
 import { DOCUMENT } from '@angular/common';
 import {
   Component,
@@ -13,6 +14,7 @@ import {
   OnDestroy,
 } from '@angular/core';
 import { authorDocumentationLinks, authorWorkspaceLinks } from './author-workspace-links';
+import { SidebarToggle } from '../page-sidebars/sidebar-toggle';
 
 export interface AuthorOutlineItem {
   label: string;
@@ -27,11 +29,14 @@ let navigationInstance = 0;
 /** Shared author outline and direct navigation between protected workspace pages. */
 @Component({
   selector: 'app-author-workspace-nav',
-  imports: [],
+  imports: [PlatformSignature, SidebarToggle],
+  host: { '[class.sidebar-collapsed]': '!sidebarOpen()' },
   templateUrl: './author-workspace-nav.html',
   styleUrl: './author-workspace-nav.css',
 })
 export class AuthorWorkspaceNav implements OnChanges, AfterViewInit, OnDestroy {
+  protected readonly sidebarOpen = signal(true);
+  protected readonly sidebarContentId = `author-sidebar-content-${++navigationInstance}`;
   private readonly document = inject(DOCUMENT);
   @Input() pageTitle = '';
   @Input() pageId: AuthorWorkspacePageId | null = null;

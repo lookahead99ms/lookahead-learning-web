@@ -1,54 +1,69 @@
-<div class="workspace-heading">
-  <p class="eyebrow">Local author workspace</p>
-  @if (headingLevel === 1) {
-    <h1>{{ pageTitle }}</h1>
-  } @else {
-    <h2>{{ pageTitle }}</h2>
-  }
-  <ng-content select="[description]"></ng-content>
-</div>
-@if (outline.length) {
-  <nav class="heading-outline" [attr.aria-label]="pageTitle + ' outline'">
-    <p class="outline-label">On this page</p>
-    @for (item of outline; track item.href) {
-      <a
-        [href]="linkHref(item.href)"
-        [attr.aria-current]="sectionIsCurrent(item) ? 'location' : null"
-        (click)="followSection($event, item)"
-        >{{ item.label }}</a
-      >
+<app-sidebar-toggle
+  side="left"
+  [open]="sidebarOpen()"
+  [controls]="sidebarContentId"
+  [label]="sidebarOpen() ? 'Close left sidebar' : 'Open left sidebar'"
+  (toggled)="sidebarOpen.set(!sidebarOpen())"
+/>
+<div
+  class="author-sidebar-content"
+  [id]="sidebarContentId"
+  [hidden]="!sidebarOpen()"
+  [attr.inert]="sidebarOpen() ? null : ''"
+>
+  <p class="platform-signature"><app-platform-signature /></p>
+  <div class="workspace-heading">
+    <p class="eyebrow">Local author workspace</p>
+    @if (headingLevel === 1) {
+      <h1>{{ pageTitle }}</h1>
+    } @else {
+      <h2>{{ pageTitle }}</h2>
     }
+    <ng-content select="[description]"></ng-content>
+  </div>
+  @if (outline.length) {
+    <nav class="heading-outline" [attr.aria-label]="pageTitle + ' outline'">
+      <p class="outline-label">On this page</p>
+      @for (item of outline; track item.href) {
+        <a
+          [href]="linkHref(item.href)"
+          [attr.aria-current]="sectionIsCurrent(item) ? 'location' : null"
+          (click)="followSection($event, item)"
+          >{{ item.label }}</a
+        >
+      }
+    </nav>
+  }
+  <nav class="workspace-navigation" aria-label="Author workspace navigation">
+    <p class="outline-label">Author workspace</p>
+    @for (page of workspaceLinks; track page.id) {
+      <a [href]="page.href" [attr.aria-current]="page.id === pageId ? 'page' : null">{{
+        page.label
+      }}</a>
+    }
+    <button
+      type="button"
+      class="documentation-toggle"
+      [class.contains-current-page]="onDocumentationPage"
+      [attr.aria-controls]="documentationId"
+      [attr.aria-expanded]="documentationOpen()"
+      (click)="toggleDocumentation()"
+    >
+      <span>Documentation</span>
+      @if (onDocumentationPage) {
+        <small>Current section</small>
+      }
+      <span class="disclosure-chevron" aria-hidden="true"></span>
+    </button>
+    <ul class="documentation-links" [id]="documentationId" [hidden]="!documentationOpen()">
+      @for (page of documentationLinks; track page.id) {
+        <li>
+          <a [href]="page.href" [attr.aria-current]="page.id === pageId ? 'page' : null">{{
+            page.label
+          }}</a>
+        </li>
+      }
+    </ul>
   </nav>
-}
-<nav class="workspace-navigation" aria-label="Author workspace navigation">
-  <p class="outline-label">Author workspace</p>
-  @for (page of workspaceLinks; track page.id) {
-    <a [href]="page.href" [attr.aria-current]="page.id === pageId ? 'page' : null">{{
-      page.label
-    }}</a>
-  }
-  <button
-    type="button"
-    class="documentation-toggle"
-    [class.contains-current-page]="onDocumentationPage"
-    [attr.aria-controls]="documentationId"
-    [attr.aria-expanded]="documentationOpen()"
-    (click)="toggleDocumentation()"
-  >
-    <span>Documentation</span>
-    @if (onDocumentationPage) {
-      <small>Current section</small>
-    }
-    <span class="disclosure-chevron" aria-hidden="true"></span>
-  </button>
-  <ul class="documentation-links" [id]="documentationId" [hidden]="!documentationOpen()">
-    @for (page of documentationLinks; track page.id) {
-      <li>
-        <a [href]="page.href" [attr.aria-current]="page.id === pageId ? 'page' : null">{{
-          page.label
-        }}</a>
-      </li>
-    }
-  </ul>
-</nav>
-<ng-content></ng-content>
+  <ng-content></ng-content>
+</div>

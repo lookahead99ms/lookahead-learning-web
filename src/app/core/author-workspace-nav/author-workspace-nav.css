@@ -4,6 +4,10 @@
   gap: 24px;
   color: var(--text-strong);
 }
+app-sidebar-toggle { align-self: flex-end; }
+:host(.sidebar-collapsed) app-sidebar-toggle { align-self: flex-start; }
+.author-sidebar-content { display: flex; flex-direction: column; gap: 24px; }
+.author-sidebar-content[hidden] { display: none; }
 .eyebrow {
   font-size: 0.75rem;
   color: var(--accent-strong);

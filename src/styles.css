@@ -193,6 +193,11 @@ a {
 }
 
 /* DLV-802: Harbor Signal composition pilot, intentionally limited to Learn. */
+/* In-page clearance for sidebar edge controls when no outer gutter exists. */
+main[data-sidebar-edge-controls] {
+  padding-block-start: calc(var(--sidebar-original-padding-top, 0px) + 48px) !important;
+}
+
 main.harbor-learn {
   --harbor-panel-gap: clamp(20px, 3vw, 40px);
 }
