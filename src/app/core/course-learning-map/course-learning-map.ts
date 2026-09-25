@@ -72,7 +72,7 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
             </div>
             <div class="learning-subunits" role="list" [attr.aria-label]="subUnitGroupLabel(unit)">
               @for (subUnit of unit.subUnits; track subUnit.id; let index = $index) {
-                <article class="learning-subunit" role="listitem">
+                <article class="learning-subunit navigation-card" role="listitem">
                   <span class="learning-subunit-label"
                     >{{ unit.subUnitLabel ?? 'Subpattern' }} {{ index + 1 }}</span
                   >
@@ -81,7 +81,10 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
                     ><span>{{ subUnit.description }}</span></span
                   >
                   <div class="learning-subunit-actions">
-                    <a class="learning-action read" [routerLink]="articleRoute(subUnit)"
+                    <a
+                      class="learning-action read"
+                      data-card-primary
+                      [routerLink]="articleRoute(subUnit)"
                       >Read lesson</a
                     >
                     @if (subUnit.questionModuleId; as questionModuleId) {

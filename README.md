@@ -17,7 +17,7 @@ delivery evidence, credentials, and learner data are kept outside this Git histo
 - A private catalog with 730 ranked canonical DSA problems and 450 validated
   ready-made Study Plan templates. This repository includes only safe examples
   of the same versioned contracts.
-- Shared Harbor Signal light/dark presentation, responsive layouts, keyboard
+- Shared Harbor Light / Midnight & Apricot Dark presentation, responsive layouts, keyboard
   navigation, and semantic interaction states.
 - A frontend-only public demonstration and an optional connected local mode with
   account-owned plans, PostgreSQL, OAuth, and protected content.
@@ -443,9 +443,21 @@ scripts/                publication, validation, profiling and local-start tools
 docs/                   public architecture and source-boundary documentation
 ```
 
-Shared interaction colors use Harbor Signal teal for primary actions and the
-established blue for links. Learn, Grow, and Look Ahead identity colors are small
+Shared interaction colors use Harbor teal in Light and Apricot in Midnight Dark
+for primary actions, with blue links in both modes. See [platform theme](docs/theme.md)
+for shared tokens, semantic exceptions and verification. Learn, Grow, and Look Ahead identity colors are small
 labels or structural markers; they do not recolor generic actions.
+
+Destination cards expose their primary action over the entire card while keeping
+secondary links and controls independent. See [whole-card navigation](docs/card-navigation.md)
+for implementation and keyboard/pointer verification.
+
+The platform header is sticky at its component boundary so the logo, navigation,
+Search, Study Plan, theme and account controls remain at the top while reading.
+Author documentation's **On this page** outline highlights the current section
+as the document scrolls, separately from the current Author workspace page.
+Tracking does not rewrite the URL or move keyboard focus. Embedded references
+report visible heading offsets through a bounded, source-checked message exchange.
 
 ## Verification
 
@@ -519,3 +531,8 @@ visitors go to sign-in and return to the plan afterward; its public JSON fallbac
 is intentionally unavailable on the protected working origin.
 
 The manifest uses `schemaVersion: 1` with `documents[]`. HTML URLs must match the published document ID and content SHA-256 under `/bff/author/previews/preview-directory/author-documents/`. The iframe allows scripts for theme selection and the shared Operations height report; the parent accepts that report only from its active sandboxed frame with the expected document ID and bounded size. External references are ordinary labeled new-tab links in the Angular parent. HTTP authentication, authorization, missing publication and service failures remain distinct.
+
+## Homepage interaction
+
+See [homepage behavior and local verification](docs/homepage.md) for the root
+route, carousel, optional public challenge, shared themes and review steps.

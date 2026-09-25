@@ -80,7 +80,7 @@ const allowedDownloads = new Set(downloadSections.flatMap((section) => section.f
 })
 export class AuthorApiPage {
   private readonly hostDocument = inject(DOCUMENT);
-  private readonly documentFrame = viewChild<ElementRef<HTMLIFrameElement>>('documentFrame');
+  protected readonly documentFrame = viewChild<ElementRef<HTMLIFrameElement>>('documentFrame');
   private readonly accounts = inject(StudyPlanAccount);
   private readonly http = inject(HttpClient);
   private readonly sanitizer = inject(DomSanitizer);

@@ -24,10 +24,11 @@
     }
     <ul class="plan-list">
       @for (plan of plans(); track plan.planId) {
-        <li>
+        <li class="navigation-card">
           <div class="plan-heading">
             <h3>{{ plan.name }}</h3>
             <a
+              data-card-primary
               [routerLink]="['/study-plan']"
               [queryParams]="{ plan: plan.planId }"
               [attr.aria-label]="'Open plan: ' + plan.name"

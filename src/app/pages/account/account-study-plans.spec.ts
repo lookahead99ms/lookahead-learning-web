@@ -54,6 +54,7 @@ describe('Manage account learning summary', () => {
     const element: HTMLElement = render().nativeElement;
     expect(element.textContent).toContain('No saved study plans yet');
     expect(element.querySelectorAll('li')).toHaveLength(0);
+
     expect(store.active()).toBeNull();
     expect(transport).not.toHaveBeenCalled();
   });
@@ -91,6 +92,8 @@ describe('Manage account learning summary', () => {
     const element: HTMLElement = render().nativeElement;
     expect(element.textContent).toContain('3 saved study plans');
     expect(element.querySelectorAll('li')).toHaveLength(3);
+    expect(element.querySelectorAll('.navigation-card [data-card-primary]')).toHaveLength(3);
+    expect(element.querySelector('.navigation-card a a')).toBeNull();
     expect(element.querySelectorAll('.unavailable')).toHaveLength(2);
     expect(element.querySelectorAll('a')[1].getAttribute('href')).toBe(
       '/study-plan?plan=second%20%26%20owned',

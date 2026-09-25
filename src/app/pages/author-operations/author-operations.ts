@@ -55,7 +55,7 @@ export class AuthorOperationsPage implements OnDestroy {
   protected readonly pageRoute = this.isLocalDevelopment
     ? '/author/local-development'
     : '/author/operations';
-  private readonly documentFrame = viewChild<ElementRef<HTMLIFrameElement>>('documentFrame');
+  protected readonly documentFrame = viewChild<ElementRef<HTMLIFrameElement>>('documentFrame');
   private destroyed = false;
   private request = 0;
   private readonly loadedOwner = signal<string | null>(null);
@@ -106,17 +106,7 @@ export class AuthorOperationsPage implements OnDestroy {
           label: section.title,
           href: `${this.pageRoute}#${section.anchor}`,
         })),
-      ...(this.referenceLinks().length
-        ? [
-            {
-              label: 'Repository and runbook links',
-              href: '/author/operations#runbooks-links',
-            },
-          ]
-        : []),
-      ...(document.evidence.length
-        ? [{ label: 'Supporting references', href: '/author/operations#supporting-references' }]
-        : []),
+
     ];
   });
 

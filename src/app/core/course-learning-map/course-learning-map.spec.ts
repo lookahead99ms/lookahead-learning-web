@@ -163,6 +163,17 @@ describe('CourseLearningMap', () => {
       fixture.nativeElement.querySelectorAll('.learning-subunit .learning-action.practice'),
     ) as HTMLAnchorElement[];
 
+    const cards = Array.from(
+      fixture.nativeElement.querySelectorAll('.learning-subunit'),
+    ) as HTMLElement[];
+    for (const card of cards) {
+      const primary = card.querySelector<HTMLAnchorElement>('[data-card-primary]')!;
+      const practice = card.querySelector<HTMLAnchorElement>('.practice')!;
+      expect(primary.tagName).toBe('A');
+      expect(primary.contains(practice)).toBe(false);
+      expect(practice.getAttribute('href')).not.toBe(primary.getAttribute('href'));
+      expect(card.querySelectorAll('[data-card-primary]')).toHaveLength(1);
+    }
     expect(links.map((link) => link.getAttribute('href'))).toEqual([
       '/learn/hands-on-dsa?pattern=algorithmic-patterns:fast-slow-pointers',
       '/learn/hands-on-dsa?pattern=algorithmic-patterns:list-reversal',

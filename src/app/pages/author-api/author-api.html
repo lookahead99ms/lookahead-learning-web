@@ -1,7 +1,15 @@
 <app-platform-header />
 <main id="main-content" class="api-page">
   <aside class="workspace-sidebar">
-    <app-author-workspace-nav pageTitle="API reference" pageId="api" [outline]="outline()" (embeddedSectionSelected)="onEmbeddedSectionSelected($event)" />
+    <app-author-workspace-nav
+      pageTitle="API reference"
+      pageId="api"
+      [outline]="outline()"
+      [embeddedFrame]="documentFrame()?.nativeElement"
+      embeddedDocumentId="api-reference"
+      [embeddedHeight]="documentHeight()"
+      (embeddedSectionSelected)="onEmbeddedSectionSelected($event)"
+    />
   </aside>
   <div class="workspace-content">
     @if (!authorized()) {

@@ -594,6 +594,18 @@ describe('StudyPlanPage', () => {
     expect(focus.querySelectorAll('li')).toHaveLength(4);
     expect(focus.querySelector('summary')?.textContent).toContain('Show 1 more focus area');
     expect(harness.routeNativeElement!.textContent).not.toContain('2099');
+
+    const cards = [...harness.routeNativeElement!.querySelectorAll('.plan-card')];
+    expect(cards.every((card) => card.querySelectorAll('[data-card-primary]').length === 1)).toBe(
+      true,
+    );
+    expect(cards[0].querySelector('[data-card-primary]')?.getAttribute('aria-label')).toBe(
+      'Continue plan: Plan 0',
+    );
+    const disclosure = focus.querySelector('summary') as HTMLElement;
+    disclosure.click();
+    harness.detectChanges();
+    expect(focus.querySelector('details')?.open).toBe(true);
     expect(account.active()).toBe(original);
     expect(open).not.toHaveBeenCalled();
   });

@@ -229,6 +229,14 @@ describe('Author previews page', () => {
     expect(link.getAttribute('target')).toBe('_blank');
     expect(link.getAttribute('rel')).toBe('noopener noreferrer');
     expect(link.getAttribute('aria-label')).toContain('opens in a new tab');
+    for (const card of root.querySelectorAll('.featured-preview')) {
+      expect(card.querySelectorAll('[data-card-primary]')).toHaveLength(1);
+      const primary = card.querySelector('[data-card-primary]')!;
+      expect(primary.getAttribute('href')).toContain('theme=light');
+      const dark = card.querySelector('a[href*="theme=dark"]')!;
+      expect(dark.hasAttribute('data-card-primary')).toBe(false);
+      expect(primary.contains(dark)).toBe(false);
+    }
     const search = root.querySelector('input')!;
     search.value = 'missing';
     search.dispatchEvent(new Event('input'));
@@ -311,7 +319,9 @@ describe('Author previews page', () => {
       '/bff/author/previews/architecture/index.html?theme=light&layout=shared',
     );
     expect(frame.getAttribute('sandbox')).toBe('allow-scripts');
-    const outlineLink = fixture.nativeElement.querySelector('.heading-outline a') as HTMLAnchorElement;
+    const outlineLink = fixture.nativeElement.querySelector(
+      '.heading-outline a',
+    ) as HTMLAnchorElement;
     expect(outlineLink.getAttribute('href')).toBe('/author/architecture#platform-panel');
     expect(outlineLink.getAttribute('target')).toBeNull();
     expect(fixture.nativeElement.classList.contains('architecture-page')).toBe(true);
@@ -347,11 +357,13 @@ describe('Author previews page', () => {
     const fixture = await loaded();
     const frame = fixture.nativeElement.querySelector('iframe') as HTMLIFrameElement;
     const report = (origin: string, source: MessageEventSource | null, height: number) => {
-      window.dispatchEvent(new MessageEvent('message', {
-        origin,
-        source,
-        data: { type: 'lookahead:architecture:height', version: 1, height },
-      }));
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          origin,
+          source,
+          data: { type: 'lookahead:architecture:height', version: 1, height },
+        }),
+      );
       fixture.detectChanges();
     };
     report('null', window, 2400);

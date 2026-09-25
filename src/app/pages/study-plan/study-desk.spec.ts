@@ -87,6 +87,15 @@ describe('Study Desk', () => {
     expect(firstCard.textContent).toContain('Recall · Day 18');
     expect(firstCard.textContent).toContain('Recall · Day 31');
     expect(firstCard.querySelector('.content-action')?.textContent).toContain('Open lesson');
+    const primary = firstCard.querySelector<HTMLAnchorElement>('[data-card-primary]')!;
+    expect(primary.getAttribute('href')).toBe(
+      '/learn/java/first?plan=saved-plan&day=1&activity=first',
+    );
+    expect(primary.querySelector('button, a, input, textarea')).toBeNull();
+    const navigation = vi.fn();
+    primary.addEventListener('click', navigation);
+    firstCard.querySelector<HTMLButtonElement>('[data-desk-action="complete-first"]')!.click();
+    expect(navigation).not.toHaveBeenCalled();
     expect(firstCard.querySelector('[data-desk-action="complete-first"]')).not.toBeNull();
   });
 
@@ -203,7 +212,10 @@ describe('Study Desk', () => {
 
   it('restores reader context to the correct day card without rendering a separate Resume strip', async () => {
     const first = entry('first');
-    const second = entry('second', { day: 2, query: { plan: 'saved-plan', day: 2, activity: 'second' } });
+    const second = entry('second', {
+      day: 2,
+      query: { plan: 'saved-plan', day: 2, activity: 'second' },
+    });
     const fixture = await setup([first, second], 2);
     fixture.componentRef.setInput('initialActivity', 'second');
     fixture.detectChanges();

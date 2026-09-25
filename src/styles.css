@@ -1,66 +1,92 @@
+@import './card-navigation.css';
+
 :root {
   color-scheme: light;
-  --surface-page: #f4f9f8;
-  --surface: #ffffff;
-  --surface-muted: #eaf3f1;
+  --surface-page: #f2f7f6;
+  --surface: #fff;
+  --surface-muted: #e7f1ef;
   --text-strong: #102a33;
   --text-body: #28434a;
   --text-subtle: #536970;
-  --line: #c6d8d6;
+  --line: #cfdfdc;
   --accent-strong: #006c73;
-  --accent-on-primary: #ffffff;
+  --accent-on-primary: #fff;
   --accent-link: #245a88;
-  --accent-secondary: #c95632;
-  --accent-secondary-strong: #bc4d2c;
-  --path-grow: #a84328; /* Small identity text: readable on tinted surfaces. */
+  --accent-secondary: #006c73;
+  --accent-secondary-strong: #006c73;
+  --path-grow: #a84328; /* Path identity, separate from generic actions. */
   --surface-accent: #dcefed;
   --accent-focus: #9a4f00;
   --success: #24755c;
   --warning: #8c6100;
   --danger: #ac3f45;
-  --code-bg: #0c2027;
-  --code-panel: #143039;
-  --code-ink: #effbf7;
-  --code-muted: #a7c2bf;
-  --code-keyword: #74d9d0;
+  --code-bg: #101c30;
+  --code-panel: #192942;
+  --code-ink: #f4eee6;
+  --code-muted: #b5c0d1;
+  --code-keyword: #ffba87;
   --code-string: #b7dc8c;
   --code-number: #ffc078;
-  --code-highlight: #1d4650;
-  --shadow: #0f39451f;
+  --code-highlight: #283d59;
+  --shadow: #173d3910;
+  --platform-surface-soft: #f8fbfa;
+  --platform-surface-tint: #e7f1ef;
+  --platform-edge: #cfdfdc;
+  --platform-edge-soft: #e0eae7;
+  --platform-shadow: 0 3px 12px #173d3910;
+  --panel-background: #213a3b;
+  --panel-ink: #e6f3ed;
+  --panel-muted: #aec9bf;
+  --panel-line: #3c5f55;
+  --panel-accent: #83d8b9;
+  --path-learn: #006c73;
+  --path-look-ahead: #245a88;
 }
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --surface-page: #07171c;
-  --surface: #10242b;
-  --surface-muted: #19323a;
-  --text-strong: #eef8f5;
-  --text-body: #d4e5e1;
-  --text-subtle: #a5c0bd;
-  --line: #31515a;
-  --accent-strong: #70d6cd;
-  --accent-on-primary: #062321;
+  --surface-page: #101c30;
+  --surface: #192942;
+  --surface-muted: #22344e;
+  --text-strong: #f4eee6;
+  --text-body: #d6dce7;
+  --text-subtle: #b5c0d1;
+  --line: #3d4c64;
+  --accent-strong: #ffba87;
+  --accent-on-primary: #172337;
   --accent-link: #9dc9ff;
-  --accent-secondary: #ff9873;
-  --accent-secondary-strong: #ff9873;
-  --path-grow: var(--accent-secondary-strong);
-  --surface-accent: #173b3b;
-  --accent-focus: #ffc36e;
+  --accent-secondary: #ffba87;
+  --accent-secondary-strong: #ffba87;
+  --path-grow: #d9b4e1;
+  --surface-accent: #483729;
+  --accent-focus: #9dc9ff;
   --success: #75d8af;
   --warning: #f4c66f;
   --danger: #ff9ea4;
-  --code-bg: #041115;
-  --code-panel: #0c2228;
-  --code-ink: #effbf7;
-  --code-muted: #9dbab6;
-  --code-keyword: #70d6cd;
+  --code-bg: #101c30;
+  --code-panel: #192942;
+  --code-ink: #f4eee6;
+  --code-muted: #b5c0d1;
+  --code-keyword: #ffba87;
   --code-string: #b9e38f;
   --code-number: #ffc078;
-  --code-highlight: #17404a;
+  --code-highlight: #283d59;
   --shadow: #0000004a;
+  --platform-surface-soft: #152339;
+  --platform-surface-tint: #22344e;
+  --platform-edge: #3d4c64;
+  --platform-edge-soft: #2d405b;
+  --platform-shadow: 0 3px 12px #00000020;
+  --panel-background: #22344e;
+  --panel-ink: #f4eee6;
+  --panel-muted: #b5c0d1;
+  --panel-line: #4b5a70;
+  --panel-accent: #ffba87;
+  --path-learn: #70d6cd;
+  --path-look-ahead: #9dc9ff;
 }
 
-/* Harbor Signal: one semantic palette for every learner surface. Named editor
-   themes remain component-owned; the private comparison previews are preserved. */
+/* Shared Harbor Light / Midnight & Apricot Dark across learner and author routes.
+   Named editor themes and original brand references remain component-owned. */
 :root {
   --bg: var(--surface-page);
   --text: var(--text-strong);
@@ -68,15 +94,13 @@
   --surface-subtle: var(--surface-muted);
   --border-strong: color-mix(in srgb, var(--text-subtle) 65%, var(--line));
   --search-primary: var(--accent-strong);
-  --search-hover: color-mix(in srgb, var(--accent-strong) 90%, var(--text-strong));
+  --search-hover: color-mix(in srgb, var(--accent-strong) 85%, #000);
   --cyan: var(--accent-strong);
   --violet: var(--accent-link);
   --orange: var(--accent-secondary-strong);
   --red: var(--danger);
   /* Path identity only: plain labels, small markers and thin structural rules.
      Actions, focus, selection and status must use shared semantic tokens. */
-  --path-learn: var(--accent-strong);
-  --path-look-ahead: var(--text-body);
   --grow-accent: var(--path-grow);
   --grow-deep: var(--path-grow);
   --accent-on-secondary: var(--accent-on-primary);
@@ -93,13 +117,13 @@
   --media-ink: var(--code-ink);
   --media-muted: var(--code-muted);
   --code-accent: var(--code-keyword);
-  --code-line: #31515a;
+  --code-line: #3d4c64;
   --code-success: #75d8af;
   --code-warning: #f4c66f;
   --code-danger: #ff9ea4;
   --code-focus: #ffc36e;
-  --code-action: #70d6cd;
-  --code-on-primary: #062321;
+  --code-action: #ffba87;
+  --code-on-primary: #172337;
   /* Typography and geometry do not change when switching color modes. */
   --hero-font-family: system-ui, sans-serif;
   --hero-font-weight: 750;

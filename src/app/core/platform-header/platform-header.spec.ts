@@ -25,6 +25,15 @@ describe('PlatformHeader account disclosure', () => {
     vi.spyOn(TestBed.inject(StudyPlanAccount), 'initialize').mockResolvedValue();
   });
 
+  it('keeps the component wrapper sticky so it can follow the full page', () => {
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    const style = getComputedStyle(fixture.nativeElement);
+    expect(style.position).toBe('sticky');
+    expect(style.top).toBe('0px');
+    expect(style.display).toBe('block');
+  });
+
   it('shows only Sign in when signed out or expired and only the account control when authenticated', () => {
     const store = TestBed.inject(StudyPlanAccount);
     const fixture = TestBed.createComponent(PlatformHeader);

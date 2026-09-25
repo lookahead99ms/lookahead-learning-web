@@ -91,10 +91,14 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
   templateUrl: './platform-header.html',
   styles: [
     `
-      .platform-header {
+      :host {
+        display: block;
         position: sticky;
         top: 0;
         z-index: 50;
+        flex-shrink: 0;
+      }
+      .platform-header {
         background: var(--surface-page);
         transform: translate3d(0, 0, 0);
         will-change: transform;
