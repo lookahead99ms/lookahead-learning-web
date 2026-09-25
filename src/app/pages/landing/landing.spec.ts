@@ -304,6 +304,16 @@ describe('Landing', () => {
     expect(root.querySelectorAll('h1')).toHaveLength(1);
     expect(root.querySelector('h1')?.textContent).toContain('Understand what you ship.');
     expect(root.querySelectorAll('.discovery-feature')).toHaveLength(4);
+    const discoveryLinks = [...root.querySelectorAll('.discovery-feature [data-card-primary]')];
+    expect(discoveryLinks.map((link) => link.getAttribute('href'))).toEqual([
+      '/look-ahead/system-design',
+      '/search',
+      '/study-plan',
+      '/look-ahead/ai-systems-architecture',
+    ]);
+    expect(discoveryLinks.every((link) => link.tagName === 'A')).toBe(true);
+    expect(root.querySelector('.discovery-feature a a')).toBeNull();
+    expect(root.querySelector('.discovery-feature[tabindex]')).toBeNull();
     expect(root.querySelectorAll('#paths .card-link')).toHaveLength(3);
     expect(root.querySelector('a[href*="/bff/author/previews"]')).toBeNull();
     expect(root.querySelector('#hero-count')).toBeNull();

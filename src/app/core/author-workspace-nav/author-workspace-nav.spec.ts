@@ -164,3 +164,124 @@ describe('AuthorWorkspaceNav', () => {
     }
   });
 });
+
+describe('Author outline follows reading position', () => {
+  const originalUrl = location.pathname + location.search + location.hash;
+  beforeEach(() => {
+    vi.useFakeTimers();
+    history.replaceState(null, '', '/author/operations');
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+    history.replaceState(null, '', originalUrl);
+  });
+
+  it('tracks native sections down and up without rewriting the URL or workspace selection', () => {
+    const fixture = TestBed.createComponent(AuthorWorkspaceNav);
+    fixture.componentRef.setInput('pageId', 'operations');
+    fixture.componentRef.setInput('outline', [
+      { label: 'First', href: '#first-section' },
+      { label: 'Second', href: '#second-section' },
+    ]);
+    let secondTop = 500;
+    const sections = ['first-section', 'second-section'].map((id, index) => {
+      const section = document.createElement('section');
+      section.id = id;
+      section.getClientRects = () => [{ top: 0 }] as unknown as DOMRectList;
+      section.getBoundingClientRect = () => ({ top: index ? secondTop : -500 }) as DOMRect;
+      document.body.append(section);
+      return section;
+    });
+    try {
+      fixture.detectChanges();
+      vi.advanceTimersByTime(20);
+      fixture.detectChanges();
+      const active = () =>
+        fixture.nativeElement.querySelector('.heading-outline [aria-current]')?.textContent.trim();
+      expect(active()).toBe('First');
+      secondTop = 20;
+      window.dispatchEvent(new Event('scroll'));
+      vi.advanceTimersByTime(20);
+      fixture.detectChanges();
+      expect(active()).toBe('Second');
+      expect(location.hash).toBe('');
+      expect(
+        fixture.nativeElement
+          .querySelector('.workspace-navigation [aria-current="page"]')
+          .textContent.trim(),
+      ).toBe('Operations');
+      secondTop = 500;
+      window.dispatchEvent(new Event('scroll'));
+      vi.advanceTimersByTime(20);
+      fixture.detectChanges();
+      expect(active()).toBe('First');
+    } finally {
+      sections.forEach((section) => section.remove());
+    }
+  });
+
+  it('accepts only current, bounded positions from the active opaque-origin frame', () => {
+    const frame = document.createElement('iframe');
+    document.body.append(frame);
+    const post = vi.spyOn(frame.contentWindow!, 'postMessage');
+    let frameTop = 200;
+    frame.getBoundingClientRect = () => ({ top: frameTop }) as DOMRect;
+    const fixture = TestBed.createComponent(AuthorWorkspaceNav);
+    fixture.componentRef.setInput('outline', [
+      { label: 'First', href: '#first-section' },
+      { label: 'Second', href: '#second-section' },
+    ]);
+    fixture.componentRef.setInput('embeddedFrame', frame);
+    fixture.componentRef.setInput('embeddedDocumentId', 'operations-reference');
+    fixture.componentRef.setInput('embeddedHeight', 2000);
+    try {
+      fixture.detectChanges();
+      const request = post.mock.calls.at(-1)![0];
+      expect(request.type).toBe('lookahead:author-document:outline-request');
+      expect(
+        post.mock.calls.some(
+          ([message]) => message.type === 'lookahead:author-document:anchor-request',
+        ),
+      ).toBe(false);
+      const data = {
+        type: 'lookahead:author-document:outline',
+        version: 1,
+        documentId: 'operations-reference',
+        requestId: request.requestId,
+        sections: [
+          { anchor: 'first-section', offset: 0 },
+          { anchor: 'second-section', offset: 800 },
+        ],
+      };
+      const send = (payload = data, source = frame.contentWindow, origin = 'null') => {
+        window.dispatchEvent(new MessageEvent('message', { data: payload, source, origin }));
+        vi.advanceTimersByTime(20);
+        fixture.detectChanges();
+      };
+      frameTop = -850;
+      send(data, window);
+      send(data, frame.contentWindow, location.origin);
+      send({ ...data, requestId: request.requestId - 1 });
+      send({ ...data, sections: [{ anchor: 'second-section', offset: -1 }] });
+      expect(
+        fixture.nativeElement.querySelector('.heading-outline [aria-current]').textContent.trim(),
+      ).toBe('First');
+      send();
+      expect(
+        fixture.nativeElement.querySelector('.heading-outline [aria-current]').textContent.trim(),
+      ).toBe('Second');
+      expect(location.hash).toBe('');
+      frameTop = 200;
+      window.dispatchEvent(new Event('scroll'));
+      vi.advanceTimersByTime(20);
+      fixture.detectChanges();
+      expect(
+        fixture.nativeElement.querySelector('.heading-outline [aria-current]').textContent.trim(),
+      ).toBe('First');
+      fixture.destroy();
+    } finally {
+      frame.remove();
+    }
+  });
+});

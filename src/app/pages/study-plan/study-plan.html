@@ -141,7 +141,7 @@
       </div>
       <div class="plan-card-grid">
         @for (card of planCards(); track card.planId) {
-          <article class="plan-card panel">
+          <article class="plan-card panel navigation-card">
             <div class="plan-card-heading">
               <p class="eyebrow">Saved study plan</p>
               <h3>{{ card.goal }}</h3>
@@ -200,6 +200,8 @@
               type="button"
               class="primary"
               [disabled]="editsLocked()"
+              data-card-primary
+              [attr.aria-label]="'Continue plan: ' + card.goal"
               (click)="continuePlan(card.planId)"
             >
               Continue plan

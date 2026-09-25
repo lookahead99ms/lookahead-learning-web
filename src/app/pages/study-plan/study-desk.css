@@ -93,7 +93,7 @@ a {
   align-items: center;
 }
 .primary:hover {
-  filter: brightness(0.94);
+  background: var(--search-hover);
 }
 button:focus-visible,
 a:focus-visible,
@@ -179,7 +179,9 @@ button:disabled {
   opacity: 0;
   pointer-events: none;
   transform: translateY(-3px);
-  transition: opacity 140ms ease, transform 140ms ease;
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
 }
 .path-collapsed .path-toggle:hover::after,
 .path-collapsed .path-toggle:focus-visible::after {

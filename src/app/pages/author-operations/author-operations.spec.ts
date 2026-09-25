@@ -26,7 +26,7 @@ const reference: AuthorDocument = {
   decisionDependencies: [],
   remainingDecisions: [],
   evidence: [{ label: 'Evidence', href: 'https://example.test/evidence' }],
-  sections: [{ title: 'Repositories', anchor: 'repositories' }],
+  sections: [{ title: 'Repositories & Runbooks', anchor: 'repositories-runbooks' }],
   references: [
     { label: 'Repository', href: 'https://github.com/example/repository' },
     {
@@ -104,14 +104,14 @@ describe('Operations author view', () => {
   });
   it('keeps a section deep link on the protected parent page', async () => {
     const previousUrl = location.pathname + location.search + location.hash;
-    history.replaceState(null, '', '/author/operations#repositories');
+    history.replaceState(null, '', '/author/operations#repositories-runbooks');
     try {
       const fixture = await create();
       expect(fixture.nativeElement.querySelector('iframe').getAttribute('src')).toBe(
         reference.href + '?theme=light&layout=shared',
       );
       const link = fixture.nativeElement.querySelector('.heading-outline a');
-      expect(link.getAttribute('href')).toBe('/author/operations#repositories');
+      expect(link.getAttribute('href')).toBe('/author/operations#repositories-runbooks');
       expect(link.getAttribute('target')).toBeNull();
     } finally {
       history.replaceState(null, '', previousUrl);
@@ -131,7 +131,7 @@ describe('Operations author view', () => {
           type: 'lookahead:author-document:anchor-request',
           version: 1,
           documentId: 'operations-reference',
-          anchor: 'repositories',
+          anchor: 'repositories-runbooks',
         },
         '*',
       );
@@ -150,15 +150,15 @@ describe('Operations author view', () => {
       fixture.nativeElement.querySelector('a[href="https://github.com/example/repository"]'),
     ).not.toBeNull();
     expect(fixture.nativeElement.querySelector('#runbooks-heading').textContent).toBe(
-      'Repository and runbook links',
+      'Source repositories and runbooks',
     );
     expect(fixture.nativeElement.querySelector('#supporting-references')).not.toBeNull();
     expect(
       fixture.nativeElement.querySelector('a[href="/author/operations#runbooks-links"]'),
-    ).not.toBeNull();
+    ).toBeNull();
     expect(
       fixture.nativeElement.querySelector('a[href="/author/operations#supporting-references"]'),
-    ).not.toBeNull();
+    ).toBeNull();
   });
   it('sizes the shared document from a validated sandbox message', async () => {
     const fixture = await create();

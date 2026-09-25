@@ -12,6 +12,11 @@ and Apricot. The palette is owned by the shared [platform theme](theme.md) in `s
 so navigation and all other Angular routes follow the same selection. The
 homepage keeps its existing layout, engineering grid and slideshow.
 
+Each discovery card uses its existing destination over the entire card surface,
+including its heading and description. The visible action remains a native link
+for keyboard and new-tab use. See [whole-card navigation](card-navigation.md) for
+the shared pattern and independent secondary controls.
+
 The carousel rotates every six seconds with a 420ms opacity fade. Hover, focus,
 touch and manual navigation pause it until explicit Play. Reduced motion disables
 autoplay and animation while keeping Previous, Next and slide selection usable.
@@ -42,6 +47,8 @@ Open `/` in both color modes. Check the three path actions at 1440×900 and
 keyboard focus, native zoom and reduced motion. Open the challenge, predict,
 step through the evidence, write a reflection, close/reopen it and switch slides;
 the response must remain. Check that canonical navigation still respects access.
+Click each discovery card's title and background as well as its visible link;
+verify all four reach their respective destinations.
 
 A stable build on port 4300 changes only when its owner updates the checkout and
 rebuilds/restarts that frontend through the established process. Updating the

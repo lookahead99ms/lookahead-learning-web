@@ -38,7 +38,8 @@
               [attr.aria-controls]="'desk-topic-' + index"
               (click)="toggleTopic(topic.id)"
             >
-              <span class="topic-number">{{ index + 1 }}</span><strong>{{ topic.title }}</strong>
+              <span class="topic-number">{{ index + 1 }}</span
+              ><strong>{{ topic.title }}</strong>
               <span aria-hidden="true">{{ topicOpen(topic.id) ? '⌃' : '⌄' }}</span>
             </button>
             <ul [id]="'desk-topic-' + index" [hidden]="!topicOpen(topic.id)">
@@ -74,7 +75,7 @@
         <div class="activity-card-grid" aria-labelledby="desk-day-heading">
           @for (entry of dayEntries(); track entry.assignment.id; let index = $index) {
             <article
-              class="activity-card"
+              class="activity-card navigation-card"
               [class.current]="selected()?.assignment?.id === entry.assignment.id"
               [attr.data-desk-activity]="entry.assignment.id"
               [attr.aria-labelledby]="'desk-activity-' + index"
@@ -129,6 +130,7 @@
                 <div class="activity-actions">
                   <a
                     class="primary content-action"
+                    data-card-primary
                     [routerLink]="entry.route"
                     [queryParams]="entry.query"
                     [attr.aria-label]="openMaterialLabel(entry) + ': ' + entry.assignment.title"
@@ -156,19 +158,25 @@
                         [disabled]="locked()"
                         [attr.data-desk-action]="'attempted-' + entry.assignment.id"
                         (click)="recordOutcome(entry, 'attempted')"
-                      >Record attempt / refresh</button>
+                      >
+                        Record attempt / refresh
+                      </button>
                       <button
                         type="button"
                         [disabled]="locked()"
                         [attr.data-desk-action]="'needs-review-' + entry.assignment.id"
                         (click)="recordOutcome(entry, 'needs-review')"
-                      >Needs review</button>
+                      >
+                        Needs review
+                      </button>
                       <button
                         type="button"
                         [disabled]="locked()"
                         [attr.data-desk-action]="'completed-' + entry.assignment.id"
                         (click)="recordOutcome(entry, 'completed')"
-                      >I completed the full content</button>
+                      >
+                        I completed the full content
+                      </button>
                     }
                   }
                 </div>
@@ -194,13 +202,17 @@
                 </p>
               }
               @if (selected()?.assignment?.id === entry.assignment.id && browsing()) {
-                <p class="browsing-note">You are browsing this occurrence. Progress has not changed.</p>
+                <p class="browsing-note">
+                  You are browsing this occurrence. Progress has not changed.
+                </p>
               }
               @if (entry.refreshLinks.length) {
                 <details class="references">
                   <summary>Related lessons for a targeted refresh</summary>
                   @for (link of entry.refreshLinks; track link.title) {
-                    <p><a [routerLink]="link.route">{{ link.title }}</a></p>
+                    <p>
+                      <a [routerLink]="link.route">{{ link.title }}</a>
+                    </p>
                   }
                 </details>
               }
@@ -212,5 +224,4 @@
       }
     </div>
   </div>
-
 </section>

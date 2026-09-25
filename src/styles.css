@@ -1,3 +1,5 @@
+@import './card-navigation.css';
+
 :root {
   color-scheme: light;
   --surface-page: #f2f7f6;

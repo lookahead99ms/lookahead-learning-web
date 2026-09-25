@@ -5,6 +5,9 @@
       [pageTitle]="pageTitle"
       [pageId]="documentId === 'local-development' ? 'local-development' : 'operations'"
       [outline]="outline()"
+      [embeddedFrame]="documentFrame()?.nativeElement"
+      [embeddedDocumentId]="documentId"
+      [embeddedHeight]="documentHeight()"
       (embeddedSectionSelected)="onEmbeddedSectionSelected($event)"
     >
       <p description>
@@ -66,7 +69,7 @@
       </section>
       @if (referenceLinks().length) {
         <section class="resource-section" id="runbooks-links" aria-labelledby="runbooks-heading">
-          <h2 id="runbooks-heading">Repository and runbook links</h2>
+          <h3 id="runbooks-heading">Source repositories and runbooks</h3>
           <p>
             Open the source repositories and maintained procedures for local setup, verification,
             handoff, and recovery.
@@ -88,7 +91,7 @@
           id="supporting-references"
           aria-labelledby="supporting-references-heading"
         >
-          <h2 id="supporting-references-heading">Supporting references</h2>
+          <h3 id="supporting-references-heading">Supporting references</h3>
           <ul>
             @for (link of document()!.evidence; track link.href) {
               <li>

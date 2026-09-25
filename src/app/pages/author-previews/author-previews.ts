@@ -106,7 +106,7 @@ export class AuthorPreviewsPage {
   });
   protected readonly expandedDiagram = signal<ArchitectureDiagramId | null>(null);
   protected readonly architectureFrameHeight = signal<number | null>(null);
-  private readonly architectureFrame =
+  protected readonly architectureFrame =
     viewChild<ElementRef<HTMLIFrameElement>>('architectureFrame');
   private documentPort: MessagePort | null = null;
 

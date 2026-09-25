@@ -448,6 +448,17 @@ for primary actions, with blue links in both modes. See [platform theme](docs/th
 for shared tokens, semantic exceptions and verification. Learn, Grow, and Look Ahead identity colors are small
 labels or structural markers; they do not recolor generic actions.
 
+Destination cards expose their primary action over the entire card while keeping
+secondary links and controls independent. See [whole-card navigation](docs/card-navigation.md)
+for implementation and keyboard/pointer verification.
+
+The platform header is sticky at its component boundary so the logo, navigation,
+Search, Study Plan, theme and account controls remain at the top while reading.
+Author documentation's **On this page** outline highlights the current section
+as the document scrolls, separately from the current Author workspace page.
+Tracking does not rewrite the URL or move keyboard focus. Embedded references
+report visible heading offsets through a bounded, source-checked message exchange.
+
 ## Verification
 
 For a frontend-only change, run affected unit/component checks, a build, and a

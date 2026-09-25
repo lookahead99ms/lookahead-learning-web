@@ -1,0 +1,32 @@
+/* A card keeps one native primary link/button. Its hit area covers the card;
+   sibling links, disclosures and form controls stay independently interactive.
+   Do not nest navigation-card containers or position a primary action's wrapper. */
+.navigation-card {
+  position: relative;
+  isolation: isolate;
+}
+.navigation-card [data-card-primary] {
+  position: static;
+}
+.navigation-card [data-card-primary]:not(:disabled):not([aria-disabled='true'])::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  cursor: pointer;
+}
+.navigation-card
+  :is(a, button, input, select, textarea, summary, label, [contenteditable='true']):not(
+    [data-card-primary]
+  ) {
+  position: relative;
+  z-index: 2;
+}
+.navigation-card:has([data-card-primary]:not(:disabled):not([aria-disabled='true'])):hover {
+  border-color: var(--accent-strong);
+}
+.navigation-card:has([data-card-primary]:focus-visible) {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 3px;
+}

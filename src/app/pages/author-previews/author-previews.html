@@ -6,6 +6,9 @@
         pageTitle="Architecture"
         pageId="architecture"
         [outline]="architectureOutline()"
+        [embeddedFrame]="architectureFrame()?.nativeElement"
+        embeddedDocumentId="architecture-reference"
+        [embeddedHeight]="architectureFrameHeight()"
         (embeddedSectionSelected)="onEmbeddedSectionSelected($event)"
       />
     </aside>
@@ -129,7 +132,7 @@
               <h2>{{ collection.title }}</h2>
               <p>{{ collection.summary }}</p>
             </div>
-            <article class="featured-preview">
+            <article class="featured-preview navigation-card">
               <p class="eyebrow">Featured for review</p>
               <h3>{{ collection.featured.title }}</h3>
               <p class="featured-reason">{{ collection.featuredReason }}</p>
@@ -141,6 +144,7 @@
                 @for (link of collection.featured.links; track link.href) {
                   <a
                     [href]="link.href"
+                    [attr.data-card-primary]="collection.featured.available && $first ? '' : null"
                     target="_blank"
                     rel="noopener noreferrer"
                     [attr.aria-label]="
@@ -162,7 +166,7 @@
                 <p class="context-note">{{ collection.chronologyNote }}</p>
                 <ul>
                   @for (entry of collection.history; track entry.id) {
-                    <li>
+                    <li class="navigation-card">
                       <div class="entry-copy">
                         <h3>{{ entry.title }}</h3>
                         <p>Selection: {{ entry.selectionLabel }}</p>
@@ -171,6 +175,7 @@
                         @for (link of entry.links; track link.href) {
                           <a
                             [href]="link.href"
+                            [attr.data-card-primary]="entry.available && $first ? '' : null"
                             target="_blank"
                             rel="noopener noreferrer"
                             [attr.aria-label]="
