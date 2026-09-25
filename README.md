@@ -8,6 +8,17 @@ content contracts, shared learning components, tests, and deliberately synthetic
 demo content. Proprietary curriculum, rankings, complete ready-made schedules,
 delivery evidence, credentials, and learner data are kept outside this Git history.
 
+## Page sidebars
+
+The shared page shell builds a local outline from visible page sections and exposes
+already-loaded recall or practice content when available. Panels use existing outer
+gutters where space permits and open as dismissible overlays otherwise; opening them
+does not resize the original content. Header links and breadcrumbs remain available.
+The homepage has a three-link left outline only. Its platform signature stays in the
+hero; other page sidebars use the same theme-aware signature. Coding Problem Workspace
+is excluded. Existing author navigation uses the shared collapse control without a
+second outline. Sidebar state is transient and adds no API or saved-session contract.
+
 ## Platform highlights
 
 - Learn foundations, Grow production practice, and Look Ahead architecture,

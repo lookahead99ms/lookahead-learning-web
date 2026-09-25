@@ -1,4 +1,9 @@
-<details class="practice-disclosure" (toggle)="disclose($event)">
+<details
+  class="practice-disclosure"
+  data-sidebar-label="Test your judgment"
+  data-sidebar-support
+  (toggle)="disclose($event)"
+>
   <summary [attr.aria-expanded]="expanded()" aria-controls="engineering-practice">
     <span class="challenge-invitation">
       <span class="eyebrow">Predict. Observe. Explain.</span>

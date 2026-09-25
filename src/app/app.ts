@@ -2,10 +2,11 @@ import { DOCUMENT } from '@angular/common';
 import { Component, ViewEncapsulation, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { PlatformThemeService } from './core/platform-theme';
+import { PageSidebars } from './core/page-sidebars/page-sidebars';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, PageSidebars],
   templateUrl: './app.html',
   styleUrl: './app.css',
   encapsulation: ViewEncapsulation.None,

@@ -52,6 +52,7 @@ import {
 import { authenticCodingVisual, relatedPracticeItems } from '../../content/pattern-experience';
 import { questionModuleIdForArticle, questionsForModule } from '../../content/question-discovery';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
+import { PageSidebarContextDirective, PageSidebarContextValue } from '../../core/page-sidebars/page-sidebar-context';
 import { InteractiveTheoryVisual } from '../../core/interactive-theory-visual/interactive-theory-visual';
 import { CodingSolutionTabs } from '../../core/coding-solution-tabs/coding-solution-tabs';
 import { CodingProblemDetail } from '../../core/coding-problem-detail/coding-problem-detail';
@@ -67,6 +68,7 @@ import { FOCUS_STUDIO_PATTERN, usesFocusStudio } from '../../content/focus-studi
 @Component({
   selector: 'app-question',
   imports: [
+    PageSidebarContextDirective,
     StudyPlanReaderNavigation,
     PlatformHeader,
     RouterLink,
@@ -1111,6 +1113,15 @@ export class Question implements OnInit {
   protected readonly courseTitle = signal('');
   protected readonly question = signal<InterviewQuestion | null>(null);
   protected readonly relatedQuestions = signal(new Map<string, InterviewQuestion>());
+  protected readonly sidebarContext = computed<PageSidebarContextValue>(() => {
+    const item = this.question();
+    if (!item || this.isCodingPractice(item) || this.studioPilot() || this.focusStudio()) return { excluded: true };
+    const pattern = this.patternLesson(item);
+    const foundation = this.foundationLesson(item);
+    const checks = pattern ? this.patternChecks(pattern) : foundation ? this.foundationChecks(foundation) : [];
+    const recall = checks.length ? checks : this.embeddedUnderstanding(item).map((question) => ({ id: question.id, prompt: question.title, answer: question.interviewAnswer }));
+    return { excluded: false, recall: recall.length ? recall : item.followUps.map((followUp, index) => ({ id: `${item.id}-follow-up-${index}`, prompt: followUp.question, answer: followUp.answer })) };
+  });
   protected readonly moduleTitle = signal('');
   protected readonly previousQuestion = signal<ReaderLink | null>(null);
   protected readonly nextQuestion = signal<ReaderLink | null>(null);

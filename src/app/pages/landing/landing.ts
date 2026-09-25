@@ -1,3 +1,4 @@
+import { PlatformSignature } from '../../core/platform-signature/platform-signature';
 import { DOCUMENT } from '@angular/common';
 import {
   Component,
@@ -14,7 +15,7 @@ import { EngineeringChallenge } from './engineering-challenge';
 
 @Component({
   selector: 'app-landing',
-  imports: [PlatformHeader, RouterLink, EngineeringChallenge],
+  imports: [PlatformSignature, PlatformHeader, RouterLink, EngineeringChallenge],
   templateUrl: './landing.html',
   styleUrl: './landing.css',
 })
