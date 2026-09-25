@@ -94,7 +94,7 @@ describe('Landing', () => {
       [{ opacity: 1 }, { opacity: 0 }],
       [{ opacity: 0 }, { opacity: 1 }],
     ]);
-    expect(animations.every((item) => item.options.duration === 920)).toBe(true);
+    expect(animations.every((item) => item.options.duration === 420)).toBe(true);
     expect(root.querySelectorAll('.hero-slide.transitioning')).toHaveLength(2);
     expect(root.querySelectorAll('.hero-slide:not([inert])')).toHaveLength(1);
     expect(
@@ -107,9 +107,7 @@ describe('Landing', () => {
     // A naturally finished transition is never cancelled: cancelling it would
     // snap the outgoing panel's opacity back to 1 a frame before it is
     // hidden, which is exactly the flicker this behavior avoids.
-    expect(animations.slice(0, 2).every((item) => item.cancel.mock.calls.length === 0)).toBe(
-      true,
-    );
+    expect(animations.slice(0, 2).every((item) => item.cancel.mock.calls.length === 0)).toBe(true);
     root.querySelector<HTMLButtonElement>('[aria-label="Previous hero slide"]')!.click();
     expect(animations[2].frames).toEqual([{ opacity: 1 }, { opacity: 0 }]);
     expect(animations[3].frames).toEqual([{ opacity: 0 }, { opacity: 1 }]);
@@ -171,6 +169,8 @@ describe('Landing', () => {
     expect(animations).toHaveLength(2);
     hidden.mockReturnValue(false);
     document.dispatchEvent(new Event('visibilitychange'));
+    // Manual navigation now pauses until explicit Play.
+    root.querySelector<HTMLButtonElement>('[aria-label="Play slideshow"]')!.click();
     await vi.advanceTimersByTimeAsync(6000);
     fixture.detectChanges();
     expect(animations).toHaveLength(4);
@@ -217,7 +217,7 @@ describe('Landing', () => {
     fixture.destroy();
   });
 
-  it('alternates panel palettes on every automatic change across consecutive five-slide loops', async () => {
+  it('keeps the same panel treatment on every automatic change across consecutive five-slide loops', async () => {
     vi.useFakeTimers();
     const fixture = TestBed.createComponent(Landing);
     fixture.detectChanges();
@@ -225,34 +225,74 @@ describe('Landing', () => {
     for (let step = 0; step < 15; step++) {
       const active = root.querySelector('.hero-slide.active')!;
       expect(active.getAttribute('aria-label')).toMatch(new RegExp(`^${(step % 5) + 1} of 5:`));
-      expect(active.querySelector('.hero-visual')?.getAttribute('data-panel-tone')).toBe(
-        step % 2 === 0 ? 'light' : 'dark',
-      );
+      expect(active.querySelector('.hero-visual')?.hasAttribute('data-panel-tone')).toBe(false);
       await vi.advanceTimersByTimeAsync(6000);
       fixture.detectChanges();
     }
     fixture.destroy();
   });
 
-  it('alternates for previous and dot navigation while preserving outgoing palettes and no-op selections', () => {
+  it('pauses manual, hover, touch and focus interactions until explicit Play', async () => {
     vi.useFakeTimers();
     const fixture = TestBed.createComponent(Landing);
     fixture.detectChanges();
     const root: HTMLElement = fixture.nativeElement;
-    captureAnimations(root);
-    const tone = (selector: string) =>
-      root.querySelector(`${selector} .hero-visual`)?.getAttribute('data-panel-tone');
+    const carousel = root.querySelector('.hero-carousel')!;
+    for (const event of ['pointerenter', 'focusin', 'pointerdown']) {
+      carousel.dispatchEvent(new Event(event, { bubbles: true }));
+      fixture.detectChanges();
+      const selected = root.querySelector('.hero-slide.active')?.getAttribute('aria-label');
+      await vi.advanceTimersByTimeAsync(12000);
+      fixture.detectChanges();
+      expect(root.querySelector('.hero-slide.active')?.getAttribute('aria-label')).toBe(selected);
+      root.querySelector<HTMLButtonElement>('[aria-label="Play slideshow"]')!.click();
+      await vi.advanceTimersByTimeAsync(6000);
+      fixture.detectChanges();
+      expect(root.querySelector('.hero-slide.active')?.getAttribute('aria-label')).not.toBe(
+        selected,
+      );
+    }
     root.querySelector<HTMLButtonElement>('[aria-label="Show slide 3: Fieldnotes"]')!.click();
     fixture.detectChanges();
-    expect(tone('.hero-slide.active')).toBe('dark');
-    expect(tone('.hero-slide.transitioning:not(.active)')).toBe('light');
-    root.querySelector<HTMLButtonElement>('[aria-label="Show slide 3: Fieldnotes"]')!.click();
+    await vi.advanceTimersByTimeAsync(12000);
     fixture.detectChanges();
-    expect(tone('.hero-slide.active')).toBe('dark');
-    root.querySelector<HTMLButtonElement>('[aria-label="Previous hero slide"]')!.click();
+    expect(root.querySelector('.hero-slide.active')?.getAttribute('aria-label')).toBe(
+      '3 of 5: Fieldnotes',
+    );
+    expect(root.querySelector('[aria-label="Play slideshow"]')).not.toBeNull();
+    fixture.destroy();
+  });
+
+  it('honors the Pause action across pointerdown, focus and click ordering', () => {
+    const fixture = TestBed.createComponent(Landing);
     fixture.detectChanges();
-    expect(tone('.hero-slide.active')).toBe('light');
-    expect(tone('.hero-slide.transitioning:not(.active)')).toBe('dark');
+    const root: HTMLElement = fixture.nativeElement;
+    const rotation = root.querySelector<HTMLButtonElement>('[data-rotation]')!;
+    rotation.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+    rotation.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    rotation.click();
+    fixture.detectChanges();
+    expect(rotation.getAttribute('aria-label')).toBe('Play slideshow');
+    rotation.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+    rotation.click();
+    fixture.detectChanges();
+    expect(rotation.getAttribute('aria-label')).toBe('Pause slideshow');
+    fixture.destroy();
+  });
+
+  it('keeps challenge progress independent of carousel navigation', () => {
+    const fixture = TestBed.createComponent(Landing);
+    fixture.detectChanges();
+    const root: HTMLElement = fixture.nativeElement;
+    root.querySelectorAll<HTMLButtonElement>('.answers button')[1].click();
+    fixture.detectChanges();
+    root.querySelector<HTMLButtonElement>('.step-controls button:last-child')!.click();
+    fixture.detectChanges();
+    const explanation = root.querySelector('.step')?.textContent;
+    root.querySelector<HTMLButtonElement>('[aria-label="Next hero slide"]')!.click();
+    fixture.detectChanges();
+    expect(root.querySelector('.step')?.textContent).toBe(explanation);
+    expect(root.querySelectorAll('.answers button[aria-pressed="true"]')).toHaveLength(1);
     fixture.destroy();
   });
 
@@ -261,15 +301,18 @@ describe('Landing', () => {
     fixture.detectChanges();
     const root: HTMLElement = fixture.nativeElement;
     expect(root.querySelectorAll('.hero-dots button').length).toBe(5);
+    expect(root.querySelectorAll('h1')).toHaveLength(1);
+    expect(root.querySelector('h1')?.textContent).toContain('Understand what you ship.');
+    expect(root.querySelectorAll('.discovery-feature')).toHaveLength(4);
+    expect(root.querySelectorAll('#paths .card-link')).toHaveLength(3);
+    expect(root.querySelector('a[href*="/bff/author/previews"]')).toBeNull();
     expect(root.querySelector('#hero-count')).toBeNull();
     expect(root.querySelector('.landing-footer a[href="/delivery-plan"]')).toBeNull();
-    expect(root.querySelector('.media-panel a')?.getAttribute('href')).toBe(
-      '/look-ahead/system-design/module/case-feed-messaging',
+    expect(root.querySelector('.discovery-feature a')?.getAttribute('href')).toBe(
+      '/look-ahead/system-design',
     );
-    expect(root.textContent).toContain('audio and video explanations are planned');
-    expect(root.textContent).toContain(
-      'Standalone clone-and-run project repositories are in preparation',
-    );
+    expect(root.textContent).toContain('Audio and video are planned');
+    expect(root.textContent).toContain('Standalone clone-and-run repositories are in preparation');
     fixture.destroy();
   });
 });

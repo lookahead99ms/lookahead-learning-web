@@ -10,10 +10,11 @@ import {
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
+import { EngineeringChallenge } from './engineering-challenge';
 
 @Component({
   selector: 'app-landing',
-  imports: [PlatformHeader, RouterLink],
+  imports: [PlatformHeader, RouterLink, EngineeringChallenge],
   templateUrl: './landing.html',
   styleUrl: './landing.css',
 })
@@ -23,6 +24,7 @@ export class Landing {
   private timer: ReturnType<typeof setTimeout> | undefined;
   private animations: Animation[] = [];
   private transitionId = 0;
+  private rotationIntent: boolean | undefined;
   @ViewChild('heroSlides') private heroSlides?: ElementRef<HTMLElement>;
   protected readonly activeSlide = signal(0);
   protected readonly outgoingSlide = signal<number | null>(null);
@@ -85,7 +87,6 @@ export class Landing {
       query: {},
     },
   ];
-  protected readonly panelTones = signal<Array<'light' | 'dark'>>(this.slides.map(() => 'light'));
   protected readonly windowExample =
     'left = 0\nfor right in range(len(values)):\n    # Maintain the valid window\n    while window_is_invalid():\n        left += 1';
 
@@ -124,14 +125,8 @@ export class Landing {
     const previous = this.activeSlide();
     if (next !== previous) {
       this.settleTransition();
-      // Keep the outgoing panel's palette stable throughout its cross-fade.
-      this.panelTones.update((tones) =>
-        tones.map((tone, slideIndex) =>
-          slideIndex === next ? (tones[previous] === 'light' ? 'dark' : 'light') : tone,
-        ),
-      );
       this.activeSlide.set(next);
-      this.animateTransition(previous, next, index >= previous ? 1 : -1);
+      this.animateTransition(previous, next);
     }
     this.scheduleRotation();
   }
@@ -153,18 +148,14 @@ export class Landing {
     this.animations = [];
   }
 
-  // direction is unused while the dissolve transition is active. Restore the
-  // translateX keyframes below (using `direction`) to bring back the
-  // slide-from-right/left motion.
-  private animateTransition(previous: number, next: number, direction: number): void {
-    void direction;
+  private animateTransition(previous: number, next: number): void {
     if (this.reducedMotion() || this.document.hidden) return;
     const slides = this.heroSlides?.nativeElement.querySelectorAll<HTMLElement>('.hero-slide');
     const outgoing = slides?.[previous];
     const incoming = slides?.[next];
     if (!outgoing?.animate || !incoming?.animate) return;
     const transitionId = this.transitionId;
-    const timing = { duration: 920, easing: 'cubic-bezier(.22,.61,.36,1)', fill: 'both' as const };
+    const timing = { duration: 420, easing: 'cubic-bezier(.22,.61,.36,1)', fill: 'both' as const };
     this.outgoingSlide.set(previous);
     this.animations = [
       outgoing.animate([{ opacity: 1 }, { opacity: 0 }], timing),
@@ -178,17 +169,34 @@ export class Landing {
 
   protected toggleRotation(): void {
     if (this.reducedMotion()) return;
-    this.paused.update((value) => !value);
+    this.paused.set(this.rotationIntent ?? !this.paused());
+    this.rotationIntent = undefined;
     this.scheduleRotation();
   }
 
-  protected focusHero(event: FocusEvent): void {
-    const target = event.target as HTMLElement | null;
-    if (target?.closest('.hero-copy, .hero-visual')) {
-      this.paused.set(true);
-      this.settleTransition();
-      this.scheduleRotation();
+  protected pauseRotation(): void {
+    this.paused.set(true);
+    this.settleTransition();
+    this.scheduleRotation();
+  }
+
+  protected interactWithHero(event: PointerEvent): void {
+    // Play is the explicit opt-in after any other pointer interaction.
+    if ((event.target as HTMLElement | null)?.closest('[data-rotation]')) {
+      // Preserve the action that was visible before focus paused the carousel.
+      this.rotationIntent = !this.paused();
+    } else {
+      this.pauseRotation();
     }
+  }
+
+  protected clearRotationIntent(): void {
+    this.rotationIntent = undefined;
+  }
+
+  protected selectSlide(index: number): void {
+    this.pauseRotation();
+    this.showSlide(index);
   }
 
   protected choosePath(event: Event, fragment?: string): void {

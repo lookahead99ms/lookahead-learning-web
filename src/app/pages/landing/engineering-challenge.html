@@ -1,0 +1,92 @@
+<details class="practice-disclosure" (toggle)="disclose($event)">
+  <summary [attr.aria-expanded]="expanded()" aria-controls="engineering-practice">
+    <span class="challenge-invitation">
+      <span class="eyebrow">Predict. Observe. Explain.</span>
+      <strong>Try an engineering decision.</strong>
+      <span class="challenge-teaser">A small scenario. A chance to test your reasoning.</span>
+    </span>
+    <span class="challenge-toggle">
+      <span>{{ expanded() ? 'Close challenge' : 'Open challenge' }}</span>
+      <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="m4 6 4 4 4-4" /></svg>
+    </span>
+  </summary>
+  <section id="engineering-practice" class="discovery-practice" aria-labelledby="practice-heading">
+    <div class="practice-intro">
+      <p class="eyebrow">When you are ready / Try a small decision</p>
+      <h2 id="practice-heading">Go beyond the answer.<br />Test your reasoning.</h2>
+      <p>
+        Predict an outcome, inspect the evidence, and explain what changed. This optional challenge
+        stays independent of the slideshow.
+      </p>
+      <p class="small">
+        A public JavaScript example with a guided explanation. Your reflection stays on this page
+        and is not graded or saved.
+      </p>
+    </div>
+    <div class="challenge-card" aria-labelledby="challenge-question">
+      <div class="challenge-heading">
+        <p class="eyebrow">Predict. Observe. Explain.</p>
+        <span class="small">{{ exampleIndex() + 1 }} / {{ count }}</span>
+      </div>
+      <p class="challenge-category">{{ example().category }}</p>
+      <h3 id="challenge-question">{{ example().question }}</h3>
+      <p class="challenge-context">{{ example().context }}</p>
+      <pre><code>{{ example().code }}</code></pre>
+      <div class="answers" role="group" aria-label="Your prediction">
+        @for (choice of example().choices; track choice; let i = $index) {
+          <button type="button" [attr.aria-pressed]="answer() === i" (click)="predict(i)">
+            {{ choice }}
+          </button>
+        }
+      </div>
+      <p class="feedback" role="status">
+        @if (answer() === null) {
+          Make a prediction to inspect the evidence.
+        } @else if (answer() === example().correct) {
+          That fits the evidence. Explore why.
+        } @else {
+          That conclusion is not supported here. Follow the evidence to see why.
+        }
+      </p>
+      @if (answer() !== null) {
+        <div class="challenge-evidence">
+          <p class="eyebrow">Behind the result / Guided explanation</p>
+          <ol class="diagram" aria-label="Reasoning stages">
+            @for (stage of stages; track stage; let i = $index) {
+              <li [class.active]="step() === i" [attr.aria-current]="step() === i ? 'step' : null">
+                {{ stage }}
+                @if (step() === i) {
+                  <small>Current focus</small>
+                }
+              </li>
+            }
+          </ol>
+          <div class="step" aria-live="polite">
+            <h4>{{ example().steps[step()][0] }}</h4>
+            <p>{{ example().steps[step()][1] }}</p>
+          </div>
+          <div class="step-controls">
+            <button type="button" [disabled]="step() === 0" (click)="moveStep(-1)">Previous</button>
+            <span class="small">{{ step() + 1 }} / 3</span>
+            <button type="button" [disabled]="step() === 2" (click)="moveStep(1)">Next</button>
+          </div>
+          @if (step() === 2) {
+            <p class="rule">{{ example().rule }}</p>
+            <label for="challenge-reflection">Explain it in your own words</label>
+            <textarea
+              id="challenge-reflection"
+              rows="3"
+              [value]="reflection()"
+              (input)="reflect($event)"
+            ></textarea>
+            <p class="small">Reflection only. Not graded or saved.</p>
+          }
+        </div>
+      }
+      <div class="challenge-end">
+        <button type="button" (click)="another()">Try another challenge</button>
+        <p>Your challenge stays fixed when the slideshow changes.</p>
+      </div>
+    </div>
+  </section>
+</details>

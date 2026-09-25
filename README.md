@@ -519,3 +519,8 @@ visitors go to sign-in and return to the plan afterward; its public JSON fallbac
 is intentionally unavailable on the protected working origin.
 
 The manifest uses `schemaVersion: 1` with `documents[]`. HTML URLs must match the published document ID and content SHA-256 under `/bff/author/previews/preview-directory/author-documents/`. The iframe allows scripts for theme selection and the shared Operations height report; the parent accepts that report only from its active sandboxed frame with the expected document ID and bounded size. External references are ordinary labeled new-tab links in the Angular parent. HTTP authentication, authorization, missing publication and service failures remain distinct.
+
+## Homepage interaction
+
+See [homepage behavior and local verification](docs/homepage.md) for the root
+route, carousel, optional public challenge, scoped themes and review steps.
