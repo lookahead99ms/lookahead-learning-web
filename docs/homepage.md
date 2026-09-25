@@ -8,8 +8,9 @@ content access policy.
 The homepage includes a fixed AI engineering headline, five original carousel
 slides, Learn/Grow/Look Ahead path entries, an optional engineering challenge,
 and four discovery cards. Light mode uses Harbor teal; dark mode uses Midnight
-and Apricot. These homepage tokens are component-scoped and do not recolor other
-routes or require a private stylesheet.
+and Apricot. The palette is owned by the shared [platform theme](theme.md) in `src/styles.css`,
+so navigation and all other Angular routes follow the same selection. The
+homepage keeps its existing layout, engineering grid and slideshow.
 
 The carousel rotates every six seconds with a 420ms opacity fade. Hover, focus,
 touch and manual navigation pause it until explicit Play. Reduced motion disables

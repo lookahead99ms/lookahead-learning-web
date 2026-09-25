@@ -837,7 +837,7 @@
   color: var(--text-strong);
   border: 1px solid var(--line);
   border-radius: 6px;
-  background: white;
+  background: var(--surface);
 }
 .editor-dialog .editor-help {
   margin: 18px 24px;
@@ -878,7 +878,7 @@
   border: 1px solid var(--border-strong);
   border-radius: 7px;
   color: var(--text-strong);
-  background: white;
+  background: var(--surface);
   font: inherit;
   font-weight: 400;
 }

@@ -17,7 +17,7 @@ delivery evidence, credentials, and learner data are kept outside this Git histo
 - A private catalog with 730 ranked canonical DSA problems and 450 validated
   ready-made Study Plan templates. This repository includes only safe examples
   of the same versioned contracts.
-- Shared Harbor Signal light/dark presentation, responsive layouts, keyboard
+- Shared Harbor Light / Midnight & Apricot Dark presentation, responsive layouts, keyboard
   navigation, and semantic interaction states.
 - A frontend-only public demonstration and an optional connected local mode with
   account-owned plans, PostgreSQL, OAuth, and protected content.
@@ -443,8 +443,9 @@ scripts/                publication, validation, profiling and local-start tools
 docs/                   public architecture and source-boundary documentation
 ```
 
-Shared interaction colors use Harbor Signal teal for primary actions and the
-established blue for links. Learn, Grow, and Look Ahead identity colors are small
+Shared interaction colors use Harbor teal in Light and Apricot in Midnight Dark
+for primary actions, with blue links in both modes. See [platform theme](docs/theme.md)
+for shared tokens, semantic exceptions and verification. Learn, Grow, and Look Ahead identity colors are small
 labels or structural markers; they do not recolor generic actions.
 
 ## Verification
@@ -523,4 +524,4 @@ The manifest uses `schemaVersion: 1` with `documents[]`. HTML URLs must match th
 ## Homepage interaction
 
 See [homepage behavior and local verification](docs/homepage.md) for the root
-route, carousel, optional public challenge, scoped themes and review steps.
+route, carousel, optional public challenge, shared themes and review steps.
