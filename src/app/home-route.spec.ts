@@ -48,8 +48,13 @@ describe('canonical homepage', () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/', Landing);
     expect(TestBed.inject(Router).url).toBe('/');
+    expect(harness.routeNativeElement?.querySelectorAll('h1')).toHaveLength(1);
     expect(
-      harness.routeNativeElement?.querySelector('.hero-slide.active h1')?.textContent,
+      harness.routeNativeElement?.querySelector('h1')?.textContent?.trim(),
+    ).toBe('AI can write it. Understand what you ship.');
+    expect(
+      harness.routeNativeElement?.querySelector('.hero-slide.active h2.slide-title')
+        ?.textContent,
     ).toContain('Become the engineer');
     expect(
       harness.routeNativeElement
