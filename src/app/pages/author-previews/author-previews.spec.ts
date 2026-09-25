@@ -324,6 +324,8 @@ describe('Author previews page', () => {
     ) as HTMLAnchorElement;
     expect(outlineLink.getAttribute('href')).toBe('/author/architecture#platform-panel');
     expect(outlineLink.getAttribute('target')).toBeNull();
+    const outlineAnchors = Array.from(fixture.nativeElement.querySelectorAll('.heading-outline a') as NodeListOf<HTMLAnchorElement>).map(link => new URL(link.href).hash);
+    expect(outlineAnchors).toEqual(['#platform-panel', '#backend-panel', '#journeys-panel', '#model-panel', '#flow-panel', '#candidate-panel', '#oauth-panel', '#trust-panel', '#environments-panel', '#development-panel']);
     expect(fixture.nativeElement.classList.contains('architecture-page')).toBe(true);
     const fullPageLink = fixture.nativeElement.querySelector(
       '.reference-toolbar a',

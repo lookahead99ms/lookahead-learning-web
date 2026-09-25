@@ -72,6 +72,9 @@ describe('Shared page sidebars', () => {
     fixture = TestBed.createComponent(PageSidebars);
     root.append(fixture.nativeElement);
     flush();
+    button('Close left sidebar').click();
+    button('Close right sidebar').click();
+    flush();
   });
 
   afterEach(() => {
@@ -93,26 +96,111 @@ describe('Shared page sidebars', () => {
     );
   });
 
+  it('opens both available sidebars by default even without docking space', () => {
+    fixture.destroy();
+    fixture = TestBed.createComponent(PageSidebars);
+    root.append(fixture.nativeElement);
+    flush();
+    expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
+    expect(button('Close right sidebar').getAttribute('aria-expanded')).toBe('true');
+    expect(page.hasAttribute('inert')).toBe(false);
+    expect(root.querySelector('.sidebar-backdrop')).toBeNull();
+  });
+
+  it('expands sidebars into unused gutters without modifying content dimensions', () => {
+    vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(2400);
+    vi.mocked(main.getBoundingClientRect).mockReturnValue({
+      left: 540,
+      right: 1860,
+      width: 1320,
+      top: 76,
+      bottom: 900,
+      height: 824,
+      x: 540,
+      y: 76,
+      toJSON: () => ({}),
+    });
+    refresh();
+    button('Open left sidebar').click();
+    button('Open right sidebar').click();
+    flush();
+    const left = root.querySelector<HTMLElement>('#page-sidebar-left')!;
+    const right = root.querySelector<HTMLElement>('#page-sidebar-right')!;
+    expect(left.style.insetInlineStart).toBe('6px');
+    expect(left.style.width).toContain('534px');
+    expect(right.style.insetInlineEnd).toBe('6px');
+    expect(right.style.width).toContain('510px');
+    expect(main.hasAttribute('data-sidebar-layout')).toBe(false);
+    button('Close left sidebar').click();
+    flush();
+    expect(left.style.insetInlineStart).toBe('6px');
+    expect(right.style.insetInlineEnd).toBe('6px');
+    expect(right.style.width).toContain('510px');
+    expect(main.style.getPropertyValue('--sidebar-start-space')).toBe('');
+    expect(main.style.getPropertyValue('--sidebar-end-space')).toBe('');
+  });
+
+  it('keeps both statements visible when navigation and practice are collapsed', () => {
+    expect(
+      root.querySelector('#page-sidebar-left app-platform-signature')?.closest('[hidden], [inert]'),
+    ).toBeNull();
+    expect(
+      root.querySelector('#page-sidebar-right app-learning-prompt')?.closest('[hidden], [inert]'),
+    ).toBeNull();
+    expect(root.querySelector('#page-sidebar-left app-platform-signature')).not.toBeNull();
+    expect(root.querySelector('#page-sidebar-right app-learning-prompt')).not.toBeNull();
+    expect(root.querySelector('#page-sidebar-left-content')?.hasAttribute('hidden')).toBe(true);
+    expect(root.querySelector('#page-sidebar-right-content')?.hasAttribute('hidden')).toBe(true);
+  });
+
+  it('keeps desktop sidebars outside the outer content surface when gutters are narrower', () => {
+    vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(1400);
+    vi.mocked(main.getBoundingClientRect).mockReturnValue({ left: 180, right: 1220, width: 1040, top: 76, bottom: 900, height: 824, x: 180, y: 76, toJSON: () => ({}) });
+    refresh();
+    button('Open left sidebar').click();
+    button('Open right sidebar').click();
+    flush();
+    expect(root.querySelector<HTMLElement>('#page-sidebar-left')!.style.width).toBe('174px');
+    expect(root.querySelector<HTMLElement>('#page-sidebar-right')!.style.width).toBe('150px');
+    expect(main.style.width).toBe('');
+  });
+
   it('docks only when each individual gutter can fit the panel and clearances', () => {
     expect(canDockSidebar(247)).toBe(false);
     expect(canDockSidebar(248)).toBe(true);
     expect(canDockSidebar(-10)).toBe(false);
   });
 
-  it('opens one modal panel, traps keyboard focus, closes with Escape and restores the toggle', () => {
+  it('opens a nonmodal panel, keeps the page interactive, and supports Escape', () => {
     const contentBefore = main.innerHTML;
     const open = button('Open left sidebar');
     open.click();
     flush();
-    expect(page.hasAttribute('inert')).toBe(true);
+    expect(page.hasAttribute('inert')).toBe(false);
+    expect(root.querySelector('.sidebar-backdrop, [aria-modal]')).toBeNull();
     const panel = root.querySelector('#page-sidebar-left')!;
-    expect(panel.getAttribute('role')).toBe('dialog');
+    expect(panel.getAttribute('role')).toBeNull();
     const close = button('Close left sidebar');
     close.focus();
-    close.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true }),
-    );
-    expect(document.activeElement).toBe(panel.querySelector('a[href$="#practice"]'));
+    const tab = new KeyboardEvent('keydown', {
+      key: 'Tab',
+      shiftKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+    close.dispatchEvent(tab);
+    expect(tab.defaultPrevented).toBe(false);
+    const contentButton = document.createElement('button');
+    contentButton.textContent = 'Use original content';
+    main.append(contentButton);
+    contentButton.focus();
+    expect(document.activeElement).toBe(contentButton);
+    const clicked = vi.fn();
+    contentButton.addEventListener('click', clicked);
+    contentButton.click();
+    expect(clicked).toHaveBeenCalledOnce();
+    contentButton.remove();
+    close.focus();
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     flush();
     expect(page.hasAttribute('inert')).toBe(false);
@@ -121,7 +209,7 @@ describe('Shared page sidebars', () => {
     expect(root.querySelector('#page-sidebar-left-content')?.hasAttribute('hidden')).toBe(true);
   });
 
-  it('keeps section navigation stable while its background page is inert', () => {
+  it('keeps section navigation stable while the page stays interactive', () => {
     button('Open left sidebar').click();
     flush();
     refresh();
@@ -129,17 +217,24 @@ describe('Shared page sidebars', () => {
     expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
   });
 
-  it('closes the other overlay and leaves both icon controls available for reopening', () => {
+  it('keeps both panels open independently and retains choices across resize', () => {
     button('Open left sidebar').click();
     flush();
     button('Open right sidebar').click();
     flush();
-    expect(button('Open left sidebar').getAttribute('aria-expanded')).toBe('false');
+    expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
     expect(button('Close right sidebar').getAttribute('aria-expanded')).toBe('true');
     button('Close right sidebar').click();
     flush();
     expect(page.hasAttribute('inert')).toBe(false);
     expect(button('Open right sidebar')).toBeTruthy();
+    refresh();
+    expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
+    expect(button('Open right sidebar').getAttribute('aria-expanded')).toBe('false');
+    button('Open right sidebar').click();
+    flush();
+    expect(button('Close left sidebar')).toBeTruthy();
+    expect(button('Close right sidebar')).toBeTruthy();
   });
 
   it('uses already-loaded recall content, resets answers between questions, and sanitizes HTML', () => {
@@ -192,6 +287,25 @@ describe('Shared page sidebars', () => {
     root.append(fixture.nativeElement);
     flush();
     expect(root.querySelector('#page-sidebar-left')).toBeNull();
+  });
+
+  it('shows the styled learning prompt on catalogs before opening a lesson', () => {
+    const previous = location.href;
+    try {
+      history.replaceState(null, '', '/grow');
+      main.querySelector('#practice')!.remove();
+      fixture.destroy();
+      fixture = TestBed.createComponent(PageSidebars);
+      root.append(fixture.nativeElement);
+      flush();
+      expect(root.querySelector('#page-sidebar-right app-sidebar-toggle')).toBeNull();
+      expect(root.querySelector('#page-sidebar-right app-learning-prompt')?.textContent).toBe(
+        'Know why it works. Know when it won’t.',
+      );
+      expect(root.querySelector('.recall-reveal')).toBeNull();
+    } finally {
+      history.replaceState(null, '', previous);
+    }
   });
 
   it('does not show an empty right panel when the page has no relevant practice', () => {

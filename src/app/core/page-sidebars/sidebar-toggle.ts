@@ -32,7 +32,7 @@ import { Component, input, output } from '@angular/core';
         height: 44px;
         border: 0;
         border-radius: 6px;
-        background: var(--surface-page);
+        background: transparent;
         color: var(--text-subtle);
         cursor: pointer;
       }

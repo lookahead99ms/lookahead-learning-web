@@ -1,22 +1,14 @@
 @if (enabled()) {
-  @if (overlay()) {
-    <button
-      class="sidebar-backdrop"
-      type="button"
-      aria-label="Close sidebar"
-      (click)="closeOverlay()"
-    ></button>
-  }
   @if (showLeft()) {
     <aside
       id="page-sidebar-left"
       class="page-sidebar left"
+      [style.inset-inline-start.px]="leftOpen() ? leftInset() : 6"
+      [style.width.px]="leftOpen() || !homepage() ? leftWidth() : 44"
       [class.open]="leftOpen()"
       [class.docked]="leftDocked()"
       [style.top.px]="headerBottom()"
       [style.max-height]="'calc(100dvh - ' + (headerBottom() + 8) + 'px)'"
-      [attr.role]="leftOpen() && !leftDocked() ? 'dialog' : null"
-      [attr.aria-modal]="leftOpen() && !leftDocked() ? true : null"
       aria-label="Page sections"
     >
       <app-sidebar-toggle
@@ -26,6 +18,11 @@
         [label]="leftOpen() ? 'Close left sidebar' : 'Open left sidebar'"
         (toggled)="toggle('left', $event)"
       />
+      @if (!homepage()) {
+        <p class="platform-signature persistent-signature">
+          <app-platform-signature [stacked]="true" />
+        </p>
+      }
       <div
         id="page-sidebar-left-content"
         class="sidebar-content"
@@ -33,10 +30,9 @@
         [attr.inert]="leftOpen() ? null : ''"
       >
         @if (!homepage()) {
-          <p class="platform-signature"><app-platform-signature /></p>
           <p class="sidebar-title">{{ title() }}</p>
         }
-        <nav aria-label="Page sections">
+        <nav class="shared-sidebar-outline" aria-label="Page sections">
           @for (section of sections(); track section.id) {
             <a
               [href]="href(section)"
@@ -53,28 +49,33 @@
     <aside
       id="page-sidebar-right"
       class="page-sidebar right"
+      [class.statement-only]="!hasRightContent()"
+      [style.inset-inline-end.px]="rightOpen() ? rightInset() : 6"
+      [style.width.px]="rightWidth()"
       [class.open]="rightOpen()"
       [class.docked]="rightDocked()"
       [style.top.px]="headerBottom()"
       [style.max-height]="'calc(100dvh - ' + (headerBottom() + 8) + 'px)'"
-      [attr.role]="rightOpen() && !rightDocked() ? 'dialog' : null"
-      [attr.aria-modal]="rightOpen() && !rightDocked() ? true : null"
       aria-label="Practice with this page"
     >
-      <app-sidebar-toggle
-        side="right"
-        [open]="rightOpen()"
-        controls="page-sidebar-right-content"
-        [label]="rightOpen() ? 'Close right sidebar' : 'Open right sidebar'"
-        (toggled)="toggle('right', $event)"
-      />
+      @if (hasRightContent()) {
+        <app-sidebar-toggle
+          side="right"
+          [open]="rightOpen()"
+          controls="page-sidebar-right-content"
+          [label]="rightOpen() ? 'Close right sidebar' : 'Open right sidebar'"
+          (toggled)="toggle('right', $event)"
+        />
+      }
+      <p class="practice-signature persistent-signature">
+        <app-learning-prompt [stacked]="true" />
+      </p>
       <div
         id="page-sidebar-right-content"
         class="sidebar-content"
         [hidden]="!rightOpen()"
         [attr.inert]="rightOpen() ? null : ''"
       >
-        <p class="sidebar-eyebrow">With this page</p>
         @if (currentRecall(); as check) {
           <h2>Quick recall</h2>
           <p>{{ check.prompt }}</p>
@@ -96,7 +97,7 @@
           }
         }
         @if (support().length) {
-          <nav aria-label="Practice on this page">
+          <nav class="shared-sidebar-outline" aria-label="Practice on this page">
             @for (section of support(); track section.id) {
               <a [href]="href(section)" (click)="follow($event, section)">{{ section.label }}</a>
             }

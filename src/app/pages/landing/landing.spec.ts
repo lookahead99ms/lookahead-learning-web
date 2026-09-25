@@ -302,7 +302,8 @@ describe('Landing', () => {
     const root: HTMLElement = fixture.nativeElement;
     expect(root.querySelectorAll('.hero-dots button').length).toBe(5);
     expect(root.querySelectorAll('h1')).toHaveLength(1);
-    expect(root.querySelector('h1')?.textContent).toContain('Understand what you ship.');
+    expect(root.querySelector('h1')?.textContent).toBe('Build with AI. Understand what you ship.');
+    expect(root.querySelector('.signature-support')?.textContent).toBe('Know why it works. Know when it won’t.');
     expect(root.querySelectorAll('.discovery-feature')).toHaveLength(4);
     const discoveryLinks = [...root.querySelectorAll('.discovery-feature [data-card-primary]')];
     expect(discoveryLinks.map((link) => link.getAttribute('href'))).toEqual([

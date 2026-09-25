@@ -14,7 +14,7 @@
   inset-inline-end: 6px;
 }
 .page-sidebar.open {
-  width: min(224px, calc(100vw - 24px));
+  max-width: calc(100vw - 24px);
   background: var(--surface-page);
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -29,9 +29,9 @@
   z-index: 45;
 }
 .page-sidebar.open.docked {
-  border-block: 0;
+  border: 0;
   border-radius: 0;
-  background: var(--surface-page);
+  background: transparent;
 }
 .left.open.docked {
   border-inline-start: 0;
@@ -40,36 +40,49 @@
   border-inline-end: 0;
 }
 app-sidebar-toggle {
-  position: sticky;
+  position: absolute;
   top: 0;
   z-index: 1;
 }
-.left.open app-sidebar-toggle {
-  margin-inline-start: auto;
+.left app-sidebar-toggle {
+  inset-inline-start: 0;
 }
-.right.open app-sidebar-toggle {
-  margin-inline-end: auto;
+.right app-sidebar-toggle {
+  inset-inline-end: 0;
 }
 .sidebar-content {
-  padding: 0 16px 24px;
+  padding: 8px 24px 24px;
   overflow-wrap: anywhere;
+  min-width: 0;
+  overflow-x: clip;
 }
 .sidebar-content[hidden] {
   display: none;
 }
-.sidebar-eyebrow {
-  margin: -31px 0 22px;
-  padding-inline-end: 38px;
-  color: var(--accent-strong);
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  min-height: 22px;
+.persistent-signature {
+  position: sticky;
+  top: 0;
+  margin: 0 0 20px;
+  padding: 8px 16px 0;
 }
-.right .sidebar-eyebrow {
-  padding-inline-end: 0;
-  padding-inline-start: 38px;
+.left > .persistent-signature {
+  padding-inline-start: 52px;
+}
+.right > .persistent-signature {
+  padding-inline-end: 52px;
+  text-align: start;
+  display: flex;
+  justify-content: flex-end;
+}
+.page-sidebar:not(.open) {
+  max-width: calc(100vw - 24px);
+}
+.left .sidebar-content > nav:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+.left .sidebar-content > nav:first-child a:first-child {
+  padding-inline-start: 36px;
 }
 .sidebar-title {
   font-size: 1rem;
@@ -85,6 +98,11 @@ nav {
   border-top: 1px solid var(--line);
 }
 nav a {
+  width: 100%;
+  box-sizing: border-box;
+  max-width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
   display: flex;
   min-height: 44px;
   align-items: center;
@@ -150,13 +168,6 @@ button {
   background: transparent;
   color: var(--accent-link);
 }
-.sidebar-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 60;
-  border: 0;
-  background: color-mix(in srgb, var(--surface-page) 65%, transparent);
-}
 @media (prefers-reduced-motion: no-preference) {
   .page-sidebar {
     transition: width 160ms ease;
@@ -167,4 +178,15 @@ button {
   font-size: 1.05rem;
   line-height: 1.55;
   margin: 0 0 24px;
+}
+
+.practice-signature {
+  color: var(--text-subtle);
+  margin: 0 0 20px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.right.statement-only > .persistent-signature {
+  padding-inline-end: 16px;
 }

@@ -1,3 +1,4 @@
+import { LearningPrompt } from '../platform-signature/learning-prompt';
 import { PlatformSignature } from '../platform-signature/platform-signature';
 import { DOCUMENT } from '@angular/common';
 import {
@@ -82,9 +83,9 @@ export function canDockSidebar(space: number, width = 224): boolean {
 
 @Component({
   selector: 'app-page-sidebars',
-  imports: [PlatformSignature, SidebarToggle],
+  imports: [LearningPrompt, PlatformSignature, SidebarToggle],
   templateUrl: './page-sidebars.html',
-  styleUrl: './page-sidebars.css',
+  styleUrls: ['./page-sidebars.css', '../author-workspace-nav/sidebar-outline.css'],
 })
 export class PageSidebars implements AfterViewInit, OnDestroy {
   private readonly document = inject(DOCUMENT);
@@ -96,6 +97,7 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
   protected readonly support = signal<PageSectionLink[]>([]);
   protected readonly title = signal('');
   protected readonly homepage = signal(false);
+  protected readonly learningPage = signal(false);
   protected readonly enabled = signal(false);
   protected readonly authorNavigation = signal(false);
   protected readonly leftOpen = signal(false);
@@ -103,6 +105,10 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
   protected readonly leftDocked = signal(false);
   protected readonly rightDocked = signal(false);
   protected readonly headerBottom = signal(76);
+  protected readonly leftWidth = signal(224);
+  protected readonly rightWidth = signal(224);
+  protected readonly leftInset = signal(6);
+  protected readonly rightInset = signal(6);
   protected readonly currentId = signal('');
   protected readonly recallIndex = signal(0);
   protected readonly answerOpen = signal(false);
@@ -113,9 +119,14 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
   protected readonly showLeft = computed(
     () => this.enabled() && !this.authorNavigation() && this.sections().length > 0,
   );
+  protected readonly hasRightContent = computed(
+    () => this.support().length > 0 || this.recall().length > 0,
+  );
   protected readonly showRight = computed(
     () =>
-      this.enabled() && !this.homepage() && (this.support().length > 0 || this.recall().length > 0),
+      this.enabled() &&
+      !this.homepage() &&
+      (this.learningPage() || this.support().length > 0 || this.recall().length > 0),
   );
   protected readonly overlay = computed(
     () => (this.leftOpen() && !this.leftDocked()) || (this.rightOpen() && !this.rightDocked()),
@@ -129,8 +140,6 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
   private leftChosen = false;
   private rightChosen = false;
   private returnFocus: HTMLElement | null = null;
-  private inertPage: HTMLElement | null = null;
-  private pageWasInert = false;
   private clearanceMain: HTMLElement | null = null;
 
   constructor() {
@@ -149,7 +158,6 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
       this.answerOpen.set(false);
       this.schedule(true);
     });
-    effect(() => this.setPageInert(this.overlay()));
   }
 
   ngAfterViewInit(): void {
@@ -183,7 +191,6 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.setPageInert(false);
     this.clearEdgeClearance();
     this.observer?.disconnect();
     this.resizeObserver?.disconnect();
@@ -207,21 +214,6 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
     main.style.setProperty('--sidebar-original-padding-top', padding);
     main.setAttribute('data-sidebar-edge-controls', '');
     this.clearanceMain = main;
-  }
-
-  private setPageInert(inert: boolean): void {
-    if (this.inertPage) {
-      this.inertPage.toggleAttribute('inert', this.pageWasInert);
-      this.inertPage = null;
-    }
-    if (!inert) return;
-    let page = this.main;
-    while (page?.parentElement && page.parentElement.tagName !== 'APP-ROOT')
-      page = page.parentElement;
-    if (!page || page === this.document.body || page === this.document.documentElement) return;
-    this.pageWasInert = page.hasAttribute('inert');
-    this.inertPage = page;
-    page.setAttribute('inert', '');
   }
 
   @HostListener('window:resize')
@@ -262,6 +254,7 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
       return;
     }
     this.homepage.set(main.classList.contains('landing-page'));
+    this.learningPage.set(/^\/(learn|grow|look-ahead)(\/|$)/.test(this.document.location.pathname));
     if (this.needsInventory) {
       this.needsInventory = false;
       this.authorNavigation.set(!!main.querySelector('app-author-workspace-nav'));
@@ -285,7 +278,8 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
     const header = this.document.querySelector('app-platform-header')?.getBoundingClientRect();
     const top = Math.max(0, header?.bottom ?? 76) + 8;
     this.headerBottom.set(top);
-    const bounds = main.getBoundingClientRect();
+    const content = main.querySelector<HTMLElement>(':scope > .question-reader') ?? main;
+    const bounds = content.getBoundingClientRect();
     const width =
       this.document.documentElement.clientWidth || this.document.defaultView!.innerWidth;
     this.updateEdgeClearance(
@@ -293,14 +287,17 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
       !this.authorNavigation() &&
         ((this.showLeft() && bounds.left < 54) || (this.showRight() && width - bounds.right < 54)),
     );
-    const leftDocked = canDockSidebar(bounds.left);
-    const rightDocked = canDockSidebar(width - bounds.right);
-    if (this.leftDocked() && !leftDocked) this.close('left', true);
-    if (this.rightDocked() && !rightDocked) this.close('right', true);
-    this.leftDocked.set(leftDocked);
-    this.rightDocked.set(rightDocked);
-    if (!this.leftChosen) this.leftOpen.set(leftDocked);
-    if (!this.rightChosen) this.rightOpen.set(rightDocked);
+    if (!this.leftChosen) this.leftOpen.set(true);
+    if (!this.rightChosen) this.rightOpen.set(true);
+    const rtl = this.document.defaultView!.getComputedStyle(main).direction === 'rtl';
+    const startSpace = rtl ? width - bounds.right : bounds.left;
+    const endSpace = rtl ? bounds.left : width - bounds.right;
+    this.leftInset.set(6);
+    this.rightInset.set(6);
+    this.leftWidth.set(Math.max(width >= 1100 ? 44 : 224, startSpace - 6));
+    this.rightWidth.set(Math.max(width >= 1100 ? 44 : 224, endSpace - 6 - 24));
+    this.leftDocked.set(canDockSidebar(startSpace));
+    this.rightDocked.set(canDockSidebar(endSpace));
     const visible = this.sections().filter((section) => visibleSidebarTarget(section.target));
     const passed = visible.filter(
       (section) => section.target.getBoundingClientRect().top <= top + 24,
@@ -318,7 +315,6 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
     }
     const docked = side === 'left' ? this.leftDocked() : this.rightDocked();
     if (!docked) {
-      this.close(side === 'left' ? 'right' : 'left');
       this.returnFocus =
         (event.currentTarget as HTMLElement)?.closest('button') ?? (event.target as HTMLElement);
     }
@@ -336,6 +332,9 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
   @HostListener('document:keydown.escape')
   protected closeOverlay(): void {
     if (!this.overlay()) return;
+    const focusInSidebar = !!(this.document.activeElement as HTMLElement | null)?.closest(
+      'app-page-sidebars',
+    );
     if (!this.leftDocked()) {
       this.leftChosen = true;
       this.close('left');
@@ -344,33 +343,7 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
       this.rightChosen = true;
       this.close('right');
     }
-    this.returnFocus?.focus();
-  }
-
-  @HostListener('document:keydown', ['$event'])
-  protected containOverlayFocus(event: KeyboardEvent): void {
-    if (event.key !== 'Tab' || !this.overlay()) return;
-    const side = this.leftOpen() && !this.leftDocked() ? 'left' : 'right';
-    const panel = this.document.getElementById(`page-sidebar-${side}`);
-    const controls = Array.from(
-      panel?.querySelectorAll<HTMLElement>('button, a[href], summary') ?? [],
-    ).filter((control) => !control.closest('[hidden], [inert]'));
-    const first = controls[0];
-    const last = controls.at(-1);
-    if (!first || !last) return;
-    if (
-      event.shiftKey &&
-      (this.document.activeElement === first || !panel?.contains(this.document.activeElement))
-    ) {
-      event.preventDefault();
-      last.focus();
-    } else if (
-      !event.shiftKey &&
-      (this.document.activeElement === last || !panel?.contains(this.document.activeElement))
-    ) {
-      event.preventDefault();
-      first.focus();
-    }
+    if (focusInSidebar) this.returnFocus?.focus();
   }
 
   protected href(section: PageSectionLink): string {

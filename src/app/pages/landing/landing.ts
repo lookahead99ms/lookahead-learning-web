@@ -1,3 +1,4 @@
+import { LearningPrompt } from '../../core/platform-signature/learning-prompt';
 import { PlatformSignature } from '../../core/platform-signature/platform-signature';
 import { DOCUMENT } from '@angular/common';
 import {
@@ -15,7 +16,7 @@ import { EngineeringChallenge } from './engineering-challenge';
 
 @Component({
   selector: 'app-landing',
-  imports: [PlatformSignature, PlatformHeader, RouterLink, EngineeringChallenge],
+  imports: [LearningPrompt, PlatformSignature, PlatformHeader, RouterLink, EngineeringChallenge],
   templateUrl: './landing.html',
   styleUrl: './landing.css',
 })

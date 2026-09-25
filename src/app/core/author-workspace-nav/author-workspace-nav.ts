@@ -2,6 +2,8 @@ import { PlatformSignature } from '../platform-signature/platform-signature';
 import { DOCUMENT } from '@angular/common';
 import {
   Component,
+  ElementRef,
+  afterRenderEffect,
   HostListener,
   inject,
   Input,
@@ -32,12 +34,13 @@ let navigationInstance = 0;
   imports: [PlatformSignature, SidebarToggle],
   host: { '[class.sidebar-collapsed]': '!sidebarOpen()' },
   templateUrl: './author-workspace-nav.html',
-  styleUrl: './author-workspace-nav.css',
+  styleUrls: ['./author-workspace-nav.css', './sidebar-outline.css'],
 })
 export class AuthorWorkspaceNav implements OnChanges, AfterViewInit, OnDestroy {
   protected readonly sidebarOpen = signal(true);
   protected readonly sidebarContentId = `author-sidebar-content-${++navigationInstance}`;
   private readonly document = inject(DOCUMENT);
+  private readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
   @Input() pageTitle = '';
   @Input() pageId: AuthorWorkspacePageId | null = null;
   @Input() headingLevel: 1 | 2 = 1;
@@ -54,6 +57,40 @@ export class AuthorWorkspaceNav implements OnChanges, AfterViewInit, OnDestroy {
   protected readonly documentationOpen = signal(false);
   protected readonly documentationId = `author-documentation-links-${++navigationInstance}`;
   protected readonly currentSection = signal(this.document.defaultView?.location.hash ?? '');
+
+  constructor() {
+    afterRenderEffect(() => {
+      this.currentSection();
+      if (this.sidebarOpen()) this.revealCurrentOutlineItem();
+    });
+  }
+
+  private revealCurrentOutlineItem(): void {
+    const host = this.element.nativeElement;
+    const active = host.querySelector<HTMLElement>('.heading-outline [aria-current="location"]');
+    const view = this.document.defaultView;
+    if (!active || !view) return;
+    // Scroll only the sidebar's own scroll container, never its page or document frame.
+    for (
+      let container: HTMLElement | null = host;
+      container && container !== this.document.body;
+      container = container.parentElement
+    ) {
+      if (
+        !/(auto|scroll)/.test(view.getComputedStyle(container).overflowY) ||
+        container.scrollHeight <= container.clientHeight
+      )
+        continue;
+      const bounds = container.getBoundingClientRect();
+      const item = active.getBoundingClientRect();
+      if (item.bottom <= item.top) return;
+      const top = bounds.top + 8;
+      const bottom = bounds.bottom - 8;
+      if (item.top < top) container.scrollTop += item.top - top;
+      else if (item.bottom > bottom) container.scrollTop += item.bottom - bottom;
+      return;
+    }
+  }
 
   protected get onDocumentationPage(): boolean {
     return this.documentationLinks.some((page) => page.id === this.pageId);
