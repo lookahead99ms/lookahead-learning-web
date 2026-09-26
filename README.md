@@ -41,7 +41,7 @@ The guide supplies the article outline and sidebar recall. Grow uses practical
 verification exercises; Look Ahead uses decision exercises. Scenarios render as
 wrapped text, while Learn code examples remain copyable. Introductory sections share the full lesson’s typography, section surfaces, and
 responsive padding, with aligned content edges. The outline includes both introductory and full-lesson sections. Detailed material and
-practice stay visible in the same reading flow. Unguided foundation lessons put concrete sections before
+practice stay visible in the same reading flow. Code and scenario examples sit on the left on wide screens; explanations flow beside them and continue below to use available space. At narrow widths the reader stacks them in source order. Walkthroughs and explicit multiple points inside explanation cards use semantic bullet lists, preserving headings and single prose explanations. Unguided foundation lessons put concrete sections before
 the abstract model. There is no learner execution service. Proprietary guide
 content belongs in the private Content repo.
 

@@ -57,9 +57,11 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
           }
           <div class="guide-walkthrough">
             <h3>Let's walk through it</h3>
-            @for (paragraph of guide.walkthrough; track paragraph) {
-              <p [innerHTML]="paragraph"></p>
-            }
+            <ul class="walkthrough-points">
+              @for (paragraph of guide.walkthrough; track paragraph) {
+                <li [innerHTML]="paragraph"></li>
+              }
+            </ul>
           </div>
         </section>
         <section
@@ -96,7 +98,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
     }
     <ng-template #referenceLesson>
       <article class="foundation-lesson" aria-label="Foundation lesson">
-        <header class="lesson-intro">
+        <header class="lesson-intro" [class.guided-outcomes]="guide()">
           @if (!guide()) {
             <p>{{ lesson().summary }}</p>
           }
@@ -126,6 +128,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
               !section.solutions?.length &&
               section.body.length > 1
             "
+            [class.three-explanations]="section.body.length === 3"
             [class.code-section]="section.code && !section.solutions?.length && !section.visual"
             [id]="section.id"
           >
@@ -133,6 +136,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
             <h2>{{ section.heading }}</h2>
             @if (section.code; as code) {
               @if (!section.solutions?.length) {
+                <div class="section-code-column">
                 <section class="foundation-code">
                   <header>
                     <span>{{ code.title }}</span>
@@ -143,13 +147,29 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
                   </header>
                   <pre><code>{{ code.source }}</code></pre>
                 </section>
+                </div>
               }
             }
             <div class="section-explanation">
-              @for (paragraph of section.body; track paragraph) {
-                <p [innerHTML]="paragraph"></p>
+              @if (section.navLabel === 'References') {
+                @for (paragraph of referenceParagraphs(section.body); track paragraph) {
+                  <div class="explanation-content" [innerHTML]="cardPoints(paragraph)"></div>
+                }
+                @if (referenceLinks(section.body).length) {
+                  <div class="reference-links-card">
+                    <ul>
+                      @for (link of referenceLinks(section.body); track link) {
+                        <li [innerHTML]="link"></li>
+                      }
+                    </ul>
+                  </div>
+                }
+              } @else {
+                @for (paragraph of section.body; track paragraph) {
+                  <div class="explanation-content" [innerHTML]="cardPoints(paragraph)"></div>
+                }
               }
-              @if (section.callout; as callout) {
+              @if (section.callout?.title !== 'Example boundary' && section.callout; as callout) {
                 <aside class="lesson-callout" [attr.data-callout-type]="callout.type">
                   <strong>{{ callout.title }}</strong>
                   <p [innerHTML]="callout.text"></p>
@@ -405,6 +425,15 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
           linear-gradient(135deg, var(--surface-accent), var(--surface));
         box-shadow: 0 12px 30px var(--shadow);
       }
+      .guided-outcomes > section {
+        grid-column: 1 / -1;
+        min-width: 0;
+      }
+      .guided-outcomes > section > ul {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px 32px;
+      }
       .lesson-intro > p {
         align-self: center;
         margin: 0;
@@ -471,10 +500,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         box-shadow: 0 8px 22px var(--shadow);
       }
       .guided-example {
-        display: grid;
-        grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-        gap: 0 24px;
-        align-items: start;
+        display: flow-root;
       }
       .guided-example > h2 {
         grid-column: 1 / -1;
@@ -489,10 +515,17 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         margin-top: 0;
       }
       .code-section {
-        display: grid;
-        grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-        column-gap: 24px;
-        align-content: start;
+        display: flow-root;
+      }
+      .guided-example > .foundation-code,
+      .guided-example > .guide-scenario,
+      .code-section > .section-code-column {
+        float: inline-start;
+        width: calc(50% - 12px);
+        margin: 0 24px 16px 0;
+      }
+      .code-section .lesson-callout {
+        clear: both;
       }
       .code-section > .section-label,
       .code-section > h2 {
@@ -504,13 +537,48 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
       .text-section > .section-explanation {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        column-gap: 24px;
+        gap: 16px 24px;
         align-items: start;
+      }
+      .text-section.three-explanations > .section-explanation {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .reference-links-card,
+      .text-section > .section-explanation > .explanation-content {
+        margin: 0;
+        padding: 18px 20px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--surface-muted);
+        overflow-wrap: anywhere;
+      }
+      .explanation-content {
+        margin: 1em 0;
+      }
+      .explanation-content > ul {
+        margin-block: 10px 0;
+      }
+      .explanation-content li + li,
+      .walkthrough-points li + li {
+        margin-top: 10px;
+      }
+      .walkthrough-points {
+        list-style-position: inside;
+        padding-left: 0 !important;
+      }
+      .reference-links-card ul {
+        margin: 0;
+      }
+      .reference-links-card li + li {
+        margin-top: 12px;
       }
       .text-section > .section-explanation > .lesson-callout {
         grid-column: 1 / -1;
       }
-      .code-section > .foundation-code {
+      .section-code-column {
+        min-width: 0;
+      }
+      .code-section > .section-code-column > .foundation-code {
         min-width: 0;
         margin-top: 0;
         align-self: start;
@@ -527,7 +595,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         line-height: 1.2;
       }
       .lesson-section > p:not(.section-label),
-      .section-explanation > p {
+      .section-explanation > .explanation-content {
         line-height: 1.7;
       }
       .section-label {
@@ -776,6 +844,13 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         font-size: 0.8rem;
       }
       @media (max-width: 850px) {
+        .guided-example > .foundation-code,
+        .guided-example > .guide-scenario,
+        .code-section > .section-code-column {
+          float: none;
+          width: auto;
+          margin: 0 0 16px;
+        }
         .guided-example,
         .code-section,
         .text-section > .section-explanation {
@@ -801,6 +876,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         .takeaways {
           display: block;
         }
+        .guided-outcomes > section > ul,
         .takeaways > ul,
         .language-notes {
           grid-template-columns: minmax(0, 1fr);
@@ -879,6 +955,23 @@ export class FoundationLessonShell {
         ? 'Make the decision'
         : 'Try one small change',
   );
+
+  protected cardPoints(content: string): string {
+    const points = content.split(/<br\s*\/?\s*>/i).map((point) => point.trim()).filter(Boolean);
+    if (points.length < 2 || /<(?:ul|ol|pre|table)\b/i.test(content)) return content;
+    const heading = /^<strong>[^]*<\/strong>$/.test(points[0]) ? points.shift()! : '';
+    if (points.length < 2) return content;
+    return `${heading}<ul>${points.map((point) => `<li>${point}</li>`).join('')}</ul>`;
+  }
+
+  protected referenceLinks(body: string[]): string[] {
+    return body.filter((paragraph) => /^\s*<a\s[^>]*>[\s\S]*<\/a>\s*$/.test(paragraph));
+  }
+
+  protected referenceParagraphs(body: string[]): string[] {
+    const links = this.referenceLinks(body);
+    return body.filter((paragraph) => !links.includes(paragraph));
+  }
 
   protected practiceReason(questionId: string): string {
     return this.lesson().practice?.find((item) => item.questionId === questionId)?.reason ?? '';

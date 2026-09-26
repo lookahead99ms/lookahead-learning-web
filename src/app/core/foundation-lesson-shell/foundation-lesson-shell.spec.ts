@@ -256,4 +256,49 @@ describe('FoundationLessonShell golden lesson contract', () => {
       expect(root.querySelector('.guide-answer p')?.textContent).toContain('duplicate');
     });
   }
+  it('groups reference links into one semantic list and preserves their destinations', () => {
+    const links = ['one', 'two', 'three'].map((name) =>
+      `<a href="https://example.com/${name}" target="_blank" rel="noopener noreferrer">${name}</a>`);
+    fixture.componentRef.setInput('lesson', {
+      ...lesson,
+      sections: [{ id: 'sample-references', navLabel: 'References',
+        heading: 'References', body: ['Check the runtime version.', ...links] }],
+    });
+    fixture.detectChanges();
+    const section = fixture.nativeElement.querySelector('#sample-references') as HTMLElement;
+    expect(section.querySelectorAll('.reference-links-card').length).toBe(1);
+    expect(section.querySelectorAll('.reference-links-card li').length).toBe(3);
+    expect(section.querySelector('.section-explanation > .explanation-content')?.textContent).toContain('Check the runtime version.');
+    expect(Array.from(section.querySelectorAll('.reference-links-card a')).map((link) => link.getAttribute('href')))
+      .toEqual(['https://example.com/one', 'https://example.com/two', 'https://example.com/three']);
+  });
+
+  it('omits the example boundary while preserving code and explanation', () => {
+    fixture.componentRef.setInput('lesson', {
+      ...lesson,
+      sections: [{ id: 'bounded-example', navLabel: 'Apply', heading: 'Example',
+        body: ['Explain the result.'], code: {title: 'Example code', language: 'java', source: 'int value = 1;'},
+        callout: {title: 'Example boundary', text: 'Supply the collaborators.', type: 'note'} }],
+    });
+    fixture.detectChanges();
+    const section = fixture.nativeElement.querySelector('#bounded-example') as HTMLElement;
+    expect(section.querySelectorAll('.lesson-callout').length).toBe(0);
+    expect(section.querySelector('.foundation-code code')?.textContent).toContain('int value = 1;');
+    expect(section.querySelector('.section-explanation .lesson-callout')).toBeNull();
+    expect(section.querySelector('.section-explanation')?.textContent).toContain('Explain the result.');
+  });
+
+  it('turns explicit card points into bullets while retaining the heading and inline emphasis', () => {
+    fixture.componentRef.setInput('lesson', {
+      ...lesson, sections: [{id: 'point-card', navLabel: 'Mechanics', heading: 'Mechanics',
+        body: ['<strong>How does this work?</strong><br>First <strong>point</strong>.<br>Second point.', 'A single explanation.']}],
+    });
+    fixture.detectChanges();
+    const card = fixture.nativeElement.querySelector('#point-card .explanation-content') as HTMLElement;
+    expect(card.querySelectorAll('ul > li').length).toBe(2);
+    expect(card.firstElementChild?.textContent).toBe('How does this work?');
+    expect(card.querySelector('li strong')?.textContent).toBe('point');
+    expect(fixture.nativeElement.querySelectorAll('#point-card ul').length).toBe(1);
+  });
+
 });
