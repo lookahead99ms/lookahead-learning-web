@@ -546,6 +546,18 @@ export interface FoundationLessonModel {
   selectionRule: string;
 }
 
+export interface LessonTeachingGuide {
+  prerequisite: string;
+  exampleTitle: string;
+  language: string;
+  code: string;
+  walkthrough: string[];
+  try: string;
+  answer: string;
+  takeaways: string[];
+  later: string;
+}
+
 /**
  * A compact golden contract for foundation topics. It preserves the same
  * orientation, invariant, retrieval, and transfer loop as a pattern lesson
@@ -553,6 +565,10 @@ export interface FoundationLessonModel {
  */
 export interface FoundationLessonV1 extends InterviewQuestion {
   schemaVersion: 'foundation-lesson/v1';
+  /** An introductory reading path followed by the full lesson inline. */
+  beginnerGuide?: LessonTeachingGuide;
+  /** Practical Grow or decision-focused Look Ahead first reading path. */
+  teachingGuide?: LessonTeachingGuide;
   summary: string;
   learningOutcomes: string[];
   memoryAnchor: PatternMemoryAnchor;

@@ -177,4 +177,83 @@ describe('FoundationLessonShell golden lesson contract', () => {
     expect(pitfalls.classList.contains('wide-section')).toBe(true);
     expect(pitfalls.querySelector('.pitfall-list')).not.toBeNull();
   });
+
+  it('shows the full lesson after the introduction while keeping the exercise answer concealed', () => {
+    fixture.componentRef.setInput('lesson', {
+      ...lesson,
+      beginnerGuide: {
+        prerequisite: 'Know how to read a short list of numbers.',
+        exampleTitle: 'Find the smallest number',
+        language: 'text',
+        code: '4, 2, 7',
+        walkthrough: ['Compare 4 with 2.', 'Keep 2.', 'Compare 2 with 7.'],
+        try: 'Add 1 to the list. Which value is smallest?',
+        answer: 'The smallest value is 1.',
+        takeaways: ['Compare values.', 'Keep the best so far.', 'Check every entry.'],
+        later: 'Explore the heap model when you need repeated minimum lookups.',
+      },
+    } satisfies FoundationLessonV1);
+    fixture.detectChanges();
+
+    const guide = fixture.nativeElement.querySelector('.beginner-guide') as HTMLElement;
+    const reference = fixture.nativeElement.querySelector('.foundation-reference') as HTMLElement;
+    const answer = guide.querySelector('.guide-answer') as HTMLDetailsElement;
+    expect(normalizedText(guide)).toContain('Find the smallest number');
+    expect(guide.querySelector('code')?.textContent).toBe('4, 2, 7');
+    expect(guide.querySelector('app-code-copy-button')).not.toBeNull();
+    expect(reference.tagName).toBe('DIV');
+    expect(reference.closest('details')).toBeNull();
+    expect(answer.open).toBe(false);
+    expect(reference.querySelector('#foundation-model')).not.toBeNull();
+    expect(reference.querySelector('.question-bank-link')).not.toBeNull();
+
+    answer.querySelector('summary')!.click();
+    expect(answer.open).toBe(true);
+    expect(normalizedText(answer)).toContain('The smallest value is 1.');
+  });
+  it('introduces the concrete lesson sections before the abstract model', () => {
+    const sections = [
+      ...fixture.nativeElement.querySelectorAll('.foundation-lesson > section'),
+    ].map((section: any) => section.id);
+    expect(sections.indexOf('heap-trace')).toBeLessThan(sections.indexOf('foundation-model'));
+  });
+
+  for (const [pathId, exercise, accessibleName] of [
+    ['grow', 'Try it and verify', 'Guided implementation'],
+    ['look-ahead', 'Make the decision', 'Guided decision'],
+  ]) {
+    it(`keeps ${pathId} teaching and detailed review available`, () => {
+      fixture.componentRef.setInput('pathId', pathId);
+      fixture.componentRef.setInput('lesson', {
+        ...lesson,
+        teachingGuide: {
+          prerequisite: 'Understand the existing service contract.',
+          exampleTitle: 'Handle a lost response',
+          language: 'Scenario',
+          code: 'Send → commit → response lost',
+          walkthrough: [
+            'Keep the operation ID.',
+            'Look up its status.',
+            'Reconcile unresolved work.',
+          ],
+          try: 'Would a new operation ID be safe?',
+          answer: 'It could duplicate the effect.',
+          takeaways: ['Keep identity.', 'Bound retries.', 'Recover unknown outcomes.'],
+          later: 'Continue into the implementation and trade-offs.',
+        },
+      } satisfies FoundationLessonV1);
+      fixture.detectChanges();
+      const root = fixture.nativeElement as HTMLElement;
+      expect(root.querySelector('article')?.getAttribute('aria-label')).toBe(accessibleName);
+      expect(root.querySelector('.guide-scenario')?.textContent).toContain('response lost');
+      expect(root.querySelector('.beginner-guide app-code-copy-button')).toBeNull();
+      expect(root.querySelector('#foundation-try-heading')?.textContent).toBe(exercise);
+      const reference = root.querySelector('.foundation-reference') as HTMLElement;
+      expect(reference.tagName).toBe('DIV');
+      expect(reference.closest('details')).toBeNull();
+      expect(reference.querySelector(':scope > summary')).toBeNull();
+      expect(reference.querySelector('.question-bank-link')).not.toBeNull();
+      expect(root.querySelector('.guide-answer p')?.textContent).toContain('duplicate');
+    });
+  }
 });

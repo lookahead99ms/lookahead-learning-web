@@ -261,16 +261,6 @@ button:disabled {
   background: var(--surface-muted);
   border-color: var(--accent-strong);
 }
-.carousel-caption {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 8px;
-}
-.carousel-caption p {
-  margin: 0;
-  font-size: 11px;
-}
 #paths {
   padding: 14px 0 24px;
   scroll-margin-top: 90px;
@@ -442,16 +432,6 @@ button:disabled {
   border-top: 1px solid var(--platform-edge-soft);
   padding: 20px 0;
   font-size: 13px;
-}
-.screen-reader-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
 }
 @media (max-width: 800px) {
   .landing-page {
