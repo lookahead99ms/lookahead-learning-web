@@ -197,9 +197,14 @@ import { FOCUS_STUDIO_PATTERN, usesFocusStudio } from '../../content/focus-studi
         }
       }
       .practice-return {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px 24px;
         margin: 0 0 16px;
       }
       .practice-return a {
+        text-decoration: underline;
+        text-underline-offset: 4px;
         color: var(--search-primary);
         font-weight: 700;
       }
@@ -788,6 +793,23 @@ import { FOCUS_STUDIO_PATTERN, usesFocusStudio } from '../../content/focus-studi
       }
       .theory-language-notes li:last-child {
         margin-bottom: 0;
+      }
+      .question-review-navigation {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px 24px;
+        margin: 16px 0 24px;
+      }
+      .question-review-navigation .practice-return { margin: 0; }
+      .question-review-navigation .related-theory-link {
+        margin: 0 0 0 auto;
+        text-align: end;
+        min-width: 0;
+        overflow-wrap: anywhere;
+        text-decoration: underline;
+        text-underline-offset: 4px;
       }
       .related-theory-link {
         display: inline-flex;
@@ -1601,12 +1623,21 @@ export class Question implements OnInit {
     return url ? { url } : null;
   }
 
+  protected readonly reviewModuleDestination = signal<UrlTree | null>(null);
+  private readonly reviewModuleId = signal('');
+  protected readonly reviewModuleLabel = computed(() =>
+    this.course()?.modules.find((module) => module.id === this.reviewModuleId())?.title
+      ?? this.reviewModuleId().split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+  );
+
   ngOnInit(): void {
     this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       this.surpriseMode.set(params.get('mode') === 'surprise');
       this.navigationContextId.set(params.get('pattern') ?? '');
       const returnTo = params.get('returnTo') ?? '';
       this.returnDestination.set(null);
+      this.reviewModuleDestination.set(null);
+      this.reviewModuleId.set('');
       if (/^\/(search|interview-questions|learn\/hands-on-dsa)(?:\?|$)/.test(returnTo)) {
         try {
           const destination = this.router.parseUrl(returnTo);
@@ -1620,11 +1651,19 @@ export class Question implements OnInit {
             (segments?.length === 1 && ['search', 'interview-questions'].includes(segments[0].path))
           ) {
             this.returnDestination.set(destination);
+            const { path, course, module, kind, unit } = destination.queryParams;
+            if (kind === 'practice' && ['learn', 'grow', 'look-ahead'].includes(path)
+              && [course, module, unit || module].every((value) => typeof value === 'string' && /^[a-zA-Z0-9_-]+$/.test(value))) {
+              this.reviewModuleId.set(module);
+              this.reviewModuleDestination.set(this.router.createUrlTree(['/', path, course], {
+                fragment: 'unit-' + (unit || module),
+              }));
+            }
             this.returnLabel.set(
               isDsaCatalog
                 ? 'Return to DSA problems'
                 : segments![0].path === 'search'
-                  ? 'Return to search results'
+                  ? this.reviewModuleDestination() ? 'Back to review questions' : 'Return to search results'
                   : 'Return to interview practice',
             );
           }

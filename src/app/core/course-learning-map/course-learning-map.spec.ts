@@ -80,7 +80,7 @@ describe('CourseLearningMap', () => {
     expect(link.querySelector('span')?.textContent).toBe('3');
     expect(link.getAttribute('aria-label')).toBe('Review questions for this topic: 3 questions');
     expect(link.getAttribute('href')).toBe(
-      '/interview-questions?path=learn&course=course&module=question-module',
+      '/interview-questions?path=learn&course=course&module=question-module&unit=unit',
     );
   });
 

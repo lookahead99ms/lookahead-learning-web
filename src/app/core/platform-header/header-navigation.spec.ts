@@ -37,37 +37,27 @@ describe('Header curriculum navigation', () => {
     };
     return { fixture, http, button };
   }
-  it('loads only selected navigation summaries, reuses cache and keeps one course expanded', () => {
+  it('loads and caches the path directory without course disclosures or highlight requests', () => {
     const { fixture, http, button } = setup();
-    http.expectNone(() => true);
     expand(button('Browse Learn'));
     http.expectOne('/content/learn/navigation.json').flush({
-      courses: [
-        { id: 'core-java', title: 'Java Foundations', hasHighlights: true },
-        { id: 'python-fundamentals', title: 'Python', hasHighlights: true },
-      ],
+      courses: [{ id: 'core-java', title: 'Java Foundations', hasHighlights: true }],
     });
     fixture.detectChanges();
-    expand(button('Show highlights for Java Foundations'));
-    http
-      .expectOne('/content/learn/core-java/navigation-highlights.json')
-      .flush({ highlights: ['JVM execution', 'Values and references', 'Exceptions'] });
+    const course = button('Java Foundations');
+    expect(course.getAttribute('href')).toBe('/learn/core-java');
+    expect(course.hasAttribute('aria-expanded')).toBe(false);
+    expect(course.hasAttribute('aria-controls')).toBe(false);
+    expand(course);
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelectorAll('.course-highlights li').length).toBe(3);
-    expect(fixture.nativeElement.querySelector('.course-highlights a')).toBeNull();
-    expand(button('Show highlights for Python'));
-    http
-      .expectOne('/content/learn/python-fundamentals/navigation-highlights.json')
-      .flush({ highlights: ['Python syntax', 'Collections', 'Functions'] });
-    fixture.detectChanges();
-    expect(fixture.nativeElement.querySelectorAll('.course-highlights').length).toBe(1);
-    expect(fixture.nativeElement.textContent).not.toContain('JVM execution');
+    expect(fixture.nativeElement.querySelector('.course-highlights')).toBeNull();
+    http.expectNone(() => true);
     fixture.componentInstance.close();
     fixture.detectChanges();
     expand(button('Browse Learn'));
     fixture.detectChanges();
     http.expectNone(() => true);
-    expect(button('Show highlights for Java Foundations')).not.toBeNull();
+    expect(button('Java Foundations')).not.toBeNull();
   });
   it('cancels stale requests and falls back to the published catalog during version skew', () => {
     const { fixture, http, button } = setup();
@@ -241,12 +231,9 @@ describe('Header hover and touch behavior', () => {
     const course = fixture.nativeElement.querySelector('.course-row a');
     course.closest('li').dispatchEvent(new PointerEvent('pointerenter', { pointerType: 'mouse' }));
     vi.advanceTimersByTime(180);
-    http
-      .expectOne('/content/learn/core-java/navigation-highlights.json')
-      .flush({ highlights: ['JVM execution', 'Values and references', 'Exceptions'] });
+    http.expectNone(() => true);
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelectorAll('.course-highlights li').length).toBe(3);
-    expect(fixture.nativeElement.querySelector('.course-highlights a')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.course-highlights')).toBeNull();
     expect(fixture.nativeElement.textContent).not.toContain('Show highlights');
     expect(fixture.nativeElement.querySelector('.path-entry button')).toBeNull();
     fixture.nativeElement
@@ -287,33 +274,26 @@ describe('Header hover and touch behavior', () => {
     expect(modified.defaultPrevented).toBe(false);
     expect(link.getAttribute('href')).toBe('/learn');
   });
-  it('preserves course highlight expansion on first touch and navigation on the second', () => {
-    const { fixture, http, link } = setup();
-    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
-    expand(link);
-    http
-      .expectOne('/content/learn/navigation.json')
-      .flush({ courses: [{ id: 'core-java', title: 'Java Foundations', hasHighlights: true }] });
+  it.each(['learn', 'grow', 'look-ahead'])('opens a %s course on the first tap and preserves modified clicks', (path) => {
+    const { fixture, http } = setup();
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+    expand(fixture.nativeElement.querySelector('#browse-' + path));
+    http.expectOne('/content/' + path + '/navigation.json').flush({
+      courses: [{ id: 'example', title: 'Example course', hasHighlights: true }],
+    });
     fixture.detectChanges();
     const course = fixture.nativeElement.querySelector('.course-row a') as HTMLAnchorElement;
-    const tap = () => {
-      course.dispatchEvent(
-        new PointerEvent('pointerdown', { pointerType: 'touch', bubbles: true }),
-      );
-      course.dispatchEvent(new MouseEvent('click', { detail: 1, bubbles: true, cancelable: true }));
-    };
-    tap();
-    http
-      .expectOne('/content/learn/core-java/navigation-highlights.json')
-      .flush({ highlights: ['Values and references'] });
-    fixture.detectChanges();
+    course.dispatchEvent(new PointerEvent('pointerdown', { pointerType: 'touch', bubbles: true }));
+    course.dispatchEvent(new MouseEvent('click', { detail: 1, bubbles: true, cancelable: true }));
+    expect(navigate).toHaveBeenCalledTimes(1);
+    expect(TestBed.inject(Router).serializeUrl(navigate.mock.calls[0][0] as any)).toBe('/' + path + '/example');
+    expect(course.hasAttribute('aria-expanded')).toBe(false);
+    http.expectNone(() => true);
+    navigate.mockClear();
+    const modified = new MouseEvent('click', { ctrlKey: true, bubbles: true, cancelable: true });
+    course.dispatchEvent(modified);
+    expect(modified.defaultPrevented).toBe(false);
     expect(navigate).not.toHaveBeenCalled();
-    expect(course.getAttribute('aria-expanded')).toBe('true');
-    expect(fixture.nativeElement.querySelector('.course-highlights')?.textContent).toContain(
-      'Values and references',
-    );
-    tap();
-    expect(navigate).toHaveBeenCalledWith(['/', 'learn', 'core-java']);
     fixture.destroy();
   });
 });

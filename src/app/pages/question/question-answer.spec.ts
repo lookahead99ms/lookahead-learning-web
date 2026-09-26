@@ -96,7 +96,12 @@ describe('Non-DSA Answer + Example', () => {
       expect(layout.querySelector('.code-panel pre')?.getAttribute('tabindex')).toBe('0');
       expect(layout.querySelector('.code-panel app-code-copy-button')).not.toBeNull();
       expect(layout.querySelector('.compatibility-notes')?.textContent).toContain('17+');
-      expect(layout.querySelector('.related-theory-link')?.getAttribute('href')).toBe(
+      const reviewRow = root.querySelector('.question-review-navigation')!;
+      expect(reviewRow).not.toBeNull();
+      expect(root.querySelectorAll('.related-theory-link')).toHaveLength(1);
+      expect(root.querySelector('.reader-question-panel')!.compareDocumentPosition(reviewRow) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(reviewRow.compareDocumentPosition(layout) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(reviewRow.querySelector('.related-theory-link')?.getAttribute('href')).toBe(
         `/${path}/sample/theory`,
       );
       expect(root.querySelector('app-dsa-problem-pilot')).toBeNull();

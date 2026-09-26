@@ -9,6 +9,7 @@ export interface SidebarRecall {
 export interface PageSidebarContextValue {
   excluded: boolean;
   hideNavigation?: boolean;
+  groupLabel?: string;
   recall?: readonly SidebarRecall[];
   groups?: readonly { id: string; sectionId?: string; title: string; courses: readonly { id: string; title: string; url: string }[] }[];
 }

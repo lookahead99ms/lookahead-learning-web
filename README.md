@@ -19,6 +19,14 @@ remain available. The homepage has only a left outline and retains its signature
 hero. Coding Problem Workspace is excluded; author pages retain their existing layout.
 Sidebar state is transient and adds no API or saved-session contract.
 
+## Header course navigation
+
+Learn, Grow and Look Ahead open compact course directories. Course links open their
+canonical route on the first click or tap; they do not expand a Course Highlights
+panel or request per-course highlights. Keyboard users expand a path with Down
+Arrow or Space and activate a course with Enter. Escape closes the directory and
+returns focus to its path link. Modified clicks retain native link behavior.
+
 ## Platform highlights
 
 - Learn foundations, Grow production practice, and Look Ahead architecture,
@@ -567,3 +575,49 @@ Course overviews across Learn, Grow and Look Ahead use the shared course layout 
 The two platform statements remain visible independently of sidebar navigation, including account, Search and course overview pages. Coding Problem Workspace excludes both statements; homepage uses its existing in-content statements.
 
 PageSidebarContext supports navigation-only exclusion while retaining platform statements. The Mediator Pattern question uses this mode.
+
+Sidebar links and group controls use a tinted hover/focus background with the shared
+link color and matching underline. Selected sections retain their accent border.
+
+Standalone platform statements use the centered reader or loading/error message
+gutters. When side space is insufficient, they flow below the content with normal
+word wrapping instead of becoming narrow fixed columns.
+
+Catalog sidebar subsection/course links use a dedicated teal (light) / mint (dark) token; parent
+section controls retain bold neutral text. Indentation and hover/focus cues remain.
+
+Catalog sidebar section controls expand their course links on first activation.
+Activating an expanded control collapses its courses and navigates to the matching
+page heading, updating the fragment and focus with the shared header offset.
+Learn shows Foundation Tracks once beneath its sidebar title; the repeated
+Foundation track labels are omitted from the page sections.
+
+Catalog sidebars highlight the path title and track label while the overview is
+current. Scrolling into a group transfers the single current-location highlight
+to that group; scrolling back restores the overview highlight. Learn uses
+Foundation Tracks, Grow Production Capabilities, and Look Ahead Senior-readiness
+Tracks. Each label appears once in the sidebar rather than above every group.
+
+Search statement placement measures the inner search-shell gutters. Statements
+remain outside the controls when docked and use normal flow when space is insufficient.
+
+Course question reviews use a focused Search header with **Back to [module]** and
+**Search all content**. Learning-map links carry the original unit ID; returning
+to the course opens that unit and scrolls it into view. Question readers preserve
+the filtered results URL and offer both return destinations. General Search keeps
+its query form. Study Plan's curriculum retry reloads the manifest and all index
+shards together, so an earlier cached publication does not trap the retry loop.
+
+Focused course reviews also omit activity/filter and results/sort toolbars;
+question cards follow the review heading directly. General Search retains those controls.
+
+Review navigation uses underlined text links below the heading and module label,
+with module return aligned left and Search all content aligned right. Links wrap
+on phones and retain visible hover/focus feedback and44px minimum hit targets.
+
+Question return links share a row with Review theory below the question panel,
+with return navigation aligned left and theory aligned right. Loading/error views
+keep their return links inside the centered message container.
+
+The shared question-bank link adds a return-unit query parameter only when the
+calling learning map supplies an explicit unit; lesson links retain their existing URLs.

@@ -69,9 +69,12 @@ export class ContentService {
       }),
     );
   }
-  private readonly contentIndexManifest$ = this.http
-    .get<ContentIndexManifest>('/content/content-index-manifest.json')
-    .pipe(shareReplay({ bufferSize: 1, refCount: true }));
+  private contentIndexManifest$ = this.loadContentIndexManifest();
+
+  private loadContentIndexManifest(): Observable<ContentIndexManifest> {
+    return this.http.get<ContentIndexManifest>('/content/content-index-manifest.json')
+      .pipe(shareReplay({ bufferSize: 1, refCount: true }));
+  }
   private readonly contentIndexShards = new Map<ContentPath, Observable<SearchDocument[]>>();
   private readonly handsOnDsaIndex$ = this.http
     .get<HandsOnDsaIndex>('/content/hands-on-dsa-index.json')
@@ -194,7 +197,13 @@ export class ContentService {
       : this.http.get<ReadyMadeTemplate>(href);
   }
 
-  getSearchIndex(path?: ContentPath): Observable<SearchDocument[]> {
+  getSearchIndex(path?: ContentPath, refresh = false): Observable<SearchDocument[]> {
+    if (refresh) {
+      // A content publication can change both the manifest and its shards.
+      // Retry the whole snapshot rather than replaying an earlier manifest.
+      this.contentIndexShards.clear();
+      this.contentIndexManifest$ = this.loadContentIndexManifest();
+    }
     return this.getContentIndex(path).pipe(map(({ documents }) => documents));
   }
 

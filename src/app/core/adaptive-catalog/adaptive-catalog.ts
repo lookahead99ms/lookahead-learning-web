@@ -104,6 +104,8 @@ export class AdaptiveCatalog implements OnInit {
   protected readonly error = signal('');
   protected readonly sidebarContext = computed(() => ({
     excluded: false,
+    groupLabel: this.config().path === 'learn' ? 'Foundation Tracks'
+      : this.config().path === 'grow' ? 'Production Capabilities' : 'Senior-readiness Tracks',
     groups: this.groups().map((group) => ({
       id: group.id,
       sectionId: `${this.config().path}-group-${group.id}-heading`,

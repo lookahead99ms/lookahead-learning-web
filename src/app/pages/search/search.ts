@@ -60,6 +60,16 @@ export class Search implements OnInit, AfterViewInit {
   private readonly urlSyncInfo = {};
   private readonly router = inject(Router);
   protected readonly questions = signal<SearchDocument[]>([]);
+  protected readonly reviewUnit = signal('');
+  protected readonly reviewContext = computed(() => {
+    if (this.selectedDiscoveryKind() !== 'practice') return null;
+    const item = this.questions().find((item) => item.path === this.selectedPath()
+      && item.courseId === this.selectedCourseId() && item.moduleId === this.selectedModuleId());
+    if (!item) return null;
+    const unit = this.reviewUnit() || item.moduleId;
+    if (!/^[a-zA-Z0-9_-]+$/.test(unit)) return null;
+    return { title: item.moduleTitle, route: ['/', item.path, item.courseId], fragment: 'unit-' + unit };
+  });
   protected readonly query = signal('');
   protected readonly submittedQuery = signal('');
   protected readonly selectedPath = signal<'all' | ContentPath>('all');
@@ -261,6 +271,7 @@ export class Search implements OnInit, AfterViewInit {
       const initialTags = [...params.getAll('tag'), ...(params.get('tags')?.split(',') ?? [])]
         .map((tag) => tag.trim())
         .filter(Boolean);
+      this.reviewUnit.set(params.get('unit') ?? '');
       this.query.set(initialQuery);
       this.submittedQuery.set(initialQuery);
       const initialPath =
@@ -300,10 +311,10 @@ export class Search implements OnInit, AfterViewInit {
     const page = this.searchPage?.nativeElement;
     const heading = this.searchHeading?.nativeElement;
     const filters = this.modeFilterRow?.nativeElement;
-    if (!page || !heading || !filters) return;
+    if (!page || !heading) return;
     const headingMargin = Number.parseFloat(getComputedStyle(heading).marginBottom) || 0;
     page.style.setProperty('--search-heading-stack', `${Math.ceil(heading.getBoundingClientRect().height + headingMargin)}px`);
-    page.style.setProperty('--search-filter-height', `${Math.ceil(filters.getBoundingClientRect().height)}px`);
+    page.style.setProperty('--search-filter-height', `${Math.ceil(filters?.getBoundingClientRect().height ?? 0)}px`);
   }
 
   protected readonly results = computed(() => {
@@ -373,6 +384,7 @@ export class Search implements OnInit, AfterViewInit {
   }
 
   protected updatePath(value: string): void {
+    this.reviewUnit.set('');
     const path = value as 'all' | ContentPath;
     this.setPathFilter(path);
     this.selectedCourseId.set('all');
@@ -383,6 +395,7 @@ export class Search implements OnInit, AfterViewInit {
   }
 
   protected updateCourse(value: string): void {
+    this.reviewUnit.set('');
     this.selectedCourseId.set(value);
     this.selectedModuleId.set('all');
     this.resetVisibleResults();
@@ -390,6 +403,7 @@ export class Search implements OnInit, AfterViewInit {
   }
 
   protected updateModule(value: string): void {
+    this.reviewUnit.set('');
     this.selectedModuleId.set(value);
     this.resetVisibleResults();
     this.syncUrl();
@@ -1111,6 +1125,7 @@ export class Search implements OnInit, AfterViewInit {
         replaceUrl: true,
         info: this.urlSyncInfo,
         queryParams: {
+          unit: this.reviewUnit() || null,
           q: this.submittedQuery() || null,
           path: this.selectedPath() === 'all' ? null : this.selectedPath(),
           course: this.selectedCourseId() === 'all' ? null : this.selectedCourseId(),

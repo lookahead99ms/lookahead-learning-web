@@ -1261,3 +1261,46 @@ select {
     position: static;
   }
 }
+
+.review-navigation {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px 24px;
+  margin-top: 16px;
+}
+.review-navigation a {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: 44px;
+  min-width: 0;
+  padding-block: 8px;
+  color: var(--accent-link);
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.5;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1px;
+  overflow-wrap: anywhere;
+}
+.review-navigation .review-back { text-align: start; }
+.review-navigation .review-search {
+  flex-shrink: 0;
+  margin-inline-start: auto;
+  text-align: end;
+}
+.review-navigation a:hover {
+  color: var(--text-strong);
+  text-decoration-thickness: 2px;
+}
+.review-navigation a:focus-visible {
+  outline: 3px solid var(--accent-link);
+  outline-offset: 3px;
+}
+@media (max-width: 540px) {
+  .review-navigation { gap: 12px; }
+  .review-navigation .review-search { max-width: 38%; }
+}
+.search-heading.review-heading { grid-template-columns: minmax(0, 1fr); }

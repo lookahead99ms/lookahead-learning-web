@@ -366,6 +366,33 @@ describe('ContentService compact indexes and selected details', () => {
     http.verify();
   });
 
+  it('refreshes the manifest and all cached shards when retrying a changed publication', () => {
+    const { service, http } = setup();
+    const manifest = (count: number) => ({
+      schemaVersion: 'content-index-manifest/v1',
+      totals: { searchDocuments: count, practiceDocuments: count },
+      practiceContentTypes: ['q-and-a'],
+      shards: [{ path: 'learn', href: '/content/indexes/learn.json', documentCount: count, practiceDocumentCount: count }],
+    });
+    let failed = false;
+    service.getSearchIndex().subscribe({ error: () => { failed = true; } });
+    http.expectOne('/content/content-index-manifest.json').flush(manifest(1));
+    http.expectOne('/content/indexes/learn.json').flush({
+      schemaVersion: 'content-index-shard/v1', path: 'learn',
+      documents: [record('first', 'q-and-a'), record('second', 'q-and-a')],
+    });
+    expect(failed).toBe(true);
+    let ids: string[] = [];
+    service.getSearchIndex(undefined, true).subscribe((documents) => { ids = documents.map((item) => item.id); });
+    http.expectOne('/content/content-index-manifest.json').flush(manifest(2));
+    http.expectOne('/content/indexes/learn.json').flush({
+      schemaVersion: 'content-index-shard/v1', path: 'learn',
+      documents: [record('first', 'q-and-a'), record('second', 'q-and-a')],
+    });
+    expect(ids).toEqual(['first', 'second']);
+    http.verify();
+  });
+
   it('loads only the requested path shard and reuses it for a later full index', () => {
     const { service, http } = setup();
     const scopedIds: string[][] = [];

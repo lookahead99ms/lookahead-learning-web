@@ -33,9 +33,6 @@ export class NavigationService {
     }
     return request;
   }
-  highlights(path: string, course: string): Observable<{ highlights: string[] }> {
-    return this.load(`/content/${path}/${course}/navigation-highlights.json`);
-  }
   private load<T>(url: string): Observable<T> {
     let request = this.cache.get(url);
     if (!request) {

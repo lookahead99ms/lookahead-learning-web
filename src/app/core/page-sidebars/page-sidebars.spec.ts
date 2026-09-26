@@ -131,6 +131,31 @@ describe('Shared page sidebars', () => {
     expect(root.querySelector('.catalog-group-toggle')).toBeNull();
   });
 
+  it('expands first, then collapses and navigates to the section on the second activation', () => {
+    TestBed.inject(PageSidebarContext).set(contextOwner, {
+      excluded: false,
+      groupLabel: 'Foundation Tracks',
+      groups: [{ id: 'mechanism', sectionId: 'existing', title: 'Mechanism', courses: [{ id: 'example', title: 'Example', url: '/learn/example' }] }],
+    });
+    const scroll = vi.spyOn(window, 'scrollBy').mockImplementation(() => {});
+    const history = vi.spyOn(window.history, 'pushState').mockImplementation(() => {});
+    flush();
+    expect(root.querySelector('.sidebar-group-label')?.textContent).toBe('Foundation Tracks');
+    button('Open left sidebar').click();
+    flush();
+    button('Expand Mechanism').click();
+    flush();
+    expect(scroll).not.toHaveBeenCalled();
+    expect(history).not.toHaveBeenCalled();
+    expect(root.querySelector<HTMLElement>('#sidebar-group-mechanism')?.hidden).toBe(false);
+    button('Collapse Mechanism and go to section').click();
+    flush();
+    expect(root.querySelector<HTMLElement>('#sidebar-group-mechanism')?.hidden).toBe(true);
+    expect(scroll).toHaveBeenCalledTimes(1);
+    expect(history.mock.calls[0][2]).toContain('#existing');
+    expect(document.activeElement).toBe(main.querySelector('#existing'));
+  });
+
   it('highlights the catalog group corresponding to the visible section independently of expansion', () => {
     TestBed.inject(PageSidebarContext).set(contextOwner, {
       excluded: false,
@@ -145,6 +170,25 @@ describe('Shared page sidebars', () => {
     expect(group.getAttribute('aria-expanded')).toBe('false');
   });
 
+  it('highlights the overview at the top and transfers selection to sections and back', () => {
+    TestBed.inject(PageSidebarContext).set(contextOwner, {
+      excluded: false, groupLabel: 'Foundation Tracks',
+      groups: [{ id: 'mechanism', sectionId: 'existing', title: 'Mechanism', courses: [{ id: 'example', title: 'Example', url: '/learn/example' }] }],
+    });
+    const section = vi.spyOn(main.querySelector('#existing')!, 'getBoundingClientRect').mockReturnValue({ top: 600 } as DOMRect);
+    vi.spyOn(main.querySelector('#practice')!, 'getBoundingClientRect').mockReturnValue({ top: 1000 } as DOMRect);
+    flush(); refresh();
+    expect(root.querySelector('.catalog-overview')?.getAttribute('aria-current')).toBe('location');
+    expect(root.querySelector('.catalog-group-toggle')?.hasAttribute('aria-current')).toBe(false);
+    section.mockReturnValue({ top: 90 } as DOMRect);
+    refresh();
+    expect(root.querySelector('.catalog-overview')?.hasAttribute('aria-current')).toBe(false);
+    expect(root.querySelector('.catalog-group-toggle')?.getAttribute('aria-current')).toBe('location');
+    section.mockReturnValue({ top: 600 } as DOMRect);
+    refresh();
+    expect(root.querySelector('.catalog-overview')?.getAttribute('aria-current')).toBe('location');
+  });
+
   it('selects the final section when scrolling reaches the document bottom', () => {
     vi.spyOn(window, 'scrollY', 'get').mockReturnValue(400);
     vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(800);
@@ -154,6 +198,19 @@ describe('Shared page sidebars', () => {
     expect(root.querySelector('[aria-current="location"]')?.textContent).toContain('Practice');
   });
 
+  it('updates selection when scrolling upward after reaching the bottom', () => {
+    const scroll = vi.spyOn(window, 'scrollY', 'get').mockReturnValue(400);
+    vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(800);
+    vi.spyOn(document.documentElement, 'scrollHeight', 'get').mockReturnValue(1200);
+    vi.spyOn(main.querySelector('#existing')!, 'getBoundingClientRect').mockReturnValue({ top: 90 } as DOMRect);
+    vi.spyOn(main.querySelector('#practice')!, 'getBoundingClientRect').mockReturnValue({ top: 500 } as DOMRect);
+    refresh();
+    expect(root.querySelector('[aria-current="location"]')?.textContent).toContain('Practice');
+    scroll.mockReturnValue(200);
+    refresh();
+    expect(root.querySelector('[aria-current="location"]')?.textContent).toContain('Mechanism');
+  });
+
   it('allows a page to hide navigation while retaining both statements', () => {
     TestBed.inject(PageSidebarContext).set(contextOwner, { excluded: false, hideNavigation: true });
     flush();
@@ -161,6 +218,40 @@ describe('Shared page sidebars', () => {
     expect(root.querySelector('app-sidebar-toggle')).toBeNull();
     expect(root.querySelector('app-platform-signature')).not.toBeNull();
     expect(root.querySelector('app-learning-prompt')).not.toBeNull();
+  });
+
+  it('uses the centered error message gutter for readable standalone text', () => {
+    main.classList.add('course-page');
+    vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(1800);
+    vi.mocked(main.getBoundingClientRect).mockReturnValue({ left: 0, right: 1800 } as DOMRect);
+    main.innerHTML = '<section class="page-message"><h1>Content unavailable</h1></section>';
+    vi.spyOn(main.querySelector('.page-message')!, 'getBoundingClientRect').mockReturnValue({ left: 320, right: 1480 } as DOMRect);
+    refresh();
+    expect(parseFloat((root.querySelector('.standalone-signature-left') as HTMLElement).style.width)).toBeGreaterThan(192);
+    expect(root.querySelector('.standalone-signature-left.inline-signature')).toBeNull();
+  });
+
+  it('keeps Search statements within the actual search-shell gutters', () => {
+    main.classList.add('search-page');
+    vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(2400);
+    vi.mocked(main.getBoundingClientRect).mockReturnValue({ left: 0, right: 2400 } as DOMRect);
+    main.innerHTML = '<section class="search-shell"><h1>Search topics and questions</h1></section>';
+    const shell = vi.spyOn(main.querySelector('.search-shell')!, 'getBoundingClientRect').mockReturnValue({ left: 470, right: 1930 } as DOMRect);
+    refresh();
+    const right = root.querySelector<HTMLElement>('.standalone-signature-right')!;
+    expect(parseFloat(right.style.width)).toBe(416);
+    expect(right.classList.contains('inline-signature')).toBe(false);
+    shell.mockReturnValue({ left: 60, right: 2340 } as DOMRect);
+    refresh();
+    expect(right.classList.contains('inline-signature')).toBe(true);
+  });
+
+  it('puts standalone text in normal flow when the page has no side gutter', () => {
+    main.classList.add('course-page');
+    vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(1800);
+    vi.mocked(main.getBoundingClientRect).mockReturnValue({ left: 0, right: 1800 } as DOMRect);
+    refresh();
+    expect(root.querySelectorAll('.standalone-signature.inline-signature').length).toBe(2);
   });
 
   it('preserves existing section IDs and ignores hidden, modal, carousel and card headings', () => {
