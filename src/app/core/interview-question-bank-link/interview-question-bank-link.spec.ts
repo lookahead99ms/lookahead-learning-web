@@ -32,7 +32,7 @@ describe('InterviewQuestionBankLink', () => {
     expect(link.textContent?.replace(/\s+/g, ' ').trim()).toContain('Review all 13 questions');
     expect(link.textContent).not.toContain('→');
     expect(link.getAttribute('href')).toBe(
-      '/interview-questions?path=learn&course=solid-design-patterns&module=creational-behavioral-patterns',
+      '/interview-questions?path=learn&course=solid-design-patterns&module=creational-behavioral-patterns&unit=creational-behavioral-patterns',
     );
     expect(link.getAttribute('aria-label')).toBe('Review questions for this topic: 13 questions');
   });

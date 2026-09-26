@@ -35,17 +35,12 @@ export class HeaderNavigation implements OnDestroy {
   ];
   protected readonly activePath = signal('');
   protected readonly courses = signal<NavigationCourse[]>([]);
-  protected readonly selectedCourse = signal('');
-  protected readonly highlights = signal<string[]>([]);
   protected readonly loading = signal(false);
-  protected readonly highlightLoading = signal(false);
   protected readonly error = signal(false);
-  protected readonly highlightError = signal(false);
   private openTimer?: ReturnType<typeof setTimeout>;
   private closeTimer?: ReturnType<typeof setTimeout>;
   private pointerType = '';
   private request?: Subscription;
-  private highlightRequest?: Subscription;
   private readonly routeSubscription = this.router.events.subscribe((event) => {
     if (event instanceof NavigationStart) this.close();
   });
@@ -83,25 +78,6 @@ export class HeaderNavigation implements OnDestroy {
       },
     });
   }
-  protected openHighlights(course: string): void {
-    if (this.selectedCourse() === course) return;
-    this.highlightRequest?.unsubscribe();
-    this.highlights.set([]);
-    this.highlightError.set(false);
-    this.highlightLoading.set(false);
-    this.selectedCourse.set(course);
-    this.highlightLoading.set(true);
-    this.highlightRequest = this.data.highlights(this.activePath(), course).subscribe({
-      next: (value) => {
-        this.highlights.set(value.highlights);
-        this.highlightLoading.set(false);
-      },
-      error: () => {
-        this.highlightError.set(true);
-        this.highlightLoading.set(false);
-      },
-    });
-  }
   protected rememberPointer(event: PointerEvent): void {
     this.pointerType = event.pointerType;
   }
@@ -111,14 +87,6 @@ export class HeaderNavigation implements OnDestroy {
     if (event.pointerType !== 'mouse') return;
     this.cancelOpening();
     this.openTimer = setTimeout(() => this.openPath(path), 180);
-  }
-  protected hoverCourse(event: PointerEvent, course: NavigationCourse): void {
-    this.keepOpen();
-    if (event.pointerType !== 'mouse' || !course.hasHighlights) return;
-    const focusedHighlights = this.element.nativeElement.querySelector('.course-highlights');
-    if (focusedHighlights?.contains(this.element.nativeElement.ownerDocument.activeElement)) return;
-    this.cancelOpening();
-    this.openTimer = setTimeout(() => this.openHighlights(course.id), 180);
   }
   protected cancelOpening(): void {
     clearTimeout(this.openTimer);
@@ -137,35 +105,27 @@ export class HeaderNavigation implements OnDestroy {
       if (!panel?.contains(this.element.nativeElement.ownerDocument.activeElement)) this.close();
     }, 280);
   }
-  protected activateLink(event: MouseEvent, path: string, course?: NavigationCourse): void {
+  protected activateLink(event: MouseEvent, path: string): void {
     if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
       return;
     const touch = event.detail > 0 && ['touch', 'pen'].includes(this.pointerType);
     this.pointerType = '';
-    if (
-      touch &&
-      ((!course && this.activePath() !== path) ||
-        (course?.hasHighlights && this.selectedCourse() !== course.id))
-    ) {
+    if (touch && this.activePath() !== path) {
       event.preventDefault();
-      if (course) this.openHighlights(course.id);
-      else this.openPath(path);
+      this.openPath(path);
       return;
     }
     event.preventDefault();
-    void this.router.navigate(course ? ['/', path, course.id] : ['/', path]);
+    void this.router.navigate(['/', path]);
   }
-  protected openWithKeyboard(event: KeyboardEvent, path: string, course?: NavigationCourse): void {
+  protected openWithKeyboard(event: KeyboardEvent, path: string): void {
     this.pointerType = '';
     if (event.key !== 'ArrowDown' && event.key !== ' ') return;
-    if (course && !course.hasHighlights) return;
     event.preventDefault();
-    if (course) this.openHighlights(course.id);
-    else this.openPath(path);
-    // Render the disclosure before moving focus; no asynchronous callback can steal it later.
+    this.openPath(path);
+    // Render before moving focus; loading must not steal focus later.
     this.changeDetector.detectChanges();
-    const selector = course ? '.course-highlights' : '.panel-heading a';
-    this.element.nativeElement.querySelector<HTMLAnchorElement>(selector)?.focus();
+    this.element.nativeElement.querySelector<HTMLAnchorElement>('.panel-heading a')?.focus();
   }
   protected currentPath(path: string): boolean {
     return (
@@ -182,11 +142,8 @@ export class HeaderNavigation implements OnDestroy {
     this.keepOpen();
     const path = this.activePath();
     this.request?.unsubscribe();
-    this.highlightRequest?.unsubscribe();
     this.activePath.set('');
-    this.selectedCourse.set('');
     this.courses.set([]);
-    this.highlights.set([]);
     this.error.set(false);
     if (restoreFocus && path)
       this.element.nativeElement.querySelector<HTMLAnchorElement>(`#browse-${path}`)?.focus();

@@ -370,6 +370,17 @@ describe('Question canonical DSA navigation', () => {
     ).toBe(returnUrl);
   });
 
+  it('keeps review results and the original course unit one click away', async () => {
+    const harness = await RouterTestingHarness.create();
+    const returnUrl = '/search?kind=practice&path=learn&course=algorithmic-patterns&module=hashing&unit=original-unit';
+    await harness.navigateByUrl('/learn/algorithmic-patterns/algorithmic-two-sum?returnTo=' + encodeURIComponent(returnUrl), Question);
+    const page = harness.routeNativeElement!;
+    expect(linkWithText(page, 'Back to review questions')?.getAttribute('href')).toBe(returnUrl);
+    expect(page.querySelector('.practice-return')?.closest('.question-review-navigation')).not.toBeNull();
+    expect(page.querySelector('a[href="/learn/algorithmic-patterns#unit-original-unit"]')).not.toBeNull();
+    expect(linkWithText(page, 'Search all content')?.getAttribute('href')).toBe('/search');
+  });
+
   it('retains the exact DSA page, filters, and ordering in a safe return link', async () => {
     const harness = await RouterTestingHarness.create();
     const returnUrl =

@@ -12,6 +12,7 @@
   --accent-strong: #006c73;
   --accent-on-primary: #fff;
   --accent-link: #245a88;
+  --sidebar-course-text: #087067;
   --accent-secondary: #006c73;
   --accent-secondary-strong: #006c73;
   --path-grow: #a84328; /* Path identity, separate from generic actions. */
@@ -54,6 +55,7 @@
   --accent-strong: #ffba87;
   --accent-on-primary: #172337;
   --accent-link: #9dc9ff;
+  --sidebar-course-text: #83d8b9;
   --accent-secondary: #ffba87;
   --accent-secondary-strong: #ffba87;
   --path-grow: #d9b4e1;

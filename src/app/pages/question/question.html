@@ -11,11 +11,17 @@
     #planNavigation
     [problemRows]="studioPilot() || focusStudio()"
   />
+  <ng-template #discoveryReturn>
   @if (returnDestination(); as destination) {
     <nav class="practice-return" aria-label="Discovery return navigation">
       <a [routerLink]="destination">{{ returnLabel() }}</a>
+      @if (reviewModuleDestination(); as moduleDestination) {
+        <a [routerLink]="moduleDestination">Back to {{ reviewModuleLabel() }}</a>
+        <a routerLink="/search">Search all content</a>
+      }
     </nav>
   }
+  </ng-template>
   @if (question(); as item) {
     <article class="question-reader question-detail-reader" [attr.data-path]="pathId()">
       <div class="question-sticky-utility">
@@ -302,6 +308,19 @@
           </nav>
         }
       </section>
+      @if (returnDestination() || item.relatedArticleId) {
+        <div class="question-review-navigation">
+          <ng-container [ngTemplateOutlet]="discoveryReturn" />
+          @if (item.relatedArticleId; as articleId) {
+            <a
+              class="related-theory-link"
+              [routerLink]="['/', pathId(), courseId(), articleId]"
+              [queryParams]="returnQueryParams()"
+              >Review theory: {{ relatedArticleTitle(item) }}</a
+            >
+          }
+        </div>
+      }
       @if (patternLesson(item); as lesson) {
         <app-pattern-lesson-shell
           [lesson]="lesson"
@@ -503,14 +522,6 @@
           </div>
         </ng-template>
         <ng-template #answerContent>
-          @if (item.relatedArticleId; as articleId) {
-            <a
-              class="related-theory-link"
-              [routerLink]="['/', pathId(), courseId(), articleId]"
-              [queryParams]="returnQueryParams()"
-              >Review theory: {{ relatedArticleTitle(item) }}</a
-            >
-          }
           @if (shouldShowHint(item)) {
             <details class="reader-hint">
               <summary>Show hint <span aria-hidden="true">›</span></summary>
@@ -630,6 +641,7 @@
     </article>
   } @else if (error()) {
     <section class="page-message">
+      <ng-container [ngTemplateOutlet]="discoveryReturn" />
       <h1>Content unavailable</h1>
       <p role="status">{{ error() }}</p>
       @if (accessFailure() === 401) {
@@ -642,6 +654,7 @@
       <p><a [routerLink]="['/', pathId(), courseId()]">Return to the course</a></p>
     </section>
   } @else {
-    <section class="page-message"><p>Loading question…</p></section>
+    <section class="page-message">
+      <ng-container [ngTemplateOutlet]="discoveryReturn" /><p>Loading question…</p></section>
   }
 </main>

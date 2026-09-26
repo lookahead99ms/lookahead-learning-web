@@ -1,5 +1,6 @@
-import { Component, computed, input } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, computed, input, inject, ElementRef, afterRenderEffect } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import {
   ContentItemSummary,
   CourseLearningUnit,
@@ -63,6 +64,7 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
                     [pathId]="pathId()"
                     [courseId]="courseId()"
                     [moduleId]="questionModuleId"
+                    [returnUnit]="unit.id"
                     [questionCount]="count"
                     [practiceItems]="questionItems(unit)"
                     [label]="questionBankLabel(unit)"
@@ -94,6 +96,7 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
                           [pathId]="pathId()"
                           [courseId]="courseId()"
                           [moduleId]="questionModuleId"
+                          [returnUnit]="unit.id"
                           [questionCount]="count"
                           [practiceItems]="questionItems(subUnit)"
                           [label]="questionBankLabel(subUnit)"
@@ -151,6 +154,7 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
                     [pathId]="pathId()"
                     [courseId]="courseId()"
                     [moduleId]="questionModuleId"
+                    [returnUnit]="unit.id"
                     [questionCount]="count"
                     [practiceItems]="questionItems(unit)"
                     [label]="questionBankLabel(unit)"
@@ -191,6 +195,7 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
         line-height: 1.55;
       }
       .learning-unit {
+        scroll-margin-top: 140px;
         overflow: hidden;
         border: 1px solid var(--line);
         border-left: 5px solid transparent;
@@ -398,6 +403,24 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
   ],
 })
 export class CourseLearningMap {
+  private readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly fragment = toSignal(inject(ActivatedRoute).fragment);
+  private restoredFragment: string | null = null;
+
+  constructor() {
+    afterRenderEffect(() => {
+      const fragment = this.fragment();
+      this.visibleUnits();
+      if (!fragment || !fragment.startsWith('unit-') || fragment === this.restoredFragment) return;
+      const target = Array.from(this.element.nativeElement.querySelectorAll<HTMLElement>('[id]'))
+        .find((element) => element.id === fragment);
+      if (!target) return;
+      if (target instanceof HTMLDetailsElement) target.open = true;
+      target.scrollIntoView({ block: 'start' });
+      this.restoredFragment = fragment;
+    });
+  }
+
   readonly course = input.required<CourseOutline>();
   readonly pathId = input.required<string>();
   readonly courseId = input.required<string>();

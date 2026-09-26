@@ -22,6 +22,10 @@
   text-decoration: none;
   overflow-wrap: anywhere;
 }
+/* Nested course destinations remain distinct from bold section controls. */
+.shared-sidebar-outline .catalog-group-courses a {
+  color: var(--sidebar-course-text);
+}
 .shared-sidebar-outline a[aria-current='location'] {
   border-inline-start-color: var(--accent-strong);
   background: var(--surface-muted);
@@ -39,13 +43,20 @@
 .shared-sidebar-outline a:focus-visible,
 .shared-sidebar-outline button:hover,
 .shared-sidebar-outline button:focus-visible {
+  background: color-mix(in srgb, var(--accent-strong) 12%, var(--surface));
+  color: var(--accent-link);
   text-decoration: underline;
+  text-decoration-color: currentColor;
   text-underline-offset: 0.2em;
   text-decoration-thickness: 1px;
 }
 
 .shared-sidebar-outline a:not([aria-current='location']):hover,
 .shared-sidebar-outline a:not([aria-current='location']):focus-visible {
-  background: transparent;
   border-inline-start-color: transparent;
+}
+
+.shared-sidebar-outline .catalog-group-courses a:hover,
+.shared-sidebar-outline .catalog-group-courses a:focus-visible {
+  color: var(--sidebar-course-text);
 }

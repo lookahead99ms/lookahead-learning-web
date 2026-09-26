@@ -1414,9 +1414,10 @@ export class StudyPlanPage implements OnInit {
   }
 
   protected loadContent(): void {
+    const refresh = !!this.loadingError();
     this.loadingError.set('');
     this.content
-      .getSearchIndex()
+      .getSearchIndex(undefined, refresh)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (documents) => {

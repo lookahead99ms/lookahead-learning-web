@@ -14,7 +14,7 @@ import {
         class="question-bank-link"
         [class.compact]="variant() === 'compact'"
         routerLink="/interview-questions"
-        [queryParams]="{ path: pathId(), course: courseId(), module: moduleId() }"
+        [queryParams]="{ path: pathId(), course: courseId(), module: moduleId(), unit: returnUnit() || moduleId() }"
         [attr.aria-label]="accessibleLabel()"
       >
         @if (variant() === 'compact') {
@@ -139,6 +139,7 @@ export class InterviewQuestionBankLink {
   readonly practiceItems = input<readonly PracticePresentationItem[]>([]);
   readonly variant = input<'bar' | 'compact'>('bar');
   readonly label = input('');
+  readonly returnUnit = input('');
   protected readonly presentation = computed(() =>
     practicePresentation(this.practiceItems(), this.questionCount()),
   );

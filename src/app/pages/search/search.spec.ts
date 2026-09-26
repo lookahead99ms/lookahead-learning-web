@@ -93,6 +93,28 @@ describe('Unified Search topic workbench', () => {
     return button;
   }
 
+  it('shows a focused module review and preserves its course return anchor', async () => {
+    const harness = await RouterTestingHarness.create();
+    const url = `/search?kind=practice&path=${document.path}&course=${document.courseId}&module=${document.moduleId}&unit=original-unit`;
+    await harness.navigateByUrl(url, Search);
+    harness.detectChanges();
+    const page = harness.routeNativeElement!;
+    expect(page.querySelector('h1')?.textContent).toBe('Review questions');
+    expect(page.querySelector('form[role="search"]')).toBeNull();
+    expect(page.querySelector('.mode-filter-row')).toBeNull();
+    expect(page.querySelector('.results-toolbar')).toBeNull();
+    const links = page.querySelectorAll('.review-navigation a');
+    expect(links[0].getAttribute('href')).toBe(`/${document.path}/${document.courseId}#unit-original-unit`);
+    expect(links[1].getAttribute('href')).toBe('/search');
+    const component = harness.routeDebugElement!.componentInstance as Search;
+    expect((component as any).questionQueryParams(document).returnTo).toBe(url);
+    await harness.navigateByUrl('/search', Search);
+    harness.detectChanges();
+    expect(page.querySelector('form[role="search"]')).not.toBeNull();
+    expect(page.querySelector('.mode-filter-row')).not.toBeNull();
+    expect(page.querySelector('.results-toolbar')).not.toBeNull();
+  });
+
   it('renders only the selected question’s short answer in the compact split', async () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/search?path=learn', Search);

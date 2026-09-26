@@ -97,12 +97,18 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
   protected readonly support = signal<PageSectionLink[]>([]);
   protected readonly catalogGroups = computed(() => this.context.value()?.groups ?? []);
   protected readonly expandedGroups = signal<ReadonlySet<string>>(new Set());
-  protected toggleGroup(id: string): void {
+  protected toggleGroup(id: string, event: MouseEvent): void {
+    const wasExpanded = this.expandedGroups().has(id);
     this.expandedGroups.update((ids) => {
       const next = new Set(ids);
-      if (next.has(id)) next.delete(id); else next.add(id);
+      if (wasExpanded) next.delete(id); else next.add(id);
       return next;
     });
+    if (wasExpanded) {
+      const group = this.catalogGroups().find((item) => item.id === id);
+      const section = this.sections().find((item) => item.id === group?.sectionId);
+      if (section) this.follow(event, section);
+    }
   }
   protected readonly title = signal('');
   protected readonly homepage = signal(false);
@@ -120,6 +126,10 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
   protected readonly leftInset = signal(6);
   protected readonly rightInset = signal(6);
   protected readonly currentId = signal('');
+  protected readonly catalogOverviewActive = computed(() =>
+    this.catalogGroups().length > 0 &&
+    !this.catalogGroups().some((group) => group.sectionId === this.currentId()),
+  );
   protected readonly recallIndex = signal(0);
   protected readonly answerOpen = signal(false);
   protected readonly recall = computed(() => this.context.value()?.recall ?? []);
@@ -292,7 +302,7 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
     const top = Math.max(0, header?.bottom ?? 76) + 8;
     this.headerBottom.set(top);
     // The main container owns its padding on catalogs, courses and lessons alike.
-    const reader = main.querySelector<HTMLElement>(':scope > .question-reader');
+    const reader = main.querySelector<HTMLElement>(':scope > .question-reader, :scope > .page-message, :scope > .search-shell');
     const outerBounds = main.getBoundingClientRect();
     const readerBounds = reader?.getBoundingClientRect();
     const width =

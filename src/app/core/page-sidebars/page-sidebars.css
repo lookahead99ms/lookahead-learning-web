@@ -240,11 +240,45 @@ button {
   z-index: 45;
   font-size: 1.05rem;
   line-height: 1.55;
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
+}
+.standalone-signature.inline-signature {
+  position: static;
+  width: auto !important;
+  margin: 12px 24px;
+  padding: 8px 0;
+  display: block;
 }
 .standalone-signature-left { inset-inline-start: 6px; }
 .standalone-signature-right {
   inset-inline-end: 6px;
   display: flex;
   justify-content: flex-end;
+}
+
+.sidebar-group-label {
+  margin: -10px 0 14px;
+  color: var(--text-subtle);
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.catalog-overview {
+  padding: 8px 10px;
+  margin-bottom: 14px;
+  border-inline-start: 3px solid transparent;
+}
+.catalog-overview .sidebar-title { margin: 0; }
+.catalog-overview .sidebar-group-label { margin: 4px 0 0; }
+.catalog-overview[aria-current='location'] {
+  background: var(--surface-muted);
+  border-inline-start-color: var(--accent-strong);
+}
+.catalog-overview[aria-current='location'] .sidebar-title {
+  color: var(--text-strong);
+  font-weight: 700;
+}
+.catalog-overview[aria-current='location'] .sidebar-group-label {
+  color: var(--accent-strong);
 }

@@ -1479,6 +1479,22 @@ describe('StudyPlanPage', () => {
     expect(harness.routeNativeElement!.textContent).toContain('The saved plan could not be read');
   });
 
+  it('refreshes the curriculum snapshot when retrying the creation choices', async () => {
+    const getSearchIndex = vi.fn().mockReturnValueOnce(throwError(() => new Error('stale index')))
+      .mockReturnValue(of(documents));
+    TestBed.overrideProvider(ContentService, { useValue: { ...service, getSearchIndex } });
+    await TestBed.inject(StudyPlanAccount).initialize();
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/study-plan?create=1&creation=choice', StudyPlanPage);
+    harness.detectChanges();
+    const retry = [...harness.routeNativeElement!.querySelectorAll('button')].find((item) => item.textContent?.trim() === 'Try again')!;
+    retry.click();
+    harness.detectChanges();
+    expect(getSearchIndex).toHaveBeenLastCalledWith(undefined, true);
+    expect(harness.routeNativeElement!.textContent).toContain('How would you like to begin?');
+    expect(harness.routeNativeElement!.textContent).not.toContain('The curriculum could not be loaded');
+  });
+
   it('shows a retry path when the published index fails', async () => {
     TestBed.overrideProvider(ContentService, {
       useValue: { ...service, getSearchIndex: () => throwError(() => new Error('offline')) },

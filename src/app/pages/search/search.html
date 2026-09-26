@@ -1,7 +1,17 @@
 <app-platform-header />
 <main #searchPage id="main-content" class="search-page" [class.harbor-learn]="selectedPath() === 'learn'">
   <section class="search-shell" aria-labelledby="search-title">
-    <header #searchHeading class="search-heading">
+    <header #searchHeading class="search-heading" [class.review-heading]="reviewContext()">
+      @if (reviewContext(); as context) {
+        <div>
+          <h1 id="search-title">Review questions</h1>
+          <p class="search-intro">{{ context.title }}</p>
+          <nav class="review-navigation" aria-label="Review navigation">
+            <a class="review-back" [routerLink]="context.route" [fragment]="context.fragment">Back to {{ context.title }}</a>
+            <a class="review-search" routerLink="/search">Search all content</a>
+          </nav>
+        </div>
+      } @else {
       <div>
         <p class="eyebrow">Across Learn, Grow, and Look Ahead</p>
         <h1 id="search-title">Search topics and questions.</h1>
@@ -20,9 +30,11 @@
         />
         <button class="search-submit" type="submit">Search</button>
       </form>
+      }
     </header>
 
     <section class="search-workspace" aria-label="Search controls and results">
+      @if (!reviewContext()) {
       <div #modeFilterRow class="mode-filter-row">
         <div class="activity-filters" role="group" aria-label="Learning activity">
           @for (activity of activityOptions; track activity.id) {
@@ -197,6 +209,8 @@
         </details>
       </div>
 
+      }
+
       @if (loading()) {
         <p class="loading-state" role="status">Loading search results…</p>
       } @else if (error()) {
@@ -205,6 +219,7 @@
           <button class="clear-filters" type="button" (click)="retrySearch()">Try again</button>
         </div>
       } @else {
+        @if (!reviewContext()) {
         <div class="results-toolbar">
           <section id="search-results" class="results-anchor" aria-live="polite">
             <h2>Results</h2>
@@ -223,6 +238,8 @@
             </select>
           </label>
         </div>
+
+        }
 
         @if (results().length) {
           <div class="result-preview-layout" [class.has-preview]="!compactPreview() && selectedPreview()">

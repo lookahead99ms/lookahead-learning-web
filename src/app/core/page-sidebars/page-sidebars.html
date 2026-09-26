@@ -1,13 +1,15 @@
 @if (enabled() && !homepage() && !showLeft() && !authorNavigation()) {
   <div class="standalone-signature standalone-signature-left"
+    [class.inline-signature]="!leftDocked() || leftWidth() < 192"
     [style.top.px]="headerBottom()" [style.width.px]="leftWidth()">
-    <app-platform-signature [stacked]="true" />
+    <app-platform-signature [stacked]="leftDocked() && leftWidth() >= 192" />
   </div>
 }
 @if (enabled() && !homepage() && !showRight()) {
   <div class="standalone-signature standalone-signature-right"
+    [class.inline-signature]="!rightDocked() || rightWidth() < 192"
     [style.top.px]="headerBottom()" [style.width.px]="rightWidth()">
-    <app-learning-prompt [stacked]="true" />
+    <app-learning-prompt [stacked]="rightDocked() && rightWidth() >= 192" />
   </div>
 }
 @if (enabled()) {
@@ -43,7 +45,14 @@
         [attr.inert]="leftOpen() ? null : ''"
       >
         @if (!homepage()) {
-          <p class="sidebar-title">{{ title() }}</p>
+          <div class="sidebar-overview"
+            [class.catalog-overview]="catalogGroups().length > 0"
+            [attr.aria-current]="catalogOverviewActive() ? 'location' : null">
+            <p class="sidebar-title">{{ title() }}</p>
+            @if (context.value()?.groupLabel && catalogGroups().length) {
+              <p class="sidebar-group-label">{{ context.value()?.groupLabel }}</p>
+            }
+          </div>
         }
         <nav class="shared-sidebar-outline" aria-label="Page sections">
           @if (catalogGroups().length) {
@@ -52,8 +61,8 @@
                 [attr.aria-current]="currentId() === group.sectionId ? 'location' : null"
                 [attr.aria-expanded]="expandedGroups().has(group.id)"
                 [attr.aria-controls]="'sidebar-group-' + group.id"
-                [attr.aria-label]="(expandedGroups().has(group.id) ? 'Collapse ' : 'Expand ') + group.title"
-                (click)="toggleGroup(group.id)">
+                [attr.aria-label]="(expandedGroups().has(group.id) ? 'Collapse ' : 'Expand ') + group.title + (expandedGroups().has(group.id) && group.sectionId ? ' and go to section' : '')"
+                (click)="toggleGroup(group.id, $event)">
                 <span>{{ group.title }}</span>
               </button>
               <div class="catalog-group-courses" [id]="'sidebar-group-' + group.id"

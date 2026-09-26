@@ -62,50 +62,14 @@
               </h2>
               <ul>
                 @for (course of group.courses; track course.id) {
-                  <li (pointerenter)="hoverCourse($event, course)" (pointerleave)="cancelOpening()">
+                  <li>
                     <div class="course-row">
                       <a
-                        [href]="'/' + path.id + '/' + course.id"
+                        [routerLink]="'/' + path.id + '/' + course.id"
                         [attr.aria-current]="currentCourse(path.id, course.id) ? 'page' : null"
-                        [attr.aria-expanded]="
-                          course.hasHighlights ? selectedCourse() === course.id : null
-                        "
-                        [attr.aria-controls]="
-                          course.hasHighlights ? 'highlights-' + course.id : null
-                        "
-                        [attr.aria-describedby]="course.hasHighlights ? 'navigation-help' : null"
-                        (pointerdown)="rememberPointer($event)"
-                        (click)="activateLink($event, path.id, course)"
-                        (keydown)="openWithKeyboard($event, path.id, course)"
                         ><span class="course-title">{{ course.title }}</span></a
                       >
                     </div>
-                    @if (selectedCourse() === course.id) {
-                      <div
-                        class="course-highlights"
-                        tabindex="-1"
-                        [attr.aria-label]="course.title + ' highlights'"
-                        [id]="'highlights-' + course.id"
-                      >
-                        <p class="highlights-label">Course highlights</p>
-                        @if (highlightLoading()) {
-                          <p role="status">Loading highlights…</p>
-                        }
-                        @if (highlightError()) {
-                          <p role="status">
-                            Highlights could not load. Open the course above to continue.
-                          </p>
-                        }
-                        <ul aria-label="Course highlights">
-                          @for (highlight of highlights(); track highlight) {
-                            <li>{{ highlight }}</li>
-                          }
-                        </ul>
-                        @if (!highlightLoading() && !highlightError() && !highlights().length) {
-                          <p>No highlights available. Open the course to explore.</p>
-                        }
-                      </div>
-                    }
                   </li>
                 }
               </ul>
