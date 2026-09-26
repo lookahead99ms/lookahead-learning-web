@@ -221,6 +221,36 @@ describe('Author outline follows reading position', () => {
     }
   });
 
+  it('scrolls only the sidebar container to reveal the active outline item', () => {
+    const fixture = TestBed.createComponent(AuthorWorkspaceNav);
+    fixture.componentRef.setInput('outline', [
+      { label: 'First', href: '#first-section' },
+      { label: 'Second', href: '#second-section' },
+    ]);
+    const host = fixture.nativeElement as HTMLElement;
+    host.style.overflowY = 'auto';
+    Object.defineProperty(host, 'scrollHeight', { value: 900 });
+    Object.defineProperty(host, 'clientHeight', { value: 300 });
+    host.getBoundingClientRect = () => ({ top: 80, bottom: 380 }) as DOMRect;
+    fixture.detectChanges();
+    const links = host.querySelectorAll<HTMLElement>('.heading-outline a');
+    links[1].getBoundingClientRect = () => ({ top: 500, bottom: 544 }) as DOMRect;
+    const pageScroll = vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+    history.replaceState(null, '', '/author/operations#second-section');
+    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    fixture.detectChanges();
+    expect(host.scrollTop).toBe(172);
+    expect(pageScroll).not.toHaveBeenCalled();
+    expect(location.hash).toBe('#second-section');
+    expect(links[1].getAttribute('aria-current')).toBe('location');
+    links[0].getBoundingClientRect = () => ({ top: 20, bottom: 64 }) as DOMRect;
+    history.replaceState(null, '', '/author/operations#first-section');
+    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    fixture.detectChanges();
+    expect(host.scrollTop).toBe(104);
+    expect(pageScroll).not.toHaveBeenCalled();
+  });
+
   it('accepts only current, bounded positions from the active opaque-origin frame', () => {
     const frame = document.createElement('iframe');
     document.body.append(frame);

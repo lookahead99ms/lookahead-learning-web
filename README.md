@@ -10,14 +10,14 @@ delivery evidence, credentials, and learner data are kept outside this Git histo
 
 ## Page sidebars
 
-The shared page shell builds a local outline from visible page sections and exposes
-already-loaded recall or practice content when available. Panels use existing outer
-gutters where space permits and open as dismissible overlays otherwise; opening them
-does not resize the original content. Header links and breadcrumbs remain available.
-The homepage has a three-link left outline only. Its platform signature stays in the
-hero; other page sidebars use the same theme-aware signature. Coding Problem Workspace
-is excluded. Existing author navigation uses the shared collapse control without a
-second outline. Sidebar state is transient and adds no API or saved-session contract.
+The shared page shell builds an outline from visible sections and exposes already-loaded
+recall/practice when available. Learn, Grow and Look Ahead catalogs also show the shared learning prompt in the right sidebar before a lesson is opened. Content keeps its original dimensions and layout.
+Expanded sidebars grow into unused outer space while content dimensions stay fixed; otherwise they open
+as nonmodal panels. Both available panels open by default and toggle independently.
+Both sidebar statements remain visible when their navigation/practice bodies are collapsed. Docked sidebars use transparent surfaces. No backdrop, page lock, or focus trap is introduced. Header and breadcrumb navigation
+remain available. The homepage has only a left outline and retains its signature in the
+hero. Coding Problem Workspace is excluded; author pages retain their existing layout.
+Sidebar state is transient and adds no API or saved-session contract.
 
 ## Platform highlights
 
@@ -547,3 +547,23 @@ The manifest uses `schemaVersion: 1` with `documents[]`. HTML URLs must match th
 
 See [homepage behavior and local verification](docs/homepage.md) for the root
 route, carousel, optional public challenge, shared themes and review steps.
+
+The learner and author sidebars share `sidebar-outline.css` for navigation row spacing, selection borders, colors and text weight. This styling does not change article width.
+
+Sign-in, sign-up, Manage Account and sign-in selection screens exclude both shared sidebars and toggles. Their form/content layout is unchanged.
+
+Catalog sidebars on Learn, Grow and Look Ahead expose independently expandable course groups from AdaptiveCatalog through PageSidebarContext. They reuse loaded course data and existing routes; no additional requests or persisted state.
+
+Desktop catalog and lesson sidebars stop at the outer main container; its padding remains part of the content surface.
+
+For full-viewport reader shells, sidebar bounds use the centered article gutter with 24px clearance; bounded outer containers retain their own boundary. Main content dimensions remain unchanged.
+
+Catalog group highlighting follows its explicit heading identity independently of expansion. Desktop reader sidebars use docked presentation; hover underlines are distinct from the filled active-section state.
+
+Search excludes shared sidebars and their toggles, alongside account screens and coding workspaces.
+
+Course overviews across Learn, Grow and Look Ahead use the shared course layout without global sidebars or a separate Learn-only contents map. Catalog expandable navigation and lesson sidebars remain separate.
+
+The two platform statements remain visible independently of sidebar navigation, including account, Search and course overview pages. Coding Problem Workspace excludes both statements; homepage uses its existing in-content statements.
+
+PageSidebarContext supports navigation-only exclusion while retaining platform statements. The Mediator Pattern question uses this mode.

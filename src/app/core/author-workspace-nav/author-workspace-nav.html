@@ -11,7 +11,7 @@
   [hidden]="!sidebarOpen()"
   [attr.inert]="sidebarOpen() ? null : ''"
 >
-  <p class="platform-signature"><app-platform-signature /></p>
+  <p class="platform-signature"><app-platform-signature [stacked]="true" /></p>
   <div class="workspace-heading">
     <p class="eyebrow">Local author workspace</p>
     @if (headingLevel === 1) {
@@ -22,7 +22,7 @@
     <ng-content select="[description]"></ng-content>
   </div>
   @if (outline.length) {
-    <nav class="heading-outline" [attr.aria-label]="pageTitle + ' outline'">
+    <nav class="heading-outline shared-sidebar-outline" [attr.aria-label]="pageTitle + ' outline'">
       <p class="outline-label">On this page</p>
       @for (item of outline; track item.href) {
         <a

@@ -511,3 +511,10 @@ button:disabled {
     text-decoration: underline;
   }
 }
+
+.signature-support {
+  margin: -8px 0 24px;
+  color: var(--text-subtle);
+  font-size: 1rem;
+  line-height: 1.5;
+}

@@ -1,13 +1,29 @@
 :host {
+  position: relative;
+  min-height: 44px;
   display: flex;
   flex-direction: column;
   gap: 24px;
   color: var(--text-strong);
 }
-app-sidebar-toggle { align-self: flex-end; }
-:host(.sidebar-collapsed) app-sidebar-toggle { align-self: flex-start; }
-.author-sidebar-content { display: flex; flex-direction: column; gap: 24px; }
-.author-sidebar-content[hidden] { display: none; }
+app-sidebar-toggle {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+}
+.platform-signature {
+  margin: 0;
+  padding-block-start: 8px;
+  padding-inline-start: 48px;
+}
+.author-sidebar-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.author-sidebar-content[hidden] {
+  display: none;
+}
 .eyebrow {
   font-size: 0.75rem;
   color: var(--accent-strong);

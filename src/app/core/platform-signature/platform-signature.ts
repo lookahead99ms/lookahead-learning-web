@@ -1,14 +1,18 @@
-import { Component } from '@angular/core';
+import { Component, input } from '@angular/core';
 
 /** The same platform promise in the homepage hero and page sidebars. */
 @Component({
   selector: 'app-platform-signature',
   preserveWhitespaces: true,
+  host: { '[class.stacked]': 'stacked()' },
   // prettier-ignore
-  template: `<span class="actor">AI</span> can <span class="action">write</span> it. <span class="second"><span class="action">Understand</span> what <span class="actor">you</span> <span class="action">ship</span>.</span>`,
+  template: `<span class="signature-line"><span class="action">Build</span> with <span class="actor">AI</span>.</span> <span class="signature-line action">Understand</span> <span class="signature-line">what <span class="actor">you</span> <span class="action">ship</span>.</span>`,
   styles: `
     :host {
       color: var(--text-strong);
+    }
+    :host(.stacked) .signature-line {
+      display: block;
     }
     .actor {
       color: var(--accent-link);
@@ -30,4 +34,6 @@ import { Component } from '@angular/core';
     }
   `,
 })
-export class PlatformSignature {}
+export class PlatformSignature {
+  readonly stacked = input(false);
+}

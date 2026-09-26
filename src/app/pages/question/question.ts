@@ -1116,6 +1116,9 @@ export class Question implements OnInit {
   protected readonly sidebarContext = computed<PageSidebarContextValue>(() => {
     const item = this.question();
     if (!item || this.isCodingPractice(item) || this.studioPilot() || this.focusStudio()) return { excluded: true };
+    if (this.pathId() === 'learn' && this.courseId() === 'solid-design-patterns' && item.id === 'mediator-pattern') {
+      return { excluded: false, hideNavigation: true };
+    }
     const pattern = this.patternLesson(item);
     const foundation = this.foundationLesson(item);
     const checks = pattern ? this.patternChecks(pattern) : foundation ? this.foundationChecks(foundation) : [];

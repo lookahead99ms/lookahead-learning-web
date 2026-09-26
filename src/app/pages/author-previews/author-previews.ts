@@ -49,7 +49,7 @@ export class AuthorPreviewsPage {
   private readonly theme = inject(PlatformThemeService);
   private readonly navigationHash = signal(this.hostDocument.defaultView?.location.hash ?? '');
   private pendingArchitectureAnchor = this.hostDocument.defaultView?.location.hash ?? '';
-  private readonly architectureSections = ['platform-panel', 'backend-panel', 'journeys-panel', 'model-panel', 'flow-panel', 'candidate-panel', 'oauth-panel', 'trust-panel', 'environments-panel'];
+  private readonly architectureSections = ['platform-panel', 'backend-panel', 'journeys-panel', 'model-panel', 'flow-panel', 'candidate-panel', 'oauth-panel', 'trust-panel', 'environments-panel', 'development-panel'];
   protected readonly architectureOnly =
     inject(ActivatedRoute).snapshot.data['architectureOnly'] === true;
   protected readonly state = signal<'disabled' | 'loading' | 'ready' | 'error'>('disabled');
@@ -95,6 +95,7 @@ export class AuthorPreviewsPage {
       ['Sign-in and requests', 'oauth-panel'],
       ['Data and failure boundaries', 'trust-panel'],
       ['Environments and repositories', 'environments-panel'],
+      ['Local setup & development', 'development-panel'],
     ].map(([label, anchor]) => ({ label, href: `/author/architecture#${anchor}` }));
   });
   protected readonly architectureNavigationHref = computed(() => {

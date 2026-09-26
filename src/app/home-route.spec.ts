@@ -51,7 +51,7 @@ describe('canonical homepage', () => {
     expect(harness.routeNativeElement?.querySelectorAll('h1')).toHaveLength(1);
     expect(
       harness.routeNativeElement?.querySelector('h1')?.textContent?.trim(),
-    ).toBe('AI can write it. Understand what you ship.');
+    ).toBe('Build with AI. Understand what you ship.');
     expect(
       harness.routeNativeElement?.querySelector('.hero-slide.active h2.slide-title')
         ?.textContent,
