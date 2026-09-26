@@ -1,8 +1,7 @@
 <app-platform-header />
 <main
   id="main-content"
-  class="content-page reader-page"
-  [class.harbor-learn]="pathId() === 'learn'"
+  class="content-page reader-page course-page"
 >
   @if (course(); as currentCourse) {
     <article class="question-reader course-reader" [attr.data-path]="pathId()">
@@ -158,36 +157,7 @@
           }
         </div>
       </section>
-      @if (pathId() === 'learn') {
-        <div class="harbor-course-layout">
-          <aside class="harbor-course-map" aria-label="Course contents">
-            <p class="eyebrow">Course contents</p>
-            <h2>Build your foundation</h2>
-            <nav aria-label="Course units">
-              <ol>
-                @if (currentCourse.learningUnits?.length) {
-                  @for (unit of currentCourse.learningUnits; track unit.id) {
-                    <li>
-                      <a [href]="'#unit-' + unit.id">{{ unit.title }}</a>
-                    </li>
-                  }
-                } @else {
-                  @for (module of currentCourse.modules; track module.id) {
-                    <li>
-                      <a [routerLink]="['/', pathId(), courseId(), 'module', module.id]">{{
-                        module.title
-                      }}</a>
-                    </li>
-                  }
-                }
-              </ol>
-            </nav>
-          </aside>
-          <ng-container *ngTemplateOutlet="courseModules" />
-        </div>
-      } @else {
-        <ng-container *ngTemplateOutlet="courseModules" />
-      }
+      <ng-container *ngTemplateOutlet="courseModules" />
       <ng-template #courseModules>
         <section class="question-list module-question-list">
           @if (currentCourse.layout === 'learning-map' && currentCourse.learningUnits?.length) {

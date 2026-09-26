@@ -83,6 +83,86 @@ describe('Shared page sidebars', () => {
     vi.restoreAllMocks();
   });
 
+  it.each(['course-page', 'search-page', 'account-page', 'account-page manage-account', 'challenge-page'])(
+    'excludes page shell %s and restores sidebars when returning to learning',
+    (className) => {
+      main.className = className;
+      refresh();
+      expect(root.querySelector('.page-sidebar')).toBeNull();
+      expect(root.querySelector('.standalone-signature app-platform-signature')).not.toBeNull();
+      expect(root.querySelector('.standalone-signature app-learning-prompt')).not.toBeNull();
+      expect(root.querySelector('app-sidebar-toggle')).toBeNull();
+      expect(main.hasAttribute('data-sidebar-edge-controls')).toBe(false);
+      expect(main.querySelector('h1')?.textContent).toBe('Sample lesson');
+
+      main.className = '';
+      refresh();
+      expect(root.querySelector('#page-sidebar-left')).not.toBeNull();
+      expect(root.querySelector('#page-sidebar-right')).not.toBeNull();
+    },
+  );
+
+  it('expands catalog groups independently and exposes course destinations', () => {
+    TestBed.inject(PageSidebarContext).set(contextOwner, {
+      excluded: false,
+      groups: [
+        { id: 'languages', title: 'Languages', courses: [{ id: 'python', title: 'Python', url: '/learn/python' }] },
+        { id: 'systems', title: 'Systems', courses: [{ id: 'design', title: 'Design', url: '/look-ahead/design' }] },
+      ],
+    });
+    flush();
+    button('Open left sidebar').click();
+    flush();
+    const courses = root.querySelector<HTMLElement>('#sidebar-group-languages')!;
+    expect(courses.hidden).toBe(true);
+    button('Expand Languages').click();
+    flush();
+    expect(courses.hidden).toBe(false);
+    expect(courses.querySelector('a')?.getAttribute('href')).toBe('/learn/python');
+    button('Expand Systems').click();
+    flush();
+    expect(courses.hidden).toBe(false);
+    button('Collapse Languages').click();
+    flush();
+    expect(courses.hidden).toBe(true);
+    expect(root.querySelector<HTMLElement>('#sidebar-group-systems')?.hidden).toBe(false);
+    TestBed.inject(PageSidebarContext).clear(contextOwner);
+    flush();
+    expect(root.querySelector('.catalog-group-toggle')).toBeNull();
+  });
+
+  it('highlights the catalog group corresponding to the visible section independently of expansion', () => {
+    TestBed.inject(PageSidebarContext).set(contextOwner, {
+      excluded: false,
+      groups: [{ id: 'mechanism', sectionId: 'existing', title: 'Mechanism', courses: [{ id: 'example', title: 'Example', url: '/learn/example' }] }],
+    });
+    vi.spyOn(main.querySelector('#existing')!, 'getBoundingClientRect').mockReturnValue({ top: 90 } as DOMRect);
+    vi.spyOn(main.querySelector('#practice')!, 'getBoundingClientRect').mockReturnValue({ top: 500 } as DOMRect);
+    flush();
+    refresh();
+    const group = root.querySelector('.catalog-group-toggle')!;
+    expect(group.getAttribute('aria-current')).toBe('location');
+    expect(group.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('selects the final section when scrolling reaches the document bottom', () => {
+    vi.spyOn(window, 'scrollY', 'get').mockReturnValue(400);
+    vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(800);
+    vi.spyOn(document.documentElement, 'scrollHeight', 'get').mockReturnValue(1200);
+    vi.spyOn(main.querySelector('#practice')!, 'getBoundingClientRect').mockReturnValue({ top: 500 } as DOMRect);
+    refresh();
+    expect(root.querySelector('[aria-current="location"]')?.textContent).toContain('Practice');
+  });
+
+  it('allows a page to hide navigation while retaining both statements', () => {
+    TestBed.inject(PageSidebarContext).set(contextOwner, { excluded: false, hideNavigation: true });
+    flush();
+    expect(root.querySelector('.page-sidebar')).toBeNull();
+    expect(root.querySelector('app-sidebar-toggle')).toBeNull();
+    expect(root.querySelector('app-platform-signature')).not.toBeNull();
+    expect(root.querySelector('app-learning-prompt')).not.toBeNull();
+  });
+
   it('preserves existing section IDs and ignores hidden, modal, carousel and card headings', () => {
     main.insertAdjacentHTML(
       'beforeend',
@@ -163,6 +243,33 @@ describe('Shared page sidebars', () => {
     expect(root.querySelector<HTMLElement>('#page-sidebar-left')!.style.width).toBe('174px');
     expect(root.querySelector<HTMLElement>('#page-sidebar-right')!.style.width).toBe('150px');
     expect(main.style.width).toBe('');
+  });
+
+  it.each(['question-reader catalog-reader', 'question-reader'])('keeps %s navigation outside the main container, including its padding', (readerClass) => {
+    vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(1800);
+    vi.mocked(main.getBoundingClientRect).mockReturnValue({ left: 260, right: 1540, width: 1280, top: 76, bottom: 900, height: 824, x: 260, y: 76, toJSON: () => ({}) });
+    const reader = document.createElement('article');
+    reader.className = readerClass;
+    main.append(reader);
+    vi.spyOn(reader, 'getBoundingClientRect').mockReturnValue({ left: 390, right: 1410, width: 1020, top: 76, bottom: 900, height: 824, x: 390, y: 76, toJSON: () => ({}) });
+    refresh();
+    expect(root.querySelector<HTMLElement>('#page-sidebar-left')!.style.width).toBe('254px');
+    expect(root.querySelector<HTMLElement>('#page-sidebar-right')!.style.width).toBe('230px');
+    expect(main.style.width).toBe('');
+    expect(reader.style.width).toBe('');
+  });
+
+  it('uses the centered reader gutter when the outer page spans the viewport', () => {
+    vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(1800);
+    vi.mocked(main.getBoundingClientRect).mockReturnValue({ left: 0, right: 1800, width: 1800, top: 76, bottom: 900, height: 824, x: 0, y: 76, toJSON: () => ({}) });
+    const reader = document.createElement('article');
+    reader.className = 'question-reader';
+    main.append(reader);
+    vi.spyOn(reader, 'getBoundingClientRect').mockReturnValue({ left: 310, right: 1490, width: 1180, top: 76, bottom: 900, height: 824, x: 310, y: 76, toJSON: () => ({}) });
+    refresh();
+    expect(root.querySelector<HTMLElement>('#page-sidebar-left')!.style.width).toBe('280px');
+    expect(root.querySelector<HTMLElement>('#page-sidebar-right')!.style.width).toBe('256px');
+    expect(reader.style.width).toBe('');
   });
 
   it('docks only when each individual gutter can fit the panel and clearances', () => {

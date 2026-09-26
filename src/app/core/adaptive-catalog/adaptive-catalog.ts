@@ -1,6 +1,7 @@
 import {
   AfterRenderRef,
   Component,
+  computed,
   DestroyRef,
   ElementRef,
   Injector,
@@ -12,6 +13,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink, Scroll } from '@angular/router';
+import { PageSidebarContextDirective } from '../page-sidebars/page-sidebar-context';
 import { CatalogCourseGroup } from '../../content/catalog-course-groups';
 import {
   CatalogOverviewItem,
@@ -80,7 +82,7 @@ export function catalogQuestionCountDisplay(questionCount: number): CatalogQuest
 
 @Component({
   selector: 'app-adaptive-catalog',
-  imports: [RouterLink],
+  imports: [RouterLink, PageSidebarContextDirective],
   templateUrl: './adaptive-catalog.html',
   styleUrl: '../../pages/catalog-experience.css',
 })
@@ -100,6 +102,17 @@ export class AdaptiveCatalog implements OnInit {
 
   protected readonly catalog = signal<CatalogOverviewItem[] | null>(null);
   protected readonly error = signal('');
+  protected readonly sidebarContext = computed(() => ({
+    excluded: false,
+    groups: this.groups().map((group) => ({
+      id: group.id,
+      sectionId: `${this.config().path}-group-${group.id}-heading`,
+      title: group.title,
+      courses: this.itemsFor(group, this.catalog() ?? [])
+        .filter((item) => item.available !== false)
+        .flatMap((item) => item.id ? [{ id: item.id, title: item.title, url: `/${this.config().path}/${item.id}` }] : []),
+    })).filter((group) => group.courses.length > 0),
+  }));
   protected readonly reviewStatusLabel = reviewStatusLabel;
 
   ngOnInit(): void {

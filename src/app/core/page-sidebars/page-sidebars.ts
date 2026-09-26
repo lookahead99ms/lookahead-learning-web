@@ -14,7 +14,7 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { NavigationEnd, Router } from '@angular/router';
+import { NavigationEnd, RouterLink, Router } from '@angular/router';
 import { PageSidebarContext } from './page-sidebar-context';
 import { SidebarToggle } from './sidebar-toggle';
 
@@ -51,7 +51,7 @@ export function collectPageSections(main: HTMLElement): PageSectionLink[] {
   const candidates = main.querySelectorAll<HTMLElement>('h1, h2, [data-sidebar-label]');
   for (const element of candidates) {
     if (!visibleSidebarTarget(element)) continue;
-    const label = (element.dataset['sidebarLabel'] || element.textContent || '')
+    const label = (element.dataset['sidebarLabel'] || element.querySelector('.result-title-text')?.textContent || element.textContent || '')
       .replace(/\s+/g, ' ')
       .trim();
     if (!label || seen.has(label)) continue;
@@ -83,7 +83,7 @@ export function canDockSidebar(space: number, width = 224): boolean {
 
 @Component({
   selector: 'app-page-sidebars',
-  imports: [LearningPrompt, PlatformSignature, SidebarToggle],
+  imports: [RouterLink, LearningPrompt, PlatformSignature, SidebarToggle],
   templateUrl: './page-sidebars.html',
   styleUrls: ['./page-sidebars.css', '../author-workspace-nav/sidebar-outline.css'],
 })
@@ -95,10 +95,20 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
   protected readonly context = inject(PageSidebarContext);
   protected readonly sections = signal<PageSectionLink[]>([]);
   protected readonly support = signal<PageSectionLink[]>([]);
+  protected readonly catalogGroups = computed(() => this.context.value()?.groups ?? []);
+  protected readonly expandedGroups = signal<ReadonlySet<string>>(new Set());
+  protected toggleGroup(id: string): void {
+    this.expandedGroups.update((ids) => {
+      const next = new Set(ids);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
   protected readonly title = signal('');
   protected readonly homepage = signal(false);
   protected readonly learningPage = signal(false);
   protected readonly enabled = signal(false);
+  protected readonly navigationExcluded = signal(false);
   protected readonly authorNavigation = signal(false);
   protected readonly leftOpen = signal(false);
   protected readonly rightOpen = signal(false);
@@ -117,7 +127,7 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
     () => this.recall()[this.recallIndex()] ?? this.recall()[0],
   );
   protected readonly showLeft = computed(
-    () => this.enabled() && !this.authorNavigation() && this.sections().length > 0,
+    () => this.enabled() && !this.navigationExcluded() && !this.authorNavigation() && this.sections().length > 0,
   );
   protected readonly hasRightContent = computed(
     () => this.support().length > 0 || this.recall().length > 0,
@@ -125,6 +135,7 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
   protected readonly showRight = computed(
     () =>
       this.enabled() &&
+      !this.navigationExcluded() &&
       !this.homepage() &&
       (this.learningPage() || this.support().length > 0 || this.recall().length > 0),
   );
@@ -145,6 +156,7 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
   constructor() {
     this.router.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
       if (!(event instanceof NavigationEnd)) return;
+      this.expandedGroups.set(new Set());
       this.leftChosen = this.rightChosen = false;
       this.leftOpen.set(false);
       this.rightOpen.set(false);
@@ -244,6 +256,7 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
       this.context.value()?.excluded ||
       main.matches('.focus-studio-page, .studio-pilot-page') ||
       !!main.querySelector('app-coding-problem-detail, app-dsa-problem-pilot');
+    this.navigationExcluded.set(!!this.context.value()?.hideNavigation || !!main?.matches('.course-page, .search-page, .account-page, .challenge-page'));
     this.enabled.set(!excluded);
     if (excluded || !main) {
       this.clearEdgeClearance();
@@ -278,10 +291,16 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
     const header = this.document.querySelector('app-platform-header')?.getBoundingClientRect();
     const top = Math.max(0, header?.bottom ?? 76) + 8;
     this.headerBottom.set(top);
-    const content = main.querySelector<HTMLElement>(':scope > .question-reader') ?? main;
-    const bounds = content.getBoundingClientRect();
+    // The main container owns its padding on catalogs, courses and lessons alike.
+    const reader = main.querySelector<HTMLElement>(':scope > .question-reader');
+    const outerBounds = main.getBoundingClientRect();
+    const readerBounds = reader?.getBoundingClientRect();
     const width =
       this.document.documentElement.clientWidth || this.document.defaultView!.innerWidth;
+    // Some reader shells span the viewport; use their centered reader gutter instead.
+    const bounds = readerBounds && outerBounds.left < 54 && width - outerBounds.right < 54
+      ? { left: Math.max(0, readerBounds.left - 24), right: Math.min(width, readerBounds.right + 24) }
+      : outerBounds;
     this.updateEdgeClearance(
       main,
       !this.authorNavigation() &&
@@ -296,13 +315,16 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
     this.rightInset.set(6);
     this.leftWidth.set(Math.max(width >= 1100 ? 44 : 224, startSpace - 6));
     this.rightWidth.set(Math.max(width >= 1100 ? 44 : 224, endSpace - 6 - 24));
-    this.leftDocked.set(canDockSidebar(startSpace));
-    this.rightDocked.set(canDockSidebar(endSpace));
+    this.leftDocked.set((width >= 1100) || canDockSidebar(startSpace));
+    this.rightDocked.set((width >= 1100) || canDockSidebar(endSpace));
     const visible = this.sections().filter((section) => visibleSidebarTarget(section.target));
     const passed = visible.filter(
       (section) => section.target.getBoundingClientRect().top <= top + 24,
     );
-    this.currentId.set((passed.at(-1) ?? visible[0])?.id ?? '');
+    const view = this.document.defaultView!;
+    const atBottom = view.scrollY > 0 &&
+      view.scrollY + view.innerHeight >= this.document.documentElement.scrollHeight - 2;
+    this.currentId.set((atBottom ? visible.at(-1) : passed.at(-1) ?? visible[0])?.id ?? '');
   }
 
   protected toggle(side: 'left' | 'right', event: Event): void {

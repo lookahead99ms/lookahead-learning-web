@@ -549,3 +549,21 @@ See [homepage behavior and local verification](docs/homepage.md) for the root
 route, carousel, optional public challenge, shared themes and review steps.
 
 The learner and author sidebars share `sidebar-outline.css` for navigation row spacing, selection borders, colors and text weight. This styling does not change article width.
+
+Sign-in, sign-up, Manage Account and sign-in selection screens exclude both shared sidebars and toggles. Their form/content layout is unchanged.
+
+Catalog sidebars on Learn, Grow and Look Ahead expose independently expandable course groups from AdaptiveCatalog through PageSidebarContext. They reuse loaded course data and existing routes; no additional requests or persisted state.
+
+Desktop catalog and lesson sidebars stop at the outer main container; its padding remains part of the content surface.
+
+For full-viewport reader shells, sidebar bounds use the centered article gutter with 24px clearance; bounded outer containers retain their own boundary. Main content dimensions remain unchanged.
+
+Catalog group highlighting follows its explicit heading identity independently of expansion. Desktop reader sidebars use docked presentation; hover underlines are distinct from the filled active-section state.
+
+Search excludes shared sidebars and their toggles, alongside account screens and coding workspaces.
+
+Course overviews across Learn, Grow and Look Ahead use the shared course layout without global sidebars or a separate Learn-only contents map. Catalog expandable navigation and lesson sidebars remain separate.
+
+The two platform statements remain visible independently of sidebar navigation, including account, Search and course overview pages. Coding Problem Workspace excludes both statements; homepage uses its existing in-content statements.
+
+PageSidebarContext supports navigation-only exclusion while retaining platform statements. The Mediator Pattern question uses this mode.

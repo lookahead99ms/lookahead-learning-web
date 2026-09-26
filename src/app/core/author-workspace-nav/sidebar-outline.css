@@ -22,8 +22,6 @@
   text-decoration: none;
   overflow-wrap: anywhere;
 }
-.shared-sidebar-outline a:hover,
-.shared-sidebar-outline a:focus-visible,
 .shared-sidebar-outline a[aria-current='location'] {
   border-inline-start-color: var(--accent-strong);
   background: var(--surface-muted);
@@ -35,4 +33,19 @@
 .shared-sidebar-outline a:focus-visible {
   outline: 3px solid var(--accent-focus);
   outline-offset: -3px;
+}
+
+.shared-sidebar-outline a:hover,
+.shared-sidebar-outline a:focus-visible,
+.shared-sidebar-outline button:hover,
+.shared-sidebar-outline button:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 1px;
+}
+
+.shared-sidebar-outline a:not([aria-current='location']):hover,
+.shared-sidebar-outline a:not([aria-current='location']):focus-visible {
+  background: transparent;
+  border-inline-start-color: transparent;
 }

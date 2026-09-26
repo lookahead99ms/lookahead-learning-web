@@ -1,8 +1,21 @@
+@if (enabled() && !homepage() && !showLeft() && !authorNavigation()) {
+  <div class="standalone-signature standalone-signature-left"
+    [style.top.px]="headerBottom()" [style.width.px]="leftWidth()">
+    <app-platform-signature [stacked]="true" />
+  </div>
+}
+@if (enabled() && !homepage() && !showRight()) {
+  <div class="standalone-signature standalone-signature-right"
+    [style.top.px]="headerBottom()" [style.width.px]="rightWidth()">
+    <app-learning-prompt [stacked]="true" />
+  </div>
+}
 @if (enabled()) {
   @if (showLeft()) {
     <aside
       id="page-sidebar-left"
       class="page-sidebar left"
+      [class.homepage]="homepage()"
       [style.inset-inline-start.px]="leftOpen() ? leftInset() : 6"
       [style.width.px]="leftOpen() || !homepage() ? leftWidth() : 44"
       [class.open]="leftOpen()"
@@ -33,6 +46,24 @@
           <p class="sidebar-title">{{ title() }}</p>
         }
         <nav class="shared-sidebar-outline" aria-label="Page sections">
+          @if (catalogGroups().length) {
+            @for (group of catalogGroups(); track group.id) {
+              <button type="button" class="catalog-group-toggle"
+                [attr.aria-current]="currentId() === group.sectionId ? 'location' : null"
+                [attr.aria-expanded]="expandedGroups().has(group.id)"
+                [attr.aria-controls]="'sidebar-group-' + group.id"
+                [attr.aria-label]="(expandedGroups().has(group.id) ? 'Collapse ' : 'Expand ') + group.title"
+                (click)="toggleGroup(group.id)">
+                <span>{{ group.title }}</span>
+              </button>
+              <div class="catalog-group-courses" [id]="'sidebar-group-' + group.id"
+                [hidden]="!expandedGroups().has(group.id)">
+                @for (course of group.courses; track course.id) {
+                  <a [routerLink]="course.url">{{ course.title }}</a>
+                }
+              </div>
+            }
+          } @else {
           @for (section of sections(); track section.id) {
             <a
               [href]="href(section)"
@@ -40,6 +71,7 @@
               (click)="follow($event, section)"
               >{{ section.label }}</a
             >
+          }
           }
         </nav>
       </div>

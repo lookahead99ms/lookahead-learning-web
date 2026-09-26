@@ -81,8 +81,12 @@ app-sidebar-toggle {
   padding-top: 0;
   border-top: 0;
 }
-.left .sidebar-content > nav:first-child a:first-child {
-  padding-inline-start: 36px;
+.left.homepage app-sidebar-toggle {
+  position: relative;
+  top: auto;
+}
+.left.homepage.open app-sidebar-toggle {
+  margin-inline-start: 24px;
 }
 .sidebar-title {
   font-size: 1rem;
@@ -113,7 +117,6 @@ nav a {
   font-size: 0.84rem;
   line-height: 1.45;
 }
-nav a:hover,
 nav a[aria-current='location'] {
   border-inline-start-color: var(--accent-strong);
   background: var(--surface-muted);
@@ -189,4 +192,59 @@ button {
 
 .right.statement-only > .persistent-signature {
   padding-inline-end: 16px;
+}
+
+.catalog-group-toggle {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 0;
+  border-inline-start: 3px solid transparent;
+  background: transparent;
+  color: var(--text-strong);
+  text-align: start;
+  font-size: .88rem;
+  font-weight: 700;
+}
+.catalog-group-toggle[aria-current='location'] {
+  background: var(--surface-muted);
+  border-inline-start-color: var(--accent-strong);
+}
+.catalog-group-courses { padding-inline-start: 12px; }
+.catalog-group-courses[hidden] { display: none; }
+
+.catalog-group-toggle > span {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.catalog-group-courses {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.standalone-signature {
+  position: fixed;
+  box-sizing: border-box;
+  padding: 8px 16px;
+  z-index: 45;
+  font-size: 1.05rem;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.standalone-signature-left { inset-inline-start: 6px; }
+.standalone-signature-right {
+  inset-inline-end: 6px;
+  display: flex;
+  justify-content: flex-end;
 }
