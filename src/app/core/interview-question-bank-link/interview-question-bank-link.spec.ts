@@ -26,13 +26,21 @@ describe('InterviewQuestionBankLink', () => {
     fixture.detectChanges();
   });
 
+  it('adds the original learning unit only when its caller supplies one', () => {
+    fixture.componentRef.setInput('returnUnit', 'original-learning-unit');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('a').getAttribute('href')).toBe(
+      '/interview-questions?path=learn&course=solid-design-patterns&module=creational-behavioral-patterns&unit=original-learning-unit',
+    );
+  });
+
   it('links to the complete module question bank with its recoverable count', () => {
     const link = fixture.nativeElement.querySelector('a') as HTMLAnchorElement;
 
     expect(link.textContent?.replace(/\s+/g, ' ').trim()).toContain('Review all 13 questions');
     expect(link.textContent).not.toContain('→');
     expect(link.getAttribute('href')).toBe(
-      '/interview-questions?path=learn&course=solid-design-patterns&module=creational-behavioral-patterns&unit=creational-behavioral-patterns',
+      '/interview-questions?path=learn&course=solid-design-patterns&module=creational-behavioral-patterns',
     );
     expect(link.getAttribute('aria-label')).toBe('Review questions for this topic: 13 questions');
   });

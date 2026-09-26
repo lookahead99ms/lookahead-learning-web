@@ -618,3 +618,6 @@ on phones and retain visible hover/focus feedback and44px minimum hit targets.
 Question return links share a row with Review theory below the question panel,
 with return navigation aligned left and theory aligned right. Loading/error views
 keep their return links inside the centered message container.
+
+The shared question-bank link adds a return-unit query parameter only when the
+calling learning map supplies an explicit unit; lesson links retain their existing URLs.
