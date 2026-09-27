@@ -32,7 +32,9 @@ forced-color modes retain the text name. The home link keeps its accessible
 name and keyboard focus. `public/favicon.svg` uses the same standalone symbol.
 
 The homepage also displays the illustrated title in a static closing section
-after Keep exploring and before the footer. `PlatformBrandIllustration` keeps
+after Keep exploring and before the footer. “Our platform” introduces the heading
+“The Essence of Look Ahead”; the page sidebar calls it “The essence” to distinguish
+the platform story from the Look Ahead catalog. `PlatformBrandIllustration` keeps
 that artwork separate from navigation branding, scales without cropping, and
 uses the shared identity colors. The heading and caption provide real text;
 decorative SVG shapes are hidden from assistive technology. The illustration's
