@@ -35,8 +35,7 @@
   text-transform: uppercase;
 }
 
-.grow-catalog .catalog-path-label,
-.grow-catalog-reader .catalog-card-kicker {
+.grow-catalog .catalog-path-label {
   color: var(--path-grow) !important;
 }
 
@@ -304,27 +303,6 @@
   min-height: 128px;
 }
 
-.grow-catalog-reader .catalog-course-preview {
-  padding: 14px;
-  border-top: 0;
-  border-inline-start: 2px solid var(--path-grow);
-  background: var(--surface-muted);
-}
-
-.grow-catalog-reader .catalog-course-preview .catalog-course-preview-label {
-  color: var(--accent-strong);
-}
-
-.grow-catalog-reader .catalog-course-preview .catalog-topic-preview {
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr));
-  gap: 9px 14px;
-}
-
-.grow-catalog-reader .catalog-course-preview .catalog-topic-preview li {
-  color: var(--text-strong);
-  font-weight: 750;
-}
-
 .adaptive-catalog-course-grid .catalog-card-action {
   margin-top: 0;
 }
@@ -426,22 +404,6 @@
   margin-top: 0;
 }
 
-.adaptive-catalog-course-grid .featured-catalog-card {
-  grid-column: span 2;
-  background:
-    radial-gradient(circle at 94% 12%, color-mix(in srgb, var(--accent-strong) 15%, transparent), transparent 30%),
-    linear-gradient(145deg, var(--surface), var(--surface-accent)) !important;
-}
-
-.adaptive-catalog-course-grid .featured-catalog-card h3 {
-  max-width: 600px;
-  font-size: clamp(1.55rem, 3vw, 2.15rem);
-}
-
-.adaptive-catalog-course-grid .featured-catalog-card > p:not(.catalog-card-kicker) {
-  max-width: 720px;
-}
-
 .adaptive-catalog-course-grid .course-card h3 {
   margin: 0 0 8px;
   color: var(--text);
@@ -539,4 +501,16 @@
     text-align: left;
     white-space: normal;
   }
+}
+
+/* Every catalog uses the same card and topic composition as Learn. */
+.harbor-catalog .catalog-path-heading,
+.harbor-catalog .catalog-course-grid {
+  width: 100%;
+}
+.harbor-catalog .catalog-topic-preview li::before {
+  background: var(--accent-strong);
+}
+.harbor-catalog .catalog-path-section {
+  scroll-margin-top: calc(var(--platform-header-height, 88px) + 64px);
 }

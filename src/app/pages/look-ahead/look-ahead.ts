@@ -39,7 +39,7 @@ export class LookAhead {
     questionMetricLabel: 'interview and practice questions',
     jumpLabel: 'Look Ahead curriculum paths',
     sectionEyebrow: 'Senior-readiness track',
-    previewLabel: 'Topics covered',
+    previewLabel: 'Inside this course',
     previewAriaLabel: 'Topics covered',
     emptyTitle: 'Nothing published yet',
     emptyDescription: 'New Look Ahead practices will appear here soon.',

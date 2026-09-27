@@ -209,25 +209,25 @@ a {
   }
 }
 
-/* DLV-802: Harbor Signal composition pilot, intentionally limited to Learn. */
+/* Shared Harbor catalog composition; course/lesson refinements remain Learn-scoped. */
 /* In-page clearance for sidebar edge controls when no outer gutter exists. */
 main[data-sidebar-edge-controls] {
   padding-block-start: calc(var(--sidebar-original-padding-top, 0px) + 48px) !important;
 }
 
-main.harbor-learn {
+main:is(.harbor-learn, .harbor-catalog) {
   --harbor-panel-gap: clamp(20px, 3vw, 40px);
 }
-main.harbor-learn.content-page {
+main:is(.harbor-learn, .harbor-catalog).content-page {
   max-width: 1440px;
   margin-inline: auto;
   padding-inline: clamp(16px, 4vw, 64px);
 }
-main.harbor-learn .question-reader {
+main:is(.harbor-learn, .harbor-catalog) .question-reader {
   max-width: none;
 }
-main.harbor-learn .reader-question-title,
-main.harbor-learn .module-context-title {
+main:is(.harbor-learn, .harbor-catalog) .reader-question-title,
+main:is(.harbor-learn, .harbor-catalog) .module-context-title {
   font-size: clamp(2rem, 4.2vw, 4rem);
   line-height: 1.08;
   letter-spacing: -0.045em;
@@ -235,37 +235,37 @@ main.harbor-learn .module-context-title {
   text-wrap: balance;
   overflow-wrap: anywhere;
 }
-main.harbor-learn .catalog-depth-copy {
+main:is(.harbor-learn, .harbor-catalog) .catalog-depth-copy {
   max-width: 740px;
 }
-main.harbor-learn .catalog-depth-copy > p {
+main:is(.harbor-learn, .harbor-catalog) .catalog-depth-copy > p {
   max-width: 62ch;
   line-height: 1.7;
 }
-main.harbor-learn .catalog-jump-nav {
+main:is(.harbor-learn, .harbor-catalog) .catalog-jump-nav {
   gap: 20px;
   padding: 20px 0;
   border-block: 1px solid var(--line);
 }
-main.harbor-learn .catalog-path-section {
+main:is(.harbor-learn, .harbor-catalog) .catalog-path-section {
   margin-top: 48px;
 }
-main.harbor-learn .catalog-path-title {
+main:is(.harbor-learn, .harbor-catalog) .catalog-path-title {
   font-size: clamp(1.6rem, 2.5vw, 2.2rem);
   letter-spacing: -0.025em;
 }
-main.harbor-learn .catalog-path-heading {
+main:is(.harbor-learn, .harbor-catalog) .catalog-path-heading {
   margin-bottom: 24px;
   align-items: end;
 }
-main.harbor-learn .course-card {
+main:is(.harbor-learn, .harbor-catalog) .course-card {
   padding: 26px;
   border-radius: 4px;
   border: 1px solid var(--line);
   background: var(--surface);
   box-shadow: 0 12px 28px color-mix(in srgb, var(--text-strong) 6%, transparent);
 }
-main.harbor-learn .course-card h3 {
+main:is(.harbor-learn, .harbor-catalog) .course-card h3 {
   font-size: 1.3rem;
   letter-spacing: -0.02em;
 }

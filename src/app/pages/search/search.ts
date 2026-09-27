@@ -723,6 +723,7 @@ export class Search implements OnInit, AfterViewInit {
       case 'grow':
         return 'grow';
       case 'look ahead':
+      case 'look-ahead':
         return 'look-ahead';
       default:
         return null;

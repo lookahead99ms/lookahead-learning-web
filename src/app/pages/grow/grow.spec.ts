@@ -187,7 +187,7 @@ describe('Grow catalog', () => {
     const card = harness.routeNativeElement!.querySelector<HTMLAnchorElement>('.course-card')!;
     const preview = card.querySelector<HTMLElement>('.catalog-course-preview')!;
     expect(preview.querySelector('.catalog-course-preview-label')?.textContent?.trim()).toBe(
-      'Key topics',
+      'Inside this course',
     );
     expect(
       [...preview.querySelectorAll('ul[aria-label="Key topics"] li')].map((item) =>
