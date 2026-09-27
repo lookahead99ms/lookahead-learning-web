@@ -11,6 +11,7 @@ import {
   signal,
 } from '@angular/core';
 import { HeaderNavigation } from './header-navigation';
+import { PlatformBrand } from '../platform-brand/platform-brand';
 import { StudyPlanAccount } from '../../pages/study-plan/study-plan-account';
 import { TopicShortcuts } from '../topic-shortcuts';
 import { FormsModule } from '@angular/forms';
@@ -87,7 +88,7 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
 
 @Component({
   selector: 'app-platform-header',
-  imports: [HeaderNavigation, TopicShortcuts, FormsModule, RouterLink, RouterLinkActive],
+  imports: [PlatformBrand, HeaderNavigation, TopicShortcuts, FormsModule, RouterLink, RouterLinkActive],
   templateUrl: './platform-header.html',
   styles: [
     `
@@ -106,15 +107,6 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
       }
       .platform-header.with-search {
         min-height: 76px;
-      }
-      .platform-header .brand > span:last-child {
-        width: max-content;
-      }
-      .platform-header .brand small {
-        font-size: 11px !important;
-        letter-spacing: -0.01em !important;
-        line-height: 1.2 !important;
-        white-space: nowrap;
       }
       .header-search-form {
         position: absolute;
@@ -550,15 +542,13 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         min-height: 76px;
       }
       .platform-header .brand {
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
         justify-self: start;
-        font-size: 24px;
-        font-weight: 800;
-        letter-spacing: -1px;
-        white-space: nowrap;
-      }
-      .platform-header .brand span {
-        color: var(--accent-strong);
+        min-width: 0;
+        min-height: 48px;
+        max-width: 100%;
+        text-decoration: none;
       }
       .platform-navigation {
         display: flex;
@@ -662,7 +652,7 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         .platform-header .brand {
           grid-column: 1 / 3;
           grid-row: 1;
-          font-size: 21px;
+          min-height: 44px;
         }
         .header-utilities {
           display: contents;

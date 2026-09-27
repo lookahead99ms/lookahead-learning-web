@@ -11,13 +11,14 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { PlatformThemeService } from '../../core/platform-theme';
+import { PlatformBrand } from '../../core/platform-brand/platform-brand';
 import { SIGN_IN_CHALLENGE_CLIENT, SignInChallenge } from './sign-in-challenge-client';
 import { safeAccountReturn } from './account-navigation';
 import { SignInManagementError } from './active-sign-ins-client';
 
 @Component({
   selector: 'app-sign-in-challenge',
-  imports: [DatePipe, RouterLink],
+  imports: [DatePipe, RouterLink, PlatformBrand],
   templateUrl: './sign-in-challenge.html',
   styleUrl: './sign-in-challenge.css',
 })

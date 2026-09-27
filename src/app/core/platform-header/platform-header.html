@@ -1,7 +1,7 @@
 <header class="content-header platform-header" [class.with-search]="showSearch">
-  <a class="brand" routerLink="/" aria-label="Look Ahead home"
-    >look ahead<span aria-hidden="true">.</span></a
-  >
+  <a class="brand" routerLink="/" aria-label="Look Ahead home">
+    <app-platform-brand aria-hidden="true" />
+  </a>
   <nav class="platform-navigation" aria-label="Main navigation">
     <app-header-navigation (opened)="closeForNavigation()" />
   </nav>

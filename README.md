@@ -22,6 +22,31 @@ Sidebar state is transient and adds no API or saved-session contract.
 
 ## Header course navigation
 
+The shared `PlatformBrand` component renders the LookAhead symbol and wordmark
+in the platform header and restricted sign-in header. The title uses clean
+LookAhead lettering: Look in the text color and Ahead in the theme accent.
+Inside the standalone symbol, AI shares one color, the code brackets share another,
+and H's right upright and crossbar share a third. Identity tokens in `src/styles.css`
+preserve those groups in both themes. The mobile header scales the icon and title;
+forced-color modes retain the text name. The home link keeps its accessible
+name and keyboard focus. `public/favicon.svg` uses the same standalone symbol.
+
+The homepage also displays the illustrated title in a static closing section
+after Keep exploring and before the footer. “Our platform” introduces the heading
+“The Essence of Look Ahead”; the page sidebar calls it “The essence” to distinguish
+the platform story from the Look Ahead catalog. `PlatformBrandIllustration` keeps
+that artwork separate from navigation branding, scales without cropping, and
+uses the shared identity colors. The heading and caption provide real text;
+decorative SVG shapes are hidden from assistive technology. The illustration's
+aspect ratio reserves its layout space, and forced-color mode retains the text.
+The illustrated E uses circuit terminals for Explore and Engineering; the final A
+combines a structural frame with a three-node branch for Algorithms and Architecture.
+The closing statement connects those themes to learning and engineering growth,
+followed by “Understand the invariant. Practice the reasoning.”
+The statement uses the header's local Avenir Next font stack for display lines,
+system text for supporting copy, shared theme colors for emphasis, and deliberate
+line groups that can wrap naturally on small screens. No web fonts are downloaded.
+
 Learn, Grow and Look Ahead open compact course directories. Course links open their
 canonical route on the first click or tap; they do not expand a Course Highlights
 panel or request per-course highlights. Keyboard users expand a path with Down
