@@ -638,3 +638,22 @@ keep their return links inside the centered message container.
 
 The shared question-bank link adds a return-unit query parameter only when the
 calling learning map supplies an explicit unit; lesson links retain their existing URLs.
+
+Foundation lesson review links preserve the originating learning unit when several
+lessons share a question module. Returning from scoped practice opens that unit in
+the course map. Targeted regression checks cover the lesson shell, question reader,
+course map, and Search (`npm test -- --watch=false` with the corresponding spec
+paths); this is frontend navigation and does not change API or progress storage.
+
+Foundation lesson details may opt into `learningFlow` with a purpose and an
+independent practice prompt, hint, and explained answer. The shared reader places
+the topic introduction and outcomes before examples, and keeps detailed content,
+a single summary, mistakes, checks, and practice in reading order. Content without
+that optional field retains the existing layout. The focused component and page
+checks run with `npm test -- --watch=false --include='src/app/core/foundation-lesson-shell/*.spec.ts' --include='src/app/pages/question/*.spec.ts'`.
+
+The shared pattern lesson reader supports optional `beginnerGuide` and
+`learningFlow` metadata, matching the foundation reader's introductory sequence.
+The public app contains only the rendering contract and synthetic tests; authored
+curriculum stays in the external content source. Verify the reader with
+`npm test -- --watch=false --include='src/app/core/pattern-lesson-shell/*.spec.ts'`.

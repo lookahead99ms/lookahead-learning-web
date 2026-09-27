@@ -25,8 +25,24 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
     PatternUnderstandingChecks,
   ],
   template: `
+    @if (lesson().learningFlow; as flow) {
+      <article class="foundation-lesson beginner-guide" aria-label="Lesson introduction">
+        <section class="lesson-section" id="foundation-start" aria-labelledby="foundation-start-heading">
+          <h2 id="foundation-start-heading">Before you start</h2>
+          <p>{{ lesson().summary }}</p>
+          @if (guide(); as guide) { <p>{{ guide.prerequisite }}</p> }
+        </section>
+        <section class="lesson-section" id="foundation-why" aria-labelledby="foundation-why-heading">
+          <h2 id="foundation-why-heading">Why this matters</h2>
+          <p>{{ flow.whyItMatters }}</p>
+          <h3 id="foundation-outcomes-heading">What you’ll learn</h3>
+          <ul>@for (outcome of lesson().learningOutcomes; track outcome) { <li>{{ outcome }}</li> }</ul>
+        </section>
+      </article>
+    }
     @if (guide(); as guide) {
       <article class="foundation-lesson beginner-guide" [attr.aria-label]="guideLabel()">
+        @if (!lesson().learningFlow) {
         <p class="guide-summary">{{ lesson().summary }}</p>
         <section
           class="lesson-section"
@@ -36,6 +52,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
           <h2 id="foundation-start-heading">Before you start</h2>
           <p>{{ guide.prerequisite }}</p>
         </section>
+        }
         <section
           class="lesson-section guided-example"
           id="foundation-example"
@@ -57,13 +74,14 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
           }
           <div class="guide-walkthrough">
             <h3>Let's walk through it</h3>
-            <ul class="walkthrough-points">
+            <ol class="walkthrough-points">
               @for (paragraph of guide.walkthrough; track paragraph) {
                 <li [innerHTML]="paragraph"></li>
               }
-            </ul>
+            </ol>
           </div>
         </section>
+        @if (!lesson().learningFlow) {
         <section
           class="lesson-section"
           id="foundation-try"
@@ -89,6 +107,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
           </ul>
           <p>{{ guide.later }}</p>
         </section>
+        }
       </article>
       <div id="foundation-reference" class="foundation-reference">
         <ng-container [ngTemplateOutlet]="referenceLesson" />
@@ -98,6 +117,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
     }
     <ng-template #referenceLesson>
       <article class="foundation-lesson" aria-label="Foundation lesson">
+        @if (!lesson().learningFlow) {
         <header class="lesson-intro" [class.guided-outcomes]="guide()">
           @if (!guide()) {
             <p>{{ lesson().summary }}</p>
@@ -118,6 +138,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
             <p><b>Interview cue:</b> {{ lesson().memoryAnchor.retrievalCue }}</p>
           </aside>
         </header>
+        }
 
         @for (section of lesson().sections; track section.id) {
           <section
@@ -236,13 +257,25 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
           </div>
         </section>
 
+        @if (lesson().learningFlow) {
+          <section id="foundation-remember" class="lesson-section takeaways" aria-labelledby="foundation-remember-heading">
+            <h2 id="foundation-remember-heading">What to remember</h2>
+            <ul>@for (takeaway of guide()?.takeaways ?? lesson().keyTakeaways; track takeaway) { <li>{{ takeaway }}</li> }</ul>
+            @if (guide(); as guide) { <p>{{ guide.later }}</p> }
+            <div class="language-notes" aria-label="Language notes">
+              @for (note of lesson().languageNotes; track note.language) {
+                <p><strong>{{ note.language }}</strong>{{ note.note }}</p>
+              }
+            </div>
+          </section>
+        }
         <section
           id="foundation-pitfalls"
           class="lesson-section wide-section"
           aria-labelledby="foundation-pitfalls-heading"
         >
           <p class="section-label"><span>Debug</span>Failure contrasts</p>
-          <h2 id="foundation-pitfalls-heading">Common failure modes</h2>
+          <h2 id="foundation-pitfalls-heading">{{ lesson().learningFlow ? "Common mistakes" : "Common failure modes" }}</h2>
           <div class="pitfall-list">
             @for (pitfall of lesson().pitfalls; track pitfall.failedAssumption) {
               <article>
@@ -268,6 +301,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
                 [pathId]="pathId()"
                 [courseId]="courseId()"
                 [moduleId]="moduleId"
+                [returnUnit]="returnUnit()"
                 [questionCount]="questionCount()"
                 [practiceItems]="questionItems()"
               />
@@ -275,6 +309,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
           }
         </section>
 
+        @if (!lesson().learningFlow) {
         <section
           id="foundation-recall"
           class="lesson-section takeaways"
@@ -306,6 +341,27 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
           </aside>
         </section>
 
+        }
+        @if (lesson().learningFlow; as flow) {
+          <section id="foundation-try" class="lesson-section" aria-labelledby="foundation-try-heading">
+            <h2 id="foundation-try-heading">Try it yourself</h2>
+            <p>{{ flow.practice.prompt }}</p>
+            <details class="guide-answer"><summary>Show a hint</summary><p>{{ flow.practice.hint }}</p></details>
+            <details class="guide-answer"><summary>Check your answer</summary><p class="practice-answer">{{ flow.practice.answer }}</p></details>
+            @if (guide(); as guide) {
+              <h3>One more small change</h3>
+              <p>{{ guide.try }}</p>
+              <details class="guide-answer"><summary>Check the small change</summary><p>{{ guide.answer }}</p></details>
+            }
+            <details class="guide-answer">
+              <summary>Practice explaining your choice</summary>
+              <p>{{ lesson().interviewRecall.prompt }}</p>
+              <details><summary>Compare your explanation</summary>
+                <ol>@for (step of lesson().interviewRecall.answerFramework; track step) { <li>{{ step }}</li> }</ol>
+              </details>
+            </details>
+          </section>
+        }
         @if (practiceItems().length) {
           <section
             id="foundation-practice"
@@ -320,7 +376,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
                   <span>{{ item.difficulty }} · {{ practiceVariation(item.id) }}</span>
                   <strong>{{ item.title }}</strong>
                   <p>{{ practiceReason(item.id) }}</p>
-                  <b aria-hidden="true">Start problem →</b>
+                  <b aria-hidden="true">Start problem</b>
                 </a>
               }
             </div>
@@ -331,6 +387,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
   `,
   styles: [
     `
+      .practice-answer { white-space: pre-line; }
       :host {
         display: block;
       }
@@ -937,6 +994,7 @@ export class FoundationLessonShell {
   readonly pathId = input.required<string>();
   readonly courseId = input.required<string>();
   readonly questionModuleId = input<string | null>(null);
+  readonly returnUnit = input('');
   readonly questionCount = input(0);
   readonly questionItems = input<ContentItemSummary[]>([]);
 

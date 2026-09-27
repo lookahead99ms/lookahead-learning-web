@@ -570,6 +570,10 @@ export interface FoundationLessonV1 extends InterviewQuestion {
   /** Practical Grow or decision-focused Look Ahead first reading path. */
   teachingGuide?: LessonTeachingGuide;
   summary: string;
+  learningFlow?: {
+    whyItMatters: string;
+    practice: { prompt: string; hint: string; answer: string };
+  };
   learningOutcomes: string[];
   memoryAnchor: PatternMemoryAnchor;
   foundationModel: FoundationLessonModel;
@@ -597,6 +601,8 @@ export interface NamedAlgorithmReference {
 }
 
 export interface PatternLessonV1 extends InterviewQuestion {
+  beginnerGuide?: LessonTeachingGuide;
+  learningFlow?: FoundationLessonV1['learningFlow'];
   schemaVersion: 'pattern-lesson/v1';
   /** Opts an upgraded lesson into non-overlapping guided and transfer problems. */
   practiceSetPolicy?: 'guided-plus-distinct-transfer';

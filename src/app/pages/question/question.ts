@@ -1143,7 +1143,7 @@ export class Question implements OnInit {
     }
     const pattern = this.patternLesson(item);
     const foundation = this.foundationLesson(item);
-    const teachingGuide = foundation?.teachingGuide ?? foundation?.beginnerGuide;
+    const teachingGuide = foundation?.teachingGuide ?? foundation?.beginnerGuide ?? pattern?.beginnerGuide;
     if (teachingGuide) {
       return { excluded: false, recall: [{
         id: `${item.id}-first-steps`,
@@ -1363,6 +1363,12 @@ export class Question implements OnInit {
     );
   }
 
+  protected questionBankReturnUnit(item: InterviewQuestion): string {
+    return flattenLearningUnits(this.course()?.learningUnits ?? []).find(
+      (unit) => unit.theoryModuleId === item.moduleId,
+    )?.id ?? '';
+  }
+
   protected questionBankModuleId(item: InterviewQuestion): string | null {
     if (item.contentType !== 'theory') return null;
     const course = this.course();
@@ -1433,6 +1439,11 @@ export class Question implements OnInit {
   protected patternNavigation(item: InterviewQuestion): { label: string; target: string }[] {
     if (isPatternLesson(item)) {
       return [
+        ...(item.learningFlow ? [
+          { label: 'Before you start', target: 'pattern-start' },
+          { label: 'Why & what', target: 'pattern-purpose' },
+          { label: 'Small example', target: 'pattern-first-example' },
+        ] : []),
         { label: 'What', target: 'pattern-what' },
         { label: 'Why', target: 'pattern-why' },
         { label: 'Recognize', target: 'pattern-where' },
@@ -1441,16 +1452,32 @@ export class Question implements OnInit {
         { label: 'Template', target: 'pattern-template' },
         { label: 'Visualize', target: 'pattern-visualize' },
         { label: 'Complexity', target: 'pattern-complexity' },
+        { label: 'Remember', target: 'pattern-remember' },
         { label: 'Pitfalls', target: 'pattern-pitfalls' },
         { label: 'Use / Avoid', target: 'pattern-guidance' },
         { label: 'Worked', target: 'pattern-worked' },
         { label: 'Understand', target: 'pattern-understand' },
+        ...(item.learningFlow ? [{ label: 'Try it', target: 'pattern-independent-practice' }] : []),
         { label: 'Essential', target: 'pattern-essential' },
         { label: 'Continue', target: 'pattern-practice' },
       ];
     }
 
     if (isFoundationLessonV1(item)) {
+      if (item.learningFlow) {
+        return [
+          { label: 'Before you start', target: 'foundation-start' },
+          { label: 'Why & what', target: 'foundation-why' },
+          ...(item.beginnerGuide || item.teachingGuide ? [{ label: 'Worked example', target: 'foundation-example' }] : []),
+          ...item.sections.map(section => ({ label: section.navLabel ?? section.heading, target: section.id })),
+          { label: 'How it works', target: 'foundation-model' },
+          { label: 'Remember', target: 'foundation-remember' },
+          { label: 'Common mistakes', target: 'foundation-pitfalls' },
+          { label: 'Check understanding', target: 'foundation-understand' },
+          { label: 'Try it yourself', target: 'foundation-try' },
+          ...((item.practice?.length ?? 0) > 0 ? [{ label: 'More practice', target: 'foundation-practice' }] : []),
+        ];
+      }
       const introduction = item.teachingGuide || item.beginnerGuide ? [
           { label: 'Before you start', target: 'foundation-start' },
           { label: item.teachingGuide ? 'Worked scenario' : 'Worked example', target: 'foundation-example' },

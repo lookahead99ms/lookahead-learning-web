@@ -318,6 +318,17 @@ describe('Question canonical DSA navigation', () => {
     }).compileComponents();
   });
 
+  it('resolves the originating lesson unit rather than a shared review module', () => {
+    const fixture = TestBed.createComponent(Question);
+    const page = fixture.componentInstance as any;
+    page.course.set({ learningUnits: [
+      { id: 'foundations', theoryModuleId: 'theory-foundations', questionModuleId: 'shared-checks' },
+      { id: 'calculate', theoryModuleId: 'theory-calculate', questionModuleId: 'shared-checks' },
+    ] });
+    expect(page.questionBankReturnUnit({ moduleId: 'theory-calculate' })).toBe('calculate');
+    expect(page.questionBankReturnUnit({ moduleId: 'unknown' })).toBe('');
+  });
+
   it('uses the guided example for navigation and recall instead of advanced checks', () => {
     const fixture = TestBed.createComponent(Question);
     const page = fixture.componentInstance as any;
@@ -338,6 +349,16 @@ describe('Question canonical DSA navigation', () => {
     expect(page.sidebarContext().recall).toEqual([{
       id: 'first-example-first-steps', prompt: 'Predict the result.', answer: 'The result is 2.',
     }]);
+  });
+
+  it('orders approved-flow anchors without linking a missing example or recall block', () => {
+    const fixture = TestBed.createComponent(Question);
+    const page = fixture.componentInstance as any;
+    const item = { schemaVersion: 'foundation-lesson/v1', learningFlow: {}, sections: [{id:'small-example', heading:'Small example'}] };
+    expect(page.patternNavigation(item).map((entry: {target:string}) => entry.target)).toEqual([
+      'foundation-start', 'foundation-why', 'small-example', 'foundation-model', 'foundation-remember',
+      'foundation-pitfalls', 'foundation-understand', 'foundation-try',
+    ]);
   });
 
   it('keeps theory articles out of previous and next question navigation', () => {
