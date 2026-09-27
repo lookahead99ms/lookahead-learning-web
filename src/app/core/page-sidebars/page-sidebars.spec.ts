@@ -72,7 +72,11 @@ describe('Shared page sidebars', () => {
     fixture = TestBed.createComponent(PageSidebars);
     root.append(fixture.nativeElement);
     flush();
+    button('Open left sidebar').click();
+    flush();
     button('Close left sidebar').click();
+    button('Open right sidebar').click();
+    flush();
     button('Close right sidebar').click();
     flush();
   });
@@ -267,13 +271,13 @@ describe('Shared page sidebars', () => {
     );
   });
 
-  it('opens both available sidebars by default even without docking space', () => {
+  it('keeps both sidebars closed by default without docking space', () => {
     fixture.destroy();
     fixture = TestBed.createComponent(PageSidebars);
     root.append(fixture.nativeElement);
     flush();
-    expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
-    expect(button('Close right sidebar').getAttribute('aria-expanded')).toBe('true');
+    expect(button('Open left sidebar').getAttribute('aria-expanded')).toBe('false');
+    expect(button('Open right sidebar').getAttribute('aria-expanded')).toBe('false');
     expect(page.hasAttribute('inert')).toBe(false);
     expect(root.querySelector('.sidebar-backdrop')).toBeNull();
   });
@@ -313,13 +317,13 @@ describe('Shared page sidebars', () => {
 
   it('keeps both statements visible when navigation and practice are collapsed', () => {
     expect(
-      root.querySelector('#page-sidebar-left app-platform-signature')?.closest('[hidden], [inert]'),
+      root.querySelector('.standalone-signature app-platform-signature')?.closest('[hidden], [inert]'),
     ).toBeNull();
     expect(
-      root.querySelector('#page-sidebar-right app-learning-prompt')?.closest('[hidden], [inert]'),
+      root.querySelector('.standalone-signature app-learning-prompt')?.closest('[hidden], [inert]'),
     ).toBeNull();
-    expect(root.querySelector('#page-sidebar-left app-platform-signature')).not.toBeNull();
-    expect(root.querySelector('#page-sidebar-right app-learning-prompt')).not.toBeNull();
+    expect(root.querySelector('.standalone-signature app-platform-signature')).not.toBeNull();
+    expect(root.querySelector('.standalone-signature app-learning-prompt')).not.toBeNull();
     expect(root.querySelector('#page-sidebar-left-content')?.hasAttribute('hidden')).toBe(true);
     expect(root.querySelector('#page-sidebar-right-content')?.hasAttribute('hidden')).toBe(true);
   });
@@ -331,8 +335,8 @@ describe('Shared page sidebars', () => {
     button('Open left sidebar').click();
     button('Open right sidebar').click();
     flush();
-    expect(root.querySelector<HTMLElement>('#page-sidebar-left')!.style.width).toBe('174px');
-    expect(root.querySelector<HTMLElement>('#page-sidebar-right')!.style.width).toBe('150px');
+    expect(root.querySelector<HTMLElement>('#page-sidebar-left')!.classList.contains('docked')).toBe(false);
+    expect(root.querySelector<HTMLElement>('#page-sidebar-right')!.style.width).toBe('280px');
     expect(main.style.width).toBe('');
   });
 
@@ -415,24 +419,40 @@ describe('Shared page sidebars', () => {
     expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
   });
 
-  it('keeps both panels open independently and retains choices across resize', () => {
+  it('opens only one overlay at a time and retains the selection across refresh', () => {
     button('Open left sidebar').click();
     flush();
     button('Open right sidebar').click();
     flush();
-    expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
+    expect(button('Open left sidebar').getAttribute('aria-expanded')).toBe('false');
     expect(button('Close right sidebar').getAttribute('aria-expanded')).toBe('true');
-    button('Close right sidebar').click();
-    flush();
-    expect(page.hasAttribute('inert')).toBe(false);
-    expect(button('Open right sidebar')).toBeTruthy();
     refresh();
+    expect(button('Close right sidebar').getAttribute('aria-expanded')).toBe('true');
+    button('Open left sidebar').click();
+    flush();
     expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
     expect(button('Open right sidebar').getAttribute('aria-expanded')).toBe('false');
-    button('Open right sidebar').click();
+    expect(page.hasAttribute('inert')).toBe(false);
+  });
+
+  it('opens docked panels by default and closes them when the viewport loses its gutters', () => {
+    vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(1800);
+    vi.mocked(main.getBoundingClientRect).mockReturnValue({left: 300, right: 1500} as DOMRect);
+    fixture.destroy();
+    fixture = TestBed.createComponent(PageSidebars);
+    root.append(fixture.nativeElement);
     flush();
-    expect(button('Close left sidebar')).toBeTruthy();
-    expect(button('Close right sidebar')).toBeTruthy();
+    expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
+    expect(button('Close right sidebar').getAttribute('aria-expanded')).toBe('true');
+    root.querySelector<HTMLAnchorElement>('#page-sidebar-left-content a')!.focus();
+    vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(391);
+    vi.mocked(main.getBoundingClientRect).mockReturnValue({left: 0, right: 391} as DOMRect);
+    refresh();
+    expect(button('Open left sidebar').getAttribute('aria-expanded')).toBe('false');
+    expect(button('Open right sidebar').getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).toBe(button('Open left sidebar'));
+    expect(root.querySelector<HTMLElement>('#page-sidebar-left')!.style.width).toBe('44px');
+    expect(root.querySelector('.standalone-signature')?.classList.contains('inline-signature')).toBe(true);
   });
 
   it('uses already-loaded recall content, resets answers between questions, and sanitizes HTML', () => {
@@ -497,7 +517,7 @@ describe('Shared page sidebars', () => {
       root.append(fixture.nativeElement);
       flush();
       expect(root.querySelector('#page-sidebar-right app-sidebar-toggle')).toBeNull();
-      expect(root.querySelector('#page-sidebar-right app-learning-prompt')?.textContent).toBe(
+      expect(root.querySelector('.standalone-signature app-learning-prompt')?.textContent).toBe(
         'Know why it works. Know when it won’t.',
       );
       expect(root.querySelector('.recall-reveal')).toBeNull();

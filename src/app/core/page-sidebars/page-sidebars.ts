@@ -316,17 +316,28 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
       !this.authorNavigation() &&
         ((this.showLeft() && bounds.left < 54) || (this.showRight() && width - bounds.right < 54)),
     );
-    if (!this.leftChosen) this.leftOpen.set(true);
-    if (!this.rightChosen) this.rightOpen.set(true);
     const rtl = this.document.defaultView!.getComputedStyle(main).direction === 'rtl';
     const startSpace = rtl ? width - bounds.right : bounds.left;
     const endSpace = rtl ? bounds.left : width - bounds.right;
     this.leftInset.set(6);
     this.rightInset.set(6);
-    this.leftWidth.set(Math.max(width >= 1100 ? 44 : 224, startSpace - 6));
-    this.rightWidth.set(Math.max(width >= 1100 ? 44 : 224, endSpace - 6 - 24));
-    this.leftDocked.set((width >= 1100) || canDockSidebar(startSpace));
-    this.rightDocked.set((width >= 1100) || canDockSidebar(endSpace));
+    const leftDocked = canDockSidebar(startSpace);
+    const rightDocked = canDockSidebar(endSpace);
+    // A resize must never carry an expanded desktop panel over the reader.
+    if (this.leftDocked() && !leftDocked) {
+      this.close('left', true);
+      this.leftChosen = false;
+    }
+    if (this.rightDocked() && !rightDocked) {
+      this.close('right', true);
+      this.rightChosen = false;
+    }
+    this.leftWidth.set(leftDocked ? startSpace - 6 : Math.min(280, width - 24));
+    this.rightWidth.set(rightDocked ? endSpace - 30 : Math.min(280, width - 24));
+    this.leftDocked.set(leftDocked);
+    this.rightDocked.set(rightDocked);
+    if (!this.leftChosen) this.leftOpen.set(leftDocked);
+    if (!this.rightChosen) this.rightOpen.set(rightDocked);
     const visible = this.sections().filter((section) => visibleSidebarTarget(section.target));
     const passed = visible.filter(
       (section) => section.target.getBoundingClientRect().top <= top + 24,
@@ -347,6 +358,10 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
     }
     const docked = side === 'left' ? this.leftDocked() : this.rightDocked();
     if (!docked) {
+      const other = side === 'left' ? 'right' : 'left';
+      this.close(other);
+      if (other === 'left') this.leftChosen = true;
+      else this.rightChosen = true;
       this.returnFocus =
         (event.currentTarget as HTMLElement)?.closest('button') ?? (event.target as HTMLElement);
     }
