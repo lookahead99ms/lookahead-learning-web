@@ -1,3 +1,4 @@
+import { highlightLearningCode } from '../focus-studio/code-presentation';
 import {
   Component,
   computed,
@@ -121,13 +122,13 @@ type Language = 'java' | 'python' | 'go';
                   </button>
                 </div>
               </div>
-              <textarea
-                [value]="practiceCode()"
-                [attr.rows]="practiceEditorRows()"
-                (input)="updatePracticeCode($any($event.target).value)"
-                [attr.aria-label]="'Practice editor for ' + practiceLanguage()"
-                spellcheck="false"
-              ></textarea>
+              <app-studio-editor
+                [code]="practiceCode()"
+                [language]="practiceLanguage()"
+                [draftKey]="practiceLanguage()"
+                [style.--studio-code-height]="(practiceEditorRows() * 24) + 'px'"
+                (codeChange)="updatePracticeCode($event)"
+              />
             </div>
             <p class="workspace-note">
               This local editor keeps your work on the page. Compare it with a reference solution
@@ -997,26 +998,8 @@ export class CodingSolutionTabs {
     );
   }
   private highlight(source: string): string {
-    const tokens =
-      /(\/\/[^\n]*|#[^\n]*|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\b\d+\b|\b(?:class|static|int|long|double|float|boolean|void|return|for|if|else|func|def|range|in|package|import|var|const)\b|\b(?:String|Integer|List|Map|HashMap|ArrayList)\b)/g;
-    return source
-      .split(tokens)
-      .map((part) => {
-        const safe = part.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        if (/^(\/\/|#)/.test(part)) return `<span class="token-comment">${safe}</span>`;
-        if (/^['"]/.test(part)) return `<span class="token-string">${safe}</span>`;
-        if (/^\d+$/.test(part)) return `<span class="token-number">${safe}</span>`;
-        if (/^(String|Integer|List|Map|HashMap|ArrayList)$/.test(part))
-          return `<span class="token-type">${safe}</span>`;
-        if (
-          /^(class|static|int|long|double|float|boolean|void|return|for|if|else|func|def|range|in|package|import|var|const)$/.test(
-            part,
-          )
-        )
-          return `<span class="token-keyword">${safe}</span>`;
-        return safe;
-      })
-      .join('');
+    return highlightLearningCode(source, this.activeSolution()?.language.toLowerCase())
+      .replaceAll('class="syntax-', 'class="token-');
   }
   private highlightPseudocode(source: string): string {
     return source

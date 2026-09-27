@@ -330,6 +330,7 @@
           [courseId]="courseId()"
           [practicePatternId]="handsOnPatternId(item)"
           [questionModuleId]="questionBankModuleId(item)"
+          [returnUnit]="questionBankReturnUnit(item)"
           [questionCount]="questionBankCount(item)"
           [questionItems]="questionBankItems(item)"
         />
@@ -424,7 +425,7 @@
                       <app-code-copy-button [code]="code.source" />
                     </div>
                   </div>
-                  <pre><code [innerHTML]="formatTheoryCode(code.source)"></code></pre>
+                  <pre><code [appLearningCode]="code.source" [codeLanguage]="code.language"></code></pre>
                 </section>
               }
             }
@@ -567,7 +568,7 @@
                         <app-code-copy-button [code]="code.source" />
                       </div>
                     </div>
-                    <pre tabindex="0" aria-label="Example code"><code>{{ code.source }}</code></pre>
+                    <pre tabindex="0" aria-label="Example code"><code [appLearningCode]="code.source" [codeLanguage]="code.language"></code></pre>
                     @if (item.compatibility; as requirements) {
                       <section class="compatibility-notes" aria-label="Compatibility requirements">
                         <strong>Compatibility</strong>

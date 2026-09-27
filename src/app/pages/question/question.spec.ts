@@ -329,6 +329,17 @@ describe('Question canonical DSA navigation', () => {
     expect(page.questionBankReturnUnit({ moduleId: 'unknown' })).toBe('');
   });
 
+  it('returns nested lessons to the containing course section while preserving their review module', () => {
+    const fixture = TestBed.createComponent(Question);
+    const page = fixture.componentInstance as any;
+    page.course.set({ learningUnits: [{ id: 'design-practice', subUnits: [
+      { id: 'booking', theoryModuleId: 'booking', questionModuleId: 'booking' },
+      { id: 'commerce', theoryModuleId: 'commerce', questionModuleId: 'commerce' },
+    ] }] });
+    expect(page.questionBankReturnUnit({ moduleId: 'booking' })).toBe('design-practice');
+    expect(page.questionBankReturnUnit({ moduleId: 'commerce' })).toBe('design-practice');
+  });
+
   it('uses the guided example for navigation and recall instead of advanced checks', () => {
     const fixture = TestBed.createComponent(Question);
     const page = fixture.componentInstance as any;

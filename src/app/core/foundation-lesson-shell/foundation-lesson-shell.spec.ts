@@ -138,6 +138,20 @@ describe('FoundationLessonShell golden lesson contract', () => {
     fixture.detectChanges();
   });
 
+  it('renders authored practice emphasis without displaying HTML or allowing event handlers', () => {
+    fixture.componentRef.setInput('lesson', {
+      ...lesson,
+      practice: [{ questionId: 'heap-practice', variation: 'Try a stream',
+        reason: '<strong>Scenario</strong><br>Keep three values.<img src="x" onerror="alert(1)">' }],
+    });
+    fixture.detectChanges();
+    const description = fixture.nativeElement.querySelector('.practice-grid p') as HTMLElement;
+    expect(description.querySelector('strong')?.textContent).toBe('Scenario');
+    expect(description.querySelector('br')).not.toBeNull();
+    expect(description.textContent).not.toContain('<strong>');
+    expect(description.querySelector('[onerror]')).toBeNull();
+  });
+
   it('renders the mental model, invariant, recall cue, and complete visual transcript', () => {
     const text = normalizedText(fixture.nativeElement);
 

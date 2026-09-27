@@ -1,10 +1,11 @@
+import { LearningCode } from '../learning-code';
 import { Component, computed, input, signal } from '@angular/core';
 import { PatternCodeBlock } from '../../content/content.models';
 import { CodeCopyButton } from '../code-copy-button/code-copy-button';
 
 @Component({
   selector: 'app-pattern-code-tabs',
-  imports: [CodeCopyButton],
+  imports: [LearningCode,CodeCopyButton],
   template: `
     <section class="code-tabs" aria-label="Core pattern template">
       <div class="tab-list" role="tablist" aria-label="Template language">
@@ -39,7 +40,7 @@ import { CodeCopyButton } from '../code-copy-button/code-copy-button';
           </div>
           <pre
             tabindex="0"
-          ><code>@for (line of block.lines; track line.id) {<span>{{ line.text || ' ' }}</span>}</code></pre>
+          ><code [appLearningCode]="activeSource()" [codeLanguage]="block.language"></code></pre>
         </section>
       }
     </section>
@@ -118,7 +119,7 @@ import { CodeCopyButton } from '../code-copy-button/code-copy-button';
           monospace;
         tab-size: 2;
       }
-      .code-panel code span {
+      .code-panel code {
         display: block;
         min-height: 1.7em;
         white-space: pre;

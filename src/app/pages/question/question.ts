@@ -1,3 +1,5 @@
+import { LearningCode } from '../../core/learning-code';
+import { highlightLearningCode } from '../../core/focus-studio/code-presentation';
 import { PROTECTED_CONTENT } from '../../content/content-delivery';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import { StudyPlanReaderNavigation } from '../../core/study-plan-reader-navigation';
@@ -67,7 +69,7 @@ import { FOCUS_STUDIO_PATTERN, usesFocusStudio } from '../../content/focus-studi
 
 @Component({
   selector: 'app-question',
-  imports: [
+  imports: [LearningCode,
     PageSidebarContextDirective,
     StudyPlanReaderNavigation,
     PlatformHeader,
@@ -1364,8 +1366,11 @@ export class Question implements OnInit {
   }
 
   protected questionBankReturnUnit(item: InterviewQuestion): string {
-    return flattenLearningUnits(this.course()?.learningUnits ?? []).find(
-      (unit) => unit.theoryModuleId === item.moduleId,
+    // Course pages render anchors on the containing unit, not its nested lessons.
+    return (this.course()?.learningUnits ?? []).find(
+      (unit) => flattenLearningUnits([unit]).some(
+        (candidate) => candidate.theoryModuleId === item.moduleId,
+      ),
     )?.id ?? '';
   }
 
@@ -1565,29 +1570,7 @@ export class Question implements OnInit {
   /** Lightweight, safe highlighting for small teaching formulas and snippets.
    * Full implementations use CodingSolutionTabs, which supplies language-aware themes. */
   protected formatTheoryCode(source: string): string {
-    const escape = (value: string): string =>
-      value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
-    return source
-      .split('\n')
-      .map(
-        (line) =>
-          line
-            .match(/\s+|[A-Za-z_][A-Za-z0-9_]*|\d+|[+−=:\-*/()[\],|]/g)
-            ?.map((token) => {
-              const safeToken = escape(token);
-              if (/^\s+$/.test(token)) return safeToken;
-              // These classes use Dracula's canonical hues. ::ng-deep is required because
-              // Angular's HTML sanitizer strips inline styles from [innerHTML] content.
-              if (/^\d+$/.test(token)) return `<span class="syntax-number">${safeToken}</span>`;
-              if (/^[+−=:\-*/()[\],|]+$/.test(token))
-                return `<span class="syntax-operator">${safeToken}</span>`;
-              if (/^(for|while|if|return|new)$/.test(token))
-                return `<span class="syntax-keyword">${safeToken}</span>`;
-              return `<span class="${token === 'Sum' ? 'syntax-function' : 'syntax-name'}">${safeToken}</span>`;
-            })
-            .join('') ?? escape(line),
-      )
-      .join('\n');
+    return highlightLearningCode(source);
   }
 
   protected leetcodeProblem(item: InterviewQuestion): { url: string } | null {

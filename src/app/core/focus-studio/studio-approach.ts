@@ -1,3 +1,4 @@
+import { LearningCode } from '../learning-code';
 import { NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
@@ -14,7 +15,7 @@ import { DsaProblemV2 } from '../../content/content.models';
 /** Teaching is read from the protected problem; the UI never embeds curriculum. */
 @Component({
   selector: 'app-studio-approach',
-  imports: [NgTemplateOutlet],
+  imports: [LearningCode,NgTemplateOutlet],
   template: `<article class="approach-overview" aria-label="Understand the approach">
     <p class="eyebrow">Understand the question first</p>
     <h2>{{ problem().title }}</h2>
@@ -71,7 +72,7 @@ import { DsaProblemV2 } from '../../content/content.models';
                   class="implementation-shape"
                   tabindex="0"
                   [attr.aria-label]="card.title + ': implementation shape'"
-                ><code>{{ formatLines(card.implementationShape!) }}</code></pre>
+                ><code [appLearningCode]="formatLines(card.implementationShape!)"></code></pre>
               }
             </ng-template>
             @if (paired()) {

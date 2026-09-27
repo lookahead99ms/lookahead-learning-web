@@ -1,3 +1,4 @@
+import { LearningCode } from '../learning-code';
 import { Component, computed, input } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -15,7 +16,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
 
 @Component({
   selector: 'app-foundation-lesson-shell',
-  imports: [
+  imports: [LearningCode,
     NgTemplateOutlet,
     RouterLink,
     CodeCopyButton,
@@ -69,7 +70,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
                 <span>{{ guide.language }}</span>
                 <app-code-copy-button [code]="guide.code" />
               </header>
-              <pre><code>{{ guide.code }}</code></pre>
+              <pre><code [appLearningCode]="guide.code" [codeLanguage]="guide.language"></code></pre>
             </section>
           }
           <div class="guide-walkthrough">
@@ -166,7 +167,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
                       ><app-code-copy-button [code]="code.source" />
                     </div>
                   </header>
-                  <pre><code>{{ code.source }}</code></pre>
+                  <pre><code [appLearningCode]="code.source" [codeLanguage]="code.language"></code></pre>
                 </section>
                 </div>
               }
@@ -375,7 +376,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
                 <a [routerLink]="['/', pathId(), courseId(), item.id]">
                   <span>{{ item.difficulty }} · {{ practiceVariation(item.id) }}</span>
                   <strong>{{ item.title }}</strong>
-                  <p>{{ practiceReason(item.id) }}</p>
+                  <p [innerHTML]="practiceReason(item.id)"></p>
                   <b aria-hidden="true">Start problem</b>
                 </a>
               }
@@ -781,7 +782,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         padding: 13px 15px;
         color: var(--lesson-teal);
         cursor: pointer;
-        font-weight: 800;
+        font-weight: 600;
       }
       .visual-transcript ol {
         padding: 0 36px 17px;

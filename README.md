@@ -657,3 +657,16 @@ The shared pattern lesson reader supports optional `beginnerGuide` and
 The public app contains only the rendering contract and synthetic tests; authored
 curriculum stays in the external content source. Verify the reader with
 `npm test -- --watch=false --include='src/app/core/pattern-lesson-shell/*.spec.ts'`.
+
+Lesson review links preserve the containing course unit independently of the
+question module. Nested lessons return to their rendered parent section in the
+course map. Both lesson readers render authored practice-card emphasis through
+Angular's standard HTML sanitization; they do not bypass sanitization.
+
+Code presentation is shared with Hands-on DSA: the lesson code directive and
+read-only references use the same Java/Python/Go parser and palettes, and all
+`CodingSolutionTabs` practice views use `StudioEditor`. Drafts remain page-local;
+this does not enable learner execution. `npm run code:presentation` builds the
+ignored `/assets/code-presentation.js` bundle for embedded visual documents.
+Normal build/private-start/watch paths regenerate it. Embedded documents must
+load that bundle before calling `LookAheadCode.highlightLearningCode`.

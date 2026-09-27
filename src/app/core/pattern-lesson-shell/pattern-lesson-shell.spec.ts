@@ -42,6 +42,17 @@ async function render(lesson: PatternLessonV1) {
 }
 
 describe('pattern beginner teaching flow', () => {
+  it('keeps the course return unit separate from the review question module', async () => {
+    const fixture = await render(sampleLesson());
+    fixture.componentRef.setInput('questionModuleId', 'sample-checks');
+    fixture.componentRef.setInput('returnUnit', 'sample-unit');
+    fixture.componentRef.setInput('questionCount', 3);
+    fixture.detectChanges();
+    const link = fixture.nativeElement.querySelector('a[href*="interview-questions"]') as HTMLAnchorElement;
+    expect(link.getAttribute('href')).toContain('module=sample-checks');
+    expect(link.getAttribute('href')).toContain('unit=sample-unit');
+  });
+
   it('places definition and outcomes before the example, with one reminder before checks', async () => {
     const fixture = await render(sampleLesson());
     const root: HTMLElement = fixture.nativeElement;

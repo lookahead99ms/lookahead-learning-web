@@ -1,3 +1,4 @@
+import { LearningCode } from '../learning-code';
 import { Component, computed, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import {
@@ -14,7 +15,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
 
 @Component({
   selector: 'app-pattern-lesson-shell',
-  imports: [
+  imports: [LearningCode,
     RouterLink,
     InteractiveTheoryVisual,
     InterviewQuestionBankLink,
@@ -39,7 +40,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         @if (lesson().beginnerGuide; as guide) {
           <section id="pattern-first-example" class="lesson-section wide-section" aria-labelledby="pattern-first-example-heading">
             <h2 id="pattern-first-example-heading">{{ guide.exampleTitle }}</h2>
-            <pre class="intro-code"><code>{{ guide.code }}</code></pre>
+            <pre class="intro-code"><code [appLearningCode]="guide.code" [codeLanguage]="guide.language"></code></pre>
             <h3>Let's walk through it</h3>
             <ol>@for (step of guide.walkthrough; track step) { <li [innerHTML]="step"></li> }</ol>
           </section>
@@ -367,6 +368,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
               [pathId]="pathId()"
               [courseId]="courseId()"
               [moduleId]="moduleId"
+              [returnUnit]="returnUnit()"
               [questionCount]="questionCount()"
               [practiceItems]="questionItems()"
             />
@@ -419,7 +421,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
             <a [routerLink]="['/', pathId(), courseId(), item.id]">
               <span>{{ item.difficulty }} · {{ practiceVariation(item.id) }}</span>
               <strong>{{ item.title }}</strong>
-              <p>{{ practiceReason(item.id) }}</p>
+              <p [innerHTML]="practiceReason(item.id)"></p>
               <b aria-hidden="true">Start problem</b>
             </a>
           }
@@ -758,7 +760,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         padding: 13px 15px;
         color: var(--lesson-teal);
         cursor: pointer;
-        font-weight: 800;
+        font-weight: 600;
       }
       .visual-transcript summary:focus-visible {
         outline: 3px solid var(--accent-focus);
@@ -1068,6 +1070,7 @@ export class PatternLessonShell {
   readonly courseId = input.required<string>();
   readonly practicePatternId = input.required<string>();
   readonly questionModuleId = input<string | null>(null);
+  readonly returnUnit = input('');
   readonly questionCount = input(0);
   readonly questionItems = input<ContentItemSummary[]>([]);
   protected readonly workedExampleIndex = signal(0);
