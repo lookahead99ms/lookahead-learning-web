@@ -1,0 +1,52 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: max-content;
+  max-width: 100%;
+  vertical-align: middle;
+}
+.identity-symbol {
+  display: block;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+}
+.identity-wordmark {
+  display: block;
+  white-space: nowrap;
+  font-family: 'Avenir Next', 'Segoe UI', system-ui, sans-serif;
+  font-size: 32px;
+  font-weight: 500;
+  letter-spacing: -1.4px;
+  line-height: 1.2;
+}
+.identity-look {
+  color: var(--text-strong);
+}
+.identity-ahead {
+  color: var(--accent-strong);
+}
+@media (max-width: 600px) {
+  :host {
+    gap: 6px;
+  }
+  .identity-symbol {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+  }
+  .identity-wordmark {
+    font-size: 26px;
+    letter-spacing: -1.1px;
+  }
+}
+@media (forced-colors: active) {
+  .identity-symbol {
+    display: none;
+  }
+  .identity-look,
+  .identity-ahead {
+    color: CanvasText;
+  }
+}

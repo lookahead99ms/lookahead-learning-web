@@ -428,6 +428,113 @@ button:disabled {
   font-size: 11px;
   line-height: 1.5;
 }
+.brand-story {
+  display: grid;
+  justify-items: center;
+  gap: clamp(24px, 3vw, 32px);
+  padding-block: clamp(48px, 6vw, 72px);
+  border-top: 1px solid var(--platform-edge-soft);
+  text-align: center;
+}
+.brand-story h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -0.02em;
+}
+.brand-story app-platform-brand-illustration {
+  width: min(100%, 760px);
+}
+.brand-story-copy {
+  display: grid;
+  justify-items: center;
+  gap: clamp(18px, 2.5vw, 24px);
+  width: min(100%, 760px);
+}
+.brand-story p {
+  margin: 0;
+  color: var(--text-subtle);
+  text-wrap: balance;
+}
+.brand-line {
+  display: block;
+}
+.brand-story .brand-opening,
+.brand-story .brand-learning,
+.brand-story .brand-principle {
+  font-family: 'Avenir Next', 'Segoe UI', system-ui, sans-serif;
+}
+.brand-story .brand-opening {
+  color: var(--text-strong);
+  font-size: clamp(32px, 4vw, 46px);
+  font-weight: 650;
+  line-height: 1.15;
+  letter-spacing: -0.045em;
+}
+.brand-opening span {
+  color: var(--accent-strong);
+}
+.brand-story .brand-learning {
+  color: var(--text-strong);
+  font-size: clamp(20px, 2.4vw, 28px);
+  font-weight: 500;
+  line-height: 1.45;
+  letter-spacing: -0.025em;
+}
+.brand-learning strong {
+  font-weight: 650;
+}
+.brand-learn {
+  color: var(--path-learn);
+}
+.brand-code {
+  color: var(--identity-code);
+}
+.brand-explore {
+  color: var(--identity-eyes);
+}
+.brand-disciplines {
+  color: var(--identity-ai);
+  font-weight: 600;
+}
+.brand-story .brand-growth {
+  font-size: clamp(16px, 1.7vw, 19px);
+  line-height: 1.65;
+}
+.brand-growth strong {
+  color: var(--text-strong);
+  font-weight: 600;
+}
+.brand-growth .brand-grow {
+  color: var(--path-grow);
+  font-weight: 700;
+}
+.brand-story .brand-principle {
+  position: relative;
+  padding-top: 24px;
+  color: var(--text-strong);
+  font-size: clamp(18px, 2vw, 22px);
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: -0.015em;
+}
+.brand-principle::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: calc(50% - 24px);
+  width: 48px;
+  border-top: 2px solid var(--platform-edge);
+}
+.brand-principle strong {
+  color: var(--identity-wall);
+  font-weight: 650;
+}
+.brand-principle em {
+  color: var(--identity-ai);
+  font-weight: 600;
+}
 .landing-footer {
   border-top: 1px solid var(--platform-edge-soft);
   padding: 20px 0;

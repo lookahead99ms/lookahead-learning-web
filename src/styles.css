@@ -42,6 +42,15 @@
   --panel-accent: #83d8b9;
   --path-learn: #006c73;
   --path-look-ahead: #245a88;
+  /* Shared identity colors are separate from action, status and path semantics. */
+  --identity-eyes: #087d69;
+  --identity-wall: #236b9a;
+  --identity-code: #a64236;
+  --identity-ai: #a15018;
+  --identity-h: #7051b5;
+  --identity-arrow: #86620b;
+  --identity-cutout: var(--surface-page);
+  --identity-door: var(--surface-muted);
 }
 :root[data-theme='dark'] {
   color-scheme: dark;
@@ -85,6 +94,12 @@
   --panel-accent: #ffba87;
   --path-learn: #70d6cd;
   --path-look-ahead: #9dc9ff;
+  --identity-eyes: #65dfc2;
+  --identity-wall: #76c6ff;
+  --identity-code: #ff9f90;
+  --identity-ai: #ffba87;
+  --identity-h: #b7a0ff;
+  --identity-arrow: #ffd16d;
 }
 
 /* Shared Harbor Light / Midnight & Apricot Dark across learner and author routes.
