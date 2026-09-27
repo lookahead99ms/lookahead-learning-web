@@ -670,3 +670,6 @@ this does not enable learner execution. `npm run code:presentation` builds the
 ignored `/assets/code-presentation.js` bundle for embedded visual documents.
 Normal build/private-start/watch paths regenerate it. Embedded documents must
 load that bundle before calling `LookAheadCode.highlightLearningCode`.
+The default `npm start` stages only the tracked demo in `prestart`, then builds
+the shared code renderer before starting Angular. The public-readiness gate
+continues to enforce the demo-only staging contract.
