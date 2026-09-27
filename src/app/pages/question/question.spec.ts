@@ -318,6 +318,28 @@ describe('Question canonical DSA navigation', () => {
     }).compileComponents();
   });
 
+  it('uses the guided example for navigation and recall instead of advanced checks', () => {
+    const fixture = TestBed.createComponent(Question);
+    const page = fixture.componentInstance as any;
+    const item = {
+      id: 'first-example', moduleId: 'basics', contentType: 'theory',
+      schemaVersion: 'foundation-lesson/v1', tags: [], checks: [], followUps: [],
+      sections: [{ id: 'actual-lesson', heading: 'Actual lesson' }],
+      beginnerGuide: { try: 'Predict the result.', answer: 'The result is 2.' },
+    };
+    page.pathId.set('learn');
+    page.courseId.set('sample-foundations');
+    page.question.set(item);
+    expect(page.patternNavigation(item).map((entry: { target: string }) => entry.target)).toEqual([
+      'foundation-start', 'foundation-example', 'foundation-try',
+      'foundation-remember', 'actual-lesson', 'foundation-model',
+      'foundation-pitfalls', 'foundation-understand', 'foundation-recall',
+    ]);
+    expect(page.sidebarContext().recall).toEqual([{
+      id: 'first-example-first-steps', prompt: 'Predict the result.', answer: 'The result is 2.',
+    }]);
+  });
+
   it('keeps theory articles out of previous and next question navigation', () => {
     const theory: InterviewQuestion = {
       id: 'ownership-guide', moduleId: 'ownership', order: 1,

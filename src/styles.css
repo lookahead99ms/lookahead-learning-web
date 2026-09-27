@@ -403,6 +403,11 @@ main.harbor-learn .foundation-lesson .memory-anchor {
   margin: 0;
   border-radius: 2px;
 }
+main.harbor-learn .foundation-lesson .guided-outcomes > section,
+main.harbor-learn .foundation-lesson .guided-outcomes > .memory-anchor {
+  grid-column: 1 / -1;
+  grid-row: auto;
+}
 main.harbor-learn .foundation-lesson .lesson-section {
   margin-top: 36px;
 }

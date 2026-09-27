@@ -159,14 +159,7 @@
             </button>
           </div>
         </div>
-        <div class="carousel-caption">
-          <p>{{ activeSlide() + 1 }} / {{ slides[activeSlide()].name }}</p>
-          <p class="hero-guidance">Explore at your pace. Pause to read.</p>
-        </div>
       </div>
-      <p class="screen-reader-only" [attr.aria-live]="paused() ? 'polite' : 'off'">
-        Slide {{ activeSlide() + 1 }} of {{ slides.length }}: {{ slides[activeSlide()].name }}
-      </p>
     </section>
     <section id="paths" class="section" tabindex="-1" aria-labelledby="paths-title">
       <p class="eyebrow">Choose your direction</p>

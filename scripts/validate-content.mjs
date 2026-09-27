@@ -1387,6 +1387,27 @@ function isDebuggerInstruction(line, language) {
 
 for (const { lesson, moduleLabel } of foundationLessons) {
   const label = `${moduleLabel}: ${lesson.id}`;
+  for (const guideField of ['beginnerGuide', 'teachingGuide']) {
+    if (lesson[guideField] === undefined) continue;
+    const guide = lesson[guideField];
+    requireValue(guide && typeof guide === 'object', `${label} has an invalid beginner guide`);
+    for (const field of [
+      'prerequisite',
+      'exampleTitle',
+      'language',
+      'code',
+      'try',
+      'answer',
+      'later',
+    ]) {
+      requireValue(
+        typeof guide[field] === 'string' && guide[field].trim().length > 0,
+        `${label} ${guideField}.${field} must contain text`,
+      );
+    }
+    requireStringArray(guide.walkthrough, `${label} ${guideField}.walkthrough`, 3);
+    requireStringArray(guide.takeaways, `${label} ${guideField}.takeaways`, 3);
+  }
   requireValue(lesson.contentType === 'theory', `${label} must use contentType theory`);
   requireValue(
     lesson.visuals === undefined && lesson.relatedQuestionIds === undefined,

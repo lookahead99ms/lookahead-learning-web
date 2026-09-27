@@ -1143,6 +1143,14 @@ export class Question implements OnInit {
     }
     const pattern = this.patternLesson(item);
     const foundation = this.foundationLesson(item);
+    const teachingGuide = foundation?.teachingGuide ?? foundation?.beginnerGuide;
+    if (teachingGuide) {
+      return { excluded: false, recall: [{
+        id: `${item.id}-first-steps`,
+        prompt: teachingGuide.try,
+        answer: teachingGuide.answer,
+      }] };
+    }
     const checks = pattern ? this.patternChecks(pattern) : foundation ? this.foundationChecks(foundation) : [];
     const recall = checks.length ? checks : this.embeddedUnderstanding(item).map((question) => ({ id: question.id, prompt: question.title, answer: question.interviewAnswer }));
     return { excluded: false, recall: recall.length ? recall : item.followUps.map((followUp, index) => ({ id: `${item.id}-follow-up-${index}`, prompt: followUp.question, answer: followUp.answer })) };
@@ -1443,12 +1451,19 @@ export class Question implements OnInit {
     }
 
     if (isFoundationLessonV1(item)) {
+      const introduction = item.teachingGuide || item.beginnerGuide ? [
+          { label: 'Before you start', target: 'foundation-start' },
+          { label: item.teachingGuide ? 'Worked scenario' : 'Worked example', target: 'foundation-example' },
+          { label: item.teachingGuide && this.pathId() === 'look-ahead' ? 'Make the decision' : 'Try it', target: 'foundation-try' },
+          { label: 'Remember', target: 'foundation-remember' },
+        ] : [];
       return [
-        { label: 'Model', target: 'foundation-model' },
+        ...introduction,
         ...item.sections.map((section) => ({
           label: section.navLabel ?? section.heading,
           target: section.id,
         })),
+        { label: 'How it works', target: 'foundation-model' },
         { label: 'Pitfalls', target: 'foundation-pitfalls' },
         { label: 'Understand', target: 'foundation-understand' },
         { label: 'Recall', target: 'foundation-recall' },
