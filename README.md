@@ -604,6 +604,8 @@ Sign-in, sign-up, Manage Account and sign-in selection screens exclude both shar
 
 Catalog sidebars on Learn, Grow and Look Ahead expose independently expandable course groups from AdaptiveCatalog through PageSidebarContext. They reuse loaded course data and existing routes; no additional requests or persisted state.
 
+All three catalogs use AdaptiveCatalog’s `harbor-catalog` shell: solid surface cards, equal grid columns, shared spacing and “Inside this course” topic lists. Shared rules live in `src/styles.css` and `src/app/pages/catalog-experience.css`; section anchors leave clearance below the sticky header and breadcrumb. Course and lesson refinements remain separately scoped.
+
 Desktop catalog and lesson sidebars stop at the outer main container; its padding remains part of the content surface.
 
 For full-viewport reader shells, sidebar bounds use the centered article gutter with 24px clearance; bounded outer containers retain their own boundary. Main content dimensions remain unchanged.
@@ -698,3 +700,14 @@ load that bundle before calling `LookAheadCode.highlightLearningCode`.
 The default `npm start` stages only the tracked demo in `prestart`, then builds
 the shared code renderer before starting Angular. The public-readiness gate
 continues to enforce the demo-only staging contract.
+
+
+Lesson review navigation accepts canonical path IDs (`learn`, `grow`, and
+`look-ahead`) in Search query parameters. A course/module review link retains its
+focused question list, course return link and full-answer return destination.
+The Search component regression suite covers the hyphenated Look Ahead path.
+
+The curriculum-free `public/assets/visual-code-presentation.js` adapter renders
+embedded illustrative code with the shared syntax bundle and an escaped-text
+fallback. Its copy helper supports existing sandboxed frames through an explicit
+button gesture and selection-copy fallback; iframe permissions are unchanged.

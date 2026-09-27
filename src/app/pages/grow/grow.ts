@@ -36,7 +36,7 @@ export class Grow {
     questionMetricLabel: 'interview and practice questions',
     jumpLabel: 'Grow capability paths',
     sectionEyebrow: 'Production capability',
-    previewLabel: 'Key topics',
+    previewLabel: 'Inside this course',
     previewAriaLabel: 'Key topics',
     emptyTitle: 'Nothing published yet',
     emptyDescription: 'New Grow capabilities will appear here soon.',
