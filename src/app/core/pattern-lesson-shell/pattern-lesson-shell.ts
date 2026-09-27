@@ -1,3 +1,4 @@
+import { LearningCode } from '../learning-code';
 import { Component, computed, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import {
@@ -14,7 +15,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
 
 @Component({
   selector: 'app-pattern-lesson-shell',
-  imports: [
+  imports: [LearningCode,
     RouterLink,
     InteractiveTheoryVisual,
     InterviewQuestionBankLink,
@@ -24,6 +25,27 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
   ],
   template: `
     <article class="golden-lesson" aria-label="Pattern lesson">
+      @if (lesson().learningFlow; as flow) {
+        <section id="pattern-start" class="lesson-section wide-section" aria-labelledby="pattern-start-heading">
+          <h2 id="pattern-start-heading">Before you start</h2>
+          <p>{{ lesson().summary }}</p>
+          <p>{{ lesson().beginnerGuide?.prerequisite }}</p>
+        </section>
+        <section id="pattern-purpose" class="lesson-section wide-section" aria-labelledby="pattern-purpose-heading">
+          <h2 id="pattern-purpose-heading">Why this matters</h2>
+          <p>{{ flow.whyItMatters }}</p>
+          <h3>What you’ll learn</h3>
+          <ul>@for (outcome of lesson().learningOutcomes; track outcome) { <li>{{ outcome }}</li> }</ul>
+        </section>
+        @if (lesson().beginnerGuide; as guide) {
+          <section id="pattern-first-example" class="lesson-section wide-section" aria-labelledby="pattern-first-example-heading">
+            <h2 id="pattern-first-example-heading">{{ guide.exampleTitle }}</h2>
+            <pre class="intro-code"><code [appLearningCode]="guide.code" [codeLanguage]="guide.language"></code></pre>
+            <h3>Let's walk through it</h3>
+            <ol>@for (step of guide.walkthrough; track step) { <li [innerHTML]="step"></li> }</ol>
+          </section>
+        }
+      } @else {
       <header class="lesson-intro">
         <p>{{ lesson().summary }}</p>
         <section aria-labelledby="lesson-outcomes-heading">
@@ -42,11 +64,12 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
           <p><b>Interview cue:</b> {{ lesson().memoryAnchor.retrievalCue }}</p>
         </aside>
       </header>
+      }
 
       <section id="pattern-what" class="lesson-section" aria-labelledby="pattern-what-heading">
         <p class="section-label"><span>01 / 14</span>Define</p>
         <h2 id="pattern-what-heading">{{ lesson().definition.heading }}</h2>
-        @for (paragraph of lesson().definition.body; track paragraph) {
+        @for (paragraph of definitionParagraphs(); track paragraph) {
           <p [innerHTML]="paragraph"></p>
         }
         <aside class="invariant-card">
@@ -58,7 +81,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
       <section id="pattern-why" class="lesson-section" aria-labelledby="pattern-why-heading">
         <p class="section-label"><span>02 / 14</span>Motivate</p>
         <h2 id="pattern-why-heading">{{ lesson().motivation.heading }}</h2>
-        @for (paragraph of lesson().motivation.body; track paragraph) {
+        @for (paragraph of motivationParagraphs(); track paragraph) {
           <p [innerHTML]="paragraph"></p>
         }
         <aside class="decision-card">
@@ -225,6 +248,33 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         </div>
       </section>
 
+      <section id="pattern-remember" class="lesson-section takeaways" aria-labelledby="pattern-takeaways-heading">
+        <p class="section-label">Keep</p>
+        <h2 id="pattern-takeaways-heading">What to remember</h2>
+        <ul>
+          @for (takeaway of lesson().keyTakeaways; track takeaway) {
+            <li>{{ takeaway }}</li>
+          }
+        </ul>
+        <div class="language-notes">
+          @for (note of lesson().languageNotes; track note.language) {
+            <p>
+              <strong>{{ note.language }}</strong
+              >{{ note.note }}
+            </p>
+          }
+        </div>
+        <aside class="interview-recall" aria-labelledby="interview-recall-heading">
+          <span>Interview recall prompt</span>
+          <h3 id="interview-recall-heading">{{ lesson().interviewRecall.prompt }}</h3>
+          <ol>
+            @for (step of lesson().interviewRecall.answerFramework; track step) {
+              <li>{{ step }}</li>
+            }
+          </ol>
+        </aside>
+      </section>
+
       <section
         id="pattern-pitfalls"
         class="lesson-section"
@@ -318,12 +368,26 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
               [pathId]="pathId()"
               [courseId]="courseId()"
               [moduleId]="moduleId"
+              [returnUnit]="returnUnit()"
               [questionCount]="questionCount()"
               [practiceItems]="questionItems()"
             />
           }
         }
       </section>
+
+      @if (lesson().learningFlow; as flow) {
+        <section id="pattern-independent-practice" class="lesson-section" aria-labelledby="pattern-independent-practice-heading">
+          <h2 id="pattern-independent-practice-heading">Try it yourself</h2>
+          <p>{{ flow.practice.prompt }}</p>
+          <details><summary>Show a hint</summary><p>{{ flow.practice.hint }}</p></details>
+          <details><summary>Check your answer</summary><p>{{ flow.practice.answer }}</p></details>
+          @if (lesson().beginnerGuide; as guide) {
+            <h3>One more small change</h3><p>{{ guide.try }}</p>
+            <details><summary>Explain this change</summary><p>{{ guide.answer }}</p></details>
+          }
+        </section>
+      }
 
       <section
         id="pattern-essential"
@@ -334,32 +398,6 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         <app-pattern-problem-workbench [problems]="essentialProblems()" />
       </section>
 
-      <section class="lesson-section takeaways" aria-labelledby="pattern-takeaways-heading">
-        <p class="section-label">Keep</p>
-        <h2 id="pattern-takeaways-heading">Key takeaways</h2>
-        <ul>
-          @for (takeaway of lesson().keyTakeaways; track takeaway) {
-            <li>{{ takeaway }}</li>
-          }
-        </ul>
-        <div class="language-notes">
-          @for (note of lesson().languageNotes; track note.language) {
-            <p>
-              <strong>{{ note.language }}</strong
-              >{{ note.note }}
-            </p>
-          }
-        </div>
-        <aside class="interview-recall" aria-labelledby="interview-recall-heading">
-          <span>Interview recall prompt</span>
-          <h3 id="interview-recall-heading">{{ lesson().interviewRecall.prompt }}</h3>
-          <ol>
-            @for (step of lesson().interviewRecall.answerFramework; track step) {
-              <li>{{ step }}</li>
-            }
-          </ol>
-        </aside>
-      </section>
 
       <section
         id="pattern-practice"
@@ -376,15 +414,15 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
           class="practice-hub-link"
           routerLink="/learn/hands-on-dsa"
           [queryParams]="{ pattern: practicePatternId() }"
-          >Open this pattern in Hands-On DSA <span aria-hidden="true">→</span></a
+          >Open this pattern in Hands-On DSA</a
         >
         <div class="practice-grid">
           @for (item of practiceItems(); track item.id) {
             <a [routerLink]="['/', pathId(), courseId(), item.id]">
               <span>{{ item.difficulty }} · {{ practiceVariation(item.id) }}</span>
               <strong>{{ item.title }}</strong>
-              <p>{{ practiceReason(item.id) }}</p>
-              <b aria-hidden="true">Start problem →</b>
+              <p [innerHTML]="practiceReason(item.id)"></p>
+              <b aria-hidden="true">Start problem</b>
             </a>
           }
         </div>
@@ -393,6 +431,10 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
   `,
   styles: [
     `
+      .intro-code { overflow-x: auto; max-width: 100%; padding: 1rem; white-space: pre; background: var(--surface-muted); border: 1px solid var(--line); }
+      details { margin-block: 1rem; }
+      summary { cursor: pointer; }
+      summary:focus-visible { outline: 2px solid var(--accent-link); outline-offset: 3px; }
       :host {
         display: block;
       }
@@ -718,7 +760,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         padding: 13px 15px;
         color: var(--lesson-teal);
         cursor: pointer;
-        font-weight: 800;
+        font-weight: 600;
       }
       .visual-transcript summary:focus-visible {
         outline: 3px solid var(--accent-focus);
@@ -1014,12 +1056,21 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
 })
 export class PatternLessonShell {
   readonly lesson = input.required<PatternLesson>();
+  protected readonly definitionParagraphs = computed(() => {
+    const lesson = this.lesson();
+    return lesson.definition.body.filter(paragraph => !lesson.learningFlow || paragraph !== lesson.summary);
+  });
+  protected readonly motivationParagraphs = computed(() => {
+    const lesson = this.lesson();
+    return lesson.motivation.body.filter(paragraph => !lesson.learningFlow || paragraph !== lesson.learningFlow.whyItMatters);
+  });
   readonly checks = input.required<ResolvedPatternCheck[]>();
   readonly practiceItems = input.required<InterviewQuestion[]>();
   readonly pathId = input.required<string>();
   readonly courseId = input.required<string>();
   readonly practicePatternId = input.required<string>();
   readonly questionModuleId = input<string | null>(null);
+  readonly returnUnit = input('');
   readonly questionCount = input(0);
   readonly questionItems = input<ContentItemSummary[]>([]);
   protected readonly workedExampleIndex = signal(0);

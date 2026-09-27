@@ -1,3 +1,4 @@
+import { LearningCode } from '../learning-code';
 import { Component, computed, input, signal } from '@angular/core';
 import { PatternEssentialProblem, TheoryVisual } from '../../content/content.models';
 import { authenticCodingVisual } from '../../content/pattern-experience';
@@ -8,7 +9,7 @@ type Language = 'java' | 'python' | 'go';
 
 @Component({
   selector: 'app-pattern-essential-problems',
-  imports: [InteractiveTheoryVisual, CodeCopyButton],
+  imports: [LearningCode,InteractiveTheoryVisual, CodeCopyButton],
   template: `
     <section class="essential-workspace" aria-label="Three essential pattern problems">
       <header>
@@ -60,7 +61,7 @@ type Language = 'java' | 'python' | 'go';
             <span>{{ activeSolution().language }} reference</span
             ><app-code-copy-button [code]="activeSolution().source" />
           </div>
-          <pre><code>{{ activeSolution().source }}</code></pre>
+          <pre><code [appLearningCode]="activeSolution().source" [codeLanguage]="activeSolution().language.toLowerCase()"></code></pre>
         </div>
       }
       <footer>

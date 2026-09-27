@@ -1,5 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { EditorView } from '@codemirror/view';
 import { describe, expect, it, vi } from 'vitest';
 import { PatternProblemV1 } from '../../content/content.models';
 import { DsaProblemPilot } from './dsa-problem-pilot';
@@ -651,10 +652,13 @@ describe('Focus Studio state retention', () => {
     language.value = 'go';
     language.dispatchEvent(new Event('change'));
     fixture.detectChanges();
-    const editor = root.querySelector<HTMLTextAreaElement>('textarea')!;
-    editor.value = 'func retainedDraft() {}';
-    editor.dispatchEvent(new Event('input'));
-    editor.setSelectionRange(5, 13);
+    await fixture.whenStable();
+    const editor = root.querySelector<HTMLElement>('.cm-editor')!;
+    const view = EditorView.findFromDOM(editor)!;
+    view.dispatch({
+      changes: { from: 0, to: view.state.doc.length, insert: 'func retainedDraft() {}' },
+      selection: { anchor: 5, head: 13 },
+    });
     fixture.detectChanges();
     expect(brief.hidden).toBe(false);
     for (const hidden of [true, false]) {
@@ -665,9 +669,10 @@ describe('Focus Studio state retention', () => {
       expect(toggle.getAttribute('aria-expanded')).toBe(String(!hidden));
       expect(toggle.getAttribute('aria-controls')).toBe(brief.id);
       expect(document.activeElement).toBe(toggle);
-      expect(root.querySelector('textarea')).toBe(editor);
-      expect(editor.value).toBe('func retainedDraft() {}');
-      expect([editor.selectionStart, editor.selectionEnd]).toEqual([5, 13]);
+      expect(root.querySelector('.cm-editor')).toBe(editor);
+      expect(EditorView.findFromDOM(editor)).toBe(view);
+      expect(view.state.doc.toString()).toBe('func retainedDraft() {}');
+      expect([view.state.selection.main.from, view.state.selection.main.to]).toEqual([5, 13]);
       expect(language.value).toBe('go');
     }
     expect(root.querySelector('app-editor-tutor')).toBeNull();

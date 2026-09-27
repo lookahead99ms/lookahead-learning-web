@@ -14,79 +14,10 @@ import { EditorState } from '@codemirror/state';
 import { EditorView, keymap } from '@codemirror/view';
 import { indentWithTab, isolateHistory } from '@codemirror/commands';
 import { HighlightStyle, syntaxHighlighting } from '@codemirror/language';
-import { tags, highlightTree, tagHighlighter } from '@lezer/highlight';
-import { python } from '@codemirror/lang-python';
-import { java } from '@codemirror/lang-java';
-import { go } from '@codemirror/lang-go';
 import { PatternLanguage } from '../../content/content.models';
 
-const languages = { python: python(), java: java(), go: go() };
-export const editorPalettes = {
-  java: {
-    name: 'Material',
-    bg: '#263238',
-    fg: '#b2ccd6',
-    keyword: '#c792ea',
-    string: '#c3e88d',
-    number: '#f78c6c',
-    comment: '#8ba3af',
-    type: '#ffcb6b',
-  },
-  python: {
-    name: 'One Dark',
-    bg: '#282c34',
-    fg: '#abb2bf',
-    keyword: '#c678dd',
-    string: '#98c379',
-    number: '#d19a66',
-    comment: '#9198a5',
-    type: '#e5c07b',
-  },
-  go: {
-    name: 'Gerry',
-    bg: '#14161a',
-    fg: '#c7ccd1',
-    keyword: '#ff6ac1',
-    string: '#7fd88f',
-    number: '#ffb86c',
-    comment: '#969dc0',
-    type: '#7aa2f7',
-  },
-};
-const syntaxTags = [
-  [tags.keyword, 'keyword'],
-  [tags.string, 'string'],
-  [tags.number, 'number'],
-  [tags.comment, 'comment'],
-  [tags.typeName, 'type'],
-  [tags.bool, 'keyword'],
-] as const;
-const escapeHtml = (value: string) =>
-  value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;');
-
-export function highlightStudioSource(source: string, language: PatternLanguage): string[] {
-  let result = '',
-    offset = 0;
-  highlightTree(
-    languages[language].language.parser.parse(source),
-    tagHighlighter(syntaxTags.map(([tag, name]) => ({ tag, class: `syntax-${name}` }))),
-    (from, to, classes) => {
-      result +=
-        escapeHtml(source.slice(offset, from)) +
-        source
-          .slice(from, to)
-          .split('\n')
-          .map((text) => `<span class="${classes}">${escapeHtml(text)}</span>`)
-          .join('\n');
-      offset = to;
-    },
-  );
-  return (result + escapeHtml(source.slice(offset))).split('\n');
-}
+import { languages, syntaxTags, editorPalettes } from './code-presentation';
+export { editorPalettes, highlightStudioSource } from './code-presentation';
 
 @Component({
   selector: 'app-studio-editor',

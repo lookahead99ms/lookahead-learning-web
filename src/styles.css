@@ -506,3 +506,18 @@ main.harbor-learn .harbor-course-layout .learning-map {
     min-width: 0;
   }
 }
+
+/* The same language palettes used by the Hands-on DSA editor and trace. */
+pre:has(> .learning-code) { background: var(--code-bg); color: var(--code-ink); overflow-x: auto; }
+.learning-code { font-weight: 400; white-space: pre; tab-size: 4; }
+.learning-code[data-code-language='java'] { --syntax-keyword:#c792ea; --syntax-string:#c3e88d; --syntax-number:#f78c6c; --syntax-comment:#8ba3af; --syntax-type:#ffcb6b; color:#b2ccd6; }
+pre:has(> .learning-code[data-code-language='java']) { background:#263238; }
+.learning-code[data-code-language='python'] { --syntax-keyword:#c678dd; --syntax-string:#98c379; --syntax-number:#d19a66; --syntax-comment:#9198a5; --syntax-type:#e5c07b; color:#abb2bf; }
+pre:has(> .learning-code[data-code-language='python']) { background:#282c34; }
+.learning-code[data-code-language='go'] { --syntax-keyword:#ff6ac1; --syntax-string:#7fd88f; --syntax-number:#ffb86c; --syntax-comment:#969dc0; --syntax-type:#7aa2f7; color:#c7ccd1; }
+pre:has(> .learning-code[data-code-language='go']) { background:#14161a; }
+.learning-code .syntax-keyword { color:var(--syntax-keyword,var(--code-keyword)); }
+.learning-code .syntax-string { color:var(--syntax-string,var(--code-string)); }
+.learning-code .syntax-number { color:var(--syntax-number,var(--code-number)); }
+.learning-code .syntax-comment { color:var(--syntax-comment,var(--code-muted)); }
+.learning-code .syntax-type { color:var(--syntax-type,var(--code-keyword)); }

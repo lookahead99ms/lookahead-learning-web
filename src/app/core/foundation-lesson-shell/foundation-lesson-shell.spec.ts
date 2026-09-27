@@ -138,6 +138,20 @@ describe('FoundationLessonShell golden lesson contract', () => {
     fixture.detectChanges();
   });
 
+  it('renders authored practice emphasis without displaying HTML or allowing event handlers', () => {
+    fixture.componentRef.setInput('lesson', {
+      ...lesson,
+      practice: [{ questionId: 'heap-practice', variation: 'Try a stream',
+        reason: '<strong>Scenario</strong><br>Keep three values.<img src="x" onerror="alert(1)">' }],
+    });
+    fixture.detectChanges();
+    const description = fixture.nativeElement.querySelector('.practice-grid p') as HTMLElement;
+    expect(description.querySelector('strong')?.textContent).toBe('Scenario');
+    expect(description.querySelector('br')).not.toBeNull();
+    expect(description.textContent).not.toContain('<strong>');
+    expect(description.querySelector('[onerror]')).toBeNull();
+  });
+
   it('renders the mental model, invariant, recall cue, and complete visual transcript', () => {
     const text = normalizedText(fixture.nativeElement);
 
@@ -168,6 +182,15 @@ describe('FoundationLessonShell golden lesson contract', () => {
     expect(normalizedText(questionBankLink)).toContain('Review all 7 questions');
     expect(questionBankLink.getAttribute('href')).toBe(
       '/interview-questions?path=learn&course=core-data-structures&module=heap-questions',
+    );
+  });
+
+  it('preserves the originating unit when lessons share a question module', () => {
+    fixture.componentRef.setInput('returnUnit', 'calculate-complexity');
+    fixture.detectChanges();
+    const link = fixture.nativeElement.querySelector('.question-bank-link') as HTMLAnchorElement;
+    expect(link.getAttribute('href')).toBe(
+      '/interview-questions?path=learn&course=core-data-structures&module=heap-questions&unit=calculate-complexity',
     );
   });
 
@@ -211,6 +234,41 @@ describe('FoundationLessonShell golden lesson contract', () => {
     expect(answer.open).toBe(true);
     expect(normalizedText(answer)).toContain('The smallest value is 1.');
   });
+  for (const hasGuide of [false, true]) {
+    it(`keeps the approved reading flow complete with guide=${hasGuide}`, () => {
+      fixture.componentRef.setInput('lesson', {
+        ...lesson,
+        learningFlow: {
+          whyItMatters: 'Choose the next waiting task without sorting every arrival.',
+          practice: { prompt: 'Add priority 1 after removing 2. What comes next?', hint: 'Compare the current priorities.', answer: '1 is now the minimum.' },
+        },
+        ...(hasGuide ? { beginnerGuide: {
+          prerequisite: 'Read a short list.', exampleTitle: 'Choose the next priority', language: 'text', code: '4, 2, 7',
+          walkthrough: ['Compare 4 and 2.', 'Keep 2.', 'Compare 2 and 7.'],
+          try: 'Add 0.', answer: '0 comes first.', takeaways: ['The root is smallest.', 'Other items are not fully sorted.', 'Check an empty heap.'], later: 'Use a bounded heap for top-k.',
+        } } : {}),
+      } satisfies FoundationLessonV1);
+      fixture.detectChanges();
+      const root = fixture.nativeElement as HTMLElement;
+      const ids = [...root.querySelectorAll('[id]')].map(node => node.id);
+      expect(new Set(ids).size).toBe(ids.length);
+      const order = ['foundation-start', 'foundation-outcomes-heading', 'heap-trace', 'foundation-model', 'foundation-remember', 'foundation-pitfalls', 'foundation-understand', 'foundation-try'];
+      expect(order.every(id => ids.includes(id))).toBe(true);
+      expect(order.map(id => ids.indexOf(id))).toEqual(order.map(id => ids.indexOf(id)).sort((a,b) => a-b));
+      expect(root.querySelector('#foundation-recall')).toBeNull();
+      expect(root.querySelector('#foundation-start')?.textContent).toContain(lesson.summary);
+      expect(root.querySelector('.question-bank-link')).not.toBeNull();
+      const disclosures = [...root.querySelectorAll<HTMLDetailsElement>('#foundation-try details')];
+      expect(disclosures.every(node => !node.open)).toBe(true);
+      disclosures[0].querySelector('summary')!.click();
+      expect(disclosures[0].open).toBe(true);
+      expect(disclosures[1].open).toBe(false);
+      disclosures[1].querySelector('summary')!.click();
+      expect(disclosures[1].open).toBe(true);
+      expect(disclosures[1].textContent).toContain('1 is now the minimum.');
+    });
+  }
+
   it('introduces the concrete lesson sections before the abstract model', () => {
     const sections = [
       ...fixture.nativeElement.querySelectorAll('.foundation-lesson > section'),

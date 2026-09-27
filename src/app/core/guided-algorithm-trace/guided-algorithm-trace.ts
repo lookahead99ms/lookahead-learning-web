@@ -1,3 +1,4 @@
+import { highlightStudioSource } from '../focus-studio/code-presentation';
 import {
   Component,
   ElementRef,
@@ -139,7 +140,7 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
             <pre
               tabindex="0"
               [attr.aria-label]="'Source editor. ' + activeLineSummary()"
-            ><code>@for (line of source().lines; track line.id; let lineNumber = $index) {<span class="source-line" [class.active]="line.id === activeAnchor()" [class.executed]="isExecuted(line.id)" [class.unreachable]="isUnreachable(lineNumber)" [attr.aria-current]="line.id === activeAnchor() ? 'step' : null" [attr.aria-label]="sourceLineLabel(line.id, lineNumber, line.text)"><span class="line-gutter"><i class="current-line-arrow" aria-hidden="true">›</i><b aria-hidden="true">{{ lineNumber + 1 }}</b></span><span class="line-code">{{ line.text || ' ' }}</span></span>}</code></pre>
+            ><code class="learning-code" [attr.data-code-language]="language()">@for (line of source().lines; track line.id; let lineNumber = $index) {<span class="source-line" [class.active]="line.id === activeAnchor()" [class.executed]="isExecuted(line.id)" [class.unreachable]="isUnreachable(lineNumber)" [attr.aria-current]="line.id === activeAnchor() ? 'step' : null" [attr.aria-label]="sourceLineLabel(line.id, lineNumber, line.text)"><span class="line-gutter"><i class="current-line-arrow" aria-hidden="true">›</i><b aria-hidden="true">{{ lineNumber + 1 }}</b></span><span class="line-code" [innerHTML]="highlightedLines()[lineNumber]"></span></span>}</code></pre>
           </section>
 
           @if (focusMode()) {
@@ -1885,6 +1886,7 @@ export class GuidedAlgorithmTrace {
   readonly initialLanguage = input<PatternLanguage>('java');
   readonly fixtureChange = output<PatternProblemFixture>();
   readonly focusExitRequest = output<void>();
+  protected readonly highlightedLines = computed(() => highlightStudioSource(this.source().lines.map(line => line.text).join('\n'), this.language()));
   protected readonly language = signal<PatternLanguage>('java');
   protected readonly stepIndex = signal(0);
   protected readonly announcement = signal('');

@@ -1385,8 +1385,15 @@ function isDebuggerInstruction(line, language) {
   );
 }
 
-for (const { lesson, moduleLabel } of foundationLessons) {
+for (const { lesson, moduleLabel } of [...foundationLessons, ...patternLessons]) {
   const label = `${moduleLabel}: ${lesson.id}`;
+  if (lesson.learningFlow !== undefined) {
+    const flow = lesson.learningFlow;
+    requireValue(typeof flow?.whyItMatters === 'string' && flow.whyItMatters.trim().length > 0, `${label} learningFlow.whyItMatters must contain text`);
+    for (const field of ['prompt', 'hint', 'answer']) {
+      requireValue(typeof flow?.practice?.[field] === 'string' && flow.practice[field].trim().length > 0, `${label} learningFlow.practice.${field} must contain text`);
+    }
+  }
   for (const guideField of ['beginnerGuide', 'teachingGuide']) {
     if (lesson[guideField] === undefined) continue;
     const guide = lesson[guideField];
@@ -1408,6 +1415,10 @@ for (const { lesson, moduleLabel } of foundationLessons) {
     requireStringArray(guide.walkthrough, `${label} ${guideField}.walkthrough`, 3);
     requireStringArray(guide.takeaways, `${label} ${guideField}.takeaways`, 3);
   }
+}
+
+for (const { lesson, moduleLabel } of foundationLessons) {
+  const label = `${moduleLabel}: ${lesson.id}`;
   requireValue(lesson.contentType === 'theory', `${label} must use contentType theory`);
   requireValue(
     lesson.visuals === undefined && lesson.relatedQuestionIds === undefined,

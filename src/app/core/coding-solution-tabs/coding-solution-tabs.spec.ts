@@ -1,6 +1,20 @@
+import { By } from '@angular/platform-browser';
+import { StudioEditor } from '../focus-studio/studio-editor';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 import { CodingSolutionTabs } from './coding-solution-tabs';
+
+
+function practiceEditor(fixture: any) {
+  const element = fixture.debugElement.query(By.directive(StudioEditor));
+  const component = element.componentInstance as StudioEditor;
+  return {
+    get value() { return component.code(); },
+    set value(value: string) { component.codeChange.emit(value); fixture.detectChanges(); },
+    get rows() { return parseInt(element.nativeElement.style.getPropertyValue('--studio-code-height'), 10) / 24; },
+    dispatchEvent(_event: Event) {},
+  };
+}
 
 describe('CodingSolutionTabs practice drafts', () => {
   it('submits the active draft to the Two Sum preview without editing code or revealing references', async () => {
@@ -17,7 +31,7 @@ describe('CodingSolutionTabs practice drafts', () => {
       prompt: 'Find distinct indices.',
     });
     fixture.detectChanges();
-    const editor = fixture.nativeElement.querySelector('textarea') as HTMLTextAreaElement;
+    const editor = practiceEditor(fixture);
     editor.value = 'my own Python draft';
     editor.dispatchEvent(new Event('input'));
     fixture.detectChanges();
@@ -59,7 +73,7 @@ describe('CodingSolutionTabs practice drafts', () => {
       java: 'java starter',
     });
     fixture.detectChanges();
-    const editor = fixture.nativeElement.querySelector('textarea') as HTMLTextAreaElement;
+    const editor = practiceEditor(fixture);
     const language = fixture.nativeElement.querySelector('select') as HTMLSelectElement;
     expect(language.value).toBe('python');
     expect(editor.value).toBe('python starter');
@@ -89,7 +103,7 @@ describe('CodingSolutionTabs practice drafts', () => {
     });
     fixture.detectChanges();
 
-    const editor = () => fixture.nativeElement.querySelector('textarea') as HTMLTextAreaElement;
+    const editor = () => practiceEditor(fixture);
     const language = fixture.nativeElement.querySelector('select') as HTMLSelectElement;
     expect(editor().value).toBe('java starter');
 
@@ -128,7 +142,7 @@ describe('CodingSolutionTabs practice drafts', () => {
       tab.textContent.trim(),
     );
     expect(tabLabels).toEqual([]);
-    expect(fixture.nativeElement.querySelector('textarea')).toBeTruthy();
+    expect(fixture.debugElement.query(By.directive(StudioEditor))).toBeTruthy();
   });
 
   it('sizes editable and reference code to content within readable bounds', async () => {
@@ -140,7 +154,7 @@ describe('CodingSolutionTabs practice drafts', () => {
     fixture.componentRef.setInput('practiceStarters', { java: 'one\ntwo' });
     fixture.detectChanges();
 
-    const editor = fixture.nativeElement.querySelector('textarea') as HTMLTextAreaElement;
+    const editor = practiceEditor(fixture);
     expect(editor.rows).toBe(6);
 
     editor.value = Array.from({ length: 30 }, (_, index) => `line ${index}`).join('\n');
