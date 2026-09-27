@@ -78,7 +78,8 @@ export function collectPageSections(main: HTMLElement): PageSectionLink[] {
 }
 
 export function canDockSidebar(space: number, width = 224): boolean {
-  return space >= width + 24;
+  // Browser zoom can round a reserved gutter down by a fraction of a CSS pixel.
+  return space + 0.5 >= width + 24;
 }
 
 @Component({
@@ -214,6 +215,7 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.clearEdgeClearance();
+    this.main?.removeAttribute('data-sidebar-columns');
     this.observer?.disconnect();
     this.resizeObserver?.disconnect();
     if (this.frame !== null) this.document.defaultView?.cancelAnimationFrame(this.frame);
@@ -254,6 +256,7 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
   private refresh(): void {
     const main = this.document.querySelector<HTMLElement>('main#main-content');
     if (main !== this.main) {
+      this.main?.removeAttribute('data-sidebar-columns');
       this.resizeObserver?.disconnect();
       this.main = main;
       if (main) this.resizeObserver?.observe(main);
@@ -269,6 +272,7 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
     this.navigationExcluded.set(!!this.context.value()?.hideNavigation || !!main?.matches('.course-page, .search-page, .account-page, .challenge-page'));
     this.enabled.set(!excluded);
     if (excluded || !main) {
+      main?.removeAttribute('data-sidebar-columns');
       this.clearEdgeClearance();
       this.leftOpen.set(false);
       this.rightOpen.set(false);
@@ -301,6 +305,8 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
     const header = this.document.querySelector('app-platform-header')?.getBoundingClientRect();
     const top = Math.max(0, header?.bottom ?? 76) + 8;
     this.headerBottom.set(top);
+    // Reserve desktop columns before measuring; panels must never cover the reader.
+    main.toggleAttribute('data-sidebar-columns', !this.authorNavigation() && (this.showLeft() || this.showRight()));
     // The main container owns its padding on catalogs, courses and lessons alike.
     const reader = main.querySelector<HTMLElement>(':scope > .question-reader, :scope > .page-message, :scope > .search-shell');
     const outerBounds = main.getBoundingClientRect();
@@ -316,20 +322,40 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
       !this.authorNavigation() &&
         ((this.showLeft() && bounds.left < 54) || (this.showRight() && width - bounds.right < 54)),
     );
-    if (!this.leftChosen) this.leftOpen.set(true);
-    if (!this.rightChosen) this.rightOpen.set(true);
     const rtl = this.document.defaultView!.getComputedStyle(main).direction === 'rtl';
     const startSpace = rtl ? width - bounds.right : bounds.left;
     const endSpace = rtl ? bounds.left : width - bounds.right;
     this.leftInset.set(6);
     this.rightInset.set(6);
-    this.leftWidth.set(Math.max(width >= 1100 ? 44 : 224, startSpace - 6));
-    this.rightWidth.set(Math.max(width >= 1100 ? 44 : 224, endSpace - 6 - 24));
-    this.leftDocked.set((width >= 1100) || canDockSidebar(startSpace));
-    this.rightDocked.set((width >= 1100) || canDockSidebar(endSpace));
+    const leftDocked = canDockSidebar(startSpace);
+    const rightDocked = canDockSidebar(endSpace);
+    // A resize must never carry an expanded desktop panel over the reader.
+    if (this.leftDocked() && !leftDocked) {
+      this.close('left', true);
+      this.leftChosen = false;
+    }
+    if (this.rightDocked() && !rightDocked) {
+      this.close('right', true);
+      this.rightChosen = false;
+    }
+    this.leftWidth.set(leftDocked ? startSpace - 6 : Math.min(280, width - 24));
+    this.rightWidth.set(rightDocked ? endSpace - 6 : Math.min(280, width - 24));
+    this.leftDocked.set(leftDocked);
+    this.rightDocked.set(rightDocked);
+    if (!this.leftChosen) this.leftOpen.set(leftDocked);
+    if (!this.rightChosen) this.rightOpen.set(rightDocked);
     const visible = this.sections().filter((section) => visibleSidebarTarget(section.target));
+    // Track the reading area below both the platform header and sticky lesson tools.
+    // A section already occupying that area must not leave the previous item selected.
+    const stickyBottom = Array.from(main.querySelectorAll<HTMLElement>(
+      '.reader-sticky-stack, .question-sticky-utility, .catalog-sticky-utility, .module-sticky-utility',
+    )).reduce((bottom, element) => {
+      const rect = element.getBoundingClientRect();
+      return rect.top <= top + 24 && rect.bottom > 0 ? Math.max(bottom, rect.bottom) : bottom;
+    }, top);
+    const readingLine = stickyBottom + Math.min(160, this.document.defaultView!.innerHeight * 0.2);
     const passed = visible.filter(
-      (section) => section.target.getBoundingClientRect().top <= top + 24,
+      (section) => section.target.getBoundingClientRect().top <= readingLine,
     );
     const view = this.document.defaultView!;
     const atBottom = view.scrollY > 0 &&
@@ -347,6 +373,10 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
     }
     const docked = side === 'left' ? this.leftDocked() : this.rightDocked();
     if (!docked) {
+      const other = side === 'left' ? 'right' : 'left';
+      this.close(other);
+      if (other === 'left') this.leftChosen = true;
+      else this.rightChosen = true;
       this.returnFocus =
         (event.currentTarget as HTMLElement)?.closest('button') ?? (event.target as HTMLElement);
     }
@@ -411,8 +441,17 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
       });
     }
     section.target.focus({ preventScroll: true });
+    const stickyHeight = Math.max(0, ...Array.from(this.main?.querySelectorAll<HTMLElement>(
+      '.reader-sticky-stack, .question-sticky-utility, .catalog-sticky-utility, .module-sticky-utility',
+    ) ?? []).map((element) => element.getBoundingClientRect().height));
+    // Heading IDs remain the accessible fragment, but reveal their complete card.
+    const scrollTarget = section.target.matches('h2')
+      ? section.target.closest<HTMLElement>('section') ?? section.target
+      : section.target;
+    const authoredMargin = parseFloat(view.getComputedStyle(scrollTarget).scrollMarginTop) || 0;
+    const clearance = Math.max(authoredMargin, this.headerBottom() + stickyHeight + 12);
     view.scrollBy({
-      top: section.target.getBoundingClientRect().top - this.headerBottom() - 12,
+      top: scrollTarget.getBoundingClientRect().top - clearance,
       behavior: 'instant',
     });
     this.currentId.set(section.id);

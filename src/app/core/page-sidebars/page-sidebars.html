@@ -1,11 +1,11 @@
-@if (enabled() && !homepage() && !showLeft() && !authorNavigation()) {
+@if (enabled() && !homepage() && (!showLeft() || (!leftDocked() && !leftOpen())) && !authorNavigation()) {
   <div class="standalone-signature standalone-signature-left"
     [class.inline-signature]="!leftDocked() || leftWidth() < 192"
     [style.top.px]="headerBottom()" [style.width.px]="leftWidth()">
     <app-platform-signature [stacked]="leftDocked() && leftWidth() >= 192" />
   </div>
 }
-@if (enabled() && !homepage() && !showRight()) {
+@if (enabled() && !homepage() && (!showRight() || (!rightDocked() && (!rightOpen() || !hasRightContent())))) {
   <div class="standalone-signature standalone-signature-right"
     [class.inline-signature]="!rightDocked() || rightWidth() < 192"
     [style.top.px]="headerBottom()" [style.width.px]="rightWidth()">
@@ -19,7 +19,7 @@
       class="page-sidebar left"
       [class.homepage]="homepage()"
       [style.inset-inline-start.px]="leftOpen() ? leftInset() : 6"
-      [style.width.px]="leftOpen() || !homepage() ? leftWidth() : 44"
+      [style.width.px]="leftOpen() || (leftDocked() && !homepage()) ? leftWidth() : 44"
       [class.open]="leftOpen()"
       [class.docked]="leftDocked()"
       [style.top.px]="headerBottom()"
@@ -33,7 +33,7 @@
         [label]="leftOpen() ? 'Close left sidebar' : 'Open left sidebar'"
         (toggled)="toggle('left', $event)"
       />
-      @if (!homepage()) {
+      @if (!homepage() && (leftDocked() || leftOpen())) {
         <p class="platform-signature persistent-signature">
           <app-platform-signature [stacked]="true" />
         </p>
@@ -86,13 +86,13 @@
       </div>
     </aside>
   }
-  @if (showRight()) {
+  @if (showRight() && (hasRightContent() || rightDocked())) {
     <aside
       id="page-sidebar-right"
       class="page-sidebar right"
       [class.statement-only]="!hasRightContent()"
       [style.inset-inline-end.px]="rightOpen() ? rightInset() : 6"
-      [style.width.px]="rightWidth()"
+      [style.width.px]="rightOpen() || rightDocked() ? rightWidth() : 44"
       [class.open]="rightOpen()"
       [class.docked]="rightDocked()"
       [style.top.px]="headerBottom()"
@@ -108,9 +108,11 @@
           (toggled)="toggle('right', $event)"
         />
       }
+      @if (rightDocked() || rightOpen()) {
       <p class="practice-signature persistent-signature">
         <app-learning-prompt [stacked]="true" />
       </p>
+      }
       <div
         id="page-sidebar-right-content"
         class="sidebar-content"

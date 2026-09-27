@@ -11,12 +11,13 @@ delivery evidence, credentials, and learner data are kept outside this Git histo
 ## Page sidebars
 
 The shared page shell builds an outline from visible sections and exposes already-loaded
-recall/practice when available. Learn, Grow and Look Ahead catalogs also show the shared learning prompt in the right sidebar before a lesson is opened. Content keeps its original dimensions and layout.
-Expanded sidebars grow into unused outer space while content dimensions stay fixed; otherwise they open
-as nonmodal panels. Both available panels open by default and toggle independently.
-Both sidebar statements remain visible when their navigation/practice bodies are collapsed. Docked sidebars use transparent surfaces. No backdrop, page lock, or focus trap is introduced. Header and breadcrumb navigation
+recall/practice when available. Learn, Grow and Look Ahead catalogs also show the shared learning prompt in the right sidebar before a lesson is opened.
+At desktop widths (1100px and above), the reader reserves 248–360px on each side, adapting to viewport width, for navigation and recall. Both panels open by default and toggle independently without covering the content.
+On smaller screens panels start collapsed; opening one overlay closes the other. Resizing out of a docked layout closes the panels.
+Both sidebar statements remain visible when their navigation/practice bodies are collapsed; when gutters are too small, they move into normal flow after the page instead of crowding the reader. The docked left navigation and selected row fade toward the content; the docked right sidebar is borderless and transparent. No backdrop, page lock, or focus trap is introduced. Header and breadcrumb navigation
 remain available. The homepage has only a left outline and retains its signature in the
 hero. Coding Problem Workspace is excluded; author pages retain their existing layout.
+Section highlighting tracks the reading area below sticky lesson tools. Both docked panels use matching outer insets for equal content gaps.
 Sidebar state is transient and adds no API or saved-session contract.
 
 ## Header course navigation
@@ -582,7 +583,7 @@ Desktop catalog and lesson sidebars stop at the outer main container; its paddin
 
 For full-viewport reader shells, sidebar bounds use the centered article gutter with 24px clearance; bounded outer containers retain their own boundary. Main content dimensions remain unchanged.
 
-Catalog group highlighting follows its explicit heading identity independently of expansion. Desktop reader sidebars use docked presentation; hover underlines are distinct from the filled active-section state.
+Catalog group highlighting follows its explicit heading identity independently of expansion. Desktop reader sidebars use docked presentation only with sufficient gutter space; hover underlines are distinct from the filled active-section state.
 
 Search excludes shared sidebars and their toggles, alongside account screens and coding workspaces.
 

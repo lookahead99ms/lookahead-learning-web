@@ -28,16 +28,30 @@
 .page-sidebar:not(.open) {
   z-index: 45;
 }
-.page-sidebar.open.docked {
+.left.open.docked {
   border: 0;
   border-radius: 0;
-  background: transparent;
+  background: linear-gradient(to right, var(--surface-page) 55%, transparent);
+  box-shadow: none;
 }
-.left.open.docked {
-  border-inline-start: 0;
+.left.open.docked:dir(rtl) {
+  background: linear-gradient(to left, var(--surface-page) 55%, transparent);
+}
+.left.docked nav a[aria-current='location'],
+.left.docked .catalog-group-toggle[aria-current='location'],
+.left.docked .catalog-overview[aria-current='location'] {
+  background: linear-gradient(to right, var(--surface-muted) 65%, transparent);
+}
+.left.docked:dir(rtl) nav a[aria-current='location'],
+.left.docked:dir(rtl) .catalog-group-toggle[aria-current='location'],
+.left.docked:dir(rtl) .catalog-overview[aria-current='location'] {
+  background: linear-gradient(to left, var(--surface-muted) 65%, transparent);
 }
 .right.open.docked {
-  border-inline-end: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
 }
 app-sidebar-toggle {
   position: absolute;
@@ -281,4 +295,25 @@ button {
 }
 .catalog-overview[aria-current='location'] .sidebar-group-label {
   color: var(--accent-strong);
+}
+
+@media (min-width: 1100px) {
+  .left.open {
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: linear-gradient(to right, var(--surface-page) 55%, transparent);
+  }
+  .left.open:dir(rtl) {
+    background: linear-gradient(to left, var(--surface-page) 55%, transparent);
+  }
+  .left.open .sidebar-content {
+    padding-inline-end: 0;
+  }
+  .left.open nav a[aria-current='location'] {
+    background: linear-gradient(to right, var(--surface-muted) 65%, transparent);
+  }
+  .left.open:dir(rtl) nav a[aria-current='location'] {
+    background: linear-gradient(to left, var(--surface-muted) 65%, transparent);
+  }
 }

@@ -72,7 +72,11 @@ describe('Shared page sidebars', () => {
     fixture = TestBed.createComponent(PageSidebars);
     root.append(fixture.nativeElement);
     flush();
+    button('Open left sidebar').click();
+    flush();
     button('Close left sidebar').click();
+    button('Open right sidebar').click();
+    flush();
     button('Close right sidebar').click();
     flush();
   });
@@ -189,6 +193,21 @@ describe('Shared page sidebars', () => {
     expect(root.querySelector('.catalog-overview')?.getAttribute('aria-current')).toBe('location');
   });
 
+  it('tracks the section visible below the sticky lesson toolbar in both scroll directions', () => {
+    const toolbar = document.createElement('div');
+    toolbar.className = 'reader-sticky-stack';
+    main.prepend(toolbar);
+    vi.spyOn(toolbar, 'getBoundingClientRect').mockReturnValue({ top: 76, bottom: 160 } as DOMRect);
+    vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(800);
+    vi.spyOn(main.querySelector('#existing')!, 'getBoundingClientRect').mockReturnValue({ top: -300 } as DOMRect);
+    const practice = vi.spyOn(main.querySelector('#practice')!, 'getBoundingClientRect').mockReturnValue({ top: 240 } as DOMRect);
+    refresh();
+    expect(root.querySelector('[aria-current="location"]')?.textContent).toContain('Practice');
+    practice.mockReturnValue({ top: 500 } as DOMRect);
+    refresh();
+    expect(root.querySelector('[aria-current="location"]')?.textContent).toContain('Mechanism');
+  });
+
   it('selects the final section when scrolling reaches the document bottom', () => {
     vi.spyOn(window, 'scrollY', 'get').mockReturnValue(400);
     vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(800);
@@ -239,7 +258,7 @@ describe('Shared page sidebars', () => {
     const shell = vi.spyOn(main.querySelector('.search-shell')!, 'getBoundingClientRect').mockReturnValue({ left: 470, right: 1930 } as DOMRect);
     refresh();
     const right = root.querySelector<HTMLElement>('.standalone-signature-right')!;
-    expect(parseFloat(right.style.width)).toBe(416);
+    expect(parseFloat(right.style.width)).toBe(440);
     expect(right.classList.contains('inline-signature')).toBe(false);
     shell.mockReturnValue({ left: 60, right: 2340 } as DOMRect);
     refresh();
@@ -267,13 +286,13 @@ describe('Shared page sidebars', () => {
     );
   });
 
-  it('opens both available sidebars by default even without docking space', () => {
+  it('keeps both sidebars closed by default without docking space', () => {
     fixture.destroy();
     fixture = TestBed.createComponent(PageSidebars);
     root.append(fixture.nativeElement);
     flush();
-    expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
-    expect(button('Close right sidebar').getAttribute('aria-expanded')).toBe('true');
+    expect(button('Open left sidebar').getAttribute('aria-expanded')).toBe('false');
+    expect(button('Open right sidebar').getAttribute('aria-expanded')).toBe('false');
     expect(page.hasAttribute('inert')).toBe(false);
     expect(root.querySelector('.sidebar-backdrop')).toBeNull();
   });
@@ -300,26 +319,26 @@ describe('Shared page sidebars', () => {
     expect(left.style.insetInlineStart).toBe('6px');
     expect(left.style.width).toContain('534px');
     expect(right.style.insetInlineEnd).toBe('6px');
-    expect(right.style.width).toContain('510px');
+    expect(right.style.width).toContain('534px');
     expect(main.hasAttribute('data-sidebar-layout')).toBe(false);
     button('Close left sidebar').click();
     flush();
     expect(left.style.insetInlineStart).toBe('6px');
     expect(right.style.insetInlineEnd).toBe('6px');
-    expect(right.style.width).toContain('510px');
+    expect(right.style.width).toContain('534px');
     expect(main.style.getPropertyValue('--sidebar-start-space')).toBe('');
     expect(main.style.getPropertyValue('--sidebar-end-space')).toBe('');
   });
 
   it('keeps both statements visible when navigation and practice are collapsed', () => {
     expect(
-      root.querySelector('#page-sidebar-left app-platform-signature')?.closest('[hidden], [inert]'),
+      root.querySelector('.standalone-signature app-platform-signature')?.closest('[hidden], [inert]'),
     ).toBeNull();
     expect(
-      root.querySelector('#page-sidebar-right app-learning-prompt')?.closest('[hidden], [inert]'),
+      root.querySelector('.standalone-signature app-learning-prompt')?.closest('[hidden], [inert]'),
     ).toBeNull();
-    expect(root.querySelector('#page-sidebar-left app-platform-signature')).not.toBeNull();
-    expect(root.querySelector('#page-sidebar-right app-learning-prompt')).not.toBeNull();
+    expect(root.querySelector('.standalone-signature app-platform-signature')).not.toBeNull();
+    expect(root.querySelector('.standalone-signature app-learning-prompt')).not.toBeNull();
     expect(root.querySelector('#page-sidebar-left-content')?.hasAttribute('hidden')).toBe(true);
     expect(root.querySelector('#page-sidebar-right-content')?.hasAttribute('hidden')).toBe(true);
   });
@@ -331,8 +350,8 @@ describe('Shared page sidebars', () => {
     button('Open left sidebar').click();
     button('Open right sidebar').click();
     flush();
-    expect(root.querySelector<HTMLElement>('#page-sidebar-left')!.style.width).toBe('174px');
-    expect(root.querySelector<HTMLElement>('#page-sidebar-right')!.style.width).toBe('150px');
+    expect(root.querySelector<HTMLElement>('#page-sidebar-left')!.classList.contains('docked')).toBe(false);
+    expect(root.querySelector<HTMLElement>('#page-sidebar-right')!.style.width).toBe('280px');
     expect(main.style.width).toBe('');
   });
 
@@ -345,7 +364,7 @@ describe('Shared page sidebars', () => {
     vi.spyOn(reader, 'getBoundingClientRect').mockReturnValue({ left: 390, right: 1410, width: 1020, top: 76, bottom: 900, height: 824, x: 390, y: 76, toJSON: () => ({}) });
     refresh();
     expect(root.querySelector<HTMLElement>('#page-sidebar-left')!.style.width).toBe('254px');
-    expect(root.querySelector<HTMLElement>('#page-sidebar-right')!.style.width).toBe('230px');
+    expect(root.querySelector<HTMLElement>('#page-sidebar-right')!.style.width).toBe('254px');
     expect(main.style.width).toBe('');
     expect(reader.style.width).toBe('');
   });
@@ -359,13 +378,14 @@ describe('Shared page sidebars', () => {
     vi.spyOn(reader, 'getBoundingClientRect').mockReturnValue({ left: 310, right: 1490, width: 1180, top: 76, bottom: 900, height: 824, x: 310, y: 76, toJSON: () => ({}) });
     refresh();
     expect(root.querySelector<HTMLElement>('#page-sidebar-left')!.style.width).toBe('280px');
-    expect(root.querySelector<HTMLElement>('#page-sidebar-right')!.style.width).toBe('256px');
+    expect(root.querySelector<HTMLElement>('#page-sidebar-right')!.style.width).toBe('280px');
     expect(reader.style.width).toBe('');
   });
 
   it('docks only when each individual gutter can fit the panel and clearances', () => {
     expect(canDockSidebar(247)).toBe(false);
     expect(canDockSidebar(248)).toBe(true);
+    expect(canDockSidebar(247.99)).toBe(true);
     expect(canDockSidebar(-10)).toBe(false);
   });
 
@@ -407,6 +427,38 @@ describe('Shared page sidebars', () => {
     expect(root.querySelector('#page-sidebar-left-content')?.hasAttribute('hidden')).toBe(true);
   });
 
+  it('positions sidebar jumps below the sticky lesson toolbar', () => {
+    const toolbar = document.createElement('div');
+    toolbar.className = 'question-sticky-utility';
+    main.prepend(toolbar);
+    vi.spyOn(toolbar, 'getBoundingClientRect').mockReturnValue({ height: 60 } as DOMRect);
+    const target = main.querySelector<HTMLElement>('#existing')!;
+    vi.spyOn(target, 'getBoundingClientRect').mockReturnValue({ top: 500 } as DOMRect);
+    const scroll = vi.spyOn(window, 'scrollBy').mockImplementation(() => {});
+    button('Open left sidebar').click();
+    flush();
+    root.querySelector<HTMLAnchorElement>('#page-sidebar-left-content a[href$="#existing"]')!.click();
+    expect(scroll).toHaveBeenCalledWith({ top: 344, behavior: 'instant' });
+  });
+
+  it('reveals the whole section card when navigation targets its heading', () => {
+    const card = document.createElement('section');
+    card.innerHTML = '<p>Retrieve</p><h2 id="card-heading">Card heading</h2>';
+    main.append(card);
+    vi.spyOn(card, 'getBoundingClientRect').mockReturnValue({ top: 500 } as DOMRect);
+    vi.spyOn(card.querySelector('h2')!, 'getBoundingClientRect').mockReturnValue({ top: 560 } as DOMRect);
+    const scroll = vi.spyOn(window, 'scrollBy').mockImplementation(() => {});
+    fixture.destroy();
+    fixture = TestBed.createComponent(PageSidebars);
+    root.append(fixture.nativeElement);
+    flush();
+    button('Open left sidebar').click();
+    flush();
+    root.querySelector<HTMLAnchorElement>('#page-sidebar-left-content a[href$="#card-heading"]')!.click();
+    expect(scroll).toHaveBeenCalledWith({ top: 404, behavior: 'instant' });
+    expect(document.activeElement).toBe(card.querySelector('h2'));
+  });
+
   it('keeps section navigation stable while the page stays interactive', () => {
     button('Open left sidebar').click();
     flush();
@@ -415,24 +467,48 @@ describe('Shared page sidebars', () => {
     expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
   });
 
-  it('keeps both panels open independently and retains choices across resize', () => {
+  it('opens only one overlay at a time and retains the selection across refresh', () => {
     button('Open left sidebar').click();
     flush();
     button('Open right sidebar').click();
     flush();
-    expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
+    expect(button('Open left sidebar').getAttribute('aria-expanded')).toBe('false');
     expect(button('Close right sidebar').getAttribute('aria-expanded')).toBe('true');
-    button('Close right sidebar').click();
-    flush();
-    expect(page.hasAttribute('inert')).toBe(false);
-    expect(button('Open right sidebar')).toBeTruthy();
     refresh();
+    expect(button('Close right sidebar').getAttribute('aria-expanded')).toBe('true');
+    button('Open left sidebar').click();
+    flush();
     expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
     expect(button('Open right sidebar').getAttribute('aria-expanded')).toBe('false');
-    button('Open right sidebar').click();
+    expect(page.hasAttribute('inert')).toBe(false);
+  });
+
+  it('opens docked panels by default and closes them when the viewport loses its gutters', () => {
+    vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(1800);
+    vi.mocked(main.getBoundingClientRect).mockReturnValue({left: 300, right: 1500} as DOMRect);
+    fixture.destroy();
+    fixture = TestBed.createComponent(PageSidebars);
+    root.append(fixture.nativeElement);
     flush();
-    expect(button('Close left sidebar')).toBeTruthy();
-    expect(button('Close right sidebar')).toBeTruthy();
+    expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
+    expect(button('Close right sidebar').getAttribute('aria-expanded')).toBe('true');
+    expect(main.hasAttribute('data-sidebar-columns')).toBe(true);
+    button('Close left sidebar').click();
+    flush();
+    expect(button('Close right sidebar').getAttribute('aria-expanded')).toBe('true');
+    button('Open left sidebar').click();
+    flush();
+    expect(button('Close right sidebar').getAttribute('aria-expanded')).toBe('true');
+    expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
+    root.querySelector<HTMLAnchorElement>('#page-sidebar-left-content a')!.focus();
+    vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(391);
+    vi.mocked(main.getBoundingClientRect).mockReturnValue({left: 0, right: 391} as DOMRect);
+    refresh();
+    expect(button('Open left sidebar').getAttribute('aria-expanded')).toBe('false');
+    expect(button('Open right sidebar').getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).toBe(button('Open left sidebar'));
+    expect(root.querySelector<HTMLElement>('#page-sidebar-left')!.style.width).toBe('44px');
+    expect(root.querySelector('.standalone-signature')?.classList.contains('inline-signature')).toBe(true);
   });
 
   it('uses already-loaded recall content, resets answers between questions, and sanitizes HTML', () => {
@@ -497,7 +573,7 @@ describe('Shared page sidebars', () => {
       root.append(fixture.nativeElement);
       flush();
       expect(root.querySelector('#page-sidebar-right app-sidebar-toggle')).toBeNull();
-      expect(root.querySelector('#page-sidebar-right app-learning-prompt')?.textContent).toBe(
+      expect(root.querySelector('.standalone-signature app-learning-prompt')?.textContent).toBe(
         'Know why it works. Know when it won’t.',
       );
       expect(root.querySelector('.recall-reveal')).toBeNull();
