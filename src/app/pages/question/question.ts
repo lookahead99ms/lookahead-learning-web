@@ -1,3 +1,4 @@
+import { ContentRecovery, RecoveryKind, RecoveryPreview, recoveryKind } from '../../core/content-recovery/content-recovery';
 import { LearningCode } from '../../core/learning-code';
 import { highlightLearningCode } from '../../core/focus-studio/code-presentation';
 import { PROTECTED_CONTENT } from '../../content/content-delivery';
@@ -15,7 +16,7 @@ import {
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { NgTemplateOutlet } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink, UrlTree } from '@angular/router';
-import { EMPTY, merge, catchError, forkJoin, map, of, switchMap, throwError } from 'rxjs';
+import { EMPTY, Subject, merge, catchError, forkJoin, map, of, switchMap, throwError } from 'rxjs';
 import {
   CatalogItem,
   ContentItemSummary,
@@ -69,7 +70,7 @@ import { FOCUS_STUDIO_PATTERN, usesFocusStudio } from '../../content/focus-studi
 
 @Component({
   selector: 'app-question',
-  imports: [LearningCode,
+  imports: [ContentRecovery, LearningCode,
     PageSidebarContextDirective,
     StudyPlanReaderNavigation,
     PlatformHeader,
@@ -935,10 +936,6 @@ export class Question implements OnInit {
   private readonly protectedContent = inject(PROTECTED_CONTENT);
   private readonly accountChanges = toObservable(this.accounts.account);
   private readonly expiryChanges = toObservable(this.accounts.sessionExpired);
-  protected readonly accessFailure = signal<401 | 403 | null>(null);
-  protected get accountReturnTo(): string {
-    return this.router.url;
-  }
   protected readonly returnDestination = signal<UrlTree | null>(null);
   private navigationIndex: HandsOnDsaIndex | null = null;
   protected readonly sourceOrderLabel = signal('Learning order');
@@ -1170,6 +1167,9 @@ export class Question implements OnInit {
   protected readonly isLastModuleInCompetency = signal(false);
   protected readonly nextCourse = signal<CatalogItem | null>(null);
   protected readonly error = signal('');
+  protected readonly recovery = signal<RecoveryKind>('temporary');
+  protected readonly recoveryPreview = signal<RecoveryPreview>({});
+  protected readonly retryLoad = new Subject<void>();
   protected readonly surpriseMode = signal(false);
   protected readonly patternRevealed = signal(false);
   protected readonly navigationContextId = signal('');
@@ -1701,10 +1701,11 @@ export class Question implements OnInit {
     (this.protectedContent
       ? merge(
           this.route.paramMap,
+          this.retryLoad.pipe(map(() => this.route.snapshot.paramMap)),
           this.accountChanges.pipe(map(() => this.route.snapshot.paramMap)),
           this.expiryChanges.pipe(map(() => this.route.snapshot.paramMap)),
         )
-      : this.route.paramMap
+      : merge(this.route.paramMap, this.retryLoad.pipe(map(() => this.route.snapshot.paramMap)))
     )
       .pipe(
         switchMap((params) => {
@@ -1714,7 +1715,7 @@ export class Question implements OnInit {
           this.patternRevealed.set(false);
           this.relatedQuestions.set(new Map());
           this.error.set('');
-          this.accessFailure.set(null);
+          this.recoveryPreview.set({});
           this.activeSectionIndex.set(0);
           this.scrolled.set(false);
           const courseId = params.get('courseId') ?? 'core-java';
@@ -1731,16 +1732,8 @@ export class Question implements OnInit {
               }).pipe(switchMap((result) => this.loadSelectedQuestion(result, questionId)));
             }),
             catchError((error) => {
-              this.accessFailure.set(
-                error?.status === 401 || error?.status === 403 ? error.status : null,
-              );
-              this.error.set(
-                error?.status === 401
-                  ? 'Sign in to read this free lesson and save your progress.'
-                  : error?.status === 403
-                    ? 'This lesson requires Pro access for its course. Your saved work is still available.'
-                    : 'The question content could not be loaded.',
-              );
+              this.recovery.set(recoveryKind(error, this.recoveryPreview()));
+              this.error.set('Unable to open this content.');
               return EMPTY;
             }),
           );
@@ -1807,6 +1800,7 @@ export class Question implements OnInit {
               problem.route[2] === questionId,
           );
           if (!summary) continue;
+          this.recoveryPreview.set({title: summary.title});
           return this.contentService.getDsaProblem(summary.id, summary.version).pipe(
             map((problem) => {
               const module: CourseModule = {
@@ -1878,7 +1872,8 @@ export class Question implements OnInit {
     questionId: string | null,
   ) {
     const selected = result.course.questions.find(({ id }) => id === questionId);
-    if (!selected) return throwError(() => new Error('Question not found'));
+    if (!selected) return throwError(() => ({ status: 404 }));
+    this.recoveryPreview.set({title: selected.title, premium: selected.access?.tier === 'premium', planned: selected.reviewStatus === 'planned'});
     if (selected.detailRef.kind === 'canonical-dsa') {
       return this.contentService
         .getDsaProblem(selected.canonicalProblemRef?.problemId ?? '', selected.detailRef.version)

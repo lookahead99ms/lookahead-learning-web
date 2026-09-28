@@ -1,3 +1,4 @@
+import { ContentRecovery, RecoveryKind, recoveryKind } from '../../core/content-recovery/content-recovery';
 import { NgTemplateOutlet } from '@angular/common';
 import { Component, DestroyRef, ElementRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -17,7 +18,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
 
 @Component({
   selector: 'app-hands-on-dsa',
-  imports: [PlatformHeader, RouterLink, NgTemplateOutlet],
+  imports: [ContentRecovery, PlatformHeader, RouterLink, NgTemplateOutlet],
   templateUrl: './hands-on-dsa.html',
   styles: [
     `
@@ -652,6 +653,7 @@ export class HandsOnDsa implements OnInit {
   private focusColumnAfterSorting: string | null = null;
   protected readonly catalog = signal<HandsOnDsaIndex | null>(null);
   protected readonly error = signal('');
+  protected readonly recovery = signal<RecoveryKind>('temporary');
   protected readonly query = signal('');
   protected readonly difficulty = signal<HandsOnDifficulty>('All');
   protected readonly tierScope = signal<HandsOnTierScope>('782');
@@ -835,7 +837,8 @@ export class HandsOnDsa implements OnInit {
   });
   protected readonly randomPracticeCount = computed(() => this.randomPracticePool().length);
 
-  ngOnInit(): void {
+  protected retryCatalog(): void {
+    this.error.set('');
     this.content
       .getHandsOnDsaIndex()
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -844,8 +847,12 @@ export class HandsOnDsa implements OnInit {
           this.catalog.set(catalog);
           queueMicrotask(() => this.canonicalizePage());
         },
-        error: () => this.error.set('The practice catalog could not be loaded. Please try again.'),
+        error: (error) => { this.recovery.set(recoveryKind(error)); this.error.set('The practice catalog could not be loaded.'); },
       });
+  }
+
+  ngOnInit(): void {
+    this.retryCatalog();
     this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const page = params.get('page') ?? '';
       const parsedPage = /^[1-9]\d*$/.test(page) ? Number(page) : 1;

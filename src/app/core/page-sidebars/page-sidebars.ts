@@ -151,7 +151,7 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
       (this.learningPage() || this.support().length > 0 || this.recall().length > 0),
   );
   protected readonly overlay = computed(
-    () => (this.leftOpen() && !this.leftDocked()) || (this.rightOpen() && !this.rightDocked()),
+    () => (!this.homepage() && this.leftOpen() && !this.leftDocked()) || (this.rightOpen() && !this.rightDocked()),
   );
   private main: HTMLElement | null = null;
   private observer?: MutationObserver;
@@ -342,7 +342,8 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
     this.rightWidth.set(rightDocked ? endSpace - 6 : Math.min(280, width - 24));
     this.leftDocked.set(leftDocked);
     this.rightDocked.set(rightDocked);
-    if (!this.leftChosen) this.leftOpen.set(leftDocked);
+    if (this.homepage()) this.leftOpen.set(true);
+    else if (!this.leftChosen) this.leftOpen.set(leftDocked);
     if (!this.rightChosen) this.rightOpen.set(rightDocked);
     const visible = this.sections().filter((section) => visibleSidebarTarget(section.target));
     // Track the reading area below both the platform header and sticky lesson tools.
@@ -397,7 +398,7 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
     const focusInSidebar = !!(this.document.activeElement as HTMLElement | null)?.closest(
       'app-page-sidebars',
     );
-    if (!this.leftDocked()) {
+    if (!this.leftDocked() && !this.homepage()) {
       this.leftChosen = true;
       this.close('left');
     }
@@ -426,7 +427,7 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
     const view = this.document.defaultView;
     if (!view) return;
     view.history.pushState(view.history.state, '', this.href(section));
-    if (!this.leftDocked()) {
+    if (!this.leftDocked() && !this.homepage()) {
       this.leftChosen = true;
       this.close('left');
     }

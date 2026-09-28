@@ -11,6 +11,7 @@ import { legacyAiItemRedirect, legacyAiModuleRedirect } from './content/ai-route
 import { legacyInterviewSearchRedirect } from './content/search-route-compatibility';
 
 export const routes: Routes = [
+  { path: 'author/content-access', canActivate: [authorGuard], loadComponent: () => import('./pages/author-content-access/author-content-access').then(page => page.AuthorContentAccess) },
   {
     path: 'author/operations',
     canActivate: [authorGuard],

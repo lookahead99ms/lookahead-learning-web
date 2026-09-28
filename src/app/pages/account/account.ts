@@ -35,6 +35,7 @@ export class AccountPage {
     initialValue: this.route.snapshot.data,
   });
   protected readonly returnTo = computed(() => safeAccountReturn(this.query().get('returnTo')));
+  protected readonly lessonReturn = computed(() => /^\/(learn|grow|look-ahead)\/[^/?#]+\/[^?#]+/.test(this.returnTo()));
   protected readonly returnUrl = computed(() => this.router.parseUrl(this.returnTo()));
   protected readonly signup = computed(
     () => this.routeData()['accountMode'] === 'signup' || this.query().get('mode') === 'signup',

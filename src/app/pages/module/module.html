@@ -97,11 +97,7 @@
       </article>
     }
   } @else if (error()) {
-    <section class="page-message">
-      <h1>Content unavailable</h1>
-      <p>{{ error() }}</p>
-      <p><a [routerLink]="['/', pathId(), courseId()]">Return to the course</a></p>
-    </section>
+    <app-content-recovery [kind]="recovery()" [preview]="recoveryPreview()" (retry)="retryLoad.next()" />
   } @else {
     <section class="page-message"><p>Loading module…</p></section>
   }

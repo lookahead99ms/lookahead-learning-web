@@ -1,7 +1,8 @@
+import { ContentRecovery, RecoveryKind, RecoveryPreview, recoveryKind } from '../../core/content-recovery/content-recovery';
 import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { EMPTY, catchError, switchMap } from 'rxjs';
+import { EMPTY, Subject, merge, map, catchError, switchMap } from 'rxjs';
 import {
   CourseModule,
   CourseOutline,
@@ -13,7 +14,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
 
 @Component({
   selector: 'app-course-section',
-  imports: [PlatformHeader, RouterLink],
+  imports: [ContentRecovery, PlatformHeader, RouterLink],
   templateUrl: './course-section.html',
   styles: [
     `
@@ -64,19 +65,24 @@ export class CourseSection implements OnInit {
   protected readonly modules = signal<CourseModule[]>([]);
   protected readonly courseId = signal('');
   protected readonly error = signal('');
+  protected readonly recovery = signal<RecoveryKind>('temporary');
+  protected readonly recoveryPreview = signal<RecoveryPreview>({});
+  protected readonly retryLoad = new Subject<void>();
   protected readonly reviewStatusLabel = reviewStatusLabel;
 
   ngOnInit(): void {
-    this.route.paramMap
+    merge(this.route.paramMap, this.retryLoad.pipe(map(() => this.route.snapshot.paramMap)))
       .pipe(
         switchMap((params) => {
           this.course.set(null);
           this.section.set(null);
           this.modules.set([]);
           this.error.set('');
+          this.recovery.set('temporary');
           this.courseId.set(params.get('courseId') ?? 'big-o-analysis');
           return this.contentService.getCourseOutline('learn', this.courseId()).pipe(
-            catchError(() => {
+            catchError((error) => {
+              this.recovery.set(recoveryKind(error));
               this.error.set('The learning content could not be loaded.');
               return EMPTY;
             }),
@@ -91,6 +97,7 @@ export class CourseSection implements OnInit {
     const sectionId = this.route.snapshot.paramMap.get('sectionId');
     const section = course.sections?.find(({ id }) => id === sectionId);
     if (!section) {
+      this.recovery.set('missing');
       this.error.set('Content section not found.');
       return;
     }

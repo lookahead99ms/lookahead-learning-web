@@ -14,10 +14,11 @@ import { RouterLink } from '@angular/router';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { EngineeringChallenge } from './engineering-challenge';
 import { PlatformBrandIllustration } from '../../core/platform-brand/platform-brand-illustration';
+import { PlatformBrand } from '../../core/platform-brand/platform-brand';
 
 @Component({
   selector: 'app-landing',
-  imports: [LearningPrompt, PlatformSignature, PlatformHeader, RouterLink, EngineeringChallenge, PlatformBrandIllustration],
+  imports: [LearningPrompt, PlatformSignature, PlatformHeader, RouterLink, EngineeringChallenge, PlatformBrandIllustration, PlatformBrand],
   templateUrl: './landing.html',
   styleUrl: './landing.css',
 })

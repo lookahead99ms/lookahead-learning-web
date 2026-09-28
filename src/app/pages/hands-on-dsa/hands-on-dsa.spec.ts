@@ -815,7 +815,7 @@ describe('Hands-On DSA route contracts', () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/learn/hands-on-dsa', HandsOnDsa);
     expect(harness.routeNativeElement!.textContent).toContain(
-      'The practice catalog could not be loaded.',
+      'We couldn’t load this content',
     );
     expect(harness.routeNativeElement!.querySelector('.pattern-groups')).toBeNull();
     expect(

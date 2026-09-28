@@ -1,3 +1,4 @@
+import { ContentRecovery, RecoveryKind, recoveryKind } from '../content-recovery/content-recovery';
 import {
   AfterRenderRef,
   Component,
@@ -82,7 +83,7 @@ export function catalogQuestionCountDisplay(questionCount: number): CatalogQuest
 
 @Component({
   selector: 'app-adaptive-catalog',
-  imports: [RouterLink, PageSidebarContextDirective],
+  imports: [ContentRecovery, RouterLink, PageSidebarContextDirective],
   templateUrl: './adaptive-catalog.html',
   styleUrl: '../../pages/catalog-experience.css',
 })
@@ -102,6 +103,7 @@ export class AdaptiveCatalog implements OnInit {
 
   protected readonly catalog = signal<CatalogOverviewItem[] | null>(null);
   protected readonly error = signal('');
+  protected readonly recovery = signal<RecoveryKind>('temporary');
   protected readonly sidebarContext = computed(() => ({
     excluded: false,
     groupLabel: this.config().path === 'learn' ? 'Foundation Tracks'
@@ -150,7 +152,7 @@ export class AdaptiveCatalog implements OnInit {
           this.catalog.set(catalog);
           if (this.pendingGroupId) this.scrollToGroup(this.pendingGroupId);
         },
-        error: () => this.error.set(this.config().errorDescription),
+        error: (error) => { this.recovery.set(recoveryKind(error)); this.error.set(this.config().errorDescription); },
       });
   }
 

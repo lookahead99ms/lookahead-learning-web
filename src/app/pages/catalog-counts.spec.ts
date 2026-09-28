@@ -157,15 +157,15 @@ describe('adaptive catalog recovery', () => {
     }).compileComponents();
     const harness = await RouterTestingHarness.create('/grow');
     const retry = harness.routeNativeElement!.querySelector<HTMLButtonElement>(
-      '.catalog-recovery-action',
+      'app-content-recovery button.primary-action',
     )!;
 
-    expect(harness.routeNativeElement?.textContent).toContain('Content unavailable');
+    expect(harness.routeNativeElement?.textContent).toContain('We couldn’t load this content');
     retry.click();
     harness.detectChanges();
 
     expect(getCatalogOverview).toHaveBeenCalledTimes(2);
     expect(harness.routeNativeElement?.textContent).toContain('Advanced Java');
-    expect(harness.routeNativeElement?.textContent).not.toContain('Content unavailable');
+    expect(harness.routeNativeElement?.textContent).not.toContain('We couldn’t load this content');
   });
 });

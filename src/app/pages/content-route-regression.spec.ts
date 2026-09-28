@@ -109,8 +109,9 @@ describe.each(routeCases)(
 
     beforeEach(async () => {
       pending = new Subject<CourseOutline>();
+      content.getContentItem.mockReset().mockReturnValue(of(course.questions[0]));
       content.getCourseOutline.mockReset().mockImplementation((_path, id) => {
-        if (id === 'missing') return throwError(() => new Error('404'));
+        if (id === 'missing') return throwError(() => ({status:404}));
         if (id === 'pending') return pending;
         return of(outlineFor(contentPath));
       });
@@ -127,34 +128,48 @@ describe.each(routeCases)(
       const reused = await harness.navigateByUrl(`/${contentPath}/missing${suffix}`, component);
       expect(reused).toBe(first);
       expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toContain(
-        'Content unavailable',
+        'We couldn’t find this page',
       );
       expect(harness.routeNativeElement?.textContent).not.toContain(title);
-      if (name === 'course') {
-        expect(
-          harness.routeNativeElement
-            ?.querySelector<HTMLAnchorElement>('.page-message a')
-            ?.getAttribute('href'),
-        ).toBe(`/${contentPath}`);
-      }
-      if (name === 'module') {
-        expect(
-          harness.routeNativeElement
-            ?.querySelector<HTMLAnchorElement>('.page-message a')
-            ?.getAttribute('href'),
-        ).toBe(`/${contentPath}/missing`);
-      }
+      const recoveryLinks = Array.from(harness.routeNativeElement!.querySelectorAll<HTMLAnchorElement>('.recovery-links a'));
+      expect(recoveryLinks.find(link => link.textContent === 'Home')?.getAttribute('href')).toBe('/');
+      expect(recoveryLinks.find(link => link.textContent === 'Go back')).toBeDefined();
+
     });
 
     it('recovers on the same component after a failed request', async () => {
       const harness = await RouterTestingHarness.create();
       const first = await harness.navigateByUrl(`/${contentPath}/missing${suffix}`, component);
-      expect(harness.routeNativeElement?.textContent).toContain('Content unavailable');
+      expect(harness.routeNativeElement?.textContent).toContain('We couldn’t find this page');
       const reused = await harness.navigateByUrl(`/${contentPath}/sample${suffix}`, component);
       expect(reused).toBe(first);
       expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toContain(title);
-      expect(harness.routeNativeElement?.textContent).not.toContain('Content unavailable');
+      expect(harness.routeNativeElement?.textContent).not.toContain('We couldn’t find this page');
     });
+
+    it('retries a transient failure on the same route', async () => {
+      content.getCourseOutline.mockReturnValueOnce(throwError(() => ({status:503})));
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl(`/${contentPath}/sample${suffix}`, component);
+      expect(harness.routeNativeElement?.textContent).toContain('We couldn’t load this content');
+      harness.routeNativeElement!.querySelector<HTMLButtonElement>('app-content-recovery button.primary-action')!.click();
+      harness.detectChanges();
+      expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toContain(title);
+    });
+
+    if (name === 'question') {
+      it.each([401, 403])('does not render protected answers after a %s denial and preserves the exact account return', async (status) => {
+        content.getContentItem.mockReturnValue(throwError(() => ({status})));
+        const harness = await RouterTestingHarness.create();
+        const destination = `/${contentPath}/sample${suffix}?view=review#example`;
+        await harness.navigateByUrl(destination, component);
+        expect(harness.routeNativeElement?.textContent).not.toContain('An example answer.');
+        expect(harness.routeNativeElement?.textContent).toContain('Sample question');
+        const link = harness.routeNativeElement!.querySelector<HTMLAnchorElement>('dialog a.primary-action')!;
+        expect(link.getAttribute('href')).toBe(`${status === 401 ? '/sign-in' : '/account'}?returnTo=${encodeURIComponent(destination)}`);
+        expect(harness.routeNativeElement?.textContent).not.toContain('Pro access');
+      });
+    }
 
     it('clears stale content while loading and ignores a superseded response', async () => {
       const harness = await RouterTestingHarness.create();
@@ -166,7 +181,7 @@ describe.each(routeCases)(
       pending.complete();
       harness.detectChanges();
       expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toContain(
-        'Content unavailable',
+        'We couldn’t find this page',
       );
     });
 
@@ -179,7 +194,7 @@ describe.each(routeCases)(
           component,
         );
         expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toContain(
-          'Content unavailable',
+          'We couldn’t find this page',
         );
         expect(harness.routeNativeElement?.textContent).not.toContain(title);
         await harness.navigateByUrl(`/${contentPath}/sample${suffix}`, component);

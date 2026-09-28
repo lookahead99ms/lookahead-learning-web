@@ -26,13 +26,15 @@
       [style.max-height]="'calc(100dvh - ' + (headerBottom() + 8) + 'px)'"
       aria-label="Page sections"
     >
-      <app-sidebar-toggle
-        side="left"
-        [open]="leftOpen()"
-        controls="page-sidebar-left-content"
-        [label]="leftOpen() ? 'Close left sidebar' : 'Open left sidebar'"
-        (toggled)="toggle('left', $event)"
-      />
+      @if (!homepage()) {
+        <app-sidebar-toggle
+          side="left"
+          [open]="leftOpen()"
+          controls="page-sidebar-left-content"
+          [label]="leftOpen() ? 'Close left sidebar' : 'Open left sidebar'"
+          (toggled)="toggle('left', $event)"
+        />
+      }
       @if (!homepage() && (leftDocked() || leftOpen())) {
         <p class="platform-signature persistent-signature">
           <app-platform-signature [stacked]="true" />

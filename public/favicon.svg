@@ -1,25 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="18 34 232 188">
-  <style>@media(prefers-color-scheme:light){[stroke="#65dfc2"]{stroke:#087d69}[fill="#65dfc2"]{fill:#087d69}[fill="#76c6ff"]{fill:#236b9a}[stroke="#ff9f90"]{stroke:#a64236}[stroke="#ffba87"]{stroke:#a15018}[stroke="#b7a0ff"]{stroke:#7051b5}[stroke="#ffd16d"]{stroke:#86620b}[stroke="#101c30"]{stroke:#f2f7f6}}</style>
-  <g id="icon-details">
-    <rect id="wall" x="96" y="44" width="14" height="168" rx="2" fill="#76c6ff" />
-    <path id="mortar" d="M96 86 H110 M96 128 H110 M96 170 H110 M103 44 V86 M103 128 V170" fill="none" stroke="#101c30" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-    <path id="single-arrow-shaft" d="M61 128 H236" fill="none" stroke="#ffd16d" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round" />
-    <path id="a-crossbar" d="M148 128 H170" fill="none" stroke="#ffba87" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round" />
-    <path id="h-crossbar" d="M199 128 H236" fill="none" stroke="#b7a0ff" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round" />
-    <path id="opening-code" d="M127 101 L103 128 L127 155" fill="none" stroke="#ff9f90" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round" />
-    <path id="ai-a" d="M137 172 L159 84 L181 172" fill="none" stroke="#ffba87" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
-    <path id="ai-i-h-left" d="M199 84 V172" fill="none" stroke="#ffba87" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
-    <path id="h-right" d="M236 84 V172" fill="none" stroke="#b7a0ff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
-    <path id="almond-eye-0" d="M34 85 C48 65 72 65 88 85 C72 103 48 103 34 85 Z" fill="none" stroke="#65dfc2" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round" />
-    <path id="upper-lid-0" d="M34 85 C48 65 72 65 88 85" fill="none" stroke="#65dfc2" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" />
-    <path id="corner-lashes-0" d="M37 81 Q31 79 29 74 M44 75 Q38 72 37 68" fill="none" stroke="#65dfc2" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
-    <circle id="iris-0" cx="66" cy="85" r="7.8" fill="none" stroke="#65dfc2" stroke-width="2.5" />
-    <circle id="pupil-0" cx="66" cy="85" r="3.4" fill="#65dfc2" />
-    <path id="almond-eye-1" d="M34 171 C48 151 72 151 88 171 C72 189 48 189 34 171 Z" fill="none" stroke="#65dfc2" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round" />
-    <path id="upper-lid-1" d="M34 171 C48 151 72 151 88 171" fill="none" stroke="#65dfc2" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" />
-    <path id="corner-lashes-1" d="M37 167 Q31 165 29 160 M44 161 Q38 158 37 154" fill="none" stroke="#65dfc2" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
-    <circle id="iris-1" cx="66" cy="171" r="7.8" fill="none" stroke="#65dfc2" stroke-width="2.5" />
-    <circle id="pupil-1" cx="66" cy="171" r="3.4" fill="#65dfc2" />
-  </g>
-  <path id="only-arrowhead" d="M218 108 L236 128 L218 148" fill="none" stroke="#ff9f90" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round" />
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="15 47 239 177">
+  <style>@media(prefers-color-scheme:light){[stroke="#65dfc2"]{stroke:#087d69}[fill="#65dfc2"]{fill:#087d69}[fill="#76c6ff"]{fill:#236b9a}[stroke="#cda7ff"]{stroke:#7644a5}[fill="#ffba87"]{fill:#a15018}[stroke="#ffd16d"]{stroke:#86620b}[fill="#101c30"]{fill:#f2f7f6}[stroke="#101c30"]{stroke:#f2f7f6}}</style>
+  <path id="wall" d="M106 84 H114 Q117 84 117 87 V204 H218 Q221 204 221 207 V211 Q221 214 218 214 H106 Q103 214 103 211 V87 Q103 84 106 84 Z" fill="#76c6ff" />
+  <path id="mortar" d="M103 116 H117 M103 148 H117 M103 180 H117 M110 85 V116 M110 148 V180" fill="none" stroke="#101c30" stroke-width="2" />
+  <path id="upper-eye" d="M31 111 C45 91 70 91 84 111 C70 130 45 130 31 111 Z" fill="none" stroke="#65dfc2" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
+  <path id="lower-eye" d="M31 177 C45 157 70 157 84 177 C70 196 45 196 31 177 Z" fill="none" stroke="#65dfc2" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
+  <path id="eyelashes" d="M38 103 Q31 101 29 96 M38 169 Q31 167 29 162" fill="none" stroke="#65dfc2" stroke-width="3" stroke-linecap="round" />
+  <circle id="upper-iris" cx="62" cy="111" r="8" fill="none" stroke="#65dfc2" stroke-width="3" />
+  <circle id="upper-pupil" cx="64" cy="111" r="3" fill="#65dfc2" />
+  <circle id="lower-iris" cx="62" cy="177" r="8" fill="none" stroke="#65dfc2" stroke-width="3" />
+  <circle id="lower-pupil" cx="64" cy="177" r="3" fill="#65dfc2" />
+  <path id="single-arrow-shaft" d="M57 145 H79 Q94 145 94 130 V80 Q94 70 104 70 H116 Q126 70 126 80 V109 Q126 119 137 119 H138 Q144 119 144 125 V134 Q144 145 155 145 H247" fill="none" stroke="#ffd16d" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+  <path id="ai-a" fill="#ffba87" fill-rule="evenodd" d="M164 84 H172 L212 190 H190 L179 154 H153 L141 190 H134 Z M168 112 L155 146 H179 Z M174.154 124.111 L181.743 121.581 L182.692 124.427 L180.320 125.218 L196.764 174.549 L199.136 173.759 L200.085 176.605 L192.495 179.135 L191.546 176.289 L193.918 175.498 L177.474 126.166 L175.103 126.957 Z" />
+  <path id="opening-code" d="M134 126 L116 145 L134 164" fill="none" stroke="#cda7ff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
+  <path id="only-arrowhead" d="M228 126 L247 145 L228 164" fill="none" stroke="#cda7ff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
+  <path id="hidden-i-ground" d="M174.154 124.111 L181.743 121.581 L182.692 124.427 L180.320 125.218 L196.764 174.549 L199.136 173.759 L200.085 176.605 L192.495 179.135 L191.546 176.289 L193.918 175.498 L177.474 126.166 L175.103 126.957 Z" fill="#101c30" />
 </svg>
