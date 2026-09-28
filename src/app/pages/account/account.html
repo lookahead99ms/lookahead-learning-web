@@ -13,6 +13,12 @@
     @if (authenticated()) {
       @for (account of [store.account()!]; track account.accountId) {
         <app-account-settings [returnTo]="returnTo()" />
+        <section class="settings-section" aria-labelledby="content-access-heading">
+          <h2 id="content-access-heading">Content access</h2>
+          <p>Access is checked when you open a lesson. Online plan purchases and upgrades aren’t available in this local development version.</p>
+          <p>You can return to your content or explore lessons from Home.</p>
+          <a routerLink="/">Explore from Home</a>
+        </section>
         <app-active-sign-ins />
         <app-account-study-plans />
       }
@@ -192,7 +198,7 @@
     }
     <nav class="account-footer" aria-label="Learning actions">
       <a class="return-action" [class.primary-action]="authenticated()" [routerLink]="returnUrl()">
-        {{ authenticated() ? 'Continue learning' : 'Return to learning' }}
+        {{ lessonReturn() ? 'Return to your lesson' : authenticated() ? 'Continue learning' : 'Return to learning' }}
       </a>
       @if (authenticated()) {
         @if (returnTo() !== '/study-plan') {

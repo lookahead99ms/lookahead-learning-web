@@ -642,19 +642,7 @@
       }
     </article>
   } @else if (error()) {
-    <section class="page-message">
-      <ng-container [ngTemplateOutlet]="discoveryReturn" />
-      <h1>Content unavailable</h1>
-      <p role="status">{{ error() }}</p>
-      @if (accessFailure() === 401) {
-        <a routerLink="/account" [queryParams]="{ returnTo: accountReturnTo }"
-          >Sign in to continue</a
-        >
-      } @else if (accessFailure() === 403) {
-        <a routerLink="/account" [queryParams]="{ returnTo: accountReturnTo }">View your account</a>
-      }
-      <p><a [routerLink]="['/', pathId(), courseId()]">Return to the course</a></p>
-    </section>
+    <app-content-recovery [kind]="recovery()" [preview]="recoveryPreview()" (retry)="retryLoad.next()" />
   } @else {
     <section class="page-message">
       <ng-container [ngTemplateOutlet]="discoveryReturn" /><p>Loading question…</p></section>

@@ -38,10 +38,7 @@
       </article>
     }
   } @else if (error()) {
-    <section class="page-message">
-      <h1>Content unavailable</h1>
-      <p>{{ error() }}</p>
-    </section>
+    <app-content-recovery [kind]="recovery()" [preview]="recoveryPreview()" (retry)="retryLoad.next()" />
   } @else {
     <section class="page-message"><p>Loading content…</p></section>
   }

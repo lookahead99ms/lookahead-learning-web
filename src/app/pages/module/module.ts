@@ -1,7 +1,8 @@
+import { ContentRecovery, RecoveryKind, RecoveryPreview, recoveryKind } from '../../core/content-recovery/content-recovery';
 import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { EMPTY, catchError, forkJoin, of, switchMap } from 'rxjs';
+import { EMPTY, Subject, merge, map, catchError, forkJoin, of, switchMap } from 'rxjs';
 import {
   CatalogItem,
   CourseOutline,
@@ -16,7 +17,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
 
 @Component({
   selector: 'app-module',
-  imports: [PlatformHeader, RouterLink],
+  imports: [ContentRecovery, PlatformHeader, RouterLink],
   templateUrl: './module.html',
   styles: [
     `
@@ -167,16 +168,20 @@ export class Module implements OnInit {
   protected readonly isFirstModuleInTrack = signal(false);
   protected readonly isLastModuleInTrack = signal(false);
   protected readonly error = signal('');
+  protected readonly recovery = signal<RecoveryKind>('temporary');
+  protected readonly recoveryPreview = signal<RecoveryPreview>({});
+  protected readonly retryLoad = new Subject<void>();
   protected readonly reviewStatusLabel = reviewStatusLabel;
 
   ngOnInit(): void {
-    this.route.paramMap
+    merge(this.route.paramMap, this.retryLoad.pipe(map(() => this.route.snapshot.paramMap)))
       .pipe(
         switchMap((params) => {
           this.course.set(null);
           this.module.set(null);
           this.questions.set([]);
           this.error.set('');
+          this.recovery.set('temporary');
           const courseId = params.get('courseId') ?? 'core-java';
           const pathId = this.route.snapshot.data['pathId'] ?? 'learn';
           this.courseId.set(courseId);
@@ -193,7 +198,8 @@ export class Module implements OnInit {
                 questions: result.course.questions.filter((item) => item.moduleId === moduleId),
               });
             }),
-            catchError(() => {
+            catchError((error) => {
+              this.recovery.set(recoveryKind(error));
               this.error.set('The learning content could not be loaded.');
               return EMPTY;
             }),
@@ -214,6 +220,7 @@ export class Module implements OnInit {
     const moduleId = this.route.snapshot.paramMap.get('moduleId');
     const selectedModule = course.modules.find(({ id }) => id === moduleId);
     if (!selectedModule) {
+      this.recovery.set('missing');
       this.error.set('Module not found.');
       return;
     }

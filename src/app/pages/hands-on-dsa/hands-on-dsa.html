@@ -275,10 +275,7 @@
         </nav>
       }
     } @else if (error()) {
-      <section class="empty-state" role="alert">
-        <h2>Content unavailable</h2>
-        <p>{{ error() }}</p>
-      </section>
+      <app-content-recovery [kind]="recovery()" (retry)="retryCatalog()" />
     } @else {
       <section class="empty-state" aria-live="polite"><p>Loading the practice catalog…</p></section>
     }

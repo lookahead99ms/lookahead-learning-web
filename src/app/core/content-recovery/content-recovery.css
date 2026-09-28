@@ -1,0 +1,150 @@
+:host {
+  display: block;
+  width: 100%;
+}
+.recovery {
+  position: relative;
+  max-width: 880px;
+  margin: 32px auto;
+  padding: clamp(20px, 4vw, 48px);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+.recovery h1 {
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  line-height: 1.2;
+  margin: 0 0 20px;
+}
+.recovery p {
+  color: var(--muted);
+  line-height: 1.65;
+}
+.eyebrow {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.summary {
+  max-width: 65ch;
+}
+.locked-preview {
+  filter: blur(6px);
+  opacity: 0.4;
+  user-select: none;
+  pointer-events: none;
+  margin-top: 38px;
+  overflow: hidden;
+}
+.placeholder-title,
+.placeholder-line,
+.placeholder-box {
+  background: var(--muted);
+  border-radius: 3px;
+}
+.placeholder-title {
+  width: 45%;
+  height: 22px;
+  margin-bottom: 26px;
+}
+.placeholder-line {
+  height: 12px;
+  margin: 17px 0;
+}
+.placeholder-line:nth-child(3n) {
+  width: 72%;
+}
+.placeholder-box {
+  height: 95px;
+  margin-top: 28px;
+  opacity: 0.3;
+}
+.locked-note {
+  text-align: center;
+  margin-top: -180px;
+  position: relative;
+  min-height: 180px;
+}
+.locked-note p {
+  color: var(--text);
+  font-weight: 750;
+}
+.recovery-links {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-top: 28px;
+}
+.recovery a {
+  color: var(--accent-link);
+  font-weight: 700;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+.primary-action {
+  background: var(--accent-strong);
+  color: var(--accent-on-primary) !important;
+  border: 1px solid transparent;
+  padding: 12px 20px;
+  font: inherit;
+  font-weight: 750;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+  min-height: 44px;
+  max-width: 100%;
+  text-align: center;
+}
+.recovery :focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 4px;
+}
+dialog {
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 28px;
+  width: min(480px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  box-shadow: 0 24px 80px #0005;
+}
+dialog::backdrop {
+  background: #071b2080;
+}
+dialog h2 {
+  font-size: 1.7rem;
+  line-height: 1.2;
+  margin: 20px 0 12px;
+}
+.close-action {
+  display: block;
+  margin-left: auto;
+  color: var(--accent-link);
+  background: transparent;
+  border: 0;
+  font: inherit;
+  font-weight: 700;
+  min-height: 44px;
+  cursor: pointer;
+}
+@media (forced-colors: active) {
+  .locked-preview {
+    display: none;
+  }
+  .locked-note {
+    margin-top: 0;
+    min-height: 0;
+  }
+}
+@media (max-width: 500px) {
+  .recovery {
+    margin: 16px auto;
+  }
+  .primary-action {
+    width: 100%;
+  }
+}

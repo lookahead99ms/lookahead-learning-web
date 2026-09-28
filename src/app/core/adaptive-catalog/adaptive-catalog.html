@@ -192,13 +192,7 @@
       <section class="catalog-context-panel" [class]="config().path + '-catalog'">
         <h1 class="reader-question-title">{{ config().title }}</h1>
       </section>
-      <section class="catalog-state catalog-state-error" role="alert">
-        <h2>Content unavailable</h2>
-        <p>{{ error() }}</p>
-        <button type="button" class="catalog-recovery-action" (click)="retryCatalog()">
-          Try again
-        </button>
-      </section>
+      <app-content-recovery [kind]="recovery()" (retry)="retryCatalog()" />
     } @else {
       <section class="catalog-context-panel" [class]="config().path + '-catalog'">
         <h1 class="reader-question-title">{{ config().title }}</h1>

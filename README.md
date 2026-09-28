@@ -13,7 +13,7 @@ delivery evidence, credentials, and learner data are kept outside this Git histo
 The shared page shell builds an outline from visible sections and exposes already-loaded
 recall/practice when available. Learn, Grow and Look Ahead catalogs also show the shared learning prompt in the right sidebar before a lesson is opened.
 At desktop widths (1100px and above), the reader reserves 248–360px on each side, adapting to viewport width, for navigation and recall. Both panels open by default and toggle independently without covering the content.
-On smaller screens panels start collapsed; opening one overlay closes the other. Resizing out of a docked layout closes the panels.
+On smaller screens, non-homepage panels start collapsed; opening one overlay closes the other. Resizing out of a docked layout closes those panels. The homepage outline stays visible without a toggle: it occupies the left gutter on desktop and becomes a horizontally scrollable row below the header on narrow screens.
 Both sidebar statements remain visible when their navigation/practice bodies are collapsed; when gutters are too small, they move into normal flow after the page instead of crowding the reader. The docked left navigation and selected row fade toward the content; the docked right sidebar is borderless and transparent. No backdrop, page lock, or focus trap is introduced. Header and breadcrumb navigation
 remain available. The homepage has only a left outline and retains its signature in the
 hero. Coding Problem Workspace is excluded; author pages retain their existing layout.
@@ -25,9 +25,11 @@ Sidebar state is transient and adds no API or saved-session contract.
 The shared `PlatformBrand` component renders the LookAhead symbol and wordmark
 in the platform header and restricted sign-in header. The title uses clean
 LookAhead lettering: Look in the text color and Ahead in the theme accent.
-Inside the standalone symbol, AI shares one color, the code brackets share another,
-and H's right upright and crossbar share a third. Identity tokens in `src/styles.css`
-preserve those groups in both themes. The mobile header scales the icon and title;
+The working header symbol uses two eyes beside a blue L-shaped wall. A thicker
+right stroke of the apricot A contains a subtle I-shaped opening. Violet code
+brackets frame A and distinguish code from the letter in both themes; one arrow
+follows the wall's top edge, curves around it, and reaches the closing bracket. Identity tokens in `src/styles.css`
+preserve these groups. The mobile header scales the icon and title;
 forced-color modes retain the text name. The home link keeps its accessible
 name and keyboard focus. `public/favicon.svg` uses the same standalone symbol.
 
@@ -42,7 +44,10 @@ aspect ratio reserves its layout space, and forced-color mode retains the text.
 The illustrated E uses circuit terminals for Explore and Engineering; the final A
 combines a structural frame with a three-node branch for Algorithms and Architecture.
 The closing statement connects those themes to learning and engineering growth,
-followed by “Understand the invariant. Practice the reasoning.”
+followed by “Understand the obstacle. Find the way.” and “Understand the invariant.
+Practice the reasoning.” The compact logo sits between them on desktop; they
+stack with the logo between them at narrow widths.
+The illustration's continuous arrow now curves around the top of its wall as well.
 The statement uses the header's local Avenir Next font stack for display lines,
 system text for supporting copy, shared theme colors for emphasis, and deliberate
 line groups that can wrap naturally on small screens. No web fonts are downloaded.
@@ -711,3 +716,6 @@ The curriculum-free `public/assets/visual-code-presentation.js` adapter renders
 embedded illustrative code with the shared syntax bundle and an escaped-text
 fallback. Its copy helper supports existing sandboxed frames through an explicit
 button gesture and selection-copy fallback; iframe permissions are unchanged.
+
+
+Content failures share `ContentRecovery`: authentication, access denial, planned content, missing pages and retryable failures have distinct messages. The locked preview contains only public metadata and decorative placeholders; protected bodies are never downloaded for blur. Sign-in and Manage Account preserve a validated return URL. `/author/content-access` is a capability-guarded synthetic review page linked from Author Operations. It does not change entitlements, create subscriptions, send email or enable checkout.

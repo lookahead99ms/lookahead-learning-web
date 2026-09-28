@@ -473,7 +473,8 @@ button:disabled {
 }
 .brand-story .brand-opening,
 .brand-story .brand-learning,
-.brand-story .brand-principle {
+.brand-story .brand-principle,
+.brand-story .brand-obstacle {
   font-family: 'Avenir Next', 'Segoe UI', system-ui, sans-serif;
 }
 .brand-story .brand-opening {
@@ -521,7 +522,18 @@ button:disabled {
   color: var(--path-grow);
   font-weight: 700;
 }
-.brand-story .brand-principle {
+.brand-principles {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+}
+.brand-principles-logo {
+  justify-self: center;
+}
+.brand-story .brand-principle,
+.brand-story .brand-obstacle {
   position: relative;
   padding-top: 24px;
   color: var(--text-strong);
@@ -530,7 +542,8 @@ button:disabled {
   line-height: 1.5;
   letter-spacing: -0.015em;
 }
-.brand-principle::before {
+.brand-principle::before,
+.brand-obstacle::before {
   content: '';
   position: absolute;
   inset-block-start: 0;
@@ -545,6 +558,15 @@ button:disabled {
 .brand-principle em {
   color: var(--identity-ai);
   font-weight: 600;
+}
+.brand-obstacle strong {
+  color: var(--identity-wall);
+  font-weight: 650;
+}
+.brand-obstacle em {
+  color: var(--identity-arrow);
+  font-weight: 600;
+  font-style: italic;
 }
 .landing-footer {
   border-top: 1px solid var(--platform-edge-soft);
@@ -578,6 +600,12 @@ button:disabled {
   }
   .discovery-feature {
     padding: 22px;
+  }
+}
+@media (max-width: 640px) {
+  .brand-principles {
+    grid-template-columns: 1fr;
+    gap: 20px;
   }
 }
 @media (max-width: 400px) {

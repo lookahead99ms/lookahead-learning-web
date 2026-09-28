@@ -1,8 +1,9 @@
+import { ContentRecovery, RecoveryKind, RecoveryPreview, recoveryKind } from '../../core/content-recovery/content-recovery';
 import { NgTemplateOutlet } from '@angular/common';
 import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { EMPTY, catchError, forkJoin, switchMap } from 'rxjs';
+import { EMPTY, Subject, merge, map, catchError, forkJoin, switchMap } from 'rxjs';
 import { ContentService } from '../../content/content.service';
 import {
   CatalogItem,
@@ -25,7 +26,7 @@ import { CourseLearningMap } from '../../core/course-learning-map/course-learnin
 
 @Component({
   selector: 'app-course',
-  imports: [PlatformHeader, RouterLink, CourseLearningMap, NgTemplateOutlet],
+  imports: [ContentRecovery, PlatformHeader, RouterLink, CourseLearningMap, NgTemplateOutlet],
   templateUrl: './course.html',
   styles: [
     `
@@ -268,6 +269,9 @@ export class Course implements OnInit {
     LearnCourseGroup | GrowCourseGroup | LookAheadCourseGroup | null
   >(null);
   protected readonly error = signal('');
+  protected readonly recovery = signal<RecoveryKind>('temporary');
+  protected readonly recoveryPreview = signal<RecoveryPreview>({});
+  protected readonly retryLoad = new Subject<void>();
   protected readonly reviewStatusLabel = reviewStatusLabel;
   protected readonly highlightGrow = highlightGrow;
   protected readonly highlightLearn = highlightLearn;
@@ -281,7 +285,7 @@ export class Course implements OnInit {
   }
 
   ngOnInit(): void {
-    this.route.paramMap
+    merge(this.route.paramMap, this.retryLoad.pipe(map(() => this.route.snapshot.paramMap)))
       .pipe(
         switchMap((params) => {
           this.course.set(null);
@@ -290,6 +294,7 @@ export class Course implements OnInit {
           this.recommendedNextCourse.set(null);
           this.otherDirectionCourses.set([]);
           this.error.set('');
+          this.recovery.set('temporary');
           const courseId = params.get('courseId') ?? 'core-java';
           const pathId = this.route.snapshot.data['pathId'] ?? 'learn';
           this.courseId.set(courseId);
@@ -299,7 +304,8 @@ export class Course implements OnInit {
             catalog: this.contentService.getCatalog(pathId),
           }).pipe(
             // Handle each request independently so later route changes can recover.
-            catchError(() => {
+            catchError((error) => {
+              this.recovery.set(recoveryKind(error));
               this.error.set('The learning content could not be loaded.');
               return EMPTY;
             }),

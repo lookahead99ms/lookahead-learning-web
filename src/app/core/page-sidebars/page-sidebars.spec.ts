@@ -30,15 +30,19 @@ describe('Shared page sidebars', () => {
     return result!;
   }
 
-  it('keeps homepage support in the content and its signature in the hero', () => {
+  it('keeps homepage sections visible without a sidebar toggle', () => {
     main.classList.add('landing-page');
     refresh();
-    button('Open left sidebar').click();
-    flush();
+    expect(root.querySelector('#page-sidebar-left')?.classList.contains('open')).toBe(true);
+    expect(root.querySelector('#page-sidebar-left app-sidebar-toggle')).toBeNull();
+    expect(root.querySelector('#page-sidebar-left-content')?.hasAttribute('hidden')).toBe(false);
     expect(root.querySelector('#page-sidebar-right')).toBeNull();
     expect(root.querySelector('#page-sidebar-left app-platform-signature')).toBeNull();
     expect(root.querySelector('#page-sidebar-left nav')?.textContent).not.toContain('Overview');
     expect(root.querySelector('#page-sidebar-left')?.textContent).not.toContain('On this page');
+    root.querySelector<HTMLAnchorElement>('#page-sidebar-left nav a')?.click();
+    flush();
+    expect(root.querySelector('#page-sidebar-left')?.classList.contains('open')).toBe(true);
   });
 
   beforeEach(() => {

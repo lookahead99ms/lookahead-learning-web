@@ -95,12 +95,47 @@ app-sidebar-toggle {
   padding-top: 0;
   border-top: 0;
 }
-.left.homepage app-sidebar-toggle {
-  position: relative;
-  top: auto;
+.left.homepage .sidebar-content {
+  padding-block-start: 16px;
 }
-.left.homepage.open app-sidebar-toggle {
-  margin-inline-start: 24px;
+@media (max-width: 1099px) {
+  .left.homepage.open {
+    inset-inline: 6px auto;
+    width: calc(100vw - 12px) !important;
+    max-width: none;
+    height: 48px;
+    overflow: hidden;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    border-radius: 0;
+    box-shadow: none;
+    background: var(--surface-page);
+    z-index: 46;
+  }
+  .left.homepage .sidebar-content {
+    padding: 0 6px;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  .left.homepage nav {
+    flex-direction: row;
+    width: max-content;
+    min-width: 100%;
+    padding: 0;
+    border: 0;
+  }
+  .left.homepage nav a {
+    width: auto;
+    flex: 0 0 auto;
+    min-height: 47px;
+    padding-inline: 12px;
+    border-inline-start: 0;
+    border-block-end: 3px solid transparent;
+    white-space: nowrap;
+  }
+  .left.homepage nav a[aria-current='location'] {
+    border-block-end-color: var(--accent-strong);
+  }
 }
 .sidebar-title {
   font-size: 1rem;

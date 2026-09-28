@@ -53,6 +53,7 @@
         <a [href]="documentHref()!" target="_blank" rel="noopener noreferrer"
           >Open full reference <span>(new tab)</span></a
         >
+        @if (!isLocalDevelopment) { <a routerLink="/author/content-access" [queryParams]="{state: 'locked'}">Review content access states</a> }
       </div>
       <section class="document-panel" [attr.aria-label]="'Private ' + pageTitle + ' reference'">
         <iframe

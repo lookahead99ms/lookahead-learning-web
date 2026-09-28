@@ -8,9 +8,9 @@
 }
 .identity-symbol {
   display: block;
-  width: 48px;
-  height: 48px;
-  flex: 0 0 48px;
+  width: 60px;
+  height: 60px;
+  flex: 0 0 60px;
 }
 .identity-wordmark {
   display: block;
@@ -20,6 +20,9 @@
   font-weight: 500;
   letter-spacing: -1.4px;
   line-height: 1.2;
+}
+:host(.symbol-only) .identity-wordmark {
+  display: none;
 }
 .identity-look {
   color: var(--text-strong);
@@ -32,9 +35,9 @@
     gap: 6px;
   }
   .identity-symbol {
-    width: 36px;
-    height: 36px;
-    flex-basis: 36px;
+    width: 42px;
+    height: 42px;
+    flex-basis: 42px;
   }
   .identity-wordmark {
     font-size: 26px;

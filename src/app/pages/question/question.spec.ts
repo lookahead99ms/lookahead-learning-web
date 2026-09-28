@@ -826,7 +826,7 @@ describe('Question canonical DSA navigation', () => {
     expect(content.getCourseOutline).not.toHaveBeenCalled();
     expect(content.getCatalog).not.toHaveBeenCalled();
     expect(harness.routeNativeElement?.textContent).toContain(
-      'The question content could not be loaded.',
+      'We couldn’t load this content',
     );
   });
 
