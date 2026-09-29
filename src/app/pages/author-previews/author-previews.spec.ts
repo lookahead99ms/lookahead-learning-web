@@ -324,8 +324,21 @@ describe('Author previews page', () => {
     ) as HTMLAnchorElement;
     expect(outlineLink.getAttribute('href')).toBe('/author/architecture#platform-panel');
     expect(outlineLink.getAttribute('target')).toBeNull();
-    const outlineAnchors = Array.from(fixture.nativeElement.querySelectorAll('.heading-outline a') as NodeListOf<HTMLAnchorElement>).map(link => new URL(link.href).hash);
-    expect(outlineAnchors).toEqual(['#platform-panel', '#backend-panel', '#journeys-panel', '#model-panel', '#flow-panel', '#candidate-panel', '#oauth-panel', '#trust-panel', '#environments-panel', '#development-panel']);
+    const outlineAnchors = Array.from(
+      fixture.nativeElement.querySelectorAll('.heading-outline a') as NodeListOf<HTMLAnchorElement>,
+    ).map((link) => new URL(link.href).hash);
+    expect(outlineAnchors).toEqual([
+      '#platform-panel',
+      '#backend-panel',
+      '#journeys-panel',
+      '#model-panel',
+      '#flow-panel',
+      '#candidate-panel',
+      '#oauth-panel',
+      '#trust-panel',
+      '#environments-panel',
+      '#development-panel',
+    ]);
     expect(fixture.nativeElement.classList.contains('architecture-page')).toBe(true);
     const fullPageLink = fixture.nativeElement.querySelector(
       '.reference-toolbar a',
@@ -377,6 +390,37 @@ describe('Author previews page', () => {
     sessionExpired.set(true);
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('iframe')).toBeNull();
+  });
+  it('keeps Architecture tabs, parent URL, and shared sidebar in sync', async () => {
+    TestBed.overrideProvider(ActivatedRoute, {
+      useValue: { snapshot: { data: { architectureOnly: true } } },
+    });
+    const previousUrl = location.pathname + location.search + location.hash;
+    history.replaceState(null, '', '/author/architecture#platform-panel');
+    try {
+      const fixture = await loaded();
+      const frame = fixture.nativeElement.querySelector('iframe') as HTMLIFrameElement;
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          origin: 'null',
+          source: frame.contentWindow,
+          data: {
+            type: 'lookahead:author-document:navigate',
+            version: 1,
+            documentId: 'architecture-reference',
+            anchor: 'journeys-panel',
+          },
+        }),
+      );
+      fixture.detectChanges();
+      expect(location.pathname + location.hash).toBe('/author/architecture#journeys-panel');
+      expect(
+        fixture.nativeElement.querySelector('.heading-outline [aria-current="location"]')
+          .textContent,
+      ).toContain('Request journeys');
+    } finally {
+      history.replaceState(null, '', previousUrl);
+    }
   });
   it('preserves canonical query parameters and anchors and hides document actions on expiry', async () => {
     TestBed.overrideProvider(ActivatedRoute, {

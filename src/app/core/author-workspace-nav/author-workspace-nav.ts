@@ -1,4 +1,3 @@
-import { PlatformSignature } from '../platform-signature/platform-signature';
 import { DOCUMENT } from '@angular/common';
 import {
   Component,
@@ -31,7 +30,7 @@ let navigationInstance = 0;
 /** Shared author outline and direct navigation between protected workspace pages. */
 @Component({
   selector: 'app-author-workspace-nav',
-  imports: [PlatformSignature, SidebarToggle],
+  imports: [SidebarToggle],
   host: { '[class.sidebar-collapsed]': '!sidebarOpen()' },
   templateUrl: './author-workspace-nav.html',
   styleUrls: ['./author-workspace-nav.css', './sidebar-outline.css'],

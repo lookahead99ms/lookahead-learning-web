@@ -6,6 +6,7 @@
   background: var(--surface-page);
 }
 .api-page {
+  overflow-anchor: none;
   display: grid;
   grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
   align-items: start;

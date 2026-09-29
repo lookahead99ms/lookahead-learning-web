@@ -1370,30 +1370,6 @@ textarea {
   }
 }
 
-.author-preview-tools {
-  margin-top: 40px;
-}
-.author-preview-tools h2 {
-  font-size: 20px;
-}
-.author-preview-tools p {
-  font-size: 14px;
-}
-.author-preview-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin: 16px 0;
-}
-.author-preview-tools [role='status']:empty {
-  display: none;
-}
-@media (max-width: 480px) {
-  .author-preview-actions button {
-    width: 100%;
-  }
-}
-
 .workspace.creation-workspace {
   grid-template-columns: minmax(0, 1fr);
   gap: 20px;
@@ -1915,4 +1891,33 @@ textarea {
   .authored-review-actions .primary {
     width: 100%;
   }
+}
+
+.plan-name-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+.plan-name-heading h1 {
+  overflow-wrap: anywhere;
+}
+.rename-plan {
+  flex: 0 0 auto;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0.35rem;
+}
+.plan-name-editor {
+  display: grid;
+  gap: 0.5rem;
+  margin-block: 0.75rem;
+  max-width: 40rem;
+}
+.plan-name-editor input {
+  min-width: 0;
+  width: 100%;
+}
+.plan-name-editor button {
+  margin-inline-end: 0.5rem;
 }

@@ -20,7 +20,13 @@ import {
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import { PlatformThemeService } from '../../core/platform-theme';
-import { embeddedAnchor, embeddedAnchorPosition, requestEmbeddedAnchor, scrollToEmbeddedAnchor } from '../../core/author-embedded-anchor';
+import {
+  embeddedAnchor,
+  embeddedAnchorPosition,
+  embeddedChildNavigation,
+  requestEmbeddedAnchor,
+  scrollToEmbeddedAnchor,
+} from '../../core/author-embedded-anchor';
 import { ArchitectureDiagramViewer } from './architecture-diagram-viewer';
 import { AuthorReviewPacket } from './author-review-packet';
 import { ArchitectureDiagramId, connectArchitectureFrame } from './architecture-diagram-protocol';
@@ -49,7 +55,18 @@ export class AuthorPreviewsPage {
   private readonly theme = inject(PlatformThemeService);
   private readonly navigationHash = signal(this.hostDocument.defaultView?.location.hash ?? '');
   private pendingArchitectureAnchor = this.hostDocument.defaultView?.location.hash ?? '';
-  private readonly architectureSections = ['platform-panel', 'backend-panel', 'journeys-panel', 'model-panel', 'flow-panel', 'candidate-panel', 'oauth-panel', 'trust-panel', 'environments-panel', 'development-panel'];
+  private readonly architectureSections = [
+    'platform-panel',
+    'backend-panel',
+    'journeys-panel',
+    'model-panel',
+    'flow-panel',
+    'candidate-panel',
+    'oauth-panel',
+    'trust-panel',
+    'environments-panel',
+    'development-panel',
+  ];
   protected readonly architectureOnly =
     inject(ActivatedRoute).snapshot.data['architectureOnly'] === true;
   protected readonly state = signal<'disabled' | 'loading' | 'ready' | 'error'>('disabled');
@@ -131,18 +148,47 @@ export class AuthorPreviewsPage {
 
   protected onEmbeddedSectionSelected(hash: string): void {
     this.pendingArchitectureAnchor = hash;
-    requestEmbeddedAnchor(this.architectureFrame()?.nativeElement, 'architecture-reference', embeddedAnchor(this.pendingArchitectureAnchor, this.architectureSections));
+    requestEmbeddedAnchor(
+      this.architectureFrame()?.nativeElement,
+      'architecture-reference',
+      embeddedAnchor(this.pendingArchitectureAnchor, this.architectureSections),
+    );
   }
 
   @HostListener('window:message', ['$event'])
   protected onArchitectureHeight(event: MessageEvent): void {
-    if (!this.architectureOnly || !this.architectureDocumentHref() || this.accounts.sessionExpired())
+    if (
+      !this.architectureOnly ||
+      !this.architectureDocumentHref() ||
+      this.accounts.sessionExpired()
+    )
       return;
     const frame = this.architectureFrame()?.nativeElement;
     if (!frame || event.source !== frame.contentWindow || event.origin !== 'null') return;
     const data = event.data;
+    const selected = embeddedChildNavigation(
+      data,
+      'architecture-reference',
+      this.architectureSections,
+    );
+    if (selected) {
+      const hash = `#${selected}`;
+      const hostWindow = this.hostDocument.defaultView;
+      if (hostWindow && hostWindow.location.hash !== hash) {
+        hostWindow.history.replaceState(null, '', `/author/architecture${hash}`);
+        hostWindow.dispatchEvent(new HashChangeEvent('hashchange'));
+      }
+      this.navigationHash.set(hash);
+      this.pendingArchitectureAnchor = '';
+      return;
+    }
     const anchor = embeddedAnchor(this.pendingArchitectureAnchor, this.architectureSections);
-    const position = embeddedAnchorPosition(data, 'architecture-reference', anchor, this.architectureFrameHeight() ?? 100_000);
+    const position = embeddedAnchorPosition(
+      data,
+      'architecture-reference',
+      anchor,
+      this.architectureFrameHeight() ?? 100_000,
+    );
     if (position !== null) {
       const hostWindow = this.hostDocument.defaultView;
       if (hostWindow) scrollToEmbeddedAnchor(frame, position, hostWindow);

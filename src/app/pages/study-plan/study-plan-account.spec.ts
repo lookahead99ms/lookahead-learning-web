@@ -114,6 +114,25 @@ describe('StudyPlanAccount transport and isolation', () => {
     store = TestBed.inject(StudyPlanAccount);
   });
 
+  it('persists a custom creation name and uses the revision-guarded name-only endpoint', async () => {
+    await store.login('demo-a', 'test');
+    nextPlan = { ...result, name: 'Mine', planNumber: 3 };
+    await store.save({ ...local, name: 'Mine', customName: true });
+    expect(JSON.parse(mutations.at(-1)!.options.body as string).name).toBe('Mine');
+    const before = structuredClone(store.active());
+    nextPlan = { ...nextPlan, name: 'Renamed', revision: 2 };
+    await store.rename('Renamed');
+    expect(mutations.at(-1)!.path).toContain('/plans/plan-a/name');
+    expect(JSON.parse(mutations.at(-1)!.options.body as string)).toEqual({
+      expectedRevision: 1,
+      name: 'Renamed',
+    });
+    expect(store.active()?.snapshot).toEqual(before?.snapshot);
+    expect(store.plans()[0].name).toBe('Renamed');
+    expect(store.nextPlanNumber()).toBe(4);
+    expect(savedAccountPlan(nextPlan).name).toBe('Renamed');
+  });
+
   it('creates an account with explicit profile data and CSRF without importing browser plans', async () => {
     const originalTransport = fetcher.getMockImplementation() as (
       path: string,
