@@ -25,7 +25,7 @@ export class AccountStudyPlans {
       const total = card?.totalSessionCount;
       return {
         planId: plan.planId,
-        name: plan.goal.trim() || 'Untitled study plan',
+        name: plan.name?.trim() || plan.goal.trim() || 'Untitled study plan',
         progress:
           nonNegativeInteger(completed) && nonNegativeInteger(total) && completed <= total
             ? { completed, total }

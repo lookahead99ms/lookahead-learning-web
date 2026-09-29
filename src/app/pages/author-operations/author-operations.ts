@@ -25,6 +25,7 @@ import {
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { PlatformThemeService } from '../../core/platform-theme';
 import {
+  apiEndpointAnchor,
   embeddedAnchor,
   embeddedAnchorPosition,
   requestEmbeddedAnchor,
@@ -157,6 +158,11 @@ export class AuthorOperationsPage implements OnDestroy {
     if (!frame || event.source !== frame.contentWindow || event.origin !== 'null') return;
     if (!this.authorized() || this.state() !== 'ready') return;
     const data = event.data;
+    if (data?.type === 'lookahead:author-document:api-navigate' && data.version === 1 && data.documentId === this.documentId) {
+      const endpoint = apiEndpointAnchor(data.anchor);
+      if (endpoint) this.hostDocument.defaultView?.location.assign(`/author/api#${endpoint}`);
+      return;
+    }
     const anchor = embeddedAnchor(
       this.pendingAnchor,
       this.document()?.sections.map((section) => section.anchor) ?? [],

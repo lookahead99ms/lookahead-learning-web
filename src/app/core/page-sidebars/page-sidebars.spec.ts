@@ -91,31 +91,42 @@ describe('Shared page sidebars', () => {
     vi.restoreAllMocks();
   });
 
-  it.each(['course-page', 'search-page', 'account-page', 'account-page manage-account', 'challenge-page'])(
-    'excludes page shell %s and restores sidebars when returning to learning',
-    (className) => {
-      main.className = className;
-      refresh();
-      expect(root.querySelector('.page-sidebar')).toBeNull();
-      expect(root.querySelector('.standalone-signature app-platform-signature')).not.toBeNull();
-      expect(root.querySelector('.standalone-signature app-learning-prompt')).not.toBeNull();
-      expect(root.querySelector('app-sidebar-toggle')).toBeNull();
-      expect(main.hasAttribute('data-sidebar-edge-controls')).toBe(false);
-      expect(main.querySelector('h1')?.textContent).toBe('Sample lesson');
+  it.each([
+    'course-page',
+    'search-page',
+    'account-page',
+    'account-page manage-account',
+    'challenge-page',
+  ])('excludes page shell %s and restores sidebars when returning to learning', (className) => {
+    main.className = className;
+    refresh();
+    expect(root.querySelector('.page-sidebar')).toBeNull();
+    expect(root.querySelector('.standalone-signature app-platform-signature')).not.toBeNull();
+    expect(root.querySelector('.standalone-signature app-learning-prompt')).not.toBeNull();
+    expect(root.querySelector('app-sidebar-toggle')).toBeNull();
+    expect(main.hasAttribute('data-sidebar-edge-controls')).toBe(false);
+    expect(main.querySelector('h1')?.textContent).toBe('Sample lesson');
 
-      main.className = '';
-      refresh();
-      expect(root.querySelector('#page-sidebar-left')).not.toBeNull();
-      expect(root.querySelector('#page-sidebar-right')).not.toBeNull();
-    },
-  );
+    main.className = '';
+    refresh();
+    expect(root.querySelector('#page-sidebar-left')).not.toBeNull();
+    expect(root.querySelector('#page-sidebar-right')).not.toBeNull();
+  });
 
   it('expands catalog groups independently and exposes course destinations', () => {
     TestBed.inject(PageSidebarContext).set(contextOwner, {
       excluded: false,
       groups: [
-        { id: 'languages', title: 'Languages', courses: [{ id: 'python', title: 'Python', url: '/learn/python' }] },
-        { id: 'systems', title: 'Systems', courses: [{ id: 'design', title: 'Design', url: '/look-ahead/design' }] },
+        {
+          id: 'languages',
+          title: 'Languages',
+          courses: [{ id: 'python', title: 'Python', url: '/learn/python' }],
+        },
+        {
+          id: 'systems',
+          title: 'Systems',
+          courses: [{ id: 'design', title: 'Design', url: '/look-ahead/design' }],
+        },
       ],
     });
     flush();
@@ -143,7 +154,14 @@ describe('Shared page sidebars', () => {
     TestBed.inject(PageSidebarContext).set(contextOwner, {
       excluded: false,
       groupLabel: 'Foundation Tracks',
-      groups: [{ id: 'mechanism', sectionId: 'existing', title: 'Mechanism', courses: [{ id: 'example', title: 'Example', url: '/learn/example' }] }],
+      groups: [
+        {
+          id: 'mechanism',
+          sectionId: 'existing',
+          title: 'Mechanism',
+          courses: [{ id: 'example', title: 'Example', url: '/learn/example' }],
+        },
+      ],
     });
     const scroll = vi.spyOn(window, 'scrollBy').mockImplementation(() => {});
     const history = vi.spyOn(window.history, 'pushState').mockImplementation(() => {});
@@ -167,10 +185,21 @@ describe('Shared page sidebars', () => {
   it('highlights the catalog group corresponding to the visible section independently of expansion', () => {
     TestBed.inject(PageSidebarContext).set(contextOwner, {
       excluded: false,
-      groups: [{ id: 'mechanism', sectionId: 'existing', title: 'Mechanism', courses: [{ id: 'example', title: 'Example', url: '/learn/example' }] }],
+      groups: [
+        {
+          id: 'mechanism',
+          sectionId: 'existing',
+          title: 'Mechanism',
+          courses: [{ id: 'example', title: 'Example', url: '/learn/example' }],
+        },
+      ],
     });
-    vi.spyOn(main.querySelector('#existing')!, 'getBoundingClientRect').mockReturnValue({ top: 90 } as DOMRect);
-    vi.spyOn(main.querySelector('#practice')!, 'getBoundingClientRect').mockReturnValue({ top: 500 } as DOMRect);
+    vi.spyOn(main.querySelector('#existing')!, 'getBoundingClientRect').mockReturnValue({
+      top: 90,
+    } as DOMRect);
+    vi.spyOn(main.querySelector('#practice')!, 'getBoundingClientRect').mockReturnValue({
+      top: 500,
+    } as DOMRect);
     flush();
     refresh();
     const group = root.querySelector('.catalog-group-toggle')!;
@@ -180,18 +209,33 @@ describe('Shared page sidebars', () => {
 
   it('highlights the overview at the top and transfers selection to sections and back', () => {
     TestBed.inject(PageSidebarContext).set(contextOwner, {
-      excluded: false, groupLabel: 'Foundation Tracks',
-      groups: [{ id: 'mechanism', sectionId: 'existing', title: 'Mechanism', courses: [{ id: 'example', title: 'Example', url: '/learn/example' }] }],
+      excluded: false,
+      groupLabel: 'Foundation Tracks',
+      groups: [
+        {
+          id: 'mechanism',
+          sectionId: 'existing',
+          title: 'Mechanism',
+          courses: [{ id: 'example', title: 'Example', url: '/learn/example' }],
+        },
+      ],
     });
-    const section = vi.spyOn(main.querySelector('#existing')!, 'getBoundingClientRect').mockReturnValue({ top: 600 } as DOMRect);
-    vi.spyOn(main.querySelector('#practice')!, 'getBoundingClientRect').mockReturnValue({ top: 1000 } as DOMRect);
-    flush(); refresh();
+    const section = vi
+      .spyOn(main.querySelector('#existing')!, 'getBoundingClientRect')
+      .mockReturnValue({ top: 600 } as DOMRect);
+    vi.spyOn(main.querySelector('#practice')!, 'getBoundingClientRect').mockReturnValue({
+      top: 1000,
+    } as DOMRect);
+    flush();
+    refresh();
     expect(root.querySelector('.catalog-overview')?.getAttribute('aria-current')).toBe('location');
     expect(root.querySelector('.catalog-group-toggle')?.hasAttribute('aria-current')).toBe(false);
     section.mockReturnValue({ top: 90 } as DOMRect);
     refresh();
     expect(root.querySelector('.catalog-overview')?.hasAttribute('aria-current')).toBe(false);
-    expect(root.querySelector('.catalog-group-toggle')?.getAttribute('aria-current')).toBe('location');
+    expect(root.querySelector('.catalog-group-toggle')?.getAttribute('aria-current')).toBe(
+      'location',
+    );
     section.mockReturnValue({ top: 600 } as DOMRect);
     refresh();
     expect(root.querySelector('.catalog-overview')?.getAttribute('aria-current')).toBe('location');
@@ -203,8 +247,12 @@ describe('Shared page sidebars', () => {
     main.prepend(toolbar);
     vi.spyOn(toolbar, 'getBoundingClientRect').mockReturnValue({ top: 76, bottom: 160 } as DOMRect);
     vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(800);
-    vi.spyOn(main.querySelector('#existing')!, 'getBoundingClientRect').mockReturnValue({ top: -300 } as DOMRect);
-    const practice = vi.spyOn(main.querySelector('#practice')!, 'getBoundingClientRect').mockReturnValue({ top: 240 } as DOMRect);
+    vi.spyOn(main.querySelector('#existing')!, 'getBoundingClientRect').mockReturnValue({
+      top: -300,
+    } as DOMRect);
+    const practice = vi
+      .spyOn(main.querySelector('#practice')!, 'getBoundingClientRect')
+      .mockReturnValue({ top: 240 } as DOMRect);
     refresh();
     expect(root.querySelector('[aria-current="location"]')?.textContent).toContain('Practice');
     practice.mockReturnValue({ top: 500 } as DOMRect);
@@ -216,7 +264,9 @@ describe('Shared page sidebars', () => {
     vi.spyOn(window, 'scrollY', 'get').mockReturnValue(400);
     vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(800);
     vi.spyOn(document.documentElement, 'scrollHeight', 'get').mockReturnValue(1200);
-    vi.spyOn(main.querySelector('#practice')!, 'getBoundingClientRect').mockReturnValue({ top: 500 } as DOMRect);
+    vi.spyOn(main.querySelector('#practice')!, 'getBoundingClientRect').mockReturnValue({
+      top: 500,
+    } as DOMRect);
     refresh();
     expect(root.querySelector('[aria-current="location"]')?.textContent).toContain('Practice');
   });
@@ -225,8 +275,12 @@ describe('Shared page sidebars', () => {
     const scroll = vi.spyOn(window, 'scrollY', 'get').mockReturnValue(400);
     vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(800);
     vi.spyOn(document.documentElement, 'scrollHeight', 'get').mockReturnValue(1200);
-    vi.spyOn(main.querySelector('#existing')!, 'getBoundingClientRect').mockReturnValue({ top: 90 } as DOMRect);
-    vi.spyOn(main.querySelector('#practice')!, 'getBoundingClientRect').mockReturnValue({ top: 500 } as DOMRect);
+    vi.spyOn(main.querySelector('#existing')!, 'getBoundingClientRect').mockReturnValue({
+      top: 90,
+    } as DOMRect);
+    vi.spyOn(main.querySelector('#practice')!, 'getBoundingClientRect').mockReturnValue({
+      top: 500,
+    } as DOMRect);
     refresh();
     expect(root.querySelector('[aria-current="location"]')?.textContent).toContain('Practice');
     scroll.mockReturnValue(200);
@@ -248,9 +302,14 @@ describe('Shared page sidebars', () => {
     vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(1800);
     vi.mocked(main.getBoundingClientRect).mockReturnValue({ left: 0, right: 1800 } as DOMRect);
     main.innerHTML = '<section class="page-message"><h1>Content unavailable</h1></section>';
-    vi.spyOn(main.querySelector('.page-message')!, 'getBoundingClientRect').mockReturnValue({ left: 320, right: 1480 } as DOMRect);
+    vi.spyOn(main.querySelector('.page-message')!, 'getBoundingClientRect').mockReturnValue({
+      left: 320,
+      right: 1480,
+    } as DOMRect);
     refresh();
-    expect(parseFloat((root.querySelector('.standalone-signature-left') as HTMLElement).style.width)).toBeGreaterThan(192);
+    expect(
+      parseFloat((root.querySelector('.standalone-signature-left') as HTMLElement).style.width),
+    ).toBeGreaterThan(192);
     expect(root.querySelector('.standalone-signature-left.inline-signature')).toBeNull();
   });
 
@@ -259,7 +318,9 @@ describe('Shared page sidebars', () => {
     vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(2400);
     vi.mocked(main.getBoundingClientRect).mockReturnValue({ left: 0, right: 2400 } as DOMRect);
     main.innerHTML = '<section class="search-shell"><h1>Search topics and questions</h1></section>';
-    const shell = vi.spyOn(main.querySelector('.search-shell')!, 'getBoundingClientRect').mockReturnValue({ left: 470, right: 1930 } as DOMRect);
+    const shell = vi
+      .spyOn(main.querySelector('.search-shell')!, 'getBoundingClientRect')
+      .mockReturnValue({ left: 470, right: 1930 } as DOMRect);
     refresh();
     const right = root.querySelector<HTMLElement>('.standalone-signature-right')!;
     expect(parseFloat(right.style.width)).toBe(440);
@@ -336,7 +397,9 @@ describe('Shared page sidebars', () => {
 
   it('keeps both statements visible when navigation and practice are collapsed', () => {
     expect(
-      root.querySelector('.standalone-signature app-platform-signature')?.closest('[hidden], [inert]'),
+      root
+        .querySelector('.standalone-signature app-platform-signature')
+        ?.closest('[hidden], [inert]'),
     ).toBeNull();
     expect(
       root.querySelector('.standalone-signature app-learning-prompt')?.closest('[hidden], [inert]'),
@@ -349,37 +412,92 @@ describe('Shared page sidebars', () => {
 
   it('keeps desktop sidebars outside the outer content surface when gutters are narrower', () => {
     vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(1400);
-    vi.mocked(main.getBoundingClientRect).mockReturnValue({ left: 180, right: 1220, width: 1040, top: 76, bottom: 900, height: 824, x: 180, y: 76, toJSON: () => ({}) });
+    vi.mocked(main.getBoundingClientRect).mockReturnValue({
+      left: 180,
+      right: 1220,
+      width: 1040,
+      top: 76,
+      bottom: 900,
+      height: 824,
+      x: 180,
+      y: 76,
+      toJSON: () => ({}),
+    });
     refresh();
     button('Open left sidebar').click();
     button('Open right sidebar').click();
     flush();
-    expect(root.querySelector<HTMLElement>('#page-sidebar-left')!.classList.contains('docked')).toBe(false);
+    expect(
+      root.querySelector<HTMLElement>('#page-sidebar-left')!.classList.contains('docked'),
+    ).toBe(false);
     expect(root.querySelector<HTMLElement>('#page-sidebar-right')!.style.width).toBe('280px');
     expect(main.style.width).toBe('');
   });
 
-  it.each(['question-reader catalog-reader', 'question-reader'])('keeps %s navigation outside the main container, including its padding', (readerClass) => {
-    vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(1800);
-    vi.mocked(main.getBoundingClientRect).mockReturnValue({ left: 260, right: 1540, width: 1280, top: 76, bottom: 900, height: 824, x: 260, y: 76, toJSON: () => ({}) });
-    const reader = document.createElement('article');
-    reader.className = readerClass;
-    main.append(reader);
-    vi.spyOn(reader, 'getBoundingClientRect').mockReturnValue({ left: 390, right: 1410, width: 1020, top: 76, bottom: 900, height: 824, x: 390, y: 76, toJSON: () => ({}) });
-    refresh();
-    expect(root.querySelector<HTMLElement>('#page-sidebar-left')!.style.width).toBe('254px');
-    expect(root.querySelector<HTMLElement>('#page-sidebar-right')!.style.width).toBe('254px');
-    expect(main.style.width).toBe('');
-    expect(reader.style.width).toBe('');
-  });
+  it.each(['question-reader catalog-reader', 'question-reader'])(
+    'keeps %s navigation outside the main container, including its padding',
+    (readerClass) => {
+      vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(1800);
+      vi.mocked(main.getBoundingClientRect).mockReturnValue({
+        left: 260,
+        right: 1540,
+        width: 1280,
+        top: 76,
+        bottom: 900,
+        height: 824,
+        x: 260,
+        y: 76,
+        toJSON: () => ({}),
+      });
+      const reader = document.createElement('article');
+      reader.className = readerClass;
+      main.append(reader);
+      vi.spyOn(reader, 'getBoundingClientRect').mockReturnValue({
+        left: 390,
+        right: 1410,
+        width: 1020,
+        top: 76,
+        bottom: 900,
+        height: 824,
+        x: 390,
+        y: 76,
+        toJSON: () => ({}),
+      });
+      refresh();
+      expect(root.querySelector<HTMLElement>('#page-sidebar-left')!.style.width).toBe('254px');
+      expect(root.querySelector<HTMLElement>('#page-sidebar-right')!.style.width).toBe('254px');
+      expect(main.style.width).toBe('');
+      expect(reader.style.width).toBe('');
+    },
+  );
 
   it('uses the centered reader gutter when the outer page spans the viewport', () => {
     vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(1800);
-    vi.mocked(main.getBoundingClientRect).mockReturnValue({ left: 0, right: 1800, width: 1800, top: 76, bottom: 900, height: 824, x: 0, y: 76, toJSON: () => ({}) });
+    vi.mocked(main.getBoundingClientRect).mockReturnValue({
+      left: 0,
+      right: 1800,
+      width: 1800,
+      top: 76,
+      bottom: 900,
+      height: 824,
+      x: 0,
+      y: 76,
+      toJSON: () => ({}),
+    });
     const reader = document.createElement('article');
     reader.className = 'question-reader';
     main.append(reader);
-    vi.spyOn(reader, 'getBoundingClientRect').mockReturnValue({ left: 310, right: 1490, width: 1180, top: 76, bottom: 900, height: 824, x: 310, y: 76, toJSON: () => ({}) });
+    vi.spyOn(reader, 'getBoundingClientRect').mockReturnValue({
+      left: 310,
+      right: 1490,
+      width: 1180,
+      top: 76,
+      bottom: 900,
+      height: 824,
+      x: 310,
+      y: 76,
+      toJSON: () => ({}),
+    });
     refresh();
     expect(root.querySelector<HTMLElement>('#page-sidebar-left')!.style.width).toBe('280px');
     expect(root.querySelector<HTMLElement>('#page-sidebar-right')!.style.width).toBe('280px');
@@ -441,7 +559,9 @@ describe('Shared page sidebars', () => {
     const scroll = vi.spyOn(window, 'scrollBy').mockImplementation(() => {});
     button('Open left sidebar').click();
     flush();
-    root.querySelector<HTMLAnchorElement>('#page-sidebar-left-content a[href$="#existing"]')!.click();
+    root
+      .querySelector<HTMLAnchorElement>('#page-sidebar-left-content a[href$="#existing"]')!
+      .click();
     expect(scroll).toHaveBeenCalledWith({ top: 344, behavior: 'instant' });
   });
 
@@ -450,7 +570,9 @@ describe('Shared page sidebars', () => {
     card.innerHTML = '<p>Retrieve</p><h2 id="card-heading">Card heading</h2>';
     main.append(card);
     vi.spyOn(card, 'getBoundingClientRect').mockReturnValue({ top: 500 } as DOMRect);
-    vi.spyOn(card.querySelector('h2')!, 'getBoundingClientRect').mockReturnValue({ top: 560 } as DOMRect);
+    vi.spyOn(card.querySelector('h2')!, 'getBoundingClientRect').mockReturnValue({
+      top: 560,
+    } as DOMRect);
     const scroll = vi.spyOn(window, 'scrollBy').mockImplementation(() => {});
     fixture.destroy();
     fixture = TestBed.createComponent(PageSidebars);
@@ -458,7 +580,9 @@ describe('Shared page sidebars', () => {
     flush();
     button('Open left sidebar').click();
     flush();
-    root.querySelector<HTMLAnchorElement>('#page-sidebar-left-content a[href$="#card-heading"]')!.click();
+    root
+      .querySelector<HTMLAnchorElement>('#page-sidebar-left-content a[href$="#card-heading"]')!
+      .click();
     expect(scroll).toHaveBeenCalledWith({ top: 404, behavior: 'instant' });
     expect(document.activeElement).toBe(card.querySelector('h2'));
   });
@@ -489,7 +613,7 @@ describe('Shared page sidebars', () => {
 
   it('opens docked panels by default and closes them when the viewport loses its gutters', () => {
     vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(1800);
-    vi.mocked(main.getBoundingClientRect).mockReturnValue({left: 300, right: 1500} as DOMRect);
+    vi.mocked(main.getBoundingClientRect).mockReturnValue({ left: 300, right: 1500 } as DOMRect);
     fixture.destroy();
     fixture = TestBed.createComponent(PageSidebars);
     root.append(fixture.nativeElement);
@@ -506,13 +630,15 @@ describe('Shared page sidebars', () => {
     expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
     root.querySelector<HTMLAnchorElement>('#page-sidebar-left-content a')!.focus();
     vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(391);
-    vi.mocked(main.getBoundingClientRect).mockReturnValue({left: 0, right: 391} as DOMRect);
+    vi.mocked(main.getBoundingClientRect).mockReturnValue({ left: 0, right: 391 } as DOMRect);
     refresh();
     expect(button('Open left sidebar').getAttribute('aria-expanded')).toBe('false');
     expect(button('Open right sidebar').getAttribute('aria-expanded')).toBe('false');
     expect(document.activeElement).toBe(button('Open left sidebar'));
     expect(root.querySelector<HTMLElement>('#page-sidebar-left')!.style.width).toBe('44px');
-    expect(root.querySelector('.standalone-signature')?.classList.contains('inline-signature')).toBe(true);
+    expect(
+      root.querySelector('.standalone-signature')?.classList.contains('inline-signature'),
+    ).toBe(true);
   });
 
   it('uses already-loaded recall content, resets answers between questions, and sanitizes HTML', () => {
@@ -565,6 +691,7 @@ describe('Shared page sidebars', () => {
     root.append(fixture.nativeElement);
     flush();
     expect(root.querySelector('#page-sidebar-left')).toBeNull();
+    expect(root.querySelector('.standalone-signature')).toBeNull();
   });
 
   it('shows the styled learning prompt on catalogs before opening a lesson', () => {

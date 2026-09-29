@@ -13,7 +13,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { firstValueFrom, timeout } from 'rxjs';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { PlatformThemeService } from '../../core/platform-theme';
-import { embeddedAnchor, embeddedAnchorPosition, embeddedChildNavigation, requestEmbeddedAnchor, scrollToEmbeddedAnchor } from '../../core/author-embedded-anchor';
+import { apiEndpointAnchor, embeddedAnchor, embeddedAnchorPosition, embeddedChildNavigation, requestEmbeddedAnchor, scrollToEmbeddedAnchor } from '../../core/author-embedded-anchor';
 import {
   AuthorOutlineItem,
   AuthorWorkspaceNav,
@@ -87,6 +87,7 @@ export class AuthorApiPage {
   private readonly theme = inject(PlatformThemeService);
   private readonly base = inject(AUTHOR_PREVIEWS_BASE_URL);
   private readonly navigationHash = signal(this.hostDocument.defaultView?.location.hash ?? '');
+  private endpointSettleTimer: number | undefined;
   private pendingAnchor = this.hostDocument.defaultView?.location.hash ?? '';
   private readonly embeddedSections = [
     'reference-content', 'start-testing', 'credentials', 'flows', 'identity',
@@ -149,7 +150,18 @@ export class AuthorApiPage {
 
   protected onEmbeddedSectionSelected(hash: string): void {
     this.pendingAnchor = hash;
-    requestEmbeddedAnchor(this.documentFrame()?.nativeElement, 'api-reference', embeddedAnchor(this.pendingAnchor, this.embeddedSections));
+    requestEmbeddedAnchor(this.documentFrame()?.nativeElement, 'api-reference', (apiEndpointAnchor(this.pendingAnchor.replace(/^#/, '')) ?? embeddedAnchor(this.pendingAnchor, this.embeddedSections)));
+  }
+
+  @HostListener('window:wheel')
+  @HostListener('window:pointerdown')
+  @HostListener('window:keydown')
+  protected cancelEndpointSettle(): void {
+    this.hostDocument.defaultView?.clearTimeout(this.endpointSettleTimer);
+  }
+
+  ngOnDestroy(): void {
+    this.cancelEndpointSettle();
   }
 
   @HostListener('window:message', ['$event'])
@@ -169,11 +181,14 @@ export class AuthorApiPage {
       this.onEmbeddedSectionSelected(hash);
       return;
     }
-    const anchor = embeddedAnchor(this.pendingAnchor, this.embeddedSections);
+    const anchor = (apiEndpointAnchor(this.pendingAnchor.replace(/^#/, '')) ?? embeddedAnchor(this.pendingAnchor, this.embeddedSections));
     const position = embeddedAnchorPosition(data, 'api-reference', anchor, this.documentHeight() ?? 50_000);
     if (position !== null) {
       const hostWindow = this.hostDocument.defaultView;
-      if (hostWindow) scrollToEmbeddedAnchor(frame, position, hostWindow);
+      if (hostWindow) hostWindow.requestAnimationFrame(() => {
+        // Allow the expanded iframe height to render before scrolling the parent.
+        hostWindow.requestAnimationFrame(() => scrollToEmbeddedAnchor(frame, position, hostWindow));
+      });
       this.pendingAnchor = '';
       return;
     }
@@ -188,8 +203,10 @@ export class AuthorApiPage {
       data.height > 50_000
     )
       return;
-    this.documentHeight.set(Math.ceil(data.height));
-    requestEmbeddedAnchor(frame, 'api-reference', anchor);
+    const height = Math.ceil(data.height);
+    const changed = height !== this.documentHeight();
+    this.documentHeight.set(height);
+    if (changed) requestEmbeddedAnchor(frame, 'api-reference', anchor);
   }
   protected readonly downloads = computed(() => {
     if (!this.documentHref()) return [];

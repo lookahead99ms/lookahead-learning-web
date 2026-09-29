@@ -12,6 +12,10 @@ import {
 
 export interface SavedPlan {
   schemaVersion: 'study-plan-local/v1';
+  name?: string;
+  customName?: boolean;
+  planNumber?: number;
+  createdAt?: string;
   revision: number;
   goal: string;
   rankingVersion: string | null;
@@ -54,6 +58,8 @@ export interface AccountRegistration {
   countryCode: string;
 }
 export interface AccountPlan {
+  name?: string;
+  planNumber?: number;
   planId: string;
   versionId: string;
   revision: number;
@@ -92,6 +98,8 @@ export type PlanActivity =
   | { type: 'setContentCompletion'; canonicalContentId: string; completed: boolean }
   | { type: 'setNote'; canonicalContentId: string; text: string };
 export interface PlanSummary {
+  name?: string;
+  planNumber?: number;
   card?: {
     schemaVersion: 'plan-card/v1';
     metadataStatus: 'available' | 'unavailable';
@@ -118,6 +126,7 @@ export interface PlanSummary {
   updatedAt: string;
 }
 interface CatalogPins {
+  planNamingPolicies?: string[];
   variationPolicies?: string[];
   studyActivityPolicies?: string[];
   catalogVersion: string;
@@ -149,6 +158,7 @@ export class StudyPlanAccount implements AccountSettingsClient {
   private readonly transport = inject(ACCOUNT_FETCH);
   readonly account = signal<StudyAccount | null>(null);
   readonly plans = signal<PlanSummary[]>([]);
+  readonly nextPlanNumber = signal(1);
   readonly planSummariesState = signal<'idle' | 'loading' | 'ready' | 'error'>('idle');
   readonly active = signal<AccountPlan | null>(null);
   readonly busy = signal(false);
@@ -320,6 +330,7 @@ export class StudyPlanAccount implements AccountSettingsClient {
       );
       this.active.set(null);
       this.plans.set([]);
+      this.nextPlanNumber.set(1);
       this.planSummariesState.set('idle');
       this.catalog.set(null);
       this.account.set(this.authOptions()?.oauth ? null : account);
@@ -387,6 +398,7 @@ export class StudyPlanAccount implements AccountSettingsClient {
       );
       this.active.set(null);
       this.plans.set([]);
+      this.nextPlanNumber.set(1);
       this.planSummariesState.set('idle');
       this.catalog.set(null);
       this.account.set(this.authOptions()?.oauth ? null : account);
@@ -447,6 +459,7 @@ export class StudyPlanAccount implements AccountSettingsClient {
     this.account.set(null);
     this.active.set(null);
     this.plans.set([]);
+    this.nextPlanNumber.set(1);
     this.planSummariesState.set('idle');
     this.catalog.set(null);
     this.csrf = null;
@@ -479,9 +492,11 @@ export class StudyPlanAccount implements AccountSettingsClient {
     const plans: PlanSummary[] = [];
     let cursor: string | null = null;
     do {
-      const result: { plans: PlanSummary[]; nextCursor: string | null } = await this.request(
-        '/plans?limit=100' + (cursor ? '&after=' + encodeURIComponent(cursor) : ''),
-      );
+      const result: { plans: PlanSummary[]; nextCursor: string | null; nextPlanNumber?: number } =
+        await this.request(
+          '/plans?limit=100' + (cursor ? '&after=' + encodeURIComponent(cursor) : ''),
+        );
+      if (result.nextPlanNumber) this.nextPlanNumber.set(result.nextPlanNumber);
       plans.push(...result.plans);
       cursor = result.nextCursor;
     } while (cursor);
@@ -520,6 +535,7 @@ export class StudyPlanAccount implements AccountSettingsClient {
     const active = this.active();
     const body = {
       goal: saved.goal,
+      ...(!active && saved.customName && saved.name ? { name: saved.name.trim() } : {}),
       snapshot: saved.snapshot,
       provenance: active && reason !== 'update-plan' ? active.provenance : this.provenance(saved),
     };
@@ -536,6 +552,14 @@ export class StudyPlanAccount implements AccountSettingsClient {
           },
         })
       : this.mutate('/plans', body);
+  }
+  rename(name: string): Promise<AccountPlan | null> {
+    const active = this.active();
+    if (!active) return Promise.resolve(null);
+    return this.mutate(`/plans/${active.planId}/name`, {
+      expectedRevision: active.revision,
+      name: name.trim(),
+    });
   }
   activity(operations: PlanActivity[], studyDay?: number): Promise<AccountPlan | null> {
     const active = this.active();
@@ -591,6 +615,8 @@ export class StudyPlanAccount implements AccountSettingsClient {
         body: JSON.stringify(mutation.body),
       });
       this.active.set(result);
+      if (result.planNumber)
+        this.nextPlanNumber.update((next) => Math.max(next, result.planNumber! + 1));
       this.mutation = null;
       this.pending.set(false);
       // A list refresh failure must not turn an acknowledged save into an uncertain mutation.
@@ -598,6 +624,8 @@ export class StudyPlanAccount implements AccountSettingsClient {
         {
           planId: result.planId,
           goal: result.goal,
+          name: result.name,
+          planNumber: result.planNumber,
           revision: result.revision,
           updatedAt: result.updatedAt,
         },
@@ -679,6 +707,9 @@ export function savedAccountPlan(plan: AccountPlan): SavedPlan {
     schemaVersion: 'study-plan-local/v1',
     revision: plan.revision,
     goal: plan.goal,
+    name: plan.name,
+    planNumber: plan.planNumber,
+    createdAt: plan.createdAt,
     rankingVersion: plan.provenance.rankingVersion,
     catalogVersion: plan.provenance.catalogVersion,
     snapshot: plan.snapshot,

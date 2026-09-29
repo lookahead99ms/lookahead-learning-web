@@ -1,3 +1,4 @@
+import { defaultPlanName, planNameError } from './study-plan-naming';
 import { StudyDesk } from './study-desk';
 import { StudyDeskActivity, StudyDeskEntry, studyDeskActivities } from './study-desk-model';
 import { variationRank } from '../../content/study-plan-variation';
@@ -39,7 +40,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ContentPath, SearchDocument } from '../../content/content.models';
 import { ContentService } from '../../content/content.service';
 import {
@@ -77,7 +78,7 @@ type AuthoredPlanStep = 'select' | 'review';
 
 @Component({
   selector: 'app-study-plan',
-  imports: [PlatformHeader, RouterLink, NgTemplateOutlet, StudyDesk],
+  imports: [PlatformHeader, NgTemplateOutlet, StudyDesk],
   templateUrl: './study-plan.html',
   styleUrl: './study-plan.css',
 })
@@ -223,6 +224,7 @@ export class StudyPlanPage implements OnInit {
       const card = summary.card;
       return {
         ...summary,
+        name: summary.name || summary.goal,
         loaded: card?.metadataStatus === 'available',
         completed: card?.completedSessionCount ?? 0,
         total: card?.totalSessionCount ?? 0,
@@ -469,6 +471,8 @@ export class StudyPlanPage implements OnInit {
   protected async saveDraft(): Promise<void> {
     const draft = this.draft();
     if (!draft || this.editsLocked()) return;
+    this.nameError.set(planNameError(draft.name ?? this.creationPlanName()));
+    if (this.nameError()) return;
     if (draft.readyMade && this.accountMode() && !this.readyMadeAdoptionAvailable()) {
       this.accountStore.error.set(
         'Saving authored schedules is not available yet. Your draft is preserved.',
@@ -526,6 +530,8 @@ export class StudyPlanPage implements OnInit {
       )
         return;
       this.goal.set(value.goal);
+      if (typeof value.customPlanName === 'string' && value.customPlanName.length <= 160)
+        this.customPlanName.set(value.customPlanName);
       this.days.set(value.days);
       this.dailyHours.set(value.dailyHours);
       this.goalType.set(value.goalType);
@@ -995,6 +1001,15 @@ export class StudyPlanPage implements OnInit {
               schemaVersion: 'study-plan-local/v1',
               revision: 0,
               goal: path.title,
+              name:
+                this.customPlanName() ??
+                defaultPlanName(
+                  this.accountStore.nextPlanNumber(),
+                  new Date(),
+                  snapshot.config.dailyHours,
+                  snapshot.config.days,
+                ),
+              customName: this.customPlanName() !== null,
               rankingVersion: template.provenance.rankingVersion,
               catalogVersion: template.provenance.catalogVersion,
               snapshot,
@@ -1046,6 +1061,76 @@ export class StudyPlanPage implements OnInit {
   protected readonly dailyHours = signal(1);
   protected readonly goalType = signal<'learning' | 'interview'>('interview');
   protected readonly familiarity = signal<Record<string, 'familiar' | 'refresh' | 'new'>>({});
+  protected readonly customPlanName = signal<string | null>(null);
+  protected readonly nameError = signal('');
+  protected readonly renaming = signal(false);
+  protected readonly renameValue = signal('');
+  @ViewChild('renameInput') private renameInput?: ElementRef<HTMLInputElement>;
+  @ViewChild('renameButton') private renameButton?: ElementRef<HTMLButtonElement>;
+  protected readonly displayedPlanName = computed(
+    () => this.saved()?.name || this.saved()?.goal || 'Study Plan',
+  );
+  protected readonly creationPlanName = computed(
+    () =>
+      this.customPlanName() ??
+      defaultPlanName(
+        this.accountMode() ? this.accountStore.nextPlanNumber() : (this.saved()?.planNumber ?? 1),
+        new Date(),
+        this.dailyHours(),
+        this.days(),
+      ),
+  );
+  protected setPlanName(value: string): void {
+    this.customPlanName.set(value);
+    this.nameError.set(planNameError(value));
+    this.persistWizardDraft();
+  }
+  protected setDraftName(value: string): void {
+    this.setPlanName(value);
+    this.draft.update((draft) => (draft ? { ...draft, name: value, customName: true } : draft));
+  }
+  protected beginRename(): void {
+    if (this.editsLocked()) return;
+    this.renameValue.set(this.displayedPlanName());
+    this.nameError.set('');
+    this.renaming.set(true);
+    setTimeout(() => {
+      if (!this.destroyRef.destroyed && this.renaming()) this.renameInput?.nativeElement.focus();
+    });
+  }
+  protected cancelRename(): void {
+    if (this.editsLocked()) return;
+    this.renaming.set(false);
+    this.nameError.set('');
+    setTimeout(() => {
+      if (!this.destroyRef.destroyed && !this.renaming()) this.renameButton?.nativeElement.focus();
+    });
+  }
+  protected async saveName(): Promise<void> {
+    if (this.editsLocked() || !this.saved()) return;
+    const error = planNameError(this.renameValue());
+    this.nameError.set(error);
+    if (error) return;
+    const name = this.renameValue().trim();
+    if (this.accountMode()) {
+      const result = await this.accountStore.rename(name);
+      if (!result) return;
+      this.acceptAccountPlan(result);
+    } else {
+      const previous = this.saved()!;
+      const updated = { ...previous, name, revision: previous.revision + 1 };
+      try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch {
+        this.nameError.set('The name could not be saved in this browser. Try again.');
+        return;
+      }
+      this.saved.set(updated);
+    }
+    this.cancelRename();
+    this.status.set('Plan name saved.');
+  }
+
   protected readonly goal = signal('Build reliable engineering foundations');
   protected readonly selectedTopicIds = signal(new Set<string>());
   protected readonly wizardSteps: ReadonlyArray<{
@@ -1123,6 +1208,7 @@ export class StudyPlanPage implements OnInit {
       this.accountReady() &&
       !this.accountStore.error() &&
       (!this.accountMode() || !!this.accountStore.catalog()) &&
+      !planNameError(this.creationPlanName()) &&
       this.hasAccessibleSelection() &&
       !this.loadingError() &&
       (!this.needsDsaRanking() || this.rankingStatus() === 'ready'),
@@ -1522,6 +1608,7 @@ export class StudyPlanPage implements OnInit {
         DRAFT_INTENT_KEY,
         JSON.stringify({
           goal: this.goal(),
+          customPlanName: this.customPlanName(),
           days: this.days(),
           dailyHours: this.dailyHours(),
           goalType: this.goalType(),
@@ -1807,6 +1894,11 @@ export class StudyPlanPage implements OnInit {
       schemaVersion: 'study-plan-local/v1',
       revision,
       goal: this.goal().trim() || 'My engineering practice',
+      name: previous?.name ?? this.creationPlanName(),
+      customName: this.customPlanName() !== null,
+      planNumber:
+        previous?.planNumber ?? (this.accountMode() ? this.accountStore.nextPlanNumber() : 1),
+      createdAt: previous?.createdAt ?? new Date().toISOString(),
       rankingVersion: this.rankingVersion,
       catalogVersion: this.accountMode()
         ? (this.accountStore.catalog()?.catalogVersion ?? null)
@@ -2123,6 +2215,9 @@ export class StudyPlanPage implements OnInit {
   protected newAccountPlan(): void {
     if (this.editsLocked()) return;
     this.dashboardVisible.set(false);
+    this.customPlanName.set(null);
+    this.nameError.set('');
+    this.renaming.set(false);
     if (this.saved()) {
       const setup = this.creationSetup;
       this.goal.set(setup?.goal ?? 'Build reliable engineering foundations');
@@ -2330,6 +2425,7 @@ export class StudyPlanPage implements OnInit {
       this.days.set(value.snapshot.config.days);
       this.dailyHours.set(value.snapshot.config.dailyHours);
       this.goal.set(value.goal);
+
       this.selectedTopicIds.set(new Set(value.snapshot.config.topicIds));
       this.status.set('Resumed your saved plan from this browser.');
     } catch {

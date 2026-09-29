@@ -11,6 +11,7 @@ describe('AuthorWorkspaceNav', () => {
       'Local author workspace',
     );
     expect(fixture.nativeElement.querySelector('h1').textContent).toBe('Operations');
+    expect(fixture.nativeElement.querySelector('app-platform-signature')).toBeNull();
   });
 
   it('projects page-specific content below the heading', () => {

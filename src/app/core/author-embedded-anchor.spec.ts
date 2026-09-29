@@ -1,4 +1,4 @@
-import { embeddedAnchor, embeddedAnchorPosition, embeddedChildNavigation, requestEmbeddedAnchor } from './author-embedded-anchor';
+import { apiEndpointAnchor, embeddedAnchor, embeddedAnchorPosition, embeddedChildNavigation, requestEmbeddedAnchor } from './author-embedded-anchor';
 
 describe('embedded Author section navigation', () => {
   it('accepts only published section anchors', () => {
@@ -29,5 +29,12 @@ describe('embedded Author section navigation', () => {
     expect(embeddedChildNavigation(message, 'api-reference', ['start-testing'])).toBe('start-testing');
     expect(embeddedChildNavigation({ ...message, anchor: 'unknown' }, 'api-reference', ['start-testing'])).toBeNull();
     expect(embeddedChildNavigation({ ...message, documentId: 'operations-reference' }, 'api-reference', ['start-testing'])).toBeNull();
+  });
+});
+
+describe('API endpoint anchors', () => {
+  it('accepts generated operation anchors and rejects destinations or unknown services', () => {
+    expect(apiEndpointAnchor('endpoint-identity-get-oauth2-jwks')).toBe('endpoint-identity-get-oauth2-jwks');
+    for (const value of ['https://example.com', 'endpoint-other-get-login', '../login', null, 'endpoint-identity-get-' + 'a'.repeat(200)]) expect(apiEndpointAnchor(value)).toBeNull();
   });
 });

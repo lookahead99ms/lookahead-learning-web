@@ -68,7 +68,10 @@ describe('PlatformHeader account disclosure', () => {
     expect(fixture.nativeElement.querySelector('.sign-in-button')).toBeNull();
     expect(fixture.nativeElement.querySelector('.avatar-trigger-btn')).toBeNull();
     TestBed.inject(StudyPlanAccount).account.set({
-      accountId: 'test', username: 'test@example.test', displayName: 'Test Learner', topicGrants: [],
+      accountId: 'test',
+      username: 'test@example.test',
+      displayName: 'Test Learner',
+      topicGrants: [],
     });
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.sign-in-button')).toBeNull();
@@ -251,11 +254,13 @@ describe('PlatformHeader account disclosure', () => {
     fixture.nativeElement.querySelector('.avatar-trigger-btn').click();
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.author-account-links')).toBeNull();
+    expect(fixture.nativeElement.querySelector('#account-menu a[href="/author"]')).toBeNull();
     accounts.account.update((account) => ({ ...account!, authorPreview: true }));
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.author-account-links')?.textContent).toContain(
       'Author Previews',
     );
+    expect(fixture.nativeElement.querySelector('#account-menu a[href="/author"]')).not.toBeNull();
   });
 
   it('uses the display name without granting author access and keeps learner actions ordered', () => {
@@ -305,20 +310,13 @@ describe('PlatformHeader account disclosure', () => {
     );
     const authorLinks = menu.querySelector('.author-account-links')!;
     expect(
-      [
-        ...authorLinks.querySelectorAll(
-          ':scope > a, :scope > .author-documentation-group > button',
-        ),
-      ].map((item) => item.textContent?.trim()),
-    ).toEqual(['Author Previews', 'Delivery Plan', 'Documentation']);
-    expect(menu.querySelector('.author-account-links a[href="/author"]')).toBeNull();
+      [...authorLinks.querySelectorAll(':scope > a')].map((item) => item.textContent?.trim()),
+    ).toEqual(['Author views', 'Author Previews', 'Delivery Plan']);
+    expect(menu.querySelector('.author-account-links a[href="/author"]')).not.toBeNull();
     expect(menu.querySelector('.author-account-links a[href="/delivery-plan"]')).not.toBeNull();
-    const documentation = menu.querySelector('#account-documentation-toggle') as HTMLButtonElement;
-    expect(documentation.getAttribute('aria-expanded')).toBe('false');
-    expect(menu.querySelector('#account-documentation-links')?.hasAttribute('hidden')).toBe(true);
-    documentation.click();
-    fixture.detectChanges();
-    expect(documentation.getAttribute('aria-expanded')).toBe('true');
+    expect(menu.querySelector('.author-documentation-label')?.textContent).toContain(
+      'Documentation',
+    );
     expect(
       [...menu.querySelectorAll('#account-documentation-links a')].map((link) =>
         link.getAttribute('href'),
@@ -334,7 +332,7 @@ describe('PlatformHeader account disclosure', () => {
     expect(menu.querySelectorAll('a[href*="localhost"], a[href*="127.0.0.1"]')).toHaveLength(0);
   });
 
-  it('opens Documentation on document routes and gives inner Escape priority', async () => {
+  it('shows Documentation directly and marks the current document route', async () => {
     vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue('/author/operations');
     const store = TestBed.inject(StudyPlanAccount);
     store.account.set({
@@ -351,24 +349,11 @@ describe('PlatformHeader account disclosure', () => {
     ) as HTMLButtonElement;
     accountTrigger.click();
     fixture.detectChanges();
-    const documentation = fixture.nativeElement.querySelector(
-      '#account-documentation-toggle',
-    ) as HTMLButtonElement;
-    expect(documentation.getAttribute('aria-expanded')).toBe('true');
-    expect(documentation.textContent).toContain('Current section');
     const current = fixture.nativeElement.querySelector(
       '#account-documentation-links a[aria-current="page"]',
     ) as HTMLAnchorElement;
     expect(current.getAttribute('href')).toBe('/author/operations');
-    current.focus();
     current.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
-    );
-    fixture.detectChanges();
-    expect(documentation.getAttribute('aria-expanded')).toBe('false');
-    expect(fixture.nativeElement.querySelector('#account-menu')).not.toBeNull();
-    expect(document.activeElement).toBe(documentation);
-    documentation.dispatchEvent(
       new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
     );
     fixture.detectChanges();

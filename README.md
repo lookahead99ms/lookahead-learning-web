@@ -719,3 +719,14 @@ button gesture and selection-copy fallback; iframe permissions are unchanged.
 
 
 Content failures share `ContentRecovery`: authentication, access denial, planned content, missing pages and retryable failures have distinct messages. The locked preview contains only public metadata and decorative placeholders; protected bodies are never downloaded for blur. Sign-in and Manage Account preserve a validated return URL. `/author/content-access` is a capability-guarded synthetic review page linked from Author Operations. It does not change entitlements, create subscriptions, send email or enable checkout.
+
+### Study-plan names
+
+Creation offers an editable name independent of the learning goal. Suggested names
+use `Study plan #N_DDMMYYYY_HXDays` (UTC creation date, configured daily hours,
+total study days); typing a custom name replaces the whole suggestion and later
+time changes preserve it. The pencil beside a saved plan name opens Save/Cancel;
+Enter saves and Escape cancels. Names must be nonblank single-line text up to160
+characters. Browser-only plans retain names in local storage. Connected account
+plans require the Domain API `plan-name-v1` contract and migration V3; the server
+allocates a per-account number and persists names across list/detail reads.
