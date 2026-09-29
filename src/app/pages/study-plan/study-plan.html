@@ -1,14 +1,50 @@
 <app-platform-header />
 <main id="main-content" class="study-plan-page" [class.progress-page]="progressVisible()">
   <section class="intro">
-    @if (accountStore.account()?.authorPreview) {
-      <p><a routerLink="/author">Author views</a></p>
-    }
     <p class="eyebrow">Adaptive Compass / Study plans</p>
     @if (progressVisible()) {
       <div class="progress-title-row">
         <div>
-          <h1 #pageHeading tabindex="-1">Study Plan</h1>
+          <div class="plan-name-heading">
+            <h1 #pageHeading tabindex="-1">{{ displayedPlanName() }}</h1>
+            <button
+              #renameButton
+              type="button"
+              class="rename-plan"
+              aria-label="Rename plan"
+              title="Rename plan"
+              [disabled]="editsLocked()"
+              (click)="beginRename()"
+            >
+              <span aria-hidden="true">✏️</span>
+            </button>
+          </div>
+          @if (renaming()) {
+            <form
+              class="plan-name-editor"
+              (submit)="$event.preventDefault(); saveName()"
+              (keydown.escape)="cancelRename()"
+            >
+              <label for="rename-plan-input">Plan name</label>
+              <input
+                #renameInput
+                id="rename-plan-input"
+                maxlength="160"
+                [value]="renameValue()"
+                (input)="renameValue.set($any($event.target).value)"
+                [disabled]="editsLocked()"
+                [attr.aria-invalid]="nameError() ? true : null"
+                aria-describedby="rename-name-error"
+              />
+              <div>
+                <button type="submit" [disabled]="editsLocked()">Save name</button
+                ><button type="button" [disabled]="editsLocked()" (click)="cancelRename()">
+                  Cancel
+                </button>
+              </div>
+              <p id="rename-name-error" role="alert">{{ nameError() }}</p>
+            </form>
+          }
           <p class="plan-tagline">{{ saved()?.goal }}</p>
         </div>
         @if (accountMode() && !accountStore.sessionExpired()) {
@@ -144,7 +180,7 @@
           <article class="plan-card panel navigation-card">
             <div class="plan-card-heading">
               <p class="eyebrow">Saved study plan</p>
-              <h3>{{ card.goal }}</h3>
+              <h3>{{ card.name }}</h3>
             </div>
             @if (card.loaded) {
               <section class="plan-card-focus" aria-label="Plan focus areas">
@@ -185,7 +221,7 @@
               <progress
                 [value]="card.completed"
                 [max]="card.total || 1"
-                [attr.aria-label]="card.goal + ' completed sessions'"
+                [attr.aria-label]="card.name + ' completed sessions'"
               ></progress>
               <div class="plan-card-next">
                 <span class="eyebrow">Up next</span>
@@ -201,7 +237,7 @@
               class="primary"
               [disabled]="editsLocked()"
               data-card-primary
-              [attr.aria-label]="'Continue plan: ' + card.goal"
+              [attr.aria-label]="'Continue plan: ' + card.name"
               (click)="continuePlan(card.planId)"
             >
               Continue plan
@@ -550,6 +586,23 @@
                 <p>Start with the outcome and time you can realistically protect.</p>
                 <div class="setup-fields">
                   <label class="field setup-goal">
+                    <span>Plan name</span>
+                    <input
+                      maxlength="160"
+                      aria-label="Plan name"
+                      [value]="creationPlanName()"
+                      (input)="setPlanName($any($event.target).value)"
+                      aria-describedby="creation-name-help"
+                    />
+                    <small id="creation-name-help"
+                      >Replace the whole name if you like. The suggested number is confirmed when
+                      you save.</small
+                    >
+                  </label>
+                  @if (nameError()) {
+                    <p role="alert">{{ nameError() }}</p>
+                  }
+                  <label class="field setup-goal">
                     What are you working toward?
                     <input
                       type="text"
@@ -821,38 +874,6 @@
       }
     </section>
   </div>
-  @if (accountMode() && accountStore.account()?.authorPreview && !accountStore.sessionExpired()) {
-    <section class="author-preview-tools panel" aria-labelledby="author-preview-heading">
-      <h2 id="author-preview-heading">Author preview tools</h2>
-      <p>Open your local author-owned examples. Opening a view does not save or change a plan.</p>
-      <div class="author-preview-actions">
-        <button type="button" [disabled]="editsLocked()" (click)="openAuthorScenario('create')">
-          Create plan
-        </button>
-        <button type="button" disabled aria-describedby="delete-preview-note">
-          Delete plan (not available yet)
-        </button>
-        <button type="button" [disabled]="editsLocked()" (click)="openAuthorScenario('saved')">
-          View saved progress
-        </button>
-        <button type="button" [disabled]="editsLocked()" (click)="openAuthorScenario('missed')">
-          View missed sessions
-        </button>
-        <button type="button" [disabled]="editsLocked()" (click)="openAuthorScenario('adjusted')">
-          View adjusted plan
-        </button>
-      </div>
-      @if (suggestedAdjustment() && !adjustmentNotice()) {
-        <p>
-          This suggestion was previously retained. You can inspect it without clearing your
-          decision.
-        </p>
-        <button type="button" (click)="reviewAdjustment()">Review retained suggestion</button>
-      }
-      <p id="delete-preview-note">Deletion is not implemented here. No plan will be deleted.</p>
-      <p role="status">{{ authorScenarioStatus() }}</p>
-    </section>
-  }
 </main>
 
 <dialog
@@ -867,6 +888,20 @@
     <header class="draft-heading">
       <p class="eyebrow">Temporary draft</p>
       <h2 id="draft-heading" tabindex="-1" autofocus>Review your plan</h2>
+      @if (!saved()) {
+        <label class="field"
+          >Plan name<input
+            maxlength="160"
+            [value]="review.name ?? creationPlanName()"
+            (input)="setDraftName($any($event.target).value)"
+            [disabled]="editsLocked()"
+        /></label>
+        @if (nameError()) {
+          <p role="alert">{{ nameError() }}</p>
+        }
+      } @else {
+        <p>{{ displayedPlanName() }}</p>
+      }
       <p>
         {{ review.goal }} · {{ review.snapshot.config.days }} days ·
         {{ review.snapshot.config.dailyHours }}

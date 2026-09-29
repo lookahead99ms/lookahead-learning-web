@@ -27,7 +27,6 @@ import {
 import {
   authorDocumentationLinks,
   authorWorkspaceLinks,
-  isAuthorDocumentationRoute,
 } from '../author-workspace-nav/author-workspace-links';
 
 export function accountTriggerLabel(displayName: string | null | undefined): string {
@@ -88,7 +87,14 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
 
 @Component({
   selector: 'app-platform-header',
-  imports: [PlatformBrand, HeaderNavigation, TopicShortcuts, FormsModule, RouterLink, RouterLinkActive],
+  imports: [
+    PlatformBrand,
+    HeaderNavigation,
+    TopicShortcuts,
+    FormsModule,
+    RouterLink,
+    RouterLinkActive,
+  ],
   templateUrl: './platform-header.html',
   styles: [
     `
@@ -452,22 +458,13 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
       .dropdown-item-unavailable small {
         font-size: 0.72rem;
       }
-      .author-documentation-toggle {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        width: 100%;
-        border: 0;
-        background: transparent;
-        text-align: start;
-        font: inherit;
-        cursor: pointer;
-      }
-      .author-documentation-toggle small {
+      .author-documentation-label {
+        margin: 8px 20px 2px;
         color: var(--text-subtle);
         font-size: 0.7rem;
-        font-weight: 650;
+        font-weight: 750;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
       }
       .author-documentation-links {
         display: flex;
@@ -476,22 +473,8 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         padding: 0 0 0 12px;
         list-style: none;
       }
-      .author-documentation-links[hidden] {
-        display: none;
-      }
       .author-documentation-links .dropdown-item-link {
         display: block;
-      }
-      .author-documentation-chevron {
-        width: 8px;
-        height: 8px;
-        flex: 0 0 auto;
-        border-inline-end: 2px solid currentColor;
-        border-bottom: 2px solid currentColor;
-        transform: rotate(45deg);
-      }
-      .author-documentation-toggle[aria-expanded='true'] .author-documentation-chevron {
-        transform: rotate(225deg);
       }
       .user-display-name {
         overflow-wrap: anywhere;
@@ -807,25 +790,10 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
     this.profileMenuOpen.set(false);
   }
   protected readonly profileMenuOpen = signal(false);
-  protected readonly accountDocumentationOpen = signal(false);
-  protected readonly onDocumentationPage = () => isAuthorDocumentationRoute(this.router.url);
   protected isCurrentAuthorDocument(href: string): boolean {
     return this.router.url.split(/[?#]/, 1)[0] === href;
   }
 
-  protected toggleAccountDocumentation(): void {
-    this.accountDocumentationOpen.update((open) => !open);
-  }
-
-  protected closeAccountDocumentationOnEscape(event: Event): void {
-    if (!this.accountDocumentationOpen()) return;
-    event.preventDefault();
-    event.stopPropagation();
-    this.accountDocumentationOpen.set(false);
-    this.elementRef.nativeElement
-      .querySelector<HTMLButtonElement>('#account-documentation-toggle')
-      ?.focus();
-  }
   protected readonly signingOut = signal(false);
   protected readonly signOutError = signal('');
 
@@ -1127,7 +1095,6 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
     this.navigation?.close();
     this.closeSearchPalette(false);
     const willOpen = !this.profileMenuOpen();
-    if (willOpen) this.accountDocumentationOpen.set(this.onDocumentationPage());
     this.profileMenuOpen.set(willOpen);
   }
 

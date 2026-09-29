@@ -74,7 +74,11 @@ describe('Operations author view', () => {
     fixture.detectChanges();
     expect(frame.getAttribute('src')).toBe(reference.href + '?theme=dark&layout=shared');
     expect(fixture.nativeElement.textContent).toContain('not live service health');
-    expect(fixture.nativeElement.textContent).toContain('Reference version: operations/test.1');
+    expect(fixture.nativeElement.textContent).toContain('Published author reference');
+    expect(fixture.nativeElement.textContent).toContain('Version operations/test.1');
+    expect(
+      fixture.nativeElement.querySelector('.reference-actions').getAttribute('aria-label'),
+    ).toBe('Operations reference actions');
     expect(fixture.nativeElement.querySelector('.reference-toolbar a').textContent).toContain(
       'Open full reference (new tab)',
     );

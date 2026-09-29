@@ -92,6 +92,43 @@ describe('StudyPlanPage', () => {
     }).compileComponents();
   });
 
+  it('updates the suggested name until edited and preserves the entire custom name', async () => {
+    const harness = await RouterTestingHarness.create();
+    const page: any = await harness.navigateByUrl(
+      '/study-plan?days=7&hours=1&approach=learning',
+      StudyPlanPage,
+    );
+    expect(page.creationPlanName()).toMatch(/^Study plan #1_\d{8}_1X7$/);
+    page.dailyHours.set(5);
+    page.days.set(90);
+    expect(page.creationPlanName()).toMatch(/_5X90$/);
+    page.setPlanName('My own plan');
+    page.dailyHours.set(3);
+    page.days.set(7);
+    expect(page.creationPlanName()).toBe('My own plan');
+    await page.generatePlan();
+    expect(page.draft().name).toBe('My own plan');
+    await page.saveDraft();
+    page.beginRename();
+    page.renameValue.set('   ');
+    await page.saveName();
+    expect(page.saved().name).toBe('My own plan');
+    expect(page.nameError()).toBe('Enter a plan name.');
+    const before = structuredClone(page.saved());
+    page.renameValue.set('Completely different');
+    await page.saveName();
+    expect(page.saved().name).toBe('Completely different');
+    expect(page.saved().snapshot).toEqual(before.snapshot);
+    expect(page.saved().completedIds).toEqual(before.completedIds);
+    expect(page.saved().goal).toBe(before.goal);
+    page.beginRename();
+    page.renameValue.set('Discard me');
+    page.cancelRename();
+    expect(page.saved().name).toBe('Completely different');
+    harness.detectChanges();
+    expect(harness.routeNativeElement!.querySelector('[aria-label="Rename plan"]')).not.toBeNull();
+  });
+
   it('keeps Study Desk browsing independent from saved progress and records the activity day', async () => {
     TestBed.overrideProvider(ContentService, {
       useValue: {
@@ -427,7 +464,7 @@ describe('StudyPlanPage', () => {
     harness.detectChanges();
     const root = harness.routeNativeElement!;
     const actions = root.querySelector('.progress-heading-actions')!;
-    expect(root.querySelector('h1')?.textContent).toContain('Study Plan');
+    expect(root.querySelector('h1')?.textContent).toContain(page.saved().name);
     expect(root.querySelector('.plan-tagline')?.textContent).toContain(
       'Build reliable engineering foundations',
     );
@@ -534,10 +571,7 @@ describe('StudyPlanPage', () => {
     expect(JSON.stringify(samples)).toBe(snapshots);
     expect(save).not.toHaveBeenCalled();
     harness.detectChanges();
-    expect(
-      harness.routeNativeElement!.querySelector('.author-preview-tools button[disabled]')
-        ?.textContent,
-    ).toContain('Delete plan');
+    expect(harness.routeNativeElement!.querySelector('.author-preview-tools')).toBeNull();
     samples[1].recovery.strategy = 'explicit-extension';
     await page.openAuthorScenario('adjusted');
     expect(page.saved().goal).toBe('Author sample · Saved plan');
@@ -1480,19 +1514,25 @@ describe('StudyPlanPage', () => {
   });
 
   it('refreshes the curriculum snapshot when retrying the creation choices', async () => {
-    const getSearchIndex = vi.fn().mockReturnValueOnce(throwError(() => new Error('stale index')))
+    const getSearchIndex = vi
+      .fn()
+      .mockReturnValueOnce(throwError(() => new Error('stale index')))
       .mockReturnValue(of(documents));
     TestBed.overrideProvider(ContentService, { useValue: { ...service, getSearchIndex } });
     await TestBed.inject(StudyPlanAccount).initialize();
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/study-plan?create=1&creation=choice', StudyPlanPage);
     harness.detectChanges();
-    const retry = [...harness.routeNativeElement!.querySelectorAll('button')].find((item) => item.textContent?.trim() === 'Try again')!;
+    const retry = [...harness.routeNativeElement!.querySelectorAll('button')].find(
+      (item) => item.textContent?.trim() === 'Try again',
+    )!;
     retry.click();
     harness.detectChanges();
     expect(getSearchIndex).toHaveBeenLastCalledWith(undefined, true);
     expect(harness.routeNativeElement!.textContent).toContain('How would you like to begin?');
-    expect(harness.routeNativeElement!.textContent).not.toContain('The curriculum could not be loaded');
+    expect(harness.routeNativeElement!.textContent).not.toContain(
+      'The curriculum could not be loaded',
+    );
   });
 
   it('shows a retry path when the published index fails', async () => {

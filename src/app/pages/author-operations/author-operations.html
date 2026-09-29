@@ -48,13 +48,22 @@
         <button type="button" (click)="load()">Try again</button>
       </section>
     } @else if (documentHref()) {
-      <div class="reference-toolbar">
-        <p>Reference version: {{ document()!.version }}</p>
-        <a [href]="documentHref()!" target="_blank" rel="noopener noreferrer"
-          >Open full reference <span>(new tab)</span></a
-        >
-        @if (!isLocalDevelopment) { <a routerLink="/author/content-access" [queryParams]="{state: 'locked'}">Review content access states</a> }
-      </div>
+      <header class="reference-toolbar">
+        <div class="reference-identity">
+          <p class="reference-label">Published author reference</p>
+          <p class="reference-version">Version {{ document()!.version }}</p>
+        </div>
+        <nav class="reference-actions" [attr.aria-label]="pageTitle + ' reference actions'">
+          <a [href]="documentHref()!" target="_blank" rel="noopener noreferrer"
+            >Open full reference <span>(new tab)</span></a
+          >
+          @if (!isLocalDevelopment) {
+            <a routerLink="/author/content-access" [queryParams]="{ state: 'locked' }"
+              >Review content access states</a
+            >
+          }
+        </nav>
+      </header>
       <section class="document-panel" [attr.aria-label]="'Private ' + pageTitle + ' reference'">
         <iframe
           #documentFrame

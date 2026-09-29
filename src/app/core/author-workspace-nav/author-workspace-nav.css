@@ -11,15 +11,11 @@ app-sidebar-toggle {
   inset-block-start: 0;
   inset-inline-start: 0;
 }
-.platform-signature {
-  margin: 0;
-  padding-block-start: 8px;
-  padding-inline-start: 48px;
-}
 .author-sidebar-content {
   display: flex;
   flex-direction: column;
   gap: 24px;
+  padding-block-start: 52px;
 }
 .author-sidebar-content[hidden] {
   display: none;
