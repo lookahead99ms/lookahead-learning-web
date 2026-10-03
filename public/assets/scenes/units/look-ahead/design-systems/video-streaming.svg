@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" class="video-streaming-root" role="img" aria-label="A video keeps playing while its quality steps down from 1080p to 480p on a slow network.">
+<style>
+.video-streaming-root text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.video-streaming-t{fill:var(--scene-ink,#102a33)}
+.video-streaming-tx{fill:var(--scene-text,#28434a)}
+.video-streaming-mut{fill:var(--scene-muted,#536970)}
+.video-streaming-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.video-streaming-soft{fill:var(--scene-accent-soft,#dcefed)}
+.video-streaming-acc{fill:var(--scene-accent,#006c73)}
+.video-streaming-ln{fill:var(--scene-line,#cfdfdc)}
+.video-streaming-cardf{fill:var(--scene-card,#fff)}
+.video-streaming-good{fill:var(--scene-good,#1f7a4d)}
+.video-streaming-warn{fill:var(--scene-warn,#a15c00)}
+.video-streaming-bad{fill:var(--scene-bad,#b3261e)}
+.video-streaming-link{fill:var(--scene-link,#245a88)}
+.video-streaming-out{fill:var(--scene-bubble-out,#d4ecea)}
+.video-streaming-sk{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.video-streaming-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.video-streaming-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:1.5;stroke-dasharray:3 3}
+.video-streaming-screen{fill:var(--scene-ink,#102a33)}.video-streaming-sky{fill:var(--scene-accent-soft,#dcefed)}.video-streaming-hill{fill:var(--scene-accent,#006c73)}.video-streaming-sun{fill:var(--scene-warn,#a15c00)}
+.video-streaming-prog{animation:video-streaming-prog 8s linear infinite;animation-delay:-3s;transform-box:fill-box;transform-origin:left center}
+@keyframes video-streaming-prog{0%{transform:scaleX(.08)}100%{transform:scaleX(1)}}
+.video-streaming-sharp{animation:video-streaming-sharp 8s infinite;animation-delay:-3s}@keyframes video-streaming-sharp{0%,22%{opacity:1}27%,92%{opacity:0}97%,100%{opacity:1}}
+.video-streaming-soft2{animation:video-streaming-soft2 8s infinite;animation-delay:-3s}@keyframes video-streaming-soft2{0%,22%{opacity:0}27%,92%{opacity:1}97%,100%{opacity:0}}
+.video-streaming-bar3{animation:video-streaming-bar3 8s infinite;animation-delay:-3s}@keyframes video-streaming-bar3{0%,18%{opacity:1}22%,92%{opacity:.2}96%,100%{opacity:1}}
+@media (prefers-reduced-motion: reduce){.video-streaming-root *{animation-play-state:paused!important}}
+</style>
+<rect class="video-streaming-screen" x="8" y="6" width="224" height="123" rx="12"/>
+<rect class="video-streaming-sky" x="18" y="30" width="204" height="76" rx="4"/>
+<g class="video-streaming-sharp"><circle class="video-streaming-sun" cx="194" cy="48" r="9"/><path class="video-streaming-hill" d="M18 106 L62 70 L92 90 L128 58 L176 98 L196 86 L222 102 V106 Z"/></g>
+<g class="video-streaming-soft2"><rect class="video-streaming-sun" x="184" y="40" width="18" height="18"/><path class="video-streaming-hill" d="M18 106 V94 H36 V82 H54 V70 H72 V82 H90 V90 H108 V76 H126 V62 H144 V76 H162 V88 H180 V98 H198 V88 H216 V98 H222 V106 Z"/></g>
+<g transform="translate(20 12)"><rect class="video-streaming-cardf" x="0" y="10" width="5" height="7"/><rect class="video-streaming-cardf" x="8" y="5" width="5" height="12"/><rect class="video-streaming-cardf video-streaming-bar3" x="16" y="0" width="5" height="17"/></g>
+<text class="video-streaming-cardf video-streaming-sharp" x="220" y="25" font-size="15" font-weight="700" text-anchor="end">1080p</text>
+<text class="video-streaming-cardf video-streaming-soft2" x="220" y="25" font-size="15" font-weight="700" text-anchor="end">480p</text>
+<rect x="18" y="113" width="204" height="6" rx="3" fill="var(--scene-line,#cfdfdc)"/>
+<rect class="video-streaming-prog" x="18" y="113" width="204" height="6" rx="3" fill="var(--scene-accent,#006c73)"/>
+</svg>

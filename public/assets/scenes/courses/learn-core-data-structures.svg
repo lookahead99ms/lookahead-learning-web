@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Three structures at work: a block is pushed onto a stack, items move through a queue, and a key drops into its hash bucket">
+<style>
+.learn-core-data-structures-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.learn-core-data-structures-tm { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; fill: var(--scene-card, #ffffff); font-weight: 700; }
+.learn-core-data-structures-wall { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 2.5; stroke-linecap: round; }
+.learn-core-data-structures-old { fill: var(--scene-muted, #536970); opacity: .45; }
+.learn-core-data-structures-acc { fill: var(--scene-accent, #006c73); }
+.learn-core-data-structures-learn { fill: var(--scene-learn, #0f8a8a); }
+.learn-core-data-structures-slot { fill: var(--scene-card, #ffffff); stroke: var(--scene-muted, #536970); stroke-width: 1.5; stroke-opacity: .7; }
+.learn-core-data-structures-hit { fill: var(--scene-accent-soft, #dcefed); stroke: var(--scene-accent, #006c73); stroke-width: 2; opacity: 0; animation: learn-core-data-structures-kf-hit 6s infinite; }
+@keyframes learn-core-data-structures-kf-hit { 0%, 72% { opacity: 0; } 76%, 96% { opacity: 1; } 100% { opacity: 0; } }
+.learn-core-data-structures-push { animation: learn-core-data-structures-kf-push 6s ease-in-out infinite; }
+@keyframes learn-core-data-structures-kf-push { 0% { transform: translateY(-44px); opacity: 0; } 10% { opacity: 1; } 35%, 70% { transform: translateY(0); opacity: 1; } 85% { transform: translateY(-44px); opacity: 0; } 100% { transform: translateY(-44px); opacity: 0; } }
+.learn-core-data-structures-q { animation: learn-core-data-structures-kf-q 6s ease-in-out infinite; }
+@keyframes learn-core-data-structures-kf-q { 0%, 30% { transform: translateX(0); } 60%, 100% { transform: translateX(-24px); } }
+.learn-core-data-structures-qout { animation: learn-core-data-structures-kf-qout 6s ease-in-out infinite; }
+@keyframes learn-core-data-structures-kf-qout { 0%, 30% { opacity: 1; } 42%, 100% { opacity: 0; } }
+.learn-core-data-structures-qin { animation: learn-core-data-structures-kf-qin 6s ease-in-out infinite; }
+@keyframes learn-core-data-structures-kf-qin { 0%, 35% { opacity: 0; } 60%, 100% { opacity: 1; } }
+.learn-core-data-structures-key { animation: learn-core-data-structures-kf-key 6s ease-in-out infinite; }
+@keyframes learn-core-data-structures-kf-key { 0% { transform: translate(0, 0); opacity: 0; } 8%, 52% { transform: translate(0, 0); opacity: 1; } 74% { transform: translate(0, 50px); opacity: 1; } 80%, 100% { transform: translate(0, 50px); opacity: 0; } }
+.learn-core-data-structures-hit, .learn-core-data-structures-push, .learn-core-data-structures-q, .learn-core-data-structures-qout, .learn-core-data-structures-qin, .learn-core-data-structures-key { animation-delay: -3s; }
+</style>
+<!-- stack -->
+<path class="learn-core-data-structures-wall" d="M20 50 V140 H96 V50"/>
+<rect class="learn-core-data-structures-old" x="26" y="116" width="64" height="18" rx="4"/>
+<rect class="learn-core-data-structures-old" x="26" y="94" width="64" height="18" rx="4"/>
+<rect class="learn-core-data-structures-acc learn-core-data-structures-push" x="26" y="72" width="64" height="18" rx="4"/>
+<text class="learn-core-data-structures-t" x="58" y="166" font-size="16" text-anchor="middle">stack</text>
+<!-- queue -->
+<path class="learn-core-data-structures-wall" d="M112 80 H208 M112 116 H208"/>
+<g class="learn-core-data-structures-q">
+<rect class="learn-core-data-structures-learn learn-core-data-structures-qout" x="116" y="88" width="20" height="20" rx="4"/>
+<rect class="learn-core-data-structures-learn" x="140" y="88" width="20" height="20" rx="4"/>
+<rect class="learn-core-data-structures-learn" x="164" y="88" width="20" height="20" rx="4"/>
+<rect class="learn-core-data-structures-learn learn-core-data-structures-qin" x="188" y="88" width="20" height="20" rx="4"/>
+</g>
+<text class="learn-core-data-structures-t" x="160" y="166" font-size="16" text-anchor="middle">queue</text>
+<!-- hash map -->
+<g class="learn-core-data-structures-key"><rect class="learn-core-data-structures-acc" x="259" y="22" width="40" height="22" rx="11"/><text class="learn-core-data-structures-tm" x="279" y="38" font-size="16" text-anchor="middle">key</text></g>
+<path d="M279 48 V66" fill="none" stroke="var(--scene-accent, #006c73)" stroke-width="2" stroke-dasharray="3 3"/>
+<rect class="learn-core-data-structures-slot" x="226" y="70" width="18" height="70" rx="4"/>
+<rect class="learn-core-data-structures-slot" x="248" y="70" width="18" height="70" rx="4"/>
+<rect class="learn-core-data-structures-slot" x="270" y="70" width="18" height="70" rx="4"/>
+<rect class="learn-core-data-structures-slot" x="292" y="70" width="18" height="70" rx="4"/>
+<rect class="learn-core-data-structures-hit" x="270" y="70" width="18" height="70" rx="4"/>
+<text class="learn-core-data-structures-t" x="268" y="166" font-size="16" text-anchor="middle">map</text>
+</svg>

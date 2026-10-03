@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" class="job-scheduler-root" role="img" aria-label="At 09:00 three jobs start on time; a worker crashes during one export, another worker takes it over, and every job finishes exactly once.">
+<style>
+.job-scheduler-root text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.job-scheduler-t{fill:var(--scene-ink,#102a33)}
+.job-scheduler-tx{fill:var(--scene-text,#28434a)}
+.job-scheduler-mut{fill:var(--scene-muted,#536970)}
+.job-scheduler-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.job-scheduler-soft{fill:var(--scene-accent-soft,#dcefed)}
+.job-scheduler-acc{fill:var(--scene-accent,#006c73)}
+.job-scheduler-ln{fill:var(--scene-line,#cfdfdc)}
+.job-scheduler-cardf{fill:var(--scene-card,#fff)}
+.job-scheduler-good{fill:var(--scene-good,#1f7a4d)}
+.job-scheduler-warn{fill:var(--scene-warn,#a15c00)}
+.job-scheduler-bad{fill:var(--scene-bad,#b3261e)}
+.job-scheduler-link{fill:var(--scene-link,#245a88)}
+.job-scheduler-out{fill:var(--scene-bubble-out,#d4ecea)}
+.job-scheduler-sk{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.job-scheduler-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.job-scheduler-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:1.5;stroke-dasharray:3 3}
+.job-scheduler-a{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-3.6s}
+.job-scheduler-min{animation-name:job-scheduler-min;transform-origin:40px 62px}@keyframes job-scheduler-min{0%{transform:rotate(-40deg)}22%,100%{transform:rotate(0deg)}}
+.job-scheduler-ring{animation-name:job-scheduler-ring;transform-origin:40px 62px}@keyframes job-scheduler-ring{0%,21%{opacity:0;transform:scale(1)}23%{opacity:.7;transform:scale(1)}36%,100%{opacity:0;transform:scale(1.25)}}
+.job-scheduler-r0s0{animation-name:job-scheduler-r0s0}@keyframes job-scheduler-r0s0{0%,20%{opacity:1}22%,100%{opacity:0}}
+.job-scheduler-r0s1{animation-name:job-scheduler-r0s1}@keyframes job-scheduler-r0s1{0%,20%{opacity:0}22%,44%{opacity:1}46%,100%{opacity:0}}
+.job-scheduler-r0s2{animation-name:job-scheduler-r0s2}@keyframes job-scheduler-r0s2{0%,44%{opacity:0}46%,100%{opacity:1}}
+.job-scheduler-r1s0{animation-name:job-scheduler-r1s0}@keyframes job-scheduler-r1s0{0%,20%{opacity:1}22%,100%{opacity:0}}
+.job-scheduler-r1s1{animation-name:job-scheduler-r1s1}@keyframes job-scheduler-r1s1{0%,20%{opacity:0}22%,36%{opacity:1}38%,100%{opacity:0}}
+.job-scheduler-r1s2{animation-name:job-scheduler-r1s2}@keyframes job-scheduler-r1s2{0%,36%{opacity:0}38%,54%{opacity:1}56%,100%{opacity:0}}
+.job-scheduler-r1s3{animation-name:job-scheduler-r1s3}@keyframes job-scheduler-r1s3{0%,54%{opacity:0}56%,72%{opacity:1}74%,100%{opacity:0}}
+.job-scheduler-r1s4{animation-name:job-scheduler-r1s4}@keyframes job-scheduler-r1s4{0%,72%{opacity:0}74%,100%{opacity:1}}
+.job-scheduler-r2s0{animation-name:job-scheduler-r2s0}@keyframes job-scheduler-r2s0{0%,20%{opacity:1}22%,100%{opacity:0}}
+.job-scheduler-r2s1{animation-name:job-scheduler-r2s1}@keyframes job-scheduler-r2s1{0%,20%{opacity:0}22%,50%{opacity:1}52%,100%{opacity:0}}
+.job-scheduler-r2s2{animation-name:job-scheduler-r2s2}@keyframes job-scheduler-r2s2{0%,50%{opacity:0}52%,100%{opacity:1}}
+@media (prefers-reduced-motion: reduce){.job-scheduler-root *{animation-play-state:paused!important}}
+</style>
+<circle cx="40" cy="62" r="34" class="job-scheduler-a job-scheduler-ring" fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<circle cx="40" cy="62" r="32" class="job-scheduler-box"/>
+<path d="M40 34 V39 M72 62 H67 M40 90 V85 M8 62 H13" stroke="var(--scene-muted,#536970)" stroke-width="2"/>
+<path d="M40 62 L22 62" stroke="var(--scene-ink,#102a33)" stroke-width="4" stroke-linecap="round"/>
+<path class="job-scheduler-a job-scheduler-min" d="M40 62 L40 38" stroke="var(--scene-accent,#006c73)" stroke-width="3" stroke-linecap="round"/>
+<circle cx="40" cy="62" r="3.5" class="job-scheduler-acc"/>
+<text x="40" y="118" font-size="15" font-weight="700" text-anchor="middle" class="job-scheduler-t">09:00</text>
+<rect x="84" y="11" width="150" height="34" rx="9" class="job-scheduler-box"/><g transform="translate(103 28)" class="job-scheduler-sk" style="stroke:var(--scene-text,#28434a);stroke-width:2"><path d="M-8 6 V-2 M0 6 V-8 M8 6 V0" stroke-width="3.5"/></g><rect x="122" y="25" width="44" height="6" rx="3" class="job-scheduler-ln"/>
+<g class="job-scheduler-a job-scheduler-r0s0"><rect x="186" y="16" width="40" height="24" rx="12" class="job-scheduler-ln"/><text x="206" y="34" font-size="15" font-weight="700" text-anchor="middle" class="job-scheduler-tx">&#8230;</text></g>
+<g class="job-scheduler-a job-scheduler-r0s1"><rect x="186" y="16" width="40" height="24" rx="12" class="job-scheduler-warn"/><text x="206" y="34" font-size="15" font-weight="700" text-anchor="middle" class="job-scheduler-cardf">&#9654;</text></g>
+<g class="job-scheduler-a job-scheduler-r0s2"><rect x="186" y="16" width="40" height="24" rx="12" class="job-scheduler-good"/><text x="206" y="34" font-size="15" font-weight="700" text-anchor="middle" class="job-scheduler-cardf">&#10003;</text></g>
+<rect x="84" y="51" width="150" height="34" rx="9" class="job-scheduler-box"/><g transform="translate(103 68)" class="job-scheduler-sk" style="stroke:var(--scene-text,#28434a);stroke-width:2"><path d="M-8 6 H8 M0 -8 V3 M-5 -3 L0 -8 L5 -3"/></g><rect x="122" y="65" width="36" height="6" rx="3" class="job-scheduler-ln"/>
+<g class="job-scheduler-a job-scheduler-r1s0"><rect x="186" y="56" width="40" height="24" rx="12" class="job-scheduler-ln"/><text x="206" y="74" font-size="15" font-weight="700" text-anchor="middle" class="job-scheduler-tx">&#8230;</text></g>
+<g class="job-scheduler-a job-scheduler-r1s1"><rect x="186" y="56" width="40" height="24" rx="12" class="job-scheduler-warn"/><text x="206" y="74" font-size="15" font-weight="700" text-anchor="middle" class="job-scheduler-cardf">&#9654;</text></g>
+<g class="job-scheduler-a job-scheduler-r1s2"><rect x="186" y="56" width="40" height="24" rx="12" class="job-scheduler-bad"/><text x="206" y="74" font-size="15" font-weight="700" text-anchor="middle" class="job-scheduler-cardf">&#10007;</text></g>
+<g class="job-scheduler-a job-scheduler-r1s3"><rect x="186" y="56" width="40" height="24" rx="12" class="job-scheduler-warn"/><text x="206" y="74" font-size="15" font-weight="700" text-anchor="middle" class="job-scheduler-cardf">&#9654;</text></g>
+<g class="job-scheduler-a job-scheduler-r1s4"><rect x="186" y="56" width="40" height="24" rx="12" class="job-scheduler-good"/><text x="206" y="74" font-size="15" font-weight="700" text-anchor="middle" class="job-scheduler-cardf">&#10003;</text></g>
+<rect x="84" y="91" width="150" height="34" rx="9" class="job-scheduler-box"/><g transform="translate(103 108)" class="job-scheduler-sk" style="stroke:var(--scene-text,#28434a);stroke-width:2"><rect x="-9" y="-6" width="18" height="12" rx="2"/><path d="M-8 -5 L0 2 L8 -5"/></g><rect x="122" y="105" width="40" height="6" rx="3" class="job-scheduler-ln"/>
+<g class="job-scheduler-a job-scheduler-r2s0"><rect x="186" y="96" width="40" height="24" rx="12" class="job-scheduler-ln"/><text x="206" y="114" font-size="15" font-weight="700" text-anchor="middle" class="job-scheduler-tx">&#8230;</text></g>
+<g class="job-scheduler-a job-scheduler-r2s1"><rect x="186" y="96" width="40" height="24" rx="12" class="job-scheduler-warn"/><text x="206" y="114" font-size="15" font-weight="700" text-anchor="middle" class="job-scheduler-cardf">&#9654;</text></g>
+<g class="job-scheduler-a job-scheduler-r2s2"><rect x="186" y="96" width="40" height="24" rx="12" class="job-scheduler-good"/><text x="206" y="114" font-size="15" font-weight="700" text-anchor="middle" class="job-scheduler-cardf">&#10003;</text></g>
+</svg>

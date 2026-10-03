@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A dependency starts failing, the circuit breaker opens, calls switch to a fallback and the error rate drops back down">
+<style>
+.look-ahead-resilience-production-box{fill:var(--scene-card,#fff);stroke:var(--scene-ink,#102a33);stroke-width:1.6}
+.look-ahead-resilience-production-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:600;fill:var(--scene-ink,#102a33)}
+.look-ahead-resilience-production-wire{stroke:var(--scene-line,#cfdfdc);stroke-width:2.2;fill:none}
+.look-ahead-resilience-production-arm{transform-box:view-box;transform-origin:128px 70px;animation:look-ahead-resilience-production-arm 7s ease-in-out infinite;animation-delay:-4.5s}
+.look-ahead-resilience-production-sick{animation:look-ahead-resilience-production-sick 7s ease-in-out infinite;animation-delay:-4.5s}
+.look-ahead-resilience-production-callA{fill:var(--scene-ahead,#2f6fb3);animation:look-ahead-resilience-production-callA 7s linear infinite;animation-delay:-4.5s}
+.look-ahead-resilience-production-callB{fill:var(--scene-good,#1f7a4d);animation:look-ahead-resilience-production-callB 7s linear infinite;animation-delay:-4.5s}
+.look-ahead-resilience-production-lbl{animation:look-ahead-resilience-production-lbl 7s ease-in-out infinite;animation-delay:-4.5s}
+.look-ahead-resilience-production-err{stroke:var(--scene-bad,#b3261e);stroke-width:3;fill:none;stroke-linejoin:round;stroke-dasharray:220;animation:look-ahead-resilience-production-err 7s linear infinite;animation-delay:-4.5s}
+@keyframes look-ahead-resilience-production-arm{0%,30%{transform:rotate(0)}38%,92%{transform:rotate(-38deg)}100%{transform:rotate(0)}}
+@keyframes look-ahead-resilience-production-sick{0%,8%{opacity:0}18%,92%{opacity:1}100%{opacity:0}}
+@keyframes look-ahead-resilience-production-callA{0%{transform:translateX(0);opacity:1}28%{transform:translateX(170px);opacity:1}30%,100%{opacity:0;transform:translateX(170px)}}
+@keyframes look-ahead-resilience-production-callB{0%,38%{opacity:0;transform:translate(0,0)}42%{opacity:1;transform:translate(0,0)}55%{transform:translate(40px,62px)}80%{transform:translate(170px,62px);opacity:1}84%,100%{opacity:0;transform:translate(170px,62px)}}
+@keyframes look-ahead-resilience-production-lbl{0%,34%{opacity:0}42%,92%{opacity:1}100%{opacity:0}}
+@keyframes look-ahead-resilience-production-err{0%{stroke-dashoffset:220}80%,100%{stroke-dashoffset:0}}
+</style>
+<rect x="0" y="0" width="320" height="180" rx="12" fill="var(--scene-card,#fff)"/>
+<!-- caller -->
+<rect class="look-ahead-resilience-production-box" x="14" y="52" width="58" height="36" rx="8" style="fill:var(--scene-accent-soft,#dcefed)"/>
+<rect x="24" y="64" width="38" height="5" rx="2" fill="var(--scene-accent,#006c73)"/><rect x="24" y="73" width="26" height="5" rx="2" fill="var(--scene-accent,#006c73)" opacity=".6"/>
+<path class="look-ahead-resilience-production-wire" d="M72 70 H122 M160 70 H232"/>
+<path class="look-ahead-resilience-production-wire" d="M100 70 C120 70 120 132 140 132 H232"/>
+<!-- breaker switch -->
+<circle cx="128" cy="70" r="5" fill="var(--scene-ink,#102a33)"/>
+<circle cx="160" cy="70" r="5" fill="var(--scene-ink,#102a33)"/>
+<path class="look-ahead-resilience-production-arm" d="M128 70 L160 70" stroke="var(--scene-ink,#102a33)" stroke-width="4" stroke-linecap="round"/>
+<g class="look-ahead-resilience-production-lbl">
+<rect x="94" y="16" width="120" height="26" rx="13" fill="var(--scene-warn,#a15c00)" opacity=".16"/>
+<text class="look-ahead-resilience-production-t" x="154" y="34" text-anchor="middle" style="fill:var(--scene-warn,#a15c00)">Breaker open</text>
+</g>
+<!-- calls -->
+<circle class="look-ahead-resilience-production-callA" cx="72" cy="70" r="6"/>
+<circle class="look-ahead-resilience-production-callB" cx="72" cy="70" r="6"/>
+<!-- failing dependency -->
+<rect class="look-ahead-resilience-production-box" x="232" y="52" width="74" height="36" rx="8"/>
+<g class="look-ahead-resilience-production-sick">
+<rect x="232" y="52" width="74" height="36" rx="8" fill="var(--scene-bad,#b3261e)" opacity=".14" stroke="var(--scene-bad,#b3261e)" stroke-width="2"/>
+<path d="M261 62 l16 16 M277 62 l-16 16" stroke="var(--scene-bad,#b3261e)" stroke-width="3" stroke-linecap="round"/>
+</g>
+<!-- fallback -->
+<rect class="look-ahead-resilience-production-box" x="232" y="116" width="74" height="32" rx="8" style="stroke:var(--scene-good,#1f7a4d)"/>
+<text class="look-ahead-resilience-production-t" x="269" y="137" text-anchor="middle" style="fill:var(--scene-good,#1f7a4d)">Fallback</text>
+<!-- error-rate sparkline -->
+<path d="M14 166 H200" stroke="var(--scene-line,#cfdfdc)" stroke-width="1.5"/>
+<path class="look-ahead-resilience-production-err" d="M14 162 L40 160 L62 146 L84 134 L104 138 L122 154 L150 160 L180 162 L200 162"/>
+</svg>

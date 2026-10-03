@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="hashing lookup">
+<style>
+.learn-algorithmic-patterns-hashing-lookup-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}.learn-algorithmic-patterns-hashing-lookup-w{font:700 16px system-ui,sans-serif;fill:#fff}
+@keyframes learn-algorithmic-patterns-hashing-lookup-d0{0%{transform:translate(0,0);opacity:0}6%{transform:translate(0,0);opacity:1}20%{transform:translate(0,0);opacity:1}45%{transform:translate(-100px,52px);opacity:1}68%{transform:translate(-100px,52px);opacity:1}76%{transform:translate(-100px,52px);opacity:0}100%{transform:translate(0,0);opacity:0}}
+.learn-algorithmic-patterns-hashing-lookup-d0{animation:learn-algorithmic-patterns-hashing-lookup-d0 6s ease-in infinite;animation-delay:-3s;}
+@keyframes learn-algorithmic-patterns-hashing-lookup-d1{0%{transform:translate(0,0);opacity:0}6%{transform:translate(0,0);opacity:1}20%{transform:translate(0,0);opacity:1}45%{transform:translate(50px,52px);opacity:1}68%{transform:translate(50px,52px);opacity:1}76%{transform:translate(50px,52px);opacity:0}100%{transform:translate(0,0);opacity:0}}
+.learn-algorithmic-patterns-hashing-lookup-d1{animation:learn-algorithmic-patterns-hashing-lookup-d1 6s ease-in infinite;animation-delay:-1s;}
+@keyframes learn-algorithmic-patterns-hashing-lookup-d2{0%{transform:translate(0,0);opacity:0}6%{transform:translate(0,0);opacity:1}20%{transform:translate(0,0);opacity:1}45%{transform:translate(-50px,52px);opacity:1}68%{transform:translate(-50px,52px);opacity:1}76%{transform:translate(-50px,52px);opacity:0}100%{transform:translate(0,0);opacity:0}}
+.learn-algorithmic-patterns-hashing-lookup-d2{animation:learn-algorithmic-patterns-hashing-lookup-d2 6s ease-in infinite;animation-delay:-5s;}
+.learn-algorithmic-patterns-hashing-lookup-bg{fill:var(--scene-card,#fff)}
+</style>
+<rect class="learn-algorithmic-patterns-hashing-lookup-bg" width="320" height="180" rx="12"/>
+<polygon points="120,24 200,24 176,56 144,56" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3" stroke-linejoin="round"/>
+<text class="learn-algorithmic-patterns-hashing-lookup-t" x="160" y="19" text-anchor="middle">hash(key)</text>
+<rect x="37" y="114" width="46" height="38" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<rect x="87" y="114" width="46" height="38" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<rect x="137" y="114" width="46" height="38" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<rect x="187" y="114" width="46" height="38" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<rect x="237" y="114" width="46" height="38" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<g fill="var(--scene-muted,#536970)"><rect x="46" y="140" width="28" height="8" rx="3"/><rect x="146" y="140" width="28" height="8" rx="3"/><rect x="246" y="140" width="28" height="8" rx="3"/></g>
+<circle class="learn-algorithmic-patterns-hashing-lookup-d0" cx="160" cy="58" r="8" fill="var(--scene-learn,#0f8a8a)"/>
+<circle class="learn-algorithmic-patterns-hashing-lookup-d1" cx="160" cy="58" r="8" fill="var(--scene-grow,#b8457a)"/>
+<circle class="learn-algorithmic-patterns-hashing-lookup-d2" cx="160" cy="58" r="8" fill="var(--scene-ahead,#2f6fb3)"/>
+<text class="learn-algorithmic-patterns-hashing-lookup-t" x="160" y="172" text-anchor="middle">one jump, one slot</text>
+</svg>

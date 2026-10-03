@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A write fails before commit and a second connection sees nothing saved">
+<style>
+.grow-quality-engineering-integration-testing-bg{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc)}
+.grow-quality-engineering-integration-testing-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33);text-anchor:middle}
+.grow-quality-engineering-integration-testing-svc{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-accent,#006c73);stroke-width:2.5}
+.grow-quality-engineering-integration-testing-db{fill:var(--scene-card,#fff);stroke:var(--scene-link,#245a88);stroke-width:2.5}
+.grow-quality-engineering-integration-testing-rowf{fill:var(--scene-link,#245a88)}
+.grow-quality-engineering-integration-testing-ln{stroke:var(--scene-line,#cfdfdc);stroke-width:2.5;stroke-dasharray:4 4;fill:none}
+.grow-quality-engineering-integration-testing-row{fill:var(--scene-grow,#b8457a)}
+.grow-quality-engineering-integration-testing-bolt{fill:var(--scene-warn,#a15c00)}
+.grow-quality-engineering-integration-testing-eye{fill:var(--scene-card,#fff);stroke:var(--scene-good,#1f7a4d);stroke-width:3}
+.grow-quality-engineering-integration-testing-pup{fill:var(--scene-good,#1f7a4d)}
+.grow-quality-engineering-integration-testing-a{animation:grow-quality-engineering-integration-testing-a 6s ease-in-out infinite;animation-delay:-3s}
+.grow-quality-engineering-integration-testing-b{animation:grow-quality-engineering-integration-testing-b 6s linear infinite;animation-delay:-3s;transform-origin:107px 80px;transform-box:view-box}
+.grow-quality-engineering-integration-testing-c{animation:grow-quality-engineering-integration-testing-c 6s linear infinite;animation-delay:-3s}
+@keyframes grow-quality-engineering-integration-testing-a{0%,5%{transform:translateX(0)}22%,30%{transform:translateX(14px)}45%,100%{transform:translateX(0)}}
+@keyframes grow-quality-engineering-integration-testing-b{0%,22%{opacity:0;transform:scale(.3)}28%{opacity:1;transform:scale(1.2)}42%{opacity:1;transform:scale(1)}48%,100%{opacity:0;transform:scale(1)}}
+@keyframes grow-quality-engineering-integration-testing-c{0%,46%{opacity:.25}52%,92%{opacity:1}100%{opacity:.25}}
+</style>
+<rect class="grow-quality-engineering-integration-testing-bg" x="1" y="1" width="318" height="178" rx="12"/>
+<rect class="grow-quality-engineering-integration-testing-svc" x="14" y="55" width="62" height="52" rx="8"/>
+<rect class="grow-quality-engineering-integration-testing-rowf" x="26" y="68" width="38" height="7" rx="3"/><rect class="grow-quality-engineering-integration-testing-rowf" x="26" y="84" width="26" height="7" rx="3"/>
+<path class="grow-quality-engineering-integration-testing-db" d="M135 62v48c0 8 11 13 25 13s25-5 25-13V62"/><ellipse class="grow-quality-engineering-integration-testing-db" cx="160" cy="62" rx="25" ry="10"/>
+<rect class="grow-quality-engineering-integration-testing-rowf" x="146" y="82" width="28" height="6" rx="3"/><rect class="grow-quality-engineering-integration-testing-rowf" x="146" y="98" width="28" height="6" rx="3"/>
+<line class="grow-quality-engineering-integration-testing-ln" x1="76" y1="80" x2="135" y2="80"/>
+<rect class="grow-quality-engineering-integration-testing-row grow-quality-engineering-integration-testing-a" x="80" y="73" width="16" height="14" rx="3"/>
+<path class="grow-quality-engineering-integration-testing-bolt grow-quality-engineering-integration-testing-b" d="M122 66l-12 18h9l-4 16 14-20h-9z"/>
+<line class="grow-quality-engineering-integration-testing-ln" x1="185" y1="86" x2="238" y2="86"/>
+<g class="grow-quality-engineering-integration-testing-c"><circle class="grow-quality-engineering-integration-testing-eye" cx="262" cy="86" r="22"/><circle class="grow-quality-engineering-integration-testing-pup" cx="262" cy="86" r="8"/></g>
+<text class="grow-quality-engineering-integration-testing-t" x="160" y="38">Real DB</text>
+<text class="grow-quality-engineering-integration-testing-t" x="262" y="132">Read back</text>
+<text class="grow-quality-engineering-integration-testing-t" x="56" y="140">Rolled back</text>
+</svg>

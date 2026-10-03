@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" class="chat-root" role="img" aria-label="Two messages are sent while the friend is offline; when his phone comes back they arrive in order, the ticks turn read and he replies.">
+<style>
+.chat-root text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.chat-t{fill:var(--scene-ink,#102a33)}
+.chat-tx{fill:var(--scene-text,#28434a)}
+.chat-mut{fill:var(--scene-muted,#536970)}
+.chat-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.chat-soft{fill:var(--scene-accent-soft,#dcefed)}
+.chat-acc{fill:var(--scene-accent,#006c73)}
+.chat-ln{fill:var(--scene-line,#cfdfdc)}
+.chat-cardf{fill:var(--scene-card,#fff)}
+.chat-good{fill:var(--scene-good,#1f7a4d)}
+.chat-warn{fill:var(--scene-warn,#a15c00)}
+.chat-bad{fill:var(--scene-bad,#b3261e)}
+.chat-link{fill:var(--scene-link,#245a88)}
+.chat-out{fill:var(--scene-bubble-out,#d4ecea)}
+.chat-sk{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.chat-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.chat-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:1.5;stroke-dasharray:3 3}
+.chat-a{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-3.8s}
+.chat-s1{animation-name:chat-s1}@keyframes chat-s1{0%,4%{opacity:0;transform:translateY(8px)}8%,100%{opacity:1;transform:none}}
+.chat-s2{animation-name:chat-s2}@keyframes chat-s2{0%,14%{opacity:0;transform:translateY(8px)}18%,100%{opacity:1;transform:none}}
+.chat-off{animation-name:chat-off}@keyframes chat-off{0%,34%{opacity:1}37%,100%{opacity:0}}
+.chat-on{animation-name:chat-on}@keyframes chat-on{0%,35%{opacity:0}38%,100%{opacity:1}}
+.chat-r1{animation-name:chat-r1}@keyframes chat-r1{0%,38%{opacity:0;transform:translateX(-8px)}41%,100%{opacity:1;transform:none}}
+.chat-r2{animation-name:chat-r2}@keyframes chat-r2{0%,42%{opacity:0;transform:translateX(-8px)}45%,100%{opacity:1;transform:none}}
+.chat-tick{animation-name:chat-tick}@keyframes chat-tick{0%,46%{fill:var(--scene-muted,#536970)}49%,100%{fill:var(--scene-link,#245a88)}}
+.chat-typ{animation-name:chat-typ}@keyframes chat-typ{0%,54%{opacity:0}57%,68%{opacity:1}70%,100%{opacity:0}}
+.chat-rep{animation-name:chat-rep}@keyframes chat-rep{0%,70%{opacity:0;transform:translateY(8px)}74%,100%{opacity:1;transform:none}}
+.chat-repin{animation-name:chat-repin}@keyframes chat-repin{0%,75%{opacity:0}78%,100%{opacity:1}}
+.chat-bin{fill:var(--scene-bubble-in,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.2}
+@media (prefers-reduced-motion: reduce){.chat-root *{animation-play-state:paused!important}}
+</style>
+<rect x="6" y="6" width="102" height="123" rx="14" class="chat-box"/>
+<rect x="132" y="6" width="102" height="123" rx="14" class="chat-box"/>
+<circle cx="57" cy="22" r="8" class="chat-acc"/><circle cx="183" cy="22" r="8" class="chat-link"/>
+<g class="chat-a chat-off"><rect x="150" y="34" width="66" height="20" rx="10" class="chat-ln"/><text x="183" y="49" font-size="13" font-weight="700" text-anchor="middle" class="chat-tx">Offline</text></g>
+<g class="chat-a chat-on"><rect x="150" y="34" width="66" height="20" rx="10" class="chat-soft"/><text x="183" y="49" font-size="13" font-weight="700" text-anchor="middle" class="chat-good">Online</text></g>
+<g class="chat-a chat-s1"><rect x="34" y="40" width="68" height="20" rx="10" class="chat-out"/><rect x="44" y="48" width="48" height="5" rx="2.5" class="chat-mut"/></g>
+<g class="chat-a chat-s2"><rect x="34" y="66" width="68" height="20" rx="10" class="chat-out"/><rect x="44" y="74" width="36" height="5" rx="2.5" class="chat-mut"/></g>
+<text x="102" y="100" font-size="14" font-weight="700" text-anchor="end" class="chat-mut chat-a chat-tick">&#10003;&#10003;</text>
+<g class="chat-a chat-r1"><rect x="138" y="62" width="68" height="20" rx="10" class="chat-bin"/><rect x="148" y="70" width="48" height="5" rx="2.5" class="chat-mut"/></g>
+<g class="chat-a chat-r2"><rect x="138" y="88" width="68" height="20" rx="10" class="chat-bin"/><rect x="148" y="96" width="36" height="5" rx="2.5" class="chat-mut"/></g>
+<g class="chat-a chat-typ"><rect x="12" y="104" width="46" height="20" rx="10" class="chat-bin"/><circle cx="25" cy="114" r="2.5" class="chat-mut"/><circle cx="35" cy="114" r="2.5" class="chat-mut"/><circle cx="45" cy="114" r="2.5" class="chat-mut"/></g>
+<g class="chat-a chat-rep"><rect x="156" y="106" width="72" height="20" rx="10" class="chat-out"/><text x="192" y="121" font-size="13" font-weight="700" text-anchor="middle" class="chat-t">Yes!</text></g>
+<g class="chat-a chat-repin"><rect x="12" y="104" width="60" height="20" rx="10" class="chat-bin"/><text x="42" y="119" font-size="13" font-weight="700" text-anchor="middle" class="chat-t">Yes!</text></g>
+</svg>

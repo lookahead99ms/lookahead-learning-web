@@ -9,6 +9,7 @@ import { SignInManagementApi } from './pages/account/sign-in-management-api';
 import type { DeliveryPlanPage } from './pages/delivery-plan/delivery-plan';
 import { legacyAiItemRedirect, legacyAiModuleRedirect } from './content/ai-route-compatibility';
 import { legacyInterviewSearchRedirect } from './content/search-route-compatibility';
+import { retiredContentRedirect } from './content/retired-content-routes';
 
 export const routes: Routes = [
   { path: 'author/content-access', canActivate: [authorGuard], loadComponent: () => import('./pages/author-content-access/author-content-access').then(page => page.AuthorContentAccess) },
@@ -94,6 +95,7 @@ export const routes: Routes = [
   { path: 'grow', loadComponent: () => import('./pages/grow/grow').then((page) => page.Grow) },
   {
     path: 'search',
+    canActivate: [retiredContentRedirect],
     loadComponent: () => import('./pages/search/search').then((page) => page.Search),
   },
   {
@@ -162,11 +164,13 @@ export const routes: Routes = [
   },
   {
     path: 'learn/hands-on-dsa',
+    canActivate: [retiredContentRedirect],
     loadComponent: () =>
       import('./pages/hands-on-dsa/hands-on-dsa').then((page) => page.HandsOnDsa),
   },
   {
     path: 'learn/:courseId/module/:moduleId',
+    canActivate: [retiredContentRedirect],
     loadComponent: () => import('./pages/module/module').then((page) => page.Module),
   },
   {
@@ -181,10 +185,14 @@ export const routes: Routes = [
   },
   {
     path: 'learn/:courseId/:questionId',
+    canActivate: [retiredContentRedirect],
     loadComponent: () => import('./pages/question/question').then((page) => page.Question),
   },
   {
     path: 'learn/:courseId',
+    canActivate: [retiredContentRedirect],
+    // Re-check on fragment-only changes so an old #unit- anchor also redirects in-app.
+    runGuardsAndResolvers: 'always',
     loadComponent: () => import('./pages/course/course').then((page) => page.Course),
   },
   {

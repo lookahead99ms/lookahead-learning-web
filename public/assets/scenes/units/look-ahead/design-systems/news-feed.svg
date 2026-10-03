@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" class="news-feed-root" role="img" aria-label="A new post from an account with 20 million followers slides in at the top of a feed and pushes older posts down.">
+<style>
+.news-feed-root text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.news-feed-t{fill:var(--scene-ink,#102a33)}
+.news-feed-tx{fill:var(--scene-text,#28434a)}
+.news-feed-mut{fill:var(--scene-muted,#536970)}
+.news-feed-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.news-feed-soft{fill:var(--scene-accent-soft,#dcefed)}
+.news-feed-acc{fill:var(--scene-accent,#006c73)}
+.news-feed-ln{fill:var(--scene-line,#cfdfdc)}
+.news-feed-cardf{fill:var(--scene-card,#fff)}
+.news-feed-good{fill:var(--scene-good,#1f7a4d)}
+.news-feed-warn{fill:var(--scene-warn,#a15c00)}
+.news-feed-bad{fill:var(--scene-bad,#b3261e)}
+.news-feed-link{fill:var(--scene-link,#245a88)}
+.news-feed-out{fill:var(--scene-bubble-out,#d4ecea)}
+.news-feed-sk{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.news-feed-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.news-feed-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:1.5;stroke-dasharray:3 3}
+.news-feed-a{animation-duration:6s;animation-iteration-count:infinite;animation-delay:-3.2s}
+.news-feed-feed{animation-name:news-feed-feed}@keyframes news-feed-feed{0%,28%{transform:translateY(-36px)}40%,100%{transform:translateY(0)}}
+.news-feed-new{animation-name:news-feed-new}@keyframes news-feed-new{0%,30%{opacity:0;transform:translateY(-8px)}42%,100%{opacity:1;transform:translateY(0)}}
+@media (prefers-reduced-motion: reduce){.news-feed-root *{animation-play-state:paused!important}}
+</style>
+<rect x="12" y="4" width="116" height="127" rx="16" class="news-feed-box"/>
+<rect x="56" y="10" width="28" height="4" rx="2" class="news-feed-ln"/>
+<clipPath id="news-feed-clip"><rect x="14" y="20" width="112" height="108" rx="10"/></clipPath>
+<g clip-path="url(#news-feed-clip)">
+<g class="news-feed-a news-feed-feed"><rect x="22" y="62" width="96" height="30" rx="8" class="news-feed-box"/><circle cx="36" cy="77" r="7" class="news-feed-soft"/><rect x="48" y="70" width="56" height="6" rx="3" class="news-feed-soft"/><rect x="48" y="81" width="40" height="5" rx="2.5" class="news-feed-soft" opacity=".6"/><rect x="22" y="98" width="96" height="30" rx="8" class="news-feed-box"/><circle cx="36" cy="113" r="7" class="news-feed-soft"/><rect x="48" y="106" width="48" height="6" rx="3" class="news-feed-soft"/><rect x="48" y="117" width="44" height="5" rx="2.5" class="news-feed-soft" opacity=".6"/><rect x="22" y="134" width="96" height="30" rx="8" class="news-feed-box"/><circle cx="36" cy="149" r="7" class="news-feed-soft"/><rect x="48" y="142" width="52" height="6" rx="3" class="news-feed-soft"/><rect x="48" y="153" width="34" height="5" rx="2.5" class="news-feed-soft" opacity=".6"/></g>
+<g class="news-feed-a news-feed-new"><rect x="22" y="26" width="96" height="30" rx="8" class="news-feed-soft" stroke="var(--scene-accent,#006c73)" stroke-width="1.5"/><circle cx="36" cy="41" r="7" class="news-feed-acc"/><rect x="48" y="34" width="56" height="6" rx="3" class="news-feed-acc"/><rect x="48" y="45" width="40" height="5" rx="2.5" class="news-feed-mut" opacity=".5"/></g>
+</g>
+<g class="news-feed-a news-feed-new"><path d="M140 41 h10 m4 -5 l-8 5 l8 5" class="news-feed-sa" style="transform:none"/><text x="160" y="46" font-size="15" font-weight="700" class="news-feed-acc">New</text>
+<circle cx="150" cy="84" r="6" class="news-feed-mut"/><circle cx="166" cy="84" r="6" class="news-feed-mut"/><circle cx="182" cy="84" r="6" class="news-feed-mut"/>
+<text x="140" y="116" font-size="16" font-weight="700" class="news-feed-t">20M</text></g>
+</svg>

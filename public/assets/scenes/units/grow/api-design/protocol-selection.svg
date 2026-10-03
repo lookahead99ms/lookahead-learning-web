@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="One need fans out to three interaction styles: one answer, live push, queued job">
+<style>
+.grow-api-design-protocol-selection-t{font:600 13px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.grow-api-design-protocol-selection-h1{animation:grow-api-design-protocol-selection-h1 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes grow-api-design-protocol-selection-h1{0%,31.3%{opacity:1}34.3%,97%{opacity:0}100%{opacity:1}}
+.grow-api-design-protocol-selection-h2{animation:grow-api-design-protocol-selection-h2 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes grow-api-design-protocol-selection-h2{0%,32.3%{opacity:0}35.3%,64.6%{opacity:1}67.6%,100%{opacity:0}}
+.grow-api-design-protocol-selection-h3{animation:grow-api-design-protocol-selection-h3 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes grow-api-design-protocol-selection-h3{0%,65.6%{opacity:0}68.6%,97.9%{opacity:1}100.9%,100%{opacity:0}}
+.grow-api-design-protocol-selection-d1{animation:grow-api-design-protocol-selection-d1 6s linear infinite;animation-delay:-3s}
+@keyframes grow-api-design-protocol-selection-d1{0%{transform:translate(0,0);opacity:1}30%{transform:translate(66px,-50px);opacity:1}33%,100%{transform:translate(66px,-50px);opacity:0}}
+.grow-api-design-protocol-selection-d2{animation:grow-api-design-protocol-selection-d2 6s linear infinite;animation-delay:-3s}
+@keyframes grow-api-design-protocol-selection-d2{0%,33.3%{transform:translate(0,0);opacity:0}34.3%{opacity:1}63.3%{transform:translate(66px,0px);opacity:1}66.3%,100%{transform:translate(66px,0px);opacity:0}}
+.grow-api-design-protocol-selection-d3{animation:grow-api-design-protocol-selection-d3 6s linear infinite;animation-delay:-3s}
+@keyframes grow-api-design-protocol-selection-d3{0%,66.6%{transform:translate(0,0);opacity:0}67.6%{opacity:1}96.6%{transform:translate(66px,50px);opacity:1}99.6%,100%{transform:translate(66px,50px);opacity:0}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"><path d="M54 90L120 40M54 90L120 90M54 90L120 140"/></g>
+<circle cx="36" cy="90" r="20" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/><text x="36" y="97" text-anchor="middle" font-family="system-ui,sans-serif" font-size="20" font-weight="700" fill="var(--scene-accent,#006c73)">?</text>
+<rect x="120" y="21" width="186" height="38" rx="10" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<rect class="grow-api-design-protocol-selection-h1" x="120" y="21" width="186" height="38" rx="10" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3.5"/>
+<text class="grow-api-design-protocol-selection-t" x="180" y="45">one answer</text>
+<circle class="grow-api-design-protocol-selection-d1" cx="54" cy="90" r="7" fill="var(--scene-grow,#b8457a)"/>
+<rect x="120" y="71" width="186" height="38" rx="10" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<rect class="grow-api-design-protocol-selection-h2" x="120" y="71" width="186" height="38" rx="10" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3.5"/>
+<text class="grow-api-design-protocol-selection-t" x="180" y="95">live push</text>
+<circle class="grow-api-design-protocol-selection-d2" cx="54" cy="90" r="7" fill="var(--scene-grow,#b8457a)"/>
+<rect x="120" y="121" width="186" height="38" rx="10" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<rect class="grow-api-design-protocol-selection-h3" x="120" y="121" width="186" height="38" rx="10" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3.5"/>
+<text class="grow-api-design-protocol-selection-t" x="180" y="145">queued job</text>
+<circle class="grow-api-design-protocol-selection-d3" cx="54" cy="90" r="7" fill="var(--scene-grow,#b8457a)"/>
+<g fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M130 35H152M147 30l5 5-5 5M152 46H130M135 41l-5 5 5 5" transform="translate(0,-1)"/>
+<path d="M130 90q5.5-12 11 0t11 0"/><rect x="130" y="132" width="22" height="16" rx="3"/><path d="M130 134l11 8 11-8"/></g>
+</svg>

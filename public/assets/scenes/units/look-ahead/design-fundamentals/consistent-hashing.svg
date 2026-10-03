@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="A fifth node joins the hash ring and only the few keys just before it move to it">
+<style>
+.consistent-hashing-t{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-ink,#102a33)}
+.consistent-hashing-b{font-weight:700}
+.consistent-hashing-ln{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.consistent-hashing-bad{fill:var(--scene-bad,#b3261e)}
+.consistent-hashing-good{fill:var(--scene-good,#1f7a4d)}
+.consistent-hashing-track{fill:var(--scene-line,#cfdfdc)}
+@media (prefers-reduced-motion:reduce){[class*="consistent-hashing-a"]{animation-play-state:paused!important}}
+.consistent-hashing-amove{animation:consistent-hashing-move 8s infinite;animation-delay:-3s;}
+@keyframes consistent-hashing-move{0%,28%{fill:var(--scene-link,#245a88);r:4.5}32%{r:7}36%,92%{fill:var(--scene-ink,#102a33);r:4.5}96%,100%{fill:var(--scene-link,#245a88);r:4.5}}
+.consistent-hashing-anode{animation:consistent-hashing-node 8s infinite;animation-delay:-3s;transform-box:fill-box;transform-origin:center;}
+@keyframes consistent-hashing-node{0%,18%{opacity:0;transform:scale(.4)}26%{opacity:1;transform:scale(1.15)}30%,92%{opacity:1;transform:scale(1)}97%,100%{opacity:0;transform:scale(.4)}}
+.consistent-hashing-anote{animation:consistent-hashing-note 8s infinite;animation-delay:-3s;}
+@keyframes consistent-hashing-note{0%,30%{opacity:0}36%,92%{opacity:1}97%,100%{opacity:0}}
+</style>
+<circle cx="62" cy="67" r="50" class="consistent-hashing-ln" style="stroke-width:4"/>
+<circle cx="79.1" cy="20.0" r="4.5" class="consistent-hashing-amove" style="stroke:var(--scene-card,#fff);stroke-width:1.5"/>
+<circle cx="90.7" cy="26.0" r="4.5" class="consistent-hashing-amove" style="stroke:var(--scene-card,#fff);stroke-width:1.5"/>
+<circle cx="107.3" cy="45.9" r="4.5" style="fill:var(--scene-link,#245a88);stroke:var(--scene-card,#fff);stroke-width:1.5"/>
+<circle cx="105.3" cy="92.0" r="4.5" style="fill:var(--scene-good,#1f7a4d);stroke:var(--scene-card,#fff);stroke-width:1.5"/>
+<circle cx="44.9" cy="114.0" r="4.5" style="fill:var(--scene-warn,#a15c00);stroke:var(--scene-card,#fff);stroke-width:1.5"/>
+<circle cx="15.0" cy="84.1" r="4.5" style="fill:var(--scene-warn,#a15c00);stroke:var(--scene-card,#fff);stroke-width:1.5"/>
+<circle cx="23.7" cy="34.9" r="4.5" style="fill:var(--scene-accent,#006c73);stroke:var(--scene-card,#fff);stroke-width:1.5"/>
+<circle cx="62.0" cy="17.0" r="9" style="fill:var(--scene-accent,#006c73)"/>
+<circle cx="112.0" cy="67.0" r="9" style="fill:var(--scene-link,#245a88)"/>
+<circle cx="62.0" cy="117.0" r="9" style="fill:var(--scene-good,#1f7a4d)"/>
+<circle cx="12.0" cy="67.0" r="9" style="fill:var(--scene-warn,#a15c00)"/>
+<g class="consistent-hashing-anode"><circle cx="97.4" cy="31.6" r="9" style="fill:var(--scene-ink,#102a33);stroke:var(--scene-card,#fff);stroke-width:2"/></g>
+<text class="consistent-hashing-t consistent-hashing-b" x="128" y="34" font-size="14">mod N: 80%</text>
+<rect x="128" y="40" width="100" height="12" rx="6" class="consistent-hashing-track"/><rect x="128" y="40" width="80" height="12" rx="6" class="consistent-hashing-bad"/>
+<g class="consistent-hashing-anote"><text class="consistent-hashing-t consistent-hashing-b" x="128" y="88" font-size="14">ring: 18%</text>
+<rect x="128" y="94" width="100" height="12" rx="6" class="consistent-hashing-track"/><rect x="128" y="94" width="18" height="12" rx="6" class="consistent-hashing-good"/></g>
+</svg>

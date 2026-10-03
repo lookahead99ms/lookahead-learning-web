@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" font-family="system-ui, sans-serif">
+<style>
+.grow-advanced-java-serialization-t{font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.grow-advanced-java-serialization-ok{animation:grow-advanced-java-serialization-a 6s linear infinite;animation-delay:-3s}
+.grow-advanced-java-serialization-bad{animation:grow-advanced-java-serialization-b 6s linear infinite;animation-delay:-3s}
+.grow-advanced-java-serialization-st{animation:grow-advanced-java-serialization-s 6s linear infinite;animation-delay:-3s}
+@keyframes grow-advanced-java-serialization-a{0%{transform:translateX(-40px)}60%,100%{transform:translateX(150px)}}
+@keyframes grow-advanced-java-serialization-b{0%{transform:translate(0,0);opacity:1}40%{transform:translate(70px,0);opacity:1}60%{transform:translate(40px,-6px) rotate(-12deg);opacity:1}100%{transform:translate(-10px,30px) rotate(-30deg);opacity:0}}
+@keyframes grow-advanced-java-serialization-s{0%,55%{opacity:0}65%,100%{opacity:1}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="0" y="82" width="320" height="10" fill="var(--scene-line,#cfdfdc)"/>
+<g class="grow-advanced-java-serialization-ok">
+<rect x="20" y="58" width="44" height="30" rx="5" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-link,#245a88)" stroke-width="2"/>
+<text x="42" y="78" font-family="ui-monospace, Menlo, monospace" font-size="16" font-weight="700" text-anchor="middle" fill="var(--scene-link,#245a88)">{ }</text>
+</g>
+<g class="grow-advanced-java-serialization-bad">
+<rect x="14" y="108" width="44" height="30" rx="5" fill="var(--scene-bad,#b3261e)" opacity=".15"/>
+<rect x="14" y="108" width="44" height="30" rx="5" fill="none" stroke="var(--scene-bad,#b3261e)" stroke-width="2" stroke-dasharray="4 3"/>
+<text x="36" y="128" font-size="16" font-weight="700" text-anchor="middle" fill="var(--scene-bad,#b3261e)">0xAC</text>
+</g>
+<rect x="104" y="40" width="10" height="62" rx="3" fill="var(--scene-warn,#a15c00)"/>
+<rect x="190" y="40" width="10" height="62" rx="3" fill="var(--scene-accent,#006c73)"/>
+<text class="grow-advanced-java-serialization-t" x="109" y="28" text-anchor="middle">size cap</text>
+<text class="grow-advanced-java-serialization-t" x="195" y="28" text-anchor="middle">schema</text>
+<g transform="translate(262 132)">
+<ellipse cx="0" cy="-22" rx="30" ry="9" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-good,#1f7a4d)" stroke-width="2"/>
+<path d="M-30 -22v34a30 9 0 0 0 60 0v-34" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-good,#1f7a4d)" stroke-width="2"/>
+<g class="grow-advanced-java-serialization-st"><path d="M-10 -2l7 7 14-15" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></g>
+</g>
+<text class="grow-advanced-java-serialization-t" x="205" y="160" text-anchor="end">stored once</text>
+</svg>

@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" class="file-sync-root" role="img" aria-label="A file saved on a laptop travels in chunks and appears on the phone.">
+<style>
+.file-sync-root text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.file-sync-t{fill:var(--scene-ink,#102a33)}
+.file-sync-tx{fill:var(--scene-text,#28434a)}
+.file-sync-mut{fill:var(--scene-muted,#536970)}
+.file-sync-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.file-sync-soft{fill:var(--scene-accent-soft,#dcefed)}
+.file-sync-acc{fill:var(--scene-accent,#006c73)}
+.file-sync-ln{fill:var(--scene-line,#cfdfdc)}
+.file-sync-cardf{fill:var(--scene-card,#fff)}
+.file-sync-good{fill:var(--scene-good,#1f7a4d)}
+.file-sync-warn{fill:var(--scene-warn,#a15c00)}
+.file-sync-bad{fill:var(--scene-bad,#b3261e)}
+.file-sync-link{fill:var(--scene-link,#245a88)}
+.file-sync-out{fill:var(--scene-bubble-out,#d4ecea)}
+.file-sync-sk{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.file-sync-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.file-sync-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:1.5;stroke-dasharray:3 3}
+.file-sync-dev{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:2}
+.file-sync-doc{fill:var(--scene-card,#fff);stroke:var(--scene-accent,#006c73);stroke-width:1.8}
+.file-sync-chunk{fill:var(--scene-accent,#006c73)}
+.file-sync-ca,.file-sync-cb,.file-sync-cc,.file-sync-cd{animation:file-sync-fly 6s linear infinite}
+.file-sync-ca{animation-delay:-3s}.file-sync-cb{animation-delay:-2.6s}.file-sync-cc{animation-delay:-2.2s}.file-sync-cd{animation-delay:-1.8s}
+@keyframes file-sync-fly{0%,24%{transform:translate(0,0);opacity:0}28%{transform:translate(0,0);opacity:1}46%{transform:translate(36px,-24px);opacity:1}64%{transform:translate(72px,0);opacity:1}68%,100%{transform:translate(72px,0);opacity:0}}
+.file-sync-edit{animation:file-sync-edit 6s infinite;animation-delay:-3s}@keyframes file-sync-edit{0%,6%{opacity:0}10%,26%{opacity:1}30%,100%{opacity:0}}
+.file-sync-wait{animation:file-sync-wait 6s infinite;animation-delay:-3s}@keyframes file-sync-wait{0%,26%{opacity:0}30%,70%{opacity:1}74%,100%{opacity:0}}
+.file-sync-arrive{animation:file-sync-arrive 6s infinite;animation-delay:-3s}@keyframes file-sync-arrive{0%,70%{opacity:0}76%,96%{opacity:1}100%{opacity:0}}
+.file-sync-spin{transform-box:fill-box;transform-origin:center;animation:file-sync-spin 1.2s linear infinite}@keyframes file-sync-spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){.file-sync-root *{animation-play-state:paused!important}}
+</style>
+<rect class="file-sync-dev" x="8" y="20" width="92" height="64" rx="8"/>
+<path d="M2 88 H106 L100 96 H8 Z" class="file-sync-ln"/>
+<path class="file-sync-doc" d="M42 30 H60 L68 38 V72 H42 Z"/>
+<rect class="file-sync-ln" x="47" y="44" width="16" height="3" rx="1.5"/><rect class="file-sync-ln" x="47" y="51" width="16" height="3" rx="1.5"/><rect class="file-sync-ln" x="47" y="58" width="11" height="3" rx="1.5"/>
+<g class="file-sync-edit"><rect x="14" y="104" width="86" height="24" rx="12" class="file-sync-soft"/><text x="57" y="121" font-size="14" font-weight="700" text-anchor="middle" class="file-sync-t">Saved</text></g>
+<path d="M108 52 Q144 16 180 52" fill="none" stroke="var(--scene-line,#cfdfdc)" stroke-width="1.5" stroke-dasharray="3 4"/>
+<g transform="translate(106 46)"><rect class="file-sync-chunk file-sync-ca" width="12" height="12" rx="2"/><rect class="file-sync-chunk file-sync-cb" width="12" height="12" rx="2"/><rect class="file-sync-chunk file-sync-cc" width="12" height="12" rx="2"/><rect class="file-sync-chunk file-sync-cd" width="12" height="12" rx="2"/></g>
+<rect class="file-sync-dev" x="182" y="10" width="52" height="96" rx="10"/>
+<rect x="198" y="15" width="20" height="3" rx="1.5" class="file-sync-ln"/>
+<g class="file-sync-wait"><circle cx="208" cy="58" r="10" fill="none" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/><path class="file-sync-spin" d="M208 48 A10 10 0 0 1 218 58" fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="3"/></g>
+<g class="file-sync-arrive"><path class="file-sync-doc" d="M196 36 H210 L220 46 V76 H196 Z"/><rect class="file-sync-ln" x="201" y="52" width="14" height="3" rx="1.5"/><rect class="file-sync-ln" x="201" y="60" width="14" height="3" rx="1.5"/></g>
+<g class="file-sync-arrive"><text x="208" y="125" font-size="14" font-weight="700" text-anchor="middle" class="file-sync-good">&#10003; Synced</text></g>
+</svg>

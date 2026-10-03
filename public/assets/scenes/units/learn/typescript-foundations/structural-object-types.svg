@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Objects from different sources plug into one socket when they have the required pegs; one missing a peg bounces">
+<style>
+.learn-typescript-foundations-structural-object-types-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-card,#fff)}
+.learn-typescript-foundations-structural-object-types-a{animation:learn-typescript-foundations-structural-object-types-a 6s ease-in-out infinite;animation-delay:-3s}
+.learn-typescript-foundations-structural-object-types-b{animation:learn-typescript-foundations-structural-object-types-a 6s ease-in-out infinite;animation-delay:-2s}
+.learn-typescript-foundations-structural-object-types-c{animation:learn-typescript-foundations-structural-object-types-c 6s ease-in-out infinite;animation-delay:-1.5s}
+@keyframes learn-typescript-foundations-structural-object-types-a{0%,10%{transform:translateX(0)}40%,65%{transform:translateX(134px)}95%,100%{transform:translateX(0)}}
+@keyframes learn-typescript-foundations-structural-object-types-c{0%,10%{transform:translateX(0)}35%{transform:translateX(96px)}50%,100%{transform:translateX(0)}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="188" y="12" width="124" height="156" rx="10" fill="var(--scene-ink,#102a33)"/>
+<rect x="188" y="28" width="44" height="9" rx="2" fill="var(--scene-accent-soft,#dcefed)"/><rect x="188" y="44" width="44" height="9" rx="2" fill="var(--scene-accent-soft,#dcefed)"/>
+<rect x="188" y="78" width="44" height="9" rx="2" fill="var(--scene-accent-soft,#dcefed)"/><rect x="188" y="94" width="44" height="9" rx="2" fill="var(--scene-accent-soft,#dcefed)"/>
+<rect x="188" y="128" width="44" height="9" rx="2" fill="var(--scene-accent-soft,#dcefed)"/><rect x="188" y="144" width="44" height="9" rx="2" fill="var(--scene-accent-soft,#dcefed)"/>
+<text x="272" y="92" text-anchor="middle" class="learn-typescript-foundations-structural-object-types-t">same</text><text x="272" y="112" text-anchor="middle" class="learn-typescript-foundations-structural-object-types-t">shape</text>
+<g class="learn-typescript-foundations-structural-object-types-a"><rect x="10" y="24" width="40" height="36" rx="8" fill="var(--scene-learn,#0f8a8a)"/><rect x="50" y="28" width="46" height="9" rx="2" fill="var(--scene-learn,#0f8a8a)"/><rect x="50" y="44" width="46" height="9" rx="2" fill="var(--scene-learn,#0f8a8a)"/><circle cx="30" cy="42" r="7" fill="var(--scene-card,#fff)"/></g>
+<g class="learn-typescript-foundations-structural-object-types-b"><rect x="10" y="74" width="40" height="36" rx="8" fill="var(--scene-grow,#b8457a)"/><rect x="50" y="78" width="46" height="9" rx="2" fill="var(--scene-grow,#b8457a)"/><rect x="50" y="94" width="46" height="9" rx="2" fill="var(--scene-grow,#b8457a)"/><rect x="21" y="86" width="18" height="12" rx="2" fill="var(--scene-card,#fff)"/></g>
+<g class="learn-typescript-foundations-structural-object-types-c"><rect x="10" y="124" width="40" height="36" rx="8" fill="var(--scene-bad,#b3261e)"/><rect x="50" y="128" width="46" height="9" rx="2" fill="var(--scene-bad,#b3261e)"/><path d="M24 136l12 12M36 136l-12 12" stroke="var(--scene-card,#fff)" stroke-width="3" stroke-linecap="round"/></g>
+</svg>

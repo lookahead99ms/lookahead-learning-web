@@ -199,7 +199,11 @@ sequenceDiagram
 
 ## Run locally: public demo
 
-Requirements: Node.js24 and npm11 or newer.
+Requirements: Node.js 24 and the exact npm version declared in `packageManager`
+(currently npm 11.17.0). The Angular packages use the patched 22.2 family;
+the lockfile resolves Angular 22.2.1 and Piscina 5.3.2. After dependency updates,
+run `npm ci`, `npm run security:dependencies`, and `npm run test:security-gates`
+before frontend tests and builds.
 
 ```shell
 npm ci
@@ -730,3 +734,31 @@ Enter saves and Escape cancels. Names must be nonblank single-line text up to160
 characters. Browser-only plans retain names in local storage. Connected account
 plans require the Domain API `plan-name-v1` contract and migration V3; the server
 allocates a per-account number and persists names across list/detail reads.
+
+## DLV-408 lesson and story components
+
+The shared lesson reader supports opt-in `system-v1`, `concept-v1` and
+`algo-pattern-v1` presentations, including staged navigation, animated walkthroughs
+and broken/fixed code comparisons. The DSA story component reads optional private
+`dsa-story/v1` companions through the existing protected content flow and shares
+the page language selection. Missing stories retain the existing debugger.
+Card scene SVGs under `public/assets/scenes/` are presentation assets; proprietary
+lesson bodies and story data remain in the private Content repository. Retired
+lesson routes redirect to their current canonical destination. No learner code
+execution service is activated.
+
+Validate presentation contracts with `npm run test:card-contract`,
+`npm run test:landing-scenes`, `npm run test:search-index`, and
+`npm test -- --watch=false`; use `npm run build:protected` for the protected build.
+The 2026-10-03 local Git snapshot passes those tests but exceeds the foundation
+lesson component CSS build budget by 905 bytes. It is not a release certification.
+
+Card scene SVG processing accepts only complete local fragment references for
+links and CSS URLs; escaped CSS tokens are rejected. Lesson prompt extraction
+and the card validator use inert DOM text parsing rather than regex tag removal.
+Extracted text does not authorize HTML insertion or bypass Angular sanitation.
+
+The foundation reader uses compact internal class names (`system`, `prose`,
+`explanation`, `code-section`) in its template and styles to limit repeated
+selectors in Angular's compiled CSS. Component style budgets remain enforced;
+update component and global reader selectors together when renaming these classes.

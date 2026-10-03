@@ -72,9 +72,25 @@ export function highlightStudioSource(source: string, language: PatternLanguage)
 }
 
 
+/** Languages shown as escaped plain text: prose-like pseudo-code would be mis-highlighted. */
+const PLAIN_CODE_LANGUAGES = new Set(['pseudo', 'pseudocode', 'pseudo-code', 'text', 'plaintext', 'plain']);
+
+export function isPlainCodeLanguage(language: string | undefined | null): boolean {
+  return PLAIN_CODE_LANGUAGES.has((language ?? 'text').trim().toLowerCase());
+}
+
+/** Learner-facing label for a code block's language; other languages keep their authored name. */
+export function codeLanguageLabel(language: string | undefined | null): string {
+  const key = (language ?? '').trim().toLowerCase();
+  if (key === 'pseudo' || key === 'pseudocode' || key === 'pseudo-code') return 'Pseudo-code';
+  if (key === 'text' || key === 'plaintext' || key === 'plain') return 'Text';
+  return language ?? '';
+}
+
 /** Escaped, lossless highlighting for read-only lesson code. */
 export function highlightLearningCode(source: string, language = 'text'): string {
   language = language.toLowerCase();
+  if (isPlainCodeLanguage(language)) return escapeHtml(source);
   if (language === 'java' || language === 'python' || language === 'go') {
     return highlightStudioSource(source, language).join('\n');
   }

@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="The event loop pushes records into a bounded queue; when the queue is full it signals pause, and a worker keeps draining it">
+<style>
+.grow-nodejs-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.grow-nodejs-m { font-family: ui-monospace, Menlo, monospace; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.grow-nodejs-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 2; }
+.grow-nodejs-soft { fill: var(--scene-accent-soft, #dcefed); }
+.grow-nodejs-acc { fill: var(--scene-accent, #006c73); }
+.grow-nodejs-ln { fill: var(--scene-line, #cfdfdc); }
+.grow-nodejs-mut { fill: var(--scene-muted, #536970); }
+.grow-nodejs-good { fill: var(--scene-good, #1f7a4d); }
+.grow-nodejs-warn { fill: var(--scene-warn, #a15c00); }
+.grow-nodejs-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 2; stroke-dasharray: 4 5; }
+
+.grow-nodejs-loop { fill: none; stroke: var(--scene-good, #1f7a4d); stroke-width: 5; stroke-linecap: round; }
+.grow-nodejs-loophd { fill: var(--scene-good, #1f7a4d); }
+.grow-nodejs-spin { transform-box: view-box; transform-origin: 54px 82px; animation: grow-nodejs-krot 3.5s linear infinite; }
+@keyframes grow-nodejs-krot { to { transform: rotate(360deg); } }
+.grow-nodejs-core { fill: var(--scene-accent-soft, #dcefed); }
+.grow-nodejs-slot { fill: var(--scene-accent, #006c73); stroke: var(--scene-accent, #006c73); stroke-width: 1.5; animation: grow-nodejs-kfill 7s infinite; }
+@keyframes grow-nodejs-kfill { 0%, 8% { fill-opacity: .08; } 12%, 62% { fill-opacity: 1; } 66%, 100% { fill-opacity: .08; } }
+.grow-nodejs-emit { fill: var(--scene-accent, #006c73); animation: grow-nodejs-kemit 7s linear infinite; }
+@keyframes grow-nodejs-kemit { 0%, 8% { opacity: 0; transform: translateX(0); } 9% { opacity: 1; transform: translateX(0); } 19% { transform: translateX(2px); } 19.01% { transform: translateX(0); } 29% { opacity: 1; transform: translateX(2px); } 30%, 64% { opacity: 0; } 65% { opacity: 1; transform: translateX(0); } 75% { transform: translateX(2px); } 75.01% { transform: translateX(0); } 85% { opacity: 1; transform: translateX(2px); } 86%, 100% { opacity: 0; } }
+.grow-nodejs-drain { fill: var(--scene-accent, #006c73); animation: grow-nodejs-kdrain 1.75s linear infinite; }
+@keyframes grow-nodejs-kdrain { 0% { transform: translateX(0); opacity: 1; } 90% { transform: translateX(8px); opacity: 1; } 100% { transform: translateX(8px); opacity: 0; } }
+.grow-nodejs-pause { animation: grow-nodejs-kpause 7s infinite; }
+@keyframes grow-nodejs-kpause { 0%, 28% { opacity: 0; transform: translateY(4px); } 32%, 62% { opacity: 1; transform: translateY(0); } 66%, 100% { opacity: 0; } }
+.grow-nodejs-pbg { fill: var(--scene-card, #ffffff); stroke: var(--scene-warn, #a15c00); stroke-width: 2; }
+.grow-nodejs-pbar { fill: var(--scene-warn, #a15c00); }
+.grow-nodejs-back { fill: none; stroke: var(--scene-warn, #a15c00); stroke-width: 2; stroke-dasharray: 4 4; }
+.grow-nodejs-chip { fill: var(--scene-card, #ffffff); stroke: var(--scene-link, #245a88); stroke-width: 2; }
+.grow-nodejs-chipin { fill: var(--scene-link, #245a88); animation: grow-nodejs-kbusy 1.75s ease-in-out infinite; }
+@keyframes grow-nodejs-kbusy { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+.grow-nodejs-pin { stroke: var(--scene-link, #245a88); stroke-width: 2; }
+.grow-nodejs-emit, .grow-nodejs-pause, .grow-nodejs-drain, .grow-nodejs-chipin { animation-delay: -3s; }
+</style>
+<!-- event loop -->
+<circle class="grow-nodejs-core" cx="54" cy="82" r="22"/>
+<g class="grow-nodejs-spin">
+<path class="grow-nodejs-loop" d="M54 52 A30 30 0 1 1 26 71"/>
+<path class="grow-nodejs-loophd" d="M18 72 L28 62 L34 76 Z"/>
+</g>
+<text class="grow-nodejs-t" x="54" y="140" font-size="16" text-anchor="middle">event loop</text>
+<rect class="grow-nodejs-emit" x="89" y="78" width="8" height="8" rx="2"/>
+<!-- bounded queue -->
+<rect class="grow-nodejs-box" x="100" y="64" width="110" height="36" rx="6"/>
+<rect class="grow-nodejs-slot" x="106" y="70" width="16" height="24" rx="3" style="animation-delay: -3.0s"/>
+<rect class="grow-nodejs-slot" x="126" y="70" width="16" height="24" rx="3" style="animation-delay: -2.65s"/>
+<rect class="grow-nodejs-slot" x="146" y="70" width="16" height="24" rx="3" style="animation-delay: -2.3s"/>
+<rect class="grow-nodejs-slot" x="166" y="70" width="16" height="24" rx="3" style="animation-delay: -1.95s"/>
+<rect class="grow-nodejs-slot" x="186" y="70" width="16" height="24" rx="3" style="animation-delay: -1.6s"/>
+<rect class="grow-nodejs-drain" x="215" y="77" width="10" height="10" rx="2"/>
+<!-- pause signal back to the loop -->
+<g class="grow-nodejs-pause">
+<path class="grow-nodejs-back" d="M118 34 C 92 34 70 38 62 48"/>
+<rect class="grow-nodejs-pbg" x="118" y="20" width="84" height="30" rx="15"/>
+<rect class="grow-nodejs-pbar" x="132" y="28" width="4" height="14" rx="1.5"/><rect class="grow-nodejs-pbar" x="140" y="28" width="4" height="14" rx="1.5"/>
+<text class="grow-nodejs-t" x="176" y="40" font-size="16" text-anchor="middle">pause</text>
+</g>
+<!-- worker -->
+<g>
+<path class="grow-nodejs-pin" d="M252 60 V54 M264 60 V54 M276 60 V54 M288 60 V54 M252 104 V110 M264 104 V110 M276 104 V110 M288 104 V110 M240 70 H234 M240 82 H234 M240 94 H234 M300 70 H306 M300 82 H306 M300 94 H306"/>
+<rect class="grow-nodejs-chip" x="240" y="60" width="60" height="44" rx="6"/>
+<rect class="grow-nodejs-chipin" x="256" y="70" width="28" height="24" rx="3"/>
+</g>
+<text class="grow-nodejs-t" x="270" y="140" font-size="16" text-anchor="middle">worker</text>
+</svg>

@@ -1,0 +1,159 @@
+/* Rows come from the shared sidebar outline (sidebar-outline.css); this file adds the sticky
+   column, the long-title wrapping and the narrow-screen disclosure. */
+:host {
+  display: block;
+  position: sticky;
+  /* Below the platform header and the sticky breadcrumb bar. */
+  top: calc(var(--platform-header-height, 76px) + 64px);
+  align-self: start;
+  min-width: 0;
+}
+.course-lesson-nav {
+  /* Global nav rules lay links out in a row; this nav is one column. */
+  display: block;
+  box-sizing: border-box;
+  max-height: calc(100dvh - var(--platform-header-height, 76px) - 80px);
+  padding: 4px 4px 16px 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.course-lesson-nav-head {
+  padding: 8px 10px 0 13px;
+}
+.sidebar-title {
+  margin: 0;
+  color: var(--text-strong);
+  font-size: 1rem;
+  font-weight: 650;
+  line-height: 1.45;
+}
+.sidebar-group-label {
+  margin: 4px 0 14px;
+  color: var(--text-subtle);
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.course-lesson-nav-list {
+  padding-top: 10px;
+}
+.course-lesson-nav-list[hidden] {
+  display: none;
+}
+/* Long titles wrap between words; a word only breaks if it alone is wider than the column. */
+.shared-sidebar-outline a,
+.course-lesson-nav-planned {
+  align-items: baseline;
+  gap: 10px;
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: manual;
+}
+.course-lesson-nav-planned {
+  box-sizing: border-box;
+  display: flex;
+  min-height: 44px;
+  padding: 8px 10px;
+  border-inline-start: 3px solid transparent;
+  color: var(--text-subtle);
+  font-size: 0.88rem;
+  font-style: italic;
+  line-height: 1.35;
+}
+.course-lesson-nav-order {
+  flex: none;
+  min-width: 2ch;
+  color: var(--text-subtle);
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+.course-lesson-nav-text {
+  min-width: 0;
+}
+.course-lesson-nav-children a,
+.course-lesson-nav-children .course-lesson-nav-planned {
+  padding-inline-start: 22px;
+}
+.shared-sidebar-outline a[aria-current='location'] .course-lesson-nav-order {
+  color: var(--accent-strong);
+}
+.course-lesson-nav-toggle {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text-strong);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-align: start;
+  cursor: pointer;
+}
+.course-lesson-nav-toggle:hover {
+  border-color: var(--accent-strong);
+  color: var(--accent-link);
+}
+.course-lesson-nav-toggle:focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 2px;
+}
+.course-lesson-nav-chevron {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.16s ease;
+}
+.course-lesson-nav-chevron.open {
+  transform: rotate(180deg);
+}
+@media (max-width: 899px) {
+  :host {
+    position: static;
+  }
+  .course-lesson-nav {
+    max-height: none;
+    padding: 0;
+    overflow: visible;
+  }
+  /* The banner right below names the course; the toggle carries the count. */
+  .course-lesson-nav-head {
+    display: none;
+  }
+  .course-lesson-nav-list {
+    margin-top: 8px;
+    padding-top: 8px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .course-lesson-nav-chevron {
+    transition: none;
+  }
+}
+@media (forced-colors: active) {
+  .shared-sidebar-outline a[aria-current='location'] {
+    border-inline-start-color: Highlight;
+  }
+  .course-lesson-nav-toggle {
+    border-color: ButtonText;
+  }
+}

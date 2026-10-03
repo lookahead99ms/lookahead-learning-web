@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Dawit keeps watching a lesson video while his connection drops; his progress saves queue up on the tablet, and when he is back online they reach the server, which moves his resume point from 1:00 to 2:10">
+<style>
+.learning-platform-t{font-family:system-ui, sans-serif;fill:var(--scene-ink,#102a33)}
+.learning-platform-tx{font-family:system-ui, sans-serif;fill:var(--scene-text,#28434a)}
+.learning-platform-tm{font-family:ui-monospace, Menlo, monospace;fill:var(--scene-ink,#102a33)}
+.learning-platform-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.learning-platform-card{fill:var(--scene-card,#fff)}
+.learning-platform-ink{fill:var(--scene-ink,#102a33)}
+.learning-platform-soft{fill:var(--scene-muted,#536970)}
+.learning-platform-line{fill:var(--scene-line,#cfdfdc)}
+.learning-platform-acc{fill:var(--scene-accent,#006c73)}
+.learning-platform-accsoft{fill:var(--scene-accent-soft,#dcefed)}
+.learning-platform-good{fill:var(--scene-good,#1f7a4d)}
+.learning-platform-bad{fill:var(--scene-bad,#b3261e)}
+.learning-platform-warn{fill:var(--scene-warn,#a15c00)}
+.learning-platform-link{fill:var(--scene-link,#245a88)}
+.learning-platform-a{animation-duration:7s;animation-iteration-count:infinite;animation-delay:-3.5s;animation-timing-function:ease-in-out}
+@media (prefers-reduced-motion: reduce){.learning-platform-a{animation-play-state:paused!important}}
+.learning-platform-prog{animation-name:learning-platform-prog;transform-box:fill-box;transform-origin:left center;animation-timing-function:linear}
+@keyframes learning-platform-prog{0%{transform:scaleX(.3)}94%{transform:scaleX(1)}100%{transform:scaleX(.3)}}
+.learning-platform-off{animation-name:learning-platform-off}
+@keyframes learning-platform-off{0%,14%{opacity:0}18%,58%{opacity:1}62%,100%{opacity:0}}
+.learning-platform-on{animation-name:learning-platform-on}
+@keyframes learning-platform-on{0%,14%{opacity:1}18%,58%{opacity:0}62%,100%{opacity:1}}
+.learning-platform-d1{animation-name:learning-platform-d1}
+@keyframes learning-platform-d1{0%,24%{opacity:0;transform:none}27%,60%{opacity:1;transform:none}72%{opacity:1;transform:translate(124px,-62px)}75%,100%{opacity:0;transform:translate(124px,-62px)}}
+.learning-platform-d2{animation-name:learning-platform-d2}
+@keyframes learning-platform-d2{0%,36%{opacity:0;transform:none}39%,62%{opacity:1;transform:none}74%{opacity:1;transform:translate(112px,-62px)}77%,100%{opacity:0;transform:translate(112px,-62px)}}
+.learning-platform-d3{animation-name:learning-platform-d3}
+@keyframes learning-platform-d3{0%,48%{opacity:0;transform:none}51%,64%{opacity:1;transform:none}76%{opacity:1;transform:translate(100px,-62px)}79%,100%{opacity:0;transform:translate(100px,-62px)}}
+.learning-platform-s1{animation-name:learning-platform-s1}
+@keyframes learning-platform-s1{0%,76%{opacity:1}79%,100%{opacity:0}}
+.learning-platform-s2{animation-name:learning-platform-s2}
+@keyframes learning-platform-s2{0%,76%{opacity:0}79%,96%{opacity:1}100%{opacity:0}}
+</style>
+<rect x="6" y="8" width="140" height="120" rx="12" class="learning-platform-ink"/><rect x="12" y="14" width="128" height="108" rx="6" class="learning-platform-box"/>
+<rect x="18" y="22" width="116" height="62" rx="5" class="learning-platform-acc" opacity=".85"/><path d="M68 40 v26 l22 -13z" class="learning-platform-card"/>
+<rect x="18" y="90" width="116" height="5" rx="2.5" class="learning-platform-line"/><rect x="18" y="90" width="116" height="5" rx="2.5" class="learning-platform-acc learning-platform-a learning-platform-prog"/>
+<g class="learning-platform-a learning-platform-on"><path d="M116 32 q10 -9 20 0 M119.5 36 q6.5 -6 13 0" stroke="var(--scene-card,#fff)" stroke-width="2.4" fill="none" stroke-linecap="round"/><circle cx="126" cy="40" r="2.2" fill="var(--scene-card,#fff)"/></g>
+<g class="learning-platform-a learning-platform-off"><rect x="22" y="26" width="64" height="20" rx="10" class="learning-platform-bad"/><text class="learning-platform-card" x="54" y="41" font-size="14" font-weight="700" text-anchor="middle" font-family="system-ui, sans-serif">Offline</text></g>
+<g class="learning-platform-a learning-platform-d1"><circle cx="26" cy="110" r="5" class="learning-platform-warn"/></g><g class="learning-platform-a learning-platform-d2"><circle cx="38" cy="110" r="5" class="learning-platform-warn"/></g><g class="learning-platform-a learning-platform-d3"><circle cx="50" cy="110" r="5" class="learning-platform-warn"/></g>
+<path d="M168 62 a12 12 0 0 1 4 -23 a17 17 0 0 1 32 -4 a13 13 0 0 1 22 13 a10 10 0 0 1 -4 14z" class="learning-platform-box"/>
+<path d="M190 46 l6 6 l12 -12" stroke="var(--scene-good,#1f7a4d)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text class="learning-platform-tx" x="196" y="88" font-size="14" text-anchor="middle">Resume at</text><text class="learning-platform-tm learning-platform-a learning-platform-s1" x="196" y="110" font-size="18" font-weight="700" text-anchor="middle">1:00</text><text class="learning-platform-tm learning-platform-a learning-platform-s2" x="196" y="110" font-size="18" font-weight="700" text-anchor="middle" style="fill:var(--scene-good,#1f7a4d)">2:10</text>
+</svg>

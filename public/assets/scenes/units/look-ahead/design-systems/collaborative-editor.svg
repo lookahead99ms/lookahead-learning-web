@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" class="collaborative-editor-root" role="img" aria-label="Two people type into the same word cat at the same moment, one adds h and the other adds o, and after their edits cross both screens show choat.">
+<style>
+.collaborative-editor-root text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.collaborative-editor-t{fill:var(--scene-ink,#102a33)}
+.collaborative-editor-tx{fill:var(--scene-text,#28434a)}
+.collaborative-editor-mut{fill:var(--scene-muted,#536970)}
+.collaborative-editor-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.collaborative-editor-soft{fill:var(--scene-accent-soft,#dcefed)}
+.collaborative-editor-acc{fill:var(--scene-accent,#006c73)}
+.collaborative-editor-ln{fill:var(--scene-line,#cfdfdc)}
+.collaborative-editor-cardf{fill:var(--scene-card,#fff)}
+.collaborative-editor-good{fill:var(--scene-good,#1f7a4d)}
+.collaborative-editor-warn{fill:var(--scene-warn,#a15c00)}
+.collaborative-editor-bad{fill:var(--scene-bad,#b3261e)}
+.collaborative-editor-link{fill:var(--scene-link,#245a88)}
+.collaborative-editor-out{fill:var(--scene-bubble-out,#d4ecea)}
+.collaborative-editor-sk{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.collaborative-editor-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.collaborative-editor-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:1.5;stroke-dasharray:3 3}
+.collaborative-editor-a{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-5.6s}
+.collaborative-editor-pa{animation-name:collaborative-editor-pa}@keyframes collaborative-editor-pa{0%,22%{opacity:1}25%,100%{opacity:0}}
+.collaborative-editor-pb{animation-name:collaborative-editor-pb}@keyframes collaborative-editor-pb{0%,22%{opacity:0}25%,58%{opacity:1}61%,100%{opacity:0}}
+.collaborative-editor-pc{animation-name:collaborative-editor-pc}@keyframes collaborative-editor-pc{0%,58%{opacity:0}61%,100%{opacity:1}}
+.collaborative-editor-fr{animation-name:collaborative-editor-fr}@keyframes collaborative-editor-fr{0%,34%{opacity:0;transform:translateX(0)}38%{opacity:1}54%{opacity:1;transform:translateX(120px)}58%,100%{opacity:0;transform:translateX(120px)}}
+.collaborative-editor-fl{animation-name:collaborative-editor-fl}@keyframes collaborative-editor-fl{0%,34%{opacity:0;transform:translateX(0)}38%{opacity:1}54%{opacity:1;transform:translateX(-120px)}58%,100%{opacity:0;transform:translateX(-120px)}}
+.collaborative-editor-ok{animation-name:collaborative-editor-ok}@keyframes collaborative-editor-ok{0%,62%{opacity:0}66%,100%{opacity:1}}
+.collaborative-editor-ia{fill:var(--scene-accent,#006c73)}.collaborative-editor-il{fill:var(--scene-link,#245a88)}
+.collaborative-editor-w{font-size:22px;font-weight:700}
+@media (prefers-reduced-motion: reduce){.collaborative-editor-root *{animation-play-state:paused!important}}
+</style>
+<rect x="6" y="8" width="108" height="76" rx="10" class="collaborative-editor-box"/><path d="M6 30 V18 Q6 8 16 8 H104 Q114 8 114 18 V30 Z" class="collaborative-editor-soft"/><circle cx="21" cy="19" r="6" class="collaborative-editor-ia"/><text x="60" y="66" text-anchor="middle" class="collaborative-editor-w collaborative-editor-t collaborative-editor-a collaborative-editor-pa">cat</text><text x="60" y="66" text-anchor="middle" class="collaborative-editor-w collaborative-editor-t collaborative-editor-a collaborative-editor-pb">c<tspan class="collaborative-editor-ia">h</tspan>at</text><text x="60" y="66" text-anchor="middle" class="collaborative-editor-w collaborative-editor-t collaborative-editor-a collaborative-editor-pc">c<tspan class="collaborative-editor-ia">h</tspan><tspan class="collaborative-editor-il">o</tspan>at</text><rect x="126" y="8" width="108" height="76" rx="10" class="collaborative-editor-box"/><path d="M126 30 V18 Q126 8 136 8 H224 Q234 8 234 18 V30 Z" class="collaborative-editor-soft"/><circle cx="141" cy="19" r="6" class="collaborative-editor-il"/><text x="180" y="66" text-anchor="middle" class="collaborative-editor-w collaborative-editor-t collaborative-editor-a collaborative-editor-pa">cat</text><text x="180" y="66" text-anchor="middle" class="collaborative-editor-w collaborative-editor-t collaborative-editor-a collaborative-editor-pb">c<tspan class="collaborative-editor-il">o</tspan>at</text><text x="180" y="66" text-anchor="middle" class="collaborative-editor-w collaborative-editor-t collaborative-editor-a collaborative-editor-pc">c<tspan class="collaborative-editor-ia">h</tspan><tspan class="collaborative-editor-il">o</tspan>at</text>
+<g class="collaborative-editor-a collaborative-editor-fr"><rect x="22" y="92" width="44" height="22" rx="11" class="collaborative-editor-ia"/><text x="44" y="108" font-size="14" font-weight="700" text-anchor="middle" class="collaborative-editor-cardf">+h</text></g>
+<g class="collaborative-editor-a collaborative-editor-fl"><rect x="174" y="92" width="44" height="22" rx="11" class="collaborative-editor-il"/><text x="196" y="108" font-size="14" font-weight="700" text-anchor="middle" class="collaborative-editor-cardf">+o</text></g>
+<g class="collaborative-editor-a collaborative-editor-ok"><rect x="70" y="100" width="100" height="26" rx="13" class="collaborative-editor-soft"/><text x="120" y="118" font-size="15" font-weight="700" text-anchor="middle" class="collaborative-editor-good">&#10003; Same</text></g>
+</svg>

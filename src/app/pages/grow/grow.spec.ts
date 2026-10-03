@@ -171,7 +171,7 @@ describe('Grow catalog', () => {
     expect(harness.routeNativeElement!.querySelectorAll('.catalog-group-heading')).toHaveLength(0);
   });
 
-  it('shows key topics as a styled, bounded curriculum preview without nested controls', async () => {
+  it('renders each course as one scene card link with title, description and meta only', async () => {
     const harness = await RouterTestingHarness.create('/grow');
     await ready(
       harness,
@@ -185,16 +185,15 @@ describe('Grow catalog', () => {
       ),
     );
     const card = harness.routeNativeElement!.querySelector<HTMLAnchorElement>('.course-card')!;
-    const preview = card.querySelector<HTMLElement>('.catalog-course-preview')!;
-    expect(preview.querySelector('.catalog-course-preview-label')?.textContent?.trim()).toBe(
-      'Inside this course',
+    const scene = card.querySelector('app-card-scene [role="img"]');
+    expect(scene?.getAttribute('aria-label')).toBe(`${catalog[0].id} illustration`);
+    expect(card.querySelector('h3')?.textContent?.trim()).toBe(catalog[0].title);
+    expect(card.querySelector('.catalog-course-description')?.textContent).toBe(
+      catalog[0].description,
     );
-    expect(
-      [...preview.querySelectorAll('ul[aria-label="Key topics"] li')].map((item) =>
-        item.textContent?.trim(),
-      ),
-    ).toEqual(['REST', 'GraphQL', 'OAuth 2.0']);
-    expect(preview.querySelector('a, button, [tabindex], .chip, .pill')).toBeNull();
+    expect(card.querySelector('.catalog-card-kicker')?.textContent).toContain('1 lesson');
+    // One link per card: no nested controls or topic lists inside the card.
+    expect(card.querySelector('a, button, [tabindex], ul')).toBeNull();
   });
 
   for (const [courseId, groupId] of [

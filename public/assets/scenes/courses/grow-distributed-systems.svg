@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A leader node copies log entries to two replicas; one replica goes down, then comes back and catches up">
+<style>
+.grow-distributed-systems-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.grow-distributed-systems-node { fill: var(--scene-card, #ffffff); stroke: var(--scene-ahead, #2f6fb3); stroke-width: 2.5; }
+.grow-distributed-systems-leader { fill: var(--scene-accent-soft, #dcefed); stroke: var(--scene-accent, #006c73); stroke-width: 3; }
+.grow-distributed-systems-acc { fill: var(--scene-accent, #006c73); }
+.grow-distributed-systems-ahead { fill: var(--scene-ahead, #2f6fb3); }
+.grow-distributed-systems-link { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 1.5; stroke-dasharray: 4 4; }
+.grow-distributed-systems-log { fill: var(--scene-accent, #006c73); }
+.grow-distributed-systems-good { fill: var(--scene-good, #1f7a4d); }
+.grow-distributed-systems-bad { fill: var(--scene-bad, #b3261e); }
+.grow-distributed-systems-x { stroke: var(--scene-card, #ffffff); stroke-width: 3; stroke-linecap: round; }
+
+.grow-distributed-systems-repl-l { animation: grow-distributed-systems-kf-repl-l 3.5s linear infinite; }
+@keyframes grow-distributed-systems-kf-repl-l { 0% { transform: translate(0px, 0px); opacity: 1; } 60% { transform: translate(-80px, 66px); opacity: 1; } 70%, 100% { transform: translate(-80px, 66px); opacity: 0; } }
+.grow-distributed-systems-repl-r { animation: grow-distributed-systems-kf-repl-r 7s linear infinite; }
+@keyframes grow-distributed-systems-kf-repl-r {
+  0% { transform: translate(0px, 0px); opacity: 1; }
+  30% { transform: translate(80px, 66px); opacity: 1; }
+  35%, 72% { transform: translate(80px, 66px); opacity: 0; }
+  73% { transform: translate(0px, 0px); opacity: 0; }
+  76% { transform: translate(0px, 0px); opacity: 1; }
+  92% { transform: translate(80px, 66px); opacity: 1; }
+  96%, 100% { transform: translate(80px, 66px); opacity: 0; }
+}
+.grow-distributed-systems-down { animation: grow-distributed-systems-kf-down 7s infinite; }
+@keyframes grow-distributed-systems-kf-down { 0%, 36% { opacity: 0; } 40%, 70% { opacity: 1; } 74%, 100% { opacity: 0; } }
+.grow-distributed-systems-caught { animation: grow-distributed-systems-kf-caught 7s infinite; }
+@keyframes grow-distributed-systems-kf-caught { 0%, 90% { opacity: 0; } 93%, 100% { opacity: 1; } }
+.grow-distributed-systems-lag { animation: grow-distributed-systems-kf-lag 7s infinite; }
+@keyframes grow-distributed-systems-kf-lag { 0%, 92% { opacity: 0; } 94%, 100% { opacity: 1; } }
+
+.grow-distributed-systems-repl-r, .grow-distributed-systems-down, .grow-distributed-systems-caught, .grow-distributed-systems-lag { animation-delay: -3s; }
+.grow-distributed-systems-repl-l { animation-delay: -1s; }
+@media (prefers-reduced-motion: reduce) { .grow-distributed-systems-repl-l, .grow-distributed-systems-repl-r, .grow-distributed-systems-down, .grow-distributed-systems-caught, .grow-distributed-systems-lag { animation-play-state: paused; } }
+</style>
+
+<!-- links -->
+<path class="grow-distributed-systems-link" d="M146 64 L80 114"/>
+<path class="grow-distributed-systems-link" d="M174 64 L240 114"/>
+<path class="grow-distributed-systems-link" d="M88 128 H232"/>
+
+<!-- leader -->
+<circle class="grow-distributed-systems-leader" cx="160" cy="44" r="24"/>
+<path class="grow-distributed-systems-acc" d="M148 50 L146 36 L154 43 L160 33 L166 43 L174 36 L172 50 Z"/>
+<text class="grow-distributed-systems-t" x="194" y="49" font-size="16">Leader</text>
+
+<!-- replicas -->
+<circle class="grow-distributed-systems-node" cx="64" cy="126" r="22"/>
+<circle class="grow-distributed-systems-ahead" cx="64" cy="126" r="6"/>
+<circle class="grow-distributed-systems-node" cx="256" cy="126" r="22"/>
+<circle class="grow-distributed-systems-ahead" cx="256" cy="126" r="6"/>
+
+<!-- logs under replicas -->
+<rect class="grow-distributed-systems-log" x="40" y="156" width="10" height="12" rx="2"/>
+<rect class="grow-distributed-systems-log" x="53" y="156" width="10" height="12" rx="2"/>
+<rect class="grow-distributed-systems-log" x="66" y="156" width="10" height="12" rx="2"/>
+<rect class="grow-distributed-systems-log" x="79" y="156" width="10" height="12" rx="2"/>
+<rect class="grow-distributed-systems-log" x="232" y="156" width="10" height="12" rx="2"/>
+<rect class="grow-distributed-systems-log" x="245" y="156" width="10" height="12" rx="2"/>
+<rect class="grow-distributed-systems-log" x="258" y="156" width="10" height="12" rx="2"/>
+<rect class="grow-distributed-systems-log grow-distributed-systems-lag" x="271" y="156" width="10" height="12" rx="2"/>
+
+<!-- right replica down, then back -->
+<g class="grow-distributed-systems-down">
+  <circle class="grow-distributed-systems-bad" cx="256" cy="126" r="22"/>
+  <path class="grow-distributed-systems-x" d="M248 118 L264 134 M264 118 L248 134"/>
+  <text class="grow-distributed-systems-t" x="306" y="90" font-size="16" text-anchor="end" style="fill: var(--scene-bad, #b3261e)">Node down</text>
+</g>
+<g class="grow-distributed-systems-caught">
+  <text class="grow-distributed-systems-t" x="306" y="90" font-size="16" text-anchor="end" style="fill: var(--scene-good, #1f7a4d)">Caught up</text>
+</g>
+
+<!-- replication entries -->
+<g class="grow-distributed-systems-repl-l"><rect class="grow-distributed-systems-log" x="155" y="57" width="10" height="12" rx="2"/></g>
+<g class="grow-distributed-systems-repl-r"><rect class="grow-distributed-systems-log" x="155" y="57" width="10" height="12" rx="2"/></g>
+</svg>

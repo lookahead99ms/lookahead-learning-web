@@ -275,28 +275,91 @@ button:disabled {
   letter-spacing: -0.025em;
   margin: 0 0 13px;
 }
+/* Small, quiet control for the path-card scene timeline. */
+.path-motion {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+.path-motion-toggle {
+  min-height: 32px;
+  padding: 4px 12px;
+  border: 1px solid var(--platform-edge);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text-body);
+  font:
+    600 13px/1.2 system-ui,
+    sans-serif;
+  cursor: pointer;
+}
+.path-motion-toggle:hover {
+  border-color: var(--accent-strong);
+  background: var(--surface-muted);
+  color: var(--text-strong);
+}
+.path-motion-toggle:focus-visible {
+  outline: 2px solid var(--accent-focus, var(--accent-strong));
+  outline-offset: 2px;
+}
 .three-columns {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
 .card {
+  container-type: inline-size;
   min-width: 0;
 }
 .card-link {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 15px 20px;
+  overflow: hidden;
   background: linear-gradient(135deg, var(--surface), var(--platform-surface-soft));
   border: 1px solid var(--platform-edge);
   border-radius: 12px;
   color: var(--text-strong);
   text-decoration: none;
   box-shadow: var(--platform-shadow);
+  transition:
+    border-color 0.18s ease,
+    transform 0.18s ease;
 }
 .card-link:hover {
   border-color: var(--accent-strong);
+  transform: translateY(-2px);
+}
+.direction-scene {
+  --card-scene-ratio: 16 / 9;
+  border-bottom: 1px solid var(--platform-edge-soft);
+}
+.card-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 15px 20px;
+}
+@container (min-width: 560px) {
+  .card-link {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  }
+  .direction-scene {
+    --card-scene-ratio: auto;
+    display: grid;
+    order: 2;
+    min-height: 170px;
+    border-bottom: 0;
+    border-left: 1px solid var(--platform-edge-soft);
+  }
+  .card-body {
+    justify-content: center;
+    padding: 20px 24px;
+  }
+  .card-action {
+    margin-top: 4px;
+  }
 }
 .card .number {
   display: flex;
@@ -364,14 +427,13 @@ button:disabled {
 }
 .feature-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 560px), 1fr));
   gap: 16px;
 }
 .discovery-feature {
-  display: flex;
-  flex-direction: column;
+  container-type: inline-size;
   min-width: 0;
-  padding: 24px;
+  overflow: hidden;
   background: linear-gradient(155deg, var(--surface) 55%, var(--platform-surface-soft));
   border: 1px solid var(--platform-edge-soft);
   border-radius: 12px;
@@ -380,11 +442,36 @@ button:disabled {
 .discovery-feature:focus-within {
   border-color: var(--accent-strong);
 }
-.feature-topline {
+.feature-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  height: 100%;
+}
+.feature-scene {
+  --card-scene-ratio: auto;
+  display: grid;
+  order: 2;
+  min-height: 210px;
+  border-left: 1px solid var(--platform-edge-soft);
+}
+.feature-body {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
+  flex-direction: column;
+  min-width: 0;
+  padding: 24px;
+}
+@container (max-width: 560px) {
+  .feature-layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+  }
+  .feature-scene {
+    --card-scene-ratio: 16 / 8;
+    order: 0;
+    min-height: 0;
+    border-left: 0;
+    border-bottom: 1px solid var(--platform-edge-soft);
+  }
 }
 .feature-name {
   color: var(--accent-strong);
@@ -392,14 +479,6 @@ button:disabled {
   font-weight: 700;
   letter-spacing: 0.025em;
   margin: 0;
-}
-.feature-topline svg {
-  width: 70px;
-  height: 52px;
-  stroke: var(--accent-strong);
-  stroke-width: 1.8;
-  fill: none;
-  flex-shrink: 0;
 }
 .discovery-feature h3 {
   font:
@@ -591,14 +670,13 @@ button:disabled {
   #paths {
     padding-top: 22px;
   }
-  .three-columns,
-  .feature-grid {
+  .three-columns {
     grid-template-columns: 1fr;
   }
   .discovery-opening::before {
     inset-inline: 0;
   }
-  .discovery-feature {
+  .feature-body {
     padding: 22px;
   }
 }

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="An adapter converts one interface into the one your code expects">
+<style>
+.learn-solid-design-patterns-structural-patterns-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-solid-design-patterns-structural-patterns-m{font-family:ui-monospace,Menlo,monospace;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-solid-design-patterns-structural-patterns-a1{animation:learn-solid-design-patterns-structural-patterns-dot 4s linear infinite;animation-delay:-2s}
+@keyframes learn-solid-design-patterns-structural-patterns-dot{0%{transform:translateX(0);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateX(236px);opacity:0}}
+.learn-solid-design-patterns-structural-patterns-a2{animation:learn-solid-design-patterns-structural-patterns-sw 4s linear infinite;animation-delay:-2s}
+@keyframes learn-solid-design-patterns-structural-patterns-sw{0%,44%{opacity:1}50%,100%{opacity:0}}
+.learn-solid-design-patterns-structural-patterns-a3{animation:learn-solid-design-patterns-structural-patterns-sw2 4s linear infinite;animation-delay:-2s}
+@keyframes learn-solid-design-patterns-structural-patterns-sw2{0%,44%{opacity:0}50%,100%{opacity:1}}
+.learn-solid-design-patterns-structural-patterns-a4{animation:learn-solid-design-patterns-structural-patterns-pl 4s ease-in-out infinite;animation-delay:-2s;transform-box:fill-box;transform-origin:center}
+@keyframes learn-solid-design-patterns-structural-patterns-pl{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+
+@media (prefers-reduced-motion:reduce){[class*="learn-solid-design-patterns-structural-patterns-a"]{animation:none!important}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<line x1="40" y1="96" x2="282" y2="96" stroke="var(--scene-line,#cfdfdc)" stroke-width="5" stroke-linecap="round"/>
+<rect x="10" y="64" width="62" height="64" rx="10" fill="var(--scene-card,#fff)" stroke="var(--scene-ahead,#2f6fb3)" stroke-width="3"/>
+<circle cx="41" cy="96" r="14" fill="var(--scene-ahead,#2f6fb3)"/><path d="M36 96h10" stroke="#fff" stroke-width="3"/>
+<g class="learn-solid-design-patterns-structural-patterns-a4"><rect x="120" y="56" width="80" height="80" rx="12" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<path d="M140 96h40M170 86l10 10-10 10" fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></g>
+<rect x="248" y="64" width="62" height="64" rx="10" fill="var(--scene-card,#fff)" stroke="var(--scene-good,#1f7a4d)" stroke-width="3"/>
+<rect x="263" y="82" width="32" height="28" rx="4" fill="var(--scene-good,#1f7a4d)"/>
+<g class="learn-solid-design-patterns-structural-patterns-a1"><circle cx="40" cy="96" r="8" fill="var(--scene-ahead,#2f6fb3)" stroke="var(--scene-card,#fff)" stroke-width="2"/></g>
+<g class="learn-solid-design-patterns-structural-patterns-a1" style="animation-delay:-3.2s"><circle cx="40" cy="96" r="8" fill="var(--scene-ahead,#2f6fb3)" stroke="var(--scene-card,#fff)" stroke-width="2"/></g>
+<text class="learn-solid-design-patterns-structural-patterns-t" x="41" y="152" text-anchor="middle">Their API</text>
+<text class="learn-solid-design-patterns-structural-patterns-t" x="160" y="42" text-anchor="middle">Adapter</text>
+<text class="learn-solid-design-patterns-structural-patterns-t" x="279" y="152" text-anchor="middle">Our API</text>
+</svg>

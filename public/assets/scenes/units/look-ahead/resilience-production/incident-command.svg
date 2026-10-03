@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="An alert fires, roles are assigned, one fix is applied">
+<style>
+.look-ahead-resilience-production-incident-command-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.look-ahead-resilience-production-incident-command-bell{transform-origin:50px 52px;animation:look-ahead-resilience-production-incident-command-ring 1.5s ease-in-out infinite;animation-delay:-0.4s}
+.look-ahead-resilience-production-incident-command-w{transform-origin:50px 60px;animation:look-ahead-resilience-production-incident-command-wave 2s ease-out infinite;animation-delay:-0.8s}
+.look-ahead-resilience-production-incident-command-r1,.look-ahead-resilience-production-incident-command-r2,.look-ahead-resilience-production-incident-command-r3{transform-box:fill-box;transform-origin:center;animation:look-ahead-resilience-production-incident-command-pop 6s ease-out infinite}
+.look-ahead-resilience-production-incident-command-r1{animation-delay:-4.6s}
+.look-ahead-resilience-production-incident-command-r2{animation-delay:-4.2s}
+.look-ahead-resilience-production-incident-command-r3{animation-delay:-3.8s}
+.look-ahead-resilience-production-incident-command-ok{stroke-dasharray:40;animation:look-ahead-resilience-production-incident-command-draw 6s ease-out infinite;animation-delay:-3s}
+.look-ahead-resilience-production-incident-command-bar{transform-origin:20px 0;animation:look-ahead-resilience-production-incident-command-fill 6s linear infinite;animation-delay:-3s}
+@keyframes look-ahead-resilience-production-incident-command-ring{0%,100%{transform:rotate(-12deg)}50%{transform:rotate(12deg)}}
+@keyframes look-ahead-resilience-production-incident-command-wave{0%{transform:scale(.6);opacity:.8}100%{transform:scale(1.4);opacity:0}}
+@keyframes look-ahead-resilience-production-incident-command-pop{0%{transform:scale(.3);opacity:0}15%,90%{transform:scale(1);opacity:1}100%{transform:scale(1);opacity:0}}
+@keyframes look-ahead-resilience-production-incident-command-draw{0%,45%{stroke-dashoffset:40}65%,92%{stroke-dashoffset:0}100%{stroke-dashoffset:40}}
+@keyframes look-ahead-resilience-production-incident-command-fill{0%{transform:scaleX(.05)}90%,100%{transform:scaleX(1)}}
+</style>
+<rect width="320" height="180" rx="10" fill="var(--scene-card,#fff)"/>
+<circle cx="50" cy="60" r="26" fill="none" stroke="var(--scene-bad,#b3261e)" stroke-width="3" class="look-ahead-resilience-production-incident-command-w"/>
+<g class="look-ahead-resilience-production-incident-command-bell">
+<path d="M36 70 Q36 40 50 38 Q64 40 64 70 Z" fill="var(--scene-bad,#b3261e)"/>
+<rect x="32" y="68" width="36" height="6" rx="3" fill="var(--scene-bad,#b3261e)"/>
+<circle cx="50" cy="80" r="4" fill="var(--scene-ink,#102a33)"/></g>
+<text x="50" y="110" text-anchor="middle" class="look-ahead-resilience-production-incident-command-t">Alert</text>
+<text x="170" y="22" text-anchor="middle" class="look-ahead-resilience-production-incident-command-t">Roles</text>
+<g class="look-ahead-resilience-production-incident-command-r1"><circle cx="130" cy="58" r="14" fill="var(--scene-ahead,#2f6fb3)"/><circle cx="130" cy="53" r="5" fill="#fff"/><path d="M121 67 Q130 57 139 67Z" fill="#fff"/><path d="M130 30 l3 5 5 0 -4 4 1 5 -5-3 -5 3 1-5 -4-4 5 0z" fill="var(--scene-warn,#a15c00)" transform="translate(0,-4) scale(.9) translate(13,0)"/></g>
+<g class="look-ahead-resilience-production-incident-command-r2"><circle cx="170" cy="58" r="14" fill="var(--scene-learn,#0f8a8a)"/><circle cx="170" cy="53" r="5" fill="#fff"/><path d="M161 67 Q170 57 179 67Z" fill="#fff"/></g>
+<g class="look-ahead-resilience-production-incident-command-r3"><circle cx="210" cy="58" r="14" fill="var(--scene-grow,#b8457a)"/><circle cx="210" cy="53" r="5" fill="#fff"/><path d="M201 67 Q210 57 219 67Z" fill="#fff"/></g>
+<g transform="translate(150,98)"><rect width="40" height="8" rx="4" fill="var(--scene-line,#cfdfdc)"/><rect x="0" width="40" height="8" rx="4" fill="var(--scene-accent,#006c73)" class="look-ahead-resilience-production-incident-command-bar" style="transform-origin:0 4px"/></g>
+<rect x="250" y="30" width="56" height="56" rx="28" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-good,#1f7a4d)" stroke-width="3"/>
+<path d="M265 58 L275 68 L293 46" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" class="look-ahead-resilience-production-incident-command-ok"/>
+<text x="278" y="110" text-anchor="middle" class="look-ahead-resilience-production-incident-command-t">Fix</text>
+<line x1="68" y1="140" x2="302" y2="140" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<circle cx="68" cy="140" r="6" fill="var(--scene-bad,#b3261e)"/><circle cx="130" cy="140" r="6" fill="var(--scene-ahead,#2f6fb3)"/><circle cx="190" cy="140" r="6" fill="var(--scene-warn,#a15c00)"/><circle cx="278" cy="140" r="6" fill="var(--scene-good,#1f7a4d)"/>
+</svg>

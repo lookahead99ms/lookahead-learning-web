@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Old searches are aborted when the query changes; only the latest result is shown">
+<style>
+.grow-vue-composables-lifecycle-t{font:600 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.grow-vue-composables-lifecycle-a{transform-box:fill-box;transform-origin:left center;animation:grow-vue-composables-lifecycle-g1 6s ease-in-out infinite;animation-delay:-3s}
+.grow-vue-composables-lifecycle-b{transform-box:fill-box;transform-origin:left center;animation:grow-vue-composables-lifecycle-g2 6s ease-in-out infinite;animation-delay:-3s}
+.grow-vue-composables-lifecycle-c{transform-box:fill-box;transform-origin:left center;animation:grow-vue-composables-lifecycle-g3 6s ease-in-out infinite;animation-delay:-3s}
+.grow-vue-composables-lifecycle-x{animation:grow-vue-composables-lifecycle-xs 6s step-end infinite;animation-delay:-3s}
+.grow-vue-composables-lifecycle-ok{animation:grow-vue-composables-lifecycle-oks 6s step-end infinite;animation-delay:-3s}
+@keyframes grow-vue-composables-lifecycle-g1{0%{transform:scaleX(.05)}25%,100%{transform:scaleX(.45)}}
+@keyframes grow-vue-composables-lifecycle-g2{0%,20%{transform:scaleX(.05)}45%,100%{transform:scaleX(.45)}}
+@keyframes grow-vue-composables-lifecycle-g3{0%,40%{transform:scaleX(.05)}85%,100%{transform:scaleX(1)}}
+@keyframes grow-vue-composables-lifecycle-xs{0%,25%{opacity:0}26%,95%{opacity:1}100%{opacity:0}}
+@keyframes grow-vue-composables-lifecycle-oks{0%,84%{opacity:0}85%,95%{opacity:1}100%{opacity:0}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="20" y="14" width="280" height="30" rx="15" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2"/>
+<circle cx="40" cy="29" r="6" fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/><path d="M45 34l6 6" stroke="var(--scene-accent,#006c73)" stroke-width="2.5" stroke-linecap="round"/>
+<text class="grow-vue-composables-lifecycle-t" x="62" y="34">v  vu  vue</text>
+<g stroke-width="0">
+<rect x="20" y="62" width="230" height="16" rx="8" fill="var(--scene-line,#cfdfdc)"/><rect class="grow-vue-composables-lifecycle-a" x="20" y="62" width="230" height="16" rx="8" fill="var(--scene-warn,#a15c00)"/>
+<rect x="20" y="92" width="230" height="16" rx="8" fill="var(--scene-line,#cfdfdc)"/><rect class="grow-vue-composables-lifecycle-b" x="20" y="92" width="230" height="16" rx="8" fill="var(--scene-warn,#a15c00)"/>
+<rect x="20" y="122" width="230" height="16" rx="8" fill="var(--scene-line,#cfdfdc)"/><rect class="grow-vue-composables-lifecycle-c" x="20" y="122" width="230" height="16" rx="8" fill="var(--scene-good,#1f7a4d)"/>
+</g>
+<g class="grow-vue-composables-lifecycle-x" stroke="var(--scene-bad,#b3261e)" stroke-width="4" stroke-linecap="round"><path d="M268 62l16 16M284 62l-16 16M268 92l16 16M284 92l-16 16"/></g>
+<g class="grow-vue-composables-lifecycle-ok" stroke="var(--scene-good,#1f7a4d)" stroke-width="4.5" stroke-linecap="round" fill="none"><path d="M266 131l8 8 16-18"/></g>
+<text class="grow-vue-composables-lifecycle-t" x="20" y="166" style="fill:var(--scene-bad,#b3261e)">abort old</text>
+<text class="grow-vue-composables-lifecycle-t" x="300" y="166" text-anchor="end" style="fill:var(--scene-good,#1f7a4d)">show latest</text>
+</svg>

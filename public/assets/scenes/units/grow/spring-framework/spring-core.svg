@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A container hands ready-made beans into the sockets of a service">
+<style>.grow-spring-framework-spring-core-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}.grow-spring-framework-spring-core-bg{fill:var(--scene-card,#fff)}.grow-spring-framework-spring-core-box{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}.grow-spring-framework-spring-core-ln{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2.5;stroke-linecap:round}.grow-spring-framework-spring-core-b1{animation:grow-spring-framework-spring-core-m1 6s ease-in-out infinite;animation-delay:-3s}.grow-spring-framework-spring-core-b2{animation:grow-spring-framework-spring-core-m2 6s ease-in-out infinite;animation-delay:-3.6s}
+@keyframes grow-spring-framework-spring-core-m1{0%,10%{transform:translate(0,0)}50%,85%{transform:translate(140px,-20px)}100%{transform:translate(0,0)}}
+@keyframes grow-spring-framework-spring-core-m2{0%,10%{transform:translate(0,0)}50%,85%{transform:translate(108px,22px)}100%{transform:translate(0,0)}}</style>
+<rect width="320" height="180" class="grow-spring-framework-spring-core-bg"/>
+<rect x="12" y="34" width="112" height="124" rx="12" class="grow-spring-framework-spring-core-box"/><text x="68" y="56" text-anchor="middle" class="grow-spring-framework-spring-core-t">Container</text>
+<rect x="206" y="50" width="104" height="96" rx="10" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/><text x="258" y="72" text-anchor="middle" class="grow-spring-framework-spring-core-t">Service</text>
+<circle cx="206" cy="96" r="9" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2.5" stroke-dasharray="3 3"/><circle cx="206" cy="128" r="9" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2.5" stroke-dasharray="3 3"/>
+<path d="M124 96H190M124 128H190" stroke="var(--scene-line,#cfdfdc)" stroke-width="2" stroke-dasharray="4 4" fill="none"/>
+<g class="grow-spring-framework-spring-core-b1"><circle cx="60" cy="116" r="12" fill="var(--scene-accent,#006c73)"/></g><g class="grow-spring-framework-spring-core-b2"><circle cx="92" cy="106" r="12" fill="var(--scene-grow,#b8457a)"/></g>
+<circle cx="40" cy="100" r="10" fill="var(--scene-learn,#0f8a8a)" opacity=".5"/><circle cx="40" cy="132" r="10" fill="var(--scene-ahead,#2f6fb3)" opacity=".5"/>
+</svg>

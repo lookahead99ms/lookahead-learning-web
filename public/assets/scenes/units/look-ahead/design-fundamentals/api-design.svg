@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Ingrid's bookstore asks for a $64.00 charge with the key order-7731, the reply is lost, the retry carries the same key, and the payments API returns the stored answer so the card is charged only once">
+<style>
+.api-design-card{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.api-design-t{font-family:system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.api-design-m{font-family:ui-monospace,Menlo,monospace;fill:var(--scene-text,#28434a)}
+.api-design-good{font-family:system-ui,sans-serif;fill:var(--scene-good,#1f7a4d)}
+.api-design-bad{font-family:system-ui,sans-serif;fill:var(--scene-bad,#b3261e)}
+.api-design-btn{fill:var(--scene-accent,#006c73)}
+.api-design-btxt{font-family:system-ui,sans-serif;fill:var(--scene-card,#fff)}
+.api-design-chip{fill:var(--scene-accent-soft,#dcefed)}
+.api-design-book{fill:var(--scene-link,#245a88)}
+.api-design-lane{stroke:var(--scene-line,#cfdfdc);stroke-width:2;stroke-dasharray:3 4}
+.api-design-tag{fill:var(--scene-card,#fff);stroke:var(--scene-accent,#006c73);stroke-width:2}
+.api-design-key{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2;stroke-linecap:round}
+.api-design-req{animation:api-design-req 7s -3s infinite}
+@keyframes api-design-req{0%{opacity:0;transform:translateX(0)}3%{opacity:1}16%{opacity:1;transform:translateX(62px)}19%,100%{opacity:0;transform:translateX(62px)}}
+.api-design-retry{animation:api-design-retry 7s -3s infinite}
+@keyframes api-design-retry{0%,36%{opacity:0;transform:translateX(0)}39%{opacity:1}52%{opacity:1;transform:translateX(62px)}55%,100%{opacity:0;transform:translateX(62px)}}
+.api-design-rep1{animation:api-design-rep1 7s -3s infinite}
+@keyframes api-design-rep1{0%,20%{opacity:0;transform:translateX(0)}22%{opacity:1}30%,33%{opacity:1;transform:translateX(-34px)}36%,100%{opacity:0;transform:translateX(-34px)}}
+.api-design-lost{animation:api-design-lost 7s -3s infinite}
+@keyframes api-design-lost{0%,29%{opacity:0}32%,94%{opacity:1}100%{opacity:0}}
+.api-design-rep2{animation:api-design-rep2 7s -3s infinite}
+@keyframes api-design-rep2{0%,58%{opacity:0;transform:translateX(0)}60%{opacity:1}72%{opacity:1;transform:translateX(-62px)}75%,100%{opacity:0;transform:translateX(-62px)}}
+.api-design-charged{animation:api-design-charged 7s -3s infinite}
+@keyframes api-design-charged{0%,17%{opacity:0}20%,94%{opacity:1}100%{opacity:0}}
+.api-design-paid{animation:api-design-paid 7s -3s infinite}
+@keyframes api-design-paid{0%,73%{opacity:0}76%,94%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.api-design-req,.api-design-retry,.api-design-rep1,.api-design-rep2{animation-play-state:paused}}
+</style>
+<!-- shop -->
+<rect class="api-design-card" x="6" y="8" width="70" height="86" rx="9"/>
+<rect class="api-design-book" x="16" y="18" width="16" height="24" rx="2"/><rect class="api-design-book" x="35" y="21" width="14" height="21" rx="2" opacity=".6"/>
+<rect class="api-design-btn" x="13" y="52" width="56" height="26" rx="13"/>
+<text class="api-design-btxt" x="41" y="70" font-size="14" font-weight="700" text-anchor="middle">Pay $64</text>
+<g class="api-design-paid"><path d="M48 90 l5 5 l10 -11" fill="none" style="stroke:var(--scene-good,#1f7a4d)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" transform="translate(-6 0)"/></g>
+<!-- API -->
+<rect class="api-design-card" x="164" y="8" width="70" height="86" rx="9"/>
+<rect class="api-design-chip" x="171" y="16" width="56" height="26" rx="6"/>
+<text class="api-design-m" x="199" y="34" font-size="14" font-weight="700" text-anchor="middle">#7731</text>
+<g class="api-design-charged"><path d="M186 66 l7 7 l14 -15" fill="none" style="stroke:var(--scene-good,#1f7a4d)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></g>
+<!-- lanes -->
+<path class="api-design-lane" d="M78 36 H162 M78 66 H162"/>
+<g class="api-design-req"><rect class="api-design-tag" x="80" y="26" width="26" height="20" rx="5"/><circle class="api-design-key" cx="89" cy="36" r="3.5"/><path class="api-design-key" d="M93 36 H101 M98 36 V40"/></g>
+<g class="api-design-rep1"><circle cx="158" cy="66" r="6" style="fill:var(--scene-good,#1f7a4d)"/></g>
+<g class="api-design-lost"><text class="api-design-bad" x="122" y="75" font-size="22" font-weight="700" text-anchor="middle">✕</text></g>
+<g class="api-design-retry"><rect class="api-design-tag" x="80" y="26" width="26" height="20" rx="5"/><circle class="api-design-key" cx="89" cy="36" r="3.5"/><path class="api-design-key" d="M93 36 H101 M98 36 V40"/></g>
+<g class="api-design-rep2"><circle cx="158" cy="66" r="6" style="fill:var(--scene-good,#1f7a4d)"/></g>
+<text class="api-design-good api-design-paid" x="120" y="122" font-size="15" font-weight="700" text-anchor="middle">Charged once ✓</text>
+</svg>

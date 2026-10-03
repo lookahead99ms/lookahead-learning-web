@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="One chart on a dashboard crashes inside its error boundary while the others stay up, and a release can roll back">
+<style>
+.grow-react-testing-delivery-t{font-family:system-ui,sans-serif;font-weight:700;font-size:16px;fill:var(--scene-ink,#102a33)}
+.grow-react-testing-delivery-bad{animation:grow-react-testing-delivery-crash 6s steps(1) infinite}
+.grow-react-testing-delivery-bd{animation:grow-react-testing-delivery-dash 1.2s linear infinite}
+.grow-react-testing-delivery-x{animation:grow-react-testing-delivery-show 6s ease-out infinite;transform-origin:200px 50px}
+.grow-react-testing-delivery-r{animation:grow-react-testing-delivery-spin 6s ease-in-out infinite;transform-origin:44px 148px}
+@keyframes grow-react-testing-delivery-crash{0%,35%{fill:var(--scene-good,#1f7a4d)}35.1%,90%{fill:var(--scene-bad,#b3261e)}90.1%,100%{fill:var(--scene-good,#1f7a4d)}}
+@keyframes grow-react-testing-delivery-dash{to{stroke-dashoffset:-14}}
+@keyframes grow-react-testing-delivery-show{0%,35%{opacity:0;transform:scale(.4)}45%{opacity:1;transform:scale(1.15)}55%,90%{opacity:1;transform:scale(1)}100%{opacity:0}}
+@keyframes grow-react-testing-delivery-spin{0%,60%{transform:rotate(0)}90%,100%{transform:rotate(-360deg)}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="14" y="12" width="292" height="108" rx="10" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<g fill="var(--scene-card,#fff)" stroke="var(--scene-muted,#536970)" stroke-width="2"><rect x="24" y="22" width="120" height="40" rx="6"/><rect x="24" y="70" width="120" height="40" rx="6"/><rect x="176" y="70" width="120" height="40" rx="6"/></g>
+<g fill="var(--scene-ahead,#2f6fb3)"><rect x="34" y="42" width="14" height="14"/><rect x="54" y="34" width="14" height="22"/><rect x="74" y="38" width="14" height="18"/><rect x="34" y="90" width="14" height="14"/><rect x="54" y="82" width="14" height="22"/><rect x="74" y="86" width="14" height="18"/><rect x="186" y="96" width="14" height="8"/><rect x="206" y="86" width="14" height="18"/><rect x="226" y="80" width="14" height="24"/></g>
+<rect class="grow-react-testing-delivery-bad" style="animation-delay:-3s" x="176" y="22" width="120" height="40" rx="6" stroke="var(--scene-muted,#536970)" stroke-width="2"/>
+<g class="grow-react-testing-delivery-x" style="animation-delay:-3s"><path d="M194 44 l12 12 M206 44 l-12 12" stroke="#fff" stroke-width="4" stroke-linecap="round"/></g>
+<rect class="grow-react-testing-delivery-bd" x="171" y="17" width="130" height="50" rx="9" fill="none" stroke="var(--scene-warn,#a15c00)" stroke-width="3" stroke-dasharray="8 6"/>
+<text x="252" y="56" text-anchor="middle" class="grow-react-testing-delivery-t" style="fill:#fff;paint-order:stroke;stroke:var(--scene-ink,#102a33);stroke-width:3px">boundary</text>
+<g class="grow-react-testing-delivery-r" style="animation-delay:-3s"><path d="M32 148 a12 12 0 1 1 5 10" fill="none" stroke="var(--scene-link,#245a88)" stroke-width="4" stroke-linecap="round"/><path d="M28 140 l5 10 l-11 1z" fill="var(--scene-link,#245a88)"/></g>
+<text x="64" y="154" class="grow-react-testing-delivery-t">rollback</text>
+</svg>

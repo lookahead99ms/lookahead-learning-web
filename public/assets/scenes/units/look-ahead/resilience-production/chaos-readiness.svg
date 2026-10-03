@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A drill takes down one zone inside a safe band and recovers">
+<style>
+.look-ahead-resilience-production-chaos-readiness-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.look-ahead-resilience-production-chaos-readiness-z{animation:look-ahead-resilience-production-chaos-readiness-fail 6s ease-in-out infinite;animation-delay:-2.2s}
+.look-ahead-resilience-production-chaos-readiness-bolt{transform-box:fill-box;transform-origin:center;animation:look-ahead-resilience-production-chaos-readiness-zap 6s ease-in-out infinite;animation-delay:-2.2s}
+.look-ahead-resilience-production-chaos-readiness-ln{stroke-dasharray:300;animation:look-ahead-resilience-production-chaos-readiness-line 6s linear infinite;animation-delay:-3s}
+@keyframes look-ahead-resilience-production-chaos-readiness-fail{0%,15%{fill:var(--scene-good,#1f7a4d)}30%,60%{fill:var(--scene-bad,#b3261e)}80%,100%{fill:var(--scene-good,#1f7a4d)}}
+@keyframes look-ahead-resilience-production-chaos-readiness-zap{0%,15%{opacity:0;transform:scale(.5)}30%,55%{opacity:1;transform:scale(1)}70%,100%{opacity:0;transform:scale(.5)}}
+@keyframes look-ahead-resilience-production-chaos-readiness-line{0%{stroke-dashoffset:300}85%,100%{stroke-dashoffset:0}}
+</style>
+<rect width="320" height="180" rx="10" fill="var(--scene-card,#fff)"/>
+<text x="14" y="22" class="look-ahead-resilience-production-chaos-readiness-t">Inject</text>
+<rect x="14" y="32" width="56" height="50" rx="8" fill="var(--scene-good,#1f7a4d)"/>
+<rect x="82" y="32" width="56" height="50" rx="8" fill="var(--scene-good,#1f7a4d)" class="look-ahead-resilience-production-chaos-readiness-z"/>
+<rect x="150" y="32" width="56" height="50" rx="8" fill="var(--scene-good,#1f7a4d)"/>
+<path d="M114 38 L102 60 H112 L106 78 L122 54 H112Z" fill="var(--scene-card,#fff)" class="look-ahead-resilience-production-chaos-readiness-bolt"/>
+<g transform="translate(238,32)"><polygon points="16,0 40,0 56,16 56,34 40,50 16,50 0,34 0,16" fill="var(--scene-bad,#b3261e)"/><rect x="14" y="21" width="28" height="8" rx="2" fill="#fff"/></g>
+<text x="266" y="104" text-anchor="middle" class="look-ahead-resilience-production-chaos-readiness-t">Abort</text>
+<rect x="14" y="116" width="210" height="34" rx="6" fill="var(--scene-accent-soft,#dcefed)"/>
+<line x1="14" y1="133" x2="224" y2="133" stroke="var(--scene-accent,#006c73)" stroke-width="1.5" stroke-dasharray="4 4"/>
+<path d="M14 133 L50 132 L80 135 L110 142 L135 146 L160 138 L190 134 L224 133" fill="none" stroke="var(--scene-ink,#102a33)" stroke-width="3" stroke-linejoin="round" class="look-ahead-resilience-production-chaos-readiness-ln"/>
+<circle cx="266" cy="136" r="16" fill="var(--scene-good,#1f7a4d)" opacity=".15"/>
+<path d="M258 136 L264 143 L276 128" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="266" y="170" text-anchor="middle" class="look-ahead-resilience-production-chaos-readiness-t">Recovered</text>
+</svg>

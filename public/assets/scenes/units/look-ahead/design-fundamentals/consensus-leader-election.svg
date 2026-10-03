@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Engine E1 is cut off, the other engines vote E2 leader for term 5, and when E1 wakes its fill with token 4 is rejected">
+<style>
+.consensus-leader-election-node{fill:var(--scene-card,#fff);stroke:var(--scene-muted,#536970);stroke-width:2}
+.consensus-leader-election-t{font-family:system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.consensus-leader-election-mono{font-family:ui-monospace,Menlo,monospace;fill:var(--scene-text,#28434a)}
+.consensus-leader-election-good{font-family:system-ui,sans-serif;fill:var(--scene-good,#1f7a4d)}
+.consensus-leader-election-bad{font-family:system-ui,sans-serif;fill:var(--scene-bad,#b3261e)}
+.consensus-leader-election-crown{fill:var(--scene-warn,#a15c00)}
+.consensus-leader-election-e1{animation:consensus-leader-election-e1 8s -3s infinite}
+@keyframes consensus-leader-election-e1{0%,10%{opacity:1}13%,55%{opacity:.35}58%,100%{opacity:1}}
+.consensus-leader-election-cut{animation:consensus-leader-election-cut 8s -3s infinite}
+@keyframes consensus-leader-election-cut{0%,10%{opacity:0}13%,55%{opacity:1}58%,100%{opacity:0}}
+.consensus-leader-election-move{animation:consensus-leader-election-move 8s -3s infinite}
+@keyframes consensus-leader-election-move{0%,24%{transform:translateX(0)}30%,96%{transform:translateX(44px)}100%{transform:translateX(0)}}
+.consensus-leader-election-term{animation:consensus-leader-election-term 8s -3s infinite}
+@keyframes consensus-leader-election-term{0%,26%{opacity:0}30%,96%{opacity:1}100%{opacity:0}}
+.consensus-leader-election-term4{animation:consensus-leader-election-term4 8s -3s infinite}
+@keyframes consensus-leader-election-term4{0%,10%{opacity:1}13%,100%{opacity:0}}
+.consensus-leader-election-v{animation:consensus-leader-election-v 8s -3s infinite}
+@keyframes consensus-leader-election-v{0%,14%{opacity:0;transform:translateY(6px)}20%,96%{opacity:1;transform:none}100%{opacity:0}}
+.consensus-leader-election-old{animation:consensus-leader-election-old 8s -3s infinite}
+@keyframes consensus-leader-election-old{0%,58%{opacity:0;transform:translateY(-20px)}62%{opacity:1}72%,94%{opacity:1;transform:none}100%{opacity:0;transform:none}}
+@media (prefers-reduced-motion:reduce){.consensus-leader-election-move,.consensus-leader-election-old{animation-play-state:paused}}
+</style>
+<text class="consensus-leader-election-t consensus-leader-election-term4" x="120" y="15" font-size="14" font-weight="700" text-anchor="middle">term 4</text>
+<text class="consensus-leader-election-good consensus-leader-election-term" x="120" y="15" font-size="14" font-weight="700" text-anchor="middle">term 5</text>
+<g class="consensus-leader-election-move"><path class="consensus-leader-election-crown" d="M21 33 l2 -10 l5 6 l4 -8 l4 8 l5 -6 l2 10z"/></g>
+<g class="consensus-leader-election-e1"><rect class="consensus-leader-election-node" x="16" y="37" width="32" height="28" rx="7"/><path d="M23 46 h18 M23 56 h18" style="stroke:var(--scene-muted,#536970);stroke-width:3;stroke-linecap:round"/></g>
+<rect class="consensus-leader-election-node" x="60" y="37" width="32" height="28" rx="7"/><path d="M67 46 h18 M67 56 h18" style="stroke:var(--scene-muted,#536970);stroke-width:3;stroke-linecap:round"/>
+<rect class="consensus-leader-election-node" x="104" y="37" width="32" height="28" rx="7"/><path d="M111 46 h18 M111 56 h18" style="stroke:var(--scene-muted,#536970);stroke-width:3;stroke-linecap:round"/>
+<rect class="consensus-leader-election-node" x="148" y="37" width="32" height="28" rx="7"/><path d="M155 46 h18 M155 56 h18" style="stroke:var(--scene-muted,#536970);stroke-width:3;stroke-linecap:round"/>
+<rect class="consensus-leader-election-node" x="192" y="37" width="32" height="28" rx="7"/><path d="M199 46 h18 M199 56 h18" style="stroke:var(--scene-muted,#536970);stroke-width:3;stroke-linecap:round"/>
+<g class="consensus-leader-election-cut"><rect x="11" y="32" width="42" height="38" rx="10" fill="none" style="stroke:var(--scene-bad,#b3261e)" stroke-width="2.5" stroke-dasharray="4 3"/></g>
+<g class="consensus-leader-election-v"><path d="M69 76 l5 5 l9 -10" fill="none" style="stroke:var(--scene-good,#1f7a4d);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round"/><path d="M113 76 l5 5 l9 -10" fill="none" style="stroke:var(--scene-good,#1f7a4d);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round"/><path d="M157 76 l5 5 l9 -10" fill="none" style="stroke:var(--scene-good,#1f7a4d);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round"/><path d="M201 76 l5 5 l9 -10" fill="none" style="stroke:var(--scene-good,#1f7a4d);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round"/></g>
+<rect class="consensus-leader-election-node" x="8" y="90" width="224" height="40" rx="10" style="stroke:var(--scene-line,#cfdfdc);stroke-width:1.5"/>
+<text class="consensus-leader-election-mono" x="16" y="116" font-size="14" font-weight="700">token 5 ✓</text>
+<g class="consensus-leader-election-old"><rect x="124" y="96" width="102" height="28" rx="7" style="fill:var(--scene-accent-soft,#dcefed)"/>
+<text class="consensus-leader-election-bad" x="133" y="116" font-size="14" font-weight="700" style="font-family:ui-monospace,Menlo,monospace">token 4 ✕</text></g>
+</svg>

@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" class="reservation-root" role="img" aria-label="One person holds a seat, pays and gets it reserved, while a second person's tap on the same seat is refused.">
+<style>
+.reservation-root text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.reservation-t{fill:var(--scene-ink,#102a33)}
+.reservation-tx{fill:var(--scene-text,#28434a)}
+.reservation-mut{fill:var(--scene-muted,#536970)}
+.reservation-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.reservation-soft{fill:var(--scene-accent-soft,#dcefed)}
+.reservation-acc{fill:var(--scene-accent,#006c73)}
+.reservation-ln{fill:var(--scene-line,#cfdfdc)}
+.reservation-cardf{fill:var(--scene-card,#fff)}
+.reservation-good{fill:var(--scene-good,#1f7a4d)}
+.reservation-warn{fill:var(--scene-warn,#a15c00)}
+.reservation-bad{fill:var(--scene-bad,#b3261e)}
+.reservation-link{fill:var(--scene-link,#245a88)}
+.reservation-out{fill:var(--scene-bubble-out,#d4ecea)}
+.reservation-sk{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.reservation-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.reservation-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:1.5;stroke-dasharray:3 3}
+.reservation-a{animation-duration:7s;animation-iteration-count:infinite;animation-delay:-3s}
+.reservation-seat{animation-name:reservation-seat}@keyframes reservation-seat{0%,13%{fill:var(--scene-card,#fff)}16%,50%{fill:var(--scene-warn,#a15c00)}53%,68%{fill:var(--scene-link,#245a88)}71%,100%{fill:var(--scene-good,#1f7a4d)}}
+.reservation-c1{animation-name:reservation-c1}@keyframes reservation-c1{0%{transform:translate(-60px,40px);opacity:0}4%{opacity:1}13%,100%{transform:translate(0,0);opacity:1}}
+.reservation-c2{animation-name:reservation-c2}@keyframes reservation-c2{0%,24%{transform:translate(60px,30px);opacity:0}28%{opacity:1}34%,62%{transform:translate(0,0);opacity:1}68%,100%{transform:translate(0,0);opacity:0}}
+.reservation-held{animation-name:reservation-held}@keyframes reservation-held{0%,14%{opacity:0}17%,50%{opacity:1}53%,100%{opacity:0}}
+.reservation-pay{animation-name:reservation-pay}@keyframes reservation-pay{0%,51%{opacity:0}54%,68%{opacity:1}71%,100%{opacity:0}}
+.reservation-done{animation-name:reservation-done}@keyframes reservation-done{0%,69%{opacity:0}72%,100%{opacity:1}}
+.reservation-no{animation-name:reservation-no}@keyframes reservation-no{0%,33%{opacity:0}36%,62%{opacity:1}66%,100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.reservation-root *{animation-play-state:paused!important}}
+</style>
+<rect x="70" y="6" width="100" height="12" rx="6" class="reservation-soft"/>
+<rect class="reservation-box" x="28" y="26" width="18" height="14" rx="3"/><rect class="reservation-ln" x="51" y="26" width="18" height="14" rx="3"/><rect class="reservation-box" x="74" y="26" width="18" height="14" rx="3"/><rect class="reservation-ln" x="97" y="26" width="18" height="14" rx="3"/><rect class="reservation-box" x="120" y="26" width="18" height="14" rx="3"/><rect class="reservation-box" x="143" y="26" width="18" height="14" rx="3"/><rect class="reservation-ln" x="166" y="26" width="18" height="14" rx="3"/><rect class="reservation-box" x="189" y="26" width="18" height="14" rx="3"/><rect class="reservation-box" x="28" y="46" width="18" height="14" rx="3"/><rect class="reservation-box" x="51" y="46" width="18" height="14" rx="3"/><rect class="reservation-ln" x="74" y="46" width="18" height="14" rx="3"/><rect class="reservation-box" x="97" y="46" width="18" height="14" rx="3"/><rect class="reservation-a reservation-seat" x="120" y="46" width="18" height="14" rx="3" stroke="var(--scene-line,#cfdfdc)" stroke-width="1.2"/><rect class="reservation-box" x="143" y="46" width="18" height="14" rx="3"/><rect class="reservation-box" x="166" y="46" width="18" height="14" rx="3"/><rect class="reservation-ln" x="189" y="46" width="18" height="14" rx="3"/><rect class="reservation-ln" x="28" y="66" width="18" height="14" rx="3"/><rect class="reservation-box" x="51" y="66" width="18" height="14" rx="3"/><rect class="reservation-box" x="74" y="66" width="18" height="14" rx="3"/><rect class="reservation-box" x="97" y="66" width="18" height="14" rx="3"/><rect class="reservation-box" x="120" y="66" width="18" height="14" rx="3"/><rect class="reservation-ln" x="143" y="66" width="18" height="14" rx="3"/><rect class="reservation-box" x="166" y="66" width="18" height="14" rx="3"/><rect class="reservation-box" x="189" y="66" width="18" height="14" rx="3"/><rect class="reservation-box" x="28" y="86" width="18" height="14" rx="3"/><rect class="reservation-box" x="51" y="86" width="18" height="14" rx="3"/><rect class="reservation-box" x="74" y="86" width="18" height="14" rx="3"/><rect class="reservation-ln" x="97" y="86" width="18" height="14" rx="3"/><rect class="reservation-box" x="120" y="86" width="18" height="14" rx="3"/><rect class="reservation-box" x="143" y="86" width="18" height="14" rx="3"/><rect class="reservation-box" x="166" y="86" width="18" height="14" rx="3"/><rect class="reservation-ln" x="189" y="86" width="18" height="14" rx="3"/><g class="reservation-a reservation-held"><rect x="28" y="108" width="100" height="24" rx="12" class="reservation-box" style="stroke:var(--scene-warn,#a15c00)"/><circle cx="44" cy="120" r="6" class="reservation-sk" style="stroke:var(--scene-warn,#a15c00)"/><path d="M44 117 v3 h3" class="reservation-sk" style="stroke:var(--scene-warn,#a15c00)"/><text x="90" y="125" font-size="15" font-weight="700" text-anchor="middle" class="reservation-warn">4:59</text></g>
+<g class="reservation-a reservation-pay"><rect x="28" y="108" width="100" height="24" rx="12" class="reservation-box" style="stroke:var(--scene-link,#245a88)"/><text x="78" y="125" font-size="14" font-weight="700" text-anchor="middle" class="reservation-link">Paying&#8230;</text></g>
+<g class="reservation-a reservation-done"><rect x="28" y="108" width="100" height="24" rx="12" class="reservation-box" style="stroke:var(--scene-good,#1f7a4d)"/><text x="78" y="125" font-size="14" font-weight="700" text-anchor="middle" class="reservation-good">Reserved &#10003;</text></g>
+<g class="reservation-a reservation-no"><rect x="148" y="108" width="64" height="24" rx="12" class="reservation-bad" fill-opacity=".15"/><text x="180" y="125" font-size="14" font-weight="700" text-anchor="middle" class="reservation-bad">Taken</text></g>
+<g class="reservation-a reservation-c1"><path d="M124 50 l0 16 l4.5 -4.5 l3.5 7.5 l3 -1.4 l-3.5 -7.5 l6 0z" style="fill:var(--scene-ink,#102a33);stroke:var(--scene-card,#fff);stroke-width:1"/></g>
+<g class="reservation-a reservation-c2"><path d="M136 56 l0 16 l4.5 -4.5 l3.5 7.5 l3 -1.4 l-3.5 -7.5 l6 0z" style="fill:var(--scene-bad,#b3261e);stroke:var(--scene-card,#fff);stroke-width:1"/></g>
+</svg>

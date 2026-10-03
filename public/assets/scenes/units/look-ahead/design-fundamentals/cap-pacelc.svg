@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Aroha adds a kettle to her cart while the link between two copies is down; one copy saves it and the other catches up when the link returns">
+<style>
+.cap-pacelc-card{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.cap-pacelc-t{font-family:system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.cap-pacelc-chip{fill:var(--scene-accent-soft,#dcefed)}
+.cap-pacelc-new{fill:var(--scene-bubble-out,#d4ecea);stroke:var(--scene-accent,#006c73);stroke-width:1.5}
+.cap-pacelc-btn{fill:var(--scene-accent,#006c73)}
+.cap-pacelc-good{font-family:system-ui,sans-serif;fill:var(--scene-good,#1f7a4d)}
+.cap-pacelc-bad{font-family:system-ui,sans-serif;fill:var(--scene-bad,#b3261e)}
+.cap-pacelc-link{stroke-width:4;fill:none;animation:cap-pacelc-link 7s -3s infinite}
+@keyframes cap-pacelc-link{0%,14%{stroke:var(--scene-good,#1f7a4d);stroke-dasharray:none}16%,70%{stroke:var(--scene-bad,#b3261e);stroke-dasharray:5 5}72%,100%{stroke:var(--scene-good,#1f7a4d);stroke-dasharray:none}}
+.cap-pacelc-down{animation:cap-pacelc-down 7s -3s infinite}
+@keyframes cap-pacelc-down{0%,14%{opacity:0}16%,70%{opacity:1}72%,100%{opacity:0}}
+.cap-pacelc-up{animation:cap-pacelc-up 7s -3s infinite}
+@keyframes cap-pacelc-up{0%,72%{opacity:0}75%,96%{opacity:1}100%{opacity:0}}
+.cap-pacelc-phone-k{animation:cap-pacelc-pk 7s -3s infinite}
+@keyframes cap-pacelc-pk{0%,18%{opacity:0;transform:translateY(-6px)}22%,96%{opacity:1;transform:none}100%{opacity:0}}
+.cap-pacelc-dot{animation:cap-pacelc-dot 7s -3s infinite}
+@keyframes cap-pacelc-dot{0%,18%{opacity:0;transform:translate(0,0)}20%{opacity:1}28%{opacity:1;transform:translate(80px,-34px)}30%,100%{opacity:0;transform:translate(80px,-34px)}}
+.cap-pacelc-syd{animation:cap-pacelc-syd 7s -3s infinite}
+@keyframes cap-pacelc-syd{0%,28%{opacity:0}31%,96%{opacity:1}100%{opacity:0}}
+.cap-pacelc-sin{animation:cap-pacelc-sin 7s -3s infinite}
+@keyframes cap-pacelc-sin{0%,74%{opacity:0}78%,96%{opacity:1}100%{opacity:0}}
+.cap-pacelc-saved{animation:cap-pacelc-saved 7s -3s infinite}
+@keyframes cap-pacelc-saved{0%,30%{opacity:0}33%,96%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.cap-pacelc-dot,.cap-pacelc-link{animation-play-state:paused}}
+</style>
+<!-- phone -->
+<rect class="cap-pacelc-card" x="6" y="6" width="76" height="123" rx="12"/>
+<rect class="cap-pacelc-chip" x="14" y="16" width="60" height="24" rx="6"/>
+<text class="cap-pacelc-t" x="22" y="33" font-size="14">Mug</text>
+<g class="cap-pacelc-phone-k"><rect class="cap-pacelc-new" x="14" y="46" width="60" height="24" rx="6"/>
+<text class="cap-pacelc-t" x="22" y="63" font-size="14" font-weight="700">Kettle</text></g>
+<rect class="cap-pacelc-btn" x="14" y="82" width="60" height="26" rx="13"/>
+
+<text x="44" y="102" font-size="20" font-weight="700" text-anchor="middle" style="fill:var(--scene-card,#fff);font-family:system-ui,sans-serif">+</text>
+<text class="cap-pacelc-good cap-pacelc-saved" x="44" y="123" font-size="14" font-weight="700" text-anchor="middle">Saved ✓</text>
+<circle class="cap-pacelc-dot" cx="86" cy="95" r="5" style="fill:var(--scene-accent,#006c73)"/>
+<!-- two copies -->
+<rect class="cap-pacelc-card" x="130" y="6" width="104" height="44" rx="9"/>
+<rect class="cap-pacelc-chip" x="136" y="14" width="40" height="28" rx="5"/>
+
+<g class="cap-pacelc-syd"><rect class="cap-pacelc-new" x="180" y="14" width="48" height="28" rx="5"/></g>
+<rect class="cap-pacelc-card" x="130" y="85" width="104" height="44" rx="9"/>
+<rect class="cap-pacelc-chip" x="136" y="93" width="40" height="28" rx="5"/>
+
+<g class="cap-pacelc-sin"><rect class="cap-pacelc-new" x="180" y="93" width="48" height="28" rx="5"/></g>
+<path class="cap-pacelc-link" d="M182 50 V85"/>
+<g class="cap-pacelc-down"><text class="cap-pacelc-bad" x="182" y="75" font-size="20" font-weight="700" text-anchor="middle" style="paint-order:stroke;stroke:var(--scene-card,#fff);stroke-width:3">✕</text></g>
+<g class="cap-pacelc-up"><text class="cap-pacelc-good" x="182" y="75" font-size="20" font-weight="700" text-anchor="middle" style="paint-order:stroke;stroke:var(--scene-card,#fff);stroke-width:3">✓</text></g>
+</svg>

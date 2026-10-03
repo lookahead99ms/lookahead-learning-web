@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A few users are routed to the new version while most stay on the current one">
+<style>
+.grow-cicd-release-strategies-t{font:700 13px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.grow-cicd-release-strategies-w{font:700 13px system-ui,sans-serif;fill:var(--scene-card,#fff)}
+.grow-cicd-release-strategies-d{animation:grow-cicd-release-strategies-a 5s linear infinite}
+.grow-cicd-release-strategies-d2{animation-name:grow-cicd-release-strategies-b}
+@keyframes grow-cicd-release-strategies-a{0%{transform:translate(0,0);opacity:0}10%{opacity:1}100%{transform:translate(150px,-34px);opacity:1}}
+@keyframes grow-cicd-release-strategies-b{0%{transform:translate(0,0);opacity:0}10%{opacity:1}100%{transform:translate(150px,34px);opacity:1}}
+.grow-cicd-release-strategies-bar{transform-origin:226px 150px;animation:grow-cicd-release-strategies-g 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes grow-cicd-release-strategies-g{0%{transform:scaleX(.1)}80%,100%{transform:scaleX(1)}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<path d="M92 90C130 90 140 60 190 56M92 90C130 90 140 120 190 124" fill="none" stroke="var(--scene-line,#cfdfdc)" stroke-width="6" stroke-linecap="round"/>
+<g fill="var(--scene-ahead,#2f6fb3)">
+<circle class="grow-cicd-release-strategies-d2" cx="92" cy="90" r="5" style="animation-delay:-3.5s"/>
+<circle class="grow-cicd-release-strategies-d2" cx="92" cy="90" r="5" style="animation-delay:-1.2s"/>
+<circle class="grow-cicd-release-strategies-d2" cx="92" cy="90" r="5" style="animation-delay:-4.6s"/>
+</g>
+<circle class="grow-cicd-release-strategies-d" cx="92" cy="90" r="5" fill="var(--scene-warn,#a15c00)" style="animation-delay:-2.4s"/>
+<g fill="var(--scene-ink,#102a33)"><circle cx="30" cy="70" r="6"/><circle cx="48" cy="90" r="6"/><circle cx="30" cy="110" r="6"/><circle cx="66" cy="76" r="6"/><circle cx="66" cy="104" r="6"/></g>
+<rect x="190" y="36" width="110" height="40" rx="10" fill="var(--scene-warn,#a15c00)"/>
+<text class="grow-cicd-release-strategies-w" x="245" y="61" text-anchor="middle">v2 canary</text>
+<rect x="190" y="104" width="110" height="40" rx="10" fill="var(--scene-good,#1f7a4d)"/>
+<text class="grow-cicd-release-strategies-w" x="245" y="129" text-anchor="middle">v1 current</text>
+<rect x="190" y="152" width="110" height="8" rx="4" fill="var(--scene-line,#cfdfdc)"/>
+<rect class="grow-cicd-release-strategies-bar" x="190" y="152" width="110" height="8" rx="4" fill="var(--scene-warn,#a15c00)" style="transform-origin:190px 156px"/>
+<text class="grow-cicd-release-strategies-t" x="20" y="150">Small share first</text>
+</svg>

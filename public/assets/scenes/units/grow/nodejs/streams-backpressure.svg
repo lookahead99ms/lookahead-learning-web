@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Records flow down a pipe to a slow sink that signals the source to pause">
+<style>
+.grow-nodejs-streams-backpressure-t{font-family:system-ui,sans-serif;font-weight:700;font-size:16px;fill:var(--scene-ink,#102a33)}
+.grow-nodejs-streams-backpressure-c{animation:grow-nodejs-streams-backpressure-flow 5s linear infinite}
+.grow-nodejs-streams-backpressure-m{animation:grow-nodejs-streams-backpressure-fillm 5s ease-in-out infinite}
+.grow-nodejs-streams-backpressure-p{animation:grow-nodejs-streams-backpressure-blink 2.5s ease-in-out infinite}
+@keyframes grow-nodejs-streams-backpressure-flow{0%{transform:translateX(0);opacity:0}10%{opacity:1}75%{opacity:1}100%{transform:translateX(150px);opacity:0}}
+@keyframes grow-nodejs-streams-backpressure-fillm{0%{transform:scaleY(.2)}60%,100%{transform:scaleY(1)}}
+@keyframes grow-nodejs-streams-backpressure-blink{0%,100%{opacity:.35}50%{opacity:1}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="10" y="62" width="50" height="50" rx="8" fill="var(--scene-ahead,#2f6fb3)"/>
+<rect x="20" y="74" width="30" height="5" rx="2" fill="#fff"/><rect x="20" y="84" width="30" height="5" rx="2" fill="#fff"/><rect x="20" y="94" width="20" height="5" rx="2" fill="#fff"/>
+<rect x="60" y="76" width="170" height="22" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2"/>
+<g class="grow-nodejs-streams-backpressure-c" style="animation-delay:-3s"><rect x="68" y="80" width="14" height="14" rx="3" fill="var(--scene-learn,#0f8a8a)"/></g>
+<g class="grow-nodejs-streams-backpressure-c" style="animation-delay:-1.8s"><rect x="68" y="80" width="14" height="14" rx="3" fill="var(--scene-learn,#0f8a8a)"/></g>
+<g class="grow-nodejs-streams-backpressure-c" style="animation-delay:-0.6s"><rect x="68" y="80" width="14" height="14" rx="3" fill="var(--scene-learn,#0f8a8a)"/></g>
+<rect x="244" y="44" width="62" height="86" rx="8" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="3"/>
+<rect class="grow-nodejs-streams-backpressure-m" style="animation-delay:-3s;transform-origin:275px 126px" x="250" y="50" width="50" height="76" rx="4" fill="var(--scene-warn,#a15c00)"/>
+<text x="275" y="154" text-anchor="middle" class="grow-nodejs-streams-backpressure-t">slow sink</text>
+<g class="grow-nodejs-streams-backpressure-p" style="animation-delay:-1s"><rect x="104" y="124" width="64" height="28" rx="14" fill="var(--scene-warn,#a15c00)"/><text x="136" y="143" text-anchor="middle" class="grow-nodejs-streams-backpressure-t" style="fill:#fff">pause</text></g>
+<path d="M240 118 Q200 140 172 138" stroke="var(--scene-warn,#a15c00)" stroke-width="2.5" fill="none" stroke-dasharray="4 3"/>
+<path d="M100 130 Q70 128 40 118" stroke="var(--scene-warn,#a15c00)" stroke-width="2.5" fill="none" stroke-dasharray="4 3"/>
+</svg>

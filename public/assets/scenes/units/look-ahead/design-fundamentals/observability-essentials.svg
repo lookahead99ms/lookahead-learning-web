@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Sanjar's check-in spins for 12 seconds while the average looks fine; the p99 and his trace show the slow seat service, and the team is paged.">
+<style>
+.observability-essentials-t{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-ink,#102a33)}
+.observability-essentials-mu{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-muted,#536970)}
+.observability-essentials-g{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-good,#1f7a4d)}
+.observability-essentials-w{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-warn,#a15c00)}
+.observability-essentials-b{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-bad,#b3261e)}
+.observability-essentials-a{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-accent,#006c73)}
+.observability-essentials-mono{font-family:ui-monospace,Menlo,monospace}
+.observability-essentials-card{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.observability-essentials-soft{fill:var(--scene-accent-soft,#dcefed)}
+.observability-essentials-acc{fill:var(--scene-accent,#006c73)}
+.observability-essentials-gd{fill:var(--scene-good,#1f7a4d)}
+.observability-essentials-wn{fill:var(--scene-warn,#a15c00)}
+.observability-essentials-bd{fill:var(--scene-bad,#b3261e)}
+.observability-essentials-ink{fill:var(--scene-ink,#102a33)}
+.observability-essentials-mf{fill:var(--scene-muted,#536970)}
+.observability-essentials-lf{fill:var(--scene-line,#cfdfdc)}
+.observability-essentials-cf{fill:var(--scene-card,#fff)}
+.observability-essentials-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.observability-essentials-sg{fill:none;stroke:var(--scene-good,#1f7a4d);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.observability-essentials-sw{fill:none;stroke:var(--scene-warn,#a15c00);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.observability-essentials-sb{fill:none;stroke:var(--scene-bad,#b3261e);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.observability-essentials-sm{fill:none;stroke:var(--scene-muted,#536970);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.observability-essentials-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.observability-essentials-si{fill:none;stroke:var(--scene-ink,#102a33);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.observability-essentials-tail{animation:observability-essentials-tail 8s -3.2s infinite;}
+@keyframes observability-essentials-tail{0%,100%{opacity:1}50%{opacity:.35}}
+.observability-essentials-grow{animation:observability-essentials-grow 8s -3.2s infinite;transform-box:fill-box;transform-origin:left center}
+@keyframes observability-essentials-grow{0%,10%{transform:scaleX(.05)}45%,100%{transform:scaleX(1)}}
+.observability-essentials-ring{animation:observability-essentials-ring 8s -3.2s infinite;transform-origin:84px 100px}
+@keyframes observability-essentials-ring{0%,64%{opacity:0;transform:rotate(0)}66%{opacity:1;transform:rotate(14deg)}70%{transform:rotate(-14deg)}74%{transform:rotate(12deg)}78%{transform:rotate(-10deg)}82%,96%{opacity:1;transform:rotate(0)}100%{opacity:0}}
+.observability-essentials-pg{animation:observability-essentials-pg 8s -3.2s infinite;}
+@keyframes observability-essentials-pg{0%,63%{opacity:0}64%,96%{opacity:1}97%,100%{opacity:0}}
+</style>
+<rect class="observability-essentials-card" x="6" y="6" width="110" height="92" rx="10"/><rect class="observability-essentials-card" x="124" y="6" width="110" height="92" rx="10"/>
+<text class="observability-essentials-g" x="61" y="27" font-size="14" font-weight="700" text-anchor="middle">avg fine ✓</text>
+<rect class="observability-essentials-soft" x="14" y="48" width="13" height="40" rx="2"/>
+<rect class="observability-essentials-acc" x="14" y="48" width="13" height="3"/>
+<rect class="observability-essentials-soft" x="31" y="54" width="13" height="34" rx="2"/>
+<rect class="observability-essentials-acc" x="31" y="54" width="13" height="3"/>
+<rect class="observability-essentials-soft" x="48" y="62" width="13" height="26" rx="2"/>
+<rect class="observability-essentials-acc" x="48" y="62" width="13" height="3"/>
+<rect class="observability-essentials-soft" x="65" y="72" width="13" height="16" rx="2"/>
+<rect class="observability-essentials-acc" x="65" y="72" width="13" height="3"/>
+<rect class="observability-essentials-soft" x="82" y="80" width="13" height="8" rx="2"/>
+<rect class="observability-essentials-acc" x="82" y="80" width="13" height="3"/>
+<rect class="observability-essentials-bd observability-essentials-tail" x="101" y="78" width="9" height="10" rx="2"/>
+<text class="observability-essentials-b" x="179" y="27" font-size="14" font-weight="700" text-anchor="middle">seat: 12 s</text>
+<rect class="observability-essentials-soft" x="132" y="38" width="94" height="11" rx="3"/><rect class="observability-essentials-acc" x="140" y="54" width="18" height="11" rx="3"/>
+<rect class="observability-essentials-bd observability-essentials-grow" x="148" y="70" width="78" height="11" rx="3"/>
+<g class="observability-essentials-ring"><path class="observability-essentials-wn" d="M84 102 c-9 0 -14 7 -14 15 v7 l-5 6 h38 l-5 -6 v-7 c0 -8 -5 -15 -14 -15z"/><circle class="observability-essentials-wn" cx="84" cy="131" r="3"/></g>
+<g class="observability-essentials-pg"><text class="observability-essentials-w" x="112" y="123" font-size="16" font-weight="700" text-anchor="start">Paged</text>
+</g>
+</svg>

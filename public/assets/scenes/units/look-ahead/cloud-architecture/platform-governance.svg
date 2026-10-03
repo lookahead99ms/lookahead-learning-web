@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Service cars drive a guarded golden road to production while one takes a time-limited exception lane">
+<style>
+.look-ahead-cloud-architecture-platform-governance-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.look-ahead-cloud-architecture-platform-governance-c{animation:look-ahead-cloud-architecture-platform-governance-go 6s linear infinite}
+.look-ahead-cloud-architecture-platform-governance-e{animation:look-ahead-cloud-architecture-platform-governance-ex 6s linear infinite}
+.look-ahead-cloud-architecture-platform-governance-g{animation:look-ahead-cloud-architecture-platform-governance-gt 6s ease-in-out infinite}
+@keyframes look-ahead-cloud-architecture-platform-governance-go{0%{transform:translateX(0)}100%{transform:translateX(250px)}}
+@keyframes look-ahead-cloud-architecture-platform-governance-ex{0%{transform:translate(0,0)}30%{transform:translate(60px,0)}40%{transform:translate(80px,30px)}70%{transform:translate(160px,30px)}80%{transform:translate(180px,0)}100%{transform:translate(250px,0)}}
+@keyframes look-ahead-cloud-architecture-platform-governance-gt{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="0" y="62" width="320" height="38" fill="var(--scene-accent-soft,#dcefed)"/>
+<path d="M0 66H320M0 96H320" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<path d="M0 81H320" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="10 8"/>
+<path d="M90 100Q110 130 130 130H200Q220 130 240 100" stroke="var(--scene-warn,#a15c00)" stroke-width="3" fill="none" stroke-dasharray="5 4"/>
+<g class="look-ahead-cloud-architecture-platform-governance-g" style="animation-delay:-3s" fill="var(--scene-good,#1f7a4d)"><rect x="100" y="48" width="8" height="52"/><rect x="200" y="48" width="8" height="52"/></g>
+<rect x="96" y="44" width="116" height="6" rx="3" fill="var(--scene-ink,#102a33)"/>
+<g class="look-ahead-cloud-architecture-platform-governance-c" style="animation-delay:-3s;animation-duration:6s"><rect x="-40" y="70" width="26" height="14" rx="4" fill="var(--scene-link,#245a88)"/></g>
+<g class="look-ahead-cloud-architecture-platform-governance-c" style="animation-delay:-5.2s"><rect x="-40" y="70" width="26" height="14" rx="4" fill="var(--scene-learn,#0f8a8a)"/></g>
+<g class="look-ahead-cloud-architecture-platform-governance-c" style="animation-delay:-1.2s"><rect x="-40" y="70" width="26" height="14" rx="4" fill="var(--scene-grow,#b8457a)"/></g>
+<g class="look-ahead-cloud-architecture-platform-governance-e" style="animation-delay:-4s"><rect x="-40" y="74" width="26" height="14" rx="4" fill="var(--scene-warn,#a15c00)"/></g>
+<rect x="276" y="62" width="30" height="38" rx="4" fill="var(--scene-ink,#102a33)"/>
+<text class="look-ahead-cloud-architecture-platform-governance-t" x="160" y="26" text-anchor="middle">Golden path</text>
+<text class="look-ahead-cloud-architecture-platform-governance-t" x="160" y="158" text-anchor="middle" style="fill:var(--scene-warn,#a15c00)">Timed pass</text>
+<text class="look-ahead-cloud-architecture-platform-governance-t" x="291" y="124" text-anchor="middle">Prod</text>
+</svg>

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Isolated accounts under one organization, a cross-account attempt blocked, logs flowing to a locked vault">
+<style>
+.look-ahead-cloud-architecture-landing-zone-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.look-ahead-cloud-architecture-landing-zone-a{animation:look-ahead-cloud-architecture-landing-zone-hop 6s linear infinite}
+.look-ahead-cloud-architecture-landing-zone-x{animation:look-ahead-cloud-architecture-landing-zone-blk 6s linear infinite}
+.look-ahead-cloud-architecture-landing-zone-l{animation:look-ahead-cloud-architecture-landing-zone-log 6s linear infinite}
+@keyframes look-ahead-cloud-architecture-landing-zone-hop{0%{transform:translate(0,0);opacity:1}25%{transform:translate(0,0)}45%{transform:translate(70px,0);opacity:1}55%{transform:translate(70px,0);opacity:0}56%,100%{transform:translate(0,0);opacity:0}}
+@keyframes look-ahead-cloud-architecture-landing-zone-blk{0%,38%{opacity:0}45%,70%{opacity:1}80%,100%{opacity:0}}
+@keyframes look-ahead-cloud-architecture-landing-zone-log{0%{transform:translate(0,0);opacity:0}10%{opacity:1}60%{transform:translate(0,40px);opacity:1}70%,100%{transform:translate(0,40px);opacity:0}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="125" y="10" width="70" height="26" rx="6" fill="var(--scene-ink,#102a33)"/>
+<text class="look-ahead-cloud-architecture-landing-zone-t" x="160" y="28" text-anchor="middle" style="fill:var(--scene-card,#fff)">Org</text>
+<path d="M160 36V46M60 46H260M60 46V54M160 46V54M260 46V54" stroke="var(--scene-muted,#536970)" stroke-width="2" fill="none"/>
+<g stroke-width="3" fill="var(--scene-accent-soft,#dcefed)">
+<rect x="25" y="54" width="70" height="52" rx="6" stroke="var(--scene-learn,#0f8a8a)"/>
+<rect x="125" y="54" width="70" height="52" rx="6" stroke="var(--scene-link,#245a88)"/>
+<rect x="225" y="54" width="70" height="52" rx="6" stroke="var(--scene-grow,#b8457a)"/>
+</g>
+<circle cx="60" cy="80" r="9" fill="var(--scene-learn,#0f8a8a)"/>
+<circle cx="160" cy="80" r="9" fill="var(--scene-link,#245a88)"/>
+<circle cx="260" cy="80" r="9" fill="var(--scene-grow,#b8457a)"/>
+<g class="look-ahead-cloud-architecture-landing-zone-a" style="animation-delay:-3s"><circle cx="60" cy="80" r="5" fill="var(--scene-warn,#a15c00)"/></g>
+<g class="look-ahead-cloud-architecture-landing-zone-x" style="animation-delay:-3s"><circle cx="128" cy="80" r="11" fill="var(--scene-bad,#b3261e)"/><path d="M123 75L133 85M133 75L123 85" stroke="#fff" stroke-width="3" stroke-linecap="round"/></g>
+<g stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="4 4"><path d="M60 106V138M160 106V138M260 106V138"/></g>
+<g class="look-ahead-cloud-architecture-landing-zone-l" style="animation-delay:-3s"><rect x="56" y="100" width="8" height="8" fill="var(--scene-good,#1f7a4d)"/></g>
+<g class="look-ahead-cloud-architecture-landing-zone-l" style="animation-delay:-4.2s"><rect x="156" y="100" width="8" height="8" fill="var(--scene-good,#1f7a4d)"/></g>
+<g class="look-ahead-cloud-architecture-landing-zone-l" style="animation-delay:-5.4s"><rect x="256" y="100" width="8" height="8" fill="var(--scene-good,#1f7a4d)"/></g>
+<rect x="25" y="138" width="270" height="32" rx="6" fill="var(--scene-ink,#102a33)"/>
+<rect x="38" y="148" width="14" height="12" rx="2" fill="var(--scene-warn,#a15c00)"/><path d="M41 148v-4a4 4 0 018 0v4" stroke="var(--scene-warn,#a15c00)" stroke-width="2.5" fill="none"/>
+<text class="look-ahead-cloud-architecture-landing-zone-t" x="175" y="159" text-anchor="middle" style="fill:var(--scene-card,#fff)">Audit log</text>
+</svg>

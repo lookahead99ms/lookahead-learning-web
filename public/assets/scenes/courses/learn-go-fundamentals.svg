@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Three goroutines work in parallel and send their results through a channel to main">
+<style>
+.learn-go-fundamentals-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.learn-go-fundamentals-tm { font-family: ui-monospace, Menlo, monospace; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.learn-go-fundamentals-w { fill: var(--scene-card, #ffffff); stroke: var(--scene-accent, #006c73); stroke-width: 2; }
+.learn-go-fundamentals-track { fill: var(--scene-accent-soft, #dcefed); }
+.learn-go-fundamentals-bar { fill: var(--scene-accent, #006c73); transform-box: fill-box; transform-origin: 0 50%; }
+.learn-go-fundamentals-wire { fill: none; stroke: var(--scene-line, #cfdfdc); stroke-width: 2; }
+.learn-go-fundamentals-pipe { fill: var(--scene-accent-soft, #dcefed); stroke: var(--scene-link, #245a88); stroke-width: 2; }
+.learn-go-fundamentals-main { fill: var(--scene-card, #ffffff); stroke: var(--scene-ink, #102a33); stroke-width: 2; }
+.learn-go-fundamentals-v { fill: var(--scene-link, #245a88); }
+.learn-go-fundamentals-p1 { animation: learn-go-fundamentals-kf-p 3s ease-in-out -0.4s infinite; }
+.learn-go-fundamentals-p2 { animation: learn-go-fundamentals-kf-p 2.2s ease-in-out -1.3s infinite; }
+.learn-go-fundamentals-p3 { animation: learn-go-fundamentals-kf-p 2.6s ease-in-out -2.1s infinite; }
+@keyframes learn-go-fundamentals-kf-p { 0% { transform: scaleX(.05); } 80% { transform: scaleX(1); } 100% { transform: scaleX(1); } }
+.learn-go-fundamentals-d1 { animation: learn-go-fundamentals-kf-d 6s linear -3s infinite; }
+.learn-go-fundamentals-d2 { animation: learn-go-fundamentals-kf-d 6s linear -5s infinite; }
+.learn-go-fundamentals-d3 { animation: learn-go-fundamentals-kf-d 6s linear -1s infinite; }
+@keyframes learn-go-fundamentals-kf-d { 0% { transform: translateX(0); opacity: 0; } 8% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translateX(124px); opacity: 0; } }
+.learn-go-fundamentals-recv { animation: learn-go-fundamentals-kf-r 2s ease-out -1s infinite; transform-box: fill-box; transform-origin: 50% 50%; }
+@keyframes learn-go-fundamentals-kf-r { 0% { transform: scale(.6); opacity: .2; } 30% { transform: scale(1); opacity: 1; } 100% { transform: scale(.6); opacity: .2; } }
+</style>
+<text class="learn-go-fundamentals-t" x="20" y="28" font-size="16">goroutines</text>
+<g>
+  <rect class="learn-go-fundamentals-w" x="20" y="40" width="72" height="30" rx="8"/>
+  <rect class="learn-go-fundamentals-track" x="30" y="52" width="52" height="6" rx="3"/>
+  <rect class="learn-go-fundamentals-bar learn-go-fundamentals-p1" x="30" y="52" width="52" height="6" rx="3"/>
+  <rect class="learn-go-fundamentals-w" x="20" y="80" width="72" height="30" rx="8"/>
+  <rect class="learn-go-fundamentals-track" x="30" y="92" width="52" height="6" rx="3"/>
+  <rect class="learn-go-fundamentals-bar learn-go-fundamentals-p2" x="30" y="92" width="52" height="6" rx="3"/>
+  <rect class="learn-go-fundamentals-w" x="20" y="120" width="72" height="30" rx="8"/>
+  <rect class="learn-go-fundamentals-track" x="30" y="132" width="52" height="6" rx="3"/>
+  <rect class="learn-go-fundamentals-bar learn-go-fundamentals-p3" x="30" y="132" width="52" height="6" rx="3"/>
+</g>
+<path class="learn-go-fundamentals-wire" d="M92 55 C108 55 104 95 118 95 M92 95 H118 M92 135 C108 135 104 95 118 95"/>
+<rect class="learn-go-fundamentals-pipe" x="118" y="81" width="120" height="28" rx="14"/>
+<text class="learn-go-fundamentals-tm" x="178" y="134" font-size="16" text-anchor="middle">chan</text>
+<circle class="learn-go-fundamentals-v learn-go-fundamentals-d1" cx="114" cy="95" r="7"/>
+<circle class="learn-go-fundamentals-v learn-go-fundamentals-d2" cx="114" cy="95" r="7"/>
+<circle class="learn-go-fundamentals-v learn-go-fundamentals-d3" cx="114" cy="95" r="7"/>
+<rect class="learn-go-fundamentals-main" x="250" y="66" width="56" height="58" rx="10"/>
+<text class="learn-go-fundamentals-t" x="278" y="88" font-size="16" text-anchor="middle">main</text>
+<circle class="learn-go-fundamentals-v learn-go-fundamentals-recv" cx="278" cy="106" r="7"/>
+</svg>

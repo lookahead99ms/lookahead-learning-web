@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Sefa's watch uploads her 10 km run and the weekly total rises from 0 to 10 km; her phone then uploads the same run again, it bounces off and the total stays at 10 km, counted once">
+<style>
+.fitness-tracking-t{font-family:system-ui, sans-serif;fill:var(--scene-ink,#102a33)}
+.fitness-tracking-tx{font-family:system-ui, sans-serif;fill:var(--scene-text,#28434a)}
+.fitness-tracking-tm{font-family:ui-monospace, Menlo, monospace;fill:var(--scene-ink,#102a33)}
+.fitness-tracking-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.fitness-tracking-card{fill:var(--scene-card,#fff)}
+.fitness-tracking-ink{fill:var(--scene-ink,#102a33)}
+.fitness-tracking-soft{fill:var(--scene-muted,#536970)}
+.fitness-tracking-line{fill:var(--scene-line,#cfdfdc)}
+.fitness-tracking-acc{fill:var(--scene-accent,#006c73)}
+.fitness-tracking-accsoft{fill:var(--scene-accent-soft,#dcefed)}
+.fitness-tracking-good{fill:var(--scene-good,#1f7a4d)}
+.fitness-tracking-bad{fill:var(--scene-bad,#b3261e)}
+.fitness-tracking-warn{fill:var(--scene-warn,#a15c00)}
+.fitness-tracking-link{fill:var(--scene-link,#245a88)}
+.fitness-tracking-a{animation-duration:6s;animation-iteration-count:infinite;animation-delay:-3.6s;animation-timing-function:ease-in-out}
+@media (prefers-reduced-motion: reduce){.fitness-tracking-a{animation-play-state:paused!important}}
+.fitness-tracking-p1{animation-name:fitness-tracking-p1}
+@keyframes fitness-tracking-p1{0%,2%{opacity:0;transform:none}6%{opacity:1;transform:none}20%{opacity:1;transform:translateX(98px)}23%,100%{opacity:0;transform:translateX(98px)}}
+.fitness-tracking-p2{animation-name:fitness-tracking-p2}
+@keyframes fitness-tracking-p2{0%,32%{opacity:0;transform:none}36%{opacity:1;transform:none}50%{opacity:1;transform:translateX(90px)}53%{transform:translateX(82px)}56%{transform:translateX(90px)}62%{opacity:1;transform:translateX(86px)}66%,100%{opacity:0;transform:translateX(86px)}}
+.fitness-tracking-route{animation-name:fitness-tracking-route}
+@keyframes fitness-tracking-route{0%,20%{stroke-dashoffset:150}34%,94%{stroke-dashoffset:0}100%{stroke-dashoffset:150}}
+.fitness-tracking-k0{animation-name:fitness-tracking-k0}
+@keyframes fitness-tracking-k0{0%,22%{opacity:1}24%,96%{opacity:0}100%{opacity:1}}
+.fitness-tracking-k10{animation-name:fitness-tracking-k10}
+@keyframes fitness-tracking-k10{0%,22%{opacity:0}24%,96%{opacity:1}100%{opacity:0}}
+.fitness-tracking-once{animation-name:fitness-tracking-once}
+@keyframes fitness-tracking-once{0%,52%{opacity:0;transform:translateY(6px)}57%,92%{opacity:1;transform:none}97%,100%{opacity:0}}
+</style>
+<rect x="20" y="6" width="20" height="10" rx="3" class="fitness-tracking-soft"/><rect x="20" y="48" width="20" height="10" rx="3" class="fitness-tracking-soft"/><rect x="12" y="14" width="36" height="36" rx="9" class="fitness-tracking-ink"/><rect x="16" y="18" width="28" height="28" rx="6" class="fitness-tracking-acc"/><path d="M20 36 q4 -10 9 -4 t9 -6" stroke="var(--scene-card,#fff)" stroke-width="2" fill="none" stroke-linecap="round"/>
+<rect x="16" y="64" width="28" height="44" rx="6" class="fitness-tracking-ink"/><rect x="19" y="68" width="22" height="34" rx="3" class="fitness-tracking-acc"/><path d="M22 94 q4 -10 9 -4 t7 -6" stroke="var(--scene-card,#fff)" stroke-width="2" fill="none" stroke-linecap="round"/>
+<g class="fitness-tracking-a fitness-tracking-p1"><rect x="34" y="22" width="28" height="20" rx="10" class="fitness-tracking-acc"/><path d="M38 38 q4 -10 9 -4 t9 -4" stroke="var(--scene-card,#fff)" stroke-width="2" fill="none" stroke-linecap="round"/></g>
+<g class="fitness-tracking-a fitness-tracking-p2"><rect x="46" y="76" width="28" height="20" rx="10" class="fitness-tracking-acc"/><path d="M50 92 q4 -10 9 -4 t9 -4" stroke="var(--scene-card,#fff)" stroke-width="2" fill="none" stroke-linecap="round"/></g>
+<rect x="132" y="6" width="102" height="122" rx="12" class="fitness-tracking-box"/>
+<rect x="140" y="14" width="86" height="50" rx="7" class="fitness-tracking-accsoft"/><path d="M140 30 h86 M140 48 h86 M168 14 v50 M198 14 v50" stroke="var(--scene-card,#fff)" stroke-width="3"/><path class="fitness-tracking-a fitness-tracking-route" d="M148 56 C160 54 158 24 176 26 S196 52 206 40 S216 22 220 24" stroke="var(--scene-accent,#006c73)" stroke-width="3" fill="none" stroke-linecap="round" stroke-dasharray="150" stroke-dashoffset="0"/>
+<text class="fitness-tracking-tx" x="183" y="82" font-size="14" text-anchor="middle">This week</text>
+<text class="fitness-tracking-t fitness-tracking-a fitness-tracking-k0" x="183" y="104" font-size="18" font-weight="700" text-anchor="middle">0 km</text><text class="fitness-tracking-t fitness-tracking-a fitness-tracking-k10" x="183" y="104" font-size="18" font-weight="700" text-anchor="middle">10 km</text>
+<g class="fitness-tracking-a fitness-tracking-once"><rect x="14" y="112" width="110" height="22" rx="11" class="fitness-tracking-good"/><text class="fitness-tracking-card" x="69" y="128" font-size="14" font-weight="700" text-anchor="middle" font-family="system-ui, sans-serif">Counted once</text></g>
+</svg>

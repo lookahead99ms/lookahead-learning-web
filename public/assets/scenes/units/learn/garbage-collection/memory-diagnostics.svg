@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Memory after each collection keeps rising, so take a heap dump to find what holds it">
+<style>
+.learn-garbage-collection-memory-diagnostics-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.learn-garbage-collection-memory-diagnostics-ax{stroke:var(--scene-line,#cfdfdc);stroke-width:2;fill:none}
+.learn-garbage-collection-memory-diagnostics-saw{stroke:var(--scene-link,#245a88);stroke-width:3;fill:none;stroke-linejoin:round;stroke-dasharray:400;animation:learn-garbage-collection-memory-diagnostics-draw 7s linear infinite;animation-delay:-4s}
+.learn-garbage-collection-memory-diagnostics-fl{stroke:var(--scene-bad,#b3261e);stroke-width:2.5;stroke-dasharray:5 4;fill:none;animation:learn-garbage-collection-memory-diagnostics-fade 7s ease-in-out infinite;animation-delay:-4s}
+.learn-garbage-collection-memory-diagnostics-dot{fill:var(--scene-bad,#b3261e);transform-box:fill-box;transform-origin:center;animation:learn-garbage-collection-memory-diagnostics-blink 1.4s ease-in-out infinite;animation-delay:-.5s}
+.learn-garbage-collection-memory-diagnostics-bar{fill:var(--scene-line,#cfdfdc)}
+.learn-garbage-collection-memory-diagnostics-hot{fill:var(--scene-warn,#a15c00)}
+.learn-garbage-collection-memory-diagnostics-lens{transform-box:fill-box;animation:learn-garbage-collection-memory-diagnostics-look 7s ease-in-out infinite;animation-delay:-3s}
+@keyframes learn-garbage-collection-memory-diagnostics-draw{0%{stroke-dashoffset:400}70%,100%{stroke-dashoffset:0}}
+@keyframes learn-garbage-collection-memory-diagnostics-fade{0%,30%{opacity:.2}60%,100%{opacity:1}}
+@keyframes learn-garbage-collection-memory-diagnostics-blink{0%,100%{transform:scale(1)}50%{transform:scale(1.5)}}
+@keyframes learn-garbage-collection-memory-diagnostics-look{0%,100%{transform:translateY(-18px)}50%{transform:translateY(8px)}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<path class="learn-garbage-collection-memory-diagnostics-ax" d="M24 14V150H206"/>
+<path class="learn-garbage-collection-memory-diagnostics-fl" d="M62 112L184 62"/>
+<path class="learn-garbage-collection-memory-diagnostics-saw" d="M24 138L62 92L64 112L102 78L104 96L142 60L144 80L182 40L184 62L196 50"/>
+<circle class="learn-garbage-collection-memory-diagnostics-dot" cx="196" cy="50" r="6"/>
+<text class="learn-garbage-collection-memory-diagnostics-t" x="115" y="172" text-anchor="middle">Floor keeps rising</text>
+<rect class="learn-garbage-collection-memory-diagnostics-bar" x="232" y="22" width="64" height="14" rx="3"/>
+<rect class="learn-garbage-collection-memory-diagnostics-bar" x="232" y="44" width="40" height="14" rx="3"/>
+<rect class="learn-garbage-collection-memory-diagnostics-hot" x="232" y="66" width="62" height="14" rx="3"/>
+<rect class="learn-garbage-collection-memory-diagnostics-bar" x="232" y="88" width="28" height="14" rx="3"/>
+<rect class="learn-garbage-collection-memory-diagnostics-bar" x="232" y="110" width="48" height="14" rx="3"/>
+<g class="learn-garbage-collection-memory-diagnostics-lens"><circle cx="276" cy="62" r="17" fill="none" stroke="var(--scene-ink,#102a33)" stroke-width="3"/><path d="M288 75L300 88" stroke="var(--scene-ink,#102a33)" stroke-width="4" stroke-linecap="round"/></g>
+<text class="learn-garbage-collection-memory-diagnostics-t" x="266" y="172" text-anchor="middle">Heap dump</text>
+</svg>

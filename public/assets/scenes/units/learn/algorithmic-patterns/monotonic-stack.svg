@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="monotonic stack">
+<style>
+.learn-algorithmic-patterns-monotonic-stack-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}.learn-algorithmic-patterns-monotonic-stack-w{font:700 16px system-ui,sans-serif;fill:#fff}
+@keyframes learn-algorithmic-patterns-monotonic-stack-a{0%{transform:none;opacity:1}30%{transform:none;opacity:1}44%{transform:translate(-90px,-28px) rotate(-25deg);opacity:0}93%{transform:translate(-90px,-28px) rotate(-25deg);opacity:0}100%{transform:none;opacity:1}}
+@keyframes learn-algorithmic-patterns-monotonic-stack-b{0%{transform:none;opacity:1}38%{transform:none;opacity:1}52%{transform:translate(-90px,-8px) rotate(-20deg);opacity:0}93%{transform:translate(-90px,-8px) rotate(-20deg);opacity:0}100%{transform:none;opacity:1}}
+@keyframes learn-algorithmic-patterns-monotonic-stack-n{0%{transform:translate(120px,-30px);opacity:0}4%{transform:translate(120px,-30px);opacity:1}50%{transform:translate(120px,-30px);opacity:1}64%{transform:translate(0,0);opacity:1}90%{transform:translate(0,0);opacity:1}97%{transform:translate(0,0);opacity:0}100%{transform:translate(120px,-30px);opacity:0}}
+.learn-algorithmic-patterns-monotonic-stack-a{animation:learn-algorithmic-patterns-monotonic-stack-a 6.5s ease-in-out infinite;animation-delay:-2.0s;}
+.learn-algorithmic-patterns-monotonic-stack-b{animation:learn-algorithmic-patterns-monotonic-stack-b 6.5s ease-in-out infinite;animation-delay:-2.0s;}
+.learn-algorithmic-patterns-monotonic-stack-n{animation:learn-algorithmic-patterns-monotonic-stack-n 6.5s ease-in-out infinite;animation-delay:-2.0s;}
+.learn-algorithmic-patterns-monotonic-stack-bg{fill:var(--scene-card,#fff)}
+</style>
+<rect class="learn-algorithmic-patterns-monotonic-stack-bg" width="320" height="180" rx="12"/>
+<path d="M110 154h100" stroke="var(--scene-ink,#102a33)" stroke-width="4" stroke-linecap="round"/>
+<rect x="125" y="128" width="70" height="20" rx="4" fill="var(--scene-learn,#0f8a8a)"/>
+<rect class="learn-algorithmic-patterns-monotonic-stack-b" x="132" y="104" width="56" height="20" rx="4" fill="var(--scene-ahead,#2f6fb3)"/>
+<rect class="learn-algorithmic-patterns-monotonic-stack-a" x="140" y="80" width="40" height="20" rx="4" fill="var(--scene-grow,#b8457a)"/>
+<rect class="learn-algorithmic-patterns-monotonic-stack-n" x="124" y="104" width="72" height="20" rx="4" fill="var(--scene-warn,#a15c00)"/>
+<path d="M244 62l-24 14" stroke="var(--scene-muted,#536970)" stroke-width="0"/>
+<text class="learn-algorithmic-patterns-monotonic-stack-t" x="160" y="28" text-anchor="middle">bigger one pops smaller</text>
+<text class="learn-algorithmic-patterns-monotonic-stack-t" x="160" y="172" text-anchor="middle">stack stays sorted</text>
+</svg>

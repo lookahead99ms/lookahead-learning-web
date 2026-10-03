@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Containers talk over a network by name; the database container is replaced while its volume keeps the data">
+<style>
+.grow-docker-kubernetes-docker-network-storage-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.grow-docker-kubernetes-docker-network-storage-w{font:700 16px system-ui,sans-serif;fill:var(--scene-card,#fff)}
+.grow-docker-kubernetes-docker-network-storage-db{animation:grow-docker-kubernetes-docker-network-storage-swap 6s ease-in-out infinite;animation-delay:-1s}
+.grow-docker-kubernetes-docker-network-storage-pk{animation:grow-docker-kubernetes-docker-network-storage-go 2s linear infinite;animation-delay:-1s}
+.grow-docker-kubernetes-docker-network-storage-pk2{animation:grow-docker-kubernetes-docker-network-storage-go 2s linear infinite;animation-delay:-2s}
+@keyframes grow-docker-kubernetes-docker-network-storage-swap{0%,30%{opacity:1}40%,55%{opacity:.15}65%,100%{opacity:1}}
+@keyframes grow-docker-kubernetes-docker-network-storage-go{0%{transform:translateX(0);opacity:0}15%,85%{opacity:1}100%{transform:translateX(70px);opacity:0}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="8" y="10" width="304" height="100" rx="12" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2" stroke-dasharray="6 4"/>
+<rect x="30" y="34" width="84" height="52" rx="8" fill="var(--scene-link,#245a88)"/>
+<text class="grow-docker-kubernetes-docker-network-storage-w" x="72" y="66" text-anchor="middle">web</text>
+<g class="grow-docker-kubernetes-docker-network-storage-db"><rect x="206" y="34" width="84" height="52" rx="8" fill="var(--scene-grow,#b8457a)"/>
+<text class="grow-docker-kubernetes-docker-network-storage-w" x="248" y="66" text-anchor="middle">db</text></g>
+<path d="M120 60h80" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<circle class="grow-docker-kubernetes-docker-network-storage-pk" cx="124" cy="60" r="5" fill="var(--scene-warn,#a15c00)"/>
+<circle class="grow-docker-kubernetes-docker-network-storage-pk2" cx="124" cy="60" r="5" fill="var(--scene-warn,#a15c00)"/>
+<path d="M248 90v28" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<path d="M222 126v26c0 7 52 7 52 0v-26" fill="var(--scene-good,#1f7a4d)"/>
+<ellipse cx="248" cy="126" rx="26" ry="7" fill="var(--scene-good,#1f7a4d)" stroke="var(--scene-card,#fff)" stroke-width="2"/>
+<text class="grow-docker-kubernetes-docker-network-storage-t" x="196" y="148" text-anchor="end">volume</text>
+</svg>

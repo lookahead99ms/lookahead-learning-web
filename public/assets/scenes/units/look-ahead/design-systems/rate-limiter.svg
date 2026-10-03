@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" class="rate-limiter-root" role="img" aria-label="Requests each take a token from the bucket and reach the API; once the bucket is empty, the next request is turned back with a 429.">
+<style>
+.rate-limiter-root text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.rate-limiter-t{fill:var(--scene-ink,#102a33)}
+.rate-limiter-tx{fill:var(--scene-text,#28434a)}
+.rate-limiter-mut{fill:var(--scene-muted,#536970)}
+.rate-limiter-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.rate-limiter-soft{fill:var(--scene-accent-soft,#dcefed)}
+.rate-limiter-acc{fill:var(--scene-accent,#006c73)}
+.rate-limiter-ln{fill:var(--scene-line,#cfdfdc)}
+.rate-limiter-cardf{fill:var(--scene-card,#fff)}
+.rate-limiter-good{fill:var(--scene-good,#1f7a4d)}
+.rate-limiter-warn{fill:var(--scene-warn,#a15c00)}
+.rate-limiter-bad{fill:var(--scene-bad,#b3261e)}
+.rate-limiter-link{fill:var(--scene-link,#245a88)}
+.rate-limiter-out{fill:var(--scene-bubble-out,#d4ecea)}
+.rate-limiter-sk{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.rate-limiter-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.rate-limiter-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:1.5;stroke-dasharray:3 3}
+.rate-limiter-a{animation-duration:6s;animation-iteration-count:infinite;animation-delay:-3.8s}
+.rate-limiter-rq{animation-name:rate-limiter-rq}@keyframes rate-limiter-rq{0%{transform:translateX(0);opacity:0}3%{opacity:1}20%{transform:translateX(90px);opacity:1}38%{transform:translateX(180px);opacity:1}42%,100%{transform:translateX(180px);opacity:0}}
+.rate-limiter-tok{animation-name:rate-limiter-tok}@keyframes rate-limiter-tok{0%,19%{opacity:1}21%,88%{opacity:0}94%,100%{opacity:1}}
+.rate-limiter-bad1{animation-name:rate-limiter-bad1}@keyframes rate-limiter-bad1{0%,50%{transform:translateX(0);opacity:0}53%{opacity:1}62%{transform:translateX(70px)}74%{transform:translateX(30px);opacity:1}80%,100%{transform:translateX(30px);opacity:0}}
+.rate-limiter-r429{animation-name:rate-limiter-r429}@keyframes rate-limiter-r429{0%,60%{opacity:0}64%,88%{opacity:1}92%,100%{opacity:0}}
+.rate-limiter-ok{animation-name:rate-limiter-ok}@keyframes rate-limiter-ok{0%,18%{opacity:0}22%,100%{opacity:1}}
+@media (prefers-reduced-motion: reduce){.rate-limiter-root *{animation-play-state:paused!important}}
+</style>
+<rect x="188" y="30" width="46" height="62" rx="10" class="rate-limiter-box"/><path d="M200 50 h22 M200 62 h22 M200 74 h14" class="rate-limiter-sk"/>
+<g class="rate-limiter-a rate-limiter-ok"><text x="211" y="114" font-size="15" font-weight="700" text-anchor="middle" class="rate-limiter-good">200</text></g>
+<path d="M92 44 l6 62 h44 l6 -62" stroke="var(--scene-ink,#102a33)" stroke-width="2.4" fill="var(--scene-accent-soft,#dcefed)" stroke-linejoin="round"/>
+<circle class="rate-limiter-a rate-limiter-tok rate-limiter-acc" cx="108" cy="94" r="5.5" style="animation-delay:-3.8s"/><circle class="rate-limiter-a rate-limiter-tok rate-limiter-acc" cx="120" cy="94" r="5.5" style="animation-delay:-3.35s"/><circle class="rate-limiter-a rate-limiter-tok rate-limiter-acc" cx="132" cy="94" r="5.5" style="animation-delay:-2.9s"/><circle class="rate-limiter-a rate-limiter-tok rate-limiter-acc" cx="114" cy="82" r="5.5" style="animation-delay:-2.45s"/><circle class="rate-limiter-a rate-limiter-tok rate-limiter-acc" cx="126" cy="82" r="5.5" style="animation-delay:-2.0s"/><circle class="rate-limiter-a rate-limiter-rq rate-limiter-good" cx="22" cy="54" r="6" style="animation-delay:-3.8s"/><circle class="rate-limiter-a rate-limiter-rq rate-limiter-good" cx="22" cy="66" r="6" style="animation-delay:-3.35s"/><circle class="rate-limiter-a rate-limiter-rq rate-limiter-good" cx="22" cy="78" r="6" style="animation-delay:-2.9s"/><circle class="rate-limiter-a rate-limiter-rq rate-limiter-good" cx="22" cy="54" r="6" style="animation-delay:-2.45s"/><circle class="rate-limiter-a rate-limiter-rq rate-limiter-good" cx="22" cy="66" r="6" style="animation-delay:-2.0s"/><circle class="rate-limiter-a rate-limiter-bad1 rate-limiter-bad" cx="22" cy="66" r="6"/>
+<g class="rate-limiter-a rate-limiter-r429"><rect x="8" y="100" width="64" height="28" rx="9" class="rate-limiter-box" style="stroke:var(--scene-bad,#b3261e)"/><text x="40" y="120" font-size="16" font-weight="700" text-anchor="middle" class="rate-limiter-bad">429</text></g>
+</svg>

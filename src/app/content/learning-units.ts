@@ -54,3 +54,47 @@ export function orderedTheoryArticles(
       return moduleDifference || left.order - right.order;
     });
 }
+
+/**
+ * Every learning-map course with units shows the course banner plus the unit card grid.
+ * Units without authored card data use their conventional scene file.
+ */
+export function courseHasUnitCards(
+  course: Pick<CourseOutline, 'layout' | 'learningUnits'>,
+): boolean {
+  return course.layout === 'learning-map' && (course.learningUnits?.length ?? 0) > 0;
+}
+
+/** The animated scene of the learning unit a lesson or question belongs to. */
+export interface UnitScene {
+  src: string;
+  /** Authored scene description; empty when the scene is decorative. */
+  alt: string;
+  unitTitle: string;
+}
+
+/**
+ * Resolves the scene of the unit that owns a module, matching the course page's unit card:
+ * authored card scenes first, otherwise the conventional unit scene file. Only learning-map
+ * courses with units have unit scenes; old tile courses return null.
+ */
+export function unitSceneForModule(
+  path: string,
+  course: Pick<CourseOutline, 'id' | 'layout' | 'learningUnits'>,
+  moduleId: string,
+): UnitScene | null {
+  if (!moduleId || !courseHasUnitCards(course)) return null;
+  const unit = flattenLearningUnits(course.learningUnits ?? []).find(
+    (candidate) =>
+      !candidate.planned &&
+      (candidate.theoryModuleId === moduleId ||
+        candidate.practiceModuleId === moduleId ||
+        candidate.questionModuleId === moduleId),
+  );
+  if (!unit) return null;
+  return {
+    src: unit.card?.scene ?? `/assets/scenes/units/${path}/${course.id}/${unit.id}.svg`,
+    alt: unit.card?.sceneAlt?.trim() ?? '',
+    unitTitle: unit.title,
+  };
+}

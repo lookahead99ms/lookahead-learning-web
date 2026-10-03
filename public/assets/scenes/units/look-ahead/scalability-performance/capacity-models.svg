@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label=" Load rising toward a capacity limit with headroom left">
+<style>
+.look-ahead-scalability-performance-capacity-models-t{font:600 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.look-ahead-scalability-performance-capacity-models-fill{transform-box:fill-box;transform-origin:50% 100%;animation:look-ahead-scalability-performance-capacity-models-rise 6s ease-in-out infinite;animation-delay:-3s}
+.look-ahead-scalability-performance-capacity-models-d{animation:look-ahead-scalability-performance-capacity-models-in 3s linear infinite}
+.look-ahead-scalability-performance-capacity-models-d2{animation-delay:-1.5s}
+.look-ahead-scalability-performance-capacity-models-d3{animation-delay:-0.7s}
+@keyframes look-ahead-scalability-performance-capacity-models-rise{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(.9)}}
+@keyframes look-ahead-scalability-performance-capacity-models-in{0%{transform:translateX(0);opacity:0}15%{opacity:1}85%{opacity:1}100%{transform:translateX(60px);opacity:0}}
+</style>
+<rect width="320" height="180" rx="10" fill="var(--scene-card,#fff)"/>
+<rect x="130" y="20" width="60" height="120" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<rect class="look-ahead-scalability-performance-capacity-models-fill" x="134" y="24" width="52" height="112" rx="5" fill="var(--scene-learn,#0f8a8a)"/>
+<line x1="120" y1="48" x2="206" y2="48" stroke="var(--scene-bad,#b3261e)" stroke-width="3" stroke-dasharray="6 4"/>
+
+<g fill="var(--scene-ahead,#2f6fb3)">
+<circle class="look-ahead-scalability-performance-capacity-models-d" cx="40" cy="60" r="7"/>
+<circle class="look-ahead-scalability-performance-capacity-models-d look-ahead-scalability-performance-capacity-models-d2" cx="40" cy="80" r="7"/>
+<circle class="look-ahead-scalability-performance-capacity-models-d look-ahead-scalability-performance-capacity-models-d3" cx="40" cy="100" r="7"/>
+<circle class="look-ahead-scalability-performance-capacity-models-d look-ahead-scalability-performance-capacity-models-d2" cx="40" cy="120" r="7"/>
+</g>
+<path d="M30 140H110" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<text class="look-ahead-scalability-performance-capacity-models-t" x="216" y="53">Limit</text>
+<text class="look-ahead-scalability-performance-capacity-models-t" x="216" y="106">Headroom</text>
+<text class="look-ahead-scalability-performance-capacity-models-t" x="40" y="162">Requests</text>
+</svg>

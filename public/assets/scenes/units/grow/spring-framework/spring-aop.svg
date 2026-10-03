@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A proxy opens a transaction, calls the service, then commits or rolls back">
+<style>.grow-spring-framework-spring-aop-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}.grow-spring-framework-spring-aop-bg{fill:var(--scene-card,#fff)}.grow-spring-framework-spring-aop-box{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}.grow-spring-framework-spring-aop-ln{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2.5;stroke-linecap:round}.grow-spring-framework-spring-aop-c{animation:grow-spring-framework-spring-aop-cl 6s linear infinite;animation-delay:-3s}.grow-spring-framework-spring-aop-f1{animation:grow-spring-framework-spring-aop-fa 6s infinite;animation-delay:-3s}.grow-spring-framework-spring-aop-f2{animation:grow-spring-framework-spring-aop-fb 6s infinite;animation-delay:-3s}
+@keyframes grow-spring-framework-spring-aop-cl{0%{transform:translateX(0)}50%{transform:translateX(150px)}100%{transform:translateX(0)}}
+@keyframes grow-spring-framework-spring-aop-fa{0%,15%{opacity:0}25%,100%{opacity:1}}
+@keyframes grow-spring-framework-spring-aop-fb{0%,60%{opacity:0}70%,95%{opacity:1}100%{opacity:0}}</style>
+<rect width="320" height="180" class="grow-spring-framework-spring-aop-bg"/>
+<rect x="96" y="30" width="216" height="120" rx="12" fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="3" stroke-dasharray="7 5"/><text x="204" y="24" text-anchor="middle" class="grow-spring-framework-spring-aop-t" style="font-size:16px">Proxy</text>
+<rect x="224" y="62" width="72" height="56" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/><rect x="236" y="76" width="48" height="6" rx="3" fill="var(--scene-ink,#102a33)"/><rect x="236" y="92" width="34" height="6" rx="3" fill="var(--scene-muted,#536970)"/>
+<g class="grow-spring-framework-spring-aop-f1"><path d="M110 56v30" stroke="var(--scene-ink,#102a33)" stroke-width="2"/><path d="M110 56h28l-6 8 6 8h-28z" fill="var(--scene-good,#1f7a4d)"/></g>
+<g class="grow-spring-framework-spring-aop-f1"><text x="104" y="136" class="grow-spring-framework-spring-aop-t" style="fill:var(--scene-good,#1f7a4d)">Begin</text></g><g class="grow-spring-framework-spring-aop-f2"><path d="M110 112h28l-6 8 6 8h-28z" fill="var(--scene-accent,#006c73)"/><text x="104" y="144" class="grow-spring-framework-spring-aop-t">Commit</text></g>
+<g class="grow-spring-framework-spring-aop-c"><circle cx="40" cy="90" r="14" fill="var(--scene-ahead,#2f6fb3)"/><path d="M46 90h-12M40 85l-6 5 6 5" stroke="var(--scene-card,#fff)" stroke-width="2.5" fill="none" transform="rotate(180 40 90)"/></g>
+<path d="M54 90H96" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+
+</svg>

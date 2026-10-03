@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Two passengers tap seat 14C at once; one booking succeeds and the other is told the seat is taken">
+<style>
+.tech-postgresql-t{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-ink,#102a33)}
+.tech-postgresql-mu{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-muted,#536970)}
+.tech-postgresql-g{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-good,#1f7a4d)}
+.tech-postgresql-w{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-warn,#a15c00)}
+.tech-postgresql-b{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-bad,#b3261e)}
+.tech-postgresql-a{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-accent,#006c73)}
+.tech-postgresql-mono{font-family:ui-monospace,Menlo,monospace}
+.tech-postgresql-card{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.tech-postgresql-soft{fill:var(--scene-accent-soft,#dcefed)}
+.tech-postgresql-acc{fill:var(--scene-accent,#006c73)}
+.tech-postgresql-gd{fill:var(--scene-good,#1f7a4d)}
+.tech-postgresql-wn{fill:var(--scene-warn,#a15c00)}
+.tech-postgresql-bd{fill:var(--scene-bad,#b3261e)}
+.tech-postgresql-ink{fill:var(--scene-ink,#102a33)}
+.tech-postgresql-mf{fill:var(--scene-muted,#536970)}
+.tech-postgresql-lf{fill:var(--scene-line,#cfdfdc)}
+.tech-postgresql-cf{fill:var(--scene-card,#fff)}
+.tech-postgresql-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-postgresql-sg{fill:none;stroke:var(--scene-good,#1f7a4d);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-postgresql-sw{fill:none;stroke:var(--scene-warn,#a15c00);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-postgresql-sb{fill:none;stroke:var(--scene-bad,#b3261e);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-postgresql-sm{fill:none;stroke:var(--scene-muted,#536970);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-postgresql-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-postgresql-si{fill:none;stroke:var(--scene-ink,#102a33);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-postgresql-seat{animation:tech-postgresql-seat 8s -3.2s infinite;}
+@keyframes tech-postgresql-seat{0%,18%{fill:var(--scene-line,#cfdfdc)}22%,94%{fill:var(--scene-good,#1f7a4d)}98%,100%{fill:var(--scene-line,#cfdfdc)}}
+.tech-postgresql-ln{animation:tech-postgresql-ln 8s -3.2s infinite;}
+@keyframes tech-postgresql-ln{0%,48%{stroke:var(--scene-line,#cfdfdc)}52%,94%{stroke:var(--scene-bad,#b3261e)}98%,100%{stroke:var(--scene-line,#cfdfdc)}}
+.tech-postgresql-a{animation:tech-postgresql-a 8s -3.2s infinite;}
+@keyframes tech-postgresql-a{0%,21%{opacity:0}22%,96%{opacity:1}97%,100%{opacity:0}}
+.tech-postgresql-b{animation:tech-postgresql-b 8s -3.2s infinite;}
+@keyframes tech-postgresql-b{0%,53%{opacity:0}54%,96%{opacity:1}97%,100%{opacity:0}}
+</style>
+<rect class="tech-postgresql-lf" x="74" y="12" width="20" height="20" rx="5"/>
+<rect class="tech-postgresql-lf" x="98" y="12" width="20" height="20" rx="5"/>
+<rect class="tech-postgresql-lf" x="122" y="12" width="20" height="20" rx="5"/>
+<rect class="tech-postgresql-lf" x="146" y="12" width="20" height="20" rx="5"/>
+<rect class="tech-postgresql-lf" x="74" y="36" width="20" height="20" rx="5"/>
+<rect class="tech-postgresql-lf" x="98" y="36" width="20" height="20" rx="5"/>
+<rect class="tech-postgresql-seat" x="122" y="36" width="20" height="20" rx="5" style="stroke:var(--scene-ink,#102a33);stroke-width:2"/>
+<rect class="tech-postgresql-lf" x="146" y="36" width="20" height="20" rx="5"/>
+<rect class="tech-postgresql-lf" x="74" y="60" width="20" height="20" rx="5"/>
+<rect class="tech-postgresql-lf" x="98" y="60" width="20" height="20" rx="5"/>
+<rect class="tech-postgresql-lf" x="122" y="60" width="20" height="20" rx="5"/>
+<rect class="tech-postgresql-lf" x="146" y="60" width="20" height="20" rx="5"/>
+<path class="tech-postgresql-sl" style="stroke-dasharray:4 5;stroke-width:2.5" d="M46 50 L118 50"/><path class="tech-postgresql-sl tech-postgresql-ln" style="stroke-dasharray:4 5;stroke-width:2.5" d="M194 50 L146 50"/>
+<circle class="tech-postgresql-acc" cx="26" cy="28" r="8"/><path class="tech-postgresql-acc" d="M11 62 a15 15 0 0 1 30 0z"/>
+<circle class="tech-postgresql-wn" cx="214" cy="28" r="8"/><path class="tech-postgresql-wn" d="M199 62 a15 15 0 0 1 30 0z"/>
+
+<g class="tech-postgresql-a"><circle class="tech-postgresql-gd" cx="26" cy="80" r="10"/><path class="tech-postgresql-sg" style="stroke:var(--scene-card,#fff);stroke-width:3" d="M20 80 l5 5 l10 -11"/></g>
+<g class="tech-postgresql-b"><circle class="tech-postgresql-bd" cx="214" cy="80" r="10"/><path class="tech-postgresql-sb" style="stroke:var(--scene-card,#fff);stroke-width:3" d="M210 76 l8 8 m0 -8 l-8 8"/></g>
+<g class="tech-postgresql-a"><text class="tech-postgresql-g" x="46" y="116" font-size="15" font-weight="700" text-anchor="middle">Booked ✓</text>
+</g><g class="tech-postgresql-b"><text class="tech-postgresql-b" x="192" y="116" font-size="15" font-weight="700" text-anchor="middle">Seat taken</text>
+</g>
+</svg>

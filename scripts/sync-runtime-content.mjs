@@ -1,6 +1,8 @@
 import { removePrivateRankingAssets } from './ranking-release.mjs';
 import { access, cp, mkdir, mkdtemp, readdir, rm } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
 import { resolve } from 'node:path';
+import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import { generateHandsOnDsaIndex } from './generate-hands-on-dsa-index.mjs';
 import { generateSearchIndex } from './generate-search-index.mjs';
@@ -57,6 +59,20 @@ if (!(await hasContentSource(sourceRoot))) {
   );
 }
 
+// On macOS (APFS) `cp -c` clones files copy-on-write: the 250 MB stage costs metadata only instead of a full
+// rewrite on every watcher-triggered sync. Elsewhere, or if cloning fails, fall back to a normal copy.
+async function copyTree(source, destination) {
+  if (process.platform === 'darwin') {
+    try {
+      await promisify(execFile)('/bin/cp', ['-cR', source, destination]);
+      return;
+    } catch {
+      await rm(destination, { recursive: true, force: true });
+    }
+  }
+  await cp(source, destination, { recursive: true });
+}
+
 async function countFiles(directory) {
   const entries = await readdir(directory, { withFileTypes: true });
   const counts = await Promise.all(
@@ -72,7 +88,7 @@ await withRuntimePublicationLock(resolve(scratchRoot, 'publication.lock'), async
   const stageRoot = resolve(transactionRoot, 'content');
   const backupRoot = resolve(transactionRoot, 'previous');
   try {
-    await cp(sourceRoot, stageRoot, { recursive: true });
+    await copyTree(sourceRoot, stageRoot);
     if (useCandidateRanking) {
       // Candidate review must never mutate or promote the immutable released
       // pointer. Removing only the staged copy makes readRankingPlan select the

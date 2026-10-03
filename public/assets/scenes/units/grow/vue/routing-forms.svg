@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="URL holds location, draft holds typing, server decides the save">
+<style>
+.grow-vue-routing-forms-t{font:600 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.grow-vue-routing-forms-m{font:600 16px ui-monospace,Menlo,monospace;fill:var(--scene-ink,#102a33)}
+.grow-vue-routing-forms-c{animation:grow-vue-routing-forms-blink 1s step-end infinite}
+.grow-vue-routing-forms-u1{animation:grow-vue-routing-forms-u1 6s step-end infinite;animation-delay:-3s}
+.grow-vue-routing-forms-u2{animation:grow-vue-routing-forms-u2 6s step-end infinite;animation-delay:-3s}
+.grow-vue-routing-forms-s{animation:grow-vue-routing-forms-s 6s step-end infinite;animation-delay:-3s}
+.grow-vue-routing-forms-f{animation:grow-vue-routing-forms-f 6s step-end infinite;animation-delay:-3s}
+.grow-vue-routing-forms-w{animation:grow-vue-routing-forms-w 6s step-end infinite;animation-delay:-3s}
+@keyframes grow-vue-routing-forms-blink{50%{opacity:0}}
+@keyframes grow-vue-routing-forms-u1{0%,49%{opacity:1}50%,100%{opacity:0}}
+@keyframes grow-vue-routing-forms-u2{0%,49%{opacity:0}50%,100%{opacity:1}}
+@keyframes grow-vue-routing-forms-w{0%,19%{opacity:0}20%,59%{opacity:1}60%,100%{opacity:0}}
+@keyframes grow-vue-routing-forms-s{0%,59%{opacity:0}60%,89%{opacity:1}90%,100%{opacity:0}}
+@keyframes grow-vue-routing-forms-f{0%,89%{opacity:0}90%,100%{opacity:1}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="16" y="12" width="288" height="30" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-link,#245a88)" stroke-width="2"/>
+<text class="grow-vue-routing-forms-m" x="28" y="32"><tspan class="grow-vue-routing-forms-u1">/books?page=1</tspan></text>
+<text class="grow-vue-routing-forms-m grow-vue-routing-forms-u2" x="28" y="32">/books?page=2</text>
+<rect x="16" y="56" width="136" height="76" rx="10" fill="var(--scene-card,#fff)" stroke="var(--scene-grow,#b8457a)" stroke-width="2.5"/>
+<path d="M30 80h100M30 104h70" stroke="var(--scene-line,#cfdfdc)" stroke-width="5" stroke-linecap="round"/>
+<path d="M30 80h70" stroke="var(--scene-grow,#b8457a)" stroke-width="5" stroke-linecap="round"/>
+<rect class="grow-vue-routing-forms-c" x="104" y="97" width="3" height="16" fill="var(--scene-ink,#102a33)"/>
+<path d="M156 94h16" stroke="var(--scene-muted,#536970)" stroke-width="3" stroke-linecap="round"/><path d="M168 88l8 6-8 6z" fill="var(--scene-muted,#536970)"/>
+<rect x="180" y="56" width="124" height="76" rx="10" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/>
+<g class="grow-vue-routing-forms-w" fill="none" stroke="var(--scene-warn,#a15c00)" stroke-width="4" stroke-linecap="round"><circle cx="242" cy="94" r="14" stroke-dasharray="14 8"/></g>
+<g class="grow-vue-routing-forms-s" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="5" stroke-linecap="round"><path d="M226 94l11 11 20-24"/></g>
+<g class="grow-vue-routing-forms-f" stroke="var(--scene-bad,#b3261e)" stroke-width="5" stroke-linecap="round"><path d="M228 80l28 28M256 80l-28 28"/></g>
+<text class="grow-vue-routing-forms-t" x="84" y="164" text-anchor="middle" style="fill:var(--scene-grow,#b8457a)">Draft</text>
+<text class="grow-vue-routing-forms-t" x="242" y="164" text-anchor="middle" style="fill:var(--scene-accent,#006c73)">Server decides</text>
+</svg>

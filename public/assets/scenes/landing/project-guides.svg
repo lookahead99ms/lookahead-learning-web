@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 150" role="img" aria-label="Building an AI feature: a retrieval step reads docs and feeds an AI model that writes an answer; a test that checks citations fails, you pass the sources to the model, and the test passes">
+<style>
+.project-guides-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); }
+.project-guides-tm { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; fill: var(--scene-text, #28434a); }
+.project-guides-b { font-weight: 700; }
+.project-guides-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.project-guides-acc { fill: var(--scene-accent, #006c73); }
+.project-guides-mut { fill: var(--scene-muted, #536970); }
+.project-guides-good { fill: var(--scene-good, #1f7a4d); }
+.project-guides-bad { fill: var(--scene-bad, #b3261e); }
+.project-guides-on-acc { fill: var(--scene-card, #ffffff); }
+.project-guides-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 1.5; }
+.project-guides-dash { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.project-guides-spark { fill: var(--scene-accent, #006c73); }
+.project-guides-ai-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.project-guides-aibox { fill: var(--scene-card, #ffffff); stroke: var(--scene-accent, #006c73); stroke-width: 1.5; }
+.project-guides-you-bg { fill: var(--scene-ink, #102a33); stroke: var(--scene-ink, #102a33); stroke-width: 1.5; }
+.project-guides-you-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-card, #ffffff); font-weight: 700; }
+.project-guides-bad-t { fill: var(--scene-bad, #b3261e); }
+.project-guides-good-t { fill: var(--scene-good, #1f7a4d); }
+
+.project-guides-youbox { fill: var(--scene-card, #ffffff); stroke: var(--scene-ink, #102a33); stroke-width: 1.5; }
+.project-guides-cite { fill: var(--scene-ahead, #245a88); }
+.project-guides-flow { animation: project-guides-kf-flow 3s linear infinite; }
+@keyframes project-guides-kf-flow { 0% { transform: translate(0, 0); opacity: 0; } 10% { opacity: 1; } 30% { transform: translate(0, -38px); } 60% { transform: translate(92px, -38px); } 90% { transform: translate(190px, -38px); opacity: 1; } 100% { transform: translate(190px, -38px); opacity: 0; } }
+.project-guides-test { animation: project-guides-kf-test 9s infinite; }
+@keyframes project-guides-kf-test { 0%, 56% { fill: var(--scene-bad, #b3261e); } 62%, 100% { fill: var(--scene-good, #1f7a4d); } }
+.project-guides-fail { animation: project-guides-kf-fail 9s infinite; }
+@keyframes project-guides-kf-fail { 0%, 56% { opacity: 1; } 60%, 100% { opacity: 0; } }
+.project-guides-pass { animation: project-guides-kf-pass 9s infinite; }
+@keyframes project-guides-kf-pass { 0%, 58% { opacity: 0; } 62%, 100% { opacity: 1; } }
+.project-guides-you { animation: project-guides-kf-you 9s infinite; }
+@keyframes project-guides-kf-you { 0%, 26% { opacity: 0; } 30%, 100% { opacity: 1; } }
+
+.project-guides-flow, .project-guides-test, .project-guides-fail, .project-guides-pass, .project-guides-you { animation-delay: -1.2s; }
+</style>
+<g class="project-guides-flow"><circle class="project-guides-acc" cx="45" cy="63" r="4"/></g>
+<rect class="project-guides-box" x="8" y="10" width="74" height="30" rx="6"/><text class="project-guides-t" x="45" y="30" font-size="13" text-anchor="middle">Retrieve</text>
+<path class="project-guides-wire" d="M82 25 H96"/>
+<rect class="project-guides-aibox" x="96" y="10" width="100" height="30" rx="6"/><g class="project-guides-ai-mark" transform="translate(106.3 10)"><g transform="translate(0 8)"><path class="project-guides-spark" d="M5.88 2.24 Q6.82 7.18 11.76 8.12 Q6.82 9.06 5.88 14 Q4.94 9.06 0 8.12 Q4.94 7.18 5.88 2.24Z M12.04 -0.14 Q12.42 1.86 14.42 2.24 Q12.42 2.62 12.04 4.62 Q11.66 2.62 9.66 2.24 Q11.66 1.86 12.04 -0.14Z M12.6 10.5 Q12.85 11.79 14.14 12.04 Q12.85 12.29 12.6 13.58 Q12.35 12.29 11.06 12.04 Q12.35 11.79 12.6 10.5Z"/></g><text class="project-guides-ai-t" x="17" y="19.68" font-size="13">AI model</text></g>
+<path class="project-guides-wire" d="M196 25 H208"/>
+<rect class="project-guides-box" x="208" y="10" width="66" height="30" rx="6"/><text class="project-guides-t" x="230" y="30" font-size="13" text-anchor="middle">Answer</text>
+<g class="project-guides-pass"><circle class="project-guides-cite" cx="265" cy="25" r="6.5"/><text class="project-guides-t project-guides-b project-guides-on-acc" x="265" y="29" font-size="12" text-anchor="middle">1</text></g>
+<path class="project-guides-wire" d="M45 40 V52"/>
+<path class="project-guides-box" d="M22 56 V78 A23 6 0 0 0 68 78 V56 Z"/><ellipse class="project-guides-box" cx="45" cy="56" rx="23" ry="6"/><text class="project-guides-t" x="45" y="76" font-size="12" text-anchor="middle">Docs</text>
+<g class="project-guides-you"><rect class="project-guides-youbox" x="96" y="52" width="178" height="28" rx="14"/><text class="project-guides-t project-guides-b" x="185" y="71" font-size="13" text-anchor="middle">You: pass the sources</text></g>
+<rect class="project-guides-box" x="8" y="94" width="266" height="46" rx="8"/>
+<rect class="project-guides-test project-guides-bad" x="18" y="110" width="14" height="14" rx="3"/>
+<text class="project-guides-tm project-guides-fail" x="42" y="121.5" font-size="12">test: cites a source ✗</text>
+<text class="project-guides-tm project-guides-pass" x="42" y="121.5" font-size="12">test: cites a source ✓</text>
+</svg>

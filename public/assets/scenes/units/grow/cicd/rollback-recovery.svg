@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Errors spike after a release, the flag is switched off and affected rows are repaired">
+<style>
+.grow-cicd-rollback-recovery-t{font:700 13px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.grow-cicd-rollback-recovery-line{fill:none;stroke:var(--scene-bad,#b3261e);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:260;animation:grow-cicd-rollback-recovery-dr 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes grow-cicd-rollback-recovery-dr{0%{stroke-dashoffset:260}60%,100%{stroke-dashoffset:0}}
+.grow-cicd-rollback-recovery-sw{animation:grow-cicd-rollback-recovery-fl 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes grow-cicd-rollback-recovery-fl{0%,35%{transform:translateX(0)}50%,100%{transform:translateX(-16px)}}
+.grow-cicd-rollback-recovery-row{animation:grow-cicd-rollback-recovery-fx 6s ease-in-out infinite}
+.grow-cicd-rollback-recovery-r1{animation-delay:-3s}.grow-cicd-rollback-recovery-r2{animation-delay:-2.2s}
+@keyframes grow-cicd-rollback-recovery-fx{0%,30%{fill:var(--scene-bad,#b3261e)}55%,100%{fill:var(--scene-good,#1f7a4d)}}
+.grow-cicd-rollback-recovery-ar{animation:grow-cicd-rollback-recovery-bk 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes grow-cicd-rollback-recovery-bk{0%,100%{transform:translateX(0)}50%{transform:translateX(-10px)}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<path d="M20 100H300" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<path d="M120 28V100" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="4 4"/>
+<path class="grow-cicd-rollback-recovery-line" d="M20 94H120L140 40L170 78L200 96H300"/>
+<rect x="196" y="22" width="56" height="26" rx="13" fill="var(--scene-line,#cfdfdc)"/>
+<circle class="grow-cicd-rollback-recovery-sw" cx="240" cy="35" r="10" fill="var(--scene-good,#1f7a4d)"/>
+<text class="grow-cicd-rollback-recovery-t" x="258" y="40">Flag off</text>
+<g class="grow-cicd-rollback-recovery-ar" fill="none" stroke="var(--scene-ahead,#2f6fb3)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M80 126H30M42 114L30 126l12 12"/></g>
+<text class="grow-cicd-rollback-recovery-t" x="90" y="131">Roll back</text>
+<g>
+<rect class="grow-cicd-rollback-recovery-row grow-cicd-rollback-recovery-r1" x="196" y="116" width="26" height="14" rx="3"/>
+<rect class="grow-cicd-rollback-recovery-row grow-cicd-rollback-recovery-r2" x="226" y="116" width="26" height="14" rx="3"/>
+<rect x="256" y="116" width="26" height="14" rx="3" fill="var(--scene-good,#1f7a4d)"/>
+</g>
+<text class="grow-cicd-rollback-recovery-t" x="196" y="156">Repair bad rows</text>
+</svg>

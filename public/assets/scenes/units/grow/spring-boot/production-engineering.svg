@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" font-family="system-ui, sans-serif">
+<style>
+.grow-spring-boot-production-engineering-t{font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.grow-spring-boot-production-engineering-big{animation:grow-spring-boot-production-engineering-big 2s linear infinite;animation-delay:-1s}
+@keyframes grow-spring-boot-production-engineering-big{0%{transform:translateX(0);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateX(130px);opacity:0}}
+.grow-spring-boot-production-engineering-big2{animation:grow-spring-boot-production-engineering-big2 2s linear infinite;animation-delay:-0.3s}
+@keyframes grow-spring-boot-production-engineering-big2{0%{transform:translateX(0);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateX(130px);opacity:0}}
+.grow-spring-boot-production-engineering-can{animation:grow-spring-boot-production-engineering-can 3s linear infinite;animation-delay:-1.5s}
+@keyframes grow-spring-boot-production-engineering-can{0%{transform:translateX(0);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateX(130px);opacity:0}}
+.grow-spring-boot-production-engineering-lg{animation:grow-spring-boot-production-engineering-lg 6s step-end infinite;animation-delay:-3s}
+@keyframes grow-spring-boot-production-engineering-lg{0%,45%{fill:var(--scene-good,#1f7a4d)}50%,100%{fill:var(--scene-bad,#b3261e)}}
+.grow-spring-boot-production-engineering-rb{animation:grow-spring-boot-production-engineering-rb 6s step-end infinite;animation-delay:-3s}
+@keyframes grow-spring-boot-production-engineering-rb{0%,48%{opacity:0}55%,92%{opacity:1}100%{opacity:0}}
+
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<circle cx="30" cy="80" r="18" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/><circle cx="30" cy="80" r="6" fill="var(--scene-accent,#006c73)"/>
+<path d="M48 80h14l12-26h94M74 54" fill="none"/><path d="M48 80h14l12-30h148" stroke="var(--scene-line,#cfdfdc)" stroke-width="10" fill="none" stroke-linejoin="round"/>
+<path d="M62 80l12 36h148" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" fill="none" stroke-linejoin="round"/>
+<g class="grow-spring-boot-production-engineering-big"><circle cx="90" cy="50" r="5" fill="var(--scene-grow,#b8457a)"/></g><g class="grow-spring-boot-production-engineering-big2"><circle cx="90" cy="50" r="5" fill="var(--scene-grow,#b8457a)"/></g><g class="grow-spring-boot-production-engineering-can"><circle cx="90" cy="116" r="4" fill="var(--scene-grow,#b8457a)"/></g>
+<rect x="228" y="22" width="80" height="56" rx="8" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/><rect x="228" y="100" width="80" height="34" rx="8" fill="var(--scene-card,#fff)" stroke="var(--scene-warn,#a15c00)" stroke-width="2.5"/>
+<rect x="240" y="112" width="30" height="8" rx="4" fill="var(--scene-line,#cfdfdc)"/><circle class="grow-spring-boot-production-engineering-lg" cx="294" cy="116" r="7" fill="var(--scene-good,#1f7a4d)"/><rect x="240" y="40" width="42" height="8" rx="4" fill="var(--scene-line,#cfdfdc)"/><rect x="240" y="56" width="30" height="8" rx="4" fill="var(--scene-line,#cfdfdc)"/>
+<g class="grow-spring-boot-production-engineering-rb"><path d="M184 108l12 16m0-16l-12 16" stroke="var(--scene-bad,#b3261e)" stroke-width="4" stroke-linecap="round"/></g>
+<text class="grow-spring-boot-production-engineering-t" x="268" y="92" text-anchor="middle" style="display:none"></text>
+<text class="grow-spring-boot-production-engineering-t" x="140" y="26" text-anchor="middle">95% stable</text><text class="grow-spring-boot-production-engineering-t" x="130" y="146" text-anchor="start" style="display:none"></text><text class="grow-spring-boot-production-engineering-t" x="140" y="150" text-anchor="middle">5% canary</text>
+<g class="grow-spring-boot-production-engineering-rb"><text class="grow-spring-boot-production-engineering-t" x="268" y="165" text-anchor="middle" style="fill:var(--scene-bad,#b3261e)">rollback</text></g>
+
+</svg>

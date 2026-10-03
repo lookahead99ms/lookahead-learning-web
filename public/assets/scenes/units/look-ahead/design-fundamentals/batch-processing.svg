@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="A day of plays is split, counted in parts overnight and added into one statement">
+<style>
+.batch-processing-t{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-ink,#102a33)}
+.batch-processing-mu{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-muted,#536970)}
+.batch-processing-row{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.2}
+.batch-processing-tile{fill:var(--scene-accent,#006c73)}
+.batch-processing-bar{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-accent,#006c73);stroke-width:1.5}
+.batch-processing-card{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.batch-processing-lane{stroke:var(--scene-line,#cfdfdc);stroke-width:2;stroke-dasharray:3 4;fill:none}
+.batch-processing-a1{animation:batch-processing-move 3.5s linear -1.6s infinite}
+.batch-processing-a2{animation:batch-processing-move 3.5s linear -0.9s infinite}
+.batch-processing-a3{animation:batch-processing-move 3.5s linear -2.3s infinite}
+.batch-processing-tally{animation:batch-processing-show 7s -3s infinite}
+.batch-processing-merge{stroke:var(--scene-accent,#006c73);stroke-width:2.5;fill:none;animation:batch-processing-showm 7s -3s infinite}
+.batch-processing-stmt{animation:batch-processing-showm 7s -3s infinite}
+@keyframes batch-processing-move{0%{transform:translateX(0);opacity:0}5%{opacity:1}80%{transform:translateX(58px);opacity:1}90%,100%{transform:translateX(58px);opacity:0}}
+@keyframes batch-processing-show{0%,8%{opacity:.25}18%,100%{opacity:1}}
+@keyframes batch-processing-showm{0%,22%{opacity:0}32%,96%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.batch-processing-a1,.batch-processing-a2,.batch-processing-a3,.batch-processing-tally,.batch-processing-merge,.batch-processing-stmt{animation-play-state:paused}}
+</style>
+<path d="M22 6 a10 10 0 1 0 11 15 a8 8 0 1 1 -11 -15z" style="fill:var(--scene-warn,#a15c00)"/>
+<rect class="batch-processing-row" x="6" y="30" width="44" height="12" rx="3"/>
+<rect class="batch-processing-row" x="6" y="46" width="44" height="12" rx="3"/>
+<rect class="batch-processing-row" x="6" y="62" width="44" height="12" rx="3"/>
+<rect class="batch-processing-row" x="6" y="78" width="44" height="12" rx="3"/>
+<rect class="batch-processing-row" x="6" y="94" width="44" height="12" rx="3"/>
+<text class="batch-processing-t" x="4" y="125" font-size="14" font-weight="700">480M plays</text>
+<path class="batch-processing-lane" d="M54 44 H126 M54 68 H126 M54 92 H126"/>
+<g class="batch-processing-a1"><rect class="batch-processing-tile" x="56" y="37" width="16" height="14" rx="3"/></g>
+<g class="batch-processing-a2"><rect class="batch-processing-tile" x="56" y="61" width="16" height="14" rx="3"/></g>
+<g class="batch-processing-a3"><rect class="batch-processing-tile" x="56" y="85" width="16" height="14" rx="3"/></g>
+<g class="batch-processing-tally">
+<rect class="batch-processing-bar" x="130" y="38" width="28" height="12" rx="3"/>
+<rect class="batch-processing-bar" x="130" y="62" width="28" height="12" rx="3"/>
+<rect class="batch-processing-bar" x="130" y="86" width="28" height="12" rx="3"/>
+</g>
+<path class="batch-processing-merge" d="M160 44 Q170 44 172 62 M160 68 H172 M160 92 Q170 92 172 74"/>
+<g class="batch-processing-stmt">
+<rect class="batch-processing-card" x="174" y="26" width="62" height="84" rx="8"/>
+<rect class="batch-processing-tile" x="190" y="36" width="30" height="5" rx="2.5"/>
+<rect class="batch-processing-bar" x="184" y="50" width="42" height="8" rx="3"/>
+<rect class="batch-processing-bar" x="184" y="64" width="34" height="8" rx="3"/>
+<text class="batch-processing-t" x="205" y="98" font-size="15" text-anchor="middle" font-weight="700" style="fill:var(--scene-good,#1f7a4d)">$167.49</text>
+</g>
+</svg>

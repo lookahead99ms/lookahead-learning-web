@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="The best language changes with the job: when latency matters Go fits best, when libraries matter Python fits best">
+<style>
+.learn-language-comparative-analysis-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.learn-language-comparative-analysis-ic { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 2; }
+.learn-language-comparative-analysis-g { fill: none; stroke: var(--scene-text, #28434a); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.learn-language-comparative-analysis-gf { fill: var(--scene-text, #28434a); }
+.learn-language-comparative-analysis-ring { fill: none; stroke: var(--scene-accent, #006c73); stroke-width: 3; }
+.learn-language-comparative-analysis-track { fill: var(--scene-accent-soft, #dcefed); }
+.learn-language-comparative-analysis-fill { fill: var(--scene-accent, #006c73); transform-box: fill-box; transform-origin: 50% 100%; }
+.learn-language-comparative-analysis-ok { fill: var(--scene-good, #1f7a4d); }
+.learn-language-comparative-analysis-okm { fill: none; stroke: var(--scene-card, #ffffff); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.learn-language-comparative-analysis-ra { animation: learn-language-comparative-analysis-kf-a 8s ease-in-out -3s infinite; }
+.learn-language-comparative-analysis-rb { animation: learn-language-comparative-analysis-kf-b 8s ease-in-out -3s infinite; }
+@keyframes learn-language-comparative-analysis-kf-a { 0%, 44% { opacity: 1; } 50%, 94% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes learn-language-comparative-analysis-kf-b { 0%, 44% { opacity: 0; } 50%, 94% { opacity: 1; } 100% { opacity: 0; } }
+.learn-language-comparative-analysis-fj { animation: learn-language-comparative-analysis-kf-fj 8s ease-in-out -3s infinite; }
+.learn-language-comparative-analysis-fp { animation: learn-language-comparative-analysis-kf-fp 8s ease-in-out -3s infinite; }
+.learn-language-comparative-analysis-fg { animation: learn-language-comparative-analysis-kf-fg 8s ease-in-out -3s infinite; }
+@keyframes learn-language-comparative-analysis-kf-fj { 0%, 44% { transform: scaleY(.7); } 52%, 94% { transform: scaleY(.6); } 100% { transform: scaleY(.7); } }
+@keyframes learn-language-comparative-analysis-kf-fp { 0%, 44% { transform: scaleY(.3); } 52%, 94% { transform: scaleY(1); } 100% { transform: scaleY(.3); } }
+@keyframes learn-language-comparative-analysis-kf-fg { 0%, 44% { transform: scaleY(1); } 52%, 94% { transform: scaleY(.35); } 100% { transform: scaleY(1); } }
+</style>
+<!-- constraints: latency, libraries, team -->
+<rect class="learn-language-comparative-analysis-ic" x="20" y="22" width="44" height="40" rx="8"/>
+<circle class="learn-language-comparative-analysis-g" cx="42" cy="44" r="11"/><path class="learn-language-comparative-analysis-g" d="M42 44 L47 39 M39 29 H45 M42 29 V33"/>
+<rect class="learn-language-comparative-analysis-ic" x="20" y="72" width="44" height="40" rx="8"/>
+<rect class="learn-language-comparative-analysis-gf" x="29" y="80" width="7" height="24" rx="1.5"/><rect class="learn-language-comparative-analysis-gf" x="38" y="83" width="7" height="21" rx="1.5" opacity=".7"/><path class="learn-language-comparative-analysis-g" d="M48 84 L55 82 L59 103 L52 105 Z"/>
+<rect class="learn-language-comparative-analysis-ic" x="20" y="122" width="44" height="40" rx="8"/>
+<circle class="learn-language-comparative-analysis-gf" cx="36" cy="135" r="5"/><circle class="learn-language-comparative-analysis-gf" cx="49" cy="135" r="5" opacity=".7"/><path class="learn-language-comparative-analysis-gf" d="M27 154 C27 144 45 144 45 154 Z"/><path class="learn-language-comparative-analysis-gf" d="M40 154 C40 144 58 144 58 154 Z" opacity=".7"/>
+<rect class="learn-language-comparative-analysis-ring learn-language-comparative-analysis-ra" x="17" y="19" width="50" height="46" rx="10"/>
+<rect class="learn-language-comparative-analysis-ring learn-language-comparative-analysis-rb" x="17" y="69" width="50" height="46" rx="10"/>
+<path d="M82 22 V162" stroke="var(--scene-line, #cfdfdc)" stroke-width="1.5" stroke-dasharray="3 4"/>
+<!-- fit meters -->
+<rect class="learn-language-comparative-analysis-track" x="118" y="40" width="26" height="100" rx="5"/>
+<rect class="learn-language-comparative-analysis-fill learn-language-comparative-analysis-fj" x="118" y="40" width="26" height="100" rx="5"/>
+<rect class="learn-language-comparative-analysis-track" x="190" y="40" width="26" height="100" rx="5"/>
+<rect class="learn-language-comparative-analysis-fill learn-language-comparative-analysis-fp" x="190" y="40" width="26" height="100" rx="5"/>
+<rect class="learn-language-comparative-analysis-track" x="262" y="40" width="26" height="100" rx="5"/>
+<rect class="learn-language-comparative-analysis-fill learn-language-comparative-analysis-fg" x="262" y="40" width="26" height="100" rx="5"/>
+<g class="learn-language-comparative-analysis-ra"><circle class="learn-language-comparative-analysis-ok" cx="275" cy="22" r="11"/><path class="learn-language-comparative-analysis-okm" d="M270 22 L274 26 L281 18"/></g>
+<g class="learn-language-comparative-analysis-rb"><circle class="learn-language-comparative-analysis-ok" cx="203" cy="22" r="11"/><path class="learn-language-comparative-analysis-okm" d="M198 22 L202 26 L209 18"/></g>
+<text class="learn-language-comparative-analysis-t" x="131" y="162" font-size="16" text-anchor="middle">Java</text>
+<text class="learn-language-comparative-analysis-t" x="203" y="162" font-size="16" text-anchor="middle">Python</text>
+<text class="learn-language-comparative-analysis-t" x="275" y="162" font-size="16" text-anchor="middle">Go</text>
+</svg>

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="leadership-mentoring">
+<style>
+.look-ahead-behavioral-carl-leadership-mentoring-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.look-ahead-behavioral-carl-leadership-mentoring-tc{text-anchor:middle}
+
+.look-ahead-behavioral-carl-leadership-mentoring-m{animation:look-ahead-behavioral-carl-leadership-mentoring-up 6s infinite -2s}
+@keyframes look-ahead-behavioral-carl-leadership-mentoring-up{0%,8%{transform:translate(0,0)}30%{transform:translate(50px,-22px)}55%{transform:translate(100px,-44px)}80%,92%{transform:translate(150px,-66px)}100%{transform:translate(0,0)}}
+.look-ahead-behavioral-carl-leadership-mentoring-rail{animation:look-ahead-behavioral-carl-leadership-mentoring-fd 6s infinite -2s}
+@keyframes look-ahead-behavioral-carl-leadership-mentoring-fd{0%,10%{opacity:1}60%,92%{opacity:.12}100%{opacity:1}}
+.look-ahead-behavioral-carl-leadership-mentoring-hand{animation:look-ahead-behavioral-carl-leadership-mentoring-fd 6s infinite -2s}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+<rect width="320" height="180" rx="10" fill="var(--scene-card,#fff)"/>
+
+<g>
+<path d="M30 140h60v-22h50v-22h50v-22h50v-22h30v88z" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M20 140h290" stroke="var(--scene-ink,#102a33)" stroke-width="3" stroke-linecap="round"/>
+<g class="look-ahead-behavioral-carl-leadership-mentoring-rail"><path d="M64 72Q110 60 156 50M64 72v46" fill="none" stroke="var(--scene-warn,#a15c00)" stroke-width="3" stroke-dasharray="6 4" stroke-linecap="round"/><path d="M58 120l6-10 6 10" fill="none" stroke="var(--scene-warn,#a15c00)" stroke-width="3"/></g>
+<circle cx="44" cy="98" r="10" fill="var(--scene-link,#245a88)"/><path d="M28 140a16 16 0 0 1 32 0z" fill="var(--scene-link,#245a88)"/>
+<g class="look-ahead-behavioral-carl-leadership-mentoring-m"><circle cx="100" cy="88" r="8" fill="var(--scene-grow,#b8457a)"/><path d="M87 118a13 13 0 0 1 26 0z" fill="var(--scene-grow,#b8457a)"/><path d="M96 76l4-12 4 12" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="0"/></g>
+<path d="M258 36v-12l16 5-16 7" fill="var(--scene-good,#1f7a4d)" stroke="var(--scene-good,#1f7a4d)" stroke-width="2.5" stroke-linejoin="round"/>
+<text class="look-ahead-behavioral-carl-leadership-mentoring-t" x="188" y="162">Support fades</text>
+</g>
+</svg>

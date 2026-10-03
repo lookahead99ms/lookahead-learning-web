@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Two slices sharing one array: a write through one shows in the other">
+<style>
+.learn-go-fundamentals-go-language-architecture-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-go-fundamentals-go-language-architecture-n{font-family:ui-monospace,Menlo,monospace;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33);text-anchor:middle}
+.learn-go-fundamentals-go-language-architecture-w{font-family:ui-monospace,Menlo,monospace;font-size:16px;font-weight:700;fill:#fff;text-anchor:middle}
+.learn-go-fundamentals-go-language-architecture-flash{animation:learn-go-fundamentals-go-language-architecture-fl 6s infinite;animation-delay:-3s}
+.learn-go-fundamentals-go-language-architecture-old{animation:learn-go-fundamentals-go-language-architecture-o 6s infinite;animation-delay:-3s}
+.learn-go-fundamentals-go-language-architecture-new{animation:learn-go-fundamentals-go-language-architecture-nw 6s infinite;animation-delay:-3s}
+.learn-go-fundamentals-go-language-architecture-pa{animation:learn-go-fundamentals-go-language-architecture-a 6s infinite;animation-delay:-3s}
+.learn-go-fundamentals-go-language-architecture-pb{animation:learn-go-fundamentals-go-language-architecture-b 6s infinite;animation-delay:-3s}
+@keyframes learn-go-fundamentals-go-language-architecture-fl{0%,30%{fill:var(--scene-card,#fff)}40%,85%{fill:var(--scene-warn,#a15c00)}100%{fill:var(--scene-card,#fff)}}
+@keyframes learn-go-fundamentals-go-language-architecture-o{0%,35%{opacity:1}40%,90%{opacity:0}95%,100%{opacity:1}}
+@keyframes learn-go-fundamentals-go-language-architecture-nw{0%,35%{opacity:0}40%,90%{opacity:1}95%,100%{opacity:0}}
+@keyframes learn-go-fundamentals-go-language-architecture-a{0%,10%{stroke-width:2;opacity:.6}20%,35%{stroke-width:4;opacity:1}50%,100%{stroke-width:2;opacity:.6}}
+@keyframes learn-go-fundamentals-go-language-architecture-b{0%,45%{stroke-width:2;opacity:.6}60%,80%{stroke-width:4;opacity:1}95%,100%{stroke-width:2;opacity:.6}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="80" y="8" width="110" height="28" rx="6" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2"/>
+<text class="learn-go-fundamentals-go-language-architecture-t" x="135" y="27" text-anchor="middle">slice a</text>
+<path class="learn-go-fundamentals-go-language-architecture-pa" d="M135 36V66M60 78V66H210V78" fill="none" stroke="var(--scene-accent,#006c73)" stroke-linejoin="round"/>
+<g stroke="var(--scene-ink,#102a33)" stroke-width="2">
+<rect x="60" y="82" width="50" height="36" fill="var(--scene-card,#fff)"/>
+<rect class="learn-go-fundamentals-go-language-architecture-flash" x="110" y="82" width="50" height="36"/>
+<rect x="160" y="82" width="50" height="36" fill="var(--scene-card,#fff)"/>
+<rect x="210" y="82" width="50" height="36" fill="var(--scene-card,#fff)"/>
+</g>
+<text class="learn-go-fundamentals-go-language-architecture-n" x="85" y="106">1</text>
+<text class="learn-go-fundamentals-go-language-architecture-n learn-go-fundamentals-go-language-architecture-old" x="135" y="106">2</text>
+<text class="learn-go-fundamentals-go-language-architecture-w learn-go-fundamentals-go-language-architecture-new" x="135" y="106">9</text>
+<text class="learn-go-fundamentals-go-language-architecture-n" x="185" y="106">3</text>
+<text class="learn-go-fundamentals-go-language-architecture-n" x="235" y="106">4</text>
+<path class="learn-go-fundamentals-go-language-architecture-pb" d="M110 122V134H260V122M185 134V146" fill="none" stroke="var(--scene-ahead,#2f6fb3)" stroke-linejoin="round"/>
+<rect x="130" y="146" width="110" height="28" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-ahead,#2f6fb3)" stroke-width="2"/>
+<text class="learn-go-fundamentals-go-language-architecture-t" x="185" y="165" text-anchor="middle">slice b</text>
+</svg>

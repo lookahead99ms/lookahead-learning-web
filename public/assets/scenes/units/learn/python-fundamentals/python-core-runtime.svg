@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Two names point to one list; a change shows through both">
+<style>
+
+.learn-python-fundamentals-python-core-runtime-flow{stroke-dasharray:6 5;animation:learn-python-fundamentals-python-core-runtime-dash 1.2s linear infinite}
+@keyframes learn-python-fundamentals-python-core-runtime-dash{to{stroke-dashoffset:-11}}
+.learn-python-fundamentals-python-core-runtime-cell{animation:learn-python-fundamentals-python-core-runtime-cell 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes learn-python-fundamentals-python-core-runtime-cell{0%,35%{fill:var(--scene-accent-soft,#dcefed)}45%,80%{fill:var(--scene-warn,#a15c00)}95%,100%{fill:var(--scene-accent-soft,#dcefed)}}
+.learn-python-fundamentals-python-core-runtime-val{animation:learn-python-fundamentals-python-core-runtime-val 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes learn-python-fundamentals-python-core-runtime-val{0%,35%{fill:var(--scene-ink,#102a33)}45%,80%{fill:var(--scene-card,#fff)}95%,100%{fill:var(--scene-ink,#102a33)}}
+.learn-python-fundamentals-python-core-runtime-ring{animation:learn-python-fundamentals-python-core-runtime-ring 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes learn-python-fundamentals-python-core-runtime-ring{0%,38%{opacity:0}48%,80%{opacity:1}92%,100%{opacity:0}}
+
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+
+<line class="learn-python-fundamentals-python-core-runtime-flow" x1="58" y1="54" x2="146" y2="82" stroke="var(--scene-ahead,#2f6fb3)" stroke-width="3"/>
+<line class="learn-python-fundamentals-python-core-runtime-flow" x1="58" y1="126" x2="146" y2="98" stroke="var(--scene-grow,#b8457a)" stroke-width="3"/>
+<polygon points="148,83 136,74 134,86" fill="var(--scene-ahead,#2f6fb3)" transform="rotate(0)"/>
+<polygon points="148,97 136,106 134,94" fill="var(--scene-grow,#b8457a)"/>
+<rect x="16" y="36" width="42" height="36" rx="8" fill="var(--scene-ahead,#2f6fb3)"/>
+<rect x="16" y="108" width="42" height="36" rx="8" fill="var(--scene-grow,#b8457a)"/>
+<text x="37" y="61" text-anchor="middle" font-size="20" font-weight="700" font-family="ui-monospace, Menlo, monospace" fill="#fff">a</text>
+<text x="37" y="133" text-anchor="middle" font-size="20" font-weight="700" font-family="ui-monospace, Menlo, monospace" fill="#fff">b</text>
+<rect class="learn-python-fundamentals-python-core-runtime-ring" x="12" y="32" width="50" height="44" rx="10" fill="none" stroke="var(--scene-warn,#a15c00)" stroke-width="3"/>
+<rect class="learn-python-fundamentals-python-core-runtime-ring" x="12" y="104" width="50" height="44" rx="10" fill="none" stroke="var(--scene-warn,#a15c00)" stroke-width="3"/>
+<rect x="150" y="62" width="156" height="56" rx="10" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="3"/>
+<rect x="158" y="72" width="34" height="36" rx="5" fill="var(--scene-accent-soft,#dcefed)"/>
+<rect class="learn-python-fundamentals-python-core-runtime-cell" x="196" y="72" width="34" height="36" rx="5"/>
+<rect x="234" y="72" width="34" height="36" rx="5" fill="var(--scene-accent-soft,#dcefed)"/>
+<rect x="272" y="72" width="26" height="36" rx="5" fill="var(--scene-accent-soft,#dcefed)"/>
+<text x="175" y="97" text-anchor="middle" font-size="16" font-family="ui-monospace, Menlo, monospace" fill="var(--scene-ink,#102a33)">1</text>
+<text class="learn-python-fundamentals-python-core-runtime-val" x="213" y="97" text-anchor="middle" font-size="16" font-family="ui-monospace, Menlo, monospace">9</text>
+<text x="251" y="97" text-anchor="middle" font-size="16" font-family="ui-monospace, Menlo, monospace" fill="var(--scene-ink,#102a33)">3</text>
+<text x="285" y="97" text-anchor="middle" font-size="16" font-family="ui-monospace, Menlo, monospace" fill="var(--scene-ink,#102a33)">7</text>
+<text x="228" y="140" text-anchor="middle" font-size="16" font-weight="700" font-family="system-ui, sans-serif" fill="var(--scene-ink,#102a33)">one list</text>
+</svg>

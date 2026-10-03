@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Orla taps Pay twice for 84.50 euros; the first tap sends the money to her card once, the second tap finds the same payment and nothing more is charged">
+<style>
+.payment-system-t{font-family:system-ui, sans-serif;fill:var(--scene-ink,#102a33)}
+.payment-system-tx{font-family:system-ui, sans-serif;fill:var(--scene-text,#28434a)}
+.payment-system-tm{font-family:ui-monospace, Menlo, monospace;fill:var(--scene-ink,#102a33)}
+.payment-system-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.payment-system-card{fill:var(--scene-card,#fff)}
+.payment-system-soft{fill:var(--scene-muted,#536970)}
+.payment-system-line{fill:var(--scene-line,#cfdfdc)}
+.payment-system-acc{fill:var(--scene-accent,#006c73)}
+.payment-system-accsoft{fill:var(--scene-accent-soft,#dcefed)}
+.payment-system-good{fill:var(--scene-good,#1f7a4d)}
+.payment-system-bad{fill:var(--scene-bad,#b3261e)}
+.payment-system-warn{fill:var(--scene-warn,#a15c00)}
+.payment-system-link{fill:var(--scene-link,#245a88)}
+.payment-system-a{animation-duration:6s;animation-iteration-count:infinite;animation-delay:-4.4s;transform-box:fill-box}
+@media (prefers-reduced-motion: reduce){.payment-system-a{animation-play-state:paused!important}}
+.payment-system-t1{animation-name:payment-system-t1}
+@keyframes payment-system-t1{0%,6%{opacity:0;transform:scale(.4)}10%{opacity:.6;transform:scale(1)}16%,100%{opacity:0;transform:scale(1.6)}}
+.payment-system-t2{animation-name:payment-system-t2}
+@keyframes payment-system-t2{0%,24%{opacity:0;transform:scale(.4)}28%{opacity:.6;transform:scale(1)}34%,100%{opacity:0;transform:scale(1.6)}}
+.payment-system-t1,.payment-system-t2{transform-origin:center}
+.payment-system-coin{animation-name:payment-system-coin}
+@keyframes payment-system-coin{0%,10%{opacity:0;transform:translate(0,0)}13%{opacity:1;transform:translate(0,0)}34%{opacity:1;transform:translate(98px,-30px)}38%,100%{opacity:0;transform:translate(98px,-30px)}}
+.payment-system-ghost{animation-name:payment-system-ghost}
+@keyframes payment-system-ghost{0%,28%{opacity:0;transform:translate(0,0)}31%{opacity:.9;transform:translate(0,0)}42%{opacity:.9;transform:translate(44px,-14px)}50%{opacity:.9;transform:translate(10px,-2px)}56%,100%{opacity:0;transform:translate(0,0)}}
+.payment-system-ok{animation-name:payment-system-ok}
+@keyframes payment-system-ok{0%,52%{opacity:0;transform:translateY(6px)}58%,94%{opacity:1;transform:none}100%{opacity:0}}
+.payment-system-btn{animation-name:payment-system-btn}
+@keyframes payment-system-btn{0%,34%{fill:var(--scene-accent,#006c73)}38%,94%{fill:var(--scene-good,#1f7a4d)}100%{fill:var(--scene-accent,#006c73)}}
+</style>
+<rect x="8" y="6" width="88" height="124" rx="12" class="payment-system-box"/>
+<rect x="42" y="12" width="20" height="4" rx="2" class="payment-system-line"/>
+<rect x="16" y="26" width="72" height="8" rx="4" class="payment-system-line"/><rect x="16" y="40" width="52" height="8" rx="4" class="payment-system-line"/>
+<text class="payment-system-t" x="52" y="72" font-size="17" font-weight="700" text-anchor="middle">€84.50</text>
+<rect class="payment-system-a payment-system-btn" x="18" y="86" width="68" height="28" rx="14"/>
+<text class="payment-system-card" style="font-family:system-ui, sans-serif" x="52" y="105" font-size="15" font-weight="700" text-anchor="middle">Pay</text>
+<circle class="payment-system-a payment-system-t1" cx="70" cy="100" r="14" style="fill:none;stroke:var(--scene-ink,#102a33);stroke-width:2"/>
+<circle class="payment-system-a payment-system-t2" cx="70" cy="100" r="14" style="fill:none;stroke:var(--scene-ink,#102a33);stroke-width:2"/>
+<g><path d="M70 100 l0 18 l5 -5 l4 8 l3.5 -1.6 l-4 -8 l7 0z" style="fill:var(--scene-ink,#102a33);stroke:var(--scene-card,#fff);stroke-width:1.2"/></g>
+<rect x="128" y="20" width="102" height="62" rx="9" class="payment-system-acc"/>
+<rect x="128" y="32" width="102" height="10" style="fill:var(--scene-ink,#102a33);fill-opacity:.55"/>
+<rect x="138" y="52" width="20" height="14" rx="3" style="fill:var(--scene-warn,#a15c00)"/>
+<rect x="166" y="56" width="52" height="5" rx="2.5" class="payment-system-card" fill-opacity=".7"/>
+<g class="payment-system-a payment-system-coin"><circle cx="84" cy="70" r="11" class="payment-system-warn"/><text class="payment-system-card" style="font-family:system-ui, sans-serif" x="84" y="75" font-size="14" font-weight="700" text-anchor="middle">€</text></g>
+<g class="payment-system-a payment-system-ghost"><circle cx="84" cy="70" r="11" style="fill:none;stroke:var(--scene-muted,#536970);stroke-width:2;stroke-dasharray:3 3"/></g>
+<g class="payment-system-a payment-system-ok"><circle cx="140" cy="106" r="10" class="payment-system-good"/><path d="M135 106 l4 4 l7 -8" stroke="var(--scene-card,#fff)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text class="payment-system-t" x="156" y="111" font-size="14" font-weight="700">Paid once</text></g>
+</svg>

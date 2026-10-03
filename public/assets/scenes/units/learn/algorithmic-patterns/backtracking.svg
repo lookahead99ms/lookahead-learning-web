@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="backtracking">
+<style>
+.learn-algorithmic-patterns-backtracking-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}.learn-algorithmic-patterns-backtracking-w{font:700 16px system-ui,sans-serif;fill:#fff}
+@keyframes learn-algorithmic-patterns-backtracking-m{0%{transform:translate(160px,24px);opacity:1}12%{transform:translate(90px,72px);opacity:1}24%{transform:translate(50px,122px);opacity:1}36%{transform:translate(90px,72px);opacity:1}48%{transform:translate(130px,122px);opacity:1}58%{transform:translate(90px,72px);opacity:1}68%{transform:translate(160px,24px);opacity:1}78%{transform:translate(230px,72px);opacity:1}90%{transform:translate(270px,122px);opacity:1}96%{transform:translate(270px,122px);opacity:1}99%{transform:translate(270px,122px);opacity:0}100%{transform:translate(160px,24px);opacity:0}}
+.learn-algorithmic-patterns-backtracking-m{animation:learn-algorithmic-patterns-backtracking-m 9s ease-in-out infinite;animation-delay:-3.6s;}
+@keyframes learn-algorithmic-patterns-backtracking-xLL{0%{opacity:0}24.5%{opacity:0}26%{opacity:1}94%{opacity:1}97%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-backtracking-xLL{animation:learn-algorithmic-patterns-backtracking-xLL 9s linear infinite;animation-delay:-3.6s;}
+@keyframes learn-algorithmic-patterns-backtracking-xLR{0%{opacity:0}48.5%{opacity:0}50%{opacity:1}94%{opacity:1}97%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-backtracking-xLR{animation:learn-algorithmic-patterns-backtracking-xLR 9s linear infinite;animation-delay:-3.6s;}
+.learn-algorithmic-patterns-backtracking-bg{fill:var(--scene-card,#fff)}
+</style>
+<rect class="learn-algorithmic-patterns-backtracking-bg" width="320" height="180" rx="12"/>
+<line x1="160" y1="24" x2="90" y2="72" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<line x1="160" y1="24" x2="230" y2="72" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<line x1="90" y1="72" x2="50" y2="122" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<line x1="90" y1="72" x2="130" y2="122" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<line x1="230" y1="72" x2="190" y2="122" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<line x1="230" y1="72" x2="270" y2="122" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<circle cx="160" cy="24" r="13" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<circle cx="90" cy="72" r="13" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<circle cx="230" cy="72" r="13" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<circle cx="50" cy="122" r="13" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-bad,#b3261e)" stroke-width="3"/>
+<circle cx="130" cy="122" r="13" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-bad,#b3261e)" stroke-width="3"/>
+<circle cx="190" cy="122" r="13" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<circle cx="270" cy="122" r="13" fill="var(--scene-good,#1f7a4d)" stroke="var(--scene-good,#1f7a4d)" stroke-width="3"/>
+<path class="learn-algorithmic-patterns-backtracking-xLL" d="M42 114l16 16m0-16l-16 16" stroke="var(--scene-bad,#b3261e)" stroke-width="4" stroke-linecap="round"/>
+<path class="learn-algorithmic-patterns-backtracking-xLR" d="M122 114l16 16m0-16l-16 16" stroke="var(--scene-bad,#b3261e)" stroke-width="4" stroke-linecap="round"/>
+<circle class="learn-algorithmic-patterns-backtracking-m" r="8" fill="var(--scene-warn,#a15c00)" stroke="var(--scene-card,#fff)" stroke-width="2"/>
+<text class="learn-algorithmic-patterns-backtracking-t" x="60" y="158" text-anchor="middle">dead end</text>
+<text class="learn-algorithmic-patterns-backtracking-t" x="260" y="158" text-anchor="middle">goal</text>
+</svg>

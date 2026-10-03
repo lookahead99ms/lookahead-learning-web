@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Bytes stream from a file into a ByteBuffer, then go out over the network through HttpClient">
+<style>
+.grow-advanced-java-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.grow-advanced-java-m { font-family: ui-monospace, Menlo, monospace; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.grow-advanced-java-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 2; }
+.grow-advanced-java-soft { fill: var(--scene-accent-soft, #dcefed); }
+.grow-advanced-java-acc { fill: var(--scene-accent, #006c73); }
+.grow-advanced-java-ln { fill: var(--scene-line, #cfdfdc); }
+.grow-advanced-java-mut { fill: var(--scene-muted, #536970); }
+.grow-advanced-java-good { fill: var(--scene-good, #1f7a4d); }
+.grow-advanced-java-warn { fill: var(--scene-warn, #a15c00); }
+.grow-advanced-java-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 2; stroke-dasharray: 4 5; }
+
+.grow-advanced-java-cell { fill: var(--scene-accent, #006c73); stroke: var(--scene-accent, #006c73); stroke-width: 1.5; animation: grow-advanced-java-kfill 7s infinite; }
+@keyframes grow-advanced-java-kfill { 0%, 20% { fill-opacity: .08; } 24%, 70% { fill-opacity: 1; } 74%, 100% { fill-opacity: .08; } }
+.grow-advanced-java-byte { animation: grow-advanced-java-kin 7s linear infinite; }
+@keyframes grow-advanced-java-kin { 0%, 18% { opacity: 0; transform: translateX(0); } 19% { opacity: 1; transform: translateX(0); } 30% { transform: translateX(14px); } 30.01% { transform: translateX(0); } 41% { transform: translateX(14px); } 41.01% { transform: translateX(0); } 52% { opacity: 1; transform: translateX(14px); } 53%, 100% { opacity: 0; } }
+.grow-advanced-java-pkt { animation: grow-advanced-java-kout 7s linear infinite; }
+@keyframes grow-advanced-java-kout { 0%, 70% { opacity: 0; transform: translateX(0); } 71% { opacity: 1; transform: translateX(0); } 80% { transform: translateX(16px); } 80.01% { transform: translateX(0); } 89% { transform: translateX(16px); } 89.01% { transform: translateX(0); } 98% { opacity: 1; transform: translateX(16px); } 99%, 100% { opacity: 0; } }
+.grow-advanced-java-globe { fill: var(--scene-accent-soft, #dcefed); stroke: var(--scene-link, #245a88); stroke-width: 2; }
+.grow-advanced-java-mer { fill: none; stroke: var(--scene-link, #245a88); stroke-width: 1.5; }
+.grow-advanced-java-spin { animation: grow-advanced-java-krot 7s linear infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes grow-advanced-java-krot { 0% { transform: scaleX(1); } 50% { transform: scaleX(.2); } 100% { transform: scaleX(1); } }
+.grow-advanced-java-byte, .grow-advanced-java-pkt, .grow-advanced-java-spin { animation-delay: -3s; }
+</style>
+<!-- file -->
+<path class="grow-advanced-java-box" d="M14 40 H44 L60 56 V112 H14 Z"/>
+<path class="grow-advanced-java-soft" d="M44 40 V56 H60 Z"/>
+<rect class="grow-advanced-java-ln" x="22" y="66" width="30" height="6" rx="3"/>
+<rect class="grow-advanced-java-ln" x="22" y="80" width="24" height="6" rx="3"/>
+<rect class="grow-advanced-java-ln" x="22" y="94" width="30" height="6" rx="3"/>
+<text class="grow-advanced-java-t" x="37" y="136" font-size="16" text-anchor="middle">file</text>
+<rect class="grow-advanced-java-byte grow-advanced-java-acc" x="64" y="73" width="10" height="10" rx="2"/>
+<!-- buffer -->
+<rect class="grow-advanced-java-box" x="88" y="58" width="132" height="40" rx="6"/>
+<rect class="grow-advanced-java-cell" x="94" y="65" width="12" height="26" rx="3" style="animation-delay: -3.0s"/>
+<rect class="grow-advanced-java-cell" x="109" y="65" width="12" height="26" rx="3" style="animation-delay: -2.65s"/>
+<rect class="grow-advanced-java-cell" x="124" y="65" width="12" height="26" rx="3" style="animation-delay: -2.3s"/>
+<rect class="grow-advanced-java-cell" x="139" y="65" width="12" height="26" rx="3" style="animation-delay: -1.95s"/>
+<rect class="grow-advanced-java-cell" x="154" y="65" width="12" height="26" rx="3" style="animation-delay: -1.6s"/>
+<rect class="grow-advanced-java-cell" x="169" y="65" width="12" height="26" rx="3" style="animation-delay: -1.25s"/>
+<rect class="grow-advanced-java-cell" x="184" y="65" width="12" height="26" rx="3" style="animation-delay: -0.9s"/>
+<rect class="grow-advanced-java-cell" x="199" y="65" width="12" height="26" rx="3" style="animation-delay: -0.55s"/>
+<text class="grow-advanced-java-m" x="154" y="136" font-size="16" text-anchor="middle">ByteBuffer</text>
+<rect class="grow-advanced-java-pkt grow-advanced-java-acc" x="224" y="72" width="12" height="12" rx="2"/>
+<!-- network globe -->
+<circle class="grow-advanced-java-globe" cx="280" cy="78" r="26"/>
+<ellipse class="grow-advanced-java-mer grow-advanced-java-spin" cx="280" cy="78" rx="12" ry="26"/>
+<path class="grow-advanced-java-mer" d="M254 78 H306 M258 64 H302 M258 92 H302"/>
+<text class="grow-advanced-java-m" x="268" y="136" font-size="16" text-anchor="middle">HttpClient</text>
+</svg>

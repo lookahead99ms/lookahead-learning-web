@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="monotonic queue">
+<style>
+.learn-algorithmic-patterns-monotonic-queue-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}.learn-algorithmic-patterns-monotonic-queue-w{font:700 16px system-ui,sans-serif;fill:#fff}
+@keyframes learn-algorithmic-patterns-monotonic-queue-fa{0%{transform:none;opacity:1}40%{transform:none;opacity:1}54%{transform:translateY(34px);opacity:0}92%{transform:translateY(34px);opacity:0}100%{transform:none;opacity:1}}
+@keyframes learn-algorithmic-patterns-monotonic-queue-nw{0%{transform:translateX(150px);opacity:0}8%{transform:translateX(150px);opacity:1}40%{transform:translateX(150px);opacity:1}62%{transform:translateX(0);opacity:1}90%{transform:translateX(0);opacity:1}97%{transform:translateX(0);opacity:0}100%{transform:translateX(150px);opacity:0}}
+.learn-algorithmic-patterns-monotonic-queue-fa{animation:learn-algorithmic-patterns-monotonic-queue-fa 7s ease-in-out infinite;animation-delay:-2.0s;}.learn-algorithmic-patterns-monotonic-queue-nw{animation:learn-algorithmic-patterns-monotonic-queue-nw 7s ease-in-out infinite;animation-delay:-2.0s;}
+.learn-algorithmic-patterns-monotonic-queue-bg{fill:var(--scene-card,#fff)}
+</style>
+<rect class="learn-algorithmic-patterns-monotonic-queue-bg" width="320" height="180" rx="12"/>
+<rect x="30" y="72" width="262" height="46" rx="12" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-ink,#102a33)" stroke-width="3"/>
+<rect x="42" y="82" width="34" height="32" rx="4" fill="var(--scene-good,#1f7a4d)"/>
+<rect x="84" y="90" width="34" height="24" rx="4" fill="var(--scene-learn,#0f8a8a)"/>
+<rect class="learn-algorithmic-patterns-monotonic-queue-fa" x="126" y="100" width="34" height="14" rx="4" fill="var(--scene-grow,#b8457a)"/>
+<rect class="learn-algorithmic-patterns-monotonic-queue-nw" x="126" y="94" width="34" height="20" rx="4" fill="var(--scene-warn,#a15c00)"/>
+<path d="M59 66v-12" stroke="var(--scene-good,#1f7a4d)" stroke-width="3"/><path d="M59 54l-6 8m6-8l6 8" stroke="var(--scene-good,#1f7a4d)" stroke-width="3" fill="none"/>
+<text class="learn-algorithmic-patterns-monotonic-queue-t" x="72" y="50" text-anchor="start">max at front</text>
+<text class="learn-algorithmic-patterns-monotonic-queue-t" x="190" y="150" text-anchor="middle">drop smaller ones</text>
+</svg>

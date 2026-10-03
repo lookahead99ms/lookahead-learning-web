@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A proto contract generates both sides while a binary call races a deadline clock">
+<style>
+.grow-api-design-grpc-t{font:600 13px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.grow-api-design-grpc-pk{animation:grow-api-design-grpc-pk 6s linear infinite;animation-delay:-3s}
+@keyframes grow-api-design-grpc-pk{0%{transform:translateX(0);opacity:0}8%{opacity:1}50%{transform:translateX(104px);opacity:1}58%,100%{transform:translateX(104px);opacity:0}}
+.grow-api-design-grpc-dl{animation:grow-api-design-grpc-dl 6s linear infinite;animation-delay:-3s}
+@keyframes grow-api-design-grpc-dl{0%{stroke-dashoffset:0}85%,100%{stroke-dashoffset:75.4}}
+.grow-api-design-grpc-cx{animation:grow-api-design-grpc-cx 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes grow-api-design-grpc-cx{0%,84%{opacity:0}90%,98%{opacity:1}100%{opacity:0}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="118" y="10" width="84" height="32" rx="6" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<text class="grow-api-design-grpc-t" x="160" y="31" text-anchor="middle" font-family="ui-monospace,Menlo,monospace">.proto</text>
+<path d="M130 42L56 56M190 42L264 56" stroke="var(--scene-muted,#536970)" stroke-width="2.5" stroke-dasharray="4 4"/>
+<rect x="14" y="56" width="64" height="62" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<rect x="242" y="56" width="64" height="62" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<g fill="var(--scene-accent,#006c73)"><rect x="26" y="70" width="40" height="8" rx="3"/><rect x="26" y="86" width="26" height="8" rx="3"/><rect x="254" y="70" width="40" height="8" rx="3"/><rect x="254" y="86" width="26" height="8" rx="3"/></g>
+<path d="M78 98H242" stroke="var(--scene-line,#cfdfdc)" stroke-width="4" stroke-linecap="round"/>
+<g class="grow-api-design-grpc-pk"><rect x="78" y="87" width="48" height="22" rx="5" fill="var(--scene-link,#245a88)"/><text x="102" y="104" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="16" font-weight="700" fill="var(--scene-card,#fff)">0110</text></g>
+<circle cx="160" cy="132" r="14" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<circle class="grow-api-design-grpc-dl" cx="160" cy="132" r="12" fill="none" stroke="var(--scene-warn,#a15c00)" stroke-width="5" stroke-dasharray="75.4" transform="rotate(-90 160 132)"/>
+<g class="grow-api-design-grpc-cx" stroke="var(--scene-bad,#b3261e)" stroke-width="4" stroke-linecap="round"><path d="M196 122l16 16M212 122l-16 16"/></g>
+<text class="grow-api-design-grpc-t" x="160" y="172" text-anchor="middle">deadline</text>
+</svg>

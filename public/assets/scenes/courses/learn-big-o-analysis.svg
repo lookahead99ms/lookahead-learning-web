@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="As input size grows, constant, linear and quadratic cost curves are drawn and pull apart">
+<style>
+.learn-big-o-analysis-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-weight: 700; }
+.learn-big-o-analysis-axis { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 2; }
+.learn-big-o-analysis-grid { fill: none; stroke: var(--scene-line, #cfdfdc); stroke-width: 1; stroke-dasharray: 3 5; }
+.learn-big-o-analysis-c { fill: none; stroke-width: 3.5; stroke-linecap: round; stroke-dasharray: 300; animation: learn-big-o-analysis-kf-draw 6s ease-out infinite; }
+@keyframes learn-big-o-analysis-kf-draw { 0% { stroke-dashoffset: 300; } 60%, 100% { stroke-dashoffset: 0; } }
+.learn-big-o-analysis-scan { fill: none; stroke: var(--scene-accent, #006c73); stroke-width: 1.5; stroke-dasharray: 4 4; animation: learn-big-o-analysis-kf-scan 6s ease-out infinite; }
+@keyframes learn-big-o-analysis-kf-scan { 0% { transform: translateX(0); opacity: 1; } 60% { transform: translateX(196px); opacity: 1; } 70%, 100% { transform: translateX(196px); opacity: 0; } }
+.learn-big-o-analysis-c, .learn-big-o-analysis-scan { animation-delay: -3s; }
+</style>
+<path class="learn-big-o-analysis-grid" d="M40 60 H300 M40 105 H300"/>
+<path class="learn-big-o-analysis-axis" d="M40 18 V156 H302"/>
+<path class="learn-big-o-analysis-axis" d="M296 151 L302 156 L296 161"/>
+<path class="learn-big-o-analysis-scan" d="M42 24 V154"/>
+<path class="learn-big-o-analysis-c" style="stroke: var(--scene-good, #1f7a4d)" d="M42 140 H238"/>
+<path class="learn-big-o-analysis-c" style="stroke: var(--scene-warn, #a15c00)" d="M42 152 L238 82"/>
+<path class="learn-big-o-analysis-c" style="stroke: var(--scene-bad, #b3261e)" d="M42 154 Q 180 150 220 26"/>
+<text class="learn-big-o-analysis-t" x="250" y="36" font-size="16" style="fill: var(--scene-bad, #b3261e)">O(n²)</text>
+<text class="learn-big-o-analysis-t" x="250" y="88" font-size="16" style="fill: var(--scene-warn, #a15c00)">O(n)</text>
+<text class="learn-big-o-analysis-t" x="250" y="145" font-size="16" style="fill: var(--scene-good, #1f7a4d)">O(1)</text>
+</svg>

@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="The nightly invoice job: sched-1 freezes, sched-2 takes the lock with token 42, and when sched-1 wakes its write with old token 41 is rejected, so every customer is billed once.">
+<style>
+.distributed-locks-t { font-family: system-ui, sans-serif; fill: var(--scene-ink, #102a33); }
+.distributed-locks-m { font-family: ui-monospace, Menlo, monospace; fill: var(--scene-text, #28434a); }
+.distributed-locks-box { fill: var(--scene-card, #fff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.distributed-locks-line { fill: var(--scene-line, #cfdfdc); }
+.distributed-locks-s1 { animation: distributed-locks-s1 6s infinite; animation-delay: -3.2s; }
+@keyframes distributed-locks-s1 { 0%, 14% { opacity: 1; } 18%, 38% { opacity: .45; } 42%, 100% { opacity: 1; } }
+.distributed-locks-zzz { animation: distributed-locks-zzz 6s infinite; animation-delay: -3.2s; }
+@keyframes distributed-locks-zzz { 0%, 15% { opacity: 0; } 19%, 38% { opacity: 1; } 42%, 100% { opacity: 0; } }
+.distributed-locks-k41 { animation: distributed-locks-k41 6s infinite; animation-delay: -3.2s; }
+@keyframes distributed-locks-k41 { 0%, 22% { opacity: 1; } 28%, 100% { opacity: 0; } }
+.distributed-locks-k42 { animation: distributed-locks-k42 6s infinite; animation-delay: -3.2s; }
+@keyframes distributed-locks-k42 { 0%, 26% { opacity: 0; transform: translateY(-14px); } 34%, 100% { opacity: 1; transform: translateY(0); } }
+.distributed-locks-good { animation: distributed-locks-good 6s infinite; animation-delay: -3.2s; }
+@keyframes distributed-locks-good { 0% { transform: translateX(0); opacity: 0; } 3% { opacity: 1; } 14% { transform: translateX(58px); opacity: 1; } 16%, 100% { transform: translateX(58px); opacity: 0; } }
+.distributed-locks-good2 { animation: distributed-locks-good2 6s infinite; animation-delay: -3.2s; }
+@keyframes distributed-locks-good2 { 0%, 76% { transform: translateX(0); opacity: 0; } 79% { opacity: 1; } 92% { transform: translateX(58px); opacity: 1; } 95%, 100% { transform: translateX(58px); opacity: 0; } }
+.distributed-locks-stale { animation: distributed-locks-stale 6s infinite; animation-delay: -3.2s; }
+@keyframes distributed-locks-stale { 0%, 40% { transform: translateX(0); opacity: 0; } 43% { opacity: 1; } 54% { transform: translateX(28px); opacity: 1; } 60% { transform: translateX(14px); opacity: 1; } 72%, 100% { transform: translateX(14px); opacity: 0; } }
+.distributed-locks-no { animation: distributed-locks-no 6s infinite; animation-delay: -3.2s; }
+@keyframes distributed-locks-no { 0%, 52% { opacity: 0; } 56%, 76% { opacity: 1; } 80%, 100% { opacity: 0; } }
+@media (prefers-reduced-motion:reduce){.distributed-locks-good,.distributed-locks-good2,.distributed-locks-stale{animation-play-state:paused}}
+</style>
+<g class="distributed-locks-s1"><rect class="distributed-locks-box" x="8" y="8" width="60" height="32" rx="8"/><path d="M20 19 h36 M20 29 h36" style="stroke:var(--scene-muted,#536970);stroke-width:3.5;stroke-linecap:round"/></g>
+<g class="distributed-locks-zzz"><rect x="22" y="12" width="6" height="24" rx="2" style="fill: var(--scene-warn, #a15c00)" transform="translate(0 0)"/><rect x="34" y="12" width="6" height="24" rx="2" style="fill: var(--scene-warn, #a15c00)"/></g>
+<g class="distributed-locks-k41">
+  <rect x="8" y="46" width="52" height="24" rx="12" style="fill: var(--scene-accent-soft, #dcefed)"/>
+  <circle cx="22" cy="58" r="4.5" fill="none" style="stroke: var(--scene-accent, #006c73)" stroke-width="2.2"/><path d="M26.5 58 h8 M32 58 v4" fill="none" style="stroke: var(--scene-accent, #006c73)" stroke-width="2.2"/>
+  <text class="distributed-locks-m" x="37" y="63.5" font-size="14" font-weight="700">41</text>
+</g>
+<rect class="distributed-locks-box" x="8" y="76" width="60" height="32" rx="8"/><path d="M20 87 h36 M20 97 h36" style="stroke:var(--scene-muted,#536970);stroke-width:3.5;stroke-linecap:round"/>
+<g class="distributed-locks-k42">
+  <rect x="8" y="108" width="52" height="24" rx="12" style="fill: var(--scene-accent-soft, #dcefed)"/>
+  <circle cx="22" cy="120" r="4.5" fill="none" style="stroke: var(--scene-accent, #006c73)" stroke-width="2.2"/><path d="M26.5 120 h8 M32 120 v4" fill="none" style="stroke: var(--scene-accent, #006c73)" stroke-width="2.2"/>
+  <text class="distributed-locks-m" x="37" y="125.5" font-size="14" font-weight="700">42</text>
+</g>
+<g class="distributed-locks-good"><rect x="76" y="17" width="26" height="14" rx="3" style="fill: var(--scene-good, #1f7a4d)" opacity=".85"/></g>
+<g class="distributed-locks-good2"><rect x="76" y="85" width="26" height="14" rx="3" style="fill: var(--scene-good, #1f7a4d)" opacity=".85"/></g>
+<g class="distributed-locks-stale">
+  <rect x="76" y="14" width="30" height="20" rx="5" style="fill: var(--scene-bad, #b3261e)" opacity=".18"/>
+  <text class="distributed-locks-m" x="91" y="29" font-size="14" font-weight="700" text-anchor="middle" style="fill: var(--scene-bad, #b3261e)">41</text>
+</g>
+<rect class="distributed-locks-box" x="136" y="6" width="98" height="123" rx="10"/>
+<rect class="distributed-locks-line" x="148" y="18" width="74" height="7" rx="3"/>
+<rect class="distributed-locks-line" x="148" y="32" width="60" height="7" rx="3"/>
+<rect class="distributed-locks-line" x="148" y="46" width="68" height="7" rx="3"/>
+<rect class="distributed-locks-line" x="148" y="60" width="52" height="7" rx="3"/>
+<g class="distributed-locks-no"><text x="118" y="60" font-size="26" font-weight="700" text-anchor="middle" style="fill: var(--scene-bad, #b3261e); font-family: system-ui, sans-serif; paint-order: stroke; stroke: var(--scene-card, #fff); stroke-width: 3">✕</text></g>
+<text class="distributed-locks-t" x="185" y="112" font-size="14" font-weight="700" text-anchor="middle" style="fill: var(--scene-good, #1f7a4d)">billed once</text>
+</svg>

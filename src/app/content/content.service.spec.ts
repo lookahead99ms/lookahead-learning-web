@@ -372,21 +372,36 @@ describe('ContentService compact indexes and selected details', () => {
       schemaVersion: 'content-index-manifest/v1',
       totals: { searchDocuments: count, practiceDocuments: count },
       practiceContentTypes: ['q-and-a'],
-      shards: [{ path: 'learn', href: '/content/indexes/learn.json', documentCount: count, practiceDocumentCount: count }],
+      shards: [
+        {
+          path: 'learn',
+          href: '/content/indexes/learn.json',
+          documentCount: count,
+          practiceDocumentCount: count,
+        },
+      ],
     });
     let failed = false;
-    service.getSearchIndex().subscribe({ error: () => { failed = true; } });
+    service.getSearchIndex().subscribe({
+      error: () => {
+        failed = true;
+      },
+    });
     http.expectOne('/content/content-index-manifest.json').flush(manifest(1));
     http.expectOne('/content/indexes/learn.json').flush({
-      schemaVersion: 'content-index-shard/v1', path: 'learn',
+      schemaVersion: 'content-index-shard/v1',
+      path: 'learn',
       documents: [record('first', 'q-and-a'), record('second', 'q-and-a')],
     });
     expect(failed).toBe(true);
     let ids: string[] = [];
-    service.getSearchIndex(undefined, true).subscribe((documents) => { ids = documents.map((item) => item.id); });
+    service.getSearchIndex(undefined, true).subscribe((documents) => {
+      ids = documents.map((item) => item.id);
+    });
     http.expectOne('/content/content-index-manifest.json').flush(manifest(2));
     http.expectOne('/content/indexes/learn.json').flush({
-      schemaVersion: 'content-index-shard/v1', path: 'learn',
+      schemaVersion: 'content-index-shard/v1',
+      path: 'learn',
       documents: [record('first', 'q-and-a'), record('second', 'q-and-a')],
     });
     expect(ids).toEqual(['first', 'second']);
@@ -756,6 +771,98 @@ describe('ContentService compact indexes and selected details', () => {
       .subscribe({ error: (cause) => (error = cause) });
     expect(error?.message).toContain('Invalid ready-made plan reference');
     http.expectNone('/content/study-plans/templates/../private.json');
+    http.verify();
+  });
+});
+
+describe('ContentService card scenes', () => {
+  function setup() {
+    TestBed.configureTestingModule({
+      providers: [ContentService, provideHttpClient(), provideHttpClientTesting()],
+    });
+    return {
+      service: TestBed.inject(ContentService),
+      http: TestBed.inject(HttpTestingController),
+    };
+  }
+
+  afterEach(() => TestBed.inject(HttpTestingController).verify());
+
+  it('loads a shared scene once as text and replays it to every card', () => {
+    const { service, http } = setup();
+    const path = '/content/grow/api-design/visuals/cards/reservation.svg';
+    const received: string[] = [];
+
+    service.getCardScene(path).subscribe((text) => received.push(text));
+    const request = http.expectOne(path);
+    expect(request.request.responseType).toBe('text');
+    request.flush('<svg></svg>');
+    service.getCardScene(path).subscribe((text) => received.push(text));
+    http.expectNone(path);
+
+    expect(received).toEqual(['<svg></svg>', '<svg></svg>']);
+  });
+
+  it('forgets a failed scene so a later visit can retry', () => {
+    const { service, http } = setup();
+    const path = '/content/grow/api-design/visuals/cards/missing.svg';
+    let failed = false;
+
+    service.getCardScene(path).subscribe({ error: () => (failed = true) });
+    http.expectOne(path).flush('missing', { status: 404, statusText: 'Not Found' });
+    expect(failed).toBe(true);
+
+    service.getCardScene(path).subscribe();
+    http.expectOne(path).flush('<svg></svg>');
+  });
+
+  it('serves a Look Ahead unit card scene from its public asset copy first', () => {
+    const { service, http } = setup();
+    const path = '/content/look-ahead/design-systems/visuals/cards/reservation.svg';
+    const received: string[] = [];
+
+    service.getCardScene(path).subscribe((text) => received.push(text));
+    http
+      .expectOne('/assets/scenes/units/look-ahead/design-systems/reservation.svg')
+      .flush('<svg id="public"></svg>');
+    http.expectNone(path);
+
+    expect(received).toEqual(['<svg id="public"></svg>']);
+  });
+
+  it('falls back to the content path when the public copy is missing or not an SVG', () => {
+    const { service, http } = setup();
+    const missing = '/content/look-ahead/design-fundamentals/visuals/cards/caching.svg';
+    const html = '/content/look-ahead/design-patterns/visuals/cards/fan-out.svg';
+    const received: string[] = [];
+
+    service.getCardScene(missing).subscribe((text) => received.push(text));
+    http
+      .expectOne('/assets/scenes/units/look-ahead/design-fundamentals/caching.svg')
+      .flush('missing', { status: 404, statusText: 'Not Found' });
+    http.expectOne(missing).flush('<svg id="content-a"></svg>');
+
+    service.getCardScene(html).subscribe((text) => received.push(text));
+    http
+      .expectOne('/assets/scenes/units/look-ahead/design-patterns/fan-out.svg')
+      .flush('<!doctype html><html></html>');
+    http.expectOne(html).flush('<svg id="content-b"></svg>');
+
+    expect(received).toEqual(['<svg id="content-a"></svg>', '<svg id="content-b"></svg>']);
+  });
+
+  it('refuses scene paths outside local SVG content', () => {
+    const { service, http } = setup();
+    for (const path of [
+      'https://evil.example/a.svg',
+      '/content/look-ahead/../secret.svg',
+      '/content/look-ahead/a.png',
+      '//evil.example/content/a.svg',
+    ]) {
+      let failed = false;
+      service.getCardScene(path).subscribe({ error: () => (failed = true) });
+      expect(failed, path).toBe(true);
+    }
     http.verify();
   });
 });

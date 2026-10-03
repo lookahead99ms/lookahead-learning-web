@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A Python list comprehension turns one list of values into a new list of doubled values, one item at a time">
+<style>
+.learn-python-fundamentals-tm { font-family: ui-monospace, Menlo, monospace; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.learn-python-fundamentals-pill { fill: var(--scene-accent-soft, #dcefed); stroke: var(--scene-accent, #006c73); stroke-width: 1.5; }
+.learn-python-fundamentals-br { fill: none; stroke: var(--scene-ink, #102a33); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.learn-python-fundamentals-in { fill: var(--scene-muted, #536970); opacity: .55; }
+.learn-python-fundamentals-out { fill: var(--scene-accent, #006c73); transform-box: fill-box; transform-origin: 50% 100%; }
+.learn-python-fundamentals-wire { fill: none; stroke: var(--scene-line, #cfdfdc); stroke-width: 2; stroke-dasharray: 4 5; }
+.learn-python-fundamentals-tok { fill: var(--scene-link, #245a88); }
+.learn-python-fundamentals-hi { fill: var(--scene-link, #245a88); opacity: 0; }
+.learn-python-fundamentals-move { animation: learn-python-fundamentals-kf-move 1.6s ease-in-out -3s infinite; }
+@keyframes learn-python-fundamentals-kf-move { 0% { transform: translateX(0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateX(64px); opacity: 0; } }
+.learn-python-fundamentals-o1 { animation: learn-python-fundamentals-kf-o1 8s ease-out -3s infinite; }
+.learn-python-fundamentals-o2 { animation: learn-python-fundamentals-kf-o2 8s ease-out -3s infinite; }
+.learn-python-fundamentals-o3 { animation: learn-python-fundamentals-kf-o3 8s ease-out -3s infinite; }
+.learn-python-fundamentals-o4 { animation: learn-python-fundamentals-kf-o4 8s ease-out -3s infinite; }
+@keyframes learn-python-fundamentals-kf-o1 { 0%, 13% { transform: scaleY(0); } 19%, 96% { transform: scaleY(1); } 100% { transform: scaleY(0); } }
+@keyframes learn-python-fundamentals-kf-o2 { 0%, 33% { transform: scaleY(0); } 39%, 96% { transform: scaleY(1); } 100% { transform: scaleY(0); } }
+@keyframes learn-python-fundamentals-kf-o3 { 0%, 53% { transform: scaleY(0); } 59%, 96% { transform: scaleY(1); } 100% { transform: scaleY(0); } }
+@keyframes learn-python-fundamentals-kf-o4 { 0%, 73% { transform: scaleY(0); } 79%, 96% { transform: scaleY(1); } 100% { transform: scaleY(0); } }
+.learn-python-fundamentals-h1 { animation: learn-python-fundamentals-kf-h1 8s linear -3s infinite; }
+.learn-python-fundamentals-h2 { animation: learn-python-fundamentals-kf-h2 8s linear -3s infinite; }
+.learn-python-fundamentals-h3 { animation: learn-python-fundamentals-kf-h3 8s linear -3s infinite; }
+.learn-python-fundamentals-h4 { animation: learn-python-fundamentals-kf-h4 8s linear -3s infinite; }
+@keyframes learn-python-fundamentals-kf-h1 { 0%, 18%, 100% { opacity: 0; } 1%, 15% { opacity: 1; } }
+@keyframes learn-python-fundamentals-kf-h2 { 0%, 20%, 38%, 100% { opacity: 0; } 21%, 35% { opacity: 1; } }
+@keyframes learn-python-fundamentals-kf-h3 { 0%, 40%, 58%, 100% { opacity: 0; } 41%, 55% { opacity: 1; } }
+@keyframes learn-python-fundamentals-kf-h4 { 0%, 60%, 78%, 100% { opacity: 0; } 61%, 75% { opacity: 1; } }
+</style>
+<rect class="learn-python-fundamentals-pill" x="74" y="22" width="172" height="34" rx="17"/>
+<text class="learn-python-fundamentals-tm" x="160" y="44" font-size="16" text-anchor="middle">[n*2 for n in xs]</text>
+<!-- input list -->
+<path class="learn-python-fundamentals-br" d="M28 82 H22 V150 H28 M110 82 H116 V150 H110"/>
+<rect class="learn-python-fundamentals-in" x="32" y="130" width="14" height="14" rx="2"/>
+<rect class="learn-python-fundamentals-in" x="51" y="112" width="14" height="32" rx="2"/>
+<rect class="learn-python-fundamentals-in" x="70" y="136" width="14" height="8" rx="2"/>
+<rect class="learn-python-fundamentals-in" x="89" y="120" width="14" height="24" rx="2"/>
+<rect class="learn-python-fundamentals-hi learn-python-fundamentals-h1" x="32" y="130" width="14" height="14" rx="2"/>
+<rect class="learn-python-fundamentals-hi learn-python-fundamentals-h2" x="51" y="112" width="14" height="32" rx="2"/>
+<rect class="learn-python-fundamentals-hi learn-python-fundamentals-h3" x="70" y="136" width="14" height="8" rx="2"/>
+<rect class="learn-python-fundamentals-hi learn-python-fundamentals-h4" x="89" y="120" width="14" height="24" rx="2"/>
+<!-- flow -->
+<path class="learn-python-fundamentals-wire" d="M124 116 H196"/>
+<path d="M192 110 L200 116 L192 122" fill="none" stroke="var(--scene-muted, #536970)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<circle class="learn-python-fundamentals-tok learn-python-fundamentals-move" cx="122" cy="116" r="6"/>
+<path d="M160 58 V104" stroke="var(--scene-line, #cfdfdc)" stroke-width="2" stroke-dasharray="3 4"/>
+<!-- output list -->
+<path class="learn-python-fundamentals-br" d="M210 72 H204 V150 H210 M292 72 H298 V150 H292"/>
+<rect class="learn-python-fundamentals-out learn-python-fundamentals-o1" x="214" y="116" width="14" height="28" rx="2"/>
+<rect class="learn-python-fundamentals-out learn-python-fundamentals-o2" x="233" y="80" width="14" height="64" rx="2"/>
+<rect class="learn-python-fundamentals-out learn-python-fundamentals-o3" x="252" y="128" width="14" height="16" rx="2"/>
+<rect class="learn-python-fundamentals-out learn-python-fundamentals-o4" x="271" y="96" width="14" height="48" rx="2"/>
+</svg>

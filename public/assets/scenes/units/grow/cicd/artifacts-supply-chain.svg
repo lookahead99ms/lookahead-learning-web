@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A package is checked for signature, provenance and parts list before it ships">
+<style>
+.grow-cicd-artifacts-supply-chain-t{font:700 13px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.grow-cicd-artifacts-supply-chain-m{font:700 13px ui-monospace,Menlo,monospace;fill:var(--scene-text,#28434a)}
+.grow-cicd-artifacts-supply-chain-k{fill:none;stroke:var(--scene-good,#1f7a4d);stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:30;animation:grow-cicd-artifacts-supply-chain-draw 6s ease-in-out infinite}
+.grow-cicd-artifacts-supply-chain-k1{animation-delay:-4.6s}.grow-cicd-artifacts-supply-chain-k2{animation-delay:-3.9s}.grow-cicd-artifacts-supply-chain-k3{animation-delay:-3.2s}
+@keyframes grow-cicd-artifacts-supply-chain-draw{0%{stroke-dashoffset:30}15%,85%{stroke-dashoffset:0}100%{stroke-dashoffset:30}}
+.grow-cicd-artifacts-supply-chain-seal{transform-origin:78px 100px;animation:grow-cicd-artifacts-supply-chain-st 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes grow-cicd-artifacts-supply-chain-st{0%{transform:scale(0);opacity:0}15%{transform:scale(1.2);opacity:1}25%,85%{transform:scale(1);opacity:1}100%{transform:scale(1);opacity:0}}
+.grow-cicd-artifacts-supply-chain-lens{animation:grow-cicd-artifacts-supply-chain-sw 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes grow-cicd-artifacts-supply-chain-sw{0%,100%{transform:translate(0,0)}50%{transform:translate(12px,6px)}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<path d="M30 70l48-20 48 20v50l-48 20-48-20z" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M30 70l48 20 48-20M78 90v50" fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/>
+<g class="grow-cicd-artifacts-supply-chain-seal">
+<circle cx="78" cy="100" r="15" fill="var(--scene-grow,#b8457a)"/>
+<path d="M71 100l5 5 9-10" fill="none" stroke="var(--scene-card,#fff)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<g fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2">
+<rect x="160" y="34" width="144" height="34" rx="8"/><rect x="160" y="78" width="144" height="34" rx="8"/><rect x="160" y="122" width="144" height="34" rx="8"/>
+</g>
+<text class="grow-cicd-artifacts-supply-chain-t" x="204" y="56">Signed</text>
+<text class="grow-cicd-artifacts-supply-chain-t" x="204" y="100">Built by CI</text>
+<text class="grow-cicd-artifacts-supply-chain-t" x="204" y="144">Parts list</text>
+<path class="grow-cicd-artifacts-supply-chain-k grow-cicd-artifacts-supply-chain-k1" d="M171 51l6 6 12-13"/>
+<path class="grow-cicd-artifacts-supply-chain-k grow-cicd-artifacts-supply-chain-k2" d="M171 95l6 6 12-13"/>
+<path class="grow-cicd-artifacts-supply-chain-k grow-cicd-artifacts-supply-chain-k3" d="M171 139l6 6 12-13"/>
+<g class="grow-cicd-artifacts-supply-chain-lens" fill="none" stroke="var(--scene-ink,#102a33)" stroke-width="3" stroke-linecap="round">
+<circle cx="112" cy="58" r="11" fill="var(--scene-card,#fff)" fill-opacity=".5"/><path d="M120 66l9 9"/>
+</g>
+</svg>

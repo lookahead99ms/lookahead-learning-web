@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Typing cat cancels the slow request for ca and only the latest answer reaches the list">
+<style>
+.grow-angular-reactivity-state-bg{fill:var(--scene-card,#fff)}
+.grow-angular-reactivity-state-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.grow-angular-reactivity-state-m{font:700 16px ui-monospace,Menlo,monospace;fill:var(--scene-ink,#102a33)}
+.grow-angular-reactivity-state-l1{transform-box:fill-box;transform-origin:left center;animation:grow-angular-reactivity-state-l1k 6s ease-out infinite;animation-delay:-3s}
+.grow-angular-reactivity-state-l2{transform-box:fill-box;transform-origin:left center;animation:grow-angular-reactivity-state-l2k 6s linear infinite;animation-delay:-3s}
+.grow-angular-reactivity-state-x{animation:grow-angular-reactivity-state-xk 6s step-end infinite;animation-delay:-3s}
+.grow-angular-reactivity-state-r{animation:grow-angular-reactivity-state-rk 6s ease-out infinite;animation-delay:-3s}
+.grow-angular-reactivity-state-c{animation:grow-angular-reactivity-state-ck 1s step-end infinite}
+@keyframes grow-angular-reactivity-state-l1k{0%,8%{transform:scaleX(0);fill:var(--scene-ahead,#2f6fb3)}8%{transform:scaleX(0)}30%{transform:scaleX(.45);fill:var(--scene-ahead,#2f6fb3)}34%,100%{transform:scaleX(.45);fill:var(--scene-bad,#b3261e)}}
+@keyframes grow-angular-reactivity-state-l2k{0%,28%{transform:scaleX(0)}55%,95%{transform:scaleX(1)}100%{transform:scaleX(1)}}
+@keyframes grow-angular-reactivity-state-xk{0%,33%{opacity:0}34%,96%{opacity:1}100%{opacity:0}}
+@keyframes grow-angular-reactivity-state-rk{0%,55%{opacity:.25;transform:none}65%,95%{opacity:1;transform:none}100%{opacity:0}}
+@keyframes grow-angular-reactivity-state-ck{0%{opacity:1}50%{opacity:0}}
+</style>
+<rect class="grow-angular-reactivity-state-bg" width="320" height="180"/>
+<rect x="20" y="8" width="280" height="38" rx="19" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/>
+<circle cx="44" cy="27" r="6" fill="none" stroke="var(--scene-muted,#536970)" stroke-width="2.5"/><line x1="48" y1="31" x2="54" y2="37" stroke="var(--scene-muted,#536970)" stroke-width="2.5" stroke-linecap="round"/>
+<text class="grow-angular-reactivity-state-m" x="66" y="33">cat</text><rect class="grow-angular-reactivity-state-c" x="104" y="17" width="2.5" height="20" fill="var(--scene-ink,#102a33)"/>
+<rect x="30" y="58" width="260" height="14" rx="7" fill="var(--scene-line,#cfdfdc)"/><rect x="30" y="96" width="260" height="14" rx="7" fill="var(--scene-line,#cfdfdc)"/>
+<rect class="grow-angular-reactivity-state-l1" x="30" y="58" width="260" height="14" rx="7"/>
+<rect class="grow-angular-reactivity-state-l2" x="30" y="96" width="260" height="14" rx="7" fill="var(--scene-good,#1f7a4d)"/>
+<g class="grow-angular-reactivity-state-x" stroke="var(--scene-bad,#b3261e)" stroke-width="4" stroke-linecap="round"><line x1="150" y1="60" x2="162" y2="70"/><line x1="162" y1="60" x2="150" y2="70"/></g>
+<text class="grow-angular-reactivity-state-t grow-angular-reactivity-state-x" x="30" y="90" style="fill:var(--scene-bad,#b3261e)">cancelled</text>
+<text class="grow-angular-reactivity-state-t" x="30" y="128" style="fill:var(--scene-good,#1f7a4d)">latest wins</text>
+<g class="grow-angular-reactivity-state-r" fill="var(--scene-accent,#006c73)"><rect x="30" y="138" width="260" height="9" rx="4.5"/><rect x="30" y="151" width="200" height="9" rx="4.5"/><rect x="30" y="164" width="230" height="9" rx="4.5"/></g>
+</svg>

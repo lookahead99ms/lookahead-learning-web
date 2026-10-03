@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A with block runs cleanup even when an error strikes">
+<style>
+
+.learn-python-fundamentals-python-functions-objects-tok{animation:learn-python-fundamentals-python-functions-objects-tok 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes learn-python-fundamentals-python-functions-objects-tok{0%{transform:translateX(0)}30%{transform:translateX(0)}45%{transform:translateX(110px)}62%{transform:translateX(110px)}78%{transform:translateX(220px)}100%{transform:translateX(220px)}}
+.learn-python-fundamentals-python-functions-objects-bolt{animation:learn-python-fundamentals-python-functions-objects-bolt 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes learn-python-fundamentals-python-functions-objects-bolt{0%,36%{opacity:.25}44%,56%{opacity:1}66%,100%{opacity:.25}}
+.learn-python-fundamentals-python-functions-objects-ok{animation:learn-python-fundamentals-python-functions-objects-ok 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes learn-python-fundamentals-python-functions-objects-ok{0%,74%{opacity:0}82%,94%{opacity:1}100%{opacity:0}}
+.learn-python-fundamentals-python-functions-objects-line{stroke-dasharray:6 5;animation:learn-python-fundamentals-python-functions-objects-dash 1.2s linear infinite}
+@keyframes learn-python-fundamentals-python-functions-objects-dash{to{stroke-dashoffset:-11}}
+
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+
+<line class="learn-python-fundamentals-python-functions-objects-line" x1="50" y1="80" x2="270" y2="80" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<circle cx="50" cy="80" r="26" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<rect x="40" y="76" width="20" height="14" rx="3" fill="var(--scene-accent,#006c73)"/>
+<path d="M43 76 V70 a7 7 0 0 1 14 0" fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="3" transform="translate(5,-4) rotate(0)"/>
+<circle cx="160" cy="80" r="26" fill="var(--scene-card,#fff)" stroke="var(--scene-bad,#b3261e)" stroke-width="3"/>
+<polygon class="learn-python-fundamentals-python-functions-objects-bolt" points="166,62 150,84 160,84 154,100 172,76 161,76" fill="var(--scene-bad,#b3261e)"/>
+<circle cx="270" cy="80" r="26" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-good,#1f7a4d)" stroke-width="3"/>
+<path class="learn-python-fundamentals-python-functions-objects-ok" d="M258 80 l9 9 l17 -19" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<g class="learn-python-fundamentals-python-functions-objects-tok"><circle cx="50" cy="38" r="8" fill="var(--scene-warn,#a15c00)"/></g>
+<text x="50" y="140" text-anchor="middle" font-size="16" font-weight="700" font-family="ui-monospace, Menlo, monospace" fill="var(--scene-ink,#102a33)">with</text>
+<text x="160" y="140" text-anchor="middle" font-size="16" font-weight="700" font-family="system-ui, sans-serif" fill="var(--scene-bad,#b3261e)">error</text>
+<text x="270" y="140" text-anchor="middle" font-size="16" font-weight="700" font-family="system-ui, sans-serif" fill="var(--scene-good,#1f7a4d)">cleanup</text>
+</svg>

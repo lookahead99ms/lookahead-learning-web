@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Money moves between two accounts inside one transaction: both steps or neither">
+<style>.grow-spring-framework-spring-jdbc-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}.grow-spring-framework-spring-jdbc-bg{fill:var(--scene-card,#fff)}.grow-spring-framework-spring-jdbc-box{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}.grow-spring-framework-spring-jdbc-ln{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2.5;stroke-linecap:round}.grow-spring-framework-spring-jdbc-co{animation:grow-spring-framework-spring-jdbc-c 6s ease-in-out infinite;animation-delay:-3s}.grow-spring-framework-spring-jdbc-ok{animation:grow-spring-framework-spring-jdbc-k 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes grow-spring-framework-spring-jdbc-c{0%,10%{transform:translateX(0);opacity:1}60%,85%{transform:translateX(150px);opacity:1}100%{transform:translateX(150px);opacity:0}}
+@keyframes grow-spring-framework-spring-jdbc-k{0%,60%{opacity:0}70%,95%{opacity:1}100%{opacity:0}}</style>
+<rect width="320" height="180" class="grow-spring-framework-spring-jdbc-bg"/>
+<rect x="8" y="30" width="304" height="118" rx="14" fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="3" stroke-dasharray="8 5"/>
+<rect x="24" y="52" width="76" height="62" rx="8" class="grow-spring-framework-spring-jdbc-box"/><rect x="220" y="52" width="76" height="62" rx="8" class="grow-spring-framework-spring-jdbc-box"/>
+<text x="62" y="136" text-anchor="middle" class="grow-spring-framework-spring-jdbc-t">Account A</text><text x="258" y="136" text-anchor="middle" class="grow-spring-framework-spring-jdbc-t">Account B</text>
+<path d="M104 83H216" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-dasharray="5 5"/>
+<g class="grow-spring-framework-spring-jdbc-co"><circle cx="62" cy="83" r="16" fill="var(--scene-warn,#a15c00)"/><text x="62" y="88" text-anchor="middle" class="grow-spring-framework-spring-jdbc-t" style="fill:var(--scene-card,#fff)">$</text></g>
+<g class="grow-spring-framework-spring-jdbc-ok"><circle cx="160" cy="48" r="0"/><path d="M148 62l8 8 16-18" stroke="var(--scene-good,#1f7a4d)" stroke-width="5" fill="none" stroke-linecap="round"/></g>
+</svg>

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A request from a hostile site carrying the cookie is stopped by a gate before reaching the app">
+<style>
+.grow-api-design-browser-api-security-t{font:600 13px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.grow-api-design-browser-api-security-rq{animation:grow-api-design-browser-api-security-rq 6s linear infinite;animation-delay:-3.3s}
+@keyframes grow-api-design-browser-api-security-rq{0%,4%{transform:translateX(0);opacity:0}8%{opacity:1}36%,66%{transform:translateX(24px);opacity:1}72%,100%{transform:translateX(24px);opacity:0}}
+.grow-api-design-browser-api-security-gt{animation:grow-api-design-browser-api-security-gt 6s ease-in-out infinite;animation-delay:-3.3s}
+@keyframes grow-api-design-browser-api-security-gt{0%,40%{opacity:0}46%,80%{opacity:1}90%,100%{opacity:0}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="8" y="46" width="98" height="84" rx="8" fill="var(--scene-card,#fff)" stroke="var(--scene-bad,#b3261e)" stroke-width="3"/><path d="M8 70H106" stroke="var(--scene-bad,#b3261e)" stroke-width="3"/><circle cx="20" cy="58" r="3.5" fill="var(--scene-bad,#b3261e)"/>
+<text class="grow-api-design-browser-api-security-t" x="57" y="92" text-anchor="middle" style="fill:var(--scene-bad,#b3261e)">evil.com</text>
+<g><circle cx="57" cy="112" r="10" fill="var(--scene-warn,#a15c00)"/><g fill="var(--scene-card,#fff)"><circle cx="53" cy="109" r="1.8"/><circle cx="61" cy="111" r="1.8"/><circle cx="55" cy="117" r="1.8"/></g></g>
+<rect x="214" y="46" width="98" height="84" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<text class="grow-api-design-browser-api-security-t" x="263" y="72" text-anchor="middle">app.com</text>
+<g fill="var(--scene-accent,#006c73)"><rect x="228" y="86" width="70" height="9" rx="3"/><rect x="228" y="102" width="50" height="9" rx="3" opacity=".6"/></g>
+<path d="M106 100H214" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-dasharray="4 5"/>
+<g class="grow-api-design-browser-api-security-rq"><rect x="108" y="90" width="34" height="20" rx="6" fill="var(--scene-bad,#b3261e)"/><circle cx="119" cy="100" r="5" fill="var(--scene-warn,#a15c00)"/><rect x="127" y="97" width="10" height="6" rx="2" fill="var(--scene-card,#fff)"/></g>
+<path d="M170 60L190 68V94q0 18-20 28q-20-10-20-28V68Z" transform="translate(0,-4)" fill="var(--scene-accent,#006c73)" opacity="0"/>
+<g class="grow-api-design-browser-api-security-gt" transform="translate(6 0)"><path d="M184 52L206 60V100q0 18-22 28q-22-10-22-28V60Z" fill="var(--scene-accent,#006c73)" stroke="var(--scene-card,#fff)" stroke-width="2.5"/><g stroke="var(--scene-card,#fff)" stroke-width="5" stroke-linecap="round"><path d="M176 82l16 16M192 82l-16 16"/></g></g>
+<text class="grow-api-design-browser-api-security-t" x="184" y="152" text-anchor="middle" style="fill:var(--scene-accent,#006c73)">blocked</text>
+</svg>

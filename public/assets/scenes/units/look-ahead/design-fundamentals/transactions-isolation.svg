@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Kwame sends $60 to a friend and both balances change together, $100 to $40 and $20 to $80; a second $60 send that overlaps is refused because only $40 is left, so the balance never goes below zero">
+<style>
+.transactions-isolation-t{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-ink,#102a33)}
+.transactions-isolation-mu{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-muted,#536970)}
+.transactions-isolation-g{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-good,#1f7a4d)}
+.transactions-isolation-w{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-warn,#a15c00)}
+.transactions-isolation-b{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-bad,#b3261e)}
+.transactions-isolation-a{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-accent,#006c73)}
+.transactions-isolation-mono{font-family:ui-monospace,Menlo,monospace}
+.transactions-isolation-card{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.transactions-isolation-soft{fill:var(--scene-accent-soft,#dcefed)}
+.transactions-isolation-acc{fill:var(--scene-accent,#006c73)}
+.transactions-isolation-gd{fill:var(--scene-good,#1f7a4d)}
+.transactions-isolation-wn{fill:var(--scene-warn,#a15c00)}
+.transactions-isolation-bd{fill:var(--scene-bad,#b3261e)}
+.transactions-isolation-ink{fill:var(--scene-ink,#102a33)}
+.transactions-isolation-mf{fill:var(--scene-muted,#536970)}
+.transactions-isolation-lf{fill:var(--scene-line,#cfdfdc)}
+.transactions-isolation-cf{fill:var(--scene-card,#fff)}
+.transactions-isolation-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.transactions-isolation-sg{fill:none;stroke:var(--scene-good,#1f7a4d);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.transactions-isolation-sw{fill:none;stroke:var(--scene-warn,#a15c00);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.transactions-isolation-sb{fill:none;stroke:var(--scene-bad,#b3261e);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.transactions-isolation-sm{fill:none;stroke:var(--scene-muted,#536970);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.transactions-isolation-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.transactions-isolation-si{fill:none;stroke:var(--scene-ink,#102a33);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.transactions-isolation-k1{animation:transactions-isolation-k1 8s -3.2s infinite;}
+@keyframes transactions-isolation-k1{0%,29%{opacity:1}30%,100%{opacity:0}}
+.transactions-isolation-k2{animation:transactions-isolation-k2 8s -3.2s infinite;}
+@keyframes transactions-isolation-k2{0%,29%{opacity:0}30%,100%{opacity:1}}
+.transactions-isolation-f1{animation:transactions-isolation-f1 8s -3.2s infinite;}
+@keyframes transactions-isolation-f1{0%,29%{opacity:1}30%,100%{opacity:0}}
+.transactions-isolation-f2{animation:transactions-isolation-f2 8s -3.2s infinite;}
+@keyframes transactions-isolation-f2{0%,29%{opacity:0}30%,100%{opacity:1}}
+.transactions-isolation-c1{animation:transactions-isolation-c1 8s -3.2s infinite;}
+@keyframes transactions-isolation-c1{0%,8%{opacity:0;transform:translateX(0)}10%{opacity:1}26%{opacity:1;transform:translateX(40px)}28%,100%{opacity:0;transform:translateX(40px)}}
+.transactions-isolation-c2{animation:transactions-isolation-c2 8s -3.2s infinite;}
+@keyframes transactions-isolation-c2{0%,52%{opacity:0;transform:translateX(0)}54%{opacity:1}64%{opacity:1;transform:translateX(18px)}74%{opacity:1;transform:translateX(0)}78%,100%{opacity:0;transform:translateX(0)}}
+.transactions-isolation-no{animation:transactions-isolation-no 8s -3.2s infinite;}
+@keyframes transactions-isolation-no{0%,65%{opacity:0}66%,96%{opacity:1}97%,100%{opacity:0}}
+</style>
+<rect class="transactions-isolation-card" x="8" y="12" width="84" height="64" rx="10"/><circle class="transactions-isolation-mf" cx="50" cy="28" r="7"/>
+<rect class="transactions-isolation-card" x="148" y="12" width="84" height="64" rx="10"/><circle class="transactions-isolation-mf" cx="190" cy="28" r="7"/>
+<g class="transactions-isolation-k1"><text class="transactions-isolation-t" x="50" y="62" font-size="22" font-weight="700" text-anchor="middle">$100</text>
+</g><g class="transactions-isolation-k2"><text class="transactions-isolation-t" x="50" y="62" font-size="22" font-weight="700" text-anchor="middle">$40</text>
+</g><g class="transactions-isolation-f1"><text class="transactions-isolation-t" x="190" y="62" font-size="22" font-weight="700" text-anchor="middle">$20</text>
+</g><g class="transactions-isolation-f2"><text class="transactions-isolation-g" x="190" y="62" font-size="22" font-weight="700" text-anchor="middle">$80</text>
+</g>
+<g class="transactions-isolation-c1"><circle class="transactions-isolation-wn" cx="100" cy="44" r="11"/><circle class="transactions-isolation-sw" style="stroke:var(--scene-card,#fff);stroke-width:1.6" cx="100" cy="44" r="6"/></g>
+<g class="transactions-isolation-c2"><circle class="transactions-isolation-wn" cx="100" cy="44" r="11"/><circle class="transactions-isolation-sw" style="stroke:var(--scene-card,#fff);stroke-width:1.6" cx="100" cy="44" r="6"/></g>
+<g class="transactions-isolation-no"><circle class="transactions-isolation-bd" cx="120" cy="44" r="12"/><path class="transactions-isolation-sb" style="stroke:var(--scene-card,#fff);stroke-width:3.2" d="M115 39 l10 10 m0 -10 l-10 10"/></g>
+<g class="transactions-isolation-no"><text class="transactions-isolation-b" x="120" y="112" font-size="16" font-weight="700" text-anchor="middle">Refused: $40 left</text>
+</g>
+</svg>

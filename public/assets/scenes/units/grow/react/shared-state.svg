@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Named actions pass through one reducer into a board where a card moves columns, and a stale answer is ignored">
+<style>
+.grow-react-shared-state-t{font-family:system-ui,sans-serif;font-weight:700;font-size:16px;fill:var(--scene-ink,#102a33)}
+.grow-react-shared-state-a{animation:grow-react-shared-state-in 6s linear infinite}
+.grow-react-shared-state-st{animation:grow-react-shared-state-stale 6s linear infinite}
+.grow-react-shared-state-k{animation:grow-react-shared-state-mv 6s ease-in-out infinite}
+@keyframes grow-react-shared-state-in{0%{transform:translateX(0);opacity:0}10%{opacity:1}70%{opacity:1}100%{transform:translateX(70px);opacity:0}}
+@keyframes grow-react-shared-state-stale{0%{transform:translateX(0);opacity:0}10%{opacity:1}50%{transform:translateX(46px);opacity:1}60%{transform:translateX(40px);opacity:1}100%{transform:translateX(-6px);opacity:0}}
+@keyframes grow-react-shared-state-mv{0%,30%{transform:translateX(0)}55%,85%{transform:translateX(58px)}100%{transform:translateX(0)}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g class="grow-react-shared-state-a" style="animation-delay:-3s"><rect x="10" y="40" width="34" height="24" rx="6" fill="var(--scene-ahead,#2f6fb3)"/></g>
+<g class="grow-react-shared-state-a" style="animation-delay:-5s"><rect x="10" y="40" width="34" height="24" rx="6" fill="var(--scene-ahead,#2f6fb3)"/></g>
+<g class="grow-react-shared-state-st" style="animation-delay:-4s"><rect x="10" y="116" width="34" height="24" rx="6" fill="var(--scene-warn,#a15c00)"/></g>
+<rect x="100" y="52" width="2" height="0" fill="none"/>
+<rect x="104" y="56" width="66" height="68" rx="10" fill="var(--scene-accent,#006c73)"/>
+<text x="137" y="95" text-anchor="middle" class="grow-react-shared-state-t" style="fill:#fff">reducer</text>
+<path d="M104 128 l12 12 M116 128 l-12 12" stroke="var(--scene-bad,#b3261e)" stroke-width="4" stroke-linecap="round" transform="translate(-4,8)"/>
+<path d="M172 90 H186" stroke="var(--scene-muted,#536970)" stroke-width="3"/><path d="M186 83 l9 7 l-9 7z" fill="var(--scene-muted,#536970)"/>
+<rect x="200" y="30" width="112" height="120" rx="10" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/>
+<line x1="256" y1="40" x2="256" y2="140" stroke="var(--scene-line,#cfdfdc)" stroke-width="2.5"/>
+<rect x="208" y="48" width="40" height="22" rx="5" fill="var(--scene-card,#fff)" stroke="var(--scene-muted,#536970)" stroke-width="1.5"/>
+<rect x="208" y="112" width="40" height="22" rx="5" fill="var(--scene-card,#fff)" stroke="var(--scene-muted,#536970)" stroke-width="1.5"/>
+<rect x="262" y="112" width="40" height="22" rx="5" fill="var(--scene-card,#fff)" stroke="var(--scene-muted,#536970)" stroke-width="1.5"/>
+<g class="grow-react-shared-state-k" style="animation-delay:-3s"><rect x="204" y="80" width="40" height="22" rx="5" fill="var(--scene-grow,#b8457a)"/></g>
+<text x="14" y="24" class="grow-react-shared-state-t">action</text>
+<text x="10" y="172" class="grow-react-shared-state-t" style="fill:var(--scene-bad,#b3261e)">stale</text>
+</svg>

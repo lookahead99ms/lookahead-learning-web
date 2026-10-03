@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A request drilled down through API, code and data layers with follow-up questions">
+<style>
+
+.look-ahead-project-recruiter-project-deep-dive-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.look-ahead-project-recruiter-project-deep-dive-l{font-family:system-ui,sans-serif;font-size:16px;font-weight:600;fill:var(--scene-text,#28434a)}
+.look-ahead-project-recruiter-project-deep-dive-m{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-card,#fff)}
+.look-ahead-project-recruiter-project-deep-dive-d{animation:look-ahead-project-recruiter-project-deep-dive-dd 6s ease-in-out infinite;animation-delay:-3s}
+.look-ahead-project-recruiter-project-deep-dive-q{animation:look-ahead-project-recruiter-project-deep-dive-qp 6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.look-ahead-project-recruiter-project-deep-dive-q1{animation-delay:-4.4s}.look-ahead-project-recruiter-project-deep-dive-q2{animation-delay:-3.4s}.look-ahead-project-recruiter-project-deep-dive-q3{animation-delay:-2.4s}
+@keyframes look-ahead-project-recruiter-project-deep-dive-dd{0%,5%{transform:translateY(0)}35%{transform:translateY(34px)}65%,85%{transform:translateY(68px)}100%{transform:translateY(0)}}
+@keyframes look-ahead-project-recruiter-project-deep-dive-qp{0%,10%{opacity:0;transform:scale(.4)}25%,45%{opacity:1;transform:scale(1)}60%,100%{opacity:0;transform:scale(.4)}}
+
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+
+<rect x="40" y="36" width="160" height="30" rx="7" fill="var(--scene-ahead,#2f6fb3)"/>
+<rect x="40" y="70" width="160" height="30" rx="7" fill="var(--scene-learn,#0f8a8a)"/>
+<rect x="40" y="104" width="160" height="30" rx="7" fill="var(--scene-warn,#a15c00)"/>
+<text class="look-ahead-project-recruiter-project-deep-dive-m" x="60" y="56">API</text><text class="look-ahead-project-recruiter-project-deep-dive-m" x="60" y="90">Code</text><text class="look-ahead-project-recruiter-project-deep-dive-m" x="60" y="124">Prod</text>
+<g class="look-ahead-project-recruiter-project-deep-dive-d"><circle cx="170" cy="51" r="8" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="3"/><circle cx="170" cy="51" r="3" fill="var(--scene-grow,#b8457a)"/></g>
+<g>
+<g class="look-ahead-project-recruiter-project-deep-dive-q look-ahead-project-recruiter-project-deep-dive-q1"><circle cx="250" cy="52" r="17" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-ahead,#2f6fb3)" stroke-width="2.5"/><text class="look-ahead-project-recruiter-project-deep-dive-m" x="250" y="58" text-anchor="middle" style="fill:var(--scene-ahead,#2f6fb3)">?</text></g>
+<g class="look-ahead-project-recruiter-project-deep-dive-q look-ahead-project-recruiter-project-deep-dive-q2"><circle cx="250" cy="86" r="17" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-learn,#0f8a8a)" stroke-width="2.5"/><text class="look-ahead-project-recruiter-project-deep-dive-m" x="250" y="92" text-anchor="middle" style="fill:var(--scene-learn,#0f8a8a)">?</text></g>
+<g class="look-ahead-project-recruiter-project-deep-dive-q look-ahead-project-recruiter-project-deep-dive-q3"><circle cx="250" cy="120" r="17" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-warn,#a15c00)" stroke-width="2.5"/><text class="look-ahead-project-recruiter-project-deep-dive-m" x="250" y="126" text-anchor="middle" style="fill:var(--scene-warn,#a15c00)">?</text></g></g>
+</svg>

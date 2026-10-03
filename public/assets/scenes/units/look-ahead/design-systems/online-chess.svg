@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Svetlana moves her knight and her clock stops with 2 seconds added while Akosua's clock starts; Akosua replies with a pawn and only her own thinking time is taken off her clock">
+<style>
+.online-chess-t{font-family:system-ui, sans-serif;fill:var(--scene-ink,#102a33)}
+.online-chess-tx{font-family:system-ui, sans-serif;fill:var(--scene-text,#28434a)}
+.online-chess-tm{font-family:ui-monospace, Menlo, monospace;fill:var(--scene-ink,#102a33)}
+.online-chess-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.online-chess-card{fill:var(--scene-card,#fff)}
+.online-chess-ink{fill:var(--scene-ink,#102a33)}
+.online-chess-soft{fill:var(--scene-muted,#536970)}
+.online-chess-line{fill:var(--scene-line,#cfdfdc)}
+.online-chess-acc{fill:var(--scene-accent,#006c73)}
+.online-chess-accsoft{fill:var(--scene-accent-soft,#dcefed)}
+.online-chess-good{fill:var(--scene-good,#1f7a4d)}
+.online-chess-bad{fill:var(--scene-bad,#b3261e)}
+.online-chess-warn{fill:var(--scene-warn,#a15c00)}
+.online-chess-link{fill:var(--scene-link,#245a88)}
+.online-chess-a{animation-duration:6s;animation-iteration-count:infinite;animation-delay:-3s;animation-timing-function:ease-in-out}
+@media (prefers-reduced-motion: reduce){.online-chess-a{animation-play-state:paused!important}}
+.online-chess-knight{animation-name:online-chess-knight}
+@keyframes online-chess-knight{0%,8%{transform:none}22%,92%{transform:translate(12px,-24px)}100%{transform:none}}
+.online-chess-pawn{animation-name:online-chess-pawn}
+@keyframes online-chess-pawn{0%,52%{transform:none}64%,92%{transform:translate(0,12px)}100%{transform:none}}
+.online-chess-sOn{animation-name:online-chess-sOn}
+@keyframes online-chess-sOn{0%,20%{opacity:1}24%,62%{opacity:0}66%,94%{opacity:1}100%{opacity:1}}
+.online-chess-aOn{animation-name:online-chess-aOn}
+@keyframes online-chess-aOn{0%,20%{opacity:0}24%,62%{opacity:1}66%,100%{opacity:0}}
+.online-chess-s1{animation-name:online-chess-s1}
+@keyframes online-chess-s1{0%,22%{opacity:1}24%,100%{opacity:0}}
+.online-chess-s2{animation-name:online-chess-s2}
+@keyframes online-chess-s2{0%,22%{opacity:0}24%,96%{opacity:1}100%{opacity:0}}
+.online-chess-a1{animation-name:online-chess-a1}
+@keyframes online-chess-a1{0%,62%{opacity:1}64%,100%{opacity:0}}
+.online-chess-a2{animation-name:online-chess-a2}
+@keyframes online-chess-a2{0%,62%{opacity:0}64%,96%{opacity:1}100%{opacity:0}}
+.online-chess-plus{animation-name:online-chess-plus}
+@keyframes online-chess-plus{0%,22%{opacity:0;transform:none}26%{opacity:1;transform:none}40%,100%{opacity:0;transform:translateY(-8px)}}
+</style>
+<rect x="69" y="19" width="102" height="102" rx="4" class="online-chess-box"/><rect x="72" y="22" width="96" height="96" class="online-chess-accsoft"/><rect x="84" y="22" width="12" height="12" class="online-chess-acc" opacity=".45"/><rect x="108" y="22" width="12" height="12" class="online-chess-acc" opacity=".45"/><rect x="132" y="22" width="12" height="12" class="online-chess-acc" opacity=".45"/><rect x="156" y="22" width="12" height="12" class="online-chess-acc" opacity=".45"/><rect x="72" y="34" width="12" height="12" class="online-chess-acc" opacity=".45"/><rect x="96" y="34" width="12" height="12" class="online-chess-acc" opacity=".45"/><rect x="120" y="34" width="12" height="12" class="online-chess-acc" opacity=".45"/><rect x="144" y="34" width="12" height="12" class="online-chess-acc" opacity=".45"/><rect x="84" y="46" width="12" height="12" class="online-chess-acc" opacity=".45"/><rect x="108" y="46" width="12" height="12" class="online-chess-acc" opacity=".45"/><rect x="132" y="46" width="12" height="12" class="online-chess-acc" opacity=".45"/><rect x="156" y="46" width="12" height="12" class="online-chess-acc" opacity=".45"/><rect x="72" y="58" width="12" height="12" class="online-chess-acc" opacity=".45"/><rect x="96" y="58" width="12" height="12" class="online-chess-acc" opacity=".45"/><rect x="120" y="58" width="12" height="12" class="online-chess-acc" opacity=".45"/><rect x="144" y="58" width="12" height="12" class="online-chess-acc" opacity=".45"/><rect x="84" y="70" width="12" height="12" class="online-chess-acc" opacity=".45"/><rect x="108" y="70" width="12" height="12" class="online-chess-acc" opacity=".45"/><rect x="132" y="70" width="12" height="12" class="online-chess-acc" opacity=".45"/><rect x="156" y="70" width="12" height="12" class="online-chess-acc" opacity=".45"/><rect x="72" y="82" width="12" height="12" class="online-chess-acc" opacity=".45"/><rect x="96" y="82" width="12" height="12" class="online-chess-acc" opacity=".45"/><rect x="120" y="82" width="12" height="12" class="online-chess-acc" opacity=".45"/><rect x="144" y="82" width="12" height="12" class="online-chess-acc" opacity=".45"/><rect x="84" y="94" width="12" height="12" class="online-chess-acc" opacity=".45"/><rect x="108" y="94" width="12" height="12" class="online-chess-acc" opacity=".45"/><rect x="132" y="94" width="12" height="12" class="online-chess-acc" opacity=".45"/><rect x="156" y="94" width="12" height="12" class="online-chess-acc" opacity=".45"/><rect x="72" y="106" width="12" height="12" class="online-chess-acc" opacity=".45"/><rect x="96" y="106" width="12" height="12" class="online-chess-acc" opacity=".45"/><rect x="120" y="106" width="12" height="12" class="online-chess-acc" opacity=".45"/><rect x="144" y="106" width="12" height="12" class="online-chess-acc" opacity=".45"/>
+<text class="online-chess-ink" x="150" y="33" font-size="14" text-anchor="middle" font-family="system-ui, sans-serif">♚</text><text class="online-chess-ink" x="114" y="33" font-size="14" text-anchor="middle" font-family="system-ui, sans-serif">♜</text><text class="online-chess-ink" x="138" y="45" font-size="14" text-anchor="middle" font-family="system-ui, sans-serif">♟</text><text class="online-chess-ink" x="150" y="45" font-size="14" text-anchor="middle" font-family="system-ui, sans-serif">♟</text><text class="online-chess-ink" x="102" y="57" font-size="14" text-anchor="middle" font-family="system-ui, sans-serif">♟</text><text class="online-chess-ink" x="150" y="117" font-size="14" text-anchor="middle" font-family="system-ui, sans-serif">♔</text><text class="online-chess-ink" x="78" y="117" font-size="14" text-anchor="middle" font-family="system-ui, sans-serif">♖</text><text class="online-chess-ink" x="126" y="81" font-size="14" text-anchor="middle" font-family="system-ui, sans-serif">♙</text><text class="online-chess-ink" x="138" y="105" font-size="14" text-anchor="middle" font-family="system-ui, sans-serif">♙</text><text class="online-chess-ink" x="150" y="105" font-size="14" text-anchor="middle" font-family="system-ui, sans-serif">♙</text><g class="online-chess-a online-chess-knight"><text class="online-chess-ink" x="90" y="93" font-size="14" text-anchor="middle" font-family="system-ui, sans-serif">♘</text></g><g class="online-chess-a online-chess-pawn"><text class="online-chess-ink" x="114" y="69" font-size="14" text-anchor="middle" font-family="system-ui, sans-serif">♟</text></g>
+<rect x="4" y="30" width="64" height="58" rx="10" class="online-chess-box"/><rect x="4" y="30" width="64" height="58" rx="10" class="online-chess-a online-chess-sOn" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2"/><text class="online-chess-t" x="36" y="52" font-size="14" font-weight="700" text-anchor="middle">Svetlana</text><text class="online-chess-tm online-chess-a online-chess-s1" x="36" y="77" font-size="17" font-weight="700" text-anchor="middle">2:41</text><text class="online-chess-tm online-chess-a online-chess-s2" x="36" y="77" font-size="17" font-weight="700" text-anchor="middle">2:43</text>
+<rect x="172" y="30" width="64" height="58" rx="10" class="online-chess-box"/><rect x="172" y="30" width="64" height="58" rx="10" class="online-chess-a online-chess-aOn" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2"/><text class="online-chess-t" x="204" y="52" font-size="14" font-weight="700" text-anchor="middle">Akosua</text><text class="online-chess-tm online-chess-a online-chess-a1" x="204" y="77" font-size="17" font-weight="700" text-anchor="middle">2:55</text><text class="online-chess-tm online-chess-a online-chess-a2" x="204" y="77" font-size="17" font-weight="700" text-anchor="middle">2:49</text>
+<g class="online-chess-a online-chess-plus"><text class="online-chess-good" x="36" y="108" font-size="14" font-weight="700" text-anchor="middle" font-family="system-ui, sans-serif">+2 s</text></g>
+</svg>

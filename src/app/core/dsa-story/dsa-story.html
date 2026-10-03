@@ -1,0 +1,339 @@
+<section class="story" [attr.aria-labelledby]="uid + '-title'" (keydown)="keys($event)">
+  <header class="story-head">
+    <div>
+      <h3 [id]="uid + '-title'">How the solution runs</h3>
+      @if (fixture(); as example) {
+        <p class="story-example">
+          Example <code>{{ example.input }}</code> → <code>{{ example.expectedOutput }}</code>
+        </p>
+      }
+    </div>
+  </header>
+
+  <div class="approach-box" role="note" aria-label="Approach and why">
+    <p><b>Approach</b>{{ story().approach.variant }}</p>
+    <p><b>Why</b>{{ story().approach.why }}</p>
+    <p class="cost">
+      <b>Cost</b>Time {{ problem().complexity.time }} · Extra space {{ problem().complexity.space }}
+    </p>
+  </div>
+
+  <div class="story-controls" role="group" aria-label="Animation controls">
+    <button
+      type="button"
+      class="primary play"
+      [attr.aria-pressed]="player.playing()"
+      (click)="player.toggle()"
+    >
+      {{ player.playing() ? 'Pause' : 'Play' }}
+    </button>
+    <button
+      type="button"
+      aria-label="Previous step"
+      [disabled]="index() === 0"
+      (click)="player.previous()"
+    >
+      Previous
+    </button>
+    <button
+      type="button"
+      aria-label="Next step"
+      [disabled]="last()"
+      (click)="player.next()"
+    >
+      Next
+    </button>
+    <button type="button" aria-label="Restart from the first step" (click)="player.restart()">
+      Restart
+    </button>
+    <label class="scrubber"
+      ><span class="sr-only">Step</span
+      ><input
+        type="range"
+        min="1"
+        [max]="count()"
+        [value]="index() + 1"
+        [attr.aria-valuetext]="'Step ' + (index() + 1) + ' of ' + count()"
+        (input)="scrub($any($event.target).value)"
+    /></label>
+    <span class="step-count" role="status">Step {{ index() + 1 }} of {{ count() }}</span>
+  </div>
+
+  <div class="stage">
+    @for (panel of panels(); track panel.view.id) {
+      <figure
+        class="view"
+        [attr.data-kind]="panel.view.kind"
+        [attr.data-window]="panel.view.window ? true : null"
+        [style.--cells]="panel.sequence && panel.sequence.kind !== 'stack' ? panel.sequence.cells.length : null"
+        [style.--cell]="panel.sequence && panel.view.cell ? panel.view.cell + 'px' : null"
+      >
+        <figcaption>
+          {{ panel.view.title }} <span class="kind">{{ kindLabel(panel.view) }}</span>
+        </figcaption>
+        <p class="sr-only">{{ panel.summary }}</p>
+        <div class="drawing" aria-hidden="true">
+          @if (panel.sequence; as model) {
+            @if (model.missing) {
+              <p class="empty">{{ panel.gone ? 'no longer in scope' : 'not created yet' }}</p>
+            } @else if (model.kind === 'stack') {
+              <ol class="stack">
+                @for (cell of reversed(model.cells); track cell.key; let top = $first) {
+                  <li [class]="'cell ' + tones(cell.tones)">
+                    <span class="v">{{ cell.text }}</span>
+                    @if (top) {
+                      <span class="tag">top</span>
+                    }
+                  </li>
+                } @empty {
+                  <li class="empty">empty</li>
+                }
+              </ol>
+            } @else {
+              <div
+                class="sequence"
+                [class.queue]="model.kind === 'queue'"
+                [style.--n]="model.cells.length + 1"
+                [style.--cell]="panel.view.cell ? panel.view.cell + 'px' : null"
+              >
+                <div class="cells">
+                  @for (cell of model.cells; track cell.key) {
+                    <div [class]="'cell ' + tones(cell.tones)" [class.gap]="cell.gap">
+                      <span class="v">{{ cell.text }}</span>
+                      <span class="i">{{
+                        cell.gap
+                          ? cell.gap + ' more'
+                          : model.kind === 'queue' && cell.index === 0
+                            ? 'front'
+                            : model.kind === 'number-line'
+                              ? ''
+                              : cell.index
+                      }}</span>
+                    </div>
+                  } @empty {
+                    <p class="empty">empty</p>
+                  }
+                  @if (model.note) {
+                    <span class="note">{{ model.note }}</span>
+                  }
+                </div>
+                @if (model.pointers.length) {
+                  <div class="pointers">
+                    @for (pointer of model.pointers; track pointer.label) {
+                      <span
+                        class="pointer"
+                        [class.past]="pointer.past"
+                        [style.--i]="pointer.slot"
+                        [style.--row]="pointer.row"
+                        ><span aria-hidden="true">▲</span>{{ pointer.label }}</span
+                      >
+                    }
+                  </div>
+                }
+              </div>
+            }
+          } @else if (panel.map; as model) {
+            @if (model.missing) {
+              <p class="empty">{{ panel.gone ? 'no longer in scope' : 'not created yet' }}</p>
+            } @else {
+              <div class="map" [class.set]="panel.view.kind === 'set'">
+                @if (panel.view.kind === 'map' && (panel.view.keyLabel || panel.view.valueLabel)) {
+                  <div class="map-head">
+                    <span>{{ panel.view.keyLabel ?? 'key' }}</span
+                    ><span>{{ panel.view.valueLabel ?? 'value' }}</span>
+                  </div>
+                }
+                @for (entry of model.entries; track entry.key) {
+                  <div [class]="'entry ' + tones(entry.tones)">
+                    <span class="k">{{ entry.key }}</span>
+                    @if (entry.value !== null) {
+                      <span class="arrow">→</span><span class="val">{{ entry.value }}</span>
+                    }
+                  </div>
+                } @empty {
+                  <p class="empty">empty</p>
+                }
+                @for (miss of model.misses; track miss) {
+                  <div class="entry tone-miss">
+                    <span class="k">{{ miss }}</span><span class="val">not in {{ panel.view.var }}</span>
+                  </div>
+                }
+              </div>
+            }
+          } @else if (panel.grid; as model) {
+            @if (model.missing) {
+              <p class="empty">{{ panel.gone ? 'no longer in scope' : 'not created yet' }}</p>
+            } @else {
+              <table class="grid">
+                <tbody>
+                  @for (row of model.rows; track $index; let r = $index) {
+                    <tr>
+                      @for (cell of row; track cell.key; let c = $index) {
+                        <td
+                          [class]="tones(cell.tones)"
+                          [class.cursor]="model.cursor?.[0] === r && model.cursor?.[1] === c"
+                        >
+                          {{ cell.text }}
+                        </td>
+                      }
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+          } @else if (panel.calls; as model) {
+            <ol class="calls">
+              @for (frame of reversed(model.frames); track $index) {
+                <li [class]="'frame ' + tones(frame.tones)" [class.current]="frame.current">
+                  <code>{{ frame.label }}</code>
+                  @if (frame.returns !== null) {
+                    <span class="tag">returns {{ frame.returns }}</span>
+                  }
+                </li>
+              }
+            </ol>
+          } @else if (panel.diagram; as model) {
+            @if (model.missing) {
+              <p class="empty">empty</p>
+            } @else {
+              <svg
+                class="diagram"
+                [attr.viewBox]="'0 -34 ' + model.width + ' ' + (model.height + 34)"
+                [style.max-width.px]="model.width * 1.25"
+              >
+                <defs>
+                  <marker
+                    [id]="uid + '-arrow'"
+                    viewBox="0 0 10 10"
+                    refX="9"
+                    refY="5"
+                    markerWidth="6"
+                    markerHeight="6"
+                    orient="auto-start-reverse"
+                  >
+                    <path d="M0 0L10 5L0 10z" class="arrow-head" />
+                  </marker>
+                  @for (tone of ['compare', 'new', 'found']; track tone) {
+                    <marker
+                      [id]="uid + '-arrow-' + tone"
+                      viewBox="0 0 10 10"
+                      refX="9"
+                      refY="5"
+                      markerWidth="6"
+                      markerHeight="6"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M0 0L10 5L0 10z" class="arrow-head" [attr.data-tone]="tone" />
+                    </marker>
+                  }
+                </defs>
+                @for (edge of model.edges; track edge.id) {
+                  <path
+                    class="edge"
+                    [class.prev]="edge.kind === 'prev'"
+                    [class.stale]="edge.kind === 'stale'"
+                    [class.extra]="edge.kind === 'extra'"
+                    [class.ghost]="edge.ghost"
+                    [attr.data-tone]="edge.tone ?? null"
+                    [attr.d]="edge.path"
+                    [attr.marker-end]="
+                      edge.directed
+                        ? 'url(#' + uid + '-arrow' + (edge.tone && edge.tone !== 'done' ? '-' + edge.tone : '') + ')'
+                        : null
+                    "
+                  />
+                }
+                @for (node of model.nodes; track node.id) {
+                  <g [class]="'node ' + tones(node.tones)" [style.transform]="'translate(' + node.x + 'px,' + node.y + 'px)'">
+                    @if (node.sentinel) {
+                      <rect class="sentinel" x="-24" y="-17" width="48" height="34" rx="8" />
+                    } @else {
+                      <circle r="22" />
+                    }
+                    @if (node.end) {
+                      <circle class="end-ring" r="17" />
+                    }
+                    <text [class.sentinel-text]="node.sentinel">{{ node.text }}</text>
+                    @for (label of node.pointers; track label; let row = $index) {
+                      <text class="pointer-label" [attr.y]="node.labelsBelow ? 40 + row * 16 : -32 - row * 16">{{ label }}</text>
+                    }
+                    @if (node.badge) {
+                      <text class="badge" x="25" y="12">{{ node.badge }}</text>
+                    }
+                  </g>
+                }
+                @if (model.nullAt; as spot) {
+                  <g class="null-slot" [style.transform]="'translate(' + spot.x + 'px,' + spot.y + 'px)'">
+                    <text>{{ noneText() }}</text>
+                    @for (label of model.nullPointers; track label; let row = $index) {
+                      <text class="pointer-label" [attr.y]="-32 - row * 16">{{ label }}</text>
+                    }
+                  </g>
+                }
+              </svg>
+            }
+          }
+        </div>
+      </figure>
+    }
+    <figure class="view variables" data-kind="variables">
+      <figcaption>Variables <span class="kind">changed values are highlighted</span></figcaption>
+      <dl>
+        @for (row of variables(); track row.name) {
+          <div
+            class="variable"
+            [class.changed]="row.changed"
+            [class.unset]="row.unset"
+            [attr.data-kind]="row.kind ?? null"
+          >
+            <dt>
+              {{ row.name }}
+              @if (row.frame) {
+                <span class="frame-tag">in {{ row.frame }}</span>
+              }
+            </dt>
+            <dd [title]="row.value">{{ row.value }}</dd>
+          </div>
+        }
+      </dl>
+    </figure>
+  </div>
+
+  <p class="caption" [attr.aria-live]="player.playing() ? 'off' : 'polite'">{{ caption() }}</p>
+
+  <ol class="ideas" aria-label="The idea in four steps">
+    @for (idea of story().ideas; track $index) {
+      <li [class.on]="$index === step().idea" [attr.aria-current]="$index === step().idea ? 'step' : null">
+        {{ idea }}
+      </li>
+    }
+  </ol>
+
+  <section class="code" [attr.aria-labelledby]="uid + '-code'">
+    <div class="code-head">
+      <h4 [id]="uid + '-code'">Reference solution</h4>
+      <div class="language-tabs" role="tablist" aria-label="Code language">
+        @for (item of languages; track item) {
+          <button
+            type="button"
+            role="tab"
+            [attr.data-story-language]="item"
+            [attr.aria-selected]="item === language()"
+            [attr.tabindex]="item === language() ? 0 : -1"
+            (click)="selectLanguage(item)"
+            (keydown)="languageKeys($event, item)"
+          >
+            {{ languageLabels[item] }}
+          </button>
+        }
+      </div>
+    </div>
+    <p class="sr-only" aria-live="off">
+      @if (currentLineNumber(); as number) {
+        Current line {{ number }}.
+      }
+    </p>
+    <pre #codeBox tabindex="0" [attr.aria-label]="languageLabels[language()] + ' reference solution'"><code class="learning-code" [attr.data-code-language]="language()">@for (line of code(); track line.id) {<span class="line" [class.current]="line.current" [class.ran]="line.ran" [attr.data-line]="line.number"><span class="no" aria-hidden="true">{{ line.number }}</span><span [innerHTML]="line.html"></span>
+</span>}</code></pre>
+  </section>
+</section>

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="A gift card object accepts a valid redeem and rejects one that would go below zero">
+<style>
+.learn-oop-oop-foundations-t{font-family:system-ui,sans-serif;font-size:14px;font-weight:700}
+.learn-oop-oop-foundations-ok{animation:learn-oop-oop-foundations-a 6s ease-in-out infinite;animation-delay:-3s}
+.learn-oop-oop-foundations-no{animation:learn-oop-oop-foundations-b 6s ease-in-out infinite;animation-delay:-3s}
+.learn-oop-oop-foundations-bar{transform-box:fill-box;transform-origin:left center;animation:learn-oop-oop-foundations-c 6s ease-in-out infinite;animation-delay:-3s}
+.learn-oop-oop-foundations-sh{animation:learn-oop-oop-foundations-d 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes learn-oop-oop-foundations-a{0%{transform:translateX(0);opacity:0}8%{opacity:1}35%{transform:translateX(34px);opacity:1}45%,100%{transform:translateX(40px);opacity:0}}
+@keyframes learn-oop-oop-foundations-b{0%,50%{transform:translateX(0);opacity:0}55%{opacity:1}75%{transform:translateX(32px);opacity:1}90%{transform:translateX(12px);opacity:1}100%{transform:translateX(0);opacity:0}}
+@keyframes learn-oop-oop-foundations-c{0%,38%{transform:scaleX(1)}50%,100%{transform:scaleX(.6)}}
+@keyframes learn-oop-oop-foundations-d{0%,72%{transform:translateX(0)}78%{transform:translateX(-4px)}84%{transform:translateX(4px)}90%,100%{transform:translateX(0)}}
+</style>
+<rect width="240" height="135" fill="var(--scene-card,#fff)"/>
+<g class="learn-oop-oop-foundations-sh">
+<rect x="104" y="30" width="126" height="84" rx="14" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<rect x="116" y="44" width="102" height="22" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<rect class="learn-oop-oop-foundations-bar" x="120" y="48" width="94" height="14" rx="4" fill="var(--scene-good,#1f7a4d)"/>
+<text class="learn-oop-oop-foundations-t" x="167" y="97" text-anchor="middle" fill="var(--scene-ink,#102a33)">balance ≥ 0</text>
+</g>
+<rect x="96" y="36" width="12" height="72" rx="4" fill="var(--scene-ink,#102a33)"/>
+<g class="learn-oop-oop-foundations-ok"><rect x="12" y="38" width="42" height="24" rx="12" fill="var(--scene-good,#1f7a4d)"/><path d="M26 50h16m-6-6 6 6-6 6" stroke="var(--scene-card,#fff)" stroke-width="3" fill="none" stroke-linecap="round"/></g>
+<g class="learn-oop-oop-foundations-no"><rect x="12" y="80" width="42" height="24" rx="12" fill="var(--scene-bad,#b3261e)"/><path d="M27 86l12 12m0-12-12 12" stroke="var(--scene-card,#fff)" stroke-width="3" stroke-linecap="round"/></g>
+<text class="learn-oop-oop-foundations-t" x="8" y="24" fill="var(--scene-text,#28434a)">redeem()</text>
+</svg>

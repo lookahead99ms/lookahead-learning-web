@@ -1,4 +1,9 @@
-import { ContentRecovery, RecoveryKind, RecoveryPreview, recoveryKind } from '../../core/content-recovery/content-recovery';
+import {
+  ContentRecovery,
+  RecoveryKind,
+  RecoveryPreview,
+  recoveryKind,
+} from '../../core/content-recovery/content-recovery';
 import { NgTemplateOutlet } from '@angular/common';
 import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -23,6 +28,7 @@ import {
 } from '../../content/look-ahead-course-groups';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { CourseLearningMap } from '../../core/course-learning-map/course-learning-map';
+import { courseHasUnitCards } from '../../content/learning-units';
 
 @Component({
   selector: 'app-course',
@@ -56,6 +62,16 @@ import { CourseLearningMap } from '../../core/course-learning-map/course-learnin
         align-items: start;
         gap: 0;
         border-bottom: 1px solid var(--line);
+      }
+      /* Card courses place the learning path between the course banner and the card grid. */
+      .course-page-intro-cards {
+        margin: 0;
+        padding: 0;
+        border-bottom: 0;
+      }
+      .course-page-intro-cards .course-learning-path {
+        max-width: none;
+        margin-top: 0;
       }
       .course-page-intro .course-intro-summary > .eyebrow {
         margin: 5px 0 0;
@@ -225,6 +241,13 @@ import { CourseLearningMap } from '../../core/course-learning-map/course-learnin
         text-decoration: underline;
         text-underline-offset: 3px;
       }
+      /* The side nav takes a column, so the map keeps room for its card grid. */
+      .course-reader.course-reader-with-nav {
+        width: min(1400px, 94vw);
+      }
+      .course-reader-with-nav .module-question-list {
+        width: 100%;
+      }
       .course-breadcrumb-bar {
         display: flex;
         align-items: center;
@@ -275,6 +298,20 @@ export class Course implements OnInit {
   protected readonly reviewStatusLabel = reviewStatusLabel;
   protected readonly highlightGrow = highlightGrow;
   protected readonly highlightLearn = highlightLearn;
+  /** Card courses show their title in the banner at the top of the learning map. */
+  protected readonly hasUnitCards = courseHasUnitCards;
+
+  /**
+   * DLV-408: Look Ahead learning-map courses show the sticky side nav of every lesson.
+   * Learn and Grow use the same map and can opt in here once reviewed.
+   */
+  protected lessonNav(course: CourseOutline): boolean {
+    return (
+      this.pathId() === 'look-ahead' &&
+      course.layout === 'learning-map' &&
+      Boolean(course.learningUnits?.length)
+    );
+  }
 
   protected pathLabel(): string {
     return this.pathId() === 'grow'

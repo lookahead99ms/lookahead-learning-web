@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A garbage collector follows references from a root; the unreachable object is swept away">
+<style>
+.learn-garbage-collection-jvm-memory-gc-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.learn-garbage-collection-jvm-memory-gc-e{stroke:var(--scene-good,#1f7a4d);stroke-width:2.5;fill:none;stroke-dasharray:6 5;animation:learn-garbage-collection-jvm-memory-gc-flow 1.2s linear infinite;animation-delay:-.4s}
+.learn-garbage-collection-jvm-memory-gc-n{fill:var(--scene-good,#1f7a4d);transform-box:fill-box;transform-origin:center;animation:learn-garbage-collection-jvm-memory-gc-mark 6s ease-in-out infinite}
+.learn-garbage-collection-jvm-memory-gc-n2{animation-delay:-2.4s}.learn-garbage-collection-jvm-memory-gc-n3{animation-delay:-1.8s}.learn-garbage-collection-jvm-memory-gc-n4{animation-delay:-1.2s}.learn-garbage-collection-jvm-memory-gc-n1{animation-delay:-3s}
+.learn-garbage-collection-jvm-memory-gc-g{fill:var(--scene-bad,#b3261e);transform-box:fill-box;transform-origin:center;animation:learn-garbage-collection-jvm-memory-gc-sweep 6s ease-in-out infinite;animation-delay:-3s}
+.learn-garbage-collection-jvm-memory-gc-stub{stroke:var(--scene-bad,#b3261e);stroke-width:2.5;stroke-dasharray:3 5;fill:none;animation:learn-garbage-collection-jvm-memory-gc-fade 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes learn-garbage-collection-jvm-memory-gc-flow{to{stroke-dashoffset:-22}}
+@keyframes learn-garbage-collection-jvm-memory-gc-mark{0%,100%{transform:scale(1)}50%{transform:scale(1.22)}}
+@keyframes learn-garbage-collection-jvm-memory-gc-sweep{0%,35%{transform:scale(1);opacity:1}55%{transform:scale(1.2);opacity:1}80%,92%{transform:scale(.1);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes learn-garbage-collection-jvm-memory-gc-fade{0%,55%{opacity:1}80%,92%{opacity:0}100%{opacity:1}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<path class="learn-garbage-collection-jvm-memory-gc-e" d="M54 76L108 48M54 84L108 112M132 45H188M132 115H188"/>
+<path class="learn-garbage-collection-jvm-memory-gc-stub" d="M218 115L262 128"/>
+<circle cx="40" cy="80" r="15" fill="var(--scene-accent,#006c73)"/>
+<circle class="learn-garbage-collection-jvm-memory-gc-n learn-garbage-collection-jvm-memory-gc-n1" cx="120" cy="45" r="12"/>
+<circle class="learn-garbage-collection-jvm-memory-gc-n learn-garbage-collection-jvm-memory-gc-n2" cx="120" cy="115" r="12"/>
+<circle class="learn-garbage-collection-jvm-memory-gc-n learn-garbage-collection-jvm-memory-gc-n3" cx="200" cy="45" r="12"/>
+<circle class="learn-garbage-collection-jvm-memory-gc-n learn-garbage-collection-jvm-memory-gc-n4" cx="200" cy="115" r="12"/>
+<circle class="learn-garbage-collection-jvm-memory-gc-g" cx="275" cy="132" r="13"/>
+<text class="learn-garbage-collection-jvm-memory-gc-t" x="40" y="116" text-anchor="middle">GC root</text>
+<text class="learn-garbage-collection-jvm-memory-gc-t" x="160" y="22" text-anchor="middle">Reachable</text>
+<text class="learn-garbage-collection-jvm-memory-gc-t" x="270" y="166" text-anchor="middle">Garbage</text>
+</svg>

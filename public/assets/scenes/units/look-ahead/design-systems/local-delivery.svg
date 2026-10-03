@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" class="local-delivery-root" role="img" aria-label="An order is paid and offered to one courier; she accepts, a second courier taps too late and is told it is taken, and she rides from the store to the customer.">
+<style>
+.local-delivery-root text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.local-delivery-t{fill:var(--scene-ink,#102a33)}
+.local-delivery-tx{fill:var(--scene-text,#28434a)}
+.local-delivery-mut{fill:var(--scene-muted,#536970)}
+.local-delivery-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.local-delivery-soft{fill:var(--scene-accent-soft,#dcefed)}
+.local-delivery-acc{fill:var(--scene-accent,#006c73)}
+.local-delivery-ln{fill:var(--scene-line,#cfdfdc)}
+.local-delivery-cardf{fill:var(--scene-card,#fff)}
+.local-delivery-good{fill:var(--scene-good,#1f7a4d)}
+.local-delivery-warn{fill:var(--scene-warn,#a15c00)}
+.local-delivery-bad{fill:var(--scene-bad,#b3261e)}
+.local-delivery-link{fill:var(--scene-link,#245a88)}
+.local-delivery-out{fill:var(--scene-bubble-out,#d4ecea)}
+.local-delivery-sk{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.local-delivery-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.local-delivery-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:1.5;stroke-dasharray:3 3}
+.local-delivery-a{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-3s}
+.local-delivery-offer{animation-name:local-delivery-offer}@keyframes local-delivery-offer{0%,2%{opacity:0}5%,20%{opacity:1}23%,100%{opacity:0}}
+.local-delivery-acc1{animation-name:local-delivery-acc1}@keyframes local-delivery-acc1{0%,21%{opacity:0}24%,90%{opacity:1}93%,100%{opacity:0}}
+.local-delivery-done{animation-name:local-delivery-done}@keyframes local-delivery-done{0%,90%{opacity:0}93%,100%{opacity:1}}
+.local-delivery-late{animation-name:local-delivery-late}@keyframes local-delivery-late{0%,28%{opacity:0}31%,58%{opacity:1}62%,100%{opacity:0}}
+.local-delivery-ride{animation-name:local-delivery-ride;animation-timing-function:linear}
+@keyframes local-delivery-ride{0%,30%{transform:translate(54px,70px)}55%{transform:translate(54px,100px)}88%,100%{transform:translate(204px,100px)}}
+.local-delivery-route{animation-name:local-delivery-route}@keyframes local-delivery-route{0%,24%{opacity:0}28%,88%{opacity:1}92%,100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.local-delivery-root *{animation-play-state:paused!important}}
+</style>
+<path d="M0 100 H240 M54 0 V135 M156 0 V84" stroke="var(--scene-line,#cfdfdc)" stroke-width="10" fill="none" opacity=".8"/>
+<path class="local-delivery-a local-delivery-route" d="M54 70 V100 H204" fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="2.5" stroke-dasharray="6 5"/>
+<g transform="translate(30 40)"><rect x="0" y="10" width="28" height="22" rx="2" class="local-delivery-box"/><path d="M-3 10 h34 l-3 -9 h-28z" class="local-delivery-warn"/><rect x="10" y="20" width="8" height="12" class="local-delivery-ln"/></g>
+<g transform="translate(188 66)"><path d="M0 14 L16 0 L32 14 V32 H0Z" class="local-delivery-box"/><rect x="12" y="20" width="8" height="12" class="local-delivery-acc"/></g>
+<circle cx="204" cy="22" r="8" class="local-delivery-soft"/><circle cx="204" cy="22" r="3" class="local-delivery-mut"/>
+<g class="local-delivery-a local-delivery-ride"><circle r="9" class="local-delivery-good" stroke="var(--scene-card,#fff)" stroke-width="2"/></g>
+<g class="local-delivery-a local-delivery-offer"><rect x="70" y="8" width="100" height="26" rx="13" class="local-delivery-box"/><text x="120" y="26" font-size="14" font-weight="700" text-anchor="middle" class="local-delivery-mut">Offer&#8230;</text></g>
+<g class="local-delivery-a local-delivery-acc1"><rect x="70" y="8" width="100" height="26" rx="13" class="local-delivery-box"/><text x="120" y="26" font-size="14" font-weight="700" text-anchor="middle" class="local-delivery-good">Accepted</text></g>
+<g class="local-delivery-a local-delivery-done"><rect x="70" y="8" width="100" height="26" rx="13" class="local-delivery-box"/><text x="120" y="26" font-size="14" font-weight="700" text-anchor="middle" class="local-delivery-good">Delivered</text></g>
+<g class="local-delivery-a local-delivery-late"><rect x="176" y="38" width="58" height="24" rx="12" class="local-delivery-bad" fill-opacity=".15"/><text x="205" y="55" font-size="14" font-weight="700" text-anchor="middle" class="local-delivery-bad">Taken</text></g>
+</svg>

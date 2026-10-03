@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" class="slow-scheduled-work-root" role="img" aria-label="Run payroll starts at once and reports Started; 24 chunks are saved as each finishes, a stopped worker's chunk is picked up by another, and the run ends Done.">
+<style>
+.slow-scheduled-work-root text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.slow-scheduled-work-t{fill:var(--scene-ink,#102a33)}
+.slow-scheduled-work-tx{fill:var(--scene-text,#28434a)}
+.slow-scheduled-work-mut{fill:var(--scene-muted,#536970)}
+.slow-scheduled-work-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.slow-scheduled-work-soft{fill:var(--scene-accent-soft,#dcefed)}
+.slow-scheduled-work-acc{fill:var(--scene-accent,#006c73)}
+.slow-scheduled-work-ln{fill:var(--scene-line,#cfdfdc)}
+.slow-scheduled-work-cardf{fill:var(--scene-card,#fff)}
+.slow-scheduled-work-good{fill:var(--scene-good,#1f7a4d)}
+.slow-scheduled-work-warn{fill:var(--scene-warn,#a15c00)}
+.slow-scheduled-work-bad{fill:var(--scene-bad,#b3261e)}
+.slow-scheduled-work-link{fill:var(--scene-link,#245a88)}
+.slow-scheduled-work-out{fill:var(--scene-bubble-out,#d4ecea)}
+.slow-scheduled-work-sk{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.slow-scheduled-work-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.slow-scheduled-work-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:1.5;stroke-dasharray:3 3}
+.slow-scheduled-work-cur{animation:slow-scheduled-work-cur 7s -3s infinite}
+@keyframes slow-scheduled-work-cur{0%{transform:translate(30px,26px)}8%,100%{transform:translate(0,0)}}
+.slow-scheduled-work-toast{animation:slow-scheduled-work-toast 7s -3s infinite}
+@keyframes slow-scheduled-work-toast{0%,8%{opacity:0}11%,96%{opacity:1}100%{opacity:0}}
+.slow-scheduled-work-fill{transform-box:fill-box;transform-origin:left center;animation:slow-scheduled-work-fill 7s -3s infinite}
+@keyframes slow-scheduled-work-fill{0%,10%{transform:scaleX(0)}80%,96%{transform:scaleX(1)}100%{transform:scaleX(0)}}
+.slow-scheduled-work-stuck{animation:slow-scheduled-work-stuck 7s -3s infinite}
+@keyframes slow-scheduled-work-stuck{0%,30%{opacity:0}33%,52%{opacity:1}56%,100%{opacity:0}}
+.slow-scheduled-work-ok{animation:slow-scheduled-work-ok 7s -3s infinite}
+@keyframes slow-scheduled-work-ok{0%,30%{opacity:1}33%,52%{opacity:0}56%,100%{opacity:1}}
+.slow-scheduled-work-work{animation:slow-scheduled-work-work 7s -3s infinite}
+@keyframes slow-scheduled-work-work{0%,10%{opacity:0}12%,80%{opacity:1}83%,100%{opacity:0}}
+.slow-scheduled-work-done{animation:slow-scheduled-work-done 7s -3s infinite}
+@keyframes slow-scheduled-work-done{0%,81%{opacity:0}84%,97%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.slow-scheduled-work-root *{animation-play-state:paused!important}}
+</style>
+<defs><clipPath id="slow-scheduled-work-clip"><rect class="slow-scheduled-work-fill" x="8" y="50" width="224" height="50"/></clipPath></defs>
+<rect x="8" y="8" width="100" height="28" rx="9" class="slow-scheduled-work-acc"/>
+<text x="58" y="27" font-size="14" font-weight="700" text-anchor="middle" class="slow-scheduled-work-cardf">Run payroll</text>
+<g class="slow-scheduled-work-toast"><rect x="116" y="8" width="116" height="28" rx="9" class="slow-scheduled-work-box"/><text x="174" y="27" font-size="14" font-weight="700" text-anchor="middle" class="slow-scheduled-work-good">Started &#10003;</text></g>
+<g class="slow-scheduled-work-cur"><path d="M84 28 l0 15 l4 -4 l3.2 7 l2.8 -1.3 l-3.2 -7 l5.6 0z" class="slow-scheduled-work-t" stroke="var(--scene-card,#fff)" stroke-width="1"/></g>
+<rect x="8" y="46" width="224" height="58" rx="10" class="slow-scheduled-work-box"/>
+<rect x="14.0" y="56" width="14" height="13" rx="3" class="slow-scheduled-work-ln"/><rect x="31.2" y="56" width="14" height="13" rx="3" class="slow-scheduled-work-ln"/><rect x="48.4" y="56" width="14" height="13" rx="3" class="slow-scheduled-work-ln"/><rect x="65.6" y="56" width="14" height="13" rx="3" class="slow-scheduled-work-ln"/><rect x="82.8" y="56" width="14" height="13" rx="3" class="slow-scheduled-work-ln"/><rect x="100.0" y="56" width="14" height="13" rx="3" class="slow-scheduled-work-ln"/><rect x="117.2" y="56" width="14" height="13" rx="3" class="slow-scheduled-work-ln"/><rect x="134.4" y="56" width="14" height="13" rx="3" class="slow-scheduled-work-ln"/><rect x="151.6" y="56" width="14" height="13" rx="3" class="slow-scheduled-work-ln"/><rect x="168.8" y="56" width="14" height="13" rx="3" class="slow-scheduled-work-ln"/><rect x="186.0" y="56" width="14" height="13" rx="3" class="slow-scheduled-work-ln"/><rect x="203.2" y="56" width="14" height="13" rx="3" class="slow-scheduled-work-ln"/><rect x="14.0" y="74" width="14" height="13" rx="3" class="slow-scheduled-work-ln"/><rect x="31.2" y="74" width="14" height="13" rx="3" class="slow-scheduled-work-ln"/><rect x="48.4" y="74" width="14" height="13" rx="3" class="slow-scheduled-work-ln"/><rect x="65.6" y="74" width="14" height="13" rx="3" class="slow-scheduled-work-ln"/><rect x="82.8" y="74" width="14" height="13" rx="3" class="slow-scheduled-work-ln"/><rect x="100.0" y="74" width="14" height="13" rx="3" class="slow-scheduled-work-ln"/><rect x="117.2" y="74" width="14" height="13" rx="3" class="slow-scheduled-work-ln"/><rect x="134.4" y="74" width="14" height="13" rx="3" class="slow-scheduled-work-ln"/><rect x="151.6" y="74" width="14" height="13" rx="3" class="slow-scheduled-work-ln"/><rect x="168.8" y="74" width="14" height="13" rx="3" class="slow-scheduled-work-ln"/><rect x="186.0" y="74" width="14" height="13" rx="3" class="slow-scheduled-work-ln"/><rect x="203.2" y="74" width="14" height="13" rx="3" class="slow-scheduled-work-ln"/>
+<g clip-path="url(#slow-scheduled-work-clip)"><rect x="14.0" y="56" width="14" height="13" rx="3" class="slow-scheduled-work-good"/><rect x="31.2" y="56" width="14" height="13" rx="3" class="slow-scheduled-work-good"/><rect x="48.4" y="56" width="14" height="13" rx="3" class="slow-scheduled-work-good"/><rect x="65.6" y="56" width="14" height="13" rx="3" class="slow-scheduled-work-good"/><rect x="82.8" y="56" width="14" height="13" rx="3" class="slow-scheduled-work-good"/><rect x="100.0" y="56" width="14" height="13" rx="3" class="slow-scheduled-work-good"/><rect x="117.2" y="56" width="14" height="13" rx="3" class="slow-scheduled-work-good"/><rect x="134.4" y="56" width="14" height="13" rx="3" class="slow-scheduled-work-good"/><rect x="151.6" y="56" width="14" height="13" rx="3" class="slow-scheduled-work-good"/><rect x="168.8" y="56" width="14" height="13" rx="3" class="slow-scheduled-work-good"/><rect x="186.0" y="56" width="14" height="13" rx="3" class="slow-scheduled-work-good"/><rect x="203.2" y="56" width="14" height="13" rx="3" class="slow-scheduled-work-good"/><rect x="14.0" y="74" width="14" height="13" rx="3" class="slow-scheduled-work-good"/><rect x="31.2" y="74" width="14" height="13" rx="3" class="slow-scheduled-work-good"/><rect x="48.4" y="74" width="14" height="13" rx="3" class="slow-scheduled-work-good"/><rect x="65.6" y="74" width="14" height="13" rx="3" class="slow-scheduled-work-good"/><rect x="82.8" y="74" width="14" height="13" rx="3" class="slow-scheduled-work-good"/><rect x="100.0" y="74" width="14" height="13" rx="3" class="slow-scheduled-work-good"/><rect x="117.2" y="74" width="14" height="13" rx="3" class="slow-scheduled-work-good"/><rect x="134.4" y="74" width="14" height="13" rx="3" class="slow-scheduled-work-good"/><rect x="151.6" y="74" width="14" height="13" rx="3" class="slow-scheduled-work-good"/><rect x="168.8" y="74" width="14" height="13" rx="3" class="slow-scheduled-work-good"/><rect x="186.0" y="74" width="14" height="13" rx="3" class="slow-scheduled-work-good"/><rect x="203.2" y="74" width="14" height="13" rx="3" class="slow-scheduled-work-good"/></g>
+<rect class="slow-scheduled-work-stuck" x="117.2" y="74" width="14" height="13" rx="3" style="fill:var(--scene-warn,#a15c00)"/>
+<g class="slow-scheduled-work-work"><circle cx="96" cy="120" r="7" class="slow-scheduled-work-acc"/><circle cx="120" cy="120" r="7" class="slow-scheduled-work-acc slow-scheduled-work-ok"/><circle cx="120" cy="120" r="7" class="slow-scheduled-work-bad slow-scheduled-work-stuck"/><circle cx="144" cy="120" r="7" class="slow-scheduled-work-acc"/></g>
+<text x="120" y="126" font-size="16" font-weight="700" text-anchor="middle" class="slow-scheduled-work-good slow-scheduled-work-done">Done &#10003;</text>
+</svg>

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A feature branch splits from main, gains commits, and merges back">
+<style>
+.learn-git-t { font-family: system-ui, sans-serif; fill: var(--scene-ink, #102a33); }
+.learn-git-tm { font-family: ui-monospace, Menlo, monospace; fill: var(--scene-text, #28434a); }
+.learn-git-b { font-weight: 700; }
+.learn-git-main { stroke: var(--scene-muted, #536970); stroke-width: 4; stroke-linecap: round; }
+.learn-git-mc { fill: var(--scene-card, #ffffff); stroke: var(--scene-muted, #536970); stroke-width: 4; }
+.learn-git-fc { fill: var(--scene-learn, #0f8a8a); }
+.learn-git-br { fill: none; stroke: var(--scene-learn, #0f8a8a); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 100; animation: learn-git-kf-br 7s ease-in-out infinite; }
+@keyframes learn-git-kf-br { 0% { stroke-dashoffset: 100; } 15% { stroke-dashoffset: 72; } 60% { stroke-dashoffset: 28; } 72%, 92% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 100; } }
+.learn-git-c1 { animation: learn-git-kf-c1 7s infinite; }
+@keyframes learn-git-kf-c1 { 0%, 18% { opacity: 0; } 22%, 92% { opacity: 1; } 100% { opacity: 0; } }
+.learn-git-c2 { animation: learn-git-kf-c2 7s infinite; }
+@keyframes learn-git-kf-c2 { 0%, 38% { opacity: 0; } 42%, 92% { opacity: 1; } 100% { opacity: 0; } }
+.learn-git-c3 { animation: learn-git-kf-c3 7s infinite; }
+@keyframes learn-git-kf-c3 { 0%, 56% { opacity: 0; } 60%, 92% { opacity: 1; } 100% { opacity: 0; } }
+.learn-git-m { animation: learn-git-kf-m 7s infinite; }
+@keyframes learn-git-kf-m { 0%, 72% { opacity: 0; } 76%, 92% { opacity: 1; } 100% { opacity: 0; } }
+.learn-git-br, .learn-git-c1, .learn-git-c2, .learn-git-c3, .learn-git-m { animation-delay: -3s; }
+</style>
+<path class="learn-git-main" d="M20 124 H300"/>
+<path class="learn-git-br" pathLength="100" d="M84 124 C112 124 108 66 136 66 H220 C248 66 244 124 268 124"/>
+<circle class="learn-git-mc" cx="38" cy="124" r="8"/><circle class="learn-git-mc" cx="84" cy="124" r="8"/>
+<circle class="learn-git-fc learn-git-c1" cx="142" cy="66" r="9"/>
+<circle class="learn-git-fc learn-git-c2" cx="180" cy="66" r="9"/>
+<circle class="learn-git-fc learn-git-c3" cx="218" cy="66" r="9"/>
+<g class="learn-git-m"><circle cx="268" cy="124" r="11" fill="var(--scene-good, #1f7a4d)"/><path d="M262 124 l4 4 l8 -8" fill="none" stroke="var(--scene-card, #ffffff)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<text class="learn-git-t learn-git-b" x="268" y="160" font-size="16" text-anchor="middle" style="fill: var(--scene-good, #1f7a4d)">merge</text></g>
+<text class="learn-git-t learn-git-b" x="22" y="156" font-size="16">main</text>
+<text class="learn-git-tm learn-git-b" x="180" y="42" font-size="16" text-anchor="middle" style="fill: var(--scene-learn, #0f8a8a)">feature/login</text>
+</svg>

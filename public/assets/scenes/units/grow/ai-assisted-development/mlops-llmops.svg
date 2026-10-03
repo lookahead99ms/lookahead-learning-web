@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A candidate model gets a small share of traffic next to the live model before full release">
+<style>
+.grow-ai-assisted-development-mlops-llmops-{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.grow-ai-assisted-development-mlops-llmops-m{font-family:ui-monospace,Menlo,monospace;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+
+.grow-ai-assisted-development-mlops-llmops-u{animation:grow-ai-assisted-development-mlops-llmops-usr 6s linear infinite}
+@keyframes grow-ai-assisted-development-mlops-llmops-usr{0%{transform:translateX(0);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateX(96px);opacity:0}}
+.grow-ai-assisted-development-mlops-llmops-q{animation:grow-ai-assisted-development-mlops-llmops-usr 6s linear infinite;animation-delay:-3s}
+.grow-ai-assisted-development-mlops-llmops-d{animation:grow-ai-assisted-development-mlops-llmops-dial 6s ease-in-out infinite;animation-delay:-3s;transform-origin:60px 90px}
+@keyframes grow-ai-assisted-development-mlops-llmops-dial{0%{transform:rotate(-30deg)}50%,85%{transform:rotate(10deg)}100%{transform:rotate(-30deg)}}
+</style>
+
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g fill="var(--scene-muted,#536970)"><circle cx="20" cy="90" r="7"/><circle cx="36" cy="70" r="7"/><circle cx="36" cy="110" r="7"/></g>
+<path d="M60 90H112" stroke="var(--scene-ink,#102a33)" stroke-width="3"/>
+<path d="M112 90L160 52H236M112 90L160 128H236" fill="none" stroke="var(--scene-ink,#102a33)" stroke-width="3.5" stroke-linejoin="round"/>
+<path d="M112 90L160 128H236" fill="none" stroke="var(--scene-warn,#a15c00)" stroke-width="3.5" stroke-dasharray="3 7" opacity="0"/>
+<circle cx="112" cy="90" r="10" fill="var(--scene-warn,#a15c00)"/>
+<g><circle class="grow-ai-assisted-development-mlops-llmops-u" cx="124" cy="52" r="6" fill="var(--scene-link,#245a88)"/><circle class="grow-ai-assisted-development-mlops-llmops-q" cx="124" cy="52" r="6" fill="var(--scene-link,#245a88)"/></g>
+<g><circle class="grow-ai-assisted-development-mlops-llmops-u" cx="124" cy="128" r="6" fill="var(--scene-grow,#b8457a)" style="animation-delay:-1.5s"/></g>
+<rect x="240" y="26" width="70" height="52" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-link,#245a88)" stroke-width="2.5"/>
+<text class="grow-ai-assisted-development-mlops-llmops-" x="275" y="57" text-anchor="middle">Live</text>
+<rect x="240" y="102" width="70" height="52" rx="8" fill="var(--scene-card,#fff)" stroke="var(--scene-grow,#b8457a)" stroke-width="2.5"/>
+<text class="grow-ai-assisted-development-mlops-llmops-" x="275" y="133" text-anchor="middle">Canary</text>
+<text class="grow-ai-assisted-development-mlops-llmops-" x="176" y="156" text-anchor="middle" style="fill:var(--scene-grow,#b8457a)">5%</text>
+<g fill="none" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"><rect x="14" y="140" width="76" height="28" rx="6"/></g>
+<g fill="var(--scene-accent,#006c73)"><rect x="22" y="148" width="14" height="12" rx="2"/><rect x="40" y="148" width="14" height="12" rx="2"/><rect x="58" y="148" width="14" height="12" rx="2"/></g>
+</svg>

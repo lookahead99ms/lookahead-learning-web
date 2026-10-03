@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Margot's signed-in transfer passes the checks at the one front door and reaches Tomas, while a request with no sign-in is turned back">
+<style>
+.tech-api-gateway-t{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-ink,#102a33)}
+.tech-api-gateway-mu{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-muted,#536970)}
+.tech-api-gateway-g{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-good,#1f7a4d)}
+.tech-api-gateway-w{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-warn,#a15c00)}
+.tech-api-gateway-b{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-bad,#b3261e)}
+.tech-api-gateway-a{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-accent,#006c73)}
+.tech-api-gateway-mono{font-family:ui-monospace,Menlo,monospace}
+.tech-api-gateway-card{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.tech-api-gateway-soft{fill:var(--scene-accent-soft,#dcefed)}
+.tech-api-gateway-acc{fill:var(--scene-accent,#006c73)}
+.tech-api-gateway-gd{fill:var(--scene-good,#1f7a4d)}
+.tech-api-gateway-wn{fill:var(--scene-warn,#a15c00)}
+.tech-api-gateway-bd{fill:var(--scene-bad,#b3261e)}
+.tech-api-gateway-ink{fill:var(--scene-ink,#102a33)}
+.tech-api-gateway-mf{fill:var(--scene-muted,#536970)}
+.tech-api-gateway-lf{fill:var(--scene-line,#cfdfdc)}
+.tech-api-gateway-cf{fill:var(--scene-card,#fff)}
+.tech-api-gateway-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-api-gateway-sg{fill:none;stroke:var(--scene-good,#1f7a4d);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-api-gateway-sw{fill:none;stroke:var(--scene-warn,#a15c00);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-api-gateway-sb{fill:none;stroke:var(--scene-bad,#b3261e);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-api-gateway-sm{fill:none;stroke:var(--scene-muted,#536970);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-api-gateway-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-api-gateway-si{fill:none;stroke:var(--scene-ink,#102a33);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-api-gateway-pk{fill:var(--scene-accent,#006c73)}
+.tech-api-gateway-p1{animation:tech-api-gateway-p1 8s -3.2s infinite;}
+@keyframes tech-api-gateway-p1{0%,3%{opacity:0;transform:translateX(0)}5%{opacity:1;transform:translateX(0)}30%{opacity:1;transform:translateX(150px)}32%,100%{opacity:0;transform:translateX(150px)}}
+.tech-api-gateway-p2{animation:tech-api-gateway-p2 8s -3.2s infinite;}
+@keyframes tech-api-gateway-p2{0%,52%{opacity:0;transform:translateX(0)}54%{opacity:1;transform:translateX(0)}64%{opacity:1;transform:translateX(26px)}74%{opacity:1;transform:translateX(0)}78%,100%{opacity:0;transform:translateX(0)}}
+.tech-api-gateway-ok{animation:tech-api-gateway-ok 8s -3.2s infinite;}
+@keyframes tech-api-gateway-ok{0%,9%{opacity:0}10%,44%{opacity:1}45%,100%{opacity:0}}
+.tech-api-gateway-no{animation:tech-api-gateway-no 8s -3.2s infinite;}
+@keyframes tech-api-gateway-no{0%,61%{opacity:0}62%,96%{opacity:1}97%,100%{opacity:0}}
+.tech-api-gateway-svc{animation:tech-api-gateway-svc 8s -3.2s infinite;}
+@keyframes tech-api-gateway-svc{0%,29%{stroke:var(--scene-line,#cfdfdc)}32%,44%{stroke:var(--scene-good,#1f7a4d)}48%,100%{stroke:var(--scene-line,#cfdfdc)}}
+</style>
+<circle class="tech-api-gateway-mf" cx="26" cy="34" r="8"/><path class="tech-api-gateway-mf" d="M11 68 a15 15 0 0 1 30 0z"/>
+
+<rect class="tech-api-gateway-card" x="92" y="12" width="56" height="84" rx="8" style="stroke:var(--scene-accent,#006c73);stroke-width:2.5"/>
+<path class="tech-api-gateway-sg" style="stroke-width:3" d="M111 34 l5 5 l10 -11"/><path class="tech-api-gateway-sg" style="stroke-width:3" d="M111 62 l5 5 l10 -11"/>
+<rect class="tech-api-gateway-card tech-api-gateway-svc" x="190" y="34" width="44" height="44" rx="8" style="stroke-width:2.5"/><rect class="tech-api-gateway-acc" x="202" y="46" width="20" height="8" rx="2"/><rect class="tech-api-gateway-lf" x="202" y="60" width="20" height="8" rx="2"/>
+<g class="tech-api-gateway-p1"><rect class="tech-api-gateway-pk" x="46" y="44" width="20" height="14" rx="3"/></g>
+<g class="tech-api-gateway-p2"><rect class="tech-api-gateway-wn" x="46" y="44" width="20" height="14" rx="3"/></g>
+<g class="tech-api-gateway-no"><circle class="tech-api-gateway-bd" cx="80" cy="51" r="11"/><path class="tech-api-gateway-sb" style="stroke:var(--scene-card,#fff);stroke-width:3" d="M76 47 l8 8 m0 -8 l-8 8"/></g>
+<g class="tech-api-gateway-ok"><text class="tech-api-gateway-g" x="120" y="118" font-size="16" font-weight="700" text-anchor="middle">Checks pass ✓</text>
+</g><g class="tech-api-gateway-no"><text class="tech-api-gateway-b" x="120" y="118" font-size="16" font-weight="700" text-anchor="middle">401 · no key</text>
+</g>
+</svg>

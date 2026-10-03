@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" class="notifications-root" role="img" aria-label="A delivery alert lands on a phone once; a retried copy with the same key is stopped before it is sent again.">
+<style>
+.notifications-root text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.notifications-t{fill:var(--scene-ink,#102a33)}
+.notifications-tx{fill:var(--scene-text,#28434a)}
+.notifications-mut{fill:var(--scene-muted,#536970)}
+.notifications-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.notifications-soft{fill:var(--scene-accent-soft,#dcefed)}
+.notifications-acc{fill:var(--scene-accent,#006c73)}
+.notifications-ln{fill:var(--scene-line,#cfdfdc)}
+.notifications-cardf{fill:var(--scene-card,#fff)}
+.notifications-good{fill:var(--scene-good,#1f7a4d)}
+.notifications-warn{fill:var(--scene-warn,#a15c00)}
+.notifications-bad{fill:var(--scene-bad,#b3261e)}
+.notifications-link{fill:var(--scene-link,#245a88)}
+.notifications-out{fill:var(--scene-bubble-out,#d4ecea)}
+.notifications-sk{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.notifications-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.notifications-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:1.5;stroke-dasharray:3 3}
+.notifications-a{animation-duration:7s;animation-iteration-count:infinite;animation-delay:-4.2s}
+.notifications-alert{animation-name:notifications-alert}@keyframes notifications-alert{0%,10%{opacity:0;transform:translateY(-14px)}18%,100%{opacity:1;transform:none}}
+.notifications-ghost{animation-name:notifications-ghost}@keyframes notifications-ghost{0%,32%{opacity:0;transform:translateX(-20px)}38%{opacity:.9}52%,74%{opacity:.9;transform:translateX(0)}82%,100%{opacity:0;transform:translateX(0)}}
+.notifications-stop{animation-name:notifications-stop}@keyframes notifications-stop{0%,52%{opacity:0}56%,80%{opacity:1}86%,100%{opacity:0}}
+.notifications-once{animation-name:notifications-once}@keyframes notifications-once{0%,18%{opacity:0}22%,100%{opacity:1}}
+@media (prefers-reduced-motion: reduce){.notifications-root *{animation-play-state:paused!important}}
+</style>
+<rect x="140" y="6" width="94" height="123" rx="18" class="notifications-box"/>
+<rect x="170" y="14" width="34" height="5" rx="2.5" class="notifications-ln"/>
+<g class="notifications-a notifications-alert"><rect x="148" y="34" width="78" height="42" rx="10" class="notifications-soft" stroke="var(--scene-accent,#006c73)" stroke-width="1.2"/>
+<path d="M164 62 q0 -12 8 -12 q8 0 8 12 z M169 66 h6" class="notifications-sk" style="stroke-width:2"/>
+<rect x="186" y="46" width="30" height="6" rx="3" class="notifications-mut"/><rect x="186" y="58" width="22" height="6" rx="3" class="notifications-ln"/></g>
+<g class="notifications-a notifications-once"><text x="187" y="104" font-size="14" font-weight="700" text-anchor="middle" class="notifications-good">1 alert &#10003;</text></g>
+<g class="notifications-a notifications-ghost"><rect x="8" y="34" width="78" height="42" rx="10" class="notifications-box" stroke-dasharray="4 3"/>
+<path d="M24 62 q0 -12 8 -12 q8 0 8 12 z M29 66 h6" class="notifications-sk" style="stroke-width:2"/>
+<rect x="46" y="46" width="30" height="6" rx="3" class="notifications-mut"/><rect x="46" y="58" width="22" height="6" rx="3" class="notifications-ln"/><path d="M90 55 h18 m-5 -6 l7 6 l-7 6" class="notifications-sk" style="stroke-width:2"/></g>
+<g class="notifications-a notifications-stop"><circle cx="118" cy="55" r="11" class="notifications-bad"/><path d="M113 50 l10 10 m0 -10 l-10 10" stroke="var(--scene-card,#fff)" stroke-width="2.5" stroke-linecap="round"/>
+<text x="47" y="102" font-size="14" font-weight="700" text-anchor="middle" class="notifications-bad">Duplicate</text></g>
+<g transform="translate(12 12)" class="notifications-sk" style="stroke:var(--scene-accent,#006c73);stroke-width:2.2"><circle cx="6" cy="8" r="5"/><path d="M11 8 h14 M20 8 v5 M25 8 v4"/></g>
+</svg>

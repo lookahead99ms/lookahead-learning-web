@@ -1139,3 +1139,72 @@ button[aria-label^='Restart'] {
 .workspace-actions button.action-visualize:hover {
   background: var(--surface-accent);
 }
+.reference-loading {
+  margin: 0;
+  padding: 16px;
+  color: var(--text-subtle);
+  font-size: 14px;
+}
+
+/* Option B: the guided debugger below the story, behind a disclosure (closed by default). */
+.line-debugger {
+  margin-top: 28px;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+.line-debugger-heading {
+  margin: 0;
+  font-size: 1rem;
+}
+.line-debugger-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text-strong);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.line-debugger-toggle:hover {
+  border-color: var(--accent-strong);
+}
+.line-debugger-toggle:focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 2px;
+}
+.line-debugger-chevron {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.16s ease;
+}
+.line-debugger-chevron.open {
+  transform: rotate(180deg);
+}
+.line-debugger-body {
+  margin-top: 16px;
+  min-width: 0;
+}
+.line-debugger-body[hidden] {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .line-debugger-chevron {
+    transition: none;
+  }
+}
+@media (forced-colors: active) {
+  .line-debugger-toggle {
+    border-color: ButtonText;
+  }
+}

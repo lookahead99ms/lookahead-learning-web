@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="An app sends a prompt to an AI service; one answer passes the check, a bad answer is caught and the app falls back to a safe default">
+<style>
+.look-ahead-ai-collaborators-box{fill:var(--scene-card,#fff);stroke:var(--scene-ink,#102a33);stroke-width:1.6}
+.look-ahead-ai-collaborators-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:600;fill:var(--scene-ink,#102a33)}
+.look-ahead-ai-collaborators-wire{stroke:var(--scene-muted,#536970);stroke-width:1.8;fill:none;stroke-dasharray:5 4}
+.look-ahead-ai-collaborators-out{animation:look-ahead-ai-collaborators-out 8s ease-in-out infinite;animation-delay:-3s}
+.look-ahead-ai-collaborators-back{animation:look-ahead-ai-collaborators-back 8s ease-in-out infinite;animation-delay:-3s}
+.look-ahead-ai-collaborators-ok{animation:look-ahead-ai-collaborators-ok 8s ease-in-out infinite;animation-delay:-3s}
+.look-ahead-ai-collaborators-bad{animation:look-ahead-ai-collaborators-bad 8s ease-in-out infinite;animation-delay:-3s}
+.look-ahead-ai-collaborators-fb{animation:look-ahead-ai-collaborators-fb 8s ease-in-out infinite;animation-delay:-3s}
+.look-ahead-ai-collaborators-shown{animation:look-ahead-ai-collaborators-shown 8s ease-in-out infinite;animation-delay:-3s}
+.look-ahead-ai-collaborators-spark{animation:look-ahead-ai-collaborators-spark 2s ease-in-out infinite}
+@keyframes look-ahead-ai-collaborators-out{0%{transform:translate(0,0);opacity:0}4%{opacity:1}20%{transform:translate(120px,0);opacity:1}24%,50%{transform:translate(120px,0);opacity:0}51%{transform:translate(0,0);opacity:0}54%{opacity:1}70%{transform:translate(120px,0);opacity:1}74%,100%{transform:translate(120px,0);opacity:0}}
+@keyframes look-ahead-ai-collaborators-back{0%,22%{transform:translate(0,0);opacity:0}25%{opacity:1}36%{transform:translate(-60px,0);opacity:1}46%{transform:translate(-120px,0);opacity:1}50%,72%{transform:translate(-120px,0);opacity:0;fill:var(--scene-good,#1f7a4d)}73%{transform:translate(0,0);opacity:0;fill:var(--scene-bad,#b3261e)}75%{opacity:1}86%,100%{transform:translate(-60px,0);opacity:0;fill:var(--scene-bad,#b3261e)}}
+@keyframes look-ahead-ai-collaborators-ok{0%,30%{opacity:0}34%,48%{opacity:1}52%,100%{opacity:0}}
+@keyframes look-ahead-ai-collaborators-bad{0%,80%{opacity:0}84%,98%{opacity:1}100%{opacity:0}}
+@keyframes look-ahead-ai-collaborators-fb{0%,84%{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc)}88%,100%{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-accent,#006c73)}}
+@keyframes look-ahead-ai-collaborators-shown{0%,44%{opacity:.2}48%,70%{opacity:1}74%,100%{opacity:.2}}
+@keyframes look-ahead-ai-collaborators-spark{0%,100%{transform:scale(.8);opacity:.6}50%{transform:scale(1.1);opacity:1}}
+</style>
+<rect x="0" y="0" width="320" height="180" rx="12" fill="var(--scene-card,#fff)"/>
+<!-- app window -->
+<rect class="look-ahead-ai-collaborators-box" x="16" y="24" width="90" height="82" rx="8"/>
+<path d="M16 40 H106" stroke="var(--scene-ink,#102a33)" stroke-width="1.4"/>
+<g fill="var(--scene-muted,#536970)"><circle cx="26" cy="32" r="2.6"/><circle cx="35" cy="32" r="2.6"/><circle cx="44" cy="32" r="2.6"/></g>
+<g class="look-ahead-ai-collaborators-shown"><rect x="26" y="52" width="70" height="22" rx="5" fill="var(--scene-accent-soft,#dcefed)"/><path d="M34 63 h40" stroke="var(--scene-accent,#006c73)" stroke-width="3" stroke-linecap="round"/></g>
+<path d="M26 88 h50" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"/>
+<text class="look-ahead-ai-collaborators-t" x="61" y="124" text-anchor="middle">App</text>
+<!-- wires -->
+<path class="look-ahead-ai-collaborators-wire" d="M106 50 H222"/>
+<path class="look-ahead-ai-collaborators-wire" d="M222 82 H106"/>
+<path d="M216 45 l7 5 l-7 5" stroke="var(--scene-muted,#536970)" stroke-width="1.8" fill="none"/>
+<path d="M112 77 l-7 5 l7 5" stroke="var(--scene-muted,#536970)" stroke-width="1.8" fill="none"/>
+<rect class="look-ahead-ai-collaborators-out" x="100" y="44" width="16" height="12" rx="3" fill="var(--scene-ahead,#2f6fb3)"/>
+<rect class="look-ahead-ai-collaborators-back" x="214" y="76" width="16" height="12" rx="3" fill="var(--scene-good,#1f7a4d)"/>
+<!-- check gate -->
+<rect x="150" y="70" width="28" height="24" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="1.6"/>
+<path d="M164 74 l8 3 v6 c0 5 -4 8 -8 9 c-4 -1 -8 -4 -8 -9 v-6z" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="1.4"/>
+<g class="look-ahead-ai-collaborators-ok"><circle cx="164" cy="112" r="10" fill="var(--scene-good,#1f7a4d)"/><path d="M159 112 l4 4 l6 -8" stroke="var(--scene-card,#fff)" stroke-width="2.4" fill="none" stroke-linecap="round"/></g>
+<g class="look-ahead-ai-collaborators-bad"><circle cx="164" cy="112" r="10" fill="var(--scene-bad,#b3261e)"/><path d="M160 108 l8 8 M168 108 l-8 8" stroke="var(--scene-card,#fff)" stroke-width="2.4" stroke-linecap="round"/></g>
+<!-- AI service -->
+<path class="look-ahead-ai-collaborators-box" d="M232 92 a18 18 0 0 1 2 -36 a24 24 0 0 1 44 -4 a18 18 0 0 1 14 40z" style="fill:var(--scene-accent-soft,#dcefed)"/>
+<g class="look-ahead-ai-collaborators-spark" style="transform-origin:262px 74px;transform-box:view-box"><path d="M262 62 l3 9 l9 3 l-9 3 l-3 9 l-3 -9 l-9 -3 l9 -3z" fill="var(--scene-ahead,#2f6fb3)"/></g>
+<text class="look-ahead-ai-collaborators-t" x="262" y="114" text-anchor="middle">AI</text>
+<!-- fallback -->
+<path class="look-ahead-ai-collaborators-wire" d="M164 122 V152 H110"/>
+<rect class="look-ahead-ai-collaborators-fb" x="16" y="136" width="94" height="32" rx="8" stroke-width="1.8"/>
+<text class="look-ahead-ai-collaborators-t" x="63" y="157" text-anchor="middle">Fallback</text>
+</svg>

@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Hoang's card buys in Lisbon and then Bangkok two minutes later; the purchase is flagged and the next one is held">
+<style>
+.tech-flink-t{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-ink,#102a33)}
+.tech-flink-mu{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-muted,#536970)}
+.tech-flink-g{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-good,#1f7a4d)}
+.tech-flink-w{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-warn,#a15c00)}
+.tech-flink-b{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-bad,#b3261e)}
+.tech-flink-a{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-accent,#006c73)}
+.tech-flink-mono{font-family:ui-monospace,Menlo,monospace}
+.tech-flink-card{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.tech-flink-soft{fill:var(--scene-accent-soft,#dcefed)}
+.tech-flink-acc{fill:var(--scene-accent,#006c73)}
+.tech-flink-gd{fill:var(--scene-good,#1f7a4d)}
+.tech-flink-wn{fill:var(--scene-warn,#a15c00)}
+.tech-flink-bd{fill:var(--scene-bad,#b3261e)}
+.tech-flink-ink{fill:var(--scene-ink,#102a33)}
+.tech-flink-mf{fill:var(--scene-muted,#536970)}
+.tech-flink-lf{fill:var(--scene-line,#cfdfdc)}
+.tech-flink-cf{fill:var(--scene-card,#fff)}
+.tech-flink-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-flink-sg{fill:none;stroke:var(--scene-good,#1f7a4d);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-flink-sw{fill:none;stroke:var(--scene-warn,#a15c00);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-flink-sb{fill:none;stroke:var(--scene-bad,#b3261e);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-flink-sm{fill:none;stroke:var(--scene-muted,#536970);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-flink-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-flink-si{fill:none;stroke:var(--scene-ink,#102a33);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-flink-cd{offset-path:path('M38 54 Q120 -10 202 54');offset-rotate:0deg;animation:tech-flink-mv 8s -3.2s infinite}
+@keyframes tech-flink-mv{0%,12%{offset-distance:0%}38%,94%{offset-distance:100%}98%,100%{offset-distance:0%}}
+.tech-flink-al{animation:tech-flink-al 8s -3.2s infinite;}
+@keyframes tech-flink-al{0%,39%{opacity:0}40%,96%{opacity:1}97%,100%{opacity:0}}
+</style>
+<path class="tech-flink-sl" style="stroke-dasharray:4 5;stroke-width:3" d="M38 54 Q120 -10 202 54"/>
+<circle class="tech-flink-acc" cx="38" cy="60" r="8"/><circle class="tech-flink-cf" cx="38" cy="60" r="3"/>
+<circle class="tech-flink-acc" cx="202" cy="60" r="8"/><circle class="tech-flink-cf" cx="202" cy="60" r="3"/>
+<circle class="tech-flink-card" cx="120" cy="22" r="10" style="stroke:var(--scene-ink,#102a33)"/><path class="tech-flink-si" style="stroke-width:2" d="M120 15 v7 l5 3"/>
+<g class="tech-flink-cd"><rect class="tech-flink-wn" x="-10" y="-7" width="20" height="14" rx="3"/><rect class="tech-flink-cf" x="-10" y="-3" width="20" height="3"/></g>
+<text class="tech-flink-t" x="38" y="92" font-size="15" font-weight="700" text-anchor="middle">Lisbon</text>
+<text class="tech-flink-t" x="202" y="92" font-size="15" font-weight="700" text-anchor="middle">Bangkok</text>
+
+<g class="tech-flink-al"><path class="tech-flink-bd" d="M120 74 l16 28 h-32 z"/><rect class="tech-flink-cf" x="118.5" y="83" width="3" height="10" rx="1"/><circle class="tech-flink-cf" cx="120" cy="97" r="2"/><text class="tech-flink-b" x="120" y="126" font-size="16" font-weight="700" text-anchor="middle">Flagged</text>
+</g>
+</svg>

@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A request carrying a token reaches the API and gets 200 OK back; the same request without a token is turned away with 401">
+<style>
+.grow-api-design-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.grow-api-design-tm { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; fill: var(--scene-ink, #102a33); font-weight: 600; }
+.grow-api-design-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.grow-api-design-pill { fill: var(--scene-card, #ffffff); stroke: var(--scene-accent, #006c73); stroke-width: 1.5; }
+.grow-api-design-soft { fill: var(--scene-accent-soft, #dcefed); }
+.grow-api-design-acc { fill: var(--scene-accent, #006c73); }
+.grow-api-design-acc-s { fill: none; stroke: var(--scene-accent, #006c73); stroke-width: 3; }
+.grow-api-design-bar { fill: var(--scene-line, #cfdfdc); }
+.grow-api-design-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 1.5; stroke-dasharray: 4 4; }
+.grow-api-design-head { fill: var(--scene-muted, #536970); }
+.grow-api-design-good { fill: var(--scene-good, #1f7a4d); }
+.grow-api-design-bad { fill: var(--scene-bad, #b3261e); }
+.grow-api-design-key { fill: none; stroke: var(--scene-warn, #a15c00); stroke-width: 2.5; stroke-linecap: round; }
+.grow-api-design-nokey { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 2; stroke-dasharray: 3 3; }
+
+.grow-api-design-req1 { animation: grow-api-design-kf-req1 7s ease-in-out infinite; }
+@keyframes grow-api-design-kf-req1 { 0% { transform: translateX(0px); opacity: 1; } 20%, 46% { transform: translateX(34px); opacity: 1; } 50%, 100% { transform: translateX(34px); opacity: 0; } }
+.grow-api-design-ok { animation: grow-api-design-kf-ok 7s ease-in-out infinite; }
+@keyframes grow-api-design-kf-ok { 0%, 24% { transform: translateX(40px); opacity: 0; } 34% { transform: translateX(0px); opacity: 1; } 48% { transform: translateX(0px); opacity: 1; } 52%, 100% { transform: translateX(0px); opacity: 0; } }
+.grow-api-design-req2 { animation: grow-api-design-kf-req2 7s ease-in-out infinite; }
+@keyframes grow-api-design-kf-req2 { 0%, 50% { transform: translateX(0px); opacity: 0; } 53% { transform: translateX(0px); opacity: 1; } 72%, 96% { transform: translateX(34px); opacity: 1; } 100% { transform: translateX(34px); opacity: 0; } }
+.grow-api-design-deny { animation: grow-api-design-kf-deny 7s ease-in-out infinite; }
+@keyframes grow-api-design-kf-deny { 0%, 74% { transform: translateX(40px); opacity: 0; } 82% { transform: translateX(0px); opacity: 1; } 85% { transform: translateX(6px); } 88% { transform: translateX(0px); } 97% { opacity: 1; } 100% { opacity: 0; } }
+
+.grow-api-design-req1, .grow-api-design-ok, .grow-api-design-req2, .grow-api-design-deny { animation-delay: -3s; }
+@media (prefers-reduced-motion: reduce) { .grow-api-design-req1, .grow-api-design-ok, .grow-api-design-req2, .grow-api-design-deny { animation-play-state: paused; } }
+</style>
+
+<!-- API with contract and lock -->
+<rect class="grow-api-design-box" x="232" y="22" width="76" height="136" rx="10"/>
+<rect class="grow-api-design-soft" x="232" y="22" width="76" height="52" rx="10"/>
+<path class="grow-api-design-acc-s" d="M262 46 V40 a8 8 0 0 1 16 0 V46"/>
+<rect class="grow-api-design-acc" x="257" y="45" width="26" height="20" rx="4"/>
+<rect class="grow-api-design-bar" x="244" y="88" width="52" height="8" rx="4"/>
+<rect class="grow-api-design-bar" x="244" y="104" width="40" height="8" rx="4"/>
+<rect class="grow-api-design-bar" x="244" y="120" width="48" height="8" rx="4"/>
+<rect class="grow-api-design-bar" x="244" y="136" width="30" height="8" rx="4"/>
+
+<!-- wires -->
+<path class="grow-api-design-wire" d="M200 54 H226"/>
+<path class="grow-api-design-head" d="M230 54 L222 49 V59 Z"/>
+<path class="grow-api-design-wire" d="M228 124 H182"/>
+<path class="grow-api-design-head" d="M176 124 L184 119 V129 Z"/>
+
+<!-- request with token -->
+<g class="grow-api-design-req1">
+  <rect class="grow-api-design-pill" x="12" y="38" width="184" height="32" rx="16"/>
+  <circle class="grow-api-design-key" cx="31" cy="54" r="6"/><path class="grow-api-design-key" d="M37 54 H48 M44 54 V59"/>
+  <text class="grow-api-design-tm" x="56" y="59" font-size="16">GET /orders/42</text>
+</g>
+<!-- same request, no token -->
+<g class="grow-api-design-req2">
+  <rect class="grow-api-design-pill" x="12" y="38" width="184" height="32" rx="16"/>
+  <circle class="grow-api-design-nokey" cx="34" cy="54" r="8"/>
+  <text class="grow-api-design-tm" x="56" y="59" font-size="16">GET /orders/42</text>
+</g>
+
+<!-- responses -->
+<g class="grow-api-design-ok">
+  <rect class="grow-api-design-good" x="64" y="108" width="108" height="32" rx="16" opacity=".16"/>
+  <text class="grow-api-design-t" x="118" y="129" font-size="16" text-anchor="middle" style="fill: var(--scene-good, #1f7a4d)">200 OK</text>
+</g>
+<g class="grow-api-design-deny">
+  <rect class="grow-api-design-bad" x="64" y="108" width="108" height="32" rx="16" opacity=".16"/>
+  <text class="grow-api-design-t" x="118" y="129" font-size="16" text-anchor="middle" style="fill: var(--scene-bad, #b3261e)">401</text>
+</g>
+</svg>

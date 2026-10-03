@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Three slow waits run one by one, then overlapped">
+<style>
+
+.learn-python-fundamentals-python-concurrency-runtime-cur{animation:learn-python-fundamentals-python-concurrency-runtime-cur 6s linear infinite;animation-delay:-3s}
+@keyframes learn-python-fundamentals-python-concurrency-runtime-cur{0%{transform:translateX(0)}90%,100%{transform:translateX(240px)}}
+.learn-python-fundamentals-python-concurrency-runtime-bar{transform-box:fill-box;transform-origin:0 50%;animation-duration:6s;animation-iteration-count:infinite;animation-timing-function:linear;animation-delay:-3s}
+.learn-python-fundamentals-python-concurrency-runtime-s1{animation-name:learn-python-fundamentals-python-concurrency-runtime-s1}.learn-python-fundamentals-python-concurrency-runtime-s2{animation-name:learn-python-fundamentals-python-concurrency-runtime-s2}.learn-python-fundamentals-python-concurrency-runtime-s3{animation-name:learn-python-fundamentals-python-concurrency-runtime-s3}.learn-python-fundamentals-python-concurrency-runtime-o{animation-name:learn-python-fundamentals-python-concurrency-runtime-o}
+@keyframes learn-python-fundamentals-python-concurrency-runtime-s1{0%{transform:scaleX(0)}30%,100%{transform:scaleX(1)}}
+@keyframes learn-python-fundamentals-python-concurrency-runtime-s2{0%,30%{transform:scaleX(0)}60%,100%{transform:scaleX(1)}}
+@keyframes learn-python-fundamentals-python-concurrency-runtime-s3{0%,60%{transform:scaleX(0)}90%,100%{transform:scaleX(1)}}
+@keyframes learn-python-fundamentals-python-concurrency-runtime-o{0%{transform:scaleX(0)}30%,100%{transform:scaleX(1)}}
+.learn-python-fundamentals-python-concurrency-runtime-ok{animation:learn-python-fundamentals-python-concurrency-runtime-ok 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes learn-python-fundamentals-python-concurrency-runtime-ok{0%,28%{opacity:0}34%,100%{opacity:1}}
+
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+
+<text x="20" y="28" font-size="16" font-weight="700" font-family="system-ui, sans-serif" fill="var(--scene-ink,#102a33)">one by one</text>
+<rect class="learn-python-fundamentals-python-concurrency-runtime-bar learn-python-fundamentals-python-concurrency-runtime-s1" x="20" y="38" width="80" height="16" rx="4" fill="var(--scene-learn,#0f8a8a)"/>
+<rect class="learn-python-fundamentals-python-concurrency-runtime-bar learn-python-fundamentals-python-concurrency-runtime-s2" x="100" y="38" width="80" height="16" rx="4" fill="var(--scene-grow,#b8457a)"/>
+<rect class="learn-python-fundamentals-python-concurrency-runtime-bar learn-python-fundamentals-python-concurrency-runtime-s3" x="180" y="38" width="80" height="16" rx="4" fill="var(--scene-ahead,#2f6fb3)"/>
+<line x1="20" y1="76" x2="300" y2="76" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<text x="20" y="104" font-size="16" font-weight="700" font-family="system-ui, sans-serif" fill="var(--scene-ink,#102a33)">waits overlap</text>
+<rect class="learn-python-fundamentals-python-concurrency-runtime-bar learn-python-fundamentals-python-concurrency-runtime-o" x="20" y="114" width="80" height="14" rx="4" fill="var(--scene-learn,#0f8a8a)"/>
+<rect class="learn-python-fundamentals-python-concurrency-runtime-bar learn-python-fundamentals-python-concurrency-runtime-o" x="20" y="132" width="80" height="14" rx="4" fill="var(--scene-grow,#b8457a)"/>
+<rect class="learn-python-fundamentals-python-concurrency-runtime-bar learn-python-fundamentals-python-concurrency-runtime-o" x="20" y="150" width="80" height="14" rx="4" fill="var(--scene-ahead,#2f6fb3)"/>
+<path class="learn-python-fundamentals-python-concurrency-runtime-ok" d="M116 140 l9 9 l17 -19" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<g class="learn-python-fundamentals-python-concurrency-runtime-cur"><line x1="20" y1="32" x2="20" y2="168" stroke="var(--scene-warn,#a15c00)" stroke-width="3" stroke-dasharray="5 4"/></g>
+</svg>

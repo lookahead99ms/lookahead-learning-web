@@ -11,10 +11,15 @@ import {
   viewChild,
 } from '@angular/core';
 import { DsaProblemV2, PatternLanguage } from '../../content/content.models';
+import { DsaStory } from '../dsa-story/dsa-story';
+import { DsaStoryLoader } from '../dsa-story/dsa-story-loader';
+import { DsaStoryV1 } from '../dsa-story/dsa-story.model';
 import { focusStudioPattern } from '../../content/focus-studio-pilot';
 import { CodingSolutionTabs } from '../coding-solution-tabs/coding-solution-tabs';
+import { ReferenceLanguageService } from '../reference-language';
 import { GuidedAlgorithmTrace } from '../guided-algorithm-trace/guided-algorithm-trace';
 import { traceSnapshot } from '../guided-algorithm-trace/trace-model';
+import { TracePlayer, traceArrowKey } from '../guided-algorithm-trace/trace-player';
 import { CodeCopyButton } from '../code-copy-button/code-copy-button';
 import { StudioDiagram } from './studio-diagram';
 import { StudioApproach } from './studio-approach';
@@ -41,6 +46,7 @@ import {
     StudioDiagram,
     StudioApproach,
     StudioPatternDiagram,
+    DsaStory,
   ],
   templateUrl: './focus-studio.html',
   styleUrl: './focus-studio.css',
@@ -49,6 +55,25 @@ export class FocusStudio {
   protected readonly Math = Math;
   readonly problem = input.required<DsaProblemV2>();
   readonly initialLanguage = input<PatternLanguage>('java');
+  /** The reference language is remembered for the next problem and for DSA core Learn lessons. */
+  private readonly referenceLanguage = inject(ReferenceLanguageService);
+  private readonly storyLoader = inject(DsaStoryLoader);
+  /**
+   * Option B: the problem's hand-made story, when one is published. Without one (or while it
+   * loads, or if it is malformed) the page keeps the shared visual walkthrough and debugger.
+   */
+  protected readonly story = signal<DsaStoryV1 | null>(null);
+  /** Option B: the line-by-line debugger below the story, closed (and not loaded) at first. */
+  protected readonly lineDebuggerOpen = signal(false);
+  protected readonly lineDebuggerFixtureId = signal<string | null>(null);
+  /** The story's example first, so the debugger steps through the case the story just told. */
+  protected readonly lineDebuggerFixture = computed(() => {
+    const fixtures = this.problem().fixtures;
+    const id = this.lineDebuggerFixtureId() ?? this.story()?.fixtureId;
+    return fixtures.find((item) => item.id === id) ?? fixtures[0];
+  });
+  /** The page-wide reference language (Java, Python or Go) shared with the story. */
+  protected readonly pageLanguage = computed(() => this.referenceLanguage.selected());
   protected readonly state = signal(createStudioState('', 'java'));
   protected readonly current = computed(() => this.state().modes[this.state().mode]);
   protected readonly mode = computed(() => this.state().mode);
@@ -221,8 +246,32 @@ export class FocusStudio {
   private readonly problemRail = viewChild<ElementRef<HTMLElement>>('problemRail');
   private readonly draftEditor = viewChild(CodingSolutionTabs);
   private peekTimer?: ReturnType<typeof setTimeout>;
+  /** Play/Pause for the guided debugger; it advances the same step as Next. */
+  protected readonly player = new TracePlayer(
+    () => ({ step: this.snapshot().step, count: this.snapshot().events.length }),
+    (step) => this.state.update((state) => stepStudio(state, step)),
+  );
 
   constructor() {
+    effect((onCleanup) => {
+      const problem = this.problem();
+      this.story.set(null);
+      this.lineDebuggerOpen.set(false);
+      this.lineDebuggerFixtureId.set(null);
+      const subscription = this.storyLoader.load(problem.id).subscribe((value) =>
+        this.story.set(
+          value && problem.fixtures.some((fixture) => fixture.id === value.fixtureId) ? value : null,
+        ),
+      );
+      onCleanup(() => subscription.unsubscribe());
+    });
+    // A story page uses the full screen width (see question.ts .option-b-page).
+    effect((onCleanup) => {
+      const page = this.host.nativeElement.closest('main');
+      const active = !!this.story();
+      page?.classList.toggle('option-b-page', active);
+      onCleanup(() => page?.classList.remove('option-b-page'));
+    });
     effect(() => {
       this.state.set(createStudioState(this.problem().fixtures[0].id, this.initialLanguage()));
       this.draftLanguage.set(this.initialLanguage());
@@ -272,7 +321,16 @@ export class FocusStudio {
       if (header) observer?.observe(header);
     });
     window.addEventListener('resize', schedule, { passive: true });
+    // Playback belongs to one trace: stop it when the trace or the debugger changes.
+    let playbackTrace = '';
+    effect(() => {
+      const position = this.position();
+      const trace = `${this.problem().id}/${position.fixtureId}/${position.language}/${this.mode()}/${this.current().debugger}`;
+      if (playbackTrace && playbackTrace !== trace) this.player.pause();
+      playbackTrace = trace;
+    });
     this.destroyRef.onDestroy(() => {
+      this.player.pause();
       clearTimeout(this.peekTimer);
       cancelAnimationFrame(frame);
       observer?.disconnect();
@@ -309,8 +367,10 @@ export class FocusStudio {
     if (this.problem().fixtures.some((item) => item.id === fixtureId)) this.patch({ fixtureId });
   }
   protected selectLanguage(language: string): void {
-    if (this.languages.includes(language as PatternLanguage))
+    if (this.languages.includes(language as PatternLanguage)) {
       this.patch({ language: language as PatternLanguage });
+      this.referenceLanguage.select(language);
+    }
   }
   protected selectDraftLanguage(language: string): void {
     if (this.languages.includes(language as PatternLanguage))
@@ -326,6 +386,7 @@ export class FocusStudio {
     this.draftEditor()?.formatStudioCode();
   }
   protected setStep(step: number, event?: Event): void {
+    this.player.pause();
     this.state.update((state) =>
       stepStudio(
         state,
@@ -340,6 +401,14 @@ export class FocusStudio {
           : button;
         target?.focus({ preventScroll: true });
       });
+  }
+  /** Left/Right arrows step the guided debugger while focus is inside it. */
+  protected debuggerKeys(event: KeyboardEvent): void {
+    if (!this.current().debugger) return;
+    const delta = traceArrowKey(event);
+    if (!delta) return;
+    event.preventDefault();
+    this.setStep(this.snapshot().step + delta);
   }
   protected visualStep(delta: number): void {
     if (this.walkthroughKind()) {
@@ -363,6 +432,9 @@ export class FocusStudio {
   protected toggleSolution(): void {
     this.current().revealed ? this.closeReference() : this.patch({ revealed: true });
   }
+  protected toggleLineDebugger(): void {
+    this.lineDebuggerOpen.update((open) => !open);
+  }
   protected toggleDebugger(): void {
     this.current().debugger
       ? this.closeReference()
@@ -370,6 +442,15 @@ export class FocusStudio {
     this.peek.set(false);
   }
   protected visualize(): void {
+    if (this.story()) {
+      this.selectMode('visual');
+      requestAnimationFrame(() =>
+        this.host.nativeElement
+          .querySelector<HTMLButtonElement>('[data-studio-mode="visual"]')
+          ?.focus({ preventScroll: true }),
+      );
+      return;
+    }
     this.state.update(visualizeStudio);
     this.peek.set(false);
     requestAnimationFrame(() =>

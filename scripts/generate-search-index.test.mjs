@@ -390,6 +390,34 @@ test('counts lessons and questions separately from lesson/practice module contai
   assert.deepEqual(course.topicPreview, ['Contracts', 'State', 'Recovery']);
 });
 
+test('passes a learning unit card through to the course locator unchanged', async (context) => {
+  const root = await testRoot(context);
+  await addCourse(root, 'look-ahead');
+  const card = {
+    summary: 'Hold a seat, confirm it after payment, never sell it twice.',
+    level: 'Advanced',
+    minutes: 45,
+    scene: '/content/look-ahead/design-systems/visuals/cards/reservation.svg',
+    sceneAlt: 'A seat turns from held to reserved while a second click is refused.',
+    pillGroups: [
+      { label: 'Patterns', items: ['Contention'] },
+      { label: 'Fundamentals', items: ['Transactions', 'Caching'] },
+    ],
+  };
+  const coursePath = join(root, 'look-ahead/sample/course.json');
+  const course = JSON.parse(await readFile(coursePath, 'utf8'));
+  course.layout = 'learning-map';
+  course.learningUnits = [
+    { id: 'intro', title: 'Intro', description: 'Intro.', theoryModuleId: 'intro', card },
+  ];
+  await writeJson(root, 'look-ahead/sample/course.json', course);
+  await generateSearchIndex(root);
+  const locator = JSON.parse(
+    await readFile(join(root, 'look-ahead/sample/content-locator.json'), 'utf8'),
+  );
+  assert.deepEqual(locator.course.learningUnits[0].card, card);
+});
+
 test('Learn uses authored important topics while Look Ahead retains its module preview', async (context) => {
   const root = await testRoot(context);
   await addCourse(root, 'learn', [' Runtime contracts ', 'Exceptions', 'runtime contracts']);
@@ -434,4 +462,49 @@ test('generates only four authored course highlights and available course links'
       highlights: ['Time complexity', 'Amortized analysis', 'Recurrences', 'Fourth topic'],
     },
   );
+});
+
+test('keeps retired lessons and modules out of Search', async (context) => {
+  const root = await testRoot(context);
+  await addCourse(root, 'learn');
+  const coursePath = join(root, 'learn/sample/course.json');
+  const course = JSON.parse(await readFile(coursePath, 'utf8'));
+  course.modules.push({ id: 'old-module', title: 'Old module', order: 2 });
+  await writeJson(root, 'learn/sample/course.json', course);
+  const base = { difficulty: 'Beginner', tags: [], followUps: [], interviewAnswer: 'Answer.' };
+  await writeJson(root, 'learn/sample/modules/intro.json', [
+    { ...base, id: 'sample-question', moduleId: 'intro', title: 'Kept' },
+    { ...base, id: 'old-lesson', moduleId: 'intro', title: 'Retired lesson' },
+  ]);
+  await writeJson(root, 'learn/sample/modules/old-module.json', [
+    { ...base, id: 'old-practice', moduleId: 'old-module', title: 'Retired module item' },
+  ]);
+  await generateSearchIndex(root, {
+    retiredCourses: [
+      {
+        path: 'learn',
+        courseId: 'sample',
+        lessons: { 'old-lesson': 'sample-question' },
+        modules: { 'old-module': 'intro' },
+        units: {},
+      },
+    ],
+  });
+  const shard = JSON.parse(await readFile(join(root, 'indexes/learn.json'), 'utf8'));
+  const contentIds = shard.documents.map((item) => item.contentId).sort();
+  assert.deepEqual(contentIds, ['intro', 'sample', 'sample-question']);
+});
+
+test('reads the app redirect table for retired ids by default', async () => {
+  const { readRetiredCourses, isRetiredDocument } = await import('./generate-search-index.mjs');
+  const courses = await readRetiredCourses();
+  const document = (contentId, moduleId = 'theory-prefix-state') => ({
+    path: 'learn',
+    courseId: 'algorithmic-patterns',
+    contentId,
+    moduleId,
+  });
+  assert.equal(isRetiredDocument(document('algorithmic-difference-arrays'), courses), true);
+  assert.equal(isRetiredDocument(document('x', 'practice-divide-and-conquer'), courses), true);
+  assert.equal(isRetiredDocument(document('algorithmic-prefix-state'), courses), false);
 });

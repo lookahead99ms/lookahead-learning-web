@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A stream pipeline: items flow along, filter drops the ones that do not match, a lambda maps circles to squares, and collect gathers the results">
+<style>
+.learn-modern-java-tm { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.learn-modern-java-belt { stroke: var(--scene-line, #cfdfdc); stroke-width: 4; stroke-linecap: round; }
+.learn-modern-java-src { fill: var(--scene-card, #ffffff); stroke: var(--scene-muted, #536970); stroke-width: 1.5; }
+.learn-modern-java-stage { fill: var(--scene-accent-soft, #dcefed); stroke: var(--scene-accent, #006c73); stroke-width: 2; }
+.learn-modern-java-lambda { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; fill: var(--scene-accent, #006c73); font-weight: 700; }
+.learn-modern-java-bucket { fill: var(--scene-card, #ffffff); stroke: var(--scene-text, #28434a); stroke-width: 2.5; stroke-linejoin: round; }
+.learn-modern-java-in { fill: var(--scene-learn, #0f8a8a); }
+.learn-modern-java-out { fill: var(--scene-ahead, #2f6fb3); }
+.learn-modern-java-rej { fill: var(--scene-muted, #536970); }
+.learn-modern-java-x { stroke: var(--scene-bad, #b3261e); stroke-width: 3; stroke-linecap: round; }
+
+.learn-modern-java-pass { animation: learn-modern-java-kf-pass 6s linear infinite; }
+@keyframes learn-modern-java-kf-pass { 0% { transform: translate(0, 0); opacity: 0; } 5% { transform: translate(8px, 0); opacity: 1; } 75% { transform: translate(240px, 0); opacity: 1; } 84% { transform: translate(240px, 18px); opacity: 1; } 90%, 100% { transform: translate(240px, 18px); opacity: 0; } }
+.learn-modern-java-circ { animation: learn-modern-java-kf-circ 6s steps(1) infinite; }
+@keyframes learn-modern-java-kf-circ { 0% { opacity: 1; } 50% { opacity: 0; } }
+.learn-modern-java-sq { animation: learn-modern-java-kf-sq 6s steps(1) infinite; }
+@keyframes learn-modern-java-kf-sq { 0% { opacity: 0; } 50% { opacity: 1; } }
+.learn-modern-java-drop { animation: learn-modern-java-kf-drop 6s linear infinite; }
+@keyframes learn-modern-java-kf-drop { 0% { transform: translate(0, 0); opacity: 0; } 5% { transform: translate(8px, 0); opacity: 1; } 24% { transform: translate(70px, 0); opacity: 1; } 38% { transform: translate(70px, 34px); opacity: 1; } 46%, 100% { transform: translate(70px, 34px); opacity: 0; } }
+
+.learn-modern-java-p1 { animation-delay: -2s; }
+.learn-modern-java-p2 { animation-delay: -4s; }
+.learn-modern-java-p3 { animation-delay: -0.6s; }
+.learn-modern-java-r1 { animation-delay: -2.3s; }
+</style>
+
+<g transform="translate(0 -10)">
+<!-- source -->
+<rect class="learn-modern-java-src" x="10" y="56" width="32" height="66" rx="6"/>
+<circle class="learn-modern-java-in" cx="26" cy="71" r="6.5"/><circle class="learn-modern-java-rej" cx="26" cy="89" r="6.5"/><circle class="learn-modern-java-in" cx="26" cy="107" r="6.5"/>
+
+<line class="learn-modern-java-belt" x1="46" y1="89" x2="248" y2="89"/>
+
+<!-- filter stage -->
+<rect class="learn-modern-java-stage" x="90" y="58" width="40" height="62" rx="7"/>
+<path d="M97 70 L110 81 L123 70" fill="none" stroke="var(--scene-accent, #006c73)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<text class="learn-modern-java-tm" x="110" y="152" font-size="16" text-anchor="middle">filter</text>
+
+<!-- map stage -->
+<rect class="learn-modern-java-stage" x="166" y="58" width="42" height="62" rx="7"/>
+<text class="learn-modern-java-lambda" x="187" y="77" font-size="18" text-anchor="middle">λ</text>
+<text class="learn-modern-java-tm" x="187" y="152" font-size="16" text-anchor="middle">map</text>
+
+<!-- collect bucket -->
+<path class="learn-modern-java-bucket" d="M246 74 L254 124 H298 L306 74"/>
+<rect class="learn-modern-java-out" x="259" y="108" width="13" height="13" rx="2"/><rect class="learn-modern-java-out" x="279" y="108" width="13" height="13" rx="2"/>
+<text class="learn-modern-java-tm" x="276" y="152" font-size="16" text-anchor="middle">collect</text>
+
+<!-- items flowing (start x=30, end x=270) -->
+<g class="learn-modern-java-pass learn-modern-java-p1">
+  <circle class="learn-modern-java-in learn-modern-java-circ learn-modern-java-p1" cx="30" cy="89" r="8"/>
+  <rect class="learn-modern-java-out learn-modern-java-sq learn-modern-java-p1" x="23" y="82" width="14" height="14" rx="2"/>
+</g>
+<g class="learn-modern-java-pass learn-modern-java-p2">
+  <circle class="learn-modern-java-in learn-modern-java-circ learn-modern-java-p2" cx="30" cy="89" r="8"/>
+  <rect class="learn-modern-java-out learn-modern-java-sq learn-modern-java-p2" x="23" y="82" width="14" height="14" rx="2"/>
+</g>
+<g class="learn-modern-java-pass learn-modern-java-p3">
+  <circle class="learn-modern-java-in learn-modern-java-circ learn-modern-java-p3" cx="30" cy="89" r="8"/>
+  <rect class="learn-modern-java-out learn-modern-java-sq learn-modern-java-p3" x="23" y="82" width="14" height="14" rx="2"/>
+</g>
+<g class="learn-modern-java-drop learn-modern-java-r1">
+  <circle class="learn-modern-java-rej" cx="30" cy="89" r="8"/>
+  <path class="learn-modern-java-x" d="M41 74 L49 82 M49 74 L41 82"/>
+</g>
+</g>
+</svg>

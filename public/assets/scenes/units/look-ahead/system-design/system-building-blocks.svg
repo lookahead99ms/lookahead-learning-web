@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A request path with an async branch to a queue"><title>A request path with an async branch to a queue</title>
+<style>
+.look-ahead-system-design-system-building-blocks-bg{fill:var(--scene-card,#fff)}
+.look-ahead-system-design-system-building-blocks-t{font-family:system-ui,sans-serif;font-weight:700;font-size:16px;fill:var(--scene-ink,#102a33);text-anchor:middle}
+.look-ahead-system-design-system-building-blocks-n{font-family:system-ui,sans-serif;font-weight:700;font-size:16px;fill:var(--scene-ink,#102a33);text-anchor:middle}
+.look-ahead-system-design-system-building-blocks-soft{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-accent,#006c73);stroke-width:2.5}
+.look-ahead-system-design-system-building-blocks-card{fill:var(--scene-card,#fff);stroke:var(--scene-ink,#102a33);stroke-width:2.5}
+.look-ahead-system-design-system-building-blocks-line{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:3;stroke-linecap:round}
+.look-ahead-system-design-system-building-blocks-dash{fill:none;stroke:var(--scene-muted,#536970);stroke-width:2.5;stroke-dasharray:5 5;stroke-linecap:round}
+
+.look-ahead-system-design-system-building-blocks-node{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-accent,#006c73);stroke-width:2.5}
+.look-ahead-system-design-system-building-blocks-req{fill:var(--scene-ahead,#2f6fb3);animation:6s linear -1.2s infinite look-ahead-system-design-system-building-blocks-go}
+.look-ahead-system-design-system-building-blocks-job{fill:var(--scene-grow,#b8457a);animation:6s linear -3s infinite look-ahead-system-design-system-building-blocks-jb}
+.look-ahead-system-design-system-building-blocks-job2{animation-name:look-ahead-system-design-system-building-blocks-jb2}
+.look-ahead-system-design-system-building-blocks-slot{fill:none;stroke:var(--scene-muted,#536970);stroke-width:2.5;stroke-dasharray:4 3}
+.look-ahead-system-design-system-building-blocks-gear{fill:none;stroke:var(--scene-learn,#0f8a8a);stroke-width:6;stroke-dasharray:4 3.5;transform-origin:292px 131px;animation:4s linear infinite look-ahead-system-design-system-building-blocks-rot}
+@keyframes look-ahead-system-design-system-building-blocks-go{0%,5%{transform:translateX(0);opacity:0}8%{opacity:1}40%{transform:translateX(290px);opacity:1}43%,100%{transform:translateX(290px);opacity:0}}
+@keyframes look-ahead-system-design-system-building-blocks-jb{0%,35%{transform:translate(0,0);opacity:0}38%{opacity:1;transform:translate(0,0)}60%{transform:translate(0,0);opacity:1}85%{transform:translate(81px,0);opacity:1}90%,100%{transform:translate(81px,0);opacity:0}}
+@keyframes look-ahead-system-design-system-building-blocks-jb2{0%,45%{transform:translate(0,0);opacity:0}48%{opacity:1;transform:translate(0,0)}85%{transform:translate(27px,0);opacity:1}90%,100%{transform:translate(27px,0);opacity:0}}
+@keyframes look-ahead-system-design-system-building-blocks-rot{to{transform:rotate(360deg)}}
+</style>
+<rect class="look-ahead-system-design-system-building-blocks-bg" width="320" height="180"/>
+<text class="look-ahead-system-design-system-building-blocks-t" x="160" y="22">Request path</text>
+<line class="look-ahead-system-design-system-building-blocks-line" x1="10" y1="52" x2="310" y2="52"/>
+<rect class="look-ahead-system-design-system-building-blocks-node" x="40" y="36" width="52" height="32" rx="8"/><rect class="look-ahead-system-design-system-building-blocks-node" x="134" y="36" width="52" height="32" rx="8"/><rect class="look-ahead-system-design-system-building-blocks-node" x="228" y="36" width="52" height="32" rx="8"/>
+<circle class="look-ahead-system-design-system-building-blocks-req" cx="10" cy="52" r="7"/>
+<path class="look-ahead-system-design-system-building-blocks-dash" d="M160 70V131H184"/>
+<rect class="look-ahead-system-design-system-building-blocks-slot" x="186" y="119" width="24" height="24" rx="4"/><rect class="look-ahead-system-design-system-building-blocks-slot" x="213" y="119" width="24" height="24" rx="4"/><rect class="look-ahead-system-design-system-building-blocks-slot" x="240" y="119" width="24" height="24" rx="4"/>
+<rect class="look-ahead-system-design-system-building-blocks-job" x="189" y="122" width="18" height="18" rx="3"/><rect class="look-ahead-system-design-system-building-blocks-job look-ahead-system-design-system-building-blocks-job2" x="189" y="122" width="18" height="18" rx="3"/>
+<circle class="look-ahead-system-design-system-building-blocks-gear" cx="292" cy="131" r="11"/>
+<text class="look-ahead-system-design-system-building-blocks-t" x="225" y="168">Queue</text>
+</svg>

@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="difference arrays">
+<style>
+.learn-algorithmic-patterns-difference-arrays-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}.learn-algorithmic-patterns-difference-arrays-w{font:700 16px system-ui,sans-serif;fill:#fff}
+@keyframes learn-algorithmic-patterns-difference-arrays-s3{0%{opacity:0}42.5%{opacity:0}44%{opacity:1}94%{opacity:1}97%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-difference-arrays-s3{animation:learn-algorithmic-patterns-difference-arrays-s3 7s linear infinite;animation-delay:-3.8s;}
+@keyframes learn-algorithmic-patterns-difference-arrays-s4{0%{opacity:0}51.5%{opacity:0}53%{opacity:1}94%{opacity:1}97%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-difference-arrays-s4{animation:learn-algorithmic-patterns-difference-arrays-s4 7s linear infinite;animation-delay:-3.8s;}
+@keyframes learn-algorithmic-patterns-difference-arrays-s5{0%{opacity:0}60.5%{opacity:0}62%{opacity:1}94%{opacity:1}97%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-difference-arrays-s5{animation:learn-algorithmic-patterns-difference-arrays-s5 7s linear infinite;animation-delay:-3.8s;}
+@keyframes learn-algorithmic-patterns-difference-arrays-s6{0%{opacity:0}69.5%{opacity:0}71%{opacity:1}94%{opacity:1}97%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-difference-arrays-s6{animation:learn-algorithmic-patterns-difference-arrays-s6 7s linear infinite;animation-delay:-3.8s;}
+@keyframes learn-algorithmic-patterns-difference-arrays-f1{0%{transform:translateY(-18px);opacity:0}8.5%{transform:translateY(-18px);opacity:0}10%{transform:translateY(0);opacity:1}94%{transform:translateY(0);opacity:1}97%{transform:translateY(-18px);opacity:0}100%{transform:translateY(-18px);opacity:0}}
+.learn-algorithmic-patterns-difference-arrays-f1{animation:learn-algorithmic-patterns-difference-arrays-f1 7s ease-out infinite;animation-delay:-3.8s;}
+@keyframes learn-algorithmic-patterns-difference-arrays-f2{0%{transform:translateY(-18px);opacity:0}22.5%{transform:translateY(-18px);opacity:0}24%{transform:translateY(0);opacity:1}94%{transform:translateY(0);opacity:1}97%{transform:translateY(-18px);opacity:0}100%{transform:translateY(-18px);opacity:0}}
+.learn-algorithmic-patterns-difference-arrays-f2{animation:learn-algorithmic-patterns-difference-arrays-f2 7s ease-out infinite;animation-delay:-3.8s;}
+.learn-algorithmic-patterns-difference-arrays-bg{fill:var(--scene-card,#fff)}
+</style>
+<rect class="learn-algorithmic-patterns-difference-arrays-bg" width="320" height="180" rx="12"/>
+<rect x="14" y="84" width="26" height="34" rx="5" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<rect x="43" y="84" width="26" height="34" rx="5" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<rect x="72" y="84" width="26" height="34" rx="5" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<rect x="101" y="84" width="26" height="34" rx="5" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<rect x="130" y="84" width="26" height="34" rx="5" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<rect x="159" y="84" width="26" height="34" rx="5" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<rect x="188" y="84" width="26" height="34" rx="5" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<rect x="217" y="84" width="26" height="34" rx="5" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<rect x="246" y="84" width="26" height="34" rx="5" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<rect x="275" y="84" width="26" height="34" rx="5" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<rect class="learn-algorithmic-patterns-difference-arrays-s3" x="101" y="84" width="26" height="34" rx="5" fill="var(--scene-accent,#006c73)"/>
+<rect class="learn-algorithmic-patterns-difference-arrays-s4" x="130" y="84" width="26" height="34" rx="5" fill="var(--scene-accent,#006c73)"/>
+<rect class="learn-algorithmic-patterns-difference-arrays-s5" x="159" y="84" width="26" height="34" rx="5" fill="var(--scene-accent,#006c73)"/>
+<rect class="learn-algorithmic-patterns-difference-arrays-s6" x="188" y="84" width="26" height="34" rx="5" fill="var(--scene-accent,#006c73)"/>
+<g class="learn-algorithmic-patterns-difference-arrays-f1"><line x1="114" y1="50" x2="114" y2="84" stroke="var(--scene-good,#1f7a4d)" stroke-width="3"/><rect x="96" y="36" width="36" height="22" rx="5" fill="var(--scene-good,#1f7a4d)"/><text class="learn-algorithmic-patterns-difference-arrays-w" x="114" y="52" text-anchor="middle">+1</text></g>
+<g class="learn-algorithmic-patterns-difference-arrays-f2"><line x1="230" y1="50" x2="230" y2="84" stroke="var(--scene-bad,#b3261e)" stroke-width="3"/><rect x="212" y="36" width="36" height="22" rx="5" fill="var(--scene-bad,#b3261e)"/><text class="learn-algorithmic-patterns-difference-arrays-w" x="230" y="52" text-anchor="middle">−1</text></g>
+<line x1="14" y1="122" x2="304" y2="122" stroke="var(--scene-ink,#102a33)" stroke-width="0"/>
+<text class="learn-algorithmic-patterns-difference-arrays-t" x="160" y="20" text-anchor="middle">mark the two ends</text>
+<text class="learn-algorithmic-patterns-difference-arrays-t" x="160" y="156" text-anchor="middle">then sweep once</text>
+</svg>

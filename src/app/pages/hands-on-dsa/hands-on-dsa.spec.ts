@@ -243,14 +243,15 @@ describe('Hands-On DSA route contracts', () => {
     expect(harness.routeNativeElement!.querySelector('.ranked-problem-number')).toBeNull();
   });
 
-  it('takes Practice to its pattern, opens a problem, and returns via the DSA breadcrumb', async () => {
+  it('opens a pattern from the course card, opens a problem, and returns via the DSA breadcrumb', async () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/learn/algorithmic-patterns', Course);
-    const practice = harness.routeNativeElement!.querySelector<HTMLAnchorElement>(
-      '.learning-action.practice',
-    )!;
-    practice.click();
-    await harness.fixture.whenStable();
+    // Course pages show one card per unit; a unit with a lesson opens the lesson,
+    // and pattern practice is reached through the filtered Hands-On DSA library.
+    const card = harness.routeNativeElement!.querySelector<HTMLAnchorElement>('#unit-hashing')!;
+    expect(card.getAttribute('href')).toBe('/learn/algorithmic-patterns/hashing-lesson');
+    expect(harness.routeNativeElement!.querySelector('.learning-action.practice')).toBeNull();
+    await harness.navigateByUrl('/learn/hands-on-dsa?pattern=algorithmic-patterns:hashing');
     harness.detectChanges();
     expect(TestBed.inject(Router).url).toBe(
       '/learn/hands-on-dsa?pattern=algorithmic-patterns:hashing',
@@ -814,9 +815,7 @@ describe('Hands-On DSA route contracts', () => {
     content.getHandsOnDsaIndex.mockReturnValueOnce(throwError(() => new Error('404')));
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/learn/hands-on-dsa', HandsOnDsa);
-    expect(harness.routeNativeElement!.textContent).toContain(
-      'We couldn’t load this content',
-    );
+    expect(harness.routeNativeElement!.textContent).toContain('We couldn’t load this content');
     expect(harness.routeNativeElement!.querySelector('.pattern-groups')).toBeNull();
     expect(
       harness.routeNativeElement!.querySelector<HTMLButtonElement>('.surprise-problem')!.disabled,

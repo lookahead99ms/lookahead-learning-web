@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="bit manipulation">
+<style>
+.learn-algorithmic-patterns-bit-manipulation-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}.learn-algorithmic-patterns-bit-manipulation-w{font:700 16px system-ui,sans-serif;fill:#fff}
+@keyframes learn-algorithmic-patterns-bit-manipulation-b0{0%{opacity:0}4.5%{opacity:0}6%{opacity:1}94%{opacity:1}97%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-bit-manipulation-b0{animation:learn-algorithmic-patterns-bit-manipulation-b0 8s linear infinite;animation-delay:-4s;}
+@keyframes learn-algorithmic-patterns-bit-manipulation-b4{0%{opacity:0}40.5%{opacity:0}42%{opacity:1}94%{opacity:1}97%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-bit-manipulation-b4{animation:learn-algorithmic-patterns-bit-manipulation-b4 8s linear infinite;animation-delay:-4s;}
+@keyframes learn-algorithmic-patterns-bit-manipulation-b5{0%{opacity:0}49.5%{opacity:0}51%{opacity:1}94%{opacity:1}97%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-bit-manipulation-b5{animation:learn-algorithmic-patterns-bit-manipulation-b5 8s linear infinite;animation-delay:-4s;}
+@keyframes learn-algorithmic-patterns-bit-manipulation-b6{0%{opacity:0}58.5%{opacity:0}60%{opacity:1}94%{opacity:1}97%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-bit-manipulation-b6{animation:learn-algorithmic-patterns-bit-manipulation-b6 8s linear infinite;animation-delay:-4s;}
+@keyframes learn-algorithmic-patterns-bit-manipulation-sc{0%{transform:translateX(0)}6%{transform:translateX(0)}78%{transform:translateX(238px)}100%{transform:translateX(238px)}}
+.learn-algorithmic-patterns-bit-manipulation-sc{animation:learn-algorithmic-patterns-bit-manipulation-sc 8s linear infinite;animation-delay:-4s;}
+.learn-algorithmic-patterns-bit-manipulation-bg{fill:var(--scene-card,#fff)}
+</style>
+<rect class="learn-algorithmic-patterns-bit-manipulation-bg" width="320" height="180" rx="12"/>
+<rect x="22" y="18" width="30" height="32" rx="6" fill="var(--scene-ahead,#2f6fb3)" stroke="var(--scene-ahead,#2f6fb3)" stroke-width="3"/>
+<rect x="56" y="18" width="30" height="32" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-ahead,#2f6fb3)" stroke-width="3"/>
+<rect x="90" y="18" width="30" height="32" rx="6" fill="var(--scene-ahead,#2f6fb3)" stroke="var(--scene-ahead,#2f6fb3)" stroke-width="3"/>
+<rect x="124" y="18" width="30" height="32" rx="6" fill="var(--scene-ahead,#2f6fb3)" stroke="var(--scene-ahead,#2f6fb3)" stroke-width="3"/>
+<rect x="158" y="18" width="30" height="32" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-ahead,#2f6fb3)" stroke-width="3"/>
+<rect x="192" y="18" width="30" height="32" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-ahead,#2f6fb3)" stroke-width="3"/>
+<rect x="226" y="18" width="30" height="32" rx="6" fill="var(--scene-ahead,#2f6fb3)" stroke="var(--scene-ahead,#2f6fb3)" stroke-width="3"/>
+<rect x="260" y="18" width="30" height="32" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-ahead,#2f6fb3)" stroke-width="3"/>
+<rect x="22" y="60" width="30" height="32" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-grow,#b8457a)" stroke-width="3"/>
+<rect x="56" y="60" width="30" height="32" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-grow,#b8457a)" stroke-width="3"/>
+<rect x="90" y="60" width="30" height="32" rx="6" fill="var(--scene-grow,#b8457a)" stroke="var(--scene-grow,#b8457a)" stroke-width="3"/>
+<rect x="124" y="60" width="30" height="32" rx="6" fill="var(--scene-grow,#b8457a)" stroke="var(--scene-grow,#b8457a)" stroke-width="3"/>
+<rect x="158" y="60" width="30" height="32" rx="6" fill="var(--scene-grow,#b8457a)" stroke="var(--scene-grow,#b8457a)" stroke-width="3"/>
+<rect x="192" y="60" width="30" height="32" rx="6" fill="var(--scene-grow,#b8457a)" stroke="var(--scene-grow,#b8457a)" stroke-width="3"/>
+<rect x="226" y="60" width="30" height="32" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-grow,#b8457a)" stroke-width="3"/>
+<rect x="260" y="60" width="30" height="32" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-grow,#b8457a)" stroke-width="3"/>
+<rect x="22" y="102" width="30" height="32" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<rect class="learn-algorithmic-patterns-bit-manipulation-b0" x="22" y="102" width="30" height="32" rx="6" fill="var(--scene-good,#1f7a4d)"/>
+<rect x="56" y="102" width="30" height="32" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<rect x="90" y="102" width="30" height="32" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<rect x="124" y="102" width="30" height="32" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<rect x="158" y="102" width="30" height="32" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<rect class="learn-algorithmic-patterns-bit-manipulation-b4" x="158" y="102" width="30" height="32" rx="6" fill="var(--scene-good,#1f7a4d)"/>
+<rect x="192" y="102" width="30" height="32" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<rect class="learn-algorithmic-patterns-bit-manipulation-b5" x="192" y="102" width="30" height="32" rx="6" fill="var(--scene-good,#1f7a4d)"/>
+<rect x="226" y="102" width="30" height="32" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<rect class="learn-algorithmic-patterns-bit-manipulation-b6" x="226" y="102" width="30" height="32" rx="6" fill="var(--scene-good,#1f7a4d)"/>
+<rect x="260" y="102" width="30" height="32" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<rect class="learn-algorithmic-patterns-bit-manipulation-sc" x="19" y="12" width="36" height="128" rx="8" fill="none" stroke="var(--scene-warn,#a15c00)" stroke-width="3.5"/>
+<text class="learn-algorithmic-patterns-bit-manipulation-t" x="160" y="168" text-anchor="middle">XOR flips bits</text>
+</svg>

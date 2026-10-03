@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Lookup finds own keys; inherited names are not application keys">
+<style>
+.learn-javascript-foundations-objects-prototypes-collections-t{font-family:system-ui,sans-serif;font-size:14px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-javascript-foundations-objects-prototypes-collections-m{font-family:ui-monospace,Menlo,monospace;font-size:18px;font-weight:700;fill:#fff}
+.learn-javascript-foundations-objects-prototypes-collections-q{animation:learn-javascript-foundations-objects-prototypes-collections-qq 6s ease-in-out infinite;animation-delay:-4.2s}
+@keyframes learn-javascript-foundations-objects-prototypes-collections-qq{0%,35%{transform:translateY(0)}55%,85%{transform:translateY(-62px)}100%{transform:translateY(0)}}
+.learn-javascript-foundations-objects-prototypes-collections-o{animation:learn-javascript-foundations-objects-prototypes-collections-oo 6s steps(1) infinite;animation-delay:-4.2s}
+@keyframes learn-javascript-foundations-objects-prototypes-collections-oo{0%{opacity:1}50%{opacity:0}100%{opacity:0}}
+.learn-javascript-foundations-objects-prototypes-collections-n{animation:learn-javascript-foundations-objects-prototypes-collections-nn 6s steps(1) infinite;animation-delay:-4.2s}
+@keyframes learn-javascript-foundations-objects-prototypes-collections-nn{0%{opacity:0}50%{opacity:1}100%{opacity:1}}
+</style>
+<rect width="240" height="135" fill="var(--scene-card,#fff)"/>
+<rect x="10" y="6" width="110" height="30" rx="8" fill="var(--scene-card,#fff)" stroke="var(--scene-warn,#a15c00)" stroke-width="3" stroke-dasharray="7 5"/>
+<text class="learn-javascript-foundations-objects-prototypes-collections-t" x="65" y="26" text-anchor="middle" style="fill:var(--scene-warn,#a15c00)">inherited</text>
+<path d="M65 36V46" stroke="var(--scene-warn,#a15c00)" stroke-width="3" stroke-dasharray="4 4"/>
+<rect x="10" y="46" width="110" height="80" rx="10" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<rect x="20" y="58" width="42" height="24" rx="6" fill="var(--scene-good,#1f7a4d)"/><rect x="68" y="58" width="42" height="24" rx="6" fill="var(--scene-link,#245a88)"/>
+<rect x="20" y="90" width="42" height="24" rx="6" fill="var(--scene-learn,#0f8a8a)"/><rect x="68" y="90" width="42" height="24" rx="6" fill="var(--scene-grow,#b8457a)"/>
+<path d="M138 95H120" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<g class="learn-javascript-foundations-objects-prototypes-collections-q"><circle cx="150" cy="95" r="12" fill="var(--scene-accent,#006c73)"/><text class="learn-javascript-foundations-objects-prototypes-collections-m" x="150" y="101" text-anchor="middle">?</text></g>
+<g class="learn-javascript-foundations-objects-prototypes-collections-o"><text class="learn-javascript-foundations-objects-prototypes-collections-t" x="172" y="100" style="fill:var(--scene-good,#1f7a4d)">own key</text></g>
+<g class="learn-javascript-foundations-objects-prototypes-collections-n"><text class="learn-javascript-foundations-objects-prototypes-collections-t" x="170" y="38" style="fill:var(--scene-bad,#b3261e)">not yours</text></g>
+</svg>

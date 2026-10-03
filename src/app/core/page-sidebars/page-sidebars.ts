@@ -22,6 +22,10 @@ export interface PageSectionLink {
   id: string;
   label: string;
   target: HTMLElement;
+  /** DLV-408: a lesson stage heading (Brief … Keep) that groups the links after it. */
+  level?: 'stage';
+  /** The stage this link belongs to, from the nearest [data-sidebar-stage]. */
+  group?: string;
 }
 
 /** Only rendered page content can become navigation. Hidden dialogs and cards are not an outline. */
@@ -48,6 +52,7 @@ export function visibleSidebarTarget(element: HTMLElement): boolean {
 export function collectPageSections(main: HTMLElement): PageSectionLink[] {
   const links: PageSectionLink[] = [];
   const seen = new Set<string>();
+  let titleLink: PageSectionLink | null = null;
   const candidates = main.querySelectorAll<HTMLElement>('h1, h2, [data-sidebar-label]');
   for (const element of candidates) {
     if (!visibleSidebarTarget(element)) continue;
@@ -72,9 +77,28 @@ export function collectPageSections(main: HTMLElement): PageSectionLink[] {
     }
     if (links.some((link) => link.id === target.id)) continue;
     seen.add(label);
-    links.push({ id: target.id, label: element.tagName === 'H1' ? 'Overview' : label, target });
+    const level = element.dataset['sidebarLevel'] === 'stage' ? ('stage' as const) : undefined;
+    const group = element.closest<HTMLElement>('[data-sidebar-stage]')?.dataset['sidebarStage'];
+    const link: PageSectionLink = {
+      id: target.id,
+      label: element.tagName === 'H1' ? 'Overview' : label,
+      target,
+      ...(level ? { level } : {}),
+      ...(group ? { group } : {}),
+    };
+    if (element.tagName === 'H1') titleLink ??= link;
+    links.push(link);
   }
-  return links;
+  // A lesson with its own Overview stage does not need a second "Overview" link for the title.
+  const overviewStage = links.some((link) => link.level === 'stage' && link.label === 'Overview');
+  return overviewStage ? links.filter((link) => link !== titleLink) : links;
+}
+
+/** The sidebar heading: an authored short title (data-sidebar-title) or the page's h1 text. */
+export function sidebarPageTitle(main: HTMLElement): string {
+  const heading = main.querySelector<HTMLElement>('h1');
+  const short = heading?.dataset['sidebarTitle']?.replace(/\s+/g, ' ').trim();
+  return short || heading?.textContent?.replace(/\s+/g, ' ').trim() || 'This page';
 }
 
 export function canDockSidebar(space: number, width = 224): boolean {
@@ -95,6 +119,14 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
   private readonly zone = inject(NgZone);
   protected readonly context = inject(PageSidebarContext);
   protected readonly sections = signal<PageSectionLink[]>([]);
+  /** Stage-grouped pages show every stage but only the current stage's sections. */
+  protected readonly outline = computed(() => {
+    const links = this.sections();
+    if (!links.some((link) => link.level === 'stage')) return links;
+    const current = links.find((link) => link.id === this.currentId());
+    const active = current?.group ?? links.find((link) => link.level === 'stage')?.group;
+    return links.filter((link) => link.level === 'stage' || !link.group || link.group === active);
+  });
   protected readonly support = signal<PageSectionLink[]>([]);
   protected readonly catalogGroups = computed(() => this.context.value()?.groups ?? []);
   protected readonly expandedGroups = signal<ReadonlySet<string>>(new Set());
@@ -127,6 +159,8 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
   protected readonly leftInset = signal(6);
   protected readonly rightInset = signal(6);
   protected readonly currentId = signal('');
+  /** The content column (viewport px) that an in-flow signature strip lines up with. */
+  protected readonly signatureColumn = signal<{ left: number; width: number } | null>(null);
   protected readonly catalogOverviewActive = computed(() =>
     this.catalogGroups().length > 0 &&
     !this.catalogGroups().some((group) => group.sectionId === this.currentId()),
@@ -274,6 +308,7 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
     if (excluded || !main) {
       main?.removeAttribute('data-sidebar-columns');
       this.clearEdgeClearance();
+      this.signatureColumn.set(null);
       this.leftOpen.set(false);
       this.rightOpen.set(false);
       this.sections.set([]);
@@ -298,9 +333,7 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
             ),
         ),
       );
-      this.title.set(
-        main.querySelector('h1')?.textContent?.replace(/\s+/g, ' ').trim() ?? 'This page',
-      );
+      this.title.set(sidebarPageTitle(main));
     }
     const header = this.document.querySelector('app-platform-header')?.getBoundingClientRect();
     const top = Math.max(0, header?.bottom ?? 76) + 8;
@@ -321,6 +354,14 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
       main,
       !this.authorNavigation() &&
         ((this.showLeft() && bounds.left < 54) || (this.showRight() && width - bounds.right < 54)),
+    );
+    const column =
+      main.querySelector<HTMLElement>('[data-signature-column]') ?? reader ?? main;
+    const columnBounds = column.getBoundingClientRect();
+    this.signatureColumn.set(
+      columnBounds.width > 0
+        ? { left: Math.max(0, Math.round(columnBounds.left)), width: Math.round(columnBounds.width) }
+        : null,
     );
     const rtl = this.document.defaultView!.getComputedStyle(main).direction === 'rtl';
     const startSpace = rtl ? width - bounds.right : bounds.left;

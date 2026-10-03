@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Linh's payment is copied from the leader to a follower, the leader crashes, and the follower takes over still holding the payment">
+<style>
+.replication-failover-t{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-ink,#102a33)}
+.replication-failover-mu{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-muted,#536970)}
+.replication-failover-g{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-good,#1f7a4d)}
+.replication-failover-w{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-warn,#a15c00)}
+.replication-failover-b{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-bad,#b3261e)}
+.replication-failover-a{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-accent,#006c73)}
+.replication-failover-mono{font-family:ui-monospace,Menlo,monospace}
+.replication-failover-card{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.replication-failover-soft{fill:var(--scene-accent-soft,#dcefed)}
+.replication-failover-acc{fill:var(--scene-accent,#006c73)}
+.replication-failover-gd{fill:var(--scene-good,#1f7a4d)}
+.replication-failover-wn{fill:var(--scene-warn,#a15c00)}
+.replication-failover-bd{fill:var(--scene-bad,#b3261e)}
+.replication-failover-ink{fill:var(--scene-ink,#102a33)}
+.replication-failover-mf{fill:var(--scene-muted,#536970)}
+.replication-failover-lf{fill:var(--scene-line,#cfdfdc)}
+.replication-failover-cf{fill:var(--scene-card,#fff)}
+.replication-failover-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.replication-failover-sg{fill:none;stroke:var(--scene-good,#1f7a4d);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.replication-failover-sw{fill:none;stroke:var(--scene-warn,#a15c00);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.replication-failover-sb{fill:none;stroke:var(--scene-bad,#b3261e);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.replication-failover-sm{fill:none;stroke:var(--scene-muted,#536970);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.replication-failover-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.replication-failover-si{fill:none;stroke:var(--scene-ink,#102a33);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.replication-failover-flow{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2.5;stroke-dasharray:3 7;stroke-linecap:round;animation:replication-failover-flow 1s linear infinite}
+@keyframes replication-failover-flow{to{stroke-dashoffset:-10}}
+.replication-failover-ca{animation:replication-failover-ca 8s -3.2s infinite;}
+@keyframes replication-failover-ca{0%,8%{opacity:0;transform:translate(0,0)}10%{opacity:1}24%{opacity:1;transform:translate(112px,-28px)}26%,100%{opacity:0;transform:translate(112px,-28px)}}
+.replication-failover-cb{animation:replication-failover-cb 8s -3.2s infinite;}
+@keyframes replication-failover-cb{0%,8%{opacity:0;transform:translate(0,0)}10%{opacity:1}24%{opacity:1;transform:translate(112px,28px)}26%,100%{opacity:0;transform:translate(112px,28px)}}
+.replication-failover-fc{animation:replication-failover-fc 8s -3.2s infinite;}
+@keyframes replication-failover-fc{0%,25%{opacity:0}26%,100%{opacity:1}}
+.replication-failover-dead{animation:replication-failover-dead 8s -3.2s infinite;}
+@keyframes replication-failover-dead{0%,37%{opacity:0}38%,100%{opacity:1}}
+.replication-failover-crown{animation:replication-failover-crown 8s -3.2s infinite;}
+@keyframes replication-failover-crown{0%,55%{opacity:0}56%,100%{opacity:1}}
+.replication-failover-l1{animation:replication-failover-l1 8s -3.2s infinite;}
+@keyframes replication-failover-l1{0%,37%{opacity:0}38%,56%{opacity:1}57%,100%{opacity:0}}
+.replication-failover-l2{animation:replication-failover-l2 8s -3.2s infinite;}
+@keyframes replication-failover-l2{0%,56%{opacity:0}57%,76%{opacity:1}77%,100%{opacity:0}}
+.replication-failover-l3{animation:replication-failover-l3 8s -3.2s infinite;}
+@keyframes replication-failover-l3{0%,76%{opacity:0}77%,100%{opacity:1}}
+</style>
+<g><rect class="replication-failover-card" x="8" y="38" width="64" height="44" rx="8" style="stroke:var(--scene-accent,#006c73);stroke-width:2"/><rect class="replication-failover-lf" x="16" y="44" width="30" height="5" rx="2"/><g class=""><circle class="replication-failover-wn" cx="40" cy="64" r="8"/><circle class="replication-failover-sw" style="stroke:var(--scene-card,#fff);stroke-width:1.6" cx="40" cy="64" r="4.5"/></g></g>
+<g class="replication-failover-dead"><rect class="replication-failover-bd" x="8" y="38" width="64" height="44" rx="8" style="opacity:.25"/><path class="replication-failover-sb" style="stroke-width:4" d="M28 48 l24 24 m0 -24 l-24 24"/></g>
+<path class="replication-failover-flow" d="M74 56 L150 38"/><path class="replication-failover-flow" d="M74 64 L150 90"/>
+<rect class="replication-failover-card" x="152" y="20" width="80" height="36" rx="8"/><rect class="replication-failover-lf" x="160" y="26" width="30" height="5" rx="2"/>
+<rect class="replication-failover-card" x="152" y="70" width="80" height="36" rx="8"/><rect class="replication-failover-lf" x="160" y="76" width="30" height="5" rx="2"/>
+<g class="replication-failover-fc"><circle class="replication-failover-wn" cx="192" cy="44" r="8"/><circle class="replication-failover-sw" style="stroke:var(--scene-card,#fff);stroke-width:1.6" cx="192" cy="44" r="4.5"/></g><g class="replication-failover-fc"><circle class="replication-failover-wn" cx="192" cy="94" r="8"/><circle class="replication-failover-sw" style="stroke:var(--scene-card,#fff);stroke-width:1.6" cx="192" cy="94" r="4.5"/></g>
+<g class="replication-failover-ca"><g class=""><circle class="replication-failover-wn" cx="40" cy="64" r="8"/><circle class="replication-failover-sw" style="stroke:var(--scene-card,#fff);stroke-width:1.6" cx="40" cy="64" r="4.5"/></g></g><g class="replication-failover-cb"><g class=""><circle class="replication-failover-wn" cx="40" cy="64" r="8"/><circle class="replication-failover-sw" style="stroke:var(--scene-card,#fff);stroke-width:1.6" cx="40" cy="64" r="4.5"/></g></g>
+<g class="replication-failover-crown"><path class="replication-failover-wn" d="M180 18 l3 -10 l9 6 l9 -6 l3 10 z"/></g>
+<g class="replication-failover-l1"><text class="replication-failover-b" x="120" y="124" font-size="16" font-weight="700" text-anchor="middle">Leader crashed</text>
+</g><g class="replication-failover-l2"><text class="replication-failover-a" x="120" y="124" font-size="16" font-weight="700" text-anchor="middle">New leader</text>
+</g><g class="replication-failover-l3"><text class="replication-failover-g" x="120" y="124" font-size="16" font-weight="700" text-anchor="middle">$250 kept ✓</text>
+</g>
+</svg>

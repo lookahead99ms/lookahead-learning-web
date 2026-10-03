@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A leader replicates a write to two followers; one link is partitioned, yet two of three acknowledgements form a quorum">
+<style>
+.look-ahead-distributed-systems-node{fill:var(--scene-card,#fff);stroke:var(--scene-accent,#006c73);stroke-width:2}
+.look-ahead-distributed-systems-lead{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-accent,#006c73);stroke-width:2.4}
+.look-ahead-distributed-systems-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:600;fill:var(--scene-ink,#102a33)}
+.look-ahead-distributed-systems-link{stroke:var(--scene-line,#cfdfdc);stroke-width:2.2;fill:none}
+.look-ahead-distributed-systems-msg{fill:var(--scene-ahead,#2f6fb3)}
+.look-ahead-distributed-systems-m1{animation:look-ahead-distributed-systems-m1 6s ease-in-out infinite;animation-delay:-4.2s}
+.look-ahead-distributed-systems-m2{animation:look-ahead-distributed-systems-m2 6s ease-in-out infinite;animation-delay:-4.2s}
+.look-ahead-distributed-systems-ack{animation:look-ahead-distributed-systems-ack 6s ease-in-out infinite;animation-delay:-4.2s}
+.look-ahead-distributed-systems-cut{animation:look-ahead-distributed-systems-cut 1.2s ease-in-out infinite;animation-delay:-.6s}
+.look-ahead-distributed-systems-ok{animation:look-ahead-distributed-systems-ok 6s ease-in-out infinite;animation-delay:-4.2s}
+@keyframes look-ahead-distributed-systems-m1{0%{transform:translate(0,0);opacity:0}5%{opacity:1}35%{transform:translate(-96px,72px);opacity:1}40%,100%{opacity:0;transform:translate(-96px,72px)}}
+@keyframes look-ahead-distributed-systems-m2{0%{transform:translate(0,0);opacity:0}5%{opacity:1}22%{transform:translate(48px,36px);opacity:1}28%,100%{transform:translate(48px,36px);opacity:0}}
+@keyframes look-ahead-distributed-systems-ack{0%,38%{opacity:0;transform:translate(0,0)}42%{opacity:1}62%{transform:translate(96px,-72px);opacity:1}66%,100%{opacity:0;transform:translate(96px,-72px)}}
+@keyframes look-ahead-distributed-systems-ok{0%,62%{opacity:0;transform:scale(.8)}68%,94%{opacity:1;transform:scale(1)}100%{opacity:0}}
+@keyframes look-ahead-distributed-systems-cut{0%,100%{opacity:1}50%{opacity:.35}}
+</style>
+<rect x="0" y="0" width="320" height="180" rx="12" fill="var(--scene-card,#fff)"/>
+<!-- links -->
+<path class="look-ahead-distributed-systems-link" d="M160 46 L64 118 M160 46 L256 118 M64 118 H256"/>
+<!-- partition on right link -->
+<g class="look-ahead-distributed-systems-cut" stroke="var(--scene-bad,#b3261e)" stroke-width="3" stroke-linecap="round">
+<path d="M201 78 l14 12 M215 78 l-14 12"/>
+</g>
+<!-- messages -->
+<circle class="look-ahead-distributed-systems-msg look-ahead-distributed-systems-m1" cx="160" cy="46" r="6"/>
+<circle class="look-ahead-distributed-systems-msg look-ahead-distributed-systems-m2" cx="160" cy="46" r="6"/>
+<circle class="look-ahead-distributed-systems-ack" cx="64" cy="118" r="6" fill="var(--scene-good,#1f7a4d)"/>
+<!-- nodes -->
+<circle class="look-ahead-distributed-systems-lead" cx="160" cy="46" r="24"/>
+<path d="M160 32 l3.5 7.5 l8 1 l-6 5.5 l1.6 8 l-7.1 -4 l-7.1 4 l1.6 -8 l-6 -5.5 l8 -1z" fill="var(--scene-accent,#006c73)"/>
+<circle class="look-ahead-distributed-systems-node" cx="64" cy="118" r="22"/>
+<circle class="look-ahead-distributed-systems-node" cx="256" cy="118" r="22" style="stroke:var(--scene-muted,#536970);stroke-dasharray:4 4"/>
+<!-- log stripes inside nodes -->
+<g fill="var(--scene-accent,#006c73)"><rect x="52" y="112" width="24" height="4" rx="2"/><rect x="52" y="120" width="16" height="4" rx="2"/></g>
+<g fill="var(--scene-muted,#536970)" opacity=".6"><rect x="244" y="112" width="24" height="4" rx="2"/></g>
+<text class="look-ahead-distributed-systems-t" x="198" y="40">Leader</text>
+<!-- quorum badge -->
+<g class="look-ahead-distributed-systems-ok" style="transform-origin:160px 160px">
+<rect x="104" y="146" width="112" height="28" rx="14" fill="var(--scene-good,#1f7a4d)" opacity=".16"/>
+<text class="look-ahead-distributed-systems-t" x="160" y="165" text-anchor="middle" style="fill:var(--scene-good,#1f7a4d)">Quorum 2 of 3</text>
+</g>
+</svg>

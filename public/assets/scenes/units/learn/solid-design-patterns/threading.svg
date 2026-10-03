@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Two threads read the same count and one update is lost">
+<style>
+.learn-solid-design-patterns-threading-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-solid-design-patterns-threading-m{font-family:ui-monospace,Menlo,monospace;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-solid-design-patterns-threading-a1{animation:learn-solid-design-patterns-threading-A 6s ease-in-out infinite;animation-delay:-3s}
+.learn-solid-design-patterns-threading-a2{animation:learn-solid-design-patterns-threading-B 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes learn-solid-design-patterns-threading-A{0%{transform:translate(0,0);opacity:0}8%{opacity:1}30%{transform:translate(78px,0)}50%{transform:translate(78px,0)}65%{transform:translate(0,0);opacity:1}85%,100%{transform:translate(0,0);opacity:0}}
+@keyframes learn-solid-design-patterns-threading-B{0%{transform:translate(0,0);opacity:0}8%{opacity:1}30%{transform:translate(78px,0)}50%{transform:translate(78px,0)}65%{transform:translate(0,0);opacity:1}85%,100%{transform:translate(0,0);opacity:0}}
+.learn-solid-design-patterns-threading-a3{animation:learn-solid-design-patterns-threading-v1 6s steps(1) infinite;animation-delay:-3s}
+.learn-solid-design-patterns-threading-a4{animation:learn-solid-design-patterns-threading-v2 6s steps(1) infinite;animation-delay:-3s}
+@keyframes learn-solid-design-patterns-threading-v1{0%,50%{opacity:1}50.1%,100%{opacity:0}}
+@keyframes learn-solid-design-patterns-threading-v2{0%,50%{opacity:0}50.1%,100%{opacity:1}}
+.learn-solid-design-patterns-threading-a5{animation:learn-solid-design-patterns-threading-lost 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes learn-solid-design-patterns-threading-lost{0%,52%{opacity:0}60%,95%{opacity:1}100%{opacity:0}}
+
+@media (prefers-reduced-motion:reduce){[class*="learn-solid-design-patterns-threading-a"]{animation:none!important}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<line x1="10" y1="54" x2="310" y2="54" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-dasharray="2 8" stroke-linecap="round"/>
+<line x1="10" y1="132" x2="310" y2="132" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-dasharray="2 8" stroke-linecap="round"/>
+<rect x="124" y="62" width="82" height="62" rx="12" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<text class="learn-solid-design-patterns-threading-t" x="165" y="84" text-anchor="middle" style="font-size:16px">count</text>
+<text class="learn-solid-design-patterns-threading-m learn-solid-design-patterns-threading-a3" x="165" y="114" text-anchor="middle" style="font-size:26px">5</text>
+<text class="learn-solid-design-patterns-threading-m learn-solid-design-patterns-threading-a4" x="165" y="114" text-anchor="middle" style="font-size:26px;fill:var(--scene-bad,#b3261e)">6</text>
+<g class="learn-solid-design-patterns-threading-a1"><circle cx="30" cy="54" r="14" fill="var(--scene-ahead,#2f6fb3)"/><text class="learn-solid-design-patterns-threading-t" x="30" y="59" text-anchor="middle" style="fill:#fff">+1</text></g>
+<g class="learn-solid-design-patterns-threading-a2"><circle cx="30" cy="132" r="14" fill="var(--scene-grow,#b8457a)"/><text class="learn-solid-design-patterns-threading-t" x="30" y="137" text-anchor="middle" style="fill:#fff">+1</text></g>
+<text class="learn-solid-design-patterns-threading-t" x="12" y="34">Thread A</text>
+<text class="learn-solid-design-patterns-threading-t" x="12" y="166">Thread B</text>
+<g class="learn-solid-design-patterns-threading-a5"><rect x="226" y="82" width="86" height="26" rx="13" fill="var(--scene-bad,#b3261e)"/><text class="learn-solid-design-patterns-threading-t" x="269" y="100" text-anchor="middle" style="fill:#fff">Lost +1</text></g>
+</svg>

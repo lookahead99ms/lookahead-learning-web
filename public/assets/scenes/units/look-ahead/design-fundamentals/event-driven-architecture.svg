@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="A new ledger entry, Deposited $200.00, is added to Lena's ledger, and a moment later her balance in the app catches up from $380.00 to $580.00">
+<style>
+.event-driven-architecture-card{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.event-driven-architecture-t{font-family:system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.event-driven-architecture-mono{font-family:ui-monospace,Menlo,monospace;fill:var(--scene-ink,#102a33)}
+.event-driven-architecture-good{font-family:system-ui,sans-serif;fill:var(--scene-good,#1f7a4d)}
+.event-driven-architecture-row{fill:var(--scene-accent-soft,#dcefed)}
+.event-driven-architecture-bar{fill:var(--scene-muted,#536970);opacity:.4}
+.event-driven-architecture-new{fill:var(--scene-bubble-out,#d4ecea);stroke:var(--scene-accent,#006c73);stroke-width:2}
+.event-driven-architecture-r3{animation:event-driven-architecture-r3 7s -3s infinite}
+@keyframes event-driven-architecture-r3{0%,8%{opacity:0;transform:translateY(10px)}14%,94%{opacity:1;transform:none}100%{opacity:0}}
+.event-driven-architecture-dot{animation:event-driven-architecture-dot 7s -3s infinite}
+@keyframes event-driven-architecture-dot{0%,16%{opacity:0;transform:translateX(0)}20%{opacity:1}44%{opacity:1;transform:translateX(18px)}47%,100%{opacity:0;transform:translateX(18px)}}
+.event-driven-architecture-old{animation:event-driven-architecture-old 7s -3s infinite}
+@keyframes event-driven-architecture-old{0%,45%{opacity:1}48%,96%{opacity:0}100%{opacity:1}}
+.event-driven-architecture-newbal{animation:event-driven-architecture-newbal 7s -3s infinite}
+@keyframes event-driven-architecture-newbal{0%,45%{opacity:0}48%,96%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.event-driven-architecture-dot,.event-driven-architecture-r3{animation-play-state:paused}}
+</style>
+<rect class="event-driven-architecture-card" x="6" y="6" width="132" height="123" rx="12"/>
+<rect class="event-driven-architecture-row" x="14" y="16" width="116" height="30" rx="6"/>
+<rect class="event-driven-architecture-bar" x="22" y="27" width="56" height="8" rx="4"/>
+<rect class="event-driven-architecture-row" x="14" y="52" width="116" height="30" rx="6"/>
+<rect class="event-driven-architecture-bar" x="22" y="63" width="44" height="8" rx="4"/>
+<g class="event-driven-architecture-r3"><rect class="event-driven-architecture-new" x="14" y="88" width="116" height="32" rx="6"/>
+<text class="event-driven-architecture-mono" x="22" y="110" font-size="17" font-weight="700">+$200</text></g>
+<rect class="event-driven-architecture-card" x="162" y="6" width="72" height="123" rx="14"/>
+<rect x="188" y="14" width="20" height="5" rx="2.5" class="event-driven-architecture-bar"/>
+<g class="event-driven-architecture-old"><text class="event-driven-architecture-t" x="198" y="76" font-size="16" font-weight="700" text-anchor="middle">$380</text></g>
+<g class="event-driven-architecture-newbal"><text class="event-driven-architecture-good" x="198" y="76" font-size="16" font-weight="700" text-anchor="middle">$580</text></g>
+<circle class="event-driven-architecture-dot" cx="142" cy="104" r="5" style="fill:var(--scene-accent,#006c73)"/>
+</svg>

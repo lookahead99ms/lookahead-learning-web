@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="intervals">
+<style>
+.learn-algorithmic-patterns-intervals-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}.learn-algorithmic-patterns-intervals-w{font:700 16px system-ui,sans-serif;fill:#fff}
+@keyframes learn-algorithmic-patterns-intervals-bb{0%{transform:translateX(70px)}18%{transform:translateX(0px)}100%{transform:translateX(0px)}}
+@keyframes learn-algorithmic-patterns-intervals-mm{0%{transform:scaleX(0)}38%{transform:scaleX(0)}52%{transform:scaleX(1)}92%{transform:scaleX(1)}97%{transform:scaleX(0)}100%{transform:scaleX(0)}}
+@keyframes learn-algorithmic-patterns-intervals-wb{0%{opacity:0}15%{opacity:0}22%{opacity:1}92%{opacity:1}97%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-intervals-bb{animation:learn-algorithmic-patterns-intervals-bb 7s ease-in-out infinite;animation-delay:-3.5s;}.learn-algorithmic-patterns-intervals-mm{animation:learn-algorithmic-patterns-intervals-mm 7s ease-in-out infinite;animation-delay:-3.5s;}.learn-algorithmic-patterns-intervals-wb{animation:learn-algorithmic-patterns-intervals-wb 7s ease-in-out infinite;animation-delay:-3.5s;}.learn-algorithmic-patterns-intervals-mm{transform-box:fill-box;transform-origin:0 50%}
+.learn-algorithmic-patterns-intervals-bg{fill:var(--scene-card,#fff)}
+</style>
+<rect class="learn-algorithmic-patterns-intervals-bg" width="320" height="180" rx="12"/>
+<rect x="90" y="24" width="32" height="64" fill="var(--scene-warn,#a15c00)" fill-opacity=".18"/>
+<rect x="30" y="30" width="92" height="20" rx="6" fill="var(--scene-learn,#0f8a8a)"/>
+<rect x="230" y="58" width="60" height="20" rx="6" fill="var(--scene-link,#245a88)"/>
+<rect class="learn-algorithmic-patterns-intervals-bb" x="90" y="58" width="92" height="20" rx="6" fill="var(--scene-grow,#b8457a)"/>
+<g class="learn-algorithmic-patterns-intervals-wb"><rect x="90" y="24" width="32" height="64" fill="none" stroke="var(--scene-warn,#a15c00)" stroke-width="3" stroke-dasharray="5 4"/></g>
+<rect class="learn-algorithmic-patterns-intervals-mm" x="30" y="116" width="152" height="22" rx="6" fill="var(--scene-good,#1f7a4d)"/>
+<rect x="230" y="116" width="60" height="22" rx="6" fill="var(--scene-link,#245a88)"/>
+<line x1="20" y1="150" x2="300" y2="150" stroke="var(--scene-ink,#102a33)" stroke-width="3"/>
+<text class="learn-algorithmic-patterns-intervals-t" x="106" y="19" text-anchor="middle">overlap</text>
+<text class="learn-algorithmic-patterns-intervals-t" x="106" y="172" text-anchor="middle">merged into one</text>
+</svg>

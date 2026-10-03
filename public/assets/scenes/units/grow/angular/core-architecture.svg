@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Parent passes inputs down to room cards and a card reports a choice up through an output">
+<style>
+.grow-angular-core-architecture-bg{fill:var(--scene-card,#fff)}
+.grow-angular-core-architecture-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.grow-angular-core-architecture-m{font:700 16px ui-monospace,Menlo,monospace;fill:var(--scene-ink,#102a33)}
+.grow-angular-core-architecture-dn{animation:grow-angular-core-architecture-down 6s linear infinite}
+.grow-angular-core-architecture-up{animation:grow-angular-core-architecture-upk 6s linear infinite;animation-delay:-3s}
+.grow-angular-core-architecture-sel{animation:grow-angular-core-architecture-selk 6s ease-in-out infinite}
+.grow-angular-core-architecture-t0{animation:grow-angular-core-architecture-t0k 6s step-end infinite}
+.grow-angular-core-architecture-t1{animation:grow-angular-core-architecture-t1k 6s step-end infinite}
+@keyframes grow-angular-core-architecture-down{0%{transform:translateY(0);opacity:0}10%{opacity:1}45%{transform:translateY(54px);opacity:1}50%,100%{transform:translateY(54px);opacity:0}}
+@keyframes grow-angular-core-architecture-upk{0%{transform:translateY(0);opacity:0}10%{opacity:1}40%{transform:translateY(-54px);opacity:1}45%,100%{transform:translateY(-54px);opacity:0}}
+@keyframes grow-angular-core-architecture-selk{0%,50%{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc)}55%,92%{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-good,#1f7a4d)}100%{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc)}}
+@keyframes grow-angular-core-architecture-t0k{0%{opacity:1}50%{opacity:0}92%{opacity:1}}
+@keyframes grow-angular-core-architecture-t1k{0%{opacity:0}50%{opacity:1}92%{opacity:0}}
+</style>
+<rect class="grow-angular-core-architecture-bg" width="320" height="180"/>
+<rect x="20" y="10" width="280" height="40" rx="10" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2"/>
+<text class="grow-angular-core-architecture-t grow-angular-core-architecture-t0" x="160" y="36" text-anchor="middle" style="animation-delay:-3s">Total 0</text>
+<text class="grow-angular-core-architecture-t grow-angular-core-architecture-t1" x="160" y="36" text-anchor="middle" style="animation-delay:-3s">Total 540</text>
+<g stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="4 4"><line x1="55" y1="50" x2="55" y2="108"/><line x1="148" y1="50" x2="148" y2="108"/><line x1="265" y1="50" x2="265" y2="108"/></g>
+<line x1="172" y1="50" x2="172" y2="108" stroke="var(--scene-good,#1f7a4d)" stroke-width="2"/>
+<g fill="var(--scene-ahead,#2f6fb3)"><circle class="grow-angular-core-architecture-dn" cx="55" cy="52" r="5" style="animation-delay:-1s"/><circle class="grow-angular-core-architecture-dn" cx="148" cy="52" r="5" style="animation-delay:-3s"/><circle class="grow-angular-core-architecture-dn" cx="265" cy="52" r="5" style="animation-delay:-2s"/></g>
+<circle class="grow-angular-core-architecture-up" cx="172" cy="108" r="5" fill="var(--scene-good,#1f7a4d)"/>
+<text class="grow-angular-core-architecture-t" x="101" y="86" text-anchor="middle" style="fill:var(--scene-ahead,#2f6fb3)">inputs</text>
+<text class="grow-angular-core-architecture-t" x="218" y="86" text-anchor="middle" style="fill:var(--scene-good,#1f7a4d)">output</text>
+<g stroke-width="2.5"><rect x="15" y="108" width="80" height="60" rx="8" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)"/>
+<rect class="grow-angular-core-architecture-sel" x="120" y="108" width="80" height="60" rx="8" style="animation-delay:-3s"/>
+<rect x="225" y="108" width="80" height="60" rx="8" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)"/></g>
+<g fill="var(--scene-muted,#536970)"><rect x="30" y="134" width="50" height="22" rx="4"/><rect x="135" y="134" width="50" height="22" rx="4" fill="var(--scene-accent,#006c73)"/><rect x="240" y="134" width="50" height="22" rx="4"/>
+<rect x="30" y="122" width="14" height="10" rx="3"/><rect x="135" y="122" width="14" height="10" rx="3" fill="var(--scene-accent,#006c73)"/><rect x="240" y="122" width="14" height="10" rx="3"/></g>
+</svg>

@@ -1,12 +1,15 @@
 import { highlightStudioSource } from '../focus-studio/code-presentation';
 import {
   Component,
+  DestroyRef,
   ElementRef,
   computed,
+  inject,
   effect,
   input,
   output,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import {
@@ -21,15 +24,19 @@ import {
   PatternProblemV1,
 } from '../../content/content.models';
 import { StudioTraceBody } from '../focus-studio/studio-trace-body';
-import { TraceSnapshot } from './trace-model';
+import { TraceSnapshot, traceSnapshot } from './trace-model';
 import { languageTraceEvents } from './trace-model';
+import { TracePlayer } from './trace-player';
+import { TraceStatePanel } from './trace-state-panel';
+import { visualPlanKind } from './trace-visual';
 import { CodeCopyButton } from '../code-copy-button/code-copy-button';
+import { ReferenceLanguageService } from '../reference-language';
 
 type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
 
 @Component({
   selector: 'app-guided-algorithm-trace',
-  imports: [CodeCopyButton, StudioTraceBody],
+  imports: [CodeCopyButton, StudioTraceBody, TraceStatePanel],
   template: `
     @if (studio()) {
       <app-studio-trace-body
@@ -63,7 +70,9 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
               (change)="chooseFixture($any($event.target).value)"
             >
               @for (fixture of guidedFixtures(); track fixture.id; let index = $index) {
-                <option [value]="index">{{ fixture.label }}</option>
+                <option [value]="index" [selected]="index === selectedFixtureIndex()">
+                  {{ fixture.label }}
+                </option>
               }
             </select>
           </label>
@@ -108,6 +117,15 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
               aria-describedby="trace-boundary-status"
             >
               Next
+            </button>
+            <button
+              type="button"
+              class="play-toggle"
+              [attr.aria-pressed]="player.playing()"
+              [disabled]="events().length < 2"
+              (click)="player.toggle()"
+            >
+              {{ player.playing() ? 'Pause' : 'Play' }}
             </button>
           </div>
         </div>
@@ -305,27 +323,35 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
                         state from another language or execution point is shown.
                       </p>
                     }
-                    <section class="state-view" aria-label="Complete data state">
-                      <h3>Data state</h3>
-                      @for (row of visibleRows(); track row.label) {
-                        <div class="state-row">
-                          <strong>{{ row.label }}</strong>
-                          <div class="state-cells" role="list" [attr.aria-label]="row.label">
-                            @for (cell of row.cells; track $index) {
-                              <span
-                                role="listitem"
-                                [class]="cellClasses(cell)"
-                                [attr.aria-label]="cellLabel(cell, $index)"
-                                ><b>{{ cell.value }}</b>
-                                @if (cell.note) {
-                                  <small>{{ cell.note }}</small>
-                                }
-                              </span>
-                            }
+                    <app-trace-state-panel
+                      [problem]="problem()"
+                      [fixture]="tracedFixture()"
+                      [snapshot]="panelSnapshot()"
+                      [language]="language()"
+                    />
+                    @if (!drawsState()) {
+                      <section class="state-view" aria-label="Complete data state">
+                        <h3>Data state</h3>
+                        @for (row of visibleRows(); track row.label) {
+                          <div class="state-row">
+                            <strong>{{ row.label }}</strong>
+                            <div class="state-cells" role="list" [attr.aria-label]="row.label">
+                              @for (cell of row.cells; track $index) {
+                                <span
+                                  role="listitem"
+                                  [class]="cellClasses(cell)"
+                                  [attr.aria-label]="cellLabel(cell, $index)"
+                                  ><b>{{ cell.value }}</b>
+                                  @if (cell.note) {
+                                    <small>{{ cell.note }}</small>
+                                  }
+                                </span>
+                              }
+                            </div>
                           </div>
-                        </div>
-                      }
-                    </section>
+                        }
+                      </section>
+                    }
 
                     <section class="variable-inspector" aria-label="Current variables">
                       <h3>Variables</h3>
@@ -507,6 +533,15 @@ type GuidedDebuggerView = 'debugger' | 'why' | 'predict' | 'complexity';
   `,
   styles: [
     `
+      .guided-trace app-trace-state-panel {
+        --surface: var(--code-panel);
+        --surface-page: var(--code-bg);
+        --surface-accent: var(--code-panel);
+        --line: var(--code-line);
+        --text-strong: var(--code-ink);
+        --text-subtle: var(--code-muted);
+        margin-bottom: 12px;
+      }
       .guided-trace {
         position: relative;
         overflow: visible;
@@ -1888,6 +1923,8 @@ export class GuidedAlgorithmTrace {
   readonly focusExitRequest = output<void>();
   protected readonly highlightedLines = computed(() => highlightStudioSource(this.source().lines.map(line => line.text).join('\n'), this.language()));
   protected readonly language = signal<PatternLanguage>('java');
+  /** Remembered for the next problem and for DSA core Learn lessons. */
+  private readonly referenceLanguage = inject(ReferenceLanguageService);
   protected readonly stepIndex = signal(0);
   protected readonly announcement = signal('');
   protected readonly activeView = signal<GuidedDebuggerView>('debugger');
@@ -2170,13 +2207,41 @@ export class GuidedAlgorithmTrace {
       this.problem().fixtures[0],
   );
 
+  /** The same sparse-delta snapshot Focus Studio uses, for the drawn state. */
+  protected readonly panelSnapshot = computed(() =>
+    traceSnapshot(this.problem(), this.tracedFixture().id, this.language(), this.stepIndex()),
+  );
+  protected readonly drawsState = computed(
+    () =>
+      visualPlanKind(this.problem(), this.tracedFixture(), this.panelSnapshot(), this.language()) !==
+      'none',
+  );
+  protected readonly player = new TracePlayer(
+    () => ({ step: this.stepIndex(), count: this.events().length }),
+    (step) => this.setStep(step),
+  );
+
   constructor() {
-    effect(() => this.language.set(this.initialLanguage()));
+    inject(DestroyRef).onDestroy(() => this.player.pause());
+    // A language chosen outside the debugger (the page-wide choice) restarts the trace, as the
+    // debugger's own language tabs do.
+    effect(() => {
+      const next = this.initialLanguage();
+      untracked(() => {
+        if (this.language() === next) return;
+        this.player.pause();
+        this.stepIndex.set(0);
+        this.language.set(next);
+      });
+    });
     let previousProblem = '';
     let previousFixture = '';
     effect(() => {
       const problemId = this.problem().id;
       const fixtureId = this.selectedFixture().id;
+      if (previousProblem && (previousProblem !== problemId || previousFixture !== fixtureId)) {
+        this.player.pause();
+      }
       if (previousProblem && previousProblem !== problemId) {
         this.stepIndex.set(0);
         this.activeView.set('debugger');
@@ -2213,6 +2278,7 @@ export class GuidedAlgorithmTrace {
   }
 
   protected previous(): void {
+    this.player.pause();
     this.setStep(this.stepIndex() - 1);
   }
 
@@ -2221,9 +2287,11 @@ export class GuidedAlgorithmTrace {
     if (fixture) this.fixtureChange.emit(fixture);
   }
   protected next(): void {
+    this.player.pause();
     this.setStep(this.stepIndex() + 1);
   }
   protected reset(): void {
+    this.player.pause();
     this.stepIndex.set(0);
     this.activeView.set('debugger');
     this.resetPrediction();
@@ -2233,8 +2301,10 @@ export class GuidedAlgorithmTrace {
 
   protected selectLanguage(value: string): void {
     if (this.language() === value) return;
+    this.player.pause();
     this.stepIndex.set(0);
     this.language.set(value as PatternLanguage);
+    this.referenceLanguage.select(value);
     this.activeView.set('debugger');
     this.resetPrediction();
     this.resetComplexity();

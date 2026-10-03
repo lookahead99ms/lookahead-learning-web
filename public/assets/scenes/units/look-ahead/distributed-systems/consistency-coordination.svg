@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Two regions race for the last unit; only the fenced owner wins and the other is turned back">
+<title>Two regions race for the last unit; only the fenced owner wins and the other is turned back</title>
+<style>
+.look-ahead-distributed-systems-consistency-coordination-t{font-family:system-ui,sans-serif;font-weight:700;font-size:16px;fill:var(--scene-ink,#102a33)}
+
+.look-ahead-distributed-systems-consistency-coordination-a{animation:look-ahead-distributed-systems-consistency-coordination-aa 6s ease-in-out infinite;animation-delay:-2.2s}
+@keyframes look-ahead-distributed-systems-consistency-coordination-aa{0%{transform:translateX(0)}22%,100%{transform:translateX(44px)}}
+.look-ahead-distributed-systems-consistency-coordination-b{animation:look-ahead-distributed-systems-consistency-coordination-bb 6s ease-in-out infinite;animation-delay:-2.2s}
+@keyframes look-ahead-distributed-systems-consistency-coordination-bb{0%{transform:translateX(0)}15%{transform:translateX(-40px)}30%,100%{transform:translateX(0)}}
+.look-ahead-distributed-systems-consistency-coordination-ck{animation:look-ahead-distributed-systems-consistency-coordination-c1 6s ease-in-out infinite;animation-delay:-2.2s}
+@keyframes look-ahead-distributed-systems-consistency-coordination-c1{0%,22%{opacity:0}30%,80%{opacity:1}92%,100%{opacity:0}}
+.look-ahead-distributed-systems-consistency-coordination-x{animation:look-ahead-distributed-systems-consistency-coordination-c2 6s ease-in-out infinite;animation-delay:-2.2s}
+@keyframes look-ahead-distributed-systems-consistency-coordination-c2{0%,28%{opacity:0}36%,80%{opacity:1}92%,100%{opacity:0}}
+.look-ahead-distributed-systems-consistency-coordination-pulse{animation:look-ahead-distributed-systems-consistency-coordination-pl 3s ease-in-out infinite;animation-delay:-1s;transform-origin:160px 90px}
+@keyframes look-ahead-distributed-systems-consistency-coordination-pl{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+</style>
+
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<text class="look-ahead-distributed-systems-consistency-coordination-t" x="160" y="26" text-anchor="middle">One owner</text>
+<g class="look-ahead-distributed-systems-consistency-coordination-pulse"><rect x="136" y="68" width="48" height="44" rx="6" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<path d="M136 84H184M160 68V84" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/></g>
+<circle cx="40" cy="90" r="24" fill="var(--scene-learn,#0f8a8a)"/><text x="40" y="97" text-anchor="middle" font-family="system-ui,sans-serif" font-size="20" font-weight="800" fill="#fff">A</text>
+<circle cx="280" cy="90" r="24" fill="var(--scene-grow,#b8457a)"/><text x="280" y="97" text-anchor="middle" font-family="system-ui,sans-serif" font-size="20" font-weight="800" fill="#fff">B</text>
+<g class="look-ahead-distributed-systems-consistency-coordination-a"><rect x="68" y="82" width="22" height="16" rx="4" fill="var(--scene-learn,#0f8a8a)"/></g>
+<g class="look-ahead-distributed-systems-consistency-coordination-b"><rect x="228" y="82" width="22" height="16" rx="4" fill="var(--scene-grow,#b8457a)"/></g>
+<g class="look-ahead-distributed-systems-consistency-coordination-ck"><circle cx="160" cy="132" r="0" /><path d="M148 131l8 8 16-17" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g class="look-ahead-distributed-systems-consistency-coordination-x"><path d="M206 56l16 16M222 56l-16 16" stroke="var(--scene-bad,#b3261e)" stroke-width="5" stroke-linecap="round"/></g>
+<text class="look-ahead-distributed-systems-consistency-coordination-t" x="160" y="168" text-anchor="middle">Last unit</text>
+</svg>

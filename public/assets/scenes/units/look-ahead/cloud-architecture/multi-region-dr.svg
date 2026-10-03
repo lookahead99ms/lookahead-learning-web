@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Primary region fails, data replicated to a standby region, traffic switches over">
+<style>
+.look-ahead-cloud-architecture-multi-region-dr-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.look-ahead-cloud-architecture-multi-region-dr-f{animation:look-ahead-cloud-architecture-multi-region-dr-fail 6s ease-in-out infinite}
+.look-ahead-cloud-architecture-multi-region-dr-r{animation:look-ahead-cloud-architecture-multi-region-dr-rep 6s linear infinite}
+.look-ahead-cloud-architecture-multi-region-dr-u{animation:look-ahead-cloud-architecture-multi-region-dr-usr 6s ease-in-out infinite}
+.look-ahead-cloud-architecture-multi-region-dr-s{animation:look-ahead-cloud-architecture-multi-region-dr-up 6s ease-in-out infinite}
+@keyframes look-ahead-cloud-architecture-multi-region-dr-fail{0%,40%{fill:var(--scene-good,#1f7a4d)}55%,90%{fill:var(--scene-bad,#b3261e)}100%{fill:var(--scene-good,#1f7a4d)}}
+@keyframes look-ahead-cloud-architecture-multi-region-dr-rep{0%{transform:translateX(0);opacity:0}10%{opacity:1}60%{transform:translateX(70px);opacity:1}70%,100%{transform:translateX(70px);opacity:0}}
+@keyframes look-ahead-cloud-architecture-multi-region-dr-usr{0%,45%{transform:translate(0,0)}65%,90%{transform:translate(0,0);opacity:1}100%{opacity:1}}
+@keyframes look-ahead-cloud-architecture-multi-region-dr-up{0%,45%{opacity:.25}60%,90%{opacity:1}100%{opacity:.25}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="14" y="40" width="108" height="92" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-muted,#536970)" stroke-width="2"/>
+<rect x="198" y="40" width="108" height="92" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-muted,#536970)" stroke-width="2"/>
+<text class="look-ahead-cloud-architecture-multi-region-dr-t" x="68" y="30" text-anchor="middle">Region A</text>
+<text class="look-ahead-cloud-architecture-multi-region-dr-t" x="252" y="30" text-anchor="middle">Region B</text>
+<g class="look-ahead-cloud-architecture-multi-region-dr-f" style="animation-delay:-3s;fill:var(--scene-good,#1f7a4d)"><rect x="30" y="56" width="76" height="16" rx="3"/><rect x="30" y="78" width="76" height="16" rx="3"/><rect x="30" y="100" width="76" height="16" rx="3"/></g>
+<g class="look-ahead-cloud-architecture-multi-region-dr-s" style="animation-delay:-3s" fill="var(--scene-link,#245a88)"><rect x="214" y="56" width="76" height="16" rx="3"/><rect x="214" y="78" width="76" height="16" rx="3"/><rect x="214" y="100" width="76" height="16" rx="3"/></g>
+<path d="M126 86H194" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="4 4"/>
+<g class="look-ahead-cloud-architecture-multi-region-dr-r" style="animation-delay:-3s"><circle cx="126" cy="86" r="6" fill="var(--scene-warn,#a15c00)"/></g>
+<g class="look-ahead-cloud-architecture-multi-region-dr-r" style="animation-delay:-5s"><circle cx="126" cy="86" r="6" fill="var(--scene-warn,#a15c00)"/></g>
+<path d="M160 150H252V136" stroke="var(--scene-accent,#006c73)" stroke-width="3" fill="none" stroke-dasharray="6 5" class="look-ahead-cloud-architecture-multi-region-dr-s" style="animation-delay:-3s"/>
+<path d="M246 144l6-8 6 8z" fill="var(--scene-accent,#006c73)" class="look-ahead-cloud-architecture-multi-region-dr-s" style="animation-delay:-3s"/>
+<circle cx="160" cy="150" r="9" fill="var(--scene-ink,#102a33)"/>
+<path d="M68 136V146" stroke="var(--scene-bad,#b3261e)" stroke-width="3" stroke-dasharray="3 3"/>
+<text class="look-ahead-cloud-architecture-multi-region-dr-t" x="68" y="172" text-anchor="middle">Down</text>
+<text class="look-ahead-cloud-architecture-multi-region-dr-t" x="252" y="172" text-anchor="middle" style="fill:var(--scene-accent,#006c73)">Failover</text>
+</svg>

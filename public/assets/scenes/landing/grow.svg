@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" data-story-ms="19500" viewBox="0 0 240 135" role="img" aria-label="Grow to deliver what the team designs. AI writes with you, you run it. Build, ship, fix with AI. Plan: you ask to add an order export, AI offers three options, CSV, PDF or JSON, and you pick CSV. Build: AI writes the code and tests, you ship it. Fix: totals come out wrong in production, AI reads the logs and points to a null currency, you choose a default currency and it is fixed">
+<style>
+.grow-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); }
+.grow-tm { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; fill: var(--scene-text, #28434a); }
+.grow-b { font-weight: 700; }
+.grow-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.grow-acc { fill: var(--scene-accent, #006c73); }
+.grow-mut { fill: var(--scene-muted, #536970); }
+.grow-good { fill: var(--scene-good, #1f7a4d); }
+.grow-bad { fill: var(--scene-bad, #b3261e); }
+.grow-on-acc { fill: var(--scene-card, #ffffff); }
+.grow-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 1.5; }
+.grow-dash { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.grow-spark { fill: var(--scene-accent, #006c73); }
+.grow-ai-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.grow-aibox { fill: var(--scene-card, #ffffff); stroke: var(--scene-accent, #006c73); stroke-width: 1.5; }
+.grow-you-bg { fill: var(--scene-ink, #102a33); stroke: var(--scene-ink, #102a33); stroke-width: 1.5; }
+.grow-you-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-card, #ffffff); font-weight: 700; }
+.grow-bad-t { fill: var(--scene-bad, #b3261e); }
+.grow-good-t { fill: var(--scene-good, #1f7a4d); }
+
+.grow-opt { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.grow-pick-ring { fill: none; stroke: var(--scene-good, #1f7a4d); stroke-width: 2; }
+.grow-doc { fill: var(--scene-card, #ffffff); stroke: var(--scene-grow, #a84328); stroke-width: 1.5; }
+.grow-bar { fill: var(--scene-line, #cfdfdc); }
+.grow-pass { fill: var(--scene-card, #ffffff); stroke: var(--scene-good, #1f7a4d); stroke-width: 1.5; }
+.grow-alert { fill: var(--scene-card, #ffffff); stroke: var(--scene-bad, #b3261e); stroke-width: 2; }
+.grow-log { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.grow-hl { fill: var(--scene-bad, #b3261e); }
+.grow-step { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.grow-lit { fill: var(--scene-accent-soft, #dcefed); stroke: var(--scene-accent, #006c73); stroke-width: 1.5; }
+.grow-play .grow-ask1 { animation: grow-kf-ask1 19.5s 1; }
+@keyframes grow-kf-ask1 { 0%, 7.69%, 0%, 7.69% { opacity: 0; } 10.97%, 16.72% { opacity: 1; } 20%, 89.74%, 100% { opacity: 0; } }
+.grow-play .grow-ai1 { animation: grow-kf-ai1 19.5s 1; }
+@keyframes grow-kf-ai1 { 0%, 7.69%, 10.97% { opacity: 0; } 14.26%, 29.03% { opacity: 1; } 32.31%, 89.74%, 100% { opacity: 0; } }
+.grow-play .grow-opts { animation: grow-kf-opts 19.5s 1; }
+@keyframes grow-kf-opts { 0%, 7.69%, 12.62% { opacity: 0; } 15.9%, 29.03% { opacity: 1; } 32.31%, 89.74%, 100% { opacity: 0; } }
+.grow-play .grow-ring { animation: grow-kf-ring 19.5s 1; }
+@keyframes grow-kf-ring { 0%, 7.69%, 20% { opacity: 0; } 23.28%, 29.03% { opacity: 1; } 32.31%, 89.74%, 100% { opacity: 0; } }
+.grow-play .grow-pick1 { animation: grow-kf-pick1 19.5s 1; }
+@keyframes grow-kf-pick1 { 0%, 7.69%, 20% { opacity: 0; } 23.28%, 29.03% { opacity: 1; } 32.31%, 89.74%, 100% { opacity: 0; } }
+.grow-play .grow-ai2 { animation: grow-kf-ai2 19.5s 1; }
+@keyframes grow-kf-ai2 { 0%, 7.69%, 32.31% { opacity: 0; } 35.59%, 48.72% { opacity: 1; } 52%, 89.74%, 100% { opacity: 0; } }
+.grow-play .grow-docg { animation: grow-kf-docg 19.5s 1; }
+@keyframes grow-kf-docg { 0%, 7.69%, 33.95% { opacity: 0; } 37.23%, 48.72% { opacity: 1; } 52%, 89.74%, 100% { opacity: 0; } }
+.grow-play .grow-go2 { animation: grow-kf-go2 19.5s 1; }
+@keyframes grow-kf-go2 { 0%, 7.69%, 37.23% { opacity: 0; } 40.51%, 48.72% { opacity: 1; } 52%, 89.74%, 100% { opacity: 0; } }
+.grow-play .grow-shipped { animation: grow-kf-shipped 19.5s 1; }
+@keyframes grow-kf-shipped { 0%, 7.69%, 40.51% { opacity: 0; } 43.79%, 48.72% { opacity: 1; } 52%, 89.74%, 100% { opacity: 0; } }
+.grow-play .grow-alertg { animation: grow-kf-alertg 19.5s 1; }
+@keyframes grow-kf-alertg { 0%, 7.69%, 52% { opacity: 0; } 55.28%, 70.05% { opacity: 1; } 73.33%, 89.74%, 100% { opacity: 0; } }
+.grow-play .grow-ai3 { animation: grow-kf-ai3 19.5s 1; }
+@keyframes grow-kf-ai3 { 0%, 7.69%, 53.64% { opacity: 0; } 56.92%, 84.82% { opacity: 1; } 88.1%, 89.74%, 100% { opacity: 0; } }
+.grow-play .grow-logs { animation: grow-kf-logs 19.5s 1; }
+@keyframes grow-kf-logs { 0%, 7.69%, 55.28% { opacity: 0; } 58.56%, 70.05% { opacity: 1; } 73.33%, 89.74%, 100% { opacity: 0; } }
+.grow-play .grow-fix4 { animation: grow-kf-fix4 19.5s 1; }
+@keyframes grow-kf-fix4 { 0%, 7.69%, 68.41% { opacity: 0; } 71.69%, 84.82% { opacity: 1; } 88.1%, 89.74%, 100% { opacity: 0; } }
+.grow-play .grow-fixed { animation: grow-kf-fixed 19.5s 1; }
+@keyframes grow-kf-fixed { 0%, 7.69%, 73.33% { opacity: 0; } 76.62%, 84.82% { opacity: 1; } 88.1%, 89.74%, 100% { opacity: 0; } }
+.grow-play .grow-st1 { animation: grow-kf-st1 19.5s 1; }
+@keyframes grow-kf-st1 { 0%, 7.69%, 0%, 7.69% { opacity: 0; } 10.97%, 84.82% { opacity: 1; } 88.1%, 89.74%, 100% { opacity: 0; } }
+.grow-play .grow-st2 { animation: grow-kf-st2 19.5s 1; }
+@keyframes grow-kf-st2 { 0%, 7.69%, 32.31% { opacity: 0; } 35.59%, 84.82% { opacity: 1; } 88.1%, 89.74%, 100% { opacity: 0; } }
+.grow-play .grow-st3 { animation: grow-kf-st3 19.5s 1; }
+@keyframes grow-kf-st3 { 0%, 7.69%, 40.51% { opacity: 0; } 43.79%, 84.82% { opacity: 1; } 88.1%, 89.74%, 100% { opacity: 0; } }
+.grow-play .grow-st4 { animation: grow-kf-st4 19.5s 1; }
+@keyframes grow-kf-st4 { 0%, 7.69%, 52% { opacity: 0; } 55.28%, 84.82% { opacity: 1; } 88.1%, 89.74%, 100% { opacity: 0; } }
+.grow-sum-bg { fill: var(--scene-accent-soft, #dcefed); }
+.grow-play .grow-summary { animation: grow-kf-summary 19.5s 1; }
+@keyframes grow-kf-summary { 0%, 5.64% { opacity: 1; } 7.69%, 84.82% { opacity: 0; } 86.87%, 100% { opacity: 1; } }
+.grow-play.grow-paused * { animation-play-state: paused; }
+</style>
+<g class="grow-ask1"><rect class="grow-you-bg" x="6" y="27" width="38" height="20" rx="10"/><text class="grow-you-t" x="25" y="41.32" font-size="12" text-anchor="middle">You</text><text class="grow-t" x="50" y="41.68" font-size="13">add order export</text></g>
+<g class="grow-pick1"><rect class="grow-you-bg" x="6" y="27" width="38" height="20" rx="10"/><text class="grow-you-t" x="25" y="41.32" font-size="12" text-anchor="middle">You</text><text class="grow-t grow-b" x="50" y="41.68" font-size="13">pick CSV</text></g>
+<g class="grow-ai1"><g class="grow-ai-mark" transform="translate(6 4)"><g transform="translate(0 3.5)"><path class="grow-spark" d="M5.46 2.08 Q6.33 6.67 10.92 7.54 Q6.33 8.41 5.46 13 Q4.59 8.41 0 7.54 Q4.59 6.67 5.46 2.08Z M11.18 -0.13 Q11.53 1.73 13.39 2.08 Q11.53 2.43 11.18 4.29 Q10.83 2.43 8.97 2.08 Q10.83 1.73 11.18 -0.13Z M11.7 9.75 Q11.93 10.95 13.13 11.18 Q11.93 11.41 11.7 12.61 Q11.47 11.41 10.27 11.18 Q11.47 10.95 11.7 9.75Z"/></g><text class="grow-ai-t" x="16" y="14.32" font-size="12">AI</text></g><text class="grow-t" x="50" y="18.68" font-size="13">3 options</text></g>
+<g class="grow-opts"><rect class="grow-opt" x="4" y="62" width="72" height="28" rx="6"/><text class="grow-t grow-b" x="40" y="80.5" font-size="13" text-anchor="middle">CSV</text><rect class="grow-opt" x="84" y="62" width="72" height="28" rx="6"/><text class="grow-t grow-b" x="120" y="80.5" font-size="13" text-anchor="middle">PDF</text><rect class="grow-opt" x="164" y="62" width="72" height="28" rx="6"/><text class="grow-t grow-b" x="200" y="80.5" font-size="13" text-anchor="middle">JSON</text></g>
+<g class="grow-ring"><rect class="grow-pick-ring" x="4" y="62" width="72" height="28" rx="6"/><text class="grow-t grow-b grow-good-t" x="66" y="80.5" font-size="13" text-anchor="middle">✓</text></g>
+<g class="grow-ai2"><g class="grow-ai-mark" transform="translate(6 4)"><g transform="translate(0 3.5)"><path class="grow-spark" d="M5.46 2.08 Q6.33 6.67 10.92 7.54 Q6.33 8.41 5.46 13 Q4.59 8.41 0 7.54 Q4.59 6.67 5.46 2.08Z M11.18 -0.13 Q11.53 1.73 13.39 2.08 Q11.53 2.43 11.18 4.29 Q10.83 2.43 8.97 2.08 Q10.83 1.73 11.18 -0.13Z M11.7 9.75 Q11.93 10.95 13.13 11.18 Q11.93 11.41 11.7 12.61 Q11.47 11.41 10.27 11.18 Q11.47 10.95 11.7 9.75Z"/></g><text class="grow-ai-t" x="16" y="14.32" font-size="12">AI</text></g><text class="grow-t" x="50" y="18.68" font-size="13">code + tests</text></g>
+<g class="grow-go2"><rect class="grow-you-bg" x="6" y="27" width="38" height="20" rx="10"/><text class="grow-you-t" x="25" y="41.32" font-size="12" text-anchor="middle">You</text><text class="grow-t grow-b" x="50" y="41.68" font-size="13">ship</text></g>
+<g class="grow-docg"><rect class="grow-doc" x="4" y="56" width="104" height="50" rx="6"/><rect class="grow-bar" x="12" y="63" width="70" height="5" rx="2.5"/><rect class="grow-bar" x="12" y="72" width="52" height="5" rx="2.5"/><rect class="grow-pass" x="12" y="82" width="62" height="18" rx="9"/><text class="grow-t grow-b grow-good-t" x="43" y="95.3" font-size="12" text-anchor="middle">✓ tests</text></g>
+<g class="grow-shipped"><text class="grow-t grow-b grow-good-t" x="232" y="86" font-size="14" text-anchor="end">Shipped ✓</text></g>
+<g class="grow-ai3"><g class="grow-ai-mark" transform="translate(6 4)"><g transform="translate(0 3.5)"><path class="grow-spark" d="M5.46 2.08 Q6.33 6.67 10.92 7.54 Q6.33 8.41 5.46 13 Q4.59 8.41 0 7.54 Q4.59 6.67 5.46 2.08Z M11.18 -0.13 Q11.53 1.73 13.39 2.08 Q11.53 2.43 11.18 4.29 Q10.83 2.43 8.97 2.08 Q10.83 1.73 11.18 -0.13Z M11.7 9.75 Q11.93 10.95 13.13 11.18 Q11.93 11.41 11.7 12.61 Q11.47 11.41 10.27 11.18 Q11.47 10.95 11.7 9.75Z"/></g><text class="grow-ai-t" x="16" y="14.32" font-size="12">AI</text></g><text class="grow-t" x="50" y="18.68" font-size="13">logs → null currency</text></g>
+<g class="grow-fix4"><rect class="grow-you-bg" x="6" y="27" width="38" height="20" rx="10"/><text class="grow-you-t" x="25" y="41.32" font-size="12" text-anchor="middle">You</text><text class="grow-t grow-b" x="50" y="41.68" font-size="13">default currency</text></g>
+<g class="grow-alertg"><rect class="grow-alert" x="4" y="54" width="132" height="22" rx="6"/><text class="grow-t grow-b grow-bad-t" x="70" y="69.7" font-size="13" text-anchor="middle">⚠ Totals wrong</text></g>
+<g class="grow-fixed"><text class="grow-t grow-b grow-good-t" x="6" y="70" font-size="14">Fixed ✓</text></g>
+<g class="grow-logs"><rect class="grow-log" x="4" y="79" width="232" height="31" rx="6"/><text class="grow-tm" x="12" y="92" font-size="12">GET /orders 200</text><rect class="grow-hl" x="8" y="95" width="224" height="13" rx="3" opacity=".14"/><text class="grow-tm grow-b grow-bad-t" x="12" y="105.5" font-size="12">currency: null</text></g>
+<rect class="grow-step" x="4" y="114" width="52" height="19" rx="9.5"/><g class="grow-st1"><rect class="grow-lit" x="4" y="114" width="52" height="19" rx="9.5"/></g><text class="grow-t grow-b" x="30" y="127.8" font-size="12" text-anchor="middle">Plan</text><rect class="grow-step" x="64" y="114" width="52" height="19" rx="9.5"/><g class="grow-st2"><rect class="grow-lit" x="64" y="114" width="52" height="19" rx="9.5"/></g><text class="grow-t grow-b" x="90" y="127.8" font-size="12" text-anchor="middle">Build</text><rect class="grow-step" x="124" y="114" width="52" height="19" rx="9.5"/><g class="grow-st3"><rect class="grow-lit" x="124" y="114" width="52" height="19" rx="9.5"/></g><text class="grow-t grow-b" x="150" y="127.8" font-size="12" text-anchor="middle">Ship</text><rect class="grow-step" x="184" y="114" width="52" height="19" rx="9.5"/><g class="grow-st4"><rect class="grow-lit" x="184" y="114" width="52" height="19" rx="9.5"/></g><text class="grow-t grow-b" x="210" y="127.8" font-size="12" text-anchor="middle">Fix</text>
+<g class="grow-summary"><rect class="grow-sum-bg" x="0" y="0" width="240" height="135"/><text class="grow-t grow-b" x="22" y="32" font-size="16">Grow to deliver</text><text class="grow-t grow-b" x="22" y="52" font-size="16">what the team designs.</text><g class="grow-ai-mark" transform="translate(22 66)"><g transform="translate(0 4)"><path class="grow-spark" d="M6.72 2.56 Q7.8 8.2 13.44 9.28 Q7.8 10.36 6.72 16 Q5.64 10.36 0 9.28 Q5.64 8.2 6.72 2.56Z M13.76 -0.16 Q14.2 2.12 16.48 2.56 Q14.2 3 13.76 5.28 Q13.32 3 11.04 2.56 Q13.32 2.12 13.76 -0.16Z M14.4 12 Q14.68 13.48 16.16 13.76 Q14.68 14.04 14.4 15.52 Q14.12 14.04 12.64 13.76 Q14.12 13.48 14.4 12Z"/></g><text class="grow-ai-t" x="19" y="17.40" font-size="15">AI</text></g><text class="grow-t" x="74" y="83" font-size="15">writes with you,</text><rect class="grow-you-bg" x="22" y="98" width="44" height="24" rx="12"/><text class="grow-you-t" x="44" y="115.04" font-size="14" text-anchor="middle">You</text><text class="grow-t" x="74" y="115" font-size="15">run it.</text></g>
+</svg>

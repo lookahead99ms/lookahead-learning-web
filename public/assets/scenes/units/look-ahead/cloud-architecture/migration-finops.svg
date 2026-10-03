@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Application crates move in waves from an on-premises building to a cloud while a cost meter is watched">
+<style>
+.look-ahead-cloud-architecture-migration-finops-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.look-ahead-cloud-architecture-migration-finops-c{animation:look-ahead-cloud-architecture-migration-finops-mv 6s ease-in-out infinite}
+.look-ahead-cloud-architecture-migration-finops-n{transform-box:fill-box;transform-origin:50% 100%;animation:look-ahead-cloud-architecture-migration-finops-gauge 6s ease-in-out infinite}
+@keyframes look-ahead-cloud-architecture-migration-finops-mv{0%,10%{transform:translateX(0);opacity:1}60%,85%{transform:translateX(100px);opacity:1}95%,100%{transform:translateX(100px);opacity:0}}
+@keyframes look-ahead-cloud-architecture-migration-finops-gauge{0%,100%{transform:rotate(-55deg)}50%{transform:rotate(25deg)}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="14" y="44" width="80" height="74" rx="4" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-muted,#536970)" stroke-width="2"/>
+<g fill="var(--scene-card,#fff)"><rect x="24" y="62" width="14" height="12"/><rect x="48" y="62" width="14" height="12"/><rect x="72" y="62" width="14" height="12"/></g>
+<rect x="44" y="90" width="20" height="28" fill="var(--scene-muted,#536970)"/>
+<path d="M98 106H210" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="5 4"/>
+<g class="look-ahead-cloud-architecture-migration-finops-c" style="animation-delay:-3s"><rect x="100" y="97" width="22" height="18" rx="2" fill="var(--scene-learn,#0f8a8a)"/></g>
+<g class="look-ahead-cloud-architecture-migration-finops-c" style="animation-delay:-3.9s"><rect x="100" y="97" width="22" height="18" rx="2" fill="var(--scene-link,#245a88)"/></g>
+<g class="look-ahead-cloud-architecture-migration-finops-c" style="animation-delay:-4.8s"><rect x="100" y="97" width="22" height="18" rx="2" fill="var(--scene-grow,#b8457a)"/></g>
+<path d="M232 112a14 14 0 0 1 4-27 20 20 0 0 1 38-4 17 17 0 0 1 4 31z" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-ahead,#2f6fb3)" stroke-width="3"/>
+<g transform="translate(60,166)"><path d="M-30 0A30 30 0 0 1 30 0" fill="none" stroke="var(--scene-line,#cfdfdc)" stroke-width="8"/>
+<path d="M-30 0A30 30 0 0 1 -10 -28" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="8"/>
+<path d="M10 -28A30 30 0 0 1 30 0" fill="none" stroke="var(--scene-bad,#b3261e)" stroke-width="8"/>
+<line class="look-ahead-cloud-architecture-migration-finops-n" style="animation-delay:-3s" x1="0" y1="0" x2="0" y2="-24" stroke="var(--scene-ink,#102a33)" stroke-width="3" stroke-linecap="round"/><circle r="4" fill="var(--scene-ink,#102a33)"/></g>
+<text class="look-ahead-cloud-architecture-migration-finops-t" x="54" y="30" text-anchor="middle">On-prem</text>
+<text class="look-ahead-cloud-architecture-migration-finops-t" x="258" y="30" text-anchor="middle">Cloud</text>
+<text class="look-ahead-cloud-architecture-migration-finops-t" x="104" y="166" text-anchor="start">Unit cost</text>
+</svg>

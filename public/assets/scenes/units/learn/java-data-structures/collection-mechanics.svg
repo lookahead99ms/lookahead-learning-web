@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Array shifting, hash bucket lookup and a heap with the smallest item on top">
+<style>
+.learn-java-data-structures-collection-mechanics-t{font:700 14px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.learn-java-data-structures-collection-mechanics-band{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:2}
+.learn-java-data-structures-collection-mechanics-a{fill:var(--scene-learn,#0f8a8a)}
+.learn-java-data-structures-collection-mechanics-b{fill:var(--scene-grow,#b8457a)}
+.learn-java-data-structures-collection-mechanics-c{fill:var(--scene-ahead,#2f6fb3)}
+.learn-java-data-structures-collection-mechanics-w{fill:var(--scene-warn,#a15c00)}
+.learn-java-data-structures-collection-mechanics-e{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-accent,#006c73);stroke-width:1.5}
+.learn-java-data-structures-collection-mechanics-ln{stroke:var(--scene-muted,#536970);stroke-width:2;fill:none}
+.learn-java-data-structures-collection-mechanics-sh{animation:learn-java-data-structures-collection-mechanics-sh 6s ease-in-out infinite;animation-delay:-3s}
+.learn-java-data-structures-collection-mechanics-ni{animation:learn-java-data-structures-collection-mechanics-ni 6s ease-in-out infinite;animation-delay:-3s}
+.learn-java-data-structures-collection-mechanics-ky{animation:learn-java-data-structures-collection-mechanics-ky 6s ease-in-out infinite;animation-delay:-3s}
+.learn-java-data-structures-collection-mechanics-sd{animation:learn-java-data-structures-collection-mechanics-sd 6s ease-in-out infinite;animation-delay:-3s}
+.learn-java-data-structures-collection-mechanics-sw{animation:learn-java-data-structures-collection-mechanics-sw 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes learn-java-data-structures-collection-mechanics-sh{0%,15%{transform:translateX(0)}40%,80%{transform:translateX(22px)}100%{transform:translateX(0)}}
+@keyframes learn-java-data-structures-collection-mechanics-ni{0%,15%{transform:translateY(-8px);opacity:0}40%,80%{transform:translateY(0);opacity:1}100%{transform:translateY(0);opacity:0}}
+@keyframes learn-java-data-structures-collection-mechanics-ky{0%,10%{transform:translate(0,0)}35%,85%{transform:translate(24px,0)}100%{transform:translate(0,0)}}
+@keyframes learn-java-data-structures-collection-mechanics-sd{0%,30%{transform:translate(0,0)}55%,85%{transform:translate(-18px,18px)}100%{transform:translate(0,0)}}
+@keyframes learn-java-data-structures-collection-mechanics-sw{0%,30%{transform:translate(0,0)}55%,85%{transform:translate(18px,-18px)}100%{transform:translate(0,0)}}
+</style>
+<rect width="240" height="135" fill="var(--scene-card,#fff)"/>
+<rect class="learn-java-data-structures-collection-mechanics-band" x="4" y="4" width="232" height="40" rx="8"/>
+<g class="learn-java-data-structures-collection-mechanics-sh"><rect class="learn-java-data-structures-collection-mechanics-a" x="14" y="15" width="18" height="18" rx="3"/><rect class="learn-java-data-structures-collection-mechanics-b" x="36" y="15" width="18" height="18" rx="3"/><rect class="learn-java-data-structures-collection-mechanics-c" x="58" y="15" width="18" height="18" rx="3"/><rect class="learn-java-data-structures-collection-mechanics-a" x="80" y="15" width="18" height="18" rx="3"/></g>
+<rect class="learn-java-data-structures-collection-mechanics-w learn-java-data-structures-collection-mechanics-ni" x="14" y="15" width="18" height="18" rx="3"/>
+<text class="learn-java-data-structures-collection-mechanics-t" x="226" y="30" text-anchor="end">Shift O(n)</text>
+<rect class="learn-java-data-structures-collection-mechanics-band" x="4" y="48" width="232" height="40" rx="8"/>
+<g class="learn-java-data-structures-collection-mechanics-ky"><rect class="learn-java-data-structures-collection-mechanics-w" x="12" y="59" width="20" height="18" rx="3"/></g>
+<path class="learn-java-data-structures-collection-mechanics-ln" d="M34 68h22"/>
+<circle class="learn-java-data-structures-collection-mechanics-e" cx="68" cy="68" r="11"/>
+<path class="learn-java-data-structures-collection-mechanics-ln" d="M80 68h10"/>
+<rect class="learn-java-data-structures-collection-mechanics-e" x="92" y="54" width="14" height="28" rx="3"/><rect class="learn-java-data-structures-collection-mechanics-e" x="108" y="54" width="14" height="28" rx="3"/><rect class="learn-java-data-structures-collection-mechanics-e" x="124" y="54" width="14" height="28" rx="3"/>
+<rect class="learn-java-data-structures-collection-mechanics-a" x="94" y="58" width="10" height="8" rx="2"/>
+<rect class="learn-java-data-structures-collection-mechanics-b" x="126" y="58" width="10" height="8" rx="2"/><rect class="learn-java-data-structures-collection-mechanics-c" x="126" y="70" width="10" height="8" rx="2"/>
+<text class="learn-java-data-structures-collection-mechanics-t" x="226" y="74" text-anchor="end">Hash bucket</text>
+<rect class="learn-java-data-structures-collection-mechanics-band" x="4" y="92" width="232" height="40" rx="8"/>
+<path class="learn-java-data-structures-collection-mechanics-ln" d="M46 104L28 122M46 104L64 122"/>
+<g class="learn-java-data-structures-collection-mechanics-sw"><circle class="learn-java-data-structures-collection-mechanics-w" cx="28" cy="122" r="7"/></g>
+<g class="learn-java-data-structures-collection-mechanics-sd"><circle class="learn-java-data-structures-collection-mechanics-a" cx="46" cy="104" r="7"/></g>
+<circle class="learn-java-data-structures-collection-mechanics-c" cx="64" cy="122" r="7"/>
+<text class="learn-java-data-structures-collection-mechanics-t" x="226" y="118" text-anchor="end">Min on top</text>
+</svg>

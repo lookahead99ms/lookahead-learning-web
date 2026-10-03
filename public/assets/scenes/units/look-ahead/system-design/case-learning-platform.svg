@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A learner progressing along a saved lesson path"><title>A learner progressing along a saved lesson path</title>
+<style>
+.look-ahead-system-design-case-learning-platform-bg{fill:var(--scene-card,#fff)}
+.look-ahead-system-design-case-learning-platform-t{font-family:system-ui,sans-serif;font-weight:700;font-size:16px;fill:var(--scene-ink,#102a33);text-anchor:middle}
+.look-ahead-system-design-case-learning-platform-n{font-family:system-ui,sans-serif;font-weight:700;font-size:16px;fill:var(--scene-ink,#102a33);text-anchor:middle}
+.look-ahead-system-design-case-learning-platform-soft{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-accent,#006c73);stroke-width:2.5}
+.look-ahead-system-design-case-learning-platform-card{fill:var(--scene-card,#fff);stroke:var(--scene-ink,#102a33);stroke-width:2.5}
+.look-ahead-system-design-case-learning-platform-line{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:3;stroke-linecap:round}
+.look-ahead-system-design-case-learning-platform-dash{fill:none;stroke:var(--scene-muted,#536970);stroke-width:2.5;stroke-dasharray:5 5;stroke-linecap:round}
+
+.look-ahead-system-design-case-learning-platform-path{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:5;stroke-linecap:round;stroke-dasharray:1 9}
+.look-ahead-system-design-case-learning-platform-done{fill:var(--scene-good,#1f7a4d)}
+.look-ahead-system-design-case-learning-platform-cur{fill:var(--scene-accent,#006c73);animation:6s ease-in-out -3s infinite look-ahead-system-design-case-learning-platform-bob;transform-box:fill-box;transform-origin:50% 50%}
+.look-ahead-system-design-case-learning-platform-lock{fill:var(--scene-line,#cfdfdc);stroke:var(--scene-muted,#536970);stroke-width:2.5}
+.look-ahead-system-design-case-learning-platform-who{fill:var(--scene-grow,#b8457a);animation:6s ease-in-out -3s infinite look-ahead-system-design-case-learning-platform-walk}
+.look-ahead-system-design-case-learning-platform-bar{fill:var(--scene-accent,#006c73);animation:6s ease-in-out -3s infinite look-ahead-system-design-case-learning-platform-fill}
+.look-ahead-system-design-case-learning-platform-wh{fill:none;stroke:#fff;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.look-ahead-system-design-case-learning-platform-lk{fill:var(--scene-muted,#536970)}
+@keyframes look-ahead-system-design-case-learning-platform-bob{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+@keyframes look-ahead-system-design-case-learning-platform-walk{0%{transform:translate(0,0)}45%,100%{transform:translate(90px,-42px)}}
+@keyframes look-ahead-system-design-case-learning-platform-fill{0%{width:60px}45%,100%{width:140px}}
+</style>
+<rect class="look-ahead-system-design-case-learning-platform-bg" width="320" height="180"/>
+<path class="look-ahead-system-design-case-learning-platform-path" d="M50 108Q95 108 140 78T230 48" pathLength="100" style="stroke-dasharray:.1 5"/>
+<rect class="look-ahead-system-design-case-learning-platform-lock" x="18" y="140" width="0" height="0"/>
+<circle class="look-ahead-system-design-case-learning-platform-done" cx="50" cy="108" r="24"/><path class="look-ahead-system-design-case-learning-platform-wh" d="M39 108l8 8 15-17"/>
+<circle class="look-ahead-system-design-case-learning-platform-cur" cx="140" cy="78" r="24"/><path class="look-ahead-system-design-case-learning-platform-wh" d="M132 66v24l20-12z" style="fill:#fff"/>
+<circle class="look-ahead-system-design-case-learning-platform-lock" cx="230" cy="48" r="24"/><rect class="look-ahead-system-design-case-learning-platform-lk" x="219" y="48" width="22" height="16" rx="3"/><path class="look-ahead-system-design-case-learning-platform-wh" d="M224 48v-6a6 6 0 0 1 12 0v6" style="stroke:var(--scene-muted,#536970)"/>
+<circle class="look-ahead-system-design-case-learning-platform-who" cx="50" cy="78" r="8" style="animation-name:look-ahead-system-design-case-learning-platform-walk"/>
+<text class="look-ahead-system-design-case-learning-platform-t" x="50" y="148">Saved</text><text class="look-ahead-system-design-case-learning-platform-t" x="230" y="92">Locked</text>
+<rect x="20" y="162" width="280" height="10" rx="5" fill="var(--scene-line,#cfdfdc)"/><rect class="look-ahead-system-design-case-learning-platform-bar" x="20" y="162" width="140" height="10" rx="5"/>
+</svg>

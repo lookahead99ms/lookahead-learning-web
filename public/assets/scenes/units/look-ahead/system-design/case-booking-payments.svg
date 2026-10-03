@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="One seat held, paid and sold to a single buyer"><title>One seat held, paid and sold to a single buyer</title>
+<style>
+.look-ahead-system-design-case-booking-payments-bg{fill:var(--scene-card,#fff)}
+.look-ahead-system-design-case-booking-payments-t{font-family:system-ui,sans-serif;font-weight:700;font-size:16px;fill:var(--scene-ink,#102a33);text-anchor:middle}
+.look-ahead-system-design-case-booking-payments-n{font-family:system-ui,sans-serif;font-weight:700;font-size:16px;fill:var(--scene-ink,#102a33);text-anchor:middle}
+.look-ahead-system-design-case-booking-payments-soft{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-accent,#006c73);stroke-width:2.5}
+.look-ahead-system-design-case-booking-payments-card{fill:var(--scene-card,#fff);stroke:var(--scene-ink,#102a33);stroke-width:2.5}
+.look-ahead-system-design-case-booking-payments-line{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:3;stroke-linecap:round}
+.look-ahead-system-design-case-booking-payments-dash{fill:none;stroke:var(--scene-muted,#536970);stroke-width:2.5;stroke-dasharray:5 5;stroke-linecap:round}
+
+.look-ahead-system-design-case-booking-payments-seat{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:3}
+.look-ahead-system-design-case-booking-payments-mine{stroke-width:3;animation:6s linear -3s infinite look-ahead-system-design-case-booking-payments-col}
+.look-ahead-system-design-case-booking-payments-hand{animation:6s ease-in-out -3s infinite look-ahead-system-design-case-booking-payments-hit;fill:var(--scene-ink,#102a33)}
+.look-ahead-system-design-case-booking-payments-xb{fill:var(--scene-bad,#b3261e);animation:6s linear -3s infinite look-ahead-system-design-case-booking-payments-xx}
+.look-ahead-system-design-case-booking-payments-x{fill:none;stroke:#fff;stroke-width:3.5;stroke-linecap:round;animation:6s linear -3s infinite look-ahead-system-design-case-booking-payments-xx}
+.look-ahead-system-design-case-booking-payments-tick{fill:none;stroke:var(--scene-good,#1f7a4d);stroke-width:5;stroke-linecap:round;stroke-linejoin:round;animation:6s linear -3s infinite look-ahead-system-design-case-booking-payments-tt}
+.look-ahead-system-design-case-booking-payments-tkt{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-good,#1f7a4d);stroke-width:3}
+@keyframes look-ahead-system-design-case-booking-payments-col{0%,10%{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc)}14%,40%{fill:var(--scene-warn,#a15c00);stroke:var(--scene-warn,#a15c00)}44%,92%{fill:var(--scene-good,#1f7a4d);stroke:var(--scene-good,#1f7a4d)}96%,100%{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc)}}
+@keyframes look-ahead-system-design-case-booking-payments-hit{0%,18%{transform:translate(40px,30px);opacity:0}24%{opacity:1;transform:translate(40px,30px)}32%{transform:translate(0,0);opacity:1}36%{transform:translate(-4px,-4px)}44%,60%{transform:translate(0,0);opacity:1}68%,100%{transform:translate(40px,30px);opacity:0}}
+@keyframes look-ahead-system-design-case-booking-payments-xx{0%,36%{opacity:0}38%,60%{opacity:1}64%,100%{opacity:0}}
+@keyframes look-ahead-system-design-case-booking-payments-tt{0%,48%{opacity:0}52%,92%{opacity:1}96%,100%{opacity:0}}
+</style>
+<rect class="look-ahead-system-design-case-booking-payments-bg" width="320" height="180"/>
+<rect class="look-ahead-system-design-case-booking-payments-seat" x="24" y="24" width="30" height="26" rx="6"/><rect class="look-ahead-system-design-case-booking-payments-seat" x="62" y="24" width="30" height="26" rx="6"/><rect class="look-ahead-system-design-case-booking-payments-seat" x="100" y="24" width="30" height="26" rx="6"/><rect class="look-ahead-system-design-case-booking-payments-seat" x="138" y="24" width="30" height="26" rx="6"/>
+<rect class="look-ahead-system-design-case-booking-payments-seat" x="24" y="60" width="30" height="26" rx="6"/><rect class="look-ahead-system-design-case-booking-payments-seat look-ahead-system-design-case-booking-payments-mine" x="62" y="60" width="30" height="26" rx="6"/><rect class="look-ahead-system-design-case-booking-payments-seat" x="100" y="60" width="30" height="26" rx="6"/><rect class="look-ahead-system-design-case-booking-payments-seat" x="138" y="60" width="30" height="26" rx="6"/>
+<rect class="look-ahead-system-design-case-booking-payments-seat" x="24" y="96" width="30" height="26" rx="6"/><rect class="look-ahead-system-design-case-booking-payments-seat" x="62" y="96" width="30" height="26" rx="6"/><rect class="look-ahead-system-design-case-booking-payments-seat" x="100" y="96" width="30" height="26" rx="6"/><rect class="look-ahead-system-design-case-booking-payments-seat" x="138" y="96" width="30" height="26" rx="6"/>
+<path class="look-ahead-system-design-case-booking-payments-hand" d="M80 78l0 20 5-4 4 9 5-2-4-9 7-1z"/>
+<circle class="look-ahead-system-design-case-booking-payments-xb" cx="92" cy="60" r="10"/><path class="look-ahead-system-design-case-booking-payments-x" d="M88 56l8 8M96 56l-8 8"/>
+<rect class="look-ahead-system-design-case-booking-payments-tkt" x="206" y="40" width="94" height="66" rx="10"/><path class="look-ahead-system-design-case-booking-payments-tick" d="M238 73l10 10 20-22"/>
+<text class="look-ahead-system-design-case-booking-payments-t" x="253" y="130">Paid</text>
+<text class="look-ahead-system-design-case-booking-payments-t" x="96" y="160">One seat, one buyer</text>
+</svg>

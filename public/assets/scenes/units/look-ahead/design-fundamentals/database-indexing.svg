@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Divya opens her inbox twice: without an index a highlight crawls through every row and takes about 80 seconds, while with an index her newest messages light up at once in about 5 ms">
+<style>
+.database-indexing-card{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.database-indexing-good{font-family:system-ui,sans-serif;fill:var(--scene-good,#1f7a4d)}
+.database-indexing-bad{font-family:system-ui,sans-serif;fill:var(--scene-bad,#b3261e)}
+.database-indexing-row{fill:var(--scene-line,#cfdfdc)}
+.database-indexing-env{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.3}
+.database-indexing-scan{fill:var(--scene-warn,#a15c00);opacity:.28;animation:database-indexing-scan 6s -3s linear infinite}
+@keyframes database-indexing-scan{0%{transform:translateY(0)}33%{transform:translateY(72px)}33.01%{transform:translateY(0)}66%{transform:translateY(72px)}66.01%{transform:translateY(0)}100%{transform:translateY(72px)}}
+.database-indexing-hit{fill:var(--scene-good,#1f7a4d);animation:database-indexing-hit 6s -3s infinite}
+@keyframes database-indexing-hit{0%,2%{opacity:0}4%,30%{opacity:.28}33%,35%{opacity:0}37%,63%{opacity:.28}66%,68%{opacity:0}70%,97%{opacity:.28}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.database-indexing-scan,.database-indexing-hit{animation-play-state:paused}}
+</style>
+<rect class="database-indexing-card" x="6" y="6" width="108" height="123" rx="10"/>
+<path class="database-indexing-env" d="M14 16 h11 v8 h-11 z M14 16 l5.5 4.5 l5.5 -4.5"/><rect class="database-indexing-row" x="30" y="17" width="74" height="6" rx="3"/>
+<path class="database-indexing-env" d="M14 28 h11 v8 h-11 z M14 28 l5.5 4.5 l5.5 -4.5"/><rect class="database-indexing-row" x="30" y="29" width="62" height="6" rx="3"/>
+<path class="database-indexing-env" d="M14 40 h11 v8 h-11 z M14 40 l5.5 4.5 l5.5 -4.5"/><rect class="database-indexing-row" x="30" y="41" width="70" height="6" rx="3"/>
+<path class="database-indexing-env" d="M14 52 h11 v8 h-11 z M14 52 l5.5 4.5 l5.5 -4.5"/><rect class="database-indexing-row" x="30" y="53" width="58" height="6" rx="3"/>
+<path class="database-indexing-env" d="M14 64 h11 v8 h-11 z M14 64 l5.5 4.5 l5.5 -4.5"/><rect class="database-indexing-row" x="30" y="65" width="72" height="6" rx="3"/>
+<path class="database-indexing-env" d="M14 76 h11 v8 h-11 z M14 76 l5.5 4.5 l5.5 -4.5"/><rect class="database-indexing-row" x="30" y="77" width="64" height="6" rx="3"/>
+<path class="database-indexing-env" d="M14 88 h11 v8 h-11 z M14 88 l5.5 4.5 l5.5 -4.5"/><rect class="database-indexing-row" x="30" y="89" width="56" height="6" rx="3"/>
+<rect class="database-indexing-scan" x="10" y="12" width="100" height="16" rx="4"/>
+<text class="database-indexing-bad" x="60" y="123" font-size="17" font-weight="700" text-anchor="middle">80 s</text>
+<rect class="database-indexing-card" x="126" y="6" width="108" height="123" rx="10"/>
+<path class="database-indexing-env" d="M134 16 h11 v8 h-11 z M134 16 l5.5 4.5 l5.5 -4.5"/><rect class="database-indexing-row" x="150" y="17" width="74" height="6" rx="3"/>
+<path class="database-indexing-env" d="M134 28 h11 v8 h-11 z M134 28 l5.5 4.5 l5.5 -4.5"/><rect class="database-indexing-row" x="150" y="29" width="62" height="6" rx="3"/>
+<path class="database-indexing-env" d="M134 40 h11 v8 h-11 z M134 40 l5.5 4.5 l5.5 -4.5"/><rect class="database-indexing-row" x="150" y="41" width="70" height="6" rx="3"/>
+<path class="database-indexing-env" d="M134 52 h11 v8 h-11 z M134 52 l5.5 4.5 l5.5 -4.5"/><rect class="database-indexing-row" x="150" y="53" width="58" height="6" rx="3"/>
+<path class="database-indexing-env" d="M134 64 h11 v8 h-11 z M134 64 l5.5 4.5 l5.5 -4.5"/><rect class="database-indexing-row" x="150" y="65" width="72" height="6" rx="3"/>
+<path class="database-indexing-env" d="M134 76 h11 v8 h-11 z M134 76 l5.5 4.5 l5.5 -4.5"/><rect class="database-indexing-row" x="150" y="77" width="64" height="6" rx="3"/>
+<path class="database-indexing-env" d="M134 88 h11 v8 h-11 z M134 88 l5.5 4.5 l5.5 -4.5"/><rect class="database-indexing-row" x="150" y="89" width="56" height="6" rx="3"/>
+<rect class="database-indexing-hit" x="130" y="12" width="100" height="40" rx="4"/>
+<text class="database-indexing-good" x="180" y="123" font-size="17" font-weight="700" text-anchor="middle">5 ms</text>
+</svg>

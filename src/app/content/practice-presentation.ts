@@ -10,6 +10,8 @@ export interface PracticePresentationItem {
 export interface PracticePresentation {
   kind: PracticePresentationKind;
   count: number;
+  /** Count with its noun, e.g. "4 problems". */
+  countLabel: string;
   compactLabel: string;
   eyebrow: string;
   detailLabel: string;
@@ -107,6 +109,7 @@ export function practicePresentation(
   return {
     kind,
     count,
+    countLabel: `${count} ${noun}`,
     compactLabel: copy.compactLabel,
     eyebrow: copy.eyebrow,
     detailLabel: `${copy.detailVerb} ${count} ${noun}`,

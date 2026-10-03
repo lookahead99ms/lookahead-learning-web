@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="tree traversal">
+<style>
+.learn-algorithmic-patterns-tree-traversal-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}.learn-algorithmic-patterns-tree-traversal-w{font:700 16px system-ui,sans-serif;fill:#fff}
+@keyframes learn-algorithmic-patterns-tree-traversal-n0{0%{opacity:0}2.5%{opacity:0}4%{opacity:1}94%{opacity:1}97%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-tree-traversal-n0{animation:learn-algorithmic-patterns-tree-traversal-n0 8s linear infinite;animation-delay:-4s;}
+@keyframes learn-algorithmic-patterns-tree-traversal-n1{0%{opacity:0}12.5%{opacity:0}14%{opacity:1}94%{opacity:1}97%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-tree-traversal-n1{animation:learn-algorithmic-patterns-tree-traversal-n1 8s linear infinite;animation-delay:-4s;}
+@keyframes learn-algorithmic-patterns-tree-traversal-n2{0%{opacity:0}22.5%{opacity:0}24%{opacity:1}94%{opacity:1}97%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-tree-traversal-n2{animation:learn-algorithmic-patterns-tree-traversal-n2 8s linear infinite;animation-delay:-4s;}
+@keyframes learn-algorithmic-patterns-tree-traversal-n3{0%{opacity:0}32.5%{opacity:0}34%{opacity:1}94%{opacity:1}97%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-tree-traversal-n3{animation:learn-algorithmic-patterns-tree-traversal-n3 8s linear infinite;animation-delay:-4s;}
+@keyframes learn-algorithmic-patterns-tree-traversal-n4{0%{opacity:0}42.5%{opacity:0}44%{opacity:1}94%{opacity:1}97%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-tree-traversal-n4{animation:learn-algorithmic-patterns-tree-traversal-n4 8s linear infinite;animation-delay:-4s;}
+@keyframes learn-algorithmic-patterns-tree-traversal-n5{0%{opacity:0}52.5%{opacity:0}54%{opacity:1}94%{opacity:1}97%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-tree-traversal-n5{animation:learn-algorithmic-patterns-tree-traversal-n5 8s linear infinite;animation-delay:-4s;}
+@keyframes learn-algorithmic-patterns-tree-traversal-n6{0%{opacity:0}62.5%{opacity:0}64%{opacity:1}94%{opacity:1}97%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-tree-traversal-n6{animation:learn-algorithmic-patterns-tree-traversal-n6 8s linear infinite;animation-delay:-4s;}
+.learn-algorithmic-patterns-tree-traversal-bg{fill:var(--scene-card,#fff)}
+</style>
+<rect class="learn-algorithmic-patterns-tree-traversal-bg" width="320" height="180" rx="12"/>
+<line x1="160" y1="34" x2="90" y2="84" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<line x1="160" y1="34" x2="230" y2="84" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<line x1="90" y1="84" x2="55" y2="134" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<line x1="90" y1="84" x2="125" y2="134" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<line x1="230" y1="84" x2="195" y2="134" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<line x1="230" y1="84" x2="265" y2="134" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<circle cx="160" cy="34" r="16" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<text class="learn-algorithmic-patterns-tree-traversal-t" x="160" y="39" text-anchor="middle">1</text>
+<circle cx="90" cy="84" r="16" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<text class="learn-algorithmic-patterns-tree-traversal-t" x="90" y="89" text-anchor="middle">2</text>
+<circle cx="230" cy="84" r="16" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<text class="learn-algorithmic-patterns-tree-traversal-t" x="230" y="89" text-anchor="middle">3</text>
+<circle cx="55" cy="134" r="16" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<text class="learn-algorithmic-patterns-tree-traversal-t" x="55" y="139" text-anchor="middle">4</text>
+<circle cx="125" cy="134" r="16" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<text class="learn-algorithmic-patterns-tree-traversal-t" x="125" y="139" text-anchor="middle">5</text>
+<circle cx="195" cy="134" r="16" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<text class="learn-algorithmic-patterns-tree-traversal-t" x="195" y="139" text-anchor="middle">6</text>
+<circle cx="265" cy="134" r="16" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<text class="learn-algorithmic-patterns-tree-traversal-t" x="265" y="139" text-anchor="middle">7</text>
+<g class="learn-algorithmic-patterns-tree-traversal-n0"><circle cx="160" cy="34" r="16" fill="var(--scene-accent,#006c73)"/><text class="learn-algorithmic-patterns-tree-traversal-w" x="160" y="39" text-anchor="middle">1</text></g>
+<g class="learn-algorithmic-patterns-tree-traversal-n1"><circle cx="90" cy="84" r="16" fill="var(--scene-accent,#006c73)"/><text class="learn-algorithmic-patterns-tree-traversal-w" x="90" y="89" text-anchor="middle">2</text></g>
+<g class="learn-algorithmic-patterns-tree-traversal-n2"><circle cx="230" cy="84" r="16" fill="var(--scene-accent,#006c73)"/><text class="learn-algorithmic-patterns-tree-traversal-w" x="230" y="89" text-anchor="middle">3</text></g>
+<g class="learn-algorithmic-patterns-tree-traversal-n3"><circle cx="55" cy="134" r="16" fill="var(--scene-accent,#006c73)"/><text class="learn-algorithmic-patterns-tree-traversal-w" x="55" y="139" text-anchor="middle">4</text></g>
+<g class="learn-algorithmic-patterns-tree-traversal-n4"><circle cx="125" cy="134" r="16" fill="var(--scene-accent,#006c73)"/><text class="learn-algorithmic-patterns-tree-traversal-w" x="125" y="139" text-anchor="middle">5</text></g>
+<g class="learn-algorithmic-patterns-tree-traversal-n5"><circle cx="195" cy="134" r="16" fill="var(--scene-accent,#006c73)"/><text class="learn-algorithmic-patterns-tree-traversal-w" x="195" y="139" text-anchor="middle">6</text></g>
+<g class="learn-algorithmic-patterns-tree-traversal-n6"><circle cx="265" cy="134" r="16" fill="var(--scene-accent,#006c73)"/><text class="learn-algorithmic-patterns-tree-traversal-w" x="265" y="139" text-anchor="middle">7</text></g>
+<text class="learn-algorithmic-patterns-tree-traversal-t" x="160" y="172" text-anchor="middle">level by level</text>
+</svg>

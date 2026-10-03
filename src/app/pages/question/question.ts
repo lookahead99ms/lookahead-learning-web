@@ -29,12 +29,16 @@ import {
   InterviewQuestion,
   PatternLesson,
   PatternProblemV1,
+  QuestionWalkthroughStep,
   ResolvedPatternCheck,
   TheorySection,
   TheoryVisual,
   isFoundationLessonV1,
   isPatternLesson,
   reviewStatusLabel,
+  systemLessonStages,
+  lessonPatternDefinition,
+  navTitle,
 } from '../../content/content.models';
 import { ContentService } from '../../content/content.service';
 import {
@@ -51,6 +55,7 @@ import {
   flattenLearningUnits,
   handsOnPatternIdForModule,
   orderedTheoryArticles,
+  unitSceneForModule,
 } from '../../content/learning-units';
 import { authenticCodingVisual, relatedPracticeItems } from '../../content/pattern-experience';
 import { questionModuleIdForArticle, questionsForModule } from '../../content/question-discovery';
@@ -66,6 +71,7 @@ import { CodeCopyButton } from '../../core/code-copy-button/code-copy-button';
 import { FoundationLessonShell } from '../../core/foundation-lesson-shell/foundation-lesson-shell';
 import { EvidenceAnswerTabs } from '../../core/evidence-answer-tabs/evidence-answer-tabs';
 import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot';
+import { CardScene } from '../../core/card-scene/card-scene';
 import { FOCUS_STUDIO_PATTERN, usesFocusStudio } from '../../content/focus-studio-scope';
 
 @Component({
@@ -86,6 +92,7 @@ import { FOCUS_STUDIO_PATTERN, usesFocusStudio } from '../../content/focus-studi
     CodeCopyButton,
     EvidenceAnswerTabs,
     DsaProblemPilot,
+    CardScene,
   ],
   templateUrl: './question.html',
   styleUrl: './question-answer.css',
@@ -94,6 +101,11 @@ import { FOCUS_STUDIO_PATTERN, usesFocusStudio } from '../../content/focus-studi
       main.harbor-learn.focus-studio-page.studio-pilot-page {
         max-width: 2100px;
         padding-inline: clamp(12px, 2vw, 32px);
+      }
+      /* Option B problem stories use the full screen width (class set by Focus Studio). */
+      main.harbor-learn.focus-studio-page.studio-pilot-page.option-b-page {
+        max-width: none;
+        padding-inline: clamp(12px, 1.2vw, 24px);
       }
       .studio-pilot-page .reader-question-panel {
         margin-block: 14px;
@@ -230,11 +242,101 @@ import { FOCUS_STUDIO_PATTERN, usesFocusStudio } from '../../content/focus-studi
         margin: 8px 0;
         line-height: 1.6;
       }
+      /* Reference answer: a full-width card toggle; the revealed answer sits in a framed panel joined to it. */
+      .practice-reference {
+        margin: 4px 0 0;
+      }
       .practice-reference > summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px 20px;
+        box-sizing: border-box;
+        min-height: 64px;
+        padding: 16px 20px;
+        border: 1px solid var(--interview-line);
+        border-inline-start: 4px solid var(--accent-strong);
+        border-radius: 12px;
+        background: var(--surface);
         cursor: pointer;
-        padding: 12px 0;
-        font-weight: 700;
-        color: var(--search-primary);
+        list-style: none;
+        transition: background-color 150ms ease, border-color 150ms ease;
+      }
+      .practice-reference > summary::-webkit-details-marker {
+        display: none;
+      }
+      .practice-reference > summary:hover {
+        background: var(--surface-muted);
+      }
+      .practice-reference[open] > summary {
+        border-end-start-radius: 0;
+        border-end-end-radius: 0;
+        background: var(--surface-muted);
+      }
+      .reference-toggle-text {
+        display: grid;
+        gap: 3px;
+        min-width: 0;
+      }
+      .reference-toggle-label {
+        color: var(--text-strong);
+        font-size: 1.05rem;
+        font-weight: 750;
+        line-height: 1.35;
+      }
+      .reference-toggle-hint {
+        color: var(--text-subtle);
+        font-size: 0.9rem;
+        line-height: 1.45;
+      }
+      .reference-toggle-action {
+        display: inline-flex;
+        flex-shrink: 0;
+        align-items: center;
+        gap: 10px;
+        min-height: 36px;
+        box-sizing: border-box;
+        padding: 6px 14px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--surface);
+        color: var(--accent-link);
+        font-size: 0.9rem;
+        font-weight: 750;
+      }
+      .reference-toggle-chevron {
+        width: 0.5em;
+        height: 0.5em;
+        border-inline-end: 2px solid currentColor;
+        border-block-end: 2px solid currentColor;
+        transform: translateY(-2px) rotate(45deg);
+        transition: transform 150ms ease;
+      }
+      .practice-reference[open] .reference-toggle-chevron {
+        transform: translateY(2px) rotate(-135deg);
+      }
+      .practice-reference-body {
+        padding: 24px;
+        border: 1px solid var(--interview-line);
+        border-block-start: 0;
+        border-inline-start: 4px solid var(--accent-strong);
+        border-end-start-radius: 12px;
+        border-end-end-radius: 12px;
+        background: var(--surface-page);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .practice-reference > summary,
+        .reference-toggle-chevron {
+          transition: none;
+        }
+      }
+      @media (max-width: 700px) {
+        .practice-reference > summary {
+          padding: 14px 16px;
+        }
+        .practice-reference-body {
+          padding: 16px 14px;
+        }
       }
       .studio-pilot-page .article-title-row {
         min-width: 0;
@@ -543,6 +645,44 @@ import { FOCUS_STUDIO_PATTERN, usesFocusStudio } from '../../content/focus-studi
         font-weight: 500;
         letter-spacing: -0.035em;
       }
+      /* The unit's scene sits beside the title on wide screens and above it on phones. Space is
+         reserved only when a scene path resolves; a missing file collapses back to the title. */
+      .reader-title-block.has-unit-scene {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) clamp(280px, 24vw, 320px);
+        align-items: center;
+        gap: 12px 32px;
+      }
+      .reader-title-block.has-unit-scene:has(> .la-card-scene-missing) {
+        display: block;
+      }
+      .reader-title-text {
+        min-width: 0;
+      }
+      .reader-unit-scene {
+        grid-column: 2;
+        grid-row: 1;
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      .reader-title-block.has-unit-scene .reader-title-text {
+        grid-column: 1;
+        grid-row: 1;
+      }
+      @media (max-width: 760px) {
+        .reader-title-block.has-unit-scene {
+          grid-template-columns: minmax(0, 1fr);
+        }
+        .reader-unit-scene {
+          grid-column: 1;
+          max-width: 420px;
+        }
+        .reader-title-block.has-unit-scene .reader-title-text {
+          grid-row: 2;
+        }
+      }
       .article-title-row {
         display: flex;
         align-items: start;
@@ -551,6 +691,13 @@ import { FOCUS_STUDIO_PATTERN, usesFocusStudio } from '../../content/focus-studi
       }
       .article-title-row .reader-question-title {
         min-width: 0;
+      }
+      .lesson-subtitle {
+        margin: 6px 0 0;
+        max-width: 62ch;
+        color: var(--text-subtle);
+        font-size: 1.05rem;
+        line-height: 1.5;
       }
       .article-read-time {
         flex: 0 0 auto;
@@ -1143,7 +1290,9 @@ export class Question implements OnInit {
     const pattern = this.patternLesson(item);
     const foundation = this.foundationLesson(item);
     const teachingGuide = foundation?.teachingGuide ?? foundation?.beginnerGuide ?? pattern?.beginnerGuide;
-    if (teachingGuide) {
+    // DLV-408: system lessons recall the real interview questions (concept first, the lesson's
+    // example as one supporting line), not the guide's scenario exercise.
+    if (teachingGuide && !(foundation && lessonPatternDefinition(foundation))) {
       return { excluded: false, recall: [{
         id: `${item.id}-first-steps`,
         prompt: teachingGuide.try,
@@ -1153,6 +1302,19 @@ export class Question implements OnInit {
     const checks = pattern ? this.patternChecks(pattern) : foundation ? this.foundationChecks(foundation) : [];
     const recall = checks.length ? checks : this.embeddedUnderstanding(item).map((question) => ({ id: question.id, prompt: question.title, answer: question.interviewAnswer }));
     return { excluded: false, recall: recall.length ? recall : item.followUps.map((followUp, index) => ({ id: `${item.id}-follow-up-${index}`, prompt: followUp.question, answer: followUp.answer })) };
+  });
+  /**
+   * Scene of the learning unit that owns this lesson or practice/round question, shown in the
+   * header. DSA problem pages, surprise challenges (the scene would reveal the pattern) and
+   * tile courses have none.
+   */
+  protected readonly unitScene = computed(() => {
+    const item = this.question();
+    const course = this.course();
+    if (!item || !course || course.id !== this.courseId()) return null;
+    if (this.isCodingPractice(item) || this.studioPilot() || this.focusStudio()) return null;
+    if (this.surpriseMode()) return null;
+    return unitSceneForModule(this.pathId(), course, item.moduleId);
   });
   protected readonly moduleTitle = signal('');
   protected readonly previousQuestion = signal<ReaderLink | null>(null);
@@ -1182,6 +1344,12 @@ export class Question implements OnInit {
   >({});
   private readonly catalogPatternByProblemId = signal<Record<string, string>>({});
   protected readonly reviewStatusLabel = reviewStatusLabel;
+
+  /** Index of the walkthrough body paragraph a step table follows; defaults to the last paragraph. */
+  protected walkthroughTableAfter(step: QuestionWalkthroughStep): number {
+    const last = step.body.length - 1;
+    return Math.min(Math.max(step.table?.afterParagraph ?? last, 0), last);
+  }
 
   /** Coding practice is classified by its existing curriculum tags, not by the generic Q&A layout. */
   protected shouldShowHint(item: InterviewQuestion): boolean {
@@ -1441,6 +1609,26 @@ export class Question implements OnInit {
     );
   }
 
+  protected lessonSubtitle(item: InterviewQuestion): string | null {
+    return isFoundationLessonV1(item) ? item.subtitle ?? null : null;
+  }
+
+  /** Reference code with lines too long for a half-width column (e.g. aligned state tables) gets the full width. */
+  protected wideCode(source: string): boolean {
+    return source.split('\n').some((line) => line.length > 64);
+  }
+
+  /** Short title for the sidebar and sticky navigation; the h1 keeps the full title. */
+  protected navTitle(item: InterviewQuestion): string | null {
+    const short = item.navTitle?.trim();
+    return short && short !== item.title ? short : null;
+  }
+
+  /** Sticky reading strip name: the authored short title, else the title before its colon. */
+  protected stickyTitle(item: InterviewQuestion): string {
+    return this.navTitle(item) ?? this.patternName(item.title);
+  }
+
   protected patternNavigation(item: InterviewQuestion): { label: string; target: string }[] {
     if (isPatternLesson(item)) {
       return [
@@ -1469,6 +1657,10 @@ export class Question implements OnInit {
     }
 
     if (isFoundationLessonV1(item)) {
+      if (lessonPatternDefinition(item)) {
+        // DLV-408: one entry per team stage; each stage wrapper is the scroll target.
+        return systemLessonStages(item).map((stage) => ({ label: stage.label, target: `stage-${stage.id}` }));
+      }
       if (item.learningFlow) {
         return [
           { label: 'Before you start', target: 'foundation-start' },
@@ -2195,7 +2387,7 @@ export class Question implements OnInit {
     if (!question) return null;
     const moduleTitle =
       this.course()?.modules.find(({ id }) => id === question.moduleId)?.title ?? question.moduleId;
-    return { id: question.id, title: question.title, moduleId: question.moduleId, moduleTitle };
+    return { id: question.id, title: navTitle(question), moduleId: question.moduleId, moduleTitle };
   }
 
   protected parentContextRoute(item: InterviewQuestion): string[] {

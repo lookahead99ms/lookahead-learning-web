@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A three-cell window slides along an array, and two pointers walk inward from both ends of a sorted array">
+<style>
+.learn-algorithmic-patterns-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.learn-algorithmic-patterns-tm { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; fill: var(--scene-ink, #102a33); font-weight: 600; }
+.learn-algorithmic-patterns-cell { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.learn-algorithmic-patterns-win { fill: var(--scene-accent-soft, #dcefed); stroke: var(--scene-accent, #006c73); stroke-width: 2.5; animation: learn-algorithmic-patterns-kf-win 6s steps(1) infinite; }
+@keyframes learn-algorithmic-patterns-kf-win { 0% { transform: translateX(0); } 20% { transform: translateX(34px); } 40% { transform: translateX(68px); } 60% { transform: translateX(102px); } 80%, 100% { transform: translateX(136px); } }
+.learn-algorithmic-patterns-l { fill: var(--scene-learn, #0f8a8a); animation: learn-algorithmic-patterns-kf-l 6s steps(1) infinite; }
+@keyframes learn-algorithmic-patterns-kf-l { 0% { transform: translateX(0); } 25% { transform: translateX(34px); } 50% { transform: translateX(68px); } 75%, 100% { transform: translateX(102px); } }
+.learn-algorithmic-patterns-r { fill: var(--scene-accent, #006c73); animation: learn-algorithmic-patterns-kf-r 6s steps(1) infinite; }
+@keyframes learn-algorithmic-patterns-kf-r { 0% { transform: translateX(0); } 25% { transform: translateX(-34px); } 50% { transform: translateX(-68px); } 75%, 100% { transform: translateX(-102px); } }
+.learn-algorithmic-patterns-win, .learn-algorithmic-patterns-l, .learn-algorithmic-patterns-r { animation-delay: -3s; }
+</style>
+<text class="learn-algorithmic-patterns-t" x="26" y="22" font-size="16">sliding window</text>
+<rect class="learn-algorithmic-patterns-win" x="22" y="30" width="106" height="38" rx="7"/>
+<g font-size="16" text-anchor="middle">
+<rect class="learn-algorithmic-patterns-cell" x="26" y="34" width="30" height="30" rx="4"/><text class="learn-algorithmic-patterns-tm" x="41" y="54">2</text>
+<rect class="learn-algorithmic-patterns-cell" x="60" y="34" width="30" height="30" rx="4"/><text class="learn-algorithmic-patterns-tm" x="75" y="54">7</text>
+<rect class="learn-algorithmic-patterns-cell" x="94" y="34" width="30" height="30" rx="4"/><text class="learn-algorithmic-patterns-tm" x="109" y="54">1</text>
+<rect class="learn-algorithmic-patterns-cell" x="128" y="34" width="30" height="30" rx="4"/><text class="learn-algorithmic-patterns-tm" x="143" y="54">8</text>
+<rect class="learn-algorithmic-patterns-cell" x="162" y="34" width="30" height="30" rx="4"/><text class="learn-algorithmic-patterns-tm" x="177" y="54">2</text>
+<rect class="learn-algorithmic-patterns-cell" x="196" y="34" width="30" height="30" rx="4"/><text class="learn-algorithmic-patterns-tm" x="211" y="54">8</text>
+<rect class="learn-algorithmic-patterns-cell" x="230" y="34" width="30" height="30" rx="4"/><text class="learn-algorithmic-patterns-tm" x="245" y="54">1</text>
+<rect class="learn-algorithmic-patterns-cell" x="264" y="34" width="30" height="30" rx="4"/><text class="learn-algorithmic-patterns-tm" x="279" y="54">8</text>
+</g>
+<text class="learn-algorithmic-patterns-t" x="26" y="104" font-size="16">two pointers</text>
+<g font-size="16" text-anchor="middle">
+<rect class="learn-algorithmic-patterns-cell" x="26" y="114" width="30" height="30" rx="4"/><text class="learn-algorithmic-patterns-tm" x="41" y="134">1</text>
+<rect class="learn-algorithmic-patterns-cell" x="60" y="114" width="30" height="30" rx="4"/><text class="learn-algorithmic-patterns-tm" x="75" y="134">3</text>
+<rect class="learn-algorithmic-patterns-cell" x="94" y="114" width="30" height="30" rx="4"/><text class="learn-algorithmic-patterns-tm" x="109" y="134">4</text>
+<rect class="learn-algorithmic-patterns-cell" x="128" y="114" width="30" height="30" rx="4"/><text class="learn-algorithmic-patterns-tm" x="143" y="134">6</text>
+<rect class="learn-algorithmic-patterns-cell" x="162" y="114" width="30" height="30" rx="4"/><text class="learn-algorithmic-patterns-tm" x="177" y="134">8</text>
+<rect class="learn-algorithmic-patterns-cell" x="196" y="114" width="30" height="30" rx="4"/><text class="learn-algorithmic-patterns-tm" x="211" y="134">9</text>
+<rect class="learn-algorithmic-patterns-cell" x="230" y="114" width="30" height="30" rx="4"/><text class="learn-algorithmic-patterns-tm" x="245" y="134">11</text>
+<rect class="learn-algorithmic-patterns-cell" x="264" y="114" width="30" height="30" rx="4"/><text class="learn-algorithmic-patterns-tm" x="279" y="134">14</text>
+</g>
+<path class="learn-algorithmic-patterns-l" d="M41 150 l-8 14 h16z"/>
+<path class="learn-algorithmic-patterns-r" d="M279 150 l-8 14 h16z"/>
+</svg>

@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="A monitor's price steps down from 249.00, crosses the dashed target of 230.00, and at that moment one alert pops up: dropped to 214.99">
+<style>
+.price-tracker-t{font-family:system-ui, sans-serif;fill:var(--scene-ink,#102a33)}
+.price-tracker-tx{font-family:system-ui, sans-serif;fill:var(--scene-text,#28434a)}
+.price-tracker-tm{font-family:ui-monospace, Menlo, monospace;fill:var(--scene-ink,#102a33)}
+.price-tracker-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.price-tracker-card{fill:var(--scene-card,#fff)}
+.price-tracker-ink{fill:var(--scene-ink,#102a33)}
+.price-tracker-soft{fill:var(--scene-muted,#536970)}
+.price-tracker-line{fill:var(--scene-line,#cfdfdc)}
+.price-tracker-acc{fill:var(--scene-accent,#006c73)}
+.price-tracker-accsoft{fill:var(--scene-accent-soft,#dcefed)}
+.price-tracker-good{fill:var(--scene-good,#1f7a4d)}
+.price-tracker-bad{fill:var(--scene-bad,#b3261e)}
+.price-tracker-warn{fill:var(--scene-warn,#a15c00)}
+.price-tracker-link{fill:var(--scene-link,#245a88)}
+.price-tracker-a{animation-duration:6s;animation-iteration-count:infinite;animation-delay:-3s;animation-timing-function:ease-in-out}
+@media (prefers-reduced-motion: reduce){.price-tracker-a{animation-play-state:paused!important}}
+.price-tracker-draw{animation-name:price-tracker-draw;animation-timing-function:linear}
+@keyframes price-tracker-draw{0%,4%{stroke-dashoffset:260}60%,94%{stroke-dashoffset:0}100%{stroke-dashoffset:260}}
+.price-tracker-alert{animation-name:price-tracker-alert}
+@keyframes price-tracker-alert{0%,36%{opacity:0;transform:translateY(-10px)}41%,92%{opacity:1;transform:none}97%,100%{opacity:0}}
+.price-tracker-ring{animation-name:price-tracker-ring;transform-box:fill-box;transform-origin:50% 0}
+@keyframes price-tracker-ring{0%,40%{transform:rotate(0)}43%{transform:rotate(-16deg)}46%{transform:rotate(14deg)}49%{transform:rotate(-8deg)}52%,100%{transform:rotate(0)}}
+.price-tracker-spark{animation-name:price-tracker-spark;transform-box:fill-box;transform-origin:center}
+@keyframes price-tracker-spark{0%,34%{opacity:0;transform:scale(.4)}38%{opacity:1;transform:scale(1.3)}46%,100%{opacity:0;transform:scale(1)}}
+</style>
+<rect x="8" y="10" width="46" height="30" rx="4" class="price-tracker-ink"/><rect x="12" y="14" width="38" height="22" rx="2" class="price-tracker-acc" opacity=".8"/><path d="M31 40 v6 M22 48 h18" stroke="var(--scene-ink,#102a33)" stroke-width="3" stroke-linecap="round"/>
+<g class="price-tracker-a price-tracker-alert"><rect x="64" y="8" width="170" height="38" rx="10" class="price-tracker-box" stroke="var(--scene-good,#1f7a4d)"/><g class="price-tracker-a price-tracker-ring"><path d="M78 20 q0 -6 7 -6 q7 0 7 6 v8 l3 4 h-20 l3 -4z" class="price-tracker-warn"/><circle cx="85" cy="35" r="2.5" class="price-tracker-warn"/></g><text class="price-tracker-t" x="102" y="32" font-size="14" font-weight="700">Dropped to 214.99</text></g>
+<rect x="8" y="56" width="226" height="74" rx="8" class="price-tracker-box"/>
+<path d="M14 94 H228" stroke="var(--scene-warn,#a15c00)" stroke-width="1.5" stroke-dasharray="5 4"/><text class="price-tracker-tx" x="226" y="88" font-size="14" text-anchor="end" style="fill:var(--scene-warn,#a15c00)">Target 230.00</text>
+<path class="price-tracker-a price-tracker-draw" d="M16 68 H68 V80 H128 V114 H226" stroke="var(--scene-link,#245a88)" stroke-width="3" fill="none" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="260" stroke-dashoffset="0"/>
+<g transform="translate(128 94)"><g class="price-tracker-a price-tracker-spark"><circle r="7" class="price-tracker-good" opacity=".35"/><circle r="3.5" class="price-tracker-good"/></g></g>
+</svg>

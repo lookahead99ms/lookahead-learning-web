@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A whole system laid out: the load estimate first, then the services, cache and database, and a request travelling through them">
+<style>
+.look-ahead-design-systems-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.look-ahead-design-systems-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 2; }
+.look-ahead-design-systems-soft { fill: var(--scene-accent-soft, #dcefed); }
+.look-ahead-design-systems-softs { fill: var(--scene-accent-soft, #dcefed); stroke: var(--scene-accent, #006c73); stroke-width: 2; }
+.look-ahead-design-systems-acc { fill: var(--scene-accent, #006c73); }
+.look-ahead-design-systems-ahead { fill: var(--scene-ahead, #2f6fb3); }
+.look-ahead-design-systems-good { fill: var(--scene-good, #1f7a4d); }
+.look-ahead-design-systems-warn { fill: var(--scene-warn, #a15c00); }
+.look-ahead-design-systems-bad { fill: var(--scene-bad, #b3261e); }
+.look-ahead-design-systems-mut { fill: var(--scene-muted, #536970); }
+.look-ahead-design-systems-card { fill: var(--scene-card, #ffffff); }
+.look-ahead-design-systems-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 2; }
+.look-ahead-design-systems-dash { fill: none; stroke: var(--scene-link, #245a88); stroke-width: 2; stroke-dasharray: 5 4; }
+.look-ahead-design-systems-check { fill: none; stroke: var(--scene-good, #1f7a4d); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+
+.look-ahead-design-systems-a1 { animation: look-ahead-design-systems-kf-a1 8s infinite; animation-delay: -3.6s; }
+.look-ahead-design-systems-a2 { animation: look-ahead-design-systems-kf-a2 8s infinite; animation-delay: -3.6s; }
+.look-ahead-design-systems-a3 { animation: look-ahead-design-systems-kf-a3 8s infinite; animation-delay: -3.6s; }
+.look-ahead-design-systems-req { animation: look-ahead-design-systems-kf-req 8s linear infinite; animation-delay: -3.6s; }
+@keyframes look-ahead-design-systems-kf-a1 { 0%, 2% { opacity: 0; } 8%, 94% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes look-ahead-design-systems-kf-a2 { 0%, 10% { opacity: 0; } 16%, 94% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes look-ahead-design-systems-kf-a3 { 0%, 18% { opacity: 0; } 24%, 94% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes look-ahead-design-systems-kf-req { 0%, 26% { transform: translate(0,0); opacity: 0; } 28% { transform: translate(0,0); opacity: 1; }
+  38% { transform: translate(62px,0); } 50% { transform: translate(140px,0); } 62% { transform: translate(222px,32px); }
+  74% { transform: translate(140px,0); } 84% { transform: translate(62px,0); } 92% { transform: translate(0,0); opacity: 1; } 94%, 100% { transform: translate(0,0); opacity: 0; } }
+</style>
+<g class="look-ahead-design-systems-a1"><rect class="look-ahead-design-systems-soft" x="16" y="14" width="104" height="28" rx="14"/><text class="look-ahead-design-systems-t" x="68" y="33" font-size="16" text-anchor="middle">10k req/s</text></g>
+<g class="look-ahead-design-systems-a2">
+<rect class="look-ahead-design-systems-box" x="18" y="80" width="28" height="44" rx="6"/><rect class="look-ahead-design-systems-soft" x="23" y="87" width="18" height="28" rx="2"/>
+<path class="look-ahead-design-systems-wire" d="M46 102 H82"/>
+<circle class="look-ahead-design-systems-softs" cx="94" cy="102" r="14"/><path d="M86 102 H92 M92 102 L101 95 M92 102 L101 109 M92 102 H102" stroke="var(--scene-accent, #006c73)" stroke-width="2" fill="none"/>
+<path class="look-ahead-design-systems-wire" d="M108 102 L150 66 M108 102 H150 M108 102 L150 138"/>
+<rect class="look-ahead-design-systems-box" x="150" y="54" width="48" height="24" rx="5"/><rect class="look-ahead-design-systems-acc" x="157" y="63" width="22" height="6" rx="3" opacity=".6"/>
+<rect class="look-ahead-design-systems-box" x="150" y="90" width="48" height="24" rx="5"/><rect class="look-ahead-design-systems-acc" x="157" y="99" width="22" height="6" rx="3" opacity=".6"/>
+<rect class="look-ahead-design-systems-box" x="150" y="126" width="48" height="24" rx="5"/><rect class="look-ahead-design-systems-acc" x="157" y="135" width="22" height="6" rx="3" opacity=".6"/>
+</g>
+<g class="look-ahead-design-systems-a3">
+<path class="look-ahead-design-systems-wire" d="M198 102 L230 80 M198 102 L230 128"/>
+<rect class="look-ahead-design-systems-softs" x="232" y="58" width="58" height="32" rx="6"/><path d="M264 63 L254 76 H262 L257 86 L270 71 H262 Z" class="look-ahead-design-systems-warn"/>
+<path class="look-ahead-design-systems-softs" d="M234 112 V146 A28 7 0 0 0 290 146 V112 Z"/><ellipse class="look-ahead-design-systems-softs" cx="262" cy="112" rx="28" ry="7"/>
+
+<path d="M234 124 A28 7 0 0 0 290 124" fill="none" stroke="var(--scene-accent, #006c73)" stroke-width="1.5"/>
+</g>
+<circle class="look-ahead-design-systems-ahead look-ahead-design-systems-req" cx="32" cy="102" r="7"/>
+</svg>

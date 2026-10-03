@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Document chunks are retrieved into a model, which writes a cited answer that must pass an evaluation gate before it ships">
+<style>
+.look-ahead-ai-systems-architecture-box{fill:var(--scene-card,#fff);stroke:var(--scene-ink,#102a33);stroke-width:1.6}
+.look-ahead-ai-systems-architecture-soft{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-accent,#006c73);stroke-width:1.6}
+.look-ahead-ai-systems-architecture-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:600;fill:var(--scene-ink,#102a33)}
+.look-ahead-ai-systems-architecture-wire{stroke:var(--scene-muted,#536970);stroke-width:1.8;fill:none;stroke-dasharray:5 4}
+.look-ahead-ai-systems-architecture-c1{animation:look-ahead-ai-systems-architecture-chunk 6s ease-in-out infinite;animation-delay:-3.4s}
+.look-ahead-ai-systems-architecture-c2{animation:look-ahead-ai-systems-architecture-chunk 6s ease-in-out infinite;animation-delay:-2.8s}
+.look-ahead-ai-systems-architecture-node{animation:look-ahead-ai-systems-architecture-node 6s ease-in-out infinite;animation-delay:-3s}
+.look-ahead-ai-systems-architecture-ans{animation:look-ahead-ai-systems-architecture-ans 6s ease-in-out infinite;animation-delay:-3s}
+.look-ahead-ai-systems-architecture-gate{animation:look-ahead-ai-systems-architecture-gate 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes look-ahead-ai-systems-architecture-chunk{0%{transform:translate(0,0);opacity:0}8%{opacity:1}36%{transform:translate(82px,0);opacity:1}42%,100%{transform:translate(82px,0);opacity:0}}
+@keyframes look-ahead-ai-systems-architecture-node{0%,30%{fill:var(--scene-card,#fff)}40%,60%{fill:var(--scene-ahead,#2f6fb3)}70%,100%{fill:var(--scene-card,#fff)}}
+@keyframes look-ahead-ai-systems-architecture-ans{0%,44%{opacity:.25}56%,96%{opacity:1}100%{opacity:.25}}
+@keyframes look-ahead-ai-systems-architecture-gate{0%,40%{opacity:0;transform:scale(.4)}48%,94%{opacity:1;transform:scale(1)}100%{opacity:0}}
+</style>
+<rect x="0" y="0" width="320" height="180" rx="12" fill="var(--scene-card,#fff)"/>
+<!-- docs -->
+<rect class="look-ahead-ai-systems-architecture-box" x="30" y="40" width="44" height="56" rx="4"/>
+<rect class="look-ahead-ai-systems-architecture-box" x="24" y="46" width="44" height="56" rx="4"/>
+<rect class="look-ahead-ai-systems-architecture-box" x="18" y="52" width="44" height="56" rx="4"/>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"><path d="M26 64 h28 M26 74 h20 M26 94 h28"/></g>
+<rect x="24" y="80" width="32" height="8" rx="2" fill="var(--scene-learn,#0f8a8a)"/>
+<text class="look-ahead-ai-systems-architecture-t" x="44" y="134" text-anchor="middle">Docs</text>
+<path class="look-ahead-ai-systems-architecture-wire" d="M66 80 H118"/>
+<rect class="look-ahead-ai-systems-architecture-c1" x="40" y="62" width="22" height="7" rx="2" fill="var(--scene-learn,#0f8a8a)"/>
+<rect class="look-ahead-ai-systems-architecture-c2" x="40" y="88" width="22" height="7" rx="2" fill="var(--scene-learn,#0f8a8a)"/>
+<!-- model -->
+<rect class="look-ahead-ai-systems-architecture-soft" x="118" y="44" width="76" height="72" rx="12"/>
+<g stroke="var(--scene-accent,#006c73)" stroke-width="1.4" fill="none"><path d="M136 62 L156 80 L176 62 M136 98 L156 80 L176 98 M136 62 V98 M176 62 V98"/></g>
+<g stroke="var(--scene-ink,#102a33)" stroke-width="1.6">
+<circle class="look-ahead-ai-systems-architecture-node" cx="136" cy="62" r="6"/><circle class="look-ahead-ai-systems-architecture-node" cx="136" cy="98" r="6"/>
+<circle class="look-ahead-ai-systems-architecture-node" cx="156" cy="80" r="7"/>
+<circle class="look-ahead-ai-systems-architecture-node" cx="176" cy="62" r="6"/><circle class="look-ahead-ai-systems-architecture-node" cx="176" cy="98" r="6"/></g>
+<text class="look-ahead-ai-systems-architecture-t" x="156" y="134" text-anchor="middle">Model</text>
+<path class="look-ahead-ai-systems-architecture-wire" d="M194 80 H220"/>
+<!-- answer with citations -->
+<g class="look-ahead-ai-systems-architecture-ans">
+<rect class="look-ahead-ai-systems-architecture-box" x="220" y="44" width="78" height="72" rx="8"/>
+<g stroke="var(--scene-text,#28434a)" stroke-width="3" stroke-linecap="round"><path d="M230 60 h44 M230 72 h52 M230 84 h36"/></g>
+<rect x="270" y="80" width="14" height="9" rx="2" fill="var(--scene-learn,#0f8a8a)"/>
+<g stroke="var(--scene-text,#28434a)" stroke-width="3" stroke-linecap="round"><path d="M230 98 h30"/></g>
+<rect x="266" y="94" width="14" height="9" rx="2" fill="var(--scene-learn,#0f8a8a)"/>
+</g>
+<!-- eval gate -->
+<g class="look-ahead-ai-systems-architecture-gate" style="transform-origin:298px 44px;transform-box:view-box"><circle cx="298" cy="44" r="11" fill="var(--scene-good,#1f7a4d)"/><path d="M292 44 l4 4 l7 -9" stroke="var(--scene-card,#fff)" stroke-width="2.4" fill="none" stroke-linecap="round"/></g>
+<text class="look-ahead-ai-systems-architecture-t" x="259" y="134" text-anchor="middle">Eval</text>
+<path d="M30 156 H290" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<g fill="var(--scene-ahead,#2f6fb3)"><circle cx="44" cy="156" r="4"/><circle cx="156" cy="156" r="4"/><circle cx="259" cy="156" r="4"/></g>
+</svg>

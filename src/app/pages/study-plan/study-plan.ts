@@ -59,6 +59,7 @@ import {
   previewStudyPlanRecovery,
 } from '../../content/study-plan-recovery';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
+import { CardScene } from '../../core/card-scene/card-scene';
 import { STUDY_PLAN_ACCESS } from './study-plan-access';
 
 import {
@@ -78,7 +79,7 @@ type AuthoredPlanStep = 'select' | 'review';
 
 @Component({
   selector: 'app-study-plan',
-  imports: [PlatformHeader, NgTemplateOutlet, StudyDesk],
+  imports: [PlatformHeader, NgTemplateOutlet, StudyDesk, CardScene],
   templateUrl: './study-plan.html',
   styleUrl: './study-plan.css',
 })

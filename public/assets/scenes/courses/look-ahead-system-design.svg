@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A design sketch: a client calls an API that checks a cache before the database, and a request traces the critical path">
+<style>
+.look-ahead-system-design-box{fill:var(--scene-card,#fff);stroke:var(--scene-ink,#102a33);stroke-width:1.6}
+.look-ahead-system-design-soft{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-accent,#006c73);stroke-width:1.6}
+.look-ahead-system-design-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:600;fill:var(--scene-ink,#102a33)}
+.look-ahead-system-design-wire{stroke:var(--scene-muted,#536970);stroke-width:1.8;fill:none;stroke-dasharray:5 4}
+.look-ahead-system-design-req{fill:var(--scene-ahead,#2f6fb3);animation:look-ahead-system-design-req 6s ease-in-out infinite;animation-delay:-2.3s}
+.look-ahead-system-design-hit{animation:look-ahead-system-design-hit 6s ease-in-out infinite;animation-delay:-2.3s}
+.look-ahead-system-design-miss{animation:look-ahead-system-design-miss 6s ease-in-out infinite;animation-delay:-2.3s}
+.look-ahead-system-design-pen{animation:look-ahead-system-design-pen 6s ease-in-out infinite;animation-delay:-2.3s}
+@keyframes look-ahead-system-design-req{0%{transform:translate(0,0);opacity:0}6%{opacity:1}22%{transform:translate(92px,0)}38%{transform:translate(150px,-44px)}48%{transform:translate(92px,0)}64%{transform:translate(184px,20px)}80%{transform:translate(92px,0)}94%{transform:translate(0,0);opacity:1}100%{opacity:0}}
+@keyframes look-ahead-system-design-hit{0%,32%{opacity:0}38%,46%{opacity:1}52%,100%{opacity:0}}
+@keyframes look-ahead-system-design-miss{0%,58%{opacity:0}64%,74%{opacity:1}80%,100%{opacity:0}}
+@keyframes look-ahead-system-design-pen{0%,100%{transform:translate(0,0) rotate(0)}50%{transform:translate(-10px,4px) rotate(-6deg)}}
+</style>
+<rect x="0" y="0" width="320" height="180" rx="12" fill="var(--scene-card,#fff)"/>
+<!-- whiteboard grid dots -->
+<g fill="var(--scene-line,#cfdfdc)">
+<circle cx="20" cy="20" r="1.6"/><circle cx="60" cy="20" r="1.6"/><circle cx="100" cy="20" r="1.6"/><circle cx="140" cy="20" r="1.6"/><circle cx="180" cy="20" r="1.6"/><circle cx="220" cy="20" r="1.6"/>
+<circle cx="20" cy="160" r="1.6"/><circle cx="60" cy="160" r="1.6"/><circle cx="100" cy="160" r="1.6"/><circle cx="140" cy="160" r="1.6"/><circle cx="180" cy="160" r="1.6"/><circle cx="220" cy="160" r="1.6"/>
+</g>
+<!-- client (phone) -->
+<rect class="look-ahead-system-design-box" x="22" y="70" width="28" height="44" rx="6"/>
+<rect x="28" y="78" width="16" height="24" rx="2" fill="var(--scene-accent-soft,#dcefed)"/>
+<path class="look-ahead-system-design-wire" d="M50 92 H112"/>
+<!-- api -->
+<!-- request -->
+<circle class="look-ahead-system-design-req" cx="46" cy="92" r="6"/>
+<rect class="look-ahead-system-design-soft" x="112" y="72" width="56" height="40" rx="8"/>
+<text class="look-ahead-system-design-t" x="140" y="97" text-anchor="middle">API</text>
+<path class="look-ahead-system-design-wire" d="M168 84 C190 84 190 48 206 48 M168 100 C190 100 190 136 206 136"/>
+<!-- cache -->
+<rect class="look-ahead-system-design-box" x="206" y="30" width="64" height="36" rx="8"/>
+<text class="look-ahead-system-design-t" x="238" y="53" text-anchor="middle">Cache</text>
+<!-- db -->
+<path d="M214 122 v26 a24 7 0 0 0 48 0 v-26" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="1.6"/>
+<ellipse cx="238" cy="122" rx="24" ry="7" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-ink,#102a33)" stroke-width="1.6"/>
+<text class="look-ahead-system-design-t" x="238" y="151" text-anchor="middle">DB</text>
+<!-- hit / miss marks -->
+<g class="look-ahead-system-design-hit"><circle cx="282" cy="48" r="9" fill="var(--scene-good,#1f7a4d)"/><path d="M277 48 l4 4 l6 -8" stroke="var(--scene-card,#fff)" stroke-width="2.2" fill="none" stroke-linecap="round"/></g>
+<g class="look-ahead-system-design-miss"><circle cx="282" cy="136" r="9" fill="var(--scene-ahead,#2f6fb3)"/><path d="M278 136 h8 M282 132 v8" stroke="var(--scene-card,#fff)" stroke-width="2.2" stroke-linecap="round"/></g>
+<!-- marker pen -->
+<g class="look-ahead-system-design-pen" style="transform-origin:296px 100px">
+<rect x="286" y="76" width="10" height="40" rx="3" transform="rotate(25 291 96)" fill="var(--scene-accent,#006c73)"/>
+<path d="M282 117 l5 8 l4 -6z" fill="var(--scene-ink,#102a33)"/>
+</g>
+</svg>

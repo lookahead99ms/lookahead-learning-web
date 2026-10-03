@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Shoppers in a line take the last phones on sale one at a time, the counter drops from 3 left to sold out, and the next shopper is turned away instead of being sold a phone that does not exist">
+<style>
+.flash-sale-t{font-family:system-ui, sans-serif;fill:var(--scene-ink,#102a33)}
+.flash-sale-tx{font-family:system-ui, sans-serif;fill:var(--scene-text,#28434a)}
+.flash-sale-tm{font-family:ui-monospace, Menlo, monospace;fill:var(--scene-ink,#102a33)}
+.flash-sale-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.flash-sale-soft{fill:var(--scene-muted,#536970)}
+.flash-sale-line{fill:var(--scene-line,#cfdfdc)}
+.flash-sale-acc{fill:var(--scene-accent,#006c73)}
+.flash-sale-accsoft{fill:var(--scene-accent-soft,#dcefed)}
+.flash-sale-good{fill:var(--scene-good,#1f7a4d)}
+.flash-sale-bad{fill:var(--scene-bad,#b3261e)}
+.flash-sale-warn{fill:var(--scene-warn,#a15c00)}
+.flash-sale-link{fill:var(--scene-link,#245a88)}
+.flash-sale-card{fill:var(--scene-card,#fff)}
+.flash-sale-ink{fill:var(--scene-ink,#102a33)}
+.flash-sale-a{animation-duration:7s;animation-iteration-count:infinite;animation-delay:-3s;animation-timing-function:ease-in-out}
+@media (prefers-reduced-motion: reduce){.flash-sale-a{animation-play-state:paused!important}}
+.flash-sale-w1{animation-name:flash-sale-w1}
+@keyframes flash-sale-w1{0%,4%{transform:none;opacity:1}16%{transform:translateX(96px);opacity:1}19%,100%{transform:translateX(96px);opacity:0}}
+.flash-sale-w2{animation-name:flash-sale-w2}
+@keyframes flash-sale-w2{0%,22%{transform:none;opacity:1}34%{transform:translateX(96px);opacity:1}37%,100%{transform:translateX(96px);opacity:0}}
+.flash-sale-w3{animation-name:flash-sale-w3}
+@keyframes flash-sale-w3{0%,40%{transform:none;opacity:1}52%{transform:translateX(96px);opacity:1}55%,100%{transform:translateX(96px);opacity:0}}
+.flash-sale-w4{animation-name:flash-sale-w4}
+@keyframes flash-sale-w4{0%,58%{transform:none;opacity:1}68%{transform:translateX(84px)}74%{transform:translateX(70px)}80%,100%{transform:translateX(70px);opacity:1}}
+.flash-sale-x4{animation-name:flash-sale-x4}
+@keyframes flash-sale-x4{0%,69%{opacity:0}72%,100%{opacity:1}}
+.flash-sale-c3{animation-name:flash-sale-c3}
+@keyframes flash-sale-c3{0%,17%{opacity:1}19%,100%{opacity:0}}
+.flash-sale-c2{animation-name:flash-sale-c2}
+@keyframes flash-sale-c2{0%,17%{opacity:0}19%,35%{opacity:1}37%,100%{opacity:0}}
+.flash-sale-c1{animation-name:flash-sale-c1}
+@keyframes flash-sale-c1{0%,35%{opacity:0}37%,53%{opacity:1}55%,100%{opacity:0}}
+.flash-sale-c0{animation-name:flash-sale-c0}
+@keyframes flash-sale-c0{0%,53%{opacity:0}55%,100%{opacity:1}}
+.flash-sale-bag{animation-name:flash-sale-bag}
+@keyframes flash-sale-bag{0%,4%{opacity:.25}6%,100%{opacity:1}}
+</style>
+<text class="flash-sale-t" x="8" y="22" font-size="14" font-weight="700">5 million shoppers</text><g opacity=".45"><circle cx="14" cy="88" r="6" class="flash-sale-soft"/><path d="M5 110 q0 -14 9 -14 q9 0 9 14z" class="flash-sale-soft"/></g><g opacity=".45"><circle cx="34" cy="88" r="6" class="flash-sale-soft"/><path d="M25 110 q0 -14 9 -14 q9 0 9 14z" class="flash-sale-soft"/></g><g class="flash-sale-a flash-sale-w4"><circle cx="54" cy="88" r="6" class="flash-sale-link"/><path d="M45 110 q0 -14 9 -14 q9 0 9 14z" class="flash-sale-link"/></g><g class="flash-sale-a flash-sale-w3"><circle cx="74" cy="88" r="6" class="flash-sale-acc"/><path d="M65 110 q0 -14 9 -14 q9 0 9 14z" class="flash-sale-acc"/></g><g class="flash-sale-a flash-sale-w2"><circle cx="94" cy="88" r="6" class="flash-sale-acc"/><path d="M85 110 q0 -14 9 -14 q9 0 9 14z" class="flash-sale-acc"/></g><g class="flash-sale-a flash-sale-w1"><circle cx="114" cy="88" r="6" class="flash-sale-acc"/><path d="M105 110 q0 -14 9 -14 q9 0 9 14z" class="flash-sale-acc"/></g>
+<g class="flash-sale-a flash-sale-x4"><circle cx="138" cy="74" r="9" class="flash-sale-bad"/><path d="M134 70 l8 8 m0 -8 l-8 8" stroke="var(--scene-card,#fff)" stroke-width="2.2"/></g>
+<rect x="144" y="34" width="88" height="94" rx="12" class="flash-sale-box"/>
+<rect x="174" y="40" width="28" height="44" rx="5" class="flash-sale-ink" opacity=".85"/><rect x="178" y="45" width="20" height="32" rx="2" class="flash-sale-accsoft"/>
+<rect x="180" y="8" width="54" height="22" rx="11" class="flash-sale-warn"/><text class="flash-sale-card" x="207" y="23" font-size="14" font-weight="700" text-anchor="middle" font-family="system-ui, sans-serif">-60%</text>
+<text class="flash-sale-t flash-sale-a flash-sale-c3" x="188" y="114" font-size="14" font-weight="700" text-anchor="middle">3 left</text>
+<text class="flash-sale-t flash-sale-a flash-sale-c2" x="188" y="114" font-size="14" font-weight="700" text-anchor="middle">2 left</text>
+<text class="flash-sale-t flash-sale-a flash-sale-c1" x="188" y="114" font-size="14" font-weight="700" text-anchor="middle">1 left</text>
+<text class="flash-sale-a flash-sale-c0" x="188" y="114" font-size="14" font-weight="700" text-anchor="middle" font-family="system-ui, sans-serif" style="fill:var(--scene-bad,#b3261e)">Sold out</text>
+
+</svg>

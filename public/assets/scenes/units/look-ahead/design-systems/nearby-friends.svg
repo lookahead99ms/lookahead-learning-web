@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="On Esra's map, a friend's pin moves along the street while Hamza's pin moves too, then Hamza stops sharing and his pin turns to a faint outline and disappears from her map">
+<style>
+.nearby-friends-t{font-family:system-ui, sans-serif;fill:var(--scene-ink,#102a33)}
+.nearby-friends-tx{font-family:system-ui, sans-serif;fill:var(--scene-text,#28434a)}
+.nearby-friends-tm{font-family:ui-monospace, Menlo, monospace;fill:var(--scene-ink,#102a33)}
+.nearby-friends-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.nearby-friends-soft{fill:var(--scene-muted,#536970)}
+.nearby-friends-line{fill:var(--scene-line,#cfdfdc)}
+.nearby-friends-acc{fill:var(--scene-accent,#006c73)}
+.nearby-friends-accsoft{fill:var(--scene-accent-soft,#dcefed)}
+.nearby-friends-good{fill:var(--scene-good,#1f7a4d)}
+.nearby-friends-bad{fill:var(--scene-bad,#b3261e)}
+.nearby-friends-warn{fill:var(--scene-warn,#a15c00)}
+.nearby-friends-link{fill:var(--scene-link,#245a88)}
+.nearby-friends-card{fill:var(--scene-card,#fff)}
+.nearby-friends-ink{fill:var(--scene-ink,#102a33)}
+.nearby-friends-a{animation-duration:7s;animation-iteration-count:infinite;animation-delay:-3s;animation-timing-function:ease-in-out}
+@media (prefers-reduced-motion: reduce){.nearby-friends-a{animation-play-state:paused!important}}
+
+.nearby-friends-move{animation-name:nearby-friends-move}
+@keyframes nearby-friends-move{0%{transform:translate(0,0)}50%{transform:translate(0,-44px)}100%{transform:translate(0,0)}}
+.nearby-friends-ham{animation-name:nearby-friends-ham}
+@keyframes nearby-friends-ham{0%{transform:translate(-30px,0);opacity:1}28%{transform:translate(0,0);opacity:1}34%{opacity:1}44%,92%{transform:translate(0,0);opacity:0}100%{transform:translate(-30px,0);opacity:0}}
+.nearby-friends-ghost{animation-name:nearby-friends-ghost}
+@keyframes nearby-friends-ghost{0%,32%{opacity:0}38%,88%{opacity:1}94%,100%{opacity:0}}
+.nearby-friends-ret{animation-name:nearby-friends-ret}
+@keyframes nearby-friends-ret{0%,92%{opacity:0}96%,100%{opacity:1}}
+</style>
+<rect x="0" y="0" width="240" height="135" class="nearby-friends-accsoft" opacity=".35"/>
+<path d="M0 40 H240 M0 104 H240 M60 0 V135 M176 0 V135" stroke="var(--scene-line,#cfdfdc)" stroke-width="9" fill="none"/>
+<circle cx="112" cy="72" r="34" fill="var(--scene-accent,#006c73)" fill-opacity=".1" stroke="var(--scene-accent,#006c73)" stroke-width="1.2" stroke-dasharray="3 3"/>
+<circle cx="112" cy="72" r="7" class="nearby-friends-link" stroke="var(--scene-card,#fff)" stroke-width="2.5"/>
+<text class="nearby-friends-t" x="112" y="95" font-size="14" font-weight="700" text-anchor="middle">Esra</text>
+<g class="nearby-friends-a nearby-friends-move"><path transform="translate(60 128)" d="M0 0 C-6 -8 -9 -12 -9 -16 A9 9 0 0 1 9 -16 C9 -12 6 -8 0 0Z" class="nearby-friends-acc" stroke="var(--scene-card,#fff)" stroke-width="1.2"/><circle cx="60" cy="112" r="3.5" class="nearby-friends-card"/></g>
+<g class="nearby-friends-a nearby-friends-ret"><path transform="translate(176 40)" d="M0 0 C-6 -8 -9 -12 -9 -16 A9 9 0 0 1 9 -16 C9 -12 6 -8 0 0Z" class="nearby-friends-good" opacity=".9"/></g>
+<g class="nearby-friends-a nearby-friends-ham"><path transform="translate(176 40)" d="M0 0 C-6 -8 -9 -12 -9 -16 A9 9 0 0 1 9 -16 C9 -12 6 -8 0 0Z" class="nearby-friends-good" stroke="var(--scene-card,#fff)" stroke-width="1.2"/><circle cx="176" cy="24" r="3.5" class="nearby-friends-card"/>
+<text class="nearby-friends-t" x="190" y="30" font-size="14" font-weight="700">Hamza</text></g>
+<g class="nearby-friends-a nearby-friends-ghost"><path transform="translate(176 40)" d="M0 0 C-6 -8 -9 -12 -9 -16 A9 9 0 0 1 9 -16 C9 -12 6 -8 0 0Z" fill="none" stroke="var(--scene-muted,#536970)" stroke-width="1.5" stroke-dasharray="3 2"/>
+<rect x="128" y="112" width="108" height="20" rx="10" class="nearby-friends-card" stroke="var(--scene-line,#cfdfdc)"/>
+<text class="nearby-friends-tx" x="182" y="127" font-size="14" text-anchor="middle">Hamza left</text></g>
+
+</svg>

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="union find">
+<style>
+.learn-algorithmic-patterns-union-find-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}.learn-algorithmic-patterns-union-find-w{font:700 16px system-ui,sans-serif;fill:#fff}
+@keyframes learn-algorithmic-patterns-union-find-br{0%{stroke-dashoffset:1}26%{stroke-dashoffset:1}40%{stroke-dashoffset:0}92%{stroke-dashoffset:0}97%{stroke-dashoffset:1}100%{stroke-dashoffset:1}}
+.learn-algorithmic-patterns-union-find-br{animation:learn-algorithmic-patterns-union-find-br 7s ease-in-out infinite;animation-delay:-3.6s;}.learn-algorithmic-patterns-union-find-br{stroke-dasharray:1}
+@keyframes learn-algorithmic-patterns-union-find-rc{0%{opacity:0}42%{opacity:0}50%{opacity:1}92%{opacity:1}97%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-union-find-rc{animation:learn-algorithmic-patterns-union-find-rc 7s linear infinite;animation-delay:-3.6s;}
+.learn-algorithmic-patterns-union-find-bg{fill:var(--scene-card,#fff)}
+</style>
+<rect class="learn-algorithmic-patterns-union-find-bg" width="320" height="180" rx="12"/>
+<path d="M45 56L100 92L50 134" fill="none" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<path d="M272 56L220 92L270 134" fill="none" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<path class="learn-algorithmic-patterns-union-find-br" pathLength="1" d="M100 92H220" stroke="var(--scene-warn,#a15c00)" stroke-width="5" stroke-linecap="round" fill="none"/>
+<circle cx="45" cy="56" r="14" fill="var(--scene-learn,#0f8a8a)"/>
+<circle cx="100" cy="92" r="14" fill="var(--scene-learn,#0f8a8a)"/>
+<circle cx="50" cy="134" r="14" fill="var(--scene-learn,#0f8a8a)"/>
+<circle cx="272" cy="56" r="14" fill="var(--scene-grow,#b8457a)"/>
+<circle cx="220" cy="92" r="14" fill="var(--scene-grow,#b8457a)"/>
+<circle cx="270" cy="134" r="14" fill="var(--scene-grow,#b8457a)"/>
+<circle class="learn-algorithmic-patterns-union-find-rc" cx="272" cy="56" r="14" fill="var(--scene-learn,#0f8a8a)"/>
+<circle class="learn-algorithmic-patterns-union-find-rc" cx="220" cy="92" r="14" fill="var(--scene-learn,#0f8a8a)"/>
+<circle class="learn-algorithmic-patterns-union-find-rc" cx="270" cy="134" r="14" fill="var(--scene-learn,#0f8a8a)"/>
+<text class="learn-algorithmic-patterns-union-find-t" x="160" y="24" text-anchor="middle">same group?</text>
+<text class="learn-algorithmic-patterns-union-find-t" x="160" y="80" text-anchor="middle">union</text>
+<text class="learn-algorithmic-patterns-union-find-t" x="160" y="172" text-anchor="middle">merge two groups</text>
+</svg>

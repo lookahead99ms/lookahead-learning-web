@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" class="photo-sharing-root" role="img" aria-label="A beach photo is posted for followers only and appears small in a follower's grid, then opens large when tapped.">
+<style>
+.photo-sharing-root text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.photo-sharing-t{fill:var(--scene-ink,#102a33)}
+.photo-sharing-tx{fill:var(--scene-text,#28434a)}
+.photo-sharing-mut{fill:var(--scene-muted,#536970)}
+.photo-sharing-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.photo-sharing-soft{fill:var(--scene-accent-soft,#dcefed)}
+.photo-sharing-acc{fill:var(--scene-accent,#006c73)}
+.photo-sharing-ln{fill:var(--scene-line,#cfdfdc)}
+.photo-sharing-cardf{fill:var(--scene-card,#fff)}
+.photo-sharing-good{fill:var(--scene-good,#1f7a4d)}
+.photo-sharing-warn{fill:var(--scene-warn,#a15c00)}
+.photo-sharing-bad{fill:var(--scene-bad,#b3261e)}
+.photo-sharing-link{fill:var(--scene-link,#245a88)}
+.photo-sharing-out{fill:var(--scene-bubble-out,#d4ecea)}
+.photo-sharing-sk{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.photo-sharing-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.photo-sharing-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:1.5;stroke-dasharray:3 3}
+.photo-sharing-sky{fill:var(--scene-accent-soft,#dcefed)}.photo-sharing-sea{fill:var(--scene-link,#245a88)}.photo-sharing-sand{fill:var(--scene-warn,#a15c00);opacity:.35}.photo-sharing-sun{fill:var(--scene-warn,#a15c00)}
+.photo-sharing-ph{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:2}
+.photo-sharing-p1,.photo-sharing-p2,.photo-sharing-p3,.photo-sharing-fly,.photo-sharing-new,.photo-sharing-tap,.photo-sharing-big{animation-duration:7s;animation-iteration-count:infinite;animation-delay:-3s}
+.photo-sharing-p1{animation-name:photo-sharing-p1}@keyframes photo-sharing-p1{0%,10%{opacity:1}13%,100%{opacity:0}}
+.photo-sharing-p2{animation-name:photo-sharing-p2}@keyframes photo-sharing-p2{0%,10%{opacity:0}13%,34%{opacity:1}37%,100%{opacity:0}}
+.photo-sharing-p3{animation-name:photo-sharing-p3}@keyframes photo-sharing-p3{0%,34%{opacity:0}37%,96%{opacity:1}100%{opacity:0}}
+.photo-sharing-fly{animation-name:photo-sharing-fly;animation-timing-function:ease-in-out}
+@keyframes photo-sharing-fly{0%,14%{transform:translate(0,0) scale(1);opacity:0}17%{opacity:1;transform:translate(0,0) scale(1)}38%{opacity:1;transform:translate(152.6px,12.6px) scale(.34)}41%,100%{opacity:0;transform:translate(152.6px,12.6px) scale(.34)}}
+.photo-sharing-new{animation-name:photo-sharing-new}@keyframes photo-sharing-new{0%,38%{opacity:0}41%,96%{opacity:1}100%{opacity:0}}
+.photo-sharing-tap{animation-name:photo-sharing-tap;transform-box:fill-box;transform-origin:center}@keyframes photo-sharing-tap{0%,50%{opacity:0;transform:scale(.5)}54%{opacity:.8;transform:scale(1)}60%,100%{opacity:0;transform:scale(1.6)}}
+.photo-sharing-big{animation-name:photo-sharing-big}@keyframes photo-sharing-big{0%,58%{opacity:0}63%,94%{opacity:1}98%,100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.photo-sharing-root *{animation-play-state:paused!important}}
+</style>
+<rect class="photo-sharing-ph" x="6" y="6" width="84" height="123" rx="14"/>
+<rect class="photo-sharing-sky" x="16" y="16" width="64" height="46" rx="4"/><circle class="photo-sharing-sun" cx="68" cy="27" r="5"/><path class="photo-sharing-sea" d="M16 44 Q24 39 32 44 T48 44 T64 44 T80 44 V56 H16 Z"/><rect class="photo-sharing-sand" x="16" y="56" width="64" height="6" rx="3"/>
+<rect x="14" y="70" width="68" height="22" rx="11" class="photo-sharing-soft"/>
+<g transform="translate(22 76)"><rect y="5" width="11" height="8" rx="1.5" class="photo-sharing-t"/><path d="M2.5 5 v-2 a3 3 0 0 1 6 0 v2" class="photo-sharing-sk" style="stroke:var(--scene-ink,#102a33);stroke-width:1.6"/></g>
+<circle cx="50" cy="81" r="4" class="photo-sharing-acc"/><circle cx="62" cy="81" r="4" class="photo-sharing-acc"/><circle cx="74" cy="81" r="4" class="photo-sharing-acc"/>
+<rect class="photo-sharing-acc" x="14" y="100" width="68" height="22" rx="11"/>
+<text class="photo-sharing-cardf photo-sharing-p1" x="48" y="116" font-size="14" font-weight="700" text-anchor="middle">Post</text>
+<text class="photo-sharing-cardf photo-sharing-p2" x="48" y="116" font-size="14" font-weight="700" text-anchor="middle">Posting&#8230;</text>
+<text class="photo-sharing-cardf photo-sharing-p3" x="48" y="116" font-size="14" font-weight="700" text-anchor="middle">Posted &#10003;</text>
+<path d="M94 52 Q120 34 146 52 M140 46 L147 52 L138 54" fill="none" class="photo-sharing-sl"/>
+<g class="photo-sharing-fly"><rect class="photo-sharing-sky" x="16" y="16" width="64" height="46" rx="4"/><circle class="photo-sharing-sun" cx="68" cy="27" r="5"/><path class="photo-sharing-sea" d="M16 44 Q24 39 32 44 T48 44 T64 44 T80 44 V56 H16 Z"/></g>
+<rect class="photo-sharing-ph" x="150" y="6" width="84" height="123" rx="14"/><rect class="photo-sharing-ln" x="158" y="18" width="22" height="22" rx="3" opacity=".5"/><rect class="photo-sharing-ln" x="183" y="18" width="22" height="22" rx="3"/><rect class="photo-sharing-ln" x="208" y="18" width="22" height="22" rx="3"/><rect class="photo-sharing-ln" x="158" y="44" width="22" height="22" rx="3"/><rect class="photo-sharing-ln" x="183" y="44" width="22" height="22" rx="3"/><rect class="photo-sharing-ln" x="208" y="44" width="22" height="22" rx="3"/><rect class="photo-sharing-ln" x="158" y="70" width="22" height="22" rx="3"/><rect class="photo-sharing-ln" x="183" y="70" width="22" height="22" rx="3"/><rect class="photo-sharing-ln" x="208" y="70" width="22" height="22" rx="3"/><rect class="photo-sharing-ln" x="158" y="96" width="22" height="22" rx="3"/><rect class="photo-sharing-ln" x="183" y="96" width="22" height="22" rx="3"/><rect class="photo-sharing-ln" x="208" y="96" width="22" height="22" rx="3"/><g class="photo-sharing-new"><rect class="photo-sharing-sky" x="158" y="18" width="22" height="22" rx="3"/><circle class="photo-sharing-sun" cx="174" cy="24" r="3"/><path class="photo-sharing-sea" d="M158 30 Q164 26 170 30 T180 30 V40 H158 Z"/></g>
+<circle class="photo-sharing-tap" cx="169" cy="29" r="9" fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/>
+<g class="photo-sharing-big"><rect x="154" y="14" width="76" height="76" rx="6" class="photo-sharing-cardf" stroke="var(--scene-line,#cfdfdc)"/><rect class="photo-sharing-sky" x="158" y="18" width="68" height="68" rx="4"/><circle class="photo-sharing-sun" cx="210" cy="34" r="8"/><path class="photo-sharing-sea" d="M158 58 Q168 50 178 58 T198 58 T218 58 T226 58 V76 H158 Z"/><rect class="photo-sharing-sand" x="158" y="76" width="68" height="10" rx="4"/></g>
+</svg>

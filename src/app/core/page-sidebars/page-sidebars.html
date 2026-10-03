@@ -1,28 +1,49 @@
-@if (
-  enabled() && !homepage() && (!showLeft() || (!leftDocked() && !leftOpen())) && !authorNavigation()
-) {
-  <div
-    class="standalone-signature standalone-signature-left"
-    [class.inline-signature]="!leftDocked() || leftWidth() < 192"
-    [style.top.px]="headerBottom()"
-    [style.width.px]="leftWidth()"
-  >
-    <app-platform-signature [stacked]="leftDocked() && leftWidth() >= 192" />
-  </div>
-}
-@if (
+@let leftSignature =
+  enabled() && !homepage() && (!showLeft() || (!leftDocked() && !leftOpen())) && !authorNavigation();
+@let rightSignature =
   enabled() &&
   !homepage() &&
   !authorNavigation() &&
-  (!showRight() || (!rightDocked() && (!rightOpen() || !hasRightContent())))
-) {
+  (!showRight() || (!rightDocked() && (!rightOpen() || !hasRightContent())));
+@let leftInline = !leftDocked() || leftWidth() < 192;
+@let rightInline = !rightDocked() || rightWidth() < 192;
+@if (leftSignature && !leftInline) {
+  <div
+    class="standalone-signature standalone-signature-left"
+    [style.top.px]="headerBottom()"
+    [style.width.px]="leftWidth()"
+  >
+    <app-platform-signature [stacked]="true" />
+  </div>
+}
+@if (rightSignature && !rightInline) {
   <div
     class="standalone-signature standalone-signature-right"
-    [class.inline-signature]="!rightDocked() || rightWidth() < 192"
     [style.top.px]="headerBottom()"
     [style.width.px]="rightWidth()"
   >
-    <app-learning-prompt [stacked]="rightDocked() && rightWidth() >= 192" />
+    <app-learning-prompt [stacked]="true" />
+  </div>
+}
+<!-- Without side gutters the two statements share one strip after the page, lined up with
+     the page's content column (data-signature-column, else the reader), not the window edge. -->
+@if ((leftSignature && leftInline) || (rightSignature && rightInline)) {
+  <div
+    class="signature-strip"
+    [class.aligned]="!!signatureColumn()"
+    [style.margin-left.px]="signatureColumn()?.left ?? null"
+    [style.width.px]="signatureColumn()?.width ?? null"
+  >
+    @if (leftSignature && leftInline) {
+      <div class="standalone-signature standalone-signature-left inline-signature">
+        <app-platform-signature />
+      </div>
+    }
+    @if (rightSignature && rightInline) {
+      <div class="standalone-signature standalone-signature-right inline-signature">
+        <app-learning-prompt />
+      </div>
+    }
   </div>
 }
 @if (enabled()) {
@@ -100,9 +121,11 @@
               </div>
             }
           } @else {
-            @for (section of sections(); track section.id) {
+            @for (section of outline(); track section.id) {
               <a
                 [href]="href(section)"
+                [class.sidebar-stage]="section.level === 'stage'"
+                [class.sidebar-nested]="!!section.group && section.level !== 'stage'"
                 [attr.aria-current]="currentId() === section.id ? 'location' : null"
                 (click)="follow($event, section)"
                 >{{ section.label }}</a

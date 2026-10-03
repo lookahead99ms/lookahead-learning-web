@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 150" role="img" aria-label="A request heads for retry now and hits a wall because the provider is down; AI asks what happens if every client retries at once, you answer right there and choose B, back off and queue, and reach a success check">
+<style>
+.decision-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); }
+.decision-tm { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; fill: var(--scene-text, #28434a); }
+.decision-b { font-weight: 700; }
+.decision-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.decision-acc { fill: var(--scene-accent, #006c73); }
+.decision-mut { fill: var(--scene-muted, #536970); }
+.decision-good { fill: var(--scene-good, #1f7a4d); }
+.decision-bad { fill: var(--scene-bad, #b3261e); }
+.decision-on-acc { fill: var(--scene-card, #ffffff); }
+.decision-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 1.5; }
+.decision-dash { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.decision-spark { fill: var(--scene-accent, #006c73); }
+.decision-ai-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.decision-aibox { fill: var(--scene-card, #ffffff); stroke: var(--scene-accent, #006c73); stroke-width: 1.5; }
+.decision-you-bg { fill: var(--scene-ink, #102a33); stroke: var(--scene-ink, #102a33); stroke-width: 1.5; }
+.decision-you-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-card, #ffffff); font-weight: 700; }
+.decision-bad-t { fill: var(--scene-bad, #b3261e); }
+.decision-good-t { fill: var(--scene-good, #1f7a4d); }
+
+.decision-a { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 3; stroke-dasharray: 140; animation: decision-kf-a 8s linear infinite; }
+@keyframes decision-kf-a { 0% { stroke-dashoffset: 140; } 26%, 100% { stroke-dashoffset: 0; } }
+.decision-wall { animation: decision-kf-wall 8s infinite; }
+@keyframes decision-kf-wall { 0%, 24% { opacity: 0; } 28%, 100% { opacity: 1; } }
+.decision-ai { animation: decision-kf-ai 8s infinite; }
+@keyframes decision-kf-ai { 0%, 32% { opacity: 0; } 36%, 100% { opacity: 1; } }
+.decision-you { animation: decision-kf-you 8s infinite; }
+@keyframes decision-kf-you { 0%, 48% { opacity: 0; } 52%, 100% { opacity: 1; } }
+
+.decision-bpath { fill: none; stroke: var(--scene-accent, #006c73); stroke-width: 3; stroke-dasharray: 260; animation: decision-kf-b 8s linear infinite; }
+@keyframes decision-kf-b { 0%, 56% { stroke-dashoffset: 260; } 82%, 100% { stroke-dashoffset: 0; } }
+.decision-ok { animation: decision-kf-ok 8s infinite; }
+@keyframes decision-kf-ok { 0%, 80% { opacity: 0; } 84%, 100% { opacity: 1; } }
+
+.decision-a, .decision-wall, .decision-ai, .decision-you, .decision-bpath, .decision-ok { animation-delay: -7.2s; }
+</style>
+<circle class="decision-acc" cx="24" cy="75" r="10"/><text class="decision-t" x="24" y="102" font-size="12" text-anchor="middle">request</text>
+<path class="decision-a" d="M34 75 C78 75 88 34 146 34"/>
+<text class="decision-t decision-b" x="58" y="20" font-size="12">A · retry now</text>
+<g class="decision-wall"><rect class="decision-bad" x="146" y="16" width="10" height="36" rx="2"/><text class="decision-t decision-b decision-bad-t" x="164" y="39" font-size="12">provider down</text></g>
+<path class="decision-bpath" d="M34 75 C78 75 88 120 146 120 H250"/>
+<text class="decision-t decision-b" x="58" y="143" font-size="12">B · back off, queue</text>
+<g class="decision-ok"><circle class="decision-good" cx="266" cy="120" r="13" opacity=".22"/><text class="decision-t decision-b decision-good-t" x="266" y="125" font-size="14" text-anchor="middle">✓</text></g>
+<g class="decision-ai"><g class="decision-ai-mark" transform="translate(166 58)"><g transform="translate(0 3.5)"><path class="decision-spark" d="M5.46 2.08 Q6.33 6.67 10.92 7.54 Q6.33 8.41 5.46 13 Q4.59 8.41 0 7.54 Q4.59 6.67 5.46 2.08Z M11.18 -0.13 Q11.53 1.73 13.39 2.08 Q11.53 2.43 11.18 4.29 Q10.83 2.43 8.97 2.08 Q10.83 1.73 11.18 -0.13Z M11.7 9.75 Q11.93 10.95 13.13 11.18 Q11.93 11.41 11.7 12.61 Q11.47 11.41 10.27 11.18 Q11.47 10.95 11.7 9.75Z"/></g><text class="decision-ai-t" x="16" y="14.32" font-size="12">AI</text></g><text class="decision-t" x="214" y="72.32" font-size="12">All retry at once?</text></g>
+<g class="decision-you"><rect class="decision-you-bg" x="166" y="84" width="42" height="20" rx="10"/><text class="decision-you-t" x="187" y="98.32" font-size="12" text-anchor="middle">You</text><text class="decision-t decision-b" x="214" y="98.32" font-size="12">Choose B</text></g>
+</svg>

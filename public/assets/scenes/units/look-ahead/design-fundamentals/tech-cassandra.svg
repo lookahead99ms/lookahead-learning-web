@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Rania's watch sends a heart-rate sample every few seconds and her day chart on the phone keeps growing">
+<style>
+.tech-cassandra-t{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-ink,#102a33)}
+.tech-cassandra-mu{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-muted,#536970)}
+.tech-cassandra-g{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-good,#1f7a4d)}
+.tech-cassandra-w{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-warn,#a15c00)}
+.tech-cassandra-b{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-bad,#b3261e)}
+.tech-cassandra-a{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-accent,#006c73)}
+.tech-cassandra-mono{font-family:ui-monospace,Menlo,monospace}
+.tech-cassandra-card{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.tech-cassandra-soft{fill:var(--scene-accent-soft,#dcefed)}
+.tech-cassandra-acc{fill:var(--scene-accent,#006c73)}
+.tech-cassandra-gd{fill:var(--scene-good,#1f7a4d)}
+.tech-cassandra-wn{fill:var(--scene-warn,#a15c00)}
+.tech-cassandra-bd{fill:var(--scene-bad,#b3261e)}
+.tech-cassandra-ink{fill:var(--scene-ink,#102a33)}
+.tech-cassandra-mf{fill:var(--scene-muted,#536970)}
+.tech-cassandra-lf{fill:var(--scene-line,#cfdfdc)}
+.tech-cassandra-cf{fill:var(--scene-card,#fff)}
+.tech-cassandra-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-cassandra-sg{fill:none;stroke:var(--scene-good,#1f7a4d);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-cassandra-sw{fill:none;stroke:var(--scene-warn,#a15c00);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-cassandra-sb{fill:none;stroke:var(--scene-bad,#b3261e);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-cassandra-sm{fill:none;stroke:var(--scene-muted,#536970);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-cassandra-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-cassandra-si{fill:none;stroke:var(--scene-ink,#102a33);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-cassandra-sd{animation:tech-cassandra-sd 2s linear infinite}
+@keyframes tech-cassandra-sd{0%{opacity:0;transform:translateX(0)}15%{opacity:1}80%{opacity:1;transform:translateX(86px)}100%{opacity:0;transform:translateX(86px)}}
+.tech-cassandra-beat{animation:tech-cassandra-beat 1.6s -0.64s infinite;transform-box:fill-box;transform-origin:center}
+@keyframes tech-cassandra-beat{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+.tech-cassandra-draw{animation:tech-cassandra-draw 8s -3.2s infinite;}
+@keyframes tech-cassandra-draw{0%,5%{stroke-dashoffset:1}70%,92%{stroke-dashoffset:0}98%,100%{stroke-dashoffset:1}}
+</style>
+<rect class="tech-cassandra-mf" x="20" y="22" width="18" height="12" rx="2"/><rect class="tech-cassandra-mf" x="20" y="82" width="18" height="12" rx="2"/><rect class="tech-cassandra-card" x="10" y="32" width="38" height="52" rx="10" style="stroke-width:2.5"/>
+<path class="tech-cassandra-bd tech-cassandra-beat" d="M29 72 c-11 -7 -13 -15 -7 -18 c3 -1 5 1 7 4 c2 -3 4 -5 7 -4 c6 3 4 11 -7 18z"/>
+<circle class="tech-cassandra-acc tech-cassandra-sd" cx="58" cy="58" r="4" style="animation-delay:-0.40s"/>
+<circle class="tech-cassandra-acc tech-cassandra-sd" cx="58" cy="58" r="4" style="animation-delay:-1.06s"/>
+<circle class="tech-cassandra-acc tech-cassandra-sd" cx="58" cy="58" r="4" style="animation-delay:-1.72s"/>
+<rect class="tech-cassandra-card" x="152" y="6" width="80" height="102" rx="12" style="stroke-width:2.5"/>
+<path class="tech-cassandra-sl" style="stroke-width:1.5" d="M162 92 H222 M162 70 H222 M162 48 H222"/>
+<path class="tech-cassandra-sa tech-cassandra-draw" pathLength="1" style="stroke-dasharray:1;stroke-width:3.5" d="M162 84 L172 72 L182 78 L192 56 L202 62 L212 38 L222 46"/>
+<text class="tech-cassandra-mu" x="38" y="124" font-size="15" font-weight="700" text-anchor="middle">every 5 s</text>
+<text class="tech-cassandra-g" x="192" y="126" font-size="15" font-weight="700" text-anchor="middle">Opens fast ✓</text>
+
+</svg>

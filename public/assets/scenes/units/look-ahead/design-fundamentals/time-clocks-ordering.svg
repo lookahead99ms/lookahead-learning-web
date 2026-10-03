@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Two server clocks disagree, so bids are numbered in one log; the close is number 43, the late bid after it is rejected and Zainab wins with $220">
+<style>
+.time-clocks-ordering-t{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-ink,#102a33)}
+.time-clocks-ordering-mu{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-muted,#536970)}
+.time-clocks-ordering-g{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-good,#1f7a4d)}
+.time-clocks-ordering-w{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-warn,#a15c00)}
+.time-clocks-ordering-b{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-bad,#b3261e)}
+.time-clocks-ordering-a{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-accent,#006c73)}
+.time-clocks-ordering-mono{font-family:ui-monospace,Menlo,monospace}
+.time-clocks-ordering-card{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.time-clocks-ordering-soft{fill:var(--scene-accent-soft,#dcefed)}
+.time-clocks-ordering-acc{fill:var(--scene-accent,#006c73)}
+.time-clocks-ordering-gd{fill:var(--scene-good,#1f7a4d)}
+.time-clocks-ordering-wn{fill:var(--scene-warn,#a15c00)}
+.time-clocks-ordering-bd{fill:var(--scene-bad,#b3261e)}
+.time-clocks-ordering-ink{fill:var(--scene-ink,#102a33)}
+.time-clocks-ordering-mf{fill:var(--scene-muted,#536970)}
+.time-clocks-ordering-lf{fill:var(--scene-line,#cfdfdc)}
+.time-clocks-ordering-cf{fill:var(--scene-card,#fff)}
+.time-clocks-ordering-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.time-clocks-ordering-sg{fill:none;stroke:var(--scene-good,#1f7a4d);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.time-clocks-ordering-sw{fill:none;stroke:var(--scene-warn,#a15c00);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.time-clocks-ordering-sb{fill:none;stroke:var(--scene-bad,#b3261e);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.time-clocks-ordering-sm{fill:none;stroke:var(--scene-muted,#536970);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.time-clocks-ordering-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.time-clocks-ordering-si{fill:none;stroke:var(--scene-ink,#102a33);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.time-clocks-ordering-hd{animation:time-clocks-ordering-hd 4s linear infinite}
+@keyframes time-clocks-ordering-hd{to{transform:rotate(360deg)}}
+.time-clocks-ordering-c0{animation:time-clocks-ordering-c0 8s -3.2s infinite;}
+@keyframes time-clocks-ordering-c0{0%,5%{opacity:0}6%,96%{opacity:1}97%,100%{opacity:0}}
+.time-clocks-ordering-c1{animation:time-clocks-ordering-c1 8s -3.2s infinite;}
+@keyframes time-clocks-ordering-c1{0%,17%{opacity:0}18%,96%{opacity:1}97%,100%{opacity:0}}
+.time-clocks-ordering-c2{animation:time-clocks-ordering-c2 8s -3.2s infinite;}
+@keyframes time-clocks-ordering-c2{0%,29%{opacity:0}30%,96%{opacity:1}97%,100%{opacity:0}}
+.time-clocks-ordering-c3{animation:time-clocks-ordering-c3 8s -3.2s infinite;}
+@keyframes time-clocks-ordering-c3{0%,43%{opacity:0}44%,96%{opacity:1}97%,100%{opacity:0}}
+.time-clocks-ordering-l1{animation:time-clocks-ordering-l1 8s -3.2s infinite;}
+@keyframes time-clocks-ordering-l1{0%,49%{opacity:0}50%,70%{opacity:1}71%,100%{opacity:0}}
+.time-clocks-ordering-l2{animation:time-clocks-ordering-l2 8s -3.2s infinite;}
+@keyframes time-clocks-ordering-l2{0%,71%{opacity:0}72%,96%{opacity:1}97%,100%{opacity:0}}
+.time-clocks-ordering-cf{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-card,#fff)}
+</style>
+<circle class="time-clocks-ordering-card" style="stroke-width:2.5" cx="46" cy="34" r="24"/><path class="time-clocks-ordering-si" style="stroke-width:3" d="M46 34 L52 24"/><path class="time-clocks-ordering-sa time-clocks-ordering-hd" style="stroke-width:2;transform-origin:46px 34px" d="M46 34 V16"/><circle class="time-clocks-ordering-card" style="stroke-width:2.5" cx="194" cy="34" r="24"/><path class="time-clocks-ordering-si" style="stroke-width:3" d="M194 34 L184 24"/><path class="time-clocks-ordering-sa time-clocks-ordering-hd" style="stroke-width:2;transform-origin:194px 34px" d="M194 34 V16"/><text class="time-clocks-ordering-b" x="120" y="44" font-size="26" font-weight="700" text-anchor="middle">≠</text>
+
+<g class="time-clocks-ordering-c0"><rect class="time-clocks-ordering-soft" x="8" y="76" width="50" height="26" rx="6"/><text class="time-clocks-ordering-t" x="33" y="95" font-size="16" font-weight="700" text-anchor="middle">41</text>
+</g>
+<g class="time-clocks-ordering-c1"><rect class="time-clocks-ordering-soft" x="66" y="76" width="50" height="26" rx="6"/><text class="time-clocks-ordering-t" x="91" y="95" font-size="16" font-weight="700" text-anchor="middle">42</text>
+</g>
+<g class="time-clocks-ordering-c2"><rect class="time-clocks-ordering-wn" x="124" y="76" width="50" height="26" rx="6"/><text class="time-clocks-ordering-cf" x="149" y="95" font-size="16" font-weight="700" text-anchor="middle">43</text>
+</g>
+<g class="time-clocks-ordering-c3"><rect class="time-clocks-ordering-bd" x="182" y="76" width="50" height="26" rx="6"/><text class="time-clocks-ordering-cf" x="207" y="95" font-size="16" font-weight="700" text-anchor="middle">44</text>
+</g>
+<g class="time-clocks-ordering-l1"><text class="time-clocks-ordering-b" x="120" y="124" font-size="16" font-weight="700" text-anchor="middle">#44 too late ✕</text>
+</g><g class="time-clocks-ordering-l2"><text class="time-clocks-ordering-g" x="120" y="124" font-size="16" font-weight="700" text-anchor="middle">Zainab wins $220</text>
+</g>
+</svg>

@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A candidate walks an interviewer through a project diagram; a magnifier dives into each component while an impact chart climbs">
+<style>
+.look-ahead-project-recruiter-box{fill:var(--scene-card,#fff);stroke:var(--scene-ink,#102a33);stroke-width:1.6}
+.look-ahead-project-recruiter-node{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-accent,#006c73);stroke-width:1.6}
+.look-ahead-project-recruiter-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:600;fill:var(--scene-ink,#102a33)}
+.look-ahead-project-recruiter-wire{stroke:var(--scene-muted,#536970);stroke-width:1.8;fill:none}
+.look-ahead-project-recruiter-lens{animation:look-ahead-project-recruiter-lens 7s ease-in-out infinite;animation-delay:-3s}
+.look-ahead-project-recruiter-line{stroke:var(--scene-good,#1f7a4d);stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:110;animation:look-ahead-project-recruiter-line 7s ease-in-out infinite;animation-delay:-3s}
+.look-ahead-project-recruiter-q{animation:look-ahead-project-recruiter-q 7s ease-in-out infinite;animation-delay:-3s}
+@keyframes look-ahead-project-recruiter-lens{0%,8%{transform:translate(0,0)}28%,40%{transform:translate(52px,-30px)}60%,72%{transform:translate(52px,28px)}92%,100%{transform:translate(0,0)}}
+@keyframes look-ahead-project-recruiter-line{0%{stroke-dashoffset:110}70%,94%{stroke-dashoffset:0}100%{stroke-dashoffset:110}}
+@keyframes look-ahead-project-recruiter-q{0%,20%{opacity:0;transform:translateY(4px)}28%,90%{opacity:1;transform:translateY(0)}100%{opacity:0}}
+</style>
+<rect x="0" y="0" width="320" height="180" rx="12" fill="var(--scene-card,#fff)"/>
+<!-- project board -->
+<rect class="look-ahead-project-recruiter-box" x="14" y="14" width="176" height="112" rx="10"/>
+<path class="look-ahead-project-recruiter-wire" d="M62 70 H92 M118 70 C130 70 128 42 142 42 M118 70 C130 70 128 98 142 98"/>
+<rect class="look-ahead-project-recruiter-node" x="28" y="56" width="34" height="28" rx="6"/>
+<rect class="look-ahead-project-recruiter-node" x="92" y="56" width="26" height="28" rx="6" style="fill:var(--scene-ahead,#2f6fb3);stroke:var(--scene-ink,#102a33)"/>
+<rect class="look-ahead-project-recruiter-node" x="142" y="30" width="34" height="24" rx="6"/>
+<path d="M144 92 v14 a15 5 0 0 0 30 0 v-14" class="look-ahead-project-recruiter-node"/><ellipse cx="159" cy="92" rx="15" ry="5" class="look-ahead-project-recruiter-node"/>
+<g class="look-ahead-project-recruiter-lens"><circle cx="102" cy="72" r="20" fill="var(--scene-ahead,#2f6fb3)" fill-opacity=".12" stroke="var(--scene-ink,#102a33)" stroke-width="3"/><path d="M116 86 l14 14" stroke="var(--scene-ink,#102a33)" stroke-width="5" stroke-linecap="round"/></g>
+<text class="look-ahead-project-recruiter-t" x="102" y="146" text-anchor="middle">Your project</text>
+<!-- impact -->
+<rect class="look-ahead-project-recruiter-box" x="204" y="14" width="102" height="72" rx="10"/>
+<path d="M216 74 H296 M216 74 V26" stroke="var(--scene-line,#cfdfdc)" stroke-width="1.8" fill="none"/>
+<path class="look-ahead-project-recruiter-line" d="M220 68 L240 60 L256 62 L272 44 L292 32"/>
+<text class="look-ahead-project-recruiter-t" x="255" y="104" text-anchor="middle">Impact</text>
+<!-- interviewer asking -->
+<g fill="var(--scene-grow,#b8457a)" stroke="var(--scene-ink,#102a33)" stroke-width="1.6"><circle cx="276" cy="136" r="9"/><path d="M260 168 a16 14 0 0 1 32 0z"/></g>
+<g class="look-ahead-project-recruiter-q"><path d="M222 120 h22 a6 6 0 0 1 6 6 v14 a6 6 0 0 1 -6 6 h-6 l-6 6 v-6 h-10 a6 6 0 0 1 -6 -6 v-14 a6 6 0 0 1 6 -6z" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="1.6"/>
+<text class="look-ahead-project-recruiter-t" x="233" y="139" text-anchor="middle" style="font-size:16px">?</text></g>
+<g fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="1.8"><circle cx="196" cy="140" r="9"/><path d="M180 170 a16 14 0 0 1 32 0z"/></g>
+</svg>

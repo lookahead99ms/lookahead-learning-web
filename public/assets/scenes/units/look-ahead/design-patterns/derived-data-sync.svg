@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" class="derived-data-sync-root" role="img" aria-label="One review is posted once, and the rating, the search results and the product page each catch up with the new count.">
+<style>
+.derived-data-sync-root text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.derived-data-sync-t{fill:var(--scene-ink,#102a33)}
+.derived-data-sync-tx{fill:var(--scene-text,#28434a)}
+.derived-data-sync-mut{fill:var(--scene-muted,#536970)}
+.derived-data-sync-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.derived-data-sync-soft{fill:var(--scene-accent-soft,#dcefed)}
+.derived-data-sync-acc{fill:var(--scene-accent,#006c73)}
+.derived-data-sync-ln{fill:var(--scene-line,#cfdfdc)}
+.derived-data-sync-cardf{fill:var(--scene-card,#fff)}
+.derived-data-sync-good{fill:var(--scene-good,#1f7a4d)}
+.derived-data-sync-warn{fill:var(--scene-warn,#a15c00)}
+.derived-data-sync-bad{fill:var(--scene-bad,#b3261e)}
+.derived-data-sync-link{fill:var(--scene-link,#245a88)}
+.derived-data-sync-out{fill:var(--scene-bubble-out,#d4ecea)}
+.derived-data-sync-sk{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.derived-data-sync-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.derived-data-sync-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:1.5;stroke-dasharray:3 3}
+.derived-data-sync-posted{animation:derived-data-sync-posted 7s -3s infinite}@keyframes derived-data-sync-posted{0%,8%{opacity:0}10%,96%{opacity:1}100%{opacity:0}}
+.derived-data-sync-post{animation:derived-data-sync-post 7s -3s infinite}@keyframes derived-data-sync-post{0%,8%{opacity:1}10%,96%{opacity:0}100%{opacity:1}}
+.derived-data-sync-dot1{animation:derived-data-sync-dot1 7s -3s infinite}@keyframes derived-data-sync-dot1{0%,10%{transform:translate(0,0);opacity:0}11%{opacity:1}20%{transform:translate(42px,-42px);opacity:1}22%,100%{transform:translate(42px,-42px);opacity:0}}
+.derived-data-sync-old1{animation:derived-data-sync-old1 7s -3s infinite}@keyframes derived-data-sync-old1{0%,20%{opacity:1}21%,96%{opacity:0}100%{opacity:1}}
+.derived-data-sync-new1{animation:derived-data-sync-new1 7s -3s infinite}@keyframes derived-data-sync-new1{0%,20%{opacity:0}21%,96%{opacity:1}100%{opacity:0}}
+.derived-data-sync-dot2{animation:derived-data-sync-dot2 7s -3s infinite}@keyframes derived-data-sync-dot2{0%,14%{transform:translate(0,0);opacity:0}15%{opacity:1}26%{transform:translate(42px,0px);opacity:1}28%,100%{transform:translate(42px,0px);opacity:0}}
+.derived-data-sync-old2{animation:derived-data-sync-old2 7s -3s infinite}@keyframes derived-data-sync-old2{0%,26%{opacity:1}27%,96%{opacity:0}100%{opacity:1}}
+.derived-data-sync-new2{animation:derived-data-sync-new2 7s -3s infinite}@keyframes derived-data-sync-new2{0%,26%{opacity:0}27%,96%{opacity:1}100%{opacity:0}}
+.derived-data-sync-dot3{animation:derived-data-sync-dot3 7s -3s infinite}@keyframes derived-data-sync-dot3{0%,22%{transform:translate(0,0);opacity:0}23%{opacity:1}46%{transform:translate(42px,42px);opacity:1}48%,100%{transform:translate(42px,42px);opacity:0}}
+.derived-data-sync-old3{animation:derived-data-sync-old3 7s -3s infinite}@keyframes derived-data-sync-old3{0%,46%{opacity:1}47%,96%{opacity:0}100%{opacity:1}}
+.derived-data-sync-new3{animation:derived-data-sync-new3 7s -3s infinite}@keyframes derived-data-sync-new3{0%,46%{opacity:0}47%,96%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.derived-data-sync-root *{animation-play-state:paused!important}}
+</style>
+<rect x="6" y="14" width="92" height="107" rx="11" class="derived-data-sync-box"/>
+<text x="14" y="40" font-size="15" class="derived-data-sync-warn">&#9733;&#9733;&#9733;&#9733;&#9733;</text>
+<rect x="14" y="52" width="76" height="6" rx="3" class="derived-data-sync-ln"/><rect x="14" y="64" width="52" height="6" rx="3" class="derived-data-sync-ln"/>
+<g class="derived-data-sync-post"><rect x="14" y="86" width="60" height="26" rx="9" class="derived-data-sync-acc"/><text x="44" y="104" font-size="14" font-weight="700" text-anchor="middle" class="derived-data-sync-cardf">Post</text></g>
+<g class="derived-data-sync-posted"><rect x="14" y="86" width="76" height="26" rx="9" class="derived-data-sync-soft"/><text x="52" y="104" font-size="14" font-weight="700" text-anchor="middle" class="derived-data-sync-good">Posted &#10003;</text></g>
+<path d="M98 67 L140 25 M98 67 L140 67 M98 67 L140 109" class="derived-data-sync-sl"/>
+<rect x="140" y="8" width="94" height="34" rx="8" class="derived-data-sync-box"/>
+<text x="148" y="31" font-size="17" class="derived-data-sync-warn">&#9733;</text>
+<text x="170" y="31" font-size="16" class="derived-data-sync-tx derived-data-sync-old1">4.41</text><text x="170" y="31" font-size="16" font-weight="700" class="derived-data-sync-t derived-data-sync-new1">4.43</text>
+<text x="222" y="31" font-size="16" font-weight="700" text-anchor="end" class="derived-data-sync-good derived-data-sync-new1">&#10003;</text>
+<rect x="140" y="50" width="94" height="34" rx="8" class="derived-data-sync-box"/>
+<circle cx="154" cy="65" r="6" class="derived-data-sync-sk"/><path d="M158.5 69.5 L164 75" class="derived-data-sync-sk"/>
+<rect x="174" y="60" width="36" height="5" rx="2.5" class="derived-data-sync-ln"/><rect x="174" y="70" width="26" height="5" rx="2.5" class="derived-data-sync-ln"/>
+<text x="222" y="73" font-size="16" font-weight="700" text-anchor="end" class="derived-data-sync-good derived-data-sync-new2">&#10003;</text>
+<rect x="140" y="92" width="94" height="34" rx="8" class="derived-data-sync-box"/>
+<path d="M148 99 h10 l4 4 v14 h-14 z" class="derived-data-sync-sk"/>
+<text x="170" y="115" font-size="16" class="derived-data-sync-tx derived-data-sync-old3">41</text><text x="170" y="115" font-size="16" font-weight="700" class="derived-data-sync-t derived-data-sync-new3">42</text>
+<text x="222" y="115" font-size="16" font-weight="700" text-anchor="end" class="derived-data-sync-good derived-data-sync-new3">&#10003;</text>
+<circle class="derived-data-sync-dot1" cx="98" cy="67" r="5" style="fill:var(--scene-accent,#006c73)"/><circle class="derived-data-sync-dot2" cx="98" cy="67" r="5" style="fill:var(--scene-accent,#006c73)"/><circle class="derived-data-sync-dot3" cx="98" cy="67" r="5" style="fill:var(--scene-accent,#006c73)"/>
+</svg>

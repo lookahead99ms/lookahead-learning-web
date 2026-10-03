@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="dynamic programming">
+<style>
+.learn-algorithmic-patterns-dynamic-programming-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}.learn-algorithmic-patterns-dynamic-programming-w{font:700 16px system-ui,sans-serif;fill:#fff}
+@keyframes learn-algorithmic-patterns-dynamic-programming-a20{0%{opacity:0}12.5%{opacity:0}14%{opacity:1}95%{opacity:1}98%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-dynamic-programming-a20{animation:learn-algorithmic-patterns-dynamic-programming-a20 7s linear infinite;animation-delay:-3.5s;}
+@keyframes learn-algorithmic-patterns-dynamic-programming-a21{0%{opacity:0}12.5%{opacity:0}14%{opacity:1}95%{opacity:1}98%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-dynamic-programming-a21{animation:learn-algorithmic-patterns-dynamic-programming-a21 7s linear infinite;animation-delay:-3.5s;}
+@keyframes learn-algorithmic-patterns-dynamic-programming-a31{0%{opacity:0}26.5%{opacity:0}28%{opacity:1}95%{opacity:1}98%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-dynamic-programming-a31{animation:learn-algorithmic-patterns-dynamic-programming-a31 7s linear infinite;animation-delay:-3.5s;}
+@keyframes learn-algorithmic-patterns-dynamic-programming-a32{0%{opacity:0}26.5%{opacity:0}28%{opacity:1}95%{opacity:1}98%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-dynamic-programming-a32{animation:learn-algorithmic-patterns-dynamic-programming-a32 7s linear infinite;animation-delay:-3.5s;}
+@keyframes learn-algorithmic-patterns-dynamic-programming-a42{0%{opacity:0}40.5%{opacity:0}42%{opacity:1}95%{opacity:1}98%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-dynamic-programming-a42{animation:learn-algorithmic-patterns-dynamic-programming-a42 7s linear infinite;animation-delay:-3.5s;}
+@keyframes learn-algorithmic-patterns-dynamic-programming-a43{0%{opacity:0}40.5%{opacity:0}42%{opacity:1}95%{opacity:1}98%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-dynamic-programming-a43{animation:learn-algorithmic-patterns-dynamic-programming-a43 7s linear infinite;animation-delay:-3.5s;}
+@keyframes learn-algorithmic-patterns-dynamic-programming-a53{0%{opacity:0}54.5%{opacity:0}56%{opacity:1}95%{opacity:1}98%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-dynamic-programming-a53{animation:learn-algorithmic-patterns-dynamic-programming-a53 7s linear infinite;animation-delay:-3.5s;}
+@keyframes learn-algorithmic-patterns-dynamic-programming-a54{0%{opacity:0}54.5%{opacity:0}56%{opacity:1}95%{opacity:1}98%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-dynamic-programming-a54{animation:learn-algorithmic-patterns-dynamic-programming-a54 7s linear infinite;animation-delay:-3.5s;}
+@keyframes learn-algorithmic-patterns-dynamic-programming-v0{0%{opacity:0}0.5%{opacity:0}2%{opacity:1}95%{opacity:1}98%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-dynamic-programming-v0{animation:learn-algorithmic-patterns-dynamic-programming-v0 7s linear infinite;animation-delay:-3.5s;}
+@keyframes learn-algorithmic-patterns-dynamic-programming-v1{0%{opacity:0}0.5%{opacity:0}2%{opacity:1}95%{opacity:1}98%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-dynamic-programming-v1{animation:learn-algorithmic-patterns-dynamic-programming-v1 7s linear infinite;animation-delay:-3.5s;}
+@keyframes learn-algorithmic-patterns-dynamic-programming-v2{0%{opacity:0}12.5%{opacity:0}14%{opacity:1}95%{opacity:1}98%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-dynamic-programming-v2{animation:learn-algorithmic-patterns-dynamic-programming-v2 7s linear infinite;animation-delay:-3.5s;}
+@keyframes learn-algorithmic-patterns-dynamic-programming-v3{0%{opacity:0}26.5%{opacity:0}28%{opacity:1}95%{opacity:1}98%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-dynamic-programming-v3{animation:learn-algorithmic-patterns-dynamic-programming-v3 7s linear infinite;animation-delay:-3.5s;}
+@keyframes learn-algorithmic-patterns-dynamic-programming-v4{0%{opacity:0}40.5%{opacity:0}42%{opacity:1}95%{opacity:1}98%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-dynamic-programming-v4{animation:learn-algorithmic-patterns-dynamic-programming-v4 7s linear infinite;animation-delay:-3.5s;}
+@keyframes learn-algorithmic-patterns-dynamic-programming-v5{0%{opacity:0}54.5%{opacity:0}56%{opacity:1}95%{opacity:1}98%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-dynamic-programming-v5{animation:learn-algorithmic-patterns-dynamic-programming-v5 7s linear infinite;animation-delay:-3.5s;}
+.learn-algorithmic-patterns-dynamic-programming-bg{fill:var(--scene-card,#fff)}
+</style>
+<rect class="learn-algorithmic-patterns-dynamic-programming-bg" width="320" height="180" rx="12"/>
+<rect x="30" y="112" width="40" height="36" rx="7" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<rect x="74" y="112" width="40" height="36" rx="7" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<rect x="118" y="112" width="40" height="36" rx="7" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<rect x="162" y="112" width="40" height="36" rx="7" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<rect x="206" y="112" width="40" height="36" rx="7" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<rect x="250" y="112" width="40" height="36" rx="7" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<path class="learn-algorithmic-patterns-dynamic-programming-a20" d="M50 110C50 50 138 50 138 108" fill="none" stroke="var(--scene-grow,#b8457a)" stroke-width="3.5" stroke-linecap="round"/>
+<path class="learn-algorithmic-patterns-dynamic-programming-a21" d="M94 110C94 72 138 72 138 108" fill="none" stroke="var(--scene-ahead,#2f6fb3)" stroke-width="3.5" stroke-linecap="round"/>
+<path class="learn-algorithmic-patterns-dynamic-programming-a31" d="M94 110C94 50 182 50 182 108" fill="none" stroke="var(--scene-grow,#b8457a)" stroke-width="3.5" stroke-linecap="round"/>
+<path class="learn-algorithmic-patterns-dynamic-programming-a32" d="M138 110C138 72 182 72 182 108" fill="none" stroke="var(--scene-ahead,#2f6fb3)" stroke-width="3.5" stroke-linecap="round"/>
+<path class="learn-algorithmic-patterns-dynamic-programming-a42" d="M138 110C138 50 226 50 226 108" fill="none" stroke="var(--scene-grow,#b8457a)" stroke-width="3.5" stroke-linecap="round"/>
+<path class="learn-algorithmic-patterns-dynamic-programming-a43" d="M182 110C182 72 226 72 226 108" fill="none" stroke="var(--scene-ahead,#2f6fb3)" stroke-width="3.5" stroke-linecap="round"/>
+<path class="learn-algorithmic-patterns-dynamic-programming-a53" d="M182 110C182 50 270 50 270 108" fill="none" stroke="var(--scene-grow,#b8457a)" stroke-width="3.5" stroke-linecap="round"/>
+<path class="learn-algorithmic-patterns-dynamic-programming-a54" d="M226 110C226 72 270 72 270 108" fill="none" stroke="var(--scene-ahead,#2f6fb3)" stroke-width="3.5" stroke-linecap="round"/>
+<g class="learn-algorithmic-patterns-dynamic-programming-v0"><rect x="30" y="112" width="40" height="36" rx="7" fill="var(--scene-accent,#006c73)"/><text class="learn-algorithmic-patterns-dynamic-programming-w" x="50" y="136" text-anchor="middle">1</text></g>
+<g class="learn-algorithmic-patterns-dynamic-programming-v1"><rect x="74" y="112" width="40" height="36" rx="7" fill="var(--scene-accent,#006c73)"/><text class="learn-algorithmic-patterns-dynamic-programming-w" x="94" y="136" text-anchor="middle">1</text></g>
+<g class="learn-algorithmic-patterns-dynamic-programming-v2"><rect x="118" y="112" width="40" height="36" rx="7" fill="var(--scene-accent,#006c73)"/><text class="learn-algorithmic-patterns-dynamic-programming-w" x="138" y="136" text-anchor="middle">2</text></g>
+<g class="learn-algorithmic-patterns-dynamic-programming-v3"><rect x="162" y="112" width="40" height="36" rx="7" fill="var(--scene-accent,#006c73)"/><text class="learn-algorithmic-patterns-dynamic-programming-w" x="182" y="136" text-anchor="middle">3</text></g>
+<g class="learn-algorithmic-patterns-dynamic-programming-v4"><rect x="206" y="112" width="40" height="36" rx="7" fill="var(--scene-accent,#006c73)"/><text class="learn-algorithmic-patterns-dynamic-programming-w" x="226" y="136" text-anchor="middle">5</text></g>
+<g class="learn-algorithmic-patterns-dynamic-programming-v5"><rect x="250" y="112" width="40" height="36" rx="7" fill="var(--scene-good,#1f7a4d)"/><text class="learn-algorithmic-patterns-dynamic-programming-w" x="270" y="136" text-anchor="middle">8</text></g>
+<text class="learn-algorithmic-patterns-dynamic-programming-t" x="160" y="28" text-anchor="middle">reuse earlier answers</text>
+<text class="learn-algorithmic-patterns-dynamic-programming-t" x="160" y="172" text-anchor="middle">sum of previous two</text>
+</svg>

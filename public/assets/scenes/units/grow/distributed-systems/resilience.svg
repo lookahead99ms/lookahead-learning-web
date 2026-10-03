@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" font-family="system-ui, sans-serif">
+<style>
+.grow-distributed-systems-resilience-t{font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.grow-distributed-systems-resilience-m{font-size:16px;fill:var(--scene-text,#28434a)}
+.grow-distributed-systems-resilience-q{animation:grow-distributed-systems-resilience-qq 5s linear infinite;animation-delay:-3s}
+.grow-distributed-systems-resilience-q2{animation:grow-distributed-systems-resilience-qq 5s linear infinite;animation-delay:-1.2s}
+.grow-distributed-systems-resilience-sw{transform-origin:150px 60px;animation:grow-distributed-systems-resilience-swing 5s ease-in-out infinite;animation-delay:-3s}
+.grow-distributed-systems-resilience-blink{animation:grow-distributed-systems-resilience-bl 5s ease-in-out infinite;animation-delay:-3s}
+@keyframes grow-distributed-systems-resilience-qq{0%{transform:translate(0,0);opacity:0}8%{opacity:1}45%{transform:translate(52px,0);opacity:1}55%,100%{transform:translate(52px,0);opacity:0}}
+@keyframes grow-distributed-systems-resilience-swing{0%,15%{transform:rotate(0)}35%,85%{transform:rotate(-38deg)}100%{transform:rotate(0)}}
+@keyframes grow-distributed-systems-resilience-bl{0%,100%{opacity:.35}50%{opacity:1}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<circle cx="34" cy="60" r="16" fill="var(--scene-link,#245a88)"/><path d="M18 60h-8" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<path d="M50 60H150M178 60H232" stroke="var(--scene-line,#cfdfdc)" stroke-width="4"/>
+<circle cx="150" cy="60" r="5" fill="var(--scene-ink,#102a33)"/><circle cx="178" cy="60" r="5" fill="var(--scene-ink,#102a33)"/>
+<path class="grow-distributed-systems-resilience-sw" d="M150 60H180" stroke="var(--scene-ink,#102a33)" stroke-width="5" stroke-linecap="round"/>
+<g class="grow-distributed-systems-resilience-blink"><path d="M164 34l6 -8l6 8" stroke="var(--scene-bad,#b3261e)" stroke-width="0" fill="none"/></g>
+<rect x="232" y="34" width="62" height="52" rx="10" fill="var(--scene-card,#fff)" stroke="var(--scene-bad,#b3261e)" stroke-width="3"/>
+<path d="M250 52l26 20M276 52l-26 20" stroke="var(--scene-bad,#b3261e)" stroke-width="4" stroke-linecap="round" class="grow-distributed-systems-resilience-blink"/>
+<circle class="grow-distributed-systems-resilience-q" cx="64" cy="60" r="6" fill="var(--scene-warn,#a15c00)"/>
+<circle class="grow-distributed-systems-resilience-q2" cx="64" cy="60" r="6" fill="var(--scene-warn,#a15c00)"/>
+<path d="M34 78V120H232" stroke="var(--scene-good,#1f7a4d)" stroke-width="4" fill="none"/>
+<rect x="232" y="102" width="62" height="36" rx="10" fill="var(--scene-good,#1f7a4d)"/>
+<path d="M251 120l8 8 16-16" stroke="#fff" stroke-width="4" fill="none"/>
+<text x="150" y="104" text-anchor="middle" class="grow-distributed-systems-resilience-t">Breaker open</text>
+<text x="160" y="166" text-anchor="middle" class="grow-distributed-systems-resilience-m">Order still completes</text>
+</svg>

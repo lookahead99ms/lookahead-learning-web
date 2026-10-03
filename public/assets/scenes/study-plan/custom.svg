@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 150" role="img" aria-label="Your own plan: set your daily time, then pick exactly the courses you want, one by one">
+<style>
+.study-plan-custom-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.study-plan-custom-chip { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.study-plan-custom-pick { fill: var(--scene-accent-soft, #dcefed); stroke: var(--scene-accent, #006c73); stroke-width: 2; }
+.study-plan-custom-track { stroke: var(--scene-line, #cfdfdc); stroke-width: 6; stroke-linecap: round; }
+.study-plan-custom-fill { stroke: var(--scene-accent, #006c73); stroke-width: 6; stroke-linecap: round; }
+.study-plan-custom-knob { fill: var(--scene-card, #ffffff); stroke: var(--scene-accent, #006c73); stroke-width: 3; }
+.study-plan-custom-slide { animation: study-plan-custom-kf-slide 7s ease-in-out infinite; }
+@keyframes study-plan-custom-kf-slide { 0%, 4% { transform: translateX(-60px); } 18%, 100% { transform: translateX(0); } }
+.study-plan-custom-grow { transform-box: view-box; transform-origin: 20px 26px; animation: study-plan-custom-kf-grow 7s ease-in-out infinite; }
+@keyframes study-plan-custom-kf-grow { 0%, 4% { transform: scaleX(.4); } 18%, 100% { transform: scaleX(1); } }
+.study-plan-custom-p1, .study-plan-custom-p2, .study-plan-custom-p3 { animation-duration: 7s; animation-iteration-count: infinite; }
+.study-plan-custom-p1 { animation-name: study-plan-custom-kf-p1; }
+.study-plan-custom-p2 { animation-name: study-plan-custom-kf-p2; }
+.study-plan-custom-p3 { animation-name: study-plan-custom-kf-p3; }
+@keyframes study-plan-custom-kf-p1 { 0%, 26% { opacity: 0; } 30%, 100% { opacity: 1; } }
+@keyframes study-plan-custom-kf-p2 { 0%, 42% { opacity: 0; } 46%, 100% { opacity: 1; } }
+@keyframes study-plan-custom-kf-p3 { 0%, 58% { opacity: 0; } 62%, 100% { opacity: 1; } }
+.study-plan-custom-slide, .study-plan-custom-grow, .study-plan-custom-p1, .study-plan-custom-p2, .study-plan-custom-p3 { animation-delay: -5.2s; }
+</style>
+<path class="study-plan-custom-track" d="M20 26 H170"/>
+<path class="study-plan-custom-fill study-plan-custom-grow" d="M20 26 H130"/>
+<g class="study-plan-custom-slide"><circle class="study-plan-custom-knob" cx="130" cy="26" r="9"/></g>
+<text class="study-plan-custom-t" x="306" y="31" font-size="15" text-anchor="end">2 h a day</text>
+<rect class="study-plan-custom-chip" x="12" y="52" width="94" height="34" rx="17"/><rect class="study-plan-custom-chip" x="113" y="52" width="94" height="34" rx="17"/><rect class="study-plan-custom-chip" x="214" y="52" width="94" height="34" rx="17"/>
+<rect class="study-plan-custom-chip" x="12" y="98" width="94" height="34" rx="17"/><rect class="study-plan-custom-chip" x="113" y="98" width="94" height="34" rx="17"/><rect class="study-plan-custom-chip" x="214" y="98" width="94" height="34" rx="17"/>
+<g class="study-plan-custom-p1"><rect class="study-plan-custom-pick" x="12" y="52" width="94" height="34" rx="17"/></g>
+<g class="study-plan-custom-p2"><rect class="study-plan-custom-pick" x="214" y="52" width="94" height="34" rx="17"/></g>
+<g class="study-plan-custom-p3"><rect class="study-plan-custom-pick" x="113" y="98" width="94" height="34" rx="17"/></g>
+<text class="study-plan-custom-t" x="59" y="74" font-size="14" text-anchor="middle">Core Java</text>
+<text class="study-plan-custom-t" x="160" y="74" font-size="14" text-anchor="middle">SQL</text>
+<text class="study-plan-custom-t" x="261" y="74" font-size="14" text-anchor="middle">Spring</text>
+<text class="study-plan-custom-t" x="59" y="120" font-size="14" text-anchor="middle">React</text>
+<text class="study-plan-custom-t" x="160" y="120" font-size="14" text-anchor="middle">Caching</text>
+<text class="study-plan-custom-t" x="261" y="120" font-size="14" text-anchor="middle">Docker</text>
+</svg>

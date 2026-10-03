@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A score card closes its connection to the old match and opens one to the new match">
+<style>
+.grow-react-effects-async-t{font-family:system-ui,sans-serif;font-weight:700;font-size:16px;fill:var(--scene-ink,#102a33)}
+.grow-react-effects-async-a{stroke-dasharray:7 6;animation:grow-react-effects-async-flowa 6s linear infinite}
+.grow-react-effects-async-b{stroke-dasharray:7 6;animation:grow-react-effects-async-flowb 6s linear infinite}
+.grow-react-effects-async-x{animation:grow-react-effects-async-cut 6s ease-in-out infinite;transform-origin:204px 62px}
+.grow-react-effects-async-ma{animation:grow-react-effects-async-fa 6s steps(1) infinite}
+.grow-react-effects-async-mb{animation:grow-react-effects-async-fb 6s steps(1) infinite}
+@keyframes grow-react-effects-async-flowa{0%{opacity:1;stroke-dashoffset:26}45%{opacity:1}50%,100%{opacity:0;stroke-dashoffset:0}}
+@keyframes grow-react-effects-async-flowb{0%,50%{opacity:0;stroke-dashoffset:26}55%{opacity:1}100%{opacity:1;stroke-dashoffset:0}}
+@keyframes grow-react-effects-async-cut{0%,44%{opacity:0;transform:scale(.5)}52%{opacity:1;transform:scale(1.15)}70%{opacity:1;transform:scale(1)}85%,100%{opacity:0}}
+@keyframes grow-react-effects-async-fa{0%{fill:var(--scene-good,#1f7a4d)}50%,100%{fill:var(--scene-muted,#536970)}}
+@keyframes grow-react-effects-async-fb{0%{fill:var(--scene-muted,#536970)}50%,100%{fill:var(--scene-good,#1f7a4d)}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="14" y="50" width="96" height="80" rx="10" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/>
+<text x="62" y="82" text-anchor="middle" class="grow-react-effects-async-t">Score</text>
+<text x="62" y="112" text-anchor="middle" class="grow-react-effects-async-t" style="font-size:22px">2 : 1</text>
+<rect class="grow-react-effects-async-ma" style="animation-delay:-3s" x="214" y="28" width="92" height="44" rx="8" stroke="var(--scene-muted,#536970)" stroke-width="2"/>
+<rect class="grow-react-effects-async-mb" style="animation-delay:-3s" x="214" y="108" width="92" height="44" rx="8" stroke="var(--scene-muted,#536970)" stroke-width="2"/>
+<text x="260" y="56" text-anchor="middle" class="grow-react-effects-async-t" style="fill:#fff;paint-order:stroke;stroke:var(--scene-ink,#102a33);stroke-width:3px">Match A</text>
+<text x="260" y="136" text-anchor="middle" class="grow-react-effects-async-t" style="fill:#fff;paint-order:stroke;stroke:var(--scene-ink,#102a33);stroke-width:3px">Match B</text>
+<path class="grow-react-effects-async-a" style="animation-delay:-3s" d="M112 80 L212 52" stroke="var(--scene-good,#1f7a4d)" stroke-width="4" fill="none" stroke-linecap="round"/>
+<path class="grow-react-effects-async-b" style="animation-delay:-3s" d="M112 102 L212 130" stroke="var(--scene-good,#1f7a4d)" stroke-width="4" fill="none" stroke-linecap="round"/>
+<g class="grow-react-effects-async-x" style="animation-delay:-3s"><circle cx="160" cy="66" r="13" fill="var(--scene-bad,#b3261e)"/><path d="M154 60 l12 12 M166 60 l-12 12" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></g>
+<text x="160" y="172" text-anchor="middle" class="grow-react-effects-async-t" style="fill:var(--scene-bad,#b3261e)">cleanup</text>
+</svg>

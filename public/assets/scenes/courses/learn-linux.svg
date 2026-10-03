@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="In a terminal, top shows one process eating CPU; kill stops it">
+<style>
+.learn-linux-win { fill: var(--scene-ink, #102a33); }
+.learn-linux-tm { font-family: ui-monospace, Menlo, monospace; fill: var(--scene-card, #ffffff); }
+.learn-linux-b { font-weight: 700; }
+.learn-linux-pid { fill: var(--scene-card, #ffffff); opacity: .45; }
+.learn-linux-track { fill: var(--scene-card, #ffffff); opacity: .14; }
+.learn-linux-bar { fill: var(--scene-learn, #0f8a8a); }
+.learn-linux-hot { fill: var(--scene-learn, #0f8a8a); transform-box: fill-box; transform-origin: left center; animation: learn-linux-kf-hot 7s ease-in-out infinite; }
+@keyframes learn-linux-kf-hot {
+  0% { transform: scaleX(.25); fill: var(--scene-learn, #0f8a8a); opacity: 1; }
+  35% { transform: scaleX(1); fill: var(--scene-bad, #b3261e); opacity: 1; }
+  66% { transform: scaleX(1); fill: var(--scene-bad, #b3261e); opacity: 1; }
+  74% { transform: scaleX(0); fill: var(--scene-bad, #b3261e); opacity: 0; }
+  94% { transform: scaleX(0); opacity: 0; }
+  100% { transform: scaleX(.25); fill: var(--scene-learn, #0f8a8a); opacity: 1; }
+}
+.learn-linux-row3 { animation: learn-linux-kf-row 7s infinite; }
+@keyframes learn-linux-kf-row { 0%, 68% { opacity: 1; } 74%, 94% { opacity: .25; } 100% { opacity: 1; } }
+.learn-linux-kill { animation: learn-linux-kf-kill 7s infinite; }
+@keyframes learn-linux-kf-kill { 0%, 48% { opacity: 0; } 52%, 92% { opacity: 1; } 96%, 100% { opacity: 0; } }
+.learn-linux-cur { animation: learn-linux-kf-cur 1s steps(1) infinite; }
+@keyframes learn-linux-kf-cur { 0% { opacity: 1; } 50% { opacity: 0; } }
+.learn-linux-hot, .learn-linux-row3, .learn-linux-kill { animation-delay: -3s; }
+</style>
+<rect class="learn-linux-win" x="16" y="12" width="288" height="156" rx="10"/>
+<circle cx="32" cy="27" r="4" fill="var(--scene-bad, #b3261e)"/><circle cx="46" cy="27" r="4" fill="var(--scene-warn, #a15c00)"/><circle cx="60" cy="27" r="4" fill="var(--scene-good, #1f7a4d)"/>
+<text class="learn-linux-tm learn-linux-b" x="30" y="60" font-size="16">$ top</text>
+<rect class="learn-linux-pid" x="30" y="72" width="44" height="12" rx="3"/><rect class="learn-linux-track" x="88" y="72" width="200" height="12" rx="6"/><rect class="learn-linux-bar" x="88" y="72" width="34" height="12" rx="6"/>
+<rect class="learn-linux-pid" x="30" y="94" width="44" height="12" rx="3"/><rect class="learn-linux-track" x="88" y="94" width="200" height="12" rx="6"/><rect class="learn-linux-bar" x="88" y="94" width="58" height="12" rx="6"/>
+<g class="learn-linux-row3"><text class="learn-linux-tm" x="30" y="127" font-size="16">4821</text><rect class="learn-linux-track" x="88" y="116" width="200" height="12" rx="6"/></g>
+<rect class="learn-linux-hot" x="88" y="116" width="200" height="12" rx="6"/>
+<g class="learn-linux-kill"><text class="learn-linux-tm learn-linux-b" x="30" y="156" font-size="16">$ kill 4821</text><rect class="learn-linux-cur" x="136" y="144" width="8" height="15" fill="var(--scene-card, #ffffff)"/></g>
+</svg>

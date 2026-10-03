@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A two-minute project map with one node zoomed on request">
+<style>
+
+.look-ahead-project-recruiter-project-narrative-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.look-ahead-project-recruiter-project-narrative-l{font-family:system-ui,sans-serif;font-size:16px;font-weight:600;fill:var(--scene-text,#28434a)}
+.look-ahead-project-recruiter-project-narrative-dot{animation:look-ahead-project-recruiter-project-narrative-mv 6s ease-in-out infinite;animation-delay:-3s}
+.look-ahead-project-recruiter-project-narrative-lens{animation:look-ahead-project-recruiter-project-narrative-lz 6s ease-in-out infinite;animation-delay:-3s}
+.look-ahead-project-recruiter-project-narrative-pn{animation:look-ahead-project-recruiter-project-narrative-pf 6s ease-in-out infinite;animation-delay:-3s}
+.look-ahead-project-recruiter-project-narrative-b1{animation:look-ahead-project-recruiter-project-narrative-bg 6s ease-in-out infinite;animation-delay:-3s;transform-origin:left;transform-box:fill-box}
+@keyframes look-ahead-project-recruiter-project-narrative-mv{0%{transform:translateX(0)}45%{transform:translateX(200px)}100%{transform:translateX(0)}}
+@keyframes look-ahead-project-recruiter-project-narrative-lz{0%,20%{transform:translate(-100px,0);opacity:0}40%,80%{transform:translate(0,0);opacity:1}100%{transform:translate(-100px,0);opacity:0}}
+@keyframes look-ahead-project-recruiter-project-narrative-pf{0%,35%{opacity:0}50%,80%{opacity:1}100%{opacity:0}}
+@keyframes look-ahead-project-recruiter-project-narrative-bg{0%,35%{transform:scaleX(.2)}60%,100%{transform:scaleX(1)}}
+
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+
+<text class="look-ahead-project-recruiter-project-narrative-t" x="160" y="26" text-anchor="middle">Two-minute map</text>
+<path d="M60 70H260" stroke="var(--scene-line,#cfdfdc)" stroke-width="6" stroke-linecap="round"/>
+<circle cx="60" cy="70" r="15" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<circle cx="60" cy="66" r="4.5" fill="var(--scene-accent,#006c73)"/><path d="M52 78a8 7 0 0 1 16 0z" fill="var(--scene-accent,#006c73)"/>
+<circle cx="160" cy="70" r="15" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-ahead,#2f6fb3)" stroke-width="3"/>
+<path d="M152 64h16M152 70h16M152 76h16" stroke="var(--scene-ahead,#2f6fb3)" stroke-width="3" stroke-linecap="round"/>
+<circle cx="260" cy="70" r="15" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-good,#1f7a4d)" stroke-width="3"/>
+<ellipse cx="260" cy="64" rx="8" ry="3" fill="var(--scene-good,#1f7a4d)"/><path d="M252 64v12a8 3 0 0 0 16 0V64" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="2.5"/>
+<g class="look-ahead-project-recruiter-project-narrative-dot"><circle cx="60" cy="70" r="6" fill="var(--scene-grow,#b8457a)"/></g>
+<g class="look-ahead-project-recruiter-project-narrative-lens"><circle cx="160" cy="70" r="24" fill="none" stroke="var(--scene-ink,#102a33)" stroke-width="3.5"/><path d="M178 88l12 12" stroke="var(--scene-ink,#102a33)" stroke-width="5" stroke-linecap="round"/></g>
+<g class="look-ahead-project-recruiter-project-narrative-pn"><path d="M160 100v10" stroke="var(--scene-ahead,#2f6fb3)" stroke-width="2.5"/>
+<rect x="90" y="110" width="140" height="42" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-ahead,#2f6fb3)" stroke-width="2"/>
+<rect class="look-ahead-project-recruiter-project-narrative-b1" x="104" y="119" width="112" height="6" rx="3" fill="var(--scene-ahead,#2f6fb3)"/>
+<rect class="look-ahead-project-recruiter-project-narrative-b1" x="104" y="130" width="80" height="6" rx="3" fill="var(--scene-learn,#0f8a8a)"/>
+<rect class="look-ahead-project-recruiter-project-narrative-b1" x="104" y="141" width="96" height="6" rx="3" fill="var(--scene-grow,#b8457a)"/></g>
+<text class="look-ahead-project-recruiter-project-narrative-l" x="160" y="171" text-anchor="middle">Depth on request</text>
+</svg>

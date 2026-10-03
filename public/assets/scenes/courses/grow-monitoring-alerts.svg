@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="An error-rate line crosses the SLO limit, a page goes to the on-call engineer, and the line recovers after the fix">
+<style>
+.grow-monitoring-alerts-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); }
+.grow-monitoring-alerts-tm { font-family: ui-monospace, Menlo, monospace; fill: var(--scene-ink, #102a33); }
+.grow-monitoring-alerts-b { font-weight: 700; }
+.grow-monitoring-alerts-box { fill: var(--scene-card, #fff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.grow-monitoring-alerts-soft { fill: var(--scene-accent-soft, #dcefed); }
+.grow-monitoring-alerts-card { fill: var(--scene-card, #fff); }
+.grow-monitoring-alerts-acc { fill: var(--scene-accent, #006c73); }
+.grow-monitoring-alerts-mut { fill: var(--scene-muted, #536970); }
+.grow-monitoring-alerts-linef { fill: var(--scene-line, #cfdfdc); }
+.grow-monitoring-alerts-good { fill: var(--scene-good, #1f7a4d); }
+.grow-monitoring-alerts-bad { fill: var(--scene-bad, #b3261e); }
+.grow-monitoring-alerts-warn { fill: var(--scene-warn, #a15c00); }
+.grow-monitoring-alerts-grow { fill: var(--scene-grow, #b8457a); }
+.grow-monitoring-alerts-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 1.5; }
+.grow-monitoring-alerts-sacc { fill: none; stroke: var(--scene-accent, #006c73); stroke-width: 2; }
+.grow-monitoring-alerts-sgood { fill: none; stroke: var(--scene-good, #1f7a4d); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.grow-monitoring-alerts-scard { fill: none; stroke: var(--scene-card, #fff); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.grow-monitoring-alerts-sbad { fill: none; stroke: var(--scene-bad, #b3261e); stroke-width: 2; }
+
+.grow-monitoring-alerts-slo { stroke: var(--scene-bad, #b3261e); stroke-width: 1.5; stroke-dasharray: 6 4; }
+.grow-monitoring-alerts-line { fill: none; stroke: var(--scene-grow, #b8457a); stroke-width: 3; stroke-linejoin: round; stroke-dasharray: 340; animation: grow-monitoring-alerts-kf-line 7s linear infinite; animation-delay: -3s; }
+@keyframes grow-monitoring-alerts-kf-line { 0% { stroke-dashoffset: 340; } 90%, 100% { stroke-dashoffset: 0; } }
+.grow-monitoring-alerts-page { animation: grow-monitoring-alerts-kf-page 7s infinite; animation-delay: -3s; }
+@keyframes grow-monitoring-alerts-kf-page { 0%, 38% { opacity: 0; } 42%, 80% { opacity: 1; } 84%, 100% { opacity: 0; } }
+.grow-monitoring-alerts-bell { transform-box: fill-box; transform-origin: 50% 0; animation: grow-monitoring-alerts-kf-ring .5s ease-in-out infinite alternate; }
+@keyframes grow-monitoring-alerts-kf-ring { from { transform: rotate(-14deg); } to { transform: rotate(14deg); } }
+.grow-monitoring-alerts-redtxt { fill: var(--scene-bad, #b3261e); }
+</style>
+<rect class="grow-monitoring-alerts-box" x="10" y="10" width="300" height="160" rx="12"/>
+<path class="grow-monitoring-alerts-wire" d="M24 150 H296"/>
+<path class="grow-monitoring-alerts-slo" d="M24 84 H296"/>
+<text class="grow-monitoring-alerts-t grow-monitoring-alerts-b grow-monitoring-alerts-redtxt" x="26" y="76" font-size="16">SLO</text>
+<path class="grow-monitoring-alerts-line" d="M24 136 L60 132 L96 134 L130 126 L150 104 L168 66 L186 58 L204 70 L222 120 L250 132 L296 130"/>
+<g class="grow-monitoring-alerts-page">
+  <rect class="grow-monitoring-alerts-card" x="150" y="18" width="150" height="34" rx="17" stroke="var(--scene-bad, #b3261e)" stroke-width="2"/>
+  <g transform="translate(162 25)"><g class="grow-monitoring-alerts-bell"><path class="grow-monitoring-alerts-bad" d="M8 0 C2 0 2 6 2 10 L0 15 H16 L14 10 C14 6 14 0 8 0 Z"/><circle class="grow-monitoring-alerts-bad" cx="8" cy="17" r="2.5"/></g></g>
+  <text class="grow-monitoring-alerts-t grow-monitoring-alerts-b grow-monitoring-alerts-redtxt" x="186" y="40" font-size="16">Paging on-call</text>
+</g>
+</svg>

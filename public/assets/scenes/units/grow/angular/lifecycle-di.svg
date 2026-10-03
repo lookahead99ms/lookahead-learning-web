@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A price chart listens to a socket until it is destroyed, then the listener ends">
+<style>
+.grow-angular-lifecycle-di-bg{fill:var(--scene-card,#fff)}
+.grow-angular-lifecycle-di-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.grow-angular-lifecycle-di-m{font:700 16px ui-monospace,Menlo,monospace;fill:var(--scene-ink,#102a33)}
+.grow-angular-lifecycle-di-open{animation:grow-angular-lifecycle-di-openk 6s step-end infinite;animation-delay:-1s}
+.grow-angular-lifecycle-di-shut{animation:grow-angular-lifecycle-di-shutk 6s step-end infinite;animation-delay:-1s}
+.grow-angular-lifecycle-di-pulse{animation:grow-angular-lifecycle-di-pk 1.5s linear infinite}
+.grow-angular-lifecycle-di-hop{animation:grow-angular-lifecycle-di-hk 6s step-end infinite;animation-delay:-1s}
+@keyframes grow-angular-lifecycle-di-openk{0%{opacity:1}45%{opacity:0}95%{opacity:1}}
+@keyframes grow-angular-lifecycle-di-shutk{0%{opacity:0}45%{opacity:1}95%{opacity:0}}
+@keyframes grow-angular-lifecycle-di-pk{0%{transform:translateX(0);opacity:0}15%{opacity:1}85%{opacity:1}100%{transform:translateX(-78px);opacity:0}}
+@keyframes grow-angular-lifecycle-di-hk{0%{transform:translateX(0)}25%{transform:translateX(70px)}50%{transform:translateX(140px)}75%{transform:translateX(215px)}}
+</style>
+<rect class="grow-angular-lifecycle-di-bg" width="320" height="180"/>
+<rect x="225" y="26" width="75" height="48" rx="10" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-link,#245a88)" stroke-width="2.5"/>
+<g fill="var(--scene-link,#245a88)"><rect x="240" y="38" width="45" height="6" rx="3"/><rect x="240" y="50" width="45" height="6" rx="3"/><rect x="240" y="62" width="45" height="6" rx="3"/></g>
+<g class="grow-angular-lifecycle-di-open">
+<rect x="15" y="14" width="130" height="76" rx="10" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/>
+<text class="grow-angular-lifecycle-di-t" x="80" y="36" text-anchor="middle">Price chart</text>
+<polyline points="28,78 50,62 68,70 92,52 112,60 134,48" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<line x1="145" y1="50" x2="225" y2="50" stroke="var(--scene-link,#245a88)" stroke-width="3"/>
+<circle class="grow-angular-lifecycle-di-pulse" cx="222" cy="50" r="5" fill="var(--scene-good,#1f7a4d)"/><circle class="grow-angular-lifecycle-di-pulse" cx="222" cy="50" r="5" fill="var(--scene-good,#1f7a4d)" style="animation-delay:-.75s"/>
+</g>
+<g class="grow-angular-lifecycle-di-shut">
+<rect x="15" y="14" width="130" height="76" rx="10" fill="none" stroke="var(--scene-line,#cfdfdc)" stroke-width="2.5" stroke-dasharray="6 5"/>
+<g stroke="var(--scene-bad,#b3261e)" stroke-width="5" stroke-linecap="round"><line x1="62" y1="34" x2="98" y2="70"/><line x1="98" y1="34" x2="62" y2="70"/></g>
+<line x1="145" y1="50" x2="165" y2="50" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/><line x1="205" y1="50" x2="225" y2="50" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<text class="grow-angular-lifecycle-di-t" x="258" y="104" text-anchor="middle" style="fill:var(--scene-good,#1f7a4d)">listener off</text>
+</g>
+<line x1="40" y1="142" x2="255" y2="142" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<g fill="var(--scene-muted,#536970)"><circle cx="40" cy="142" r="7"/><circle cx="110" cy="142" r="7"/><circle cx="180" cy="142" r="7"/><circle cx="255" cy="142" r="7" fill="var(--scene-bad,#b3261e)"/></g>
+<circle class="grow-angular-lifecycle-di-hop" cx="40" cy="142" r="11" fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="3.5"/>
+<text class="grow-angular-lifecycle-di-t" x="285" y="172" text-anchor="end">ngOnDestroy</text>
+</svg>

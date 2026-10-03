@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Evidence cards flow into a limited context window; a stale card is rejected">
+<style>
+.grow-ai-assisted-development-prompt-context-{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.grow-ai-assisted-development-prompt-context-m{font-family:ui-monospace,Menlo,monospace;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+
+.grow-ai-assisted-development-prompt-context-c1{animation:grow-ai-assisted-development-prompt-context-in 6s ease-in-out infinite;animation-delay:-3s}
+.grow-ai-assisted-development-prompt-context-c2{animation:grow-ai-assisted-development-prompt-context-in 6s ease-in-out infinite;animation-delay:-2.2s}
+.grow-ai-assisted-development-prompt-context-c3{animation:grow-ai-assisted-development-prompt-context-in 6s ease-in-out infinite;animation-delay:-1.4s}
+@keyframes grow-ai-assisted-development-prompt-context-in{0%{transform:translateX(-14px);opacity:0}25%,85%{transform:translateX(0);opacity:1}100%{transform:translateX(0);opacity:0}}
+.grow-ai-assisted-development-prompt-context-x{animation:grow-ai-assisted-development-prompt-context-bump 3s ease-in-out infinite;animation-delay:-1.5s}
+@keyframes grow-ai-assisted-development-prompt-context-bump{0%,100%{transform:translateX(0)}50%{transform:translateX(-8px)}}
+.grow-ai-assisted-development-prompt-context-b{animation:grow-ai-assisted-development-prompt-context-fill 6s ease-in-out infinite;animation-delay:-3s;transform-box:fill-box;transform-origin:left}
+@keyframes grow-ai-assisted-development-prompt-context-fill{0%{transform:scaleX(.2)}50%,85%{transform:scaleX(.8)}100%{transform:scaleX(.2)}}
+</style>
+
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g class="grow-ai-assisted-development-prompt-context-c1"><rect x="12" y="16" width="86" height="30" rx="6" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2"/><rect x="22" y="26" width="50" height="6" rx="3" fill="var(--scene-accent,#006c73)"/><rect x="22" y="36" width="34" height="5" rx="2" fill="var(--scene-muted,#536970)"/></g>
+<g class="grow-ai-assisted-development-prompt-context-c2"><rect x="12" y="56" width="86" height="30" rx="6" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-link,#245a88)" stroke-width="2"/><rect x="22" y="66" width="56" height="6" rx="3" fill="var(--scene-link,#245a88)"/><rect x="22" y="76" width="40" height="5" rx="2" fill="var(--scene-muted,#536970)"/></g>
+<g class="grow-ai-assisted-development-prompt-context-c3"><rect x="12" y="96" width="86" height="30" rx="6" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-learn,#0f8a8a)" stroke-width="2"/><rect x="22" y="106" width="46" height="6" rx="3" fill="var(--scene-learn,#0f8a8a)"/><rect x="22" y="116" width="30" height="5" rx="2" fill="var(--scene-muted,#536970)"/></g>
+<g class="grow-ai-assisted-development-prompt-context-x"><rect x="12" y="136" width="86" height="30" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-bad,#b3261e)" stroke-width="2" stroke-dasharray="5 3"/><path d="M42 144L68 158M68 144L42 158" stroke="var(--scene-bad,#b3261e)" stroke-width="3.5" stroke-linecap="round"/></g>
+<g stroke="var(--scene-ink,#102a33)" stroke-width="2.5" fill="none"><path d="M104 31H150M104 71H150M104 111H150"/></g>
+<rect x="154" y="16" width="156" height="120" rx="10" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<g fill="var(--scene-accent-soft,#dcefed)"><rect x="166" y="28" width="132" height="14" rx="4"/><rect x="166" y="48" width="132" height="14" rx="4"/><rect x="166" y="68" width="132" height="14" rx="4"/></g>
+<g fill="var(--scene-accent,#006c73)"><rect class="grow-ai-assisted-development-prompt-context-c1" x="166" y="28" width="96" height="14" rx="4"/><rect class="grow-ai-assisted-development-prompt-context-c2" x="166" y="48" width="112" height="14" rx="4"/><rect class="grow-ai-assisted-development-prompt-context-c3" x="166" y="68" width="76" height="14" rx="4"/></g>
+<text class="grow-ai-assisted-development-prompt-context-" x="232" y="108" text-anchor="middle">Context window</text>
+<rect x="166" y="144" width="132" height="12" rx="6" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-line,#cfdfdc)"/>
+<rect class="grow-ai-assisted-development-prompt-context-b" x="166" y="144" width="132" height="12" rx="6" fill="var(--scene-warn,#a15c00)"/>
+<text class="grow-ai-assisted-development-prompt-context-" x="232" y="175" text-anchor="middle" style="font-size:16px">Token budget</text>
+</svg>

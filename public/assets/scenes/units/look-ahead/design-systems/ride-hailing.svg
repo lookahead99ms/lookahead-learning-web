@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" class="ride-hailing-root" role="img" aria-label="A rider requests a ride at a quoted price and the matched driver drives to her pin.">
+<style>
+.ride-hailing-root text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.ride-hailing-t{fill:var(--scene-ink,#102a33)}
+.ride-hailing-tx{fill:var(--scene-text,#28434a)}
+.ride-hailing-mut{fill:var(--scene-muted,#536970)}
+.ride-hailing-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.ride-hailing-soft{fill:var(--scene-accent-soft,#dcefed)}
+.ride-hailing-acc{fill:var(--scene-accent,#006c73)}
+.ride-hailing-ln{fill:var(--scene-line,#cfdfdc)}
+.ride-hailing-cardf{fill:var(--scene-card,#fff)}
+.ride-hailing-good{fill:var(--scene-good,#1f7a4d)}
+.ride-hailing-warn{fill:var(--scene-warn,#a15c00)}
+.ride-hailing-bad{fill:var(--scene-bad,#b3261e)}
+.ride-hailing-link{fill:var(--scene-link,#245a88)}
+.ride-hailing-out{fill:var(--scene-bubble-out,#d4ecea)}
+.ride-hailing-sk{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.ride-hailing-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ride-hailing-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:1.5;stroke-dasharray:3 3}
+.ride-hailing-a{animation-duration:7s;animation-iteration-count:infinite;animation-delay:-3s}
+.ride-hailing-road{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:10}
+.ride-hailing-idle{fill:var(--scene-muted,#536970);opacity:.55}
+.ride-hailing-drive{animation-name:ride-hailing-drive;animation-timing-function:linear}
+@keyframes ride-hailing-drive{0%,28%{transform:translate(155px,22px)}52%{transform:translate(155px,90px)}86%,100%{transform:translate(80px,90px)}}
+.ride-hailing-find{animation-name:ride-hailing-find}@keyframes ride-hailing-find{0%,24%{opacity:1}28%,100%{opacity:0}}
+.ride-hailing-found{animation-name:ride-hailing-found}@keyframes ride-hailing-found{0%,24%{opacity:0}28%,100%{opacity:1}}
+.ride-hailing-ping{animation-name:ride-hailing-ping;transform-box:fill-box;transform-origin:center}@keyframes ride-hailing-ping{0%,4%{opacity:.7;transform:scale(.3)}22%{opacity:0;transform:scale(1.4)}100%{opacity:0;transform:scale(1.4)}}
+.ride-hailing-route{animation-name:ride-hailing-route}@keyframes ride-hailing-route{0%,26%{opacity:0}30%,86%{opacity:1}90%,100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.ride-hailing-root *{animation-play-state:paused!important}}
+</style>
+<path class="ride-hailing-road" d="M0 45 H240 M0 90 H240 M68 0 V135 M155 0 V135"/>
+<path class="ride-hailing-a ride-hailing-route" d="M155 22 V90 H78" fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="3" stroke-dasharray="6 5"/>
+<rect class="ride-hailing-idle" x="196" y="40" width="18" height="10" rx="3"/><rect class="ride-hailing-idle" x="186" y="86" width="18" height="10" rx="3"/><rect class="ride-hailing-idle" x="62" y="4" width="10" height="18" rx="3"/>
+<circle class="ride-hailing-a ride-hailing-ping" cx="68" cy="90" r="26" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="1.5"/>
+<path d="M68 92 C58 80 56 74 56 70 A12 12 0 0 1 80 70 C80 74 78 80 68 92 Z" class="ride-hailing-acc"/><circle cx="68" cy="70" r="4.5" class="ride-hailing-cardf"/>
+<g class="ride-hailing-a ride-hailing-drive"><rect x="-11" y="-7" width="22" height="14" rx="3" class="ride-hailing-good"/><rect x="-6" y="-4" width="12" height="8" rx="1.5" class="ride-hailing-cardf" opacity=".7"/></g>
+<rect x="6" y="6" width="82" height="30" rx="9" class="ride-hailing-box"/>
+<text x="47" y="27" font-size="15" font-weight="700" text-anchor="middle" class="ride-hailing-t">$25.72</text>
+<rect x="122" y="104" width="112" height="26" rx="13" class="ride-hailing-box"/>
+<text x="178" y="122" font-size="14" text-anchor="middle" class="ride-hailing-mut ride-hailing-a ride-hailing-find">Finding&#8230;</text>
+<text x="178" y="122" font-size="14" font-weight="700" text-anchor="middle" class="ride-hailing-good ride-hailing-a ride-hailing-found">On the way</text>
+</svg>

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="The URL query holds the current step while the form holds the typed draft">
+<style>
+.grow-angular-routing-forms-bg{fill:var(--scene-card,#fff)}
+.grow-angular-routing-forms-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.grow-angular-routing-forms-m{font:700 16px ui-monospace,Menlo,monospace;fill:var(--scene-ink,#102a33)}
+.grow-angular-routing-forms-u0{animation:grow-angular-routing-forms-u0k 6s step-end infinite;animation-delay:-3s}
+.grow-angular-routing-forms-u1{animation:grow-angular-routing-forms-u1k 6s step-end infinite;animation-delay:-3s}
+.grow-angular-routing-forms-u2{animation:grow-angular-routing-forms-u2k 6s step-end infinite;animation-delay:-3s}
+.grow-angular-routing-forms-ring{animation:grow-angular-routing-forms-rk 6s step-end infinite;animation-delay:-3s}
+.grow-angular-routing-forms-f{transform-box:fill-box;transform-origin:left center;animation:grow-angular-routing-forms-fk 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes grow-angular-routing-forms-u0k{0%{opacity:1}33%{opacity:0}100%{opacity:0}}
+@keyframes grow-angular-routing-forms-u1k{0%{opacity:0}33%{opacity:1}66%{opacity:0}}
+@keyframes grow-angular-routing-forms-u2k{0%{opacity:0}66%{opacity:1}100%{opacity:1}}
+@keyframes grow-angular-routing-forms-rk{0%{transform:translateX(0)}33%{transform:translateX(100px)}66%{transform:translateX(200px)}}
+@keyframes grow-angular-routing-forms-fk{0%{transform:scaleX(.3)}50%,100%{transform:scaleX(1)}}
+</style>
+<rect class="grow-angular-routing-forms-bg" width="320" height="180"/>
+<rect x="15" y="8" width="290" height="28" rx="14" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-link,#245a88)" stroke-width="2"/>
+<circle cx="32" cy="22" r="5" fill="var(--scene-link,#245a88)"/>
+<text class="grow-angular-routing-forms-m grow-angular-routing-forms-u0" x="48" y="27">/file?step=1</text><text class="grow-angular-routing-forms-m grow-angular-routing-forms-u1" x="48" y="27">/file?step=2</text><text class="grow-angular-routing-forms-m grow-angular-routing-forms-u2" x="48" y="27">/file?step=3</text>
+<text class="grow-angular-routing-forms-t" x="15" y="58" style="fill:var(--scene-link,#245a88)">URL owns step</text>
+<line x1="60" y1="80" x2="260" y2="80" stroke="var(--scene-line,#cfdfdc)" stroke-width="4"/>
+<g fill="var(--scene-link,#245a88)"><circle cx="60" cy="80" r="9"/><circle cx="160" cy="80" r="9"/><circle cx="260" cy="80" r="9"/></g>
+<circle class="grow-angular-routing-forms-ring" cx="60" cy="80" r="15" fill="none" stroke="var(--scene-warn,#a15c00)" stroke-width="4"/>
+<rect x="15" y="104" width="290" height="68" rx="10" fill="var(--scene-card,#fff)" stroke="var(--scene-grow,#b8457a)" stroke-width="2.5"/>
+<text class="grow-angular-routing-forms-t" x="28" y="124" style="fill:var(--scene-grow,#b8457a)">Form owns draft</text>
+<rect x="28" y="136" width="200" height="10" rx="5" fill="var(--scene-line,#cfdfdc)"/><rect x="28" y="152" width="200" height="10" rx="5" fill="var(--scene-line,#cfdfdc)"/>
+<rect x="28" y="136" width="200" height="10" rx="5" fill="var(--scene-grow,#b8457a)"/><rect class="grow-angular-routing-forms-f" x="28" y="152" width="200" height="10" rx="5" fill="var(--scene-grow,#b8457a)"/>
+<g transform="translate(252 134)"><rect width="38" height="30" rx="5" fill="var(--scene-grow,#b8457a)"/><rect x="8" y="0" width="20" height="10" fill="var(--scene-card,#fff)"/><rect x="9" y="17" width="20" height="13" rx="2" fill="var(--scene-card,#fff)"/></g>
+</svg>

@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" font-family="system-ui, sans-serif">
+<style>
+.grow-spring-boot-boot-testing-t{font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.grow-spring-boot-boot-testing-d0{animation:grow-spring-boot-boot-testing-d0 5s step-end infinite;animation-delay:-2.0s}
+@keyframes grow-spring-boot-boot-testing-d0{0%,10%{fill:var(--scene-line,#cfdfdc)}20%,90%{fill:var(--scene-good,#1f7a4d)}100%{fill:var(--scene-line,#cfdfdc)}}
+.grow-spring-boot-boot-testing-d1{animation:grow-spring-boot-boot-testing-d1 5s step-end infinite;animation-delay:-2.4s}
+@keyframes grow-spring-boot-boot-testing-d1{0%,10%{fill:var(--scene-line,#cfdfdc)}20%,90%{fill:var(--scene-good,#1f7a4d)}100%{fill:var(--scene-line,#cfdfdc)}}
+.grow-spring-boot-boot-testing-d2{animation:grow-spring-boot-boot-testing-d2 5s step-end infinite;animation-delay:-2.8s}
+@keyframes grow-spring-boot-boot-testing-d2{0%,10%{fill:var(--scene-line,#cfdfdc)}20%,90%{fill:var(--scene-good,#1f7a4d)}100%{fill:var(--scene-line,#cfdfdc)}}
+.grow-spring-boot-boot-testing-d3{animation:grow-spring-boot-boot-testing-d3 5s step-end infinite;animation-delay:-3.2s}
+@keyframes grow-spring-boot-boot-testing-d3{0%,10%{fill:var(--scene-line,#cfdfdc)}20%,90%{fill:var(--scene-good,#1f7a4d)}100%{fill:var(--scene-line,#cfdfdc)}}
+.grow-spring-boot-boot-testing-d4{animation:grow-spring-boot-boot-testing-d4 5s step-end infinite;animation-delay:-3.6s}
+@keyframes grow-spring-boot-boot-testing-d4{0%,10%{fill:var(--scene-line,#cfdfdc)}20%,90%{fill:var(--scene-good,#1f7a4d)}100%{fill:var(--scene-line,#cfdfdc)}}
+.grow-spring-boot-boot-testing-d5{animation:grow-spring-boot-boot-testing-d5 5s step-end infinite;animation-delay:-4.0s}
+@keyframes grow-spring-boot-boot-testing-d5{0%,10%{fill:var(--scene-line,#cfdfdc)}20%,90%{fill:var(--scene-good,#1f7a4d)}100%{fill:var(--scene-line,#cfdfdc)}}
+.grow-spring-boot-boot-testing-d6{animation:grow-spring-boot-boot-testing-d6 5s step-end infinite;animation-delay:-4.4s}
+@keyframes grow-spring-boot-boot-testing-d6{0%,10%{fill:var(--scene-line,#cfdfdc)}20%,90%{fill:var(--scene-good,#1f7a4d)}100%{fill:var(--scene-line,#cfdfdc)}}
+.grow-spring-boot-boot-testing-d7{animation:grow-spring-boot-boot-testing-d7 5s step-end infinite;animation-delay:-4.800000000000001s}
+@keyframes grow-spring-boot-boot-testing-d7{0%,10%{fill:var(--scene-line,#cfdfdc)}20%,90%{fill:var(--scene-good,#1f7a4d)}100%{fill:var(--scene-line,#cfdfdc)}}
+.grow-spring-boot-boot-testing-d8{animation:grow-spring-boot-boot-testing-d8 5s step-end infinite;animation-delay:-5.2s}
+@keyframes grow-spring-boot-boot-testing-d8{0%,10%{fill:var(--scene-line,#cfdfdc)}20%,90%{fill:var(--scene-good,#1f7a4d)}100%{fill:var(--scene-line,#cfdfdc)}}
+.grow-spring-boot-boot-testing-d9{animation:grow-spring-boot-boot-testing-d9 5s step-end infinite;animation-delay:-5.6s}
+@keyframes grow-spring-boot-boot-testing-d9{0%,10%{fill:var(--scene-line,#cfdfdc)}20%,90%{fill:var(--scene-good,#1f7a4d)}100%{fill:var(--scene-line,#cfdfdc)}}
+.grow-spring-boot-boot-testing-e0{animation:grow-spring-boot-boot-testing-e0 5s step-end infinite;animation-delay:-1.5s}
+@keyframes grow-spring-boot-boot-testing-e0{0%,15%{fill:var(--scene-line,#cfdfdc)}30%,90%{fill:var(--scene-good,#1f7a4d)}100%{fill:var(--scene-line,#cfdfdc)}}
+.grow-spring-boot-boot-testing-e1{animation:grow-spring-boot-boot-testing-e1 5s step-end infinite;animation-delay:-2.1s}
+@keyframes grow-spring-boot-boot-testing-e1{0%,15%{fill:var(--scene-line,#cfdfdc)}30%,90%{fill:var(--scene-good,#1f7a4d)}100%{fill:var(--scene-line,#cfdfdc)}}
+.grow-spring-boot-boot-testing-e2{animation:grow-spring-boot-boot-testing-e2 5s step-end infinite;animation-delay:-2.7s}
+@keyframes grow-spring-boot-boot-testing-e2{0%,15%{fill:var(--scene-line,#cfdfdc)}30%,90%{fill:var(--scene-good,#1f7a4d)}100%{fill:var(--scene-line,#cfdfdc)}}
+.grow-spring-boot-boot-testing-e3{animation:grow-spring-boot-boot-testing-e3 5s step-end infinite;animation-delay:-3.3s}
+@keyframes grow-spring-boot-boot-testing-e3{0%,15%{fill:var(--scene-line,#cfdfdc)}30%,90%{fill:var(--scene-good,#1f7a4d)}100%{fill:var(--scene-line,#cfdfdc)}}
+.grow-spring-boot-boot-testing-e4{animation:grow-spring-boot-boot-testing-e4 5s step-end infinite;animation-delay:-3.9s}
+@keyframes grow-spring-boot-boot-testing-e4{0%,15%{fill:var(--scene-line,#cfdfdc)}30%,90%{fill:var(--scene-good,#1f7a4d)}100%{fill:var(--scene-line,#cfdfdc)}}
+.grow-spring-boot-boot-testing-e5{animation:grow-spring-boot-boot-testing-e5 5s step-end infinite;animation-delay:-4.5s}
+@keyframes grow-spring-boot-boot-testing-e5{0%,15%{fill:var(--scene-line,#cfdfdc)}30%,90%{fill:var(--scene-good,#1f7a4d)}100%{fill:var(--scene-line,#cfdfdc)}}
+.grow-spring-boot-boot-testing-spin{animation:grow-spring-boot-boot-testing-spin 2s linear infinite;animation-delay:0s}
+@keyframes grow-spring-boot-boot-testing-spin{to{transform:rotate(360deg)}}
+.grow-spring-boot-boot-testing-spin{transform-origin:226px 57px}
+
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="30" y="112" width="260" height="38" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/>
+<rect x="80" y="70" width="160" height="38" rx="8" fill="var(--scene-card,#fff)" stroke="var(--scene-learn,#0f8a8a)" stroke-width="2.5"/>
+<rect x="112" y="28" width="96" height="38" rx="8" fill="var(--scene-card,#fff)" stroke="var(--scene-grow,#b8457a)" stroke-width="2.5"/>
+<circle class="grow-spring-boot-boot-testing-d0" cx="46" cy="131" r="5" fill="var(--scene-line,#cfdfdc)"/><circle class="grow-spring-boot-boot-testing-d5" cx="224" cy="131" r="5" fill="var(--scene-line,#cfdfdc)"/>
+<circle class="grow-spring-boot-boot-testing-d1" cx="58" cy="131" r="5" fill="var(--scene-line,#cfdfdc)"/><circle class="grow-spring-boot-boot-testing-d6" cx="236" cy="131" r="5" fill="var(--scene-line,#cfdfdc)"/>
+<circle class="grow-spring-boot-boot-testing-d2" cx="70" cy="131" r="5" fill="var(--scene-line,#cfdfdc)"/><circle class="grow-spring-boot-boot-testing-d7" cx="248" cy="131" r="5" fill="var(--scene-line,#cfdfdc)"/>
+<circle class="grow-spring-boot-boot-testing-d3" cx="82" cy="131" r="5" fill="var(--scene-line,#cfdfdc)"/><circle class="grow-spring-boot-boot-testing-d8" cx="260" cy="131" r="5" fill="var(--scene-line,#cfdfdc)"/>
+<circle class="grow-spring-boot-boot-testing-d4" cx="94" cy="131" r="5" fill="var(--scene-line,#cfdfdc)"/><circle class="grow-spring-boot-boot-testing-d9" cx="272" cy="131" r="5" fill="var(--scene-line,#cfdfdc)"/>
+<circle class="grow-spring-boot-boot-testing-e0" cx="96" cy="89" r="5" fill="var(--scene-line,#cfdfdc)"/><circle class="grow-spring-boot-boot-testing-e3" cx="196" cy="89" r="5" fill="var(--scene-line,#cfdfdc)"/>
+<circle class="grow-spring-boot-boot-testing-e1" cx="108" cy="89" r="5" fill="var(--scene-line,#cfdfdc)"/><circle class="grow-spring-boot-boot-testing-e4" cx="208" cy="89" r="5" fill="var(--scene-line,#cfdfdc)"/>
+<circle class="grow-spring-boot-boot-testing-e2" cx="120" cy="89" r="5" fill="var(--scene-line,#cfdfdc)"/><circle class="grow-spring-boot-boot-testing-e5" cx="220" cy="89" r="5" fill="var(--scene-line,#cfdfdc)"/>
+<g class="grow-spring-boot-boot-testing-spin"><path d="M226 49a8 8 0 1 1-8 8" fill="none" stroke="var(--scene-grow,#b8457a)" stroke-width="3" stroke-linecap="round"/></g>
+<text class="grow-spring-boot-boot-testing-t" x="160" y="136" text-anchor="middle">unit</text><text class="grow-spring-boot-boot-testing-t" x="160" y="94" text-anchor="middle">slice</text><text class="grow-spring-boot-boot-testing-t" x="160" y="52" text-anchor="middle">full app</text>
+
+</svg>

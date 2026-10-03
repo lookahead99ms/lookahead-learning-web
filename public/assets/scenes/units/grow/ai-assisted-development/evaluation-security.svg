@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A document with a hidden instruction is blocked while a test set scores answers">
+<style>
+.grow-ai-assisted-development-evaluation-security-{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.grow-ai-assisted-development-evaluation-security-m{font-family:ui-monospace,Menlo,monospace;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+
+.grow-ai-assisted-development-evaluation-security-w{animation:grow-ai-assisted-development-evaluation-security-warn 3s ease-in-out infinite;animation-delay:-1s}
+@keyframes grow-ai-assisted-development-evaluation-security-warn{0%,100%{opacity:.5}50%{opacity:1}}
+.grow-ai-assisted-development-evaluation-security-i{animation:grow-ai-assisted-development-evaluation-security-inj 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes grow-ai-assisted-development-evaluation-security-inj{0%{transform:translateX(0);opacity:0}15%{opacity:1}55%,100%{transform:translateX(60px);opacity:1}}
+.grow-ai-assisted-development-evaluation-security-cell{animation:grow-ai-assisted-development-evaluation-security-cl 6s steps(1) infinite}
+@keyframes grow-ai-assisted-development-evaluation-security-cl{0%{opacity:.25}100%{opacity:1}}
+</style>
+
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="12" y="14" width="96" height="116" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2.5"/>
+<g fill="var(--scene-muted,#536970)" opacity=".6"><rect x="22" y="26" width="62" height="6" rx="3"/><rect x="22" y="40" width="76" height="6" rx="3"/><rect x="22" y="54" width="52" height="6" rx="3"/></g>
+<rect x="20" y="70" width="80" height="26" rx="4" fill="var(--scene-bad,#b3261e)" class="grow-ai-assisted-development-evaluation-security-w"/>
+<text class="grow-ai-assisted-development-evaluation-security-m" x="60" y="88" text-anchor="middle" style="fill:#fff;font-size:16px">IGNORE</text>
+<text class="grow-ai-assisted-development-evaluation-security-" x="60" y="152" text-anchor="middle">Untrusted</text>
+<g class="grow-ai-assisted-development-evaluation-security-i"><rect x="112" y="76" width="30" height="14" rx="4" fill="var(--scene-bad,#b3261e)"/></g>
+<path d="M112 83H170" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-dasharray="5 4"/>
+<path d="M186 46l24 8v22c0 16-10 26-24 32c-14-6-24-16-24-32V54z" transform="translate(-0,-4)" fill="var(--scene-accent,#006c73)"/>
+<path d="M174 82l8 9 16-18" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" transform="translate(0,-4)"/>
+<text class="grow-ai-assisted-development-evaluation-security-" x="186" y="152" text-anchor="middle">Checks</text>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="2"><rect x="236" y="22" width="72" height="104" rx="8" fill="var(--scene-card,#fff)"/></g>
+<g>
+<rect x="244" y="32" width="26" height="20" rx="4" fill="var(--scene-good,#1f7a4d)"/><rect x="274" y="32" width="26" height="20" rx="4" fill="var(--scene-good,#1f7a4d)"/>
+<rect x="244" y="58" width="26" height="20" rx="4" fill="var(--scene-good,#1f7a4d)"/><rect x="274" y="58" width="26" height="20" rx="4" fill="var(--scene-bad,#b3261e)" class="grow-ai-assisted-development-evaluation-security-w"/>
+<rect x="244" y="84" width="26" height="20" rx="4" fill="var(--scene-good,#1f7a4d)"/><rect x="274" y="84" width="26" height="20" rx="4" fill="var(--scene-good,#1f7a4d)" class="grow-ai-assisted-development-evaluation-security-w" style="animation-delay:-2s"/>
+</g>
+<text class="grow-ai-assisted-development-evaluation-security-" x="272" y="152" text-anchor="middle">Eval set</text>
+</svg>

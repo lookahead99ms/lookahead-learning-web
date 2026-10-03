@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="browser-node-boundaries">
+<style>
+.learn-web-platform-foundations-browser-node-boundaries-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-web-platform-foundations-browser-node-boundaries-m{font-family:ui-monospace,Menlo,monospace;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-web-platform-foundations-browser-node-boundaries-card{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:2}
+
+.learn-web-platform-foundations-browser-node-boundaries-bg{fill:var(--scene-accent-soft,#dcefed)}
+.learn-web-platform-foundations-browser-node-boundaries-tk{animation:learn-web-platform-foundations-browser-node-boundaries-tk 6s linear infinite;animation-delay:-3s}
+@keyframes learn-web-platform-foundations-browser-node-boundaries-tk{0%{transform:translate(0,0);opacity:0}5%{opacity:1}22%{transform:translate(50px,0);opacity:1}28%{transform:translate(50px,0);opacity:1}30%,100%{opacity:0}}
+.learn-web-platform-foundations-browser-node-boundaries-tk2{animation:learn-web-platform-foundations-browser-node-boundaries-tk2 6s linear infinite;animation-delay:-3s}
+@keyframes learn-web-platform-foundations-browser-node-boundaries-tk2{0%,28%{transform:translate(0,0);opacity:0}30%{opacity:1}55%{transform:translate(0,0);opacity:1}60%,100%{opacity:0;transform:translate(0,0)}}
+.learn-web-platform-foundations-browser-node-boundaries-go{animation:learn-web-platform-foundations-browser-node-boundaries-go 6s linear infinite;animation-delay:-3s;opacity:0}
+@keyframes learn-web-platform-foundations-browser-node-boundaries-go{0%,26%{opacity:0;transform:translateX(0)}30%{opacity:1}55%{transform:translateX(-52px);opacity:1}60%,100%{opacity:0}}
+.learn-web-platform-foundations-browser-node-boundaries-go2{animation:learn-web-platform-foundations-browser-node-boundaries-go2 6s linear infinite;animation-delay:-3s;opacity:0}
+@keyframes learn-web-platform-foundations-browser-node-boundaries-go2{0%,26%{opacity:0;transform:translateX(0)}30%{opacity:1}55%{transform:translateX(52px);opacity:1}60%,100%{opacity:0}}
+.learn-web-platform-foundations-browser-node-boundaries-bnc{animation:learn-web-platform-foundations-browser-node-boundaries-bnc 6s linear infinite;animation-delay:-3s}
+@keyframes learn-web-platform-foundations-browser-node-boundaries-bnc{0%,28%{transform:translateX(0);opacity:0}32%{opacity:1}50%{transform:translateX(26px)}70%{transform:translateX(0);opacity:1}95%{opacity:1}98%,100%{opacity:0}}
+.learn-web-platform-foundations-browser-node-boundaries-bnc2{animation:learn-web-platform-foundations-browser-node-boundaries-bnc2 6s linear infinite;animation-delay:-3s}
+@keyframes learn-web-platform-foundations-browser-node-boundaries-bnc2{0%,28%{transform:translateX(0);opacity:0}32%{opacity:1}50%{transform:translateX(-26px)}70%{transform:translateX(0);opacity:1}95%{opacity:1}98%,100%{opacity:0}}
+</style>
+
+<rect class="learn-web-platform-foundations-browser-node-boundaries-bg" width="320" height="180"/>
+<rect class="learn-web-platform-foundations-browser-node-boundaries-card" x="10" y="30" width="86" height="92" rx="10"/>
+<rect x="10" y="30" width="86" height="18" rx="10" fill="var(--scene-link,#245a88)"/><rect x="10" y="40" width="86" height="8" fill="var(--scene-link,#245a88)"/>
+<rect x="22" y="62" width="62" height="8" rx="4" fill="var(--scene-line,#cfdfdc)"/><rect x="22" y="78" width="44" height="8" rx="4" fill="var(--scene-line,#cfdfdc)"/><rect x="22" y="94" width="54" height="8" rx="4" fill="var(--scene-line,#cfdfdc)"/>
+<rect class="learn-web-platform-foundations-browser-node-boundaries-card" x="224" y="30" width="86" height="92" rx="10"/>
+<rect x="224" y="30" width="86" height="18" rx="10" fill="var(--scene-ink,#102a33)"/><rect x="224" y="40" width="86" height="8" fill="var(--scene-ink,#102a33)"/>
+<path d="M238 66L250 76L238 86" stroke="var(--scene-good,#1f7a4d)" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><rect x="258" y="82" width="38" height="5" rx="2" fill="var(--scene-good,#1f7a4d)"/>
+<g class="learn-web-platform-foundations-browser-node-boundaries-go"><rect x="170" y="70" width="14" height="12" rx="3" fill="var(--scene-learn,#0f8a8a)"/></g>
+<g class="learn-web-platform-foundations-browser-node-boundaries-go2"><rect x="150" y="70" width="14" height="12" rx="3" fill="var(--scene-learn,#0f8a8a)"/></g>
+<g class="learn-web-platform-foundations-browser-node-boundaries-tk"><rect x="50" y="70" width="14" height="12" rx="3" fill="var(--scene-learn,#0f8a8a)"/></g>
+<rect x="116" y="50" width="88" height="52" rx="10" fill="var(--scene-accent,#006c73)"/>
+<text x="160" y="82" text-anchor="middle" style="font:700 16px system-ui,sans-serif;fill:#fff">shared fn</text>
+<path d="M100 76H112M208 76H220" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<g class="learn-web-platform-foundations-browser-node-boundaries-bnc"><rect x="40" y="132" width="28" height="22" rx="4" fill="var(--scene-card,#fff)" stroke="var(--scene-bad,#b3261e)" stroke-width="3"/><path d="M45 137L63 149M63 137L45 149" stroke="var(--scene-bad,#b3261e)" stroke-width="3"/></g>
+<g class="learn-web-platform-foundations-browser-node-boundaries-bnc2"><rect x="252" y="132" width="28" height="22" rx="4" fill="var(--scene-card,#fff)" stroke="var(--scene-bad,#b3261e)" stroke-width="3"/><path d="M257 137L275 149M275 137L257 149" stroke="var(--scene-bad,#b3261e)" stroke-width="3"/></g>
+<text class="learn-web-platform-foundations-browser-node-boundaries-t" x="53" y="20" text-anchor="middle">Browser</text>
+<text class="learn-web-platform-foundations-browser-node-boundaries-t" x="267" y="20" text-anchor="middle">Node.js</text>
+
+</svg>

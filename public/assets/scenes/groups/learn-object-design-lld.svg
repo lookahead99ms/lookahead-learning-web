@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 200" role="img" aria-label="An Order object calls a Payment interface, and card or wallet implementations take turns handling it">
+  <style>
+    .learn-object-design-lld-card { fill: var(--scene-card, #fff); stroke: var(--scene-line, #cfdfdc); stroke-width: 2; }
+    .learn-object-design-lld-soft { fill: var(--scene-accent-soft, #dcefed); stroke: var(--scene-accent, #006c73); stroke-width: 2; }
+    .learn-object-design-lld-ink { fill: var(--scene-ink, #102a33); font-family: system-ui, sans-serif; font-weight: 700; }
+    .learn-object-design-lld-mono { fill: var(--scene-ink, #102a33); font-family: ui-monospace, Menlo, monospace; font-weight: 700; }
+    .learn-object-design-lld-row { fill: var(--scene-line, #cfdfdc); }
+    .learn-object-design-lld-wire { stroke: var(--scene-muted, #536970); stroke-width: 2; fill: none; }
+    .learn-object-design-lld-tri { fill: var(--scene-card, #fff); stroke: var(--scene-muted, #536970); stroke-width: 2; }
+    .learn-object-design-lld-icon { fill: none; stroke: var(--scene-learn, #0f8a8a); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .learn-object-design-lld-pulse { fill: var(--scene-accent, #006c73); }
+    .learn-object-design-lld-call { animation: learn-object-design-lld-call 6s linear infinite; animation-delay: -2.4s; }
+    .learn-object-design-lld-a { animation: learn-object-design-lld-hiA 6s ease-in-out infinite; animation-delay: -2.4s; }
+    .learn-object-design-lld-b { animation: learn-object-design-lld-hiB 6s ease-in-out infinite; animation-delay: -2.4s; }
+    .learn-object-design-lld-paid { animation: learn-object-design-lld-paid 3s ease-in-out infinite; animation-delay: -1.8s; }
+    .learn-object-design-lld-shield { fill: var(--scene-good, #1f7a4d); }
+    @keyframes learn-object-design-lld-call {
+      0% { transform: translate(0, 0); opacity: 0; }
+      4% { opacity: 1; }
+      22% { transform: translate(161px, 0); }
+      42% { transform: translate(120px, 80px); opacity: 1; }
+      49% { transform: translate(120px, 80px); opacity: 0; }
+      50% { transform: translate(0, 0); opacity: 0; }
+      54% { opacity: 1; }
+      72% { transform: translate(161px, 0); }
+      92% { transform: translate(202px, 80px); opacity: 1; }
+      99% { transform: translate(202px, 80px); opacity: 0; }
+      100% { transform: translate(0, 0); opacity: 0; }
+    }
+    @keyframes learn-object-design-lld-hiA { 0%, 38%, 58%, 100% { fill: var(--scene-card, #fff); } 44%, 52% { fill: var(--scene-accent-soft, #dcefed); } }
+    @keyframes learn-object-design-lld-hiB { 0%, 88%, 100% { fill: var(--scene-card, #fff); } 6% { fill: var(--scene-accent-soft, #dcefed); } 8%, 86% { fill: var(--scene-card, #fff); } 94% { fill: var(--scene-accent-soft, #dcefed); } }
+    @keyframes learn-object-design-lld-paid { 0%, 35% { opacity: 0.35; } 50%, 85% { opacity: 1; } 100% { opacity: 0.35; } }
+  </style>
+
+  <!-- Order object: state rows + invariant shield -->
+  <rect class="learn-object-design-lld-card" x="24" y="30" width="150" height="140" rx="12"/>
+  <text class="learn-object-design-lld-ink" x="44" y="58" font-size="17">Order</text>
+  <path d="M24 70 H174" stroke="var(--scene-line, #cfdfdc)" stroke-width="2"/>
+  <rect class="learn-object-design-lld-row" x="44" y="86" width="84" height="10" rx="5"/>
+  <rect class="learn-object-design-lld-row" x="44" y="106" width="60" height="10" rx="5"/>
+  <g class="learn-object-design-lld-paid">
+    <rect x="44" y="130" width="76" height="26" rx="13" fill="var(--scene-good, #1f7a4d)"/>
+    <text x="82" y="148" font-size="16" text-anchor="middle" font-family="system-ui, sans-serif" font-weight="700" fill="var(--scene-card, #fff)">PAID</text>
+  </g>
+  <path class="learn-object-design-lld-shield" d="M150 84 l14 5 v10 c0 9 -6 15 -14 18 c-8 -3 -14 -9 -14 -18 v-10 z"/>
+  <path d="M144 100 l5 5 l8 -10" stroke="var(--scene-card, #fff)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+  <!-- call wire to interface -->
+  <path class="learn-object-design-lld-wire" d="M174 66 H262" stroke-dasharray="5 5"/>
+  <path d="M256 60 l8 6 l-8 6" class="learn-object-design-lld-wire"/>
+
+  <!-- interface -->
+  <rect class="learn-object-design-lld-soft" x="266" y="44" width="170" height="44" rx="10"/>
+  <text class="learn-object-design-lld-mono" x="351" y="72" font-size="16" text-anchor="middle">Payment</text>
+
+  <!-- realization arrows -->
+  <path class="learn-object-design-lld-wire" d="M310 128 V104 H392 V128" stroke-dasharray="5 4"/>
+  <path class="learn-object-design-lld-wire" d="M351 104 V98"/>
+  <path class="learn-object-design-lld-tri" d="M343 98 l8 -10 l8 10 z"/>
+
+  <!-- implementations: card and wallet -->
+  <rect class="learn-object-design-lld-card learn-object-design-lld-a" x="270" y="128" width="80" height="50" rx="10"/>
+  <rect class="learn-object-design-lld-icon" x="290" y="140" width="40" height="26" rx="4"/>
+  <path class="learn-object-design-lld-icon" d="M290 148 H330 M296 160 H306"/>
+
+  <rect class="learn-object-design-lld-card learn-object-design-lld-b" x="352" y="128" width="80" height="50" rx="10"/>
+  <path class="learn-object-design-lld-icon" d="M374 142 H408 a4 4 0 0 1 4 4 V164 a4 4 0 0 1 -4 4 H374 a4 4 0 0 1 -4 -4 V146 a4 4 0 0 1 4 -4 z"/>
+  <path class="learn-object-design-lld-icon" d="M398 151 H412 V159 H398 a4 4 0 0 1 0 -8 z"/>
+
+  <!-- travelling call -->
+  <circle class="learn-object-design-lld-pulse learn-object-design-lld-call" cx="190" cy="66" r="6"/>
+</svg>

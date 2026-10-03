@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="One Send socket that SMS, email and push plugs all fit">
+<style>
+.learn-go-fundamentals-go-interfaces-errors-t{font-family:ui-monospace,Menlo,monospace;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-go-fundamentals-go-interfaces-errors-s{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-text,#28434a)}
+.learn-go-fundamentals-go-interfaces-errors-p1,.learn-go-fundamentals-go-interfaces-errors-p2,.learn-go-fundamentals-go-interfaces-errors-p3{animation:learn-go-fundamentals-go-interfaces-errors-pl 6s infinite}
+.learn-go-fundamentals-go-interfaces-errors-p1{animation-delay:-1s}
+.learn-go-fundamentals-go-interfaces-errors-p2{animation-delay:-5s}
+.learn-go-fundamentals-go-interfaces-errors-p3{animation-delay:-3s}
+.learn-go-fundamentals-go-interfaces-errors-ok{animation:learn-go-fundamentals-go-interfaces-errors-k 2s infinite;animation-delay:-1s}
+.learn-go-fundamentals-go-interfaces-errors-ring{animation:learn-go-fundamentals-go-interfaces-errors-r 6s infinite;animation-delay:-3s}
+@keyframes learn-go-fundamentals-go-interfaces-errors-pl{0%{transform:translateX(-40px);opacity:0}5%{transform:translateX(-40px);opacity:1}12%,30%{transform:translateX(0);opacity:1}33%,100%{transform:translateX(0);opacity:0}}
+@keyframes learn-go-fundamentals-go-interfaces-errors-k{0%,100%{opacity:.5}50%{opacity:1}}
+@keyframes learn-go-fundamentals-go-interfaces-errors-r{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g class="learn-go-fundamentals-go-interfaces-errors-p1"><g>
+<rect x="56" y="66" width="76" height="48" rx="9" fill="var(--scene-learn,#0f8a8a)"/>
+<path d="M70 114l-3 12 16-12z" fill="var(--scene-learn,#0f8a8a)"/>
+<circle cx="76" cy="90" r="4" fill="#fff"/><circle cx="94" cy="90" r="4" fill="#fff"/><circle cx="112" cy="90" r="4" fill="#fff"/>
+<rect x="132" y="86" width="38" height="8" fill="var(--scene-ink,#102a33)"/>
+</g></g>
+<g class="learn-go-fundamentals-go-interfaces-errors-p2"><g>
+<rect x="56" y="66" width="76" height="48" rx="6" fill="var(--scene-grow,#b8457a)"/>
+<path d="M58 70l36 26 36-26" fill="none" stroke="#fff" stroke-width="4"/>
+<rect x="132" y="86" width="38" height="8" fill="var(--scene-ink,#102a33)"/>
+</g></g>
+<g class="learn-go-fundamentals-go-interfaces-errors-p3"><g>
+<rect x="56" y="66" width="76" height="48" rx="9" fill="var(--scene-ahead,#2f6fb3)"/>
+<path d="M94 74a12 12 0 0 1 12 12v10h-24v-10a12 12 0 0 1 12-12zM88 104h12" fill="#fff" stroke="#fff" stroke-width="3"/>
+<rect x="132" y="86" width="38" height="8" fill="var(--scene-ink,#102a33)"/>
+</g></g>
+<g class="learn-go-fundamentals-go-interfaces-errors-ring" style="transform-origin:230px 95px">
+<rect x="170" y="45" width="120" height="100" rx="14" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+
+<text class="learn-go-fundamentals-go-interfaces-errors-t" x="230" y="90" text-anchor="middle">Send()</text>
+<circle class="learn-go-fundamentals-go-interfaces-errors-ok" cx="230" cy="116" r="11" fill="var(--scene-good,#1f7a4d)"/>
+<path d="M224 116l4 4 8-9" fill="none" stroke="#fff" stroke-width="3"/>
+</g>
+<text class="learn-go-fundamentals-go-interfaces-errors-s" x="230" y="168" text-anchor="middle">any plug that fits</text>
+</svg>

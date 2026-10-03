@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Unit, contract and end-to-end test layers turn green one by one, and the quality gate opens so the build can ship">
+<style>
+.grow-quality-engineering-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); }
+.grow-quality-engineering-tm { font-family: ui-monospace, Menlo, monospace; fill: var(--scene-ink, #102a33); }
+.grow-quality-engineering-b { font-weight: 700; }
+.grow-quality-engineering-box { fill: var(--scene-card, #fff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.grow-quality-engineering-soft { fill: var(--scene-accent-soft, #dcefed); }
+.grow-quality-engineering-card { fill: var(--scene-card, #fff); }
+.grow-quality-engineering-acc { fill: var(--scene-accent, #006c73); }
+.grow-quality-engineering-mut { fill: var(--scene-muted, #536970); }
+.grow-quality-engineering-linef { fill: var(--scene-line, #cfdfdc); }
+.grow-quality-engineering-good { fill: var(--scene-good, #1f7a4d); }
+.grow-quality-engineering-bad { fill: var(--scene-bad, #b3261e); }
+.grow-quality-engineering-warn { fill: var(--scene-warn, #a15c00); }
+.grow-quality-engineering-grow { fill: var(--scene-grow, #b8457a); }
+.grow-quality-engineering-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 1.5; }
+.grow-quality-engineering-sacc { fill: none; stroke: var(--scene-accent, #006c73); stroke-width: 2; }
+.grow-quality-engineering-sgood { fill: none; stroke: var(--scene-good, #1f7a4d); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.grow-quality-engineering-scard { fill: none; stroke: var(--scene-card, #fff); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.grow-quality-engineering-sbad { fill: none; stroke: var(--scene-bad, #b3261e); stroke-width: 2; }
+
+.grow-quality-engineering-c1 { animation: grow-quality-engineering-kf-c1 7s infinite; animation-delay: -5.2s; }
+@keyframes grow-quality-engineering-kf-c1 { 0%, 8% { opacity: 0; } 12%, 94% { opacity: 1; } 100% { opacity: 0; } }
+.grow-quality-engineering-c2 { animation: grow-quality-engineering-kf-c2 7s infinite; animation-delay: -5.2s; }
+@keyframes grow-quality-engineering-kf-c2 { 0%, 24% { opacity: 0; } 28%, 94% { opacity: 1; } 100% { opacity: 0; } }
+.grow-quality-engineering-c3 { animation: grow-quality-engineering-kf-c3 7s infinite; animation-delay: -5.2s; }
+@keyframes grow-quality-engineering-kf-c3 { 0%, 40% { opacity: 0; } 44%, 94% { opacity: 1; } 100% { opacity: 0; } }
+.grow-quality-engineering-arm { transform-box: view-box; transform-origin: 232px 80px; animation: grow-quality-engineering-kf-arm 7s ease-in-out infinite; animation-delay: -5.2s; }
+@keyframes grow-quality-engineering-kf-arm { 0%, 48% { transform: rotate(0deg); } 56%, 90% { transform: rotate(-70deg); } 96%, 100% { transform: rotate(0deg); } }
+.grow-quality-engineering-pkt { animation: grow-quality-engineering-kf-pkt 7s ease-in-out infinite; animation-delay: -5.2s; }
+@keyframes grow-quality-engineering-kf-pkt { 0%, 56% { transform: translateX(0); opacity: 1; } 84% { transform: translateX(80px); opacity: 1; } 90%, 100% { transform: translateX(80px); opacity: 0; } }
+</style>
+<!-- test pyramid -->
+<path class="grow-quality-engineering-soft" d="M20 160 H176 L156 120 H40 Z"/>
+<path class="grow-quality-engineering-soft" d="M44 114 H152 L132 74 H64 Z"/>
+<path class="grow-quality-engineering-soft" d="M68 68 H128 L98 22 Z"/>
+<text class="grow-quality-engineering-t grow-quality-engineering-b" x="98" y="145" font-size="16" text-anchor="middle">unit</text>
+<text class="grow-quality-engineering-t grow-quality-engineering-b" x="98" y="99" font-size="16" text-anchor="middle">contract</text>
+<text class="grow-quality-engineering-t grow-quality-engineering-b" x="98" y="60" font-size="16" text-anchor="middle">e2e</text>
+<g class="grow-quality-engineering-c1"><circle class="grow-quality-engineering-good" cx="166" cy="140" r="9"/><path class="grow-quality-engineering-scard" d="M161 140 L165 144 L171 136" stroke-width="2"/></g>
+<g class="grow-quality-engineering-c2"><circle class="grow-quality-engineering-good" cx="144" cy="94" r="9"/><path class="grow-quality-engineering-scard" d="M139 94 L143 98 L149 90" stroke-width="2"/></g>
+<g class="grow-quality-engineering-c3"><circle class="grow-quality-engineering-good" cx="130" cy="46" r="9"/><path class="grow-quality-engineering-scard" d="M125 46 L129 50 L135 42" stroke-width="2"/></g>
+
+<!-- gate -->
+<path class="grow-quality-engineering-wire" d="M190 160 H310"/>
+<rect class="grow-quality-engineering-mut" x="226" y="76" width="12" height="84" rx="3"/>
+<g class="grow-quality-engineering-arm"><rect class="grow-quality-engineering-warn" x="232" y="76" width="74" height="10" rx="5"/></g>
+<g class="grow-quality-engineering-pkt"><rect class="grow-quality-engineering-acc" x="186" y="122" width="34" height="30" rx="5"/><path class="grow-quality-engineering-scard" d="M194 133 H212 M194 141 H206" stroke-width="2"/></g>
+</svg>

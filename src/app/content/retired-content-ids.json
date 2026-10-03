@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "retired-content-ids/v1",
+  "courses": [
+    {
+      "path": "learn",
+      "courseId": "algorithmic-patterns",
+      "reason": "DLV-408: 25 pattern lessons became Recognize + 20 units + Choose.",
+      "lessons": {
+        "algorithmic-difference-arrays": "algorithmic-prefix-state",
+        "algorithmic-monotonic-queue": "algorithmic-monotonic-stack",
+        "algorithmic-list-reversal": "algorithmic-linked-list-patterns",
+        "algorithmic-divide-and-conquer": "algorithmic-recursion-recurrence",
+        "algorithmic-two-dimensional-dp": "algorithmic-dp-state-transition-optimization"
+      },
+      "modules": {
+        "theory-difference-arrays": "theory-prefix-state",
+        "theory-monotonic-queue": "theory-monotonic-stack",
+        "theory-list-reversal": "theory-linked-list-patterns",
+        "theory-divide-and-conquer": "theory-recursion-recurrence",
+        "theory-two-dimensional-dp-pattern": "theory-dp-state-transition-optimization",
+        "practice-divide-and-conquer": "practice-recursion-recurrence",
+        "practice-two-dimensional-dp-pattern": "practice-dp-state-transition-optimization"
+      },
+      "units": {
+        "difference-arrays": "prefix-state",
+        "monotonic-queue": "monotonic-stack",
+        "list-reversal": "linked-lists",
+        "divide-conquer": "recursion",
+        "two-dimensional-dp": "dynamic-programming"
+      }
+    }
+  ]
+}

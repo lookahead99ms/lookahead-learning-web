@@ -12,6 +12,7 @@ import { validateAnswerSlidePlan } from './answer-slide-contract.mjs';
 import { buildHandsOnDsaIndex } from './generate-hands-on-dsa-index.mjs';
 import { foundationLanguageNoteErrors } from './foundation-language-notes.mjs';
 import { includesBaselineSolutionLanguages } from './solution-language-contract.mjs';
+import { cardSceneTextErrors, learningUnitCardErrors } from './learning-unit-card-contract.mjs';
 
 const repositoryRoot = fileURLToPath(new URL('../', import.meta.url));
 const requestedRoot = process.argv[2];
@@ -58,6 +59,8 @@ const questionsById = new Map();
 const patternLessons = [];
 const foundationLessons = [];
 const referencedAssetPaths = new Set();
+// Card scenes referenced by unit cards; their drawings must carry no headline text.
+const referencedCardScenes = new Set();
 let courseCount = 0;
 let questionCount = 0;
 let traceProblemCount = 0;
@@ -623,6 +626,17 @@ function isPracticeModule(module) {
   );
 }
 
+function validateLearningUnitCard(card, unitLabel) {
+  const errors = learningUnitCardErrors(card, unitLabel);
+  requireValue(errors.length === 0, errors.join('; '));
+  // The shared asset check below proves the scene file exists under the content root
+  // or, for app scenes and public unit-scene copies, under public/assets/scenes/.
+  if (card.scene) {
+    referencedAssetPaths.add(card.scene);
+    referencedCardScenes.add(card.scene);
+  }
+}
+
 function validateLearningUnits(units, moduleIds, courseLabel) {
   const unitIds = new Set();
   const discoverableModuleIds = new Set();
@@ -654,6 +668,7 @@ function validateLearningUnits(units, moduleIds, courseLabel) {
     }
     if (unit.questionModuleId) discoverableModuleIds.add(unit.questionModuleId);
     if (unit.practiceModuleId) discoverableModuleIds.add(unit.practiceModuleId);
+    if (unit.card !== undefined) validateLearningUnitCard(unit.card, unitLabel);
     if (unit.subUnits !== undefined) {
       requireValue(
         Array.isArray(unit.subUnits) && unit.subUnits.length > 0,
@@ -860,6 +875,23 @@ for (const file of contentFiles) {
   ) {
     continue;
   }
+  if (label.startsWith('learn/dsa-stories/')) {
+    // Option B problem stories. The full runtime check lives in the content repository:
+    // python3 tools/validate_option_b_stories.py
+    const story = JSON.parse(await readFile(file, 'utf8'));
+    requireValue(/^learn\/dsa-stories\/[a-z0-9-]+\.json$/.test(label), `${label}: unexpected story path`);
+    requireValue(story.schemaVersion === 'dsa-story/v1', `${label}: unsupported story schema`);
+    requireValue(
+      label === `learn/dsa-stories/${story.problemId}.json` &&
+        canonicalDsaProblems.has(story.problemId),
+      `${label}: a story must be named after its canonical problem`,
+    );
+    requireValue(
+      Array.isArray(story.steps) && story.steps.length > 0,
+      `${label}: a story needs steps`,
+    );
+    continue;
+  }
   if (
     label.includes('/modules/') ||
     label.includes('/traces/') ||
@@ -942,6 +974,8 @@ for (const file of contentFiles) {
         );
       }
       validateAnswerSlidePlan(question);
+      validateNavTitle(question.navTitle, `${moduleLabel}: ${question.id}`);
+      await validateWalkthrough(question.walkthrough, `${moduleLabel}: ${question.id}`);
       requireValue(
         !questionIds.has(question.id),
         `${moduleLabel}: duplicate question id ${question.id}`,
@@ -1134,17 +1168,62 @@ await buildHandsOnDsaIndex(contentRoot, undefined, {
   requireRankingPlan: requestedRoot === '--external',
 });
 
+const publicScenesRoot = resolve(repositoryRoot, 'public/assets/scenes');
+
+async function fileExists(path) {
+  try {
+    await access(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * The web app ships public copies of Look Ahead unit card scenes under
+ * public/assets/scenes/units/look-ahead/<course>/<file>.svg and serves them first.
+ */
+function publicSceneCopy(assetPath) {
+  const match =
+    /^\/content\/look-ahead\/([a-z0-9][a-z0-9-]*)\/visuals\/cards\/([a-z0-9][a-z0-9_-]*)\.svg$/i.exec(
+      assetPath,
+    );
+  return match ? join(publicScenesRoot, 'units/look-ahead', match[1], `${match[2]}.svg`) : null;
+}
+
 for (const assetPath of referencedAssetPaths) {
+  if (assetPath.startsWith('/assets/scenes/')) {
+    // A card scene may point straight at an app scene under public/assets/scenes/.
+    const sceneFile = resolve(publicScenesRoot, assetPath.slice('/assets/scenes/'.length));
+    requireValue(
+      sceneFile.startsWith(`${publicScenesRoot}/`),
+      `Asset path escapes public/assets/scenes: ${assetPath}`,
+    );
+    requireValue(await fileExists(sceneFile), `Referenced scene does not exist: ${assetPath}`);
+    continue;
+  }
   if (!assetPath.startsWith('/content/')) continue;
   const assetFile = resolve(contentRoot, assetPath.slice('/content/'.length));
   requireValue(
     assetFile.startsWith(`${contentRoot}/`),
     `Asset path escapes the content root: ${assetPath}`,
   );
-  try {
-    await access(assetFile);
-  } catch {
-    throw new Error(`Referenced asset does not exist: ${assetPath}`);
+  if (await fileExists(assetFile)) continue;
+  const publicCopy = publicSceneCopy(assetPath);
+  if (publicCopy && (await fileExists(publicCopy))) continue;
+  throw new Error(`Referenced asset does not exist: ${assetPath}`);
+}
+
+// Every copy a unit card can show (the public copy first, then the content file) leaves its
+// words to the shared card text styling: scene-token colours, no !important, no headline scale.
+for (const scenePath of referencedCardScenes) {
+  const candidates = scenePath.startsWith('/assets/scenes/')
+    ? [resolve(publicScenesRoot, scenePath.slice('/assets/scenes/'.length))]
+    : [publicSceneCopy(scenePath), resolve(contentRoot, scenePath.slice('/content/'.length))];
+  for (const file of candidates) {
+    if (!file || !(await fileExists(file))) continue;
+    const errors = cardSceneTextErrors(await readFile(file, 'utf8'), scenePath);
+    requireValue(errors.length === 0, errors.join('; '));
   }
 }
 
@@ -1191,8 +1270,11 @@ for (const [id, problem] of canonicalDsaProblems) {
   for (const placement of problem.placements) {
     if (placement.role === 'essential') {
       const lesson = questionsById.get(placement.lessonId);
+      // A pattern lesson rewritten as algo-pattern-v1 (foundation-lesson/v1) keeps its essential problems.
       requireValue(
-        lesson?.schemaVersion === 'pattern-lesson/v2' &&
+        (lesson?.schemaVersion === 'pattern-lesson/v2' ||
+          (lesson?.schemaVersion === 'foundation-lesson/v1' &&
+            lesson.lessonPattern === 'algo-pattern-v1')) &&
           lesson.essentialProblemRefs?.some(({ problemId }) => problemId === id),
         `${id} has an unresolved essential placement ${placement.lessonId}`,
       );
@@ -1325,6 +1407,232 @@ for (const file of contentFiles.filter((path) => path.includes('/traces/'))) {
   }
 }
 
+/** Optional lesson header bullets: 3-5 short, non-empty strings. */
+function validateSubtitlePoints(value, label) {
+  if (value === undefined) return;
+  requireStringArray(value, `${label} subtitlePoints`, 3);
+  requireValue(value.length <= 5, `${label} subtitlePoints must contain no more than five items`);
+}
+
+/** Mirrors LESSON_PATTERNS in src/app/content/content.models.ts. */
+const STAGE_LESSON_PATTERNS = new Set([
+  'system-v1',
+  'fundamental-v1',
+  'pattern-v1',
+  'design-v1',
+  'leadership-v1',
+  'story-v1',
+  'algo-pattern-v1',
+  'concept-v1',
+]);
+
+/** Optional short navigation title: non-empty, at most 60 characters. */
+function validateNavTitle(value, label) {
+  if (value === undefined) return;
+  requireValue(
+    typeof value === 'string' && value.trim().length > 0 && value.trim().length <= 60,
+    `${label} navTitle must be non-empty text of at most 60 characters`,
+  );
+}
+
+/** Optional section cards: 2-4 cards, each with a non-empty title and at least one point. */
+function validateSectionCards(cards, label) {
+  if (cards === undefined) return;
+  requireValue(
+    Array.isArray(cards) && cards.length >= 2 && cards.length <= 4,
+    `${label} cards must contain two to four cards`,
+  );
+  const titles = new Set();
+  for (const [index, card] of cards.entries()) {
+    requireValue(
+      card && typeof card === 'object' && typeof card.title === 'string' && card.title.trim(),
+      `${label} card ${index + 1} needs a title`,
+    );
+    requireValue(!titles.has(card.title.trim()), `${label} repeats card title ${card.title}`);
+    titles.add(card.title.trim());
+    requireStringArray(card.points, `${label} card ${card.title} points`);
+  }
+}
+
+/** Optional Design Rounds walkthrough: ordered timed steps, each with a body and optional diagram. */
+async function validateWalkthrough(steps, label) {
+  if (steps === undefined) return;
+  requireValue(
+    Array.isArray(steps) && steps.length > 0,
+    `${label} walkthrough must be a non-empty array`,
+  );
+  const ids = new Set();
+  for (const [index, step] of steps.entries()) {
+    const stepLabel = `${label} walkthrough step ${step?.id ?? index + 1}`;
+    requireValue(step && typeof step === 'object', `${stepLabel} must be an object`);
+    requireValue(
+      typeof step.id === 'string' && /^[a-z0-9][a-z0-9-]*$/.test(step.id),
+      `${stepLabel} needs a kebab-case id`,
+    );
+    requireValue(!ids.has(step.id), `${label} repeats walkthrough step ${step.id}`);
+    ids.add(step.id);
+    requireValue(
+      typeof step.label === 'string' && step.label.trim(),
+      `${stepLabel} needs a time label`,
+    );
+    requireValue(
+      typeof step.heading === 'string' && step.heading.trim(),
+      `${stepLabel} needs a heading`,
+    );
+    requireStringArray(step.body, `${stepLabel} body`);
+    if (step.visual !== undefined) {
+      requireValue(
+        step.visual &&
+          typeof step.visual.assetPath === 'string' &&
+          typeof step.visual.alt === 'string' &&
+          step.visual.alt.trim(),
+        `${stepLabel} visual needs an assetPath and alt text`,
+      );
+      const visualPath = step.visual.assetPath.split(/[?#]/, 1)[0].replace(/^\/content\//, '');
+      try {
+        await access(join(contentRoot, visualPath));
+      } catch {
+        throw new Error(`${stepLabel} references missing visual ${step.visual.assetPath}`);
+      }
+    }
+    if (step.visualTranscript !== undefined) {
+      requireValue(
+        step.visual !== undefined,
+        `${stepLabel} has a visualTranscript without a visual`,
+      );
+      requireStringArray(step.visualTranscript, `${stepLabel} visualTranscript`);
+    }
+    if (step.table !== undefined) {
+      validateTheoryTable(step.table, stepLabel);
+      requireValue(
+        step.table.afterParagraph === undefined ||
+          (Number.isInteger(step.table.afterParagraph) &&
+            step.table.afterParagraph >= 0 &&
+            step.table.afterParagraph < step.body.length),
+        `${stepLabel} table afterParagraph must point at one of its body paragraphs`,
+      );
+    }
+    validateSectionCards(step.cards, stepLabel);
+  }
+}
+
+/**
+ * A storyboard visual (TheoryVisual type "storyboard"): frames the lesson page plays, and an optional narrow
+ * drawing that exists. The content repository checks the SVG's data attributes against the frames
+ * (apply_system_lessons.py, check_storyboard).
+ */
+async function validateStoryboard(visual, label) {
+  if (visual.type !== 'storyboard') return;
+  const board = visual.storyboard;
+  requireValue(
+    board && Array.isArray(board.frames) && board.frames.length >= 2,
+    `${label} storyboard needs at least two frames`,
+  );
+  for (const frame of board.frames) {
+    requireValue(
+      Number.isInteger(frame?.ms) && frame.ms >= 0 && (frame.wait === undefined || (Number.isInteger(frame.wait) && frame.wait >= 0)),
+      `${label} storyboard frame needs ms (and an optional wait) in whole milliseconds`,
+    );
+  }
+  requireValue(
+    board.holdMs === undefined || (Number.isInteger(board.holdMs) && board.holdMs >= 1000),
+    `${label} storyboard holdMs must be at least 1000`,
+  );
+  requireValue(
+    (board.narrowAssetPath === undefined) === (board.narrowBelow === undefined),
+    `${label} storyboard narrowAssetPath and narrowBelow go together`,
+  );
+  if (board.narrowAssetPath !== undefined) {
+    const narrowPath = String(board.narrowAssetPath).split(/[?#]/, 1)[0].replace(/^\/content\//, '');
+    try {
+      await access(join(contentRoot, narrowPath));
+    } catch {
+      throw new Error(`${label} references missing narrow storyboard ${board.narrowAssetPath}`);
+    }
+  }
+}
+
+/** algo-pattern-v1 practice ladder: each rung is a practice page of the canonical problem it names. */
+function validateLadder(ladder, label) {
+  if (ladder === undefined) return;
+  requireValue(
+    Array.isArray(ladder) && ladder.length > 0,
+    `${label} ladder must be a non-empty array`,
+  );
+  for (const step of ladder) {
+    for (const field of ['questionId', 'problemId', 'title', 'difficulty', 'newIdea']) {
+      requireValue(
+        typeof step?.[field] === 'string' && step[field].trim(),
+        `${label} ladder step needs ${field}`,
+      );
+    }
+    const question = questionsById.get(step.questionId);
+    requireValue(
+      question?.canonicalProblemRef?.problemId === step.problemId,
+      `${label} ladder step ${step.questionId} is not a practice page of ${step.problemId}`,
+    );
+  }
+}
+
+/** algo-pattern-v1 spot-the-pattern drill: every answer is one of the offered options. */
+function validateSpotDrill(spot, label) {
+  if (spot === undefined) return;
+  requireStringArray(spot?.options, `${label} spot options`, 2);
+  requireValue(
+    spot.options.includes(spot.pattern),
+    `${label} spot pattern must be one of its options`,
+  );
+  requireValue(Array.isArray(spot.items) && spot.items.length > 0, `${label} spot needs items`);
+  for (const item of spot.items) {
+    requireValue(
+      ['statement', 'answer', 'why'].every(
+        (field) => typeof item?.[field] === 'string' && item[field].trim(),
+      ),
+      `${label} spot item needs a statement, an answer and why`,
+    );
+    requireValue(
+      spot.options.includes(item.answer),
+      `${label} spot answer ${item.answer} is not an option`,
+    );
+  }
+}
+
+/** Same shape as TheorySection.table: columns plus rows of matching width. */
+function validateTheoryTable(table, label) {
+  requireValue(table && typeof table === 'object', `${label} table must be an object`);
+  requireStringArray(table.columns, `${label} table columns`);
+  requireValue(
+    Array.isArray(table.rows) &&
+      table.rows.length > 0 &&
+      table.rows.every(
+        (row) =>
+          Array.isArray(row) &&
+          row.length === table.columns.length &&
+          row.every((cell) => typeof cell === 'string'),
+      ),
+    `${label} table rows must match its ${table.columns.length} column(s)`,
+  );
+  requireValue(
+    table.caption === undefined || (typeof table.caption === 'string' && table.caption.trim()),
+    `${label} table caption must contain text when present`,
+  );
+}
+
+/** Debug pair side: a note, optional code tabs, and an optional output and/or table. */
+function validatePairSide(side, label) {
+  requireValue(side && typeof side === 'object', `${label} must be an object`);
+  requireValue(Array.isArray(side.body), `${label} body must be an array`);
+  requireValue(
+    side.codeTabs === undefined || Array.isArray(side.codeTabs),
+    `${label} codeTabs must be an array when present`,
+  );
+  if (side.table !== undefined) validateTheoryTable(side.table, label);
+  requireValue(
+    side.body.length > 0 || side.codeTabs?.length || side.output || side.table,
+    `${label} has nothing to show`,
+  );
+}
+
 function requireStringArray(value, label, minimum = 1) {
   requireValue(
     Array.isArray(value) &&
@@ -1389,9 +1697,15 @@ for (const { lesson, moduleLabel } of [...foundationLessons, ...patternLessons])
   const label = `${moduleLabel}: ${lesson.id}`;
   if (lesson.learningFlow !== undefined) {
     const flow = lesson.learningFlow;
-    requireValue(typeof flow?.whyItMatters === 'string' && flow.whyItMatters.trim().length > 0, `${label} learningFlow.whyItMatters must contain text`);
+    requireValue(
+      typeof flow?.whyItMatters === 'string' && flow.whyItMatters.trim().length > 0,
+      `${label} learningFlow.whyItMatters must contain text`,
+    );
     for (const field of ['prompt', 'hint', 'answer']) {
-      requireValue(typeof flow?.practice?.[field] === 'string' && flow.practice[field].trim().length > 0, `${label} learningFlow.practice.${field} must contain text`);
+      requireValue(
+        typeof flow?.practice?.[field] === 'string' && flow.practice[field].trim().length > 0,
+        `${label} learningFlow.practice.${field} must contain text`,
+      );
     }
   }
   for (const guideField of ['beginnerGuide', 'teachingGuide']) {
@@ -1424,6 +1738,7 @@ for (const { lesson, moduleLabel } of foundationLessons) {
     lesson.visuals === undefined && lesson.relatedQuestionIds === undefined,
     `${label} must not mix legacy relation fields with FoundationLessonV1`,
   );
+  validateSubtitlePoints(lesson.subtitlePoints, label);
   requireStringArray(lesson.learningOutcomes, `${label} learningOutcomes`, 3);
   requireValue(
     lesson.learningOutcomes.length <= 5,
@@ -1471,6 +1786,15 @@ for (const { lesson, moduleLabel } of foundationLessons) {
         await access(join(contentRoot, visualPath));
       } catch {
         throw new Error(`${label} references missing visual ${section.visual.assetPath}`);
+      }
+      await validateStoryboard(section.visual, `${label} section ${section.id}`);
+    }
+    validateSectionCards(section.cards, `${label} section ${section.id}`);
+    validateLadder(section.ladder, `${label} section ${section.id}`);
+    validateSpotDrill(section.spot, `${label} section ${section.id}`);
+    for (const pair of section.pairs ?? []) {
+      for (const side of ['broken', 'fixed']) {
+        validatePairSide(pair?.[side], `${label} section ${section.id} pair ${pair?.n} ${side}`);
       }
     }
     if (section.solutions?.length) {
@@ -1555,10 +1879,16 @@ for (const { lesson, moduleLabel } of foundationLessons) {
     lesson.keyTakeaways.length <= 5,
     `${label} keyTakeaways must contain no more than five items`,
   );
-  for (const error of foundationLanguageNoteErrors(
-    lesson.languageNotes,
-    moduleLabel.split('/')[0],
-  )) {
+  // DLV-408 pilot: single-language system lessons (lessonPattern "system-v1") may omit
+  // other-language notes; Go and Python have their own courses.
+  // Language-agnostic stage-pattern lessons (the System Design Ladder) may omit them too.
+  const optionalLanguageNotes =
+    STAGE_LESSON_PATTERNS.has(lesson.lessonPattern) &&
+    Array.isArray(lesson.languageNotes) &&
+    lesson.languageNotes.length === 0;
+  for (const error of optionalLanguageNotes
+    ? []
+    : foundationLanguageNoteErrors(lesson.languageNotes, moduleLabel.split('/')[0])) {
     requireValue(false, `${label} ${error}`);
   }
   requireValue(lesson.reviewEvidence?.note, `${label} is missing review evidence`);
@@ -2269,7 +2599,9 @@ for (const { lesson, moduleLabel } of patternLessons) {
     `${label} keyTakeaways must contain no more than five items`,
   );
   requireValue(
-    Array.isArray(lesson.languageNotes) && lesson.languageNotes.length === 3,
+    Array.isArray(lesson.languageNotes) &&
+      (lesson.languageNotes.length === 3 ||
+        (STAGE_LESSON_PATTERNS.has(lesson.lessonPattern) && lesson.languageNotes.length === 0)),
     `${label} must include Java, Python, and Go language notes`,
   );
   requireValue(lesson.reviewEvidence?.note, `${label} is missing review evidence`);

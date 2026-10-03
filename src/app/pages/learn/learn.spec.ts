@@ -1,3 +1,5 @@
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import {
   Event,
@@ -70,6 +72,8 @@ describe('Learn catalog', () => {
           withInMemoryScrolling({ scrollPositionRestoration: 'top' }),
         ),
         { provide: ContentService, useValue: { getCatalogOverview: () => loaded } },
+        provideHttpClient(),
+        provideHttpClientTesting(),
       ],
     }).compileComponents();
   });
@@ -194,27 +198,92 @@ describe('Learn catalog', () => {
     expect(harness.routeNativeElement!.querySelector('.course-card h2')).toBeNull();
   });
 
-  it('labels generated module names as a bounded course preview without nested controls', async () => {
+  it('shows each group as one scene card followed by uniform course cards', async () => {
     const harness = await RouterTestingHarness.create('/learn');
-    await ready(
-      harness,
-      catalog.map((course, index) =>
-        index === 0
-          ? { ...course, topicPreview: ['Syntax', 'Types', 'Exceptions', 'Generics'] }
-          : course,
-      ),
+    await ready(harness);
+    const section = harness.routeNativeElement!.querySelector<HTMLElement>(
+      '#learn-group-java-platform',
+    )!;
+    const groupCard = section.querySelector<HTMLElement>('.catalog-group-card')!;
+    const group = LEARN_COURSE_GROUPS.find((candidate) => candidate.id === 'java-platform')!;
+    expect(groupCard.querySelector('[role="img"]')?.getAttribute('aria-label')).toBe(
+      `${group.title} illustration`,
     );
-    const card = harness.routeNativeElement!.querySelector<HTMLAnchorElement>('#core-java')!;
-    expect(card.querySelector('.catalog-course-preview-label')?.textContent?.trim()).toBe(
-      'Inside this course',
+    expect(groupCard.querySelector('h2')?.textContent?.trim()).toBe(group.title);
+    expect(groupCard.querySelector('.catalog-group-description')?.textContent?.trim()).toBe(
+      group.description,
     );
-    const preview = card.querySelector<HTMLElement>('ul[aria-label="Course preview"]')!;
-    expect([...preview.querySelectorAll('li')].map((item) => item.textContent?.trim())).toEqual([
-      'Syntax',
-      'Types',
-      'Exceptions',
+    expect(groupCard.querySelector('a')).toBeNull();
+
+    const cards = [...section.querySelectorAll<HTMLAnchorElement>('.catalog-course-grid > li > a')];
+    expect(cards.map((card) => card.id)).toEqual(group.courseIds);
+    for (const card of cards) {
+      expect(card.querySelectorAll('a, button, [tabindex]')).toHaveLength(0);
+      expect(card.querySelector('[role="img"]')?.getAttribute('aria-label')).toBe(
+        `${card.id} illustration`,
+      );
+      const title = card.querySelector('h3')!;
+      expect(card.getAttribute('aria-labelledby')).toBe(title.id);
+      expect(card.getAttribute('aria-describedby')).toContain(
+        card.querySelector('.catalog-card-kicker')!.id,
+      );
+      // The card reads drawing, then title, then description; the counts follow as plain meta.
+      expect(
+        [
+          ...card.querySelectorAll(
+            'app-card-scene, h3, .catalog-course-description, .catalog-card-kicker',
+          ),
+        ].map((node) => (node.localName === 'p' ? node.className.split(' ')[0] : node.localName)),
+      ).toEqual(['app-card-scene', 'h3', 'catalog-course-description', 'catalog-card-kicker']);
+      // Drawing words take the shared card text styling, so the title stays the strongest text.
+      expect(card.querySelector('app-card-scene')?.classList).toContain('la-card-scene-card');
+    }
+    // The title colour follows the path (--card-title-color is set on the Learn catalog).
+    expect(harness.routeNativeElement!.querySelector('.learn-catalog-reader')).not.toBeNull();
+    expect(groupCard.querySelector('app-card-scene')?.classList).toContain('la-card-scene-card');
+  });
+
+  it('requests group and course scenes from the app scene assets', async () => {
+    const harness = await RouterTestingHarness.create('/learn');
+    await ready(harness);
+    const requested = TestBed.inject(HttpTestingController)
+      .match(() => true)
+      .map((request) => request.request.url);
+    expect(requested).toContain('/assets/scenes/groups/learn-java-platform.svg');
+    expect(requested).toContain('/assets/scenes/courses/learn-core-java.svg');
+  });
+
+  it('shows initials on a soft background when a course scene is missing', async () => {
+    const harness = await RouterTestingHarness.create('/learn');
+    await ready(harness, [{ ...catalog[0], title: 'Core Java' }, ...catalog.slice(1)]);
+    TestBed.inject(HttpTestingController)
+      .match('/assets/scenes/courses/learn-core-java.svg')
+      .forEach((request) => request.flush('missing', { status: 404, statusText: 'Not Found' }));
+    harness.detectChanges();
+    const scene = harness.routeNativeElement!.querySelector<HTMLElement>(
+      '#core-java .la-card-scene',
+    )!;
+    expect(scene.dataset['state']).toBe('failed');
+    expect(scene.getAttribute('aria-label')).toBe('Core Java illustration');
+    expect(scene.querySelector('.la-card-scene-mark')?.textContent?.trim()).toBe('CJ');
+  });
+
+  it('collects catalog courses outside every group under More to explore', async () => {
+    const harness = await RouterTestingHarness.create('/learn');
+    await ready(harness, [
+      ...catalog,
+      { ...catalog[0], id: 'rust-fundamentals', title: 'Rust Fundamentals' },
     ]);
-    expect(preview.querySelector('a, button, [tabindex], .chip, .pill')).toBeNull();
+    const root = harness.routeNativeElement!;
+    const more = root.querySelector<HTMLElement>('#learn-group-more')!;
+    expect(more.querySelector('h2')?.textContent?.trim()).toBe('More to explore');
+    expect(
+      [...more.querySelectorAll('a.course-card')].map((card) => card.getAttribute('href')),
+    ).toEqual(['/learn/rust-fundamentals']);
+    expect(root.querySelector('.catalog-jump-nav a[href="/learn?group=more"]')).not.toBeNull();
+    expect(root.querySelectorAll('.catalog-path-section')).toHaveLength(
+      LEARN_COURSE_GROUPS.length + 1,
+    );
   });
 
   it('opens the course overview instead of a direct entry lesson', async () => {
@@ -222,7 +291,9 @@ describe('Learn catalog', () => {
     await ready(harness);
     const card = harness.routeNativeElement!.querySelector<HTMLAnchorElement>('#sorting-searching');
     expect(card?.getAttribute('href')).toBe('/learn/sorting-searching');
-    expect(card?.textContent).toContain('Explore course');
+    expect(
+      card?.querySelector(`#${card.getAttribute('aria-labelledby')}`)?.textContent?.trim(),
+    ).toBe('sorting-searching');
   });
 
   it('does not invent course cards when a deployment catalog lacks a course', async () => {

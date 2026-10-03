@@ -34,6 +34,24 @@
         <a class="panel-action panel-explore" [routerLink]="'/' + path.id"
           >Explore all {{ path.label }}</a
         >
+        <p class="panel-tagline">
+          <span class="panel-tagline-pill"
+            ><strong class="panel-tagline-head">{{ taglines[path.id].headline }}</strong>
+            <span class="panel-tagline-sub"
+              ><span class="panel-tagline-ai"
+                ><svg
+                  class="panel-tagline-sparkles"
+                  viewBox="-1 -1 26 26"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <path [attr.d]="aiSparkles" /></svg
+                >{{ aiLabel }}</span
+              >
+              {{ taglines[path.id].ai }} {{ taglines[path.id].you }}</span
+            ></span
+          >
+        </p>
         <button
           class="panel-action panel-close navigation-utility"
           type="button"

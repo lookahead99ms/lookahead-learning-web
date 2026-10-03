@@ -34,7 +34,7 @@ export const representativeRoutes = [
 
 export const cacheSaturationProblems = [
   [
-    'Graph Traversal, Ordering, and Shortest Paths',
+    'Graph Traversal',
     '/learn/algorithmic-patterns/dsa-catalog-open-the-lock',
     'Open the Lock',
   ],
@@ -45,17 +45,17 @@ export const cacheSaturationProblems = [
     'Partition to K Equal Sum Subsets',
   ],
   [
-    'Trie and Prefix Search Patterns',
+    'Tries and Prefix Search',
     '/learn/algorithmic-patterns/dsa-catalog-stream-of-characters',
     'Stream of Characters',
   ],
   [
-    'Graph Traversal, Ordering, and Shortest Paths',
+    'Graph Traversal',
     '/learn/algorithmic-patterns/dsa-catalog-word-ladder',
     'Word Ladder',
   ],
   [
-    'Graph Traversal, Ordering, and Shortest Paths',
+    'Graph Traversal',
     '/learn/algorithmic-patterns/dsa-catalog-escape-the-spreading-fire',
     'Escape the Spreading Fire',
   ],
@@ -65,7 +65,7 @@ export const cacheSaturationProblems = [
     'Valid Sudoku',
   ],
   [
-    'Trie and Prefix Search Patterns',
+    'Tries and Prefix Search',
     '/learn/algorithmic-patterns/dsa-catalog-search-suggestions-system',
     'Search Suggestions System',
   ],
@@ -902,13 +902,13 @@ async function captureReport(options) {
     await harness.setEnvironment();
     await harness.navigate('/learn/hands-on-dsa', 'Problem library', { clearCache: true });
     const coldDetail = await harness.clickLink({
-      groupText: 'Graph Traversal, Ordering, and Shortest Paths',
+      groupText: 'Graph Traversal',
       href: '/learn/algorithmic-patterns/dsa-catalog-open-the-lock',
       readyText: 'Open the Lock',
     });
     await harness.clickLink({ href: '/learn/hands-on-dsa', readyText: 'Problem library' });
     const warmDetail = await harness.clickLink({
-      groupText: 'Graph Traversal, Ordering, and Shortest Paths',
+      groupText: 'Graph Traversal',
       href: '/learn/algorithmic-patterns/dsa-catalog-open-the-lock',
       readyText: 'Open the Lock',
     });
@@ -926,7 +926,7 @@ async function captureReport(options) {
     }
     const saturatedHeap = await harness.collectHeap();
     await harness.clickLink({
-      groupText: 'Graph Traversal, Ordering, and Shortest Paths',
+      groupText: 'Graph Traversal',
       href: '/learn/algorithmic-patterns/dsa-catalog-open-the-lock',
       readyText: 'Open the Lock',
     });
@@ -938,7 +938,7 @@ async function captureReport(options) {
     const cycleNetworks = [];
     for (let cycle = 0; cycle < options.cycles; cycle += 1) {
       const opened = await harness.clickLink({
-        groupText: 'Graph Traversal, Ordering, and Shortest Paths',
+        groupText: 'Graph Traversal',
         href: '/learn/algorithmic-patterns/dsa-catalog-open-the-lock',
         readyText: 'Open the Lock',
       });

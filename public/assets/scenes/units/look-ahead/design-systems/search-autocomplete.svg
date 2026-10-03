@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" class="search-autocomplete-root" role="img" aria-label="Typing b, r, i, g shows a list of suggestions that all start with brig, while a removed term is never shown.">
+<style>
+.search-autocomplete-root text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.search-autocomplete-t{fill:var(--scene-ink,#102a33)}
+.search-autocomplete-tx{fill:var(--scene-text,#28434a)}
+.search-autocomplete-mut{fill:var(--scene-muted,#536970)}
+.search-autocomplete-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.search-autocomplete-soft{fill:var(--scene-accent-soft,#dcefed)}
+.search-autocomplete-acc{fill:var(--scene-accent,#006c73)}
+.search-autocomplete-ln{fill:var(--scene-line,#cfdfdc)}
+.search-autocomplete-cardf{fill:var(--scene-card,#fff)}
+.search-autocomplete-good{fill:var(--scene-good,#1f7a4d)}
+.search-autocomplete-warn{fill:var(--scene-warn,#a15c00)}
+.search-autocomplete-bad{fill:var(--scene-bad,#b3261e)}
+.search-autocomplete-link{fill:var(--scene-link,#245a88)}
+.search-autocomplete-out{fill:var(--scene-bubble-out,#d4ecea)}
+.search-autocomplete-sk{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.search-autocomplete-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.search-autocomplete-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:1.5;stroke-dasharray:3 3}
+.search-autocomplete-a{animation-duration:6s;animation-iteration-count:infinite;animation-delay:-3s}
+.search-autocomplete-l1{animation-name:search-autocomplete-l1}@keyframes search-autocomplete-l1{0%,3%{opacity:0}5%,100%{opacity:1}}
+.search-autocomplete-l2{animation-name:search-autocomplete-l2}@keyframes search-autocomplete-l2{0%,9%{opacity:0}11%,100%{opacity:1}}
+.search-autocomplete-l3{animation-name:search-autocomplete-l3}@keyframes search-autocomplete-l3{0%,15%{opacity:0}17%,100%{opacity:1}}
+.search-autocomplete-l4{animation-name:search-autocomplete-l4}@keyframes search-autocomplete-l4{0%,21%{opacity:0}23%,100%{opacity:1}}
+.search-autocomplete-list{animation-name:search-autocomplete-list}@keyframes search-autocomplete-list{0%,28%{opacity:0;transform:translateY(-6px)}34%,100%{opacity:1;transform:translateY(0)}}
+.search-autocomplete-pick{animation-name:search-autocomplete-pick}@keyframes search-autocomplete-pick{0%,62%{opacity:0}66%,100%{opacity:1}}
+.search-autocomplete-tap{animation-name:search-autocomplete-tap}@keyframes search-autocomplete-tap{0%,52%{opacity:0;transform:translate(16px,16px)}62%,100%{opacity:1;transform:translate(0,0)}}
+.search-autocomplete-block{animation-name:search-autocomplete-block}@keyframes search-autocomplete-block{0%,36%{opacity:0}42%,100%{opacity:1}}
+@media (prefers-reduced-motion: reduce){.search-autocomplete-root *{animation-play-state:paused!important}}
+</style>
+<rect x="8" y="8" width="224" height="32" rx="16" class="search-autocomplete-box"/>
+<circle cx="26" cy="24" r="6" fill="none" stroke="var(--scene-muted,#536970)" stroke-width="2"/><path d="M30.5 28.5 l5 5" stroke="var(--scene-muted,#536970)" stroke-width="2.4" stroke-linecap="round"/>
+<g font-size="17" font-weight="700">
+<text class="search-autocomplete-a search-autocomplete-l1 search-autocomplete-t" x="46" y="30">b</text><text class="search-autocomplete-a search-autocomplete-l2 search-autocomplete-t" x="56" y="30">r</text><text class="search-autocomplete-a search-autocomplete-l3 search-autocomplete-t" x="63" y="30">i</text><text class="search-autocomplete-a search-autocomplete-l4 search-autocomplete-t" x="69" y="30">g</text></g>
+<g class="search-autocomplete-a search-autocomplete-list"><rect x="8" y="46" width="224" height="84" rx="10" class="search-autocomplete-box"/>
+<rect class="search-autocomplete-a search-autocomplete-pick search-autocomplete-soft" x="14" y="52" width="212" height="24" rx="7"/>
+<text x="24" y="70" font-size="15" class="search-autocomplete-tx"><tspan font-weight="700" class="search-autocomplete-t">brig</tspan>hton</text>
+<text x="24" y="94" font-size="15" class="search-autocomplete-tx"><tspan font-weight="700" class="search-autocomplete-t">brig</tspan>ade</text>
+<g class="search-autocomplete-a search-autocomplete-block"><rect x="14" y="102" width="212" height="22" rx="11" fill="none" stroke="var(--scene-bad,#b3261e)" stroke-width="1.3" stroke-dasharray="4 3"/><circle cx="30" cy="113" r="6" fill="none" stroke="var(--scene-bad,#b3261e)" stroke-width="2"/><path d="M26 117 l8 -8" stroke="var(--scene-bad,#b3261e)" stroke-width="2"/><rect x="44" y="110" width="60" height="6" rx="3" class="search-autocomplete-bad" opacity=".5"/></g></g>
+<g class="search-autocomplete-a search-autocomplete-tap"><path d="M150 56 l0 18 l5 -5 l4 8.5 l3.4 -1.6 l-4 -8.5 l7 0z" class="search-autocomplete-t" stroke="var(--scene-card,#fff)" stroke-width="1.2"/></g>
+</svg>

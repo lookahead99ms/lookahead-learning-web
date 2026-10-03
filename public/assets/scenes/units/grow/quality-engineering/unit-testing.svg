@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A stand-in feeds a real rule, a fixed clock, and the test passes">
+<style>
+.grow-quality-engineering-unit-testing-bg{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc)}
+.grow-quality-engineering-unit-testing-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33);text-anchor:middle}
+.grow-quality-engineering-unit-testing-ghost{fill:none;stroke:var(--scene-muted,#536970);stroke-width:2;stroke-dasharray:5 4}
+.grow-quality-engineering-unit-testing-rule{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-accent,#006c73);stroke-width:2.5}
+.grow-quality-engineering-unit-testing-bar{fill:var(--scene-accent,#006c73)}
+.grow-quality-engineering-unit-testing-ln{stroke:var(--scene-line,#cfdfdc);stroke-width:2.5;stroke-dasharray:4 4}
+.grow-quality-engineering-unit-testing-clk{fill:var(--scene-card,#fff);stroke:var(--scene-ink,#102a33);stroke-width:2.5}
+.grow-quality-engineering-unit-testing-hand{stroke:var(--scene-ink,#102a33);stroke-width:2.5;stroke-linecap:round}
+.grow-quality-engineering-unit-testing-dot{fill:var(--scene-ahead,#2f6fb3)}
+.grow-quality-engineering-unit-testing-ok{fill:var(--scene-good,#1f7a4d)}
+.grow-quality-engineering-unit-testing-tick{fill:none;stroke:#fff;stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+.grow-quality-engineering-unit-testing-a{0%{transform:translateX(0);opacity:0}5%{opacity:1}20%{transform:translateX(30px);opacity:1}25%,100%{transform:translateX(30px);opacity:0}}
+@keyframes grow-quality-engineering-unit-testing-b{0%,25%{transform:translateX(0);opacity:0}30%{opacity:1}42%{transform:translateX(38px);opacity:1}46%,100%{transform:translateX(38px);opacity:0}}
+@keyframes grow-quality-engineering-unit-testing-c{0%,40%{transform:scale(0);opacity:0}47%{transform:scale(1.2);opacity:1}52%,94%{transform:scale(1);opacity:1}100%{transform:scale(0);opacity:0}}
+</style>
+<rect class="grow-quality-engineering-unit-testing-bg" x="1" y="1" width="318" height="178" rx="12"/>
+<circle class="grow-quality-engineering-unit-testing-clk" cx="170" cy="24" r="14"/><line class="grow-quality-engineering-unit-testing-hand" x1="170" y1="24" x2="170" y2="14"/><line class="grow-quality-engineering-unit-testing-hand" x1="170" y1="24" x2="170" y2="14"/>
+<rect class="grow-quality-engineering-unit-testing-ghost" x="20" y="52" width="80" height="56" rx="8"/>
+<text class="grow-quality-engineering-unit-testing-t" x="60" y="86" style="fill:var(--scene-muted,#536970)">?</text>
+<rect class="grow-quality-engineering-unit-testing-rule" x="130" y="50" width="80" height="60" rx="8"/>
+<rect class="grow-quality-engineering-unit-testing-bar" x="142" y="62" width="40" height="7" rx="3"/><rect class="grow-quality-engineering-unit-testing-bar" x="142" y="77" width="56" height="7" rx="3"/><rect class="grow-quality-engineering-unit-testing-bar" x="142" y="92" width="28" height="7" rx="3"/>
+<line class="grow-quality-engineering-unit-testing-ln" x1="100" y1="80" x2="130" y2="80"/><line class="grow-quality-engineering-unit-testing-ln" x1="210" y1="80" x2="248" y2="80"/>
+<circle class="grow-quality-engineering-unit-testing-dot grow-quality-engineering-unit-testing-a" cx="100" cy="80" r="5"/><circle class="grow-quality-engineering-unit-testing-dot grow-quality-engineering-unit-testing-b" cx="210" cy="80" r="5"/>
+<g class="grow-quality-engineering-unit-testing-c"><circle class="grow-quality-engineering-unit-testing-ok" cx="270" cy="80" r="22"/><path class="grow-quality-engineering-unit-testing-tick" d="M259 80l8 8 15-17"/></g>
+<text class="grow-quality-engineering-unit-testing-t" x="60" y="140">Stand-in</text><text class="grow-quality-engineering-unit-testing-t" x="170" y="140">Real rule</text><text class="grow-quality-engineering-unit-testing-t" x="270" y="140">Passes</text>
+</svg>

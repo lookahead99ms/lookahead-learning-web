@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Input 0 is dropped by || but kept by ??">
+<style>
+.learn-javascript-foundations-values-coercion-equality-m{font-family:ui-monospace,Menlo,monospace;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-javascript-foundations-values-coercion-equality-chip{animation:learn-javascript-foundations-values-coercion-equality-move 6s linear infinite;animation-delay:-3.4s}
+@keyframes learn-javascript-foundations-values-coercion-equality-move{0%{transform:translateX(0);opacity:1}35%{transform:translateX(34px);opacity:1}45%,100%{transform:translateX(34px);opacity:0}}
+.learn-javascript-foundations-values-coercion-equality-bad{animation:learn-javascript-foundations-values-coercion-equality-b 6s linear infinite;animation-delay:-3.4s}
+@keyframes learn-javascript-foundations-values-coercion-equality-b{0%,38%{opacity:.45}50%,85%{opacity:1}100%{opacity:.45}}
+.learn-javascript-foundations-values-coercion-equality-ok{animation:learn-javascript-foundations-values-coercion-equality-g 6s linear infinite;animation-delay:-3.4s}
+@keyframes learn-javascript-foundations-values-coercion-equality-g{0%,38%{opacity:.45}55%,90%{opacity:1}100%{opacity:.45}}
+</style>
+<rect width="240" height="135" fill="var(--scene-card,#fff)"/>
+<rect x="6" y="46" width="66" height="40" rx="9" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<text class="learn-javascript-foundations-values-coercion-equality-m" x="39" y="72" text-anchor="middle">size=0</text>
+<path d="M74 66H92L110 32H140M92 66L110 100H140" fill="none" stroke="var(--scene-muted,#536970)" stroke-width="3" stroke-linejoin="round"/>
+<g class="learn-javascript-foundations-values-coercion-equality-chip"><circle cx="86" cy="66" r="11" fill="var(--scene-accent,#006c73)"/><text class="learn-javascript-foundations-values-coercion-equality-m" x="86" y="71" text-anchor="middle" style="fill:#fff">0</text></g>
+<g class="learn-javascript-foundations-values-coercion-equality-bad"><rect x="140" y="12" width="94" height="40" rx="10" fill="var(--scene-card,#fff)" stroke="var(--scene-bad,#b3261e)" stroke-width="3"/>
+<text class="learn-javascript-foundations-values-coercion-equality-m" x="187" y="38" text-anchor="middle" style="fill:var(--scene-bad,#b3261e)">|| 10</text></g>
+<g class="learn-javascript-foundations-values-coercion-equality-ok"><rect x="140" y="80" width="94" height="40" rx="10" fill="var(--scene-card,#fff)" stroke="var(--scene-good,#1f7a4d)" stroke-width="3"/>
+<text class="learn-javascript-foundations-values-coercion-equality-m" x="187" y="106" text-anchor="middle" style="fill:var(--scene-good,#1f7a4d)">?? 0</text></g>
+</svg>

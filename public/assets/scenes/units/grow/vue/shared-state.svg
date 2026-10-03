@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="One store shared by components; switching accounts clears it and drops a stale reply">
+<style>
+.grow-vue-shared-state-t{font:600 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.grow-vue-shared-state-a{animation:grow-vue-shared-state-a 6s step-end infinite;animation-delay:-1.5s}
+.grow-vue-shared-state-b{animation:grow-vue-shared-state-b 6s step-end infinite;animation-delay:-1.5s}
+.grow-vue-shared-state-x{animation:grow-vue-shared-state-x 6s linear infinite;animation-delay:-1.5s}
+.grow-vue-shared-state-d{animation:grow-vue-shared-state-d 6s linear infinite;animation-delay:-1.5s}
+@keyframes grow-vue-shared-state-a{0%,49%{opacity:1}50%,100%{opacity:0}}
+@keyframes grow-vue-shared-state-b{0%,49%{opacity:0}50%,100%{opacity:1}}
+@keyframes grow-vue-shared-state-d{0%{transform:translate(0,0);opacity:0}10%{opacity:1}55%{transform:translate(-40px,-38px);opacity:1}60%,100%{transform:translate(-40px,-38px);opacity:0}}
+@keyframes grow-vue-shared-state-x{0%,52%{opacity:0}56%,85%{opacity:1}90%,100%{opacity:0}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="3"><path d="M160 66L60 112M160 66V112M160 66L260 112"/></g>
+<rect x="115" y="14" width="90" height="52" rx="12" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/>
+<g class="grow-vue-shared-state-a" fill="var(--scene-ahead,#2f6fb3)"><rect x="127" y="28" width="66" height="8" rx="4"/><rect x="127" y="44" width="46" height="8" rx="4"/></g>
+<g class="grow-vue-shared-state-b" fill="var(--scene-grow,#b8457a)"><rect x="127" y="28" width="40" height="8" rx="4"/><rect x="127" y="44" width="66" height="8" rx="4"/></g>
+<g fill="var(--scene-card,#fff)" stroke="var(--scene-link,#245a88)" stroke-width="2.5"><rect x="22" y="112" width="76" height="32" rx="8"/><rect x="122" y="112" width="76" height="32" rx="8"/><rect x="222" y="112" width="76" height="32" rx="8"/></g>
+<g stroke="var(--scene-muted,#536970)" stroke-width="4" stroke-linecap="round"><path d="M36 128h48M136 128h48M236 128h48"/></g>
+<circle class="grow-vue-shared-state-d" cx="262" cy="104" r="6" fill="var(--scene-warn,#a15c00)"/>
+<g class="grow-vue-shared-state-x" stroke="var(--scene-bad,#b3261e)" stroke-width="4" stroke-linecap="round"><path d="M212 60l12 12M224 60l-12 12"/></g>
+<text class="grow-vue-shared-state-t" x="160" y="168" text-anchor="middle">one store, one copy</text>
+</svg>

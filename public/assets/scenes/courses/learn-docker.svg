@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="One layered image is run to start several identical containers">
+<style>
+.learn-docker-t { font-family: system-ui, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.learn-docker-tm { font-family: ui-monospace, Menlo, monospace; fill: var(--scene-text, #28434a); font-weight: 700; }
+.learn-docker-l1 { fill: var(--scene-ahead, #2f6fb3); }
+.learn-docker-l2 { fill: var(--scene-learn, #0f8a8a); }
+.learn-docker-l3 { fill: var(--scene-accent, #006c73); }
+.learn-docker-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-ink, #102a33); stroke-width: 2; }
+.learn-docker-run { fill: var(--scene-good, #1f7a4d); animation: learn-docker-kf-pulse 1.4s ease-in-out infinite; }
+@keyframes learn-docker-kf-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+.learn-docker-c1 { animation: learn-docker-kf-c1 7s infinite; }
+@keyframes learn-docker-kf-c1 { 0%, 10% { opacity: 0; transform: translateX(-24px); } 18%, 88% { opacity: 1; transform: translateX(0); } 94%, 100% { opacity: 0; transform: translateX(0); } }
+.learn-docker-c2 { animation: learn-docker-kf-c2 7s infinite; }
+@keyframes learn-docker-kf-c2 { 0%, 30% { opacity: 0; transform: translateX(-24px); } 38%, 88% { opacity: 1; transform: translateX(0); } 94%, 100% { opacity: 0; transform: translateX(0); } }
+.learn-docker-c3 { animation: learn-docker-kf-c3 7s infinite; }
+@keyframes learn-docker-kf-c3 { 0%, 50% { opacity: 0; transform: translateX(-24px); } 58%, 88% { opacity: 1; transform: translateX(0); } 94%, 100% { opacity: 0; transform: translateX(0); } }
+.learn-docker-c1, .learn-docker-c2, .learn-docker-c3 { animation-delay: -3s; }
+</style>
+<!-- image: stacked layers -->
+<rect class="learn-docker-l1" x="24" y="112" width="100" height="22" rx="4"/>
+<rect class="learn-docker-l2" x="24" y="86" width="100" height="22" rx="4"/>
+<rect class="learn-docker-l3" x="24" y="60" width="100" height="22" rx="4"/>
+<text class="learn-docker-t" x="74" y="160" font-size="16" text-anchor="middle">image</text>
+<!-- run arrow -->
+<path d="M134 97 H170 m-7 -7 l7 7 l-7 7" fill="none" stroke="var(--scene-muted, #536970)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<text class="learn-docker-tm" x="150" y="82" font-size="16" text-anchor="middle">run</text>
+<!-- containers -->
+<g class="learn-docker-c1"><rect class="learn-docker-box" x="186" y="34" width="114" height="34" rx="6"/><rect class="learn-docker-l3" x="196" y="42" width="60" height="5" rx="2"/><rect class="learn-docker-l2" x="196" y="49" width="60" height="5" rx="2"/><rect class="learn-docker-l1" x="196" y="56" width="60" height="5" rx="2"/><circle class="learn-docker-run" cx="284" cy="51" r="6"/></g>
+<g class="learn-docker-c2"><rect class="learn-docker-box" x="186" y="80" width="114" height="34" rx="6"/><rect class="learn-docker-l3" x="196" y="88" width="60" height="5" rx="2"/><rect class="learn-docker-l2" x="196" y="95" width="60" height="5" rx="2"/><rect class="learn-docker-l1" x="196" y="102" width="60" height="5" rx="2"/><circle class="learn-docker-run" cx="284" cy="97" r="6"/></g>
+<g class="learn-docker-c3"><rect class="learn-docker-box" x="186" y="126" width="114" height="34" rx="6"/><rect class="learn-docker-l3" x="196" y="134" width="60" height="5" rx="2"/><rect class="learn-docker-l2" x="196" y="141" width="60" height="5" rx="2"/><rect class="learn-docker-l1" x="196" y="148" width="60" height="5" rx="2"/><circle class="learn-docker-run" cx="284" cy="143" r="6"/></g>
+<text class="learn-docker-t" x="243" y="22" font-size="16" text-anchor="middle">containers</text>
+</svg>

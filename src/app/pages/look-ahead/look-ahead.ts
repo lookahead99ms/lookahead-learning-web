@@ -22,8 +22,8 @@ export class LookAhead {
       'Frame ambiguous systems, defend trade-offs, lead through evidence, and communicate the judgment expected in senior and staff-level interviews.',
     actionsLabel: 'Look Ahead starting points',
     primaryAction: {
-      label: 'Start the system design path',
-      routerLink: '/look-ahead/system-design',
+      label: 'Start the System Design Ladder',
+      routerLink: '/look-ahead/design-fundamentals',
     },
     secondaryActions: [
       {

@@ -1,3 +1,4 @@
+import { HIDDEN_COURSE_IDS } from '../content/hidden-courses';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
@@ -5,7 +6,10 @@ import { of, throwError } from 'rxjs';
 import { CatalogOverviewItem } from '../content/content.models';
 import { ContentService } from '../content/content.service';
 import { LOOK_AHEAD_COURSE_GROUPS } from '../content/look-ahead-course-groups';
-import { catalogQuestionCountDisplay } from '../core/adaptive-catalog/adaptive-catalog';
+import {
+  catalogMonogram,
+  catalogQuestionCountDisplay,
+} from '../core/adaptive-catalog/adaptive-catalog';
 import { Grow } from './grow/grow';
 import { LookAhead } from './look-ahead/look-ahead';
 
@@ -30,9 +34,24 @@ describe('catalog question count display', () => {
   });
 });
 
+describe('catalog scene fallback monogram', () => {
+  it.each([
+    ['Core Java', 'CJ'],
+    ['SQL', 'SQL'],
+    ['Linux', 'L'],
+    ['Node.js', 'N'],
+    ['Lead, Communicate, and Evolve', 'LC'],
+    ['System & Security', 'SS'],
+    ['AI Engineering and AI-Assisted Development', 'AE'],
+    ['', ''],
+  ] as const)('reduces %j to %j', (title, mark) => {
+    expect(catalogMonogram(title)).toBe(mark);
+  });
+});
+
 for (const { path, courseId, component } of [
   { path: 'grow', courseId: 'advanced-java', component: Grow },
-  { path: 'look-ahead', courseId: 'system-design', component: LookAhead },
+  { path: 'look-ahead', courseId: 'resilience-production', component: LookAhead },
 ]) {
   describe(`${path} curriculum counts`, () => {
     async function render(lessonCount: number, questionCount: number) {
@@ -67,9 +86,9 @@ for (const { path, courseId, component } of [
           card.querySelector('.catalog-card-kicker')?.textContent?.replace(/\s+/g, ' ').trim(),
         ).toBe(label);
         expect(card.getAttribute('href')).toBe(`/${path}/${courseId}`);
-        expect(card.textContent).toContain('Contracts');
-        expect(card.textContent).toContain('Recovery');
         expect(card.textContent).not.toContain('26 topics');
+        // The uniform card keeps to scene, title, description and meta: no topic list.
+        expect(card.querySelector('ul, li')).toBeNull();
       },
     );
 
@@ -121,16 +140,102 @@ describe('adaptive Look Ahead catalog', () => {
     expect(root.querySelectorAll('.catalog-jump-nav a')).toHaveLength(
       LOOK_AHEAD_COURSE_GROUPS.length,
     );
-    expect(root.querySelectorAll('.featured-catalog-card')).toHaveLength(1);
-    const featured = root.querySelector<HTMLElement>('#system-design')!;
-    expect(featured.classList.contains('featured-catalog-card')).toBe(true);
-    expect(featured.querySelector('.catalog-featured-label')?.textContent?.trim()).toBe(
-      'Recommended starting point',
+    expect(
+      Array.from(root.querySelectorAll('.featured-catalog-card')).map((card) => card.id),
+    ).toEqual(['design-fundamentals']);
+    expect(
+      root.querySelector('#design-fundamentals .catalog-featured-label')?.textContent?.trim(),
+    ).toBe('New: start here');
+    expect(root.querySelector('.catalog-path-section .catalog-path-title')?.textContent?.trim()).toBe(
+      'System Design Ladder',
+    );
+    const featured = root.querySelector<HTMLElement>('#design-fundamentals')!;
+    expect(featured.querySelectorAll('a')).toHaveLength(0);
+  });
+});
+
+describe('hidden Look Ahead courses', () => {
+  it('stay out of the catalog, its groups, the More to explore section and the counts', async () => {
+    const item = (id: string): CatalogOverviewItem => ({
+      id,
+      title: id,
+      description: id,
+      available: true,
+      lessonCount: 3,
+      questionCount: 7,
+      moduleCount: 1,
+      topicPreview: [],
+      languages: [],
+    });
+    const catalog = [
+      item('design-fundamentals'),
+      item('resilience-production'),
+      ...HIDDEN_COURSE_IDS.map((id) => item(id.split(':')[1])),
+    ];
+    await TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: 'look-ahead', component: LookAhead }]),
+        { provide: ContentService, useValue: { getCatalogOverview: () => of(catalog) } },
+      ],
+    }).compileComponents();
+    const harness = await RouterTestingHarness.create('/look-ahead');
+    const root = harness.routeNativeElement!;
+    for (const id of HIDDEN_COURSE_IDS) {
+      expect(root.querySelector(`#${id.split(':')[1]}`)).toBeNull();
+    }
+    expect(root.textContent).not.toContain('More to explore');
+    expect(root.querySelectorAll('.course-card')).toHaveLength(2);
+    expect(root.querySelectorAll('.catalog-scoreboard > div')[0].querySelector('dt')?.textContent?.trim()).toBe('2');
+  });
+});
+
+describe('planned Look Ahead course', () => {
+  it('renders an unavailable course as a Planned card without a link', async () => {
+    const catalog: CatalogOverviewItem[] = [
+      {
+        id: 'ai-systems-architecture',
+        title: 'AI Systems Architecture',
+        available: true,
+        lessonCount: 2,
+        questionCount: 5,
+        moduleCount: 2,
+        topicPreview: [],
+        languages: [],
+      },
+      {
+        id: 'ai-collaborators',
+        title: 'AI Collaborators',
+        description: 'Work with AI teammates.',
+        available: false,
+        lessonCount: 0,
+        questionCount: 0,
+        moduleCount: 0,
+        topicPreview: [],
+        languages: [],
+      },
+    ];
+    await TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: 'look-ahead', component: LookAhead }]),
+        { provide: ContentService, useValue: { getCatalogOverview: () => of(catalog) } },
+      ],
+    }).compileComponents();
+    const harness = await RouterTestingHarness.create('/look-ahead');
+    const card = harness.routeNativeElement!.querySelector<HTMLElement>('#ai-collaborators')!;
+
+    expect(card.tagName).toBe('ARTICLE');
+    expect(card.classList).toContain('unavailable');
+    expect(card.getAttribute('href')).toBeNull();
+    expect(card.querySelector('.review-status')?.textContent?.trim()).toBe('Planned');
+    expect(card.querySelector('h3')?.textContent?.trim()).toBe('AI Collaborators');
+    expect(card.querySelector('a, [href]')).toBeNull();
+    expect(card.textContent).toContain('Work with AI teammates.');
+    expect(card.querySelector('app-card-scene [role="img"]')?.getAttribute('aria-label')).toBe(
+      'AI Collaborators illustration',
     );
     expect(
-      root.querySelector('#distributed-systems')?.classList.contains('featured-catalog-card'),
-    ).toBe(false);
-    expect(featured.querySelectorAll('.catalog-topic-preview li')).toHaveLength(3);
+      harness.routeNativeElement!.querySelector('#ai-systems-architecture')?.tagName,
+    ).toBe('A');
   });
 });
 

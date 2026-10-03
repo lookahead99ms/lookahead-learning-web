@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 200" role="img" aria-label="Inside the JVM, two threads hold references into the heap; one object group loses its reference and the garbage collector sweeps it away">
+<style>
+.learn-java-platform-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.learn-java-platform-frame { fill: var(--scene-card, #ffffff); stroke: var(--scene-accent, #006c73); stroke-width: 2; }
+.learn-java-platform-heap { fill: var(--scene-accent-soft, #dcefed); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.learn-java-platform-chip { fill: var(--scene-accent, #006c73); }
+.learn-java-platform-chip-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-card, #ffffff); font-weight: 700; }
+.learn-java-platform-sf { fill: var(--scene-card, #ffffff); stroke: var(--scene-muted, #536970); stroke-width: 1.5; }
+.learn-java-platform-sf-top { fill: var(--scene-learn, #0f8a8a); }
+.learn-java-platform-bar { fill: var(--scene-line, #cfdfdc); }
+.learn-java-platform-ref { fill: none; stroke: var(--scene-text, #28434a); stroke-width: 2; }
+.learn-java-platform-obj { fill: var(--scene-learn, #0f8a8a); stroke: var(--scene-card, #ffffff); stroke-width: 2; }
+.learn-java-platform-dead { fill: var(--scene-card, #ffffff); stroke: var(--scene-muted, #536970); stroke-width: 2; stroke-dasharray: 4 3; }
+.learn-java-platform-sweep { stroke: var(--scene-warn, #a15c00); stroke-width: 3; }
+.learn-java-platform-gc { fill: var(--scene-warn, #a15c00); }
+
+.learn-java-platform-push { animation: learn-java-platform-kf-push 6s steps(1) infinite; }
+@keyframes learn-java-platform-kf-push { 0% { opacity: 0; } 30% { opacity: 1; } 80% { opacity: 0; } }
+.learn-java-platform-cut { animation: learn-java-platform-kf-cut 6s infinite; }
+@keyframes learn-java-platform-kf-cut { 0%, 12% { opacity: 1; } 16%, 92% { opacity: 0; } 96%, 100% { opacity: 1; } }
+.learn-java-platform-live { animation: learn-java-platform-kf-live 6s infinite; }
+@keyframes learn-java-platform-kf-live { 0%, 12% { opacity: 1; } 16%, 92% { opacity: 0; } 96%, 100% { opacity: 1; } }
+.learn-java-platform-gone { animation: learn-java-platform-kf-gone 6s infinite; }
+@keyframes learn-java-platform-kf-gone { 0%, 12% { opacity: 0; } 16%, 57% { opacity: 1; } 61%, 100% { opacity: 0; } }
+.learn-java-platform-sweeper { animation: learn-java-platform-kf-sweep 6s linear infinite; }
+@keyframes learn-java-platform-kf-sweep { 0%, 28% { transform: translateX(0); opacity: 0; } 30% { transform: translateX(0); opacity: 1; } 70% { transform: translateX(200px); opacity: 1; } 74%, 100% { transform: translateX(200px); opacity: 0; } }
+
+.learn-java-platform-push, .learn-java-platform-cut, .learn-java-platform-live, .learn-java-platform-gone, .learn-java-platform-sweeper { animation-delay: -3s; }
+</style>
+
+<rect class="learn-java-platform-frame" x="16" y="16" width="448" height="168" rx="14"/>
+<rect class="learn-java-platform-chip" x="30" y="28" width="52" height="26" rx="13"/>
+<text class="learn-java-platform-chip-t" x="56" y="46" font-size="16" text-anchor="middle">JVM</text>
+
+<!-- two thread stacks -->
+<g>
+  <rect class="learn-java-platform-sf" x="34" y="148" width="50" height="22" rx="4"/><rect class="learn-java-platform-bar" x="42" y="157" width="30" height="4" rx="2"/>
+  <rect class="learn-java-platform-sf" x="34" y="122" width="50" height="22" rx="4"/><rect class="learn-java-platform-bar" x="42" y="131" width="24" height="4" rx="2"/>
+  <rect class="learn-java-platform-sf-top" x="34" y="96" width="50" height="22" rx="4"/>
+  <rect class="learn-java-platform-sf" x="96" y="148" width="50" height="22" rx="4"/><rect class="learn-java-platform-bar" x="104" y="157" width="28" height="4" rx="2"/>
+  <rect class="learn-java-platform-sf" x="96" y="122" width="50" height="22" rx="4"/><rect class="learn-java-platform-bar" x="104" y="131" width="32" height="4" rx="2"/>
+  <rect class="learn-java-platform-sf-top learn-java-platform-push" x="96" y="96" width="50" height="22" rx="4"/>
+</g>
+
+<!-- heap -->
+<rect class="learn-java-platform-heap" x="172" y="62" width="276" height="110" rx="10"/>
+<text class="learn-java-platform-t" x="186" y="86" font-size="16">heap</text>
+
+<!-- references from stacks into heap -->
+<path class="learn-java-platform-ref" d="M84 107 C150 107 170 104 236 104"/>
+<path class="learn-java-platform-ref" d="M146 133 C200 140 230 146 280 146"/>
+<path class="learn-java-platform-ref" d="M250 104 L282 146"/>
+<path class="learn-java-platform-ref" d="M250 104 L322 92"/>
+<path class="learn-java-platform-ref" d="M294 146 L340 142"/>
+<g class="learn-java-platform-live"><path class="learn-java-platform-ref" d="M336 92 L374 112"/></g>
+<path class="learn-java-platform-ref" d="M388 112 L414 146" style="stroke-dasharray: 4 3"/>
+
+<!-- live objects -->
+<circle class="learn-java-platform-obj" cx="250" cy="104" r="13"/>
+<circle class="learn-java-platform-obj" cx="294" cy="146" r="13"/>
+<circle class="learn-java-platform-obj" cx="336" cy="92" r="13"/>
+<circle class="learn-java-platform-obj" cx="350" cy="142" r="10"/>
+
+<!-- object group that loses its reference -->
+<g class="learn-java-platform-live">
+  <circle class="learn-java-platform-obj" cx="388" cy="112" r="13"/>
+  <circle class="learn-java-platform-obj" cx="420" cy="148" r="11"/>
+</g>
+<g class="learn-java-platform-gone">
+  <circle class="learn-java-platform-dead" cx="388" cy="112" r="13"/>
+  <circle class="learn-java-platform-dead" cx="420" cy="148" r="11"/>
+  <path d="M349 95 L361 107 M361 95 L349 107" stroke="var(--scene-bad, #b3261e)" stroke-width="3" stroke-linecap="round"/>
+</g>
+
+<!-- GC sweep -->
+<g class="learn-java-platform-sweeper">
+  <line class="learn-java-platform-sweep" x1="232" y1="66" x2="232" y2="168"/>
+  <rect class="learn-java-platform-gc" x="212" y="28" width="40" height="26" rx="13"/>
+  <text class="learn-java-platform-chip-t" x="232" y="46" font-size="16" text-anchor="middle">GC</text>
+</g>
+</svg>

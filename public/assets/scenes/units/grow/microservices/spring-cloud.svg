@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A gateway front door sends requests to ready instances in turn and skips the draining one">
+<style>
+.grow-microservices-spring-cloud-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;text-anchor:middle}
+.grow-microservices-spring-cloud-a{offset-path:path("M118 90 L215 40");animation:grow-microservices-spring-cloud-go 6s linear infinite;animation-delay:-3s}
+.grow-microservices-spring-cloud-b{offset-path:path("M118 90 L215 90");animation:grow-microservices-spring-cloud-go 6s linear infinite;animation-delay:-1s}
+.grow-microservices-spring-cloud-c{offset-path:path("M118 90 L158 124");animation:grow-microservices-spring-cloud-stop 6s linear infinite;animation-delay:-5s}
+.grow-microservices-spring-cloud-d{offset-path:path("M20 90 L108 90");animation:grow-microservices-spring-cloud-go 3s linear infinite;animation-delay:-1.2s}
+@keyframes grow-microservices-spring-cloud-go{0%{offset-distance:0%;opacity:0}10%{opacity:1}85%{opacity:1}100%{offset-distance:100%;opacity:0}}
+@keyframes grow-microservices-spring-cloud-stop{0%{offset-distance:0%;opacity:0}10%{opacity:1}70%{offset-distance:100%;opacity:1}100%{offset-distance:100%;opacity:0}}
+</style>
+<rect width="320" height="180" rx="12" fill="var(--scene-card,#fff)"/>
+<g stroke-width="2" fill="none"><path d="M118 90L215 40" stroke="var(--scene-line,#cfdfdc)"/><path d="M118 90H215" stroke="var(--scene-line,#cfdfdc)"/><path d="M118 90L215 140" stroke="var(--scene-warn,#a15c00)" stroke-dasharray="4 4"/></g>
+<circle cx="14" cy="90" r="6" fill="var(--scene-muted,#536970)"/>
+<path d="M20 90H62" stroke="var(--scene-muted,#536970)" stroke-width="2"/>
+<rect x="62" y="52" width="56" height="76" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/>
+<path d="M78 128V80a12 12 0 0 1 24 0v48z" fill="var(--scene-accent,#006c73)" fill-opacity=".25" stroke="var(--scene-accent,#006c73)" stroke-width="2"/>
+<circle cx="97" cy="104" r="2.5" fill="var(--scene-accent,#006c73)"/>
+<text class="grow-microservices-spring-cloud-t" x="90" y="152" fill="var(--scene-ink,#102a33)">Gateway</text>
+<g stroke-width="2"><rect x="215" y="22" width="90" height="36" rx="8" fill="var(--scene-good,#1f7a4d)" fill-opacity=".15" stroke="var(--scene-good,#1f7a4d)"/>
+<rect x="215" y="72" width="90" height="36" rx="8" fill="var(--scene-good,#1f7a4d)" fill-opacity=".15" stroke="var(--scene-good,#1f7a4d)"/>
+<rect x="215" y="122" width="90" height="36" rx="8" fill="var(--scene-warn,#a15c00)" fill-opacity=".12" stroke="var(--scene-warn,#a15c00)" stroke-dasharray="5 3"/></g>
+<text class="grow-microservices-spring-cloud-t" x="260" y="46" fill="var(--scene-good,#1f7a4d)">Ready</text>
+<path d="M240 92l8 8 16-16" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+<text class="grow-microservices-spring-cloud-t" x="260" y="146" fill="var(--scene-warn,#a15c00)">Draining</text>
+<circle class="grow-microservices-spring-cloud-d" r="5" fill="var(--scene-link,#245a88)"/>
+<circle class="grow-microservices-spring-cloud-a" r="5" fill="var(--scene-link,#245a88)"/>
+<circle class="grow-microservices-spring-cloud-b" r="5" fill="var(--scene-link,#245a88)"/>
+<circle class="grow-microservices-spring-cloud-c" r="5" fill="var(--scene-warn,#a15c00)"/>
+<g><circle cx="190" cy="148" r="9" fill="var(--scene-bad,#b3261e)"/><path d="M186 144l8 8M194 144l-8 8" stroke="var(--scene-card,#fff)" stroke-width="2.5" stroke-linecap="round"/></g>
+</svg>

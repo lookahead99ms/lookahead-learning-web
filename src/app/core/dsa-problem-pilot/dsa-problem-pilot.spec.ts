@@ -6,6 +6,7 @@ import { PatternProblemV1 } from '../../content/content.models';
 import { DsaProblemPilot } from './dsa-problem-pilot';
 import { StudyPlanAccount } from '../../pages/study-plan/study-plan-account';
 import { EXECUTION_FETCH } from '../dsa-run-examples/dsa-execution-client';
+import { ReferenceLanguageService } from '../reference-language';
 
 @Component({
   imports: [DsaProblemPilot],
@@ -547,6 +548,26 @@ describe('DsaProblemPilot mode tabs', () => {
       requestAnimationFrame.mockRestore();
       scrollTo.mockRestore();
     }
+  });
+
+  it('opens the guided debugger in the remembered reference language and remembers a new choice', async () => {
+    await TestBed.configureTestingModule({ imports: [DsaProblemPilot] }).compileComponents();
+    const reference = TestBed.inject(ReferenceLanguageService);
+    reference.selected.set('go');
+    const fixture = TestBed.createComponent(DsaProblemPilot);
+    fixture.componentRef.setInput('problem', twoSumProblem());
+    fixture.componentRef.setInput('entryMode', 'guided');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const root = fixture.nativeElement as HTMLElement;
+    expect(root.querySelector('.guided-trace')?.getAttribute('data-language')).toBe('go');
+    root.querySelectorAll<HTMLButtonElement>('.language-tabs button')[1].click();
+    fixture.detectChanges();
+    expect(root.querySelector('.guided-trace')?.getAttribute('data-language')).toBe('python');
+    // The DSA core Learn lessons read the same choice.
+    expect(reference.selected()).toBe('python');
   });
 
   it('enters and exits Focus without losing debugger state, scrolling the page, or losing focus', async () => {

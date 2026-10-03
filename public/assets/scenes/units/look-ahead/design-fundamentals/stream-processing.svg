@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="A late click lands in the minute it was tapped">
+<style>
+.stream-processing-t{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-ink,#102a33)}
+.stream-processing-mu{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-muted,#536970)}
+.stream-processing-g{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-good,#1f7a4d)}
+.stream-processing-w{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-warn,#a15c00)}
+.stream-processing-b{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-bad,#b3261e)}
+.stream-processing-a{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-accent,#006c73)}
+.stream-processing-mono{font-family:ui-monospace,Menlo,monospace}
+.stream-processing-card{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.stream-processing-soft{fill:var(--scene-accent-soft,#dcefed)}
+.stream-processing-acc{fill:var(--scene-accent,#006c73)}
+.stream-processing-gd{fill:var(--scene-good,#1f7a4d)}
+.stream-processing-wn{fill:var(--scene-warn,#a15c00)}
+.stream-processing-bd{fill:var(--scene-bad,#b3261e)}
+.stream-processing-ink{fill:var(--scene-ink,#102a33)}
+.stream-processing-mf{fill:var(--scene-muted,#536970)}
+.stream-processing-lf{fill:var(--scene-line,#cfdfdc)}
+.stream-processing-cf{fill:var(--scene-card,#fff)}
+.stream-processing-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.stream-processing-sg{fill:none;stroke:var(--scene-good,#1f7a4d);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.stream-processing-sw{fill:none;stroke:var(--scene-warn,#a15c00);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.stream-processing-sb{fill:none;stroke:var(--scene-bad,#b3261e);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.stream-processing-sm{fill:none;stroke:var(--scene-muted,#536970);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.stream-processing-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.stream-processing-si{fill:none;stroke:var(--scene-ink,#102a33);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.stream-processing-late{animation:stream-processing-late 8s -3.2s infinite;}
+@keyframes stream-processing-late{0%,8%{opacity:0;transform:translate(0,0)}12%{opacity:1;transform:translate(0,0)}22%{opacity:1;transform:translate(0,0)}42%{opacity:1;transform:translate(-57px,-26px)}56%,94%{opacity:1;transform:translate(-114px,0)}98%,100%{opacity:0;transform:translate(-114px,0)}}
+.stream-processing-land{animation:stream-processing-land 8s -3.2s infinite;}
+@keyframes stream-processing-land{0%,54%{stroke:var(--scene-line,#cfdfdc)}58%,94%{stroke:var(--scene-good,#1f7a4d)}98%,100%{stroke:var(--scene-line,#cfdfdc)}}
+.stream-processing-lbl{animation:stream-processing-lbl 8s -3.2s infinite;}
+@keyframes stream-processing-lbl{0%,11%{opacity:0}12%,94%{opacity:1}95%,100%{opacity:0}}
+</style>
+<rect class="stream-processing-card stream-processing-land" x="10" y="26" width="104" height="68" rx="10" style="stroke-width:2.5"/><rect class="stream-processing-card" x="126" y="26" width="104" height="68" rx="10"/>
+<circle class="stream-processing-acc" cx="34" cy="72" r="9"/><circle class="stream-processing-acc" cx="60" cy="72" r="9"/><circle class="stream-processing-acc" cx="152" cy="72" r="9"/>
+<g class="stream-processing-late"><circle class="stream-processing-wn" cx="206" cy="72" r="9"/><circle class="stream-processing-sw" style="stroke-width:2" cx="206" cy="72" r="14"/></g>
+<text class="stream-processing-mu" x="62" y="116" font-size="15" font-weight="700" text-anchor="middle">12:00</text>
+<text class="stream-processing-mu" x="178" y="116" font-size="15" font-weight="700" text-anchor="middle">12:01</text>
+
+<g class="stream-processing-lbl"><text class="stream-processing-g" x="120" y="17" font-size="16" font-weight="700" text-anchor="middle">late click ✓</text>
+</g>
+</svg>

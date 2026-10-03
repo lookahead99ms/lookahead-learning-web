@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Transaction A locks a row while transaction B waits; A commits, the lock is released and B updates the row">
+<style>
+.grow-data-access-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.grow-data-access-m { font-family: ui-monospace, Menlo, monospace; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.grow-data-access-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 2; }
+.grow-data-access-soft { fill: var(--scene-accent-soft, #dcefed); }
+.grow-data-access-acc { fill: var(--scene-accent, #006c73); }
+.grow-data-access-ln { fill: var(--scene-line, #cfdfdc); }
+.grow-data-access-mut { fill: var(--scene-muted, #536970); }
+.grow-data-access-good { fill: var(--scene-good, #1f7a4d); }
+.grow-data-access-warn { fill: var(--scene-warn, #a15c00); }
+.grow-data-access-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 2; stroke-dasharray: 4 5; }
+
+.grow-data-access-hdr { fill: var(--scene-accent-soft, #dcefed); }
+.grow-data-access-cellln { fill: var(--scene-muted, #536970); opacity: .45; }
+.grow-data-access-txa { fill: var(--scene-accent-soft, #dcefed); stroke: var(--scene-accent, #006c73); stroke-width: 2; }
+.grow-data-access-txb { fill: var(--scene-card, #ffffff); stroke: var(--scene-link, #245a88); stroke-width: 2; }
+.grow-data-access-rowa { fill: var(--scene-accent, #006c73); animation: grow-data-access-krowa 7s infinite; }
+@keyframes grow-data-access-krowa { 0%, 8% { opacity: 0; } 12%, 60% { opacity: .22; } 64%, 100% { opacity: 0; } }
+.grow-data-access-rowb { fill: var(--scene-link, #245a88); animation: grow-data-access-krowb 7s infinite; }
+@keyframes grow-data-access-krowb { 0%, 66% { opacity: 0; } 70%, 94% { opacity: .22; } 100% { opacity: 0; } }
+.grow-data-access-lock { animation: grow-data-access-klock 7s infinite; }
+@keyframes grow-data-access-klock { 0%, 10% { opacity: 0; transform: translateY(-6px); } 14%, 60% { opacity: 1; transform: translateY(0); } 64%, 100% { opacity: 0; transform: translateY(-6px); } }
+.grow-data-access-shackle { fill: none; stroke: var(--scene-warn, #a15c00); stroke-width: 3; }
+.grow-data-access-body { fill: var(--scene-warn, #a15c00); }
+.grow-data-access-arra { fill: none; stroke: var(--scene-accent, #006c73); stroke-width: 2.5; animation: grow-data-access-karra 7s infinite; }
+@keyframes grow-data-access-karra { 0%, 8% { opacity: 0; } 12%, 60% { opacity: 1; } 64%, 100% { opacity: 0; } }
+.grow-data-access-arrbw { fill: none; stroke: var(--scene-link, #245a88); stroke-width: 2.5; stroke-dasharray: 5 5; animation: grow-data-access-kwait 7s infinite; }
+@keyframes grow-data-access-kwait { 0%, 22% { opacity: 0; } 26%, 64% { opacity: 1; stroke-dashoffset: 0; } 66%, 100% { opacity: 0; } }
+.grow-data-access-arrb { fill: none; stroke: var(--scene-link, #245a88); stroke-width: 2.5; animation: grow-data-access-kgo 7s infinite; }
+@keyframes grow-data-access-kgo { 0%, 64% { opacity: 0; } 68%, 94% { opacity: 1; } 100% { opacity: 0; } }
+.grow-data-access-hg { fill: var(--scene-warn, #a15c00); animation: grow-data-access-kwait 7s infinite; }
+.grow-data-access-commit { animation: grow-data-access-kcommit 7s infinite; }
+@keyframes grow-data-access-kcommit { 0%, 54% { opacity: 0; transform: translateY(4px); } 58%, 94% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; } }
+.grow-data-access-cbg { fill: var(--scene-good, #1f7a4d); }
+.grow-data-access-ct { font-family: ui-monospace, Menlo, monospace; fill: var(--scene-card, #ffffff); font-weight: 700; }
+.grow-data-access-rowa, .grow-data-access-rowb, .grow-data-access-lock, .grow-data-access-arra, .grow-data-access-arrbw, .grow-data-access-arrb, .grow-data-access-hg, .grow-data-access-commit { animation-delay: -3s; }
+</style>
+<!-- table -->
+<rect class="grow-data-access-box" x="104" y="24" width="112" height="132" rx="8"/>
+<path class="grow-data-access-hdr" d="M106 26 H214 V48 H106 Z"/>
+<rect class="grow-data-access-rowa" x="106" y="76" width="108" height="26"/>
+<rect class="grow-data-access-rowb" x="106" y="76" width="108" height="26"/>
+<rect class="grow-data-access-cellln" x="114" y="34" width="26" height="6" rx="3"/><rect class="grow-data-access-cellln" x="152" y="34" width="34" height="6" rx="3"/>
+<rect class="grow-data-access-cellln" x="114" y="59" width="22" height="6" rx="3"/><rect class="grow-data-access-cellln" x="152" y="59" width="40" height="6" rx="3"/>
+<rect class="grow-data-access-cellln" x="114" y="86" width="26" height="6" rx="3"/><rect class="grow-data-access-cellln" x="152" y="86" width="30" height="6" rx="3"/>
+<rect class="grow-data-access-cellln" x="114" y="113" width="20" height="6" rx="3"/><rect class="grow-data-access-cellln" x="152" y="113" width="38" height="6" rx="3"/>
+<rect class="grow-data-access-cellln" x="114" y="138" width="24" height="6" rx="3"/><rect class="grow-data-access-cellln" x="152" y="138" width="32" height="6" rx="3"/>
+<path class="grow-data-access-ln" d="M106 74 H214 V75 H106 Z M106 102 H214 V103 H106 Z M106 128 H214 V129 H106 Z"/>
+<!-- lock on the row -->
+<g class="grow-data-access-lock"><path class="grow-data-access-shackle" d="M196 84 V80 A6 6 0 0 1 208 80 V84"/><rect class="grow-data-access-body" x="192" y="84" width="20" height="14" rx="3"/></g>
+<!-- Tx A -->
+<rect class="grow-data-access-txa" x="12" y="72" width="64" height="34" rx="17"/>
+<text class="grow-data-access-t" x="44" y="94" font-size="16" text-anchor="middle">Tx A</text>
+<path class="grow-data-access-arra" d="M78 89 H100 M94 83 L100 89 L94 95"/>
+<g class="grow-data-access-commit"><rect class="grow-data-access-cbg" x="10" y="116" width="68" height="26" rx="6"/><text class="grow-data-access-ct" x="44" y="134" font-size="16" text-anchor="middle">COMMIT</text></g>
+<!-- Tx B -->
+<rect class="grow-data-access-txb" x="244" y="72" width="64" height="34" rx="17"/>
+<text class="grow-data-access-t" x="276" y="94" font-size="16" text-anchor="middle">Tx B</text>
+<path class="grow-data-access-arrbw" d="M242 89 H222"/>
+<path class="grow-data-access-arrb" d="M242 89 H220 M226 83 L220 89 L226 95"/>
+<!-- hourglass: B waits -->
+<path class="grow-data-access-hg" d="M268 116 H284 L278 126 L284 136 H268 L274 126 Z"/>
+</svg>

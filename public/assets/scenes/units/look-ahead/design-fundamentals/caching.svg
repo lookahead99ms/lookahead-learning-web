@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Fans read a saved copy of the score; one refresh updates it from the database">
+<style>
+.caching-t{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-ink,#102a33)}
+.caching-b{font-weight:700}
+.caching-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.caching-soft{fill:var(--scene-accent-soft,#dcefed)}
+.caching-acc{fill:var(--scene-accent,#006c73)}
+.caching-warn{fill:var(--scene-warn,#a15c00)}
+.caching-track{fill:var(--scene-line,#cfdfdc)}
+.caching-fan{fill:var(--scene-muted,#536970)}
+@media (prefers-reduced-motion:reduce){[class*="caching-a"]{animation-play-state:paused!important}}
+.caching-ahit{animation:caching-hit 8s infinite;animation-delay:-3s;}
+@keyframes caching-hit{0%{transform:translateX(0);opacity:1}7%{transform:translateX(26px)}14%{transform:translateX(0)}21%{transform:translateX(26px)}28%{transform:translateX(0)}35%{transform:translateX(26px)}42%{transform:translateX(0)}49%{transform:translateX(26px)}56%{transform:translateX(0);opacity:1}60%,100%{transform:translateX(0);opacity:0}}
+.caching-ahit2{animation:caching-hit2 8s infinite;animation-delay:-3s;}
+@keyframes caching-hit2{0%{transform:translateX(26px);opacity:1}7%{transform:translateX(0)}14%{transform:translateX(26px)}21%{transform:translateX(0)}28%{transform:translateX(26px)}35%{transform:translateX(0)}42%{transform:translateX(26px)}49%{transform:translateX(0)}56%{transform:translateX(26px);opacity:1}60%,100%{opacity:0}}
+.caching-amiss{animation:caching-miss 8s infinite;animation-delay:-3s;}
+@keyframes caching-miss{0%,61%{transform:translateX(0);opacity:0}62%{opacity:1}67%{transform:translateX(24px)}72%{transform:translateX(0);opacity:1}74%,100%{opacity:0}}
+.caching-aold{animation:caching-old 8s infinite;animation-delay:-3s;}
+@keyframes caching-old{0%,62%{opacity:1}64%,72%{opacity:.3}73%,100%{opacity:0}}
+.caching-anew{animation:caching-new 8s infinite;animation-delay:-3s;}
+@keyframes caching-new{0%,72%{opacity:0}74%,97%{opacity:1}100%{opacity:0}}
+.caching-aage{animation:caching-age 8s infinite;animation-delay:-3s;transform-box:fill-box;transform-origin:left center;}
+@keyframes caching-age{0%{transform:scaleX(.05)}62%{transform:scaleX(1)}72%{transform:scaleX(1)}74%{transform:scaleX(.05)}100%{transform:scaleX(.4)}}
+.caching-aagec{animation:caching-agec 8s infinite;animation-delay:-3s;}
+@keyframes caching-agec{0%,40%{fill:var(--scene-good,#1f7a4d)}55%,72%{fill:var(--scene-warn,#a15c00)}74%,100%{fill:var(--scene-good,#1f7a4d)}}
+</style>
+<!-- fans -->
+<circle class="caching-fan" cx="16" cy="38" r="7"/><path class="caching-fan" d="M4 56 a12 10 0 0 1 24 0z"/>
+<circle class="caching-fan" cx="16" cy="78" r="7"/><path class="caching-fan" d="M4 96 a12 10 0 0 1 24 0z"/>
+<circle class="caching-acc caching-ahit" cx="38" cy="50" r="5"/>
+<circle class="caching-acc caching-ahit2" cx="38" cy="86" r="5"/>
+<!-- saved copy -->
+<rect x="70" y="22" width="76" height="84" rx="10" class="caching-soft" style="stroke:var(--scene-accent,#006c73);stroke-width:2"/>
+<text class="caching-t caching-b caching-aold" x="108" y="64" font-size="26" text-anchor="middle">1–0</text>
+<text class="caching-t caching-b caching-anew" x="108" y="64" font-size="26" text-anchor="middle">2–0</text>
+<rect x="82" y="84" width="52" height="8" rx="4" class="caching-track"/>
+<rect x="82" y="84" width="52" height="8" rx="4" class="caching-aage caching-aagec"/>
+<circle class="caching-warn caching-amiss" cx="152" cy="64" r="5"/>
+<!-- database -->
+<path d="M180 40 v52 a24 8 0 0 0 48 0 v-52" class="caching-box" style="stroke-width:2;stroke:var(--scene-muted,#536970)"/>
+<ellipse cx="204" cy="40" rx="24" ry="8" class="caching-box" style="stroke-width:2;stroke:var(--scene-muted,#536970)"/>
+<path d="M180 62 a24 8 0 0 0 48 0 M180 80 a24 8 0 0 0 48 0" class="caching-box" style="fill:none;stroke-width:2;stroke:var(--scene-muted,#536970)"/>
+<text class="caching-t caching-b" x="120" y="126" font-size="14" text-anchor="middle">2M fans, 1 refresh</text>
+</svg>

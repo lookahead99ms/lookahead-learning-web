@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Ana saves a new email on two of three copies, and a read of two copies still finds it">
+<style>
+.replication-quorums-t{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-ink,#102a33)}
+.replication-quorums-mu{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-muted,#536970)}
+.replication-quorums-g{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-good,#1f7a4d)}
+.replication-quorums-w{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-warn,#a15c00)}
+.replication-quorums-b{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-bad,#b3261e)}
+.replication-quorums-a{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-accent,#006c73)}
+.replication-quorums-mono{font-family:ui-monospace,Menlo,monospace}
+.replication-quorums-card{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.replication-quorums-soft{fill:var(--scene-accent-soft,#dcefed)}
+.replication-quorums-acc{fill:var(--scene-accent,#006c73)}
+.replication-quorums-gd{fill:var(--scene-good,#1f7a4d)}
+.replication-quorums-wn{fill:var(--scene-warn,#a15c00)}
+.replication-quorums-bd{fill:var(--scene-bad,#b3261e)}
+.replication-quorums-ink{fill:var(--scene-ink,#102a33)}
+.replication-quorums-mf{fill:var(--scene-muted,#536970)}
+.replication-quorums-lf{fill:var(--scene-line,#cfdfdc)}
+.replication-quorums-cf{fill:var(--scene-card,#fff)}
+.replication-quorums-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.replication-quorums-sg{fill:none;stroke:var(--scene-good,#1f7a4d);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.replication-quorums-sw{fill:none;stroke:var(--scene-warn,#a15c00);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.replication-quorums-sb{fill:none;stroke:var(--scene-bad,#b3261e);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.replication-quorums-sm{fill:none;stroke:var(--scene-muted,#536970);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.replication-quorums-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.replication-quorums-si{fill:none;stroke:var(--scene-ink,#102a33);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.replication-quorums-w{animation:replication-quorums-w 8s -3.2s infinite;}
+@keyframes replication-quorums-w{0%,3%{opacity:0}4%,44%{opacity:1}45%,100%{opacity:0}}
+.replication-quorums-wl{animation:replication-quorums-wl 8s -3.2s infinite;}
+@keyframes replication-quorums-wl{0%,7%{opacity:0}8%,44%{opacity:1}45%,100%{opacity:0}}
+.replication-quorums-nw{animation:replication-quorums-nw 8s -3.2s infinite;}
+@keyframes replication-quorums-nw{0%,11%{opacity:0}12%,100%{opacity:1}}
+.replication-quorums-rd{animation:replication-quorums-rd 8s -3.2s infinite;}
+@keyframes replication-quorums-rd{0%,47%{opacity:0}48%,96%{opacity:1}97%,100%{opacity:0}}
+.replication-quorums-rl{animation:replication-quorums-rl 8s -3.2s infinite;}
+@keyframes replication-quorums-rl{0%,47%{opacity:0}48%,72%{opacity:1}73%,100%{opacity:0}}
+.replication-quorums-fl{animation:replication-quorums-fl 8s -3.2s infinite;}
+@keyframes replication-quorums-fl{0%,73%{opacity:0}74%,96%{opacity:1}97%,100%{opacity:0}}
+</style>
+<rect class="replication-quorums-card" x="10" y="34" width="64" height="44" rx="8"/><circle class="replication-quorums-mf" cx="42" cy="56" r="11" style="opacity:.55"/>
+<g class="replication-quorums-nw"><circle class="replication-quorums-acc" cx="42" cy="56" r="11"/><path class="replication-quorums-sa" style="stroke:var(--scene-card,#fff);stroke-width:2.2" d="M36 56 l4 4 l8 -9"/></g>
+<rect class="replication-quorums-card" x="88" y="34" width="64" height="44" rx="8"/><circle class="replication-quorums-mf" cx="120" cy="56" r="11" style="opacity:.55"/>
+<g class="replication-quorums-nw"><circle class="replication-quorums-acc" cx="120" cy="56" r="11"/><path class="replication-quorums-sa" style="stroke:var(--scene-card,#fff);stroke-width:2.2" d="M114 56 l4 4 l8 -9"/></g>
+<rect class="replication-quorums-card" x="166" y="34" width="64" height="44" rx="8"/><circle class="replication-quorums-mf" cx="198" cy="56" r="11" style="opacity:.55"/>
+<g class="replication-quorums-w"><path class="replication-quorums-sa" d="M42 8 V26 M36 20 l6 7 l6 -7"/></g>
+<g class="replication-quorums-w"><path class="replication-quorums-sa" d="M120 8 V26 M114 20 l6 7 l6 -7"/></g>
+<g class="replication-quorums-rd"><rect class="replication-quorums-sg" x="84" y="28" width="150" height="56" rx="10" style="stroke-dasharray:5 4;stroke-width:2.5"/></g>
+<g class="replication-quorums-wl"><text class="replication-quorums-a" x="120" y="112" font-size="16" font-weight="700" text-anchor="middle">Write 2 of 3 ✓</text>
+</g><g class="replication-quorums-rl"><text class="replication-quorums-g" x="120" y="112" font-size="16" font-weight="700" text-anchor="middle">Read 2 of 3</text>
+</g><g class="replication-quorums-fl"><text class="replication-quorums-g" x="120" y="112" font-size="18" font-weight="700" text-anchor="middle">2 + 2 &gt; 3 ✓</text>
+</g>
+</svg>

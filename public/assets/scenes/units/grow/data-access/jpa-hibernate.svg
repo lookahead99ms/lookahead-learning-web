@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" font-family="system-ui, sans-serif">
+<style>
+.grow-data-access-jpa-hibernate-t{font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.grow-data-access-jpa-hibernate-q{animation:grow-data-access-jpa-hibernate-p 4s ease-in-out infinite;opacity:.2}
+@keyframes grow-data-access-jpa-hibernate-p{0%,100%{opacity:.2}20%,40%{opacity:1}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g stroke-width="2" stroke="var(--scene-bad,#b3261e)" fill="none">
+<rect x="14" y="14" width="40" height="64" rx="6" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-ink,#102a33)"/>
+<g stroke="var(--scene-ink,#102a33)"><path d="M20 30h28M20 46h28M20 62h28"/></g>
+<path class="grow-data-access-jpa-hibernate-q" style="animation-delay:-3s" d="M54 24H150"/>
+<path class="grow-data-access-jpa-hibernate-q" style="animation-delay:-2.4s" d="M54 30H150"/>
+<path class="grow-data-access-jpa-hibernate-q" style="animation-delay:-1.8s" d="M54 38H150"/>
+<path class="grow-data-access-jpa-hibernate-q" style="animation-delay:-1.2s" d="M54 46H150"/>
+<path class="grow-data-access-jpa-hibernate-q" style="animation-delay:-.6s" d="M54 54H150"/>
+<path class="grow-data-access-jpa-hibernate-q" style="animation-delay:0s" d="M54 62H150"/>
+</g>
+<g fill="var(--scene-bad,#b3261e)" font-size="16"><rect x="150" y="14" width="156" height="64" rx="8" fill="var(--scene-card,#fff)" stroke="var(--scene-bad,#b3261e)" stroke-width="2"/></g>
+<text x="228" y="52" text-anchor="middle" class="grow-data-access-jpa-hibernate-t" style="font-size:22px;fill:var(--scene-bad,#b3261e)">1 + 20</text>
+<g>
+<rect x="14" y="102" width="40" height="64" rx="6" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<path d="M20 118h28M20 134h28M20 150h28" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<path d="M54 120H150M54 148H150" stroke="var(--scene-good,#1f7a4d)" stroke-width="4" stroke-linecap="round" class="grow-data-access-jpa-hibernate-q" style="animation-delay:-3s"/>
+</g>
+<rect x="150" y="102" width="156" height="64" rx="8" fill="var(--scene-card,#fff)" stroke="var(--scene-good,#1f7a4d)" stroke-width="2"/>
+<text x="228" y="142" text-anchor="middle" class="grow-data-access-jpa-hibernate-t" style="font-size:22px;fill:var(--scene-good,#1f7a4d)">2 queries</text>
+</svg>

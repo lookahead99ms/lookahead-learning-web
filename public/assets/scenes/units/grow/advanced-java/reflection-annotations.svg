@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" font-family="system-ui, sans-serif">
+<style>
+.grow-advanced-java-reflection-annotations-t{font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.grow-advanced-java-reflection-annotations-pl{animation:grow-advanced-java-reflection-annotations-pl 6s ease-in-out infinite;animation-delay:-3s}
+.grow-advanced-java-reflection-annotations-lk{animation:grow-advanced-java-reflection-annotations-lk 6s linear infinite;animation-delay:-3s}
+.grow-advanced-java-reflection-annotations-ok{animation:grow-advanced-java-reflection-annotations-ok 6s linear infinite;animation-delay:-3s}
+@keyframes grow-advanced-java-reflection-annotations-pl{0%{transform:translateX(0)}50%,100%{transform:translateX(22px)}}
+@keyframes grow-advanced-java-reflection-annotations-lk{0%,60%{opacity:1}70%,100%{opacity:0}}
+@keyframes grow-advanced-java-reflection-annotations-ok{0%,55%{opacity:0}70%,100%{opacity:1}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="150" y="22" width="156" height="104" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/>
+<rect x="160" y="34" width="136" height="26" rx="4" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<path d="M150 80h-4v22h4" fill="none"/>
+<rect x="136" y="70" width="30" height="34" rx="5" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/>
+<path d="M166 87h-4" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<g class="grow-advanced-java-reflection-annotations-pl">
+<rect x="16" y="68" width="96" height="38" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-grow,#b8457a)" stroke-width="2.5"/>
+<rect x="24" y="76" width="14" height="22" rx="3" fill="var(--scene-grow,#b8457a)"/>
+<rect x="46" y="80" width="56" height="6" rx="3" fill="var(--scene-line,#cfdfdc)"/>
+<rect x="46" y="92" width="40" height="6" rx="3" fill="var(--scene-line,#cfdfdc)"/>
+</g>
+<text class="grow-advanced-java-reflection-annotations-t" x="228" y="96" text-anchor="middle">editor</text>
+<g transform="translate(228 47)"><rect x="-8" y="-3" width="16" height="12" rx="2" fill="var(--scene-bad,#b3261e)" class="grow-advanced-java-reflection-annotations-lk"/><path d="M-5 -3v-4a5 5 0 0 1 10 0v4" fill="none" stroke="var(--scene-bad,#b3261e)" stroke-width="2.5" class="grow-advanced-java-reflection-annotations-lk"/><path d="M-6 3l4 4 8-9" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="3" stroke-linecap="round" class="grow-advanced-java-reflection-annotations-ok"/></g>
+<text class="grow-advanced-java-reflection-annotations-t" x="64" y="140" text-anchor="middle">plugin</text>
+<g transform="translate(228 150)"><rect x="-70" y="-14" width="140" height="26" rx="13" fill="var(--scene-card,#fff)" stroke="var(--scene-warn,#a15c00)" stroke-width="2"/><text class="grow-advanced-java-reflection-annotations-t" y="4" text-anchor="middle">opens</text></g>
+</svg>

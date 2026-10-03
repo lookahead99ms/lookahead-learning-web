@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 200" role="img" aria-label="Left: an AI model is one component of a system, fed by a document store and called by a service. Right: an engineer asks an AI tool, reads its hint, and makes the decision">
+<style>
+.look-ahead-ai-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.look-ahead-ai-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-ink, #102a33); stroke-width: 2; }
+.look-ahead-ai-aibox { fill: var(--scene-card, #ffffff); stroke: var(--scene-accent, #006c73); stroke-width: 2; }
+.look-ahead-ai-spark { fill: var(--scene-accent, #006c73); }
+.look-ahead-ai-plain { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 400; }
+.look-ahead-ai-div { stroke: var(--scene-line, #cfdfdc); stroke-width: 2; }
+.look-ahead-ai-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 2; }
+.look-ahead-ai-me { fill: var(--scene-ahead, #2f6fb3); stroke: var(--scene-ink, #102a33); stroke-width: 1.6; }
+.look-ahead-ai-dot { fill: var(--scene-accent, #006c73); }
+.look-ahead-ai-flow { animation: look-ahead-ai-kf-flow 6s linear infinite; }
+@keyframes look-ahead-ai-kf-flow { 0% { transform: translate(0, 0); opacity: 0; } 6% { opacity: 1; } 30% { transform: translate(-70px, 0); } 52% { transform: translate(-70px, -64px); } 76% { transform: translate(-150px, -64px); opacity: 1; } 82%, 100% { transform: translate(-150px, -64px); opacity: 0; } }
+.look-ahead-ai-hint { animation: look-ahead-ai-kf-hint 6s infinite; }
+@keyframes look-ahead-ai-kf-hint { 0%, 18% { opacity: 0; } 24%, 100% { opacity: 1; } }
+.look-ahead-ai-pick { animation: look-ahead-ai-kf-pick 6s infinite; }
+@keyframes look-ahead-ai-kf-pick { 0%, 52% { opacity: 0; } 58%, 100% { opacity: 1; } }
+
+.look-ahead-ai-flow, .look-ahead-ai-hint, .look-ahead-ai-pick { animation-delay: -4.2s; }
+</style>
+<path class="look-ahead-ai-div" d="M282 20 V168"/>
+<!-- Build with AI: the model is one part of the architecture. -->
+<g class="look-ahead-ai-flow"><circle class="look-ahead-ai-dot" cx="215" cy="113" r="5"/></g>
+<rect class="look-ahead-ai-box" x="10" y="28" width="62" height="42" rx="7"/><text class="look-ahead-ai-t" x="41" y="55.5" font-size="18" text-anchor="middle">App</text>
+<path class="look-ahead-ai-wire" d="M72 49 H96"/>
+<rect class="look-ahead-ai-box" x="96" y="28" width="98" height="42" rx="7"/><text class="look-ahead-ai-t" x="145" y="55.5" font-size="18" text-anchor="middle">Service</text>
+<path class="look-ahead-ai-wire" d="M145 70 V92"/>
+<rect class="look-ahead-ai-aibox" x="80" y="92" width="130" height="42" rx="7"/><g transform="translate(97 103)"><path class="look-ahead-ai-spark" d="M8.4 3.2 Q9.74 10.26 16.8 11.6 Q9.74 12.94 8.4 20 Q7.06 12.94 0 11.6 Q7.06 10.26 8.4 3.2Z M17.2 -0.2 Q17.74 2.66 20.6 3.2 Q17.74 3.74 17.2 6.6 Q16.66 3.74 13.8 3.2 Q16.66 2.66 17.2 -0.2Z M18 15 Q18.35 16.85 20.2 17.2 Q18.35 17.55 18 19.4 Q17.65 17.55 15.8 17.2 Q17.65 16.85 18 15Z"/></g><text class="look-ahead-ai-t" x="121" y="119.5" font-size="18">AI model</text>
+<path class="look-ahead-ai-wire" d="M210 113 H216"/>
+<path class="look-ahead-ai-box" d="M216 98 V128 A28 7 0 0 0 272 128 V98 Z"/><ellipse class="look-ahead-ai-box" cx="244" cy="98" rx="28" ry="7"/><text class="look-ahead-ai-t" x="244" y="124" font-size="17" text-anchor="middle">Docs</text>
+<text class="look-ahead-ai-t" x="140" y="186" font-size="19" text-anchor="middle">Build with AI</text>
+<!-- Work with AI: the tool gives a hint, the engineer decides. -->
+<g class="look-ahead-ai-hint"><g transform="translate(330 33)"><path class="look-ahead-ai-spark" d="M8.4 3.2 Q9.74 10.26 16.8 11.6 Q9.74 12.94 8.4 20 Q7.06 12.94 0 11.6 Q7.06 10.26 8.4 3.2Z M17.2 -0.2 Q17.74 2.66 20.6 3.2 Q17.74 3.74 17.2 6.6 Q16.66 3.74 13.8 3.2 Q16.66 2.66 17.2 -0.2Z M18 15 Q18.35 16.85 20.2 17.2 Q18.35 17.55 18 19.4 Q17.65 17.55 15.8 17.2 Q17.65 16.85 18 15Z"/></g><text class="look-ahead-ai-t" x="354" y="49.5" font-size="18">AI<tspan class="look-ahead-ai-plain">: a hint</tspan></text></g>
+<circle class="look-ahead-ai-me" cx="326" cy="100" r="12"/><path class="look-ahead-ai-me" d="M304 140 a22 20 0 0 1 44 0 Z"/>
+<rect class="look-ahead-ai-box" x="358" y="104" width="60" height="38" rx="5"/><path class="look-ahead-ai-wire" d="M350 146 H426"/>
+<g class="look-ahead-ai-pick"><circle cx="446" cy="116" r="14" fill="var(--scene-good, #1f7a4d)"/><path d="M439 116 l5 5 l9 -10" fill="none" stroke="var(--scene-card, #ffffff)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text class="look-ahead-ai-t" x="384" y="186" font-size="19" text-anchor="middle">You decide</text>
+</svg>

@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Nilufar and Ruairi swipe right on each other at the same moment, their two hearts fly together into one heart, and a single It's a match! appears while the next profile slides up in each stack">
+<style>
+.dating-matches-t{font-family:system-ui, sans-serif;fill:var(--scene-ink,#102a33)}
+.dating-matches-tx{font-family:system-ui, sans-serif;fill:var(--scene-text,#28434a)}
+.dating-matches-tm{font-family:ui-monospace, Menlo, monospace;fill:var(--scene-ink,#102a33)}
+.dating-matches-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.dating-matches-card{fill:var(--scene-card,#fff)}
+.dating-matches-ink{fill:var(--scene-ink,#102a33)}
+.dating-matches-soft{fill:var(--scene-muted,#536970)}
+.dating-matches-line{fill:var(--scene-line,#cfdfdc)}
+.dating-matches-acc{fill:var(--scene-accent,#006c73)}
+.dating-matches-accsoft{fill:var(--scene-accent-soft,#dcefed)}
+.dating-matches-good{fill:var(--scene-good,#1f7a4d)}
+.dating-matches-bad{fill:var(--scene-bad,#b3261e)}
+.dating-matches-warn{fill:var(--scene-warn,#a15c00)}
+.dating-matches-link{fill:var(--scene-link,#245a88)}
+.dating-matches-a{animation-duration:6s;animation-iteration-count:infinite;animation-delay:-3.2s;animation-timing-function:ease-in-out}
+@media (prefers-reduced-motion: reduce){.dating-matches-a{animation-play-state:paused!important}}
+.dating-matches-swipe{animation-name:dating-matches-swipe;transform-box:fill-box;transform-origin:50% 100%}
+@keyframes dating-matches-swipe{0%,14%{transform:none;opacity:1}30%{transform:translateX(44px) rotate(18deg);opacity:0}92%{transform:translateX(44px) rotate(18deg);opacity:0}100%{transform:none;opacity:1}}
+.dating-matches-hl{animation-name:dating-matches-hl}
+@keyframes dating-matches-hl{0%,18%{opacity:0;transform:none}26%{opacity:1;transform:none}44%{opacity:1;transform:translate(42px,8px)}48%,100%{opacity:0;transform:translate(42px,8px)}}
+.dating-matches-hr{animation-name:dating-matches-hr}
+@keyframes dating-matches-hr{0%,18%{opacity:0;transform:none}26%{opacity:1;transform:none}44%{opacity:1;transform:translate(-42px,8px)}48%,100%{opacity:0;transform:translate(-42px,8px)}}
+.dating-matches-big{animation-name:dating-matches-big;transform-box:fill-box;transform-origin:center}
+@keyframes dating-matches-big{0%,44%{opacity:0;transform:scale(.4)}50%{opacity:1;transform:scale(1.2)}56%,92%{opacity:1;transform:scale(1)}97%,100%{opacity:0;transform:scale(1)}}
+.dating-matches-pill{animation-name:dating-matches-pill}
+@keyframes dating-matches-pill{0%,48%{opacity:0;transform:translateY(6px)}54%,92%{opacity:1;transform:none}97%,100%{opacity:0}}
+.dating-matches-next{animation-name:dating-matches-next}
+@keyframes dating-matches-next{0%,28%{opacity:0}36%,92%{opacity:1}100%{opacity:0}}
+</style>
+<rect x="8" y="4" width="72" height="104" rx="12" class="dating-matches-box"/>
+<text class="dating-matches-t" x="44" y="22" font-size="14" font-weight="700" text-anchor="middle">Nilufar</text>
+<g class="dating-matches-a dating-matches-next"><rect x="17" y="30" width="54" height="68" rx="8" class="dating-matches-line" fill-opacity=".6"/><circle cx="44" cy="56" r="13" class="dating-matches-warn" opacity=".5"/></g>
+<g class="dating-matches-a dating-matches-swipe"><rect x="17" y="30" width="54" height="68" rx="8" class="dating-matches-accsoft" stroke="var(--scene-line,#cfdfdc)"/><circle cx="44" cy="54" r="14" class="dating-matches-link"/><text class="dating-matches-card" x="44" y="59" font-size="14" font-weight="700" text-anchor="middle" font-family="system-ui, sans-serif">R</text><path d="M28 84 h32" stroke="var(--scene-muted,#536970)" stroke-width="3" stroke-linecap="round" opacity=".5"/></g>
+<g class="dating-matches-a dating-matches-hl"><path transform="translate(66 46)" d="M0 3.5 C0 -1 6.5 -1.5 7 3 C7.5 -1.5 14 -1 14 3.5 C14 8 9 10.5 7 13 C5 10.5 0 8 0 3.5Z" class="dating-matches-bad"/></g>
+<rect x="160" y="4" width="72" height="104" rx="12" class="dating-matches-box"/>
+<text class="dating-matches-t" x="196" y="22" font-size="14" font-weight="700" text-anchor="middle">Ruairi</text>
+<g class="dating-matches-a dating-matches-next"><rect x="169" y="30" width="54" height="68" rx="8" class="dating-matches-line" fill-opacity=".6"/><circle cx="196" cy="56" r="13" class="dating-matches-good" opacity=".5"/></g>
+<g class="dating-matches-a dating-matches-swipe"><rect x="169" y="30" width="54" height="68" rx="8" class="dating-matches-accsoft" stroke="var(--scene-line,#cfdfdc)"/><circle cx="196" cy="54" r="14" class="dating-matches-acc"/><text class="dating-matches-card" x="196" y="59" font-size="14" font-weight="700" text-anchor="middle" font-family="system-ui, sans-serif">N</text><path d="M180 84 h32" stroke="var(--scene-muted,#536970)" stroke-width="3" stroke-linecap="round" opacity=".5"/></g>
+<g class="dating-matches-a dating-matches-hr"><path transform="translate(160 46)" d="M0 3.5 C0 -1 6.5 -1.5 7 3 C7.5 -1.5 14 -1 14 3.5 C14 8 9 10.5 7 13 C5 10.5 0 8 0 3.5Z" class="dating-matches-bad"/></g>
+<g transform="translate(120 58)"><g class="dating-matches-a dating-matches-big"><path transform="translate(-14 -13) scale(2)" d="M0 3.5 C0 -1 6.5 -1.5 7 3 C7.5 -1.5 14 -1 14 3.5 C14 8 9 10.5 7 13 C5 10.5 0 8 0 3.5Z" class="dating-matches-bad"/></g></g>
+<g class="dating-matches-a dating-matches-pill"><rect x="62" y="112" width="116" height="20" rx="10" class="dating-matches-acc"/><text class="dating-matches-card" x="120" y="127" font-size="14" font-weight="700" text-anchor="middle" font-family="system-ui, sans-serif">It's a match!</text></g>
+</svg>

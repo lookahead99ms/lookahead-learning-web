@@ -8,6 +8,7 @@ import {
   inject,
   input,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import {
@@ -20,6 +21,7 @@ import {
 import { FocusStudio } from '../focus-studio/focus-studio';
 import { CodingSolutionTabs } from '../coding-solution-tabs/coding-solution-tabs';
 import { GuidedAlgorithmTrace } from '../guided-algorithm-trace/guided-algorithm-trace';
+import { ReferenceLanguageService } from '../reference-language';
 
 @Component({
   selector: 'app-dsa-problem-pilot',
@@ -41,7 +43,13 @@ export class DsaProblemPilot {
   readonly problem = input.required<PatternProblemV1>();
   readonly entryMode = input<'guided' | 'practice'>('practice');
   readonly showProblemHeading = input(true);
-  readonly initialLanguage = input<PatternLanguage>('java');
+  /** Unset: start in the learner's reference language (shared with DSA core Learn lessons; Java by default). */
+  readonly initialLanguage = input<PatternLanguage | undefined>(undefined);
+  private readonly referenceLanguage = inject(ReferenceLanguageService);
+  /** Read once per problem: switching language inside the page must not reset the studio or the trace. */
+  protected readonly startLanguage = computed(
+    () => this.initialLanguage() ?? untracked(() => this.referenceLanguage.selected()),
+  );
   readonly focusStudio = input(false);
   protected readonly studioProblem = computed(() => {
     const problem = this.problem();

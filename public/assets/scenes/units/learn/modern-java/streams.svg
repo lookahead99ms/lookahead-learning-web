@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Items flow on a belt, are filtered, mapped to coins and collected in a basket">
+<style>
+.learn-modern-java-streams-t{font-family:system-ui,sans-serif;font-size:14px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-modern-java-streams-a{animation:learn-modern-java-streams-ka 6s linear infinite;animation-delay:-3s}
+.learn-modern-java-streams-b{animation:learn-modern-java-streams-ka 6s linear infinite;animation-delay:-5s}
+.learn-modern-java-streams-c{animation:learn-modern-java-streams-kc 6s linear infinite;animation-delay:-1s}
+.learn-modern-java-streams-m{animation:learn-modern-java-streams-km 6s linear infinite;animation-delay:-3s}
+.learn-modern-java-streams-n{animation:learn-modern-java-streams-km 6s linear infinite;animation-delay:-5s}
+.learn-modern-java-streams-s{animation:learn-modern-java-streams-ks 6s ease-in-out infinite;animation-delay:-1s}
+@keyframes learn-modern-java-streams-ka{0%{transform:translateX(0);opacity:0}5%{opacity:1}30%{transform:translateX(78px);opacity:1}100%{transform:translateX(78px);opacity:0}}
+@keyframes learn-modern-java-streams-kc{0%{transform:translate(0,0);opacity:0}5%{opacity:1}25%{transform:translate(50px,0);opacity:1}45%{transform:translate(60px,36px);opacity:0}100%{transform:translate(60px,36px);opacity:0}}
+@keyframes learn-modern-java-streams-km{0%,30%{transform:translateX(0);opacity:0}32%{opacity:1}65%{transform:translateX(88px);opacity:1}80%{transform:translateX(88px) translateY(22px);opacity:1}81%,100%{opacity:0;transform:translateX(88px) translateY(22px)}}
+@keyframes learn-modern-java-streams-ks{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+</style>
+<rect width="240" height="135" rx="10" fill="var(--scene-card,#fff)"/>
+<rect x="6" y="66" width="228" height="8" rx="4" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M66 38 L104 38 L92 62 L78 62 Z" fill="var(--scene-link,#245a88)"/>
+<g class="learn-modern-java-streams-s" style="transform-origin:135px 41px"><rect x="118" y="26" width="34" height="30" rx="8" fill="var(--scene-grow,#b8457a)"/>
+<path d="M126 41h18m-6-6l6 6-6 6" stroke="var(--scene-card,#fff)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+<path d="M178 82 L230 82 L225 118 L183 118 Z" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<g class="learn-modern-java-streams-c"><rect x="14" y="60" width="20" height="20" rx="4" fill="var(--scene-bad,#b3261e)"/></g>
+<g class="learn-modern-java-streams-a"><circle cx="24" cy="70" r="9" fill="var(--scene-ahead,#2f6fb3)"/></g>
+<g class="learn-modern-java-streams-b"><circle cx="24" cy="70" r="9" fill="var(--scene-ahead,#2f6fb3)"/></g>
+<g class="learn-modern-java-streams-m"><circle cx="102" cy="70" r="8" fill="var(--scene-warn,#a15c00)"/></g>
+<g class="learn-modern-java-streams-n"><circle cx="102" cy="70" r="8" fill="var(--scene-warn,#a15c00)"/></g>
+<circle cx="194" cy="108" r="7" fill="var(--scene-warn,#a15c00)"/><circle cx="210" cy="108" r="7" fill="var(--scene-warn,#a15c00)"/><circle cx="202" cy="95" r="7" fill="var(--scene-warn,#a15c00)"/>
+<text x="85" y="26" text-anchor="middle" class="learn-modern-java-streams-t">filter</text>
+<text x="135" y="19" text-anchor="middle" class="learn-modern-java-streams-t">map</text>
+<text x="204" y="131" text-anchor="middle" class="learn-modern-java-streams-t">collect</text>
+</svg>
