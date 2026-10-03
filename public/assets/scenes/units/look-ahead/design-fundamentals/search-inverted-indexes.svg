@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="A search reads the product list for each word and shows the products in both">
+<style>
+.search-inverted-indexes-t{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-ink,#102a33)}
+.search-inverted-indexes-mu{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-muted,#536970)}
+.search-inverted-indexes-g{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-good,#1f7a4d)}
+.search-inverted-indexes-w{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-warn,#a15c00)}
+.search-inverted-indexes-b{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-bad,#b3261e)}
+.search-inverted-indexes-a{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-accent,#006c73)}
+.search-inverted-indexes-mono{font-family:ui-monospace,Menlo,monospace}
+.search-inverted-indexes-card{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.search-inverted-indexes-soft{fill:var(--scene-accent-soft,#dcefed)}
+.search-inverted-indexes-acc{fill:var(--scene-accent,#006c73)}
+.search-inverted-indexes-gd{fill:var(--scene-good,#1f7a4d)}
+.search-inverted-indexes-wn{fill:var(--scene-warn,#a15c00)}
+.search-inverted-indexes-bd{fill:var(--scene-bad,#b3261e)}
+.search-inverted-indexes-ink{fill:var(--scene-ink,#102a33)}
+.search-inverted-indexes-mf{fill:var(--scene-muted,#536970)}
+.search-inverted-indexes-lf{fill:var(--scene-line,#cfdfdc)}
+.search-inverted-indexes-cf{fill:var(--scene-card,#fff)}
+.search-inverted-indexes-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.search-inverted-indexes-sg{fill:none;stroke:var(--scene-good,#1f7a4d);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.search-inverted-indexes-sw{fill:none;stroke:var(--scene-warn,#a15c00);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.search-inverted-indexes-sb{fill:none;stroke:var(--scene-bad,#b3261e);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.search-inverted-indexes-sm{fill:none;stroke:var(--scene-muted,#536970);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.search-inverted-indexes-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.search-inverted-indexes-si{fill:none;stroke:var(--scene-ink,#102a33);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.search-inverted-indexes-hl{animation:search-inverted-indexes-hl 8s -3.2s infinite;}
+@keyframes search-inverted-indexes-hl{0%,12%{stroke:none}22%,100%{stroke:var(--scene-accent,#006c73)}}
+.search-inverted-indexes-chip{fill:var(--scene-accent-soft,#dcefed);stroke:none;stroke-width:2.5}
+.search-inverted-indexes-com{animation:search-inverted-indexes-hl 8s -3.2s infinite}
+.search-inverted-indexes-res{animation:search-inverted-indexes-res 8s -3.2s infinite;}
+@keyframes search-inverted-indexes-res{0%,34%{opacity:0;transform:translateY(-8px)}44%,94%{opacity:1;transform:none}98%,100%{opacity:0}}
+.search-inverted-indexes-cf{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-card,#fff)}
+</style>
+<text class="search-inverted-indexes-t" x="6" y="36" font-size="14" font-weight="700" text-anchor="start">wireless</text>
+<text class="search-inverted-indexes-t" x="6" y="72" font-size="14" font-weight="700" text-anchor="start">headphones</text>
+<rect class="search-inverted-indexes-chip search-inverted-indexes-com" x="96" y="18" width="20" height="24" rx="5"/><text class="search-inverted-indexes-t" x="106" y="35" font-size="14" font-weight="700" text-anchor="middle">1</text>
+
+<rect class="search-inverted-indexes-chip" x="142" y="18" width="20" height="24" rx="5"/><text class="search-inverted-indexes-t" x="152" y="35" font-size="14" font-weight="700" text-anchor="middle">3</text>
+
+<rect class="search-inverted-indexes-chip" x="165" y="18" width="20" height="24" rx="5"/><text class="search-inverted-indexes-t" x="175" y="35" font-size="14" font-weight="700" text-anchor="middle">4</text>
+
+<rect class="search-inverted-indexes-chip search-inverted-indexes-com" x="188" y="18" width="20" height="24" rx="5"/><text class="search-inverted-indexes-t" x="198" y="35" font-size="14" font-weight="700" text-anchor="middle">5</text>
+
+<rect class="search-inverted-indexes-chip search-inverted-indexes-com" x="211" y="18" width="20" height="24" rx="5"/><text class="search-inverted-indexes-t" x="221" y="35" font-size="14" font-weight="700" text-anchor="middle">6</text>
+
+<rect class="search-inverted-indexes-chip search-inverted-indexes-com" x="96" y="54" width="20" height="24" rx="5"/><text class="search-inverted-indexes-t" x="106" y="71" font-size="14" font-weight="700" text-anchor="middle">1</text>
+
+<rect class="search-inverted-indexes-chip" x="119" y="54" width="20" height="24" rx="5"/><text class="search-inverted-indexes-t" x="129" y="71" font-size="14" font-weight="700" text-anchor="middle">2</text>
+
+<rect class="search-inverted-indexes-chip search-inverted-indexes-com" x="188" y="54" width="20" height="24" rx="5"/><text class="search-inverted-indexes-t" x="198" y="71" font-size="14" font-weight="700" text-anchor="middle">5</text>
+
+<rect class="search-inverted-indexes-chip search-inverted-indexes-com" x="211" y="54" width="20" height="24" rx="5"/><text class="search-inverted-indexes-t" x="221" y="71" font-size="14" font-weight="700" text-anchor="middle">6</text>
+
+<g class="search-inverted-indexes-res"><rect class="search-inverted-indexes-gd" x="96" y="90" width="20" height="24" rx="5" style="opacity:.9"/><text class="search-inverted-indexes-cf" x="106" y="107" font-size="14" font-weight="700" text-anchor="middle">1</text>
+<rect class="search-inverted-indexes-gd" x="188" y="90" width="20" height="24" rx="5" style="opacity:.9"/><text class="search-inverted-indexes-cf" x="198" y="107" font-size="14" font-weight="700" text-anchor="middle">5</text>
+<rect class="search-inverted-indexes-gd" x="211" y="90" width="20" height="24" rx="5" style="opacity:.9"/><text class="search-inverted-indexes-cf" x="221" y="107" font-size="14" font-weight="700" text-anchor="middle">6</text>
+</g>
+<text class="search-inverted-indexes-g" x="6" y="107" font-size="14" font-weight="700" text-anchor="start">in both</text>
+</svg>

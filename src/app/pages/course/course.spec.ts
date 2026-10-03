@@ -366,4 +366,111 @@ describe('Course learning path', () => {
     expect(intro.textContent).not.toContain('Previous in group');
     expect(intro.textContent).not.toContain('Next in group');
   });
+  it('moves the title into the card banner when the course has unit cards', async () => {
+    const content = TestBed.inject(ContentService) as unknown as Record<string, unknown>;
+    content['getCardScene'] = vi.fn(() => of('<svg xmlns="http://www.w3.org/2000/svg"></svg>'));
+    vi.spyOn(TestBed.inject(ContentService), 'getCourseOutline').mockReturnValue(
+      of({
+        id: 'design-rounds',
+        path: 'look-ahead',
+        title: 'Design Rounds',
+        description: 'Interview practice.',
+        version: '1',
+        layout: 'learning-map',
+        learningUnits: [
+          {
+            id: 'round',
+            title: 'Reservation System',
+            description: 'Round.',
+            theoryModuleId: 'round',
+            practiceModuleId: 'round',
+            card: { summary: 'Hold a seat.' },
+          },
+        ],
+        modules: [{ id: 'round', order: 1, title: 'Round', description: 'Round.' }],
+        questions: [],
+        moduleDetailRefs: [],
+      } as CourseOutline),
+    );
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/look-ahead/design-rounds', Course);
+    const page = harness.routeNativeElement!;
+
+    expect(page.querySelector('.course-page-intro')).toBeNull();
+    expect(page.querySelectorAll('h1').length).toBe(1);
+    expect(page.querySelector('.unit-card-banner h1')?.textContent?.trim()).toBe('Design Rounds');
+    expect(page.querySelector('a.unit-card')).not.toBeNull();
+  });
+
+  it('gives Look Ahead learning-map courses the side nav of every lesson', async () => {
+    const content = TestBed.inject(ContentService) as unknown as Record<string, unknown>;
+    content['getCardScene'] = vi.fn(() => of('<svg xmlns="http://www.w3.org/2000/svg"></svg>'));
+    vi.spyOn(TestBed.inject(ContentService), 'getCourseOutline').mockReturnValue(
+      of({
+        id: 'design-fundamentals',
+        path: 'look-ahead',
+        title: 'Fundamentals',
+        description: 'Building blocks.',
+        version: '1',
+        layout: 'learning-map',
+        learningUnits: ['one', 'two', 'three'].map((id) => ({
+          id,
+          title: `Lesson ${id}`,
+          description: 'Unit.',
+          theoryModuleId: id,
+          card: { summary: 'Summary.' },
+        })),
+        modules: ['one', 'two', 'three'].map((id, index) => ({
+          id,
+          order: index + 1,
+          title: id,
+          description: 'Module.',
+        })),
+        questions: ['one', 'two', 'three'].map((id, index) => ({
+          id: `${id}-lesson`,
+          moduleId: id,
+          order: index + 1,
+          title: `Lesson ${id}`,
+          contentType: 'theory',
+        })),
+        moduleDetailRefs: [],
+      } as unknown as CourseOutline),
+    );
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/look-ahead/design-fundamentals', Course);
+    const page = harness.routeNativeElement!;
+
+    const nav = page.querySelector('app-course-lesson-nav nav')!;
+    expect(nav.getAttribute('aria-label')).toBe('Lessons in Fundamentals');
+    expect(Array.from(nav.querySelectorAll('a')).map((link) => link.getAttribute('href'))).toEqual([
+      '/look-ahead/design-fundamentals/one-lesson',
+      '/look-ahead/design-fundamentals/two-lesson',
+      '/look-ahead/design-fundamentals/three-lesson',
+    ]);
+    expect(page.querySelector('.course-reader.course-reader-with-nav')).not.toBeNull();
+  });
+
+  it('leaves Learn and Grow course pages without the side nav for now', async () => {
+    vi.spyOn(TestBed.inject(ContentService), 'getCourseOutline').mockReturnValue(
+      of({
+        ...javaFoundations,
+        layout: 'learning-map',
+        learningUnits: [
+          {
+            id: 'platform',
+            title: 'Platform',
+            description: 'Unit.',
+            theoryModuleId: 'java-platform',
+          },
+        ],
+      } as CourseOutline),
+    );
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/learn/core-java', Course);
+    const page = harness.routeNativeElement!;
+
+    expect(page.querySelector('app-course-learning-map')).not.toBeNull();
+    expect(page.querySelector('app-course-lesson-nav')).toBeNull();
+    expect(page.querySelector('.course-reader-with-nav')).toBeNull();
+  });
 });

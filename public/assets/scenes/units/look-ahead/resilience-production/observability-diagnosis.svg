@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A trace follows one request across hops and a magnifier finds the slow hop after a deploy">
+<style>
+.look-ahead-resilience-production-observability-diagnosis-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.look-ahead-resilience-production-observability-diagnosis-p{animation:look-ahead-resilience-production-observability-diagnosis-run 6s linear infinite;animation-delay:-3s}
+.look-ahead-resilience-production-observability-diagnosis-m{animation:look-ahead-resilience-production-observability-diagnosis-scan 6s ease-in-out infinite;animation-delay:-3s}
+.look-ahead-resilience-production-observability-diagnosis-h{transform-box:fill-box;transform-origin:center;animation:look-ahead-resilience-production-observability-diagnosis-pulse 1.4s ease-in-out infinite;animation-delay:-.5s}
+@keyframes look-ahead-resilience-production-observability-diagnosis-run{0%{transform:translateX(0)}100%{transform:translateX(240px)}}
+@keyframes look-ahead-resilience-production-observability-diagnosis-scan{0%{transform:translateX(-200px)}50%,85%{transform:translateX(0)}100%{transform:translateX(-200px)}}
+@keyframes look-ahead-resilience-production-observability-diagnosis-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+</style>
+<rect width="320" height="180" rx="10" fill="var(--scene-card,#fff)"/>
+<line x1="40" y1="100" x2="280" y2="100" stroke="var(--scene-line,#cfdfdc)" stroke-width="5" stroke-linecap="round"/>
+<rect x="24" y="84" width="22" height="32" rx="5" fill="var(--scene-ink,#102a33)"/>
+<circle cx="35" cy="110" r="2" fill="var(--scene-card,#fff)"/>
+<circle cx="110" cy="100" r="14" fill="var(--scene-ahead,#2f6fb3)"/>
+<circle cx="190" cy="100" r="14" fill="var(--scene-ahead,#2f6fb3)"/>
+<circle cx="270" cy="100" r="16" fill="var(--scene-bad,#b3261e)" class="look-ahead-resilience-production-observability-diagnosis-h"/>
+<text x="262" y="158" text-anchor="middle" class="look-ahead-resilience-production-observability-diagnosis-t">Slow hop</text>
+<g transform="translate(35,100)"><circle r="6" fill="var(--scene-warn,#a15c00)" class="look-ahead-resilience-production-observability-diagnosis-p"/></g>
+<line x1="190" y1="42" x2="190" y2="82" stroke="var(--scene-grow,#b8457a)" stroke-width="3"/>
+<path d="M190 42 H212 L206 50 L212 58 H190Z" fill="var(--scene-grow,#b8457a)"/>
+<text x="190" y="28" text-anchor="middle" class="look-ahead-resilience-production-observability-diagnosis-t">Deploy</text>
+<text x="70" y="28" text-anchor="middle" class="look-ahead-resilience-production-observability-diagnosis-t">Trace</text>
+<g class="look-ahead-resilience-production-observability-diagnosis-m"><g transform="translate(270,100)">
+<circle r="22" fill="var(--scene-accent-soft,#dcefed)" fill-opacity=".35" stroke="var(--scene-accent,#006c73)" stroke-width="4"/>
+<line x1="16" y1="16" x2="32" y2="32" stroke="var(--scene-accent,#006c73)" stroke-width="6" stroke-linecap="round"/></g></g>
+</svg>

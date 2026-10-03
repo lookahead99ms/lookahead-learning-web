@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label=" Requests hit a cache or spread across shards, one shard hot">
+<style>
+.look-ahead-scalability-performance-caching-partitioning-t{font:600 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.look-ahead-scalability-performance-caching-partitioning-r{animation:look-ahead-scalability-performance-caching-partitioning-go 4s linear infinite}
+.look-ahead-scalability-performance-caching-partitioning-r2{animation-delay:-2s}
+.look-ahead-scalability-performance-caching-partitioning-r3{animation:look-ahead-scalability-performance-caching-partitioning-go2 4s linear infinite;animation-delay:-3s}
+.look-ahead-scalability-performance-caching-partitioning-hot{animation:look-ahead-scalability-performance-caching-partitioning-pulse 2s ease-in-out infinite;animation-delay:-1s}
+@keyframes look-ahead-scalability-performance-caching-partitioning-go{0%{transform:translateX(0);opacity:0}15%{opacity:1}80%{opacity:1}100%{transform:translateX(64px);opacity:0}}
+@keyframes look-ahead-scalability-performance-caching-partitioning-go2{0%{transform:translateX(0);opacity:0}15%{opacity:1}80%{opacity:1}100%{transform:translateX(150px);opacity:0}}
+@keyframes look-ahead-scalability-performance-caching-partitioning-pulse{0%,100%{opacity:1}50%{opacity:.45}}
+</style>
+<rect width="320" height="180" rx="10" fill="var(--scene-card,#fff)"/>
+<rect x="20" y="58" width="22" height="50" rx="5" fill="var(--scene-muted,#536970)"/>
+<rect x="88" y="45" width="70" height="76" rx="10" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<path d="M126 55L110 88H124L118 112L140 78H126Z" fill="var(--scene-warn,#a15c00)"/>
+<g fill="var(--scene-ahead,#2f6fb3)">
+<circle class="look-ahead-scalability-performance-caching-partitioning-r" cx="48" cy="72" r="6"/>
+<circle class="look-ahead-scalability-performance-caching-partitioning-r look-ahead-scalability-performance-caching-partitioning-r2" cx="48" cy="72" r="6"/>
+<circle class="look-ahead-scalability-performance-caching-partitioning-r3" cx="48" cy="96" r="6"/>
+</g>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="2"><path d="M160 96H206M206 40V140M206 40H214M206 90H214M206 140H214"/></g>
+<rect x="216" y="26" width="84" height="28" rx="6" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-learn,#0f8a8a)" stroke-width="2"/>
+<rect class="look-ahead-scalability-performance-caching-partitioning-hot" x="216" y="76" width="84" height="28" rx="6" fill="var(--scene-bad,#b3261e)"/>
+<rect x="216" y="126" width="84" height="28" rx="6" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-learn,#0f8a8a)" stroke-width="2"/>
+<text class="look-ahead-scalability-performance-caching-partitioning-t" x="98" y="144">Cache</text>
+<text class="look-ahead-scalability-performance-caching-partitioning-t" x="218" y="170">Shards</text>
+<text class="look-ahead-scalability-performance-caching-partitioning-t" x="226" y="95" style="fill:var(--scene-card,#fff)">Hot key</text>
+</svg>

@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="The compiler rejects a string passed where a number is expected, then accepts a number">
+<style>
+.learn-typescript-foundations-ed { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.learn-typescript-foundations-code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; fill: var(--scene-ink, #102a33); font-weight: 600; }
+.learn-typescript-foundations-type { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; fill: var(--scene-ahead, #2f6fb3); font-weight: 700; }
+.learn-typescript-foundations-tok { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-weight: 700; fill: var(--scene-card, #ffffff); }
+.learn-typescript-foundations-slot { fill: var(--scene-accent-soft, #dcefed); stroke: var(--scene-ahead, #2f6fb3); stroke-width: 2; stroke-dasharray: 5 4; }
+.learn-typescript-foundations-link { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 1.5; stroke-dasharray: 3 4; }
+.learn-typescript-foundations-str { fill: var(--scene-warn, #a15c00); }
+.learn-typescript-foundations-num { fill: var(--scene-good, #1f7a4d); }
+.learn-typescript-foundations-squig { fill: none; stroke: var(--scene-bad, #b3261e); stroke-width: 2; }
+.learn-typescript-foundations-badbg { fill: var(--scene-bad, #b3261e); }
+.learn-typescript-foundations-goodbg { fill: var(--scene-good, #1f7a4d); }
+.learn-typescript-foundations-mark { fill: none; stroke: var(--scene-card, #ffffff); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
+.learn-typescript-foundations-s { animation: learn-typescript-foundations-s 8s ease-in-out infinite; animation-delay: -3s; }
+.learn-typescript-foundations-n { animation: learn-typescript-foundations-n 8s ease-in-out infinite; animation-delay: -3s; }
+.learn-typescript-foundations-err { animation: learn-typescript-foundations-err 8s steps(1) infinite; animation-delay: -3s; }
+.learn-typescript-foundations-ok { animation: learn-typescript-foundations-ok 8s steps(1) infinite; animation-delay: -3s; }
+@keyframes learn-typescript-foundations-s {
+  0% { transform: translateX(0); opacity: 0; }
+  8% { transform: translateX(0); opacity: 1; }
+  24% { transform: translateX(64px); opacity: 1; }
+  27% { transform: translateX(54px); }
+  30% { transform: translateX(64px); }
+  33% { transform: translateX(56px); }
+  40% { transform: translateX(56px); opacity: 1; }
+  46% { transform: translateX(56px); opacity: 0; }
+  100% { transform: translateX(56px); opacity: 0; }
+}
+@keyframes learn-typescript-foundations-n {
+  0%, 48% { transform: translateX(0); opacity: 0; }
+  54% { transform: translateX(0); opacity: 1; }
+  70% { transform: translateX(108px); opacity: 1; }
+  92% { transform: translateX(108px); opacity: 1; }
+  98% { transform: translateX(108px); opacity: 0; }
+  100% { transform: translateX(108px); opacity: 0; }
+}
+@keyframes learn-typescript-foundations-err { 0% { opacity: 0; } 24% { opacity: 1; } 44% { opacity: 0; } }
+@keyframes learn-typescript-foundations-ok { 0% { opacity: 0; } 70% { opacity: 1; } 94% { opacity: 0; } }
+</style>
+<rect class="learn-typescript-foundations-ed" x="16" y="16" width="288" height="44" rx="8"/>
+<text class="learn-typescript-foundations-code" x="32" y="44" font-size="16">total(price: <tspan class="learn-typescript-foundations-type">number</tspan>)</text>
+<g class="learn-typescript-foundations-err">
+  <path class="learn-typescript-foundations-squig" d="M140 50 q4 -4 8 0 t8 0 t8 0 t8 0 t8 0 t8 0 t8 0"/>
+</g>
+<path class="learn-typescript-foundations-link" d="M168 60 V96"/>
+<rect class="learn-typescript-foundations-slot" x="134" y="100" width="68" height="36" rx="18"/>
+<g class="learn-typescript-foundations-s">
+  <rect class="learn-typescript-foundations-str" x="20" y="100" width="68" height="36" rx="3"/>
+  <text class="learn-typescript-foundations-tok" x="54" y="123" font-size="16" text-anchor="middle">"42"</text>
+</g>
+<g class="learn-typescript-foundations-n">
+  <rect class="learn-typescript-foundations-num" x="26" y="100" width="68" height="36" rx="18"/>
+  <text class="learn-typescript-foundations-tok" x="60" y="123" font-size="16" text-anchor="middle">42</text>
+</g>
+<g class="learn-typescript-foundations-err">
+  <circle class="learn-typescript-foundations-badbg" cx="256" cy="118" r="22"/>
+  <path class="learn-typescript-foundations-mark" d="M247 109 L265 127 M265 109 L247 127"/>
+</g>
+<g class="learn-typescript-foundations-ok">
+  <circle class="learn-typescript-foundations-goodbg" cx="256" cy="118" r="22"/>
+  <path class="learn-typescript-foundations-mark" d="M245 118 L253 126 L268 110"/>
+</g>
+</svg>

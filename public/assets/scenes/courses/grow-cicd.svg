@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="An artifact moves through build, test and release stages, each turning green, and the new version rolls out to more and more traffic">
+<style>
+.grow-cicd-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); }
+.grow-cicd-tm { font-family: ui-monospace, Menlo, monospace; fill: var(--scene-ink, #102a33); }
+.grow-cicd-b { font-weight: 700; }
+.grow-cicd-box { fill: var(--scene-card, #fff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.grow-cicd-soft { fill: var(--scene-accent-soft, #dcefed); }
+.grow-cicd-card { fill: var(--scene-card, #fff); }
+.grow-cicd-acc { fill: var(--scene-accent, #006c73); }
+.grow-cicd-mut { fill: var(--scene-muted, #536970); }
+.grow-cicd-linef { fill: var(--scene-line, #cfdfdc); }
+.grow-cicd-good { fill: var(--scene-good, #1f7a4d); }
+.grow-cicd-bad { fill: var(--scene-bad, #b3261e); }
+.grow-cicd-warn { fill: var(--scene-warn, #a15c00); }
+.grow-cicd-grow { fill: var(--scene-grow, #b8457a); }
+.grow-cicd-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 1.5; }
+.grow-cicd-sacc { fill: none; stroke: var(--scene-accent, #006c73); stroke-width: 2; }
+.grow-cicd-sgood { fill: none; stroke: var(--scene-good, #1f7a4d); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.grow-cicd-scard { fill: none; stroke: var(--scene-card, #fff); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.grow-cicd-sbad { fill: none; stroke: var(--scene-bad, #b3261e); stroke-width: 2; }
+
+.grow-cicd-pkt { animation: grow-cicd-kf-pkt 7s linear infinite; animation-delay: -5.6s; }
+@keyframes grow-cicd-kf-pkt { 0% { transform: translateX(0); opacity: 1; } 15% { transform: translateX(0); } 40% { transform: translateX(100px); } 50% { transform: translateX(100px); } 72% { transform: translateX(200px); opacity: 1; } 78%, 100% { transform: translateX(200px); opacity: 0; } }
+.grow-cicd-ok1 { animation: grow-cicd-kf-ok1 7s infinite; animation-delay: -5.6s; }
+@keyframes grow-cicd-kf-ok1 { 0%, 12% { opacity: 0; } 16%, 96% { opacity: 1; } 100% { opacity: 0; } }
+.grow-cicd-ok2 { animation: grow-cicd-kf-ok2 7s infinite; animation-delay: -5.6s; }
+@keyframes grow-cicd-kf-ok2 { 0%, 42% { opacity: 0; } 46%, 96% { opacity: 1; } 100% { opacity: 0; } }
+.grow-cicd-ok3 { animation: grow-cicd-kf-ok3 7s infinite; animation-delay: -5.6s; }
+@keyframes grow-cicd-kf-ok3 { 0%, 72% { opacity: 0; } 76%, 96% { opacity: 1; } 100% { opacity: 0; } }
+.grow-cicd-roll { animation: grow-cicd-kf-roll 7s ease-in-out infinite; animation-delay: -5.6s; }
+@keyframes grow-cicd-kf-roll { 0%, 74% { width: 0; } 96% { width: 240px; } 100% { width: 0; } }
+</style>
+<path class="grow-cicd-wire" d="M60 70 H260" stroke-width="3"/>
+<!-- stage circles -->
+<circle class="grow-cicd-box" cx="60" cy="70" r="24"/>
+<circle class="grow-cicd-box" cx="160" cy="70" r="24"/>
+<circle class="grow-cicd-box" cx="260" cy="70" r="24"/>
+<g class="grow-cicd-ok1"><circle class="grow-cicd-good" cx="60" cy="70" r="24"/><path class="grow-cicd-scard" d="M50 70 L57 77 L71 63"/></g>
+<g class="grow-cicd-ok2"><circle class="grow-cicd-good" cx="160" cy="70" r="24"/><path class="grow-cicd-scard" d="M150 70 L157 77 L171 63"/></g>
+<g class="grow-cicd-ok3"><circle class="grow-cicd-good" cx="260" cy="70" r="24"/><path class="grow-cicd-scard" d="M250 70 L257 77 L271 63"/></g>
+<!-- artifact -->
+<g class="grow-cicd-pkt"><rect class="grow-cicd-acc" x="48" y="20" width="24" height="20" rx="4"/><path class="grow-cicd-scard" d="M54 30 H66" stroke-width="2"/></g>
+<text class="grow-cicd-t grow-cicd-b" x="60" y="118" font-size="16" text-anchor="middle">build</text>
+<text class="grow-cicd-t grow-cicd-b" x="160" y="118" font-size="16" text-anchor="middle">test</text>
+<text class="grow-cicd-t grow-cicd-b" x="260" y="118" font-size="16" text-anchor="middle">release</text>
+<!-- rollout bar -->
+<rect class="grow-cicd-soft" x="40" y="140" width="240" height="16" rx="8"/>
+<svg x="40" y="140" width="240" height="16"><rect class="grow-cicd-good grow-cicd-roll" x="0" y="0" width="0" height="16" rx="8"/></svg>
+</svg>

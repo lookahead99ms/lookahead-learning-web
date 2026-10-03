@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="An executor runs checks in parallel under a deadline and cancels the rest">
+<style>
+.learn-solid-design-patterns-executors-async-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-solid-design-patterns-executors-async-m{font-family:ui-monospace,Menlo,monospace;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-solid-design-patterns-executors-async-a1{animation:learn-solid-design-patterns-executors-async-p1 6s linear infinite;animation-delay:-4s;transform-box:fill-box;transform-origin:left}
+.learn-solid-design-patterns-executors-async-a2{animation:learn-solid-design-patterns-executors-async-p2 6s linear infinite;animation-delay:-4s;transform-box:fill-box;transform-origin:left}
+.learn-solid-design-patterns-executors-async-a3{animation:learn-solid-design-patterns-executors-async-p3 6s linear infinite;animation-delay:-4s;transform-box:fill-box;transform-origin:left}
+@keyframes learn-solid-design-patterns-executors-async-p1{0%{transform:scaleX(.02)}70%,100%{transform:scaleX(1)}}
+@keyframes learn-solid-design-patterns-executors-async-p2{0%{transform:scaleX(.02)}60%{transform:scaleX(.55)}100%{transform:scaleX(.55)}}
+@keyframes learn-solid-design-patterns-executors-async-p3{0%{transform:scaleX(.02)}55%,100%{transform:scaleX(.45)}}
+.learn-solid-design-patterns-executors-async-a4{animation:learn-solid-design-patterns-executors-async-hand 6s linear infinite;animation-delay:-4s;transform-box:fill-box;transform-origin:bottom center}
+@keyframes learn-solid-design-patterns-executors-async-hand{to{transform:rotate(360deg)}}
+.learn-solid-design-patterns-executors-async-a5{animation:learn-solid-design-patterns-executors-async-can 6s steps(1) infinite;animation-delay:-4s}
+@keyframes learn-solid-design-patterns-executors-async-can{0%,60%{opacity:0}60.1%,100%{opacity:1}}
+
+@media (prefers-reduced-motion:reduce){[class*="learn-solid-design-patterns-executors-async-a"]{animation:none!important}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="10" y="30" width="62" height="120" rx="12" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<text class="learn-solid-design-patterns-executors-async-t" x="41" y="95" text-anchor="middle" style="font-size:16px">Pool</text>
+<g fill="none" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"><path d="M72 50H108"/><path d="M72 90H108"/><path d="M72 130H108"/></g>
+<rect x="108" y="40" width="130" height="20" rx="6" fill="var(--scene-line,#cfdfdc)"/><rect class="learn-solid-design-patterns-executors-async-a1" x="108" y="40" width="130" height="20" rx="6" fill="var(--scene-good,#1f7a4d)"/>
+<rect x="108" y="80" width="130" height="20" rx="6" fill="var(--scene-line,#cfdfdc)"/><rect class="learn-solid-design-patterns-executors-async-a2" x="108" y="80" width="130" height="20" rx="6" fill="var(--scene-ahead,#2f6fb3)"/>
+<rect x="108" y="120" width="130" height="20" rx="6" fill="var(--scene-line,#cfdfdc)"/><rect class="learn-solid-design-patterns-executors-async-a3" x="108" y="120" width="130" height="20" rx="6" fill="var(--scene-grow,#b8457a)"/>
+<g class="learn-solid-design-patterns-executors-async-a5"><rect x="140" y="146" width="96" height="26" rx="13" fill="var(--scene-bad,#b3261e)"/><text class="learn-solid-design-patterns-executors-async-t" x="188" y="164" text-anchor="middle" style="fill:#fff">Cancel</text></g>
+<circle cx="278" cy="70" r="28" fill="var(--scene-card,#fff)" stroke="var(--scene-warn,#a15c00)" stroke-width="4"/>
+<g class="learn-solid-design-patterns-executors-async-a4"><path d="M278 70V50" stroke="var(--scene-warn,#a15c00)" stroke-width="4" stroke-linecap="round"/></g>
+<circle cx="278" cy="70" r="3" fill="var(--scene-warn,#a15c00)"/>
+<text class="learn-solid-design-patterns-executors-async-t" x="278" y="124" text-anchor="middle">Deadline</text>
+</svg>

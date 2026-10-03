@@ -1,8 +1,11 @@
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { DsaProblemV2 } from '../../content/content.models';
 import { FocusStudio } from './focus-studio';
 import { StudioEditor } from './studio-editor';
+import { of } from 'rxjs';
+import { DsaStoryLoader } from '../dsa-story/dsa-story-loader';
+import { ReferenceLanguageService } from '../reference-language';
 
 const sample = {
   schemaVersion: 'dsa-problem/v2',
@@ -167,6 +170,48 @@ describe('production Focus Studio controls', () => {
     );
     expect(root.querySelector('.reference-navigation')?.textContent).toContain(
       'Instruction 2 of 2',
+    );
+  });
+  it('loads the debugger on demand, plays it and steps with arrow keys', async () => {
+    const { fixture, root, click } = await setup();
+    await click('Approach');
+    expect(root.querySelector('app-guided-algorithm-trace')).toBeNull();
+    await click('Open guided debugger');
+    expect(root.querySelector('app-guided-algorithm-trace')).not.toBeNull();
+    const labels = [...root.querySelectorAll('.reference-navigation button')].map((button) =>
+      button.textContent?.trim(),
+    );
+    expect(labels).toEqual(['Previous', 'Play', 'Next', 'Restart']);
+    const status = () => root.querySelector('.reference-navigation [role=status]')?.textContent;
+    const next = root.querySelector<HTMLButtonElement>('[aria-label="Next instruction"]')!;
+    next.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    fixture.detectChanges();
+    expect(status()).toContain('Instruction 2 of 2');
+    next.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+    fixture.detectChanges();
+    expect(status()).toContain('Instruction 1 of 2');
+    // Arrow keys inside a form field keep their normal meaning.
+    root
+      .querySelector('.reference-header select')!
+      .dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    fixture.detectChanges();
+    expect(status()).toContain('Instruction 1 of 2');
+    vi.useFakeTimers();
+    try {
+      await click('Play');
+      expect(root.querySelector('.play-toggle')?.textContent?.trim()).toBe('Pause');
+      vi.advanceTimersByTime(1000);
+      fixture.detectChanges();
+      expect(status()).toContain('Instruction 2 of 2');
+      expect(root.querySelector('.play-toggle')?.textContent?.trim()).toBe('Play');
+    } finally {
+      vi.useRealTimers();
+    }
+    // Lines already executed are dimmed while the current one is highlighted.
+    expect(root.querySelector('app-studio-trace-body .source-line.current')).not.toBeNull();
+    expect(root.querySelector('app-studio-trace-body .source-line.executed')).not.toBeNull();
+    expect(root.querySelector('app-trace-state-panel .explain')?.getAttribute('aria-live')).toBe(
+      'polite',
     );
   });
   it('keeps first visits to other modes answer-hidden', async () => {
@@ -351,6 +396,161 @@ describe('production Focus Studio controls', () => {
       divider.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
       fixture.detectChanges();
       expect(divider.getAttribute('aria-valuenow')).toBe(expected);
+    }
+  });
+});
+
+describe('Option B story in Focus Studio', () => {
+  const story = (problemId: string, fixtureId: string) => ({
+    schemaVersion: 'dsa-story/v1',
+    problemId,
+    fixtureId,
+    approach: { variant: 'Synthetic heap walk.', why: 'Synthetic reason.' },
+    ideas: ['Read the input.', 'Return the result.'],
+    views: [{ id: 'values', kind: 'array', title: 'values', var: 'values' }],
+    variables: ['values'],
+    steps: [
+      { lines: ['start'], say: 'Read {values}.', idea: 0, state: { values: [1, 2] } },
+      { lines: ['end'], say: 'Return 2.', idea: 1, state: { values: [1, 2] }, returns: 2, result: 2 },
+    ],
+  });
+  async function withLoader(value: unknown) {
+    TestBed.configureTestingModule({
+      providers: [{ provide: DsaStoryLoader, useValue: { load: () => of(value) } }],
+    });
+    return setup();
+  }
+
+  it('replaces the visual walkthrough with the story and drops the debugger action', async () => {
+    const { root, click, fixture } = await withLoader(story(sample.id, 'first'));
+    expect(root.querySelector('.studio')?.hasAttribute('data-option-b')).toBe(true);
+    await click('Approach');
+    const debuggerButton = root.querySelector<HTMLButtonElement>('.action-debugger');
+    expect(debuggerButton?.hidden).toBe(true);
+    await click('Visual walkthrough');
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(root.querySelector('.story-panel')?.hasAttribute('hidden')).toBe(false);
+    expect(root.querySelector('.working-grid')?.hasAttribute('hidden')).toBe(true);
+    expect(root.querySelector('.visual-controls')).toBeNull();
+    expect(root.querySelector('app-dsa-story .approach-box')?.textContent).toContain('Synthetic heap walk.');
+    expect(root.querySelector('app-dsa-story .caption')?.textContent?.trim()).toBe('Read [1, 2].');
+    expect(root.querySelectorAll(`[id="${sample.id}-studio-panel-visual"]`)).toHaveLength(1);
+  });
+
+  describe('line-by-line debugger below the story', () => {
+    const settle = async (fixture: { detectChanges(): void; whenStable(): Promise<unknown> }) => {
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+    };
+    async function openStory() {
+      const result = await withLoader(story(sample.id, 'first'));
+      await result.click('Visual walkthrough');
+      await settle(result.fixture);
+      const toggle = result.root.querySelector<HTMLButtonElement>('.story-panel .line-debugger-toggle')!;
+      const body = result.root.querySelector<HTMLElement>('.story-panel .line-debugger-body')!;
+      return { ...result, toggle, body };
+    }
+
+    it('sits below the story, collapsed and not loaded', async () => {
+      const { root, toggle, body } = await openStory();
+      const panel = root.querySelector('.story-panel')!;
+      const parts = Array.from(panel.children).map((child) => child.localName + '.' + child.className);
+      expect(parts.indexOf('app-dsa-story.')).toBeLessThan(parts.indexOf('section.line-debugger'));
+      expect(toggle.localName).toBe('button');
+      expect(toggle.type).toBe('button');
+      expect(toggle.getAttribute('aria-expanded')).toBe('false');
+      expect(toggle.getAttribute('aria-controls')).toBe(body.id);
+      expect(toggle.textContent?.trim()).toBe('Step through the code line by line');
+      expect(toggle.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
+      expect(toggle.querySelector('svg')?.classList).not.toContain('open');
+      expect(body.hidden).toBe(true);
+      expect(root.querySelector('.line-debugger app-guided-algorithm-trace')).toBeNull();
+      expect(
+        root.querySelector('.line-debugger')?.getAttribute('aria-labelledby'),
+      ).toBe(toggle.id);
+    });
+
+    it('opens the shared guided debugger for the same reference solution, and closes it again', async () => {
+      const { root, fixture, toggle, body } = await openStory();
+      toggle.click();
+      await settle(fixture);
+      expect(toggle.getAttribute('aria-expanded')).toBe('true');
+      expect(toggle.textContent?.trim()).toBe('Hide the line-by-line debugger');
+      expect(toggle.querySelector('svg')?.classList).toContain('open');
+      expect(body.hidden).toBe(false);
+      const trace = body.querySelector('app-guided-algorithm-trace .guided-trace');
+      expect(trace).not.toBeNull();
+      expect(trace?.getAttribute('aria-label')).toBe(`${sample.title} guided trace`);
+      expect(body.querySelector('.trace-summary-values')?.textContent).toContain('values = [1,2]');
+      const lines = [...body.querySelectorAll('.source-panel .source-line .line-code')].map((line) =>
+        line.textContent,
+      );
+      expect(lines).toEqual(['read input', 'return result']);
+      // The debugger steps on its own; the story stays where it was.
+      const next = [...body.querySelectorAll<HTMLButtonElement>('.trace-controls button')].find(
+        (button) => button.textContent?.trim() === 'Next',
+      )!;
+      next.click();
+      await settle(fixture);
+      expect(body.querySelector('.step-status')?.textContent).toContain('Step 2 of 2');
+      expect(root.querySelector('app-dsa-story .caption')?.textContent?.trim()).toBe('Read [1, 2].');
+
+      // Closing hides it but keeps its place; focus stays on the toggle.
+      toggle.focus();
+      toggle.click();
+      await settle(fixture);
+      expect(toggle.getAttribute('aria-expanded')).toBe('false');
+      expect(toggle.textContent?.trim()).toBe('Step through the code line by line');
+      expect(body.hidden).toBe(true);
+      expect(document.activeElement).toBe(toggle);
+      toggle.click();
+      await settle(fixture);
+      expect(body.querySelector('.step-status')?.textContent).toContain('Step 2 of 2');
+    });
+
+    it('is a native button, so Enter and Space work and it is in the tab order', async () => {
+      const { toggle } = await openStory();
+      expect(toggle.hasAttribute('tabindex')).toBe(false);
+      expect(toggle.disabled).toBe(false);
+      expect(toggle.closest('h3')).not.toBeNull();
+      // Native buttons turn Enter and Space into a click; the handler is on click.
+      expect(toggle.getAttribute('role')).toBeNull();
+    });
+
+    it('follows the page-wide language and sets it from its own tabs', async () => {
+      const { fixture, toggle, body } = await openStory();
+      const languages = TestBed.inject(ReferenceLanguageService);
+      toggle.click();
+      await settle(fixture);
+      const selectedTab = () =>
+        body.querySelector('.language-tabs [aria-selected="true"]')?.textContent?.trim();
+      expect(selectedTab()).toBe('java');
+
+      languages.select('go');
+      await settle(fixture);
+      expect(selectedTab()).toBe('go');
+      expect(body.querySelector('.guided-trace')?.getAttribute('data-language')).toBe('go');
+
+      [...body.querySelectorAll<HTMLButtonElement>('.language-tabs button')]
+        .find((tab) => tab.textContent?.trim() === 'python')!
+        .click();
+      await settle(fixture);
+      expect(languages.selected()).toBe('python');
+      expect(selectedTab()).toBe('python');
+    });
+  });
+
+  it('keeps the shared walkthrough and debugger without a usable story', async () => {
+    for (const value of [null, story(sample.id, 'missing-fixture'), { schemaVersion: 'other' }]) {
+      TestBed.resetTestingModule();
+      const { root, click } = await withLoader(value);
+      expect(root.querySelector('.studio')?.hasAttribute('data-option-b')).toBe(false);
+      await click('Approach');
+      expect(root.querySelector<HTMLButtonElement>('.action-debugger')?.hidden).toBe(false);
+      expect(root.querySelector('.story-panel')).toBeNull();
+      expect(root.querySelector('.line-debugger')).toBeNull();
     }
   });
 });

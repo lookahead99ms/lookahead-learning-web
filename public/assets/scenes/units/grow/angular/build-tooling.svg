@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="New hashed chunks upload first, index.html switches last, and an old open tab keeps working">
+<style>
+.grow-angular-build-tooling-bg{fill:var(--scene-card,#fff)}
+.grow-angular-build-tooling-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.grow-angular-build-tooling-m{font:700 16px ui-monospace,Menlo,monospace;fill:var(--scene-ink,#102a33)}
+.grow-angular-build-tooling-new{animation:grow-angular-build-tooling-nk 6s linear infinite;animation-delay:-3s}
+.grow-angular-build-tooling-idx{animation:grow-angular-build-tooling-ik 6s step-end infinite;animation-delay:-3s}
+.grow-angular-build-tooling-req{animation:grow-angular-build-tooling-rk 2s ease-in-out infinite}
+.grow-angular-build-tooling-c1{animation:grow-angular-build-tooling-c1k 6s step-end infinite;animation-delay:-3s}
+.grow-angular-build-tooling-c2{animation:grow-angular-build-tooling-c2k 6s step-end infinite;animation-delay:-3s}
+.grow-angular-build-tooling-c3{animation:grow-angular-build-tooling-c3k 6s step-end infinite;animation-delay:-3s}
+@keyframes grow-angular-build-tooling-nk{0%{transform:translateX(0);opacity:0}8%{opacity:1}40%,100%{transform:translateX(108px);opacity:1}}
+@keyframes grow-angular-build-tooling-ik{0%,50%{fill:var(--scene-line,#cfdfdc)}51%,100%{fill:var(--scene-good,#1f7a4d)}}
+@keyframes grow-angular-build-tooling-rk{0%,100%{transform:translateX(0)}50%{transform:translateX(-78px)}}
+@keyframes grow-angular-build-tooling-c1k{0%,10%{opacity:0}11%,95%{opacity:1}100%{opacity:0}}
+@keyframes grow-angular-build-tooling-c2k{0%,50%{opacity:0}51%,95%{opacity:1}100%{opacity:0}}
+@keyframes grow-angular-build-tooling-c3k{0%,66%{opacity:0}67%,95%{opacity:1}100%{opacity:0}}
+</style>
+<rect class="grow-angular-build-tooling-bg" width="320" height="180"/>
+<rect x="10" y="22" width="56" height="64" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/>
+<g fill="var(--scene-accent,#006c73)"><rect x="20" y="34" width="36" height="7" rx="3"/><rect x="20" y="48" width="26" height="7" rx="3"/><rect x="20" y="62" width="32" height="7" rx="3"/></g>
+<rect x="116" y="12" width="96" height="94" rx="10" fill="var(--scene-card,#fff)" stroke="var(--scene-link,#245a88)" stroke-width="2.5"/>
+<g fill="var(--scene-muted,#536970)"><rect x="126" y="22" width="16" height="16" rx="3"/><rect x="126" y="44" width="16" height="16" rx="3"/><rect x="126" y="88" width="16" height="16" rx="3"/></g>
+<g fill="var(--scene-good,#1f7a4d)"><rect class="grow-angular-build-tooling-new" x="68" y="44" width="16" height="16" rx="3"/><rect class="grow-angular-build-tooling-new" x="68" y="66" width="16" height="16" rx="3" style="animation-delay:-2.7s"/></g>
+<rect class="grow-angular-build-tooling-idx" x="148" y="22" width="56" height="16" rx="8"/>
+<g fill="var(--scene-good,#1f7a4d)"><rect x="148" y="44" width="16" height="16" rx="3" opacity="0"/></g>
+<rect x="238" y="22" width="72" height="64" rx="8" fill="var(--scene-card,#fff)" stroke="var(--scene-muted,#536970)" stroke-width="2.5"/>
+<rect x="238" y="22" width="72" height="14" rx="6" fill="var(--scene-muted,#536970)"/><circle cx="274" cy="62" r="11" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="3.5"/><polyline points="268,62 273,67 281,57" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+<g class="grow-angular-build-tooling-req"><circle cx="228" cy="96" r="5" fill="var(--scene-warn,#a15c00)"/></g>
+<line x1="146" y1="96" x2="232" y2="96" stroke="var(--scene-warn,#a15c00)" stroke-width="2" stroke-dasharray="4 4"/>
+<g fill="var(--scene-good,#1f7a4d)"><path class="grow-angular-build-tooling-c1" d="M12 118l5 6 10-12" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><path class="grow-angular-build-tooling-c2" d="M12 140l5 6 10-12" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><path class="grow-angular-build-tooling-c3" d="M12 162l5 6 10-12" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text class="grow-angular-build-tooling-t" x="36" y="125">chunks first</text><text class="grow-angular-build-tooling-t" x="36" y="147">index.html last</text><text class="grow-angular-build-tooling-t" x="36" y="169">old tab still works</text>
+</svg>

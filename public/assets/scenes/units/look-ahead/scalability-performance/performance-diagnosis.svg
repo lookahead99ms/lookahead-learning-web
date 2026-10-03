@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label=" A trace waterfall where a magnifier finds the slowest span">
+<style>
+.look-ahead-scalability-performance-performance-diagnosis-t{font:600 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.look-ahead-scalability-performance-performance-diagnosis-b{transform-box:fill-box;transform-origin:0 50%;animation:look-ahead-scalability-performance-performance-diagnosis-grow 6s ease-out infinite;animation-delay:-3s}
+.look-ahead-scalability-performance-performance-diagnosis-m{animation:look-ahead-scalability-performance-performance-diagnosis-scan 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes look-ahead-scalability-performance-performance-diagnosis-grow{0%{transform:scaleX(0)}40%,100%{transform:scaleX(1)}}
+@keyframes look-ahead-scalability-performance-performance-diagnosis-scan{0%{transform:translateY(-52px)}50%,100%{transform:translateY(0)}}
+</style>
+<rect width="320" height="180" rx="10" fill="var(--scene-card,#fff)"/>
+<path d="M30 20V130H300" fill="none" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<rect class="look-ahead-scalability-performance-performance-diagnosis-b" x="34" y="26" width="40" height="16" rx="4" fill="var(--scene-learn,#0f8a8a)"/>
+<rect class="look-ahead-scalability-performance-performance-diagnosis-b" x="64" y="52" width="36" height="16" rx="4" fill="var(--scene-ahead,#2f6fb3)"/>
+<rect class="look-ahead-scalability-performance-performance-diagnosis-b" x="94" y="78" width="150" height="16" rx="4" fill="var(--scene-bad,#b3261e)"/>
+<rect class="look-ahead-scalability-performance-performance-diagnosis-b" x="238" y="104" width="30" height="16" rx="4" fill="var(--scene-grow,#b8457a)"/>
+<g class="look-ahead-scalability-performance-performance-diagnosis-m" fill="none" stroke="var(--scene-ink,#102a33)" stroke-width="4" stroke-linecap="round">
+<circle cx="170" cy="86" r="26" fill="var(--scene-card,#fff)" fill-opacity=".25"/>
+<path d="M189 105L208 124"/></g>
+<text class="look-ahead-scalability-performance-performance-diagnosis-t" x="34" y="160">Measure</text>
+<text class="look-ahead-scalability-performance-performance-diagnosis-t" x="240" y="160">Slowest</text>
+</svg>

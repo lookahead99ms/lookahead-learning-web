@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Different records enter one generic function and come out as the same type">
+<style>
+.learn-typescript-foundations-generics-constraints-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-typescript-foundations-generics-constraints-belt{animation:learn-typescript-foundations-generics-constraints-belt 6s linear infinite;animation-delay:-3s}
+@keyframes learn-typescript-foundations-generics-constraints-belt{0%{transform:translateX(0)}100%{transform:translateX(120px)}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="0" y="88" width="320" height="8" rx="2" fill="var(--scene-line,#cfdfdc)"/>
+<g class="learn-typescript-foundations-generics-constraints-belt">
+<g id="learn-typescript-foundations-generics-constraints-set"><circle cx="16" cy="72" r="14" fill="var(--scene-learn,#0f8a8a)"/><rect x="46" y="58" width="28" height="28" rx="4" fill="var(--scene-grow,#b8457a)"/><polygon points="90,86 118,86 104,58" fill="var(--scene-ahead,#2f6fb3)"/></g>
+<use href="#learn-typescript-foundations-generics-constraints-set" x="-120"/><use href="#learn-typescript-foundations-generics-constraints-set" x="120"/><use href="#learn-typescript-foundations-generics-constraints-set" x="240"/>
+</g>
+<rect x="116" y="22" width="88" height="104" rx="12" fill="var(--scene-ink,#102a33)"/>
+<text x="160" y="46" text-anchor="middle" font-family="system-ui,sans-serif" font-size="16" font-weight="700" fill="var(--scene-card,#fff)">one code</text>
+<text x="160" y="96" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="34" font-weight="700" fill="var(--scene-card,#fff)">T</text>
+<text x="160" y="158" text-anchor="middle" class="learn-typescript-foundations-generics-constraints-t">same type out</text>
+</svg>

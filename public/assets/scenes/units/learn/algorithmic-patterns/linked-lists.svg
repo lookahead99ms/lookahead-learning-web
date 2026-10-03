@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="linked lists">
+<style>
+.learn-algorithmic-patterns-linked-lists-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}.learn-algorithmic-patterns-linked-lists-w{font:700 16px system-ui,sans-serif;fill:#fff}
+@keyframes learn-algorithmic-patterns-linked-lists-k{0%{transform:translate(0px,0)}12%{transform:translate(0px,0)}24%{transform:translate(76px,0)}36%{transform:translate(76px,0)}48%{transform:translate(152px,0)}60%{transform:translate(152px,0)}72%{transform:translate(228px,0)}94%{transform:translate(228px,0)}100%{transform:translate(0px,0)}}
+.learn-algorithmic-patterns-linked-lists-k{animation:learn-algorithmic-patterns-linked-lists-k 7s ease-in-out infinite;animation-delay:-3.5s;}
+.learn-algorithmic-patterns-linked-lists-bg{fill:var(--scene-card,#fff)}
+</style>
+<rect class="learn-algorithmic-patterns-linked-lists-bg" width="320" height="180" rx="12"/>
+<rect x="18" y="72" width="54" height="36" rx="7" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<line x1="52" y1="72" x2="52" y2="108" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<rect x="27" y="82" width="16" height="16" rx="3" fill="var(--scene-learn,#0f8a8a)"/>
+<circle cx="62" cy="90" r="4" fill="var(--scene-accent,#006c73)"/><path d="M62 90H86" stroke="var(--scene-accent,#006c73)" stroke-width="3"/><path d="M94 90l-8-6v12z" fill="var(--scene-accent,#006c73)"/>
+<rect x="94" y="72" width="54" height="36" rx="7" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<line x1="128" y1="72" x2="128" y2="108" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<rect x="103" y="82" width="16" height="16" rx="3" fill="var(--scene-grow,#b8457a)"/>
+<circle cx="138" cy="90" r="4" fill="var(--scene-accent,#006c73)"/><path d="M138 90H162" stroke="var(--scene-accent,#006c73)" stroke-width="3"/><path d="M170 90l-8-6v12z" fill="var(--scene-accent,#006c73)"/>
+<rect x="170" y="72" width="54" height="36" rx="7" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<line x1="204" y1="72" x2="204" y2="108" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<rect x="179" y="82" width="16" height="16" rx="3" fill="var(--scene-ahead,#2f6fb3)"/>
+<circle cx="214" cy="90" r="4" fill="var(--scene-accent,#006c73)"/><path d="M214 90H238" stroke="var(--scene-accent,#006c73)" stroke-width="3"/><path d="M246 90l-8-6v12z" fill="var(--scene-accent,#006c73)"/>
+<rect x="246" y="72" width="54" height="36" rx="7" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<line x1="280" y1="72" x2="280" y2="108" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<rect x="255" y="82" width="16" height="16" rx="3" fill="var(--scene-warn,#a15c00)"/>
+<circle cx="290" cy="90" r="4" fill="var(--scene-muted,#536970)"/>
+<text class="learn-algorithmic-patterns-linked-lists-t" x="45" y="62" text-anchor="middle">head</text>
+<text class="learn-algorithmic-patterns-linked-lists-t" x="154" y="126" text-anchor="middle">next</text>
+<text class="learn-algorithmic-patterns-linked-lists-t" x="273" y="126" text-anchor="middle">null</text>
+<g class="learn-algorithmic-patterns-linked-lists-k"><path d="M45 148v-24l-8 8m8-8l8 8" stroke="var(--scene-bad,#b3261e)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" transform="translate(0,0)"/><circle cx="45" cy="156" r="8" fill="var(--scene-bad,#b3261e)"/></g>
+<text class="learn-algorithmic-patterns-linked-lists-t" x="160" y="26" text-anchor="middle">follow the pointers</text>
+</svg>

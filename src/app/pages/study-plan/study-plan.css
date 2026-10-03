@@ -1797,6 +1797,22 @@ textarea {
   background: var(--surface-page);
   text-align: start;
 }
+.plan-type-scene {
+  --card-scene-ratio: 32 / 15;
+  align-self: stretch;
+  overflow: hidden;
+  margin: -12px -12px 4px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+@media (max-width: 600px) {
+  .plan-type-card {
+    padding: 18px;
+  }
+  .plan-type-scene {
+    margin: -6px -6px 2px;
+  }
+}
 .plan-type-card strong {
   color: var(--text-strong);
   font-size: clamp(21px, 2.2vw, 28px);

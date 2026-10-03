@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="The event loop stays responsive while two workers do heavy computation and later jobs wait">
+<style>
+.grow-nodejs-workers-concurrency-t{font-family:system-ui,sans-serif;font-weight:700;font-size:16px;fill:var(--scene-ink,#102a33)}
+.grow-nodejs-workers-concurrency-g{animation:grow-nodejs-workers-concurrency-spin 3s linear infinite}
+.grow-nodejs-workers-concurrency-b{animation:grow-nodejs-workers-concurrency-beat 2s linear infinite}
+.grow-nodejs-workers-concurrency-q{animation:grow-nodejs-workers-concurrency-wait 4s ease-in-out infinite}
+@keyframes grow-nodejs-workers-concurrency-spin{to{transform:rotate(360deg)}}
+@keyframes grow-nodejs-workers-concurrency-beat{0%{transform:translateX(0)}100%{transform:translateX(-40px)}}
+@keyframes grow-nodejs-workers-concurrency-wait{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="10" y="14" width="300" height="56" rx="10" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-good,#1f7a4d)" stroke-width="2"/>
+<clipPath id="grow-nodejs-workers-concurrency-cp"><rect x="14" y="18" width="292" height="48"/></clipPath>
+<g clip-path="url(#grow-nodejs-workers-concurrency-cp)"><g class="grow-nodejs-workers-concurrency-b" style="animation-delay:-1s"><path d="M10 42 H90 l8 -16 l10 32 l8 -16 H200 l8 -16 l10 32 l8 -16 H330" stroke="var(--scene-good,#1f7a4d)" stroke-width="3" fill="none" stroke-linejoin="round"/></g></g>
+<text x="20" y="88" class="grow-nodejs-workers-concurrency-t" style="fill:var(--scene-good,#1f7a4d)">loop free</text>
+<g class="grow-nodejs-workers-concurrency-g" style="animation-delay:-1.4s;transform-origin:150px 134px"><circle cx="150" cy="134" r="22" fill="var(--scene-learn,#0f8a8a)"/><circle cx="150" cy="134" r="8" fill="var(--scene-card,#fff)"/><g fill="var(--scene-learn,#0f8a8a)"><rect x="146" y="104" width="8" height="10"/><rect x="146" y="154" width="8" height="10"/><rect x="120" y="130" width="10" height="8"/><rect x="170" y="130" width="10" height="8"/></g></g>
+<g class="grow-nodejs-workers-concurrency-g" style="animation-delay:-0.3s;animation-direction:reverse;transform-origin:204px 134px"><circle cx="204" cy="134" r="22" fill="var(--scene-ahead,#2f6fb3)"/><circle cx="204" cy="134" r="8" fill="var(--scene-card,#fff)"/><g fill="var(--scene-ahead,#2f6fb3)"><rect x="200" y="104" width="8" height="10"/><rect x="200" y="154" width="8" height="10"/><rect x="174" y="130" width="10" height="8"/><rect x="224" y="130" width="10" height="8"/></g></g>
+<g class="grow-nodejs-workers-concurrency-q" style="animation-delay:-1s"><rect x="256" y="112" width="18" height="18" rx="4" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-muted,#536970)" stroke-width="2"/></g>
+<g class="grow-nodejs-workers-concurrency-q" style="animation-delay:-2.2s"><rect x="280" y="112" width="18" height="18" rx="4" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-muted,#536970)" stroke-width="2"/></g>
+<text x="22" y="140" class="grow-nodejs-workers-concurrency-t">workers</text>
+<text x="22" y="156" class="grow-nodejs-workers-concurrency-t" style="display:none">x</text>
+</svg>

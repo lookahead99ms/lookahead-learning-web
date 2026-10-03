@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="A pencil writes a chain of numbers on a notepad, from 200 million daily users to 4 billion reads a day, 46,296 a second, 138,889 at the evening peak and 155 servers, and the answer gets circled">
+<style>
+.estimation-pad{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.estimation-rule{stroke:var(--scene-accent-soft,#dcefed);stroke-width:1.5}
+.estimation-margin{stroke:var(--scene-bad,#b3261e);stroke-width:1;opacity:.35}
+.estimation-m{font-family:ui-monospace,Menlo,monospace;fill:var(--scene-text,#28434a);font-weight:700}
+.estimation-pk{font-family:ui-monospace,Menlo,monospace;fill:var(--scene-warn,#a15c00);font-weight:700}
+.estimation-ms{font-family:ui-monospace,Menlo,monospace;fill:var(--scene-ink,#102a33);font-weight:700}
+.estimation-arrow{fill:none;stroke:var(--scene-muted,#536970);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.estimation-ring{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:3;stroke-dasharray:300;animation:estimation-ring 7s -3s infinite}
+@keyframes estimation-ring{0%,40%{stroke-dashoffset:300}50%,92%{stroke-dashoffset:0}100%{stroke-dashoffset:0;opacity:0}}
+.estimation-l1{animation:estimation-l1 7s -3s infinite}
+@keyframes estimation-l1{0%,2%{opacity:0}5%,92%{opacity:1}100%{opacity:0}}
+.estimation-l2{animation:estimation-l2 7s -3s infinite}
+@keyframes estimation-l2{0%,14%{opacity:0}18%,92%{opacity:1}100%{opacity:0}}
+.estimation-l3{animation:estimation-l3 7s -3s infinite}
+@keyframes estimation-l3{0%,28%{opacity:0}32%,92%{opacity:1}100%{opacity:0}}
+.estimation-pencil{animation:estimation-pencil 7s -3s infinite}
+@keyframes estimation-pencil{0%{transform:translate(0,0)}12%{transform:translate(0,0)}22%{transform:translate(0,34px)}34%,46%{transform:translate(0,68px)}54%,100%{transform:translate(0,0)}}
+@media (prefers-reduced-motion:reduce){.estimation-pencil,.estimation-ring{animation-play-state:paused}}
+</style>
+<rect class="estimation-pad" x="6" y="6" width="228" height="123" rx="8"/>
+<path class="estimation-rule" d="M6 44 H234 M6 78 H234 M6 112 H234"/>
+<path class="estimation-margin" d="M16 6 V129"/>
+<text class="estimation-m estimation-l1" x="26" y="36" font-size="16">200M × 20</text>
+<g class="estimation-l2"><path class="estimation-arrow" d="M26 46 v14 m-5 -5 l5 5 l5 -5" transform="translate(0 -1)"/><text class="estimation-pk" x="44" y="70" font-size="16">138k / s peak</text></g>
+<g class="estimation-l3"><path class="estimation-arrow" d="M26 80 v14 m-5 -5 l5 5 l5 -5" transform="translate(0 -1)"/><text class="estimation-ms" x="44" y="104" font-size="16">155 servers</text></g>
+<ellipse class="estimation-ring" cx="98" cy="98" rx="68" ry="17"/>
+<g class="estimation-pencil">
+<path d="M196 28 l22 -14 l5 7 l-22 14 z" style="fill:var(--scene-warn,#a15c00)"/>
+<path d="M196 28 l5 7 l-8 2 z" style="fill:var(--scene-ink,#102a33)"/>
+</g>
+</svg>

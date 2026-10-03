@@ -17,6 +17,36 @@
   --accent-secondary-strong: #006c73;
   --path-grow: #a84328; /* Path identity, separate from generic actions. */
   --surface-accent: #dcefed;
+  /* Inline code in lesson prose (DLV-408). */
+  --inline-code-ink: #9a3412;
+  --inline-code-bg: #fdf3ec;
+  --inline-code-line: #f0d9c8;
+  /* AI prompt: slate with a cyan edge, like a chat input. */
+  --prompt-accent: #0e7490;
+  --prompt-bg: #f3f6f9;
+  --prompt-line: #d5dee7;
+  --prompt-ink: #1f2d3a;
+  --interview-accent: #1f5fae;
+  --interview-bg: #f1f6fd;
+  --interview-line: #cddcf1;
+  --study-accent: #1f5fae;
+  /* Quick revision cheat sheet: pale grey-blue sheet, slim navy band, soft indigo accent. */
+  --sheet-bg: #f6f9fc;
+  --sheet-tile: #ffffff;
+  --sheet-line: #e3e8ef;
+  --sheet-shadow: rgba(10, 37, 64, 0.06);
+  --sheet-ink: #425466;
+  --sheet-heading: #0a2540;
+  --sheet-band: #0a2540;
+  --sheet-band-ink: #ffffff;
+  --sheet-band-muted: #adbdcc;
+  --sheet-band-rule: rgba(255, 255, 255, 0.25);
+  --sheet-accent: #5e5ce6;
+  --sheet-on-accent: #ffffff;
+  --sheet-chip: #f0f0ff;
+  --sheet-chip-line: #dcdcfb;
+  --study-bg: #f2f7fe;
+  --study-grid: rgba(31, 95, 174, 0.07);
   --accent-focus: #9a4f00;
   --success: #24755c;
   --warning: #8c6100;
@@ -70,6 +100,33 @@
   --accent-secondary-strong: #ffba87;
   --path-grow: #d9b4e1;
   --surface-accent: #483729;
+  --inline-code-ink: #ffc79c;
+  --inline-code-bg: #243553;
+  --inline-code-line: #3d5173;
+  --prompt-accent: #67d4e8;
+  --prompt-bg: #17222e;
+  --prompt-line: #2c3a48;
+  --prompt-ink: #e2ebf2;
+  --interview-accent: #9cc4ff;
+  --interview-bg: #182a45;
+  --interview-line: #2f4a70;
+  --study-accent: #9cc4ff;
+  --sheet-bg: #13243a;
+  --sheet-tile: #1a2d46;
+  --sheet-line: #2a4060;
+  --sheet-shadow: rgba(0, 0, 0, 0.25);
+  --sheet-ink: #c8d4e0;
+  --sheet-heading: #eef3f8;
+  --sheet-band: #0b1a2c;
+  --sheet-band-ink: #ffffff;
+  --sheet-band-muted: #9fb2c6;
+  --sheet-band-rule: rgba(255, 255, 255, 0.2);
+  --sheet-accent: #a5a3ff;
+  --sheet-on-accent: #13123a;
+  --sheet-chip: #23305a;
+  --sheet-chip-line: #37457a;
+  --study-bg: #172a45;
+  --study-grid: rgba(156, 196, 255, 0.07);
   --accent-focus: #9dc9ff;
   --success: #75d8af;
   --warning: #f4c66f;
@@ -102,6 +159,9 @@
   --identity-ai: #ffba87;
   --identity-h: #b7a0ff;
   --identity-arrow: #ffd16d;
+  --card-title-learn: #ffba87;
+  --card-title-grow: #ffba87;
+  --card-title-look-ahead: #ffba87;
 }
 
 /* Shared Harbor Light / Midnight & Apricot Dark across learner and author routes.
@@ -196,6 +256,53 @@ a {
 .skip-link:focus-visible {
   transform: translateY(0);
 }
+/* Card text roles (DLV-408 round 5). On catalog course/group cards and course unit cards the
+   title is the strongest text: path colour, heaviest weight. Words inside the drawing step back
+   in their own face, a lighter weight and muted ink (card-scene.ts applies these to the SVG
+   text; learning-unit-card-contract.mjs checks the drawings leave their text to it). */
+:root {
+  --card-title-color: var(--text-strong);
+  --card-title-weight: 800;
+  /* Card titles in apricot, the colour that stands out (user, 2026-10-02): deep apricot #a84e17 on light
+     (5.6:1 on white), the dark theme's apricot #ffba87 on dark (8.8:1 on #192942, 7.6:1 on #22344e). */
+  --card-title-learn: #a84e17;
+  --card-title-grow: #a84e17;
+  --card-title-look-ahead: #a84e17;
+  --card-scene-text-font: 'Avenir Next', Avenir, Bahnschrift, 'Trebuchet MS', system-ui, sans-serif;
+  --card-scene-code-font:
+    'JetBrains Mono', ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
+  --card-scene-text-weight: 600;
+  --card-scene-text-color: color-mix(in srgb, var(--text-subtle) 70%, var(--text-body));
+  /* Drawing text never reaches the card title's size (DLV-408 round 7). Each card sets
+     --card-title-size where its title is sized; card-scene.ts caps the rendered size of a word
+     at this share of it, and a node value or single mark (7, L, ✓) at the second share. */
+  --card-scene-text-max-ratio: 0.75;
+  --card-scene-mark-max-ratio: 0.85;
+}
+/* Resolved to px on each card scene host, so card-scene.ts can read the cap. */
+@property --card-scene-text-max {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+@property --card-scene-mark-max {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+.learn-catalog-reader,
+.learning-map[data-path='learn'] {
+  --card-title-color: var(--card-title-learn);
+}
+.grow-catalog-reader,
+.learning-map[data-path='grow'] {
+  --card-title-color: var(--card-title-grow);
+}
+.look-ahead-catalog-reader,
+.learning-map[data-path='look-ahead'] {
+  --card-title-color: var(--card-title-look-ahead);
+}
+
 :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
   outline: 3px solid var(--accent-focus);
   outline-offset: 3px;
@@ -524,6 +631,15 @@ main.harbor-learn .harbor-course-layout .learning-map {
   }
 }
 
+/* DLV-408 system lessons put code beside its explanation, so they take the widest
+   reader that still leaves both sidebars docked (a docked panel needs 248px). */
+@media (min-width: 1100px) {
+  main.content-page[data-sidebar-columns]:has(.system-lesson) {
+    --reader-sidebar-space: 256px;
+    padding-inline: 16px;
+  }
+}
+
 /* The same language palettes used by the Hands-on DSA editor and trace. */
 pre:has(> .learning-code) { background: var(--code-bg); color: var(--code-ink); overflow-x: auto; }
 .learning-code { font-weight: 400; white-space: pre; tab-size: 4; }
@@ -538,3 +654,98 @@ pre:has(> .learning-code[data-code-language='go']) { background:#14161a; }
 .learning-code .syntax-number { color:var(--syntax-number,var(--code-number)); }
 .learning-code .syntax-comment { color:var(--syntax-comment,var(--code-muted)); }
 .learning-code .syntax-type { color:var(--syntax-type,var(--code-keyword)); }
+
+/* DLV-408 system lessons. Lesson prose is inserted with innerHTML, which component
+   styles cannot reach, so its inline elements are styled here. */
+.system-lesson {
+  --lesson-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
+}
+/* Inline code: a monospace face on a tinted chip in its own colour, so Driver::id
+   or d -> d.id() never blends into the sentence. */
+.system-lesson :is(.explanation-content, .lesson-table, .spoken-answer, .follow-ups, .lesson-callout, .cheat-sheet, .section-card) code:not(pre code) {
+  padding: 0.1em 0.38em;
+  border: 1px solid var(--inline-code-line);
+  border-radius: 5px;
+  background: var(--inline-code-bg);
+  color: var(--inline-code-ink);
+  font-family: var(--lesson-mono);
+  font-size: 0.86em;
+  font-weight: 600;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.system-lesson :is(.explanation-content, .lesson-table) samp {
+  font-family: var(--lesson-mono);
+  font-size: 0.86em;
+  color: var(--success);
+}
+/* Only a line that is entirely bold ("Traps to avoid:") becomes a heading over its list.
+   A sentence that merely starts with a bold word stays one sentence. */
+.system-lesson .explanation-content > .points-heading {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: var(--text-strong);
+}
+/* A whole statement of code gets its own line; short names stay inline. */
+.system-lesson .explanation-content > .prose-line {
+  display: block;
+}
+.system-lesson .explanation-content > code.code-line {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0.55rem 0;
+  padding: 0.5rem 0.75rem;
+  overflow-x: auto;
+  white-space: pre;
+}
+/* Invariants are rules to hold, not steps: star bullets. */
+.system-lesson .invariants-section .explanation-content li::marker {
+  content: '★  ';
+  color: var(--warning);
+}
+.system-lesson .quick-revision .explanation-content :is(.points-heading, strong) {
+  color: var(--sheet-heading);
+}
+.system-lesson .explanation-content :is(ul, ol) {
+  margin: 0.4rem 0 0;
+  padding-left: 1.4rem;
+  line-height: 1.75;
+}
+.system-lesson .explanation-content li + li {
+  margin-top: 0.6rem;
+}
+.system-lesson .explanation-content li::marker {
+  color: var(--accent-strong);
+  font-weight: 700;
+}
+/* A prompt is something you type into an AI tool: its own colour, face and copy button. */
+.system-lesson .ai-prompt {
+  margin: 0;
+  border: 1px solid var(--prompt-line);
+  border-left: 4px solid var(--prompt-accent);
+  border-radius: 10px;
+  background: var(--prompt-bg);
+}
+.system-lesson .ai-prompt figcaption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0.5rem 0.75rem 0.5rem 1rem;
+  border-bottom: 1px solid var(--prompt-line);
+  color: var(--prompt-accent);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.system-lesson .ai-prompt p {
+  margin: 0;
+  padding: 0.9rem 1rem 1rem;
+  color: var(--prompt-ink);
+  font-family: var(--lesson-mono);
+  font-size: 0.9rem;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}

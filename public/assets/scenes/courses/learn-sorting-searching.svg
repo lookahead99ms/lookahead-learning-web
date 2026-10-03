@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Bars swap into sorted order, then a binary search halves a sorted row until it lands on 23">
+<style>
+.learn-sorting-searching-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.learn-sorting-searching-tm { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; fill: var(--scene-ink, #102a33); font-weight: 600; }
+.learn-sorting-searching-bar { fill: var(--scene-accent, #006c73); }
+.learn-sorting-searching-base { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 2; }
+.learn-sorting-searching-cell { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.learn-sorting-searching-b1 { animation: learn-sorting-searching-kf-b1 7s steps(1) infinite; }
+.learn-sorting-searching-b2 { animation: learn-sorting-searching-kf-b2 7s steps(1) infinite; }
+.learn-sorting-searching-b3 { animation: learn-sorting-searching-kf-b3 7s steps(1) infinite; }
+.learn-sorting-searching-b4 { animation: learn-sorting-searching-kf-b4 7s steps(1) infinite; }
+/* slots 20px apart; heights 36,12,48,24 -> 12,24,36,48 */
+@keyframes learn-sorting-searching-kf-b1 { 0% { transform: translateX(0); } 25% { transform: translateX(20px); } 75%, 100% { transform: translateX(40px); } }
+@keyframes learn-sorting-searching-kf-b2 { 0% { transform: translateX(0); } 25%, 100% { transform: translateX(-20px); } }
+@keyframes learn-sorting-searching-kf-b3 { 0% { transform: translateX(0); } 50%, 100% { transform: translateX(20px); } }
+@keyframes learn-sorting-searching-kf-b4 { 0% { transform: translateX(0); } 50% { transform: translateX(-20px); } 75%, 100% { transform: translateX(-40px); } }
+.learn-sorting-searching-win { fill: var(--scene-accent-soft, #dcefed); stroke: var(--scene-accent, #006c73); stroke-width: 2; animation: learn-sorting-searching-kf-win 7s steps(1) infinite; }
+@keyframes learn-sorting-searching-kf-win { 0% { x: 18px; width: 284px; } 40% { x: 182px; width: 120px; } 70%, 100% { x: 222px; width: 40px; } }
+.learn-sorting-searching-mid { fill: var(--scene-learn, #0f8a8a); animation: learn-sorting-searching-kf-mid 7s steps(1) infinite; }
+@keyframes learn-sorting-searching-kf-mid { 0% { transform: translateX(0); } 40%, 100% { transform: translateX(80px); } }
+.learn-sorting-searching-found { fill: var(--scene-good, #1f7a4d); opacity: 0; animation: learn-sorting-searching-kf-found 7s steps(1) infinite; }
+@keyframes learn-sorting-searching-kf-found { 0% { opacity: 0; } 70%, 100% { opacity: 1; } }
+.learn-sorting-searching-b1, .learn-sorting-searching-b2, .learn-sorting-searching-b3, .learn-sorting-searching-b4, .learn-sorting-searching-win, .learn-sorting-searching-mid, .learn-sorting-searching-found { animation-delay: -3s; }
+</style>
+<!-- sort -->
+<text class="learn-sorting-searching-t" x="18" y="34" font-size="16">sort</text>
+<g transform="translate(100 0)">
+<rect class="learn-sorting-searching-bar learn-sorting-searching-b1" x="0" y="34" width="14" height="36" rx="3"/>
+<rect class="learn-sorting-searching-bar learn-sorting-searching-b2" x="20" y="58" width="14" height="12" rx="3"/>
+<rect class="learn-sorting-searching-bar learn-sorting-searching-b3" x="40" y="22" width="14" height="48" rx="3"/>
+<rect class="learn-sorting-searching-bar learn-sorting-searching-b4" x="60" y="46" width="14" height="24" rx="3"/>
+<path class="learn-sorting-searching-base" d="M-6 72 H80"/>
+</g>
+<!-- binary search -->
+<text class="learn-sorting-searching-t" x="18" y="102" font-size="16">find 23</text>
+<rect class="learn-sorting-searching-win" x="18" y="112" width="284" height="40" rx="6"/>
+<g font-size="16" text-anchor="middle">
+<rect class="learn-sorting-searching-cell" x="24" y="118" width="34" height="28" rx="4"/><text class="learn-sorting-searching-tm" x="41" y="137">2</text>
+<rect class="learn-sorting-searching-cell" x="64" y="118" width="34" height="28" rx="4"/><text class="learn-sorting-searching-tm" x="81" y="137">5</text>
+<rect class="learn-sorting-searching-cell" x="104" y="118" width="34" height="28" rx="4"/><text class="learn-sorting-searching-tm" x="121" y="137">8</text>
+<rect class="learn-sorting-searching-cell" x="144" y="118" width="34" height="28" rx="4"/><text class="learn-sorting-searching-tm" x="161" y="137">12</text>
+<rect class="learn-sorting-searching-cell" x="184" y="118" width="34" height="28" rx="4"/><text class="learn-sorting-searching-tm" x="201" y="137">16</text>
+<rect class="learn-sorting-searching-cell" x="224" y="118" width="34" height="28" rx="4"/>
+<rect class="learn-sorting-searching-found" x="224" y="118" width="34" height="28" rx="4"/>
+<text class="learn-sorting-searching-tm" x="241" y="137">23</text>
+<rect class="learn-sorting-searching-cell" x="264" y="118" width="34" height="28" rx="4"/><text class="learn-sorting-searching-tm" x="281" y="137">38</text>
+</g>
+<path class="learn-sorting-searching-mid" d="M161 158 l-7 12 h14z"/>
+</svg>

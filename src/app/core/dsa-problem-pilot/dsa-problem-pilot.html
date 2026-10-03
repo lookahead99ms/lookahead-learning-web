@@ -1,5 +1,5 @@
 @if (studioProblem(); as selectedProblem) {
-  <app-focus-studio [problem]="selectedProblem" [initialLanguage]="initialLanguage()" />
+  <app-focus-studio [problem]="selectedProblem" [initialLanguage]="startLanguage()" />
 } @else {
   <section
     class="pilot"
@@ -169,7 +169,7 @@
             [solutions]="solutions()"
             [complexity]="complexity()"
             [practiceStarters]="practice().starters"
-            [initialLanguage]="initialLanguage()"
+            [initialLanguage]="startLanguage()"
             [showReferences]="false"
             [studioLayout]="focusStudio()"
             [tutorProblem]="tutorProblem()"
@@ -275,15 +275,20 @@
               </button>
             </header>
           }
-          <app-guided-algorithm-trace
-            class="mode-reaction"
-            [problem]="problem()"
-            [selectedFixture]="activeFixture()"
-            [initialLanguage]="initialLanguage()"
-            [focusMode]="focusMode()"
-            (fixtureChange)="chooseFixture($event)"
-            (focusExitRequest)="exitFocusMode()"
-          />
+          <div class="mode-reaction trace-slot">
+            @defer (when mode() === 'guided') {
+              <app-guided-algorithm-trace
+                [problem]="problem()"
+                [selectedFixture]="activeFixture()"
+                [initialLanguage]="startLanguage()"
+                [focusMode]="focusMode()"
+                (fixtureChange)="chooseFixture($event)"
+                (focusExitRequest)="exitFocusMode()"
+              />
+            } @placeholder {
+              <p class="trace-loading" role="status">Loading the guided debugger…</p>
+            }
+          </div>
         </div>
         <div class="mistakes">
           <h5>Common mistakes</h5>

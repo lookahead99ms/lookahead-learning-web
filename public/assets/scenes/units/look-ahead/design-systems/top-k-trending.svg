@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="#DerbyDay mentions surge after the match, its bar grows and it climbs from third to first in the trending list, pushing #MorningCoffee and #rain down">
+<style>
+.top-k-trending-t{font-family:system-ui, sans-serif;fill:var(--scene-ink,#102a33)}
+.top-k-trending-tx{font-family:system-ui, sans-serif;fill:var(--scene-text,#28434a)}
+.top-k-trending-tm{font-family:ui-monospace, Menlo, monospace;fill:var(--scene-ink,#102a33)}
+.top-k-trending-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.top-k-trending-card{fill:var(--scene-card,#fff)}
+.top-k-trending-soft{fill:var(--scene-muted,#536970)}
+.top-k-trending-line{fill:var(--scene-line,#cfdfdc)}
+.top-k-trending-acc{fill:var(--scene-accent,#006c73)}
+.top-k-trending-accsoft{fill:var(--scene-accent-soft,#dcefed)}
+.top-k-trending-good{fill:var(--scene-good,#1f7a4d)}
+.top-k-trending-bad{fill:var(--scene-bad,#b3261e)}
+.top-k-trending-warn{fill:var(--scene-warn,#a15c00)}
+.top-k-trending-link{fill:var(--scene-link,#245a88)}
+.top-k-trending-a{animation-duration:6s;animation-iteration-count:infinite;animation-delay:-4.2s;transform-box:fill-box}
+@media (prefers-reduced-motion: reduce){.top-k-trending-a{animation-play-state:paused!important}}
+.top-k-trending-up{animation-name:top-k-trending-up}
+@keyframes top-k-trending-up{0%,25%{transform:translateY(0)}55%,92%{transform:translateY(-84px)}100%{transform:translateY(0)}}
+.top-k-trending-dn{animation-name:top-k-trending-dn}
+@keyframes top-k-trending-dn{0%,35%{transform:translateY(0)}55%,92%{transform:translateY(42px)}100%{transform:translateY(0)}}
+.top-k-trending-bar{animation-name:top-k-trending-bar;transform-origin:left center}
+@keyframes top-k-trending-bar{0%,20%{transform:scaleX(.22)}55%,92%{transform:scaleX(1)}100%{transform:scaleX(.22)}}
+.top-k-trending-hot{animation-name:top-k-trending-hot}
+@keyframes top-k-trending-hot{0%,30%{opacity:0}40%,92%{opacity:1}100%{opacity:0}}
+</style>
+<rect x="4" y="4" width="232" height="127" rx="10" class="top-k-trending-box"/>
+<g class="top-k-trending-a top-k-trending-dn"><text class="top-k-trending-t" x="16" y="24" font-size="14" font-weight="700">#MorningCoffee</text>
+<rect x="16" y="31" width="190" height="9" rx="4.5" class="top-k-trending-line" fill-opacity=".55"/>
+<rect x="16" y="31" width="150" height="9" rx="4.5" class="top-k-trending-link"/></g>
+<g class="top-k-trending-a top-k-trending-dn"><text class="top-k-trending-t" x="16" y="66" font-size="14" font-weight="700">#rain</text>
+<rect x="16" y="73" width="190" height="9" rx="4.5" class="top-k-trending-line" fill-opacity=".55"/>
+<rect x="16" y="73" width="96" height="9" rx="4.5" class="top-k-trending-link"/></g>
+<g class="top-k-trending-a top-k-trending-up"><text class="top-k-trending-t" x="16" y="108" font-size="14" font-weight="700">#DerbyDay</text>
+<rect x="16" y="115" width="190" height="9" rx="4.5" class="top-k-trending-line" fill-opacity=".55"/>
+<rect class="top-k-trending-a top-k-trending-bar top-k-trending-acc" x="16" y="115" width="200" height="9" rx="4.5"/><g class="top-k-trending-a top-k-trending-hot"><path d="M104 103 l7 -9 l7 9 h-4 v6 h-6 v-6z" class="top-k-trending-good"/></g></g>
+<g><circle cx="216" cy="20" r="9" class="top-k-trending-card" stroke="var(--scene-muted,#536970)" stroke-width="1.8"/><path d="M216 14 v6 l4 3" stroke="var(--scene-muted,#536970)" stroke-width="1.8" fill="none" stroke-linecap="round"/></g>
+</svg>

@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="A photo app gains thousands of users, its one server turns red at 240% CPU and feeds time out, then two more servers join and the load turns green again">
+<style>
+.one-server-to-millions-t{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-ink,#102a33)}
+.one-server-to-millions-mu{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-muted,#536970)}
+.one-server-to-millions-g{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-good,#1f7a4d)}
+.one-server-to-millions-w{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-warn,#a15c00)}
+.one-server-to-millions-b{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-bad,#b3261e)}
+.one-server-to-millions-a{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-accent,#006c73)}
+.one-server-to-millions-mono{font-family:ui-monospace,Menlo,monospace}
+.one-server-to-millions-card{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.one-server-to-millions-soft{fill:var(--scene-accent-soft,#dcefed)}
+.one-server-to-millions-acc{fill:var(--scene-accent,#006c73)}
+.one-server-to-millions-gd{fill:var(--scene-good,#1f7a4d)}
+.one-server-to-millions-wn{fill:var(--scene-warn,#a15c00)}
+.one-server-to-millions-bd{fill:var(--scene-bad,#b3261e)}
+.one-server-to-millions-ink{fill:var(--scene-ink,#102a33)}
+.one-server-to-millions-mf{fill:var(--scene-muted,#536970)}
+.one-server-to-millions-lf{fill:var(--scene-line,#cfdfdc)}
+.one-server-to-millions-cf{fill:var(--scene-card,#fff)}
+.one-server-to-millions-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.one-server-to-millions-sg{fill:none;stroke:var(--scene-good,#1f7a4d);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.one-server-to-millions-sw{fill:none;stroke:var(--scene-warn,#a15c00);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.one-server-to-millions-sb{fill:none;stroke:var(--scene-bad,#b3261e);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.one-server-to-millions-sm{fill:none;stroke:var(--scene-muted,#536970);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.one-server-to-millions-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.one-server-to-millions-si{fill:none;stroke:var(--scene-ink,#102a33);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.one-server-to-millions-u2{animation:one-server-to-millions-u2 8s -3.2s infinite;}
+@keyframes one-server-to-millions-u2{0%,9%{opacity:0}10%,100%{opacity:1}}
+.one-server-to-millions-u3{animation:one-server-to-millions-u3 8s -3.2s infinite;}
+@keyframes one-server-to-millions-u3{0%,23%{opacity:0}24%,100%{opacity:1}}
+.one-server-to-millions-s2{animation:one-server-to-millions-s2 8s -3.2s infinite;}
+@keyframes one-server-to-millions-s2{0%,51%{opacity:0}52%,100%{opacity:1}}
+.one-server-to-millions-s3{animation:one-server-to-millions-s3 8s -3.2s infinite;}
+@keyframes one-server-to-millions-s3{0%,57%{opacity:0}58%,100%{opacity:1}}
+.one-server-to-millions-bar{animation:one-server-to-millions-bar 8s -3.2s infinite;transform-box:fill-box;transform-origin:left center}
+@keyframes one-server-to-millions-bar{0%,48%{transform:scaleX(1);fill:var(--scene-bad,#b3261e)}56%,96%{transform:scaleX(.34);fill:var(--scene-good,#1f7a4d)}100%{transform:scaleX(1);fill:var(--scene-bad,#b3261e)}}
+.one-server-to-millions-l1{animation:one-server-to-millions-l1 8s -3.2s infinite;}
+@keyframes one-server-to-millions-l1{0%,48%{opacity:1}49%,100%{opacity:0}}
+.one-server-to-millions-l2{animation:one-server-to-millions-l2 8s -3.2s infinite;}
+@keyframes one-server-to-millions-l2{0%,51%{opacity:0}52%,62%{opacity:1}63%,100%{opacity:0}}
+.one-server-to-millions-l3{animation:one-server-to-millions-l3 8s -3.2s infinite;}
+@keyframes one-server-to-millions-l3{0%,63%{opacity:0}64%,96%{opacity:1}97%,100%{opacity:0}}
+</style>
+<g class=""><circle class="one-server-to-millions-acc" cx="16" cy="22" r="5.5"/><circle class="one-server-to-millions-acc" cx="33" cy="22" r="5.5"/><circle class="one-server-to-millions-acc" cx="50" cy="22" r="5.5"/><circle class="one-server-to-millions-acc" cx="67" cy="22" r="5.5"/></g>
+<g class=""><circle class="one-server-to-millions-acc" cx="16" cy="37" r="5.5"/><circle class="one-server-to-millions-acc" cx="33" cy="37" r="5.5"/><circle class="one-server-to-millions-acc" cx="50" cy="37" r="5.5"/><circle class="one-server-to-millions-acc" cx="67" cy="37" r="5.5"/></g>
+<g class="one-server-to-millions-u2"><circle class="one-server-to-millions-acc" cx="16" cy="52" r="5.5"/><circle class="one-server-to-millions-acc" cx="33" cy="52" r="5.5"/><circle class="one-server-to-millions-acc" cx="50" cy="52" r="5.5"/><circle class="one-server-to-millions-acc" cx="67" cy="52" r="5.5"/></g>
+<g class="one-server-to-millions-u2"><circle class="one-server-to-millions-acc" cx="16" cy="67" r="5.5"/><circle class="one-server-to-millions-acc" cx="33" cy="67" r="5.5"/><circle class="one-server-to-millions-acc" cx="50" cy="67" r="5.5"/><circle class="one-server-to-millions-acc" cx="67" cy="67" r="5.5"/></g>
+<g class="one-server-to-millions-u3"><circle class="one-server-to-millions-acc" cx="16" cy="82" r="5.5"/><circle class="one-server-to-millions-acc" cx="33" cy="82" r="5.5"/><circle class="one-server-to-millions-acc" cx="50" cy="82" r="5.5"/><circle class="one-server-to-millions-acc" cx="67" cy="82" r="5.5"/></g>
+<g class="one-server-to-millions-u3"><circle class="one-server-to-millions-acc" cx="16" cy="97" r="5.5"/><circle class="one-server-to-millions-acc" cx="33" cy="97" r="5.5"/><circle class="one-server-to-millions-acc" cx="50" cy="97" r="5.5"/><circle class="one-server-to-millions-acc" cx="67" cy="97" r="5.5"/></g>
+<path class="one-server-to-millions-mf" d="M84 58 l12 -7 v14z"/>
+<g class=""><rect class="one-server-to-millions-card" x="104" y="14" width="84" height="26" rx="6"/><rect class="one-server-to-millions-lf" x="112" y="23" width="68" height="9" rx="2"/><rect class="one-server-to-millions-bd one-server-to-millions-bar" x="112" y="23" width="68" height="9" rx="2"/></g>
+<g class="one-server-to-millions-s2"><rect class="one-server-to-millions-card" x="104" y="46" width="84" height="26" rx="6"/><rect class="one-server-to-millions-lf" x="112" y="55" width="68" height="9" rx="2"/><rect class="one-server-to-millions-gd" x="112" y="55" width="68" height="9" rx="2" style="transform:scaleX(.34);transform-box:fill-box;transform-origin:left center"/></g>
+<g class="one-server-to-millions-s3"><rect class="one-server-to-millions-card" x="104" y="78" width="84" height="26" rx="6"/><rect class="one-server-to-millions-lf" x="112" y="87" width="68" height="9" rx="2"/><rect class="one-server-to-millions-gd" x="112" y="87" width="68" height="9" rx="2" style="transform:scaleX(.34);transform-box:fill-box;transform-origin:left center"/></g>
+<g class="one-server-to-millions-l1"><text class="one-server-to-millions-b" x="120" y="124" font-size="16" font-weight="700" text-anchor="middle">240% CPU</text>
+</g><g class="one-server-to-millions-l2"><text class="one-server-to-millions-w" x="120" y="124" font-size="16" font-weight="700" text-anchor="middle">+ 2 servers</text>
+</g><g class="one-server-to-millions-l3"><text class="one-server-to-millions-g" x="120" y="124" font-size="16" font-weight="700" text-anchor="middle">Load shared ✓</text>
+</g>
+</svg>

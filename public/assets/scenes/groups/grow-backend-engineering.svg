@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 200" role="img" aria-label="A client sends POST /orders to a backend service, the service writes a row to the database, and 201 Created comes back">
+<style>
+.grow-backend-engineering-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.grow-backend-engineering-m { font-family: ui-monospace, Menlo, monospace; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.grow-backend-engineering-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 2; }
+.grow-backend-engineering-soft { fill: var(--scene-accent-soft, #dcefed); }
+.grow-backend-engineering-acc { fill: var(--scene-accent, #006c73); }
+.grow-backend-engineering-ln { fill: var(--scene-line, #cfdfdc); }
+.grow-backend-engineering-mut { fill: var(--scene-muted, #536970); }
+.grow-backend-engineering-good { fill: var(--scene-good, #1f7a4d); }
+.grow-backend-engineering-warn { fill: var(--scene-warn, #a15c00); }
+.grow-backend-engineering-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 2; stroke-dasharray: 4 5; }
+
+.grow-backend-engineering-req { animation: grow-backend-engineering-kreq 7s ease-in-out infinite; }
+@keyframes grow-backend-engineering-kreq { 0%, 4% { opacity: 0; transform: translateX(0); } 8% { opacity: 1; transform: translateX(0); } 38% { opacity: 1; transform: translateX(152px); } 48% { opacity: 1; transform: translateX(152px); } 52%, 100% { opacity: 0; transform: translateX(152px); } }
+.grow-backend-engineering-q { animation: grow-backend-engineering-kq 7s ease-in-out infinite; }
+@keyframes grow-backend-engineering-kq { 0%, 46% { opacity: 0; transform: translateX(0); } 48% { opacity: 1; transform: translateX(0); } 57% { opacity: 1; transform: translateX(70px); } 59% { opacity: 0; transform: translateX(70px); } 61% { opacity: 1; transform: translateX(70px); } 68% { opacity: 1; transform: translateX(0); } 70%, 100% { opacity: 0; transform: translateX(0); } }
+.grow-backend-engineering-row { fill: var(--scene-accent, #006c73); animation: grow-backend-engineering-krow 7s infinite; }
+@keyframes grow-backend-engineering-krow { 0%, 55% { opacity: 0; } 58%, 92% { opacity: .9; } 98%, 100% { opacity: 0; } }
+.grow-backend-engineering-resp { animation: grow-backend-engineering-kresp 7s ease-in-out infinite; }
+@keyframes grow-backend-engineering-kresp { 0%, 68% { opacity: 0; transform: translateX(0); } 71% { opacity: 1; transform: translateX(0); } 92% { opacity: 1; transform: translateX(-152px); } 98%, 100% { opacity: 0; transform: translateX(-152px); } }
+.grow-backend-engineering-respbg { fill: var(--scene-card, #ffffff); stroke: var(--scene-good, #1f7a4d); stroke-width: 2; }
+.grow-backend-engineering-reqbg { fill: var(--scene-card, #ffffff); stroke: var(--scene-accent, #006c73); stroke-width: 2; }
+.grow-backend-engineering-led { fill: var(--scene-good, #1f7a4d); animation: grow-backend-engineering-kled 1.4s steps(2) infinite; }
+@keyframes grow-backend-engineering-kled { 0% { opacity: 1; } 100% { opacity: .25; } }
+.grow-backend-engineering-req, .grow-backend-engineering-q, .grow-backend-engineering-row, .grow-backend-engineering-resp { animation-delay: -3s; }
+.grow-backend-engineering-l2 { animation-delay: -0.5s; } .grow-backend-engineering-l3 { animation-delay: -1s; }
+</style>
+<!-- client laptop -->
+<rect class="grow-backend-engineering-box" x="32" y="80" width="96" height="62" rx="6"/>
+<rect class="grow-backend-engineering-soft" x="40" y="88" width="80" height="46" rx="3"/>
+<rect class="grow-backend-engineering-ln" x="48" y="96" width="44" height="6" rx="3"/>
+<rect class="grow-backend-engineering-ln" x="48" y="108" width="62" height="6" rx="3"/>
+<rect class="grow-backend-engineering-acc" x="48" y="120" width="30" height="8" rx="4"/>
+<path class="grow-backend-engineering-box" d="M20 146 H140 L132 156 H28 Z"/>
+<!-- wires -->
+<path class="grow-backend-engineering-wire" d="M142 118 H194"/>
+<path class="grow-backend-engineering-wire" d="M302 118 H376"/>
+<!-- server rack -->
+<rect class="grow-backend-engineering-box" x="196" y="64" width="104" height="122" rx="8"/>
+<g>
+<rect class="grow-backend-engineering-soft" x="206" y="74" width="84" height="28" rx="4"/>
+<rect class="grow-backend-engineering-soft" x="206" y="111" width="84" height="28" rx="4"/>
+<rect class="grow-backend-engineering-soft" x="206" y="148" width="84" height="28" rx="4"/>
+<rect class="grow-backend-engineering-mut" x="214" y="85" width="34" height="5" rx="2.5"/>
+<rect class="grow-backend-engineering-mut" x="214" y="122" width="34" height="5" rx="2.5"/>
+<rect class="grow-backend-engineering-mut" x="214" y="159" width="34" height="5" rx="2.5"/>
+<circle class="grow-backend-engineering-led" cx="278" cy="88" r="5"/>
+<circle class="grow-backend-engineering-led grow-backend-engineering-l2" cx="278" cy="125" r="5"/>
+<circle class="grow-backend-engineering-led grow-backend-engineering-l3" cx="278" cy="162" r="5"/>
+</g>
+<!-- database -->
+<path class="grow-backend-engineering-box" d="M378 80 V160 A40 12 0 0 0 458 160 V80"/>
+<ellipse class="grow-backend-engineering-box" cx="418" cy="80" rx="40" ry="12"/>
+<rect class="grow-backend-engineering-ln" x="392" y="104" width="52" height="7" rx="3.5"/>
+<rect class="grow-backend-engineering-row" x="392" y="120" width="52" height="7" rx="3.5"/>
+<rect class="grow-backend-engineering-ln" x="392" y="136" width="52" height="7" rx="3.5"/>
+<!-- query dot -->
+<circle class="grow-backend-engineering-q grow-backend-engineering-acc" cx="306" cy="118" r="7"/>
+<!-- request / response pills -->
+<g class="grow-backend-engineering-req"><rect class="grow-backend-engineering-reqbg" x="30" y="16" width="136" height="34" rx="17"/><text class="grow-backend-engineering-m" x="98" y="38" font-size="16" text-anchor="middle">POST /orders</text></g>
+<g class="grow-backend-engineering-resp"><rect class="grow-backend-engineering-respbg" x="180" y="16" width="142" height="34" rx="17"/><circle class="grow-backend-engineering-good" cx="199" cy="33" r="6"/><text class="grow-backend-engineering-m" x="262" y="38" font-size="16" text-anchor="middle">201 Created</text></g>
+</svg>

@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="AI proposes a code change, the tests run green, and the engineer reviews before merging">
+<style>
+.grow-ai-assisted-development-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.grow-ai-assisted-development-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.grow-ai-assisted-development-ln { fill: var(--scene-line, #cfdfdc); }
+.grow-ai-assisted-development-chip { fill: var(--scene-accent-soft, #dcefed); stroke: var(--scene-accent, #006c73); stroke-width: 1.5; }
+.grow-ai-assisted-development-star { fill: var(--scene-accent, #006c73); }
+.grow-ai-assisted-development-add { animation: grow-ai-assisted-development-type 7s ease-out infinite; }
+@keyframes grow-ai-assisted-development-type { 0%, 6% { opacity: 0; transform: translateX(-8px); } 18%, 94% { opacity: 1; transform: translateX(0); } 100% { opacity: 0; } }
+.grow-ai-assisted-development-addbg { fill: var(--scene-good, #1f7a4d); opacity: .14; }
+.grow-ai-assisted-development-addln { fill: var(--scene-good, #1f7a4d); }
+.grow-ai-assisted-development-dot { fill: var(--scene-line, #cfdfdc); }
+.grow-ai-assisted-development-d1 { animation: grow-ai-assisted-development-pass 7s infinite; }
+.grow-ai-assisted-development-d2 { animation: grow-ai-assisted-development-pass2 7s infinite; }
+.grow-ai-assisted-development-d3 { animation: grow-ai-assisted-development-pass3 7s infinite; }
+@keyframes grow-ai-assisted-development-pass { 0%, 30% { fill: var(--scene-line, #cfdfdc); } 34%, 96% { fill: var(--scene-good, #1f7a4d); } 100% { fill: var(--scene-line, #cfdfdc); } }
+@keyframes grow-ai-assisted-development-pass2 { 0%, 38% { fill: var(--scene-line, #cfdfdc); } 42%, 96% { fill: var(--scene-good, #1f7a4d); } 100% { fill: var(--scene-line, #cfdfdc); } }
+@keyframes grow-ai-assisted-development-pass3 { 0%, 46% { fill: var(--scene-line, #cfdfdc); } 50%, 96% { fill: var(--scene-good, #1f7a4d); } 100% { fill: var(--scene-line, #cfdfdc); } }
+.grow-ai-assisted-development-review { animation: grow-ai-assisted-development-rev 7s infinite; }
+@keyframes grow-ai-assisted-development-rev { 0%, 64% { opacity: 0; transform: translateY(6px); } 70%, 96% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; } }
+.grow-ai-assisted-development-revbg { fill: var(--scene-accent, #006c73); }
+.grow-ai-assisted-development-revt { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-card, #ffffff); font-weight: 700; }
+.grow-ai-assisted-development-add, .grow-ai-assisted-development-d1, .grow-ai-assisted-development-d2, .grow-ai-assisted-development-d3, .grow-ai-assisted-development-review { animation-delay: -3s; }
+</style>
+<!-- editor -->
+<rect class="grow-ai-assisted-development-box" x="12" y="14" width="182" height="152" rx="10"/>
+<rect class="grow-ai-assisted-development-ln" x="26" y="30" width="96" height="7" rx="3.5"/>
+<rect class="grow-ai-assisted-development-ln" x="38" y="46" width="118" height="7" rx="3.5"/>
+<rect class="grow-ai-assisted-development-ln" x="38" y="62" width="84" height="7" rx="3.5"/>
+<g class="grow-ai-assisted-development-add">
+  <rect class="grow-ai-assisted-development-addbg" x="20" y="76" width="166" height="46" rx="5"/>
+  <rect class="grow-ai-assisted-development-addln" x="25" y="84" width="7" height="2.5"/><rect class="grow-ai-assisted-development-addln" x="27.25" y="81.75" width="2.5" height="7"/>
+  <rect class="grow-ai-assisted-development-addln" x="38" y="82" width="104" height="7" rx="3.5"/>
+  <rect class="grow-ai-assisted-development-addln" x="25" y="104" width="7" height="2.5"/><rect class="grow-ai-assisted-development-addln" x="27.25" y="101.75" width="2.5" height="7"/>
+  <rect class="grow-ai-assisted-development-addln" x="38" y="102" width="78" height="7" rx="3.5" opacity=".7"/>
+</g>
+<rect class="grow-ai-assisted-development-ln" x="38" y="130" width="70" height="7" rx="3.5"/>
+<rect class="grow-ai-assisted-development-ln" x="26" y="146" width="40" height="7" rx="3.5"/>
+<!-- AI chip -->
+<g transform="translate(118 132)">
+  <rect class="grow-ai-assisted-development-chip" width="68" height="26" rx="13"/>
+  <path class="grow-ai-assisted-development-star" d="M16 5 C17.5 11 19 12.5 25 13 C19 13.5 17.5 15 16 21 C14.5 15 13 13.5 7 13 C13 12.5 14.5 11 16 5 Z"/>
+  <text class="grow-ai-assisted-development-t" x="31" y="18" font-size="16">AI</text>
+</g>
+<!-- tests -->
+<rect class="grow-ai-assisted-development-box" x="206" y="14" width="102" height="96" rx="10"/>
+<text class="grow-ai-assisted-development-t" x="220" y="42" font-size="16">tests</text>
+<circle class="grow-ai-assisted-development-dot grow-ai-assisted-development-d1" cx="226" cy="72" r="9"/>
+<circle class="grow-ai-assisted-development-dot grow-ai-assisted-development-d2" cx="252" cy="72" r="9"/>
+<circle class="grow-ai-assisted-development-dot grow-ai-assisted-development-d3" cx="278" cy="72" r="9"/>
+<!-- you review -->
+<g class="grow-ai-assisted-development-review">
+  <rect class="grow-ai-assisted-development-revbg" x="206" y="124" width="102" height="34" rx="17"/>
+  <path d="M217 141 l5 5 l9 -10" fill="none" stroke="var(--scene-card, #ffffff)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text class="grow-ai-assisted-development-revt" x="234" y="146" font-size="16">Reviewed</text>
+</g>
+</svg>

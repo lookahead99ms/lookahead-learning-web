@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Code passes a type checker gate; a bad value is rejected and the types vanish">
+<style>
+.learn-typescript-foundations-compiler-inference-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-typescript-foundations-compiler-inference-ok{animation:learn-typescript-foundations-compiler-inference-ok 6s linear infinite;animation-delay:-2s}
+.learn-typescript-foundations-compiler-inference-bad{animation:learn-typescript-foundations-compiler-inference-bad 6s linear infinite;animation-delay:-2s}
+.learn-typescript-foundations-compiler-inference-tag{animation:learn-typescript-foundations-compiler-inference-tag 6s linear infinite;animation-delay:-2s}
+.learn-typescript-foundations-compiler-inference-x{animation:learn-typescript-foundations-compiler-inference-x 6s linear infinite;animation-delay:-2s}
+@keyframes learn-typescript-foundations-compiler-inference-ok{0%{transform:translateX(0)}60%,100%{transform:translateX(164px)}}
+@keyframes learn-typescript-foundations-compiler-inference-tag{0%,35%{opacity:1}55%,100%{opacity:0}}
+@keyframes learn-typescript-foundations-compiler-inference-bad{0%{transform:translateX(0)}25%{transform:translateX(20px)}50%,100%{transform:translateX(0)}}
+@keyframes learn-typescript-foundations-compiler-inference-x{0%,22%{opacity:0}28%,45%{opacity:1}55%,100%{opacity:0}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="8" y="28" width="56" height="96" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<rect x="16" y="40" width="34" height="7" rx="3" fill="var(--scene-link,#245a88)"/>
+<rect x="16" y="56" width="40" height="7" rx="3" fill="var(--scene-muted,#536970)"/>
+<rect x="16" y="72" width="26" height="7" rx="3" fill="var(--scene-link,#245a88)"/>
+<rect x="16" y="88" width="38" height="7" rx="3" fill="var(--scene-muted,#536970)"/>
+<rect x="16" y="104" width="22" height="7" rx="3" fill="var(--scene-link,#245a88)"/>
+<rect x="228" y="28" width="84" height="96" rx="8" fill="var(--scene-card,#fff)" stroke="var(--scene-good,#1f7a4d)" stroke-width="3"/>
+<text x="270" y="82" text-anchor="middle" class="learn-typescript-foundations-compiler-inference-t" style="font-family:ui-monospace,Menlo,monospace">JS</text>
+<rect x="124" y="20" width="48" height="112" rx="10" fill="var(--scene-ink,#102a33)"/>
+<circle cx="148" cy="60" r="14" fill="var(--scene-card,#fff)"/>
+<path d="M141 60l5 6 10-12" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<g class="learn-typescript-foundations-compiler-inference-bad"><rect x="76" y="36" width="24" height="24" rx="5" fill="var(--scene-bad,#b3261e)"/></g>
+<g class="learn-typescript-foundations-compiler-inference-x"><path d="M80 8l14 14M94 8l-14 14" stroke="var(--scene-bad,#b3261e)" stroke-width="5" stroke-linecap="round"/></g>
+<g class="learn-typescript-foundations-compiler-inference-ok"><rect x="76" y="92" width="24" height="24" rx="5" fill="var(--scene-good,#1f7a4d)"/>
+<g class="learn-typescript-foundations-compiler-inference-tag"><rect x="55" y="134" width="80" height="24" rx="12" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2"/><text x="95" y="151" text-anchor="middle" class="learn-typescript-foundations-compiler-inference-t">number</text></g></g>
+<text x="160" y="174" text-anchor="middle" class="learn-typescript-foundations-compiler-inference-t">checked, then erased</text>
+</svg>

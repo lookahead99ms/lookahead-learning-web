@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" class="realtime-updates-root" role="img" aria-label="A phone loses signal for six seconds, then gets the missed price ticks back and the chart keeps the high of 412.80.">
+<style>
+.realtime-updates-root text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.realtime-updates-t{fill:var(--scene-ink,#102a33)}
+.realtime-updates-tx{fill:var(--scene-text,#28434a)}
+.realtime-updates-mut{fill:var(--scene-muted,#536970)}
+.realtime-updates-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.realtime-updates-soft{fill:var(--scene-accent-soft,#dcefed)}
+.realtime-updates-acc{fill:var(--scene-accent,#006c73)}
+.realtime-updates-ln{fill:var(--scene-line,#cfdfdc)}
+.realtime-updates-cardf{fill:var(--scene-card,#fff)}
+.realtime-updates-good{fill:var(--scene-good,#1f7a4d)}
+.realtime-updates-warn{fill:var(--scene-warn,#a15c00)}
+.realtime-updates-bad{fill:var(--scene-bad,#b3261e)}
+.realtime-updates-link{fill:var(--scene-link,#245a88)}
+.realtime-updates-out{fill:var(--scene-bubble-out,#d4ecea)}
+.realtime-updates-sk{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.realtime-updates-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.realtime-updates-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:1.5;stroke-dasharray:3 3}
+.realtime-updates-line{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:100}
+.realtime-updates-replay{fill:none;stroke:var(--scene-good,#1f7a4d);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:100}
+.realtime-updates-slash{stroke:var(--scene-bad,#b3261e);stroke-width:2.4;stroke-linecap:round}
+.realtime-updates-gapbox{fill:var(--scene-bad,#b3261e);fill-opacity:.1;stroke:var(--scene-bad,#b3261e);stroke-width:1;stroke-dasharray:3 3}
+.realtime-updates-fixbox{fill:var(--scene-good,#1f7a4d);fill-opacity:.12}
+.realtime-updates-s1{animation:realtime-updates-d1 7s -3s infinite}.realtime-updates-s2{animation:realtime-updates-d2 7s -3s infinite}.realtime-updates-s3{animation:realtime-updates-d3 7s -3s infinite}
+.realtime-updates-gap{animation:realtime-updates-gap 7s -3s infinite}.realtime-updates-back{animation:realtime-updates-back 7s -3s infinite}.realtime-updates-high{animation:realtime-updates-high 7s -3s infinite}.realtime-updates-sig{animation:realtime-updates-sig 7s -3s infinite}
+@keyframes realtime-updates-d1{0%{stroke-dashoffset:100}14%,100%{stroke-dashoffset:0}}
+@keyframes realtime-updates-d2{0%,34%{stroke-dashoffset:100}41%,100%{stroke-dashoffset:0}}
+@keyframes realtime-updates-d3{0%,43%{stroke-dashoffset:100}64%,100%{stroke-dashoffset:0}}
+@keyframes realtime-updates-gap{0%,15%{opacity:0}17%,33%{opacity:1}35%,100%{opacity:0}}
+@keyframes realtime-updates-back{0%,34%{opacity:0}37%,96%{opacity:1}100%{opacity:0}}
+@keyframes realtime-updates-high{0%,40%{opacity:0}43%,96%{opacity:1}100%{opacity:0}}
+@keyframes realtime-updates-sig{0%,15%{opacity:1}17%,33%{opacity:.2}35%,100%{opacity:1}}
+@media (prefers-reduced-motion: reduce){.realtime-updates-root *{animation-play-state:paused!important}}
+</style>
+<rect x="8" y="6" width="140" height="123" rx="14" class="realtime-updates-box"/>
+<g class="realtime-updates-sig"><rect x="116" y="20" width="5" height="7" class="realtime-updates-t"/><rect x="123" y="15" width="5" height="12" class="realtime-updates-t"/><rect x="130" y="10" width="5" height="17" class="realtime-updates-t"/></g>
+<path d="M112 28 L138 8" class="realtime-updates-slash realtime-updates-gap"/>
+<path d="M16 62 H140 M16 84 H140 M16 106 H140" stroke="var(--scene-line,#cfdfdc)" stroke-width="1"/>
+<g class="realtime-updates-gap"><rect x="66" y="36" width="34" height="84" rx="4" class="realtime-updates-gapbox"/><text x="83" y="86" font-size="20" font-weight="700" text-anchor="middle" class="realtime-updates-bad">?</text></g>
+<g class="realtime-updates-back"><rect x="66" y="36" width="34" height="84" rx="4" class="realtime-updates-fixbox"/><text x="83" y="114" font-size="13" font-weight="700" text-anchor="middle" class="realtime-updates-good">+60</text></g>
+<path d="M16 100 L30 94 L44 98 L56 84 L66 78" pathLength="100" class="realtime-updates-line realtime-updates-s1"/>
+<path d="M66 78 L78 62 L88 46 L100 68" pathLength="100" class="realtime-updates-replay realtime-updates-s2"/>
+<path d="M100 68 L112 76 L124 70 L140 74" pathLength="100" class="realtime-updates-line realtime-updates-s3"/>
+<g class="realtime-updates-high"><circle cx="88" cy="46" r="4" class="realtime-updates-good"/><text x="88" y="38" font-size="13" font-weight="700" text-anchor="middle" class="realtime-updates-t">412.80</text></g>
+<g class="realtime-updates-mut"><circle cx="176" cy="22" r="5"/><path d="M168 38 q8 -12 16 0z"/><circle cx="196" cy="22" r="5"/><path d="M188 38 q8 -12 16 0z"/><circle cx="216" cy="22" r="5"/><path d="M208 38 q8 -12 16 0z"/></g>
+<g class="realtime-updates-gap"><rect x="158" y="56" width="76" height="40" rx="10" class="realtime-updates-bad" opacity=".13"/><text x="196" y="82" font-size="15" font-weight="700" text-anchor="middle" class="realtime-updates-bad">Offline</text></g>
+<g class="realtime-updates-back"><rect x="158" y="56" width="76" height="40" rx="10" class="realtime-updates-good" opacity=".14"/><text x="196" y="82" font-size="15" font-weight="700" text-anchor="middle" class="realtime-updates-good">Synced &#10003;</text></g>
+</svg>

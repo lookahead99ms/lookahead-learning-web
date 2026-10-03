@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Request times out while the late reply is still on its way; the same request ID is kept">
+<title>Request times out while the late reply is still on its way; the same request ID is kept</title>
+<style>
+.look-ahead-distributed-systems-partial-failure-t{font-family:system-ui,sans-serif;font-weight:700;font-size:16px;fill:var(--scene-ink,#102a33)}
+
+.look-ahead-distributed-systems-partial-failure-h{transform-origin:160px 38px;animation:look-ahead-distributed-systems-partial-failure-spin 6s linear infinite;animation-delay:-3s}
+@keyframes look-ahead-distributed-systems-partial-failure-spin{to{transform:rotate(360deg)}}
+.look-ahead-distributed-systems-partial-failure-req{animation:look-ahead-distributed-systems-partial-failure-go 6s linear infinite;animation-delay:-3s}
+@keyframes look-ahead-distributed-systems-partial-failure-go{0%{transform:translateX(0);opacity:1}30%{transform:translateX(130px);opacity:1}38%{transform:translateX(130px);opacity:0}100%{transform:translateX(130px);opacity:0}}
+.look-ahead-distributed-systems-partial-failure-late{animation:look-ahead-distributed-systems-partial-failure-lt 6s linear infinite;animation-delay:-3s}
+@keyframes look-ahead-distributed-systems-partial-failure-lt{0%,45%{transform:translateX(0);opacity:0}50%{opacity:1}90%{transform:translateX(-130px);opacity:1}96%,100%{transform:translateX(-130px);opacity:0}}
+.look-ahead-distributed-systems-partial-failure-q{animation:look-ahead-distributed-systems-partial-failure-qq 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes look-ahead-distributed-systems-partial-failure-qq{0%,35%{opacity:0}45%,70%{opacity:1}80%,100%{opacity:0}}
+.look-ahead-distributed-systems-partial-failure-ok{animation:look-ahead-distributed-systems-partial-failure-okk 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes look-ahead-distributed-systems-partial-failure-okk{0%,85%{opacity:0}92%,100%{opacity:1}}
+</style>
+
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="20" y="98" width="60" height="54" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/>
+<rect x="240" y="98" width="60" height="54" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-link,#245a88)" stroke-width="2.5"/>
+<rect x="30" y="112" width="40" height="9" rx="3" fill="var(--scene-accent,#006c73)"/><rect x="30" y="128" width="40" height="9" rx="3" fill="var(--scene-accent,#006c73)" opacity=".5"/>
+<rect x="250" y="112" width="40" height="9" rx="3" fill="var(--scene-link,#245a88)"/><rect x="250" y="128" width="40" height="9" rx="3" fill="var(--scene-link,#245a88)" opacity=".5"/>
+<line x1="90" y1="125" x2="230" y2="125" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-dasharray="6 5"/>
+<circle cx="160" cy="38" r="21" fill="var(--scene-card,#fff)" stroke="var(--scene-warn,#a15c00)" stroke-width="3"/>
+<g class="look-ahead-distributed-systems-partial-failure-h"><line x1="160" y1="38" x2="160" y2="24" stroke="var(--scene-warn,#a15c00)" stroke-width="3" stroke-linecap="round"/></g>
+<circle cx="160" cy="38" r="3" fill="var(--scene-warn,#a15c00)"/>
+<text class="look-ahead-distributed-systems-partial-failure-t" x="160" y="82" text-anchor="middle" fill="var(--scene-warn,#a15c00)" style="fill:var(--scene-warn,#a15c00)">Timeout</text>
+<g class="look-ahead-distributed-systems-partial-failure-req"><circle cx="100" cy="125" r="14" fill="var(--scene-accent,#006c73)"/><text x="100" y="130" text-anchor="middle" font-family="system-ui,sans-serif" font-size="16" font-weight="700" fill="#fff">#7</text></g>
+<g class="look-ahead-distributed-systems-partial-failure-late"><circle cx="230" cy="125" r="14" fill="var(--scene-link,#245a88)"/><text x="230" y="130" text-anchor="middle" font-family="system-ui,sans-serif" font-size="16" font-weight="700" fill="#fff">#7</text></g>
+<text class="look-ahead-distributed-systems-partial-failure-q" x="50" y="92" text-anchor="middle" font-family="system-ui,sans-serif" font-size="20" font-weight="800" style="fill:var(--scene-bad,#b3261e)">?</text>
+<text class="look-ahead-distributed-systems-partial-failure-ok" x="50" y="92" text-anchor="middle" font-family="system-ui,sans-serif" font-size="20" font-weight="800" style="fill:var(--scene-good,#1f7a4d)">&#10003;</text>
+<text class="look-ahead-distributed-systems-partial-failure-t" x="160" y="168" text-anchor="middle">Same request ID</text>
+</svg>

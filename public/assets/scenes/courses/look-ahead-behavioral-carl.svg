@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A candidate tells an interviewer a story that fills in step by step: context, action, result, and what they learned">
+<style>
+.look-ahead-behavioral-carl-box{fill:var(--scene-card,#fff);stroke:var(--scene-ink,#102a33);stroke-width:1.6}
+.look-ahead-behavioral-carl-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:600;fill:var(--scene-ink,#102a33)}
+.look-ahead-behavioral-carl-s1{animation:look-ahead-behavioral-carl-s1 8s ease-in-out infinite;animation-delay:-3s}
+.look-ahead-behavioral-carl-s2{animation:look-ahead-behavioral-carl-s2 8s ease-in-out infinite;animation-delay:-3s}
+.look-ahead-behavioral-carl-s3{animation:look-ahead-behavioral-carl-s3 8s ease-in-out infinite;animation-delay:-3s}
+.look-ahead-behavioral-carl-s4{animation:look-ahead-behavioral-carl-s4 8s ease-in-out infinite;animation-delay:-3s}
+.look-ahead-behavioral-carl-bar{transform-box:fill-box;transform-origin:left;animation:look-ahead-behavioral-carl-bar 8s linear infinite;animation-delay:-3s}
+.look-ahead-behavioral-carl-talk{animation:look-ahead-behavioral-carl-talk 1.4s ease-in-out infinite}
+.look-ahead-behavioral-carl-talk2{animation:look-ahead-behavioral-carl-talk 1.4s ease-in-out infinite;animation-delay:-.45s}
+.look-ahead-behavioral-carl-talk3{animation:look-ahead-behavioral-carl-talk 1.4s ease-in-out infinite;animation-delay:-.9s}
+.look-ahead-behavioral-carl-nod{transform-box:fill-box;transform-origin:bottom;animation:look-ahead-behavioral-carl-nod 2s ease-in-out infinite}
+@keyframes look-ahead-behavioral-carl-s1{0%,2%{opacity:.25}6%,96%{opacity:1}100%{opacity:.25}}
+@keyframes look-ahead-behavioral-carl-s2{0%,22%{opacity:.25}28%,96%{opacity:1}100%{opacity:.25}}
+@keyframes look-ahead-behavioral-carl-s3{0%,44%{opacity:.25}50%,96%{opacity:1}100%{opacity:.25}}
+@keyframes look-ahead-behavioral-carl-s4{0%,66%{opacity:.25}72%,96%{opacity:1}100%{opacity:.25}}
+@keyframes look-ahead-behavioral-carl-bar{0%{transform:scaleX(0)}88%,96%{transform:scaleX(1)}100%{transform:scaleX(0)}}
+@keyframes look-ahead-behavioral-carl-talk{0%,100%{opacity:.3}50%{opacity:1}}
+@keyframes look-ahead-behavioral-carl-nod{0%,100%{transform:rotate(0)}50%{transform:rotate(6deg)}}
+</style>
+<rect x="0" y="0" width="320" height="180" rx="12" fill="var(--scene-card,#fff)"/>
+<!-- story card -->
+<rect class="look-ahead-behavioral-carl-box" x="16" y="16" width="288" height="86" rx="10"/>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="1.4"><path d="M88 26 V80 M160 26 V80 M232 26 V80"/></g>
+<!-- context: map pin -->
+<g class="look-ahead-behavioral-carl-s1"><path d="M52 30 a12 12 0 0 1 12 12 c0 9 -12 22 -12 22 s-12 -13 -12 -22 a12 12 0 0 1 12 -12z" fill="var(--scene-ahead,#2f6fb3)"/><circle cx="52" cy="42" r="4.5" fill="var(--scene-card,#fff)"/></g>
+<!-- action: gear -->
+<g class="look-ahead-behavioral-carl-s2"><g fill="var(--scene-accent,#006c73)"><rect x="120" y="29" width="8" height="8" rx="1.5" transform="rotate(0 124 46)"/><rect x="120" y="29" width="8" height="8" rx="1.5" transform="rotate(45 124 46)"/><rect x="120" y="29" width="8" height="8" rx="1.5" transform="rotate(90 124 46)"/><rect x="120" y="29" width="8" height="8" rx="1.5" transform="rotate(135 124 46)"/><rect x="120" y="29" width="8" height="8" rx="1.5" transform="rotate(180 124 46)"/><rect x="120" y="29" width="8" height="8" rx="1.5" transform="rotate(225 124 46)"/><rect x="120" y="29" width="8" height="8" rx="1.5" transform="rotate(270 124 46)"/><rect x="120" y="29" width="8" height="8" rx="1.5" transform="rotate(315 124 46)"/><circle cx="124" cy="46" r="12"/></g><circle cx="124" cy="46" r="4.5" fill="var(--scene-card,#fff)"/></g>
+<!-- result: rising chart -->
+<g class="look-ahead-behavioral-carl-s3"><path d="M178 64 H216 M178 64 V30" stroke="var(--scene-ink,#102a33)" stroke-width="1.8" fill="none"/><path d="M182 58 L192 50 L200 54 L212 36" stroke="var(--scene-good,#1f7a4d)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M206 35 l7 -1 l-1 7" stroke="var(--scene-good,#1f7a4d)" stroke-width="3" fill="none" stroke-linecap="round"/></g>
+<!-- learning: bulb -->
+<g class="look-ahead-behavioral-carl-s4"><path d="M268 30 a13 13 0 0 1 8 23 v5 h-16 v-5 a13 13 0 0 1 8 -23z" fill="var(--scene-warn,#a15c00)"/><rect x="261" y="60" width="14" height="4" rx="1.5" fill="var(--scene-ink,#102a33)"/></g>
+<rect x="28" y="84" width="264" height="7" rx="3.5" fill="var(--scene-accent-soft,#dcefed)"/>
+<rect class="look-ahead-behavioral-carl-bar" x="28" y="84" width="264" height="7" rx="3.5" fill="var(--scene-grow,#b8457a)"/>
+<!-- people -->
+<g fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="1.8"><circle cx="44" cy="134" r="10"/><path d="M26 166 a18 16 0 0 1 36 0z"/></g>
+<g class="look-ahead-behavioral-carl-nod"><g fill="var(--scene-grow,#b8457a)" stroke="var(--scene-ink,#102a33)" stroke-width="1.6"><circle cx="276" cy="134" r="10"/></g></g>
+<path d="M258 166 a18 16 0 0 1 36 0z" fill="var(--scene-grow,#b8457a)" stroke="var(--scene-ink,#102a33)" stroke-width="1.6"/>
+<path d="M96 116 h138 a8 8 0 0 1 8 8 v24 a8 8 0 0 1 -8 8 h-138 a8 8 0 0 1 -8 -8 v-24 a8 8 0 0 1 8 -8z" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="1.6"/>
+<path d="M242 136 l12 2 l-12 6z" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="1.6" stroke-linejoin="round"/>
+<path d="M241 137 v6" stroke="var(--scene-card,#fff)" stroke-width="3"/>
+<text class="look-ahead-behavioral-carl-t" x="165" y="141" text-anchor="middle">Your story</text>
+<g fill="var(--scene-ink,#102a33)"><circle class="look-ahead-behavioral-carl-talk" cx="152" cy="168" r="2.6"/><circle class="look-ahead-behavioral-carl-talk2" cx="165" cy="168" r="2.6"/><circle class="look-ahead-behavioral-carl-talk3" cx="178" cy="168" r="2.6"/></g>
+</svg>

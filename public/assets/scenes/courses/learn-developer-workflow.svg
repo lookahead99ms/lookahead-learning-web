@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A debugger steps to a breakpoint, the bug is fixed, the failing test turns green and CI passes">
+<style>
+.learn-developer-workflow-t { font-family: system-ui, sans-serif; fill: var(--scene-ink, #102a33); }
+.learn-developer-workflow-b { font-weight: 700; }
+.learn-developer-workflow-ed { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.learn-developer-workflow-code { fill: var(--scene-muted, #536970); opacity: .4; }
+.learn-developer-workflow-gut { fill: var(--scene-accent-soft, #dcefed); }
+.learn-developer-workflow-hl { fill: var(--scene-accent-soft, #dcefed); animation: learn-developer-workflow-kf-hl 8s steps(1) infinite; }
+@keyframes learn-developer-workflow-kf-hl { 0% { transform: translateY(0); } 12% { transform: translateY(20px); } 24% { transform: translateY(40px); } 36%, 100% { transform: translateY(60px); } }
+.learn-developer-workflow-sq { fill: none; stroke: var(--scene-bad, #b3261e); stroke-width: 2.5; animation: learn-developer-workflow-kf-sq 8s infinite; }
+@keyframes learn-developer-workflow-kf-sq { 0%, 46% { stroke: var(--scene-bad, #b3261e); } 50%, 100% { stroke: var(--scene-good, #1f7a4d); } }
+.learn-developer-workflow-red { animation: learn-developer-workflow-kf-red 8s infinite; }
+@keyframes learn-developer-workflow-kf-red { 0%, 52% { opacity: 1; } 55%, 100% { opacity: 0; } }
+.learn-developer-workflow-green { animation: learn-developer-workflow-kf-green 8s infinite; }
+@keyframes learn-developer-workflow-kf-green { 0%, 52% { opacity: 0; } 55%, 100% { opacity: 1; } }
+.learn-developer-workflow-ci { fill: var(--scene-card, #ffffff); stroke: var(--scene-muted, #536970); stroke-width: 2.5; }
+.learn-developer-workflow-d1 { animation: learn-developer-workflow-kf-d1 8s infinite; }
+@keyframes learn-developer-workflow-kf-d1 { 0%, 62% { opacity: 0; } 65%, 100% { opacity: 1; } }
+.learn-developer-workflow-d2 { animation: learn-developer-workflow-kf-d2 8s infinite; }
+@keyframes learn-developer-workflow-kf-d2 { 0%, 72% { opacity: 0; } 75%, 100% { opacity: 1; } }
+.learn-developer-workflow-d3 { animation: learn-developer-workflow-kf-d3 8s infinite; }
+@keyframes learn-developer-workflow-kf-d3 { 0%, 82% { opacity: 0; } 85%, 100% { opacity: 1; } }
+.learn-developer-workflow-hl, .learn-developer-workflow-sq, .learn-developer-workflow-red, .learn-developer-workflow-green, .learn-developer-workflow-d1, .learn-developer-workflow-d2, .learn-developer-workflow-d3 { animation-delay: -3.4s; }
+</style>
+<rect class="learn-developer-workflow-ed" x="14" y="14" width="176" height="152" rx="10"/>
+<rect class="learn-developer-workflow-gut" x="14" y="14" width="26" height="152" rx="10"/>
+<rect class="learn-developer-workflow-hl" x="40" y="30" width="150" height="18"/>
+<rect class="learn-developer-workflow-code" x="50" y="35" width="90" height="8" rx="4"/>
+<rect class="learn-developer-workflow-code" x="62" y="55" width="104" height="8" rx="4"/>
+<rect class="learn-developer-workflow-code" x="62" y="75" width="70" height="8" rx="4"/>
+<rect class="learn-developer-workflow-code" x="74" y="95" width="86" height="8" rx="4"/>
+<path class="learn-developer-workflow-sq" d="M74 108 q4 -4 8 0 t8 0 t8 0 t8 0 t8 0 t8 0 t8 0 t8 0 t8 0 t8 0 t6 0"/>
+<rect class="learn-developer-workflow-code" x="62" y="125" width="60" height="8" rx="4"/>
+<rect class="learn-developer-workflow-code" x="50" y="145" width="40" height="8" rx="4"/>
+<circle cx="27" cy="99" r="6" fill="var(--scene-bad, #b3261e)"/>
+<g class="learn-developer-workflow-red"><rect x="204" y="26" width="104" height="36" rx="18" fill="var(--scene-bad, #b3261e)"/><text class="learn-developer-workflow-t learn-developer-workflow-b" x="256" y="49" font-size="16" text-anchor="middle" style="fill: var(--scene-card, #ffffff)">✗ 1 failing</text></g>
+<g class="learn-developer-workflow-green"><rect x="204" y="26" width="104" height="36" rx="18" fill="var(--scene-good, #1f7a4d)"/><text class="learn-developer-workflow-t learn-developer-workflow-b" x="256" y="49" font-size="16" text-anchor="middle" style="fill: var(--scene-card, #ffffff)">✓ all pass</text></g>
+<text class="learn-developer-workflow-t learn-developer-workflow-b" x="256" y="104" font-size="16" text-anchor="middle">CI</text>
+<path d="M222 130 H290" stroke="var(--scene-line, #cfdfdc)" stroke-width="3"/>
+<circle class="learn-developer-workflow-ci" cx="222" cy="130" r="10"/><circle class="learn-developer-workflow-ci" cx="256" cy="130" r="10"/><circle class="learn-developer-workflow-ci" cx="290" cy="130" r="10"/>
+<g class="learn-developer-workflow-d1"><circle cx="222" cy="130" r="11" fill="var(--scene-good, #1f7a4d)"/><path d="M217 130 l3.5 3.5 l6 -7" fill="none" stroke="var(--scene-card, #ffffff)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g class="learn-developer-workflow-d2"><circle cx="256" cy="130" r="11" fill="var(--scene-good, #1f7a4d)"/><path d="M251 130 l3.5 3.5 l6 -7" fill="none" stroke="var(--scene-card, #ffffff)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g class="learn-developer-workflow-d3"><circle cx="290" cy="130" r="11" fill="var(--scene-good, #1f7a4d)"/><path d="M285 130 l3.5 3.5 l6 -7" fill="none" stroke="var(--scene-card, #ffffff)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+</svg>

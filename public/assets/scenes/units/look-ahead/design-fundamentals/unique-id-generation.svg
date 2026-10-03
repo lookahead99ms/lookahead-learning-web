@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Servers in three regions each hand out short codes that never repeat">
+<style>
+.unique-id-generation-t{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-ink,#102a33)}
+.unique-id-generation-mu{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-muted,#536970)}
+.unique-id-generation-g{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-good,#1f7a4d)}
+.unique-id-generation-w{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-warn,#a15c00)}
+.unique-id-generation-b{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-bad,#b3261e)}
+.unique-id-generation-a{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-accent,#006c73)}
+.unique-id-generation-mono{font-family:ui-monospace,Menlo,monospace}
+.unique-id-generation-card{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.unique-id-generation-soft{fill:var(--scene-accent-soft,#dcefed)}
+.unique-id-generation-acc{fill:var(--scene-accent,#006c73)}
+.unique-id-generation-gd{fill:var(--scene-good,#1f7a4d)}
+.unique-id-generation-wn{fill:var(--scene-warn,#a15c00)}
+.unique-id-generation-bd{fill:var(--scene-bad,#b3261e)}
+.unique-id-generation-ink{fill:var(--scene-ink,#102a33)}
+.unique-id-generation-mf{fill:var(--scene-muted,#536970)}
+.unique-id-generation-lf{fill:var(--scene-line,#cfdfdc)}
+.unique-id-generation-cf{fill:var(--scene-card,#fff)}
+.unique-id-generation-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.unique-id-generation-sg{fill:none;stroke:var(--scene-good,#1f7a4d);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.unique-id-generation-sw{fill:none;stroke:var(--scene-warn,#a15c00);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.unique-id-generation-sb{fill:none;stroke:var(--scene-bad,#b3261e);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.unique-id-generation-sm{fill:none;stroke:var(--scene-muted,#536970);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.unique-id-generation-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.unique-id-generation-si{fill:none;stroke:var(--scene-ink,#102a33);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.unique-id-generation-fall{animation:unique-id-generation-fall 2s linear infinite}
+@keyframes unique-id-generation-fall{0%{opacity:0;transform:translateY(0)}12%{opacity:1}80%{opacity:1;transform:translateY(34px)}100%{opacity:0;transform:translateY(34px)}}
+</style>
+<rect class="unique-id-generation-card" x="12" y="6" width="64" height="28" rx="7"/><rect class="unique-id-generation-acc" x="20" y="14" width="30" height="5" rx="2"/><circle class="unique-id-generation-acc" cx="64" cy="17" r="4"/><rect class="unique-id-generation-lf" x="20" y="23" width="40" height="4" rx="2"/>
+<rect class="unique-id-generation-acc unique-id-generation-fall" x="26" y="38" width="36" height="12" rx="4" style="animation-delay:-0.30s"/>
+<rect class="unique-id-generation-acc unique-id-generation-fall" x="26" y="38" width="36" height="12" rx="4" style="animation-delay:-1.30s"/>
+<rect class="unique-id-generation-card" x="88" y="6" width="64" height="28" rx="7"/><rect class="unique-id-generation-wn" x="96" y="14" width="30" height="5" rx="2"/><circle class="unique-id-generation-wn" cx="140" cy="17" r="4"/><rect class="unique-id-generation-lf" x="96" y="23" width="40" height="4" rx="2"/>
+<rect class="unique-id-generation-wn unique-id-generation-fall" x="102" y="38" width="36" height="12" rx="4" style="animation-delay:-0.65s"/>
+<rect class="unique-id-generation-wn unique-id-generation-fall" x="102" y="38" width="36" height="12" rx="4" style="animation-delay:-1.65s"/>
+<rect class="unique-id-generation-card" x="164" y="6" width="64" height="28" rx="7"/><rect class="unique-id-generation-gd" x="172" y="14" width="30" height="5" rx="2"/><circle class="unique-id-generation-gd" cx="216" cy="17" r="4"/><rect class="unique-id-generation-lf" x="172" y="23" width="40" height="4" rx="2"/>
+<rect class="unique-id-generation-gd unique-id-generation-fall" x="178" y="38" width="36" height="12" rx="4" style="animation-delay:-1.00s"/>
+<rect class="unique-id-generation-gd unique-id-generation-fall" x="178" y="38" width="36" height="12" rx="4" style="animation-delay:-2.00s"/>
+<rect class="unique-id-generation-card" x="8" y="76" width="224" height="30" rx="8"/><text class="unique-id-generation-a unique-id-generation-mono" x="120" y="97" font-size="16" font-weight="700" text-anchor="middle">/Tz4k9Qa</text>
+
+<text class="unique-id-generation-g" x="120" y="128" font-size="15" font-weight="700" text-anchor="middle">No repeats ✓</text>
+
+</svg>

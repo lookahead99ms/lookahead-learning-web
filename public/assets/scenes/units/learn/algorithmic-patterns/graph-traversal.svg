@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="graph traversal">
+<style>
+.learn-algorithmic-patterns-graph-traversal-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}.learn-algorithmic-patterns-graph-traversal-w{font:700 16px system-ui,sans-serif;fill:#fff}
+@keyframes learn-algorithmic-patterns-graph-traversal-rg{0%{transform:scale(.1);opacity:.8}70%{transform:scale(14);opacity:0}100%{transform:scale(14);opacity:0}}
+.learn-algorithmic-patterns-graph-traversal-rg{animation:learn-algorithmic-patterns-graph-traversal-rg 8s linear infinite;animation-delay:-3.2s;}.learn-algorithmic-patterns-graph-traversal-rg{transform-box:fill-box;transform-origin:center}
+@keyframes learn-algorithmic-patterns-graph-traversal-g0{0%{opacity:0}2.5%{opacity:0}4%{opacity:1}94%{opacity:1}97%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-graph-traversal-g0{animation:learn-algorithmic-patterns-graph-traversal-g0 8s linear infinite;animation-delay:-3.2s;}
+@keyframes learn-algorithmic-patterns-graph-traversal-g1{0%{opacity:0}14.5%{opacity:0}16%{opacity:1}94%{opacity:1}97%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-graph-traversal-g1{animation:learn-algorithmic-patterns-graph-traversal-g1 8s linear infinite;animation-delay:-3.2s;}
+@keyframes learn-algorithmic-patterns-graph-traversal-g2{0%{opacity:0}14.5%{opacity:0}16%{opacity:1}94%{opacity:1}97%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-graph-traversal-g2{animation:learn-algorithmic-patterns-graph-traversal-g2 8s linear infinite;animation-delay:-3.2s;}
+@keyframes learn-algorithmic-patterns-graph-traversal-g3{0%{opacity:0}28.5%{opacity:0}30%{opacity:1}94%{opacity:1}97%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-graph-traversal-g3{animation:learn-algorithmic-patterns-graph-traversal-g3 8s linear infinite;animation-delay:-3.2s;}
+@keyframes learn-algorithmic-patterns-graph-traversal-g4{0%{opacity:0}28.5%{opacity:0}30%{opacity:1}94%{opacity:1}97%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-graph-traversal-g4{animation:learn-algorithmic-patterns-graph-traversal-g4 8s linear infinite;animation-delay:-3.2s;}
+@keyframes learn-algorithmic-patterns-graph-traversal-g5{0%{opacity:0}42.5%{opacity:0}44%{opacity:1}94%{opacity:1}97%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-graph-traversal-g5{animation:learn-algorithmic-patterns-graph-traversal-g5 8s linear infinite;animation-delay:-3.2s;}
+@keyframes learn-algorithmic-patterns-graph-traversal-g6{0%{opacity:0}56.5%{opacity:0}58%{opacity:1}94%{opacity:1}97%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-graph-traversal-g6{animation:learn-algorithmic-patterns-graph-traversal-g6 8s linear infinite;animation-delay:-3.2s;}
+@keyframes learn-algorithmic-patterns-graph-traversal-g7{0%{opacity:0}56.5%{opacity:0}58%{opacity:1}94%{opacity:1}97%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-graph-traversal-g7{animation:learn-algorithmic-patterns-graph-traversal-g7 8s linear infinite;animation-delay:-3.2s;}
+.learn-algorithmic-patterns-graph-traversal-bg{fill:var(--scene-card,#fff)}
+</style>
+<rect class="learn-algorithmic-patterns-graph-traversal-bg" width="320" height="180" rx="12"/>
+<line x1="36" y1="86" x2="96" y2="44" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<line x1="36" y1="86" x2="96" y2="128" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<line x1="96" y1="44" x2="166" y2="58" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<line x1="96" y1="128" x2="166" y2="116" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<line x1="166" y1="58" x2="166" y2="116" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<line x1="166" y1="58" x2="232" y2="86" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<line x1="166" y1="116" x2="232" y2="86" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<line x1="232" y1="86" x2="288" y2="48" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<line x1="232" y1="86" x2="288" y2="126" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<circle class="learn-algorithmic-patterns-graph-traversal-rg" cx="36" cy="86" r="10" fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="3" vector-effect="non-scaling-stroke"/>
+<circle cx="36" cy="86" r="13" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<circle cx="96" cy="44" r="13" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<circle cx="96" cy="128" r="13" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<circle cx="166" cy="58" r="13" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<circle cx="166" cy="116" r="13" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<circle cx="232" cy="86" r="13" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<circle cx="288" cy="48" r="13" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<circle cx="288" cy="126" r="13" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<g class="learn-algorithmic-patterns-graph-traversal-g0"><circle cx="36" cy="86" r="13" fill="var(--scene-accent,#006c73)"/></g>
+<g class="learn-algorithmic-patterns-graph-traversal-g1"><circle cx="96" cy="44" r="13" fill="var(--scene-accent,#006c73)"/></g>
+<g class="learn-algorithmic-patterns-graph-traversal-g2"><circle cx="96" cy="128" r="13" fill="var(--scene-accent,#006c73)"/></g>
+<g class="learn-algorithmic-patterns-graph-traversal-g3"><circle cx="166" cy="58" r="13" fill="var(--scene-accent,#006c73)"/></g>
+<g class="learn-algorithmic-patterns-graph-traversal-g4"><circle cx="166" cy="116" r="13" fill="var(--scene-accent,#006c73)"/></g>
+<g class="learn-algorithmic-patterns-graph-traversal-g5"><circle cx="232" cy="86" r="13" fill="var(--scene-accent,#006c73)"/></g>
+<g class="learn-algorithmic-patterns-graph-traversal-g6"><circle cx="288" cy="48" r="13" fill="var(--scene-accent,#006c73)"/></g>
+<g class="learn-algorithmic-patterns-graph-traversal-g7"><circle cx="288" cy="126" r="13" fill="var(--scene-accent,#006c73)"/></g>
+<text class="learn-algorithmic-patterns-graph-traversal-t" x="160" y="170" text-anchor="middle">ripple out: fewest hops</text>
+</svg>

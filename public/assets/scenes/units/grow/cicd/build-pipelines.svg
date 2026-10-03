@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="One build moves unchanged from test to staging to production">
+<style>
+.grow-cicd-build-pipelines-t{font:700 13px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.grow-cicd-build-pipelines-m{font:700 13px ui-monospace,Menlo,monospace;fill:var(--scene-card,#fff)}
+.grow-cicd-build-pipelines-pkg{animation:grow-cicd-build-pipelines-mv 6s linear infinite;animation-delay:-3s}
+@keyframes grow-cicd-build-pipelines-mv{0%{transform:translateX(0)}100%{transform:translateX(200px)}}
+.grow-cicd-build-pipelines-st{animation:grow-cicd-build-pipelines-pop 6s ease-in-out infinite}
+.grow-cicd-build-pipelines-s1{animation-delay:-3.6s}.grow-cicd-build-pipelines-s2{animation-delay:-2.4s}.grow-cicd-build-pipelines-s3{animation-delay:-1.2s}
+@keyframes grow-cicd-build-pipelines-pop{0%,100%{fill:var(--scene-accent-soft,#dcefed)}30%,60%{fill:var(--scene-good,#1f7a4d)}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="20" y="82" width="280" height="6" rx="3" fill="var(--scene-line,#cfdfdc)"/>
+<g stroke="var(--scene-accent,#006c73)" stroke-width="2">
+<rect class="grow-cicd-build-pipelines-st grow-cicd-build-pipelines-s1" x="62" y="58" width="52" height="54" rx="10"/>
+<rect class="grow-cicd-build-pipelines-st grow-cicd-build-pipelines-s2" x="134" y="58" width="52" height="54" rx="10"/>
+<rect class="grow-cicd-build-pipelines-st grow-cicd-build-pipelines-s3" x="206" y="58" width="52" height="54" rx="10"/>
+</g>
+<g fill="none" stroke="var(--scene-ink,#102a33)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+<path d="M80 85l6 6 12-14"/>
+<path d="M152 74v22M142 86h20"/>
+<path d="M216 96l14-22 14 22z"/>
+</g>
+<g class="grow-cicd-build-pipelines-pkg">
+<rect x="17" y="32" width="52" height="24" rx="5" fill="var(--scene-ahead,#2f6fb3)"/>
+<text class="grow-cicd-build-pipelines-m" x="43" y="49" text-anchor="middle">a3f9</text>
+<path d="M43 56v8" stroke="var(--scene-ahead,#2f6fb3)" stroke-width="2.5"/>
+</g>
+<text class="grow-cicd-build-pipelines-t" x="160" y="26" text-anchor="middle" fill="var(--scene-ink,#102a33)">Build once</text>
+<text class="grow-cicd-build-pipelines-t" x="160" y="162" text-anchor="middle" style="fill:var(--scene-good,#1f7a4d)">Same digest everywhere</text>
+</svg>

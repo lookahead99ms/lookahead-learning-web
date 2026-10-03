@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Shoppers tap Buy on the last units of earbuds; the stock counts down to zero and the next shopper sees Sold out">
+<style>
+.tech-dynamodb-t{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-ink,#102a33)}
+.tech-dynamodb-mu{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-muted,#536970)}
+.tech-dynamodb-g{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-good,#1f7a4d)}
+.tech-dynamodb-w{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-warn,#a15c00)}
+.tech-dynamodb-b{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-bad,#b3261e)}
+.tech-dynamodb-a{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-accent,#006c73)}
+.tech-dynamodb-mono{font-family:ui-monospace,Menlo,monospace}
+.tech-dynamodb-card{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.tech-dynamodb-soft{fill:var(--scene-accent-soft,#dcefed)}
+.tech-dynamodb-acc{fill:var(--scene-accent,#006c73)}
+.tech-dynamodb-gd{fill:var(--scene-good,#1f7a4d)}
+.tech-dynamodb-wn{fill:var(--scene-warn,#a15c00)}
+.tech-dynamodb-bd{fill:var(--scene-bad,#b3261e)}
+.tech-dynamodb-ink{fill:var(--scene-ink,#102a33)}
+.tech-dynamodb-mf{fill:var(--scene-muted,#536970)}
+.tech-dynamodb-lf{fill:var(--scene-line,#cfdfdc)}
+.tech-dynamodb-cf{fill:var(--scene-card,#fff)}
+.tech-dynamodb-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-dynamodb-sg{fill:none;stroke:var(--scene-good,#1f7a4d);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-dynamodb-sw{fill:none;stroke:var(--scene-warn,#a15c00);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-dynamodb-sb{fill:none;stroke:var(--scene-bad,#b3261e);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-dynamodb-sm{fill:none;stroke:var(--scene-muted,#536970);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-dynamodb-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-dynamodb-si{fill:none;stroke:var(--scene-ink,#102a33);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-dynamodb-i2{animation:tech-dynamodb-i2 8s -3.2s infinite;}
+@keyframes tech-dynamodb-i2{0%,18%{opacity:1}24%,94%{opacity:.12}98%,100%{opacity:1}}
+.tech-dynamodb-i1{animation:tech-dynamodb-i1 8s -3.2s infinite;}
+@keyframes tech-dynamodb-i1{0%,48%{opacity:1}54%,94%{opacity:.12}98%,100%{opacity:1}}
+.tech-dynamodb-o1{animation:tech-dynamodb-o1 8s -3.2s infinite;}
+@keyframes tech-dynamodb-o1{0%,19%{opacity:0}20%,96%{opacity:1}97%,100%{opacity:0}}
+.tech-dynamodb-o2{animation:tech-dynamodb-o2 8s -3.2s infinite;}
+@keyframes tech-dynamodb-o2{0%,49%{opacity:0}50%,96%{opacity:1}97%,100%{opacity:0}}
+.tech-dynamodb-o3{animation:tech-dynamodb-o3 8s -3.2s infinite;}
+@keyframes tech-dynamodb-o3{0%,77%{opacity:0}78%,96%{opacity:1}97%,100%{opacity:0}}
+.tech-dynamodb-c2{animation:tech-dynamodb-c2 8s -3.2s infinite;}
+@keyframes tech-dynamodb-c2{0%,24%{opacity:1}25%,100%{opacity:0}}
+.tech-dynamodb-c1{animation:tech-dynamodb-c1 8s -3.2s infinite;}
+@keyframes tech-dynamodb-c1{0%,24%{opacity:0}25%,54%{opacity:1}55%,100%{opacity:0}}
+.tech-dynamodb-c0{animation:tech-dynamodb-c0 8s -3.2s infinite;}
+@keyframes tech-dynamodb-c0{0%,54%{opacity:0}55%,96%{opacity:1}97%,100%{opacity:0}}
+</style>
+<g class="tech-dynamodb-i1"><rect class="tech-dynamodb-card" x="20" y="20" width="30" height="40" rx="8"/><circle class="tech-dynamodb-acc" cx="30" cy="36" r="5"/><circle class="tech-dynamodb-acc" cx="40" cy="36" r="5"/><rect class="tech-dynamodb-lf" x="26" y="48" width="18" height="5" rx="2"/></g>
+<g class="tech-dynamodb-i2"><rect class="tech-dynamodb-card" x="56" y="20" width="30" height="40" rx="8"/><circle class="tech-dynamodb-acc" cx="66" cy="36" r="5"/><circle class="tech-dynamodb-acc" cx="76" cy="36" r="5"/><rect class="tech-dynamodb-lf" x="62" y="48" width="18" height="5" rx="2"/></g>
+<circle class="tech-dynamodb-mf" cx="144" cy="24" r="8"/><path class="tech-dynamodb-mf" d="M129 58 a15 15 0 0 1 30 0z"/>
+
+<circle class="tech-dynamodb-mf" cx="178" cy="24" r="8"/><path class="tech-dynamodb-mf" d="M163 58 a15 15 0 0 1 30 0z"/>
+
+<circle class="tech-dynamodb-mf" cx="212" cy="24" r="8"/><path class="tech-dynamodb-mf" d="M197 58 a15 15 0 0 1 30 0z"/>
+
+<g class="tech-dynamodb-o1"><path class="tech-dynamodb-sg" style="stroke-width:3" d="M136 78 l5 5 l10 -11"/></g><g class="tech-dynamodb-o2"><path class="tech-dynamodb-sg" style="stroke-width:3" d="M170 78 l5 5 l10 -11"/></g><g class="tech-dynamodb-o3"><path class="tech-dynamodb-sb" style="stroke-width:3" d="M211 76 l14 14 m0 -14 l-14 14"/></g>
+<g class="tech-dynamodb-c2"><text class="tech-dynamodb-w" x="54" y="100" font-size="20" font-weight="700" text-anchor="middle">2 left</text>
+</g><g class="tech-dynamodb-c1"><text class="tech-dynamodb-w" x="54" y="100" font-size="20" font-weight="700" text-anchor="middle">1 left</text>
+</g><g class="tech-dynamodb-c0"><text class="tech-dynamodb-b" x="54" y="100" font-size="20" font-weight="700" text-anchor="middle">Sold out</text>
+</g>
+</svg>

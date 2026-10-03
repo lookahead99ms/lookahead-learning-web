@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 200" role="img" aria-label="The same small program written in Java, Python and Go runs line by line and prints the same result">
+<style>
+.learn-language-foundations-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.learn-language-foundations-tile { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 2; }
+.learn-language-foundations-j { fill: var(--scene-warn, #a15c00); }
+.learn-language-foundations-p { fill: var(--scene-link, #245a88); }
+.learn-language-foundations-g { fill: var(--scene-accent, #006c73); }
+.learn-language-foundations-ln { fill: var(--scene-muted, #536970); opacity: .45; }
+.learn-language-foundations-cur { fill: var(--scene-accent-soft, #dcefed); }
+.learn-language-foundations-wire { fill: none; stroke: var(--scene-line, #cfdfdc); stroke-width: 2; }
+.learn-language-foundations-term { fill: var(--scene-ink, #102a33); }
+.learn-language-foundations-prompt { fill: none; stroke: var(--scene-card, #ffffff); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.learn-language-foundations-step { animation: learn-language-foundations-kf-step 6s steps(1) -3s infinite; }
+@keyframes learn-language-foundations-kf-step { 0% { transform: translateY(0); } 25% { transform: translateY(14px); } 50% { transform: translateY(28px); } 75% { transform: translateY(42px); } }
+.learn-language-foundations-m1 { animation: learn-language-foundations-kf-m1 6s ease-in -3s infinite; }
+.learn-language-foundations-m2 { animation: learn-language-foundations-kf-m2 6s ease-in -3s infinite; }
+.learn-language-foundations-m3 { animation: learn-language-foundations-kf-m3 6s ease-in -3s infinite; }
+@keyframes learn-language-foundations-kf-m1 { 0% { transform: translate(0, 0); opacity: 0; } 4% { opacity: 1; } 22% { transform: translate(120px, 32px); opacity: 1; } 24%, 100% { transform: translate(120px, 32px); opacity: 0; } }
+@keyframes learn-language-foundations-kf-m2 { 0%, 30% { transform: translate(0, 0); opacity: 0; } 34% { opacity: 1; } 52% { transform: translate(0, 32px); opacity: 1; } 54%, 100% { transform: translate(0, 32px); opacity: 0; } }
+@keyframes learn-language-foundations-kf-m3 { 0%, 60% { transform: translate(0, 0); opacity: 0; } 64% { opacity: 1; } 82% { transform: translate(-120px, 32px); opacity: 1; } 84%, 100% { transform: translate(-120px, 32px); opacity: 0; } }
+.learn-language-foundations-o1 { animation: learn-language-foundations-kf-o1 6s ease-out -3s infinite; }
+.learn-language-foundations-o2 { animation: learn-language-foundations-kf-o2 6s ease-out -3s infinite; }
+.learn-language-foundations-o3 { animation: learn-language-foundations-kf-o3 6s ease-out -3s infinite; }
+@keyframes learn-language-foundations-kf-o1 { 0%, 21% { opacity: 0; } 25%, 95% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes learn-language-foundations-kf-o2 { 0%, 51% { opacity: 0; } 55%, 95% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes learn-language-foundations-kf-o3 { 0%, 81% { opacity: 0; } 85%, 95% { opacity: 1; } 100% { opacity: 0; } }
+</style>
+<!-- Java -->
+<rect class="learn-language-foundations-tile" x="20" y="14" width="120" height="104" rx="10"/>
+<rect class="learn-language-foundations-j" x="30" y="26" width="4" height="16" rx="2"/>
+<text class="learn-language-foundations-t" x="40" y="39" font-size="16">Java</text>
+<rect class="learn-language-foundations-cur learn-language-foundations-step" x="32" y="48" width="98" height="12" rx="3"/>
+<rect class="learn-language-foundations-ln" x="38" y="52" width="70" height="5" rx="2.5"/>
+<rect class="learn-language-foundations-ln" x="50" y="66" width="62" height="5" rx="2.5"/>
+<rect class="learn-language-foundations-ln" x="50" y="80" width="46" height="5" rx="2.5"/>
+<rect class="learn-language-foundations-ln" x="38" y="94" width="10" height="5" rx="2.5"/>
+<!-- Python -->
+<rect class="learn-language-foundations-tile" x="180" y="14" width="120" height="104" rx="10"/>
+<rect class="learn-language-foundations-p" x="190" y="26" width="4" height="16" rx="2"/>
+<text class="learn-language-foundations-t" x="200" y="39" font-size="16">Python</text>
+<rect class="learn-language-foundations-cur learn-language-foundations-step" x="192" y="48" width="98" height="12" rx="3"/>
+<rect class="learn-language-foundations-ln" x="198" y="52" width="56" height="5" rx="2.5"/>
+<rect class="learn-language-foundations-ln" x="210" y="66" width="50" height="5" rx="2.5"/>
+<rect class="learn-language-foundations-ln" x="222" y="80" width="42" height="5" rx="2.5"/>
+<rect class="learn-language-foundations-ln" x="198" y="94" width="40" height="5" rx="2.5"/>
+<!-- Go -->
+<rect class="learn-language-foundations-tile" x="340" y="14" width="120" height="104" rx="10"/>
+<rect class="learn-language-foundations-g" x="350" y="26" width="4" height="16" rx="2"/>
+<text class="learn-language-foundations-t" x="360" y="39" font-size="16">Go</text>
+<rect class="learn-language-foundations-cur learn-language-foundations-step" x="352" y="48" width="98" height="12" rx="3"/>
+<rect class="learn-language-foundations-ln" x="358" y="52" width="64" height="5" rx="2.5"/>
+<rect class="learn-language-foundations-ln" x="370" y="66" width="54" height="5" rx="2.5"/>
+<rect class="learn-language-foundations-ln" x="370" y="80" width="66" height="5" rx="2.5"/>
+<rect class="learn-language-foundations-ln" x="358" y="94" width="10" height="5" rx="2.5"/>
+<!-- wires -->
+<path class="learn-language-foundations-wire" d="M80 118 L200 150 M240 118 V150 M400 118 L280 150"/>
+<circle class="learn-language-foundations-j learn-language-foundations-m1" cx="80" cy="118" r="6"/>
+<circle class="learn-language-foundations-p learn-language-foundations-m2" cx="240" cy="118" r="6"/>
+<circle class="learn-language-foundations-g learn-language-foundations-m3" cx="400" cy="118" r="6"/>
+<!-- terminal: same output from each -->
+<rect class="learn-language-foundations-term" x="160" y="150" width="160" height="40" rx="8"/>
+<path class="learn-language-foundations-prompt" d="M174 163 L181 170 L174 177"/>
+<rect class="learn-language-foundations-j learn-language-foundations-o1" x="194" y="163" width="34" height="14" rx="4"/>
+<rect class="learn-language-foundations-p learn-language-foundations-o2" x="236" y="163" width="34" height="14" rx="4"/>
+<rect class="learn-language-foundations-g learn-language-foundations-o3" x="278" y="163" width="34" height="14" rx="4"/>
+</svg>

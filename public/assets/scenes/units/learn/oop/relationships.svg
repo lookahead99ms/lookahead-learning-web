@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="A booking owns its room hold and releases it on cancel while the guest remains">
+<style>
+.learn-oop-relationships-t{font-family:system-ui,sans-serif;font-size:14px;font-weight:700}
+.learn-oop-relationships-hold{animation:learn-oop-relationships-a 7s ease-in-out infinite;animation-delay:-3s}
+.learn-oop-relationships-bk{animation:learn-oop-relationships-b 7s ease-in-out infinite;animation-delay:-3s}
+.learn-oop-relationships-x{animation:learn-oop-relationships-c 7s ease-in-out infinite;animation-delay:-3s}
+@keyframes learn-oop-relationships-a{0%,45%{opacity:1;transform:scale(1)}65%,90%{opacity:0;transform:scale(.6)}100%{opacity:1;transform:scale(1)}}
+@keyframes learn-oop-relationships-b{0%,45%{opacity:1}65%,90%{opacity:.35}100%{opacity:1}}
+@keyframes learn-oop-relationships-c{0%,40%{opacity:0}50%,85%{opacity:1}95%,100%{opacity:0}}
+</style>
+<rect width="240" height="135" fill="var(--scene-card,#fff)"/>
+<g class="learn-oop-relationships-bk">
+<rect x="78" y="50" width="70" height="36" rx="10" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<text class="learn-oop-relationships-t" x="113" y="73" text-anchor="middle" fill="var(--scene-ink,#102a33)">Booking</text>
+</g>
+<path d="M162 68h24" stroke="var(--scene-accent,#006c73)" stroke-width="3" class="learn-oop-relationships-bk"/>
+<path d="M148 68l7-5 7 5-7 5z" fill="var(--scene-accent,#006c73)" class="learn-oop-relationships-bk"/>
+<g class="learn-oop-relationships-hold" style="transform-origin:206px 69px">
+<rect x="186" y="44" width="40" height="50" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-ahead,#2f6fb3)" stroke-width="3"/>
+<rect x="194" y="52" width="24" height="16" rx="2" fill="var(--scene-ahead,#2f6fb3)"/>
+<circle cx="212" cy="82" r="3" fill="var(--scene-ahead,#2f6fb3)"/>
+</g>
+<path d="M78 68H52" stroke="var(--scene-muted,#536970)" stroke-width="3" stroke-dasharray="5 4"/>
+<circle cx="30" cy="58" r="8" fill="var(--scene-grow,#b8457a)"/>
+<path d="M14 90a16 14 0 0 1 32 0z" fill="var(--scene-grow,#b8457a)"/>
+<text class="learn-oop-relationships-t" x="30" y="114" text-anchor="middle" fill="var(--scene-grow,#b8457a)">Guest</text>
+<g class="learn-oop-relationships-x"><text class="learn-oop-relationships-t" x="206" y="30" text-anchor="middle" fill="var(--scene-bad,#b3261e)">cancel</text></g>
+</svg>

@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="One read-only image starts several containers, each with a thin writable layer that disappears on removal">
+<style>
+.learn-docker-docker-images-and-runtime-t{font-family:system-ui,sans-serif;font-size:17px;font-weight:600;fill:var(--scene-ink,#102a33)}
+.learn-docker-docker-images-and-runtime-bg{fill:var(--scene-card,#fff)}
+.learn-docker-docker-images-and-runtime-l1{fill:var(--scene-ahead,#2f6fb3)}
+.learn-docker-docker-images-and-runtime-l2{fill:var(--scene-link,#245a88)}
+.learn-docker-docker-images-and-runtime-l3{fill:var(--scene-learn,#0f8a8a)}
+.learn-docker-docker-images-and-runtime-w{fill:var(--scene-warn,#a15c00)}
+.learn-docker-docker-images-and-runtime-box{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.learn-docker-docker-images-and-runtime-flow{stroke:var(--scene-accent,#006c73);stroke-width:3;stroke-dasharray:6 6;fill:none;animation:learn-docker-docker-images-and-runtime-dash 1.2s linear infinite}
+.learn-docker-docker-images-and-runtime-arr{fill:var(--scene-accent,#006c73)}
+.learn-docker-docker-images-and-runtime-c1{animation:learn-docker-docker-images-and-runtime-pop 6s ease-in-out infinite;animation-delay:-3s;transform-box:fill-box;transform-origin:center}
+.learn-docker-docker-images-and-runtime-c2{animation:learn-docker-docker-images-and-runtime-pop 6s ease-in-out infinite;animation-delay:-4.5s;transform-box:fill-box;transform-origin:center}
+.learn-docker-docker-images-and-runtime-gone{animation:learn-docker-docker-images-and-runtime-fade 6s ease-in-out infinite;animation-delay:-3s}
+.learn-docker-docker-images-and-runtime-run{fill:var(--scene-good,#1f7a4d);animation:learn-docker-docker-images-and-runtime-blink 1.5s ease-in-out infinite;animation-delay:-0.5s}
+@keyframes learn-docker-docker-images-and-runtime-dash{to{stroke-dashoffset:-12}}
+@keyframes learn-docker-docker-images-and-runtime-pop{0%{opacity:0;transform:scale(.85)}15%,100%{opacity:1;transform:scale(1)}}
+@keyframes learn-docker-docker-images-and-runtime-fade{0%,45%{opacity:1}65%,90%{opacity:0}100%{opacity:1}}
+@keyframes learn-docker-docker-images-and-runtime-blink{0%,100%{opacity:1}50%{opacity:.35}}
+</style>
+<rect width="320" height="180" class="learn-docker-docker-images-and-runtime-bg"/>
+<text x="16" y="28" class="learn-docker-docker-images-and-runtime-t">Image</text>
+<rect x="16" y="40" width="90" height="26" rx="4" class="learn-docker-docker-images-and-runtime-l1"/>
+<rect x="16" y="70" width="90" height="26" rx="4" class="learn-docker-docker-images-and-runtime-l2"/>
+<rect x="16" y="100" width="90" height="26" rx="4" class="learn-docker-docker-images-and-runtime-l3"/>
+<rect x="16" y="130" width="90" height="26" rx="4" class="learn-docker-docker-images-and-runtime-l1" opacity=".55"/>
+<path d="M114 98 H146" class="learn-docker-docker-images-and-runtime-flow"/>
+<path d="M146 88 L162 98 L146 108 Z" class="learn-docker-docker-images-and-runtime-arr"/>
+<text x="176" y="28" class="learn-docker-docker-images-and-runtime-t">Containers</text>
+<g class="learn-docker-docker-images-and-runtime-c1">
+<rect x="176" y="40" width="128" height="52" rx="6" class="learn-docker-docker-images-and-runtime-box"/>
+<rect x="184" y="48" width="80" height="8" rx="2" class="learn-docker-docker-images-and-runtime-l1"/>
+<rect x="184" y="59" width="80" height="8" rx="2" class="learn-docker-docker-images-and-runtime-l2"/>
+<rect x="184" y="70" width="80" height="8" rx="2" class="learn-docker-docker-images-and-runtime-l3"/>
+<rect x="184" y="80" width="80" height="8" rx="2" class="learn-docker-docker-images-and-runtime-w"/>
+<circle cx="288" cy="66" r="7" class="learn-docker-docker-images-and-runtime-run"/>
+</g>
+<g class="learn-docker-docker-images-and-runtime-c2">
+<rect x="176" y="100" width="128" height="52" rx="6" class="learn-docker-docker-images-and-runtime-box"/>
+<rect x="184" y="108" width="80" height="8" rx="2" class="learn-docker-docker-images-and-runtime-l1"/>
+<rect x="184" y="119" width="80" height="8" rx="2" class="learn-docker-docker-images-and-runtime-l2"/>
+<rect x="184" y="130" width="80" height="8" rx="2" class="learn-docker-docker-images-and-runtime-l3"/>
+<g class="learn-docker-docker-images-and-runtime-gone"><rect x="184" y="140" width="80" height="8" rx="2" class="learn-docker-docker-images-and-runtime-w"/></g>
+<circle cx="288" cy="126" r="7" class="learn-docker-docker-images-and-runtime-run"/>
+</g>
+<text x="176" y="172" class="learn-docker-docker-images-and-runtime-t" style="fill:var(--scene-warn,#a15c00)">Gone on remove</text>
+</svg>

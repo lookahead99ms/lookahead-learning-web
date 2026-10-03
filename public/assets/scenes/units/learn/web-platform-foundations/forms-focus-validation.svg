@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="forms-focus-validation">
+<style>
+.learn-web-platform-foundations-forms-focus-validation-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-web-platform-foundations-forms-focus-validation-m{font-family:ui-monospace,Menlo,monospace;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-web-platform-foundations-forms-focus-validation-card{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:2}
+
+.learn-web-platform-foundations-forms-focus-validation-bg{fill:var(--scene-accent-soft,#dcefed)}
+.learn-web-platform-foundations-forms-focus-validation-type{animation:learn-web-platform-foundations-forms-focus-validation-type 6s steps(1) infinite;animation-delay:-3s}
+@keyframes learn-web-platform-foundations-forms-focus-validation-type{0%{opacity:0}8%{opacity:1}100%{opacity:1}}
+.learn-web-platform-foundations-forms-focus-validation-w1{clip-path:inset(0 100% 0 0);animation:learn-web-platform-foundations-forms-focus-validation-w1 6s linear infinite;animation-delay:-3s}
+@keyframes learn-web-platform-foundations-forms-focus-validation-w1{0%,4%{clip-path:inset(0 100% 0 0)}30%,100%{clip-path:inset(0 0 0 0)}}
+.learn-web-platform-foundations-forms-focus-validation-ring{stroke:var(--scene-accent,#006c73);stroke-width:3;fill:none;animation:learn-web-platform-foundations-forms-focus-validation-ring 6s linear infinite;animation-delay:-3s}
+@keyframes learn-web-platform-foundations-forms-focus-validation-ring{0%,36%{stroke:var(--scene-accent,#006c73)}40%,92%{stroke:var(--scene-bad,#b3261e)}100%{stroke:var(--scene-accent,#006c73)}}
+.learn-web-platform-foundations-forms-focus-validation-err{animation:learn-web-platform-foundations-forms-focus-validation-err 6s linear infinite;animation-delay:-3s;opacity:1}
+@keyframes learn-web-platform-foundations-forms-focus-validation-err{0%,36%{opacity:0;transform:translateY(-6px)}42%,92%{opacity:1;transform:none}100%{opacity:0}}
+.learn-web-platform-foundations-forms-focus-validation-caret{animation:learn-web-platform-foundations-forms-focus-validation-bl 1s steps(1) infinite}
+@keyframes learn-web-platform-foundations-forms-focus-validation-bl{0%,50%{opacity:1}51%,100%{opacity:0}}
+</style>
+
+<rect class="learn-web-platform-foundations-forms-focus-validation-bg" width="320" height="180"/>
+<rect class="learn-web-platform-foundations-forms-focus-validation-card" x="30" y="20" width="260" height="140" rx="12"/>
+<text class="learn-web-platform-foundations-forms-focus-validation-t" x="48" y="52">Email</text>
+<rect class="learn-web-platform-foundations-forms-focus-validation-card" x="48" y="64" width="224" height="40" rx="8"/>
+<rect class="learn-web-platform-foundations-forms-focus-validation-ring" x="48" y="64" width="224" height="40" rx="8"/>
+<g class="learn-web-platform-foundations-forms-focus-validation-w1"><text class="learn-web-platform-foundations-forms-focus-validation-m" x="60" y="90">ana.site.com</text></g>
+<rect class="learn-web-platform-foundations-forms-focus-validation-caret" x="180" y="76" width="2" height="16" fill="var(--scene-ink,#102a33)"/>
+<g class="learn-web-platform-foundations-forms-focus-validation-err">
+<circle cx="58" cy="132" r="10" fill="var(--scene-bad,#b3261e)"/>
+<rect x="56.5" y="126" width="3" height="7" fill="#fff"/><rect x="56.5" y="135" width="3" height="3" fill="#fff"/>
+<text class="learn-web-platform-foundations-forms-focus-validation-t" x="76" y="137" style="fill:var(--scene-bad,#b3261e)">Needs an @</text></g>
+
+</svg>

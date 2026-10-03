@@ -1,3 +1,4 @@
+import { withoutHiddenCourseDocuments } from '../../content/hidden-courses';
 import { NgTemplateOutlet } from '@angular/common';
 import {
   Component,
@@ -680,7 +681,7 @@ export class Search implements OnInit, AfterViewInit {
     index.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (questions) => {
         if (requestVersion !== this.indexRequestVersion) return;
-        this.questions.set(questions);
+        this.questions.set(withoutHiddenCourseDocuments(questions));
         this.loading.set(false);
         this.validatePreviewSelection();
       },

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Driver tokens pass lambda rule gates; one is rejected, one lands in an Optional box">
+<style>
+.learn-modern-java-modern-language-t{font-family:system-ui,sans-serif;font-size:14px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-modern-java-modern-language-c{font-family:ui-monospace,Menlo,monospace;font-size:14px;font-weight:700;fill:var(--scene-card,#fff)}
+.learn-modern-java-modern-language-a{animation:learn-modern-java-modern-language-ka 6s linear infinite;animation-delay:-4.6s}
+.learn-modern-java-modern-language-b{animation:learn-modern-java-modern-language-kb 6s linear infinite;animation-delay:-1.2s}
+.learn-modern-java-modern-language-p{animation:learn-modern-java-modern-language-kp 3s ease-in-out infinite;animation-delay:-1s}
+@keyframes learn-modern-java-modern-language-ka{0%{transform:translateX(0);opacity:0}6%{opacity:1}70%{transform:translateX(168px);opacity:1}82%{transform:translateX(168px) scale(.8);opacity:1}100%{transform:translateX(168px) scale(.8);opacity:1}}
+@keyframes learn-modern-java-modern-language-kb{0%{transform:translate(0,0);opacity:0}6%{opacity:1}38%{transform:translate(70px,0);opacity:1}48%{transform:translate(70px,0);opacity:1}70%{transform:translate(78px,34px);opacity:0}100%{transform:translate(78px,34px);opacity:0}}
+@keyframes learn-modern-java-modern-language-kp{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+</style>
+<rect width="240" height="135" rx="10" fill="var(--scene-card,#fff)"/>
+<rect x="8" y="64" width="224" height="10" rx="5" fill="var(--scene-line,#cfdfdc)"/>
+<g class="learn-modern-java-modern-language-p" style="transform-origin:68px 38px">
+<rect x="48" y="24" width="40" height="28" rx="8" fill="var(--scene-link,#245a88)"/>
+<text x="68" y="44" text-anchor="middle" class="learn-modern-java-modern-language-c">x→</text></g>
+<rect x="64" y="52" width="8" height="12" fill="var(--scene-link,#245a88)"/>
+<rect x="64" y="74" width="8" height="20" fill="var(--scene-link,#245a88)"/>
+<g class="learn-modern-java-modern-language-p" style="transform-origin:112px 38px;animation-delay:-2s">
+<rect x="92" y="24" width="40" height="28" rx="8" fill="var(--scene-learn,#0f8a8a)"/>
+<text x="112" y="44" text-anchor="middle" class="learn-modern-java-modern-language-c">x→</text></g>
+<rect x="108" y="52" width="8" height="12" fill="var(--scene-learn,#0f8a8a)"/>
+<rect x="108" y="74" width="8" height="20" fill="var(--scene-learn,#0f8a8a)"/>
+<rect x="172" y="36" width="58" height="62" rx="10" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3" stroke-dasharray="7 4"/>
+<text x="201" y="124" text-anchor="middle" class="learn-modern-java-modern-language-t">Optional</text>
+<g class="learn-modern-java-modern-language-b"><circle cx="24" cy="69" r="10" fill="var(--scene-bad,#b3261e)"/></g>
+<g class="learn-modern-java-modern-language-a"><circle cx="24" cy="69" r="10" fill="var(--scene-good,#1f7a4d)"/></g>
+</svg>

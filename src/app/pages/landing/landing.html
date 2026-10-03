@@ -167,38 +167,71 @@
       <div class="three-columns">
         <article class="card">
           <a class="card-link" routerLink="/learn" aria-label="Explore foundations">
-            <p class="number">Learn</p>
-            <h3>Build the mental model.</h3>
-            <p>
-              Language foundations, theoretical interview questions, and canonical DSA practice.
-              Read the reasoning, write code, and step through a visual debugger.
-            </p>
-            <span class="card-action">Explore foundations</span>
+            <app-card-scene
+              class="direction-scene"
+              src="/assets/scenes/landing/learn.svg"
+              [alt]="tagline('learn') + ' Looking for 42 in sorted prices one by one is slow; you ask for a faster way, AI hints that the list is sorted so you can halve the range, you halve it twice and find 42, and explain it back: halving takes about 6 steps, not 64. Then a new task, the first price of at least 40, and you solve it with the same idea on your own, no hint needed'"
+            />
+            <div class="card-body">
+              <p class="number">Learn</p>
+              <h3>Build the mental model.</h3>
+              <p>
+                Language foundations, theoretical interview questions, and canonical DSA practice.
+                Read the reasoning, write code, and step through a visual debugger.
+              </p>
+              <span class="card-action">Explore foundations</span>
+            </div>
           </a>
         </article>
         <article class="card">
           <a class="card-link" routerLink="/grow" aria-label="Explore production practice">
-            <p class="number">Grow</p>
-            <h3>Make it work in production.</h3>
-            <p>
-              Develop senior-engineer judgment through implementation, operational failures,
-              diagnosis, security, and delivery scenarios.
-            </p>
-            <span class="card-action">Explore production practice</span>
+            <app-card-scene
+              class="direction-scene"
+              src="/assets/scenes/landing/grow.svg"
+              [alt]="tagline('grow') + ' Build, ship, fix with AI. Plan: you ask to add an order export, AI offers three options, CSV, PDF or JSON, and you pick CSV. Build: AI writes the code and tests, you ship it. Fix: totals come out wrong in production, AI reads the logs and points to a null currency, you choose a default currency and it is fixed'"
+            />
+            <div class="card-body">
+              <p class="number">Grow</p>
+              <h3>Make it work in production.</h3>
+              <p>
+                Develop senior-engineer judgment through implementation, operational failures,
+                diagnosis, security, and delivery scenarios.
+              </p>
+              <span class="card-action">Explore production practice</span>
+            </div>
           </a>
         </article>
         <article class="card">
           <a class="card-link" routerLink="/look-ahead" aria-label="Explore advanced topics">
-            <p class="number">Look Ahead</p>
-            <h3>Explain the bigger decisions.</h3>
-            <p>
-              System design, leadership, behavioral reasoning, and AI engineering. Connect decisions
-              to constraints and their consequences.
-            </p>
-            <span class="card-action">Explore advanced topics</span>
+            <app-card-scene
+              class="direction-scene"
+              src="/assets/scenes/landing/look-ahead.svg"
+              [alt]="tagline('look-ahead') + ' A phone app calls a Feed service that reads from a database; too many reads pile up until a cache goes between the Feed service and the database and reads hit the cache; then an AI ranker is attached to the Feed service, with sorting by likes as its fallback. When the ranker times out, the likes fallback keeps the feed loading and the balance tips toward available, because a slightly stale feed beats an empty one; you set a 50 ms budget for the ranker and everything is green again'"
+            />
+            <div class="card-body">
+              <p class="number">Look Ahead</p>
+              <h3>Explain the bigger decisions.</h3>
+              <p>
+                System design, leadership, behavioral reasoning, and AI engineering. Connect decisions
+                to constraints and their consequences.
+              </p>
+              <span class="card-action">Explore advanced topics</span>
+            </div>
           </a>
         </article>
       </div>
+      @if (!reducedMotion()) {
+        <div class="path-motion">
+          <button
+            type="button"
+            class="path-motion-toggle"
+            [attr.aria-pressed]="scenesPaused()"
+            (click)="toggleScenes()"
+          >
+            {{ scenesPaused() ? 'Play animations' : 'Pause animations' }}
+          </button>
+        </div>
+      }
     </section>
   </div>
   <app-engineering-challenge />
@@ -214,78 +247,88 @@
     </div>
     <div class="feature-grid">
       <article class="discovery-feature navigation-card">
-        <div class="feature-topline">
-          <p class="feature-name">System Design</p>
-          <svg viewBox="0 0 96 72" aria-hidden="true" focusable="false">
-            <rect x="10" y="24" width="26" height="20" rx="2" />
-            <rect x="60" y="7" width="26" height="20" rx="2" />
-            <rect x="60" y="43" width="26" height="20" rx="2" />
-            <path d="M36 34h12V17h12M48 34v19h12" />
-          </svg>
+        <div class="feature-layout">
+          <app-card-scene
+            class="feature-scene"
+            src="/assets/scenes/landing/system-design.svg"
+            alt="A ticket system: fan app, gateway, reservation service and seats database. AI notes that 90 percent of requests are reads, you answer right there to add a cache, and the cache attaches to the reservation service"
+          />
+          <div class="feature-body">
+            <p class="feature-name">System Design</p>
+            <h3>Understand why, as well as how.</h3>
+            <p class="feature-description">
+              Connect constraints to choices, trade-offs and failure modes. Practice explaining the
+              reasoning behind a design.
+            </p>
+            <a data-card-primary routerLink="/look-ahead/design-systems">Explore system design</a>
+            <p class="feature-availability">
+              Written walkthroughs available. Audio and video are planned.
+            </p>
+          </div>
         </div>
-        <h3>Understand why, as well as how.</h3>
-        <p class="feature-description">
-          Connect constraints to choices, trade-offs and failure modes. Practice explaining the
-          reasoning behind a design.
-        </p>
-        <a data-card-primary routerLink="/look-ahead/system-design">Explore system design</a>
-        <p class="feature-availability">
-          Written walkthroughs available. Audio and video are planned.
-        </p>
       </article>
       <article class="discovery-feature navigation-card">
-        <div class="feature-topline">
-          <p class="feature-name">Topic Workbench</p>
-          <svg viewBox="0 0 96 72" aria-hidden="true" focusable="false">
-            <circle cx="39" cy="29" r="19" />
-            <path d="m53 43 23 23M30 24h18M30 33h12" />
-          </svg>
+        <div class="feature-layout">
+          <app-card-scene
+            class="feature-scene"
+            src="/assets/scenes/landing/topic-workbench.svg"
+            alt="A magnifier moves across topic cards and settles on Idempotency; you ask what it is, AI answers in one line, repeat it and get the same result, and you explain it back"
+          />
+          <div class="feature-body">
+            <p class="feature-name">Topic Workbench</p>
+            <h3>Follow a question worth exploring.</h3>
+            <p class="feature-description">
+              Bring explanations, interview questions and practical reasoning together around the
+              subject you want to understand.
+            </p>
+            <a data-card-primary routerLink="/search">Find a topic</a>
+            <p class="feature-availability">One subject. Several ways to learn.</p>
+          </div>
         </div>
-        <h3>Follow a question worth exploring.</h3>
-        <p class="feature-description">
-          Bring explanations, interview questions and practical reasoning together around the
-          subject you want to understand.
-        </p>
-        <a data-card-primary routerLink="/search">Find a topic</a>
-        <p class="feature-availability">One subject. Several ways to learn.</p>
       </article>
       <article class="discovery-feature navigation-card">
-        <div class="feature-topline">
-          <p class="feature-name">Study Plan</p>
-          <svg viewBox="0 0 96 72" aria-hidden="true" focusable="false">
-            <rect x="16" y="13" width="64" height="51" rx="3" />
-            <path d="M16 27h64M30 7v12M65 7v12m-38 22 5 5 9-11M51 42h17M51 52h12" />
-          </svg>
+        <div class="feature-layout">
+          <app-card-scene
+            class="feature-scene"
+            src="/assets/scenes/landing/study-plan.svg"
+            alt="Wednesday gets busy, so the study plan moves the quiz to Thursday on its own"
+          />
+          <div class="feature-body">
+            <p class="feature-name">Study Plan</p>
+            <h3>A plan that bends with your week.</h3>
+            <p class="feature-description">
+              Choose your scope, make room for practice and review, and adjust your plan when your week
+              changes.
+            </p>
+            <a data-card-primary routerLink="/study-plan">Shape my study plan</a>
+            <p class="feature-availability">
+              Completing a task and demonstrating mastery are different milestones.
+            </p>
+          </div>
         </div>
-        <h3>A plan that bends with your week.</h3>
-        <p class="feature-description">
-          Choose your scope, make room for practice and review, and adjust your plan when your week
-          changes.
-        </p>
-        <a data-card-primary routerLink="/study-plan">Shape my study plan</a>
-        <p class="feature-availability">
-          Completing a task and demonstrating mastery are different milestones.
-        </p>
       </article>
       <article class="discovery-feature navigation-card">
-        <div class="feature-topline">
-          <p class="feature-name">AI Project Guides</p>
-          <svg viewBox="0 0 96 72" aria-hidden="true" focusable="false">
-            <rect x="12" y="12" width="72" height="49" rx="3" />
-            <path d="M12 24h72m-47 9-9 9 9 9m22-18 9 9-9 9M50 31l-5 22" />
-          </svg>
+        <div class="feature-layout">
+          <app-card-scene
+            class="feature-scene"
+            src="/assets/scenes/landing/project-guides.svg"
+            alt="Building an AI feature: a retrieval step reads docs and feeds an AI model that writes an answer; a test that checks citations fails, you pass the sources to the model, and the test passes"
+          />
+          <div class="feature-body">
+            <p class="feature-name">AI Project Guides</p>
+            <h3>Complete projects. Your own decisions.</h3>
+            <p class="feature-description">
+              Trace AI applications through architecture, implementation, tests and operating decisions.
+              Then make the design your own.
+            </p>
+            <a data-card-primary routerLink="/look-ahead/ai-systems-architecture"
+              >Explore project guides</a
+            >
+            <p class="feature-availability">
+              Curriculum guides available. Standalone clone-and-run repositories are in preparation.
+            </p>
+          </div>
         </div>
-        <h3>Complete projects. Your own decisions.</h3>
-        <p class="feature-description">
-          Trace AI applications through architecture, implementation, tests and operating decisions.
-          Then make the design your own.
-        </p>
-        <a data-card-primary routerLink="/look-ahead/ai-systems-architecture"
-          >Explore project guides</a
-        >
-        <p class="feature-availability">
-          Curriculum guides available. Standalone clone-and-run repositories are in preparation.
-        </p>
       </article>
     </div>
   </section>

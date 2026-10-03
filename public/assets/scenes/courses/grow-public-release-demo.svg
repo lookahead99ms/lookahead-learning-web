@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A release checklist ticks off, the version is tagged v1.0, and the public site goes live">
+<style>
+.grow-public-release-demo-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); }
+.grow-public-release-demo-tm { font-family: ui-monospace, Menlo, monospace; fill: var(--scene-ink, #102a33); }
+.grow-public-release-demo-b { font-weight: 700; }
+.grow-public-release-demo-box { fill: var(--scene-card, #fff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.grow-public-release-demo-soft { fill: var(--scene-accent-soft, #dcefed); }
+.grow-public-release-demo-card { fill: var(--scene-card, #fff); }
+.grow-public-release-demo-acc { fill: var(--scene-accent, #006c73); }
+.grow-public-release-demo-mut { fill: var(--scene-muted, #536970); }
+.grow-public-release-demo-linef { fill: var(--scene-line, #cfdfdc); }
+.grow-public-release-demo-good { fill: var(--scene-good, #1f7a4d); }
+.grow-public-release-demo-bad { fill: var(--scene-bad, #b3261e); }
+.grow-public-release-demo-warn { fill: var(--scene-warn, #a15c00); }
+.grow-public-release-demo-grow { fill: var(--scene-grow, #b8457a); }
+.grow-public-release-demo-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 1.5; }
+.grow-public-release-demo-sacc { fill: none; stroke: var(--scene-accent, #006c73); stroke-width: 2; }
+.grow-public-release-demo-sgood { fill: none; stroke: var(--scene-good, #1f7a4d); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.grow-public-release-demo-scard { fill: none; stroke: var(--scene-card, #fff); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.grow-public-release-demo-sbad { fill: none; stroke: var(--scene-bad, #b3261e); stroke-width: 2; }
+
+.grow-public-release-demo-c1 { animation: grow-public-release-demo-kf-c1 7s infinite; animation-delay: -4.6s; }
+@keyframes grow-public-release-demo-kf-c1 { 0%, 8% { opacity: 0; } 12%, 94% { opacity: 1; } 100% { opacity: 0; } }
+.grow-public-release-demo-c2 { animation: grow-public-release-demo-kf-c2 7s infinite; animation-delay: -4.6s; }
+@keyframes grow-public-release-demo-kf-c2 { 0%, 20% { opacity: 0; } 24%, 94% { opacity: 1; } 100% { opacity: 0; } }
+.grow-public-release-demo-c3 { animation: grow-public-release-demo-kf-c3 7s infinite; animation-delay: -4.6s; }
+@keyframes grow-public-release-demo-kf-c3 { 0%, 32% { opacity: 0; } 36%, 94% { opacity: 1; } 100% { opacity: 0; } }
+.grow-public-release-demo-tag { transform-box: fill-box; transform-origin: center; animation: grow-public-release-demo-kf-tag 7s ease-out infinite; animation-delay: -4.6s; }
+@keyframes grow-public-release-demo-kf-tag { 0%, 42% { transform: scale(0); opacity: 0; } 48%, 94% { transform: scale(1); opacity: 1; } 100% { transform: scale(0); opacity: 0; } }
+.grow-public-release-demo-live { animation: grow-public-release-demo-kf-live 7s infinite; animation-delay: -4.6s; }
+@keyframes grow-public-release-demo-kf-live { 0%, 58% { opacity: 0; } 62%, 94% { opacity: 1; } 100% { opacity: 0; } }
+.grow-public-release-demo-dot { transform-box: fill-box; transform-origin: center; animation: grow-public-release-demo-kf-dot 1.2s ease-in-out infinite; }
+@keyframes grow-public-release-demo-kf-dot { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.5); } }
+.grow-public-release-demo-goodtxt { fill: var(--scene-good, #1f7a4d); }
+</style>
+<!-- checklist -->
+<rect class="grow-public-release-demo-box" x="12" y="24" width="112" height="132" rx="10"/>
+<g transform="translate(26 44)">
+  <rect class="grow-public-release-demo-box" x="0" y="0" width="18" height="18" rx="4"/><rect class="grow-public-release-demo-linef" x="28" y="6" width="54" height="6" rx="3"/>
+  <rect class="grow-public-release-demo-box" x="0" y="36" width="18" height="18" rx="4"/><rect class="grow-public-release-demo-linef" x="28" y="42" width="44" height="6" rx="3"/>
+  <rect class="grow-public-release-demo-box" x="0" y="72" width="18" height="18" rx="4"/><rect class="grow-public-release-demo-linef" x="28" y="78" width="50" height="6" rx="3"/>
+  <g class="grow-public-release-demo-c1"><rect class="grow-public-release-demo-good" x="0" y="0" width="18" height="18" rx="4"/><path class="grow-public-release-demo-scard" d="M4 9 L8 13 L14 5" stroke-width="2"/></g>
+  <g class="grow-public-release-demo-c2"><rect class="grow-public-release-demo-good" x="0" y="36" width="18" height="18" rx="4"/><path class="grow-public-release-demo-scard" d="M4 45 L8 49 L14 41" stroke-width="2"/></g>
+  <g class="grow-public-release-demo-c3"><rect class="grow-public-release-demo-good" x="0" y="72" width="18" height="18" rx="4"/><path class="grow-public-release-demo-scard" d="M4 81 L8 85 L14 77" stroke-width="2"/></g>
+</g>
+
+<!-- browser -->
+<rect class="grow-public-release-demo-box" x="140" y="24" width="168" height="132" rx="10"/>
+<path class="grow-public-release-demo-wire" d="M140 46 H308" stroke="var(--scene-line, #cfdfdc)"/>
+<circle class="grow-public-release-demo-linef" cx="154" cy="35" r="4"/><circle class="grow-public-release-demo-linef" cx="166" cy="35" r="4"/><circle class="grow-public-release-demo-linef" cx="178" cy="35" r="4"/>
+<rect class="grow-public-release-demo-soft" x="152" y="58" width="144" height="38" rx="6"/>
+<rect class="grow-public-release-demo-linef" x="152" y="106" width="100" height="6" rx="3"/>
+<rect class="grow-public-release-demo-linef" x="152" y="118" width="76" height="6" rx="3"/>
+<g class="grow-public-release-demo-tag"><rect class="grow-public-release-demo-acc" x="228" y="64" width="60" height="26" rx="13"/><text class="grow-public-release-demo-tm grow-public-release-demo-b" x="258" y="82" font-size="16" text-anchor="middle" fill="var(--scene-card, #fff)" style="fill: var(--scene-card, #fff)">v1.0</text></g>
+<g class="grow-public-release-demo-live">
+  <rect class="grow-public-release-demo-card" x="232" y="128" width="64" height="22" rx="11" stroke="var(--scene-good, #1f7a4d)" stroke-width="1.5"/>
+  <circle class="grow-public-release-demo-good grow-public-release-demo-dot" cx="246" cy="139" r="4"/>
+  <text class="grow-public-release-demo-t grow-public-release-demo-b grow-public-release-demo-goodtxt" x="256" y="144" font-size="16">Live</text>
+</g>
+</svg>

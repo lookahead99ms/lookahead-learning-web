@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" class="large-files-root" role="img" aria-label="A 4 GiB video uploads in 64 parts; the connection drops after part 51, the upload resumes from part 52 instead of zero, and the video shows Ready once it is checked.">
+<style>
+.large-files-root text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.large-files-t{fill:var(--scene-ink,#102a33)}
+.large-files-tx{fill:var(--scene-text,#28434a)}
+.large-files-mut{fill:var(--scene-muted,#536970)}
+.large-files-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.large-files-soft{fill:var(--scene-accent-soft,#dcefed)}
+.large-files-acc{fill:var(--scene-accent,#006c73)}
+.large-files-ln{fill:var(--scene-line,#cfdfdc)}
+.large-files-cardf{fill:var(--scene-card,#fff)}
+.large-files-good{fill:var(--scene-good,#1f7a4d)}
+.large-files-warn{fill:var(--scene-warn,#a15c00)}
+.large-files-bad{fill:var(--scene-bad,#b3261e)}
+.large-files-link{fill:var(--scene-link,#245a88)}
+.large-files-out{fill:var(--scene-bubble-out,#d4ecea)}
+.large-files-sk{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.large-files-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.large-files-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:1.5;stroke-dasharray:3 3}
+.large-files-thumb{fill:var(--scene-ink,#102a33);opacity:.85}
+.large-files-fill{fill:var(--scene-accent,#006c73);transform-box:fill-box;transform-origin:left center;animation:large-files-fill 8s -3s infinite}
+.large-files-seps{stroke:var(--scene-card,#fff);stroke-width:14;stroke-dasharray:1 2.19}
+.large-files-wifi{fill:none;stroke:var(--scene-ink,#102a33);stroke-width:2.4;stroke-linecap:round;animation:large-files-wifi 8s -3s infinite}
+.large-files-dot{fill:var(--scene-ink,#102a33);animation:large-files-wifi 8s -3s infinite}
+.large-files-slash{stroke:var(--scene-bad,#b3261e);stroke-width:2.6;stroke-linecap:round}
+.large-files-a{animation:large-files-a 8s -3s infinite}.large-files-b{animation:large-files-b 8s -3s infinite}.large-files-c{animation:large-files-c 8s -3s infinite}.large-files-d{animation:large-files-d 8s -3s infinite}.large-files-mark{animation:large-files-mark 8s -3s infinite}
+@keyframes large-files-fill{0%{transform:scaleX(.08)}34%,50%{transform:scaleX(.797)}74%,100%{transform:scaleX(1)}}
+@keyframes large-files-wifi{0%,34%{opacity:1}35%,50%{opacity:.25}51%,100%{opacity:1}}
+@keyframes large-files-a{0%,34%{opacity:1}35%,100%{opacity:0}}
+@keyframes large-files-b{0%,34%{opacity:0}35%,50%{opacity:1}51%,100%{opacity:0}}
+@keyframes large-files-c{0%,50%{opacity:0}51%,74%{opacity:1}75%,100%{opacity:0}}
+@keyframes large-files-d{0%,75%{opacity:0}77%,98%{opacity:1}100%{opacity:0}}
+@keyframes large-files-mark{0%,34%{opacity:0}35%,70%{opacity:1}74%,100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.large-files-root *{animation-play-state:paused!important}}
+</style>
+<rect x="6" y="8" width="228" height="119" rx="13" class="large-files-box"/>
+<rect x="18" y="18" width="48" height="34" rx="5" class="large-files-thumb"/><path d="M36 26 V44 L50 35 Z" class="large-files-cardf"/>
+<text x="76" y="41" font-size="15" font-weight="700" class="large-files-t">4 GiB</text>
+<path d="M186 30 Q202 16 218 30 M192 37 Q202 29 212 37" class="large-files-wifi"/><circle cx="202" cy="44" r="2.6" class="large-files-dot"/>
+<path d="M190 48 L214 20" class="large-files-slash large-files-b"/>
+<rect x="18" y="64" width="204" height="14" rx="3" class="large-files-ln"/>
+<rect x="18" y="64" width="204" height="14" rx="3" class="large-files-fill"/>
+<line x1="19.5" y1="71" x2="220.5" y2="71" class="large-files-seps"/>
+<g class="large-files-mark"><path d="M180.6 82 l-5 7 h10 z" class="large-files-bad"/></g>
+<text x="120" y="114" font-size="15" font-weight="700" text-anchor="middle" class="large-files-t large-files-a">Uploading</text>
+<text x="120" y="114" font-size="15" font-weight="700" text-anchor="middle" class="large-files-bad large-files-b">Offline</text>
+<text x="120" y="114" font-size="15" font-weight="700" text-anchor="middle" class="large-files-acc large-files-c">Resume at 52</text>
+<g class="large-files-d"><rect x="72" y="94" width="96" height="26" rx="13" class="large-files-good"/><text x="120" y="113" font-size="15" font-weight="700" text-anchor="middle" class="large-files-cardf">&#9654; Ready</text></g>
+</svg>

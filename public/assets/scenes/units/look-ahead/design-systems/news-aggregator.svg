@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Articles about the same event from different publishers slide into one story card titled Council approves tram line, which keeps its Breaking badge while its source count grows from 1 to 4">
+<style>
+.news-aggregator-t{font-family:system-ui, sans-serif;fill:var(--scene-ink,#102a33)}
+.news-aggregator-tx{font-family:system-ui, sans-serif;fill:var(--scene-text,#28434a)}
+.news-aggregator-tm{font-family:ui-monospace, Menlo, monospace;fill:var(--scene-ink,#102a33)}
+.news-aggregator-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.news-aggregator-soft{fill:var(--scene-muted,#536970)}
+.news-aggregator-line{fill:var(--scene-line,#cfdfdc)}
+.news-aggregator-acc{fill:var(--scene-accent,#006c73)}
+.news-aggregator-accsoft{fill:var(--scene-accent-soft,#dcefed)}
+.news-aggregator-good{fill:var(--scene-good,#1f7a4d)}
+.news-aggregator-bad{fill:var(--scene-bad,#b3261e)}
+.news-aggregator-warn{fill:var(--scene-warn,#a15c00)}
+.news-aggregator-link{fill:var(--scene-link,#245a88)}
+.news-aggregator-card{fill:var(--scene-card,#fff)}
+.news-aggregator-ink{fill:var(--scene-ink,#102a33)}
+.news-aggregator-a{animation-duration:7s;animation-iteration-count:infinite;animation-delay:-3.5s;animation-timing-function:ease-in-out}
+@media (prefers-reduced-motion: reduce){.news-aggregator-a{animation-play-state:paused!important}}
+.news-aggregator-m1{animation-name:news-aggregator-m1}
+@keyframes news-aggregator-m1{0%,10%{transform:translate(0,0);opacity:1}22%{transform:translate(118px,-20px) ;opacity:1}25%,94%{transform:translate(118px,-20px);opacity:0}100%{transform:translate(0,0);opacity:0}}
+.news-aggregator-m2{animation-name:news-aggregator-m2}
+@keyframes news-aggregator-m2{0%,30%{transform:translate(0,0);opacity:1}42%{transform:translate(118px,14px) ;opacity:1}45%,94%{transform:translate(118px,14px);opacity:0}100%{transform:translate(0,0);opacity:0}}
+.news-aggregator-m3{animation-name:news-aggregator-m3}
+@keyframes news-aggregator-m3{0%,50%{transform:translate(0,0);opacity:1}62%{transform:translate(118px,48px) ;opacity:1}65%,94%{transform:translate(118px,48px);opacity:0}100%{transform:translate(0,0);opacity:0}}
+.news-aggregator-c1{animation-name:news-aggregator-c1}
+@keyframes news-aggregator-c1{0%,22%{opacity:1}24%,100%{opacity:0}}
+.news-aggregator-c2{animation-name:news-aggregator-c2}
+@keyframes news-aggregator-c2{0%,22%{opacity:0}24%,42%{opacity:1}44%,100%{opacity:0}}
+.news-aggregator-c3{animation-name:news-aggregator-c3}
+@keyframes news-aggregator-c3{0%,42%{opacity:0}44%,62%{opacity:1}64%,100%{opacity:0}}
+.news-aggregator-c4{animation-name:news-aggregator-c4}
+@keyframes news-aggregator-c4{0%,62%{opacity:0}64%,96%{opacity:1}98%,100%{opacity:0}}
+.news-aggregator-pulse{animation-name:news-aggregator-pulse;transform-box:fill-box;transform-origin:center}
+@keyframes news-aggregator-pulse{0%,20%,40%,60%,80%,100%{transform:scale(1)}23%,43%,63%{transform:scale(1.04)}}
+</style>
+<g class="news-aggregator-a news-aggregator-m3"><rect x="8" y="14" width="56" height="26" rx="5" class="news-aggregator-box"/><rect x="8" y="14" width="56" height="7" rx="3" class="news-aggregator-warn"/><rect x="14" y="26" width="42" height="4" rx="2" class="news-aggregator-soft" opacity=".6"/><rect x="14" y="33" width="34" height="4" rx="2" class="news-aggregator-soft" opacity=".4"/></g>
+<g class="news-aggregator-a news-aggregator-m2"><rect x="8" y="48" width="56" height="26" rx="5" class="news-aggregator-box"/><rect x="8" y="48" width="56" height="7" rx="3" class="news-aggregator-link"/><rect x="14" y="60" width="42" height="4" rx="2" class="news-aggregator-soft" opacity=".6"/><rect x="14" y="67" width="34" height="4" rx="2" class="news-aggregator-soft" opacity=".4"/></g>
+<g class="news-aggregator-a news-aggregator-m1"><rect x="8" y="82" width="56" height="26" rx="5" class="news-aggregator-box"/><rect x="8" y="82" width="56" height="7" rx="3" class="news-aggregator-good"/><rect x="14" y="94" width="42" height="4" rx="2" class="news-aggregator-soft" opacity=".6"/><rect x="14" y="101" width="34" height="4" rx="2" class="news-aggregator-soft" opacity=".4"/></g>
+<path d="M70 67 h14 m-6 -6 l6 6 l-6 6" stroke="var(--scene-muted,#536970)" stroke-width="2" fill="none"/>
+<g class="news-aggregator-a news-aggregator-pulse"><rect x="92" y="14" width="142" height="108" rx="10" class="news-aggregator-box" stroke="var(--scene-accent,#006c73)"/></g>
+<rect x="102" y="24" width="72" height="20" rx="10" class="news-aggregator-bad"/>
+<text class="news-aggregator-card" x="138" y="39" font-size="14" font-weight="700" text-anchor="middle" font-family="system-ui, sans-serif">Breaking</text>
+<text class="news-aggregator-t" x="102" y="64" font-size="14" font-weight="700">Council approves</text>
+<text class="news-aggregator-t" x="102" y="82" font-size="14" font-weight="700">tram line</text>
+<rect x="102" y="94" width="122" height="1" class="news-aggregator-line"/>
+<text class="news-aggregator-tx news-aggregator-a news-aggregator-c1" x="102" y="113" font-size="14">1 source</text>
+<text class="news-aggregator-tx news-aggregator-a news-aggregator-c2" x="102" y="113" font-size="14">2 sources</text>
+<text class="news-aggregator-tx news-aggregator-a news-aggregator-c3" x="102" y="113" font-size="14">3 sources</text>
+<text class="news-aggregator-tx news-aggregator-a news-aggregator-c4" x="102" y="113" font-size="14" font-weight="700">4 sources</text>
+
+</svg>

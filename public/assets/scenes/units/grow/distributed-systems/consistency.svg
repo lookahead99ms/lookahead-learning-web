@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" font-family="system-ui, sans-serif">
+<style>
+.grow-distributed-systems-consistency-t{font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.grow-distributed-systems-consistency-m{font-size:16px;fill:var(--scene-text,#28434a)}
+.grow-distributed-systems-consistency-cp{animation:grow-distributed-systems-consistency-cpy 6s linear infinite;animation-delay:-3s}
+.grow-distributed-systems-consistency-v2{animation:grow-distributed-systems-consistency-v 6s ease-in-out infinite;animation-delay:-3s}
+.grow-distributed-systems-consistency-rd{animation:grow-distributed-systems-consistency-rdd 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes grow-distributed-systems-consistency-cpy{0%,10%{transform:translate(0,0);opacity:0}15%{opacity:1}70%{transform:translate(0,30px);opacity:1}75%,100%{transform:translate(0,30px);opacity:0}}
+@keyframes grow-distributed-systems-consistency-v{0%,72%{opacity:0}80%,95%{opacity:1}100%{opacity:0}}
+@keyframes grow-distributed-systems-consistency-rdd{0%,10%{opacity:0}20%,70%{opacity:1}80%,100%{opacity:0}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="20" y="14" width="110" height="44" rx="10" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2"/>
+<text x="75" y="42" text-anchor="middle" class="grow-distributed-systems-consistency-t">Primary v2</text>
+<rect x="20" y="96" width="110" height="44" rx="10" fill="var(--scene-card,#fff)" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="5 3"/>
+<text x="75" y="124" text-anchor="middle" class="grow-distributed-systems-consistency-m">Replica v1</text>
+<g class="grow-distributed-systems-consistency-v2"><rect x="20" y="96" width="110" height="44" rx="10" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-good,#1f7a4d)" stroke-width="3"/><text x="75" y="124" text-anchor="middle" class="grow-distributed-systems-consistency-t">Replica v2</text></g>
+<path d="M44 60V94" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-dasharray="4 4"/>
+<rect class="grow-distributed-systems-consistency-cp" x="34" y="62" width="20" height="12" rx="3" fill="var(--scene-grow,#b8457a)"/>
+<circle cx="214" cy="100" r="14" fill="var(--scene-link,#245a88)"/><path d="M194 140c0-14 40-14 40 0z" fill="var(--scene-link,#245a88)"/>
+<rect x="236" y="22" width="72" height="36" rx="8" fill="var(--scene-card,#fff)" stroke="var(--scene-good,#1f7a4d)" stroke-width="2"/>
+<path d="M250 36h44M250 46h30" stroke="var(--scene-good,#1f7a4d)" stroke-width="4" stroke-linecap="round"/>
+<path d="M214 78V60L236 44" stroke="var(--scene-good,#1f7a4d)" stroke-width="3" fill="none"/>
+<g class="grow-distributed-systems-consistency-rd"><path d="M198 90C180 70 160 50 138 38" stroke="var(--scene-warn,#a15c00)" stroke-width="3" fill="none" stroke-dasharray="5 4"/><path d="M134 36l12 0l-6 10z" fill="var(--scene-warn,#a15c00)" transform="rotate(-30 138 38)"/></g>
+<text x="160" y="170" text-anchor="middle" class="grow-distributed-systems-consistency-m">Read-your-writes</text>
+</svg>

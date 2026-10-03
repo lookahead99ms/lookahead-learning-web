@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Traffic fails over from a fenced region to the second region under a higher epoch">
+<title>Traffic fails over from a fenced region to the second region under a higher epoch</title>
+<style>
+.look-ahead-distributed-systems-multi-region-t{font-family:system-ui,sans-serif;font-weight:700;font-size:16px;fill:var(--scene-ink,#102a33)}
+
+.look-ahead-distributed-systems-multi-region-la{animation:look-ahead-distributed-systems-multi-region-l1 6s ease-in-out infinite;animation-delay:-4s}
+.look-ahead-distributed-systems-multi-region-lb{animation:look-ahead-distributed-systems-multi-region-l2 6s ease-in-out infinite;animation-delay:-4s}
+@keyframes look-ahead-distributed-systems-multi-region-l1{0%,40%{opacity:1}48%,92%{opacity:0}100%{opacity:1}}
+@keyframes look-ahead-distributed-systems-multi-region-l2{0%,52%{opacity:0}62%,92%{opacity:1}100%{opacity:0}}
+.look-ahead-distributed-systems-multi-region-da{animation:look-ahead-distributed-systems-multi-region-d1 6s ease-in-out infinite;animation-delay:-4s}
+@keyframes look-ahead-distributed-systems-multi-region-d1{0%,40%{opacity:0}48%,92%{opacity:1}100%{opacity:0}}
+.look-ahead-distributed-systems-multi-region-pk{animation:look-ahead-distributed-systems-multi-region-pp 6s linear infinite;animation-delay:-4s}
+@keyframes look-ahead-distributed-systems-multi-region-pp{0%{transform:translateX(0);opacity:1}30%{transform:translateX(100px);opacity:1}38%,100%{transform:translateX(100px);opacity:0}}
+</style>
+
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<circle cx="160" cy="24" r="8" fill="var(--scene-ink,#102a33)"/><path d="M143 46a17 14 0 0 1 34 0z" fill="var(--scene-ink,#102a33)"/>
+<line class="look-ahead-distributed-systems-multi-region-la" x1="150" y1="40" x2="85" y2="66" stroke="var(--scene-good,#1f7a4d)" stroke-width="4" stroke-linecap="round"/>
+<line class="look-ahead-distributed-systems-multi-region-lb" x1="170" y1="40" x2="235" y2="66" stroke="var(--scene-good,#1f7a4d)" stroke-width="4" stroke-linecap="round"/>
+<rect x="20" y="68" width="110" height="68" rx="10" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-good,#1f7a4d)" stroke-width="3"/>
+<rect x="190" y="68" width="110" height="68" rx="10" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-link,#245a88)" stroke-width="3"/>
+<g fill="var(--scene-accent,#006c73)"><rect x="34" y="82" width="82" height="9" rx="3"/><rect x="34" y="98" width="82" height="9" rx="3" opacity=".6"/><rect x="34" y="114" width="82" height="9" rx="3" opacity=".35"/></g>
+<g fill="var(--scene-link,#245a88)"><rect x="204" y="82" width="82" height="9" rx="3"/><rect x="204" y="98" width="82" height="9" rx="3" opacity=".6"/><rect x="204" y="114" width="82" height="9" rx="3" opacity=".35"/></g>
+<line x1="136" y1="102" x2="184" y2="102" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-dasharray="5 4"/>
+<g class="look-ahead-distributed-systems-multi-region-pk"><circle cx="140" cy="102" r="5" fill="var(--scene-accent,#006c73)"/></g>
+<g class="look-ahead-distributed-systems-multi-region-da"><rect x="20" y="68" width="110" height="68" rx="10" fill="var(--scene-card,#fff)" fill-opacity=".55" stroke="var(--scene-bad,#b3261e)" stroke-width="3"/><rect x="60" y="94" width="30" height="24" rx="4" fill="var(--scene-bad,#b3261e)"/><path d="M66 94v-7a9 9 0 0 1 18 0v7" fill="none" stroke="var(--scene-bad,#b3261e)" stroke-width="4"/></g>
+<text class="look-ahead-distributed-systems-multi-region-t" x="75" y="160" text-anchor="middle" style="fill:var(--scene-bad,#b3261e)">Fenced</text>
+<text class="look-ahead-distributed-systems-multi-region-t" x="245" y="160" text-anchor="middle" style="fill:var(--scene-link,#245a88)">Epoch 2</text>
+</svg>

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="ownership-ambiguity">
+<style>
+.look-ahead-behavioral-carl-ownership-ambiguity-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.look-ahead-behavioral-carl-ownership-ambiguity-tc{text-anchor:middle}
+
+.look-ahead-behavioral-carl-ownership-ambiguity-me{animation:look-ahead-behavioral-carl-ownership-ambiguity-mv 6s infinite -2.4s}
+@keyframes look-ahead-behavioral-carl-ownership-ambiguity-mv{0%,12%{transform:translateX(0)}30%,50%{transform:translateX(128px)}70%,100%{transform:translateX(0)}}
+.look-ahead-behavioral-carl-ownership-ambiguity-gear{transform-box:fill-box;transform-origin:center;animation:look-ahead-behavioral-carl-ownership-ambiguity-sp 6s infinite -2.4s}
+@keyframes look-ahead-behavioral-carl-ownership-ambiguity-sp{0%,40%{transform:rotate(0)}}
+.look-ahead-behavioral-carl-ownership-ambiguity-bad{animation:look-ahead-behavioral-carl-ownership-ambiguity-b 6s infinite -2.4s}.look-ahead-behavioral-carl-ownership-ambiguity-good{animation:look-ahead-behavioral-carl-ownership-ambiguity-g 6s infinite -2.4s}
+@keyframes look-ahead-behavioral-carl-ownership-ambiguity-b{0%,55%{opacity:1}65%,100%{opacity:0}}
+@keyframes look-ahead-behavioral-carl-ownership-ambiguity-g{0%,55%{opacity:0}65%,92%{opacity:1}100%{opacity:0}}
+.look-ahead-behavioral-carl-ownership-ambiguity-pulse{transform-box:fill-box;transform-origin:center;animation:look-ahead-behavioral-carl-ownership-ambiguity-pl 1.4s ease-in-out infinite}
+@keyframes look-ahead-behavioral-carl-ownership-ambiguity-pl{50%{transform:scale(1.15)}}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+<rect width="320" height="180" rx="10" fill="var(--scene-card,#fff)"/>
+
+<g>
+<rect x="14" y="30" width="136" height="112" rx="8" fill="var(--scene-accent-soft,#dcefed)"/>
+<rect x="170" y="30" width="136" height="112" rx="8" fill="none" stroke="var(--scene-line,#cfdfdc)" stroke-width="2" stroke-dasharray="6 5"/>
+<path d="M160 22v128" stroke="var(--scene-ink,#102a33)" stroke-width="3"/>
+<path d="M154 40h12M154 60h12M154 80h12M154 100h12M154 120h12" stroke="var(--scene-ink,#102a33)" stroke-width="3" stroke-linecap="round"/>
+<g class="look-ahead-behavioral-carl-ownership-ambiguity-bad"><g class="look-ahead-behavioral-carl-ownership-ambiguity-pulse"><circle cx="238" cy="88" r="22" fill="var(--scene-bad,#b3261e)"/><path d="M238 76v14M238 96v0.1" stroke="#fff" stroke-width="4.5" stroke-linecap="round"/></g></g>
+<g class="look-ahead-behavioral-carl-ownership-ambiguity-good"><circle cx="238" cy="88" r="22" fill="var(--scene-good,#1f7a4d)"/><path d="M227 88l8 8 16-18" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g class="look-ahead-behavioral-carl-ownership-ambiguity-me"><circle cx="60" cy="74" r="11" fill="var(--scene-accent,#006c73)"/><path d="M42 112a18 16 0 0 1 36 0z" fill="var(--scene-accent,#006c73)"/></g>
+<text class="look-ahead-behavioral-carl-ownership-ambiguity-t look-ahead-behavioral-carl-ownership-ambiguity-tc" x="160" y="168">Step in</text>
+</g>
+</svg>

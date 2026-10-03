@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A model proposes a tool call; app code checks allowlist and policy before it runs">
+<style>
+.grow-ai-assisted-development-agent-workflows-{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.grow-ai-assisted-development-agent-workflows-m{font-family:ui-monospace,Menlo,monospace;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+
+.grow-ai-assisted-development-agent-workflows-p{animation:grow-ai-assisted-development-agent-workflows-prop 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes grow-ai-assisted-development-agent-workflows-prop{0%{transform:translateX(0);opacity:0}10%{opacity:1}45%{transform:translateX(86px);opacity:1}55%{transform:translateX(86px)}90%{transform:translateX(176px);opacity:1}100%{transform:translateX(176px);opacity:0}}
+.grow-ai-assisted-development-agent-workflows-r{animation:grow-ai-assisted-development-agent-workflows-rej 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes grow-ai-assisted-development-agent-workflows-rej{0%,15%{transform:translate(0,0);opacity:0}25%{opacity:1}50%{transform:translate(86px,0);opacity:1}75%{transform:translate(60px,46px) rotate(20deg);opacity:1}100%{transform:translate(60px,60px);opacity:0}}
+.grow-ai-assisted-development-agent-workflows-c{animation:grow-ai-assisted-development-agent-workflows-ck 6s ease-in-out infinite;animation-delay:-3s;stroke-dasharray:30}
+@keyframes grow-ai-assisted-development-agent-workflows-ck{0%,40%{stroke-dashoffset:30}55%,90%{stroke-dashoffset:0}100%{stroke-dashoffset:30}}
+</style>
+
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="10" y="40" width="56" height="64" rx="10" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/>
+<rect x="20" y="54" width="36" height="22" rx="5" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="2"/>
+<circle cx="31" cy="65" r="3.5" fill="var(--scene-accent,#006c73)"/><circle cx="45" cy="65" r="3.5" fill="var(--scene-accent,#006c73)"/>
+<path d="M30 90H46" stroke="var(--scene-accent,#006c73)" stroke-width="3" stroke-linecap="round"/>
+<text class="grow-ai-assisted-development-agent-workflows-" x="38" y="124" text-anchor="middle">Model</text>
+<rect x="116" y="26" width="26" height="92" rx="6" fill="var(--scene-warn,#a15c00)"/>
+<rect x="116" y="26" width="26" height="92" rx="6" fill="none" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<path class="grow-ai-assisted-development-agent-workflows-c" d="M122 72l5 6 9-12" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/>
+<text class="grow-ai-assisted-development-agent-workflows-" x="129" y="142" text-anchor="middle">Your code</text>
+<rect x="244" y="48" width="64" height="48" rx="8" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2.5"/>
+<path d="M262 72l8-10 8 10M270 62v22" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="3" stroke-linecap="round" transform="rotate(90 270 72)"/>
+<path d="M72 72H112M146 72H240" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-dasharray="5 4"/>
+<g class="grow-ai-assisted-development-agent-workflows-p"><rect x="72" y="61" width="26" height="22" rx="5" fill="var(--scene-link,#245a88)"/><path d="M78 72h14M87 67l5 5-5 5" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" transform="translate(0,0)"/></g>
+<g class="grow-ai-assisted-development-agent-workflows-r"><rect x="72" y="61" width="26" height="22" rx="5" fill="var(--scene-bad,#b3261e)"/><path d="M79 66l12 12M91 66l-12 12" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></g>
+<g transform="translate(204,150)"><circle cx="8" cy="-6" r="6" fill="var(--scene-ink,#102a33)"/><path d="M-2 10c0-9 20-9 20 0" fill="var(--scene-ink,#102a33)"/></g>
+<text class="grow-ai-assisted-development-agent-workflows-" x="228" y="150" text-anchor="start">Approve</text>
+</svg>

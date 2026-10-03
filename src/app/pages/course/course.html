@@ -1,10 +1,11 @@
 <app-platform-header />
-<main
-  id="main-content"
-  class="content-page reader-page course-page"
->
+<main id="main-content" class="content-page reader-page course-page">
   @if (course(); as currentCourse) {
-    <article class="question-reader course-reader" [attr.data-path]="pathId()">
+    <article
+      class="question-reader course-reader"
+      [class.course-reader-with-nav]="lessonNav(currentCourse)"
+      [attr.data-path]="pathId()"
+    >
       <div class="reader-sticky-stack">
         <section class="reader-sticky-context course-breadcrumb-bar">
           <nav class="breadcrumbs" aria-label="Breadcrumb">
@@ -22,141 +23,151 @@
           </nav>
         </section>
       </div>
-      <section class="course-page-intro">
-        <div class="course-intro-summary">
-          @if (currentCourse.reviewStatus; as status) {
-            @if (status !== 'reviewed') {
-              <span
-                class="review-status context-review-status"
-                [attr.data-review-status]="status"
-                >{{ reviewStatusLabel(status) }}</span
-              >
+      @let unitCards = hasUnitCards(currentCourse);
+      @if (!unitCards) {
+        <ng-container *ngTemplateOutlet="coursePageIntro" />
+      }
+      <ng-template #coursePageIntro>
+        <section class="course-page-intro" [class.course-page-intro-cards]="unitCards">
+          <div class="course-intro-summary">
+            @if (!unitCards) {
+              @if (currentCourse.reviewStatus; as status) {
+                @if (status !== 'reviewed') {
+                  <span
+                    class="review-status context-review-status"
+                    [attr.data-review-status]="status"
+                    >{{ reviewStatusLabel(status) }}</span
+                  >
+                }
+              }
+              <h1 class="reader-question-title">{{ currentCourse.title }}</h1>
+              <p
+                class="eyebrow"
+                [innerHTML]="
+                  pathId() === 'grow'
+                    ? highlightGrow(currentCourse.description)
+                    : pathId() === 'learn'
+                      ? highlightLearn(currentCourse.description)
+                      : currentCourse.description
+                "
+              ></p>
             }
-          }
-          <h1 class="reader-question-title">{{ currentCourse.title }}</h1>
-          <p
-            class="eyebrow"
-            [innerHTML]="
-              pathId() === 'grow'
-                ? highlightGrow(currentCourse.description)
-                : pathId() === 'learn'
-                  ? highlightLearn(currentCourse.description)
-                  : currentCourse.description
-            "
-          ></p>
-          @if (currentCourse.learningPath; as learningPath) {
-            @if (backgroundCourses().length || recommendedNextCourse()) {
-              <section class="course-learning-path" aria-labelledby="course-learning-path-title">
-                <h2 id="course-learning-path-title">Learning path</h2>
-                <p>{{ learningPath.guidance }}</p>
-                <div
-                  class="course-relationship-map"
-                  [class.background-only]="backgroundCourses().length && !recommendedNextCourse()"
-                  [class.next-only]="!backgroundCourses().length && recommendedNextCourse()"
-                >
-                  @if (backgroundCourses().length) {
+            @if (currentCourse.learningPath; as learningPath) {
+              @if (backgroundCourses().length || recommendedNextCourse()) {
+                <section class="course-learning-path" aria-labelledby="course-learning-path-title">
+                  <h2 id="course-learning-path-title">Learning path</h2>
+                  <p>{{ learningPath.guidance }}</p>
+                  <div
+                    class="course-relationship-map"
+                    [class.background-only]="backgroundCourses().length && !recommendedNextCourse()"
+                    [class.next-only]="!backgroundCourses().length && recommendedNextCourse()"
+                  >
+                    @if (backgroundCourses().length) {
+                      <section
+                        class="course-relationship-column course-background-column"
+                        aria-labelledby="helpful-background-title"
+                      >
+                        <h3 id="helpful-background-title">Helpful background</h3>
+                        <ul class="course-relationship-list">
+                          @for (item of backgroundCourses().slice(0, 3); track item.id) {
+                            <li>
+                              @if (item.available) {
+                                <a [routerLink]="['/', item.path, item.id]">{{ item.title }}</a>
+                              } @else {
+                                <span class="unavailable">{{ item.title }} (coming next)</span>
+                              }
+                            </li>
+                          }
+                        </ul>
+                        @if (backgroundCourses().length > 3) {
+                          <details class="course-relationship-more">
+                            <summary>
+                              {{ relationshipCountLabel(backgroundCourses().length - 3) }}
+                            </summary>
+                            <ul class="course-relationship-list">
+                              @for (item of backgroundCourses().slice(3); track item.id) {
+                                <li>
+                                  @if (item.available) {
+                                    <a [routerLink]="['/', item.path, item.id]">{{ item.title }}</a>
+                                  } @else {
+                                    <span class="unavailable">{{ item.title }} (coming next)</span>
+                                  }
+                                </li>
+                              }
+                            </ul>
+                          </details>
+                        }
+                        <p class="course-background-note">
+                          Review the relevant concepts; completing every linked course is not
+                          required.
+                        </p>
+                      </section>
+                      <span class="course-relationship-arrow" aria-hidden="true">→</span>
+                    }
                     <section
-                      class="course-relationship-column course-background-column"
-                      aria-labelledby="helpful-background-title"
+                      class="course-relationship-column course-current-column"
+                      aria-labelledby="current-course-map-title"
                     >
-                      <h3 id="helpful-background-title">Helpful background</h3>
-                      <ul class="course-relationship-list">
-                        @for (item of backgroundCourses().slice(0, 3); track item.id) {
+                      <h3 id="current-course-map-title">Current course</h3>
+                      <div class="course-current-node">
+                        <strong>{{ currentCourse.title }}</strong>
+                        @if (learningGroup(); as group) {
+                          <a
+                            class="course-group-return"
+                            [routerLink]="['/', pathId()]"
+                            [queryParams]="browseQueryParams()"
+                            >Browse {{ group.title }}</a
+                          >
+                        }
+                      </div>
+                    </section>
+                    @if (recommendedNextCourse(); as item) {
+                      <span class="course-relationship-arrow" aria-hidden="true">→</span>
+                      <section
+                        class="course-relationship-column course-next-column"
+                        aria-labelledby="next-directions-title"
+                      >
+                        <h3 id="next-directions-title">Recommended next</h3>
+                        <ul class="course-relationship-list">
                           <li>
                             @if (item.available) {
                               <a [routerLink]="['/', item.path, item.id]">{{ item.title }}</a>
                             } @else {
                               <span class="unavailable">{{ item.title }} (coming next)</span>
                             }
+                            <p class="course-direction-reason">{{ item.reason }}</p>
                           </li>
+                        </ul>
+                        @if (otherDirectionCourses().length) {
+                          <details class="course-other-directions">
+                            <summary>
+                              Other directions ({{ otherDirectionCourses().length }})
+                            </summary>
+                            <ul class="course-relationship-list">
+                              @for (other of otherDirectionCourses(); track other.id) {
+                                <li>
+                                  @if (other.available) {
+                                    <a [routerLink]="['/', other.path, other.id]">{{
+                                      other.title
+                                    }}</a>
+                                  } @else {
+                                    <span class="unavailable">{{ other.title }} (coming next)</span>
+                                  }
+                                  <p class="course-direction-reason">{{ other.reason }}</p>
+                                </li>
+                              }
+                            </ul>
+                          </details>
                         }
-                      </ul>
-                      @if (backgroundCourses().length > 3) {
-                        <details class="course-relationship-more">
-                          <summary>
-                            {{ relationshipCountLabel(backgroundCourses().length - 3) }}
-                          </summary>
-                          <ul class="course-relationship-list">
-                            @for (item of backgroundCourses().slice(3); track item.id) {
-                              <li>
-                                @if (item.available) {
-                                  <a [routerLink]="['/', item.path, item.id]">{{ item.title }}</a>
-                                } @else {
-                                  <span class="unavailable">{{ item.title }} (coming next)</span>
-                                }
-                              </li>
-                            }
-                          </ul>
-                        </details>
-                      }
-                      <p class="course-background-note">
-                        Review the relevant concepts; completing every linked course is not
-                        required.
-                      </p>
-                    </section>
-                    <span class="course-relationship-arrow" aria-hidden="true">→</span>
-                  }
-                  <section
-                    class="course-relationship-column course-current-column"
-                    aria-labelledby="current-course-map-title"
-                  >
-                    <h3 id="current-course-map-title">Current course</h3>
-                    <div class="course-current-node">
-                      <strong>{{ currentCourse.title }}</strong>
-                      @if (learningGroup(); as group) {
-                        <a
-                          class="course-group-return"
-                          [routerLink]="['/', pathId()]"
-                          [queryParams]="browseQueryParams()"
-                          >Browse {{ group.title }}</a
-                        >
-                      }
-                    </div>
-                  </section>
-                  @if (recommendedNextCourse(); as item) {
-                    <span class="course-relationship-arrow" aria-hidden="true">→</span>
-                    <section
-                      class="course-relationship-column course-next-column"
-                      aria-labelledby="next-directions-title"
-                    >
-                      <h3 id="next-directions-title">Recommended next</h3>
-                      <ul class="course-relationship-list">
-                        <li>
-                          @if (item.available) {
-                            <a [routerLink]="['/', item.path, item.id]">{{ item.title }}</a>
-                          } @else {
-                            <span class="unavailable">{{ item.title }} (coming next)</span>
-                          }
-                          <p class="course-direction-reason">{{ item.reason }}</p>
-                        </li>
-                      </ul>
-                      @if (otherDirectionCourses().length) {
-                        <details class="course-other-directions">
-                          <summary>Other directions ({{ otherDirectionCourses().length }})</summary>
-                          <ul class="course-relationship-list">
-                            @for (other of otherDirectionCourses(); track other.id) {
-                              <li>
-                                @if (other.available) {
-                                  <a [routerLink]="['/', other.path, other.id]">{{
-                                    other.title
-                                  }}</a>
-                                } @else {
-                                  <span class="unavailable">{{ other.title }} (coming next)</span>
-                                }
-                                <p class="course-direction-reason">{{ other.reason }}</p>
-                              </li>
-                            }
-                          </ul>
-                        </details>
-                      }
-                    </section>
-                  }
-                </div>
-              </section>
+                      </section>
+                    }
+                  </div>
+                </section>
+              }
             }
-          }
-        </div>
-      </section>
+          </div>
+        </section>
+      </ng-template>
       <ng-container *ngTemplateOutlet="courseModules" />
       <ng-template #courseModules>
         <section class="question-list module-question-list">
@@ -166,7 +177,15 @@
               [pathId]="pathId()"
               [courseId]="courseId()"
               [units]="currentCourse.learningUnits"
-            />
+              [lessonNav]="lessonNav(currentCourse)"
+            >
+              @if (
+                currentCourse.learningPath &&
+                (backgroundCourses().length || recommendedNextCourse())
+              ) {
+                <ng-container *ngTemplateOutlet="coursePageIntro" />
+              }
+            </app-course-learning-map>
           } @else {
             <div
               class="course-grid module-grid"
@@ -219,7 +238,11 @@
       </ng-template>
     </article>
   } @else if (error()) {
-    <app-content-recovery [kind]="recovery()" [preview]="recoveryPreview()" (retry)="retryLoad.next()" />
+    <app-content-recovery
+      [kind]="recovery()"
+      [preview]="recoveryPreview()"
+      (retry)="retryLoad.next()"
+    />
   } @else {
     <section class="page-message"><p>Loading course…</p></section>
   }

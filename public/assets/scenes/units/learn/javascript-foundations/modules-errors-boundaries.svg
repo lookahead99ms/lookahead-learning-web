@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Module exposes a small API and a clean error while internals stay private">
+<style>
+.learn-javascript-foundations-modules-errors-boundaries-t{font-family:system-ui,sans-serif;font-size:14px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-javascript-foundations-modules-errors-boundaries-m{font-family:ui-monospace,Menlo,monospace;font-size:18px;font-weight:700;fill:#fff}
+.learn-javascript-foundations-modules-errors-boundaries-in{animation:learn-javascript-foundations-modules-errors-boundaries-i 6s linear infinite;animation-delay:-5.3s}
+@keyframes learn-javascript-foundations-modules-errors-boundaries-i{0%{transform:translateX(-24px);opacity:0}15%{opacity:1}40%,100%{transform:translateX(26px);opacity:0}}
+.learn-javascript-foundations-modules-errors-boundaries-out{animation:learn-javascript-foundations-modules-errors-boundaries-o 6s linear infinite;animation-delay:-5.3s}
+@keyframes learn-javascript-foundations-modules-errors-boundaries-o{0%,45%{transform:translateX(-10px);opacity:0}60%{opacity:1}100%{transform:translateX(46px);opacity:1}}
+</style>
+<rect width="240" height="135" fill="var(--scene-card,#fff)"/>
+<rect x="62" y="8" width="108" height="92" rx="12" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<rect x="72" y="22" width="70" height="30" rx="7" fill="var(--scene-card,#fff)" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="5 4"/>
+<text class="learn-javascript-foundations-modules-errors-boundaries-t" x="107" y="42" text-anchor="middle">private</text>
+<rect x="166" y="46" width="8" height="40" fill="var(--scene-card,#fff)"/>
+<path d="M170 46V86" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<text class="learn-javascript-foundations-modules-errors-boundaries-t" x="116" y="85" text-anchor="middle">export</text>
+<g class="learn-javascript-foundations-modules-errors-boundaries-in"><rect x="12" y="50" width="30" height="22" rx="5" fill="var(--scene-warn,#a15c00)"/><path d="M12 52L27 63L42 52" stroke="#fff" stroke-width="2" fill="none"/></g>
+<g class="learn-javascript-foundations-modules-errors-boundaries-out"><rect x="140" y="48" width="30" height="26" rx="6" fill="var(--scene-bad,#b3261e)"/><text class="learn-javascript-foundations-modules-errors-boundaries-m" x="155" y="67" text-anchor="middle">!</text></g>
+<text class="learn-javascript-foundations-modules-errors-boundaries-t" x="190" y="124" text-anchor="middle" style="fill:var(--scene-bad,#b3261e)">typed error</text>
+</svg>

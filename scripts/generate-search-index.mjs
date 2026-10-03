@@ -17,6 +17,25 @@ const practiceContentTypes = new Set([
 ]);
 const practiceFormats = ['explain', 'solve', 'design', 'debug', 'rehearse'];
 const previewCharacterLimit = 280;
+// Same table the app's retired-content redirect uses (DLV-408 course restructures).
+const retiredContentPath = new URL('../src/app/content/retired-content-ids.json', import.meta.url);
+
+export async function readRetiredCourses(path = retiredContentPath) {
+  return (await readJson(path)).courses ?? [];
+}
+
+/** A retired lesson or module is redirected by the app, so Search must not offer it. */
+export function isRetiredDocument(document, retiredCourses) {
+  const own = (table, id) => typeof id === 'string' && Object.hasOwn(table ?? {}, id);
+  return retiredCourses.some(
+    (course) =>
+      course.path === document.path &&
+      course.courseId === document.courseId &&
+      (own(course.lessons, document.contentId) ||
+        own(course.modules, document.contentId) ||
+        own(course.modules, document.moduleId)),
+  );
+}
 
 async function readJson(path) {
   return JSON.parse(await readFile(path, 'utf8'));
@@ -169,6 +188,7 @@ function summaryFor(
     moduleId: question.moduleId,
     order: question.order,
     title: canonicalProblem?.title ?? question.title,
+    ...(!canonicalProblem && question.navTitle ? { navTitle: question.navTitle } : {}),
     difficulty: canonicalProblem?.difficulty ?? question.difficulty,
     tags: uniqueLabels([...(canonicalProblem?.tags ?? []), ...(question.tags ?? [])]),
     contentType,
@@ -548,7 +568,8 @@ async function contentForCourse(contentRoot, path, catalogItem, canonicalProblem
   return { documents, answerSlideDeckCount };
 }
 
-export async function generateSearchIndex(contentRoot) {
+export async function generateSearchIndex(contentRoot, { retiredCourses } = {}) {
+  const retired = retiredCourses ?? (await readRetiredCourses());
   await Promise.all([
     rm(join(contentRoot, 'indexes'), { recursive: true, force: true }),
     rm(join(contentRoot, 'details'), { recursive: true, force: true }),
@@ -593,7 +614,7 @@ export async function generateSearchIndex(contentRoot) {
   const placementDocuments = [
     ...courseResults.flatMap(({ documents: courseDocuments }) => courseDocuments),
     ...specialDocuments,
-  ];
+  ].filter((document) => !isRetiredDocument(document, retired));
   const documents = deduplicateCanonicalDocuments(placementDocuments, canonicalProblems);
   const documentIds = new Set();
   for (const document of documents) {

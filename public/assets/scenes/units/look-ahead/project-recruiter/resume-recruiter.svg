@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A resume with three claims each stamped with evidence during a recruiter call">
+<style>
+
+.look-ahead-project-recruiter-resume-recruiter-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.look-ahead-project-recruiter-resume-recruiter-l{font-family:system-ui,sans-serif;font-size:16px;font-weight:600;fill:var(--scene-text,#28434a)}
+.look-ahead-project-recruiter-resume-recruiter-ck{stroke-dasharray:30;animation:look-ahead-project-recruiter-resume-recruiter-dr 6s ease-in-out infinite}
+.look-ahead-project-recruiter-resume-recruiter-c1{animation-delay:-4.2s}.look-ahead-project-recruiter-resume-recruiter-c2{animation-delay:-3.2s}.look-ahead-project-recruiter-resume-recruiter-c3{animation-delay:-2.2s}
+.look-ahead-project-recruiter-resume-recruiter-ev{animation:look-ahead-project-recruiter-resume-recruiter-ef 6s ease-in-out infinite}
+.look-ahead-project-recruiter-resume-recruiter-e1{animation-delay:-4.2s}.look-ahead-project-recruiter-resume-recruiter-e2{animation-delay:-3.2s}.look-ahead-project-recruiter-resume-recruiter-e3{animation-delay:-2.2s}
+.look-ahead-project-recruiter-resume-recruiter-bub{animation:look-ahead-project-recruiter-resume-recruiter-bp 3s ease-in-out infinite;animation-delay:-1s;transform-box:fill-box;transform-origin:center}
+@keyframes look-ahead-project-recruiter-resume-recruiter-dr{0%,15%{stroke-dashoffset:30}30%,85%{stroke-dashoffset:0}100%{stroke-dashoffset:30}}
+@keyframes look-ahead-project-recruiter-resume-recruiter-ef{0%,15%{opacity:0;transform:translateX(-8px)}30%,85%{opacity:1;transform:translateX(0)}100%{opacity:0}}
+@keyframes look-ahead-project-recruiter-resume-recruiter-bp{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+
+<text class="look-ahead-project-recruiter-resume-recruiter-t" x="95" y="24" text-anchor="middle">3 role signals</text>
+<rect x="30" y="36" width="130" height="122" rx="8" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<rect x="44" y="46" width="50" height="8" rx="4" fill="var(--scene-ink,#102a33)"/>
+<g stroke-width="7" stroke-linecap="round" stroke="var(--scene-muted,#536970)" opacity=".55"><path d="M44 78h84M44 108h84M44 138h84"/></g>
+<g fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+<path class="look-ahead-project-recruiter-resume-recruiter-ck look-ahead-project-recruiter-resume-recruiter-c1" d="M138 72l5 6 10-12"/><path class="look-ahead-project-recruiter-resume-recruiter-ck look-ahead-project-recruiter-resume-recruiter-c2" d="M138 102l5 6 10-12"/><path class="look-ahead-project-recruiter-resume-recruiter-ck look-ahead-project-recruiter-resume-recruiter-c3" d="M138 132l5 6 10-12"/></g>
+<g stroke-width="2" stroke="var(--scene-accent,#006c73)" fill="var(--scene-accent-soft,#dcefed)">
+<rect class="look-ahead-project-recruiter-resume-recruiter-ev look-ahead-project-recruiter-resume-recruiter-e1" x="180" y="62" width="64" height="22" rx="6"/><rect class="look-ahead-project-recruiter-resume-recruiter-ev look-ahead-project-recruiter-resume-recruiter-e2" x="180" y="92" width="64" height="22" rx="6"/><rect class="look-ahead-project-recruiter-resume-recruiter-ev look-ahead-project-recruiter-resume-recruiter-e3" x="180" y="122" width="64" height="22" rx="6"/></g>
+<g stroke="var(--scene-accent,#006c73)" stroke-width="3" stroke-linecap="round"><path class="look-ahead-project-recruiter-resume-recruiter-ev look-ahead-project-recruiter-resume-recruiter-e1" d="M190 73h44"/><path class="look-ahead-project-recruiter-resume-recruiter-ev look-ahead-project-recruiter-resume-recruiter-e2" d="M190 103h30"/><path class="look-ahead-project-recruiter-resume-recruiter-ev look-ahead-project-recruiter-resume-recruiter-e3" d="M190 133h38"/></g>
+<g class="look-ahead-project-recruiter-resume-recruiter-bub"><rect x="262" y="40" width="42" height="30" rx="10" fill="var(--scene-ahead,#2f6fb3)"/><path d="M272 70l-4 9 12-9z" fill="var(--scene-ahead,#2f6fb3)"/>
+<path d="M275 55h16M275 61h10" stroke="var(--scene-card,#fff)" stroke-width="3" stroke-linecap="round"/></g>
+<text class="look-ahead-project-recruiter-resume-recruiter-l" x="212" y="168" text-anchor="middle">Claim + evidence</text>
+</svg>

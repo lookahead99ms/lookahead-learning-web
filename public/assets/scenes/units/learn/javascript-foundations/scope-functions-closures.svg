@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Two counters each keep private state">
+<style>
+.learn-javascript-foundations-scope-functions-closures-t{font-family:system-ui,sans-serif;font-size:14px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-javascript-foundations-scope-functions-closures-m{font-family:ui-monospace,Menlo,monospace;font-size:20px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-javascript-foundations-scope-functions-closures-a{animation:learn-javascript-foundations-scope-functions-closures-sa 6s steps(1) infinite;animation-delay:-3s}
+@keyframes learn-javascript-foundations-scope-functions-closures-sa{0%{opacity:1}33%{opacity:0}100%{opacity:0}}
+.learn-javascript-foundations-scope-functions-closures-a2{animation:learn-javascript-foundations-scope-functions-closures-sb 6s steps(1) infinite;animation-delay:-3s}
+@keyframes learn-javascript-foundations-scope-functions-closures-sb{0%{opacity:0}33%{opacity:1}66%{opacity:0}100%{opacity:0}}
+.learn-javascript-foundations-scope-functions-closures-a3{animation:learn-javascript-foundations-scope-functions-closures-sc 6s steps(1) infinite;animation-delay:-3s}
+@keyframes learn-javascript-foundations-scope-functions-closures-sc{0%{opacity:0}66%{opacity:1}100%{opacity:1}}
+.learn-javascript-foundations-scope-functions-closures-b1{animation:learn-javascript-foundations-scope-functions-closures-sd 6s steps(1) infinite;animation-delay:-3s}
+@keyframes learn-javascript-foundations-scope-functions-closures-sd{0%{opacity:1}50%{opacity:0}100%{opacity:0}}
+.learn-javascript-foundations-scope-functions-closures-b2{animation:learn-javascript-foundations-scope-functions-closures-se 6s steps(1) infinite;animation-delay:-3s}
+@keyframes learn-javascript-foundations-scope-functions-closures-se{0%{opacity:0}50%{opacity:1}100%{opacity:1}}
+.learn-javascript-foundations-scope-functions-closures-pulse{animation:learn-javascript-foundations-scope-functions-closures-p 3s ease-in-out infinite;animation-delay:-1s;transform-box:fill-box;transform-origin:center}
+@keyframes learn-javascript-foundations-scope-functions-closures-p{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+</style>
+<rect width="240" height="135" fill="var(--scene-card,#fff)"/>
+<rect x="76" y="6" width="88" height="28" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2"/>
+<text class="learn-javascript-foundations-scope-functions-closures-t" x="120" y="25" text-anchor="middle">factory()</text>
+<path d="M104 34L62 52M136 34L178 52" stroke="var(--scene-accent,#006c73)" stroke-width="3" fill="none"/>
+<g class="learn-javascript-foundations-scope-functions-closures-pulse"><rect x="8" y="52" width="106" height="76" rx="12" fill="var(--scene-card,#fff)" stroke="var(--scene-learn,#0f8a8a)" stroke-width="3"/>
+<rect x="28" y="62" width="66" height="30" rx="8" fill="var(--scene-accent-soft,#dcefed)"/>
+<g class="learn-javascript-foundations-scope-functions-closures-a"><text class="learn-javascript-foundations-scope-functions-closures-m" x="61" y="84" text-anchor="middle">1</text></g><g class="learn-javascript-foundations-scope-functions-closures-a2"><text class="learn-javascript-foundations-scope-functions-closures-m" x="61" y="84" text-anchor="middle">2</text></g><g class="learn-javascript-foundations-scope-functions-closures-a3"><text class="learn-javascript-foundations-scope-functions-closures-m" x="61" y="84" text-anchor="middle">3</text></g>
+<text class="learn-javascript-foundations-scope-functions-closures-t" x="61" y="115" text-anchor="middle">own count</text></g>
+<rect x="126" y="52" width="106" height="76" rx="12" fill="var(--scene-card,#fff)" stroke="var(--scene-grow,#b8457a)" stroke-width="3"/>
+<rect x="146" y="62" width="66" height="30" rx="8" fill="var(--scene-accent-soft,#dcefed)"/>
+<g class="learn-javascript-foundations-scope-functions-closures-b1"><text class="learn-javascript-foundations-scope-functions-closures-m" x="179" y="84" text-anchor="middle">7</text></g><g class="learn-javascript-foundations-scope-functions-closures-b2"><text class="learn-javascript-foundations-scope-functions-closures-m" x="179" y="84" text-anchor="middle">8</text></g>
+<text class="learn-javascript-foundations-scope-functions-closures-t" x="179" y="115" text-anchor="middle">own count</text>
+</svg>

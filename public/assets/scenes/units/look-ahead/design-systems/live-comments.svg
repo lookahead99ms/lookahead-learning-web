@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="On a live video, Sakura's comment slides into the comment list as hearts float up and the heart total ticks from 12,401 to 12,405">
+<style>
+.live-comments-t{font-family:system-ui, sans-serif;fill:var(--scene-ink,#102a33)}
+.live-comments-tx{font-family:system-ui, sans-serif;fill:var(--scene-text,#28434a)}
+.live-comments-tm{font-family:ui-monospace, Menlo, monospace;fill:var(--scene-ink,#102a33)}
+.live-comments-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.live-comments-soft{fill:var(--scene-muted,#536970)}
+.live-comments-line{fill:var(--scene-line,#cfdfdc)}
+.live-comments-acc{fill:var(--scene-accent,#006c73)}
+.live-comments-accsoft{fill:var(--scene-accent-soft,#dcefed)}
+.live-comments-good{fill:var(--scene-good,#1f7a4d)}
+.live-comments-bad{fill:var(--scene-bad,#b3261e)}
+.live-comments-warn{fill:var(--scene-warn,#a15c00)}
+.live-comments-link{fill:var(--scene-link,#245a88)}
+.live-comments-card{fill:var(--scene-card,#fff)}
+.live-comments-ink{fill:var(--scene-ink,#102a33)}
+.live-comments-a{animation-duration:6s;animation-iteration-count:infinite;animation-delay:-3s;animation-timing-function:ease-in-out}
+@media (prefers-reduced-motion: reduce){.live-comments-a{animation-play-state:paused!important}}
+.live-comments-heart1{animation-name:live-comments-heart1}
+@keyframes live-comments-heart1{0%,0%{opacity:0;transform:translateY(0) scale(.6)}5%{opacity:1;transform:translateY(-8px) scale(1)}40%{opacity:0;transform:translateY(-62px) scale(1)}41%,100%{opacity:0;transform:translateY(-62px)}}
+.live-comments-heart2{animation-name:live-comments-heart2}
+@keyframes live-comments-heart2{0%,18%{opacity:0;transform:translateY(0) scale(.6)}23%{opacity:1;transform:translateY(-8px) scale(1)}58%{opacity:0;transform:translateY(-62px) scale(1)}59%,100%{opacity:0;transform:translateY(-62px)}}
+.live-comments-heart3{animation-name:live-comments-heart3}
+@keyframes live-comments-heart3{0%,36%{opacity:0;transform:translateY(0) scale(.6)}41%{opacity:1;transform:translateY(-8px) scale(1)}76%{opacity:0;transform:translateY(-62px) scale(1)}77%,100%{opacity:0;transform:translateY(-62px)}}
+.live-comments-heart4{animation-name:live-comments-heart4}
+@keyframes live-comments-heart4{0%,54%{opacity:0;transform:translateY(0) scale(.6)}59%{opacity:1;transform:translateY(-8px) scale(1)}94%{opacity:0;transform:translateY(-62px) scale(1)}95%,100%{opacity:0;transform:translateY(-62px)}}
+.live-comments-scroll{animation-name:live-comments-scroll}
+@keyframes live-comments-scroll{0%,20%{transform:none}30%,100%{transform:translateY(-24px)}}
+.live-comments-mine{animation-name:live-comments-mine}
+@keyframes live-comments-mine{0%,20%{opacity:0;transform:translateY(24px)}30%,90%{opacity:1;transform:none}96%,100%{opacity:0}}
+.live-comments-old{animation-name:live-comments-old}
+@keyframes live-comments-old{0%,20%{opacity:1}30%,100%{opacity:0}}
+.live-comments-n1{animation-name:live-comments-n1}
+@keyframes live-comments-n1{0%,40%{opacity:1}43%,100%{opacity:0}}
+.live-comments-n2{animation-name:live-comments-n2}
+@keyframes live-comments-n2{0%,40%{opacity:0}43%,100%{opacity:1}}
+</style>
+
+<rect x="6" y="6" width="228" height="123" rx="12" class="live-comments-ink" opacity=".88"/>
+<path d="M104 30 v30 l26 -15z" class="live-comments-card" opacity=".7"/>
+<rect x="14" y="14" width="44" height="22" rx="5" class="live-comments-bad"/><text class="live-comments-card" x="36" y="30" font-size="14" font-weight="700" text-anchor="middle" font-family="system-ui, sans-serif">LIVE</text>
+<rect x="150" y="14" width="76" height="22" rx="11" class="live-comments-card" opacity=".9"/>
+<path d="M163 31 l-6 -6 a3.6 3.6 0 0 1 6 -4 a3.6 3.6 0 0 1 6 4z" class="live-comments-bad"/>
+<text class="live-comments-tm live-comments-a live-comments-n1" x="174" y="30" font-size="14" font-weight="700">12,401</text>
+<text class="live-comments-tm live-comments-a live-comments-n2" x="174" y="30" font-size="14" font-weight="700">12,405</text>
+<g transform="translate(206 118)"><g class="live-comments-a live-comments-heart1"><path d="M0 0 l-8 -8 a5 5 0 0 1 8 -6 a5 5 0 0 1 8 6z" class="live-comments-bad"/></g></g>
+<g transform="translate(196 118)"><g class="live-comments-a live-comments-heart2"><path d="M0 0 l-8 -8 a5 5 0 0 1 8 -6 a5 5 0 0 1 8 6z" class="live-comments-bad"/></g></g>
+<g transform="translate(212 118)"><g class="live-comments-a live-comments-heart3"><path d="M0 0 l-8 -8 a5 5 0 0 1 8 -6 a5 5 0 0 1 8 6z" class="live-comments-bad"/></g></g>
+<g transform="translate(200 118)"><g class="live-comments-a live-comments-heart4"><path d="M0 0 l-8 -8 a5 5 0 0 1 8 -6 a5 5 0 0 1 8 6z" class="live-comments-bad"/></g></g>
+
+<g class="live-comments-a live-comments-scroll">
+<g class="live-comments-a live-comments-old"><rect x="14" y="70" width="110" height="18" rx="9" class="live-comments-card" opacity=".75"/><rect x="22" y="77" width="78" height="5" rx="2.5" class="live-comments-soft"/></g>
+<rect x="14" y="94" width="90" height="18" rx="9" class="live-comments-card" opacity=".75"/><rect x="22" y="101" width="60" height="5" rx="2.5" class="live-comments-soft"/>
+</g>
+<g class="live-comments-a live-comments-mine"><rect x="14" y="98" width="164" height="24" rx="12" style="fill:var(--scene-bubble-in,#fff)"/>
+<text class="live-comments-t" x="24" y="115" font-size="14"><tspan font-weight="700">Sakura</tspan> What a save!</text></g>
+
+</svg>

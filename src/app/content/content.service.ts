@@ -34,6 +34,7 @@ import {
 } from './content.models';
 import { validateAnswerSlideDeck } from './answer-slide-contract';
 import { DeliveryPlan } from './delivery-plan.models';
+import { publicUnitScenePath } from '../core/card-scene/scene-assets';
 import type { HandsOnDsaIndex } from './hands-on-dsa';
 
 export const CONTENT_DETAIL_CACHE_MAX_ENTRIES = 8;
@@ -72,7 +73,8 @@ export class ContentService {
   private contentIndexManifest$ = this.loadContentIndexManifest();
 
   private loadContentIndexManifest(): Observable<ContentIndexManifest> {
-    return this.http.get<ContentIndexManifest>('/content/content-index-manifest.json')
+    return this.http
+      .get<ContentIndexManifest>('/content/content-index-manifest.json')
       .pipe(shareReplay({ bufferSize: 1, refCount: true }));
   }
   private readonly contentIndexShards = new Map<ContentPath, Observable<SearchDocument[]>>();
@@ -135,6 +137,48 @@ export class ContentService {
           };
         }),
       );
+  }
+
+  /**
+   * Loads a course-card scene as SVG text from the same content origin as other
+   * course assets. One request per path is shared by every card and page that uses it;
+   * a failed load is forgotten so a later visit can try again.
+   * Look Ahead unit card scenes (/content/look-ahead/<course>/visuals/cards/<file>.svg)
+   * load their public copy under /assets/scenes/units/look-ahead/<course>/ first, because
+   * content visuals need access and signed-out visitors should still see the scene; the
+   * content path is the fallback when no public copy ships or it is not an SVG.
+   */
+  getCardScene(path: string): Observable<string> {
+    if (!this.validCardScenePath(path)) {
+      return throwError(() => new Error('Invalid card scene path'));
+    }
+    let request = this.cardScenes.get(path);
+    if (!request) {
+      const publicCopy = publicUnitScenePath(path);
+      const content = this.http.get(path, { responseType: 'text' });
+      const source = publicCopy
+        ? this.http.get(publicCopy, { responseType: 'text' }).pipe(
+            // A host's HTML fallback page for a missing file is not a scene.
+            switchMap((text) => (/<svg[\s>]/i.test(text) ? of(text) : content)),
+            catchError(() => content),
+          )
+        : content;
+      request = source.pipe(
+        catchError((cause: unknown) => {
+          this.cardScenes.delete(path);
+          return throwError(() => cause);
+        }),
+        shareReplay({ bufferSize: 1, refCount: false }),
+      );
+      this.cardScenes.set(path, request);
+    }
+    return request;
+  }
+
+  private readonly cardScenes = new Map<string, Observable<string>>();
+
+  private validCardScenePath(path: string): boolean {
+    return /^\/content\/[a-z0-9][a-z0-9/_-]*\.svg$/i.test(path) && !path.includes('//');
   }
 
   getModuleQuestions(course: CourseOutline, moduleId: string): Observable<InterviewQuestion[]> {

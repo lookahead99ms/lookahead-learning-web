@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Thabo taps the shoe ad once, his phone sends the click twice, and the 10:01 count for ad 77 goes from 3 to 4 while the repeat copy is dropped">
+<style>
+.ad-click-aggregator-t{font-family:system-ui, sans-serif;fill:var(--scene-ink,#102a33)}
+.ad-click-aggregator-tx{font-family:system-ui, sans-serif;fill:var(--scene-text,#28434a)}
+.ad-click-aggregator-tm{font-family:ui-monospace, Menlo, monospace;fill:var(--scene-ink,#102a33)}
+.ad-click-aggregator-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.ad-click-aggregator-card{fill:var(--scene-card,#fff)}
+.ad-click-aggregator-soft{fill:var(--scene-muted,#536970)}
+.ad-click-aggregator-line{fill:var(--scene-line,#cfdfdc)}
+.ad-click-aggregator-acc{fill:var(--scene-accent,#006c73)}
+.ad-click-aggregator-accsoft{fill:var(--scene-accent-soft,#dcefed)}
+.ad-click-aggregator-good{fill:var(--scene-good,#1f7a4d)}
+.ad-click-aggregator-bad{fill:var(--scene-bad,#b3261e)}
+.ad-click-aggregator-warn{fill:var(--scene-warn,#a15c00)}
+.ad-click-aggregator-link{fill:var(--scene-link,#245a88)}
+.ad-click-aggregator-a{animation-duration:6s;animation-iteration-count:infinite;animation-delay:-3.9s;transform-box:fill-box}
+@media (prefers-reduced-motion: reduce){.ad-click-aggregator-a{animation-play-state:paused!important}}
+.ad-click-aggregator-tap{animation-name:ad-click-aggregator-tap}
+@keyframes ad-click-aggregator-tap{0%,4%{opacity:0;transform:translate(10px,12px)}10%,20%{opacity:1;transform:none}26%,100%{opacity:0}}
+.ad-click-aggregator-c1{animation-name:ad-click-aggregator-c1}
+@keyframes ad-click-aggregator-c1{0%,12%{opacity:0;transform:translate(0,0)}15%{opacity:1;transform:translate(0,0)}34%{opacity:1;transform:translate(104px,-14px)}37%,100%{opacity:0;transform:translate(104px,-14px)}}
+.ad-click-aggregator-c2{animation-name:ad-click-aggregator-c2}
+@keyframes ad-click-aggregator-c2{0%,40%{opacity:0;transform:translate(0,0)}43%{opacity:1;transform:translate(0,0)}60%{opacity:1;transform:translate(84px,8px)}66%{opacity:1;transform:translate(70px,14px)}74%,100%{opacity:0;transform:translate(70px,18px)}}
+.ad-click-aggregator-x{animation-name:ad-click-aggregator-x}
+@keyframes ad-click-aggregator-x{0%,60%{opacity:0}63%,92%{opacity:1}96%,100%{opacity:0}}
+.ad-click-aggregator-n3{animation-name:ad-click-aggregator-n3}
+@keyframes ad-click-aggregator-n3{0%,34%{opacity:1}36%,100%{opacity:0}}
+.ad-click-aggregator-n4{animation-name:ad-click-aggregator-n4}
+@keyframes ad-click-aggregator-n4{0%,34%{opacity:0;transform:scale(.7)}38%{opacity:1;transform:scale(1.15)}42%,100%{opacity:1;transform:scale(1)}}
+.ad-click-aggregator-n4{transform-origin:center}
+</style>
+<rect x="8" y="8" width="80" height="120" rx="12" class="ad-click-aggregator-box"/>
+<rect x="38" y="14" width="20" height="4" rx="2" class="ad-click-aggregator-line"/>
+<rect x="15" y="28" width="66" height="22" rx="4" class="ad-click-aggregator-line" fill-opacity=".6"/>
+<rect x="15" y="56" width="66" height="60" rx="6" class="ad-click-aggregator-accsoft" stroke="var(--scene-accent,#006c73)" stroke-width="1.5"/>
+<path d="M24 92 c6 0 10 -8 14 -8 l6 6 c4 2 16 2 22 6 c3 2 3 6 0 6 h-40 c-4 0 -4 -10 -2 -10z" class="ad-click-aggregator-acc"/>
+<text class="ad-click-aggregator-t" x="48" y="74" font-size="14" font-weight="700" text-anchor="middle">Ad 77</text>
+<g class="ad-click-aggregator-a ad-click-aggregator-tap"><path d="M56 88 l0 18 l5 -5 l4 8 l3.5 -1.6 l-4 -8 l7 0z" style="fill:var(--scene-ink,#102a33);stroke:var(--scene-card,#fff);stroke-width:1.2"/></g>
+<rect x="118" y="20" width="114" height="92" rx="10" class="ad-click-aggregator-box"/>
+<text class="ad-click-aggregator-tx" x="175" y="40" font-size="14" text-anchor="middle">10:01 clicks</text>
+<text class="ad-click-aggregator-t ad-click-aggregator-a ad-click-aggregator-n3" x="175" y="84" font-size="32" font-weight="700" text-anchor="middle">3</text>
+<text class="ad-click-aggregator-good ad-click-aggregator-a ad-click-aggregator-n4" style="font-family:system-ui, sans-serif" x="175" y="84" font-size="32" font-weight="700" text-anchor="middle">4</text>
+<circle class="ad-click-aggregator-a ad-click-aggregator-c1 ad-click-aggregator-acc" cx="68" cy="70" r="7"/>
+<circle class="ad-click-aggregator-a ad-click-aggregator-c2" cx="68" cy="84" r="7" style="fill:var(--scene-muted,#536970)"/>
+<g class="ad-click-aggregator-a ad-click-aggregator-x"><circle cx="146" cy="96" r="10" class="ad-click-aggregator-card" stroke="var(--scene-bad,#b3261e)" stroke-width="2"/><path d="M141 91 l10 10 m0 -10 l-10 10" stroke="var(--scene-bad,#b3261e)" stroke-width="2.5" stroke-linecap="round"/></g>
+</svg>

@@ -1,3 +1,4 @@
+import { HIDDEN_COURSE_IDS } from './hidden-courses';
 import { variedTopics } from './study-plan-variation';
 import { ContentPath, ContentType, SearchDocument } from './content.models';
 import { buildInterviewSprint } from './study-plan-sprint';
@@ -512,9 +513,26 @@ function chunkWeeks(days: StudyPlanDay[]): StudyPlanWeek[] {
 }
 
 /** One checklist entry per published course, without private answer bodies. */
+/**
+ * Look Ahead courses that are published to the catalog but not yet offered as
+ * study-plan topics. The server's plan validator does not know these topic IDs
+ * yet, so offering them would produce plans that cannot be saved. Remove an ID
+ * here once the server accepts `look-ahead:<courseId>` for it.
+ */
+export const STUDY_PLAN_EXCLUDED_LOOK_AHEAD_COURSE_IDS: ReadonlySet<string> = new Set([
+  'design-fundamentals',
+  'design-patterns',
+  'design-systems',
+  'design-rounds',
+  'ai-collaborators',
+  ...HIDDEN_COURSE_IDS.filter((id) => id.startsWith('look-ahead:')).map((id) => id.slice(11)),
+]);
+
 export function studyPlanOfferings(documents: SearchDocument[]): StudyPlanTopic[] {
   const offerings = new Map<string, StudyPlanTopic>();
   for (const item of documents) {
+    if (item.path === 'look-ahead' && STUDY_PLAN_EXCLUDED_LOOK_AHEAD_COURSE_IDS.has(item.courseId))
+      continue;
     const id = `${item.path}:${item.courseId}`;
     if (!offerings.has(id))
       offerings.set(id, {

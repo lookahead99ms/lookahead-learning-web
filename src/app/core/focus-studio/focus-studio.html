@@ -1,6 +1,7 @@
 <section
   class="studio"
   [attr.data-mode]="mode()"
+  [attr.data-option-b]="story() ? '' : null"
   [class.debugger-active]="current().debugger"
   [class.problem-pinned]="problemPinned()"
   [class.problem-peek]="peek() && !problemPinned()"
@@ -144,7 +145,7 @@
           type="button"
           class="primary action-debugger"
           [class.action-close]="current().debugger"
-          [hidden]="mode() === 'practice' || mode() === 'recall'"
+          [hidden]="mode() === 'practice' || mode() === 'recall' || !!story()"
           [attr.aria-pressed]="current().debugger"
           (click)="toggleDebugger()"
         >
@@ -184,7 +185,69 @@
     >
       <app-studio-approach [problem]="problem()" />
     </section>
-    @if (mode() === 'visual' && !current().debugger) {
+    @if (story(); as selectedStory) {
+      <section
+        class="story-panel"
+        [id]="problem().id + '-studio-panel-visual'"
+        role="tabpanel"
+        [attr.aria-labelledby]="problem().id + '-studio-tab-visual'"
+        [hidden]="mode() !== 'visual'"
+      >
+        @defer (when mode() === 'visual') {
+          <app-dsa-story [story]="selectedStory" [problem]="problem()" />
+        } @placeholder {
+          <p class="reference-loading" role="status">Loading the walkthrough…</p>
+        }
+        <!-- Below the story: the shared guided debugger for the same reference solution, closed
+             until asked for and only loaded then. It follows the page-wide language. -->
+        <section class="line-debugger" [attr.aria-labelledby]="problem().id + '-line-debugger-toggle'">
+          <h3 class="line-debugger-heading">
+            <button
+              type="button"
+              class="line-debugger-toggle"
+              [id]="problem().id + '-line-debugger-toggle'"
+              [attr.aria-expanded]="lineDebuggerOpen()"
+              [attr.aria-controls]="problem().id + '-line-debugger'"
+              (click)="toggleLineDebugger()"
+            >
+              <span>{{
+                lineDebuggerOpen()
+                  ? 'Hide the line-by-line debugger'
+                  : 'Step through the code line by line'
+              }}</span>
+              <svg
+                class="line-debugger-chevron"
+                [class.open]="lineDebuggerOpen()"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+          </h3>
+          <div
+            class="line-debugger-body"
+            [id]="problem().id + '-line-debugger'"
+            [hidden]="!lineDebuggerOpen()"
+          >
+            @defer (when lineDebuggerOpen()) {
+              <app-guided-algorithm-trace
+                [problem]="problem()"
+                [selectedFixture]="lineDebuggerFixture()"
+                [initialLanguage]="pageLanguage()"
+                (fixtureChange)="lineDebuggerFixtureId.set($event.id)"
+              />
+            } @placeholder {
+              <p class="reference-loading">The debugger loads when you open it.</p>
+            } @loading {
+              <p class="reference-loading" role="status">Loading the guided debugger…</p>
+            }
+          </div>
+        </section>
+      </section>
+    }
+    @if (mode() === 'visual' && !current().debugger && !story()) {
       <nav class="visual-controls" aria-label="Visual walkthrough playback">
         <button
           type="button"
@@ -211,7 +274,7 @@
     }
     <div
       class="working-grid"
-      [hidden]="mode() === 'approach' && !current().revealed"
+      [hidden]="(mode() === 'approach' && !current().revealed) || (mode() === 'visual' && !!story())"
       [class.editor-only]="!contextVisible()"
       [class.compare]="mode() === 'practice' && current().revealed"
       [class.contextual]="mode() !== 'practice'"
@@ -277,6 +340,7 @@
             (studioDraftChange)="updateDraft($event)"
           />
         </section>
+        @if (!story()) {
         <section
           [id]="problem().id + '-studio-panel-visual'"
           role="tabpanel"
@@ -303,6 +367,7 @@
             />
           }
         </section>
+        }
         <section
           class="recall-panel"
           [id]="problem().id + '-studio-panel-recall'"
@@ -451,7 +516,11 @@
           </details>
         }
         @if (current().revealed) {
-          <section class="reference-panel" (keydown.escape)="closeReference()">
+          <section
+            class="reference-panel"
+            (keydown.escape)="closeReference()"
+            (keydown)="debuggerKeys($event)"
+          >
             <header class="reference-header">
               <ng-container [ngTemplateOutlet]="referenceHeader" />
             </header>
@@ -472,6 +541,15 @@
                   </button>
                   <button
                     type="button"
+                    class="play-toggle"
+                    [attr.aria-pressed]="player.playing()"
+                    [disabled]="snapshot().events.length < 2"
+                    (click)="player.toggle()"
+                  >
+                    {{ player.playing() ? 'Pause' : 'Play' }}
+                  </button>
+                  <button
+                    type="button"
                     aria-label="Next instruction"
                     [disabled]="snapshot().step >= snapshot().events.length - 1"
                     class="primary"
@@ -485,16 +563,20 @@
                 </div>
               </nav>
             }
-            <app-guided-algorithm-trace
-              [problem]="problem()"
-              [selectedFixture]="fixture()"
-              [initialLanguage]="position().language"
-              [studio]="true"
-              [studioSnapshot]="snapshot()"
-              [studioDebugger]="current().debugger"
-              [studioContextual]="mode() !== 'practice'"
-              [studioFollow]="follow()"
-            />
+            @defer (on immediate) {
+              <app-guided-algorithm-trace
+                [problem]="problem()"
+                [selectedFixture]="fixture()"
+                [initialLanguage]="position().language"
+                [studio]="true"
+                [studioSnapshot]="snapshot()"
+                [studioDebugger]="current().debugger"
+                [studioContextual]="mode() !== 'practice'"
+                [studioFollow]="follow()"
+              />
+            } @placeholder {
+              <p class="reference-loading" role="status">Loading the reference solution…</p>
+            }
             <div class="reference-rationale">
               <p>
                 <strong>Time</strong> {{ problem().complexity.time }} · <strong>Space</strong>

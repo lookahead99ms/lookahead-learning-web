@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Stop-the-world collectors freeze the app in long pauses; concurrent collectors work beside it">
+<style>
+.learn-garbage-collection-gc-collectors-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.learn-garbage-collection-gc-collectors-run{fill:var(--scene-good,#1f7a4d)}
+.learn-garbage-collection-gc-collectors-pz{fill:var(--scene-bad,#b3261e);transform-box:fill-box;transform-origin:center;animation:learn-garbage-collection-gc-collectors-pulse 6s ease-in-out infinite}
+.learn-garbage-collection-gc-collectors-pz2{animation-delay:-1.2s}.learn-garbage-collection-gc-collectors-pz1{animation-delay:-3s}
+.learn-garbage-collection-gc-collectors-gc{fill:var(--scene-accent,#006c73)}
+.learn-garbage-collection-gc-collectors-gcm{fill:none;stroke:var(--scene-card,#fff);stroke-width:3;stroke-dasharray:8 8;animation:learn-garbage-collection-gc-collectors-slide 1s linear infinite;animation-delay:-.3s}
+.learn-garbage-collection-gc-collectors-ph{stroke:var(--scene-ink,#102a33);stroke-width:2.5;animation:learn-garbage-collection-gc-collectors-scan 6s linear infinite;animation-delay:-3s}
+@keyframes learn-garbage-collection-gc-collectors-pulse{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.15)}}
+@keyframes learn-garbage-collection-gc-collectors-slide{to{stroke-dashoffset:-16}}
+@keyframes learn-garbage-collection-gc-collectors-scan{0%{transform:translateX(0)}100%{transform:translateX(260px)}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<text class="learn-garbage-collection-gc-collectors-t" x="20" y="24">Stop-the-world</text>
+<rect class="learn-garbage-collection-gc-collectors-run" x="20" y="34" width="280" height="30" rx="4"/>
+<rect class="learn-garbage-collection-gc-collectors-pz learn-garbage-collection-gc-collectors-pz1" x="90" y="34" width="55" height="30"/>
+<rect class="learn-garbage-collection-gc-collectors-pz learn-garbage-collection-gc-collectors-pz2" x="215" y="34" width="45" height="30"/>
+<text class="learn-garbage-collection-gc-collectors-t" x="20" y="102">Concurrent</text>
+<rect class="learn-garbage-collection-gc-collectors-run" x="20" y="112" width="280" height="24" rx="4"/>
+<rect class="learn-garbage-collection-gc-collectors-pz learn-garbage-collection-gc-collectors-pz1" x="132" y="112" width="6" height="24"/>
+<rect class="learn-garbage-collection-gc-collectors-pz learn-garbage-collection-gc-collectors-pz2" x="236" y="112" width="6" height="24"/>
+<rect class="learn-garbage-collection-gc-collectors-gc" x="20" y="144" width="280" height="12" rx="6"/>
+<path class="learn-garbage-collection-gc-collectors-gcm" d="M28 150H292"/>
+<line class="learn-garbage-collection-gc-collectors-ph" x1="30" y1="28" x2="30" y2="162"/>
+</svg>

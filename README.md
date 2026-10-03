@@ -730,3 +730,21 @@ Enter saves and Escape cancels. Names must be nonblank single-line text up to160
 characters. Browser-only plans retain names in local storage. Connected account
 plans require the Domain API `plan-name-v1` contract and migration V3; the server
 allocates a per-account number and persists names across list/detail reads.
+
+## DLV-408 lesson and story components
+
+The shared lesson reader supports opt-in `system-v1`, `concept-v1` and
+`algo-pattern-v1` presentations, including staged navigation, animated walkthroughs
+and broken/fixed code comparisons. The DSA story component reads optional private
+`dsa-story/v1` companions through the existing protected content flow and shares
+the page language selection. Missing stories retain the existing debugger.
+Card scene SVGs under `public/assets/scenes/` are presentation assets; proprietary
+lesson bodies and story data remain in the private Content repository. Retired
+lesson routes redirect to their current canonical destination. No learner code
+execution service is activated.
+
+Validate presentation contracts with `npm run test:card-contract`,
+`npm run test:landing-scenes`, `npm run test:search-index`, and
+`npm test -- --watch=false`; use `npm run build:protected` for the protected build.
+The 2026-10-03 local Git snapshot passes those tests but exceeds the foundation
+lesson component CSS build budget by 905 bytes. It is not a release certification.

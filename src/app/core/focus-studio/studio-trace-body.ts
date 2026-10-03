@@ -5,13 +5,14 @@ import {
   PatternProblemV1,
 } from '../../content/content.models';
 import { TraceSnapshot } from '../guided-algorithm-trace/trace-model';
+import { TraceStatePanel } from '../guided-algorithm-trace/trace-state-panel';
 import { StudioEssentialState } from './studio-essential-state';
 import { StudioInspector } from './studio-inspector';
-import { editorPalettes, highlightStudioSource } from './studio-editor';
+import { editorPalettes, highlightStudioSource } from './code-presentation';
 
 @Component({
   selector: 'app-studio-trace-body',
-  imports: [StudioInspector, StudioEssentialState],
+  imports: [StudioInspector, StudioEssentialState, TraceStatePanel],
   template: `<div
     class="trace-body"
     [class.with-inspector]="debugger()"
@@ -24,14 +25,28 @@ import { editorPalettes, highlightStudioSource } from './studio-editor';
     [style.--syntax-comment]="palette().comment"
     [style.--syntax-type]="palette().type"
   >
-    <pre
-      #sourcePanel
-      tabindex="0"
-      aria-label="Reference solution, read-only"
-    ><code>@for (line of source().lines; track line.id; let index = $index) {<span class="source-line" [class.current]="debugger() && line.id === snapshot()?.event?.sourceAnchor?.[language()]" [attr.aria-current]="debugger() && line.id === snapshot()?.event?.sourceAnchor?.[language()] ? 'step' : null"><span class="line-number" aria-hidden="true">{{ index + 1 }}</span><span [innerHTML]="highlighted()[index]"></span></span>}</code></pre>
+    <div class="code-column">
+      <pre
+        #sourcePanel
+        tabindex="0"
+        aria-label="Reference solution, read-only"
+      ><code>@for (line of source().lines; track line.id; let index = $index) {<span class="source-line" [class.current]="debugger() && line.id === snapshot()?.event?.sourceAnchor?.[language()]" [class.executed]="debugger() && executed().has(line.id) && line.id !== snapshot()?.event?.sourceAnchor?.[language()]" [attr.aria-current]="debugger() && line.id === snapshot()?.event?.sourceAnchor?.[language()] ? 'step' : null"><span class="line-number" aria-hidden="true">{{ index + 1 }}</span><span class="line-text" [innerHTML]="highlighted()[index]"></span></span>}</code></pre>
+      @if (debugger()) {
+        <p class="code-key" aria-hidden="true">
+          <span><i class="key-current"></i>Running now</span>
+          <span><i class="key-executed"></i>Already ran</span>
+        </p>
+      }
+    </div>
     @if (debugger()) {
       @if (snapshot(); as state) {
         <div class="inspector-scroll">
+          <app-trace-state-panel
+            [problem]="problem()"
+            [fixture]="fixture()"
+            [snapshot]="state"
+            [language]="language()"
+          />
           <app-studio-essential-state
             [problem]="problem()"
             [fixture]="fixture()"
@@ -110,6 +125,62 @@ import { editorPalettes, highlightStudioSource } from './studio-editor';
         background: #24565e;
         box-shadow: inset 3px 0 #6ed7cf;
       }
+      .source-line.executed {
+        background: rgb(255 255 255 / 5%);
+      }
+      .source-line.executed .line-text {
+        opacity: 0.72;
+      }
+      .source-line.executed .line-number {
+        position: relative;
+      }
+      .source-line.executed .line-number::before {
+        content: '';
+        position: absolute;
+        left: 8px;
+        top: 50%;
+        width: 5px;
+        height: 5px;
+        margin-top: -2.5px;
+        border-radius: 50%;
+        background: currentColor;
+      }
+      .code-column {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        background: var(--code-bg);
+      }
+      .code-key {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 16px;
+        margin: 0;
+        padding: 8px 14px;
+        border-top: 1px solid rgb(255 255 255 / 8%);
+        color: var(--code-fg);
+        font-size: 13px;
+      }
+      .code-key span {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        opacity: 0.85;
+      }
+      .code-key i {
+        display: inline-block;
+        width: 14px;
+        height: 10px;
+        border-radius: 2px;
+      }
+      .key-current {
+        background: #24565e;
+        box-shadow: inset 3px 0 #6ed7cf;
+      }
+      .key-executed {
+        background: rgb(255 255 255 / 9%);
+        outline: 1px solid rgb(255 255 255 / 14%);
+      }
       .inspector-scroll {
         height: var(--studio-code-height, 520px);
         overflow: auto;
@@ -141,13 +212,18 @@ import { editorPalettes, highlightStudioSource } from './studio-editor';
         align-items: start;
       }
       .with-inspector .inspector-scroll {
-        grid-row: 1;
+        grid-row: 2;
         height: auto;
         min-height: 0;
         overflow: visible;
+        display: grid;
+        gap: 10px;
+        align-content: start;
+      }
+      .with-inspector .code-column {
+        grid-row: 1;
       }
       .with-inspector pre {
-        grid-row: 2;
         height: var(--studio-source-height, 280px);
         min-height: 0;
         overflow: auto;
@@ -184,13 +260,38 @@ import { editorPalettes, highlightStudioSource } from './studio-editor';
         outline: 3px solid var(--accent);
         outline-offset: 2px;
       }
+      @container trace-surface (min-width: 760px) {
+        .with-inspector {
+          grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+          align-items: stretch;
+        }
+        .with-inspector .code-column {
+          grid-row: 1;
+          grid-column: 1;
+        }
+        .with-inspector pre {
+          flex: 1 1 auto;
+          height: auto;
+          min-height: var(--studio-source-height, 280px);
+          max-height: var(--studio-code-height, 520px);
+        }
+        .with-inspector .inspector-scroll {
+          grid-row: 1;
+          grid-column: 2;
+        }
+        .secondary-state {
+          grid-row: 2;
+        }
+      }
       @container trace-surface (min-width:1100px) {
         :host-context([data-composition='wide']) .with-inspector {
           grid-template-columns: minmax(0, 60fr) minmax(0, 40fr);
         }
-        :host-context([data-composition='wide']) .with-inspector pre {
+        :host-context([data-composition='wide']) .with-inspector .code-column {
           grid-row: 1;
           grid-column: 1;
+        }
+        :host-context([data-composition='wide']) .with-inspector pre {
           height: 520px;
         }
         :host-context([data-composition='wide']) .with-inspector .inspector-scroll {
@@ -205,6 +306,11 @@ import { editorPalettes, highlightStudioSource } from './studio-editor';
         .source-line.current {
           outline: 2px solid Highlight;
           outline-offset: -2px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .source-line {
+          transition: none;
         }
       }
     `,
@@ -223,6 +329,16 @@ export class StudioTraceBody {
     this.problem().implementations.find((item) => item.language === this.language())!,
   );
   protected readonly palette = computed(() => editorPalettes[this.language()]);
+  /** Source lines executed before the current instruction, for dimming. */
+  protected readonly executed = computed(() => {
+    const snapshot = this.snapshot();
+    const language = this.language();
+    return new Set(
+      (snapshot?.events ?? [])
+        .slice(0, (snapshot?.step ?? 0) + 1)
+        .map((event) => event.sourceAnchor[language]),
+    );
+  });
   protected readonly highlighted = computed(() =>
     highlightStudioSource(
       this.source()

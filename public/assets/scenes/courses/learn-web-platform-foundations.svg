@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Keyboard focus tabs through a form to the submit button, which sends a request that returns 200 OK">
+<style>
+.learn-web-platform-foundations-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-weight: 700; fill: var(--scene-ink, #102a33); }
+.learn-web-platform-foundations-on { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-weight: 700; fill: var(--scene-card, #ffffff); }
+.learn-web-platform-foundations-win { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.learn-web-platform-foundations-bar { fill: var(--scene-accent-soft, #dcefed); }
+.learn-web-platform-foundations-dot { fill: var(--scene-muted, #536970); }
+.learn-web-platform-foundations-lbl { fill: var(--scene-muted, #536970); }
+.learn-web-platform-foundations-in { fill: var(--scene-card, #ffffff); stroke: var(--scene-muted, #536970); stroke-width: 1.5; }
+.learn-web-platform-foundations-btn { fill: var(--scene-accent, #006c73); }
+.learn-web-platform-foundations-ring { fill: none; stroke: var(--scene-ahead, #2f6fb3); stroke-width: 3; }
+.learn-web-platform-foundations-key { fill: var(--scene-card, #ffffff); stroke: var(--scene-muted, #536970); stroke-width: 1.5; }
+.learn-web-platform-foundations-keyb { fill: var(--scene-line, #cfdfdc); }
+.learn-web-platform-foundations-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 1.5; stroke-dasharray: 4 5; }
+.learn-web-platform-foundations-pkt { fill: var(--scene-ahead, #2f6fb3); }
+.learn-web-platform-foundations-okbg { fill: var(--scene-good, #1f7a4d); }
+.learn-web-platform-foundations-focus { animation: learn-web-platform-foundations-focus 7s ease-in-out infinite; animation-delay: -3s; }
+.learn-web-platform-foundations-bfocus { animation: learn-web-platform-foundations-bfocus 7s steps(1) infinite; animation-delay: -3s; }
+.learn-web-platform-foundations-press { transform-box: fill-box; transform-origin: center; animation: learn-web-platform-foundations-press 7s ease-in-out infinite; animation-delay: -3s; }
+.learn-web-platform-foundations-click { transform-box: fill-box; transform-origin: center; animation: learn-web-platform-foundations-click 7s ease-in-out infinite; animation-delay: -3s; }
+.learn-web-platform-foundations-send { animation: learn-web-platform-foundations-send 7s ease-in-out infinite; animation-delay: -3s; }
+.learn-web-platform-foundations-res { animation: learn-web-platform-foundations-res 7s ease-in-out infinite; animation-delay: -3s; }
+@keyframes learn-web-platform-foundations-focus {
+  0%, 12% { transform: translate(0, 0); opacity: 1; }
+  16%, 28% { transform: translate(0, 40px); opacity: 1; }
+  30%, 100% { transform: translate(0, 40px); opacity: 0; }
+}
+@keyframes learn-web-platform-foundations-bfocus {
+  0%, 29% { opacity: 0; }
+  31%, 100% { opacity: 1; }
+}
+@keyframes learn-web-platform-foundations-press {
+  0%, 12% { transform: translateY(0); }
+  14% { transform: translateY(3px); }
+  16%, 28% { transform: translateY(0); }
+  30% { transform: translateY(3px); }
+  32%, 100% { transform: translateY(0); }
+}
+@keyframes learn-web-platform-foundations-click {
+  0%, 36% { transform: scale(1); }
+  38% { transform: scale(.92); }
+  40%, 100% { transform: scale(1); }
+}
+@keyframes learn-web-platform-foundations-send {
+  0%, 39% { transform: translateX(0); opacity: 0; }
+  41% { transform: translateX(0); opacity: 1; }
+  54% { transform: translateX(96px); opacity: 1; }
+  56%, 100% { transform: translateX(96px); opacity: 0; }
+}
+@keyframes learn-web-platform-foundations-res {
+  0%, 52% { opacity: 0; }
+  56%, 94% { opacity: 1; }
+  100% { opacity: 0; }
+}
+</style>
+<rect class="learn-web-platform-foundations-win" x="12" y="14" width="190" height="156" rx="10"/>
+<path class="learn-web-platform-foundations-bar" d="M12 24 a10 10 0 0 1 10 -10 H192 a10 10 0 0 1 10 10 V36 H12 Z"/>
+<circle class="learn-web-platform-foundations-dot" cx="26" cy="25" r="3.5"/>
+<circle class="learn-web-platform-foundations-dot" cx="38" cy="25" r="3.5"/>
+<circle class="learn-web-platform-foundations-dot" cx="50" cy="25" r="3.5"/>
+<rect class="learn-web-platform-foundations-lbl" x="30" y="46" width="44" height="5" rx="2.5"/>
+<rect class="learn-web-platform-foundations-in" x="30" y="56" width="150" height="22" rx="5"/>
+<rect class="learn-web-platform-foundations-lbl" x="30" y="86" width="60" height="5" rx="2.5"/>
+<rect class="learn-web-platform-foundations-in" x="30" y="96" width="150" height="22" rx="5"/>
+<g class="learn-web-platform-foundations-click">
+  <rect class="learn-web-platform-foundations-btn" x="30" y="136" width="86" height="24" rx="6"/>
+  <text class="learn-web-platform-foundations-on" x="73" y="153" font-size="16" text-anchor="middle">Submit</text>
+</g>
+<g class="learn-web-platform-foundations-bfocus">
+  <rect class="learn-web-platform-foundations-ring" x="26" y="132" width="94" height="32" rx="9"/>
+</g>
+<g class="learn-web-platform-foundations-focus">
+  <rect class="learn-web-platform-foundations-ring" x="26" y="52" width="158" height="30" rx="8"/>
+</g>
+<g class="learn-web-platform-foundations-press">
+  <rect class="learn-web-platform-foundations-keyb" x="232" y="34" width="68" height="40" rx="8"/>
+  <rect class="learn-web-platform-foundations-key" x="232" y="30" width="68" height="38" rx="8"/>
+  <text class="learn-web-platform-foundations-t" x="266" y="54" font-size="16" text-anchor="middle">Tab</text>
+</g>
+<path class="learn-web-platform-foundations-wire" d="M126 148 H220"/>
+<g class="learn-web-platform-foundations-send">
+  <circle class="learn-web-platform-foundations-pkt" cx="130" cy="148" r="6"/>
+</g>
+<g class="learn-web-platform-foundations-res">
+  <rect class="learn-web-platform-foundations-okbg" x="222" y="134" width="86" height="28" rx="14"/>
+  <text class="learn-web-platform-foundations-on" x="265" y="153" font-size="16" text-anchor="middle">200 OK</text>
+</g>
+</svg>

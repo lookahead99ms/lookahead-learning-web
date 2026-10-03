@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" class="web-crawler-root" role="img" aria-label="Links found on a page join a to-fetch list, a repeated link is skipped, and each website is fetched slowly.">
+<style>
+.web-crawler-root text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.web-crawler-t{fill:var(--scene-ink,#102a33)}
+.web-crawler-tx{fill:var(--scene-text,#28434a)}
+.web-crawler-mut{fill:var(--scene-muted,#536970)}
+.web-crawler-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.web-crawler-soft{fill:var(--scene-accent-soft,#dcefed)}
+.web-crawler-acc{fill:var(--scene-accent,#006c73)}
+.web-crawler-ln{fill:var(--scene-line,#cfdfdc)}
+.web-crawler-cardf{fill:var(--scene-card,#fff)}
+.web-crawler-good{fill:var(--scene-good,#1f7a4d)}
+.web-crawler-warn{fill:var(--scene-warn,#a15c00)}
+.web-crawler-bad{fill:var(--scene-bad,#b3261e)}
+.web-crawler-link{fill:var(--scene-link,#245a88)}
+.web-crawler-out{fill:var(--scene-bubble-out,#d4ecea)}
+.web-crawler-sk{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.web-crawler-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.web-crawler-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:1.5;stroke-dasharray:3 3}
+.web-crawler-a{animation-duration:6s;animation-iteration-count:infinite;animation-delay:-3s}
+.web-crawler-slot{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:1.5;stroke-dasharray:4 3}
+.web-crawler-c1{animation-name:web-crawler-c1;animation-timing-function:ease-in-out}@keyframes web-crawler-c1{0%,4%{transform:translate(-120px,16px);opacity:0}7%{opacity:1;transform:translate(-120px,16px)}24%,92%{transform:translate(0,0);opacity:1}97%,100%{opacity:0}}
+.web-crawler-c2{animation-name:web-crawler-c2;animation-timing-function:ease-in-out}@keyframes web-crawler-c2{0%,24%{transform:translate(-120px,10px);opacity:0}27%{opacity:1;transform:translate(-120px,10px)}44%,92%{transform:translate(0,0);opacity:1}97%,100%{opacity:0}}
+.web-crawler-c3{animation-name:web-crawler-c3;animation-timing-function:ease-in-out}@keyframes web-crawler-c3{0%,44%{transform:translate(-120px,4px);opacity:0}47%{opacity:1;transform:translate(-120px,4px)}62%,66%{transform:translate(0,0);opacity:1}72%,100%{transform:translate(0,0);opacity:0}}
+.web-crawler-skip{animation-name:web-crawler-skip}@keyframes web-crawler-skip{0%,64%{opacity:0}70%,92%{opacity:1}97%,100%{opacity:0}}
+.web-crawler-gap{animation-name:web-crawler-gap;animation-timing-function:linear;transform-box:fill-box;transform-origin:left center}@keyframes web-crawler-gap{0%{transform:scaleX(0)}33%{transform:scaleX(1)}33.01%{transform:scaleX(0)}66%{transform:scaleX(1)}66.01%{transform:scaleX(0)}100%{transform:scaleX(1)}}
+.web-crawler-chip{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-accent,#006c73);stroke-width:1}
+@media (prefers-reduced-motion: reduce){.web-crawler-root *{animation-play-state:paused!important}}
+</style>
+<rect x="6" y="8" width="84" height="119" rx="9" class="web-crawler-box"/>
+<path d="M6 17 Q6 8 15 8 H81 Q90 8 90 17 V28 H6Z" class="web-crawler-soft"/><circle cx="18" cy="18" r="3.5" class="web-crawler-acc"/>
+<rect x="14" y="38" width="66" height="5" rx="2.5" class="web-crawler-ln"/><rect x="14" y="48" width="50" height="5" rx="2.5" class="web-crawler-ln"/>
+<rect x="14" y="66" width="62" height="8" rx="4" class="web-crawler-acc"/><rect x="14" y="86" width="46" height="8" rx="4" class="web-crawler-link"/><rect x="14" y="106" width="62" height="8" rx="4" class="web-crawler-acc"/>
+<rect class="web-crawler-slot" x="128" y="12" width="106" height="26" rx="13"/><rect class="web-crawler-slot" x="128" y="42" width="106" height="26" rx="13"/><rect class="web-crawler-slot" x="128" y="72" width="106" height="26" rx="13"/>
+<g class="web-crawler-a web-crawler-c1"><rect class="web-crawler-chip" x="128" y="12" width="106" height="26" rx="13"/><rect x="142" y="21" width="62" height="8" rx="4" class="web-crawler-acc"/></g>
+<g class="web-crawler-a web-crawler-c2"><rect class="web-crawler-chip" x="128" y="42" width="106" height="26" rx="13"/><rect x="142" y="51" width="46" height="8" rx="4" class="web-crawler-link"/></g>
+<g class="web-crawler-a web-crawler-c3"><rect class="web-crawler-chip" x="128" y="72" width="106" height="26" rx="13"/><rect x="142" y="81" width="62" height="8" rx="4" class="web-crawler-acc"/></g>
+<g class="web-crawler-a web-crawler-skip"><rect x="128" y="72" width="106" height="26" rx="13" class="web-crawler-cardf" stroke="var(--scene-bad,#b3261e)" stroke-width="1.5"/><path d="M142 80 l10 10 m0 -10 l-10 10" stroke="var(--scene-bad,#b3261e)" stroke-width="2.6" stroke-linecap="round"/><text x="196" y="90" font-size="15" font-weight="700" text-anchor="middle" class="web-crawler-bad">Skip</text></g>
+<circle cx="138" cy="116" r="8" class="web-crawler-sk"/><path d="M138 111 v5 h4" class="web-crawler-sk"/>
+<rect x="154" y="113" width="80" height="7" rx="3.5" class="web-crawler-ln"/><rect class="web-crawler-a web-crawler-gap web-crawler-acc" x="154" y="113" width="80" height="7" rx="3.5"/>
+</svg>

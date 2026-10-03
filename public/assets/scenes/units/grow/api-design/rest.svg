@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Two editors save the same document resource; the second save is rejected as stale">
+<style>
+.grow-api-design-rest-t{font:600 13px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.grow-api-design-rest-pa{animation:grow-api-design-rest-pa 6s linear infinite;animation-delay:-4.3s}
+@keyframes grow-api-design-rest-pa{0%,4%{transform:translateX(0);opacity:1}24%{transform:translateX(52px);opacity:1}28%,100%{transform:translateX(52px);opacity:0}}
+.grow-api-design-rest-fl{animation:grow-api-design-rest-fl 6s ease-in-out infinite;animation-delay:-4.3s}
+@keyframes grow-api-design-rest-fl{0%,24%{opacity:0}30%,42%{opacity:.9}52%,100%{opacity:0}}
+.grow-api-design-rest-pb{animation:grow-api-design-rest-pb 6s linear infinite;animation-delay:-4.3s}
+@keyframes grow-api-design-rest-pb{0%,46%{transform:translate(0,0);opacity:0}48%{opacity:1}62%{transform:translate(52px,0);opacity:1}78%{transform:translate(-4px,0);opacity:1}86%,100%{transform:translate(-4px,0);opacity:0}}
+.grow-api-design-rest-er{animation:grow-api-design-rest-er 6s ease-in-out infinite;animation-delay:-4.3s}
+@keyframes grow-api-design-rest-er{0%,62%{opacity:0}68%,92%{opacity:1}98%,100%{opacity:0}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<text class="grow-api-design-rest-t" x="160" y="20" text-anchor="middle" font-family="ui-monospace,Menlo,monospace">/docs/d42</text>
+<path d="M120 34H174L200 60V132a6 6 0 0 1-6 6H126a6 6 0 0 1-6-6Z" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="3" stroke-linejoin="round"/>
+<path d="M174 34V60H200" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-ink,#102a33)" stroke-width="3" stroke-linejoin="round"/>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="5" stroke-linecap="round"><path d="M132 78H188M132 94H188M132 110H170"/></g>
+<rect class="grow-api-design-rest-fl" x="120" y="34" width="80" height="104" rx="6" fill="var(--scene-good,#1f7a4d)" opacity="0"/>
+<g fill="var(--scene-accent,#006c73)"><circle cx="34" cy="58" r="12"/><circle cx="34" cy="128" r="12" fill="var(--scene-grow,#b8457a)"/></g>
+<g stroke="var(--scene-card,#fff)" stroke-width="3" stroke-linecap="round"><path d="M28 58l4 4 7-8"/></g>
+<path d="M50 58H116M50 128H116" stroke="var(--scene-line,#cfdfdc)" stroke-width="2" stroke-dasharray="3 5"/>
+<g class="grow-api-design-rest-pa"><rect x="54" y="50" width="30" height="16" rx="5" fill="var(--scene-accent,#006c73)"/></g>
+<g class="grow-api-design-rest-pb"><rect x="54" y="120" width="30" height="16" rx="5" fill="var(--scene-grow,#b8457a)"/></g>
+<g class="grow-api-design-rest-er"><rect x="214" y="105" width="94" height="24" rx="12" fill="var(--scene-bad,#b3261e)"/><text x="261" y="122" text-anchor="middle" font-family="system-ui,sans-serif" font-size="16" font-weight="700" fill="var(--scene-card,#fff)">409 stale</text></g>
+</svg>

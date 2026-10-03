@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Typing stays urgent while only a small window of a long list is mounted and slides along the rows">
+<style>
+.grow-react-performance-rendering-t{font-family:system-ui,sans-serif;font-weight:700;font-size:16px;fill:var(--scene-ink,#102a33)}
+.grow-react-performance-rendering-w{animation:grow-react-performance-rendering-slide 6s ease-in-out infinite}
+.grow-react-performance-rendering-c{animation:grow-react-performance-rendering-blink 1s steps(1) infinite}
+.grow-react-performance-rendering-d{animation:grow-react-performance-rendering-dim 6s ease-in-out infinite}
+@keyframes grow-react-performance-rendering-slide{0%{transform:translateY(0)}50%{transform:translateY(54px)}100%{transform:translateY(0)}}
+@keyframes grow-react-performance-rendering-blink{50%{opacity:0}}
+@keyframes grow-react-performance-rendering-dim{0%,20%{opacity:1}35%,60%{opacity:.35}75%,100%{opacity:1}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<text x="14" y="24" class="grow-react-performance-rendering-t">typing</text>
+<rect x="14" y="34" width="110" height="40" rx="8" fill="var(--scene-card,#fff)" stroke="var(--scene-grow,#b8457a)" stroke-width="3"/>
+<rect x="26" y="50" width="40" height="8" rx="4" fill="var(--scene-ink,#102a33)"/>
+<rect class="grow-react-performance-rendering-c" style="animation-delay:-.4s" x="72" y="44" width="3" height="20" fill="var(--scene-grow,#b8457a)"/>
+<path d="M60 100 H130" stroke="var(--scene-muted,#536970)" stroke-width="3" stroke-dasharray="5 5"/><path d="M128 93 l9 7 l-9 7z" fill="var(--scene-muted,#536970)"/>
+<g class="grow-react-performance-rendering-d" style="animation-delay:-3s"><rect x="14" y="120" width="96" height="30" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2"/><text x="62" y="140" text-anchor="middle" class="grow-react-performance-rendering-t">updating</text></g>
+<g fill="var(--scene-line,#cfdfdc)"><rect x="150" y="10" width="160" height="14" rx="4"/><rect x="150" y="28" width="160" height="14" rx="4"/><rect x="150" y="46" width="160" height="14" rx="4"/><rect x="150" y="64" width="160" height="14" rx="4"/><rect x="150" y="82" width="160" height="14" rx="4"/><rect x="150" y="100" width="160" height="14" rx="4"/><rect x="150" y="118" width="160" height="14" rx="4"/><rect x="150" y="136" width="160" height="14" rx="4"/></g>
+<g class="grow-react-performance-rendering-w" style="animation-delay:-3s"><rect x="144" y="6" width="172" height="58" rx="8" fill="var(--scene-good,#1f7a4d)" fill-opacity=".18" stroke="var(--scene-good,#1f7a4d)" stroke-width="3"/></g>
+<text x="150" y="172" class="grow-react-performance-rendering-t">5,000 rows</text>
+</svg>

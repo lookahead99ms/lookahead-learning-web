@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Old and new systems compared on the same requests before a gradual cutover"><style>
+.learn-language-comparative-analysis-transition-paths-t{font-family:system-ui,sans-serif;font-size:15px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-language-comparative-analysis-transition-paths-w{font-family:system-ui,sans-serif;font-size:15px;font-weight:700;fill:#fff}
+.learn-language-comparative-analysis-transition-paths-ln{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:3;stroke-linecap:round}
+.learn-language-comparative-analysis-transition-paths-box{stroke-width:2}
+.learn-language-comparative-analysis-transition-paths-oa{fill:var(--scene-muted,#536970);animation:learn-language-comparative-analysis-transition-paths-r2 6s linear infinite -3s}
+.learn-language-comparative-analysis-transition-paths-ob{fill:var(--scene-learn,#0f8a8a);animation:learn-language-comparative-analysis-transition-paths-r3 6s linear infinite -3s}
+.learn-language-comparative-analysis-transition-paths-ok{animation:learn-language-comparative-analysis-transition-paths-r4 6s ease-in-out infinite -3s;transform-box:fill-box;transform-origin:center}
+.learn-language-comparative-analysis-transition-paths-fill{animation:learn-language-comparative-analysis-transition-paths-r5 6s linear infinite -3s}
+@keyframes learn-language-comparative-analysis-transition-paths-r2{0%,20%{transform:translate(0,0);opacity:0}22%{opacity:1}60%{transform:translate(28px,0);opacity:1}64%,100%{transform:translate(28px,0);opacity:0}}
+@keyframes learn-language-comparative-analysis-transition-paths-r3{0%,20%{transform:translate(0,0);opacity:0}22%{opacity:1}60%{transform:translate(28px,0);opacity:1}64%,100%{transform:translate(28px,0);opacity:0}}
+@keyframes learn-language-comparative-analysis-transition-paths-r4{0%,40%{transform:scale(0);opacity:0}50%{transform:scale(1.2);opacity:1}58%,92%{transform:scale(1);opacity:1}100%{transform:scale(0);opacity:0}}
+@keyframes learn-language-comparative-analysis-transition-paths-r5{0%{width:15px}60%{width:45px}85%{width:90px}100%{width:90px}}
+</style>
+<rect width="240" height="135" fill="var(--scene-card,#fff)"/>
+<circle cx="14" cy="39" r="7" fill="var(--scene-accent,#006c73)"/>
+<path class="learn-language-comparative-analysis-transition-paths-ln" d="M21 39H34M34 39V22H52M34 39V56H52"/>
+<rect class="learn-language-comparative-analysis-transition-paths-box" x="52" y="8" width="56" height="28" rx="7" fill="var(--scene-card,#fff)" stroke="var(--scene-muted,#536970)"/>
+<text class="learn-language-comparative-analysis-transition-paths-t" x="80" y="28" text-anchor="middle">Old</text>
+<rect class="learn-language-comparative-analysis-transition-paths-box" x="52" y="42" width="56" height="28" rx="7" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-learn,#0f8a8a)"/>
+<text class="learn-language-comparative-analysis-transition-paths-t" x="80" y="62" text-anchor="middle">New</text>
+<path class="learn-language-comparative-analysis-transition-paths-ln" d="M108 22H128Q143 22 143 39M108 56H128Q143 56 143 39"/>
+<circle class="learn-language-comparative-analysis-transition-paths-oa" cx="114" cy="22" r="4"/>
+<circle class="learn-language-comparative-analysis-transition-paths-ob" cx="114" cy="56" r="4"/>
+<circle cx="162" cy="39" r="19" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<g class="learn-language-comparative-analysis-transition-paths-ok"><path d="M152 40l7 7 12-14" stroke="var(--scene-good,#1f7a4d)" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+<rect x="12" y="94" width="146" height="14" rx="7" fill="var(--scene-line,#cfdfdc)"/>
+<rect class="learn-language-comparative-analysis-transition-paths-fill" x="12" y="94" width="15" height="14" rx="7" fill="var(--scene-good,#1f7a4d)"/>
+<g fill="var(--scene-ink,#102a33)"><circle cx="40" cy="120" r="2.5"/><circle cx="76" cy="120" r="2.5"/><circle cx="112" cy="120" r="2.5"/><circle cx="148" cy="120" r="2.5"/></g>
+<rect x="168" y="87" width="66" height="28" rx="8" fill="var(--scene-good,#1f7a4d)"/>
+<text class="learn-language-comparative-analysis-transition-paths-w" x="201" y="106" text-anchor="middle">Cutover</text>
+</svg>

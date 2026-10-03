@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Ximena opens her own test result 5531, then changes the address to 5532; the portal checks the record's owner against her and refuses.">
+<style>
+.security-essentials-t{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-ink,#102a33)}
+.security-essentials-mu{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-muted,#536970)}
+.security-essentials-g{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-good,#1f7a4d)}
+.security-essentials-w{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-warn,#a15c00)}
+.security-essentials-b{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-bad,#b3261e)}
+.security-essentials-a{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-accent,#006c73)}
+.security-essentials-mono{font-family:ui-monospace,Menlo,monospace}
+.security-essentials-card{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.security-essentials-soft{fill:var(--scene-accent-soft,#dcefed)}
+.security-essentials-acc{fill:var(--scene-accent,#006c73)}
+.security-essentials-gd{fill:var(--scene-good,#1f7a4d)}
+.security-essentials-wn{fill:var(--scene-warn,#a15c00)}
+.security-essentials-bd{fill:var(--scene-bad,#b3261e)}
+.security-essentials-ink{fill:var(--scene-ink,#102a33)}
+.security-essentials-mf{fill:var(--scene-muted,#536970)}
+.security-essentials-lf{fill:var(--scene-line,#cfdfdc)}
+.security-essentials-cf{fill:var(--scene-card,#fff)}
+.security-essentials-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.security-essentials-sg{fill:none;stroke:var(--scene-good,#1f7a4d);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.security-essentials-sw{fill:none;stroke:var(--scene-warn,#a15c00);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.security-essentials-sb{fill:none;stroke:var(--scene-bad,#b3261e);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.security-essentials-sm{fill:none;stroke:var(--scene-muted,#536970);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.security-essentials-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.security-essentials-si{fill:none;stroke:var(--scene-ink,#102a33);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.security-essentials-a{animation:security-essentials-a 8s -3.2s infinite;}
+@keyframes security-essentials-a{0%,46%{opacity:1}47%,100%{opacity:0}}
+.security-essentials-b{animation:security-essentials-b 8s -3.2s infinite;}
+@keyframes security-essentials-b{0%,49%{opacity:0}50%,96%{opacity:1}97%,100%{opacity:0}}
+</style>
+<rect class="security-essentials-card" x="8" y="8" width="224" height="30" rx="15"/>
+<rect class="security-essentials-gd" x="20" y="21" width="12" height="9" rx="2"/><path class="security-essentials-sg" style="stroke-width:2" d="M22 21 v-3 a4 4 0 0 1 8 0 v3"/>
+<g class="security-essentials-a"><text class="security-essentials-t security-essentials-mono" x="42" y="29" font-size="16" font-weight="700" text-anchor="start">/results/5531</text>
+</g><g class="security-essentials-b"><text class="security-essentials-b security-essentials-mono" x="42" y="29" font-size="16" font-weight="700" text-anchor="start">/results/5532</text>
+</g>
+<g class="security-essentials-a"><rect class="security-essentials-card" x="70" y="48" width="100" height="52" rx="8"/><circle class="security-essentials-mf" cx="90" cy="64" r="6"/><rect class="security-essentials-lf" x="102" y="60" width="52" height="7" rx="2"/><rect class="security-essentials-lf" x="82" y="76" width="72" height="7" rx="2"/><circle class="security-essentials-gd" cx="170" cy="48" r="11"/><path class="security-essentials-sa" style="stroke:var(--scene-card,#fff);stroke-width:2.5" d="M163 48 l5 5 l10 -11"/></g>
+<g class="security-essentials-b"><rect class="security-essentials-bd" x="106" y="66" width="28" height="24" rx="5"/><path class="security-essentials-sb" style="stroke-width:4" d="M112 66 v-8 a8 8 0 0 1 16 0 v8"/><circle class="security-essentials-cf" cx="120" cy="77" r="3.5"/></g>
+<g class="security-essentials-a"><text class="security-essentials-g" x="120" y="124" font-size="16" font-weight="700" text-anchor="middle">Her result ✓</text>
+</g><g class="security-essentials-b"><text class="security-essentials-b" x="120" y="124" font-size="16" font-weight="700" text-anchor="middle">Not hers: refused</text>
+</g>
+</svg>

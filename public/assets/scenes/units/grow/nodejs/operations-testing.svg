@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Shutdown closes the door to new work, lets accepted work drain within a grace timer, then cancels stragglers">
+<style>
+.grow-nodejs-operations-testing-t{font-family:system-ui,sans-serif;font-weight:700;font-size:16px;fill:var(--scene-ink,#102a33)}
+.grow-nodejs-operations-testing-n{animation:grow-nodejs-operations-testing-in 6s linear infinite}
+.grow-nodejs-operations-testing-d{animation:grow-nodejs-operations-testing-done 6s linear infinite}
+.grow-nodejs-operations-testing-s{animation:grow-nodejs-operations-testing-cut 6s linear infinite}
+.grow-nodejs-operations-testing-r{animation:grow-nodejs-operations-testing-tick 6s linear infinite;transform-origin:268px 56px}
+@keyframes grow-nodejs-operations-testing-in{0%{transform:translateX(0);opacity:1}30%{transform:translateX(30px);opacity:1}45%,100%{transform:translateX(30px);opacity:.0}}
+@keyframes grow-nodejs-operations-testing-done{0%,10%{transform:translateX(0);opacity:1}60%,100%{transform:translateX(95px);opacity:0}}
+@keyframes grow-nodejs-operations-testing-cut{0%,70%{fill:var(--scene-warn,#a15c00)}80%,100%{fill:var(--scene-bad,#b3261e)}}
+@keyframes grow-nodejs-operations-testing-tick{to{transform:rotate(360deg)}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="104" y="30" width="206" height="124" rx="10" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2"/>
+<rect x="96" y="30" width="10" height="124" fill="var(--scene-bad,#b3261e)"/>
+<text x="110" y="22" class="grow-nodejs-operations-testing-t" style="fill:var(--scene-bad,#b3261e)">closed</text>
+<g class="grow-nodejs-operations-testing-n" style="animation-delay:-3.5s"><rect x="14" y="68" width="30" height="24" rx="6" fill="var(--scene-ahead,#2f6fb3)" stroke="var(--scene-card,#fff)"/></g>
+<g class="grow-nodejs-operations-testing-n" style="animation-delay:-2s"><rect x="14" y="108" width="30" height="24" rx="6" fill="var(--scene-ahead,#2f6fb3)"/></g>
+<g class="grow-nodejs-operations-testing-d" style="animation-delay:-3s"><rect x="116" y="46" width="30" height="24" rx="6" fill="var(--scene-good,#1f7a4d)"/><path d="M124 58 l5 5 l9 -10" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/></g>
+<g class="grow-nodejs-operations-testing-d" style="animation-delay:-4.5s"><rect x="116" y="82" width="30" height="24" rx="6" fill="var(--scene-good,#1f7a4d)"/><path d="M124 94 l5 5 l9 -10" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/></g>
+<rect class="grow-nodejs-operations-testing-s" style="animation-delay:-3s" x="116" y="118" width="30" height="24" rx="6"/>
+<path d="M124 126 l14 8 M138 126 l-14 8" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+<text x="268" y="124" text-anchor="middle" class="grow-nodejs-operations-testing-t">grace</text>
+<circle cx="268" cy="56" r="26" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="3"/>
+<g class="grow-nodejs-operations-testing-r" style="animation-delay:-3s"><line x1="268" y1="56" x2="268" y2="38" stroke="var(--scene-accent,#006c73)" stroke-width="3" stroke-linecap="round"/></g>
+<circle cx="268" cy="56" r="3" fill="var(--scene-ink,#102a33)"/>
+<text x="14" y="58" class="grow-nodejs-operations-testing-t" style="fill:var(--scene-muted,#536970)">new</text>
+<text x="190" y="148" text-anchor="middle" class="grow-nodejs-operations-testing-t" style="display:none">x</text>
+</svg>

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Events flow down partition lanes while one poison event blocks only its own lane">
+<title>Events flow down partition lanes while one poison event blocks only its own lane</title>
+<style>
+.look-ahead-distributed-systems-event-driven-t{font-family:system-ui,sans-serif;font-weight:700;font-size:16px;fill:var(--scene-ink,#102a33)}
+
+.look-ahead-distributed-systems-event-driven-f1{animation:look-ahead-distributed-systems-event-driven-fl 6s linear infinite;animation-delay:-3s}
+.look-ahead-distributed-systems-event-driven-f2{animation:look-ahead-distributed-systems-event-driven-fl 6s linear infinite;animation-delay:-5s}
+.look-ahead-distributed-systems-event-driven-f3{animation:look-ahead-distributed-systems-event-driven-fl 6s linear infinite;animation-delay:-1s}
+@keyframes look-ahead-distributed-systems-event-driven-fl{0%{transform:translateX(0);opacity:0}8%{opacity:1}88%{opacity:1}100%{transform:translateX(200px);opacity:0}}
+.look-ahead-distributed-systems-event-driven-bl{animation:look-ahead-distributed-systems-event-driven-bk 1.6s ease-in-out infinite;animation-delay:-.6s}
+@keyframes look-ahead-distributed-systems-event-driven-bk{0%,100%{opacity:1}50%{opacity:.55}}
+</style>
+
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<text class="look-ahead-distributed-systems-event-driven-t" x="190" y="26" text-anchor="middle" style="fill:var(--scene-bad,#b3261e)">Poison event</text>
+<rect x="12" y="44" width="30" height="102" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/>
+<path d="M19 86l8 6 8-6M19 96l8 6 8-6" fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="2.5" stroke-linecap="round"/>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="4" stroke-linecap="round"><line x1="46" y1="58" x2="282" y2="58"/><line x1="46" y1="98" x2="282" y2="98"/><line x1="46" y1="138" x2="282" y2="138"/></g>
+<circle cx="294" cy="58" r="12" fill="var(--scene-muted,#536970)" opacity=".55"/>
+<circle cx="294" cy="98" r="12" fill="var(--scene-good,#1f7a4d)"/><circle cx="294" cy="138" r="12" fill="var(--scene-good,#1f7a4d)"/>
+<rect x="100" y="50" width="18" height="16" rx="4" fill="var(--scene-muted,#536970)"/><rect x="124" y="50" width="18" height="16" rx="4" fill="var(--scene-muted,#536970)"/><rect x="148" y="50" width="18" height="16" rx="4" fill="var(--scene-muted,#536970)"/>
+<g class="look-ahead-distributed-systems-event-driven-bl"><rect x="180" y="46" width="22" height="24" rx="5" fill="var(--scene-bad,#b3261e)"/><path d="M186 54l10 10M196 54l-10 10" stroke="#fff" stroke-width="3" stroke-linecap="round"/></g>
+<g class="look-ahead-distributed-systems-event-driven-f1"><rect x="50" y="90" width="18" height="16" rx="4" fill="var(--scene-learn,#0f8a8a)"/></g>
+<g class="look-ahead-distributed-systems-event-driven-f2"><rect x="50" y="90" width="18" height="16" rx="4" fill="var(--scene-ahead,#2f6fb3)"/></g>
+<g class="look-ahead-distributed-systems-event-driven-f3"><rect x="50" y="130" width="18" height="16" rx="4" fill="var(--scene-learn,#0f8a8a)"/></g>
+<g class="look-ahead-distributed-systems-event-driven-f2"><rect x="50" y="130" width="18" height="16" rx="4" fill="var(--scene-grow,#b8457a)"/></g>
+<text class="look-ahead-distributed-systems-event-driven-t" x="160" y="171" text-anchor="middle">Other lanes flow</text>
+</svg>

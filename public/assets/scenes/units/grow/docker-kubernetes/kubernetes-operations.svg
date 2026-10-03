@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A pod moves through stages Pending, crash loop, Ready; the failed stage is found and fixed">
+<style>
+.grow-docker-kubernetes-kubernetes-operations-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.grow-docker-kubernetes-kubernetes-operations-bad{animation:grow-docker-kubernetes-kubernetes-operations-b 6s ease-in-out infinite;animation-delay:-2.2s}
+.grow-docker-kubernetes-kubernetes-operations-ok{animation:grow-docker-kubernetes-kubernetes-operations-g 6s ease-in-out infinite;animation-delay:-2.2s}
+.grow-docker-kubernetes-kubernetes-operations-lens{animation:grow-docker-kubernetes-kubernetes-operations-m 6s ease-in-out infinite;animation-delay:-2.2s}
+@keyframes grow-docker-kubernetes-kubernetes-operations-b{0%,45%{opacity:1}60%,100%{opacity:0}}
+@keyframes grow-docker-kubernetes-kubernetes-operations-g{0%,45%{opacity:0}60%,100%{opacity:1}}
+@keyframes grow-docker-kubernetes-kubernetes-operations-m{0%{transform:translate(-120px,0)}40%,50%{transform:translate(0,0)}100%{transform:translate(120px,0)}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<path d="M62 70H258" stroke="var(--scene-line,#cfdfdc)" stroke-width="4"/>
+<circle cx="50" cy="70" r="26" fill="var(--scene-warn,#a15c00)"/>
+<path d="M50 56v15l10 6" stroke="var(--scene-card,#fff)" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="160" cy="70" r="26" fill="var(--scene-bad,#b3261e)" class="grow-docker-kubernetes-kubernetes-operations-bad"/>
+<path class="grow-docker-kubernetes-kubernetes-operations-bad" d="M149 59l22 22M171 59l-22 22" stroke="var(--scene-card,#fff)" stroke-width="5" stroke-linecap="round"/>
+<circle cx="160" cy="70" r="26" fill="var(--scene-good,#1f7a4d)" class="grow-docker-kubernetes-kubernetes-operations-ok"/>
+<path class="grow-docker-kubernetes-kubernetes-operations-ok" d="M148 70l9 9 16-18" stroke="var(--scene-card,#fff)" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="270" cy="70" r="26" fill="var(--scene-good,#1f7a4d)"/>
+<path d="M258 70l9 9 16-18" stroke="var(--scene-card,#fff)" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<g class="grow-docker-kubernetes-kubernetes-operations-lens"><circle cx="160" cy="70" r="38" fill="none" stroke="var(--scene-ahead,#2f6fb3)" stroke-width="4"/><path d="M187 97l14 14" stroke="var(--scene-ahead,#2f6fb3)" stroke-width="6" stroke-linecap="round"/></g>
+<text class="grow-docker-kubernetes-kubernetes-operations-t" x="50" y="140" text-anchor="middle">Pending</text>
+<text class="grow-docker-kubernetes-kubernetes-operations-t" x="160" y="160" text-anchor="middle">Find the stage</text>
+<text class="grow-docker-kubernetes-kubernetes-operations-t" x="270" y="140" text-anchor="middle">Ready</text>
+</svg>

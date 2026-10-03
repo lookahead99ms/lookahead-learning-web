@@ -1,0 +1,748 @@
+:host {
+  display: block;
+  min-width: 0;
+  --cell: 52px;
+  --gap: 6px;
+  --tone-active-bg: color-mix(in srgb, var(--accent-strong) 16%, var(--surface));
+  --tone-compare-bg: color-mix(in srgb, var(--warning) 16%, var(--surface));
+  --tone-found-bg: color-mix(in srgb, var(--success) 20%, var(--surface));
+  --tone-new-bg: color-mix(in srgb, var(--accent-link) 16%, var(--surface));
+}
+.story {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  color: var(--text-strong);
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.story-head h3 {
+  margin: 0;
+  font-size: 18px;
+}
+.story-example {
+  margin: 4px 0 0;
+  color: var(--text-subtle);
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.story-example code {
+  font-size: 13px;
+}
+.approach-box {
+  display: grid;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--accent-strong);
+  border-radius: 10px;
+  background: var(--surface);
+  padding: 10px 14px;
+  font-size: 15px;
+  line-height: 1.55;
+}
+.approach-box p {
+  margin: 0;
+}
+.approach-box b {
+  display: inline-block;
+  min-width: 82px;
+  margin-right: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--accent-strong);
+}
+.approach-box .cost {
+  color: var(--text-body);
+  font-size: 14px;
+}
+.story-controls {
+  position: sticky;
+  top: var(--stage-top, 72px);
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.story-controls button {
+  min-width: 84px;
+}
+.story-controls .play {
+  min-width: 92px;
+}
+.scrubber {
+  flex: 1 1 180px;
+  display: flex;
+  min-width: 140px;
+}
+.scrubber input {
+  width: 100%;
+  accent-color: var(--accent-strong);
+}
+.step-count {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-subtle);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.stage {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-start;
+  min-width: 0;
+}
+.view {
+  flex: 1 1 320px;
+  min-width: min(100%, 280px);
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-page);
+  padding: 10px 12px 12px;
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+.view[data-kind='array'],
+.view[data-kind='queue'],
+.view[data-kind='grid'],
+.view[data-kind='linked-list'],
+.view[data-kind='tree'],
+.view[data-kind='trie'],
+.view[data-kind='graph'] {
+  flex-basis: 420px;
+}
+/* A long array (a 1-D DP table, dp[0..amount]) asks for the width of all its cells, so the
+   target cell at the far end stays in view instead of behind a scrollbar. Short arrays keep 420px. */
+.view[data-kind='array'],
+.view[data-kind='queue'] {
+  flex-basis: max(420px, calc(var(--cells, 0) * (var(--cell) + var(--gap)) - var(--gap) + 26px));
+}
+.view.variables {
+  flex: 1 1 300px;
+  background: var(--surface);
+}
+.view figcaption {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--text-strong);
+}
+.view figcaption .kind {
+  margin-left: 6px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--text-subtle);
+}
+.drawing {
+  min-width: 0;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+.empty {
+  margin: 0;
+  color: var(--text-subtle);
+  font-style: italic;
+}
+
+/* Tones shared by cells, entries, frames and nodes */
+.cell,
+.entry,
+.frame,
+.grid td {
+  transition:
+    background-color 0.35s,
+    border-color 0.35s,
+    opacity 0.35s;
+}
+.tone-active {
+  background: var(--tone-active-bg) !important;
+  border-color: var(--accent-strong) !important;
+  box-shadow: inset 0 0 0 1px var(--accent-strong);
+}
+.tone-compare {
+  background: var(--tone-compare-bg) !important;
+  border-color: var(--warning) !important;
+  box-shadow: inset 0 0 0 1px var(--warning);
+}
+.tone-found {
+  background: var(--tone-found-bg) !important;
+  border-color: var(--success) !important;
+  box-shadow: inset 0 0 0 2px var(--success);
+}
+.tone-new {
+  background: var(--tone-new-bg) !important;
+  border-color: var(--accent-link) !important;
+  box-shadow: inset 0 0 0 1px var(--accent-link);
+}
+.tone-done {
+  border-style: solid;
+  opacity: 0.72;
+}
+.tone-dim {
+  opacity: 0.38;
+  border-style: dashed !important;
+}
+
+/* Arrays and queues */
+.sequence {
+  position: relative;
+  width: max-content;
+  min-width: 100%;
+}
+.cells {
+  display: flex;
+  gap: var(--gap);
+}
+.cell {
+  width: var(--cell);
+  min-height: var(--cell);
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  border: 2px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface);
+}
+.cell .v {
+  font-weight: 800;
+  font-size: 17px;
+  max-width: calc(var(--cell) - 6px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cell .i {
+  font: 500 11px var(--font-mono, ui-monospace, monospace);
+  color: var(--text-subtle);
+}
+.pointers {
+  position: relative;
+  height: calc(28px + var(--rows, 1) * 18px);
+  min-height: 44px;
+}
+.pointer {
+  position: absolute;
+  top: calc(4px + var(--row, 0) * 18px);
+  left: 0;
+  width: var(--cell);
+  display: grid;
+  justify-items: center;
+  font-weight: 800;
+  font-size: 13px;
+  line-height: 1.1;
+  color: var(--accent-strong);
+  transform: translateX(calc(var(--i) * (var(--cell) + var(--gap))));
+  transition: transform 0.55s cubic-bezier(0.3, 0.7, 0.3, 1);
+}
+.pointer:nth-child(2n) {
+  color: var(--accent-link);
+}
+.pointer.past {
+  color: var(--text-subtle);
+}
+
+/* Stack: top first */
+.stack,
+.calls {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  max-width: 360px;
+}
+.stack .cell {
+  width: auto;
+  min-height: 40px;
+  grid-auto-flow: column;
+  justify-content: space-between;
+  padding: 0 12px;
+}
+.tag {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-subtle);
+}
+
+/* Maps and sets */
+.map {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+}
+.map-head {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 18px;
+  font-size: 12px;
+  color: var(--text-subtle);
+}
+.map-head span:first-child::after {
+  content: ' →';
+}
+.entry {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 2px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface);
+  min-width: 0;
+}
+.entry .k {
+  font-weight: 800;
+  font-size: 16px;
+}
+.entry .arrow {
+  color: var(--text-subtle);
+}
+.entry .val {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.entry.tone-miss {
+  border-style: dashed;
+  border-color: var(--danger);
+  background: transparent;
+  color: var(--danger);
+}
+.entry.tone-miss .val {
+  font-weight: 500;
+  font-size: 13px;
+}
+
+/* Grids */
+.grid {
+  border-collapse: separate;
+  border-spacing: 4px;
+}
+.grid td {
+  min-width: 34px;
+  height: 34px;
+  text-align: center;
+  font-weight: 700;
+  border: 2px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+}
+.grid td.cursor {
+  outline: 3px solid var(--accent-strong);
+  outline-offset: 1px;
+}
+
+/* Call stack */
+.frame {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 7px 12px;
+  border: 2px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface);
+}
+.frame.current {
+  border-color: var(--accent-strong);
+}
+
+/* Lists, trees and graphs */
+.diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-width: 260px;
+  overflow: visible;
+}
+.diagram .edge {
+  fill: none;
+  stroke: var(--text-subtle);
+  stroke-width: 2.5;
+  transition: d 0.5s;
+}
+.diagram .arrow-head {
+  fill: var(--text-subtle);
+}
+.diagram .node {
+  transition: transform 0.55s cubic-bezier(0.3, 0.7, 0.3, 1);
+}
+.diagram .node circle {
+  fill: var(--surface);
+  stroke: var(--line);
+  stroke-width: 2.5;
+  transition:
+    fill 0.35s,
+    stroke 0.35s;
+}
+.diagram text {
+  fill: var(--text-strong);
+  font-weight: 800;
+  font-size: 15px;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+.diagram .pointer-label {
+  fill: var(--accent-strong);
+  font-size: 13px;
+}
+.diagram .null-slot text:first-child {
+  fill: var(--text-subtle);
+  font: 600 13px var(--font-mono, ui-monospace, monospace);
+}
+.diagram .node.tone-active circle {
+  fill: var(--tone-active-bg);
+  stroke: var(--accent-strong);
+}
+.diagram .node.tone-compare circle {
+  fill: var(--tone-compare-bg);
+  stroke: var(--warning);
+}
+.diagram .node.tone-found circle {
+  fill: var(--tone-found-bg);
+  stroke: var(--success);
+  stroke-width: 3.5;
+}
+.diagram .node.tone-new circle {
+  fill: var(--tone-new-bg);
+  stroke: var(--accent-link);
+}
+.diagram .node.tone-active,
+.diagram .node.tone-compare,
+.diagram .node.tone-found,
+.diagram .node.tone-new {
+  background: none !important;
+  box-shadow: none;
+}
+
+/* Tree (recursion): the empty child a call is looking at, and what finished calls returned */
+.diagram .edge.ghost {
+  stroke-width: 1.6;
+  stroke-dasharray: 3 4;
+  opacity: 0.7;
+}
+.diagram .null-slot .pointer-label,
+.diagram .badge {
+  paint-order: stroke;
+  stroke: var(--surface);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+.diagram .badge {
+  fill: var(--success);
+  font: 700 12px var(--font-mono, ui-monospace, monospace);
+  text-anchor: start;
+}
+
+/* Graph: an edge takes its tone from its two ends (graphEdgeTone): the edge being followed,
+   an answer path, an edge already followed */
+.diagram .edge[data-tone='compare'] {
+  stroke: var(--warning);
+  stroke-width: 3.5;
+}
+.diagram .edge[data-tone='new'] {
+  stroke: var(--accent-link);
+  stroke-width: 3.5;
+}
+.diagram .edge[data-tone='found'] {
+  stroke: var(--success);
+  stroke-width: 3.5;
+}
+.diagram .edge[data-tone='done'] {
+  stroke-dasharray: 6 5;
+  opacity: 0.55;
+}
+.diagram .arrow-head[data-tone='compare'] {
+  fill: var(--warning);
+}
+.diagram .arrow-head[data-tone='new'] {
+  fill: var(--accent-link);
+}
+.diagram .arrow-head[data-tone='found'] {
+  fill: var(--success);
+}
+
+/* Linked list with `follow` (design problems): back links, off-list links, dummy nodes */
+.diagram .edge.prev {
+  stroke-width: 1.6;
+}
+.diagram .edge.stale {
+  stroke-width: 1.6;
+  stroke-dasharray: 4 4;
+  opacity: 0.6;
+}
+.diagram .node rect.sentinel {
+  fill: var(--surface-page);
+  stroke: var(--line);
+  stroke-width: 2;
+  stroke-dasharray: 5 3;
+}
+.diagram .sentinel-text {
+  fill: var(--text-subtle);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Variables */
+.variables dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 6px;
+}
+.variable {
+  min-width: 0;
+  padding: 6px 9px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-page);
+  transition:
+    background-color 0.35s,
+    border-color 0.35s;
+}
+.variable dt {
+  font: 600 12px var(--font-mono, ui-monospace, monospace);
+  color: var(--text-subtle);
+}
+.variable dd {
+  margin: 2px 0 0;
+  font-weight: 800;
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+.variable.unset dd {
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--text-subtle);
+}
+.variable.changed {
+  border-color: var(--accent-strong);
+  background: var(--tone-active-bg);
+}
+.variable[data-kind='result'],
+.variable[data-kind='returns'] {
+  grid-column: 1 / -1;
+}
+.variable[data-kind='result'].changed {
+  border-color: var(--success);
+  background: var(--tone-found-bg);
+}
+
+/* Caption and ideas */
+.caption {
+  margin: 0;
+  border-left: 3px solid var(--accent-strong);
+  background: var(--surface-accent);
+  border-radius: 0 10px 10px 0;
+  padding: 10px 14px;
+  font-size: 16px;
+  line-height: 1.5;
+  min-height: 3.2em;
+}
+.ideas {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: idea;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 8px;
+}
+.ideas li {
+  counter-increment: idea;
+  position: relative;
+  padding: 9px 12px 9px 42px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  font-size: 14px;
+  line-height: 1.5;
+  transition:
+    border-color 0.3s,
+    background-color 0.3s;
+}
+.ideas li::before {
+  content: counter(idea);
+  position: absolute;
+  left: 11px;
+  top: 9px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 800;
+  background: var(--surface-muted);
+}
+.ideas li.on {
+  border-color: var(--accent-strong);
+  background: var(--surface-accent);
+}
+.ideas li.on::before {
+  background: var(--accent-strong);
+  color: var(--accent-on-primary);
+}
+
+/* Code */
+.code {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.code-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--surface-muted);
+}
+.code-head h4 {
+  margin: 0;
+  font-size: 15px;
+}
+.language-tabs {
+  display: flex;
+  gap: 4px;
+}
+.language-tabs button {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text-subtle);
+  border-radius: 8px;
+  padding: 5px 12px;
+  font-weight: 700;
+  font-size: 13px;
+}
+.language-tabs button[aria-selected='true'] {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+  color: var(--accent-on-primary);
+}
+.code pre {
+  margin: 0;
+  padding: 10px 0;
+  max-height: 440px;
+  overflow: auto;
+  font-size: 13.5px;
+  line-height: 1.7;
+}
+.code .line {
+  display: block;
+  padding-right: 16px;
+  border-left: 4px solid transparent;
+}
+.code .line .no {
+  display: inline-block;
+  width: 3.2em;
+  padding-right: 1em;
+  text-align: right;
+  opacity: 0.5;
+  user-select: none;
+}
+.code .line.ran {
+  background: rgb(255 255 255 / 0.06);
+  border-left-color: rgb(255 255 255 / 0.28);
+}
+.code .line.current {
+  background: rgb(255 214 102 / 0.2);
+  border-left-color: #ffd666;
+}
+
+@media (max-width: 600px) {
+  :host {
+    --cell: 44px;
+  }
+  .approach-box b {
+    display: block;
+  }
+  .story-controls button {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .story *,
+  .story *::before {
+    transition: none !important;
+  }
+}
+
+/* Variables panel: a caller's local shown while a helper runs */
+.variable .frame-tag {
+  margin-left: 4px;
+  font-weight: 500;
+  font-size: 0.85em;
+  color: var(--text-subtle);
+}
+
+/* Strings, number lines and bits: one narrow cell per character, number or binary digit */
+.view[data-kind='string'] {
+  --cell: 36px;
+  flex-basis: max(320px, calc(var(--cells, 0) * (var(--cell) + var(--gap)) - var(--gap) + 26px));
+}
+.view[data-kind='number-line'],
+.view[data-kind='bits'] {
+  --cell: 36px;
+  flex-basis: max(300px, calc(var(--cells, 0) * (var(--cell) + var(--gap)) - var(--gap) + 90px));
+}
+.view[data-kind='string'] .cell .v {
+  font-family: var(--font-mono, ui-monospace, monospace);
+}
+/* A number line: ticks on one rule, not boxes */
+.view[data-kind='number-line'] .cells {
+  border-bottom: 2px solid var(--line);
+  padding-bottom: 4px;
+}
+.view[data-kind='number-line'] .cell {
+  min-height: 36px;
+  border-color: transparent;
+  background: transparent;
+}
+.view[data-kind='bits'] .cell .v {
+  font-family: var(--font-mono, ui-monospace, monospace);
+}
+.cells .note {
+  align-self: center;
+  margin-left: 6px;
+  font-weight: 700;
+  color: var(--text-subtle);
+  white-space: nowrap;
+}
+/* Windowed array: hidden runs of cells collapse into one "…" cell */
+.cell.gap {
+  border-style: dashed;
+  background: transparent;
+  color: var(--text-subtle);
+}
+.cell.gap .v {
+  font-weight: 500;
+}
+
+/* Extra pointer fields (random) and trie word ends */
+.diagram .edge.extra {
+  stroke: var(--accent-link);
+  stroke-width: 1.8;
+  stroke-dasharray: 5 4;
+}
+.diagram .node .end-ring {
+  fill: none;
+  stroke: var(--success);
+  stroke-width: 2;
+}

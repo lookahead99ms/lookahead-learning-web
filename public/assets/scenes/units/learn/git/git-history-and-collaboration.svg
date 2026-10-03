@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A file moves from disk to staged to commit while a branch splits and merges">
+<style>
+.learn-git-git-history-and-collaboration-t{font:600 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33);text-anchor:middle}
+.learn-git-git-history-and-collaboration-file{animation:learn-git-git-history-and-collaboration-mv 6s ease-in-out infinite;animation-delay:-3s}
+.learn-git-git-history-and-collaboration-fc{animation:learn-git-git-history-and-collaboration-col 6s linear infinite;animation-delay:-3s}
+.learn-git-git-history-and-collaboration-n{animation:learn-git-git-history-and-collaboration-pop 6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.learn-git-git-history-and-collaboration-d1{animation-delay:-3s}.learn-git-git-history-and-collaboration-d2{animation-delay:-2.2s}.learn-git-git-history-and-collaboration-d3{animation-delay:-1.4s}.learn-git-git-history-and-collaboration-d4{animation-delay:-0.6s}
+.learn-git-git-history-and-collaboration-br{stroke-dasharray:120;animation:learn-git-git-history-and-collaboration-dr 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes learn-git-git-history-and-collaboration-mv{0%,12%{transform:translateX(0)}38%,60%{transform:translateX(105px)}86%,100%{transform:translateX(210px)}}
+@keyframes learn-git-git-history-and-collaboration-col{0%,12%{fill:var(--scene-warn,#a15c00)}38%,60%{fill:var(--scene-ahead,#2f6fb3)}86%,100%{fill:var(--scene-good,#1f7a4d)}}
+@keyframes learn-git-git-history-and-collaboration-pop{0%,100%{transform:scale(1)}50%{transform:scale(1.25)}}
+@keyframes learn-git-git-history-and-collaboration-dr{0%{stroke-dashoffset:120}40%,85%{stroke-dashoffset:0}100%{stroke-dashoffset:120}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2">
+<rect x="15" y="14" width="80" height="58" rx="8"/><rect x="120" y="14" width="80" height="58" rx="8"/><rect x="225" y="14" width="80" height="58" rx="8"/></g>
+<g stroke="var(--scene-muted,#536970)" stroke-width="2.5" fill="none" stroke-linecap="round"><path d="M99 43h17m-5-5l5 5-5 5"/><path d="M204 43h17m-5-5l5 5-5 5"/></g>
+<g class="learn-git-git-history-and-collaboration-file"><path class="learn-git-git-history-and-collaboration-fc" d="M44 26h20l8 8v28H44z"/><path d="M64 26v8h8" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2"/><path d="M50 44h16M50 51h16" stroke="var(--scene-card,#fff)" stroke-width="2.5"/></g>
+<g class="learn-git-git-history-and-collaboration-t"><text x="55" y="92">Disk</text><text x="160" y="92">Staged</text><text x="265" y="92">Commit</text></g>
+<g fill="none" stroke-width="4" stroke-linecap="round">
+<path d="M30 156H290" stroke="var(--scene-ink,#102a33)"/>
+<path class="learn-git-git-history-and-collaboration-br" d="M100 156Q115 118 140 118H200Q225 118 240 156" stroke="var(--scene-grow,#b8457a)"/></g>
+<g stroke="var(--scene-card,#fff)" stroke-width="2">
+<circle class="learn-git-git-history-and-collaboration-n learn-git-git-history-and-collaboration-d1" cx="40" cy="156" r="7" fill="var(--scene-ink,#102a33)"/>
+<circle class="learn-git-git-history-and-collaboration-n learn-git-git-history-and-collaboration-d2" cx="100" cy="156" r="7" fill="var(--scene-ink,#102a33)"/>
+<circle class="learn-git-git-history-and-collaboration-n learn-git-git-history-and-collaboration-d3" cx="140" cy="118" r="7" fill="var(--scene-grow,#b8457a)"/>
+<circle class="learn-git-git-history-and-collaboration-n learn-git-git-history-and-collaboration-d4" cx="200" cy="118" r="7" fill="var(--scene-grow,#b8457a)"/>
+<circle class="learn-git-git-history-and-collaboration-n learn-git-git-history-and-collaboration-d1" cx="240" cy="156" r="9" fill="var(--scene-good,#1f7a4d)"/></g>
+</svg>

@@ -13,7 +13,14 @@ import { Router, RouterLink, NavigationStart } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { LEARN_COURSE_GROUPS } from '../../content/learn-course-groups';
 import { GROW_COURSE_GROUPS } from '../../content/grow-course-groups';
+import { withoutHiddenCourses } from '../../content/hidden-courses';
 import { LOOK_AHEAD_COURSE_GROUPS } from '../../content/look-ahead-course-groups';
+import {
+  AI_LABEL,
+  AI_SPARKLES_PATH,
+  PATH_TAGLINES,
+  PathTaglineId,
+} from '../../content/path-taglines';
 import { NavigationCourse, NavigationService } from './navigation.service';
 
 @Component({
@@ -28,7 +35,10 @@ export class HeaderNavigation implements OnDestroy {
   private readonly element: ElementRef<HTMLElement> = inject(ElementRef);
   private readonly router = inject(Router);
   readonly opened = output<void>();
-  protected readonly paths = [
+  protected readonly taglines = PATH_TAGLINES;
+  protected readonly aiLabel = AI_LABEL;
+  protected readonly aiSparkles = AI_SPARKLES_PATH;
+  protected readonly paths: { id: PathTaglineId; label: string; groups: typeof LEARN_COURSE_GROUPS }[] = [
     { id: 'learn', label: 'Learn', groups: LEARN_COURSE_GROUPS },
     { id: 'grow', label: 'Grow', groups: GROW_COURSE_GROUPS },
     { id: 'look-ahead', label: 'Look Ahead', groups: LOOK_AHEAD_COURSE_GROUPS },
@@ -69,7 +79,7 @@ export class HeaderNavigation implements OnDestroy {
     this.loading.set(true);
     this.request = this.data.courses(path).subscribe({
       next: (value) => {
-        this.courses.set(value.courses);
+        this.courses.set(withoutHiddenCourses(path, value.courses));
         this.loading.set(false);
       },
       error: () => {

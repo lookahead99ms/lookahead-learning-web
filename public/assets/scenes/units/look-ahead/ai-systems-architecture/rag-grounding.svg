@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A question retrieves the current authorized document and returns a cited answer">
+<style>
+.look-ahead-ai-systems-architecture-rag-grounding-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.look-ahead-ai-systems-architecture-rag-grounding-scan{animation:look-ahead-ai-systems-architecture-rag-grounding-scan 6s ease-in-out infinite;animation-delay:-3s}
+.look-ahead-ai-systems-architecture-rag-grounding-cite{animation:look-ahead-ai-systems-architecture-rag-grounding-cite 6s ease-in-out infinite;animation-delay:-3s}
+.look-ahead-ai-systems-architecture-rag-grounding-pick{animation:look-ahead-ai-systems-architecture-rag-grounding-pick 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes look-ahead-ai-systems-architecture-rag-grounding-scan{0%{transform:translate(0,0)}25%{transform:translate(0,0)}50%{transform:translate(0,44px)}75%{transform:translate(0,44px)}100%{transform:translate(0,0)}}
+@keyframes look-ahead-ai-systems-architecture-rag-grounding-cite{0%,30%{opacity:.15}50%,90%{opacity:1}100%{opacity:.15}}
+@keyframes look-ahead-ai-systems-architecture-rag-grounding-pick{0%,30%{stroke-width:2}50%,90%{stroke-width:4}100%{stroke-width:2}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g>
+<rect x="20" y="22" width="86" height="34" rx="5" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<rect x="28" y="32" width="50" height="5" rx="2" fill="var(--scene-line,#cfdfdc)"/><rect x="28" y="42" width="34" height="5" rx="2" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M88 30l12 14M100 30l-12 14" stroke="var(--scene-bad,#b3261e)" stroke-width="3" stroke-linecap="round"/>
+<rect class="look-ahead-ai-systems-architecture-rag-grounding-pick" x="20" y="66" width="86" height="34" rx="5" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-good,#1f7a4d)" stroke-width="2"/>
+<rect x="28" y="76" width="50" height="5" rx="2" fill="var(--scene-accent,#006c73)"/><rect x="28" y="86" width="34" height="5" rx="2" fill="var(--scene-accent,#006c73)"/>
+<path d="M84 84l6 6 12-14" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="20" y="110" width="86" height="34" rx="5" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<rect x="28" y="120" width="50" height="5" rx="2" fill="var(--scene-line,#cfdfdc)"/><rect x="28" y="130" width="34" height="5" rx="2" fill="var(--scene-line,#cfdfdc)"/>
+<rect x="88" y="118" width="10" height="16" rx="2" fill="var(--scene-warn,#a15c00)"/>
+</g>
+<g class="look-ahead-ai-systems-architecture-rag-grounding-scan"><circle cx="124" cy="44" r="14" fill="none" stroke="var(--scene-link,#245a88)" stroke-width="4"/><path d="M134 54l12 12" stroke="var(--scene-link,#245a88)" stroke-width="5" stroke-linecap="round"/></g>
+<path d="M150 82h28" stroke="var(--scene-muted,#536970)" stroke-width="3" stroke-linecap="round"/><path d="M174 74l8 8-8 8" fill="none" stroke="var(--scene-muted,#536970)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<g class="look-ahead-ai-systems-architecture-rag-grounding-cite">
+<rect x="188" y="40" width="116" height="84" rx="10" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2"/>
+<rect x="200" y="54" width="92" height="7" rx="3" fill="var(--scene-accent,#006c73)"/><rect x="200" y="68" width="76" height="7" rx="3" fill="var(--scene-accent,#006c73)"/><rect x="200" y="82" width="86" height="7" rx="3" fill="var(--scene-accent,#006c73)"/>
+<rect x="200" y="99" width="36" height="17" rx="8" fill="var(--scene-good,#1f7a4d)"/><text x="218" y="112" text-anchor="middle" class="look-ahead-ai-systems-architecture-rag-grounding-t" style="fill:var(--scene-card,#fff)">[2]</text>
+</g>
+<text x="70" y="166" text-anchor="middle" class="look-ahead-ai-systems-architecture-rag-grounding-t">Current source</text>
+<text x="246" y="152" text-anchor="middle" class="look-ahead-ai-systems-architecture-rag-grounding-t">Cited answer</text>
+</svg>

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img"><style>
+.learn-sorting-searching-elementary-sorts-t{font:600 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.learn-sorting-searching-elementary-sorts-k{animation:learn-sorting-searching-elementary-sorts-k 6s ease-in-out infinite;animation-delay:-3s}
+.learn-sorting-searching-elementary-sorts-b{animation:learn-sorting-searching-elementary-sorts-b 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes learn-sorting-searching-elementary-sorts-k{0%,20%{transform:translate(0,0)}30%{transform:translate(-22px,-14px)}40%,75%{transform:translate(-44px,0)}95%,100%{transform:translate(0,0)}}
+@keyframes learn-sorting-searching-elementary-sorts-b{0%,20%{transform:translateX(0)}40%,75%{transform:translateX(44px)}95%,100%{transform:translateX(0)}}
+</style><rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<text class="learn-sorting-searching-elementary-sorts-t" x="160" y="30" text-anchor="middle">Insert next item</text>
+<line x1="20" y1="141" x2="300" y2="141" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<rect x="30" y="110" width="34" height="30" rx="4" fill="var(--scene-good,#1f7a4d)"/>
+<rect x="74" y="90" width="34" height="50" rx="4" fill="var(--scene-good,#1f7a4d)"/>
+<g class="learn-sorting-searching-elementary-sorts-b">
+<rect x="118" y="60" width="34" height="80" rx="4" fill="var(--scene-good,#1f7a4d)"/>
+</g>
+<g class="learn-sorting-searching-elementary-sorts-k">
+<rect x="162" y="78" width="34" height="62" rx="4" fill="var(--scene-accent,#006c73)"/>
+</g>
+<rect x="206" y="100" width="34" height="40" rx="4" fill="var(--scene-muted,#536970)"/>
+<rect x="250" y="70" width="34" height="70" rx="4" fill="var(--scene-muted,#536970)"/>
+<path d="M30 150 V156 H196 V150" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="3" stroke-linecap="round"/>
+<text class="learn-sorting-searching-elementary-sorts-t" x="113" y="174" text-anchor="middle">Sorted prefix</text></svg>

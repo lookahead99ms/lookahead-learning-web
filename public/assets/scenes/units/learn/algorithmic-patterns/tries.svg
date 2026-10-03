@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="tries">
+<style>
+.learn-algorithmic-patterns-tries-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}.learn-algorithmic-patterns-tries-w{font:700 16px system-ui,sans-serif;fill:#fff}
+@keyframes learn-algorithmic-patterns-tries-p0{0%{opacity:0}6.5%{opacity:0}8%{opacity:1}94%{opacity:1}97%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-tries-p0{animation:learn-algorithmic-patterns-tries-p0 8s linear infinite;animation-delay:-4s;}
+@keyframes learn-algorithmic-patterns-tries-p1{0%{opacity:0}20.5%{opacity:0}22%{opacity:1}94%{opacity:1}97%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-tries-p1{animation:learn-algorithmic-patterns-tries-p1 8s linear infinite;animation-delay:-4s;}
+@keyframes learn-algorithmic-patterns-tries-p2{0%{opacity:0}34.5%{opacity:0}36%{opacity:1}94%{opacity:1}97%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-tries-p2{animation:learn-algorithmic-patterns-tries-p2 8s linear infinite;animation-delay:-4s;}
+@keyframes learn-algorithmic-patterns-tries-p3{0%{opacity:0}48.5%{opacity:0}50%{opacity:1}94%{opacity:1}97%{opacity:0}100%{opacity:0}}
+.learn-algorithmic-patterns-tries-p3{animation:learn-algorithmic-patterns-tries-p3 8s linear infinite;animation-delay:-4s;}
+.learn-algorithmic-patterns-tries-bg{fill:var(--scene-card,#fff)}
+</style>
+<rect class="learn-algorithmic-patterns-tries-bg" width="320" height="180" rx="12"/>
+<line x1="160" y1="20" x2="100" y2="58" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<line x1="160" y1="20" x2="220" y2="58" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<line x1="100" y1="58" x2="100" y2="98" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<line x1="220" y1="58" x2="220" y2="98" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<line x1="100" y1="98" x2="60" y2="138" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<line x1="100" y1="98" x2="140" y2="138" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<line x1="220" y1="98" x2="220" y2="138" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<circle cx="160" cy="20" r="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<circle cx="100" cy="58" r="14" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<text class="learn-algorithmic-patterns-tries-t" x="100" y="63" text-anchor="middle">c</text>
+<circle cx="220" cy="58" r="14" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<text class="learn-algorithmic-patterns-tries-t" x="220" y="63" text-anchor="middle">d</text>
+<circle cx="100" cy="98" r="14" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<text class="learn-algorithmic-patterns-tries-t" x="100" y="103" text-anchor="middle">a</text>
+<circle cx="220" cy="98" r="14" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<text class="learn-algorithmic-patterns-tries-t" x="220" y="103" text-anchor="middle">o</text>
+<circle cx="60" cy="138" r="14" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<text class="learn-algorithmic-patterns-tries-t" x="60" y="143" text-anchor="middle">t</text>
+<circle cx="140" cy="138" r="14" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<text class="learn-algorithmic-patterns-tries-t" x="140" y="143" text-anchor="middle">r</text>
+<circle cx="220" cy="138" r="14" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<text class="learn-algorithmic-patterns-tries-t" x="220" y="143" text-anchor="middle">g</text>
+<circle cx="79" cy="126" r="4" fill="var(--scene-good,#1f7a4d)"/>
+<circle cx="159" cy="126" r="4" fill="var(--scene-good,#1f7a4d)"/>
+<circle cx="239" cy="126" r="4" fill="var(--scene-good,#1f7a4d)"/>
+<g class="learn-algorithmic-patterns-tries-p0"><circle cx="160" cy="20" r="8" fill="var(--scene-accent,#006c73)"/></g>
+<g class="learn-algorithmic-patterns-tries-p1"><circle cx="100" cy="58" r="14" fill="var(--scene-accent,#006c73)"/></g>
+<g class="learn-algorithmic-patterns-tries-p2"><circle cx="100" cy="98" r="14" fill="var(--scene-accent,#006c73)"/></g>
+<g class="learn-algorithmic-patterns-tries-p3"><circle cx="60" cy="138" r="14" fill="var(--scene-accent,#006c73)"/></g>
+<g class="learn-algorithmic-patterns-tries-p1"><text class="learn-algorithmic-patterns-tries-w" x="100" y="63" text-anchor="middle">c</text></g>
+<g class="learn-algorithmic-patterns-tries-p2"><text class="learn-algorithmic-patterns-tries-w" x="100" y="103" text-anchor="middle">a</text></g>
+<g class="learn-algorithmic-patterns-tries-p3"><text class="learn-algorithmic-patterns-tries-w" x="60" y="143" text-anchor="middle">t</text></g>
+<text class="learn-algorithmic-patterns-tries-t" x="160" y="172" text-anchor="middle">shared prefix, one path</text>
+</svg>

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" font-family="system-ui, sans-serif">
+<style>
+
+.grow-monitoring-alerts-production-support-t{font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.grow-monitoring-alerts-production-support-hl{animation:grow-monitoring-alerts-production-support-hop 8s steps(1,end) infinite;animation-delay:-3s}
+.grow-monitoring-alerts-production-support-ck{animation:grow-monitoring-alerts-production-support-tick 8s ease-in-out infinite;animation-delay:-3s}
+.grow-monitoring-alerts-production-support-rb{transform-box:fill-box;transform-origin:center;animation:grow-monitoring-alerts-production-support-spin 8s ease-in-out infinite;animation-delay:-3s}
+@keyframes grow-monitoring-alerts-production-support-hop{0%{transform:translateX(0)}25%{transform:translateX(75px)}50%{transform:translateX(150px)}75%{transform:translateX(225px)}100%{transform:translateX(0)}}
+@keyframes grow-monitoring-alerts-production-support-tick{0%,60%{opacity:0}75%,95%{opacity:1}100%{opacity:0}}
+@keyframes grow-monitoring-alerts-production-support-spin{0%,25%{transform:rotate(0)}50%,100%{transform:rotate(-360deg)}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+
+<g class="grow-monitoring-alerts-production-support-hl"><rect x="5" y="22" width="70" height="92" rx="10" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/></g>
+<path d="M75 68H80M150 68H155M225 68H230" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<path d="M40 38c-10 0-14 8-14 17v8l-5 7h38l-5-7v-8c0-9-4-17-14-17z" fill="var(--scene-bad,#b3261e)"/><circle cx="40" cy="87" r="5" fill="var(--scene-bad,#b3261e)"/>
+<circle cx="115" cy="54" r="10" fill="var(--scene-ahead,#2f6fb3)"/><path d="M97 88q0-18 18-18t18 18z" fill="var(--scene-ahead,#2f6fb3)"/><path d="M115 30l4 7h-8z" fill="var(--scene-warn,#a15c00)"/>
+<g class="grow-monitoring-alerts-production-support-rb"><path d="M208 58a20 20 0 1 0 5 18" fill="none" stroke="var(--scene-warn,#a15c00)" stroke-width="5" stroke-linecap="round"/><path d="M200 46l12 14 4-16z" fill="var(--scene-warn,#a15c00)"/></g>
+<rect x="247" y="38" width="36" height="60" rx="5" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<path d="M254 56h22M254 70h22M254 84h22" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<path class="grow-monitoring-alerts-production-support-ck" d="M254 56l3 3 5-6M254 70l3 3 5-6M254 84l3 3 5-6" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="3.5" transform="translate(14 0)"/>
+<text x="115" y="150" text-anchor="middle" class="grow-monitoring-alerts-production-support-t">Lead</text><text x="190" y="150" text-anchor="middle" class="grow-monitoring-alerts-production-support-t">Rollback</text><text x="265" y="150" text-anchor="middle" class="grow-monitoring-alerts-production-support-t">Verify</text>
+</svg>

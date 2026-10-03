@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="An app and an API agree on a contract sheet, a renamed field fails, and one journey runs end to end">
+<style>
+.grow-quality-engineering-contract-e2e-bg{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc)}
+.grow-quality-engineering-contract-e2e-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33);text-anchor:middle}
+.grow-quality-engineering-contract-e2e-ph{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-accent,#006c73);stroke-width:2.5}
+.grow-quality-engineering-contract-e2e-api{fill:var(--scene-card,#fff);stroke:var(--scene-link,#245a88);stroke-width:2.5}
+.grow-quality-engineering-contract-e2e-sh{fill:var(--scene-card,#fff);stroke:var(--scene-ink,#102a33);stroke-width:2.5}
+.grow-quality-engineering-contract-e2e-ln{stroke:var(--scene-line,#cfdfdc);stroke-width:3;fill:none;stroke-dasharray:4 4}
+.grow-quality-engineering-contract-e2e-ok{fill:none;stroke:var(--scene-good,#1f7a4d);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.grow-quality-engineering-contract-e2e-bar{fill:var(--scene-line,#cfdfdc)}
+.grow-quality-engineering-contract-e2e-st{fill:var(--scene-muted,#536970)}
+.grow-quality-engineering-contract-e2e-bad{fill:var(--scene-bad,#b3261e)}
+.grow-quality-engineering-contract-e2e-x{stroke:#fff;stroke-width:3;stroke-linecap:round}
+.grow-quality-engineering-contract-e2e-a{animation:grow-quality-engineering-contract-e2e-a 6s ease-in-out infinite;animation-delay:-3s}
+.grow-quality-engineering-contract-e2e-b{animation:grow-quality-engineering-contract-e2e-b 6s linear infinite;animation-delay:-3s}
+.grow-quality-engineering-contract-e2e-c{animation:grow-quality-engineering-contract-e2e-c 6s linear infinite;animation-delay:-3s}
+.grow-quality-engineering-contract-e2e-d{animation:grow-quality-engineering-contract-e2e-d 6s linear infinite;animation-delay:-3s}
+.grow-quality-engineering-contract-e2e-e{animation:grow-quality-engineering-contract-e2e-e 6s linear infinite;animation-delay:-3s}
+@keyframes grow-quality-engineering-contract-e2e-a{0%,10%{transform:translateX(0);opacity:0}15%{opacity:1}35%{transform:translateX(-24px);opacity:1}50%{transform:translateX(-24px);opacity:1}60%{transform:translateX(0);opacity:1}70%,100%{transform:translateX(0);opacity:0}}
+@keyframes grow-quality-engineering-contract-e2e-b{0%,30%{opacity:0}40%,100%{opacity:1}}
+@keyframes grow-quality-engineering-contract-e2e-c{0%,5%{fill:var(--scene-muted,#536970)}15%,100%{fill:var(--scene-good,#1f7a4d)}}
+@keyframes grow-quality-engineering-contract-e2e-d{0%,30%{fill:var(--scene-muted,#536970)}40%,100%{fill:var(--scene-good,#1f7a4d)}}
+@keyframes grow-quality-engineering-contract-e2e-e{0%,60%{fill:var(--scene-muted,#536970)}70%,100%{fill:var(--scene-good,#1f7a4d)}}
+</style>
+<rect class="grow-quality-engineering-contract-e2e-bg" x="1" y="1" width="318" height="178" rx="12"/>
+<path class="grow-quality-engineering-contract-e2e-ln" d="M40 50Q160 -10 280 50"/>
+<circle class="grow-quality-engineering-contract-e2e-st grow-quality-engineering-contract-e2e-c" cx="75" cy="27" r="6"/><circle class="grow-quality-engineering-contract-e2e-st grow-quality-engineering-contract-e2e-d" cx="160" cy="15" r="6"/><circle class="grow-quality-engineering-contract-e2e-st grow-quality-engineering-contract-e2e-e" cx="245" cy="27" r="6"/>
+<rect class="grow-quality-engineering-contract-e2e-ph" x="22" y="58" width="40" height="64" rx="8"/><circle cx="42" cy="112" r="3" fill="var(--scene-accent,#006c73)"/><rect class="grow-quality-engineering-contract-e2e-bar" x="30" y="68" width="24" height="30" rx="3"/>
+<rect class="grow-quality-engineering-contract-e2e-api" x="258" y="58" width="44" height="18" rx="4"/><rect class="grow-quality-engineering-contract-e2e-api" x="258" y="80" width="44" height="18" rx="4"/><rect class="grow-quality-engineering-contract-e2e-api" x="258" y="102" width="44" height="18" rx="4"/>
+<rect class="grow-quality-engineering-contract-e2e-sh" x="116" y="62" width="88" height="68" rx="6"/>
+<rect class="grow-quality-engineering-contract-e2e-bar" x="140" y="76" width="50" height="7" rx="3"/><rect class="grow-quality-engineering-contract-e2e-bar" x="140" y="96" width="50" height="7" rx="3"/><rect class="grow-quality-engineering-contract-e2e-bar" x="140" y="116" width="50" height="7" rx="3"/>
+<path class="grow-quality-engineering-contract-e2e-ok" d="M126 79l4 4 8-9M126 99l4 4 8-9M126 119l4 4 8-9"/>
+<g class="grow-quality-engineering-contract-e2e-a"><rect class="grow-quality-engineering-contract-e2e-bad" x="212" y="94" width="34" height="22" rx="5"/><path class="grow-quality-engineering-contract-e2e-x" d="M222 100l14 10M236 100l-14 10"/></g>
+<text class="grow-quality-engineering-contract-e2e-t" x="42" y="146">App</text><text class="grow-quality-engineering-contract-e2e-t" x="160" y="156">Contract</text><text class="grow-quality-engineering-contract-e2e-t" x="280" y="146">API</text>
+</svg>

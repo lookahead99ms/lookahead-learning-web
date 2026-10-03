@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Four marketplace questions appear in turn, and each one lights up the shape that answers it: tables for Yusuf's order, one document for a laptop listing, one long row for a seller's day, and a graph for sellers you may like">
+<style>
+.data-modeling-card{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.data-modeling-t{font-family:system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.data-modeling-m{font-family:ui-monospace,Menlo,monospace;fill:var(--scene-text,#28434a)}
+.data-modeling-ln{stroke:var(--scene-muted,#536970);stroke-width:1.5;fill:none;opacity:.6}
+.data-modeling-soft{fill:var(--scene-accent-soft,#dcefed)}
+.data-modeling-dot{fill:var(--scene-accent,#006c73)}
+.data-modeling-hd{fill:var(--scene-muted,#536970);opacity:.45}
+.data-modeling-bubble{fill:var(--scene-bubble-out,#d4ecea)}
+.data-modeling-ring{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:3;opacity:0}
+.data-modeling-q{opacity:0}
+.data-modeling-r1,.data-modeling-q1{animation:data-modeling-a 8s -3s infinite}
+.data-modeling-r2,.data-modeling-q2{animation:data-modeling-b 8s -3s infinite}
+.data-modeling-r3,.data-modeling-q3{animation:data-modeling-c 8s -3s infinite}
+.data-modeling-r4,.data-modeling-q4{animation:data-modeling-d 8s -3s infinite}
+@keyframes data-modeling-a{0%,23%{opacity:1}25%,100%{opacity:0}}
+@keyframes data-modeling-b{0%,24%{opacity:0}25%,48%{opacity:1}50%,100%{opacity:0}}
+@keyframes data-modeling-c{0%,49%{opacity:0}50%,73%{opacity:1}75%,100%{opacity:0}}
+@keyframes data-modeling-d{0%,74%{opacity:0}75%,98%{opacity:1}100%{opacity:0}}
+</style>
+<rect class="data-modeling-bubble" x="8" y="6" width="224" height="28" rx="14"/>
+<text class="data-modeling-t data-modeling-q data-modeling-q1" x="120" y="26" font-size="15" font-weight="700" text-anchor="middle">Place Yusuf's order</text>
+<text class="data-modeling-t data-modeling-q data-modeling-q2" x="120" y="26" font-size="15" font-weight="700" text-anchor="middle">Show a laptop listing</text>
+<text class="data-modeling-t data-modeling-q data-modeling-q3" x="120" y="26" font-size="15" font-weight="700" text-anchor="middle">Seller's sales today</text>
+<text class="data-modeling-t data-modeling-q data-modeling-q4" x="120" y="26" font-size="15" font-weight="700" text-anchor="middle">Sellers you may like</text>
+<!-- tables -->
+<g transform="translate(8 44)">
+<rect class="data-modeling-card" width="50" height="84" rx="8"/>
+<rect class="data-modeling-hd" x="7" y="8" width="36" height="8" rx="2"/>
+<path class="data-modeling-ln" d="M7 26 H43 M7 36 H43 M7 46 H43 M25 16 V50"/>
+<rect class="data-modeling-hd" x="7" y="58" width="36" height="8" rx="2"/>
+<path class="data-modeling-ln" d="M7 76 H43 M25 66 V80"/>
+<rect class="data-modeling-ring data-modeling-r1" x="-3" y="-3" width="56" height="90" rx="10"/></g>
+<!-- document -->
+<g transform="translate(66 44)">
+<rect class="data-modeling-card" width="50" height="84" rx="8"/>
+<path d="M9 8 h20 l12 12 v58 h-32 z" class="data-modeling-soft"/>
+<rect class="data-modeling-hd" x="15" y="30" width="20" height="7" rx="2"/>
+<rect class="data-modeling-hd" x="15" y="44" width="14" height="7" rx="2"/>
+<rect class="data-modeling-hd" x="15" y="58" width="22" height="7" rx="2"/>
+<rect class="data-modeling-ring data-modeling-r2" x="-3" y="-3" width="56" height="90" rx="10"/></g>
+<!-- wide row -->
+<g transform="translate(124 44)">
+<rect class="data-modeling-card" width="50" height="84" rx="8"/>
+<rect class="data-modeling-dot" x="6" y="22" width="8" height="30" rx="2"/>
+<rect class="data-modeling-soft" x="16" y="22" width="8" height="30" rx="2"/>
+<rect class="data-modeling-soft" x="26" y="22" width="8" height="30" rx="2"/>
+<rect class="data-modeling-soft" x="36" y="22" width="8" height="30" rx="2" opacity=".6"/>
+<path class="data-modeling-ln" d="M6 64 H44 M38 59 l6 5 l-6 5" style="stroke:var(--scene-accent,#006c73);stroke-width:2.5;opacity:1"/>
+<rect class="data-modeling-ring data-modeling-r3" x="-3" y="-3" width="56" height="90" rx="10"/></g>
+<!-- graph -->
+<g transform="translate(182 44)">
+<rect class="data-modeling-card" width="50" height="84" rx="8"/>
+<path class="data-modeling-ln" d="M13 18 L35 34 L16 54 L36 70 M35 34 L40 14 M16 54 L12 72"/>
+<circle class="data-modeling-dot" cx="13" cy="18" r="7"/>
+<circle class="data-modeling-soft" cx="35" cy="34" r="6" style="stroke:var(--scene-accent,#006c73);stroke-width:1.5"/>
+<circle class="data-modeling-soft" cx="40" cy="14" r="5" style="stroke:var(--scene-accent,#006c73);stroke-width:1.5"/>
+<circle class="data-modeling-soft" cx="16" cy="54" r="6" style="stroke:var(--scene-accent,#006c73);stroke-width:1.5"/>
+<circle class="data-modeling-soft" cx="12" cy="72" r="5" style="stroke:var(--scene-accent,#006c73);stroke-width:1.5"/>
+<circle class="data-modeling-dot" cx="36" cy="70" r="7" style="fill:var(--scene-good,#1f7a4d)"/>
+<rect class="data-modeling-ring data-modeling-r4" x="-3" y="-3" width="56" height="90" rx="10"/></g>
+</svg>

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="An HTTP request and response, then a clean CI pipeline turns green">
+<style>
+.learn-developer-workflow-http-ci-feedback-t{font-family:system-ui,sans-serif;font-size:17px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-developer-workflow-http-ci-feedback-w{font-family:system-ui,sans-serif;font-size:17px;font-weight:700;fill:#fff}
+.learn-developer-workflow-http-ci-feedback-req{animation:learn-developer-workflow-http-ci-feedback-reqk 6s linear infinite;animation-delay:-3s}
+.learn-developer-workflow-http-ci-feedback-res{animation:learn-developer-workflow-http-ci-feedback-resk 6s linear infinite;animation-delay:-3s}
+.learn-developer-workflow-http-ci-feedback-s1{animation:learn-developer-workflow-http-ci-feedback-s1k 6s infinite;animation-delay:-3s}
+.learn-developer-workflow-http-ci-feedback-s2{animation:learn-developer-workflow-http-ci-feedback-s2k 6s infinite;animation-delay:-3s}
+.learn-developer-workflow-http-ci-feedback-s3{animation:learn-developer-workflow-http-ci-feedback-s3k 6s infinite;animation-delay:-3s}
+@keyframes learn-developer-workflow-http-ci-feedback-reqk{0%{transform:translateX(0);opacity:1}25%{transform:translateX(120px);opacity:1}30%,100%{transform:translateX(120px);opacity:0}}
+@keyframes learn-developer-workflow-http-ci-feedback-resk{0%,25%{transform:translateX(120px);opacity:0}30%{transform:translateX(120px);opacity:1}55%{transform:translateX(0);opacity:1}60%,100%{transform:translateX(0);opacity:0}}
+@keyframes learn-developer-workflow-http-ci-feedback-s1k{0%,58%{opacity:.25}64%,100%{opacity:1}}
+@keyframes learn-developer-workflow-http-ci-feedback-s2k{0%,72%{opacity:.25}78%,100%{opacity:1}}
+@keyframes learn-developer-workflow-http-ci-feedback-s3k{0%,86%{opacity:.25}92%,100%{opacity:1}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="16" y="14" width="56" height="64" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<rect x="26" y="26" width="36" height="8" rx="4" fill="var(--scene-link,#245a88)"/><rect x="26" y="42" width="26" height="8" rx="4" fill="var(--scene-muted,#536970)"/><rect x="26" y="58" width="32" height="8" rx="4" fill="var(--scene-muted,#536970)"/>
+<rect x="248" y="14" width="56" height="64" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<circle cx="276" cy="36" r="8" fill="var(--scene-accent,#006c73)"/><rect x="258" y="52" width="36" height="8" rx="4" fill="var(--scene-muted,#536970)"/><rect x="258" y="64" width="24" height="6" rx="3" fill="var(--scene-muted,#536970)"/>
+<path d="M80 34H240M240 58H80" stroke="var(--scene-line,#cfdfdc)" stroke-width="2" stroke-dasharray="4 4"/>
+<g class="learn-developer-workflow-http-ci-feedback-req"><rect x="86" y="24" width="30" height="20" rx="4" fill="var(--scene-link,#245a88)"/><path d="M88 27L101 36L114 27" fill="none" stroke="#fff" stroke-width="2"/></g>
+<g class="learn-developer-workflow-http-ci-feedback-res"><rect x="86" y="46" width="48" height="24" rx="4" fill="var(--scene-good,#1f7a4d)"/><text x="110" y="64" text-anchor="middle" class="learn-developer-workflow-http-ci-feedback-w">200</text></g>
+<text x="160" y="90" text-anchor="middle" class="learn-developer-workflow-http-ci-feedback-t">Read the response</text>
+<rect x="16" y="106" width="288" height="58" rx="10" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<g class="learn-developer-workflow-http-ci-feedback-s1"><circle cx="52" cy="135" r="15" fill="var(--scene-good,#1f7a4d)"/><path d="M45 135L50 140L59 130" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/></g>
+<path d="M70 135H102" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<g class="learn-developer-workflow-http-ci-feedback-s2"><circle cx="124" cy="135" r="15" fill="var(--scene-good,#1f7a4d)"/><path d="M117 135L122 140L131 130" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/></g>
+<path d="M142 135H174" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<g class="learn-developer-workflow-http-ci-feedback-s3"><circle cx="196" cy="135" r="15" fill="var(--scene-good,#1f7a4d)"/><path d="M189 135L194 140L203 130" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/></g>
+<text x="262" y="140" text-anchor="middle" class="learn-developer-workflow-http-ci-feedback-t">CI</text>
+</svg>

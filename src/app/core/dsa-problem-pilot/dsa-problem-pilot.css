@@ -321,7 +321,8 @@ select:focus-visible {
   overflow: hidden;
   background: var(--surface-subtle);
 }
-.guided-trace-stage.focused app-guided-algorithm-trace {
+.guided-trace-stage.focused app-guided-algorithm-trace,
+.guided-trace-stage.focused > .trace-slot {
   display: block;
   min-height: 0;
   height: 100%;
@@ -447,7 +448,8 @@ select:focus-visible {
     overflow-y: auto;
     background: var(--code-bg);
   }
-  .guided-trace-stage.focused app-guided-algorithm-trace {
+  .guided-trace-stage.focused app-guided-algorithm-trace,
+  .guided-trace-stage.focused > .trace-slot {
     height: auto;
   }
   .focus-header {
@@ -527,4 +529,11 @@ select:focus-visible {
     color: CanvasText;
     background: Canvas;
   }
+}
+
+.trace-loading {
+  margin: 0;
+  padding: 16px;
+  color: var(--text-subtle);
+  font-size: 14px;
 }

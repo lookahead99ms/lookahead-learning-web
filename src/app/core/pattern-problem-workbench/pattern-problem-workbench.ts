@@ -46,11 +46,15 @@ import { DsaProblemPilot } from '../dsa-problem-pilot/dsa-problem-pilot';
             {{ activeProblem().complexity.space }} space. {{ activeProblem().complexity.why }}
           </p>
         </div>
-        <app-guided-algorithm-trace
-          [problem]="activeProblem()"
-          [selectedFixture]="activeFixture()"
-          (fixtureChange)="chooseFixture($event)"
-        />
+        @defer (on viewport) {
+          <app-guided-algorithm-trace
+            [problem]="activeProblem()"
+            [selectedFixture]="activeFixture()"
+            (fixtureChange)="chooseFixture($event)"
+          />
+        } @placeholder {
+          <p class="trace-loading" role="status">Loading the guided debugger…</p>
+        }
       }
     </section>
   `,

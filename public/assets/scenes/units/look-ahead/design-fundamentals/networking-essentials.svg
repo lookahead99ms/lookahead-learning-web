@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Mateus's train enters a tunnel and his phone shows reconnecting while his teammate's reply number 58 waits; when the signal returns the phone resumes after message 57 and the reply arrives once">
+<style>
+.networking-essentials-t{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-ink,#102a33)}
+.networking-essentials-mu{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-muted,#536970)}
+.networking-essentials-g{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-good,#1f7a4d)}
+.networking-essentials-w{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-warn,#a15c00)}
+.networking-essentials-b{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-bad,#b3261e)}
+.networking-essentials-a{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-accent,#006c73)}
+.networking-essentials-mono{font-family:ui-monospace,Menlo,monospace}
+.networking-essentials-card{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.networking-essentials-soft{fill:var(--scene-accent-soft,#dcefed)}
+.networking-essentials-acc{fill:var(--scene-accent,#006c73)}
+.networking-essentials-gd{fill:var(--scene-good,#1f7a4d)}
+.networking-essentials-wn{fill:var(--scene-warn,#a15c00)}
+.networking-essentials-bd{fill:var(--scene-bad,#b3261e)}
+.networking-essentials-ink{fill:var(--scene-ink,#102a33)}
+.networking-essentials-mf{fill:var(--scene-muted,#536970)}
+.networking-essentials-lf{fill:var(--scene-line,#cfdfdc)}
+.networking-essentials-cf{fill:var(--scene-card,#fff)}
+.networking-essentials-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.networking-essentials-sg{fill:none;stroke:var(--scene-good,#1f7a4d);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.networking-essentials-sw{fill:none;stroke:var(--scene-warn,#a15c00);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.networking-essentials-sb{fill:none;stroke:var(--scene-bad,#b3261e);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.networking-essentials-sm{fill:none;stroke:var(--scene-muted,#536970);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.networking-essentials-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.networking-essentials-si{fill:none;stroke:var(--scene-ink,#102a33);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.networking-essentials-env{fill:var(--scene-card,#fff);stroke:var(--scene-accent,#006c73);stroke-width:1.5}
+.networking-essentials-out{fill:var(--scene-bubble-out,#d4ecea)}
+.networking-essentials-in{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc)}
+.networking-essentials-bar{animation:networking-essentials-bar 8s -3.2s infinite;}
+@keyframes networking-essentials-bar{0%,24%{fill:var(--scene-ink,#102a33)}27%,60%{fill:var(--scene-line,#cfdfdc)}63%,100%{fill:var(--scene-ink,#102a33)}}
+.networking-essentials-on{animation:networking-essentials-on 8s -3.2s infinite;}
+@keyframes networking-essentials-on{0%,24%{opacity:1}27%,60%{opacity:0}63%,100%{opacity:1}}
+.networking-essentials-off{animation:networking-essentials-off 8s -3.2s infinite;}
+@keyframes networking-essentials-off{0%,24%{opacity:0}27%,60%{opacity:1}63%,100%{opacity:0}}
+.networking-essentials-s1{animation:networking-essentials-s1 8s -3.2s infinite;}
+@keyframes networking-essentials-s1{0%,24%{opacity:1}25%,100%{opacity:0}}
+.networking-essentials-s2{animation:networking-essentials-s2 8s -3.2s infinite;}
+@keyframes networking-essentials-s2{0%,26%{opacity:0}27%,60%{opacity:1}61%,100%{opacity:0}}
+.networking-essentials-s3{animation:networking-essentials-s3 8s -3.2s infinite;}
+@keyframes networking-essentials-s3{0%,62%{opacity:0}63%,96%{opacity:1}97%,100%{opacity:0}}
+.networking-essentials-got{animation:networking-essentials-got 8s -3.2s infinite;}
+@keyframes networking-essentials-got{0%,71%{opacity:0}72%,96%{opacity:1}97%,100%{opacity:0}}
+.networking-essentials-envm{animation:networking-essentials-envm 8s -3.2s infinite;}
+@keyframes networking-essentials-envm{0%,10%{opacity:0;transform:translate(68px,0)}13%{opacity:1;transform:translate(68px,0)}28%,62%{opacity:1;transform:translate(0,0)}78%{opacity:1;transform:translate(-68px,0)}82%,100%{opacity:0;transform:translate(-68px,0)}}
+.networking-essentials-flow{fill:none;stroke:var(--scene-good,#1f7a4d);stroke-width:3;stroke-dasharray:3 8;stroke-linecap:round;animation:networking-essentials-flow 1s -.3s linear infinite}
+@keyframes networking-essentials-flow{to{stroke-dashoffset:-11}}
+.networking-essentials-cut{fill:none;stroke:var(--scene-bad,#b3261e);stroke-width:3;stroke-dasharray:4 4}
+.networking-essentials-tun{fill:var(--scene-muted,#536970)}
+</style>
+<rect class="networking-essentials-card" x="12" y="8" width="58" height="88" rx="10"/>
+<rect class="networking-essentials-bar networking-essentials-ink" x="44" y="19" width="5" height="6"/><rect class="networking-essentials-bar networking-essentials-ink" x="51" y="15" width="5" height="10"/><rect class="networking-essentials-bar networking-essentials-ink" x="58" y="11" width="5" height="14"/>
+<rect class="networking-essentials-out" x="18" y="32" width="40" height="16" rx="6"/>
+<g class="networking-essentials-got"><rect class="networking-essentials-in" x="18" y="56" width="40" height="16" rx="6"/></g>
+<rect class="networking-essentials-card" x="170" y="8" width="58" height="88" rx="10"/>
+<rect class="networking-essentials-in" x="176" y="32" width="40" height="16" rx="6"/><rect class="networking-essentials-out" x="176" y="56" width="40" height="16" rx="6"/>
+<g class="networking-essentials-on"><path class="networking-essentials-flow" d="M72 64 H168"/></g>
+<g class="networking-essentials-off"><path class="networking-essentials-cut" d="M72 64 H94 M146 64 H168"/><path class="networking-essentials-tun" d="M94 76 V50 a26 26 0 0 1 52 0 V76 h-12 V52 a14 14 0 0 0 -28 0 V76 z"/></g>
+<g class="networking-essentials-envm"><rect class="networking-essentials-env" x="110" y="57" width="20" height="14" rx="2.5"/><path class="networking-essentials-sa" style="stroke-width:1.6" d="M111 58 l9.0 8.4 l9.0 -8.4"/></g>
+<g class="networking-essentials-s1"><text class="networking-essentials-g" x="120" y="122" font-size="16" font-weight="700" text-anchor="middle">Connected</text>
+</g><g class="networking-essentials-s2"><text class="networking-essentials-w" x="120" y="122" font-size="16" font-weight="700" text-anchor="middle">Reconnecting…</text>
+</g><g class="networking-essentials-s3"><text class="networking-essentials-g" x="120" y="122" font-size="16" font-weight="700" text-anchor="middle">Back from #57</text>
+</g>
+</svg>

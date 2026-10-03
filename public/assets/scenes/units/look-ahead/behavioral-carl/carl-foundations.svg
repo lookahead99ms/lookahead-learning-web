@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="carl-foundations">
+<style>
+.look-ahead-behavioral-carl-carl-foundations-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.look-ahead-behavioral-carl-carl-foundations-tc{text-anchor:middle}
+
+.look-ahead-behavioral-carl-carl-foundations-s{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-line,#cfdfdc);stroke-width:2;animation:look-ahead-behavioral-carl-carl-foundations-lit 6s infinite;animation-delay:var(--d)}
+@keyframes look-ahead-behavioral-carl-carl-foundations-lit{0%,8%{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-line,#cfdfdc)}14%,30%{fill:var(--scene-accent,#006c73);stroke:var(--scene-accent,#006c73)}38%,100%{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-line,#cfdfdc)}}
+.look-ahead-behavioral-carl-carl-foundations-g{fill:none;stroke:var(--scene-ink,#102a33);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.look-ahead-behavioral-carl-carl-foundations-w{fill:none;stroke:#fff;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.look-ahead-behavioral-carl-carl-foundations-bulb{transform-box:fill-box;transform-origin:center;animation:look-ahead-behavioral-carl-carl-foundations-pop 6s infinite -3s}
+@keyframes look-ahead-behavioral-carl-carl-foundations-pop{0%,70%{transform:scale(1);opacity:.55}80%,95%{transform:scale(1.18);opacity:1}100%{transform:scale(1);opacity:.55}}
+.look-ahead-behavioral-carl-carl-foundations-ret{fill:none;stroke:var(--scene-learn,#0f8a8a);stroke-width:2.5;stroke-dasharray:6 5;animation:look-ahead-behavioral-carl-carl-foundations-dash 1.2s linear infinite}
+@keyframes look-ahead-behavioral-carl-carl-foundations-dash{to{stroke-dashoffset:-11}}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+<rect width="320" height="180" rx="10" fill="var(--scene-card,#fff)"/>
+
+<g>
+<rect class="look-ahead-behavioral-carl-carl-foundations-s" x="24" y="38" width="52" height="64" rx="8" style="--d:-3.2s"/>
+<rect class="look-ahead-behavioral-carl-carl-foundations-s" x="90" y="38" width="52" height="64" rx="8" style="--d:-2.2s"/>
+<rect class="look-ahead-behavioral-carl-carl-foundations-s" x="156" y="38" width="52" height="64" rx="8" style="--d:-1.2s"/>
+<rect class="look-ahead-behavioral-carl-carl-foundations-s" x="222" y="38" width="52" height="64" rx="8" style="--d:-0.2s"/>
+<path class="look-ahead-behavioral-carl-carl-foundations-g" d="M50 58v0M50 52a7 7 0 1 1 0 .01M50 62v14M50 76l-6 8M50 76l6 8" style="stroke:var(--scene-ink,#102a33)"/>
+<path class="look-ahead-behavioral-carl-carl-foundations-g" d="M104 84v-34l22 8-22 8M104 84h0" />
+<path class="look-ahead-behavioral-carl-carl-foundations-g" d="M172 52v28l8-8 6 12 6-3-6-12h12z"/>
+<path class="look-ahead-behavioral-carl-carl-foundations-g" d="M236 70l8 8 18-22"/>
+<circle cx="292" cy="50" r="13" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-learn,#0f8a8a)" stroke-width="2.5" class="look-ahead-behavioral-carl-carl-foundations-bulb"/>
+<path class="look-ahead-behavioral-carl-carl-foundations-g" d="M287 62h10M292 57v10" style="stroke:var(--scene-learn,#0f8a8a)"/>
+<path class="look-ahead-behavioral-carl-carl-foundations-ret" d="M262 112v14H60v-14"/>
+<path d="M56 116l4-6 4 6z" fill="var(--scene-learn,#0f8a8a)"/>
+<text class="look-ahead-behavioral-carl-carl-foundations-t" x="24" y="156">One true story</text>
+</g>
+</svg>

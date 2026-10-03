@@ -1,4 +1,5 @@
 import { Component, computed, signal } from '@angular/core';
+import { CardScene } from '../../core/card-scene/card-scene';
 
 // Redistributable, synthetic homepage examples. Private curriculum and preview
 // scenarios are deliberately not bundled into the public application.
@@ -75,6 +76,7 @@ const examples = [
 
 @Component({
   selector: 'app-engineering-challenge',
+  imports: [CardScene],
   templateUrl: './engineering-challenge.html',
   styleUrl: './engineering-challenge.css',
 })

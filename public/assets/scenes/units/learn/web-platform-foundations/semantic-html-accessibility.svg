@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="semantic-html-accessibility">
+<style>
+.learn-web-platform-foundations-semantic-html-accessibility-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-web-platform-foundations-semantic-html-accessibility-m{font-family:ui-monospace,Menlo,monospace;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-web-platform-foundations-semantic-html-accessibility-card{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:2}
+
+.learn-web-platform-foundations-semantic-html-accessibility-bg{fill:var(--scene-accent-soft,#dcefed)}
+.learn-web-platform-foundations-semantic-html-accessibility-hl{fill:var(--scene-accent,#006c73);opacity:0;animation:learn-web-platform-foundations-semantic-html-accessibility-hl 6s linear infinite}
+.learn-web-platform-foundations-semantic-html-accessibility-n{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:2}
+.learn-web-platform-foundations-semantic-html-accessibility-nh{fill:var(--scene-accent,#006c73);opacity:0;animation:learn-web-platform-foundations-semantic-html-accessibility-hl 6s linear infinite}
+.learn-web-platform-foundations-semantic-html-accessibility-d{animation-delay:-.8s}.learn-web-platform-foundations-semantic-html-accessibility-a{animation-delay:-5.3s}.learn-web-platform-foundations-semantic-html-accessibility-b{animation-delay:-3.8s}.learn-web-platform-foundations-semantic-html-accessibility-c{animation-delay:-2.3s}
+@keyframes learn-web-platform-foundations-semantic-html-accessibility-hl{0%,2%{opacity:0}5%,22%{opacity:1}25%,100%{opacity:0}}
+.learn-web-platform-foundations-semantic-html-accessibility-ln{stroke:var(--scene-line,#cfdfdc);stroke-width:2;fill:none}
+</style>
+
+<rect class="learn-web-platform-foundations-semantic-html-accessibility-bg" width="320" height="180"/>
+<rect class="learn-web-platform-foundations-semantic-html-accessibility-card" x="14" y="30" width="136" height="128" rx="8"/>
+<rect fill="var(--scene-muted,#536970)" opacity=".4" x="22" y="38" width="120" height="20" rx="3"/>
+<rect fill="var(--scene-muted,#536970)" opacity=".4" x="22" y="64" width="30" height="62" rx="3"/>
+<rect fill="var(--scene-muted,#536970)" opacity=".4" x="58" y="64" width="84" height="62" rx="3"/>
+<rect fill="var(--scene-muted,#536970)" opacity=".4" x="22" y="132" width="120" height="18" rx="3"/>
+<rect class="learn-web-platform-foundations-semantic-html-accessibility-hl learn-web-platform-foundations-semantic-html-accessibility-d" x="22" y="38" width="120" height="20" rx="3"/>
+<rect class="learn-web-platform-foundations-semantic-html-accessibility-hl learn-web-platform-foundations-semantic-html-accessibility-a" x="22" y="64" width="30" height="62" rx="3"/>
+<rect class="learn-web-platform-foundations-semantic-html-accessibility-hl learn-web-platform-foundations-semantic-html-accessibility-b" x="58" y="64" width="84" height="62" rx="3"/>
+<rect class="learn-web-platform-foundations-semantic-html-accessibility-hl learn-web-platform-foundations-semantic-html-accessibility-c" x="22" y="132" width="120" height="18" rx="3"/>
+<path class="learn-web-platform-foundations-semantic-html-accessibility-ln" d="M165 94H182M182 48V140M182 48H196M182 80H196M182 112H196M182 140H196"/>
+<rect class="learn-web-platform-foundations-semantic-html-accessibility-n" x="196" y="36" width="104" height="24" rx="6"/><rect class="learn-web-platform-foundations-semantic-html-accessibility-nh learn-web-platform-foundations-semantic-html-accessibility-d" x="196" y="36" width="104" height="24" rx="6"/>
+<rect class="learn-web-platform-foundations-semantic-html-accessibility-n" x="196" y="68" width="104" height="24" rx="6"/><rect class="learn-web-platform-foundations-semantic-html-accessibility-nh learn-web-platform-foundations-semantic-html-accessibility-a" x="196" y="68" width="104" height="24" rx="6"/>
+<rect class="learn-web-platform-foundations-semantic-html-accessibility-n" x="196" y="100" width="104" height="24" rx="6"/><rect class="learn-web-platform-foundations-semantic-html-accessibility-nh learn-web-platform-foundations-semantic-html-accessibility-b" x="196" y="100" width="104" height="24" rx="6"/>
+<rect class="learn-web-platform-foundations-semantic-html-accessibility-n" x="196" y="132" width="104" height="24" rx="6"/><rect class="learn-web-platform-foundations-semantic-html-accessibility-nh learn-web-platform-foundations-semantic-html-accessibility-c" x="196" y="132" width="104" height="24" rx="6"/>
+<text class="learn-web-platform-foundations-semantic-html-accessibility-t" x="82" y="21" text-anchor="middle">Page</text>
+<text class="learn-web-platform-foundations-semantic-html-accessibility-t" x="248" y="21" text-anchor="middle">Landmarks</text>
+
+</svg>

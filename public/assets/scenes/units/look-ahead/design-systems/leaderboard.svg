@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" class="leaderboard-root" role="img" aria-label="A player finishes a match for 120 points and her score and rank jump at once, while a repeat of the same match result is counted only once.">
+<style>
+.leaderboard-root text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.leaderboard-t{fill:var(--scene-ink,#102a33)}
+.leaderboard-tx{fill:var(--scene-text,#28434a)}
+.leaderboard-mut{fill:var(--scene-muted,#536970)}
+.leaderboard-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.leaderboard-soft{fill:var(--scene-accent-soft,#dcefed)}
+.leaderboard-acc{fill:var(--scene-accent,#006c73)}
+.leaderboard-ln{fill:var(--scene-line,#cfdfdc)}
+.leaderboard-cardf{fill:var(--scene-card,#fff)}
+.leaderboard-good{fill:var(--scene-good,#1f7a4d)}
+.leaderboard-warn{fill:var(--scene-warn,#a15c00)}
+.leaderboard-bad{fill:var(--scene-bad,#b3261e)}
+.leaderboard-link{fill:var(--scene-link,#245a88)}
+.leaderboard-out{fill:var(--scene-bubble-out,#d4ecea)}
+.leaderboard-sk{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.leaderboard-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.leaderboard-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:1.5;stroke-dasharray:3 3}
+.leaderboard-a{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-3.4s}
+.leaderboard-c1{animation-name:leaderboard-c1}@keyframes leaderboard-c1{0%,8%{opacity:0;transform:translateX(0)}12%{opacity:1;transform:translateX(0)}26%{opacity:1;transform:translateX(-104px)}30%,100%{opacity:0;transform:translateX(-104px)}}
+.leaderboard-old{animation-name:leaderboard-old}@keyframes leaderboard-old{0%,27%{opacity:1}30%,100%{opacity:0}}
+.leaderboard-new{animation-name:leaderboard-new}@keyframes leaderboard-new{0%,27%{opacity:0}30%,100%{opacity:1}}
+.leaderboard-flash{animation-name:leaderboard-flash}@keyframes leaderboard-flash{0%,27%{fill:var(--scene-accent-soft,#dcefed)}30%,45%{fill:var(--scene-good,#1f7a4d);fill-opacity:.25}55%,100%{fill:var(--scene-accent-soft,#dcefed)}}
+.leaderboard-c2{animation-name:leaderboard-c2}@keyframes leaderboard-c2{0%,50%{opacity:0;transform:translateX(0)}54%{opacity:1;transform:translateX(0)}64%{opacity:1;transform:translateX(-14px)}70%{opacity:1;transform:translateX(4px)}90%{opacity:1;transform:translateX(0)}96%,100%{opacity:0}}
+.leaderboard-dup{animation-name:leaderboard-dup}@keyframes leaderboard-dup{0%,64%{opacity:0}68%,92%{opacity:1}96%,100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.leaderboard-root *{animation-play-state:paused!important}}
+</style>
+<rect x="6" y="6" width="148" height="123" rx="12" class="leaderboard-box"/><rect x="12" y="14" width="136" height="20" rx="5" class="leaderboard-ln" fill-opacity=".45"/><text x="20" y="29" font-size="13" font-weight="700" class="leaderboard-t">1</text><circle cx="46" cy="24" r="6" class="leaderboard-mut" opacity=".5"/><rect x="58" y="21" width="70" height="6" rx="3" class="leaderboard-mut" opacity=".5"/><rect x="12" y="38" width="136" height="20" rx="5" class="leaderboard-ln" fill-opacity=".45"/><text x="20" y="53" font-size="13" font-weight="700" class="leaderboard-t">2</text><circle cx="46" cy="48" r="6" class="leaderboard-mut" opacity=".5"/><rect x="58" y="45" width="60" height="6" rx="3" class="leaderboard-mut" opacity=".5"/><rect x="12" y="62" width="136" height="20" rx="5" class="leaderboard-ln" fill-opacity=".45"/><text x="20" y="77" font-size="13" font-weight="700" class="leaderboard-t">3</text><circle cx="46" cy="72" r="6" class="leaderboard-mut" opacity=".5"/><rect x="58" y="69" width="50" height="6" rx="3" class="leaderboard-mut" opacity=".5"/><text x="80" y="92" font-size="14" text-anchor="middle" class="leaderboard-mut">&#8942;</text>
+<rect x="12" y="98" width="136" height="26" rx="6" class="leaderboard-a leaderboard-flash"/>
+<g class="leaderboard-a leaderboard-old"><text x="20" y="116" font-size="14" font-weight="700" class="leaderboard-t">#41,980</text></g>
+<g class="leaderboard-a leaderboard-new"><text x="20" y="116" font-size="14" font-weight="700" class="leaderboard-t">#41,231</text><text x="140" y="116" font-size="14" font-weight="700" text-anchor="end" class="leaderboard-good">&#9650;</text></g>
+<rect x="166" y="10" width="68" height="56" rx="10" class="leaderboard-box"/>
+<path d="M188 20 h24 v10 q0 10 -12 10 q-12 0 -12 -10z M200 40 v6 M192 48 h16" stroke="var(--scene-warn,#a15c00)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="200" y="60" font-size="14" font-weight="700" text-anchor="middle" class="leaderboard-good">+120</text>
+<path d="M200 70 v24" class="leaderboard-sl"/>
+<g class="leaderboard-a leaderboard-c1"><rect x="170" y="98" width="60" height="26" rx="13" class="leaderboard-acc"/><text x="200" y="116" font-size="14" font-weight="700" text-anchor="middle" class="leaderboard-cardf">+120</text></g>
+<g class="leaderboard-a leaderboard-c2"><rect x="170" y="98" width="60" height="26" rx="13" class="leaderboard-ln"/><text x="200" y="116" font-size="14" font-weight="700" text-anchor="middle" class="leaderboard-tx">+120</text></g>
+<g class="leaderboard-a leaderboard-dup"><circle cx="200" cy="82" r="9" class="leaderboard-bad"/><path d="M196 78 l8 8 m0 -8 l-8 8" stroke="var(--scene-card,#fff)" stroke-width="2.4" stroke-linecap="round"/></g>
+</svg>

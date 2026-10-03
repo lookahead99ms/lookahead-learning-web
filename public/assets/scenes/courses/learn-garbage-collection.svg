@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A stack frame references objects on the heap; one reference is dropped, the unreachable objects turn hollow, and the garbage collector sweeps them away">
+<style>
+.learn-garbage-collection-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.learn-garbage-collection-heap { fill: var(--scene-accent-soft, #dcefed); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.learn-garbage-collection-sf { fill: var(--scene-card, #ffffff); stroke: var(--scene-muted, #536970); stroke-width: 1.5; }
+.learn-garbage-collection-sf-top { fill: var(--scene-learn, #0f8a8a); }
+.learn-garbage-collection-bar { fill: var(--scene-line, #cfdfdc); }
+.learn-garbage-collection-ref { fill: none; stroke: var(--scene-text, #28434a); stroke-width: 2; }
+.learn-garbage-collection-obj { fill: var(--scene-learn, #0f8a8a); stroke: var(--scene-card, #ffffff); stroke-width: 2; }
+.learn-garbage-collection-dead { fill: var(--scene-card, #ffffff); stroke: var(--scene-muted, #536970); stroke-width: 2; stroke-dasharray: 4 3; }
+.learn-garbage-collection-sweep { stroke: var(--scene-warn, #a15c00); stroke-width: 3; }
+.learn-garbage-collection-gc { fill: var(--scene-warn, #a15c00); }
+.learn-garbage-collection-gc-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-card, #ffffff); font-weight: 700; }
+.learn-garbage-collection-x { stroke: var(--scene-bad, #b3261e); stroke-width: 3; stroke-linecap: round; }
+
+.learn-garbage-collection-live { animation: learn-garbage-collection-kf-live 6s infinite; }
+@keyframes learn-garbage-collection-kf-live { 0%, 12% { opacity: 1; } 16%, 92% { opacity: 0; } 96%, 100% { opacity: 1; } }
+.learn-garbage-collection-gone1 { animation: learn-garbage-collection-kf-gone1 6s infinite; }
+@keyframes learn-garbage-collection-kf-gone1 { 0%, 12% { opacity: 0; } 16%, 55% { opacity: 1; } 59%, 100% { opacity: 0; } }
+.learn-garbage-collection-gone2 { animation: learn-garbage-collection-kf-gone2 6s infinite; }
+@keyframes learn-garbage-collection-kf-gone2 { 0%, 12% { opacity: 0; } 16%, 63% { opacity: 1; } 67%, 100% { opacity: 0; } }
+.learn-garbage-collection-sweeper { animation: learn-garbage-collection-kf-sweep 6s linear infinite; }
+@keyframes learn-garbage-collection-kf-sweep { 0%, 28% { transform: translateX(0); opacity: 0; } 30% { transform: translateX(0); opacity: 1; } 70% { transform: translateX(140px); opacity: 1; } 74%, 100% { transform: translateX(140px); opacity: 0; } }
+
+.learn-garbage-collection-live, .learn-garbage-collection-gone1, .learn-garbage-collection-gone2, .learn-garbage-collection-sweeper { animation-delay: -3s; }
+</style>
+
+<!-- stack frames -->
+<rect class="learn-garbage-collection-sf" x="14" y="130" width="60" height="24" rx="4"/><rect class="learn-garbage-collection-bar" x="23" y="140" width="34" height="4" rx="2"/>
+<rect class="learn-garbage-collection-sf" x="14" y="102" width="60" height="24" rx="4"/><rect class="learn-garbage-collection-bar" x="23" y="112" width="28" height="4" rx="2"/>
+<rect class="learn-garbage-collection-sf-top" x="14" y="74" width="60" height="24" rx="4"/>
+<text class="learn-garbage-collection-t" x="44" y="62" font-size="16" text-anchor="middle">stack</text>
+
+<!-- heap -->
+<rect class="learn-garbage-collection-heap" x="96" y="52" width="212" height="116" rx="10"/>
+<text class="learn-garbage-collection-t" x="108" y="74" font-size="16">heap</text>
+
+<!-- references -->
+<path class="learn-garbage-collection-ref" d="M74 86 C110 86 120 104 148 104"/>
+<path class="learn-garbage-collection-ref" d="M148 104 L188 140"/>
+<g class="learn-garbage-collection-live"><path class="learn-garbage-collection-ref" d="M148 104 L232 88"/></g>
+<path class="learn-garbage-collection-ref" d="M232 88 L270 136" style="stroke-dasharray: 4 3"/>
+
+<!-- live objects -->
+<circle class="learn-garbage-collection-obj" cx="148" cy="104" r="13"/>
+<circle class="learn-garbage-collection-obj" cx="188" cy="140" r="12"/>
+
+<!-- objects that lose their reference -->
+<g class="learn-garbage-collection-live">
+  <circle class="learn-garbage-collection-obj" cx="232" cy="88" r="13"/>
+  <circle class="learn-garbage-collection-obj" cx="270" cy="136" r="12"/>
+</g>
+<g class="learn-garbage-collection-gone1">
+  <circle class="learn-garbage-collection-dead" cx="232" cy="88" r="13"/>
+  <path class="learn-garbage-collection-x" d="M184 90 L194 100 M194 90 L184 100"/>
+</g>
+<g class="learn-garbage-collection-gone2"><circle class="learn-garbage-collection-dead" cx="270" cy="136" r="12"/></g>
+
+<!-- GC sweep -->
+<g class="learn-garbage-collection-sweeper">
+  <line class="learn-garbage-collection-sweep" x1="150" y1="56" x2="150" y2="164"/>
+  <rect class="learn-garbage-collection-gc" x="132" y="18" width="36" height="24" rx="12"/>
+  <text class="learn-garbage-collection-gc-t" x="150" y="35" font-size="16" text-anchor="middle">GC</text>
+</g>
+</svg>

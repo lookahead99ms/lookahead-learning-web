@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Rows in users and orders are matched by key and joined into a result table">
+<style>
+.learn-sql-t { font-family: system-ui, sans-serif; fill: var(--scene-card, #ffffff); font-weight: 700; }
+.learn-sql-tm { font-family: ui-monospace, Menlo, monospace; fill: var(--scene-card, #ffffff); font-weight: 700; }
+.learn-sql-tbl { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.learn-sql-hd { fill: var(--scene-ink, #102a33); }
+.learn-sql-hd2 { fill: var(--scene-accent, #006c73); }
+.learn-sql-cell { fill: var(--scene-muted, #536970); opacity: .35; }
+.learn-sql-sep { stroke: var(--scene-line, #cfdfdc); stroke-width: 1; }
+.learn-sql-k1 { fill: var(--scene-learn, #0f8a8a); }
+.learn-sql-k2 { fill: var(--scene-grow, #b8457a); }
+.learn-sql-k3 { fill: var(--scene-ahead, #2f6fb3); }
+.learn-sql-k4 { fill: var(--scene-warn, #a15c00); }
+.learn-sql-hlA { fill: var(--scene-accent-soft, #dcefed); animation: learn-sql-kf-A 7s infinite; }
+@keyframes learn-sql-kf-A { 0%, 8% { opacity: 0; } 12%, 44% { opacity: 1; } 48%, 100% { opacity: 0; } }
+.learn-sql-hlB { fill: var(--scene-accent-soft, #dcefed); animation: learn-sql-kf-B 7s infinite; }
+@keyframes learn-sql-kf-B { 0%, 50% { opacity: 0; } 54%, 86% { opacity: 1; } 90%, 100% { opacity: 0; } }
+.learn-sql-lnA { stroke: var(--scene-learn, #0f8a8a); stroke-width: 3; animation: learn-sql-kf-A 7s infinite; }
+.learn-sql-lnB { stroke: var(--scene-ahead, #2f6fb3); stroke-width: 3; animation: learn-sql-kf-B 7s infinite; }
+.learn-sql-r1 { animation: learn-sql-kf-r1 7s infinite; }
+@keyframes learn-sql-kf-r1 { 0%, 26% { opacity: 0; } 30%, 92% { opacity: 1; } 96%, 100% { opacity: 0; } }
+.learn-sql-r2 { animation: learn-sql-kf-r2 7s infinite; }
+@keyframes learn-sql-kf-r2 { 0%, 68% { opacity: 0; } 72%, 92% { opacity: 1; } 96%, 100% { opacity: 0; } }
+.learn-sql-hlA, .learn-sql-hlB, .learn-sql-lnA, .learn-sql-lnB, .learn-sql-r1, .learn-sql-r2 { animation-delay: -3s; }
+</style>
+<!-- users -->
+<rect class="learn-sql-tbl" x="12" y="38" width="86" height="104" rx="6"/>
+<rect class="learn-sql-hlA" x="13" y="68" width="84" height="22"/>
+<rect class="learn-sql-hlB" x="13" y="116" width="84" height="22"/>
+<path class="learn-sql-hd" d="M18 38 H92 a6 6 0 0 1 6 6 V64 H12 V44 a6 6 0 0 1 6 -6z"/>
+<text class="learn-sql-t" x="55" y="56" font-size="16" text-anchor="middle">users</text>
+<rect class="learn-sql-k1" x="20" y="73" width="12" height="12" rx="3"/><rect class="learn-sql-cell" x="40" y="75" width="48" height="8" rx="4"/>
+<path class="learn-sql-sep" d="M12 92 H98"/>
+<rect class="learn-sql-k2" x="20" y="97" width="12" height="12" rx="3"/><rect class="learn-sql-cell" x="40" y="99" width="38" height="8" rx="4"/>
+<path class="learn-sql-sep" d="M12 116 H98"/>
+<rect class="learn-sql-k3" x="20" y="121" width="12" height="12" rx="3"/><rect class="learn-sql-cell" x="40" y="123" width="44" height="8" rx="4"/>
+<!-- orders -->
+<rect class="learn-sql-tbl" x="120" y="38" width="86" height="104" rx="6"/>
+<rect class="learn-sql-hlB" x="121" y="68" width="84" height="22"/>
+<rect class="learn-sql-hlA" x="121" y="92" width="84" height="22"/>
+<path class="learn-sql-hd" d="M126 38 H200 a6 6 0 0 1 6 6 V64 H120 V44 a6 6 0 0 1 6 -6z"/>
+<text class="learn-sql-t" x="163" y="56" font-size="16" text-anchor="middle">orders</text>
+<rect class="learn-sql-k3" x="128" y="73" width="12" height="12" rx="3"/><rect class="learn-sql-cell" x="148" y="75" width="40" height="8" rx="4"/>
+<path class="learn-sql-sep" d="M120 92 H206"/>
+<rect class="learn-sql-k1" x="128" y="97" width="12" height="12" rx="3"/><rect class="learn-sql-cell" x="148" y="99" width="50" height="8" rx="4"/>
+<path class="learn-sql-sep" d="M120 116 H206"/>
+<rect class="learn-sql-k4" x="128" y="121" width="12" height="12" rx="3"/><rect class="learn-sql-cell" x="148" y="123" width="34" height="8" rx="4"/>
+<!-- match lines -->
+<path class="learn-sql-lnA" d="M98 79 L120 103"/>
+<path class="learn-sql-lnB" d="M98 127 L120 79"/>
+<!-- arrow -->
+<path d="M212 90 H226 m-6 -6 l6 6 l-6 6" fill="none" stroke="var(--scene-muted, #536970)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<!-- result -->
+<rect class="learn-sql-tbl" x="232" y="38" width="78" height="104" rx="6"/>
+<path class="learn-sql-hd2" d="M238 38 H304 a6 6 0 0 1 6 6 V64 H232 V44 a6 6 0 0 1 6 -6z"/>
+<text class="learn-sql-tm" x="271" y="56" font-size="16" text-anchor="middle">JOIN</text>
+<g class="learn-sql-r1"><rect class="learn-sql-k1" x="240" y="73" width="12" height="12" rx="3"/><rect class="learn-sql-cell" x="258" y="75" width="22" height="8" rx="4"/><rect class="learn-sql-cell" x="284" y="75" width="18" height="8" rx="4"/></g>
+<path class="learn-sql-sep" d="M232 92 H310"/>
+<g class="learn-sql-r2"><rect class="learn-sql-k3" x="240" y="97" width="12" height="12" rx="3"/><rect class="learn-sql-cell" x="258" y="99" width="22" height="8" rx="4"/><rect class="learn-sql-cell" x="284" y="99" width="18" height="8" rx="4"/></g>
+</svg>

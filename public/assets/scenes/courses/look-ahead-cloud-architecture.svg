@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Two cloud regions, each with private networks and a guarded entry; when region A goes down, traffic fails over to region B">
+<style>
+.look-ahead-cloud-architecture-region{fill:var(--scene-card,#fff);stroke:var(--scene-accent,#006c73);stroke-width:1.8;stroke-dasharray:6 4}
+.look-ahead-cloud-architecture-net{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-accent,#006c73);stroke-width:1.2}
+.look-ahead-cloud-architecture-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:600;fill:var(--scene-ink,#102a33)}
+.look-ahead-cloud-architecture-wire{stroke:var(--scene-line,#cfdfdc);stroke-width:2.2;fill:none}
+.look-ahead-cloud-architecture-toA{fill:var(--scene-ahead,#2f6fb3);animation:look-ahead-cloud-architecture-toA 7s linear infinite;animation-delay:-4.3s}
+.look-ahead-cloud-architecture-toB{fill:var(--scene-ahead,#2f6fb3);animation:look-ahead-cloud-architecture-toB 7s linear infinite;animation-delay:-4.3s}
+.look-ahead-cloud-architecture-down{animation:look-ahead-cloud-architecture-down 7s ease-in-out infinite;animation-delay:-4.3s}
+.look-ahead-cloud-architecture-live{animation:look-ahead-cloud-architecture-live 7s ease-in-out infinite;animation-delay:-4.3s}
+@keyframes look-ahead-cloud-architecture-toA{0%{transform:translate(0,0);opacity:1}18%{transform:translate(-36px,24px);opacity:1}20%{opacity:0;transform:translate(-36px,24px)}21%{transform:translate(0,0);opacity:1}38%{transform:translate(-36px,24px);opacity:1}40%,100%{opacity:0;transform:translate(-36px,24px)}}
+@keyframes look-ahead-cloud-architecture-toB{0%,48%{opacity:0;transform:translate(0,0)}50%{opacity:1;transform:translate(0,0)}68%{transform:translate(36px,24px);opacity:1}70%{opacity:0;transform:translate(36px,24px)}71%{opacity:1;transform:translate(0,0)}90%{opacity:1;transform:translate(36px,24px)}92%,100%{opacity:0;transform:translate(36px,24px)}}
+@keyframes look-ahead-cloud-architecture-down{0%,40%{opacity:0}46%,94%{opacity:1}100%{opacity:0}}
+@keyframes look-ahead-cloud-architecture-live{0%,44%{opacity:0}50%,94%{opacity:1}100%{opacity:0}}
+</style>
+<rect x="0" y="0" width="320" height="180" rx="12" fill="var(--scene-card,#fff)"/>
+<!-- global entry: DNS globe -->
+<circle cx="160" cy="30" r="16" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="1.6"/>
+<path d="M144 30 H176 M160 14 C150 22 150 38 160 46 M160 14 C170 22 170 38 160 46" stroke="var(--scene-accent,#006c73)" stroke-width="1.3" fill="none"/>
+<path class="look-ahead-cloud-architecture-wire" d="M150 42 L82 98 M170 42 L238 98"/>
+<!-- region A -->
+<rect class="look-ahead-cloud-architecture-region" x="12" y="72" width="140" height="96" rx="12"/>
+<text class="look-ahead-cloud-architecture-t" x="24" y="92">Region A</text>
+<rect class="look-ahead-cloud-architecture-net" x="24" y="104" width="52" height="50" rx="6"/>
+<rect class="look-ahead-cloud-architecture-net" x="86" y="104" width="54" height="50" rx="6"/>
+<g fill="var(--scene-accent,#006c73)"><rect x="34" y="116" width="32" height="8" rx="2"/><rect x="34" y="132" width="32" height="8" rx="2"/>
+<path d="M104 120 v26 a9 3 0 0 0 18 0 v-26" opacity=".8"/><ellipse cx="113" cy="120" rx="9" ry="3"/></g>
+<!-- region B -->
+<rect class="look-ahead-cloud-architecture-region" x="168" y="72" width="140" height="96" rx="12"/>
+<text class="look-ahead-cloud-architecture-t" x="180" y="92">Region B</text>
+<rect class="look-ahead-cloud-architecture-net" x="180" y="104" width="52" height="50" rx="6"/>
+<rect class="look-ahead-cloud-architecture-net" x="242" y="104" width="54" height="50" rx="6"/>
+<g fill="var(--scene-accent,#006c73)"><rect x="190" y="116" width="32" height="8" rx="2"/><rect x="190" y="132" width="32" height="8" rx="2"/>
+<path d="M260 120 v26 a9 3 0 0 0 18 0 v-26" opacity=".8"/><ellipse cx="269" cy="120" rx="9" ry="3"/></g>
+<!-- lock on each region (identity boundary) -->
+<g fill="var(--scene-ink,#102a33)">
+<rect x="130" y="80" width="14" height="11" rx="2"/><path d="M133 80 v-4 a4 4 0 0 1 8 0 v4" stroke="var(--scene-ink,#102a33)" stroke-width="2" fill="none"/>
+<rect x="286" y="80" width="14" height="11" rx="2"/><path d="M289 80 v-4 a4 4 0 0 1 8 0 v4" stroke="var(--scene-ink,#102a33)" stroke-width="2" fill="none"/>
+</g>
+<!-- region A outage overlay -->
+<g class="look-ahead-cloud-architecture-down">
+<rect x="12" y="72" width="140" height="96" rx="12" fill="var(--scene-bad,#b3261e)" opacity=".13" stroke="var(--scene-bad,#b3261e)" stroke-width="2"/>
+<path d="M98 50 l12 12 M110 50 l-12 12" stroke="var(--scene-bad,#b3261e)" stroke-width="3" stroke-linecap="round"/>
+</g>
+<g class="look-ahead-cloud-architecture-live">
+<rect x="168" y="72" width="140" height="96" rx="12" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="2.4"/>
+</g>
+<!-- traffic -->
+<circle class="look-ahead-cloud-architecture-toA" cx="160" cy="46" r="6"/>
+<circle class="look-ahead-cloud-architecture-toB" cx="160" cy="46" r="6"/>
+</svg>

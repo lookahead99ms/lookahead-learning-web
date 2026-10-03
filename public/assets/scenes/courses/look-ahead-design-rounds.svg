@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A design is sketched on a whiteboard against a 45 minute clock, with one box linking down to its lesson">
+<style>
+.look-ahead-design-rounds-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.look-ahead-design-rounds-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 2; }
+.look-ahead-design-rounds-soft { fill: var(--scene-accent-soft, #dcefed); }
+.look-ahead-design-rounds-softs { fill: var(--scene-accent-soft, #dcefed); stroke: var(--scene-accent, #006c73); stroke-width: 2; }
+.look-ahead-design-rounds-acc { fill: var(--scene-accent, #006c73); }
+.look-ahead-design-rounds-ahead { fill: var(--scene-ahead, #2f6fb3); }
+.look-ahead-design-rounds-good { fill: var(--scene-good, #1f7a4d); }
+.look-ahead-design-rounds-warn { fill: var(--scene-warn, #a15c00); }
+.look-ahead-design-rounds-bad { fill: var(--scene-bad, #b3261e); }
+.look-ahead-design-rounds-mut { fill: var(--scene-muted, #536970); }
+.look-ahead-design-rounds-card { fill: var(--scene-card, #ffffff); }
+.look-ahead-design-rounds-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 2; }
+.look-ahead-design-rounds-dash { fill: none; stroke: var(--scene-link, #245a88); stroke-width: 2; stroke-dasharray: 5 4; }
+.look-ahead-design-rounds-check { fill: none; stroke: var(--scene-good, #1f7a4d); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+
+.look-ahead-design-rounds-draw { stroke-dasharray: 200; animation: look-ahead-design-rounds-kf-draw 8s infinite; }
+.look-ahead-design-rounds-ring { stroke-dasharray: 189; animation: look-ahead-design-rounds-kf-ring 8s linear infinite; animation-delay: -4s; transform-origin: 268px 56px; transform: rotate(-90deg); }
+.look-ahead-design-rounds-link { stroke-dashoffset: 0; animation: look-ahead-design-rounds-kf-link 8s infinite; animation-delay: -4.4s; }
+.look-ahead-design-rounds-hi { animation: look-ahead-design-rounds-kf-hi 8s infinite; animation-delay: -4.4s; }
+@keyframes look-ahead-design-rounds-kf-draw { 0% { stroke-dashoffset: 200; } 12% { stroke-dashoffset: 0; } 92% { stroke-dashoffset: 0; opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes look-ahead-design-rounds-kf-ring { from { stroke-dashoffset: 0; } to { stroke-dashoffset: 189; } }
+@keyframes look-ahead-design-rounds-kf-link { 0%, 40% { opacity: 0; } 48%, 92% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes look-ahead-design-rounds-kf-hi { 0%, 46% { opacity: 0; } 54%, 92% { opacity: 1; } 100% { opacity: 0; } }
+</style>
+<rect class="look-ahead-design-rounds-box" x="14" y="14" width="200" height="132" rx="8"/><path class="look-ahead-design-rounds-wire" d="M60 146 L48 168 M168 146 L180 168"/>
+<path class="look-ahead-design-rounds-draw" d="M30 66 h36 v26 h-36 Z" fill="none" stroke="var(--scene-link, #245a88)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:-3.2s"/>
+<path class="look-ahead-design-rounds-draw" d="M66 79 H96" fill="none" stroke="var(--scene-link, #245a88)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:-2.6s"/>
+<path class="look-ahead-design-rounds-draw" d="M96 52 h46 v54 h-46 Z" fill="none" stroke="var(--scene-link, #245a88)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:-2.2s"/>
+<path class="look-ahead-design-rounds-draw" d="M142 70 L170 52 M142 88 L170 106" fill="none" stroke="var(--scene-link, #245a88)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:-1.6s"/>
+<path class="look-ahead-design-rounds-draw" d="M170 40 h30 v24 h-30 Z" fill="none" stroke="var(--scene-link, #245a88)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:-1.2s"/>
+<g class="look-ahead-design-rounds-draw" style="animation-delay:-0.8s"><path d="M170 98 V122 A15 5 0 0 0 200 122 V98" fill="none" stroke="var(--scene-link, #245a88)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="look-ahead-design-rounds-draw" style="animation-delay:-0.8s"/><ellipse cx="185" cy="98" rx="15" ry="5" fill="none" stroke="var(--scene-link, #245a88)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="look-ahead-design-rounds-draw" style="animation-delay:-0.8s"/></g>
+<circle cx="268" cy="56" r="30" fill="var(--scene-card, #ffffff)" stroke="var(--scene-line, #cfdfdc)" stroke-width="6"/>
+<circle class="look-ahead-design-rounds-ring" cx="268" cy="56" r="30" fill="none" stroke="var(--scene-warn, #a15c00)" stroke-width="6"/>
+<text class="look-ahead-design-rounds-t" x="268" y="61" font-size="16" text-anchor="middle">45 min</text>
+<path class="look-ahead-design-rounds-dash look-ahead-design-rounds-link" d="M119 106 C 130 150, 200 160, 236 148"/><path class="look-ahead-design-rounds-link" d="M230 141 L238 148 L229 154" fill="none" stroke="var(--scene-link, #245a88)" stroke-width="2"/>
+<rect class="look-ahead-design-rounds-box" x="254" y="118" width="62" height="34" rx="5"/>
+<rect class="look-ahead-design-rounds-box" x="248" y="126" width="62" height="34" rx="5"/>
+<rect class="look-ahead-design-rounds-box" x="242" y="134" width="62" height="34" rx="5"/>
+<rect class="look-ahead-design-rounds-soft look-ahead-design-rounds-hi" x="243" y="135" width="60" height="32" rx="4"/>
+<text class="look-ahead-design-rounds-t" x="273" y="156" font-size="16" text-anchor="middle">lesson</text>
+</svg>

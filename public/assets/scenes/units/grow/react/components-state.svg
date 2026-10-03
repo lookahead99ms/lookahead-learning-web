@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A seat map owns the chosen seats, passes props down to seats and receives onSelect taps back up">
+<style>
+.grow-react-components-state-t{font-family:system-ui,sans-serif;font-weight:700;font-size:16px;fill:var(--scene-ink,#102a33)}
+.grow-react-components-state-dn{animation:grow-react-components-state-down 6s ease-in-out infinite}
+.grow-react-components-state-up{animation:grow-react-components-state-upk 6s ease-in-out infinite}
+.grow-react-components-state-pick{animation:grow-react-components-state-sel 6s steps(1) infinite}
+.grow-react-components-state-chip{animation:grow-react-components-state-pop 6s ease-out infinite;transform-origin:262px 38px}
+@keyframes grow-react-components-state-upk{0%,10%{transform:translateY(0);opacity:0}20%{opacity:1}45%{transform:translateY(-34px);opacity:1}55%,100%{transform:translateY(-34px);opacity:0}}
+@keyframes grow-react-components-state-down{0%,55%{transform:translateY(0);opacity:0}62%{opacity:1}90%{transform:translateY(46px);opacity:1}100%{transform:translateY(46px);opacity:0}}
+@keyframes grow-react-components-state-sel{0%,50%{fill:var(--scene-line,#cfdfdc)}50.1%,100%{fill:var(--scene-good,#1f7a4d)}}
+@keyframes grow-react-components-state-pop{0%,48%{transform:scale(.8);opacity:.4}56%{transform:scale(1.15);opacity:1}70%,100%{transform:scale(1);opacity:1}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="20" y="14" width="280" height="50" rx="10" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/>
+<text x="34" y="44" class="grow-react-components-state-t">SeatMap</text>
+<rect x="120" y="26" width="30" height="26" rx="6" fill="var(--scene-good,#1f7a4d)"/>
+<rect x="156" y="26" width="30" height="26" rx="6" fill="var(--scene-good,#1f7a4d)"/>
+<g class="grow-react-components-state-chip" style="animation-delay:-3s"><rect x="192" y="26" width="30" height="26" rx="6" fill="var(--scene-ahead,#2f6fb3)"/><path d="M200 39 l5 5 l10 -11" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="2"><line x1="80" y1="64" x2="80" y2="104"/><line x1="160" y1="64" x2="160" y2="104"/><line x1="240" y1="64" x2="240" y2="104"/></g>
+<rect x="50" y="104" width="60" height="44" rx="8" fill="var(--scene-card,#fff)" stroke="var(--scene-muted,#536970)" stroke-width="2.5"/>
+<rect class="grow-react-components-state-pick" style="animation-delay:-3s" x="130" y="104" width="60" height="44" rx="8" stroke="var(--scene-muted,#536970)" stroke-width="2.5"/>
+<rect x="210" y="104" width="60" height="44" rx="8" fill="var(--scene-card,#fff)" stroke="var(--scene-muted,#536970)" stroke-width="2.5"/>
+<g class="grow-react-components-state-dn" style="animation-delay:-3s"><path d="M92 68 l-6 -9 h12z" transform="rotate(180 92 63)" fill="var(--scene-accent,#006c73)"/></g>
+<g class="grow-react-components-state-up" style="animation-delay:-3s"><path d="M168 104 l-7 10 h14z" fill="var(--scene-grow,#b8457a)"/></g>
+<text x="102" y="86" class="grow-react-components-state-t" style="fill:var(--scene-accent,#006c73)">props</text>
+<text x="176" y="170" class="grow-react-components-state-t" style="fill:var(--scene-grow,#b8457a)">onSelect</text>
+</svg>

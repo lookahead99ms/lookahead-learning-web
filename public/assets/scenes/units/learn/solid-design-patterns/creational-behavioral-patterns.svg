@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A change arrives and is routed to the pattern that fits">
+<style>
+.learn-solid-design-patterns-creational-behavioral-patterns-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-solid-design-patterns-creational-behavioral-patterns-m{font-family:ui-monospace,Menlo,monospace;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-solid-design-patterns-creational-behavioral-patterns-a1{animation:learn-solid-design-patterns-creational-behavioral-patterns-mv 6s linear infinite;animation-delay:-3s}
+@keyframes learn-solid-design-patterns-creational-behavioral-patterns-mv{0%{transform:translate(0,0);opacity:0}6%{opacity:1}30%{transform:translate(70px,0)}50%{transform:translate(70px,0)}85%{transform:translate(138px,-52px)}95%{opacity:1;transform:translate(138px,-52px)}100%{transform:translate(138px,-52px);opacity:0}}
+.learn-solid-design-patterns-creational-behavioral-patterns-a2{animation:learn-solid-design-patterns-creational-behavioral-patterns-pu 6s ease-in-out infinite;animation-delay:-3s;transform-box:fill-box;transform-origin:center}
+@keyframes learn-solid-design-patterns-creational-behavioral-patterns-pu{0%,60%{transform:scale(1)}80%{transform:scale(1.12)}100%{transform:scale(1)}}
+
+@media (prefers-reduced-motion:reduce){[class*="learn-solid-design-patterns-creational-behavioral-patterns-a"]{animation:none!important}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g fill="none" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"><path d="M50 100H110"/><path d="M110 100C140 100 150 48 190 48H236"/><path d="M110 100H236"/><path d="M110 100C140 100 150 152 190 152H236"/></g>
+<rect x="14" y="84" width="40" height="32" rx="6" fill="var(--scene-grow,#b8457a)"/><text class="learn-solid-design-patterns-creational-behavioral-patterns-t" x="34" y="104" text-anchor="middle" fill="#fff" style="fill:#fff">New</text>
+<circle cx="110" cy="100" r="9" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<text class="learn-solid-design-patterns-creational-behavioral-patterns-t" x="110" y="76" text-anchor="middle">What varies?</text>
+<g class="learn-solid-design-patterns-creational-behavioral-patterns-a2"><rect x="236" y="30" width="70" height="36" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/><path d="M252 48h14M274 48h18" stroke="var(--scene-accent,#006c73)" stroke-width="4" stroke-linecap="round"/><circle cx="270" cy="48" r="4" fill="var(--scene-accent,#006c73)"/></g>
+<rect x="236" y="82" width="70" height="36" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-link,#245a88)" stroke-width="2.5"/><path d="M250 100h14l8-8m-8 8l8 8h18" fill="none" stroke="var(--scene-link,#245a88)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="236" y="134" width="70" height="36" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-good,#1f7a4d)" stroke-width="2.5"/><rect x="246" y="142" width="50" height="20" rx="5" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="3"/><rect x="256" y="148" width="30" height="8" rx="3" fill="var(--scene-good,#1f7a4d)"/>
+<text class="learn-solid-design-patterns-creational-behavioral-patterns-t" x="271" y="25" text-anchor="middle">Adapter</text>
+<circle class="learn-solid-design-patterns-creational-behavioral-patterns-a1" cx="50" cy="100" r="7" fill="var(--scene-grow,#b8457a)" stroke="var(--scene-card,#fff)" stroke-width="2"/>
+</svg>

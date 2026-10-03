@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" font-family="system-ui, sans-serif">
+<style>
+.grow-advanced-java-networking-http-t{font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.grow-advanced-java-networking-http-p{animation:grow-advanced-java-networking-http-p 6s ease-in-out infinite;animation-delay:-3s}
+.grow-advanced-java-networking-http-d{transform-origin:40px 0;animation:grow-advanced-java-networking-http-d 6s linear infinite;animation-delay:-3s}
+.grow-advanced-java-networking-http-x{animation:grow-advanced-java-networking-http-x 6s linear infinite;animation-delay:-3s}
+@keyframes grow-advanced-java-networking-http-p{0%{transform:translateX(0);opacity:1}35%{transform:translateX(150px);opacity:1}55%{transform:translateX(150px);opacity:1}70%{transform:translateX(0);opacity:1}85%{transform:translateX(150px);opacity:1}100%{transform:translateX(150px);opacity:0}}
+@keyframes grow-advanced-java-networking-http-d{0%{transform:scaleX(1)}100%{transform:scaleX(.1)}}
+@keyframes grow-advanced-java-networking-http-x{0%,45%{opacity:0}55%,70%{opacity:1}75%,100%{opacity:0}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="16" y="30" width="70" height="56" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2"/>
+<rect x="26" y="40" width="50" height="26" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="2"/>
+<rect x="38" y="90" width="26" height="6" fill="var(--scene-accent,#006c73)"/>
+<rect x="234" y="24" width="70" height="68" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<circle cx="250" cy="42" r="4" fill="var(--scene-good,#1f7a4d)"/><circle cx="250" cy="62" r="4" fill="var(--scene-warn,#a15c00)"/><circle cx="250" cy="80" r="4" fill="var(--scene-bad,#b3261e)"/>
+<path d="M96 58h128" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-dasharray="3 5"/>
+<g class="grow-advanced-java-networking-http-p"><rect x="96" y="49" width="26" height="18" rx="4" fill="var(--scene-link,#245a88)"/><path d="M101 54l8 5 8-5" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2"/></g>
+<g class="grow-advanced-java-networking-http-x"><circle cx="160" cy="30" r="13" fill="var(--scene-bad,#b3261e)"/><path d="M160 22v9l6 4" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></g>
+<text class="grow-advanced-java-networking-http-t" x="51" y="116" text-anchor="middle">client</text>
+<text class="grow-advanced-java-networking-http-t" x="269" y="116" text-anchor="middle">server</text>
+<rect x="40" y="140" width="240" height="12" rx="6" fill="var(--scene-line,#cfdfdc)"/>
+<rect class="grow-advanced-java-networking-http-d" x="40" y="140" width="240" height="12" rx="6" fill="var(--scene-warn,#a15c00)"/>
+<text class="grow-advanced-java-networking-http-t" x="160" y="173" text-anchor="middle">deadline</text>
+</svg>

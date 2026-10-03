@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" font-family="system-ui, sans-serif">
+<style>
+
+.grow-monitoring-alerts-datadog-splunk-t{font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.grow-monitoring-alerts-datadog-splunk-f1{transform-box:fill-box;transform-origin:0 50%;animation:grow-monitoring-alerts-datadog-splunk-g1 6s ease-in-out infinite;animation-delay:-3s}
+.grow-monitoring-alerts-datadog-splunk-f2{transform-box:fill-box;transform-origin:0 50%;animation:grow-monitoring-alerts-datadog-splunk-g2 6s ease-in-out infinite;animation-delay:-3s}
+.grow-monitoring-alerts-datadog-splunk-b{transform-origin:262px 60px;animation:grow-monitoring-alerts-datadog-splunk-ring 6s ease-in-out infinite;animation-delay:-3s}
+.grow-monitoring-alerts-datadog-splunk-w{animation:grow-monitoring-alerts-datadog-splunk-wave 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes grow-monitoring-alerts-datadog-splunk-g1{0%,100%{transform:scaleX(1)}50%{transform:scaleX(1.15)}}
+@keyframes grow-monitoring-alerts-datadog-splunk-g2{0%{transform:scaleX(1)}60%,100%{transform:scaleX(3.6)}}
+@keyframes grow-monitoring-alerts-datadog-splunk-ring{0%,40%{transform:rotate(0)}48%{transform:rotate(14deg)}56%{transform:rotate(-14deg)}64%{transform:rotate(10deg)}72%,100%{transform:rotate(0)}}
+@keyframes grow-monitoring-alerts-datadog-splunk-wave{0%,40%{opacity:0}55%,90%{opacity:1}100%{opacity:0}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+
+<text x="16" y="24" class="grow-monitoring-alerts-datadog-splunk-t">Release A</text>
+<rect x="16" y="32" width="160" height="22" rx="4" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-line,#cfdfdc)" stroke-width="1.5"/>
+<rect x="16" y="32" width="24" height="22" rx="4" fill="var(--scene-bad,#b3261e)" class="grow-monitoring-alerts-datadog-splunk-f1"/>
+<text x="16" y="84" class="grow-monitoring-alerts-datadog-splunk-t">Release B</text>
+<rect x="16" y="92" width="80" height="22" rx="4" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-line,#cfdfdc)" stroke-width="1.5"/>
+<rect x="16" y="92" width="20" height="22" rx="4" fill="var(--scene-bad,#b3261e)" class="grow-monitoring-alerts-datadog-splunk-f2"/>
+<text x="16" y="150" class="grow-monitoring-alerts-datadog-splunk-t">failed ÷ requests</text>
+<path d="M200 24V120" stroke="var(--scene-line,#cfdfdc)" stroke-width="2" stroke-dasharray="4 4"/>
+<g class="grow-monitoring-alerts-datadog-splunk-b"><path d="M262 28c-18 0-24 14-24 30v14l-8 12h64l-8-12V58c0-16-6-30-24-30z" fill="var(--scene-warn,#a15c00)"/><circle cx="262" cy="100" r="6" fill="var(--scene-warn,#a15c00)"/></g>
+<g class="grow-monitoring-alerts-datadog-splunk-w" fill="none" stroke="var(--scene-warn,#a15c00)" stroke-width="3" stroke-linecap="round"><path d="M222 50q-6 10 0 20M302 50q6 10 0 20"/></g>
+<text x="262" y="150" text-anchor="middle" class="grow-monitoring-alerts-datadog-splunk-t">Monitor pages</text>
+</svg>

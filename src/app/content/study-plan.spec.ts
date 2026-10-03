@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { SearchDocument } from './content.models';
-import { buildStudyPlan, STUDY_PLAN_TOPICS, studyPlanOfferings } from './study-plan';
+import {
+  buildStudyPlan,
+  STUDY_PLAN_EXCLUDED_LOOK_AHEAD_COURSE_IDS,
+  STUDY_PLAN_TOPICS,
+  studyPlanOfferings,
+} from './study-plan';
 
 function document(
   id: string,
@@ -223,6 +228,28 @@ describe('bounded prerequisite and retrieval scheduling', () => {
       'pattern-foundation',
     ]);
     expect(plan.blockedItems).toEqual([]);
+  });
+  it('does not offer the new Look Ahead design ladder or AI Collaborators as plan topics yet', () => {
+    expect([...STUDY_PLAN_EXCLUDED_LOOK_AHEAD_COURSE_IDS]).toEqual([
+      'design-fundamentals',
+      'design-patterns',
+      'design-systems',
+      'design-rounds',
+      'ai-collaborators',
+      'system-design',
+      'distributed-systems',
+      'scalability-performance',
+    ]);
+    const docs = [
+      document('sd-1', 'look-ahead', 'system-design'),
+      ...[...STUDY_PLAN_EXCLUDED_LOOK_AHEAD_COURSE_IDS].map((courseId) =>
+        document(`${courseId}-1`, 'look-ahead', courseId),
+      ),
+      document('learn-design', 'learn', 'design-fundamentals'),
+    ];
+    expect(studyPlanOfferings(docs).map((topic) => topic.id)).toEqual([
+      'learn:design-fundamentals',
+    ]);
   });
   it('reports missing dependencies and cycles without enrolling unselected content', () => {
     const a = { ...document('a', 'learn', 'core-java'), studyPrerequisiteIds: ['b'] };

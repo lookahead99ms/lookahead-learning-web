@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Growth curves: flat and gentle ones stay under the time budget, quadratic crosses it"><style>.learn-big-o-analysis-growth-rates-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-big-o-analysis-growth-rates-m{font-family:system-ui,sans-serif;font-size:16px;font-weight:600;fill:var(--scene-muted,#536970)}
+.learn-big-o-analysis-growth-rates-dot{animation:learn-big-o-analysis-growth-rates-run 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes learn-big-o-analysis-growth-rates-run{0%{transform:translateX(0)}100%{transform:translateX(0)}}
+.learn-big-o-analysis-growth-rates-d1{offset-path:path("M40 126 Q120 114 280 90");animation:learn-big-o-analysis-growth-rates-mv 6s ease-in-out infinite;animation-delay:-3s}
+.learn-big-o-analysis-growth-rates-d2{offset-path:path("M40 126 Q150 118 215 30");animation:learn-big-o-analysis-growth-rates-mv 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes learn-big-o-analysis-growth-rates-mv{0%,100%{offset-distance:5%}50%{offset-distance:95%}}
+.learn-big-o-analysis-growth-rates-bud{animation:learn-big-o-analysis-growth-rates-dash 3s linear infinite;animation-delay:-1s}
+@keyframes learn-big-o-analysis-growth-rates-dash{to{stroke-dashoffset:-16}}</style><rect width="320" height="180" fill="var(--scene-card,#fff)"/><path d="M34 24v108h254" fill="none" stroke="var(--scene-muted,#536970)" stroke-width="2"/>
+<path d="M40 126h240" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="3.5" stroke-linecap="round"/>
+<path d="M40 126 Q120 114 280 90" fill="none" stroke="var(--scene-ahead,#2f6fb3)" stroke-width="3.5" stroke-linecap="round"/>
+<path d="M40 126 Q150 118 215 30" fill="none" stroke="var(--scene-bad,#b3261e)" stroke-width="3.5" stroke-linecap="round"/>
+<path class="learn-big-o-analysis-growth-rates-bud" d="M34 62h254" stroke="var(--scene-warn,#a15c00)" stroke-width="2.5" stroke-dasharray="8 8" fill="none"/>
+<circle class="learn-big-o-analysis-growth-rates-d1" r="6" fill="var(--scene-ahead,#2f6fb3)"/>
+<circle class="learn-big-o-analysis-growth-rates-d2" r="6" fill="var(--scene-bad,#b3261e)"/>
+<text class="learn-big-o-analysis-growth-rates-t" x="40" y="54" style="fill:var(--scene-warn,#a15c00)">time budget</text>
+<text class="learn-big-o-analysis-growth-rates-t" x="222" y="46" style="fill:var(--scene-bad,#b3261e)">n²</text>
+<text class="learn-big-o-analysis-growth-rates-t" x="190" y="160" style="fill:var(--scene-ink,#102a33)">input size</text>
+</svg>

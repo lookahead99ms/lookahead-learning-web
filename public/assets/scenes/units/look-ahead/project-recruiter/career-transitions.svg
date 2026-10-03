@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A path climbing from the current role over evidence stones to a target role flag">
+<style>
+
+.look-ahead-project-recruiter-career-transitions-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.look-ahead-project-recruiter-career-transitions-l{font-family:system-ui,sans-serif;font-size:16px;font-weight:600;fill:var(--scene-text,#28434a)}
+.look-ahead-project-recruiter-career-transitions-w{animation:look-ahead-project-recruiter-career-transitions-wk 6s ease-in-out infinite;animation-delay:-3s}
+.look-ahead-project-recruiter-career-transitions-st{animation:look-ahead-project-recruiter-career-transitions-sp 6s ease-in-out infinite}
+.look-ahead-project-recruiter-career-transitions-a1{animation-delay:-4s}.look-ahead-project-recruiter-career-transitions-a2{animation-delay:-3.3s}.look-ahead-project-recruiter-career-transitions-a3{animation-delay:-2.6s}
+.look-ahead-project-recruiter-career-transitions-fl{animation:look-ahead-project-recruiter-career-transitions-fw 2s ease-in-out infinite;transform-box:fill-box;transform-origin:left}
+@keyframes look-ahead-project-recruiter-career-transitions-wk{0%{transform:translate(0,0)}100%{transform:translate(0,0)}0%,8%{transform:translate(0,0)}30%{transform:translate(56px,-14px)}55%{transform:translate(112px,-28px)}80%,92%{transform:translate(168px,-42px)}100%{transform:translate(0,0)}}
+@keyframes look-ahead-project-recruiter-career-transitions-sp{0%,10%{fill:var(--scene-line,#cfdfdc)}30%,90%{fill:var(--scene-good,#1f7a4d)}100%{fill:var(--scene-line,#cfdfdc)}}
+@keyframes look-ahead-project-recruiter-career-transitions-fw{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.8)}}
+
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+
+<text class="look-ahead-project-recruiter-career-transitions-t" x="160" y="24" text-anchor="middle">Moving toward</text>
+<rect x="20" y="124" width="60" height="26" rx="6" fill="var(--scene-line,#cfdfdc)"/>
+<rect x="236" y="62" width="64" height="26" rx="6" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2"/>
+<path d="M80 130Q150 118 236 76" fill="none" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-dasharray="6 6"/>
+<g><ellipse class="look-ahead-project-recruiter-career-transitions-st look-ahead-project-recruiter-career-transitions-a1" cx="106" cy="122" rx="14" ry="7"/><ellipse class="look-ahead-project-recruiter-career-transitions-st look-ahead-project-recruiter-career-transitions-a2" cx="150" cy="106" rx="14" ry="7"/><ellipse class="look-ahead-project-recruiter-career-transitions-st look-ahead-project-recruiter-career-transitions-a3" cx="194" cy="86" rx="14" ry="7"/></g>
+<g class="look-ahead-project-recruiter-career-transitions-w"><circle cx="50" cy="100" r="8" fill="var(--scene-grow,#b8457a)"/><path d="M38 124a12 18 0 0 1 24 0z" fill="var(--scene-grow,#b8457a)"/></g>
+<path d="M268 62V34" stroke="var(--scene-ink,#102a33)" stroke-width="3"/><path class="look-ahead-project-recruiter-career-transitions-fl" d="M268 34h26l-7 8 7 8h-26z" fill="var(--scene-accent,#006c73)"/>
+<text class="look-ahead-project-recruiter-career-transitions-l" x="50" y="170" text-anchor="middle">Now</text>
+<text class="look-ahead-project-recruiter-career-transitions-l" x="268" y="108" text-anchor="middle">Target role</text>
+</svg>

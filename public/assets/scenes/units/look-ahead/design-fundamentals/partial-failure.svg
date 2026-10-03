@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Selin's flight search fills in airline results while one slow partner hangs; at the 1.5 second budget the page shows what it has, and the breaker for the slow partner opens">
+<style>
+.partial-failure-t{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-ink,#102a33)}
+.partial-failure-mu{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-muted,#536970)}
+.partial-failure-g{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-good,#1f7a4d)}
+.partial-failure-w{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-warn,#a15c00)}
+.partial-failure-b{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-bad,#b3261e)}
+.partial-failure-a{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-accent,#006c73)}
+.partial-failure-mono{font-family:ui-monospace,Menlo,monospace}
+.partial-failure-card{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.partial-failure-soft{fill:var(--scene-accent-soft,#dcefed)}
+.partial-failure-acc{fill:var(--scene-accent,#006c73)}
+.partial-failure-gd{fill:var(--scene-good,#1f7a4d)}
+.partial-failure-wn{fill:var(--scene-warn,#a15c00)}
+.partial-failure-bd{fill:var(--scene-bad,#b3261e)}
+.partial-failure-ink{fill:var(--scene-ink,#102a33)}
+.partial-failure-mf{fill:var(--scene-muted,#536970)}
+.partial-failure-lf{fill:var(--scene-line,#cfdfdc)}
+.partial-failure-cf{fill:var(--scene-card,#fff)}
+.partial-failure-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.partial-failure-sg{fill:none;stroke:var(--scene-good,#1f7a4d);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.partial-failure-sw{fill:none;stroke:var(--scene-warn,#a15c00);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.partial-failure-sb{fill:none;stroke:var(--scene-bad,#b3261e);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.partial-failure-sm{fill:none;stroke:var(--scene-muted,#536970);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.partial-failure-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.partial-failure-si{fill:none;stroke:var(--scene-ink,#102a33);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.partial-failure-ring{animation:partial-failure-ring 8s -3.2s infinite;}
+@keyframes partial-failure-ring{0%,5%{stroke-dashoffset:138}50%,100%{stroke-dashoffset:0}}
+.partial-failure-spin{animation:partial-failure-spin 8s -3.2s infinite;}
+@keyframes partial-failure-spin{0%,50%{opacity:1}52%,100%{opacity:0}}
+.partial-failure-sp{animation:partial-failure-sp .9s linear infinite;transform-origin:114px 89px}
+@keyframes partial-failure-sp{to{transform:rotate(360deg)}}
+.partial-failure-skip{animation:partial-failure-skip 8s -3.2s infinite;}
+@keyframes partial-failure-skip{0%,51%{opacity:0}52%,96%{opacity:1}97%,100%{opacity:0}}
+.partial-failure-bar{animation:partial-failure-bar 8s -3.2s infinite;}
+@keyframes partial-failure-bar{0%,50%{opacity:1}51%,100%{opacity:0}}
+.partial-failure-open{animation:partial-failure-open 8s -3.2s infinite;}
+@keyframes partial-failure-open{0%,55%{opacity:0}56%,96%{opacity:1}97%,100%{opacity:0}}
+.partial-failure-lever{animation:partial-failure-lever 8s -3.2s infinite;transform-origin:160px 92px}
+@keyframes partial-failure-lever{0%,52%{transform:rotate(0)}58%,96%{transform:rotate(-32deg)}100%{transform:rotate(0)}}
+</style>
+<rect class="partial-failure-card" x="6" y="8" width="132" height="98" rx="10"/>
+<rect class="partial-failure-soft" x="14" y="18" width="116" height="22" rx="6"/>
+<circle class="partial-failure-acc" cx="26" cy="29" r="6"/>
+<rect class="partial-failure-lf" x="40" y="25" width="56" height="8" rx="2"/><path class="partial-failure-sg" d="M106 29 l5 5 l10 -11"/>
+<rect class="partial-failure-soft" x="14" y="48" width="116" height="22" rx="6"/>
+<circle class="partial-failure-acc" cx="26" cy="59" r="6"/>
+<rect class="partial-failure-lf" x="40" y="55" width="56" height="8" rx="2"/><path class="partial-failure-sg" d="M106 59 l5 5 l10 -11"/>
+<rect class="partial-failure-soft" x="14" y="78" width="116" height="22" rx="6"/>
+<circle class="partial-failure-mf" cx="26" cy="89" r="6"/>
+<rect class="partial-failure-lf partial-failure-bar" x="40" y="85" width="56" height="8" rx="2"/>
+<g class="partial-failure-spin"><circle class="partial-failure-sp partial-failure-sw" cx="114" cy="89" r="7" style="stroke-dasharray:14 30"/></g>
+<g class="partial-failure-skip"><text class="partial-failure-w" x="72" y="94" font-size="14" font-weight="700" text-anchor="middle">skipped</text>
+</g>
+<circle class="partial-failure-sl" cx="190" cy="36" r="22" style="stroke-width:6"/>
+<circle class="partial-failure-sw partial-failure-ring" cx="190" cy="36" r="22" style="stroke-width:6;stroke-dasharray:138.2;transform:rotate(-90deg);transform-origin:190px 36px;stroke-linecap:butt"/>
+<text class="partial-failure-t" x="190" y="41" font-size="14" font-weight="700" text-anchor="middle">1.5 s</text>
+<circle class="partial-failure-ink" cx="160" cy="92" r="4"/><circle class="partial-failure-ink" cx="222" cy="92" r="4"/>
+<path class="partial-failure-si partial-failure-lever" style="stroke-width:3.5" d="M160 92 H220"/>
+<g class="partial-failure-open"><text class="partial-failure-b" x="186" y="124" font-size="14" font-weight="700" text-anchor="middle">Breaker open</text>
+</g>
+</svg>

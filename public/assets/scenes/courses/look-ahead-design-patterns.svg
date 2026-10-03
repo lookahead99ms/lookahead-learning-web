@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A sudden burst of requests fills a buffer, which drains at a steady rate to the workers">
+<style>
+.look-ahead-design-patterns-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.look-ahead-design-patterns-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 2; }
+.look-ahead-design-patterns-soft { fill: var(--scene-accent-soft, #dcefed); }
+.look-ahead-design-patterns-softs { fill: var(--scene-accent-soft, #dcefed); stroke: var(--scene-accent, #006c73); stroke-width: 2; }
+.look-ahead-design-patterns-acc { fill: var(--scene-accent, #006c73); }
+.look-ahead-design-patterns-ahead { fill: var(--scene-ahead, #2f6fb3); }
+.look-ahead-design-patterns-good { fill: var(--scene-good, #1f7a4d); }
+.look-ahead-design-patterns-warn { fill: var(--scene-warn, #a15c00); }
+.look-ahead-design-patterns-bad { fill: var(--scene-bad, #b3261e); }
+.look-ahead-design-patterns-mut { fill: var(--scene-muted, #536970); }
+.look-ahead-design-patterns-card { fill: var(--scene-card, #ffffff); }
+.look-ahead-design-patterns-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 2; }
+.look-ahead-design-patterns-dash { fill: none; stroke: var(--scene-link, #245a88); stroke-width: 2; stroke-dasharray: 5 4; }
+.look-ahead-design-patterns-check { fill: none; stroke: var(--scene-good, #1f7a4d); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+
+.look-ahead-design-patterns-d { animation: look-ahead-design-patterns-kf-burst 6s linear infinite; }
+.look-ahead-design-patterns-lvl { transform-box: fill-box; transform-origin: 50% 100%; animation: look-ahead-design-patterns-kf-lvl 6s ease-in-out infinite; animation-delay: -1.2s; }
+.look-ahead-design-patterns-o { animation: look-ahead-design-patterns-kf-out 1.2s linear infinite; }
+@keyframes look-ahead-design-patterns-kf-burst { 0% { transform: translate(0,0); opacity: 0; } 4% { opacity: 1; } 22% { transform: translate(var(--dx),var(--dy)); opacity: 1; } 24%, 100% { transform: translate(var(--dx),var(--dy)); opacity: 0; } }
+@keyframes look-ahead-design-patterns-kf-lvl { 0%, 8% { transform: scaleY(.15); } 30% { transform: scaleY(.9); } 92%, 100% { transform: scaleY(.15); } }
+@keyframes look-ahead-design-patterns-kf-out { from { transform: translate(0,0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } to { transform: translate(60px,0); opacity: 0; } }
+</style>
+<path d="M18 74 H52 L60 70 L68 24 L76 20 L84 66 L92 72 H118" fill="none" stroke="var(--scene-bad, #b3261e)" stroke-width="3" stroke-linejoin="round"/>
+<text class="look-ahead-design-patterns-t" x="88" y="34" font-size="16">burst</text>
+<circle class="look-ahead-design-patterns-ahead look-ahead-design-patterns-d" cx="20" cy="98" r="6" style="--dx:130px;--dy:-1px;animation-delay:-0.55s"/>
+<circle class="look-ahead-design-patterns-ahead look-ahead-design-patterns-d" cx="28" cy="116" r="6" style="--dx:122px;--dy:-18px;animation-delay:-0.50s"/>
+<circle class="look-ahead-design-patterns-ahead look-ahead-design-patterns-d" cx="18" cy="134" r="6" style="--dx:132px;--dy:-39px;animation-delay:-0.45s"/>
+<circle class="look-ahead-design-patterns-ahead look-ahead-design-patterns-d" cx="34" cy="150" r="6" style="--dx:116px;--dy:-45px;animation-delay:-0.40s"/>
+<circle class="look-ahead-design-patterns-ahead look-ahead-design-patterns-d" cx="44" cy="104" r="6" style="--dx:106px;--dy:-4px;animation-delay:-0.35s"/>
+<circle class="look-ahead-design-patterns-ahead look-ahead-design-patterns-d" cx="40" cy="128" r="6" style="--dx:110px;--dy:-27px;animation-delay:-0.30s"/>
+<circle class="look-ahead-design-patterns-ahead look-ahead-design-patterns-d" cx="54" cy="142" r="6" style="--dx:96px;--dy:-46px;animation-delay:-0.25s"/>
+<circle class="look-ahead-design-patterns-ahead look-ahead-design-patterns-d" cx="24" cy="160" r="6" style="--dx:126px;--dy:-65px;animation-delay:-0.20s"/>
+<circle class="look-ahead-design-patterns-ahead look-ahead-design-patterns-d" cx="58" cy="118" r="6" style="--dx:92px;--dy:-23px;animation-delay:-0.15s"/>
+<path class="look-ahead-design-patterns-box" d="M138 88 H196 V160 a6 6 0 0 1 -6 6 H144 a6 6 0 0 1 -6 -6 Z"/>
+<rect class="look-ahead-design-patterns-acc look-ahead-design-patterns-lvl" x="141" y="92" width="52" height="71" rx="4" opacity=".55"/>
+<path d="M146 108 H188" stroke="var(--scene-card, #ffffff)" stroke-width="2" opacity=".8"/>
+<path d="M146 124 H188" stroke="var(--scene-card, #ffffff)" stroke-width="2" opacity=".8"/>
+<path d="M146 140 H188" stroke="var(--scene-card, #ffffff)" stroke-width="2" opacity=".8"/>
+<path class="look-ahead-design-patterns-wire" d="M196 128 H262"/>
+<circle class="look-ahead-design-patterns-good look-ahead-design-patterns-o" cx="200" cy="128" r="6" style="animation-delay:0.0s"/>
+<circle class="look-ahead-design-patterns-good look-ahead-design-patterns-o" cx="200" cy="128" r="6" style="animation-delay:-0.4s"/>
+<circle class="look-ahead-design-patterns-good look-ahead-design-patterns-o" cx="200" cy="128" r="6" style="animation-delay:-0.8s"/>
+<rect class="look-ahead-design-patterns-box" x="262" y="104" width="44" height="16" rx="3"/><circle class="look-ahead-design-patterns-good" cx="272" cy="112" r="3"/>
+<rect class="look-ahead-design-patterns-box" x="262" y="124" width="44" height="16" rx="3"/><circle class="look-ahead-design-patterns-good" cx="272" cy="132" r="3"/>
+<rect class="look-ahead-design-patterns-box" x="262" y="144" width="44" height="16" rx="3"/><circle class="look-ahead-design-patterns-good" cx="272" cy="152" r="3"/>
+<text class="look-ahead-design-patterns-t" x="306" y="88" font-size="16" text-anchor="end">steady</text>
+</svg>

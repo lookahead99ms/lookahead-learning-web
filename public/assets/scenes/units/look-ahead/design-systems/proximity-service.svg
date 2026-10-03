@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" class="proximity-service-root" role="img" aria-label="A search ring grows around a person and the cafes inside it light up, including one 55 meters away in the next grid cell, while places outside stay gray.">
+<style>
+.proximity-service-root text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.proximity-service-t{fill:var(--scene-ink,#102a33)}
+.proximity-service-tx{fill:var(--scene-text,#28434a)}
+.proximity-service-mut{fill:var(--scene-muted,#536970)}
+.proximity-service-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.proximity-service-soft{fill:var(--scene-accent-soft,#dcefed)}
+.proximity-service-acc{fill:var(--scene-accent,#006c73)}
+.proximity-service-ln{fill:var(--scene-line,#cfdfdc)}
+.proximity-service-cardf{fill:var(--scene-card,#fff)}
+.proximity-service-good{fill:var(--scene-good,#1f7a4d)}
+.proximity-service-warn{fill:var(--scene-warn,#a15c00)}
+.proximity-service-bad{fill:var(--scene-bad,#b3261e)}
+.proximity-service-link{fill:var(--scene-link,#245a88)}
+.proximity-service-out{fill:var(--scene-bubble-out,#d4ecea)}
+.proximity-service-sk{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.proximity-service-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.proximity-service-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:1.5;stroke-dasharray:3 3}
+.proximity-service-a{animation-duration:7s;animation-iteration-count:infinite;animation-delay:-3s}
+.proximity-service-ring{animation-name:proximity-service-ring;transform-box:fill-box;transform-origin:center}@keyframes proximity-service-ring{0%,6%{transform:scale(.05);opacity:0}10%{opacity:1}36%,100%{transform:scale(1);opacity:1}}
+.proximity-service-p1{animation-name:proximity-service-p1}@keyframes proximity-service-p1{0%,20%{fill:var(--scene-muted,#536970)}24%,100%{fill:var(--scene-good,#1f7a4d)}}
+.proximity-service-p2{animation-name:proximity-service-p2}@keyframes proximity-service-p2{0%,28%{fill:var(--scene-muted,#536970)}32%,100%{fill:var(--scene-good,#1f7a4d)}}
+.proximity-service-p3{animation-name:proximity-service-p3}@keyframes proximity-service-p3{0%,33%{fill:var(--scene-muted,#536970)}37%,100%{fill:var(--scene-good,#1f7a4d)}}
+.proximity-service-edge{animation-name:proximity-service-edge}@keyframes proximity-service-edge{0%,33%{opacity:0}38%,100%{opacity:1}}
+.proximity-service-res{animation-name:proximity-service-res}@keyframes proximity-service-res{0%,40%{opacity:0;transform:translateY(6px)}46%,100%{opacity:1;transform:translateY(0)}}
+@media (prefers-reduced-motion: reduce){.proximity-service-root *{animation-play-state:paused!important}}
+</style>
+<path d="M0 34 H240 M0 99 H240 M40 0 V135 M196 0 V135" stroke="var(--scene-line,#cfdfdc)" stroke-width="8" fill="none" opacity=".7"/>
+<path d="M120 0 V135 M0 68 H240 M60 0 V135 M180 0 V135" stroke="var(--scene-muted,#536970)" stroke-width="1" stroke-dasharray="3 4" fill="none" opacity=".6"/>
+<circle class="proximity-service-a proximity-service-ring" cx="108" cy="72" r="44" fill="var(--scene-accent-soft,#dcefed)" fill-opacity=".7" stroke="var(--scene-accent,#006c73)" stroke-width="1.5"/>
+<path class="proximity-service-a proximity-service-p1" transform="translate(88 62)" d="M0 0 C-6 -8 -8 -12 -8 -15 A8 8 0 0 1 8 -15 C8 -12 6 -8 0 0Z" stroke="var(--scene-card,#fff)" stroke-width="1"/><path class="proximity-service-a proximity-service-p2" transform="translate(98 104)" d="M0 0 C-6 -8 -8 -12 -8 -15 A8 8 0 0 1 8 -15 C8 -12 6 -8 0 0Z" stroke="var(--scene-card,#fff)" stroke-width="1"/><path class="proximity-service-a proximity-service-p3" transform="translate(138 84)" d="M0 0 C-6 -8 -8 -12 -8 -15 A8 8 0 0 1 8 -15 C8 -12 6 -8 0 0Z" stroke="var(--scene-card,#fff)" stroke-width="1"/><path class="proximity-service-soft" transform="translate(213 26)" d="M0 0 C-6 -8 -8 -12 -8 -15 A8 8 0 0 1 8 -15 C8 -12 6 -8 0 0Z" stroke="var(--scene-card,#fff)" stroke-width="1"/><path class="proximity-service-soft" transform="translate(20 24)" d="M0 0 C-6 -8 -8 -12 -8 -15 A8 8 0 0 1 8 -15 C8 -12 6 -8 0 0Z" stroke="var(--scene-card,#fff)" stroke-width="1"/><path class="proximity-service-soft" transform="translate(220 92)" d="M0 0 C-6 -8 -8 -12 -8 -15 A8 8 0 0 1 8 -15 C8 -12 6 -8 0 0Z" stroke="var(--scene-card,#fff)" stroke-width="1"/>
+<circle cx="108" cy="72" r="7" class="proximity-service-link" stroke="var(--scene-card,#fff)" stroke-width="2"/>
+<g class="proximity-service-a proximity-service-edge"><path d="M142 86 L156 98" stroke="var(--scene-ink,#102a33)" stroke-width="1.2"/><text x="148" y="115" font-size="14" font-weight="700" class="proximity-service-t">55 m</text></g>
+<g class="proximity-service-a proximity-service-res"><rect x="6" y="100" width="62" height="28" rx="9" class="proximity-service-box"/>
+<path d="M16 108 h16 v8 q0 6 -8 6 q-8 0 -8 -6z M32 110 q5 0 5 4 q0 4 -5 4" class="proximity-service-sk" style="stroke:var(--scene-text,#28434a);stroke-width:1.8"/>
+<text x="56" y="120" font-size="16" font-weight="700" text-anchor="middle" class="proximity-service-t">3</text></g>
+</svg>

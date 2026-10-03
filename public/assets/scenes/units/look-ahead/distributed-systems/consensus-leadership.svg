@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A new leader is elected for term 5; the old leader's stale token is rejected at the deploy gate">
+<title>A new leader is elected for term 5; the old leader's stale token is rejected at the deploy gate</title>
+<style>
+.look-ahead-distributed-systems-consensus-leadership-t{font-family:system-ui,sans-serif;font-weight:700;font-size:16px;fill:var(--scene-ink,#102a33)}
+
+.look-ahead-distributed-systems-consensus-leadership-red{animation:look-ahead-distributed-systems-consensus-leadership-rd 6s ease-in-out infinite;animation-delay:-2.4s}
+@keyframes look-ahead-distributed-systems-consensus-leadership-rd{0%{transform:translateX(0);opacity:1}35%,70%{transform:translateX(154px);opacity:1}85%,100%{transform:translateX(154px);opacity:0}}
+.look-ahead-distributed-systems-consensus-leadership-grn{animation:look-ahead-distributed-systems-consensus-leadership-gn 6s ease-in-out infinite;animation-delay:-2.4s}
+@keyframes look-ahead-distributed-systems-consensus-leadership-gn{0%{transform:translateX(0);opacity:1}40%,50%{transform:translateX(88px);opacity:1}55%,100%{transform:translateX(88px);opacity:0}}
+.look-ahead-distributed-systems-consensus-leadership-xx{animation:look-ahead-distributed-systems-consensus-leadership-x1 6s ease-in-out infinite;animation-delay:-2.4s}
+@keyframes look-ahead-distributed-systems-consensus-leadership-x1{0%,32%{opacity:0}38%,75%{opacity:1}88%,100%{opacity:0}}
+.look-ahead-distributed-systems-consensus-leadership-ck{animation:look-ahead-distributed-systems-consensus-leadership-c1 6s ease-in-out infinite;animation-delay:-2.4s}
+@keyframes look-ahead-distributed-systems-consensus-leadership-c1{0%,40%{opacity:0}46%,80%{opacity:1}92%,100%{opacity:0}}
+.look-ahead-distributed-systems-consensus-leadership-hb{transform-origin:110px 60px;animation:look-ahead-distributed-systems-consensus-leadership-h 2s ease-in-out infinite;animation-delay:-.5s}
+@keyframes look-ahead-distributed-systems-consensus-leadership-h{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+</style>
+
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<text class="look-ahead-distributed-systems-consensus-leadership-t" x="110" y="17" text-anchor="middle">Term 5</text>
+<path d="M94 42l2-14 8 6 6-8 6 8 8-6 2 14z" fill="var(--scene-warn,#a15c00)"/>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="3"><line x1="70" y1="60" x2="150" y2="60"/><line x1="150" y1="60" x2="190" y2="60"/></g>
+<circle cx="30" cy="60" r="13" fill="var(--scene-card,#fff)" stroke="var(--scene-muted,#536970)" stroke-width="3" stroke-dasharray="4 3"/>
+<circle cx="70" cy="60" r="13" fill="var(--scene-ahead,#2f6fb3)"/><circle cx="150" cy="60" r="13" fill="var(--scene-ahead,#2f6fb3)"/><circle cx="190" cy="60" r="13" fill="var(--scene-ahead,#2f6fb3)"/>
+<circle class="look-ahead-distributed-systems-consensus-leadership-hb" cx="110" cy="60" r="13" fill="var(--scene-good,#1f7a4d)"/>
+<line x1="30" y1="73" x2="30" y2="114" stroke="var(--scene-muted,#536970)" stroke-width="3" stroke-dasharray="4 4"/>
+<line x1="110" y1="73" x2="110" y2="142" stroke="var(--scene-good,#1f7a4d)" stroke-width="3"/>
+<line x1="30" y1="114" x2="222" y2="114" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-dasharray="5 4"/>
+<line x1="110" y1="142" x2="226" y2="142" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-dasharray="5 4"/>
+<text class="look-ahead-distributed-systems-consensus-leadership-t" x="170" y="102" text-anchor="middle" style="fill:var(--scene-bad,#b3261e)">Stale token</text>
+<rect x="228" y="96" width="80" height="62" rx="9" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/>
+<text class="look-ahead-distributed-systems-consensus-leadership-t" x="268" y="132" text-anchor="middle">Deploy</text>
+<rect x="222" y="100" width="6" height="26" rx="2" fill="var(--scene-bad,#b3261e)"/>
+<circle class="look-ahead-distributed-systems-consensus-leadership-red" cx="34" cy="114" r="9" fill="var(--scene-bad,#b3261e)"/>
+<circle class="look-ahead-distributed-systems-consensus-leadership-grn" cx="116" cy="142" r="9" fill="var(--scene-good,#1f7a4d)"/>
+<g class="look-ahead-distributed-systems-consensus-leadership-xx"><path d="M202 108l10 10M212 108l-10 10" stroke="var(--scene-bad,#b3261e)" stroke-width="4" stroke-linecap="round"/></g>
+<g class="look-ahead-distributed-systems-consensus-leadership-ck"><path d="M260 146l6 6 11-12" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" transform="translate(0,0)"/></g>
+</svg>

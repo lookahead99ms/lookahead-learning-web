@@ -14,7 +14,9 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink, Scroll } from '@angular/router';
+import { CardScene } from '../card-scene/card-scene';
 import { PageSidebarContextDirective } from '../page-sidebars/page-sidebar-context';
+import { withoutHiddenCourses } from '../../content/hidden-courses';
 import { CatalogCourseGroup } from '../../content/catalog-course-groups';
 import {
   CatalogOverviewItem,
@@ -81,9 +83,36 @@ export function catalogQuestionCountDisplay(questionCount: number): CatalogQuest
   };
 }
 
+/** Section id for catalog courses that no authored group lists. */
+export const UNGROUPED_SECTION_ID = 'more';
+
+const MONOGRAM_SKIP = new Set(['a', 'an', 'and', 'the', 'of', 'for', 'to', 'with', 'in', 'on']);
+
+/**
+ * Short initials shown when a catalog scene is missing: "Core Java" -> "CJ",
+ * "SQL" -> "SQL", "Linux" -> "L". Never more than three characters.
+ */
+export function catalogMonogram(title: string): string {
+  const words = title
+    .split(/[\s/_-]+/)
+    .map((word) => word.replace(/[^\p{L}\p{N}]/gu, ''))
+    .filter(Boolean);
+  const significant = words.filter((word) => !MONOGRAM_SKIP.has(word.toLowerCase()));
+  const picked = significant.length ? significant : words;
+  if (!picked.length) return '';
+  if (picked.length === 1) {
+    const [word] = picked;
+    return /^[\p{Lu}\p{N}]{2,3}$/u.test(word) ? word : word[0].toUpperCase();
+  }
+  return picked
+    .slice(0, 2)
+    .map((word) => word[0].toUpperCase())
+    .join('');
+}
+
 @Component({
   selector: 'app-adaptive-catalog',
-  imports: [ContentRecovery, RouterLink, PageSidebarContextDirective],
+  imports: [CardScene, ContentRecovery, RouterLink, PageSidebarContextDirective],
   templateUrl: './adaptive-catalog.html',
   styleUrl: '../../pages/catalog-experience.css',
 })
@@ -104,11 +133,28 @@ export class AdaptiveCatalog implements OnInit {
   protected readonly catalog = signal<CatalogOverviewItem[] | null>(null);
   protected readonly error = signal('');
   protected readonly recovery = signal<RecoveryKind>('temporary');
+  /** Authored groups, plus a "More to explore" section for catalog courses no group lists. */
+  protected readonly sections = computed<readonly CatalogCourseGroup[]>(() => {
+    const groups = this.groups();
+    const assigned = new Set(groups.flatMap((group) => group.courseIds));
+    const rest = (this.catalog() ?? []).filter((item) => item.id && !assigned.has(item.id));
+    if (!rest.length) return groups;
+    return [
+      ...groups,
+      {
+        id: UNGROUPED_SECTION_ID,
+        title: 'More to explore',
+        description: 'More courses on this path that sit outside the groups above.',
+        courseIds: rest.flatMap((item) => (item.id ? [item.id] : [])),
+      },
+    ];
+  });
+  protected readonly monogram = catalogMonogram;
   protected readonly sidebarContext = computed(() => ({
     excluded: false,
     groupLabel: this.config().path === 'learn' ? 'Foundation Tracks'
       : this.config().path === 'grow' ? 'Production Capabilities' : 'Senior-readiness Tracks',
-    groups: this.groups().map((group) => ({
+    groups: this.sections().map((group) => ({
       id: group.id,
       sectionId: `${this.config().path}-group-${group.id}-heading`,
       title: group.title,
@@ -124,8 +170,10 @@ export class AdaptiveCatalog implements OnInit {
 
     this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const groupId = params.get('group');
-      const group = this.groups().find((candidate) => candidate.id === groupId);
-      this.pendingGroupId = group?.id ?? null;
+      const known =
+        groupId === UNGROUPED_SECTION_ID ||
+        this.groups().some((candidate) => candidate.id === groupId);
+      this.pendingGroupId = known ? groupId : null;
       this.navigationScrollPending = true;
       this.scrollRequest?.destroy();
     });
@@ -149,7 +197,7 @@ export class AdaptiveCatalog implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (catalog) => {
-          this.catalog.set(catalog);
+          this.catalog.set(withoutHiddenCourses(this.config().path, catalog));
           if (this.pendingGroupId) this.scrollToGroup(this.pendingGroupId);
         },
         error: (error) => { this.recovery.set(recoveryKind(error)); this.error.set(this.config().errorDescription); },
@@ -209,8 +257,12 @@ export class AdaptiveCatalog implements OnInit {
       : (item.description ?? '');
   }
 
-  protected cardClass(): string {
-    return `${this.config().path}-course-card`;
+  protected groupScene(group: CatalogCourseGroup): string {
+    return `/assets/scenes/groups/${this.config().path}-${group.id}.svg`;
+  }
+
+  protected courseScene(item: CatalogOverviewItem): string {
+    return `/assets/scenes/courses/${this.config().path}-${item.id}.svg`;
   }
 
   protected repeatJump(event: MouseEvent, groupId: string | undefined): void {

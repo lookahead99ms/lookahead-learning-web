@@ -1,3 +1,4 @@
+import { PATH_TAGLINES } from '../../content/path-taglines';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
@@ -37,6 +38,23 @@ describe('Header curriculum navigation', () => {
     };
     return { fixture, http, button };
   }
+  it('leaves hidden Look Ahead courses out of the menu, including More to explore', () => {
+    const { fixture, http, button } = setup();
+    expand(button('Browse Look Ahead'));
+    http.expectOne('/content/look-ahead/navigation.json').flush({
+      courses: [
+        { id: 'system-design', title: 'System Design', hasHighlights: false },
+        { id: 'distributed-systems', title: 'Distributed Systems', hasHighlights: false },
+        { id: 'scalability-performance', title: 'Scalability', hasHighlights: false },
+        { id: 'cloud-architecture', title: 'Cloud Architecture', hasHighlights: false },
+      ],
+    });
+    fixture.detectChanges();
+    const labels = [...fixture.nativeElement.querySelectorAll('.course-row a')].map((a: any) =>
+      a.textContent.trim(),
+    );
+    expect(labels).toEqual(['Cloud Architecture']);
+  });
   it('loads and caches the path directory without course disclosures or highlight requests', () => {
     const { fixture, http, button } = setup();
     expand(button('Browse Learn'));
@@ -294,6 +312,31 @@ describe('Header hover and touch behavior', () => {
     course.dispatchEvent(modified);
     expect(modified.defaultPrevented).toBe(false);
     expect(navigate).not.toHaveBeenCalled();
+    fixture.destroy();
+  });
+  it.each(['learn', 'grow', 'look-ahead'] as const)('shows the %s summary between Explore and Close as plain text', (path) => {
+    const { fixture, http } = setup();
+    expand(fixture.nativeElement.querySelector('#browse-' + path));
+    http.expectOne('/content/' + path + '/navigation.json').flush({ courses: [] });
+    fixture.detectChanges();
+    const heading = fixture.nativeElement.querySelector('.panel-heading') as HTMLElement;
+    const tagline = heading.querySelector('.panel-tagline') as HTMLElement;
+    const kids = [...heading.children];
+    expect(kids.indexOf(tagline)).toBe(1);
+    expect(kids[0].classList).toContain('panel-explore');
+    expect(kids[2].classList).toContain('panel-close');
+    const t = PATH_TAGLINES[path];
+    expect(tagline.querySelector('.panel-tagline-head')?.textContent).toBe(t.headline);
+    const ai = tagline.querySelector('.panel-tagline-ai') as HTMLElement;
+    expect(ai.textContent?.trim()).toBe('AI');
+    expect(ai.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
+    expect(ai.querySelector('svg path')?.getAttribute('d')).toBeTruthy();
+    expect(tagline.querySelector('.panel-tagline-chip')).toBeNull();
+    expect(tagline.textContent).not.toContain('✦');
+    expect(tagline.querySelector('.panel-tagline-sub')?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+      `AI ${t.ai} ${t.you}`,
+    );
+    expect(tagline.querySelector('a, button, [tabindex]')).toBeNull();
     fixture.destroy();
   });
 });

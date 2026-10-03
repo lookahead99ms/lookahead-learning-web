@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" class="multi-region-root" role="img" aria-label="An edit made by Ewa is saved in Frankfurt and Virginia; when Frankfurt goes down the edit is still safe in Virginia.">
+<style>
+.multi-region-root text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.multi-region-t{fill:var(--scene-ink,#102a33)}
+.multi-region-tx{fill:var(--scene-text,#28434a)}
+.multi-region-mut{fill:var(--scene-muted,#536970)}
+.multi-region-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.multi-region-soft{fill:var(--scene-accent-soft,#dcefed)}
+.multi-region-acc{fill:var(--scene-accent,#006c73)}
+.multi-region-ln{fill:var(--scene-line,#cfdfdc)}
+.multi-region-cardf{fill:var(--scene-card,#fff)}
+.multi-region-good{fill:var(--scene-good,#1f7a4d)}
+.multi-region-warn{fill:var(--scene-warn,#a15c00)}
+.multi-region-bad{fill:var(--scene-bad,#b3261e)}
+.multi-region-link{fill:var(--scene-link,#245a88)}
+.multi-region-out{fill:var(--scene-bubble-out,#d4ecea)}
+.multi-region-sk{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.multi-region-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.multi-region-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:1.5;stroke-dasharray:3 3}
+.multi-region-type{animation:multi-region-type 8s -3s infinite}@keyframes multi-region-type{0%,3%{opacity:0}6%,96%{opacity:1}100%{opacity:0}}
+.multi-region-d1{animation:multi-region-d1 8s -3s infinite}
+@keyframes multi-region-d1{0%,6%{transform:translate(0,0);opacity:0}7%{opacity:1}14%{transform:translate(-28px,-26px);opacity:1}15%,100%{transform:translate(-28px,-26px);opacity:0}}
+.multi-region-d2{animation:multi-region-d2 8s -3s infinite}
+@keyframes multi-region-d2{0%,14%{transform:translate(0,0);opacity:0}15%{opacity:1}22%{transform:translate(-50px,-34px)}30%{transform:translate(-110px,14px);opacity:1}31%,100%{transform:translate(-110px,14px);opacity:0}}
+.multi-region-saved{animation:multi-region-saved 8s -3s infinite}@keyframes multi-region-saved{0%,30%{opacity:0}32%,60%{opacity:1}63%,100%{opacity:0}}
+.multi-region-down{animation:multi-region-down 8s -3s infinite}@keyframes multi-region-down{0%,61%{opacity:0}63%,96%{opacity:1}100%{opacity:0}}
+.multi-region-up{animation:multi-region-up 8s -3s infinite}@keyframes multi-region-up{0%,61%{opacity:1}63%,96%{opacity:0}100%{opacity:1}}
+.multi-region-kept{animation:multi-region-kept 8s -3s infinite}@keyframes multi-region-kept{0%,66%{opacity:0}69%,96%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.multi-region-root *{animation-play-state:paused!important}}
+</style>
+<ellipse cx="52" cy="70" rx="46" ry="46" class="multi-region-soft"/>
+<ellipse cx="170" cy="66" rx="42" ry="42" class="multi-region-soft"/>
+<path d="M170 60 Q112 22 84 84" fill="none" stroke="var(--scene-line,#cfdfdc)" stroke-width="1.5" stroke-dasharray="3 4"/>
+<path d="M206 100 L170 60" fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="2.4" class="multi-region-up"/>
+<path d="M206 100 Q150 124 84 84" fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="2.4" stroke-dasharray="5 4" class="multi-region-kept"/>
+<circle cx="30" cy="62" r="6" class="multi-region-acc"/>
+<circle cx="84" cy="84" r="6" class="multi-region-acc"/>
+<circle cx="170" cy="60" r="6" class="multi-region-acc multi-region-up"/>
+<g class="multi-region-down"><circle cx="170" cy="60" r="8" class="multi-region-bad"/><path d="M166 56 l8 8 m0 -8 l-8 8" stroke="var(--scene-card,#fff)" stroke-width="2.2"/></g>
+<circle cx="212" cy="98" r="8" class="multi-region-link"/><path d="M198 124 q14 -18 28 0z" class="multi-region-link"/>
+<circle class="multi-region-d1" cx="206" cy="100" r="5" style="fill:var(--scene-warn,#a15c00)"/>
+<circle class="multi-region-d2" cx="170" cy="60" r="5" style="fill:var(--scene-warn,#a15c00)"/>
+<g class="multi-region-type"><rect x="128" y="4" width="106" height="24" rx="8" class="multi-region-box"/><text x="181" y="21" font-size="14" text-anchor="middle" class="multi-region-t">&#9998; Edit</text></g>
+<text x="116" y="62" font-size="13" font-weight="700" text-anchor="middle" class="multi-region-up multi-region-acc">30 ms</text>
+<g class="multi-region-saved"><rect x="14" y="104" width="130" height="26" rx="13" class="multi-region-soft"/><text x="79" y="122" font-size="14" font-weight="700" text-anchor="middle" class="multi-region-good">Saved &#10003; twice</text></g>
+<g class="multi-region-kept"><rect x="14" y="104" width="130" height="26" rx="13" class="multi-region-soft"/><text x="79" y="122" font-size="14" font-weight="700" text-anchor="middle" class="multi-region-bad">Region down</text></g>
+</svg>

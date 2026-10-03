@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Beatriz raises the bid on a film camera to 150.00 as the clock runs down; at the close her bid wins and Nuno's bid, arriving after the close, is refused">
+<style>
+.online-auction-t{font-family:system-ui, sans-serif;fill:var(--scene-ink,#102a33)}
+.online-auction-tx{font-family:system-ui, sans-serif;fill:var(--scene-text,#28434a)}
+.online-auction-tm{font-family:ui-monospace, Menlo, monospace;fill:var(--scene-ink,#102a33)}
+.online-auction-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.online-auction-soft{fill:var(--scene-muted,#536970)}
+.online-auction-line{fill:var(--scene-line,#cfdfdc)}
+.online-auction-acc{fill:var(--scene-accent,#006c73)}
+.online-auction-accsoft{fill:var(--scene-accent-soft,#dcefed)}
+.online-auction-good{fill:var(--scene-good,#1f7a4d)}
+.online-auction-bad{fill:var(--scene-bad,#b3261e)}
+.online-auction-warn{fill:var(--scene-warn,#a15c00)}
+.online-auction-link{fill:var(--scene-link,#245a88)}
+.online-auction-card{fill:var(--scene-card,#fff)}
+.online-auction-ink{fill:var(--scene-ink,#102a33)}
+.online-auction-a{animation-duration:6s;animation-iteration-count:infinite;animation-delay:-3.9s;animation-timing-function:ease-in-out}
+@media (prefers-reduced-motion: reduce){.online-auction-a{animation-play-state:paused!important}}
+.online-auction-p1{animation-name:online-auction-p1}
+@keyframes online-auction-p1{0%,30%{opacity:1}33%,100%{opacity:0}}
+.online-auction-p2{animation-name:online-auction-p2}
+@keyframes online-auction-p2{0%,30%{opacity:0}33%,100%{opacity:1}}
+.online-auction-bidb{animation-name:online-auction-bidb}
+@keyframes online-auction-bidb{0%,14%{opacity:0;transform:none}17%{opacity:1}30%{opacity:1;transform:translate(52px,-38px)}33%,100%{opacity:0;transform:translate(52px,-38px)}}
+.online-auction-bidn{animation-name:online-auction-bidn}
+@keyframes online-auction-bidn{0%,62%{opacity:0;transform:none}65%{opacity:1}76%{opacity:1;transform:translate(-4px,-24px)}82%{transform:translate(2px,-14px);opacity:1}88%,100%{opacity:0;transform:translate(2px,-14px)}}
+.online-auction-nx{animation-name:online-auction-nx}
+@keyframes online-auction-nx{0%,74%{opacity:0}77%,90%{opacity:1}94%,100%{opacity:0}}
+.online-auction-t3{animation-name:online-auction-t3}
+@keyframes online-auction-t3{0%,18%{opacity:1}20%,100%{opacity:0}}
+.online-auction-t2{animation-name:online-auction-t2}
+@keyframes online-auction-t2{0%,18%{opacity:0}20%,38%{opacity:1}40%,100%{opacity:0}}
+.online-auction-t1{animation-name:online-auction-t1}
+@keyframes online-auction-t1{0%,38%{opacity:0}40%,56%{opacity:1}58%,100%{opacity:0}}
+.online-auction-t0{animation-name:online-auction-t0}
+@keyframes online-auction-t0{0%,56%{opacity:0}58%,100%{opacity:1}}
+.online-auction-win{animation-name:online-auction-win}
+@keyframes online-auction-win{0%,58%{opacity:0;transform:translateY(8px)}62%,96%{opacity:1;transform:none}100%{opacity:0}}
+</style>
+
+<rect x="8" y="8" width="76" height="62" rx="10" class="online-auction-accsoft"/>
+<rect x="18" y="26" width="56" height="36" rx="5" class="online-auction-ink" opacity=".85"/><rect x="26" y="20" width="16" height="8" rx="2" class="online-auction-ink" opacity=".85"/>
+<circle cx="46" cy="44" r="11" class="online-auction-card"/><circle cx="46" cy="44" r="6" class="online-auction-soft"/>
+<text class="online-auction-tm online-auction-a online-auction-p1" x="96" y="44" font-size="22" font-weight="700">$122.50</text>
+<text class="online-auction-tm online-auction-a online-auction-p2" x="96" y="44" font-size="22" font-weight="700">$150.00</text>
+<rect x="96" y="54" width="92" height="22" rx="11" class="online-auction-box"/>
+<path d="M108 59 v6 l4 3" stroke="var(--scene-muted,#536970)" stroke-width="1.6" fill="none"/><circle cx="108" cy="65" r="6.5" fill="none" stroke="var(--scene-muted,#536970)" stroke-width="1.6"/>
+<text class="online-auction-t online-auction-a online-auction-t3" x="120" y="70" font-size="14" font-weight="700">0:03</text>
+<text class="online-auction-t online-auction-a online-auction-t2" x="120" y="70" font-size="14" font-weight="700">0:02</text>
+<text class="online-auction-a online-auction-t1" x="120" y="70" font-size="14" font-weight="700" font-family="system-ui, sans-serif" style="fill:var(--scene-warn,#a15c00)">0:01</text>
+<text class="online-auction-a online-auction-t0" x="120" y="70" font-size="14" font-weight="700" font-family="system-ui, sans-serif" style="fill:var(--scene-bad,#b3261e)">Closed</text>
+<circle cx="40" cy="108" r="14" class="online-auction-acc"/><text class="online-auction-card" x="40" y="113" font-size="14" font-weight="700" text-anchor="middle" font-family="system-ui, sans-serif">B</text>
+<circle cx="214" cy="108" r="14" class="online-auction-link"/><text class="online-auction-card" x="214" y="113" font-size="14" font-weight="700" text-anchor="middle" font-family="system-ui, sans-serif">N</text>
+<g class="online-auction-a online-auction-bidb"><circle cx="62" cy="96" r="6" class="online-auction-acc"/></g>
+<g class="online-auction-a online-auction-bidn"><circle cx="200" cy="96" r="6" class="online-auction-link"/></g>
+<g class="online-auction-a online-auction-nx"><circle cx="206" cy="66" r="8" class="online-auction-bad"/><path d="M202.5 62.5 l7 7 m0 -7 l-7 7" stroke="var(--scene-card,#fff)" stroke-width="2"/></g>
+<g class="online-auction-a online-auction-win"><rect x="64" y="96" width="112" height="26" rx="13" class="online-auction-good" opacity=".16"/><text class="online-auction-t" x="120" y="114" font-size="14" font-weight="700" text-anchor="middle" style="fill:var(--scene-good,#1f7a4d)">Beatriz wins</text></g>
+
+</svg>

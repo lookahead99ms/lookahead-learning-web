@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 150" role="img" aria-label="Wednesday gets busy, so the study plan moves the quiz to Thursday on its own">
+<style>
+.study-plan-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); }
+.study-plan-tm { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; fill: var(--scene-text, #28434a); }
+.study-plan-b { font-weight: 700; }
+.study-plan-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.study-plan-acc { fill: var(--scene-accent, #006c73); }
+.study-plan-mut { fill: var(--scene-muted, #536970); }
+.study-plan-good { fill: var(--scene-good, #1f7a4d); }
+.study-plan-bad { fill: var(--scene-bad, #b3261e); }
+.study-plan-on-acc { fill: var(--scene-card, #ffffff); }
+.study-plan-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 1.5; }
+.study-plan-dash { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.study-plan-spark { fill: var(--scene-accent, #006c73); }
+.study-plan-ai-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.study-plan-aibox { fill: var(--scene-card, #ffffff); stroke: var(--scene-accent, #006c73); stroke-width: 1.5; }
+.study-plan-you-bg { fill: var(--scene-ink, #102a33); stroke: var(--scene-ink, #102a33); stroke-width: 1.5; }
+.study-plan-you-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-card, #ffffff); font-weight: 700; }
+.study-plan-bad-t { fill: var(--scene-bad, #b3261e); }
+.study-plan-good-t { fill: var(--scene-good, #1f7a4d); }
+
+.study-plan-note { fill: var(--scene-card, #ffffff); stroke: var(--scene-accent, #006c73); stroke-width: 1.5; }
+.study-plan-note-t { font-weight: 700; }
+.study-plan-busy { animation: study-plan-kf-busy 9s infinite; }
+@keyframes study-plan-kf-busy { 0%, 8% { opacity: 0; } 12%, 100% { opacity: 1; } }
+.study-plan-move { animation: study-plan-kf-move 9s ease-in-out infinite; }
+@keyframes study-plan-kf-move { 0%, 36% { transform: translateX(0); } 48%, 100% { transform: translateX(54px); } }
+.study-plan-plan { animation: study-plan-kf-plan 9s infinite; }
+@keyframes study-plan-kf-plan { 0%, 48% { opacity: 0; } 52%, 94% { opacity: 1; } 98%, 100% { opacity: 0; } }
+
+.study-plan-busy, .study-plan-move, .study-plan-plan { animation-delay: -6s; }
+</style>
+<text class="study-plan-t study-plan-b" x="32" y="16" font-size="12" text-anchor="middle">Mon</text><text class="study-plan-t study-plan-b" x="86" y="16" font-size="12" text-anchor="middle">Tue</text><text class="study-plan-t study-plan-b" x="140" y="16" font-size="12" text-anchor="middle">Wed</text><text class="study-plan-t study-plan-b" x="194" y="16" font-size="12" text-anchor="middle">Thu</text><text class="study-plan-t study-plan-b" x="248" y="16" font-size="12" text-anchor="middle">Fri</text>
+<rect class="study-plan-box" x="8" y="22" width="48" height="80" rx="6"/><rect class="study-plan-box" x="62" y="22" width="48" height="80" rx="6"/><rect class="study-plan-box" x="116" y="22" width="48" height="80" rx="6"/><rect class="study-plan-box" x="170" y="22" width="48" height="80" rx="6"/><rect class="study-plan-box" x="224" y="22" width="48" height="80" rx="6"/>
+<rect class="study-plan-good" x="12" y="28" width="40" height="22" rx="4" opacity=".5"/><rect class="study-plan-good" x="66" y="28" width="40" height="22" rx="4" opacity=".5"/>
+<rect class="study-plan-acc" x="228" y="28" width="40" height="22" rx="4" opacity=".5"/>
+<g class="study-plan-busy"><rect class="study-plan-mut" x="120" y="56" width="40" height="40" rx="4" opacity=".3"/><text class="study-plan-t study-plan-b" x="140" y="80" font-size="12" text-anchor="middle">busy</text></g>
+<g class="study-plan-move"><rect class="study-plan-acc" x="120" y="28" width="40" height="22" rx="4"/><text class="study-plan-t study-plan-b study-plan-on-acc" x="140" y="43.5" font-size="12" text-anchor="middle">Quiz</text></g>
+<g class="study-plan-plan"><rect class="study-plan-note" x="8" y="112" width="60" height="24" rx="12"/><text class="study-plan-t study-plan-note-t" x="38" y="128.5" font-size="12" text-anchor="middle">↻ Plan</text><text class="study-plan-t" x="76" y="128.5" font-size="13">Quiz moved to Thu</text></g>
+</svg>

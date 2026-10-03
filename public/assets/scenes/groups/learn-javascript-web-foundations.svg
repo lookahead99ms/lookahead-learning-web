@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 200" role="img" aria-label="HTML gives a page its structure, CSS styles it, and JavaScript or TypeScript makes a click add a new row">
+<style>
+.learn-javascript-web-foundations-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-weight: 700; fill: var(--scene-ink, #102a33); }
+.learn-javascript-web-foundations-chip { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.learn-javascript-web-foundations-c1 { fill: none; stroke: var(--scene-warn, #a15c00); stroke-width: 3; }
+.learn-javascript-web-foundations-c2 { fill: none; stroke: var(--scene-link, #245a88); stroke-width: 3; }
+.learn-javascript-web-foundations-c3 { fill: none; stroke: var(--scene-learn, #0f8a8a); stroke-width: 3; }
+.learn-javascript-web-foundations-d1 { fill: var(--scene-warn, #a15c00); }
+.learn-javascript-web-foundations-d2 { fill: var(--scene-link, #245a88); }
+.learn-javascript-web-foundations-d3 { fill: var(--scene-learn, #0f8a8a); }
+.learn-javascript-web-foundations-wire { fill: none; stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; stroke-dasharray: 4 5; }
+.learn-javascript-web-foundations-win { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.learn-javascript-web-foundations-bar { fill: var(--scene-accent-soft, #dcefed); }
+.learn-javascript-web-foundations-dot { fill: var(--scene-muted, #536970); }
+.learn-javascript-web-foundations-wf { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.learn-javascript-web-foundations-hd { fill: var(--scene-link, #245a88); }
+.learn-javascript-web-foundations-soft { fill: var(--scene-accent-soft, #dcefed); }
+.learn-javascript-web-foundations-ln { fill: var(--scene-muted, #536970); }
+.learn-javascript-web-foundations-lnc { fill: var(--scene-card, #ffffff); }
+.learn-javascript-web-foundations-btn { fill: var(--scene-accent, #006c73); }
+.learn-javascript-web-foundations-new { fill: var(--scene-learn, #0f8a8a); }
+.learn-javascript-web-foundations-cur { fill: var(--scene-ink, #102a33); stroke: var(--scene-card, #ffffff); stroke-width: 1.5; }
+.learn-javascript-web-foundations-h1 { animation: learn-javascript-web-foundations-h1 8s steps(1) infinite; animation-delay: -3s; }
+.learn-javascript-web-foundations-h2 { animation: learn-javascript-web-foundations-h2 8s steps(1) infinite; animation-delay: -3s; }
+.learn-javascript-web-foundations-h3 { animation: learn-javascript-web-foundations-h3 8s steps(1) infinite; animation-delay: -3s; }
+.learn-javascript-web-foundations-style { animation: learn-javascript-web-foundations-style 8s ease-in-out infinite; animation-delay: -3s; }
+.learn-javascript-web-foundations-cursor { animation: learn-javascript-web-foundations-cursor 8s ease-in-out infinite; animation-delay: -3s; }
+.learn-javascript-web-foundations-row { animation: learn-javascript-web-foundations-row 8s ease-out infinite; animation-delay: -3s; }
+@keyframes learn-javascript-web-foundations-h1 { 0% { opacity: 1; } 22% { opacity: 0; } }
+@keyframes learn-javascript-web-foundations-h2 { 0% { opacity: 0; } 22% { opacity: 1; } 46% { opacity: 0; } }
+@keyframes learn-javascript-web-foundations-h3 { 0% { opacity: 0; } 46% { opacity: 1; } 96% { opacity: 0; } }
+@keyframes learn-javascript-web-foundations-style {
+  0%, 20% { opacity: 0; }
+  30%, 94% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes learn-javascript-web-foundations-cursor {
+  0%, 46% { transform: translate(60px, 30px); opacity: 0; }
+  50% { transform: translate(60px, 30px); opacity: 1; }
+  60% { transform: translate(0, 0); opacity: 1; }
+  92% { transform: translate(0, 0); opacity: 1; }
+  98%, 100% { transform: translate(0, 0); opacity: 0; }
+}
+@keyframes learn-javascript-web-foundations-row {
+  0%, 62% { transform: translateX(-16px); opacity: 0; }
+  70% { transform: translateX(0); opacity: 1; }
+  94% { transform: translateX(0); opacity: 1; }
+  100% { transform: translateX(0); opacity: 0; }
+}
+</style>
+<!-- the three layers -->
+<path class="learn-javascript-web-foundations-wire" d="M134 52 C150 52 150 100 166 100 M134 100 H166 M134 148 C150 148 150 100 166 100"/>
+<rect class="learn-javascript-web-foundations-chip" x="18" y="32" width="116" height="40" rx="10"/>
+<circle class="learn-javascript-web-foundations-d1" cx="38" cy="52" r="6"/>
+<text class="learn-javascript-web-foundations-t" x="54" y="58" font-size="16">HTML</text>
+<rect class="learn-javascript-web-foundations-c1 learn-javascript-web-foundations-h1" x="18" y="32" width="116" height="40" rx="10"/>
+<rect class="learn-javascript-web-foundations-chip" x="18" y="80" width="116" height="40" rx="10"/>
+<circle class="learn-javascript-web-foundations-d2" cx="38" cy="100" r="6"/>
+<text class="learn-javascript-web-foundations-t" x="54" y="106" font-size="16">CSS</text>
+<rect class="learn-javascript-web-foundations-c2 learn-javascript-web-foundations-h2" x="18" y="80" width="116" height="40" rx="10"/>
+<rect class="learn-javascript-web-foundations-chip" x="18" y="128" width="116" height="40" rx="10"/>
+<circle class="learn-javascript-web-foundations-d3" cx="38" cy="148" r="6"/>
+<text class="learn-javascript-web-foundations-t" x="54" y="154" font-size="16">JS / TS</text>
+<rect class="learn-javascript-web-foundations-c3 learn-javascript-web-foundations-h3" x="18" y="128" width="116" height="40" rx="10"/>
+<!-- browser -->
+<rect class="learn-javascript-web-foundations-win" x="166" y="14" width="298" height="172" rx="12"/>
+<path class="learn-javascript-web-foundations-bar" d="M166 26 a12 12 0 0 1 12 -12 H452 a12 12 0 0 1 12 12 V40 H166 Z"/>
+<circle class="learn-javascript-web-foundations-dot" cx="182" cy="27" r="4"/>
+<circle class="learn-javascript-web-foundations-dot" cx="196" cy="27" r="4"/>
+<circle class="learn-javascript-web-foundations-dot" cx="210" cy="27" r="4"/>
+<!-- wireframe (structure) -->
+<rect class="learn-javascript-web-foundations-wf" x="182" y="52" width="266" height="22" rx="4"/>
+<rect class="learn-javascript-web-foundations-wf" x="182" y="84" width="122" height="88" rx="6"/>
+<rect class="learn-javascript-web-foundations-wf" x="316" y="84" width="132" height="20" rx="4"/>
+<rect class="learn-javascript-web-foundations-wf" x="316" y="110" width="132" height="20" rx="4"/>
+<rect class="learn-javascript-web-foundations-wf" x="316" y="150" width="76" height="22" rx="5"/>
+<!-- styles -->
+<g class="learn-javascript-web-foundations-style">
+  <rect class="learn-javascript-web-foundations-hd" x="182" y="52" width="266" height="22" rx="4"/>
+  <rect class="learn-javascript-web-foundations-lnc" x="192" y="60" width="70" height="6" rx="3"/>
+  <rect class="learn-javascript-web-foundations-soft" x="182" y="84" width="122" height="88" rx="6"/>
+  <rect class="learn-javascript-web-foundations-ln" x="194" y="98" width="80" height="6" rx="3"/>
+  <rect class="learn-javascript-web-foundations-ln" x="194" y="112" width="96" height="6" rx="3"/>
+  <rect class="learn-javascript-web-foundations-ln" x="194" y="126" width="64" height="6" rx="3"/>
+  <rect class="learn-javascript-web-foundations-soft" x="316" y="84" width="132" height="20" rx="4"/>
+  <rect class="learn-javascript-web-foundations-ln" x="326" y="91" width="70" height="6" rx="3"/>
+  <rect class="learn-javascript-web-foundations-soft" x="316" y="110" width="132" height="20" rx="4"/>
+  <rect class="learn-javascript-web-foundations-ln" x="326" y="117" width="90" height="6" rx="3"/>
+  <rect class="learn-javascript-web-foundations-btn" x="316" y="150" width="76" height="22" rx="5"/>
+  <rect class="learn-javascript-web-foundations-lnc" x="338" y="158" width="32" height="6" rx="3"/>
+</g>
+<!-- behaviour: click adds a row -->
+<g class="learn-javascript-web-foundations-row">
+  <rect class="learn-javascript-web-foundations-new" x="316" y="136" width="132" height="10" rx="3" opacity=".9"/>
+</g>
+<g class="learn-javascript-web-foundations-cursor">
+  <path class="learn-javascript-web-foundations-cur" d="M366 160 L366 182 L371 177 L375 186 L379 184 L375 175 L382 175 Z"/>
+</g>
+</svg>

@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 200" role="img" aria-label="A cloud region runs three services. One service fails and raises an alert, it restarts, and traffic recovers while the other services keep serving">
+<style>
+.look-ahead-architecture-production-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.look-ahead-architecture-production-cloud{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-accent,#006c73);stroke-width:1.5}
+.look-ahead-architecture-production-t{font-family:system-ui,sans-serif;font-size:15px;font-weight:600;fill:var(--scene-ink,#102a33)}
+.look-ahead-architecture-production-bar{fill:var(--scene-line,#cfdfdc)}
+.look-ahead-architecture-production-bad{fill:var(--scene-bad,#b3261e);stroke:var(--scene-bad,#b3261e);stroke-width:2}
+.look-ahead-architecture-production-good{fill:var(--scene-good,#1f7a4d)}
+.look-ahead-architecture-production-down{animation:look-ahead-architecture-production-down 6s ease-in-out infinite;animation-delay:-3s}
+.look-ahead-architecture-production-up{animation:look-ahead-architecture-production-up 6s ease-in-out infinite;animation-delay:-3s}
+.look-ahead-architecture-production-spin{transform-box:fill-box;transform-origin:center;animation:look-ahead-architecture-production-spin 1.2s linear infinite;animation-delay:-0.6s}
+.look-ahead-architecture-production-restart{animation:look-ahead-architecture-production-restart 6s ease-in-out infinite;animation-delay:-3s}
+.look-ahead-architecture-production-alert{transform-box:fill-box;transform-origin:50% 10%;animation:look-ahead-architecture-production-ring 6s ease-in-out infinite;animation-delay:-3s}
+.look-ahead-architecture-production-line{stroke:var(--scene-good,#1f7a4d);stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:320;animation:look-ahead-architecture-production-draw 6s linear infinite;animation-delay:-3s}
+@keyframes look-ahead-architecture-production-down{0%,20%{opacity:0}28%,45%{opacity:1}55%,100%{opacity:0}}
+@keyframes look-ahead-architecture-production-restart{0%,45%{opacity:0}52%,70%{opacity:1}78%,100%{opacity:0}}
+@keyframes look-ahead-architecture-production-up{0%,70%{opacity:0}80%,95%{opacity:1}100%{opacity:0}}
+@keyframes look-ahead-architecture-production-spin{to{transform:rotate(360deg)}}
+@keyframes look-ahead-architecture-production-ring{0%,20%{transform:rotate(0)}24%{transform:rotate(-14deg)}28%{transform:rotate(12deg)}32%{transform:rotate(-8deg)}36%,100%{transform:rotate(0)}}
+@keyframes look-ahead-architecture-production-draw{0%{stroke-dashoffset:320}85%,100%{stroke-dashoffset:0}}
+</style>
+<rect x="0" y="0" width="480" height="200" rx="14" fill="var(--scene-card,#fff)"/>
+<!-- alert bell -->
+<g class="look-ahead-architecture-production-alert">
+<path d="M44 112 v-20 a20 20 0 0 1 40 0 v20 l8 10 h-56z" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="2" stroke-linejoin="round"/>
+<path d="M56 128 a8 8 0 0 0 16 0" fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="2"/>
+</g>
+<circle class="look-ahead-architecture-production-bad look-ahead-architecture-production-down" cx="80" cy="72" r="7"/>
+<text class="look-ahead-architecture-production-t" x="64" y="158" text-anchor="middle">Alert</text>
+<!-- cloud region -->
+<path class="look-ahead-architecture-production-cloud" d="M142 150 a26 26 0 0 1 -2 -50 a34 34 0 0 1 64 -14 a30 30 0 0 1 52 8 a28 28 0 0 1 14 56z" opacity=".55"/>
+<rect class="look-ahead-architecture-production-box" x="156" y="104" width="48" height="30" rx="7"/>
+<rect class="look-ahead-architecture-production-box" x="212" y="104" width="48" height="30" rx="7"/>
+<rect class="look-ahead-architecture-production-box" x="268" y="104" width="48" height="30" rx="7"/>
+<circle class="look-ahead-architecture-production-good" cx="170" cy="119" r="5"/>
+<circle class="look-ahead-architecture-production-good" cx="282" cy="119" r="5"/>
+<rect class="look-ahead-architecture-production-bar" x="180" y="116" width="16" height="6" rx="3"/>
+<rect class="look-ahead-architecture-production-bar" x="292" y="116" width="16" height="6" rx="3"/>
+<!-- middle service: healthy, failing, restarting -->
+<circle class="look-ahead-architecture-production-good look-ahead-architecture-production-up" cx="226" cy="119" r="5"/>
+<rect class="look-ahead-architecture-production-bar" x="236" y="116" width="16" height="6" rx="3"/>
+<g class="look-ahead-architecture-production-down">
+<rect x="212" y="104" width="48" height="30" rx="7" fill="var(--scene-bad,#b3261e)" fill-opacity=".16" stroke="var(--scene-bad,#b3261e)" stroke-width="2"/>
+<path d="M222 113 l12 12 M234 113 l-12 12" stroke="var(--scene-bad,#b3261e)" stroke-width="3" stroke-linecap="round"/>
+</g>
+<g class="look-ahead-architecture-production-restart">
+<rect x="212" y="104" width="48" height="30" rx="7" fill="var(--scene-ahead,#2f6fb3)" fill-opacity=".14" stroke="var(--scene-ahead,#2f6fb3)" stroke-width="2"/>
+<path class="look-ahead-architecture-production-spin" d="M230 119 a8 8 0 1 1 8 8" fill="none" stroke="var(--scene-ahead,#2f6fb3)" stroke-width="3" stroke-linecap="round"/>
+</g>
+<text class="look-ahead-architecture-production-t" x="236" y="170" text-anchor="middle">Cloud</text>
+<!-- dashboard -->
+<rect class="look-ahead-architecture-production-box" x="352" y="34" width="106" height="132" rx="10"/>
+<text class="look-ahead-architecture-production-t" x="364" y="60">Recovery</text>
+<path d="M364 96 H446" stroke="var(--scene-bad,#b3261e)" stroke-width="1.5" stroke-dasharray="4 4"/>
+<path class="look-ahead-architecture-production-line" d="M364 140 L376 138 L388 140 L398 118 L408 126 L420 104 L432 92 L446 90"/>
+<path d="M364 150 H446" stroke="var(--scene-line,#cfdfdc)" stroke-width="1.5"/>
+</svg>

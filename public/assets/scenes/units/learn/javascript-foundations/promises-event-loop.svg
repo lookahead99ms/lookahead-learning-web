@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Sync code, then promise callbacks, then timers">
+<style>
+.learn-javascript-foundations-promises-event-loop-t{font-family:system-ui,sans-serif;font-size:15px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-javascript-foundations-promises-event-loop-m{font-family:ui-monospace,Menlo,monospace;font-size:18px;font-weight:700;fill:#fff}
+.learn-javascript-foundations-promises-event-loop-h{animation:learn-javascript-foundations-promises-event-loop-hh 6s linear infinite;animation-delay:-3s}
+@keyframes learn-javascript-foundations-promises-event-loop-hh{0%{transform:translateX(0)}100%{transform:translateX(160px)}}
+.learn-javascript-foundations-promises-event-loop-l1{animation:learn-javascript-foundations-promises-event-loop-x1 6s steps(1) infinite;animation-delay:-3s}
+@keyframes learn-javascript-foundations-promises-event-loop-x1{0%{opacity:1}30%{opacity:.35}100%{opacity:.35}}
+.learn-javascript-foundations-promises-event-loop-l2{animation:learn-javascript-foundations-promises-event-loop-x2 6s steps(1) infinite;animation-delay:-3s}
+@keyframes learn-javascript-foundations-promises-event-loop-x2{0%{opacity:.35}30%{opacity:1}60%{opacity:.35}100%{opacity:.35}}
+.learn-javascript-foundations-promises-event-loop-l3{animation:learn-javascript-foundations-promises-event-loop-x3 6s steps(1) infinite;animation-delay:-3s}
+@keyframes learn-javascript-foundations-promises-event-loop-x3{0%{opacity:.35}60%{opacity:1}100%{opacity:1}}
+</style>
+<rect width="240" height="135" fill="var(--scene-card,#fff)"/>
+<path d="M40 70H200" stroke="var(--scene-line,#cfdfdc)" stroke-width="6" stroke-linecap="round"/>
+<g class="learn-javascript-foundations-promises-event-loop-l1"><circle cx="40" cy="70" r="18" fill="var(--scene-accent,#006c73)"/><text class="learn-javascript-foundations-promises-event-loop-m" x="40" y="76" text-anchor="middle">1</text><text class="learn-javascript-foundations-promises-event-loop-t" x="40" y="109" text-anchor="middle">sync</text></g>
+<g class="learn-javascript-foundations-promises-event-loop-l2"><circle cx="120" cy="70" r="18" fill="var(--scene-good,#1f7a4d)"/><text class="learn-javascript-foundations-promises-event-loop-m" x="120" y="76" text-anchor="middle">2</text><text class="learn-javascript-foundations-promises-event-loop-t" x="120" y="109" text-anchor="middle">promise</text></g>
+<g class="learn-javascript-foundations-promises-event-loop-l3"><circle cx="200" cy="70" r="18" fill="var(--scene-warn,#a15c00)"/><text class="learn-javascript-foundations-promises-event-loop-m" x="200" y="76" text-anchor="middle">3</text><text class="learn-javascript-foundations-promises-event-loop-t" x="200" y="109" text-anchor="middle">timer</text></g>
+<g class="learn-javascript-foundations-promises-event-loop-h"><path d="M40 46L31 28H49Z" fill="var(--scene-ink,#102a33)"/><path d="M40 46V50" stroke="var(--scene-ink,#102a33)" stroke-width="3"/></g>
+</svg>

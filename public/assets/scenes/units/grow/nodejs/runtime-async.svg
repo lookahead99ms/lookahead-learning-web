@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Tasks run two at a time and results land in input order">
+<style>
+.grow-nodejs-runtime-async-t{font-family:system-ui,sans-serif;font-weight:700;font-size:16px;fill:var(--scene-ink,#102a33)}
+.grow-nodejs-runtime-async-tk{animation:grow-nodejs-runtime-async-go 6s linear infinite}
+.grow-nodejs-runtime-async-rs{animation:grow-nodejs-runtime-async-fill 6s steps(1) infinite}
+@keyframes grow-nodejs-runtime-async-go{0%{transform:translateX(0);opacity:0}8%{opacity:1}85%{opacity:1}100%{transform:translateX(250px);opacity:0}}
+@keyframes grow-nodejs-runtime-async-fill{0%{fill:var(--scene-line,#cfdfdc)}50%{fill:var(--scene-good,#1f7a4d)}100%{fill:var(--scene-good,#1f7a4d)}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="108" y="30" width="84" height="80" rx="10" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2" stroke-dasharray="5 4"/>
+<text x="150" y="22" text-anchor="middle" class="grow-nodejs-runtime-async-t">max 2</text>
+<g class="grow-nodejs-runtime-async-tk" style="animation-delay:-3s"><rect x="14" y="35" width="26" height="26" rx="6" fill="var(--scene-ahead,#2f6fb3)"/><text x="27" y="55" text-anchor="middle" class="grow-nodejs-runtime-async-t" style="fill:#fff">1</text></g>
+<g class="grow-nodejs-runtime-async-tk" style="animation-delay:-4.5s"><rect x="14" y="75" width="26" height="26" rx="6" fill="var(--scene-ahead,#2f6fb3)"/><text x="27" y="95" text-anchor="middle" class="grow-nodejs-runtime-async-t" style="fill:#fff">2</text></g>
+<g class="grow-nodejs-runtime-async-tk" style="animation-delay:0s"><rect x="14" y="35" width="26" height="26" rx="6" fill="var(--scene-ahead,#2f6fb3)"/><text x="27" y="55" text-anchor="middle" class="grow-nodejs-runtime-async-t" style="fill:#fff">3</text></g>
+<g class="grow-nodejs-runtime-async-tk" style="animation-delay:-1.5s"><rect x="14" y="75" width="26" height="26" rx="6" fill="var(--scene-ahead,#2f6fb3)"/><text x="27" y="95" text-anchor="middle" class="grow-nodejs-runtime-async-t" style="fill:#fff">4</text></g>
+<text x="14" y="154" class="grow-nodejs-runtime-async-t">in order</text>
+<rect class="grow-nodejs-runtime-async-rs" style="animation-delay:-3s" x="110" y="136" width="30" height="26" rx="6"/>
+<rect class="grow-nodejs-runtime-async-rs" style="animation-delay:-2s" x="148" y="136" width="30" height="26" rx="6"/>
+<rect class="grow-nodejs-runtime-async-rs" style="animation-delay:-1s" x="186" y="136" width="30" height="26" rx="6"/>
+<rect class="grow-nodejs-runtime-async-rs" style="animation-delay:0s" x="224" y="136" width="30" height="26" rx="6"/>
+<g class="grow-nodejs-runtime-async-t" style="fill:#fff;font-size:16px" text-anchor="middle"><text x="125" y="156" style="fill:var(--scene-ink,#102a33)">1</text><text x="163" y="156" style="fill:var(--scene-ink,#102a33)">2</text><text x="201" y="156" style="fill:var(--scene-ink,#102a33)">3</text><text x="239" y="156" style="fill:var(--scene-ink,#102a33)">4</text></g>
+</svg>

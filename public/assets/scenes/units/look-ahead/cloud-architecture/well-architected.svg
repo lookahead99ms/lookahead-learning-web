@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Six pillars of different heights adjusting until the roof beam sits level">
+<style>
+.look-ahead-cloud-architecture-well-architected-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.look-ahead-cloud-architecture-well-architected-p{transform-box:fill-box;transform-origin:50% 100%;animation:look-ahead-cloud-architecture-well-architected-grow 6s ease-in-out infinite}
+.look-ahead-cloud-architecture-well-architected-roof{transform-box:fill-box;transform-origin:50% 50%;animation:look-ahead-cloud-architecture-well-architected-tilt 6s ease-in-out infinite}
+.look-ahead-cloud-architecture-well-architected-ok{animation:look-ahead-cloud-architecture-well-architected-pop 6s ease-in-out -1.2s infinite}
+@keyframes look-ahead-cloud-architecture-well-architected-grow{0%,100%{transform:scaleY(var(--s,.6))}50%{transform:scaleY(1)}}
+@keyframes look-ahead-cloud-architecture-well-architected-tilt{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(0)}}
+@keyframes look-ahead-cloud-architecture-well-architected-pop{0%,35%{opacity:.15}45%,90%{opacity:1}100%{opacity:.15}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="30" y="148" width="260" height="8" rx="3" fill="var(--scene-line,#cfdfdc)"/>
+<g>
+<rect class="look-ahead-cloud-architecture-well-architected-p" style="--s:0.62;animation-delay:-1.2s" x="42" y="48" width="30" height="100" rx="3" fill="var(--scene-learn,#0f8a8a)"/>
+<rect class="look-ahead-cloud-architecture-well-architected-p" style="--s:0.9;animation-delay:-1.2s" x="82" y="48" width="30" height="100" rx="3" fill="var(--scene-link,#245a88)"/>
+<rect class="look-ahead-cloud-architecture-well-architected-p" style="--s:0.7;animation-delay:-1.2s" x="122" y="48" width="30" height="100" rx="3" fill="var(--scene-good,#1f7a4d)"/>
+<rect class="look-ahead-cloud-architecture-well-architected-p" style="--s:0.95;animation-delay:-1.2s" x="162" y="48" width="30" height="100" rx="3" fill="var(--scene-grow,#b8457a)"/>
+<rect class="look-ahead-cloud-architecture-well-architected-p" style="--s:0.55;animation-delay:-1.2s" x="202" y="48" width="30" height="100" rx="3" fill="var(--scene-warn,#a15c00)"/>
+<rect class="look-ahead-cloud-architecture-well-architected-p" style="--s:0.8;animation-delay:-1.2s" x="242" y="48" width="30" height="100" rx="3" fill="var(--scene-ahead,#2f6fb3)"/>
+</g>
+<rect class="look-ahead-cloud-architecture-well-architected-roof" style="animation-delay:-1.2s" x="30" y="34" width="260" height="12" rx="4" fill="var(--scene-ink,#102a33)"/>
+<text class="look-ahead-cloud-architecture-well-architected-t" x="160" y="22" text-anchor="middle">Six pillars</text>
+<g class="look-ahead-cloud-architecture-well-architected-ok"><text class="look-ahead-cloud-architecture-well-architected-t" x="160" y="172" text-anchor="middle" style="fill:var(--scene-good,#1f7a4d)">Balanced</text></g>
+</svg>

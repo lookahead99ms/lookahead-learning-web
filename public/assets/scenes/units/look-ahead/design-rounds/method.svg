@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" class="methodr-root" role="img" aria-label="A 45-minute timer runs while a design grows on the board from one box to a full diagram, ending with the trade-offs.">
+<style>
+.methodr-root text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.methodr-t{fill:var(--scene-ink,#102a33)}
+.methodr-mut{fill:var(--scene-muted,#536970)}
+.methodr-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.methodr-new{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-accent,#006c73);stroke-width:2}
+.methodr-ln{fill:var(--scene-line,#cfdfdc)}
+.methodr-acc{fill:var(--scene-accent,#006c73)}
+.methodr-good{fill:var(--scene-good,#1f7a4d)}
+.methodr-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2;stroke-linecap:round}
+.methodr-a{animation-duration:9s;animation-iteration-count:infinite;animation-delay:-4s}
+.methodr-bar{transform-origin:16px 0;animation-name:methodr-bar}@keyframes methodr-bar{0%{transform:scaleX(0)}90%,100%{transform:scaleX(1)}}
+.methodr-b2{animation-name:methodr-b2}@keyframes methodr-b2{0%,20%{opacity:0}24%,100%{opacity:1}}
+.methodr-b3{animation-name:methodr-b3}@keyframes methodr-b3{0%,36%{opacity:0}40%,100%{opacity:1}}
+.methodr-b4{animation-name:methodr-b4}@keyframes methodr-b4{0%,52%{opacity:0}56%,100%{opacity:1}}
+.methodr-p1{animation-name:methodr-p1}@keyframes methodr-p1{0%,20%{opacity:1}23%,100%{opacity:0}}
+.methodr-p2{animation-name:methodr-p2}@keyframes methodr-p2{0%,21%{opacity:0}24%,54%{opacity:1}57%,100%{opacity:0}}
+.methodr-p3{animation-name:methodr-p3}@keyframes methodr-p3{0%,55%{opacity:0}58%,78%{opacity:1}81%,100%{opacity:0}}
+.methodr-p4{animation-name:methodr-p4}@keyframes methodr-p4{0%,79%{opacity:0}82%,100%{opacity:1}}
+@media (prefers-reduced-motion: reduce){.methodr-root *{animation-play-state:paused!important}}
+</style>
+<rect x="16" y="12" width="168" height="10" rx="5" class="methodr-ln"/>
+<rect class="methodr-a methodr-bar methodr-acc" x="16" y="12" width="168" height="10" rx="5"/>
+<text x="224" y="22" font-size="14" font-weight="700" text-anchor="end" class="methodr-t">45m</text>
+<rect x="16" y="40" width="44" height="30" rx="6" class="methodr-box"/>
+<path class="methodr-a methodr-b2 methodr-sa" d="M62 55 H80"/>
+<rect class="methodr-a methodr-b2 methodr-new" x="84" y="40" width="44" height="30" rx="6"/>
+<path class="methodr-a methodr-b3 methodr-sa" d="M130 55 H148"/>
+<rect class="methodr-a methodr-b3 methodr-new" x="152" y="40" width="44" height="30" rx="6"/>
+<path class="methodr-a methodr-b4 methodr-sa" d="M174 72 V84"/>
+<rect class="methodr-a methodr-b4 methodr-new" x="152" y="86" width="44" height="12" rx="6"/>
+<path class="methodr-a methodr-b4 methodr-sa" d="M106 72 V84"/>
+<rect class="methodr-a methodr-b4 methodr-new" x="84" y="86" width="44" height="12" rx="6"/>
+<rect x="16" y="104" width="208" height="24" rx="12" class="methodr-box"/>
+<text class="methodr-a methodr-p1 methodr-t" x="120" y="121" font-size="14" font-weight="700" text-anchor="middle">Ask first, then numbers</text>
+<text class="methodr-a methodr-p2 methodr-t" x="120" y="121" font-size="14" font-weight="700" text-anchor="middle">One box, then grow it</text>
+<text class="methodr-a methodr-p3 methodr-t" x="120" y="121" font-size="14" font-weight="700" text-anchor="middle">Deep dive on the risk</text>
+<text class="methodr-a methodr-p4 methodr-good" x="120" y="121" font-size="14" font-weight="700" text-anchor="middle">Trade-offs &#10003;</text>
+</svg>

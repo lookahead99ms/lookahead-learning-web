@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" font-family="system-ui, sans-serif">
+<style>
+.grow-spring-boot-boot-fundamentals-t{font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.grow-spring-boot-boot-fundamentals-m1{animation:grow-spring-boot-boot-fundamentals-m1 6s linear infinite;animation-delay:-3s}
+@keyframes grow-spring-boot-boot-fundamentals-m1{0%,15%{opacity:0}25%,85%{opacity:1}95%,100%{opacity:0}}
+.grow-spring-boot-boot-fundamentals-m2{animation:grow-spring-boot-boot-fundamentals-m2 6s linear infinite;animation-delay:-2.4s}
+@keyframes grow-spring-boot-boot-fundamentals-m2{0%,15%{opacity:0}25%,85%{opacity:1}95%,100%{opacity:0}}
+.grow-spring-boot-boot-fundamentals-m3{animation:grow-spring-boot-boot-fundamentals-m3 6s linear infinite;animation-delay:-1.8s}
+@keyframes grow-spring-boot-boot-fundamentals-m3{0%,15%{opacity:0}25%,85%{opacity:1}95%,100%{opacity:0}}
+.grow-spring-boot-boot-fundamentals-b1{animation:grow-spring-boot-boot-fundamentals-b1 6s ease-out infinite;animation-delay:-3s}
+@keyframes grow-spring-boot-boot-fundamentals-b1{0%,28%{transform:scale(0)}40%,88%{transform:scale(1)}96%,100%{transform:scale(0)}}
+.grow-spring-boot-boot-fundamentals-b2{animation:grow-spring-boot-boot-fundamentals-b2 6s ease-out infinite;animation-delay:-2.4s}
+@keyframes grow-spring-boot-boot-fundamentals-b2{0%,28%{transform:scale(0)}40%,88%{transform:scale(1)}96%,100%{transform:scale(0)}}
+.grow-spring-boot-boot-fundamentals-b1,.grow-spring-boot-boot-fundamentals-b2{transform-box:fill-box;transform-origin:center}
+.grow-spring-boot-boot-fundamentals-sc{animation:grow-spring-boot-boot-fundamentals-sc 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes grow-spring-boot-boot-fundamentals-sc{0%{transform:translateY(0)}60%,100%{transform:translateY(88px)}}
+
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="14" y="18" width="86" height="36" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/><rect x="24" y="28" width="50" height="6" rx="3" fill="var(--scene-line,#cfdfdc)"/><rect x="24" y="39" width="34" height="6" rx="3" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M104 36h28" stroke="var(--scene-line,#cfdfdc)" stroke-width="2.5"/>
+<rect x="14" y="62" width="86" height="36" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/><rect x="24" y="72" width="50" height="6" rx="3" fill="var(--scene-line,#cfdfdc)"/><rect x="24" y="83" width="34" height="6" rx="3" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M104 80h28" stroke="var(--scene-line,#cfdfdc)" stroke-width="2.5"/>
+<rect x="14" y="106" width="86" height="36" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-muted,#536970)" stroke-width="2.5"/><rect x="24" y="116" width="50" height="6" rx="3" fill="var(--scene-line,#cfdfdc)"/><rect x="24" y="127" width="34" height="6" rx="3" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M104 124h28" stroke="var(--scene-line,#cfdfdc)" stroke-width="2.5"/>
+<rect x="132" y="12" width="56" height="136" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<path class="grow-spring-boot-boot-fundamentals-m1" d="M150 36l6 7 12-14" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path class="grow-spring-boot-boot-fundamentals-m2" d="M150 80l6 7 12-14" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path class="grow-spring-boot-boot-fundamentals-m3" d="M152 116l16 16m0-16l-16 16" stroke="var(--scene-bad,#b3261e)" stroke-width="4" stroke-linecap="round"/>
+<rect class="grow-spring-boot-boot-fundamentals-sc" x="134" y="16" width="52" height="4" rx="2" fill="var(--scene-accent,#006c73)" opacity=".6"/>
+<rect x="212" y="12" width="96" height="136" rx="10" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/>
+<path d="M190 36h18" stroke="var(--scene-line,#cfdfdc)" stroke-width="2.5"/><circle class="grow-spring-boot-boot-fundamentals-b1" cx="260" cy="36" r="15" fill="var(--scene-good,#1f7a4d)"/>
+<path d="M190 80h18" stroke="var(--scene-line,#cfdfdc)" stroke-width="2.5"/><circle class="grow-spring-boot-boot-fundamentals-b2" cx="260" cy="80" r="15" fill="var(--scene-good,#1f7a4d)"/>
+<circle cx="260" cy="124" r="15" fill="var(--scene-ahead,#2f6fb3)"/><path d="M252 124l6 6 10-12" stroke="var(--scene-card,#fff)" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+<text class="grow-spring-boot-boot-fundamentals-t" x="57" y="171" text-anchor="middle">candidates</text><text class="grow-spring-boot-boot-fundamentals-t" x="160" y="171" text-anchor="middle">conditions</text><text class="grow-spring-boot-boot-fundamentals-t" x="260" y="171" text-anchor="middle">beans</text>
+
+</svg>

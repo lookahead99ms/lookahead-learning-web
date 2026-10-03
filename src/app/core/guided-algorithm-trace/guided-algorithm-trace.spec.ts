@@ -1,5 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { vi } from 'vitest';
 import {
   GuidedTraceCellState,
   PatternProblemFixture,
@@ -220,6 +221,7 @@ function signedTwoSumProblem(): PatternProblemV1 {
     [problem]="activeProblem()"
     [selectedFixture]="selectedFixture()"
     [focusMode]="focusMode()"
+    [initialLanguage]="language()"
     (focusExitRequest)="focusExitCount.update((count) => count + 1)"
   />`,
 })
@@ -228,6 +230,7 @@ class TraceHost {
   readonly selectedFixture = signal(this.activeProblem().fixtures[0]);
   readonly focusMode = signal(false);
   readonly focusExitCount = signal(0);
+  readonly language = signal<'java' | 'python' | 'go'>('java');
 }
 
 function normalizedText(element: Element): string {
@@ -280,6 +283,54 @@ describe('GuidedAlgorithmTrace shared interaction contract', () => {
     expect(fixture.nativeElement.querySelector('.sr-status').textContent).toContain(
       'python selected. Trace reset to step 1.',
     );
+  });
+
+  it('follows a language chosen outside the debugger and restarts at step 1', () => {
+    const root = fixture.nativeElement as HTMLElement;
+    root
+      .querySelector('.guided-trace')!
+      .dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    fixture.detectChanges();
+    expect(root.querySelector('.step-status')!.textContent).toContain('2 of 3');
+
+    fixture.componentInstance.language.set('go');
+    fixture.detectChanges();
+    expect(root.querySelector('.guided-trace')?.getAttribute('data-language')).toBe('go');
+    expect(root.querySelector('.language-tabs [aria-selected="true"]')?.textContent?.trim()).toBe(
+      'go',
+    );
+    expect(root.querySelector('.step-status')!.textContent).toContain('1 of 3');
+  });
+
+  it('plays about one step per second, stops at the end and pauses on a manual step', () => {
+    vi.useFakeTimers();
+    try {
+      const root = fixture.nativeElement as HTMLElement;
+      const status = () => root.querySelector('.step-status')!.textContent;
+      const button = (label: string) =>
+        [...root.querySelectorAll<HTMLButtonElement>('.trace-controls button')].find(
+          (item) => item.textContent?.trim() === label,
+        )!;
+      button('Play').click();
+      fixture.detectChanges();
+      expect(button('Pause').getAttribute('aria-pressed')).toBe('true');
+      vi.advanceTimersByTime(1000);
+      fixture.detectChanges();
+      expect(status()).toContain('2 of 3');
+      button('Previous').click();
+      fixture.detectChanges();
+      expect(button('Play')).toBeTruthy();
+      vi.advanceTimersByTime(3000);
+      fixture.detectChanges();
+      expect(status()).toContain('1 of 3');
+      button('Play').click();
+      vi.advanceTimersByTime(5000);
+      fixture.detectChanges();
+      expect(status()).toContain('3 of 3');
+      expect(button('Play').getAttribute('aria-pressed')).toBe('false');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('keeps full source text out of the compact navigation strip', () => {

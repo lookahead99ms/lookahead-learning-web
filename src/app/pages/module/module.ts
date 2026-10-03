@@ -10,6 +10,7 @@ import {
   CourseSection,
   ContentItemSummary,
   reviewStatusLabel,
+  navTitle,
 } from '../../content/content.models';
 import { ContentService } from '../../content/content.service';
 import { isTheoryArticle } from '../../content/question-discovery';
@@ -172,6 +173,7 @@ export class Module implements OnInit {
   protected readonly recoveryPreview = signal<RecoveryPreview>({});
   protected readonly retryLoad = new Subject<void>();
   protected readonly reviewStatusLabel = reviewStatusLabel;
+  protected readonly navTitle = navTitle;
 
   ngOnInit(): void {
     merge(this.route.paramMap, this.retryLoad.pipe(map(() => this.route.snapshot.paramMap)))

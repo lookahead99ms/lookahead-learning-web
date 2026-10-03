@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Delivery slices build a bridge and the keys are handed to the client team">
+<style>
+
+.look-ahead-project-recruiter-consulting-contract-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.look-ahead-project-recruiter-consulting-contract-l{font-family:system-ui,sans-serif;font-size:16px;font-weight:600;fill:var(--scene-text,#28434a)}
+.look-ahead-project-recruiter-consulting-contract-s{animation:look-ahead-project-recruiter-consulting-contract-sl 6s ease-out infinite}
+.look-ahead-project-recruiter-consulting-contract-s1{animation-delay:-3.6s}.look-ahead-project-recruiter-consulting-contract-s2{animation-delay:-3s}.look-ahead-project-recruiter-consulting-contract-s3{animation-delay:-2.4s}
+.look-ahead-project-recruiter-consulting-contract-key{animation:look-ahead-project-recruiter-consulting-contract-kp 6s ease-in-out infinite;animation-delay:-3.5s}
+.look-ahead-project-recruiter-consulting-contract-cl{animation:look-ahead-project-recruiter-consulting-contract-cg 6s ease-in-out infinite;animation-delay:-3.5s}
+@keyframes look-ahead-project-recruiter-consulting-contract-sl{0%{transform:translateY(-30px);opacity:0}15%,92%{transform:translateY(0);opacity:1}100%{transform:translateY(0);opacity:0}}
+@keyframes look-ahead-project-recruiter-consulting-contract-kp{0%,45%{transform:translateX(0)}75%,92%{transform:translateX(120px)}100%{transform:translateX(120px);opacity:0}}
+@keyframes look-ahead-project-recruiter-consulting-contract-cg{0%,50%{opacity:.35}80%,95%{opacity:1}100%{opacity:.35}}
+
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+
+<text class="look-ahead-project-recruiter-consulting-contract-t" x="160" y="24" text-anchor="middle">Deliver in slices</text>
+<path d="M20 130h56M244 130h56" stroke="var(--scene-line,#cfdfdc)" stroke-width="10" stroke-linecap="round"/>
+<g stroke="var(--scene-ahead,#2f6fb3)" stroke-width="2" fill="var(--scene-accent-soft,#dcefed)">
+<rect class="look-ahead-project-recruiter-consulting-contract-s look-ahead-project-recruiter-consulting-contract-s1" x="80" y="112" width="52" height="20" rx="3"/><rect class="look-ahead-project-recruiter-consulting-contract-s look-ahead-project-recruiter-consulting-contract-s2" x="134" y="112" width="52" height="20" rx="3"/><rect class="look-ahead-project-recruiter-consulting-contract-s look-ahead-project-recruiter-consulting-contract-s3" x="188" y="112" width="52" height="20" rx="3"/></g>
+<path d="M80 134v20M240 134v20M160 134v20" stroke="var(--scene-muted,#536970)" stroke-width="4"/>
+<g><circle cx="50" cy="82" r="9" fill="var(--scene-ahead,#2f6fb3)"/><path d="M34 112a16 18 0 0 1 32 0z" fill="var(--scene-ahead,#2f6fb3)"/></g>
+<g class="look-ahead-project-recruiter-consulting-contract-cl"><circle cx="270" cy="82" r="9" fill="var(--scene-good,#1f7a4d)"/><path d="M254 112a16 18 0 0 1 32 0z" fill="var(--scene-good,#1f7a4d)"/></g>
+<g class="look-ahead-project-recruiter-consulting-contract-key"><circle cx="86" cy="64" r="7" fill="none" stroke="var(--scene-warn,#a15c00)" stroke-width="3.5"/><path d="M93 64h22M107 64v7M114 64v7" stroke="var(--scene-warn,#a15c00)" stroke-width="3.5" stroke-linecap="round"/></g>
+<text class="look-ahead-project-recruiter-consulting-contract-l" x="160" y="174" text-anchor="middle">Hand off ownership</text>
+</svg>

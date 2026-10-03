@@ -9,13 +9,21 @@
   border: 1px solid var(--line);
   border-radius: 22px;
   background:
-    radial-gradient(circle at 96% 6%, color-mix(in srgb, var(--accent-strong) 12%, transparent), transparent 34%),
+    radial-gradient(
+      circle at 96% 6%,
+      color-mix(in srgb, var(--accent-strong) 12%, transparent),
+      transparent 34%
+    ),
     linear-gradient(135deg, var(--surface), var(--surface-accent));
 }
 
 .learn-catalog.catalog-depth-hero {
   background:
-    radial-gradient(circle at 96% 6%, color-mix(in srgb, var(--accent-strong) 14%, transparent), transparent 34%),
+    radial-gradient(
+      circle at 96% 6%,
+      color-mix(in srgb, var(--accent-strong) 14%, transparent),
+      transparent 34%
+    ),
     linear-gradient(135deg, var(--surface), var(--surface-accent));
 }
 
@@ -23,9 +31,7 @@
   min-width: 0;
 }
 
-.catalog-path-label,
-.catalog-card-kicker,
-.catalog-path-heading > p {
+.catalog-path-label {
   margin: 0 0 9px !important;
   color: var(--accent-strong) !important;
   font-size: 0.72rem !important;
@@ -39,8 +45,7 @@
   color: var(--path-grow) !important;
 }
 
-.learn-catalog .catalog-path-label,
-.learn-catalog-reader .catalog-card-kicker {
+.learn-catalog .catalog-path-label {
   color: var(--accent-strong) !important;
 }
 
@@ -239,96 +244,6 @@
   color: var(--accent-strong);
 }
 
-.catalog-course-grid .course-card {
-  min-height: 290px;
-}
-
-.catalog-course-grid .catalog-card-kicker {
-  padding-right: 0;
-}
-
-.catalog-topic-preview {
-  margin: 18px 0 0;
-  padding: 15px 0 0;
-  display: grid;
-  gap: 8px;
-  border-top: 1px solid var(--line);
-  list-style: none;
-}
-
-.catalog-topic-preview li {
-  position: relative;
-  padding-left: 15px;
-  color: var(--text-subtle);
-  font-size: 0.78rem;
-  line-height: 1.4;
-}
-
-.catalog-topic-preview li::before {
-  content: '';
-  position: absolute;
-  top: 0.55em;
-  left: 0;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--path-grow);
-}
-
-.look-ahead-course-card .catalog-topic-preview li::before {
-  background: var(--text-body);
-}
-
-.learn-catalog-reader .catalog-topic-preview li::before {
-  background: var(--search-primary);
-}
-
-.catalog-course-preview {
-  margin-top: 18px;
-  padding-top: 14px;
-  border-top: 1px solid var(--line);
-}
-
-.catalog-course-preview .catalog-course-preview-label {
-  margin: 0;
-  color: var(--accent-strong);
-  font-size: 0.68rem;
-  font-weight: 850;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.adaptive-catalog-course-grid .catalog-course-preview {
-  margin-top: auto;
-  min-height: 128px;
-}
-
-.adaptive-catalog-course-grid .catalog-card-action {
-  margin-top: 0;
-}
-
-.catalog-course-preview .catalog-topic-preview {
-  margin-top: 10px;
-  padding-top: 0;
-  border-top: 0;
-}
-
-.catalog-card-action {
-  margin-top: auto;
-  padding-top: 20px;
-  color: var(--accent-link);
-  font-size: 0.8rem;
-  font-weight: 850;
-}
-
-.look-ahead-course-card .catalog-card-action {
-  color: var(--accent-link);
-}
-
-.learn-course-card .catalog-card-action {
-  color: var(--accent-link);
-}
-
 .catalog-path-section {
   margin-top: 34px;
   scroll-margin-top: 130px;
@@ -400,30 +315,6 @@
   box-shadow: 0 8px 20px var(--shadow);
 }
 
-.adaptive-catalog-course-grid {
-  margin-top: 0;
-}
-
-.adaptive-catalog-course-grid .course-card h3 {
-  margin: 0 0 8px;
-  color: var(--text);
-  font-size: 1.35rem;
-  letter-spacing: -0.025em;
-}
-
-.catalog-featured-label {
-  width: fit-content;
-  margin-bottom: 10px;
-  padding-left: 12px;
-  border-left: 3px solid var(--text-body);
-  color: var(--text-body);
-  font-size: 0.68rem;
-  font-weight: 850;
-  letter-spacing: 0.08em;
-  line-height: 1.4;
-  text-transform: uppercase;
-}
-
 @media (max-width: 700px) {
   .catalog-depth-hero {
     margin-top: 12px;
@@ -474,19 +365,6 @@
     width: 100%;
   }
 
-  .catalog-course-grid .course-card {
-    min-height: 0;
-  }
-
-  .adaptive-catalog-course-grid .catalog-course-preview {
-    margin-top: 18px;
-    min-height: 0;
-  }
-
-  .adaptive-catalog-course-grid .featured-catalog-card {
-    grid-column: auto;
-  }
-
   .catalog-path-section {
     margin-top: 28px;
   }
@@ -508,9 +386,346 @@
 .harbor-catalog .catalog-course-grid {
   width: 100%;
 }
-.harbor-catalog .catalog-topic-preview li::before {
-  background: var(--accent-strong);
-}
 .harbor-catalog .catalog-path-section {
   scroll-margin-top: calc(var(--platform-header-height, 88px) + 64px);
+}
+
+/*
+ * Group card + course grid. Each group is one full-width card (scene, title,
+ * description, count) styled like the course ladder banner; its courses follow as
+ * uniform scene cards: 3 columns, 2 on tablet widths, 1 on phones.
+ */
+.harbor-catalog .catalog-path-section {
+  container-type: inline-size;
+}
+
+/*
+ * Each group is its own band: a tinted panel with a path-coloured top edge, the group
+ * card as its header, and a wide gap plus a divider before the next group, so it is
+ * clear at a glance where one group ends and the next begins.
+ */
+.harbor-catalog .catalog-path-section {
+  --catalog-band-accent: var(--accent-strong);
+  position: relative;
+  margin-top: 72px;
+  padding: 22px 22px 26px;
+  border: 1px solid var(--line);
+  border-top: 5px solid var(--catalog-band-accent);
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--surface-muted) 60%, var(--surface-page));
+}
+
+.learn-catalog-reader .catalog-path-section {
+  --catalog-band-accent: var(--path-learn);
+}
+
+.grow-catalog-reader .catalog-path-section {
+  --catalog-band-accent: var(--path-grow);
+}
+
+.look-ahead-catalog-reader .catalog-path-section {
+  --catalog-band-accent: var(--path-look-ahead);
+}
+
+.harbor-catalog .catalog-jump-nav + .catalog-path-section {
+  margin-top: 36px;
+}
+
+.harbor-catalog .catalog-path-section + .catalog-path-section::before {
+  content: '';
+  position: absolute;
+  top: -38px;
+  left: 50%;
+  width: min(240px, 40%);
+  height: 2px;
+  border-radius: 2px;
+  background: var(--border-strong, var(--line));
+  transform: translateX(-50%);
+}
+
+.harbor-catalog .catalog-path-section .catalog-group-card {
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.06);
+}
+
+@container (max-width: 640px) {
+  .harbor-catalog .catalog-path-section .catalog-group-card {
+    margin-bottom: 16px;
+  }
+}
+
+@media (max-width: 700px) {
+  .harbor-catalog .catalog-path-section {
+    margin-top: 56px;
+    padding: 14px 12px 18px;
+    border-radius: 18px;
+  }
+
+  .harbor-catalog .catalog-path-section + .catalog-path-section::before {
+    top: -30px;
+  }
+}
+
+.harbor-catalog .catalog-group-card {
+  margin: 0 0 20px;
+  padding: 0;
+  display: grid;
+  /* An even split keeps the 480x200 group scene large enough to read. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: stretch;
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+}
+
+.catalog-group-scene {
+  border-right: 1px solid var(--line);
+}
+
+.catalog-group-scene ::ng-deep .la-card-scene {
+  height: 100%;
+  min-height: 100%;
+}
+
+.harbor-catalog .catalog-group-card .catalog-path-heading-copy {
+  display: grid;
+  align-content: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 30px 34px;
+}
+
+/* --card-title-size: the title's size, also read by the card drawing to keep its words smaller. */
+.harbor-catalog .catalog-group-card {
+  --card-title-size: clamp(1.5rem, 2.6vw, 2.1rem);
+}
+.harbor-catalog .catalog-group-card .catalog-path-title {
+  margin: 0;
+  color: var(--card-title-color);
+  font-weight: var(--card-title-weight);
+  font-size: var(--card-title-size);
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+.catalog-group-description {
+  max-width: 72ch;
+  margin: 0;
+  color: var(--text-body);
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.harbor-catalog .catalog-group-card .catalog-path-summary {
+  margin: 4px 0 0;
+  color: var(--accent-strong);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1.45;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: normal;
+  font-variant-numeric: tabular-nums;
+}
+
+.harbor-catalog .adaptive-catalog-course-grid {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  list-style: none;
+}
+
+.catalog-course-item {
+  display: grid;
+  min-width: 0;
+}
+
+.harbor-catalog .catalog-course-card {
+  scroll-margin-top: 140px;
+  padding: 0;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  color: inherit;
+  background: var(--surface);
+  box-shadow: none;
+  text-decoration: none;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.harbor-catalog a.catalog-course-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent-strong);
+  box-shadow: 0 10px 28px rgb(0 0 0 / 0.12);
+}
+
+.harbor-catalog a.catalog-course-card:focus-visible {
+  transform: none;
+  border-color: var(--accent-strong);
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 3px;
+}
+
+.catalog-course-scene {
+  border-bottom: 1px solid var(--line);
+}
+
+/* Card order: drawing, title, description; the counts sit at the foot as plain meta. */
+.catalog-course-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 16px 20px 20px;
+}
+
+.harbor-catalog .catalog-card-kicker {
+  margin: auto 0 0;
+  padding-top: 4px;
+  color: var(--accent-strong);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+.harbor-catalog .catalog-course-card {
+  --card-title-size: 1.2rem;
+}
+.harbor-catalog .catalog-course-card .catalog-course-title {
+  margin: 0;
+  color: var(--card-title-color);
+  font-weight: var(--card-title-weight);
+  font-size: var(--card-title-size);
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+.harbor-catalog .catalog-course-card .catalog-course-description {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: var(--text-body);
+  font-size: 0.93rem;
+  line-height: 1.5;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+.catalog-course-badges {
+  margin: 2px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+}
+
+.catalog-featured-label {
+  padding: 3px 9px;
+  border-radius: 6px;
+  color: var(--text-strong);
+  background: var(--surface-accent);
+  font-size: 0.76rem;
+  font-weight: 750;
+  line-height: 1.4;
+}
+
+.harbor-catalog .catalog-course-card .review-status {
+  font-size: 0.68rem;
+}
+
+/* Planned: a quieter card that is clearly not a link. */
+.harbor-catalog .catalog-course-card.unavailable {
+  border-style: dashed;
+  border-color: var(--border-strong);
+  background: var(--surface-muted);
+}
+
+.catalog-course-card.unavailable .catalog-course-scene {
+  opacity: 0.6;
+  filter: grayscale(0.6);
+}
+
+.catalog-course-card.unavailable .review-status[data-review-status='planned'] {
+  padding: 2px 9px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  color: var(--text-strong);
+  background: var(--surface);
+}
+
+.catalog-course-card.unavailable .catalog-course-title,
+.catalog-course-card.unavailable .catalog-course-description {
+  color: var(--text-subtle);
+}
+
+@container (max-width: 720px) {
+  .harbor-catalog .adaptive-catalog-course-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container (max-width: 640px) {
+  .harbor-catalog .catalog-group-card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .catalog-group-scene {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .catalog-group-scene ::ng-deep .la-card-scene {
+    height: auto;
+  }
+
+  .harbor-catalog .catalog-group-card .catalog-path-heading-copy {
+    padding: 22px 22px 24px;
+  }
+}
+
+@container (max-width: 460px) {
+  .harbor-catalog .adaptive-catalog-course-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .harbor-catalog .catalog-course-card {
+    transition: none;
+  }
+
+  .harbor-catalog a.catalog-course-card:hover {
+    transform: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .harbor-catalog .catalog-path-section {
+    border-color: CanvasText;
+    background: Canvas;
+  }
+
+  .harbor-catalog .catalog-group-card,
+  .harbor-catalog .catalog-course-card {
+    border-color: CanvasText;
+    color: CanvasText;
+    background: Canvas;
+    box-shadow: none;
+  }
 }

@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PageSidebarContext } from './page-sidebar-context';
-import { PageSidebars, canDockSidebar, collectPageSections } from './page-sidebars';
+import { PageSidebars, canDockSidebar, collectPageSections, sidebarPageTitle } from './page-sidebars';
 
 describe('Shared page sidebars', () => {
   let root: HTMLElement;
@@ -327,7 +327,12 @@ describe('Shared page sidebars', () => {
     expect(right.classList.contains('inline-signature')).toBe(false);
     shell.mockReturnValue({ left: 60, right: 2340 } as DOMRect);
     refresh();
-    expect(right.classList.contains('inline-signature')).toBe(true);
+    // In flow, the statement moves into the shared strip after the page.
+    expect(
+      root.querySelector('.signature-strip .standalone-signature-right')?.classList.contains(
+        'inline-signature',
+      ),
+    ).toBe(true);
   });
 
   it('puts standalone text in normal flow when the page has no side gutter', () => {
@@ -336,6 +341,51 @@ describe('Shared page sidebars', () => {
     vi.mocked(main.getBoundingClientRect).mockReturnValue({ left: 0, right: 1800 } as DOMRect);
     refresh();
     expect(root.querySelectorAll('.standalone-signature.inline-signature').length).toBe(2);
+  });
+
+  it('lines the in-flow statements up with the page content column in one strip', () => {
+    main.classList.add('course-page');
+    vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(1440);
+    vi.mocked(main.getBoundingClientRect).mockReturnValue({ left: 0, right: 1440 } as DOMRect);
+    main.innerHTML =
+      '<article class="question-reader"><nav>Lessons</nav><section class="learning-map" data-signature-column><h1>Fundamentals</h1></section></article>';
+    vi.spyOn(main.querySelector('.question-reader')!, 'getBoundingClientRect').mockReturnValue({
+      left: 43,
+      right: 1397,
+      width: 1354,
+    } as DOMRect);
+    vi.spyOn(main.querySelector('.learning-map')!, 'getBoundingClientRect').mockReturnValue({
+      left: 287,
+      right: 1397,
+      width: 1110,
+    } as DOMRect);
+    refresh();
+    const strip = root.querySelector<HTMLElement>('.signature-strip')!;
+    expect(strip).not.toBeNull();
+    expect(strip.classList).toContain('aligned');
+    expect(strip.style.marginLeft).toBe('287px');
+    expect(strip.style.width).toBe('1110px');
+    const parts = Array.from(strip.children).map((child) => child.className);
+    expect(parts).toEqual([
+      'standalone-signature standalone-signature-left inline-signature',
+      'standalone-signature standalone-signature-right inline-signature',
+    ]);
+    expect(strip.querySelector('app-platform-signature')?.classList).not.toContain('stacked');
+
+    // Without a marked column the strip follows the reader.
+    main.querySelector('.learning-map')!.removeAttribute('data-signature-column');
+    refresh();
+    expect(strip.style.marginLeft).toBe('43px');
+    expect(strip.style.width).toBe('1354px');
+  });
+
+  it('keeps docked statements out of the in-flow strip', () => {
+    main.classList.add('course-page');
+    vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(1800);
+    vi.mocked(main.getBoundingClientRect).mockReturnValue({ left: 300, right: 1500 } as DOMRect);
+    refresh();
+    expect(root.querySelector('.signature-strip')).toBeNull();
+    expect(root.querySelectorAll('.standalone-signature:not(.inline-signature)').length).toBe(2);
   });
 
   it('preserves existing section IDs and ignores hidden, modal, carousel and card headings', () => {
@@ -749,5 +799,66 @@ describe('Shared page sidebars', () => {
     expect(context.value()?.excluded).toBe(false);
     context.clear(nextOwner);
     expect(context.value()).toBeNull();
+  });
+});
+
+describe('Lesson stage outline (DLV-408)', () => {
+  it('marks stage headings and assigns each section to its stage', () => {
+    const main = document.createElement('main');
+    main.innerHTML = `
+      <h1>Spring MVC</h1>
+      <section id="stage-brief" data-sidebar-label="Brief" data-sidebar-level="stage" data-sidebar-stage="brief">
+        <section id="lesson-scenario"><h2 data-sidebar-label="Scenario">Learning scenario: A URL shortener</h2></section>
+      </section>
+      <section id="stage-build" data-sidebar-label="Build" data-sidebar-level="stage" data-sidebar-stage="build">
+        <section id="url-shortener-code"><h2 data-sidebar-label="The code">Build it: create and redirect</h2></section>
+      </section>`;
+    document.body.append(main);
+    try {
+      const links = collectPageSections(main).map(({ id, label, level, group }) => ({ id, label, level, group }));
+      expect(links).toEqual([
+        { id: links[0].id, label: 'Overview', level: undefined, group: undefined },
+        { id: 'stage-brief', label: 'Brief', level: 'stage', group: 'brief' },
+        { id: 'lesson-scenario', label: 'Scenario', level: undefined, group: 'brief' },
+        { id: 'stage-build', label: 'Build', level: 'stage', group: 'build' },
+        { id: 'url-shortener-code', label: 'The code', level: undefined, group: 'build' },
+      ]);
+    } finally {
+      main.remove();
+    }
+  });
+  it('drops the title Overview link when the lesson has its own Overview stage', () => {
+    const main = document.createElement('main');
+    main.innerHTML = `
+      <h1>Replication and Quorums</h1>
+      <section id="stage-overview" data-sidebar-label="Overview" data-sidebar-level="stage" data-sidebar-stage="overview">
+        <section id="rq-overview"><h2 data-sidebar-label="What you will learn">Overview</h2></section>
+      </section>
+      <section id="stage-brief" data-sidebar-label="Brief" data-sidebar-level="stage" data-sidebar-stage="brief">
+        <section id="lesson-scenario"><h2 data-sidebar-label="Scenario">Learning scenario</h2></section>
+      </section>`;
+    document.body.append(main);
+    try {
+      expect(collectPageSections(main).map(({ id, label }) => ({ id, label }))).toEqual([
+        { id: 'stage-overview', label: 'Overview' },
+        { id: 'rq-overview', label: 'What you will learn' },
+        { id: 'stage-brief', label: 'Brief' },
+        { id: 'lesson-scenario', label: 'Scenario' },
+      ]);
+    } finally {
+      main.remove();
+    }
+  });
+});
+
+describe('Sidebar page title (navTitle)', () => {
+  it('prefers the authored short title on the h1 and falls back to its text', () => {
+    const main = document.createElement('main');
+    main.innerHTML = '<h1 data-sidebar-title=" Design a reservation system ">Design a reservation system with payment: 60,000 seats</h1>';
+    expect(sidebarPageTitle(main)).toBe('Design a reservation system');
+    main.querySelector('h1')!.removeAttribute('data-sidebar-title');
+    expect(sidebarPageTitle(main)).toBe('Design a reservation system with payment: 60,000 seats');
+    main.innerHTML = '<p>No heading</p>';
+    expect(sidebarPageTitle(main)).toBe('This page');
   });
 });

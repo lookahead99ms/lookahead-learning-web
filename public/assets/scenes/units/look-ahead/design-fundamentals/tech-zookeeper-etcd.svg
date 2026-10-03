@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Aigerim raises the New checkout flag from 10% to 50% and many servers switch to the new value together">
+<style>
+.tech-zookeeper-etcd-t{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-ink,#102a33)}
+.tech-zookeeper-etcd-mu{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-muted,#536970)}
+.tech-zookeeper-etcd-g{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-good,#1f7a4d)}
+.tech-zookeeper-etcd-w{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-warn,#a15c00)}
+.tech-zookeeper-etcd-b{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-bad,#b3261e)}
+.tech-zookeeper-etcd-a{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-accent,#006c73)}
+.tech-zookeeper-etcd-mono{font-family:ui-monospace,Menlo,monospace}
+.tech-zookeeper-etcd-card{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.tech-zookeeper-etcd-soft{fill:var(--scene-accent-soft,#dcefed)}
+.tech-zookeeper-etcd-acc{fill:var(--scene-accent,#006c73)}
+.tech-zookeeper-etcd-gd{fill:var(--scene-good,#1f7a4d)}
+.tech-zookeeper-etcd-wn{fill:var(--scene-warn,#a15c00)}
+.tech-zookeeper-etcd-bd{fill:var(--scene-bad,#b3261e)}
+.tech-zookeeper-etcd-ink{fill:var(--scene-ink,#102a33)}
+.tech-zookeeper-etcd-mf{fill:var(--scene-muted,#536970)}
+.tech-zookeeper-etcd-lf{fill:var(--scene-line,#cfdfdc)}
+.tech-zookeeper-etcd-cf{fill:var(--scene-card,#fff)}
+.tech-zookeeper-etcd-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-zookeeper-etcd-sg{fill:none;stroke:var(--scene-good,#1f7a4d);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-zookeeper-etcd-sw{fill:none;stroke:var(--scene-warn,#a15c00);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-zookeeper-etcd-sb{fill:none;stroke:var(--scene-bad,#b3261e);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-zookeeper-etcd-sm{fill:none;stroke:var(--scene-muted,#536970);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-zookeeper-etcd-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-zookeeper-etcd-si{fill:none;stroke:var(--scene-ink,#102a33);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-zookeeper-etcd-v1{animation:tech-zookeeper-etcd-v1 8s -3.2s infinite;}
+@keyframes tech-zookeeper-etcd-v1{0%,30%{opacity:1}31%,100%{opacity:0}}
+.tech-zookeeper-etcd-v2{animation:tech-zookeeper-etcd-v2 8s -3.2s infinite;}
+@keyframes tech-zookeeper-etcd-v2{0%,31%{opacity:0}32%,96%{opacity:1}97%,100%{opacity:0}}
+.tech-zookeeper-etcd-dot{animation:tech-zookeeper-etcd-dot 8s -3.2s infinite;}
+@keyframes tech-zookeeper-etcd-dot{0%,30%{fill:var(--scene-line,#cfdfdc)}32%,94%{fill:var(--scene-accent,#006c73)}98%,100%{fill:var(--scene-line,#cfdfdc)}}
+</style>
+<path class="tech-zookeeper-etcd-sm" d="M24 14 V82"/><path class="tech-zookeeper-etcd-acc" d="M24 14 h40 l-9 11 l9 11 h-40 z"/>
+<g class="tech-zookeeper-etcd-v1"><text class="tech-zookeeper-etcd-mu" x="44" y="112" font-size="22" font-weight="700" text-anchor="middle">10%</text>
+</g><g class="tech-zookeeper-etcd-v2"><text class="tech-zookeeper-etcd-a" x="44" y="112" font-size="22" font-weight="700" text-anchor="middle">50%</text>
+</g>
+<path class="tech-zookeeper-etcd-sa" style="stroke-dasharray:3 7;stroke-width:3" d="M78 48 H104"/>
+<circle class="tech-zookeeper-etcd-dot" cx="128" cy="20" r="8"/><circle class="tech-zookeeper-etcd-dot" cx="150" cy="20" r="8"/><circle class="tech-zookeeper-etcd-dot" cx="172" cy="20" r="8"/><circle class="tech-zookeeper-etcd-dot" cx="194" cy="20" r="8"/><circle class="tech-zookeeper-etcd-dot" cx="216" cy="20" r="8"/>
+<circle class="tech-zookeeper-etcd-dot" cx="128" cy="42" r="8"/><circle class="tech-zookeeper-etcd-dot" cx="150" cy="42" r="8"/><circle class="tech-zookeeper-etcd-dot" cx="172" cy="42" r="8"/><circle class="tech-zookeeper-etcd-dot" cx="194" cy="42" r="8"/><circle class="tech-zookeeper-etcd-dot" cx="216" cy="42" r="8"/>
+<circle class="tech-zookeeper-etcd-dot" cx="128" cy="64" r="8"/><circle class="tech-zookeeper-etcd-dot" cx="150" cy="64" r="8"/><circle class="tech-zookeeper-etcd-dot" cx="172" cy="64" r="8"/><circle class="tech-zookeeper-etcd-dot" cx="194" cy="64" r="8"/><circle class="tech-zookeeper-etcd-dot" cx="216" cy="64" r="8"/>
+<circle class="tech-zookeeper-etcd-dot" cx="128" cy="86" r="8"/><circle class="tech-zookeeper-etcd-dot" cx="150" cy="86" r="8"/><circle class="tech-zookeeper-etcd-dot" cx="172" cy="86" r="8"/><circle class="tech-zookeeper-etcd-dot" cx="194" cy="86" r="8"/><circle class="tech-zookeeper-etcd-dot" cx="216" cy="86" r="8"/>
+<text class="tech-zookeeper-etcd-mu" x="170" y="122" font-size="15" font-weight="700" text-anchor="middle">5,000 servers</text>
+
+</svg>

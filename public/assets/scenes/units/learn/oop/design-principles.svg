@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Checkout has a Promotion socket and new promotion plug-ins slot in without editing checkout">
+<style>
+.learn-oop-design-principles-t{font-family:system-ui,sans-serif;font-size:14px;font-weight:700}
+.learn-oop-design-principles-p1{animation:learn-oop-design-principles-a 6s ease-in-out infinite;animation-delay:-3s}
+.learn-oop-design-principles-p2{animation:learn-oop-design-principles-b 6s ease-in-out infinite;animation-delay:-3s}
+.learn-oop-design-principles-p3{animation:learn-oop-design-principles-c 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes learn-oop-design-principles-a{0%,28%{transform:translateX(0)}38%,95%{transform:translateX(-40px);opacity:.0}100%{transform:translateX(0)}}
+@keyframes learn-oop-design-principles-b{0%,28%{transform:translateX(40px);opacity:0}38%,62%{transform:translateX(0);opacity:1}72%,100%{transform:translateX(40px);opacity:0}}
+@keyframes learn-oop-design-principles-c{0%,62%{transform:translateX(40px);opacity:0}72%,95%{transform:translateX(0);opacity:1}100%{transform:translateX(40px);opacity:0}}
+</style>
+<rect width="240" height="135" fill="var(--scene-card,#fff)"/>
+<rect x="8" y="22" width="92" height="70" rx="12" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<text class="learn-oop-design-principles-t" x="54" y="52" text-anchor="middle" fill="var(--scene-ink,#102a33)">Checkout</text>
+<text class="learn-oop-design-principles-t" x="54" y="74" text-anchor="middle" fill="var(--scene-muted,#536970)">unchanged</text>
+<rect x="100" y="38" width="16" height="38" rx="4" fill="var(--scene-ink,#102a33)"/>
+<rect x="116" y="44" width="10" height="7" fill="var(--scene-ink,#102a33)"/><rect x="116" y="63" width="10" height="7" fill="var(--scene-ink,#102a33)"/>
+<g class="learn-oop-design-principles-p1"><rect x="126" y="34" width="106" height="46" rx="8" fill="var(--scene-learn,#0f8a8a)"/>
+<circle cx="168" cy="48" r="5" fill="var(--scene-card,#fff)"/><circle cx="190" cy="66" r="5" fill="var(--scene-card,#fff)"/><path d="M192 44L166 70" stroke="var(--scene-card,#fff)" stroke-width="4" stroke-linecap="round"/></g>
+<g class="learn-oop-design-principles-p2"><rect x="126" y="34" width="106" height="46" rx="8" fill="var(--scene-grow,#b8457a)"/>
+<g fill="var(--scene-card,#fff)"><rect x="150" y="48" width="32" height="18" rx="2"/><rect x="184" y="54" width="14" height="12" rx="2"/><circle cx="160" cy="69" r="5"/><circle cx="190" cy="69" r="5"/></g></g>
+<g class="learn-oop-design-principles-p3"><rect x="126" y="34" width="106" height="46" rx="8" fill="var(--scene-ahead,#2f6fb3)"/>
+<g fill="var(--scene-card,#fff)"><rect x="154" y="54" width="50" height="20" rx="2"/><rect x="151" y="46" width="56" height="9" rx="2"/></g><rect x="176" y="46" width="6" height="28" fill="var(--scene-ahead,#2f6fb3)"/></g>
+<text class="learn-oop-design-principles-t" x="179" y="112" text-anchor="middle" fill="var(--scene-text,#28434a)">new plug-in</text>
+</svg>

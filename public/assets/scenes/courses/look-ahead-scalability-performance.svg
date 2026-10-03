@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Rising traffic queues at a load balancer, a fourth server joins, load evens out and p99 latency drops back under target">
+<style>
+.look-ahead-scalability-performance-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.6}
+.look-ahead-scalability-performance-soft{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-accent,#006c73);stroke-width:1.6}
+.look-ahead-scalability-performance-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:600;fill:var(--scene-ink,#102a33)}
+.look-ahead-scalability-performance-wire{stroke:var(--scene-line,#cfdfdc);stroke-width:2;fill:none}
+.look-ahead-scalability-performance-q{fill:var(--scene-ahead,#2f6fb3);animation:look-ahead-scalability-performance-q 6s ease-in-out infinite;animation-delay:-4.5s}
+.look-ahead-scalability-performance-bar{transform-box:fill-box;transform-origin:bottom;animation:look-ahead-scalability-performance-bar 6s ease-in-out infinite;animation-delay:-4.5s}
+.look-ahead-scalability-performance-new{animation:look-ahead-scalability-performance-new 6s ease-in-out infinite;animation-delay:-4.5s}
+.look-ahead-scalability-performance-hot{animation:look-ahead-scalability-performance-hot 6s ease-in-out infinite;animation-delay:-4.5s}
+.look-ahead-scalability-performance-good{animation:look-ahead-scalability-performance-good 6s ease-in-out infinite;animation-delay:-4.5s}
+@keyframes look-ahead-scalability-performance-q{0%,10%{opacity:.2}30%,55%{opacity:1}75%,100%{opacity:.2}}
+@keyframes look-ahead-scalability-performance-bar{0%,10%{transform:scaleY(.5)}35%,55%{transform:scaleY(1)}75%,100%{transform:scaleY(.6)}}
+@keyframes look-ahead-scalability-performance-new{0%,50%{opacity:0;transform:translateY(8px)}62%,94%{opacity:1;transform:translateY(0)}100%{opacity:0}}
+@keyframes look-ahead-scalability-performance-hot{0%,25%{opacity:0}35%,58%{opacity:1}68%,100%{opacity:0}}
+@keyframes look-ahead-scalability-performance-good{0%,62%{opacity:0}70%,96%{opacity:1}100%{opacity:0}}
+</style>
+<rect x="0" y="0" width="320" height="180" rx="12" fill="var(--scene-card,#fff)"/>
+<!-- queue -->
+<rect class="look-ahead-scalability-performance-box" x="14" y="76" width="74" height="28" rx="6"/>
+<circle cx="28" cy="90" r="6" fill="var(--scene-ahead,#2f6fb3)"/>
+<circle cx="44" cy="90" r="6" fill="var(--scene-ahead,#2f6fb3)"/>
+<circle class="look-ahead-scalability-performance-q" cx="60" cy="90" r="6"/>
+<circle class="look-ahead-scalability-performance-q" cx="76" cy="90" r="6" style="animation-delay:-4.2s"/>
+<path class="look-ahead-scalability-performance-wire" d="M88 90 H110"/>
+<!-- LB -->
+<rect class="look-ahead-scalability-performance-soft" x="110" y="70" width="40" height="40" rx="9"/>
+<text class="look-ahead-scalability-performance-t" x="130" y="95" text-anchor="middle">LB</text>
+<path class="look-ahead-scalability-performance-wire" d="M150 90 C166 90 166 46 180 46 M150 90 C166 90 166 82 180 82 M150 90 C166 90 166 118 180 118"/>
+<!-- servers with load bars -->
+<g>
+<rect class="look-ahead-scalability-performance-box" x="180" y="32" width="52" height="28" rx="6"/>
+<rect class="look-ahead-scalability-performance-box" x="180" y="68" width="52" height="28" rx="6"/>
+<rect class="look-ahead-scalability-performance-box" x="180" y="104" width="52" height="28" rx="6"/>
+<rect class="look-ahead-scalability-performance-bar" x="188" y="38" width="36" height="16" rx="3" fill="var(--scene-grow,#b8457a)" opacity=".55"/>
+<rect class="look-ahead-scalability-performance-bar" x="188" y="74" width="36" height="16" rx="3" fill="var(--scene-grow,#b8457a)" opacity=".55"/>
+<rect class="look-ahead-scalability-performance-bar" x="188" y="110" width="36" height="16" rx="3" fill="var(--scene-grow,#b8457a)" opacity=".55"/>
+</g>
+<g class="look-ahead-scalability-performance-new">
+<path class="look-ahead-scalability-performance-wire" d="M150 90 C166 90 166 154 180 154" style="stroke:var(--scene-good,#1f7a4d)"/>
+<rect x="180" y="140" width="52" height="28" rx="6" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-good,#1f7a4d)" stroke-width="1.8"/>
+<path d="M200 154 h12 M206 148 v12" stroke="var(--scene-good,#1f7a4d)" stroke-width="2.4" stroke-linecap="round"/>
+</g>
+<!-- latency gauge -->
+<rect class="look-ahead-scalability-performance-box" x="246" y="40" width="62" height="100" rx="8"/>
+<text class="look-ahead-scalability-performance-t" x="277" y="62" text-anchor="middle">p99</text>
+<path d="M254 96 H300" stroke="var(--scene-muted,#536970)" stroke-width="1.4" stroke-dasharray="4 3"/>
+<rect x="266" y="76" width="22" height="56" rx="3" fill="var(--scene-line,#cfdfdc)" opacity=".5"/>
+<rect class="look-ahead-scalability-performance-bar" x="266" y="80" width="22" height="52" rx="3" fill="var(--scene-ahead,#2f6fb3)" opacity=".75"/>
+<g class="look-ahead-scalability-performance-hot"><circle cx="300" cy="76" r="5" fill="var(--scene-bad,#b3261e)"/></g>
+<g class="look-ahead-scalability-performance-good"><circle cx="300" cy="76" r="5" fill="var(--scene-good,#1f7a4d)"/></g>
+</svg>

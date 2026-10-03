@@ -117,18 +117,18 @@ describe('Unified Search topic workbench', () => {
 
   it('keeps canonical Look Ahead review URLs scoped with their course return link', async () => {
     const lookAheadDocument: SearchDocument = {
-      ...document, path: 'look-ahead', courseId: 'scalability-performance',
-      courseTitle: 'Scalability and Performance', moduleId: 'queues-backpressure',
+      ...document, path: 'look-ahead', courseId: 'resilience-production',
+      courseTitle: 'Resilience in Production', moduleId: 'queues-backpressure',
       moduleTitle: 'Queues, Backpressure, and Fairness',
     };
     content.getSearchIndex.mockReturnValue(of([lookAheadDocument]));
     const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/search?kind=practice&path=look-ahead&course=scalability-performance&module=queues-backpressure&unit=queues-backpressure', Search);
+    await harness.navigateByUrl('/search?kind=practice&path=look-ahead&course=resilience-production&module=queues-backpressure&unit=queues-backpressure', Search);
     harness.detectChanges();
     expect(content.getSearchIndex).toHaveBeenCalledWith('look-ahead');
     expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toBe('Review questions');
     expect(harness.routeNativeElement?.querySelector('.review-back')?.getAttribute('href'))
-      .toBe('/look-ahead/scalability-performance#unit-queues-backpressure');
+      .toBe('/look-ahead/resilience-production#unit-queues-backpressure');
     expect(harness.routeNativeElement?.querySelector('form[role="search"]')).toBeNull();
   });
 

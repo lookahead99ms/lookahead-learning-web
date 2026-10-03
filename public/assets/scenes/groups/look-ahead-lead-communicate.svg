@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 200" role="img" aria-label="Lead: a lead picks an option and the team lines up behind it. Your story: a situation, action and result told in order. Your project: a project card explained to an interviewer who nods">
+<style>
+.look-ahead-lead-communicate-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.look-ahead-lead-communicate-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-ink, #102a33); stroke-width: 2; }
+.look-ahead-lead-communicate-soft { fill: var(--scene-accent-soft, #dcefed); stroke: var(--scene-accent, #006c73); stroke-width: 2; }
+.look-ahead-lead-communicate-lead { fill: var(--scene-ahead, #2f6fb3); stroke: var(--scene-ink, #102a33); stroke-width: 1.6; }
+.look-ahead-lead-communicate-team { fill: var(--scene-accent-soft, #dcefed); stroke: var(--scene-accent, #006c73); stroke-width: 1.8; }
+.look-ahead-lead-communicate-div { stroke: var(--scene-line, #cfdfdc); stroke-width: 2; }
+.look-ahead-lead-communicate-dash { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 2; stroke-dasharray: 5 4; }
+.look-ahead-lead-communicate-ink { fill: none; stroke: var(--scene-ink, #102a33); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.look-ahead-lead-communicate-ok { fill: none; stroke: var(--scene-good, #1f7a4d); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.look-ahead-lead-communicate-bar { fill: var(--scene-accent, #006c73); }
+.look-ahead-lead-communicate-bar2 { fill: var(--scene-muted, #536970); opacity: .55; }
+
+.look-ahead-lead-communicate-flag { animation: look-ahead-lead-communicate-kf-flag 7s infinite; }
+@keyframes look-ahead-lead-communicate-kf-flag { 0%, 12% { opacity: 0; } 18%, 100% { opacity: 1; } }
+.look-ahead-lead-communicate-align { animation: look-ahead-lead-communicate-kf-align 7s infinite; }
+@keyframes look-ahead-lead-communicate-kf-align { 0%, 20% { opacity: 0; } 28%, 100% { opacity: 1; } }
+.look-ahead-lead-communicate-s1 { animation: look-ahead-lead-communicate-kf-s1 7s infinite; }
+.look-ahead-lead-communicate-s2 { animation: look-ahead-lead-communicate-kf-s2 7s infinite; }
+.look-ahead-lead-communicate-s3 { animation: look-ahead-lead-communicate-kf-s3 7s infinite; }
+@keyframes look-ahead-lead-communicate-kf-s1 { 0%, 30% { opacity: .25; } 36%, 100% { opacity: 1; } }
+@keyframes look-ahead-lead-communicate-kf-s2 { 0%, 40% { opacity: .25; } 46%, 100% { opacity: 1; } }
+@keyframes look-ahead-lead-communicate-kf-s3 { 0%, 50% { opacity: .25; } 56%, 100% { opacity: 1; } }
+.look-ahead-lead-communicate-nod { animation: look-ahead-lead-communicate-kf-nod 7s infinite; }
+@keyframes look-ahead-lead-communicate-kf-nod { 0%, 66% { opacity: 0; } 72%, 100% { opacity: 1; } }
+
+.look-ahead-lead-communicate-flag, .look-ahead-lead-communicate-align, .look-ahead-lead-communicate-s1, .look-ahead-lead-communicate-s2, .look-ahead-lead-communicate-s3, .look-ahead-lead-communicate-nod { animation-delay: -5.4s; }
+</style>
+<path class="look-ahead-lead-communicate-div" d="M162 24 V168 M318 24 V168"/>
+<!-- Lead: the lead sets a direction and the team lines up behind it. -->
+<circle class="look-ahead-lead-communicate-lead" cx="62" cy="48" r="12"/>
+<path class="look-ahead-lead-communicate-lead" d="M40 84 a22 20 0 0 1 44 0 Z"/>
+<g class="look-ahead-lead-communicate-flag"><path class="look-ahead-lead-communicate-ink" d="M98 30 V84"/><path d="M98 30 h30 l-7 8 l7 8 h-30 Z" fill="var(--scene-good, #1f7a4d)"/></g>
+<g class="look-ahead-lead-communicate-align"><path class="look-ahead-lead-communicate-dash" d="M62 86 L32 112 M62 86 V114 M62 86 L92 112"/></g>
+<circle class="look-ahead-lead-communicate-team" cx="32" cy="120" r="9"/><path class="look-ahead-lead-communicate-team" d="M16 150 a16 15 0 0 1 32 0 Z"/>
+<circle class="look-ahead-lead-communicate-team" cx="62" cy="122" r="9"/><path class="look-ahead-lead-communicate-team" d="M46 152 a16 15 0 0 1 32 0 Z"/>
+<circle class="look-ahead-lead-communicate-team" cx="92" cy="120" r="9"/><path class="look-ahead-lead-communicate-team" d="M76 150 a16 15 0 0 1 32 0 Z"/>
+<text class="look-ahead-lead-communicate-t" x="84" y="186" font-size="19" text-anchor="middle">Lead</text>
+<!-- Your story: situation, action, result, told in order. -->
+<rect class="look-ahead-lead-communicate-box" x="178" y="24" width="124" height="128" rx="10"/>
+<g class="look-ahead-lead-communicate-s1"><circle class="look-ahead-lead-communicate-soft" cx="198" cy="52" r="10"/><text class="look-ahead-lead-communicate-t" x="198" y="57.5" font-size="17" text-anchor="middle">1</text><rect class="look-ahead-lead-communicate-bar2" x="216" y="47" width="70" height="10" rx="5"/></g>
+<g class="look-ahead-lead-communicate-s2"><circle class="look-ahead-lead-communicate-soft" cx="198" cy="88" r="10"/><text class="look-ahead-lead-communicate-t" x="198" y="93.5" font-size="17" text-anchor="middle">2</text><rect class="look-ahead-lead-communicate-bar2" x="216" y="83" width="56" height="10" rx="5"/></g>
+<g class="look-ahead-lead-communicate-s3"><circle class="look-ahead-lead-communicate-soft" cx="198" cy="124" r="10"/><path class="look-ahead-lead-communicate-ok" d="M193 124 l4 4 l7 -8"/><rect class="look-ahead-lead-communicate-bar" x="216" y="119" width="64" height="10" rx="5"/></g>
+<text class="look-ahead-lead-communicate-t" x="240" y="186" font-size="19" text-anchor="middle">Your story</text>
+<!-- Your project: a project card explained to an interviewer who nods. -->
+<rect class="look-ahead-lead-communicate-box" x="332" y="30" width="84" height="62" rx="8"/>
+<path class="look-ahead-lead-communicate-ink" d="M342 48 h14 v12 h-14 Z M356 54 H370 M370 46 h16 v16 h-16 Z"/>
+<rect class="look-ahead-lead-communicate-bar" x="342" y="72" width="48" height="8" rx="4"/>
+<path class="look-ahead-lead-communicate-dash" d="M418 62 C436 62 438 92 440 104"/>
+<circle class="look-ahead-lead-communicate-team" cx="442" cy="118" r="10"/><path class="look-ahead-lead-communicate-team" d="M424 152 a18 16 0 0 1 36 0 Z"/>
+<circle class="look-ahead-lead-communicate-lead" cx="358" cy="122" r="10"/><path class="look-ahead-lead-communicate-lead" d="M340 156 a18 16 0 0 1 36 0 Z"/>
+<g class="look-ahead-lead-communicate-nod"><circle cx="458" cy="96" r="11" fill="var(--scene-good, #1f7a4d)"/><path d="M453 96 l4 4 l6 -8" fill="none" stroke="var(--scene-card, #ffffff)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text class="look-ahead-lead-communicate-t" x="398" y="186" font-size="19" text-anchor="middle">Your project</text>
+</svg>

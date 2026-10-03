@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="An agent drafts a refund, a human approval gate lets it through once">
+<style>
+.look-ahead-ai-systems-architecture-bounded-agent-workflows-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.look-ahead-ai-systems-architecture-bounded-agent-workflows-coin{animation:look-ahead-ai-systems-architecture-bounded-agent-workflows-coin 6s ease-in-out infinite;animation-delay:-3s}
+.look-ahead-ai-systems-architecture-bounded-agent-workflows-gate{animation:look-ahead-ai-systems-architecture-bounded-agent-workflows-gate 6s ease-in-out infinite;animation-delay:-3s}
+.look-ahead-ai-systems-architecture-bounded-agent-workflows-ok{animation:look-ahead-ai-systems-architecture-bounded-agent-workflows-ok 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes look-ahead-ai-systems-architecture-bounded-agent-workflows-coin{0%{transform:translateX(0)}35%{transform:translateX(70px)}55%{transform:translateX(70px)}85%{transform:translateX(150px)}100%{transform:translateX(150px)}}
+@keyframes look-ahead-ai-systems-architecture-bounded-agent-workflows-gate{0%,35%{transform:translateY(0)}55%,85%{transform:scaleY(.12)}100%{transform:translateY(0)}}
+@keyframes look-ahead-ai-systems-architecture-bounded-agent-workflows-ok{0%,35%{opacity:0}50%,85%{opacity:1}100%{opacity:0}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="20" y="48" width="56" height="62" rx="12" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/>
+<circle cx="38" cy="72" r="5" fill="var(--scene-accent,#006c73)"/><circle cx="58" cy="72" r="5" fill="var(--scene-accent,#006c73)"/>
+<rect x="36" y="88" width="24" height="5" rx="2" fill="var(--scene-accent,#006c73)"/><path d="M48 48v-10" stroke="var(--scene-accent,#006c73)" stroke-width="3"/><circle cx="48" cy="35" r="4" fill="var(--scene-grow,#b8457a)"/>
+<path d="M76 100h230" stroke="var(--scene-line,#cfdfdc)" stroke-width="6" stroke-linecap="round"/>
+<g class="look-ahead-ai-systems-architecture-bounded-agent-workflows-coin"><circle cx="90" cy="100" r="13" fill="var(--scene-warn,#a15c00)"/><text x="90" y="105" text-anchor="middle" style="font:700 16px system-ui,sans-serif;fill:#fff">$</text></g>
+<rect x="166" y="64" width="8" height="52" rx="3" fill="var(--scene-ink,#102a33)"/>
+<rect style="transform-origin:170px 114px" class="look-ahead-ai-systems-architecture-bounded-agent-workflows-gate" x="160" y="68" width="20" height="46" rx="3" fill="var(--scene-bad,#b3261e)" opacity=".9"/>
+<circle cx="170" cy="46" r="11" fill="var(--scene-link,#245a88)"/>
+<g class="look-ahead-ai-systems-architecture-bounded-agent-workflows-ok"><circle cx="205" cy="44" r="12" fill="var(--scene-good,#1f7a4d)"/><path d="M199 44l5 5 8-10" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+<rect x="262" y="82" width="44" height="36" rx="6" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-good,#1f7a4d)" stroke-width="2.5"/><path d="M272 100l8 8 16-16" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="54" y="138" text-anchor="middle" class="look-ahead-ai-systems-architecture-bounded-agent-workflows-t">Agent drafts</text>
+<text x="176" y="150" text-anchor="middle" class="look-ahead-ai-systems-architecture-bounded-agent-workflows-t">Human approves</text>
+</svg>

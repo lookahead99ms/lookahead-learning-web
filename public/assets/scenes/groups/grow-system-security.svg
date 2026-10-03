@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 200" role="img" aria-label="Requests pass a gateway that checks their token, a bad request is rejected, and when one service goes down traffic is rerouted to a healthy one">
+<style>
+.grow-system-security-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.grow-system-security-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.grow-system-security-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 1.5; stroke-dasharray: 4 4; }
+.grow-system-security-bar { fill: var(--scene-line, #cfdfdc); }
+.grow-system-security-shield { fill: var(--scene-accent-soft, #dcefed); stroke: var(--scene-accent, #006c73); stroke-width: 2.5; }
+.grow-system-security-acc { fill: var(--scene-accent, #006c73); }
+.grow-system-security-acc-s { fill: none; stroke: var(--scene-accent, #006c73); stroke-width: 3; }
+.grow-system-security-good { fill: var(--scene-good, #1f7a4d); }
+.grow-system-security-bad { fill: var(--scene-bad, #b3261e); }
+.grow-system-security-bad-t { fill: var(--scene-bad, #b3261e); }
+.grow-system-security-card-f { fill: var(--scene-card, #ffffff); }
+.grow-system-security-x { stroke: var(--scene-card, #ffffff); stroke-width: 2.5; stroke-linecap: round; }
+
+.grow-system-security-ok1 { animation: grow-system-security-kf-ok1 7s linear infinite; }
+@keyframes grow-system-security-kf-ok1 {
+  0% { transform: translate(0px, 0px); opacity: 1; }
+  18% { transform: translate(92px, 0px); opacity: 1; }
+  32% { transform: translate(206px, 0px); opacity: 1; }
+  36%, 100% { transform: translate(206px, 0px); opacity: 0; }
+}
+.grow-system-security-badreq { animation: grow-system-security-kf-bad 7s linear infinite; }
+@keyframes grow-system-security-kf-bad {
+  0%, 30% { transform: translate(0px, 0px); opacity: 0; }
+  32% { transform: translate(0px, 0px); opacity: 1; }
+  46% { transform: translate(62px, 0px); opacity: 1; }
+  54% { transform: translate(34px, 0px); opacity: 1; }
+  60%, 100% { transform: translate(34px, 0px); opacity: 0; }
+}
+.grow-system-security-rejected { animation: grow-system-security-kf-rej 7s infinite; }
+@keyframes grow-system-security-kf-rej { 0%, 44% { opacity: 0; } 47%, 66% { opacity: 1; } 70%, 100% { opacity: 0; } }
+.grow-system-security-ok2 { animation: grow-system-security-kf-ok2 7s linear infinite; }
+@keyframes grow-system-security-kf-ok2 {
+  0%, 60% { transform: translate(0px, 0px); opacity: 0; }
+  62% { transform: translate(0px, 0px); opacity: 1; }
+  78% { transform: translate(92px, 0px); opacity: 1; }
+  94% { transform: translate(206px, 54px); opacity: 1; }
+  98%, 100% { transform: translate(206px, 54px); opacity: 0; }
+}
+.grow-system-security-down { animation: grow-system-security-kf-down 7s infinite; }
+@keyframes grow-system-security-kf-down { 0%, 40% { opacity: 0; } 44%, 96% { opacity: 1; } 100% { opacity: 0; } }
+.grow-system-security-up { animation: grow-system-security-kf-up 7s infinite; }
+@keyframes grow-system-security-kf-up { 0%, 40% { opacity: 1; } 44%, 96% { opacity: 0; } 100% { opacity: 1; } }
+
+.grow-system-security-ok1, .grow-system-security-badreq, .grow-system-security-rejected, .grow-system-security-ok2, .grow-system-security-down, .grow-system-security-up { animation-delay: -3.4s; }
+@media (prefers-reduced-motion: reduce) { .grow-system-security-ok1, .grow-system-security-badreq, .grow-system-security-rejected, .grow-system-security-ok2, .grow-system-security-down, .grow-system-security-up { animation-play-state: paused; } }
+</style>
+
+<!-- client laptop -->
+<rect class="grow-system-security-box" x="26" y="74" width="74" height="50" rx="5"/>
+<rect class="grow-system-security-bar" x="36" y="86" width="40" height="6" rx="3"/>
+<rect class="grow-system-security-bar" x="36" y="98" width="52" height="6" rx="3"/>
+<rect class="grow-system-security-bar" x="36" y="110" width="30" height="6" rx="3"/>
+<rect class="grow-system-security-acc" x="16" y="126" width="94" height="6" rx="3"/>
+
+<!-- wires -->
+<path class="grow-system-security-wire" d="M110 100 H160"/>
+<path class="grow-system-security-wire" d="M230 100 L300 46"/>
+<path class="grow-system-security-wire" d="M230 100 H300"/>
+<path class="grow-system-security-wire" d="M230 100 L300 154"/>
+
+<!-- gateway shield with lock -->
+<path class="grow-system-security-shield" d="M195 60 L230 73 V100 C230 124 214 138 195 146 C176 138 160 124 160 100 V73 Z"/>
+<path class="grow-system-security-acc-s" d="M187 98 V90 a8 8 0 0 1 16 0 V98"/>
+<rect class="grow-system-security-acc" x="182" y="97" width="26" height="22" rx="4"/>
+<circle class="grow-system-security-card-f" cx="195" cy="107" r="3.5"/>
+<text class="grow-system-security-t" x="195" y="172" font-size="16" text-anchor="middle">Gateway</text>
+
+<!-- services -->
+<rect class="grow-system-security-box" x="300" y="26" width="160" height="40" rx="8"/>
+<rect class="grow-system-security-bar" x="314" y="40" width="70" height="12" rx="6"/>
+<circle class="grow-system-security-good" cx="440" cy="46" r="7"/>
+
+<rect class="grow-system-security-box" x="300" y="80" width="160" height="40" rx="8"/>
+<g class="grow-system-security-up">
+  <rect class="grow-system-security-bar" x="314" y="94" width="90" height="12" rx="6"/>
+  <circle class="grow-system-security-good" cx="440" cy="100" r="7"/>
+</g>
+<g class="grow-system-security-down">
+  <rect class="grow-system-security-bad" x="300" y="80" width="160" height="40" rx="8" opacity=".14"/>
+  <text class="grow-system-security-t grow-system-security-bad-t" x="314" y="105" font-size="16">Rerouted</text>
+  <circle class="grow-system-security-bad" cx="440" cy="100" r="8"/>
+  <path class="grow-system-security-x" d="M436 96 L444 104 M444 96 L436 104"/>
+</g>
+
+<rect class="grow-system-security-box" x="300" y="134" width="160" height="40" rx="8"/>
+<rect class="grow-system-security-bar" x="314" y="148" width="56" height="12" rx="6"/>
+<circle class="grow-system-security-good" cx="440" cy="154" r="7"/>
+
+<!-- requests -->
+<g class="grow-system-security-ok1"><circle class="grow-system-security-good" cx="102" cy="100" r="8"/></g>
+<g class="grow-system-security-ok2"><circle class="grow-system-security-good" cx="102" cy="100" r="8"/></g>
+<g class="grow-system-security-badreq"><circle class="grow-system-security-bad" cx="102" cy="100" r="8"/></g>
+
+<g class="grow-system-security-rejected">
+  <rect class="grow-system-security-bad" x="148" y="22" width="94" height="28" rx="14" opacity=".16"/>
+  <text class="grow-system-security-t grow-system-security-bad-t" x="195" y="41" font-size="16" text-anchor="middle">Rejected</text>
+</g>
+</svg>

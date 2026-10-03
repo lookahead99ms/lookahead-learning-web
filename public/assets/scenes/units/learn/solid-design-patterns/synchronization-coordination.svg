@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Two transfers each hold one lock and wait for the other: a deadlock circle">
+<style>
+.learn-solid-design-patterns-synchronization-coordination-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-solid-design-patterns-synchronization-coordination-m{font-family:ui-monospace,Menlo,monospace;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-solid-design-patterns-synchronization-coordination-a1{animation:learn-solid-design-patterns-synchronization-coordination-sp 6s linear infinite;animation-delay:-3s;transform-box:fill-box;transform-origin:center}
+@keyframes learn-solid-design-patterns-synchronization-coordination-sp{to{transform:rotate(360deg)}}
+.learn-solid-design-patterns-synchronization-coordination-a2{animation:learn-solid-design-patterns-synchronization-coordination-bl 2s ease-in-out infinite;animation-delay:-1s}
+@keyframes learn-solid-design-patterns-synchronization-coordination-bl{0%,100%{opacity:.35}50%{opacity:1}}
+
+@media (prefers-reduced-motion:reduce){[class*="learn-solid-design-patterns-synchronization-coordination-a"]{animation:none!important}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="10" y="60" width="86" height="70" rx="12" fill="var(--scene-card,#fff)" stroke="var(--scene-ahead,#2f6fb3)" stroke-width="3"/>
+<rect x="224" y="60" width="86" height="70" rx="12" fill="var(--scene-card,#fff)" stroke="var(--scene-grow,#b8457a)" stroke-width="3"/>
+<circle cx="53" cy="88" r="12" fill="var(--scene-ahead,#2f6fb3)"/><circle cx="267" cy="88" r="12" fill="var(--scene-grow,#b8457a)"/>
+<path d="M53 100v14M267 100v14" stroke="var(--scene-ink,#102a33)" stroke-width="3"/>
+<text class="learn-solid-design-patterns-synchronization-coordination-t" x="53" y="52" text-anchor="middle">Alice</text>
+<text class="learn-solid-design-patterns-synchronization-coordination-t" x="267" y="52" text-anchor="middle">Bob</text>
+<g class="learn-solid-design-patterns-synchronization-coordination-a2" fill="none" stroke="var(--scene-bad,#b3261e)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M100 80H212"/><path d="M204 72l10 8-10 8"/><path d="M220 112H108"/><path d="M116 104l-10 8 10 8"/></g>
+<g class="learn-solid-design-patterns-synchronization-coordination-a1"><circle cx="160" cy="96" r="20" fill="none" stroke="var(--scene-bad,#b3261e)" stroke-width="3" stroke-dasharray="8 6"/></g>
+<rect x="118" y="142" width="84" height="26" rx="13" fill="var(--scene-bad,#b3261e)"/><text class="learn-solid-design-patterns-synchronization-coordination-t" x="160" y="160" text-anchor="middle" style="fill:#fff">Stuck</text>
+<text class="learn-solid-design-patterns-synchronization-coordination-m" x="53" y="150" text-anchor="middle" style="fill:var(--scene-muted,#536970)">lock 1</text>
+<text class="learn-solid-design-patterns-synchronization-coordination-m" x="267" y="150" text-anchor="middle" style="fill:var(--scene-muted,#536970)">lock 2</text>
+</svg>

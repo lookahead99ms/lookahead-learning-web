@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Three services, each with its own database, pass an order event along; one service redeploys on its own without stopping the others">
+<style>
+.grow-microservices-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.grow-microservices-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.grow-microservices-band { fill: var(--scene-grow, #b8457a); }
+.grow-microservices-db { fill: var(--scene-accent-soft, #dcefed); stroke: var(--scene-accent, #006c73); stroke-width: 1.5; }
+.grow-microservices-link { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 1.5; }
+.grow-microservices-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 1.5; stroke-dasharray: 4 4; }
+.grow-microservices-env { fill: var(--scene-warn, #a15c00); }
+.grow-microservices-env-l { fill: none; stroke: var(--scene-card, #ffffff); stroke-width: 1.5; }
+.grow-microservices-ring { fill: none; stroke: var(--scene-accent, #006c73); stroke-width: 3; }
+
+.grow-microservices-msg { animation: grow-microservices-kf-msg 7s ease-in-out infinite; }
+@keyframes grow-microservices-kf-msg {
+  0% { transform: translateX(-20px); opacity: 0; }
+  8%, 30% { transform: translateX(0px); opacity: 1; }
+  36% { transform: translateX(18px); opacity: 0; }
+  40% { transform: translateX(92px); opacity: 0; }
+  46%, 64% { transform: translateX(110px); opacity: 1; }
+  70%, 100% { transform: translateX(128px); opacity: 0; }
+}
+.grow-microservices-deploy { animation: grow-microservices-kf-deploy 7s infinite; }
+@keyframes grow-microservices-kf-deploy { 0%, 72% { opacity: 0; } 76%, 90% { opacity: 1; } 96%, 100% { opacity: 0; } }
+
+.grow-microservices-msg, .grow-microservices-deploy { animation-delay: -3.5s; }
+@media (prefers-reduced-motion: reduce) { .grow-microservices-msg, .grow-microservices-deploy { animation-play-state: paused; } }
+</style>
+
+<!-- wires between services -->
+<path class="grow-microservices-wire" d="M96 56 H114"/>
+<path class="grow-microservices-wire" d="M206 56 H224"/>
+
+<!-- services -->
+<rect class="grow-microservices-box" x="4" y="30" width="92" height="52" rx="9"/>
+<rect class="grow-microservices-band" x="4" y="30" width="92" height="6" rx="3"/>
+<text class="grow-microservices-t" x="50" y="64" font-size="16" text-anchor="middle">Orders</text>
+
+<rect class="grow-microservices-box" x="114" y="30" width="92" height="52" rx="9"/>
+<rect class="grow-microservices-band" x="114" y="30" width="92" height="6" rx="3"/>
+<text class="grow-microservices-t" x="160" y="64" font-size="16" text-anchor="middle">Payments</text>
+<rect class="grow-microservices-ring grow-microservices-deploy" x="109" y="25" width="102" height="62" rx="12"/>
+
+<rect class="grow-microservices-box" x="224" y="30" width="92" height="52" rx="9"/>
+<rect class="grow-microservices-band" x="224" y="30" width="92" height="6" rx="3"/>
+<text class="grow-microservices-t" x="270" y="64" font-size="16" text-anchor="middle">Shipping</text>
+
+<!-- each owns its database -->
+<path class="grow-microservices-link" d="M50 82 V116 M160 82 V116 M270 82 V116"/>
+<g>
+  <path class="grow-microservices-db" d="M32 120 a18 6 0 0 1 36 0 V150 a18 6 0 0 1 -36 0 Z"/>
+  <path class="grow-microservices-db" d="M32 120 a18 6 0 0 0 36 0"/>
+  <path class="grow-microservices-db" d="M142 120 a18 6 0 0 1 36 0 V150 a18 6 0 0 1 -36 0 Z"/>
+  <path class="grow-microservices-db" d="M142 120 a18 6 0 0 0 36 0"/>
+  <path class="grow-microservices-db" d="M252 120 a18 6 0 0 1 36 0 V150 a18 6 0 0 1 -36 0 Z"/>
+  <path class="grow-microservices-db" d="M252 120 a18 6 0 0 0 36 0"/>
+</g>
+
+<!-- event envelope moving service to service -->
+<g class="grow-microservices-msg">
+  <rect class="grow-microservices-env" x="94" y="48" width="22" height="16" rx="3"/>
+  <path class="grow-microservices-env-l" d="M95 49 L105 57 L115 49"/>
+</g>
+</svg>

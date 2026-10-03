@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" class="contention-root" role="img" aria-label="Two people tap Book on berth 23 in the same second; one gets it and the other is told it is taken.">
+<style>
+.contention-root text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.contention-t{fill:var(--scene-ink,#102a33)}
+.contention-tx{fill:var(--scene-text,#28434a)}
+.contention-mut{fill:var(--scene-muted,#536970)}
+.contention-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.contention-soft{fill:var(--scene-accent-soft,#dcefed)}
+.contention-acc{fill:var(--scene-accent,#006c73)}
+.contention-ln{fill:var(--scene-line,#cfdfdc)}
+.contention-cardf{fill:var(--scene-card,#fff)}
+.contention-good{fill:var(--scene-good,#1f7a4d)}
+.contention-warn{fill:var(--scene-warn,#a15c00)}
+.contention-bad{fill:var(--scene-bad,#b3261e)}
+.contention-link{fill:var(--scene-link,#245a88)}
+.contention-out{fill:var(--scene-bubble-out,#d4ecea)}
+.contention-sk{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.contention-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.contention-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:1.5;stroke-dasharray:3 3}
+.contention-tap{fill:var(--scene-accent,#006c73);fill-opacity:.25;transform-box:fill-box;transform-origin:center;animation:contention-tap 6s -3s infinite}
+.contention-target{fill:var(--scene-card,#fff);stroke:var(--scene-accent,#006c73);stroke-width:2;animation:contention-target 6s -3s infinite}
+.contention-d1{fill:var(--scene-good,#1f7a4d);animation:contention-d1 6s -3s infinite}
+.contention-d2{fill:var(--scene-bad,#b3261e);animation:contention-d2 6s -3s infinite}
+.contention-res{animation:contention-res 6s -3s infinite}
+.contention-wait{animation:contention-wait 6s -3s infinite}
+.contention-w1{animation:contention-blink 1s -.0s infinite}.contention-w2{animation:contention-blink 1s -.33s infinite}.contention-w3{animation:contention-blink 1s -.66s infinite}
+@keyframes contention-blink{0%,100%{opacity:.25}50%{opacity:1}}
+@keyframes contention-tap{0%{opacity:0;transform:scale(.4)}6%{opacity:1;transform:scale(1)}14%,100%{opacity:0;transform:scale(1.4)}}
+@keyframes contention-d1{0%,8%{opacity:0;transform:translate(0,0)}10%{opacity:1}28%{opacity:1;transform:translate(32px,0)}31%,100%{opacity:0;transform:translate(32px,0)}}
+@keyframes contention-d2{0%,9%{opacity:0;transform:translate(0,0)}11%{opacity:1}30%{transform:translate(-32px,0)}40%{opacity:1;transform:translate(-14px,0)}43%,100%{opacity:0;transform:translate(-14px,0)}}
+@keyframes contention-target{0%,28%{fill:var(--scene-card,#fff)}31%,96%{fill:var(--scene-good,#1f7a4d)}100%{fill:var(--scene-card,#fff)}}
+@keyframes contention-res{0%,36%{opacity:0}40%,96%{opacity:1}100%{opacity:0}}
+@keyframes contention-wait{0%,36%{opacity:1}40%,96%{opacity:0}100%{opacity:1}}
+@media (prefers-reduced-motion: reduce){.contention-root *{animation-play-state:paused!important}}
+</style>
+<rect x="4" y="10" width="68" height="114" rx="11" class="contention-box"/>
+<circle cx="38" cy="30" r="6" class="contention-ln"/><path d="M27 48 Q27 38 38 38 Q49 38 49 48 Z" class="contention-ln"/>
+<rect x="12" y="62" width="52" height="20" rx="10" class="contention-acc"/>
+<circle cx="38" cy="72" r="14" class="contention-tap"/>
+<g class="contention-wait"><circle cx="28" cy="102" r="2.5" class="contention-mut contention-w1"/><circle cx="38" cy="102" r="2.5" class="contention-mut contention-w2"/><circle cx="48" cy="102" r="2.5" class="contention-mut contention-w3"/></g>
+<text x="38" y="108" font-size="13" font-weight="700" text-anchor="middle" class="contention-good contention-res">Booked ✓</text>
+<rect x="168" y="10" width="68" height="114" rx="11" class="contention-box"/>
+<circle cx="202" cy="30" r="6" class="contention-ln"/><path d="M191 48 Q191 38 202 38 Q213 38 213 48 Z" class="contention-ln"/>
+<rect x="176" y="62" width="52" height="20" rx="10" class="contention-acc"/>
+<circle cx="202" cy="72" r="14" class="contention-tap"/>
+<g class="contention-wait"><circle cx="192" cy="102" r="2.5" class="contention-mut contention-w1"/><circle cx="202" cy="102" r="2.5" class="contention-mut contention-w2"/><circle cx="212" cy="102" r="2.5" class="contention-mut contention-w3"/></g>
+<text x="202" y="108" font-size="13" font-weight="700" text-anchor="middle" class="contention-bad contention-res">Taken</text>
+<text x="120" y="22" font-size="13" font-weight="700" text-anchor="middle" class="contention-t">Berth 23</text>
+<rect x="92" y="28" width="56" height="98" rx="9" class="contention-soft"/>
+<rect x="98" y="34" width="20" height="12" rx="2" class="contention-box"/><rect x="122" y="34" width="20" height="12" rx="2" class="contention-ln"/>
+<rect x="98" y="50" width="20" height="12" rx="2" class="contention-ln"/><rect x="122" y="50" width="20" height="12" rx="2" class="contention-box"/>
+<rect x="104" y="67" width="32" height="20" rx="3" class="contention-target"/>
+<rect x="98" y="92" width="20" height="12" rx="2" class="contention-box"/><rect x="122" y="92" width="20" height="12" rx="2" class="contention-ln"/>
+<rect x="98" y="108" width="20" height="12" rx="2" class="contention-ln"/><rect x="122" y="108" width="20" height="12" rx="2" class="contention-box"/>
+<circle cx="72" cy="77" r="5" class="contention-d1"/><circle cx="168" cy="77" r="5" class="contention-d2"/>
+</svg>

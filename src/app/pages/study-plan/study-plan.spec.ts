@@ -1,6 +1,8 @@
 import { afterEach, vi } from 'vitest';
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { BehaviorSubject, Subject, of, throwError } from 'rxjs';
@@ -88,6 +90,8 @@ describe('StudyPlanPage', () => {
           { path: 'exit', component: PlannerExit },
         ]),
         { provide: ContentService, useValue: service },
+        provideHttpClient(),
+        provideHttpClientTesting(),
       ],
     }).compileComponents();
   });
@@ -2212,10 +2216,10 @@ describe('StudyPlanPage', () => {
         route: ['/', 'grow', 'spring-boot', 'spring-lesson'],
       },
       {
-        ...document('design-lesson', 'system-design', 'free'),
+        ...document('design-lesson', 'resilience-production', 'free'),
         path: 'look-ahead',
         courseTitle: 'System Design',
-        route: ['/', 'look-ahead', 'system-design', 'design-lesson'],
+        route: ['/', 'look-ahead', 'resilience-production', 'design-lesson'],
       },
     ];
     const variant = {
@@ -2230,7 +2234,7 @@ describe('StudyPlanPage', () => {
       scheduledMinutes: 900,
       selectedContentCount: 3,
       availableContentCount: 3,
-      topicIds: ['learn:core-java', 'grow:spring-boot', 'look-ahead:system-design'],
+      topicIds: ['learn:core-java', 'grow:spring-boot', 'look-ahead:resilience-production'],
     };
     TestBed.overrideProvider(ContentService, {
       useValue: {
@@ -2255,7 +2259,7 @@ describe('StudyPlanPage', () => {
                 topics: [
                   { id: 'learn:core-java', title: 'Core Java' },
                   { id: 'grow:spring-boot', title: 'Spring Boot' },
-                  { id: 'look-ahead:system-design', title: 'System Design' },
+                  { id: 'look-ahead:resilience-production', title: 'System Design' },
                 ],
                 recommendedVariantId: variant.templateId,
                 variants: [variant],
@@ -2277,6 +2281,12 @@ describe('StudyPlanPage', () => {
       expect.stringContaining('Authored'),
       expect.stringContaining('Custom'),
     ]);
+    expect(
+      choices.map((choice) => choice.querySelector('app-card-scene')?.getAttribute('src')),
+    ).toEqual(['/assets/scenes/study-plan/authored.svg', '/assets/scenes/study-plan/custom.svg']);
+    for (const choice of choices) {
+      expect(choice.querySelector('app-card-scene')?.getAttribute('aria-hidden')).toBe('true');
+    }
 
     await page.selectCreationMode('authored');
     page.chooseReadyMadePath('backend');
@@ -2308,7 +2318,7 @@ describe('StudyPlanPage', () => {
     expect([...page.selectedTopicIds()]).toEqual([
       'learn:core-java',
       'grow:spring-boot',
-      'look-ahead:system-design',
+      'look-ahead:resilience-production',
     ]);
     expect(TestBed.inject(Router).url).toContain('creation=custom');
     expect(TestBed.inject(Router).url).toContain('builderStep=learn');

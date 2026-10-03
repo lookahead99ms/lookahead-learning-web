@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" class="url-shortener-root" role="img" aria-label="A long link becomes a short link, and tapping the short link opens the long page.">
+<style>
+.url-shortener-root text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.url-shortener-t{fill:var(--scene-ink,#102a33)}
+.url-shortener-tx{fill:var(--scene-text,#28434a)}
+.url-shortener-mut{fill:var(--scene-muted,#536970)}
+.url-shortener-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.url-shortener-soft{fill:var(--scene-accent-soft,#dcefed)}
+.url-shortener-acc{fill:var(--scene-accent,#006c73)}
+.url-shortener-ln{fill:var(--scene-line,#cfdfdc)}
+.url-shortener-cardf{fill:var(--scene-card,#fff)}
+.url-shortener-good{fill:var(--scene-good,#1f7a4d)}
+.url-shortener-warn{fill:var(--scene-warn,#a15c00)}
+.url-shortener-bad{fill:var(--scene-bad,#b3261e)}
+.url-shortener-link{fill:var(--scene-link,#245a88)}
+.url-shortener-out{fill:var(--scene-bubble-out,#d4ecea)}
+.url-shortener-sk{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.url-shortener-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.url-shortener-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:1.5;stroke-dasharray:3 3}
+.url-shortener-a{animation-duration:6s;animation-iteration-count:infinite;animation-delay:-4.6s}
+.url-shortener-long{animation-name:url-shortener-long}@keyframes url-shortener-long{0%,25%{opacity:1}35%,100%{opacity:.45}}
+.url-shortener-arrow{animation-name:url-shortener-arrow}@keyframes url-shortener-arrow{0%,25%{opacity:0}32%,100%{opacity:1}}
+.url-shortener-short{animation-name:url-shortener-short;transform-box:fill-box;transform-origin:center}@keyframes url-shortener-short{0%,32%{opacity:0;transform:scale(.8)}40%,100%{opacity:1;transform:scale(1)}}
+.url-shortener-tap{animation-name:url-shortener-tap}@keyframes url-shortener-tap{0%,50%{opacity:0;transform:translate(14px,14px)}58%,100%{opacity:1;transform:translate(0,0)}}
+.url-shortener-page{animation-name:url-shortener-page}@keyframes url-shortener-page{0%,64%{opacity:0;transform:translateY(6px)}72%,100%{opacity:1;transform:translateY(0)}}
+@media (prefers-reduced-motion: reduce){.url-shortener-root *{animation-play-state:paused!important}}
+</style>
+<g class="url-shortener-a url-shortener-long"><rect x="8" y="6" width="224" height="28" rx="8" class="url-shortener-box"/><text x="18" y="25" font-size="13" class="url-shortener-mut">https://shoes.example/&#8230;</text></g>
+<path class="url-shortener-a url-shortener-arrow" d="M120 37 v14 m-6 -6 l6 7 l6 -7" stroke="var(--scene-accent,#006c73)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+<g class="url-shortener-a url-shortener-short"><rect x="52" y="54" width="136" height="30" rx="15" class="url-shortener-soft" stroke="var(--scene-accent,#006c73)" stroke-width="1.5"/><text x="120" y="75" font-size="15" font-weight="700" text-anchor="middle" class="url-shortener-t">sho.rt/k3Xp</text></g>
+<g class="url-shortener-a url-shortener-tap"><path d="M174 76 l0 18 l5 -5 l4 8 l3.5 -1.6 l-4 -8 l7 0z" class="url-shortener-t" stroke="var(--scene-card,#fff)" stroke-width="1"/></g>
+<g class="url-shortener-a url-shortener-page"><rect x="30" y="94" width="180" height="38" rx="8" class="url-shortener-box"/><rect x="30" y="94" width="180" height="12" rx="6" class="url-shortener-ln"/><text x="120" y="124" font-size="15" font-weight="700" text-anchor="middle" class="url-shortener-t">Spring shoes</text></g>
+</svg>

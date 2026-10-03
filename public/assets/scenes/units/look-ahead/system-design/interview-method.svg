@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A design answer built step by step"><title>A design answer built step by step</title>
+<style>
+.look-ahead-system-design-interview-method-bg{fill:var(--scene-card,#fff)}
+.look-ahead-system-design-interview-method-t{font-family:system-ui,sans-serif;font-weight:700;font-size:16px;fill:var(--scene-ink,#102a33);text-anchor:middle}
+.look-ahead-system-design-interview-method-n{font-family:system-ui,sans-serif;font-weight:700;font-size:16px;fill:var(--scene-ink,#102a33);text-anchor:middle}
+.look-ahead-system-design-interview-method-soft{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-accent,#006c73);stroke-width:2.5}
+.look-ahead-system-design-interview-method-card{fill:var(--scene-card,#fff);stroke:var(--scene-ink,#102a33);stroke-width:2.5}
+.look-ahead-system-design-interview-method-line{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:3;stroke-linecap:round}
+.look-ahead-system-design-interview-method-dash{fill:none;stroke:var(--scene-muted,#536970);stroke-width:2.5;stroke-dasharray:5 5;stroke-linecap:round}
+
+.look-ahead-system-design-interview-method-board{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-accent,#006c73);stroke-width:3}
+.look-ahead-system-design-interview-method-clip{fill:var(--scene-accent,#006c73)}
+.look-ahead-system-design-interview-method-row{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:2}
+.look-ahead-system-design-interview-method-box{fill:none;stroke:var(--scene-ink,#102a33);stroke-width:2.5}
+.look-ahead-system-design-interview-method-tl{font-family:system-ui,sans-serif;font-weight:700;font-size:16px;fill:var(--scene-ink,#102a33)}
+.look-ahead-system-design-interview-method-ck{fill:none;stroke:var(--scene-good,#1f7a4d);stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;animation:6s linear -3s infinite look-ahead-system-design-interview-method-k1}
+.look-ahead-system-design-interview-method-c2{animation-name:look-ahead-system-design-interview-method-k2}.look-ahead-system-design-interview-method-c3{animation-name:look-ahead-system-design-interview-method-k3}
+.look-ahead-system-design-interview-method-clock{fill:var(--scene-card,#fff);stroke:var(--scene-warn,#a15c00);stroke-width:3}
+.look-ahead-system-design-interview-method-hand{stroke:var(--scene-warn,#a15c00);stroke-width:3;stroke-linecap:round;transform-origin:292px 70px;animation:6s linear -3s infinite look-ahead-system-design-interview-method-spin}
+@keyframes look-ahead-system-design-interview-method-k1{0%,5%{stroke-dashoffset:1}15%,90%{stroke-dashoffset:0}96%,100%{stroke-dashoffset:1}}
+@keyframes look-ahead-system-design-interview-method-k2{0%,25%{stroke-dashoffset:1}35%,90%{stroke-dashoffset:0}96%,100%{stroke-dashoffset:1}}
+@keyframes look-ahead-system-design-interview-method-k3{0%,45%{stroke-dashoffset:1}55%,90%{stroke-dashoffset:0}96%,100%{stroke-dashoffset:1}}
+@keyframes look-ahead-system-design-interview-method-spin{to{transform:rotate(360deg)}}
+</style>
+<rect class="look-ahead-system-design-interview-method-bg" width="320" height="180"/>
+<rect class="look-ahead-system-design-interview-method-board" x="22" y="12" width="236" height="158" rx="12"/>
+<rect class="look-ahead-system-design-interview-method-clip" x="110" y="6" width="60" height="14" rx="5"/>
+<rect class="look-ahead-system-design-interview-method-row" x="36" y="30" width="208" height="38" rx="8"/><rect class="look-ahead-system-design-interview-method-box" x="46" y="40" width="18" height="18" rx="4"/><path class="look-ahead-system-design-interview-method-ck" pathLength="1" d="M49 49l5 5 9-12"/><text class="look-ahead-system-design-interview-method-tl" x="76" y="55">Requirements</text>
+<rect class="look-ahead-system-design-interview-method-row" x="36" y="76" width="208" height="38" rx="8"/><rect class="look-ahead-system-design-interview-method-box" x="46" y="86" width="18" height="18" rx="4"/><path class="look-ahead-system-design-interview-method-ck look-ahead-system-design-interview-method-c2" pathLength="1" d="M49 95l5 5 9-12"/><text class="look-ahead-system-design-interview-method-tl" x="76" y="101">Estimates</text>
+<rect class="look-ahead-system-design-interview-method-row" x="36" y="122" width="208" height="38" rx="8"/><rect class="look-ahead-system-design-interview-method-box" x="46" y="132" width="18" height="18" rx="4"/><path class="look-ahead-system-design-interview-method-ck look-ahead-system-design-interview-method-c3" pathLength="1" d="M49 141l5 5 9-12"/><text class="look-ahead-system-design-interview-method-tl" x="76" y="147">Defend</text>
+<circle class="look-ahead-system-design-interview-method-clock" cx="292" cy="70" r="20"/><line class="look-ahead-system-design-interview-method-hand" x1="292" y1="70" x2="292" y2="56"/><circle cx="292" cy="70" r="3" fill="var(--scene-warn,#a15c00)"/>
+</svg>

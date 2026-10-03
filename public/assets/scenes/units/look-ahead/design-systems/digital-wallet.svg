@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Wairimu sends 40.00 to Farid: her balance drops from 100.00 to 60.00 as a 40 coin travels across and lands in Farid's wallet as +40.00">
+<style>
+.digital-wallet-t{font-family:system-ui, sans-serif;fill:var(--scene-ink,#102a33)}
+.digital-wallet-tx{font-family:system-ui, sans-serif;fill:var(--scene-text,#28434a)}
+.digital-wallet-tm{font-family:ui-monospace, Menlo, monospace;fill:var(--scene-ink,#102a33)}
+.digital-wallet-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.digital-wallet-card{fill:var(--scene-card,#fff)}
+.digital-wallet-soft{fill:var(--scene-muted,#536970)}
+.digital-wallet-line{fill:var(--scene-line,#cfdfdc)}
+.digital-wallet-acc{fill:var(--scene-accent,#006c73)}
+.digital-wallet-accsoft{fill:var(--scene-accent-soft,#dcefed)}
+.digital-wallet-good{fill:var(--scene-good,#1f7a4d)}
+.digital-wallet-bad{fill:var(--scene-bad,#b3261e)}
+.digital-wallet-warn{fill:var(--scene-warn,#a15c00)}
+.digital-wallet-link{fill:var(--scene-link,#245a88)}
+.digital-wallet-a{animation-duration:6s;animation-iteration-count:infinite;animation-delay:-4.4s;transform-box:fill-box}
+@media (prefers-reduced-motion: reduce){.digital-wallet-a{animation-play-state:paused!important}}
+.digital-wallet-coin{animation-name:digital-wallet-coin}
+@keyframes digital-wallet-coin{0%,18%{opacity:0;transform:translate(0,0)}22%{opacity:1;transform:translate(0,0)}36%{opacity:1;transform:translate(42px,-30px)}52%{opacity:1;transform:translate(86px,0)}56%,100%{opacity:0;transform:translate(86px,0)}}
+.digital-wallet-b100{animation-name:digital-wallet-b100}
+@keyframes digital-wallet-b100{0%,20%{opacity:1}23%,95%{opacity:0}100%{opacity:1}}
+.digital-wallet-b60{animation-name:digital-wallet-b60}
+@keyframes digital-wallet-b60{0%,20%{opacity:0}23%,95%{opacity:1}100%{opacity:0}}
+.digital-wallet-in{animation-name:digital-wallet-in}
+@keyframes digital-wallet-in{0%,52%{opacity:0;transform:translateY(6px)}58%,95%{opacity:1;transform:none}100%{opacity:0}}
+</style>
+<path d="M88 62 Q120 22 152 62" stroke="var(--scene-line,#cfdfdc)" stroke-width="2" stroke-dasharray="4 4" fill="none"/>
+<rect x="8" y="8" width="80" height="120" rx="12" class="digital-wallet-box"/>
+<rect x="38" y="14" width="20" height="4" rx="2" class="digital-wallet-line"/>
+<circle cx="48" cy="38" r="9" style="fill:var(--scene-accent,#006c73)"/><path d="M32 64 a16 13 0 0 1 32 0z" style="fill:var(--scene-accent,#006c73)"/>
+<rect x="20" y="104" width="56" height="8" rx="4" class="digital-wallet-line"/>
+<rect x="152" y="8" width="80" height="120" rx="12" class="digital-wallet-box"/>
+<rect x="182" y="14" width="20" height="4" rx="2" class="digital-wallet-line"/>
+<circle cx="192" cy="38" r="9" style="fill:var(--scene-link,#245a88)"/><path d="M176 64 a16 13 0 0 1 32 0z" style="fill:var(--scene-link,#245a88)"/>
+<rect x="164" y="104" width="56" height="8" rx="4" class="digital-wallet-line"/>
+<text class="digital-wallet-t digital-wallet-a digital-wallet-b100" x="48" y="90" font-size="17" font-weight="700" text-anchor="middle">100.00</text>
+<text class="digital-wallet-t digital-wallet-a digital-wallet-b60" x="48" y="90" font-size="17" font-weight="700" text-anchor="middle">60.00</text>
+<text class="digital-wallet-good digital-wallet-a digital-wallet-in" style="font-family:system-ui, sans-serif" x="192" y="90" font-size="17" font-weight="700" text-anchor="middle">+40.00</text>
+<g class="digital-wallet-a digital-wallet-coin"><circle cx="78" cy="62" r="13" class="digital-wallet-warn"/><text class="digital-wallet-card" style="font-family:system-ui, sans-serif" x="78" y="67" font-size="14" font-weight="700" text-anchor="middle">40</text></g>
+</svg>

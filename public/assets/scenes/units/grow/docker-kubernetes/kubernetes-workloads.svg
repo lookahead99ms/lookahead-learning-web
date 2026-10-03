@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Rolling update: Pods are swapped from v1 to v2 one at a time while the Service keeps sending traffic to ready Pods">
+<style>
+.grow-docker-kubernetes-kubernetes-workloads-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.grow-docker-kubernetes-kubernetes-workloads-w{font:700 16px system-ui,sans-serif;fill:var(--scene-card,#fff)}
+.grow-docker-kubernetes-kubernetes-workloads-n{animation:grow-docker-kubernetes-kubernetes-workloads-in 6s ease-in-out infinite}
+.grow-docker-kubernetes-kubernetes-workloads-o{animation:grow-docker-kubernetes-kubernetes-workloads-out 6s ease-in-out infinite}
+.grow-docker-kubernetes-kubernetes-workloads-a{animation-delay:-.5s}
+.grow-docker-kubernetes-kubernetes-workloads-b{animation-delay:-1.7s}
+.grow-docker-kubernetes-kubernetes-workloads-c{animation-delay:-5.5s}
+.grow-docker-kubernetes-kubernetes-workloads-f{animation:grow-docker-kubernetes-kubernetes-workloads-flow 1.5s linear infinite;animation-delay:-.5s}
+@keyframes grow-docker-kubernetes-kubernetes-workloads-in{0%,20%{opacity:0}35%,90%{opacity:1}100%{opacity:0}}
+@keyframes grow-docker-kubernetes-kubernetes-workloads-out{0%,20%{opacity:1}35%,90%{opacity:0}100%{opacity:1}}
+@keyframes grow-docker-kubernetes-kubernetes-workloads-flow{0%{transform:translateY(0);opacity:0}20%,80%{opacity:1}100%{transform:translateY(40px);opacity:0}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="100" y="12" width="120" height="30" rx="15" fill="var(--scene-accent,#006c73)"/>
+<text class="grow-docker-kubernetes-kubernetes-workloads-w" x="160" y="32" text-anchor="middle">Service</text>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="2"><path d="M130 42L58 82"/><path d="M160 42V82"/><path d="M190 42L262 82"/></g>
+<circle class="grow-docker-kubernetes-kubernetes-workloads-f" cx="160" cy="44" r="4" fill="var(--scene-warn,#a15c00)"/>
+<g>
+<g transform="translate(18,84)"><rect width="80" height="56" rx="8" fill="var(--scene-muted,#536970)" class="grow-docker-kubernetes-kubernetes-workloads-o grow-docker-kubernetes-kubernetes-workloads-a"/><rect width="80" height="56" rx="8" fill="var(--scene-good,#1f7a4d)" class="grow-docker-kubernetes-kubernetes-workloads-n grow-docker-kubernetes-kubernetes-workloads-a"/></g>
+<g transform="translate(120,84)"><rect width="80" height="56" rx="8" fill="var(--scene-muted,#536970)" class="grow-docker-kubernetes-kubernetes-workloads-o grow-docker-kubernetes-kubernetes-workloads-b"/><rect width="80" height="56" rx="8" fill="var(--scene-good,#1f7a4d)" class="grow-docker-kubernetes-kubernetes-workloads-n grow-docker-kubernetes-kubernetes-workloads-b"/></g>
+<g transform="translate(222,84)"><rect width="80" height="56" rx="8" fill="var(--scene-muted,#536970)" class="grow-docker-kubernetes-kubernetes-workloads-o grow-docker-kubernetes-kubernetes-workloads-c"/><rect width="80" height="56" rx="8" fill="var(--scene-good,#1f7a4d)" class="grow-docker-kubernetes-kubernetes-workloads-n grow-docker-kubernetes-kubernetes-workloads-c"/></g>
+</g>
+<text class="grow-docker-kubernetes-kubernetes-workloads-t" x="58" y="166" text-anchor="middle">v1 out</text>
+<text class="grow-docker-kubernetes-kubernetes-workloads-t" x="262" y="166" text-anchor="middle">v2 in</text>
+</svg>

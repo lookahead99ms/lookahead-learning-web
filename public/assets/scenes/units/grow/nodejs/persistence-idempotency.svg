@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A retried request with the same key returns the one existing order">
+<style>
+.grow-nodejs-persistence-idempotency-t{font-family:system-ui,sans-serif;font-weight:700;font-size:16px;fill:var(--scene-ink,#102a33)}
+.grow-nodejs-persistence-idempotency-a{animation:grow-nodejs-persistence-idempotency-send 6s ease-in-out infinite}
+.grow-nodejs-persistence-idempotency-o{animation:grow-nodejs-persistence-idempotency-stamp 6s ease-out infinite;transform-origin:250px 90px}
+.grow-nodejs-persistence-idempotency-r{animation:grow-nodejs-persistence-idempotency-back 6s ease-in-out infinite}
+@keyframes grow-nodejs-persistence-idempotency-send{0%{transform:translateX(0);opacity:0}10%{opacity:1}45%{transform:translateX(110px);opacity:1}55%,100%{transform:translateX(110px);opacity:0}}
+@keyframes grow-nodejs-persistence-idempotency-stamp{0%,40%{opacity:.25;transform:scale(.9)}50%{opacity:1;transform:scale(1.06)}60%,100%{opacity:1;transform:scale(1)}}
+@keyframes grow-nodejs-persistence-idempotency-back{0%,55%{transform:translateX(0);opacity:0}65%{opacity:1}100%{transform:translateX(-95px);opacity:0}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g class="grow-nodejs-persistence-idempotency-a" style="animation-delay:-2.5s"><rect x="14" y="40" width="70" height="30" rx="6" fill="var(--scene-ahead,#2f6fb3)"/><text x="49" y="60" text-anchor="middle" class="grow-nodejs-persistence-idempotency-t" style="fill:#fff">key 42</text></g>
+<g class="grow-nodejs-persistence-idempotency-a" style="animation-delay:-1.9s"><rect x="14" y="110" width="70" height="30" rx="6" fill="var(--scene-ahead,#2f6fb3)"/><text x="49" y="130" text-anchor="middle" class="grow-nodejs-persistence-idempotency-t" style="fill:#fff">key 42</text></g>
+<text x="14" y="30" class="grow-nodejs-persistence-idempotency-t" style="fill:var(--scene-muted,#536970)">retry</text>
+<path d="M92 55 L205 85 M92 125 L205 95" stroke="var(--scene-line,#cfdfdc)" stroke-width="2" stroke-dasharray="4 4" fill="none"/>
+<g class="grow-nodejs-persistence-idempotency-o" style="animation-delay:-3.5s"><rect x="210" y="52" width="86" height="76" rx="10" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-good,#1f7a4d)" stroke-width="3"/>
+<rect x="222" y="64" width="40" height="6" rx="3" fill="var(--scene-muted,#536970)"/><rect x="222" y="78" width="62" height="6" rx="3" fill="var(--scene-line,#cfdfdc)"/><rect x="222" y="90" width="50" height="6" rx="3" fill="var(--scene-line,#cfdfdc)"/>
+<circle cx="272" cy="112" r="10" fill="var(--scene-good,#1f7a4d)"/><path d="M267 112 l4 4 l7 -8" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/></g>
+<text x="253" y="152" text-anchor="middle" class="grow-nodejs-persistence-idempotency-t">1 order</text>
+<g class="grow-nodejs-persistence-idempotency-r" style="animation-delay:-3.8s"><rect x="195" y="158" width="14" height="14" rx="3" fill="var(--scene-good,#1f7a4d)" style="display:none"/></g>
+</svg>

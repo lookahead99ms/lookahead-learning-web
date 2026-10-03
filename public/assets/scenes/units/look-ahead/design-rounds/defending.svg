@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" class="defendr-root" role="img" aria-label="An interviewer asks why not Redis, the candidate answers that holds live in the database and says when she would switch, and the point is closed.">
+<style>
+.defendr-root text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.defendr-t{fill:var(--scene-ink,#102a33)}
+.defendr-in{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.defendr-out{fill:var(--scene-bubble-out,#d4ecea)}
+.defendr-good{fill:var(--scene-good,#1f7a4d)}
+.defendr-a{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-3s}
+.defendr-q{animation-name:defendr-q}@keyframes defendr-q{0%,4%{opacity:0;transform:translateY(6px)}9%,100%{opacity:1;transform:translateY(0)}}
+.defendr-r1{animation-name:defendr-r1}@keyframes defendr-r1{0%,24%{opacity:0;transform:translateY(6px)}29%,100%{opacity:1;transform:translateY(0)}}
+.defendr-r2{animation-name:defendr-r2}@keyframes defendr-r2{0%,46%{opacity:0;transform:translateY(6px)}51%,100%{opacity:1;transform:translateY(0)}}
+.defendr-ok{animation-name:defendr-ok}@keyframes defendr-ok{0%,68%{opacity:0}73%,100%{opacity:1}}
+@media (prefers-reduced-motion: reduce){.defendr-root *{animation-play-state:paused!important}}
+</style>
+<g class="defendr-a defendr-q"><rect x="10" y="8" width="138" height="28" rx="12" class="defendr-in"/><text x="22" y="27" font-size="14" font-weight="700" class="defendr-t">Why not Redis?</text></g>
+<g class="defendr-a defendr-r1"><rect x="62" y="42" width="168" height="28" rx="12" class="defendr-out"/><text x="220" y="61" font-size="14" text-anchor="end" class="defendr-t">Holds live in the DB</text></g>
+<g class="defendr-a defendr-r2"><rect x="62" y="76" width="168" height="28" rx="12" class="defendr-out"/><text x="220" y="95" font-size="14" text-anchor="end" class="defendr-t">Switch at 10x writes</text></g>
+<g class="defendr-a defendr-ok"><rect x="10" y="108" width="128" height="22" rx="11" class="defendr-in" style="stroke:var(--scene-good,#1f7a4d)"/><text x="74" y="124" font-size="14" font-weight="700" text-anchor="middle" class="defendr-good">Point closed &#10003;</text></g>
+</svg>

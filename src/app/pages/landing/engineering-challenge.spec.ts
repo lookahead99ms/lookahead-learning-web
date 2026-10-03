@@ -1,7 +1,15 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { EngineeringChallenge } from './engineering-challenge';
 
 describe('EngineeringChallenge', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
+  });
+
   function setup() {
     const fixture = TestBed.createComponent(EngineeringChallenge);
     fixture.detectChanges();
@@ -81,5 +89,19 @@ describe('EngineeringChallenge', () => {
     const fresh = setup();
     expect(fresh.root.querySelector('details')!.open).toBe(false);
     expect(fresh.root.querySelector('.challenge-evidence')).toBeNull();
+  });
+
+  it('shows the decision scene beside the invitation without adding a control to the summary', () => {
+    const { root } = setup();
+    const summary = root.querySelector('summary')!;
+    const scene = summary.querySelector('app-card-scene .la-card-scene');
+
+    expect(scene?.getAttribute('role')).toBe('img');
+    expect(scene?.getAttribute('aria-label')).toContain('provider is down');
+    expect(summary.querySelector('app-card-scene')?.getAttribute('src')).toBe(
+      '/assets/scenes/landing/decision.svg',
+    );
+    expect(summary.querySelector('a, button, input, select, textarea, [tabindex]')).toBeNull();
+    expect(summary.querySelector('.challenge-toggle')?.textContent).toContain('Open challenge');
   });
 });

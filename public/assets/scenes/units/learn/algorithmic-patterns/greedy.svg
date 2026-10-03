@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="greedy">
+<style>
+.learn-algorithmic-patterns-greedy-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}.learn-algorithmic-patterns-greedy-w{font:700 16px system-ui,sans-serif;fill:#fff}
+@keyframes learn-algorithmic-patterns-greedy-c0{0%{transform:translate(0,0);opacity:1}8%{transform:translate(0,0);opacity:1}22%{transform:translate(165px,74px);opacity:1}92%{transform:translate(165px,74px);opacity:1}96%{transform:translate(165px,74px);opacity:0}100%{transform:translate(0,0);opacity:0}}
+.learn-algorithmic-patterns-greedy-c0{animation:learn-algorithmic-patterns-greedy-c0 7s ease-in-out infinite;animation-delay:-3.6s;}
+@keyframes learn-algorithmic-patterns-greedy-c1{0%{transform:translate(0,0);opacity:1}32%{transform:translate(0,0);opacity:1}46%{transform:translate(148px,76px);opacity:1}92%{transform:translate(148px,76px);opacity:1}96%{transform:translate(148px,76px);opacity:0}100%{transform:translate(0,0);opacity:0}}
+.learn-algorithmic-patterns-greedy-c1{animation:learn-algorithmic-patterns-greedy-c1 7s ease-in-out infinite;animation-delay:-3.6s;}
+@keyframes learn-algorithmic-patterns-greedy-c2{0%{transform:translate(0,0);opacity:1}56%{transform:translate(0,0);opacity:1}70%{transform:translate(128px,82px);opacity:1}92%{transform:translate(128px,82px);opacity:1}96%{transform:translate(128px,82px);opacity:0}100%{transform:translate(0,0);opacity:0}}
+.learn-algorithmic-patterns-greedy-c2{animation:learn-algorithmic-patterns-greedy-c2 7s ease-in-out infinite;animation-delay:-3.6s;}
+.learn-algorithmic-patterns-greedy-bg{fill:var(--scene-card,#fff)}
+</style>
+<rect class="learn-algorithmic-patterns-greedy-bg" width="320" height="180" rx="12"/>
+<rect x="185" y="98" width="122" height="56" rx="12" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<circle cx="50" cy="52" r="22" fill="var(--scene-line,#cfdfdc)"/>
+<circle cx="110" cy="52" r="16" fill="var(--scene-line,#cfdfdc)"/>
+<circle cx="160" cy="52" r="10" fill="var(--scene-line,#cfdfdc)"/>
+<g class="learn-algorithmic-patterns-greedy-c0"><circle cx="50" cy="52" r="22" fill="var(--scene-warn,#a15c00)"/><text class="learn-algorithmic-patterns-greedy-w" x="50" y="57" text-anchor="middle">25</text></g>
+<g class="learn-algorithmic-patterns-greedy-c1"><circle cx="110" cy="52" r="16" fill="var(--scene-warn,#a15c00)"/><text class="learn-algorithmic-patterns-greedy-w" x="110" y="57" text-anchor="middle">10</text></g>
+<g class="learn-algorithmic-patterns-greedy-c2"><circle cx="160" cy="52" r="10" fill="var(--scene-warn,#a15c00)"/><text class="learn-algorithmic-patterns-greedy-w" x="160" y="57" text-anchor="middle">1</text></g>
+<text class="learn-algorithmic-patterns-greedy-t" x="105" y="22" text-anchor="middle">biggest coin first</text>
+<text class="learn-algorithmic-patterns-greedy-t" x="245" y="172" text-anchor="middle">fewest coins</text>
+</svg>

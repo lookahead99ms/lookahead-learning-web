@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 200" role="img" aria-label="A change moves through the everyday tools: terminal, Git, tests, database and container, until it is deployed">
+<style>
+.learn-engineering-tools-t { font-family: system-ui, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.learn-engineering-tools-tm { font-family: ui-monospace, Menlo, monospace; fill: var(--scene-card, #ffffff); font-weight: 700; }
+.learn-engineering-tools-tile { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 2; }
+.learn-engineering-tools-wire { stroke: var(--scene-line, #cfdfdc); stroke-width: 3; stroke-dasharray: 5 5; }
+.learn-engineering-tools-ink { fill: var(--scene-ink, #102a33); }
+.learn-engineering-tools-mut { fill: var(--scene-muted, #536970); }
+.learn-engineering-tools-glow { fill: none; stroke: var(--scene-accent, #006c73); stroke-width: 3.5; opacity: 0; }
+.learn-engineering-tools-g1 { animation: learn-engineering-tools-kf-g1 8s infinite; }
+@keyframes learn-engineering-tools-kf-g1 { 0%, 16% { opacity: 1; } 18%, 100% { opacity: 0; } }
+.learn-engineering-tools-g2 { animation: learn-engineering-tools-kf-g2 8s infinite; }
+@keyframes learn-engineering-tools-kf-g2 { 0%, 17% { opacity: 0; } 18%, 34% { opacity: 1; } 36%, 100% { opacity: 0; } }
+.learn-engineering-tools-g3 { animation: learn-engineering-tools-kf-g3 8s infinite; }
+@keyframes learn-engineering-tools-kf-g3 { 0%, 35% { opacity: 0; } 36%, 52% { opacity: 1; } 54%, 100% { opacity: 0; } }
+.learn-engineering-tools-g4 { animation: learn-engineering-tools-kf-g4 8s infinite; }
+@keyframes learn-engineering-tools-kf-g4 { 0%, 53% { opacity: 0; } 54%, 70% { opacity: 1; } 72%, 100% { opacity: 0; } }
+.learn-engineering-tools-g5 { animation: learn-engineering-tools-kf-g5 8s infinite; }
+@keyframes learn-engineering-tools-kf-g5 { 0%, 71% { opacity: 0; } 72%, 96% { opacity: 1; } 98%, 100% { opacity: 0; } }
+.learn-engineering-tools-tok { animation: learn-engineering-tools-kf-tok 8s ease-in-out infinite; }
+@keyframes learn-engineering-tools-kf-tok { 0%, 12% { transform: translateX(0); } 18%, 30% { transform: translateX(92px); } 36%, 48% { transform: translateX(184px); } 54%, 66% { transform: translateX(276px); } 72%, 96% { transform: translateX(368px); } 100% { transform: translateX(0); } }
+.learn-engineering-tools-done { animation: learn-engineering-tools-kf-done 8s infinite; }
+@keyframes learn-engineering-tools-kf-done { 0%, 74% { opacity: 0; } 78%, 96% { opacity: 1; } 100% { opacity: 0; } }
+.learn-engineering-tools-g1, .learn-engineering-tools-g2, .learn-engineering-tools-g3, .learn-engineering-tools-g4, .learn-engineering-tools-g5, .learn-engineering-tools-tok, .learn-engineering-tools-done { animation-delay: -3s; }
+</style>
+<path class="learn-engineering-tools-wire" d="M96 84 H116 M188 84 H208 M280 84 H300 M372 84 H392"/>
+<!-- tiles -->
+<rect class="learn-engineering-tools-tile" x="24" y="48" width="72" height="72" rx="12"/>
+<rect class="learn-engineering-tools-tile" x="116" y="48" width="72" height="72" rx="12"/>
+<rect class="learn-engineering-tools-tile" x="208" y="48" width="72" height="72" rx="12"/>
+<rect class="learn-engineering-tools-tile" x="300" y="48" width="72" height="72" rx="12"/>
+<rect class="learn-engineering-tools-tile" x="392" y="48" width="72" height="72" rx="12"/>
+<rect class="learn-engineering-tools-glow learn-engineering-tools-g1" x="24" y="48" width="72" height="72" rx="12"/>
+<rect class="learn-engineering-tools-glow learn-engineering-tools-g2" x="116" y="48" width="72" height="72" rx="12"/>
+<rect class="learn-engineering-tools-glow learn-engineering-tools-g3" x="208" y="48" width="72" height="72" rx="12"/>
+<rect class="learn-engineering-tools-glow learn-engineering-tools-g4" x="300" y="48" width="72" height="72" rx="12"/>
+<rect class="learn-engineering-tools-glow learn-engineering-tools-g5" x="392" y="48" width="72" height="72" rx="12"/>
+<!-- terminal -->
+<rect class="learn-engineering-tools-ink" x="36" y="64" width="48" height="40" rx="5"/>
+<text class="learn-engineering-tools-tm" x="44" y="90" font-size="16">$_</text>
+<!-- git -->
+<path d="M132 98 H172 M140 98 C150 98 148 70 158 70 H166" fill="none" stroke="var(--scene-learn, #0f8a8a)" stroke-width="3"/>
+<circle cx="132" cy="98" r="5" fill="var(--scene-muted, #536970)"/><circle cx="172" cy="98" r="5" fill="var(--scene-muted, #536970)"/><circle cx="166" cy="70" r="6" fill="var(--scene-learn, #0f8a8a)"/>
+<!-- tests -->
+<g fill="none" stroke="var(--scene-good, #1f7a4d)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M222 68 l4 4 l7 -8"/><path d="M222 86 l4 4 l7 -8"/><path d="M222 104 l4 4 l7 -8"/></g>
+<rect class="learn-engineering-tools-mut" x="240" y="65" width="28" height="6" rx="3" opacity=".45"/><rect class="learn-engineering-tools-mut" x="240" y="83" width="22" height="6" rx="3" opacity=".45"/><rect class="learn-engineering-tools-mut" x="240" y="101" width="26" height="6" rx="3" opacity=".45"/>
+<!-- database -->
+<path d="M318 66 V102 a18 6 0 0 0 36 0 V66" fill="var(--scene-accent-soft, #dcefed)" stroke="var(--scene-ahead, #2f6fb3)" stroke-width="2.5"/>
+<ellipse cx="336" cy="66" rx="18" ry="6" fill="var(--scene-card, #ffffff)" stroke="var(--scene-ahead, #2f6fb3)" stroke-width="2.5"/>
+<path d="M318 84 a18 6 0 0 0 36 0" fill="none" stroke="var(--scene-ahead, #2f6fb3)" stroke-width="2"/>
+<!-- container -->
+<rect x="404" y="68" width="48" height="34" rx="3" fill="var(--scene-accent, #006c73)"/>
+<path d="M414 72 V98 M424 72 V98 M434 72 V98 M444 72 V98" stroke="var(--scene-card, #ffffff)" stroke-width="2" opacity=".6"/>
+<!-- moving change token -->
+<g class="learn-engineering-tools-tok"><circle cx="60" cy="140" r="8" fill="var(--scene-accent, #006c73)"/><path d="M60 128 V122" stroke="var(--scene-accent, #006c73)" stroke-width="3" stroke-linecap="round"/></g>
+<text class="learn-engineering-tools-t" x="24" y="30" font-size="16">From terminal to production</text>
+<g class="learn-engineering-tools-done"><rect x="356" y="160" width="108" height="30" rx="15" fill="var(--scene-good, #1f7a4d)"/><text class="learn-engineering-tools-t" x="410" y="180" font-size="16" text-anchor="middle" style="fill: var(--scene-card, #ffffff)">✓ deployed</text></g>
+</svg>

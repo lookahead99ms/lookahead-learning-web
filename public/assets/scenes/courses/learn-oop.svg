@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A switchOn call reaches a Lamp object, its on state flips and the bulb lights up">
+  <style>
+    .learn-oop-card { fill: var(--scene-card, #fff); stroke: var(--scene-line, #cfdfdc); stroke-width: 2; }
+    .learn-oop-ink { fill: var(--scene-ink, #102a33); font-family: system-ui, sans-serif; font-weight: 700; }
+    .learn-oop-mono { fill: var(--scene-ink, #102a33); font-family: ui-monospace, Menlo, monospace; font-weight: 700; }
+    .learn-oop-wire { stroke: var(--scene-muted, #536970); stroke-width: 2; fill: none; }
+    .learn-oop-track { fill: var(--scene-line, #cfdfdc); }
+    .learn-oop-knob { fill: var(--scene-card, #fff); stroke: var(--scene-muted, #536970); stroke-width: 1.5; animation: learn-oop-knob 6s ease-in-out infinite; animation-delay: -3s; }
+    .learn-oop-on { fill: var(--scene-learn, #0f8a8a); animation: learn-oop-on 6s ease-in-out infinite; animation-delay: -3s; }
+    .learn-oop-glow { fill: var(--scene-warn, #a15c00); animation: learn-oop-glow 6s ease-in-out infinite; animation-delay: -3s; }
+    .learn-oop-bulb { fill: var(--scene-card, #fff); stroke: var(--scene-ink, #102a33); stroke-width: 2.5; }
+    .learn-oop-msg { animation: learn-oop-msg 6s ease-in-out infinite; animation-delay: -3s; }
+    .learn-oop-ray { stroke: var(--scene-warn, #a15c00); stroke-width: 3; stroke-linecap: round; animation: learn-oop-on 6s ease-in-out infinite; animation-delay: -3s; }
+    @keyframes learn-oop-msg { 0% { transform: translateX(0); opacity: 0; } 8% { opacity: 1; } 30% { transform: translateX(52px); opacity: 1; } 36%, 100% { transform: translateX(52px); opacity: 0; } }
+    @keyframes learn-oop-knob { 0%, 32% { transform: translateX(0); } 40%, 88% { transform: translateX(22px); } 96%, 100% { transform: translateX(0); } }
+    @keyframes learn-oop-on { 0%, 32% { opacity: 0; } 40%, 88% { opacity: 1; } 96%, 100% { opacity: 0; } }
+    @keyframes learn-oop-glow { 0%, 32% { opacity: 0; } 40%, 88% { opacity: 0.28; } 96%, 100% { opacity: 0; } }
+  </style>
+
+  <!-- caller message -->
+  <text class="learn-oop-mono" x="16" y="62" font-size="16">flip()</text>
+  <path class="learn-oop-wire" d="M16 76 H92"/>
+  <path class="learn-oop-wire" d="M86 70 l7 6 l-7 6"/>
+  <circle class="learn-oop-msg" cx="26" cy="76" r="6" fill="var(--scene-accent, #006c73)"/>
+
+  <!-- Lamp object -->
+  <rect class="learn-oop-card" x="98" y="28" width="118" height="124" rx="12"/>
+  <text class="learn-oop-ink" x="116" y="56" font-size="17">Lamp</text>
+  <path d="M98 68 H216" stroke="var(--scene-line, #cfdfdc)" stroke-width="2"/>
+  <text class="learn-oop-mono" x="116" y="98" font-size="16">on</text>
+  <rect class="learn-oop-track" x="150" y="84" width="46" height="22" rx="11"/>
+  <rect class="learn-oop-on" x="150" y="84" width="46" height="22" rx="11"/>
+  <circle class="learn-oop-knob" cx="162" cy="95" r="9"/>
+  <rect x="116" y="122" width="80" height="10" rx="5" fill="var(--scene-line, #cfdfdc)"/>
+
+  <!-- bulb -->
+  <path class="learn-oop-wire" d="M216 90 H236" stroke-dasharray="4 4"/>
+  <circle class="learn-oop-glow" cx="270" cy="82" r="38"/>
+  <path class="learn-oop-bulb" d="M270 56 a22 22 0 0 1 13 40 v8 h-26 v-8 a22 22 0 0 1 13 -40 z"/>
+  <rect x="258" y="108" width="24" height="6" rx="2" fill="var(--scene-muted, #536970)"/>
+  <rect x="261" y="117" width="18" height="6" rx="2" fill="var(--scene-muted, #536970)"/>
+  <path class="learn-oop-ray" d="M270 30 v8 M238 46 l6 6 M302 46 l-6 6"/>
+</svg>

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label=" Data moves between hot, warm and cold tiers while an edge copy serves users">
+<style>
+.look-ahead-scalability-performance-storage-delivery-t{font:600 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.look-ahead-scalability-performance-storage-delivery-f{animation:look-ahead-scalability-performance-storage-delivery-dn 6s ease-in-out infinite}
+.look-ahead-scalability-performance-storage-delivery-e{animation:look-ahead-scalability-performance-storage-delivery-ed 3s ease-in-out infinite}
+@keyframes look-ahead-scalability-performance-storage-delivery-dn{0%{transform:translateY(0);opacity:1}40%{transform:translateY(0)}80%{transform:translateY(50px);opacity:1}100%{transform:translateY(50px);opacity:0}}
+@keyframes look-ahead-scalability-performance-storage-delivery-ed{0%{transform:translateX(0);opacity:0}20%{opacity:1}100%{transform:translateX(70px);opacity:0}}
+</style>
+<rect width="320" height="180" rx="10" fill="var(--scene-card,#fff)"/>
+<rect x="14" y="20" width="130" height="36" rx="6" fill="var(--scene-warn,#a15c00)"/>
+<rect x="14" y="62" width="130" height="36" rx="6" fill="var(--scene-ahead,#2f6fb3)"/>
+<rect x="14" y="104" width="130" height="36" rx="6" fill="var(--scene-muted,#536970)"/>
+<text class="look-ahead-scalability-performance-storage-delivery-t" x="24" y="44" style="fill:var(--scene-card,#fff)">Hot</text>
+<text class="look-ahead-scalability-performance-storage-delivery-t" x="24" y="86" style="fill:var(--scene-card,#fff)">Warm</text>
+<text class="look-ahead-scalability-performance-storage-delivery-t" x="24" y="128" style="fill:var(--scene-card,#fff)">Cold</text>
+<g fill="var(--scene-card,#fff)"><rect class="look-ahead-scalability-performance-storage-delivery-f" x="100" y="28" width="12" height="20" rx="2" style="animation-delay:-3s"/></g>
+<g transform="translate(236,70)">
+<circle r="34" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<ellipse rx="14" ry="34" fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="2"/>
+<path d="M-34 0H34M-30 -16H30M-30 16H30" stroke="var(--scene-accent,#006c73)" stroke-width="2"/></g>
+<g fill="var(--scene-learn,#0f8a8a)"><rect class="look-ahead-scalability-performance-storage-delivery-e" x="150" y="64" width="12" height="16" rx="2" style="animation-delay:-1.5s"/></g>
+<circle cx="296" cy="140" r="8" fill="var(--scene-muted,#536970)"/>
+<path d="M236 106V132H286" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" fill="none"/>
+<text class="look-ahead-scalability-performance-storage-delivery-t" x="206" y="168">Edge copy</text>
+</svg>

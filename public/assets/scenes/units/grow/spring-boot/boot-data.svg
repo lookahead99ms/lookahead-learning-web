@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" font-family="system-ui, sans-serif">
+<style>
+.grow-spring-boot-boot-data-t{font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.grow-spring-boot-boot-data-f0{animation:grow-spring-boot-boot-data-f0 6s linear infinite;animation-delay:-3s}
+@keyframes grow-spring-boot-boot-data-f0{0%,10%{opacity:0}25%,85%{opacity:1}95%,100%{opacity:0}}
+.grow-spring-boot-boot-data-f1{animation:grow-spring-boot-boot-data-f1 6s linear infinite;animation-delay:-2.2s}
+@keyframes grow-spring-boot-boot-data-f1{0%,10%{opacity:0}25%,85%{opacity:1}95%,100%{opacity:0}}
+.grow-spring-boot-boot-data-f2{animation:grow-spring-boot-boot-data-f2 6s linear infinite;animation-delay:-1.4s}
+@keyframes grow-spring-boot-boot-data-f2{0%,10%{opacity:0}25%,85%{opacity:1}95%,100%{opacity:0}}
+.grow-spring-boot-boot-data-f3{animation:grow-spring-boot-boot-data-f3 6s linear infinite;animation-delay:-0.6s}
+@keyframes grow-spring-boot-boot-data-f3{0%,10%{opacity:0}25%,85%{opacity:1}95%,100%{opacity:0}}
+.grow-spring-boot-boot-data-pulse{animation:grow-spring-boot-boot-data-pulse 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes grow-spring-boot-boot-data-pulse{0%,100%{opacity:.55}50%{opacity:1}}
+
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="16" y="14" width="190" height="122" rx="8" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2.5"/>
+<rect x="17.5" y="15.5" width="93" height="30" fill="var(--scene-line,#cfdfdc)"/><rect x="110.5" y="15.5" width="94" height="30" fill="var(--scene-accent-soft,#dcefed)"/>
+<path d="M111 15v120M17 46h188M17 72h188M17 98h188" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<text class="grow-spring-boot-boot-data-t" x="64" y="36" text-anchor="middle">old</text><text class="grow-spring-boot-boot-data-t" x="158" y="36" text-anchor="middle">new</text>
+<rect x="28" y="52" width="70" height="14" rx="3" fill="var(--scene-muted,#536970)"/>
+<rect class="grow-spring-boot-boot-data-f0" x="122" y="52" width="70" height="14" rx="3" fill="var(--scene-good,#1f7a4d)"/>
+<rect x="28" y="78" width="70" height="14" rx="3" fill="var(--scene-muted,#536970)"/>
+<rect class="grow-spring-boot-boot-data-f1" x="122" y="78" width="70" height="14" rx="3" fill="var(--scene-good,#1f7a4d)"/>
+<rect x="28" y="104" width="70" height="14" rx="3" fill="var(--scene-muted,#536970)"/>
+<rect class="grow-spring-boot-boot-data-f2" x="122" y="104" width="70" height="14" rx="3" fill="var(--scene-good,#1f7a4d)"/>
+<g class="grow-spring-boot-boot-data-pulse"><rect x="232" y="22" width="72" height="40" rx="8" fill="var(--scene-card,#fff)" stroke="var(--scene-muted,#536970)" stroke-width="2.5"/><circle cx="252" cy="42" r="8" fill="var(--scene-muted,#536970)"/><rect x="266" y="36" width="28" height="12" rx="3" fill="var(--scene-line,#cfdfdc)"/></g>
+<rect x="232" y="82" width="72" height="40" rx="8" fill="var(--scene-card,#fff)" stroke="var(--scene-good,#1f7a4d)" stroke-width="2.5"/><circle cx="252" cy="102" r="8" fill="var(--scene-good,#1f7a4d)"/><rect x="266" y="96" width="28" height="12" rx="3" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M226 42h-14M226 102h-14" stroke="var(--scene-muted,#536970)" stroke-width="3" stroke-linecap="round"/><path d="M212 42h-2M212 102h-2" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<text class="grow-spring-boot-boot-data-t" x="160" y="165" text-anchor="middle">backfill in small batches</text>
+
+</svg>

@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="An error spike fires an alert, a magnifier inspects the spike to find the cause, and the line recovers as the fix ships">
+<style>
+.grow-technical-scenarios-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.grow-technical-scenarios-axis { stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.grow-technical-scenarios-line { fill: none; stroke: var(--scene-accent, #006c73); stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; stroke-dasharray: 360; animation: grow-technical-scenarios-kf-line 7s linear infinite; }
+@keyframes grow-technical-scenarios-kf-line { 0% { stroke-dashoffset: 360; } 90%, 100% { stroke-dashoffset: 0; } }
+.grow-technical-scenarios-chip { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.grow-technical-scenarios-hl { fill: var(--scene-accent-soft, #dcefed); stroke: var(--scene-accent, #006c73); stroke-width: 2; }
+.grow-technical-scenarios-head { fill: var(--scene-muted, #536970); }
+.grow-technical-scenarios-lens { fill: var(--scene-card, #ffffff); fill-opacity: .35; stroke: var(--scene-ink, #102a33); stroke-width: 3; }
+.grow-technical-scenarios-handle { stroke: var(--scene-ink, #102a33); stroke-width: 5; stroke-linecap: round; }
+
+.grow-technical-scenarios-s1 { animation: grow-technical-scenarios-kf-s1 7s infinite; }
+@keyframes grow-technical-scenarios-kf-s1 { 0%, 22% { opacity: 0; } 25%, 45% { opacity: 1; } 48%, 100% { opacity: 0; } }
+.grow-technical-scenarios-s2 { animation: grow-technical-scenarios-kf-s2 7s infinite; }
+@keyframes grow-technical-scenarios-kf-s2 { 0%, 45% { opacity: 0; } 48%, 68% { opacity: 1; } 71%, 100% { opacity: 0; } }
+.grow-technical-scenarios-s3 { animation: grow-technical-scenarios-kf-s3 7s infinite; }
+@keyframes grow-technical-scenarios-kf-s3 { 0%, 68% { opacity: 0; } 71%, 97% { opacity: 1; } 100% { opacity: 0; } }
+.grow-technical-scenarios-mag { animation: grow-technical-scenarios-kf-mag 7s ease-in-out infinite; }
+@keyframes grow-technical-scenarios-kf-mag { 0%, 44% { transform: translate(-30px, 10px); opacity: 0; } 50% { transform: translate(-12px, 4px); opacity: 1; } 66% { transform: translate(0px, 0px); opacity: 1; } 71%, 100% { transform: translate(0px, 0px); opacity: 0; } }
+
+.grow-technical-scenarios-line, .grow-technical-scenarios-s1, .grow-technical-scenarios-s2, .grow-technical-scenarios-s3, .grow-technical-scenarios-mag { animation-delay: -3.4s; }
+@media (prefers-reduced-motion: reduce) { .grow-technical-scenarios-line, .grow-technical-scenarios-s1, .grow-technical-scenarios-s2, .grow-technical-scenarios-s3, .grow-technical-scenarios-mag { animation-play-state: paused; } }
+</style>
+
+<!-- error-rate graph -->
+<path class="grow-technical-scenarios-axis" d="M16 98 H304"/>
+<path class="grow-technical-scenarios-line" d="M16 86 L60 84 L90 82 L112 34 L132 22 L152 30 L172 40 L196 80 L240 86 L304 85"/>
+<path d="M112 34 L132 22 L152 30" fill="none" stroke="var(--scene-bad, #b3261e)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="grow-technical-scenarios-s1"/>
+
+<!-- magnifier inspecting the spike -->
+<g class="grow-technical-scenarios-mag">
+  <circle class="grow-technical-scenarios-lens" cx="140" cy="38" r="18"/>
+  <path class="grow-technical-scenarios-handle" d="M153 51 L166 64"/>
+</g>
+
+<!-- steps -->
+<rect class="grow-technical-scenarios-chip" x="12" y="122" width="88" height="40" rx="10"/>
+<rect class="grow-technical-scenarios-hl grow-technical-scenarios-s1" x="12" y="122" width="88" height="40" rx="10"/>
+<text class="grow-technical-scenarios-t" x="56" y="147" font-size="16" text-anchor="middle">Alert</text>
+<path class="grow-technical-scenarios-head" d="M110 142 L102 137 V147 Z"/>
+
+<rect class="grow-technical-scenarios-chip" x="116" y="122" width="88" height="40" rx="10"/>
+<rect class="grow-technical-scenarios-hl grow-technical-scenarios-s2" x="116" y="122" width="88" height="40" rx="10"/>
+<text class="grow-technical-scenarios-t" x="160" y="147" font-size="16" text-anchor="middle">Diagnose</text>
+<path class="grow-technical-scenarios-head" d="M214 142 L206 137 V147 Z"/>
+
+<rect class="grow-technical-scenarios-chip" x="220" y="122" width="88" height="40" rx="10"/>
+<rect class="grow-technical-scenarios-hl grow-technical-scenarios-s3" x="220" y="122" width="88" height="40" rx="10"/>
+<text class="grow-technical-scenarios-t" x="264" y="147" font-size="16" text-anchor="middle">Recover</text>
+</svg>

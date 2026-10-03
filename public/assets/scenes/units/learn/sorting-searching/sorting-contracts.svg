@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img"><style>
+.learn-sorting-searching-sorting-contracts-t{font:600 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.learn-sorting-searching-sorting-contracts-c3a{animation:learn-sorting-searching-sorting-contracts-m1 6s ease-in-out infinite;animation-delay:-3s}
+.learn-sorting-searching-sorting-contracts-c1{animation:learn-sorting-searching-sorting-contracts-m2 6s ease-in-out infinite;animation-delay:-3s}
+.learn-sorting-searching-sorting-contracts-c3b{animation:learn-sorting-searching-sorting-contracts-m3 6s ease-in-out infinite;animation-delay:-3s}
+.learn-sorting-searching-sorting-contracts-c2{animation:learn-sorting-searching-sorting-contracts-m4 6s ease-in-out infinite;animation-delay:-3s}
+.learn-sorting-searching-sorting-contracts-ok{animation:learn-sorting-searching-sorting-contracts-ok 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes learn-sorting-searching-sorting-contracts-m1{0%,20%{transform:translate(0,0)}30%{transform:translate(62px,-16px)}40%,75%{transform:translate(124px,0)}95%,100%{transform:translate(0,0)}}
+@keyframes learn-sorting-searching-sorting-contracts-m2{0%,20%{transform:translate(0,0)}30%{transform:translate(-31px,16px)}40%,75%{transform:translate(-62px,0)}95%,100%{transform:translate(0,0)}}
+@keyframes learn-sorting-searching-sorting-contracts-m3{0%,20%{transform:translate(0,0)}30%{transform:translate(31px,-16px)}40%,75%{transform:translate(62px,0)}95%,100%{transform:translate(0,0)}}
+@keyframes learn-sorting-searching-sorting-contracts-m4{0%,20%{transform:translate(0,0)}30%{transform:translate(-62px,16px)}40%,75%{transform:translate(-124px,0)}95%,100%{transform:translate(0,0)}}
+@keyframes learn-sorting-searching-sorting-contracts-ok{0%,40%{opacity:0}48%,75%{opacity:1}85%,100%{opacity:0}}
+</style><rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<text class="learn-sorting-searching-sorting-contracts-t" x="160" y="36" text-anchor="middle">Sort by number</text>
+<g class="learn-sorting-searching-sorting-contracts-c3a"><rect x="28" y="62" width="52" height="52" rx="8" fill="var(--scene-grow,#b8457a)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/><text x="54" y="96" text-anchor="middle" font-size="22" font-weight="700" font-family="system-ui, sans-serif" fill="#fff">3</text></g>
+<g class="learn-sorting-searching-sorting-contracts-c1"><rect x="90" y="62" width="52" height="52" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/><text x="116" y="96" text-anchor="middle" font-size="22" font-weight="700" font-family="system-ui, sans-serif" fill="var(--scene-ink,#102a33)">1</text></g>
+<g class="learn-sorting-searching-sorting-contracts-c3b"><rect x="152" y="62" width="52" height="52" rx="8" fill="var(--scene-ahead,#2f6fb3)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/><text x="178" y="96" text-anchor="middle" font-size="22" font-weight="700" font-family="system-ui, sans-serif" fill="#fff">3</text></g>
+<g class="learn-sorting-searching-sorting-contracts-c2"><rect x="214" y="62" width="52" height="52" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/><text x="240" y="96" text-anchor="middle" font-size="22" font-weight="700" font-family="system-ui, sans-serif" fill="var(--scene-ink,#102a33)">2</text></g>
+<path class="learn-sorting-searching-sorting-contracts-ok" d="M154 128 H266 M154 122 V128 M266 122 V128" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="3" stroke-linecap="round"/>
+<text class="learn-sorting-searching-sorting-contracts-t" x="160" y="158" text-anchor="middle">Equal keys keep order</text></svg>

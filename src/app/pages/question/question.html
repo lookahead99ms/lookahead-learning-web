@@ -45,7 +45,7 @@
         </nav>
         @if (scrolled() && item.contentType === 'theory' && visiblePillWindow(item).length) {
           <div class="sticky-pill-strip" aria-label="Reading position">
-            <span class="sticky-pattern-name">{{ patternName(item.title) }}</span>
+            <span class="sticky-pattern-name">{{ stickyTitle(item) }}</span>
             <span class="sticky-pill-sep" aria-hidden="true">:</span>
             @for (link of visiblePillWindow(item); track link.target) {
               <button
@@ -88,8 +88,24 @@
             }}</span>
           }
         }
+        <div class="reader-title-block" [class.has-unit-scene]="!!unitScene()">
+        @if (unitScene(); as scene) {
+          <app-card-scene
+            class="reader-unit-scene"
+            [src]="scene.src"
+            [alt]="scene.alt"
+            [optional]="true"
+            [attr.aria-hidden]="scene.alt ? null : 'true'"
+            [attr.data-unit]="scene.unitTitle"
+          />
+        }
+        <div class="reader-title-text">
         <div class="article-title-row">
-          <h1 class="reader-question-title" [attr.aria-label]="numberedTitle(item)">
+          <h1
+            class="reader-question-title"
+            [attr.aria-label]="numberedTitle(item)"
+            [attr.data-sidebar-title]="navTitle(item)"
+          >
             @if (releaseInfo(item)?.studyOrder; as number) {
               <span [attr.title]="'Learning order ' + number + ' of ' + releaseTotal()"
                 >{{ number }}.
@@ -120,6 +136,11 @@
               }
             </p>
           }
+        </div>
+        @if (lessonSubtitle(item); as subtitle) {
+          <p class="lesson-subtitle">{{ subtitle }}</p>
+        }
+        </div>
         </div>
         @if (studioPilot() || focusStudio()) {
           <div class="problem-pattern-disclosure">
@@ -511,9 +532,17 @@
             (toggle)="referenceExpanded.set(reference.open)"
           >
             <summary [attr.aria-expanded]="referenceExpanded()">
-              {{ referenceExpanded() ? 'Hide reference answer' : 'Show reference answer' }}
+              <span class="reference-toggle-text">
+                <span class="reference-toggle-label">Reference answer</span>
+                <span class="reference-toggle-hint">Try it on your own first, then compare.</span>
+              </span>
+              <span class="reference-toggle-action">
+                {{ referenceExpanded() ? 'Hide' : 'Show' }}<span class="reference-toggle-chevron" aria-hidden="true"></span>
+              </span>
             </summary>
-            <ng-container *ngTemplateOutlet="referenceAnswer" />
+            <div class="practice-reference-body">
+              <ng-container *ngTemplateOutlet="referenceAnswer" />
+            </div>
           </details>
         } @else {
           <ng-container *ngTemplateOutlet="referenceAnswer" />
@@ -524,6 +553,107 @@
           </div>
         </ng-template>
         <ng-template #answerContent>
+          @if (item.walkthrough?.length) {
+            <section
+              class="question-walkthrough"
+              id="question-walkthrough"
+              aria-labelledby="question-walkthrough-heading"
+            >
+              <h2 class="panel-label" id="question-walkthrough-heading">Walk through it</h2>
+              <ol class="walkthrough-steps" data-sidebar-stage="walkthrough">
+                @for (step of item.walkthrough; track step.id) {
+                  <li class="walkthrough-step">
+                    <section [id]="'walkthrough-' + step.id" [attr.aria-labelledby]="'walkthrough-' + step.id + '-heading'">
+                      <p class="walkthrough-time">{{ step.label }}</p>
+                      <h3 [id]="'walkthrough-' + step.id + '-heading'" [attr.data-sidebar-label]="step.heading">
+                        {{ step.heading }}
+                      </h3>
+                      @for (paragraph of step.body; track $index; let index = $index) {
+                        <p [innerHTML]="paragraph"></p>
+                        @if (step.table && walkthroughTableAfter(step) === index) {
+                          <ng-container *ngTemplateOutlet="walkthroughTable; context: { $implicit: step.table }" />
+                        }
+                      }
+                      @if (step.cards?.length) {
+                        <!-- Same card look as lesson section cards: side by side when the step has room, stacked otherwise. -->
+                        <div class="section-cards walkthrough-cards">
+                          <ul class="section-card-grid" [attr.data-card-count]="step.cards!.length">
+                            @for (card of step.cards; track card.title) {
+                              <li class="section-card">
+                                <h4>{{ card.title }}</h4>
+                                <ul>
+                                  @for (point of card.points; track $index) {
+                                    <li [innerHTML]="point"></li>
+                                  }
+                                </ul>
+                              </li>
+                            }
+                          </ul>
+                        </div>
+                      }
+                      @if (step.visual; as visual) {
+                        <figure class="theory-visual walkthrough-visual">
+                          @if (visual.type === 'interactive') {
+                            <app-interactive-theory-visual [visual]="visual" />
+                          } @else {
+                            <img [src]="visual.assetPath" [alt]="visual.alt" />
+                          }
+                          @if (visual.caption; as caption) {
+                            <figcaption>{{ caption }}</figcaption>
+                          }
+                        </figure>
+                        @if (step.visualTranscript?.length) {
+                          <details class="visual-transcript walkthrough-transcript">
+                            <summary>Read the complete visual transcript</summary>
+                            <ol>
+                              @for (line of step.visualTranscript; track $index) {
+                                <li>{{ line }}</li>
+                              }
+                            </ol>
+                          </details>
+                        }
+                      }
+                    </section>
+                  </li>
+                }
+              </ol>
+            </section>
+          }
+          <!-- Same look as lesson tables; a wide table scrolls inside its own frame, never the page. -->
+          <ng-template #walkthroughTable let-table>
+            <div
+              class="lesson-table-wrap walkthrough-table"
+              role="region"
+              tabindex="0"
+              [attr.aria-label]="table.caption || 'Table'"
+            >
+              <table class="lesson-table">
+                @if (table.caption) {
+                  <caption>{{ table.caption }}</caption>
+                }
+                <thead>
+                  <tr>
+                    @for (column of table.columns; track $index) {
+                      <th scope="col">{{ column }}</th>
+                    }
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of table.rows; track $index) {
+                    <tr>
+                      @for (cell of row; track $index; let first = $first) {
+                        @if (first) {
+                          <th scope="row" [innerHTML]="cell"></th>
+                        } @else {
+                          <td [innerHTML]="cell"></td>
+                        }
+                      }
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </ng-template>
           @if (shouldShowHint(item)) {
             <details class="reader-hint">
               <summary>Show hint <span aria-hidden="true">›</span></summary>
@@ -552,7 +682,11 @@
           }
           <section class="details-content">
             <div class="details-content-body">
-              <div class="answer-code-grid" [class.has-reference-code]="!!item.code">
+              <div
+                class="answer-code-grid"
+                [class.has-reference-code]="!!item.code && !wideCode(item.code.source)"
+                [class.has-wide-code]="!!item.code && wideCode(item.code.source)"
+              >
                 <section class="explanation-panel">
                   <h2 class="panel-label">Detailed explanation</h2>
                   @for (paragraph of item.explanation; track paragraph) {
@@ -628,14 +762,30 @@
             </details>
           }
           @if (item.followUps.length) {
-            <section class="main-followups">
-              <h2 class="panel-label">Likely follow-ups</h2>
-              @for (followUp of item.followUps; track followUp.question) {
-                <details>
-                  <summary>{{ followUp.question }}</summary>
-                  <p [innerHTML]="followUp.answer"></p>
-                </details>
-              }
+            <section class="main-followups" aria-labelledby="question-followups-heading">
+              <h2 class="panel-label" id="question-followups-heading">Likely follow-ups</h2>
+              <p class="followups-intro">Answer each one out loud first, then open the strong answer to compare.</p>
+              <ol class="followup-list">
+                @for (followUp of item.followUps; track followUp.question; let index = $index) {
+                  <li class="followup-card">
+                    <p class="followup-meta" [id]="'followup-' + (index + 1) + '-label'">
+                      <span class="followup-number">Follow-up {{ index + 1 }}</span>
+                      <span class="followup-role">Interviewer</span>
+                    </p>
+                    <h3 class="followup-question" [id]="'followup-' + (index + 1) + '-question'">{{ followUp.question }}</h3>
+                    <details class="followup-answer">
+                      <summary [attr.aria-describedby]="'followup-' + (index + 1) + '-question'">
+                        <span class="followup-toggle-show">Show a strong answer</span>
+                        <span class="followup-toggle-hide">Hide the answer</span>
+                      </summary>
+                      <div class="followup-answer-panel">
+                        <p class="followup-answer-label">Strong answer</p>
+                        <p class="followup-answer-text" [innerHTML]="followUp.answer"></p>
+                      </div>
+                    </details>
+                  </li>
+                }
+              </ol>
             </section>
           }
         </ng-template>

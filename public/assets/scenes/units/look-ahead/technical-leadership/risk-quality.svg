@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A car speeding along a road with guardrail and a safety shield, balancing speed and safety"><style>.look-ahead-technical-leadership-risk-quality-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}.look-ahead-technical-leadership-risk-quality-bg{fill:var(--scene-card,#fff)}.look-ahead-technical-leadership-risk-quality-car{animation:look-ahead-technical-leadership-risk-quality-drive 5s linear infinite -3s}
+.look-ahead-technical-leadership-risk-quality-sh{animation:look-ahead-technical-leadership-risk-quality-pulse 5s ease-in-out infinite -3s;transform-origin:262px 52px}
+.look-ahead-technical-leadership-risk-quality-line{animation:look-ahead-technical-leadership-risk-quality-dash 1s linear infinite}
+@keyframes look-ahead-technical-leadership-risk-quality-drive{0%{transform:translateX(-70px)}100%{transform:translateX(250px)}}
+@keyframes look-ahead-technical-leadership-risk-quality-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+@keyframes look-ahead-technical-leadership-risk-quality-dash{to{stroke-dashoffset:-20}}</style><rect class="look-ahead-technical-leadership-risk-quality-bg" width="320" height="180"/>
+<rect x="0" y="100" width="320" height="52" fill="var(--scene-muted,#536970)"/>
+<path class="look-ahead-technical-leadership-risk-quality-line" d="M0 126 H320" stroke="#fff" stroke-width="3" stroke-dasharray="12 8"/>
+<path d="M0 94 H320" stroke="var(--scene-good,#1f7a4d)" stroke-width="6"/>
+<g stroke="var(--scene-good,#1f7a4d)" stroke-width="5"><path d="M20 94v14M80 94v14M140 94v14M200 94v14M260 94v14M310 94v14"/></g>
+<g transform="translate(0 6)"><g class="look-ahead-technical-leadership-risk-quality-car"><rect x="0" y="108" width="54" height="18" rx="6" fill="var(--scene-bad,#b3261e)"/><path d="M12 108 l8-14 h20 l8 14z" fill="var(--scene-bad,#b3261e)"/><circle cx="14" cy="128" r="6" fill="var(--scene-ink,#102a33)"/><circle cx="42" cy="128" r="6" fill="var(--scene-ink,#102a33)"/></g></g>
+<path d="M0 166 H320" stroke="var(--scene-warn,#a15c00)" stroke-width="0"/>
+<g class="look-ahead-technical-leadership-risk-quality-sh"><path d="M262 22 l28 10 v20 q0 20-28 30 q-28-10-28-30 v-20z" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-good,#1f7a4d)" stroke-width="4"/><path d="M250 54 l9 9 16-18" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></g>
+<path d="M20 30 h60 m-14 -10 l14 10 -14 10" fill="none" stroke="var(--scene-bad,#b3261e)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<text class="look-ahead-technical-leadership-risk-quality-t" x="20" y="62">Speed</text><text class="look-ahead-technical-leadership-risk-quality-t" x="160" y="168" text-anchor="middle">Guardrails</text></svg>

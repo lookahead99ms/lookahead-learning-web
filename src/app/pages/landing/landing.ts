@@ -15,14 +15,22 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { EngineeringChallenge } from './engineering-challenge';
 import { PlatformBrandIllustration } from '../../core/platform-brand/platform-brand-illustration';
 import { PlatformBrand } from '../../core/platform-brand/platform-brand';
+import { CardScene } from '../../core/card-scene/card-scene';
+import { PathTaglineId, pathTaglineText } from '../../content/path-taglines';
+import { PathSceneTimeline } from './path-scene-timeline';
+
+/** The path cards whose scenes share one timeline, in play order. */
+const PATH_SCENES = ['learn', 'grow', 'look-ahead'] as const;
+type PathScene = (typeof PATH_SCENES)[number];
 
 @Component({
   selector: 'app-landing',
-  imports: [LearningPrompt, PlatformSignature, PlatformHeader, RouterLink, EngineeringChallenge, PlatformBrandIllustration, PlatformBrand],
+  imports: [LearningPrompt, PlatformSignature, PlatformHeader, RouterLink, EngineeringChallenge, PlatformBrandIllustration, PlatformBrand, CardScene],
   templateUrl: './landing.html',
   styleUrl: './landing.css',
 })
 export class Landing {
+  protected readonly tagline = (id: PathTaglineId): string => pathTaglineText(id);
   private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
   private timer: ReturnType<typeof setTimeout> | undefined;
@@ -34,6 +42,10 @@ export class Landing {
   protected readonly outgoingSlide = signal<number | null>(null);
   protected readonly reducedMotion = signal(false);
   protected readonly paused = signal(false);
+  /** The visitor paused the path-card scenes with the toggle. */
+  protected readonly scenesPaused = signal(false);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private sceneTimeline: PathSceneTimeline<PathScene> | undefined;
   protected readonly slides = [
     {
       name: 'Pathfinder',
@@ -100,12 +112,15 @@ export class Landing {
       const motion = view?.matchMedia?.('(prefers-reduced-motion: reduce)');
       this.reducedMotion.set(motion?.matches ?? false);
       this.paused.set(motion?.matches ?? false);
+      const timeline = this.startSceneTimeline(motion?.matches ?? false);
       const visibilityChanged = () => {
         if (this.document.hidden) this.settleTransition();
         this.scheduleRotation();
+        timeline.setStopped('hidden', this.document.hidden);
       };
       const motionChanged = (event: MediaQueryListEvent) => {
         this.reducedMotion.set(event.matches);
+        timeline.setStopped('reduced-motion', event.matches);
         if (event.matches) this.paused.set(true);
         this.settleTransition();
         this.scheduleRotation();
@@ -121,7 +136,54 @@ export class Landing {
     this.destroyRef.onDestroy(() => {
       clearTimeout(this.timer);
       this.settleTransition();
+      this.sceneTimeline?.destroy();
     });
+  }
+
+  protected toggleScenes(): void {
+    if (this.reducedMotion()) return;
+    this.scenesPaused.update((paused) => !paused);
+    this.sceneTimeline?.setStopped('user', this.scenesPaused());
+  }
+
+  /**
+   * Learn, Grow and Look Ahead share one timeline: all summaries, then the stories start 1 s apart.
+   * The page drives each inlined SVG by toggling "<name>-play" (and "<name>-paused") on its root;
+   * the story length comes from the SVG's data-story-ms. Runs only while the cards are on screen.
+   */
+  private startSceneTimeline(reduced: boolean): PathSceneTimeline<PathScene> {
+    const root = this.host.nativeElement;
+    const svg = (id: PathScene) =>
+      root.querySelector<SVGSVGElement>(
+        `#paths app-card-scene[src="/assets/scenes/landing/${id}.svg"] .la-card-scene-art > svg`,
+      );
+    const timeline = new PathSceneTimeline<PathScene>(PATH_SCENES, {
+      play: (id) => {
+        const scene = svg(id);
+        if (!scene) return;
+        scene.classList.remove(`${id}-play`, `${id}-paused`);
+        void scene.getBoundingClientRect(); // restart the CSS animations from their first frame
+        scene.classList.add(`${id}-play`);
+      },
+      hold: (id) => svg(id)?.classList.remove(`${id}-play`, `${id}-paused`),
+      freeze: (id, frozen) => svg(id)?.classList.toggle(`${id}-paused`, frozen),
+      duration: (id) => Number(svg(id)?.getAttribute('data-story-ms')) || null,
+    });
+    this.sceneTimeline = timeline;
+    timeline.setStopped('reduced-motion', reduced);
+    timeline.setStopped('hidden', this.document.hidden);
+    const paths = root.querySelector('#paths');
+    const View = this.document.defaultView?.IntersectionObserver;
+    if (paths && View) {
+      timeline.setStopped('offscreen', true);
+      const observer = new View((entries) => {
+        for (const entry of entries) timeline.setStopped('offscreen', !entry.isIntersecting);
+      });
+      observer.observe(paths);
+      this.destroyRef.onDestroy(() => observer.disconnect());
+    }
+    timeline.start();
+    return timeline;
   }
 
   protected showSlide(index: number): void {

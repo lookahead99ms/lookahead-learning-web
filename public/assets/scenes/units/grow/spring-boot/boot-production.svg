@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" font-family="system-ui, sans-serif">
+<style>
+.grow-spring-boot-boot-production-t{font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.grow-spring-boot-boot-production-beat{animation:grow-spring-boot-boot-production-beat 1.6s ease-in-out infinite;animation-delay:-0.5s}
+@keyframes grow-spring-boot-boot-production-beat{0%,100%{opacity:.4}50%{opacity:1}}
+.grow-spring-boot-boot-production-dot{animation:grow-spring-boot-boot-production-dot 3s linear infinite;animation-delay:-1s}
+@keyframes grow-spring-boot-boot-production-dot{0%{transform:translateX(0);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateX(70px);opacity:0}}
+.grow-spring-boot-boot-production-dotb{animation:grow-spring-boot-boot-production-dotb 6s linear infinite;animation-delay:-4s}
+@keyframes grow-spring-boot-boot-production-dotb{0%{transform:translateX(0);opacity:0}5%{opacity:1}35%{transform:translateX(70px);opacity:1}40%,100%{transform:translateX(70px);opacity:0}}
+.grow-spring-boot-boot-production-nr{animation:grow-spring-boot-boot-production-nr 6s step-end infinite;animation-delay:-4s}
+@keyframes grow-spring-boot-boot-production-nr{0%,45%{opacity:0}55%,95%{opacity:1}100%{opacity:0}}
+.grow-spring-boot-boot-production-rd{animation:grow-spring-boot-boot-production-rd 6s step-end infinite;animation-delay:-4s}
+@keyframes grow-spring-boot-boot-production-rd{0%,45%{opacity:1}55%,100%{opacity:0}}
+
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<circle cx="38" cy="90" r="22" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/><path d="M26 90h24m-8-8l8 8-8 8" fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="152" y="24" width="156" height="52" rx="8" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2.5"/><path class="grow-spring-boot-boot-production-beat" d="M160 58h10l6-14 8 24 6-10h8" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="152" y="104" width="156" height="52" rx="8" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2.5"/><path class="grow-spring-boot-boot-production-beat" d="M160 138h10l6-14 8 24 6-10h8" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M64 80L148 50M64 100L148 130" stroke="var(--scene-line,#cfdfdc)" stroke-width="2.5" stroke-dasharray="5 5"/>
+<g class="grow-spring-boot-boot-production-dot"><circle cx="74" cy="76" r="5" fill="var(--scene-grow,#b8457a)"/></g>
+<g class="grow-spring-boot-boot-production-dotb"><circle cx="74" cy="104" r="5" fill="var(--scene-grow,#b8457a)"/></g>
+<g class="grow-spring-boot-boot-production-rd"><text class="grow-spring-boot-boot-production-t" x="256" y="56" text-anchor="middle" style="display:none"></text></g>
+<text class="grow-spring-boot-boot-production-t" x="264" y="49" text-anchor="middle" fill="var(--scene-good,#1f7a4d)" style="fill:var(--scene-good,#1f7a4d)">alive</text>
+<g class="grow-spring-boot-boot-production-rd"><text class="grow-spring-boot-boot-production-t" x="264" y="129" text-anchor="middle" style="fill:var(--scene-good,#1f7a4d)">ready</text></g>
+<g class="grow-spring-boot-boot-production-nr"><rect x="150" y="102" width="160" height="56" rx="8" fill="var(--scene-card,#fff)" opacity=".7"/><text class="grow-spring-boot-boot-production-t" x="264" y="129" text-anchor="middle" style="fill:var(--scene-warn,#a15c00)">not ready</text><path d="M137 112v36" stroke="var(--scene-warn,#a15c00)" stroke-width="5" stroke-linecap="round"/></g>
+<text class="grow-spring-boot-boot-production-t" x="38" y="136" text-anchor="middle" style="display:none"></text>
+
+</svg>

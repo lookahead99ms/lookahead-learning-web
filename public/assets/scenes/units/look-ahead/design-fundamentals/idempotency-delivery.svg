@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Chidi's transfer request gets no answer, the phone retries with the same key, and the bank returns the saved transfer t-901 instead of sending money twice">
+<style>
+.idempotency-delivery-card{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.idempotency-delivery-mono{font-family:ui-monospace,Menlo,monospace;fill:var(--scene-ink,#102a33)}
+.idempotency-delivery-good{font-family:system-ui,sans-serif;fill:var(--scene-good,#1f7a4d)}
+.idempotency-delivery-bad{font-family:system-ui,sans-serif;fill:var(--scene-bad,#b3261e)}
+.idempotency-delivery-pk{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-accent,#006c73);stroke-width:2}
+.idempotency-delivery-key{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2;stroke-linecap:round}
+.idempotency-delivery-rs{fill:var(--scene-bubble-out,#d4ecea);stroke:var(--scene-good,#1f7a4d);stroke-width:1.5}
+.idempotency-delivery-btn{fill:var(--scene-accent,#006c73)}
+.idempotency-delivery-ink{fill:var(--scene-ink,#102a33)}
+.idempotency-delivery-lane{stroke:var(--scene-line,#cfdfdc);stroke-width:2;stroke-dasharray:3 4}
+.idempotency-delivery-req1{animation:idempotency-delivery-req1 8s -3s infinite}
+@keyframes idempotency-delivery-req1{0%{opacity:0;transform:translateX(0)}3%{opacity:1}14%{opacity:1;transform:translateX(52px)}16%,100%{opacity:0;transform:translateX(52px)}}
+.idempotency-delivery-rcpt{animation:idempotency-delivery-rcpt 8s -3s infinite}
+@keyframes idempotency-delivery-rcpt{0%,14%{opacity:0}17%,96%{opacity:1}100%{opacity:0}}
+.idempotency-delivery-lost{animation:idempotency-delivery-lost 8s -3s infinite}
+@keyframes idempotency-delivery-lost{0%,17%{opacity:0;transform:translateX(0)}19%{opacity:1}26%{opacity:1;transform:translateX(-24px)}29%,100%{opacity:0;transform:translateX(-24px)}}
+.idempotency-delivery-x{animation:idempotency-delivery-x 8s -3s infinite}
+@keyframes idempotency-delivery-x{0%,26%{opacity:0}28%,52%{opacity:1}55%,100%{opacity:0}}
+.idempotency-delivery-req2{animation:idempotency-delivery-req2 8s -3s infinite}
+@keyframes idempotency-delivery-req2{0%,31%{opacity:0;transform:translateX(0)}33%{opacity:1}46%{opacity:1;transform:translateX(52px)}48%,100%{opacity:0;transform:translateX(52px)}}
+.idempotency-delivery-resp{animation:idempotency-delivery-resp 8s -3s infinite}
+@keyframes idempotency-delivery-resp{0%,50%{opacity:0;transform:translateX(0)}52%{opacity:1}62%{opacity:1;transform:translateX(-52px)}64%,100%{opacity:0;transform:translateX(-52px)}}
+.idempotency-delivery-done{animation:idempotency-delivery-done 8s -3s infinite}
+@keyframes idempotency-delivery-done{0%,62%{opacity:0}65%,96%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.idempotency-delivery-req1,.idempotency-delivery-req2,.idempotency-delivery-lost,.idempotency-delivery-resp{animation-play-state:paused}}
+</style>
+<rect class="idempotency-delivery-card" x="6" y="8" width="70" height="86" rx="12"/>
+<circle class="idempotency-delivery-ink" cx="41" cy="24" r="6"/><path class="idempotency-delivery-ink" d="M30 40 a11 9 0 0 1 22 0z"/>
+<rect class="idempotency-delivery-btn" x="13" y="52" width="56" height="28" rx="14"/>
+<text x="41" y="71" font-size="14" font-weight="700" text-anchor="middle" style="font-family:system-ui,sans-serif;fill:var(--scene-card,#fff)">Send</text>
+<rect class="idempotency-delivery-card" x="164" y="8" width="70" height="86" rx="12"/>
+<path class="idempotency-delivery-ink" d="M199 14 l22 10 h-44z"/>
+<rect class="idempotency-delivery-ink" x="181" y="27" width="4" height="12"/><rect class="idempotency-delivery-ink" x="197" y="27" width="4" height="12"/><rect class="idempotency-delivery-ink" x="213" y="27" width="4" height="12"/>
+<rect class="idempotency-delivery-ink" x="177" y="41" width="44" height="4"/>
+<g class="idempotency-delivery-rcpt"><rect class="idempotency-delivery-rs" x="171" y="55" width="56" height="26" rx="6"/>
+<text class="idempotency-delivery-mono" x="199" y="73" font-size="14" font-weight="700" text-anchor="middle">t-901</text></g>
+<path class="idempotency-delivery-lane" d="M78 40 H162 M78 70 H162"/>
+<g class="idempotency-delivery-req1"><rect class="idempotency-delivery-pk" x="80" y="30" width="26" height="20" rx="5"/><circle class="idempotency-delivery-key" cx="89" cy="40" r="3.5"/><path class="idempotency-delivery-key" d="M93 40 H101 M98 40 V44"/></g><g class="idempotency-delivery-req2"><rect class="idempotency-delivery-pk" x="80" y="30" width="26" height="20" rx="5"/><circle class="idempotency-delivery-key" cx="89" cy="40" r="3.5"/><path class="idempotency-delivery-key" d="M93 40 H101 M98 40 V44"/></g><g class="idempotency-delivery-lost"><rect class="idempotency-delivery-rs" x="132" y="60" width="26" height="20" rx="5"/><path d="M138 67 h14 M138 73 h9" style="stroke:var(--scene-good,#1f7a4d);stroke-width:2.5;stroke-linecap:round" fill="none"/></g>
+<g class="idempotency-delivery-x"><text class="idempotency-delivery-bad" x="118" y="79" font-size="22" font-weight="700" text-anchor="middle">✕</text></g>
+<g class="idempotency-delivery-resp"><rect class="idempotency-delivery-rs" x="136" y="60" width="26" height="20" rx="5"/><path d="M142 67 h14 M142 73 h9" style="stroke:var(--scene-good,#1f7a4d);stroke-width:2.5;stroke-linecap:round" fill="none"/></g>
+<text class="idempotency-delivery-good idempotency-delivery-done" x="120" y="122" font-size="15" font-weight="700" text-anchor="middle">Sent once ✓</text>
+</svg>

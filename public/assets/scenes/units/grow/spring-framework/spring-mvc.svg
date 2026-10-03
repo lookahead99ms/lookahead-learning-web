@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A request reaches the dispatcher, which routes it to one controller and returns JSON">
+<style>.grow-spring-framework-spring-mvc-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}.grow-spring-framework-spring-mvc-bg{fill:var(--scene-card,#fff)}.grow-spring-framework-spring-mvc-box{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}.grow-spring-framework-spring-mvc-ln{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2.5;stroke-linecap:round}.grow-spring-framework-spring-mvc-rq{animation:grow-spring-framework-spring-mvc-r 6s ease-in-out infinite;animation-delay:-3s}.grow-spring-framework-spring-mvc-hi{animation:grow-spring-framework-spring-mvc-h 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes grow-spring-framework-spring-mvc-r{0%{transform:translateX(0)}35%,100%{transform:translateX(66px)}}
+@keyframes grow-spring-framework-spring-mvc-h{0%,35%{opacity:.25}50%,90%{opacity:1}100%{opacity:.25}}</style>
+<rect width="320" height="180" class="grow-spring-framework-spring-mvc-bg"/>
+<path d="M52 90H128M178 90L238 44M178 90H238M178 90L238 136" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" fill="none"/>
+<circle cx="154" cy="90" r="28" fill="var(--scene-accent,#006c73)"/><text x="154" y="95" text-anchor="middle" class="grow-spring-framework-spring-mvc-t" style="fill:var(--scene-card,#fff)">Route</text>
+<rect x="238" y="30" width="72" height="28" rx="6" class="grow-spring-framework-spring-mvc-box"/><rect x="238" y="76" width="72" height="28" rx="6" class="grow-spring-framework-spring-mvc-box"/><rect x="238" y="122" width="72" height="28" rx="6" class="grow-spring-framework-spring-mvc-box"/>
+<g class="grow-spring-framework-spring-mvc-hi"><rect x="238" y="76" width="72" height="28" rx="6" fill="var(--scene-good,#1f7a4d)"/><text x="274" y="95" text-anchor="middle" class="grow-spring-framework-spring-mvc-t" style="fill:var(--scene-card,#fff)">JSON</text></g>
+<text x="274" y="49" text-anchor="middle" class="grow-spring-framework-spring-mvc-t" opacity=".0">.</text>
+<g class="grow-spring-framework-spring-mvc-rq"><rect x="14" y="76" width="36" height="28" rx="4" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/><path d="M14 78l18 14 18-14" stroke="var(--scene-ink,#102a33)" stroke-width="2" fill="none"/></g>
+<text x="154" y="148" text-anchor="middle" class="grow-spring-framework-spring-mvc-t">Dispatcher</text>
+</svg>

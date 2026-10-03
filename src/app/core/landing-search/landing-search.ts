@@ -1,3 +1,4 @@
+import { withoutHiddenCourseDocuments } from '../../content/hidden-courses';
 import { Component, ElementRef, HostListener, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -299,7 +300,7 @@ export class LandingSearch {
   private loadIndex(): void {
     if (this.loaded) return;
     this.loaded = true;
-    this.content.getSearchIndex().subscribe({ next: (documents) => this.documents.set(documents) });
+    this.content.getSearchIndex().subscribe({ next: (documents) => this.documents.set(withoutHiddenCourseDocuments(documents)) });
   }
 
   private buildSuggestions(documents: SearchDocument[], query: string): LandingSuggestion[] {

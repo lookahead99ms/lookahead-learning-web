@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Only a window of rows is mounted while pages arrive from a cursor API">
+<style>
+.grow-angular-performance-enterprise-bg{fill:var(--scene-card,#fff)}
+.grow-angular-performance-enterprise-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.grow-angular-performance-enterprise-m{font:700 16px ui-monospace,Menlo,monospace;fill:var(--scene-ink,#102a33)}
+.grow-angular-performance-enterprise-win{animation:grow-angular-performance-enterprise-wk 6s step-end infinite;animation-delay:-3s}
+.grow-angular-performance-enterprise-chip{animation:grow-angular-performance-enterprise-ck 3s linear infinite}
+.grow-angular-performance-enterprise-fl{animation:grow-angular-performance-enterprise-fk 1.5s step-end infinite}
+@keyframes grow-angular-performance-enterprise-wk{0%{transform:translateY(0)}25%{transform:translateY(36px)}50%{transform:translateY(72px)}75%{transform:translateY(36px)}}
+@keyframes grow-angular-performance-enterprise-ck{0%{transform:translateX(0);opacity:0}15%{opacity:1}85%{opacity:1}100%{transform:translateX(-80px);opacity:0}}
+@keyframes grow-angular-performance-enterprise-fk{0%{fill:var(--scene-warn,#a15c00)}50%{fill:var(--scene-accent,#006c73)}}
+</style>
+<rect class="grow-angular-performance-enterprise-bg" width="320" height="180"/>
+<rect x="15" y="10" width="120" height="9" rx="4" fill="var(--scene-line,#cfdfdc)"/><rect x="15" y="22" width="120" height="9" rx="4" fill="var(--scene-line,#cfdfdc)"/><rect x="15" y="34" width="120" height="9" rx="4" fill="var(--scene-line,#cfdfdc)"/><rect x="15" y="46" width="120" height="9" rx="4" fill="var(--scene-line,#cfdfdc)"/><rect x="15" y="58" width="120" height="9" rx="4" fill="var(--scene-line,#cfdfdc)"/><rect x="15" y="70" width="120" height="9" rx="4" fill="var(--scene-line,#cfdfdc)"/><rect x="15" y="82" width="120" height="9" rx="4" fill="var(--scene-line,#cfdfdc)"/><rect x="15" y="94" width="120" height="9" rx="4" fill="var(--scene-line,#cfdfdc)"/><rect x="15" y="106" width="120" height="9" rx="4" fill="var(--scene-line,#cfdfdc)"/><rect x="15" y="118" width="120" height="9" rx="4" fill="var(--scene-line,#cfdfdc)"/><rect x="15" y="130" width="120" height="9" rx="4" fill="var(--scene-line,#cfdfdc)"/><rect x="15" y="142" width="120" height="9" rx="4" fill="var(--scene-line,#cfdfdc)"/><rect x="15" y="154" width="120" height="9" rx="4" fill="var(--scene-line,#cfdfdc)"/>
+<g class="grow-angular-performance-enterprise-win"><rect x="10" y="7" width="130" height="51" rx="8" fill="var(--scene-accent-soft,#dcefed)" fill-opacity=".55" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<rect x="15" y="10" width="120" height="9" rx="4" fill="var(--scene-accent,#006c73)"/><rect class="grow-angular-performance-enterprise-fl" x="15" y="22" width="120" height="9" rx="4"/><rect x="15" y="34" width="120" height="9" rx="4" fill="var(--scene-accent,#006c73)"/><rect x="15" y="46" width="120" height="9" rx="4" fill="var(--scene-accent,#006c73)"/></g>
+<text class="grow-angular-performance-enterprise-t" x="152" y="30" style="fill:var(--scene-accent,#006c73)">20 rows mounted</text>
+<ellipse cx="260" cy="82" rx="38" ry="9" fill="var(--scene-link,#245a88)"/><rect x="222" y="82" width="76" height="30" fill="var(--scene-link,#245a88)"/><ellipse cx="260" cy="112" rx="38" ry="9" fill="var(--scene-link,#245a88)"/><ellipse cx="260" cy="82" rx="38" ry="9" fill="var(--scene-ahead,#2f6fb3)"/>
+<g class="grow-angular-performance-enterprise-chip"><rect x="200" y="54" width="38" height="12" rx="3" fill="var(--scene-good,#1f7a4d)" transform="translate(40 0)"/></g>
+<g class="grow-angular-performance-enterprise-chip" style="animation-delay:-1.5s"><rect x="200" y="54" width="38" height="12" rx="3" fill="var(--scene-good,#1f7a4d)" transform="translate(40 0)"/></g>
+<text class="grow-angular-performance-enterprise-t" x="260" y="140" text-anchor="middle" style="fill:var(--scene-link,#245a88)">cursor API</text>
+<text class="grow-angular-performance-enterprise-t" x="152" y="172" style="fill:var(--scene-warn,#a15c00)">1 row updated</text>
+</svg>

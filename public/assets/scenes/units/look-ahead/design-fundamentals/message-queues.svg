@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Checkout says the order is placed at once, order tickets ride a belt in order, and both picking and email take each one in turn">
+<style>
+.message-queues-card{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.message-queues-t{font-family:system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.message-queues-good{font-family:system-ui,sans-serif;fill:var(--scene-good,#1f7a4d)}
+.message-queues-btn{fill:var(--scene-accent,#006c73)}
+.message-queues-belt{fill:var(--scene-line,#cfdfdc)}
+.message-queues-roll{fill:var(--scene-muted,#536970)}
+.message-queues-tk{fill:var(--scene-bubble-out,#d4ecea);stroke:var(--scene-accent,#006c73);stroke-width:1.5}
+.message-queues-icon{fill:none;stroke:var(--scene-ink,#102a33);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
+.message-queues-ticket{animation:message-queues-ticket 7s -3s infinite linear}
+@keyframes message-queues-ticket{0%{transform:translateX(0);opacity:0}6%{opacity:1}88%{opacity:1}96%,100%{transform:translateX(66px);opacity:0}}
+.message-queues-check{animation:message-queues-check 2.333s -1.18s infinite}
+@keyframes message-queues-check{0%,6%{transform:scale(1)}11%{transform:scale(1.4)}20%,100%{transform:scale(1)}}
+.message-queues-tap{animation:message-queues-tap 2.333s -1.18s infinite}
+@keyframes message-queues-tap{0%,8%{opacity:.6}14%,100%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.message-queues-ticket,.message-queues-check,.message-queues-tap{animation-play-state:paused}}
+</style>
+<rect class="message-queues-card" x="6" y="12" width="64" height="110" rx="12"/>
+<rect class="message-queues-btn message-queues-tap" x="12" y="40" width="52" height="28" rx="14"/>
+<text class="message-queues-t" x="38" y="59" font-size="14" font-weight="700" text-anchor="middle" style="fill:var(--scene-card,#fff)">Order</text>
+<path d="M24 98 l8 8 l16 -18" fill="none" style="stroke:var(--scene-good,#1f7a4d);stroke-width:4;stroke-linecap:round;stroke-linejoin:round"/>
+<rect class="message-queues-belt" x="76" y="70" width="94" height="8" rx="4"/>
+<circle class="message-queues-roll" cx="86" cy="74" r="2.5"/><circle class="message-queues-roll" cx="110" cy="74" r="2.5"/><circle class="message-queues-roll" cx="134" cy="74" r="2.5"/><circle class="message-queues-roll" cx="158" cy="74" r="2.5"/>
+<g class="message-queues-ticket"><rect class="message-queues-tk" x="78" y="46" width="24" height="20" rx="4"/><path d="M84 53 h12 M84 59 h8" style="stroke:var(--scene-accent,#006c73);stroke-width:2;stroke-linecap:round" fill="none"/></g>
+<g class="message-queues-ticket" style="animation-delay:-5.333s"><rect class="message-queues-tk" x="78" y="46" width="24" height="20" rx="4"/><path d="M84 53 h12 M84 59 h8" style="stroke:var(--scene-accent,#006c73);stroke-width:2;stroke-linecap:round" fill="none"/></g>
+<g class="message-queues-ticket" style="animation-delay:-0.667s"><rect class="message-queues-tk" x="78" y="46" width="24" height="20" rx="4"/><path d="M84 53 h12 M84 59 h8" style="stroke:var(--scene-accent,#006c73);stroke-width:2;stroke-linecap:round" fill="none"/></g>
+<text class="message-queues-t" x="122" y="104" font-size="14" font-weight="700" text-anchor="middle">In order</text>
+<path d="M172 74 L182 36 M172 74 L182 98" style="stroke:var(--scene-line,#cfdfdc)" stroke-width="2.5" fill="none"/>
+<rect class="message-queues-card" x="182" y="8" width="52" height="56" rx="10"/>
+<path class="message-queues-icon" d="M194 28 h28 l-4 20 h-20z M199 28 l5 -8 M217 28 l-5 -8"/>
+<text class="message-queues-good message-queues-check" x="230" y="22" font-size="16" font-weight="700" text-anchor="end" style="transform-origin:222px 17px">✓</text>
+<rect class="message-queues-card" x="182" y="72" width="52" height="56" rx="10"/>
+<path class="message-queues-icon" d="M194 92 h28 v20 h-28z M194 92 l14 11 l14 -11"/>
+<text class="message-queues-good message-queues-check" x="230" y="86" font-size="16" font-weight="700" text-anchor="end" style="transform-origin:222px 81px">✓</text>
+</svg>

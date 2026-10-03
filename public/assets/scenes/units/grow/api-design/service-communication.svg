@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A service saves an order and its outbox row in one commit, then the event is sent once">
+<style>
+.grow-api-design-service-communication-t{font:600 13px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.grow-api-design-service-communication-sv{animation:grow-api-design-service-communication-sv 6s ease-in-out infinite;animation-delay:-4.0s}
+@keyframes grow-api-design-service-communication-sv{0%,4%{opacity:0}10%,86%{opacity:1}95%,100%{opacity:0}}
+.grow-api-design-service-communication-bolt{animation:grow-api-design-service-communication-bolt 6s ease-in-out infinite;animation-delay:-4.0s}
+@keyframes grow-api-design-service-communication-bolt{0%,30%{opacity:0}34%,70%{opacity:1}76%,100%{opacity:0}}
+.grow-api-design-service-communication-env{animation:grow-api-design-service-communication-env 6s linear infinite;animation-delay:-4.0s}
+@keyframes grow-api-design-service-communication-env{0%,52%{transform:translateX(0);opacity:0}54%{opacity:1}92%{transform:translateX(80px);opacity:1}97%,100%{transform:translateX(80px);opacity:0}}
+.grow-api-design-service-communication-sent{animation:grow-api-design-service-communication-sent 6s ease-in-out infinite;animation-delay:-4.0s}
+@keyframes grow-api-design-service-communication-sent{0%,60%{opacity:0}66%,92%{opacity:1}98%,100%{opacity:0}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="12" y="54" width="58" height="60" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<g fill="var(--scene-accent,#006c73)"><rect x="22" y="66" width="38" height="8" rx="3"/><rect x="22" y="82" width="26" height="8" rx="3"/><rect x="22" y="98" width="32" height="8" rx="3"/></g>
+<g class="grow-api-design-service-communication-bolt"><path d="M46 8L34 30H44L38 48L56 24H46Z" fill="var(--scene-warn,#a15c00)" stroke="var(--scene-warn,#a15c00)" stroke-width="1.5" stroke-linejoin="round"/></g>
+<path d="M70 84H100" stroke="var(--scene-muted,#536970)" stroke-width="3" stroke-linecap="round"/><path d="M96 78l6 6-6 6" fill="none" stroke="var(--scene-muted,#536970)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M100 56V122a40 10 0 0 0 80 0V56" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="3"/><ellipse cx="140" cy="56" rx="40" ry="10" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-ink,#102a33)" stroke-width="3"/>
+<g class="grow-api-design-service-communication-sv"><rect x="108" y="72" width="64" height="20" rx="4" fill="var(--scene-accent,#006c73)"/><rect x="108" y="98" width="64" height="20" rx="4" fill="var(--scene-warn,#a15c00)"/></g>
+<path d="M92 66H88V124H92M188 66H192V124H188" fill="none" stroke="none"/>
+<path d="M104 150H176" stroke="var(--scene-accent,#006c73)" stroke-width="3" stroke-linecap="round"/><path d="M104 150v-8M176 150v-8" stroke="var(--scene-accent,#006c73)" stroke-width="3" stroke-linecap="round"/>
+<text class="grow-api-design-service-communication-t" x="140" y="172" text-anchor="middle">one commit</text>
+<path d="M180 108H206" stroke="var(--scene-warn,#a15c00)" stroke-width="3" stroke-linecap="round" stroke-dasharray="4 4"/>
+<rect x="212" y="96" width="96" height="26" rx="13" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-link,#245a88)" stroke-width="3"/>
+<g class="grow-api-design-service-communication-env"><rect x="216" y="101" width="22" height="16" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-warn,#a15c00)" stroke-width="2.5"/><path d="M216 103l11 7 11-7" fill="none" stroke="var(--scene-warn,#a15c00)" stroke-width="2.5"/></g>
+<text class="grow-api-design-service-communication-t" x="260" y="150" text-anchor="middle">sent once</text>
+</svg>

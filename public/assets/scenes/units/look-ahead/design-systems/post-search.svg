@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Someone searches for marathon training and the results fill in newest first, with a post from just now on top, while a private post the searcher may not see is caught and removed before it is shown">
+<style>
+.post-search-t{font-family:system-ui, sans-serif;fill:var(--scene-ink,#102a33)}
+.post-search-tx{font-family:system-ui, sans-serif;fill:var(--scene-text,#28434a)}
+.post-search-tm{font-family:ui-monospace, Menlo, monospace;fill:var(--scene-ink,#102a33)}
+.post-search-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.post-search-soft{fill:var(--scene-muted,#536970)}
+.post-search-line{fill:var(--scene-line,#cfdfdc)}
+.post-search-acc{fill:var(--scene-accent,#006c73)}
+.post-search-accsoft{fill:var(--scene-accent-soft,#dcefed)}
+.post-search-good{fill:var(--scene-good,#1f7a4d)}
+.post-search-bad{fill:var(--scene-bad,#b3261e)}
+.post-search-warn{fill:var(--scene-warn,#a15c00)}
+.post-search-link{fill:var(--scene-link,#245a88)}
+.post-search-card{fill:var(--scene-card,#fff)}
+.post-search-ink{fill:var(--scene-ink,#102a33)}
+.post-search-a{animation-duration:7s;animation-iteration-count:infinite;animation-delay:-3s;animation-timing-function:ease-in-out}
+@media (prefers-reduced-motion: reduce){.post-search-a{animation-play-state:paused!important}}
+
+.post-search-r1{animation-name:post-search-r1}
+@keyframes post-search-r1{0%,4%{opacity:0;transform:translateY(-6px)}10%,94%{opacity:1;transform:none}100%{opacity:0}}
+.post-search-r2{animation-name:post-search-r2}
+@keyframes post-search-r2{0%,8%{opacity:0;transform:translateY(-6px)}14%,94%{opacity:1;transform:none}100%{opacity:0}}
+.post-search-r3{animation-name:post-search-r3}
+@keyframes post-search-r3{0%,12%{opacity:0;transform:translateY(-6px)}18%,50%{opacity:1;transform:none}58%,100%{opacity:0}}
+.post-search-lock{animation-name:post-search-lock}
+@keyframes post-search-lock{0%,22%{opacity:0}26%,50%{opacity:1}58%,100%{opacity:0}}
+.post-search-r4{animation-name:post-search-r4}
+@keyframes post-search-r4{0%,60%{opacity:0;transform:translateY(8px)}68%,94%{opacity:1;transform:none}100%{opacity:0}}
+</style>
+<rect x="8" y="8" width="224" height="28" rx="14" class="post-search-box" stroke="var(--scene-accent,#006c73)"/>
+<circle cx="25" cy="21" r="6" fill="none" stroke="var(--scene-ink,#102a33)" stroke-width="2"/><path d="M29.5 25.5 l5 5" stroke="var(--scene-ink,#102a33)" stroke-width="2.4" stroke-linecap="round"/>
+<text class="post-search-t" x="42" y="27" font-size="14">marathon training</text>
+<g class="post-search-a post-search-r1"><rect x="8" y="44" width="224" height="26" rx="6" class="post-search-box"/><circle cx="22" cy="57" r="7" class="post-search-acc"/><rect x="36" y="51" width="90" height="5" rx="2.5" class="post-search-soft" opacity=".7"/><rect x="36" y="59" width="60" height="5" rx="2.5" class="post-search-soft" opacity=".45"/><text class="post-search-t" x="224" y="62" font-size="14" font-weight="700" text-anchor="end" style="fill:var(--scene-good,#1f7a4d)">Just now</text></g>
+<g class="post-search-a post-search-r2"><rect x="8" y="74" width="224" height="26" rx="6" class="post-search-box"/><circle cx="22" cy="87" r="7" class="post-search-soft"/><rect x="36" y="81" width="110" height="5" rx="2.5" class="post-search-soft" opacity=".7"/><rect x="36" y="89" width="76" height="5" rx="2.5" class="post-search-soft" opacity=".45"/></g>
+<g class="post-search-a post-search-r4"><rect x="8" y="104" width="224" height="26" rx="6" class="post-search-box"/><circle cx="22" cy="117" r="7" class="post-search-soft"/><rect x="36" y="111" width="96" height="5" rx="2.5" class="post-search-soft" opacity=".7"/><rect x="36" y="119" width="70" height="5" rx="2.5" class="post-search-soft" opacity=".45"/></g>
+<g class="post-search-a post-search-r3"><rect x="8" y="104" width="224" height="26" rx="6" class="post-search-box"/><circle cx="22" cy="117" r="7" class="post-search-soft"/><rect x="36" y="111" width="80" height="5" rx="2.5" class="post-search-soft" opacity=".7"/><rect x="36" y="119" width="56" height="5" rx="2.5" class="post-search-soft" opacity=".45"/></g>
+<g class="post-search-a post-search-lock"><rect x="8" y="104" width="224" height="26" rx="6" fill="var(--scene-bad,#b3261e)" fill-opacity=".12" stroke="var(--scene-bad,#b3261e)" stroke-width="1.5"/>
+<rect x="150" y="117" width="12" height="9" rx="2" class="post-search-bad"/><path d="M152.5 117 v-3 a3.5 3.5 0 0 1 7 0 v3" fill="none" stroke="var(--scene-bad,#b3261e)" stroke-width="1.8"/>
+<text class="post-search-t" x="224" y="122" font-size="14" font-weight="700" text-anchor="end" style="fill:var(--scene-bad,#b3261e)">Private</text></g>
+
+</svg>

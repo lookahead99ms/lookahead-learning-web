@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Two apps agree on a contract: a request goes out and a 200 OK response returns">
+<style>
+.grow-api-design-api-foundations-t{font:600 13px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.grow-api-design-api-foundations-rq{animation:grow-api-design-api-foundations-rq 6s linear infinite;animation-delay:-3.4s}
+@keyframes grow-api-design-api-foundations-rq{0%,5%{transform:translateX(0);opacity:1}35%{transform:translateX(150px);opacity:1}40%,100%{transform:translateX(150px);opacity:0}}
+.grow-api-design-api-foundations-rs{animation:grow-api-design-api-foundations-rs 6s linear infinite;animation-delay:-3.4s}
+@keyframes grow-api-design-api-foundations-rs{0%,40%{transform:translateX(0);opacity:0}45%{opacity:1}80%{transform:translateX(-150px);opacity:1}85%,100%{transform:translateX(-150px);opacity:0}}
+.grow-api-design-api-foundations-c1{animation:grow-api-design-api-foundations-c1 6s ease-in-out infinite;animation-delay:-3.4s}
+@keyframes grow-api-design-api-foundations-c1{0%,10%{opacity:0}20%,88%{opacity:1}96%,100%{opacity:0}}
+.grow-api-design-api-foundations-c2{animation:grow-api-design-api-foundations-c2 6s ease-in-out infinite;animation-delay:-3.4s}
+@keyframes grow-api-design-api-foundations-c2{0%,22%{opacity:0}32%,88%{opacity:1}96%,100%{opacity:0}}
+.grow-api-design-api-foundations-c3{animation:grow-api-design-api-foundations-c3 6s ease-in-out infinite;animation-delay:-3.4s}
+@keyframes grow-api-design-api-foundations-c3{0%,34%{opacity:0}44%,88%{opacity:1}96%,100%{opacity:0}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="14" y="40" width="64" height="64" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<rect x="24" y="52" width="44" height="8" rx="3" fill="var(--scene-accent,#006c73)"/><rect x="24" y="68" width="30" height="8" rx="3" fill="var(--scene-muted,#536970)"/><rect x="24" y="84" width="38" height="8" rx="3" fill="var(--scene-muted,#536970)"/>
+<rect x="242" y="40" width="64" height="64" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<rect x="252" y="52" width="44" height="10" rx="3" fill="var(--scene-accent,#006c73)"/><rect x="252" y="68" width="44" height="10" rx="3" fill="var(--scene-accent,#006c73)" opacity=".6"/><rect x="252" y="84" width="44" height="10" rx="3" fill="var(--scene-accent,#006c73)" opacity=".35"/>
+<path d="M78 72H112M208 72H242" stroke="var(--scene-muted,#536970)" stroke-width="2.5" stroke-dasharray="4 4"/>
+<rect x="112" y="18" width="96" height="98" rx="7" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="3"/>
+<text class="grow-api-design-api-foundations-t" x="160" y="40" text-anchor="middle">contract</text>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="5" stroke-linecap="round"><path d="M142 62H196M142 82H196M142 102H196"/></g>
+<g fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path class="grow-api-design-api-foundations-c1" d="M122 62l4 4 8-9"/><path class="grow-api-design-api-foundations-c2" d="M122 82l4 4 8-9"/><path class="grow-api-design-api-foundations-c3" d="M122 102l4 4 8-9"/></g>
+<path d="M30 130H290M290 156H30" stroke="var(--scene-line,#cfdfdc)" stroke-width="2" stroke-dasharray="3 5"/>
+<g class="grow-api-design-api-foundations-rq"><rect x="30" y="120" width="34" height="20" rx="6" fill="var(--scene-accent,#006c73)"/></g>
+<g class="grow-api-design-api-foundations-rs"><rect x="218" y="144" width="78" height="26" rx="13" fill="var(--scene-good,#1f7a4d)"/><text x="257" y="163" text-anchor="middle" font-family="system-ui,sans-serif" font-size="16" font-weight="700" fill="var(--scene-card,#fff)">200 OK</text></g>
+</svg>

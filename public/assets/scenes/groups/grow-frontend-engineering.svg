@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 200" role="img" aria-label="A dashboard page and its phone layout fill their cards with data arriving from an API">
+<style>
+.grow-frontend-engineering-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.grow-frontend-engineering-tm { font-family: ui-monospace, Menlo, monospace; fill: var(--scene-ink, #102a33); font-weight: 600; }
+.grow-frontend-engineering-card { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.grow-frontend-engineering-soft { fill: var(--scene-accent-soft, #dcefed); }
+.grow-frontend-engineering-line { fill: var(--scene-line, #cfdfdc); }
+.grow-frontend-engineering-acc { fill: var(--scene-accent, #006c73); }
+.grow-frontend-engineering-grow { fill: var(--scene-grow, #b8457a); }
+.grow-frontend-engineering-good { fill: var(--scene-good, #1f7a4d); }
+.grow-frontend-engineering-link { fill: var(--scene-link, #245a88); }
+.grow-frontend-engineering-mut { fill: var(--scene-muted, #536970); }
+.grow-frontend-engineering-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 1.5; }
+.grow-frontend-engineering-dash { fill: none; stroke: var(--scene-accent, #006c73); stroke-width: 1.8; stroke-dasharray: 4 4; }
+.grow-frontend-engineering-white { fill: var(--scene-card, #ffffff); }
+
+.grow-frontend-engineering-a-pk1 { animation: grow-frontend-engineering-pk1 6s linear infinite; animation-delay: -3s; }
+.grow-frontend-engineering-a-pk2 { animation: grow-frontend-engineering-pk2 6s linear infinite; animation-delay: -3s; }
+@keyframes grow-frontend-engineering-pk1 { 0% { transform: translate(0,0); opacity: 0; } 8% { opacity: 1; } 40% { transform: translate(-12px,0); opacity: 1; } 46%,100% { transform: translate(-12px,0); opacity: 0; } }
+@keyframes grow-frontend-engineering-pk2 { 0%,30% { transform: translate(0,0); opacity: 0; } 36% { opacity: 1; } 64% { transform: translate(14px,0); opacity: 1; } 70%,100% { transform: translate(14px,0); opacity: 0; } }
+.grow-frontend-engineering-a-f1 { animation: grow-frontend-engineering-fill 6s ease-in-out infinite; animation-delay: -3s; }
+.grow-frontend-engineering-a-f2 { animation: grow-frontend-engineering-fill 6s ease-in-out infinite; animation-delay: -2.6s; }
+.grow-frontend-engineering-a-f3 { animation: grow-frontend-engineering-fill 6s ease-in-out infinite; animation-delay: -2.2s; }
+.grow-frontend-engineering-a-m { animation: grow-frontend-engineering-fillm 6s ease-in-out infinite; animation-delay: -4.6s; }
+@keyframes grow-frontend-engineering-fill { 0%,40% { opacity: 0; } 50%,92% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes grow-frontend-engineering-fillm { 0%,64% { opacity: 0; } 72%,92% { opacity: 1; } 100% { opacity: 0; } }
+.grow-frontend-engineering-a-cur { animation: grow-frontend-engineering-cur 6s ease-in-out infinite; animation-delay: -3s; }
+@keyframes grow-frontend-engineering-cur { 0%,20% { transform: translate(0,0); } 45%,70% { transform: translate(60px,-22px); } 100% { transform: translate(0,0); } }
+
+@media (prefers-reduced-motion: reduce) { [class*="grow-frontend-engineering-a-"] { animation: none !important; } }
+</style>
+<rect class="grow-frontend-engineering-card" x="20" y="18" width="270" height="164" rx="12"/>
+<circle class="grow-frontend-engineering-mut" cx="36" cy="34" r="4" opacity=".45"/><circle class="grow-frontend-engineering-mut" cx="49" cy="34" r="4" opacity=".45"/><circle class="grow-frontend-engineering-mut" cx="62" cy="34" r="4" opacity=".45"/>
+<rect class="grow-frontend-engineering-soft" x="76" y="24" width="200" height="22" rx="11"/>
+<text class="grow-frontend-engineering-tm" x="90" y="40" font-size="16">/dashboard</text>
+<rect class="grow-frontend-engineering-line" x="20" y="52" width="270" height="1.5"/>
+<rect class="grow-frontend-engineering-soft" x="34" y="64" width="244" height="12" rx="4"/>
+<rect class="grow-frontend-engineering-soft" x="34" y="86" width="62" height="82" rx="6"/>
+<rect class="grow-frontend-engineering-mut" x="44" y="98" width="40" height="5" rx="2.5" opacity=".45"/><rect class="grow-frontend-engineering-acc" x="44" y="112" width="40" height="5" rx="2.5"/><rect class="grow-frontend-engineering-mut" x="44" y="126" width="40" height="5" rx="2.5" opacity=".45"/>
+<rect class="grow-frontend-engineering-soft" x="108" y="86" width="50" height="62" rx="6"/>
+<g class="grow-frontend-engineering-a-f1"><rect class="grow-frontend-engineering-acc" x="108" y="86" width="50" height="22" rx="6"/><rect class="grow-frontend-engineering-white" x="116" y="116" width="34" height="5" rx="2.5"/><rect class="grow-frontend-engineering-mut" x="116" y="128" width="24" height="5" rx="2.5" opacity=".5"/></g>
+<rect class="grow-frontend-engineering-soft" x="166" y="86" width="50" height="62" rx="6"/>
+<g class="grow-frontend-engineering-a-f2"><rect class="grow-frontend-engineering-acc" x="166" y="86" width="50" height="22" rx="6"/><rect class="grow-frontend-engineering-white" x="174" y="116" width="34" height="5" rx="2.5"/><rect class="grow-frontend-engineering-mut" x="174" y="128" width="24" height="5" rx="2.5" opacity=".5"/></g>
+<rect class="grow-frontend-engineering-soft" x="224" y="86" width="50" height="62" rx="6"/>
+<g class="grow-frontend-engineering-a-f3"><rect class="grow-frontend-engineering-acc" x="224" y="86" width="50" height="22" rx="6"/><rect class="grow-frontend-engineering-white" x="232" y="116" width="34" height="5" rx="2.5"/><rect class="grow-frontend-engineering-mut" x="232" y="128" width="24" height="5" rx="2.5" opacity=".5"/></g>
+<rect class="grow-frontend-engineering-soft" x="108" y="156" width="166" height="12" rx="4"/>
+<g class="grow-frontend-engineering-a-cur"><path class="grow-frontend-engineering-t" d="M150 150 l0 16 l4 -4 l3 7 l3 -1.4 l-3 -6.6 l6 0 z" style="stroke: var(--scene-card,#fff); stroke-width: 1.2"/></g>
+<rect class="grow-frontend-engineering-card" x="390" y="30" width="72" height="144" rx="12"/>
+<rect class="grow-frontend-engineering-mut" x="415" y="38" width="22" height="4" rx="2" opacity=".45"/>
+<rect class="grow-frontend-engineering-soft" x="400" y="52" width="52" height="10" rx="3"/>
+<rect class="grow-frontend-engineering-soft" x="400" y="70" width="52" height="42" rx="5"/><rect class="grow-frontend-engineering-soft" x="400" y="118" width="52" height="42" rx="5"/>
+<g class="grow-frontend-engineering-a-m"><rect class="grow-frontend-engineering-acc" x="400" y="70" width="52" height="14" rx="5"/><rect class="grow-frontend-engineering-acc" x="400" y="118" width="52" height="14" rx="5"/></g>
+<path class="grow-frontend-engineering-dash" d="M306 104 H290"/><path class="grow-frontend-engineering-dash" d="M368 104 H390"/>
+<rect class="grow-frontend-engineering-card" x="304" y="68" width="66" height="72" rx="10"/>
+<rect class="grow-frontend-engineering-soft" x="314" y="78" width="46" height="10" rx="3"/><rect class="grow-frontend-engineering-soft" x="314" y="94" width="46" height="10" rx="3"/>
+<circle class="grow-frontend-engineering-good" cx="352" cy="83" r="2.6"/><circle class="grow-frontend-engineering-good" cx="352" cy="99" r="2.6"/>
+<text class="grow-frontend-engineering-t" x="337" y="128" font-size="16" text-anchor="middle">API</text>
+<g class="grow-frontend-engineering-a-pk1"><circle class="grow-frontend-engineering-grow" cx="300" cy="104" r="5"/></g>
+<g class="grow-frontend-engineering-a-pk2"><circle class="grow-frontend-engineering-grow" cx="374" cy="104" r="5"/></g>
+<text class="grow-frontend-engineering-t" x="426" y="194" font-size="16" text-anchor="middle">Responsive</text>
+
+</svg>

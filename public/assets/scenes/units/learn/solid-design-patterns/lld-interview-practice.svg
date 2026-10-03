@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="An elevator model with rules that must always hold, traced step by step">
+<style>
+.learn-solid-design-patterns-lld-interview-practice-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-solid-design-patterns-lld-interview-practice-m{font-family:ui-monospace,Menlo,monospace;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-solid-design-patterns-lld-interview-practice-a1{animation:learn-solid-design-patterns-lld-interview-practice-car 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes learn-solid-design-patterns-lld-interview-practice-car{0%,10%{transform:translateY(0)}45%,60%{transform:translateY(-76px)}95%,100%{transform:translateY(0)}}
+.learn-solid-design-patterns-lld-interview-practice-a2{animation:learn-solid-design-patterns-lld-interview-practice-door 6s steps(1) infinite;animation-delay:-3s}
+@keyframes learn-solid-design-patterns-lld-interview-practice-door{0%,10%{opacity:1}12%,40%{opacity:0}42%,62%{opacity:1}64%,92%{opacity:0}94%,100%{opacity:1}}
+.learn-solid-design-patterns-lld-interview-practice-a3{animation:learn-solid-design-patterns-lld-interview-practice-tk1 6s steps(1) infinite;animation-delay:-3s}
+.learn-solid-design-patterns-lld-interview-practice-a4{animation:learn-solid-design-patterns-lld-interview-practice-tk2 6s steps(1) infinite;animation-delay:-3s}
+@keyframes learn-solid-design-patterns-lld-interview-practice-tk1{0%,12%{opacity:.2}13%,100%{opacity:1}}
+@keyframes learn-solid-design-patterns-lld-interview-practice-tk2{0%,45%{opacity:.2}46%,100%{opacity:1}}
+
+@media (prefers-reduced-motion:reduce){[class*="learn-solid-design-patterns-lld-interview-practice-a"]{animation:none!important}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="20" y="14" width="80" height="152" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="3"><path d="M20 52H100M20 90H100M20 128H100"/></g>
+<g class="learn-solid-design-patterns-lld-interview-practice-a1"><rect x="34" y="104" width="52" height="54" rx="6" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<path d="M60 108v46" stroke="var(--scene-accent,#006c73)" stroke-width="2"/>
+<g class="learn-solid-design-patterns-lld-interview-practice-a2"><rect x="40" y="110" width="40" height="42" rx="3" fill="var(--scene-accent,#006c73)"/></g></g>
+<rect x="124" y="30" width="186" height="44" rx="12" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-good,#1f7a4d)" stroke-width="3"/>
+<g class="learn-solid-design-patterns-lld-interview-practice-a3"><circle cx="146" cy="52" r="10" fill="var(--scene-good,#1f7a4d)"/><path d="M141 52l4 4 7-8" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text class="learn-solid-design-patterns-lld-interview-practice-t" x="164" y="57">Doors shut</text>
+<rect x="124" y="98" width="186" height="44" rx="12" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-ahead,#2f6fb3)" stroke-width="3"/>
+<g class="learn-solid-design-patterns-lld-interview-practice-a4"><circle cx="146" cy="120" r="10" fill="var(--scene-ahead,#2f6fb3)"/><path d="M141 120l4 4 7-8" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text class="learn-solid-design-patterns-lld-interview-practice-t" x="164" y="125">Top floor cap</text>
+<text class="learn-solid-design-patterns-lld-interview-practice-t" x="217" y="166" text-anchor="middle" style="fill:var(--scene-muted,#536970)">Rules first</text>
+</svg>

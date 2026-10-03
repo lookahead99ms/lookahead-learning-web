@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A written contract with goal, files and tests; the diff is checked and a person approves">
+<style>
+.grow-ai-assisted-development-collaboration-contract-{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.grow-ai-assisted-development-collaboration-contract-m{font-family:ui-monospace,Menlo,monospace;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+
+.grow-ai-assisted-development-collaboration-contract-k{animation:grow-ai-assisted-development-collaboration-contract-tick 6s ease-in-out infinite;stroke-dasharray:30;}
+@keyframes grow-ai-assisted-development-collaboration-contract-tick{0%,10%{stroke-dashoffset:30}25%,85%{stroke-dashoffset:0}100%{stroke-dashoffset:30}}
+.grow-ai-assisted-development-collaboration-contract-a{animation:grow-ai-assisted-development-collaboration-contract-flow 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes grow-ai-assisted-development-collaboration-contract-flow{0%,100%{opacity:.25}50%{opacity:1}}
+.grow-ai-assisted-development-collaboration-contract-s{animation:grow-ai-assisted-development-collaboration-contract-stamp 6s ease-in-out infinite;animation-delay:-3s;transform-box:fill-box;transform-origin:center}
+@keyframes grow-ai-assisted-development-collaboration-contract-stamp{0%,40%{transform:scale(0);opacity:0}55%{transform:scale(1.2);opacity:1}65%,90%{transform:scale(1);opacity:1}100%{opacity:0}}
+</style>
+
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="14" y="16" width="112" height="148" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2"/>
+<text class="grow-ai-assisted-development-collaboration-contract-" x="70" y="38" text-anchor="middle">Contract</text>
+<g fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+<path class="grow-ai-assisted-development-collaboration-contract-k" d="M26 58l5 5 9-10" style="animation-delay:-3s"/><path class="grow-ai-assisted-development-collaboration-contract-k" d="M26 90l5 5 9-10" style="animation-delay:-2.5s"/><path class="grow-ai-assisted-development-collaboration-contract-k" d="M26 122l5 5 9-10" style="animation-delay:-2s"/></g>
+<g fill="var(--scene-muted,#536970)"><rect x="50" y="55" width="62" height="7" rx="3"/><rect x="50" y="87" width="50" height="7" rx="3"/><rect x="50" y="119" width="56" height="7" rx="3"/><rect x="50" y="140" width="40" height="7" rx="3" opacity=".5"/></g>
+<g class="grow-ai-assisted-development-collaboration-contract-a"><path d="M134 90H176" stroke="var(--scene-ink,#102a33)" stroke-width="3"/><path d="M170 82L180 90L170 98" fill="none" stroke="var(--scene-ink,#102a33)" stroke-width="3"/></g>
+<rect x="186" y="16" width="120" height="86" rx="8" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<text class="grow-ai-assisted-development-collaboration-contract-" x="246" y="38" text-anchor="middle">Diff</text>
+<rect x="196" y="48" width="100" height="10" rx="3" fill="var(--scene-bad,#b3261e)" opacity=".25"/><rect x="196" y="64" width="100" height="10" rx="3" fill="var(--scene-good,#1f7a4d)" opacity=".3"/><rect x="196" y="80" width="100" height="10" rx="3" fill="var(--scene-good,#1f7a4d)" opacity=".3"/>
+<rect x="186" y="112" width="120" height="52" rx="8" fill="var(--scene-card,#fff)" stroke="var(--scene-good,#1f7a4d)" stroke-width="2.5"/>
+<circle class="grow-ai-assisted-development-collaboration-contract-s" cx="212" cy="138" r="14" fill="var(--scene-good,#1f7a4d)"/>
+<path class="grow-ai-assisted-development-collaboration-contract-s" d="M205 138l5 5 9-10" fill="none" stroke="var(--scene-card,#fff)" stroke-width="3.5" stroke-linecap="round"/>
+<text class="grow-ai-assisted-development-collaboration-contract-" x="268" y="144" text-anchor="middle">Tests</text>
+</svg>

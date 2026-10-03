@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" font-family="system-ui, sans-serif">
+<style>
+.grow-spring-boot-configuration-t{font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.grow-spring-boot-configuration-top{animation:grow-spring-boot-configuration-top 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes grow-spring-boot-configuration-top{0%,100%{transform:translateX(0)}50%{transform:translateX(6px)}}
+.grow-spring-boot-configuration-ok{animation:grow-spring-boot-configuration-ok 6s step-end infinite;animation-delay:-3s}
+@keyframes grow-spring-boot-configuration-ok{0%,45%{opacity:1}55%,100%{opacity:0}}
+.grow-spring-boot-configuration-no{animation:grow-spring-boot-configuration-no 6s step-end infinite;animation-delay:-3s}
+@keyframes grow-spring-boot-configuration-no{0%,45%{opacity:0}55%,95%{opacity:1}100%{opacity:0}}
+.grow-spring-boot-configuration-fl{animation:grow-spring-boot-configuration-fl 6s step-end infinite;animation-delay:-3s}
+@keyframes grow-spring-boot-configuration-fl{0%,45%{opacity:1}55%,100%{opacity:.25}}
+
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g class="grow-spring-boot-configuration-top"><rect x="18" y="14" width="160" height="34" rx="6" fill="var(--scene-accent,#006c73)"/><rect x="30" y="26" width="70" height="8" rx="4" fill="var(--scene-card,#fff)"/><rect x="110" y="26" width="30" height="8" rx="4" fill="var(--scene-accent-soft,#dcefed)"/></g>
+<rect x="18" y="56" width="160" height="34" rx="6" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2"/><rect x="30" y="68" width="80" height="8" rx="4" fill="var(--scene-line,#cfdfdc)"/>
+<rect x="18" y="98" width="160" height="34" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2.5"/><rect x="30" y="110" width="60" height="8" rx="4" fill="var(--scene-line,#cfdfdc)"/><rect x="100" y="110" width="40" height="8" rx="4" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M184 31h36m-8-7l8 7-8 7" stroke="var(--scene-accent,#006c73)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="226" y="14" width="82" height="86" rx="8" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2.5"/><rect x="236" y="26" width="46" height="7" rx="3" fill="var(--scene-line,#cfdfdc)"/><rect x="236" y="42" width="60" height="7" rx="3" fill="var(--scene-line,#cfdfdc)"/><rect x="236" y="58" width="36" height="7" rx="3" fill="var(--scene-line,#cfdfdc)"/><rect class="grow-spring-boot-configuration-fl" x="236" y="74" width="54" height="7" rx="3" fill="var(--scene-grow,#b8457a)"/>
+<g transform="translate(267 128)"><circle r="17" class="grow-spring-boot-configuration-ok" fill="var(--scene-good,#1f7a4d)"/><path class="grow-spring-boot-configuration-ok" d="M-8 0l6 7 11-14" fill="none" stroke="var(--scene-card,#fff)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><circle r="17" class="grow-spring-boot-configuration-no" fill="var(--scene-bad,#b3261e)"/><path class="grow-spring-boot-configuration-no" d="M-7 -7l14 14m0-14l-14 14" stroke="var(--scene-card,#fff)" stroke-width="4" stroke-linecap="round"/></g>
+<text class="grow-spring-boot-configuration-t" x="98" y="164" text-anchor="middle">top source wins</text><text class="grow-spring-boot-configuration-t" x="267" y="168" text-anchor="middle" style="display:none"></text>
+
+</svg>

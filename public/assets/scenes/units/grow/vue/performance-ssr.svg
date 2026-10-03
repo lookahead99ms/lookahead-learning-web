@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Server sends ready HTML, browser hydrates it and only a few rows are mounted">
+<style>
+.grow-vue-performance-ssr-t{font:600 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.grow-vue-performance-ssr-p{animation:grow-vue-performance-ssr-fly 6s linear infinite;animation-delay:-2.5s}
+.grow-vue-performance-ssr-r{animation:grow-vue-performance-ssr-hy 6s ease-in-out infinite}
+@keyframes grow-vue-performance-ssr-fly{0%{transform:translateX(0);opacity:0}10%{opacity:1}70%{opacity:1}85%,100%{transform:translateX(90px);opacity:0}}
+@keyframes grow-vue-performance-ssr-hy{0%,50%{fill:var(--scene-line,#cfdfdc)}65%,90%{fill:var(--scene-good,#1f7a4d)}100%{fill:var(--scene-line,#cfdfdc)}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="14" y="30" width="80" height="96" rx="10" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/>
+<g fill="var(--scene-accent,#006c73)"><rect x="28" y="46" width="52" height="8" rx="3"/><rect x="28" y="64" width="52" height="8" rx="3"/><rect x="28" y="82" width="52" height="8" rx="3"/><circle cx="34" cy="108" r="4"/><circle cx="48" cy="108" r="4"/></g>
+<path d="M100 78h86" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-dasharray="6 6"/>
+<g class="grow-vue-performance-ssr-p"><rect x="104" y="64" width="26" height="28" rx="4" fill="var(--scene-card,#fff)" stroke="var(--scene-link,#245a88)" stroke-width="2.5"/><path d="M110 74h14M110 82h14" stroke="var(--scene-link,#245a88)" stroke-width="3" stroke-linecap="round"/></g>
+<rect x="190" y="14" width="116" height="130" rx="10" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2.5"/>
+<path d="M190 34h116" stroke="var(--scene-ink,#102a33)" stroke-width="2.5"/>
+<g><rect class="grow-vue-performance-ssr-r" style="animation-delay:-3s" x="202" y="44" width="92" height="16" rx="5"/><rect class="grow-vue-performance-ssr-r" style="animation-delay:-2.7s" x="202" y="68" width="92" height="16" rx="5"/><rect class="grow-vue-performance-ssr-r" style="animation-delay:-2.4s" x="202" y="92" width="92" height="16" rx="5"/><rect x="202" y="116" width="92" height="16" rx="5" fill="var(--scene-line,#cfdfdc)" opacity=".5"/></g>
+<text class="grow-vue-performance-ssr-t" x="54" y="164" text-anchor="middle">Server HTML</text>
+<text class="grow-vue-performance-ssr-t" x="248" y="164" text-anchor="middle" style="fill:var(--scene-good,#1f7a4d)">Hydrate</text>
+</svg>

@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" class="online-judge-root" role="img" aria-label="A submitted solution runs locked inside a sandbox with no network, passes the hidden tests one by one, and gets Accepted and a better contest rank.">
+<style>
+.online-judge-root text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.online-judge-t{fill:var(--scene-ink,#102a33)}
+.online-judge-tx{fill:var(--scene-text,#28434a)}
+.online-judge-mut{fill:var(--scene-muted,#536970)}
+.online-judge-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.online-judge-soft{fill:var(--scene-accent-soft,#dcefed)}
+.online-judge-acc{fill:var(--scene-accent,#006c73)}
+.online-judge-ln{fill:var(--scene-line,#cfdfdc)}
+.online-judge-cardf{fill:var(--scene-card,#fff)}
+.online-judge-good{fill:var(--scene-good,#1f7a4d)}
+.online-judge-warn{fill:var(--scene-warn,#a15c00)}
+.online-judge-bad{fill:var(--scene-bad,#b3261e)}
+.online-judge-link{fill:var(--scene-link,#245a88)}
+.online-judge-out{fill:var(--scene-bubble-out,#d4ecea)}
+.online-judge-sk{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.online-judge-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.online-judge-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:1.5;stroke-dasharray:3 3}
+.online-judge-a{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-5.2s}
+.online-judge-btn{animation-name:online-judge-btn}@keyframes online-judge-btn{0%,4%{fill:var(--scene-accent,#006c73)}6%,10%{fill:var(--scene-good,#1f7a4d)}12%,100%{fill:var(--scene-accent,#006c73)}}
+.online-judge-fly{animation-name:online-judge-fly}@keyframes online-judge-fly{0%,8%{opacity:0;transform:translateX(0)}10%{opacity:1}18%{opacity:1;transform:translateX(40px)}20%,100%{opacity:0;transform:translateX(40px)}}
+.online-judge-ver{animation-name:online-judge-ver;transform-box:fill-box;transform-origin:center}@keyframes online-judge-ver{0%,56%{opacity:0;transform:scale(.85)}60%,100%{opacity:1;transform:scale(1)}}
+.online-judge-rk{animation-name:online-judge-rk}@keyframes online-judge-rk{0%,60%{opacity:0}64%,100%{opacity:1}}
+.online-judge-t0{animation-name:online-judge-t0}@keyframes online-judge-t0{0%,22%{fill:var(--scene-line,#cfdfdc)}24%,100%{fill:var(--scene-good,#1f7a4d)}}
+.online-judge-t1{animation-name:online-judge-t1}@keyframes online-judge-t1{0%,30%{fill:var(--scene-line,#cfdfdc)}32%,100%{fill:var(--scene-good,#1f7a4d)}}
+.online-judge-t2{animation-name:online-judge-t2}@keyframes online-judge-t2{0%,38%{fill:var(--scene-line,#cfdfdc)}40%,100%{fill:var(--scene-good,#1f7a4d)}}
+.online-judge-t3{animation-name:online-judge-t3}@keyframes online-judge-t3{0%,46%{fill:var(--scene-line,#cfdfdc)}48%,100%{fill:var(--scene-good,#1f7a4d)}}
+.online-judge-t4{animation-name:online-judge-t4}@keyframes online-judge-t4{0%,54%{fill:var(--scene-line,#cfdfdc)}56%,100%{fill:var(--scene-good,#1f7a4d)}}
+@media (prefers-reduced-motion: reduce){.online-judge-root *{animation-play-state:paused!important}}
+</style>
+<rect x="6" y="8" width="64" height="119" rx="10" class="online-judge-box"/>
+<rect x="14" y="18" width="34" height="6" rx="3" class="online-judge-acc" fill-opacity=".55"/><rect x="20" y="30" width="30" height="6" rx="3" class="online-judge-link" fill-opacity=".55"/><rect x="20" y="42" width="40" height="6" rx="3" class="online-judge-soft"/><rect x="26" y="54" width="22" height="6" rx="3" class="online-judge-link" fill-opacity=".55"/><rect x="20" y="66" width="34" height="6" rx="3" class="online-judge-soft"/><rect x="14" y="78" width="16" height="6" rx="3" class="online-judge-acc" fill-opacity=".55"/>
+<rect x="12" y="96" width="52" height="24" rx="12" class="online-judge-a online-judge-btn"/><text x="38" y="113" font-size="13" font-weight="700" text-anchor="middle" class="online-judge-cardf">Submit</text>
+<g class="online-judge-a online-judge-fly"><rect x="60" y="48" width="16" height="20" rx="2" class="online-judge-cardf" stroke="var(--scene-accent,#006c73)" stroke-width="1.3"/><path d="M64 55 h8 M64 59 h6 M64 63 h8" stroke="var(--scene-accent,#006c73)" stroke-width="1.2"/></g>
+<rect x="84" y="8" width="78" height="119" rx="10" class="online-judge-soft"/>
+<rect x="84" y="8" width="78" height="119" rx="10" fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="2.5" stroke-dasharray="7 4"/>
+<g transform="translate(115 20) scale(1.3)"><rect x="0" y="7" width="16" height="12" rx="2" class="online-judge-acc"/><path d="M3 8 v-3 a5 5 0 0 1 10 0 v3" stroke="var(--scene-accent,#006c73)" stroke-width="2" fill="none"/></g>
+<path d="M104 64 h26 M104 76 h26 M104 88 h18" class="online-judge-sk" style="stroke-width:2.4;stroke:var(--scene-accent,#006c73);opacity:.5"/>
+<circle cx="98" cy="98" r="5.5" class="online-judge-a online-judge-t0"/><circle cx="111" cy="98" r="5.5" class="online-judge-a online-judge-t1"/><circle cx="124" cy="98" r="5.5" class="online-judge-a online-judge-t2"/><circle cx="137" cy="98" r="5.5" class="online-judge-a online-judge-t3"/><circle cx="150" cy="98" r="5.5" class="online-judge-a online-judge-t4"/><g class="online-judge-a online-judge-ver"><rect x="170" y="14" width="66" height="32" rx="16" class="online-judge-good"/><text x="203" y="35" font-size="13" font-weight="700" text-anchor="middle" class="online-judge-cardf">Accepted</text></g>
+<rect x="170" y="62" width="66" height="65" rx="10" class="online-judge-box"/>
+<path d="M203 74 l-9 12 h6 v8 h6 v-8 h6z" class="online-judge-mut" opacity=".5"/>
+<text x="203" y="116" font-size="17" font-weight="700" text-anchor="middle" class="online-judge-a online-judge-rk online-judge-t"><tspan class="online-judge-mut" font-size="13" font-weight="400">#14 &#8594; </tspan>#9</text>
+</svg>

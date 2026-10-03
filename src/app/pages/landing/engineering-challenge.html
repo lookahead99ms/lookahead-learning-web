@@ -5,15 +5,22 @@
   (toggle)="disclose($event)"
 >
   <summary [attr.aria-expanded]="expanded()" aria-controls="engineering-practice">
-    <span class="challenge-invitation">
-      <span class="eyebrow">Predict. Observe. Explain.</span>
-      <strong>Try an engineering decision.</strong>
-      <span class="challenge-teaser">A small scenario. A chance to test your reasoning.</span>
+    <span class="challenge-summary-copy">
+      <span class="challenge-invitation">
+        <span class="eyebrow">Predict. Observe. Explain.</span>
+        <strong>Try an engineering decision.</strong>
+        <span class="challenge-teaser">A small scenario. A chance to test your reasoning.</span>
+      </span>
+      <span class="challenge-toggle">
+        <span>{{ expanded() ? 'Close challenge' : 'Open challenge' }}</span>
+        <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="m4 6 4 4 4-4" /></svg>
+      </span>
     </span>
-    <span class="challenge-toggle">
-      <span>{{ expanded() ? 'Close challenge' : 'Open challenge' }}</span>
-      <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="m4 6 4 4 4-4" /></svg>
-    </span>
+    <app-card-scene
+      class="challenge-scene"
+      src="/assets/scenes/landing/decision.svg"
+      alt="A request heads for retry now and hits a wall because the provider is down; AI asks what happens if every client retries at once, you answer right there and choose B, back off and queue, and reach a success check"
+    />
   </summary>
   <section id="engineering-practice" class="discovery-practice" aria-labelledby="practice-heading">
     <div class="practice-intro">

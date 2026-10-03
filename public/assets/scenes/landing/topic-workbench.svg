@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 150" role="img" aria-label="A magnifier moves across topic cards and settles on Idempotency; you ask what it is, AI answers in one line, repeat it and get the same result, and you explain it back">
+<style>
+.topic-workbench-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); }
+.topic-workbench-tm { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; fill: var(--scene-text, #28434a); }
+.topic-workbench-b { font-weight: 700; }
+.topic-workbench-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.topic-workbench-acc { fill: var(--scene-accent, #006c73); }
+.topic-workbench-mut { fill: var(--scene-muted, #536970); }
+.topic-workbench-good { fill: var(--scene-good, #1f7a4d); }
+.topic-workbench-bad { fill: var(--scene-bad, #b3261e); }
+.topic-workbench-on-acc { fill: var(--scene-card, #ffffff); }
+.topic-workbench-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 1.5; }
+.topic-workbench-dash { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.topic-workbench-spark { fill: var(--scene-accent, #006c73); }
+.topic-workbench-ai-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.topic-workbench-aibox { fill: var(--scene-card, #ffffff); stroke: var(--scene-accent, #006c73); stroke-width: 1.5; }
+.topic-workbench-you-bg { fill: var(--scene-ink, #102a33); stroke: var(--scene-ink, #102a33); stroke-width: 1.5; }
+.topic-workbench-you-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-card, #ffffff); font-weight: 700; }
+.topic-workbench-bad-t { fill: var(--scene-bad, #b3261e); }
+.topic-workbench-good-t { fill: var(--scene-good, #1f7a4d); }
+
+.topic-workbench-frame { fill: none; stroke: var(--scene-accent, #006c73); stroke-width: 2; }
+.topic-workbench-ring { fill: none; stroke: var(--scene-ink, #102a33); stroke-width: 2.5; }
+.topic-workbench-handle { stroke: var(--scene-ink, #102a33); stroke-width: 3.5; stroke-linecap: round; }
+.topic-workbench-lens { animation: topic-workbench-kf-lens 9s ease-in-out infinite; }
+@keyframes topic-workbench-kf-lens { 0%, 6% { transform: translate(0, 0); } 14%, 18% { transform: translate(136px, 0); } 26%, 30% { transform: translate(0, 34px); } 38%, 100% { transform: translate(136px, 34px); } }
+.topic-workbench-hit { animation: topic-workbench-kf-hit 9s infinite; }
+@keyframes topic-workbench-kf-hit { 0%, 36% { opacity: 0; } 40%, 100% { opacity: 1; } }
+.topic-workbench-modes { animation: topic-workbench-kf-modes 9s infinite; }
+@keyframes topic-workbench-kf-modes { 0%, 0% { opacity: 0; } 4%, 40% { opacity: 1; } 44%, 100% { opacity: 0; } }
+.topic-workbench-ask { animation: topic-workbench-kf-ask 9s infinite; }
+@keyframes topic-workbench-kf-ask { 0%, 42% { opacity: 0; } 46%, 94% { opacity: 1; } 98%, 100% { opacity: 0; } }
+.topic-workbench-ai { animation: topic-workbench-kf-ai 9s infinite; }
+@keyframes topic-workbench-kf-ai { 0%, 52% { opacity: 0; } 56%, 94% { opacity: 1; } 98%, 100% { opacity: 0; } }
+.topic-workbench-you { animation: topic-workbench-kf-you 9s infinite; }
+@keyframes topic-workbench-kf-you { 0%, 66% { opacity: 0; } 70%, 94% { opacity: 1; } 98%, 100% { opacity: 0; } }
+
+.topic-workbench-lens, .topic-workbench-hit, .topic-workbench-modes, .topic-workbench-ask, .topic-workbench-ai, .topic-workbench-you { animation-delay: -7.6s; }
+</style>
+<rect class="topic-workbench-box" x="8" y="6" width="128" height="28" rx="7"/><text class="topic-workbench-t" x="18" y="25" font-size="13">Caching</text>
+<rect class="topic-workbench-box" x="144" y="6" width="128" height="28" rx="7"/><text class="topic-workbench-t" x="154" y="25" font-size="13">Kafka</text>
+<rect class="topic-workbench-box" x="8" y="40" width="128" height="28" rx="7"/><text class="topic-workbench-t" x="18" y="59" font-size="13">Isolation</text>
+<rect class="topic-workbench-box" x="144" y="40" width="128" height="28" rx="7"/>
+<g class="topic-workbench-hit"><rect class="topic-workbench-acc" x="144" y="40" width="128" height="28" rx="7" opacity=".18"/><rect class="topic-workbench-frame" x="144" y="40" width="128" height="28" rx="7"/></g>
+<text class="topic-workbench-t topic-workbench-b" x="152" y="59" font-size="13">Idempotency</text>
+<g class="topic-workbench-modes"><text class="topic-workbench-tm" x="8" y="96" font-size="12">explain · interview · practice</text></g>
+<g class="topic-workbench-ask"><rect class="topic-workbench-you-bg" x="8" y="78" width="38" height="20" rx="10"/><text class="topic-workbench-you-t" x="27" y="92.32" font-size="12" text-anchor="middle">You</text><text class="topic-workbench-t" x="52" y="92.68" font-size="13">What is idempotency?</text></g>
+<g class="topic-workbench-ai"><g class="topic-workbench-ai-mark" transform="translate(8 102)"><g transform="translate(0 3.5)"><path class="topic-workbench-spark" d="M5.46 2.08 Q6.33 6.67 10.92 7.54 Q6.33 8.41 5.46 13 Q4.59 8.41 0 7.54 Q4.59 6.67 5.46 2.08Z M11.18 -0.13 Q11.53 1.73 13.39 2.08 Q11.53 2.43 11.18 4.29 Q10.83 2.43 8.97 2.08 Q10.83 1.73 11.18 -0.13Z M11.7 9.75 Q11.93 10.95 13.13 11.18 Q11.93 11.41 11.7 12.61 Q11.47 11.41 10.27 11.18 Q11.47 10.95 11.7 9.75Z"/></g><text class="topic-workbench-ai-t" x="16" y="14.32" font-size="12">AI</text></g><text class="topic-workbench-t" x="52" y="116.68" font-size="13">Repeat it, same result.</text></g>
+<g class="topic-workbench-you"><rect class="topic-workbench-you-bg" x="8" y="126" width="38" height="20" rx="10"/><text class="topic-workbench-you-t" x="27" y="140.32" font-size="12" text-anchor="middle">You</text><text class="topic-workbench-t topic-workbench-good-t topic-workbench-b" x="52" y="140.68" font-size="13">explain it back ✓</text></g>
+<g class="topic-workbench-lens"><circle class="topic-workbench-ring" cx="125" cy="19" r="9"/><path class="topic-workbench-handle" d="M131.5 25.5 l5 5"/></g>
+</svg>

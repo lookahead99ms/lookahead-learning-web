@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="math geometry">
+<style>
+.learn-algorithmic-patterns-math-geometry-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}.learn-algorithmic-patterns-math-geometry-w{font:700 16px system-ui,sans-serif;fill:#fff}
+@keyframes learn-algorithmic-patterns-math-geometry-rot{0%{transform:rotate(0)}100%{transform:rotate(-360deg)}}
+.learn-algorithmic-patterns-math-geometry-rot{animation:learn-algorithmic-patterns-math-geometry-rot 8s linear infinite;animation-delay:-3s;}.learn-algorithmic-patterns-math-geometry-rot{transform-origin:100px 98px}
+@keyframes learn-algorithmic-patterns-math-geometry-wv{0.0%{transform:translate(0.0px,-0.0px)}8.33%{transform:translate(9.2px,-28.0px)}16.67%{transform:translate(18.3px,-48.5px)}25.0%{transform:translate(27.5px,-56.0px)}33.33%{transform:translate(36.7px,-48.5px)}41.67%{transform:translate(45.8px,-28.0px)}50.0%{transform:translate(55.0px,-0.0px)}58.33%{transform:translate(64.2px,28.0px)}66.67%{transform:translate(73.3px,48.5px)}75.0%{transform:translate(82.5px,56.0px)}83.33%{transform:translate(91.7px,48.5px)}91.67%{transform:translate(100.8px,28.0px)}100.0%{transform:translate(110.0px,0.0px)}}
+.learn-algorithmic-patterns-math-geometry-wv{animation:learn-algorithmic-patterns-math-geometry-wv 8s linear infinite;animation-delay:-3s;}
+.learn-algorithmic-patterns-math-geometry-bg{fill:var(--scene-card,#fff)}
+</style>
+<rect class="learn-algorithmic-patterns-math-geometry-bg" width="320" height="180" rx="12"/>
+<line x1="30" y1="98" x2="310" y2="98" stroke="var(--scene-line,#cfdfdc)" stroke-width="2.5"/><line x1="100" y1="30" x2="100" y2="166" stroke="var(--scene-line,#cfdfdc)" stroke-width="2.5"/>
+<circle cx="100" cy="98" r="56" fill="var(--scene-accent-soft,#dcefed)" fill-opacity=".5" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<polyline points="190.0,98.0 192.8,89.2 195.5,80.7 198.2,72.6 201.0,65.1 203.8,58.4 206.5,52.7 209.2,48.1 212.0,44.7 214.8,42.7 217.5,42.0 220.2,42.7 223.0,44.7 225.8,48.1 228.5,52.7 231.2,58.4 234.0,65.1 236.8,72.6 239.5,80.7 242.2,89.2 245.0,98.0 247.8,106.8 250.5,115.3 253.2,123.4 256.0,130.9 258.8,137.6 261.5,143.3 264.2,147.9 267.0,151.3 269.8,153.3 272.5,154.0 275.2,153.3 278.0,151.3 280.8,147.9 283.5,143.3 286.2,137.6 289.0,130.9 291.8,123.4 294.5,115.3 297.2,106.8 300.0,98.0" fill="none" stroke="var(--scene-learn,#0f8a8a)" stroke-width="3"/>
+<g class="learn-algorithmic-patterns-math-geometry-rot"><line x1="100" y1="98" x2="156" y2="98" stroke="var(--scene-warn,#a15c00)" stroke-width="4" stroke-linecap="round"/><circle cx="156" cy="98" r="7" fill="var(--scene-warn,#a15c00)"/></g>
+<circle class="learn-algorithmic-patterns-math-geometry-wv" cx="190" cy="98" r="7" fill="var(--scene-warn,#a15c00)"/>
+<text class="learn-algorithmic-patterns-math-geometry-t" x="100" y="24" text-anchor="middle">x² + y² = r²</text>
+<text class="learn-algorithmic-patterns-math-geometry-t" x="250" y="174" text-anchor="middle">angle to wave</text>
+</svg>

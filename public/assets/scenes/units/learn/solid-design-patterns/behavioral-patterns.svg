@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="One event reaches the hub and fans out to every listener">
+<style>
+.learn-solid-design-patterns-behavioral-patterns-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-solid-design-patterns-behavioral-patterns-m{font-family:ui-monospace,Menlo,monospace;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-solid-design-patterns-behavioral-patterns-a1{animation:learn-solid-design-patterns-behavioral-patterns-ev 6s linear infinite;animation-delay:-3s}
+@keyframes learn-solid-design-patterns-behavioral-patterns-ev{0%{transform:translateX(0);opacity:0}8%{opacity:1}30%{transform:translateX(70px);opacity:1}34%{opacity:0}100%{opacity:0;transform:translateX(70px)}}
+.learn-solid-design-patterns-behavioral-patterns-a2{animation:learn-solid-design-patterns-behavioral-patterns-fan 6s linear infinite;animation-delay:-3s}
+@keyframes learn-solid-design-patterns-behavioral-patterns-fan{0%,32%{opacity:0}34%{opacity:1;transform:translate(0,0)}60%{opacity:1}62%,100%{opacity:0}}
+.learn-solid-design-patterns-behavioral-patterns-a5{animation:learn-solid-design-patterns-behavioral-patterns-r 6s ease-out infinite;animation-delay:-3s;transform-box:fill-box;transform-origin:center}
+@keyframes learn-solid-design-patterns-behavioral-patterns-r{0%,30%{transform:scale(1);opacity:0}34%{opacity:.9}60%{transform:scale(1.6);opacity:0}100%{opacity:0}}
+.learn-solid-design-patterns-behavioral-patterns-b1{animation:learn-solid-design-patterns-behavioral-patterns-t1 6s linear infinite;animation-delay:-3s}
+.learn-solid-design-patterns-behavioral-patterns-b2{animation:learn-solid-design-patterns-behavioral-patterns-t2 6s linear infinite;animation-delay:-3s}
+.learn-solid-design-patterns-behavioral-patterns-b3{animation:learn-solid-design-patterns-behavioral-patterns-t3 6s linear infinite;animation-delay:-3s}
+@keyframes learn-solid-design-patterns-behavioral-patterns-t1{0%,32%{transform:translate(0,0);opacity:0}34%{opacity:1}56%{transform:translate(52px,-52px);opacity:1}60%,100%{transform:translate(52px,-52px);opacity:0}}
+@keyframes learn-solid-design-patterns-behavioral-patterns-t2{0%,32%{transform:translate(0,0);opacity:0}34%{opacity:1}56%{transform:translate(52px,0);opacity:1}60%,100%{transform:translate(52px,0);opacity:0}}
+@keyframes learn-solid-design-patterns-behavioral-patterns-t3{0%,32%{transform:translate(0,0);opacity:0}34%{opacity:1}56%{transform:translate(52px,52px);opacity:1}60%,100%{transform:translate(52px,52px);opacity:0}}
+
+@media (prefers-reduced-motion:reduce){[class*="learn-solid-design-patterns-behavioral-patterns-a"]{animation:none!important}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g fill="none" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"><path d="M50 90H100"/><path d="M168 90L226 38"/><path d="M168 90H226"/><path d="M168 90L226 142"/></g>
+<rect x="8" y="72" width="42" height="36" rx="8" fill="var(--scene-warn,#a15c00)"/><circle cx="29" cy="90" r="7" fill="none" stroke="#fff" stroke-width="3"/><circle cx="29" cy="90" r="2" fill="#fff"/>
+<rect x="100" y="60" width="68" height="60" rx="12" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<circle cx="134" cy="90" r="12" fill="var(--scene-accent,#006c73)"/><circle cx="134" cy="90" r="4" fill="var(--scene-card,#fff)"/>
+<g class="learn-solid-design-patterns-behavioral-patterns-a5"><circle cx="134" cy="90" r="14" fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="3"/></g>
+<rect x="226" y="20" width="34" height="36" rx="8" fill="var(--scene-card,#fff)" stroke="var(--scene-ahead,#2f6fb3)" stroke-width="3"/><rect x="236" y="28" width="14" height="20" rx="3" fill="var(--scene-ahead,#2f6fb3)"/>
+<rect x="226" y="72" width="34" height="36" rx="8" fill="var(--scene-card,#fff)" stroke="var(--scene-good,#1f7a4d)" stroke-width="3"/><path d="M234 84h18M234 92h18M234 100h12" stroke="var(--scene-good,#1f7a4d)" stroke-width="3" stroke-linecap="round"/>
+<rect x="226" y="124" width="34" height="36" rx="8" fill="var(--scene-card,#fff)" stroke="var(--scene-bad,#b3261e)" stroke-width="3"/><path d="M233 150a9 9 0 0118 0z" fill="var(--scene-bad,#b3261e)"/><path d="M243 130v6" stroke="var(--scene-bad,#b3261e)" stroke-width="3" stroke-linecap="round"/>
+<g class="learn-solid-design-patterns-behavioral-patterns-a1"><circle cx="54" cy="90" r="6" fill="var(--scene-warn,#a15c00)"/></g>
+<circle class="learn-solid-design-patterns-behavioral-patterns-b1" cx="168" cy="90" r="6" fill="var(--scene-accent,#006c73)"/><circle class="learn-solid-design-patterns-behavioral-patterns-b2" cx="168" cy="90" r="6" fill="var(--scene-accent,#006c73)"/><circle class="learn-solid-design-patterns-behavioral-patterns-b3" cx="168" cy="90" r="6" fill="var(--scene-accent,#006c73)"/>
+<text class="learn-solid-design-patterns-behavioral-patterns-t" x="29" y="128" text-anchor="middle">Motion</text>
+<text class="learn-solid-design-patterns-behavioral-patterns-t" x="134" y="46" text-anchor="middle">Hub</text>
+</svg>

@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="The event loop takes the next queued callback and runs it on the call stack">
+<style>
+.learn-javascript-foundations-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.learn-javascript-foundations-cup { fill: var(--scene-card, #ffffff); stroke: var(--scene-muted, #536970); stroke-width: 2; }
+.learn-javascript-foundations-frame { fill: var(--scene-accent-soft, #dcefed); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.learn-javascript-foundations-line { stroke: var(--scene-muted, #536970); stroke-width: 3; stroke-linecap: round; }
+.learn-javascript-foundations-run { fill: var(--scene-learn, #0f8a8a); }
+.learn-javascript-foundations-run-line { stroke: var(--scene-card, #ffffff); stroke-width: 3; stroke-linecap: round; }
+.learn-javascript-foundations-ring { fill: none; stroke: var(--scene-line, #cfdfdc); stroke-width: 5; }
+.learn-javascript-foundations-arc { fill: none; stroke: var(--scene-learn, #0f8a8a); stroke-width: 5; stroke-linecap: round; }
+.learn-javascript-foundations-head { fill: var(--scene-learn, #0f8a8a); }
+.learn-javascript-foundations-q { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.learn-javascript-foundations-cb { fill: var(--scene-learn, #0f8a8a); }
+.learn-javascript-foundations-cb2 { fill: var(--scene-warn, #a15c00); }
+.learn-javascript-foundations-path { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 1.5; stroke-dasharray: 4 5; }
+.learn-javascript-foundations-spin { transform-box: view-box; transform-origin: 240px 70px; animation: learn-javascript-foundations-spin 2s linear infinite; animation-delay: -3s; }
+.learn-javascript-foundations-hop { animation: learn-javascript-foundations-hop 6s ease-in-out infinite; animation-delay: -3s; }
+.learn-javascript-foundations-top { animation: learn-javascript-foundations-top 6s ease-in-out infinite; animation-delay: -3s; }
+@keyframes learn-javascript-foundations-spin { to { transform: rotate(360deg); } }
+@keyframes learn-javascript-foundations-hop {
+  0% { transform: translate(0, 0); opacity: 0; }
+  10% { transform: translate(0, 0); opacity: 1; }
+  20% { transform: translate(0, 0); opacity: 1; }
+  32% { transform: translate(-50px, -112px); opacity: 1; }
+  42% { transform: translate(-132px, -60px); opacity: 1; }
+  46% { transform: translate(-132px, -60px); opacity: 0; }
+  100% { transform: translate(-132px, -60px); opacity: 0; }
+}
+@keyframes learn-javascript-foundations-top {
+  0%, 42% { transform: translateY(0); opacity: 0; }
+  46% { transform: translateY(0); opacity: 1; }
+  82% { transform: translateY(0); opacity: 1; }
+  92% { transform: translateY(-16px); opacity: 0; }
+  100% { transform: translateY(-16px); opacity: 0; }
+}
+</style>
+<text class="learn-javascript-foundations-t" x="76" y="24" font-size="16" text-anchor="middle">call stack</text>
+<path class="learn-javascript-foundations-cup" d="M26 38 V160 H126 V38"/>
+<rect class="learn-javascript-foundations-frame" x="34" y="128" width="84" height="24" rx="5"/>
+<path class="learn-javascript-foundations-line" d="M44 140 H90"/>
+<rect class="learn-javascript-foundations-frame" x="34" y="100" width="84" height="24" rx="5"/>
+<path class="learn-javascript-foundations-line" d="M44 112 H76"/>
+<g class="learn-javascript-foundations-top">
+  <rect class="learn-javascript-foundations-run" x="34" y="72" width="84" height="24" rx="5"/>
+  <path class="learn-javascript-foundations-run-line" d="M44 84 H100"/>
+</g>
+<circle class="learn-javascript-foundations-ring" cx="240" cy="70" r="34"/>
+<g class="learn-javascript-foundations-spin">
+  <path class="learn-javascript-foundations-arc" d="M240 36 A34 34 0 0 1 274 70"/>
+  <path class="learn-javascript-foundations-head" d="M266 66 L282 66 L274 78 Z"/>
+</g>
+<text class="learn-javascript-foundations-t" x="240" y="76" font-size="16" text-anchor="middle">loop</text>
+<path class="learn-javascript-foundations-path" d="M188 124 C188 60 170 28 140 28 C104 28 92 44 88 64"/>
+<rect class="learn-javascript-foundations-q" x="160" y="124" width="148" height="34" rx="8"/>
+<rect class="learn-javascript-foundations-cb2" x="214" y="132" width="36" height="18" rx="9"/>
+<rect class="learn-javascript-foundations-cb" x="258" y="132" width="36" height="18" rx="9"/>
+<g class="learn-javascript-foundations-hop">
+  <rect class="learn-javascript-foundations-cb" x="170" y="132" width="36" height="18" rx="9"/>
+</g>
+<text class="learn-javascript-foundations-t" x="234" y="175" font-size="16" text-anchor="middle">task queue</text>
+</svg>

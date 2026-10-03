@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" font-family="system-ui, sans-serif">
+<style>
+
+.grow-monitoring-alerts-alerting-slo-t{font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.grow-monitoring-alerts-alerting-slo-bud{transform-origin:24px 0;animation:grow-monitoring-alerts-alerting-slo-drain 7s linear infinite;animation-delay:-3s}
+.grow-monitoring-alerts-alerting-slo-l1{animation:grow-monitoring-alerts-alerting-slo-lamp1 7s ease-in-out infinite;animation-delay:-3s}
+.grow-monitoring-alerts-alerting-slo-l2{animation:grow-monitoring-alerts-alerting-slo-lamp2 7s ease-in-out infinite;animation-delay:-3s}
+.grow-monitoring-alerts-alerting-slo-p{transform-origin:274px 125px;animation:grow-monitoring-alerts-alerting-slo-ring 7s ease-in-out infinite;animation-delay:-3s}
+@keyframes grow-monitoring-alerts-alerting-slo-drain{0%{transform:scaleX(1)}85%,100%{transform:scaleX(.18)}}
+@keyframes grow-monitoring-alerts-alerting-slo-lamp1{0%,25%{fill:var(--scene-card,#fff)}35%,90%{fill:var(--scene-bad,#b3261e)}100%{fill:var(--scene-card,#fff)}}
+@keyframes grow-monitoring-alerts-alerting-slo-lamp2{0%,45%{fill:var(--scene-card,#fff)}55%,90%{fill:var(--scene-bad,#b3261e)}100%{fill:var(--scene-card,#fff)}}
+@keyframes grow-monitoring-alerts-alerting-slo-ring{0%,55%{transform:rotate(0);opacity:.3}62%{transform:rotate(14deg);opacity:1}70%{transform:rotate(-14deg)}78%{transform:rotate(8deg)}86%,95%{transform:rotate(0);opacity:1}100%{opacity:.3}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+
+<text x="24" y="28" class="grow-monitoring-alerts-alerting-slo-t">Error budget</text>
+<rect x="24" y="38" width="272" height="30" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<rect x="28" y="42" width="264" height="22" rx="3" fill="var(--scene-good,#1f7a4d)" class="grow-monitoring-alerts-alerting-slo-bud" style="transform-origin:28px 0"/>
+<g stroke="var(--scene-ink,#102a33)" stroke-width="2"><circle cx="40" cy="116" r="13" class="grow-monitoring-alerts-alerting-slo-l1"/><circle cx="128" cy="116" r="13" class="grow-monitoring-alerts-alerting-slo-l2"/></g>
+<path d="M56 116H114" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<text x="40" y="154" text-anchor="middle" class="grow-monitoring-alerts-alerting-slo-t">5 min</text>
+<text x="128" y="154" text-anchor="middle" class="grow-monitoring-alerts-alerting-slo-t">1 hour</text>
+<path d="M156 116H236" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/><path d="M228 108l10 8-10 8" fill="none" stroke="var(--scene-muted,#536970)" stroke-width="3"/>
+<g class="grow-monitoring-alerts-alerting-slo-p"><path d="M274 98c-14 0-19 11-19 24v10l-6 9h50l-6-9v-10c0-13-5-24-19-24z" fill="var(--scene-bad,#b3261e)"/><circle cx="274" cy="147" r="5" fill="var(--scene-bad,#b3261e)"/></g>
+<text x="274" y="172" text-anchor="middle" class="grow-monitoring-alerts-alerting-slo-t" style="font-size:16px">Page</text>
+</svg>

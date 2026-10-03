@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label=" Producers fill a queue and a slow-down signal flows back">
+<style>
+.look-ahead-scalability-performance-queues-backpressure-t{font:600 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.look-ahead-scalability-performance-queues-backpressure-m{animation:look-ahead-scalability-performance-queues-backpressure-mv 4s linear infinite}
+.look-ahead-scalability-performance-queues-backpressure-o{animation:look-ahead-scalability-performance-queues-backpressure-ov 4s linear infinite}
+.look-ahead-scalability-performance-queues-backpressure-s{animation:look-ahead-scalability-performance-queues-backpressure-sg 2s ease-in-out infinite;animation-delay:-1s}
+@keyframes look-ahead-scalability-performance-queues-backpressure-mv{0%{transform:translateX(0);opacity:0}15%{opacity:1}100%{transform:translateX(52px);opacity:1}}
+@keyframes look-ahead-scalability-performance-queues-backpressure-ov{0%{transform:translateX(0);opacity:1}85%{opacity:1}100%{transform:translateX(50px);opacity:0}}
+@keyframes look-ahead-scalability-performance-queues-backpressure-sg{0%,100%{opacity:1}50%{opacity:.35}}
+</style>
+<rect width="320" height="180" rx="10" fill="var(--scene-card,#fff)"/>
+<g fill="var(--scene-ahead,#2f6fb3)"><rect x="14" y="40" width="26" height="22" rx="5"/><rect x="14" y="76" width="26" height="22" rx="5"/><rect x="14" y="112" width="26" height="22" rx="5"/></g>
+<rect x="100" y="60" width="110" height="52" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<g fill="var(--scene-learn,#0f8a8a)"><rect x="106" y="68" width="14" height="36" rx="3"/><rect x="124" y="68" width="14" height="36" rx="3"/><rect x="142" y="68" width="14" height="36" rx="3"/><rect x="160" y="68" width="14" height="36" rx="3"/><rect x="178" y="68" width="14" height="36" rx="3" fill="var(--scene-warn,#a15c00)"/></g>
+<g fill="var(--scene-learn,#0f8a8a)">
+<rect class="look-ahead-scalability-performance-queues-backpressure-m" x="44" y="75" width="14" height="22" rx="3" style="animation-delay:-3s"/>
+<rect class="look-ahead-scalability-performance-queues-backpressure-m" x="44" y="75" width="14" height="22" rx="3" style="animation-delay:-1s"/>
+<rect class="look-ahead-scalability-performance-queues-backpressure-o" x="214" y="75" width="14" height="22" rx="3" style="animation-delay:-2s"/></g>
+<rect x="268" y="62" width="40" height="48" rx="8" fill="var(--scene-good,#1f7a4d)"/>
+<path d="M280 86H296M290 79L297 86L290 93" stroke="var(--scene-card,#fff)" stroke-width="3" fill="none" stroke-linecap="round"/>
+<g class="look-ahead-scalability-performance-queues-backpressure-s" fill="none" stroke="var(--scene-bad,#b3261e)" stroke-width="3" stroke-linecap="round"><path d="M180 36H60M70 28L58 36L70 44"/></g>
+<text class="look-ahead-scalability-performance-queues-backpressure-t" x="86" y="30" style="fill:var(--scene-bad,#b3261e)">Slow down</text>
+<text class="look-ahead-scalability-performance-queues-backpressure-t" x="124" y="136">Queue</text>
+<text class="look-ahead-scalability-performance-queues-backpressure-t" x="10" y="160">Producers</text>
+<text class="look-ahead-scalability-performance-queues-backpressure-t" x="246" y="136">Workers</text>
+</svg>

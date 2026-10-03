@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" class="counting-at-scale-root" role="img" aria-label="A flood of posts is counted into a trending list; the top hashtag count climbs and it moves up to number one.">
+<style>
+.counting-at-scale-root text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.counting-at-scale-t{fill:var(--scene-ink,#102a33)}
+.counting-at-scale-tx{fill:var(--scene-text,#28434a)}
+.counting-at-scale-mut{fill:var(--scene-muted,#536970)}
+.counting-at-scale-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.counting-at-scale-soft{fill:var(--scene-accent-soft,#dcefed)}
+.counting-at-scale-acc{fill:var(--scene-accent,#006c73)}
+.counting-at-scale-ln{fill:var(--scene-line,#cfdfdc)}
+.counting-at-scale-cardf{fill:var(--scene-card,#fff)}
+.counting-at-scale-good{fill:var(--scene-good,#1f7a4d)}
+.counting-at-scale-warn{fill:var(--scene-warn,#a15c00)}
+.counting-at-scale-bad{fill:var(--scene-bad,#b3261e)}
+.counting-at-scale-link{fill:var(--scene-link,#245a88)}
+.counting-at-scale-out{fill:var(--scene-bubble-out,#d4ecea)}
+.counting-at-scale-sk{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.counting-at-scale-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.counting-at-scale-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:1.5;stroke-dasharray:3 3}
+.counting-at-scale-p{animation:counting-at-scale-p 2.4s linear infinite}
+@keyframes counting-at-scale-p{0%{transform:translateX(0);opacity:0}12%{opacity:1}75%{opacity:1}100%{transform:translateX(34px);opacity:0}}
+.counting-at-scale-p1{animation-delay:-3s}.counting-at-scale-p2{animation-delay:-3.8s}.counting-at-scale-p3{animation-delay:-4.6s}
+.counting-at-scale-s{animation:counting-at-scale-s 7s -3s infinite}
+@keyframes counting-at-scale-s{0%,26%{transform:translateY(34px)}40%,94%{transform:translateY(0)}100%{transform:translateY(34px)}}
+.counting-at-scale-d{animation:counting-at-scale-d 7s -3s infinite}
+@keyframes counting-at-scale-d{0%,26%{transform:translateY(-34px)}40%,94%{transform:translateY(0)}100%{transform:translateY(-34px)}}
+.counting-at-scale-old{animation:counting-at-scale-old 7s -3s infinite}.counting-at-scale-new{animation:counting-at-scale-new 7s -3s infinite}
+@keyframes counting-at-scale-old{0%,24%{opacity:1}28%,96%{opacity:0}100%{opacity:1}}
+@keyframes counting-at-scale-new{0%,24%{opacity:0}28%,96%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.counting-at-scale-root *{animation-play-state:paused!important}}
+</style>
+<g class="counting-at-scale-p counting-at-scale-p1"><rect x="8" y="36" width="40" height="16" rx="8" class="counting-at-scale-out"/><circle cx="19" cy="44" r="3.5" class="counting-at-scale-acc"/><rect x="26" y="42" width="16" height="4" rx="2" class="counting-at-scale-mut"/></g><g class="counting-at-scale-p counting-at-scale-p2"><rect x="8" y="62" width="40" height="16" rx="8" class="counting-at-scale-out"/><circle cx="19" cy="70" r="3.5" class="counting-at-scale-acc"/><rect x="26" y="68" width="16" height="4" rx="2" class="counting-at-scale-mut"/></g><g class="counting-at-scale-p counting-at-scale-p3"><rect x="8" y="88" width="40" height="16" rx="8" class="counting-at-scale-out"/><circle cx="19" cy="96" r="3.5" class="counting-at-scale-acc"/><rect x="26" y="94" width="16" height="4" rx="2" class="counting-at-scale-mut"/></g><g class="counting-at-scale-p counting-at-scale-p2"><rect x="8" y="112" width="40" height="16" rx="8" class="counting-at-scale-out"/><circle cx="19" cy="120" r="3.5" class="counting-at-scale-acc"/><rect x="26" y="118" width="16" height="4" rx="2" class="counting-at-scale-mut"/></g>
+<text x="8" y="22" font-size="13" font-weight="700" class="counting-at-scale-t">100k/s</text>
+<rect x="88" y="8" width="146" height="119" rx="12" class="counting-at-scale-box"/>
+<text x="161" y="27" font-size="13" font-weight="700" text-anchor="middle" class="counting-at-scale-t">Trending</text>
+<g class="counting-at-scale-d"><rect x="96" y="82" width="130" height="19" rx="7" class="counting-at-scale-out" opacity=".6"/><rect x="104" y="88" width="64" height="7" rx="3" class="counting-at-scale-mut"/><text x="218" y="97" font-size="13" text-anchor="end" class="counting-at-scale-tx">197</text></g>
+<g class="counting-at-scale-d"><rect x="96" y="104" width="130" height="19" rx="7" class="counting-at-scale-out" opacity=".6"/><rect x="104" y="110" width="50" height="7" rx="3" class="counting-at-scale-mut"/></g>
+<g class="counting-at-scale-s"><rect x="96" y="36" width="130" height="38" rx="9" class="counting-at-scale-soft"/>
+<text x="104" y="61" font-size="15" font-weight="700" class="counting-at-scale-t">#1</text>
+<text x="218" y="61" font-size="16" font-weight="700" text-anchor="end" class="counting-at-scale-tx counting-at-scale-old">140</text>
+<text x="218" y="61" font-size="16" font-weight="700" text-anchor="end" class="counting-at-scale-tx counting-at-scale-new">213</text></g>
+</svg>

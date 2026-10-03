@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A messy invoice is checked field by field into a clean record, one bad field is rejected">
+<style>
+.look-ahead-ai-systems-architecture-structured-output-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.look-ahead-ai-systems-architecture-structured-output-f1{animation:look-ahead-ai-systems-architecture-structured-output-f 6s ease-in-out infinite;animation-delay:-3s}
+.look-ahead-ai-systems-architecture-structured-output-f2{animation:look-ahead-ai-systems-architecture-structured-output-f 6s ease-in-out infinite;animation-delay:-2s}
+.look-ahead-ai-systems-architecture-structured-output-f3{animation:look-ahead-ai-systems-architecture-structured-output-f 6s ease-in-out infinite;animation-delay:-1s}
+.look-ahead-ai-systems-architecture-structured-output-bad{animation:look-ahead-ai-systems-architecture-structured-output-bad 6s ease-in-out infinite;animation-delay:-3s}
+.look-ahead-ai-systems-architecture-structured-output-scan{animation:look-ahead-ai-systems-architecture-structured-output-scan 6s linear infinite;animation-delay:-3s}
+@keyframes look-ahead-ai-systems-architecture-structured-output-f{0%,20%{opacity:0;transform:translateX(-14px)}40%,90%{opacity:1;transform:translateX(0)}100%{opacity:0;transform:translateX(-14px)}}
+@keyframes look-ahead-ai-systems-architecture-structured-output-bad{0%,20%{opacity:0}35%,60%{opacity:1;transform:translate(0,0)}100%{opacity:0;transform:translate(0,22px)}}
+@keyframes look-ahead-ai-systems-architecture-structured-output-scan{0%{transform:translateY(0)}50%{transform:translateY(90px)}100%{transform:translateY(0)}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g transform="rotate(-4 66 76)"><rect x="22" y="22" width="88" height="106" rx="5" fill="var(--scene-card,#fff)" stroke="var(--scene-muted,#536970)" stroke-width="2.5"/>
+<path d="M32 40h50M32 52h64M32 64h30M32 76h58M32 88h44M32 100h62" stroke="var(--scene-muted,#536970)" stroke-width="5" stroke-linecap="round" stroke-dasharray="14 4 22 5 9 3"/></g>
+<g class="look-ahead-ai-systems-architecture-structured-output-scan"><rect x="18" y="30" width="96" height="4" rx="2" fill="var(--scene-link,#245a88)" opacity=".8"/></g>
+<path d="M124 76h44" stroke="var(--scene-muted,#536970)" stroke-width="3" stroke-linecap="round"/><path d="M162 68l8 8-8 8" fill="none" stroke="var(--scene-muted,#536970)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="184" y="22" width="122" height="106" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/>
+<g class="look-ahead-ai-systems-architecture-structured-output-f1"><rect x="194" y="32" width="70" height="8" rx="3" fill="var(--scene-accent,#006c73)"/><path d="M276 36l5 5 10-11" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g class="look-ahead-ai-systems-architecture-structured-output-f2"><rect x="194" y="56" width="52" height="8" rx="3" fill="var(--scene-accent,#006c73)"/><path d="M276 60l5 5 10-11" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g class="look-ahead-ai-systems-architecture-structured-output-f3"><rect x="194" y="80" width="62" height="8" rx="3" fill="var(--scene-accent,#006c73)"/><path d="M276 84l5 5 10-11" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g class="look-ahead-ai-systems-architecture-structured-output-bad"><rect x="194" y="104" width="44" height="8" rx="3" fill="var(--scene-bad,#b3261e)"/><path d="M276 102l12 12M288 102l-12 12" stroke="var(--scene-bad,#b3261e)" stroke-width="3.5" stroke-linecap="round"/></g>
+<text x="66" y="156" text-anchor="middle" class="look-ahead-ai-systems-architecture-structured-output-t">Messy invoice</text>
+<text x="245" y="156" text-anchor="middle" class="look-ahead-ai-systems-architecture-structured-output-t">Validated record</text>
+</svg>

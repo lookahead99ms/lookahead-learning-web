@@ -33,6 +33,8 @@
     "test:foundation-notes": "node --test scripts/foundation-language-notes.test.mjs",
     "test:dsa-index": "node --test scripts/generate-hands-on-dsa-index.test.mjs",
     "test:search-index": "node --test scripts/generate-search-index.test.mjs",
+    "test:card-contract": "node --test scripts/learning-unit-card-contract.test.mjs",
+    "test:landing-scenes": "node --test scripts/landing-scenes.test.mjs",
     "test:answer-slides": "node --test scripts/answer-slide-contract.test.mjs",
     "test:content-audit": "node --test scripts/audit-content.test.mjs",
     "test:dsa-profile": "node --test scripts/profile-dsa-loading.test.mjs",

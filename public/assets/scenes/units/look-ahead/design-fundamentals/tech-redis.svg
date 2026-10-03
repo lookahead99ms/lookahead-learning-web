@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Matteo wins a race, gains 300 points and climbs from fourth to second on the leaderboard">
+<style>
+.tech-redis-t{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-ink,#102a33)}
+.tech-redis-mu{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-muted,#536970)}
+.tech-redis-g{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-good,#1f7a4d)}
+.tech-redis-w{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-warn,#a15c00)}
+.tech-redis-b{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-bad,#b3261e)}
+.tech-redis-a{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-accent,#006c73)}
+.tech-redis-mono{font-family:ui-monospace,Menlo,monospace}
+.tech-redis-card{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.tech-redis-soft{fill:var(--scene-accent-soft,#dcefed)}
+.tech-redis-acc{fill:var(--scene-accent,#006c73)}
+.tech-redis-gd{fill:var(--scene-good,#1f7a4d)}
+.tech-redis-wn{fill:var(--scene-warn,#a15c00)}
+.tech-redis-bd{fill:var(--scene-bad,#b3261e)}
+.tech-redis-ink{fill:var(--scene-ink,#102a33)}
+.tech-redis-mf{fill:var(--scene-muted,#536970)}
+.tech-redis-lf{fill:var(--scene-line,#cfdfdc)}
+.tech-redis-cf{fill:var(--scene-card,#fff)}
+.tech-redis-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-redis-sg{fill:none;stroke:var(--scene-good,#1f7a4d);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-redis-sw{fill:none;stroke:var(--scene-warn,#a15c00);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-redis-sb{fill:none;stroke:var(--scene-bad,#b3261e);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-redis-sm{fill:none;stroke:var(--scene-muted,#536970);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-redis-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-redis-si{fill:none;stroke:var(--scene-ink,#102a33);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-redis-me{animation:tech-redis-me 8s -3.2s infinite;}
+@keyframes tech-redis-me{0%,18%{transform:translateY(0)}30%,94%{transform:translateY(-52px)}98%,100%{transform:translateY(0)}}
+.tech-redis-x2{animation:tech-redis-x2 8s -3.2s infinite;}
+@keyframes tech-redis-x2{0%,18%{transform:translateY(0)}30%,94%{transform:translateY(26px)}98%,100%{transform:translateY(0)}}
+.tech-redis-pts{animation:tech-redis-pts 8s -3.2s infinite;}
+@keyframes tech-redis-pts{0%,15%{opacity:0}16%,96%{opacity:1}97%,100%{opacity:0}}
+</style>
+<g><rect class="tech-redis-card" x="10" y="10" width="150" height="22" rx="6"/><circle class="tech-redis-mf" cx="24" cy="21" r="6"/><rect class="tech-redis-lf" x="40" y="17" width="80" height="8" rx="2"/></g>
+<g class="tech-redis-x2"><rect class="tech-redis-card" x="10" y="36" width="150" height="22" rx="6"/><circle class="tech-redis-mf" cx="24" cy="47" r="6"/><rect class="tech-redis-lf" x="40" y="43" width="70" height="8" rx="2"/></g>
+<g class="tech-redis-x2"><rect class="tech-redis-card" x="10" y="62" width="150" height="22" rx="6"/><circle class="tech-redis-mf" cx="24" cy="73" r="6"/><rect class="tech-redis-lf" x="40" y="69" width="90" height="8" rx="2"/></g>
+<g class="tech-redis-me"><rect class="tech-redis-soft" x="10" y="88" width="150" height="22" rx="6" style="stroke:var(--scene-accent,#006c73);stroke-width:2"/><circle class="tech-redis-acc" cx="24" cy="99" r="6"/><text class="tech-redis-t" x="40" y="104" font-size="15" font-weight="700" text-anchor="start">Matteo</text>
+</g>
+<g class="tech-redis-pts"><path class="tech-redis-sg" style="stroke-width:5" d="M192 44 V20 M182 30 l10 -10 l10 10"/><text class="tech-redis-g" x="196" y="76" font-size="22" font-weight="700" text-anchor="middle">+300</text>
+</g>
+</svg>

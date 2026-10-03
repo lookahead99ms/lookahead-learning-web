@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Older requests are aborted; only the latest result is kept">
+<style>
+.learn-javascript-foundations-cancellation-host-runtime-t{font-family:system-ui,sans-serif;font-size:15px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-javascript-foundations-cancellation-host-runtime-m{font-family:ui-monospace,Menlo,monospace;font-size:15px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-javascript-foundations-cancellation-host-runtime-r1{animation:learn-javascript-foundations-cancellation-host-runtime-g1 6s linear infinite;animation-delay:-3.2s;transform-box:fill-box;transform-origin:left}
+@keyframes learn-javascript-foundations-cancellation-host-runtime-g1{0%{transform:scaleX(0.05)}45%,100%{transform:scaleX(.55)}}
+.learn-javascript-foundations-cancellation-host-runtime-r2{animation:learn-javascript-foundations-cancellation-host-runtime-g2 6s linear infinite;animation-delay:-3.2s;transform-box:fill-box;transform-origin:left}
+@keyframes learn-javascript-foundations-cancellation-host-runtime-g2{0%{transform:scaleX(0.05)}60%,100%{transform:scaleX(.7)}}
+.learn-javascript-foundations-cancellation-host-runtime-r3{animation:learn-javascript-foundations-cancellation-host-runtime-g3 6s linear infinite;animation-delay:-3.2s;transform-box:fill-box;transform-origin:left}
+@keyframes learn-javascript-foundations-cancellation-host-runtime-g3{0%{transform:scaleX(0.05)}75%,100%{transform:scaleX(1)}}
+.learn-javascript-foundations-cancellation-host-runtime-x{animation:learn-javascript-foundations-cancellation-host-runtime-xx 6s steps(1) infinite;animation-delay:-3.2s}
+@keyframes learn-javascript-foundations-cancellation-host-runtime-xx{0%{opacity:0}45%{opacity:1}100%{opacity:1}}
+.learn-javascript-foundations-cancellation-host-runtime-ok{animation:learn-javascript-foundations-cancellation-host-runtime-kk 6s steps(1) infinite;animation-delay:-3.2s}
+@keyframes learn-javascript-foundations-cancellation-host-runtime-kk{0%{opacity:0}75%{opacity:1}100%{opacity:1}}
+</style>
+<rect width="240" height="135" fill="var(--scene-card,#fff)"/>
+<text class="learn-javascript-foundations-cancellation-host-runtime-m" x="8" y="29" style="fill:var(--scene-muted,#536970)">a</text>
+<text class="learn-javascript-foundations-cancellation-host-runtime-m" x="8" y="59" style="fill:var(--scene-muted,#536970)">ab</text>
+<text class="learn-javascript-foundations-cancellation-host-runtime-m" x="8" y="89" style="fill:var(--scene-ink,#102a33)">abc</text>
+<rect x="44" y="16" width="150" height="16" rx="8" fill="var(--scene-line,#cfdfdc)"/>
+<rect x="44" y="46" width="150" height="16" rx="8" fill="var(--scene-line,#cfdfdc)"/>
+<rect x="44" y="76" width="150" height="16" rx="8" fill="var(--scene-line,#cfdfdc)"/>
+<rect class="learn-javascript-foundations-cancellation-host-runtime-r1" x="44" y="16" width="150" height="16" rx="8" fill="var(--scene-bad,#b3261e)"/>
+<rect class="learn-javascript-foundations-cancellation-host-runtime-r2" x="44" y="46" width="150" height="16" rx="8" fill="var(--scene-bad,#b3261e)"/>
+<rect class="learn-javascript-foundations-cancellation-host-runtime-r3" x="44" y="76" width="150" height="16" rx="8" fill="var(--scene-good,#1f7a4d)"/>
+<g class="learn-javascript-foundations-cancellation-host-runtime-x"><path d="M208 17L222 31M222 17L208 31M208 47L222 61M222 47L208 61" stroke="var(--scene-bad,#b3261e)" stroke-width="4" stroke-linecap="round"/></g>
+<g class="learn-javascript-foundations-cancellation-host-runtime-ok"><path d="M206 85L213 92L227 74" stroke="var(--scene-good,#1f7a4d)" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text class="learn-javascript-foundations-cancellation-host-runtime-t" x="44" y="122">abort old, keep latest</text>
+</svg>

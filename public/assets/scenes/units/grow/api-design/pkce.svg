@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A client sends a hashed challenge and keeps the verifier, so a stolen code fails">
+<style>
+.grow-api-design-pkce-t{font:600 13px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.grow-api-design-pkce-ch{animation:grow-api-design-pkce-ch 6s linear infinite;animation-delay:-4.8s}
+@keyframes grow-api-design-pkce-ch{0%{transform:translateX(0);opacity:0}4%{opacity:1}24%{transform:translateX(140px);opacity:1}28%,100%{transform:translateX(140px);opacity:0}}
+.grow-api-design-pkce-cd{animation:grow-api-design-pkce-cd 6s linear infinite;animation-delay:-4.8s}
+@keyframes grow-api-design-pkce-cd{0%,30%{transform:translateX(0);opacity:0}32%{opacity:1}50%{transform:translateX(-140px);opacity:1}54%,100%{transform:translateX(-140px);opacity:0}}
+.grow-api-design-pkce-th{animation:grow-api-design-pkce-th 6s linear infinite;animation-delay:-4.8s}
+@keyframes grow-api-design-pkce-th{0%,56%{transform:translate(0,0);opacity:0}58%{opacity:1}78%{transform:translate(56px,34px);opacity:1}84%,100%{transform:translate(56px,34px);opacity:0}}
+.grow-api-design-pkce-x{animation:grow-api-design-pkce-x 6s ease-in-out infinite;animation-delay:-4.8s}
+@keyframes grow-api-design-pkce-x{0%,76%{opacity:0}80%,96%{opacity:1}100%{opacity:0}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<text class="grow-api-design-pkce-t" x="160" y="16" text-anchor="middle">stolen code</text>
+<circle cx="160" cy="38" r="12" fill="var(--scene-ink,#102a33)"/><path d="M142 64a18 16 0 0 1 36 0Z" fill="var(--scene-ink,#102a33)"/><circle cx="156" cy="37" r="2" fill="var(--scene-bad,#b3261e)"/><circle cx="165" cy="37" r="2" fill="var(--scene-bad,#b3261e)"/>
+<rect x="14" y="76" width="58" height="56" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<g fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="104" r="7"/><path d="M39 104H60M54 104v8M48 104v6"/></g>
+<rect x="248" y="76" width="58" height="56" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<g fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="4" stroke-linecap="round"><rect x="265" y="100" width="24" height="18" rx="3" fill="var(--scene-accent,#006c73)"/><path d="M270 100v-6a7 7 0 0 1 14 0v6"/></g>
+<path d="M72 104H248" stroke="var(--scene-muted,#536970)" stroke-width="3" stroke-dasharray="4 5"/>
+<g class="grow-api-design-pkce-ch"><rect x="80" y="94" width="26" height="20" rx="5" fill="var(--scene-link,#245a88)"/><text x="93" y="109" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="16" font-weight="700" fill="var(--scene-card,#fff)">#</text></g>
+<g class="grow-api-design-pkce-cd"><rect x="222" y="94" width="30" height="20" rx="4" fill="var(--scene-learn,#0f8a8a)"/><circle cx="229" cy="104" r="2.5" fill="var(--scene-card,#fff)"/></g>
+<g class="grow-api-design-pkce-th"><rect x="164" y="62" width="30" height="20" rx="4" fill="var(--scene-learn,#0f8a8a)"/><circle cx="171" cy="72" r="2.5" fill="var(--scene-card,#fff)"/></g>
+<g class="grow-api-design-pkce-x" stroke="var(--scene-bad,#b3261e)" stroke-width="5" stroke-linecap="round"><path d="M222 54l18 18M240 54l-18 18"/></g>
+<text class="grow-api-design-pkce-t" x="160" y="90" text-anchor="middle" style="fill:var(--scene-link,#245a88)">challenge</text>
+<text class="grow-api-design-pkce-t" x="43" y="152" text-anchor="middle">verifier</text>
+</svg>

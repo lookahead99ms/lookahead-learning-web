@@ -10,6 +10,7 @@ import {
   DsaProblemNavigationLink,
   DsaProblemV2,
   InterviewQuestion,
+  navTitle,
 } from '../../content/content.models';
 import { ContentService } from '../../content/content.service';
 import { HandsOnDsaIndex } from '../../content/hands-on-dsa';
@@ -211,6 +212,7 @@ function outlineFor(course: CourseContent): CourseOutline {
       moduleId: question.moduleId,
       order: question.order,
       title: question.title,
+      ...(question.navTitle ? { navTitle: question.navTitle } : {}),
       difficulty: question.difficulty,
       tags: question.tags,
       contentType: question.contentType ?? 'q-and-a',
@@ -360,6 +362,25 @@ describe('Question canonical DSA navigation', () => {
     expect(page.sidebarContext().recall).toEqual([{
       id: 'first-example-first-steps', prompt: 'Predict the result.', answer: 'The result is 2.',
     }]);
+  });
+
+  it('recalls the real interview questions for system lessons instead of the guide exercise', () => {
+    const fixture = TestBed.createComponent(Question);
+    const page = fixture.componentInstance as any;
+    const item = {
+      id: 'system-lesson', moduleId: 'basics', contentType: 'theory', lessonPattern: 'system-v1',
+      schemaVersion: 'foundation-lesson/v1', tags: [], followUps: [],
+      checks: [{ questionId: 'what-is-a-lambda', category: 'core' }],
+      sections: [{ id: 'actual-lesson', heading: 'Actual lesson' }],
+      beginnerGuide: { try: 'Change the rating limit.', answer: 'D1, D2 and D4.' },
+    };
+    page.pathId.set('learn');
+    page.courseId.set('sample-foundations');
+    page.relatedQuestions.set(new Map([['what-is-a-lambda', {
+      id: 'what-is-a-lambda', title: 'What is a lambda?', interviewAnswer: 'A small implementation of one method.', explanation: [],
+    }]]));
+    page.question.set(item);
+    expect(page.sidebarContext().recall.map((check: { prompt: string }) => check.prompt)).toEqual(['What is a lambda?']);
   });
 
   it('orders approved-flow anchors without linking a missing example or recall block', () => {
@@ -706,10 +727,19 @@ describe('Question canonical DSA navigation', () => {
       expect(root.querySelector('.practice-instructions')?.textContent).toContain('Try it before');
       const reference = root.querySelector<HTMLDetailsElement>('.practice-reference')!;
       expect(reference.open).toBe(false);
+      const referenceSummary = reference.querySelector('summary')!;
+      expect(referenceSummary.querySelector('.reference-toggle-label')?.textContent).toBe('Reference answer');
+      expect(referenceSummary.querySelector('.reference-toggle-hint')?.textContent).toBe('Try it on your own first, then compare.');
+      expect(referenceSummary.querySelector('.reference-toggle-action')?.textContent?.trim()).toBe('Show');
+      expect(reference.querySelector(':scope > .practice-reference-body .non-dsa-answer-layout')).not.toBeNull();
       expect(reference.textContent).toContain('Canonical reference');
       expect(reference.textContent).toContain('What changes under load?');
       reference.querySelector('summary')!.click();
       expect(reference.open).toBe(true);
+      reference.dispatchEvent(new Event('toggle'));
+      harness.fixture.detectChanges();
+      expect(referenceSummary.querySelector('.reference-toggle-action')?.textContent?.trim()).toBe('Hide');
+      expect(referenceSummary.getAttribute('aria-expanded')).toBe('true');
     },
   );
 
@@ -951,6 +981,190 @@ describe('Question canonical DSA navigation', () => {
     expect(root.querySelector<HTMLAnchorElement>('.problem-navigation-link.next')?.href).toContain(
       'pattern=core-data-structures:arrays',
     );
+  });
+
+  it('keeps the subtitle line but no longer renders legacy subtitle points (the Overview stage replaces them)', async () => {
+    const lesson = {
+      id: 'design-fundamentals-caching',
+      moduleId: 'caching',
+      order: 1,
+      title: 'Caching: Where Reads Stop',
+      difficulty: 'Beginner',
+      tags: ['Caching'],
+      contentType: 'theory',
+      schemaVersion: 'foundation-lesson/v1',
+      subtitle: 'Decide what a cache may get wrong.',
+      subtitlePoints: ['Pick a cache layer', '  Set a TTL you can defend ', '', 'Plan for a cold start'],
+      summary: 'A cache trades freshness for speed.',
+      interviewAnswer: 'Cache what is read often and can be slightly stale.',
+      explanation: [],
+      versionNotes: [],
+      followUps: [],
+      learningOutcomes: ['Pick a layer.', 'Set a TTL.', 'Warm a cache.'],
+      memoryAnchor: { phrase: 'Stale on purpose.', mentalModel: 'A copy.', retrievalCue: 'Reads beat writes.' },
+      foundationModel: { heading: 'Copies', representation: 'Key to value.', invariant: 'TTL bounds staleness.', operationLens: 'Read-through.', selectionRule: 'Cache hot reads.' },
+      sections: [{ id: 'layers', navLabel: 'Layers', heading: 'Where a cache sits', body: ['Browser, CDN, service.'] }],
+      pitfalls: [],
+      checks: [],
+      practice: [],
+      keyTakeaways: ['TTL is a promise.'],
+      languageNotes: [],
+      interviewRecall: { prompt: 'Why cache?', answerFramework: ['Hot reads.'] },
+      reviewEvidence: { technical: true, editorial: true, ux: true, accessibility: true, note: 'Fixture.' },
+    } as unknown as InterviewQuestion;
+    const course: CourseContent = {
+      id: 'design-fundamentals',
+      path: 'look-ahead',
+      title: 'Fundamentals',
+      description: 'Building blocks.',
+      version: '1',
+      modules: [{ id: 'caching', order: 1, title: 'Caching', description: 'Caches.' }],
+      questions: [lesson],
+    };
+    content.getCatalog.mockReturnValueOnce(of([{ id: 'design-fundamentals', title: 'Fundamentals' }]));
+    content.getCourseOutline.mockReturnValueOnce(of(outlineFor(course)));
+    content.getContentItem.mockReturnValueOnce(of(lesson));
+    const harness = await RouterTestingHarness.create();
+
+    await harness.navigateByUrl('/look-ahead/design-fundamentals/design-fundamentals-caching', Question);
+
+    const root = harness.routeNativeElement!;
+    const lead = root.querySelector('.lesson-subtitle') as HTMLElement;
+    expect(lead.textContent?.trim()).toBe('Decide what a cache may get wrong.');
+    expect(root.querySelector('.lesson-subtitle-points')).toBeNull();
+    expect(root.textContent).not.toContain('Set a TTL you can defend');
+  });
+
+  it('keeps the plain subtitle line for foundation lessons only', () => {
+    const fixture = TestBed.createComponent(Question);
+    const page = fixture.componentInstance as any;
+    expect(page.lessonSubtitle({ schemaVersion: 'foundation-lesson/v1', subtitle: 'Only a line.' })).toBe('Only a line.');
+    expect(page.lessonSubtitle({ subtitle: 'Ignored for non-foundation items' })).toBeNull();
+  });
+
+  it('gives reference code with long aligned lines the full width instead of a half column', () => {
+    const page = TestBed.createComponent(Question).componentInstance as any;
+    expect(page.wideCode('short line\nanother')).toBe(false);
+    expect(page.wideCode('Seat (Reservation)   AVAILABLE -> HELD -> PAYING -> SOLD   expiry job or cancel')).toBe(true);
+    expect(navTitle({ title: 'Full title: with detail', navTitle: '  Short  ' })).toBe('Short');
+    expect(navTitle({ title: 'Full title', navTitle: '   ' })).toBe('Full title');
+  });
+
+  it('renders a Design Round walkthrough before the written answer and uses navTitle for navigation', async () => {
+    const round = {
+      id: 'design-rounds-reservation-design',
+      moduleId: 'reservation-round',
+      order: 1,
+      title: 'Design a reservation system with payment: 60,000 seats, 2 million fans',
+      navTitle: 'Design a reservation system',
+      difficulty: 'Advanced',
+      tags: ['Design Rounds'],
+      contentType: 'practice',
+      practiceFormat: 'design',
+      interviewAnswer: '<strong>Requirements.</strong> Hold seats.',
+      walkthrough: [
+        {
+          id: 'requirements',
+          label: '0-5 min',
+          heading: 'Requirements',
+          body: ['Fans hold up to <code>4</code> seats for <strong>5 minutes</strong>.'],
+          cards: [
+            { title: 'Functional requirements', points: ['Hold up to <code>4</code> seats.', 'Pay once.'] },
+            { title: 'Non-functional requirements', points: ['No double booking.'] },
+          ],
+        },
+        {
+          id: 'architecture',
+          label: '10-20 min',
+          heading: 'Architecture',
+          body: ['Three services.', 'Pick a side per part.'],
+          table: {
+            caption: 'Consistency or availability',
+            columns: ['Part', 'We choose', 'Why'],
+            rows: [
+              ['Seat holds', 'Consistency', 'No <strong>double</strong> booking.'],
+              ['Seat map', 'Availability', 'Stale for a second is fine.'],
+            ],
+            afterParagraph: 0,
+          },
+          visual: { type: 'diagram', assetPath: '/content/look-ahead/design-rounds/visuals/arch.svg', alt: 'Three services' },
+          visualTranscript: ['Gateway calls Checkout.', 'Checkout calls Reservation.'],
+        },
+      ],
+      explanation: ['Why the numbers come first.'],
+      versionNotes: [],
+      followUps: [],
+    } as unknown as InterviewQuestion;
+    const second = {
+      ...round,
+      id: 'design-rounds-second',
+      order: 2,
+      title: 'Design a second system: with a very long subtitle',
+      navTitle: 'Design a second system',
+      walkthrough: undefined,
+    } as unknown as InterviewQuestion;
+    const course: CourseContent = {
+      id: 'design-rounds',
+      path: 'look-ahead',
+      title: 'Design Rounds',
+      description: 'Rounds.',
+      version: '1',
+      modules: [{ id: 'reservation-round', order: 1, title: 'Reservation System', description: 'A round.' }],
+      questions: [round, second],
+    };
+    content.getCatalog.mockReturnValueOnce(of([{ id: 'design-rounds', title: 'Design Rounds' }]));
+    content.getCourseOutline.mockReturnValueOnce(of(outlineFor(course)));
+    content.getContentItem.mockReturnValueOnce(of(round));
+    const harness = await RouterTestingHarness.create();
+
+    await harness.navigateByUrl('/look-ahead/design-rounds/design-rounds-reservation-design', Question);
+
+    const root = harness.routeNativeElement!;
+    const heading = root.querySelector('h1.reader-question-title') as HTMLElement;
+    expect(heading.textContent).toContain('60,000 seats');
+    expect(heading.dataset['sidebarTitle']).toBe('Design a reservation system');
+    const walkthrough = root.querySelector('.question-walkthrough') as HTMLElement;
+    expect(walkthrough.querySelector('h2')?.textContent).toBe('Walk through it');
+    const answer = root.querySelector('.reader-interview-panel') as HTMLElement;
+    expect(walkthrough.compareDocumentPosition(answer) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const steps = Array.from(walkthrough.querySelectorAll('.walkthrough-step'));
+    expect(steps.map((step) => step.querySelector('.walkthrough-time')?.textContent?.trim())).toEqual(['0-5 min', '10-20 min']);
+    expect(steps.map((step) => step.querySelector('h3')?.textContent?.trim())).toEqual(['Requirements', 'Architecture']);
+    expect(steps[0].querySelector('p:not(.walkthrough-time) code')?.textContent).toBe('4');
+    expect(steps[0].querySelector('strong')?.textContent).toBe('5 minutes');
+    const image = steps[1].querySelector('figure img') as HTMLImageElement;
+    expect(image.getAttribute('src')).toBe('/content/look-ahead/design-rounds/visuals/arch.svg');
+    expect(image.alt).toBe('Three services');
+    expect(Array.from(steps[1].querySelectorAll('.walkthrough-transcript li')).map((li) => li.textContent)).toEqual([
+      'Gateway calls Checkout.',
+      'Checkout calls Reservation.',
+    ]);
+    expect(steps[0].querySelector('figure')).toBeNull();
+    const cards = Array.from(steps[0].querySelectorAll('.walkthrough-cards .section-card'));
+    expect(steps[0].querySelector('.section-card-grid')?.getAttribute('data-card-count')).toBe('2');
+    expect(cards.map((card) => card.querySelector('h4')?.textContent?.trim())).toEqual([
+      'Functional requirements',
+      'Non-functional requirements',
+    ]);
+    expect(Array.from(cards[0].querySelectorAll('li')).map((li) => li.textContent)).toEqual(['Hold up to 4 seats.', 'Pay once.']);
+    expect(cards[0].querySelector('code')?.textContent).toBe('4');
+    const lastBodyParagraph = steps[0].querySelector('p:not(.walkthrough-time)') as HTMLElement;
+    expect(lastBodyParagraph.compareDocumentPosition(cards[0]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(steps[1].querySelector('.walkthrough-cards')).toBeNull();
+    const table = steps[1].querySelector('.walkthrough-table table') as HTMLTableElement;
+    expect(table.caption?.textContent).toBe('Consistency or availability');
+    expect(Array.from(table.querySelectorAll('thead th')).map((th) => th.textContent)).toEqual(['Part', 'We choose', 'Why']);
+    expect(Array.from(table.querySelectorAll('tbody th[scope="row"]')).map((th) => th.textContent)).toEqual(['Seat holds', 'Seat map']);
+    expect(table.querySelector('tbody td strong')?.textContent).toBe('double');
+    const tableFrame = steps[1].querySelector('.walkthrough-table') as HTMLElement;
+    expect(tableFrame.getAttribute('tabindex')).toBe('0');
+    expect(tableFrame.getAttribute('aria-label')).toBe('Consistency or availability');
+    const stepParagraphs = Array.from(steps[1].querySelectorAll('p:not(.walkthrough-time)'));
+    expect(stepParagraphs[0].compareDocumentPosition(tableFrame) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(tableFrame.compareDocumentPosition(stepParagraphs[1]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(steps[0].querySelector('.walkthrough-table')).toBeNull();
+    expect(root.querySelector('.inner-navigation-link.next strong')?.textContent).toContain('Design a second system');
+    expect(root.querySelector('.inner-navigation-link.next strong')?.textContent).not.toContain('very long subtitle');
   });
 
   it('renders an authentic debugger for a code-answer question without solution tabs', async () => {

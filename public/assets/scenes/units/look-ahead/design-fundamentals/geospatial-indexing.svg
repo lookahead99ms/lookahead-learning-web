@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Ayesha searches for cafes within 1 km; reading only her map cell misses Noor Cafe across the edge, reading the 8 neighboring cells too finds all 9.">
+<style>
+.geospatial-indexing-t { font-family: system-ui, sans-serif; fill: var(--scene-ink, #102a33); }
+.geospatial-indexing-cell { fill: var(--scene-card, #fff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.geospatial-indexing-own { fill: var(--scene-accent-soft, #dcefed); stroke: var(--scene-accent, #006c73); stroke-width: 2; }
+.geospatial-indexing-far { fill: var(--scene-muted, #536970); opacity: .45; }
+.geospatial-indexing-in { fill: var(--scene-accent, #006c73); }
+.geospatial-indexing-nb { animation: geospatial-indexing-nb 7s infinite; animation-delay: -3.2s; }
+@keyframes geospatial-indexing-nb { 0%, 32% { fill: var(--scene-card, #fff); } 40%, 100% { fill: var(--scene-accent-soft, #dcefed); } }
+.geospatial-indexing-pin { animation: geospatial-indexing-pin 7s infinite; animation-delay: -3.2s; }
+@keyframes geospatial-indexing-pin { 0%, 34% { fill: var(--scene-muted, #536970); opacity: .45; } 42%, 100% { fill: var(--scene-accent, #006c73); opacity: 1; } }
+.geospatial-indexing-noor { animation: geospatial-indexing-noor 7s infinite; animation-delay: -3.2s; }
+@keyframes geospatial-indexing-noor { 0%, 34% { fill: var(--scene-warn, #a15c00); opacity: .6; } 42%, 100% { fill: var(--scene-good, #1f7a4d); opacity: 1; } }
+.geospatial-indexing-ring { fill: none; stroke: var(--scene-accent, #006c73); stroke-width: 2; stroke-dasharray: 5 4; animation: geospatial-indexing-ring 7s infinite; animation-delay: -3.2s; }
+@keyframes geospatial-indexing-ring { 0%, 20% { opacity: 0; } 28%, 100% { opacity: 1; } }
+.geospatial-indexing-a { animation: geospatial-indexing-a 7s infinite; animation-delay: -3.2s; }
+@keyframes geospatial-indexing-a { 0%, 34% { opacity: 1; } 40%, 100% { opacity: 0; } }
+.geospatial-indexing-b { animation: geospatial-indexing-b 7s infinite; animation-delay: -3.2s; }
+@keyframes geospatial-indexing-b { 0%, 36% { opacity: 0; } 44%, 100% { opacity: 1; } }
+</style>
+<rect class="geospatial-indexing-cell geospatial-indexing-nb" x="6" y="8" width="40" height="36"/>
+<rect class="geospatial-indexing-cell geospatial-indexing-nb" x="46" y="8" width="40" height="36"/>
+<rect class="geospatial-indexing-cell geospatial-indexing-nb" x="86" y="8" width="40" height="36"/>
+<rect class="geospatial-indexing-cell geospatial-indexing-nb" x="6" y="44" width="40" height="36"/>
+<rect class="geospatial-indexing-cell geospatial-indexing-nb" x="86" y="44" width="40" height="36"/>
+<rect class="geospatial-indexing-cell geospatial-indexing-nb" x="6" y="80" width="40" height="36"/>
+<rect class="geospatial-indexing-cell geospatial-indexing-nb" x="46" y="80" width="40" height="36"/>
+<rect class="geospatial-indexing-cell geospatial-indexing-nb" x="86" y="80" width="40" height="36"/>
+<rect class="geospatial-indexing-own" x="46" y="44" width="40" height="36"/>
+<circle class="geospatial-indexing-ring" cx="66" cy="62" r="40"/>
+<circle class="geospatial-indexing-in" cx="52" cy="54" r="4.5"/>
+<circle class="geospatial-indexing-in" cx="80" cy="54" r="4.5"/>
+<circle class="geospatial-indexing-in" cx="52" cy="72" r="4.5"/>
+<circle class="geospatial-indexing-in" cx="80" cy="72" r="4.5"/>
+<circle class="geospatial-indexing-pin" cx="70" cy="34" r="4.5"/>
+<circle class="geospatial-indexing-pin" cx="38" cy="70" r="4.5"/>
+<circle class="geospatial-indexing-pin" cx="68" cy="96" r="4.5"/>
+<circle class="geospatial-indexing-pin" cx="97" cy="76" r="4.5"/>
+<circle class="geospatial-indexing-noor" cx="93" cy="58" r="5.5"/>
+<circle class="geospatial-indexing-far" cx="14" cy="18" r="4.5"/>
+<circle class="geospatial-indexing-far" cx="112" cy="106" r="4.5"/>
+<circle class="geospatial-indexing-far" cx="116" cy="18" r="4.5"/>
+<circle class="geospatial-indexing-far" cx="14" cy="106" r="4.5"/>
+<path d="M66 70 c-6 -8 -8 -11 -8 -15 a8 8 0 0 1 16 0 c0 4 -2 7 -8 15z" style="fill: var(--scene-link, #245a88)"/>
+<circle cx="66" cy="55" r="3" style="fill: var(--scene-card, #fff)"/>
+<g class="geospatial-indexing-a">
+  <text class="geospatial-indexing-t" x="134" y="52" font-size="18" font-weight="700" style="fill: var(--scene-warn, #a15c00)">4 cafes</text>
+  <text class="geospatial-indexing-t" x="134" y="90" font-size="15" font-weight="700" style="fill: var(--scene-warn, #a15c00)">Noor ✕</text>
+</g>
+<g class="geospatial-indexing-b">
+  <text class="geospatial-indexing-t" x="134" y="52" font-size="18" font-weight="700" style="fill: var(--scene-good, #1f7a4d)">9 cafes</text>
+  <text class="geospatial-indexing-t" x="134" y="90" font-size="15" font-weight="700" style="fill: var(--scene-good, #1f7a4d)">Noor ✓</text>
+</g>
+</svg>

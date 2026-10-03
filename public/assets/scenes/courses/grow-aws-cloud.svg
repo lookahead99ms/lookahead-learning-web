@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A load balancer spreads traffic across servers in two availability zones inside a VPC; when one server fails, traffic keeps flowing to the healthy ones">
+<style>
+.grow-aws-cloud-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); }
+.grow-aws-cloud-tm { font-family: ui-monospace, Menlo, monospace; fill: var(--scene-ink, #102a33); }
+.grow-aws-cloud-b { font-weight: 700; }
+.grow-aws-cloud-box { fill: var(--scene-card, #fff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.grow-aws-cloud-soft { fill: var(--scene-accent-soft, #dcefed); }
+.grow-aws-cloud-card { fill: var(--scene-card, #fff); }
+.grow-aws-cloud-acc { fill: var(--scene-accent, #006c73); }
+.grow-aws-cloud-mut { fill: var(--scene-muted, #536970); }
+.grow-aws-cloud-linef { fill: var(--scene-line, #cfdfdc); }
+.grow-aws-cloud-good { fill: var(--scene-good, #1f7a4d); }
+.grow-aws-cloud-bad { fill: var(--scene-bad, #b3261e); }
+.grow-aws-cloud-warn { fill: var(--scene-warn, #a15c00); }
+.grow-aws-cloud-grow { fill: var(--scene-grow, #b8457a); }
+.grow-aws-cloud-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 1.5; }
+.grow-aws-cloud-sacc { fill: none; stroke: var(--scene-accent, #006c73); stroke-width: 2; }
+.grow-aws-cloud-sgood { fill: none; stroke: var(--scene-good, #1f7a4d); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.grow-aws-cloud-scard { fill: none; stroke: var(--scene-card, #fff); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.grow-aws-cloud-sbad { fill: none; stroke: var(--scene-bad, #b3261e); stroke-width: 2; }
+
+.grow-aws-cloud-vpc { fill: none; stroke: var(--scene-accent, #006c73); stroke-width: 1.5; stroke-dasharray: 6 4; }
+.grow-aws-cloud-flow { fill: none; stroke: var(--scene-accent, #006c73); stroke-width: 2; stroke-dasharray: 4 6; animation: grow-aws-cloud-kf-flow 1s linear infinite; }
+@keyframes grow-aws-cloud-kf-flow { to { stroke-dashoffset: -20; } }
+.grow-aws-cloud-flowa { animation: grow-aws-cloud-kf-flow 1s linear infinite, grow-aws-cloud-kf-cut 7s infinite; animation-delay: 0s, -3s; }
+@keyframes grow-aws-cloud-kf-cut { 0%, 40% { opacity: 1; } 46%, 80% { opacity: .15; } 86%, 100% { opacity: 1; } }
+.grow-aws-cloud-fail { animation: grow-aws-cloud-kf-fail 7s infinite; animation-delay: -3s; }
+@keyframes grow-aws-cloud-kf-fail { 0%, 40% { opacity: 0; } 44%, 80% { opacity: 1; } 84%, 100% { opacity: 0; } }
+</style>
+<!-- load balancer -->
+<circle class="grow-aws-cloud-acc" cx="160" cy="22" r="14"/>
+<path class="grow-aws-cloud-scard" d="M152 22 H168 M160 15 V29"/>
+<path class="grow-aws-cloud-flow grow-aws-cloud-flowa" d="M150 31 L62 84"/>
+<path class="grow-aws-cloud-flow" d="M156 35 L114 84"/>
+<path class="grow-aws-cloud-flow" d="M164 35 L206 84"/>
+<path class="grow-aws-cloud-flow" d="M170 31 L258 84"/>
+
+<rect class="grow-aws-cloud-vpc" x="10" y="46" width="300" height="128" rx="10"/>
+<text class="grow-aws-cloud-t grow-aws-cloud-b" x="20" y="64" font-size="16">VPC</text>
+
+<!-- AZ a -->
+<rect class="grow-aws-cloud-soft" x="20" y="72" width="134" height="94" rx="8"/>
+<g transform="translate(38 84)"><rect class="grow-aws-cloud-box" width="48" height="30" rx="5"/><rect class="grow-aws-cloud-linef" x="8" y="9" width="24" height="4" rx="2"/><rect class="grow-aws-cloud-linef" x="8" y="17" width="16" height="4" rx="2"/><circle class="grow-aws-cloud-good" cx="38" cy="15" r="4"/></g>
+<g transform="translate(90 84)"><rect class="grow-aws-cloud-box" width="48" height="30" rx="5"/><rect class="grow-aws-cloud-linef" x="8" y="9" width="24" height="4" rx="2"/><rect class="grow-aws-cloud-linef" x="8" y="17" width="16" height="4" rx="2"/><circle class="grow-aws-cloud-good" cx="38" cy="15" r="4"/></g>
+<g class="grow-aws-cloud-fail" transform="translate(38 84)"><rect class="grow-aws-cloud-bad" width="48" height="30" rx="5"/><path class="grow-aws-cloud-scard" d="M18 9 L30 21 M30 9 L18 21"/></g>
+<text class="grow-aws-cloud-t grow-aws-cloud-b" x="30" y="156" font-size="16">AZ a</text>
+<g transform="translate(104 124)"><path class="grow-aws-cloud-box" d="M0 6 A16 6 0 0 1 32 6 V28 A16 6 0 0 1 0 28 Z"/><path class="grow-aws-cloud-wire" d="M0 6 A16 6 0 0 0 32 6"/></g>
+
+<!-- AZ b -->
+<rect class="grow-aws-cloud-soft" x="166" y="72" width="134" height="94" rx="8"/>
+<g transform="translate(182 84)"><rect class="grow-aws-cloud-box" width="48" height="30" rx="5"/><rect class="grow-aws-cloud-linef" x="8" y="9" width="24" height="4" rx="2"/><rect class="grow-aws-cloud-linef" x="8" y="17" width="16" height="4" rx="2"/><circle class="grow-aws-cloud-good" cx="38" cy="15" r="4"/></g>
+<g transform="translate(234 84)"><rect class="grow-aws-cloud-box" width="48" height="30" rx="5"/><rect class="grow-aws-cloud-linef" x="8" y="9" width="24" height="4" rx="2"/><rect class="grow-aws-cloud-linef" x="8" y="17" width="16" height="4" rx="2"/><circle class="grow-aws-cloud-good" cx="38" cy="15" r="4"/></g>
+<text class="grow-aws-cloud-t grow-aws-cloud-b" x="176" y="156" font-size="16">AZ b</text>
+<g transform="translate(250 124)"><path class="grow-aws-cloud-box" d="M0 6 A16 6 0 0 1 32 6 V28 A16 6 0 0 1 0 28 Z"/><path class="grow-aws-cloud-wire" d="M0 6 A16 6 0 0 0 32 6"/></g>
+</svg>

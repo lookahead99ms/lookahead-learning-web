@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label=" A balancer spreads requests across servers and skips an unhealthy one">
+<style>
+.look-ahead-scalability-performance-load-balancing-routing-t{font:600 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.look-ahead-scalability-performance-load-balancing-routing-p{animation:look-ahead-scalability-performance-load-balancing-routing-a 4.5s ease-in infinite}
+.look-ahead-scalability-performance-load-balancing-routing-q{animation:look-ahead-scalability-performance-load-balancing-routing-b 4.5s ease-in infinite}
+.look-ahead-scalability-performance-load-balancing-routing-n{animation:look-ahead-scalability-performance-load-balancing-routing-c 4.5s ease-in infinite}
+.look-ahead-scalability-performance-load-balancing-routing-x{animation:look-ahead-scalability-performance-load-balancing-routing-blink 1.5s ease-in-out infinite}
+@keyframes look-ahead-scalability-performance-load-balancing-routing-a{0%{transform:translate(0,0);opacity:0}15%{opacity:1}100%{transform:translate(90px,-50px);opacity:0}}
+@keyframes look-ahead-scalability-performance-load-balancing-routing-b{0%{transform:translate(0,0);opacity:0}15%{opacity:1}100%{transform:translate(90px,0);opacity:0}}
+@keyframes look-ahead-scalability-performance-load-balancing-routing-c{0%{transform:translate(0,0);opacity:0}15%{opacity:1}55%{transform:translate(60px,26px);opacity:1}70%,100%{transform:translate(60px,26px);opacity:0}}
+@keyframes look-ahead-scalability-performance-load-balancing-routing-blink{0%,100%{opacity:1}50%{opacity:.4}}
+</style>
+<rect width="320" height="180" rx="10" fill="var(--scene-card,#fff)"/>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="3" fill="none"><path d="M40 78H90M130 78L222 28M130 78L222 78M130 78L222 128"/></g>
+<rect x="90" y="56" width="42" height="44" rx="8" fill="var(--scene-accent,#006c73)"/>
+<path d="M101 78H121M115 70L123 78L115 86" stroke="var(--scene-card,#fff)" stroke-width="3" fill="none" stroke-linecap="round"/>
+<g fill="var(--scene-ahead,#2f6fb3)">
+<circle class="look-ahead-scalability-performance-load-balancing-routing-p" cx="132" cy="78" r="6" style="animation-delay:-3s"/>
+<circle class="look-ahead-scalability-performance-load-balancing-routing-q" cx="132" cy="78" r="6" style="animation-delay:-2s"/>
+<circle class="look-ahead-scalability-performance-load-balancing-routing-p" cx="132" cy="78" r="6" style="animation-delay:-.8s"/>
+<circle class="look-ahead-scalability-performance-load-balancing-routing-q" cx="132" cy="78" r="6" style="animation-delay:-3.8s"/>
+<circle class="look-ahead-scalability-performance-load-balancing-routing-n" cx="132" cy="78" r="6" style="animation-delay:-1.3s"/>
+</g>
+<g fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-good,#1f7a4d)" stroke-width="3">
+<rect x="224" y="12" width="64" height="32" rx="6"/><rect x="224" y="62" width="64" height="32" rx="6"/></g>
+<rect x="224" y="112" width="64" height="32" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-bad,#b3261e)" stroke-width="3"/>
+<path class="look-ahead-scalability-performance-load-balancing-routing-x" d="M246 122L266 136M266 122L246 136" stroke="var(--scene-bad,#b3261e)" stroke-width="4" stroke-linecap="round"/>
+<circle cx="24" cy="78" r="12" fill="var(--scene-muted,#536970)"/>
+<text class="look-ahead-scalability-performance-load-balancing-routing-t" x="76" y="124">Balancer</text>
+<text class="look-ahead-scalability-performance-load-balancing-routing-t" x="224" y="166">Unhealthy</text>
+</svg>

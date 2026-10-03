@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Ilse's invoice email is saved in three places before her server is told 250 stored, then it appears at the top of Vikram's inbox">
+<style>
+.email-service-t{font-family:system-ui, sans-serif;fill:var(--scene-ink,#102a33)}
+.email-service-tx{font-family:system-ui, sans-serif;fill:var(--scene-text,#28434a)}
+.email-service-tm{font-family:ui-monospace, Menlo, monospace;fill:var(--scene-ink,#102a33)}
+.email-service-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.email-service-soft{fill:var(--scene-muted,#536970)}
+.email-service-line{fill:var(--scene-line,#cfdfdc)}
+.email-service-acc{fill:var(--scene-accent,#006c73)}
+.email-service-accsoft{fill:var(--scene-accent-soft,#dcefed)}
+.email-service-good{fill:var(--scene-good,#1f7a4d)}
+.email-service-bad{fill:var(--scene-bad,#b3261e)}
+.email-service-warn{fill:var(--scene-warn,#a15c00)}
+.email-service-link{fill:var(--scene-link,#245a88)}
+.email-service-card{fill:var(--scene-card,#fff)}
+.email-service-ink{fill:var(--scene-ink,#102a33)}
+.email-service-a{animation-duration:7s;animation-iteration-count:infinite;animation-delay:-3.8s;animation-timing-function:ease-in-out}
+@media (prefers-reduced-motion: reduce){.email-service-a{animation-play-state:paused!important}}
+.email-service-env{animation-name:email-service-env}
+@keyframes email-service-env{0%,4%{opacity:0;transform:none}8%{opacity:1}22%,30%{opacity:1;transform:translateX(52px)}34%,100%{opacity:0;transform:translateX(52px)}}
+.email-service-d1{animation-name:email-service-d1}
+@keyframes email-service-d1{0%,22%{opacity:.3}25%,92%{opacity:1}96%,100%{opacity:.3}}
+.email-service-d2{animation-name:email-service-d2}
+@keyframes email-service-d2{0%,26%{opacity:.3}29%,92%{opacity:1}96%,100%{opacity:.3}}
+.email-service-d3{animation-name:email-service-d3}
+@keyframes email-service-d3{0%,30%{opacity:.3}33%,92%{opacity:1}96%,100%{opacity:.3}}
+.email-service-ok{animation-name:email-service-ok}
+@keyframes email-service-ok{0%,36%{opacity:0;transform:translateY(6px)}40%,92%{opacity:1;transform:none}96%,100%{opacity:0}}
+.email-service-rows{animation-name:email-service-rows}
+@keyframes email-service-rows{0%,44%{transform:none}52%,92%{transform:translateY(26px)}98%,100%{transform:none}}
+.email-service-row{animation-name:email-service-row}
+@keyframes email-service-row{0%,44%{opacity:0}52%,92%{opacity:1}96%,100%{opacity:0}}
+</style>
+
+<circle cx="24" cy="30" r="14" class="email-service-link"/><text class="email-service-card" x="24" y="35" font-size="14" font-weight="700" text-anchor="middle" font-family="system-ui, sans-serif">I</text>
+<g class="email-service-a email-service-env"><rect x="12" y="54" width="30" height="22" rx="3" class="email-service-box" stroke="var(--scene-accent,#006c73)"/><path d="M12 56 l15 11 l15 -11" fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="1.5"/></g>
+<g class="email-service-a email-service-d1"><ellipse cx="82" cy="46" rx="14" ry="4" class="email-service-good"/><rect x="68" y="46" width="28" height="12" class="email-service-good"/><ellipse cx="82" cy="58" rx="14" ry="4" class="email-service-good"/><ellipse cx="82" cy="46" rx="14" ry="4" class="email-service-card" opacity=".35"/></g>
+<g class="email-service-a email-service-d2"><ellipse cx="82" cy="66" rx="14" ry="4" class="email-service-good"/><rect x="68" y="66" width="28" height="12" class="email-service-good"/><ellipse cx="82" cy="78" rx="14" ry="4" class="email-service-good"/><ellipse cx="82" cy="66" rx="14" ry="4" class="email-service-card" opacity=".35"/></g>
+<g class="email-service-a email-service-d3"><ellipse cx="82" cy="86" rx="14" ry="4" class="email-service-good"/><rect x="68" y="86" width="28" height="12" class="email-service-good"/><ellipse cx="82" cy="98" rx="14" ry="4" class="email-service-good"/><ellipse cx="82" cy="86" rx="14" ry="4" class="email-service-card" opacity=".35"/></g>
+
+<g class="email-service-a email-service-ok"><rect x="6" y="104" width="94" height="24" rx="12" class="email-service-good" opacity=".16"/><text class="email-service-t" x="53" y="121" font-size="14" font-weight="700" text-anchor="middle" style="fill:var(--scene-good,#1f7a4d)">250 stored</text></g>
+<rect x="110" y="6" width="124" height="123" rx="12" class="email-service-box"/>
+<text class="email-service-t" x="122" y="28" font-size="14" font-weight="700">Inbox</text>
+<g class="email-service-a email-service-row"><rect x="116" y="38" width="112" height="22" rx="6" class="email-service-accsoft"/>
+<text class="email-service-t" x="122" y="54" font-size="14" font-weight="700">Ilse · Invoice</text></g>
+<g class="email-service-a email-service-rows">
+<rect x="122" y="44" width="80" height="6" rx="3" class="email-service-line"/><rect x="122" y="54" width="56" height="5" rx="2.5" class="email-service-line"/>
+<rect x="122" y="70" width="88" height="6" rx="3" class="email-service-line"/><rect x="122" y="80" width="48" height="5" rx="2.5" class="email-service-line"/>
+<rect x="122" y="96" width="72" height="6" rx="3" class="email-service-line"/>
+</g>
+
+</svg>

@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A database write reaching a cache copy"><title>A database write reaching a cache copy</title>
+<style>
+.look-ahead-system-design-data-and-consistency-bg{fill:var(--scene-card,#fff)}
+.look-ahead-system-design-data-and-consistency-t{font-family:system-ui,sans-serif;font-weight:700;font-size:16px;fill:var(--scene-ink,#102a33);text-anchor:middle}
+.look-ahead-system-design-data-and-consistency-n{font-family:system-ui,sans-serif;font-weight:700;font-size:16px;fill:var(--scene-ink,#102a33);text-anchor:middle}
+.look-ahead-system-design-data-and-consistency-soft{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-accent,#006c73);stroke-width:2.5}
+.look-ahead-system-design-data-and-consistency-card{fill:var(--scene-card,#fff);stroke:var(--scene-ink,#102a33);stroke-width:2.5}
+.look-ahead-system-design-data-and-consistency-line{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:3;stroke-linecap:round}
+.look-ahead-system-design-data-and-consistency-dash{fill:none;stroke:var(--scene-muted,#536970);stroke-width:2.5;stroke-dasharray:5 5;stroke-linecap:round}
+
+.look-ahead-system-design-data-and-consistency-stale{fill:var(--scene-card,#fff);stroke:var(--scene-warn,#a15c00);stroke-width:3.5;animation:6s linear -2.2s infinite look-ahead-system-design-data-and-consistency-st}
+.look-ahead-system-design-data-and-consistency-p1{animation:6s linear -2.2s infinite look-ahead-system-design-data-and-consistency-old}.look-ahead-system-design-data-and-consistency-p2{animation:6s linear -2.2s infinite look-ahead-system-design-data-and-consistency-new}
+.look-ahead-system-design-data-and-consistency-d1{animation:6s linear -2.2s infinite look-ahead-system-design-data-and-consistency-olddb}.look-ahead-system-design-data-and-consistency-d2{animation:6s linear -2.2s infinite look-ahead-system-design-data-and-consistency-newdb}
+.look-ahead-system-design-data-and-consistency-ring{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:3;transform-origin:60px 75px;animation:6s linear -2.2s infinite look-ahead-system-design-data-and-consistency-rg}
+.look-ahead-system-design-data-and-consistency-dot{fill:var(--scene-accent,#006c73);animation:6s linear -2.2s infinite look-ahead-system-design-data-and-consistency-mv}
+@keyframes look-ahead-system-design-data-and-consistency-st{0%,45%{stroke:var(--scene-warn,#a15c00)}46%,100%{stroke:var(--scene-good,#1f7a4d)}}
+@keyframes look-ahead-system-design-data-and-consistency-old{0%,18%{opacity:1}19%,44%{opacity:1}45%,92%{opacity:0}93%,100%{opacity:1}}
+@keyframes look-ahead-system-design-data-and-consistency-new{0%,44%{opacity:0}45%,92%{opacity:1}93%,100%{opacity:0}}
+@keyframes look-ahead-system-design-data-and-consistency-olddb{0%,18%{opacity:1}19%,92%{opacity:0}93%,100%{opacity:1}}
+@keyframes look-ahead-system-design-data-and-consistency-newdb{0%,18%{opacity:0}19%,92%{opacity:1}93%,100%{opacity:0}}
+@keyframes look-ahead-system-design-data-and-consistency-rg{0%,18%{opacity:0;transform:scale(.8)}20%{opacity:1;transform:scale(1)}30%,100%{opacity:0;transform:scale(1.4)}}
+@keyframes look-ahead-system-design-data-and-consistency-mv{0%,22%{opacity:0;transform:translateX(0)}24%{opacity:1;transform:translateX(0)}44%{opacity:1;transform:translateX(100px)}46%,100%{opacity:0;transform:translateX(100px)}}
+</style>
+<rect class="look-ahead-system-design-data-and-consistency-bg" width="320" height="180"/>
+<line class="look-ahead-system-design-data-and-consistency-dash" x1="100" y1="75" x2="200" y2="75"/>
+<ellipse class="look-ahead-system-design-data-and-consistency-soft" cx="60" cy="102" rx="32" ry="11"/><rect x="28" y="48" width="64" height="54" fill="var(--scene-accent-soft,#dcefed)"/>
+<line x1="28" y1="48" x2="28" y2="102" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/><line x1="92" y1="48" x2="92" y2="102" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/>
+<ellipse class="look-ahead-system-design-data-and-consistency-soft" cx="60" cy="48" rx="32" ry="11"/><ellipse class="look-ahead-system-design-data-and-consistency-ring" cx="60" cy="75" rx="40" ry="38"/>
+<text class="look-ahead-system-design-data-and-consistency-n look-ahead-system-design-data-and-consistency-d1" x="60" y="87">$12</text><text class="look-ahead-system-design-data-and-consistency-n look-ahead-system-design-data-and-consistency-d2" x="60" y="87">$10</text>
+<rect class="look-ahead-system-design-data-and-consistency-stale" x="210" y="45" width="80" height="60" rx="12"/>
+<text class="look-ahead-system-design-data-and-consistency-n look-ahead-system-design-data-and-consistency-p1" x="250" y="82">$12</text><text class="look-ahead-system-design-data-and-consistency-n look-ahead-system-design-data-and-consistency-p2" x="250" y="82">$10</text>
+<circle class="look-ahead-system-design-data-and-consistency-dot" cx="100" cy="75" r="7"/>
+<text class="look-ahead-system-design-data-and-consistency-t" x="60" y="140">Database</text><text class="look-ahead-system-design-data-and-consistency-t" x="250" y="140">Cache</text>
+</svg>

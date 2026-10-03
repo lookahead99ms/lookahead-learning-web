@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Joaquín searches homes with filters and a map; a listing that just sold is marked and drops out of his results">
+<style>
+.tech-elasticsearch-t{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-ink,#102a33)}
+.tech-elasticsearch-mu{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-muted,#536970)}
+.tech-elasticsearch-g{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-good,#1f7a4d)}
+.tech-elasticsearch-w{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-warn,#a15c00)}
+.tech-elasticsearch-b{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-bad,#b3261e)}
+.tech-elasticsearch-a{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--scene-accent,#006c73)}
+.tech-elasticsearch-mono{font-family:ui-monospace,Menlo,monospace}
+.tech-elasticsearch-card{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.tech-elasticsearch-soft{fill:var(--scene-accent-soft,#dcefed)}
+.tech-elasticsearch-acc{fill:var(--scene-accent,#006c73)}
+.tech-elasticsearch-gd{fill:var(--scene-good,#1f7a4d)}
+.tech-elasticsearch-wn{fill:var(--scene-warn,#a15c00)}
+.tech-elasticsearch-bd{fill:var(--scene-bad,#b3261e)}
+.tech-elasticsearch-ink{fill:var(--scene-ink,#102a33)}
+.tech-elasticsearch-mf{fill:var(--scene-muted,#536970)}
+.tech-elasticsearch-lf{fill:var(--scene-line,#cfdfdc)}
+.tech-elasticsearch-cf{fill:var(--scene-card,#fff)}
+.tech-elasticsearch-sa{fill:none;stroke:var(--scene-accent,#006c73);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-elasticsearch-sg{fill:none;stroke:var(--scene-good,#1f7a4d);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-elasticsearch-sw{fill:none;stroke:var(--scene-warn,#a15c00);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-elasticsearch-sb{fill:none;stroke:var(--scene-bad,#b3261e);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-elasticsearch-sm{fill:none;stroke:var(--scene-muted,#536970);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-elasticsearch-sl{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-elasticsearch-si{fill:none;stroke:var(--scene-ink,#102a33);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tech-elasticsearch-row2{animation:tech-elasticsearch-row2 8s -3.2s infinite;}
+@keyframes tech-elasticsearch-row2{0%,40%{opacity:1;transform:none}50%,94%{opacity:0;transform:translateX(12px)}98%,100%{opacity:1;transform:none}}
+.tech-elasticsearch-row3{animation:tech-elasticsearch-row3 8s -3.2s infinite;}
+@keyframes tech-elasticsearch-row3{0%,48%{transform:translateY(0)}58%,94%{transform:translateY(-28px)}98%,100%{transform:translateY(0)}}
+.tech-elasticsearch-sold{animation:tech-elasticsearch-sold 8s -3.2s infinite;}
+@keyframes tech-elasticsearch-sold{0%,21%{opacity:0}22%,48%{opacity:1}49%,100%{opacity:0}}
+</style>
+<rect class="tech-elasticsearch-soft" x="8" y="6" width="50" height="24" rx="12"/><text class="tech-elasticsearch-a" x="33" y="23" font-size="14" font-weight="700" text-anchor="middle">3 bed</text>
+<rect class="tech-elasticsearch-soft" x="64" y="6" width="98" height="24" rx="12"/><text class="tech-elasticsearch-a" x="113" y="23" font-size="14" font-weight="700" text-anchor="middle">under $600k</text>
+
+<circle class="tech-elasticsearch-si" style="stroke-width:3" cx="204" cy="17" r="8"/><path class="tech-elasticsearch-si" style="stroke-width:3" d="M210 23 l8 8"/>
+<g><rect class="tech-elasticsearch-card" x="8" y="38" width="224" height="26" rx="8"/><path class="tech-elasticsearch-mf" d="M14 56 l10 -10 l10 10 v8 h-20 z"/><rect class="tech-elasticsearch-lf" x="44" y="48" width="76" height="8" rx="2"/></g>
+<g class="tech-elasticsearch-row2"><rect class="tech-elasticsearch-card" x="8" y="68" width="224" height="26" rx="8"/><path class="tech-elasticsearch-mf" d="M14 86 l10 -10 l10 10 v8 h-20 z"/><rect class="tech-elasticsearch-lf" x="44" y="78" width="76" height="8" rx="2"/></g>
+<g class="tech-elasticsearch-sold"><rect class="tech-elasticsearch-bd" x="150" y="73" width="74" height="16" rx="8" style="opacity:.14"/><text class="tech-elasticsearch-b" x="187" y="86" font-size="15" font-weight="700" text-anchor="middle">Sold</text>
+</g>
+<g class="tech-elasticsearch-row3"><rect class="tech-elasticsearch-card" x="8" y="98" width="224" height="26" rx="8"/><path class="tech-elasticsearch-mf" d="M14 116 l10 -10 l10 10 v8 h-20 z"/><rect class="tech-elasticsearch-lf" x="44" y="108" width="76" height="8" rx="2"/></g>
+</svg>

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="css-cascade-layout-responsive">
+<style>
+.learn-web-platform-foundations-css-cascade-layout-responsive-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-web-platform-foundations-css-cascade-layout-responsive-m{font-family:ui-monospace,Menlo,monospace;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.learn-web-platform-foundations-css-cascade-layout-responsive-card{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:2}
+
+.learn-web-platform-foundations-css-cascade-layout-responsive-bg{fill:var(--scene-accent-soft,#dcefed)}
+.learn-web-platform-foundations-css-cascade-layout-responsive-fr{fill:var(--scene-card,#fff);stroke:var(--scene-accent,#006c73);stroke-width:3;animation:learn-web-platform-foundations-css-cascade-layout-responsive-fr 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes learn-web-platform-foundations-css-cascade-layout-responsive-fr{0%,10%{width:100px;height:126px}45%,60%{width:276px;height:62px}95%,100%{width:100px;height:126px}}
+.learn-web-platform-foundations-css-cascade-layout-responsive-c1,.learn-web-platform-foundations-css-cascade-layout-responsive-c2,.learn-web-platform-foundations-css-cascade-layout-responsive-c3{stroke:none;animation-duration:6s;animation-iteration-count:infinite;animation-timing-function:ease-in-out;animation-delay:-3s}
+.learn-web-platform-foundations-css-cascade-layout-responsive-c1{fill:var(--scene-learn,#0f8a8a);animation-name:learn-web-platform-foundations-css-cascade-layout-responsive-c1}
+.learn-web-platform-foundations-css-cascade-layout-responsive-c2{fill:var(--scene-grow,#b8457a);animation-name:learn-web-platform-foundations-css-cascade-layout-responsive-c2}
+.learn-web-platform-foundations-css-cascade-layout-responsive-c3{fill:var(--scene-ahead,#2f6fb3);animation-name:learn-web-platform-foundations-css-cascade-layout-responsive-c3}
+@keyframes learn-web-platform-foundations-css-cascade-layout-responsive-c1{0%,10%,95%,100%{transform:translate(0,0)}45%,60%{transform:translate(0,0)}}
+@keyframes learn-web-platform-foundations-css-cascade-layout-responsive-c2{0%,10%,95%,100%{transform:translate(0,38px)}45%,60%{transform:translate(82px,0)}}
+@keyframes learn-web-platform-foundations-css-cascade-layout-responsive-c3{0%,10%,95%,100%{transform:translate(0,76px)}45%,60%{transform:translate(164px,0)}}
+.learn-web-platform-foundations-css-cascade-layout-responsive-l1{animation:learn-web-platform-foundations-css-cascade-layout-responsive-l1 6s steps(1) infinite;animation-delay:-3s}
+.learn-web-platform-foundations-css-cascade-layout-responsive-l2{animation:learn-web-platform-foundations-css-cascade-layout-responsive-l2 6s steps(1) infinite;animation-delay:-3s}
+@keyframes learn-web-platform-foundations-css-cascade-layout-responsive-l1{0%,32%{opacity:1}33%,78%{opacity:0}79%,100%{opacity:1}}
+@keyframes learn-web-platform-foundations-css-cascade-layout-responsive-l2{0%,32%{opacity:0}33%,78%{opacity:1}79%,100%{opacity:0}}
+</style>
+
+<rect class="learn-web-platform-foundations-css-cascade-layout-responsive-bg" width="320" height="180"/>
+<rect class="learn-web-platform-foundations-css-cascade-layout-responsive-fr" x="22" y="14" width="100" height="126" rx="10"/>
+<rect class="learn-web-platform-foundations-css-cascade-layout-responsive-c1" x="34" y="28" width="76" height="28" rx="6"/>
+<rect class="learn-web-platform-foundations-css-cascade-layout-responsive-c2" x="34" y="28" width="76" height="28" rx="6" style="transform-origin:0 0"/>
+<rect class="learn-web-platform-foundations-css-cascade-layout-responsive-c3" x="34" y="28" width="76" height="28" rx="6"/>
+<text class="learn-web-platform-foundations-css-cascade-layout-responsive-t learn-web-platform-foundations-css-cascade-layout-responsive-l1" x="160" y="168" text-anchor="middle">1 column</text>
+<text class="learn-web-platform-foundations-css-cascade-layout-responsive-t learn-web-platform-foundations-css-cascade-layout-responsive-l2" x="160" y="168" text-anchor="middle">3 columns</text>
+
+</svg>

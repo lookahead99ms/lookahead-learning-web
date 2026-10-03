@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A user consents, the app receives a code, then exchanges it for a token to call the API">
+<style>
+.grow-api-design-oauth-oidc-t{font:600 13px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.grow-api-design-oauth-oidc-tg{animation:grow-api-design-oauth-oidc-tg 6s ease-in-out infinite;animation-delay:-4.2s}
+@keyframes grow-api-design-oauth-oidc-tg{0%,6%{transform:translateX(0)}20%,100%{transform:translateX(18px)}}
+.grow-api-design-oauth-oidc-cd{animation:grow-api-design-oauth-oidc-cd 6s linear infinite;animation-delay:-4.2s}
+@keyframes grow-api-design-oauth-oidc-cd{0%,22%{transform:translate(0,0);opacity:0}25%{opacity:1}50%{transform:translate(-70px,30px);opacity:1}54%,100%{transform:translate(-70px,30px);opacity:0}}
+.grow-api-design-oauth-oidc-tk{animation:grow-api-design-oauth-oidc-tk 6s linear infinite;animation-delay:-4.2s}
+@keyframes grow-api-design-oauth-oidc-tk{0%,56%{transform:translateX(0);opacity:0}58%{opacity:1}84%{transform:translateX(150px);opacity:1}88%,100%{transform:translateX(150px);opacity:0}}
+.grow-api-design-oauth-oidc-ok{animation:grow-api-design-oauth-oidc-ok 6s ease-in-out infinite;animation-delay:-4.2s}
+@keyframes grow-api-design-oauth-oidc-ok{0%,84%{opacity:0}88%,96%{opacity:1}100%{opacity:0}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="120" y="12" width="80" height="58" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<text class="grow-api-design-oauth-oidc-t" x="160" y="32" text-anchor="middle">consent</text>
+<rect x="142" y="42" width="36" height="16" rx="8" fill="var(--scene-line,#cfdfdc)"/><circle class="grow-api-design-oauth-oidc-tg" cx="150" cy="50" r="6" fill="var(--scene-good,#1f7a4d)"/>
+<rect x="14" y="100" width="60" height="52" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/><path d="M14 116H74" stroke="var(--scene-accent,#006c73)" stroke-width="3"/><rect x="24" y="126" width="34" height="8" rx="3" fill="var(--scene-accent,#006c73)"/>
+<rect x="246" y="100" width="60" height="52" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/><g fill="var(--scene-accent,#006c73)"><rect x="256" y="110" width="40" height="10" rx="3"/><rect x="256" y="126" width="40" height="10" rx="3" opacity=".6"/></g>
+<path d="M60 100L130 70M74 126H246" stroke="var(--scene-muted,#536970)" stroke-width="2.5" stroke-dasharray="4 4"/>
+<g class="grow-api-design-oauth-oidc-cd"><rect x="118" y="60" width="26" height="18" rx="4" fill="var(--scene-learn,#0f8a8a)"/><circle cx="123" cy="69" r="2.5" fill="var(--scene-card,#fff)"/></g>
+<g class="grow-api-design-oauth-oidc-tk"><rect x="80" y="116" width="30" height="18" rx="9" fill="var(--scene-accent,#006c73)"/></g>
+<g class="grow-api-design-oauth-oidc-ok"><circle cx="276" cy="86" r="11" fill="var(--scene-good,#1f7a4d)"/><path d="M270 86l4 4 8-9" fill="none" stroke="var(--scene-card,#fff)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text class="grow-api-design-oauth-oidc-t" x="52" y="86" text-anchor="middle">code</text>
+<text class="grow-api-design-oauth-oidc-t" x="160" y="150" text-anchor="middle">token</text>
+</svg>

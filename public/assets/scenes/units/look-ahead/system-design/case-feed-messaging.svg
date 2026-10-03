@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Chat messages arriving and a feed alert"><title>Chat messages arriving and a feed alert</title>
+<style>
+.look-ahead-system-design-case-feed-messaging-bg{fill:var(--scene-card,#fff)}
+.look-ahead-system-design-case-feed-messaging-t{font-family:system-ui,sans-serif;font-weight:700;font-size:16px;fill:var(--scene-ink,#102a33);text-anchor:middle}
+.look-ahead-system-design-case-feed-messaging-n{font-family:system-ui,sans-serif;font-weight:700;font-size:16px;fill:var(--scene-ink,#102a33);text-anchor:middle}
+.look-ahead-system-design-case-feed-messaging-soft{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-accent,#006c73);stroke-width:2.5}
+.look-ahead-system-design-case-feed-messaging-card{fill:var(--scene-card,#fff);stroke:var(--scene-ink,#102a33);stroke-width:2.5}
+.look-ahead-system-design-case-feed-messaging-line{fill:none;stroke:var(--scene-line,#cfdfdc);stroke-width:3;stroke-linecap:round}
+.look-ahead-system-design-case-feed-messaging-dash{fill:none;stroke:var(--scene-muted,#536970);stroke-width:2.5;stroke-dasharray:5 5;stroke-linecap:round}
+
+.look-ahead-system-design-case-feed-messaging-phone{fill:var(--scene-card,#fff);stroke:var(--scene-ink,#102a33);stroke-width:3}
+.look-ahead-system-design-case-feed-messaging-in{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-accent,#006c73);stroke-width:2}
+.look-ahead-system-design-case-feed-messaging-out{fill:var(--scene-accent,#006c73)}
+.look-ahead-system-design-case-feed-messaging-m1{animation:6s ease-out -3s infinite look-ahead-system-design-case-feed-messaging-a1;transform-box:fill-box;transform-origin:0 100%}
+.look-ahead-system-design-case-feed-messaging-m2{animation:6s ease-out -3s infinite look-ahead-system-design-case-feed-messaging-a2;transform-box:fill-box;transform-origin:100% 100%}
+.look-ahead-system-design-case-feed-messaging-m3{animation:6s ease-out -3s infinite look-ahead-system-design-case-feed-messaging-a3;transform-box:fill-box;transform-origin:0 100%}
+.look-ahead-system-design-case-feed-messaging-tk{fill:none;stroke:var(--scene-good,#1f7a4d);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;animation:6s linear -3s infinite look-ahead-system-design-case-feed-messaging-a4}
+.look-ahead-system-design-case-feed-messaging-dt{fill:var(--scene-muted,#536970)}
+.look-ahead-system-design-case-feed-messaging-bell{fill:var(--scene-warn,#a15c00);transform-origin:240px 30px;animation:6s ease-in-out -3s infinite look-ahead-system-design-case-feed-messaging-ring}
+.look-ahead-system-design-case-feed-messaging-badge{fill:var(--scene-bad,#b3261e)}
+.look-ahead-system-design-case-feed-messaging-f1{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-accent,#006c73);stroke-width:2;animation:6s ease-out -3s infinite look-ahead-system-design-case-feed-messaging-s1}
+.look-ahead-system-design-case-feed-messaging-f2{animation-name:look-ahead-system-design-case-feed-messaging-s2}
+@keyframes look-ahead-system-design-case-feed-messaging-a1{0%,4%{opacity:0;transform:scale(.6)}12%,92%{opacity:1;transform:scale(1)}98%,100%{opacity:0;transform:scale(.6)}}
+@keyframes look-ahead-system-design-case-feed-messaging-a2{0%,24%{opacity:0;transform:scale(.6)}32%,92%{opacity:1;transform:scale(1)}98%,100%{opacity:0;transform:scale(.6)}}
+@keyframes look-ahead-system-design-case-feed-messaging-a3{0%,44%{opacity:0;transform:scale(.6)}52%,92%{opacity:1;transform:scale(1)}98%,100%{opacity:0;transform:scale(.6)}}
+@keyframes look-ahead-system-design-case-feed-messaging-a4{0%,40%{opacity:0}46%,92%{opacity:1}98%,100%{opacity:0}}
+@keyframes look-ahead-system-design-case-feed-messaging-ring{0%,30%{transform:rotate(0)}34%{transform:rotate(14deg)}38%{transform:rotate(-14deg)}42%{transform:rotate(8deg)}46%,100%{transform:rotate(0)}}
+@keyframes look-ahead-system-design-case-feed-messaging-s1{0%,36%{opacity:0;transform:translateX(30px)}44%,92%{opacity:1;transform:translateX(0)}98%,100%{opacity:0;transform:translateX(30px)}}
+@keyframes look-ahead-system-design-case-feed-messaging-s2{0%,44%{opacity:0;transform:translateX(30px)}52%,92%{opacity:1;transform:translateX(0)}98%,100%{opacity:0;transform:translateX(30px)}}
+</style>
+<rect class="look-ahead-system-design-case-feed-messaging-bg" width="320" height="180"/>
+<rect class="look-ahead-system-design-case-feed-messaging-phone" x="24" y="8" width="130" height="146" rx="16"/><line class="look-ahead-system-design-case-feed-messaging-line" x1="74" y1="18" x2="104" y2="18"/>
+<g class="look-ahead-system-design-case-feed-messaging-m1"><rect class="look-ahead-system-design-case-feed-messaging-in" x="36" y="32" width="60" height="30" rx="10"/><text class="look-ahead-system-design-case-feed-messaging-tl" x="66" y="52" style="font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33);text-anchor:middle">Hi</text></g>
+<g class="look-ahead-system-design-case-feed-messaging-m2"><rect class="look-ahead-system-design-case-feed-messaging-out" x="76" y="72" width="66" height="30" rx="10"/><text x="109" y="92" style="font:700 16px system-ui,sans-serif;fill:#fff;text-anchor:middle">Yes</text><path class="look-ahead-system-design-case-feed-messaging-tk" d="M96 118l4 4 8-9M104 122l4 4 8-9" transform="translate(14 -2)"/></g>
+<g class="look-ahead-system-design-case-feed-messaging-m3"><rect class="look-ahead-system-design-case-feed-messaging-in" x="36" y="112" width="52" height="30" rx="10"/><circle class="look-ahead-system-design-case-feed-messaging-dt" cx="50" cy="127" r="3.5"/><circle class="look-ahead-system-design-case-feed-messaging-dt" cx="62" cy="127" r="3.5"/><circle class="look-ahead-system-design-case-feed-messaging-dt" cx="74" cy="127" r="3.5"/></g>
+<path class="look-ahead-system-design-case-feed-messaging-bell" d="M240 14c-10 0-17 8-17 18v14l-9 10h52l-9-10V32c0-10-7-18-17-18z"/><circle class="look-ahead-system-design-case-feed-messaging-bell" cx="240" cy="66" r="6"/>
+<circle class="look-ahead-system-design-case-feed-messaging-badge" cx="258" cy="16" r="6"/>
+<rect class="look-ahead-system-design-case-feed-messaging-f1" x="190" y="84" width="110" height="28" rx="8"/><rect class="look-ahead-system-design-case-feed-messaging-f1 look-ahead-system-design-case-feed-messaging-f2" x="190" y="118" width="110" height="28" rx="8"/>
+<text class="look-ahead-system-design-case-feed-messaging-t" x="89" y="174">Chat</text><text class="look-ahead-system-design-case-feed-messaging-t" x="245" y="174">Feed</text>
+</svg>

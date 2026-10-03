@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" font-family="system-ui, sans-serif">
+<style>
+
+.grow-monitoring-alerts-observability-t{font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.grow-monitoring-alerts-observability-s{animation:grow-monitoring-alerts-observability-scan 6s linear infinite;animation-delay:-3s}
+.grow-monitoring-alerts-observability-sp{animation:grow-monitoring-alerts-observability-spike 6s ease-in-out infinite;animation-delay:-3s}
+.grow-monitoring-alerts-observability-lg{animation:grow-monitoring-alerts-observability-log 6s linear infinite;animation-delay:-3s}
+@keyframes grow-monitoring-alerts-observability-scan{0%{transform:translateX(0)}100%{transform:translateX(200px)}}
+@keyframes grow-monitoring-alerts-observability-spike{0%,100%{opacity:.25}40%,70%{opacity:1}}
+@keyframes grow-monitoring-alerts-observability-log{0%,30%{opacity:.35}45%,80%{opacity:1}100%{opacity:.35}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+
+<g fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-line,#cfdfdc)" stroke-width="1.5">
+<rect x="82" y="10" width="226" height="48" rx="6"/><rect x="82" y="66" width="226" height="48" rx="6"/><rect x="82" y="122" width="226" height="48" rx="6"/></g>
+<text x="10" y="39" class="grow-monitoring-alerts-observability-t">Metric</text><text x="10" y="95" class="grow-monitoring-alerts-observability-t">Trace</text><text x="10" y="151" class="grow-monitoring-alerts-observability-t">Log</text>
+<polyline points="90,48 120,46 150,47 180,40 200,16 225,14 250,18 280,15 300,16" fill="none" stroke="var(--scene-bad,#b3261e)" stroke-width="3" stroke-linejoin="round"/>
+<g stroke-width="0"><rect x="92" y="74" width="60" height="8" rx="3" fill="var(--scene-ahead,#2f6fb3)"/><rect x="120" y="86" width="90" height="8" rx="3" fill="var(--scene-learn,#0f8a8a)"/><rect x="170" y="98" width="120" height="8" rx="3" fill="var(--scene-bad,#b3261e)"/></g>
+<g class="grow-monitoring-alerts-observability-lg" stroke-linecap="round" stroke-width="4"><path d="M94 134H200" stroke="var(--scene-muted,#536970)"/><path d="M94 144H180" stroke="var(--scene-muted,#536970)"/><path d="M94 154H270" stroke="var(--scene-bad,#b3261e)"/><path d="M94 164H150" stroke="var(--scene-muted,#536970)"/></g>
+<g class="grow-monitoring-alerts-observability-s"><rect x="88" y="6" width="3" height="168" rx="1.5" fill="var(--scene-ink,#102a33)"/><circle cx="89.5" cy="6" r="4" fill="var(--scene-ink,#102a33)"/></g>
+</svg>

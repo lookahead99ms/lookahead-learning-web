@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Total 88.62 does not match lines 88.63; two hypotheses, a failing test decides">
+<style>
+.grow-ai-assisted-development-guided-debugging-{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.grow-ai-assisted-development-guided-debugging-m{font-family:ui-monospace,Menlo,monospace;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+
+.grow-ai-assisted-development-guided-debugging-t{animation:grow-ai-assisted-development-guided-debugging-blink 3s steps(1) infinite;animation-delay:-1s}
+@keyframes grow-ai-assisted-development-guided-debugging-blink{0%,60%{opacity:1}60.1%,100%{opacity:.3}}
+.grow-ai-assisted-development-guided-debugging-h1{animation:grow-ai-assisted-development-guided-debugging-h 6s ease-in-out infinite;animation-delay:-3s}
+.grow-ai-assisted-development-guided-debugging-h2{animation:grow-ai-assisted-development-guided-debugging-h 6s ease-in-out infinite;animation-delay:-1s}
+@keyframes grow-ai-assisted-development-guided-debugging-h{0%,100%{opacity:.65}40%,60%{opacity:1}}
+.grow-ai-assisted-development-guided-debugging-g{animation:grow-ai-assisted-development-guided-debugging-draw 6s linear infinite;animation-delay:-3s;stroke-dasharray:40}
+@keyframes grow-ai-assisted-development-guided-debugging-draw{0%{stroke-dashoffset:40}50%,90%{stroke-dashoffset:0}100%{stroke-dashoffset:40}}
+</style>
+
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="12" y="24" width="148" height="36" rx="8" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<text class="grow-ai-assisted-development-guided-debugging-" x="22" y="48" style="fill:var(--scene-bad,#b3261e)">88.63 &#8800; 88.62</text>
+<path d="M160 42H176" stroke="var(--scene-bad,#b3261e)" stroke-width="3"/>
+<circle cx="190" cy="42" r="13" fill="var(--scene-bad,#b3261e)"/><text class="grow-ai-assisted-development-guided-debugging-" x="190" y="48" text-anchor="middle" style="fill:#fff">?</text>
+<path d="M202 36L214 24M202 48L214 60" stroke="var(--scene-ink,#102a33)" stroke-width="2.5" fill="none"/>
+<g class="grow-ai-assisted-development-guided-debugging-h1"><rect x="216" y="10" width="96" height="28" rx="6" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-grow,#b8457a)" stroke-width="2"/><text class="grow-ai-assisted-development-guided-debugging-" x="264" y="30" text-anchor="middle">Rounding?</text></g>
+<g class="grow-ai-assisted-development-guided-debugging-h2"><rect x="216" y="46" width="96" height="28" rx="6" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-link,#245a88)" stroke-width="2"/><g fill="var(--scene-link,#245a88)"><rect x="228" y="54" width="10" height="12" rx="2"/><rect x="244" y="54" width="10" height="12" rx="2" opacity=".4"/><rect x="260" y="54" width="10" height="12" rx="2"/><rect x="276" y="54" width="10" height="12" rx="2" opacity=".4"/><rect x="292" y="54" width="10" height="12" rx="2"/></g></g>
+<rect x="12" y="96" width="296" height="72" rx="8" fill="var(--scene-ink,#102a33)"/>
+<circle cx="32" cy="114" r="5" fill="var(--scene-bad,#b3261e)"/><circle cx="48" cy="114" r="5" fill="var(--scene-warn,#a15c00)"/><circle cx="64" cy="114" r="5" fill="var(--scene-good,#1f7a4d)"/>
+<g fill="#fff" opacity=".6"><rect x="24" y="130" width="150" height="6" rx="3"/><rect x="24" y="146" width="104" height="6" rx="3"/></g>
+<g class="grow-ai-assisted-development-guided-debugging-t"><rect x="206" y="128" width="88" height="30" rx="6" fill="var(--scene-bad,#b3261e)"/><text class="grow-ai-assisted-development-guided-debugging-" x="250" y="149" text-anchor="middle" style="fill:#fff">FAIL</text></g>
+</svg>

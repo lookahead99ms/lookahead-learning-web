@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A client picks a path of fields through a graph while a depth limit blocks deeper queries">
+<style>
+.grow-api-design-graphql-t{font:600 13px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.grow-api-design-graphql-pa{animation:grow-api-design-graphql-pa 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes grow-api-design-graphql-pa{0%,46%{opacity:1}50%,96%{opacity:.12}100%{opacity:1}}
+.grow-api-design-graphql-pb{animation:grow-api-design-graphql-pb 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes grow-api-design-graphql-pb{0%,46%{opacity:.12}50%,96%{opacity:1}100%{opacity:.12}}
+.grow-api-design-graphql-lm{animation:grow-api-design-graphql-lm 3s ease-in-out infinite;animation-delay:-1s}
+@keyframes grow-api-design-graphql-lm{0%,100%{opacity:1}50%{opacity:.55}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<text class="grow-api-design-graphql-t" x="10" y="22">pick fields</text>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="3"><line x1="50" y1="90" x2="130" y2="50"/><line x1="50" y1="90" x2="130" y2="130"/><line x1="130" y1="50" x2="205" y2="30"/><line x1="130" y1="50" x2="205" y2="70"/><line x1="130" y1="130" x2="205" y2="110"/><line x1="130" y1="130" x2="205" y2="150"/></g>
+<g stroke="var(--scene-bad,#b3261e)" stroke-width="2.5" stroke-dasharray="4 4" opacity=".7"><line x1="205" y1="70" x2="270" y2="53"/><line x1="205" y1="150" x2="270" y2="133"/></g>
+<g fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"><circle cx="50" cy="90" r="15"/><circle cx="130" cy="50" r="13"/><circle cx="130" cy="130" r="13"/><circle cx="205" cy="30" r="11"/><circle cx="205" cy="70" r="11"/><circle cx="205" cy="110" r="11"/><circle cx="205" cy="150" r="11"/></g>
+<g fill="var(--scene-card,#fff)" stroke="var(--scene-bad,#b3261e)" stroke-width="2.5" opacity=".7"><circle cx="280" cy="50" r="10"/><circle cx="280" cy="130" r="10"/></g>
+<g class="grow-api-design-graphql-pa" stroke="var(--scene-accent,#006c73)" stroke-width="5" stroke-linecap="round"><line x1="50" y1="90" x2="130" y2="50"/><line x1="130" y1="50" x2="205" y2="30"/>
+<g fill="var(--scene-accent,#006c73)" stroke="none"><circle cx="50" cy="90" r="15"/><circle cx="130" cy="50" r="13"/><circle cx="205" cy="30" r="11"/></g></g>
+<g class="grow-api-design-graphql-pb" stroke="var(--scene-grow,#b8457a)" stroke-width="5" stroke-linecap="round"><line x1="50" y1="90" x2="130" y2="130"/><line x1="130" y1="130" x2="205" y2="110"/>
+<g fill="var(--scene-grow,#b8457a)" stroke="none"><circle cx="50" cy="90" r="15"/><circle cx="130" cy="130" r="13"/><circle cx="205" cy="110" r="11"/></g></g>
+<line class="grow-api-design-graphql-lm" x1="240" y1="20" x2="240" y2="150" stroke="var(--scene-bad,#b3261e)" stroke-width="3" stroke-dasharray="6 5"/>
+<text class="grow-api-design-graphql-t" x="240" y="172" text-anchor="middle" style="fill:var(--scene-bad,#b3261e)">depth limit</text>
+</svg>

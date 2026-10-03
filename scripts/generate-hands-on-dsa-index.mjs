@@ -426,7 +426,9 @@ export async function buildHandsOnDsaIndex(
         lessonId: lesson.id,
         lessonTitle: lesson.title,
         tags: lesson.tags ?? [],
-        hasGuidedLesson: lesson.schemaVersion === 'pattern-lesson/v2',
+        hasGuidedLesson:
+          lesson.schemaVersion === 'pattern-lesson/v2' ||
+          lesson.lessonPattern === 'algo-pattern-v1',
         problems: orderedProblems,
       });
     }

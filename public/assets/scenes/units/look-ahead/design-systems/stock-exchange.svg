@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135" role="img" aria-label="Aditi's buy of 100 waits in the order book; Henrik's sell of 150 arrives, they meet at 50.20, Aditi's order is filled once and Henrik has 50 left">
+<style>
+.stock-exchange-t{font-family:system-ui, sans-serif;fill:var(--scene-ink,#102a33)}
+.stock-exchange-tx{font-family:system-ui, sans-serif;fill:var(--scene-text,#28434a)}
+.stock-exchange-tm{font-family:ui-monospace, Menlo, monospace;fill:var(--scene-ink,#102a33)}
+.stock-exchange-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.stock-exchange-soft{fill:var(--scene-muted,#536970)}
+.stock-exchange-line{fill:var(--scene-line,#cfdfdc)}
+.stock-exchange-acc{fill:var(--scene-accent,#006c73)}
+.stock-exchange-accsoft{fill:var(--scene-accent-soft,#dcefed)}
+.stock-exchange-good{fill:var(--scene-good,#1f7a4d)}
+.stock-exchange-bad{fill:var(--scene-bad,#b3261e)}
+.stock-exchange-warn{fill:var(--scene-warn,#a15c00)}
+.stock-exchange-link{fill:var(--scene-link,#245a88)}
+.stock-exchange-card{fill:var(--scene-card,#fff)}
+.stock-exchange-ink{fill:var(--scene-ink,#102a33)}
+.stock-exchange-a{animation-duration:6s;animation-iteration-count:infinite;animation-delay:-3s;animation-timing-function:ease-in-out}
+@media (prefers-reduced-motion: reduce){.stock-exchange-a{animation-play-state:paused!important}}
+.stock-exchange-sell{animation-name:stock-exchange-sell}
+@keyframes stock-exchange-sell{0%,8%{transform:translateX(130px);opacity:0}12%{opacity:1}30%,90%{transform:none;opacity:1}96%,100%{transform:none;opacity:0}}
+.stock-exchange-spark{animation-name:stock-exchange-spark}
+@keyframes stock-exchange-spark{0%,30%{opacity:0;transform:scale(.4)}34%{opacity:1;transform:scale(1.2)}44%,100%{opacity:0;transform:scale(1)}}
+.stock-exchange-buyon{animation-name:stock-exchange-buyon}
+@keyframes stock-exchange-buyon{0%,36%{opacity:1}40%,100%{opacity:.4}}
+.stock-exchange-fill{animation-name:stock-exchange-fill}
+@keyframes stock-exchange-fill{0%,36%{opacity:0}40%,92%{opacity:1}96%,100%{opacity:0}}
+.stock-exchange-s150{animation-name:stock-exchange-s150}
+@keyframes stock-exchange-s150{0%,36%{opacity:1}40%,100%{opacity:0}}
+.stock-exchange-s50{animation-name:stock-exchange-s50}
+@keyframes stock-exchange-s50{0%,36%{opacity:0}40%,92%{opacity:1}96%,100%{opacity:0}}
+.stock-exchange-trade{animation-name:stock-exchange-trade}
+@keyframes stock-exchange-trade{0%,38%{opacity:0;transform:translateY(10px)}44%,92%{opacity:1;transform:none}96%,100%{opacity:0}}
+</style>
+
+<rect x="8" y="10" width="106" height="34" rx="17" class="stock-exchange-accsoft" stroke="var(--scene-good,#1f7a4d)" stroke-width="1.5"/>
+<g class="stock-exchange-a stock-exchange-buyon"><circle cx="26" cy="27" r="11" class="stock-exchange-good"/><text class="stock-exchange-card" x="26" y="32" font-size="14" font-weight="700" text-anchor="middle" font-family="system-ui, sans-serif">A</text>
+<text class="stock-exchange-t" x="40" y="32" font-size="14" font-weight="700">Buy 100</text></g>
+<g class="stock-exchange-a stock-exchange-fill"><text class="stock-exchange-t" x="111" y="32" font-size="14" font-weight="700" text-anchor="end" style="fill:var(--scene-good,#1f7a4d)">&#10003;</text></g>
+<g class="stock-exchange-a stock-exchange-sell"><rect x="126" y="10" width="106" height="34" rx="17" class="stock-exchange-box" stroke="var(--scene-bad,#b3261e)"/>
+<circle cx="214" cy="27" r="11" class="stock-exchange-bad"/><text class="stock-exchange-card" x="214" y="32" font-size="14" font-weight="700" text-anchor="middle" font-family="system-ui, sans-serif">H</text>
+<text class="stock-exchange-t stock-exchange-a stock-exchange-s150" x="138" y="32" font-size="14" font-weight="700">Sell 150</text>
+<text class="stock-exchange-t stock-exchange-a stock-exchange-s50" x="138" y="32" font-size="14" font-weight="700">50 left</text></g>
+<g transform="translate(120 27)"><g class="stock-exchange-a stock-exchange-spark"><path d="M0 -12 L3 -3 L12 0 L3 3 L0 12 L-3 3 L-12 0 L-3 -3Z" class="stock-exchange-warn"/></g></g>
+<g opacity=".55">
+<rect x="14" y="54" width="70" height="7" rx="3.5" class="stock-exchange-good"/><rect x="14" y="66" width="52" height="7" rx="3.5" class="stock-exchange-good"/><rect x="14" y="78" width="80" height="7" rx="3.5" class="stock-exchange-good"/>
+<rect x="150" y="54" width="62" height="7" rx="3.5" class="stock-exchange-bad"/><rect x="166" y="66" width="46" height="7" rx="3.5" class="stock-exchange-bad"/><rect x="140" y="78" width="72" height="7" rx="3.5" class="stock-exchange-bad"/>
+</g>
+<line x1="120" y1="52" x2="120" y2="88" stroke="var(--scene-line,#cfdfdc)" stroke-width="1.5" stroke-dasharray="3 3"/>
+<g class="stock-exchange-a stock-exchange-trade"><rect x="34" y="98" width="172" height="30" rx="8" class="stock-exchange-box" stroke="var(--scene-accent,#006c73)"/>
+<text class="stock-exchange-t" x="120" y="118" font-size="14" font-weight="700" text-anchor="middle">Traded 100 at 50.20</text></g>
+
+</svg>

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="conflict-failure">
+<style>
+.look-ahead-behavioral-carl-conflict-failure-t{font-family:system-ui,sans-serif;font-size:16px;font-weight:700;fill:var(--scene-ink,#102a33)}
+.look-ahead-behavioral-carl-conflict-failure-tc{text-anchor:middle}
+
+.look-ahead-behavioral-carl-conflict-failure-L{animation:look-ahead-behavioral-carl-conflict-failure-l 6s infinite -4.6s}.look-ahead-behavioral-carl-conflict-failure-R{animation:look-ahead-behavioral-carl-conflict-failure-r 6s infinite -4.6s}
+@keyframes look-ahead-behavioral-carl-conflict-failure-l{0%,10%{transform:translateX(-10px)}25%,40%{transform:translateX(8px)}55%,100%{transform:translateX(-10px)}}
+@keyframes look-ahead-behavioral-carl-conflict-failure-r{0%,10%{transform:translateX(10px)}25%,40%{transform:translateX(-8px)}55%,100%{transform:translateX(10px)}}
+.look-ahead-behavioral-carl-conflict-failure-spark{transform-box:fill-box;transform-origin:center;animation:look-ahead-behavioral-carl-conflict-failure-sp 6s infinite -4.6s}
+@keyframes look-ahead-behavioral-carl-conflict-failure-sp{0%,20%{opacity:0;transform:scale(.4)}28%,40%{opacity:1;transform:scale(1.1)}50%,100%{opacity:0;transform:scale(.4)}}
+.look-ahead-behavioral-carl-conflict-failure-bridge{stroke-dasharray:130;animation:look-ahead-behavioral-carl-conflict-failure-bd 6s infinite -4.6s}
+@keyframes look-ahead-behavioral-carl-conflict-failure-bd{0%,45%{stroke-dashoffset:130}65%,92%{stroke-dashoffset:0}100%{stroke-dashoffset:130}}
+.look-ahead-behavioral-carl-conflict-failure-ok{animation:look-ahead-behavioral-carl-conflict-failure-okk 6s infinite -4.6s}
+@keyframes look-ahead-behavioral-carl-conflict-failure-okk{0%,62%{opacity:0}72%,92%{opacity:1}100%{opacity:0}}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+<rect width="320" height="180" rx="10" fill="var(--scene-card,#fff)"/>
+
+<g>
+<g class="look-ahead-behavioral-carl-conflict-failure-L"><circle cx="60" cy="52" r="15" fill="var(--scene-link,#245a88)"/><path d="M34 98a26 22 0 0 1 52 0z" fill="var(--scene-link,#245a88)"/></g>
+<g class="look-ahead-behavioral-carl-conflict-failure-R"><circle cx="260" cy="52" r="15" fill="var(--scene-grow,#b8457a)"/><path d="M234 98a26 22 0 0 1 52 0z" fill="var(--scene-grow,#b8457a)"/></g>
+<g class="look-ahead-behavioral-carl-conflict-failure-spark"><path d="M160 36l7 16 16 0-13 10 5 17-15-10-15 10 5-17-13-10 16 0z" fill="var(--scene-warn,#a15c00)"/></g>
+<path class="look-ahead-behavioral-carl-conflict-failure-bridge" d="M96 92Q160 54 224 92" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="5" stroke-linecap="round"/>
+<g class="look-ahead-behavioral-carl-conflict-failure-ok"><circle cx="160" cy="50" r="13" fill="var(--scene-good,#1f7a4d)"/><path d="M153 50l5 5 9-11" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text class="look-ahead-behavioral-carl-conflict-failure-t look-ahead-behavioral-carl-conflict-failure-tc" x="160" y="158">Own it, repair it</text>
+</g>
+</svg>

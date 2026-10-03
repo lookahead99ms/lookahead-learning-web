@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="application.yml feeds a Spring Boot service, it starts up, and the health check turns UP with a steady heartbeat">
+<style>
+.grow-spring-boot-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.grow-spring-boot-m { font-family: ui-monospace, Menlo, monospace; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.grow-spring-boot-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 2; }
+.grow-spring-boot-soft { fill: var(--scene-accent-soft, #dcefed); }
+.grow-spring-boot-acc { fill: var(--scene-accent, #006c73); }
+.grow-spring-boot-ln { fill: var(--scene-line, #cfdfdc); }
+.grow-spring-boot-mut { fill: var(--scene-muted, #536970); }
+.grow-spring-boot-good { fill: var(--scene-good, #1f7a4d); }
+.grow-spring-boot-warn { fill: var(--scene-warn, #a15c00); }
+.grow-spring-boot-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 2; stroke-dasharray: 4 5; }
+
+.grow-spring-boot-key { fill: var(--scene-accent, #006c73); }
+.grow-spring-boot-val { fill: var(--scene-text, #28434a); opacity: .55; }
+.grow-spring-boot-feed { fill: var(--scene-accent, #006c73); animation: grow-spring-boot-kfeed 7s linear infinite; }
+@keyframes grow-spring-boot-kfeed { 0% { opacity: 0; transform: translateX(0); } 3% { opacity: 1; } 14% { transform: translateX(22px); opacity: 1; } 14.01% { transform: translateX(0); } 25% { transform: translateX(22px); } 25.01% { transform: translateX(0); } 36% { opacity: 1; transform: translateX(22px); } 37%, 100% { opacity: 0; } }
+.grow-spring-boot-gear { fill: none; stroke: var(--scene-grow, #b8457a); stroke-width: 8; stroke-dasharray: 8.25 8.25; }
+.grow-spring-boot-ring { fill: none; stroke: var(--scene-grow, #b8457a); stroke-width: 7; }
+.grow-spring-boot-hub { fill: var(--scene-card, #ffffff); stroke: var(--scene-grow, #b8457a); stroke-width: 3; }
+.grow-spring-boot-spin { transform-box: fill-box; transform-origin: center; animation: grow-spring-boot-krot 7s linear infinite; }
+@keyframes grow-spring-boot-krot { to { transform: rotate(360deg); } }
+.grow-spring-boot-track { fill: var(--scene-accent-soft, #dcefed); }
+.grow-spring-boot-bar { fill: var(--scene-good, #1f7a4d); transform-box: fill-box; transform-origin: left center; animation: grow-spring-boot-kbar 7s ease-in-out infinite; }
+@keyframes grow-spring-boot-kbar { 0%, 4% { transform: scaleX(0); } 44%, 94% { transform: scaleX(1); } 100% { transform: scaleX(0); } }
+.grow-spring-boot-up { animation: grow-spring-boot-kup 7s infinite; }
+@keyframes grow-spring-boot-kup { 0%, 44% { opacity: 0; transform: translateY(4px); } 48%, 94% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; } }
+.grow-spring-boot-upbg { fill: var(--scene-good, #1f7a4d); }
+.grow-spring-boot-upt { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-card, #ffffff); font-weight: 700; }
+.grow-spring-boot-wait { fill: none; stroke: var(--scene-line, #cfdfdc); stroke-width: 2; stroke-dasharray: 5 5; }
+.grow-spring-boot-beat { fill: none; stroke: var(--scene-good, #1f7a4d); stroke-width: 2.5; stroke-linejoin: round; stroke-dasharray: 120; animation: grow-spring-boot-kbeat 7s linear infinite; }
+@keyframes grow-spring-boot-kbeat { 0%, 46% { stroke-dashoffset: 120; opacity: 0; } 47% { opacity: 1; stroke-dashoffset: 120; } 52% { stroke-dashoffset: 0; } 94% { stroke-dashoffset: 0; opacity: 1; } 100% { opacity: 0; } }
+.grow-spring-boot-feed, .grow-spring-boot-spin, .grow-spring-boot-bar, .grow-spring-boot-up, .grow-spring-boot-beat { animation-delay: -3.8s; }
+</style>
+<!-- config file -->
+<path class="grow-spring-boot-box" d="M16 26 H80 L96 42 V118 H16 Z"/>
+<path class="grow-spring-boot-soft" d="M80 26 V42 H96 Z"/>
+<rect class="grow-spring-boot-key" x="24" y="50" width="30" height="6" rx="3"/><rect class="grow-spring-boot-val" x="58" y="50" width="26" height="6" rx="3"/>
+<rect class="grow-spring-boot-key" x="32" y="66" width="22" height="6" rx="3"/><rect class="grow-spring-boot-val" x="58" y="66" width="30" height="6" rx="3"/>
+<rect class="grow-spring-boot-key" x="32" y="82" width="26" height="6" rx="3"/><rect class="grow-spring-boot-val" x="62" y="82" width="20" height="6" rx="3"/>
+<rect class="grow-spring-boot-key" x="24" y="98" width="34" height="6" rx="3"/><rect class="grow-spring-boot-val" x="62" y="98" width="24" height="6" rx="3"/>
+<text class="grow-spring-boot-m" x="14" y="144" font-size="16">application.yml</text>
+<rect class="grow-spring-boot-feed" x="100" y="68" width="10" height="10" rx="2"/>
+<!-- service with auto-config gear -->
+<rect class="grow-spring-boot-box" x="134" y="26" width="92" height="92" rx="12"/>
+<g class="grow-spring-boot-spin"><circle class="grow-spring-boot-gear" cx="180" cy="66" r="21"/><circle class="grow-spring-boot-ring" cx="180" cy="66" r="15"/></g>
+<circle class="grow-spring-boot-hub" cx="180" cy="66" r="7"/>
+<rect class="grow-spring-boot-track" x="146" y="100" width="68" height="8" rx="4"/>
+<rect class="grow-spring-boot-bar" x="146" y="100" width="68" height="8" rx="4"/>
+<!-- health -->
+<path class="grow-spring-boot-wait" d="M240 72 H306"/>
+<g class="grow-spring-boot-up"><rect class="grow-spring-boot-upbg" x="246" y="26" width="56" height="28" rx="14"/><text class="grow-spring-boot-upt" x="274" y="45" font-size="16" text-anchor="middle">UP</text></g>
+<path class="grow-spring-boot-beat" d="M240 72 H258 L264 60 L272 86 L278 66 L284 72 H306"/>
+<text class="grow-spring-boot-t" x="273" y="110" font-size="16" text-anchor="middle">health</text>
+</svg>

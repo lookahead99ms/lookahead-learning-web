@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Multi-stage build: heavy build stage hands only the jar to a slim image that runs as a container">
+<style>
+.grow-docker-kubernetes-docker-images-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.grow-docker-kubernetes-docker-images-jar{animation:grow-docker-kubernetes-docker-images-move 6s ease-in-out infinite;animation-delay:-3s}
+.grow-docker-kubernetes-docker-images-l1,.grow-docker-kubernetes-docker-images-l2{animation:grow-docker-kubernetes-docker-images-pop 6s ease-out infinite}
+.grow-docker-kubernetes-docker-images-l1{animation-delay:-3.6s}
+.grow-docker-kubernetes-docker-images-l2{animation-delay:-3.2s}
+.grow-docker-kubernetes-docker-images-run{animation:grow-docker-kubernetes-docker-images-pulse 2s ease-in-out infinite;animation-delay:-1s;transform-box:fill-box;transform-origin:center}
+@keyframes grow-docker-kubernetes-docker-images-move{0%,10%{transform:translate(0,0);opacity:1}55%{transform:translate(120px,18px);opacity:1}70%,100%{transform:translate(120px,18px);opacity:0}}
+@keyframes grow-docker-kubernetes-docker-images-pop{0%,15%{opacity:0;transform:translateY(-10px)}30%,90%{opacity:1;transform:none}100%{opacity:0}}
+@keyframes grow-docker-kubernetes-docker-images-pulse{50%{transform:scale(1.12)}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="14" y="30" width="120" height="112" rx="10" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<text class="grow-docker-kubernetes-docker-images-t" x="74" y="22" text-anchor="middle">JDK + Maven</text>
+<rect x="26" y="108" width="96" height="24" rx="4" fill="var(--scene-muted,#536970)"/>
+<rect x="26" y="80" width="96" height="24" rx="4" fill="var(--scene-link,#245a88)"/>
+<rect x="26" y="52" width="96" height="24" rx="4" fill="var(--scene-warn,#a15c00)"/>
+<path d="M140 90h26" stroke="var(--scene-muted,#536970)" stroke-width="3" stroke-dasharray="5 4"/>
+<rect x="186" y="62" width="120" height="80" rx="10" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/>
+<text class="grow-docker-kubernetes-docker-images-t" x="246" y="22" text-anchor="middle">JRE + jar</text>
+<rect x="198" y="112" width="96" height="22" rx="4" fill="var(--scene-muted,#536970)"/>
+<rect class="grow-docker-kubernetes-docker-images-l1" x="198" y="86" width="96" height="22" rx="4" fill="var(--scene-link,#245a88)"/>
+<rect class="grow-docker-kubernetes-docker-images-l2" x="198" y="68" width="96" height="14" rx="4" fill="var(--scene-good,#1f7a4d)"/>
+<g class="grow-docker-kubernetes-docker-images-run"><circle cx="246" cy="42" r="12" fill="var(--scene-good,#1f7a4d)"/><path d="M242 36l11 6-11 6z" fill="var(--scene-card,#fff)"/></g>
+<text class="grow-docker-kubernetes-docker-images-t" x="246" y="164" text-anchor="middle">non-root</text>
+<g class="grow-docker-kubernetes-docker-images-jar"><rect x="54" y="60" width="40" height="22" rx="4" fill="var(--scene-good,#1f7a4d)" stroke="var(--scene-card,#fff)" stroke-width="2"/><path d="M62 71h24" stroke="var(--scene-card,#fff)" stroke-width="3" stroke-linecap="round"/></g>
+</svg>

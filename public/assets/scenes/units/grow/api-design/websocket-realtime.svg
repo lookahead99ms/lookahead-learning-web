@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A WebSocket pipe carries messages both ways, drops, then reconnects and resumes">
+<style>
+.grow-api-design-websocket-realtime-t{font:600 13px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.grow-api-design-websocket-realtime-r1{animation:grow-api-design-websocket-realtime-r1 3s linear infinite;animation-delay:-1.3s}
+@keyframes grow-api-design-websocket-realtime-r1{0%{transform:translateX(0);opacity:0}6%{opacity:1}90%{transform:translateX(150px);opacity:1}100%{transform:translateX(150px);opacity:0}}
+.grow-api-design-websocket-realtime-l1{animation:grow-api-design-websocket-realtime-l1 3s linear infinite;animation-delay:-0.2s}
+@keyframes grow-api-design-websocket-realtime-l1{0%{transform:translateX(0);opacity:0}6%{opacity:1}90%{transform:translateX(-150px);opacity:1}100%{transform:translateX(-150px);opacity:0}}
+.grow-api-design-websocket-realtime-gap{animation:grow-api-design-websocket-realtime-gap 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes grow-api-design-websocket-realtime-gap{0%,55%{opacity:0}60%,70%{opacity:1}75%,100%{opacity:0}}
+.grow-api-design-websocket-realtime-lv{animation:grow-api-design-websocket-realtime-lv 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes grow-api-design-websocket-realtime-lv{0%,56%{opacity:1}60%,100%{opacity:0}}
+.grow-api-design-websocket-realtime-rs{animation:grow-api-design-websocket-realtime-rs 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes grow-api-design-websocket-realtime-rs{0%,70%{opacity:0}76%,96%{opacity:1}100%{opacity:0}}
+.grow-api-design-websocket-realtime-pp{animation:grow-api-design-websocket-realtime-pp 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes grow-api-design-websocket-realtime-pp{0%,56%{opacity:1}60%,74%{opacity:0}78%,100%{opacity:1}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="12" y="56" width="62" height="68" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<path d="M12 74H74" stroke="var(--scene-accent,#006c73)" stroke-width="3"/><rect x="22" y="86" width="34" height="8" rx="3" fill="var(--scene-accent,#006c73)"/><rect x="22" y="102" width="42" height="8" rx="3" fill="var(--scene-muted,#536970)"/>
+<rect x="246" y="56" width="62" height="68" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<g fill="var(--scene-accent,#006c73)"><rect x="258" y="68" width="38" height="12" rx="3"/><rect x="258" y="86" width="38" height="12" rx="3" opacity=".6"/><rect x="258" y="104" width="38" height="12" rx="3" opacity=".35"/></g>
+<g class="grow-api-design-websocket-realtime-pp"><rect x="74" y="76" width="172" height="28" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="3"/>
+<g class="grow-api-design-websocket-realtime-r1"><circle cx="92" cy="84" r="6" fill="var(--scene-accent,#006c73)"/></g><g class="grow-api-design-websocket-realtime-l1"><circle cx="228" cy="96" r="6" fill="var(--scene-grow,#b8457a)"/></g></g>
+<g class="grow-api-design-websocket-realtime-gap"><path d="M74 76H144L152 90L140 98L148 104H74M246 76H176L168 90L180 98L172 104H246" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-bad,#b3261e)" stroke-width="3" stroke-linejoin="round"/>
+<g stroke="var(--scene-bad,#b3261e)" stroke-width="4" stroke-linecap="round"><path d="M152 114l12 12M164 114l-12 12"/></g></g>
+<g class="grow-api-design-websocket-realtime-lv"><circle cx="124" cy="52" r="6" fill="var(--scene-good,#1f7a4d)"/><text class="grow-api-design-websocket-realtime-t" x="136" y="57">live</text></g>
+<g class="grow-api-design-websocket-realtime-rs"><text class="grow-api-design-websocket-realtime-t" x="160" y="57" text-anchor="middle" style="fill:var(--scene-good,#1f7a4d)">resume #42</text></g>
+</svg>

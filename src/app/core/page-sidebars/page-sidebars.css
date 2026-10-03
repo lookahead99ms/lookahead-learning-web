@@ -291,12 +291,34 @@ button {
   line-height: 1.55;
   overflow-wrap: normal;
 }
+/* In-flow statements (no side gutter): one strip after the page. Aligned to the page's content
+   column when it is known; the two statements sit at its two ends and wrap onto two lines when
+   the column is narrow. */
+.signature-strip {
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 32px;
+  margin: 8px 24px 32px;
+  padding-block: 20px 0;
+  border-top: 1px solid var(--line);
+  font-size: 1.05rem;
+  line-height: 1.55;
+}
+.signature-strip.aligned {
+  margin-inline-end: 0;
+  max-width: calc(100% - 24px);
+}
 .standalone-signature.inline-signature {
   position: static;
-  width: auto !important;
-  margin: 12px 24px;
-  padding: 8px 0;
+  width: auto;
+  margin: 0;
+  padding: 0;
   display: block;
+  min-width: 0;
+  max-width: 100%;
 }
 .standalone-signature-left { inset-inline-start: 6px; }
 .standalone-signature-right {
@@ -351,4 +373,18 @@ button {
   .left.open:dir(rtl) nav a[aria-current='location'] {
     background: linear-gradient(to left, var(--surface-muted) 65%, transparent);
   }
+}
+
+/* DLV-408 lesson stages: plain uppercase group links, with the current stage's sections indented. */
+.shared-sidebar-outline a.sidebar-stage {
+  min-height: 36px;
+  margin-top: 6px;
+  color: var(--text-strong);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.shared-sidebar-outline a.sidebar-nested {
+  padding-inline-start: 22px;
 }

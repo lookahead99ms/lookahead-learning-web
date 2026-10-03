@@ -322,6 +322,11 @@
       <p>Choose a reviewed preparation path or build a plan from your own course selections.</p>
       <div class="plan-type-grid">
         <button type="button" class="plan-type-card" (click)="selectCreationMode('authored')">
+          <app-card-scene
+            class="plan-type-scene"
+            aria-hidden="true"
+            src="/assets/scenes/study-plan/authored.svg"
+          />
           <span class="eyebrow">Authored</span>
           <strong>Start with a prepared path</strong>
           <span
@@ -330,6 +335,11 @@
           >
         </button>
         <button type="button" class="plan-type-card" (click)="selectCreationMode('custom')">
+          <app-card-scene
+            class="plan-type-scene"
+            aria-hidden="true"
+            src="/assets/scenes/study-plan/custom.svg"
+          />
           <span class="eyebrow">Custom</span>
           <strong>Create your own study plan</strong>
           <span

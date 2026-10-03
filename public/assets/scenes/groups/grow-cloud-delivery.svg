@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 200" role="img" aria-label="A build is packaged as an image, deployed to pods in the cloud, and watched on a live health chart that feeds back into the next build">
+<style>
+.grow-cloud-delivery-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); }
+.grow-cloud-delivery-tm { font-family: ui-monospace, Menlo, monospace; fill: var(--scene-ink, #102a33); }
+.grow-cloud-delivery-b { font-weight: 700; }
+.grow-cloud-delivery-box { fill: var(--scene-card, #fff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.grow-cloud-delivery-soft { fill: var(--scene-accent-soft, #dcefed); }
+.grow-cloud-delivery-card { fill: var(--scene-card, #fff); }
+.grow-cloud-delivery-acc { fill: var(--scene-accent, #006c73); }
+.grow-cloud-delivery-mut { fill: var(--scene-muted, #536970); }
+.grow-cloud-delivery-linef { fill: var(--scene-line, #cfdfdc); }
+.grow-cloud-delivery-good { fill: var(--scene-good, #1f7a4d); }
+.grow-cloud-delivery-bad { fill: var(--scene-bad, #b3261e); }
+.grow-cloud-delivery-warn { fill: var(--scene-warn, #a15c00); }
+.grow-cloud-delivery-grow { fill: var(--scene-grow, #b8457a); }
+.grow-cloud-delivery-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 1.5; }
+.grow-cloud-delivery-sacc { fill: none; stroke: var(--scene-accent, #006c73); stroke-width: 2; }
+.grow-cloud-delivery-sgood { fill: none; stroke: var(--scene-good, #1f7a4d); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.grow-cloud-delivery-scard { fill: none; stroke: var(--scene-card, #fff); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.grow-cloud-delivery-sbad { fill: none; stroke: var(--scene-bad, #b3261e); stroke-width: 2; }
+
+.grow-cloud-delivery-flow { stroke: var(--scene-accent, #006c73); stroke-width: 2.5; fill: none; stroke-dasharray: 6 8; animation: grow-cloud-delivery-kf-flow 1.2s linear infinite; }
+@keyframes grow-cloud-delivery-kf-flow { to { stroke-dashoffset: -28; } }
+.grow-cloud-delivery-back { stroke: var(--scene-muted, #536970); stroke-width: 1.5; fill: none; stroke-dasharray: 4 6; animation: grow-cloud-delivery-kf-back 1.6s linear infinite; }
+@keyframes grow-cloud-delivery-kf-back { to { stroke-dashoffset: 20; } }
+.grow-cloud-delivery-pkt { animation: grow-cloud-delivery-kf-pkt 7s linear infinite; animation-delay: -3s; }
+@keyframes grow-cloud-delivery-kf-pkt { 0% { transform: translateX(0); opacity: 0; } 4% { opacity: 1; } 30% { transform: translateX(26px); opacity: 1; } 36%, 100% { transform: translateX(26px); opacity: 0; } }
+.grow-cloud-delivery-pkt2 { animation: grow-cloud-delivery-kf-pkt2 7s linear infinite; animation-delay: -3s; }
+@keyframes grow-cloud-delivery-kf-pkt2 { 0%, 34% { transform: translateX(0); opacity: 0; } 38% { opacity: 1; } 60% { transform: translateX(22px); opacity: 1; } 66%, 100% { transform: translateX(22px); opacity: 0; } }
+.grow-cloud-delivery-pod3 { transform-box: fill-box; transform-origin: center; animation: grow-cloud-delivery-kf-pod 7s ease-out infinite; animation-delay: -3s; }
+@keyframes grow-cloud-delivery-kf-pod { 0%, 40% { transform: scale(0); } 48%, 92% { transform: scale(1); } 100% { transform: scale(0); } }
+.grow-cloud-delivery-line { fill: none; stroke: var(--scene-grow, #b8457a); stroke-width: 3; stroke-linejoin: round; stroke-dasharray: 200; animation: grow-cloud-delivery-kf-line 7s linear infinite; animation-delay: -3s; }
+@keyframes grow-cloud-delivery-kf-line { 0% { stroke-dashoffset: 200; } 85%, 100% { stroke-dashoffset: 0; } }
+.grow-cloud-delivery-beat { transform-box: fill-box; transform-origin: center; animation: grow-cloud-delivery-kf-beat 1.4s ease-in-out infinite; }
+@keyframes grow-cloud-delivery-kf-beat { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.6); opacity: .4; } }
+</style>
+<!-- build: image layers -->
+<g transform="translate(36 52)">
+  <rect class="grow-cloud-delivery-soft" x="0" y="0" width="100" height="100" rx="14"/>
+  <rect class="grow-cloud-delivery-box" x="18" y="58" width="64" height="18" rx="4"/>
+  <rect class="grow-cloud-delivery-box" x="18" y="38" width="64" height="18" rx="4"/>
+  <rect class="grow-cloud-delivery-acc" x="18" y="18" width="64" height="18" rx="4"/>
+</g>
+<text class="grow-cloud-delivery-t grow-cloud-delivery-b" x="86" y="178" font-size="16" text-anchor="middle">build</text>
+
+<path class="grow-cloud-delivery-flow" d="M142 102 H182"/>
+<path class="grow-cloud-delivery-flow" d="M304 102 H338"/>
+<g class="grow-cloud-delivery-pkt"><rect class="grow-cloud-delivery-acc" x="144" y="94" width="16" height="16" rx="3"/></g>
+<g class="grow-cloud-delivery-pkt2"><rect class="grow-cloud-delivery-grow" x="306" y="94" width="16" height="16" rx="3"/></g>
+
+<!-- deploy: cloud with pods -->
+<path class="grow-cloud-delivery-soft" d="M200 140 C176 140 172 108 194 102 C192 74 230 64 244 84 C256 62 292 70 290 98 C312 100 314 140 290 140 Z"/>
+<rect class="grow-cloud-delivery-acc" x="206" y="104" width="22" height="22" rx="5"/>
+<rect class="grow-cloud-delivery-acc" x="234" y="104" width="22" height="22" rx="5"/>
+<rect class="grow-cloud-delivery-acc grow-cloud-delivery-pod3" x="262" y="104" width="22" height="22" rx="5"/>
+<text class="grow-cloud-delivery-t grow-cloud-delivery-b" x="244" y="178" font-size="16" text-anchor="middle">deploy</text>
+
+<!-- observe: health chart -->
+<g transform="translate(344 52)">
+  <rect class="grow-cloud-delivery-box" x="0" y="0" width="104" height="100" rx="12"/>
+  <path class="grow-cloud-delivery-wire" d="M12 84 H92"/>
+  <path class="grow-cloud-delivery-line" d="M12 70 L28 66 L40 72 L52 40 L62 58 L76 50 L92 52"/>
+  <circle class="grow-cloud-delivery-good grow-cloud-delivery-beat" cx="88" cy="18" r="5"/>
+</g>
+<text class="grow-cloud-delivery-t grow-cloud-delivery-b" x="396" y="178" font-size="16" text-anchor="middle">observe</text>
+
+<!-- feedback loop -->
+<path class="grow-cloud-delivery-back" d="M396 46 V22 H86 V46"/>
+<path class="grow-cloud-delivery-wire" d="M80 40 L86 48 L92 40"/>
+</svg>
