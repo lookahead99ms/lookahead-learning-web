@@ -133,7 +133,7 @@ describe('FoundationLessonShell concept-v1 (concept courses)', () => {
       'Concept', 'How it works', 'Operations and cost', 'Code', 'When to use', 'Common mistakes', 'Practice',
       'Check yourself', 'Cheat sheet', 'References',
     ]);
-    expect(root.querySelector('.system-lesson')?.classList).toContain('algo-lesson');
+    expect(root.querySelector('.system')?.classList).toContain('algo-lesson');
     expect(root.querySelector('#lesson-scenario')).toBeNull();
     expect(root.querySelector('#foundation-pitfalls')).toBeNull();
     expect(root.querySelector('#lesson-interview-answer')).toBeNull();
@@ -154,7 +154,7 @@ describe('FoundationLessonShell concept-v1 (concept courses)', () => {
     expect(board.classList).toContain('storyboard-story');
     expect(board.classList).toContain('storyboard-has-beside');
     expect(board.querySelector('.storyboard-canvas img')?.getAttribute('src')).toBe('/content/story.svg');
-    expect(Array.from(board.querySelectorAll('.storyboard-beside .explanation-content')).map((p) => p.textContent)).toEqual([
+    expect(Array.from(board.querySelectorAll('.storyboard-beside .prose')).map((p) => p.textContent)).toEqual([
       'A payment provider retries a webhook when your reply is lost.', 'The ID tells you which bucket to check.',
     ]);
     expect(board.querySelector('.storyboard-beside .beside-points')).toBeNull();

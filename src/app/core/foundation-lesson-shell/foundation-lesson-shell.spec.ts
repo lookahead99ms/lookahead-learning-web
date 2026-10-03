@@ -346,7 +346,7 @@ describe('FoundationLessonShell golden lesson contract', () => {
     const section = fixture.nativeElement.querySelector('#sample-references') as HTMLElement;
     expect(section.querySelectorAll('.reference-links-card').length).toBe(1);
     expect(section.querySelectorAll('.reference-links-card li').length).toBe(3);
-    expect(section.querySelector('.section-explanation > .explanation-content')?.textContent).toContain('Check the runtime version.');
+    expect(section.querySelector('.explanation > .prose')?.textContent).toContain('Check the runtime version.');
     expect(Array.from(section.querySelectorAll('.reference-links-card a')).map((link) => link.getAttribute('href')))
       .toEqual(['https://example.com/one', 'https://example.com/two', 'https://example.com/three']);
   });
@@ -362,8 +362,8 @@ describe('FoundationLessonShell golden lesson contract', () => {
     const section = fixture.nativeElement.querySelector('#bounded-example') as HTMLElement;
     expect(section.querySelectorAll('.lesson-callout').length).toBe(0);
     expect(section.querySelector('.foundation-code code')?.textContent).toContain('int value = 1;');
-    expect(section.querySelector('.section-explanation .lesson-callout')).toBeNull();
-    expect(section.querySelector('.section-explanation')?.textContent).toContain('Explain the result.');
+    expect(section.querySelector('.explanation .lesson-callout')).toBeNull();
+    expect(section.querySelector('.explanation')?.textContent).toContain('Explain the result.');
   });
 
   it('turns explicit card points into bullets while retaining the heading and inline emphasis', () => {
@@ -372,7 +372,7 @@ describe('FoundationLessonShell golden lesson contract', () => {
         body: ['<strong>How does this work?</strong><br>First <strong>point</strong>.<br>Second point.', 'A single explanation.']}],
     });
     fixture.detectChanges();
-    const card = fixture.nativeElement.querySelector('#point-card .explanation-content') as HTMLElement;
+    const card = fixture.nativeElement.querySelector('#point-card .prose') as HTMLElement;
     expect(card.querySelectorAll('ul > li').length).toBe(2);
     expect(card.firstElementChild?.textContent).toBe('How does this work?');
     expect(card.querySelector('li strong')?.textContent).toBe('point');
@@ -385,7 +385,7 @@ describe('FoundationLessonShell golden lesson contract', () => {
         body: ['<strong>Follow one request:</strong><br>1. Map the path.<br>2. Convert the body.<br>3. Validate it.']}],
     });
     fixture.detectChanges();
-    const card = fixture.nativeElement.querySelector('#steps-card .explanation-content') as HTMLElement;
+    const card = fixture.nativeElement.querySelector('#steps-card .prose') as HTMLElement;
     expect(card.querySelectorAll('ol > li').length).toBe(3);
     expect(card.querySelector('ul')).toBeNull();
     expect(card.querySelector('ol > li')?.textContent).toBe('Map the path.');
@@ -400,9 +400,9 @@ describe('FoundationLessonShell golden lesson contract', () => {
           afterParagraph: 0}}],
     });
     fixture.detectChanges();
-    const explanation = fixture.nativeElement.querySelector('#table-card .section-explanation') as HTMLElement;
+    const explanation = fixture.nativeElement.querySelector('#table-card .explanation') as HTMLElement;
     const children = [...explanation.children].map((child) => child.className);
-    expect(children).toEqual(['explanation-content', 'lesson-table-wrap', 'explanation-content']);
+    expect(children).toEqual(['prose', 'lesson-table-wrap', 'prose']);
     const table = explanation.querySelector('table') as HTMLTableElement;
     expect(table.caption?.textContent).toBe('Four shapes');
     expect([...table.querySelectorAll('thead th')].map((th) => th.getAttribute('scope'))).toEqual(['col', 'col']);
@@ -497,7 +497,7 @@ describe('FoundationLessonShell system-v1 lessons (DLV-408)', () => {
 
   it('puts code and its run console beside the explanation, with the table below', () => {
     const section = fixture.nativeElement.querySelector('#code') as HTMLElement;
-    expect(section.classList).toContain('system-code-section');
+    expect(section.classList).toContain('code-section');
     const pair = section.querySelector('.code-pair') as HTMLElement;
     expect(pair.querySelector('.code-pair-code .foundation-code')).not.toBeNull();
     const console = pair.querySelector('.code-pair-code .run-console') as HTMLElement;
@@ -506,7 +506,7 @@ describe('FoundationLessonShell system-v1 lessons (DLV-408)', () => {
     expect(console.querySelector('.run-command')?.textContent).toBe('java Matcher.java');
     expect(Array.from(console.querySelectorAll('.run-line')).map((line) => line.textContent)).toEqual(['Eligible: D1']);
     expect(console.querySelector('.run-exit')?.textContent).toBe('Process finished with exit code 0');
-    expect(pair.querySelector('.code-pair-text .explanation-content')?.textContent).toBe('Send requests.');
+    expect(pair.querySelector('.code-pair-text .prose')?.textContent).toBe('Send requests.');
     expect(pair.classList).toContain('code-pair-centered');
     expect(pair.nextElementSibling?.classList).toContain('lesson-table-wrap');
   });
@@ -527,7 +527,7 @@ describe('FoundationLessonShell system-v1 lessons (DLV-408)', () => {
   });
 
   it('keeps a sentence that starts with a bold word whole and gives a code statement its own line', () => {
-    const [sentence, rule] = Array.from(fixture.nativeElement.querySelectorAll('#obstacles .explanation-content')) as HTMLElement[];
+    const [sentence, rule] = Array.from(fixture.nativeElement.querySelectorAll('#obstacles .prose')) as HTMLElement[];
     expect(sentence.querySelector('.points-heading')).toBeNull();
     expect(sentence.innerHTML).toBe('An <strong>invariant</strong> is a rule.');
     expect(rule.querySelector('ul')).toBeNull();
@@ -596,7 +596,7 @@ describe('FoundationLessonShell system-v1 lessons (DLV-408)', () => {
     const prompt = fixture.nativeElement.querySelector('#code .ai-prompt') as HTMLElement;
     expect(prompt.querySelector('p')?.textContent).toBe('Write a <Driver> filter.');
     expect(prompt.querySelector('app-code-copy-button')).not.toBeNull();
-    expect(fixture.nativeElement.querySelectorAll('#code .explanation-content').length).toBe(1);
+    expect(fixture.nativeElement.querySelectorAll('#code .prose').length).toBe(1);
   });
 
   it('labels each section with its stage and a short sidebar name', () => {
@@ -770,7 +770,7 @@ describe('FoundationLessonShell system-v1 lessons (DLV-408)', () => {
     const section = root.querySelector('#requirements') as HTMLElement;
     const grid = section.querySelector('.section-cards ul.section-card-grid') as HTMLElement;
     expect(grid.dataset['cardCount']).toBe('2');
-    expect(section.querySelector('.section-explanation')!.compareDocumentPosition(grid) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(section.querySelector('.explanation')!.compareDocumentPosition(grid) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     const cards = Array.from(grid.querySelectorAll(':scope > li.section-card'));
     expect(cards.map((card) => card.querySelector('h3')?.textContent)).toEqual(['Functional requirements', 'Non-functional requirements']);
     expect(Array.from(cards[0].querySelectorAll('ul > li')).map((li) => li.textContent)).toEqual(['Hold up to 4 seats.', 'Pay or release.']);
@@ -864,7 +864,7 @@ describe('FoundationLessonShell system-v1 lessons (DLV-408)', () => {
         'Problem first', 'Brief', 'Walkthrough', 'Variations', 'When to use', 'Common mistakes', 'Problems',
         'Spot the pattern', 'Cheat sheet', 'References',
       ]);
-      expect(root.querySelector('.system-lesson')?.classList).toContain('algo-lesson');
+      expect(root.querySelector('.system')?.classList).toContain('algo-lesson');
       expect(root.querySelector('#lesson-scenario')).toBeNull();
       expect(root.querySelector('#foundation-pitfalls')).toBeNull();
       expect(root.querySelector('#lesson-interview-answer')).toBeNull();
@@ -891,7 +891,7 @@ describe('FoundationLessonShell system-v1 lessons (DLV-408)', () => {
       expect(story.classList).toContain('storyboard-story');
       expect(story.classList).toContain('storyboard-has-beside');
       expect(story.querySelector('.storyboard-canvas img')?.getAttribute('src')).toBe('/content/visited.svg');
-      expect(story.querySelector('.storyboard-beside .explanation-content')?.textContent).toBe('The first way most people try. Keep a box of visited nodes.');
+      expect(story.querySelector('.storyboard-beside .prose')?.textContent).toBe('The first way most people try. Keep a box of visited nodes.');
       expect(story.querySelector('.storyboard-beside .storyboard-cost')?.textContent).toBe('Time O(n). Memory O(n).');
       expect(story.querySelector('.storyboard-bar .storyboard-toggle')?.textContent).toContain('Pause');
       expect(section.querySelector('.foundation-code, .run-console, .lesson-table')).toBeNull();
@@ -904,7 +904,7 @@ describe('FoundationLessonShell system-v1 lessons (DLV-408)', () => {
       expect(story.classList).not.toContain('storyboard-story');
       expect(Array.from(story.querySelectorAll('.storyboard-legend span')).map((span) => span.textContent?.trim())).toEqual(['slow: 1 node per step', 'fast: 2 nodes per step']);
       expect(story.nextElementSibling?.classList).toContain('storyboard-callout');
-      expect(brief.querySelector('.section-explanation .lesson-callout')).toBeNull();
+      expect(brief.querySelector('.explanation .lesson-callout')).toBeNull();
       const walk = fixture.nativeElement.querySelector('#walk') as HTMLElement;
       expect(walk.querySelector('app-lesson-storyboard')?.classList).toContain('storyboard-has-beside');
       expect(Array.from(walk.querySelectorAll('.storyboard-beside .beside-points li')).map((li) => li.textContent)).toEqual([

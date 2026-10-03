@@ -634,7 +634,7 @@ main.harbor-learn .harbor-course-layout .learning-map {
 /* DLV-408 system lessons put code beside its explanation, so they take the widest
    reader that still leaves both sidebars docked (a docked panel needs 248px). */
 @media (min-width: 1100px) {
-  main.content-page[data-sidebar-columns]:has(.system-lesson) {
+  main.content-page[data-sidebar-columns]:has(.system) {
     --reader-sidebar-space: 256px;
     padding-inline: 16px;
   }
@@ -657,12 +657,12 @@ pre:has(> .learning-code[data-code-language='go']) { background:#14161a; }
 
 /* DLV-408 system lessons. Lesson prose is inserted with innerHTML, which component
    styles cannot reach, so its inline elements are styled here. */
-.system-lesson {
+.system {
   --lesson-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
 }
 /* Inline code: a monospace face on a tinted chip in its own colour, so Driver::id
    or d -> d.id() never blends into the sentence. */
-.system-lesson :is(.explanation-content, .lesson-table, .spoken-answer, .follow-ups, .lesson-callout, .cheat-sheet, .section-card) code:not(pre code) {
+.system :is(.prose, .lesson-table, .spoken-answer, .follow-ups, .lesson-callout, .cheat-sheet, .section-card) code:not(pre code) {
   padding: 0.1em 0.38em;
   border: 1px solid var(--inline-code-line);
   border-radius: 5px;
@@ -674,23 +674,23 @@ pre:has(> .learning-code[data-code-language='go']) { background:#14161a; }
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
 }
-.system-lesson :is(.explanation-content, .lesson-table) samp {
+.system :is(.prose, .lesson-table) samp {
   font-family: var(--lesson-mono);
   font-size: 0.86em;
   color: var(--success);
 }
 /* Only a line that is entirely bold ("Traps to avoid:") becomes a heading over its list.
    A sentence that merely starts with a bold word stays one sentence. */
-.system-lesson .explanation-content > .points-heading {
+.system .prose > .points-heading {
   display: block;
   margin-bottom: 0.35rem;
   color: var(--text-strong);
 }
 /* A whole statement of code gets its own line; short names stay inline. */
-.system-lesson .explanation-content > .prose-line {
+.system .prose > .prose-line {
   display: block;
 }
-.system-lesson .explanation-content > code.code-line {
+.system .prose > code.code-line {
   display: block;
   width: fit-content;
   max-width: 100%;
@@ -700,34 +700,34 @@ pre:has(> .learning-code[data-code-language='go']) { background:#14161a; }
   white-space: pre;
 }
 /* Invariants are rules to hold, not steps: star bullets. */
-.system-lesson .invariants-section .explanation-content li::marker {
+.system .invariants-section .prose li::marker {
   content: '★  ';
   color: var(--warning);
 }
-.system-lesson .quick-revision .explanation-content :is(.points-heading, strong) {
+.system .quick-revision .prose :is(.points-heading, strong) {
   color: var(--sheet-heading);
 }
-.system-lesson .explanation-content :is(ul, ol) {
+.system .prose :is(ul, ol) {
   margin: 0.4rem 0 0;
   padding-left: 1.4rem;
   line-height: 1.75;
 }
-.system-lesson .explanation-content li + li {
+.system .prose li + li {
   margin-top: 0.6rem;
 }
-.system-lesson .explanation-content li::marker {
+.system .prose li::marker {
   color: var(--accent-strong);
   font-weight: 700;
 }
 /* A prompt is something you type into an AI tool: its own colour, face and copy button. */
-.system-lesson .ai-prompt {
+.system .ai-prompt {
   margin: 0;
   border: 1px solid var(--prompt-line);
   border-left: 4px solid var(--prompt-accent);
   border-radius: 10px;
   background: var(--prompt-bg);
 }
-.system-lesson .ai-prompt figcaption {
+.system .ai-prompt figcaption {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -740,7 +740,7 @@ pre:has(> .learning-code[data-code-language='go']) { background:#14161a; }
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
-.system-lesson .ai-prompt p {
+.system .ai-prompt p {
   margin: 0;
   padding: 0.9rem 1rem 1rem;
   color: var(--prompt-ink);

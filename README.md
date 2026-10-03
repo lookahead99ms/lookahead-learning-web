@@ -757,3 +757,8 @@ Card scene SVG processing accepts only complete local fragment references for
 links and CSS URLs; escaped CSS tokens are rejected. Lesson prompt extraction
 and the card validator use inert DOM text parsing rather than regex tag removal.
 Extracted text does not authorize HTML insertion or bypass Angular sanitation.
+
+The foundation reader uses compact internal class names (`system`, `prose`,
+`explanation`, `code-section`) in its template and styles to limit repeated
+selectors in Angular's compiled CSS. Component style budgets remain enforced;
+update component and global reader selectors together when renaming these classes.

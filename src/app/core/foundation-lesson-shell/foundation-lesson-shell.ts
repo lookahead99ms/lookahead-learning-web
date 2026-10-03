@@ -171,7 +171,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
     }
     }
     <ng-template #systemLesson>
-      <article class="foundation-lesson system-lesson" [class.algo-lesson]="isAlgo()" aria-label="Lesson">
+      <article class="foundation-lesson system" [class.algo-lesson]="isAlgo()" aria-label="Lesson">
         @for (stage of stages(); track stage.id) {
           <section
             class="lesson-stage"
@@ -366,7 +366,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         "
         [class.three-explanations]="section.body.length === 3"
         [class.code-section]="section.code && !section.solutions?.length && !section.visual && !stage"
-        [class.system-code-section]="stage && (section.code || section.codeTabs?.length) && !section.solutions?.length"
+        [class.code-section]="stage && (section.code || section.codeTabs?.length) && !section.solutions?.length"
         [class.quick-revision]="stage && section.sidebar"
         [class.invariants-section]="stage && section.navLabel === 'Invariants'"
         [id]="section.id"
@@ -405,7 +405,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
           <app-lesson-storyboard [visual]="section.visual" [variant]="isStory(section, stage) ? 'story' : 'scene'" [beside]="true">
             @if (isStory(section, stage)) {
               @for (paragraph of section.body; track paragraph) {
-                <div class="explanation-content" [innerHTML]="cardPoints(paragraph, true)"></div>
+                <div class="prose" [innerHTML]="cardPoints(paragraph, true)"></div>
               }
               @if (section.cost) {
                 <p class="storyboard-cost" [innerHTML]="section.cost"></p>
@@ -439,10 +439,10 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
             </div>
           }
         }
-        <div class="section-explanation">
+        <div class="explanation">
           @if (section.navLabel === 'References') {
             @for (paragraph of referenceParagraphs(section.body); track paragraph) {
-              <div class="explanation-content" [innerHTML]="cardPoints(paragraph)"></div>
+              <div class="prose" [innerHTML]="cardPoints(paragraph)"></div>
             }
             @if (referenceLinks(section.body).length) {
               <div class="reference-links-card">
@@ -461,7 +461,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
                   <p>{{ prompt }}</p>
                 </figure>
               } @else {
-                <div class="explanation-content" [innerHTML]="cardPoints(paragraph, !!stage)"></div>
+                <div class="prose" [innerHTML]="cardPoints(paragraph, !!stage)"></div>
               }
               @if (section.table && !besideVisual(section) && tableAfter(section) === index) {
                 <ng-container [ngTemplateOutlet]="lessonTable" [ngTemplateOutletContext]="{ $implicit: section.table }" />
@@ -513,7 +513,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
                 <div class="pair-head">
                   <h3><span class="pair-number" aria-hidden="true">{{ pair.n }}</span>{{ pair.title }}</h3>
                   @for (paragraph of pair.problem; track paragraph) {
-                    <div class="explanation-content" [innerHTML]="cardPoints(paragraph, true)"></div>
+                    <div class="prose" [innerHTML]="cardPoints(paragraph, true)"></div>
                   }
                 </div>
                 @if (pairDiff(section, pair); as diff) {
@@ -527,7 +527,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
                           <p class="pair-fix-title">{{ pair.broken.title }}</p>
                         }
                         @for (paragraph of pair.broken.body; track paragraph) {
-                          <div class="explanation-content" [innerHTML]="cardPoints(paragraph, true)"></div>
+                          <div class="prose" [innerHTML]="cardPoints(paragraph, true)"></div>
                         }
                       </div>
                       @if (isLanguageTabs(pair.broken.codeTabs)) {
@@ -575,7 +575,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
                           <p class="pair-fix-title">{{ pair.fixed.title }}</p>
                         }
                         @for (paragraph of pair.fixed.body; track paragraph) {
-                          <div class="explanation-content" [innerHTML]="cardPoints(paragraph, true)"></div>
+                          <div class="prose" [innerHTML]="cardPoints(paragraph, true)"></div>
                         }
                       </div>
                       @if (isLanguageTabs(pair.fixed.codeTabs)) {
@@ -686,9 +686,9 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
           <div class="code-pair-code">
             <ng-container [ngTemplateOutlet]="languageCode" [ngTemplateOutletContext]="{ $implicit: section.codeTabs, key: section.id, label: section.heading }" />
           </div>
-          <div class="section-explanation code-pair-text">
+          <div class="explanation code-pair-text">
             @for (paragraph of section.body; track paragraph) {
-              <div class="explanation-content" [innerHTML]="cardPoints(paragraph, true)"></div>
+              <div class="prose" [innerHTML]="cardPoints(paragraph, true)"></div>
             }
             @if (section.callout?.title !== 'Example boundary' && section.callout; as callout) {
               <aside class="lesson-callout" [attr.data-callout-type]="callout.type">
@@ -700,7 +700,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         </div>
       } @else if (section.codeTabs?.length) {
         @for (paragraph of section.body; track paragraph) {
-          <div class="explanation-content section-intro" [innerHTML]="cardPoints(paragraph, true)"></div>
+          <div class="prose section-intro" [innerHTML]="cardPoints(paragraph, true)"></div>
         }
         <div class="code-tabs" role="tablist" [attr.aria-label]="section.heading + ': files'">
           @for (tab of section.codeTabs; track tab.id; let index = $index) {
@@ -727,9 +727,9 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
             <div class="code-pair-code">
               <ng-container [ngTemplateOutlet]="codeBlock" [ngTemplateOutletContext]="{ $implicit: tab }" />
             </div>
-            <div class="section-explanation code-pair-text">
+            <div class="explanation code-pair-text">
               @for (paragraph of tab.body; track paragraph) {
-                <div class="explanation-content" [innerHTML]="cardPoints(paragraph, true)"></div>
+                <div class="prose" [innerHTML]="cardPoints(paragraph, true)"></div>
               }
             </div>
           </div>
@@ -742,7 +742,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
               <ng-container [ngTemplateOutlet]="runConsole" [ngTemplateOutletContext]="{ $implicit: output }" />
             }
           </div>
-          <div class="section-explanation code-pair-text">
+          <div class="explanation code-pair-text">
             @for (paragraph of section.body; track paragraph) {
               @if (promptText(paragraph); as prompt) {
                 <figure class="ai-prompt">
@@ -750,7 +750,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
                   <p>{{ prompt }}</p>
                 </figure>
               } @else {
-                <div class="explanation-content" [innerHTML]="cardPoints(paragraph, true)"></div>
+                <div class="prose" [innerHTML]="cardPoints(paragraph, true)"></div>
               }
             }
             @if (section.callout?.title !== 'Example boundary' && section.callout; as callout) {
@@ -824,7 +824,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         <div class="d-head d-l">
           <p class="pair-label">{{ pairLabel(section, 'broken') }}</p>
           @for (paragraph of pair.broken.body; track paragraph) {
-            <div class="explanation-content" [innerHTML]="cardPoints(paragraph, true)"></div>
+            <div class="prose" [innerHTML]="cardPoints(paragraph, true)"></div>
           }
         </div>
         <div class="d-head d-r">
@@ -833,7 +833,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
             <p class="pair-fix-title">{{ pair.fixed.title }}</p>
           }
           @for (paragraph of pair.fixed.body; track paragraph) {
-            <div class="explanation-content" [innerHTML]="cardPoints(paragraph, true)"></div>
+            <div class="prose" [innerHTML]="cardPoints(paragraph, true)"></div>
           }
         </div>
         @for (file of diff.files; track file.label) {
@@ -1486,20 +1486,20 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
       .code-section > h2 {
         grid-column: 1 / -1;
       }
-      .section-explanation {
+      .explanation {
         min-width: 0;
       }
-      .text-section > .section-explanation {
+      .text-section > .explanation {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 16px 24px;
         align-items: start;
       }
-      .text-section.three-explanations > .section-explanation {
+      .text-section.three-explanations > .explanation {
         grid-template-columns: minmax(0, 1fr);
       }
       .reference-links-card,
-      .text-section > .section-explanation > .explanation-content {
+      .text-section > .explanation > .prose {
         margin: 0;
         padding: 18px 20px;
         border: 1px solid var(--line);
@@ -1507,13 +1507,13 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         background: var(--surface-muted);
         overflow-wrap: anywhere;
       }
-      .explanation-content {
+      .prose {
         margin: 1em 0;
       }
-      .explanation-content > ul {
+      .prose > ul {
         margin-block: 10px 0;
       }
-      .explanation-content li + li,
+      .prose li + li,
       .walkthrough-points li + li {
         margin-top: 10px;
       }
@@ -1527,7 +1527,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
       .reference-links-card li + li {
         margin-top: 12px;
       }
-      .text-section > .section-explanation > .lesson-callout {
+      .text-section > .explanation > .lesson-callout {
         grid-column: 1 / -1;
       }
       .section-code-column {
@@ -1550,7 +1550,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         line-height: 1.2;
       }
       .lesson-section > p:not(.section-label),
-      .section-explanation > .explanation-content {
+      .explanation > .prose {
         line-height: 1.7;
       }
       .section-label {
@@ -1570,7 +1570,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
       }
       /* DLV-408 system lessons: one reading column, one card after another. Stages group
          sections under a numbered divider; nothing sits side by side. */
-      .system-lesson {
+      .system {
         /* Cards use their full width; tables, code and prompts break up long text. */
         --reading-width: none;
         display: flex;
@@ -1598,7 +1598,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         font-weight: 600;
         letter-spacing: 0.02em;
       }
-      .system-lesson .lesson-section {
+      .system .lesson-section {
         --card-pad-x: clamp(1rem, 2vw, 1.75rem);
         padding: 1.75rem var(--card-pad-x);
         border-top-width: 3px;
@@ -1607,83 +1607,83 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
       }
       /* Small labels ("Prove | More practice", "Advanced · Diagnose", table headers):
          a readable demi-bold at a real size, little tracking, no heavy capitals. */
-      .system-lesson :is(.section-label, .practice-grid span, .one-line-label) {
+      .system :is(.section-label, .practice-grid span, .one-line-label) {
         font-size: 0.85rem;
         font-weight: 600;
         letter-spacing: 0.01em;
         text-transform: none;
       }
-      .system-lesson .lesson-table thead th {
+      .system .lesson-table thead th {
         font-size: 0.85rem;
         font-weight: 650;
         letter-spacing: 0;
         text-transform: none;
       }
-      .system-lesson .lesson-section h2 {
+      .system .lesson-section h2 {
         margin: 0.6rem 0 1.25rem;
         font-size: clamp(1.35rem, 1.4vw + 0.9rem, 1.7rem);
         line-height: 1.25;
       }
-      .system-lesson .lesson-section h3 {
+      .system .lesson-section h3 {
         margin: 1.75rem 0 0.5rem;
         color: var(--text-strong);
         font-size: 1.08rem;
       }
-      .system-lesson .lesson-section p,
-      .system-lesson .explanation-content,
-      .system-lesson .lesson-section > ul,
-      .system-lesson .follow-ups,
-      .system-lesson .try-exercise {
+      .system .lesson-section p,
+      .system .prose,
+      .system .lesson-section > ul,
+      .system .follow-ups,
+      .system .try-exercise {
         max-width: var(--reading-width);
       }
-      .system-lesson .lesson-section p,
-      .system-lesson .explanation-content {
+      .system .lesson-section p,
+      .system .prose {
         line-height: 1.8;
       }
-      .system-lesson .section-explanation,
-      .system-lesson .text-section > .section-explanation,
-      .system-lesson .text-section.three-explanations > .section-explanation {
+      .system .explanation,
+      .system .text-section > .explanation,
+      .system .text-section.three-explanations > .explanation {
         display: flex;
         flex-direction: column;
         gap: 1.1rem;
       }
-      .system-lesson .explanation-content,
-      .system-lesson .text-section > .section-explanation > .explanation-content {
+      .system .prose,
+      .system .text-section > .explanation > .prose {
         margin: 0;
         padding: 0;
         border: 0;
         background: none;
       }
       /* Lesson prose arrives through innerHTML, so its inline elements (lists, code,
-         samples) are styled globally in styles.css under .system-lesson. */
-      .system-lesson .lesson-section > ul {
+         samples) are styled globally in styles.css under .system. */
+      .system .lesson-section > ul {
         margin: 0.4rem 0 0;
         padding-left: 1.4rem;
         line-height: 1.75;
       }
-      .system-lesson .lesson-section > ul > li + li {
+      .system .lesson-section > ul > li + li {
         margin-top: 0.6rem;
       }
-      .system-lesson .code-section > .section-code-column,
-      .system-lesson .section-code-column {
+      .system .code-section > .section-code-column,
+      .system .section-code-column {
         float: none;
         width: auto;
         margin: 0 0 1.5rem;
       }
-      .system-lesson .foundation-code {
+      .system .foundation-code {
         margin-top: 0;
       }
-      .system-lesson .foundation-code pre {
+      .system .foundation-code pre {
         font-size: 0.8rem;
         line-height: 1.65;
       }
       /* The lesson column is the size container for every side-by-side decision. */
-      .system-lesson {
+      .system {
         container: lesson / inline-size;
       }
       /* Code with its run console on the left, the explanation beside it; tables,
          visuals and transcripts run full width below. */
-      .system-lesson .system-code-section {
+      .system .code-section {
         display: flex;
         flex-direction: column;
         gap: 1.5rem;
@@ -1702,7 +1702,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
       .code-pair-text {
         min-width: 0;
       }
-      .system-lesson .code-pair .foundation-code pre {
+      .system .code-pair .foundation-code pre {
         max-height: min(80vh, 48rem);
       }
       @container lesson (min-width: 760px) {
@@ -1715,10 +1715,10 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         .code-pair.code-pair-centered {
           align-items: center;
         }
-        .system-lesson .scenario-card .scenario-why {
+        .system .scenario-card .scenario-why {
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
-        .system-lesson .lesson-section .pitfall-list {
+        .system .lesson-section .pitfall-list {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
@@ -1871,12 +1871,12 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         border-radius: 10px;
         background: var(--surface-muted);
       }
-      .system-lesson .practice-timer-prompt {
+      .system .practice-timer-prompt {
         flex: 1 1 100%;
         margin: 0;
         color: var(--text-strong);
       }
-      .system-lesson .practice-timer-clock {
+      .system .practice-timer-clock {
         margin: 0;
         color: var(--text-strong);
         font: 700 1.6rem/1 var(--lesson-mono, monospace);
@@ -1916,7 +1916,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         border-radius: 12px;
         background: var(--surface);
       }
-      .system-lesson .pair-head h3 {
+      .system .pair-head h3 {
         display: flex;
         align-items: center;
         gap: 0.6rem;
@@ -1965,7 +1965,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
       .pair-side > * {
         min-width: 0;
       }
-      .system-lesson .pair-label {
+      .system .pair-label {
         margin: 0 0 0.3rem;
         color: var(--side-accent);
         font-size: 0.9rem;
@@ -1977,19 +1977,19 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
       .pair-fixed .pair-label::before {
         content: '✓ ';
       }
-      .system-lesson .pair-fix-title {
+      .system .pair-fix-title {
         margin: 0 0 0.3rem;
         color: var(--text-strong);
         font-weight: 650;
       }
-      .pair-side-head .explanation-content {
+      .pair-side-head .prose {
         font-size: 0.95rem;
         line-height: 1.65;
       }
-      .pair-side-head .explanation-content + .explanation-content {
+      .pair-side-head .prose + .prose {
         margin-top: 0.4rem;
       }
-      .system-lesson .pair-side .foundation-code pre {
+      .system .pair-side .foundation-code pre {
         max-height: 30rem;
         font-size: 0.76rem;
       }
@@ -2026,7 +2026,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         margin: 0;
       }
       /* Long code: the explanation starts level with the first line of code, not the title bar. */
-      .system-lesson .code-pair .foundation-code header {
+      .system .code-pair .foundation-code header {
         box-sizing: border-box;
         min-height: 2.9rem;
       }
@@ -2078,7 +2078,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
       .lesson-table tbody tr:nth-child(even) {
         background: color-mix(in srgb, var(--surface-muted) 45%, transparent);
       }
-      .system-lesson .concept-visual {
+      .system .concept-visual {
         margin-top: 1.5rem;
       }
       /* algo-pattern-v1: the code is the lesson, so it runs full width with its explanation below. */
@@ -2116,7 +2116,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
       .cheat-template {
         margin-bottom: 1.25rem;
       }
-      .system-lesson .cheat-template h3 {
+      .system .cheat-template h3 {
         margin: 0 0 0.6rem;
         color: var(--text-strong);
         font-size: 1rem;
@@ -2145,7 +2145,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
       }
       /* algo-pattern-v1 Problem first: the problem's name with its level and source, the problem card on its own,
          then the storyboard with a short explanation and one cost line beside it. Fits a 1280 x 720 screen. */
-      .system-lesson .problem-label {
+      .system .problem-label {
         flex-wrap: wrap;
         row-gap: 0.4rem;
         color: var(--accent-link);
@@ -2184,29 +2184,29 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         border-radius: 8px;
         background: var(--surface-accent);
       }
-      .system-lesson .problem-card p {
+      .system .problem-card p {
         margin: 0.3rem 0;
         line-height: 1.6;
       }
-      .system-lesson .problem-card strong {
+      .system .problem-card strong {
         color: var(--text-strong);
       }
-      .system-lesson .problem-card .problem-example {
+      .system .problem-card .problem-example {
         font-family: var(--lesson-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
         font-size: 0.85rem;
       }
-      .system-lesson .lesson-storyboard .storyboard-beside .explanation-content {
+      .system .lesson-storyboard .storyboard-beside .prose {
         margin: 0 0 0.6rem;
         line-height: 1.6;
       }
       /* Problem first fits one 1280 x 720 screen: a slightly smaller explanation beside the drawing. */
-      .system-lesson .storyboard-story .storyboard-beside {
+      .system .storyboard-story .storyboard-beside {
         font-size: 1rem;
       }
-      .system-lesson .storyboard-story .storyboard-beside .explanation-content {
+      .system .storyboard-story .storyboard-beside .prose {
         line-height: 1.55;
       }
-      .system-lesson .storyboard-cost {
+      .system .storyboard-cost {
         margin: 0;
         padding: 0.45rem 0.75rem;
         border-left: 3px solid var(--accent-link);
@@ -2215,7 +2215,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         font-size: 0.97rem;
         line-height: 1.55;
       }
-      .system-lesson .beside-points {
+      .system .beside-points {
         display: grid;
         gap: 0.65rem;
         margin: 0;
@@ -2285,14 +2285,14 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
       .split-diff .d-r .pair-label::before {
         content: '✓ ';
       }
-      .system-lesson .split-diff .pair-label {
+      .system .split-diff .pair-label {
         margin: 0;
         color: var(--side-accent);
       }
-      .system-lesson .split-diff .pair-fix-title {
+      .system .split-diff .pair-fix-title {
         margin: 0;
       }
-      .split-diff .d-head .explanation-content {
+      .split-diff .d-head .prose {
         margin: 0;
         font-size: 0.95rem;
         line-height: 1.6;
@@ -2441,8 +2441,8 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
           display: none;
         }
       }
-      .system-lesson .problem-ladder,
-      .system-lesson .spot-list {
+      .system .problem-ladder,
+      .system .spot-list {
         display: grid;
         gap: 0.75rem;
         margin: 1.25rem 0 0;
@@ -2480,7 +2480,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         font-size: 0.85rem;
         font-weight: 600;
       }
-      .system-lesson .ladder-body p {
+      .system .ladder-body p {
         margin: 0.3rem 0 0;
         line-height: 1.6;
       }
@@ -2490,7 +2490,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         border-radius: 10px;
         background: var(--surface);
       }
-      .system-lesson .spot-item .spot-statement {
+      .system .spot-item .spot-statement {
         margin: 0 0 0.75rem;
         color: var(--text-strong);
         line-height: 1.6;
@@ -2523,7 +2523,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         outline: 3px solid var(--accent-focus);
         outline-offset: 2px;
       }
-      .system-lesson .spot-item .spot-result {
+      .system .spot-item .spot-result {
         margin: 0.6rem 0 0;
         line-height: 1.6;
       }
@@ -2536,7 +2536,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
       .spot-wrong {
         color: var(--danger);
       }
-      .system-lesson .scenario-card .lesson-one-line {
+      .system .scenario-card .lesson-one-line {
         margin: 0.75rem 0 1.25rem;
         padding: 1rem 1.25rem;
         border-left: 3px solid var(--lesson-teal);
@@ -2552,7 +2552,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         letter-spacing: 0.08em;
         text-transform: uppercase;
       }
-      .system-lesson .lesson-one-line p {
+      .system .lesson-one-line p {
         margin: 0;
         color: var(--text-strong);
         font-size: 1.12rem;
@@ -2570,23 +2570,23 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         border-radius: 10px;
         background: var(--surface-muted);
       }
-      .system-lesson .scenario-why h3 {
+      .system .scenario-why h3 {
         margin: 0 0 0.35rem;
       }
-      .system-lesson .scenario-why p {
+      .system .scenario-why p {
         margin: 0;
       }
       /* Interview answer: a spoken answer, so a reading face in its own blue. */
-      .system-lesson .interview-answer-card {
+      .system .interview-answer-card {
         border-color: var(--interview-line);
         border-top-color: var(--interview-accent);
         background: var(--interview-bg);
       }
-      .system-lesson .interview-answer-card .section-label {
+      .system .interview-answer-card .section-label {
         border-left-color: var(--interview-accent);
         color: var(--interview-accent);
       }
-      .system-lesson .interview-answer-card .spoken-answer {
+      .system .interview-answer-card .spoken-answer {
         margin: 0;
         padding: 1.1rem 1.3rem;
         border-left: 4px solid var(--interview-accent);
@@ -2599,7 +2599,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
       }
       /* Quick revision: a light cheat sheet. Pale grey-blue sheet, a slim navy title band,
          white numbered tiles with one soft indigo accent. Same tile order in every lesson. */
-      .system-lesson .quick-revision {
+      .system .quick-revision {
         padding-top: 0;
         overflow: hidden;
         border-color: var(--sheet-line);
@@ -2607,12 +2607,12 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         background: var(--sheet-bg);
         color: var(--sheet-ink);
       }
-      .system-lesson .quick-revision > :is(.section-label, h2) {
+      .system .quick-revision > :is(.section-label, h2) {
         margin-inline: calc(-1 * var(--card-pad-x));
         padding-inline: var(--card-pad-x);
         background: var(--sheet-band);
       }
-      .system-lesson .quick-revision > .section-label {
+      .system .quick-revision > .section-label {
         display: flex;
         width: auto;
         margin-top: 0;
@@ -2620,11 +2620,11 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         border-left: 0;
         color: var(--sheet-band-muted);
       }
-      .system-lesson .quick-revision > .section-label span {
+      .system .quick-revision > .section-label span {
         color: var(--sheet-band-muted);
         border-right-color: var(--sheet-band-rule);
       }
-      .system-lesson .quick-revision > h2 {
+      .system .quick-revision > h2 {
         margin-top: 0;
         margin-bottom: 1.25rem;
         padding-top: 0.35rem;
@@ -2697,7 +2697,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
       .cheat-tile.cheat-traps {
         border-left: 3px solid var(--sheet-accent);
       }
-      .system-lesson .cheat-sheet h3 {
+      .system .cheat-sheet h3 {
         display: flex;
         align-items: flex-start;
         gap: 0.55rem;
@@ -2746,13 +2746,13 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         color: var(--sheet-heading);
         font-size: 0.88rem;
       }
-      .system-lesson .quick-revision .explanation-content {
+      .system .quick-revision .prose {
         font-size: 0.98rem;
         line-height: 1.65;
       }
       /* Check understanding and More practice: a light blueprint, so study blocks read as one family. */
-      .system-lesson #foundation-understand,
-      .system-lesson #foundation-practice {
+      .system #foundation-understand,
+      .system #foundation-practice {
         border-top-color: var(--study-accent);
         background-color: var(--study-bg);
         background-image:
@@ -2760,49 +2760,49 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
           linear-gradient(90deg, var(--study-grid) 1px, transparent 1px);
         background-size: 22px 22px;
       }
-      .system-lesson :is(#foundation-understand, #foundation-practice) .section-label {
+      .system :is(#foundation-understand, #foundation-practice) .section-label {
         border-left-color: var(--study-accent);
         color: var(--study-accent);
       }
-      .system-lesson .quick-revision .section-explanation {
+      .system .quick-revision .explanation {
         gap: 0.9rem;
       }
-      .system-lesson .pitfall-list,
-      .system-lesson .practice-grid,
-      .system-lesson .language-notes {
+      .system .pitfall-list,
+      .system .practice-grid,
+      .system .language-notes {
         display: flex;
         flex-direction: column;
         gap: 0.9rem;
       }
-      .system-lesson .pitfall-list article {
+      .system .pitfall-list article {
         max-width: var(--reading-width);
         padding: 1.1rem 1.25rem;
       }
-      .system-lesson .pitfall-list h3 {
+      .system .pitfall-list h3 {
         margin: 0 0 0.5rem;
       }
-      .system-lesson .takeaways {
+      .system .takeaways {
         display: block;
       }
-      .system-lesson .takeaways > ul {
+      .system .takeaways > ul {
         display: block;
       }
-      .system-lesson .memory-anchor {
+      .system .memory-anchor {
         max-width: var(--reading-width);
         margin-top: 1.75rem;
       }
-      .system-lesson .language-notes p {
+      .system .language-notes p {
         max-width: var(--reading-width);
         padding: 0.9rem 1.1rem;
         line-height: 1.65;
       }
-      .system-lesson .follow-ups dt {
+      .system .follow-ups dt {
         margin-top: 1.25rem;
       }
-      .system-lesson .follow-ups dd {
+      .system .follow-ups dd {
         line-height: 1.75;
       }
-      .system-lesson .practice-grid a {
+      .system .practice-grid a {
         max-width: var(--reading-width);
       }
       .lesson-stage > section {
@@ -3074,7 +3074,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         }
         .guided-example,
         .code-section,
-        .text-section > .section-explanation {
+        .text-section > .explanation {
           grid-template-columns: minmax(0, 1fr);
           row-gap: 16px;
         }
