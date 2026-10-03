@@ -199,7 +199,11 @@ sequenceDiagram
 
 ## Run locally: public demo
 
-Requirements: Node.js24 and npm11 or newer.
+Requirements: Node.js 24 and the exact npm version declared in `packageManager`
+(currently npm 11.17.0). The Angular packages use the patched 22.2 family;
+the lockfile resolves Angular 22.2.1 and Piscina 5.3.2. After dependency updates,
+run `npm ci`, `npm run security:dependencies`, and `npm run test:security-gates`
+before frontend tests and builds.
 
 ```shell
 npm ci
