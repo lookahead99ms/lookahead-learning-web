@@ -18,17 +18,18 @@ const ANIMATION_ELEMENTS = new Set(['animate', 'set', 'animatemotion', 'animatet
 
 /** Keeps url(#local) references and replaces every other url(...) with none. */
 function stripExternalUrls(css: string): string {
+  // Escaped CSS tokens cannot be checked as literal local fragment references.
+  if (css.includes('\\')) return '';
   return css
     .replace(/@import[^;]*;?/gi, '')
-    .replace(/url\(\s*(['"]?)(.*?)\1\s*\)/gi, (match, _quote: string, target: string) =>
-      target.trim().startsWith('#') ? match : 'none',
+    .replace(/url\s*\(\s*(['"]?)(.*?)\1\s*\)/gi, (match, _quote: string, target: string) =>
+      isLocalReference(target) ? match : 'none',
     )
-    .replace(/expression\s*\(/gi, 'none(')
-    .replace(/javascript:/gi, '');
+    .replace(/expression\s*\(/gi, 'none(');
 }
 
 function isLocalReference(value: string): boolean {
-  return value.trim().startsWith('#');
+  return /^#[A-Za-z_][\w:.-]*$/.test(value.trim());
 }
 
 const MONO_FAMILY = /mono|menlo|consolas|courier/i;
@@ -175,7 +176,7 @@ export function sanitizeSceneSvg(
         if (!isLocalReference(attribute.value)) element.removeAttributeNode(attribute);
       } else if (attributeName === 'style') {
         attribute.value = stripExternalUrls(attribute.value);
-      } else if (/url\(/i.test(attribute.value)) {
+      } else if (attribute.value.includes('\\') || /url\s*\(/i.test(attribute.value)) {
         attribute.value = stripExternalUrls(attribute.value);
       }
     }

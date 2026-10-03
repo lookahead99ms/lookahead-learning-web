@@ -752,3 +752,8 @@ Validate presentation contracts with `npm run test:card-contract`,
 `npm test -- --watch=false`; use `npm run build:protected` for the protected build.
 The 2026-10-03 local Git snapshot passes those tests but exceeds the foundation
 lesson component CSS build budget by 905 bytes. It is not a release certification.
+
+Card scene SVG processing accepts only complete local fragment references for
+links and CSS URLs; escaped CSS tokens are rejected. Lesson prompt extraction
+and the card validator use inert DOM text parsing rather than regex tag removal.
+Extracted text does not authorize HTML insertion or bypass Angular sanitation.

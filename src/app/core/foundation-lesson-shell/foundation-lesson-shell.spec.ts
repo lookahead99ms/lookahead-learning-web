@@ -117,6 +117,23 @@ function normalizedText(element: Element): string {
 describe('FoundationLessonShell golden lesson contract', () => {
   let fixture: ComponentFixture<FoundationLessonShell>;
 
+  it('extracts prompt text with an inert parser and decodes entities once', () => {
+    const component = fixture.componentInstance as unknown as { promptText(value: string): string | null };
+    expect(component.promptText('<strong>Prompt:</strong> “Use <em>plain</em> &amp; &lt;b&gt;text&lt;/b&gt;”'))
+      .toBe('Use plain & <b>text</b>');
+    expect(component.promptText('<strong>Prompt:</strong> &amp;lt;script&amp;gt;'))
+      .toBe('&lt;script&gt;');
+  });
+
+  it('requires success markers at the start of console lines', () => {
+    const component = fixture.componentInstance as unknown as { isPassLine(value: string): boolean };
+    expect(component.isPassLine('BUILD SUCCESS')).toBe(true);
+    expect(component.isPassLine('Failures: 0, Errors: 0')).toBe(true);
+    expect(component.isPassLine('PASSED: result matches')).toBe(true);
+    expect(component.isPassLine('FAILED: expected BUILD SUCCESS')).toBe(false);
+    expect(component.isPassLine('error before Failures: 0, Errors: 0')).toBe(false);
+  });
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [FoundationLessonShell],

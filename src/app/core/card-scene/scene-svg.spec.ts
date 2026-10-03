@@ -53,6 +53,19 @@ describe('sanitizeSceneSvg', () => {
     expect(result.querySelector('set')).toBeNull();
   });
 
+  it('allows only complete local fragments and rejects escaped CSS tokens', () => {
+    const result = sanitizeSceneSvg(svg(
+      '<rect id="bad" fill="url( javaSCRIPT:alert )"/>' +
+      '<rect id="fragment" fill="url(#gradient)"/>' +
+      '<use href="#gradient extra"/>' +
+      '<style>.a{fill:u\\72l(https://evil.example/p)}</style>',
+    ))!;
+    expect(result.querySelector('#bad')?.getAttribute('fill')).toBe('none');
+    expect(result.querySelector('#fragment')?.getAttribute('fill')).toBe('url(#gradient)');
+    expect(result.querySelector('use')?.hasAttribute('href')).toBe(false);
+    expect(result.querySelector('style')?.textContent).toBe('');
+  });
+
   it('hides the SVG from assistive technology because the card carries the label', () => {
     const result = sanitizeSceneSvg(
       svg('<rect/>', 'role="img" aria-label="Scene" width="320" height="180"'),

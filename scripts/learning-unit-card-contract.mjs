@@ -1,3 +1,5 @@
+import { JSDOM } from 'jsdom';
+
 // Shared by validate-content.mjs and its tests; keep in step with CourseLearningUnitCard.
 const learningUnitCardLevels = new Set(['Beginner', 'Intermediate', 'Advanced']);
 const learningUnitCardFields = new Set([
@@ -98,16 +100,7 @@ const cardSceneWordScale = 30;
 const cardSceneValueScale = 44;
 
 function decodeSvgText(inner) {
-  return inner
-    .replace(/<[^>]+>/g, '')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;|&apos;/g, "'")
-    .replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCodePoint(parseInt(hex, 16)))
-    .replace(/&#(\d+);/g, (_, code) => String.fromCodePoint(Number(code)))
-    .replace(/&amp;/g, '&')
-    .trim();
+  return (JSDOM.fragment(inner).textContent ?? '').trim();
 }
 
 /** A value: at most 8 characters and no word of three or more letters. */

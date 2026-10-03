@@ -3221,7 +3221,8 @@ export class FoundationLessonShell {
   protected promptText(paragraph: string): string | null {
     const match = /^\s*<strong>Prompt:<\/strong>\s*([\s\S]+)$/.exec(paragraph);
     if (!match) return null;
-    const text = match[1].replace(/<[^>]+>/g, '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&amp;/g, '&').trim();
+    const parsed = new DOMParser().parseFromString(match[1], 'text/html');
+    const text = (parsed.body.textContent ?? '').trim();
     return text.replace(/^["“](.*)["”]$/s, '$1');
   }
 
@@ -3478,7 +3479,7 @@ export class FoundationLessonShell {
   }
 
   protected isPassLine(line: string): boolean {
-    return /^PASSED\b|Failures: 0, Errors: 0|BUILD SUCCESS/.test(line);
+    return /^(?:PASSED\b|Failures: 0, Errors: 0|BUILD SUCCESS)/.test(line);
   }
 
   protected lineCount(source: string | undefined): number {
