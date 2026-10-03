@@ -1,11 +1,33 @@
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DsaProblemV2 } from '../../content/content.models';
 import { FocusStudio } from './focus-studio';
 import { StudioEditor } from './studio-editor';
 import { of } from 'rxjs';
 import { DsaStoryLoader } from '../dsa-story/dsa-story-loader';
-import { ReferenceLanguageService } from '../reference-language';
+import { REFERENCE_LANGUAGE_KEY, ReferenceLanguageService } from '../reference-language';
+
+// Preferences belong to one synthetic browser per test, not the worker's shared storage.
+let storageDescriptor: PropertyDescriptor | undefined;
+beforeEach(() => {
+  storageDescriptor = Object.getOwnPropertyDescriptor(window, 'localStorage');
+  const values = new Map<string, string>();
+  Object.defineProperty(window, 'localStorage', {
+    configurable: true,
+    value: {
+      getItem: (key: string) => values.get(key) ?? null,
+      setItem: (key: string, value: string) => void values.set(key, value),
+      removeItem: (key: string) => void values.delete(key),
+      clear: () => values.clear(),
+      key: (index: number) => [...values.keys()][index] ?? null,
+      get length() { return values.size; },
+    },
+  });
+});
+afterEach(() => {
+  if (storageDescriptor) Object.defineProperty(window, 'localStorage', storageDescriptor);
+  else Reflect.deleteProperty(window, 'localStorage');
+});
 
 const sample = {
   schemaVersion: 'dsa-problem/v2',
@@ -517,6 +539,16 @@ describe('Option B story in Focus Studio', () => {
       expect(toggle.closest('h3')).not.toBeNull();
       // Native buttons turn Enter and Space into a click; the handler is on click.
       expect(toggle.getAttribute('role')).toBeNull();
+    });
+
+    it('restores a saved Python preference when the debugger opens', async () => {
+      window.localStorage.setItem(REFERENCE_LANGUAGE_KEY, 'python');
+      const { fixture, toggle, body } = await openStory();
+      toggle.click();
+      await settle(fixture);
+      expect(body.querySelector('.language-tabs [aria-selected="true"]')?.textContent?.trim())
+        .toBe('python');
+      expect(body.querySelector('.guided-trace')?.getAttribute('data-language')).toBe('python');
     });
 
     it('follows the page-wide language and sets it from its own tabs', async () => {
