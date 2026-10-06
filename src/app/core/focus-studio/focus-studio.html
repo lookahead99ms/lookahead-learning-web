@@ -30,9 +30,6 @@
       Problem
     </button>
     <h2 class="visually-hidden">Workspace</h2>
-    @if (!problemPinned()) {
-      <p class="heading-problem-title" [attr.title]="problem().title">{{ problem().title }}</p>
-    }
     <!-- User review 2026-10-05 (option B): one numbered segmented control; the guide line below says what
          the selected tab is for and holds that tab's one action. -->
     <div role="tablist" class="mode-tabs" aria-label="Practice mode">

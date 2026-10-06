@@ -497,10 +497,10 @@ describe('production Focus Studio controls', () => {
     await click('Recall');
     expect(guide()).toContain('Step 4 of 4');
     expect(root.querySelectorAll('.workspace-actions button')).toHaveLength(1);
-    const pinned = root.querySelector('.problem-toggle')!.getAttribute('aria-pressed') === 'true';
-    expect(!!root.querySelector('.heading-problem-title')).toBe(!pinned);
+    expect(root.querySelector('.heading-problem-title')).toBeNull();
+    expect(root.querySelector('.problem-rail h2')?.textContent).toBe(root.querySelector('.studio')?.getAttribute('aria-label')?.replace(' Focus Studio', ''));
     await click('Problem');
-    expect(!!root.querySelector('.heading-problem-title')).toBe(pinned);
+    expect(root.querySelector('.heading-problem-title')).toBeNull();
   });
   it('navigates all four tabs by keyboard without resetting mode state', async () => {
     const { root, fixture, click } = await setup();
