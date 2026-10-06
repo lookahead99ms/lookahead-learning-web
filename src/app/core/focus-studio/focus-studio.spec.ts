@@ -481,7 +481,7 @@ describe('production Focus Studio controls', () => {
     await click('Visualize solution');
     expect(actions()).toEqual(['Close visualization']);
   });
-  it('shows numbered tabs, a guide line with one action, and the problem title when the panel is hidden', async () => {
+  it('groups mode, timer and solution controls in the header with guidance below', async () => {
     const { root, click } = await setup();
     const tabs = [...root.querySelectorAll<HTMLButtonElement>('.studio-heading .mode-tabs [role=tab]')];
     expect(tabs.map((tab) => tab.getAttribute('aria-label'))).toEqual([
@@ -497,11 +497,15 @@ describe('production Focus Studio controls', () => {
     await click('Recall');
     expect(guide()).toBe('Answer from memory first, then open each answer to check yourself.');
     expect(root.querySelector('.mode-guide-step')).toBeNull();
-    expect(root.querySelectorAll('.workspace-actions button')).toHaveLength(1);
+    expect(root.querySelectorAll('.studio-heading .workspace-actions button')).toHaveLength(1);
+    expect(root.querySelector('.studio-heading app-studio-timer')).not.toBeNull();
+    expect([...root.querySelectorAll<HTMLButtonElement>('.studio-heading button')].every(button => !!button.title.trim())).toBe(true);
+    expect(root.querySelector('.workspace-toolbar .workspace-actions')).toBeNull();
     expect(root.querySelector('.heading-problem-title')).toBeNull();
     expect(root.querySelector('.problem-rail h2')?.textContent).toBe(root.querySelector('.studio')?.getAttribute('aria-label')?.replace(' Focus Studio', ''));
     await click('Problem');
     expect(root.querySelector('.heading-problem-title')).toBeNull();
+    expect(root.querySelectorAll('.studio-heading .workspace-actions button')).toHaveLength(1);
   });
   it('navigates all four tabs by keyboard without resetting mode state', async () => {
     const { root, fixture, click } = await setup();

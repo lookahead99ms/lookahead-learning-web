@@ -29,7 +29,7 @@ export interface RecallCardView {
         <span class="count" role="status">{{ graded() }} of {{ cards().length }} checked</span>
         <span class="meter" aria-hidden="true"><span [style.width.%]="meter()"></span></span>
       </div>
-      <button type="button" class="all" (click)="toggleAll()">
+      <button type="button" class="all" [attr.title]="allOpen() ? 'Hide every recall answer' : 'Reveal every recall answer to check your understanding'" (click)="toggleAll()">
         {{ allOpen() ? 'Hide all answers' : 'Show all answers' }}
       </button>
     </header>
@@ -60,6 +60,7 @@ export interface RecallCardView {
                   <button
                     type="button"
                     [attr.data-grade]="grade.id"
+                    [attr.title]="'Rate your recall of this answer as: ' + grade.label"
                     [attr.aria-pressed]="gradeOf(card.id) === grade.id"
                     (click)="setGrade(card.id, grade.id)"
                   >
@@ -71,6 +72,7 @@ export interface RecallCardView {
             <button
               type="button"
               class="reveal"
+              [attr.title]="isOpen(card.id) ? 'Hide this answer and try recalling it again' : 'Reveal this answer to check your recall'"
               [attr.aria-expanded]="isOpen(card.id)"
               [attr.aria-controls]="isOpen(card.id) ? ids(index).answer : null"
               (click)="toggle(card.id)"

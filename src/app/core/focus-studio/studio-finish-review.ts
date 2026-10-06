@@ -53,7 +53,7 @@ export const NOTES_SAVE_DELAY_MS = 600;
         @if (suggestion(); as suggested) {
           <p class="suggestion">
             {{ suggested.text }}
-            <button type="button" class="use-suggestion" (click)="useSuggestion(suggested)">
+            <button type="button" class="use-suggestion" title="Apply the suggested rating and review plan for this attempt" (click)="useSuggestion(suggested)">
               Use this
             </button>
           </p>
@@ -68,6 +68,7 @@ export const NOTES_SAVE_DELAY_MS = 600;
               <button
                 type="button"
                 [attr.aria-pressed]="record()?.rating === option"
+                [attr.title]="'Save your rating for this problem: ' + option"
                 (click)="rate(option)"
               >
                 {{ option }}
@@ -83,6 +84,7 @@ export const NOTES_SAVE_DELAY_MS = 600;
               <button
                 type="button"
                 [attr.aria-pressed]="reviewChoice() === option.id"
+                [attr.title]="option.id === 'none' ? 'Clear the planned review date' : 'Plan another review: ' + option.label"
                 (click)="scheduleReview(option.id)"
               >
                 {{ option.label }}
@@ -135,7 +137,7 @@ export const NOTES_SAVE_DELAY_MS = 600;
 
       @if (hasProgress()) {
         @if (!confirmingClear()) {
-          <button type="button" class="quiet clear-trigger" (click)="openClear()">
+          <button type="button" class="quiet clear-trigger" title="Choose whether to clear this problem’s saved progress on this device" (click)="openClear()">
             Clear progress for this problem
           </button>
         } @else {
@@ -155,10 +157,10 @@ export const NOTES_SAVE_DELAY_MS = 600;
               And my notes
             </label>
             <div class="options">
-              <button type="button" class="confirm-clear" (click)="confirmClear()">
+              <button type="button" class="confirm-clear" title="Clear this problem’s rating, review date and status, plus notes if selected" (click)="confirmClear()">
                 Clear progress
               </button>
-              <button type="button" class="cancel-clear" (click)="cancelClear()">Cancel</button>
+              <button type="button" class="cancel-clear" title="Keep your saved progress and close this confirmation" (click)="cancelClear()">Cancel</button>
             </div>
           </div>
         }

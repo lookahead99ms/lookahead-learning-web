@@ -297,11 +297,11 @@ export class FocusStudio {
         return ['visualize'];
     }
   });
-  protected readonly modes: { id: StudioMode; label: string }[] = [
-    { id: 'practice', label: 'Try it yourself' },
-    { id: 'approach', label: 'Approach' },
-    { id: 'visual', label: 'Visual walkthrough' },
-    { id: 'recall', label: 'Recall' },
+  protected readonly modes: { id: StudioMode; label: string; description: string }[] = [
+    { id: 'practice', label: 'Try it yourself', description: 'Write your own solution and test your reasoning against the examples (1)' },
+    { id: 'approach', label: 'Approach', description: 'Review the invariant, reasoning and complexity of the canonical approach (2)' },
+    { id: 'visual', label: 'Visual walkthrough', description: 'Follow the algorithm visually, including each executed line (3)' },
+    { id: 'recall', label: 'Recall', description: 'Answer the recall questions from memory, then check each answer (4)' },
   ];
   protected readonly languages: PatternLanguage[] = ['java', 'python', 'go'];
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);

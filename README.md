@@ -773,7 +773,7 @@ labels, prose, code blocks, tables and consoles inside it stay in the component.
 
 ## DLV-408 lesson tools, Hands-On DSA workspace and device-local practice
 
-The practice toolbar keeps the Problem control and numbered mode tabs without repeating the problem name. The page title and full problem contract retain the name. The guidance line shows the selected mode’s instructions without a repeated Step X of Y counter.
+The practice toolbar keeps the Problem control and numbered mode tabs without repeating the problem name. The page title and full problem contract retain the name. The Problem control, mode tabs, timer and solution/visualization action share one header row when space permits, wrapping on narrow screens. Workspace buttons include brief native hover descriptions of their actions, including state-dependent Problem and solution controls. The guidance line below shows the selected mode’s instructions without a repeated Step X of Y counter.
 
 Status (2026-10-05, extended 2026-10-06): implemented and checked locally on
 `feature/DLV-408-review-notes` with component tests; captured in a local Git review snapshot, not a release

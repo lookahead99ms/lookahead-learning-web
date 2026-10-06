@@ -14,6 +14,7 @@
       #problemButton
       type="button"
       class="problem-toggle"
+      [attr.title]="problemPinned() ? 'Hide the full problem statement and examples (P)' : 'Keep the full problem statement and examples open beside your work (P)'"
       [attr.aria-expanded]="problemPinned() || peek()"
       [attr.aria-pressed]="problemPinned()"
       [attr.aria-controls]="problem().id + '-studio-problem'"
@@ -37,6 +38,7 @@
         <button
           type="button"
           role="tab"
+          [attr.title]="item.description"
           [id]="problem().id + '-studio-tab-' + item.id"
           [attr.data-studio-mode]="item.id"
           [attr.aria-label]="item.id === 'recall' && solved() ? item.label + ', solved' : item.label"
@@ -53,6 +55,51 @@
     </div>
     <!-- Practice tools (user-approved preview, 2026-10-05): a timed attempt, browser-only. -->
     <app-studio-timer [timer]="timer" [available]="mode() === 'practice'" (start)="startTimer()" />
+      <div class="workspace-actions" role="group" aria-label="Solution and visualization">
+        @for (action of actions(); track action) {
+        @switch (action) {
+          @case ('locked') {
+            <p class="timer-lock">Hints and the solution unlock when you stop the timer.</p>
+          }
+          @case ('close-visualization') {
+            <button type="button" class="primary action-debugger action-close" title="Close the visualization and return to the previous mode (Escape)" aria-keyshortcuts="Escape" (click)="closeReference()">
+              <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <rect x="4" y="4" width="16" height="16" rx="2" />
+                <path d="M9 4v16M12 8h5M12 12h5M12 16h3" />
+              </svg>
+              Close visualization
+            </button>
+          }
+          @case ('solution') {
+            <button
+              type="button"
+              class="reveal"
+              [attr.title]="current().revealed ? 'Hide the reference solution and return to your draft' : 'Reveal the reference solution and compare it with your draft'"
+              [class.action-close]="current().revealed"
+              [attr.aria-expanded]="current().revealed"
+              (click)="toggleSolution()"
+            >
+              <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              {{ current().revealed ? 'Close solution' : 'Show solution' }}
+            </button>
+          }
+          @case ('visualize') {
+            <button type="button" class="primary action-visualize" title="Open the solution walkthrough to trace how the algorithm works" (click)="visualize()">
+              <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <rect x="9" y="2" width="6" height="5" rx="1" />
+                <path d="M12 7v5M5 17v-5h14v5" />
+                <rect x="2" y="17" width="6" height="5" rx="1" />
+                <rect x="16" y="17" width="6" height="5" rx="1" />
+              </svg>
+              Visualize solution
+            </button>
+          }
+        }
+        }
+      </div>
   </header>
   <aside
     #problemRail
@@ -135,50 +182,6 @@
       <p class="mode-guide">
         {{ modeGuide() }}
       </p>
-      <div class="workspace-actions" role="group" aria-label="Solution and visualization">
-        @for (action of actions(); track action) {
-        @switch (action) {
-          @case ('locked') {
-            <p class="timer-lock">Hints and the solution unlock when you stop the timer.</p>
-          }
-          @case ('close-visualization') {
-            <button type="button" class="primary action-debugger action-close" aria-keyshortcuts="Escape" (click)="closeReference()">
-              <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                <rect x="4" y="4" width="16" height="16" rx="2" />
-                <path d="M9 4v16M12 8h5M12 12h5M12 16h3" />
-              </svg>
-              Close visualization
-            </button>
-          }
-          @case ('solution') {
-            <button
-              type="button"
-              class="reveal"
-              [class.action-close]="current().revealed"
-              [attr.aria-expanded]="current().revealed"
-              (click)="toggleSolution()"
-            >
-              <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" />
-                <circle cx="12" cy="12" r="3" />
-              </svg>
-              {{ current().revealed ? 'Close solution' : 'Show solution' }}
-            </button>
-          }
-          @case ('visualize') {
-            <button type="button" class="primary action-visualize" (click)="visualize()">
-              <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                <rect x="9" y="2" width="6" height="5" rx="1" />
-                <path d="M12 7v5M5 17v-5h14v5" />
-                <rect x="2" y="17" width="6" height="5" rx="1" />
-                <rect x="16" y="17" width="6" height="5" rx="1" />
-              </svg>
-              Visualize solution
-            </button>
-          }
-        }
-        }
-      </div>
     </div>
     <section
       [id]="problem().id + '-studio-panel-approach'"
@@ -261,10 +264,11 @@
           <div role="group" aria-label="Your code actions">
             <app-code-copy-button [code]="draft()" [workspace]="true" /><button
               type="button"
+              title="Format your draft code without changing its intended behavior"
               (click)="formatDraft()"
             >
               Format code</button
-            ><button type="button" class="action-reset" (click)="resetDraft()">
+            ><button type="button" class="action-reset" title="Replace your draft with the original starter code" (click)="resetDraft()">
               Reset starter
             </button>
           </div>
@@ -274,6 +278,7 @@
               (click)="toggleHints()"
               aria-keyshortcuts="H"
               aria-label="Show hints panel"
+              title="Open the hints panel; reveal hints one at a time (H)"
               class="action-hint"
               aria-expanded="false"
             >
@@ -370,6 +375,7 @@
               <button
                 type="button"
                 aria-label="Close hints"
+                title="Hide the hints panel and return to the examples"
                 class="action-close"
                 aria-expanded="true"
                 (click)="toggleHints()"
@@ -383,6 +389,7 @@
                 type="button"
                 class="action-hint"
                 [attr.aria-label]="hintCount() === 0 ? 'Reveal hint' : 'Show next hint'"
+                title="Reveal one more hint to help you continue"
                 (click)="revealHint()"
               >
                 <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">

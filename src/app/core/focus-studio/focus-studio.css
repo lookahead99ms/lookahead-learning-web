@@ -1247,3 +1247,12 @@ button[aria-label^='Restart'] {
 .hints-panel + app-studio-examples {
   border-top: 1px solid var(--line);
 }
+
+/* DLV-408: one controls row, followed by a separate guidance line. */
+.studio-heading { gap: 12px; }
+.studio-heading > .workspace-actions { flex: 0 1 auto; padding: 0; align-items: center; }
+.studio-heading > app-studio-timer { margin-inline-start: auto; }
+.workspace-toolbar { min-height: 36px; padding-block: 4px; }
+@media (max-width: 700px) {
+  .studio-heading > app-studio-timer { margin-inline-start: 0; }
+}

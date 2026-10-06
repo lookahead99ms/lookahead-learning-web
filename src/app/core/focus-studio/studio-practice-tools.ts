@@ -51,16 +51,17 @@ const BASE = `
         timer().clock()
       }}</span>
       @if (timer().running()) {
-        <button type="button" (click)="timer().stop()">Stop</button>
+        <button type="button" title="Stop the countdown and unlock hints and the solution" (click)="timer().stop()">Stop</button>
       } @else {
         @if (!timer().expired()) {
-          <button type="button" (click)="timer().resume()">Resume</button>
+          <button type="button" title="Resume the countdown and lock hints and the solution again" (click)="timer().resume()">Resume</button>
         }
-        <button type="button" (click)="timer().reset()">Reset</button>
+        <button type="button" title="Clear this timed attempt and choose a new attempt length" (click)="timer().reset()">Reset</button>
       }
     } @else if (available()) {
       <select
         aria-label="Attempt length"
+        title="Choose how long to practice before the countdown expires"
         [value]="timer().minutes()"
         (change)="timer().setMinutes(+$any($event.target).value)"
       >
@@ -70,7 +71,7 @@ const BASE = `
           </option>
         }
       </select>
-      <button type="button" class="start" (click)="start.emit()">
+      <button type="button" class="start" title="Start the countdown; hints and the solution stay locked until you stop it" (click)="start.emit()">
         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
           <circle cx="12" cy="13" r="8" />
           <path d="M12 9v4l2.5 2.5M9 2h6" />
@@ -136,8 +137,8 @@ export class StudioTimer {
       Continue anyway?
     </p>
     <div role="group" aria-label="Timed attempt">
-      <button type="button" class="primary" (click)="proceed.emit()">Continue anyway</button>
-      <button type="button" (click)="back.emit()">Back to Try it yourself</button>
+      <button type="button" class="primary" title="Open this learning mode while the countdown continues" (click)="proceed.emit()">Continue anyway</button>
+      <button type="button" title="Keep the timer running and return to your draft" (click)="back.emit()">Back to Try it yourself</button>
     </div>`,
   host: { role: 'note', 'aria-label': 'Timed attempt running' },
   styles: [
@@ -199,7 +200,7 @@ export class StudioTimerGate {
           }
         </select></label
       >
-      <button type="button" (click)="save.emit({ time: time(), space: space() })">
+      <button type="button" title="Save your predicted time and space complexity before revealing the solution" (click)="save.emit({ time: time(), space: space() })">
         Save my prediction
       </button>
       <span role="status">{{
