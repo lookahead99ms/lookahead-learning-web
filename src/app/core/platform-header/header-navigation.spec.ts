@@ -142,9 +142,13 @@ describe('Header curriculum navigation', () => {
     );
     expect(fixture.nativeElement.querySelector('[role="menu"]')).toBeNull();
   });
-  it.each([0, 1, 2, 5, 6])('sizes the directory from %i nonempty authored groups', (count) => {
+  it.each([0, 1, 2, 5, 6, 7])('sizes the directory from %i nonempty authored groups', (count) => {
     const { fixture, http, button } = setup();
     const selectedGroups = LEARN_COURSE_GROUPS.slice(0, count);
+    const headerGroups = [
+      ...selectedGroups.filter((group) => group.id !== 'computer-fundamentals'),
+      ...selectedGroups.filter((group) => group.id === 'computer-fundamentals'),
+    ];
     const courses = selectedGroups.map((group, index) => ({
       id: group.courseIds[0],
       title: `Course ${index + 1}`,
@@ -161,9 +165,9 @@ describe('Header curriculum navigation', () => {
     expect(panel.style.getPropertyValue('--navigation-group-count')).toBe(String(count));
     expect(
       [...panel.querySelectorAll('.navigation-group h2')].map((h) => h.textContent?.trim()),
-    ).toEqual(selectedGroups.map((group) => group.title));
+    ).toEqual(headerGroups.map((group) => group.title));
     expect([...panel.querySelectorAll('.course-row a')].map((a) => a.getAttribute('href'))).toEqual(
-      courses.map((course) => '/learn/' + course.id),
+      headerGroups.map((group) => '/learn/' + group.courseIds[0]),
     );
     if (count === 0) {
       expect(panel.querySelector('.navigation-groups')).toBeNull();

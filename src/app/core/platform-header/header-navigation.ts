@@ -39,7 +39,10 @@ export class HeaderNavigation implements OnDestroy {
   protected readonly aiLabel = AI_LABEL;
   protected readonly aiSparkles = AI_SPARKLES_PATH;
   protected readonly paths: { id: PathTaglineId; label: string; groups: typeof LEARN_COURSE_GROUPS }[] = [
-    { id: 'learn', label: 'Learn', groups: LEARN_COURSE_GROUPS },
+    { id: 'learn', label: 'Learn', groups: [
+      ...LEARN_COURSE_GROUPS.filter((group) => group.id !== 'computer-fundamentals'),
+      ...LEARN_COURSE_GROUPS.filter((group) => group.id === 'computer-fundamentals'),
+    ] },
     { id: 'grow', label: 'Grow', groups: GROW_COURSE_GROUPS },
     { id: 'look-ahead', label: 'Look Ahead', groups: LOOK_AHEAD_COURSE_GROUPS },
   ];

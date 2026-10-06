@@ -22,6 +22,8 @@ Sidebar state is transient and adds no API or saved-session contract.
 
 ## Header course navigation
 
+The Learn dropdown places Engineering Tools before Computer Fundamentals so the six-column desktop menu has a shorter second row. This presentation order does not change the catalog’s learning order.
+
 The shared `PlatformBrand` component renders the LookAhead symbol and wordmark
 in the platform header and restricted sign-in header. The title uses clean
 LookAhead lettering: Look in the text color and Ahead in the theme accent.
