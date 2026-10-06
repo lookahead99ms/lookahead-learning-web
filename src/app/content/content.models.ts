@@ -249,6 +249,8 @@ export interface TheoryPairSide {
   output?: TheoryOutput;
   /** A small comparison table shown where the run console would be (same shape as a section table). */
   table?: TheoryTable;
+  /** Fixed side only: names of broken-side files the fix deletes. A file left out without being named here is unchanged. */
+  deletedFiles?: string[];
 }
 
 /** DLV-408 Debug stage: one problem the testers found, with the broken and fixed code side by side. */

@@ -2848,7 +2848,8 @@ export class FoundationLessonShell {
       brokenOutput,
       fixedOutput,
       files: files.map((file) => {
-        const rows = fileRows(file);
+        const deleted = !file.fixed && !!file.broken && !!pair.fixed.deletedFiles?.includes(file.broken.title);
+        const rows = fileRows(file, deleted);
         const { removed, added } = changeCount(rows);
         const renamed = !!file.broken && !!file.fixed && file.broken.title !== file.fixed.title;
         return {
@@ -2858,6 +2859,7 @@ export class FoundationLessonShell {
           fixed: file.fixed,
           rows,
           renamed,
+          deleted,
           unchanged: !removed && !added && !renamed,
           removed,
           added,

@@ -19,6 +19,8 @@ export interface PairDiffFile {
   rows: DiffRow[];
   /** The fix renamed the file (its lines may still be the same). */
   renamed: boolean;
+  /** The fix deletes the file: every line shows as removed. */
+  deleted: boolean;
   /** The fix leaves this file alone (only on the broken side, or the same name and lines on both): shown folded. */
   unchanged: boolean;
   removed: number;
@@ -81,6 +83,8 @@ const DIFF_MARKS = { same: '', del: '−', add: '+' } as const;
           @if (file.fixed; as code) {
             <span>{{ code.title }}@if (file.removed || file.added) {<small class="d-count" [attr.aria-label]="file.added + ' lines added, ' + file.removed + ' removed'"><b class="d-count-add">+{{ file.added }}</b><b class="d-count-del">−{{ file.removed }}</b></small>} @else if (file.renamed) {<small class="d-count">renamed</small>}</span>
             <div><small>{{ languageLabel(code.language) }}</small><app-code-copy-button [code]="code.source" /></div>
+          } @else if (file.deleted) {
+            <span class="d-file-none">Deleted by the fix<small class="d-count" [attr.aria-label]="file.removed + ' lines removed'"><b class="d-count-del">−{{ file.removed }}</b></small></span>
           } @else {
             <span class="d-file-none">Unchanged</span>
           }

@@ -112,6 +112,64 @@ describe('retired content routes', () => {
     expect(target('/learn/solid-design-patterns/lld-allocation-booking-guide')).toBeNull();
   });
 
+  it('sends a removed AWS question to the lesson it belonged to', () => {
+    const aws = RETIRED_COURSE_IDS.find(
+      (entry) => entry.path === 'grow' && entry.courseId === 'aws-cloud',
+    );
+    expect(Object.keys(aws?.lessons ?? {})).toHaveLength(74);
+    // Every target is a lesson of the course, and no kept question (aws-edge-01...) is listed.
+    for (const [retired, lesson] of Object.entries(aws?.lessons ?? {})) {
+      expect(retired).toMatch(/^aws-(?!cloud-)[a-z-]+-\d+$/);
+      expect(lesson).toMatch(/^aws-cloud-[a-z-]+-guide$/);
+      expect(target(`/grow/aws-cloud/${retired}`)).toBe(`/grow/aws-cloud/${lesson}`);
+    }
+    expect(target('/grow/aws-cloud/aws-network-01?from=search#answer')).toBe(
+      '/grow/aws-cloud/aws-cloud-networking-guide?from=search#answer',
+    );
+    expect(target('/grow/aws-cloud/aws-compute-07')).toBe('/grow/aws-cloud/aws-cloud-compute-guide');
+    expect(target('/grow/aws-cloud/aws-security-16')).toBe(
+      '/grow/aws-cloud/aws-cloud-iam-security-guide',
+    );
+    expect(target('/grow/aws-cloud/aws-edge-06')).toBe(
+      '/grow/aws-cloud/aws-cloud-edge-api-protection-guide',
+    );
+  });
+
+  it.each([
+    '/grow/aws-cloud/aws-edge-01',
+    '/grow/aws-cloud/aws-compute-03',
+    '/grow/aws-cloud/aws-cloud-networking-1',
+    '/grow/aws-cloud/aws-cloud-networking-guide',
+    '/grow/aws-cloud',
+    '/learn/aws-cloud/aws-network-01',
+    '/grow/docker-kubernetes/aws-network-01',
+  ])('leaves the live Grow route %s alone', (url) => {
+    expect(target(url)).toBeNull();
+  });
+
+  it('guards the Grow question route, where a removed question id arrives', () => {
+    const route = routes.find((entry: Route) => entry.path === 'grow/:courseId/:questionId');
+    expect(route?.canActivate ?? []).toContain(retiredContentRedirect);
+  });
+
+  it('redirects a removed Grow question in the router', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([
+          { path: 'grow/:courseId/:questionId', canActivate: [retiredContentRedirect], component: Page },
+        ]),
+      ],
+    });
+    const harness = await RouterTestingHarness.create();
+    const router = TestBed.inject(Router);
+
+    await harness.navigateByUrl('/grow/aws-cloud/aws-storage-15?from=plan');
+    expect(router.url).toBe('/grow/aws-cloud/aws-cloud-storage-databases-guide?from=plan');
+
+    await harness.navigateByUrl('/grow/aws-cloud/aws-storage-02');
+    expect(router.url).toBe('/grow/aws-cloud/aws-storage-02');
+  });
+
   it('guards every Learn route that can carry a retired id', () => {
     const guarded = (path: string) =>
       (routes.find((route: Route) => route.path === path)?.canActivate ?? []).includes(
