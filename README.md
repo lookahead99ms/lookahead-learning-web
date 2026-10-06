@@ -207,6 +207,10 @@ the lockfile resolves Angular 22.2.1 and Piscina 5.3.2. After dependency updates
 run `npm ci`, `npm run security:dependencies`, and `npm run test:security-gates`
 before frontend tests and builds.
 
+Unit tests isolate each file so component overrides and browser mocks cannot leak
+into another suite. `npm run test:order` runs the same assertions in a shuffled
+order with one worker (seed 1106), to check fixture and mock cleanup within files.
+
 Authored HTML used in plain-text lesson labels, pattern names and problem prompts
 passes through `src/app/core/html-text.ts`. It parses a detached document, removes
 script/style/template content and decodes entities once. Its output belongs only

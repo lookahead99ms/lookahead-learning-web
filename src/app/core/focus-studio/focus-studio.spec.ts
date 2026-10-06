@@ -4,7 +4,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DsaProblemV2 } from '../../content/content.models';
 import { FocusStudio } from './focus-studio';
 import { complexityVerdict, leadingBigO } from './practice-tools';
-import { StudioEditor } from './studio-editor';
 import { of } from 'rxjs';
 import { DsaStoryLoader } from '../dsa-story/dsa-story-loader';
 import { REFERENCE_LANGUAGE_KEY, ReferenceLanguageService } from '../reference-language';
@@ -111,7 +110,6 @@ const sample = {
 } as unknown as DsaProblemV2;
 
 async function setup(problem: DsaProblemV2 = sample) {
-  TestBed.overrideComponent(StudioEditor, { set: { template: '' } });
   const fixture = TestBed.createComponent(FocusStudio);
   fixture.componentRef.setInput('problem', structuredClone(problem));
   fixture.detectChanges();
@@ -1202,7 +1200,6 @@ describe('Focus Studio device progress', () => {
     class Host {
       readonly problem = structuredClone(sample);
     }
-    TestBed.overrideComponent(StudioEditor, { set: { template: '' } });
     const fixture = TestBed.createComponent(Host);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -1370,7 +1367,6 @@ describe('Recall card grid', () => {
     class Host {
       readonly problem = structuredClone(sample);
     }
-    TestBed.overrideComponent(StudioEditor, { set: { template: '' } });
     const fixture = TestBed.createComponent(Host);
     fixture.detectChanges();
     await fixture.whenStable();

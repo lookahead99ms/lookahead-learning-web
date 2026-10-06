@@ -3,6 +3,7 @@ import { vi } from 'vitest';
 import { ArchitectureDiagramViewer } from './architecture-diagram-viewer';
 
 describe('Architecture diagram viewer', () => {
+  let dialogDescriptors: Record<string, PropertyDescriptor | undefined>;
   let resize: () => void;
   let port: {
     onmessage: ((event: { data: unknown }) => void) | null;
@@ -10,6 +11,9 @@ describe('Architecture diagram viewer', () => {
     start: ReturnType<typeof vi.fn>;
   };
   beforeEach(() => {
+    dialogDescriptors = Object.fromEntries(['showModal', 'close'].map((name) =>
+      [name, Object.getOwnPropertyDescriptor(HTMLDialogElement.prototype, name)],
+    ));
     vi.stubGlobal(
       'ResizeObserver',
       class {
@@ -52,6 +56,10 @@ describe('Architecture diagram viewer', () => {
   });
   afterEach(() => {
     vi.restoreAllMocks();
+    for (const [name, descriptor] of Object.entries(dialogDescriptors)) {
+      if (descriptor) Object.defineProperty(HTMLDialogElement.prototype, name, descriptor);
+      else Reflect.deleteProperty(HTMLDialogElement.prototype, name);
+    }
     vi.unstubAllGlobals();
     document.body.style.overflow = '';
   });

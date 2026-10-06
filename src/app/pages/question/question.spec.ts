@@ -314,11 +314,11 @@ describe('Question canonical DSA navigation', () => {
   };
 
   beforeEach(async () => {
-    content.getCatalog.mockClear();
-    content.getCourseOutline.mockClear();
-    content.getContentItem.mockClear();
+    content.getCatalog.mockReset();
+    content.getCourseOutline.mockReset();
+    content.getContentItem.mockReset();
     content.getHandsOnDsaIndex.mockReset().mockReturnValue(of(emptyIndex()));
-    content.getDsaProblem.mockClear();
+    content.getDsaProblem.mockReset();
     await TestBed.configureTestingModule({
       providers: [provideRouter(routes), { provide: ContentService, useValue: content }],
     }).compileComponents();

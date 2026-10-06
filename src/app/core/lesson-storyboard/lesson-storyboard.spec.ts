@@ -161,8 +161,11 @@ describe('LessonStoryboard', () => {
   };
   let observers: { callback: IntersectionObserverCallback; element?: Element }[];
   let media: boolean;
+  let assetSequence = 0;
 
   beforeEach(() => {
+    // Give each test its own asset; the real loader caches successful source promises.
+    visual.assetPath = `/content/learn/x/visuals/two-${++assetSequence}.svg`;
     observers = [];
     media = false;
     vi.stubGlobal(
