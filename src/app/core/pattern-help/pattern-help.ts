@@ -1,3 +1,4 @@
+import { htmlText } from '../html-text';
 import { Component, ElementRef, effect, inject, input, output, signal, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom, switchMap } from 'rxjs';
@@ -12,10 +13,6 @@ interface Signal {
 
 /** Where the explorer's signals live: the Recognize the Pattern lesson's map section (content, not code). */
 const MAP_SOURCE = { path: 'learn', course: 'algorithmic-patterns', lesson: 'algorithmic-pattern-foundations' };
-
-function plain(html: string): string {
-  return html.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
-}
 
 /**
  * "Help me recognize the pattern" on a Hands-On DSA problem (user review, 2026-10-05). The learner picks a
@@ -355,7 +352,7 @@ export class PatternHelp {
         (candidate) => candidate.patternMap && candidate.table,
       );
       if (!section?.patternMap || !section.table) throw new Error('no pattern map');
-      this.units.set(section.table.rows.map((row) => plain(row[1] ?? '')));
+      this.units.set(section.table.rows.map((row) => htmlText(row[1] ?? '')));
       this.signals.set(section.patternMap.signals);
     } catch {
       this.loadFailed.set(true);

@@ -207,6 +207,12 @@ the lockfile resolves Angular 22.2.1 and Piscina 5.3.2. After dependency updates
 run `npm ci`, `npm run security:dependencies`, and `npm run test:security-gates`
 before frontend tests and builds.
 
+Authored HTML used in plain-text lesson labels, pattern names and problem prompts
+passes through `src/app/core/html-text.ts`. It parses a detached document, removes
+script/style/template content and decodes entities once. Its output belongs only
+in text bindings; it is not an HTML sanitizer. Run its regression tests together
+with the affected lesson, pattern and question component tests after changes.
+
 ```shell
 npm ci
 npm start

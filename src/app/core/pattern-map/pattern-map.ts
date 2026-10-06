@@ -1,3 +1,4 @@
+import { htmlText } from '../html-text';
 import { AfterViewInit, Component, DestroyRef, ElementRef, computed, inject, input, signal, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TheoryPatternMap, TheoryPatternSignal, TheoryTable } from '../../content/content.models';
@@ -16,11 +17,6 @@ export function hasWords(text: string, phrase: string): boolean {
   if (!words) return false;
   const pattern = words.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+');
   return new RegExp(`(^|[^a-z])${pattern}([^a-z]|$)`, 'i').test(text);
-}
-
-function plain(html: string): string {
-  const entities: Record<string, string> = { amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'" };
-  return html.replace(/<[^>]*>/g, '').replace(/&(amp|lt|gt|quot|#39);/g, (_, name: string) => entities[name]);
 }
 
 /**
@@ -488,9 +484,9 @@ export class PatternMap implements AfterViewInit {
   protected readonly units = computed<MapUnit[]>(() =>
     this.table().rows.map((row, index) => ({
       n: index + 1,
-      name: plain(row[1] ?? ''),
-      signal: plain(row[2] ?? ''),
-      memory: plain(row[3] ?? ''),
+      name: htmlText(row[1] ?? ''),
+      signal: htmlText(row[2] ?? ''),
+      memory: htmlText(row[3] ?? ''),
       href: this.map().lessonHrefs[index] ?? '',
     })),
   );

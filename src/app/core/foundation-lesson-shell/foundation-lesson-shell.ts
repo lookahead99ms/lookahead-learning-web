@@ -1,3 +1,4 @@
+import { htmlText } from '../html-text';
 import { LearningCode } from '../learning-code';
 import { codeLanguageLabel } from '../focus-studio/code-presentation';
 import { Component, DestroyRef, computed, inject, input, signal } from '@angular/core';
@@ -42,12 +43,7 @@ const LANGUAGE_NAMES: Record<string, string> = { java: 'Java', python: 'Python',
 
 /** Inline lesson HTML as plain text, for places that only take text (tab labels, tooltips). */
 export function plainText(html: string): string {
-  const entities: Record<string, string> = { amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'", nbsp: ' ', rarr: '→', times: '×' };
-  return html
-    .replace(/<[^>]*>/g, '')
-    .replace(/&(amp|lt|gt|quot|#39|nbsp|rarr|times);/g, (_, name: string) => entities[name])
-    .replace(/\s+/g, ' ')
-    .trim();
+  return htmlText(html).replace(/\s+/g, ' ').trim();
 }
 
 @Component({

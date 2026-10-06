@@ -1,3 +1,4 @@
+import { htmlText } from '../../core/html-text';
 import { ContentRecovery, RecoveryKind, RecoveryPreview, recoveryKind } from '../../core/content-recovery/content-recovery';
 import { LearningCode } from '../../core/learning-code';
 import { highlightLearningCode } from '../../core/focus-studio/code-presentation';
@@ -1550,7 +1551,7 @@ export class Question implements OnInit {
   /** The problem statement as plain text, for the pattern help dialog. */
   protected problemStatement(item: InterviewQuestion): string {
     const text = this.canonicalProblem(item)?.description ?? '';
-    return text.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim();
+    return htmlText(text).trim();
   }
   protected readonly navigationContextId = signal('');
   protected readonly handsOnPatternTitles = signal<Record<string, string>>({});
