@@ -1,4 +1,5 @@
 import { PatternLanguage, PatternProblemV1 } from '../../content/content.models';
+import { resultRowName } from '../walkthrough/walkthrough.model';
 
 /**
  * Option B problem stories (`dsa-story/v1`): one hand-made animation per Hands-On DSA problem.
@@ -477,7 +478,8 @@ export function variableRows(
     });
   }
   rows.push({
-    name: 'result',
+    // A local named `result` keeps its name; the returned value is then labelled `returned`.
+    name: resultRowName(rows.map((row) => row.name)),
     value: last ? formatValue(step.result, language, step.heap) : 'not returned yet',
     unset: !last,
     changed: last,

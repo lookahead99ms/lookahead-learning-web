@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="An engineer runs go test -race on a laptop: a test request goes through the Go toll trips service to a stand-in for the bank that issued the toll tag and back, two test rows turn green, and the race detector flags a third row when two goroutines touch the same value in the service">
+<style>
+.gs-tg-a,.gs-tg-b,.gs-tg-c,.gs-tg-d,.gs-tg-e,.gs-tg-f,.gs-tg-g,.gs-tg-h{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-6.3s;animation-timing-function:ease-in-out}
+.gs-tg-a{animation-name:gs-tg-a}
+@keyframes gs-tg-a{0%{transform:translateX(0);opacity:0}3%{opacity:1}16%{transform:translateX(30px);opacity:1}19%,100%{transform:translateX(30px);opacity:0}}
+.gs-tg-b{animation-name:gs-tg-b}
+@keyframes gs-tg-b{0%,18%{transform:translateX(0);opacity:0}20%{opacity:1}30%{transform:translateX(38px);opacity:1}40%{transform:translateX(0);opacity:1}42%,100%{transform:translateX(0);opacity:0}}
+.gs-tg-c{animation-name:gs-tg-c}
+@keyframes gs-tg-c{0%,40%{opacity:0}44%,94%{opacity:1}100%{opacity:0}}
+.gs-tg-d{animation-name:gs-tg-d}
+@keyframes gs-tg-d{0%,50%{opacity:0}54%,94%{opacity:1}100%{opacity:0}}
+.gs-tg-e{animation-name:gs-tg-e}
+@keyframes gs-tg-e{0%,56%{transform:translateX(0);opacity:0}58%{opacity:1}70%{transform:translateX(16px);opacity:1}94%{transform:translateX(16px);opacity:1}100%{opacity:0}}
+.gs-tg-f{animation-name:gs-tg-f}
+@keyframes gs-tg-f{0%,56%{transform:translateX(0);opacity:0}58%{opacity:1}70%{transform:translateX(-16px);opacity:1}94%{transform:translateX(-16px);opacity:1}100%{opacity:0}}
+.gs-tg-g{animation-name:gs-tg-g}
+@keyframes gs-tg-g{0%,70%{opacity:0}74%,94%{opacity:1}100%{opacity:0}}
+.gs-tg-h{animation-name:gs-tg-h}
+@keyframes gs-tg-h{0%,72%{opacity:0}76%,94%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.gs-tg-a,.gs-tg-b,.gs-tg-c,.gs-tg-d,.gs-tg-e,.gs-tg-f,.gs-tg-g,.gs-tg-h{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g fill="var(--scene-ink,#102a33)" opacity=".09"><ellipse cx="64" cy="152" rx="46" ry="6"/><ellipse cx="160" cy="152" rx="34" ry="6"/><ellipse cx="270" cy="152" rx="30" ry="6"/></g>
+<circle cx="30" cy="84" r="12" fill="var(--scene-accent,#006c73)"/>
+<path d="M10 150c0-24 9-36 20-36s20 12 20 36Z" fill="var(--scene-accent,#006c73)"/>
+<rect x="44" y="62" width="64" height="50" rx="4" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2.5"/>
+<path d="M38 112h76l-6 8H44Z" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-ink,#102a33)" stroke-width="2" stroke-linejoin="round"/>
+<path d="M44 120h64v3H44Z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<g fill="var(--scene-line,#cfdfdc)"><rect x="61" y="71" width="38" height="5" rx="2"/><rect x="61" y="84" width="32" height="5" rx="2"/><rect x="61" y="97" width="36" height="5" rx="2"/></g>
+<g fill="var(--scene-line,#cfdfdc)"><circle cx="53" cy="73.5" r="4"/><circle cx="53" cy="86.5" r="4"/><circle cx="53" cy="99.5" r="4"/></g>
+<g class="gs-tg-c"><circle cx="53" cy="73.5" r="5" fill="var(--scene-good,#1f7a4d)"/><path d="M50.5 73.5l2 2 3.5-4" fill="none" stroke="var(--scene-card,#fff)" stroke-width="1.6" stroke-linecap="round"/></g>
+<g class="gs-tg-d"><circle cx="53" cy="86.5" r="5" fill="var(--scene-good,#1f7a4d)"/><path d="M50.5 86.5l2 2 3.5-4" fill="none" stroke="var(--scene-card,#fff)" stroke-width="1.6" stroke-linecap="round"/></g>
+<g class="gs-tg-h"><path d="M53 93.5l5.5 10h-11Z" fill="var(--scene-warn,#9a6700)"/><path d="M53 97v3" stroke="var(--scene-card,#fff)" stroke-width="1.6" stroke-linecap="round"/></g>
+<path d="M112 100H128M196 104H238" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="3 5"/>
+<path d="M130 66h52l10-10H140Z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M182 66l10-10v84l-10 10Z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="130" y="66" width="52" height="84" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2.5"/>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="4" stroke-linecap="round"><path d="M138 82H164M138 100H164M138 136H164"/></g>
+<rect x="138" y="114" width="36" height="10" rx="2" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-ink,#102a33)" stroke-width="1.5"/>
+<g fill="var(--scene-good,#1f7a4d)"><circle cx="173" cy="82" r="3"/><circle cx="173" cy="100" r="3"/><circle cx="173" cy="136" r="3"/></g>
+<path d="M240 70l30-18 30 18Z" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-link,#1f5f8b)" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray="6 4"/>
+<rect x="244" y="70" width="52" height="8" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<g fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"><rect x="248" y="80" width="8" height="52"/><rect x="266" y="80" width="8" height="52"/><rect x="284" y="80" width="8" height="52"/></g>
+<rect x="238" y="132" width="64" height="9" rx="2" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<path d="M238 141h64v3h-64Z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<circle cx="270" cy="61" r="4" fill="var(--scene-good,#1f7a4d)"/>
+<g class="gs-tg-a"><rect x="86" y="128" width="30" height="16" rx="4" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="2"/><rect x="86" y="128" width="30" height="5" rx="2" fill="var(--scene-accent,#006c73)"/></g>
+<g class="gs-tg-b"><circle cx="196" cy="104" r="5" fill="var(--scene-accent,#006c73)"/></g>
+<g class="gs-tg-e"><circle cx="134" cy="119" r="4.5" fill="var(--scene-accent,#006c73)"/></g>
+<g class="gs-tg-f"><circle cx="178" cy="119" r="4.5" fill="var(--scene-link,#1f5f8b)"/></g>
+<g class="gs-tg-g"><rect x="124" y="24" width="74" height="22" rx="5" fill="var(--scene-card,#fff)" stroke="var(--scene-warn,#9a6700)" stroke-width="2"/><path d="M161 46l-5 8h10Z" fill="var(--scene-warn,#9a6700)"/><text x="161" y="39" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="var(--scene-warn,#9a6700)">DATA RACE</text></g>
+</svg>

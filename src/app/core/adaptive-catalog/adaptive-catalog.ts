@@ -15,6 +15,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink, Scroll } from '@angular/router';
 import { CardScene } from '../card-scene/card-scene';
+import { evenGridColumns } from '../even-grid';
 import { PageSidebarContextDirective } from '../page-sidebars/page-sidebar-context';
 import { withoutHiddenCourses } from '../../content/hidden-courses';
 import { CatalogCourseGroup } from '../../content/catalog-course-groups';
@@ -150,6 +151,8 @@ export class AdaptiveCatalog implements OnInit {
     ];
   });
   protected readonly monogram = catalogMonogram;
+  /** 2 or 3 columns from the group's course count, so no row ends with one lonely card. */
+  protected readonly gridColumns = evenGridColumns;
   protected readonly sidebarContext = computed(() => ({
     excluded: false,
     groupLabel: this.config().path === 'learn' ? 'Foundation Tracks'

@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A developer reads the reflog on a laptop, picks the entry of a commit that a hard reset left behind, and the main branch label moves back onto that commit, which turns from a faded outline into a saved commit with a check mark">
+<style>
+.gitrw-shadow{fill:var(--scene-ink,#102a33);opacity:.08}
+.gitrw-side{fill:var(--scene-ink,#102a33);opacity:.14}
+.gitrw-paper{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.gitrw-bar{fill:var(--scene-line,#cfdfdc)}
+.gitrw-key{fill:var(--scene-accent,#006c73)}
+.gitrw-wire{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.5;stroke-dasharray:3 4}
+.gitrw-track{fill:none;stroke:var(--scene-ink,#102a33);stroke-width:3;stroke-linecap:round}
+.gitrw-a{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-5.6s;animation-timing-function:ease-in-out}
+@media (prefers-reduced-motion: reduce){.gitrw-a{animation-play-state:paused!important}}
+.gitrw-pick{animation-name:gitrw-pick}
+@keyframes gitrw-pick{0%,8%{opacity:0}14%,92%{opacity:1}97%,100%{opacity:0}}
+.gitrw-dot{animation-name:gitrw-dot}
+@keyframes gitrw-dot{0%,16%{opacity:0;transform:none}18%{opacity:1;transform:none}34%{opacity:1;transform:translate(104px,0)}40%{opacity:1;transform:translate(104px,34px)}42%,100%{opacity:0;transform:translate(104px,34px)}}
+.gitrw-ghost{animation-name:gitrw-ghost}
+@keyframes gitrw-ghost{0%,40%{opacity:1}46%,94%{opacity:0}100%{opacity:1}}
+.gitrw-saved{animation-name:gitrw-saved}
+@keyframes gitrw-saved{0%,40%{opacity:0}46%,94%{opacity:1}100%{opacity:0}}
+.gitrw-chip{animation-name:gitrw-chip}
+@keyframes gitrw-chip{0%,44%{transform:none}56%,94%{transform:translateX(38px)}100%{transform:none}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<!-- the developer behind a laptop -->
+<circle cx="40" cy="58" r="13" fill="var(--scene-link,#245a88)"/>
+<path d="M14 112c0-20 12-34 26-34s26 14 26 34z" fill="var(--scene-link,#245a88)" opacity=".85"/>
+<ellipse cx="46" cy="160" rx="40" ry="4" class="gitrw-shadow"/>
+<path d="M18 98h52l8 52H10z" class="gitrw-side"/>
+<path d="M16 96h52l8 52H8z" fill="var(--scene-ink,#102a33)"/>
+<path d="M22 102h42l6 40H16z" fill="var(--scene-accent-soft,#dcefed)"/>
+<rect x="4" y="148" width="76" height="6" rx="2" fill="var(--scene-line,#cfdfdc)"/>
+<!-- the reflog: one row per place HEAD has been -->
+<ellipse cx="136" cy="152" rx="36" ry="4" class="gitrw-shadow"/>
+<path d="M104 30h52l12 12v104h-64z" class="gitrw-paper"/>
+<path d="M156 30v12h12" fill="none" stroke="var(--scene-line,#cfdfdc)" stroke-width="1.5"/>
+<text x="112" y="50" font-size="12" fill="var(--scene-muted,#536970)">reflog</text>
+<rect x="112" y="62" width="10" height="8" rx="2" class="gitrw-key"/><rect x="126" y="64" width="32" height="4" rx="2" class="gitrw-bar"/>
+<rect x="112" y="80" width="10" height="8" rx="2" class="gitrw-key"/><rect x="126" y="82" width="26" height="4" rx="2" class="gitrw-bar"/>
+<rect x="112" y="98" width="10" height="8" rx="2" class="gitrw-key"/><rect x="126" y="100" width="30" height="4" rx="2" class="gitrw-bar"/>
+<rect x="112" y="116" width="10" height="8" rx="2" class="gitrw-key"/><rect x="126" y="118" width="22" height="4" rx="2" class="gitrw-bar"/>
+<g class="gitrw-a gitrw-pick"><rect x="108" y="76" width="56" height="16" rx="4" fill="none" stroke="var(--scene-warn,#a15c00)" stroke-width="1.8"/></g>
+<!-- the commit ID travels from the reflog to the graph -->
+<path d="M168 84H274V120" class="gitrw-wire"/>
+<circle cx="170" cy="84" r="3.5" fill="var(--scene-accent,#006c73)" class="gitrw-a gitrw-dot"/>
+<!-- the commit graph: main moves back onto the lost commit -->
+<path d="M196 132H262" class="gitrw-track"/>
+<circle cx="200" cy="132" r="9" fill="var(--scene-ink,#102a33)"/>
+<circle cx="236" cy="132" r="9" fill="var(--scene-ink,#102a33)"/>
+<g class="gitrw-a gitrw-ghost">
+<circle cx="274" cy="132" r="9" fill="none" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="3 3"/>
+<circle cx="292" cy="114" r="8" fill="var(--scene-bad,#b4442c)"/>
+<path d="M288.5 110.5l7 7m0-7l-7 7" stroke="var(--scene-card,#fff)" stroke-width="2" stroke-linecap="round"/>
+</g>
+<g class="gitrw-a gitrw-saved">
+<path d="M262 132H266" class="gitrw-track"/>
+<circle cx="274" cy="132" r="9" fill="var(--scene-good,#1f7a4d)"/>
+<circle cx="292" cy="114" r="8" fill="var(--scene-good,#1f7a4d)"/>
+<path d="M288 114l3 3 5-6" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2" stroke-linecap="round"/>
+</g>
+<g class="gitrw-a gitrw-chip">
+<path d="M236 152v-8" stroke="var(--scene-grow,#b8457a)" stroke-width="2"/>
+<rect x="219" y="152" width="34" height="16" rx="4" fill="var(--scene-grow,#b8457a)"/>
+<text x="236" y="164" font-size="11" text-anchor="middle" fill="var(--scene-card,#fff)">main</text>
+</g>
+</svg>

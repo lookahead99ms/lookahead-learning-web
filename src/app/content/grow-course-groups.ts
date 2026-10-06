@@ -1,4 +1,4 @@
-import { CatalogCourseGroup } from './catalog-course-groups';
+import type { CatalogCourseGroup } from './catalog-course-groups';
 
 export type GrowCourseGroup = CatalogCourseGroup;
 
@@ -7,14 +7,30 @@ export const GROW_COURSE_GROUPS: GrowCourseGroup[] = [
     id: 'backend-engineering',
     title: 'Backend Engineering',
     description:
-      'Build robust Java and Node.js services with explicit API and persistence contracts.',
-    courseIds: ['advanced-java', 'spring-framework', 'spring-boot', 'data-access', 'nodejs'],
+      'Build Java, Node.js, Go, and Python services with explicit API, data, and persistence contracts.',
+    courseIds: [
+      'advanced-java',
+      'spring-framework',
+      'spring-boot',
+      'data-access',
+      'nosql-databases',
+      'nodejs',
+      'go-services',
+      'python-services',
+      'data-engineering',
+    ],
   },
   {
     id: 'system-security',
     title: 'System & Security',
     description: 'Design secure APIs and resilient systems under real distributed constraints.',
-    courseIds: ['api-design', 'microservices', 'distributed-systems', 'technical-scenarios'],
+    courseIds: [
+      'api-design',
+      'application-security',
+      'microservices',
+      'distributed-systems',
+      'technical-scenarios',
+    ],
   },
   {
     id: 'frontend-engineering',
@@ -39,7 +55,6 @@ export const GROW_COURSE_GROUPS: GrowCourseGroup[] = [
       'cicd',
       'monitoring-alerts',
       'quality-engineering',
-      'public-release-demo',
     ],
   },
 ];

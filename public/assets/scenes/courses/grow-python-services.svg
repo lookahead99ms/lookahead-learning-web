@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Two request bodies meet the Order model: qty 2 passes validation and gets 201, qty &quot;two&quot; fails the int field and gets 422, and the two tests covering both cases pass">
+<style>
+.gc-py-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.gc-py-tm { font-family: ui-monospace, Menlo, monospace; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.gc-py-tc { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-card, #ffffff); font-weight: 700; }
+.gc-py-sh { fill: var(--scene-ink, #102a33); opacity: .08; }
+.gc-py-slab { fill: var(--scene-ink, #102a33); opacity: .14; }
+.gc-py-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 2; }
+.gc-py-soft { fill: var(--scene-accent-soft, #dcefed); }
+.gc-py-acc { fill: var(--scene-accent, #006c73); }
+.gc-py-lnk { fill: var(--scene-link, #245a88); }
+.gc-py-good { fill: var(--scene-good, #1f7a4d); }
+.gc-py-bad { fill: var(--scene-bad, #b3261e); }
+.gc-py-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 2; stroke-dasharray: 4 5; }
+.gc-py-ck { fill: none; stroke: var(--scene-card, #ffffff); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+.gc-py-da { animation: gc-py-kf-da 7s linear infinite; }
+@keyframes gc-py-kf-da { 0%, 2% { transform: translate(0, 0); opacity: 0; } 3% { opacity: 1; } 13% { transform: translate(20px, 18px); opacity: 1; } 14%, 100% { transform: translate(20px, 18px); opacity: 0; } }
+.gc-py-ga { animation: gc-py-kf-ga 7s infinite; }
+@keyframes gc-py-kf-ga { 0%, 13% { opacity: 0; } 15%, 34% { opacity: 1; } 37%, 100% { opacity: 0; } }
+.gc-py-ok { animation: gc-py-kf-ok 7s infinite; }
+@keyframes gc-py-kf-ok { 0%, 18% { opacity: 0; transform: translateX(-6px); } 22%, 95% { opacity: 1; transform: translateX(0); } 98%, 100% { opacity: 0; transform: translateX(0); } }
+.gc-py-db { animation: gc-py-kf-db 7s linear infinite; }
+@keyframes gc-py-kf-db { 0%, 38% { transform: translate(0, 0); opacity: 0; } 39% { opacity: 1; } 49% { transform: translate(20px, -26px); opacity: 1; } 50%, 100% { transform: translate(20px, -26px); opacity: 0; } }
+.gc-py-gb { animation: gc-py-kf-gb 7s infinite; }
+@keyframes gc-py-kf-gb { 0%, 49% { opacity: 0; } 51%, 95% { opacity: 1; } 98%, 100% { opacity: 0; } }
+.gc-py-no { animation: gc-py-kf-no 7s infinite; }
+@keyframes gc-py-kf-no { 0%, 53% { opacity: 0; transform: translateX(-6px); } 57%, 95% { opacity: 1; transform: translateX(0); } 98%, 100% { opacity: 0; transform: translateX(0); } }
+.gc-py-k1 { animation: gc-py-kf-k1 7s infinite; }
+@keyframes gc-py-kf-k1 { 0%, 65% { opacity: 0; } 68%, 95% { opacity: 1; } 98%, 100% { opacity: 0; } }
+.gc-py-k2 { animation: gc-py-kf-k2 7s infinite; }
+@keyframes gc-py-kf-k2 { 0%, 72% { opacity: 0; } 75%, 95% { opacity: 1; } 98%, 100% { opacity: 0; } }
+
+.gc-py-da, .gc-py-ga, .gc-py-ok, .gc-py-db, .gc-py-gb, .gc-py-no, .gc-py-k1, .gc-py-k2 { animation-delay: -6.02s; }
+@media (prefers-reduced-motion: reduce) { .gc-py-da, .gc-py-ga, .gc-py-ok, .gc-py-db, .gc-py-gb, .gc-py-no, .gc-py-k1, .gc-py-k2 { animation-play-state: paused; } }
+</style>
+
+<!-- two request bodies -->
+<ellipse class="gc-py-sh" cx="58" cy="71" rx="44" ry="3"/>
+<rect class="gc-py-slab" x="12" y="30" width="92" height="38" rx="6"/>
+<rect class="gc-py-box" x="12" y="26" width="92" height="38" rx="6"/>
+<rect class="gc-py-lnk" x="12" y="26" width="6" height="38" rx="3"/>
+<text class="gc-py-tm" x="26" y="50" font-size="12">"qty": 2</text>
+<ellipse class="gc-py-sh" cx="58" cy="149" rx="44" ry="3"/>
+<rect class="gc-py-slab" x="12" y="108" width="92" height="38" rx="6"/>
+<rect class="gc-py-box" x="12" y="104" width="92" height="38" rx="6"/>
+<rect class="gc-py-lnk" x="12" y="104" width="6" height="38" rx="3"/>
+<text class="gc-py-tm" x="26" y="128" font-size="11">"qty":"two"</text>
+
+<path class="gc-py-wire" d="M104 46 L124 64 M104 124 L124 98"/>
+<g class="gc-py-da"><circle class="gc-py-lnk" cx="104" cy="46" r="4.5"/></g>
+<g class="gc-py-db"><circle class="gc-py-lnk" cx="104" cy="124" r="4.5"/></g>
+
+<!-- the validation model -->
+<ellipse class="gc-py-sh" cx="164" cy="158" rx="40" ry="4"/>
+<rect class="gc-py-slab" x="124" y="30" width="80" height="122" rx="7"/>
+<rect class="gc-py-box" x="124" y="26" width="80" height="122" rx="7"/>
+<path class="gc-py-acc" d="M131 26 H197 a7 7 0 0 1 7 7 V46 H124 V33 a7 7 0 0 1 7 -7z"/>
+<text class="gc-py-tc" x="134" y="41" font-size="12">Order</text>
+<g class="gc-py-ga"><rect class="gc-py-good" x="125" y="54" width="78" height="24" opacity=".16"/></g>
+<g class="gc-py-gb"><rect class="gc-py-bad" x="125" y="54" width="78" height="24" opacity=".16"/><rect x="126" y="55" width="76" height="22" rx="3" fill="none" stroke="var(--scene-bad, #b3261e)" stroke-width="1.5"/></g>
+<text class="gc-py-tm" x="133" y="70" font-size="11">qty: int</text>
+<path d="M125 80 H203 M125 106 H203" stroke="var(--scene-line, #cfdfdc)" stroke-width="1.5"/>
+<text class="gc-py-tm" x="133" y="97" font-size="11">name: str</text>
+<text class="gc-py-tm" x="133" y="123" font-size="11">sku: str</text>
+
+<!-- responses -->
+<path class="gc-py-wire" d="M206 40 H220 M206 72 H220"/>
+<g class="gc-py-ok"><rect class="gc-py-good" x="222" y="28" width="52" height="24" rx="12" opacity=".16"/><text class="gc-py-t" x="248" y="45" font-size="13" text-anchor="middle" style="fill: var(--scene-good, #1f7a4d)">201</text></g>
+<g class="gc-py-no"><rect class="gc-py-bad" x="222" y="60" width="52" height="24" rx="12" opacity=".16"/><text class="gc-py-t" x="248" y="77" font-size="13" text-anchor="middle" style="fill: var(--scene-bad, #b3261e)">422</text><text class="gc-py-tm" x="280" y="76" font-size="11" style="fill: var(--scene-bad, #b3261e)">qty</text></g>
+
+<!-- tests -->
+<ellipse class="gc-py-sh" cx="263" cy="166" rx="46" ry="4"/>
+<rect class="gc-py-slab" x="216" y="104" width="94" height="58" rx="7"/>
+<rect class="gc-py-box" x="216" y="100" width="94" height="58" rx="7"/>
+<path class="gc-py-soft" d="M223 101 H302 a7 7 0 0 1 7 7 V116 H217 V108 a7 7 0 0 1 7 -7z"/>
+<text class="gc-py-t" x="226" y="113" font-size="11">tests</text>
+<text class="gc-py-tm" x="226" y="134" font-size="11">test_201</text>
+<text class="gc-py-tm" x="226" y="151" font-size="11">test_422</text>
+<g class="gc-py-k1"><circle class="gc-py-good" cx="296" cy="130" r="7"/><path class="gc-py-ck" d="M292.5 130 l2.5 2.5 l4.5 -5"/></g>
+<g class="gc-py-k2"><circle class="gc-py-good" cx="296" cy="147" r="7"/><path class="gc-py-ck" d="M292.5 147 l2.5 2.5 l4.5 -5"/></g>
+</svg>

@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A friend's phone sends a location update to the location server, which lights one map cell; a stopwatch beside the server first shows 0.20 ns with a red cross, then 3.9 ns with an error bar and a green check">
+<style>
+.jmh-a{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-6.4s;animation-timing-function:ease-in-out}
+.jmh-t{font:600 11px system-ui,sans-serif;fill:var(--scene-muted,#536970);text-anchor:middle}
+.jmh-v{font:700 14px ui-monospace,Menlo,monospace;text-anchor:middle}
+.jmh-dot{animation-name:jmh-go}
+.jmh-cell{animation-name:jmh-cell}
+.jmh-lie{animation-name:jmh-lie}
+.jmh-true{animation-name:jmh-true}
+.jmh-hand{animation-name:jmh-hand;transform-box:view-box;transform-origin:262px 66px}
+@keyframes jmh-go{0%{transform:translate(0,0);opacity:0}4%{opacity:1}20%{transform:translate(62px,0);opacity:1}24%,100%{transform:translate(62px,0);opacity:0}}
+@keyframes jmh-cell{0%,21%{opacity:0}25%,94%{opacity:1}100%{opacity:0}}
+@keyframes jmh-lie{0%,26%{opacity:0}30%,50%{opacity:1}54%,100%{opacity:0}}
+@keyframes jmh-true{0%,54%{opacity:0}58%,94%{opacity:1}100%{opacity:0}}
+@keyframes jmh-hand{0%,24%{transform:rotate(0)}52%{transform:rotate(300deg)}90%,100%{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.jmh-a{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g fill="var(--scene-ink,#102a33)" opacity=".08"><ellipse cx="36" cy="160" rx="30" ry="5"/><ellipse cx="146" cy="160" rx="52" ry="7"/><ellipse cx="262" cy="160" rx="44" ry="5"/></g>
+<circle cx="28" cy="98" r="11" fill="var(--scene-accent,#006c73)"/>
+<path d="M8 160q0-42 20-42t20 42z" fill="var(--scene-accent,#006c73)"/>
+<rect x="40" y="100" width="22" height="38" rx="4" fill="var(--scene-ink,#102a33)"/>
+<rect x="43" y="104" width="16" height="28" rx="2" fill="var(--scene-accent-soft,#dcefed)"/>
+<path d="M51 109a4 4 0 0 1 4 4c0 3-4 7-4 7s-4-4-4-7a4 4 0 0 1 4-4z" fill="var(--scene-bad,#b3261e)"/>
+<circle cx="51" cy="113" r="1.5" fill="var(--scene-card,#fff)"/>
+<path d="M66 118H96" fill="none" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="4 4"/>
+<circle class="jmh-a jmh-dot" cx="38" cy="118" r="4.5" fill="var(--scene-accent,#006c73)"/>
+<path d="M100 62l12-10h76l-12 10z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M176 62l12-10v88l-12 10z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="100" y="62" width="76" height="88" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<g fill="var(--scene-good,#1f7a4d)"><circle cx="110" cy="72" r="2.5"/><circle cx="118" cy="72" r="2.5"/></g>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"><path d="M130 72h36"/></g>
+<g fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-line,#cfdfdc)" stroke-width="1">
+<rect x="112" y="84" width="16" height="16"/><rect x="130" y="84" width="16" height="16"/><rect x="148" y="84" width="16" height="16"/>
+<rect x="112" y="102" width="16" height="16"/><rect x="130" y="102" width="16" height="16"/><rect x="148" y="102" width="16" height="16"/>
+<rect x="112" y="120" width="16" height="16"/><rect x="130" y="120" width="16" height="16"/><rect x="148" y="120" width="16" height="16"/>
+</g>
+<rect class="jmh-a jmh-cell" x="130" y="102" width="16" height="16" fill="var(--scene-accent,#006c73)"/>
+<path d="M188 96H220" fill="none" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="3 3"/>
+<circle cx="262" cy="66" r="24" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2.5"/>
+<path d="M256 36h12M262 36v6" stroke="var(--scene-ink,#102a33)" stroke-width="2.5" stroke-linecap="round"/>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="2" stroke-linecap="round"><path d="M262 46v4M282 66h-4M262 86v-4M242 66h4"/></g>
+<path class="jmh-a jmh-hand" d="M262 66V50" stroke="var(--scene-accent,#006c73)" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="262" cy="66" r="2.5" fill="var(--scene-ink,#102a33)"/>
+<text class="jmh-t" x="262" y="148">per call</text>
+<g class="jmh-a jmh-lie">
+<text class="jmh-v" x="262" y="114" fill="var(--scene-bad,#b3261e)">0.20 ns</text>
+<circle cx="300" cy="40" r="10" fill="var(--scene-bad,#b3261e)"/><path d="M296 36l8 8M304 36l-8 8" stroke="var(--scene-card,#fff)" stroke-width="2.5" stroke-linecap="round"/>
+</g>
+<g class="jmh-a jmh-true">
+<text class="jmh-v" x="262" y="114" fill="var(--scene-ink,#102a33)">3.9 ns</text>
+<g stroke="var(--scene-good,#1f7a4d)" stroke-width="2" stroke-linecap="round"><path d="M246 128h32M246 123v10M278 123v10"/></g>
+<circle cx="262" cy="128" r="3.5" fill="var(--scene-good,#1f7a4d)"/>
+<circle cx="300" cy="40" r="10" fill="var(--scene-good,#1f7a4d)"/><path d="M295 40l3.5 3.5 6.5-7" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</svg>

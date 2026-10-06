@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A listener opens a show page on her phone; the router asks the catalog server for episode titles, then the listening server for her progress, and the phone shows both together">
+<style>
+.gql-fed-t{font:600 11px system-ui,sans-serif;fill:var(--scene-muted,#5f7478)}
+.gql-fed-loop{animation-duration:8s;animation-iteration-count:infinite;animation-timing-function:linear;animation-delay:-7.2s}
+.gql-fed-d0{animation-name:gql-fed-d0}
+@keyframes gql-fed-d0{0%{transform:translate(0,0);opacity:1}10%{transform:translate(30px,2px);opacity:1}11%,100%{transform:translate(30px,2px);opacity:0}}
+.gql-fed-d1{animation-name:gql-fed-d1}
+@keyframes gql-fed-d1{0%,11%{transform:translate(0,0);opacity:0}12%{transform:translate(0,0);opacity:1}24%{transform:translate(58px,-38px);opacity:1}34%{transform:translate(0,0);opacity:1}35%,100%{transform:translate(0,0);opacity:0}}
+.gql-fed-d2{animation-name:gql-fed-d2}
+@keyframes gql-fed-d2{0%,37%{transform:translate(0,0);opacity:0}38%{transform:translate(0,0);opacity:1}50%{transform:translate(58px,30px);opacity:1}60%{transform:translate(0,0);opacity:1}61%,100%{transform:translate(0,0);opacity:0}}
+.gql-fed-d3{animation-name:gql-fed-d3}
+@keyframes gql-fed-d3{0%,64%{transform:translate(0,0);opacity:0}65%{transform:translate(0,0);opacity:1}79%{transform:translate(-30px,-2px);opacity:1}80%,100%{transform:translate(-30px,-2px);opacity:0}}
+.gql-fed-fill{animation-name:gql-fed-fill}
+@keyframes gql-fed-fill{0%,80%{opacity:0}84%,97%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.gql-fed-loop{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<!-- Nadia, holding her phone -->
+<ellipse cx="44" cy="156" rx="34" ry="5" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<circle cx="22" cy="70" r="10" fill="var(--scene-grow,#b8457a)"/>
+<path d="M6 104a16 18 0 0 1 32 0v46H6Z" fill="var(--scene-grow,#b8457a)"/>
+<!-- the phone and the show page: three episode rows (title bar, progress track) -->
+<rect x="44" y="34" width="52" height="112" rx="8" fill="var(--scene-ink,#102a33)" opacity="0.14" transform="translate(3 3)"/>
+<rect x="44" y="34" width="52" height="112" rx="8" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="1.5"/>
+<rect x="50" y="44" width="40" height="10" rx="2" fill="var(--scene-accent-soft,#dcefed)"/>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="4" stroke-linecap="round">
+<path d="M52 70h34M52 96h34M52 122h34"/>
+<path d="M52 80h34M52 106h34M52 132h34" stroke-width="3"/>
+</g>
+<g class="gql-fed-loop gql-fed-fill">
+<path d="M52 70h30M52 96h22M52 122h32" stroke="var(--scene-ink,#102a33)" stroke-width="4" stroke-linecap="round"/>
+<path d="M52 106h12M52 132h34" stroke="var(--scene-accent,#006c73)" stroke-width="3" stroke-linecap="round"/>
+</g>
+<!-- wires: phone to router, router to each subgraph server -->
+<path d="M98 88H128M172 84L230 46M172 96L230 126" fill="none" stroke="var(--scene-muted,#5f7478)" stroke-width="1.5" stroke-dasharray="3 4"/>
+<!-- the router: one box that splits the query in two -->
+<ellipse cx="150" cy="118" rx="26" ry="4" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<path d="M128 70l6-5h40l-6 5Z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M168 70l6-5v40l-6 5Z" fill="var(--scene-ink,#102a33)" opacity="0.14"/>
+<rect x="128" y="70" width="40" height="40" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="1.5"/>
+<path d="M136 90h8l8-8h8M144 90l8 8h8" fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<text class="gql-fed-t" x="148" y="134" text-anchor="middle">router</text>
+<!-- the catalog server (titles) and the listening server (progress) -->
+<defs><g id="gql-fed-server">
+<ellipse cx="0" cy="44" rx="26" ry="4" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<path d="M-20 0l6-5h36l-6 5Z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M16 0l6-5v36l-6 5Z" fill="var(--scene-ink,#102a33)" opacity="0.14"/>
+<rect x="-20" y="0" width="36" height="36" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="1.5"/>
+<path d="M-14 9h18M-14 18h18M-14 27h18" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"/>
+<circle cx="9" cy="9" r="2" fill="var(--scene-good,#1f7a4d)"/>
+<circle cx="9" cy="18" r="2" fill="var(--scene-good,#1f7a4d)"/>
+</g></defs>
+<use href="#gql-fed-server" transform="translate(250 22)"/>
+<use href="#gql-fed-server" transform="translate(250 106)"/>
+<text class="gql-fed-t" x="250" y="76" text-anchor="middle">catalog</text>
+<text class="gql-fed-t" x="250" y="160" text-anchor="middle">listening</text>
+<!-- one dot per message: the query, fetch 1, fetch 2, the merged page -->
+<circle class="gql-fed-loop gql-fed-d0" cx="98" cy="88" r="4" fill="var(--scene-grow,#b8457a)"/>
+<circle class="gql-fed-loop gql-fed-d1" cx="172" cy="84" r="4" fill="var(--scene-accent,#006c73)"/>
+<circle class="gql-fed-loop gql-fed-d2" cx="172" cy="96" r="4" fill="var(--scene-link,#1f5f8b)"/>
+<circle class="gql-fed-loop gql-fed-d3" cx="128" cy="90" r="4" fill="var(--scene-grow,#b8457a)"/>
+</svg>

@@ -1,0 +1,640 @@
+/* By pattern, two panes. The host is the size container, so the panes react to the
+   width they get (docked sidebars included), not only to the window. */
+:host {
+  --diff-beginner: var(--success);
+  --diff-intermediate: var(--warning);
+  --diff-advanced: var(--identity-mark-code);
+  --sticky-top: calc(var(--platform-header-height, 76px) + 64px);
+  display: block;
+  container: pattern-browser / inline-size;
+  min-width: 0;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.panes {
+  display: grid;
+  /* The list stays narrow (long names take two lines) so the problem titles get the width. */
+  grid-template-columns: clamp(248px, 22%, 300px) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+/* Left: the pattern list, sticky, scrolling on its own. */
+.pattern-list-pane {
+  position: sticky;
+  top: var(--sticky-top);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  max-height: calc(100dvh - var(--sticky-top) - 16px);
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+.pane-label {
+  margin: 0;
+  padding: 10px 14px 8px;
+  border-bottom: 1px solid var(--line);
+  color: var(--text-subtle);
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.pattern-list {
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 4px 6px 8px;
+  scrollbar-width: thin;
+}
+.course-label {
+  margin: 0;
+  padding: 10px 8px 4px;
+  color: var(--text-subtle);
+  font-size: 0.66rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+/* Full pattern names: a long one takes a second line, with the order and the count on its first. */
+.pattern-option {
+  display: grid;
+  grid-template-columns: 1.4rem minmax(0, 1fr) auto;
+  gap: 2px 6px;
+  align-items: baseline;
+  padding: 6px 8px;
+  border-radius: 8px;
+  color: var(--text-body);
+  cursor: pointer;
+}
+.pattern-option:hover {
+  background: var(--surface-muted);
+}
+.pattern-option[aria-selected='true'] {
+  background: var(--surface-muted);
+  box-shadow: inset 3px 0 var(--accent-strong);
+}
+.pattern-option:focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: -1px;
+}
+.pattern-option.is-empty {
+  opacity: 0.5;
+}
+.option-order,
+.detail-order {
+  color: var(--text-subtle);
+  font: 700 0.76rem/1 ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+}
+.option-name {
+  min-width: 0;
+  color: var(--text-strong);
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.3;
+  overflow-wrap: break-word;
+}
+.hidden-name {
+  color: var(--text-subtle);
+  font-style: italic;
+}
+.option-count {
+  justify-self: end;
+  min-width: 2ch;
+  color: var(--text-subtle);
+  text-align: end;
+  font: 600 0.76rem ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+}
+.option-facts {
+  grid-column: 2 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.option-progress {
+  color: var(--text-subtle);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+.mix-bar {
+  display: inline-flex;
+  width: 44px;
+  height: 5px;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.mix-bar.wide {
+  width: 72px;
+  height: 6px;
+}
+.mix-bar i {
+  flex: 0 1 0;
+  min-width: 0;
+}
+.beginner {
+  background: var(--diff-beginner);
+}
+.intermediate {
+  background: var(--diff-intermediate);
+}
+.advanced {
+  background: var(--diff-advanced);
+}
+
+/* Right: one pattern. */
+.pattern-detail {
+  container: pattern-detail / inline-size;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  scroll-margin-top: var(--sticky-top);
+}
+.detail-head {
+  display: grid;
+  /* A long next-unsolved title must not widen the pane; it shortens with an ellipsis. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  padding: 16px 18px 14px;
+  border-bottom: 1px solid var(--line);
+}
+.back-to-patterns {
+  display: none;
+}
+.detail-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px 12px;
+  flex-wrap: wrap;
+}
+.detail-title-row h3 {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0;
+  color: var(--text-strong);
+  font-family: 'Avenir Next', Avenir, 'Segoe UI', sans-serif;
+  font-size: 1.3rem;
+  letter-spacing: -0.02em;
+  scroll-margin-top: var(--sticky-top);
+}
+.detail-title-row h3:focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 3px;
+}
+.show-name,
+.back-to-patterns {
+  min-height: 32px;
+  padding: 4px 11px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text-strong);
+  background: var(--surface);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.show-name {
+  border-style: dashed;
+  border-color: var(--border-strong);
+  color: var(--text-subtle);
+}
+.detail-description {
+  max-width: 78ch;
+  margin: 0;
+  color: var(--text-body);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+.detail-facts {
+  display: flex;
+  align-items: center;
+  gap: 8px 20px;
+  flex-wrap: wrap;
+  color: var(--text-subtle);
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+}
+.detail-count {
+  color: var(--text-strong);
+  font-weight: 700;
+}
+.of-total {
+  color: var(--text-subtle);
+  font-weight: 400;
+}
+.detail-mix,
+.detail-progress {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin: 0 4px 0 8px;
+  border-radius: 2px;
+}
+.dot:first-child {
+  margin-left: 0;
+}
+.meter {
+  display: inline-block;
+  width: 64px;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.meter span {
+  display: block;
+  height: 100%;
+  background: var(--success);
+}
+.lesson-link {
+  color: var(--accent-link);
+  font-weight: 800;
+  text-decoration: none;
+}
+.lesson-link:hover {
+  text-decoration: underline;
+}
+/* Next unsolved sits on its own row; its title gives way first on a narrow pane. The table's
+   column headers sort the pattern, as in All problems. */
+.detail-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  flex-wrap: wrap;
+}
+.next-unsolved {
+  display: inline-flex;
+  flex: 0 1 auto;
+  align-items: baseline;
+  gap: 8px;
+  min-width: min(100%, 16rem);
+  min-height: 36px;
+  max-width: max-content;
+  white-space: nowrap;
+  padding: 7px 14px;
+  border: 1px solid var(--accent-strong);
+  border-radius: 9px;
+  color: var(--accent-on-primary);
+  background: var(--accent-strong);
+  font-size: 0.86rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+.next-title {
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.all-solved {
+  margin: 0;
+  color: var(--success);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+.show-name:focus-visible,
+.back-to-patterns:focus-visible,
+.column-sort:focus-visible,
+.next-unsolved:focus-visible,
+.lesson-link:focus-visible,
+.problem-link:focus-visible,
+.preview-toggle:focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 2px;
+}
+.pattern-empty {
+  margin: 0;
+  padding: 22px 18px;
+  color: var(--text-subtle);
+}
+
+/* Compact one-line rows, in the flat table's column order. */
+.pattern-problems {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 0.875rem;
+}
+.pattern-problems th,
+.pattern-problems td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--line);
+  text-align: end;
+  vertical-align: middle;
+  font-variant-numeric: tabular-nums;
+}
+.pattern-problems tr:last-child td {
+  border-bottom: 0;
+}
+.pattern-problems th {
+  padding-block: 2px;
+  color: var(--text-strong);
+  background: var(--surface-muted);
+  font-size: 0.8rem;
+  font-weight: 800;
+  /* Headers wrap between words ("Interview / priority"), never inside one. */
+  overflow-wrap: normal;
+  hyphens: manual;
+}
+/* The same sort buttons as the All problems table. */
+.column-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 4px 0;
+  border: 0;
+  color: var(--accent-strong);
+  background: transparent;
+  font: inherit;
+  font-weight: 700;
+  text-align: inherit;
+  cursor: pointer;
+}
+.column-sort span {
+  flex-shrink: 0;
+}
+.column-sort:hover {
+  text-decoration: underline;
+}
+.column-sort:disabled {
+  color: var(--text-subtle);
+  cursor: default;
+  text-decoration: none;
+}
+.pattern-problems .col-learning,
+.pattern-problems .cell-learning {
+  width: 9rem;
+  padding-inline-start: 18px;
+  text-align: start;
+}
+.pattern-problems .col-title,
+.pattern-problems .cell-title {
+  text-align: start;
+}
+.col-difficulty {
+  width: 7.75rem;
+}
+.col-interview {
+  width: 10rem;
+}
+.pattern-problems th:not(.col-title, .col-status) .column-sort {
+  white-space: nowrap;
+}
+.pattern-problems .col-status,
+.pattern-problems .cell-status {
+  width: 4.5rem;
+  padding-inline-end: 14px;
+  text-align: center;
+}
+.cell-learning,
+.cell-interview {
+  color: var(--text-subtle);
+  font-size: 0.8rem;
+}
+.cell-tag {
+  display: none;
+}
+.title-layout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 12px;
+}
+.problem-link {
+  min-width: 0;
+  color: var(--accent-link);
+  font-weight: 800;
+  line-height: 1.35;
+  text-decoration: none;
+}
+.problem-link:hover {
+  text-decoration: underline;
+}
+.preview-toggle {
+  flex: 0 0 auto;
+  min-height: 32px;
+  padding: 2px 8px;
+  border: 0;
+  border-radius: 6px;
+  color: var(--accent-link);
+  background: transparent;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.preview-toggle:hover {
+  background: var(--surface-muted);
+}
+.cell-difficulty {
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+.cell-difficulty::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-inline-end: 7px;
+  border-radius: 2px;
+  background: var(--dot, var(--line));
+}
+.cell-difficulty[data-difficulty='Beginner'] {
+  --dot: var(--diff-beginner);
+}
+.cell-difficulty[data-difficulty='Intermediate'] {
+  --dot: var(--diff-intermediate);
+}
+.cell-difficulty[data-difficulty='Advanced'] {
+  --dot: var(--diff-advanced);
+}
+.pattern-problem-row.is-previewing td {
+  border-bottom-color: transparent;
+}
+.preview-row td {
+  padding: 4px 18px 14px;
+  background: var(--surface-muted);
+  font-size: 0.875rem;
+  line-height: 1.55;
+  text-align: start;
+}
+
+/* Narrow: two screens, the pattern list and then one pattern; the URL says which. */
+@container pattern-browser (max-width: 700px) {
+  .panes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pattern-list-pane {
+    position: static;
+    max-height: none;
+  }
+  .pattern-list {
+    overflow: visible;
+  }
+  .panes[data-screen='detail'] .pattern-list-pane,
+  .panes[data-screen='list'] .pattern-detail {
+    display: none;
+  }
+  .pattern-option {
+    padding-block: 9px;
+  }
+  .back-to-patterns {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    justify-self: start;
+    min-height: 40px;
+  }
+  .back-to-patterns span {
+    font-size: 1.2rem;
+    line-height: 1;
+  }
+  .detail-head {
+    padding: 14px;
+  }
+  .next-unsolved {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+}
+
+/* A narrow pattern pane: each row wraps to its title, then the three short facts. */
+@container pattern-detail (max-width: 560px) {
+  .pattern-problems,
+  .pattern-problems tbody {
+    display: block;
+  }
+  /* The sort headers stay, two to a line, as in the All problems table on a phone. */
+  .pattern-problems thead {
+    display: block;
+  }
+  .pattern-problems thead tr {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-bottom: 1px solid var(--line);
+    background: var(--surface-muted);
+  }
+  .pattern-problems th,
+  .pattern-problems th.col-learning,
+  .pattern-problems th.col-status {
+    width: auto;
+    padding: 2px 14px;
+    border: 0;
+    text-align: start;
+  }
+  .pattern-problems th.col-status {
+    display: none;
+  }
+  .pattern-problems th .column-sort {
+    white-space: normal;
+  }
+  /* Title and status on the first line; the three short facts wrap whole, never mid-label. */
+  .pattern-problem-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px 14px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .pattern-problems .pattern-problem-row > td {
+    width: auto;
+    padding: 0;
+    border: 0;
+    text-align: start;
+  }
+  .pattern-problems .cell-title {
+    order: 0;
+    flex: 1 1 calc(100% - 3.5rem);
+    min-width: 0;
+  }
+  .pattern-problems .cell-status {
+    order: 1;
+    flex: 0 0 auto;
+    width: auto;
+    padding: 0;
+  }
+  .pattern-problem-row > .cell-learning,
+  .pattern-problem-row > .cell-difficulty,
+  .pattern-problem-row > .cell-interview {
+    order: 2;
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+  .cell-tag {
+    display: inline;
+  }
+  .preview-row {
+    display: block;
+  }
+  .preview-row td {
+    display: block;
+    padding: 4px 14px 14px;
+  }
+}
+
+/* A middle-width pattern pane (most screens up to about 1700px): the short columns give the
+   problem title more room, and two-word headers wrap between words, as in All problems. */
+@container pattern-detail (min-width: 561px) and (max-width: 1040px) {
+  .pattern-problems .col-learning,
+  .pattern-problems .cell-learning {
+    width: 6.25rem;
+    padding-inline-start: 14px;
+  }
+  .col-difficulty {
+    width: 7rem;
+  }
+  .col-interview {
+    width: 6.5rem;
+  }
+  .pattern-problems .col-status,
+  .pattern-problems .cell-status {
+    width: 3.75rem;
+    padding-inline: 4px 8px;
+  }
+  .pattern-problems th:not(.col-title, .col-status) .column-sort {
+    white-space: normal;
+  }
+}
+@media (forced-colors: active) {
+  .pattern-list-pane,
+  .pattern-detail,
+  .mix-bar,
+  .meter {
+    border: 1px solid CanvasText;
+  }
+  .pattern-option[aria-selected='true'] {
+    outline: 2px solid Highlight;
+  }
+  .meter span,
+  .mix-bar i,
+  .dot,
+  .cell-difficulty::before {
+    background: CanvasText;
+  }
+}

@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Random order totals roll into the installment split; one total, 102 cents in 4, comes out as 26, 26, 26 and 24 cents, gets a warning badge and is kept as a pinned test case">
+<style>
+.pbt-t{font:600 12px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.pbt-v{font:700 11px ui-monospace,Menlo,monospace;fill:var(--scene-ink,#102a33)}
+.pbt-loop{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-6.2s;animation-timing-function:ease-in-out}
+.pbt-dot1{animation-name:pbt-dot1}
+.pbt-dot2{animation-name:pbt-dot2}
+.pbt-bars{animation-name:pbt-bars}
+.pbt-warn{animation-name:pbt-warn}
+.pbt-card{animation-name:pbt-card}
+@keyframes pbt-dot1{0%{transform:translate(0,0);opacity:0}4%{opacity:1}18%{transform:translate(70px,0);opacity:1}22%,100%{transform:translate(70px,0);opacity:0}}
+@keyframes pbt-dot2{0%,22%{transform:translate(0,0);opacity:0}26%{opacity:1}40%{transform:translate(70px,0);opacity:1}44%,100%{transform:translate(70px,0);opacity:0}}
+@keyframes pbt-bars{0%,40%{opacity:0}48%,96%{opacity:1}100%{opacity:0}}
+@keyframes pbt-warn{0%,50%{opacity:0}56%,96%{opacity:1}100%{opacity:0}}
+@keyframes pbt-card{0%,60%{opacity:0;transform:translate(-40px,0)}72%,96%{opacity:1;transform:translate(0,0)}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.pbt-loop{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<!-- generator: two dice -->
+<ellipse cx="44" cy="134" rx="30" ry="6" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<rect x="22" y="84" width="34" height="34" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<path d="M22 90l8-8h30l-4 8" fill="var(--scene-line,#cfdfdc)"/>
+<circle cx="31" cy="93" r="3" fill="var(--scene-ink,#102a33)"/><circle cx="39" cy="101" r="3" fill="var(--scene-ink,#102a33)"/><circle cx="47" cy="109" r="3" fill="var(--scene-ink,#102a33)"/>
+<rect x="44" y="102" width="26" height="26" rx="5" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2"/>
+<circle cx="51" cy="109" r="2.5" fill="var(--scene-accent,#006c73)"/><circle cx="63" cy="121" r="2.5" fill="var(--scene-accent,#006c73)"/>
+<!-- wire to the split service -->
+<path d="M76 104H146" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="3 5" opacity="0.6"/>
+<circle class="pbt-loop pbt-dot1" cx="76" cy="104" r="5" fill="var(--scene-link,#2f6fb3)"/>
+<circle class="pbt-loop pbt-dot2" cx="76" cy="104" r="5" fill="var(--scene-grow,#b8457a)"/>
+<!-- split service: a server box with slots -->
+<ellipse cx="176" cy="150" rx="34" ry="6" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<path d="M146 62l8-8h52l-8 8Z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M198 62l8-8v80l-8 8Z" fill="var(--scene-ink,#102a33)" opacity="0.14"/>
+<rect x="146" y="62" width="52" height="80" rx="4" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<text class="pbt-t" x="155" y="80">split</text>
+<path d="M154 92h36M154 102h36" stroke="var(--scene-line,#cfdfdc)" stroke-width="4" stroke-linecap="round"/>
+<circle cx="157" cy="130" r="3" fill="var(--scene-good,#1f7a4d)"/><circle cx="167" cy="130" r="3" fill="var(--scene-good,#1f7a4d)"/>
+<!-- four installments: the last one is 2 cents short -->
+<g class="pbt-loop pbt-bars">
+<ellipse cx="256" cy="98" rx="46" ry="4" fill="var(--scene-ink,#102a33)" opacity="0.08"/>
+<rect x="216" y="44" width="16" height="52" rx="2" fill="var(--scene-accent,#006c73)"/>
+<rect x="236" y="44" width="16" height="52" rx="2" fill="var(--scene-accent,#006c73)"/>
+<rect x="256" y="44" width="16" height="52" rx="2" fill="var(--scene-accent,#006c73)"/>
+<rect x="276" y="52" width="16" height="44" rx="2" fill="var(--scene-warn,#a15c00)"/>
+<text class="pbt-v" x="217" y="40">26</text><text class="pbt-v" x="237" y="40">26</text><text class="pbt-v" x="257" y="40">26</text><text class="pbt-v" x="277" y="48">24</text>
+</g>
+<g class="pbt-loop pbt-warn">
+<circle cx="300" cy="64" r="10" fill="var(--scene-bad,#b3261e)"/>
+<path d="M300 58v7M300 69v1" stroke="var(--scene-card,#fff)" stroke-width="2.5" stroke-linecap="round"/>
+</g>
+<!-- the shrunk input, kept as a pinned test case -->
+<g class="pbt-loop pbt-card">
+<ellipse cx="258" cy="152" rx="40" ry="5" fill="var(--scene-ink,#102a33)" opacity="0.08"/>
+<path d="M220 116h68l8 8v24h-76Z" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<path d="M288 116v8h8" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-ink,#102a33)" stroke-width="1.5"/>
+<rect x="220" y="116" width="6" height="32" fill="var(--scene-grow,#b8457a)"/>
+<text class="pbt-v" x="232" y="137">102 in 4</text>
+<circle cx="222" cy="114" r="5" fill="var(--scene-bad,#b3261e)"/>
+</g>
+</svg>

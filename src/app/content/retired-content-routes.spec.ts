@@ -85,7 +85,8 @@ describe('retired content routes', () => {
   });
 
   it('never maps a retired id to another retired id or to itself', () => {
-    for (const course of RETIRED_COURSE_IDS) {
+    // A course move (targetCourseId) keeps ids unchanged, so only same-course entries are checked.
+    for (const course of RETIRED_COURSE_IDS.filter((entry) => !entry.targetCourseId)) {
       for (const table of [course.lessons, course.modules, course.units]) {
         for (const [retired, current] of Object.entries(table)) {
           expect(current).not.toBe(retired);
@@ -93,6 +94,22 @@ describe('retired content routes', () => {
         }
       }
     }
+  });
+
+  it('sends lessons, units and modules that moved to Java Concurrency to the new course', () => {
+    expect(target('/learn/solid-design-patterns/java-thread-safety-and-coordination')).toBe(
+      '/learn/java-concurrency/java-thread-safety-and-coordination',
+    );
+    expect(target('/learn/solid-design-patterns/virtual-threads')).toBe(
+      '/learn/java-concurrency/virtual-threads',
+    );
+    expect(target('/learn/solid-design-patterns#unit-threading')).toBe(
+      '/learn/java-concurrency#unit-threading',
+    );
+    expect(target('/learn/solid-design-patterns/module/executors-async')).toBe(
+      '/learn/java-concurrency/module/executors-async',
+    );
+    expect(target('/learn/solid-design-patterns/lld-allocation-booking-guide')).toBeNull();
   });
 
   it('guards every Learn route that can carry a retired id', () => {

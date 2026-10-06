@@ -24,19 +24,21 @@ export type FocusStudioPattern =
   | (typeof FOCUS_STUDIO_PILOT)[keyof typeof FOCUS_STUDIO_PILOT]
   | 'generic';
 
+// Whole words only: a bare substring put "Selected-entries" (en-trie-s) in trees, "Cheapest" in heaps
+// and "Lexicographic" in graphs. Plurals and the sub- prefix (subtree, subarray) are listed explicitly.
 const metadataFamilies: ReadonlyArray<[FocusStudioPattern, RegExp]> = [
-  ['lru', /\blru\b|least recently used/i],
-  ['sliding-window', /sliding window|window/i],
-  ['two-pointers', /two pointers?|fast.?slow pointers?/i],
-  ['heaps', /heap|priority queue/i],
-  ['stacks', /stack/i],
-  ['trees', /tree|trie/i],
-  ['graphs', /graph|union find|connectivity|shortest path|topological/i],
-  ['intervals', /interval|sweep line/i],
-  ['dynamic-programming', /dynamic programming|\bdp\b|recurrence/i],
-  ['prefix-sum', /prefix|difference array/i],
-  ['maps', /hash|map|frequency/i],
-  ['arrays', /array|matrix/i],
+  ['lru', /\blru\b|\bleast recently used\b/i],
+  ['sliding-window', /\bsliding windows?\b|\bwindows?\b/i],
+  ['two-pointers', /\btwo pointers?\b|\bfast.?slow pointers?\b/i],
+  ['heaps', /\bheaps?\b|\bpriority queues?\b/i],
+  ['stacks', /\bstacks?\b/i],
+  ['trees', /\b(?:sub)?trees?\b|\btries?\b/i],
+  ['graphs', /\bgraphs?\b|\bunion find\b|\bconnectivity\b|\bshortest paths?\b|\btopological\b/i],
+  ['intervals', /\bintervals?\b|\bsweep lines?\b/i],
+  ['dynamic-programming', /\bdynamic programming\b|\bdp\b|\brecurrences?\b/i],
+  ['prefix-sum', /\bprefix(?:es)?\b|\bdifference arrays?\b/i],
+  ['maps', /\bhash(?:es|ed|ing)?\b|\bmaps?\b|\bmapping\b|\bfrequency\b/i],
+  ['arrays', /\b(?:sub)?arrays?\b|\bmatrix\b|\bmatrices\b/i],
 ];
 
 export function focusStudioPattern(

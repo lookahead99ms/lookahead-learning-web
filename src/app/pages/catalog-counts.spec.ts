@@ -74,20 +74,20 @@ for (const { path, courseId, component } of [
     }
 
     it.each([
-      [13, 131, '13 lessons · 125+ questions'],
-      [1, 1, '1 lesson · 1 question'],
-      [0, 0, '0 lessons · 0 questions'],
+      [13, 131],
+      [1, 1],
+      [0, 0],
     ] as const)(
-      'labels %i lessons and %i questions without inventing a topic total',
-      async (lessons, questions, label) => {
+      'keeps %i lessons and %i questions off the course card without inventing a topic total',
+      async (lessons, questions) => {
         const harness = await render(lessons, questions);
         const card = harness.routeNativeElement!.querySelector<HTMLAnchorElement>('.course-card')!;
-        expect(
-          card.querySelector('.catalog-card-kicker')?.textContent?.replace(/\s+/g, ' ').trim(),
-        ).toBe(label);
+        // The card carries no lesson or question count (user review, 2026-10-03).
+        expect(card.querySelector('.catalog-card-kicker')).toBeNull();
+        expect(card.textContent).not.toMatch(/\blessons?\b|\bquestions?\b/);
         expect(card.getAttribute('href')).toBe(`/${path}/${courseId}`);
         expect(card.textContent).not.toContain('26 topics');
-        // The uniform card keeps to scene, title, description and meta: no topic list.
+        // The uniform card keeps to scene, title and description: no topic list.
         expect(card.querySelector('ul, li')).toBeNull();
       },
     );

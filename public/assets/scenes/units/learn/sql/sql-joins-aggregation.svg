@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Pledge rows travel from the database to a crowdfunding campaign page on a laptop; each pledge adds one block to the progress bar, which passes the goal line and gets a check while a backer watches">
+<style>
+.sqlja-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.sqlja-shadow{fill:var(--scene-ink,#102a33);opacity:.08}
+.sqlja-side{fill:var(--scene-ink,#102a33);opacity:.14}
+.sqlja-bar{fill:var(--scene-line,#cfdfdc)}
+.sqlja-key{fill:var(--scene-accent,#006c73)}
+.sqlja-wire{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.5;stroke-dasharray:3 4}
+.sqlja-a{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-6s;animation-timing-function:ease-in-out}
+@media (prefers-reduced-motion: reduce){.sqlja-a{animation-play-state:paused!important}}
+.sqlja-dot{animation-name:sqlja-dot}
+@keyframes sqlja-dot{0%{opacity:1;transform:none}12%{opacity:1;transform:translateX(70px)}13%{opacity:0;transform:none}14%{opacity:1;transform:none}26%{opacity:1;transform:translateX(70px)}27%{opacity:0;transform:none}28%{opacity:1;transform:none}40%{opacity:1;transform:translateX(70px)}41%,100%{opacity:0;transform:none}}
+.sqlja-f1{animation-name:sqlja-f1}
+@keyframes sqlja-f1{0%,11%{opacity:0}15%,92%{opacity:1}97%,100%{opacity:0}}
+.sqlja-f2{animation-name:sqlja-f2}
+@keyframes sqlja-f2{0%,25%{opacity:0}29%,92%{opacity:1}97%,100%{opacity:0}}
+.sqlja-f3{animation-name:sqlja-f3}
+@keyframes sqlja-f3{0%,39%{opacity:0}43%,92%{opacity:1}97%,100%{opacity:0}}
+.sqlja-ok{animation-name:sqlja-ok}
+@keyframes sqlja-ok{0%,46%{opacity:0;transform:scale(.6)}52%,92%{opacity:1;transform:none}97%,100%{opacity:0}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<!-- the pledge table: a database cylinder with key and value rows -->
+<ellipse cx="52" cy="150" rx="38" ry="5" class="sqlja-shadow"/>
+<path d="M16 54v86c0 5 16 9 36 9s36-4 36-9V54z" class="sqlja-box"/>
+<path d="M74 56v84c0 3-6 6-14 7V62c8-1 14-3 14-6z" class="sqlja-side"/>
+<ellipse cx="52" cy="54" rx="36" ry="9" fill="var(--scene-line,#cfdfdc)"/>
+<rect x="26" y="72" width="8" height="8" rx="2" class="sqlja-key"/><rect x="38" y="74" width="16" height="4" rx="2" class="sqlja-bar"/>
+<rect x="26" y="90" width="8" height="8" rx="2" class="sqlja-key"/><rect x="38" y="92" width="28" height="4" rx="2" class="sqlja-bar"/>
+<rect x="26" y="108" width="8" height="8" rx="2" class="sqlja-key"/><rect x="38" y="110" width="28" height="4" rx="2" class="sqlja-bar"/>
+<rect x="26" y="126" width="8" height="8" rx="2" fill="var(--scene-muted,#536970)" opacity=".5"/><rect x="38" y="128" width="10" height="4" rx="2" class="sqlja-bar" opacity=".5"/>
+<!-- pledges travel to the campaign page, one at a time -->
+<path d="M92 100H160" class="sqlja-wire"/>
+<circle cx="94" cy="100" r="4" fill="var(--scene-warn,#a15c00)" class="sqlja-a sqlja-dot"/>
+<!-- the laptop with the campaign page -->
+<ellipse cx="227" cy="140" rx="74" ry="5" class="sqlja-shadow"/>
+<rect x="168" y="38" width="118" height="84" rx="7" fill="var(--scene-ink,#102a33)"/>
+<rect x="174" y="44" width="106" height="72" rx="3" fill="var(--scene-card,#fff)"/>
+<path d="M158 122h138l8 12H150z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M150 134h154v3H150z" class="sqlja-side"/>
+<!-- campaign picture and title bars -->
+<rect x="182" y="52" width="34" height="24" rx="3" fill="var(--scene-accent-soft,#d9eeec)"/>
+<circle cx="199" cy="62" r="6" fill="var(--scene-warn,#a15c00)" opacity=".8"/>
+<rect x="222" y="54" width="48" height="5" rx="2.5" class="sqlja-bar"/>
+<rect x="222" y="64" width="34" height="4" rx="2" class="sqlja-bar" opacity=".6"/>
+<!-- progress bar: one block per pledge, and the goal line -->
+<rect x="182" y="88" width="90" height="10" rx="3" fill="none" stroke="var(--scene-line,#cfdfdc)" stroke-width="1.5"/>
+<rect x="183" y="89" width="16" height="8" rx="2" class="sqlja-key sqlja-a sqlja-f1"/>
+<rect x="200" y="89" width="34" height="8" rx="2" class="sqlja-key sqlja-a sqlja-f2"/>
+<rect x="235" y="89" width="34" height="8" rx="2" class="sqlja-key sqlja-a sqlja-f3"/>
+<path d="M262 84v18" stroke="var(--scene-ink,#102a33)" stroke-width="1.5" stroke-dasharray="2 2"/>
+<rect x="182" y="104" width="22" height="4" rx="2" class="sqlja-bar"/><rect x="210" y="104" width="16" height="4" rx="2" class="sqlja-bar"/>
+<!-- funded: a check next to the bar -->
+<g class="sqlja-a sqlja-ok" style="transform-origin:282px 93px">
+<circle cx="282" cy="93" r="9" fill="var(--scene-good,#1f7a4d)"/>
+<path d="M277.5 93l3 3 6-6" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<!-- the backer watching the campaign -->
+<circle cx="132" cy="140" r="9" fill="var(--scene-link,#245a88)"/>
+<path d="M114 176c0-14 8-24 18-24s18 10 18 24z" fill="var(--scene-link,#245a88)" opacity=".85"/>
+</svg>

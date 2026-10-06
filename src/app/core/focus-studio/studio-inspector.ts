@@ -11,6 +11,7 @@ import { StudioStateValues } from './studio-state-values';
 @Component({
   selector: 'app-studio-inspector',
   imports: [StudioStateValues],
+  host: { '[attr.data-scale]': "scale() === 'player' ? 'player' : null" },
   template: `<section class="inspector" aria-label="Recorded runtime state">
     <header>
       <h3>State inspector</h3>
@@ -26,6 +27,7 @@ import { StudioStateValues } from './studio-state-values';
             [name]="entry.name"
             [value]="entry.value"
             [active]="entry.active"
+            [scale]="scale()"
           />
         </section>
       }
@@ -44,7 +46,11 @@ import { StudioStateValues } from './studio-state-values';
                 The recorded reference does not include this collection's contents.
               </p>
             } @else {
-              <app-studio-state-values [name]="variable.name" [value]="parse(variable.value)" />
+              <app-studio-state-values
+                [name]="variable.name"
+                [value]="parse(variable.value)"
+                [scale]="scale()"
+              />
             }
             @if (variable.changed) {
               <small>Changed this step</small>
@@ -180,10 +186,23 @@ import { StudioStateValues } from './studio-state-values';
         outline: 3px solid var(--accent);
         outline-offset: 3px;
       }
+      :host([data-scale='player']) h3 {
+        font-size: 14px;
+      }
+      :host([data-scale='player']) header p,
+      :host([data-scale='player']) h4,
+      :host([data-scale='player']) small,
+      :host([data-scale='player']) .note,
+      :host([data-scale='player']) pre,
+      :host([data-scale='player']) footer {
+        font-size: 13px;
+      }
     `,
   ],
 })
 export class StudioInspector {
+  /** 'player': the walkthrough player's three type sizes (13, 14, 16 px); other hosts keep theirs. */
+  readonly scale = input<'studio' | 'player'>('studio');
   readonly problem = input.required<PatternProblemV1>();
   readonly fixture = input.required<DsaProblemFixtureV2>();
   readonly snapshot = input.required<TraceSnapshot>();

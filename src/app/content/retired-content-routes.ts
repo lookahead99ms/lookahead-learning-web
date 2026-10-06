@@ -17,6 +17,8 @@ import retiredContent from './retired-content-ids.json';
 export interface RetiredCourseIds {
   readonly path: string;
   readonly courseId: string;
+  /** Set when the ids moved to another course of the same path (DLV-410: Java Concurrency). */
+  readonly targetCourseId?: string;
   /** Lesson (question) ids: `/<path>/<course>/<lesson>`. */
   readonly lessons: Readonly<Record<string, string>>;
   /** Module ids: `/<path>/<course>/module/<module>` and Search `?module=`. */
@@ -25,7 +27,10 @@ export interface RetiredCourseIds {
   readonly units: Readonly<Record<string, string>>;
 }
 
-export const RETIRED_COURSE_IDS: readonly RetiredCourseIds[] = retiredContent.courses;
+// JSON imports infer one union type for all entries, which no longer fits once entries differ in shape
+// (DLV-410 added targetCourseId), so the table is typed explicitly here.
+export const RETIRED_COURSE_IDS: readonly RetiredCourseIds[] =
+  retiredContent.courses as unknown as readonly RetiredCourseIds[];
 
 const replacement = (table: Readonly<Record<string, string>>, id: unknown): string | undefined =>
   typeof id === 'string' && Object.hasOwn(table, id) ? table[id] : undefined;
@@ -59,13 +64,16 @@ export function retiredContentTarget(
   const course = courses.find(({ path, courseId }) => path === paths[0] && courseId === paths[1]);
   if (course && paths.length === 3) {
     const lesson = replacement(course.lessons, paths[2]);
-    if (lesson) nextPaths = [paths[0], paths[1], lesson];
+    if (lesson) nextPaths = [paths[0], course.targetCourseId ?? paths[1], lesson];
   } else if (course && paths.length === 4 && paths[2] === 'module') {
     const module = replacement(course.modules, paths[3]);
-    if (module) nextPaths = [...paths.slice(0, 3), module];
+    if (module) nextPaths = [paths[0], course.targetCourseId ?? paths[1], paths[2], module];
   } else if (course && paths.length === 2 && fragment?.startsWith('unit-')) {
     const unit = replacement(course.units, fragment.slice('unit-'.length));
-    if (unit) fragment = `unit-${unit}`;
+    if (unit) {
+      fragment = `unit-${unit}`;
+      if (course.targetCourseId) nextPaths = [paths[0], course.targetCourseId];
+    }
   }
 
   // Hands-On DSA group filter, on the catalog and on the problem pages it links to.

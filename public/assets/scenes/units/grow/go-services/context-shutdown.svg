@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A deploy sends SIGTERM to a Go service while a driver's end-trip request is in flight; a new request is refused, the shared car still locks, and the driver gets 200 before the server switches off">
+<style>
+.gs-cs-a,.gs-cs-b,.gs-cs-c,.gs-cs-d,.gs-cs-e,.gs-cs-f,.gs-cs-g,.gs-cs-h{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-5.2s;animation-timing-function:ease-in-out}
+.gs-cs-a{animation-name:gs-cs-a}
+@keyframes gs-cs-a{0%{transform:translateX(0);opacity:0}3%{opacity:1}16%{transform:translateX(46px);opacity:1}20%,100%{transform:translateX(46px);opacity:0}}
+.gs-cs-b{animation-name:gs-cs-b}
+@keyframes gs-cs-b{0%,18%{opacity:0}23%,92%{opacity:1}100%{opacity:0}}
+.gs-cs-f{animation-name:gs-cs-f}
+@keyframes gs-cs-f{0%,22%{transform:translateX(0);opacity:0}24%{opacity:1}34%{transform:translateX(30px);opacity:1}37%,100%{transform:translateX(30px);opacity:0}}
+.gs-cs-h{animation-name:gs-cs-h}
+@keyframes gs-cs-h{0%,35%{opacity:0}40%,92%{opacity:1}100%{opacity:0}}
+.gs-cs-c{animation-name:gs-cs-c}
+@keyframes gs-cs-c{0%,38%{transform:translateX(0);opacity:0}41%{opacity:1}48%{transform:translateX(36px);opacity:1}54%,92%{transform:translateX(18px);opacity:1}100%{transform:translateX(18px);opacity:0}}
+.gs-cs-d{animation-name:gs-cs-d}
+@keyframes gs-cs-d{0%,48%{opacity:0}52%,92%{opacity:1}100%{opacity:0}}
+.gs-cs-e{animation-name:gs-cs-e}
+@keyframes gs-cs-e{0%,56%{opacity:0}60%,92%{opacity:1}100%{opacity:0}}
+.gs-cs-g{animation-name:gs-cs-g}
+@keyframes gs-cs-g{0%,76%{opacity:1}82%,96%{opacity:.15}100%{opacity:1}}
+@media (prefers-reduced-motion: reduce){.gs-cs-a,.gs-cs-b,.gs-cs-c,.gs-cs-d,.gs-cs-e,.gs-cs-f,.gs-cs-g,.gs-cs-h{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g fill="var(--scene-ink,#102a33)" opacity=".09"><ellipse cx="42" cy="152" rx="30" ry="6"/><ellipse cx="160" cy="152" rx="34" ry="6"/><ellipse cx="266" cy="146" rx="46" ry="6"/></g>
+<circle cx="36" cy="72" r="13" fill="var(--scene-accent,#006c73)"/>
+<path d="M14 150c0-26 10-40 22-40s22 14 22 40Z" fill="var(--scene-accent,#006c73)"/>
+<rect x="46" y="96" width="22" height="38" rx="4" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2.5"/>
+<rect x="50" y="102" width="14" height="5" rx="2" fill="var(--scene-line,#cfdfdc)"/><rect x="50" y="111" width="10" height="5" rx="2" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M72 92H126M72 128H126M190 104H222" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="3 5"/>
+<path d="M130 66h52l10-10H140Z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M182 66l10-10v84l-10 10Z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="130" y="66" width="52" height="84" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2.5"/>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="4" stroke-linecap="round"><path d="M138 82H164M138 100H164M138 118H164M138 136H164"/></g>
+<g class="gs-cs-g" fill="var(--scene-good,#1f7a4d)"><circle cx="173" cy="82" r="3"/><circle cx="173" cy="100" r="3"/><circle cx="173" cy="118" r="3"/><circle cx="173" cy="136" r="3"/></g>
+<path d="M226 132v-16c0-6 4-9 10-10l14-14c3-3 6-4 10-4h22c5 0 8 2 11 6l9 12c5 1 8 4 8 10v16Z" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M254 96h12v12h-24ZM270 96h12l8 12h-20Z" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-ink,#102a33)" stroke-width="1.5" stroke-linejoin="round"/>
+<path d="M276 88v-8" stroke="var(--scene-ink,#102a33)" stroke-width="2" stroke-linecap="round"/><circle cx="276" cy="79" r="2" fill="var(--scene-ink,#102a33)"/>
+<g fill="var(--scene-ink,#102a33)"><circle cx="244" cy="134" r="9"/><circle cx="290" cy="134" r="9"/></g>
+<g fill="var(--scene-line,#cfdfdc)"><circle cx="244" cy="134" r="4"/><circle cx="290" cy="134" r="4"/></g>
+<g class="gs-cs-h"><path d="M298 54v-5a7 7 0 0 1 14 0v5" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="2.5"/><rect x="295" y="54" width="20" height="16" rx="3" fill="var(--scene-good,#1f7a4d)"/><circle cx="305" cy="62" r="2.5" fill="var(--scene-card,#fff)"/></g>
+<g class="gs-cs-a"><rect x="76" y="83" width="34" height="18" rx="4" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="2"/><rect x="76" y="83" width="34" height="5" rx="2" fill="var(--scene-accent,#006c73)"/></g>
+<g class="gs-cs-b"><rect x="122" y="26" width="68" height="22" rx="5" fill="var(--scene-card,#fff)" stroke="var(--scene-warn,#9a6700)" stroke-width="2"/><path d="M156 48l-5 8h10Z" fill="var(--scene-warn,#9a6700)"/><text x="156" y="41" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="var(--scene-warn,#9a6700)">SIGTERM</text></g>
+<g class="gs-cs-f"><circle cx="194" cy="104" r="5" fill="var(--scene-accent,#006c73)"/></g>
+<g class="gs-cs-c"><rect x="76" y="119" width="34" height="18" rx="4" fill="var(--scene-card,#fff)" stroke="var(--scene-bad,#b3261e)" stroke-width="2"/><rect x="76" y="119" width="34" height="5" rx="2" fill="var(--scene-bad,#b3261e)"/></g>
+<g class="gs-cs-d"><circle cx="116" cy="160" r="9" fill="var(--scene-bad,#b3261e)"/><path d="M112 156l8 8M120 156l-8 8" stroke="var(--scene-card,#fff)" stroke-width="2.5" stroke-linecap="round"/></g>
+<g class="gs-cs-e"><rect x="68" y="26" width="46" height="22" rx="11" fill="var(--scene-good,#1f7a4d)"/><text x="91" y="42" text-anchor="middle" font-family="system-ui,sans-serif" font-size="15" font-weight="700" fill="var(--scene-card,#fff)">200</text></g>
+</svg>

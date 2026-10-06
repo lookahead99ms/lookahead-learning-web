@@ -59,7 +59,8 @@ import {
   previewStudyPlanRecovery,
 } from '../../content/study-plan-recovery';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
-import { CardScene } from '../../core/card-scene/card-scene';
+import { StudyPlanOverview } from './study-plan-overview';
+import { StudyPlanTypeChoice } from './study-plan-type-choice';
 import { STUDY_PLAN_ACCESS } from './study-plan-access';
 
 import {
@@ -79,9 +80,9 @@ type AuthoredPlanStep = 'select' | 'review';
 
 @Component({
   selector: 'app-study-plan',
-  imports: [PlatformHeader, NgTemplateOutlet, StudyDesk, CardScene],
+  imports: [PlatformHeader, NgTemplateOutlet, StudyDesk, StudyPlanOverview, StudyPlanTypeChoice],
   templateUrl: './study-plan.html',
-  styleUrl: './study-plan.css',
+  styleUrls: ['./study-plan-base.css', './study-plan.css'],
 })
 export class StudyPlanPage implements OnInit {
   private readonly content = inject(ContentService);

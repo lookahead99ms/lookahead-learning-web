@@ -312,7 +312,7 @@ function listDrawing(list: ListVisual): Drawing {
         </svg>
       </div>
     }
-    @if (narration(); as story) {
+    @if (narrate() ? narration() : null; as story) {
       <p class="explain" aria-live="polite">
         <small>{{ story.line }}</small>
         {{ story.text }}
@@ -552,6 +552,8 @@ export class TraceStatePanel {
   readonly fixture = input.required<{ id: string }>();
   readonly snapshot = input.required<TraceSnapshot>();
   readonly language = input.required<PatternLanguage>();
+  /** Off when a host (the walkthrough player) already captions the step. */
+  readonly narrate = input(true);
   protected readonly ids = `trace-state-${++drawingIds}`;
   protected readonly cellHeight = CELL_HEIGHT;
   protected readonly nodeRadius = NODE_RADIUS;

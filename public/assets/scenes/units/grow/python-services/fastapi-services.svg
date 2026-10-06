@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A travel site sends two bookings for the same SUV to a FastAPI rentals service; the first is answered 201 and the car gets a booking tag, the second is refused with 409 because the car is taken">
+<style>
+.pyfa-a,.pyfa-b,.pyfa-c,.pyfa-d,.pyfa-e,.pyfa-f{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-6.9s;animation-timing-function:ease-in-out}
+.pyfa-a{animation-name:pyfa-a}
+@keyframes pyfa-a{0%,4%{transform:translateX(0);opacity:1}24%{transform:translateX(88px);opacity:1}28%,100%{transform:translateX(88px);opacity:0}}
+.pyfa-b{animation-name:pyfa-b}
+@keyframes pyfa-b{0%,28%{transform:translateX(0);opacity:0}30%{opacity:1}44%{transform:translateX(36px);opacity:1}47%,100%{transform:translateX(36px);opacity:0}}
+.pyfa-c{animation-name:pyfa-c}
+@keyframes pyfa-c{0%,44%{opacity:0}50%,96%{opacity:1}100%{opacity:0}}
+.pyfa-d{animation-name:pyfa-d}
+@keyframes pyfa-d{0%,48%{transform:translate(0,0);opacity:0}50%{opacity:1}66%{transform:translate(88px,0);opacity:1}76%{transform:translate(20px,0);opacity:1}80%,100%{transform:translate(20px,0);opacity:0}}
+.pyfa-e{animation-name:pyfa-e}
+@keyframes pyfa-e{0%,72%{opacity:0}78%,96%{opacity:1}100%{opacity:0}}
+.pyfa-f{animation-name:pyfa-f}
+@keyframes pyfa-f{0%,26%{opacity:0}30%,96%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.pyfa-a,.pyfa-b,.pyfa-c,.pyfa-d,.pyfa-e,.pyfa-f{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g fill="var(--scene-ink,#102a33)" opacity=".09"><ellipse cx="42" cy="152" rx="30" ry="6"/><ellipse cx="156" cy="152" rx="34" ry="6"/><ellipse cx="266" cy="146" rx="46" ry="6"/></g>
+<circle cx="30" cy="70" r="13" fill="var(--scene-accent,#006c73)"/>
+<path d="M8 150c0-26 10-40 22-40s22 14 22 40Z" fill="var(--scene-accent,#006c73)"/>
+<path d="M40 120h34l6 22H46Z" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<rect x="44" y="94" width="30" height="26" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2.5"/>
+<rect x="49" y="100" width="20" height="4" rx="2" fill="var(--scene-line,#cfdfdc)"/><rect x="49" y="108" width="13" height="4" rx="2" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M78 92H126M78 128H126M186 108H214" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="3 5"/>
+<path d="M130 66h44l10-10h-44Z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M174 66l10-10v84l-10 10Z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="130" y="66" width="44" height="84" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2.5"/>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="4" stroke-linecap="round"><path d="M138 82H158M138 100H158M138 118H158M138 136H158"/></g>
+<g fill="var(--scene-good,#1f7a4d)"><circle cx="166" cy="82" r="3"/><circle cx="166" cy="100" r="3"/><circle cx="166" cy="118" r="3"/><circle cx="166" cy="136" r="3"/></g>
+<path d="M218 112l14-14h34l12 14 18 6v16H218Z" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M236 101h12v11h-22ZM252 101h12l9 11h-21Z" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-ink,#102a33)" stroke-width="1.5"/>
+<rect x="218" y="126" width="78" height="8" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<g fill="var(--scene-ink,#102a33)"><circle cx="238" cy="136" r="9"/><circle cx="280" cy="136" r="9"/></g>
+<g fill="var(--scene-line,#cfdfdc)"><circle cx="238" cy="136" r="3.5"/><circle cx="280" cy="136" r="3.5"/></g>
+<g class="pyfa-c"><path d="M266 62h22l8 8-8 8h-22Z" fill="var(--scene-accent,#006c73)"/><circle cx="270" cy="70" r="2.5" fill="var(--scene-card,#fff)"/><path d="M262 78l-6 18" stroke="var(--scene-accent,#006c73)" stroke-width="2"/></g>
+<g class="pyfa-a"><rect x="82" y="83" width="34" height="18" rx="4" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="2"/><rect x="82" y="83" width="34" height="5" rx="2" fill="var(--scene-accent,#006c73)"/></g>
+<g class="pyfa-b"><circle cx="186" cy="108" r="5" fill="var(--scene-accent,#006c73)"/></g>
+<g class="pyfa-d"><rect x="82" y="119" width="34" height="18" rx="4" fill="var(--scene-card,#fff)" stroke="var(--scene-warn,#9a6700)" stroke-width="2"/><rect x="82" y="119" width="34" height="5" rx="2" fill="var(--scene-warn,#9a6700)"/></g>
+<g class="pyfa-f"><rect x="62" y="26" width="46" height="22" rx="11" fill="var(--scene-good,#1f7a4d)"/><text x="85" y="42" text-anchor="middle" font-family="system-ui,sans-serif" font-size="15" font-weight="700" fill="var(--scene-card,#fff)">201</text></g>
+<g class="pyfa-e"><rect x="62" y="152" width="46" height="22" rx="11" fill="var(--scene-bad,#b3261e)"/><text x="85" y="168" text-anchor="middle" font-family="system-ui,sans-serif" font-size="15" font-weight="700" fill="var(--scene-card,#fff)">409</text></g>
+</svg>

@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A skier passes a lift gate whose reader sends each scan to a stream job that counts scans in one-minute windows by the time they happened; the watermark closes each minute and its bar appears on the lift-line dashboard, while a scan from a gate that lost its radio link arrives after its minute closed and lands in the late tray with a warning">
+<style>
+.de-sp-t{font:600 11px system-ui,sans-serif;fill:var(--scene-muted,#4d6268)}
+.de-sp-loop{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-7s;animation-timing-function:linear}
+.de-sp-p1{animation-name:de-sp-p1}
+.de-sp-p2{animation-name:de-sp-p2}
+.de-sp-p3{animation-name:de-sp-p3}
+@keyframes de-sp-p1{0%{transform:translate(0,0);opacity:0}2%{opacity:1}14%{transform:translate(84px,8px);opacity:1}16%,100%{transform:translate(84px,8px);opacity:0}}
+@keyframes de-sp-p2{0%,18%{transform:translate(0,0);opacity:0}20%{opacity:1}32%{transform:translate(118px,8px);opacity:1}34%,100%{transform:translate(118px,8px);opacity:0}}
+@keyframes de-sp-p3{0%,36%{transform:translate(0,0);opacity:0}38%{opacity:1}50%{transform:translate(152px,8px);opacity:1}52%,100%{transform:translate(152px,8px);opacity:0}}
+.de-sp-late{animation-name:de-sp-late}
+@keyframes de-sp-late{0%,58%{transform:translate(0,0);opacity:0}60%{opacity:1}78%{transform:translate(108px,6px);opacity:1}97%{transform:translate(108px,6px);opacity:1}100%{transform:translate(108px,6px);opacity:0}}
+.de-sp-wm{animation-name:de-sp-wm}
+@keyframes de-sp-wm{0%,10%{transform:translate(0,0)}26%,40%{transform:translate(34px,0)}56%,100%{transform:translate(68px,0)}}
+.de-sp-c1{animation-name:de-sp-c1}
+.de-sp-c2{animation-name:de-sp-c2}
+@keyframes de-sp-c1{0%,25%{opacity:0}28%,97%{opacity:1}100%{opacity:0}}
+@keyframes de-sp-c2{0%,55%{opacity:0}58%,97%{opacity:1}100%{opacity:0}}
+.de-sp-b1{animation-name:de-sp-b1;transform-origin:268px 120px}
+.de-sp-b2{animation-name:de-sp-b2;transform-origin:283px 120px}
+@keyframes de-sp-b1{0%,25%{transform:scaleY(0)}30%,97%{transform:scaleY(1)}100%{transform:scaleY(0)}}
+@keyframes de-sp-b2{0%,55%{transform:scaleY(0)}60%,97%{transform:scaleY(1)}100%{transform:scaleY(0)}}
+.de-sp-warn{animation-name:de-sp-warn}
+@keyframes de-sp-warn{0%,78%{opacity:0}81%,97%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.de-sp-loop{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<!-- a snowy peak behind the lift gate -->
+<path d="M44 34l20-22 20 22Z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M58 19l6-7 6 7-3 3-3-3-3 3Z" fill="var(--scene-card,#fff)"/>
+<!-- skier with skis on the shoulder, at the lift gate -->
+<ellipse cx="40" cy="104" rx="30" ry="5" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<rect x="6" y="18" width="3" height="58" rx="1.5" fill="var(--scene-grow,#b8457a)" transform="rotate(-14 7 47)"/>
+<rect x="11" y="18" width="3" height="58" rx="1.5" fill="var(--scene-grow,#b8457a)" transform="rotate(-14 12 47)"/>
+<circle cx="20" cy="44" r="9" fill="var(--scene-accent,#006c73)"/>
+<path d="M11 42a9 9 0 0 1 18 0Z" fill="var(--scene-ink,#102a33)"/>
+<path d="M4 76a16 16 0 0 1 32 0V98H4Z" fill="var(--scene-accent,#006c73)"/>
+<!-- the gate: a post with a pass reader and a turnstile arm -->
+<path d="M40 40l4-4h14l-4 4Z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M54 40l4-4v60l-4 4Z" fill="var(--scene-ink,#102a33)" opacity="0.14"/>
+<rect x="40" y="40" width="14" height="60" rx="2" fill="var(--scene-ink,#102a33)"/>
+<rect x="42" y="50" width="10" height="16" rx="2" fill="var(--scene-accent-soft,#dcefed)"/>
+<circle cx="47" cy="58" r="3" fill="var(--scene-good,#1f7a4d)"/>
+<path d="M54 76H70" stroke="var(--scene-ink,#102a33)" stroke-width="3" stroke-linecap="round"/>
+<!-- an upper-mountain gate whose radio link is down: its scan arrives late -->
+<ellipse cx="38" cy="166" rx="22" ry="4" fill="var(--scene-ink,#102a33)" opacity="0.08"/>
+<path d="M28 124l3-3h10l-3 3Z" fill="var(--scene-line,#cfdfdc)"/>
+<rect x="28" y="124" width="10" height="40" rx="2" fill="var(--scene-ink,#102a33)" opacity="0.55"/>
+<rect x="30" y="132" width="6" height="10" rx="1.5" fill="var(--scene-accent-soft,#dcefed)"/>
+<path d="M33 124V112" stroke="var(--scene-ink,#102a33)" stroke-width="1.5" opacity="0.55"/>
+<path d="M28 110a7 7 0 0 1 10 0" stroke="var(--scene-muted,#4d6268)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+<path d="M44 106l6 6M50 106l-6 6" stroke="var(--scene-bad,#b3261e)" stroke-width="2" stroke-linecap="round"/>
+<!-- wires -->
+<path d="M68 64H104M42 146H146" stroke="var(--scene-muted,#4d6268)" stroke-width="1.5" stroke-dasharray="3 5" fill="none" opacity="0.6"/>
+<!-- the stream job: a server with three one-minute windows -->
+<ellipse cx="168" cy="112" rx="66" ry="6" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<path d="M104 34l8-8h120l-8 8Z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M224 34l8-8v70l-8 8Z" fill="var(--scene-ink,#102a33)" opacity="0.14"/>
+<rect x="104" y="34" width="120" height="70" rx="4" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<circle cx="214" cy="42" r="2.5" fill="var(--scene-good,#1f7a4d)"/>
+<g fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="1.2">
+<rect x="112" y="56" width="30" height="40" rx="3"/><rect x="146" y="56" width="30" height="40" rx="3"/><rect x="180" y="56" width="30" height="40" rx="3"/>
+</g>
+<text class="de-sp-t" x="127" y="50" text-anchor="middle">:00</text>
+<text class="de-sp-t" x="161" y="50" text-anchor="middle">:01</text>
+<text class="de-sp-t" x="195" y="50" text-anchor="middle">:02</text>
+<g fill="var(--scene-accent,#006c73)">
+<rect x="116" y="84" width="22" height="7" rx="2"/><rect x="116" y="75" width="22" height="7" rx="2"/><rect x="116" y="66" width="22" height="7" rx="2"/>
+<rect x="150" y="84" width="22" height="7" rx="2"/><rect x="150" y="75" width="22" height="7" rx="2"/>
+<rect x="184" y="84" width="22" height="7" rx="2"/>
+</g>
+<!-- the watermark sweeps across the windows; a closed window gets a check -->
+<g class="de-sp-loop de-sp-wm"><path d="M110 54V100" stroke="var(--scene-warn,#b26a00)" stroke-width="2" stroke-dasharray="4 3"/><path d="M110 100l-5 7h10Z" fill="var(--scene-warn,#b26a00)"/></g>
+<g class="de-sp-loop de-sp-c1" opacity="0"><circle cx="138" cy="58" r="6" fill="var(--scene-good,#1f7a4d)"/><path d="M135 58l2 2.5 4-4.5" stroke="var(--scene-card,#fff)" stroke-width="1.8" fill="none" stroke-linecap="round"/></g>
+<g class="de-sp-loop de-sp-c2" opacity="0"><circle cx="172" cy="58" r="6" fill="var(--scene-good,#1f7a4d)"/><path d="M169 58l2 2.5 4-4.5" stroke="var(--scene-card,#fff)" stroke-width="1.8" fill="none" stroke-linecap="round"/></g>
+<!-- late tray under the job -->
+<path d="M146 152h56l-6 10h-44Z" fill="var(--scene-line,#cfdfdc)"/>
+<rect x="146" y="146" width="56" height="6" rx="2" fill="var(--scene-ink,#102a33)" opacity="0.14"/>
+<text class="de-sp-t" x="174" y="140" text-anchor="middle">late</text>
+<g class="de-sp-loop de-sp-warn" opacity="0"><path d="M212 136l9 15h-18Z" fill="var(--scene-warn,#b26a00)"/><path d="M212 141v5" stroke="var(--scene-card,#fff)" stroke-width="2" stroke-linecap="round"/></g>
+<!-- the lift-line dashboard: scans per minute -->
+<ellipse cx="282" cy="140" rx="30" ry="5" fill="var(--scene-ink,#102a33)" opacity="0.08"/>
+<rect x="252" y="58" width="60" height="74" rx="5" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<path d="M258 120H306" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<rect x="260" y="68" width="24" height="4" rx="2" fill="var(--scene-line,#cfdfdc)"/>
+<rect class="de-sp-loop de-sp-b1" x="262" y="90" width="12" height="30" rx="2" fill="var(--scene-grow,#b8457a)"/>
+<rect class="de-sp-loop de-sp-b2" x="277" y="100" width="12" height="20" rx="2" fill="var(--scene-grow,#b8457a)"/>
+<rect x="292" y="112" width="12" height="8" rx="2" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M224 70H252" stroke="var(--scene-muted,#4d6268)" stroke-width="1.5" stroke-dasharray="3 5" opacity="0.6"/>
+<!-- scans travelling from the gate reader to their minute -->
+<g class="de-sp-loop de-sp-p1" opacity="0"><circle cx="44" cy="64" r="4.5" fill="var(--scene-accent,#006c73)"/></g>
+<g class="de-sp-loop de-sp-p2" opacity="0"><circle cx="44" cy="64" r="4.5" fill="var(--scene-accent,#006c73)"/></g>
+<g class="de-sp-loop de-sp-p3" opacity="0"><circle cx="44" cy="64" r="4.5" fill="var(--scene-accent,#006c73)"/></g>
+<g class="de-sp-loop de-sp-late" opacity="0"><circle cx="66" cy="140" r="4.5" fill="var(--scene-warn,#b26a00)"/></g>
+</svg>

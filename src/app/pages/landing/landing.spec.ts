@@ -196,7 +196,7 @@ describe('Landing', () => {
     fixture.destroy();
   });
 
-  it('starts the path-card stories at 3, 4 and 5 s, lets them overlap, and pauses with the toggle', async () => {
+  it('starts the path-card stories at 1.5, 2.5 and 3.5 s, lets them overlap, and pauses with the toggle', async () => {
     vi.useFakeTimers();
     vi.stubGlobal('matchMedia', () => ({
       matches: false,
@@ -220,7 +220,7 @@ describe('Landing', () => {
     const playing = () =>
       ['learn', 'grow', 'look-ahead'].filter((name) => scene(name).classList.contains(`${name}-play`));
 
-    await vi.advanceTimersByTimeAsync(2999);
+    await vi.advanceTimersByTimeAsync(1499);
     expect(playing()).toEqual([]);
     await vi.advanceTimersByTimeAsync(1);
     expect(playing()).toEqual(['learn']);

@@ -191,7 +191,9 @@ describe('Grow catalog', () => {
     expect(card.querySelector('.catalog-course-description')?.textContent).toBe(
       catalog[0].description,
     );
-    expect(card.querySelector('.catalog-card-kicker')?.textContent).toContain('1 lesson');
+    // No lesson or question count on the card (user review, 2026-10-03).
+    expect(card.querySelector('.catalog-card-kicker')).toBeNull();
+    expect(card.textContent).not.toContain('1 lesson');
     // One link per card: no nested controls or topic lists inside the card.
     expect(card.querySelector('a, button, [tabindex], ul')).toBeNull();
   });

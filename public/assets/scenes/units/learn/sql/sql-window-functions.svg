@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Daily stream rows flow from the database into a listener's phone chart, where each track gets its position: 1, 2, then two tracks tied at 3 share one place, one marked up and one marked new">
+<style>
+.sqlwf-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.sqlwf-shadow{fill:var(--scene-ink,#102a33);opacity:.08}
+.sqlwf-side{fill:var(--scene-ink,#102a33);opacity:.14}
+.sqlwf-bar{fill:var(--scene-line,#cfdfdc)}
+.sqlwf-key{fill:var(--scene-accent,#006c73)}
+.sqlwf-wire{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.5;stroke-dasharray:3 4}
+.sqlwf-a{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-5.6s;animation-timing-function:ease-in-out}
+@media (prefers-reduced-motion: reduce){.sqlwf-a{animation-play-state:paused!important}}
+.sqlwf-dot{animation-name:sqlwf-dot}
+@keyframes sqlwf-dot{0%{opacity:1;transform:none}12%{opacity:1;transform:translateX(78px)}13%{opacity:0;transform:none}14%{opacity:1;transform:none}26%{opacity:1;transform:translateX(78px)}27%{opacity:0;transform:none}28%{opacity:1;transform:none}40%{opacity:1;transform:translateX(78px)}41%,100%{opacity:0;transform:none}}
+.sqlwf-r1{animation-name:sqlwf-r1}
+@keyframes sqlwf-r1{0%,11%{opacity:0;transform:translateX(-8px)}15%,92%{opacity:1;transform:none}97%,100%{opacity:0;transform:none}}
+.sqlwf-r2{animation-name:sqlwf-r2}
+@keyframes sqlwf-r2{0%,25%{opacity:0;transform:translateX(-8px)}29%,92%{opacity:1;transform:none}97%,100%{opacity:0;transform:none}}
+.sqlwf-r3{animation-name:sqlwf-r3}
+@keyframes sqlwf-r3{0%,39%{opacity:0;transform:translateX(-8px)}43%,92%{opacity:1;transform:none}97%,100%{opacity:0;transform:none}}
+.sqlwf-tie{animation-name:sqlwf-tie}
+@keyframes sqlwf-tie{0%,48%{opacity:0}53%,92%{opacity:1}97%,100%{opacity:0}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<!-- the daily_streams table: a database cylinder with key and value rows -->
+<ellipse cx="56" cy="146" rx="40" ry="5" class="sqlwf-shadow"/>
+<path d="M20 50v86c0 5 16 9 36 9s36-4 36-9V50z" class="sqlwf-box"/>
+<path d="M78 52v84c0 3-6 6-14 7V58c8-1 14-3 14-6z" class="sqlwf-side"/>
+<ellipse cx="56" cy="50" rx="36" ry="9" fill="var(--scene-line,#cfdfdc)"/>
+<rect x="30" y="68" width="8" height="8" rx="2" class="sqlwf-key"/><rect x="42" y="70" width="30" height="4" rx="2" class="sqlwf-bar"/>
+<rect x="30" y="84" width="8" height="8" rx="2" class="sqlwf-key"/><rect x="42" y="86" width="22" height="4" rx="2" class="sqlwf-bar"/>
+<rect x="30" y="100" width="8" height="8" rx="2" class="sqlwf-key"/><rect x="42" y="102" width="26" height="4" rx="2" class="sqlwf-bar"/>
+<rect x="30" y="116" width="8" height="8" rx="2" class="sqlwf-key"/><rect x="42" y="118" width="18" height="4" rx="2" class="sqlwf-bar"/>
+<!-- rows travel to the chart -->
+<path d="M96 92H176" class="sqlwf-wire"/>
+<circle cx="98" cy="92" r="3.5" fill="var(--scene-accent,#006c73)" class="sqlwf-a sqlwf-dot"/>
+<!-- the listener behind the phone -->
+<circle cx="292" cy="56" r="13" fill="var(--scene-link,#245a88)"/>
+<path d="M266 112c0-20 12-34 26-34s26 14 26 34z" fill="var(--scene-link,#245a88)" opacity=".85"/>
+<!-- the phone with today's chart -->
+<ellipse cx="228" cy="168" rx="50" ry="4" class="sqlwf-shadow"/>
+<rect x="183" y="20" width="96" height="148" rx="13" class="sqlwf-side"/>
+<rect x="179" y="18" width="96" height="148" rx="13" fill="var(--scene-ink,#102a33)"/>
+<rect x="185" y="30" width="84" height="126" rx="5" fill="var(--scene-card,#fff)"/>
+<rect x="213" y="23" width="28" height="3" rx="1.5" fill="var(--scene-card,#fff)" opacity=".5"/>
+<!-- position 1: same as yesterday -->
+<g class="sqlwf-a sqlwf-r1">
+<circle cx="197" cy="48" r="8" fill="var(--scene-accent,#006c73)"/><text x="197" y="51.5" text-anchor="middle" font-size="10" fill="var(--scene-card,#fff)">1</text>
+<rect x="209" y="43" width="34" height="4" rx="2" class="sqlwf-bar"/><rect x="209" y="50" width="22" height="3" rx="1.5" class="sqlwf-bar" opacity=".6"/>
+<path d="M253 48h8" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-linecap="round"/>
+</g>
+<!-- position 2: up since yesterday -->
+<g class="sqlwf-a sqlwf-r2">
+<circle cx="197" cy="74" r="8" fill="var(--scene-accent,#006c73)"/><text x="197" y="77.5" text-anchor="middle" font-size="10" fill="var(--scene-card,#fff)">2</text>
+<rect x="209" y="69" width="30" height="4" rx="2" class="sqlwf-bar"/><rect x="209" y="76" width="20" height="3" rx="1.5" class="sqlwf-bar" opacity=".6"/>
+<path d="M257 70l-5 7h10z" fill="var(--scene-good,#1f7a4d)"/>
+</g>
+<!-- two tracks tied at 3 share one place -->
+<g class="sqlwf-a sqlwf-tie"><rect x="188" y="88" width="78" height="54" rx="7" fill="none" stroke="var(--scene-warn,#a15c00)" stroke-width="1.6"/></g>
+<g class="sqlwf-a sqlwf-r3">
+<circle cx="197" cy="102" r="8" fill="var(--scene-accent,#006c73)"/><text x="197" y="105.5" text-anchor="middle" font-size="10" fill="var(--scene-card,#fff)">3</text>
+<rect x="209" y="97" width="26" height="4" rx="2" class="sqlwf-bar"/><rect x="209" y="104" width="18" height="3" rx="1.5" class="sqlwf-bar" opacity=".6"/>
+<path d="M257 98l-5 7h10z" fill="var(--scene-good,#1f7a4d)"/>
+<circle cx="197" cy="128" r="8" fill="var(--scene-accent,#006c73)"/><text x="197" y="131.5" text-anchor="middle" font-size="10" fill="var(--scene-card,#fff)">3</text>
+<rect x="209" y="123" width="26" height="4" rx="2" class="sqlwf-bar"/><rect x="209" y="130" width="16" height="3" rx="1.5" class="sqlwf-bar" opacity=".6"/>
+<rect x="245" y="122" width="19" height="11" rx="3" fill="var(--scene-warn,#a15c00)"/><text x="254.5" y="130.2" text-anchor="middle" font-size="7" fill="var(--scene-card,#fff)">NEW</text>
+</g>
+</svg>

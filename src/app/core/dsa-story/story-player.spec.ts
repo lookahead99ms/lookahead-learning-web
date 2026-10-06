@@ -80,4 +80,43 @@ describe('StoryPlayer', () => {
     expect(player.index()).toBe(0);
     expect(player.playing()).toBe(true);
   });
+
+  describe('with autoplay off (Visual walkthrough, option B)', () => {
+    it('never starts on its own, even with a remembered "not paused" choice', () => {
+      const storage = memory({ [STORY_PAUSED_KEY]: '0' });
+      const player = new StoryPlayer(() => 3, () => 1000, () => false, storage, { autoplay: false });
+      player.setVisible(true);
+      expect(player.playing()).toBe(false);
+      vi.advanceTimersByTime(10_000);
+      expect(player.index()).toBe(0);
+    });
+
+    it('Play runs to the last step and stops there instead of looping', () => {
+      const player = new StoryPlayer(() => 3, () => 1000, () => false, null, { autoplay: false });
+      player.toggle();
+      expect(player.playing()).toBe(true);
+      vi.advanceTimersByTime(350);
+      expect(player.index()).toBe(1);
+      vi.advanceTimersByTime(1000);
+      expect(player.index()).toBe(2);
+      expect(player.playing()).toBe(false);
+      vi.advanceTimersByTime(STORY_HOLD_MS * 2);
+      expect(player.index()).toBe(2);
+      // Play from the end starts over.
+      player.toggle();
+      expect(player.index()).toBe(0);
+      expect(player.playing()).toBe(true);
+      player.toggle();
+      expect(player.playing()).toBe(false);
+    });
+
+    it('still pauses when scrolled away', () => {
+      const player = new StoryPlayer(() => 4, () => 1000, () => false, null, { autoplay: false });
+      player.toggle();
+      player.setVisible(false);
+      expect(player.playing()).toBe(false);
+      vi.advanceTimersByTime(5000);
+      expect(player.index()).toBe(0);
+    });
+  });
 });

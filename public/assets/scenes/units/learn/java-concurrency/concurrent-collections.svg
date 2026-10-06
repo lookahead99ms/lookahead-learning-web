@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Two bidders send 520.00 on the same lot at once: the high bid turns from 500.00 to 520.00 for one of them, the other is refused, and an outbid notice drops into a queue for the push sender">
+<style>
+.cc-a{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-5.6s;animation-timing-function:ease-in-out}
+.cc-t{font:600 11px system-ui,sans-serif;fill:var(--scene-muted,#536970);text-anchor:middle}
+.cc-v{font:700 15px ui-monospace,Menlo,monospace;fill:var(--scene-ink,#102a33);text-anchor:middle}
+.cc-dot1{animation-name:cc-go1}
+.cc-dot2{animation-name:cc-go2}
+.cc-old{animation-name:cc-out}
+.cc-new{animation-name:cc-in}
+.cc-ok{animation-name:cc-ok}
+.cc-no{animation-name:cc-no}
+.cc-card{animation-name:cc-card}
+.cc-bell{animation-name:cc-ring;transform-box:fill-box;transform-origin:50% 0}
+@keyframes cc-go1{0%{transform:translate(0,0);opacity:0}4%{opacity:1}20%{transform:translate(66px,24px);opacity:1}24%,100%{transform:translate(66px,24px);opacity:0}}
+@keyframes cc-go2{0%,6%{transform:translate(0,0);opacity:0}10%{opacity:1}28%{transform:translate(66px,-32px);opacity:1}32%,100%{transform:translate(66px,-32px);opacity:0}}
+@keyframes cc-out{0%,20%{opacity:1}23%,94%{opacity:0}100%{opacity:1}}
+@keyframes cc-in{0%,20%{opacity:0}23%,94%{opacity:1}100%{opacity:0}}
+@keyframes cc-ok{0%,21%{opacity:0;transform:scale(.6)}25%,92%{opacity:1;transform:scale(1)}97%,100%{opacity:0}}
+@keyframes cc-no{0%,29%{opacity:0}33%,92%{opacity:1}97%,100%{opacity:0}}
+@keyframes cc-card{0%,34%{transform:translate(0,0);opacity:0}38%{opacity:1}56%,92%{transform:translate(52px,34px);opacity:1}97%,100%{transform:translate(52px,34px);opacity:0}}
+@keyframes cc-ring{0%,58%{transform:rotate(0)}61%{transform:rotate(14deg)}64%{transform:rotate(-12deg)}67%{transform:rotate(8deg)}70%,100%{transform:rotate(0)}}
+@media (prefers-reduced-motion:reduce){.cc-a{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g fill="var(--scene-ink,#102a33)" opacity=".08"><ellipse cx="38" cy="78" rx="26" ry="5"/><ellipse cx="38" cy="160" rx="26" ry="5"/><ellipse cx="174" cy="146" rx="50" ry="7"/><ellipse cx="266" cy="160" rx="40" ry="5"/></g>
+<g fill="none" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="4 4"><path d="M62 58L128 82"/><path d="M62 138L128 106"/><path d="M214 100L262 130"/></g>
+<circle cx="30" cy="40" r="9" fill="var(--scene-accent,#006c73)"/><path d="M14 74q0-20 16-20t16 20z" fill="var(--scene-accent,#006c73)"/>
+<rect x="42" y="46" width="16" height="26" rx="3" fill="var(--scene-ink,#102a33)"/><rect x="44" y="49" width="12" height="18" rx="1.5" fill="var(--scene-accent-soft,#dcefed)"/>
+<circle cx="30" cy="120" r="9" fill="var(--scene-link,#1f5f8b)"/><path d="M14 154q0-20 16-20t16 20z" fill="var(--scene-link,#1f5f8b)"/>
+<rect x="42" y="126" width="16" height="26" rx="3" fill="var(--scene-ink,#102a33)"/><rect x="44" y="129" width="12" height="18" rx="1.5" fill="var(--scene-accent-soft,#dcefed)"/>
+<circle class="cc-a cc-dot1" cx="62" cy="58" r="4.5" fill="var(--scene-accent,#006c73)"/>
+<circle class="cc-a cc-dot2" cx="62" cy="138" r="4.5" fill="var(--scene-link,#1f5f8b)"/>
+<path d="M132 58l12-10h76l-12 10z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M208 58l12-10v84l-12 10z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="132" y="58" width="76" height="84" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<text class="cc-t" x="170" y="74">lot 1042</text>
+<rect x="140" y="80" width="60" height="28" rx="5" fill="var(--scene-accent-soft,#dcefed)"/>
+<text class="cc-v cc-a cc-old" x="170" y="99">500.00</text>
+<text class="cc-v cc-a cc-new" x="170" y="99">520.00</text>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"><path d="M142 120h40M142 130h40"/></g>
+<g fill="var(--scene-good,#1f7a4d)"><circle cx="194" cy="120" r="3"/><circle cx="194" cy="130" r="3"/></g>
+<g class="cc-a cc-ok" style="transform-box:fill-box;transform-origin:center"><circle cx="70" cy="34" r="10" fill="var(--scene-good,#1f7a4d)"/><path d="M65 34l3.5 3.5 6.5-7" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g class="cc-a cc-no"><circle cx="70" cy="114" r="10" fill="var(--scene-bad,#b3261e)"/><path d="M66 110l8 8M74 110l-8 8" stroke="var(--scene-card,#fff)" stroke-width="2.5" stroke-linecap="round"/></g>
+<path d="M232 150h68l-6 10h-56z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="232" y="122" width="68" height="28" rx="3" fill="none" stroke="var(--scene-muted,#536970)" stroke-width="2"/>
+<rect x="240" y="138" width="22" height="10" rx="2" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-line,#cfdfdc)"/>
+<g class="cc-a cc-card"><rect x="214" y="96" width="22" height="16" rx="2" fill="var(--scene-card,#fff)" stroke="var(--scene-warn,#a15c00)" stroke-width="2"/><rect x="214" y="96" width="22" height="5" rx="2" fill="var(--scene-warn,#a15c00)"/></g>
+<g class="cc-a cc-bell"><path d="M280 44q-12 0-12 16v8h24v-8q0-16-12-16z" fill="var(--scene-warn,#a15c00)"/><circle cx="280" cy="72" r="3" fill="var(--scene-warn,#a15c00)"/></g>
+<path d="M280 96v18" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="3 3"/>
+</svg>

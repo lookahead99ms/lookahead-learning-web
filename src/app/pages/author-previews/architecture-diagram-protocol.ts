@@ -10,6 +10,8 @@ export const architectureDiagrams = {
   'candidate-trust': 'Database and permission boundaries',
   'candidate-failures': 'Failure and recovery behavior',
   'candidate-environments': 'Environments and publication boundaries',
+  'lesson-downloads': 'Lesson project downloads',
+  'dsa-recall-workspace': 'Hands-On DSA recall and workspace',
 } as const;
 
 export type ArchitectureDiagramId = keyof typeof architectureDiagrams;

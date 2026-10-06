@@ -31,6 +31,8 @@ type Language = 'java' | 'python' | 'go';
         [draftKey]="studioDraftKey()"
         (codeChange)="studioDraftChange.emit($event)"
       />
+      <!-- Focus Studio's practice tools sit directly under the editor, before anything else. -->
+      <ng-content select="[studioBelowEditor]" />
       @if (tutorProblem(); as problem) {
         <app-editor-tutor
           [problem]="problem"

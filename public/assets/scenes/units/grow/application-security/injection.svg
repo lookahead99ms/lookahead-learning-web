@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A recruiter's search term reaches the database as a bound parameter, so an injected quote returns no rows">
+<style>
+.as-inj-t{font:600 12px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.as-inj-code{font:600 11px ui-monospace,Menlo,monospace;fill:var(--scene-ink,#102a33)}
+.as-inj-dot{animation:as-inj-dot 7s linear infinite;animation-delay:-5.4s}
+@keyframes as-inj-dot{0%,6%{transform:translate(0,0);opacity:0}10%{opacity:1}40%{transform:translate(104px,0);opacity:1}46%,100%{transform:translate(104px,0);opacity:0}}
+.as-inj-ok{animation:as-inj-ok 7s ease-in-out infinite;animation-delay:-5.4s}
+@keyframes as-inj-ok{0%,44%{opacity:0}50%,96%{opacity:1}100%{opacity:0}}
+.as-inj-bad{animation:as-inj-bad 7s ease-in-out infinite;animation-delay:-5.4s}
+@keyframes as-inj-bad{0%,10%{opacity:0}18%,40%{opacity:1}48%,100%{opacity:0}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<!-- recruiter -->
+<ellipse cx="44" cy="150" rx="30" ry="6" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<circle cx="44" cy="60" r="13" fill="var(--scene-accent,#006c73)"/>
+<path d="M24 92a20 20 0 0 1 40 0Z" fill="var(--scene-accent,#006c73)"/>
+<!-- search box with an injected term -->
+<rect x="14" y="104" width="86" height="30" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<text class="as-inj-t" x="22" y="116">search</text>
+<text class="as-inj-code" x="22" y="129">Al' OR 1=1</text>
+<!-- wire to the server -->
+<path d="M100 119H150" stroke="var(--scene-line,#cfdfdc)" stroke-width="2" stroke-dasharray="3 5"/>
+<!-- server: the query with a bound parameter -->
+<ellipse cx="176" cy="150" rx="30" ry="6" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<rect x="146" y="86" width="60" height="54" rx="6" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<text class="as-inj-code" x="152" y="104">WHERE</text>
+<text class="as-inj-code" x="152" y="118">name</text>
+<text class="as-inj-code" x="152" y="132">LIKE ?</text>
+<!-- parameter chip travels the wire from the box toward the query -->
+<g class="as-inj-dot"><rect x="40" y="111" width="18" height="16" rx="4" fill="var(--scene-grow,#b8457a)"/><text class="as-inj-code" x="46" y="123" fill="var(--scene-card,#fff)">?</text></g>
+<!-- wire to the database -->
+<path d="M206 113H250" stroke="var(--scene-line,#cfdfdc)" stroke-width="2" stroke-dasharray="3 5"/>
+<!-- database cylinder -->
+<ellipse cx="282" cy="156" rx="26" ry="6" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<path d="M258 74c0-5 11-9 24-9s24 4 24 9v44c0 5-11 9-24 9s-24-4-24-9Z" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<ellipse cx="282" cy="74" rx="24" ry="9" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<path d="M266 96h32M266 108h32" stroke="var(--scene-line,#cfdfdc)" stroke-width="4" stroke-linecap="round"/>
+<!-- the injected term matches nothing: red cross while the attack is in flight -->
+<g class="as-inj-bad"><circle cx="282" cy="102" r="12" fill="var(--scene-bad,#b3261e)"/><path d="M277 97l10 10M287 97l-10 10" stroke="var(--scene-card,#fff)" stroke-width="2.5" stroke-linecap="round"/></g>
+<!-- bound value returns one legitimate row: green check -->
+<g class="as-inj-ok"><circle cx="282" cy="102" r="12" fill="var(--scene-good,#1f7a4d)"/><path d="M277 102l4 4 7-8" stroke="var(--scene-card,#fff)" stroke-width="2.5" stroke-linecap="round" fill="none"/></g>
+</svg>

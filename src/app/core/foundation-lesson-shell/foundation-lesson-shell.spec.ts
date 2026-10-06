@@ -8,6 +8,7 @@ import {
   LESSON_PATTERNS,
 } from '../../content/content.models';
 import { FoundationLessonShell } from './foundation-lesson-shell';
+import { isPassLine } from './lesson-run-console';
 import { ReferenceLanguageService } from '../reference-language';
 
 const lesson: FoundationLessonV1 = {
@@ -126,12 +127,11 @@ describe('FoundationLessonShell golden lesson contract', () => {
   });
 
   it('requires success markers at the start of console lines', () => {
-    const component = fixture.componentInstance as unknown as { isPassLine(value: string): boolean };
-    expect(component.isPassLine('BUILD SUCCESS')).toBe(true);
-    expect(component.isPassLine('Failures: 0, Errors: 0')).toBe(true);
-    expect(component.isPassLine('PASSED: result matches')).toBe(true);
-    expect(component.isPassLine('FAILED: expected BUILD SUCCESS')).toBe(false);
-    expect(component.isPassLine('error before Failures: 0, Errors: 0')).toBe(false);
+    expect(isPassLine('BUILD SUCCESS')).toBe(true);
+    expect(isPassLine('Failures: 0, Errors: 0')).toBe(true);
+    expect(isPassLine('PASSED: result matches')).toBe(true);
+    expect(isPassLine('FAILED: expected BUILD SUCCESS')).toBe(false);
+    expect(isPassLine('error before Failures: 0, Errors: 0')).toBe(false);
   });
 
   beforeEach(async () => {
@@ -495,13 +495,105 @@ describe('FoundationLessonShell system-v1 lessons (DLV-408)', () => {
     expect(root.querySelector('#foundation-why')).toBeNull();
   });
 
+  describe('Variations and mistakes as tabs (user review, 2026-10-05)', () => {
+    const pair = (n: number, title: string) => ({
+      n, title, problem: [`Problem ${n}.`],
+      broken: { body: [`Broken ${n}.`], codeTabs: [{ id: `b${n}`, title: `B${n}.java`, language: 'java', source: `class B${n} {}` }] },
+      fixed: { title: `Fix ${n}`, body: [`Fixed ${n}.`], codeTabs: [{ id: `f${n}`, title: `F${n}.java`, language: 'java', source: `class F${n} {}` }] },
+    });
+    const withSections = (sections: object[]) => ({ ...systemLesson, sections: [...systemLesson.sections.filter((section) => section.id !== 'obstacles'), ...sections] } as FoundationLessonV1);
+    const mistakes = (count: number) => ({ id: 'obstacles', stage: 'debug', navLabel: 'Common mistakes', heading: 'Bugs that look correct at first', body: ['Real runs.'],
+      pairs: Array.from({ length: count }, (_, index) => pair(index + 1, `Mistake ${index + 1}`)) });
+
+    it('shows one mistake at a time behind tabs, keeps the others findable, and steps with Previous / Next', () => {
+      fixture.componentRef.setInput('lesson', withSections([mistakes(3)]));
+      fixture.detectChanges();
+      const root: HTMLElement = fixture.nativeElement;
+      const tabs = () => Array.from(root.querySelectorAll<HTMLButtonElement>('#obstacles app-lesson-tabs [role="tab"]'));
+      const cards = () => Array.from(root.querySelectorAll<HTMLElement>('#obstacles .pair-card'));
+      expect(tabs().map((tab) => tab.textContent?.trim())).toEqual(['1Mistake 1', '2Mistake 2', '3Mistake 3']);
+      expect(tabs()[1].getAttribute('aria-controls')).toBe('obstacles-2');
+      expect(cards().map((card) => card.getAttribute('hidden'))).toEqual([null, 'until-found', 'until-found']);
+      expect(cards()[0].getAttribute('role')).toBe('tabpanel');
+      expect(cards()[0].getAttribute('aria-labelledby')).toBe('obstacles-pairs-tab-0');
+
+      tabs()[2].click();
+      fixture.detectChanges();
+      expect(cards().map((card) => card.getAttribute('hidden'))).toEqual(['until-found', 'until-found', null]);
+
+      const [previous] = Array.from(root.querySelectorAll<HTMLButtonElement>('#obstacles .tab-step button'));
+      previous.click();
+      fixture.detectChanges();
+      expect(cards()[1].getAttribute('hidden')).toBeNull();
+      expect(root.querySelector('#obstacles .tab-step-count')?.textContent?.trim()).toBe('2 of 3');
+
+      // Find in page reveals a hidden panel; the tab follows it.
+      cards()[0].dispatchEvent(new Event('beforematch'));
+      fixture.detectChanges();
+      expect(tabs()[0].getAttribute('aria-selected')).toBe('true');
+    });
+
+    it('keeps a single mistake as a plain card with no tabs', () => {
+      fixture.componentRef.setInput('lesson', withSections([mistakes(1)]));
+      fixture.detectChanges();
+      const root: HTMLElement = fixture.nativeElement;
+      expect(root.querySelector('#obstacles app-lesson-tabs')).toBeNull();
+      expect(root.querySelector('#obstacles .pair-card')?.hasAttribute('hidden')).toBe(false);
+      expect(root.querySelector('#obstacles .tab-step')).toBeNull();
+    });
+  });
+
+  it('lists the lessons to know first and offers Run it yourself with a project download', async () => {
+    fixture.componentRef.setInput('lesson', {
+      ...systemLesson,
+      prerequisites: [{ title: 'Spring Core', href: '/grow/spring-framework/spring-framework-spring-core-guide', where: 'Grow › Spring Framework' }],
+      runLocally: {
+        requirements: ['JDK 21 or later', 'Maven 3.9+'],
+        versionNotes: ['On Boot 3: <code>spring-boot-starter-web</code>'],
+        steps: ['Open <code>pom.xml</code> in IntelliJ IDEA', 'Run <code>mvn test</code>'],
+        download: { href: '/content/grow/spring-boot/downloads/demo-project.json' },
+      },
+    } as FoundationLessonV1);
+    fixture.detectChanges();
+    const root: HTMLElement = fixture.nativeElement;
+    const start = root.querySelector<HTMLElement>('#foundation-start')!;
+    const link = start.querySelector<HTMLAnchorElement>('.start-prerequisites a')!;
+    expect(link.textContent?.trim()).toBe('Spring Core');
+    expect(link.getAttribute('href')).toBe('/grow/spring-framework/spring-framework-spring-core-guide');
+    const run = start.querySelector<HTMLDetailsElement>('details.run-locally')!;
+    expect(run.open).toBe(false);
+    expect(run.querySelector('summary')?.textContent?.trim()).toBe('Run it yourself');
+    expect(run.querySelector('li code')?.textContent).toBe('spring-boot-starter-web');
+
+    // The bundle is fetched and packed into a zip in the browser.
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ zipName: 'demo.zip', root: 'demo', files: [{ path: 'pom.xml', content: '<project/>' }] })),
+    );
+    const createUrl = vi.fn(() => 'blob:demo');
+    const revoke = vi.fn();
+    Object.assign(URL, { createObjectURL: createUrl, revokeObjectURL: revoke });
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    run.querySelector<HTMLButtonElement>('.project-download')!.click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(fetchSpy).toHaveBeenCalledWith('/content/grow/spring-boot/downloads/demo-project.json', { credentials: 'same-origin' });
+    expect(createUrl).toHaveBeenCalled();
+    expect(click).toHaveBeenCalled();
+    fetchSpy.mockRestore();
+    click.mockRestore();
+  });
+
   it('puts code and its run console beside the explanation, with the table below', () => {
     const section = fixture.nativeElement.querySelector('#code') as HTMLElement;
     expect(section.classList).toContain('code-section');
     const pair = section.querySelector('.code-pair') as HTMLElement;
     expect(pair.querySelector('.code-pair-code .foundation-code')).not.toBeNull();
-    const console = pair.querySelector('.code-pair-code .run-console') as HTMLElement;
+    // The console is its own grid item, so it can sit under the code or under the explanation.
+    const console = pair.querySelector(':scope > .code-pair-console .run-console') as HTMLElement;
+    expect(pair.querySelector('.code-pair-code .run-console')).toBeNull();
     expect(console.querySelector('.run-console-tool')?.textContent).toBe('Run');
+    // No decorative rerun/stop gutter.
+    expect(console.querySelector('.run-console-gutter, .run-rerun, .run-stop')).toBeNull();
     expect(console.querySelector('.run-console-tab')?.textContent?.trim()).toBe('Matcher ×');
     expect(console.querySelector('.run-command')?.textContent).toBe('java Matcher.java');
     expect(Array.from(console.querySelectorAll('.run-line')).map((line) => line.textContent)).toEqual(['Eligible: D1']);
@@ -610,11 +702,34 @@ describe('FoundationLessonShell system-v1 lessons (DLV-408)', () => {
     const scenario = normalizedText(fixture.nativeElement.querySelector('#lesson-scenario'));
     expect(fixture.nativeElement.querySelector('#lesson-scenario .one-line-label')?.textContent).toBe('In one line');
     expect(scenario).toContain('A heap preserves');
-    const why = Array.from(fixture.nativeElement.querySelectorAll('#lesson-scenario .scenario-why h3')).map((h) => (h as HTMLElement).textContent);
+    const why = Array.from(fixture.nativeElement.querySelectorAll('#lesson-scenario .scenario-block h3')).map((h) => (h as HTMLElement).textContent);
     expect(why).toEqual(['Why this scenario?', 'Why it matters']);
     expect(scenario).toContain('Learning scenario: A URL shortener');
     expect(scenario).toContain('Think of bit.ly, TinyURL or Rebrandly.');
     expect(fixture.nativeElement.querySelector('#lesson-scenario button, #lesson-scenario .pill')).toBeNull();
+  });
+
+  it('orders the card as why the subject, why it matters, the scenario, this lesson, then the outcomes', () => {
+    fixture.componentRef.setInput('lesson', {
+      ...systemLesson,
+      learningScenario: {
+        ...systemLesson.learningScenario!,
+        subject: 'Spring Boot',
+        focus: 'auto-configuration',
+        whySubject: '<p>Boot sets Spring up for you.</p><ul><li>Starters</li></ul>',
+      },
+    } as FoundationLessonV1);
+    fixture.detectChanges();
+    const card = fixture.nativeElement.querySelector('#lesson-scenario') as HTMLElement;
+    const headings = Array.from(card.querySelectorAll('h2, h3')).map((h) => (h as HTMLElement).textContent?.trim());
+    expect(headings).toEqual([
+      'Why Spring Boot?',
+      'Why Spring Boot matters',
+      'Learning scenario: A URL shortener',
+      'This lesson: auto-configuration in a URL shortener',
+      'After this lesson you can',
+    ]);
+    expect(card.querySelector('.scenario-block li')?.textContent).toBe('Starters');
   });
 
   it('links the interview answer, quick revision and practice from the right sidebar', () => {
@@ -858,6 +973,29 @@ describe('FoundationLessonShell system-v1 lessons (DLV-408)', () => {
       fixture.detectChanges();
     });
 
+    it('groups Variations into tabs, each with its companion sections, and keeps one side-nav entry for the stage', () => {
+      const lesson = algo();
+      const v = lesson.sections.find((section) => section.id === 'v')!;
+      const variations = [
+        { ...v, id: 'va', navLabel: 'The size decides', heading: 'Variation A · The size limit tells you the cost' },
+        { id: 'va-code', stage: 'variations', navLabel: 'The budget in code', heading: 'The size table, computed', body: ['Prints the table.'] },
+        { id: 'vb', stage: 'variations', navLabel: 'The question decides', heading: 'Variation B · What the question asks for decides', body: ['Count ways: DP.'] },
+      ];
+      fixture.componentRef.setInput('lesson', { ...lesson, sections: lesson.sections.flatMap((section) => (section.id === 'v' ? variations : [section])) } as FoundationLessonV1);
+      fixture.detectChanges();
+      const root: HTMLElement = fixture.nativeElement;
+      const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>('#lesson-variations app-lesson-tabs [role="tab"]'));
+      expect(tabs.map((tab) => tab.textContent?.trim())).toEqual(['AThe size decides', 'BThe question decides']);
+      const panels = Array.from(root.querySelectorAll<HTMLElement>('#lesson-variations .lesson-tab-panel'));
+      expect(panels.map((panel) => Array.from(panel.querySelectorAll('section.lesson-section')).map((section) => section.id))).toEqual([['va', 'va-code'], ['vb']]);
+      expect(panels.map((panel) => panel.getAttribute('hidden'))).toEqual([null, 'until-found']);
+      expect(root.querySelectorAll('#lesson-variations h2[data-sidebar-label]').length).toBe(0);
+      expect(root.querySelector('#va h3.tab-panel-heading')?.textContent?.trim()).toBe('Variation A · The size limit tells you the cost');
+      tabs[1].click();
+      fixture.detectChanges();
+      expect(panels.map((panel) => panel.getAttribute('hidden'))).toEqual(['until-found', null]);
+    });
+
     it('renders the problem-first stages in order with their own labels and no scenario, pitfall or interview blocks', () => {
       const root: HTMLElement = fixture.nativeElement;
       expect(Array.from(root.querySelectorAll('.lesson-stage')).map((stage) => (stage as HTMLElement).dataset['sidebarLabel'])).toEqual([
@@ -930,7 +1068,7 @@ describe('FoundationLessonShell system-v1 lessons (DLV-408)', () => {
       const panel = variation.querySelector('[role="tabpanel"]') as HTMLElement;
       expect(panel.getAttribute('aria-labelledby')).toBe('v-lang-java');
       expect(panel.querySelector('.foundation-code header span')?.textContent).toBe('cycle_start.java');
-      expect(panel.querySelector('.run-console .run-command')?.textContent).toBe('java cycle_start.java');
+      expect(variation.querySelector('.code-pair-console .run-console .run-command')?.textContent).toBe('java cycle_start.java');
 
       (variation.querySelector('#v-lang-python') as HTMLButtonElement).click();
       fixture.detectChanges();

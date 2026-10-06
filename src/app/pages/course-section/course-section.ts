@@ -1,5 +1,5 @@
 import { ContentRecovery, RecoveryKind, RecoveryPreview, recoveryKind } from '../../core/content-recovery/content-recovery';
-import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { EMPTY, Subject, merge, map, catchError, switchMap } from 'rxjs';
@@ -9,6 +9,7 @@ import {
   CourseSection as ContentSection,
   reviewStatusLabel,
 } from '../../content/content.models';
+import { catalogGroupForCourse } from '../../content/catalog-course-groups';
 import { ContentService } from '../../content/content.service';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 
@@ -64,6 +65,8 @@ export class CourseSection implements OnInit {
   protected readonly section = signal<ContentSection | null>(null);
   protected readonly modules = signal<CourseModule[]>([]);
   protected readonly courseId = signal('');
+  /** The Learn catalog group the course sits in, for the breadcrumb's group level. */
+  protected readonly courseGroup = computed(() => catalogGroupForCourse('learn', this.courseId()));
   protected readonly error = signal('');
   protected readonly recovery = signal<RecoveryKind>('temporary');
   protected readonly recoveryPreview = signal<RecoveryPreview>({});

@@ -21,10 +21,6 @@ import { Component, input } from '@angular/core';
     .action {
       color: var(--accent-strong);
       font-weight: 750;
-      text-decoration: underline;
-      text-decoration-color: color-mix(in srgb, var(--accent-strong) 35%, transparent);
-      text-underline-offset: 0.16em;
-      text-decoration-thickness: 0.07em;
     }
     @media (forced-colors: active) {
       .actor,

@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A contestant submits code to a judge server, which runs each submission as its own child process: two finish with a check, and one that never stops is killed with SIGKILL and marked with a red cross while the others keep running">
+<style>
+.ospt-w{font-family:system-ui,sans-serif;font-size:11px;font-weight:700;fill:var(--scene-muted,#536970)}
+.ospt-loop{animation-duration:8s;animation-iteration-count:infinite;animation-timing-function:linear;animation-delay:-5.4s}
+.ospt-sub{animation-name:ospt-sub}
+.ospt-f1{animation-name:ospt-f1}
+.ospt-f2{animation-name:ospt-f2}
+.ospt-f3{animation-name:ospt-f3}
+.ospt-ok1{animation-name:ospt-ok1}
+.ospt-ok2{animation-name:ospt-ok2}
+.ospt-spin{animation-name:ospt-spin;transform-origin:286px 147px}
+.ospt-kill{animation-name:ospt-kill}
+.ospt-x{animation-name:ospt-x}
+.ospt-p3{animation-name:ospt-p3}
+.ospt-led{animation-name:ospt-led}
+@keyframes ospt-sub{0%,4%{transform:translateX(0);opacity:0}6%{opacity:1}18%{transform:translateX(52px);opacity:1}21%,100%{transform:translateX(52px);opacity:0}}
+@keyframes ospt-f1{0%,20%{transform:translate(0,0);opacity:0}22%{opacity:1}30%{transform:translate(34px,-46px);opacity:1}32%,100%{transform:translate(34px,-46px);opacity:0}}
+@keyframes ospt-f2{0%,22%{transform:translate(0,0);opacity:0}24%{opacity:1}32%{transform:translate(34px,0);opacity:1}34%,100%{transform:translate(34px,0);opacity:0}}
+@keyframes ospt-f3{0%,24%{transform:translate(0,0);opacity:0}26%{opacity:1}34%{transform:translate(34px,46px);opacity:1}36%,100%{transform:translate(34px,46px);opacity:0}}
+@keyframes ospt-ok1{0%,40%{opacity:0}44%,94%{opacity:1}98%,100%{opacity:0}}
+@keyframes ospt-ok2{0%,46%{opacity:0}50%,94%{opacity:1}98%,100%{opacity:0}}
+@keyframes ospt-spin{0%,34%{transform:rotate(0);opacity:0}36%{opacity:1}58%{transform:rotate(720deg);opacity:1}60%,100%{transform:rotate(720deg);opacity:0}}
+@keyframes ospt-kill{0%,54%{transform:translate(0,0);opacity:0}56%{opacity:1}62%{transform:translate(26px,26px);opacity:1}64%,100%{transform:translate(26px,26px);opacity:0}}
+@keyframes ospt-x{0%,62%{opacity:0}64%,94%{opacity:1}98%,100%{opacity:0}}
+@keyframes ospt-p3{0%,74%{opacity:1}82%,92%{opacity:.4}98%,100%{opacity:1}}
+@keyframes ospt-led{0%,20%{opacity:.35}24%,90%{opacity:1}96%,100%{opacity:.35}}
+@media (prefers-reduced-motion: reduce){.ospt-loop{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g fill="var(--scene-ink,#102a33)" opacity=".09"><ellipse cx="46" cy="152" rx="40" ry="7"/><ellipse cx="152" cy="156" rx="34" ry="6"/><ellipse cx="262" cy="170" rx="50" ry="6"/></g>
+<path d="M28 116c0-14 7-22 18-22s18 8 18 22z" fill="var(--scene-accent,#006c73)"/>
+<circle cx="46" cy="78" r="13" fill="var(--scene-accent,#006c73)"/>
+<path d="M16 106h58l6 38H10z" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-muted,#536970)" stroke-width="1.5" stroke-linejoin="round"/>
+<rect x="6" y="144" width="80" height="6" rx="2" fill="var(--scene-ink,#102a33)" opacity=".16"/>
+<path d="M36 120l-6 6 6 6M56 120l6 6-6 6" fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M84 122H124" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="4 4" fill="none"/>
+<g class="ospt-loop ospt-sub"><rect x="74" y="112" width="24" height="20" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-link,#245a88)" stroke-width="1.5"/><rect x="74" y="112" width="24" height="5" rx="2" fill="var(--scene-link,#245a88)"/><path d="M78 122h14M78 126h9" stroke="var(--scene-muted,#536970)" stroke-width="1.5"/></g>
+<path d="M130 46l10-8h36l-10 8z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M166 46l10-8v104l-10 8z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="130" y="46" width="36" height="104" rx="3" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-line,#cfdfdc)" stroke-width="1.5"/>
+<g fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)"><rect x="135" y="58" width="26" height="12" rx="2"/><rect x="135" y="78" width="26" height="12" rx="2"/><rect x="135" y="98" width="26" height="12" rx="2"/><rect x="135" y="118" width="26" height="12" rx="2"/></g>
+<circle cx="156" cy="64" r="2.4" fill="var(--scene-good,#1f7a4d)"/>
+<circle class="ospt-loop ospt-led" cx="156" cy="84" r="2.4" fill="var(--scene-good,#1f7a4d)"/>
+<circle cx="156" cy="104" r="2.4" fill="var(--scene-good,#1f7a4d)"/>
+<g stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="4 4" fill="none"><path d="M168 98C190 98 190 55 212 55"/><path d="M168 101H212"/><path d="M168 104C190 104 190 147 212 147"/></g>
+<g fill="var(--scene-link,#245a88)">
+<circle class="ospt-loop ospt-f1" cx="176" cy="101" r="4.5"/>
+<circle class="ospt-loop ospt-f2" cx="176" cy="101" r="4.5"/>
+<circle class="ospt-loop ospt-f3" cx="176" cy="101" r="4.5"/></g>
+<g><rect x="214" y="38" width="88" height="34" rx="4" fill="var(--scene-card,#fff)" stroke="var(--scene-muted,#536970)" stroke-width="1.5"/><rect x="214" y="38" width="88" height="7" rx="3" fill="var(--scene-line,#cfdfdc)"/><text class="ospt-w" x="222" y="63">4121</text></g>
+<g><rect x="214" y="84" width="88" height="34" rx="4" fill="var(--scene-card,#fff)" stroke="var(--scene-muted,#536970)" stroke-width="1.5"/><rect x="214" y="84" width="88" height="7" rx="3" fill="var(--scene-line,#cfdfdc)"/><text class="ospt-w" x="222" y="109">4122</text></g>
+<g class="ospt-loop ospt-p3"><rect x="214" y="130" width="88" height="34" rx="4" fill="var(--scene-card,#fff)" stroke="var(--scene-muted,#536970)" stroke-width="1.5"/><rect x="214" y="130" width="88" height="7" rx="3" fill="var(--scene-line,#cfdfdc)"/><text class="ospt-w" x="222" y="155">4123</text></g>
+<g class="ospt-loop ospt-ok1"><circle cx="286" cy="58" r="8" fill="var(--scene-good,#1f7a4d)"/><path d="M282 58l3 3 5.5-5.5" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g class="ospt-loop ospt-ok2"><circle cx="286" cy="104" r="8" fill="var(--scene-good,#1f7a4d)"/><path d="M282 104l3 3 5.5-5.5" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g class="ospt-loop ospt-spin"><path d="M280 147a6 6 0 1 1 6 6" fill="none" stroke="var(--scene-warn,#9a6700)" stroke-width="2.2" stroke-linecap="round"/><path d="M283.5 150.5L286 153l-2.5 2.5" fill="none" stroke="var(--scene-warn,#9a6700)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g class="ospt-loop ospt-kill"><path d="M168 122l14 0" stroke="var(--scene-bad,#b3261e)" stroke-width="2.5" stroke-linecap="round"/><path d="M178 118l5 4-5 4" fill="none" stroke="var(--scene-bad,#b3261e)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g class="ospt-loop ospt-x"><circle cx="286" cy="150" r="8" fill="var(--scene-bad,#b3261e)"/><path d="M282.5 146.5l7 7M289.5 146.5l-7 7" stroke="var(--scene-card,#fff)" stroke-width="2.2" stroke-linecap="round"/></g>
+</svg>

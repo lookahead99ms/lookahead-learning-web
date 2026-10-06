@@ -20,6 +20,7 @@ import {
   viewTones,
 } from './dsa-story.model';
 import { twoSumProblem, twoSumStory } from './dsa-story.fixture';
+import { diagramFrame } from './dsa-story';
 
 describe('Option B story model', () => {
   it('accepts a well-formed story and rejects anything else', () => {
@@ -123,6 +124,15 @@ describe('Option B story model', () => {
     expect(renamed[2].name).toBe('seenIndex');
   });
 
+  it('names the returned value "returned" when the code has a local named result', () => {
+    const story = twoSumStory();
+    story.variables = [...story.variables, 'result'];
+    story.steps = story.steps.map((step) => ({ ...step, state: { ...step.state, result: [] } }));
+    const names = variableRows(story, story.steps.length - 1, 'python').map((row) => row.name);
+    expect(names.slice(-2)).toEqual(['result', 'returned']);
+    expect(new Set(names).size).toBe(names.length);
+  });
+
   it('maps each step to the lines that ran in every language', () => {
     const story = twoSumStory();
     const problem = twoSumProblem();
@@ -186,6 +196,23 @@ describe('Option B node and frame views', () => {
     ],
     steps: [firstStep, listStep],
   } as DsaStoryV1;
+
+  it('frames a node drawing so wide labels are never cut, and never shrinks text below 12 px', () => {
+    const model = linkedListModel(listStory.views[0], listStory, 0, 'java');
+    const plain = diagramFrame(model);
+    expect(plain.viewBox.split(' ').map(Number).slice(0, 2)).toEqual([0, -34]);
+    // A long pointer name over the first node widens the box to the left.
+    const named = diagramFrame({
+      ...model,
+      nodes: model.nodes.map((node, index) => (index ? node : { ...node, pointers: ['greater_dummy'] })),
+    });
+    const [left, , width] = named.viewBox.split(' ').map(Number);
+    expect(left).toBeLessThan(0);
+    expect(left).toBeLessThanOrEqual(40 - ('greater_dummy'.length * 14 * 0.62) / 2);
+    expect(width).toBeGreaterThan(plain.width);
+    // 14 px labels at no less than 12/14 scale.
+    expect(named.min).toBe(Math.ceil((named.width * 12) / 14));
+  });
 
   it('keeps list nodes in place and follows the real next fields', () => {
     const start = linkedListModel(listStory.views[0], listStory, 0, 'java');

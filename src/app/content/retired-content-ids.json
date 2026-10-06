@@ -28,6 +28,49 @@
         "divide-conquer": "recursion",
         "two-dimensional-dp": "dynamic-programming"
       }
+    },
+    {
+      "path": "learn",
+      "courseId": "solid-design-patterns",
+      "targetCourseId": "java-concurrency",
+      "reason": "DLV-410: the three concurrency units moved to Java Concurrency with unchanged ids.",
+      "lessons": {
+        "java-thread-safety-and-coordination": "java-thread-safety-and-coordination",
+        "thread-vs-runnable-callable": "thread-vs-runnable-callable",
+        "thread-lifecycle-sleep": "thread-lifecycle-sleep",
+        "thread-safety-immutability": "thread-safety-immutability",
+        "java-thread-state-model": "java-thread-state-model",
+        "java-happens-before-rules": "java-happens-before-rules",
+        "java-safe-publication": "java-safe-publication",
+        "java-synchronization-liveness-and-deadlock": "java-synchronization-liveness-and-deadlock",
+        "synchronized-volatile-atomic": "synchronized-volatile-atomic",
+        "locks-and-conditions": "locks-and-conditions",
+        "deadlock-livelock-starvation": "deadlock-livelock-starvation",
+        "wait-notify-notifyall": "wait-notify-notifyall",
+        "concurrent-collections": "concurrent-collections",
+        "synchronous-vs-asynchronous": "synchronous-vs-asynchronous",
+        "java-execution-ownership-and-cancellation": "java-execution-ownership-and-cancellation",
+        "executor-service-lifecycle": "executor-service-lifecycle",
+        "virtual-threads": "virtual-threads",
+        "completablefuture-composition": "completablefuture-composition",
+        "future-vs-completablefuture": "future-vs-completablefuture",
+        "completablefuture-get-vs-join": "completablefuture-get-vs-join",
+        "completablefuture-allof-anyof": "completablefuture-allof-anyof",
+        "async-processing-strategy": "async-processing-strategy",
+        "completionstage-exception-handling": "completionstage-exception-handling",
+        "structured-concurrency-boundaries": "structured-concurrency-boundaries",
+        "execute-vs-submit-rejection": "execute-vs-submit-rejection"
+      },
+      "modules": {
+        "threading": "threading",
+        "synchronization-coordination": "synchronization-coordination",
+        "executors-async": "executors-async"
+      },
+      "units": {
+        "threading": "threading",
+        "synchronization-coordination": "synchronization-coordination",
+        "executors-async": "executors-async"
+      }
     }
   ]
 }

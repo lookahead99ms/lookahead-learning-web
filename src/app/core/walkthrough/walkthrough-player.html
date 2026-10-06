@@ -1,0 +1,238 @@
+<section
+  #section
+  class="walkthrough"
+  tabindex="-1"
+  [attr.aria-labelledby]="uid + '-title'"
+  [attr.data-pane]="pane()"
+  (keydown)="keys($event)"
+>
+  <h3 class="sr-only" [id]="uid + '-title'">{{ label() }}</h3>
+  <div class="wt-head">
+    @if (examples().length) {
+      <label class="example"
+        ><span>Example</span
+        ><select
+          [value]="example()"
+          [attr.aria-describedby]="notice() ? uid + '-notice' : null"
+          (change)="exampleChange.emit($any($event.target).value)"
+        >
+          @for (item of examples(); track item.id) {
+            <option [value]="item.id" [selected]="item.id === example()">{{ item.label }}</option>
+          }
+        </select></label
+      >
+    }
+    <div class="language-tabs" role="tablist" aria-label="Code language">
+      @for (item of languages; track item) {
+        <button
+          type="button"
+          role="tab"
+          [attr.data-walkthrough-language]="item"
+          [attr.aria-selected]="item === language()"
+          [attr.tabindex]="item === language() ? 0 : -1"
+          (click)="languageChange.emit(item)"
+          (keydown)="languageKeys($event, item)"
+        >
+          {{ languageLabels[item] }}
+        </button>
+      }
+    </div>
+    <div class="pane-switch" role="group" aria-label="Show">
+      <button type="button" [attr.aria-pressed]="pane() === 'drawing'" (click)="pane.set('drawing')">
+        Drawing
+      </button>
+      <button type="button" [attr.aria-pressed]="pane() === 'code'" (click)="pane.set('code')">
+        Code
+      </button>
+    </div>
+    @if (approach()) {
+      <button
+        type="button"
+        class="approach-toggle"
+        [attr.aria-expanded]="approachOpen()"
+        [attr.aria-controls]="uid + '-approach'"
+        (click)="approachOpen.set(!approachOpen())"
+      >
+        Approach
+      </button>
+    }
+  </div>
+  @if (notice(); as text) {
+    <p class="notice" [id]="uid + '-notice'">{{ text }}</p>
+  }
+  @if (approach(); as summary) {
+    <div [id]="uid + '-approach'">
+      @if (approachOpen()) {
+        <div class="approach-box" role="note" aria-label="Approach and why">
+          @for (row of summary.rows; track row.label) {
+            <p>
+              <b>{{ row.label }}</b>{{ row.text }}
+            </p>
+          }
+        </div>
+      } @else {
+        <p class="approach-sum">
+          <b>{{ summary.summary }}</b> · Time {{ summary.time }} · Extra space {{ summary.space }}
+        </p>
+      }
+    </div>
+  }
+
+  <div class="wt-grid">
+    <div class="wt-left">
+      <div #controls class="controls" role="group" aria-label="Walkthrough controls">
+        <button
+          #previousButton
+          type="button"
+          class="icon"
+          aria-label="Previous step"
+          aria-keyshortcuts="ArrowLeft"
+          [disabled]="index() === 0"
+          (click)="move(index() - 1)"
+        >
+          <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M10 3 5 8l5 5" /></svg>
+        </button>
+        <button
+          type="button"
+          class="play"
+          aria-keyshortcuts="Space"
+          [attr.aria-pressed]="playing()"
+          [disabled]="count() < 2"
+          (click)="toggle.emit()"
+        >
+          {{ playing() ? 'Pause' : 'Play' }}
+        </button>
+        <button
+          #nextButton
+          type="button"
+          class="primary"
+          aria-label="Next step"
+          aria-keyshortcuts="ArrowRight"
+          [disabled]="index() >= count() - 1"
+          (click)="move(index() + 1)"
+        >
+          Next<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="m6 3 5 5-5 5" /></svg>
+        </button>
+        <label class="scrubber"
+          ><span class="sr-only">Step</span
+          ><input
+            type="range"
+            min="1"
+            [max]="count()"
+            [value]="index() + 1"
+            [disabled]="count() < 2"
+            [attr.aria-valuetext]="'Step ' + (index() + 1) + ' of ' + count()"
+            (input)="step.emit(+$any($event.target).value - 1)"
+        /></label>
+        <!-- Announced on each step, and silent while playing, like the caption. -->
+        <span class="step-count" role="status" [attr.aria-live]="playing() ? 'off' : 'polite'"
+          >Step {{ index() + 1 }} of {{ count() }}</span
+        >
+        <button
+          type="button"
+          class="restart"
+          aria-label="Restart from the first step"
+          aria-keyshortcuts="Home"
+          [disabled]="index() === 0"
+          (click)="move(0)"
+        >
+          Restart
+        </button>
+        @if (everyLineAvailable()) {
+          <div class="mode-switch" role="group" aria-label="Step size">
+            <button type="button" [attr.aria-pressed]="!everyLine()" (click)="everyLineChange.emit(false)">
+              Steps
+            </button>
+            <button type="button" [attr.aria-pressed]="everyLine()" (click)="everyLineChange.emit(true)">
+              Every line
+            </button>
+          </div>
+        }
+      </div>
+      <!-- The stage never pushes the caption off screen: it scrolls inside, with a cue below it. -->
+      <div #stage class="wt-stage" [class.has-more]="below()">
+        <ng-content select="[walkthroughStage]" />
+      </div>
+      @if (below(); as more) {
+        <button type="button" class="more-below" (click)="revealBelow()">
+          {{ more.views ? '+' + more.views + (more.views === 1 ? ' more view' : ' more views') + ' below' : 'More below' }}
+        </button>
+      }
+      <div #captionRow class="caption-row">
+        <span class="num" aria-hidden="true">{{ index() + 1 }}/{{ count() }}</span>
+        <div class="caption-text">
+          @if (captionLine(); as line) {
+            <code class="caption-line">{{ line }}</code>
+          }
+          <p class="caption" [attr.aria-live]="playing() ? 'off' : 'polite'">{{ caption() }}</p>
+          @if (captionDetail(); as detail) {
+            <p class="caption-detail">{{ detail }}</p>
+          }
+        </div>
+      </div>
+      @if (values().length) {
+        <div class="values" aria-label="Values at this step" role="group">
+          <dl>
+            @for (row of shownValues(); track (row.kind ?? '') + ':' + row.name) {
+              <div
+                class="variable"
+                [class.changed]="row.changed"
+                [class.unset]="row.unset"
+                [class.drawn]="row.drawn"
+                [attr.data-kind]="row.kind ?? null"
+              >
+                <dt>
+                  {{ row.name }}
+                  @if (row.frame) {
+                    <span class="frame-tag">in {{ row.frame }}</span>
+                  }
+                </dt>
+                <dd>{{ row.value }}</dd>
+              </div>
+            }
+          </dl>
+          @if (drawnCount()) {
+            <button
+              type="button"
+              class="drawn-toggle"
+              [attr.aria-expanded]="showDrawn()"
+              (click)="showDrawn.set(!showDrawn())"
+            >
+              {{ showDrawn() ? 'Hide drawn values' : '+' + drawnCount() + ' drawn above' }}
+            </button>
+          }
+          @if (valuesNote(); as note) {
+            <p class="values-note">{{ note }}</p>
+          }
+        </div>
+      }
+      <div class="wt-extra"><ng-content select="[walkthroughExtra]" /></div>
+    </div>
+    <div class="wt-right">
+      <app-walkthrough-code
+        [lines]="code()"
+        [language]="language()"
+        [source]="source()"
+        [ranLabel]="everyLine() ? 'Already ran' : 'Also ran'"
+      />
+      @if (ideas().length) {
+        <nav class="ideas" [attr.aria-labelledby]="uid + '-ideas'">
+          <h4 [id]="uid + '-ideas'">The idea, in {{ ideas().length }} parts</h4>
+          <ol>
+            @for (text of ideas(); track $index) {
+              <li>
+                <button
+                  type="button"
+                  [attr.aria-current]="$index === idea() ? 'step' : null"
+                  (click)="ideaSelect.emit($index)"
+                >
+                  <span class="k" aria-hidden="true">{{ $index + 1 }}</span><span>{{ text }}</span>
+                </button>
+              </li>
+            }
+          </ol>
+        </nav>
+      }
+    </div>
+  </div>
+</section>

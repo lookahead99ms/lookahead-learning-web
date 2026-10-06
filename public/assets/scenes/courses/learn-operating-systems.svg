@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="The scheduler hands one CPU core to processes P1, P2 and P3 in turn; P2 writes a page that lands in the page cache marked dirty, and the cache later flushes it to disk">
+<style>
+.lc-os-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.lc-os-tc { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-card, #ffffff); font-weight: 700; }
+.lc-os-sh { fill: var(--scene-ink, #102a33); opacity: .08; }
+.lc-os-slab { fill: var(--scene-ink, #102a33); opacity: .14; }
+.lc-os-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 2; }
+.lc-os-pg { fill: var(--scene-accent-soft, #dcefed); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.lc-os-ln { fill: var(--scene-line, #cfdfdc); }
+.lc-os-acc { fill: var(--scene-accent, #006c73); }
+.lc-os-lnk { fill: var(--scene-link, #245a88); }
+.lc-os-grw { fill: var(--scene-grow, #b8457a); }
+.lc-os-good { fill: var(--scene-good, #1f7a4d); }
+.lc-os-warn { fill: var(--scene-warn, #a15c00); }
+.lc-os-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 2; stroke-dasharray: 4 5; }
+.lc-os-pin { stroke: var(--scene-muted, #536970); stroke-width: 2.5; stroke-linecap: round; }
+.lc-os-glow { fill: none; stroke-width: 3; }
+
+.lc-os-r1 { animation: lc-os-kf-r1 8s infinite; }
+@keyframes lc-os-kf-r1 { 0%, 31% { opacity: 1; } 32%, 100% { opacity: 0; } }
+.lc-os-r2 { animation: lc-os-kf-r2 8s infinite; }
+@keyframes lc-os-kf-r2 { 0%, 31% { opacity: 0; } 32%, 63% { opacity: 1; } 64%, 100% { opacity: 0; } }
+.lc-os-r3 { animation: lc-os-kf-r3 8s infinite; }
+@keyframes lc-os-kf-r3 { 0%, 63% { opacity: 0; } 64%, 96% { opacity: 1; } 97%, 100% { opacity: 0; } }
+.lc-os-cur { animation: lc-os-kf-cur 8s linear infinite; }
+@keyframes lc-os-kf-cur { 0% { transform: translateX(0); } 96% { transform: translateX(90px); } 100% { transform: translateX(90px); } }
+.lc-os-w { animation: lc-os-kf-w 8s ease-in-out infinite; }
+@keyframes lc-os-kf-w { 0%, 38% { transform: translate(0, 0); opacity: 0; } 39% { opacity: 1; } 50% { transform: translate(90px, -20px); opacity: 1; } 51%, 100% { transform: translate(90px, -20px); opacity: 0; } }
+.lc-os-cp { animation: lc-os-kf-cp 8s infinite; }
+@keyframes lc-os-kf-cp { 0%, 50% { opacity: 0; } 51%, 96% { opacity: 1; } 98%, 100% { opacity: 0; } }
+.lc-os-dirty { animation: lc-os-kf-dirty 8s infinite; }
+@keyframes lc-os-kf-dirty { 0%, 50% { opacity: 0; } 51%, 79% { opacity: 1; } 80%, 100% { opacity: 0; } }
+.lc-os-fl { animation: lc-os-kf-fl 8s ease-in infinite; }
+@keyframes lc-os-kf-fl { 0%, 62% { transform: translate(0, 0); opacity: 0; } 63% { opacity: 1; } 79% { transform: translate(0, 48px); opacity: 1; } 80%, 100% { transform: translate(0, 48px); opacity: 0; } }
+.lc-os-ok { animation: lc-os-kf-ok 8s infinite; }
+@keyframes lc-os-kf-ok { 0%, 79% { opacity: 0; } 81%, 96% { opacity: 1; } 98%, 100% { opacity: 0; } }
+
+.lc-os-r1, .lc-os-r2, .lc-os-r3, .lc-os-cur, .lc-os-w, .lc-os-cp, .lc-os-dirty, .lc-os-fl, .lc-os-ok { animation-delay: -5.6s; }
+@media (prefers-reduced-motion: reduce) { .lc-os-r1, .lc-os-r2, .lc-os-r3, .lc-os-cur, .lc-os-w, .lc-os-cp, .lc-os-dirty, .lc-os-fl, .lc-os-ok { animation-play-state: paused; } }
+</style>
+
+<!-- processes with their memory pages -->
+<g>
+  <rect class="lc-os-slab" x="12" y="25" width="78" height="34" rx="6"/>
+  <rect class="lc-os-box" x="12" y="22" width="78" height="34" rx="6"/>
+  <rect class="lc-os-acc" x="12" y="22" width="6" height="34" rx="3"/>
+  <text class="lc-os-t" x="26" y="44" font-size="13">P1</text>
+  <rect class="lc-os-pg" x="50" y="33" width="10" height="12" rx="2"/><rect class="lc-os-pg" x="63" y="33" width="10" height="12" rx="2"/><rect class="lc-os-pg" x="76" y="33" width="10" height="12" rx="2"/>
+  <rect class="lc-os-slab" x="12" y="69" width="78" height="34" rx="6"/>
+  <rect class="lc-os-box" x="12" y="66" width="78" height="34" rx="6"/>
+  <rect class="lc-os-lnk" x="12" y="66" width="6" height="34" rx="3"/>
+  <text class="lc-os-t" x="26" y="88" font-size="13">P2</text>
+  <rect class="lc-os-pg" x="50" y="77" width="10" height="12" rx="2"/><rect class="lc-os-pg" x="63" y="77" width="10" height="12" rx="2"/><rect class="lc-os-lnk" x="76" y="77" width="10" height="12" rx="2"/>
+  <rect class="lc-os-slab" x="12" y="113" width="78" height="34" rx="6"/>
+  <rect class="lc-os-box" x="12" y="110" width="78" height="34" rx="6"/>
+  <rect class="lc-os-grw" x="12" y="110" width="6" height="34" rx="3"/>
+  <text class="lc-os-t" x="26" y="132" font-size="13">P3</text>
+  <rect class="lc-os-pg" x="50" y="121" width="10" height="12" rx="2"/><rect class="lc-os-pg" x="63" y="121" width="10" height="12" rx="2"/>
+</g>
+<rect class="lc-os-glow lc-os-r1" x="10" y="20" width="82" height="38" rx="8" stroke="var(--scene-accent, #006c73)"/>
+<rect class="lc-os-glow lc-os-r2" x="10" y="64" width="82" height="38" rx="8" stroke="var(--scene-link, #245a88)"/>
+<rect class="lc-os-glow lc-os-r3" x="10" y="108" width="82" height="38" rx="8" stroke="var(--scene-grow, #b8457a)"/>
+
+<!-- scheduler wires -->
+<path class="lc-os-wire" d="M94 39 L126 70 M94 83 H126 M94 127 L126 96"/>
+
+<!-- one CPU core -->
+<ellipse class="lc-os-sh" cx="156" cy="118" rx="30" ry="4"/>
+<path class="lc-os-pin" d="M140 50 V54 M152 50 V54 M164 50 V54 M176 50 V54 M140 110 V114 M152 110 V114 M164 110 V114 M176 110 V114 M124 68 H128 M124 82 H128 M124 96 H128 M184 68 H188 M184 82 H188 M184 96 H188"/>
+<rect x="128" y="54" width="56" height="56" rx="6" fill="var(--scene-card, #ffffff)" stroke="var(--scene-muted, #536970)" stroke-width="2"/>
+<g class="lc-os-r1"><rect class="lc-os-acc" x="140" y="66" width="32" height="32" rx="4"/><text class="lc-os-tc" x="156" y="87" font-size="13" text-anchor="middle">P1</text></g>
+<g class="lc-os-r2"><rect class="lc-os-lnk" x="140" y="66" width="32" height="32" rx="4"/><text class="lc-os-tc" x="156" y="87" font-size="13" text-anchor="middle">P2</text></g>
+<g class="lc-os-r3"><rect class="lc-os-grw" x="140" y="66" width="32" height="32" rx="4"/><text class="lc-os-tc" x="156" y="87" font-size="13" text-anchor="middle">P3</text></g>
+
+<!-- time slices -->
+<rect class="lc-os-acc" x="111" y="136" width="29" height="10" rx="3" opacity=".45"/>
+<rect class="lc-os-lnk" x="141" y="136" width="29" height="10" rx="3" opacity=".45"/>
+<rect class="lc-os-grw" x="171" y="136" width="29" height="10" rx="3" opacity=".45"/>
+<g class="lc-os-cur"><path d="M111 130 V152" stroke="var(--scene-ink, #102a33)" stroke-width="2.5" stroke-linecap="round"/></g>
+<text class="lc-os-t" x="156" y="168" font-size="11" text-anchor="middle">time slices</text>
+
+<!-- the write: core to page cache -->
+<g class="lc-os-w"><rect class="lc-os-lnk" x="188" y="70" width="12" height="14" rx="2"/></g>
+
+<!-- page cache -->
+<ellipse class="lc-os-sh" cx="261" cy="90" rx="49" ry="4"/>
+<rect class="lc-os-slab" x="212" y="25" width="98" height="60" rx="7"/>
+<rect class="lc-os-box" x="212" y="22" width="98" height="60" rx="7"/>
+<text class="lc-os-t" x="221" y="40" font-size="12">page cache</text>
+<path class="lc-os-warn" d="M303 27 L296 37 H301 L298 45 L306 34 H301 Z"/>
+<rect class="lc-os-pg" x="230" y="50" width="12" height="14" rx="2"/><rect class="lc-os-pg" x="246" y="50" width="12" height="14" rx="2"/><rect class="lc-os-pg" x="262" y="50" width="12" height="14" rx="2"/>
+<rect class="lc-os-pg" x="278" y="50" width="12" height="14" rx="2" style="stroke-dasharray: 3 2"/>
+<rect class="lc-os-lnk lc-os-cp" x="278" y="50" width="12" height="14" rx="2"/>
+<circle class="lc-os-warn lc-os-dirty" cx="298" cy="57" r="4"/>
+
+<!-- flush to disk -->
+<path class="lc-os-wire" d="M284 84 V104"/>
+<g class="lc-os-fl"><rect class="lc-os-lnk" x="278" y="50" width="12" height="14" rx="2"/></g>
+<ellipse class="lc-os-sh" cx="266" cy="166" rx="34" ry="4"/>
+<path d="M238 114 V152 a28 8 0 0 0 56 0 V114" fill="var(--scene-accent-soft, #dcefed)" stroke="var(--scene-muted, #536970)" stroke-width="2"/>
+<ellipse cx="266" cy="114" rx="28" ry="8" fill="var(--scene-card, #ffffff)" stroke="var(--scene-muted, #536970)" stroke-width="2"/>
+<path d="M238 132 a28 8 0 0 0 56 0" fill="none" stroke="var(--scene-muted, #536970)" stroke-width="1.5"/>
+<text class="lc-os-t" x="266" y="150" font-size="12" text-anchor="middle">disk</text>
+<g class="lc-os-ok"><circle class="lc-os-good" cx="296" cy="112" r="9"/><path d="M291 112 l3.5 3.5 l6 -6.5" fill="none" stroke="var(--scene-card, #ffffff)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+</svg>

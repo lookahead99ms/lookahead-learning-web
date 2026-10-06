@@ -224,17 +224,19 @@ describe('Learn catalog', () => {
       );
       const title = card.querySelector('h3')!;
       expect(card.getAttribute('aria-labelledby')).toBe(title.id);
-      expect(card.getAttribute('aria-describedby')).toContain(
-        card.querySelector('.catalog-card-kicker')!.id,
+      expect(card.getAttribute('aria-describedby')).toBe(
+        card.querySelector('.catalog-course-description')!.id,
       );
-      // The card reads drawing, then title, then description; the counts follow as plain meta.
+      // The card reads drawing, then title, then description, with no lesson or question
+      // counts (user review, 2026-10-03).
       expect(
         [
           ...card.querySelectorAll(
             'app-card-scene, h3, .catalog-course-description, .catalog-card-kicker',
           ),
         ].map((node) => (node.localName === 'p' ? node.className.split(' ')[0] : node.localName)),
-      ).toEqual(['app-card-scene', 'h3', 'catalog-course-description', 'catalog-card-kicker']);
+      ).toEqual(['app-card-scene', 'h3', 'catalog-course-description']);
+      expect(card.textContent).not.toMatch(/\d+\+? (?:lessons?|questions?)\b/);
       // Drawing words take the shared card text styling, so the title stays the strongest text.
       expect(card.querySelector('app-card-scene')?.classList).toContain('la-card-scene-card');
     }

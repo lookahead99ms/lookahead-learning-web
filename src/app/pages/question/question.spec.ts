@@ -1,3 +1,4 @@
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
@@ -15,6 +16,7 @@ import {
 import { ContentService } from '../../content/content.service';
 import { HandsOnDsaIndex } from '../../content/hands-on-dsa';
 import { Question } from './question';
+import { StudyPlanAccount } from '../study-plan/study-plan-account';
 
 type CanonicalRouteCase = {
   problemId: string;
@@ -286,8 +288,10 @@ function linkWithText(root: HTMLElement, text: string): HTMLAnchorElement | unde
   );
 }
 
+/** Reveals the pattern through the recognition dialog. */
 async function revealPattern(harness: RouterTestingHarness): Promise<void> {
-  harness.routeNativeElement!.querySelector<HTMLButtonElement>('.pattern-reveal-toggle')!.click();
+  const root = harness.routeNativeElement!;
+  root.querySelector<HTMLButtonElement>('app-pattern-help .reveal')!.click();
   harness.detectChanges();
   await harness.fixture.whenStable();
 }
@@ -310,11 +314,11 @@ describe('Question canonical DSA navigation', () => {
   };
 
   beforeEach(async () => {
-    content.getCatalog.mockClear();
-    content.getCourseOutline.mockClear();
-    content.getContentItem.mockClear();
+    content.getCatalog.mockReset();
+    content.getCourseOutline.mockReset();
+    content.getContentItem.mockReset();
     content.getHandsOnDsaIndex.mockReset().mockReturnValue(of(emptyIndex()));
-    content.getDsaProblem.mockClear();
+    content.getDsaProblem.mockReset();
     await TestBed.configureTestingModule({
       providers: [provideRouter(routes), { provide: ContentService, useValue: content }],
     }).compileComponents();
@@ -438,11 +442,9 @@ describe('Question canonical DSA navigation', () => {
       '/learn/algorithmic-patterns/algorithmic-two-sum?returnTo=' + encodeURIComponent(returnUrl),
       Question,
     );
-    expect(
-      linkWithText(harness.routeNativeElement!, 'Return to interview practice')?.getAttribute(
-        'href',
-      ),
-    ).toBe(returnUrl);
+    const back = harness.routeNativeElement!.querySelector('.problem-back');
+    expect(back?.textContent?.trim()).toBe('Interview practice');
+    expect(back?.getAttribute('href')).toBe(returnUrl);
   });
 
   it('keeps review results and the original course unit one click away', async () => {
@@ -464,9 +466,9 @@ describe('Question canonical DSA navigation', () => {
       '/learn/algorithmic-patterns/algorithmic-two-sum?returnTo=' + encodeURIComponent(returnUrl),
       Question,
     );
-    expect(
-      linkWithText(harness.routeNativeElement!, 'Return to DSA problems')?.getAttribute('href'),
-    ).toBe(returnUrl);
+    const back = harness.routeNativeElement!.querySelector('.problem-back');
+    expect(back?.textContent?.trim()).toBe('Hands-On DSA problems');
+    expect(back?.getAttribute('href')).toBe(returnUrl);
   });
 
   it.each([
@@ -520,10 +522,10 @@ describe('Question canonical DSA navigation', () => {
       );
 
       const previous = harness.routeNativeElement!.querySelector<HTMLAnchorElement>(
-        '.problem-navigation-link.previous',
+        '.problem-nav-card.previous',
       );
       const next = harness.routeNativeElement!.querySelector<HTMLAnchorElement>(
-        '.problem-navigation-link.next',
+        '.problem-nav-card.next',
       );
       expect(previous?.textContent).toContain(twoSum.title);
       const expectedNumber = sort === 'interview-rank' ? 10 : 2;
@@ -562,6 +564,158 @@ describe('Question canonical DSA navigation', () => {
     },
   );
 
+  it('marks a problem solved on this device in the header and on neighbour cards', async () => {
+    const storageDescriptor = Object.getOwnPropertyDescriptor(window, 'localStorage');
+    const values = new Map<string, string>();
+    Object.defineProperty(window, 'localStorage', {
+      configurable: true,
+      value: {
+        getItem: (key: string) => values.get(key) ?? null,
+        setItem: (key: string, value: string) => void values.set(key, value),
+      },
+    });
+    try {
+      const selected = routeCases[2];
+      const solved = (rating: string) => ({
+        status: 'solved',
+        rating,
+        reviewAt: null,
+        notes: '',
+        updatedAt: '2026-10-04T10:00:00.000Z',
+      });
+      values.set(
+        'look-ahead.dsa-practice.v1',
+        JSON.stringify({
+          schemaVersion: 'dsa-practice-local/v1',
+          problems: {
+            [selected.problemId]: solved('Solved with hints'),
+            [twoSum.problemId]: solved('Solved on my own'),
+          },
+        }),
+      );
+      const index = indexFor(selected);
+      index.totals = { groups: 1, problemPlacements: 3, distinctProblems: 3 };
+      const template = index.groups[0].problems[0];
+      index.groups[0].problems = [
+        { ...template, id: containsDuplicate.problemId, title: containsDuplicate.title, questionId: containsDuplicate.questionId, route: ['/learn', containsDuplicate.courseId, containsDuplicate.questionId], studyOrder: 1 },
+        { ...template, id: twoSum.problemId, title: twoSum.title, questionId: twoSum.questionId, route: ['/learn', twoSum.courseId, twoSum.questionId], studyOrder: 2 },
+        { ...template, studyOrder: 3 },
+      ];
+      content.getHandsOnDsaIndex.mockReturnValueOnce(of(index));
+      content.getDsaProblem.mockReturnValueOnce(of(canonicalProblem(selected)));
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl(`/learn/${selected.courseId}/${selected.problemId}`, Question);
+      const root = harness.routeNativeElement!;
+      const mark = root.querySelector('.problem-title-metadata .problem-solved')!;
+      expect(mark.textContent!.replace(/\s+/g, ' ').trim()).toBe('✓ Solved: Solved with hints');
+      expect(mark.querySelector('[aria-hidden="true"]')!.textContent!.trim()).toBe('✓');
+      const previous = root.querySelector<HTMLAnchorElement>('.problem-nav-card.previous')!;
+      expect(previous.querySelector('.solved-tick')!.textContent).toBe('✓');
+      expect(previous.getAttribute('aria-label')).toContain(`Previous: ${twoSum.title}, solved.`);
+    } finally {
+      if (storageDescriptor) Object.defineProperty(window, 'localStorage', storageDescriptor);
+      else Reflect.deleteProperty(window, 'localStorage');
+    }
+  });
+
+  it('ticks solved study-plan neighbours, resolving plan entries to problems by route', async () => {
+    const storageDescriptor = Object.getOwnPropertyDescriptor(window, 'localStorage');
+    const values = new Map<string, string>();
+    Object.defineProperty(window, 'localStorage', {
+      configurable: true,
+      value: {
+        getItem: (key: string) => values.get(key) ?? null,
+        setItem: (key: string, value: string) => void values.set(key, value),
+      },
+    });
+    TestBed.overrideProvider(StudyPlanAccount, {
+      useValue: {
+        account: signal(null),
+        sessionExpired: signal(false),
+        initialize: vi.fn().mockResolvedValue(undefined),
+      },
+    });
+    try {
+      const renamedRoute = ['/learn', 'core-data-structures', 'core-ds-renamed-question'];
+      const step = (id: string, title: string, route: string[]) => ({
+        id,
+        kind: 'new',
+        title,
+        minutes: 15,
+        route,
+        contentType: 'dsa-problem',
+      });
+      values.set(
+        'look-ahead.study-plan.v1',
+        JSON.stringify({
+          schemaVersion: 'study-plan-local/v1',
+          completedIds: [],
+          snapshot: {
+            config: { days: 1 },
+            focusedDailyHours: 1,
+            days: [
+              {
+                day: 1,
+                assignments: [
+                  // Plan activity ids are not problem ids.
+                  step('plan-two-sum', twoSum.title, ['/learn', twoSum.courseId, twoSum.questionId]),
+                  step('plan-current', firstUnique.title, ['/learn', firstUnique.courseId, firstUnique.questionId]),
+                  step('plan-renamed', 'Renamed Question', renamedRoute),
+                ],
+              },
+            ],
+          },
+        }),
+      );
+      const solved = {
+        status: 'solved',
+        rating: 'Solved on my own',
+        reviewAt: null,
+        notes: '',
+        updatedAt: '2026-10-04T10:00:00.000Z',
+      };
+      values.set(
+        'look-ahead.dsa-practice.v1',
+        JSON.stringify({
+          schemaVersion: 'dsa-practice-local/v1',
+          // Two Sum is not in this index: its route ends with its problem id.
+          // The renamed question's route does not, so the published index maps it.
+          problems: { [twoSum.problemId]: solved, 'algorithmic-renamed-problem': solved },
+        }),
+      );
+      const index = indexFor(firstUnique);
+      index.groups[0].problems.push({
+        ...index.groups[0].problems[0],
+        id: 'algorithmic-renamed-problem',
+        title: 'Renamed Question',
+        questionId: 'core-ds-renamed-question',
+        route: renamedRoute,
+      });
+      content.getHandsOnDsaIndex.mockReturnValueOnce(of(index));
+      content.getDsaProblem.mockReturnValueOnce(of(canonicalProblem(firstUnique)));
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl(
+        `/learn/${firstUnique.courseId}/${firstUnique.questionId}?plan=browser&day=1&activity=plan-current`,
+        Question,
+      );
+      await harness.fixture.whenStable();
+      harness.detectChanges();
+      const root = harness.routeNativeElement!;
+      const row = root.querySelector('.source-navigation-rows nav')!;
+      expect(row.getAttribute('aria-label')).toBe('Study plan problem navigation');
+      const previous = row.querySelector<HTMLAnchorElement>('.problem-nav-card.previous')!;
+      const next = row.querySelector<HTMLAnchorElement>('.problem-nav-card.next')!;
+      expect(previous.textContent).toContain(twoSum.title);
+      expect(previous.querySelector('.solved-tick')?.textContent).toBe('✓');
+      expect(previous.getAttribute('aria-label')).toContain(', solved.');
+      expect(next.textContent).toContain('Renamed Question');
+      expect(next.querySelector('.solved-tick')?.textContent).toBe('✓');
+    } finally {
+      if (storageDescriptor) Object.defineProperty(window, 'localStorage', storageDescriptor);
+      else Reflect.deleteProperty(window, 'localStorage');
+    }
+  });
+
   it('uses exact release values in the shared header and associates the full concept title', async () => {
     const selected: CanonicalRouteCase = {
       problemId: 'dsa-catalog-meeting-rooms',
@@ -590,53 +744,54 @@ describe('Question canonical DSA navigation', () => {
       root.querySelector('.problem-title-metadata [aria-label="Difficulty: Intermediate"]'),
     ).not.toBeNull();
     expect(
-      root.querySelector('.problem-title-metadata [aria-label="Rank: 30 of 782 in interview priority"]')
+      root.querySelector('.problem-title-metadata [aria-label="Rank 30 of 782 in interview priority"]')
         ?.textContent,
-    ).toBe('Rank: 30');
+    ).toBe('Rank 30');
     expect(root.querySelector('.problem-release-order')).toBeNull();
+    const back = root.querySelector<HTMLAnchorElement>('.problem-back')!;
+    expect(back.textContent?.trim()).toBe('Hands-On DSA problems');
+    expect(back.getAttribute('href')).toBe('/learn/hands-on-dsa');
     const titleCluster = root.querySelector('.article-title-row')!;
     expect([...titleCluster.children].map((element) => element.tagName)).toEqual(['H1', 'P']);
-    expect([...titleCluster.querySelectorAll('.problem-title-metadata > span:not(.problem-pattern)')].map(element => element.textContent)).toEqual(['Difficulty: Intermediate', 'Rank: 30']);
-    expect(getComputedStyle(titleCluster.querySelector('.problem-title-metadata')!).columnGap).toBe('16px');
-    expect(getComputedStyle(titleCluster.querySelector('.problem-rank')!).borderInlineStart).toBe('1px solid var(--muted)');
+    expect([...titleCluster.querySelectorAll('.problem-title-metadata > span')].map(element => element.textContent)).toEqual(['Intermediate', 'Rank 30', 'Problem 616 of 782']);
     expect(getComputedStyle(titleCluster).flexDirection).toBe('column');
     expect(getComputedStyle(titleCluster).alignItems).toBe('flex-start');
     expect(getComputedStyle(titleCluster).textAlign).toBe('start');
-    expect(
-      [...root.querySelectorAll('.reader-question-panel p')].filter(
-        (element) => element.textContent?.trim() === 'Learning order',
-      ),
-    ).toHaveLength(0);
     expect(root.querySelector('.source-order-label')).toBeNull();
     const navigation = root.querySelector('.source-navigation-rows nav')!;
     expect(navigation.getAttribute('aria-label')).toBe('Learning order problem navigation');
-    expect(navigation.getAttribute('title')).toBe('Learning order problem navigation');
     expect(navigation.children).toHaveLength(2);
-    expect(getComputedStyle(navigation.querySelector('.boundary')!).justifySelf).toBe('start');
-    expect(getComputedStyle(navigation.querySelector('.boundary-end')!).justifySelf).toBe('end');
-    expect(getComputedStyle(navigation).marginTop).toBe('0px');
-    expect(getComputedStyle(navigation).paddingBlock).toBe('0px');
+    expect(navigation.querySelector('.problem-nav-boundary')?.textContent).toBe('First problem');
+    expect(navigation.querySelector('.problem-nav-boundary.end')?.textContent).toBe('Last problem');
+    // The theory link and the return link moved into the header; the old link row is gone.
+    expect(root.querySelector('.question-review-navigation')).toBeNull();
     expect(root.querySelector('.problem-concept-review')).toBeNull();
-    expect(root.querySelector('.problem-pattern-link')).toBeNull();
+    expect(root.querySelector('.pattern-lesson-open')).toBeNull();
     expect(root.querySelector('.breadcrumbs')?.textContent).not.toContain('Hashing');
-    const revealButton = root.querySelector<HTMLButtonElement>('.pattern-reveal-toggle')!;
-    expect(revealButton.textContent).toBe('Show Pattern');
-    expect(revealButton.getAttribute('aria-expanded')).toBe('false');
-    expect(revealButton.getAttribute('aria-controls')).toBe('problem-pattern-review');
+    const help = root.querySelector<HTMLButtonElement>('.pattern-help-open')!;
+    expect(help.textContent?.trim()).toBe('Help me recognize the pattern');
+    expect(help.getAttribute('aria-haspopup')).toBe('dialog');
+    help.click();
+    harness.detectChanges();
+    expect(root.querySelector('app-pattern-help dialog')?.hasAttribute('open')).toBe(true);
+    expect(root.querySelector('app-pattern-help h2')?.textContent).toBe('Meeting Rooms');
     await revealPattern(harness);
-    expect(revealButton.textContent).toBe('Hide Pattern');
-    expect(revealButton.getAttribute('aria-expanded')).toBe('true');
-    expect(root.querySelector('.problem-pattern-link')?.textContent).toBe('Review the Hashing pattern');
-    expect(root.querySelector('.problem-pattern-link')?.getAttribute('href')).toBe('/learn/algorithmic-patterns/algorithmic-hashing-lookup');
+    // After reveal, the header offers only the named lesson link with its new-tab cue.
+    expect(root.querySelector('app-pattern-help .answer h4')?.textContent).toBe('Hashing');
+    expect(root.querySelector('.pattern-help-open')).toBeNull();
+    const lesson = root.querySelector<HTMLAnchorElement>('.pattern-lesson-open')!;
+    expect(lesson.textContent).toContain('Hashing lesson');
+    expect(lesson.textContent).not.toContain('Open the');
+    expect(lesson.textContent).toContain('(opens in a new tab)');
+    expect(lesson.getAttribute('href')).toBe('/learn/algorithmic-patterns/algorithmic-hashing-lookup');
+    expect(lesson.getAttribute('target')).toBe('_blank');
+    expect(root.querySelector('.pattern-hide')).toBeNull();
+    expect(root.querySelector('.problem-pattern-actions')?.querySelectorAll('a, button')).toHaveLength(1);
     expect(root.querySelector('.breadcrumbs')?.textContent).toContain('Hashing');
-    await revealPattern(harness);
-    expect(root.querySelector('.problem-pattern-link')).toBeNull();
-    expect(root.querySelector('.breadcrumbs')?.textContent).not.toContain('Hashing');
     expect(root.querySelector('.question-context-panel')).toBeNull();
-    await revealPattern(harness);
     await harness.navigateByUrl('/learn/algorithmic-patterns/algorithmic-two-sum', Question);
-    expect(harness.routeNativeElement!.querySelector('.pattern-reveal-toggle')?.getAttribute('aria-expanded')).toBe('false');
-    expect(harness.routeNativeElement!.querySelector('.problem-pattern-link')).toBeNull();
+    expect(harness.routeNativeElement!.querySelector('.pattern-help-open')).not.toBeNull();
+    expect(harness.routeNativeElement!.querySelector('.pattern-lesson-open')).toBeNull();
   });
 
   it('navigates from the last result on one page to the first on the next', async () => {
@@ -760,7 +915,7 @@ describe('Question canonical DSA navigation', () => {
       expect(root.textContent).not.toContain('Legacy practice module');
 
       expect(linkWithText(root, 'Hands-On DSA')?.getAttribute('href')).toBe('/learn/hands-on-dsa');
-      expect(root.querySelector('.problem-pattern-link')).toBeNull();
+      expect(root.querySelector('.pattern-lesson-open')).toBeNull();
       await revealPattern(harness);
       const patternBreadcrumb = [
         ...root.querySelectorAll<HTMLAnchorElement>('.breadcrumbs a'),
@@ -768,16 +923,16 @@ describe('Question canonical DSA navigation', () => {
       expect(patternBreadcrumb?.getAttribute('href')).toBe(
         '/learn/hands-on-dsa?pattern=algorithmic-patterns:hashing-lookup',
       );
-      expect(root.querySelector('.problem-pattern-link')?.getAttribute('href')).toBe(
+      expect(root.querySelector('.pattern-lesson-open')?.getAttribute('href')).toBe(
         '/learn/algorithmic-patterns/algorithmic-hashing-lookup',
       );
 
       const previous = root.querySelector<HTMLAnchorElement>(
-        '.question-inner-navigation .previous',
+        '.problem-nav-cards .previous',
       );
-      const next = root.querySelector<HTMLAnchorElement>('.question-inner-navigation .next');
+      const next = root.querySelector<HTMLAnchorElement>('.problem-nav-cards .next');
       if (testCase.previous) {
-        expect(previous?.classList.contains('problem-navigation-link')).toBe(true);
+        expect(previous?.classList.contains('problem-nav-card')).toBe(true);
         expect(previous?.textContent).toContain(testCase.previous.title);
         expect(previous?.getAttribute('href')).toBe(
           `/learn/${testCase.previous.courseId}/${testCase.previous.questionId}?pattern=algorithmic-patterns:hashing-lookup`,
@@ -786,7 +941,7 @@ describe('Question canonical DSA navigation', () => {
         expect(previous).toBeNull();
       }
       if (testCase.next) {
-        expect(next?.classList.contains('problem-navigation-link')).toBe(true);
+        expect(next?.classList.contains('problem-nav-card')).toBe(true);
         expect(next?.textContent).toContain(testCase.next.title);
         expect(next?.getAttribute('href')).toBe(
           `/learn/${testCase.next.courseId}/${testCase.next.questionId}?pattern=algorithmic-patterns:hashing-lookup`,
@@ -877,7 +1032,7 @@ describe('Question canonical DSA navigation', () => {
     expect(patternBreadcrumb?.getAttribute('href')).toBe(
       '/learn/hands-on-dsa?pattern=algorithmic-patterns:prefix-state',
     );
-    expect(root.querySelector('.problem-pattern-link')?.getAttribute('href')).toBe(
+    expect(root.querySelector('.pattern-lesson-open')?.getAttribute('href')).toBe(
       '/learn/algorithmic-patterns/algorithmic-prefix-state',
     );
     expect(linkWithText(root, 'All Prefix State problems')).toBeUndefined();
@@ -926,13 +1081,13 @@ describe('Question canonical DSA navigation', () => {
     expect(root.querySelector('.problem-toggle')?.textContent).toContain('Problem');
     expect(root.querySelector('.problem-toggle')?.getAttribute('aria-expanded')).toBe('true');
     const returnLink = new URL(
-      linkWithText(root, 'Return to DSA problems')!.getAttribute('href')!,
+      root.querySelector('.problem-back')!.getAttribute('href')!,
       'http://localhost',
     );
     expect(returnLink.pathname).toBe('/learn/hands-on-dsa');
     expect(returnLink.searchParams.get('pattern')).toBe('core-data-structures:arrays');
     expect(returnLink.searchParams.get('page')).toBe('2');
-    expect(root.querySelector<HTMLAnchorElement>('.problem-navigation-link.next')?.href).toContain(
+    expect(root.querySelector<HTMLAnchorElement>('.problem-nav-card.next')?.href).toContain(
       'pattern=core-data-structures:arrays',
     );
     expect(root.querySelectorAll('.mode-tabs [role="tab"]')).toHaveLength(4);
@@ -942,9 +1097,9 @@ describe('Question canonical DSA navigation', () => {
     );
     expect(harness.routeNativeElement!.querySelector('.studio-pilot-page')).not.toBeNull();
     expect(harness.routeNativeElement!.querySelector('.problem-toggle')).not.toBeNull();
-    expect(harness.routeNativeElement!.querySelector('.problem-pattern-link')).toBeNull();
+    expect(harness.routeNativeElement!.querySelector('.pattern-lesson-open')).toBeNull();
     await revealPattern(harness);
-    expect(harness.routeNativeElement!.querySelector('.problem-pattern-link')?.getAttribute('href')).toBe(
+    expect(harness.routeNativeElement!.querySelector('.pattern-lesson-open')?.getAttribute('href')).toBe(
       '/learn/algorithmic-patterns/algorithmic-hashing-lookup',
     );
   });
@@ -972,13 +1127,13 @@ describe('Question canonical DSA navigation', () => {
       Question,
     );
     const root = harness.routeNativeElement!;
-    expect(root.querySelector('.problem-navigation-link.previous')?.textContent).toContain(
+    expect(root.querySelector('.problem-nav-card.previous')?.textContent).toContain(
       containsDuplicate.title,
     );
-    expect(root.querySelector('.problem-navigation-link.next')?.textContent).toContain(
+    expect(root.querySelector('.problem-nav-card.next')?.textContent).toContain(
       firstUnique.title,
     );
-    expect(root.querySelector<HTMLAnchorElement>('.problem-navigation-link.next')?.href).toContain(
+    expect(root.querySelector<HTMLAnchorElement>('.problem-nav-card.next')?.href).toContain(
       'pattern=core-data-structures:arrays',
     );
   });
@@ -1221,5 +1376,47 @@ describe('Question canonical DSA navigation', () => {
     expect(visual?.title).toBe('Interactive merit student stream trace');
     expect(visual?.getAttribute('src')).toContain('stream-practice-debugger.html#merit');
     expect(harness.routeNativeElement?.textContent).toContain('Trace the practical pipeline.');
+  });
+
+  it('shows the catalog group between the path and the course in the lesson breadcrumb', async () => {
+    const lesson: InterviewQuestion = {
+      id: 'stream-basics',
+      moduleId: 'streams',
+      order: 1,
+      title: 'Stream basics',
+      difficulty: 'Beginner',
+      tags: ['Java Streams'],
+      interviewAnswer: 'Filter, map, and collect.',
+      explanation: ['Trace the element shape after each stage.'],
+      versionNotes: [],
+      followUps: [],
+      reviewStatus: 'reviewed',
+    };
+    const streamCourse: CourseContent = {
+      id: 'modern-java',
+      path: 'learn',
+      title: 'Modern Java',
+      description: 'Modern Java APIs.',
+      version: 'Java 21+',
+      modules: [{ id: 'streams', order: 1, title: 'Streams', description: 'Pipelines.' }],
+      questions: [lesson],
+    };
+    content.getCatalog.mockReturnValueOnce(of([{ id: 'modern-java', title: 'Modern Java' }]));
+    content.getCourseOutline.mockReturnValueOnce(of(outlineFor(streamCourse)));
+    content.getContentItem.mockReturnValueOnce(of(lesson));
+    const harness = await RouterTestingHarness.create();
+
+    await harness.navigateByUrl('/learn/modern-java/stream-basics', Question);
+
+    // Home / Learn / Java Platform and Runtime / Modern Java (user review, 2026-10-03).
+    const links = [
+      ...harness.routeNativeElement!.querySelectorAll<HTMLAnchorElement>('.breadcrumbs a'),
+    ].map((link) => [link.textContent?.trim(), link.getAttribute('href')]);
+    expect(links).toEqual([
+      ['Home', '/'],
+      ['Learn', '/learn'],
+      ['Java Platform and Runtime', '/learn?group=java-platform'],
+      ['Modern Java', '/learn/modern-java'],
+    ]);
   });
 });

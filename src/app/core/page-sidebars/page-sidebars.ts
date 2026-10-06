@@ -1,10 +1,12 @@
 import { LearningPrompt } from '../platform-signature/learning-prompt';
+import { ReasoningPrompt } from '../platform-signature/reasoning-prompt';
 import { PlatformSignature } from '../platform-signature/platform-signature';
 import { DOCUMENT } from '@angular/common';
 import {
   AfterViewInit,
   Component,
   DestroyRef,
+  ElementRef,
   HostListener,
   NgZone,
   OnDestroy,
@@ -12,7 +14,9 @@ import {
   effect,
   inject,
   signal,
+  viewChild,
 } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, RouterLink, Router } from '@angular/router';
 import { PageSidebarContext } from './page-sidebar-context';
@@ -56,7 +60,12 @@ export function collectPageSections(main: HTMLElement): PageSectionLink[] {
   const candidates = main.querySelectorAll<HTMLElement>('h1, h2, [data-sidebar-label]');
   for (const element of candidates) {
     if (!visibleSidebarTarget(element)) continue;
-    const label = (element.dataset['sidebarLabel'] || element.querySelector('.result-title-text')?.textContent || element.textContent || '')
+    const label = (
+      element.dataset['sidebarLabel'] ||
+      element.querySelector('.result-title-text')?.textContent ||
+      element.textContent ||
+      ''
+    )
       .replace(/\s+/g, ' ')
       .trim();
     if (!label || seen.has(label)) continue;
@@ -101,6 +110,15 @@ export function sidebarPageTitle(main: HTMLElement): string {
   return short || heading?.textContent?.replace(/\s+/g, ' ').trim() || 'This page';
 }
 
+/** Which Practice & review icon a practice link gets, from its label. */
+export function practiceIcon(label: string): string {
+  if (/revision|cheat sheet/i.test(label)) return 'revision';
+  if (/understanding|quick check/i.test(label)) return 'check';
+  if (/practice|exercise|try it/i.test(label)) return 'practice';
+  if (/interview|follow-ups/i.test(label)) return 'interview';
+  return 'section';
+}
+
 export function canDockSidebar(space: number, width = 224): boolean {
   // Browser zoom can round a reserved gutter down by a fraction of a CSS pixel.
   return space + 0.5 >= width + 24;
@@ -108,12 +126,22 @@ export function canDockSidebar(space: number, width = 224): boolean {
 
 @Component({
   selector: 'app-page-sidebars',
-  imports: [RouterLink, LearningPrompt, PlatformSignature, SidebarToggle],
+  imports: [
+    NgTemplateOutlet,
+    RouterLink,
+    LearningPrompt,
+    PlatformSignature,
+    ReasoningPrompt,
+    SidebarToggle,
+  ],
   templateUrl: './page-sidebars.html',
   styleUrls: ['./page-sidebars.css', '../author-workspace-nav/sidebar-outline.css'],
 })
 export class PageSidebars implements AfterViewInit, OnDestroy {
   private readonly document = inject(DOCUMENT);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private homeAnchor?: Comment;
+  protected readonly inlineLayout = signal(false);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly zone = inject(NgZone);
@@ -134,7 +162,8 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
     const wasExpanded = this.expandedGroups().has(id);
     this.expandedGroups.update((ids) => {
       const next = new Set(ids);
-      if (wasExpanded) next.delete(id); else next.add(id);
+      if (wasExpanded) next.delete(id);
+      else next.add(id);
       return next;
     });
     if (wasExpanded) {
@@ -151,6 +180,8 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
   protected readonly authorNavigation = signal(false);
   protected readonly leftOpen = signal(false);
   protected readonly rightOpen = signal(false);
+  /** Room the sidebars leave at the bottom of the window for a corner statement. */
+  protected readonly cornerReserve = 96;
   protected readonly leftDocked = signal(false);
   protected readonly rightDocked = signal(false);
   protected readonly headerBottom = signal(76);
@@ -161,9 +192,10 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
   protected readonly currentId = signal('');
   /** The content column (viewport px) that an in-flow signature strip lines up with. */
   protected readonly signatureColumn = signal<{ left: number; width: number } | null>(null);
-  protected readonly catalogOverviewActive = computed(() =>
-    this.catalogGroups().length > 0 &&
-    !this.catalogGroups().some((group) => group.sectionId === this.currentId()),
+  protected readonly catalogOverviewActive = computed(
+    () =>
+      this.catalogGroups().length > 0 &&
+      !this.catalogGroups().some((group) => group.sectionId === this.currentId()),
   );
   protected readonly recallIndex = signal(0);
   protected readonly answerOpen = signal(false);
@@ -172,20 +204,68 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
     () => this.recall()[this.recallIndex()] ?? this.recall()[0],
   );
   protected readonly showLeft = computed(
-    () => this.enabled() && !this.navigationExcluded() && !this.authorNavigation() && this.sections().length > 0,
+    () =>
+      this.enabled() &&
+      !this.navigationExcluded() &&
+      !this.authorNavigation() &&
+      this.sections().length > 0,
   );
+  protected readonly lessonNav = computed(() => this.context.value()?.lessonNav ?? null);
+  /**
+   * Practice & review rows (user review, 2026-10-05): the page's practice links with an icon each, and
+   * Quick recall (a dialog, no section) right after Quick revision, or first when there is no revision.
+   */
+  protected readonly practiceRows = computed(() => {
+    const rows: { key: string; label: string; icon: string; section: PageSectionLink | null }[] =
+      this.support().map((section) => ({
+        key: section.id,
+        label: section.label,
+        icon: practiceIcon(section.label),
+        section,
+      }));
+    if (this.recall().length) {
+      const revision = rows.findIndex((row) => row.icon === 'revision');
+      rows.splice(revision + 1, 0, {
+        key: 'quick-recall',
+        label: 'Quick recall',
+        icon: 'recall',
+        section: null,
+      });
+    }
+    return rows;
+  });
+  private readonly recallDialog = viewChild<ElementRef<HTMLDialogElement>>('recallDialog');
+  private readonly recallOpener = viewChild<ElementRef<HTMLButtonElement>>('recallOpener');
+  private readonly recallQuestion = viewChild<ElementRef<HTMLElement>>('recallQuestion');
   protected readonly hasRightContent = computed(
-    () => this.support().length > 0 || this.recall().length > 0,
+    () => this.support().length > 0 || this.recall().length > 0 || !!this.lessonNav(),
   );
   protected readonly showRight = computed(
     () =>
       this.enabled() &&
       !this.navigationExcluded() &&
       !this.homepage() &&
-      (this.learningPage() || this.support().length > 0 || this.recall().length > 0),
+      (this.learningPage() ||
+        this.support().length > 0 ||
+        this.recall().length > 0 ||
+        !!this.lessonNav()),
   );
+
+  /** Opens search with the lesson's course and module already selected. */
+  protected searchLesson(event: Event, query: string): void {
+    event.preventDefault();
+    const nav = this.lessonNav();
+    if (!nav) return;
+    const q = query.trim();
+    void this.router.navigate(['/search'], {
+      queryParams: { ...(q ? { q } : {}), ...nav.search },
+    });
+  }
   protected readonly overlay = computed(
-    () => (!this.homepage() && this.leftOpen() && !this.leftDocked()) || (this.rightOpen() && !this.rightDocked()),
+    () =>
+      !this.inlineLayout() &&
+      ((!this.homepage() && this.leftOpen() && !this.leftDocked()) ||
+        (this.rightOpen() && !this.rightDocked())),
   );
   private main: HTMLElement | null = null;
   private observer?: MutationObserver;
@@ -195,12 +275,22 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
   private initialized = false;
   private leftChosen = false;
   private rightChosen = false;
+  /**
+   * The page asked for a collapsed left navigation at this width (context collapseLeftBelow), and the
+   * panel would dock if it got its column back.
+   */
+  private leftReclaimable = false;
+  /** On such a page, the learner's last open/close choice; kept across query-only navigation. */
+  private leftMemory: { path: string; open: boolean } | null = null;
+  private reflowing = false;
   private returnFocus: HTMLElement | null = null;
   private clearanceMain: HTMLElement | null = null;
 
   constructor() {
     this.router.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
       if (!(event instanceof NavigationEnd)) return;
+      if (this.leftMemory && this.leftMemory.path !== this.document.location.pathname)
+        this.leftMemory = null;
       this.expandedGroups.set(new Set());
       this.leftChosen = this.rightChosen = false;
       this.leftOpen.set(false);
@@ -219,6 +309,8 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.initialized = true;
+    this.homeAnchor = this.document.createComment('page sidebars home');
+    this.host.nativeElement.before(this.homeAnchor);
     const view = this.document.defaultView;
     if (!view) return;
     this.zone.runOutsideAngular(() => {
@@ -248,11 +340,33 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.initialized = false;
+    this.mountInline(null);
+    this.homeAnchor?.remove();
+    this.host.nativeElement.remove();
     this.clearEdgeClearance();
     this.main?.removeAttribute('data-sidebar-columns');
+    this.main?.removeAttribute('data-sidebar-nav-shown');
+    this.main?.removeAttribute('data-sidebar-left-collapsed');
     this.observer?.disconnect();
     this.resizeObserver?.disconnect();
     if (this.frame !== null) this.document.defaultView?.cancelAnimationFrame(this.frame);
+  }
+
+  /** Move the shared view ahead of the reader on narrow layouts; Angular retains view ownership. */
+  private mountInline(main: HTMLElement | null): void {
+    const host = this.host.nativeElement;
+    const active = host.contains(this.document.activeElement)
+      ? (this.document.activeElement as HTMLElement)
+      : null;
+    this.inlineLayout.set(!!main);
+    host.classList.toggle('inline-sidebars', !!main);
+    if (main) {
+      if (main.previousElementSibling !== host) main.before(host);
+    } else if (this.homeAnchor?.parentNode && this.homeAnchor.nextSibling !== host) {
+      this.homeAnchor.after(host);
+    }
+    if (active && this.document.activeElement !== active) active.focus();
   }
 
   private clearEdgeClearance(): void {
@@ -283,6 +397,7 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
     if (!view) return;
     this.frame = view.requestAnimationFrame(() => {
       this.frame = null;
+      if (!this.initialized) return;
       this.zone.run(() => this.refresh());
     });
   }
@@ -291,6 +406,8 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
     const main = this.document.querySelector<HTMLElement>('main#main-content');
     if (main !== this.main) {
       this.main?.removeAttribute('data-sidebar-columns');
+      this.main?.removeAttribute('data-sidebar-nav-shown');
+      this.main?.removeAttribute('data-sidebar-left-collapsed');
       this.resizeObserver?.disconnect();
       this.main = main;
       if (main) this.resizeObserver?.observe(main);
@@ -303,10 +420,17 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
       this.context.value()?.excluded ||
       main.matches('.focus-studio-page, .studio-pilot-page') ||
       !!main.querySelector('app-coding-problem-detail, app-dsa-problem-pilot');
-    this.navigationExcluded.set(!!this.context.value()?.hideNavigation || !!main?.matches('.course-page, .search-page, .account-page, .challenge-page'));
+    this.navigationExcluded.set(
+      !!this.context.value()?.hideNavigation ||
+        !!main?.matches('.course-page, .search-page, .account-page, .challenge-page'),
+    );
     this.enabled.set(!excluded);
     if (excluded || !main) {
+      this.mountInline(null);
       main?.removeAttribute('data-sidebar-columns');
+      main?.removeAttribute('data-sidebar-nav-shown');
+      main?.removeAttribute('data-sidebar-left-collapsed');
+      this.leftReclaimable = false;
       this.clearEdgeClearance();
       this.signatureColumn.set(null);
       this.leftOpen.set(false);
@@ -339,28 +463,46 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
     const top = Math.max(0, header?.bottom ?? 76) + 8;
     this.headerBottom.set(top);
     // Reserve desktop columns before measuring; panels must never cover the reader.
-    main.toggleAttribute('data-sidebar-columns', !this.authorNavigation() && (this.showLeft() || this.showRight()));
+    main.toggleAttribute(
+      'data-sidebar-columns',
+      !this.authorNavigation() && (this.showLeft() || this.showRight()),
+    );
     // The main container owns its padding on catalogs, courses and lessons alike.
-    const reader = main.querySelector<HTMLElement>(':scope > .question-reader, :scope > .page-message, :scope > .search-shell');
+    const reader = main.querySelector<HTMLElement>(
+      ':scope > .question-reader, :scope > .page-message, :scope > .search-shell',
+    );
     const outerBounds = main.getBoundingClientRect();
     const readerBounds = reader?.getBoundingClientRect();
     const width =
       this.document.documentElement.clientWidth || this.document.defaultView!.innerWidth;
     // Some reader shells span the viewport; use their centered reader gutter instead.
-    const bounds = readerBounds && outerBounds.left < 54 && width - outerBounds.right < 54
-      ? { left: Math.max(0, readerBounds.left - 24), right: Math.min(width, readerBounds.right + 24) }
-      : outerBounds;
+    const bounds =
+      readerBounds && outerBounds.left < 54 && width - outerBounds.right < 54
+        ? {
+            left: Math.max(0, readerBounds.left - 24),
+            right: Math.min(width, readerBounds.right + 24),
+          }
+        : outerBounds;
     this.updateEdgeClearance(
       main,
       !this.authorNavigation() &&
         ((this.showLeft() && bounds.left < 54) || (this.showRight() && width - bounds.right < 54)),
     );
-    const column =
-      main.querySelector<HTMLElement>('[data-signature-column]') ?? reader ?? main;
+    const column = main.querySelector<HTMLElement>('[data-signature-column]') ?? reader ?? main;
     const columnBounds = column.getBoundingClientRect();
+    // When the page itself is the column, line up with its content, not its padding edge: on a
+    // full-width page (Manage account below 1280px, user review 2026-10-03) the padding edge is
+    // the window edge, and the statements would sit cut off against it.
+    const columnStyle = column === main ? this.document.defaultView!.getComputedStyle(main) : null;
+    const paddingLeft = parseFloat(columnStyle?.paddingLeft ?? '') || 0;
+    const paddingRight = parseFloat(columnStyle?.paddingRight ?? '') || 0;
+    const columnWidth = columnBounds.width - paddingLeft - paddingRight;
     this.signatureColumn.set(
-      columnBounds.width > 0
-        ? { left: Math.max(0, Math.round(columnBounds.left)), width: Math.round(columnBounds.width) }
+      columnWidth > 0
+        ? {
+            left: Math.max(0, Math.round(columnBounds.left + paddingLeft)),
+            width: Math.round(columnWidth),
+          }
         : null,
     );
     const rtl = this.document.defaultView!.getComputedStyle(main).direction === 'rtl';
@@ -370,28 +512,57 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
     this.rightInset.set(6);
     const leftDocked = canDockSidebar(startSpace);
     const rightDocked = canDockSidebar(endSpace);
-    // A resize must never carry an expanded desktop panel over the reader.
-    if (this.leftDocked() && !leftDocked) {
-      this.close('left', true);
-      this.leftChosen = false;
-    }
-    if (this.rightDocked() && !rightDocked) {
-      this.close('right', true);
-      this.rightChosen = false;
-    }
+    // A page can ask for its left column below a width (collapseLeftBelow). While the page holds
+    // that column, the gutter the panel would get back mirrors the end gutter, which the page
+    // reserves the same way.
+    const reclaimed = main.hasAttribute('data-sidebar-left-collapsed');
+    const collapseBelow = this.context.value()?.collapseLeftBelow ?? 0;
+    this.leftReclaimable =
+      collapseBelow > 0 &&
+      width < collapseBelow &&
+      this.showLeft() &&
+      !this.homepage() &&
+      canDockSidebar(reclaimed ? endSpace : startSpace);
+    // Without gutters, keep both sections in flow rather than covering the reader.
+    this.mountInline(
+      !this.homepage() &&
+        (this.showLeft() || (this.showRight() && this.hasRightContent())) &&
+        ((!leftDocked && !this.leftReclaimable) || (this.showRight() && !rightDocked))
+        ? main
+        : null,
+    );
+    if (this.inlineLayout()) this.clearEdgeClearance();
     this.leftWidth.set(leftDocked ? startSpace - 6 : Math.min(280, width - 24));
     this.rightWidth.set(rightDocked ? endSpace - 6 : Math.min(280, width - 24));
     this.leftDocked.set(leftDocked);
     this.rightDocked.set(rightDocked);
+    const remembered =
+      this.leftMemory?.path === this.document.location.pathname && collapseBelow > 0
+        ? this.leftMemory.open
+        : null;
     if (this.homepage()) this.leftOpen.set(true);
-    else if (!this.leftChosen) this.leftOpen.set(leftDocked);
-    if (!this.rightChosen) this.rightOpen.set(rightDocked);
+    else if (!this.leftChosen && remembered !== null)
+      this.leftOpen.set(remembered && (leftDocked || this.leftReclaimable));
+    else if (!this.leftChosen) this.leftOpen.set(true);
+    // Handing the column over (or back) moves the page; measure again before anything paints.
+    if (this.syncNavShown() && !this.reflowing) {
+      this.reflowing = true;
+      try {
+        this.refresh();
+      } finally {
+        this.reflowing = false;
+      }
+      return;
+    }
+    if (!this.rightChosen) this.rightOpen.set(true);
     const visible = this.sections().filter((section) => visibleSidebarTarget(section.target));
     // Track the reading area below both the platform header and sticky lesson tools.
     // A section already occupying that area must not leave the previous item selected.
-    const stickyBottom = Array.from(main.querySelectorAll<HTMLElement>(
-      '.reader-sticky-stack, .question-sticky-utility, .catalog-sticky-utility, .module-sticky-utility',
-    )).reduce((bottom, element) => {
+    const stickyBottom = Array.from(
+      main.querySelectorAll<HTMLElement>(
+        '.reader-sticky-stack, .question-sticky-utility, .catalog-sticky-utility, .module-sticky-utility',
+      ),
+    ).reduce((bottom, element) => {
       const rect = element.getBoundingClientRect();
       return rect.top <= top + 24 && rect.bottom > 0 ? Math.max(bottom, rect.bottom) : bottom;
     }, top);
@@ -400,21 +571,45 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
       (section) => section.target.getBoundingClientRect().top <= readingLine,
     );
     const view = this.document.defaultView!;
-    const atBottom = view.scrollY > 0 &&
+    const atBottom =
+      view.scrollY > 0 &&
       view.scrollY + view.innerHeight >= this.document.documentElement.scrollHeight - 2;
-    this.currentId.set((atBottom ? visible.at(-1) : passed.at(-1) ?? visible[0])?.id ?? '');
+    this.currentId.set((atBottom ? visible.at(-1) : (passed.at(-1) ?? visible[0]))?.id ?? '');
+  }
+
+  /**
+   * Marks the page while the docked left navigation is open, so the page can drop in-page
+   * shortcuts that repeat it (the catalog's "Jump to" row, user review 2026-10-03). An overlay
+   * panel doesn't count: it stays closed until the reader asks for it.
+   */
+  private syncNavShown(): boolean {
+    const main = this.main;
+    main?.toggleAttribute(
+      'data-sidebar-nav-shown',
+      this.showLeft() && this.leftDocked() && this.leftOpen() && !this.homepage(),
+    );
+    // A page with collapseLeftBelow takes the left column while the navigation is closed there.
+    const collapse = this.leftReclaimable && !this.leftOpen();
+    if (!main || main.hasAttribute('data-sidebar-left-collapsed') === collapse) return false;
+    main.toggleAttribute('data-sidebar-left-collapsed', collapse);
+    // Opened, the panel gets its column back and docks there instead of covering the page.
+    if (!collapse && this.leftOpen() && this.leftReclaimable) this.leftDocked.set(true);
+    this.schedule();
+    return true;
   }
 
   protected toggle(side: 'left' | 'right', event: Event): void {
     const open = side === 'left' ? this.leftOpen : this.rightOpen;
     if (side === 'left') this.leftChosen = true;
     else this.rightChosen = true;
+    if (side === 'left' && this.context.value()?.collapseLeftBelow)
+      this.leftMemory = { path: this.document.location.pathname, open: !open() };
     if (open()) {
       this.close(side);
       return;
     }
-    const docked = side === 'left' ? this.leftDocked() : this.rightDocked();
-    if (!docked) {
+    const docked = side === 'left' ? this.leftDocked() || this.leftReclaimable : this.rightDocked();
+    if (!docked && !this.inlineLayout()) {
       const other = side === 'left' ? 'right' : 'left';
       this.close(other);
       if (other === 'left') this.leftChosen = true;
@@ -423,12 +618,14 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
         (event.currentTarget as HTMLElement)?.closest('button') ?? (event.target as HTMLElement);
     }
     open.set(true);
+    this.syncNavShown();
   }
 
   protected close(side: 'left' | 'right', restore = false): void {
     const panel = this.document.getElementById(`page-sidebar-${side}`);
     const focusInside = !!panel?.contains(this.document.activeElement);
     (side === 'left' ? this.leftOpen : this.rightOpen).set(false);
+    this.syncNavShown();
     if (restore && focusInside)
       panel?.querySelector<HTMLButtonElement>('app-sidebar-toggle button')?.focus();
   }
@@ -443,7 +640,7 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
       this.leftChosen = true;
       this.close('left');
     }
-    if (!this.rightDocked()) {
+    if (!this.inlineLayout() && !this.rightDocked()) {
       this.rightChosen = true;
       this.close('right');
     }
@@ -468,11 +665,11 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
     const view = this.document.defaultView;
     if (!view) return;
     view.history.pushState(view.history.state, '', this.href(section));
-    if (!this.leftDocked() && !this.homepage()) {
+    if (!this.inlineLayout() && !this.leftDocked() && !this.leftReclaimable && !this.homepage()) {
       this.leftChosen = true;
       this.close('left');
     }
-    if (!this.rightDocked()) {
+    if (!this.inlineLayout() && !this.rightDocked()) {
       this.rightChosen = true;
       this.close('right');
     }
@@ -483,12 +680,17 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
       });
     }
     section.target.focus({ preventScroll: true });
-    const stickyHeight = Math.max(0, ...Array.from(this.main?.querySelectorAll<HTMLElement>(
-      '.reader-sticky-stack, .question-sticky-utility, .catalog-sticky-utility, .module-sticky-utility',
-    ) ?? []).map((element) => element.getBoundingClientRect().height));
+    const stickyHeight = Math.max(
+      0,
+      ...Array.from(
+        this.main?.querySelectorAll<HTMLElement>(
+          '.reader-sticky-stack, .question-sticky-utility, .catalog-sticky-utility, .module-sticky-utility',
+        ) ?? [],
+      ).map((element) => element.getBoundingClientRect().height),
+    );
     // Heading IDs remain the accessible fragment, but reveal their complete card.
     const scrollTarget = section.target.matches('h2')
-      ? section.target.closest<HTMLElement>('section') ?? section.target
+      ? (section.target.closest<HTMLElement>('section') ?? section.target)
       : section.target;
     const authoredMargin = parseFloat(view.getComputedStyle(scrollTarget).scrollMarginTop) || 0;
     const clearance = Math.max(authoredMargin, this.headerBottom() + stickyHeight + 12);
@@ -502,5 +704,49 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
   protected nextRecall(): void {
     this.recallIndex.update((index) => (index + 1) % this.recall().length);
     this.answerOpen.set(false);
+    this.recallQuestion()?.nativeElement.focus();
+  }
+
+  /**
+   * Opens Quick recall at the question the learner left it on. An overlay sidebar closes first so a panel
+   * and a dialog never stack. Nothing here records progress.
+   */
+  protected openRecall(): void {
+    const dialog = this.recallDialog()?.nativeElement;
+    if (!dialog) return;
+    if (!this.inlineLayout() && !this.rightDocked()) {
+      this.rightChosen = true;
+      this.close('right');
+    }
+    this.answerOpen.set(false);
+    if (typeof dialog.showModal === 'function') dialog.showModal();
+    else dialog.setAttribute('open', '');
+    this.recallQuestion()?.nativeElement.focus();
+  }
+
+  protected closeRecall(): void {
+    const dialog = this.recallDialog()?.nativeElement;
+    if (!dialog?.hasAttribute('open')) return;
+    if (typeof dialog.close === 'function') dialog.close();
+    else {
+      dialog.removeAttribute('open');
+      this.recallClosed();
+    }
+  }
+
+  /** After Close recall, Escape or a backdrop click: focus returns to a visible control. */
+  protected recallClosed(): void {
+    const opener = this.recallOpener()?.nativeElement;
+    const visible = opener && !opener.closest('[hidden]') ? opener : null;
+    (
+      visible ??
+      this.document.querySelector<HTMLElement>('#page-sidebar-right app-sidebar-toggle button')
+    )?.focus();
+  }
+
+  @HostListener('click', ['$event'])
+  protected backdropClick(event: MouseEvent): void {
+    const dialog = this.recallDialog()?.nativeElement;
+    if (dialog?.hasAttribute('open') && event.target === dialog) this.closeRecall();
   }
 }

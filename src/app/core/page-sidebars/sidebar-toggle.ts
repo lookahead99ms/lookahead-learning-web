@@ -1,39 +1,44 @@
 import { Component, input, output } from '@angular/core';
 
-/** Icon-only disclosure with its complete action available to assistive technology. */
+/** Labeled disclosure; its heading stays visible when its contents are collapsed. */
 @Component({
   selector: 'app-sidebar-toggle',
   template: `
     <button
       type="button"
-      [attr.aria-label]="label()"
+      [attr.aria-label]="heading() ? label() + ': ' + heading() : label()"
       [attr.title]="label()"
       [attr.aria-expanded]="open()"
       [attr.aria-controls]="controls()"
       (click)="toggled.emit($event)"
     >
       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <rect x="3" y="3" width="18" height="18" rx="4" />
-        <path [attr.d]="side() === 'left' ? 'M9 3v18' : 'M15 3v18'" />
+        <path [attr.d]="open() ? 'M6 9l6 6 6-6' : 'M9 6l6 6-6 6'" />
       </svg>
+      <span class="sidebar-title" [id]="headingId()">{{ heading() }}</span>
     </button>
   `,
   styles: [
     `
       :host {
         display: block;
-        width: 44px;
-        height: 44px;
+        width: 100%;
+        min-height: 44px;
       }
       button {
-        display: grid;
-        place-items: center;
-        width: 44px;
-        height: 44px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px;
+        font: inherit;
+        font-weight: 650;
+        text-align: start;
+        width: 100%;
+        min-height: 44px;
         border: 0;
         border-radius: 6px;
         background: transparent;
-        color: var(--text-subtle);
+        color: var(--text-strong);
         cursor: pointer;
       }
       button:hover {
@@ -44,8 +49,16 @@ import { Component, input, output } from '@angular/core';
         outline: 3px solid var(--accent-focus);
         outline-offset: -3px;
       }
+      .sidebar-title {
+        min-width: 0;
+        overflow-wrap: anywhere;
+      }
+      button[aria-expanded='false'] svg:dir(rtl) {
+        transform: scaleX(-1);
+      }
       svg {
-        width: 24px;
+        flex: 0 0 20px;
+        width: 20px;
         height: 24px;
         fill: none;
         stroke: currentColor;
@@ -55,6 +68,8 @@ import { Component, input, output } from '@angular/core';
   ],
 })
 export class SidebarToggle {
+  readonly heading = input('');
+  readonly headingId = input<string | null>(null);
   readonly side = input<'left' | 'right'>('left');
   readonly open = input(false);
   readonly controls = input.required<string>();

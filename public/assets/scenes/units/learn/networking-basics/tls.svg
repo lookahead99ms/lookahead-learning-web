@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A card terminal checks the payments server's certificate, signed by the company's root CA, closes the padlock on the connection, then sends the card payment encrypted">
+<style>
+.lnb-tls-w{font-family:system-ui,sans-serif;font-size:11px;font-weight:700;fill:var(--scene-muted,#536970)}
+.lnb-tls-loop{animation-duration:8s;animation-iteration-count:infinite;animation-timing-function:linear;animation-delay:-3.2s}
+.lnb-tls-cert{animation-name:lnb-tls-cert}
+.lnb-tls-ok{animation-name:lnb-tls-ok}
+.lnb-tls-open{animation-name:lnb-tls-open}
+.lnb-tls-shut{animation-name:lnb-tls-shut}
+.lnb-tls-pay{animation-name:lnb-tls-pay}
+.lnb-tls-led{animation-name:lnb-tls-led}
+.lnb-tls-tap{animation-name:lnb-tls-tap}
+@keyframes lnb-tls-cert{0%,6%{transform:translateX(0);opacity:0}9%{opacity:1}30%{transform:translateX(-142px);opacity:1}62%{transform:translateX(-142px);opacity:1}66%,100%{transform:translateX(-142px);opacity:0}}
+@keyframes lnb-tls-ok{0%,32%{opacity:0}36%,62%{opacity:1}66%,100%{opacity:0}}
+@keyframes lnb-tls-open{0%,36%{opacity:1}39%,94%{opacity:0}97%,100%{opacity:1}}
+@keyframes lnb-tls-shut{0%,36%{opacity:0}39%,94%{opacity:1}97%,100%{opacity:0}}
+@keyframes lnb-tls-pay{0%,44%{transform:translateX(0);opacity:0}47%{opacity:1}78%{transform:translateX(146px);opacity:1}82%,100%{transform:translateX(146px);opacity:0}}
+@keyframes lnb-tls-led{0%,78%{opacity:.35}82%,96%{opacity:1}100%{opacity:.35}}
+@keyframes lnb-tls-tap{0%,40%{transform:translate(0,0)}46%,60%{transform:translate(8px,-6px)}66%,100%{transform:translate(0,0)}}
+@media (prefers-reduced-motion: reduce){.lnb-tls-loop{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g fill="var(--scene-ink,#102a33)" opacity=".09"><ellipse cx="62" cy="152" rx="46" ry="7"/><ellipse cx="270" cy="152" rx="40" ry="7"/></g>
+<path d="M34 50l8-6h48l-8 6z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M82 50l8-6v92l-8 6z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="34" y="50" width="48" height="92" rx="6" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-muted,#536970)" stroke-width="1.5"/>
+<rect x="40" y="57" width="36" height="28" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)"/>
+<path d="M45 66h18M45 72h24M45 78h12" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<g fill="var(--scene-muted,#536970)" opacity=".55"><circle cx="46" cy="94" r="2.5"/><circle cx="58" cy="94" r="2.5"/><circle cx="70" cy="94" r="2.5"/><circle cx="46" cy="104" r="2.5"/><circle cx="58" cy="104" r="2.5"/><circle cx="70" cy="104" r="2.5"/><circle cx="46" cy="114" r="2.5"/><circle cx="58" cy="114" r="2.5"/><circle cx="70" cy="114" r="2.5"/></g>
+<rect x="44" y="124" width="28" height="6" rx="2" fill="var(--scene-ink,#102a33)" opacity=".18"/>
+<g class="lnb-tls-loop lnb-tls-tap"><rect x="10" y="100" width="34" height="22" rx="3" fill="var(--scene-link,#245a88)"/><rect x="10" y="105" width="34" height="4" fill="var(--scene-ink,#102a33)" opacity=".35"/><rect x="15" y="113" width="8" height="5" rx="1" fill="var(--scene-warn,#a76a00)"/></g>
+<path d="M240 44l12-10h46l-12 10z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M286 44l12-10v100l-12 10z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="240" y="44" width="46" height="100" rx="3" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-line,#cfdfdc)" stroke-width="1.5"/>
+<g fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)"><rect x="246" y="56" width="34" height="14" rx="2"/><rect x="246" y="80" width="34" height="14" rx="2"/><rect x="246" y="104" width="34" height="14" rx="2"/></g>
+<circle cx="274" cy="63" r="2.5" fill="var(--scene-good,#1f7a4d)"/>
+<circle class="lnb-tls-loop lnb-tls-led" cx="274" cy="87" r="2.5" fill="var(--scene-good,#1f7a4d)"/>
+<circle cx="274" cy="111" r="2.5" fill="var(--scene-good,#1f7a4d)"/>
+<path d="M92 92H234" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="4 4" fill="none"/>
+<g transform="translate(152 79)"><rect x="-3" y="5" width="22" height="19" rx="3" fill="var(--scene-card,#fff)"/>
+<rect x="0" y="8" width="16" height="13" rx="2" fill="var(--scene-accent,#006c73)"/>
+<path class="lnb-tls-loop lnb-tls-shut" d="M3 8V4a5 5 0 0 1 10 0v4" fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="2.4"/>
+<path class="lnb-tls-loop lnb-tls-open" d="M3 8V4a5 5 0 0 1 10 0" fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="2.4" transform="translate(-4 -3) rotate(-25 3 8)"/>
+</g>
+<g class="lnb-tls-loop lnb-tls-cert">
+<path d="M222 70h26l6 6v30h-32z" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="1.5"/>
+<path d="M248 70v6h6" fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="1.5"/>
+<path d="M227 82h18M227 88h22M227 94h12" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<circle cx="246" cy="99" r="4.5" fill="var(--scene-warn,#a76a00)"/>
+</g>
+<g class="lnb-tls-loop lnb-tls-ok"><circle cx="96" cy="62" r="9" fill="var(--scene-good,#1f7a4d)"/><path d="M91.5 62l3 3 6-6" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g class="lnb-tls-loop lnb-tls-pay">
+<rect x="90" y="80" width="30" height="20" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-link,#245a88)" stroke-width="1.5"/>
+<rect x="90" y="80" width="30" height="6" rx="2" fill="var(--scene-link,#245a88)"/>
+<rect x="100" y="89" width="10" height="8" rx="1.5" fill="var(--scene-accent,#006c73)"/>
+</g>
+<text class="lnb-tls-w" x="263" y="164" text-anchor="middle">payments API</text>
+<text class="lnb-tls-w" x="58" y="164" text-anchor="middle">terminal</text>
+</svg>

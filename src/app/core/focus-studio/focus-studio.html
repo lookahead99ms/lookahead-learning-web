@@ -2,7 +2,6 @@
   class="studio"
   [attr.data-mode]="mode()"
   [attr.data-option-b]="story() ? '' : null"
-  [class.debugger-active]="current().debugger"
   [class.problem-pinned]="problemPinned()"
   [class.problem-peek]="peek() && !problemPinned()"
   [style.--rail-share]="railShare() + '%'"
@@ -15,9 +14,11 @@
       #problemButton
       type="button"
       class="problem-toggle"
+      [attr.title]="problemPinned() ? 'Hide the full problem statement and examples (P)' : 'Keep the full problem statement and examples open beside your work (P)'"
       [attr.aria-expanded]="problemPinned() || peek()"
       [attr.aria-pressed]="problemPinned()"
       [attr.aria-controls]="problem().id + '-studio-problem'"
+      aria-keyshortcuts="P"
       (click)="toggleProblem()"
       (pointerenter)="showPeek($event)"
       (pointerleave)="leavePeek()"
@@ -29,7 +30,76 @@
       </svg>
       Problem
     </button>
-    <h2>Workspace</h2>
+    <h2 class="visually-hidden">Workspace</h2>
+    <!-- User review 2026-10-05 (option B): one numbered segmented control; the guide line below says what
+         the selected tab is for and holds that tab's one action. -->
+    <div role="tablist" class="mode-tabs" aria-label="Practice mode">
+      @for (item of modes; track item.id; let index = $index) {
+        <button
+          type="button"
+          role="tab"
+          [attr.title]="item.description"
+          [id]="problem().id + '-studio-tab-' + item.id"
+          [attr.data-studio-mode]="item.id"
+          [attr.aria-label]="item.id === 'recall' && solved() ? item.label + ', solved' : item.label"
+          [attr.aria-keyshortcuts]="index + 1"
+          [attr.aria-selected]="mode() === item.id"
+          [attr.tabindex]="mode() === item.id ? 0 : -1"
+          [attr.aria-controls]="problem().id + '-studio-panel-' + item.id"
+          (click)="selectMode(item.id)"
+          (keydown)="modeKeys($event)"
+        ><span class="mode-step" aria-hidden="true" [class.mode-step-done]="item.id === 'recall' && solved()">{{
+            item.id === 'recall' && solved() ? '✓' : index + 1
+          }}</span>{{ item.label }}</button>
+      }
+    </div>
+    <!-- Practice tools (user-approved preview, 2026-10-05): a timed attempt, browser-only. -->
+    <app-studio-timer [timer]="timer" [available]="mode() === 'practice'" (start)="startTimer()" />
+      <div class="workspace-actions" role="group" aria-label="Solution and visualization">
+        @for (action of actions(); track action) {
+        @switch (action) {
+          @case ('locked') {
+            <p class="timer-lock">Hints and the solution unlock when you stop the timer.</p>
+          }
+          @case ('close-visualization') {
+            <button type="button" class="primary action-debugger action-close" title="Close the visualization and return to the previous mode (Escape)" aria-keyshortcuts="Escape" (click)="closeReference()">
+              <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <rect x="4" y="4" width="16" height="16" rx="2" />
+                <path d="M9 4v16M12 8h5M12 12h5M12 16h3" />
+              </svg>
+              Close visualization
+            </button>
+          }
+          @case ('solution') {
+            <button
+              type="button"
+              class="reveal"
+              [attr.title]="current().revealed ? 'Hide the reference solution and return to your draft' : 'Reveal the reference solution and compare it with your draft'"
+              [class.action-close]="current().revealed"
+              [attr.aria-expanded]="current().revealed"
+              (click)="toggleSolution()"
+            >
+              <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              {{ current().revealed ? 'Close solution' : 'Show solution' }}
+            </button>
+          }
+          @case ('visualize') {
+            <button type="button" class="primary action-visualize" title="Open the solution walkthrough to trace how the algorithm works" (click)="visualize()">
+              <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <rect x="9" y="2" width="6" height="5" rx="1" />
+                <path d="M12 7v5M5 17v-5h14v5" />
+                <rect x="2" y="17" width="6" height="5" rx="1" />
+                <rect x="16" y="17" width="6" height="5" rx="1" />
+              </svg>
+              Visualize solution
+            </button>
+          }
+        }
+        }
+      </div>
   </header>
   <aside
     #problemRail
@@ -109,178 +179,72 @@
   ></div>
   <div class="right-workspace" [attr.data-composition]="composition()">
     <div class="workspace-toolbar">
-      <div role="tablist" class="mode-tabs" aria-label="Practice mode">
-        @for (item of modes; track item.id) {
-          <button
-            type="button"
-            role="tab"
-            [id]="problem().id + '-studio-tab-' + item.id"
-            [attr.data-studio-mode]="item.id"
-            [attr.aria-selected]="mode() === item.id"
-            [attr.tabindex]="mode() === item.id ? 0 : -1"
-            [attr.aria-controls]="problem().id + '-studio-panel-' + item.id"
-            (click)="selectMode(item.id)"
-            (keydown)="modeKeys($event)"
-          >
-            {{ item.label }}
-          </button>
-        }
-      </div>
-      <div class="workspace-actions" role="group" aria-label="Solution and debugger">
-        <button
-          type="button"
-          class="reveal"
-          [class.action-close]="current().revealed"
-          [hidden]="current().debugger || mode() === 'visual' || mode() === 'recall'"
-          [attr.aria-expanded]="current().revealed"
-          (click)="toggleSolution()"
-        >
-          <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-            <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" />
-            <circle cx="12" cy="12" r="3" />
-          </svg>
-          {{ current().revealed ? 'Close solution' : 'Show solution' }}
-        </button>
-        <button
-          type="button"
-          class="primary action-debugger"
-          [class.action-close]="current().debugger"
-          [hidden]="mode() === 'practice' || mode() === 'recall' || !!story()"
-          [attr.aria-pressed]="current().debugger"
-          (click)="toggleDebugger()"
-        >
-          <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-            <rect x="4" y="4" width="16" height="16" rx="2" />
-            <path d="M9 4v16M12 8h5M12 12h5M12 16h3" />
-          </svg>
-          {{
-            linked()
-              ? 'Close visualization'
-              : current().debugger
-                ? 'Close guided debugger'
-                : 'Open guided debugger'
-          }}
-        </button>
-        <button
-          type="button"
-          class="primary action-visualize"
-          [hidden]="mode() !== 'approach' && mode() !== 'recall'"
-          (click)="visualize()"
-        >
-          <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-            <rect x="9" y="2" width="6" height="5" rx="1" />
-            <path d="M12 7v5M5 17v-5h14v5" />
-            <rect x="2" y="17" width="6" height="5" rx="1" />
-            <rect x="16" y="17" width="6" height="5" rx="1" />
-          </svg>
-          Visualize solution
-        </button>
-      </div>
+      <p class="mode-guide">
+        {{ modeGuide() }}
+      </p>
     </div>
     <section
       [id]="problem().id + '-studio-panel-approach'"
       role="tabpanel"
       [attr.aria-labelledby]="problem().id + '-studio-tab-approach'"
-      [hidden]="mode() !== 'approach' || current().debugger"
+      [hidden]="mode() !== 'approach' || gated()"
     >
       <app-studio-approach [problem]="problem()" />
     </section>
-    @if (story(); as selectedStory) {
-      <section
-        class="story-panel"
-        [id]="problem().id + '-studio-panel-visual'"
-        role="tabpanel"
-        [attr.aria-labelledby]="problem().id + '-studio-tab-visual'"
-        [hidden]="mode() !== 'visual'"
-      >
+    @if (gated()) {
+      <app-studio-timer-gate
+        [tab]="modes[modeIndex()].label"
+        (proceed)="continueAnyway()"
+        (back)="leaveGate()"
+      />
+    }
+    <!-- Visual walkthrough, option B "Code beside" (user-approved 2026-10-06): one player for the
+         story or, when no story loads, the shared conceptual and recorded-state diagrams. Its
+         "Every line" switch replaced the separate guided debugger. -->
+    <section
+      class="story-panel"
+      [id]="problem().id + '-studio-panel-visual'"
+      role="tabpanel"
+      [attr.aria-labelledby]="problem().id + '-studio-tab-visual'"
+      [hidden]="mode() !== 'visual' || gated()"
+    >
+      @if (story(); as selectedStory) {
         @defer (when mode() === 'visual') {
-          <app-dsa-story [story]="selectedStory" [problem]="problem()" />
+          <app-dsa-story
+            [story]="selectedStory"
+            [problem]="problem()"
+            [fixtureId]="visualMode().fixtureId"
+            [everyLine]="visualMode().debugger"
+            (fixtureIdChange)="setVisualFixture($event ?? selectedStory.fixtureId)"
+            (everyLineChange)="setEveryLine($event)"
+          />
         } @placeholder {
           <p class="reference-loading" role="status">Loading the walkthrough…</p>
         }
-        <!-- Below the story: the shared guided debugger for the same reference solution, closed
-             until asked for and only loaded then. It follows the page-wide language. -->
-        <section class="line-debugger" [attr.aria-labelledby]="problem().id + '-line-debugger-toggle'">
-          <h3 class="line-debugger-heading">
-            <button
-              type="button"
-              class="line-debugger-toggle"
-              [id]="problem().id + '-line-debugger-toggle'"
-              [attr.aria-expanded]="lineDebuggerOpen()"
-              [attr.aria-controls]="problem().id + '-line-debugger'"
-              (click)="toggleLineDebugger()"
-            >
-              <span>{{
-                lineDebuggerOpen()
-                  ? 'Hide the line-by-line debugger'
-                  : 'Step through the code line by line'
-              }}</span>
-              <svg
-                class="line-debugger-chevron"
-                [class.open]="lineDebuggerOpen()"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-                focusable="false"
-              >
-                <path d="M6 9l6 6 6-6" />
-              </svg>
-            </button>
-          </h3>
-          <div
-            class="line-debugger-body"
-            [id]="problem().id + '-line-debugger'"
-            [hidden]="!lineDebuggerOpen()"
-          >
-            @defer (when lineDebuggerOpen()) {
-              <app-guided-algorithm-trace
-                [problem]="problem()"
-                [selectedFixture]="lineDebuggerFixture()"
-                [initialLanguage]="pageLanguage()"
-                (fixtureChange)="lineDebuggerFixtureId.set($event.id)"
-              />
-            } @placeholder {
-              <p class="reference-loading">The debugger loads when you open it.</p>
-            } @loading {
-              <p class="reference-loading" role="status">Loading the guided debugger…</p>
-            }
-          </div>
-        </section>
-      </section>
-    }
-    @if (mode() === 'visual' && !current().debugger && !story()) {
-      <nav class="visual-controls" aria-label="Visual walkthrough playback">
-        <button
-          type="button"
-          aria-label="Previous conceptual step"
-          [disabled]="visualIndex() === 0"
-          (click)="visualStep(-1)"
-        >
-          Previous
-        </button>
-        <button
-          type="button"
-          aria-label="Next conceptual step"
-          [disabled]="visualIndex() >= visualLength() - 1"
-          class="primary"
-          (click)="visualStep(1)"
-        >
-          Next
-        </button>
-        <span role="status">Visual step {{ visualIndex() + 1 }} of {{ visualLength() }}</span>
-        <button type="button" aria-label="Restart walkthrough" (click)="restartVisual()">
-          Restart
-        </button>
-      </nav>
-    }
+      } @else if (mode() === 'visual') {
+        <app-studio-fallback-walkthrough
+          [problem]="problem()"
+          [pattern]="pattern()"
+          [fixtureId]="visualMode().fixtureId"
+          [language]="visualMode().language"
+          [step]="visualStep()"
+          [everyLine]="visualMode().debugger"
+          (fixtureChange)="setVisualFixture($event)"
+          (languageChange)="selectLanguage($event)"
+          (everyLineChange)="setEveryLine($event)"
+          (stepChange)="setVisualStep($event)"
+        />
+      }
+    </section>
     <div
       class="working-grid"
-      [hidden]="(mode() === 'approach' && !current().revealed) || (mode() === 'visual' && !!story())"
+      [hidden]="(mode() === 'approach' && !current().revealed) || mode() === 'visual' || gated()"
       [class.editor-only]="!contextVisible()"
       [class.compare]="mode() === 'practice' && current().revealed"
       [class.contextual]="mode() !== 'practice'"
     >
       <header class="draft-header" [hidden]="mode() !== 'practice'">
-        <div>
+        <div class="code-identity">
           <h3>Your code <small>Editable</small></h3>
           <p>Draft / {{ filename() }}</p>
         </div>
@@ -300,18 +264,21 @@
           <div role="group" aria-label="Your code actions">
             <app-code-copy-button [code]="draft()" [workspace]="true" /><button
               type="button"
+              title="Format your draft code without changing its intended behavior"
               (click)="formatDraft()"
             >
               Format code</button
-            ><button type="button" class="action-reset" (click)="resetDraft()">
+            ><button type="button" class="action-reset" title="Replace your draft with the original starter code" (click)="resetDraft()">
               Reset starter
             </button>
           </div>
-          @if (!hintsVisible() && !current().revealed) {
+          @if (!hintsVisible() && !current().revealed && !locked()) {
             <button
               type="button"
               (click)="toggleHints()"
+              aria-keyshortcuts="H"
               aria-label="Show hints panel"
+              title="Open the hints panel; reveal hints one at a time (H)"
               class="action-hint"
               aria-expanded="false"
             >
@@ -338,36 +305,17 @@
             [studioLanguage]="draftLanguage()"
             [tutorProblem]="tutorProblem()"
             (studioDraftChange)="updateDraft($event)"
-          />
+          >
+            <!-- Directly under the editor (user-approved preview, 2026-10-05): the prediction box, then
+                 the shortcuts legend. -->
+            <ng-container ngProjectAs="[studioBelowEditor]">
+              @if (!current().revealed && !locked()) {
+                <app-studio-prediction [saved]="prediction()" (save)="savePrediction($event)" />
+              }
+              <app-studio-shortcuts />
+            </ng-container>
+          </app-coding-solution-tabs>
         </section>
-        @if (!story()) {
-        <section
-          [id]="problem().id + '-studio-panel-visual'"
-          role="tabpanel"
-          [attr.aria-labelledby]="problem().id + '-studio-tab-visual'"
-          [hidden]="mode() !== 'visual'"
-        >
-          @if (visualFrame(); as frame) {
-            <app-studio-pattern-diagram
-              [problem]="problem()"
-              [fixture]="fixture()"
-              [frame]="frame"
-              [linked]="linked()"
-              (fixtureChange)="selectFixture($event)"
-            />
-          } @else {
-            <app-studio-diagram
-              [problem]="problem()"
-              [pattern]="pattern()"
-              [fixture]="fixture()"
-              [language]="position().language"
-              [snapshot]="snapshot()"
-              [linked]="linked()"
-              (fixtureChange)="selectFixture($event)"
-            />
-          }
-        </section>
-        }
         <section
           class="recall-panel"
           [id]="problem().id + '-studio-panel-recall'"
@@ -375,40 +323,26 @@
           [attr.aria-labelledby]="problem().id + '-studio-tab-recall'"
           [hidden]="mode() !== 'recall'"
         >
-          <p class="eyebrow">Interview revision</p>
-          <h3>Recall the reasoning.</h3>
-          <p>Try answering aloud, then expand the explanation to check your reasoning.</p>
-          @if (problem().teaching?.recall; as questions) {
-            @for (question of questions; track question.id) {
-              <article class="recall-question">
-                <p class="eyebrow">{{ question.label }}</p>
-                <h4>{{ question.question }}</h4>
-                <details class="recall-answer">
-                  <summary>Review answer: {{ question.label }}</summary>
-                  @for (paragraph of question.answer; track $index) {
-                    <p>{{ paragraph }}</p>
-                  }
-                  @if (question.steps?.length) {
-                    <ol>
-                      @for (step of question.steps; track $index) {
-                        <li>{{ step }}</li>
-                      }
-                    </ol>
-                  }
-                </details>
-              </article>
-            }
-          } @else {
-            @for (check of problem().practice.checks; track $index) {
-              <article class="recall-question">
-                <h4>{{ check.prompt }}</h4>
-                <details class="recall-answer">
-                  <summary>Review answer: {{ check.prompt }}</summary>
-                  <p>{{ check.expected }}</p>
-                </details>
-              </article>
-            }
-          }
+          <!-- Recall as a card grid (user-approved preview, option B, 2026-10-06): two columns of cards,
+               then the connected ideas and Finish and review at the full workspace width. -->
+          <app-studio-recall-grid [problemId]="problem().id" [cards]="recallCards()" />
+          <details class="context-disclosure recall-connected">
+            <summary>Keep these ideas connected</summary>
+            <h4>The invariant</h4>
+            <p>{{ problem().trace.invariant }}</p>
+            <h4>Why this approach fits</h4>
+            <p>{{ problem().practice.canonicalApproach.whyThisApproach }}</p>
+            <h4>Cost and its reason</h4>
+            <p>
+              <strong>Time:</strong> {{ problem().complexity.time }} ·
+              <strong>Extra space:</strong> {{ problem().complexity.space }}
+            </p>
+            <p>{{ problem().practice.canonicalApproach.whyOptimal }}</p>
+            <h4>When the contract changes</h4>
+            <p>{{ problem().practice.canonicalApproach.whenAssumptionChanges }}</p>
+          </details>
+          <!-- Finish and review (rating, review date, notes, next problems), supplied by the problem page. -->
+          <ng-content select="[studioFinish]" />
         </section>
       </div>
       <div
@@ -427,9 +361,9 @@
       <aside
         class="studio-context"
         [hidden]="!contextVisible()"
-        aria-label="Help, solution and debugger"
+        aria-label="Help and solution"
       >
-        @if (mode() === 'practice' && !current().revealed) {
+        @if (mode() === 'practice' && !current().revealed && hintsVisible() && !locked()) {
           <section class="hints-panel">
             <header>
               <h3>
@@ -441,6 +375,7 @@
               <button
                 type="button"
                 aria-label="Close hints"
+                title="Hide the hints panel and return to the examples"
                 class="action-close"
                 aria-expanded="true"
                 (click)="toggleHints()"
@@ -454,7 +389,8 @@
                 type="button"
                 class="action-hint"
                 [attr.aria-label]="hintCount() === 0 ? 'Reveal hint' : 'Show next hint'"
-                (click)="hintCount.set(hintCount() + 1)"
+                title="Reveal one more hint to help you continue"
+                (click)="revealHint()"
               >
                 <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                   <path d="M9 18h6M10 21h4M8 14a6 6 0 1 1 8 0l-1 2H9Z" />
@@ -474,139 +410,97 @@
             </div>
           </section>
         }
-        @if (mode() !== 'practice' && mode() !== 'approach' && !current().debugger) {
-          <details class="context-disclosure" [open]="!current().debugger">
-            <summary>
-              {{ mode() === 'visual' ? 'What changed, and why' : 'Keep these ideas connected' }}
-            </summary>
-            @if (mode() === 'visual') {
-              @if (visualFrame(); as frame) {
-                <h3>{{ frame.phase }}</h3>
-                <p aria-live="polite">{{ frame.why }}</p>
-                <p>Conceptual teaching values. These are not native Java, Python or Go locals.</p>
-                <dl class="teaching-metrics">
-                  @for (metric of visualMetrics(); track metric.name) {
-                    <div>
-                      <dt>{{ metric.name }}</dt>
-                      <dd>{{ metric.value }}</dd>
-                    </div>
-                  }
-                </dl>
-              } @else {
-                <h3>{{ walkthroughEvent()?.label }}</h3>
-                <p>{{ walkthroughEvent()?.what }}</p>
-                <p>{{ walkthroughEvent()?.why }}</p>
-              }
-              <h4>The invariant</h4>
-              <p>{{ trace()?.invariant }}</p>
-            } @else {
-              <h4>The invariant</h4>
-              <p>{{ problem().trace.invariant }}</p>
-              <h4>Why this approach fits</h4>
-              <p>{{ problem().practice.canonicalApproach.whyThisApproach }}</p>
-              <h4>Cost and its reason</h4>
-              <p>
-                <strong>Time:</strong> {{ problem().complexity.time }} ·
-                <strong>Extra space:</strong> {{ problem().complexity.space }}
-              </p>
-              <p>{{ problem().practice.canonicalApproach.whyOptimal }}</p>
-              <h4>When the contract changes</h4>
-              <p>{{ problem().practice.canonicalApproach.whenAssumptionChanges }}</p>
-            }
-          </details>
+        <!-- Examples beside the editor (user-approved preview, "+ Practice tools"); hints sit above
+             them only while open. -->
+        @if (mode() === 'practice' && !current().revealed) {
+          <app-studio-examples [fixtures]="problem().fixtures" />
         }
-        @if (current().revealed) {
-          <section
-            class="reference-panel"
-            (keydown.escape)="closeReference()"
-            (keydown)="debuggerKeys($event)"
-          >
+        <!-- The visual mode's `revealed` is its Every line switch; the walkthrough shows that itself. -->
+        @if (current().revealed && mode() !== 'visual') {
+          <section class="reference-panel" (keydown.escape)="closeReference()">
             <header class="reference-header">
               <ng-container [ngTemplateOutlet]="referenceHeader" />
             </header>
-            @if (current().debugger) {
-              <nav class="reference-navigation" aria-label="Guided debugger controls">
-                <span role="status"
-                  >Instruction {{ snapshot().events.length ? snapshot().step + 1 : 0 }} of
-                  {{ snapshot().events.length }} · {{ position().language }}</span
-                >
-                <div>
-                  <button
-                    type="button"
-                    aria-label="Previous instruction"
-                    [disabled]="snapshot().step === 0"
-                    (click)="setStep(snapshot().step - 1, $event)"
-                  >
-                    Previous
-                  </button>
-                  <button
-                    type="button"
-                    class="play-toggle"
-                    [attr.aria-pressed]="player.playing()"
-                    [disabled]="snapshot().events.length < 2"
-                    (click)="player.toggle()"
-                  >
-                    {{ player.playing() ? 'Pause' : 'Play' }}
-                  </button>
-                  <button
-                    type="button"
-                    aria-label="Next instruction"
-                    [disabled]="snapshot().step >= snapshot().events.length - 1"
-                    class="primary"
-                    (click)="setStep(snapshot().step + 1, $event)"
-                  >
-                    Next
-                  </button>
-                  <button type="button" aria-label="Restart trace" (click)="setStep(0, $event)">
-                    Restart
-                  </button>
+            <!-- One body under the header, so the header can share the editor header's row (review note #23). -->
+            <div class="reference-body">
+              @defer (on immediate) {
+                <app-guided-algorithm-trace
+                  [problem]="problem()"
+                  [selectedFixture]="fixture()"
+                  [initialLanguage]="position().language"
+                  [studio]="true"
+                  [studioSnapshot]="snapshot()"
+                  [studioContextual]="mode() !== 'practice'"
+                />
+              } @placeholder {
+                <p class="reference-loading" role="status">Loading the reference solution…</p>
+              }
+              <!-- Compare mode shows this full width under both panels instead (review note #24, round 2). -->
+              @if (!(mode() === 'practice' && current().revealed)) {
+                <div class="reference-rationale">
+                  <ng-container [ngTemplateOutlet]="rationale" />
                 </div>
-              </nav>
-            }
-            @defer (on immediate) {
-              <app-guided-algorithm-trace
-                [problem]="problem()"
-                [selectedFixture]="fixture()"
-                [initialLanguage]="position().language"
-                [studio]="true"
-                [studioSnapshot]="snapshot()"
-                [studioDebugger]="current().debugger"
-                [studioContextual]="mode() !== 'practice'"
-                [studioFollow]="follow()"
-              />
-            } @placeholder {
-              <p class="reference-loading" role="status">Loading the reference solution…</p>
-            }
-            <div class="reference-rationale">
-              <p>
-                <strong>Time</strong> {{ problem().complexity.time }} · <strong>Space</strong>
-                {{ problem().complexity.space }}
-              </p>
-              <details>
-                <summary>Why this approach</summary>
-                <p>{{ problem().practice.canonicalApproach.whyThisApproach }}</p>
-                <p>{{ problem().practice.canonicalApproach.whyOptimal }}</p>
-                <p>{{ problem().practice.canonicalApproach.whenAssumptionChanges }}</p>
-              </details>
-              <details>
-                <summary>Common mistakes</summary>
-                <ul>
-                  @for (mistake of problem().practice.commonMistakes; track $index) {
-                    <li>{{ mistake }}</li>
-                  }
-                </ul>
-              </details>
+              }
             </div>
           </section>
         }
       </aside>
+      @if (mode() === 'practice' && current().revealed && contextVisible()) {
+        <!-- Review note #24, round 2: the reasoning sits full width under both code panels, so it
+             uses the space under "Your code" instead of making the reference column long. -->
+        <section class="compare-rationale" aria-label="Why the reference solution works">
+          <ng-container [ngTemplateOutlet]="rationale" />
+        </section>
+      }
     </div>
   </div>
 </section>
+<ng-template #rationale>
+  <app-studio-complexity
+    [time]="problem().complexity.time"
+    [space]="problem().complexity.space"
+    [prediction]="prediction()"
+  />
+  @if (rationaleInvariant(); as invariant) {
+    <p class="invariant-callout"><b>Invariant</b>{{ invariant }}</p>
+  }
+  <details class="rationale-card" open>
+    <summary>Why this approach</summary>
+    <p>
+      <b>Why it works</b>{{ problem().practice.canonicalApproach.whyThisApproach }}
+    </p>
+    <p>
+      <b>Why it's optimal</b>{{ problem().practice.canonicalApproach.whyOptimal }}
+    </p>
+    <p>
+      <b>When it changes</b
+      >{{ problem().practice.canonicalApproach.whenAssumptionChanges }}
+    </p>
+  </details>
+  <details class="rationale-card mistakes-card" open>
+    <summary>
+      <svg
+        class="action-icon"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <path d="M12 3 2 21h20L12 3Z" />
+        <path d="M12 10v5M12 18h.01" />
+      </svg>
+      Common mistakes
+    </summary>
+    <ul>
+      @for (mistake of commonMistakes(); track $index) {
+        <li>{{ mistake }}</li>
+      }
+    </ul>
+  </details>
+</ng-template>
 <ng-template #referenceHeader>
-  <div class="reference-identity">
+  <div class="reference-identity code-identity">
     <h3>Reference solution</h3>
-    <p>Read-only · {{ current().debugger ? 'Guided debugger' : 'Not your code' }}</p>
+    <p>Read-only · Not your code</p>
   </div>
   <div class="code-controls">
     <label
@@ -625,6 +519,7 @@
     <label class="reference-example"
       >Example<select
         [value]="fixture().id"
+        [title]="fixtureLabel(fixture().input)"
         [style.width.ch]="Math.min(44, fixtureLabel(fixture().input).length + 4)"
         (change)="selectFixture($any($event.target).value)"
       >
@@ -636,13 +531,4 @@
       </select></label
     >
   </div>
-  @if (current().debugger) {
-    <label class="follow-control"
-      ><input
-        type="checkbox"
-        [checked]="follow()"
-        (change)="follow.set($any($event.target).checked)"
-      />Follow active line</label
-    >
-  }
 </ng-template>

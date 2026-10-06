@@ -1,4 +1,4 @@
-import { CatalogCourseGroup } from './catalog-course-groups';
+import type { CatalogCourseGroup } from './catalog-course-groups';
 
 export type LearnCourseGroup = CatalogCourseGroup;
 
@@ -19,8 +19,14 @@ export const LEARN_COURSE_GROUPS: LearnCourseGroup[] = [
     id: 'java-platform',
     title: 'Java Platform and Runtime',
     description:
-      'Build on Java foundations with collections, modern language features, JVM memory, garbage collection, diagnostics, and concurrency.',
-    courseIds: ['java-data-structures', 'modern-java', 'garbage-collection'],
+      'Build on Java foundations with collections, modern language features, concurrency, JVM memory, garbage collection, and performance.',
+    courseIds: [
+      'java-data-structures',
+      'modern-java',
+      'java-concurrency',
+      'garbage-collection',
+      'jvm-performance',
+    ],
   },
   {
     id: 'javascript-web-foundations',
@@ -45,8 +51,14 @@ export const LEARN_COURSE_GROUPS: LearnCourseGroup[] = [
     id: 'object-design-lld',
     title: 'Object Design & Low-Level Design',
     description:
-      'Model valid state, apply SOLID and design patterns, reason about concurrency, and practise frequently asked LLD interviews.',
+      'Model valid state, apply SOLID and design patterns, and practice frequently asked LLD interviews.',
     courseIds: ['oop', 'solid-design-patterns'],
+  },
+  {
+    id: 'computer-fundamentals',
+    title: 'Computer Fundamentals',
+    description: 'How networks and operating systems work underneath every program you write.',
+    courseIds: ['networking-basics', 'operating-systems'],
   },
   {
     id: 'engineering-tools',

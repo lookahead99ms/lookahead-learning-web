@@ -1,5 +1,7 @@
 @if (studioProblem(); as selectedProblem) {
-  <app-focus-studio [problem]="selectedProblem" [initialLanguage]="startLanguage()" />
+  <app-focus-studio [problem]="selectedProblem" [initialLanguage]="startLanguage()">
+    <ng-container ngProjectAs="[studioFinish]"><ng-content select="[studioFinish]" /></ng-container>
+  </app-focus-studio>
 } @else {
   <section
     class="pilot"

@@ -148,6 +148,16 @@ let instances = 0;
       .lesson-storyboard .storyboard-beside {
         min-width: 0;
       }
+      /* Problem first fits one 1280 x 720 screen: a slightly smaller explanation beside the drawing, with a small
+         gap between its paragraphs. The shell projects these .prose paragraphs; its scoped .system .prose rule
+         (line-height 1.8, no margin) cannot see this template, so these selectors carry one class more than it. */
+      .lesson-storyboard.storyboard-story .storyboard-beside {
+        font-size: 1rem;
+      }
+      .lesson-storyboard.storyboard-story.storyboard-has-beside .storyboard-beside .prose {
+        margin: 0 0 0.6rem;
+        line-height: 1.55;
+      }
       .lesson-storyboard .storyboard-legend {
         display: flex;
         flex-wrap: wrap;

@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A user document with a nested address is hashed on its key to partition p1, and a cached copy of the same key ticks down its TTL until it expires">
+<style>
+.gc-nosql-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.gc-nosql-tm { font-family: ui-monospace, Menlo, monospace; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.gc-nosql-sh { fill: var(--scene-ink, #102a33); opacity: .08; }
+.gc-nosql-slab { fill: var(--scene-ink, #102a33); opacity: .14; }
+.gc-nosql-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 2; }
+.gc-nosql-soft { fill: var(--scene-accent-soft, #dcefed); }
+.gc-nosql-ln { fill: var(--scene-line, #cfdfdc); }
+.gc-nosql-acc { fill: var(--scene-accent, #006c73); }
+.gc-nosql-warn { fill: var(--scene-warn, #a15c00); }
+.gc-nosql-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 2; stroke-dasharray: 4 5; }
+
+.gc-nosql-cp { animation: gc-nosql-kf-cp 8s ease-in-out infinite; }
+@keyframes gc-nosql-kf-cp { 0%, 8% { transform: translate(0, 0); opacity: 0; } 9% { opacity: 1; } 22% { transform: translate(100px, 12px); opacity: 1; } 23%, 100% { transform: translate(100px, 12px); opacity: 0; } }
+.gc-nosql-row { animation: gc-nosql-kf-row 8s infinite; }
+@keyframes gc-nosql-kf-row { 0%, 22% { opacity: 0; } 24%, 95% { opacity: 1; } 98%, 100% { opacity: 0; } }
+.gc-nosql-hand { transform-origin: 290px 53px; animation: gc-nosql-kf-hand 8s linear infinite; }
+@keyframes gc-nosql-kf-hand { 0%, 26% { transform: rotate(0deg); } 78%, 100% { transform: rotate(360deg); } }
+.gc-nosql-exp { animation: gc-nosql-kf-exp 8s infinite; }
+@keyframes gc-nosql-kf-exp { 0%, 78% { opacity: 0; } 80%, 95% { opacity: 1; } 98%, 100% { opacity: 0; } }
+.gc-nosql-wr { animation: gc-nosql-kf-wr 8s ease-in-out infinite; }
+@keyframes gc-nosql-kf-wr { 0%, 26% { transform: translate(0, 0); opacity: 0; } 27% { opacity: 1; } 38% { transform: translate(96px, 0); opacity: 1; } 46% { transform: translate(96px, 46px); opacity: 1; } 47%, 100% { transform: translate(96px, 46px); opacity: 0; } }
+.gc-nosql-land { animation: gc-nosql-kf-land 8s infinite; }
+@keyframes gc-nosql-kf-land { 0%, 46% { opacity: 0; } 48%, 95% { opacity: 1; } 98%, 100% { opacity: 0; } }
+
+.gc-nosql-cp, .gc-nosql-row, .gc-nosql-hand, .gc-nosql-exp, .gc-nosql-wr, .gc-nosql-land { animation-delay: -6.88s; }
+@media (prefers-reduced-motion: reduce) { .gc-nosql-cp, .gc-nosql-row, .gc-nosql-hand, .gc-nosql-exp, .gc-nosql-wr, .gc-nosql-land { animation-play-state: paused; } }
+</style>
+
+<!-- document with nested fields -->
+<ellipse class="gc-nosql-sh" cx="56" cy="156" rx="44" ry="5"/>
+<path d="M18 20 H80 L98 38 V144 a6 6 0 0 1 -6 6 H18 a6 6 0 0 1 -6 -6 V26 a6 6 0 0 1 6 -6Z" fill="var(--scene-card, #ffffff)" stroke="var(--scene-muted, #536970)" stroke-width="2" stroke-linejoin="round"/>
+<path class="gc-nosql-soft" d="M80 20 V38 H98 Z" stroke="var(--scene-muted, #536970)" stroke-width="2" stroke-linejoin="round"/>
+<text class="gc-nosql-tm" x="22" y="40" font-size="12" style="fill: var(--scene-accent, #006c73)">u42</text>
+<text class="gc-nosql-tm" x="22" y="62" font-size="11">name</text><rect class="gc-nosql-ln" x="58" y="56" width="30" height="6" rx="3"/>
+<text class="gc-nosql-tm" x="22" y="80" font-size="11">addr</text>
+<path d="M26 86 V120" stroke="var(--scene-accent, #006c73)" stroke-width="2.5" stroke-linecap="round"/>
+<text class="gc-nosql-tm" x="34" y="98" font-size="11">city</text><rect class="gc-nosql-ln" x="66" y="92" width="22" height="6" rx="3"/>
+<text class="gc-nosql-tm" x="34" y="116" font-size="11">zip</text><rect class="gc-nosql-ln" x="66" y="110" width="18" height="6" rx="3"/>
+<text class="gc-nosql-tm" x="22" y="138" font-size="11">tags</text><rect class="gc-nosql-soft" x="58" y="130" width="13" height="10" rx="3"/><rect class="gc-nosql-soft" x="74" y="130" width="13" height="10" rx="3"/>
+
+<!-- copy into the key-value cache -->
+<g class="gc-nosql-cp"><rect class="gc-nosql-acc" x="100" y="36" width="22" height="10" rx="3"/></g>
+<ellipse class="gc-nosql-sh" cx="252" cy="92" rx="56" ry="4"/>
+<rect class="gc-nosql-slab" x="196" y="24" width="112" height="62" rx="7"/>
+<rect class="gc-nosql-box" x="196" y="20" width="112" height="62" rx="7"/>
+<text class="gc-nosql-t" x="206" y="37" font-size="12">cache</text>
+<path class="gc-nosql-warn" d="M299 24 L292 34 H297 L294 42 L302 31 H297 Z"/>
+<path d="M197 43 H307 M197 63 H307" stroke="var(--scene-line, #cfdfdc)" stroke-width="1.5"/>
+<g class="gc-nosql-row">
+  <rect class="gc-nosql-soft" x="197" y="44" width="110" height="18"/>
+  <text class="gc-nosql-tm" x="206" y="58" font-size="12">u42</text>
+  <rect class="gc-nosql-acc" x="236" y="50" width="30" height="6" rx="3" opacity=".7"/>
+</g>
+<circle cx="290" cy="53" r="8" fill="var(--scene-card, #ffffff)" stroke="var(--scene-muted, #536970)" stroke-width="2"/>
+<g class="gc-nosql-hand"><path d="M290 53 V47.5" stroke="var(--scene-warn, #a15c00)" stroke-width="2.5" stroke-linecap="round"/></g>
+<text class="gc-nosql-tm" x="206" y="77" font-size="12">u7</text><rect class="gc-nosql-ln" x="236" y="70" width="22" height="6" rx="3"/>
+<g class="gc-nosql-exp">
+  <rect x="198" y="45" width="80" height="16" rx="3" fill="var(--scene-card, #ffffff)" stroke="var(--scene-warn, #a15c00)" stroke-width="1.5" stroke-dasharray="3 3"/>
+  <text class="gc-nosql-t" x="238" y="57" font-size="11" text-anchor="middle" style="fill: var(--scene-warn, #a15c00)">expired</text>
+</g>
+
+<!-- hash the key to a partition -->
+<text class="gc-nosql-tm" x="106" y="98" font-size="11">hash(u42) → p1</text>
+<path class="gc-nosql-wire" d="M100 108 H209 V122"/>
+<g class="gc-nosql-wr"><rect class="gc-nosql-acc" x="102" y="103" width="22" height="10" rx="3"/></g>
+
+<!-- partitioned table -->
+<ellipse class="gc-nosql-sh" cx="210" cy="172" rx="98" ry="4"/>
+<rect class="gc-nosql-slab" x="112" y="128" width="58" height="40" rx="6"/>
+<rect class="gc-nosql-box" x="112" y="124" width="58" height="40" rx="6"/>
+<text class="gc-nosql-tm" x="120" y="139" font-size="11">p0</text>
+<rect class="gc-nosql-ln" x="120" y="145" width="40" height="5" rx="2.5"/><rect class="gc-nosql-ln" x="120" y="154" width="30" height="5" rx="2.5"/>
+<rect class="gc-nosql-slab" x="180" y="128" width="58" height="40" rx="6"/>
+<rect class="gc-nosql-box" x="180" y="124" width="58" height="40" rx="6" style="stroke: var(--scene-accent, #006c73)"/>
+<text class="gc-nosql-tm" x="188" y="139" font-size="11">p1</text>
+<rect class="gc-nosql-ln" x="188" y="145" width="36" height="5" rx="2.5"/>
+<rect class="gc-nosql-acc gc-nosql-land" x="188" y="154" width="42" height="5" rx="2.5"/>
+<rect class="gc-nosql-slab" x="248" y="128" width="58" height="40" rx="6"/>
+<rect class="gc-nosql-box" x="248" y="124" width="58" height="40" rx="6"/>
+<text class="gc-nosql-tm" x="256" y="139" font-size="11">p2</text>
+<rect class="gc-nosql-ln" x="256" y="145" width="38" height="5" rx="2.5"/><rect class="gc-nosql-ln" x="256" y="154" width="26" height="5" rx="2.5"/>
+</svg>

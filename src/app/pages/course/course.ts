@@ -20,12 +20,7 @@ import {
   highlightLearn,
   reviewStatusLabel,
 } from '../../content/content.models';
-import { LEARN_COURSE_GROUPS, LearnCourseGroup } from '../../content/learn-course-groups';
-import { GROW_COURSE_GROUPS, GrowCourseGroup } from '../../content/grow-course-groups';
-import {
-  LOOK_AHEAD_COURSE_GROUPS,
-  LookAheadCourseGroup,
-} from '../../content/look-ahead-course-groups';
+import { CatalogCourseGroup, catalogGroupForCourse } from '../../content/catalog-course-groups';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { CourseLearningMap } from '../../core/course-learning-map/course-learning-map';
 import { courseHasUnitCards } from '../../content/learning-units';
@@ -93,73 +88,108 @@ import { courseHasUnitCards } from '../../content/learning-units';
         letter-spacing: 0.1em;
         text-transform: uppercase;
       }
+      /* Learning path (user review #7, 2026-10-03): a stepper, not three boxes. Each column is a
+         step on one line (background → you are here → next); the current course is the filled
+         dot in the path colour, the recommended next course is the one big link, and other
+         directions fold under it. Phones stack the steps on a vertical line. */
       .course-learning-path {
+        --path-step-accent: var(--card-top-accent, var(--accent-strong));
         max-width: 1120px;
         margin-top: 20px;
-        padding: 20px 22px;
+        padding: 22px 26px 24px;
         border: 1px solid var(--line);
-        border-left: 2px solid var(--line);
-        border-radius: 14px;
+        border-radius: 16px;
         background: var(--surface);
       }
       .course-learning-path h2 {
-        margin: 0 0 6px;
-        color: var(--text);
-        font-size: 0.88rem;
-        font-weight: 850;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
+        margin: 0 0 4px;
+        color: var(--text-strong);
+        font-size: 1.05rem;
+        font-weight: 800;
+        letter-spacing: -0.005em;
       }
       .course-learning-path > p {
         max-width: 880px;
-        margin: 0 0 16px;
-        color: var(--muted);
+        margin: 0 0 22px;
+        color: var(--text-body);
+        font-size: 0.95rem;
+        line-height: 1.5;
       }
       .course-relationship-map {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) auto minmax(180px, 0.8fr) auto minmax(0, 1fr);
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(0, 1fr);
+        gap: 0 32px;
         align-items: start;
-        gap: 10px;
       }
-      .course-relationship-map.background-only {
-        grid-template-columns: minmax(0, 1fr) auto minmax(180px, 0.8fr);
-      }
-      .course-relationship-map.next-only {
-        grid-template-columns: minmax(180px, 0.8fr) auto minmax(0, 1fr);
+      .course-relationship-arrow {
+        display: none;
       }
       .course-relationship-column {
+        position: relative;
         min-width: 0;
+        padding-top: 30px;
+      }
+      /* The step dot, and the line from it to the next step. */
+      .course-relationship-column::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        box-sizing: border-box;
+        width: 16px;
+        height: 16px;
+        border: 2px solid var(--border-strong);
+        border-radius: 50%;
+        background: var(--surface);
+      }
+      .course-relationship-column:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        top: 7px;
+        left: 24px;
+        right: -24px;
+        height: 2px;
+        border-radius: 2px;
+        background: var(--line);
+      }
+      .course-current-column::before {
+        border-color: var(--path-step-accent);
+        background: var(--path-step-accent);
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--path-step-accent) 22%, transparent);
+      }
+      .course-next-column::before {
+        border-color: var(--accent-link);
       }
       .course-relationship-column h3 {
         display: block;
-        margin: 0 0 8px;
-        color: var(--muted);
-        font-size: 0.7rem;
-        font-weight: 850;
+        margin: 0 0 6px;
+        color: var(--text-subtle);
+        font-size: 0.72rem;
+        font-weight: 800;
         letter-spacing: 0.07em;
         text-transform: uppercase;
       }
+      .course-current-column h3 {
+        color: var(--path-step-accent);
+      }
       .course-background-note {
         margin: 10px 0 0;
-        color: var(--muted);
-        font-size: 0.78rem;
-        line-height: 1.4;
+        color: var(--text-subtle);
+        font-size: 0.8rem;
+        line-height: 1.45;
       }
       .course-relationship-list {
         display: grid;
-        gap: 8px;
+        gap: 10px;
         margin: 0;
         padding: 0;
         list-style: none;
       }
       .course-relationship-list a,
       .course-relationship-list .unavailable {
-        display: block;
-        padding: 10px 12px;
-        border-left: 3px solid var(--line);
-        background: var(--surface-muted);
-        color: var(--text);
-        font-weight: 750;
+        color: var(--text-strong);
+        font-weight: 700;
         text-decoration: none;
       }
       .course-relationship-list a {
@@ -167,77 +197,64 @@ import { courseHasUnitCards } from '../../content/learning-units';
       }
       .course-relationship-list a:hover,
       .course-relationship-list a:focus-visible {
-        border-left-color: var(--accent-link);
         color: var(--search-hover);
+        text-decoration: underline;
+        text-underline-offset: 3px;
       }
       .course-relationship-list .unavailable {
         color: var(--text-subtle);
       }
+      /* The recommended next course is the step's one clear action. */
+      .course-next-column > .course-relationship-list a {
+        font-size: 1.12rem;
+        font-weight: 800;
+      }
+      .course-next-column > .course-relationship-list a::after {
+        content: ' →';
+      }
       .course-direction-reason {
-        margin: 6px 12px 0;
-        color: var(--muted);
-        font-size: 0.78rem;
-        line-height: 1.4;
+        margin: 4px 0 0;
+        color: var(--text-body);
+        font-size: 0.86rem;
+        line-height: 1.45;
       }
-      .course-other-directions {
-        margin-top: 12px;
+      .course-other-directions,
+      .course-relationship-more {
+        margin-top: 14px;
       }
-      .course-other-directions summary {
+      .course-other-directions summary,
+      .course-relationship-more summary {
         width: fit-content;
         color: var(--accent-link);
         cursor: pointer;
-        font-size: 0.8rem;
-        font-weight: 750;
+        font-size: 0.84rem;
+        font-weight: 700;
       }
-      .course-other-directions .course-relationship-list {
+      .course-other-directions .course-relationship-list,
+      .course-relationship-more .course-relationship-list {
         margin-top: 10px;
+        padding-left: 12px;
+        border-left: 2px solid var(--line);
       }
       .course-relationship-more:not([open]) > .course-relationship-list,
       .course-other-directions:not([open]) > .course-relationship-list {
         display: none;
       }
       .course-current-node {
-        min-width: 180px;
-        display: flex;
-        flex-direction: column;
-        border-left: 2px solid var(--line);
-        background: var(--surface-accent);
+        display: grid;
+        gap: 6px;
+        justify-items: start;
       }
       .course-current-node strong {
-        display: block;
-        padding: 10px 12px;
-        color: var(--text);
-      }
-      .course-relationship-arrow {
-        align-self: start;
-        margin-top: 28px;
-        color: var(--accent-link);
-        font-size: 1.35rem;
+        color: var(--text-strong);
+        font-size: 1.12rem;
         font-weight: 800;
-      }
-      .course-relationship-more {
-        margin-top: 8px;
-        color: var(--muted);
-      }
-      .course-relationship-more summary {
-        width: fit-content;
-        color: var(--accent-link);
-        cursor: pointer;
-        font-size: 0.8rem;
-        font-weight: 750;
-      }
-      .course-relationship-more .course-relationship-list {
-        margin-top: 8px;
+        line-height: 1.3;
       }
       .course-group-return {
-        display: inline-flex;
-        align-self: flex-end;
-        margin: 0 12px 10px;
-        padding-top: 8px;
-        border-top: 1px solid var(--line);
         color: var(--accent-link);
-        font-size: 0.76rem;
-        font-weight: 750;
+        font-size: 0.84rem;
+        font-weight: 650;
         text-decoration: underline;
         text-underline-offset: 3px;
       }
@@ -262,17 +279,28 @@ import { courseHasUnitCards } from '../../content/learning-units';
         position: static;
         flex: 0 0 auto;
       }
-      @media (max-width: 980px) {
-        .course-relationship-map,
-        .course-relationship-map.background-only,
-        .course-relationship-map.next-only {
-          grid-template-columns: 1fr;
-          align-items: start;
+      @media (max-width: 760px) {
+        .course-learning-path {
+          padding: 18px 18px 20px;
         }
-        .course-relationship-arrow {
-          margin-top: 0;
-          transform: rotate(90deg);
-          text-align: center;
+        .course-relationship-map {
+          grid-auto-flow: row;
+          grid-auto-columns: auto;
+          gap: 22px;
+        }
+        .course-relationship-column {
+          padding: 0 0 0 30px;
+        }
+        .course-relationship-column::before {
+          top: 1px;
+        }
+        .course-relationship-column:not(:last-child)::after {
+          top: 24px;
+          bottom: -16px;
+          left: 7px;
+          right: auto;
+          width: 2px;
+          height: auto;
         }
       }
     `,
@@ -288,9 +316,7 @@ export class Course implements OnInit {
   protected readonly backgroundCourses = signal<CourseNavigationItem[]>([]);
   protected readonly recommendedNextCourse = signal<CourseNavigationItem | null>(null);
   protected readonly otherDirectionCourses = signal<CourseNavigationItem[]>([]);
-  protected readonly learningGroup = signal<
-    LearnCourseGroup | GrowCourseGroup | LookAheadCourseGroup | null
-  >(null);
+  protected readonly learningGroup = signal<CatalogCourseGroup | null>(null);
   protected readonly error = signal('');
   protected readonly recovery = signal<RecoveryKind>('temporary');
   protected readonly recoveryPreview = signal<RecoveryPreview>({});
@@ -353,7 +379,7 @@ export class Course implements OnInit {
       .subscribe({
         next: ({ course, catalog }) => {
           this.course.set(course);
-          const group = this.groupFor(this.pathId(), course.id);
+          const group = catalogGroupForCourse(this.pathId(), course.id);
           this.learningGroup.set(group);
           const catalogById = new Map(
             catalog.flatMap((item) => (item.id ? ([[item.id, item]] as const) : [])),
@@ -419,19 +445,6 @@ export class Course implements OnInit {
     return (this.course()?.questions ?? [])
       .filter((question) => question.moduleId === moduleId)
       .sort((left, right) => left.order - right.order);
-  }
-
-  private groupFor(
-    pathId: string,
-    courseId: string,
-  ): LearnCourseGroup | GrowCourseGroup | LookAheadCourseGroup | null {
-    const groups =
-      pathId === 'learn'
-        ? LEARN_COURSE_GROUPS
-        : pathId === 'grow'
-          ? GROW_COURSE_GROUPS
-          : LOOK_AHEAD_COURSE_GROUPS;
-    return groups.find((candidate) => candidate.courseIds.includes(courseId)) ?? null;
   }
 }
 

@@ -55,59 +55,68 @@ const diagramLabels: Record<FocusStudioPattern, string> = {
 @Component({
   selector: 'app-studio-diagram',
   imports: [StudioStateValues, StudioSemanticDiagram, StudioIntervalComparison],
-  template: `<section class="diagram" [attr.aria-label]="title()">
-    @if (linked()) {
-      <p class="link-notice">
-        Linked to
-        {{ language() === 'python' ? 'Python' : language() === 'java' ? 'Java' : 'Go' }} reference
-        instructions. Only published state is shown.
-      </p>
-    }
-    <p class="eyebrow">See the decision. Then the change.</p>
-    <h3>{{ heading() }}</h3>
-    <p class="mode-note">
-      {{
-        linked()
-          ? 'Linked view: both controls follow the same published trace.'
-          : 'Follow recorded changes, then explain the reasoning.'
-      }}
-    </p>
-    <label class="visual-example"
-      >Choose example<select
-        [value]="fixture().id"
-        (change)="fixtureChange.emit($any($event.target).value)"
-      >
-        @for (example of problem().fixtures; track example.id) {
-          <option [value]="example.id" [selected]="example.id === fixture().id">
-            {{ exampleLabel(example) }}
-          </option>
-        }
-      </select></label
-    >
-    <section class="input-data" aria-label="Selected example input">
-      @for (entry of inputs(); track entry.label) {
-        <section class="input-entry">
-          <h4>
-            Input <code>{{ entry.label }}</code>
-          </h4>
-          <app-studio-state-values
-            [name]="entry.label"
-            [value]="entry.value"
-            [active]="entry.active"
-            [showCurrentLabel]="false"
-          />
-        </section>
+  template: `<section class="diagram" [class.compact]="compact()" [attr.aria-label]="title()">
+    <!-- Inside the walkthrough player (compact), the player owns the title, notes and example. -->
+    @if (!compact()) {
+      @if (linked()) {
+        <p class="link-notice">
+          Linked to
+          {{ language() === 'python' ? 'Python' : language() === 'java' ? 'Java' : 'Go' }} reference
+          instructions. Only published state is shown.
+        </p>
       }
-    </section>
+      <p class="eyebrow">See the decision. Then the change.</p>
+      <h3>{{ heading() }}</h3>
+      <p class="mode-note">
+        {{
+          linked()
+            ? 'Linked view: both controls follow the same published trace.'
+            : 'Follow recorded changes, then explain the reasoning.'
+        }}
+      </p>
+      <label class="visual-example"
+        >Choose example<select
+          [value]="fixture().id"
+          (change)="fixtureChange.emit($any($event.target).value)"
+        >
+          @for (example of problem().fixtures; track example.id) {
+            <option [value]="example.id" [selected]="example.id === fixture().id">
+              {{ exampleLabel(example) }}
+            </option>
+          }
+        </select></label
+      >
+    }
+    <!-- Inside the walkthrough player (compact) the example's input is in the Example selector;
+         its tables would push the drawing and the caption off screen. -->
+    @if (!compact()) {
+      <section class="input-data" aria-label="Selected example input">
+        @for (entry of inputs(); track entry.label) {
+          <section class="input-entry">
+            <h4>
+              Input <code>{{ entry.label }}</code>
+            </h4>
+            <app-studio-state-values
+              [name]="entry.label"
+              [value]="entry.value"
+              [active]="entry.active"
+              [showCurrentLabel]="false"
+            />
+          </section>
+        }
+      </section>
+    }
     <div
       class="diagram-stage"
       [class.heap-stage]="pattern() === 'heaps'"
       [class.tree-stage]="pattern() === 'trees'"
     >
-      <p class="phase">
-        {{ language() }} / published instruction {{ snapshot().step + 1 }} of
-        {{ snapshot().events.length }}
-      </p>
+      @if (!compact()) {
+        <p class="phase">
+          {{ language() }} / published instruction {{ snapshot().step + 1 }} of
+          {{ snapshot().events.length }}
+        </p>
+      }
       @if (snapshot().unavailable; as reason) {
         <p class="state-note" role="status">{{ reason }}</p>
       } @else {
@@ -123,6 +132,7 @@ const diagramLabels: Record<FocusStudioPattern, string> = {
             [problem]="problem()"
             [snapshot]="snapshot()"
             [language]="language()"
+            [scale]="compact() ? 'player' : 'studio'"
           />
         } @else if (matrix(); as rows) {
           <div class="matrix" role="group" aria-label="Recorded matrix">
@@ -367,6 +377,11 @@ const diagramLabels: Record<FocusStudioPattern, string> = {
         border-radius: 10px;
         min-width: 0;
         color: var(--ink);
+      }
+      .diagram.compact {
+        padding: 0;
+        border: 0;
+        background: transparent;
       }
       [hidden] {
         display: none !important;
@@ -846,6 +861,8 @@ export class StudioDiagram {
   readonly language = input.required<PatternLanguage>();
   readonly snapshot = input.required<TraceSnapshot>();
   readonly linked = input(false);
+  /** Drawn inside the walkthrough player, which already shows the title, step and example. */
+  readonly compact = input(false);
   protected readonly title = computed(() => this.problem().id === 'algorithmic-meeting-rooms' ? 'Meeting interval comparison' : diagramLabels[this.pattern()]);
   protected readonly inputs = computed(() =>
     Object.entries(this.fixture().arguments ?? {}).map(([label, value]) => ({

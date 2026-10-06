@@ -13,8 +13,11 @@ export interface PathSceneControls<Id extends string = string> {
 /** Why the timeline is stopped; it runs only when no reason applies. */
 export type PathSceneStopReason = 'offscreen' | 'hidden' | 'user' | 'reduced-motion';
 
-/** Each round, the first story starts 3 s after all three cards show their summary. */
-export const FIRST_START_MS = 3000;
+/**
+ * Each round, the first story starts 1.5 s after all three cards show their summary. Each story
+ * holds its first frame for 1.5 s, so the first drawing visibly moves 3 s after load.
+ */
+export const FIRST_START_MS = 1500;
 /** Each card's story starts this long after the previous card's. */
 export const STAGGER_MS = 1000;
 
@@ -22,7 +25,7 @@ type SceneState = 'waiting' | 'playing' | 'done';
 
 /**
  * One shared timeline for the three landing path cards. Every round starts with all three on
- * their summary; the stories then start 1 s apart (3, 4, 5 s) and overlap, each playing once.
+ * their summary; the stories then start 1 s apart (1.5, 2.5, 3.5 s) and overlap, each playing once.
  * When every card is back on its summary the next round begins the same way. Time only passes
  * while the timeline runs, so a stop (off screen, hidden tab, Pause, reduced motion) keeps it.
  */
@@ -134,7 +137,7 @@ export class PathSceneTimeline<Id extends string = string> {
         this.states[i] = 'done';
       }
     });
-    // Every card is back on its summary: the next round starts the same way (3, 4, 5 s).
+    // Every card is back on its summary: the next round starts the same way (1.5, 2.5, 3.5 s).
     if (this.states.every((state) => state === 'done')) this.newRound(FIRST_START_MS);
     this.schedule();
   }

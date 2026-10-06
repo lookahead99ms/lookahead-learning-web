@@ -1,0 +1,33 @@
+<p class="eyebrow">Create a study plan</p>
+<h2 id="plan-type-heading">How would you like to begin?</h2>
+<p>Choose a reviewed preparation path or build a plan from your own course selections.</p>
+<div class="plan-type-grid">
+  <button type="button" class="plan-type-card" (click)="choose.emit('authored')">
+    <app-card-scene
+      class="plan-type-scene"
+      aria-hidden="true"
+      src="/assets/scenes/study-plan/authored.svg"
+    />
+    <span class="eyebrow">Authored</span>
+    <strong>Start with a prepared path</strong>
+    <span
+      >Choose a preparation path, review its Learn, Grow, and Look Ahead courses, then save or
+      customize it.</span
+    >
+  </button>
+  <button type="button" class="plan-type-card" (click)="choose.emit('custom')">
+    <app-card-scene
+      class="plan-type-scene"
+      aria-hidden="true"
+      src="/assets/scenes/study-plan/custom.svg"
+    />
+    <span class="eyebrow">Custom</span>
+    <strong>Create your own study plan</strong>
+    <span
+      >Set your time and choose the exact Learn, Grow, and Look Ahead courses you want.</span
+    >
+  </button>
+</div>
+@if (status()) {
+  <p class="context-status" role="status">{{ status() }}</p>
+}

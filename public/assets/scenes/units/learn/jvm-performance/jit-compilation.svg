@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A reader's page asks for an ad: the bid request card reaches a bidder server, the server's tier meter lights tier 0, then 3, then 4 as its scoring code is compiled, the timer drops from 8 µs to 0.7 µs, and the bid returns in time to fill the ad slot with a green check">
+<style>
+.jit-a{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-6.6s;animation-timing-function:ease-in-out}
+.jit-t{font:600 11px system-ui,sans-serif;fill:var(--scene-muted,#536970);text-anchor:middle}
+.jit-v{font:700 13px ui-monospace,Menlo,monospace;fill:var(--scene-ink,#102a33);text-anchor:middle}
+.jit-req{animation-name:jit-req}
+.jit-bid{animation-name:jit-bid}
+.jit-t0{animation-name:jit-t0}
+.jit-t3{animation-name:jit-t3}
+.jit-t4{animation-name:jit-t4}
+.jit-slow{animation-name:jit-slow}
+.jit-fast{animation-name:jit-fast}
+.jit-ad{animation-name:jit-ad}
+.jit-ok{animation-name:jit-ok}
+@keyframes jit-req{0%{transform:translate(0,0);opacity:0}4%{opacity:1}20%{transform:translate(118px,0);opacity:1}24%,100%{transform:translate(118px,0);opacity:0}}
+@keyframes jit-bid{0%,58%{transform:translate(0,0);opacity:0}61%{opacity:1}74%{transform:translate(-118px,0);opacity:1}77%,100%{transform:translate(-118px,0);opacity:0}}
+@keyframes jit-t0{0%,20%{opacity:0}23%,34%{opacity:1}37%,100%{opacity:0}}
+@keyframes jit-t3{0%,34%{opacity:0}37%,46%{opacity:1}49%,100%{opacity:0}}
+@keyframes jit-t4{0%,46%{opacity:0}49%,94%{opacity:1}100%{opacity:0}}
+@keyframes jit-slow{0%,20%{opacity:0}23%,46%{opacity:1}49%,100%{opacity:0}}
+@keyframes jit-fast{0%,46%{opacity:0}49%,94%{opacity:1}100%{opacity:0}}
+@keyframes jit-ad{0%,74%{opacity:0}77%,94%{opacity:1}100%{opacity:0}}
+@keyframes jit-ok{0%,76%{opacity:0;transform:scale(.6)}80%,92%{opacity:1;transform:scale(1)}97%,100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.jit-a{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g fill="var(--scene-ink,#102a33)" opacity=".08"><ellipse cx="44" cy="160" rx="34" ry="5"/><ellipse cx="236" cy="160" rx="54" ry="7"/></g>
+<circle cx="30" cy="96" r="11" fill="var(--scene-accent,#006c73)"/>
+<path d="M10 158q0-42 20-42t20 42z" fill="var(--scene-accent,#006c73)"/>
+<path d="M50 56h34l4 4v86l-4 4h-34z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="44" y="50" width="40" height="96" rx="7" fill="var(--scene-ink,#102a33)"/>
+<rect x="48" y="58" width="32" height="80" rx="3" fill="var(--scene-card,#fff)"/>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"><path d="M52 66h24M52 74h18M52 122h24M52 130h20"/></g>
+<rect x="52" y="82" width="24" height="32" rx="2" fill="none" stroke="var(--scene-muted,#536970)" stroke-width="1.5" stroke-dasharray="3 2"/>
+<g class="jit-a jit-ad"><rect x="52" y="82" width="24" height="32" rx="2" fill="var(--scene-accent-soft,#dcefed)"/><path d="M56 106l6-9 5 6 3-4 4 7z" fill="var(--scene-accent,#006c73)"/><circle cx="70" cy="90" r="3" fill="var(--scene-warn,#a15c00)"/></g>
+<path d="M90 98H196" fill="none" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="4 4"/>
+<g class="jit-a jit-req"><rect x="80" y="88" width="24" height="18" rx="2" fill="var(--scene-card,#fff)" stroke="var(--scene-link,#1f5f8b)" stroke-width="2"/><rect x="80" y="88" width="24" height="5" rx="2" fill="var(--scene-link,#1f5f8b)"/></g>
+<g class="jit-a jit-bid"><circle cx="192" cy="98" r="8" fill="var(--scene-warn,#a15c00)"/><circle cx="192" cy="98" r="4.5" fill="none" stroke="var(--scene-card,#fff)" stroke-width="1.5"/></g>
+<path d="M196 54l12-10h72l-12 10z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M268 54l12-10v98l-12 10z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="196" y="54" width="72" height="98" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<g fill="var(--scene-good,#1f7a4d)"><circle cx="206" cy="64" r="2.5"/><circle cx="214" cy="64" r="2.5"/></g>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"><path d="M226 64h32"/></g>
+<text class="jit-t" x="207" y="90">4</text><text class="jit-t" x="207" y="110">3</text><text class="jit-t" x="207" y="130">0</text>
+<g fill="var(--scene-accent-soft,#dcefed)"><rect x="216" y="80" width="44" height="13" rx="3"/><rect x="216" y="100" width="44" height="13" rx="3"/><rect x="216" y="120" width="44" height="13" rx="3"/></g>
+<rect class="jit-a jit-t0" x="216" y="120" width="44" height="13" rx="3" fill="var(--scene-warn,#a15c00)"/>
+<rect class="jit-a jit-t3" x="216" y="100" width="44" height="13" rx="3" fill="var(--scene-link,#1f5f8b)"/>
+<rect class="jit-a jit-t4" x="216" y="80" width="44" height="13" rx="3" fill="var(--scene-good,#1f7a4d)"/>
+<circle cx="300" cy="26" r="15" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<path d="M296 8h8M300 8v3" stroke="var(--scene-ink,#102a33)" stroke-width="2" stroke-linecap="round"/>
+<path d="M300 26l6-7" stroke="var(--scene-accent,#006c73)" stroke-width="2" stroke-linecap="round"/>
+<path d="M300 41v8" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="2 2"/>
+<text class="jit-v jit-a jit-slow" x="256" y="32">8 µs</text>
+<text class="jit-v jit-a jit-fast" x="256" y="32">0.7 µs</text>
+<g class="jit-a jit-ok" style="transform-box:fill-box;transform-origin:center"><circle cx="92" cy="50" r="10" fill="var(--scene-good,#1f7a4d)"/><path d="M87 50l3.5 3.5 6.5-7" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+</svg>

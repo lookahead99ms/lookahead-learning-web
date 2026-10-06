@@ -56,7 +56,8 @@
     "build:protected": "node scripts/build.mjs --configuration production,protected",
     "start:protected": "ng serve --configuration protected --host 127.0.0.1 --port 4317",
     "start:oauth": "node scripts/start-private.mjs --configuration protected",
-    "code:presentation": "node scripts/build-code-presentation.mjs"
+    "code:presentation": "node scripts/build-code-presentation.mjs",
+    "test:order": "ng test --watch=false --runner-config=vitest.stress.config.ts"
   },
   "private": true,
   "packageManager": "npm@11.17.0",

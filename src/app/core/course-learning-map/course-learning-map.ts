@@ -20,10 +20,10 @@ import {
   CourseOutline,
   reviewStatusLabel,
 } from '../../content/content.models';
-import { practicePresentation } from '../../content/practice-presentation';
 import { questionsForModule } from '../../content/question-discovery';
 import { CardScene } from '../card-scene/card-scene';
 import { CourseLessonNav, CourseLessonNavItem } from '../course-lesson-nav/course-lesson-nav';
+import { evenGridColumns } from '../even-grid';
 
 const LADDER_INTROS: Record<string, string> = {
   'design-fundamentals':
@@ -36,7 +36,10 @@ const LADDER_INTROS: Record<string, string> = {
     'Each round is a 45-minute interview question. Try it on your own first, then open the reference answer and follow the links down to the lessons behind each step.',
 };
 
-/** Singular and plural nouns for the course banner count; lessons unless a course says otherwise. */
+/**
+ * Singular and plural nouns for the side nav count and the filter summary; lessons unless a
+ * course says otherwise.
+ */
 const LADDER_COUNT_NOUNS: Record<string, readonly [string, string]> = {
   'design-rounds': ['round', 'rounds'],
 };
@@ -53,7 +56,7 @@ interface UnitCardEntry {
   sceneAlt: string;
   initials: string;
   meta: string[];
-  /** The meta line shows only when it has something to say (labels, counts, minutes, planned). */
+  /** The meta line shows only when it has something to say (a sub-unit label or planned). */
   hasMeta: boolean;
   /** Level, meta and summary ids, in reading order, for the card's accessible description. */
   describedBy: string;
@@ -93,7 +96,6 @@ interface UnitCardEntry {
           }
           <h1 class="unit-card-banner-title">{{ course().title }}</h1>
           <p class="unit-card-banner-intro">{{ ladderIntro() ?? course().description }}</p>
-          <p class="unit-card-banner-count">{{ cardCountLabel() }}</p>
         </header>
         <ng-content />
         @if (family(); as active) {
@@ -107,7 +109,10 @@ interface UnitCardEntry {
           </div>
         }
         @if (shownCards().length) {
-          <ul class="unit-card-grid">
+          <ul
+            class="unit-card-grid"
+            [attr.data-columns]="lessonNav() ? null : gridColumns(shownCards().length)"
+          >
             @for (entry of shownCards(); track entry.key) {
               <li
                 class="unit-card-item"
@@ -152,11 +157,6 @@ interface UnitCardEntry {
                       <span class="unit-card-meta" [id]="'unit-card-meta-' + entry.key">
                         @for (item of entry.meta; track $index) {
                           <span class="unit-card-meta-item">{{ item }}</span>
-                        }
-                        @if (entry.card?.minutes; as minutes) {
-                          <span class="unit-card-meta-item unit-card-minutes"
-                            >{{ minutes }} min</span
-                          >
                         }
                         @if (entry.planned) {
                           <span
@@ -288,15 +288,6 @@ interface UnitCardEntry {
         color: var(--text-body);
         font-size: 1.04rem;
         line-height: 1.55;
-      }
-      .unit-card-banner-count {
-        margin: 4px 0 0;
-        color: var(--learning-accent);
-        font-size: 0.78rem;
-        font-weight: 800;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        font-variant-numeric: tabular-nums;
       }
       .unit-card-grid {
         display: grid;
@@ -608,13 +599,43 @@ interface UnitCardEntry {
         color: var(--accent-on-primary);
         background: var(--accent-strong);
       }
+      /* Without the side nav, the column count follows the card count (data-columns,
+         even-grid.ts; user review #1, #2): 2 cards share the full width, 4 are 2×2, one card
+         gets the whole row with its drawing beside the text. */
+      .unit-card-grid[data-columns='2'] {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .unit-card-grid[data-columns='1'] {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      @container (min-width: 620px) {
+        .unit-card-grid[data-columns='1'] a.unit-card {
+          grid-template-columns: minmax(0, 58fr) minmax(0, 42fr);
+          grid-template-rows: none;
+        }
+        .unit-card-grid[data-columns='1'] a.unit-card > .unit-card-scene {
+          grid-column: 2;
+          grid-row: 1;
+          display: grid;
+          align-content: center;
+          border-bottom: 0;
+          border-left: 1px solid var(--line);
+        }
+        .unit-card-grid[data-columns='1'] a.unit-card > .unit-card-body {
+          grid-column: 1;
+          grid-row: 1;
+          justify-content: center;
+          padding: 28px 32px;
+        }
+      }
       @container (max-width: 940px) {
-        .unit-card-grid {
+        .unit-card-grid:not([data-columns='1']) {
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
       }
       @container (max-width: 580px) {
-        .unit-card-grid {
+        .unit-card-grid,
+        .unit-card-grid[data-columns] {
           grid-template-columns: minmax(0, 1fr);
         }
         .unit-card-banner {
@@ -708,8 +729,8 @@ export class CourseLearningMap {
    */
   protected readonly cards = computed<UnitCardEntry[]>(() =>
     this.visibleUnits().flatMap((unit) => [
-      // With the side nav, the nav carries the lesson numbers; the card does not repeat them.
-      this.cardEntry(unit, unit.id, this.lessonNav() ? null : this.unitOrder(unit)),
+      // Cards carry no lesson number (user review, 2026-10-03); the side nav keeps the order.
+      this.cardEntry(unit, unit.id, null),
       ...(unit.planned ? [] : (unit.subUnits ?? [])).map((subUnit, index) =>
         this.cardEntry(
           subUnit,
@@ -720,6 +741,8 @@ export class CourseLearningMap {
       ),
     ]),
   );
+
+  protected readonly gridColumns = evenGridColumns;
 
   /** Every lesson in course order for the side nav; a family's sub-units nest under it. */
   protected readonly navItems = computed<CourseLessonNavItem[]>(() => {
@@ -794,12 +817,6 @@ export class CourseLearningMap {
     () => LADDER_COUNT_NOUNS[this.courseId()] ?? (['lesson', 'lessons'] as const),
   );
 
-  protected readonly cardCountLabel = computed(() => {
-    const count = this.visibleUnits().filter((unit) => !unit.planned).length;
-    const [singular, plural] = this.cardNouns();
-    return `${count} ${count === 1 ? singular : plural}`;
-  });
-
   /**
    * The family pill (a pattern or fundamental) the map is filtered to, if any. It comes from
    * `?family=`; a value no card carries falls back to showing every card.
@@ -861,8 +878,9 @@ export class CourseLearningMap {
     const target = card
       ? { route: this.cardRoute(unit), queryParams: null }
       : this.unitTarget(unit);
-    const meta = [...(label ? [label] : []), ...(card || planned ? [] : this.countLabels(unit))];
-    const hasMeta = meta.length > 0 || Boolean(card?.minutes) || planned;
+    // Cards carry no counts or minutes (user review, 2026-10-03): only a sub-unit label.
+    const meta = label ? [label] : [];
+    const hasMeta = meta.length > 0 || planned;
     const describedBy = [
       ...(card?.level ? [`unit-card-level-${key}`] : []),
       ...(hasMeta ? [`unit-card-meta-${key}`] : []),
@@ -883,25 +901,6 @@ export class CourseLearningMap {
       describedBy,
       ...target,
     };
-  }
-
-  /** Question and practice counts the unit already exposes, for the card's meta line. */
-  private countLabels(unit: CourseLearningUnit): string[] {
-    const labels: string[] = [];
-    const questions = this.questionItems(unit).length;
-    if (questions) labels.push(`${questions} ${questions === 1 ? 'question' : 'questions'}`);
-    const practice = this.practiceItems(unit);
-    if (practice.length) {
-      const presentation = practicePresentation(practice);
-      labels.push(
-        ['explain', 'mixed', 'unknown'].includes(presentation.kind)
-          ? `${presentation.count} practice`
-          : presentation.countLabel,
-      );
-    } else if (unit.practiceModuleId && !this.usesQuestionBankPractice(unit)) {
-      labels.push('Hands-on practice');
-    }
-    return labels;
   }
 
   /** An authored card opens its lesson, or the unit's first question when there is no lesson. */

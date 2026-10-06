@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="An executor hands queued tasks to two threads; thread T1 takes the lock on the shared hits counter and bumps it from 41 to 42 while thread T2 waits its turn">
+<style>
+.lc-jconc-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.lc-jconc-tm { font-family: ui-monospace, Menlo, monospace; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.lc-jconc-tc { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-card, #ffffff); font-weight: 700; }
+.lc-jconc-sh { fill: var(--scene-ink, #102a33); opacity: .08; }
+.lc-jconc-slab { fill: var(--scene-ink, #102a33); opacity: .14; }
+.lc-jconc-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 2; }
+.lc-jconc-soft { fill: var(--scene-accent-soft, #dcefed); }
+.lc-jconc-ln { fill: var(--scene-line, #cfdfdc); }
+.lc-jconc-mut { fill: var(--scene-muted, #536970); }
+.lc-jconc-acc { fill: var(--scene-accent, #006c73); }
+.lc-jconc-lnk { fill: var(--scene-link, #245a88); }
+.lc-jconc-warn { fill: var(--scene-warn, #a15c00); }
+.lc-jconc-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 2; stroke-dasharray: 4 5; }
+.lc-jconc-card { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.lc-jconc-shk { fill: none; stroke-width: 3; }
+
+.lc-jconc-task1 { animation: lc-jconc-kf-task1 8s ease-in-out infinite; }
+@keyframes lc-jconc-kf-task1 { 0%, 2% { transform: translate(0, 0); opacity: 1; } 13% { transform: translate(73px, -23px); opacity: 1; } 15%, 97% { transform: translate(73px, -23px); opacity: 0; } 100% { transform: translate(0, 0); opacity: 0; } }
+.lc-jconc-task2 { animation: lc-jconc-kf-task2 8s ease-in-out infinite; }
+@keyframes lc-jconc-kf-task2 { 0%, 6% { transform: translate(0, 0); opacity: 1; } 17% { transform: translate(73px, 31px); opacity: 1; } 19%, 97% { transform: translate(73px, 31px); opacity: 0; } 100% { transform: translate(0, 0); opacity: 0; } }
+.lc-jconc-d1 { animation: lc-jconc-kf-d1 8s linear infinite; }
+@keyframes lc-jconc-kf-d1 { 0%, 15% { transform: translate(0, 0); opacity: 0; } 16% { opacity: 1; } 27%, 54% { transform: translate(40px, 46px); opacity: 1; } 57%, 100% { transform: translate(40px, 46px); opacity: 0; } }
+.lc-jconc-d2 { animation: lc-jconc-kf-d2 8s linear infinite; }
+@keyframes lc-jconc-kf-d2 { 0%, 19% { transform: translate(0, 0); opacity: 0; } 20% { opacity: 1; } 30%, 57% { transform: translate(25px, -17px); opacity: 1; } 62%, 84% { transform: translate(42px, -28px); opacity: 1; } 87%, 100% { transform: translate(42px, -28px); opacity: 0; } }
+.lc-jconc-hg { animation: lc-jconc-kf-hg 8s infinite; }
+@keyframes lc-jconc-kf-hg { 0%, 30% { opacity: 0; } 32%, 56% { opacity: 1; } 58%, 100% { opacity: 0; } }
+.lc-jconc-la { animation: lc-jconc-kf-la 8s infinite; }
+@keyframes lc-jconc-kf-la { 0%, 26% { opacity: 0; transform: translateY(-4px); } 28%, 55% { opacity: 1; transform: translateY(0); } 57%, 100% { opacity: 0; transform: translateY(0); } }
+.lc-jconc-lb { animation: lc-jconc-kf-lb 8s infinite; }
+@keyframes lc-jconc-kf-lb { 0%, 57% { opacity: 0; transform: translateY(-4px); } 59%, 85% { opacity: 1; transform: translateY(0); } 87%, 100% { opacity: 0; transform: translateY(0); } }
+.lc-jconc-hl { animation: lc-jconc-kf-hl 8s infinite; }
+@keyframes lc-jconc-kf-hl { 0%, 27% { opacity: 0; } 29%, 85% { opacity: 1; } 87%, 100% { opacity: 0; } }
+.lc-jconc-v41 { animation: lc-jconc-kf-v41 8s infinite; }
+@keyframes lc-jconc-kf-v41 { 0%, 38% { opacity: 1; } 39%, 97% { opacity: 0; } 98%, 100% { opacity: 1; } }
+.lc-jconc-v42 { animation: lc-jconc-kf-v42 8s infinite; }
+@keyframes lc-jconc-kf-v42 { 0%, 38% { opacity: 0; } 39%, 69% { opacity: 1; } 70%, 100% { opacity: 0; } }
+.lc-jconc-v43 { animation: lc-jconc-kf-v43 8s infinite; }
+@keyframes lc-jconc-kf-v43 { 0%, 69% { opacity: 0; } 70%, 97% { opacity: 1; } 98%, 100% { opacity: 0; } }
+
+.lc-jconc-task1, .lc-jconc-task2, .lc-jconc-d1, .lc-jconc-d2, .lc-jconc-hg, .lc-jconc-la, .lc-jconc-lb, .lc-jconc-hl, .lc-jconc-v41, .lc-jconc-v42, .lc-jconc-v43 { animation-delay: -3.6s; }
+@media (prefers-reduced-motion: reduce) { .lc-jconc-task1, .lc-jconc-task2, .lc-jconc-d1, .lc-jconc-d2, .lc-jconc-hg, .lc-jconc-la, .lc-jconc-lb, .lc-jconc-hl, .lc-jconc-v41, .lc-jconc-v42, .lc-jconc-v43 { animation-play-state: paused; } }
+</style>
+
+<!-- executor queue: a tray of task cards -->
+<ellipse class="lc-jconc-sh" cx="44" cy="150" rx="34" ry="5"/>
+<rect class="lc-jconc-slab" x="14" y="56" width="60" height="88" rx="8"/>
+<rect class="lc-jconc-box" x="14" y="52" width="60" height="88" rx="8"/>
+<rect class="lc-jconc-card" x="22" y="112" width="44" height="18" rx="4"/><rect class="lc-jconc-mut" x="22" y="112" width="5" height="18" rx="2" opacity=".6"/><rect class="lc-jconc-ln" x="33" y="119" width="24" height="4" rx="2"/>
+<rect class="lc-jconc-card" x="22" y="88" width="44" height="18" rx="4"/><rect class="lc-jconc-mut" x="22" y="88" width="5" height="18" rx="2" opacity=".6"/><rect class="lc-jconc-ln" x="33" y="95" width="20" height="4" rx="2"/>
+<rect class="lc-jconc-card" x="22" y="64" width="44" height="18" rx="4"/><rect class="lc-jconc-mut" x="22" y="64" width="5" height="18" rx="2" opacity=".6"/><rect class="lc-jconc-ln" x="33" y="71" width="26" height="4" rx="2"/>
+<g class="lc-jconc-task2"><rect class="lc-jconc-card" x="22" y="88" width="44" height="18" rx="4"/><rect class="lc-jconc-lnk" x="22" y="88" width="5" height="18" rx="2"/><rect class="lc-jconc-ln" x="33" y="95" width="26" height="4" rx="2"/></g>
+<g class="lc-jconc-task1"><rect class="lc-jconc-card" x="22" y="64" width="44" height="18" rx="4"/><rect class="lc-jconc-acc" x="22" y="64" width="5" height="18" rx="2"/><rect class="lc-jconc-ln" x="33" y="71" width="22" height="4" rx="2"/></g>
+<text class="lc-jconc-t" x="44" y="170" font-size="13" text-anchor="middle">tasks</text>
+
+<!-- wires from the threads to the lock -->
+<path class="lc-jconc-wire" d="M138 50 L180 96"/>
+<path class="lc-jconc-wire" d="M138 128 L180 100"/>
+
+<!-- two worker threads -->
+<ellipse class="lc-jconc-sh" cx="117" cy="67" rx="22" ry="3"/>
+<rect class="lc-jconc-acc" x="96" y="38" width="42" height="24" rx="12"/>
+<text class="lc-jconc-tc" x="117" y="55" font-size="14" text-anchor="middle">T1</text>
+<ellipse class="lc-jconc-sh" cx="117" cy="145" rx="22" ry="3"/>
+<rect class="lc-jconc-lnk" x="96" y="116" width="42" height="24" rx="12"/>
+<text class="lc-jconc-tc" x="117" y="133" font-size="14" text-anchor="middle">T2</text>
+
+<!-- messages on the wires -->
+<g class="lc-jconc-d1"><circle class="lc-jconc-acc" cx="138" cy="50" r="4.5"/></g>
+<g class="lc-jconc-d2"><circle class="lc-jconc-lnk" cx="138" cy="128" r="4.5"/></g>
+<path class="lc-jconc-warn lc-jconc-hg" d="M146 146 H158 L153 155 L158 164 H146 L151 155 Z"/>
+
+<!-- the lock in front of the shared entry -->
+<path class="lc-jconc-shk" d="M185 92 V88 a5 5 0 0 1 10 0 V92" stroke="var(--scene-muted, #536970)"/>
+<rect class="lc-jconc-mut" x="182" y="91" width="16" height="14" rx="3"/>
+<g class="lc-jconc-la"><path class="lc-jconc-shk" d="M185 92 V88 a5 5 0 0 1 10 0 V92" stroke="var(--scene-accent, #006c73)"/><rect class="lc-jconc-acc" x="182" y="91" width="16" height="14" rx="3"/></g>
+<g class="lc-jconc-lb"><path class="lc-jconc-shk" d="M185 92 V88 a5 5 0 0 1 10 0 V92" stroke="var(--scene-link, #245a88)"/><rect class="lc-jconc-lnk" x="182" y="91" width="16" height="14" rx="3"/></g>
+
+<!-- shared map -->
+<ellipse class="lc-jconc-sh" cx="256" cy="152" rx="54" ry="5"/>
+<rect class="lc-jconc-slab" x="204" y="34" width="104" height="112" rx="8"/>
+<rect class="lc-jconc-box" x="204" y="30" width="104" height="112" rx="8"/>
+<path class="lc-jconc-soft" d="M212 31 H300 a7 7 0 0 1 7 7 V56 H205 V38 a7 7 0 0 1 7 -7z"/>
+<text class="lc-jconc-t" x="256" y="48" font-size="13" text-anchor="middle">shared map</text>
+<rect class="lc-jconc-soft lc-jconc-hl" x="205" y="85" width="102" height="27"/>
+<path d="M205 84 H307 M205 112 H307" stroke="var(--scene-line, #cfdfdc)" stroke-width="1.5"/>
+<text class="lc-jconc-tm" x="214" y="75" font-size="12">home</text><text class="lc-jconc-tm" x="298" y="75" font-size="13" text-anchor="end">7</text>
+<text class="lc-jconc-tm" x="214" y="103" font-size="12">hits</text>
+<text class="lc-jconc-tm lc-jconc-v41" x="298" y="103" font-size="14" text-anchor="end">41</text>
+<text class="lc-jconc-tm lc-jconc-v42" x="298" y="103" font-size="14" text-anchor="end" style="fill: var(--scene-accent, #006c73)">42</text>
+<text class="lc-jconc-tm lc-jconc-v43" x="298" y="103" font-size="14" text-anchor="end" style="fill: var(--scene-link, #245a88)">43</text>
+<text class="lc-jconc-tm" x="214" y="131" font-size="12">cart</text><text class="lc-jconc-tm" x="298" y="131" font-size="13" text-anchor="end">3</text>
+</svg>

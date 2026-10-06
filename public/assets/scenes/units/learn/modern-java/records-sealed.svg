@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A policyholder files a 410.00 pet claim from a phone; the claims app knows every kind of claim, Car, Home, Travel and Pet, and routes the claim to the pets queue, not the travel queue, where a check appears">
+<style>
+.rsc-a{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-5.4s;animation-timing-function:ease-in-out}
+.rsc-e{font:600 10px system-ui,sans-serif;fill:var(--scene-muted,#536970);text-anchor:end}
+.rsc-b{font:600 10px system-ui,sans-serif;fill:var(--scene-ink,#102a33);text-anchor:middle}
+.rsc-v{font:700 13px ui-monospace,Menlo,monospace;fill:var(--scene-ink,#102a33);text-anchor:middle}
+.rsc-pay{animation-name:rsc-pay}
+.rsc-route{animation-name:rsc-route}
+.rsc-pick{animation-name:rsc-pick}
+.rsc-ok{animation-name:rsc-ok}
+@keyframes rsc-pay{0%{transform:translate(0,0);opacity:0}4%{opacity:1}22%{transform:translate(40px,-4px);opacity:1}26%,100%{transform:translate(40px,-4px);opacity:0}}
+@keyframes rsc-pick{0%,22%{opacity:0}26%,92%{opacity:1}97%,100%{opacity:0}}
+@keyframes rsc-route{0%,30%{transform:translate(0,0);opacity:0}34%{opacity:1}54%{transform:translate(52px,36px);opacity:1}58%,100%{transform:translate(52px,36px);opacity:0}}
+@keyframes rsc-ok{0%,55%{opacity:0;transform:scale(.6)}60%,92%{opacity:1;transform:scale(1)}97%,100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.rsc-a{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g fill="var(--scene-ink,#102a33)" opacity=".08"><ellipse cx="38" cy="158" rx="30" ry="5"/><ellipse cx="148" cy="160" rx="54" ry="7"/><ellipse cx="264" cy="44" rx="40" ry="3"/><ellipse cx="264" cy="84" rx="40" ry="3"/><ellipse cx="264" cy="124" rx="40" ry="3"/><ellipse cx="264" cy="164" rx="40" ry="3"/></g>
+<g fill="none" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="4 4"><path d="M64 100L100 96"/><path d="M196 82L224 30"/><path d="M196 90L224 70"/><path d="M196 100L224 110"/><path d="M196 108L224 150"/></g>
+<circle cx="34" cy="92" r="11" fill="var(--scene-link,#1f5f8b)"/><path d="M14 152q0-40 20-40t20 40z" fill="var(--scene-link,#1f5f8b)"/>
+<rect x="48" y="92" width="18" height="30" rx="3" fill="var(--scene-ink,#102a33)"/><rect x="50" y="95" width="14" height="22" rx="1.5" fill="var(--scene-card,#fff)"/>
+<path d="M52 98h10M52 103h10M52 108h6" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<circle cx="59" cy="113" r="2.5" fill="var(--scene-warn,#a15c00)"/>
+<circle class="rsc-a rsc-pay" cx="64" cy="100" r="4.5" fill="var(--scene-link,#1f5f8b)"/>
+<path d="M138 132h20l8 22h-36z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<path d="M104 52l8-8h86l-8 8z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M190 52l8-8v80l-8 8z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="104" y="52" width="86" height="80" rx="4" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<text class="rsc-v" x="147" y="72">USD 410.00</text>
+<g fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-line,#cfdfdc)"><rect x="110" y="80" width="36" height="18" rx="3"/><rect x="148" y="80" width="36" height="18" rx="3"/><rect x="110" y="104" width="36" height="18" rx="3"/><rect x="148" y="104" width="36" height="18" rx="3"/></g>
+<rect class="rsc-a rsc-pick" x="148" y="104" width="36" height="18" rx="3" fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/>
+<text class="rsc-b" x="128" y="93">Car</text><text class="rsc-b" x="166" y="93">Home</text><text class="rsc-b" x="128" y="117">Travel</text><text class="rsc-b" x="166" y="117">Pet</text>
+<circle class="rsc-a rsc-route" cx="196" cy="108" r="4.5" fill="var(--scene-accent,#006c73)"/>
+<g fill="var(--scene-line,#cfdfdc)"><path d="M224 18l5-5h74l-5 5z"/><path d="M224 58l5-5h74l-5 5z"/><path d="M224 98l5-5h74l-5 5z"/><path d="M224 138l5-5h74l-5 5z"/></g>
+<g fill="var(--scene-ink,#102a33)" opacity=".14"><path d="M298 18l5-5v22l-5 5z"/><path d="M298 58l5-5v22l-5 5z"/><path d="M298 98l5-5v22l-5 5z"/><path d="M298 138l5-5v22l-5 5z"/></g>
+<g fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"><rect x="224" y="18" width="74" height="22" rx="3"/><rect x="224" y="58" width="74" height="22" rx="3"/><rect x="224" y="98" width="74" height="22" rx="3"/></g>
+<rect x="224" y="138" width="74" height="22" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="2"/>
+<g fill="var(--scene-good,#1f7a4d)"><circle cx="232" cy="29" r="2.5"/><circle cx="232" cy="69" r="2.5"/><circle cx="232" cy="109" r="2.5"/></g>
+<g fill="var(--scene-accent,#006c73)"><circle cx="234" cy="151" r="3"/><circle cx="230" cy="145" r="1.6"/><circle cx="234" cy="143.5" r="1.6"/><circle cx="238" cy="145" r="1.6"/></g>
+<text class="rsc-e" x="294" y="33">motor</text>
+<text class="rsc-e" x="294" y="73">property</text>
+<text class="rsc-e" x="294" y="113">travel</text>
+<text class="rsc-e" x="294" y="153">pets</text>
+<g class="rsc-a rsc-ok" style="transform-box:fill-box;transform-origin:center"><circle cx="306" cy="134" r="9" fill="var(--scene-good,#1f7a4d)"/><path d="M301.5 134l3 3 6-6.5" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+</svg>

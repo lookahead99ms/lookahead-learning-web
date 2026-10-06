@@ -103,7 +103,9 @@ describe('CourseLearningMap', () => {
     expect(banner.querySelector('.unit-card-banner-intro')?.textContent).toContain(
       'Course description.',
     );
-    expect(banner.querySelector('.unit-card-banner-count')?.textContent?.trim()).toBe('1 lesson');
+    // The banner carries no lesson count (user review, 2026-10-03).
+    expect(banner.querySelector('.unit-card-banner-count')).toBeNull();
+    expect(banner.textContent).not.toMatch(/\d+ lessons?\b/);
     expect(element().querySelector('.learning-map-intro')).toBeNull();
     expect(element().querySelector('.learning-action')).toBeNull();
     expect(element().querySelector('app-interview-question-bank-link')).toBeNull();
@@ -120,11 +122,14 @@ describe('CourseLearningMap', () => {
     const summary = card.querySelector('.unit-card-summary')!;
     expect(summary.textContent?.trim()).toBe('Unit description.');
     expect(summary.classList).toContain('unit-card-summary-clamped');
-    expect(metaText(card)).toEqual(['01', '3 questions']);
+    // No lesson number and no question count on the card (user review, 2026-10-03), so this
+    // card has no meta line and is described by its summary alone.
+    expect(metaText(card)).toEqual([]);
+    expect(card.querySelector('.unit-card-meta')).toBeNull();
+    expect(card.textContent).not.toContain('01');
+    expect(card.textContent).not.toMatch(/\bquestions?\b/);
     expect(card.getAttribute('aria-labelledby')).toBe('unit-card-title-unit');
-    expect(card.getAttribute('aria-describedby')).toBe(
-      'unit-card-meta-unit unit-card-summary-unit',
-    );
+    expect(card.getAttribute('aria-describedby')).toBe('unit-card-summary-unit');
   });
 
   it('loads the conventional unit scene and falls back to initials when it is missing', () => {
@@ -176,9 +181,6 @@ describe('CourseLearningMap', () => {
     expect(cards.map((card) => card.id)).toEqual(['unit-practice-family', 'unit-track']);
     expect(metaText(cards[1])).toEqual(['Practice track 1']);
     expect(cards[1].getAttribute('href')).toBe('/learn/course/lesson');
-    expect(element().querySelector('.unit-card-banner-count')?.textContent?.trim()).toBe(
-      '1 lesson',
-    );
   });
 
   it('nests sub-units under their family in the side nav, linked like their cards', () => {
@@ -225,7 +227,8 @@ describe('CourseLearningMap', () => {
 
     const card = cardFor('hashing-lookup');
     expect(card.getAttribute('href')).toBe('/learn/hands-on-dsa?pattern=course:hashing-lookup');
-    expect(metaText(card)).toEqual(['01', 'Hands-on practice']);
+    // Cards carry no practice counts (user review, 2026-10-03).
+    expect(metaText(card)).toEqual([]);
   });
 
   it('uses each nested learning-unit id for its canonical Hands-On DSA filter', () => {
@@ -263,7 +266,7 @@ describe('CourseLearningMap', () => {
     expect(cardFor('list-reversal').getAttribute('href')).toBe(
       '/learn/hands-on-dsa?pattern=algorithmic-patterns:list-reversal',
     );
-    expect(metaText(cardFor('list-reversal'))).toEqual(['Subpattern 2', 'Hands-on practice']);
+    expect(metaText(cardFor('list-reversal'))).toEqual(['Subpattern 2']);
     for (const card of Array.from(element().querySelectorAll('a.unit-card'))) {
       expect(card.querySelectorAll('a')).toHaveLength(0);
     }
@@ -295,24 +298,25 @@ describe('CourseLearningMap', () => {
     practiceExperience: 'questionBank',
   };
 
-  it('counts question-bank practice and links a unit without a lesson to that practice', () => {
+  it('links a unit without a lesson to its question-bank practice, with no count on the card', () => {
     fixture.componentRef.setInput('course', withPractice(withoutLesson, 4));
     fixture.componentRef.setInput('units', [streams]);
     fixture.detectChanges();
 
     const card = cardFor('streams');
-    expect(metaText(card)).toEqual(['01', '3 questions', '4 problems']);
+    // The practice count stays; the lesson number and question count do not (2026-10-03).
+    expect(metaText(card)).toEqual([]);
     expect(card.getAttribute('href')).toBe('/learn/course/module/practice-module');
   });
 
-  it('prefers the lesson over practice and keeps both counts in the meta line', () => {
+  it('prefers the lesson over practice and shows no practice count', () => {
     fixture.componentRef.setInput('course', withPractice(course, 1));
     fixture.componentRef.setInput('units', [streams]);
     fixture.detectChanges();
 
     const card = cardFor('streams');
     expect(card.getAttribute('href')).toBe('/learn/course/lesson');
-    expect(metaText(card)).toEqual(['01', '3 questions', '1 problem']);
+    expect(metaText(card)).toEqual([]);
   });
 
   it('omits an empty question-bank practice count', () => {
@@ -335,7 +339,7 @@ describe('CourseLearningMap', () => {
     ]);
     fixture.detectChanges();
 
-    expect(metaText(cardFor('empty'))).toEqual(['01']);
+    expect(metaText(cardFor('empty'))).toEqual([]);
   });
 
   it('shows planned units as non-link cards with the Planned state', () => {
@@ -362,9 +366,6 @@ describe('CourseLearningMap', () => {
     expect(planned.querySelector('a')).toBeNull();
     const status = planned.querySelector('[data-review-status="planned"]');
     expect(status?.textContent?.trim()).toBe('Planned');
-    expect(element().querySelector('.unit-card-banner-count')?.textContent?.trim()).toBe(
-      '1 lesson',
-    );
   });
 });
 
@@ -468,7 +469,7 @@ describe('CourseLearningMap unit cards', () => {
     return fixture.nativeElement as HTMLElement;
   }
 
-  it('replaces the intro paragraph with a course banner and a count line', async () => {
+  it('replaces the intro paragraph with a course banner without a count line', async () => {
     const element = await render('design-rounds');
 
     expect(element.querySelector('.learning-map-intro')).toBeNull();
@@ -477,12 +478,15 @@ describe('CourseLearningMap unit cards', () => {
     expect(banner.querySelector('.unit-card-banner-intro')?.textContent).toContain(
       'Each round is a 45-minute interview question.',
     );
-    expect(banner.querySelector('.unit-card-banner-count')?.textContent?.trim()).toBe('3 rounds');
+    // The banner carries no lesson or round count (user review, 2026-10-03).
+    expect(banner.querySelector('.unit-card-banner-count')).toBeNull();
+    expect(banner.textContent).not.toMatch(/\d+ (?:rounds?|lessons?)\b/);
   });
 
-  it('counts lessons for courses without a custom noun', async () => {
+  it('shows no lesson count in the banner for courses without a custom noun', async () => {
     const element = await render('design-systems');
-    expect(element.querySelector('.unit-card-banner-count')?.textContent?.trim()).toBe('3 lessons');
+    expect(element.querySelector('.unit-card-banner-count')).toBeNull();
+    expect(element.querySelector('.unit-card-banner')?.textContent).not.toMatch(/\d+ lessons?\b/);
   });
 
   it('makes each card one link to its lesson, the round question, or the practice of a plain unit', async () => {
@@ -501,20 +505,21 @@ describe('CourseLearningMap unit cards', () => {
     );
   });
 
-  it('shows the level on the title row, the meta line, and family pills below the link', async () => {
+  it('shows the level on the title row, no counts or minutes, and family pills below the link', async () => {
     const element = await render('design-rounds');
     const card = element.querySelector('a.unit-card')!;
 
-    expect(card.querySelector('.unit-card-minutes')?.textContent?.trim()).toBe('45 min');
+    // No minutes or counts on cards (user review, 2026-10-03), so this card has no meta line.
+    expect(card.querySelector('.unit-card-minutes, .unit-card-meta')).toBeNull();
     expect(card.querySelector('.unit-card-level')?.textContent).toBe('Advanced');
-    // Drawing, then title, then description; the unit facts follow as plain meta, not a pill.
+    // Drawing, then title, then description.
     expect(
       Array.from(
         card.querySelectorAll(
           'app-card-scene, .unit-card-title, .unit-card-summary, .unit-card-meta',
         ),
       ).map((node) => node.classList[0]),
-    ).toEqual(['unit-card-scene', 'unit-card-title', 'unit-card-summary', 'unit-card-meta']);
+    ).toEqual(['unit-card-scene', 'unit-card-title', 'unit-card-summary']);
     // Drawing words take the shared card text styling; the map carries the path for the title colour.
     expect(card.querySelector('app-card-scene')?.classList).toContain('la-card-scene-card');
     expect(element.querySelector('.learning-map')?.getAttribute('data-path')).toBe('look-ahead');
@@ -524,7 +529,7 @@ describe('CourseLearningMap unit cards', () => {
     expect(level.parentElement?.classList).toContain('unit-card-title-row');
     expect(level.previousElementSibling?.classList).toContain('unit-card-title');
     expect(card.getAttribute('aria-describedby')).toBe(
-      'unit-card-level-lesson-unit unit-card-meta-lesson-unit unit-card-summary-lesson-unit',
+      'unit-card-level-lesson-unit unit-card-summary-lesson-unit',
     );
     expect(card.querySelector('.unit-card-summary')?.textContent).toContain('never sell it twice');
     // Family pills are filter buttons, so they sit in the card frame but outside the link.
@@ -792,13 +797,13 @@ describe('CourseLearningMap unit cards', () => {
       ).toEqual(['01', '02', '03']);
     });
 
-    it('leaves the lesson numbers to the side nav, not the cards', async () => {
+    it('keeps the lesson numbers in the side nav, not the cards', async () => {
       const element = await renderWithNav();
       const cards = Array.from(element.querySelectorAll<HTMLAnchorElement>('a.unit-card'));
 
       expect(
         cards.map((card) => card.querySelector('.unit-card-meta')?.textContent?.trim()),
-      ).toEqual(['45 min', undefined, '1 practice']);
+      ).toEqual([undefined, undefined, undefined]);
       // A card with nothing for the meta line has none, and is described by its summary alone.
       expect(cards[1].getAttribute('aria-describedby')).toBe('unit-card-summary-round-unit');
       expect(

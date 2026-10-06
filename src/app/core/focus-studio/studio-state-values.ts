@@ -2,6 +2,7 @@ import { Component, computed, input } from '@angular/core';
 
 @Component({
   selector: 'app-studio-state-values',
+  host: { '[attr.data-scale]': "scale() === 'player' ? 'player' : null" },
   template: `@if (value() === undefined) {
       <p class="empty">Not recorded at this instruction.</p>
     } @else if (collection(); as values) {
@@ -116,6 +117,15 @@ import { Component, computed, input } from '@angular/core';
           monospace;
         overflow-wrap: anywhere;
       }
+      :host([data-scale='player']) small,
+      :host([data-scale='player']) .indexed-cell span,
+      :host([data-scale='player']) .empty,
+      :host([data-scale='player']) dt {
+        font-size: 13px;
+      }
+      :host([data-scale='player']) .scalar-value {
+        font-size: 16px;
+      }
     `,
   ],
 })
@@ -124,6 +134,8 @@ export class StudioStateValues {
   readonly name = input.required<string>();
   readonly active = input<number[]>([]);
   readonly showCurrentLabel = input(true);
+  /** 'player': the walkthrough player's three type sizes (13, 14, 16 px); other hosts keep theirs. */
+  readonly scale = input<'studio' | 'player'>('studio');
   protected readonly collection = computed(() =>
     Array.isArray(this.value()) ? (this.value() as unknown[]) : null,
   );
