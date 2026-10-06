@@ -493,9 +493,10 @@ describe('production Focus Studio controls', () => {
     expect(tabs.map((tab) => tab.querySelector('.mode-step')?.textContent)).toEqual(['1', '2', '3', '4']);
     expect(root.querySelector('.studio-heading h2')?.classList.contains('visually-hidden')).toBe(true);
     const guide = () => root.querySelector('.mode-guide')?.textContent?.replace(/\s+/g, ' ').trim();
-    expect(guide()).toBe('Step 1 of 4 Write your solution, then trace it through each example.');
+    expect(guide()).toBe('Write your solution, then trace it through each example.');
     await click('Recall');
-    expect(guide()).toContain('Step 4 of 4');
+    expect(guide()).toBe('Answer from memory first, then open each answer to check yourself.');
+    expect(root.querySelector('.mode-guide-step')).toBeNull();
     expect(root.querySelectorAll('.workspace-actions button')).toHaveLength(1);
     expect(root.querySelector('.heading-problem-title')).toBeNull();
     expect(root.querySelector('.problem-rail h2')?.textContent).toBe(root.querySelector('.studio')?.getAttribute('aria-label')?.replace(' Focus Studio', ''));

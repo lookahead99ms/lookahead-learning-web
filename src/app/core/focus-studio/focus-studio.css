@@ -1161,11 +1161,6 @@ button[aria-label^='Restart'] {
   color: var(--text-body, var(--ink));
   font-size: 14px;
 }
-.mode-guide-step {
-  margin-inline-end: 8px;
-  color: var(--muted);
-  font: 600 12px ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-}
 .workspace-actions {
   min-height: 36px;
   padding: 6px 0;
