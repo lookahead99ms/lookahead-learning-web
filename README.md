@@ -13,7 +13,7 @@ delivery evidence, credentials, and learner data are kept outside this Git histo
 The shared page shell builds an outline from visible sections and exposes already-loaded
 recall/practice when available. Learn, Grow and Look Ahead catalogs also show the shared learning prompt in the right sidebar before a lesson is opened.
 At desktop widths (1100px and above), the reader reserves 248–360px on each side, adapting to viewport width, for navigation and recall. Both panels open by default and toggle independently without covering the content.
-On smaller screens, non-homepage panels start collapsed; opening one overlay closes the other. Resizing out of a docked layout closes those panels. The homepage outline stays visible without a toggle: it occupies the left gutter on desktop and becomes a horizontally scrollable row below the header on narrow screens.
+On smaller screens, both sections start open in normal flow above the reader. Their labeled heading buttons remain visible when contents are collapsed. Sections toggle independently, and resizing preserves the learner’s choices. The homepage outline stays visible without a toggle: it occupies the left gutter on desktop and becomes a horizontally scrollable row below the header on narrow screens.
 Both sidebar statements remain visible when their navigation/practice bodies are collapsed; when gutters are too small, they move into normal flow after the page instead of crowding the reader. The docked left navigation and selected row fade toward the content; the docked right sidebar is borderless and transparent. No backdrop, page lock, or focus trap is introduced. Header and breadcrumb navigation
 remain available. The homepage has only a left outline and retains its signature in the
 hero. Coding Problem Workspace is excluded; author pages retain their existing layout.
@@ -812,7 +812,8 @@ Hands-On DSA (`src/app/pages/hands-on-dsa/`, `src/app/core/focus-studio/`):
 
 - Catalog: hero counts from the published catalog, breadcrumb with the Learn group,
   a **Problem library** table with an inline statement preview loaded on demand,
-  pattern names hidden by default (`patterns=show` in the URL shows them),
+  pattern names hidden by default, with no placeholder line under the problem title
+  (`patterns=show` in the URL shows them),
   **Hide solved** (`solved=hide`), and **Surprise me**, which draws from every page
   of the current filters and prefers problems not yet solved on this device.
 - Catalog views (2026-10-06): an **All problems | By pattern** switch. By pattern
@@ -826,10 +827,9 @@ Hands-On DSA (`src/app/pages/hands-on-dsa/`, `src/app/core/focus-studio/`):
   order carries across the views and across patterns; sorting by difficulty is off
   while the list shows one difficulty. **Status** is the last column, not sortable,
   and shows an empty circle (○) for a problem not started on this device.
-- Page width: the page sets `collapseLeftBelow: 1700` on the shared page sidebars
-  (`core/page-sidebars/`), so below 1700px the left navigation starts collapsed and
-  the catalog keeps its column; the learner can still open it. Other pages are
-  unchanged.
+- Page navigation: Hands-On DSA uses the shared sidebar default. The left navigation
+  starts open when there is room to dock it beside the catalog; narrow screens keep
+  the standard drawer toggle. Learners can close and reopen it.
 - Workspace header and practice tools (`practice-tools.ts`,
   `studio-practice-tools.ts`): a timed attempt per problem (15, 25 or 45 minutes by
   difficulty; hints and the solution stay locked while it runs), a time/space
@@ -873,3 +873,12 @@ Hands-On DSA (`src/app/pages/hands-on-dsa/`, `src/app/core/focus-studio/`):
 Verify with `npm test -- --watch=false` (the specs beside each component cover the
 behavior above), `npm run build`, and `node scripts/validate-content.mjs --external`
 for the private content checks (including every lesson download link).
+
+Sidebar toggles sit beside the navigation headings, below the passive corner
+statements. Statement emphasis uses weight and color without underlines; the AI
+review prompt reads “Review what AI writes. Know where it can fail.”
+
+On Hands-On DSA problem pages, “Help me recognize the pattern” precedes reveal.
+After reveal, the header keeps only the named pattern lesson link with its new-tab
+indicator. Opening another problem conceals its pattern again; reveal changes no
+saved practice progress.

@@ -2,7 +2,12 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PageSidebarContext } from './page-sidebar-context';
-import { PageSidebars, canDockSidebar, collectPageSections, sidebarPageTitle } from './page-sidebars';
+import {
+  PageSidebars,
+  canDockSidebar,
+  collectPageSections,
+  sidebarPageTitle,
+} from './page-sidebars';
 
 describe('Shared page sidebars', () => {
   let root: HTMLElement;
@@ -25,7 +30,7 @@ describe('Shared page sidebars', () => {
   }
 
   function button(label: string): HTMLButtonElement {
-    const result = root.querySelector<HTMLButtonElement>(`button[aria-label="${label}"]`);
+    const result = root.querySelector<HTMLButtonElement>(`button[aria-label^="${label}"]`);
     expect(result).not.toBeNull();
     return result!;
   }
@@ -76,11 +81,8 @@ describe('Shared page sidebars', () => {
     fixture = TestBed.createComponent(PageSidebars);
     root.append(fixture.nativeElement);
     flush();
-    button('Open left sidebar').click();
-    flush();
+    // Most interaction tests begin with the learner's explicit collapsed choice.
     button('Close left sidebar').click();
-    button('Open right sidebar').click();
-    flush();
     button('Close right sidebar').click();
     flush();
   });
@@ -157,12 +159,23 @@ describe('Shared page sidebars', () => {
       excluded: false,
       lessonNav: {
         path: { title: 'Learn', route: ['/', 'learn'] },
-        group: { title: 'Java Platform and Runtime', route: ['/', 'learn'], queryParams: { group: 'java-platform' } },
-        nextGroup: { title: 'Web Foundations', route: ['/', 'learn'], queryParams: { group: 'javascript-web-foundations' } },
+        group: {
+          title: 'Java Platform and Runtime',
+          route: ['/', 'learn'],
+          queryParams: { group: 'java-platform' },
+        },
+        nextGroup: {
+          title: 'Web Foundations',
+          route: ['/', 'learn'],
+          queryParams: { group: 'javascript-web-foundations' },
+        },
         nextCourseInNextGroup: false,
         course: { title: 'Modern Java', route: ['/', 'learn', 'modern-java'] },
         current: 'Java Streams',
-        previous: { title: 'Java 8 Functional Foundations', route: ['/', 'learn', 'modern-java', 'functional'] },
+        previous: {
+          title: 'Java 8 Functional Foundations',
+          route: ['/', 'learn', 'modern-java', 'functional'],
+        },
         next: null,
         nextCourse: { title: 'JVM Memory and GC', route: ['/', 'learn', 'garbage-collection'] },
         search: { path: 'learn', course: 'modern-java', module: 'streams' },
@@ -175,7 +188,9 @@ describe('Shared page sidebars', () => {
     expect(nav).not.toBeNull();
     expect(nav.getAttribute('data-path')).toBe('learn');
     const text = (selector: string) =>
-      Array.from(nav.querySelectorAll<HTMLElement>(selector)).map((element) => element.textContent?.replace(/\s+/g, ' ').trim());
+      Array.from(nav.querySelectorAll<HTMLElement>(selector)).map((element) =>
+        element.textContent?.replace(/\s+/g, ' ').trim(),
+      );
     const href = (selector: string) => nav.querySelector(selector)?.getAttribute('href');
     // Path, group, course and its lessons, then the next course in this group and the next group.
     expect(text('.outline-path > a')).toEqual(['Learn']);
@@ -207,12 +222,23 @@ describe('Shared page sidebars', () => {
       excluded: false,
       lessonNav: {
         path: { title: 'Learn', route: ['/', 'learn'] },
-        group: { title: 'Java Platform and Runtime', route: ['/', 'learn'], queryParams: { group: 'java-platform' } },
-        nextGroup: { title: 'Web Foundations', route: ['/', 'learn'], queryParams: { group: 'javascript-web-foundations' } },
+        group: {
+          title: 'Java Platform and Runtime',
+          route: ['/', 'learn'],
+          queryParams: { group: 'java-platform' },
+        },
+        nextGroup: {
+          title: 'Web Foundations',
+          route: ['/', 'learn'],
+          queryParams: { group: 'javascript-web-foundations' },
+        },
         nextCourseInNextGroup: true,
         course: { title: 'JVM Memory and GC', route: ['/', 'learn', 'garbage-collection'] },
         current: 'Memory and GC Diagnosis',
-        nextCourse: { title: 'JavaScript Foundations', route: ['/', 'learn', 'javascript-foundations'] },
+        nextCourse: {
+          title: 'JavaScript Foundations',
+          route: ['/', 'learn', 'javascript-foundations'],
+        },
         search: { path: 'learn', course: 'garbage-collection', module: 'diagnosis' },
       },
     });
@@ -220,7 +246,9 @@ describe('Shared page sidebars', () => {
     button('Open right sidebar').click();
     flush();
     const nextGroup = root.querySelector<HTMLElement>('.sidebar-lesson-nav .outline-group.ahead')!;
-    expect(nextGroup.querySelector('.outline-course.ahead > a')?.textContent?.trim()).toBe('JavaScript Foundations');
+    expect(nextGroup.querySelector('.outline-course.ahead > a')?.textContent?.trim()).toBe(
+      'JavaScript Foundations',
+    );
     expect(root.querySelectorAll('.sidebar-lesson-nav .outline-course.ahead').length).toBe(1);
   });
 
@@ -403,9 +431,9 @@ describe('Shared page sidebars', () => {
     refresh();
     // In flow, the statement moves into the shared strip after the page.
     expect(
-      root.querySelector('.signature-strip .standalone-signature-right')?.classList.contains(
-        'inline-signature',
-      ),
+      root
+        .querySelector('.signature-strip .standalone-signature-right')
+        ?.classList.contains('inline-signature'),
     ).toBe(true);
   });
 
@@ -498,13 +526,19 @@ describe('Shared page sidebars', () => {
     );
   });
 
-  it('keeps both sidebars closed by default without docking space', () => {
+  it('opens both sections in flow by default without docking space', () => {
     fixture.destroy();
     fixture = TestBed.createComponent(PageSidebars);
     root.append(fixture.nativeElement);
     flush();
-    expect(button('Open left sidebar').getAttribute('aria-expanded')).toBe('false');
-    expect(button('Open right sidebar').getAttribute('aria-expanded')).toBe('false');
+    expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
+    expect(button('Close right sidebar').getAttribute('aria-expanded')).toBe('true');
+    expect(fixture.nativeElement.classList.contains('inline-sidebars')).toBe(true);
+    expect(main.previousElementSibling).toBe(fixture.nativeElement);
+    button('Close left sidebar').click();
+    flush();
+    expect(button('Open left sidebar').textContent).toContain('Sample lesson');
+    expect(button('Close right sidebar').textContent).toContain('Practice & review');
     expect(page.hasAttribute('inert')).toBe(false);
     expect(root.querySelector('.sidebar-backdrop')).toBeNull();
   });
@@ -545,20 +579,47 @@ describe('Shared page sidebars', () => {
   it('shows the reasoning statements in the two bottom corners of wide gutters', () => {
     vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(2400);
     vi.mocked(main.getBoundingClientRect).mockReturnValue({
-      left: 540, right: 1860, width: 1320, top: 76, bottom: 900, height: 824, x: 540, y: 76, toJSON: () => ({}),
+      left: 540,
+      right: 1860,
+      width: 1320,
+      top: 76,
+      bottom: 900,
+      height: 824,
+      x: 540,
+      y: 76,
+      toJSON: () => ({}),
     });
     refresh();
     const corners = Array.from(root.querySelectorAll<HTMLElement>('.corner-signature'));
     expect(corners).toHaveLength(2);
     expect(corners[0].classList).toContain('corner-signature-left');
     expect(corners[1].classList).toContain('corner-signature-right');
-    expect(corners[0].textContent?.replace(/\s+/g, ' ').trim()).toBe('Understand the obstacle. Find the way.');
-    expect(corners[1].textContent?.replace(/\s+/g, ' ').trim()).toBe('Know why it works. Know when it won’t.');
+    expect(corners[0].textContent?.replace(/\s+/g, ' ').trim()).toBe(
+      'Understand the obstacle. Find the way.',
+    );
+    expect(corners[1].textContent?.replace(/\s+/g, ' ').trim()).toBe(
+      'Know why it works. Know when it won’t.',
+    );
     expect(root.querySelector('.signature-strip app-reasoning-prompt')).toBeNull();
+    expect(
+      root.querySelector('#page-sidebar-left .sidebar-heading .sidebar-title')?.textContent,
+    ).toBe('Sample lesson');
+    expect(
+      root.querySelector('#page-sidebar-left .sidebar-heading app-sidebar-toggle'),
+    ).not.toBeNull();
+    expect(root.querySelector('.persistent-signature app-sidebar-toggle')).toBeNull();
+    expect(
+      root
+        .querySelector('#page-sidebar-right app-reasoning-prompt')
+        ?.textContent?.replace(/\s+/g, ' ')
+        .trim(),
+    ).toBe('Review what AI writes. Know where it can fail.');
     // An open sidebar stops short of its bottom corner.
     button('Open left sidebar').click();
     flush();
-    const reserved = Number(/- (\d+)px/.exec(root.querySelector<HTMLElement>('#page-sidebar-left')!.style.maxHeight)?.[1]);
+    const reserved = Number(
+      /- (\d+)px/.exec(root.querySelector<HTMLElement>('#page-sidebar-left')!.style.maxHeight)?.[1],
+    );
     expect(reserved).toBeGreaterThanOrEqual(96 + 8);
   });
 
@@ -678,7 +739,7 @@ describe('Shared page sidebars', () => {
     expect(canDockSidebar(-10)).toBe(false);
   });
 
-  it('opens a nonmodal panel, keeps the page interactive, and supports Escape', () => {
+  it('keeps expanded in-flow sections interactive without modal keyboard behavior', () => {
     const contentBefore = main.innerHTML;
     const open = button('Open left sidebar');
     open.click();
@@ -711,9 +772,9 @@ describe('Shared page sidebars', () => {
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     flush();
     expect(page.hasAttribute('inert')).toBe(false);
-    expect(document.activeElement).toBe(button('Open left sidebar'));
+    expect(document.activeElement).toBe(button('Close left sidebar'));
     expect(main.innerHTML).toBe(contentBefore);
-    expect(root.querySelector('#page-sidebar-left-content')?.hasAttribute('hidden')).toBe(true);
+    expect(root.querySelector('#page-sidebar-left-content')?.hasAttribute('hidden')).toBe(false);
   });
 
   it('positions sidebar jumps below the sticky lesson toolbar', () => {
@@ -745,8 +806,6 @@ describe('Shared page sidebars', () => {
     fixture = TestBed.createComponent(PageSidebars);
     root.append(fixture.nativeElement);
     flush();
-    button('Open left sidebar').click();
-    flush();
     root
       .querySelector<HTMLAnchorElement>('#page-sidebar-left-content a[href$="#card-heading"]')!
       .click();
@@ -762,23 +821,23 @@ describe('Shared page sidebars', () => {
     expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
   });
 
-  it('opens only one overlay at a time and retains the selection across refresh', () => {
+  it('toggles both in-flow sections independently and retains choices across refresh', () => {
     button('Open left sidebar').click();
     flush();
     button('Open right sidebar').click();
     flush();
-    expect(button('Open left sidebar').getAttribute('aria-expanded')).toBe('false');
+    expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
     expect(button('Close right sidebar').getAttribute('aria-expanded')).toBe('true');
     refresh();
     expect(button('Close right sidebar').getAttribute('aria-expanded')).toBe('true');
-    button('Open left sidebar').click();
+    button('Close right sidebar').click();
     flush();
     expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
     expect(button('Open right sidebar').getAttribute('aria-expanded')).toBe('false');
     expect(page.hasAttribute('inert')).toBe(false);
   });
 
-  it('opens docked panels by default and closes them when the viewport loses its gutters', () => {
+  it('opens docked sections by default and preserves expansion when the viewport loses its gutters', () => {
     vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(1800);
     vi.mocked(main.getBoundingClientRect).mockReturnValue({ left: 300, right: 1500 } as DOMRect);
     fixture.destroy();
@@ -803,17 +862,14 @@ describe('Shared page sidebars', () => {
     vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(391);
     vi.mocked(main.getBoundingClientRect).mockReturnValue({ left: 0, right: 391 } as DOMRect);
     refresh();
-    expect(button('Open left sidebar').getAttribute('aria-expanded')).toBe('false');
-    expect(button('Open right sidebar').getAttribute('aria-expanded')).toBe('false');
+    expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
+    expect(button('Close right sidebar').getAttribute('aria-expanded')).toBe('true');
     expect(main.hasAttribute('data-sidebar-nav-shown')).toBe(false);
-    expect(document.activeElement).toBe(button('Open left sidebar'));
-    expect(root.querySelector<HTMLElement>('#page-sidebar-left')!.style.width).toBe('44px');
-    expect(
-      root.querySelector('.standalone-signature')?.classList.contains('inline-signature'),
-    ).toBe(true);
+    expect(main.previousElementSibling).toBe(fixture.nativeElement);
+    expect(document.activeElement?.tagName).toBe('A');
   });
 
-  it('lets a page start the left navigation collapsed below a width and take its column', async () => {
+  it('starts expanded despite a page width hint and lets the learner reclaim its column', async () => {
     // The page gives up the left column while main carries data-sidebar-left-collapsed.
     const width = vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(1440);
     vi.mocked(main.getBoundingClientRect).mockImplementation(
@@ -829,6 +885,9 @@ describe('Shared page sidebars', () => {
     context.set(contextOwner, { excluded: false, collapseLeftBelow: 1700 });
     fixture = TestBed.createComponent(PageSidebars);
     root.append(fixture.nativeElement);
+    flush();
+    expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
+    button('Close left sidebar').click();
     flush();
     expect(main.hasAttribute('data-sidebar-left-collapsed')).toBe(true);
     expect(button('Open left sidebar').getAttribute('aria-expanded')).toBe('false');
@@ -891,14 +950,22 @@ describe('Shared page sidebars', () => {
     button('Open right sidebar').click();
     flush();
     const group = root.querySelector<HTMLElement>('.practice-review')!;
-    expect(group.querySelector('.practice-review-label')?.textContent).toBe('Practice & review');
+    expect(
+      root.querySelector('.practice-heading #practice-review-label')?.textContent?.trim(),
+    ).toBe('Practice & review');
+    expect(group.getAttribute('aria-labelledby')).toBe('practice-review-label');
+    expect(root.querySelector('.practice-heading app-sidebar-toggle')).not.toBeNull();
     const rows = Array.from(group.querySelectorAll<HTMLElement>('.practice-action'));
     expect(rows.map((row) => row.textContent?.trim())).toContain('Quick recall');
     expect(rows.every((row) => row.querySelector('.practice-icon svg'))).toBe(true);
     // No question sits in the sidebar any more.
-    expect(root.querySelector('#page-sidebar-right-content')?.textContent).not.toContain('First check?');
+    expect(root.querySelector('#page-sidebar-right-content')?.textContent).not.toContain(
+      'First check?',
+    );
 
-    const opener = rows.find((row) => row.textContent?.trim() === 'Quick recall') as HTMLButtonElement;
+    const opener = rows.find(
+      (row) => row.textContent?.trim() === 'Quick recall',
+    ) as HTMLButtonElement;
     expect(opener.getAttribute('aria-haspopup')).toBe('dialog');
     opener.click();
     flush();
@@ -1024,7 +1091,12 @@ describe('Lesson stage outline (DLV-408)', () => {
       </section>`;
     document.body.append(main);
     try {
-      const links = collectPageSections(main).map(({ id, label, level, group }) => ({ id, label, level, group }));
+      const links = collectPageSections(main).map(({ id, label, level, group }) => ({
+        id,
+        label,
+        level,
+        group,
+      }));
       expect(links).toEqual([
         { id: links[0].id, label: 'Overview', level: undefined, group: undefined },
         { id: 'stage-brief', label: 'Brief', level: 'stage', group: 'brief' },
@@ -1063,7 +1135,8 @@ describe('Lesson stage outline (DLV-408)', () => {
 describe('Sidebar page title (navTitle)', () => {
   it('prefers the authored short title on the h1 and falls back to its text', () => {
     const main = document.createElement('main');
-    main.innerHTML = '<h1 data-sidebar-title=" Design a reservation system ">Design a reservation system with payment: 60,000 seats</h1>';
+    main.innerHTML =
+      '<h1 data-sidebar-title=" Design a reservation system ">Design a reservation system with payment: 60,000 seats</h1>';
     expect(sidebarPageTitle(main)).toBe('Design a reservation system');
     main.querySelector('h1')!.removeAttribute('data-sidebar-title');
     expect(sidebarPageTitle(main)).toBe('Design a reservation system with payment: 60,000 seats');

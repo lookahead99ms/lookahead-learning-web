@@ -288,10 +288,10 @@ function linkWithText(root: HTMLElement, text: string): HTMLAnchorElement | unde
   );
 }
 
-/** Toggles the pattern: "Show the pattern" in the help dialog, or "Hide pattern" in the header once shown. */
+/** Reveals the pattern through the recognition dialog. */
 async function revealPattern(harness: RouterTestingHarness): Promise<void> {
   const root = harness.routeNativeElement!;
-  (root.querySelector<HTMLButtonElement>('.pattern-hide') ?? root.querySelector<HTMLButtonElement>('app-pattern-help .reveal'))!.click();
+  root.querySelector<HTMLButtonElement>('app-pattern-help .reveal')!.click();
   harness.detectChanges();
   await harness.fixture.whenStable();
 }
@@ -776,7 +776,7 @@ describe('Question canonical DSA navigation', () => {
     expect(root.querySelector('app-pattern-help dialog')?.hasAttribute('open')).toBe(true);
     expect(root.querySelector('app-pattern-help h2')?.textContent).toBe('Meeting Rooms');
     await revealPattern(harness);
-    // After the reveal: the dialog names the pattern, and the header offers its lesson and "Hide pattern".
+    // After reveal, the header offers only the named lesson link with its new-tab cue.
     expect(root.querySelector('app-pattern-help .answer h4')?.textContent).toBe('Hashing');
     expect(root.querySelector('.pattern-help-open')).toBeNull();
     const lesson = root.querySelector<HTMLAnchorElement>('.pattern-lesson-open')!;
@@ -785,14 +785,10 @@ describe('Question canonical DSA navigation', () => {
     expect(lesson.textContent).toContain('(opens in a new tab)');
     expect(lesson.getAttribute('href')).toBe('/learn/algorithmic-patterns/algorithmic-hashing-lookup');
     expect(lesson.getAttribute('target')).toBe('_blank');
-    expect(root.querySelector('.pattern-hide')?.textContent).toBe('Hide pattern');
+    expect(root.querySelector('.pattern-hide')).toBeNull();
+    expect(root.querySelector('.problem-pattern-actions')?.querySelectorAll('a, button')).toHaveLength(1);
     expect(root.querySelector('.breadcrumbs')?.textContent).toContain('Hashing');
-    await revealPattern(harness);
-    expect(root.querySelector('.pattern-lesson-open')).toBeNull();
-    expect(root.querySelector('.pattern-help-open')).not.toBeNull();
-    expect(root.querySelector('.breadcrumbs')?.textContent).not.toContain('Hashing');
     expect(root.querySelector('.question-context-panel')).toBeNull();
-    await revealPattern(harness);
     await harness.navigateByUrl('/learn/algorithmic-patterns/algorithmic-two-sum', Question);
     expect(harness.routeNativeElement!.querySelector('.pattern-help-open')).not.toBeNull();
     expect(harness.routeNativeElement!.querySelector('.pattern-lesson-open')).toBeNull();

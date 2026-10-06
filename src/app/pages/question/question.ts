@@ -428,8 +428,7 @@ import { catalogGroupForCourse, nextCatalogGroup } from '../../content/catalog-c
         max-width: 100%;
       }
       .pattern-help-open,
-      .pattern-lesson-open,
-      .pattern-hide {
+      .pattern-lesson-open {
         display: inline-flex;
         align-items: center;
         gap: 8px;
@@ -453,14 +452,8 @@ import { catalogGroupForCourse, nextCatalogGroup } from '../../content/catalog-c
         background: var(--surface);
         color: var(--accent-strong);
       }
-      .pattern-hide {
-        border: 1px solid var(--line);
-        background: var(--surface);
-        color: var(--text-strong);
-      }
       .pattern-help-open:hover,
-      .pattern-lesson-open:hover,
-      .pattern-hide:hover {
+      .pattern-lesson-open:hover {
         filter: brightness(1.06);
       }
       .visually-hidden {

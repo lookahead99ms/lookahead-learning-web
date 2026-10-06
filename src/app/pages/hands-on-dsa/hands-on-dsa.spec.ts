@@ -272,13 +272,11 @@ describe('Hands-On DSA route contracts', () => {
     expect(
       rows.map((row) => row.querySelector('.problem-learning-order')!.textContent?.trim()),
     ).toEqual(['1', '2']);
-    const pattern = rows[0].querySelector('.problem-pattern')!;
-    expect(pattern.textContent).toBe('Pattern hidden');
-    expect(pattern.classList).toContain('pattern-hidden');
-    // A compact row: the title with its pattern line under it, and Preview beside them.
+    expect(rows[0].querySelector('.problem-pattern')).toBeNull();
+    // Hidden pattern names leave only the title, with Preview beside it.
     const titleText = rows[0].querySelector('.problem-title-cell .problem-title-text')!;
     expect(titleText.querySelector('.problem-link')).not.toBeNull();
-    expect(titleText.querySelector('.problem-pattern')).toBe(pattern);
+    expect(titleText.querySelector('.problem-pattern')).toBeNull();
     expect(
       rows[0].querySelector('.problem-title-layout > .problem-preview-toggle')?.textContent?.trim(),
     ).toBe('Preview');
@@ -982,7 +980,7 @@ describe('Hands-On DSA route contracts', () => {
         node.textContent?.trim(),
       );
     expect(toggle().checked).toBe(true);
-    expect(patternLines()).toEqual(['Pattern hidden', 'Pattern hidden']);
+    expect(patternLines()).toEqual([]);
 
     toggle().click();
     await harness.fixture.whenStable();
@@ -1003,7 +1001,7 @@ describe('Hands-On DSA route contracts', () => {
     harness.detectChanges();
     expect(searchParams(router).has('patterns')).toBe(false);
     expect(searchParams(router).get('difficulty')).toBe('Beginner');
-    expect(patternLines()).toEqual(['Pattern hidden', 'Pattern hidden']);
+    expect(patternLines()).toEqual([]);
   });
 
   it('does not match pattern titles or pattern text in search while names are hidden', async () => {
@@ -1836,7 +1834,7 @@ describe('Hands-On DSA route contracts', () => {
       expect(strip.textContent).toContain('Progress does not sync to other devices yet.');
     });
 
-    it('keeps the two view switches together and asks for the left column below 1700px', async () => {
+    it('keeps the two view switches together and uses the shared navigation default', async () => {
       const harness = await RouterTestingHarness.create();
       await harness.navigateByUrl('/learn/hands-on-dsa', HandsOnDsa);
       const root = harness.routeNativeElement!;
@@ -1846,7 +1844,7 @@ describe('Hands-On DSA route contracts', () => {
         'Hide solved',
       ]);
       expect(switches.querySelectorAll('input[type="checkbox"]')).toHaveLength(2);
-      expect(TestBed.inject(PageSidebarContext).value()).toEqual({ excluded: false, collapseLeftBelow: 1700 });
+      expect(TestBed.inject(PageSidebarContext).value()).toEqual({ excluded: false });
     });
 
     it('hides solved problems and keeps the choice in the URL', async () => {

@@ -159,8 +159,7 @@
         </div>
         </div>
         @if (studioPilot() || focusStudio()) {
-          <!-- User review 2026-10-05 (Option A): "Help me recognize the pattern" opens the explorer; once the
-               pattern is shown, the header offers its lesson (new tab) and a way to hide it again. -->
+          <!-- User-approved 2026-10-06: recognize first; after reveal keep only the named lesson link. -->
           <div class="problem-pattern-actions">
             @if (!patternRevealed()) {
               <button type="button" class="pattern-help-open" aria-haspopup="dialog" (click)="patternHelpOpen.set(true)">
@@ -177,7 +176,6 @@
                 >{{ patternName(conceptReviewTitle(item)) }} lesson<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9 3h4v4M13 3 7.5 8.5M12 9.5V13H3V4h3.5" /></svg
                 ><span class="visually-hidden"> (opens in a new tab)</span></a
               >
-              <button type="button" class="pattern-hide" (click)="patternRevealed.set(false)">Hide pattern</button>
             }
           </div>
           <app-pattern-help

@@ -2,8 +2,8 @@ import { Component, computed, input } from '@angular/core';
 
 /**
  * Corner statements beside PlatformSignature and LearningPrompt (user review, 2026-10-04). The
- * corners pair in rows: top left "Build with AI" with top right `ai` (stay ahead of your AI and
- * see where its code fails); bottom left `reasoning` (obstacle → way) with bottom right "Know why
+ * corners pair in rows: top left "Build with AI" with top right `ai` (review AI output and
+ * consider where it can fail); bottom left `reasoning` (obstacle → way) with bottom right "Know why
  * it works" (LearningPrompt).
  */
 interface StatementLine {
@@ -12,6 +12,7 @@ interface StatementLine {
   key: string;
   /** Colours the key word like the AI in "Build with AI". */
   actor?: boolean;
+  tail?: string;
 }
 
 export const REASONING_STATEMENTS: Record<'reasoning' | 'ai', readonly StatementLine[]> = {
@@ -21,8 +22,8 @@ export const REASONING_STATEMENTS: Record<'reasoning' | 'ai', readonly Statement
   ],
   ai: [
     // AI takes the same colour as "Build with AI" (top left), so the AI pair reads as one.
-    { lead: 'Look ahead', middle: 'of your', key: 'AI', actor: true },
-    { lead: 'Know', middle: 'where its code', key: 'breaks' },
+    { lead: 'Review', middle: 'what', key: 'AI', actor: true, tail: 'writes' },
+    { lead: 'Know', middle: 'where it can', key: 'fail' },
   ],
 };
 
@@ -31,7 +32,7 @@ export const REASONING_STATEMENTS: Record<'reasoning' | 'ai', readonly Statement
   preserveWhitespaces: true,
   host: { '[class.stacked]': 'stacked()' },
   // prettier-ignore
-  template: `@for (line of lines(); track line.key) {<span class="line"><span class="lead">{{ line.lead }}</span> {{ line.middle }} <span class="key" [class.actor]="line.actor">{{ line.key }}</span>.</span> }`,
+  template: `@for (line of lines(); track line.key) {<span class="line"><span class="lead">{{ line.lead }}</span> {{ line.middle }} <span class="key" [class.actor]="line.actor">{{ line.key }}</span>@if (line.tail) { {{ line.tail }}}.</span> }`,
   styles: `
     :host {
       color: var(--text-strong);

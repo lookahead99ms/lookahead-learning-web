@@ -542,9 +542,6 @@ export function previewSummary(text: string): string {
         font-size: 0.76rem;
         line-height: 1.3;
       }
-      .problem-pattern.pattern-hidden {
-        font-style: italic;
-      }
       .problem-preview-toggle,
       .problem-preview-retry {
         min-height: 44px;
@@ -792,10 +789,9 @@ export class HandsOnDsa implements OnInit {
   private focusAfterSorting: string | null = null;
   /** The Learn catalog group Hands-On DSA sits in, for the breadcrumb's group level. */
   protected readonly courseGroup = catalogGroupForCourse('learn', 'hands-on-dsa');
-  /** Below 1700px the left page navigation starts collapsed, so the catalog gets its column. */
+  /** Use the shared default: navigation opens when it can dock beside the catalog. */
   protected readonly sidebarContext: PageSidebarContextValue = {
     excluded: false,
-    collapseLeftBelow: 1700,
   };
   protected readonly catalog = signal<HandsOnDsaIndex | null>(null);
   protected readonly error = signal('');

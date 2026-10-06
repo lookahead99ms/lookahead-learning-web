@@ -1,14 +1,10 @@
-@let leftSignature =
-  enabled() && !homepage() && (!showLeft() || (!leftDocked() && !leftOpen())) && !authorNavigation();
-@let rightSignature =
-  enabled() &&
-  !homepage() &&
-  !authorNavigation() &&
-  (!showRight() || (!rightDocked() && (!rightOpen() || !hasRightContent())));
 @let leftInline = !leftDocked() || leftWidth() < 192;
 @let rightInline = !rightDocked() || rightWidth() < 192;
+@let leftSignature = enabled() && !homepage() && (!showLeft() || leftInline) && !authorNavigation();
+@let rightSignature =
+  enabled() && !homepage() && !authorNavigation() && (!showRight() || rightInline);
 <!-- Four corners (user review, 2026-10-04), paired in rows because people scan a row at a time:
-     the top row is the AI promise (Build with AI · Look ahead of your AI), the bottom row the
+     the top row is the AI promise (Build with AI · Review what AI writes), the bottom row the
      reasoning habit (Understand the obstacle · Know why it works). The bottom corners sit in any
      gutter wide enough to hold them, whether or not a sidebar is open there; the sidebars stop
      short of them. -->
@@ -66,12 +62,16 @@
       </div>
     }
     @if (leftSignature && leftInline && !cornerLeft) {
-      <div class="standalone-signature standalone-signature-left inline-signature reasoning-signature">
+      <div
+        class="standalone-signature standalone-signature-left inline-signature reasoning-signature"
+      >
         <app-reasoning-prompt variant="reasoning" />
       </div>
     }
     @if (rightSignature && rightInline && !cornerRight) {
-      <div class="standalone-signature standalone-signature-right inline-signature reasoning-signature">
+      <div
+        class="standalone-signature standalone-signature-right inline-signature reasoning-signature"
+      >
         <app-learning-prompt />
       </div>
     }
@@ -84,26 +84,39 @@
       class="page-sidebar left"
       [class.homepage]="homepage()"
       [style.inset-inline-start.px]="leftOpen() ? leftInset() : 6"
-      [style.width.px]="leftOpen() || (leftDocked() && !homepage()) ? leftWidth() : 44"
+      [style.width.px]="leftWidth()"
       [class.open]="leftOpen()"
       [class.docked]="leftDocked()"
       [style.top.px]="headerBottom()"
-      [style.max-height]="'calc(100dvh - ' + (headerBottom() + 8 + (cornerLeft ? cornerReserve : 0)) + 'px)'"
+      [style.max-height]="
+        'calc(100dvh - ' + (headerBottom() + 8 + (cornerLeft ? cornerReserve : 0)) + 'px)'
+      "
       aria-label="Page sections"
     >
-      @if (!homepage()) {
-        <app-sidebar-toggle
-          side="left"
-          [open]="leftOpen()"
-          controls="page-sidebar-left-content"
-          [label]="leftOpen() ? 'Close left sidebar' : 'Open left sidebar'"
-          (toggled)="toggle('left', $event)"
-        />
-      }
       @if (!homepage() && (leftDocked() || leftOpen())) {
         <p class="platform-signature persistent-signature">
           <app-platform-signature [stacked]="true" />
         </p>
+      }
+      @if (!homepage()) {
+        <div class="sidebar-heading">
+          <app-sidebar-toggle
+            side="left"
+            [heading]="title()"
+            [open]="leftOpen()"
+            controls="page-sidebar-left-content"
+            [label]="leftOpen() ? 'Close left sidebar' : 'Open left sidebar'"
+            (toggled)="toggle('left', $event)"
+          />
+          @if (context.value()?.groupLabel && catalogGroups().length) {
+            <div
+              class="sidebar-overview catalog-overview"
+              [attr.aria-current]="catalogOverviewActive() ? 'location' : null"
+            >
+              <p class="sidebar-group-label">{{ context.value()?.groupLabel }}</p>
+            </div>
+          }
+        </div>
       }
       <div
         id="page-sidebar-left-content"
@@ -111,18 +124,6 @@
         [hidden]="!leftOpen()"
         [attr.inert]="leftOpen() ? null : ''"
       >
-        @if (!homepage()) {
-          <div
-            class="sidebar-overview"
-            [class.catalog-overview]="catalogGroups().length > 0"
-            [attr.aria-current]="catalogOverviewActive() ? 'location' : null"
-          >
-            <p class="sidebar-title">{{ title() }}</p>
-            @if (context.value()?.groupLabel && catalogGroups().length) {
-              <p class="sidebar-group-label">{{ context.value()?.groupLabel }}</p>
-            }
-          </div>
-        }
         <nav class="shared-sidebar-outline" aria-label="Page sections">
           @if (catalogGroups().length) {
             @for (group of catalogGroups(); track group.id) {
@@ -173,26 +174,32 @@
       class="page-sidebar right"
       [class.statement-only]="!hasRightContent()"
       [style.inset-inline-end.px]="rightOpen() ? rightInset() : 6"
-      [style.width.px]="rightOpen() || rightDocked() ? rightWidth() : 44"
+      [style.width.px]="rightWidth()"
       [class.open]="rightOpen()"
       [class.docked]="rightDocked()"
       [style.top.px]="headerBottom()"
-      [style.max-height]="'calc(100dvh - ' + (headerBottom() + 8 + (cornerRight ? cornerReserve : 0)) + 'px)'"
+      [style.max-height]="
+        'calc(100dvh - ' + (headerBottom() + 8 + (cornerRight ? cornerReserve : 0)) + 'px)'
+      "
       aria-label="Practice with this page"
     >
-      @if (hasRightContent()) {
-        <app-sidebar-toggle
-          side="right"
-          [open]="rightOpen()"
-          controls="page-sidebar-right-content"
-          [label]="rightOpen() ? 'Close right sidebar' : 'Open right sidebar'"
-          (toggled)="toggle('right', $event)"
-        />
-      }
       @if (rightDocked() || rightOpen()) {
         <p class="practice-signature persistent-signature">
           <app-reasoning-prompt variant="ai" [stacked]="true" />
         </p>
+      }
+      @if (hasRightContent()) {
+        <div class="sidebar-heading practice-heading">
+          <app-sidebar-toggle
+            side="right"
+            heading="Practice & review"
+            headingId="practice-review-label"
+            [open]="rightOpen()"
+            controls="page-sidebar-right-content"
+            [label]="rightOpen() ? 'Close right sidebar' : 'Open right sidebar'"
+            (toggled)="toggle('right', $event)"
+          />
+        </div>
       }
       <div
         id="page-sidebar-right-content"
@@ -206,7 +213,9 @@
           <svg viewBox="0 0 16 16">
             @switch (name) {
               @case ('revision') {
-                <path d="M4 1.5h5.5L12.5 4.5V14a.5.5 0 0 1-.5.5H4a.5.5 0 0 1-.5-.5V2a.5.5 0 0 1 .5-.5Z" />
+                <path
+                  d="M4 1.5h5.5L12.5 4.5V14a.5.5 0 0 1-.5.5H4a.5.5 0 0 1-.5-.5V2a.5.5 0 0 1 .5-.5Z"
+                />
                 <path d="M9.5 1.5v3h3M5.75 7.5h4.5M5.75 10h4.5M5.75 12.5h2.5" />
               }
               @case ('recall') {
@@ -215,14 +224,18 @@
                 <path d="M5.6 8.2a1.2 1.2 0 1 1 1.7 1.1c-.4.2-.6.5-.6.9M6.7 12h.01" />
               }
               @case ('check') {
-                <path d="M2.5 3.5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v6.5a1 1 0 0 1-1 1H7l-3 2.5V11H3.5a1 1 0 0 1-1-1Z" />
+                <path
+                  d="M2.5 3.5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v6.5a1 1 0 0 1-1 1H7l-3 2.5V11H3.5a1 1 0 0 1-1-1Z"
+                />
                 <path d="M6.6 5.3a1.4 1.4 0 1 1 2 1.3c-.4.2-.6.5-.6.9M8 9.1h.01" />
               }
               @case ('practice') {
                 <path d="M5.5 4 2 8l3.5 4M10.5 4 14 8l-3.5 4M9 2.5 7 13.5" />
               }
               @case ('interview') {
-                <path d="M8 1.5a2.5 2.5 0 0 1 2.5 2.5v3.5a2.5 2.5 0 0 1-5 0V4A2.5 2.5 0 0 1 8 1.5Z" />
+                <path
+                  d="M8 1.5a2.5 2.5 0 0 1 2.5 2.5v3.5a2.5 2.5 0 0 1-5 0V4A2.5 2.5 0 0 1 8 1.5Z"
+                />
                 <path d="M3.5 7.5a4.5 4.5 0 0 0 9 0M8 12v2.5M5.5 14.5h5" />
               }
               @default {
@@ -233,7 +246,6 @@
         </ng-template>
         @if (practiceRows().length) {
           <nav class="practice-review" aria-labelledby="practice-review-label">
-            <p class="practice-review-label" id="practice-review-label">Practice &amp; review</p>
             <ul class="practice-actions">
               @for (row of practiceRows(); track row.key) {
                 <li>
@@ -244,7 +256,11 @@
                       [attr.aria-current]="currentId() === section.id ? 'location' : null"
                       (click)="follow($event, section)"
                     >
-                      <span class="practice-icon" aria-hidden="true"><ng-container [ngTemplateOutlet]="practiceIcon" [ngTemplateOutletContext]="{ $implicit: row.icon }" /></span>
+                      <span class="practice-icon" aria-hidden="true"
+                        ><ng-container
+                          [ngTemplateOutlet]="practiceIcon"
+                          [ngTemplateOutletContext]="{ $implicit: row.icon }"
+                      /></span>
                       <span class="practice-text">{{ row.label }}</span>
                     </a>
                   } @else {
@@ -255,7 +271,11 @@
                       aria-haspopup="dialog"
                       (click)="openRecall()"
                     >
-                      <span class="practice-icon" aria-hidden="true"><ng-container [ngTemplateOutlet]="practiceIcon" [ngTemplateOutletContext]="{ $implicit: 'recall' }" /></span>
+                      <span class="practice-icon" aria-hidden="true"
+                        ><ng-container
+                          [ngTemplateOutlet]="practiceIcon"
+                          [ngTemplateOutletContext]="{ $implicit: 'recall' }"
+                      /></span>
                       <span class="practice-text">Quick recall</span>
                       <svg class="practice-opens" viewBox="0 0 16 16" aria-hidden="true">
                         <rect x="2" y="3.5" width="12" height="10" rx="1.5" />
@@ -271,7 +291,11 @@
         @if (lessonNav(); as nav) {
           <!-- Where the lesson sits (outline, 2026-10-05): path, group, course and its lessons, then the next
                course and the next group. Each level has its own type, colour and hover. -->
-          <nav class="sidebar-lesson-nav" aria-label="Where you are" [attr.data-path]="nav.search.path">
+          <nav
+            class="sidebar-lesson-nav"
+            aria-label="Where you are"
+            [attr.data-path]="nav.search.path"
+          >
             <ol class="lesson-outline">
               <li class="outline-path">
                 @if (nav.path; as path) {
@@ -280,7 +304,9 @@
                 <ol>
                   <li class="outline-group">
                     @if (nav.group; as group) {
-                      <a [routerLink]="group.route" [queryParams]="group.queryParams ?? null">{{ group.title }}</a>
+                      <a [routerLink]="group.route" [queryParams]="group.queryParams ?? null">{{
+                        group.title
+                      }}</a>
                     }
                     <ol>
                       <li class="outline-course here">
@@ -288,40 +314,62 @@
                         <ol class="outline-lessons">
                           @if (nav.previous; as previous) {
                             <li class="outline-lesson">
-                              <a [routerLink]="previous.route" [queryParams]="previous.queryParams ?? null">{{ previous.title }}</a>
+                              <a
+                                [routerLink]="previous.route"
+                                [queryParams]="previous.queryParams ?? null"
+                                >{{ previous.title }}</a
+                              >
                             </li>
                           }
-                          <li class="outline-lesson current" aria-current="page">{{ nav.current }}</li>
+                          <li class="outline-lesson current" aria-current="page">
+                            {{ nav.current }}
+                          </li>
                           @if (nav.next; as next) {
                             <li class="outline-lesson">
-                              <a [routerLink]="next.route" [queryParams]="next.queryParams ?? null">{{ next.title }}</a>
+                              <a
+                                [routerLink]="next.route"
+                                [queryParams]="next.queryParams ?? null"
+                                >{{ next.title }}</a
+                              >
                             </li>
                           }
                         </ol>
                       </li>
                       @if (nav.nextCourse; as course) {
                         @if (!nav.nextCourseInNextGroup) {
-                          <li class="outline-course ahead"><a [routerLink]="course.route">{{ course.title }}</a></li>
+                          <li class="outline-course ahead">
+                            <a [routerLink]="course.route">{{ course.title }}</a>
+                          </li>
                         }
                       }
                     </ol>
                   </li>
                   @if (nav.nextGroup; as group) {
                     <li class="outline-group ahead">
-                      <a [routerLink]="group.route" [queryParams]="group.queryParams ?? null">{{ group.title }}</a>
+                      <a [routerLink]="group.route" [queryParams]="group.queryParams ?? null">{{
+                        group.title
+                      }}</a>
                       @if (nav.nextCourseInNextGroup && nav.nextCourse; as course) {
                         <ol>
-                          <li class="outline-course ahead"><a [routerLink]="course.route">{{ course.title }}</a></li>
+                          <li class="outline-course ahead">
+                            <a [routerLink]="course.route">{{ course.title }}</a>
+                          </li>
                         </ol>
                       }
                     </li>
                   } @else if (nav.nextCourseInNextGroup && nav.nextCourse; as course) {
-                    <li class="outline-course ahead"><a [routerLink]="course.route">{{ course.title }}</a></li>
+                    <li class="outline-course ahead">
+                      <a [routerLink]="course.route">{{ course.title }}</a>
+                    </li>
                   }
                 </ol>
               </li>
             </ol>
-            <form class="sidebar-lesson-search" role="search" (submit)="searchLesson($event, lessonQuery.value)">
+            <form
+              class="sidebar-lesson-search"
+              role="search"
+              (submit)="searchLesson($event, lessonQuery.value)"
+            >
               <svg class="sidebar-lesson-search-icon" viewBox="0 0 20 20" aria-hidden="true">
                 <circle cx="8.5" cy="8.5" r="5.5" />
                 <path d="M13 13l4.5 4.5" />
@@ -343,7 +391,12 @@
   @if (recall().length) {
     <!-- Quick recall (2026-10-05): one question at a time in a modal dialog; the answer stays hidden until
          Reveal answer; the position is kept while the learner stays on the lesson. -->
-    <dialog #recallDialog class="recall-dialog" aria-labelledby="recall-dialog-title" (close)="recallClosed()">
+    <dialog
+      #recallDialog
+      class="recall-dialog"
+      aria-labelledby="recall-dialog-title"
+      (close)="recallClosed()"
+    >
       @if (currentRecall(); as check) {
         <div class="recall-shell">
           <div class="recall-head">
@@ -367,7 +420,12 @@
                 Reveal answer
               </button>
             }
-            <div id="sidebar-recall-answer" class="recall-answer" [hidden]="!answerOpen()" [innerHTML]="check.answer"></div>
+            <div
+              id="sidebar-recall-answer"
+              class="recall-answer"
+              [hidden]="!answerOpen()"
+              [innerHTML]="check.answer"
+            ></div>
           </div>
           <div class="recall-foot">
             <small>Questions from this lesson's understanding checks</small>

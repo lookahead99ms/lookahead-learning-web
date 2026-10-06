@@ -53,16 +53,35 @@
   border-radius: 0;
   box-shadow: none;
 }
-app-sidebar-toggle {
-  position: absolute;
-  top: 0;
-  z-index: 1;
+/* Navigation controls belong to heading rows, independently of passive statements. */
+.sidebar-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 0 16px 8px;
 }
-.left app-sidebar-toggle {
-  inset-inline-start: 0;
+.sidebar-heading app-sidebar-toggle {
+  position: static;
+  flex: 1;
 }
-.right app-sidebar-toggle {
-  inset-inline-end: 0;
+.sidebar-heading .sidebar-overview {
+  flex: 1 0 100%;
+  min-width: 0;
+  margin: 0;
+}
+.sidebar-heading .sidebar-title {
+  margin: 0;
+}
+.sidebar-heading [hidden] {
+  display: none;
+}
+.page-sidebar:not(.open) .sidebar-heading {
+  padding-inline: 16px;
+}
+.practice-heading .practice-review-label {
+  flex: 1;
+  margin: 0;
 }
 .sidebar-content {
   padding: 8px 24px 24px;
@@ -80,10 +99,10 @@ app-sidebar-toggle {
   padding: 8px 16px 0;
 }
 .left > .persistent-signature {
-  padding-inline-start: 52px;
+  padding-inline-start: 24px;
 }
 .right > .persistent-signature {
-  padding-inline-end: 52px;
+  padding-inline-end: 24px;
   text-align: start;
   display: flex;
   justify-content: flex-end;
@@ -233,15 +252,19 @@ button {
   background: transparent;
   color: var(--text-strong);
   text-align: start;
-  font-size: .88rem;
+  font-size: 0.88rem;
   font-weight: 700;
 }
 .catalog-group-toggle[aria-current='location'] {
   background: var(--surface-muted);
   border-inline-start-color: var(--accent-strong);
 }
-.catalog-group-courses { padding-inline-start: 12px; }
-.catalog-group-courses[hidden] { display: none; }
+.catalog-group-courses {
+  padding-inline-start: 12px;
+}
+.catalog-group-courses[hidden] {
+  display: none;
+}
 
 .catalog-group-toggle > span {
   min-width: 0;
@@ -292,7 +315,9 @@ button {
   min-width: 0;
   max-width: 100%;
 }
-.standalone-signature-left { inset-inline-start: 6px; }
+.standalone-signature-left {
+  inset-inline-start: 6px;
+}
 .standalone-signature-right {
   inset-inline-end: 6px;
   display: flex;
@@ -312,8 +337,12 @@ button {
   margin-bottom: 14px;
   border-inline-start: 3px solid transparent;
 }
-.catalog-overview .sidebar-title { margin: 0; }
-.catalog-overview .sidebar-group-label { margin: 4px 0 0; }
+.catalog-overview .sidebar-title {
+  margin: 0;
+}
+.catalog-overview .sidebar-group-label {
+  margin: 4px 0 0;
+}
 .catalog-overview[aria-current='location'] {
   background: var(--surface-muted);
   border-inline-start-color: var(--accent-strong);
@@ -765,7 +794,7 @@ button {
 }
 /* Lines up with the top statement, which leaves room for the left sidebar toggle. */
 .corner-signature-left.beside-toggle {
-  padding-inline-start: 52px;
+  padding-inline-start: 24px;
 }
 .corner-signature-right {
   inset-inline-end: 6px;
@@ -776,4 +805,39 @@ button {
   .corner-signature {
     display: none;
   }
+}
+
+/* Narrow layouts disclose both sections in normal flow, ahead of the reader. */
+:host(.inline-sidebars) {
+  display: flex;
+  flex-direction: column;
+  margin: 16px 24px;
+  gap: 12px;
+}
+:host(.inline-sidebars) .page-sidebar:not(.homepage) {
+  position: static;
+  width: 100% !important;
+  max-width: none;
+  max-height: none !important;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: none;
+  background: var(--surface-page);
+}
+:host(.inline-sidebars) .sidebar-heading {
+  padding: 4px 8px;
+}
+:host(.inline-sidebars) .sidebar-content {
+  max-height: 40dvh;
+  overflow-y: auto;
+}
+:host(.inline-sidebars) .persistent-signature {
+  display: none;
+}
+:host(.inline-sidebars) .signature-strip {
+  order: 3;
+  margin: 0;
+  width: 100% !important;
+  max-width: none;
+  padding-top: 12px;
 }

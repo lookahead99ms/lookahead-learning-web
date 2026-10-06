@@ -60,7 +60,12 @@ export function collectPageSections(main: HTMLElement): PageSectionLink[] {
   const candidates = main.querySelectorAll<HTMLElement>('h1, h2, [data-sidebar-label]');
   for (const element of candidates) {
     if (!visibleSidebarTarget(element)) continue;
-    const label = (element.dataset['sidebarLabel'] || element.querySelector('.result-title-text')?.textContent || element.textContent || '')
+    const label = (
+      element.dataset['sidebarLabel'] ||
+      element.querySelector('.result-title-text')?.textContent ||
+      element.textContent ||
+      ''
+    )
       .replace(/\s+/g, ' ')
       .trim();
     if (!label || seen.has(label)) continue;
@@ -121,12 +126,22 @@ export function canDockSidebar(space: number, width = 224): boolean {
 
 @Component({
   selector: 'app-page-sidebars',
-  imports: [NgTemplateOutlet, RouterLink, LearningPrompt, PlatformSignature, ReasoningPrompt, SidebarToggle],
+  imports: [
+    NgTemplateOutlet,
+    RouterLink,
+    LearningPrompt,
+    PlatformSignature,
+    ReasoningPrompt,
+    SidebarToggle,
+  ],
   templateUrl: './page-sidebars.html',
   styleUrls: ['./page-sidebars.css', '../author-workspace-nav/sidebar-outline.css'],
 })
 export class PageSidebars implements AfterViewInit, OnDestroy {
   private readonly document = inject(DOCUMENT);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private homeAnchor?: Comment;
+  protected readonly inlineLayout = signal(false);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly zone = inject(NgZone);
@@ -147,7 +162,8 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
     const wasExpanded = this.expandedGroups().has(id);
     this.expandedGroups.update((ids) => {
       const next = new Set(ids);
-      if (wasExpanded) next.delete(id); else next.add(id);
+      if (wasExpanded) next.delete(id);
+      else next.add(id);
       return next;
     });
     if (wasExpanded) {
@@ -176,9 +192,10 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
   protected readonly currentId = signal('');
   /** The content column (viewport px) that an in-flow signature strip lines up with. */
   protected readonly signatureColumn = signal<{ left: number; width: number } | null>(null);
-  protected readonly catalogOverviewActive = computed(() =>
-    this.catalogGroups().length > 0 &&
-    !this.catalogGroups().some((group) => group.sectionId === this.currentId()),
+  protected readonly catalogOverviewActive = computed(
+    () =>
+      this.catalogGroups().length > 0 &&
+      !this.catalogGroups().some((group) => group.sectionId === this.currentId()),
   );
   protected readonly recallIndex = signal(0);
   protected readonly answerOpen = signal(false);
@@ -187,7 +204,11 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
     () => this.recall()[this.recallIndex()] ?? this.recall()[0],
   );
   protected readonly showLeft = computed(
-    () => this.enabled() && !this.navigationExcluded() && !this.authorNavigation() && this.sections().length > 0,
+    () =>
+      this.enabled() &&
+      !this.navigationExcluded() &&
+      !this.authorNavigation() &&
+      this.sections().length > 0,
   );
   protected readonly lessonNav = computed(() => this.context.value()?.lessonNav ?? null);
   /**
@@ -196,10 +217,20 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
    */
   protected readonly practiceRows = computed(() => {
     const rows: { key: string; label: string; icon: string; section: PageSectionLink | null }[] =
-      this.support().map((section) => ({ key: section.id, label: section.label, icon: practiceIcon(section.label), section }));
+      this.support().map((section) => ({
+        key: section.id,
+        label: section.label,
+        icon: practiceIcon(section.label),
+        section,
+      }));
     if (this.recall().length) {
       const revision = rows.findIndex((row) => row.icon === 'revision');
-      rows.splice(revision + 1, 0, { key: 'quick-recall', label: 'Quick recall', icon: 'recall', section: null });
+      rows.splice(revision + 1, 0, {
+        key: 'quick-recall',
+        label: 'Quick recall',
+        icon: 'recall',
+        section: null,
+      });
     }
     return rows;
   });
@@ -231,7 +262,10 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
     });
   }
   protected readonly overlay = computed(
-    () => (!this.homepage() && this.leftOpen() && !this.leftDocked()) || (this.rightOpen() && !this.rightDocked()),
+    () =>
+      !this.inlineLayout() &&
+      ((!this.homepage() && this.leftOpen() && !this.leftDocked()) ||
+        (this.rightOpen() && !this.rightDocked())),
   );
   private main: HTMLElement | null = null;
   private observer?: MutationObserver;
@@ -255,7 +289,8 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
   constructor() {
     this.router.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
       if (!(event instanceof NavigationEnd)) return;
-      if (this.leftMemory && this.leftMemory.path !== this.document.location.pathname) this.leftMemory = null;
+      if (this.leftMemory && this.leftMemory.path !== this.document.location.pathname)
+        this.leftMemory = null;
       this.expandedGroups.set(new Set());
       this.leftChosen = this.rightChosen = false;
       this.leftOpen.set(false);
@@ -274,6 +309,8 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.initialized = true;
+    this.homeAnchor = this.document.createComment('page sidebars home');
+    this.host.nativeElement.before(this.homeAnchor);
     const view = this.document.defaultView;
     if (!view) return;
     this.zone.runOutsideAngular(() => {
@@ -303,6 +340,10 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.initialized = false;
+    this.mountInline(null);
+    this.homeAnchor?.remove();
+    this.host.nativeElement.remove();
     this.clearEdgeClearance();
     this.main?.removeAttribute('data-sidebar-columns');
     this.main?.removeAttribute('data-sidebar-nav-shown');
@@ -310,6 +351,22 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
     this.observer?.disconnect();
     this.resizeObserver?.disconnect();
     if (this.frame !== null) this.document.defaultView?.cancelAnimationFrame(this.frame);
+  }
+
+  /** Move the shared view ahead of the reader on narrow layouts; Angular retains view ownership. */
+  private mountInline(main: HTMLElement | null): void {
+    const host = this.host.nativeElement;
+    const active = host.contains(this.document.activeElement)
+      ? (this.document.activeElement as HTMLElement)
+      : null;
+    this.inlineLayout.set(!!main);
+    host.classList.toggle('inline-sidebars', !!main);
+    if (main) {
+      if (main.previousElementSibling !== host) main.before(host);
+    } else if (this.homeAnchor?.parentNode && this.homeAnchor.nextSibling !== host) {
+      this.homeAnchor.after(host);
+    }
+    if (active && this.document.activeElement !== active) active.focus();
   }
 
   private clearEdgeClearance(): void {
@@ -340,6 +397,7 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
     if (!view) return;
     this.frame = view.requestAnimationFrame(() => {
       this.frame = null;
+      if (!this.initialized) return;
       this.zone.run(() => this.refresh());
     });
   }
@@ -362,9 +420,13 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
       this.context.value()?.excluded ||
       main.matches('.focus-studio-page, .studio-pilot-page') ||
       !!main.querySelector('app-coding-problem-detail, app-dsa-problem-pilot');
-    this.navigationExcluded.set(!!this.context.value()?.hideNavigation || !!main?.matches('.course-page, .search-page, .account-page, .challenge-page'));
+    this.navigationExcluded.set(
+      !!this.context.value()?.hideNavigation ||
+        !!main?.matches('.course-page, .search-page, .account-page, .challenge-page'),
+    );
     this.enabled.set(!excluded);
     if (excluded || !main) {
+      this.mountInline(null);
       main?.removeAttribute('data-sidebar-columns');
       main?.removeAttribute('data-sidebar-nav-shown');
       main?.removeAttribute('data-sidebar-left-collapsed');
@@ -401,30 +463,37 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
     const top = Math.max(0, header?.bottom ?? 76) + 8;
     this.headerBottom.set(top);
     // Reserve desktop columns before measuring; panels must never cover the reader.
-    main.toggleAttribute('data-sidebar-columns', !this.authorNavigation() && (this.showLeft() || this.showRight()));
+    main.toggleAttribute(
+      'data-sidebar-columns',
+      !this.authorNavigation() && (this.showLeft() || this.showRight()),
+    );
     // The main container owns its padding on catalogs, courses and lessons alike.
-    const reader = main.querySelector<HTMLElement>(':scope > .question-reader, :scope > .page-message, :scope > .search-shell');
+    const reader = main.querySelector<HTMLElement>(
+      ':scope > .question-reader, :scope > .page-message, :scope > .search-shell',
+    );
     const outerBounds = main.getBoundingClientRect();
     const readerBounds = reader?.getBoundingClientRect();
     const width =
       this.document.documentElement.clientWidth || this.document.defaultView!.innerWidth;
     // Some reader shells span the viewport; use their centered reader gutter instead.
-    const bounds = readerBounds && outerBounds.left < 54 && width - outerBounds.right < 54
-      ? { left: Math.max(0, readerBounds.left - 24), right: Math.min(width, readerBounds.right + 24) }
-      : outerBounds;
+    const bounds =
+      readerBounds && outerBounds.left < 54 && width - outerBounds.right < 54
+        ? {
+            left: Math.max(0, readerBounds.left - 24),
+            right: Math.min(width, readerBounds.right + 24),
+          }
+        : outerBounds;
     this.updateEdgeClearance(
       main,
       !this.authorNavigation() &&
         ((this.showLeft() && bounds.left < 54) || (this.showRight() && width - bounds.right < 54)),
     );
-    const column =
-      main.querySelector<HTMLElement>('[data-signature-column]') ?? reader ?? main;
+    const column = main.querySelector<HTMLElement>('[data-signature-column]') ?? reader ?? main;
     const columnBounds = column.getBoundingClientRect();
     // When the page itself is the column, line up with its content, not its padding edge: on a
     // full-width page (Manage account below 1280px, user review 2026-10-03) the padding edge is
     // the window edge, and the statements would sit cut off against it.
-    const columnStyle =
-      column === main ? this.document.defaultView!.getComputedStyle(main) : null;
+    const columnStyle = column === main ? this.document.defaultView!.getComputedStyle(main) : null;
     const paddingLeft = parseFloat(columnStyle?.paddingLeft ?? '') || 0;
     const paddingRight = parseFloat(columnStyle?.paddingRight ?? '') || 0;
     const columnWidth = columnBounds.width - paddingLeft - paddingRight;
@@ -454,16 +523,15 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
       this.showLeft() &&
       !this.homepage() &&
       canDockSidebar(reclaimed ? endSpace : startSpace);
-    // A resize must never carry an expanded desktop panel over the reader. Handing the column to
-    // the page is not a resize: the learner's choice stays.
-    if (this.leftDocked() && !leftDocked && !reclaimed) {
-      this.close('left', true);
-      this.leftChosen = false;
-    }
-    if (this.rightDocked() && !rightDocked) {
-      this.close('right', true);
-      this.rightChosen = false;
-    }
+    // Without gutters, keep both sections in flow rather than covering the reader.
+    this.mountInline(
+      !this.homepage() &&
+        (this.showLeft() || (this.showRight() && this.hasRightContent())) &&
+        ((!leftDocked && !this.leftReclaimable) || (this.showRight() && !rightDocked))
+        ? main
+        : null,
+    );
+    if (this.inlineLayout()) this.clearEdgeClearance();
     this.leftWidth.set(leftDocked ? startSpace - 6 : Math.min(280, width - 24));
     this.rightWidth.set(rightDocked ? endSpace - 6 : Math.min(280, width - 24));
     this.leftDocked.set(leftDocked);
@@ -475,7 +543,7 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
     if (this.homepage()) this.leftOpen.set(true);
     else if (!this.leftChosen && remembered !== null)
       this.leftOpen.set(remembered && (leftDocked || this.leftReclaimable));
-    else if (!this.leftChosen) this.leftOpen.set(leftDocked && !this.leftReclaimable);
+    else if (!this.leftChosen) this.leftOpen.set(true);
     // Handing the column over (or back) moves the page; measure again before anything paints.
     if (this.syncNavShown() && !this.reflowing) {
       this.reflowing = true;
@@ -486,13 +554,15 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
       }
       return;
     }
-    if (!this.rightChosen) this.rightOpen.set(rightDocked);
+    if (!this.rightChosen) this.rightOpen.set(true);
     const visible = this.sections().filter((section) => visibleSidebarTarget(section.target));
     // Track the reading area below both the platform header and sticky lesson tools.
     // A section already occupying that area must not leave the previous item selected.
-    const stickyBottom = Array.from(main.querySelectorAll<HTMLElement>(
-      '.reader-sticky-stack, .question-sticky-utility, .catalog-sticky-utility, .module-sticky-utility',
-    )).reduce((bottom, element) => {
+    const stickyBottom = Array.from(
+      main.querySelectorAll<HTMLElement>(
+        '.reader-sticky-stack, .question-sticky-utility, .catalog-sticky-utility, .module-sticky-utility',
+      ),
+    ).reduce((bottom, element) => {
       const rect = element.getBoundingClientRect();
       return rect.top <= top + 24 && rect.bottom > 0 ? Math.max(bottom, rect.bottom) : bottom;
     }, top);
@@ -501,9 +571,10 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
       (section) => section.target.getBoundingClientRect().top <= readingLine,
     );
     const view = this.document.defaultView!;
-    const atBottom = view.scrollY > 0 &&
+    const atBottom =
+      view.scrollY > 0 &&
       view.scrollY + view.innerHeight >= this.document.documentElement.scrollHeight - 2;
-    this.currentId.set((atBottom ? visible.at(-1) : passed.at(-1) ?? visible[0])?.id ?? '');
+    this.currentId.set((atBottom ? visible.at(-1) : (passed.at(-1) ?? visible[0]))?.id ?? '');
   }
 
   /**
@@ -537,9 +608,8 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
       this.close(side);
       return;
     }
-    const docked =
-      side === 'left' ? this.leftDocked() || this.leftReclaimable : this.rightDocked();
-    if (!docked) {
+    const docked = side === 'left' ? this.leftDocked() || this.leftReclaimable : this.rightDocked();
+    if (!docked && !this.inlineLayout()) {
       const other = side === 'left' ? 'right' : 'left';
       this.close(other);
       if (other === 'left') this.leftChosen = true;
@@ -570,7 +640,7 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
       this.leftChosen = true;
       this.close('left');
     }
-    if (!this.rightDocked()) {
+    if (!this.inlineLayout() && !this.rightDocked()) {
       this.rightChosen = true;
       this.close('right');
     }
@@ -595,11 +665,11 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
     const view = this.document.defaultView;
     if (!view) return;
     view.history.pushState(view.history.state, '', this.href(section));
-    if (!this.leftDocked() && !this.leftReclaimable && !this.homepage()) {
+    if (!this.inlineLayout() && !this.leftDocked() && !this.leftReclaimable && !this.homepage()) {
       this.leftChosen = true;
       this.close('left');
     }
-    if (!this.rightDocked()) {
+    if (!this.inlineLayout() && !this.rightDocked()) {
       this.rightChosen = true;
       this.close('right');
     }
@@ -610,12 +680,17 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
       });
     }
     section.target.focus({ preventScroll: true });
-    const stickyHeight = Math.max(0, ...Array.from(this.main?.querySelectorAll<HTMLElement>(
-      '.reader-sticky-stack, .question-sticky-utility, .catalog-sticky-utility, .module-sticky-utility',
-    ) ?? []).map((element) => element.getBoundingClientRect().height));
+    const stickyHeight = Math.max(
+      0,
+      ...Array.from(
+        this.main?.querySelectorAll<HTMLElement>(
+          '.reader-sticky-stack, .question-sticky-utility, .catalog-sticky-utility, .module-sticky-utility',
+        ) ?? [],
+      ).map((element) => element.getBoundingClientRect().height),
+    );
     // Heading IDs remain the accessible fragment, but reveal their complete card.
     const scrollTarget = section.target.matches('h2')
-      ? section.target.closest<HTMLElement>('section') ?? section.target
+      ? (section.target.closest<HTMLElement>('section') ?? section.target)
       : section.target;
     const authoredMargin = parseFloat(view.getComputedStyle(scrollTarget).scrollMarginTop) || 0;
     const clearance = Math.max(authoredMargin, this.headerBottom() + stickyHeight + 12);
@@ -639,7 +714,7 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
   protected openRecall(): void {
     const dialog = this.recallDialog()?.nativeElement;
     if (!dialog) return;
-    if (!this.rightDocked()) {
+    if (!this.inlineLayout() && !this.rightDocked()) {
       this.rightChosen = true;
       this.close('right');
     }
@@ -663,7 +738,10 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
   protected recallClosed(): void {
     const opener = this.recallOpener()?.nativeElement;
     const visible = opener && !opener.closest('[hidden]') ? opener : null;
-    (visible ?? this.document.querySelector<HTMLElement>('#page-sidebar-right app-sidebar-toggle button'))?.focus();
+    (
+      visible ??
+      this.document.querySelector<HTMLElement>('#page-sidebar-right app-sidebar-toggle button')
+    )?.focus();
   }
 
   @HostListener('click', ['$event'])

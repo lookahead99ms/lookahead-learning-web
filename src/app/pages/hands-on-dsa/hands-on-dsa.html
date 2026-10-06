@@ -258,9 +258,7 @@
                         [queryParams]="problemQueryParams(problem.patternId)"
                         >{{ problem.title }}</a
                       >
-                      @if (patternNamesHidden()) {
-                        <span class="problem-pattern pattern-hidden">Pattern hidden</span>
-                      } @else {
+                      @if (!patternNamesHidden()) {
                         <span class="problem-pattern">{{ problem.patternTitle }}</span>
                       }
                     </div>
