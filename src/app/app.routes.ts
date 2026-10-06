@@ -123,6 +123,8 @@ export const routes: Routes = [
   {
     path: 'grow/:courseId/:questionId',
     data: { pathId: 'grow' },
+    // DLV-410: a removed question's route opens its lesson (retired-content-ids.json).
+    canActivate: [retiredContentRedirect],
     loadComponent: () => import('./pages/question/question').then((page) => page.Question),
   },
   {

@@ -132,7 +132,8 @@ export function similarity(before: string, after: string, beforeName?: string, a
  * Pairs the files of a broken side with the files of its fix, as a code review would: the same file name first;
  * then renamed files, the most similar pairs of the same language that share at least 30% of their lines (or, when
  * exactly one file is left on each side, those two); anything else is shown on one side only. A file only on the
- * broken side is one the fix leaves alone (often the check that both versions run); a file only on the fixed side
+ * broken side is one the fix leaves alone (often the check that both versions run) unless the fixed side names it in
+ * `deletedFiles`; a file only on the fixed side
  * is one the fix adds. Broken order first, then new files.
  */
 export function pairFiles<T extends { title: string; source: string; language?: string }>(
@@ -181,12 +182,14 @@ export function pairFiles<T extends { title: string; source: string; language?: 
 
 /**
  * Rows of one file of a pair: the split diff when both sides have it; all added lines for a file the fix adds;
- * the file as unchanged lines on the broken side when the fix leaves it alone.
+ * the file as unchanged lines on the broken side when the fix leaves it alone, or as removed lines when the fix
+ * deletes it.
  */
-export function fileRows<T extends { title: string; source: string }>(file: DiffFile<T>): DiffRow[] {
+export function fileRows<T extends { title: string; source: string }>(file: DiffFile<T>, deleted = false): DiffRow[] {
   if (file.broken && file.fixed) return splitDiff(file.broken.source, file.fixed.source, file.broken.title, file.fixed.title);
   if (file.fixed) return splitLines(file.fixed.source).map((text, index) => ({ left: null, right: { line: index + 1, text, kind: 'add' } }));
-  return splitLines(file.broken!.source).map((text, index) => ({ left: { line: index + 1, text, kind: 'same' }, right: null }));
+  const kind = deleted ? 'del' : 'same';
+  return splitLines(file.broken!.source).map((text, index) => ({ left: { line: index + 1, text, kind }, right: null }));
 }
 
 /** Lines removed from the broken side and added on the fixed side. */

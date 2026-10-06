@@ -105,4 +105,10 @@ describe('fileRows', () => {
     expect(shape(kept)).toEqual(['=1|.']);
     expect(changeCount(kept)).toEqual({ removed: 0, added: 0 });
   });
+
+  it('shows a file the fix deletes as removed lines only', () => {
+    const gone = fileRows({ label: 'old_test.go', broken: tab('old_test.go', 'package a\nfunc T() {}', 'go'), fixed: null }, true);
+    expect(shape(gone)).toEqual(['-1|.', '-2|.']);
+    expect(changeCount(gone)).toEqual({ removed: 2, added: 0 });
+  });
 });
