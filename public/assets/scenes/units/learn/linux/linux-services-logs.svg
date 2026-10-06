@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="The arrivals feed on a Linux server fails and its log gets an error line; the service manager restarts it, a check appears, and a fresh update travels to the countdown sign where a rider waits for route 12 in 4 minutes">
+<style>
+.lsl-w{font-family:system-ui,sans-serif;font-size:13px;font-weight:700;fill:var(--scene-muted,#536970)}
+.lsl-c{font-family:system-ui,sans-serif;font-size:13px;font-weight:700;fill:var(--scene-card,#fff)}
+.lsl-v{font-family:system-ui,sans-serif;font-size:13px;font-weight:800;fill:var(--scene-card,#fff)}
+.lsl-loop{animation-duration:8s;animation-iteration-count:infinite;animation-timing-function:linear;animation-delay:-5.1s}
+.lsl-dot{animation-name:lsl-dot}
+.lsl-cross{animation-name:lsl-cross}
+.lsl-spin{animation-name:lsl-spin;transform-box:fill-box;transform-origin:50% 50%}
+.lsl-ok{animation-name:lsl-ok}
+.lsl-led{animation-name:lsl-led}
+.lsl-err{animation-name:lsl-err}
+.lsl-new{animation-name:lsl-new}
+.lsl-ring{animation-name:lsl-ring;transform-box:fill-box;transform-origin:50% 50%}
+@keyframes lsl-dot{0%{transform:translateX(0);opacity:0}3%{opacity:1}18%{transform:translateX(86px);opacity:1}21%,68%{transform:translateX(86px);opacity:0}69%{transform:translateX(0);opacity:0}72%{opacity:1}88%{transform:translateX(86px);opacity:1}91%,100%{transform:translateX(86px);opacity:0}}
+@keyframes lsl-cross{0%,24%{opacity:0}27%,44%{opacity:1}48%,100%{opacity:0}}
+@keyframes lsl-spin{0%,44%{opacity:0;transform:rotate(0deg)}48%{opacity:1}66%{opacity:1;transform:rotate(300deg)}70%,100%{opacity:0;transform:rotate(360deg)}}
+@keyframes lsl-ok{0%,58%{opacity:0}62%,96%{opacity:1}99%,100%{opacity:0}}
+@keyframes lsl-led{0%,24%{opacity:1}27%,56%{opacity:.25}60%,100%{opacity:1}}
+@keyframes lsl-err{0%,26%{opacity:0}30%,96%{opacity:1}99%,100%{opacity:0}}
+@keyframes lsl-new{0%,52%{opacity:0}56%,96%{opacity:1}99%,100%{opacity:0}}
+@keyframes lsl-ring{0%,18%{opacity:0;transform:scale(1)}20%{opacity:.6;transform:scale(1)}28%{opacity:0;transform:scale(1.6)}29%,87%{opacity:0;transform:scale(1)}89%{opacity:.6;transform:scale(1)}97%,100%{opacity:0;transform:scale(1.6)}}
+@media (prefers-reduced-motion: reduce){.lsl-loop{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g fill="var(--scene-ink,#102a33)" opacity=".09"><ellipse cx="62" cy="150" rx="48" ry="7"/><ellipse cx="250" cy="160" rx="54" ry="7"/></g>
+<path d="M28 46l10-8h52l-10 8z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M80 46l10-8v94l-10 8z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="28" y="46" width="52" height="94" rx="3" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-line,#cfdfdc)" stroke-width="1.5"/>
+<g fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)"><rect x="34" y="56" width="40" height="13" rx="2"/><rect x="34" y="76" width="40" height="13" rx="2"/></g>
+<circle cx="68" cy="62.5" r="2.6" fill="var(--scene-good,#1f7a4d)"/>
+<circle class="lsl-loop lsl-led" cx="68" cy="82.5" r="2.6" fill="var(--scene-good,#1f7a4d)"/>
+<path d="M38 60h18M38 65h12M38 80h22M38 85h14" stroke="var(--scene-muted,#536970)" stroke-width="1.5"/>
+<path d="M38 100h36v34H38z" fill="var(--scene-card,#fff)" stroke="var(--scene-muted,#536970)" stroke-width="1.2"/>
+<path d="M42 106h24M42 112h18" stroke="var(--scene-muted,#536970)" stroke-width="1.5"/>
+<path class="lsl-loop lsl-err" d="M42 118h26" stroke="var(--scene-bad,#b3261e)" stroke-width="2"/>
+<path class="lsl-loop lsl-new" d="M42 124h22M42 129h16" stroke="var(--scene-accent,#006c73)" stroke-width="1.8"/>
+<g class="lsl-loop lsl-cross"><circle cx="88" cy="40" r="9" fill="var(--scene-bad,#b3261e)"/><path d="M84.5 36.5l7 7M91.5 36.5l-7 7" stroke="var(--scene-card,#fff)" stroke-width="2.2" stroke-linecap="round"/></g>
+<g class="lsl-loop lsl-spin"><path d="M100 70a12 12 0 1 1-4-9" fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="3" stroke-linecap="round"/><path d="M93 56l5 6-7 2z" fill="var(--scene-accent,#006c73)"/></g>
+<g class="lsl-loop lsl-ok"><circle cx="88" cy="40" r="9" fill="var(--scene-good,#1f7a4d)"/><path d="M84 40l3 3 5-6" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<path d="M118 72H204" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="4 4" fill="none"/>
+<circle class="lsl-loop lsl-dot" cx="118" cy="72" r="5" fill="var(--scene-accent,#006c73)"/>
+<rect x="246" y="92" width="6" height="66" fill="var(--scene-muted,#536970)"/>
+<rect x="206" y="40" width="88" height="54" rx="5" fill="var(--scene-ink,#102a33)" opacity=".88"/>
+<rect x="206" y="94" width="88" height="5" rx="2" fill="var(--scene-ink,#102a33)" opacity=".16"/>
+<rect x="214" y="50" width="26" height="18" rx="3" fill="var(--scene-accent,#006c73)"/>
+<text class="lsl-v" x="227" y="64" text-anchor="middle">12</text>
+<text class="lsl-c" x="250" y="64">4 min</text>
+<rect x="214" y="76" width="44" height="5" rx="2" fill="var(--scene-card,#fff)" opacity=".5"/>
+<circle class="lsl-loop lsl-ring" cx="250" cy="67" r="16" fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="2"/>
+<path d="M266 154c0-17 8-26 20-26s20 9 20 26z" fill="var(--scene-link,#245a88)"/>
+<circle cx="286" cy="114" r="11" fill="var(--scene-link,#245a88)"/>
+</svg>

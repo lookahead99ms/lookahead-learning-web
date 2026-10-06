@@ -320,20 +320,30 @@ export function filterHandsOnDsaIndexGroups(
   difficulty: HandsOnDifficulty,
   scope: HandsOnTierScope = '782',
   sort: HandsOnSort = 'pattern-order',
+  /**
+   * False when the learner hides pattern names: the query then matches only a problem's own
+   * title and statement, so a search cannot reveal which pattern a problem belongs to.
+   */
+  matchPatternText = true,
 ): HandsOnDsaIndexGroup[] {
   const normalizedQuery = query.trim().toLowerCase();
   const scopeLimit = scope === '730' ? 782 : Number(scope);
   const filtered = groups.flatMap((group) => {
-    const groupMatches = [group.title, group.description, group.lessonTitle, ...group.tags]
-      .join(' ')
-      .toLowerCase()
-      .includes(normalizedQuery);
+    const groupMatches =
+      matchPatternText &&
+      [group.title, group.description, group.lessonTitle, ...group.tags]
+        .join(' ')
+        .toLowerCase()
+        .includes(normalizedQuery);
     const problems = group.problems.filter(
       (problem) =>
         (difficulty === 'All' || problem.difficulty === difficulty) &&
         (problem.interviewRank === undefined || problem.interviewRank <= scopeLimit) &&
         (groupMatches ||
-          [problem.title, problem.description, problem.variation, problem.invariantAdaptation]
+          (matchPatternText
+            ? [problem.title, problem.description, problem.variation, problem.invariantAdaptation]
+            : [problem.title, problem.description]
+          )
             .join(' ')
             .toLowerCase()
             .includes(normalizedQuery)),

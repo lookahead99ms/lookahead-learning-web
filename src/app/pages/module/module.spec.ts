@@ -133,6 +133,20 @@ describe('Module question labels', () => {
     expect(labels).not.toContain('Q&A');
   });
 
+  it('shows the catalog group between the path and the course in the breadcrumb', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/learn/modern-java/module/streams', Module);
+
+    // Home / Learn / Java Platform and Runtime / Modern Java (user review, 2026-10-03).
+    const links = [
+      ...(harness.routeNativeElement?.querySelectorAll<HTMLAnchorElement>('.breadcrumbs a') ?? []),
+    ].map((link) => link.getAttribute('href'));
+    expect(links).toEqual(['/', '/learn', '/learn?group=java-platform', '/learn/modern-java']);
+    expect(harness.routeNativeElement?.querySelector('.breadcrumbs')?.textContent).toContain(
+      'Java Platform and Runtime',
+    );
+  });
+
   it('retains the Q&A label for the conceptual interview module', async () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/learn/modern-java/module/streams', Module);

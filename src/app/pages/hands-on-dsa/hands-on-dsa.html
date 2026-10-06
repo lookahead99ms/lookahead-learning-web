@@ -1,23 +1,31 @@
 <app-platform-header />
-<main id="main-content" class="content-page reader-page harbor-learn">
+<main
+  id="main-content"
+  class="content-page reader-page harbor-learn hands-on-dsa-page"
+  [pageSidebarContext]="sidebarContext"
+>
   <article class="question-reader practice-reader">
     <div class="reader-sticky-stack">
       <section class="reader-sticky-context practice-breadcrumb-bar">
         <nav class="breadcrumbs" aria-label="Breadcrumb">
-          <a routerLink="/">Home</a><span>/</span><a routerLink="/learn">Learn</a><span>/</span
-          ><span aria-current="page">Hands-On DSA</span>
+          <a routerLink="/">Home</a><span>/</span><a routerLink="/learn">Learn</a><span>/</span>
+          @if (courseGroup; as group) {
+            <a routerLink="/learn" [queryParams]="{ group: group.id }">{{ group.title }}</a
+            ><span>/</span>
+          }
+          <span aria-current="page">Hands-On DSA</span>
         </nav>
       </section>
     </div>
 
     <header class="practice-hero">
-      <span class="review-status practice-status" data-review-status="evolving"
-        >Curriculum status: Evolving</span
-      >
-      <h1>Practice the invariant, not just the answer.</h1>
+      <h1>Hands-On DSA</h1>
       <p>
+        @if (heroCounts(); as counts) {
+          {{ counts.problems }} problems across {{ counts.patterns }} patterns.
+        }
         Start from the pattern you just learned, trace its state on a real input, then move to
-        problems that force you to adapt the same reasoning.
+        problems that make you adapt the same reasoning.
       </p>
       <ul class="practice-proof" aria-label="Practice sequence">
         <li>Recognize</li>
@@ -29,7 +37,11 @@
         <button
           class="surprise-problem"
           type="button"
-          aria-describedby="surprise-problem-description"
+          [attr.aria-describedby]="
+            surpriseUnavailableReason()
+              ? 'surprise-problem-description surprise-problem-unavailable'
+              : 'surprise-problem-description'
+          "
           [disabled]="!randomPracticeCount()"
           (click)="surpriseMe()"
         >
@@ -37,24 +49,33 @@
           <strong>Surprise me</strong>
         </button>
         <p id="surprise-problem-description">
-          Start a ready-to-solve problem without revealing its pattern.
+          Opens a problem from your current filters without revealing its pattern.
         </p>
+        @if (surpriseUnavailableReason(); as reason) {
+          <p id="surprise-problem-unavailable" class="surprise-problem-unavailable">{{ reason }}</p>
+        }
       </div>
     </header>
 
     @if (catalog()) {
+      <app-practice-progress-strip
+        [problemIds]="catalogProblemIds()"
+        [total]="heroCounts()?.problems ?? 0"
+      />
       <section class="practice-controls" aria-label="Filter practice problems">
-        <label>
-          Search problems and patterns
+        <label class="practice-search">
+          {{ patternNamesHidden() ? 'Search problems' : 'Search problems and patterns' }}
           <input
             type="search"
             [value]="query()"
-            placeholder="Try palindrome, window, or graph"
+            [placeholder]="
+              patternNamesHidden() ? 'Try remove, palindrome, or matrix' : 'Try palindrome, window, or graph'
+            "
             (input)="updateQuery($any($event.target).value)"
           />
         </label>
         <label>
-          Filter by difficulty
+          Difficulty
           <select [value]="difficulty()" (change)="updateDifficulty($any($event.target).value)">
             @for (option of difficulties; track option) {
               <option [value]="option" [selected]="difficulty() === option">{{ option }}</option>
@@ -71,9 +92,7 @@
             }
           </select>
         </label>
-      </section>
-
-      <section class="pattern-filter" aria-label="Filter by algorithmic pattern">
+        @if (!grouped()) {
         <label for="practice-pattern">
           Practice pattern
           <select
@@ -89,16 +108,25 @@
             }
           </select>
         </label>
-        <div class="pattern-selection-context">
-          <p>{{ selectedGroup()?.title ?? groups().length + ' patterns to explore' }}</p>
-          @if (selectedGroup()) {
-            <a
-              routerLink="/learn/hands-on-dsa"
-              [queryParams]="{ pattern: null, page: null }"
-              queryParamsHandling="merge"
-              >All patterns</a
-            >
-          }
+        }
+        <!-- The two view switches stay together and wrap as one unit. -->
+        <div class="practice-switches">
+          <label class="hide-pattern-names">
+            <input
+              type="checkbox"
+              [checked]="patternNamesHidden()"
+              (change)="updatePatternNames($any($event.target).checked)"
+            />
+            Hide pattern names
+          </label>
+          <label class="hide-solved">
+            <input
+              type="checkbox"
+              [checked]="solvedHidden()"
+              (change)="updateSolvedHidden($any($event.target).checked)"
+            />
+            Hide solved
+          </label>
         </div>
       </section>
 
@@ -108,46 +136,95 @@
         tabindex="-1"
         aria-label="Practice results"
       >
-        <h2>{{ selectedGroup() ? selectedGroup()?.title + ' problem set' : 'Problem library' }}</h2>
-        <button
-          class="group-patterns"
-          type="button"
-          [attr.aria-pressed]="sort() === 'pattern-order'"
-          (click)="updateSort(sort() === 'pattern-order' ? 'study-order' : 'pattern-order')"
-        >
-          Group by pattern
-        </button>
-        <div class="practice-results-meta">
-          <p aria-live="polite">
-            {{ resultRange() }}
-          </p>
-          @if (selectedGroup(); as selected) {
-            <a
-              class="clear-pattern-filter"
-              routerLink="/learn/hands-on-dsa"
-              [queryParams]="{ pattern: null, page: null }"
-              queryParamsHandling="merge"
-              [attr.aria-label]="'Clear ' + selected.title + ' pattern filter'"
-            >
-              <span aria-hidden="true">×</span> Clear filter
-            </a>
-          }
-          @if (hasCatalogFilters()) {
-            <button class="clear-catalog-filters" type="button" (click)="clearCatalogFilters()">
-              <span aria-hidden="true">×</span> Clear all filters
-            </button>
-          }
+        <h2>{{ filterGroup() ? filterGroup()?.title + ' problem set' : 'Problem library' }}</h2>
+        <div class="practice-results-bar">
+          <p class="practice-result-range" aria-live="polite">{{ resultRange() }}</p>
+          <!-- One view switch (user review 2026-10-06): the column headers sort, in both views. -->
+          <div class="view-switch" role="radiogroup" aria-label="View" (keydown)="viewKeys($event)">
+            @for (view of views; track view.value) {
+              @let checked = (view.value === 'groups') === grouped();
+              <button
+                type="button"
+                role="radio"
+                [attr.data-view]="view.value"
+                [attr.aria-checked]="checked"
+                [attr.tabindex]="checked ? 0 : -1"
+                (click)="setView(view.value)"
+              >
+                {{ view.label }}
+              </button>
+            }
+          </div>
         </div>
+        @if (filterGroup() || hasCatalogFilters()) {
+          <div class="practice-results-meta">
+            @if (filterGroup(); as selected) {
+              <a
+                class="clear-pattern-filter"
+                routerLink="/learn/hands-on-dsa"
+                [queryParams]="{ pattern: null, page: null }"
+                queryParamsHandling="merge"
+                [attr.aria-label]="'Clear ' + selected.title + ' pattern filter'"
+              >
+                <span aria-hidden="true">×</span> Clear filter
+              </a>
+            }
+            @if (hasCatalogFilters()) {
+              <button class="clear-catalog-filters" type="button" (click)="clearCatalogFilters()">
+                <span aria-hidden="true">×</span> Clear all filters
+              </button>
+            }
+          </div>
+        }
       </header>
 
+      <!-- One preview body for the flat table and the grouped pattern pane. -->
+      <ng-template #previewBody let-problem let-patternId="patternId">
+        @if (readyPreview(problem.id); as preview) {
+          <p class="problem-preview-summary">{{ preview.summary }}</p>
+          @if (preview.example; as example) {
+            <p class="problem-preview-example">
+              <span class="problem-preview-label">Example</span>
+              <code>{{ example.input }}</code>
+              <span aria-hidden="true">→</span>
+              <span class="visually-hidden">gives</span>
+              <code>{{ example.expected }}</code>
+            </p>
+          }
+        } @else if (previews()[problem.id]?.status === 'error') {
+          <p class="problem-preview-status" role="alert">
+            The preview could not be loaded.
+            <button
+              type="button"
+              class="problem-preview-retry"
+              (click)="loadPreview(problem)"
+            >
+              Try again
+            </button>
+          </p>
+        } @else {
+          <p class="problem-preview-status">Loading preview…</p>
+        }
+        <a
+          class="problem-preview-open"
+          [routerLink]="problem.route"
+          [queryParams]="problemQueryParams(patternId)"
+          >Open problem</a
+        >
+      </ng-template>
+
       <ng-template #problemTable let-problems>
+        <div class="problem-table-wrap">
         <table class="problem-table" aria-label="Practice problem orders" role="table">
           <thead role="rowgroup">
             <tr role="row">
+              <!-- Column order (user, 2026-10-06): Learning order, Problem, Difficulty, Interview priority, Status. -->
               @for (column of sortColumns; track column.id) {
                 <th
                   scope="col"
                   role="columnheader"
+                  [class.problem-title-column]="column.id === 'title'"
+                  [attr.data-column]="column.id"
                   [attr.aria-sort]="columnSortDirection(column.id)"
                 >
                   <button
@@ -155,33 +232,49 @@
                     class="column-sort"
                     [attr.data-sort-column]="column.id"
                     [disabled]="column.id === 'difficulty' && difficulty() !== 'All'"
-                    [attr.aria-label]="columnSortLabel(column.id, column.label)"
+                    [attr.aria-label]="columnSortLabel(column)"
                     (click)="sortColumn(column.id)"
                   >
-                    {{ column.label
-                    }}<span aria-hidden="true">{{
-                      columnSortDirection(column.id) === 'ascending'
-                        ? '↑'
-                        : columnSortDirection(column.id) === 'descending'
-                          ? '↓'
-                          : '↕'
-                    }}</span>
+                    {{ column.label }}<span aria-hidden="true">{{ columnSortArrow(column.id) }}</span>
                   </button>
                 </th>
               }
+              <th scope="col" role="columnheader" class="problem-status-column">Status</th>
             </tr>
           </thead>
           <tbody role="rowgroup">
             @for (problem of problems; track problem.id) {
-              <tr class="problem-table-row" role="row">
+              @let previewOpen = openPreviewId() === problem.id;
+              <tr class="problem-table-row" role="row" [class.is-previewing]="previewOpen">
+                <td class="problem-learning-order" data-label="Learning order" role="cell">
+                  {{ problem.studyOrder ?? '—' }}
+                </td>
                 <td class="problem-title-cell" role="cell">
-                  <a
-                    class="problem-link"
-                    [routerLink]="problem.route"
-                    [queryParams]="problemQueryParams(problem.patternId)"
-                    >{{ problem.title }}</a
-                  >
-                  <span class="problem-pattern">{{ problem.patternTitle }}</span>
+                  <div class="problem-title-layout">
+                    <div class="problem-title-text">
+                      <a
+                        class="problem-link"
+                        [routerLink]="problem.route"
+                        [queryParams]="problemQueryParams(problem.patternId)"
+                        >{{ problem.title }}</a
+                      >
+                      @if (patternNamesHidden()) {
+                        <span class="problem-pattern pattern-hidden">Pattern hidden</span>
+                      } @else {
+                        <span class="problem-pattern">{{ problem.patternTitle }}</span>
+                      }
+                    </div>
+                    <button
+                      type="button"
+                      class="problem-preview-toggle"
+                      [attr.aria-expanded]="previewOpen"
+                      [attr.aria-controls]="previewDomId(problem.id)"
+                      [attr.aria-label]="(previewOpen ? 'Hide preview of ' : 'Preview ') + problem.title"
+                      (click)="togglePreview(problem)"
+                    >
+                      {{ previewOpen ? 'Hide preview' : 'Preview' }}
+                    </button>
+                  </div>
                 </td>
                 <td class="problem-difficulty" data-label="Difficulty" role="cell">
                   {{ problem.difficulty }}
@@ -189,32 +282,54 @@
                 <td class="problem-interview-order" data-label="Interview priority" role="cell">
                   {{ problem.interviewRank ?? '—' }}
                 </td>
-                <td class="problem-learning-order" data-label="Learning order" role="cell">
-                  {{ problem.studyOrder ?? '—' }}
+                <td class="problem-status" role="cell">
+                  <app-practice-status-mark
+                    [status]="progress.displayStatus(problem.id)"
+                    [compact]="true"
+                    [markOnly]="true"
+                  />
                 </td>
               </tr>
+              @if (previewOpen) {
+                <tr class="problem-preview-row" role="row" [id]="previewDomId(problem.id)">
+                  <td colspan="5" role="cell">
+                    <ng-container
+                      [ngTemplateOutlet]="previewBody"
+                      [ngTemplateOutletContext]="{ $implicit: problem, patternId: problem.patternId }"
+                    />
+                  </td>
+                </tr>
+              }
             }
           </tbody>
         </table>
-      </ng-template>
-      @if (visibleGroups().length && sort() === 'pattern-order') {
-        <div class="pattern-groups" role="region" aria-label="Pattern problem sets">
-          @for (group of displayedGroups(); track group.id) {
-            <section class="pattern-group" [attr.aria-labelledby]="'practice-group-' + group.id">
-              <header class="pattern-group-header">
-                <h2 [id]="'practice-group-' + group.id">{{ group.title }}</h2>
-                <p>{{ group.description }}</p>
-                <a class="lesson-link" [routerLink]="['/learn', group.courseId, group.lessonId]"
-                  >Review {{ group.title }} concept</a
-                >
-              </header>
-              <ng-container
-                [ngTemplateOutlet]="problemTable"
-                [ngTemplateOutletContext]="{ $implicit: group.problems }"
-              />
-            </section>
-          }
         </div>
+      </ng-template>
+      @if (grouped()) {
+        @if (patternEntries().length) {
+          <app-pattern-browser
+            [entries]="patternEntries()"
+            [selected]="selectedPattern()"
+            [screen]="patternScreen()"
+            [namesHidden]="patternNamesHidden()"
+            [revealed]="revealedPatterns()"
+            [sort]="sort()"
+            [sortDescription]="sortDescription()"
+            [difficultyFiltered]="difficulty() !== 'All'"
+            [openPreviewId]="openPreviewId()"
+            [previewTemplate]="previewBody"
+            (choosePattern)="choosePattern($event)"
+            (back)="backToPatterns()"
+            (reveal)="revealPattern($event)"
+            (sortColumn)="sortColumn($event)"
+            (previewToggle)="togglePreview($event)"
+          />
+        } @else {
+          <section class="empty-state" aria-live="polite">
+            <h2>No matching practice yet</h2>
+            <p>The catalog only shows problems backed by published content.</p>
+          </section>
+        }
       } @else if (displayedRankedProblems().length) {
         <ng-container
           [ngTemplateOutlet]="problemTable"

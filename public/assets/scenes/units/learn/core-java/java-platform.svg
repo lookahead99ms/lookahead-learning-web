@@ -1,6 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Source is compiled to bytecode, then the JVM warms up hot code">
 <style>
 .learn-core-java-java-platform-t{font:600 17px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.learn-core-java-java-platform-c{font:500 10px ui-monospace,Menlo,monospace;fill:var(--scene-muted,#536970)}
 .learn-core-java-java-platform-pk{animation:learn-core-java-java-platform-run 6s linear infinite;animation-delay:-3s}
 .learn-core-java-java-platform-gear{transform-box:fill-box;transform-origin:center;animation:learn-core-java-java-platform-spin 6s linear infinite;animation-delay:-3s}
 .learn-core-java-java-platform-b1,.learn-core-java-java-platform-b2,.learn-core-java-java-platform-b3{transform-box:fill-box;transform-origin:50% 100%;animation:learn-core-java-java-platform-grow 6s ease-in-out infinite}
@@ -16,10 +17,13 @@
 <g stroke="var(--scene-accent,#006c73)" stroke-width="3" stroke-linecap="round"><path d="M22 74H46M22 86H40M22 98H48"/></g>
 <g class="learn-core-java-java-platform-gear"><circle cx="100" cy="88" r="15" fill="var(--scene-warn,#a15c00)"/><circle cx="100" cy="88" r="5" fill="var(--scene-card,#fff)"/>
 <g stroke="var(--scene-warn,#a15c00)" stroke-width="6" stroke-linecap="round"><path d="M100 66V72M100 104V110M78 88H84M116 88H122M84 72l4 4M112 100l4 4M116 72l-4 4M88 100l-4 4"/></g></g>
+<text class="learn-core-java-java-platform-c" x="36" y="50" text-anchor="middle">Main.java</text>
 <text class="learn-core-java-java-platform-t" x="100" y="136" text-anchor="middle">javac</text>
 <rect x="148" y="64" width="44" height="48" rx="5" fill="var(--scene-link,#245a88)"/>
 <g fill="var(--scene-card,#fff)" font-family="ui-monospace,Menlo,monospace" font-size="17" font-weight="700"><text x="157" y="85">01</text><text x="157" y="104">10</text></g>
+<text class="learn-core-java-java-platform-c" x="170" y="56" text-anchor="middle">Main.class</text>
 <text class="learn-core-java-java-platform-t" x="170" y="136" text-anchor="middle">bytecode</text>
+<text class="learn-core-java-java-platform-c" x="265" y="158" text-anchor="middle">hot code → JIT</text>
 <rect x="222" y="34" width="86" height="106" rx="10" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/>
 <text class="learn-core-java-java-platform-t" x="265" y="56" text-anchor="middle">JVM</text>
 <g fill="var(--scene-good,#1f7a4d)"><rect class="learn-core-java-java-platform-b1" x="236" y="68" width="14" height="60" rx="3"/><rect class="learn-core-java-java-platform-b2" x="258" y="68" width="14" height="60" rx="3"/><rect class="learn-core-java-java-platform-b3" x="280" y="68" width="14" height="60" rx="3"/></g>

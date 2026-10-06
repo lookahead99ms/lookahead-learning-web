@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
@@ -65,6 +65,20 @@ export class AccountPage {
     this.router.currentNavigation()?.extras.state?.['signInCanceled'] === true;
   constructor() {
     void this.store.loadAuthOptions();
+    // Review note #11b: a learner who is already signed in when /sign-in?returnTo=… loads (for
+    // example, back from the gateway's sign-in round trip) goes straight to returnTo instead of
+    // seeing Manage account. /account itself still shows Manage account; an OAuth continuation
+    // for another client stays on this page so it can finish.
+    effect(() => {
+      if (
+        this.routeData()['accountMode'] === 'signin' &&
+        this.query().has('returnTo') &&
+        !this.oauthContinuation() &&
+        this.authenticated()
+      ) {
+        void this.router.navigateByUrl(this.returnTo(), { replaceUrl: true });
+      }
+    });
   }
   protected async submit(): Promise<void> {
     this.passwordVisible.set(false);

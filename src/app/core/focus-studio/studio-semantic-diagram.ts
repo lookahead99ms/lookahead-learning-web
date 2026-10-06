@@ -6,6 +6,7 @@ import { recordedMapEntries } from './studio-state-view';
 
 @Component({
   selector: 'app-studio-semantic-diagram',
+  host: { '[attr.data-scale]': "scale() === 'player' ? 'player' : null" },
   template: `<div class="semantic-state" aria-label="Recorded algorithm structures">
     @for (field of structures(); track field.name) {
       <section [class.changed]="field.changed" [attr.data-structure]="field.kind">
@@ -408,10 +409,26 @@ import { recordedMapEntries } from './studio-state-view';
         outline: 2px solid var(--accent);
         outline-offset: 2px;
       }
+      /* Inside the walkthrough player: its type sizes, never below 13 px. */
+      :host([data-scale='player']) h4 span,
+      :host([data-scale='player']) .note,
+      :host([data-scale='player']) small,
+      :host([data-scale='player']) dt,
+      :host([data-scale='player']) .cells span,
+      :host([data-scale='player']) table,
+      :host([data-scale='player']) dd,
+      :host([data-scale='player']) text,
+      :host([data-scale='player']) text.index,
+      :host([data-scale='player']) .range,
+      :host([data-scale='player']) .parent-links span {
+        font-size: 13px;
+      }
     `,
   ],
 })
 export class StudioSemanticDiagram {
+  /** 'player': the walkthrough player's three type sizes (13, 14, 16 px); other hosts keep theirs. */
+  readonly scale = input<'studio' | 'player'>('studio');
   readonly problem = input.required<PatternProblemV1>();
   readonly snapshot = input.required<TraceSnapshot>();
   readonly language = input.required<PatternLanguage>();

@@ -30,6 +30,10 @@
           <a [routerLink]="['/', pathId()]">{{ pathLabel() }}</a
           ><span>/</span>
           @if (isCodingPractice(item) && pathId() === 'learn' && (!isCoursePracticePlacement(item) || studioPilot() || focusStudio())) {
+            @if (handsOnGroup; as group) {
+              <a routerLink="/learn" [queryParams]="{ group: group.id }">{{ group.title }}</a
+              ><span>/</span>
+            }
             <a routerLink="/learn/hands-on-dsa">Hands-On DSA</a><span>/</span>
             @if (!(studioPilot() || focusStudio()) || patternRevealed()) {
             <a
@@ -40,6 +44,12 @@
             }
             <span aria-current="page">{{ item.title }}</span>
           } @else {
+            @if (courseGroup(); as group) {
+              <a [routerLink]="['/', pathId()]" [queryParams]="{ group: group.id }">{{
+                group.title
+              }}</a
+              ><span>/</span>
+            }
             <a [routerLink]="['/', pathId(), courseId()]">{{ courseTitle() }}</a>
           }
         </nav>
@@ -100,6 +110,11 @@
           />
         }
         <div class="reader-title-text">
+        @if (studioPilot() || focusStudio()) {
+          <a class="problem-back" [routerLink]="returnDestination() ?? ['/learn/hands-on-dsa']"
+            ><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" /></svg>{{ backLabel() }}</a
+          >
+        }
         <div class="article-title-row">
           <h1
             class="reader-question-title"
@@ -107,7 +122,7 @@
             [attr.data-sidebar-title]="navTitle(item)"
           >
             @if (releaseInfo(item)?.studyOrder; as number) {
-              <span [attr.title]="'Learning order ' + number + ' of ' + releaseTotal()"
+              <span class="problem-number" [attr.title]="'Learning order ' + number + ' of ' + releaseTotal()"
                 >{{ number }}.
               </span>
             }
@@ -116,22 +131,23 @@
               <span class="pattern-title-subtitle">: {{ subtitle }}</span>
             }
           </h1>
-          @if (item.contentType === 'theory' && item.estimatedReadMinutes; as minutes) {
-            <p class="article-read-time">{{ minutes }} min read</p>
-          }
           @if (studioPilot() || focusStudio()) {
             <p class="problem-title-metadata">
-              <span
-                [attr.title]="'Difficulty: ' + item.difficulty"
-                [attr.aria-label]="'Difficulty: ' + item.difficulty"
-                >Difficulty: {{ item.difficulty }}</span
-              >
+              <span class="problem-level" [attr.aria-label]="'Difficulty: ' + item.difficulty">{{ item.difficulty }}</span>
               @if (releaseInfo(item)?.interviewRank; as rank) {
                 <span
-                  class="problem-rank"
                   [attr.title]="'Interview priority ' + rank + ' of ' + releaseTotal()"
-                  [attr.aria-label]="'Rank: ' + rank + ' of ' + releaseTotal() + ' in interview priority'"
-                  >Rank: {{ rank }}</span
+                  [attr.aria-label]="'Rank ' + rank + ' of ' + releaseTotal() + ' in interview priority'"
+                  >Rank {{ rank }}</span
+                >
+              }
+              @if (releaseInfo(item)?.studyOrder; as number) {
+                <span>Problem {{ number }} of {{ releaseTotal() }}</span>
+              }
+              @if (solvedRating(item); as rating) {
+                <span class="problem-solved"
+                  ><span aria-hidden="true">✓ </span><span class="visually-hidden">Solved: </span
+                  >{{ rating }}</span
                 >
               }
             </p>
@@ -143,25 +159,45 @@
         </div>
         </div>
         @if (studioPilot() || focusStudio()) {
-          <div class="problem-pattern-disclosure">
-            <button
-              type="button"
-              class="pattern-reveal-toggle"
-              [attr.aria-expanded]="patternRevealed()"
-              aria-controls="problem-pattern-review"
-              (click)="patternRevealed.set(!patternRevealed())"
-            >{{ patternRevealed() ? 'Hide Pattern' : 'Show Pattern' }}</button>
-            <div id="problem-pattern-review" [hidden]="!patternRevealed()">
-              @if (patternRevealed()) {
-                <a class="problem-pattern-link" [routerLink]="parentContextRoute(item)" [queryParams]="returnQueryParams()">Review the {{ patternName(conceptReviewTitle(item)) }} pattern</a>
-              }
-            </div>
+          <!-- User review 2026-10-05 (Option A): "Help me recognize the pattern" opens the explorer; once the
+               pattern is shown, the header offers its lesson (new tab) and a way to hide it again. -->
+          <div class="problem-pattern-actions">
+            @if (!patternRevealed()) {
+              <button type="button" class="pattern-help-open" aria-haspopup="dialog" (click)="patternHelpOpen.set(true)">
+                <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.2" /><path d="m10.6 5.4-1.7 3.5-3.5 1.7 1.7-3.5z" /></svg>
+                Help me recognize the pattern
+              </button>
+            } @else {
+              <a
+                class="pattern-lesson-open"
+                [routerLink]="parentContextRoute(item)"
+                [queryParams]="returnQueryParams()"
+                target="_blank"
+                rel="noopener"
+                >{{ patternName(conceptReviewTitle(item)) }} lesson<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9 3h4v4M13 3 7.5 8.5M12 9.5V13H3V4h3.5" /></svg
+                ><span class="visually-hidden"> (opens in a new tab)</span></a
+              >
+              <button type="button" class="pattern-hide" (click)="patternRevealed.set(false)">Hide pattern</button>
+            }
           </div>
+          <app-pattern-help
+            [open]="patternHelpOpen()"
+            [problemTitle]="patternName(item.title)"
+            [statement]="problemStatement(item)"
+            [patternName]="patternName(conceptReviewTitle(item))"
+            [revealed]="patternRevealed()"
+            [lessonRoute]="parentContextRoute(item)"
+            [lessonQuery]="returnQueryParams()"
+            (revealPattern)="patternRevealed.set(true)"
+            (closed)="patternHelpOpen.set(false)"
+          />
         }
         @if (!(studioPilot() || focusStudio())) {
           <p class="eyebrow">{{ item.difficulty }}</p>
         }
-        @if (hasTheoryExperience(item)) {
+        <!-- DLV-408: the left side nav already lists every stage, so the jump row under the level label only
+             renders when this page hides that nav. -->
+        @if (hasTheoryExperience(item) && sidebarContext().hideNavigation) {
           <nav class="pattern-navigation" aria-label="Article navigation">
             @for (link of patternNavigation(item); track link.target) {
               <button type="button" (click)="scrollToSection(link.target)">{{ link.label }}</button>
@@ -170,52 +206,58 @@
         }
         @if ((studioPilot() || focusStudio()) && canonicalProblem(item)) {
           <div class="source-navigation-rows">
-            @for (row of problemNavigationRows(item, planNavigation); track row.label) {
+            @for (row of problemNavigationRows(item, planNavigation); track row.label; let rows = $count) {
               <nav
-                class="question-inner-navigation canonical-problem-navigation"
+                class="problem-nav-cards"
                 [attr.aria-label]="row.label + ' problem navigation'"
-                [attr.title]="row.label + ' problem navigation'"
               >
                 @if (row.previous; as previous) {
                   <a
-                    class="inner-navigation-link problem-navigation-link previous"
+                    class="problem-nav-card previous"
                     [routerLink]="previous.route"
                     [queryParams]="previous.query"
-                    [attr.aria-label]="'Previous: ' + previous.title + '. ' + previous.meaning"
+                    [attr.title]="previous.meaning"
+                    [attr.aria-label]="
+                      'Previous: ' + previous.title + (previous.solved ? ', solved' : '') + '. ' + previous.meaning
+                    "
                   >
-                    <span><span aria-hidden="true">← </span>Previous:</span
-                    ><strong>
-                      @if (previous.number) {
-                        {{ previous.number }}.
-                      }
-                      {{ previous.title }}</strong
+                    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" /></svg>
+                    <span class="card-text"
+                      ><small>Previous{{ rows > 1 ? ' · ' + row.label : '' }}</small
+                      ><b>{{ previous.number ? previous.number + '. ' : '' }}{{ previous.title }}</b></span
                     >
+                    @if (previous.solved) {
+                      <span class="solved-tick" aria-hidden="true" title="Solved">✓</span>
+                    }
                   </a>
                 } @else {
-                  <span class="boundary">First problem</span>
+                  <span class="problem-nav-boundary">First problem</span>
                 }
                 @if (row.next; as next) {
                   <a
-                    class="inner-navigation-link problem-navigation-link next"
+                    class="problem-nav-card next"
                     [routerLink]="next.route"
                     [queryParams]="next.query"
-                    [attr.aria-label]="'Next: ' + next.title + '. ' + next.meaning"
+                    [attr.title]="next.meaning"
+                    [attr.aria-label]="'Next: ' + next.title + (next.solved ? ', solved' : '') + '. ' + next.meaning"
                   >
-                    <span>Next:<span aria-hidden="true"> →</span></span
-                    ><strong>
-                      @if (next.number) {
-                        {{ next.number }}.
-                      }
-                      {{ next.title }}</strong
+                    <span class="card-text"
+                      ><small>Next{{ rows > 1 ? ' · ' + row.label : '' }}</small
+                      ><b>{{ next.number ? next.number + '. ' : '' }}{{ next.title }}</b></span
                     >
+                    @if (next.solved) {
+                      <span class="solved-tick" aria-hidden="true" title="Solved">✓</span>
+                    }
+                    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5" /></svg>
                   </a>
                 } @else {
-                  <span class="boundary boundary-end">Last problem</span>
+                  <span class="problem-nav-boundary end">Last problem</span>
                 }
               </nav>
             }
           </div>
-        } @else if (!planNavigation.valid()) {
+        } @else if (!planNavigation.valid() && !(item.contentType === 'theory' && lessonNav())) {
+          <!-- Lessons show previous / next in the right sidebar's lesson nav (user review #5). -->
           <nav
             class="question-inner-navigation"
             [class.canonical-problem-navigation]="canonicalNavigation(item)"
@@ -329,10 +371,12 @@
           </nav>
         }
       </section>
-      @if (returnDestination() || item.relatedArticleId) {
+      <!-- DSA problem pages: the back link above the title replaces the return link and the pattern lesson sits
+           behind "Help me recognize the pattern"; only the review flow keeps its extra links here. -->
+      @if ((studioPilot() || focusStudio()) ? !!reviewModuleDestination() : (returnDestination() || item.relatedArticleId)) {
         <div class="question-review-navigation">
           <ng-container [ngTemplateOutlet]="discoveryReturn" />
-          @if (item.relatedArticleId; as articleId) {
+          @if (!(studioPilot() || focusStudio()) && item.relatedArticleId; as articleId) {
             <a
               class="related-theory-link"
               [routerLink]="['/', pathId(), courseId(), articleId]"
@@ -503,7 +547,16 @@
           entryMode="practice"
           [showProblemHeading]="false"
           [initialLanguage]="courseId() === 'python-fundamentals' ? 'python' : 'java'"
-        />
+        >
+          @if (studioPilot()) {
+            <app-studio-finish-review
+              studioFinish
+              [problemId]="problem.id"
+              [patternId]="handsOnPatternId(item)"
+              [patternRevealed]="patternRevealed()"
+            />
+          }
+        </app-dsa-problem-pilot>
       } @else if (isCodingPractice(item)) {
         <app-coding-problem-detail
           [item]="item"

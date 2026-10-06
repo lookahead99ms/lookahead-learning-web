@@ -298,3 +298,39 @@ it('reveals and masks the entered password without submitting, then masks on sig
   expect(password.value).toBe('');
   expect(toggle.getAttribute('aria-label')).toBe('Show password');
 });
+
+it.each([
+  ['signin', '/learn/modern-java', true],
+  ['signin', undefined, false],
+  [undefined, '/learn/modern-java', false],
+])('sends a signed-in learner on /sign-in straight to returnTo (mode %s, returnTo %s)', async (mode, returnTo, redirects) => {
+  const queryParamMap = convertToParamMap(returnTo ? { returnTo } : {});
+  const data = mode ? { accountMode: mode } : {};
+  TestBed.configureTestingModule({
+    imports: [AccountPage],
+    providers: [
+      provideRouter([]),
+      provideHttpClient(),
+      {
+        provide: ActivatedRoute,
+        useValue: { queryParamMap: of(queryParamMap), data: of(data), snapshot: { queryParamMap, data } },
+      },
+      { provide: ContentService, useValue: { getSearchIndex: () => of([]) } },
+    ],
+  });
+  const store = TestBed.inject(StudyPlanAccount);
+  vi.spyOn(store, 'initialize').mockResolvedValue();
+  vi.spyOn(store, 'loadAuthOptions').mockResolvedValue();
+  const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+  store.account.set({
+    accountId: 'sample',
+    username: 'sample@example.test',
+    displayName: 'Sample learner',
+    topicGrants: [],
+  });
+  const fixture = TestBed.createComponent(AccountPage);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  if (redirects) expect(navigate).toHaveBeenCalledWith('/learn/modern-java', { replaceUrl: true });
+  else expect(navigate).not.toHaveBeenCalled();
+});

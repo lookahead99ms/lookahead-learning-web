@@ -14,6 +14,16 @@ describe('Grow course placement', () => {
     expect(ai?.courseIds).toEqual(['ai-assisted-development']);
   });
 
+  it('keeps the public demo course out of every Grow group', () => {
+    const ids = GROW_COURSE_GROUPS.flatMap((group) => group.courseIds);
+    expect(ids).not.toContain('public-release-demo');
+  });
+
+  it('places Application Security beside API Design', () => {
+    const security = GROW_COURSE_GROUPS.find((group) => group.id === 'system-security');
+    expect(security?.courseIds.slice(0, 2)).toEqual(['api-design', 'application-security']);
+  });
+
   it('assigns each course to one navigation group', () => {
     const ids = GROW_COURSE_GROUPS.flatMap((group) => group.courseIds);
     expect(new Set(ids).size).toBe(ids.length);

@@ -33,7 +33,9 @@ describe('LEARN_COURSE_GROUPS', () => {
     expect(javaPlatform?.courseIds).toEqual([
       'java-data-structures',
       'modern-java',
+      'java-concurrency',
       'garbage-collection',
+      'jvm-performance',
     ]);
   });
 
@@ -53,7 +55,13 @@ describe('LEARN_COURSE_GROUPS', () => {
     ]);
   });
 
-  it('places object modeling, SOLID, patterns, concurrency, and LLD together', () => {
+  it('keeps networking and operating systems together in Computer Fundamentals', () => {
+    const fundamentals = LEARN_COURSE_GROUPS.find((group) => group.id === 'computer-fundamentals');
+
+    expect(fundamentals?.courseIds).toEqual(['networking-basics', 'operating-systems']);
+  });
+
+  it('places object modeling, SOLID, patterns, and LLD together', () => {
     const objectDesign = LEARN_COURSE_GROUPS.find((group) => group.id === 'object-design-lld');
 
     expect(objectDesign?.courseIds).toEqual(['oop', 'solid-design-patterns']);

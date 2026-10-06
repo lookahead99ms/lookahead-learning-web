@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A jar leaves the large JDK build crate for a small JRE image, the small image is pulled by two new servers, and a phone shows the vote counts they serve">
+<style>
+.ms-bg{fill:var(--scene-card,#fff)}
+.ms-t{font-family:system-ui,sans-serif;font-size:13px;font-weight:600;fill:var(--scene-ink,#102a33)}
+.ms-front{fill:var(--scene-accent-soft,#dcefed);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.ms-top{fill:var(--scene-line,#cfdfdc)}
+.ms-side{fill:var(--scene-ink,#102a33);opacity:.14}
+.ms-shadow{fill:var(--scene-ink,#102a33);opacity:.09}
+.ms-bar{fill:var(--scene-muted,#536970);opacity:.55}
+.ms-jar{fill:var(--scene-warn,#a15c00)}
+.ms-lid{fill:var(--scene-ink,#102a33);opacity:.55}
+.ms-wire{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.5;stroke-dasharray:4 4}
+.ms-dot{fill:var(--scene-accent,#006c73)}
+.ms-server{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.ms-slot{fill:var(--scene-muted,#536970);opacity:.35}
+.ms-led{fill:var(--scene-good,#1f7a4d)}
+.ms-phone{fill:var(--scene-card,#fff);stroke:var(--scene-ink,#102a33);stroke-width:2}
+.ms-screen{fill:var(--scene-accent-soft,#dcefed)}
+.ms-va{fill:var(--scene-link,#245a88)}
+.ms-vb{fill:var(--scene-learn,#0f8a8a)}
+.ms-ok{fill:var(--scene-good,#1f7a4d)}
+.ms-okmark{fill:none;stroke:var(--scene-card,#fff);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ms-loop{animation-duration:8s;animation-iteration-count:infinite;animation-timing-function:ease-in-out;animation-delay:-6s}
+.ms-move{animation-name:ms-move}
+.ms-pull1{animation-name:ms-pull1}
+.ms-pull2{animation-name:ms-pull2}
+.ms-on{animation-name:ms-on}
+.ms-grow{animation-name:ms-grow;transform-box:fill-box;transform-origin:bottom}
+@keyframes ms-move{0%,15%{transform:translate(0,0);opacity:1}35%,90%{transform:translate(99px,4px);opacity:1}95%{transform:translate(99px,4px);opacity:0}97%{transform:translate(0,0);opacity:0}100%{transform:translate(0,0);opacity:1}}
+@keyframes ms-pull1{0%,36%{transform:translate(0,0);opacity:0}38%{transform:translate(0,0);opacity:1}55%{transform:translate(36px,-34px);opacity:1}58%,100%{transform:translate(36px,-34px);opacity:0}}
+@keyframes ms-pull2{0%,36%{transform:translate(0,0);opacity:0}38%{transform:translate(0,0);opacity:1}55%{transform:translate(36px,14px);opacity:1}58%,100%{transform:translate(36px,14px);opacity:0}}
+@keyframes ms-on{0%,55%{opacity:.25}60%,95%{opacity:1}100%{opacity:.25}}
+@keyframes ms-grow{0%,58%{transform:scaleY(.15)}75%,95%{transform:scaleY(1)}100%{transform:scaleY(.15)}}
+@media (prefers-reduced-motion: reduce){.ms-loop{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" class="ms-bg"/>
+<ellipse cx="60" cy="146" rx="50" ry="6" class="ms-shadow"/>
+<ellipse cx="156" cy="146" rx="30" ry="5" class="ms-shadow"/>
+<ellipse cx="236" cy="146" rx="28" ry="5" class="ms-shadow"/>
+<ellipse cx="286" cy="150" rx="22" ry="4" class="ms-shadow"/>
+<polygon points="14,58 26,46 106,46 94,58" class="ms-top"/>
+<polygon points="94,58 106,46 106,128 94,140" class="ms-side"/>
+<rect x="14" y="58" width="80" height="82" rx="3" class="ms-front"/>
+<text x="22" y="76" class="ms-t">JDK</text>
+<rect x="22" y="84" width="58" height="4" rx="2" class="ms-bar"/>
+<rect x="22" y="92" width="44" height="4" rx="2" class="ms-bar"/>
+<rect x="22" y="100" width="52" height="4" rx="2" class="ms-bar"/>
+<polygon points="128,90 136,82 184,82 176,90" class="ms-top"/>
+<polygon points="176,90 184,82 184,132 176,140" class="ms-side"/>
+<rect x="128" y="90" width="48" height="50" rx="3" class="ms-front"/>
+<text x="136" y="106" class="ms-t">JRE</text>
+<g class="ms-loop ms-move">
+<rect x="44" y="112" width="18" height="20" rx="3" class="ms-jar"/>
+<rect x="42" y="108" width="22" height="6" rx="2" class="ms-lid"/>
+</g>
+<path d="M186 114 H200 V78 H214" class="ms-wire"/>
+<path d="M200 114 V126 H214" class="ms-wire"/>
+<circle cx="180" cy="114" r="4" class="ms-dot ms-loop ms-pull1"/>
+<circle cx="180" cy="114" r="4" class="ms-dot ms-loop ms-pull2"/>
+<polygon points="214,62 222,56 262,56 254,62" class="ms-top"/>
+<polygon points="254,62 262,56 262,86 254,92" class="ms-side"/>
+<rect x="214" y="62" width="40" height="30" rx="3" class="ms-server"/>
+<rect x="219" y="69" width="22" height="4" rx="2" class="ms-slot"/>
+<rect x="219" y="77" width="22" height="4" rx="2" class="ms-slot"/>
+<circle cx="247" cy="71" r="3" class="ms-led ms-loop ms-on"/>
+<polygon points="214,110 222,104 262,104 254,110" class="ms-top"/>
+<polygon points="254,110 262,104 262,134 254,140" class="ms-side"/>
+<rect x="214" y="110" width="40" height="30" rx="3" class="ms-server"/>
+<rect x="219" y="117" width="22" height="4" rx="2" class="ms-slot"/>
+<rect x="219" y="125" width="22" height="4" rx="2" class="ms-slot"/>
+<circle cx="247" cy="119" r="3" class="ms-led ms-loop ms-on"/>
+<rect x="270" y="52" width="34" height="94" rx="6" class="ms-phone"/>
+<rect x="274" y="60" width="26" height="76" rx="2" class="ms-screen"/>
+<rect x="278" y="84" width="8" height="48" rx="1" class="ms-va ms-loop ms-grow"/>
+<rect x="289" y="94" width="8" height="38" rx="1" class="ms-vb ms-loop ms-grow"/>
+<circle cx="300" cy="52" r="8" class="ms-ok"/>
+<path d="M296 52 L299 55 L304 49" class="ms-okmark"/>
+</svg>

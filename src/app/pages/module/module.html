@@ -12,6 +12,12 @@
             <a routerLink="/">Home</a><span>/</span>
             <a [routerLink]="['/', pathId()]">{{ pathLabel() }}</a
             ><span>/</span>
+            @if (courseGroup(); as group) {
+              <a [routerLink]="['/', pathId()]" [queryParams]="{ group: group.id }">{{
+                group.title
+              }}</a
+              ><span>/</span>
+            }
             <a [routerLink]="['/', pathId(), courseId()]">{{ currentCourse.title }}</a>
           </nav>
         </div>

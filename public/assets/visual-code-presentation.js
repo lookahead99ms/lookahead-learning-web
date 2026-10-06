@@ -1,9 +1,11 @@
 /* Shared presentation for illustrative visuals. No code is executed. */
 (() => {
   'use strict';
+  // Code keeps its authored lines: no wrapping or mid-token breaks. Each visual's code
+  // panel scrolls sideways (overflow-x) when a line is wider than the panel.
   const style = document.createElement('style');
   style.textContent = `
-    .lookahead-visual-code { background:var(--syntax-bg,#263238);color:var(--syntax-fg,#b2ccd6);white-space:pre-wrap;overflow-wrap:anywhere; }
+    .lookahead-visual-code { background:var(--syntax-bg,#263238);color:var(--syntax-fg,#b2ccd6);white-space:pre;overflow-wrap:normal; }
     .lookahead-visual-code .syntax-keyword{color:var(--syntax-keyword)}
     .lookahead-visual-code .syntax-string{color:var(--syntax-string)}
     .lookahead-visual-code .syntax-number{color:var(--syntax-number)}

@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="An HTTP service gets SIGTERM: it refuses new requests with 503, lets the three requests in flight finish one by one inside a 10-second context deadline, and exits cleanly">
+<style>
+.gc-go-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.gc-go-tm { font-family: ui-monospace, Menlo, monospace; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.gc-go-tcm { font-family: ui-monospace, Menlo, monospace; fill: var(--scene-card, #ffffff); font-weight: 700; }
+.gc-go-sh { fill: var(--scene-ink, #102a33); opacity: .08; }
+.gc-go-slab { fill: var(--scene-ink, #102a33); opacity: .14; }
+.gc-go-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 2; }
+.gc-go-soft { fill: var(--scene-accent-soft, #dcefed); }
+.gc-go-ln { fill: var(--scene-line, #cfdfdc); }
+.gc-go-lnk { fill: var(--scene-link, #245a88); }
+.gc-go-good { fill: var(--scene-good, #1f7a4d); }
+.gc-go-warn { fill: var(--scene-warn, #a15c00); }
+.gc-go-bad { fill: var(--scene-bad, #b3261e); }
+.gc-go-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 2; stroke-dasharray: 4 5; }
+.gc-go-req { fill: var(--scene-card, #ffffff); stroke: var(--scene-link, #245a88); stroke-width: 2; }
+.gc-go-ck { fill: none; stroke: var(--scene-card, #ffffff); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+.gc-go-r1 { animation: gc-go-kf-r1 8s ease-in-out infinite; }
+@keyframes gc-go-kf-r1 { 0%, 2% { transform: translateX(0); opacity: 0; } 4% { opacity: 1; } 18% { transform: translateX(66px); opacity: 1; } 20%, 100% { transform: translateX(66px); opacity: 0; } }
+.gc-go-r2 { animation: gc-go-kf-r2 8s ease-in-out infinite; }
+@keyframes gc-go-kf-r2 { 0%, 38% { transform: translateX(0); opacity: 0; } 40% { opacity: 1; } 47% { transform: translateX(52px); opacity: 1; } 52% { transform: translateX(30px); opacity: 1; } 56%, 100% { transform: translateX(30px); opacity: 0; } }
+.gc-go-503 { animation: gc-go-kf-503 8s infinite; }
+@keyframes gc-go-kf-503 { 0%, 49% { opacity: 0; } 52%, 95% { opacity: 1; } 98%, 100% { opacity: 0; } }
+.gc-go-gate { animation: gc-go-kf-gate 8s infinite; }
+@keyframes gc-go-kf-gate { 0%, 31% { opacity: 0; transform: translateY(-8px); } 34%, 95% { opacity: 1; transform: translateY(0); } 98%, 100% { opacity: 0; transform: translateY(0); } }
+.gc-go-sig { animation: gc-go-kf-sig 8s infinite; }
+@keyframes gc-go-kf-sig { 0%, 29% { opacity: 0; } 31%, 95% { opacity: 1; } 98%, 100% { opacity: 0; } }
+.gc-go-ring { animation: gc-go-kf-ring 8s linear infinite; }
+@keyframes gc-go-kf-ring { 0%, 32% { stroke-dashoffset: 0; } 95% { stroke-dashoffset: 72; } 100% { stroke-dashoffset: 0; } }
+.gc-go-p1 { transform-origin: 124px 0; animation: gc-go-kf-p1 8s linear infinite; }
+@keyframes gc-go-kf-p1 { 0% { transform: scaleX(.45); opacity: 1; } 49% { transform: scaleX(1); opacity: 1; } 51%, 100% { transform: scaleX(1); opacity: 0; } }
+.gc-go-p2 { transform-origin: 124px 0; animation: gc-go-kf-p2 8s linear infinite; }
+@keyframes gc-go-kf-p2 { 0% { transform: scaleX(.3); opacity: 1; } 59% { transform: scaleX(1); opacity: 1; } 61%, 100% { transform: scaleX(1); opacity: 0; } }
+.gc-go-p3 { transform-origin: 124px 0; animation: gc-go-kf-p3 8s linear infinite; }
+@keyframes gc-go-kf-p3 { 0%, 18% { transform: scaleX(.1); opacity: 1; } 73% { transform: scaleX(1); opacity: 1; } 75%, 100% { transform: scaleX(1); opacity: 0; } }
+.gc-go-c1 { animation: gc-go-kf-c1 8s infinite; }
+@keyframes gc-go-kf-c1 { 0%, 49% { opacity: 0; } 51%, 95% { opacity: 1; } 98%, 100% { opacity: 0; } }
+.gc-go-c2 { animation: gc-go-kf-c2 8s infinite; }
+@keyframes gc-go-kf-c2 { 0%, 59% { opacity: 0; } 61%, 95% { opacity: 1; } 98%, 100% { opacity: 0; } }
+.gc-go-c3 { animation: gc-go-kf-c3 8s infinite; }
+@keyframes gc-go-kf-c3 { 0%, 73% { opacity: 0; } 75%, 95% { opacity: 1; } 98%, 100% { opacity: 0; } }
+.gc-go-exit { animation: gc-go-kf-exit 8s infinite; }
+@keyframes gc-go-kf-exit { 0%, 77% { opacity: 0; transform: translateY(4px); } 80%, 95% { opacity: 1; transform: translateY(0); } 98%, 100% { opacity: 0; transform: translateY(0); } }
+
+.gc-go-r1, .gc-go-r2, .gc-go-503, .gc-go-gate, .gc-go-sig, .gc-go-ring, .gc-go-p1, .gc-go-p2, .gc-go-p3, .gc-go-c1, .gc-go-c2, .gc-go-c3, .gc-go-exit { animation-delay: -5.28s; }
+@media (prefers-reduced-motion: reduce) { .gc-go-r1, .gc-go-r2, .gc-go-503, .gc-go-gate, .gc-go-sig, .gc-go-ring, .gc-go-p1, .gc-go-p2, .gc-go-p3, .gc-go-c1, .gc-go-c2, .gc-go-c3, .gc-go-exit { animation-play-state: paused; } }
+</style>
+
+<!-- incoming requests -->
+<path class="gc-go-wire" d="M12 92 H108"/>
+<g class="gc-go-r1"><rect class="gc-go-req" x="14" y="82" width="30" height="20" rx="4"/><rect class="gc-go-lnk" x="14" y="82" width="5" height="20" rx="2"/></g>
+<g class="gc-go-r2"><rect class="gc-go-req" x="14" y="82" width="30" height="20" rx="4"/><rect class="gc-go-lnk" x="14" y="82" width="5" height="20" rx="2"/></g>
+<g class="gc-go-503">
+  <rect class="gc-go-bad" x="30" y="114" width="44" height="22" rx="11" opacity=".16"/>
+  <text class="gc-go-t" x="52" y="129" font-size="13" text-anchor="middle" style="fill: var(--scene-bad, #b3261e)">503</text>
+</g>
+<g class="gc-go-gate"><rect class="gc-go-bad" x="100" y="72" width="7" height="40" rx="3"/></g>
+
+<!-- the service with its requests in flight -->
+<ellipse class="gc-go-sh" cx="168" cy="158" rx="56" ry="5"/>
+<path class="gc-go-ln" d="M112 30 L120 22 H224 L216 30 Z"/>
+<path class="gc-go-slab" d="M216 30 L224 22 V144 L216 152 Z"/>
+<rect class="gc-go-box" x="112" y="30" width="104" height="122" rx="3"/>
+<rect class="gc-go-soft" x="113" y="31" width="102" height="20"/>
+<text class="gc-go-t" x="122" y="45" font-size="11">in flight</text>
+<rect class="gc-go-ln" x="124" y="66" width="66" height="8" rx="4"/>
+<rect class="gc-go-lnk gc-go-p1" x="124" y="66" width="66" height="8" rx="4"/>
+<g class="gc-go-c1"><circle class="gc-go-good" cx="203" cy="70" r="7"/><path class="gc-go-ck" d="M199.5 70 l2.5 2.5 l4.5 -5"/></g>
+<rect class="gc-go-ln" x="124" y="94" width="66" height="8" rx="4"/>
+<rect class="gc-go-lnk gc-go-p2" x="124" y="94" width="66" height="8" rx="4"/>
+<g class="gc-go-c2"><circle class="gc-go-good" cx="203" cy="98" r="7"/><path class="gc-go-ck" d="M199.5 98 l2.5 2.5 l4.5 -5"/></g>
+<rect class="gc-go-ln" x="124" y="122" width="66" height="8" rx="4"/>
+<rect class="gc-go-lnk gc-go-p3" x="124" y="122" width="66" height="8" rx="4"/>
+<g class="gc-go-c3"><circle class="gc-go-good" cx="203" cy="126" r="7"/><path class="gc-go-ck" d="M199.5 126 l2.5 2.5 l4.5 -5"/></g>
+
+<!-- shutdown context deadline -->
+<circle cx="270" cy="60" r="22" fill="none" stroke="var(--scene-line, #cfdfdc)" stroke-width="5"/>
+<circle class="gc-go-ring" cx="270" cy="60" r="22" fill="none" stroke="var(--scene-accent, #006c73)" stroke-width="5" stroke-linecap="round" pathLength="100" stroke-dasharray="100" transform="rotate(-90 270 60)"/>
+<text class="gc-go-tm" x="270" y="65" font-size="13" text-anchor="middle">10s</text>
+<text class="gc-go-t" x="270" y="100" font-size="11" text-anchor="middle">deadline</text>
+<g class="gc-go-sig"><rect class="gc-go-warn" x="234" y="112" width="72" height="22" rx="6"/><text class="gc-go-tcm" x="270" y="127" font-size="11" text-anchor="middle">SIGTERM</text></g>
+<g class="gc-go-exit"><rect class="gc-go-good" x="234" y="142" width="72" height="22" rx="6"/><text class="gc-go-tcm" x="270" y="157" font-size="11" text-anchor="middle">exit 0</text></g>
+</svg>

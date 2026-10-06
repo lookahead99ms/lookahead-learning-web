@@ -1,16 +1,16 @@
 :host {
   display: block;
   min-width: 0;
-  --cell: 52px;
+  --cell-base: 52px;
   --gap: 6px;
   --tone-active-bg: color-mix(in srgb, var(--accent-strong) 16%, var(--surface));
   --tone-compare-bg: color-mix(in srgb, var(--warning) 16%, var(--surface));
   --tone-found-bg: color-mix(in srgb, var(--success) 20%, var(--surface));
   --tone-new-bg: color-mix(in srgb, var(--accent-link) 16%, var(--surface));
 }
-.story {
-  display: grid;
-  gap: 12px;
+/* The drawing for one step, inside the walkthrough player's left column. */
+.story-stage {
+  container: story-stage / inline-size;
   min-width: 0;
   color: var(--text-strong);
 }
@@ -22,141 +22,78 @@
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
-.story-head h3 {
-  margin: 0;
-  font-size: 18px;
-}
-.story-example {
-  margin: 4px 0 0;
-  color: var(--text-subtle);
-  font-size: 14px;
-  overflow-wrap: anywhere;
-}
-.story-example code {
-  font-size: 13px;
-}
-.approach-box {
-  display: grid;
-  gap: 6px;
-  border: 1px solid var(--line);
-  border-left: 4px solid var(--accent-strong);
-  border-radius: 10px;
-  background: var(--surface);
-  padding: 10px 14px;
-  font-size: 15px;
-  line-height: 1.55;
-}
-.approach-box p {
-  margin: 0;
-}
-.approach-box b {
-  display: inline-block;
-  min-width: 82px;
-  margin-right: 8px;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--accent-strong);
-}
-.approach-box .cost {
-  color: var(--text-body);
-  font-size: 14px;
-}
-.story-controls {
-  position: sticky;
-  top: var(--stage-top, 72px);
-  z-index: 2;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 10px;
-  padding: 8px 10px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface);
-}
-.story-controls button {
-  min-width: 84px;
-}
-.story-controls .play {
-  min-width: 92px;
-}
-.scrubber {
-  flex: 1 1 180px;
-  display: flex;
-  min-width: 140px;
-}
-.scrubber input {
-  width: 100%;
-  accent-color: var(--accent-strong);
-}
-.step-count {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-subtle);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
 .stage {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: flex-start;
+  display: grid;
+  gap: 14px;
+  align-items: start;
   min-width: 0;
 }
+/* A tree, graph, trie or grid is the focal drawing; the arrays and maps it works with sit
+   beside it as compact strips. The focal column never gets narrower than its drawing needs for
+   12 px text (--focal-min); when the stage cannot also fit the side column, that column wraps
+   below. A linked list is not focal: it is a long row and takes the whole stage width. */
+.stage.split {
+  display: flex;
+  flex-wrap: wrap;
+}
+.focal-col,
+.side-col {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+  min-width: 0;
+}
+.focal-col {
+  flex: 1.4 1 min(100%, var(--focal-min, 300px));
+}
+.side-col {
+  flex: 1 1 160px;
+}
+.side-col > .view + .view {
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
 .view {
-  flex: 1 1 320px;
-  min-width: min(100%, 280px);
+  /* Every cell of a row shares one width, wide enough for its longest value (--cell-fit). */
+  --cell: max(var(--cell-base), var(--cell-fit, 0px));
+  min-width: 0;
   margin: 0;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--surface-page);
-  padding: 10px 12px 12px;
   display: grid;
   gap: 8px;
   align-content: start;
 }
-.view[data-kind='array'],
-.view[data-kind='queue'],
-.view[data-kind='grid'],
-.view[data-kind='linked-list'],
-.view[data-kind='tree'],
-.view[data-kind='trie'],
-.view[data-kind='graph'] {
-  flex-basis: 420px;
-}
-/* A long array (a 1-D DP table, dp[0..amount]) asks for the width of all its cells, so the
-   target cell at the far end stays in view instead of behind a scrollbar. Short arrays keep 420px. */
-.view[data-kind='array'],
-.view[data-kind='queue'] {
-  flex-basis: max(420px, calc(var(--cells, 0) * (var(--cell) + var(--gap)) - var(--gap) + 26px));
-}
-.view.variables {
-  flex: 1 1 300px;
-  background: var(--surface);
+.stage:not(.split) > .view + .view {
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
 }
 .view figcaption {
-  font-size: 13px;
+  font-size: var(--wt-fs-s, 13px);
   font-weight: 800;
-  letter-spacing: 0.04em;
   color: var(--text-strong);
 }
 .view figcaption .kind {
   margin-left: 6px;
   font-weight: 500;
-  letter-spacing: 0;
   color: var(--text-subtle);
 }
 .drawing {
   min-width: 0;
   overflow-x: auto;
   padding-bottom: 2px;
+  /* Scroll cue: a shadow at the edge where more of the drawing is out of view. */
+  background:
+    linear-gradient(to right, var(--surface) 40%, transparent) left / 28px 100% no-repeat local,
+    linear-gradient(to left, var(--surface) 40%, transparent) right / 28px 100% no-repeat local,
+    radial-gradient(farthest-side at 0 50%, rgb(0 0 0 / 0.22), transparent) left / 12px 100% no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, rgb(0 0 0 / 0.22), transparent) right / 12px 100% no-repeat scroll;
 }
 .empty {
   margin: 0;
   color: var(--text-subtle);
   font-style: italic;
+}
+.line-stage app-trace-state-panel {
+  min-width: 0;
 }
 
 /* Tones shared by cells, entries, frames and nodes */
@@ -210,7 +147,8 @@
 }
 .cell {
   width: var(--cell);
-  min-height: var(--cell);
+  /* A cell widened for a long value keeps the row's base height. */
+  min-height: var(--cell-base);
   display: grid;
   align-content: center;
   justify-items: center;
@@ -220,14 +158,11 @@
 }
 .cell .v {
   font-weight: 800;
-  font-size: 17px;
-  max-width: calc(var(--cell) - 6px);
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: var(--wt-fs-l, 16px);
   white-space: nowrap;
 }
 .cell .i {
-  font: 500 11px var(--font-mono, ui-monospace, monospace);
+  font: 500 var(--wt-fs-s, 13px) var(--font-mono, ui-monospace, monospace);
   color: var(--text-subtle);
 }
 .pointers {
@@ -243,7 +178,7 @@
   display: grid;
   justify-items: center;
   font-weight: 800;
-  font-size: 13px;
+  font-size: var(--wt-fs-s, 13px);
   line-height: 1.1;
   color: var(--accent-strong);
   transform: translateX(calc(var(--i) * (var(--cell) + var(--gap))));
@@ -263,6 +198,7 @@
   margin: 0;
   padding: 0;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 6px;
   max-width: 360px;
 }
@@ -274,7 +210,7 @@
   padding: 0 12px;
 }
 .tag {
-  font-size: 12px;
+  font-size: var(--wt-fs-s, 13px);
   font-weight: 700;
   color: var(--text-subtle);
 }
@@ -289,7 +225,7 @@
   grid-column: 1 / -1;
   display: flex;
   gap: 18px;
-  font-size: 12px;
+  font-size: var(--wt-fs-s, 13px);
   color: var(--text-subtle);
 }
 .map-head span:first-child::after {
@@ -307,7 +243,7 @@
 }
 .entry .k {
   font-weight: 800;
-  font-size: 16px;
+  font-size: var(--wt-fs-l, 16px);
 }
 .entry .arrow {
   color: var(--text-subtle);
@@ -324,7 +260,7 @@
 }
 .entry.tone-miss .val {
   font-weight: 500;
-  font-size: 13px;
+  font-size: var(--wt-fs-s, 13px);
 }
 
 /* Grids */
@@ -346,12 +282,13 @@
   outline-offset: 1px;
 }
 
-/* Call stack */
+/* Call stack: a long call wraps inside its frame (after "(", then at its commas). */
 .frame {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  gap: 6px;
+  gap: 2px 6px;
+  min-width: 0;
   padding: 7px 12px;
   border: 2px solid var(--line);
   border-radius: 9px;
@@ -360,13 +297,18 @@
 .frame.current {
   border-color: var(--accent-strong);
 }
+.frame code {
+  min-width: 0;
+  font-size: var(--wt-fs-s, 13px);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
 
 /* Lists, trees and graphs */
 .diagram {
   display: block;
   width: 100%;
   height: auto;
-  min-width: 260px;
   overflow: visible;
 }
 .diagram .edge {
@@ -396,13 +338,14 @@
   text-anchor: middle;
   dominant-baseline: central;
 }
+/* Labels are 14 px in viewBox units; the drawing never scales below 12/14 (see diagramFrame). */
 .diagram .pointer-label {
   fill: var(--accent-strong);
-  font-size: 13px;
+  font-size: 14px;
 }
 .diagram .null-slot text:first-child {
   fill: var(--text-subtle);
-  font: 600 13px var(--font-mono, ui-monospace, monospace);
+  font: 600 14px var(--font-mono, ui-monospace, monospace);
 }
 .diagram .node.tone-active circle {
   fill: var(--tone-active-bg);
@@ -444,7 +387,7 @@
 }
 .diagram .badge {
   fill: var(--success);
-  font: 700 12px var(--font-mono, ui-monospace, monospace);
+  font: 700 14px var(--font-mono, ui-monospace, monospace);
   text-anchor: start;
 }
 
@@ -493,214 +436,29 @@
 }
 .diagram .sentinel-text {
   fill: var(--text-subtle);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-/* Variables */
-.variables dl {
-  margin: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 6px;
-}
-.variable {
-  min-width: 0;
-  padding: 6px 9px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface-page);
-  transition:
-    background-color 0.35s,
-    border-color 0.35s;
-}
-.variable dt {
-  font: 600 12px var(--font-mono, ui-monospace, monospace);
-  color: var(--text-subtle);
-}
-.variable dd {
-  margin: 2px 0 0;
-  font-weight: 800;
-  font-size: 15px;
-  overflow-wrap: anywhere;
-}
-.variable.unset dd {
-  font-weight: 500;
-  font-size: 13px;
-  color: var(--text-subtle);
-}
-.variable.changed {
-  border-color: var(--accent-strong);
-  background: var(--tone-active-bg);
-}
-.variable[data-kind='result'],
-.variable[data-kind='returns'] {
-  grid-column: 1 / -1;
-}
-.variable[data-kind='result'].changed {
-  border-color: var(--success);
-  background: var(--tone-found-bg);
-}
-
-/* Caption and ideas */
-.caption {
-  margin: 0;
-  border-left: 3px solid var(--accent-strong);
-  background: var(--surface-accent);
-  border-radius: 0 10px 10px 0;
-  padding: 10px 14px;
-  font-size: 16px;
-  line-height: 1.5;
-  min-height: 3.2em;
-}
-.ideas {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  counter-reset: idea;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 8px;
-}
-.ideas li {
-  counter-increment: idea;
-  position: relative;
-  padding: 9px 12px 9px 42px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface);
   font-size: 14px;
-  line-height: 1.5;
-  transition:
-    border-color 0.3s,
-    background-color 0.3s;
-}
-.ideas li::before {
-  content: counter(idea);
-  position: absolute;
-  left: 11px;
-  top: 9px;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  font-size: 12px;
-  font-weight: 800;
-  background: var(--surface-muted);
-}
-.ideas li.on {
-  border-color: var(--accent-strong);
-  background: var(--surface-accent);
-}
-.ideas li.on::before {
-  background: var(--accent-strong);
-  color: var(--accent-on-primary);
-}
-
-/* Code */
-.code {
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  overflow: hidden;
-}
-.code-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 8px 12px;
-  background: var(--surface-muted);
-}
-.code-head h4 {
-  margin: 0;
-  font-size: 15px;
-}
-.language-tabs {
-  display: flex;
-  gap: 4px;
-}
-.language-tabs button {
-  border: 1px solid var(--line);
-  background: var(--surface);
-  color: var(--text-subtle);
-  border-radius: 8px;
-  padding: 5px 12px;
   font-weight: 700;
-  font-size: 13px;
-}
-.language-tabs button[aria-selected='true'] {
-  background: var(--accent-strong);
-  border-color: var(--accent-strong);
-  color: var(--accent-on-primary);
-}
-.code pre {
-  margin: 0;
-  padding: 10px 0;
-  max-height: 440px;
-  overflow: auto;
-  font-size: 13.5px;
-  line-height: 1.7;
-}
-.code .line {
-  display: block;
-  padding-right: 16px;
-  border-left: 4px solid transparent;
-}
-.code .line .no {
-  display: inline-block;
-  width: 3.2em;
-  padding-right: 1em;
-  text-align: right;
-  opacity: 0.5;
-  user-select: none;
-}
-.code .line.ran {
-  background: rgb(255 255 255 / 0.06);
-  border-left-color: rgb(255 255 255 / 0.28);
-}
-.code .line.current {
-  background: rgb(255 214 102 / 0.2);
-  border-left-color: #ffd666;
 }
 
 @media (max-width: 600px) {
   :host {
-    --cell: 44px;
-  }
-  .approach-box b {
-    display: block;
-  }
-  .story-controls button {
-    min-width: 0;
-    flex: 1 1 auto;
+    --cell-base: 44px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .story *,
-  .story *::before {
+  .story-stage *,
+  .story-stage *::before {
     transition: none !important;
   }
 }
 
-/* Variables panel: a caller's local shown while a helper runs */
-.variable .frame-tag {
-  margin-left: 4px;
-  font-weight: 500;
-  font-size: 0.85em;
-  color: var(--text-subtle);
-}
-
 /* Strings, number lines and bits: one narrow cell per character, number or binary digit */
 .view[data-kind='string'] {
-  --cell: 36px;
-  flex-basis: max(320px, calc(var(--cells, 0) * (var(--cell) + var(--gap)) - var(--gap) + 26px));
+  --cell-base: 36px;
 }
 .view[data-kind='number-line'],
 .view[data-kind='bits'] {
-  --cell: 36px;
-  flex-basis: max(300px, calc(var(--cells, 0) * (var(--cell) + var(--gap)) - var(--gap) + 90px));
+  --cell-base: 36px;
 }
 .view[data-kind='string'] .cell .v {
   font-family: var(--font-mono, ui-monospace, monospace);

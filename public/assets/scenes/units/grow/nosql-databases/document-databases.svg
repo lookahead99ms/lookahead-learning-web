@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Two buyers tap Reserve on the same phone ad at once; both requests reach the ad document in the database, one conditional update turns its status from active to reserved, the first buyer gets a check and the second a cross">
+<style>
+.nosql-docdb-t{font:600 11px system-ui,sans-serif;fill:var(--scene-muted,#4d6268)}
+.nosql-docdb-s{font:700 11px system-ui,sans-serif}
+.nosql-docdb-loop{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-6.6s;animation-timing-function:ease-in-out}
+.nosql-docdb-r1{animation-name:nosql-docdb-r1}
+.nosql-docdb-r2{animation-name:nosql-docdb-r2}
+@keyframes nosql-docdb-r1{0%,5%{transform:translate(0,0);opacity:0}7%{opacity:1}28%{transform:translate(120px,24px);opacity:1}31%,100%{transform:translate(120px,24px);opacity:0}}
+@keyframes nosql-docdb-r2{0%,14%{transform:translate(0,0);opacity:0}16%{opacity:1}40%{transform:translate(120px,-28px);opacity:1}43%,100%{transform:translate(120px,-28px);opacity:0}}
+.nosql-docdb-active{animation-name:nosql-docdb-active}
+.nosql-docdb-reserved{animation-name:nosql-docdb-reserved}
+@keyframes nosql-docdb-active{0%,29%{opacity:1}31%,97%{opacity:0}100%{opacity:1}}
+@keyframes nosql-docdb-reserved{0%,29%{opacity:0}31%,97%{opacity:1}100%{opacity:0}}
+.nosql-docdb-ok{animation-name:nosql-docdb-ok}
+.nosql-docdb-no{animation-name:nosql-docdb-no}
+@keyframes nosql-docdb-ok{0%,33%{opacity:0}37%,96%{opacity:1}100%{opacity:0}}
+@keyframes nosql-docdb-no{0%,44%{opacity:0}48%,96%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.nosql-docdb-loop{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<!-- buyer 1 with a phone -->
+<ellipse cx="44" cy="80" rx="30" ry="4" fill="var(--scene-ink,#102a33)" opacity="0.08"/>
+<circle cx="26" cy="22" r="10" fill="var(--scene-accent,#006c73)"/>
+<path d="M8 52a18 18 0 0 1 36 0Z" fill="var(--scene-accent,#006c73)" opacity="0.85"/>
+<rect x="45" y="22" width="30" height="54" rx="6" fill="var(--scene-ink,#102a33)" opacity="0.14"/>
+<rect x="42" y="20" width="30" height="54" rx="6" fill="var(--scene-ink,#102a33)"/>
+<rect x="45" y="26" width="24" height="42" rx="3" fill="var(--scene-card,#fff)"/>
+<rect x="47" y="29" width="20" height="13" rx="2" fill="var(--scene-accent-soft,#dcefed)"/>
+<rect x="47" y="45" width="16" height="3" rx="1.5" fill="var(--scene-line,#cfdfdc)"/>
+<rect x="47" y="57" width="20" height="7" rx="2" fill="var(--scene-accent,#006c73)"/>
+<!-- buyer 2 with a phone -->
+<ellipse cx="44" cy="166" rx="30" ry="4" fill="var(--scene-ink,#102a33)" opacity="0.08"/>
+<circle cx="26" cy="108" r="10" fill="var(--scene-link,#245a88)"/>
+<path d="M8 138a18 18 0 0 1 36 0Z" fill="var(--scene-link,#245a88)" opacity="0.85"/>
+<rect x="45" y="108" width="30" height="54" rx="6" fill="var(--scene-ink,#102a33)" opacity="0.14"/>
+<rect x="42" y="106" width="30" height="54" rx="6" fill="var(--scene-ink,#102a33)"/>
+<rect x="45" y="112" width="24" height="42" rx="3" fill="var(--scene-card,#fff)"/>
+<rect x="47" y="115" width="20" height="13" rx="2" fill="var(--scene-accent-soft,#dcefed)"/>
+<rect x="47" y="131" width="16" height="3" rx="1.5" fill="var(--scene-line,#cfdfdc)"/>
+<rect x="47" y="143" width="20" height="7" rx="2" fill="var(--scene-link,#245a88)"/>
+<!-- wires from both phones to the database -->
+<path d="M74 66L194 90M74 118L194 90" stroke="var(--scene-muted,#4d6268)" stroke-width="1.5" stroke-dasharray="3 5" fill="none" opacity="0.6"/>
+<!-- the database: a cylinder holding the ad document -->
+<ellipse cx="252" cy="166" rx="56" ry="5" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<path d="M196 30v118a56 12 0 0 0 112 0V30" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<path d="M290 40v116a56 12 0 0 0 18-8V30" fill="var(--scene-ink,#102a33)" opacity="0.1"/>
+<ellipse cx="252" cy="30" rx="56" ry="12" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<!-- the ad document: folded corner, photo, title and price bars, status -->
+<path d="M219 53h48l11 11v80h-59Z" fill="var(--scene-ink,#102a33)" opacity="0.12"/>
+<path d="M216 50h48l11 11v80h-59Z" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="1.6"/>
+<path d="M264 50v11h11" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="1.6"/>
+<rect x="222" y="58" width="36" height="24" rx="3" fill="var(--scene-accent-soft,#dcefed)"/>
+<rect x="231" y="62" width="14" height="16" rx="3" fill="var(--scene-ink,#102a33)" opacity="0.55"/>
+<rect x="222" y="88" width="46" height="4" rx="2" fill="var(--scene-line,#cfdfdc)"/>
+<rect x="222" y="97" width="30" height="4" rx="2" fill="var(--scene-line,#cfdfdc)"/>
+<text class="nosql-docdb-t" x="222" y="114">status</text>
+<g class="nosql-docdb-loop nosql-docdb-active" opacity="0">
+<rect x="219" y="119" width="54" height="16" rx="8" fill="var(--scene-accent-soft,#dcefed)"/>
+<text class="nosql-docdb-s" x="246" y="131" text-anchor="middle" fill="var(--scene-accent,#006c73)">active</text>
+</g>
+<g class="nosql-docdb-loop nosql-docdb-reserved">
+<rect x="219" y="119" width="54" height="16" rx="8" fill="var(--scene-warn,#a15c00)"/>
+<text class="nosql-docdb-s" x="246" y="131" text-anchor="middle" fill="var(--scene-card,#fff)">reserved</text>
+<rect x="282" y="112" width="14" height="11" rx="2" fill="var(--scene-warn,#a15c00)"/>
+<path d="M285 112v-3a4 4 0 0 1 8 0v3" fill="none" stroke="var(--scene-warn,#a15c00)" stroke-width="2"/>
+</g>
+<!-- one Reserve request from each buyer travels to the database -->
+<g class="nosql-docdb-loop nosql-docdb-r1" opacity="0"><circle cx="74" cy="66" r="5" fill="var(--scene-accent,#006c73)"/></g>
+<g class="nosql-docdb-loop nosql-docdb-r2" opacity="0"><circle cx="74" cy="118" r="5" fill="var(--scene-link,#245a88)"/></g>
+<!-- the outcome: the first buyer holds the phone, the second is refused -->
+<g class="nosql-docdb-loop nosql-docdb-ok"><circle cx="90" cy="26" r="10" fill="var(--scene-good,#1f7a4d)"/><path d="M85 26l4 4 7-8" stroke="var(--scene-card,#fff)" stroke-width="2.5" stroke-linecap="round" fill="none"/></g>
+<g class="nosql-docdb-loop nosql-docdb-no"><circle cx="90" cy="112" r="10" fill="var(--scene-bad,#b3261e)"/><path d="M86 108l8 8M94 108l-8 8" stroke="var(--scene-card,#fff)" stroke-width="2.5" stroke-linecap="round"/></g>
+</svg>

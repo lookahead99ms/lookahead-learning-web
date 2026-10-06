@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A shopper types a shop's domain: the query travels to a recursive resolver, which asks the shop's authoritative name server; the address comes back, is stored in the resolver's cache with a TTL that counts down, and the shopper's laptop connects">
+<style>
+.lnb-dns-w{font-family:system-ui,sans-serif;font-size:11px;font-weight:700;fill:var(--scene-muted,#536970)}
+.lnb-dns-loop{animation-duration:8s;animation-iteration-count:infinite;animation-timing-function:linear;animation-delay:-5.6s}
+.lnb-dns-q1{animation-name:lnb-dns-q1}
+.lnb-dns-q2{animation-name:lnb-dns-q2}
+.lnb-dns-a1{animation-name:lnb-dns-a1}
+.lnb-dns-a2{animation-name:lnb-dns-a2}
+.lnb-dns-row{animation-name:lnb-dns-row}
+.lnb-dns-ttl{animation-name:lnb-dns-ttl;transform-box:fill-box;transform-origin:left center}
+.lnb-dns-ok{animation-name:lnb-dns-ok}
+@keyframes lnb-dns-q1{0%{transform:translateX(0);opacity:0}2%{opacity:1}13%{transform:translateX(52px);opacity:1}15%,100%{transform:translateX(52px);opacity:0}}
+@keyframes lnb-dns-q2{0%,15%{transform:translateX(0);opacity:0}17%{opacity:1}29%{transform:translateX(56px);opacity:1}31%,100%{transform:translateX(56px);opacity:0}}
+@keyframes lnb-dns-a1{0%,32%{transform:translateX(0);opacity:0}34%{opacity:1}45%{transform:translateX(-62px);opacity:1}47%,100%{transform:translateX(-62px);opacity:0}}
+@keyframes lnb-dns-a2{0%,47%{transform:translateX(0);opacity:0}49%{opacity:1}60%{transform:translateX(-66px);opacity:1}62%,100%{transform:translateX(-66px);opacity:0}}
+@keyframes lnb-dns-row{0%,45%{opacity:0}48%,94%{opacity:1}98%,100%{opacity:0}}
+@keyframes lnb-dns-ttl{0%,46%{transform:scaleX(1)}94%,100%{transform:scaleX(.15)}}
+@keyframes lnb-dns-ok{0%,60%{opacity:0}63%,94%{opacity:1}98%,100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.lnb-dns-loop{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g fill="var(--scene-ink,#102a33)" opacity=".09"><ellipse cx="50" cy="150" rx="46" ry="7"/><ellipse cx="160" cy="150" rx="40" ry="7"/><ellipse cx="276" cy="150" rx="38" ry="7"/></g>
+<!-- the shopper behind a laptop -->
+<circle cx="50" cy="50" r="12" fill="var(--scene-accent,#006c73)"/>
+<path d="M30 92c0-15 9-24 20-24s20 9 20 24z" fill="var(--scene-accent,#006c73)"/>
+<path d="M14 84h72l-4 46H18z" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-muted,#536970)" stroke-width="1.5" stroke-linejoin="round"/>
+<rect x="22" y="92" width="56" height="12" rx="6" fill="var(--scene-card,#fff)"/>
+<circle cx="29" cy="98" r="3" fill="var(--scene-link,#245a88)"/><rect x="35" y="96.5" width="34" height="3" rx="1.5" fill="var(--scene-link,#245a88)"/>
+<g fill="var(--scene-card,#fff)" opacity=".7"><rect x="24" y="110" width="22" height="12" rx="2"/><rect x="52" y="110" width="22" height="12" rx="2"/></g>
+<rect x="6" y="130" width="88" height="7" rx="2" fill="var(--scene-ink,#102a33)" opacity=".16"/>
+<g class="lnb-dns-loop lnb-dns-ok"><circle cx="84" cy="74" r="9" fill="var(--scene-good,#1f7a4d)"/><path d="M79.5 74l3 3 6-6" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<!-- wires -->
+<g stroke="var(--scene-muted,#536970)" stroke-width="1.5" stroke-dasharray="3 4" fill="none"><path d="M90 112H128"/><path d="M196 112H244"/></g>
+<!-- the recursive resolver with its cache -->
+<path d="M128 62l10-8h58l-10 8z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M186 62l10-8v80l-10 8z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="128" y="62" width="58" height="80" rx="3" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-line,#cfdfdc)" stroke-width="1.5"/>
+<path d="M150 70l-5 9h5l-3 8 9-11h-5l3-6z" fill="var(--scene-warn,#a15c00)"/>
+<g fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)"><rect x="134" y="94" width="46" height="14" rx="2"/><rect x="134" y="116" width="46" height="14" rx="2"/></g>
+<rect x="138" y="98" width="7" height="6" rx="1.5" fill="var(--scene-link,#245a88)"/><rect x="148" y="100" width="26" height="3" rx="1.5" fill="var(--scene-line,#cfdfdc)"/>
+<g class="lnb-dns-loop lnb-dns-row">
+<rect x="138" y="120" width="7" height="6" rx="1.5" fill="var(--scene-accent,#006c73)"/>
+<rect class="lnb-dns-loop lnb-dns-ttl" x="148" y="121.5" width="28" height="3" rx="1.5" fill="var(--scene-accent,#006c73)"/>
+</g>
+<text class="lnb-dns-w" x="157" y="160" text-anchor="middle">cache</text>
+<!-- the authoritative name server with its zone -->
+<path d="M248 48l10-8h44l-10 8z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M292 48l10-8v94l-10 8z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="248" y="48" width="44" height="94" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="1.5"/>
+<g fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-line,#cfdfdc)"><rect x="253" y="58" width="34" height="12" rx="2"/><rect x="253" y="78" width="34" height="12" rx="2"/></g>
+<circle cx="282" cy="64" r="2.5" fill="var(--scene-good,#1f7a4d)"/><circle cx="282" cy="84" r="2.5" fill="var(--scene-good,#1f7a4d)"/>
+<path d="M254 98h22l6 6v30h-28z" fill="var(--scene-card,#fff)" stroke="var(--scene-muted,#536970)" stroke-width="1.2"/>
+<path d="M276 98v6h6" fill="none" stroke="var(--scene-muted,#536970)" stroke-width="1.2"/>
+<g fill="var(--scene-line,#cfdfdc)"><rect x="258" y="108" width="16" height="3" rx="1.5"/><rect x="258" y="115" width="20" height="3" rx="1.5"/><rect x="258" y="122" width="14" height="3" rx="1.5"/></g>
+<!-- the question goes out, the address comes back -->
+<circle class="lnb-dns-loop lnb-dns-q1" cx="80" cy="112" r="4.5" fill="var(--scene-link,#245a88)"/>
+<circle class="lnb-dns-loop lnb-dns-q2" cx="190" cy="112" r="4.5" fill="var(--scene-link,#245a88)"/>
+<g class="lnb-dns-loop lnb-dns-a1"><rect x="222" y="104" width="36" height="16" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="1.5"/><rect x="222" y="104" width="36" height="5" rx="2" fill="var(--scene-accent,#006c73)"/><path d="M227 114h20" stroke="var(--scene-muted,#536970)" stroke-width="1.5"/></g>
+<g class="lnb-dns-loop lnb-dns-a2"><rect x="108" y="104" width="36" height="16" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="1.5"/><rect x="108" y="104" width="36" height="5" rx="2" fill="var(--scene-accent,#006c73)"/><path d="M113 114h20" stroke="var(--scene-muted,#536970)" stroke-width="1.5"/></g>
+</svg>

@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A cardholder opens a statement on a phone; the request walks down a B-tree index from the root to the leaf for card 4242 and reads only the three table pages that hold its rows, while the other pages stay unread, and the statement lines appear on the phone with a check">
+<style>
+.sqlqp-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.sqlqp-shadow{fill:var(--scene-ink,#102a33);opacity:.08}
+.sqlqp-side{fill:var(--scene-ink,#102a33);opacity:.14}
+.sqlqp-bar{fill:var(--scene-line,#cfdfdc)}
+.sqlqp-node{fill:var(--scene-card,#fff);stroke:var(--scene-accent,#006c73);stroke-width:1.6}
+.sqlqp-edge{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.3}
+.sqlqp-wire{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.5;stroke-dasharray:3 4}
+.sqlqp-hit{fill:var(--scene-warn,#a15c00)}
+.sqlqp-a{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-6.2s;animation-timing-function:ease-in-out}
+@media (prefers-reduced-motion: reduce){.sqlqp-a{animation-play-state:paused!important}}
+.sqlqp-dot{animation-name:sqlqp-dot}
+@keyframes sqlqp-dot{0%{opacity:0;transform:none}3%{opacity:1;transform:none}16%{opacity:1;transform:translate(72px,-62px)}28%{opacity:1;transform:translate(73px,-10px)}33%{opacity:1;transform:translate(73px,14px)}40%{opacity:1;transform:translate(148px,14px)}44%{opacity:1;transform:translate(148px,-8px)}48%{opacity:0;transform:translate(148px,-8px)}100%{opacity:0;transform:translate(148px,-8px)}}
+.sqlqp-ring{animation-name:sqlqp-ring}
+@keyframes sqlqp-ring{0%,24%{opacity:0}29%,92%{opacity:1}97%,100%{opacity:0}}
+.sqlqp-pages{animation-name:sqlqp-pages}
+@keyframes sqlqp-pages{0%,42%{opacity:0}47%,92%{opacity:1}97%,100%{opacity:0}}
+.sqlqp-lines{animation-name:sqlqp-lines}
+@keyframes sqlqp-lines{0%,48%{opacity:0;transform:translateY(-6px)}55%,92%{opacity:1;transform:none}97%,100%{opacity:0;transform:none}}
+.sqlqp-ok{animation-name:sqlqp-ok}
+@keyframes sqlqp-ok{0%,58%{opacity:0}63%,92%{opacity:1}97%,100%{opacity:0}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<!-- the cardholder with the phone -->
+<circle cx="26" cy="64" r="11" fill="var(--scene-link,#245a88)"/>
+<path d="M4 116c0-18 10-30 22-30s22 12 22 30z" fill="var(--scene-link,#245a88)" opacity=".85"/>
+<ellipse cx="60" cy="166" rx="30" ry="4" class="sqlqp-shadow"/>
+<rect x="40" y="70" width="46" height="92" rx="9" class="sqlqp-side"/>
+<rect x="37" y="68" width="46" height="92" rx="9" fill="var(--scene-ink,#102a33)"/>
+<rect x="41" y="78" width="38" height="74" rx="4" fill="var(--scene-card,#fff)"/>
+<rect x="45" y="83" width="22" height="4" rx="2" fill="var(--scene-accent,#006c73)"/>
+<g class="sqlqp-a sqlqp-lines">
+<rect x="45" y="94" width="26" height="3" rx="1.5" class="sqlqp-bar"/><rect x="45" y="101" width="20" height="3" rx="1.5" class="sqlqp-bar"/>
+<rect x="45" y="108" width="28" height="3" rx="1.5" class="sqlqp-bar"/><rect x="45" y="115" width="18" height="3" rx="1.5" class="sqlqp-bar"/>
+<rect x="45" y="126" width="30" height="4" rx="2" fill="var(--scene-ink,#102a33)" opacity=".55"/>
+</g>
+<g class="sqlqp-a sqlqp-ok"><circle cx="83" cy="70" r="8" fill="var(--scene-good,#1f7a4d)"/><path d="M79 70l3 3 5-6" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<!-- the index: a small B-tree on a panel -->
+<ellipse cx="158" cy="132" rx="54" ry="4" class="sqlqp-shadow"/>
+<rect x="106" y="22" width="106" height="106" rx="8" class="sqlqp-box"/>
+<rect x="108" y="128" width="102" height="4" rx="2" class="sqlqp-side"/>
+<path d="M159 50L124 88M159 50L159 88M159 50L194 88" class="sqlqp-edge"/>
+<rect x="143" y="36" width="32" height="16" rx="4" class="sqlqp-node"/>
+<rect x="108" y="88" width="32" height="16" rx="4" class="sqlqp-node"/>
+<rect x="143" y="88" width="32" height="16" rx="4" fill="var(--scene-accent-soft,#d9eeee)" stroke="var(--scene-accent,#006c73)" stroke-width="1.6"/>
+<rect x="178" y="88" width="32" height="16" rx="4" class="sqlqp-node"/>
+<text x="159" y="99.5" text-anchor="middle" font-size="9" fill="var(--scene-ink,#102a33)">4242</text>
+<rect x="114" y="94" width="20" height="3" rx="1.5" class="sqlqp-bar"/><rect x="184" y="94" width="20" height="3" rx="1.5" class="sqlqp-bar"/>
+<rect x="151" y="42" width="16" height="3" rx="1.5" class="sqlqp-bar"/>
+<g class="sqlqp-a sqlqp-ring"><rect x="139" y="84" width="40" height="24" rx="6" fill="none" stroke="var(--scene-warn,#a15c00)" stroke-width="1.8"/></g>
+<!-- the request travels from the phone, down the tree, to the table -->
+<path d="M84 104L156 44M159 104V120H234V98" class="sqlqp-wire"/>
+<circle cx="86" cy="106" r="4" fill="var(--scene-accent,#006c73)" class="sqlqp-a sqlqp-dot"/>
+<!-- the table: stacked pages, only three are read -->
+<ellipse cx="276" cy="162" rx="40" ry="4" class="sqlqp-shadow"/>
+<g>
+<rect x="240" y="30" width="34" height="38" rx="3" class="sqlqp-box"/><rect x="280" y="30" width="34" height="38" rx="3" class="sqlqp-box"/>
+<rect x="240" y="76" width="34" height="38" rx="3" class="sqlqp-box"/><rect x="280" y="76" width="34" height="38" rx="3" class="sqlqp-box"/>
+<rect x="240" y="122" width="34" height="38" rx="3" class="sqlqp-box"/><rect x="280" y="122" width="34" height="38" rx="3" class="sqlqp-box"/>
+<path d="M246 40h22M246 48h22M246 56h22M286 40h22M286 48h22M286 56h22M246 86h22M246 94h22M246 102h22M286 86h22M286 94h22M286 102h22M246 132h22M246 140h22M246 148h22M286 132h22M286 140h22M286 148h22" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"/>
+</g>
+<g class="sqlqp-a sqlqp-pages">
+<rect x="284" y="46" width="26" height="5" rx="2.5" class="sqlqp-hit"/>
+<rect x="244" y="92" width="26" height="5" rx="2.5" class="sqlqp-hit"/>
+<rect x="284" y="138" width="26" height="5" rx="2.5" class="sqlqp-hit"/>
+</g>
+</svg>

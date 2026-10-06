@@ -122,10 +122,13 @@
               </div>
             </header>
 
-            <ul class="course-grid catalog-course-grid adaptive-catalog-course-grid" role="list">
+            <ul
+              class="course-grid catalog-course-grid adaptive-catalog-course-grid"
+              role="list"
+              [attr.data-columns]="gridColumns(groupItems.length)"
+            >
               @for (item of groupItems; track item.id) {
                 @let titleId = config().path + '-course-' + item.id + '-title';
-                @let metaId = config().path + '-course-' + item.id + '-meta';
                 @let descriptionId = config().path + '-course-' + item.id + '-description';
                 <li class="catalog-course-item">
                   @if (item.available !== false) {
@@ -135,7 +138,7 @@
                       [id]="item.id"
                       [routerLink]="['/', config().path, item.id]"
                       [attr.aria-labelledby]="titleId"
-                      [attr.aria-describedby]="metaId + (item.description ? ' ' + descriptionId : '')"
+                      [attr.aria-describedby]="item.description ? descriptionId : null"
                     >
                       <app-card-scene
                         card
@@ -145,7 +148,8 @@
                         [fallback]="monogram(item.title)"
                       />
                       <div class="catalog-course-body">
-                        <!-- Drawing, then title, then description; the counts follow as plain meta. -->
+                        <!-- Drawing, then title, then description. The card carries no lesson or
+                             question counts (user review, 2026-10-03); the hero scoreboard has them. -->
                         <h3 class="catalog-course-title" [id]="titleId">{{ item.title }}</h3>
                         @if (item.description) {
                           <p
@@ -154,17 +158,6 @@
                             [innerHTML]="descriptionFor(item)"
                           ></p>
                         }
-                        <p class="catalog-card-kicker" [id]="metaId">
-                          {{ item.lessonCount }}
-                          {{ item.lessonCount === 1 ? 'lesson' : 'lessons' }} ·
-                          <span
-                            [attr.title]="questionCountTitle(item.questionCount)"
-                            [attr.aria-label]="questionCountAriaLabel(item.questionCount)"
-                          >
-                            {{ questionCountText(item.questionCount) }}
-                            {{ questionCountLabel(item.questionCount) }}
-                          </span>
-                        </p>
                         @if (
                           (item.reviewStatus ?? 'reviewed') !== 'reviewed' ||
                           (group.featuredCourseId === item.id && group.featuredLabel)

@@ -10,8 +10,12 @@
         <div class="reader-sticky-stack">
           <section class="reader-sticky-context course-context-panel">
             <nav class="breadcrumbs" aria-label="Breadcrumb">
-              <a routerLink="/">Home</a><span>/</span><a routerLink="/learn">Learn</a><span>/</span
-              ><a [routerLink]="['/learn', courseId()]">{{ currentCourse.title }}</a>
+              <a routerLink="/">Home</a><span>/</span><a routerLink="/learn">Learn</a><span>/</span>
+              @if (courseGroup(); as group) {
+                <a routerLink="/learn" [queryParams]="{ group: group.id }">{{ group.title }}</a
+                ><span>/</span>
+              }
+              <a [routerLink]="['/learn', courseId()]">{{ currentCourse.title }}</a>
             </nav>
             <h1 class="reader-question-title section-title">{{ currentSection.title }}</h1>
             <p class="section-description">{{ currentSection.description }}</p>

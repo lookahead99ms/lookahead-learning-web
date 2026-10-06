@@ -1,0 +1,96 @@
+<div class="active-plan-context">
+  <div>
+    <p class="eyebrow">Your active plan · Revision {{ revision() }}</p>
+    <p class="plan-summary">
+      {{ plan().config.days }} study days
+      @if (shiftedDays()) {
+        · {{ shiftedDays() }} recovery
+        {{ shiftedDays() === 1 ? 'day' : 'days' }} added ·
+        {{ plan().config.days + shiftedDays() }} days including recovery
+      }
+    </p>
+  </div>
+  <label class="active-day-selector">
+    Study day
+    <select
+      [value]="selectedDay()"
+      (change)="selectDay.emit(+$any($event.target).value)"
+    >
+      @for (day of plan().days; track day.day) {
+        <option [value]="day.day" [selected]="selectedDay() === day.day">
+          Day {{ day.day }}
+        </option>
+      }
+    </select>
+  </label>
+  <div class="plan-level-actions" aria-label="Plan actions">
+    <button type="button" aria-haspopup="dialog" (click)="openSchedule.emit()">
+      Your complete schedule
+    </button>
+    <button
+      type="button"
+      aria-haspopup="dialog"
+      [disabled]="editsLocked()"
+      (click)="openRecovery.emit()"
+    >
+      Make Room for Real Life
+    </button>
+    <button
+      type="button"
+      [disabled]="editsLocked()"
+      (click)="reviewDay.emit(selectedDay())"
+    >
+      Review study day {{ selectedDay() }}
+    </button>
+  </div>
+</div>
+<section class="compass-panel" aria-labelledby="time-protection-heading">
+  <div
+    class="compass-ring"
+    [style.--learning-end]="allocation().learningEnd + '%'"
+    [style.--practice-end]="allocation().practiceEnd + '%'"
+  >
+    <div>
+      <strong>{{ allocation().total }}</strong
+      ><span>minutes in your first week</span>
+    </div>
+  </div>
+  <div class="compass-summary">
+    <p class="eyebrow">Direction, not pressure</p>
+    <h2 id="time-protection-heading">Protect the time you have.</h2>
+    <dl class="allocation">
+      <div>
+        <dt>Learn</dt>
+        <dd>{{ allocation().understand }}m</dd>
+      </div>
+      <div>
+        <dt>Practice</dt>
+        <dd>{{ allocation().practice }}m</dd>
+      </div>
+      <div>
+        <dt>Recall</dt>
+        <dd>{{ allocation().recall }}m</dd>
+      </div>
+    </dl>
+    <aside class="plan-guidance" aria-labelledby="plan-guidance-heading">
+      <p class="plan-guidance-heading" id="plan-guidance-heading">About this plan</p>
+      <ul>
+        <li><strong>Completion</strong> records your practice, not mastery.</li>
+        <li>
+          <strong>{{
+            accountMode() ? 'Saved to your account.' : 'Saved on this browser.'
+          }}</strong>
+          Progress belongs to this plan.
+        </li>
+        <li>
+          <strong>Based on saved progress.</strong> Exploring topics does not move your
+          place.
+        </li>
+        <li>
+          <strong>Your plan organizes</strong> learning, practice, and recall around the
+          time you set.
+        </li>
+      </ul>
+    </aside>
+  </div>
+</section>

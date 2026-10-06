@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A player in a voice channel: a JOIN command travels to the voice server over TCP and is confirmed, while audio frames stream over UDP and one lost frame is skipped">
+<style>
+.learn-networking-basics-tcp-udp-w{font-family:system-ui,sans-serif;font-size:14px;font-weight:700;fill:var(--scene-muted,#536970)}
+.learn-networking-basics-tcp-udp-loop{animation-duration:8s;animation-iteration-count:infinite;animation-timing-function:linear;animation-delay:-4.4s}
+.learn-networking-basics-tcp-udp-ca{animation-name:learn-networking-basics-tcp-udp-ca}
+.learn-networking-basics-tcp-udp-cb{animation-name:learn-networking-basics-tcp-udp-cb}
+.learn-networking-basics-tcp-udp-ok{animation-name:learn-networking-basics-tcp-udp-ok}
+.learn-networking-basics-tcp-udp-d1{animation-name:learn-networking-basics-tcp-udp-d1}
+.learn-networking-basics-tcp-udp-d2{animation-name:learn-networking-basics-tcp-udp-d2}
+.learn-networking-basics-tcp-udp-d3{animation-name:learn-networking-basics-tcp-udp-d3}
+.learn-networking-basics-tcp-udp-d4{animation-name:learn-networking-basics-tcp-udp-d4}
+.learn-networking-basics-tcp-udp-d5{animation-name:learn-networking-basics-tcp-udp-d5}
+.learn-networking-basics-tcp-udp-x{animation-name:learn-networking-basics-tcp-udp-x}
+.learn-networking-basics-tcp-udp-led{animation-name:learn-networking-basics-tcp-udp-led}
+@keyframes learn-networking-basics-tcp-udp-ca{0%,5%{transform:translateX(0);opacity:0}8%{opacity:1}42%{transform:translateX(118px);opacity:1}46%,100%{transform:translateX(118px);opacity:0}}
+@keyframes learn-networking-basics-tcp-udp-cb{0%,50%{transform:translateX(0);opacity:0}53%{opacity:1}87%{transform:translateX(118px);opacity:1}91%,100%{transform:translateX(118px);opacity:0}}
+@keyframes learn-networking-basics-tcp-udp-ok{0%,43%{opacity:0}47%,92%{opacity:1}96%,100%{opacity:0}}
+@keyframes learn-networking-basics-tcp-udp-d1{0%{transform:translateX(0);opacity:1}18%{transform:translateX(136px);opacity:1}20%,100%{transform:translateX(136px);opacity:0}}
+@keyframes learn-networking-basics-tcp-udp-d2{0%,15%{transform:translateX(0);opacity:0}16%{opacity:1}33%{transform:translateX(136px);opacity:1}35%,100%{transform:translateX(136px);opacity:0}}
+@keyframes learn-networking-basics-tcp-udp-d3{0%,30%{transform:translate(0,0);opacity:0}31%{opacity:1}39%{transform:translate(64px,0);opacity:1}44%{transform:translate(70px,22px);opacity:.6}46%,100%{transform:translate(70px,22px);opacity:0}}
+@keyframes learn-networking-basics-tcp-udp-d4{0%,45%{transform:translateX(0);opacity:0}46%{opacity:1}63%{transform:translateX(136px);opacity:1}65%,100%{transform:translateX(136px);opacity:0}}
+@keyframes learn-networking-basics-tcp-udp-d5{0%,60%{transform:translateX(0);opacity:0}61%{opacity:1}78%{transform:translateX(136px);opacity:1}80%,100%{transform:translateX(136px);opacity:0}}
+@keyframes learn-networking-basics-tcp-udp-x{0%,42%{opacity:0}45%,72%{opacity:1}76%,100%{opacity:0}}
+@keyframes learn-networking-basics-tcp-udp-led{0%,40%{opacity:.35}46%,100%{opacity:1}}
+@media (prefers-reduced-motion: reduce){.learn-networking-basics-tcp-udp-loop{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g fill="var(--scene-ink,#102a33)" opacity=".09"><ellipse cx="50" cy="150" rx="44" ry="7"/><ellipse cx="272" cy="152" rx="40" ry="7"/></g>
+<path d="M30 112c0-14 7-22 18-22s18 8 18 22z" fill="var(--scene-accent,#006c73)"/>
+<circle cx="48" cy="72" r="13" fill="var(--scene-accent,#006c73)"/>
+<path d="M33 72a15 15 0 0 1 30 0" fill="none" stroke="var(--scene-ink,#102a33)" stroke-width="3" stroke-linecap="round"/>
+<rect x="30" y="68" width="6" height="11" rx="3" fill="var(--scene-ink,#102a33)"/><rect x="60" y="68" width="6" height="11" rx="3" fill="var(--scene-ink,#102a33)"/>
+<path d="M18 102h56l6 40H12z" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-muted,#536970)" stroke-width="1.5" stroke-linejoin="round"/>
+<rect x="8" y="142" width="80" height="6" rx="2" fill="var(--scene-ink,#102a33)" opacity=".16"/>
+<circle cx="46" cy="122" r="5" fill="var(--scene-card,#fff)"/>
+<path d="M248 44l12-10h46l-12 10z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M294 44l12-10v100l-12 10z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="248" y="44" width="46" height="100" rx="3" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-line,#cfdfdc)" stroke-width="1.5"/>
+<g fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)"><rect x="254" y="56" width="34" height="14" rx="2"/><rect x="254" y="80" width="34" height="14" rx="2"/><rect x="254" y="104" width="34" height="14" rx="2"/></g>
+<circle cx="282" cy="63" r="2.5" fill="var(--scene-good,#1f7a4d)"/>
+<circle class="learn-networking-basics-tcp-udp-loop learn-networking-basics-tcp-udp-led" cx="282" cy="87" r="2.5" fill="var(--scene-good,#1f7a4d)"/>
+<circle cx="282" cy="111" r="2.5" fill="var(--scene-good,#1f7a4d)"/>
+<g stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="4 4" fill="none"><path d="M90 62H242"/><path d="M90 104H242"/></g>
+<text class="learn-networking-basics-tcp-udp-w" x="112" y="48" text-anchor="middle">TCP</text>
+<text class="learn-networking-basics-tcp-udp-w" x="112" y="130" text-anchor="middle">UDP</text>
+<g class="learn-networking-basics-tcp-udp-loop learn-networking-basics-tcp-udp-ca"><rect x="98" y="52" width="30" height="20" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-link,#245a88)" stroke-width="1.5"/><rect x="98" y="52" width="30" height="6" rx="2" fill="var(--scene-link,#245a88)"/><path d="M103 64h16M103 68h10" stroke="var(--scene-muted,#536970)" stroke-width="1.5"/></g>
+<g class="learn-networking-basics-tcp-udp-loop learn-networking-basics-tcp-udp-cb"><rect x="98" y="52" width="30" height="20" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-link,#245a88)" stroke-width="1.5"/><rect x="98" y="52" width="30" height="6" rx="2" fill="var(--scene-link,#245a88)"/><path d="M103 64h12M103 68h16" stroke="var(--scene-muted,#536970)" stroke-width="1.5"/></g>
+<g class="learn-networking-basics-tcp-udp-loop learn-networking-basics-tcp-udp-ok"><circle cx="236" cy="38" r="9" fill="var(--scene-good,#1f7a4d)"/><path d="M231.5 38l3 3 6-6" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g fill="var(--scene-accent,#006c73)">
+<circle class="learn-networking-basics-tcp-udp-loop learn-networking-basics-tcp-udp-d1" cx="98" cy="104" r="5"/>
+<circle class="learn-networking-basics-tcp-udp-loop learn-networking-basics-tcp-udp-d2" cx="98" cy="104" r="5"/>
+<circle class="learn-networking-basics-tcp-udp-loop learn-networking-basics-tcp-udp-d3" cx="98" cy="104" r="5"/>
+<circle class="learn-networking-basics-tcp-udp-loop learn-networking-basics-tcp-udp-d4" cx="98" cy="104" r="5"/>
+<circle class="learn-networking-basics-tcp-udp-loop learn-networking-basics-tcp-udp-d5" cx="98" cy="104" r="5"/></g>
+<g class="learn-networking-basics-tcp-udp-loop learn-networking-basics-tcp-udp-x"><circle cx="168" cy="126" r="8" fill="var(--scene-bad,#b3261e)"/><path d="M164.5 122.5l7 7M171.5 122.5l-7 7" stroke="var(--scene-card,#fff)" stroke-width="2.2" stroke-linecap="round"/></g>
+</svg>

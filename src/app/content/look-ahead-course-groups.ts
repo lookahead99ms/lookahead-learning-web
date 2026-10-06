@@ -1,4 +1,4 @@
-import { CatalogCourseGroup } from './catalog-course-groups';
+import type { CatalogCourseGroup } from './catalog-course-groups';
 
 export type LookAheadCourseGroup = CatalogCourseGroup;
 

@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A laptop asks DNS for shop.test and gets back 10.0.4.7, opens a TCP connection to that server, secures it with TLS, sends GET / and receives 200 OK">
+<style>
+.lc-net-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.lc-net-tm { font-family: ui-monospace, Menlo, monospace; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.lc-net-tc { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-card, #ffffff); font-weight: 700; }
+.lc-net-sh { fill: var(--scene-ink, #102a33); opacity: .08; }
+.lc-net-slab { fill: var(--scene-ink, #102a33); opacity: .14; }
+.lc-net-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 2; }
+.lc-net-ln { fill: var(--scene-line, #cfdfdc); }
+.lc-net-acc { fill: var(--scene-accent, #006c73); }
+.lc-net-good { fill: var(--scene-good, #1f7a4d); }
+.lc-net-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 2; stroke-dasharray: 4 5; }
+
+.lc-net-q { animation: lc-net-kf-q 8s linear infinite; }
+@keyframes lc-net-kf-q { 0%, 2% { transform: translate(0, 0); opacity: 0; } 3% { opacity: 1; } 12% { transform: translate(46px, -40px); opacity: 1; } 13%, 100% { transform: translate(46px, -40px); opacity: 0; } }
+.lc-net-a { animation: lc-net-kf-a 8s linear infinite; }
+@keyframes lc-net-kf-a { 0%, 13% { transform: translate(46px, -40px); opacity: 0; } 14% { opacity: 1; } 23% { transform: translate(0, 0); opacity: 1; } 24%, 100% { transform: translate(0, 0); opacity: 0; } }
+.lc-net-ip { animation: lc-net-kf-ip 8s infinite; }
+@keyframes lc-net-kf-ip { 0%, 23% { opacity: 0; } 25%, 95% { opacity: 1; } 98%, 100% { opacity: 0; } }
+.lc-net-hs { animation: lc-net-kf-hs 8s ease-in-out infinite; }
+@keyframes lc-net-kf-hs { 0%, 26% { transform: translateX(0); opacity: 0; } 27% { opacity: 1; } 31% { transform: translateX(150px); } 35% { transform: translateX(0); } 39% { transform: translateX(150px); opacity: 1; } 40%, 100% { transform: translateX(150px); opacity: 0; } }
+.lc-net-conn { animation: lc-net-kf-conn 8s infinite; }
+@keyframes lc-net-kf-conn { 0%, 39% { opacity: 0; } 41%, 95% { opacity: 1; } 98%, 100% { opacity: 0; } }
+.lc-net-lock { animation: lc-net-kf-lock 8s infinite; }
+@keyframes lc-net-kf-lock { 0%, 42% { opacity: 0; transform: translateY(-6px); } 45%, 95% { opacity: 1; transform: translateY(0); } 98%, 100% { opacity: 0; transform: translateY(0); } }
+.lc-net-req { animation: lc-net-kf-req 8s ease-in-out infinite; }
+@keyframes lc-net-kf-req { 0%, 47% { transform: translateX(0); opacity: 0; } 48% { opacity: 1; } 60% { transform: translateX(104px); opacity: 1; } 62%, 100% { transform: translateX(104px); opacity: 0; } }
+.lc-net-res { animation: lc-net-kf-res 8s ease-in-out infinite; }
+@keyframes lc-net-kf-res { 0%, 62% { transform: translateX(0); opacity: 0; } 63% { opacity: 1; } 80%, 95% { transform: translateX(-104px); opacity: 1; } 98%, 100% { transform: translateX(-104px); opacity: 0; } }
+
+.lc-net-q, .lc-net-a, .lc-net-ip, .lc-net-hs, .lc-net-conn, .lc-net-lock, .lc-net-req, .lc-net-res { animation-delay: -5.84s; }
+@media (prefers-reduced-motion: reduce) { .lc-net-q, .lc-net-a, .lc-net-ip, .lc-net-hs, .lc-net-conn, .lc-net-lock, .lc-net-req, .lc-net-res { animation-play-state: paused; } }
+</style>
+
+<!-- name lookup note -->
+<rect class="lc-net-box" x="12" y="14" width="78" height="40" rx="6"/>
+<text class="lc-net-tm" x="20" y="30" font-size="11">shop.test</text>
+<text class="lc-net-tm lc-net-ip" x="20" y="46" font-size="11" style="fill: var(--scene-good, #1f7a4d)">10.0.4.7</text>
+
+<!-- DNS resolver -->
+<ellipse class="lc-net-sh" cx="153" cy="68" rx="34" ry="4"/>
+<rect class="lc-net-slab" x="120" y="22" width="66" height="42" rx="6"/>
+<rect class="lc-net-box" x="120" y="18" width="66" height="42" rx="6"/>
+<path class="lc-net-acc" d="M126 19 H180 a5 5 0 0 1 5 5 V32 H121 V24 a5 5 0 0 1 5 -5z"/>
+<text class="lc-net-tc" x="153" y="30" font-size="11" text-anchor="middle">DNS</text>
+<rect class="lc-net-acc" x="128" y="38" width="7" height="7" rx="2"/><rect class="lc-net-ln" x="140" y="39" width="36" height="5" rx="2.5"/>
+<rect class="lc-net-acc" x="128" y="48" width="7" height="7" rx="2" opacity=".5"/><rect class="lc-net-ln" x="140" y="49" width="28" height="5" rx="2.5"/>
+
+<!-- wires -->
+<path class="lc-net-wire" d="M74 90 L120 50"/>
+<path class="lc-net-wire" d="M80 112 H238"/>
+<path class="lc-net-conn" d="M80 112 H238" stroke="var(--scene-accent, #006c73)" stroke-width="3" fill="none"/>
+
+<!-- DNS question and answer -->
+<g class="lc-net-q"><circle class="lc-net-acc" cx="74" cy="90" r="4.5"/></g>
+<g class="lc-net-a"><circle class="lc-net-good" cx="74" cy="90" r="4.5"/></g>
+<!-- TCP handshake -->
+<g class="lc-net-hs"><circle class="lc-net-acc" cx="84" cy="112" r="4"/></g>
+
+<!-- TLS padlock on the connection -->
+<g class="lc-net-lock">
+  <path d="M154 106 V101 a6 6 0 0 1 12 0 V106" fill="none" stroke="var(--scene-accent, #006c73)" stroke-width="3"/>
+  <rect class="lc-net-acc" x="150" y="105" width="20" height="15" rx="3"/>
+  <circle cx="160" cy="112" r="2" fill="var(--scene-card, #ffffff)"/>
+</g>
+
+<!-- request and response -->
+<g class="lc-net-req">
+  <rect x="84" y="80" width="50" height="22" rx="5" fill="var(--scene-card, #ffffff)" stroke="var(--scene-link, #245a88)" stroke-width="2"/>
+  <text class="lc-net-tm" x="109" y="95" font-size="12" text-anchor="middle" style="fill: var(--scene-link, #245a88)">GET /</text>
+</g>
+<g class="lc-net-res">
+  <rect x="180" y="122" width="56" height="22" rx="5" fill="var(--scene-card, #ffffff)" stroke="var(--scene-good, #1f7a4d)" stroke-width="2"/>
+  <text class="lc-net-tm" x="208" y="137" font-size="12" text-anchor="middle" style="fill: var(--scene-good, #1f7a4d)">200 OK</text>
+</g>
+
+<!-- person behind a laptop -->
+<ellipse class="lc-net-sh" cx="45" cy="138" rx="36" ry="5"/>
+<circle class="lc-net-acc" cx="45" cy="72" r="11"/>
+<path class="lc-net-acc" d="M21 106 C21 81 69 81 69 106 Z"/>
+<rect x="18" y="94" width="54" height="34" rx="4" fill="var(--scene-card, #ffffff)" stroke="var(--scene-muted, #536970)" stroke-width="2"/>
+<circle class="lc-net-ln" cx="45" cy="111" r="4"/>
+<rect x="12" y="128" width="66" height="5" rx="2" fill="var(--scene-muted, #536970)"/>
+
+<!-- server -->
+<ellipse class="lc-net-sh" cx="274" cy="156" rx="38" ry="5"/>
+<path class="lc-net-ln" d="M240 52 L250 44 H310 L300 52 Z"/>
+<path class="lc-net-slab" d="M300 52 L310 44 V142 L300 150 Z"/>
+<rect class="lc-net-box" x="240" y="52" width="60" height="98" rx="3"/>
+<rect class="lc-net-ln" x="248" y="64" width="34" height="8" rx="2"/><circle class="lc-net-good" cx="291" cy="68" r="2.5"/>
+<rect class="lc-net-ln" x="248" y="84" width="34" height="8" rx="2"/><circle class="lc-net-good" cx="291" cy="88" r="2.5"/>
+<rect class="lc-net-ln" x="248" y="104" width="34" height="8" rx="2"/><circle class="lc-net-good" cx="291" cy="108" r="2.5"/>
+<rect class="lc-net-ln" x="248" y="124" width="34" height="8" rx="2"/><circle class="lc-net-good" cx="291" cy="128" r="2.5"/>
+<text class="lc-net-tm" x="270" y="172" font-size="11" text-anchor="middle">10.0.4.7</text>
+</svg>

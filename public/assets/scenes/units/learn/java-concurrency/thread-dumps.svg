@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="An on-call engineer runs jcmd against the check-in service: a thread dump slides from the server to the laptop, and the highlighted line shows six request threads waiting behind one thread that holds the seat-map lock while its call to the loyalty service hangs">
+<style>
+.td-a{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-5.2s;animation-timing-function:ease-in-out}
+.td-t{font:600 11px system-ui,sans-serif;fill:var(--scene-muted,#536970);text-anchor:middle}
+.td-dot{animation-name:td-call;animation-timing-function:linear}
+.td-doc{animation-name:td-slide}
+.td-lens{animation-name:td-lens}
+.td-mark{animation-name:td-mark}
+.td-warn{animation-name:td-warn;transform-box:fill-box;transform-origin:center}
+@keyframes td-call{0%{transform:translate(0,0);opacity:0}5%{opacity:1}85%{transform:translate(46px,-30px);opacity:1}92%,100%{transform:translate(46px,-30px);opacity:0}}
+@keyframes td-slide{0%,18%{transform:translate(0,0);opacity:0}24%{opacity:1}44%,92%{transform:translate(-114px,34px);opacity:1}98%,100%{transform:translate(-114px,34px);opacity:0}}
+@keyframes td-lens{0%,48%{opacity:0;transform:translate(8px,8px)}56%,92%{opacity:1;transform:translate(0,0)}98%,100%{opacity:0}}
+@keyframes td-mark{0%,50%{opacity:0}56%,92%{opacity:1}98%,100%{opacity:0}}
+@keyframes td-warn{0%,30%{opacity:0;transform:scale(.6)}36%,92%{opacity:1;transform:scale(1)}98%,100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.td-a{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g fill="var(--scene-ink,#102a33)" opacity=".08"><ellipse cx="54" cy="160" rx="46" ry="6"/><ellipse cx="200" cy="162" rx="56" ry="7"/><ellipse cx="284" cy="66" rx="24" ry="4"/></g>
+<path d="M226 52L264 30" fill="none" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="4 4"/>
+<circle class="td-a td-dot" cx="226" cy="52" r="4.5" fill="var(--scene-accent,#006c73)"/>
+<path d="M266 22l8-6h28l-8 6z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M294 22l8-6v38l-8 6z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="266" y="22" width="28" height="38" rx="2" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"><path d="M271 32h12M271 40h12M271 48h12"/></g>
+<circle cx="288" cy="32" r="2.5" fill="var(--scene-warn,#a15c00)"/>
+<text class="td-t" x="280" y="76">loyalty</text>
+<path d="M148 46l14-10h96l-14 10z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M244 46l14-10v108l-14 10z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="148" y="46" width="96" height="108" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<rect x="156" y="54" width="64" height="12" rx="3" fill="var(--scene-accent,#006c73)"/>
+<g transform="translate(224 52)"><path d="M3 6v-2.5a4 4 0 0 1 8 0v2.5" fill="none" stroke="var(--scene-ink,#102a33)" stroke-width="2"/><rect x="1" y="6" width="12" height="9" rx="2" fill="var(--scene-ink,#102a33)"/></g>
+<g fill="var(--scene-warn,#a15c00)" opacity=".85"><rect x="156" y="74" width="44" height="10" rx="3"/><rect x="156" y="88" width="44" height="10" rx="3"/><rect x="156" y="102" width="44" height="10" rx="3"/><rect x="156" y="116" width="44" height="10" rx="3"/><rect x="156" y="130" width="44" height="10" rx="3"/><rect x="156" y="144" width="44" height="6" rx="3" opacity=".6"/></g>
+<g fill="none" stroke="var(--scene-muted,#536970)" stroke-width="1.5" stroke-dasharray="2 3"><path d="M204 79h24v-13M204 93h24M204 107h24M204 121h24M204 135h24v-56"/></g>
+<g class="td-a td-warn"><circle cx="236" cy="96" r="9" fill="var(--scene-warn,#a15c00)"/><path d="M236 91v6" stroke="var(--scene-card,#fff)" stroke-width="2.4" stroke-linecap="round"/><circle cx="236" cy="101" r="1.4" fill="var(--scene-card,#fff)"/></g>
+<circle cx="40" cy="74" r="11" fill="var(--scene-link,#1f5f8b)"/><path d="M20 114q0-26 20-26t20 26z" fill="var(--scene-link,#1f5f8b)"/>
+<path d="M8 150h104l-8 8h-88z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="8" y="140" width="104" height="10" rx="2" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M18 140l6-44h76l6 44z" fill="var(--scene-ink,#102a33)"/>
+<path d="M25 136l5-35h64l5 35z" fill="var(--scene-accent-soft,#dcefed)"/>
+<g class="td-a td-doc">
+<path d="M160 64h40l8 8v48h-48z" fill="var(--scene-card,#fff)" stroke="var(--scene-muted,#536970)" stroke-width="1.5"/>
+<path d="M200 64v8h8" fill="none" stroke="var(--scene-muted,#536970)" stroke-width="1.5"/>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"><path d="M166 78h26M166 86h34M166 102h30M166 110h22"/></g>
+<rect class="td-a td-mark" x="164" y="91" width="38" height="7" rx="2" fill="var(--scene-warn,#a15c00)" opacity=".75"/>
+<g class="td-a td-lens"><circle cx="196" cy="98" r="9" fill="none" stroke="var(--scene-ink,#102a33)" stroke-width="2.5"/><path d="M202 105l6 7" stroke="var(--scene-ink,#102a33)" stroke-width="3" stroke-linecap="round"/></g>
+</g>
+</svg>

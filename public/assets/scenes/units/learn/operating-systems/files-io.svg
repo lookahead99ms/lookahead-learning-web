@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A courier puts a parcel into a door of a parcel locker: the locker controller writes the deposit through to its drive with fsync, a new journal row appears, and only then does the customer's phone receive the pickup code">
+<style>
+.os-files-io-w{font-family:system-ui,sans-serif;font-size:13px;font-weight:700;fill:var(--scene-muted,#536970)}
+.os-files-io-loop{animation-duration:8s;animation-iteration-count:infinite;animation-timing-function:linear;animation-delay:-6.6s}
+.os-files-io-box{animation-name:os-files-io-box}
+.os-files-io-door{animation-name:os-files-io-door}
+.os-files-io-dot{animation-name:os-files-io-dot}
+.os-files-io-row{animation-name:os-files-io-row}
+.os-files-io-msg{animation-name:os-files-io-msg}
+.os-files-io-ok{animation-name:os-files-io-ok}
+@keyframes os-files-io-box{0%,4%{transform:translateX(0);opacity:0}7%{opacity:1}26%{transform:translateX(52px);opacity:1}30%,100%{transform:translateX(52px);opacity:0}}
+@keyframes os-files-io-door{0%,28%{opacity:0}32%,94%{opacity:1}98%,100%{opacity:0}}
+@keyframes os-files-io-dot{0%,33%{transform:translateX(0);opacity:0}35%{opacity:1}53%{transform:translateX(64px);opacity:1}56%,100%{transform:translateX(64px);opacity:0}}
+@keyframes os-files-io-row{0%,55%{opacity:0}60%,94%{opacity:1}98%,100%{opacity:0}}
+@keyframes os-files-io-msg{0%,62%{transform:translateY(6px);opacity:0}68%,94%{transform:translateY(0);opacity:1}98%,100%{opacity:0}}
+@keyframes os-files-io-ok{0%,72%{opacity:0}76%,94%{opacity:1}98%,100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.os-files-io-loop{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g fill="var(--scene-ink,#102a33)" opacity=".09"><ellipse cx="36" cy="156" rx="30" ry="6"/><ellipse cx="128" cy="158" rx="50" ry="7"/><ellipse cx="226" cy="150" rx="32" ry="6"/><ellipse cx="292" cy="150" rx="18" ry="5"/></g>
+<path d="M14 150c0-20 9-30 22-30s22 10 22 30z" fill="var(--scene-accent,#006c73)"/>
+<circle cx="36" cy="104" r="12" fill="var(--scene-accent,#006c73)"/>
+<g class="os-files-io-loop os-files-io-box"><path d="M50 118l6-5h20l-6 5z" fill="var(--scene-line,#cfdfdc)"/><path d="M70 118l6-5v16l-6 5z" fill="var(--scene-ink,#102a33)" opacity=".14"/><rect x="50" y="118" width="20" height="16" rx="1.5" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-muted,#536970)" stroke-width="1.2"/><path d="M60 118v16" stroke="var(--scene-muted,#536970)" stroke-width="1.2"/></g>
+<path d="M86 36l10-8h66l-10 8z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M162 36l10-8v114l-10 8z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="86" y="36" width="76" height="114" rx="3" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-muted,#536970)" stroke-width="1.5"/>
+<g fill="var(--scene-card,#fff)" stroke="var(--scene-muted,#536970)" stroke-width="1"><rect x="92" y="42" width="20" height="22" rx="1.5"/><rect x="114" y="42" width="20" height="22" rx="1.5"/><rect x="136" y="42" width="20" height="22" rx="1.5"/><rect x="92" y="68" width="20" height="22" rx="1.5"/><rect x="136" y="68" width="20" height="22" rx="1.5"/><rect x="92" y="94" width="20" height="22" rx="1.5"/><rect x="114" y="94" width="20" height="22" rx="1.5"/><rect x="136" y="94" width="20" height="22" rx="1.5"/><rect x="92" y="120" width="20" height="24" rx="1.5"/><rect x="136" y="120" width="20" height="24" rx="1.5"/></g>
+<rect x="114" y="68" width="20" height="22" rx="1.5" fill="var(--scene-ink,#102a33)" opacity=".18"/>
+<rect x="114" y="120" width="20" height="24" rx="1.5" fill="var(--scene-ink,#102a33)" opacity=".18"/>
+<g class="os-files-io-loop os-files-io-door"><rect x="114" y="120" width="20" height="24" rx="1.5" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="1.5"/><circle cx="130" cy="132" r="1.5" fill="var(--scene-accent,#006c73)"/></g>
+<g fill="var(--scene-muted,#536970)"><circle cx="108" cy="53" r="1.2"/><circle cx="130" cy="53" r="1.2"/><circle cx="152" cy="53" r="1.2"/><circle cx="108" cy="79" r="1.2"/><circle cx="152" cy="79" r="1.2"/><circle cx="108" cy="105" r="1.2"/><circle cx="130" cy="105" r="1.2"/><circle cx="152" cy="105" r="1.2"/><circle cx="108" cy="132" r="1.2"/><circle cx="152" cy="132" r="1.2"/></g>
+<path d="M206 82l8-6h34l-8 6z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M240 82l8-6v52l-8 6z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="206" y="82" width="34" height="52" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-muted,#536970)" stroke-width="1.5"/>
+<g fill="var(--scene-line,#cfdfdc)"><rect x="211" y="89" width="24" height="6" rx="1.5"/><rect x="211" y="99" width="24" height="6" rx="1.5"/></g>
+<g class="os-files-io-loop os-files-io-row"><rect x="211" y="109" width="24" height="6" rx="1.5" fill="var(--scene-accent,#006c73)"/></g>
+<circle cx="234" cy="127" r="2.2" fill="var(--scene-good,#1f7a4d)"/>
+<g stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="4 4" fill="none"><path d="M166 104H202"/></g>
+<text class="os-files-io-w" x="184" y="96" text-anchor="middle">fsync</text>
+<circle class="os-files-io-loop os-files-io-dot" cx="140" cy="104" r="4.5" fill="var(--scene-accent,#006c73)"/>
+<rect x="278" y="64" width="30" height="54" rx="5" fill="var(--scene-ink,#102a33)" opacity=".85"/>
+<rect x="281" y="70" width="24" height="40" rx="2" fill="var(--scene-card,#fff)"/>
+<g class="os-files-io-loop os-files-io-msg"><rect x="283" y="76" width="20" height="14" rx="3" fill="var(--scene-link,#245a88)"/><path d="M286 81h12M286 85h8" stroke="var(--scene-card,#fff)" stroke-width="1.5"/></g>
+<g class="os-files-io-loop os-files-io-ok"><circle cx="304" cy="128" r="8" fill="var(--scene-good,#1f7a4d)"/><path d="M300 128l3 3 5-6" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+</svg>

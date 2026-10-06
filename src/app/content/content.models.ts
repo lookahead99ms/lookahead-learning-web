@@ -163,6 +163,8 @@ export interface TheorySection {
   ladder?: TheoryLadderStep[];
   /** algo-pattern-v1 Spot the pattern stage: one-line problems; the learner picks a pattern, then sees why. */
   spot?: TheorySpotDrill;
+  /** Recognize the Pattern: draw this section's table (#, Unit, Signal, What you remember) as the pattern explorer. */
+  patternMap?: TheoryPatternMap;
   /** algo-pattern-v1 Problem first: the problem card; the body explains the first approach beside the storyboard. */
   problem?: TheoryProblemCard;
   /** Problem first: one cost line under the explanation (inline HTML). */
@@ -269,6 +271,36 @@ export interface TheoryCodeTab {
    * so the console switches with the code. File tabs leave it out.
    */
   output?: TheoryOutput;
+}
+
+/** One signal in the pattern explorer: what it narrows, which units fit and when, and what to check first. */
+export interface TheoryPatternSignal {
+  key: string;
+  /** Words a learner might type for this signal (matched as whole words). */
+  aliases: string[];
+  intro: string;
+  /** `unit` is the 1-based row of the section table. */
+  candidates: { unit: number; when: string }[];
+  check: string;
+}
+
+export interface TheoryPatternMap {
+  orderLabel: string;
+  orderNote?: string;
+  /** Lesson route for each table row, in row order. */
+  lessonHrefs: string[];
+  signals: TheoryPatternSignal[];
+}
+
+export interface LessonRunLocally {
+  /** What to install (JDK, build tool, versions the code was tested on). */
+  requirements: string[];
+  /** Differences on other supported versions. */
+  versionNotes?: string[];
+  /** How to open and run the project. */
+  steps: string[];
+  /** The project bundle (JSON) that the page packs into a .zip. */
+  download?: { href: string; label?: string };
 }
 
 export interface TheoryTable {
@@ -443,7 +475,14 @@ export interface LearningScenario {
   systemId: string;
   system: string;
   brands: string[];
+  /** How this lesson uses the scenario ("This lesson: <focus> in <system>"). */
   why: string;
+  /** The lesson's subject, e.g. "Spring Boot" (2026-10-05): headings read "Why Spring Boot?" and "Why Spring Boot matters". */
+  subject?: string;
+  /** "Why <subject>?": what the subject is for and its main parts (inline HTML). */
+  whySubject?: string;
+  /** The part of the subject this lesson focuses on, e.g. "auto-configuration". */
+  focus?: string;
 }
 
 export interface CodeSolution {
@@ -795,8 +834,19 @@ export interface DsaTeachingV1 {
   recall?: DsaTeachingRecall[];
 }
 
+/** What a rewritten recall question tests; template questions published before the rewrite have none. */
+export type DsaRecallKind =
+  | 'concept'
+  | 'state'
+  | 'correctness'
+  | 'complexity'
+  | 'trap'
+  | 'boundary'
+  | 'transfer';
+
 export interface DsaTeachingRecall {
   id: string;
+  kind?: DsaRecallKind;
   label: string;
   question: string;
   answer: string[];
@@ -882,7 +932,8 @@ export interface LessonReviewEvidence {
   editorial: boolean;
   ux: boolean;
   accessibility: boolean;
-  note: string;
+  /** Internal review note: kept in the private source, omitted from the protected publication. */
+  note?: string;
 }
 
 export interface LessonPitfall {
@@ -931,6 +982,10 @@ export interface FoundationLessonV1 extends InterviewQuestion {
   subtitlePoints?: string[];
   learningScenario?: LearningScenario;
   beforeYouStart?: string;
+  /** Before you start (2026-10-05): lessons on the platform to know first. */
+  prerequisites?: { title: string; href: string; where?: string }[];
+  /** Before you start: how to run the lesson's code yourself, and its project download. */
+  runLocally?: LessonRunLocally;
   learningFlow?: {
     whyItMatters: string;
     practice: { prompt: string; hint: string; answer: string };

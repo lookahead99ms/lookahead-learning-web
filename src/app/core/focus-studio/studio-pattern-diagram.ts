@@ -4,42 +4,47 @@ import { WalkthroughFrame } from './studio-walkthrough';
 
 @Component({
   selector: 'app-studio-pattern-diagram',
-  template: `<section class="concept-pane">
-    @if (linked()) {
-      <p class="link-notice">
-        Linked to published source instructions. Geometry is derived; the inspector lists recorded
-        locals.
+  template: `<section class="concept-pane" [class.compact]="compact()">
+    <!-- Inside the walkthrough player (compact), the player owns the title, notes and example. -->
+    @if (!compact()) {
+      @if (linked()) {
+        <p class="link-notice">
+          Linked to published source instructions. Geometry is derived; the inspector lists recorded
+          locals.
+        </p>
+      }
+      <p class="eyebrow">See the decision. Then the change.</p>
+      <h3>
+        {{
+          frame().kind === 'window'
+            ? 'Add the new value. Release the old one.'
+            : 'Two walls. One safe elimination.'
+        }}
+      </h3>
+      <p class="mode-note">
+        {{
+          linked()
+            ? 'Shared instruction cursor. Derived geometry is not additional native state.'
+            : 'Conceptual steps, not source instructions. Reference code remains opt-in.'
+        }}
       </p>
-    }
-    <p class="eyebrow">See the decision. Then the change.</p>
-    <h3>
-      {{
-        frame().kind === 'window'
-          ? 'Add the new value. Release the old one.'
-          : 'Two walls. One safe elimination.'
-      }}
-    </h3>
-    <p class="mode-note">
-      {{
-        linked()
-          ? 'Shared instruction cursor. Derived geometry is not additional native state.'
-          : 'Conceptual steps, not source instructions. Reference code remains opt-in.'
-      }}
-    </p>
-    <label
-      >Visualization example<select
-        [value]="fixture().id"
-        (change)="fixtureChange.emit($any($event.target).value)"
+      <label
+        >Visualization example<select
+          [value]="fixture().id"
+          (change)="fixtureChange.emit($any($event.target).value)"
+        >
+          @for (example of problem().fixtures; track example.id) {
+            <option [value]="example.id" [selected]="fixture().id === example.id">
+              {{ example.label }} / {{ example.input }}
+            </option>
+          }
+        </select></label
       >
-        @for (example of problem().fixtures; track example.id) {
-          <option [value]="example.id" [selected]="fixture().id === example.id">
-            {{ example.label }} / {{ example.input }}
-          </option>
-        }
-      </select></label
-    >
-    <div class="pattern-stage">
-      <p class="phase">{{ linked() ? 'Linked' : 'Conceptual' }} / {{ frame().phase }}</p>
+    }
+    <div class="pattern-stage" [class.compact]="compact()">
+      @if (!compact()) {
+        <p class="phase">{{ linked() ? 'Linked' : 'Conceptual' }} / {{ frame().phase }}</p>
+      }
       @if (frame().kind === 'container') {
         <svg
           viewBox="0 0 400 270"
@@ -140,7 +145,10 @@ import { WalkthroughFrame } from './studio-walkthrough';
           <text x="200" y="261" text-anchor="middle">Configured k = {{ frame().k }}</text>
         </svg>
       }
-      <p class="visual-text" aria-live="polite">{{ description() }}</p>
+      <!-- In the player its caption is the one live description of the step. -->
+      @if (!compact()) {
+        <p class="visual-text" aria-live="polite">{{ description() }}</p>
+      }
     </div>
   </section>`,
   styles: [
@@ -201,6 +209,21 @@ import { WalkthroughFrame } from './studio-walkthrough';
         min-width: 0;
         padding: 10px;
         margin-top: 12px;
+      }
+      .concept-pane.compact {
+        border: 0;
+        padding: 0;
+        background: transparent;
+      }
+      /* Inside the walkthrough player: 14 px labels, so a narrow stage still shows 12 px or more. */
+      .pattern-stage.compact text:not(.cell-value) {
+        font-size: 14px;
+      }
+      .pattern-stage.compact {
+        grid-template-rows: auto;
+        border: 0;
+        padding: 0;
+        margin-top: 0;
       }
       .phase,
       .visual-text {
@@ -298,6 +321,8 @@ export class StudioPatternDiagram {
   readonly fixture = input.required<DsaProblemFixtureV2>();
   readonly frame = input.required<WalkthroughFrame>();
   readonly linked = input(false);
+  /** Drawn inside the walkthrough player, which already shows the title, step and example. */
+  readonly compact = input(false);
   readonly fixtureChange = output<string>();
   protected readonly size = computed(() => this.frame().right - this.frame().left + 1);
   protected readonly active = computed(

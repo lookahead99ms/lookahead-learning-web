@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A review whose text is an img tag with an onerror handler reaches the store's server, is encoded, and shows on Lena's product page as plain text, so no script runs">
+<style>
+.as-xss-t{font:600 11px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.as-xss-code{font:600 9px ui-monospace,Menlo,monospace;fill:var(--scene-ink,#102a33)}
+.as-xss-card{animation:as-xss-card 8s linear infinite;animation-delay:-6.2s}
+@keyframes as-xss-card{0%,4%{transform:translate(0,0);opacity:0}8%{opacity:1}34%{transform:translate(78px,28px);opacity:1}38%,100%{transform:translate(78px,28px);opacity:0}}
+.as-xss-enc{animation:as-xss-enc 8s ease-in-out infinite;animation-delay:-6.2s}
+@keyframes as-xss-enc{0%,34%{opacity:0}40%,94%{opacity:1}100%{opacity:0}}
+.as-xss-dot{animation:as-xss-dot 8s linear infinite;animation-delay:-6.2s}
+@keyframes as-xss-dot{0%,42%{transform:translate(0,0);opacity:0}45%{opacity:1}56%{transform:translate(40px,0);opacity:1}60%,100%{transform:translate(40px,0);opacity:0}}
+.as-xss-text{animation:as-xss-text 8s ease-in-out infinite;animation-delay:-6.2s}
+@keyframes as-xss-text{0%,56%{opacity:0}62%,96%{opacity:1}100%{opacity:0}}
+.as-xss-ok{animation:as-xss-ok 8s ease-in-out infinite;animation-delay:-6.2s}
+@keyframes as-xss-ok{0%,66%{opacity:0}70%,96%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.as-xss-card,.as-xss-enc,.as-xss-dot,.as-xss-text,.as-xss-ok{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<!-- the attacker's account, posting a review from a phone -->
+<ellipse cx="38" cy="96" rx="26" ry="5" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<circle cx="34" cy="44" r="10" fill="var(--scene-link,#245a88)"/>
+<path d="M18 72a16 16 0 0 1 32 0Z" fill="var(--scene-link,#245a88)"/>
+<rect x="46" y="54" width="18" height="32" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="1.5"/>
+<path d="M50 62h10M50 68h7" stroke="var(--scene-line,#cfdfdc)" stroke-width="2.5" stroke-linecap="round"/>
+<!-- wires: phone to server, server to laptop -->
+<path d="M64 74L134 100M172 104H198" fill="none" stroke="var(--scene-muted,#536970)" stroke-width="1.5" stroke-dasharray="3 4"/>
+<!-- the review card travels to the server -->
+<g class="as-xss-card">
+<rect x="44" y="64" width="58" height="22" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="1.2"/>
+<rect x="44" y="64" width="58" height="5" rx="2" fill="var(--scene-link,#245a88)"/>
+<text class="as-xss-code" x="48" y="81">&lt;img onerror</text>
+</g>
+<!-- server: encodes the text for the page -->
+<ellipse cx="153" cy="150" rx="30" ry="5" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<path d="M134 74l8-6h36l-8 6Z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M170 74l8-6v70l-8 6Z" fill="var(--scene-ink,#102a33)" opacity="0.14"/>
+<rect x="134" y="74" width="36" height="70" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="1.5"/>
+<path d="M140 84h18M140 94h18M140 132h18" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"/>
+<circle cx="163" cy="84" r="2" fill="var(--scene-good,#1f7a4d)"/>
+<circle cx="163" cy="94" r="2" fill="var(--scene-good,#1f7a4d)"/>
+<g class="as-xss-enc"><rect x="137" y="104" width="30" height="18" rx="4" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="1.2"/>
+<text class="as-xss-code" x="142" y="117">&amp;lt;</text></g>
+<!-- message dot: the encoded page goes to the laptop -->
+<circle class="as-xss-dot" cx="172" cy="104" r="4" fill="var(--scene-accent,#006c73)"/>
+<!-- Lena, reading the product page on a laptop -->
+<circle cx="292" cy="30" r="10" fill="var(--scene-accent,#006c73)"/>
+<path d="M276 58a16 16 0 0 1 32 0Z" fill="var(--scene-accent,#006c73)"/>
+<ellipse cx="252" cy="160" rx="54" ry="5" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<rect x="200" y="62" width="104" height="80" rx="4" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="1.5"/>
+<path d="M192 142h120l-8 12H200Z" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-ink,#102a33)" stroke-width="1.5"/>
+<!-- product: headphones and a star rating -->
+<path d="M210 86a10 10 0 0 1 20 0" fill="none" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<rect x="207" y="84" width="6" height="9" rx="2" fill="var(--scene-accent,#006c73)"/>
+<rect x="227" y="84" width="6" height="9" rx="2" fill="var(--scene-accent,#006c73)"/>
+<path d="M240 76l2 4 4 .5-3 3 1 4-4-2-4 2 1-4-3-3 4-.5Z M254 76l2 4 4 .5-3 3 1 4-4-2-4 2 1-4-3-3 4-.5Z M268 76l2 4 4 .5-3 3 1 4-4-2-4 2 1-4-3-3 4-.5Z M282 76l2 4 4 .5-3 3 1 4-4-2-4 2 1-4-3-3 4-.5Z" fill="var(--scene-warn,#a15c00)"/>
+<!-- Lena's own review: a text bar -->
+<path d="M208 104h84M208 112h60" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"/>
+<!-- the attacker's review, shown as plain text -->
+<g class="as-xss-text"><rect x="206" y="119" width="92" height="16" rx="3" fill="var(--scene-accent-soft,#dcefed)"/>
+<text class="as-xss-code" x="210" y="130">&lt;img onerror…&gt;</text></g>
+<!-- nothing ran: check badge next to Lena -->
+<g class="as-xss-ok"><circle cx="268" cy="34" r="9" fill="var(--scene-good,#1f7a4d)"/><path d="M264 34l3 3 6-6" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2" stroke-linecap="round"/></g>
+</svg>

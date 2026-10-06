@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A request carrying ' OR 1=1 reaches the API; the parameterized query binds it as a plain value so the database returns zero rows, and the API's call to the internal metadata host is blocked">
+<style>
+.gc-appsec-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.gc-appsec-tm { font-family: ui-monospace, Menlo, monospace; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.gc-appsec-sh { fill: var(--scene-ink, #102a33); opacity: .08; }
+.gc-appsec-slab { fill: var(--scene-ink, #102a33); opacity: .14; }
+.gc-appsec-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 2; }
+.gc-appsec-soft { fill: var(--scene-accent-soft, #dcefed); }
+.gc-appsec-ln { fill: var(--scene-line, #cfdfdc); }
+.gc-appsec-acc { fill: var(--scene-accent, #006c73); }
+.gc-appsec-good { fill: var(--scene-good, #1f7a4d); }
+.gc-appsec-bad { fill: var(--scene-bad, #b3261e); }
+.gc-appsec-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 2; stroke-dasharray: 4 5; }
+
+.gc-appsec-d1 { animation: gc-appsec-kf-d1 8s linear infinite; }
+@keyframes gc-appsec-kf-d1 { 0%, 3% { transform: translateX(0); opacity: 0; } 4% { opacity: 1; } 14% { transform: translateX(24px); opacity: 1; } 15%, 100% { transform: translateX(24px); opacity: 0; } }
+.gc-appsec-bind { animation: gc-appsec-kf-bind 8s ease-out infinite; }
+@keyframes gc-appsec-kf-bind { 0%, 17% { transform: translateX(-28px); opacity: 0; } 20% { opacity: 1; } 30%, 95% { transform: translateX(0); opacity: 1; } 98%, 100% { transform: translateX(0); opacity: 0; } }
+.gc-appsec-q { animation: gc-appsec-kf-q 8s linear infinite; }
+@keyframes gc-appsec-kf-q { 0%, 31% { transform: translateY(0); opacity: 0; } 32% { opacity: 1; } 39% { transform: translateY(18px); opacity: 1; } 40%, 100% { transform: translateY(18px); opacity: 0; } }
+.gc-appsec-zero { animation: gc-appsec-kf-zero 8s infinite; }
+@keyframes gc-appsec-kf-zero { 0%, 40% { opacity: 0; transform: translateX(-6px); } 44%, 95% { opacity: 1; transform: translateX(0); } 98%, 100% { opacity: 0; transform: translateX(0); } }
+.gc-appsec-d2 { animation: gc-appsec-kf-d2 8s ease-out infinite; }
+@keyframes gc-appsec-kf-d2 { 0%, 54% { transform: translateX(0); opacity: 0; } 55% { opacity: 1; } 64%, 95% { transform: translateX(-16px); opacity: 1; } 98%, 100% { transform: translateX(-16px); opacity: 0; } }
+.gc-appsec-stop { animation: gc-appsec-kf-stop 8s infinite; }
+@keyframes gc-appsec-kf-stop { 0%, 63% { opacity: 0; } 66%, 95% { opacity: 1; } 98%, 100% { opacity: 0; } }
+
+.gc-appsec-d1, .gc-appsec-bind, .gc-appsec-q, .gc-appsec-zero, .gc-appsec-d2, .gc-appsec-stop { animation-delay: -6.88s; }
+@media (prefers-reduced-motion: reduce) { .gc-appsec-d1, .gc-appsec-bind, .gc-appsec-q, .gc-appsec-zero, .gc-appsec-d2, .gc-appsec-stop { animation-play-state: paused; } }
+</style>
+
+<!-- incoming request with a malicious payload -->
+<ellipse class="gc-appsec-sh" cx="61" cy="64" rx="50" ry="4"/>
+<rect class="gc-appsec-box" x="10" y="22" width="102" height="36" rx="6"/>
+<rect class="gc-appsec-bad" x="10" y="22" width="6" height="36" rx="3"/>
+<text class="gc-appsec-tm" x="22" y="45" font-size="12">id=' OR 1=1</text>
+<path class="gc-appsec-wire" d="M112 40 H138"/>
+<g class="gc-appsec-d1"><circle class="gc-appsec-bad" cx="114" cy="40" r="4.5"/></g>
+
+<!-- API server with a padlock -->
+<ellipse class="gc-appsec-sh" cx="172" cy="156" rx="36" ry="5"/>
+<path class="gc-appsec-ln" d="M140 26 L148 18 H204 L196 26 Z"/>
+<path class="gc-appsec-slab" d="M196 26 L204 18 V142 L196 150 Z"/>
+<rect class="gc-appsec-box" x="140" y="26" width="56" height="124" rx="3"/>
+<path d="M162 44 V39 a6 6 0 0 1 12 0 V44" fill="none" stroke="var(--scene-accent, #006c73)" stroke-width="3"/>
+<rect class="gc-appsec-acc" x="158" y="43" width="20" height="16" rx="3"/>
+<circle cx="168" cy="50" r="2" fill="var(--scene-card, #ffffff)"/>
+<rect class="gc-appsec-ln" x="148" y="74" width="30" height="8" rx="2"/><circle class="gc-appsec-good" cx="187" cy="78" r="2.5"/>
+<rect class="gc-appsec-ln" x="148" y="94" width="30" height="8" rx="2"/><circle class="gc-appsec-good" cx="187" cy="98" r="2.5"/>
+<rect class="gc-appsec-ln" x="148" y="114" width="30" height="8" rx="2"/><circle class="gc-appsec-good" cx="187" cy="118" r="2.5"/>
+
+<!-- parameterized query: the payload is bound as a value -->
+<ellipse class="gc-appsec-sh" cx="261" cy="84" rx="48" ry="3"/>
+<rect class="gc-appsec-slab" x="212" y="25" width="98" height="54" rx="6"/>
+<rect class="gc-appsec-box" x="212" y="22" width="98" height="54" rx="6"/>
+<text class="gc-appsec-tm" x="220" y="40" font-size="11">WHERE id = ?</text>
+<rect x="220" y="49" width="82" height="18" rx="4" fill="none" stroke="var(--scene-muted, #536970)" stroke-width="1.5" stroke-dasharray="3 3"/>
+<g class="gc-appsec-bind">
+  <rect class="gc-appsec-soft" x="220" y="49" width="82" height="18" rx="4" stroke="var(--scene-warn, #a15c00)" stroke-width="1.5"/>
+  <text class="gc-appsec-tm" x="261" y="62" font-size="11" text-anchor="middle">"' OR 1=1"</text>
+</g>
+
+<!-- database answers: nothing matches -->
+<path class="gc-appsec-wire" d="M240 78 V96"/>
+<g class="gc-appsec-q"><circle class="gc-appsec-acc" cx="240" cy="80" r="4"/></g>
+<ellipse class="gc-appsec-sh" cx="241" cy="150" rx="24" ry="4"/>
+<path d="M222 104 V138 a19 6 0 0 0 38 0 V104" fill="var(--scene-accent-soft, #dcefed)" stroke="var(--scene-muted, #536970)" stroke-width="2"/>
+<ellipse cx="241" cy="104" rx="19" ry="6" fill="var(--scene-card, #ffffff)" stroke="var(--scene-muted, #536970)" stroke-width="2"/>
+<path d="M222 121 a19 6 0 0 0 38 0" fill="none" stroke="var(--scene-muted, #536970)" stroke-width="1.5"/>
+<g class="gc-appsec-zero">
+  <rect class="gc-appsec-good" x="266" y="110" width="46" height="22" rx="11" opacity=".16"/>
+  <text class="gc-appsec-t" x="289" y="125" font-size="12" text-anchor="middle" style="fill: var(--scene-good, #1f7a4d)">0 rows</text>
+</g>
+
+<!-- internal call that never leaves -->
+<path class="gc-appsec-wire" d="M138 124 H76"/>
+<g class="gc-appsec-d2"><circle class="gc-appsec-acc" cx="134" cy="124" r="4.5"/></g>
+<g class="gc-appsec-stop">
+  <circle class="gc-appsec-bad" cx="104" cy="124" r="10"/>
+  <path d="M99 119 L109 129 M109 119 L99 129" stroke="var(--scene-card, #ffffff)" stroke-width="2.5" stroke-linecap="round"/>
+</g>
+<ellipse class="gc-appsec-sh" cx="44" cy="152" rx="30" ry="4"/>
+<path class="gc-appsec-ln" d="M14 100 L20 94 H80 L74 100 Z"/>
+<path class="gc-appsec-slab" d="M74 100 L80 94 V142 L74 148 Z"/>
+<rect class="gc-appsec-box" x="14" y="100" width="60" height="48" rx="3" style="stroke-dasharray: 4 3"/>
+<rect class="gc-appsec-ln" x="22" y="110" width="34" height="7" rx="2"/><rect class="gc-appsec-ln" x="22" y="124" width="34" height="7" rx="2"/>
+<text class="gc-appsec-tm" x="44" y="170" font-size="11" text-anchor="middle">metadata</text>
+</svg>

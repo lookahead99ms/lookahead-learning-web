@@ -8,9 +8,10 @@ import {
   inject,
   input,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
-import { DsaProblemV2, PatternLanguage } from '../../content/content.models';
+import { DsaProblemV2, DsaRecallKind, PatternLanguage } from '../../content/content.models';
 import { DsaStory } from '../dsa-story/dsa-story';
 import { DsaStoryLoader } from '../dsa-story/dsa-story-loader';
 import { DsaStoryV1 } from '../dsa-story/dsa-story.model';
@@ -19,12 +20,9 @@ import { CodingSolutionTabs } from '../coding-solution-tabs/coding-solution-tabs
 import { ReferenceLanguageService } from '../reference-language';
 import { GuidedAlgorithmTrace } from '../guided-algorithm-trace/guided-algorithm-trace';
 import { traceSnapshot } from '../guided-algorithm-trace/trace-model';
-import { TracePlayer, traceArrowKey } from '../guided-algorithm-trace/trace-player';
 import { CodeCopyButton } from '../code-copy-button/code-copy-button';
-import { StudioDiagram } from './studio-diagram';
 import { StudioApproach } from './studio-approach';
-import { StudioPatternDiagram } from './studio-pattern-diagram';
-import { conceptualFrames, linkedWalkthrough, walkthroughKind } from './studio-walkthrough';
+import { StudioFallbackWalkthrough } from './studio-fallback-walkthrough';
 import {
   StudioMode,
   StudioModeState,
@@ -34,7 +32,57 @@ import {
   stepStudio,
   visualizeStudio,
   closeStudioReference,
+  setStudioLanguage,
+  lockStudio,
+  migrateStudioState,
 } from './workspace-state';
+import { ComplexityPrediction, PracticeTimer, loadPrediction, savePrediction, defaultTimerMinutes } from './practice-tools';
+import {
+  StudioComplexity,
+  StudioPrediction,
+  StudioShortcuts,
+  StudioTimer,
+  StudioTimerGate,
+} from './studio-practice-tools';
+import { StudioExamples } from './studio-examples';
+import { RecallCardView, StudioRecallGrid } from './studio-recall-grid';
+import { PracticeProgressService } from '../practice-progress/practice-progress';
+
+type StudioAction = 'solution' | 'close-visualization' | 'visualize' | 'locked';
+
+/**
+ * Recall card tags (card grid, 2026-10-06). A rewritten card names its kind; its tag is that kind.
+ * Template cards published before the rewrite have none, so their id keeps today's short tag and
+ * borrows the colour of the nearest kind.
+ */
+const RECALL_TAGS: Record<DsaRecallKind, string> = {
+  concept: 'Concept',
+  state: 'State',
+  correctness: 'Correctness',
+  complexity: 'Complexity',
+  trap: 'Trap',
+  boundary: 'Boundary',
+  transfer: 'Transfer',
+};
+const TEMPLATE_RECALL: Record<string, { tag: string; kind: DsaRecallKind }> = {
+  'key-idea': { tag: 'Key idea', kind: 'concept' },
+  recognize: { tag: 'Spot it', kind: 'concept' },
+  flow: { tag: 'Flow', kind: 'state' },
+  invariant: { tag: 'Invariant', kind: 'correctness' },
+  complexity: { tag: 'Cost', kind: 'complexity' },
+  mistakes: { tag: 'Avoid', kind: 'trap' },
+  'failure-mode': { tag: 'Edge case', kind: 'boundary' },
+  'contract-change': { tag: 'What if', kind: 'transfer' },
+  'fixture-trace': { tag: 'Trace', kind: 'state' },
+};
+function templateRecall(id: string): { tag: string; kind: DsaRecallKind } {
+  return (
+    TEMPLATE_RECALL[id] ??
+    (id.startsWith('problem-check')
+      ? { tag: 'Check', kind: 'correctness' }
+      : { tag: 'Recall', kind: 'concept' })
+  );
+}
 
 @Component({
   selector: 'app-focus-studio',
@@ -43,10 +91,16 @@ import {
     CodingSolutionTabs,
     GuidedAlgorithmTrace,
     CodeCopyButton,
-    StudioDiagram,
     StudioApproach,
-    StudioPatternDiagram,
+    StudioFallbackWalkthrough,
     DsaStory,
+    StudioTimer,
+    StudioTimerGate,
+    StudioPrediction,
+    StudioComplexity,
+    StudioShortcuts,
+    StudioExamples,
+    StudioRecallGrid,
   ],
   templateUrl: './focus-studio.html',
   styleUrl: './focus-studio.css',
@@ -58,23 +112,27 @@ export class FocusStudio {
   /** The reference language is remembered for the next problem and for DSA core Learn lessons. */
   private readonly referenceLanguage = inject(ReferenceLanguageService);
   private readonly storyLoader = inject(DsaStoryLoader);
+  /** Browser-local practice progress: started on first engagement, solved by a rating. */
+  private readonly progress = inject(PracticeProgressService);
+  /** The Recall tab's number becomes a ✓ once this problem is rated on this device. */
+  protected readonly solved = computed(
+    () => this.progress.records()[this.problem().id]?.status === 'solved',
+  );
   /**
    * Option B: the problem's hand-made story, when one is published. Without one (or while it
-   * loads, or if it is malformed) the page keeps the shared visual walkthrough and debugger.
+   * loads, or if it is malformed) the page keeps the fallback walkthrough (StudioFallbackWalkthrough).
    */
   protected readonly story = signal<DsaStoryV1 | null>(null);
-  /** Option B: the line-by-line debugger below the story, closed (and not loaded) at first. */
-  protected readonly lineDebuggerOpen = signal(false);
-  protected readonly lineDebuggerFixtureId = signal<string | null>(null);
-  /** The story's example first, so the debugger steps through the case the story just told. */
-  protected readonly lineDebuggerFixture = computed(() => {
-    const fixtures = this.problem().fixtures;
-    const id = this.lineDebuggerFixtureId() ?? this.story()?.fixtureId;
-    return fixtures.find((item) => item.id === id) ?? fixtures[0];
-  });
-  /** The page-wide reference language (Java, Python or Go) shared with the story. */
-  protected readonly pageLanguage = computed(() => this.referenceLanguage.selected());
   protected readonly state = signal(createStudioState('', 'java'));
+  /**
+   * The Visual walkthrough's memory ("Code beside", 2026-10-06): its example, language, recorded
+   * line position, and `debugger`, which is the player's "Every line" switch.
+   */
+  protected readonly visualMode = computed(() => this.state().modes.visual);
+  protected readonly visualStep = computed(() => {
+    const visual = this.visualMode();
+    return visual.positions[`${visual.fixtureId}/${visual.language}`] ?? 0;
+  });
   protected readonly current = computed(() => this.state().modes[this.state().mode]);
   protected readonly mode = computed(() => this.state().mode);
   protected readonly position = computed(() => studioPosition(this.state()));
@@ -91,23 +149,13 @@ export class FocusStudio {
       this.position().step,
     ),
   );
-  protected readonly walkthroughEvent = computed(() => {
-    const event = this.snapshot().event;
-    if (this.problem().id !== 'algorithmic-meeting-rooms' || !event) return event;
-    const language = this.position().language;
-    const lines = this.problem().implementations.find(item => item.language === language)?.lines ?? [];
-    const index = lines.findIndex(line => line.id === event.sourceAnchor[language]);
-    return { ...event, label: `${language} instruction ${index + 1}`, what: lines[index]?.text.trim() ?? event.what,
-      why: event.result !== undefined ? `The selected runtime returned ${event.result}.` : 'Observe the recorded state after this instruction, then predict the next comparison.' };
-  });
   protected readonly pattern = computed(() => focusStudioPattern(this.problem()) ?? 'generic');
-  protected readonly linked = computed(() => this.mode() === 'visual' && this.current().debugger);
   protected readonly problemPinned = computed(() => this.state().problemExpanded);
   protected readonly peek = signal(false);
   protected readonly peekTop = signal(160);
   protected readonly hintCount = signal(0);
-  protected readonly hintsVisible = signal(true);
-  protected readonly follow = signal(true);
+  /** Hints stay closed until the learner opens them (the Hints button or H). */
+  protected readonly hintsVisible = signal(false);
   protected readonly railShare = signal(22);
   protected readonly referenceShare = signal(46);
   protected readonly contextualShare = signal(68);
@@ -116,6 +164,32 @@ export class FocusStudio {
   );
   protected readonly drafts = signal<Record<string, string>>({});
   protected readonly draftLanguage = signal<PatternLanguage>('java');
+  /**
+   * Recall cards for the grid: the authored recall, or the problem's practice checks when none is
+   * published. A card's kind picks its tag; a template card without one keeps its id-based tag.
+   */
+  protected readonly recallCards = computed<RecallCardView[]>(() => {
+    const recall = this.problem().teaching?.recall ?? [];
+    if (recall.length)
+      return recall.map((card) => ({
+        id: card.id,
+        label: card.label,
+        question: card.question,
+        answer: card.answer,
+        steps: card.steps,
+        ...(card.kind && RECALL_TAGS[card.kind]
+          ? { kind: card.kind, tag: RECALL_TAGS[card.kind] }
+          : templateRecall(card.id)),
+      }));
+    return this.problem().practice.checks.map((check, index) => ({
+      id: `problem-check-${index + 1}`,
+      label: `Check ${index + 1}`,
+      question: check.prompt,
+      answer: [check.expected],
+      tag: 'Check',
+      kind: 'correctness',
+    }));
+  });
   protected readonly draftKey = computed(
     () => `${this.problem().id}/${this.fixture().id}/${this.draftLanguage()}`,
   );
@@ -131,6 +205,24 @@ export class FocusStudio {
       .implementations.find((item) => item.language === this.position().language)!
       .lines.map((line) => line.text)
       .join('\n'),
+  );
+  /** The invariant shown above the reference's "Why this approach" card (review note #24). */
+  protected readonly rationaleInvariant = computed(
+    () =>
+      this.problem().invariantAdaptation?.trim() || this.problem().trace?.invariant?.trim() || '',
+  );
+  /**
+   * Presentation only (review note #24): many published mistakes open by restating the
+   * invariant ("Breaking this invariant: <invariant>"). The invariant now sits above the
+   * cards, so such a mistake reads as a short pointer instead of repeating it. Content files
+   * stay unchanged; drop this once the content rewrite removes the restated invariant.
+   */
+  protected readonly commonMistakes = computed(() =>
+    this.problem().practice.commonMistakes.map((mistake) =>
+      this.rationaleInvariant() && /^breaking this invariant:/i.test(mistake.trim())
+        ? 'Breaking the invariant above.'
+        : mistake,
+    ),
   );
   protected readonly solutions = computed(() =>
     this.problem().implementations.map((item) => ({
@@ -148,91 +240,63 @@ export class FocusStudio {
         }
       : null,
   );
-  protected readonly trace = computed(() =>
-    [this.problem().trace, ...(this.problem().fixtureTraces ?? [])].find(
-      (item) => item.fixtureId === this.fixture().id,
-    )!,
+  /** Timed attempt (practice tools): while it runs, hints and the solution stay locked. */
+  protected readonly timer = new PracticeTimer();
+  protected readonly locked = computed(() => this.timer.running());
+  /** Tabs the learner chose to open anyway during this attempt ("Continue anyway?"). */
+  protected readonly peeked = signal<ReadonlySet<StudioMode>>(new Set());
+  protected readonly gated = computed(
+    () => this.locked() && this.mode() !== 'practice' && !this.peeked().has(this.mode()),
   );
-  protected readonly visualSteps = computed(() => {
-    const events = this.snapshot().events;
-    return events.flatMap((event, index) =>
-      this.problem().id === 'algorithmic-meeting-rooms' ||
-      index === 0 ||
-      index === events.length - 1 ||
-      event.stateUnavailable ||
-      event.variables.some((variable) => variable.changed) ||
-      event.rows.length
-        ? [index]
-        : [],
-    );
-  });
-  protected readonly walkthroughKind = computed(() => walkthroughKind(this.problem().id));
-  protected readonly conceptPositions = signal<Record<string, number>>({});
-  protected readonly conceptFrames = computed(() => {
-    const kind = this.walkthroughKind();
-    return kind ? conceptualFrames(kind, this.fixture()) : [];
-  });
-  protected readonly visualIndex = computed(() =>
-    this.walkthroughKind()
-      ? Math.min(
-          this.conceptPositions()[this.fixture().id] ?? 0,
-          Math.max(0, this.conceptFrames().length - 1),
-        )
-      : Math.max(0, this.visualSteps().filter((step) => step <= this.snapshot().step).length - 1),
-  );
-  protected readonly visualLength = computed(() =>
-    this.walkthroughKind() ? this.conceptFrames().length : this.visualSteps().length,
-  );
-  protected readonly visualFrame = computed(() => {
-    const kind = this.walkthroughKind();
-    if (!kind) return null;
-    return this.linked()
-      ? linkedWalkthrough(
-          kind,
-          this.problem(),
-          this.fixture(),
-          this.snapshot(),
-          this.position().language,
-        )
-      : (this.conceptFrames()[this.visualIndex()] ?? null);
-  });
-  protected readonly visualMetrics = computed(() => {
-    const f = this.visualFrame();
-    if (!f) return [];
-    const fields: [string, unknown][] =
-      f.kind === 'container'
-        ? [
-            ['left', f.left],
-            ['right', f.right],
-            ['leftHeight', f.values[f.left]],
-            ['rightHeight', f.values[f.right]],
-            ['width', f.right - f.left],
-            ['currentArea', f.total],
-            ['maxArea', f.best],
-            ['Best pair', f.bestRange],
-          ]
-        : [
-            ['start', f.left],
-            ['end', f.right],
-            ['windowSize', f.right - f.left + 1],
-            ['Target k', f.k],
-            ['currentSum', f.total],
-            ['Best valid sum', f.best],
-            ['Best window', f.bestRange],
-            ['Entering index', f.entering],
-            ['Leaving index', f.leaving],
-            ['Candidate status', f.right - f.left + 1 === f.k ? 'Exact k' : 'Not exact k'],
-          ];
-    return fields.map(([name, value]) => ({
-      name,
-      value:
-        value == null ? 'Not yet' : Array.isArray(value) ? `[${value.join(', ')}]` : String(value),
-    }));
-  });
-  protected readonly contextVisible = computed(
-    () => this.mode() !== 'practice' || this.current().revealed || this.hintsVisible(),
+  protected readonly prediction = signal<ComplexityPrediction | null>(null);
+  /**
+   * The side column: on Try it yourself it always holds the examples (hints join them while open)
+   * or the reference; Recall uses the full width unless a reference is open there.
+   */
+  protected readonly contextVisible = computed(() =>
+    this.mode() === 'recall' ? this.current().revealed : true,
   );
   protected readonly composition = signal<'stack' | 'laptop' | 'wide'>('laptop');
+  protected readonly modeIndex = computed(() => this.modes.findIndex((item) => item.id === this.mode()));
+  /** One line under the tabs that says what the selected tab is for (user review 2026-10-05, option B). */
+  protected readonly modeGuide = computed(() => {
+    switch (this.mode()) {
+      case 'practice':
+        return 'Write your solution, then trace it through each example.';
+      case 'approach':
+        return 'Understand the question and the plan before you write code.';
+      case 'visual':
+        // The example is in the walkthrough's own selector; the guide line does not repeat it.
+        return 'Watch the reference solution run, one step at a time.';
+      default:
+        return 'Answer from memory first, then open each answer to check yourself.';
+    }
+  });
+  /**
+   * Each tab has one action at rest, in the same place: Try it yourself shows the solution, Approach and
+   * Recall visualize the solution. The Visual walkthrough brings its own player ("Every line" replaced the
+   * separate guided debugger, 2026-10-06), so it only offers "Close visualization" after a handoff, which
+   * returns to the tab it came from (Escape does the same). An open solution always offers its close
+   * action. During a timed attempt every opening action gives way to one "unlock when you stop" note.
+   */
+  protected readonly actions = computed<StudioAction[]>(() => {
+    const actions = this.restingActions();
+    return this.locked() && actions.some((action) => action !== 'close-visualization')
+      ? ['locked']
+      : actions;
+  });
+  private readonly restingActions = computed<StudioAction[]>(() => {
+    const current = this.current();
+    if (this.mode() === 'visual') return this.state().visualizationOrigin ? ['close-visualization'] : [];
+    switch (this.mode()) {
+      case 'practice':
+        return ['solution'];
+      case 'approach':
+        return current.revealed ? ['solution'] : ['visualize'];
+      default:
+        return ['visualize'];
+    }
+  });
   protected readonly modes: { id: StudioMode; label: string }[] = [
     { id: 'practice', label: 'Try it yourself' },
     { id: 'approach', label: 'Approach' },
@@ -246,18 +310,11 @@ export class FocusStudio {
   private readonly problemRail = viewChild<ElementRef<HTMLElement>>('problemRail');
   private readonly draftEditor = viewChild(CodingSolutionTabs);
   private peekTimer?: ReturnType<typeof setTimeout>;
-  /** Play/Pause for the guided debugger; it advances the same step as Next. */
-  protected readonly player = new TracePlayer(
-    () => ({ step: this.snapshot().step, count: this.snapshot().events.length }),
-    (step) => this.state.update((state) => stepStudio(state, step)),
-  );
 
   constructor() {
     effect((onCleanup) => {
       const problem = this.problem();
       this.story.set(null);
-      this.lineDebuggerOpen.set(false);
-      this.lineDebuggerFixtureId.set(null);
       const subscription = this.storyLoader.load(problem.id).subscribe((value) =>
         this.story.set(
           value && problem.fixtures.some((fixture) => fixture.id === value.fixtureId) ? value : null,
@@ -272,14 +329,62 @@ export class FocusStudio {
       page?.classList.toggle('option-b-page', active);
       onCleanup(() => page?.classList.remove('option-b-page'));
     });
+    // A state from before "Code beside" moves its guided debugger to the walkthrough's Every line.
+    effect(() => {
+      const state = this.state();
+      const migrated = migrateStudioState(state);
+      if (migrated !== state) untracked(() => this.state.set(migrated));
+    });
     effect(() => {
       this.state.set(createStudioState(this.problem().fixtures[0].id, this.initialLanguage()));
       this.draftLanguage.set(this.initialLanguage());
       this.drafts.set({});
       this.hintCount.set(0);
-      this.conceptPositions.set({});
-      this.hintsVisible.set(true);
+      this.hintsVisible.set(false);
       this.peek.set(false);
+    });
+    // The walkthrough opens on the story's animated example until the learner picks another.
+    effect(() => {
+      const story = this.story();
+      if (!story) return;
+      untracked(() =>
+        this.state.update((state) => {
+          const visual = state.modes.visual;
+          const pristine =
+            visual.fixtureId === this.problem().fixtures[0].id &&
+            !visual.chosen &&
+            !visual.debugger &&
+            !state.visualizationOrigin;
+          return pristine && visual.fixtureId !== story.fixtureId
+            ? { ...state, modes: { ...state.modes, visual: { ...visual, fixtureId: story.fixtureId } } }
+            : state;
+        }),
+      );
+    });
+    // Practice tools are kept per problem for this tab session (sessionStorage).
+    effect(() => {
+      const id = this.problem().id;
+      const difficulty = this.problem().difficulty;
+      untracked(() => {
+        this.timer.load(id, defaultTimerMinutes(difficulty));
+        this.peeked.set(new Set());
+        this.prediction.set(loadPrediction(id));
+      });
+    });
+    // Starting, resuming or restoring a timed attempt closes any open solution, Every line or hints.
+    effect(() => {
+      if (!this.locked()) return;
+      untracked(() => {
+        this.state.update(lockStudio);
+        this.hintsVisible.set(false);
+      });
+    });
+    const shortcuts = (event: KeyboardEvent) => this.shortcutKeys(event);
+    document.addEventListener('keydown', shortcuts);
+    // The page-wide language can also change from the walkthrough or another tab: follow it here.
+    effect(() => {
+      const language = this.referenceLanguage.selected();
+      untracked(() => this.applyLanguage(language));
     });
     const measure = () => {
       const host = this.host.nativeElement;
@@ -321,16 +426,9 @@ export class FocusStudio {
       if (header) observer?.observe(header);
     });
     window.addEventListener('resize', schedule, { passive: true });
-    // Playback belongs to one trace: stop it when the trace or the debugger changes.
-    let playbackTrace = '';
-    effect(() => {
-      const position = this.position();
-      const trace = `${this.problem().id}/${position.fixtureId}/${position.language}/${this.mode()}/${this.current().debugger}`;
-      if (playbackTrace && playbackTrace !== trace) this.player.pause();
-      playbackTrace = trace;
-    });
     this.destroyRef.onDestroy(() => {
-      this.player.pause();
+      this.timer.destroy();
+      document.removeEventListener('keydown', shortcuts);
       clearTimeout(this.peekTimer);
       cancelAnimationFrame(frame);
       observer?.disconnect();
@@ -366,17 +464,22 @@ export class FocusStudio {
   protected selectFixture(fixtureId: string): void {
     if (this.problem().fixtures.some((item) => item.id === fixtureId)) this.patch({ fixtureId });
   }
+  /** Your code, the reference solution and the visual walkthrough share one language. */
   protected selectLanguage(language: string): void {
-    if (this.languages.includes(language as PatternLanguage)) {
-      this.patch({ language: language as PatternLanguage });
-      this.referenceLanguage.select(language);
-    }
+    if (!this.languages.includes(language as PatternLanguage)) return;
+    this.applyLanguage(language as PatternLanguage);
+    this.referenceLanguage.select(language);
   }
   protected selectDraftLanguage(language: string): void {
-    if (this.languages.includes(language as PatternLanguage))
-      this.draftLanguage.set(language as PatternLanguage);
+    this.selectLanguage(language);
+  }
+  private applyLanguage(language: PatternLanguage): void {
+    if (this.position().language !== language || Object.values(this.state().modes).some((mode) => mode.language !== language))
+      this.state.update((state) => setStudioLanguage(state, language));
+    if (this.draftLanguage() !== language) this.draftLanguage.set(language);
   }
   protected updateDraft(code: string): void {
+    this.markStarted();
     this.drafts.update((drafts) => ({ ...drafts, [this.draftKey()]: code }));
   }
   protected resetDraft(): void {
@@ -385,73 +488,127 @@ export class FocusStudio {
   protected formatDraft(): void {
     this.draftEditor()?.formatStudioCode();
   }
-  protected setStep(step: number, event?: Event): void {
-    this.player.pause();
+  /** The walkthrough's example, chosen in its header (or the Problem panel while on the tab). */
+  protected setVisualFixture(fixtureId: string): void {
+    if (!this.problem().fixtures.some((item) => item.id === fixtureId)) return;
+    this.state.update((state) => ({
+      ...state,
+      modes: { ...state.modes, visual: { ...state.modes.visual, fixtureId, chosen: true } },
+    }));
+  }
+  /** "Every line": the walkthrough steps the recorded line trace (it replaced "Open guided debugger"). */
+  protected setEveryLine(on: boolean): void {
+    if (on) this.markStarted();
+    this.state.update((state) => ({
+      ...state,
+      modes: { ...state.modes, visual: { ...state.modes.visual, debugger: on, revealed: on } },
+    }));
+  }
+  /** The fallback walkthrough's recorded line position, kept per example and language. */
+  protected setVisualStep(step: number): void {
     this.state.update((state) =>
-      stepStudio(
-        state,
-        Math.min(Math.max(0, step), Math.max(0, this.snapshot().events.length - 1)),
-      ),
+      state.mode === 'visual' ? stepStudio(state, Math.max(0, step)) : state,
     );
-    const button = event?.currentTarget as HTMLButtonElement | null;
-    if (button)
-      requestAnimationFrame(() => {
-        const target = button.disabled
-          ? button.closest('nav')?.querySelector<HTMLButtonElement>('button:not(:disabled)')
-          : button;
-        target?.focus({ preventScroll: true });
-      });
-  }
-  /** Left/Right arrows step the guided debugger while focus is inside it. */
-  protected debuggerKeys(event: KeyboardEvent): void {
-    if (!this.current().debugger) return;
-    const delta = traceArrowKey(event);
-    if (!delta) return;
-    event.preventDefault();
-    this.setStep(this.snapshot().step + delta);
-  }
-  protected visualStep(delta: number): void {
-    if (this.walkthroughKind()) {
-      this.conceptPositions.update((positions) => ({
-        ...positions,
-        [this.fixture().id]: Math.max(
-          0,
-          Math.min(this.visualLength() - 1, this.visualIndex() + delta),
-        ),
-      }));
-      return;
-    }
-    const steps = this.visualSteps();
-    this.setStep(steps[Math.min(steps.length - 1, Math.max(0, this.visualIndex() + delta))] ?? 0);
-  }
-  protected restartVisual(): void {
-    if (this.walkthroughKind())
-      this.conceptPositions.update((positions) => ({ ...positions, [this.fixture().id]: 0 }));
-    else this.setStep(0);
   }
   protected toggleSolution(): void {
-    this.current().revealed ? this.closeReference() : this.patch({ revealed: true });
+    if (this.current().revealed) this.closeReference();
+    else if (!this.locked()) {
+      this.markStarted();
+      this.patch({ revealed: true });
+    }
   }
-  protected toggleLineDebugger(): void {
-    this.lineDebuggerOpen.update((open) => !open);
+  /** Reveals the next hint; the first one opened marks the problem started on this device. */
+  protected revealHint(): void {
+    this.markStarted();
+    this.hintCount.update((count) => count + 1);
   }
-  protected toggleDebugger(): void {
-    this.current().debugger
-      ? this.closeReference()
-      : this.patch({ revealed: true, debugger: true });
-    this.peek.set(false);
+  private markStarted(): void {
+    this.progress.markStarted(this.problem().id);
   }
-  protected visualize(): void {
-    if (this.story()) {
-      this.selectMode('visual');
-      requestAnimationFrame(() =>
-        this.host.nativeElement
-          .querySelector<HTMLButtonElement>('[data-studio-mode="visual"]')
-          ?.focus({ preventScroll: true }),
-      );
+  protected startTimer(): void {
+    this.peeked.set(new Set());
+    this.timer.start();
+  }
+  /** "Continue anyway?": open this tab during the attempt; the timer keeps running. */
+  protected continueAnyway(): void {
+    const mode = this.mode();
+    this.peeked.update((modes) => new Set(modes).add(mode));
+    this.focusTab(mode);
+  }
+  protected leaveGate(): void {
+    this.selectMode('practice');
+    this.focusTab('practice');
+  }
+  protected savePrediction(prediction: ComplexityPrediction): void {
+    this.prediction.set(prediction);
+    savePrediction(this.problem().id, prediction);
+  }
+  private focusTab(mode: StudioMode): void {
+    requestAnimationFrame(() =>
+      this.host.nativeElement
+        .querySelector<HTMLButtonElement>(`[data-studio-mode="${mode}"]`)
+        ?.focus({ preventScroll: true }),
+    );
+  }
+  /**
+   * Keyboard shortcuts (practice tools): 1–4 switch tabs, P toggles the Problem panel and H the
+   * hints; Escape closes a "Visualize solution" handoff (visualEscape). They never fire while typing
+   * (editor, inputs, selects), with a modifier, or when focus is elsewhere on the page; the tabs keep
+   * their own arrow, Home and End keys (modeKeys).
+   */
+  protected shortcutKeys(event: KeyboardEvent): void {
+    if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;
+    const target = event.target instanceof Element ? event.target : null;
+    const host = this.host.nativeElement;
+    if (target && target !== document.body && target !== document.documentElement && !host.contains(target))
+      return;
+    if (
+      target?.closest(
+        'input, textarea, select, [contenteditable]:not([contenteditable="false"]), .cm-editor, app-studio-editor',
+      )
+    )
+      return;
+    if (event.key === 'Escape') {
+      if (this.visualEscape(target)) event.preventDefault();
       return;
     }
-    this.state.update(visualizeStudio);
+    const key = event.key.toLowerCase();
+    const index = ['1', '2', '3', '4'].indexOf(key);
+    if (index >= 0 && index < this.modes.length) {
+      const mode = this.modes[index].id;
+      this.selectMode(mode);
+      host
+        .querySelector<HTMLButtonElement>(`[data-studio-mode="${mode}"]`)
+        ?.focus({ preventScroll: true });
+    } else if (key === 'p') this.toggleProblem();
+    else if (key === 'h' && this.mode() === 'practice' && !this.locked() && !this.current().revealed)
+      this.toggleHints();
+    else return;
+    event.preventDefault();
+  }
+  /**
+   * Escape on the Visual walkthrough after a handoff does what "Close visualization" does: back to
+   * the tab it came from, with focus on that tab. The Problem panel's peek keeps its own Escape, and
+   * an open dialog (pattern help, a confirmation) owns Escape while it is open.
+   */
+  private visualEscape(target: Element | null): boolean {
+    if (this.mode() !== 'visual' || !this.state().visualizationOrigin || this.peek()) return false;
+    if (target?.closest('dialog, [role="dialog"], [role="alertdialog"], .problem-rail, .problem-toggle'))
+      return false;
+    if (document.querySelector('dialog[open], [aria-modal="true"]')) return false;
+    this.closeReference();
+    return true;
+  }
+  /**
+   * "Visualize solution" from Approach or Recall: the Visual walkthrough on the same language, with
+   * "Close visualization" to return. An example the learner picked in this tab stays, even one the
+   * story does not animate (the player runs it line by line with its notice); otherwise the
+   * walkthrough opens on the story's animated example.
+   */
+  protected visualize(): void {
+    if (this.locked()) return;
+    const story = this.story();
+    this.state.update((state) => visualizeStudio(state, story ? { fixtureId: story.fixtureId } : {}));
     this.peek.set(false);
     requestAnimationFrame(() =>
       this.host.nativeElement

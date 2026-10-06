@@ -2,6 +2,7 @@
 <style>
 .learn-core-java-language-fundamentals-t{font:600 17px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
 .learn-core-java-language-fundamentals-n{font:700 17px ui-monospace,Menlo,monospace;fill:var(--scene-ink,#102a33)}
+.learn-core-java-language-fundamentals-c{font:500 10px ui-monospace,Menlo,monospace;fill:var(--scene-muted,#536970)}
 .learn-core-java-language-fundamentals-cell{animation:learn-core-java-language-fundamentals-flash 6s ease-in-out infinite;animation-delay:-3s}
 .learn-core-java-language-fundamentals-p{stroke-dasharray:6 5;animation:learn-core-java-language-fundamentals-dash 1.2s linear infinite;animation-delay:-3s}
 .learn-core-java-language-fundamentals-cp{animation:learn-core-java-language-fundamentals-hop 6s ease-in-out infinite;animation-delay:-3s}
@@ -17,15 +18,19 @@
 <g class="learn-core-java-language-fundamentals-cp"><rect x="98" y="38" width="46" height="40" rx="6" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/>
 <text class="learn-core-java-language-fundamentals-n" x="121" y="64" text-anchor="middle">7</text></g>
 <path d="M68 58H92" stroke="var(--scene-muted,#536970)" stroke-width="2.5"/><path d="M90 52l8 6-8 6" fill="none" stroke="var(--scene-muted,#536970)" stroke-width="2.5"/>
+<text class="learn-core-java-language-fundamentals-c" x="41" y="30" text-anchor="middle">a</text><text class="learn-core-java-language-fundamentals-c" x="121" y="30" text-anchor="middle">b</text>
 <text class="learn-core-java-language-fundamentals-t" x="80" y="112" text-anchor="middle">int copy</text>
+<text class="learn-core-java-language-fundamentals-c" x="80" y="136" text-anchor="middle">int b = a;</text>
 </g>
 <g>
 <rect x="178" y="30" width="40" height="22" rx="11" fill="var(--scene-ahead,#2f6fb3)"/>
 <rect x="258" y="30" width="40" height="22" rx="11" fill="var(--scene-grow,#b8457a)"/>
+<g font-family="ui-monospace,Menlo,monospace" font-size="13" font-weight="700" text-anchor="middle" fill="var(--scene-card,#fff)"><text x="198" y="46">x</text><text x="278" y="46">y</text></g>
 <path class="learn-core-java-language-fundamentals-p" d="M198 52C198 72 218 76 232 84" fill="none" stroke="var(--scene-ahead,#2f6fb3)" stroke-width="3"/>
 <path class="learn-core-java-language-fundamentals-p" d="M278 52C278 72 262 76 248 84" fill="none" stroke="var(--scene-grow,#b8457a)" stroke-width="3"/>
 <g stroke="var(--scene-ink,#102a33)" stroke-width="2.5"><rect x="180" y="88" width="30" height="30" fill="var(--scene-card,#fff)"/><rect class="learn-core-java-language-fundamentals-cell" x="210" y="88" width="30" height="30"/><rect x="240" y="88" width="30" height="30" fill="var(--scene-card,#fff)"/></g>
 <g class="learn-core-java-language-fundamentals-n" text-anchor="middle"><text x="195" y="109">1</text><text x="225" y="109">9</text><text x="255" y="109">3</text></g>
 <text class="learn-core-java-language-fundamentals-t" x="238" y="146" text-anchor="middle">shared array</text>
+<text class="learn-core-java-language-fundamentals-c" x="238" y="168" text-anchor="middle">y[1] = 9;</text>
 </g>
 </svg>

@@ -321,27 +321,6 @@ summary {
   max-width: 100%;
   min-width: 0;
 }
-.reference-navigation {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  font-size: 12px;
-  border-top: 1px solid var(--line);
-  padding-top: 10px;
-}
-.reference-navigation > div {
-  display: flex;
-  gap: 8px;
-}
-.reference-navigation label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.reference-navigation input {
-  accent-color: var(--accent);
-}
 .comparison-reference-header {
   grid-column: 3;
   grid-row: 1;
@@ -428,48 +407,6 @@ summary {
   display: block;
   margin-bottom: 6px;
 }
-.visual-controls {
-  padding: 16px;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.visual-controls p {
-  flex-basis: 100%;
-  font-size: 12px;
-  color: var(--muted);
-  margin: 4px 0;
-}
-.recall-panel {
-  padding: 22px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 10px;
-}
-.recall-panel h3 {
-  font-size: 22px;
-  line-height: 1.35;
-  margin: 8px 0 24px;
-}
-.recall-panel label {
-  display: block;
-  margin: 24px 0;
-  font-size: 14px;
-  color: var(--ink);
-}
-.recall-panel textarea {
-  display: block;
-  width: 100%;
-  box-sizing: border-box;
-  resize: vertical;
-  margin-top: 12px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 12px;
-  background: var(--surface-soft);
-  line-height: 1.65;
-}
 .context-disclosure {
   padding: 18px;
   border-bottom: 1px solid var(--line);
@@ -495,11 +432,10 @@ summary {
   margin-top: 20px;
 }
 .reference-rationale {
+  display: grid;
+  gap: 12px;
   padding: 14px 16px;
   font-size: 13px;
-}
-.reference-rationale details {
-  margin: 12px 0;
 }
 .reference-rationale p,
 .reference-rationale li {
@@ -626,13 +562,7 @@ summary {
   .code-controls {
     gap: 10px;
   }
-  .reference-navigation {
-    gap: 8px;
-  }
   .problem-rail {
-    padding: 16px;
-  }
-  .recall-panel {
     padding: 16px;
   }
   .reference-example {
@@ -687,22 +617,6 @@ summary {
 .reference-header .reference-example {
   flex: 0 1 auto;
 }
-.reference-navigation {
-  flex: 0 0 100%;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 8px;
-}
-.reference-navigation > div {
-  grid-column: 1/-1;
-  flex-wrap: wrap;
-}
-.reference-navigation > span {
-  color: var(--muted);
-}
-.reference-navigation > label {
-  justify-self: end;
-}
 .primary {
   background: var(--accent);
   border-color: var(--accent);
@@ -713,27 +627,12 @@ summary {
   background: var(--accent);
   filter: brightness(0.94);
 }
-.visual-controls {
-  padding: 14px 16px;
-  border: 1px solid var(--line);
-  border-top: 0;
-  border-radius: 0 0 10px 10px;
-  background: var(--surface);
-}
-.visual-controls p {
-  color: var(--accent);
-  font-weight: 600;
-}
-.contextual .reference-panel > app-guided-algorithm-trace {
+.contextual .reference-body > app-guided-algorithm-trace {
   display: block;
   padding: 10px 14px;
 }
 .contextual .reference-header {
   padding: 10px 14px;
-}
-.reference-navigation button {
-  min-height: 34px;
-  padding: 7px 10px;
 }
 .context-disclosure {
   padding: 12px 16px;
@@ -744,17 +643,6 @@ summary {
 @media (max-width: 600px) {
   .reference-header .code-controls {
     flex-basis: 100%;
-  }
-  .reference-navigation {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .reference-navigation > label {
-    justify-self: start;
-  }
-  .reference-navigation button,
-  .visual-controls button {
-    font-size: 11px;
-    padding: 8px;
   }
 }
 
@@ -822,7 +710,7 @@ summary {
 .right-workspace[data-composition='wide'] .working-grid {
   grid-template-columns: minmax(0, 32fr) minmax(0, 68fr);
 }
-.studio[data-mode='practice']:not(.debugger-active) .working-grid:not(.compare):not(.editor-only) {
+.studio[data-mode='practice'] .working-grid:not(.compare):not(.editor-only) {
   grid-template-columns: minmax(0, 70fr) minmax(280px, 30fr);
 }
 .working-grid.editor-only {
@@ -880,65 +768,7 @@ summary {
 .reference-identity {
   flex: 1 1 180px;
 }
-.reference-navigation {
-  position: sticky;
-  top: var(--stage-top, 82px);
-  z-index: 16;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  min-height: 48px;
-  padding: 6px 10px;
-  margin: 0 12px 10px;
-  border: 1px solid var(--line);
-  border-top: 3px solid var(--accent);
-  border-radius: 7px;
-  background: var(--surface);
-  box-shadow: 0 3px 8px #173a4110;
-  box-sizing: border-box;
-}
-.reference-navigation > div {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-.reference-navigation > span {
-  font-size: 11px;
-  font-variant-numeric: tabular-nums;
-}
-.reference-navigation button {
-  min-height: 34px;
-  font-size: 12px;
-  padding: 6px 10px;
-}
-.follow-control {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-inline-start: auto;
-  font-size: 11px;
-}
-.visual-controls {
-  position: sticky;
-  top: var(--stage-top, 82px);
-  z-index: 15;
-  justify-content: flex-end;
-  min-height: 58px;
-  padding: 8px 12px;
-  margin-bottom: 12px;
-  border: 1px solid var(--line);
-  border-top: 3px solid var(--accent);
-  border-radius: 8px;
-  box-shadow: 0 3px 8px #173a4110;
-}
-.visual-controls span {
-  font-size: 12px;
-  font-variant-numeric: tabular-nums;
-}
-.visual-controls button {
-  font-size: 13px;
-}
-.right-workspace[data-composition='stack'] .working-grid {
+.right-workspace[data-composition='stack'] .working-grid:not([hidden]) {
   display: flex !important;
   flex-direction: column;
   gap: 14px;
@@ -1000,46 +830,12 @@ summary {
   .mode-tabs button {
     flex: 0 1 auto;
   }
-  .reference-navigation {
-    justify-content: flex-start;
-    margin-inline: 8px;
-  }
   .reference-header {
     padding: 12px;
   }
-  .visual-controls {
-    padding: 8px;
-    gap: 6px;
-  }
-  .visual-controls button {
-    font-size: 12px;
-  }
-  .visual-controls span {
-    font-size: 11px;
-  }
-}
-.teaching-metrics {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-}
-.teaching-metrics > div {
-  background: var(--surface-accent);
-  padding: 12px;
-  min-width: 0;
-}
-.teaching-metrics dt {
-  font-size: 12px;
-  color: var(--muted);
-}
-.teaching-metrics dd {
-  font-size: 19px;
-  font-weight: 700;
-  overflow-wrap: anywhere;
-  margin: 5px 0 0;
 }
 
-/* Reveal is deliberately distinct from primary navigation and debugger actions. */
+/* Reveal is deliberately distinct from primary navigation and visualization actions. */
 .workspace-actions .reveal {
   background: #fff2d9;
   color: #704000;
@@ -1064,30 +860,6 @@ summary {
   align-items: center;
   gap: 8px;
 }
-.recall-question {
-  border-top: 1px solid var(--line);
-  padding: 20px 0;
-}
-.recall-question h4 {
-  font-size: 17px;
-  line-height: 1.5;
-  margin: 4px 0 12px;
-}
-.recall-answer summary {
-  cursor: pointer;
-  color: var(--accent);
-  font-weight: 700;
-}
-.recall-answer summary:focus-visible {
-  outline: 3px solid var(--accent);
-  outline-offset: 4px;
-}
-.recall-answer p,
-.recall-answer li {
-  line-height: 1.75;
-  overflow-wrap: anywhere;
-}
-
 /* Action roles are scoped to the studio; dimensions stay shared. */
 button.action-hint {
   background: var(--surface-accent);
@@ -1114,7 +886,6 @@ button[aria-label^='Next'] {
   background: var(--accent);
   color: var(--accent-on-primary);
 }
-button.action-reset,
 button[aria-label^='Restart'] {
   background: var(--surface-accent);
   color: var(--text);
@@ -1146,65 +917,351 @@ button[aria-label^='Restart'] {
   font-size: 14px;
 }
 
-/* Option B: the guided debugger below the story, behind a disclosure (closed by default). */
-.line-debugger {
-  margin-top: 28px;
-  border-top: 1px solid var(--line);
-  padding-top: 16px;
+/* Review note #23: in the side-by-side compare, "Your code" and "Reference solution" share one
+   header structure: the title block, then one controls row that may wrap. Controls never push
+   past the panel edge; a long example narrows with an ellipsis instead. */
+.compare .draft-header,
+.compare .reference-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  gap: 10px;
+  padding: 12px 14px;
 }
-.line-debugger-heading {
+.compare .code-identity p {
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 4px 0 0;
+}
+.compare .code-controls {
+  gap: 8px 10px;
+}
+.code-controls select {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.compare .reference-header .reference-example {
+  flex: 1 1 260px;
+}
+/* On the two-column grid the reference panel joins the editor's rows, so both headers end on
+   the same line and line 1 of both code panels starts at the same height. */
+@media (min-width: 1100px) {
+  .right-workspace:not([data-composition='stack']) .compare > .studio-context,
+  .right-workspace:not([data-composition='stack']) .compare .reference-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: subgrid;
+    grid-row: 1 / span 2;
+  }
+  .right-workspace:not([data-composition='stack']) .compare .reference-header {
+    grid-row: 1;
+  }
+  .right-workspace:not([data-composition='stack']) .compare .reference-body {
+    grid-row: 2;
+    min-width: 0;
+  }
+}
+
+/* Review note #24: cost as two chips (now in StudioComplexity, studio-practice-tools.ts), the
+   invariant as its own callout, then "Why this approach" as the Approach card from the top of the
+   problem page (dsa-story .approach-box) and "Common mistakes" with a warning accent. Both stay
+   <details> disclosures. */
+.invariant-callout {
   margin: 0;
-  font-size: 1rem;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--accent-strong);
+  border-radius: 10px;
+  background: var(--surface-accent);
+  color: var(--text-strong);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
 }
-.line-debugger-toggle {
+.invariant-callout b,
+.rationale-card p b {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.invariant-callout b {
+  color: var(--accent-strong);
+}
+.rationale-card {
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--accent-strong);
+  border-radius: 10px;
+  background: var(--surface);
+  padding: 10px 14px;
+  color: var(--text-body);
+}
+.rationale-card summary {
+  font-size: 14px;
+  color: var(--text-strong);
+}
+.rationale-card[open] summary {
+  margin-bottom: 10px;
+}
+.rationale-card p {
+  margin: 0 0 10px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.rationale-card p:last-child {
+  margin-bottom: 0;
+}
+.rationale-card p b {
+  color: var(--muted);
+}
+.mistakes-card {
+  border-left-color: var(--warning);
+}
+.mistakes-card summary .action-icon {
+  color: var(--warning);
+  vertical-align: -3px;
+  margin-inline-end: 4px;
+}
+.mistakes-card ul {
+  margin: 0;
+  padding-inline-start: 20px;
+}
+.mistakes-card li + li {
+  margin-top: 6px;
+}
+.mistakes-card li::marker {
+  color: var(--warning);
+}
+@media (forced-colors: active) {
+  .invariant-callout,
+  .rationale-card,
+  .mistakes-card {
+    border-color: CanvasText;
+  }
+}
+
+/* Review note #24, round 2 (2026-10-04): in compare mode the reasoning moves out of the reference
+   column into one full-width section under both code panels. The cost chips and the invariant run
+   across the top; "Why this approach" and "Common mistakes" sit side by side, so the explanation
+   uses the width (and the space that used to sit empty under "Your code"). The editor stretches to
+   the reference panel's height. Narrow layouts stack everything in one column. */
+.compare .mode-content {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+}
+.compare .mode-content > .draft-panel:not([hidden]) {
+  flex: 1;
+}
+.compare-rationale {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 12px 16px;
+  margin-top: 16px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  font-size: 14px;
+  container-type: inline-size;
+}
+.compare-rationale > app-studio-complexity,
+.compare-rationale > .invariant-callout {
+  grid-column: 1 / -1;
+}
+.compare-rationale .rationale-card,
+.compare-rationale .invariant-callout {
+  line-height: 1.65;
+}
+.right-workspace[data-composition='stack'] .compare-rationale {
+  order: 4;
+  margin-top: 0;
+}
+@container (max-width: 760px) {
+  .compare-rationale {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 900px) {
+  .compare-rationale {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Option B (user review 2026-10-05): numbered segmented tabs in the heading row, a guide line with the
+   selected tab's one action under it. The second grid row is flexible so a tall problem panel adds its
+   extra height below the workspace, never above the tabs. */
+.studio {
+  grid-template-rows: auto 1fr;
+}
+.studio-heading {
+  flex-wrap: wrap;
+  gap: 12px;
+  min-height: 56px;
+  padding: 4px 0 8px;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.heading-problem-title {
+  min-width: 0;
+  max-width: 34ch;
+  margin: 0;
+  overflow: hidden;
+  color: var(--ink);
+  font: 600 17px/1.25 Georgia, serif;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.studio-heading .mode-tabs {
+  align-self: center;
+  gap: 2px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.studio-heading .mode-tabs button {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  min-height: 44px;
-  padding: 8px 14px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: var(--surface);
-  color: var(--text-strong);
-  font: inherit;
+  gap: 7px;
+  min-height: 34px;
+  padding: 6px 14px;
+  border: 0;
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.studio-heading .mode-tabs button[aria-selected='true'] {
+  background: var(--surface-soft);
+  box-shadow: inset 0 -2px 0 var(--accent);
+  color: var(--ink);
   font-weight: 700;
-  cursor: pointer;
 }
-.line-debugger-toggle:hover {
-  border-color: var(--accent-strong);
+.mode-step {
+  color: var(--muted);
+  font: 700 11px/1 ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 }
-.line-debugger-toggle:focus-visible {
-  outline: 3px solid var(--accent-focus);
-  outline-offset: 2px;
+.mode-step.mode-step-done {
+  color: var(--success);
 }
-.line-debugger-chevron {
-  flex: none;
-  width: 20px;
-  height: 20px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  transition: transform 0.16s ease;
+.workspace-toolbar {
+  align-items: center;
+  min-height: 52px;
+  padding-block: 2px;
 }
-.line-debugger-chevron.open {
-  transform: rotate(180deg);
-}
-.line-debugger-body {
-  margin-top: 16px;
+.mode-guide {
+  flex: 1 1 320px;
   min-width: 0;
+  margin: 0;
+  color: var(--text-body, var(--ink));
+  font-size: 14px;
 }
-.line-debugger-body[hidden] {
-  display: none;
+.mode-guide-step {
+  margin-inline-end: 8px;
+  color: var(--muted);
+  font: 600 12px ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 }
-@media (prefers-reduced-motion: reduce) {
-  .line-debugger-chevron {
-    transition: none;
+.workspace-actions {
+  min-height: 36px;
+  padding: 6px 0;
+}
+.workspace-actions button {
+  font-size: 13px;
+  font-weight: 700;
+}
+@media (max-width: 700px) {
+  .studio-heading {
+    flex-wrap: wrap;
+  }
+  .heading-problem-title {
+    flex: 1 1 auto;
+  }
+  .studio-heading .mode-tabs {
+    width: 100%;
+  }
+  .studio-heading .mode-tabs button {
+    flex: 1 0 auto;
+    padding: 6px 10px;
+    font-size: 13px;
   }
 }
 @media (forced-colors: active) {
-  .line-debugger-toggle {
-    border-color: ButtonText;
+  .studio-heading .mode-tabs button[aria-selected='true'] {
+    outline: 2px solid Highlight;
   }
+}
+.timer-lock {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* Recall card grid (user-approved preview, option B, 2026-10-06): the cards, the connected ideas and
+   Finish and review each take the full workspace width. The grid has its own styles. */
+.recall-panel {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+.recall-connected {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+/* Narrow desktop widths (user review 2026-10-06): the heading row, the guide line and the working grid
+   wrap or shrink inside the workspace instead of running past its right edge. */
+.studio-heading {
+  container-type: inline-size;
+  min-width: 0;
+}
+.workspace-toolbar,
+.workspace-actions,
+.working-grid > * {
+  min-width: 0;
+}
+.workspace-actions {
+  max-width: 100%;
+}
+.workspace-actions button {
+  white-space: normal;
+  text-align: start;
+}
+.studio[data-mode='practice'] .working-grid:not(.compare):not(.editor-only) {
+  grid-template-columns: minmax(0, 70fr) minmax(min(280px, 40%), 30fr);
+}
+@container (max-width: 640px) {
+  .studio-heading .mode-tabs {
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+  }
+  .studio-heading .mode-tabs button {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+}
+.hints-panel header {
+  flex-wrap: wrap;
+}
+.hints-panel header button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.hints-panel + app-studio-examples {
+  border-top: 1px solid var(--line);
 }

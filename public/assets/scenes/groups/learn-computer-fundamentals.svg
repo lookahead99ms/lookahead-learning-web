@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 200" role="img" aria-label="A program calls send; the operating system kernel runs it on the CPU, queues the data in a socket buffer and hands it to the network card, the packet crosses the wire to a remote server and the reply comes back to the program">
+<style>
+.lg-cfund-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.lg-cfund-tm { font-family: ui-monospace, Menlo, monospace; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.lg-cfund-sh { fill: var(--scene-ink, #102a33); opacity: .08; }
+.lg-cfund-slab { fill: var(--scene-ink, #102a33); opacity: .14; }
+.lg-cfund-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 2; }
+.lg-cfund-soft { fill: var(--scene-accent-soft, #dcefed); }
+.lg-cfund-ln { fill: var(--scene-line, #cfdfdc); }
+.lg-cfund-mut { fill: var(--scene-muted, #536970); }
+.lg-cfund-acc { fill: var(--scene-accent, #006c73); }
+.lg-cfund-lnk { fill: var(--scene-link, #245a88); }
+.lg-cfund-good { fill: var(--scene-good, #1f7a4d); }
+.lg-cfund-pg { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.lg-cfund-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 2; stroke-dasharray: 5 5; stroke-width: 2.5; }
+.lg-cfund-pin { stroke: var(--scene-muted, #536970); stroke-width: 2.5; stroke-linecap: round; }
+
+.lg-cfund-sys { animation: lg-cfund-kf-sys 8s linear infinite; }
+@keyframes lg-cfund-kf-sys { 0%, 3% { transform: translateY(0); opacity: 0; } 4% { opacity: 1; } 12% { transform: translateY(26px); opacity: 1; } 13%, 100% { transform: translateY(26px); opacity: 0; } }
+.lg-cfund-cpu { animation: lg-cfund-kf-cpu 8s infinite; }
+@keyframes lg-cfund-kf-cpu { 0%, 12% { opacity: 0; } 14%, 24% { opacity: 1; } 26%, 100% { opacity: 0; } }
+.lg-cfund-buf { animation: lg-cfund-kf-buf 8s infinite; }
+@keyframes lg-cfund-kf-buf { 0%, 24% { opacity: 0; } 27%, 34% { opacity: 1; } 36%, 100% { opacity: 0; } }
+.lg-cfund-out { animation: lg-cfund-kf-out 8s linear infinite; }
+@keyframes lg-cfund-kf-out { 0%, 34% { transform: translate(0, 0); opacity: 0; } 35% { opacity: 1; } 40% { transform: translate(0, 44px); } 58% { transform: translate(72px, 44px); opacity: 1; } 60%, 100% { transform: translate(72px, 44px); opacity: 0; } }
+.lg-cfund-back { animation: lg-cfund-kf-back 8s linear infinite; }
+@keyframes lg-cfund-kf-back { 0%, 62% { transform: translateX(0); opacity: 0; } 63% { opacity: 1; } 78% { transform: translateX(-54px); opacity: 1; } 80%, 100% { transform: translateX(-54px); opacity: 0; } }
+.lg-cfund-ok { animation: lg-cfund-kf-ok 8s infinite; }
+@keyframes lg-cfund-kf-ok { 0%, 80% { opacity: 0; } 83%, 96% { opacity: 1; } 98%, 100% { opacity: 0; } }
+
+.lg-cfund-sys, .lg-cfund-cpu, .lg-cfund-buf, .lg-cfund-out, .lg-cfund-back, .lg-cfund-ok { animation-delay: -3.92s; }
+@media (prefers-reduced-motion: reduce) { .lg-cfund-sys, .lg-cfund-cpu, .lg-cfund-buf, .lg-cfund-out, .lg-cfund-back, .lg-cfund-ok { animation-play-state: paused; } }
+</style>
+
+<!-- the program -->
+<rect class="lg-cfund-slab" x="140" y="16" width="200" height="50" rx="7"/>
+<rect class="lg-cfund-box" x="140" y="12" width="200" height="50" rx="7"/>
+<path class="lg-cfund-soft" d="M147 13 H332 a7 7 0 0 1 7 7 V26 H141 V20 a7 7 0 0 1 7 -7z"/>
+<circle class="lg-cfund-mut" cx="152" cy="19.5" r="2.5"/><circle class="lg-cfund-mut" cx="161" cy="19.5" r="2.5"/><circle class="lg-cfund-mut" cx="170" cy="19.5" r="2.5"/>
+<rect class="lg-cfund-ln" x="152" y="33" width="70" height="5" rx="2.5"/><rect class="lg-cfund-ln" x="230" y="33" width="44" height="5" rx="2.5"/>
+<text class="lg-cfund-tm" x="152" y="55" font-size="15">send(req)</text>
+<rect class="lg-cfund-ln" x="248" y="48" width="44" height="5" rx="2.5"/>
+<g class="lg-cfund-ok"><circle class="lg-cfund-good" cx="318" cy="44" r="9"/><path d="M313.5 44 l3 3 l6 -6.5" fill="none" stroke="var(--scene-card, #ffffff)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+
+<!-- system call into the kernel -->
+<path class="lg-cfund-wire" d="M188 62 V82"/>
+<g class="lg-cfund-sys"><circle class="lg-cfund-acc" cx="188" cy="60" r="6"/></g>
+
+<!-- operating system kernel -->
+<rect class="lg-cfund-slab" x="24" y="86" width="340" height="52" rx="10"/>
+<rect class="lg-cfund-soft" x="24" y="80" width="340" height="52" rx="10" stroke="var(--scene-line, #cfdfdc)" stroke-width="2"/>
+<text class="lg-cfund-t" x="36" y="112" font-size="16">kernel</text>
+<!-- CPU core -->
+<path class="lg-cfund-pin" d="M104 87 V90 M114 87 V90 M124 87 V90 M104 122 V125 M114 122 V125 M124 122 V125 M95 98 H98 M95 106 H98 M95 114 H98 M130 98 H133 M130 106 H133 M130 114 H133"/>
+<rect x="98" y="90" width="32" height="32" rx="4" fill="var(--scene-card, #ffffff)" stroke="var(--scene-muted, #536970)" stroke-width="2"/>
+<rect class="lg-cfund-acc" x="106" y="98" width="16" height="16" rx="2"/>
+<rect class="lg-cfund-cpu" x="92" y="84" width="44" height="44" rx="7" fill="none" stroke="var(--scene-accent, #006c73)" stroke-width="2.5"/>
+<!-- memory pages -->
+<rect class="lg-cfund-pg" x="160" y="96" width="14" height="20" rx="2"/><rect class="lg-cfund-acc" x="178" y="96" width="14" height="20" rx="2"/><rect class="lg-cfund-pg" x="196" y="96" width="14" height="20" rx="2"/>
+<rect class="lg-cfund-lnk" x="214" y="96" width="14" height="20" rx="2" opacity=".6"/><rect class="lg-cfund-pg" x="232" y="96" width="14" height="20" rx="2"/><rect class="lg-cfund-pg" x="250" y="96" width="14" height="20" rx="2"/>
+<!-- socket buffer: a tray of queued data -->
+<rect class="lg-cfund-box" x="292" y="92" width="58" height="28" rx="5"/>
+<rect class="lg-cfund-ln" x="298" y="98" width="10" height="16" rx="2"/><rect class="lg-cfund-ln" x="311" y="98" width="10" height="16" rx="2"/>
+<rect class="lg-cfund-acc lg-cfund-buf" x="324" y="98" width="10" height="16" rx="2"/>
+
+<!-- network card and the wire -->
+<path class="lg-cfund-wire" d="M329 120 V150"/>
+<ellipse class="lg-cfund-sh" cx="328" cy="182" rx="28" ry="4"/>
+<rect class="lg-cfund-slab" x="306" y="154" width="46" height="24" rx="4"/>
+<rect x="306" y="150" width="46" height="24" rx="4" fill="var(--scene-ink, #102a33)"/>
+<rect x="314" y="156" width="12" height="11" rx="1.5" fill="var(--scene-card, #ffffff)"/><rect x="331" y="156" width="12" height="11" rx="1.5" fill="var(--scene-card, #ffffff)"/>
+<path class="lg-cfund-wire" d="M352 162 H404"/>
+<g class="lg-cfund-out"><rect class="lg-cfund-acc" x="322" y="111" width="14" height="14" rx="3"/></g>
+<g class="lg-cfund-back"><rect class="lg-cfund-good" x="390" y="155" width="14" height="14" rx="3"/></g>
+
+<!-- remote server -->
+<ellipse class="lg-cfund-sh" cx="436" cy="186" rx="34" ry="5"/>
+<path class="lg-cfund-ln" d="M406 62 L414 54 H466 L458 62 Z"/>
+<path class="lg-cfund-slab" d="M458 62 L466 54 V174 L458 182 Z"/>
+<rect class="lg-cfund-box" x="406" y="62" width="52" height="120" rx="3"/>
+<rect class="lg-cfund-ln" x="413" y="74" width="28" height="8" rx="2"/><circle class="lg-cfund-good" cx="449" cy="78" r="2.5"/>
+<rect class="lg-cfund-ln" x="413" y="94" width="28" height="8" rx="2"/><circle class="lg-cfund-good" cx="449" cy="98" r="2.5"/>
+<rect class="lg-cfund-ln" x="413" y="114" width="28" height="8" rx="2"/><circle class="lg-cfund-good" cx="449" cy="118" r="2.5"/>
+<rect class="lg-cfund-ln" x="413" y="134" width="28" height="8" rx="2"/><circle class="lg-cfund-good" cx="449" cy="138" r="2.5"/>
+</svg>

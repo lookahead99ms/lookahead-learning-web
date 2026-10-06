@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A player buys a game on a phone; the day's purchases file passes a check station, one row with a bad price drops into a quarantine tray, and the checked rows reach the publisher revenue report, which gets a check mark">
+<style>
+.dq-a,.dq-b,.dq-c,.dq-d,.dq-e,.dq-f{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-6.6s;animation-timing-function:ease-in-out}
+.dq-a{animation-name:dq-a}
+@keyframes dq-a{0%,4%{transform:translateX(0);opacity:1}26%{transform:translateX(76px);opacity:1}30%,100%{transform:translateX(76px);opacity:0}}
+.dq-b{animation-name:dq-b}
+@keyframes dq-b{0%,30%{transform:translate(0,0);opacity:0}34%{opacity:1}48%,94%{transform:translate(2px,34px);opacity:1}100%{transform:translate(2px,34px);opacity:0}}
+.dq-c{animation-name:dq-c}
+@keyframes dq-c{0%,44%{transform:translateX(0);opacity:0}48%{opacity:1}64%{transform:translateX(62px);opacity:1}68%,100%{transform:translateX(62px);opacity:0}}
+.dq-d{animation-name:dq-d;transform-origin:268px 132px;transform-box:view-box}
+@keyframes dq-d{0%,64%{transform:scaleY(.35)}74%,96%{transform:scaleY(1)}100%{transform:scaleY(.35)}}
+.dq-e{animation-name:dq-e}
+@keyframes dq-e{0%,72%{opacity:0}78%,96%{opacity:1}100%{opacity:0}}
+.dq-f{animation-name:dq-f}
+@keyframes dq-f{0%,40%{opacity:0}46%,96%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.dq-a,.dq-b,.dq-c,.dq-d,.dq-e,.dq-f{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g fill="var(--scene-ink,#102a33)" opacity=".09"><ellipse cx="34" cy="152" rx="28" ry="6"/><ellipse cx="166" cy="128" rx="36" ry="6"/><ellipse cx="170" cy="164" rx="36" ry="5"/><ellipse cx="270" cy="152" rx="36" ry="6"/></g>
+<circle cx="30" cy="74" r="12" fill="var(--scene-accent,#006c73)"/>
+<path d="M8 150c0-26 10-40 22-40s22 14 22 40Z" fill="var(--scene-accent,#006c73)"/>
+<rect x="38" y="98" width="20" height="34" rx="4" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2.5"/>
+<rect x="42" y="104" width="12" height="9" rx="2" fill="var(--scene-accent-soft,#dcefed)"/>
+<rect x="42" y="117" width="12" height="5" rx="2" fill="var(--scene-good,#1f7a4d)"/>
+<path d="M62 98H124M198 98H236" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="3 5"/>
+<path d="M134 54h56l10-10h-56Z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M190 54l10-10v70l-10 10Z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="134" y="54" width="56" height="70" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2.5"/>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="4" stroke-linecap="round"><path d="M154 68H180M154 84H180M154 100H180"/></g>
+<g fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M141 68l3 3 5-6M141 84l3 3 5-6M141 100l3 3 5-6"/></g>
+<rect x="139" y="112" width="5" height="5" rx="1" fill="var(--scene-good,#1f7a4d)"/><rect x="148" y="112" width="5" height="5" rx="1" fill="var(--scene-good,#1f7a4d)"/>
+<path d="M138 146h64l-6 14h-52Z" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M144 146v-4M196 146v-4" stroke="var(--scene-ink,#102a33)" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M246 52h44l6-6h-44Z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M290 52l6-6v94l-6 6Z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="246" y="52" width="44" height="94" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2.5"/>
+<path d="M252 132H284" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<g class="dq-d">
+<rect x="254" y="100" width="7" height="32" rx="1.5" fill="var(--scene-accent,#006c73)"/>
+<rect x="265" y="88" width="7" height="44" rx="1.5" fill="var(--scene-link,#1f5f8b)"/>
+<rect x="276" y="108" width="7" height="24" rx="1.5" fill="var(--scene-accent,#006c73)"/>
+</g>
+<g class="dq-a"><path d="M66 78h22l6 6v28H66Z" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/><path d="M88 78v6h6" fill="none" stroke="var(--scene-ink,#102a33)" stroke-width="2"/><path d="M71 90H88M71 96H88M71 102H88" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"/><path d="M71 108H88" stroke="var(--scene-bad,#b3261e)" stroke-width="3" stroke-linecap="round"/></g>
+<g class="dq-b"><rect x="158" y="114" width="22" height="6" rx="3" fill="var(--scene-bad,#b3261e)"/></g>
+<g class="dq-f"><circle cx="210" cy="152" r="8" fill="var(--scene-warn,#9a6700)"/><path d="M210 147v6M210 156v1" stroke="var(--scene-card,#fff)" stroke-width="2.5" stroke-linecap="round"/></g>
+<g class="dq-c"><path d="M176 84h22l6 6v22h-28Z" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/><path d="M198 84v6h6" fill="none" stroke="var(--scene-ink,#102a33)" stroke-width="2"/><path d="M181 96H198M181 102H198M181 108H198" stroke="var(--scene-good,#1f7a4d)" stroke-width="3" stroke-linecap="round"/></g>
+<g class="dq-e"><circle cx="292" cy="44" r="11" fill="var(--scene-good,#1f7a4d)"/><path d="M287 44l4 4 6-8" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+</svg>

@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Two admins add a member to the same workspace at the same moment. The first request fills the last of five seat rows in the database and gets a check; the second is aborted with a serialization failure, 40001, and its retry is refused because the plan is full">
+<style>
+.sqliso-box{fill:var(--scene-card,#fff);stroke:var(--scene-line,#cfdfdc);stroke-width:1.5}
+.sqliso-shadow{fill:var(--scene-ink,#102a33);opacity:.08}
+.sqliso-side{fill:var(--scene-ink,#102a33);opacity:.14}
+.sqliso-bar{fill:var(--scene-line,#cfdfdc)}
+.sqliso-key{fill:var(--scene-accent,#006c73)}
+.sqliso-wire{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.5;stroke-dasharray:3 4}
+.sqliso-a{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-3.8s;animation-timing-function:ease-in-out}
+@media (prefers-reduced-motion: reduce){.sqliso-a{animation-play-state:paused!important}}
+.sqliso-dota{animation-name:sqliso-dota}
+@keyframes sqliso-dota{0%,4%{opacity:1;transform:none}22%{opacity:1;transform:translate(118px,26px)}23%,100%{opacity:0;transform:none}}
+.sqliso-dotb{animation-name:sqliso-dotb}
+@keyframes sqliso-dotb{0%,10%{opacity:1;transform:none}30%{opacity:1;transform:translate(118px,-22px)}31%,56%{opacity:0;transform:none}57%{opacity:1;transform:none}74%{opacity:1;transform:translate(118px,-22px)}75%,100%{opacity:0;transform:none}}
+.sqliso-row5{animation-name:sqliso-row5}
+@keyframes sqliso-row5{0%,21%{opacity:0}25%,94%{opacity:1}98%,100%{opacity:0}}
+.sqliso-oka{animation-name:sqliso-oka}
+@keyframes sqliso-oka{0%,25%{opacity:0;transform:scale(.6)}29%,94%{opacity:1;transform:none}98%,100%{opacity:0}}
+.sqliso-errb{animation-name:sqliso-errb}
+@keyframes sqliso-errb{0%,31%{opacity:0}35%,70%{opacity:1}74%,100%{opacity:0}}
+.sqliso-nob{animation-name:sqliso-nob}
+@keyframes sqliso-nob{0%,75%{opacity:0;transform:scale(.6)}79%,94%{opacity:1;transform:none}98%,100%{opacity:0}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<!-- admin 1 behind a laptop -->
+<circle cx="34" cy="30" r="11" fill="var(--scene-accent,#006c73)"/>
+<path d="M14 66c0-16 9-26 20-26s20 10 20 26z" fill="var(--scene-accent,#006c73)" opacity=".85"/>
+<ellipse cx="44" cy="80" rx="34" ry="3.5" class="sqliso-shadow"/>
+<path d="M22 50h40l-6 22H16z" fill="var(--scene-ink,#102a33)"/>
+<rect x="10" y="72" width="62" height="5" rx="2" class="sqliso-side"/>
+<rect x="8" y="70" width="62" height="5" rx="2" fill="var(--scene-ink,#102a33)"/>
+<!-- admin 2 behind a laptop -->
+<circle cx="34" cy="106" r="11" fill="var(--scene-link,#245a88)"/>
+<path d="M14 142c0-16 9-26 20-26s20 10 20 26z" fill="var(--scene-link,#245a88)" opacity=".85"/>
+<ellipse cx="44" cy="156" rx="34" ry="3.5" class="sqliso-shadow"/>
+<path d="M22 126h40l-6 22H16z" fill="var(--scene-ink,#102a33)"/>
+<rect x="10" y="148" width="62" height="5" rx="2" class="sqliso-side"/>
+<rect x="8" y="146" width="62" height="5" rx="2" fill="var(--scene-ink,#102a33)"/>
+<!-- requests travel to the database -->
+<path d="M76 62L196 88" class="sqliso-wire"/>
+<path d="M76 136L196 114" class="sqliso-wire"/>
+<circle cx="78" cy="62" r="3.5" fill="var(--scene-accent,#006c73)" class="sqliso-a sqliso-dota"/>
+<circle cx="78" cy="136" r="3.5" fill="var(--scene-link,#245a88)" class="sqliso-a sqliso-dotb"/>
+<!-- the database: five seat rows, the fifth fills -->
+<ellipse cx="252" cy="166" rx="50" ry="5" class="sqliso-shadow"/>
+<path d="M204 34v122c0 5 22 9 48 9s48-4 48-9V34z" class="sqliso-box"/>
+<path d="M286 36v120c0 3-8 6-18 7V42c10-1 18-3 18-6z" class="sqliso-side"/>
+<ellipse cx="252" cy="34" rx="48" ry="10" fill="var(--scene-line,#cfdfdc)"/>
+<rect x="218" y="54" width="9" height="9" rx="2" class="sqliso-key"/><rect x="232" y="56.5" width="34" height="4" rx="2" class="sqliso-bar"/>
+<rect x="218" y="72" width="9" height="9" rx="2" class="sqliso-key"/><rect x="232" y="74.5" width="28" height="4" rx="2" class="sqliso-bar"/>
+<rect x="218" y="90" width="9" height="9" rx="2" class="sqliso-key"/><rect x="232" y="92.5" width="32" height="4" rx="2" class="sqliso-bar"/>
+<rect x="218" y="108" width="9" height="9" rx="2" class="sqliso-key"/><rect x="232" y="110.5" width="24" height="4" rx="2" class="sqliso-bar"/>
+<rect x="216" y="124" width="54" height="13" rx="3" fill="none" stroke="var(--scene-muted,#536970)" stroke-width="1.2" stroke-dasharray="3 3"/>
+<g class="sqliso-a sqliso-row5"><rect x="218" y="126" width="9" height="9" rx="2" fill="var(--scene-accent,#006c73)"/><rect x="232" y="128.5" width="30" height="4" rx="2" fill="var(--scene-accent,#006c73)" opacity=".55"/></g>
+<!-- admin 1: added -->
+<g class="sqliso-a sqliso-oka" style="transform-origin:94px 40px"><circle cx="94" cy="40" r="10" fill="var(--scene-good,#1f7a4d)"/><path d="M89 40l4 4 7-8" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></g>
+<!-- admin 2: aborted with a serialization failure, then the retry is refused -->
+<g class="sqliso-a sqliso-errb"><path d="M94 104l12 21H82z" fill="var(--scene-warn,#a15c00)"/><text x="94" y="122" text-anchor="middle" font-size="10" fill="var(--scene-card,#fff)">!</text><text x="112" y="116" font-size="10" fill="var(--scene-warn,#a15c00)">40001</text><path d="M112 93a8 8 0 1 1 3 10" fill="none" stroke="var(--scene-warn,#a15c00)" stroke-width="1.6"/><path d="M112 89v5h5" fill="none" stroke="var(--scene-warn,#a15c00)" stroke-width="1.6"/></g>
+<g class="sqliso-a sqliso-nob" style="transform-origin:94px 114px"><circle cx="94" cy="114" r="10" fill="var(--scene-bad,#b42318)"/><path d="M90 110l8 8M98 110l-8 8" stroke="var(--scene-card,#fff)" stroke-width="2.2" stroke-linecap="round"/></g>
+</svg>

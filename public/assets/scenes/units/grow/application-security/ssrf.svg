@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="An uptime checker reaches a customer's public site, while a check aimed at an internal server is refused at the guard">
+<style>
+.as-ssrf-code{font:600 10px ui-monospace,Menlo,monospace;fill:var(--scene-muted,#5b6b70)}
+.as-ssrf-a{animation:as-ssrf-a 8s linear infinite;animation-delay:-6.4s}
+@keyframes as-ssrf-a{0%,4%{transform:translate(0,0);opacity:0}8%{opacity:1}32%{transform:translate(76px,-36px);opacity:1}36%,100%{transform:translate(76px,-36px);opacity:0}}
+.as-ssrf-ok{animation:as-ssrf-ok 8s ease-in-out infinite;animation-delay:-6.4s}
+@keyframes as-ssrf-ok{0%,32%{opacity:0}36%,52%{opacity:1}56%,100%{opacity:0}}
+.as-ssrf-b{animation:as-ssrf-b 8s linear infinite;animation-delay:-6.4s}
+@keyframes as-ssrf-b{0%,50%{transform:translate(0,0);opacity:0}54%{opacity:1}70%,96%{transform:translate(44px,14px);opacity:1}100%{transform:translate(44px,14px);opacity:0}}
+.as-ssrf-no{animation:as-ssrf-no 8s ease-in-out infinite;animation-delay:-6.4s}
+@keyframes as-ssrf-no{0%,70%{opacity:0}74%,96%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.as-ssrf-a,.as-ssrf-ok,.as-ssrf-b,.as-ssrf-no{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<!-- customer adding a monitor -->
+<ellipse cx="34" cy="128" rx="28" ry="5" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<circle cx="34" cy="58" r="12" fill="var(--scene-accent,#006c73)"/>
+<path d="M14 92a20 20 0 0 1 40 0Z" fill="var(--scene-accent,#006c73)"/>
+<rect x="12" y="92" width="46" height="28" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<path d="M18 100h30M18 107h22" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"/>
+<path d="M8 121h54" stroke="var(--scene-ink,#102a33)" stroke-width="3" stroke-linecap="round"/>
+<path d="M62 104H98" stroke="var(--scene-muted,#5b6b70)" stroke-width="2" stroke-dasharray="3 5"/>
+<!-- checker server -->
+<ellipse cx="132" cy="140" rx="34" ry="6" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<path d="M100 70l8-8h56l-8 8Z" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-ink,#102a33)" stroke-width="1.5"/>
+<path d="M156 70l8-8v62l-8 8Z" fill="var(--scene-ink,#102a33)" opacity="0.14"/>
+<rect x="100" y="70" width="56" height="62" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<path d="M108 84h30M108 98h30M108 112h30" stroke="var(--scene-line,#cfdfdc)" stroke-width="4" stroke-linecap="round"/>
+<circle cx="146" cy="84" r="2.5" fill="var(--scene-good,#1f7a4d)"/><circle cx="146" cy="98" r="2.5" fill="var(--scene-good,#1f7a4d)"/><circle cx="146" cy="112" r="2.5" fill="var(--scene-good,#1f7a4d)"/>
+<!-- public site -->
+<path d="M160 82L236 46" stroke="var(--scene-muted,#5b6b70)" stroke-width="2" stroke-dasharray="3 5"/>
+<ellipse cx="268" cy="76" rx="32" ry="5" fill="var(--scene-ink,#102a33)" opacity="0.08"/>
+<rect x="236" y="22" width="64" height="48" rx="5" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<path d="M236 33h64" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<rect x="237" y="23" width="62" height="10" rx="4" fill="var(--scene-accent-soft,#dcefed)"/>
+<path d="M244 44h40M244 53h28M244 61h34" stroke="var(--scene-line,#cfdfdc)" stroke-width="4" stroke-linecap="round"/>
+<g class="as-ssrf-ok"><circle cx="300" cy="24" r="10" fill="var(--scene-good,#1f7a4d)"/><path d="M295 24l4 4 6-7" stroke="var(--scene-card,#fff)" stroke-width="2.5" stroke-linecap="round" fill="none"/></g>
+<!-- private network boundary with an internal server -->
+<rect x="214" y="96" width="98" height="72" rx="8" fill="none" stroke="var(--scene-muted,#5b6b70)" stroke-width="1.5" stroke-dasharray="5 4"/>
+<ellipse cx="276" cy="158" rx="24" ry="4" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<path d="M258 112l6-6h34l-6 6Z" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-ink,#102a33)" stroke-width="1.5"/>
+<path d="M292 112l6-6v36l-6 6Z" fill="var(--scene-ink,#102a33)" opacity="0.14"/>
+<rect x="258" y="112" width="34" height="36" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<path d="M264 122h16M264 132h16" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"/>
+<text class="as-ssrf-code" x="244" y="163">10.0.4.21</text>
+<!-- the guard on the boundary -->
+<path d="M160 116L204 130" stroke="var(--scene-muted,#5b6b70)" stroke-width="2" stroke-dasharray="3 5"/>
+<path d="M214 118l12 5v9c0 8-5 13-12 16c-7-3-12-8-12-16v-9Z" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2"/>
+<path d="M214 126v14" stroke="var(--scene-accent,#006c73)" stroke-width="2" stroke-linecap="round"/>
+<!-- request dots -->
+<circle class="as-ssrf-a" cx="160" cy="82" r="5" fill="var(--scene-link,#1f5f8b)"/>
+<circle class="as-ssrf-b" cx="160" cy="116" r="5" fill="var(--scene-grow,#b8457a)"/>
+<g class="as-ssrf-no"><circle cx="232" cy="112" r="10" fill="var(--scene-bad,#b3261e)"/><path d="M228 108l8 8M236 108l-8 8" stroke="var(--scene-card,#fff)" stroke-width="2.5" stroke-linecap="round"/></g>
+</svg>

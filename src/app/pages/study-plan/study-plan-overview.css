@@ -1,0 +1,251 @@
+/* Your active plan: the plan line, study day and plan actions, then the week's time split (the compass). */
+.compass-panel {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 40px;
+  align-items: center;
+  margin-bottom: 25px;
+}
+.compass-ring {
+  width: 190px;
+  height: 190px;
+  background: conic-gradient(
+    var(--accent-strong) 0 var(--learning-end),
+    color-mix(in srgb, var(--accent-strong) 55%, var(--surface)) var(--learning-end)
+      var(--practice-end),
+    var(--surface-muted) var(--practice-end) 100%
+  );
+  border-radius: 50%;
+  padding: 16px;
+}
+.compass-ring > div {
+  background: var(--surface);
+  border-radius: 50%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.compass-ring strong {
+  font-size: 42px;
+  color: var(--text-strong);
+  letter-spacing: -0.06em;
+}
+.compass-ring span {
+  font-size: 10px;
+  color: var(--text-subtle);
+}
+.compass-summary {
+  display: grid;
+  grid-template-columns: minmax(230px, 0.7fr) minmax(480px, 1.3fr);
+  grid-template-rows: auto auto 1fr;
+  gap: 0 32px;
+  align-items: start;
+  min-width: 0;
+}
+.compass-summary > .eyebrow,
+.compass-summary > h2,
+.compass-summary > .allocation {
+  grid-column: 1;
+}
+.compass-summary > .eyebrow {
+  grid-row: 1;
+}
+.compass-summary > h2 {
+  grid-row: 2;
+}
+.compass-summary > .allocation {
+  grid-row: 3;
+}
+.allocation {
+  display: flex;
+  gap: 24px;
+  margin: 0;
+}
+.allocation dt {
+  font-size: 12px;
+  color: var(--text-subtle);
+}
+.allocation dd {
+  margin: 5px 0 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+.plan-guidance {
+  grid-column: 2;
+  grid-row: 1 / 4;
+  align-self: center;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  color: var(--text);
+  text-align: start;
+}
+.plan-guidance-heading {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin: 0 0 6px;
+  color: var(--accent-strong);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.plan-guidance-heading::after {
+  content: none;
+}
+.plan-guidance ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.plan-guidance li {
+  position: relative;
+  min-height: 88px;
+  padding: 18px 16px 16px 38px;
+  background: color-mix(in srgb, var(--accent-strong) 8%, var(--surface));
+  color: var(--text-body);
+  font-size: 14px;
+  line-height: 1.4;
+}
+.plan-guidance li::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 17px;
+  top: 25px;
+  width: 8px;
+  height: 8px;
+  background: var(--accent-strong);
+  transform: rotate(45deg);
+}
+.plan-guidance li + li {
+  border-inline-start: 0;
+}
+.plan-guidance strong {
+  color: var(--text-strong);
+  font-weight: 800;
+}
+.compass-panel p:last-child {
+  font-size: 12px;
+  color: var(--text-subtle);
+}
+@media (max-width: 1050px) {
+  .compass-panel {
+    grid-template-columns: 1fr;
+  }
+  .compass-summary {
+    grid-template-columns: minmax(210px, 0.7fr) minmax(0, 1.3fr);
+    gap: 0 24px;
+  }
+  .plan-guidance {
+    max-width: none;
+    padding-top: 0;
+  }
+  .compass-ring {
+    margin: auto;
+  }
+}
+@media (max-width: 760px) {
+  .compass-panel {
+    text-align: center;
+  }
+  .compass-summary {
+    display: block;
+  }
+  .plan-guidance {
+    margin-top: 24px;
+    text-align: start;
+  }
+  .plan-guidance ul {
+    grid-template-columns: 1fr;
+  }
+  .plan-guidance li {
+    min-height: auto;
+    padding: 14px 14px 14px 38px;
+  }
+  .plan-guidance li::before {
+    top: 21px;
+  }
+  .plan-guidance li + li {
+    margin-top: 8px;
+    border-inline-start: 0;
+    border-top: 0;
+  }
+  .allocation {
+    justify-content: center;
+  }
+}
+.plan-level-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.active-plan-context {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px 28px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--line);
+}
+:host > .compass-panel {
+  margin: 0;
+  padding-top: 28px;
+}
+.active-plan-context > div:first-child {
+  min-width: 220px;
+}
+.active-day-selector {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: 0 1 190px;
+  color: var(--text-subtle);
+  font-size: 12px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+.active-day-selector select {
+  min-width: 92px;
+  margin: 0;
+}
+.active-plan-context .eyebrow,
+.active-plan-context .plan-summary {
+  margin: 0;
+}
+.active-plan-context .plan-summary {
+  margin-top: 6px;
+  color: var(--text-subtle);
+  font-size: 13px;
+}
+.plan-level-actions {
+  justify-content: flex-end;
+}
+@media (max-width: 900px) {
+  .active-plan-context {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .active-day-selector {
+    width: 100%;
+    flex-basis: auto;
+  }
+  .plan-level-actions {
+    justify-content: flex-start;
+  }
+}
+@media (max-width: 640px) {
+  .plan-level-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .plan-level-actions button {
+    width: 100%;
+  }
+}

@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A home's smart meter sends its readings to the nightly job, which replaces the 14 September partition with a fresh copy instead of adding a second one">
+<style>
+.de-bp-t{font:600 12px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.de-bp-loop{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-6.6s}
+.de-bp-dot1{animation-name:de-bp-dot1;animation-timing-function:linear}
+@keyframes de-bp-dot1{0%,4%{transform:translate(0,0);opacity:0}8%{opacity:1}26%{transform:translate(58px,0);opacity:1}30%,100%{transform:translate(58px,0);opacity:0}}
+.de-bp-dot2{animation-name:de-bp-dot2;animation-timing-function:linear}
+@keyframes de-bp-dot2{0%,32%{transform:translate(0,0);opacity:0}36%{opacity:1}52%{transform:translate(44px,0);opacity:1}56%,100%{transform:translate(44px,0);opacity:0}}
+.de-bp-old{animation-name:de-bp-old;animation-timing-function:ease-in-out}
+@keyframes de-bp-old{0%,54%{opacity:1;transform:translate(0,0)}62%,94%{opacity:0;transform:translate(12px,0)}100%{opacity:1;transform:translate(0,0)}}
+.de-bp-new{animation-name:de-bp-new;animation-timing-function:ease-out}
+@keyframes de-bp-new{0%,58%{opacity:0;transform:translate(0,-26px)}68%,94%{opacity:1;transform:translate(0,0)}100%{opacity:0;transform:translate(0,0)}}
+.de-bp-ok{animation-name:de-bp-ok;animation-timing-function:ease-in-out}
+@keyframes de-bp-ok{0%,70%{opacity:0}76%,94%{opacity:1}100%{opacity:0}}
+.de-bp-led{animation-name:de-bp-led;animation-timing-function:steps(1)}
+@keyframes de-bp-led{0%,30%{opacity:.35}32%,58%{opacity:1}60%,100%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){.de-bp-loop{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<!-- home with a smart meter on its wall -->
+<ellipse cx="52" cy="150" rx="40" ry="6" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<path d="M16 82L52 52L88 82" fill="none" stroke="var(--scene-ink,#102a33)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M22 80V146H82V80" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-ink,#102a33)" stroke-width="2.5" stroke-linejoin="round"/>
+<rect x="30" y="112" width="16" height="34" rx="2" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<rect x="54" y="92" width="22" height="30" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<rect x="57" y="96" width="16" height="9" rx="1.5" fill="var(--scene-accent,#006c73)"/>
+<circle cx="65" cy="114" r="3" fill="var(--scene-good,#1f7a4d)"/>
+<text class="de-bp-t" x="65" y="136" text-anchor="middle" font-size="11">kWh</text>
+<!-- wire from the meter to the nightly job -->
+<path d="M78 100H120" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="3 5"/>
+<g class="de-bp-loop de-bp-dot1"><circle cx="66" cy="100" r="5" fill="var(--scene-accent,#006c73)"/></g>
+<!-- the nightly job: a server with a moon above it -->
+<ellipse cx="152" cy="150" rx="34" ry="6" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<path d="M124 76L132 68H184L176 76Z" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-ink,#102a33)" stroke-width="2" stroke-linejoin="round"/>
+<path d="M176 76L184 68V138L176 146Z" fill="var(--scene-ink,#102a33)" opacity="0.14"/>
+<rect x="124" y="76" width="52" height="70" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<path d="M132 90H160M132 106H160M132 122H160" stroke="var(--scene-line,#cfdfdc)" stroke-width="5" stroke-linecap="round"/>
+<circle class="de-bp-loop de-bp-led" cx="167" cy="90" r="3" fill="var(--scene-good,#1f7a4d)"/>
+<circle cx="167" cy="106" r="3" fill="var(--scene-good,#1f7a4d)" opacity="0.35"/>
+<path d="M136 30a12 12 0 1 0 12 16a10 10 0 0 1-12-16Z" fill="var(--scene-warn,#8c6100)"/>
+<text class="de-bp-t" x="172" y="50" text-anchor="middle" font-size="11">02:00</text>
+<!-- wire from the job to the table -->
+<path d="M184 100H226" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="3 5"/>
+<g class="de-bp-loop de-bp-dot2"><circle cx="186" cy="100" r="5" fill="var(--scene-accent,#006c73)"/></g>
+<!-- daily_usage: a table with one partition per day -->
+<ellipse cx="270" cy="152" rx="42" ry="6" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<path d="M230 52c0-6 18-10 40-10s40 4 40 10v88c0 6-18 10-40 10s-40-4-40-10Z" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<ellipse cx="270" cy="52" rx="40" ry="10" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<rect x="240" y="114" width="60" height="22" rx="4" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-ink,#102a33)" stroke-width="1.5"/>
+<text class="de-bp-t" x="270" y="129" text-anchor="middle">15 Sep</text>
+<g class="de-bp-loop de-bp-old"><rect x="240" y="86" width="60" height="22" rx="4" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-ink,#102a33)" stroke-width="1.5"/><text class="de-bp-t" x="270" y="101" text-anchor="middle">14 Sep</text></g>
+<g class="de-bp-loop de-bp-new"><rect x="240" y="86" width="60" height="22" rx="4" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="2"/><text class="de-bp-t" x="270" y="101" text-anchor="middle">14 Sep</text></g>
+<g class="de-bp-loop de-bp-ok"><circle cx="300" cy="74" r="10" fill="var(--scene-good,#1f7a4d)"/><path d="M295 74l4 4 6-7" stroke="var(--scene-card,#fff)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></g>
+</svg>

@@ -303,6 +303,47 @@ a {
   --card-title-color: var(--card-title-look-ahead);
 }
 
+/* Every learning card carries the same thin path-coloured line along its top edge, the accent
+   the catalog group bands already have (user review, 2026-10-03): catalog course cards, course
+   and section tiles, course unit cards and module question cards. The path tokens switch with
+   the theme, so the line is the light path colour on dark. A planned card keeps a quiet line.
+   The line follows the card's rounded corners and never takes clicks. Not used on Home. */
+:root {
+  --card-top-accent: var(--accent-strong);
+}
+.learn-catalog-reader,
+[data-path='learn'] {
+  --card-top-accent: var(--path-learn);
+}
+.grow-catalog-reader,
+[data-path='grow'] {
+  --card-top-accent: var(--path-grow);
+}
+.look-ahead-catalog-reader,
+[data-path='look-ahead'] {
+  --card-top-accent: var(--path-look-ahead);
+}
+:where(main:not(.landing-page))
+  :is(.course-card, .unit-card-frame, article.unit-card, .question-card) {
+  position: relative;
+}
+:where(main:not(.landing-page))
+  :is(.course-card, .unit-card-frame, article.unit-card, .question-card)::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 1;
+  box-sizing: border-box;
+  block-size: 20px;
+  border-block-start: 3px solid var(--card-top-accent);
+  border-start-start-radius: inherit;
+  border-start-end-radius: inherit;
+  pointer-events: none;
+}
+:where(main:not(.landing-page)) :is(.course-card.unavailable, .unit-card-planned)::before {
+  border-block-start-color: var(--border-strong);
+}
+
 :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
   outline: 3px solid var(--accent-focus);
   outline-offset: 3px;
@@ -640,6 +681,29 @@ main.harbor-learn .harbor-course-layout .learning-map {
   }
 }
 
+/* Hands-On DSA is a wide problem table, so it takes most of a wide screen: up to 1760px,
+   with narrower side gutters that still leave both sidebars docked (a docked panel needs
+   248px). Scoped to this page; every other page keeps the 1440px reader. */
+main.harbor-learn.content-page.hands-on-dsa-page {
+  max-width: 1760px;
+}
+@media (min-width: 1100px) {
+  main.content-page.hands-on-dsa-page[data-sidebar-columns] {
+    --reader-sidebar-space: clamp(248px, 14vw, 320px);
+    max-width: min(1760px, calc(100% - 2 * var(--reader-sidebar-space))) !important;
+    padding-inline: clamp(16px, 2vw, 40px);
+  }
+  /* Below 1700px the page starts with the left navigation collapsed (collapseLeftBelow) and takes
+     its column, keeping only a strip for the sidebar toggle. Opening the navigation gives the
+     column back. */
+  main.content-page.hands-on-dsa-page[data-sidebar-columns][data-sidebar-left-collapsed] {
+    --reader-sidebar-toggle-space: 64px;
+    width: calc(100% - var(--reader-sidebar-toggle-space) - var(--reader-sidebar-space)) !important;
+    max-width: calc(100% - var(--reader-sidebar-toggle-space) - var(--reader-sidebar-space)) !important;
+    margin-inline: var(--reader-sidebar-toggle-space) var(--reader-sidebar-space) !important;
+  }
+}
+
 /* The same language palettes used by the Hands-on DSA editor and trace. */
 pre:has(> .learning-code) { background: var(--code-bg); color: var(--code-ink); overflow-x: auto; }
 .learning-code { font-weight: 400; white-space: pre; tab-size: 4; }
@@ -662,7 +726,9 @@ pre:has(> .learning-code[data-code-language='go']) { background:#14161a; }
 }
 /* Inline code: a monospace face on a tinted chip in its own colour, so Driver::id
    or d -> d.id() never blends into the sentence. */
-.system :is(.prose, .lesson-table, .spoken-answer, .follow-ups, .lesson-callout, .cheat-sheet, .section-card) code:not(pre code) {
+.system :is(.prose, .lesson-table, .spoken-answer, .follow-ups, .lesson-callout, .cheat-sheet, .section-card) code:not(pre code),
+.rich code:not(pre code),
+.recall-question code {
   padding: 0.1em 0.38em;
   border: 1px solid var(--inline-code-line);
   border-radius: 5px;

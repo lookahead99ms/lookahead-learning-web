@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Events drop into five-minute windows; the closed 12:05 window is loaded once into its partition, and a quality check scans the rows and flags one with a null value">
+<style>
+.gc-deng-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.gc-deng-tm { font-family: ui-monospace, Menlo, monospace; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.gc-deng-sh { fill: var(--scene-ink, #102a33); opacity: .08; }
+.gc-deng-slab { fill: var(--scene-ink, #102a33); opacity: .14; }
+.gc-deng-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 2; }
+.gc-deng-bin { fill: var(--scene-card, #ffffff); stroke: var(--scene-muted, #536970); stroke-width: 2; stroke-linejoin: round; }
+.gc-deng-soft { fill: var(--scene-accent-soft, #dcefed); }
+.gc-deng-ln { fill: var(--scene-line, #cfdfdc); }
+.gc-deng-mut { fill: var(--scene-muted, #536970); }
+.gc-deng-acc { fill: var(--scene-accent, #006c73); }
+.gc-deng-good { fill: var(--scene-good, #1f7a4d); }
+.gc-deng-bad { fill: var(--scene-bad, #b3261e); }
+.gc-deng-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 2; stroke-dasharray: 4 5; }
+
+.gc-deng-e1 { animation: gc-deng-kf-e1 8s ease-in infinite; }
+@keyframes gc-deng-kf-e1 { 0%, 1% { transform: translate(0, 0); opacity: 0; } 2% { opacity: 1; } 12% { transform: translate(128px, 0); } 18%, 95% { transform: translate(128px, 58px); opacity: 1; } 98%, 100% { transform: translate(128px, 58px); opacity: 0; } }
+.gc-deng-e2 { animation: gc-deng-kf-e2 8s ease-in infinite; }
+@keyframes gc-deng-kf-e2 { 0%, 20% { transform: translate(0, 0); opacity: 0; } 21% { opacity: 1; } 31% { transform: translate(114px, 0); } 37%, 95% { transform: translate(114px, 48px); opacity: 1; } 98%, 100% { transform: translate(114px, 48px); opacity: 0; } }
+.gc-deng-ld { animation: gc-deng-kf-ld 8s ease-in-out infinite; }
+@keyframes gc-deng-kf-ld { 0%, 6% { transform: translate(0, 0); opacity: 0; } 8% { opacity: 1; } 14% { transform: translate(0, 28px); } 26% { transform: translate(104px, 28px); opacity: 1; } 28%, 100% { transform: translate(104px, 28px); opacity: 0; } }
+.gc-deng-rows { animation: gc-deng-kf-rows 8s infinite; }
+@keyframes gc-deng-kf-rows { 0%, 26% { opacity: 0; } 30%, 95% { opacity: 1; } 98%, 100% { opacity: 0; } }
+.gc-deng-once { animation: gc-deng-kf-once 8s infinite; }
+@keyframes gc-deng-kf-once { 0%, 29% { opacity: 0; } 32%, 95% { opacity: 1; } 98%, 100% { opacity: 0; } }
+.gc-deng-scan { animation: gc-deng-kf-scan 8s linear infinite; }
+@keyframes gc-deng-kf-scan { 0%, 42% { transform: translateY(0); opacity: 0; } 43% { opacity: 1; } 68% { transform: translateY(102px); opacity: 1; } 70%, 100% { transform: translateY(102px); opacity: 0; } }
+.gc-deng-flag { animation: gc-deng-kf-flag 8s infinite; }
+@keyframes gc-deng-kf-flag { 0%, 58% { opacity: 0; } 61%, 95% { opacity: 1; } 98%, 100% { opacity: 0; } }
+
+.gc-deng-e1, .gc-deng-e2, .gc-deng-ld, .gc-deng-rows, .gc-deng-once, .gc-deng-scan, .gc-deng-flag { animation-delay: -6.56s; }
+@media (prefers-reduced-motion: reduce) { .gc-deng-e1, .gc-deng-e2, .gc-deng-ld, .gc-deng-rows, .gc-deng-once, .gc-deng-scan, .gc-deng-flag { animation-play-state: paused; } }
+</style>
+
+<!-- event stream -->
+<path class="gc-deng-wire" d="M8 18 H146"/>
+<g class="gc-deng-e1"><circle class="gc-deng-acc" cx="14" cy="18" r="4.5"/></g>
+<g class="gc-deng-e2"><circle class="gc-deng-acc" cx="14" cy="18" r="4.5"/></g>
+
+<!-- time windows: two closed, one filling -->
+<ellipse class="gc-deng-sh" cx="83" cy="90" rx="74" ry="4"/>
+<path class="gc-deng-bin" d="M14 34 V80 a4 4 0 0 0 4 4 H52 a4 4 0 0 0 4 -4 V34"/>
+<rect class="gc-deng-mut" x="11" y="29" width="48" height="5" rx="2"/>
+<g class="gc-deng-acc" opacity=".55"><circle cx="24" cy="76" r="4.5"/><circle cx="35" cy="76" r="4.5"/><circle cx="46" cy="76" r="4.5"/><circle cx="29" cy="66" r="4.5"/><circle cx="41" cy="66" r="4.5"/></g>
+<path class="gc-deng-bin" d="M62 34 V80 a4 4 0 0 0 4 4 H100 a4 4 0 0 0 4 -4 V34"/>
+<rect class="gc-deng-mut" x="59" y="29" width="48" height="5" rx="2"/>
+<g class="gc-deng-acc"><circle cx="72" cy="76" r="4.5"/><circle cx="83" cy="76" r="4.5"/><circle cx="94" cy="76" r="4.5"/><circle cx="77" cy="66" r="4.5"/><circle cx="89" cy="66" r="4.5"/><circle cx="83" cy="56" r="4.5"/></g>
+<path class="gc-deng-bin" d="M110 34 V80 a4 4 0 0 0 4 4 H148 a4 4 0 0 0 4 -4 V34"/>
+<g class="gc-deng-acc"><circle cx="120" cy="76" r="4.5"/><circle cx="131" cy="76" r="4.5"/></g>
+<text class="gc-deng-tm" x="35" y="99" font-size="11" text-anchor="middle">12:00</text>
+<text class="gc-deng-tm" x="83" y="99" font-size="11" text-anchor="middle">12:05</text>
+<text class="gc-deng-tm" x="131" y="99" font-size="11" text-anchor="middle">12:10</text>
+
+<!-- the closed window is loaded once -->
+<path class="gc-deng-wire" d="M83 106 V132 H188"/>
+<g class="gc-deng-ld"><rect class="gc-deng-acc" x="74" y="98" width="18" height="14" rx="2"/><path d="M76 103 H90 M76 107 H90" stroke="var(--scene-card, #ffffff)" stroke-width="1.5"/></g>
+<g class="gc-deng-once">
+  <circle class="gc-deng-good" cx="104" cy="152" r="7"/><path d="M100.5 152 l2.5 2.5 l4.5 -5" fill="none" stroke="var(--scene-card, #ffffff)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text class="gc-deng-t" x="116" y="156" font-size="11" style="fill: var(--scene-good, #1f7a4d)">loaded once</text>
+</g>
+
+<!-- the partition, scanned by a quality check -->
+<ellipse class="gc-deng-sh" cx="250" cy="166" rx="58" ry="4"/>
+<rect class="gc-deng-slab" x="192" y="26" width="116" height="134" rx="7"/>
+<rect class="gc-deng-box" x="192" y="22" width="116" height="134" rx="7"/>
+<path class="gc-deng-soft" d="M199 23 H300 a7 7 0 0 1 7 7 V44 H193 V30 a7 7 0 0 1 7 -7z"/>
+<text class="gc-deng-tm" x="202" y="38" font-size="11">w=12:05</text>
+<g class="gc-deng-rows">
+  <rect class="gc-deng-acc" x="202" y="54" width="8" height="8" rx="2"/><rect class="gc-deng-ln" x="216" y="55" width="52" height="6" rx="3"/>
+  <rect class="gc-deng-acc" x="202" y="74" width="8" height="8" rx="2"/><rect class="gc-deng-ln" x="216" y="75" width="40" height="6" rx="3"/>
+  <rect class="gc-deng-acc" x="202" y="94" width="8" height="8" rx="2"/><rect class="gc-deng-ln" x="216" y="95" width="48" height="6" rx="3"/>
+  <g class="gc-deng-flag"><rect class="gc-deng-bad" x="193" y="108" width="114" height="20" opacity=".14"/></g>
+  <rect class="gc-deng-acc" x="202" y="114" width="8" height="8" rx="2"/><text class="gc-deng-tm" x="216" y="122" font-size="11" style="fill: var(--scene-bad, #b3261e)">null</text>
+  <rect class="gc-deng-acc" x="202" y="134" width="8" height="8" rx="2"/><rect class="gc-deng-ln" x="216" y="135" width="44" height="6" rx="3"/>
+  <path d="M193 68 H307 M193 88 H307 M193 108 H307 M193 128 H307" stroke="var(--scene-line, #cfdfdc)" stroke-width="1"/>
+</g>
+<g class="gc-deng-scan"><path d="M194 48 H306" stroke="var(--scene-warn, #a15c00)" stroke-width="2.5"/></g>
+<g class="gc-deng-flag">
+  <path d="M286 110 V127" stroke="var(--scene-bad, #b3261e)" stroke-width="2" stroke-linecap="round"/>
+  <path class="gc-deng-bad" d="M287 110 L299 114 L287 118 Z"/>
+</g>
+</svg>

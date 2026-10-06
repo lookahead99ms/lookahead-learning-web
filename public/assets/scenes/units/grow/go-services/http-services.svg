@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A driver's app sends two start-charging requests to a Go service; the valid one is answered 201 and the charger starts, the one with a misspelled field is refused with 400">
+<style>
+.gs-hs-a,.gs-hs-b,.gs-hs-c,.gs-hs-d,.gs-hs-e,.gs-hs-f{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-6.9s;animation-timing-function:ease-in-out}
+.gs-hs-a{animation-name:gs-hs-a}
+@keyframes gs-hs-a{0%,4%{transform:translateX(0);opacity:1}24%{transform:translateX(88px);opacity:1}28%,100%{transform:translateX(88px);opacity:0}}
+.gs-hs-b{animation-name:gs-hs-b}
+@keyframes gs-hs-b{0%,28%{transform:translateX(0);opacity:0}30%{opacity:1}44%{transform:translateX(78px);opacity:1}47%,100%{transform:translateX(78px);opacity:0}}
+.gs-hs-c{animation-name:gs-hs-c}
+@keyframes gs-hs-c{0%,44%{opacity:0}50%,96%{opacity:1}100%{opacity:0}}
+.gs-hs-d{animation-name:gs-hs-d}
+@keyframes gs-hs-d{0%,48%{transform:translate(0,0);opacity:0}50%{opacity:1}66%{transform:translate(88px,0);opacity:1}76%{transform:translate(20px,0);opacity:1}80%,100%{transform:translate(20px,0);opacity:0}}
+.gs-hs-e{animation-name:gs-hs-e}
+@keyframes gs-hs-e{0%,72%{opacity:0}78%,96%{opacity:1}100%{opacity:0}}
+.gs-hs-f{animation-name:gs-hs-f}
+@keyframes gs-hs-f{0%,26%{opacity:0}30%,96%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.gs-hs-a,.gs-hs-b,.gs-hs-c,.gs-hs-d,.gs-hs-e,.gs-hs-f{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g fill="var(--scene-ink,#102a33)" opacity=".09"><ellipse cx="42" cy="152" rx="30" ry="6"/><ellipse cx="160" cy="152" rx="34" ry="6"/><ellipse cx="272" cy="152" rx="32" ry="6"/></g>
+<circle cx="36" cy="72" r="13" fill="var(--scene-accent,#006c73)"/>
+<path d="M14 150c0-26 10-40 22-40s22 14 22 40Z" fill="var(--scene-accent,#006c73)"/>
+<rect x="46" y="96" width="22" height="38" rx="4" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2.5"/>
+<rect x="50" y="102" width="14" height="5" rx="2" fill="var(--scene-line,#cfdfdc)"/><rect x="50" y="111" width="10" height="5" rx="2" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M72 92H126M72 128H126M196 104H236" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="3 5"/>
+<path d="M130 66h52l10-10H140Z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M182 66l10-10v84l-10 10Z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="130" y="66" width="52" height="84" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2.5"/>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="4" stroke-linecap="round"><path d="M138 82H164M138 100H164M138 118H164M138 136H164"/></g>
+<g fill="var(--scene-good,#1f7a4d)"><circle cx="173" cy="82" r="3"/><circle cx="173" cy="100" r="3"/><circle cx="173" cy="118" r="3"/><circle cx="173" cy="136" r="3"/></g>
+<path d="M254 60h30l6-6h-30Z" fill="var(--scene-line,#cfdfdc)"/>
+<rect x="254" y="60" width="30" height="90" rx="4" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2.5"/>
+<rect x="259" y="68" width="20" height="26" rx="3" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-ink,#102a33)" stroke-width="1.5"/>
+<path class="gs-hs-c" d="M271 71l-7 11h6l-3 9 8-12h-6l3-8Z" fill="var(--scene-good,#1f7a4d)"/>
+<path d="M284 110c18 0 20 18 8 26" fill="none" stroke="var(--scene-ink,#102a33)" stroke-width="3" stroke-linecap="round"/>
+<rect x="286" y="132" width="12" height="9" rx="2" fill="var(--scene-ink,#102a33)"/>
+<g class="gs-hs-a"><rect x="76" y="83" width="34" height="18" rx="4" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="2"/><rect x="76" y="83" width="34" height="5" rx="2" fill="var(--scene-accent,#006c73)"/></g>
+<g class="gs-hs-b"><circle cx="198" cy="104" r="5" fill="var(--scene-accent,#006c73)"/></g>
+<g class="gs-hs-d"><rect x="76" y="119" width="34" height="18" rx="4" fill="var(--scene-card,#fff)" stroke="var(--scene-warn,#9a6700)" stroke-width="2"/><rect x="76" y="119" width="34" height="5" rx="2" fill="var(--scene-warn,#9a6700)"/></g>
+<g class="gs-hs-f"><rect x="68" y="26" width="46" height="22" rx="11" fill="var(--scene-good,#1f7a4d)"/><text x="91" y="42" text-anchor="middle" font-family="system-ui,sans-serif" font-size="15" font-weight="700" fill="var(--scene-card,#fff)">201</text></g>
+<g class="gs-hs-e"><rect x="68" y="152" width="46" height="22" rx="11" fill="var(--scene-bad,#b3261e)"/><text x="91" y="168" text-anchor="middle" font-family="system-ui,sans-serif" font-size="15" font-weight="700" fill="var(--scene-card,#fff)">400</text></g>
+</svg>

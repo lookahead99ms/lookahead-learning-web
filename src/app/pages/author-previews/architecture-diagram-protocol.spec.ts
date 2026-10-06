@@ -43,6 +43,19 @@ describe('architecture diagram channel boundary', () => {
       expect(parseDiagramMessage(invalid)).toBeNull();
   });
 
+  it('opens the DLV-408 content diagrams (lesson downloads, DSA recall and workspace) in the full-screen viewer', () => {
+    const diagrams = [
+      ['lesson-downloads', 'Lesson project downloads'],
+      ['dsa-recall-workspace', 'Hands-On DSA recall and workspace'],
+    ] as const;
+    for (const [diagramId, title] of diagrams) {
+      expect(architectureDiagrams[diagramId]).toBe(title);
+      expect(
+        parseDiagramMessage({ type: 'lookahead:architecture:expand', version: 1, diagramId }),
+      ).toEqual({ type: 'lookahead:architecture:expand', version: 1, diagramId });
+    }
+  });
+
   it('opens each approved candidate diagram through the existing protected document contract', () => {
     const candidates = [
       ['candidate-apps', 'Three apps, two databases'],

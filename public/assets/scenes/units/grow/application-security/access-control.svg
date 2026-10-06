@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Two people ask the procurement server for Maya's purchase request: Omar, who is not her manager, is refused, while Tom, her manager, approves it">
+<style>
+.as-ac-t{font:600 11px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.as-ac-dota{animation:as-ac-dota 8s linear infinite;animation-delay:-6.4s}
+@keyframes as-ac-dota{0%,4%{transform:translate(0,0);opacity:0}7%{opacity:1}22%{transform:translate(78px,26px);opacity:1}26%,100%{transform:translate(78px,26px);opacity:0}}
+.as-ac-dotb{animation:as-ac-dotb 8s linear infinite;animation-delay:-6.4s}
+@keyframes as-ac-dotb{0%,38%{transform:translate(0,0);opacity:0}41%{opacity:1}54%{transform:translate(78px,-24px);opacity:1}66%{transform:translate(152px,-24px);opacity:1}70%,100%{transform:translate(152px,-24px);opacity:0}}
+.as-ac-no{animation:as-ac-no 8s ease-in-out infinite;animation-delay:-6.4s}
+@keyframes as-ac-no{0%,24%{opacity:0}28%,94%{opacity:1}100%{opacity:0}}
+.as-ac-ok{animation:as-ac-ok 8s ease-in-out infinite;animation-delay:-6.4s}
+@keyframes as-ac-ok{0%,66%{opacity:0}70%,94%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.as-ac-dota,.as-ac-dotb,.as-ac-no,.as-ac-ok{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<!-- Omar, top left, behind a laptop -->
+<ellipse cx="40" cy="74" rx="26" ry="5" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<circle cx="40" cy="30" r="10" fill="var(--scene-accent,#006c73)"/>
+<path d="M24 56a16 16 0 0 1 32 0Z" fill="var(--scene-accent,#006c73)"/>
+<path d="M22 56h36l-4 14H26Z" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-ink,#102a33)" stroke-width="1.5"/>
+<!-- Tom, bottom left, behind a laptop -->
+<ellipse cx="40" cy="160" rx="26" ry="5" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<circle cx="40" cy="116" r="10" fill="var(--scene-grow,#b8457a)"/>
+<path d="M24 142a16 16 0 0 1 32 0Z" fill="var(--scene-grow,#b8457a)"/>
+<path d="M22 142h36l-4 14H26Z" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-ink,#102a33)" stroke-width="1.5"/>
+<!-- wires to the server and on to the report -->
+<path d="M62 62L132 88M62 136L132 112M178 100H226" fill="none" stroke="var(--scene-muted,#5f7478)" stroke-width="1.5" stroke-dasharray="3 4"/>
+<!-- server with a padlock: the access check -->
+<ellipse cx="156" cy="146" rx="30" ry="5" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<path d="M134 70l8-6h36l-8 6Z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M170 70l8-6v70l-8 6Z" fill="var(--scene-ink,#102a33)" opacity="0.14"/>
+<rect x="134" y="70" width="36" height="70" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="1.5"/>
+<path d="M140 80h18M140 90h18M140 128h18" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"/>
+<circle cx="163" cy="80" r="2" fill="var(--scene-good,#1f7a4d)"/>
+<circle cx="163" cy="90" r="2" fill="var(--scene-good,#1f7a4d)"/>
+<path d="M146 104v-5a6 6 0 0 1 12 0v5" fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/>
+<rect x="143" y="103" width="18" height="15" rx="3" fill="var(--scene-accent,#006c73)"/>
+<!-- Maya's purchase request: owner tag, amount, and the approval stamp -->
+<ellipse cx="266" cy="152" rx="40" ry="5" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<path d="M228 48h62l12 12v86h-74Z" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="1.5"/>
+<path d="M290 48v12h12" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-ink,#102a33)" stroke-width="1.5"/>
+<text class="as-ac-t" x="236" y="66">PR-1001</text>
+<rect x="234" y="73" width="38" height="15" rx="7" fill="var(--scene-accent-soft,#dcefed)"/>
+<text class="as-ac-t" x="240" y="84">maya</text>
+<text class="as-ac-t" x="236" y="104">$2,396.00</text>
+<path d="M236 114h48M236 122h34" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"/>
+<!-- request dots -->
+<circle class="as-ac-dota" cx="62" cy="62" r="4" fill="var(--scene-accent,#006c73)"/>
+<circle class="as-ac-dotb" cx="62" cy="136" r="4" fill="var(--scene-grow,#b8457a)"/>
+<!-- Omar is refused -->
+<g class="as-ac-no"><circle cx="68" cy="34" r="9" fill="var(--scene-bad,#b3261e)"/><path d="M64 30l8 8M72 30l-8 8" stroke="var(--scene-card,#fff)" stroke-width="2" stroke-linecap="round"/></g>
+<!-- Tom approves: check badge and stamp -->
+<g class="as-ac-ok"><circle cx="68" cy="120" r="9" fill="var(--scene-good,#1f7a4d)"/><path d="M64 120l3 3 6-6" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2" stroke-linecap="round"/>
+<rect x="236" y="127" width="60" height="15" rx="3" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="1.5" transform="rotate(-6 266 134)"/>
+<text x="241" y="138" font-size="9" font-weight="700" fill="var(--scene-good,#1f7a4d)" transform="rotate(-6 266 134)">APPROVED</text></g>
+</svg>

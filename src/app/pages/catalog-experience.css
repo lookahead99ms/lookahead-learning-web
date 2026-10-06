@@ -210,6 +210,12 @@
   gap: 8px;
 }
 
+/* The docked left sidebar already lists every group, so the row would repeat it (user review,
+   2026-10-03). Without that sidebar (narrow screens, or the reader closed it) the row stays. */
+main[data-sidebar-nav-shown] .catalog-jump-nav {
+  display: none;
+}
+
 .catalog-jump-nav > span {
   margin-right: 3px;
   color: var(--muted);
@@ -443,15 +449,6 @@
   transform: translateX(-50%);
 }
 
-.harbor-catalog .catalog-path-section .catalog-group-card {
-  box-shadow: 0 6px 18px rgb(0 0 0 / 0.06);
-}
-
-@container (max-width: 640px) {
-  .harbor-catalog .catalog-path-section .catalog-group-card {
-    margin-bottom: 16px;
-  }
-}
 
 @media (max-width: 700px) {
   .harbor-catalog .catalog-path-section {
@@ -465,35 +462,39 @@
   }
 }
 
+/*
+ * The group hero is the band's section header, not a card (user review #8, 2026-10-03): no
+ * border, fill or shadow, nothing that lifts on hover. A smaller drawing sits beside the title
+ * and a rule under the header separates it from the course cards, which are the only things
+ * in the band that look clickable.
+ */
 .harbor-catalog .catalog-group-card {
-  margin: 0 0 20px;
-  padding: 0;
+  margin: 2px 0 24px;
+  padding: 0 0 22px;
   display: grid;
-  /* An even split keeps the 480x200 group scene large enough to read. */
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  align-items: stretch;
-  gap: 0;
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: var(--surface);
+  grid-template-columns: minmax(180px, 300px) minmax(0, 1fr);
+  align-items: center;
+  gap: 28px;
+  overflow: visible;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
 }
 
 .catalog-group-scene {
-  border-right: 1px solid var(--line);
-}
-
-.catalog-group-scene ::ng-deep .la-card-scene {
-  height: 100%;
-  min-height: 100%;
+  --card-scene-ratio: 12 / 5;
+  overflow: hidden;
+  border-radius: 12px;
 }
 
 .harbor-catalog .catalog-group-card .catalog-path-heading-copy {
   display: grid;
   align-content: center;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
-  padding: 30px 34px;
+  padding: 0;
 }
 
 /* --card-title-size: the title's size, also read by the card drawing to keep its words smaller. */
@@ -518,19 +519,20 @@
   line-height: 1.55;
 }
 
+/* Plain facts about the section, quieter than the card meta so the header reads as a header. */
 .harbor-catalog .catalog-group-card .catalog-path-summary {
-  margin: 4px 0 0;
-  color: var(--accent-strong);
-  font-size: 0.76rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  margin: 2px 0 0;
+  color: var(--text-subtle);
+  font-size: 0.86rem;
+  font-weight: 600;
   line-height: 1.45;
   text-align: left;
-  text-transform: uppercase;
   white-space: normal;
   font-variant-numeric: tabular-nums;
 }
 
+/* Columns follow the group's course count (data-columns, even-grid.ts): 2 → 2, 4 → 2×2,
+   3/5/6 → 3; one course gets the whole row as a wide card. */
 .harbor-catalog .adaptive-catalog-course-grid {
   width: 100%;
   margin: 0;
@@ -539,6 +541,26 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 20px;
   list-style: none;
+}
+.harbor-catalog .adaptive-catalog-course-grid[data-columns='2'] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.harbor-catalog .adaptive-catalog-course-grid[data-columns='1'] {
+  grid-template-columns: minmax(0, 1fr);
+}
+@container (min-width: 721px) {
+  .harbor-catalog .adaptive-catalog-course-grid[data-columns='1'] .catalog-course-card {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: none;
+  }
+  .harbor-catalog .adaptive-catalog-course-grid[data-columns='1'] .catalog-course-scene {
+    border-right: 1px solid var(--line);
+    border-bottom: 0;
+  }
+  .harbor-catalog .adaptive-catalog-course-grid[data-columns='1'] .catalog-course-body {
+    justify-content: center;
+    padding: 28px 32px;
+  }
 }
 
 .catalog-course-item {
@@ -581,7 +603,7 @@
   border-bottom: 1px solid var(--line);
 }
 
-/* Card order: drawing, title, description; the counts sit at the foot as plain meta. */
+/* Card order: drawing, title, description; badges, when a card has any, sit at the foot. */
 .catalog-course-body {
   display: flex;
   flex-direction: column;
@@ -628,7 +650,8 @@
 }
 
 .catalog-course-badges {
-  margin: 2px 0 0;
+  margin: auto 0 0;
+  padding-top: 4px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -675,7 +698,7 @@
 }
 
 @container (max-width: 720px) {
-  .harbor-catalog .adaptive-catalog-course-grid {
+  .harbor-catalog .adaptive-catalog-course-grid:not([data-columns='1']) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -683,24 +706,17 @@
 @container (max-width: 640px) {
   .harbor-catalog .catalog-group-card {
     grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
   }
 
   .catalog-group-scene {
-    border-right: 0;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .catalog-group-scene ::ng-deep .la-card-scene {
-    height: auto;
-  }
-
-  .harbor-catalog .catalog-group-card .catalog-path-heading-copy {
-    padding: 22px 22px 24px;
+    max-width: 360px;
   }
 }
 
 @container (max-width: 460px) {
-  .harbor-catalog .adaptive-catalog-course-grid {
+  .harbor-catalog .adaptive-catalog-course-grid,
+  .harbor-catalog .adaptive-catalog-course-grid[data-columns] {
     grid-template-columns: minmax(0, 1fr);
   }
 }
@@ -721,7 +737,6 @@
     background: Canvas;
   }
 
-  .harbor-catalog .catalog-group-card,
   .harbor-catalog .catalog-course-card {
     border-color: CanvasText;
     color: CanvasText;

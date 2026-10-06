@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PageSidebarContext } from './page-sidebar-context';
 import { PageSidebars, canDockSidebar, collectPageSections, sidebarPageTitle } from './page-sidebars';
@@ -148,6 +148,80 @@ describe('Shared page sidebars', () => {
     TestBed.inject(PageSidebarContext).clear(contextOwner);
     flush();
     expect(root.querySelector('.catalog-group-toggle')).toBeNull();
+  });
+
+  it('shows where the lesson sits as an outline and searches with the lesson preset', () => {
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    TestBed.inject(PageSidebarContext).set(contextOwner, {
+      excluded: false,
+      lessonNav: {
+        path: { title: 'Learn', route: ['/', 'learn'] },
+        group: { title: 'Java Platform and Runtime', route: ['/', 'learn'], queryParams: { group: 'java-platform' } },
+        nextGroup: { title: 'Web Foundations', route: ['/', 'learn'], queryParams: { group: 'javascript-web-foundations' } },
+        nextCourseInNextGroup: false,
+        course: { title: 'Modern Java', route: ['/', 'learn', 'modern-java'] },
+        current: 'Java Streams',
+        previous: { title: 'Java 8 Functional Foundations', route: ['/', 'learn', 'modern-java', 'functional'] },
+        next: null,
+        nextCourse: { title: 'JVM Memory and GC', route: ['/', 'learn', 'garbage-collection'] },
+        search: { path: 'learn', course: 'modern-java', module: 'streams' },
+      },
+    });
+    flush();
+    button('Open right sidebar').click();
+    flush();
+    const nav = root.querySelector<HTMLElement>('.sidebar-lesson-nav')!;
+    expect(nav).not.toBeNull();
+    expect(nav.getAttribute('data-path')).toBe('learn');
+    const text = (selector: string) =>
+      Array.from(nav.querySelectorAll<HTMLElement>(selector)).map((element) => element.textContent?.replace(/\s+/g, ' ').trim());
+    const href = (selector: string) => nav.querySelector(selector)?.getAttribute('href');
+    // Path, group, course and its lessons, then the next course in this group and the next group.
+    expect(text('.outline-path > a')).toEqual(['Learn']);
+    expect(text('.outline-group > a')).toEqual(['Java Platform and Runtime', 'Web Foundations']);
+    expect(text('.outline-course > a')).toEqual(['Modern Java', 'JVM Memory and GC']);
+    expect(text('.outline-lesson')).toEqual(['Java 8 Functional Foundations', 'Java Streams']);
+    expect(nav.querySelector('.outline-lesson.current')?.getAttribute('aria-current')).toBe('page');
+    expect(href('.outline-path > a')).toBe('/learn');
+    expect(href('.outline-group > a')).toBe('/learn?group=java-platform');
+    expect(href('.outline-course.here > a')).toBe('/learn/modern-java');
+    expect(href('.outline-course.ahead > a')).toBe('/learn/garbage-collection');
+    expect(href('.outline-group.ahead > a')).toBe('/learn?group=javascript-web-foundations');
+    // The outline explains itself: no "Next course" or "Next group" captions.
+    expect(nav.textContent).not.toMatch(/next (course|group|lesson)/i);
+    const input = nav.querySelector<HTMLInputElement>('input[type="search"]')!;
+    expect(input.getAttribute('aria-label')).toBe('Search Modern Java');
+    input.value = '  flatMap ';
+    nav.querySelector('form')!.dispatchEvent(new Event('submit', { cancelable: true }));
+    expect(navigate).toHaveBeenCalledWith(['/search'], {
+      queryParams: { q: 'flatMap', path: 'learn', course: 'modern-java', module: 'streams' },
+    });
+    TestBed.inject(PageSidebarContext).clear(contextOwner);
+    flush();
+    expect(root.querySelector('.sidebar-lesson-nav')).toBeNull();
+  });
+
+  it('puts the next course inside the next group when the course ends its group', () => {
+    TestBed.inject(PageSidebarContext).set(contextOwner, {
+      excluded: false,
+      lessonNav: {
+        path: { title: 'Learn', route: ['/', 'learn'] },
+        group: { title: 'Java Platform and Runtime', route: ['/', 'learn'], queryParams: { group: 'java-platform' } },
+        nextGroup: { title: 'Web Foundations', route: ['/', 'learn'], queryParams: { group: 'javascript-web-foundations' } },
+        nextCourseInNextGroup: true,
+        course: { title: 'JVM Memory and GC', route: ['/', 'learn', 'garbage-collection'] },
+        current: 'Memory and GC Diagnosis',
+        nextCourse: { title: 'JavaScript Foundations', route: ['/', 'learn', 'javascript-foundations'] },
+        search: { path: 'learn', course: 'garbage-collection', module: 'diagnosis' },
+      },
+    });
+    flush();
+    button('Open right sidebar').click();
+    flush();
+    const nextGroup = root.querySelector<HTMLElement>('.sidebar-lesson-nav .outline-group.ahead')!;
+    expect(nextGroup.querySelector('.outline-course.ahead > a')?.textContent?.trim()).toBe('JavaScript Foundations');
+    expect(root.querySelectorAll('.sidebar-lesson-nav .outline-course.ahead').length).toBe(1);
   });
 
   it('expands first, then collapses and navigates to the section on the second activation', () => {
@@ -340,7 +414,10 @@ describe('Shared page sidebars', () => {
     vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(1800);
     vi.mocked(main.getBoundingClientRect).mockReturnValue({ left: 0, right: 1800 } as DOMRect);
     refresh();
-    expect(root.querySelectorAll('.standalone-signature.inline-signature').length).toBe(2);
+    // All four corner statements join the strip: the two promises and the reasoning habit.
+    expect(root.querySelectorAll('.standalone-signature.inline-signature').length).toBe(4);
+    expect(root.querySelectorAll('.signature-strip app-reasoning-prompt').length).toBe(2);
+    expect(root.querySelector('.corner-signature')).toBeNull();
   });
 
   it('lines the in-flow statements up with the page content column in one strip', () => {
@@ -369,6 +446,8 @@ describe('Shared page sidebars', () => {
     expect(parts).toEqual([
       'standalone-signature standalone-signature-left inline-signature',
       'standalone-signature standalone-signature-right inline-signature',
+      'standalone-signature standalone-signature-left inline-signature reasoning-signature',
+      'standalone-signature standalone-signature-right inline-signature reasoning-signature',
     ]);
     expect(strip.querySelector('app-platform-signature')?.classList).not.toContain('stacked');
 
@@ -377,6 +456,24 @@ describe('Shared page sidebars', () => {
     refresh();
     expect(strip.style.marginLeft).toBe('43px');
     expect(strip.style.width).toBe('1354px');
+  });
+
+  it('lines the strip up with the page content, not the window edge, when the page is the column', () => {
+    // Manage account below 1280px: the page spans the window and pads its content by 24px.
+    main.classList.add('account-page');
+    main.style.paddingLeft = '24px';
+    main.style.paddingRight = '24px';
+    vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(1200);
+    vi.mocked(main.getBoundingClientRect).mockReturnValue({
+      left: 0,
+      right: 1200,
+      width: 1200,
+    } as DOMRect);
+    refresh();
+    const strip = root.querySelector<HTMLElement>('.signature-strip')!;
+    expect(strip.classList).toContain('aligned');
+    expect(strip.style.marginLeft).toBe('24px');
+    expect(strip.style.width).toBe('1152px');
   });
 
   it('keeps docked statements out of the in-flow strip', () => {
@@ -443,6 +540,26 @@ describe('Shared page sidebars', () => {
     expect(right.style.width).toContain('534px');
     expect(main.style.getPropertyValue('--sidebar-start-space')).toBe('');
     expect(main.style.getPropertyValue('--sidebar-end-space')).toBe('');
+  });
+
+  it('shows the reasoning statements in the two bottom corners of wide gutters', () => {
+    vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(2400);
+    vi.mocked(main.getBoundingClientRect).mockReturnValue({
+      left: 540, right: 1860, width: 1320, top: 76, bottom: 900, height: 824, x: 540, y: 76, toJSON: () => ({}),
+    });
+    refresh();
+    const corners = Array.from(root.querySelectorAll<HTMLElement>('.corner-signature'));
+    expect(corners).toHaveLength(2);
+    expect(corners[0].classList).toContain('corner-signature-left');
+    expect(corners[1].classList).toContain('corner-signature-right');
+    expect(corners[0].textContent?.replace(/\s+/g, ' ').trim()).toBe('Understand the obstacle. Find the way.');
+    expect(corners[1].textContent?.replace(/\s+/g, ' ').trim()).toBe('Know why it works. Know when it won’t.');
+    expect(root.querySelector('.signature-strip app-reasoning-prompt')).toBeNull();
+    // An open sidebar stops short of its bottom corner.
+    button('Open left sidebar').click();
+    flush();
+    const reserved = Number(/- (\d+)px/.exec(root.querySelector<HTMLElement>('#page-sidebar-left')!.style.maxHeight)?.[1]);
+    expect(reserved).toBeGreaterThanOrEqual(96 + 8);
   });
 
   it('keeps both statements visible when navigation and practice are collapsed', () => {
@@ -671,11 +788,15 @@ describe('Shared page sidebars', () => {
     expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
     expect(button('Close right sidebar').getAttribute('aria-expanded')).toBe('true');
     expect(main.hasAttribute('data-sidebar-columns')).toBe(true);
+    // The page knows the docked navigation is showing, so it can drop shortcuts that repeat it.
+    expect(main.hasAttribute('data-sidebar-nav-shown')).toBe(true);
     button('Close left sidebar').click();
     flush();
+    expect(main.hasAttribute('data-sidebar-nav-shown')).toBe(false);
     expect(button('Close right sidebar').getAttribute('aria-expanded')).toBe('true');
     button('Open left sidebar').click();
     flush();
+    expect(main.hasAttribute('data-sidebar-nav-shown')).toBe(true);
     expect(button('Close right sidebar').getAttribute('aria-expanded')).toBe('true');
     expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
     root.querySelector<HTMLAnchorElement>('#page-sidebar-left-content a')!.focus();
@@ -684,6 +805,7 @@ describe('Shared page sidebars', () => {
     refresh();
     expect(button('Open left sidebar').getAttribute('aria-expanded')).toBe('false');
     expect(button('Open right sidebar').getAttribute('aria-expanded')).toBe('false');
+    expect(main.hasAttribute('data-sidebar-nav-shown')).toBe(false);
     expect(document.activeElement).toBe(button('Open left sidebar'));
     expect(root.querySelector<HTMLElement>('#page-sidebar-left')!.style.width).toBe('44px');
     expect(
@@ -691,7 +813,69 @@ describe('Shared page sidebars', () => {
     ).toBe(true);
   });
 
-  it('uses already-loaded recall content, resets answers between questions, and sanitizes HTML', () => {
+  it('lets a page start the left navigation collapsed below a width and take its column', async () => {
+    // The page gives up the left column while main carries data-sidebar-left-collapsed.
+    const width = vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(1440);
+    vi.mocked(main.getBoundingClientRect).mockImplementation(
+      () =>
+        ({
+          left: main.hasAttribute('data-sidebar-left-collapsed') ? 64 : 248,
+          right: 1192,
+          width: main.hasAttribute('data-sidebar-left-collapsed') ? 1128 : 944,
+        }) as DOMRect,
+    );
+    const context = TestBed.inject(PageSidebarContext);
+    fixture.destroy();
+    context.set(contextOwner, { excluded: false, collapseLeftBelow: 1700 });
+    fixture = TestBed.createComponent(PageSidebars);
+    root.append(fixture.nativeElement);
+    flush();
+    expect(main.hasAttribute('data-sidebar-left-collapsed')).toBe(true);
+    expect(button('Open left sidebar').getAttribute('aria-expanded')).toBe('false');
+    expect(button('Close right sidebar').getAttribute('aria-expanded')).toBe('true');
+    expect(main.hasAttribute('data-sidebar-nav-shown')).toBe(false);
+
+    // Opening hands the column back and docks the panel there: no overlay, the right panel stays.
+    button('Open left sidebar').click();
+    expect(main.hasAttribute('data-sidebar-left-collapsed')).toBe(false);
+    flush();
+    const left = root.querySelector<HTMLElement>('#page-sidebar-left')!;
+    expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
+    expect(left.classList.contains('docked')).toBe(true);
+    expect(left.style.width).toBe('242px');
+    expect(root.querySelector('.sidebar-backdrop')).toBeNull();
+    expect(button('Close right sidebar').getAttribute('aria-expanded')).toBe('true');
+    expect(main.hasAttribute('data-sidebar-nav-shown')).toBe(true);
+
+    // A filter change on the same page keeps the learner's choice.
+    await TestBed.inject(Router).navigate([], { queryParams: { q: 'window' } });
+    flush();
+    expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
+    expect(main.hasAttribute('data-sidebar-left-collapsed')).toBe(false);
+
+    button('Close left sidebar').click();
+    expect(main.hasAttribute('data-sidebar-left-collapsed')).toBe(true);
+    flush();
+    await TestBed.inject(Router).navigate([], { queryParams: { q: 'graph' } });
+    flush();
+    expect(button('Open left sidebar').getAttribute('aria-expanded')).toBe('false');
+    expect(main.hasAttribute('data-sidebar-left-collapsed')).toBe(true);
+
+    // At or above the page's width, and on pages without the option, the column stays reserved.
+    width.mockReturnValue(1920);
+    refresh();
+    expect(main.hasAttribute('data-sidebar-left-collapsed')).toBe(false);
+    context.clear(contextOwner);
+    width.mockReturnValue(1440);
+    fixture.destroy();
+    fixture = TestBed.createComponent(PageSidebars);
+    root.append(fixture.nativeElement);
+    flush();
+    expect(main.hasAttribute('data-sidebar-left-collapsed')).toBe(false);
+    expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('groups the practice links with Quick recall, which opens a dialog that keeps its place', () => {
     TestBed.inject(PageSidebarContext).set(contextOwner, {
       excluded: false,
       recall: [
@@ -706,18 +890,43 @@ describe('Shared page sidebars', () => {
     flush();
     button('Open right sidebar').click();
     flush();
-    const reveal = root.querySelector<HTMLButtonElement>('.recall-reveal')!;
-    expect(reveal.getAttribute('aria-expanded')).toBe('false');
-    reveal.click();
+    const group = root.querySelector<HTMLElement>('.practice-review')!;
+    expect(group.querySelector('.practice-review-label')?.textContent).toBe('Practice & review');
+    const rows = Array.from(group.querySelectorAll<HTMLElement>('.practice-action'));
+    expect(rows.map((row) => row.textContent?.trim())).toContain('Quick recall');
+    expect(rows.every((row) => row.querySelector('.practice-icon svg'))).toBe(true);
+    // No question sits in the sidebar any more.
+    expect(root.querySelector('#page-sidebar-right-content')?.textContent).not.toContain('First check?');
+
+    const opener = rows.find((row) => row.textContent?.trim() === 'Quick recall') as HTMLButtonElement;
+    expect(opener.getAttribute('aria-haspopup')).toBe('dialog');
+    opener.click();
     flush();
-    expect(root.querySelector('#sidebar-recall-answer strong')?.textContent).toBe('First answer');
-    expect(root.querySelector('#sidebar-recall-answer script')).toBeNull();
-    root.querySelector<HTMLButtonElement>('.recall-navigation button')!.click();
+    const dialog = root.querySelector<HTMLDialogElement>('dialog.recall-dialog')!;
+    expect(dialog.hasAttribute('open')).toBe(true);
+    expect(dialog.querySelector('.recall-count')?.textContent?.trim()).toBe('Question 1 of 2');
+    expect(dialog.querySelector('.recall-question')?.textContent).toBe('First check?');
+    expect(dialog.querySelector<HTMLElement>('#sidebar-recall-answer')!.hidden).toBe(true);
+    dialog.querySelector<HTMLButtonElement>('.recall-reveal')!.click();
     flush();
-    expect(root.querySelector('#page-sidebar-right-content')?.textContent).toContain(
-      'Second check?',
-    );
-    expect(reveal.getAttribute('aria-expanded')).toBe('false');
+    expect(dialog.querySelector('#sidebar-recall-answer strong')?.textContent).toBe('First answer');
+    expect(dialog.querySelector('#sidebar-recall-answer script')).toBeNull();
+    expect(dialog.querySelector('.recall-reveal')).toBeNull();
+
+    // Next question hides the previous answer.
+    dialog.querySelector<HTMLButtonElement>('.recall-next')!.click();
+    flush();
+    expect(dialog.querySelector('.recall-question')?.textContent).toBe('Second check?');
+    expect(dialog.querySelector<HTMLElement>('#sidebar-recall-answer')!.hidden).toBe(true);
+    expect(dialog.querySelector('.recall-next')?.textContent?.trim()).toBe('Start again');
+
+    // Close recall, then reopen at the same question.
+    dialog.querySelector<HTMLButtonElement>('.recall-close')!.click();
+    flush();
+    expect(dialog.hasAttribute('open')).toBe(false);
+    root.querySelector<HTMLButtonElement>('.practice-review button.practice-action')!.click();
+    flush();
+    expect(dialog.querySelector('.recall-question')?.textContent).toBe('Second check?');
   });
 
   it('excludes every coding workspace via page capability even without a known URL', () => {

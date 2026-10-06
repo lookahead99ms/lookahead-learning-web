@@ -184,41 +184,13 @@ h2 {
   line-height: 1.35;
   margin: 0 0 16px;
 }
-p,
-#sidebar-recall-answer {
+p {
   font-size: 0.88rem;
   line-height: 1.65;
 }
 button {
   font: inherit;
   cursor: pointer;
-}
-.recall-reveal {
-  min-height: 44px;
-  padding: 8px 12px;
-  border: 0;
-  border-radius: 6px;
-  background: var(--accent-strong);
-  color: var(--accent-on-primary);
-  font-size: 0.82rem;
-}
-#sidebar-recall-answer {
-  margin-block: 16px;
-}
-.recall-navigation {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-block: 14px;
-  font-size: 0.75rem;
-  color: var(--text-subtle);
-}
-.recall-navigation button {
-  min-height: 44px;
-  border: 0;
-  background: transparent;
-  color: var(--accent-link);
 }
 @media (prefers-reduced-motion: no-preference) {
   .page-sidebar {
@@ -387,4 +359,421 @@ button {
 }
 .shared-sidebar-outline a.sidebar-nested {
   padding-inline-start: 22px;
+}
+
+/* Practice & review (user review, 2026-10-05): compact full-width rows with an icon each, subtle edges,
+   clear hover and focus. Three rows jump within the page; Quick recall opens a dialog. */
+.practice-review {
+  margin-bottom: 18px;
+}
+.practice-review-label {
+  margin: 0 0 8px;
+  color: var(--text-subtle);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.practice-actions {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.practice-review .practice-action {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 40px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-strong);
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: start;
+  text-decoration: none;
+}
+.practice-review .practice-action:hover {
+  background: var(--surface-muted);
+}
+.practice-review .practice-action[aria-current] {
+  background: var(--surface-muted);
+  box-shadow: inset 3px 0 0 var(--accent-strong);
+}
+.practice-icon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--surface-accent);
+  color: var(--accent-strong);
+}
+.practice-icon svg,
+.practice-opens {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.practice-icon svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 1.7;
+}
+.practice-text {
+  flex: 1;
+  min-width: 0;
+}
+.practice-opens {
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  color: var(--text-subtle);
+  stroke-width: 1.6;
+}
+
+/* Where you are (outline, 2026-10-05): path, group, course and lessons, then the next course and group.
+   Each level has its own type, colour and hover; the width stays the sidebar's and long names wrap. */
+.sidebar-lesson-nav {
+  display: grid;
+  gap: 14px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+.lesson-outline,
+.lesson-outline ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lesson-outline ol {
+  margin-inline-start: 5px;
+  padding-inline-start: 10px;
+  border-inline-start: 1px solid var(--line);
+}
+.sidebar-lesson-nav .lesson-outline a {
+  display: block;
+  width: auto;
+  min-height: 0;
+  margin-inline-start: -8px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 7px;
+  font-size: inherit;
+  line-height: 1.35;
+  text-decoration: none;
+}
+.sidebar-lesson-nav {
+  --outline-path: var(--path-learn);
+  --outline-course: var(--card-title-learn, var(--accent-strong));
+}
+.sidebar-lesson-nav[data-path='grow'] {
+  --outline-path: var(--path-grow);
+  --outline-course: var(--card-title-grow, var(--accent-strong));
+}
+.sidebar-lesson-nav[data-path='look-ahead'] {
+  --outline-path: var(--path-look-ahead);
+  --outline-course: var(--card-title-look-ahead, var(--accent-strong));
+}
+.outline-path > a {
+  color: var(--outline-path);
+  font-size: 0.7rem !important;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.outline-path > a:hover {
+  text-decoration: underline !important;
+  text-underline-offset: 3px;
+}
+.outline-group > a {
+  color: var(--text-subtle);
+  font-size: 0.84rem !important;
+  font-weight: 600;
+}
+.outline-group > a:hover {
+  background: var(--surface-muted);
+  color: var(--text-strong);
+}
+.outline-course > a {
+  color: var(--text-strong);
+  font-size: 0.95rem !important;
+  font-weight: 800;
+}
+.outline-course.here > a {
+  color: var(--outline-course);
+}
+.outline-course > a:hover {
+  background: color-mix(in srgb, var(--outline-course) 12%, transparent);
+}
+.outline-lessons {
+  margin-block: 2px 6px !important;
+}
+.outline-lesson {
+  position: relative;
+  color: var(--text-body);
+  font-size: 0.88rem;
+}
+.sidebar-lesson-nav .outline-lesson > a {
+  padding-inline-start: 14px;
+  color: var(--text-body);
+}
+.outline-lesson > a:hover {
+  background: var(--surface-muted);
+  box-shadow: inset 3px 0 0 var(--accent-strong);
+  color: var(--text-strong);
+}
+.outline-lesson::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: -15px;
+  top: 0.72em;
+  box-sizing: border-box;
+  width: 9px;
+  height: 9px;
+  border: 2px solid var(--border-strong);
+  border-radius: 50%;
+  background: var(--surface-page);
+}
+.outline-lesson.current {
+  margin-inline-start: -8px;
+  padding: 4px 8px 4px 14px;
+  border-radius: 7px;
+  background: var(--surface-muted);
+  color: var(--text-strong);
+  font-weight: 800;
+}
+.outline-lesson.current::before {
+  inset-inline-start: -7px;
+  border-color: var(--accent-strong);
+  background: var(--accent-strong);
+}
+.outline-course.ahead,
+.outline-group.ahead {
+  margin-top: 6px;
+}
+.sidebar-lesson-nav .ahead > a {
+  color: var(--accent-link);
+}
+.ahead > a::after {
+  content: ' \2192';
+}
+.ahead > a:dir(rtl)::after {
+  content: ' \2190';
+}
+.ahead > a:hover {
+  background: transparent !important;
+  text-decoration: underline !important;
+  text-underline-offset: 3px;
+}
+.sidebar-lesson-nav .lesson-outline a:focus-visible,
+.practice-review .practice-action:focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: -1px;
+}
+
+/* Quick recall dialog: one question at a time; full screen on phones. */
+.recall-dialog {
+  width: min(640px, calc(100vw - 32px));
+  max-height: calc(100dvh - 48px);
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--text-body);
+  box-shadow: 0 24px 64px rgb(0 0 0 / 30%);
+}
+.recall-dialog::backdrop {
+  background: rgb(12 24 30 / 55%);
+}
+.recall-shell {
+  display: flex;
+  flex-direction: column;
+  max-height: inherit;
+}
+.recall-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.recall-eyebrow {
+  margin: 0;
+  color: var(--text-subtle);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.recall-head h2 {
+  margin: 2px 0 0;
+  font-size: 1.05rem;
+}
+.recall-close {
+  flex: 0 0 auto;
+  min-height: 36px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--text-strong);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+.recall-body {
+  padding: 18px 20px;
+  overflow-y: auto;
+}
+.recall-count {
+  margin: 0 0 6px;
+  color: var(--accent-strong);
+  font-size: 0.8rem !important;
+  font-weight: 800;
+}
+.recall-question {
+  margin: 0 0 16px;
+  color: var(--text-strong);
+  font-size: 1.1rem !important;
+  font-weight: 700;
+  line-height: 1.4 !important;
+}
+.recall-reveal {
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid var(--accent-strong);
+  border-radius: 9px;
+  background: transparent;
+  color: var(--accent-strong);
+  font-weight: 700;
+}
+.recall-answer {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--surface-muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+.recall-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 20px 16px;
+  border-top: 1px solid var(--line);
+  color: var(--text-subtle);
+}
+.recall-next {
+  min-height: 40px;
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--accent-strong);
+  color: var(--accent-on-primary);
+  font-weight: 700;
+}
+.recall-dialog :focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 2px;
+}
+@media (max-width: 640px) {
+  .recall-dialog {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+  }
+  .recall-shell {
+    height: 100%;
+  }
+  .recall-body {
+    flex: 1;
+  }
+}
+.sidebar-lesson-search {
+  position: relative;
+}
+.sidebar-lesson-search-icon {
+  position: absolute;
+  top: 50%;
+  left: 11px;
+  width: 16px;
+  height: 16px;
+  transform: translateY(-50%);
+  fill: none;
+  stroke: var(--text-subtle);
+  stroke-width: 2;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+.sidebar-lesson-search input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 9px 12px 9px 34px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--text-strong);
+  background: var(--surface-muted);
+  font: inherit;
+  font-size: 0.86rem;
+}
+.sidebar-lesson-search input::placeholder {
+  color: var(--text-subtle);
+}
+.sidebar-lesson-search input:focus-visible {
+  border-color: var(--accent-strong);
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 1px;
+}
+.sidebar-lesson-nav .visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Bottom-corner statements: fixed in the side gutters like the top ones, below any sidebar. */
+.corner-signature {
+  position: fixed;
+  bottom: 12px;
+  box-sizing: border-box;
+  padding: 8px 16px;
+  z-index: 44;
+  font-size: 1.05rem;
+  line-height: 1.55;
+  pointer-events: none;
+}
+.corner-signature-left {
+  inset-inline-start: 6px;
+}
+/* Lines up with the top statement, which leaves room for the left sidebar toggle. */
+.corner-signature-left.beside-toggle {
+  padding-inline-start: 52px;
+}
+.corner-signature-right {
+  inset-inline-end: 6px;
+  display: flex;
+  justify-content: flex-end;
+}
+@media (max-height: 560px) {
+  .corner-signature {
+    display: none;
+  }
 }

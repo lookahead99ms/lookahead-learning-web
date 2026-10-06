@@ -3,6 +3,7 @@ import { codeLanguageLabel } from '../focus-studio/code-presentation';
 import { Component, DestroyRef, computed, inject, input, signal } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { evenGridColumns } from '../even-grid';
 import {
   ContentItemSummary,
   FoundationLessonV1,
@@ -12,8 +13,6 @@ import {
   navTitle,
   ResolvedPatternCheck,
   systemLessonStages,
-  TheoryCodeTab,
-  TheoryOutput,
   TheoryPair,
   TheorySection,
 } from '../../content/content.models';
@@ -24,44 +23,32 @@ import { InterviewQuestionBankLink } from '../interview-question-bank-link/inter
 import { PatternUnderstandingChecks } from '../pattern-understanding-checks/pattern-understanding-checks';
 import { isReferenceLanguage, ReferenceLanguageService } from '../reference-language';
 import { LessonStoryboard } from '../lesson-storyboard/lesson-storyboard';
-import { changeCount, DiffRow, fileRows, pairFiles } from './split-diff';
-
-/** One language's version of a code block (a section, Debug pair side or cheat-sheet tab). */
-type LanguageTab = Omit<TheoryCodeTab, 'body'>;
-
-/** One file of a Debug pair's split diff. */
-interface PairDiffFile {
-  label: string;
-  language: string;
-  broken: LanguageTab | null;
-  fixed: LanguageTab | null;
-  rows: DiffRow[];
-  /** The fix renamed the file (its lines may still be the same). */
-  renamed: boolean;
-  /** The fix leaves this file alone (only on the broken side, or the same name and lines on both): shown folded. */
-  unchanged: boolean;
-  removed: number;
-  added: number;
-}
-
-/** A Debug pair shown as a split diff: the broken program on the left, the fix on the right. */
-interface PairDiff {
-  /** Java | Python | Go pairs: the tabs that switch the diff (one choice for the page); null for file pairs. */
-  languages: LanguageTab[] | null;
-  files: PairDiffFile[];
-  brokenOutput: TheoryOutput | null;
-  fixedOutput: TheoryOutput | null;
-}
-
-const DIFF_MARKS = { same: '', del: '−', add: '+' } as const;
+import { changeCount, fileRows, pairFiles } from './split-diff';
+import { ConsoleBeside } from './console-beside';
+import { LessonTabItem, LessonTabs } from '../lesson-tabs/lesson-tabs';
+import { PatternMap } from '../pattern-map/pattern-map';
+import { LessonStart } from '../lesson-start/lesson-start';
+import { cardPoints } from './card-points';
+import { LanguageTab, LessonSplitDiff, PairDiff } from './lesson-split-diff';
+import { LessonRunConsole } from './lesson-run-console';
+import { LessonTable } from './lesson-table';
+import { LessonTabStep } from './lesson-tab-step';
+import { LessonCheatSheet } from './lesson-cheat-sheet';
+import { LessonProblemLadder } from './lesson-problem-ladder';
+import { LessonSpotDrill } from './lesson-spot-drill';
+import { LessonScenarioCard } from './lesson-scenario-card';
 
 const LANGUAGE_NAMES: Record<string, string> = { java: 'Java', python: 'Python', go: 'Go' };
 
-/** First line of a crash report: Java exception, Python traceback or Go panic. */
-const CRASH_START = /^(Exception in thread |Traceback \(most recent call last\):|panic: )/;
-
-/** A line that holds nothing but one code element, e.g. a whole Java statement. */
-const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
+/** Inline lesson HTML as plain text, for places that only take text (tab labels, tooltips). */
+export function plainText(html: string): string {
+  const entities: Record<string, string> = { amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'", nbsp: ' ', rarr: '→', times: '×' };
+  return html
+    .replace(/<[^>]*>/g, '')
+    .replace(/&(amp|lt|gt|quot|#39|nbsp|rarr|times);/g, (_, name: string) => entities[name])
+    .replace(/\s+/g, ' ')
+    .trim();
+}
 
 @Component({
   selector: 'app-foundation-lesson-shell',
@@ -70,9 +57,21 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
     RouterLink,
     CodeCopyButton,
     CodingSolutionTabs,
+    ConsoleBeside,
     InteractiveTheoryVisual,
     InterviewQuestionBankLink,
     LessonStoryboard,
+    LessonStart,
+    LessonTabs,
+    LessonTabStep,
+    LessonScenarioCard,
+    LessonCheatSheet,
+    LessonSplitDiff,
+    LessonRunConsole,
+    LessonTable,
+    LessonProblemLadder,
+    LessonSpotDrill,
+    PatternMap,
     PatternUnderstandingChecks,
   ],
   template: `
@@ -83,28 +82,28 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
       <article class="foundation-lesson beginner-guide" aria-label="Lesson introduction">
         <section class="lesson-section" id="foundation-start" aria-labelledby="foundation-start-heading">
           <h2 id="foundation-start-heading">Before you start</h2>
-          <p>{{ lesson().summary }}</p>
-          @if (guide(); as guide) { <p>{{ guide.prerequisite }}</p> }
+          <p><span class="rich" [innerHTML]="lesson().summary"></span></p>
+          @if (guide(); as guide) { <p><span class="rich" [innerHTML]="guide.prerequisite"></span></p> }
         </section>
         <section class="lesson-section" id="foundation-why" aria-labelledby="foundation-why-heading">
           <h2 id="foundation-why-heading">Why this matters</h2>
-          <p>{{ flow.whyItMatters }}</p>
+          <p><span class="rich" [innerHTML]="flow.whyItMatters"></span></p>
           <h3 id="foundation-outcomes-heading">What you’ll learn</h3>
-          <ul>@for (outcome of lesson().learningOutcomes; track outcome) { <li>{{ outcome }}</li> }</ul>
+          <ul>@for (outcome of lesson().learningOutcomes; track outcome) { <li><span class="rich" [innerHTML]="outcome"></span></li> }</ul>
         </section>
       </article>
     }
     @if (guide(); as guide) {
       <article class="foundation-lesson beginner-guide" [attr.aria-label]="guideLabel()">
         @if (!lesson().learningFlow) {
-        <p class="guide-summary">{{ lesson().summary }}</p>
+        <p class="guide-summary"><span class="rich" [innerHTML]="lesson().summary"></span></p>
         <section
           class="lesson-section"
           id="foundation-start"
           aria-labelledby="foundation-start-heading"
         >
           <h2 id="foundation-start-heading">Before you start</h2>
-          <p>{{ guide.prerequisite }}</p>
+          <p><span class="rich" [innerHTML]="guide.prerequisite"></span></p>
         </section>
         }
         <section
@@ -142,10 +141,10 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
           aria-labelledby="foundation-try-heading"
         >
           <h2 id="foundation-try-heading">{{ exerciseLabel() }}</h2>
-          <p>{{ guide.try }}</p>
+          <p><span class="rich" [innerHTML]="guide.try"></span></p>
           <details class="guide-answer">
             <summary>Check your answer</summary>
-            <p>{{ guide.answer }}</p>
+            <p><span class="rich" [innerHTML]="guide.answer"></span></p>
           </details>
         </section>
         <section
@@ -156,10 +155,10 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
           <h2 id="foundation-remember-heading">What to remember</h2>
           <ul>
             @for (takeaway of guide.takeaways; track takeaway) {
-              <li>{{ takeaway }}</li>
+              <li><span class="rich" [innerHTML]="takeaway"></span></li>
             }
           </ul>
-          <p>{{ guide.later }}</p>
+          <p><span class="rich" [innerHTML]="guide.later"></span></p>
         </section>
         }
       </article>
@@ -182,50 +181,29 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
             [attr.data-sidebar-stage]="stage.id"
             [attr.aria-label]="stage.label"
           >
+            @if (stage.id !== 'overview') {
+              <!-- Stage marker (user review #13): step number and stage name; the section's
+                   aria-label already names the stage for assistive tech. -->
+              <div class="stage-divider" aria-hidden="true">
+                <span class="stage-divider-step"></span>
+                <span class="stage-divider-name">{{ stage.label }}</span>
+              </div>
+            }
             @if (stage.id === slots().scenario) {
-              <section class="lesson-section scenario-card" id="lesson-scenario">
-                <p class="section-label stage-label"><span>{{ stageLabel(slots().scenario) }}</span>Scenario</p>
-                <div class="lesson-one-line">
-                  <span class="one-line-label">In one line</span>
-                  <p>{{ lesson().summary }}</p>
-                </div>
-                @if (lesson().learningScenario; as scenario) {
-                  <h2 data-sidebar-label="Scenario">Learning scenario: {{ scenario.system }}</h2>
-                  <p class="scenario-brands">Think of {{ brandList(scenario.brands) }}.</p>
-                  <h3>After this lesson you can</h3>
-                  <ul>
-                    @for (outcome of lesson().learningOutcomes; track outcome) {
-                      <li>{{ outcome }}</li>
-                    }
-                  </ul>
-                  <div class="scenario-why">
-                    <div>
-                      <h3>Why this scenario?</h3>
-                      <p>{{ scenario.why }}</p>
-                    </div>
-                    @if (lesson().learningFlow; as flow) {
-                      <div>
-                        <h3>Why it matters</h3>
-                        <p>{{ flow.whyItMatters }}</p>
-                      </div>
-                    }
-                  </div>
-                } @else {
-                  <h2 data-sidebar-label="Scenario">What you will learn</h2>
-                  <ul>
-                    @for (outcome of lesson().learningOutcomes; track outcome) {
-                      <li>{{ outcome }}</li>
-                    }
-                  </ul>
-                  @if (lesson().learningFlow; as flow) {
-                    <p><strong>Why it matters:</strong> {{ flow.whyItMatters }}</p>
-                  }
-                }
-              </section>
+              <section
+                class="lesson-section scenario-card"
+                id="lesson-scenario"
+                appLessonScenarioCard
+                [lesson]="lesson()"
+                [stageLabel]="stageLabel(slots().scenario)"
+              ></section>
               <section class="lesson-section" id="foundation-start" aria-labelledby="foundation-start-heading">
                 <p class="section-label stage-label"><span>{{ stageLabel(slots().scenario) }}</span>Before you start</p>
                 <h2 id="foundation-start-heading" data-sidebar-label="Before you start">Before you start</h2>
-                <p>{{ lesson().beforeYouStart ?? guide()?.prerequisite }}</p>
+                @if (lesson().beforeYouStart ?? guide()?.prerequisite; as intro) {
+                  <p><span class="rich" [innerHTML]="intro"></span></p>
+                }
+                <app-lesson-start [prerequisites]="lesson().prerequisites ?? []" [runLocally]="lesson().runLocally ?? null" />
               </section>
             }
             @if (stage.id === slots().keep) {
@@ -234,27 +212,58 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
                 <h2 id="lesson-takeaways-heading" data-sidebar-label="Key takeaways">Key takeaways</h2>
                 <ul>
                   @for (takeaway of lesson().keyTakeaways; track takeaway) {
-                    <li>{{ takeaway }}</li>
+                    <li><span class="rich" [innerHTML]="takeaway"></span></li>
                   }
                 </ul>
                 <aside class="memory-anchor" aria-label="Memory anchor">
                   <span>Memory anchor</span>
-                  <strong>{{ lesson().memoryAnchor.phrase }}</strong>
-                  <p>{{ lesson().memoryAnchor.mentalModel }}</p>
-                  <p><b>Recall cue:</b> {{ lesson().memoryAnchor.retrievalCue }}</p>
+                  <strong><span class="rich" [innerHTML]="lesson().memoryAnchor.phrase"></span></strong>
+                  <p><span class="rich" [innerHTML]="lesson().memoryAnchor.mentalModel"></span></p>
+                  <p><b>Recall cue:</b>{{ ' ' }}<span class="rich" [innerHTML]="lesson().memoryAnchor.retrievalCue"></span></p>
                 </aside>
                 @if (lesson().languageNotes?.length) {
                   <div class="language-notes" aria-label="Language notes">
                     @for (note of lesson().languageNotes; track note.language) {
-                      <p><strong>{{ note.language }}</strong>{{ note.note }}</p>
+                      <p><strong>{{ note.language }}</strong><span class="rich" [innerHTML]="note.note"></span></p>
                     }
                   </div>
                 }
               </section>
             }
-            @for (section of stage.sections; track section.id) {
-              @if (!section.sidebar) {
-                <ng-container [ngTemplateOutlet]="sectionCard" [ngTemplateOutletContext]="{ $implicit: section, stage: stage.id }" />
+            @if (stage.id === 'variations' && variationGroups(stage.sections).length > 1) {
+              <!-- Variations as underlined tabs (user review, 2026-10-05): one variation at a time, with its
+                   companion sections (e.g. the code after Variation A). Hidden panels stay findable. -->
+              @let groups = variationGroups(stage.sections);
+              @let picked = tabIndex('variations', groups.length);
+              <div class="lesson-tabbed" id="lesson-variations">
+                <app-lesson-tabs
+                  [items]="variationTabs(groups)"
+                  [selected]="picked"
+                  idPrefix="lesson-variations"
+                  ariaLabel="Variations"
+                  (select)="setTab('variations', $event)"
+                />
+                @for (group of groups; track group.key; let index = $index) {
+                  <div
+                    class="lesson-tab-panel"
+                    role="tabpanel"
+                    [id]="'lesson-variations-panel-' + index"
+                    [attr.aria-labelledby]="'lesson-variations-tab-' + index"
+                    [attr.hidden]="index === picked ? null : 'until-found'"
+                    (beforematch)="setTab('variations', index)"
+                  >
+                    @for (section of group.sections; track section.id) {
+                      <ng-container [ngTemplateOutlet]="sectionCard" [ngTemplateOutletContext]="{ $implicit: section, stage: stage.id, inTabs: true }" />
+                    }
+                  </div>
+                }
+                <ng-container [ngTemplateOutlet]="tabStep" [ngTemplateOutletContext]="{ key: 'variations', count: groups.length, prefix: 'lesson-variations' }" />
+              </div>
+            } @else {
+              @for (section of stage.sections; track section.id) {
+                @if (!section.sidebar) {
+                  <ng-container [ngTemplateOutlet]="sectionCard" [ngTemplateOutletContext]="{ $implicit: section, stage: stage.id }" />
+                }
               }
             }
             @if (stage.id === slots().mistakes) {
@@ -264,9 +273,9 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
                 <div class="pitfall-list">
                   @for (pitfall of lesson().pitfalls; track pitfall.failedAssumption) {
                     <article>
-                      <h3>{{ pitfall.failedAssumption }}</h3>
-                      <p><strong>Symptom:</strong> {{ pitfall.symptom }}</p>
-                      <p><strong>Correction:</strong> {{ pitfall.correction }}</p>
+                      <h3><span class="rich" [innerHTML]="pitfall.failedAssumption"></span></h3>
+                      <p><strong>Symptom:</strong>{{ ' ' }}<span class="rich" [innerHTML]="pitfall.symptom"></span></p>
+                      <p><strong>Correction:</strong>{{ ' ' }}<span class="rich" [innerHTML]="pitfall.correction"></span></p>
                     </article>
                   }
                 </div>
@@ -281,7 +290,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
                   <h3>Likely follow-up questions</h3>
                   <dl class="follow-ups">
                     @for (followUp of lesson().followUps; track followUp.question) {
-                      <dt>{{ followUp.question }}</dt>
+                      <dt><span class="rich" [innerHTML]="followUp.question"></span></dt>
                       <dd [innerHTML]="followUp.answer"></dd>
                     }
                   </dl>
@@ -318,18 +327,18 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
                   @for (exercise of exercises(); track exercise.prompt; let index = $index) {
                     <div class="try-exercise">
                       <h3>Exercise {{ index + 1 }}</h3>
-                      <p>{{ exercise.prompt }}</p>
+                      <p><span class="rich" [innerHTML]="exercise.prompt"></span></p>
                       @if (exercise.hint) {
-                        <details class="guide-answer"><summary>Show a hint</summary><p>{{ exercise.hint }}</p></details>
+                        <details class="guide-answer"><summary>Show a hint</summary><p><span class="rich" [innerHTML]="exercise.hint"></span></p></details>
                       }
-                      <details class="guide-answer"><summary>Check your answer</summary><p class="practice-answer">{{ exercise.answer }}</p></details>
+                      <details class="guide-answer"><summary>Check your answer</summary><p class="practice-answer"><span class="rich" [innerHTML]="exercise.answer"></span></p></details>
                     </div>
                   }
                   <details class="guide-answer">
                     <summary>Practice explaining your choice</summary>
-                    <p>{{ lesson().interviewRecall.prompt }}</p>
+                    <p><span class="rich" [innerHTML]="lesson().interviewRecall.prompt"></span></p>
                     <details><summary>Compare your explanation</summary>
-                      <ol>@for (step of lesson().interviewRecall.answerFramework; track step) { <li>{{ step }}</li> }</ol>
+                      <ol>@for (step of lesson().interviewRecall.answerFramework; track step) { <li class="rich" [innerHTML]="step"></li> }</ol>
                     </details>
                   </details>
                 </section>
@@ -355,7 +364,17 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         }
       </article>
     </ng-template>
-    <ng-template #sectionCard let-section let-stage="stage">
+    <ng-template #tabStep let-key="key" let-count="count" let-prefix="prefix">
+      <!-- Previous / Next under tabbed panels, for reading them in order (user review, 2026-10-05). -->
+      <div
+        class="tab-step"
+        appLessonTabStep
+        [at]="tabIndex(key, count)"
+        [count]="count"
+        (step)="stepTab(key, count, $event.delta, prefix, $event.event)"
+      ></div>
+    </ng-template>
+    <ng-template #sectionCard let-section let-stage="stage" let-inTabs="inTabs">
       <section
         class="lesson-section wide-section"
         [class.text-section]="
@@ -382,9 +401,9 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
               <em class="problem-source">{{ problem.source }}</em>
             }
           </p>
-          <h2 class="visually-hidden" [attr.data-sidebar-label]="stage ? section.navLabel : null">{{ section.heading }}</h2>
+          <h2 class="visually-hidden" [attr.data-sidebar-label]="stage ? section.navLabel : null"><span class="rich" [innerHTML]="section.heading"></span></h2>
           <div class="problem-card">
-            <p><strong>The problem.</strong> {{ problem.statement }}</p>
+            <p><strong>The problem.</strong>{{ ' ' }}<span class="rich" [innerHTML]="problem.statement"></span></p>
             @if (problem.example) {
               <p class="problem-example" [innerHTML]="problem.example"></p>
             }
@@ -397,7 +416,12 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         } @else {
           <p class="section-label">{{ section.navLabel }}</p>
         }
-        <h2 [attr.data-sidebar-label]="stage ? section.navLabel : null">{{ section.heading }}</h2>
+        @if (inTabs) {
+          <!-- Inside tabs the side nav keeps one stable entry for the stage, so no sidebar label here. -->
+          <h3 class="tab-panel-heading"><span class="rich" [innerHTML]="section.heading"></span></h3>
+        } @else {
+          <h2 [attr.data-sidebar-label]="stage ? section.navLabel : null"><span class="rich" [innerHTML]="section.heading"></span></h2>
+        }
         }
         @if (section.visualBeside && section.visual?.type === 'storyboard') {
           <!-- A storyboard with the explanation beside it: in Problem first (and a concept-v1 Concept story) a short
@@ -463,7 +487,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
               } @else {
                 <div class="prose" [innerHTML]="cardPoints(paragraph, !!stage)"></div>
               }
-              @if (section.table && !besideVisual(section) && tableAfter(section) === index) {
+              @if (section.table && !section.patternMap && !besideVisual(section) && tableAfter(section) === index) {
                 <ng-container [ngTemplateOutlet]="lessonTable" [ngTemplateOutletContext]="{ $implicit: section.table }" />
               }
             }
@@ -475,43 +499,46 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
             </aside>
           }
         </div>
+        @if (stage && section.patternMap && section.table) {
+          <!-- Recognize the Pattern: the 20 units as a route with a signal finder (user review, 2026-10-05). -->
+          <app-pattern-map class="pattern-map" [table]="section.table" [map]="section.patternMap" />
+        }
         <ng-container [ngTemplateOutlet]="sectionCards" [ngTemplateOutletContext]="{ $implicit: section }" />
         @if (stage && section.cheatSheet; as sheet) {
-          <div class="cheat-sheet">
-            @if (isLanguageTabs(sheet.codeTabs)) {
-              <div class="cheat-template">
-                <h3>The template</h3>
-                <ng-container [ngTemplateOutlet]="languageCode" [ngTemplateOutletContext]="{ $implicit: sheet.codeTabs, key: section.id + '-template', label: 'Cheat sheet template' }" />
-              </div>
-            }
-            <ol class="cheat-tiles">
-              @for (tile of sheet.tiles; track tile.title; let index = $index, last = $last) {
-                <li class="cheat-tile" [class.cheat-traps]="last">
-                  <h3><span class="cheat-number" aria-hidden="true">{{ index + 1 }}</span>{{ tile.title }}</h3>
-                  <ul>
-                    @for (point of tile.points; track point) {
-                      <li [innerHTML]="point"></li>
-                    }
-                  </ul>
-                </li>
-              }
-            </ol>
-            <div class="cheat-facts">
-              <h3>Exact facts</h3>
-              <ul>
-                @for (fact of sheet.facts; track fact) {
-                  <li [innerHTML]="fact"></li>
-                }
-              </ul>
-            </div>
-          </div>
+          <div
+            class="cheat-sheet"
+            appLessonCheatSheet
+            [sheet]="sheet"
+            [sectionId]="section.id"
+            [languageCode]="isLanguageTabs(sheet.codeTabs) ? languageCode : null"
+          ></div>
         }
         @if (stage && section.pairs?.length) {
-          <ol class="pair-list">
-            @for (pair of section.pairs; track pair.n) {
-              <li class="pair-card" [id]="section.id + '-' + pair.n">
+          @let pairTabs = section.pairs.length > 1;
+          @let pairPick = tabIndex(section.id + '-pairs', section.pairs.length);
+          <div [class.lesson-tabbed]="pairTabs" [attr.id]="pairTabs ? section.id + '-tabs' : null">
+          @if (pairTabs) {
+            <app-lesson-tabs
+              [items]="pairTabItems(section)"
+              [selected]="pairPick"
+              [idPrefix]="section.id + '-pairs'"
+              [panelIds]="pairPanelIds(section)"
+              [ariaLabel]="section.navLabel ?? section.heading"
+              (select)="setTab(section.id + '-pairs', $event)"
+            />
+          }
+          <ol class="pair-list" [attr.role]="pairTabs ? 'presentation' : null">
+            @for (pair of section.pairs; track pair.n; let pairIndex = $index) {
+              <li
+                class="pair-card"
+                [id]="section.id + '-' + pair.n"
+                [attr.role]="pairTabs ? 'tabpanel' : null"
+                [attr.aria-labelledby]="pairTabs ? section.id + '-pairs-tab-' + pairIndex : null"
+                [attr.hidden]="pairTabs && pairIndex !== pairPick ? 'until-found' : null"
+                (beforematch)="setTab(section.id + '-pairs', pairIndex)"
+              >
                 <div class="pair-head">
-                  <h3><span class="pair-number" aria-hidden="true">{{ pair.n }}</span>{{ pair.title }}</h3>
+                  <h3><span class="pair-number" aria-hidden="true">{{ pair.n }}</span><span class="rich" [innerHTML]="pair.title"></span></h3>
                   @for (paragraph of pair.problem; track paragraph) {
                     <div class="prose" [innerHTML]="cardPoints(paragraph, true)"></div>
                   }
@@ -524,7 +551,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
                       <div class="pair-side-head">
                         <p class="pair-label">{{ pairLabel(section, 'broken') }}</p>
                         @if (pair.broken.title) {
-                          <p class="pair-fix-title">{{ pair.broken.title }}</p>
+                          <p class="pair-fix-title"><span class="rich" [innerHTML]="pair.broken.title"></span></p>
                         }
                         @for (paragraph of pair.broken.body; track paragraph) {
                           <div class="prose" [innerHTML]="cardPoints(paragraph, true)"></div>
@@ -572,7 +599,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
                       <div class="pair-side-head">
                         <p class="pair-label">{{ pairLabel(section, 'fixed') }}</p>
                         @if (pair.fixed.title) {
-                          <p class="pair-fix-title">{{ pair.fixed.title }}</p>
+                          <p class="pair-fix-title"><span class="rich" [innerHTML]="pair.fixed.title"></span></p>
                         }
                         @for (paragraph of pair.fixed.body; track paragraph) {
                           <div class="prose" [innerHTML]="cardPoints(paragraph, true)"></div>
@@ -621,11 +648,15 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
               </li>
             }
           </ol>
+          @if (pairTabs) {
+            <ng-container [ngTemplateOutlet]="tabStep" [ngTemplateOutletContext]="{ key: section.id + '-pairs', count: section.pairs.length, prefix: section.id + '-pairs' }" />
+          }
+          </div>
         }
         @if (stage && section.practiceTimer; as timer) {
           <div class="practice-timer" role="group" [attr.aria-label]="'Speaking timer, ' + formatTime(timer.seconds)">
             @if (timer.prompt) {
-              <p class="practice-timer-prompt">{{ timer.prompt }}</p>
+              <p class="practice-timer-prompt"><span class="rich" [innerHTML]="timer.prompt"></span></p>
             }
             <p class="practice-timer-clock" aria-hidden="true">{{ formatTime(timerRemaining(section.id, timer.seconds)) }}</p>
             <div class="practice-timer-actions">
@@ -678,14 +709,20 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         }
       </section>
     </ng-template>
-    <!-- DLV-408: code with its run console on the left, the explanation beside it, tables and visuals below. -->
+    <!-- DLV-408: code on the left, the explanation beside it; the run console sits under the explanation, level
+         with the end of the code, when it fits there, and under the code otherwise. Tables and visuals below. -->
     <ng-template #systemCode let-section let-stage="stage">
       @if (isLanguageTabs(section.codeTabs)) {
         <!-- DSA core courses: the same program in Java, Python and Go; one language choice for the page. -->
-        <div class="code-pair" [class.code-pair-centered]="lineCount(languageTab(section.codeTabs).source) <= 30">
+        <div appConsoleBeside class="code-pair" [class.code-pair-centered]="lineCount(languageTab(section.codeTabs).source) <= 30">
           <div class="code-pair-code">
-            <ng-container [ngTemplateOutlet]="languageCode" [ngTemplateOutletContext]="{ $implicit: section.codeTabs, key: section.id, label: section.heading }" />
+            <ng-container [ngTemplateOutlet]="languageCode" [ngTemplateOutletContext]="{ $implicit: section.codeTabs, key: section.id, label: section.heading, console: false }" />
           </div>
+          @if (languageTab(section.codeTabs).output; as output) {
+            <div class="code-pair-console">
+              <ng-container [ngTemplateOutlet]="runConsole" [ngTemplateOutletContext]="{ $implicit: output }" />
+            </div>
+          }
           <div class="explanation code-pair-text">
             @for (paragraph of section.body; track paragraph) {
               <div class="prose" [innerHTML]="cardPoints(paragraph, true)"></div>
@@ -735,13 +772,15 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
           </div>
         }
       } @else {
-        <div class="code-pair" [class.code-pair-centered]="lineCount(section.code.source) <= 30">
+        <div appConsoleBeside class="code-pair" [class.code-pair-centered]="lineCount(section.code.source) <= 30">
           <div class="code-pair-code">
             <ng-container [ngTemplateOutlet]="codeBlock" [ngTemplateOutletContext]="{ $implicit: section.code }" />
-            @if (section.output; as output) {
-              <ng-container [ngTemplateOutlet]="runConsole" [ngTemplateOutletContext]="{ $implicit: output }" />
-            }
           </div>
+          @if (section.output; as output) {
+            <div class="code-pair-console">
+              <ng-container [ngTemplateOutlet]="runConsole" [ngTemplateOutletContext]="{ $implicit: output }" />
+            </div>
+          }
           <div class="explanation code-pair-text">
             @for (paragraph of section.body; track paragraph) {
               @if (promptText(paragraph); as prompt) {
@@ -816,88 +855,19 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
       }
       <div
         class="split-diff"
+        appLessonSplitDiff
+        [diff]="diff"
+        [pair]="pair"
+        [brokenLabel]="pairLabel(section, 'broken')"
+        [fixedLabel]="pairLabel(section, 'fixed')"
+        [codeBlock]="codeBlock"
+        [lessonTable]="lessonTable"
+        [runConsole]="runConsole"
         [id]="pairKey(section, pair) + (diff.languages ? '-lang-panel' : '-diff')"
         [attr.role]="diff.languages ? 'tabpanel' : 'group'"
         [attr.aria-labelledby]="diff.languages ? pairKey(section, pair) + '-lang-' + languageTab(diff.languages).language : null"
         [attr.aria-label]="diff.languages ? null : pair.title + ': ' + pairLabel(section, 'broken') + ' and ' + pairLabel(section, 'fixed')"
-      >
-        <div class="d-head d-l">
-          <p class="pair-label">{{ pairLabel(section, 'broken') }}</p>
-          @for (paragraph of pair.broken.body; track paragraph) {
-            <div class="prose" [innerHTML]="cardPoints(paragraph, true)"></div>
-          }
-        </div>
-        <div class="d-head d-r">
-          <p class="pair-label">{{ pairLabel(section, 'fixed') }}</p>
-          @if (pair.fixed.title) {
-            <p class="pair-fix-title">{{ pair.fixed.title }}</p>
-          }
-          @for (paragraph of pair.fixed.body; track paragraph) {
-            <div class="prose" [innerHTML]="cardPoints(paragraph, true)"></div>
-          }
-        </div>
-        @for (file of diff.files; track file.label) {
-          @if (file.unchanged && diff.files.length > 1) {
-            <details class="d-shared d-l">
-              <summary><span>{{ file.label }}</span> <small>Not changed by the fix</small></summary>
-              <ng-container [ngTemplateOutlet]="codeBlock" [ngTemplateOutletContext]="{ $implicit: file.broken ?? file.fixed }" />
-            </details>
-          } @else {
-            <div class="d-file d-l">
-              @if (file.broken; as code) {
-                <span>{{ code.title }}</span>
-                <div><small>{{ languageLabel(code.language) }}</small><app-code-copy-button [code]="code.source" /></div>
-              } @else {
-                <span class="d-file-none">No file before the fix</span>
-              }
-            </div>
-            <div class="d-file d-r">
-              @if (file.fixed; as code) {
-                <span>{{ code.title }}@if (file.removed || file.added) {<small class="d-count" [attr.aria-label]="file.added + ' lines added, ' + file.removed + ' removed'"><b class="d-count-add">+{{ file.added }}</b><b class="d-count-del">−{{ file.removed }}</b></small>} @else if (file.renamed) {<small class="d-count">renamed</small>}</span>
-                <div><small>{{ languageLabel(code.language) }}</small><app-code-copy-button [code]="code.source" /></div>
-              } @else {
-                <span class="d-file-none">Unchanged</span>
-              }
-            </div>
-            @for (row of file.rows; track $index) {
-              <ng-container [ngTemplateOutlet]="diffCell" [ngTemplateOutletContext]="{ $implicit: row.left, side: 'l', language: file.language }" />
-              <ng-container [ngTemplateOutlet]="diffCell" [ngTemplateOutletContext]="{ $implicit: row.right, side: 'r', language: file.language }" />
-            }
-            <div class="d-end d-l" aria-hidden="true"></div>
-            <div class="d-end d-r" aria-hidden="true"></div>
-          }
-        }
-        <div class="d-out d-l">
-          @if (pair.broken.table; as table) {
-            <ng-container [ngTemplateOutlet]="lessonTable" [ngTemplateOutletContext]="{ $implicit: table }" />
-          }
-          @if (diff.brokenOutput; as output) {
-            <ng-container [ngTemplateOutlet]="runConsole" [ngTemplateOutletContext]="{ $implicit: output }" />
-          }
-        </div>
-        <div class="d-out d-r">
-          @if (pair.fixed.table; as table) {
-            <ng-container [ngTemplateOutlet]="lessonTable" [ngTemplateOutletContext]="{ $implicit: table }" />
-          }
-          @if (diff.fixedOutput; as output) {
-            <ng-container [ngTemplateOutlet]="runConsole" [ngTemplateOutletContext]="{ $implicit: output }" />
-          }
-        </div>
-      </div>
-    </ng-template>
-    <ng-template #diffCell let-cell let-side="side" let-language="language">
-      @if (cell) {
-        <div class="d-row" [class]="'d-row d-' + side + ' d-' + cell.kind">
-          <span class="d-num" aria-hidden="true">{{ cell.line }}</span>
-          <span class="d-mark" aria-hidden="true">{{ diffMark(cell.kind) }}</span>
-          @if (cell.kind !== 'same') {
-            <span class="visually-hidden">{{ cell.kind === 'del' ? 'Removed line ' + cell.line + ': ' : 'Added line ' + cell.line + ': ' }}</span>
-          }
-          <code class="d-code" [appLearningCode]="cell.text || ' '" [codeLanguage]="language"></code>
-        </div>
-      } @else {
-        <div class="d-row" [class]="'d-row d-' + side + ' d-fill'" aria-hidden="true"></div>
-      }
+      ></div>
     </ng-template>
     <!-- A storyboard animation on its own (played in view), the key idea under it, then its transcript. -->
     <ng-template #storyboardVisual let-section>
@@ -948,53 +918,35 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
     </ng-template>
     <!-- algo-pattern-v1 Problems: rungs from easy to hard, each a link to its hands-on problem page. -->
     <ng-template #problemLadder let-section>
-      <ol class="problem-ladder" aria-label="Practice problems, easy to hard">
-        @for (step of section.ladder; track step.questionId; let index = $index) {
-          <li>
-            <span class="ladder-rung" aria-hidden="true">{{ index + 1 }}</span>
-            <div class="ladder-body">
-              <a [routerLink]="['/', pathId(), courseId(), step.questionId]">{{ step.title }}</a>
-              <span class="ladder-level">{{ step.difficulty }}</span>
-              <p [innerHTML]="step.newIdea"></p>
-            </div>
-          </li>
-        }
-      </ol>
+      <ol
+        class="problem-ladder"
+        aria-label="Practice problems, easy to hard"
+        appLessonProblemLadder
+        [steps]="section.ladder"
+        [pathId]="pathId()"
+        [courseId]="courseId()"
+      ></ol>
     </ng-template>
     <!-- algo-pattern-v1 Spot the pattern: pick a pattern per problem, then see whether it fits and why. -->
     <ng-template #spotDrill let-drill let-section="section">
-      <ol class="spot-list">
-        @for (item of drill.items; track item.statement; let index = $index) {
-          <li class="spot-item">
-            <p class="spot-statement" [id]="section.id + '-spot-' + index">{{ item.statement }}</p>
-            <div class="spot-options" role="group" [attr.aria-labelledby]="section.id + '-spot-' + index">
-              @for (option of drill.options; track option) {
-                <button
-                  type="button"
-                  [attr.aria-pressed]="spotPick(section.id, index) === option"
-                  (click)="pickSpot(section.id, index, option)"
-                >{{ option }}</button>
-              }
-            </div>
-            <p class="spot-result" aria-live="polite">
-              @if (spotPick(section.id, index); as picked) {
-                @if (picked === item.answer) {
-                  <strong class="spot-right">Right: {{ item.answer }}.</strong>
-                } @else {
-                  <strong class="spot-wrong">Not this one. It is {{ item.answer }}.</strong>
-                }
-                {{ item.why }}
-              }
-            </p>
-          </li>
-        }
-      </ol>
+      <ol
+        class="spot-list"
+        appLessonSpotDrill
+        [drill]="drill"
+        [sectionId]="section.id"
+        [picks]="spotPicks()"
+        (pick)="pickSpot(section.id, $event.index, $event.option)"
+      ></ol>
     </ng-template>
     <!-- Small titled cards after the body: side by side when the lesson column is wide, stacked otherwise. -->
     <ng-template #sectionCards let-section>
       @if (section.cards?.length) {
         <div class="section-cards">
-          <ul class="section-card-grid" [attr.data-card-count]="section.cards.length">
+          <ul
+            class="section-card-grid"
+            [attr.data-card-count]="section.cards.length"
+            [attr.data-columns]="gridColumns(section.cards.length)"
+          >
             @for (card of section.cards; track card.title) {
               <li class="section-card">
                 <h3>{{ card.title }}</h3>
@@ -1011,7 +963,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
     </ng-template>
     <!-- DSA core courses: Java | Python | Go tabs. One choice drives every block on the page (and the
          Hands-On DSA problem page); the console belongs to the tab, so it switches with the code. -->
-    <ng-template #languageCode let-tabs let-key="key" let-label="label">
+    <ng-template #languageCode let-tabs let-key="key" let-label="label" let-withConsole="console">
       <div class="code-tabs language-tabs" role="tablist" [attr.aria-label]="label + ': language'">
         @for (tab of tabs; track tab.id) {
           <button
@@ -1029,31 +981,22 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
       @if (languageTab(tabs); as tab) {
         <div class="language-panel" role="tabpanel" [id]="key + '-lang-panel'" [attr.aria-labelledby]="key + '-lang-' + tab.language">
           <ng-container [ngTemplateOutlet]="codeBlock" [ngTemplateOutletContext]="{ $implicit: tab }" />
-          @if (tab.output; as output) {
+          <!-- A code pair places the console itself (beside the explanation when it fits). -->
+          @if (withConsole !== false && tab.output; as output) {
             <ng-container [ngTemplateOutlet]="runConsole" [ngTemplateOutletContext]="{ $implicit: output }" />
           }
         </div>
       }
     </ng-template>
     <ng-template #runConsole let-output>
-      <div class="run-console" role="group" [attr.aria-label]="'Program output, ' + output.title" [class.run-console-failed]="(output.exitCode ?? 0) !== 0">
-        <div class="run-console-bar">
-          <span class="run-console-tool">{{ output.tool ?? 'Run' }}</span>
-          <span class="run-console-tab">{{ programName(output.title) }}<span aria-hidden="true"> ×</span></span>
-        </div>
-        <div class="run-console-main">
-          <div class="run-console-gutter" aria-hidden="true"><span class="run-rerun"></span><span class="run-stop"></span></div>
-          <div class="run-console-body">
-            @if (output.command) {
-              <div class="run-command">{{ output.command }}</div>
-            }
-            @for (line of outputLines(output.text); track $index) {
-              <div class="run-line" [class.run-line-error]="isErrorLine(line, output, $index)" [class.run-line-pass]="isPassLine(line)">{{ line }}</div>
-            }
-            <div class="run-exit">Process finished with exit code {{ output.exitCode ?? 0 }}</div>
-          </div>
-        </div>
-      </div>
+      <div
+        class="run-console"
+        appLessonRunConsole
+        [output]="output"
+        role="group"
+        [attr.aria-label]="'Program output, ' + output.title"
+        [class.run-console-failed]="(output.exitCode ?? 0) !== 0"
+      ></div>
       @if (output.note) {
         <p class="run-console-note">{{ output.note }}</p>
       }
@@ -1071,55 +1014,29 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
       </section>
     </ng-template>
     <ng-template #lessonTable let-table>
-      <div class="lesson-table-wrap">
-        <table class="lesson-table">
-          @if (table.caption) {
-            <caption>{{ table.caption }}</caption>
-          }
-          <thead>
-            <tr>
-              @for (column of table.columns; track $index) {
-                <th scope="col">{{ column }}</th>
-              }
-            </tr>
-          </thead>
-          <tbody>
-            @for (row of table.rows; track $index) {
-              <tr>
-                @for (cell of row; track $index; let first = $first) {
-                  @if (first) {
-                    <th scope="row" [innerHTML]="cell"></th>
-                  } @else {
-                    <td [innerHTML]="cell"></td>
-                  }
-                }
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+      <div class="lesson-table-wrap" appLessonTable [table]="table"></div>
     </ng-template>
     <ng-template #referenceLesson>
       <article class="foundation-lesson" aria-label="Foundation lesson">
         @if (!lesson().learningFlow) {
         <header class="lesson-intro" [class.guided-outcomes]="guide()">
           @if (!guide()) {
-            <p>{{ lesson().summary }}</p>
+            <p><span class="rich" [innerHTML]="lesson().summary"></span></p>
           }
           <section aria-labelledby="foundation-outcomes-heading">
             <span>After this lesson</span>
             <h2 id="foundation-outcomes-heading">You will be able to</h2>
             <ul>
               @for (outcome of lesson().learningOutcomes; track outcome) {
-                <li>{{ outcome }}</li>
+                <li><span class="rich" [innerHTML]="outcome"></span></li>
               }
             </ul>
           </section>
           <aside class="memory-anchor" aria-label="Memory anchor and interview retrieval cue">
             <span>Memory anchor</span>
-            <strong>{{ lesson().memoryAnchor.phrase }}</strong>
-            <p>{{ lesson().memoryAnchor.mentalModel }}</p>
-            <p><b>Interview cue:</b> {{ lesson().memoryAnchor.retrievalCue }}</p>
+            <strong><span class="rich" [innerHTML]="lesson().memoryAnchor.phrase"></span></strong>
+            <p><span class="rich" [innerHTML]="lesson().memoryAnchor.mentalModel"></span></p>
+            <p><b>Interview cue:</b>{{ ' ' }}<span class="rich" [innerHTML]="lesson().memoryAnchor.retrievalCue"></span></p>
           </aside>
         </header>
         }
@@ -1134,23 +1051,23 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
           aria-labelledby="foundation-model-heading"
         >
           <p class="section-label"><span>Model</span>Reason before choosing</p>
-          <h2 id="foundation-model-heading">{{ lesson().foundationModel.heading }}</h2>
+          <h2 id="foundation-model-heading"><span class="rich" [innerHTML]="lesson().foundationModel.heading"></span></h2>
           <div class="model-grid">
             <article>
               <span>What we are working with</span>
-              <p>{{ lesson().foundationModel.representation }}</p>
+              <p><span class="rich" [innerHTML]="lesson().foundationModel.representation"></span></p>
             </article>
             <article class="model-invariant">
               <span>What must stay true</span>
-              <p>{{ lesson().foundationModel.invariant }}</p>
+              <p><span class="rich" [innerHTML]="lesson().foundationModel.invariant"></span></p>
             </article>
             <article>
               <span>How the work happens</span>
-              <p>{{ lesson().foundationModel.operationLens }}</p>
+              <p><span class="rich" [innerHTML]="lesson().foundationModel.operationLens"></span></p>
             </article>
             <article>
               <span>When to choose this</span>
-              <p>{{ lesson().foundationModel.selectionRule }}</p>
+              <p><span class="rich" [innerHTML]="lesson().foundationModel.selectionRule"></span></p>
             </article>
           </div>
         </section>
@@ -1158,11 +1075,11 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         @if (lesson().learningFlow) {
           <section id="foundation-remember" class="lesson-section takeaways" aria-labelledby="foundation-remember-heading">
             <h2 id="foundation-remember-heading">What to remember</h2>
-            <ul>@for (takeaway of guide()?.takeaways ?? lesson().keyTakeaways; track takeaway) { <li>{{ takeaway }}</li> }</ul>
-            @if (guide(); as guide) { <p>{{ guide.later }}</p> }
+            <ul>@for (takeaway of guide()?.takeaways ?? lesson().keyTakeaways; track takeaway) { <li><span class="rich" [innerHTML]="takeaway"></span></li> }</ul>
+            @if (guide(); as guide) { <p><span class="rich" [innerHTML]="guide.later"></span></p> }
             <div class="language-notes" aria-label="Language notes">
               @for (note of lesson().languageNotes; track note.language) {
-                <p><strong>{{ note.language }}</strong>{{ note.note }}</p>
+                <p><strong>{{ note.language }}</strong><span class="rich" [innerHTML]="note.note"></span></p>
               }
             </div>
           </section>
@@ -1177,9 +1094,9 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
           <div class="pitfall-list">
             @for (pitfall of lesson().pitfalls; track pitfall.failedAssumption) {
               <article>
-                <h3>{{ pitfall.failedAssumption }}</h3>
-                <p><strong>Symptom:</strong> {{ pitfall.symptom }}</p>
-                <p><strong>Correction:</strong> {{ pitfall.correction }}</p>
+                <h3><span class="rich" [innerHTML]="pitfall.failedAssumption"></span></h3>
+                <p><strong>Symptom:</strong>{{ ' ' }}<span class="rich" [innerHTML]="pitfall.symptom"></span></p>
+                <p><strong>Correction:</strong>{{ ' ' }}<span class="rich" [innerHTML]="pitfall.correction"></span></p>
               </article>
             }
           </div>
@@ -1217,23 +1134,23 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
           <h2 id="foundation-recall-heading">Key takeaways</h2>
           <ul>
             @for (takeaway of lesson().keyTakeaways; track takeaway) {
-              <li>{{ takeaway }}</li>
+              <li><span class="rich" [innerHTML]="takeaway"></span></li>
             }
           </ul>
           <div class="language-notes" aria-label="Language notes">
             @for (note of lesson().languageNotes; track note.language) {
               <p>
                 <strong>{{ note.language }}</strong
-                >{{ note.note }}
+                ><span class="rich" [innerHTML]="note.note"></span>
               </p>
             }
           </div>
           <aside class="interview-recall" aria-labelledby="interview-recall-prompt">
             <span>Interview recall prompt</span>
-            <h3 id="interview-recall-prompt">{{ lesson().interviewRecall.prompt }}</h3>
+            <h3 id="interview-recall-prompt"><span class="rich" [innerHTML]="lesson().interviewRecall.prompt"></span></h3>
             <ol>
               @for (step of lesson().interviewRecall.answerFramework; track step) {
-                <li>{{ step }}</li>
+                <li class="rich" [innerHTML]="step"></li>
               }
             </ol>
           </aside>
@@ -1243,19 +1160,19 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         @if (lesson().learningFlow; as flow) {
           <section id="foundation-try" class="lesson-section" aria-labelledby="foundation-try-heading">
             <h2 id="foundation-try-heading">Try it yourself</h2>
-            <p>{{ flow.practice.prompt }}</p>
-            <details class="guide-answer"><summary>Show a hint</summary><p>{{ flow.practice.hint }}</p></details>
-            <details class="guide-answer"><summary>Check your answer</summary><p class="practice-answer">{{ flow.practice.answer }}</p></details>
+            <p><span class="rich" [innerHTML]="flow.practice.prompt"></span></p>
+            <details class="guide-answer"><summary>Show a hint</summary><p><span class="rich" [innerHTML]="flow.practice.hint"></span></p></details>
+            <details class="guide-answer"><summary>Check your answer</summary><p class="practice-answer"><span class="rich" [innerHTML]="flow.practice.answer"></span></p></details>
             @if (guide(); as guide) {
               <h3>One more small change</h3>
-              <p>{{ guide.try }}</p>
-              <details class="guide-answer"><summary>Check the small change</summary><p>{{ guide.answer }}</p></details>
+              <p><span class="rich" [innerHTML]="guide.try"></span></p>
+              <details class="guide-answer"><summary>Check the small change</summary><p><span class="rich" [innerHTML]="guide.answer"></span></p></details>
             }
             <details class="guide-answer">
               <summary>Practice explaining your choice</summary>
-              <p>{{ lesson().interviewRecall.prompt }}</p>
+              <p><span class="rich" [innerHTML]="lesson().interviewRecall.prompt"></span></p>
               <details><summary>Compare your explanation</summary>
-                <ol>@for (step of lesson().interviewRecall.answerFramework; track step) { <li>{{ step }}</li> }</ol>
+                <ol>@for (step of lesson().interviewRecall.answerFramework; track step) { <li class="rich" [innerHTML]="step"></li> }</ol>
               </details>
             </details>
           </section>
@@ -1510,10 +1427,6 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
       .prose {
         margin: 1em 0;
       }
-      .prose > ul {
-        margin-block: 10px 0;
-      }
-      .prose li + li,
       .walkthrough-points li + li {
         margin-top: 10px;
       }
@@ -1584,19 +1497,68 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         gap: 1.25rem;
         scroll-margin-top: 10rem;
       }
-      /* The Overview card's own heading names the stage, so the stage title is not repeated above it. */
-      .lesson-stage.self-titled-stage::before {
-        content: none;
+      /* Stage marker (user review #13, 2026-10-03): a numbered step chip in the path colour,
+         the stage name as a real heading-sized label, and a rule that fades out to the right,
+         instead of a grey word over a thin full-width line. The Overview card's own heading
+         names its stage, so it has no marker and does not take a number. */
+      .system {
+        counter-reset: lesson-stage;
       }
-      .lesson-stage::before {
-        content: attr(data-sidebar-label);
-        display: block;
-        padding-bottom: 0.6rem;
-        border-bottom: 1px solid var(--line);
-        color: var(--text-subtle);
-        font-size: 0.95rem;
-        font-weight: 600;
-        letter-spacing: 0.02em;
+      .lesson-stage:not(.self-titled-stage) {
+        counter-increment: lesson-stage;
+      }
+      .stage-divider {
+        --stage-accent: var(--card-top-accent, var(--accent-strong));
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-top: 0.25rem;
+      }
+      .stage-divider-step {
+        display: inline-grid;
+        place-items: center;
+        flex: none;
+        min-width: 2.2rem;
+        height: 2.2rem;
+        padding: 0 0.45rem;
+        box-sizing: border-box;
+        border: 1.5px solid color-mix(in srgb, var(--stage-accent) 55%, transparent);
+        border-radius: 999px;
+        color: var(--text-strong);
+        background: color-mix(in srgb, var(--stage-accent) 16%, var(--surface));
+        font-size: 0.82rem;
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
+      }
+      .stage-divider-step::before {
+        content: counter(lesson-stage, decimal-leading-zero);
+      }
+      .stage-divider-name {
+        flex: none;
+        color: var(--text-strong);
+        font-size: 1.3rem;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+        line-height: 1.2;
+      }
+      .stage-divider::after {
+        content: '';
+        flex: 1;
+        height: 2px;
+        border-radius: 2px;
+        background: linear-gradient(
+          90deg,
+          color-mix(in srgb, var(--stage-accent) 60%, transparent),
+          transparent
+        );
+      }
+      @media (forced-colors: active) {
+        .stage-divider-step {
+          border-color: CanvasText;
+        }
+        .stage-divider::after {
+          background: CanvasText;
+        }
       }
       .system .lesson-section {
         --card-pad-x: clamp(1rem, 2vw, 1.75rem);
@@ -1607,16 +1569,10 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
       }
       /* Small labels ("Prove | More practice", "Advanced · Diagnose", table headers):
          a readable demi-bold at a real size, little tracking, no heavy capitals. */
-      .system :is(.section-label, .practice-grid span, .one-line-label) {
+      .system :is(.section-label, .practice-grid span) {
         font-size: 0.85rem;
         font-weight: 600;
         letter-spacing: 0.01em;
-        text-transform: none;
-      }
-      .system .lesson-table thead th {
-        font-size: 0.85rem;
-        font-weight: 650;
-        letter-spacing: 0;
         text-transform: none;
       }
       .system .lesson-section h2 {
@@ -1681,17 +1637,18 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
       .system {
         container: lesson / inline-size;
       }
-      /* Code with its run console on the left, the explanation beside it; tables,
-         visuals and transcripts run full width below. */
+      /* Code on the left, the explanation beside it; tables, visuals and transcripts
+         run full width below. */
       .system .code-section {
         display: flex;
         flex-direction: column;
         gap: 1.5rem;
       }
+      /* Narrow: code, its run console right under it, then the explanation (source order). */
       .code-pair {
         display: grid;
         grid-template-columns: minmax(0, 1fr);
-        gap: 1.5rem;
+        gap: 0.75rem;
       }
       .code-pair-code {
         display: flex;
@@ -1699,8 +1656,12 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         flex-direction: column;
         gap: 0.75rem;
       }
+      .code-pair-console {
+        min-width: 0;
+      }
       .code-pair-text {
         min-width: 0;
+        margin-top: 0.75rem;
       }
       .system .code-pair .foundation-code pre {
         max-height: min(80vh, 48rem);
@@ -1708,15 +1669,48 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
       @container lesson (min-width: 760px) {
         .code-pair {
           grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
-          gap: 2rem;
+          grid-template-areas: 'code text';
+          gap: 0.75rem 2rem;
           align-items: start;
+        }
+        .code-pair-code {
+          grid-area: code;
+        }
+        .code-pair-console {
+          grid-area: console;
+        }
+        .code-pair-text {
+          grid-area: text;
+          margin-top: 0;
         }
         /* Short code: the explanation sits level with the middle of the code. */
         .code-pair.code-pair-centered {
           align-items: center;
         }
-        .system .scenario-card .scenario-why {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
+        /* With a console it stays under the code and the explanation spans both; the
+           last row takes any spare height, so no gap opens between code and console. */
+        .code-pair:has(> .code-pair-console) {
+          grid-template-rows: auto 1fr;
+          grid-template-areas: 'code text' 'console text';
+        }
+        .code-pair.code-pair-centered:has(> .code-pair-console) {
+          grid-template-rows: 1fr auto auto 1fr;
+          grid-template-areas: '. text' 'code text' 'console text' '. text';
+          align-items: start;
+        }
+        .code-pair.code-pair-centered:has(> .code-pair-console) > .code-pair-text {
+          align-self: center;
+        }
+        /* The explanation leaves room (ConsoleBeside measures it): the console moves
+           under the explanation, its bottom level with the end of the code. */
+        .code-pair.console-beside,
+        .code-pair.code-pair-centered.console-beside {
+          grid-template-rows: 1fr auto;
+          grid-template-areas: 'code text' 'code console';
+        }
+        .code-pair.console-beside > .code-pair-console {
+          align-self: end;
+          margin-top: 0.75rem;
         }
         .system .lesson-section .pitfall-list {
           display: grid;
@@ -1756,9 +1750,7 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         outline: 3px solid var(--accent-focus);
         outline-offset: 2px;
       }
-      /* Program output modelled on an IDE run tool window (dark, as the code block):
-         a "Run" tab strip, a rerun/stop gutter, the command in grey, one row per printed
-         line, then the exit line after a blank row. */
+      /* Program output modelled on an IDE run tool window (lesson-run-console.ts styles its inside). */
       .run-console {
         overflow: hidden;
         border: 1px solid #393b40;
@@ -1766,83 +1758,6 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         background: #1e1f22;
         color: #bcbec4;
         font-family: var(--lesson-mono, monospace);
-      }
-      .run-console-bar {
-        display: flex;
-        align-items: stretch;
-        gap: 0.9rem;
-        padding: 0 0.8rem;
-        border-bottom: 1px solid #393b40;
-        background: #2b2d30;
-        font-size: 0.75rem;
-      }
-      .run-console-tool {
-        align-self: center;
-        color: #dfe1e5;
-        font-weight: 700;
-      }
-      .run-console-tab {
-        padding: 0.45rem 0.2rem 0.4rem;
-        border-bottom: 2px solid #3574f0;
-        color: #dfe1e5;
-      }
-      .run-console-tab span {
-        color: #6f737a;
-      }
-      .run-console-main {
-        display: flex;
-      }
-      .run-console-gutter {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.7rem;
-        padding: 0.8rem 0.55rem;
-        border-right: 1px solid #393b40;
-      }
-      .run-rerun {
-        width: 0;
-        height: 0;
-        border-block: 5px solid transparent;
-        border-inline-start: 8px solid #57965c;
-      }
-      .run-stop {
-        width: 8px;
-        height: 8px;
-        border-radius: 1px;
-        background: #6f737a;
-      }
-      .run-console-body {
-        min-width: 0;
-        flex: 1;
-        overflow-x: auto;
-        padding: 0.7rem 1rem 0.8rem;
-        font-size: 0.8rem;
-        line-height: 1.6;
-      }
-      .run-console-body > div {
-        min-height: 1.6em;
-        white-space: pre;
-      }
-      .run-command {
-        color: #6f737a;
-      }
-      .run-exit {
-        margin-top: 1.6em;
-        color: #bcbec4;
-      }
-      /* IDE colours for stderr-style lines and passing checks; a failed run shows a red exit line. */
-      .run-line-error {
-        color: #f75464;
-      }
-      .run-line-pass {
-        color: #5fb865;
-      }
-      .run-console-failed .run-exit {
-        color: #f75464;
-      }
-      .run-console-failed .run-rerun {
-        border-inline-start-color: #f75464;
       }
       .run-console-note {
         margin: 0.35rem 0 0;
@@ -1898,6 +1813,43 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
       .practice-timer-actions button:focus-visible {
         outline: 3px solid var(--accent-focus);
         outline-offset: 2px;
+      }
+      .lesson-section > .pattern-map {
+        grid-column: 1 / -1;
+      }
+      /* Variations and mistakes as underlined tabs (user review, 2026-10-05). */
+      .lesson-tabbed {
+        scroll-margin-top: 88px;
+      }
+      #lesson-variations {
+        --tab-fade: var(--bg);
+      }
+      .lesson-tabbed > .pair-list {
+        gap: 0;
+        margin-top: 0;
+      }
+      /* hidden="until-found" hides only the content (content-visibility), so the box would stay: an empty
+         bordered card per hidden panel. With no box it takes no space, and Find in page still reveals it. */
+      .lesson-tabbed [hidden='until-found'] {
+        margin: 0;
+        padding: 0;
+        border: 0;
+      }
+      .system .lesson-section h3.tab-panel-heading {
+        margin: 0.6rem 0 1.25rem;
+        color: var(--lesson-ink);
+        font-size: clamp(1.35rem, 1.4vw + 0.9rem, 1.7rem);
+        line-height: 1.25;
+      }
+      .tab-step {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin: 1rem 0 0;
+        padding-top: 0.9rem;
+        border-top: 1px solid var(--line);
       }
       /* Debug pairs: the problem across the top; "What broke" and "The fix" side by side.
          Subgrid keeps each side's note, code and output on shared rows so they line up;
@@ -2030,8 +1982,11 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         box-sizing: border-box;
         min-height: 2.9rem;
       }
-      .code-pair:not(.code-pair-centered) > .code-pair-text {
-        padding-top: calc(2.9rem + 1px + 16px);
+      /* Only beside the code: stacked on a narrow lesson, the explanation follows without a gap. */
+      @container lesson (min-width: 760px) {
+        .code-pair:not(.code-pair-centered) > .code-pair-text {
+          padding-top: calc(2.9rem + 1px + 16px);
+        }
       }
       .section-intro {
         margin-bottom: 0.25rem;
@@ -2045,53 +2000,23 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         border: 1px solid var(--line);
         border-radius: 10px;
       }
-      .lesson-table {
-        width: 100%;
-        border-collapse: collapse;
-        line-height: 1.55;
-      }
-      .lesson-table caption {
-        padding: 0.7rem 1rem;
-        color: var(--text-strong);
-        font-weight: 700;
-        text-align: start;
-      }
-      .lesson-table :is(th, td) {
-        padding: 0.7rem 1rem;
-        border-top: 1px solid var(--line);
-        text-align: start;
-        vertical-align: top;
-      }
-      .lesson-table thead th {
-        border-top: 0;
-        background: var(--surface-muted);
-        color: var(--text-strong);
-        font-size: 0.78rem;
-        font-weight: 800;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-      }
-      .lesson-table tbody th {
-        font-weight: 600;
-        white-space: nowrap;
-      }
-      .lesson-table tbody tr:nth-child(even) {
-        background: color-mix(in srgb, var(--surface-muted) 45%, transparent);
-      }
       .system .concept-visual {
         margin-top: 1.5rem;
       }
       /* algo-pattern-v1: the code is the lesson, so it runs full width with its explanation below. */
       @container lesson (min-width: 760px) {
-        .algo-lesson .code-pair {
+        .algo-lesson .code-pair,
+        .algo-lesson .code-pair.code-pair-centered:has(> .code-pair-console) {
           grid-template-columns: minmax(0, 1fr);
+          grid-template-rows: none;
+          grid-template-areas: none;
         }
-      }
-      /* Console lines wrap so a long exception message is read in place instead of scrolled sideways. */
-      .algo-lesson .run-console-body > div {
-        white-space: pre-wrap;
-        overflow-wrap: anywhere;
-        tab-size: 2;
+        .algo-lesson .code-pair > * {
+          grid-area: auto;
+        }
+        .algo-lesson .code-pair > .code-pair-text {
+          margin-top: 0.75rem;
+        }
       }
       /* Language tabs sit on the code block's title bar. */
       .language-tabs {
@@ -2112,14 +2037,6 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
       .language-panel .foundation-code {
         margin-top: 0;
         border-top-left-radius: 0;
-      }
-      .cheat-template {
-        margin-bottom: 1.25rem;
-      }
-      .system .cheat-template h3 {
-        margin: 0 0 0.6rem;
-        color: var(--text-strong);
-        font-size: 1rem;
       }
       /* algo-pattern-v1: animated SVG diagrams stay at a readable size instead of filling a wide column. */
       .algo-lesson .concept-visual img {
@@ -2195,17 +2112,6 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         font-family: var(--lesson-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
         font-size: 0.85rem;
       }
-      .system .lesson-storyboard .storyboard-beside .prose {
-        margin: 0 0 0.6rem;
-        line-height: 1.6;
-      }
-      /* Problem first fits one 1280 x 720 screen: a slightly smaller explanation beside the drawing. */
-      .system .storyboard-story .storyboard-beside {
-        font-size: 1rem;
-      }
-      .system .storyboard-story .storyboard-beside .prose {
-        line-height: 1.55;
-      }
       .system .storyboard-cost {
         margin: 0;
         padding: 0.45rem 0.75rem;
@@ -2225,221 +2131,10 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
       .storyboard-callout {
         margin-top: 1rem;
       }
-      /* When to use: a "Use this" / "Look-alike" pill in the first column (authored cell HTML, so ::ng-deep). */
-      .lesson-table ::ng-deep .kind {
-        display: inline-block;
-        padding: 0.1rem 0.55rem;
-        border-radius: 999px;
-        font-size: 0.8rem;
-        font-weight: 700;
-        white-space: nowrap;
-      }
-      .lesson-table ::ng-deep .kind-use {
-        background: color-mix(in srgb, var(--success) 16%, var(--surface));
-        color: var(--success);
-      }
-      .lesson-table ::ng-deep .kind-alt {
-        background: color-mix(in srgb, var(--warning) 16%, var(--surface));
-        color: var(--warning);
-      }
-      /* Debug pairs as a split diff (every Learn and Grow pair of programs). The code panel is dark in both
-         themes, so the row colors are fixed. One grid: heads, then per file a title row and aligned rows, then
-         consoles; in a narrow column CSS order puts the whole broken side first, then the fix. */
-      .split-diff {
-        --diff-del-bg: #4a1d27;
-        --diff-add-bg: #17402d;
-        --diff-del-mark: #ff8f9a;
-        --diff-add-mark: #7fe0a8;
-        --diff-fill: #0c1526;
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-        column-gap: 14px;
-        min-width: 0;
-      }
-      .split-diff > * {
-        min-width: 0;
-      }
+      /* Debug pairs as a split diff (every Learn and Grow pair of programs): lesson-split-diff.ts draws and
+         styles the diff; its language tabs sit above it here. */
       .diff-language-tabs {
         margin-bottom: 0.5rem;
-      }
-      .split-diff .d-l {
-        --side-accent: var(--danger);
-      }
-      .split-diff .d-r {
-        --side-accent: var(--success);
-      }
-      .split-diff .d-head {
-        display: flex;
-        flex-direction: column;
-        gap: 0.35rem;
-        margin-bottom: 0.6rem;
-        padding: 0.75rem 0.85rem;
-        border: 1px solid var(--line);
-        border-top: 3px solid var(--side-accent);
-        border-radius: 10px;
-        background: color-mix(in srgb, var(--side-accent) 6%, var(--surface));
-      }
-      .split-diff .d-l .pair-label::before {
-        content: '✗ ';
-      }
-      .split-diff .d-r .pair-label::before {
-        content: '✓ ';
-      }
-      .system .split-diff .pair-label {
-        margin: 0;
-        color: var(--side-accent);
-      }
-      .system .split-diff .pair-fix-title {
-        margin: 0;
-      }
-      .split-diff .d-head .prose {
-        margin: 0;
-        font-size: 0.95rem;
-        line-height: 1.6;
-      }
-      .split-diff .d-file {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-        margin-top: 0.6rem;
-        padding: 0.45rem 0.75rem;
-        border-radius: 10px 10px 0 0;
-        background: var(--code-panel);
-        color: var(--code-ink);
-        font-size: 0.85rem;
-      }
-      .split-diff .d-file > span {
-        min-width: 0;
-        overflow-wrap: anywhere;
-      }
-      .split-diff .d-file > div {
-        display: flex;
-        flex: none;
-        align-items: center;
-        gap: 0.5rem;
-      }
-      .split-diff .d-file small,
-      .split-diff .d-file-none {
-        color: var(--code-muted);
-      }
-      .split-diff .d-count {
-        margin-left: 0.6rem;
-      }
-      .split-diff .d-count b {
-        font-weight: 700;
-      }
-      .split-diff .d-count b + b {
-        margin-left: 0.4rem;
-      }
-      .split-diff .d-count-add {
-        color: var(--diff-add-mark);
-      }
-      .split-diff .d-count-del {
-        color: var(--diff-del-mark);
-      }
-      .split-diff .d-row {
-        display: grid;
-        grid-template-columns: 2.4em 1.3em minmax(0, 1fr);
-        align-items: start;
-        padding: 0 10px 0 2px;
-        background: var(--code-bg);
-        color: var(--code-ink);
-        font-family: var(--lesson-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
-        font-size: 0.8rem;
-        line-height: 1.6;
-      }
-      .split-diff .d-num {
-        padding-right: 6px;
-        color: var(--code-muted);
-        text-align: right;
-        user-select: none;
-      }
-      .split-diff .d-mark {
-        font-weight: 800;
-        text-align: center;
-        user-select: none;
-      }
-      .split-diff .d-code {
-        min-width: 0;
-        padding: 0;
-        border: 0;
-        background: none;
-        color: inherit;
-        font: inherit;
-        white-space: pre-wrap;
-        overflow-wrap: anywhere;
-        tab-size: 4;
-      }
-      .split-diff .d-del {
-        background: var(--diff-del-bg);
-      }
-      .split-diff .d-del .d-mark {
-        color: var(--diff-del-mark);
-      }
-      .split-diff .d-add {
-        background: var(--diff-add-bg);
-      }
-      .split-diff .d-add .d-mark {
-        color: var(--diff-add-mark);
-      }
-      .split-diff .d-fill {
-        background: repeating-linear-gradient(135deg, var(--code-bg) 0 6px, var(--diff-fill) 6px 12px);
-      }
-      .split-diff .d-end {
-        height: 10px;
-        border-radius: 0 0 10px 10px;
-        background: var(--code-bg);
-      }
-      .split-diff .d-shared {
-        grid-column: 1 / -1;
-        margin-top: 0.6rem;
-      }
-      .split-diff .d-shared summary {
-        cursor: pointer;
-        color: var(--text-strong);
-        font-weight: 600;
-      }
-      .split-diff .d-shared summary small {
-        margin-left: 0.4rem;
-        color: var(--text-subtle);
-        font-weight: 500;
-      }
-      .split-diff .d-shared .foundation-code {
-        margin-top: 0.5rem;
-      }
-      .split-diff .d-out {
-        display: grid;
-        gap: 0.75rem;
-        align-content: start;
-        padding-top: 0.75rem;
-      }
-      .split-diff .d-out:empty {
-        display: none;
-      }
-      .split-diff .d-out .lesson-table-wrap {
-        margin: 0;
-      }
-      .split-diff .run-console-body > div {
-        white-space: pre-wrap;
-        overflow-wrap: anywhere;
-      }
-      @container lesson (max-width: 759px) {
-        .split-diff {
-          grid-template-columns: minmax(0, 1fr);
-        }
-        .split-diff .d-l {
-          order: 1;
-        }
-        .split-diff .d-r {
-          order: 2;
-        }
-        .split-diff .d-head.d-r {
-          margin-top: 1.25rem;
-        }
-        .split-diff .d-fill {
-          display: none;
-        }
       }
       .system .problem-ladder,
       .system .spot-list {
@@ -2448,133 +2143,6 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         margin: 1.25rem 0 0;
         padding: 0;
         list-style: none;
-      }
-      .problem-ladder li {
-        display: grid;
-        grid-template-columns: 2.25rem minmax(0, 1fr);
-        gap: 0.9rem;
-        align-items: start;
-        padding: 0.9rem 1rem;
-        border: 1px solid var(--line);
-        border-radius: 10px;
-        background: var(--surface);
-      }
-      .ladder-rung {
-        display: grid;
-        place-items: center;
-        width: 2.25rem;
-        height: 2.25rem;
-        border-radius: 50%;
-        background: var(--surface-accent);
-        color: var(--text-strong);
-        font-weight: 700;
-      }
-      .ladder-body a {
-        color: var(--accent-link);
-        font-size: 1.05rem;
-        font-weight: 650;
-      }
-      .ladder-level {
-        margin-left: 0.6rem;
-        color: var(--text-subtle);
-        font-size: 0.85rem;
-        font-weight: 600;
-      }
-      .system .ladder-body p {
-        margin: 0.3rem 0 0;
-        line-height: 1.6;
-      }
-      .spot-item {
-        padding: 1rem 1.1rem;
-        border: 1px solid var(--line);
-        border-radius: 10px;
-        background: var(--surface);
-      }
-      .system .spot-item .spot-statement {
-        margin: 0 0 0.75rem;
-        color: var(--text-strong);
-        line-height: 1.6;
-      }
-      .spot-options {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-      }
-      .spot-options button {
-        min-height: 40px;
-        padding: 0.35rem 0.85rem;
-        border: 1px solid var(--line);
-        border-radius: 999px;
-        background: var(--surface);
-        color: var(--text-strong);
-        font: inherit;
-        font-size: 0.92rem;
-        cursor: pointer;
-      }
-      .spot-options button:hover {
-        border-color: var(--accent-link);
-      }
-      .spot-options button[aria-pressed='true'] {
-        border-color: var(--accent-link);
-        background: var(--surface-accent);
-        font-weight: 650;
-      }
-      .spot-options button:focus-visible {
-        outline: 3px solid var(--accent-focus);
-        outline-offset: 2px;
-      }
-      .system .spot-item .spot-result {
-        margin: 0.6rem 0 0;
-        line-height: 1.6;
-      }
-      .spot-result:empty {
-        display: none;
-      }
-      .spot-right {
-        color: var(--success);
-      }
-      .spot-wrong {
-        color: var(--danger);
-      }
-      .system .scenario-card .lesson-one-line {
-        margin: 0.75rem 0 1.25rem;
-        padding: 1rem 1.25rem;
-        border-left: 3px solid var(--lesson-teal);
-        border-radius: 6px;
-        background: var(--surface-accent);
-      }
-      .one-line-label {
-        display: block;
-        margin-bottom: 0.3rem;
-        color: var(--lesson-teal);
-        font-size: 0.75rem;
-        font-weight: 800;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-      }
-      .system .lesson-one-line p {
-        margin: 0;
-        color: var(--text-strong);
-        font-size: 1.12rem;
-        line-height: 1.6;
-      }
-      .scenario-why {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr);
-        gap: 1rem;
-        margin-top: 1.5rem;
-      }
-      .scenario-why > div {
-        padding: 1rem 1.2rem;
-        border: 1px solid var(--line);
-        border-radius: 10px;
-        background: var(--surface-muted);
-      }
-      .system .scenario-why h3 {
-        margin: 0 0 0.35rem;
-      }
-      .system .scenario-why p {
-        margin: 0;
       }
       /* Interview answer: a spoken answer, so a reading face in its own blue. */
       .system .interview-answer-card {
@@ -2636,6 +2204,9 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
       .section-cards {
         margin-top: 1.1rem;
       }
+      /* Card grids and revision tiles take their column count from the number of cards
+         (data-columns, even-grid.ts; user review #21): 4 are 2×2, 6 are 3 + 3, 5 are 3 + 2,
+         so no row ends with one lonely card. Narrow lessons drop to fewer columns. */
       .lesson-section ul.section-card-grid {
         display: grid;
         grid-template-columns: minmax(0, 1fr);
@@ -2645,8 +2216,13 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         list-style: none;
       }
       @container lesson (min-width: 560px) {
-        .lesson-section ul.section-card-grid {
+        .lesson-section ul.section-card-grid:not([data-columns='1']) {
           grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+      @container lesson (min-width: 860px) {
+        .lesson-section ul.section-card-grid[data-columns='3'] {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
         }
       }
       .section-card {
@@ -2677,74 +2253,6 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
         flex-direction: column;
         gap: 1rem;
         margin-top: 1.1rem;
-      }
-      .cheat-tiles {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-        gap: 0.9rem;
-        margin: 0;
-        padding: 0;
-        list-style: none;
-      }
-      .cheat-tile,
-      .cheat-facts {
-        padding: 0.95rem 1.05rem 1rem;
-        border: 1px solid var(--sheet-line);
-        border-radius: 10px;
-        background: var(--sheet-tile);
-        box-shadow: 0 1px 2px var(--sheet-shadow);
-      }
-      .cheat-tile.cheat-traps {
-        border-left: 3px solid var(--sheet-accent);
-      }
-      .system .cheat-sheet h3 {
-        display: flex;
-        align-items: flex-start;
-        gap: 0.55rem;
-        margin: 0 0 0.55rem;
-        color: var(--sheet-heading);
-        font-size: 0.98rem;
-        line-height: 1.4;
-      }
-      .cheat-number {
-        display: inline-grid;
-        flex: none;
-        width: 1.5rem;
-        height: 1.5rem;
-        place-items: center;
-        border-radius: 50%;
-        background: var(--sheet-accent);
-        color: var(--sheet-on-accent);
-        font-size: 0.8rem;
-        font-weight: 700;
-      }
-      .cheat-sheet ul {
-        margin: 0;
-        padding-left: 1.1rem;
-        font-size: 0.95rem;
-        line-height: 1.6;
-      }
-      .cheat-sheet li + li {
-        margin-top: 0.35rem;
-      }
-      .cheat-sheet li::marker {
-        color: var(--sheet-accent);
-      }
-      .cheat-facts ul {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        padding: 0;
-        list-style: none;
-      }
-      .cheat-facts li {
-        margin: 0 !important;
-        padding: 0.3rem 0.7rem;
-        border: 1px solid var(--sheet-chip-line);
-        border-radius: 999px;
-        background: var(--sheet-chip);
-        color: var(--sheet-heading);
-        font-size: 0.88rem;
       }
       .system .quick-revision .prose {
         font-size: 0.98rem;
@@ -2810,15 +2318,6 @@ const CODE_ONLY_LINE = /^<code>(?:(?!<\/?code\b)[^])*<\/code>$/;
       }
       .scenario-card {
         border-inline-start: 3px solid var(--lesson-teal);
-      }
-      .lesson-one-line {
-        margin: 0.75rem 0 1rem;
-        font-size: 1.1rem;
-        line-height: 1.6;
-        color: var(--text-strong);
-      }
-      .scenario-brands {
-        color: var(--text-subtle);
       }
       .spoken-answer {
         line-height: 1.8;
@@ -3169,6 +2668,8 @@ export class FoundationLessonShell {
   readonly isSystem = computed(() => this.pattern() !== null);
   readonly slots = computed(() => (this.pattern() ?? LESSON_PATTERNS['system-v1']).slots);
   readonly stages = computed(() => systemLessonStages(this.lesson()));
+  /** Columns for card grids and revision tiles, so no row ends with one lonely card. */
+  protected readonly gridColumns = evenGridColumns;
   readonly exercises = computed(() => {
     const flow = this.lesson().learningFlow;
     const guide = this.guide();
@@ -3193,29 +2694,8 @@ export class FoundationLessonShell {
         : 'Try one small change',
   );
 
-  protected cardPoints(content: string, system = false): string {
-    const points = content.split(/<br\s*\/?\s*>/i).map((point) => point.trim()).filter(Boolean);
-    if (points.length < 2 || /<(?:ul|ol|pre|table)\b/i.test(content)) return content;
-    // System lessons: a line that is only code (a whole statement) gets its own line,
-    // and the sentences around it stay prose instead of turning into bullets.
-    if (system && points.some((point) => CODE_ONLY_LINE.test(point))) {
-      return points
-        .map((point) =>
-          CODE_ONLY_LINE.test(point)
-            ? point.replace(/^<code>/, '<code class="code-line">')
-            : `<span class="prose-line">${point}</span>`,
-        )
-        .join('');
-    }
-    const lead = /^<strong>[^]*<\/strong>$/.test(points[0]) ? points.shift()! : '';
-    const heading = lead && `<span class="points-heading">${lead}</span>`;
-    if (points.length < 2) return content;
-    // "1. …<br>2. …" becomes a real ordered list instead of bullets that repeat the number.
-    if (points.every((point, index) => point.startsWith(`${index + 1}. `))) {
-      return `${heading}<ol>${points.map((point) => `<li>${point.replace(/^\d+\.\s+/, '')}</li>`).join('')}</ol>`;
-    }
-    return `${heading}<ul>${points.map((point) => `<li>${point}</li>`).join('')}</ul>`;
-  }
+  /** Paragraph HTML as points (see card-points.ts); also used by the Debug split diff. */
+  protected readonly cardPoints = cardPoints;
 
   /** "<strong>Prompt:</strong> "…"" paragraphs in system lessons are text to paste into an AI tool. */
   protected promptText(paragraph: string): string | null {
@@ -3284,12 +2764,51 @@ export class FoundationLessonShell {
     this.selectedTabs.update((tabs) => ({ ...tabs, [key]: index }));
   }
 
-  protected pairKey(section: TheorySection, pair: TheoryPair): string {
-    return `${section.id}-${pair.n}`;
+  /** Previous / Next under tabbed panels: move one step, then bring the tab row back into view. */
+  protected stepTab(key: string, count: number, delta: number, prefix: string, event: Event): void {
+    const next = Math.min(Math.max(this.tabIndex(key, count) + delta, 0), count - 1);
+    this.setTab(key, next);
+    const group = event.currentTarget instanceof HTMLElement ? event.currentTarget.closest<HTMLElement>('.lesson-tabbed') : null;
+    const tab = group?.ownerDocument.getElementById(`${prefix}-tab-${next}`);
+    group?.scrollIntoView?.({ block: 'start', behavior: 'smooth' });
+    tab?.focus({ preventScroll: true });
   }
 
-  protected diffMark(kind: keyof typeof DIFF_MARKS): string {
-    return DIFF_MARKS[kind];
+  /**
+   * Variation sections grouped for tabs: a section headed "Variation X · ..." starts a group; the sections after
+   * it (its code, its table) belong to it.
+   */
+  protected variationGroups(sections: readonly TheorySection[]): { key: string; label: string; title: string; sections: TheorySection[] }[] {
+    const groups: { key: string; label: string; title: string; sections: TheorySection[] }[] = [];
+    for (const section of sections) {
+      if (section.sidebar) continue;
+      const match = /^Variation ([A-Z])\s*·\s*/.exec(section.heading);
+      if (match || !groups.length) {
+        groups.push({ key: match?.[1] ?? String.fromCharCode(65 + groups.length), label: section.navLabel ?? section.heading, title: section.heading, sections: [section] });
+      } else {
+        groups[groups.length - 1].sections.push(section);
+      }
+    }
+    return groups;
+  }
+
+  protected variationTabs(groups: readonly { key: string; label: string; title: string }[]): LessonTabItem[] {
+    return groups.map(({ key, label, title }) => ({ key, label: plainText(label), title: plainText(title) }));
+  }
+
+  protected pairTabItems(section: TheorySection): LessonTabItem[] {
+    return (section.pairs ?? []).map((pair) => {
+      const title = plainText(pair.title);
+      return { key: String(pair.n), label: title, title };
+    });
+  }
+
+  protected pairPanelIds(section: TheorySection): string[] {
+    return (section.pairs ?? []).map((pair) => `${section.id}-${pair.n}`);
+  }
+
+  protected pairKey(section: TheorySection, pair: TheoryPair): string {
+    return `${section.id}-${pair.n}`;
   }
 
   /** Split diffs per pair and language; the lesson input is immutable, so each is computed once. */
@@ -3455,33 +2974,6 @@ export class FoundationLessonShell {
     return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
   }
 
-  protected programName(title: string): string {
-    return title.replace(/^Run:\s*/, '');
-  }
-
-  /** Printed lines without the final newline; blank lines stay as empty rows. */
-  protected outputLines(text: string): string[] {
-    return text.replace(/\n$/, '').split('\n');
-  }
-
-  /**
-   * Console lines a real IDE would show in red: exceptions, stack frames, compiler errors, failed checks,
-   * and, in a run that crashed, everything from the start of the crash report (a Java exception, a Python
-   * traceback or a Go panic) to the end.
-   */
-  protected isErrorLine(line: string, output: { exitCode?: number; tool?: string; text?: string }, index = -1): boolean {
-    if (/^(Exception in thread|\s+at |\[ERROR\]|FAILED)|: error: |\berrors?$/.test(line)) return true;
-    if ((output.exitCode ?? 0) !== 0 && index >= 0 && output.text) {
-      const start = this.outputLines(output.text).findIndex((text) => CRASH_START.test(text));
-      if (start >= 0 && index >= start) return true;
-    }
-    return output.tool === 'Build' && (output.exitCode ?? 0) !== 0;
-  }
-
-  protected isPassLine(line: string): boolean {
-    return /^(?:PASSED\b|Failures: 0, Errors: 0|BUILD SUCCESS)/.test(line);
-  }
-
   protected lineCount(source: string | undefined): number {
     return source ? source.split('\n').length : 0;
   }
@@ -3509,11 +3001,7 @@ export class FoundationLessonShell {
   }
 
   /** Spot the pattern: the option each learner picked, per section and item. */
-  private readonly spotPicks = signal<Record<string, string>>({});
-
-  protected spotPick(sectionId: string, index: number): string | null {
-    return this.spotPicks()[`${sectionId}-${index}`] ?? null;
-  }
+  protected readonly spotPicks = signal<Record<string, string>>({});
 
   protected pickSpot(sectionId: string, index: number, option: string): void {
     this.spotPicks.update((picks) => ({ ...picks, [`${sectionId}-${index}`]: option }));
@@ -3522,10 +3010,6 @@ export class FoundationLessonShell {
   protected stageLabel(stageId: string | null): string {
     const stages = (this.pattern() ?? LESSON_PATTERNS['system-v1']).stages;
     return stages.find((stage) => stage.id === stageId)?.label ?? stageId ?? '';
-  }
-
-  protected brandList(brands: string[]): string {
-    return brands.length < 2 ? brands.join('') : `${brands.slice(0, -1).join(', ')} or ${brands.at(-1)}`;
   }
 
   protected referenceLinks(body: string[]): string[] {

@@ -1,5 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { TheoryVisual } from '../../content/content.models';
 import { LessonStoryboard } from './lesson-storyboard';
@@ -237,6 +238,46 @@ describe('LessonStoryboard', () => {
     expect(button.getAttribute('aria-pressed')).toBe('true');
     expect(button.getAttribute('aria-label')).toBe('Play animation');
     expect(root.querySelector('.storyboard-status')?.textContent).toBe('Paused.');
+  });
+
+  it('sets the Problem-first explanation beside the drawing a little smaller, with rules that reach its projected paragraphs', async () => {
+    @Component({
+      imports: [LessonStoryboard],
+      template: `<app-lesson-storyboard [visual]="visual" [variant]="variant()" [beside]="true">
+        <div class="prose">The first way most people try.</div>
+        <div class="prose">Keep a box of visited nodes.</div>
+      </app-lesson-storyboard>`,
+    })
+    class Host {
+      visual = visual;
+      variant = signal<'story' | 'scene'>('story');
+    }
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const rules = Array.from(document.styleSheets)
+      .flatMap((sheet) => Array.from(sheet.cssRules))
+      .filter((rule): rule is CSSStyleRule => rule instanceof CSSStyleRule);
+    const declared = (element: Element, property: string) =>
+      rules.filter((rule) => element.matches(rule.selectorText) && rule.style.getPropertyValue(property)).map((rule) => ({
+        value: rule.style.getPropertyValue(property),
+        // Classes and attributes in the selector: the shell's scoped .system .prose rule has four.
+        weight: (rule.selectorText.match(/\.[\w-]+|\[[^\]]+\]/g) ?? []).length,
+      }));
+    const beside = root.querySelector('.storyboard-beside')!;
+    const paragraphs = Array.from(root.querySelectorAll('.storyboard-beside .prose'));
+    expect(paragraphs.length).toBe(2);
+    expect(declared(beside, 'font-size').map((d) => d.value)).toEqual(['1rem']);
+    for (const paragraph of paragraphs) {
+      expect(declared(paragraph, 'line-height')).toEqual([{ value: '1.55', weight: 5 }]);
+      expect(declared(paragraph, 'margin').map((d) => d.value)).toEqual(['0px 0px 0.6rem']);
+    }
+
+    fixture.componentInstance.variant.set('scene');
+    fixture.detectChanges();
+    expect(root.querySelector('app-lesson-storyboard')!.classList).not.toContain('storyboard-story');
+    expect(declared(beside, 'font-size')).toEqual([]);
+    expect(declared(paragraphs[0], 'line-height')).toEqual([]);
   });
 
   it('shows the last frame and no control under reduced motion', async () => {

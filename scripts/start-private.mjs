@@ -2,7 +2,7 @@ import './build-code-presentation.mjs';
 import { spawn } from 'node:child_process';
 import { request as httpRequest } from 'node:http';
 import { watch } from 'node:fs';
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { startDeliveryEditor } from './delivery-editor.mjs';
@@ -71,8 +71,22 @@ function run(command, arguments_, label) {
   });
 }
 
+// When the latest sync started. On macOS the sync copies by APFS clone, and cloning a file fires
+// a change event on the source without changing it; files untouched since then are skipped.
+let lastSyncStartedAt = 0;
+
 async function syncPrivateContent() {
+  lastSyncStartedAt = Date.now();
   await run(process.execPath, [syncScript, '--external'], 'Private content sync');
+}
+
+/** True when the file was written since the last sync began, or is gone (deleted or renamed). */
+async function changedSinceSync(filename) {
+  try {
+    return (await stat(resolve(contentRoot, filename))).mtimeMs >= lastSyncStartedAt - 1000;
+  } catch {
+    return true;
+  }
 }
 
 const protectedWorking =
@@ -155,7 +169,13 @@ function queueSync() {
 const contentWatcher = watch(contentRoot, { recursive: true }, (_event, filename) => {
   // The board reads private JSON directly. A whole-app reload here would erase editor drafts.
   if (filename && String(filename).replaceAll('\\', '/').split('/')[0] === 'delivery') return;
-  queueSync();
+  if (!filename) {
+    queueSync();
+    return;
+  }
+  void changedSinceSync(String(filename)).then((changed) => {
+    if (changed) queueSync();
+  });
 });
 contentWatcher.on('error', (error) =>
   console.error(`Private content watch failed: ${error.message}`),

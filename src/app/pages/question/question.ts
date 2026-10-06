@@ -60,7 +60,11 @@ import {
 import { authenticCodingVisual, relatedPracticeItems } from '../../content/pattern-experience';
 import { questionModuleIdForArticle, questionsForModule } from '../../content/question-discovery';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
-import { PageSidebarContextDirective, PageSidebarContextValue } from '../../core/page-sidebars/page-sidebar-context';
+import {
+  PageSidebarContextDirective,
+  PageSidebarContextValue,
+  SidebarLessonNav,
+} from '../../core/page-sidebars/page-sidebar-context';
 import { InteractiveTheoryVisual } from '../../core/interactive-theory-visual/interactive-theory-visual';
 import { CodingSolutionTabs } from '../../core/coding-solution-tabs/coding-solution-tabs';
 import { CodingProblemDetail } from '../../core/coding-problem-detail/coding-problem-detail';
@@ -72,7 +76,11 @@ import { FoundationLessonShell } from '../../core/foundation-lesson-shell/founda
 import { EvidenceAnswerTabs } from '../../core/evidence-answer-tabs/evidence-answer-tabs';
 import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot';
 import { CardScene } from '../../core/card-scene/card-scene';
+import { PatternHelp } from '../../core/pattern-help/pattern-help';
+import { StudioFinishReview } from '../../core/focus-studio/studio-finish-review';
+import { PracticeProgressService } from '../../core/practice-progress/practice-progress';
 import { FOCUS_STUDIO_PATTERN, usesFocusStudio } from '../../content/focus-studio-scope';
+import { catalogGroupForCourse, nextCatalogGroup } from '../../content/catalog-course-groups';
 
 @Component({
   selector: 'app-question',
@@ -93,6 +101,8 @@ import { FOCUS_STUDIO_PATTERN, usesFocusStudio } from '../../content/focus-studi
     EvidenceAnswerTabs,
     DsaProblemPilot,
     CardScene,
+    PatternHelp,
+    StudioFinishReview,
   ],
   templateUrl: './question.html',
   styleUrl: './question-answer.css',
@@ -128,7 +138,10 @@ import { FOCUS_STUDIO_PATTERN, usesFocusStudio } from '../../content/focus-studi
         text-align: start;
       }
       .studio-pilot-page .reader-question-panel .reader-question-title {
-        font-size: clamp(26px, 2vw, 32px);
+        font-size: clamp(1.6rem, 2.6vw, 2.2rem);
+        font-weight: 600;
+        line-height: 1.2;
+        letter-spacing: -0.01em;
       }
       .studio-pilot-page .reader-question-panel .question-inner-navigation {
         flex: 1 1 580px;
@@ -341,84 +354,206 @@ import { FOCUS_STUDIO_PATTERN, usesFocusStudio } from '../../content/focus-studi
       .studio-pilot-page .article-title-row {
         min-width: 0;
       }
+      .problem-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin: 0 0 6px -4px;
+        padding: 4px 8px 4px 4px;
+        border-radius: 8px;
+        color: var(--muted);
+        font-size: 0.88rem;
+        font-weight: 600;
+        text-decoration: none;
+      }
+      .problem-back:hover {
+        background: var(--surface-muted);
+        color: var(--text-strong);
+      }
+      .problem-back svg,
+      .pattern-help-open svg,
+      .pattern-lesson-open svg,
+      .problem-nav-card svg {
+        flex: 0 0 auto;
+        width: 16px;
+        height: 16px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .reader-question-title .problem-number {
+        color: var(--muted);
+        font-weight: 500;
+      }
       .problem-title-metadata {
         display: flex;
         flex-wrap: wrap;
         align-items: center;
-        column-gap: 16px;
-        row-gap: 8px;
-        font-size: 13px;
-        margin: 0;
+        gap: 8px;
+        margin: 2px 0 0;
         color: var(--muted);
+        font-size: 0.85rem;
       }
       .problem-title-metadata > span {
         white-space: nowrap;
       }
-      .problem-rank {
-        padding-inline-start: 16px;
-        border-inline-start: 1px solid var(--muted);
+      .problem-title-metadata > span + span::before {
+        content: '·';
+        margin-inline-end: 8px;
+        color: var(--line);
       }
-      .problem-pattern-disclosure {
-        margin-inline-start: auto;
+      .problem-title-metadata .problem-solved {
+        color: var(--success);
+        font-weight: 700;
+      }
+      .problem-nav-card .solved-tick {
+        flex: 0 0 auto;
+        color: var(--success);
+        font-weight: 800;
+      }
+      .problem-title-metadata .problem-level {
+        color: var(--text-strong);
+        font-weight: 700;
+        text-transform: capitalize;
+      }
+      .problem-pattern-actions {
         display: flex;
-        flex-direction: column;
-        align-items: flex-end;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-end;
         gap: 8px;
-        text-align: end;
+        margin-inline-start: auto;
         max-width: 100%;
       }
-      .pattern-reveal-toggle {
-        padding: 8px 12px;
-        border: 1px solid var(--line);
-        border-radius: 6px;
-        background: var(--surface);
-        color: var(--search-primary);
+      .pattern-help-open,
+      .pattern-lesson-open,
+      .pattern-hide {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 40px;
+        padding: 9px 16px;
+        border-radius: 10px;
         font: inherit;
-        font-size: 13px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        white-space: nowrap;
         cursor: pointer;
+        text-decoration: none;
       }
-      .problem-pattern-link {
-        font-size: 13px;
-        overflow-wrap: anywhere;
+      .pattern-help-open {
+        border: 0;
+        background: var(--accent-strong);
+        color: var(--accent-on-primary);
+      }
+      .pattern-lesson-open {
+        border: 1px solid var(--accent-strong);
+        background: var(--surface);
+        color: var(--accent-strong);
+      }
+      .pattern-hide {
+        border: 1px solid var(--line);
+        background: var(--surface);
+        color: var(--text-strong);
+      }
+      .pattern-help-open:hover,
+      .pattern-lesson-open:hover,
+      .pattern-hide:hover {
+        filter: brightness(1.06);
+      }
+      .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
       }
       @media (max-width: 700px) {
-        .problem-pattern-disclosure {
+        .problem-pattern-actions {
           flex-basis: 100%;
+          justify-content: flex-start;
         }
       }
       .source-navigation-rows {
         flex: 1 0 100%;
-        min-width: 0;
-      }
-      .source-navigation-rows .question-inner-navigation {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-        width: 100%;
-        box-sizing: border-box;
+        gap: 10px;
+        min-width: 0;
+        margin-top: 14px;
       }
-      .studio-pilot-page .source-navigation-rows .question-inner-navigation {
-        margin-top: 0;
-        padding-block: 0;
+      .problem-nav-cards {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
       }
-      .source-navigation-rows .problem-navigation-link.previous {
+      .problem-nav-card {
+        display: flex;
+        align-items: center;
         justify-content: flex-start;
-        text-align: start;
+        gap: 12px;
+        min-width: 0;
+        padding: 10px 14px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--surface);
+        color: var(--text-strong);
+        text-decoration: none;
+        transition:
+          border-color 0.15s,
+          background 0.15s;
       }
-      .source-navigation-rows .problem-navigation-link.next {
+      .problem-nav-card:hover {
+        border-color: var(--accent-strong);
+        background: var(--surface-muted);
+      }
+      .problem-nav-card.next {
+        grid-column: 2;
         justify-content: flex-end;
         text-align: end;
       }
-      .source-navigation-rows .boundary {
-        color: var(--muted);
-        font-size: 12px;
-        align-self: center;
-        justify-self: start;
-        text-align: start;
+      .problem-nav-card svg {
+        width: 20px;
+        height: 20px;
+        color: var(--accent-strong);
       }
-      .source-navigation-rows .next,
-      .source-navigation-rows .boundary-end {
+      .problem-nav-card .card-text {
+        min-width: 0;
+      }
+      .problem-nav-card small {
+        display: block;
+        color: var(--muted);
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .problem-nav-card b {
+        display: block;
+        overflow: hidden;
+        font-size: 0.95rem;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .problem-nav-boundary {
+        align-self: center;
+        color: var(--muted);
+        font-size: 0.85rem;
+      }
+      .problem-nav-boundary.end {
+        grid-column: 2;
         justify-self: end;
-        text-align: end;
+      }
+      @media (max-width: 640px) {
+        .problem-nav-cards {
+          grid-template-columns: minmax(0, 1fr);
+        }
+        .problem-nav-card.next,
+        .problem-nav-boundary.end {
+          grid-column: 1;
+        }
       }
       .question-inner-navigation {
         display: grid;
@@ -698,14 +833,6 @@ import { FOCUS_STUDIO_PATTERN, usesFocusStudio } from '../../content/focus-studi
         color: var(--text-subtle);
         font-size: 1.05rem;
         line-height: 1.5;
-      }
-      .article-read-time {
-        flex: 0 0 auto;
-        margin: 10px 0 0;
-        color: var(--muted);
-        font-size: 0.8rem;
-        font-weight: 800;
-        white-space: nowrap;
       }
       .theory-section {
         margin: 0 0 18px;
@@ -1001,9 +1128,6 @@ import { FOCUS_STUDIO_PATTERN, usesFocusStudio } from '../../content/focus-studi
         .article-title-row {
           display: block;
         }
-        .article-read-time {
-          margin: 8px 0 0;
-        }
       }
       .sticky-pill-strip {
         display: flex;
@@ -1081,6 +1205,8 @@ export class Question implements OnInit {
   private readonly router = inject(Router);
   private readonly accounts = inject(StudyPlanAccount);
   private readonly protectedContent = inject(PROTECTED_CONTENT);
+  /** Practice progress saved in this browser only, for the solved mark and the nav card ticks. */
+  private readonly practiceProgress = inject(PracticeProgressService);
   private readonly accountChanges = toObservable(this.accounts.account);
   private readonly expiryChanges = toObservable(this.accounts.sessionExpired);
   protected readonly returnDestination = signal<UrlTree | null>(null);
@@ -1096,6 +1222,32 @@ export class Question implements OnInit {
   private readonly sourcePositions = signal<Record<string, number>>({});
   protected releaseInfo(item: InterviewQuestion) {
     return this.releaseProblems()[this.canonicalProblem(item)?.id ?? ''];
+  }
+  /** Published problem ids by route (`learn/course/question`), as plan entries link by route. */
+  private readonly problemIdByRoute = computed(() =>
+    Object.fromEntries(
+      Object.values(this.releaseProblems()).map((problem) => [
+        problem.route.join('/').replace(/^\/+/, ''),
+        problem.id,
+      ]),
+    ),
+  );
+  /**
+   * A plan entry names a plan activity, not always a problem. Resolve it the way the reader
+   * navigation matches the current page, by route: the published problem at that route, then a
+   * known problem id, then the route's last segment (which is the problem id for most problems).
+   */
+  private planEntryProblemId(entry: { id: string; route: string[] }): string {
+    const key = entry.route.join('/').replace(/^\/+/, '');
+    return (
+      this.problemIdByRoute()[key] ??
+      (this.releaseProblems()[entry.id] ? entry.id : (entry.route.at(-1) ?? entry.id))
+    );
+  }
+  /** The learner's rating once this problem is marked solved on this device. */
+  protected solvedRating(item: InterviewQuestion): string | null {
+    const record = this.practiceProgress.records()[this.canonicalProblem(item)?.id ?? ''];
+    return record?.status === 'solved' ? record.rating : null;
   }
   protected numberedTitle(item: InterviewQuestion): string | null {
     const info = this.releaseInfo(item);
@@ -1129,6 +1281,7 @@ export class Question implements OnInit {
       return {
         title: link.title,
         number,
+        solved: this.practiceProgress.solvedIds().has(link.problemId),
         meaning,
         route: this.canonicalProblemRoute(link),
         query: this.canonicalProblemQueryParams(link, context?.handsOnPatternId ?? ''),
@@ -1148,6 +1301,7 @@ export class Question implements OnInit {
         ? {
             ...entry,
             number: entry.position,
+            solved: this.practiceProgress.solvedIds().has(this.planEntryProblemId(entry)),
             meaning: `Study plan step ${entry.position}, day ${entry.query.day}`,
           }
         : undefined;
@@ -1279,9 +1433,66 @@ export class Question implements OnInit {
   protected readonly pathId = signal('learn');
   protected readonly course = signal<CourseOutline | null>(null);
   protected readonly courseTitle = signal('');
+  /** The catalog group the course sits in, for the breadcrumb's group level. */
+  protected readonly courseGroup = computed(() =>
+    catalogGroupForCourse(this.pathId(), this.courseId()),
+  );
+  protected readonly handsOnGroup = catalogGroupForCourse('learn', 'hands-on-dsa');
+
+  /**
+   * The lesson's place above its course in the sidebar outline: the path, the course's group and the next
+   * group. When the next course is listed in the next group, the outline shows it inside that group.
+   */
+  private lessonNavPlace(nextCourseId: string | null): Pick<SidebarLessonNav, 'path' | 'group' | 'nextGroup' | 'nextCourseInNextGroup'> {
+    const pathId = this.pathId();
+    const pathTitle = ({ learn: 'Learn', grow: 'Grow', 'look-ahead': 'Look Ahead' } as Record<string, string>)[pathId];
+    const group = this.courseGroup();
+    const following = group ? nextCatalogGroup(pathId, group.id) : null;
+    const groupLink = (target: { id: string; title: string }) => ({
+      title: target.title,
+      route: ['/', pathId],
+      queryParams: { group: target.id },
+    });
+    return {
+      path: pathTitle ? { title: pathTitle, route: ['/', pathId] } : undefined,
+      group: group ? groupLink(group) : null,
+      nextGroup: following ? groupLink(following) : null,
+      nextCourseInNextGroup: !!(nextCourseId && following?.courseIds.includes(nextCourseId)),
+    };
+  }
   protected readonly question = signal<InterviewQuestion | null>(null);
   protected readonly relatedQuestions = signal(new Map<string, InterviewQuestion>());
   protected readonly sidebarContext = computed<PageSidebarContextValue>(() => {
+    const base = this.baseSidebarContext();
+    const lessonNav = this.lessonNav();
+    return !base.excluded && lessonNav ? { ...base, lessonNav } : base;
+  });
+  /**
+   * A lesson's place in its course for the right sidebar (user review #5): course link,
+   * previous / current / next lesson, the next course, and search preset to this lesson.
+   */
+  protected readonly lessonNav = computed<SidebarLessonNav | null>(() => {
+    const item = this.question();
+    const course = this.course();
+    if (!item || item.contentType !== 'theory' || !course || course.id !== this.courseId()) return null;
+    const lessonRoute = (link: ReaderLink) => ['/', this.pathId(), this.courseId(), link.id];
+    const previous = this.previousArticle();
+    const next = this.nextArticle();
+    const nextCourse = this.nextCourse();
+    return {
+      course: { title: course.title, route: ['/', this.pathId(), this.courseId()] },
+      current: navTitle(item),
+      previous: previous ? { title: previous.title, route: lessonRoute(previous), queryParams: this.returnQueryParams() } : null,
+      next: next ? { title: next.title, route: lessonRoute(next), queryParams: this.returnQueryParams() } : null,
+      nextCourse:
+        nextCourse?.id && nextCourse.available !== false
+          ? { title: nextCourse.title, route: ['/', this.pathId(), nextCourse.id] }
+          : null,
+      ...this.lessonNavPlace(nextCourse?.id ?? null),
+      search: { path: this.pathId(), course: this.courseId(), module: item.moduleId },
+    };
+  });
+  private readonly baseSidebarContext = computed<PageSidebarContextValue>(() => {
     const item = this.question();
     if (!item || this.isCodingPractice(item) || this.studioPilot() || this.focusStudio()) return { excluded: true };
     if (this.pathId() === 'learn' && this.courseId() === 'solid-design-patterns' && item.id === 'mediator-pattern') {
@@ -1334,6 +1545,20 @@ export class Question implements OnInit {
   protected readonly retryLoad = new Subject<void>();
   protected readonly surpriseMode = signal(false);
   protected readonly patternRevealed = signal(false);
+  protected readonly patternHelpOpen = signal(false);
+
+  /** Back link above a DSA problem title: where the learner came from, or the Hands-On DSA catalog. */
+  protected backLabel(): string {
+    const label = this.returnLabel();
+    if (!this.returnDestination() || label === 'Return to DSA problems') return 'Hands-On DSA problems';
+    return label.replace(/^(Return|Back) to /, '').replace(/^./, (first) => first.toUpperCase());
+  }
+
+  /** The problem statement as plain text, for the pattern help dialog. */
+  protected problemStatement(item: InterviewQuestion): string {
+    const text = this.canonicalProblem(item)?.description ?? '';
+    return text.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim();
+  }
   protected readonly navigationContextId = signal('');
   protected readonly handsOnPatternTitles = signal<Record<string, string>>({});
   private readonly focusStudioNeighbors = signal<
@@ -1905,6 +2130,7 @@ export class Question implements OnInit {
           this.question.set(null);
           this.referenceExpanded.set(false);
           this.patternRevealed.set(false);
+          this.patternHelpOpen.set(false);
           this.relatedQuestions.set(new Map());
           this.error.set('');
           this.recoveryPreview.set({});

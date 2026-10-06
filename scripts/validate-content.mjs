@@ -56,6 +56,11 @@ const forbiddenVisualAssets = new Set([
 ]);
 const questionIds = new Set();
 const questionsById = new Map();
+// Course directory of each question, e.g. learn/algorithmic-patterns.
+const questionCourseDirs = new Map();
+// Theory module files whose learning unit has no practice module of its own (a course-wide lesson such as
+// Recognize the Pattern). Their lessons may point practice at problems owned by other lessons of the course.
+const theoryModulesWithoutPractice = new Set();
 const patternLessons = [];
 const foundationLessons = [];
 const referencedAssetPaths = new Set();
@@ -666,6 +671,9 @@ function validateLearningUnits(units, moduleIds, courseLabel) {
         `${unitLabel} practiceExperience requires practiceModuleId`,
       );
     }
+    if (!unit.practiceModuleId) {
+      theoryModulesWithoutPractice.add(`${dirname(courseLabel)}/modules/${unit.theoryModuleId}.json`);
+    }
     if (unit.questionModuleId) discoverableModuleIds.add(unit.questionModuleId);
     if (unit.practiceModuleId) discoverableModuleIds.add(unit.practiceModuleId);
     if (unit.card !== undefined) validateLearningUnitCard(unit.card, unitLabel);
@@ -892,6 +900,24 @@ for (const file of contentFiles) {
     );
     continue;
   }
+  if (/^(learn|grow|look-ahead)\/[a-z0-9-]+\/downloads\//.test(label)) {
+    // Lesson project bundles (2026-10-05): the page packs them into a .zip. Built and verified by
+    // python3 tools/curriculum/build_lesson_projects.py --verify in the content repository.
+    const project = JSON.parse(await readFile(file, 'utf8'));
+    requireValue(/\/downloads\/[a-z0-9-]+-project\.json$/.test(label), `${label}: unexpected download path`);
+    requireValue(project.schemaVersion === 'lesson-project/v1', `${label}: unsupported project schema`);
+    requireValue(
+      label.endsWith(`/downloads/${project.lessonId}-project.json`) && project.zipName === `${project.lessonId}.zip`,
+      `${label}: a project must be named after its lesson`,
+    );
+    requireValue(
+      Array.isArray(project.files) &&
+        project.files.length > 0 &&
+        project.files.every((entry) => typeof entry.path === 'string' && !entry.path.startsWith('/') && !entry.path.includes('..') && typeof entry.content === 'string'),
+      `${label}: a project needs relative text files`,
+    );
+    continue;
+  }
   if (
     label.includes('/modules/') ||
     label.includes('/traces/') ||
@@ -982,10 +1008,26 @@ for (const file of contentFiles) {
       );
       questionIds.add(question.id);
       questionsById.set(question.id, question);
+      questionCourseDirs.set(question.id, dirname(dirname(moduleLabel)));
       requireValue(
         question.moduleId === module.id,
         `${moduleLabel}: ${question.id} has wrong moduleId`,
       );
+      if (question.runLocally !== undefined) {
+        // "Run it yourself" download (2026-10-05): the bundle belongs to this lesson's own path and course,
+        // and build_lesson_projects.py must have written it. A runLocally copied from another course's
+        // lesson keeps that course in the href, and the page link 404s.
+        const href = question.runLocally?.download?.href;
+        const expectedHref = `/content/${manifest.path}/${manifest.id}/downloads/${question.id}-project.json`;
+        requireValue(
+          href === expectedHref,
+          `${moduleLabel}: ${question.id} runLocally.download.href must be ${expectedHref} (found ${href})`,
+        );
+        requireValue(
+          await fileExists(join(contentRoot, href.slice('/content/'.length))),
+          `${moduleLabel}: ${question.id} runLocally download ${href} does not exist under the content root`,
+        );
+      }
       requireValue(
         Number.isInteger(question.order) && question.order > 0,
         `${moduleLabel}: invalid order for ${question.id}`,
@@ -1868,8 +1910,11 @@ for (const { lesson, moduleLabel } of foundationLessons) {
       seenPractice.add(reference.questionId);
       const question = questionsById.get(reference.questionId);
       requireValue(question, `${label} references missing practice ${reference.questionId}`);
+      const courseWide =
+        theoryModulesWithoutPractice.has(moduleLabel) &&
+        questionCourseDirs.get(reference.questionId) === dirname(dirname(moduleLabel));
       requireValue(
-        question.relatedArticleId === lesson.id,
+        question.relatedArticleId === lesson.id || courseWide,
         `${label} practice ${reference.questionId} is not explicitly related to this lesson`,
       );
     }

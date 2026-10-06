@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A 200-minute delay event leaves the airline's operations server, skips past the plain cases of the notifier's switch and stops at the long-delay case, which lights up; a push message with a rebook button then appears on a passenger's phone">
+<style>
+.pm-a{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-5.6s;animation-timing-function:ease-in-out}
+.pm-t{font:600 9px system-ui,sans-serif;fill:var(--scene-muted,#536970)}
+.pm-v{font:700 10px ui-monospace,Menlo,monospace;fill:var(--scene-ink,#102a33);text-anchor:middle}
+.pm-card{animation-name:pm-card}
+.pm-hit{animation-name:pm-hit}
+.pm-ok{animation-name:pm-ok;transform-box:fill-box;transform-origin:center}
+.pm-dot{animation-name:pm-dot}
+.pm-note{animation-name:pm-note}
+.pm-badge{animation-name:pm-badge}
+@keyframes pm-card{0%,4%{transform:translate(0,0);opacity:0}8%{opacity:1}30%,90%{transform:translate(46px,-41px);opacity:1}96%,100%{transform:translate(46px,-41px);opacity:0}}
+@keyframes pm-hit{0%,32%{opacity:0}37%,90%{opacity:1}96%,100%{opacity:0}}
+@keyframes pm-ok{0%,35%{opacity:0;transform:scale(.6)}40%,90%{opacity:1;transform:scale(1)}96%,100%{opacity:0}}
+@keyframes pm-dot{0%,40%{transform:translate(0,0);opacity:0}43%{opacity:1}56%{transform:translate(44px,26px);opacity:1}59%,100%{transform:translate(44px,26px);opacity:0}}
+@keyframes pm-note{0%,56%{opacity:0}61%,90%{opacity:1}96%,100%{opacity:0}}
+@keyframes pm-badge{0%,60%{opacity:0}65%,90%{opacity:1}96%,100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.pm-a{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g fill="var(--scene-ink,#102a33)" opacity=".08"><ellipse cx="40" cy="156" rx="30" ry="5"/><ellipse cx="160" cy="162" rx="58" ry="6"/><ellipse cx="282" cy="160" rx="30" ry="5"/></g>
+<path d="M18 62l10-8h40l-10 8z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M58 62l10-8v86l-10 8z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="18" y="62" width="40" height="88" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"><path d="M24 78h20M24 98h20M24 118h20M24 138h20"/></g>
+<g fill="var(--scene-good,#1f7a4d)"><circle cx="51" cy="78" r="2.5"/><circle cx="51" cy="98" r="2.5"/><circle cx="51" cy="118" r="2.5"/><circle cx="51" cy="138" r="2.5"/></g>
+<g fill="none" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="4 4"><path d="M58 92q20 -2 40 -26"/><path d="M220 52q30 2 44 26"/></g>
+<path d="M104 160h112l-8 8h-112z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<path d="M104 30l8-8h112l-8 8z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M216 30l8-8v130l-8 8z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="104" y="30" width="112" height="130" rx="4" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<rect class="pm-a pm-hit" x="108" y="40" width="104" height="26" rx="5" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2"/>
+<g fill="var(--scene-warn,#a15c00)"><rect x="114" y="46" width="14" height="14" rx="3"/><rect x="114" y="78" width="14" height="14" rx="3"/></g>
+<rect x="114" y="104" width="14" height="14" rx="3" fill="var(--scene-link,#1f5f8b)"/>
+<rect x="114" y="130" width="14" height="14" rx="3" fill="var(--scene-bad,#b3261e)"/>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="4" stroke-linecap="round"><path d="M136 53h20M136 85h58M136 111h58M136 137h58"/></g>
+<text class="pm-t" x="162" y="57">≥ 180</text>
+<g class="pm-a pm-ok"><circle cx="204" cy="53" r="8" fill="var(--scene-good,#1f7a4d)"/><path d="M200 53l3 3 5-6" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g class="pm-a pm-card"><rect x="22" y="82" width="34" height="24" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-warn,#a15c00)" stroke-width="2"/><rect x="22" y="82" width="34" height="6" rx="2" fill="var(--scene-warn,#a15c00)"/><text class="pm-v" x="39" y="101">200</text></g>
+<circle class="pm-a pm-dot" cx="220" cy="52" r="4.5" fill="var(--scene-accent,#006c73)"/>
+<circle cx="292" cy="58" r="10" fill="var(--scene-link,#1f5f8b)"/><path d="M272 98q0-26 20-26t20 26z" fill="var(--scene-link,#1f5f8b)"/>
+<rect x="258" y="76" width="30" height="54" rx="5" fill="var(--scene-ink,#102a33)"/>
+<rect x="261" y="81" width="24" height="44" rx="2" fill="var(--scene-accent-soft,#dcefed)"/>
+<g class="pm-a pm-note"><rect x="263" y="85" width="20" height="18" rx="2" fill="var(--scene-card,#fff)"/><rect x="263" y="85" width="20" height="4" rx="1.5" fill="var(--scene-warn,#a15c00)"/><path d="M266 94h14M266 99h10" stroke="var(--scene-line,#cfdfdc)" stroke-width="2" stroke-linecap="round"/><rect x="265" y="108" width="16" height="7" rx="3.5" fill="var(--scene-accent,#006c73)"/></g>
+<g class="pm-a pm-badge"><circle cx="300" cy="118" r="9" fill="var(--scene-good,#1f7a4d)"/><path d="M296 118l3 3 5-6" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></g>
+</svg>

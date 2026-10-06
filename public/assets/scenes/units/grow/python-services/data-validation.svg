@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A seller's app sends a new gig to the gigs API; a validation gate in front of the service stops the request because one field is wrong and answers 422, then the corrected request passes, the gig is listed and the answer is 201">
+<style>
+.pydv-a,.pydv-b,.pydv-c,.pydv-e,.pydv-f,.pydv-g{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-3s;animation-timing-function:ease-in-out}
+.pydv-a{animation-name:pydv-a}
+@keyframes pydv-a{0%,4%{transform:translateX(0);opacity:1}20%,44%{transform:translateX(62px);opacity:1}48%,100%{transform:translateX(62px);opacity:0}}
+.pydv-c{animation-name:pydv-c}
+@keyframes pydv-c{0%,21%{opacity:0}24%,44%{opacity:1}48%,100%{opacity:0}}
+.pydv-e{animation-name:pydv-e}
+@keyframes pydv-e{0%,25%{opacity:0}29%,46%{opacity:1}50%,100%{opacity:0}}
+.pydv-b{animation-name:pydv-b}
+@keyframes pydv-b{0%,50%{transform:translateX(0);opacity:0}53%{transform:translateX(0);opacity:1}62%{transform:translateX(62px);opacity:1}72%{transform:translateX(118px);opacity:1}75%,100%{transform:translateX(118px);opacity:0}}
+.pydv-f{animation-name:pydv-f}
+@keyframes pydv-f{0%,73%{opacity:0}77%,96%{opacity:1}100%{opacity:0}}
+.pydv-g{animation-name:pydv-g}
+@keyframes pydv-g{0%,60%{opacity:0}63%,70%{opacity:1}74%,100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.pydv-a,.pydv-b,.pydv-c,.pydv-e,.pydv-f,.pydv-g{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g fill="var(--scene-ink,#102a33)" opacity=".09"><ellipse cx="42" cy="152" rx="30" ry="6"/><ellipse cx="164" cy="152" rx="20" ry="5"/><ellipse cx="250" cy="152" rx="40" ry="6"/></g>
+<circle cx="30" cy="70" r="13" fill="var(--scene-grow,#7a4fb3)"/>
+<path d="M8 150c0-26 10-40 22-40s22 14 22 40Z" fill="var(--scene-grow,#7a4fb3)"/>
+<path d="M40 120h34l6 22H46Z" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<rect x="44" y="94" width="30" height="26" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2.5"/>
+<rect x="49" y="100" width="20" height="4" rx="2" fill="var(--scene-line,#cfdfdc)"/><rect x="49" y="108" width="13" height="4" rx="2" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M80 110H150M178 110H214" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="3 5"/>
+<rect x="154" y="64" width="8" height="88" rx="2" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="166" y="64" width="8" height="88" rx="2" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="150" y="58" width="28" height="10" rx="3" fill="var(--scene-accent,#006c73)"/>
+<g stroke="var(--scene-accent,#006c73)" stroke-width="2"><path d="M154 80h20M154 96h20M154 124h20M154 140h20"/></g>
+<path d="M218 66h44l10-10h-44Z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M262 66l10-10v84l-10 10Z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="218" y="66" width="44" height="84" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2.5"/>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="4" stroke-linecap="round"><path d="M226 82H246M226 100H246M226 118H246"/></g>
+<g fill="var(--scene-good,#1f7a4d)"><circle cx="254" cy="82" r="3"/><circle cx="254" cy="100" r="3"/><circle cx="254" cy="118" r="3"/></g>
+<g class="pydv-f"><rect x="224" y="128" width="32" height="16" rx="3" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="1.5"/><rect x="228" y="132" width="10" height="8" rx="1.5" fill="var(--scene-accent,#006c73)"/><rect x="241" y="133" width="11" height="3" rx="1.5" fill="var(--scene-accent,#006c73)"/><rect x="241" y="138" width="7" height="3" rx="1.5" fill="var(--scene-good,#1f7a4d)"/></g>
+<g class="pydv-a"><rect x="84" y="90" width="30" height="40" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-grow,#7a4fb3)" stroke-width="2"/><rect x="84" y="90" width="30" height="6" rx="2" fill="var(--scene-grow,#7a4fb3)"/><g fill="var(--scene-line,#cfdfdc)"><rect x="88" y="100" width="22" height="4" rx="2"/><rect x="88" y="108" width="22" height="4" rx="2"/><rect x="88" y="116" width="22" height="4" rx="2"/><rect x="88" y="124" width="14" height="3" rx="1.5"/></g>
+<g class="pydv-c"><rect x="86" y="106" width="26" height="8" rx="2" fill="var(--scene-bad,#b3261e)"/><circle cx="118" cy="86" r="8" fill="var(--scene-bad,#b3261e)"/><path d="M114.5 82.5l7 7M121.5 82.5l-7 7" stroke="var(--scene-card,#fff)" stroke-width="2.2" stroke-linecap="round"/></g></g>
+<g class="pydv-b"><rect x="84" y="90" width="30" height="40" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-grow,#7a4fb3)" stroke-width="2"/><rect x="84" y="90" width="30" height="6" rx="2" fill="var(--scene-grow,#7a4fb3)"/><g fill="var(--scene-line,#cfdfdc)"><rect x="88" y="100" width="22" height="4" rx="2"/><rect x="88" y="108" width="22" height="4" rx="2"/><rect x="88" y="116" width="22" height="4" rx="2"/><rect x="88" y="124" width="14" height="3" rx="1.5"/></g>
+<g class="pydv-g"><circle cx="118" cy="86" r="8" fill="var(--scene-good,#1f7a4d)"/><path d="M114 86l3 3 5-6" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g></g>
+<g class="pydv-e"><rect x="62" y="26" width="46" height="22" rx="11" fill="var(--scene-bad,#b3261e)"/><text x="85" y="42" text-anchor="middle" font-family="system-ui,sans-serif" font-size="15" font-weight="700" fill="var(--scene-card,#fff)">422</text></g>
+<g class="pydv-f"><rect x="62" y="26" width="46" height="22" rx="11" fill="var(--scene-good,#1f7a4d)"/><text x="85" y="42" text-anchor="middle" font-family="system-ui,sans-serif" font-size="15" font-weight="700" fill="var(--scene-card,#fff)">201</text></g>
+</svg>

@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A cyclist opens a map on her phone: map tiles from four streams travel from the tile server over one HTTP/2 connection, the map fills row by row, and a check appears when the screen is complete">
+<style>
+.learn-networking-basics-http-versions-w{font-family:system-ui,sans-serif;font-size:14px;font-weight:700;fill:var(--scene-muted,#536970)}
+.learn-networking-basics-http-versions-loop{animation-duration:8s;animation-iteration-count:infinite;animation-timing-function:linear;animation-delay:-3.2s}
+.learn-networking-basics-http-versions-p1{animation-name:learn-networking-basics-http-versions-p1}
+.learn-networking-basics-http-versions-p2{animation-name:learn-networking-basics-http-versions-p2}
+.learn-networking-basics-http-versions-p3{animation-name:learn-networking-basics-http-versions-p3}
+.learn-networking-basics-http-versions-p4{animation-name:learn-networking-basics-http-versions-p4}
+.learn-networking-basics-http-versions-r1{animation-name:learn-networking-basics-http-versions-r1}
+.learn-networking-basics-http-versions-r2{animation-name:learn-networking-basics-http-versions-r2}
+.learn-networking-basics-http-versions-r3{animation-name:learn-networking-basics-http-versions-r3}
+.learn-networking-basics-http-versions-r4{animation-name:learn-networking-basics-http-versions-r4}
+.learn-networking-basics-http-versions-ok{animation-name:learn-networking-basics-http-versions-ok}
+@keyframes learn-networking-basics-http-versions-p1{0%,5%{transform:translateX(0);opacity:0}7%{opacity:1}25%{transform:translateX(-118px);opacity:1}27%,100%{transform:translateX(-118px);opacity:0}}
+@keyframes learn-networking-basics-http-versions-p2{0%,15%{transform:translateX(0);opacity:0}17%{opacity:1}35%{transform:translateX(-118px);opacity:1}37%,100%{transform:translateX(-118px);opacity:0}}
+@keyframes learn-networking-basics-http-versions-p3{0%,25%{transform:translateX(0);opacity:0}27%{opacity:1}45%{transform:translateX(-118px);opacity:1}47%,100%{transform:translateX(-118px);opacity:0}}
+@keyframes learn-networking-basics-http-versions-p4{0%,35%{transform:translateX(0);opacity:0}37%{opacity:1}55%{transform:translateX(-118px);opacity:1}57%,100%{transform:translateX(-118px);opacity:0}}
+@keyframes learn-networking-basics-http-versions-r1{0%,24%{opacity:0}27%,92%{opacity:1}96%,100%{opacity:0}}
+@keyframes learn-networking-basics-http-versions-r2{0%,34%{opacity:0}37%,92%{opacity:1}96%,100%{opacity:0}}
+@keyframes learn-networking-basics-http-versions-r3{0%,44%{opacity:0}47%,92%{opacity:1}96%,100%{opacity:0}}
+@keyframes learn-networking-basics-http-versions-r4{0%,54%{opacity:0}57%,92%{opacity:1}96%,100%{opacity:0}}
+@keyframes learn-networking-basics-http-versions-ok{0%,58%{opacity:0}62%,90%{opacity:1}94%,100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.learn-networking-basics-http-versions-loop{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g fill="var(--scene-ink,#102a33)" opacity=".09"><ellipse cx="62" cy="156" rx="50" ry="7"/><ellipse cx="270" cy="152" rx="40" ry="7"/></g>
+<path d="M18 150c0-26 10-40 26-40s26 14 26 40z" fill="var(--scene-accent,#006c73)"/>
+<circle cx="44" cy="90" r="14" fill="var(--scene-accent,#006c73)"/>
+<rect x="60" y="66" width="44" height="80" rx="7" fill="var(--scene-ink,#102a33)"/>
+<rect x="64" y="74" width="36" height="62" rx="2" fill="var(--scene-card,#fff)"/>
+<g fill="none" stroke="var(--scene-line,#cfdfdc)" stroke-width="1"><path d="M64 89.5h36M64 105h36M64 120.5h36M76 74v62M88 74v62"/></g>
+<g fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="1">
+<g class="learn-networking-basics-http-versions-loop learn-networking-basics-http-versions-r1"><rect x="65" y="75" width="10" height="13.5"/><rect x="77" y="75" width="10" height="13.5"/><rect x="89" y="75" width="10" height="13.5"/></g>
+<g class="learn-networking-basics-http-versions-loop learn-networking-basics-http-versions-r2"><rect x="65" y="90.5" width="10" height="13.5"/><rect x="77" y="90.5" width="10" height="13.5"/><rect x="89" y="90.5" width="10" height="13.5"/></g>
+<g class="learn-networking-basics-http-versions-loop learn-networking-basics-http-versions-r3"><rect x="65" y="106" width="10" height="13.5"/><rect x="77" y="106" width="10" height="13.5"/><rect x="89" y="106" width="10" height="13.5"/></g>
+<g class="learn-networking-basics-http-versions-loop learn-networking-basics-http-versions-r4"><rect x="65" y="121.5" width="10" height="13.5"/><rect x="77" y="121.5" width="10" height="13.5"/><rect x="89" y="121.5" width="10" height="13.5"/></g></g>
+<path d="M248 44l12-10h46l-12 10z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M294 44l12-10v100l-12 10z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="248" y="44" width="46" height="100" rx="3" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-line,#cfdfdc)" stroke-width="1.5"/>
+<g fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)"><rect x="254" y="56" width="34" height="14" rx="2"/><rect x="254" y="80" width="34" height="14" rx="2"/><rect x="254" y="104" width="34" height="14" rx="2"/></g>
+<g fill="var(--scene-good,#1f7a4d)"><circle cx="282" cy="63" r="2.5"/><circle cx="282" cy="87" r="2.5"/><circle cx="282" cy="111" r="2.5"/></g>
+<g fill="var(--scene-accent,#006c73)" opacity=".6"><rect x="258" y="60" width="6" height="6"/><rect x="266" y="60" width="6" height="6"/><rect x="258" y="84" width="6" height="6"/><rect x="258" y="108" width="6" height="6"/><rect x="266" y="108" width="6" height="6"/></g>
+<path d="M108 96H242" fill="none" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="4 4"/>
+<text class="learn-networking-basics-http-versions-w" x="175" y="80" text-anchor="middle">HTTP/2</text>
+<text class="learn-networking-basics-http-versions-w" x="175" y="124" text-anchor="middle">1 connection</text>
+<g stroke="var(--scene-card,#fff)" stroke-width="1.5">
+<rect class="learn-networking-basics-http-versions-loop learn-networking-basics-http-versions-p1" x="226" y="89" width="14" height="14" rx="2" fill="var(--scene-accent,#006c73)"/>
+<rect class="learn-networking-basics-http-versions-loop learn-networking-basics-http-versions-p2" x="226" y="89" width="14" height="14" rx="2" fill="var(--scene-link,#245a88)"/>
+<rect class="learn-networking-basics-http-versions-loop learn-networking-basics-http-versions-p3" x="226" y="89" width="14" height="14" rx="2" fill="var(--scene-grow,#b8457a)"/>
+<rect class="learn-networking-basics-http-versions-loop learn-networking-basics-http-versions-p4" x="226" y="89" width="14" height="14" rx="2" fill="var(--scene-ahead,#2f6fb3)"/></g>
+<g class="learn-networking-basics-http-versions-loop learn-networking-basics-http-versions-ok"><circle cx="112" cy="62" r="9" fill="var(--scene-good,#1f7a4d)"/><path d="M107.5 62l3 3 6-6" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+</svg>

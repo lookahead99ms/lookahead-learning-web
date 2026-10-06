@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="An engineer at a laptop rebases two commits of her branch onto the end of main: the commits slide onto main and leave dashed old copies behind, a rules file shows a conflict warning that turns into a check, and the updated branch travels to the code host server, which shows a check">
+<style>
+.gitrb-shadow{fill:var(--scene-ink,#102a33);opacity:.09}
+.gitrb-side{fill:var(--scene-ink,#102a33);opacity:.14}
+.gitrb-wire{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.5;stroke-dasharray:3 4}
+.gitrb-line{fill:none;stroke:var(--scene-ink,#102a33);stroke-width:3;stroke-linecap:round}
+.gitrb-ghost{fill:none;stroke:var(--scene-muted,#536970);stroke-width:1.6;stroke-dasharray:3 3}
+.gitrb-a{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-6s;animation-timing-function:ease-in-out}
+@media (prefers-reduced-motion: reduce){.gitrb-a{animation-play-state:paused!important}}
+.gitrb-c1{animation-name:gitrb-c1}
+@keyframes gitrb-c1{0%,14%{transform:none}28%,90%{transform:translate(48px,40px)}97%,100%{transform:none}}
+.gitrb-c2{animation-name:gitrb-c2}
+@keyframes gitrb-c2{0%,28%{transform:none}42%,90%{transform:translate(48px,40px)}97%,100%{transform:none}}
+.gitrb-old{animation-name:gitrb-old}
+@keyframes gitrb-old{0%,14%{opacity:0}22%,90%{opacity:1}97%,100%{opacity:0}}
+.gitrb-warn{animation-name:gitrb-warn}
+@keyframes gitrb-warn{0%,24%{opacity:0}28%,40%{opacity:1}44%,100%{opacity:0}}
+.gitrb-fixed{animation-name:gitrb-fixed}
+@keyframes gitrb-fixed{0%,42%{opacity:0}46%,90%{opacity:1}97%,100%{opacity:0}}
+.gitrb-dot{animation-name:gitrb-dot}
+@keyframes gitrb-dot{0%,52%{opacity:0;transform:none}54%{opacity:1;transform:none}68%{opacity:1;transform:translate(36px,-14px)}70%,100%{opacity:0;transform:translate(36px,-14px)}}
+.gitrb-ok{animation-name:gitrb-ok}
+@keyframes gitrb-ok{0%,68%{opacity:0}72%,92%{opacity:1}97%,100%{opacity:0}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<!-- the engineer behind her laptop -->
+<circle cx="44" cy="74" r="13" fill="var(--scene-accent,#006c73)"/>
+<path d="M18 128c0-22 11-36 26-36s26 14 26 36z" fill="var(--scene-accent,#006c73)" opacity=".85"/>
+<ellipse cx="46" cy="152" rx="40" ry="4" class="gitrb-shadow"/>
+<path d="M14 112h62l-6 30H20z" fill="var(--scene-ink,#102a33)"/>
+<rect x="18" y="116" width="54" height="22" rx="2" fill="var(--scene-card,#fff)" opacity=".2"/>
+<rect x="8" y="142" width="76" height="6" rx="3" fill="var(--scene-line,#cfdfdc)"/>
+<rect x="8" y="146" width="76" height="3" rx="1.5" class="gitrb-side"/>
+<!-- the rules file with the conflict, then the check -->
+<ellipse cx="198" cy="64" rx="16" ry="3" class="gitrb-shadow"/>
+<path d="M184 22h20l8 8v32h-28z" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="1.5"/>
+<path d="M204 22v8h8" fill="none" stroke="var(--scene-line,#cfdfdc)" stroke-width="1.5"/>
+<rect x="189" y="36" width="16" height="3" rx="1.5" fill="var(--scene-line,#cfdfdc)"/>
+<rect x="189" y="43" width="12" height="3" rx="1.5" fill="var(--scene-accent,#006c73)"/>
+<rect x="189" y="50" width="15" height="3" rx="1.5" fill="var(--scene-line,#cfdfdc)"/>
+<g class="gitrb-a gitrb-warn"><circle cx="214" cy="24" r="8" fill="var(--scene-warn,#a15c00)"/><path d="M214 19v6M214 28v1" stroke="var(--scene-card,#fff)" stroke-width="2.2" stroke-linecap="round"/></g>
+<g class="gitrb-a gitrb-fixed"><circle cx="214" cy="24" r="8" fill="var(--scene-good,#1f7a4d)"/><path d="M210 24l3 3 5-6" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<!-- main: a line of commits; the branch commits start above it -->
+<path d="M104 132H236" class="gitrb-line"/>
+<path d="M140 132Q146 96 158 92H182" class="gitrb-line" stroke="var(--scene-accent,#006c73)" opacity=".35"/>
+<text x="104" y="156" font-size="13" fill="var(--scene-muted,#536970)">main</text>
+<circle cx="116" cy="132" r="7" fill="var(--scene-ink,#102a33)"/>
+<circle cx="140" cy="132" r="7" fill="var(--scene-ink,#102a33)"/>
+<circle cx="164" cy="132" r="7" fill="var(--scene-ink,#102a33)"/>
+<g class="gitrb-a gitrb-old"><circle cx="158" cy="92" r="7" class="gitrb-ghost"/><circle cx="182" cy="92" r="7" class="gitrb-ghost"/></g>
+<g class="gitrb-a gitrb-c1"><circle cx="158" cy="92" r="8" fill="var(--scene-accent,#006c73)" stroke="var(--scene-card,#fff)" stroke-width="2"/></g>
+<g class="gitrb-a gitrb-c2"><circle cx="182" cy="92" r="8" fill="var(--scene-accent,#006c73)" stroke="var(--scene-card,#fff)" stroke-width="2"/></g>
+<!-- the push to the code host -->
+<path d="M234 132L270 118" class="gitrb-wire"/>
+<circle cx="234" cy="132" r="3.5" fill="var(--scene-accent,#006c73)" class="gitrb-a gitrb-dot"/>
+<ellipse cx="290" cy="152" rx="26" ry="4" class="gitrb-shadow"/>
+<rect x="276" y="76" width="34" height="74" rx="4" class="gitrb-side"/>
+<rect x="270" y="72" width="34" height="76" rx="4" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="1.5"/>
+<rect x="276" y="84" width="22" height="6" rx="2" fill="var(--scene-line,#cfdfdc)"/>
+<rect x="276" y="98" width="22" height="6" rx="2" fill="var(--scene-line,#cfdfdc)"/>
+<rect x="276" y="112" width="22" height="6" rx="2" fill="var(--scene-line,#cfdfdc)"/>
+<circle cx="279" cy="134" r="2.5" fill="var(--scene-good,#1f7a4d)"/><circle cx="287" cy="134" r="2.5" fill="var(--scene-good,#1f7a4d)"/>
+<g class="gitrb-a gitrb-ok"><circle cx="304" cy="70" r="9" fill="var(--scene-good,#1f7a4d)"/><path d="M299.5 70l3 3 5.5-6" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+</svg>

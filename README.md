@@ -558,6 +558,8 @@ See [Architecture](docs/architecture.md),
 - The public fixture is intentionally small and does not represent the private
   curriculum.
 - Browser-only plans do not synchronize across devices.
+- Hands-On DSA practice progress is saved in the current browser only, in every
+  mode (including connected local mode); it does not reach an account or another device.
 - Connected OAuth/PostgreSQL is local development, not production certification.
 - Learner code execution is deferred; dormant candidate code is not a learner
   capability.
@@ -744,7 +746,10 @@ and broken/fixed code comparisons. The DSA story component reads optional privat
 the page language selection. Missing stories retain the existing debugger.
 Card scene SVGs under `public/assets/scenes/` are presentation assets; proprietary
 lesson bodies and story data remain in the private Content repository. Retired
-lesson routes redirect to their current canonical destination. No learner code
+lesson routes redirect to their current canonical destination
+(`src/app/content/retired-content-ids.json`); an entry with `targetCourseId` also
+moves the route to another course, as for the Java Concurrency lessons that left
+Design Patterns and LLD (DLV-410). No learner code
 execution service is activated.
 
 Validate presentation contracts with `npm run test:card-contract`,
@@ -762,3 +767,109 @@ The foundation reader uses compact internal class names (`system`, `prose`,
 `explanation`, `code-section`) in its template and styles to limit repeated
 selectors in Angular's compiled CSS. Component style budgets remain enforced;
 update component and global reader selectors together when renaming these classes.
+The Debug-pair split diff's own grid, file bars and rows are styled in `src/styles.css`
+under `app-foundation-lesson-shell .split-diff` (scoped to the reader, never Home); the
+labels, prose, code blocks, tables and consoles inside it stay in the component.
+
+## DLV-408 lesson tools, Hands-On DSA workspace and device-local practice
+
+Status (2026-10-05, extended 2026-10-06): implemented and checked locally on
+`feature/DLV-408-review-notes` with component tests; captured in a local Git review snapshot, not a release
+certification. All of it is
+frontend behavior over the existing content contracts: no endpoint, API contract or
+server-side persistence changed, and no learner code is executed.
+
+Shared lesson components (`src/app/core/`):
+
+- `lesson-tabs/` — underlined tabs for small groups inside a lesson (Variations,
+  Common mistakes) with Previous/Next, WAI-ARIA tab keys (arrows, Home, End),
+  edge chevrons when the row scrolls, and `hidden="until-found"` panels so
+  in-page search still finds hidden text.
+- `lesson-start/` — **Before you start**: prerequisite lessons as title-only links
+  and a closed **Run it yourself** section (requirements, version notes, steps for
+  IntelliJ IDEA or VS Code, project download).
+- `zip/zip-store.ts` — a minimal ZIP writer (stored entries, fixed 1980 timestamp,
+  so the same files give the same bytes). The project arrives as a
+  `lesson-project/v1` JSON bundle through the normal content read and is packed
+  into `{lessonId}.zip` in the browser.
+- `pattern-map/` — the Recognize the Pattern route: units in study order with a
+  signal finder that rings matching units; the rows come from the lesson's own
+  section table, and narrow screens get a numbered list.
+- `pattern-help/` — **Help me recognize the pattern** on a Hands-On DSA problem:
+  pick a signal, see the patterns that fit and what to check first; revealing the
+  problem's pattern is one more click and never changes progress. Its lesson link,
+  like the concept-review links on question pages, reads "{Pattern} lesson".
+- `page-sidebars/` — the lesson right sidebar: a **Practice & review** group first
+  (Quick recall opens a dialog that keeps its place, hides the answer until Reveal
+  and records no progress), then a **Where you are** outline (path, group, course,
+  previous/current/next lesson, next course and group). The lesson column width
+  does not change.
+- `even-grid.ts`, `foundation-lesson-shell/console-beside.ts` and
+  `platform-signature/reasoning-prompt.ts` — even card grids, a run console beside
+  the explanation when it fits, and the paired corner statements.
+
+Hands-On DSA (`src/app/pages/hands-on-dsa/`, `src/app/core/focus-studio/`):
+
+- Catalog: hero counts from the published catalog, breadcrumb with the Learn group,
+  a **Problem library** table with an inline statement preview loaded on demand,
+  pattern names hidden by default (`patterns=show` in the URL shows them),
+  **Hide solved** (`solved=hide`), and **Surprise me**, which draws from every page
+  of the current filters and prefers problems not yet solved on this device.
+- Catalog views (2026-10-06): an **All problems | By pattern** switch. By pattern
+  (`view=groups`, `pattern-browser.ts`) lists the patterns in preparation order on
+  the left, with solved of total, and one pattern's problems on the right; below
+  700px the two panes become two screens and the URL says which one. The old
+  `sort=pattern-order` URL is rewritten to `view=groups`. The view and the sort are
+  how the list is shown, not filters.
+- Header sorting (`catalog-sort.ts`): Learning order, Problem, Difficulty and
+  Interview priority headers sort both tables from one `sort` URL parameter, so an
+  order carries across the views and across patterns; sorting by difficulty is off
+  while the list shows one difficulty. **Status** is the last column, not sortable,
+  and shows an empty circle (○) for a problem not started on this device.
+- Page width: the page sets `collapseLeftBelow: 1700` on the shared page sidebars
+  (`core/page-sidebars/`), so below 1700px the left navigation starts collapsed and
+  the catalog keeps its column; the learner can still open it. Other pages are
+  unchanged.
+- Workspace header and practice tools (`practice-tools.ts`,
+  `studio-practice-tools.ts`): a timed attempt per problem (15, 25 or 45 minutes by
+  difficulty; hints and the solution stay locked while it runs), a time/space
+  prediction box directly under the editor, marked against the reference cost, and a
+  keyboard shortcut line under it (1–4 tabs, P problem, H hints). Both tools use
+  `sessionStorage` for the tab and never change saved progress.
+- Visual walkthrough (2026-10-06, Option B "Code beside", `src/app/core/walkthrough/`):
+  one player for every problem. One header row (example, language, Approach), then
+  a pinned control bar (Previous, Play/Pause, Next, scrubber, Restart), the drawing,
+  one caption and the values not already drawn on the left, and the reference code
+  with the current line highlighted on the right; narrow screens switch between
+  Drawing and Code. `core/dsa-story/` (rebuilt) and
+  `focus-studio/studio-fallback-walkthrough.ts` (problems without a story) feed it.
+  Its **Every line** switch steps the recorded line trace and replaces the separate
+  guided debugger; `migrateStudioState` (`workspace-state.ts`) moves a saved
+  debugger state from another tab to it. **Visualize solution** keeps an example the
+  learner chose, and Escape (like Close visualization) returns to the tab it came
+  from.
+- Try it yourself: the problem's examples sit beside the editor (`studio-examples.ts`,
+  input → expected with the explanation on expand). Hints start closed; the Hints
+  button or H opens them above the examples.
+- Recall (`studio-recall-grid.ts`, `recall-check.ts`): a two-column card grid (one
+  column on phones) with a number, a coloured kind tag (from the card's optional
+  `kind`; template cards without one keep their id-based tag), Reveal answer and
+  Got it / Partly / Missed under a revealed answer. "N of M checked" counts graded
+  cards. Open answers and grades are kept per problem in `sessionStorage` and never
+  change saved progress.
+- `studio-finish-review.ts` — **Finish and review** under the Recall cards at the full
+  workspace width, in four columns (rating, review date of 3 days, 1 week or none,
+  notes, next problems) that stack on narrow widths. Once a card is graded it
+  suggests a rating and review date from the grades; only **Use this** applies it.
+- `core/practice-progress/` and `practice-progress-strip.ts` — progress saved in
+  this browser only under the `localStorage` key `look-ahead.dsa-practice.v1`
+  (`dsa-practice-local/v1`): status, rating, review date and notes per problem.
+  The strip shows solved of the published total, started and review due, counts
+  only problems the catalog still publishes, and states "Saved in this browser
+  only. Progress does not sync to other devices yet." When storage is blocked,
+  progress lasts until the page is left. Cross-device sync is proposed, not built
+  (DLV-724 in the private delivery plan).
+
+Verify with `npm test -- --watch=false` (the specs beside each component cover the
+behavior above), `npm run build`, and `node scripts/validate-content.mjs --external`
+for the private content checks (including every lesson download link).
