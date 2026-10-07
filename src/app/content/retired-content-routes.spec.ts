@@ -5,6 +5,7 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { routes } from '../app.routes';
 import {
   RETIRED_COURSE_IDS,
+  RetiredCourseIds,
   retiredContentRedirect,
   retiredContentTarget,
 } from './retired-content-routes';
@@ -110,6 +111,113 @@ describe('retired content routes', () => {
       '/learn/java-concurrency/module/executors-async',
     );
     expect(target('/learn/solid-design-patterns/lld-allocation-booking-guide')).toBeNull();
+  });
+
+  it('sends the pass-by-value question that moved to Java Foundations to the new course', () => {
+    expect(target('/learn/oop/java-pass-by-value')).toBe('/learn/core-java/java-pass-by-value');
+    expect(target('/learn/oop/java-pass-by-value?from=plan#answer')).toBe(
+      '/learn/core-java/java-pass-by-value?from=plan#answer',
+    );
+    // Only that question moved: the course, its units, its modules and its other questions stay.
+    for (const url of [
+      '/learn/oop',
+      '/learn/oop#unit-oop-foundations',
+      '/learn/oop/module/oop-foundations',
+      '/learn/oop/access-modifiers',
+      '/learn/oop/oop-state-behavior-and-invariants',
+      '/learn/core-java/java-pass-by-value',
+    ]) {
+      expect(target(url)).toBeNull();
+    }
+  });
+
+  it('sends the Singleton question that moved to Design Patterns and LLD to the new course', () => {
+    expect(target('/learn/oop/singleton-pattern')).toBe(
+      '/learn/solid-design-patterns/singleton-pattern',
+    );
+    expect(target('/learn/oop/singleton-pattern?from=plan#answer')).toBe(
+      '/learn/solid-design-patterns/singleton-pattern?from=plan#answer',
+    );
+    // The course's other entry still works: each id is looked up in every entry of the course.
+    expect(target('/learn/oop/java-pass-by-value')).toBe('/learn/core-java/java-pass-by-value');
+    for (const url of [
+      '/learn/oop',
+      '/learn/oop#unit-design-principles',
+      '/learn/oop/module/design-principles',
+      '/learn/oop/solid-principles',
+      '/learn/oop/solid-change-boundaries',
+      '/learn/oop/enum-singleton-safety',
+      '/learn/solid-design-patterns/singleton-pattern',
+      '/learn/core-java/singleton-pattern',
+    ]) {
+      expect(target(url)).toBeNull();
+    }
+  });
+
+  it('lists each moved oop question in exactly one entry of the real table', () => {
+    const oop = RETIRED_COURSE_IDS.filter(
+      (entry) => entry.path === 'learn' && entry.courseId === 'oop',
+    );
+    expect(oop.map((entry) => entry.targetCourseId)).toEqual(['core-java', 'solid-design-patterns']);
+    const ids = oop.flatMap((entry) => Object.keys(entry.lessons));
+    expect(ids).toEqual(['java-pass-by-value', 'singleton-pattern']);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('looks an id up in every entry of a course, not only the first', () => {
+    const table: RetiredCourseIds[] = [
+      {
+        path: 'learn',
+        courseId: 'sample',
+        targetCourseId: 'first-target',
+        lessons: { 'lesson-a': 'lesson-a' },
+        modules: { 'module-a': 'module-a' },
+        units: { 'unit-a': 'unit-a' },
+      },
+      {
+        path: 'learn',
+        courseId: 'sample',
+        targetCourseId: 'second-target',
+        lessons: { 'lesson-b': 'lesson-b' },
+        modules: { 'module-b': 'module-b' },
+        units: { 'unit-b': 'unit-b' },
+      },
+      {
+        // Same course, no target: a rename inside the course.
+        path: 'learn',
+        courseId: 'sample',
+        lessons: { 'lesson-c': 'lesson-c2', 'lesson-a': 'ignored-duplicate' },
+        modules: { 'module-c': 'module-c2' },
+        units: { 'unit-c': 'unit-c2' },
+      },
+    ];
+    const from = (url: string) => {
+      const tree = retiredContentTarget(serializer.parse(url), table);
+      return tree ? serializer.serialize(tree) : null;
+    };
+    expect(from('/learn/sample/lesson-a')).toBe('/learn/first-target/lesson-a');
+    expect(from('/learn/sample/lesson-b?from=plan#answer')).toBe(
+      '/learn/second-target/lesson-b?from=plan#answer',
+    );
+    expect(from('/learn/sample/lesson-c')).toBe('/learn/sample/lesson-c2');
+    expect(from('/learn/sample/module/module-a')).toBe('/learn/first-target/module/module-a');
+    expect(from('/learn/sample/module/module-b')).toBe('/learn/second-target/module/module-b');
+    expect(from('/learn/sample/module/module-c')).toBe('/learn/sample/module/module-c2');
+    expect(from('/learn/sample#unit-unit-a')).toBe('/learn/first-target#unit-unit-a');
+    expect(from('/learn/sample#unit-unit-b')).toBe('/learn/second-target#unit-unit-b');
+    expect(from('/learn/sample#unit-unit-c')).toBe('/learn/sample#unit-unit-c2');
+    expect(from('/search?course=sample&module=module-c&unit=unit-c')).toBe(
+      '/search?course=sample&module=module-c2&unit=unit-c2',
+    );
+    for (const url of [
+      '/learn/sample/lesson-d',
+      '/learn/sample/module/lesson-b',
+      '/learn/sample#unit-lesson-b',
+      '/learn/other/lesson-b',
+      '/grow/sample/lesson-b',
+    ]) {
+      expect(from(url)).toBeNull();
+    }
   });
 
   it('sends a removed AWS question to the lesson it belonged to', () => {

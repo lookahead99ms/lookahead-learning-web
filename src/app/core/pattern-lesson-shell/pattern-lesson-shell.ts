@@ -280,7 +280,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         class="lesson-section"
         aria-labelledby="pattern-pitfalls-heading"
       >
-        <p class="section-label"><span>09 / 14</span>Debug</p>
+        <p class="section-label"><span>09 / 14</span>Common mistakes</p>
         <h2 id="pattern-pitfalls-heading">Common failure modes</h2>
         <div class="pitfall-list">
           @for (pitfall of lesson().pitfalls; track pitfall.failedAssumption) {

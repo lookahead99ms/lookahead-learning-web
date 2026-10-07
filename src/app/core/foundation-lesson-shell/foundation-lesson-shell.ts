@@ -1085,7 +1085,7 @@ export function plainText(html: string): string {
           class="lesson-section wide-section"
           aria-labelledby="foundation-pitfalls-heading"
         >
-          <p class="section-label"><span>Debug</span>Failure contrasts</p>
+          <p class="section-label"><span>Common mistakes</span>Failure contrasts</p>
           <h2 id="foundation-pitfalls-heading">{{ lesson().learningFlow ? "Common mistakes" : "Common failure modes" }}</h2>
           <div class="pitfall-list">
             @for (pitfall of lesson().pitfalls; track pitfall.failedAssumption) {

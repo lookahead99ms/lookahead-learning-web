@@ -761,7 +761,10 @@ lesson bodies and story data remain in the private Content repository. Retired
 lesson routes redirect to their current canonical destination
 (`src/app/content/retired-content-ids.json`); an entry with `targetCourseId` also
 moves the route to another course, as for the Java Concurrency lessons that left
-Design Patterns and LLD (DLV-410). The same table sends the 74 removed AWS Cloud
+Design Patterns and LLD (DLV-410). A course may have several entries with different
+targets (Object-Oriented Design has one for `core-java` and one for
+`solid-design-patterns`); the redirect and the search index look an id up in all of
+them. The same table sends the 74 removed AWS Cloud
 question routes (`/grow/aws-cloud/aws-network-01`) to the lesson each belonged to;
 `grow/:courseId/:questionId` is the only Grow route with the redirect guard. No learner code
 execution service is activated.

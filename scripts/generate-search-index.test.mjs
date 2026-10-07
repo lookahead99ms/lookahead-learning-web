@@ -508,3 +508,26 @@ test('reads the app redirect table for retired ids by default', async () => {
   assert.equal(isRetiredDocument(document('x', 'practice-divide-and-conquer'), courses), true);
   assert.equal(isRetiredDocument(document('algorithmic-prefix-state'), courses), false);
 });
+
+test('reads every redirect entry of a course, not only the first', async () => {
+  const { readRetiredCourses, isRetiredDocument } = await import('./generate-search-index.mjs');
+  const courses = await readRetiredCourses();
+  // Object-Oriented Design has two entries: one question went to core-java, one to solid-design-patterns.
+  const oop = courses.filter((course) => course.path === 'learn' && course.courseId === 'oop');
+  assert.deepEqual(
+    oop.map((course) => course.targetCourseId),
+    ['core-java', 'solid-design-patterns'],
+  );
+  const document = (courseId, contentId) => ({
+    path: 'learn',
+    courseId,
+    contentId,
+    moduleId: 'design-principles',
+  });
+  assert.equal(isRetiredDocument(document('oop', 'java-pass-by-value'), courses), true);
+  assert.equal(isRetiredDocument(document('oop', 'singleton-pattern'), courses), true);
+  assert.equal(isRetiredDocument(document('oop', 'solid-principles'), courses), false);
+  // The moved questions stay searchable in the courses they moved to.
+  assert.equal(isRetiredDocument(document('core-java', 'java-pass-by-value'), courses), false);
+  assert.equal(isRetiredDocument(document('solid-design-patterns', 'singleton-pattern'), courses), false);
+});

@@ -147,7 +147,7 @@ export interface TheorySection {
   output?: TheoryOutput;
   /** System lessons: several files shown as tabs, each with its own explanation. */
   codeTabs?: TheoryCodeTab[];
-  /** System lessons, Debug stage: numbered problem/fix pairs. */
+  /** System lessons, Common mistakes stage: numbered problem/fix pairs. */
   pairs?: TheoryPair[];
   /** Column labels for pairs, e.g. {broken: 'Weak answer', fixed: 'Strong answer'}. */
   pairLabels?: { broken: string; fixed: string };
@@ -253,7 +253,7 @@ export interface TheoryPairSide {
   deletedFiles?: string[];
 }
 
-/** DLV-408 Debug stage: one problem the testers found, with the broken and fixed code side by side. */
+/** DLV-408 Common mistakes stage: one common mistake, with the broken and fixed code side by side. */
 export interface TheoryPair {
   n: number;
   title: string;
@@ -319,7 +319,7 @@ export const LESSON_STAGES = [
   { id: 'understand', label: 'Understand' },
   { id: 'build', label: 'Build' },
   /** Break and Fix, merged: each problem and its fix side by side (troubleshooting). */
-  { id: 'debug', label: 'Debug' },
+  { id: 'debug', label: 'Common mistakes' },
   { id: 'ship', label: 'Ship' },
   { id: 'own', label: 'Own' },
   { id: 'prove', label: 'Prove' },
@@ -361,7 +361,7 @@ export const LESSON_PATTERNS: Record<string, LessonPatternDefinition> = {
       { id: 'overview', label: 'Overview' },
       { id: 'brief', label: 'Brief' },
       { id: 'understand', label: 'How it works' },
-      { id: 'debug', label: 'Debug' },
+      { id: 'debug', label: 'Common mistakes' },
       { id: 'scale', label: 'At scale' },
       { id: 'interview', label: 'Interview' },
       { id: 'keep', label: 'Keep' },
@@ -375,7 +375,7 @@ export const LESSON_PATTERNS: Record<string, LessonPatternDefinition> = {
       { id: 'brief', label: 'Problem' },
       { id: 'pattern', label: 'Pattern' },
       { id: 'variants', label: 'Variants' },
-      { id: 'debug', label: 'Debug' },
+      { id: 'debug', label: 'Common mistakes' },
       { id: 'tradeoffs', label: 'Trade-offs' },
       { id: 'used', label: 'Where it is used' },
       { id: 'interview', label: 'Interview' },
@@ -390,8 +390,8 @@ export const LESSON_PATTERNS: Record<string, LessonPatternDefinition> = {
       { id: 'brief', label: 'Brief' },
       { id: 'estimate', label: 'Estimate' },
       { id: 'design', label: 'Design' },
-      { id: 'deepdive', label: 'Deep dive' },
-      { id: 'debug', label: 'Debug' },
+      { id: 'deepdive', label: 'Where Systems Break' },
+      { id: 'debug', label: 'Common mistakes' },
       { id: 'tradeoffs', label: 'Trade-offs' },
       { id: 'interview', label: 'Interview' },
       { id: 'keep', label: 'Keep' },
@@ -404,7 +404,7 @@ export const LESSON_PATTERNS: Record<string, LessonPatternDefinition> = {
       { id: 'situation', label: 'Situation' },
       { id: 'options', label: 'Options' },
       { id: 'decide', label: 'Decide' },
-      { id: 'debug', label: 'Debug' },
+      { id: 'debug', label: 'Common mistakes' },
       { id: 'conversation', label: 'Conversation' },
       { id: 'interview', label: 'Interview' },
       { id: 'keep', label: 'Keep' },
@@ -417,7 +417,7 @@ export const LESSON_PATTERNS: Record<string, LessonPatternDefinition> = {
       { id: 'question', label: 'The question' },
       { id: 'asking', label: 'What they are asking' },
       { id: 'build', label: 'Build your story' },
-      { id: 'debug', label: 'Debug' },
+      { id: 'debug', label: 'Common mistakes' },
       { id: 'followups', label: 'Follow-ups' },
       { id: 'practice', label: 'Practice' },
       { id: 'keep', label: 'Keep' },
