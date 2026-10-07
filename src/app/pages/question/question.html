@@ -823,7 +823,7 @@
                       <span class="followup-number">Follow-up {{ index + 1 }}</span>
                       <span class="followup-role">Interviewer</span>
                     </p>
-                    <h3 class="followup-question" [id]="'followup-' + (index + 1) + '-question'">{{ followUp.question }}</h3>
+                    <h3 class="followup-question" [id]="'followup-' + (index + 1) + '-question'" [innerHTML]="followUp.question"></h3>
                     <details class="followup-answer">
                       <summary [attr.aria-describedby]="'followup-' + (index + 1) + '-question'">
                         <span class="followup-toggle-show">Show a strong answer</span>

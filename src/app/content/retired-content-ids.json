@@ -73,6 +73,28 @@
       }
     },
     {
+      "path": "learn",
+      "courseId": "oop",
+      "targetCourseId": "core-java",
+      "reason": "DLV-410: the pass-by-value question moved to Java Foundations, the course whose lesson teaches it, with its id unchanged.",
+      "lessons": {
+        "java-pass-by-value": "java-pass-by-value"
+      },
+      "modules": {},
+      "units": {}
+    },
+    {
+      "path": "learn",
+      "courseId": "oop",
+      "targetCourseId": "solid-design-patterns",
+      "reason": "DLV-410: the thread-safe Singleton question moved to Design Patterns and LLD, next to the creational patterns lesson that teaches Singleton, with its id unchanged.",
+      "lessons": {
+        "singleton-pattern": "singleton-pattern"
+      },
+      "modules": {},
+      "units": {}
+    },
+    {
       "path": "grow",
       "courseId": "aws-cloud",
       "reason": "DLV-410: 74 old AWS interview questions that no lesson used were removed; each old route opens its lesson.",

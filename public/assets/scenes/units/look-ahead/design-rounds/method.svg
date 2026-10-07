@@ -35,6 +35,6 @@
 <rect x="16" y="104" width="208" height="24" rx="12" class="methodr-box"/>
 <text class="methodr-a methodr-p1 methodr-t" x="120" y="121" font-size="14" font-weight="700" text-anchor="middle">Ask first, then numbers</text>
 <text class="methodr-a methodr-p2 methodr-t" x="120" y="121" font-size="14" font-weight="700" text-anchor="middle">One box, then grow it</text>
-<text class="methodr-a methodr-p3 methodr-t" x="120" y="121" font-size="14" font-weight="700" text-anchor="middle">Deep dive on the risk</text>
+<text class="methodr-a methodr-p3 methodr-t" x="120" y="121" font-size="14" font-weight="700" text-anchor="middle">Where systems break</text>
 <text class="methodr-a methodr-p4 methodr-good" x="120" y="121" font-size="14" font-weight="700" text-anchor="middle">Trade-offs &#10003;</text>
 </svg>

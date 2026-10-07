@@ -17,7 +17,10 @@ import retiredContent from './retired-content-ids.json';
 export interface RetiredCourseIds {
   readonly path: string;
   readonly courseId: string;
-  /** Set when the ids moved to another course of the same path (DLV-410: Java Concurrency). */
+  /**
+   * Set when the ids moved to another course of the same path (DLV-410: Java Concurrency). One
+   * course may have several entries with different targets: each id is looked up in all of them.
+   */
   readonly targetCourseId?: string;
   /** Lesson (question) ids: `/<path>/<course>/<lesson>`. */
   readonly lessons: Readonly<Record<string, string>>;
@@ -34,6 +37,16 @@ export const RETIRED_COURSE_IDS: readonly RetiredCourseIds[] =
 
 const replacement = (table: Readonly<Record<string, string>>, id: unknown): string | undefined =>
   typeof id === 'string' && Object.hasOwn(table, id) ? table[id] : undefined;
+
+type RetiredTable = 'lessons' | 'modules' | 'units';
+
+/** The first entry, among all entries of one course, whose table lists the id. */
+const entryListing = (
+  entries: readonly RetiredCourseIds[],
+  table: RetiredTable,
+  id: unknown,
+): RetiredCourseIds | undefined =>
+  entries.find((entry) => replacement(entry[table], id) !== undefined);
 
 /** `algorithmic-patterns:difference-arrays` -> `algorithmic-patterns:prefix-state`. */
 function replaceGroupId(value: string, courses: readonly RetiredCourseIds[]): string {
@@ -61,17 +74,26 @@ export function retiredContentTarget(
   let fragment = url.fragment;
   const queryParams: Params = { ...url.queryParams };
 
-  const course = courses.find(({ path, courseId }) => path === paths[0] && courseId === paths[1]);
-  if (course && paths.length === 3) {
-    const lesson = replacement(course.lessons, paths[2]);
-    if (lesson) nextPaths = [paths[0], course.targetCourseId ?? paths[1], lesson];
-  } else if (course && paths.length === 4 && paths[2] === 'module') {
-    const module = replacement(course.modules, paths[3]);
-    if (module) nextPaths = [paths[0], course.targetCourseId ?? paths[1], paths[2], module];
-  } else if (course && paths.length === 2 && fragment?.startsWith('unit-')) {
-    const unit = replacement(course.units, fragment.slice('unit-'.length));
-    if (unit) {
-      fragment = `unit-${unit}`;
+  // A course can have several entries (ids that moved to different courses), so the entry is
+  // chosen per id: the one whose table lists it.
+  const entries = courses.filter(
+    ({ path, courseId }) => path === paths[0] && courseId === paths[1],
+  );
+  if (paths.length === 3) {
+    const course = entryListing(entries, 'lessons', paths[2]);
+    if (course) {
+      nextPaths = [paths[0], course.targetCourseId ?? paths[1], course.lessons[paths[2]]];
+    }
+  } else if (paths.length === 4 && paths[2] === 'module') {
+    const course = entryListing(entries, 'modules', paths[3]);
+    if (course) {
+      nextPaths = [paths[0], course.targetCourseId ?? paths[1], paths[2], course.modules[paths[3]]];
+    }
+  } else if (paths.length === 2 && fragment?.startsWith('unit-')) {
+    const retiredUnit = fragment.slice('unit-'.length);
+    const course = entryListing(entries, 'units', retiredUnit);
+    if (course) {
+      fragment = `unit-${course.units[retiredUnit]}`;
       if (course.targetCourseId) nextPaths = [paths[0], course.targetCourseId];
     }
   }
@@ -85,17 +107,19 @@ export function retiredContentTarget(
 
   // Search's course filters: /search?path=learn&course=algorithmic-patterns&module=...&unit=...
   if (paths.length === 1 && paths[0] === 'search') {
-    const searchCourse = courses.find(
+    const searchEntries = courses.filter(
       ({ path, courseId }) =>
         courseId === queryParams['course'] &&
         (queryParams['path'] === undefined || queryParams['path'] === path),
     );
-    if (searchCourse) {
-      const module = replacement(searchCourse.modules, queryParams['module']);
-      const unit = replacement(searchCourse.units, queryParams['unit']);
-      if (module) queryParams['module'] = module;
-      if (unit) queryParams['unit'] = unit;
-    }
+    const module = searchEntries
+      .map((entry) => replacement(entry.modules, queryParams['module']))
+      .find(Boolean);
+    const unit = searchEntries
+      .map((entry) => replacement(entry.units, queryParams['unit']))
+      .find(Boolean);
+    if (module) queryParams['module'] = module;
+    if (unit) queryParams['unit'] = unit;
   }
 
   const unchanged =

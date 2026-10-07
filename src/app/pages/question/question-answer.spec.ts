@@ -135,7 +135,7 @@ describe('Non-DSA Answer + Example', () => {
       ...example,
       followUps: [
         { question: 'What changes?', answer: 'Keep the <strong>contract</strong> stable.' },
-        { question: 'What breaks first?', answer: 'The cache.' },
+        { question: 'What breaks first when <code>ttl &lt; 1</code>?', answer: 'The cache.' },
       ],
     });
     const section = root.querySelector<HTMLElement>('.main-followups')!;
@@ -147,7 +147,9 @@ describe('Non-DSA Answer + Example', () => {
     expect(cards.map((card) => card.querySelector('.followup-number')?.textContent?.trim())).toEqual(['Follow-up 1', 'Follow-up 2']);
     expect(cards[0].querySelector('.followup-role')?.textContent?.trim()).toBe('Interviewer');
     const question = cards[1].querySelector('h3.followup-question')!;
-    expect(question.textContent?.trim()).toBe('What breaks first?');
+    // A follow-up question is rich text, like the lesson page shows it: inline code renders as code, never as visible tags.
+    expect(question.textContent?.trim()).toBe('What breaks first when ttl < 1?');
+    expect(question.querySelector('code')?.textContent).toBe('ttl < 1');
     const details = cards[0].querySelector<HTMLDetailsElement>('details.followup-answer')!;
     const summary = details.querySelector('summary')!;
     expect(details.open).toBe(false);
