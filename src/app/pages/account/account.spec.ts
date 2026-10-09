@@ -334,3 +334,20 @@ it.each([
   if (redirects) expect(navigate).toHaveBeenCalledWith('/learn/modern-java', { replaceUrl: true });
   else expect(navigate).not.toHaveBeenCalled();
 });
+
+it('uses the server-selected managed sign-in flow without a local password form', async () => {
+  const queryParamMap = convertToParamMap({ returnTo: '/study-plan' });
+  TestBed.configureTestingModule({
+    imports: [AccountPage],
+    providers: [provideRouter([]), provideHttpClient(), { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap, data: { accountMode: 'signin' } }, queryParamMap: of(queryParamMap), data: of({ accountMode: 'signin' }) } }],
+  });
+  const store = TestBed.inject(StudyPlanAccount);
+  Object.defineProperty(store, 'enabled', { value: true });
+  vi.spyOn(store, 'loadAuthOptions').mockResolvedValue();
+  store.authOptions.set({ registration: false, google: false, oauth: true, managedLogin: true });
+  const fixture = TestBed.createComponent(AccountPage); fixture.detectChanges();
+  const link = fixture.nativeElement.querySelector('a[href^="/bff/login"]');
+  expect(link.textContent).toContain('Continue to secure sign-in');
+  expect(link.getAttribute('href')).toBe('/bff/login?returnTo=%2Fstudy-plan');
+  expect(fixture.nativeElement.querySelector('input[type="password"]')).toBeNull();
+});

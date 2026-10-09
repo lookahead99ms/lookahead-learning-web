@@ -53,12 +53,15 @@ export class AccountPage {
   protected readonly formError = signal(
     this.route.snapshot.queryParamMap.get('error') === 'oauth'
       ? 'Sign-in could not be completed. Please try again.'
-      : '',
+      : this.route.snapshot.queryParamMap.get('error') === 'admission'
+        ? 'Application access could not be confirmed. If this persists, contact the account administrator.'
+        : '',
   );
   protected readonly oauthContinuation = computed(() =>
     this.query().get('oauth') === 'continue' ? 'continue' : null,
   );
   protected readonly countries = registrationCountries;
+  protected readonly managedLoginUrl = computed(() => '/bff/login?returnTo=' + encodeURIComponent(this.returnTo()));
   protected readonly passwordChanged =
     this.router.currentNavigation()?.extras.state?.['passwordChanged'] === true;
   protected readonly signInCanceled =

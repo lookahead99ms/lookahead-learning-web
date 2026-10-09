@@ -16,7 +16,7 @@
         <app-account-settings [returnTo]="returnTo()" />
         <section class="settings-section" aria-labelledby="content-access-heading">
           <h2 id="content-access-heading">Content access</h2>
-          <p>Access is checked when you open a lesson. Online plan purchases and upgrades aren’t available in this local development version.</p>
+          <p>Access is checked when you open a lesson. @if (store.authOptions()?.managedLogin) {Contact the account administrator about course access.} @else {Online plan purchases and upgrades aren’t available in this local development version.}</p>
           <p>You can return to your content or explore lessons from Home.</p>
           <a routerLink="/">Explore from Home</a>
         </section>
@@ -42,6 +42,12 @@
             : 'Sign in to continue your learning.'
         }}
       </p>
+      @if (store.authOptions()?.managedLogin) {
+        <p>Your password and account recovery are handled by the secure sign-in service.</p>
+        @if (formError()) { <p class="form-error" role="alert">{{ formError() }}</p> }
+        <a class="primary-action managed-login-action" [href]="managedLoginUrl()">Continue to secure sign-in</a>
+        <p class="managed-login-hint">If you need access, contact your account administrator.</p>
+      } @else {
       <button type="button" class="google-button" disabled aria-describedby="google-status">
         {{ signup() ? 'Sign up with Google' : 'Sign in with Google' }}
       </button>
@@ -191,6 +197,7 @@
           >
         }
       </p>
+      }
     } @else {
       <p>
         This standalone demo saves learning plans on this browser. Account sign-in is unavailable.

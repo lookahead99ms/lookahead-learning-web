@@ -184,10 +184,12 @@ describe('Operations author view', () => {
     sendHeight('null', height, window);
     sendHeight('https://example.test', height);
     sendHeight('null', { ...height, documentId: 'other-document' });
-    sendHeight('null', { ...height, height: 50_000 });
+    sendHeight('null', { ...height, height: 60_001 });
     expect(frame.style.height).toBe('');
     sendHeight('null', height);
     expect(frame.style.height).toBe('1825px');
+    sendHeight('null', { ...height, height: 41_066 });
+    expect(frame.style.height).toBe('41066px');
     account.set({ accountId: 'author', authorPreview: false });
     fixture.detectChanges();
     sendHeight('null', { ...height, height: 2500 });

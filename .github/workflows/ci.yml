@@ -17,7 +17,7 @@ jobs:
   verify:
     name: Test and build Angular application
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 55
 
     steps:
       - name: Check out source
@@ -37,6 +37,15 @@ jobs:
 
       - name: Test security gates with synthetic pass and fail reports
         run: npm run test:security-gates
+
+      - name: Test container scanner failure and inventory gates
+        run: python3 -m unittest discover -s tools/security -p 'test_*.py'
+
+      - name: Install the verified container scanner
+        run: python3 tools/security/container_scan.py install
+
+      - name: Scan container configuration and source for secrets
+        run: python3 tools/security/container_scan.py config
 
       - name: Install the verified secret scanner
         run: npm run security:install-secret-scanner
@@ -91,8 +100,8 @@ jobs:
       - name: Test canonical content contract
         run: npm run test:content-contract
 
-      - name: Run unit tests
-        run: npm test -- --watch=false
+      - name: Require full application line coverage of at least 85 percent
+        run: npm run test:coverage
 
       - name: Test content inventory with synthetic fixtures
         run: npm run test:content-audit
@@ -105,3 +114,16 @@ jobs:
 
       - name: Build public demo application
         run: npm run build:ci
+
+      - name: Test protected container artifact boundary
+        run: npm run test:container-boundary
+
+      - name: Build and verify protected Web container locally
+        run: |
+          docker build --platform linux/amd64 --iidfile /tmp/lookahead-web-image-id .
+          docker build --platform linux/amd64 --target toolchain --iidfile /tmp/lookahead-web-toolchain-id .
+          docker build --platform linux/amd64 --target build --iidfile /tmp/lookahead-web-builder-id .
+          npm run test:container -- "$(cat /tmp/lookahead-web-image-id)"
+
+      - name: Scan pinned OS bases and exact toolchain, builder and Web images
+        run: python3 tools/security/container_scan.py images --toolchain "$(cat /tmp/lookahead-web-toolchain-id)" --builder "$(cat /tmp/lookahead-web-builder-id)" --image "$(cat /tmp/lookahead-web-image-id)"

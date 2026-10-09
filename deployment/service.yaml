@@ -1,0 +1,116 @@
+# Task/service values are projected into maintained Infra templates. No credentials in YAML.
+schemaVersion: lookahead-service/v2
+service: web
+shared:
+  port: 8080
+  health:
+    path: /health
+    intervalSeconds: 15
+    enabled: true
+    command:
+    - CMD
+    - /opt/lookahead/healthcheck.sh
+    timeoutSeconds: 5
+    retries: 3
+    startPeriodSeconds: 60
+  settings:
+    LOOKAHEAD_ENVIRONMENT: '@environment'
+    LOOKAHEAD_BIND_ADDRESS: 0.0.0.0
+    PORT: '@service.port'
+  resourceRefs: []
+  secretRefs: []
+  infrastructureRefs:
+    cluster: persistent.Cluster
+    subnet1: persistent.AppSubnet1
+    subnet2: persistent.AppSubnet2
+    securityGroup: persistent.WebSecurity
+    executionRole: persistent.SharedTaskExecutionRoleArn
+    logGroup: persistent.WebLogs
+    namespace: persistent.PrivateNamespace
+    targetGroup: runtime.WebTarget
+    taskRole: persistent.SharedApplicationTaskRoleArn
+  runtime:
+    launchType: FARGATE
+    operatingSystem: LINUX
+    cpuArchitecture: X86_64
+    readOnlyRootFilesystem: true
+    assignPublicIp: false
+    platformVersion: 1.4.0
+    networkMode: awsvpc
+    ephemeralStorageGiB: 20
+    stopTimeoutSeconds: 120
+  ingress:
+    mode: load-balancer
+    targetGroupRef: runtime.WebTarget
+    loadBalancerRef: runtime.LoadBalancerDns
+  monitoring:
+    namespace: AWS/ECS
+    cpuAlarmRef: web.CpuAlarmArn
+    logs:
+      driver: awslogs
+      streamPrefix: web
+      region: '@region'
+      mode: non-blocking
+      maxBufferSize: 4m
+  secretEnvironment: {}
+  container:
+    name: web
+    user: 10001:10001
+    essential: true
+    entryPoint:
+    - nginx
+    - -g
+    - daemon off;
+    workingDirectory: /usr/share/nginx/html
+    family: lookahead-@environment-web
+  storage:
+    volumeName: temporary
+    mountPath: /tmp
+    readOnly: false
+  deployment:
+    minimumHealthyPercent: 100
+    maximumPercent: 200
+    healthCheckGracePeriodSeconds: 90
+    circuitBreakerEnabled: true
+    rollback: true
+environments:
+  dev:
+    cpu: 256
+    memory: 512
+    desiredCount: 0
+    imageDigest: null
+    contentReleaseId: null
+    activationEvidence: null
+    scaling:
+      enabled: false
+      minCapacity: 0
+      maxCapacity: 2
+      targetCpuPercent: 60
+      scaleInCooldownSeconds: 300
+      scaleOutCooldownSeconds: 60
+    alarms:
+      enabled: false
+      cpuThresholdPercent: 80
+      periodSeconds: 60
+      evaluationPeriods: 3
+    jvm: null
+  prod:
+    cpu: 256
+    memory: 512
+    desiredCount: 0
+    imageDigest: null
+    contentReleaseId: null
+    activationEvidence: null
+    scaling:
+      enabled: false
+      minCapacity: 0
+      maxCapacity: 4
+      targetCpuPercent: 60
+      scaleInCooldownSeconds: 300
+      scaleOutCooldownSeconds: 60
+    alarms:
+      enabled: false
+      cpuThresholdPercent: 80
+      periodSeconds: 60
+      evaluationPeriods: 3
+    jvm: null

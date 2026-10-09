@@ -33,6 +33,10 @@ import {
 } from '../../core/author-embedded-anchor';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 
+// Long operator references wrap beyond 30,000px on narrow screens. Keep a
+// finite limit while allowing the verified AWS guide to use one page scroll.
+const maxDocumentHeight = 60_000;
+
 @Component({
   selector: 'app-author-operations',
   imports: [PlatformHeader, AuthorWorkspaceNav, RouterLink],
@@ -171,7 +175,7 @@ export class AuthorOperationsPage implements OnDestroy {
       data,
       this.documentId,
       anchor,
-      this.documentHeight() ?? 30_000,
+      this.documentHeight() ?? maxDocumentHeight,
     );
     if (position !== null) {
       const hostWindow = this.hostDocument.defaultView;
@@ -187,7 +191,7 @@ export class AuthorOperationsPage implements OnDestroy {
       data.documentId !== this.documentId ||
       !Number.isFinite(data.height) ||
       data.height < 300 ||
-      data.height > 30_000
+      data.height > maxDocumentHeight
     )
       return;
     this.documentHeight.set(Math.ceil(data.height));

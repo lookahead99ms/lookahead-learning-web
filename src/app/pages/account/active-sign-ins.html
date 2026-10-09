@@ -168,6 +168,10 @@
   }
   <p class="status" role="status" aria-live="polite">{{ status() }}</p>
   @if (reauthenticationRequired()) {
+    @if (managedLogin()) {
+      <a #managedReauthentication class="primary-action" href="/bff/login?reauthenticate=true&amp;returnTo=%2Faccount">Confirm identity through secure sign-in</a>
+      <p>Return here to review and submit your change again.</p>
+    } @else {
     <form (submit)="$event.preventDefault(); reauthenticate()" aria-label="Confirm your identity">
       <label for="sign-in-current-password">Current password</label>
       <div class="password-input">
@@ -200,5 +204,6 @@
       </div>
       <p>Confirmation keeps this sign-in. You will review and submit your change again.</p>
     </form>
+    }
   }
 </section>

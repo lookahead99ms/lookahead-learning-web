@@ -47,9 +47,11 @@ export function embeddedAnchorPosition(data: unknown, documentId: string, anchor
 }
 
 export function scrollToEmbeddedAnchor(frame: HTMLIFrameElement, offset: number, hostWindow: Window): void {
-  const headerHeight = Number.parseFloat(
+  const configuredHeaderHeight = Number.parseFloat(
     hostWindow.getComputedStyle(hostWindow.document.documentElement).getPropertyValue('--platform-header-height'),
   ) || 76;
+  const measuredHeaderHeight = hostWindow.document.querySelector('app-platform-header')?.getBoundingClientRect().height ?? 0;
+  const headerHeight = Math.max(configuredHeaderHeight, measuredHeaderHeight);
   const frameTop = frame.getBoundingClientRect().top + hostWindow.scrollY;
   hostWindow.scrollTo({ top: Math.max(0, frameTop + offset - headerHeight - 16), behavior: 'auto' });
 }

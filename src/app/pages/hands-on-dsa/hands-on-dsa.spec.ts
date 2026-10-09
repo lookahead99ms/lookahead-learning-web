@@ -531,6 +531,8 @@ describe('Hands-On DSA route contracts', () => {
     else expect(harness.routeNativeElement!.textContent).toContain('0 problems');
   });
 
+  // This exhaustive route/DOM contract performs 33 navigations. Allow a bounded
+  // budget under instrumented, parallel CI; ordinary tests keep the default timeout.
   it('visits 782 unique problems across 32 replacement pages, ending with seven', async () => {
     catalog = paginatedIndex(782);
     // The same canonical problem may be placed in another pattern; it must not consume another slot.
@@ -579,7 +581,7 @@ describe('Hands-On DSA route contracts', () => {
     harness.detectChanges();
     expect(harness.routeNativeElement!.textContent).toContain('751–775 of 782 problems');
     expect(harness.routeNativeElement!.querySelectorAll('.problem-table-row')).toHaveLength(25);
-  });
+  }, 30_000);
 
   it.each(['0', '-2', 'abc', '2.5', 'Infinity', '9007199254740993', '01', '1'])(
     'canonicalizes invalid or redundant first-page URL %s',

@@ -207,6 +207,11 @@ the lockfile resolves Angular 22.2.1 and Piscina 5.3.2. After dependency updates
 run `npm ci`, `npm run security:dependencies`, and `npm run test:security-gates`
 before frontend tests and builds.
 
+`npm run test:coverage` instruments all production TypeScript under `src`, including files never imported by tests, using the matching pinned Vitest V8 provider. Only test files, declarations and test setup are excluded. CI requires at least **85% line coverage**; branch coverage is reported separately. Standard LCOV, JSON and HTML reports are in `coverage/lookahead-learning-web/`. The app-owned CI check enforces the threshold without a private checkout. Infra separately validates complete current reports for Web, Gateway, Identity and Domain before DEV and PROD deployment; missing, failed, stale or below-threshold results block both. These checks do not publish reports or private fixtures to the frontend.
+
+The exhaustive Hands-On DSA route test visits all 32 pages plus the Previous link and uses a test-specific 30-second timeout for instrumented parallel CI. All pagination/deduplication assertions remain active; other tests retain their default timeout. A targeted route-file run is useful for diagnosis, but only the full application run can satisfy the 85% coverage gate.
+
+
 Unit tests isolate each file so component overrides and browser mocks cannot leak
 into another suite. `npm run test:order` runs the same assertions in a shuffled
 order with one worker (seed 1106), to check fixture and mock cleanup within files.
@@ -901,3 +906,145 @@ On Hands-On DSA problem pages, “Help me recognize the pattern” precedes reve
 After reveal, the header keeps only the named pattern lesson link with its new-tab
 indicator. Opening another problem conceals its pattern again; reveal changes no
 saved practice progress.
+
+
+## AWS DEV deployment candidate (DLV-810)
+
+`deployment/service.yaml` is the application-owned service contract for the local AWS candidate. It declares health, capacity, immutable image/release inputs and symbolic approved resource/secret references. Shared DEV/PROD values, IAM, S3, networking, CloudFormation and tooling belong to Infra. YAML uses JSON syntax. Current image/evidence values are unresolved and desired count is zero; this is not an activated cloud profile. Local configuration and authorization are preserved. See the sibling Infra `aws/devprod/README.md` for local planning commands and remaining application/identity/bootstrap gates. No resource creation, upload or GitHub activation has been performed.
+
+Admin → Operations includes a protected AWS deployment reference maintained in the private Content repository. It covers content startup and RAM caching, resource/YAML ownership, approval-gated commands and recovery. The reader accepts up to 32 named sections, supports bounded document heights up to 60,000 pixels for narrow-screen references and accounts for the actual wrapped header when navigating sections. It provides no AWS execution controls.
+
+Deployment direction: this application owns its service YAML and future thin caller to an immutable-pinned Infra reusable workflow. The v2 manifest separates shared settings from DEV/PROD overrides. Infra owns bootstrap/IAM/security groups/templates/orchestration; see workspace Infra `docs/deployment/README.md`. Build-once digest promotion, required scans and separate DEV/PROD approvals remain gates, not enabled deployment behavior.
+
+## Service deployment configuration
+
+`deployment/service.yaml` uses `lookahead-service/v2`: `shared` owns service port, health, settings and approved resource/secret/Infra output references; `environments.dev` and `.prod` select capacity, image digest, content release and activation evidence. Both candidates retain zero tasks. Shared account/region values and all infrastructure remain Infra-owned. Infra's maintained `aws/devprod/parameter-bindings.yaml` validates every template parameter; `scripts/aws_deployment.py plan --environment dev|prod` generates an offline plan. See Infra `docs/deployment/README.md` for commands and activation gates. No application contract or Local Docker behavior changed; AWS deployment remains blocked.
+
+October8 candidate service configuration adds explicit Fargate runtime/private networking, ingress/target-group references, optional alarm references, and per-environment scaling min/max, CPU targets, cooldowns and alarm thresholds. Desired/min tasks stay0 and scaling/alarms disabled. Fargate uses CPU/memory, not an EC2 instance type. Infra owns conditional scaling/IAM/CloudWatch resources; see Infra docs/deployment/README.md.
+
+Deployment `service.yaml` now declares task startup, health probes, temporary disk, logging/rollout settings and approved environment/Secrets Manager bindings. This Angular service has `jvm: null`; its protected static image uses the launch and health contract described below. Infra shared values and maintained templates remain authoritative; see Infra `docs/deployment/README.md` → JVM and task configuration. Local Docker/runtime behavior is unchanged and AWS activation remains blocked.
+
+AWS candidate `deployment/service.yaml` now references the shared application task role and separate shared Fargate execution role from its owning environment foundation. Active cloud applications reuse this pair; DEV/PROD have separate role resources/scopes. Infra owns policies, trust and validation; service-specific secret mappings and existing authorization are preserved. See Infra `docs/deployment/README.md` → Two shared IAM roles per environment. No cloud activation.
+
+
+## Server-selected cloud sign-in
+
+The connected application reads `/api/v1/auth/options`. When Gateway advertises
+`managedLogin: true`, the sign-in page offers a same-origin `/bff/login` link and
+collects no login password. Local retains its existing sign-in form, and the
+standalone public demo remains independent of backend availability.
+
+DEV/PROD credentials and password recovery use the configured Cognito provider.
+The frontend keeps the existing account/profile, active-sign-in and password-change
+API contracts. Recent-auth confirmation redirects through Gateway and requires the
+user to review and submit the intended change again. The restricted two-sign-in
+choice retains its safe learning destination; it does not grant ordinary account
+or content access until Domain confirms admission.
+
+Browser state uses session-bound CSRF. OAuth tokens, provider client secrets,
+Domain binding/challenge proofs, AWS credentials and private publication downloads
+stay server-side. Cloud logout accepts only the fixed same-origin
+`/bff/logout/complete` bridge without query or fragment; Gateway selects the provider
+logout URL. No AWS SDK is included in Angular.
+
+Validate with `npm test -- --watch=false '--include=src/app/pages/account/*.spec.ts'
+--include=src/app/pages/study-plan/study-plan-account.spec.ts` (one command) and
+`npm run build:protected`. Browser checks use controlled cloud responses on the
+managed working frontend; they verify presentation and navigation contracts,
+not deployed Cognito or RDS connectivity.
+
+
+### Protected Web container
+
+The Dockerfile builds `production,protected` Angular with a digest-pinned Alpine
+3.23 base, exact Node24 distribution package and npm11.17.0 CLI source verified
+against its SHA256 archive checksum. The CLI production dependencies are rebuilt
+from the reviewed `deployment/container/npm-cli-lock.json`, with real maintained
+fixes for brace expansion, HTTP cache semantics, IP parsing, tar and Undici.
+This is an application-owned reconstructed npm distribution, rather than the
+unmodified vulnerable bundle in the former Node base. Every installed dependency
+retains its package manifest and exact SHA512 archive integrity. The verified
+bootstrap is temporary within one build instruction; it is removed after the
+fixed frozen CLI graph is installed and does not persist in an image layer.
+CLI source code/version stays npm11.17.0; dependency versions are reported honestly.
+
+Application installation still uses the canonical `package-lock.json` and npm CI.
+The existing esbuild0.28.2 tool is now declared directly because our presentation
+build imports it directly; its version and archive integrity are unchanged.
+Compilation and serving images use the requested target platform (`linux/amd64`
+in CI). Only compiled browser assets are copied into the pinned NGINX serving
+image. Node is build tooling; application API services remain Java/Spring. No AWS
+SDK, credentials, private curriculum, local preview, source map or API server is
+packaged in the frontend. Local npm development commands and configurations are
+unchanged.
+
+```sh
+npm run test:container-boundary
+docker build --platform linux/amd64 --iidfile /tmp/lookahead-web-image-id .
+docker build --platform linux/amd64 --target toolchain --iidfile /tmp/lookahead-web-toolchain-id .
+docker build --platform linux/amd64 --target build --iidfile /tmp/lookahead-web-builder-id .
+python3 tools/security/container_scan.py images --toolchain "$(cat /tmp/lookahead-web-toolchain-id)" --builder "$(cat /tmp/lookahead-web-builder-id)" --image "$(cat /tmp/lookahead-web-image-id)"
+npm run test:container -- "$(cat /tmp/lookahead-web-image-id)"
+```
+
+The security gate scans both pinned OS bases plus the exact immutable toolchain,
+complete compiler image and serving image. It requires complete OS/package
+inventories, every CLI lock component and every platform-applicable application
+component in the compiler image. High, Critical, unknown-severity or secret
+findings block delivery without exceptions. Local image scanning exports one
+bounded archive, verifies its configuration digest and scans those same bytes;
+this supports OCI manifest indexes without weakening identity binding.
+
+For a tooling dependency update, review the upstream fixed versions, update the
+source archive checksum and explicit overrides in `prepare-npm-cli.mjs`, generate
+and review the corresponding npm CLI production lock using the verified source,
+and rerun the five image scans, protected build and disposable container smoke.
+Keep the lock as the authoritative reproducible toolchain dependency input; do
+not update versions only in scanner metadata or reuse an old clean report.
+
+The smoke command starts and removes only its own disposable container, with no
+host port or network, UID10001, read-only root, dropped capabilities and writable
+`/tmp`. It verifies actual health, routes, MIME/cache headers and the runtime
+artifact boundary. It does not start or replace a local frontend/backend service.
+The image listens on8080 and checks `/health`; NGINX exits gracefully on SIGQUIT.
+The image and ECS contract use `/opt/lookahead/healthcheck.sh`.
+
+The ALB routes `/api`, `/bff`, `/content`, authentication and protocol requests to
+Gateway. Direct requests to reserved paths on Web return404; they never receive
+SPA fallback. Other extensionless routes receive the Angular shell, while missing
+static files return404. HTML and unhashed assets use `no-store`; fingerprinted
+JS/CSS use browser-private immutable caching, never shared cache permission.
+DEV whole-site admission remains an ALB responsibility. A locally passing image
+cannot verify real admission, DNS/TLS, Cognito callbacks or origin isolation.
+
+CI builds this protected image, executes the smoke gate, and scans configuration,
+both pinned bases and the exact immutable built image with app-owned Trivy tooling,
+in addition to the full application 85% coverage gate. See [security CI](docs/security-ci.md)
+for thresholds, local commands and the required GitHub check name. Complete release security scans,
+registry/source provenance, DEV verification and separate PROD approval remain
+Infra release gates; this local build does not authorize deployment or upload.
+
+
+`test:coverage` also checks a conservative production-line lower bound including
+all shell probes in `deployment/container/`: every noncomment shell line counts
+as uncovered because it has no V8 instrumentation. This avoids crediting smoke
+execution as numeric coverage and blocks CI even when Angular alone narrowly
+passes85%. Runtime probe behavior is separately checked by the actual image smoke.
+
+Static container-output verification reads each file through the same open
+handle used to inspect its type, rejects symlinks with `O_NOFOLLOW`, and reuses
+the inspected application shell instead of reopening it. Verify a finished
+build directory with no concurrent producer; this tool is not a sandbox for
+a concurrently modified directory tree. Run `npm run test:container-boundary`
+for packaging regressions.
+
+Container security failures now log the scan stage (builder OS base, runtime
+OS base, exact toolchain, complete compiler or serving image), aggregate blocking counts and reviewed constant rejection
+reasons. Raw scanner output, arbitrary error text and findings remain in ignored
+scratch reports. High/Critical/Unknown findings, secrets, scanner failures and
+image-binding/coverage gaps continue to block. Run
+`python3 -m unittest discover -s tools/security -p 'test_*.py'` for this tooling.
+
+### Container operational logs
+
+The protected NGINX runtime emits JSON access events to stdout for ECS CloudWatch collection: timestamp, generated request ID, method, status, response bytes and duration. Access events exclude URLs, query strings, IP addresses, headers, cookies and bodies. Error output remains on stderr; native NGINX diagnostics can contain request context and must be treated as restricted operational data. The disposable container smoke sends synthetic URL/query/header secrets and verifies they are absent from captured logs for denied requests. This verifies local behavior, not live AWS delivery.

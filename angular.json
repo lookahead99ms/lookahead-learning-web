@@ -45,9 +45,16 @@
                 "output": "/"
               }
             ],
-            "styles": ["src/styles.css"],
+            "styles": [
+              "src/styles.css"
+            ],
             "webWorkerTsConfig": "tsconfig.worker.json",
-            "externalDependencies": ["fs/promises", "module", "node:fs/promises", "node:module"]
+            "externalDependencies": [
+              "fs/promises",
+              "module",
+              "node:fs/promises",
+              "node:module"
+            ]
           },
           "configurations": {
             "production": {
@@ -95,7 +102,10 @@
                 {
                   "glob": "**/*",
                   "input": "public",
-                  "ignore": ["content/**", "local-previews/**"]
+                  "ignore": [
+                    "content/**",
+                    "local-previews/**"
+                  ]
                 },
                 {
                   "glob": "*.wasm",
@@ -148,7 +158,25 @@
         "test": {
           "builder": "@angular/build:unit-test",
           "options": {
-            "isolate": true
+            "isolate": true,
+            "coverageInclude": [
+              "src/**/*.ts"
+            ],
+            "coverageExclude": [
+              "src/**/*.spec.ts",
+              "src/**/*.d.ts",
+              "src/test-setup.ts"
+            ],
+            "coverageReporters": [
+              "text-summary",
+              "json-summary",
+              "json",
+              "lcov",
+              "html"
+            ],
+            "coverageThresholds": {
+              "lines": 85
+            }
           }
         }
       }
