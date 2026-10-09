@@ -4,7 +4,7 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { smokeImage, parseResponse, assertPrivateBundle, deniedPaths, requireLocalEngine } from './smoke.mjs';
+import { smokeImage, parseResponse, assertPrivateBundle, deniedPaths, requireLocalEngine, assertOperationalLogs } from './smoke.mjs';
 
 const reference = 'sha256:' + 'a'.repeat(64);
 const resolvedDockerId = 'sha256:' + 'b'.repeat(64);
@@ -23,6 +23,7 @@ function fixture({ unhealthy = false, fallbackPath, privateFile = false } = {}) 
     if (args[0] === 'context') return ok(JSON.stringify([{ Endpoints: { docker: { Host: 'unix:///var/run/docker.sock' } } }]));
     if (args[0] === 'image') return ok(JSON.stringify([{ Id: resolvedDockerId, Config: { User: '10001:10001', Healthcheck: { Test: ['CMD', '/opt/lookahead/healthcheck.sh'] } } }]));
     if (args[0] === 'create') return ok(id + '\n');
+    if (args[0] === 'logs') return ok(JSON.stringify({ event: 'http_access', time: '2026-10-09T00:00:00Z', requestId: 'a'.repeat(32), method: 'GET', status: '404', bytes: '9', durationSeconds: '0.001' }) + '\n');
     if (args[0] === 'start' || args[0] === 'rm') return ok('');
     if (args[0] === 'container') return ok(JSON.stringify([{ Image: resolvedDockerId, State: { Running: true, Health: { Status: unhealthy ? 'unhealthy' : 'healthy' } },
       HostConfig: { NetworkMode: 'none', ReadonlyRootfs: true, CapDrop: ['ALL'], SecurityOpt: ['no-new-privileges:true'], Tmpfs: { '/tmp': 'rw' } } }]));
@@ -104,3 +105,11 @@ for (const [name, options, failure] of [
     assert.equal(calls.filter(args => args[0] === 'rm').length, 1);
   });
 }
+
+test('operational logs reject private content and unexpected fields', () => {
+  const record = { event: 'http_access', time: '2026-10-09T00:00:00Z', requestId: 'a'.repeat(32), method: 'GET', status: '404', bytes: '9', durationSeconds: '0.001' };
+  assert.equal(assertOperationalLogs(JSON.stringify(record), 'synthetic-secret'), 1);
+  assert.throws(() => assertOperationalLogs(JSON.stringify({ ...record, uri: '/private' }), 'synthetic-secret'), /Unexpected/);
+  assert.throws(() => assertOperationalLogs(JSON.stringify(record) + '\nsynthetic-secret', 'synthetic-secret'), /leaked/);
+  assert.throws(() => assertOperationalLogs('', 'synthetic-secret'), /emit/);
+});

@@ -39,6 +39,21 @@ export function parseResponse(result) {
   return { status, headers, body: result.stdout };
 }
 
+export function assertOperationalLogs(logs, marker) {
+  assert(!logs.includes(marker), 'Private request marker leaked into container logs');
+  const records = logs.split('\n').filter(line => line.startsWith('{')).map(line => JSON.parse(line));
+  const access = records.filter(record => record.event === 'http_access');
+  assert(access.some(record => record.status === '404'), 'Denied requests must emit access logs');
+  const fields = ['event', 'time', 'requestId', 'method', 'status', 'bytes', 'durationSeconds'].sort();
+  for (const record of access) {
+    assert.deepEqual(Object.keys(record).sort(), fields, 'Unexpected access-log field');
+    assert.match(record.requestId, /^[a-f0-9]{32}$/);
+    assert.match(record.status, /^[1-5][0-9]{2}$/);
+    assert(['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'OTHER'].includes(record.method), 'Unbounded HTTP method in logs');
+  }
+  return access.length;
+}
+
 export function assertPrivateBundle(response) {
   assert.equal(response.status, 200, 'Fingerprint bundle unavailable');
   assert.match(response.headers['content-type'] ?? '', /^(?:application|text)\/javascript(?:\s*;|$)/i, 'Incorrect JavaScript MIME');
@@ -134,6 +149,13 @@ export async function smokeImage(imageReference, { docker = localDocker, scratch
       assert(!response.body.includes('<app-root') && response.body !== index.body, 'Denied path returned the application shell');
     }
 
+    const privateMarker = 'privacy-probe-' + owner;
+    const privateResponse = parseResponse(docker(['exec', id, 'wget', '-S', '-O', '-', '-T', '5',
+      '--header', `Cookie: synthetic=${privateMarker}`, '--header', `Authorization: Bearer ${privateMarker}`,
+      `http://127.0.0.1:8080/api/${privateMarker}?code=${privateMarker}`]));
+    assert.equal(privateResponse.status, 404);
+    const operationalLogRecords = assertOperationalLogs(run(['logs', id]), privateMarker);
+
     // Copy only static bytes into an owned scratch directory and reuse the build-boundary verifier.
     await mkdir(scratchRoot, { recursive: true });
     copiedRoot = await mkdtemp(join(scratchRoot, 'web-image-smoke-'));
@@ -144,7 +166,7 @@ export async function smokeImage(imageReference, { docker = localDocker, scratch
     run(['exec', id, 'sh', '-c', 'for p in /workspace /build /app /src /node_modules /usr/local/lib/node_modules; do test ! -e "$p" || exit 1; done; for tool in node npm npx git; do ! command -v "$tool" >/dev/null 2>&1 || exit 1; done']);
     return { schema: 'lookahead-web-container-smoke/v1', checkedAt: new Date().toISOString(),
       buildArtifactDigest: imageReference, resolvedDockerId: image.Id, dockerHealth: 'healthy', user: 10001,
-      network: 'none', readOnly: true, publishedPorts: 0, staticArtifacts: artifacts,
+      network: 'none', readOnly: true, publishedPorts: 0, operationalLogRecords, staticArtifacts: artifacts,
       shellSha256: createHash('sha256').update(index.body).digest('hex'), requests,
       limitation: 'Focused packaging and routing regression checks; not an exhaustive vulnerability or secret scan.', passed: true };
   } finally {

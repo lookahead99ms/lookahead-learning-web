@@ -1044,3 +1044,7 @@ reasons. Raw scanner output, arbitrary error text and findings remain in ignored
 scratch reports. High/Critical/Unknown findings, secrets, scanner failures and
 image-binding/coverage gaps continue to block. Run
 `python3 -m unittest discover -s tools/security -p 'test_*.py'` for this tooling.
+
+### Container operational logs
+
+The protected NGINX runtime emits JSON access events to stdout for ECS CloudWatch collection: timestamp, generated request ID, method, status, response bytes and duration. Access events exclude URLs, query strings, IP addresses, headers, cookies and bodies. Error output remains on stderr; native NGINX diagnostics can contain request context and must be treated as restricted operational data. The disposable container smoke sends synthetic URL/query/header secrets and verifies they are absent from captured logs for denied requests. This verifies local behavior, not live AWS delivery.
