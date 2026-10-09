@@ -1002,3 +1002,10 @@ the inspected application shell instead of reopening it. Verify a finished
 build directory with no concurrent producer; this tool is not a sandbox for
 a concurrently modified directory tree. Run `npm run test:container-boundary`
 for packaging regressions.
+
+Container security failures now log the scan stage (builder base, runtime base
+or application image), aggregate blocking counts and reviewed constant rejection
+reasons. Raw scanner output, arbitrary error text and findings remain in ignored
+scratch reports. High/Critical/Unknown findings, secrets, scanner failures and
+image-binding/coverage gaps continue to block. Run
+`python3 -m unittest discover -s tools/security -p 'test_*.py'` for this tooling.

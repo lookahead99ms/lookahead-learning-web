@@ -23,6 +23,14 @@ def config_report():
 
 
 class ContainerGateTests(unittest.TestCase):
+    def test_failure_diagnostics_do_not_publish_untrusted_error_text(self):
+        for reason in scan.SAFE_FAILURE_REASONS:
+            self.assertIn(reason, scan.failure_message(ValueError(reason)))
+        for error in (ValueError('synthetic-private-message'), OSError('synthetic-private-message'),
+                      KeyError('synthetic-private-message'), ValueError('Security findings require action synthetic-private-message')):
+            self.assertNotIn('synthetic-private-message', scan.failure_message(error))
+            self.assertIn('No clean result', scan.failure_message(error))
+
     def test_clean_reports_and_lower_findings(self):
         report = image_report()
         report['Results'][0]['Vulnerabilities'] = [{'Severity': 'MEDIUM'}]

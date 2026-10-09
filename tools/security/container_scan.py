@@ -21,6 +21,46 @@ PINS = Path(__file__).with_name('tools.json')
 LIMIT = 200 * 1024 * 1024
 
 
+# Emit only reviewed constant reasons; never print raw scanner/parser errors.
+SAFE_FAILURE_REASONS = frozenset({
+    'Dockerfile configuration coverage missing',
+    'Expected exactly one exported image manifest',
+    'Expected pinned Node builder and unprivileged NGINX runtime',
+    'Exported image has no configuration',
+    'Image configuration identity absent',
+    'Image report must describe Linux AMD64',
+    'Immutable local image ID from build iidfile required',
+    'Immutable local image required',
+    'Invalid or oversized image archive',
+    'Invalid scanner archive entry',
+    'Local image export exceeds bound',
+    'Local image export failed',
+    'Local image export timed out',
+    'Missing or invalid severity',
+    'Missing or unsupported operating system',
+    'OS package coverage missing',
+    'Remote image must have immutable digest',
+    'Required image metadata missing or oversized',
+    'Scanner archive checksum/size mismatch',
+    'Scanner archive too large',
+    'Scanner executable no longer matches pinned archive',
+    'Scanner failed; private diagnostics retained locally',
+    'Scanner image differs from exported local configuration',
+    'Scanner image differs from requested pinned base',
+    'Scanner result coverage missing',
+    'Security findings require action',
+    'Selected local image must be Linux AMD64',
+    'Unsafe or ambiguous archive member',
+    'Unsupported report kind',
+    'Unsupported scanner report schema',
+})
+
+
+def failure_message(error):
+    reason = str(error) if type(error) is ValueError and str(error) in SAFE_FAILURE_REASONS else 'No clean result is available'
+    return 'Container security gate failed: ' + reason
+
+
 def target_pin():
     host = {'Linux-x86_64': 'linux-amd64', 'Darwin-arm64': 'darwin-arm64'}[platform.system() + '-' + platform.machine().lower()]
     return json.loads(PINS.read_text())['trivy']['archives'][host]
@@ -104,6 +144,7 @@ def report_gate(document, kind):
                     raise ValueError('Missing or invalid severity')
                 counts[severity.lower() if severity in ('HIGH', 'CRITICAL', 'UNKNOWN') else 'lower'] += 1
     if any(counts[key] for key in ('high', 'critical', 'unknown', 'secrets')):
+        print(json.dumps({'containerFindingsRequiringAction': counts}))
         raise ValueError('Security findings require action')
     return counts
 
@@ -198,6 +239,8 @@ def local_config_id(target):
 
 
 def scan(kind, target=None, local=False):
+    stage = 'configuration' if kind != 'image' else ('applicationImage' if local else ('builderBase' if target.startswith('node:') else 'runtimeBase'))
+    print(json.dumps({'containerScanStage': stage}), flush=True)
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / 'trivy.yaml').write_text('{}\n')
     (OUT / 'ignore').write_text('')
@@ -243,6 +286,6 @@ def main():
 if __name__ == '__main__':
     try:
         main()
-    except (ValueError, KeyError, TypeError, OSError, tarfile.TarError, subprocess.SubprocessError, json.JSONDecodeError):
-        print('Container security gate failed; no clean result is available.', file=sys.stderr)
+    except (ValueError, KeyError, TypeError, OSError, tarfile.TarError, subprocess.SubprocessError, json.JSONDecodeError) as error:
+        print(failure_message(error), file=sys.stderr)
         sys.exit(1)
