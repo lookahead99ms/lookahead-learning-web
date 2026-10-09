@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import { lstat, readdir, readFile } from 'node:fs/promises';
+import { constants } from 'node:fs';
+import fileSystem, { readdir } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -8,19 +9,26 @@ const privateMarker = /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|(?:AKIA
 
 export async function verifyStatic(root) {
   const files = [];
+  let index;
   async function walk(directory, prefix = '') {
-    for (const name of await readdir(directory)) {
+    for (const entry of await readdir(directory, { withFileTypes: true })) {
+      const name = entry.name;
       const relative = prefix + name;
       assert(!forbiddenName.test(relative), `Forbidden static artifact: ${relative}`);
       const path = join(directory, name);
-      const stat = await lstat(path);
-      assert(!stat.isSymbolicLink(), `Static symlink forbidden: ${relative}`);
-      if (stat.isDirectory()) await walk(path, relative + '/');
+      assert(!entry.isSymbolicLink(), `Static symlink forbidden: ${relative}`);
+      if (entry.isDirectory()) await walk(path, relative + '/');
       else {
-        assert(stat.isFile(), `Non-file static artifact: ${relative}`);
-        if (/\.(?:html|js|css|json|txt|svg)$/i.test(name)) {
-          assert(!privateMarker.test(await readFile(path, 'utf8')), `Private marker in static artifact: ${relative}`);
-        }
+        // Inspect and read the same open file; O_NOFOLLOW rejects a replaced symlink.
+        const handle = await fileSystem.open(path, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
+        try {
+          assert((await handle.stat()).isFile(), `Non-file static artifact: ${relative}`);
+          if (/\.(?:html|js|css|json|txt|svg)$/i.test(name)) {
+            const text = await handle.readFile('utf8');
+            assert(!privateMarker.test(text), `Private marker in static artifact: ${relative}`);
+            if (relative === 'index.html') index = text;
+          }
+        } finally { await handle.close(); }
         files.push(relative);
       }
     }
@@ -28,7 +36,6 @@ export async function verifyStatic(root) {
   await walk(resolve(root));
   assert(files.includes('index.html'), 'Missing application shell');
   assert(files.some(file => /^main-[A-Z0-9]+\.js$/i.test(file)), 'Missing fingerprinted main bundle');
-  const index = await readFile(join(root, 'index.html'), 'utf8');
   assert(index.includes('<app-root'), 'Unexpected application shell');
   assert(!/sourceMappingURL/.test(index), 'Source maps are forbidden');
   return { fileCount: files.length, privateArtifacts: false };

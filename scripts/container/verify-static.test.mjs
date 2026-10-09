@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { test } from 'node:test';
+import { mock, test } from 'node:test';
+import fileSystem from 'node:fs/promises';
 import { verifyStatic } from './verify-static.mjs';
 
 async function fixture(run) {
@@ -35,4 +36,17 @@ test('rejects symlinks and absent application shell', () => fixture(async root =
   await rm(join(root, 'alias.html'));
   await rm(join(root, 'index.html'));
   await assert.rejects(verifyStatic(root), /Missing application shell/);
+}));
+
+test('rejects a file replaced with a symlink immediately before opening', () => fixture(async root => {
+  const actualOpen = fileSystem.open;
+  const replacement = mock.method(fileSystem, 'open', async (path, ...args) => {
+    if (path === join(root, 'index.html')) {
+      await rm(path);
+      await symlink(join(root, 'main-ABCDEFGH.js'), path);
+    }
+    return actualOpen(path, ...args);
+  });
+  try { await assert.rejects(verifyStatic(root), { code: 'ELOOP' }); }
+  finally { replacement.mock.restore(); }
 }));

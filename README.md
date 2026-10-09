@@ -995,3 +995,10 @@ all shell probes in `deployment/container/`: every noncomment shell line counts
 as uncovered because it has no V8 instrumentation. This avoids crediting smoke
 execution as numeric coverage and blocks CI even when Angular alone narrowly
 passes85%. Runtime probe behavior is separately checked by the actual image smoke.
+
+Static container-output verification reads each file through the same open
+handle used to inspect its type, rejects symlinks with `O_NOFOLLOW`, and reuses
+the inspected application shell instead of reopening it. Verify a finished
+build directory with no concurrent producer; this tool is not a sandbox for
+a concurrently modified directory tree. Run `npm run test:container-boundary`
+for packaging regressions.
