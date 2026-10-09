@@ -115,3 +115,16 @@ test('CLI fails for absent/malformed reports and high findings, passes a complet
     assert.equal(run().status, 0);
   } finally { rmSync(directory, { recursive: true, force: true }); }
 });
+
+for (const scope of ['diff-informed', 'overlay', 'diff-informed,overlay', true]) {
+  test(`CodeQL rejects incremental analysis scope ${scope}`, () => {
+    const report = sarif();
+    report.runs[0].properties = { incrementalMode: scope };
+    assert.throws(() => checkSarif(report), /Full repository analysis required/);
+  });
+}
+test('CodeQL rejects malformed scope properties', () => {
+  const report = sarif();
+  report.runs[0].properties = [];
+  assert.throws(() => checkSarif(report), /Invalid analysis scope/);
+});

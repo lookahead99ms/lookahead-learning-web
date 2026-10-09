@@ -1048,3 +1048,23 @@ image-binding/coverage gaps continue to block. Run
 ### Container operational logs
 
 The protected NGINX runtime emits JSON access events to stdout for ECS CloudWatch collection: timestamp, generated request ID, method, status, response bytes and duration. Access events exclude URLs, query strings, IP addresses, headers, cookies and bodies. Error output remains on stderr; native NGINX diagnostics can contain request context and must be treated as restricted operational data. The disposable container smoke sends synthetic URL/query/header secrets and verifies they are absent from captured logs for denied requests. This verifies local behavior, not live AWS delivery.
+
+PR and main security gates require full-repository CodeQL analysis. The pinned
+action disables diff-informed and overlay analysis; reports marked incremental
+are rejected. A changed-lines-only scan cannot certify whole-code security or
+justify retiring an unexercised source-bound exception.
+
+The dormant `release-image.yml` manual workflow reuses the full CI job, then
+exports its exact scanned image as a one-day archive. Publication loads that
+archive without rebuilding, validates source/Dockerfile/workflow/archive/config
+digests, and uses a separately reviewed DEV OIDC role. It requires an exact main
+SHA, immutable DEV ECR repository and a protected `dev` environment with independent
+review and protected-branch restriction. Unsupported private-repository approval
+features block this workflow; a manual trigger alone is insufficient. Registry
+receipt verifies remote manifest/config identity. No workflow was dispatched or
+image published locally. Configure approved settings and action allowlists before
+activation; private content and AWS credentials are never bundled in the image.
+
+Publication explicitly pushes only the verified `linux/amd64` manifest (Docker API
+1.46 or newer). The registry receipt checks its config digest against the saved
+archive; Docker Desktop index IDs are kept separate from that config identity.

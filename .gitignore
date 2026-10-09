@@ -76,3 +76,4 @@ Thumbs.db
 
 # Generated shared code renderer for embedded visuals
 /public/assets/code-presentation.js
+tools/release/__pycache__/

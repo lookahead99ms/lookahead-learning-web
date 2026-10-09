@@ -1,6 +1,11 @@
 name: Learning Web CI
 
 on:
+  workflow_call:
+    inputs:
+      export-image:
+        type: boolean
+        default: false
   push:
     branches: [main]
   pull_request:
@@ -18,6 +23,9 @@ jobs:
     name: Test and build Angular application
     runs-on: ubuntu-latest
     timeout-minutes: 55
+    env:
+      CODEQL_ACTION_DIFF_INFORMED_QUERIES: 'false'
+      CODEQL_ACTION_OVERLAY_ANALYSIS: 'false'
 
     steps:
       - name: Check out source
@@ -61,6 +69,9 @@ jobs:
 
       - name: Verify dependency vulnerabilities and SBOM coverage
         run: npm run security:dependencies
+
+      - name: Verify immutable image binding
+        run: python3 -m unittest discover -s tools/release -p 'test_*.py'
 
       - name: Initialize JavaScript and TypeScript analysis
         uses: github/codeql-action/init@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4
@@ -127,3 +138,17 @@ jobs:
 
       - name: Scan pinned OS bases and exact toolchain, builder and Web images
         run: python3 tools/security/container_scan.py images --toolchain "$(cat /tmp/lookahead-web-toolchain-id)" --builder "$(cat /tmp/lookahead-web-builder-id)" --image "$(cat /tmp/lookahead-web-image-id)"
+
+      - name: Export the exact scanned release image
+        if: inputs.export-image == true
+        run: python3 tools/release/image.py export --image "$(cat /tmp/lookahead-web-image-id)" --directory "$RUNNER_TEMP/release-image"
+
+      - name: Retain immutable image for the same release run
+        if: inputs.export-image == true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: release-image-${{ github.sha }}
+          path: ${{ runner.temp }}/release-image/
+          retention-days: 1
+          if-no-files-found: error
+          compression-level: 0
