@@ -102,6 +102,7 @@ dd {
   margin: 4px 0 0;
 }
 button,
+a.primary-action,
 input {
   box-sizing: border-box;
   min-height: 44px;
@@ -111,6 +112,16 @@ input {
   background: var(--surface);
   color: var(--text-strong);
   font: inherit;
+}
+a.primary-action {
+  display: inline-flex;
+  align-items: center;
+  margin-block: 12px;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: var(--accent-strong);
+  color: var(--accent-on-primary);
 }
 .password-input {
   display: flex;
@@ -143,6 +154,7 @@ button:disabled {
   background: color-mix(in srgb, var(--accent-strong) 90%, var(--text-strong));
 }
 button:focus-visible,
+a:focus-visible,
 input:focus-visible,
 [tabindex='-1']:focus {
   outline: 3px solid var(--accent-focus);

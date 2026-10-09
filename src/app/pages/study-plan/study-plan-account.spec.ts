@@ -435,6 +435,23 @@ describe('StudyPlanAccount transport and isolation', () => {
     expect(store.logoutRedirectPending()).toBe(false);
   });
 
+  it('accepts only the configured same-origin managed logout bridge', async () => {
+    await store.login('demo-a', 'test');
+    store.authOptions.set({ registration: false, google: false, oauth: true, managedLogin: true });
+    const transport = fetcher.getMockImplementation() as (path: string, options: RequestInit) => Promise<Response>;
+    let destination = new URL('/bff/logout/complete', window.location.origin).href;
+    fetcher.mockImplementation((path: string, options: RequestInit) =>
+      path.endsWith('/auth/logout') ? Promise.resolve(json({ logoutUrl: destination })) : transport(path, options),
+    );
+    expect(await store.logout()).toBe(true);
+    expect(store.logoutRedirectPending()).toBe(true);
+    for (const rejected of ['/bff/logout/complete?next=https://external.example', '/bff/logout/complete#extra', 'https://external.example/bff/logout/complete']) {
+      destination = new URL(rejected, window.location.origin).href;
+      expect(await store.logout()).toBe(false);
+      expect(store.logoutRedirectPending()).toBe(false);
+    }
+  });
+
   it('treats an already-expired logout session as signed out', async () => {
     await store.login('demo-a', 'test');
     const transport = fetcher.getMockImplementation() as (

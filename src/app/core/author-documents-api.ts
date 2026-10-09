@@ -11,6 +11,9 @@ import { StudyPlanAccount } from '../pages/study-plan/study-plan-account';
 
 const publicationRoot = '/bff/author/previews/preview-directory/author-documents/';
 const documentIds = new Set(['study-plan-review', 'operations-reference', 'local-development']);
+// The Operations reference includes separate Local and cloud ownership sections.
+// Keep navigation bounded while accepting its 21-section published manifest.
+const maxDocumentSections = 32;
 type RecordValue = Record<string, unknown>;
 function object(value: unknown): RecordValue {
   if (!value || typeof value !== 'object' || Array.isArray(value))
@@ -81,7 +84,7 @@ export function parseAuthorDocument(value: unknown, id: string): AuthorDocument 
   const relativeHref = `${id}/${htmlSha256}/index.html`;
   const href = text(content['href'], 2000);
   if (href !== publicationRoot + relativeHref) throw new AuthorDocumentError('invalid');
-  const sections = list(entry['sections'], 20).map((value) => {
+  const sections = list(entry['sections'], maxDocumentSections).map((value) => {
     const item = object(value),
       fragment = text(item['fragment'], 101),
       anchor = fragment.slice(1);

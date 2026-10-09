@@ -57,7 +57,10 @@
     "start:protected": "ng serve --configuration protected --host 127.0.0.1 --port 4317",
     "start:oauth": "node scripts/start-private.mjs --configuration protected",
     "code:presentation": "node scripts/build-code-presentation.mjs",
-    "test:order": "ng test --watch=false --runner-config=vitest.stress.config.ts"
+    "test:order": "ng test --watch=false --runner-config=vitest.stress.config.ts",
+    "test:coverage": "ng test --watch=false --coverage && node scripts/container/check-runtime-coverage.mjs",
+    "test:container-boundary": "node --test scripts/container/*.test.mjs",
+    "test:container": "node scripts/container/smoke.mjs"
   },
   "private": true,
   "packageManager": "npm@11.17.0",
@@ -87,6 +90,7 @@
     "@angular/build": "^22.2.0",
     "@angular/cli": "^22.2.0",
     "@angular/compiler-cli": "^22.2.0",
+    "@vitest/coverage-v8": "4.1.11",
     "jsdom": "^28.0.0",
     "marked": "18.0.11",
     "prettier": "^3.8.1",

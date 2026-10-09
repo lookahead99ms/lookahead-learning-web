@@ -1,6 +1,18 @@
-import { apiEndpointAnchor, embeddedAnchor, embeddedAnchorPosition, embeddedChildNavigation, requestEmbeddedAnchor } from './author-embedded-anchor';
+import { apiEndpointAnchor, embeddedAnchor, embeddedAnchorPosition, embeddedChildNavigation, requestEmbeddedAnchor, scrollToEmbeddedAnchor } from './author-embedded-anchor';
 
 describe('embedded Author section navigation', () => {
+  it('keeps section headings below the wrapped mobile header', () => {
+    const scrollTo = vi.fn();
+    const host = {
+      document: { documentElement: {}, querySelector: () => ({ getBoundingClientRect: () => ({ height: 152 }) }) },
+      getComputedStyle: () => ({ getPropertyValue: () => '76px' }),
+      scrollY: 100, scrollTo,
+    } as unknown as Window;
+    const frame = { getBoundingClientRect: () => ({ top: 200 }) } as HTMLIFrameElement;
+    scrollToEmbeddedAnchor(frame, 720, host);
+    expect(scrollTo).toHaveBeenCalledWith({ top: 852, behavior: 'auto' });
+  });
+
   it('accepts only published section anchors', () => {
     expect(embeddedAnchor('#change-workflow', ['change-workflow'])).toBe('change-workflow');
     expect(embeddedAnchor('#unknown', ['change-workflow'])).toBeNull();

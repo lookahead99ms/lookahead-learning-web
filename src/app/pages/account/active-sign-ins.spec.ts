@@ -334,6 +334,24 @@ describe('Active sign-in inventory', () => {
     expect(client.rename).toHaveBeenCalledTimes(2);
   });
 
+  it('uses fresh managed sign-in for cloud confirmation without collecting a password or retrying the change', async () => {
+    store.authOptions.set({ registration: false, google: false, oauth: true, managedLogin: true });
+    client.rename.mockRejectedValueOnce(new SignInManagementError('reauthentication-required'));
+    button('Edit label for My browser').click();
+    await settle();
+    fill('Review after confirmation');
+    button('Save label').click();
+    await settle();
+    const link = fixture.nativeElement.querySelector('a[href^="/bff/login"]');
+    expect(link.textContent).toContain('Confirm identity through secure sign-in');
+    expect(link.getAttribute('href')).toBe('/bff/login?reauthenticate=true&returnTo=%2Faccount');
+    expect(document.activeElement).toBe(link);
+    expect(fixture.nativeElement.querySelector('input[type="password"]')).toBeNull();
+    expect(client.reauthenticate).not.toHaveBeenCalled();
+    expect(client.rename).toHaveBeenCalledTimes(1);
+    expect(store.account()?.accountId).toBe('owner');
+  });
+
   it('ignores late responses after ownership changes', async () => {
     let resolve!: (value: ActiveSignInInventory) => void;
     client.rename.mockReturnValue(

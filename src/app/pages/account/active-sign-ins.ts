@@ -31,6 +31,7 @@ export class ActiveSignIns implements OnDestroy {
   private readonly injector = inject(Injector);
   private readonly owner = this.accounts.account()?.accountId;
   private destroyed = false;
+  protected readonly managedLogin = () => this.accounts.authOptions()?.managedLogin === true;
   protected readonly inventory = signal<ActiveSignInInventory | null>(null);
   protected readonly loading = signal(true);
   protected readonly pending = signal(false);
@@ -43,6 +44,7 @@ export class ActiveSignIns implements OnDestroy {
   protected readonly currentPassword = signal('');
   protected readonly passwordVisible = signal(false);
   private readonly passwordInput = viewChild<ElementRef<HTMLInputElement>>('passwordInput');
+  private readonly managedReauthentication = viewChild<ElementRef<HTMLAnchorElement>>('managedReauthentication');
   private trigger: HTMLButtonElement | null = null;
   private deferredFocus: (() => HTMLElement | null | undefined) | null = null;
   private readonly heading = viewChild<ElementRef<HTMLElement>>('heading');
@@ -216,7 +218,7 @@ export class ActiveSignIns implements OnDestroy {
         this.error.set(this.message(error));
         if (error instanceof SignInManagementError && error.kind === 'reauthentication-required') {
           this.reauthenticationRequired.set(true);
-          this.focus(() => this.passwordInput()?.nativeElement);
+          this.focus(() => this.managedLogin() ? this.managedReauthentication()?.nativeElement : this.passwordInput()?.nativeElement);
         } else {
           this.focus(() => this.errorElement()?.nativeElement);
         }
@@ -236,7 +238,7 @@ export class ActiveSignIns implements OnDestroy {
       case 'expired':
         return 'Your sign-in expired. Sign in again to manage active sign-ins.';
       case 'reauthentication-required':
-        return 'Confirm your current password before making this change. Your current sign-in stays active.';
+        return this.managedLogin() ? 'Confirm your identity through secure sign-in, then review this change again.' : 'Confirm your current password before making this change. Your current sign-in stays active.';
       case 'reauthentication-rejected':
         return 'We could not confirm your password. Re-enter it to try again. Your current sign-in stays active.';
       case 'invalid-label':

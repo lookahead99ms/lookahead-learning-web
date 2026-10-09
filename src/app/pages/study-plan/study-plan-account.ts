@@ -169,7 +169,7 @@ export class StudyPlanAccount implements AccountSettingsClient {
   readonly logoutRedirectPending = signal(false);
   readonly pending = signal(false);
   readonly catalog = signal<CatalogPins | null>(null);
-  readonly authOptions = signal<{ registration: boolean; google: boolean; oauth?: boolean } | null>(
+  readonly authOptions = signal<{ registration: boolean; google: boolean; oauth?: boolean; managedLogin?: boolean } | null>(
     null,
   );
   private csrf: { token: string; headerName: string } | null = null;
@@ -437,7 +437,7 @@ export class StudyPlanAccount implements AccountSettingsClient {
       this.clearAccount();
       if (this.authOptions()?.oauth && result?.logoutUrl) {
         const target = new URL(result.logoutUrl);
-        if (target.origin !== window.location.origin || target.pathname !== '/connect/logout')
+        if (target.origin !== window.location.origin || !(target.pathname === '/connect/logout' || (this.authOptions()?.managedLogin === true && target.pathname === '/bff/logout/complete' && !target.search && !target.hash)))
           throw new Error('Invalid logout destination');
         this.logoutRedirectPending.set(true);
         window.location.assign(target.href);

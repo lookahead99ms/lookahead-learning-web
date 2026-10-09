@@ -39,6 +39,17 @@ function manifest() {
 }
 
 describe('Private author-document boundary', () => {
+  it('accepts the 21-section Operations reference while keeping navigation bounded', () => {
+    const publication = manifest();
+    publication.documents[0].sections = Array.from({ length: 21 }, (_, index) => ({
+      id: `section-${index}`, title: `Section ${index + 1}`, fragment: `#section-${index}`,
+    }));
+    expect(parseAuthorDocument(publication, 'operations-reference').sections).toHaveLength(21);
+    publication.documents[0].sections = Array.from({ length: 33 }, (_, index) => ({
+      id: `section-${index}`, title: `Section ${index + 1}`, fragment: `#section-${index}`,
+    }));
+    expect(() => parseAuthorDocument(publication, 'operations-reference')).toThrow();
+  });
   it('resolves only the immutable protected document path', () => {
     const value = parseAuthorDocument(manifest(), 'operations-reference');
     expect(value.href).toBe(`${root}operations-reference/${sha}/index.html`);

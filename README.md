@@ -207,6 +207,8 @@ the lockfile resolves Angular 22.2.1 and Piscina 5.3.2. After dependency updates
 run `npm ci`, `npm run security:dependencies`, and `npm run test:security-gates`
 before frontend tests and builds.
 
+`npm run test:coverage` instruments all production TypeScript under `src`, including files never imported by tests, using the matching pinned Vitest V8 provider. Only test files, declarations and test setup are excluded. CI requires at least **85% line coverage**; branch coverage is reported separately. Standard LCOV, JSON and HTML reports are in `coverage/lookahead-learning-web/`. The app-owned CI check enforces the threshold without a private checkout. Infra separately validates complete current reports for Web, Gateway, Identity and Domain before DEV and PROD deployment; missing, failed, stale or below-threshold results block both. These checks do not publish reports or private fixtures to the frontend.
+
 Unit tests isolate each file so component overrides and browser mocks cannot leak
 into another suite. `npm run test:order` runs the same assertions in a shuffled
 order with one worker (seed 1106), to check fixture and mock cleanup within files.
@@ -901,3 +903,95 @@ On Hands-On DSA problem pages, “Help me recognize the pattern” precedes reve
 After reveal, the header keeps only the named pattern lesson link with its new-tab
 indicator. Opening another problem conceals its pattern again; reveal changes no
 saved practice progress.
+
+
+## AWS DEV deployment candidate (DLV-810)
+
+`deployment/service.yaml` is the application-owned service contract for the local AWS candidate. It declares health, capacity, immutable image/release inputs and symbolic approved resource/secret references. Shared DEV/PROD values, IAM, S3, networking, CloudFormation and tooling belong to Infra. YAML uses JSON syntax. Current image/evidence values are unresolved and desired count is zero; this is not an activated cloud profile. Local configuration and authorization are preserved. See the sibling Infra `aws/devprod/README.md` for local planning commands and remaining application/identity/bootstrap gates. No resource creation, upload or GitHub activation has been performed.
+
+Admin → Operations includes a protected AWS deployment reference maintained in the private Content repository. It covers content startup and RAM caching, resource/YAML ownership, approval-gated commands and recovery. The reader accepts up to 32 named sections, supports bounded document heights up to 60,000 pixels for narrow-screen references and accounts for the actual wrapped header when navigating sections. It provides no AWS execution controls.
+
+Deployment direction: this application owns its service YAML and future thin caller to an immutable-pinned Infra reusable workflow. The v2 manifest separates shared settings from DEV/PROD overrides. Infra owns bootstrap/IAM/security groups/templates/orchestration; see workspace Infra `docs/deployment/README.md`. Build-once digest promotion, required scans and separate DEV/PROD approvals remain gates, not enabled deployment behavior.
+
+## Service deployment configuration
+
+`deployment/service.yaml` uses `lookahead-service/v2`: `shared` owns service port, health, settings and approved resource/secret/Infra output references; `environments.dev` and `.prod` select capacity, image digest, content release and activation evidence. Both candidates retain zero tasks. Shared account/region values and all infrastructure remain Infra-owned. Infra's maintained `aws/devprod/parameter-bindings.yaml` validates every template parameter; `scripts/aws_deployment.py plan --environment dev|prod` generates an offline plan. See Infra `docs/deployment/README.md` for commands and activation gates. No application contract or Local Docker behavior changed; AWS deployment remains blocked.
+
+October8 candidate service configuration adds explicit Fargate runtime/private networking, ingress/target-group references, optional alarm references, and per-environment scaling min/max, CPU targets, cooldowns and alarm thresholds. Desired/min tasks stay0 and scaling/alarms disabled. Fargate uses CPU/memory, not an EC2 instance type. Infra owns conditional scaling/IAM/CloudWatch resources; see Infra docs/deployment/README.md.
+
+Deployment `service.yaml` now declares task startup, health probes, temporary disk, logging/rollout settings and approved environment/Secrets Manager bindings. This Angular service has `jvm: null`; its protected static image uses the launch and health contract described below. Infra shared values and maintained templates remain authoritative; see Infra `docs/deployment/README.md` → JVM and task configuration. Local Docker/runtime behavior is unchanged and AWS activation remains blocked.
+
+AWS candidate `deployment/service.yaml` now references the shared application task role and separate shared Fargate execution role from its owning environment foundation. Active cloud applications reuse this pair; DEV/PROD have separate role resources/scopes. Infra owns policies, trust and validation; service-specific secret mappings and existing authorization are preserved. See Infra `docs/deployment/README.md` → Two shared IAM roles per environment. No cloud activation.
+
+
+## Server-selected cloud sign-in
+
+The connected application reads `/api/v1/auth/options`. When Gateway advertises
+`managedLogin: true`, the sign-in page offers a same-origin `/bff/login` link and
+collects no login password. Local retains its existing sign-in form, and the
+standalone public demo remains independent of backend availability.
+
+DEV/PROD credentials and password recovery use the configured Cognito provider.
+The frontend keeps the existing account/profile, active-sign-in and password-change
+API contracts. Recent-auth confirmation redirects through Gateway and requires the
+user to review and submit the intended change again. The restricted two-sign-in
+choice retains its safe learning destination; it does not grant ordinary account
+or content access until Domain confirms admission.
+
+Browser state uses session-bound CSRF. OAuth tokens, provider client secrets,
+Domain binding/challenge proofs, AWS credentials and private publication downloads
+stay server-side. Cloud logout accepts only the fixed same-origin
+`/bff/logout/complete` bridge without query or fragment; Gateway selects the provider
+logout URL. No AWS SDK is included in Angular.
+
+Validate with `npm test -- --watch=false '--include=src/app/pages/account/*.spec.ts'
+--include=src/app/pages/study-plan/study-plan-account.spec.ts` (one command) and
+`npm run build:protected`. Browser checks use controlled cloud responses on the
+managed working frontend; they verify presentation and navigation contracts,
+not deployed Cognito or RDS connectivity.
+
+
+### Protected Web container
+
+The Dockerfile builds `production,protected` Angular with the pinned Node24
+builder and npm11.17.0, then copies only compiled browser assets into a
+pinned NGINX static-server image. Node is build tooling; application API services
+remain Java/Spring. The builder runs on the host architecture even when the
+serving image targets `linux/amd64`. No AWS SDK, credentials, private curriculum,
+local preview, source map or API server is packaged in the frontend. The default
+`npm start` public demo and Local configuration are unchanged.
+
+```sh
+npm run test:container-boundary
+docker build --platform linux/amd64 --iidfile /tmp/lookahead-web-image-id .
+npm run test:container -- "$(cat /tmp/lookahead-web-image-id)"
+```
+
+The smoke command starts and removes only its own disposable container, with no
+host port or network, UID10001, read-only root, dropped capabilities and writable
+`/tmp`. It verifies actual health, routes, MIME/cache headers and the runtime
+artifact boundary. It does not start or replace a local frontend/backend service.
+The image listens on8080 and checks `/health`; NGINX exits gracefully on SIGQUIT.
+The image and ECS contract use `/opt/lookahead/healthcheck.sh`.
+
+The ALB routes `/api`, `/bff`, `/content`, authentication and protocol requests to
+Gateway. Direct requests to reserved paths on Web return404; they never receive
+SPA fallback. Other extensionless routes receive the Angular shell, while missing
+static files return404. HTML and unhashed assets use `no-store`; fingerprinted
+JS/CSS use browser-private immutable caching, never shared cache permission.
+DEV whole-site admission remains an ALB responsibility. A locally passing image
+cannot verify real admission, DNS/TLS, Cognito callbacks or origin isolation.
+
+CI builds this protected image, executes the smoke gate, and scans configuration,
+both pinned bases and the exact immutable built image with app-owned Trivy tooling,
+in addition to the full application 85% coverage gate. See [security CI](docs/security-ci.md)
+for thresholds, local commands and the required GitHub check name. Complete release security scans,
+registry/source provenance, DEV verification and separate PROD approval remain
+Infra release gates; this local build does not authorize deployment or upload.
+
+
+`test:coverage` also checks a conservative production-line lower bound including
+all shell probes in `deployment/container/`: every noncomment shell line counts
+as uncovered because it has no V8 instrumentation. This avoids crediting smoke
+execution as numeric coverage and blocks CI even when Angular alone narrowly
+passes85%. Runtime probe behavior is separately checked by the actual image smoke.

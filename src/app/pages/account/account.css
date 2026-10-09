@@ -158,6 +158,27 @@ button:disabled {
   color: var(--accent-on-primary);
   font-weight: 700;
 }
+.managed-login-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 10px 14px;
+  box-sizing: border-box;
+  border: 1px solid var(--accent-strong);
+  border-radius: 8px;
+  text-align: center;
+  text-decoration: none;
+}
+.managed-login-action:focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 3px;
+}
+.managed-login-hint {
+  margin: 8px 0 0;
+  color: var(--text-subtle);
+  font-size: 0.8rem;
+}
 .google-button {
   width: 100%;
   margin-top: 16px;
