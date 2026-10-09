@@ -28,7 +28,7 @@ class ReleaseWorkflowTests(unittest.TestCase):
         self.assertIn('test "$mutability" = IMMUTABLE', commands)
         self.assertEqual('write', publish['permissions']['id-token'])
         ci = (root / '.github/workflows/ci.yml').read_text()
-        sast = 'Enforce CodeQL severity' if root.name.endswith('web-public') else 'Require completed SAST'
+        sast = 'Enforce CodeQL severity'
         self.assertLess(ci.index(sast), ci.index('Export the exact scanned release image'))
         self.assertLess(ci.index('container_scan.py images --toolchain'), ci.index('Export the exact scanned release image'))
 
