@@ -209,6 +209,9 @@ before frontend tests and builds.
 
 `npm run test:coverage` instruments all production TypeScript under `src`, including files never imported by tests, using the matching pinned Vitest V8 provider. Only test files, declarations and test setup are excluded. CI requires at least **85% line coverage**; branch coverage is reported separately. Standard LCOV, JSON and HTML reports are in `coverage/lookahead-learning-web/`. The app-owned CI check enforces the threshold without a private checkout. Infra separately validates complete current reports for Web, Gateway, Identity and Domain before DEV and PROD deployment; missing, failed, stale or below-threshold results block both. These checks do not publish reports or private fixtures to the frontend.
 
+The exhaustive Hands-On DSA route test visits all 32 pages plus the Previous link and uses a test-specific 30-second timeout for instrumented parallel CI. All pagination/deduplication assertions remain active; other tests retain their default timeout. A targeted route-file run is useful for diagnosis, but only the full application run can satisfy the 85% coverage gate.
+
+
 Unit tests isolate each file so component overrides and browser mocks cannot leak
 into another suite. `npm run test:order` runs the same assertions in a shuffled
 order with one worker (seed 1106), to check fixture and mock cleanup within files.
