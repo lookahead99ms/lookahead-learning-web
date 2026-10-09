@@ -84,6 +84,9 @@ export function checkSarif(report) {
   for (const run of report.runs) {
     const driver = run.tool?.driver;
     assert.equal(driver?.name, 'CodeQL', 'Expected CodeQL analysis');
+    const properties = run.properties ?? {};
+    assert(properties && typeof properties === 'object' && !Array.isArray(properties), 'Invalid analysis scope');
+    assert(properties.incrementalMode === undefined || properties.incrementalMode === '', 'Full repository analysis required');
     const components = [driver, ...(run.tool?.extensions ?? [])];
     const rules = components.flatMap((component) => component.rules ?? []);
     assert(Array.isArray(rules) && rules.length > 0, 'Missing analyzed rules');
