@@ -25,7 +25,10 @@ LIMIT = 200 * 1024 * 1024
 SAFE_FAILURE_REASONS = frozenset({
     'Dockerfile configuration coverage missing',
     'Expected exactly one exported image manifest',
-    'Expected pinned Node builder and unprivileged NGINX runtime',
+    'Expected pinned Alpine toolchain and unprivileged NGINX runtime',
+    'Complete toolchain package coverage missing',
+    'Complete builder dependency coverage missing',
+    'Complete npm CLI dependency coverage missing',
     'Exported image has no configuration',
     'Image configuration identity absent',
     'Image report must describe Linux AMD64',
@@ -102,9 +105,9 @@ def executable():
 
 def base_images(text):
     images = re.findall(r'^FROM\s+(?:--platform=\S+\s+)?(\S+)', text, re.M | re.I)
-    if len(images) != 2 or not re.fullmatch(r'node:24-alpine@sha256:[a-f0-9]{64}', images[0]) or not re.fullmatch(r'nginxinc/nginx-unprivileged:stable-alpine-slim@sha256:[a-f0-9]{64}', images[1]):
-        raise ValueError('Expected pinned Node builder and unprivileged NGINX runtime')
-    return images
+    if len(images) != 3 or not re.fullmatch(r'alpine:3.23@sha256:[a-f0-9]{64}', images[0]) or images[1] != 'toolchain' or not re.fullmatch(r'nginxinc/nginx-unprivileged:stable-alpine-slim@sha256:[a-f0-9]{64}', images[2]):
+        raise ValueError('Expected pinned Alpine toolchain and unprivileged NGINX runtime')
+    return [images[0], images[2]]
 
 
 def report_gate(document, kind):
@@ -238,8 +241,26 @@ def local_config_id(target):
         return archive_config_id(archive)
 
 
-def scan(kind, target=None, local=False):
-    stage = 'configuration' if kind != 'image' else ('applicationImage' if local else ('builderBase' if target.startswith('node:') else 'runtimeBase'))
+def stage_coverage(document, stage):
+    if stage in ('toolchainImage', 'builderImage'):
+        packages = [p for r in document['Results'] for p in r.get('Packages', [])]
+        if not any(p.get('Name') == 'nodejs' and p.get('Version', '').startswith('24.') for p in packages) or not any(p.get('Name') == 'npm' and p.get('Version') == '11.17.0' and p.get('FilePath') == 'opt/npm/package.json' for p in packages):
+            raise ValueError('Complete toolchain package coverage missing')
+        cli = json.loads((ROOT / 'deployment/container/npm-cli-lock.json').read_text())['packages']
+        expected_cli = {(name.rsplit('node_modules/', 1)[-1], item['version']) for name, item in cli.items() if name}
+        actual_cli = {(p.get('Name'), p.get('Version')) for p in packages if p.get('FilePath', '').startswith('opt/npm/')}
+        if not expected_cli <= actual_cli:
+            raise ValueError('Complete npm CLI dependency coverage missing')
+        if stage == 'builderImage':
+            canonical = json.loads((ROOT / 'package-lock.json').read_text())['packages']
+            expected = {(name.rsplit('node_modules/', 1)[-1], item['version']) for name, item in canonical.items() if name and all(not spec or ('!' + value) not in spec and (not any(not x.startswith('!') for x in spec) or value in spec) for spec, value in ((item.get('os', []), 'linux'), (item.get('cpu', []), 'x64'), (item.get('libc', []), 'musl')))}
+            actual = {(p.get('Name'), p.get('Version')) for p in packages if p.get('FilePath', '').startswith('build/node_modules/')}
+            if not expected <= actual:
+                raise ValueError('Complete builder dependency coverage missing')
+
+
+def scan(kind, target=None, local=False, stage=None):
+    stage = stage or ('configuration' if kind != 'image' else ('applicationImage' if local else ('builderBase' if target.startswith('alpine:') else 'runtimeBase')))
     print(json.dumps({'containerScanStage': stage}), flush=True)
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / 'trivy.yaml').write_text('{}\n')
@@ -248,19 +269,26 @@ def scan(kind, target=None, local=False):
     report.unlink(missing_ok=True)
     common = ['--config', str(OUT / 'trivy.yaml'), '--ignorefile', str(OUT / 'ignore'),
               '--format', 'json', '--output', str(report), '--exit-code', '0', '--timeout', '15m', '--quiet']
-    config_id = local_config_id(target) if kind == 'image' and local else None
-    if kind == 'image':
-        args = ['image', '--image-src', 'docker' if local else 'remote', '--platform', 'linux/amd64',
-                '--scanners', 'vuln', '--list-all-pkgs', *common, target]
-    else:
-        args = ['fs', '--scanners', 'misconfig,secret', '--skip-dirs', '.git,.codex-scratch,node_modules,dist,coverage', *common, '.']
-    clean_env = {k: v for k, v in os.environ.items() if not k.startswith('TRIVY_')}
-    result = subprocess.run([executable(), *args], cwd=ROOT, env=clean_env, capture_output=True, timeout=960)
-    (report.with_suffix('.log')).write_bytes(result.stdout + result.stderr)
-    if result.returncode:
-        raise ValueError('Scanner failed; private diagnostics retained locally')
+    config_id = None
+    with tempfile.TemporaryDirectory(prefix='exact-image-', dir=OUT) as directory:
+        if kind == 'image' and local:
+            archive = Path(directory) / 'image.tar'
+            export_local_image(target, archive)
+            config_id = archive_config_id(archive)
+            args = ['image', '--input', str(archive), '--scanners', 'vuln,secret', '--list-all-pkgs', *common]
+        elif kind == 'image':
+            args = ['image', '--image-src', 'remote', '--platform', 'linux/amd64',
+                    '--scanners', 'vuln,secret', '--list-all-pkgs', *common, target]
+        else:
+            args = ['fs', '--scanners', 'misconfig,secret', '--skip-dirs', '.git,.codex-scratch,node_modules,dist,coverage', *common, '.']
+        clean_env = {k: v for k, v in os.environ.items() if not k.startswith('TRIVY_')}
+        result = subprocess.run([executable(), *args], cwd=ROOT, env=clean_env, capture_output=True, timeout=960)
+        (report.with_suffix('.log')).write_bytes(result.stdout + result.stderr)
+        if result.returncode:
+            raise ValueError('Scanner failed; private diagnostics retained locally')
     document = json.loads(report.read_text())
     counts = report_gate(document, kind)
+    stage_coverage(document, stage)
     if kind == 'image':
         image_identity(document, target, config_id)
     print(json.dumps({'scan': kind, 'counts': counts}))
@@ -270,16 +298,20 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('action', choices=('install', 'config', 'images'))
     parser.add_argument('--image')
+    parser.add_argument('--toolchain')
+    parser.add_argument('--builder')
     args = parser.parse_args()
     if args.action == 'install':
         install()
     elif args.action == 'config':
         scan('config')
     else:
-        if not args.image or not re.fullmatch(r'sha256:[a-f0-9]{64}', args.image):
+        if any(not value or not re.fullmatch(r'sha256:[a-f0-9]{64}', value) for value in (args.image, args.toolchain, args.builder)):
             raise ValueError('Immutable local image ID from build iidfile required')
         for image in base_images((ROOT / 'Dockerfile').read_text()):
             scan('image', image)
+        scan('image', args.toolchain, local=True, stage='toolchainImage')
+        scan('image', args.builder, local=True, stage='builderImage')
         scan('image', args.image, local=True)
 
 

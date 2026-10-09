@@ -1,13 +1,32 @@
-# Angular compilation is platform independent; build natively even for AMD64 ECS.
-FROM --platform=$BUILDPLATFORM node:24-alpine@sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1 AS build
+# Exact toolchain, compiler and serving images are scanned independently.
+FROM alpine:3.23@sha256:85fe1e81d6758c208f3e1eed4338a1997e19d4be002d4dd32d3100c9a8c010a0 AS toolchain
+RUN apk add --no-cache nodejs=24.18.1-r0
+COPY scripts/container/prepare-npm-cli.mjs /opt/lookahead/prepare-npm-cli.mjs
+COPY deployment/container/npm-cli-lock.json /opt/npm/package-lock.json
+# Bootstrap stays inside this RUN; only the genuinely patched locked CLI persists.
+RUN wget -q https://registry.npmjs.org/npm/-/npm-11.17.0.tgz -O /tmp/npm.tgz \
+    && echo "b290bbb35b9e72c3ef84edbe041f28c4479c4d9ee79f555817b8caafe7ce4bba  /tmp/npm.tgz" | sha256sum -c - \
+    && mkdir -p /tmp/bootstrap /build \
+    && tar -xzf /tmp/npm.tgz --strip-components=1 -C /tmp/bootstrap \
+    && tar -xzf /tmp/npm.tgz --strip-components=1 --exclude='package/node_modules/*' -C /opt/npm \
+    && node /opt/lookahead/prepare-npm-cli.mjs /opt/npm/package.json /opt/npm/package-lock.json \
+    && node /tmp/bootstrap/bin/npm-cli.js ci --prefix /opt/npm --ignore-scripts --omit=dev --no-audit --no-fund \
+    && ln -s /opt/npm/bin/npm-cli.js /usr/local/bin/npm \
+    && ln -s /opt/npm/bin/npx-cli.js /usr/local/bin/npx \
+    && rm -rf /tmp/bootstrap /tmp/npm.tgz /root/.npm \
+    && chown 10001:10001 /build
+ENV HOME=/build
+USER 10001:10001
 WORKDIR /build
-COPY package.json package-lock.json ./
-RUN npm install --global npm@11.17.0 --ignore-scripts --no-audit --no-fund \
-    && npm ci --include=prod --include=dev --include=optional --include=peer --no-audit --no-fund
-COPY angular.json tsconfig*.json ./
-COPY src ./src
-COPY scripts ./scripts
-COPY public ./public
+
+FROM toolchain AS build
+COPY --chown=10001:10001 package.json package-lock.json ./
+RUN npm ci --include=prod --include=dev --include=optional --include=peer --no-audit --no-fund
+COPY --chown=10001:10001 angular.json tsconfig*.json ./
+COPY --chown=10001:10001 src ./src
+COPY --chown=10001:10001 scripts/build.mjs scripts/build-code-presentation.mjs ./scripts/
+COPY --chown=10001:10001 scripts/container/verify-static.mjs ./scripts/container/
+COPY --chown=10001:10001 public ./public
 RUN npm run build:protected \
     && node scripts/container/verify-static.mjs dist/lookahead-learning-web/browser
 

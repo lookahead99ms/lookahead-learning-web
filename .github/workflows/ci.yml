@@ -121,7 +121,9 @@ jobs:
       - name: Build and verify protected Web container locally
         run: |
           docker build --platform linux/amd64 --iidfile /tmp/lookahead-web-image-id .
+          docker build --platform linux/amd64 --target toolchain --iidfile /tmp/lookahead-web-toolchain-id .
+          docker build --platform linux/amd64 --target build --iidfile /tmp/lookahead-web-builder-id .
           npm run test:container -- "$(cat /tmp/lookahead-web-image-id)"
 
-      - name: Scan pinned builder, runtime base and exact built Web image
-        run: python3 tools/security/container_scan.py images --image "$(cat /tmp/lookahead-web-image-id)"
+      - name: Scan pinned OS bases and exact toolchain, builder and Web images
+        run: python3 tools/security/container_scan.py images --toolchain "$(cat /tmp/lookahead-web-toolchain-id)" --builder "$(cat /tmp/lookahead-web-builder-id)" --image "$(cat /tmp/lookahead-web-image-id)"

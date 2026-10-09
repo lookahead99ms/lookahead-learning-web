@@ -956,19 +956,51 @@ not deployed Cognito or RDS connectivity.
 
 ### Protected Web container
 
-The Dockerfile builds `production,protected` Angular with the pinned Node24
-builder and npm11.17.0, then copies only compiled browser assets into a
-pinned NGINX static-server image. Node is build tooling; application API services
-remain Java/Spring. The builder runs on the host architecture even when the
-serving image targets `linux/amd64`. No AWS SDK, credentials, private curriculum,
-local preview, source map or API server is packaged in the frontend. The default
-`npm start` public demo and Local configuration are unchanged.
+The Dockerfile builds `production,protected` Angular with a digest-pinned Alpine
+3.23 base, exact Node24 distribution package and npm11.17.0 CLI source verified
+against its SHA256 archive checksum. The CLI production dependencies are rebuilt
+from the reviewed `deployment/container/npm-cli-lock.json`, with real maintained
+fixes for brace expansion, HTTP cache semantics, IP parsing, tar and Undici.
+This is an application-owned reconstructed npm distribution, rather than the
+unmodified vulnerable bundle in the former Node base. Every installed dependency
+retains its package manifest and exact SHA512 archive integrity. The verified
+bootstrap is temporary within one build instruction; it is removed after the
+fixed frozen CLI graph is installed and does not persist in an image layer.
+CLI source code/version stays npm11.17.0; dependency versions are reported honestly.
+
+Application installation still uses the canonical `package-lock.json` and npm CI.
+The existing esbuild0.28.2 tool is now declared directly because our presentation
+build imports it directly; its version and archive integrity are unchanged.
+Compilation and serving images use the requested target platform (`linux/amd64`
+in CI). Only compiled browser assets are copied into the pinned NGINX serving
+image. Node is build tooling; application API services remain Java/Spring. No AWS
+SDK, credentials, private curriculum, local preview, source map or API server is
+packaged in the frontend. Local npm development commands and configurations are
+unchanged.
 
 ```sh
 npm run test:container-boundary
 docker build --platform linux/amd64 --iidfile /tmp/lookahead-web-image-id .
+docker build --platform linux/amd64 --target toolchain --iidfile /tmp/lookahead-web-toolchain-id .
+docker build --platform linux/amd64 --target build --iidfile /tmp/lookahead-web-builder-id .
+python3 tools/security/container_scan.py images --toolchain "$(cat /tmp/lookahead-web-toolchain-id)" --builder "$(cat /tmp/lookahead-web-builder-id)" --image "$(cat /tmp/lookahead-web-image-id)"
 npm run test:container -- "$(cat /tmp/lookahead-web-image-id)"
 ```
+
+The security gate scans both pinned OS bases plus the exact immutable toolchain,
+complete compiler image and serving image. It requires complete OS/package
+inventories, every CLI lock component and every platform-applicable application
+component in the compiler image. High, Critical, unknown-severity or secret
+findings block delivery without exceptions. Local image scanning exports one
+bounded archive, verifies its configuration digest and scans those same bytes;
+this supports OCI manifest indexes without weakening identity binding.
+
+For a tooling dependency update, review the upstream fixed versions, update the
+source archive checksum and explicit overrides in `prepare-npm-cli.mjs`, generate
+and review the corresponding npm CLI production lock using the verified source,
+and rerun the five image scans, protected build and disposable container smoke.
+Keep the lock as the authoritative reproducible toolchain dependency input; do
+not update versions only in scanner metadata or reuse an old clean report.
 
 The smoke command starts and removes only its own disposable container, with no
 host port or network, UID10001, read-only root, dropped capabilities and writable
@@ -1006,8 +1038,8 @@ build directory with no concurrent producer; this tool is not a sandbox for
 a concurrently modified directory tree. Run `npm run test:container-boundary`
 for packaging regressions.
 
-Container security failures now log the scan stage (builder base, runtime base
-or application image), aggregate blocking counts and reviewed constant rejection
+Container security failures now log the scan stage (builder OS base, runtime
+OS base, exact toolchain, complete compiler or serving image), aggregate blocking counts and reviewed constant rejection
 reasons. Raw scanner output, arbitrary error text and findings remain in ignored
 scratch reports. High/Critical/Unknown findings, secrets, scanner failures and
 image-binding/coverage gaps continue to block. Run

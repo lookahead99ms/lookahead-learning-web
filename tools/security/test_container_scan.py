@@ -60,10 +60,41 @@ class ContainerGateTests(unittest.TestCase):
         with self.assertRaises(ValueError): scan.report_gate(report, 'config')
 
     def test_pinned_bases_include_platform_qualified_builder(self):
-        valid = 'FROM --platform=$BUILDPLATFORM node:24-alpine@sha256:' + 'a' * 64 + ' AS build\nFROM nginxinc/nginx-unprivileged:stable-alpine-slim@sha256:' + 'b' * 64
+        valid = 'FROM alpine:3.23@sha256:' + 'a' * 64 + ' AS toolchain\nFROM toolchain AS build\nFROM nginxinc/nginx-unprivileged:stable-alpine-slim@sha256:' + 'b' * 64
         self.assertEqual(2, len(scan.base_images(valid)))
-        for invalid in (valid.replace('@sha256:' + 'a' * 64, ''), valid.splitlines()[0], valid.replace('node:24-alpine', 'node:latest')):
+        for invalid in (valid.replace('@sha256:' + 'a' * 64, ''), valid.splitlines()[0], valid.replace('alpine:3.23', 'alpine:latest'), valid.replace('FROM toolchain AS build', 'FROM node:latest AS build')):
             with self.assertRaises(ValueError): scan.base_images(invalid)
+
+    def test_images_require_each_exact_stage_and_scan_all_five_targets(self):
+        ids = ['sha256:' + char * 64 for char in 'abc']
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            root.joinpath('Dockerfile').write_text('FROM alpine:3.23@sha256:' + 'd' * 64 + ' AS toolchain\nFROM toolchain AS build\nFROM nginxinc/nginx-unprivileged:stable-alpine-slim@sha256:' + 'e' * 64)
+            args = ['container_scan.py', 'images', '--image', ids[0], '--toolchain', ids[1], '--builder', ids[2]]
+            with patch.object(scan, 'ROOT', root), patch.object(scan.sys, 'argv', args), patch.object(scan, 'scan') as run:
+                scan.main()
+                self.assertEqual(5, run.call_count)
+                self.assertEqual(run.call_args_list[2].kwargs, {'local': True, 'stage': 'toolchainImage'})
+                self.assertEqual(run.call_args_list[3].kwargs, {'local': True, 'stage': 'builderImage'})
+            with patch.object(scan.sys, 'argv', args[:-2]), patch.object(scan, 'scan') as run:
+                with self.assertRaises(ValueError): scan.main()
+                run.assert_not_called()
+
+    def test_stage_inventory_requires_node_npm_cli_and_target_application_packages(self):
+        document = {'Results': [{'Packages': [{'Name': 'nodejs', 'Version': '24.18.1-r0'}, {'Name': 'npm', 'Version': '11.17.0', 'FilePath': 'opt/npm/package.json'}]}]}
+        with self.assertRaises(ValueError): scan.stage_coverage({'Results': [{'Packages': []}]}, 'toolchainImage')
+        with tempfile.TemporaryDirectory() as directory, patch.object(scan, 'ROOT', Path(directory)):
+            cli_path = Path(directory, 'deployment/container'); cli_path.mkdir(parents=True)
+            cli_path.joinpath('npm-cli-lock.json').write_text(scan.json.dumps({'packages': {'': {}, 'node_modules/tool': {'version': '1.0.0'}}}))
+            with self.assertRaises(ValueError): scan.stage_coverage(document, 'toolchainImage')
+            document['Results'][0]['Packages'].append({'Name': 'tool', 'Version': '1.0.0', 'FilePath': 'opt/npm/node_modules/tool/package.json'})
+            scan.stage_coverage(document, 'toolchainImage')
+            Path(directory, 'package-lock.json').write_text(scan.json.dumps({'packages': {'': {}, 'node_modules/@sample/a': {'version': '1.2.3'}, 'node_modules/mac-only': {'version': '1.0.0', 'os': ['darwin']}}}))
+            with self.assertRaises(ValueError): scan.stage_coverage(document, 'builderImage')
+            document['Results'][0]['Packages'].append({'Name': '@sample/a', 'Version': '1.2.3', 'FilePath': 'build/node_modules/@sample/a/package.json'})
+            scan.stage_coverage(document, 'builderImage')
+            document['Results'][0]['Packages'][-1]['Version'] = '1.2.4'
+            with self.assertRaises(ValueError): scan.stage_coverage(document, 'builderImage')
 
     def test_executable_is_bound_to_hash_verified_archive(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -99,13 +130,14 @@ class ContainerGateTests(unittest.TestCase):
             with self.assertRaises(ValueError): scan.main()
         with tempfile.TemporaryDirectory() as directory, patch.object(scan, 'OUT', Path(directory)), patch.object(scan, 'executable', return_value='fixture'):
             def run(command, **kwargs):
-                self.assertEqual('docker', command[command.index('--image-src') + 1])
-                self.assertEqual('sha256:' + 'a' * 64, command[-1])
+                self.assertIn('--input', command)
+                self.assertNotIn('--image-src', command)
+                self.assertEqual('image.tar', Path(command[command.index('--input') + 1]).name)
                 Path(command[command.index('--output') + 1]).write_text(scan.json.dumps(image_report()))
                 return subprocess.CompletedProcess(command, 0, b'', b'')
-            with patch.object(scan.subprocess, 'run', side_effect=run), patch.object(scan, 'local_config_id', return_value='sha256:' + 'c' * 64) as resolve:
+            with patch.object(scan.subprocess, 'run', side_effect=run), patch.object(scan, 'export_local_image') as export, patch.object(scan, 'archive_config_id', return_value='sha256:' + 'c' * 64):
                 scan.scan('image', 'sha256:' + 'a' * 64, local=True)
-                resolve.assert_called_once_with('sha256:' + 'a' * 64)
+                self.assertEqual('sha256:' + 'a' * 64, export.call_args.args[0])
 
     def test_report_schema_platform_and_config_id_are_required(self):
         mutations = [('SchemaVersion', 1), ('SchemaVersion', None)]

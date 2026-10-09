@@ -21,6 +21,7 @@
 !Dockerfile
 !deployment/
 !deployment/container/
+!deployment/container/npm-cli-lock.json
 !deployment/container/nginx.conf
 !deployment/container/healthcheck.sh
 !.dockerignore
