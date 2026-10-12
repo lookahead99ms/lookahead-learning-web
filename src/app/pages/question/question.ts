@@ -1439,7 +1439,7 @@ export class Question implements OnInit {
    */
   private lessonNavPlace(nextCourseId: string | null): Pick<SidebarLessonNav, 'path' | 'group' | 'nextGroup' | 'nextCourseInNextGroup'> {
     const pathId = this.pathId();
-    const pathTitle = ({ learn: 'Learn', grow: 'Grow', 'look-ahead': 'Look Ahead' } as Record<string, string>)[pathId];
+    const pathTitle = ({ learn: 'Learn', grow: 'Grow', 'blaze': 'Blaze' } as Record<string, string>)[pathId];
     const group = this.courseGroup();
     const following = group ? nextCatalogGroup(pathId, group.id) : null;
     const groupLink = (target: { id: string; title: string }) => ({
@@ -1897,7 +1897,7 @@ export class Question implements OnInit {
       const introduction = item.teachingGuide || item.beginnerGuide ? [
           { label: 'Before you start', target: 'foundation-start' },
           { label: item.teachingGuide ? 'Worked scenario' : 'Worked example', target: 'foundation-example' },
-          { label: item.teachingGuide && this.pathId() === 'look-ahead' ? 'Make the decision' : 'Try it', target: 'foundation-try' },
+          { label: item.teachingGuide && this.pathId() === 'blaze' ? 'Make the decision' : 'Try it', target: 'foundation-try' },
           { label: 'Remember', target: 'foundation-remember' },
         ] : [];
       return [
@@ -2088,7 +2088,7 @@ export class Question implements OnInit {
           ) {
             this.returnDestination.set(destination);
             const { path, course, module, kind, unit } = destination.queryParams;
-            if (kind === 'practice' && ['learn', 'grow', 'look-ahead'].includes(path)
+            if (kind === 'practice' && ['learn', 'grow', 'blaze'].includes(path)
               && [course, module, unit || module].every((value) => typeof value === 'string' && /^[a-zA-Z0-9_-]+$/.test(value))) {
               this.reviewModuleId.set(module);
               this.reviewModuleDestination.set(this.router.createUrlTree(['/', path, course], {
@@ -2625,8 +2625,8 @@ export class Question implements OnInit {
   protected pathLabel(): string {
     return this.pathId() === 'grow'
       ? 'Grow'
-      : this.pathId() === 'look-ahead'
-        ? 'Look Ahead'
+      : this.pathId() === 'blaze'
+        ? 'Blaze'
         : 'Learn';
   }
 

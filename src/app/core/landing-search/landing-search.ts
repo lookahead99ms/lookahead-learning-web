@@ -131,7 +131,7 @@ type LandingSuggestion = {
       .landing-search-stage.grow {
         color: var(--accent-link);
       }
-      .landing-search-stage.look-ahead {
+      .landing-search-stage.blaze {
         color: var(--text-strong);
       }
       .landing-search-stage.search {
@@ -389,7 +389,7 @@ export class LandingSearch {
   }
 
   private pathLabel(path: SearchDocument['path']): string {
-    return path === 'look-ahead' ? 'Look Ahead' : `${path[0].toUpperCase()}${path.slice(1)}`;
+    return path === 'blaze' ? 'Blaze' : `${path[0].toUpperCase()}${path.slice(1)}`;
   }
 
   private score(document: SearchDocument, query: string): number {

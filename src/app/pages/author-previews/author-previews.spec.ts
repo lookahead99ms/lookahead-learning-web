@@ -17,7 +17,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import { PlatformThemeService } from '../../core/platform-theme';
 import { routes } from '../../app.routes';
-import { authorGuard } from '../../core/author-access';
+import { authorGuard, staffGuard, deliveryGuard, ownerGuard } from '../../core/author-access';
 import { environment as publicEnvironment } from '../../../environments/environment.production';
 import { environment as demoEnvironment } from '../../../environments/environment.demo';
 
@@ -128,9 +128,12 @@ describe('private preview inventory contract', () => {
     expect(publicEnvironment.authorPreviewsBaseUrl).toBe('');
     expect(demoEnvironment.authorPreviewsBaseUrl).toBe('');
   });
-  it('uses the server-capability guard on both author routes', () => {
-    for (const path of ['author/previews', 'author/architecture', 'author/api', 'delivery-plan'])
-      expect(routes.find((route) => route.path === path)?.canActivate).toContain(authorGuard);
+  it('uses distinct server capabilities for staff, delivery and owner routes', () => {
+    for (const path of ['admin/previews', 'admin/architecture', 'admin/api'])
+      expect(routes.find((route) => route.path === path)?.canActivate).toContain(staffGuard);
+    expect(routes.find(route => route.path === 'delivery-plan')?.canActivate).toContain(deliveryGuard);
+    expect(routes.find(route => route.path === 'admin/access')?.canActivate).toContain(ownerGuard);
+    expect(routes.find(route => route.path === 'admin/previews/study-plan')?.canActivate).toContain(authorGuard);
   });
 });
 
@@ -149,7 +152,7 @@ describe('Author previews page', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: AUTHOR_PREVIEWS_BASE_URL, useValue: base },
-        { provide: StudyPlanAccount, useValue: { account, sessionExpired } },
+        { provide: StudyPlanAccount, useValue: { account, sessionExpired, plans: signal([]) } },
         { provide: PlatformThemeService, useValue: { selected: selectedTheme } },
         { provide: ActivatedRoute, useValue: { snapshot: { data: {} } } },
       ],
@@ -262,7 +265,14 @@ describe('Author previews page', () => {
     expect(root.querySelectorAll('.featured-preview')).toHaveLength(1);
     expect(root.querySelectorAll('.collection-history li')).toHaveLength(1);
     expect((root.querySelector('details') as HTMLDetailsElement).open).toBe(false);
-    expect(root.textContent).toContain('Featured means current review focus');
+    expect(root.textContent).toContain('Featured marks the lead study of each collection');
+    // DLV-926: live product first; the gallery is labelled history with its build date.
+    expect(root.querySelector('#live-product')).not.toBeNull();
+    expect(root.querySelector('#design-history')?.textContent).toBe('Design history');
+    expect(
+      root.querySelector('#live-product')!.compareDocumentPosition(root.querySelector('#design-history')!) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
     expect(root.textContent).toContain('Selection: Proposed');
     const search = root.querySelector('input')!;
     search.value = 'Platform architecture';
@@ -273,7 +283,7 @@ describe('Author previews page', () => {
   it('shows a retry state after outage and recovers', async () => {
     const fixture = create();
     const http = TestBed.inject(HttpTestingController);
-    expect(fixture.nativeElement.textContent).toContain('Loading author previews');
+    expect(fixture.nativeElement.textContent).toContain('Loading previews');
     http.expectOne(manifestUrl).flush('Unavailable', { status: 503, statusText: 'Unavailable' });
     await fixture.whenStable();
     fixture.detectChanges();
@@ -293,14 +303,14 @@ describe('Author previews page', () => {
   });
   it('does not load or render private previews without the server capability', () => {
     account.set({ displayName: 'Author', username: 'author' });
-    expect(create().nativeElement.textContent).toContain('Author access required');
+    expect(create().nativeElement.textContent).toContain('Admin access required');
     TestBed.inject(HttpTestingController).expectNone(manifestUrl);
   });
   it('removes displayed inventory after session expiry', async () => {
     const fixture = await loaded();
     sessionExpired.set(true);
     fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain('Author access required');
+    expect(fixture.nativeElement.textContent).toContain('Admin access required');
     expect(fixture.nativeElement.querySelector('.preview-links')).toBeNull();
   });
   it('keeps Architecture separate while using the same configured inventory', async () => {
@@ -322,22 +332,20 @@ describe('Author previews page', () => {
     const outlineLink = fixture.nativeElement.querySelector(
       '.heading-outline a',
     ) as HTMLAnchorElement;
-    expect(outlineLink.getAttribute('href')).toBe('/author/architecture#platform-panel');
+    expect(outlineLink.getAttribute('href')).toBe('/admin/architecture#overview-panel');
     expect(outlineLink.getAttribute('target')).toBeNull();
     const outlineAnchors = Array.from(
       fixture.nativeElement.querySelectorAll('.heading-outline a') as NodeListOf<HTMLAnchorElement>,
     ).map((link) => new URL(link.href).hash);
     expect(outlineAnchors).toEqual([
-      '#platform-panel',
-      '#backend-panel',
+      '#overview-panel',
+      '#components-panel',
+      '#signin-panel',
+      '#data-panel',
       '#journeys-panel',
+      '#publication-panel',
       '#model-panel',
-      '#flow-panel',
-      '#candidate-panel',
-      '#oauth-panel',
-      '#trust-panel',
-      '#environments-panel',
-      '#development-panel',
+      '#deferred-panel',
     ]);
     expect(fixture.nativeElement.classList.contains('architecture-page')).toBe(true);
     const fullPageLink = fixture.nativeElement.querySelector(
@@ -363,7 +371,7 @@ describe('Author previews page', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('iframe')).toBeNull();
     expect(fixture.nativeElement.querySelector('.reference-toolbar')).toBeNull();
-    expect(fixture.nativeElement.textContent).toContain('Author access required');
+    expect(fixture.nativeElement.textContent).toContain('Admin access required');
   });
   it('uses only a bounded height report from the active Architecture frame', async () => {
     TestBed.overrideProvider(ActivatedRoute, {
@@ -396,7 +404,7 @@ describe('Author previews page', () => {
       useValue: { snapshot: { data: { architectureOnly: true } } },
     });
     const previousUrl = location.pathname + location.search + location.hash;
-    history.replaceState(null, '', '/author/architecture#platform-panel');
+    history.replaceState(null, '', '/admin/architecture#overview-panel');
     try {
       const fixture = await loaded();
       const frame = fixture.nativeElement.querySelector('iframe') as HTMLIFrameElement;
@@ -413,7 +421,7 @@ describe('Author previews page', () => {
         }),
       );
       fixture.detectChanges();
-      expect(location.pathname + location.hash).toBe('/author/architecture#journeys-panel');
+      expect(location.pathname + location.hash).toBe('/admin/architecture#journeys-panel');
       expect(
         fixture.nativeElement.querySelector('.heading-outline [aria-current="location"]')
           .textContent,

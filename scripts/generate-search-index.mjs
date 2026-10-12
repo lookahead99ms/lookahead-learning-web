@@ -7,7 +7,7 @@ import {
 } from './answer-slide-contract.mjs';
 import { readCanonicalDsaProblems } from './canonical-dsa-contract.mjs';
 
-const paths = ['learn', 'grow', 'look-ahead'];
+const paths = ['learn', 'grow', 'blaze'];
 const languages = new Set(['java', 'python', 'go']);
 const practiceContentTypes = new Set([
   'q-and-a',
@@ -217,7 +217,7 @@ function documentFor(question, context) {
     answerSlidesRef,
   } = context;
   const pathLabel =
-    path === 'look-ahead' ? 'Look Ahead' : `${path[0].toUpperCase()}${path.slice(1)}`;
+    path === 'blaze' ? 'Blaze' : `${path[0].toUpperCase()}${path.slice(1)}`;
   const title = canonicalProblem?.title ?? question.title;
   const difficulty = canonicalProblem?.difficulty ?? question.difficulty;
   const tags = uniqueLabels([...(canonicalProblem?.tags ?? []), ...(question.tags ?? [])]);
@@ -274,7 +274,7 @@ function documentFor(question, context) {
 
 function courseDocument(path, catalogItem, course) {
   const pathLabel =
-    path === 'look-ahead' ? 'Look Ahead' : `${path[0].toUpperCase()}${path.slice(1)}`;
+    path === 'blaze' ? 'Blaze' : `${path[0].toUpperCase()}${path.slice(1)}`;
   const subjects = uniqueLabels(Array.isArray(course.chips) ? course.chips : []);
   const access = course.access ?? catalogItem.access ?? { tier: 'free' };
   return {
@@ -301,7 +301,7 @@ function courseDocument(path, catalogItem, course) {
 
 function topicDocument(path, course, module) {
   const pathLabel =
-    path === 'look-ahead' ? 'Look Ahead' : `${path[0].toUpperCase()}${path.slice(1)}`;
+    path === 'blaze' ? 'Blaze' : `${path[0].toUpperCase()}${path.slice(1)}`;
   const subjects = uniqueLabels([
     module.title,
     ...(Array.isArray(course.chips) ? course.chips : []),
@@ -331,7 +331,7 @@ function topicDocument(path, course, module) {
 
 function toolDocument(path, catalogItem) {
   const pathLabel =
-    path === 'look-ahead' ? 'Look Ahead' : `${path[0].toUpperCase()}${path.slice(1)}`;
+    path === 'blaze' ? 'Blaze' : `${path[0].toUpperCase()}${path.slice(1)}`;
   const access = catalogItem.access ?? { tier: 'free' };
   return {
     id: `tool:${path}:${catalogItem.id}`,

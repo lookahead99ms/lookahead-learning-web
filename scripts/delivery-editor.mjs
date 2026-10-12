@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from 'node:util';
 import { createServer } from 'node:http';
 import { createHash, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 import { constants } from 'node:fs';
@@ -168,7 +169,18 @@ async function readEvidence(file, itemId, evidenceId) {
 export async function startDeliveryEditor({ file, origins, authorize }) {
   const token = randomBytes(32).toString('hex');
   let pending = Promise.resolve();
-  async function mutate(payload, requestedId) {
+  async function permissions(request) {
+    if (!authorize) return { manageAccess: true, deliveryRead: true };
+    const result = await authorize(request);
+    // Compatibility for author-only callers; the managed working stack returns capabilities.
+    if (result === 200) return { manageAccess: true, deliveryRead: true };
+    if (!result || typeof result !== 'object' || result.deliveryRead !== true)
+      fail([401, 403].includes(result) ? result : 403, 'Delivery Plan access required.');
+    return result;
+  }
+  async function mutate(payload, requestedId, request) {
+    // Check again after entering the write queue so revocation cannot reuse a queued grant.
+    const access = await permissions(request);
     if (!payload || Object.keys(payload).some((key) => !['revision', 'item'].includes(key)))
       fail(422, 'Invalid save request.');
     if (typeof payload.revision !== 'string') fail(428, 'A plan revision is required.');
@@ -185,6 +197,19 @@ export async function startDeliveryEditor({ file, origins, authorize }) {
     );
     const id = requestedId ?? `DLV-${highest + 1}`;
     validateItem(payload.item, current.plan, id);
+    if (!access.manageAccess) {
+      const next = payload.item.statusId;
+      const allowed = !existing
+        ? access.deliveryCreate && ['backlog', 'in-progress', 'review'].includes(next)
+        : next === 'done'
+          ? access.deliveryDone && existing.statusId === 'review'
+          : access.deliveryReview && existing.statusId !== 'done' && next === 'review';
+      if (!allowed) fail(403, 'Your role cannot make this workflow change.');
+      // Review sign-off is a status transition, never permission to rewrite the story.
+      if (existing && next === 'done' && editableFields.some(field => field !== 'statusId'
+          && !isDeepStrictEqual(payload.item[field] ?? [], existing[field] ?? [])))
+        fail(403, 'Reviewers can mark reviewed stories Done without changing their content.');
+    }
     const updatedAt = new Date().toISOString();
     const item = { ...existing, ...payload.item, id, updatedAt };
     item.title = item.title.trim();
@@ -233,11 +258,7 @@ export async function startDeliveryEditor({ file, origins, authorize }) {
         .map((value) => value.trim());
       if (forwarded.some((address) => !['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(address)))
         fail(403, 'Only loopback clients may use the editor.');
-      if (authorize) {
-        const status = await authorize(request);
-        if (status !== 200)
-          fail([401, 403].includes(status) ? status : 503, 'Local author access required.');
-      }
+      await permissions(request);
       const url = new URL(request.url, 'http://localhost');
       const path = url.pathname;
       if (request.method === 'GET' && path === '/__local/delivery/plan') {
@@ -296,7 +317,7 @@ export async function startDeliveryEditor({ file, origins, authorize }) {
         fail(404, 'Unknown editor route.');
       const body = await readBody(request);
       // Serialize our writes; revisions additionally protect separate tabs and external edits.
-      const operation = pending.then(() => mutate(body, match[1]));
+      const operation = pending.then(() => mutate(body, match[1], request));
       pending = operation.catch(() => {});
       const result = await operation;
       response.statusCode = request.method === 'POST' ? 201 : 200;

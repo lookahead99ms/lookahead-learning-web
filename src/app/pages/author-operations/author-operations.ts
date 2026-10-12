@@ -22,6 +22,13 @@ import {
   AuthorOutlineItem,
   AuthorWorkspaceNav,
 } from '../../core/author-workspace-nav/author-workspace-nav';
+import { AuthorAdminMenu } from '../../core/author-workspace-nav/author-admin-menu';
+import { AuthorDocHero } from '../../core/author-workspace-nav/author-doc-hero';
+import {
+  authorDocumentPages,
+  authorDocumentationLinks,
+  isAuthorDocumentPageId,
+} from '../../core/author-workspace-nav/author-workspace-links';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { PlatformThemeService } from '../../core/platform-theme';
 import {
@@ -39,9 +46,9 @@ const maxDocumentHeight = 60_000;
 
 @Component({
   selector: 'app-author-operations',
-  imports: [PlatformHeader, AuthorWorkspaceNav, RouterLink],
+  imports: [PlatformHeader, AuthorWorkspaceNav, AuthorAdminMenu, AuthorDocHero, RouterLink],
   templateUrl: './author-operations.html',
-  styleUrl: './author-operations.css',
+  styleUrls: ['./author-operations.css', '../../core/author-workspace-nav/reference-footer.css'],
 })
 export class AuthorOperationsPage implements OnDestroy {
   private readonly hostDocument = inject(DOCUMENT);
@@ -49,17 +56,16 @@ export class AuthorOperationsPage implements OnDestroy {
   private readonly documents = inject(AUTHOR_DOCUMENTS_CLIENT);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly theme = inject(PlatformThemeService);
-  protected readonly documentId =
-    inject(ActivatedRoute).snapshot.data['authorDocument'] === 'local-development'
-      ? 'local-development'
-      : 'operations-reference';
-  protected readonly isLocalDevelopment = this.documentId === 'local-development';
-  protected readonly pageTitle = this.isLocalDevelopment
-    ? 'Local setup & development'
-    : 'Operations';
-  protected readonly pageRoute = this.isLocalDevelopment
-    ? '/author/local-development'
-    : '/author/operations';
+  // Routes name one of the published private documents; anything else is Operations.
+  protected readonly pageId = ((value: unknown) =>
+    isAuthorDocumentPageId(value) ? value : 'operations')(
+    inject(ActivatedRoute).snapshot.data['authorDocument'],
+  );
+  protected readonly page = authorDocumentPages[this.pageId];
+  protected readonly documentId = this.page.documentId;
+  private readonly link = authorDocumentationLinks.find((page) => page.id === this.pageId)!;
+  protected readonly pageTitle = this.link.label;
+  protected readonly pageRoute = this.link.href;
   protected readonly documentFrame = viewChild<ElementRef<HTMLIFrameElement>>('documentFrame');
   private destroyed = false;
   private request = 0;
@@ -67,7 +73,7 @@ export class AuthorOperationsPage implements OnDestroy {
   private readonly navigationHash = signal(this.hostDocument.defaultView?.location.hash ?? '');
   private pendingAnchor = this.hostDocument.defaultView?.location.hash ?? '';
   protected readonly authorized = computed(
-    () => this.accounts.account()?.authorPreview === true && !this.accounts.sessionExpired(),
+    () => (this.accounts.account()?.permissions?.previewDocuments ?? this.accounts.account()?.authorPreview === true) && !this.accounts.sessionExpired(),
   );
   protected readonly document = signal<AuthorDocument | null>(null);
   protected readonly documentHeight = signal<number | null>(null);
@@ -97,21 +103,60 @@ export class AuthorOperationsPage implements OnDestroy {
     if (!href) return null;
     return this.sanitizer.bypassSecurityTrustResourceUrl(href);
   });
-  protected readonly referenceLinks = computed(() =>
-    this.isLocalDevelopment ? [] : (this.document()?.references ?? []),
+  protected readonly referenceLinks = computed(() => this.document()?.references ?? []);
+  /** Local setup only: the published setup script, offered here because the document sandbox cannot. */
+  protected readonly setupDownload = computed(() =>
+    this.pageId === 'local-development'
+      ? (this.document()?.downloads.find((item) => item.filename === 'lookahead_setup.py') ?? null)
+      : null,
   );
+  protected readonly setupSteps = [
+    { icon: '📥', text: 'Clones or updates the six repositories into one folder.' },
+    { icon: '🌿', text: 'Stays on main, or creates your branch from the latest origin/main.' },
+    { icon: '🛠️', text: 'Builds Gateway BFF and Identity (Gradle), Domain API (Maven) and their Docker images.' },
+    { icon: '🐳', text: 'Starts the Local backend on ports 4350–4352.' },
+    { icon: '🌐', text: 'Installs and starts the web app: protected on 4301 or demo on 4300.' },
+  ];
+  protected readonly setupNeeds = ['Git', 'Python 3', 'Java 21', 'Docker (running)', 'Node 24 and npm'];
+  protected readonly setupCommands = [
+    { label: 'Ask each question (press Enter for the default)', command: 'python3 lookahead_setup.py' },
+    { label: 'Accept every default', command: 'python3 lookahead_setup.py --yes' },
+    { label: 'Preview the commands without changing anything', command: 'python3 lookahead_setup.py --yes --dry-run' },
+    {
+      label: 'Task branch for a UI-only change, demo web app',
+      command:
+        'python3 lookahead_setup.py --branch feature/DLV-123-short-description --repos web-public,content --web demo',
+    },
+  ];
+  protected readonly copiedCommand = signal<string | null>(null);
+  private copiedTimer: ReturnType<typeof setTimeout> | undefined;
+
+  protected async copyCommand(command: string): Promise<void> {
+    try {
+      await this.hostDocument.defaultView?.navigator.clipboard.writeText(command);
+      this.copiedCommand.set(command);
+      clearTimeout(this.copiedTimer);
+      this.copiedTimer = setTimeout(() => this.copiedCommand.set(null), 2000);
+    } catch {
+      this.copiedCommand.set(null);
+    }
+  }
+
+  protected fileSize(bytes: number): string {
+    return bytes < 1024 ? `${bytes} bytes` : `${Math.round(bytes / 1024)} KB`;
+  }
   protected readonly outline = computed<AuthorOutlineItem[]>(() => {
     const href = this.documentFrameHref();
     const document = this.document();
     if (!href || !document) return [];
     return [
-      ...document.sections
-        .filter((section) => section.anchor !== 'local-development-workflow')
-        .map((section) => ({
-          label: section.title,
-          href: `${this.pageRoute}#${section.anchor}`,
-        })),
-
+      ...(this.setupDownload()
+        ? [{ label: 'One-command setup', href: `${this.pageRoute}#one-command-setup` }]
+        : []),
+      ...document.sections.map((section) => ({
+        label: section.title,
+        href: `${this.pageRoute}#${section.anchor}`,
+      })),
     ];
   });
 
@@ -164,7 +209,7 @@ export class AuthorOperationsPage implements OnDestroy {
     const data = event.data;
     if (data?.type === 'lookahead:author-document:api-navigate' && data.version === 1 && data.documentId === this.documentId) {
       const endpoint = apiEndpointAnchor(data.anchor);
-      if (endpoint) this.hostDocument.defaultView?.location.assign(`/author/api#${endpoint}`);
+      if (endpoint) this.hostDocument.defaultView?.location.assign(`/admin/api#${endpoint}`);
       return;
     }
     const anchor = embeddedAnchor(
@@ -219,5 +264,6 @@ export class AuthorOperationsPage implements OnDestroy {
 
   ngOnDestroy(): void {
     this.destroyed = true;
+    clearTimeout(this.copiedTimer);
   }
 }

@@ -4,7 +4,7 @@
 
 .delivery-page {
   display: grid;
-  grid-template-columns: minmax(210px, 240px) minmax(0, 1fr);
+  grid-template-columns: minmax(210px, 240px) minmax(0, 1fr) minmax(210px, 240px);
   column-gap: 24px;
   align-items: start;
   --delivery-ink: var(--text-strong);
@@ -15,7 +15,7 @@
   --delivery-navy: var(--code-panel);
   --delivery-gold: var(--accent-secondary);
   min-height: 100vh;
-  padding: 0 clamp(16px, 3vw, 48px) 72px;
+  padding: 24px clamp(16px, 3vw, 48px) 72px;
   color: var(--delivery-ink);
   background:
     radial-gradient(
@@ -32,24 +32,6 @@
   font-family: 'Avenir Next', Avenir, 'Segoe UI', sans-serif;
 }
 
-.delivery-breadcrumbs {
-  grid-column: 1 / -1;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  max-width: 1680px;
-  margin: 0 auto;
-  padding: 18px 2px;
-  color: var(--text-subtle);
-  font-size: 0.82rem;
-  font-weight: 750;
-}
-
-.delivery-breadcrumbs a {
-  color: var(--accent-link);
-  text-decoration: none;
-}
-
 .delivery-hero,
 .delivery-metrics,
 .delivery-workspace {
@@ -61,7 +43,8 @@
 
 .delivery-hero,
 .delivery-state {
-  grid-column: 1 / -1;
+  grid-column: 2;
+  grid-row: 1;
 }
 
 .delivery-hero,
@@ -72,7 +55,7 @@
 
 .delivery-outline {
   grid-column: 1;
-  grid-row: 3 / span 2;
+  grid-row: 1 / span 3;
   align-self: start;
   position: sticky;
   top: calc(var(--platform-header-height, 76px) + 12px);
@@ -87,15 +70,37 @@
   max-width: none;
 }
 
+/* Both sidebars start at the top, beside the hero. */
+.delivery-page > app-author-admin-menu {
+  grid-column: 3;
+  grid-row: 1 / span 3;
+  top: calc(var(--platform-header-height, 76px) + 12px);
+  max-height: calc(100dvh - var(--platform-header-height, 76px) - 24px);
+  padding: 0;
+  border-inline-start: 0;
+}
+
 @media (max-width: 1100px) {
   .delivery-page {
     grid-template-columns: minmax(0, 1fr);
   }
 
   .delivery-outline,
+  .delivery-hero,
+  .delivery-state,
   .delivery-metrics,
-  .delivery-workspace {
+  .delivery-workspace,
+  .delivery-page > app-author-admin-menu {
     grid-column: 1;
+    grid-row: auto;
+  }
+
+  .delivery-page > app-author-admin-menu {
+    position: static;
+    order: 0;
+    max-height: none;
+    padding-block: 12px;
+    border-bottom: 1px solid var(--line);
   }
 
   .delivery-outline {
@@ -110,12 +115,12 @@
 .delivery-hero {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.55fr);
-  gap: clamp(24px, 4vw, 72px);
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
+  gap: clamp(20px, 3vw, 40px);
   overflow: hidden;
-  padding: clamp(28px, 5vw, 64px);
+  padding: clamp(22px, 3vw, 36px);
   border: 1px solid var(--shadow);
-  border-radius: 28px;
+  border-radius: 22px;
   color: var(--code-ink);
   background:
     linear-gradient(
@@ -133,10 +138,10 @@
 
 .delivery-hero::after {
   position: absolute;
-  right: -90px;
-  bottom: -130px;
-  width: 350px;
-  height: 350px;
+  right: -70px;
+  bottom: -110px;
+  width: 260px;
+  height: 260px;
   border: 1px solid color-mix(in srgb, var(--code-ink) 13%, transparent);
   border-radius: 50%;
   box-shadow:
@@ -168,10 +173,10 @@
 
 .delivery-hero h1 {
   max-width: 850px;
-  margin: 12px 0 14px;
-  font-size: clamp(2.2rem, 5vw, 4.9rem);
-  line-height: 0.98;
-  letter-spacing: -0.055em;
+  margin: 10px 0 12px;
+  font-size: clamp(1.8rem, 3vw, 2.9rem);
+  line-height: 1.04;
+  letter-spacing: -0.045em;
   text-wrap: balance;
 }
 
@@ -179,8 +184,8 @@
   max-width: 800px;
   margin: 0;
   color: var(--code-ink);
-  font-size: clamp(1rem, 1.5vw, 1.24rem);
-  line-height: 1.65;
+  font-size: clamp(0.95rem, 1.1vw, 1.06rem);
+  line-height: 1.6;
 }
 
 .source-line {
@@ -188,7 +193,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 8px 12px;
-  margin-top: 25px;
+  margin-top: 18px;
   color: var(--code-ink);
   font-size: 0.76rem;
 }
@@ -209,9 +214,9 @@
   position: relative;
   z-index: 1;
   align-self: end;
-  padding: 22px;
+  padding: 18px;
   border: 1px solid color-mix(in srgb, var(--code-ink) 16%, transparent);
-  border-radius: 20px;
+  border-radius: 16px;
   background: color-mix(in srgb, var(--code-ink) 8%, transparent);
   backdrop-filter: blur(12px);
 }
@@ -1567,6 +1572,17 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Three columns leave the hero narrow sooner; stack its focus card below the copy. */
+@media (max-width: 1320px) {
+  .delivery-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .active-stage-card {
+    max-width: 620px;
   }
 }
 

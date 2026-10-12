@@ -54,6 +54,10 @@ describe('Manage account learning summary', () => {
     const element: HTMLElement = render().nativeElement;
     expect(element.textContent).toContain('No saved study plans yet');
     expect(element.querySelectorAll('li')).toHaveLength(0);
+    const create = element.querySelectorAll<HTMLAnchorElement>('.create-plan-action');
+    expect(create).toHaveLength(1);
+    expect(create[0].textContent?.trim()).toBe('Create a study plan');
+    expect(create[0].getAttribute('href')).toBe('/study-plan?create=1');
 
     expect(store.active()).toBeNull();
     expect(transport).not.toHaveBeenCalled();
@@ -63,12 +67,18 @@ describe('Manage account learning summary', () => {
     store.planSummariesState.set('ready');
     const element: HTMLElement = render().nativeElement;
     expect(element.textContent).toContain('1 saved study plan');
+    const create = element.querySelector('.summary-heading .create-plan-action');
+    expect(create?.textContent?.trim()).toBe('Create study plan');
+    expect(create?.getAttribute('href')).toBe('/study-plan?create=1');
     expect(element.querySelector('h3')?.textContent).toBe('Prepare Java');
     expect(element.querySelector('.plan-progress')?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
       '2 of 8 sessions completed',
     );
-    expect(element.querySelector('a')?.getAttribute('href')).toBe('/study-plan?plan=owned-plan');
-    expect(element.querySelector('a')?.getAttribute('aria-label')).toBe('Open plan: Prepare Java');
+    const meter = element.querySelector<HTMLElement>('.plan-meter')!;
+    expect(meter.getAttribute('aria-hidden')).toBe('true');
+    expect(meter.querySelector<HTMLElement>('span')!.style.inlineSize).toBe('25%');
+    expect(element.querySelector('.plan-heading a')?.getAttribute('href')).toBe('/study-plan?plan=owned-plan');
+    expect(element.querySelector('.plan-heading a')?.getAttribute('aria-label')).toBe('Open plan: Prepare Java');
     expect(element.querySelector('time')?.getAttribute('datetime')).toBe(plan.updatedAt);
     expect(element.textContent).toContain('14 days');
     expect(element.textContent).toContain('45 min');
@@ -95,7 +105,7 @@ describe('Manage account learning summary', () => {
     expect(element.querySelectorAll('.navigation-card [data-card-primary]')).toHaveLength(3);
     expect(element.querySelector('.navigation-card a a')).toBeNull();
     expect(element.querySelectorAll('.unavailable')).toHaveLength(2);
-    expect(element.querySelectorAll('a')[1].getAttribute('href')).toBe(
+    expect(element.querySelectorAll('.plan-heading a')[1].getAttribute('href')).toBe(
       '/study-plan?plan=second%20%26%20owned',
     );
     expect(element.querySelectorAll('li')[1].querySelectorAll('dt')).toHaveLength(1);

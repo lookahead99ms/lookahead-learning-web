@@ -372,7 +372,7 @@ describe('Course learning path', () => {
     vi.spyOn(TestBed.inject(ContentService), 'getCourseOutline').mockReturnValue(
       of({
         id: 'design-rounds',
-        path: 'look-ahead',
+        path: 'blaze',
         title: 'Design Rounds',
         description: 'Interview practice.',
         version: '1',
@@ -393,7 +393,7 @@ describe('Course learning path', () => {
       } as CourseOutline),
     );
     const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/look-ahead/design-rounds', Course);
+    await harness.navigateByUrl('/blaze/design-rounds', Course);
     const page = harness.routeNativeElement!;
 
     expect(page.querySelector('.course-page-intro')).toBeNull();
@@ -402,13 +402,13 @@ describe('Course learning path', () => {
     expect(page.querySelector('a.unit-card')).not.toBeNull();
   });
 
-  it('gives Look Ahead learning-map courses the side nav of every lesson', async () => {
+  it('gives Blaze learning-map courses the side nav of every lesson', async () => {
     const content = TestBed.inject(ContentService) as unknown as Record<string, unknown>;
     content['getCardScene'] = vi.fn(() => of('<svg xmlns="http://www.w3.org/2000/svg"></svg>'));
     vi.spyOn(TestBed.inject(ContentService), 'getCourseOutline').mockReturnValue(
       of({
         id: 'design-fundamentals',
-        path: 'look-ahead',
+        path: 'blaze',
         title: 'Fundamentals',
         description: 'Building blocks.',
         version: '1',
@@ -437,15 +437,15 @@ describe('Course learning path', () => {
       } as unknown as CourseOutline),
     );
     const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/look-ahead/design-fundamentals', Course);
+    await harness.navigateByUrl('/blaze/design-fundamentals', Course);
     const page = harness.routeNativeElement!;
 
     const nav = page.querySelector('app-course-lesson-nav nav')!;
     expect(nav.getAttribute('aria-label')).toBe('Lessons in Fundamentals');
     expect(Array.from(nav.querySelectorAll('a')).map((link) => link.getAttribute('href'))).toEqual([
-      '/look-ahead/design-fundamentals/one-lesson',
-      '/look-ahead/design-fundamentals/two-lesson',
-      '/look-ahead/design-fundamentals/three-lesson',
+      '/blaze/design-fundamentals/one-lesson',
+      '/blaze/design-fundamentals/two-lesson',
+      '/blaze/design-fundamentals/three-lesson',
     ]);
     expect(page.querySelector('.course-reader.course-reader-with-nav')).not.toBeNull();
   });

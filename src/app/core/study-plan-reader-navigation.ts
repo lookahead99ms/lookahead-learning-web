@@ -1,4 +1,5 @@
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { upgradeLegacyCatalogJson } from './catalog-url';
 import { Component, DestroyRef, OnInit, computed, inject, input, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
@@ -155,7 +156,7 @@ export class StudyPlanReaderNavigation implements OnInit {
       if (plan) this.saved.set(savedAccountPlan(plan));
     } else if (this.planId === 'browser' && !this.account.account()) {
       try {
-        const saved = JSON.parse(localStorage.getItem('look-ahead.study-plan.v1') ?? 'null');
+        const saved = JSON.parse(upgradeLegacyCatalogJson(localStorage.getItem('look-ahead.study-plan.v1') ?? 'null'));
         if (
           saved?.schemaVersion === 'study-plan-local/v1' &&
           (saved.studyLog === undefined || validStudyLog(saved.studyLog)) &&

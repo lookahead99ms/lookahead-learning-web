@@ -27,7 +27,7 @@
             <div class="catalog-primary-actions" [attr.aria-label]="config().actionsLabel">
               <a
                 class="catalog-primary-action"
-                [class.look-ahead-action]="config().path === 'look-ahead'"
+                [class.blaze-action]="config().path === 'blaze'"
                 [routerLink]="config().primaryAction.routerLink"
                 [queryParams]="config().primaryAction.queryParams"
                 (click)="repeatJump($event, config().primaryAction.groupId)"
@@ -47,7 +47,7 @@
           </div>
           <dl
             class="catalog-scoreboard"
-            [class.look-ahead-scoreboard]="config().path === 'look-ahead'"
+            [class.blaze-scoreboard]="config().path === 'blaze'"
             [attr.aria-label]="config().metricsLabel"
           >
             <div>

@@ -567,10 +567,10 @@
                 [ngTemplateOutletContext]="{ path: 'grow', stepNumber: 3 }"
               />
             }
-            @case ('look-ahead') {
+            @case ('blaze') {
               <ng-container
                 [ngTemplateOutlet]="pathSelections"
-                [ngTemplateOutletContext]="{ path: 'look-ahead', stepNumber: 4 }"
+                [ngTemplateOutletContext]="{ path: 'blaze', stepNumber: 4 }"
               />
             }
             @case ('review') {
@@ -624,7 +624,7 @@
                 </div>
                 @if (!hasAccessibleSelection()) {
                   <p class="builder-validation" role="alert">
-                    Select at least one available course across Learn, Grow, or Look Ahead.
+                    Select at least one available course across Learn, Grow, or Blaze.
                   </p>
                 }
                 @if (needsDsaRanking() && rankingStatus() === 'loading') {

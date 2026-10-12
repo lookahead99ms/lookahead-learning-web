@@ -29,7 +29,7 @@ const example: InterviewQuestion = {
   relatedArticleId: 'theory',
 };
 
-async function render(path: 'learn' | 'grow' | 'look-ahead', item = example) {
+async function render(path: 'learn' | 'grow' | 'blaze', item = example) {
   const outline: CourseOutline = {
     id: 'sample',
     path,
@@ -78,7 +78,7 @@ async function render(path: 'learn' | 'grow' | 'look-ahead', item = example) {
 }
 
 describe('Non-DSA Answer + Example', () => {
-  it.each(['learn', 'grow', 'look-ahead'] as const)(
+  it.each(['learn', 'grow', 'blaze'] as const)(
     'uses the same content flow for %s',
     async (path) => {
       const root = await render(path);
@@ -131,7 +131,7 @@ describe('Non-DSA Answer + Example', () => {
   });
 
   it('presents each follow-up as a numbered interviewer card with a closed strong answer', async () => {
-    const root = await render('look-ahead', {
+    const root = await render('blaze', {
       ...example,
       followUps: [
         { question: 'What changes?', answer: 'Keep the <strong>contract</strong> stable.' },

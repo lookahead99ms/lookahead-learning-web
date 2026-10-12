@@ -336,8 +336,8 @@ describe('ContentService compact indexes and selected details', () => {
           practiceDocumentCount: 1,
         },
         {
-          path: 'look-ahead',
-          href: '/content/indexes/look-ahead.json',
+          path: 'blaze',
+          href: '/content/indexes/blaze.json',
           documentCount: 0,
           practiceDocumentCount: 0,
         },
@@ -353,9 +353,9 @@ describe('ContentService compact indexes and selected details', () => {
       path: 'grow',
       documents: [record('question', 'q-and-a')],
     });
-    http.expectOne('/content/indexes/look-ahead.json').flush({
+    http.expectOne('/content/indexes/blaze.json').flush({
       schemaVersion: 'content-index-shard/v1',
-      path: 'look-ahead',
+      path: 'blaze',
       documents: [],
     });
 
@@ -434,8 +434,8 @@ describe('ContentService compact indexes and selected details', () => {
           practiceDocumentCount: 1,
         },
         {
-          path: 'look-ahead',
-          href: '/content/indexes/look-ahead.json',
+          path: 'blaze',
+          href: '/content/indexes/blaze.json',
           documentCount: 1,
           practiceDocumentCount: 0,
         },
@@ -447,7 +447,7 @@ describe('ContentService compact indexes and selected details', () => {
       documents: [record('grow-question', 'q-and-a')],
     });
     http.expectNone('/content/indexes/learn.json');
-    http.expectNone('/content/indexes/look-ahead.json');
+    http.expectNone('/content/indexes/blaze.json');
     expect(scopedIds).toEqual([['grow-question']]);
 
     service.getSearchIndex().subscribe((documents) => fullIds.push(documents.map(({ id }) => id)));
@@ -456,13 +456,13 @@ describe('ContentService compact indexes and selected details', () => {
       path: 'learn',
       documents: [record('learn-question', 'q-and-a')],
     });
-    http.expectOne('/content/indexes/look-ahead.json').flush({
+    http.expectOne('/content/indexes/blaze.json').flush({
       schemaVersion: 'content-index-shard/v1',
-      path: 'look-ahead',
-      documents: [record('look-ahead-lesson', 'theory')],
+      path: 'blaze',
+      documents: [record('blaze-lesson', 'theory')],
     });
     http.expectNone('/content/indexes/grow.json');
-    expect(fullIds).toEqual([['learn-question', 'grow-question', 'look-ahead-lesson']]);
+    expect(fullIds).toEqual([['learn-question', 'grow-question', 'blaze-lesson']]);
     http.verify();
   });
 
@@ -816,14 +816,14 @@ describe('ContentService card scenes', () => {
     http.expectOne(path).flush('<svg></svg>');
   });
 
-  it('serves a Look Ahead unit card scene from its public asset copy first', () => {
+  it('serves a Blaze unit card scene from its public asset copy first', () => {
     const { service, http } = setup();
-    const path = '/content/look-ahead/design-systems/visuals/cards/reservation.svg';
+    const path = '/content/blaze/design-systems/visuals/cards/reservation.svg';
     const received: string[] = [];
 
     service.getCardScene(path).subscribe((text) => received.push(text));
     http
-      .expectOne('/assets/scenes/units/look-ahead/design-systems/reservation.svg')
+      .expectOne('/assets/scenes/units/blaze/design-systems/reservation.svg')
       .flush('<svg id="public"></svg>');
     http.expectNone(path);
 
@@ -832,19 +832,19 @@ describe('ContentService card scenes', () => {
 
   it('falls back to the content path when the public copy is missing or not an SVG', () => {
     const { service, http } = setup();
-    const missing = '/content/look-ahead/design-fundamentals/visuals/cards/caching.svg';
-    const html = '/content/look-ahead/design-patterns/visuals/cards/fan-out.svg';
+    const missing = '/content/blaze/design-fundamentals/visuals/cards/caching.svg';
+    const html = '/content/blaze/design-patterns/visuals/cards/fan-out.svg';
     const received: string[] = [];
 
     service.getCardScene(missing).subscribe((text) => received.push(text));
     http
-      .expectOne('/assets/scenes/units/look-ahead/design-fundamentals/caching.svg')
+      .expectOne('/assets/scenes/units/blaze/design-fundamentals/caching.svg')
       .flush('missing', { status: 404, statusText: 'Not Found' });
     http.expectOne(missing).flush('<svg id="content-a"></svg>');
 
     service.getCardScene(html).subscribe((text) => received.push(text));
     http
-      .expectOne('/assets/scenes/units/look-ahead/design-patterns/fan-out.svg')
+      .expectOne('/assets/scenes/units/blaze/design-patterns/fan-out.svg')
       .flush('<!doctype html><html></html>');
     http.expectOne(html).flush('<svg id="content-b"></svg>');
 
@@ -855,8 +855,8 @@ describe('ContentService card scenes', () => {
     const { service, http } = setup();
     for (const path of [
       'https://evil.example/a.svg',
-      '/content/look-ahead/../secret.svg',
-      '/content/look-ahead/a.png',
+      '/content/blaze/../secret.svg',
+      '/content/blaze/a.png',
       '//evil.example/content/a.svg',
     ]) {
       let failed = false;

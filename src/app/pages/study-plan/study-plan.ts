@@ -1,4 +1,5 @@
 import { defaultPlanName, planNameError } from './study-plan-naming';
+import { upgradeLegacyCatalogJson } from '../../core/catalog-url';
 import { StudyDesk } from './study-desk';
 import { StudyDeskActivity, StudyDeskEntry, studyDeskActivities } from './study-desk-model';
 import { variationRank } from '../../content/study-plan-variation';
@@ -74,7 +75,7 @@ import {
 
 const STORAGE_KEY = 'look-ahead.study-plan.v1';
 const DRAFT_INTENT_KEY = 'look-ahead.study-plan-draft-intent.v1';
-type StudyPlanWizardStep = 'setup' | 'learn' | 'grow' | 'look-ahead' | 'review';
+type StudyPlanWizardStep = 'setup' | 'learn' | 'grow' | 'blaze' | 'review';
 type StudyPlanCreationMode = 'choice' | 'authored' | 'custom';
 type AuthoredPlanStep = 'select' | 'review';
 
@@ -513,7 +514,7 @@ export class StudyPlanPage implements OnInit {
   private restoreDraftIntent(): void {
     if (this.route.snapshot.queryParamMap.get('create') !== '1') return;
     try {
-      const value = JSON.parse(window.sessionStorage.getItem(DRAFT_INTENT_KEY) ?? 'null');
+      const value = JSON.parse(upgradeLegacyCatalogJson(window.sessionStorage.getItem(DRAFT_INTENT_KEY) ?? 'null'));
       if (
         !value ||
         typeof value.goal !== 'string' ||
@@ -1055,7 +1056,7 @@ export class StudyPlanPage implements OnInit {
         },
       });
   }
-  protected readonly paths: ContentPath[] = ['learn', 'grow', 'look-ahead'];
+  protected readonly paths: ContentPath[] = ['learn', 'grow', 'blaze'];
   protected readonly days = signal(30);
   protected readonly isPresetDuration = computed(() =>
     this.durations.some((day) => day === this.days()),
@@ -1143,7 +1144,7 @@ export class StudyPlanPage implements OnInit {
     { id: 'setup', label: 'Plan setup', shortLabel: 'Setup' },
     { id: 'learn', label: 'Learn selections', shortLabel: 'Learn' },
     { id: 'grow', label: 'Grow selections', shortLabel: 'Grow' },
-    { id: 'look-ahead', label: 'Look Ahead selections', shortLabel: 'Look Ahead' },
+    { id: 'blaze', label: 'Blaze selections', shortLabel: 'Blaze' },
     { id: 'review', label: 'Review and save', shortLabel: 'Review' },
   ];
   protected readonly wizardStep = signal<StudyPlanWizardStep>('setup');
@@ -1152,7 +1153,7 @@ export class StudyPlanPage implements OnInit {
   );
   protected readonly wizardPath = computed<ContentPath | null>(() => {
     const step = this.wizardStep();
-    return step === 'learn' || step === 'grow' || step === 'look-ahead' ? step : null;
+    return step === 'learn' || step === 'grow' || step === 'blaze' ? step : null;
   });
   protected readonly setupStepValid = computed(
     () =>
@@ -1772,7 +1773,7 @@ export class StudyPlanPage implements OnInit {
     this.persistWizardDraft();
   }
   protected pathLabel(path: ContentPath): string {
-    return path === 'look-ahead' ? 'Look Ahead' : path === 'grow' ? 'Grow' : 'Learn';
+    return path === 'blaze' ? 'Blaze' : path === 'grow' ? 'Grow' : 'Learn';
   }
   protected topicsFor(path: ContentPath): StudyPlanTopic[] {
     return this.topics().filter((topic) => topic.path === path);
@@ -2337,7 +2338,7 @@ export class StudyPlanPage implements OnInit {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
-      const value: SavedPlan = JSON.parse(raw);
+      const value: SavedPlan = JSON.parse(upgradeLegacyCatalogJson(raw));
       if (
         value.schemaVersion !== 'study-plan-local/v1' ||
         !Array.isArray(value.snapshot?.days) ||

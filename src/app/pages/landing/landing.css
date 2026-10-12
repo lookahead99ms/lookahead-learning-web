@@ -262,7 +262,8 @@ button:disabled {
   border-color: var(--accent-strong);
 }
 #paths {
-  padding: 14px 0 24px;
+  /* Clear space after the carousel controls so they read as part of the slideshow (DLV-932, user-approved). */
+  padding: 44px 0 24px;
   scroll-margin-top: 90px;
 }
 #paths > .eyebrow {
@@ -308,16 +309,31 @@ button:disabled {
   gap: 12px;
 }
 .card {
+  --path-color: var(--path-learn);
   container-type: inline-size;
   min-width: 0;
+}
+.card:nth-child(2) {
+  --path-color: var(--path-grow);
+}
+.card:nth-child(3) {
+  --path-color: var(--path-blaze);
 }
 .card-link {
   display: flex;
   flex-direction: column;
   height: 100%;
   overflow: hidden;
-  background: linear-gradient(135deg, var(--surface), var(--platform-surface-soft));
+  /* Path tint and top rule (DLV-932, user-approved 2026-10-12; matches the Manage account path tiles). */
+  background:
+    radial-gradient(circle at 85% 100%, color-mix(in srgb, var(--path-color) 22%, transparent), transparent 55%),
+    linear-gradient(
+      160deg,
+      color-mix(in srgb, var(--path-color) 12%, var(--surface)),
+      color-mix(in srgb, var(--path-color) 4%, var(--surface))
+    );
   border: 1px solid var(--platform-edge);
+  border-top: 3px solid var(--path-color);
   border-radius: 12px;
   color: var(--text-strong);
   text-decoration: none;
@@ -327,7 +343,8 @@ button:disabled {
     transform 0.18s ease;
 }
 .card-link:hover {
-  border-color: var(--accent-strong);
+  border-color: color-mix(in srgb, var(--path-color) 70%, var(--platform-edge));
+  border-top-color: var(--path-color);
   transform: translateY(-2px);
 }
 .direction-scene {
@@ -364,24 +381,30 @@ button:disabled {
 .card .number {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 17px;
+  gap: 10px;
+  font-size: 20px;
   font-weight: 800;
   letter-spacing: -0.02em;
-  margin: 0 0 5px;
+  margin: 0 0 8px;
 }
-.card .number::before {
-  content: '';
-  width: 3px;
-  height: 14px;
-  background: var(--path-learn);
-  border-radius: 1px;
+.path-badge {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--path-color) 18%, var(--surface));
+  color: var(--path-color);
 }
-.card:nth-child(2) .number::before {
-  background: var(--path-grow);
-}
-.card:nth-child(3) .number::before {
-  background: var(--path-look-ahead);
+.path-badge svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 .card h3 {
   font-size: 14px;
@@ -393,12 +416,25 @@ button:disabled {
   font-size: 12px;
   line-height: 1.55;
 }
+/* Looks like a button; the whole card is the one link, so this stays a span (no nested control). */
 .card-action {
-  color: var(--accent-link);
-  font-size: 13px;
-  font-weight: 650;
-  text-decoration: underline;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  box-sizing: border-box;
   margin-top: auto;
+  padding: 6px 14px;
+  border: 1px solid var(--accent-strong);
+  border-radius: 8px;
+  background: var(--accent-strong);
+  color: var(--accent-on-primary);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.card-link:hover .card-action {
+  background: color-mix(in srgb, var(--accent-strong) 88%, var(--text-strong));
 }
 .feature-discovery {
   margin: 0 0 36px;
@@ -668,7 +704,7 @@ button:disabled {
     font-size: clamp(30px, 6vw, 42px);
   }
   #paths {
-    padding-top: 22px;
+    padding-top: 32px;
   }
   .three-columns {
     grid-template-columns: 1fr;

@@ -1,10 +1,10 @@
 import { vi } from 'vitest';
 import { PathSceneTimeline } from './path-scene-timeline';
 
-type Id = 'learn' | 'grow' | 'look-ahead';
-const IDS: readonly Id[] = ['learn', 'grow', 'look-ahead'];
+type Id = 'learn' | 'grow' | 'blaze';
+const IDS: readonly Id[] = ['learn', 'grow', 'blaze'];
 // The three path stories share one length (data-story-ms in each SVG).
-const STORY: Record<Id, number | null> = { learn: 19500, grow: 19500, 'look-ahead': 19500 };
+const STORY: Record<Id, number | null> = { learn: 19500, grow: 19500, 'blaze': 19500 };
 
 function setup(durations: Record<Id, number | null> = STORY) {
   const log: string[] = [];
@@ -25,7 +25,7 @@ describe('PathSceneTimeline', () => {
   it('starts learn, grow and look ahead at 1.5, 2.5 and 3.5 s on load and lets them overlap', () => {
     const { timeline, log } = setup();
     timeline.start();
-    expect(log).toEqual(['hold learn', 'hold grow', 'hold look-ahead']);
+    expect(log).toEqual(['hold learn', 'hold grow', 'hold blaze']);
 
     vi.advanceTimersByTime(1499);
     expect(timeline.playing).toEqual([]);
@@ -34,14 +34,14 @@ describe('PathSceneTimeline', () => {
     vi.advanceTimersByTime(1000);
     expect(timeline.playing).toEqual(['learn', 'grow']);
     vi.advanceTimersByTime(1000);
-    expect(timeline.playing).toEqual(['learn', 'grow', 'look-ahead']);
+    expect(timeline.playing).toEqual(['learn', 'grow', 'blaze']);
 
     // Equal stories end in the same order, 1 s apart: 21, 22 and 23 s.
     vi.advanceTimersByTime(21000 - 3500);
-    expect(timeline.playing).toEqual(['grow', 'look-ahead']);
+    expect(timeline.playing).toEqual(['grow', 'blaze']);
     expect(log.at(-1)).toBe('hold learn');
     vi.advanceTimersByTime(1000);
-    expect(timeline.playing).toEqual(['look-ahead']);
+    expect(timeline.playing).toEqual(['blaze']);
     vi.advanceTimersByTime(1000);
     expect(timeline.playing).toEqual([]);
     timeline.destroy();
@@ -62,13 +62,13 @@ describe('PathSceneTimeline', () => {
     vi.advanceTimersByTime(1000);
     expect(timeline.playing).toEqual(['learn', 'grow']);
     vi.advanceTimersByTime(1000);
-    expect(timeline.playing).toEqual(['learn', 'grow', 'look-ahead']);
-    expect(plays().slice(3)).toEqual(['play learn', 'play grow', 'play look-ahead']);
+    expect(timeline.playing).toEqual(['learn', 'grow', 'blaze']);
+    expect(plays().slice(3)).toEqual(['play learn', 'play grow', 'play blaze']);
     timeline.destroy();
   });
 
   it('waits for the longest story before the next round starts', () => {
-    const { timeline } = setup({ learn: 10000, grow: 30000, 'look-ahead': 10000 });
+    const { timeline } = setup({ learn: 10000, grow: 30000, 'blaze': 10000 });
     timeline.start();
     vi.advanceTimersByTime(32500 - 1);
     expect(timeline.playing).toEqual(['grow']);
@@ -95,7 +95,7 @@ describe('PathSceneTimeline', () => {
     vi.advanceTimersByTime(499);
     expect(timeline.playing).toEqual(['learn', 'grow']);
     vi.advanceTimersByTime(1);
-    expect(timeline.playing).toEqual(['learn', 'grow', 'look-ahead']);
+    expect(timeline.playing).toEqual(['learn', 'grow', 'blaze']);
     timeline.destroy();
   });
 
@@ -127,17 +127,17 @@ describe('PathSceneTimeline', () => {
     log.length = 0;
     timeline.setStopped('reduced-motion', true);
     expect(timeline.playing).toEqual([]);
-    expect(log).toEqual(['hold learn', 'hold grow', 'hold look-ahead']);
+    expect(log).toEqual(['hold learn', 'hold grow', 'hold blaze']);
     vi.advanceTimersByTime(120000);
     expect(log.some((line) => line.startsWith('play'))).toBe(false);
     timeline.destroy();
   });
 
   it('lets a scene that has not loaded sit out the round', () => {
-    const { timeline } = setup({ learn: 13500, grow: null, 'look-ahead': 13500 });
+    const { timeline } = setup({ learn: 13500, grow: null, 'blaze': 13500 });
     timeline.start();
     vi.advanceTimersByTime(3500);
-    expect(timeline.playing).toEqual(['learn', 'look-ahead']);
+    expect(timeline.playing).toEqual(['learn', 'blaze']);
     vi.advanceTimersByTime(13500);
     expect(timeline.playing).toEqual([]);
     vi.advanceTimersByTime(1500);

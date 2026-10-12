@@ -1,0 +1,61 @@
+/* Shared footer of every documentation page: version or description, plus the full-page link. */
+.reference-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px 28px;
+  margin-top: 8px;
+  padding: 18px 22px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--path-blaze) 9%, var(--surface)),
+    var(--surface) 60%
+  );
+  color: var(--text-subtle);
+  font-size: 0.88rem;
+}
+.reference-toolbar p {
+  margin: 0;
+}
+.reference-toolbar a.open-reference {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid color-mix(in srgb, var(--accent-strong) 55%, var(--line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-strong) 12%, var(--surface));
+  color: var(--text-strong);
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+.reference-toolbar a.open-reference:hover {
+  border-color: var(--accent-strong);
+  background: color-mix(in srgb, var(--accent-strong) 22%, var(--surface));
+}
+.reference-toolbar a.open-reference:focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 2px;
+}
+.open-reference .open-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+.open-reference .new-tab {
+  color: var(--text-subtle);
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reference-toolbar a.open-reference {
+    transition: none;
+  }
+}

@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { signal } from '@angular/core';
-import { authorGuard } from './author-access';
+import { authorGuard, signedInGuard } from './author-access';
 import { StudyPlanAccount } from '../pages/study-plan/study-plan-account';
 
 describe('author workspace access', () => {
@@ -21,10 +21,10 @@ describe('author workspace access', () => {
     });
   });
   const access = () =>
-    TestBed.runInInjectionContext(() => authorGuard({} as any, { url: '/author' } as any));
-  it('preserves the author destination through sign-in', async () => {
+    TestBed.runInInjectionContext(() => authorGuard({} as any, { url: '/admin' } as any));
+  it('preserves the admin destination through sign-in', async () => {
     expect(TestBed.inject(Router).serializeUrl((await access()) as any)).toBe(
-      '/sign-in?returnTo=%2Fauthor',
+      '/sign-in?returnTo=%2Fadmin',
     );
   });
   it('does not infer capability from username, display name, or paid content grants', async () => {
@@ -40,5 +40,18 @@ describe('author workspace access', () => {
     expect(await access()).toBe(true);
     expired.set(true);
     expect(TestBed.inject(Router).serializeUrl((await access()) as any)).toContain('/sign-in?');
+  });
+  it('lets any signed-in account reach Platform reviews, where the server decides the role', async () => {
+    const reviews = () =>
+      TestBed.runInInjectionContext(() =>
+        signedInGuard({} as any, { url: '/admin/reviews' } as any),
+      );
+    expect(TestBed.inject(Router).serializeUrl((await reviews()) as any)).toBe(
+      '/sign-in?returnTo=%2Fadmin%2Freviews',
+    );
+    account.set({ username: 'reviewer@example.test' });
+    expect(await reviews()).toBe(true);
+    expired.set(true);
+    expect(TestBed.inject(Router).serializeUrl((await reviews()) as any)).toContain('/sign-in?');
   });
 });

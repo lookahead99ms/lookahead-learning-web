@@ -130,7 +130,7 @@ describe('unitSceneForModule', () => {
       theoryModuleId: 'reservation-round',
       card: {
         summary: 'A round.',
-        scene: '/content/look-ahead/design-systems/visuals/cards/reservation.svg',
+        scene: '/content/blaze/design-systems/visuals/cards/reservation.svg',
         sceneAlt: ' Two fans tap one seat. ',
       },
     },
@@ -140,30 +140,30 @@ describe('unitSceneForModule', () => {
 
   it('uses the conventional unit scene for the unit owning a lesson, practice or question module', () => {
     for (const moduleId of ['caching', 'caching-practice', 'caching-questions']) {
-      expect(unitSceneForModule('look-ahead', course, moduleId)).toEqual({
-        src: '/assets/scenes/units/look-ahead/design-fundamentals/caching.svg',
+      expect(unitSceneForModule('blaze', course, moduleId)).toEqual({
+        src: '/assets/scenes/units/blaze/design-fundamentals/caching.svg',
         alt: '',
         unitTitle: 'Caching',
       });
     }
-    expect(unitSceneForModule('look-ahead', course, 'cdn')?.src).toBe(
-      '/assets/scenes/units/look-ahead/design-fundamentals/cdn.svg',
+    expect(unitSceneForModule('blaze', course, 'cdn')?.src).toBe(
+      '/assets/scenes/units/blaze/design-fundamentals/cdn.svg',
     );
   });
 
   it('prefers the authored card scene and its description', () => {
-    expect(unitSceneForModule('look-ahead', course, 'reservation-round')).toEqual({
-      src: '/content/look-ahead/design-systems/visuals/cards/reservation.svg',
+    expect(unitSceneForModule('blaze', course, 'reservation-round')).toEqual({
+      src: '/content/blaze/design-systems/visuals/cards/reservation.svg',
       alt: 'Two fans tap one seat.',
       unitTitle: 'Reservation System',
     });
   });
 
   it('resolves nothing for tile courses, planned units or unknown modules', () => {
-    expect(unitSceneForModule('look-ahead', { ...course, layout: 'tiles' }, 'caching')).toBeNull();
-    expect(unitSceneForModule('look-ahead', { ...course, layout: undefined }, 'caching')).toBeNull();
-    expect(unitSceneForModule('look-ahead', course, 'later')).toBeNull();
-    expect(unitSceneForModule('look-ahead', course, 'unknown')).toBeNull();
-    expect(unitSceneForModule('look-ahead', course, '')).toBeNull();
+    expect(unitSceneForModule('blaze', { ...course, layout: 'tiles' }, 'caching')).toBeNull();
+    expect(unitSceneForModule('blaze', { ...course, layout: undefined }, 'caching')).toBeNull();
+    expect(unitSceneForModule('blaze', course, 'later')).toBeNull();
+    expect(unitSceneForModule('blaze', course, 'unknown')).toBeNull();
+    expect(unitSceneForModule('blaze', course, '')).toBeNull();
   });
 });

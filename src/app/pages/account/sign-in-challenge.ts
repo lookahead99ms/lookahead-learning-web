@@ -13,7 +13,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { PlatformThemeService } from '../../core/platform-theme';
 import { PlatformBrand } from '../../core/platform-brand/platform-brand';
 import { SIGN_IN_CHALLENGE_CLIENT, SignInChallenge } from './sign-in-challenge-client';
-import { safeAccountReturn } from './account-navigation';
+import { gatewayLoginUrl, safeAccountReturn } from './account-navigation';
 import { SignInManagementError } from './active-sign-ins-client';
 
 @Component({
@@ -82,7 +82,7 @@ export class SignInChallengePage implements OnDestroy {
         window.location.assign(
           this.oauthContinuation
             ? '/api/v1/auth/continue'
-            : '/bff/login?returnTo=' + encodeURIComponent(this.returnTo),
+            : gatewayLoginUrl(this.returnTo),
         );
       } else {
         await this.router.navigateByUrl(this.returnTo);

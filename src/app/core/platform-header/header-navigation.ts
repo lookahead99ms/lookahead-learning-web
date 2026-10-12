@@ -14,7 +14,7 @@ import { Subscription } from 'rxjs';
 import { LEARN_COURSE_GROUPS } from '../../content/learn-course-groups';
 import { GROW_COURSE_GROUPS } from '../../content/grow-course-groups';
 import { withoutHiddenCourses } from '../../content/hidden-courses';
-import { LOOK_AHEAD_COURSE_GROUPS } from '../../content/look-ahead-course-groups';
+import { BLAZE_COURSE_GROUPS } from '../../content/blaze-course-groups';
 import {
   AI_LABEL,
   AI_SPARKLES_PATH,
@@ -44,7 +44,7 @@ export class HeaderNavigation implements OnDestroy {
       ...LEARN_COURSE_GROUPS.filter((group) => group.id === 'computer-fundamentals'),
     ] },
     { id: 'grow', label: 'Grow', groups: GROW_COURSE_GROUPS },
-    { id: 'look-ahead', label: 'Look Ahead', groups: LOOK_AHEAD_COURSE_GROUPS },
+    { id: 'blaze', label: 'Blaze', groups: BLAZE_COURSE_GROUPS },
   ];
   protected readonly activePath = signal('');
   protected readonly courses = signal<NavigationCourse[]>([]);
@@ -141,10 +141,8 @@ export class HeaderNavigation implements OnDestroy {
     this.element.nativeElement.querySelector<HTMLAnchorElement>('.panel-heading a')?.focus();
   }
   protected currentPath(path: string): boolean {
-    return (
-      this.router.url.split('?')[0].startsWith('/' + path + '/') ||
-      this.router.url.split('?')[0] === '/' + path
-    );
+    const url = this.router.url.split('?')[0];
+    return url.startsWith('/' + path + '/') || url === '/' + path;
   }
   protected currentCourse(path: string, course: string): boolean {
     const url = this.router.url.split('?')[0];

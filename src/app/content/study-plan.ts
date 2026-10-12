@@ -112,7 +112,7 @@ export const STUDY_PLAN_TOPICS: StudyPlanTopic[] = [
   },
   {
     id: 'architecture',
-    path: 'look-ahead',
+    path: 'blaze',
     title: 'System and cloud architecture',
     description: 'System design, distributed systems, scale, resilience, and cloud decisions.',
     courseIds: [
@@ -125,7 +125,7 @@ export const STUDY_PLAN_TOPICS: StudyPlanTopic[] = [
   },
   {
     id: 'ai-systems-architecture',
-    path: 'look-ahead',
+    path: 'blaze',
     title: 'AI systems architecture and projects',
     description:
       'Production RAG, validated extraction, full-stack AI products, and architecture trade-offs.',
@@ -133,7 +133,7 @@ export const STUDY_PLAN_TOPICS: StudyPlanTopic[] = [
   },
   {
     id: 'leadership-interviews',
-    path: 'look-ahead',
+    path: 'blaze',
     title: 'Leadership, behavioral, and project interviews',
     description: 'Principal judgment, CARL/STAR evidence, mentoring, influence, and project depth.',
     courseIds: ['technical-leadership', 'behavioral-carl', 'project-recruiter'],
@@ -514,24 +514,24 @@ function chunkWeeks(days: StudyPlanDay[]): StudyPlanWeek[] {
 
 /** One checklist entry per published course, without private answer bodies. */
 /**
- * Look Ahead courses that are published to the catalog but not yet offered as
+ * Blaze courses that are published to the catalog but not yet offered as
  * study-plan topics. The server's plan validator does not know these topic IDs
  * yet, so offering them would produce plans that cannot be saved. Remove an ID
- * here once the server accepts `look-ahead:<courseId>` for it.
+ * here once the server accepts `blaze:<courseId>` for it.
  */
-export const STUDY_PLAN_EXCLUDED_LOOK_AHEAD_COURSE_IDS: ReadonlySet<string> = new Set([
+export const STUDY_PLAN_EXCLUDED_BLAZE_COURSE_IDS: ReadonlySet<string> = new Set([
   'design-fundamentals',
   'design-patterns',
   'design-systems',
   'design-rounds',
   'ai-collaborators',
-  ...HIDDEN_COURSE_IDS.filter((id) => id.startsWith('look-ahead:')).map((id) => id.slice(11)),
+  ...HIDDEN_COURSE_IDS.filter((id) => id.startsWith('blaze:')).map((id) => id.slice('blaze:'.length)),
 ]);
 
 export function studyPlanOfferings(documents: SearchDocument[]): StudyPlanTopic[] {
   const offerings = new Map<string, StudyPlanTopic>();
   for (const item of documents) {
-    if (item.path === 'look-ahead' && STUDY_PLAN_EXCLUDED_LOOK_AHEAD_COURSE_IDS.has(item.courseId))
+    if (item.path === 'blaze' && STUDY_PLAN_EXCLUDED_BLAZE_COURSE_IDS.has(item.courseId))
       continue;
     const id = `${item.path}:${item.courseId}`;
     if (!offerings.has(id))
@@ -556,7 +556,7 @@ export function studyPlanOfferings(documents: SearchDocument[]): StudyPlanTopic[
     handsOn.description =
       'Canonical coding problems across the published DSA curriculum. Shared selections are scheduled only once.';
   }
-  const paths: ContentPath[] = ['learn', 'grow', 'look-ahead'];
+  const paths: ContentPath[] = ['learn', 'grow', 'blaze'];
   return [...offerings.values()].sort(
     (a, b) => paths.indexOf(a.path) - paths.indexOf(b.path) || a.title.localeCompare(b.title),
   );

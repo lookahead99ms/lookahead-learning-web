@@ -20,7 +20,7 @@ import { PathTaglineId, pathTaglineText } from '../../content/path-taglines';
 import { PathSceneTimeline } from './path-scene-timeline';
 
 /** The path cards whose scenes share one timeline, in play order. */
-const PATH_SCENES = ['learn', 'grow', 'look-ahead'] as const;
+const PATH_SCENES = ['learn', 'grow', 'blaze'] as const;
 type PathScene = (typeof PATH_SCENES)[number];
 
 @Component({

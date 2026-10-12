@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { SearchDocument } from './content.models';
 import {
   buildStudyPlan,
-  STUDY_PLAN_EXCLUDED_LOOK_AHEAD_COURSE_IDS,
+  STUDY_PLAN_EXCLUDED_BLAZE_COURSE_IDS,
   STUDY_PLAN_TOPICS,
   studyPlanOfferings,
 } from './study-plan';
@@ -59,7 +59,7 @@ describe('study plan generator', () => {
       [
         document('java', 'learn', 'core-java'),
         document('spring', 'grow', 'spring-boot'),
-        document('design', 'look-ahead', 'system-design'),
+        document('design', 'blaze', 'system-design'),
       ],
       {
         days: 7,
@@ -229,8 +229,8 @@ describe('bounded prerequisite and retrieval scheduling', () => {
     ]);
     expect(plan.blockedItems).toEqual([]);
   });
-  it('does not offer the new Look Ahead design ladder or AI Collaborators as plan topics yet', () => {
-    expect([...STUDY_PLAN_EXCLUDED_LOOK_AHEAD_COURSE_IDS]).toEqual([
+  it('does not offer the new Blaze design ladder or AI Collaborators as plan topics yet', () => {
+    expect([...STUDY_PLAN_EXCLUDED_BLAZE_COURSE_IDS]).toEqual([
       'design-fundamentals',
       'design-patterns',
       'design-systems',
@@ -241,9 +241,9 @@ describe('bounded prerequisite and retrieval scheduling', () => {
       'scalability-performance',
     ]);
     const docs = [
-      document('sd-1', 'look-ahead', 'system-design'),
-      ...[...STUDY_PLAN_EXCLUDED_LOOK_AHEAD_COURSE_IDS].map((courseId) =>
-        document(`${courseId}-1`, 'look-ahead', courseId),
+      document('sd-1', 'blaze', 'system-design'),
+      ...[...STUDY_PLAN_EXCLUDED_BLAZE_COURSE_IDS].map((courseId) =>
+        document(`${courseId}-1`, 'blaze', courseId),
       ),
       document('learn-design', 'learn', 'design-fundamentals'),
     ];

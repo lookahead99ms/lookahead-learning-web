@@ -64,7 +64,7 @@ for (const { mode, colors } of palettes) {
         '--accent-strong',
         '--path-learn',
         '--path-grow',
-        '--path-look-ahead',
+        '--path-blaze',
       ]) {
         check(colors[text], colors[surface], 4.5, `${text} on ${surface}`);
       }

@@ -8,7 +8,27 @@ import {
   AccountSettingsError,
   ManagedAccountProfile,
   PasswordChange,
+  ProfileLinks,
 } from '../account/account-settings-client';
+import { isThemePreference, ThemePreference } from '../../core/platform-theme';
+
+const profileLinkKeys = ['github', 'linkedin', 'x', 'website'] as const;
+
+/** Maps Identity's profile view to the UI contract, dropping fields it does not recognize. */
+function managedProfile(profile: ManagedAccountProfile): ManagedAccountProfile {
+  const result: ManagedAccountProfile = {
+    displayName: profile.displayName,
+    username: profile.username,
+  };
+  if (isThemePreference(profile.themePreference)) result.themePreference = profile.themePreference;
+  const links = profile.links as Partial<Record<string, unknown>> | undefined;
+  if (links && typeof links === 'object') {
+    result.links = Object.fromEntries(
+      profileLinkKeys.map((key) => [key, typeof links[key] === 'string' && links[key] ? links[key] : null]),
+    ) as unknown as ProfileLinks;
+  }
+  return result;
+}
 
 export interface SavedPlan {
   schemaVersion: 'study-plan-local/v1';
@@ -33,6 +53,11 @@ export interface SavedPlan {
   history: { revision: number; changedAt: string; reason: string }[];
   readyMade?: import('../../content/study-plan-ready-made').ReadyMadePins;
 }
+export interface StaffPermissions {
+  manageAccess: boolean; previewDocuments: boolean; deliveryRead: boolean;
+  deliveryCreate: boolean; deliveryReview: boolean; deliveryDone: boolean;
+  triageFeedback: boolean; fullCurriculum: boolean; feedbackRole: string;
+}
 export interface StudyAccount {
   accountId: string;
   username: string;
@@ -40,6 +65,7 @@ export interface StudyAccount {
   topicGrants: string[];
   contentGrants?: string[];
   authorPreview?: boolean;
+  permissions?: StaffPermissions;
 }
 export interface PlanProvenance {
   origin?: string;
@@ -188,7 +214,57 @@ export class StudyPlanAccount implements AccountSettingsClient {
       this.account.update((account) =>
         account ? { ...account, displayName: profile.displayName } : null,
       );
-      return { displayName: profile.displayName, username: profile.username };
+      return managedProfile(profile);
+    } catch (error) {
+      throw this.settingsFailure(error, owner);
+    }
+  }
+
+  /**
+   * The signed-in account's saved theme, or null when it is unavailable. A background read for
+   * applying the theme after sign-in: failures change no account state.
+   */
+  async loadThemePreference(): Promise<ThemePreference | null> {
+    const account = this.account();
+    if (!this.enabled || !account || this.sessionExpired()) return null;
+    try {
+      const profile = await this.request<{ accountId?: string; themePreference?: unknown }>(
+        '/account/profile',
+        {},
+        true,
+      );
+      if (profile?.accountId !== account.accountId || this.account()?.accountId !== account.accountId)
+        return null;
+      return isThemePreference(profile.themePreference) ? profile.themePreference : null;
+    } catch {
+      return null;
+    }
+  }
+
+  updateThemePreference(theme: ThemePreference): Promise<ManagedAccountProfile> {
+    return this.postProfileChange('/account/preferences', { theme });
+  }
+
+  updateProfileLinks(links: ProfileLinks): Promise<ManagedAccountProfile> {
+    return this.postProfileChange('/account/links', links);
+  }
+
+  /** Theme and link saves: no busy lock, so other account actions stay available meanwhile. */
+  private async postProfileChange(path: string, body: unknown): Promise<ManagedAccountProfile> {
+    const owner = this.settingsOwner();
+    try {
+      await this.refreshCsrf(true);
+      const profile = await this.request<ManagedAccountProfile & { accountId: string }>(
+        path,
+        {
+          method: 'POST',
+          headers: { ...this.csrfHeaders(), 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        },
+        true,
+      );
+      this.verifyProfileOwner(profile, owner);
+      return managedProfile(profile);
     } catch (error) {
       throw this.settingsFailure(error, owner);
     }
@@ -217,7 +293,7 @@ export class StudyPlanAccount implements AccountSettingsClient {
       const composed = await this.request<StudyAccount>('/auth/me');
       this.verifyProfileOwner(composed, owner);
       this.account.set({ ...composed, displayName: profile.displayName });
-      return { displayName: profile.displayName, username: profile.username };
+      return managedProfile(profile);
     } catch (error) {
       throw this.settingsFailure(error, owner);
     } finally {
@@ -291,6 +367,8 @@ export class StudyPlanAccount implements AccountSettingsClient {
       return new AccountSettingsError('session-expired');
     }
     if (error.code === 'INVALID_PROFILE') return new AccountSettingsError('invalid-name');
+    if (error.code === 'INVALID_PROFILE_LINK') return new AccountSettingsError('invalid-link');
+    if (error.code === 'INVALID_PREFERENCES') return new AccountSettingsError('invalid-preference');
     if (error.code === 'INVALID_PASSWORD') return new AccountSettingsError('password-policy');
     if (error.code === 'PASSWORD_TOO_COMMON') return new AccountSettingsError('password-common');
     if (error.code === 'PASSWORD_UNCHANGED') return new AccountSettingsError('password-unchanged');

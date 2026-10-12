@@ -1,4 +1,5 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
+import { Component, computed, effect, ElementRef, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
@@ -7,22 +8,41 @@ import { registrationCountries, registrationCountryCode } from './countries';
 import { AccountSettings } from './account-settings';
 import { ACCOUNT_SETTINGS_CLIENT } from './account-settings-client';
 import { AccountStudyPlans } from './account-study-plans';
+import { accountMembership } from './account-membership';
 import { ActiveSignIns } from './active-sign-ins';
 import { ACTIVE_SIGN_INS_CLIENT } from './active-sign-ins-client';
 import { SignInManagementApi } from './sign-in-management-api';
 
-import { safeAccountReturn } from './account-navigation';
+import { gatewayLoginUrl, safeAccountReturn } from './account-navigation';
+import {
+  PageSidebarContextDirective,
+  PageSidebarContextValue,
+} from '../../core/page-sidebars/page-sidebar-context';
 export { safeAccountReturn } from './account-navigation';
 
 @Component({
   selector: 'app-account',
-  imports: [PlatformHeader, RouterLink, AccountSettings, AccountStudyPlans, ActiveSignIns],
+  imports: [
+    PlatformHeader,
+    RouterLink,
+    NgTemplateOutlet,
+    PageSidebarContextDirective,
+    AccountSettings,
+    AccountStudyPlans,
+    ActiveSignIns,
+  ],
   providers: [
     { provide: ACCOUNT_SETTINGS_CLIENT, useExisting: StudyPlanAccount },
     { provide: ACTIVE_SIGN_INS_CLIENT, useExisting: SignInManagementApi },
   ],
   templateUrl: './account.html',
   styleUrl: './account.css',
+  host: {
+    '(window:scroll)': 'trackSection()',
+    '(window:wheel)': 'releaseSection()',
+    '(window:touchstart)': 'releaseSection()',
+    '(window:keydown)': 'releaseSection()',
+  },
 })
 export class AccountPage {
   protected readonly store = inject(StudyPlanAccount);
@@ -35,7 +55,7 @@ export class AccountPage {
     initialValue: this.route.snapshot.data,
   });
   protected readonly returnTo = computed(() => safeAccountReturn(this.query().get('returnTo')));
-  protected readonly lessonReturn = computed(() => /^\/(learn|grow|look-ahead)\/[^/?#]+\/[^?#]+/.test(this.returnTo()));
+  protected readonly lessonReturn = computed(() => /^\/(learn|grow|blaze|look-ahead)\/[^/?#]+\/[^?#]+/.test(this.returnTo()));
   protected readonly returnUrl = computed(() => this.router.parseUrl(this.returnTo()));
   protected readonly signup = computed(
     () => this.routeData()['accountMode'] === 'signup' || this.query().get('mode') === 'signup',
@@ -61,11 +81,34 @@ export class AccountPage {
     this.query().get('oauth') === 'continue' ? 'continue' : null,
   );
   protected readonly countries = registrationCountries;
-  protected readonly managedLoginUrl = computed(() => '/bff/login?returnTo=' + encodeURIComponent(this.returnTo()));
+  protected readonly managedLoginUrl = computed(() => gatewayLoginUrl(this.returnTo()));
   protected readonly passwordChanged =
     this.router.currentNavigation()?.extras.state?.['passwordChanged'] === true;
   protected readonly signInCanceled =
     this.router.currentNavigation()?.extras.state?.['signInCanceled'] === true;
+  /** Side menu entries, in page order; each id is the section's anchor. */
+  protected readonly sections = [
+    { id: 'study-plans', label: 'Study plans' },
+    { id: 'profile', label: 'Profile' },
+    { id: 'membership', label: 'Membership' },
+    { id: 'links', label: 'Profiles and links' },
+    { id: 'security', label: 'Security' },
+    { id: 'sign-ins', label: 'Active sign-ins' },
+  ] as const;
+  protected readonly activeSection = signal<string>(this.sections[0].id);
+  /** Hero figure, shown only once the saved plan list is confirmed. */
+  protected readonly savedPlanCount = computed(() =>
+    this.store.planSummariesState() === 'ready' ? this.store.plans().length : null,
+  );
+  protected readonly membership = accountMembership;
+  // The account rail takes the left edge, so the page statements and sidebars stay off this page.
+  protected readonly sidebarContext: PageSidebarContextValue = { excluded: true };
+  private readonly document = inject(DOCUMENT);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private scrollFrame = 0;
+  // A menu jump keeps its section marked until the learner scrolls by hand, so a short
+  // section near the end of the page is not replaced by its neighbour.
+  private sectionPinned = false;
   constructor() {
     void this.store.loadAuthOptions();
     // Review note #11b: a learner who is already signed in when /sign-in?returnTo=… loads (for
@@ -81,6 +124,52 @@ export class AccountPage {
       ) {
         void this.router.navigateByUrl(this.returnTo(), { replaceUrl: true });
       }
+    });
+  }
+  protected greetingName(name: string): string {
+    return name.trim().split(/\s+/)[0] || 'there';
+  }
+  protected initials(name: string): string {
+    const words = name.trim().split(/\s+/).filter(Boolean);
+    return words
+      .slice(0, 2)
+      .map((word) => Array.from(word)[0].toUpperCase())
+      .join('');
+  }
+  protected sectionHref(id: string): string {
+    return this.router.url.split('#')[0] + '#' + id;
+  }
+  protected goToSection(event: MouseEvent, id: string): void {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const target = this.document.getElementById(id);
+    if (!target) return;
+    event.preventDefault();
+    const reduceMotion = this.document.defaultView?.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    this.activeSection.set(id);
+    this.sectionPinned = true;
+    target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+    target.focus({ preventScroll: true });
+  }
+  protected releaseSection(): void {
+    this.sectionPinned = false;
+  }
+  protected trackSection(): void {
+    const view = this.document.defaultView;
+    if (this.scrollFrame || !view || !this.authenticated()) return;
+    this.scrollFrame = view.requestAnimationFrame(() => {
+      this.scrollFrame = 0;
+      if (this.sectionPinned) return;
+      const headerHeight =
+        parseFloat(view.getComputedStyle(this.host.nativeElement).getPropertyValue('--platform-header-height')) || 76;
+      let current: string = this.sections[0].id;
+      for (const section of this.sections) {
+        const element = this.document.getElementById(section.id);
+        if (element && element.getBoundingClientRect().top <= headerHeight + 48) current = section.id;
+      }
+      const page = this.document.documentElement;
+      if (view.innerHeight + view.scrollY >= page.scrollHeight - 2)
+        current = this.sections[this.sections.length - 1].id;
+      this.activeSection.set(current);
     });
   }
   protected async submit(): Promise<void> {
@@ -127,7 +216,7 @@ export class AccountPage {
       window.location.assign(
         this.oauthContinuation()
           ? '/api/v1/auth/continue'
-          : '/bff/login?returnTo=' + encodeURIComponent(this.returnTo()),
+          : gatewayLoginUrl(this.returnTo()),
       );
     } else {
       await this.router.navigateByUrl(this.returnTo());

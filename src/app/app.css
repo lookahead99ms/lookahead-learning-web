@@ -346,12 +346,12 @@ footer {
 .grow-course-card .course-number {
   color: var(--path-grow);
 }
-.look-ahead-catalog .eyebrow,
-.look-ahead-course-card .course-number {
+.blaze-catalog .eyebrow,
+.blaze-course-card .course-number {
   color: var(--text-body);
 }
 .grow-course-card,
-.look-ahead-course-card,
+.blaze-course-card,
 .learn-course-card {
   border-left: 4px solid transparent;
 }
@@ -383,8 +383,8 @@ footer {
   border-color: var(--line);
   border-left-color: var(--accent-strong);
 }
-.catalog-course-grid > a.look-ahead-course-card:hover,
-.catalog-course-grid > a.look-ahead-course-card:focus-visible {
+.catalog-course-grid > a.blaze-course-card:hover,
+.catalog-course-grid > a.blaze-course-card:focus-visible {
   border-color: var(--line);
   border-left-color: var(--accent-strong);
 }
@@ -403,7 +403,7 @@ footer {
 .catalog-course-grid > a.course-card small {
   color: var(--accent-link);
 }
-.look-ahead-course-card {
+.blaze-course-card {
   border-left-color: transparent;
 }
 .question-list {
@@ -636,7 +636,7 @@ a.reader-module:focus-visible {
 .grow-catalog .catalog-highlight {
   color: var(--path-grow);
 }
-.look-ahead-catalog .catalog-highlight {
+.blaze-catalog .catalog-highlight {
   color: var(--text-body);
 }
 .catalog-course-grid {
@@ -1048,8 +1048,8 @@ a.reader-module:focus-visible {
   border-color: var(--border-strong);
   border-left-color: var(--accent-strong);
 }
-.module-reader[data-path="look-ahead"] .question-card:hover,
-.module-reader[data-path="look-ahead"] .question-card:focus-within {
+.module-reader[data-path="blaze"] .question-card:hover,
+.module-reader[data-path="blaze"] .question-card:focus-within {
   border-color: var(--line);
   border-left-color: var(--accent-strong);
 }
@@ -1083,11 +1083,11 @@ a.reader-module:focus-visible {
   border-left-color: var(--accent-strong);
   box-shadow: 0 12px 30px var(--shadow);
 }
-.course-reader[data-path="look-ahead"] .course-card.module-tile {
+.course-reader[data-path="blaze"] .course-card.module-tile {
   border-left: 5px solid transparent;
 }
-.course-reader[data-path="look-ahead"] .course-card.module-tile:hover,
-.course-reader[data-path="look-ahead"] .course-card.module-tile:focus-visible {
+.course-reader[data-path="blaze"] .course-card.module-tile:hover,
+.course-reader[data-path="blaze"] .course-card.module-tile:focus-visible {
   border-color: var(--line);
   border-left-color: var(--accent-strong);
   box-shadow: 0 12px 30px var(--shadow);

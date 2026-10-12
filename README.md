@@ -1,7 +1,7 @@
 # Look Ahead Learning Web
 
 Angular frontend for a technical learning platform organized into three connected
-paths: **Learn**, **Grow**, and **Look Ahead**.
+paths: **Learn**, **Grow**, and **Blaze**.
 
 This is a portfolio-safe public source repository. It contains the application,
 content contracts, shared learning components, tests, and deliberately synthetic
@@ -11,7 +11,7 @@ delivery evidence, credentials, and learner data are kept outside this Git histo
 ## Page sidebars
 
 The shared page shell builds an outline from visible sections and exposes already-loaded
-recall/practice when available. Learn, Grow and Look Ahead catalogs also show the shared learning prompt in the right sidebar before a lesson is opened.
+recall/practice when available. Learn, Grow and Blaze catalogs also show the shared learning prompt in the right sidebar before a lesson is opened.
 At desktop widths (1100px and above), the reader reserves 248–360px on each side, adapting to viewport width, for navigation and recall. Both panels open by default and toggle independently without covering the content.
 On smaller screens, both sections start open in normal flow above the reader. Their labeled heading buttons remain visible when contents are collapsed. Sections toggle independently, and resizing preserves the learner’s choices. The homepage outline stays visible without a toggle: it occupies the left gutter on desktop and becomes a horizontally scrollable row below the header on narrow screens.
 Both sidebar statements remain visible when their navigation/practice bodies are collapsed; when gutters are too small, they move into normal flow after the page instead of crowding the reader. The docked left navigation and selected row fade toward the content; the docked right sidebar is borderless and transparent. No backdrop, page lock, or focus trap is introduced. Header and breadcrumb navigation
@@ -38,7 +38,7 @@ name and keyboard focus. `public/favicon.svg` uses the same standalone symbol.
 The homepage also displays the illustrated title in a static closing section
 after Keep exploring and before the footer. “Our platform” introduces the heading
 “The Essence of Look Ahead”; the page sidebar calls it “The essence” to distinguish
-the platform story from the Look Ahead catalog. `PlatformBrandIllustration` keeps
+the platform story from the Blaze catalog. `PlatformBrandIllustration` keeps
 that artwork separate from navigation branding, scales without cropping, and
 uses the shared identity colors. The heading and caption provide real text;
 decorative SVG shapes are hidden from assistive technology. The illustration's
@@ -54,7 +54,7 @@ The statement uses the header's local Avenir Next font stack for display lines,
 system text for supporting copy, shared theme colors for emphasis, and deliberate
 line groups that can wrap naturally on small screens. No web fonts are downloaded.
 
-Learn, Grow and Look Ahead open compact course directories. Course links open their
+Learn, Grow and Blaze open compact course directories. Course links open their
 canonical route on the first click or tap; they do not expand a Course Highlights
 panel or request per-course highlights. Keyboard users expand a path with Down
 Arrow or Space and activate a course with Enter. Escape closes the directory and
@@ -66,19 +66,19 @@ The landing carousel uses labeled slide selectors and previous/next/play control
 without a separate slide-name caption, reading prompt, or duplicate status paragraph.
 
 Foundation lessons may provide an optional `beginnerGuide` (Learn) or
-`teachingGuide` (Grow and Look Ahead) within the existing
+`teachingGuide` (Grow and Blaze) within the existing
 `foundation-lesson/v1` contract. The shared reader starts with prerequisites,
 a complete example, explained steps, a small exercise and takeaways. The exercise answer uses a native disclosure; the complete lesson follows
 inline without an expansion step.
 The guide supplies the article outline and sidebar recall. Grow uses practical
-verification exercises; Look Ahead uses decision exercises. Scenarios render as
+verification exercises; Blaze uses decision exercises. Scenarios render as
 wrapped text, while Learn code examples remain copyable. Introductory sections share the full lesson’s typography, section surfaces, and
 responsive padding, with aligned content edges. The outline includes both introductory and full-lesson sections. Detailed material and
 practice stay visible in the same reading flow. Code and scenario examples sit on the left on wide screens; explanations flow beside them and continue below to use available space. At narrow widths the reader stacks them in source order. Walkthroughs and explicit multiple points inside explanation cards use semantic bullet lists, preserving headings and single prose explanations. Unguided foundation lessons put concrete sections before
 the abstract model. There is no learner execution service. Proprietary guide
 content belongs in the private Content repo.
 
-- Learn foundations, Grow production practice, and Look Ahead architecture,
+- Learn foundations, Grow production practice, and Blaze architecture,
   leadership, and engineering judgment.
 - Unified Search with an optional selected-result preview, lessons, interview
   questions, hands-on practice, guided algorithm traces, and adaptive Study Plans.
@@ -238,15 +238,22 @@ Useful routes:
 | `/`                                | Landing and platform overview                                            |
 | `/learn`                           | Foundation catalog                                                       |
 | `/grow`                            | Production-practice catalog                                              |
-| `/look-ahead`                      | Architecture and leadership catalog                                      |
+| `/blaze`                           | Architecture and leadership catalog (Blaze)                              |
 | `/search`                          | Unified topic and learning-mode discovery with optional result summaries |
 | `/learn/hands-on-dsa`              | Ranked DSA practice catalog                                              |
 | `/study-plan`                      | Study Plan creation, review and progress                                 |
 | `/sign-in`, `/sign-up`, `/account` | Account entry and profile surfaces                                       |
 | `/support`                         | Support and feedback surface                                             |
 
-The three Learn, Grow, and Look Ahead cards on `/` are full-area native links to
+The three Learn, Grow, and Blaze cards on `/` are full-area native links to
 their catalog routes, including keyboard focus and normal browser new-tab actions.
+
+The Blaze catalog (formerly Look Ahead, renamed in DLV-931) lives at `/blaze` with the
+data id `blaze`: `/content/blaze/...` assets, topic ids such as `blaze:system-design`, and
+`--path-blaze` tokens. The platform keeps the name Look Ahead, so browser storage keys keep
+their `look-ahead.` / `look-ahead-` prefix. `CatalogUrlSerializer` (`src/app/core/catalog-url.ts`)
+opens old `/look-ahead/...` links on the matching `/blaze/...` page, and
+`upgradeLegacyCatalogJson` upgrades study plans saved in the browser before the rename.
 
 The approved DLV-801 Search refinement uses compact, full-title result rows.
 Results occupy the full desktop width until a row is selected through its native
@@ -325,7 +332,7 @@ Do not start a second stack for a frontend-only styling change.
 ### Custom Study Plan builder
 
 Open `/study-plan?create=1` to build a custom plan through five progressive
-steps: setup, Learn, Grow, Look Ahead, and review. Setup must be valid before the
+steps: setup, Learn, Grow, Blaze, and review. Setup must be valid before the
 course steps open; each path may be left empty as long as at least one accessible
 course is selected across the whole plan. The current step is URL-owned for
 Back/Forward navigation, while unsaved choices use session-scoped draft intent so
@@ -380,9 +387,33 @@ only in the current browser and does not synchronize across devices.
 
 ### Manage account
 
-The account page groups Profile, Security, Active sign-ins, and Learning summary
-into separate panels. At narrow widths the panels stack with space between them;
-their existing profile, password, session, and saved-plan actions are unchanged.
+The signed-in account page has a full-height rail at the window's left edge with
+the learner's initials, name and sign-in email and an **Account sections** menu:
+Study plans, Profile, Appearance, Security and Active sign-ins. The content fills
+the space beside the rail (up to 1600px). A hero holds the page heading, a
+greeting, the Continue learning, Study Plan and Search actions, the account's
+**Membership** and the saved-plan count (once the plan list is confirmed). From
+1360px the sections form two columns: Study plans, Profile and Active sign-ins
+span the width, and Appearance sits beside Security. The menu marks the section in view and, below
+900px, becomes a wrapping row above a single column. On this page the header
+leaves out Search, Study Plan and the theme switch, and the platform statements
+and lesson sidebars are not shown.
+
+**Appearance** offers Light, Dark and System (System follows the device's setting
+as it changes). Signed in, the choice is saved to the account through
+`POST /api/v1/account/preferences` and applied after every sign-in, on any
+browser; the header's Light/Dark switch saves the same way. Signed out, the theme
+is a browser preference only. **Profile** shows the name (with a pencil button that edits it in place) and the
+sign-in email (not changeable yet) beside a
+**Membership** block derived only from server grants: Author (author access),
+Course access (granted course count and paths) or Free. Paid plans (DLV-209) are
+not active, so no product name or upgrade action is shown; the block notes that
+access is checked when a lesson opens and offers **Browse your courses** buttons
+for the covered paths (Learn, Grow, Blaze). Below, **Profiles and links** shows Google, then GitHub,
+LinkedIn, X and Portfolio, as their official logos (names kept for assistive
+technology), each with an Add or Edit button that opens one form
+(`POST /api/v1/account/links`, https addresses only). Saved links open in a new tab
+and say so. Google shows its real status and a disabled Connect button.
 
 Open **Manage account** from the signed-in account menu to review your profile,
 edit your display name, or change your password. Password changes require your
@@ -391,12 +422,15 @@ The signed-in account view uses a full page layout with responsive account secti
 the sign-in and sign-up forms remain compact. Authentication pages omit the
 redundant header Sign in link while session restoration is in progress.
 
-The read-only **Learning summary** lists the account's saved study plans using
+The **Study plans** section lists the account's saved study plans using
 the already-loaded account API data. Each plan links to `/study-plan?plan=<id>`.
 Session progress is displayed only when the API supplies available, valid counts;
 missing metadata is not treated as zero progress. Duration, daily time and the
-last-updated date are shown when supplied. Loading and failed requests remain
-distinct from an account with no saved plans. The current plan-card contract has
+last-updated date are shown when supplied; a thin progress bar beside the
+session count is decorative and hidden from assistive technology. Loading and failed requests remain
+distinct from an account with no saved plans. The section's **Create study plan**
+button opens `/study-plan?create=1`; with no saved plans, the empty state offers
+**Create a study plan** instead. The current plan-card contract has
 no lifecycle status, so this view does not infer an active plan from dates.
 
 **Continue learning**, **Study Plan**, and **Search** are native navigation links
@@ -468,14 +502,23 @@ legacy `/delivery` redirect, and is absent from the public landing footer.
 
 ### Local author previews
 
-For an account with the server-provided `authorPreview` capability, the Author
-portion of the account menu has **Author Previews**, **Delivery Plan**, and a
-**Documentation** disclosure. It reveals direct links to Architecture, Local
-setup & development, API reference and Operations. The shared Author sidebar
-uses the same order and grouping. Documentation opens by default on one of its
-four routes and can be collapsed; it starts closed on other Author routes. The
-existing `/author` route remains available by direct URL, while every Author
-destination retains its author guard.
+For an account with the server-provided `authorPreview` capability, the **Admin**
+portion of the account menu has three links: **Previews** (`/admin/previews`),
+**Documentation** (`/admin/docs`) and **Delivery Plan**. Platform reviews are a
+tab of **Support and feedback** (`/support?view=reviews`); see below. The Documentation home lists eleven protected pages in three
+reader groups: Start here (Reviewer guide, Pages & screen names, Content access
+checks), How it works (Architecture, Sign-in & authentication, API reference) and
+Run and release (Local setup & development, Release gates, AWS deployment,
+Operations, Production support). Each documentation page lists the same groups in the
+right-hand admin menu, below the Admin links; other admin pages show the Admin
+links only. Every admin destination retains its author guard.
+
+DLV-926 moved these pages from `/author/...` to `/admin/...` on 2026-10-11 and
+removed the former `/author` landing page. Old `/author` addresses redirect to
+their `/admin` pages. The Gateway's sign-in return allowlist still accepts only
+`/author`, so the web app sends `/admin` destinations to the Gateway as the
+matching `/author` address and the redirect brings the person back; adding
+`admin` to that allowlist is a pending Gateway change.
 
 The protected environment sets `authorPreviewsBaseUrl` to `/bff/author/previews/`;
 the default, demo, and public production environments leave it empty. An empty
@@ -532,7 +575,7 @@ docs/                   public architecture and source-boundary documentation
 
 Shared interaction colors use Harbor teal in Light and Apricot in Midnight Dark
 for primary actions, with blue links in both modes. See [platform theme](docs/theme.md)
-for shared tokens, semantic exceptions and verification. Learn, Grow, and Look Ahead identity colors are small
+for shared tokens, semantic exceptions and verification. Learn, Grow, and Blaze identity colors are small
 labels or structural markers; they do not recolor generic actions.
 
 Destination cards expose their primary action over the entire card while keeping
@@ -589,21 +632,54 @@ or redistribution rights.
 
 ## Private author review
 
-Author Previews includes a versioned Study Plan review entry and the `/author/previews/study-plan` route. Private scope, version, evidence and decisions come from the capability-protected author-documents publication, not the public bundle. The embedded HTML uses a scripts-only sandbox; review controls belong to Angular outside the document.
+Previews opens with links to the live product and the author-owned Study Plan sample views, followed by the design inventory labelled **Design history** with its build date. It includes a versioned Study Plan review entry and the `/admin/previews/study-plan` route. Private scope, version, evidence and decisions come from the capability-protected author-documents publication, not the public bundle. The embedded HTML uses a scripts-only sandbox; review controls belong to Angular outside the document.
 
 The review adapter uses the BFF-protected Domain artifact registry and account-scoped review-event history. Decisions bind the canonical artifact ID, artifact version, owning ticket and source hash; the rendered HTML hash is separate display provenance. Writes use BFF CSRF and a header-only idempotency key. Decline and Need more require an explanation; comments are limited to 2,000 Unicode codepoints. Replacing a prior decision is explicit and supersedes the latest event for that account. A conflicting change requires reloading history and reviewing the new replacement target.
 
 Uncertain submissions preserve the draft and exact retry key. A later page load reads authoritative history instead of inventing a local result. A recorded decision remains pending Main reconciliation, not ticket completion or authorization for Git changes or deployment. A disposable Local author fixture verified recording, refresh and Domain restart persistence, and a real two-tab supersession conflict. These checks supplement unit/component tests; they do not establish production durability. If publication, artifact binding or history cannot be confirmed, recording stays disabled.
 
+## Support and feedback, and Platform reviews
+
+`/support` has a **Contact support** form for every signed-in account: a request
+type (problem, feedback or question), reply email, subject, message and up to three
+screenshots, sent once with an idempotency key and confirmed with a reference.
+When the review service recognises the account as a reviewer or the owner, the page
+adds a **Platform reviews** tab (`/support?view=reviews`). The former
+`/admin/reviews` address opens that tab.
+
+Platform reviews collect pre-release feedback. A reviewer adds any number of items
+(type, page, importance, title, description and up to six PNG, JPEG or WebP images,
+5 MB each and 20 MB per item; pasted screenshots are accepted) and sees only their
+own items. The owner has two views: **All reviews** shows every reviewer's items,
+per-reviewer counts, filters and a status and note that the reviewer then sees;
+**My reviews** is exactly the reviewer view, where the owner adds their own items.
+Anyone can edit or delete their own item until the owner changes its status.
+
+Items are grouped by the day they were sent, newest day first (about 30 days per
+page, then **Show older days**). Each row shows the title, reviewer, type, page,
+importance, time, image count and status; opening it loads the description, the
+owner's note and the images, one item at a time.
+
+The tab talks to a `PlatformReviewClient`; the `/support` route provides
+`ConnectedPlatformReviewClient` (DLV-928), which calls `/bff/api/v1/platform-reviews`
+with the BFF session, CSRF and an `Idempotency-Key` that is reused when the same form
+is retried. Images are fetched with the session and shown as `blob:` URLs. The server
+decides owner, reviewer or no access; an account without a role sees only Contact
+support. Invited reviewers do not need admin access. The page needs the Gateway and Domain API;
+the public demo has no review service.
+
 ## Private Operations reference
 
-The author-only `/author/operations` and `/author/local-development` routes read protected, immutable author-documents through the Gateway. Operations covers documented topology, deployment, diagnostics and recovery. Local setup & development covers worktrees, builds, Docker, ports and verification. Neither executes commands or reports live service health. The public demo has no publication configured. The source documents remain outside this repository.
+The admin documentation routes (`/admin/review-guide`, `/admin/screen-names`, `/admin/access-checks`, `/admin/authentication`, `/admin/local-development`, `/admin/operations`, `/admin/aws-deployment`, `/admin/release-gates` and `/admin/production-support`) read protected, immutable author-documents through the Gateway with one shared page component. Operations covers Local environments, deployment order, rollback and repositories; the cloud candidate, release gates, authentication walkthrough and production support runbooks each have their own page. Neither executes commands or reports live service health. The public demo has no publication configured. The source documents remain outside this repository.
 
-Author, Previews, Delivery Plan, Architecture, Local setup & development, API Reference and Operations use a
-shared left navigation, including while the Delivery Plan is loading or unavailable. “On this page” lists headings in the current view;
-Author Previews and Delivery Plan are direct links followed by an expandable Documentation
-group with direct links to the four reference pages. Narrow viewports stack this navigation above the content. The
-desktop sidebar stays beside the article as the page scrolls. It scrolls independently only when its links are
+Previews, Documentation, Delivery Plan and every documentation page use three columns,
+including while the Delivery Plan is loading or unavailable. The left sidebar holds the
+page title and “On this page”, the headings in the current view. The right sidebar is the
+Admin menu (Previews, Documentation, Delivery Plan); on a documentation page it also lists
+the eleven reference pages in their three reader groups. The Delivery Plan hero sits in the
+centre column so both sidebars start beside it. Narrow viewports stack the Admin menu,
+then the outline, above the content. The desktop sidebars stay beside the article as the
+page scrolls. It scrolls independently only when its links are
 taller than the available viewport; narrow viewports stack it in the page flow with a bounded height.
 Document outline links retain the protected Author URL and scroll the parent
 page to the chosen embedded section; the raw reference remains available only
@@ -611,9 +687,21 @@ through its explicit full-page link.
 Operations shows the published reference version above the document. Its
 Repository and runbook links and Supporting references are regular sections in
 the main reading flow with matching links in the heading outline.
+Each documentation page (including API reference and Architecture) opens with a hero in its
+reader group's colour (`AuthorDocHero`) and ends with the published version and the
+full-reference link. Links the guide mentions are listed under **Links in this guide** (on
+Operations, **Source repositories and runbooks**).
+Every code block in a documentation page or the API reference has a **Copy** button. The
+document's scripts-only sandbox has no clipboard access, so it posts
+`lookahead:author-document:copy` to the admin page, which validates the sender and copies on the
+reader's click (`AuthorWorkspaceNav`). Local setup & development also shows a collapsed
+**One-command setup** card with a **Download** button for `lookahead_setup.py`, a
+hash-addressed file in the protected author-documents publication (`downloads` in its
+manifest entry); the sandboxed document cannot offer downloads itself. On narrow screens the right-hand Admin menu starts
+collapsed so the page content comes first.
 The shared Operations, Local setup, API and Architecture documents report their content heights to the
 parent, so their references flow with the page rather than inside a fixed-height
-viewer. The Author pages use a continuous two-column reading layout; the
+viewer. The Author pages use a continuous three-column reading layout; the
 document frame keeps its script-only sandbox without adding a second visual page.
 The working `/delivery-plan` requires an active author session. Signed-out
 visitors go to sign-in and return to the plan afterward; its public JSON fallback
@@ -630,7 +718,7 @@ The learner and author sidebars share `sidebar-outline.css` for navigation row s
 
 Sign-in, sign-up, Manage Account and sign-in selection screens exclude both shared sidebars and toggles. Their form/content layout is unchanged.
 
-Catalog sidebars on Learn, Grow and Look Ahead expose independently expandable course groups from AdaptiveCatalog through PageSidebarContext. They reuse loaded course data and existing routes; no additional requests or persisted state.
+Catalog sidebars on Learn, Grow and Blaze expose independently expandable course groups from AdaptiveCatalog through PageSidebarContext. They reuse loaded course data and existing routes; no additional requests or persisted state.
 
 All three catalogs use AdaptiveCatalog’s `harbor-catalog` shell: solid surface cards, equal grid columns, shared spacing and “Inside this course” topic lists. Shared rules live in `src/styles.css` and `src/app/pages/catalog-experience.css`; section anchors leave clearance below the sticky header and breadcrumb. Course and lesson refinements remain separately scoped.
 
@@ -642,7 +730,7 @@ Catalog group highlighting follows its explicit heading identity independently o
 
 Search excludes shared sidebars and their toggles, alongside account screens and coding workspaces.
 
-Course overviews across Learn, Grow and Look Ahead use the shared course layout without global sidebars or a separate Learn-only contents map. Catalog expandable navigation and lesson sidebars remain separate.
+Course overviews across Learn, Grow and Blaze use the shared course layout without global sidebars or a separate Learn-only contents map. Catalog expandable navigation and lesson sidebars remain separate.
 
 The two platform statements remain visible independently of sidebar navigation, including account, Search and course overview pages. Coding Problem Workspace excludes both statements; homepage uses its existing in-content statements.
 
@@ -667,7 +755,7 @@ Foundation track labels are omitted from the page sections.
 Catalog sidebars highlight the path title and track label while the overview is
 current. Scrolling into a group transfers the single current-location highlight
 to that group; scrolling back restores the overview highlight. Learn uses
-Foundation Tracks, Grow Production Capabilities, and Look Ahead Senior-readiness
+Foundation Tracks, Grow Production Capabilities, and Blaze Senior-readiness
 Tracks. Each label appears once in the sidebar rather than above every group.
 
 Search statement placement measures the inner search-shell gutters. Statements
@@ -724,16 +812,16 @@ read-only references use the same Java/Python/Go parser and palettes, and all
 this does not enable learner execution. `npm run code:presentation` builds the
 ignored `/assets/code-presentation.js` bundle for embedded visual documents.
 Normal build/private-start/watch paths regenerate it. Embedded documents must
-load that bundle before calling `LookAheadCode.highlightLearningCode`.
+load that bundle before calling `BlazeCode.highlightLearningCode`.
 The default `npm start` stages only the tracked demo in `prestart`, then builds
 the shared code renderer before starting Angular. The public-readiness gate
 continues to enforce the demo-only staging contract.
 
 
 Lesson review navigation accepts canonical path IDs (`learn`, `grow`, and
-`look-ahead`) in Search query parameters. A course/module review link retains its
+`blaze`) in Search query parameters. A course/module review link retains its
 focused question list, course return link and full-answer return destination.
-The Search component regression suite covers the hyphenated Look Ahead path.
+The Search component regression suite covers the hyphenated Blaze path.
 
 The curriculum-free `public/assets/visual-code-presentation.js` adapter renders
 embedded illustrative code with the shared syntax bundle and an escaped-text
@@ -1068,3 +1156,19 @@ activation; private content and AWS credentials are never bundled in the image.
 Publication explicitly pushes only the verified `linux/amd64` manifest (Docker API
 1.46 or newer). The registry receipt checks its config digest against the saved
 archive; Docker Desktop index IDs are kept separate from that config identity.
+
+
+## People and access (DLV-930)
+
+The owner page `/admin/access` looks up existing accounts, prepares pending email
+assignments and saves roles plus selected/full curriculum grants through Gateway.
+Current server permissions control navigation; backend checks remain authoritative.
+Testers get full curriculum and feedback only. Admins handle feedback and create
+Delivery Plan stories/move them to Review; reviewers may mark reviewed stories Done.
+Owner-owned study-plan review artifacts remain owner-only.
+
+Pending email assignments require provider-verified ownership on an already-admitted
+Cognito identity; Local signup cannot claim them, and the page sends no email.
+The Delivery Plan editor remains loopback-only development tooling; restarting
+the managed frontend loads its updated operation-specific permission callback.
+This is not a production multiuser Delivery Plan service.

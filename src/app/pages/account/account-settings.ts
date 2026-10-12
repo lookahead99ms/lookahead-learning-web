@@ -1,6 +1,7 @@
 import {
   afterNextRender,
   Component,
+  computed,
   ElementRef,
   inject,
   Injector,
@@ -9,19 +10,32 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { NgTemplateOutlet } from '@angular/common';
+import { Router, RouterLink } from '@angular/router';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import {
   ACCOUNT_SETTINGS_CLIENT,
   AccountSettingsError,
   ManagedAccountProfile,
   PasswordChange,
+  ProfileLinks,
 } from './account-settings-client';
+import { AccountThemePreference } from '../../core/account-theme';
+import { accountMembership, joinPaths } from './account-membership';
+import { PATH_TAGLINES } from '../../content/path-taglines';
+import { PlatformThemeService, ThemePreference } from '../../core/platform-theme';
+import {
+  displayProfileLink,
+  normalizeProfileLink,
+  ProfileLinkKey,
+  profileLinkFields,
+} from './profile-links';
 
 type PasswordField = keyof PasswordChange;
 
 @Component({
   selector: 'app-account-settings',
+  imports: [NgTemplateOutlet, RouterLink],
   templateUrl: './account-settings.html',
   styleUrl: './account-settings.css',
 })
@@ -31,6 +45,7 @@ export class AccountSettings implements OnDestroy {
   private readonly client = inject(ACCOUNT_SETTINGS_CLIENT);
   private readonly router = inject(Router);
   private readonly injector = inject(Injector);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly owner = this.store.account()?.accountId;
   private destroyed = false;
 
@@ -62,6 +77,56 @@ export class AccountSettings implements OnDestroy {
     { key: 'newPassword', label: 'New password', autocomplete: 'new-password' },
     { key: 'confirmPassword', label: 'Confirm new password', autocomplete: 'new-password' },
   ] as const;
+
+  protected readonly theme = inject(PlatformThemeService);
+  private readonly accountTheme = inject(AccountThemePreference);
+  protected readonly themeOptions = [
+    { value: 'light', label: 'Light', hint: 'Always light' },
+    { value: 'dark', label: 'Dark', hint: 'Always dark' },
+    { value: 'system', label: 'System', hint: 'Match this device' },
+  ] as const;
+  protected readonly savingTheme = signal(false);
+  protected readonly themeStatus = signal('');
+
+  protected readonly membership = computed(() => {
+    const account = this.store.account();
+    return account ? accountMembership(account) : null;
+  });
+  protected readonly joinPaths = joinPaths;
+  // Each path's platform tagline, split as "Learn" + "to solve it on your own." (shared wording).
+  private readonly catalogPaths = (['learn', 'grow', 'blaze'] as const).map((id) => {
+    const headline = PATH_TAGLINES[id].headline;
+    const space = headline.indexOf(' ');
+    return {
+      id,
+      name: headline.slice(0, space),
+      hint: headline.slice(space + 1),
+      route: '/' + id,
+    };
+  });
+  /** The paths the account's grants cover, or every path when it has none to narrow by. */
+  protected browsePaths(granted: readonly string[]) {
+    const covered = this.catalogPaths.filter((path) => granted.includes(path.name));
+    return covered.length ? covered : this.catalogPaths;
+  }
+
+  protected readonly linkFields = profileLinkFields;
+  protected readonly editingLinks = signal(false);
+  protected readonly savingLinks = signal(false);
+  protected readonly linksError = signal('');
+  protected readonly linksStatus = signal('');
+  protected readonly linkErrorField = signal<ProfileLinkKey | null>(null);
+  protected readonly linkDrafts: Record<ProfileLinkKey, ReturnType<typeof signal<string>>> = {
+    github: signal(''),
+    linkedin: signal(''),
+    x: signal(''),
+    website: signal(''),
+  };
+  protected readonly displayUrl = displayProfileLink;
+  /** Shown as empty rows until Identity reports saved links. */
+  protected readonly noLinks: ProfileLinks = { github: null, linkedin: null, x: null, website: null };
+  private lastLinkButton: ProfileLinkKey = 'github';
+  private readonly linksErrorElement = viewChild<ElementRef<HTMLElement>>('linksErrorElement');
 
   private readonly nameInput = viewChild<ElementRef<HTMLInputElement>>('nameInput');
   private readonly editNameButton = viewChild<ElementRef<HTMLButtonElement>>('editNameButton');
@@ -162,6 +227,90 @@ export class AccountSettings implements OnDestroy {
     } finally {
       this.savingName.set(false);
     }
+  }
+
+  protected editLinks(focus: ProfileLinkKey = 'github'): void {
+    const links = this.profile()?.links;
+    for (const field of this.linkFields) this.linkDrafts[field.key].set(links?.[field.key] ?? '');
+    this.linksError.set('');
+    this.linkErrorField.set(null);
+    this.linksStatus.set('');
+    this.editingLinks.set(true);
+    this.lastLinkButton = focus;
+    this.focusAfterRender(() => this.hostInput('profile-link-' + focus));
+  }
+
+  protected cancelLinks(): void {
+    if (this.savingLinks()) return;
+    this.linksError.set('');
+    this.linkErrorField.set(null);
+    this.editingLinks.set(false);
+    this.focusAfterRender(() => this.linkButton());
+  }
+
+  protected async saveLinks(): Promise<void> {
+    if (this.savingLinks() || !this.currentOwner()) return;
+    this.linksError.set('');
+    this.linkErrorField.set(null);
+    const links = {} as ProfileLinks;
+    for (const field of this.linkFields) {
+      const value = normalizeProfileLink(field, this.linkDrafts[field.key]());
+      if (value === undefined) {
+        this.linkErrorField.set(field.key);
+        this.linksError.set(field.error);
+        this.focusAfterRender(() => this.hostInput('profile-link-' + field.key));
+        return;
+      }
+      links[field.key] = value;
+    }
+    this.savingLinks.set(true);
+    try {
+      const profile = await this.client.updateProfileLinks(links);
+      if (!this.currentOwner()) return;
+      this.profile.update((current) => (current ? { ...current, links: profile.links ?? links } : current));
+      this.editingLinks.set(false);
+      this.linksStatus.set('Your links have been saved.');
+      this.focusAfterRender(() => this.linkButton());
+    } catch (error) {
+      if (!this.currentOwner()) return;
+      this.linksError.set(
+        error instanceof AccountSettingsError && error.kind === 'invalid-link'
+          ? 'One of these addresses wasn’t accepted. Use the https:// address of each profile page.'
+          : error instanceof AccountSettingsError && error.kind === 'session-expired'
+            ? 'Your session expired. Sign in again to manage your account.'
+            : 'We could not save your links. Your changes are still here; try again.',
+      );
+      this.focusAfterRender(() => this.linksErrorElement()?.nativeElement);
+    } finally {
+      this.savingLinks.set(false);
+    }
+  }
+
+  protected async chooseTheme(preference: ThemePreference): Promise<void> {
+    if (this.savingTheme()) return;
+    this.themeStatus.set('');
+    this.savingTheme.set(true);
+    try {
+      const saved = await this.accountTheme.choose(preference);
+      if (this.destroyed) return;
+      this.themeStatus.set(
+        saved
+          ? 'Theme saved to your account.'
+          : 'Theme changed on this browser, but we could not save it to your account. Try again.',
+      );
+    } finally {
+      this.savingTheme.set(false);
+    }
+  }
+
+  private linkButton(): HTMLElement | null {
+    return this.host.nativeElement.querySelector<HTMLElement>(
+      `[data-link-button="${this.lastLinkButton}"]`,
+    );
+  }
+
+  private hostInput(id: string): HTMLElement | null {
+    return this.host.nativeElement.querySelector<HTMLElement>('#' + id);
   }
 
   protected openPassword(): void {

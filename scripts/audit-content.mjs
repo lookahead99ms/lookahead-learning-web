@@ -8,7 +8,7 @@ import {
 } from './canonical-dsa-contract.mjs';
 
 const repositoryRoot = fileURLToPath(new URL('../', import.meta.url));
-const paths = ['learn', 'grow', 'look-ahead'];
+const paths = ['learn', 'grow', 'blaze'];
 const languages = ['java', 'python', 'go'];
 const dsaCourses = ['algorithmic-patterns', 'core-data-structures', 'sorting-searching'];
 // This route composes existing courses; it has no course.json of its own.
@@ -530,7 +530,7 @@ export async function auditContent(root) {
     sourceFingerprint: createHash('sha256').update(JSON.stringify(hashes)).digest('hex'),
     methodology: {
       scope:
-        'Local source files in Learn, Grow, and Look Ahead. Planned modules are counted but their records are excluded, matching the course loader. Delivery, generated indexes, and application behavior are not audited.',
+        'Local source files in Learn, Grow, and Blaze. Planned modules are counted but their records are excluded, matching the course loader. Delivery, generated indexes, and application behavior are not audited.',
       evidence:
         'Structural presence only. Review booleans and complete labels are assertions, not independently verified quality. No learner code is executed. Missing code can be intentional for conceptual or technology-specific lessons.',
       lessons:

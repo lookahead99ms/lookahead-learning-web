@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A write is copied to two replicas that both confirm, while messages flow through a queue to a consumer">
+<style>
+.blaze-design-fundamentals-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.blaze-design-fundamentals-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 2; }
+.blaze-design-fundamentals-soft { fill: var(--scene-accent-soft, #dcefed); }
+.blaze-design-fundamentals-softs { fill: var(--scene-accent-soft, #dcefed); stroke: var(--scene-accent, #006c73); stroke-width: 2; }
+.blaze-design-fundamentals-acc { fill: var(--scene-accent, #006c73); }
+.blaze-design-fundamentals-ahead { fill: var(--scene-ahead, #2f6fb3); }
+.blaze-design-fundamentals-good { fill: var(--scene-good, #1f7a4d); }
+.blaze-design-fundamentals-warn { fill: var(--scene-warn, #a15c00); }
+.blaze-design-fundamentals-bad { fill: var(--scene-bad, #b3261e); }
+.blaze-design-fundamentals-mut { fill: var(--scene-muted, #536970); }
+.blaze-design-fundamentals-card { fill: var(--scene-card, #ffffff); }
+.blaze-design-fundamentals-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 2; }
+.blaze-design-fundamentals-dash { fill: none; stroke: var(--scene-link, #245a88); stroke-width: 2; stroke-dasharray: 5 4; }
+.blaze-design-fundamentals-check { fill: none; stroke: var(--scene-good, #1f7a4d); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+
+.blaze-design-fundamentals-go { animation: blaze-design-fundamentals-kf-go 6s linear infinite; animation-delay: -3.4s; }
+.blaze-design-fundamentals-rep1 { animation: blaze-design-fundamentals-kf-rep1 6s linear infinite; animation-delay: -3.4s; }
+.blaze-design-fundamentals-rep2 { animation: blaze-design-fundamentals-kf-rep2 6s linear infinite; animation-delay: -3.4s; }
+.blaze-design-fundamentals-fill { animation: blaze-design-fundamentals-kf-fill 6s infinite; animation-delay: -3.4s; }
+.blaze-design-fundamentals-ok { animation: blaze-design-fundamentals-kf-ok 6s infinite; animation-delay: -3.4s; }
+.blaze-design-fundamentals-belt { animation: blaze-design-fundamentals-kf-belt 1.6s linear infinite; animation-delay: -0.8s; }
+.blaze-design-fundamentals-in { animation: blaze-design-fundamentals-kf-in 1.6s linear infinite; animation-delay: -0.8s; }
+.blaze-design-fundamentals-out { animation: blaze-design-fundamentals-kf-out 1.6s linear infinite; animation-delay: -0.8s; }
+@keyframes blaze-design-fundamentals-kf-go { 0% { transform: translate(0,0); opacity: 1; } 22% { transform: translate(64px,0); opacity: 1; } 24%, 100% { transform: translate(64px,0); opacity: 0; } }
+@keyframes blaze-design-fundamentals-kf-rep1 { 0%, 24% { transform: translate(0,0); opacity: 0; } 25% { opacity: 1; } 46% { transform: translate(78px,-26px); opacity: 1; } 48%, 100% { transform: translate(78px,-26px); opacity: 0; } }
+@keyframes blaze-design-fundamentals-kf-rep2 { 0%, 24% { transform: translate(0,0); opacity: 0; } 25% { opacity: 1; } 46% { transform: translate(78px,26px); opacity: 1; } 48%, 100% { transform: translate(78px,26px); opacity: 0; } }
+@keyframes blaze-design-fundamentals-kf-fill { 0%, 46% { opacity: 0; } 52%, 90% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes blaze-design-fundamentals-kf-ok { 0%, 50% { opacity: 0; } 56%, 90% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes blaze-design-fundamentals-kf-belt { from { transform: translate(0,0); } to { transform: translate(34px,0); } }
+@keyframes blaze-design-fundamentals-kf-in { 0%, 60% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes blaze-design-fundamentals-kf-out { 0% { opacity: 1; } 40%, 100% { opacity: 0; } }
+</style>
+<rect class="blaze-design-fundamentals-box" x="18" y="30" width="30" height="48" rx="6"/><rect class="blaze-design-fundamentals-soft" x="23" y="37" width="20" height="30" rx="2"/>
+<path class="blaze-design-fundamentals-wire" d="M50 54 H96"/><path class="blaze-design-fundamentals-wire" d="M136 48 L190 26 M136 60 L190 80"/>
+<path class="blaze-design-fundamentals-softs" d="M96 34 V72 A20 6 0 0 0 136 72 V34 Z"/><ellipse class="blaze-design-fundamentals-softs" cx="116" cy="34" rx="20" ry="6"/>
+<g class="blaze-design-fundamentals-fill"><path class="blaze-design-fundamentals-acc" d="M96 34 V72 A20 6 0 0 0 136 72 V34 Z"/><ellipse class="blaze-design-fundamentals-acc" cx="116" cy="34" rx="20" ry="6"/></g>
+<path class="blaze-design-fundamentals-box" d="M192 12 V42 A20 6 0 0 0 232 42 V12 Z"/><ellipse class="blaze-design-fundamentals-box" cx="212" cy="12" rx="20" ry="6"/>
+<g class="blaze-design-fundamentals-fill"><path class="blaze-design-fundamentals-softs" d="M192 12 V42 A20 6 0 0 0 232 42 V12 Z"/><ellipse class="blaze-design-fundamentals-softs" cx="212" cy="12" rx="20" ry="6"/></g>
+<path class="blaze-design-fundamentals-check blaze-design-fundamentals-ok" d="M242 26 l6 7 l11 -13"/>
+<path class="blaze-design-fundamentals-box" d="M192 64 V94 A20 6 0 0 0 232 94 V64 Z"/><ellipse class="blaze-design-fundamentals-box" cx="212" cy="64" rx="20" ry="6"/>
+<g class="blaze-design-fundamentals-fill"><path class="blaze-design-fundamentals-softs" d="M192 64 V94 A20 6 0 0 0 232 94 V64 Z"/><ellipse class="blaze-design-fundamentals-softs" cx="212" cy="64" rx="20" ry="6"/></g>
+<path class="blaze-design-fundamentals-check blaze-design-fundamentals-ok" d="M242 78 l6 7 l11 -13"/>
+<circle class="blaze-design-fundamentals-ahead blaze-design-fundamentals-go" cx="34" cy="54" r="6"/>
+<circle class="blaze-design-fundamentals-ahead blaze-design-fundamentals-rep1" cx="134" cy="52" r="6"/>
+<circle class="blaze-design-fundamentals-ahead blaze-design-fundamentals-rep2" cx="134" cy="52" r="6"/>
+<text class="blaze-design-fundamentals-t" x="304" y="58" font-size="16" text-anchor="end">replicas</text>
+<path d="M16 112 H304" stroke="var(--scene-line, #cfdfdc)" stroke-width="1.5"/>
+<text class="blaze-design-fundamentals-t" x="18" y="150" font-size="16">queue</text>
+<rect class="blaze-design-fundamentals-box" x="76" y="124" width="192" height="40" rx="8"/>
+<g class="blaze-design-fundamentals-belt">
+<g class="blaze-design-fundamentals-in"><rect class="blaze-design-fundamentals-acc" x="74" y="132" width="24" height="24" rx="4" opacity=".85"/></g>
+<g class=""><rect class="blaze-design-fundamentals-acc" x="108" y="132" width="24" height="24" rx="4" opacity=".85"/></g>
+<g class=""><rect class="blaze-design-fundamentals-acc" x="142" y="132" width="24" height="24" rx="4" opacity=".85"/></g>
+<g class=""><rect class="blaze-design-fundamentals-acc" x="176" y="132" width="24" height="24" rx="4" opacity=".85"/></g>
+<g class="blaze-design-fundamentals-out"><rect class="blaze-design-fundamentals-acc" x="210" y="132" width="24" height="24" rx="4" opacity=".85"/></g>
+</g>
+<circle class="blaze-design-fundamentals-softs" cx="294" cy="144" r="14"/><path class="blaze-design-fundamentals-check" d="M287 144 l5 6 l9 -11" style="stroke: var(--scene-accent, #006c73)"/>
+</svg>

@@ -35,7 +35,7 @@ function item(overrides: Partial<InterviewQuestion>): InterviewQuestion {
 
 function course(
   id: string,
-  path: 'learn' | 'grow' | 'look-ahead',
+  path: 'learn' | 'grow' | 'blaze',
   questions: InterviewQuestion[],
   learningUnits?: CourseLearningUnit[],
 ): CourseContent {
@@ -84,7 +84,7 @@ const round = item({
   title: 'Design a reservation system: 60,000 seats',
   practiceFormat: 'design',
 } as Partial<InterviewQuestion>);
-const roundsCourse = course('design-rounds', 'look-ahead', [round], [
+const roundsCourse = course('design-rounds', 'blaze', [round], [
   {
     id: 'reservation-round',
     title: 'Reservation System',
@@ -93,7 +93,7 @@ const roundsCourse = course('design-rounds', 'look-ahead', [round], [
     practiceModuleId: 'reservation-round',
     card: {
       summary: 'A 45-minute round.',
-      scene: '/content/look-ahead/design-systems/visuals/cards/reservation.svg',
+      scene: '/content/blaze/design-systems/visuals/cards/reservation.svg',
       sceneAlt: 'Two fans tap the same seat.',
     },
   },
@@ -150,13 +150,13 @@ describe('Question unit scene header', () => {
   }
 
   it('shows the Design Round unit card scene with its authored description beside the title', async () => {
-    const root = await open('/look-ahead/design-rounds/design-rounds-reservation-design');
+    const root = await open('/blaze/design-rounds/design-rounds-reservation-design');
 
     const block = root.querySelector('.reader-title-block') as HTMLElement;
     expect(block.classList).toContain('has-unit-scene');
     const scene = block.querySelector('app-card-scene.reader-unit-scene') as HTMLElement;
     expect(content.getCardScene).toHaveBeenCalledWith(
-      '/content/look-ahead/design-systems/visuals/cards/reservation.svg',
+      '/content/blaze/design-systems/visuals/cards/reservation.svg',
     );
     expect(scene.getAttribute('aria-hidden')).toBeNull();
     expect(scene.querySelector('.la-card-scene')?.getAttribute('aria-label')).toBe(

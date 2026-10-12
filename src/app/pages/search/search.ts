@@ -723,9 +723,10 @@ export class Search implements OnInit, AfterViewInit {
         return 'learn';
       case 'grow':
         return 'grow';
+      case 'blaze':
       case 'look ahead':
       case 'look-ahead':
-        return 'look-ahead';
+        return 'blaze';
       default:
         return null;
     }
@@ -957,7 +958,7 @@ export class Search implements OnInit, AfterViewInit {
   }
 
   protected pathLabel(path: ContentPath): string {
-    return path === 'look-ahead' ? 'Look Ahead' : path[0].toUpperCase() + path.slice(1);
+    return path === 'blaze' ? 'Blaze' : path[0].toUpperCase() + path.slice(1);
   }
 
   protected questionTags(result: SearchDocument): string[] {

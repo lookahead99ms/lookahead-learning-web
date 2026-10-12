@@ -1,0 +1,97 @@
+<app-platform-header />
+<main id="main-content" class="support-page">
+  <header class="support-hero">
+    <div class="hero-copy">
+      <p class="eyebrow"><span aria-hidden="true">💬</span> Support and feedback</p>
+      <h1>Tell us what happened.</h1>
+      <p class="lede">
+        Include the steps we can follow. Attach screenshots only when you want to share them; avoid
+        private or sensitive information.
+      </p>
+    </div>
+    <ul class="hero-facts" aria-label="How support works">
+      <li><span aria-hidden="true">✉️</span> We reply to the email you give</li>
+      <li><span aria-hidden="true">🧾</span> Every request gets a reference</li>
+      <li><span aria-hidden="true">🔒</span> Never include passwords</li>
+    </ul>
+  </header>
+
+  @if (reviewRole()) {
+    <div class="support-tabs" role="tablist" aria-label="Support and feedback" (keydown)="moveTab($event)">
+      <button
+        type="button"
+        role="tab"
+        id="support-tab-contact"
+        aria-controls="support-panel"
+        [attr.aria-selected]="view() === 'contact'"
+        [attr.tabindex]="view() === 'contact' ? 0 : -1"
+        (click)="show('contact')"
+      >
+        <span aria-hidden="true">✉️</span> Contact support
+      </button>
+      <button
+        type="button"
+        role="tab"
+        id="support-tab-reviews"
+        aria-controls="support-panel"
+        [attr.aria-selected]="view() === 'reviews'"
+        [attr.tabindex]="view() === 'reviews' ? 0 : -1"
+        (click)="show('reviews')"
+      >
+        <span aria-hidden="true">🧪</span> Platform reviews
+        <span class="role-badge">{{ reviewRole() === 'owner' ? 'Owner' : 'Reviewer' }}</span>
+      </button>
+    </div>
+  }
+
+  <div
+    id="support-panel"
+    class="support-body"
+    [class.reviews-body]="view() === 'reviews'"
+    [attr.role]="reviewRole() ? 'tabpanel' : null"
+    [attr.aria-labelledby]="reviewRole() ? 'support-tab-' + view() : null"
+  >
+    @if (waitingForReviews()) {
+      <p class="panel loading" role="status">Checking review access…</p>
+    } @else if (view() === 'reviews') {
+      <section class="panel" aria-label="Platform reviews">
+        <app-admin-reviews />
+      </section>
+    } @else {
+      <section class="panel form-panel" aria-labelledby="contact-heading">
+        <h2 id="contact-heading"><span aria-hidden="true">✉️</span> Contact support</h2>
+        <app-support-request-form />
+      </section>
+      <aside class="tips" aria-labelledby="tips-heading">
+        <h2 id="tips-heading"><span aria-hidden="true">📝</span> A helpful report</h2>
+        <ol>
+          <li>
+            <span class="tip-icon" aria-hidden="true">👣</span>
+            <span><strong>Steps</strong> you took, in order.</span>
+          </li>
+          <li>
+            <span class="tip-icon" aria-hidden="true">🎯</span>
+            <span><strong>What you expected</strong> and what happened instead.</span>
+          </li>
+          <li>
+            <span class="tip-icon" aria-hidden="true">🔗</span>
+            <span><strong>The page address</strong>, such as /learn/core-java.</span>
+          </li>
+          <li>
+            <span class="tip-icon" aria-hidden="true">🖼️</span>
+            <span><strong>A screenshot</strong> when the screen looks wrong.</span>
+          </li>
+        </ol>
+        @if (reviewRole() && view() === 'contact') {
+          <p class="tips-note">
+            <span aria-hidden="true">🧪</span> Reviewing before release? Use
+            <button type="button" class="link-button" (click)="show('reviews')">
+              Platform reviews
+            </button>
+            so the owner can track each item.
+          </p>
+        }
+      </aside>
+    }
+  </div>
+</main>

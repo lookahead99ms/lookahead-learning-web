@@ -18,7 +18,7 @@ export interface SidebarLessonLink {
  * next group, and a search preset to the lesson's course and module.
  */
 export interface SidebarLessonNav {
-  /** Learn, Grow or Look Ahead. */
+  /** Learn, Grow or Blaze. */
   path?: SidebarLessonLink;
   /** The catalog group the course is listed under, when there is one. */
   group?: SidebarLessonLink | null;

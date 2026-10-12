@@ -76,7 +76,7 @@ describe('retired content routes', () => {
     '/learn/algorithmic-patterns/algorithmic-prefix-state',
     '/learn/algorithmic-patterns',
     '/learn/another-course/algorithmic-difference-arrays',
-    '/look-ahead/algorithmic-patterns/algorithmic-difference-arrays',
+    '/blaze/algorithmic-patterns/algorithmic-difference-arrays',
     '/learn/algorithmic-patterns/module/theory-prefix-state',
     '/learn/hands-on-dsa?pattern=algorithmic-patterns:prefix-state',
     '/learn/algorithmic-patterns/constructor',

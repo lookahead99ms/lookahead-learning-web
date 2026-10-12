@@ -298,7 +298,7 @@ describe('FoundationLessonShell golden lesson contract', () => {
 
   for (const [pathId, exercise, accessibleName] of [
     ['grow', 'Try it and verify', 'Guided implementation'],
-    ['look-ahead', 'Make the decision', 'Guided decision'],
+    ['blaze', 'Make the decision', 'Guided decision'],
   ]) {
     it(`keeps ${pathId} teaching and detailed review available`, () => {
       fixture.componentRef.setInput('pathId', pathId);
@@ -750,7 +750,7 @@ describe('FoundationLessonShell system-v1 lessons (DLV-408)', () => {
     expect(systemLessonStages(trimmed).map((stage) => stage.id)).toEqual(['brief', 'understand', 'build', 'debug', 'own', 'prove', 'keep']);
   });
 
-  it('renders a Look Ahead story lesson with its own stages, text answer pairs and a speaking timer', () => {
+  it('renders a Blaze story lesson with its own stages, text answer pairs and a speaking timer', () => {
     const story = {
       ...systemLesson,
       lessonPattern: 'story-v1',

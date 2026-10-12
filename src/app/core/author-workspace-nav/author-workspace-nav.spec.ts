@@ -7,9 +7,7 @@ describe('AuthorWorkspaceNav', () => {
     const fixture = TestBed.createComponent(AuthorWorkspaceNav);
     fixture.componentRef.setInput('pageTitle', 'Operations');
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.eyebrow').textContent).toBe(
-      'Local author workspace',
-    );
+    expect(fixture.nativeElement.querySelector('.eyebrow').textContent).toBe('Admin');
     expect(fixture.nativeElement.querySelector('h1').textContent).toBe('Operations');
     expect(fixture.nativeElement.querySelector('app-platform-signature')).toBeNull();
   });
@@ -35,72 +33,18 @@ describe('AuthorWorkspaceNav', () => {
     expect(fixture.nativeElement.querySelector('.extra').textContent).toBe('Extra sidebar content');
   });
 
-  it('groups four direct documentation links under a route-aware disclosure', () => {
+  it('keeps admin navigation out of the left sidebar', () => {
     const fixture = TestBed.createComponent(AuthorWorkspaceNav);
     fixture.componentRef.setInput('pageTitle', 'Operations');
     fixture.componentRef.setInput('pageId', 'operations');
     fixture.detectChanges();
-    const links = [
-      ...fixture.nativeElement.querySelectorAll('.workspace-navigation a'),
-    ] as HTMLAnchorElement[];
-    expect(links.map((link) => link.getAttribute('href'))).toEqual([
-      '/author/previews',
-      '/delivery-plan',
-      '/author/architecture',
-      '/author/local-development',
-      '/author/api',
-      '/author/operations',
-    ]);
-    const button = fixture.nativeElement.querySelector(
-      '.documentation-toggle',
-    ) as HTMLButtonElement;
-    expect(button.textContent).toContain('Documentation');
-    expect(button.textContent).toContain('Current section');
-    expect(button.getAttribute('aria-expanded')).toBe('true');
-    expect(
-      fixture.nativeElement.querySelector(`#${button.getAttribute('aria-controls')}`),
-    ).not.toBeNull();
-    expect(links.at(-1)?.getAttribute('aria-current')).toBe('page');
-    button.click();
-    fixture.detectChanges();
-    expect(button.getAttribute('aria-expanded')).toBe('false');
-    expect(fixture.nativeElement.querySelector('.documentation-links').hidden).toBe(true);
-    expect(button.textContent).toContain('Current section');
-    const originalUrl = location.pathname + location.search + location.hash;
-    try {
-      history.replaceState(null, '', '/author/operations#maintenance');
-      window.dispatchEvent(new HashChangeEvent('hashchange'));
-      fixture.detectChanges();
-      expect(button.getAttribute('aria-expanded')).toBe('false');
-    } finally {
-      history.replaceState(null, '', originalUrl);
-    }
-  });
-
-  it('defaults Documentation closed outside document pages and keeps instance IDs unique', () => {
-    const first = TestBed.createComponent(AuthorWorkspaceNav);
-    first.componentRef.setInput('pageId', 'previews');
-    first.detectChanges();
-    const second = TestBed.createComponent(AuthorWorkspaceNav);
-    second.componentRef.setInput('pageId', 'architecture');
-    second.detectChanges();
-    const firstButton = first.nativeElement.querySelector(
-      '.documentation-toggle',
-    ) as HTMLButtonElement;
-    const secondButton = second.nativeElement.querySelector(
-      '.documentation-toggle',
-    ) as HTMLButtonElement;
-    expect(firstButton.getAttribute('aria-expanded')).toBe('false');
-    expect(first.nativeElement.querySelector('.documentation-links').hidden).toBe(true);
-    expect(secondButton.getAttribute('aria-expanded')).toBe('true');
-    expect(firstButton.getAttribute('aria-controls')).not.toBe(
-      secondButton.getAttribute('aria-controls'),
-    );
+    expect(fixture.nativeElement.querySelector('nav[aria-label="Admin navigation"]')).toBeNull();
+    expect(fixture.nativeElement.textContent).not.toContain('Documentation pages');
   });
 
   it('keeps same-page outline links on the author route and scrolls to their section', () => {
     const originalUrl = location.pathname + location.search + location.hash;
-    history.replaceState(null, '', '/author/operations');
+    history.replaceState(null, '', '/admin/operations');
     try {
       @Component({
         selector: 'app-outline-host',
@@ -114,7 +58,7 @@ describe('AuthorWorkspaceNav', () => {
       class OutlineHost {
         outline = [
           { label: 'Repository and runbook links', href: '#repository-runbook-links' },
-          { label: 'Supporting references', href: '/author/operations#supporting-references' },
+          { label: 'Supporting references', href: '/admin/operations#supporting-references' },
         ];
       }
       const fixture = TestBed.createComponent(OutlineHost);
@@ -122,16 +66,16 @@ describe('AuthorWorkspaceNav', () => {
       const section: HTMLElement = fixture.nativeElement.querySelector('#repository-runbook-links');
       section.scrollIntoView = vi.fn();
       const link: HTMLAnchorElement = fixture.nativeElement.querySelector('.heading-outline a');
-      expect(link.getAttribute('href')).toBe('/author/operations#repository-runbook-links');
+      expect(link.getAttribute('href')).toBe('/admin/operations#repository-runbook-links');
       expect(link.getAttribute('aria-current')).toBe('location');
       link.click();
-      expect(location.pathname).toBe('/author/operations');
+      expect(location.pathname).toBe('/admin/operations');
       expect(location.hash).toBe('#repository-runbook-links');
       expect(section.scrollIntoView).toHaveBeenCalled();
       const supporting: HTMLElement = fixture.nativeElement.querySelector('#supporting-references');
       supporting.scrollIntoView = vi.fn();
       fixture.nativeElement.querySelectorAll('.heading-outline a')[1].click();
-      expect(location.pathname).toBe('/author/operations');
+      expect(location.pathname).toBe('/admin/operations');
       expect(location.hash).toBe('#supporting-references');
       expect(supporting.scrollIntoView).toHaveBeenCalled();
     } finally {
@@ -141,11 +85,11 @@ describe('AuthorWorkspaceNav', () => {
 
   it('requests embedded sections without targeting a raw document window', () => {
     const originalUrl = location.pathname + location.search + location.hash;
-    history.replaceState(null, '', '/author/local-development');
+    history.replaceState(null, '', '/admin/local-development');
     try {
       const fixture = TestBed.createComponent(AuthorWorkspaceNav);
       fixture.componentRef.setInput('outline', [
-        { label: 'Change workflow', href: '/author/local-development#change-workflow' },
+        { label: 'Change workflow', href: '/admin/local-development#change-workflow' },
       ]);
       fixture.detectChanges();
       const requested: string[] = [];
@@ -155,7 +99,7 @@ describe('AuthorWorkspaceNav', () => {
       const click = new MouseEvent('click', { bubbles: true, cancelable: true });
       link.dispatchEvent(click);
       expect(click.defaultPrevented).toBe(true);
-      expect(location.pathname).toBe('/author/local-development');
+      expect(location.pathname).toBe('/admin/local-development');
       expect(location.hash).toBe('#change-workflow');
       expect(requested).toEqual(['#change-workflow']);
       link.click();
@@ -170,7 +114,7 @@ describe('Author outline follows reading position', () => {
   const originalUrl = location.pathname + location.search + location.hash;
   beforeEach(() => {
     vi.useFakeTimers();
-    history.replaceState(null, '', '/author/operations');
+    history.replaceState(null, '', '/admin/operations');
   });
   afterEach(() => {
     vi.useRealTimers();
@@ -207,11 +151,6 @@ describe('Author outline follows reading position', () => {
       fixture.detectChanges();
       expect(active()).toBe('Second');
       expect(location.hash).toBe('');
-      expect(
-        fixture.nativeElement
-          .querySelector('.workspace-navigation [aria-current="page"]')
-          .textContent.trim(),
-      ).toBe('Operations');
       secondTop = 500;
       window.dispatchEvent(new Event('scroll'));
       vi.advanceTimersByTime(20);
@@ -237,7 +176,7 @@ describe('Author outline follows reading position', () => {
     const links = host.querySelectorAll<HTMLElement>('.heading-outline a');
     links[1].getBoundingClientRect = () => ({ top: 500, bottom: 544 }) as DOMRect;
     const pageScroll = vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
-    history.replaceState(null, '', '/author/operations#second-section');
+    history.replaceState(null, '', '/admin/operations#second-section');
     window.dispatchEvent(new HashChangeEvent('hashchange'));
     fixture.detectChanges();
     expect(host.scrollTop).toBe(172);
@@ -245,7 +184,7 @@ describe('Author outline follows reading position', () => {
     expect(location.hash).toBe('#second-section');
     expect(links[1].getAttribute('aria-current')).toBe('location');
     links[0].getBoundingClientRect = () => ({ top: 20, bottom: 64 }) as DOMRect;
-    history.replaceState(null, '', '/author/operations#first-section');
+    history.replaceState(null, '', '/admin/operations#first-section');
     window.dispatchEvent(new HashChangeEvent('hashchange'));
     fixture.detectChanges();
     expect(host.scrollTop).toBe(104);
@@ -313,6 +252,51 @@ describe('Author outline follows reading position', () => {
       fixture.destroy();
     } finally {
       frame.remove();
+    }
+  });
+});
+
+describe('Copy on behalf of the embedded document', () => {
+  it('copies only for its own frame and answers with the result', async () => {
+    const frame = document.createElement('iframe');
+    document.body.append(frame);
+    const reply = vi.spyOn(frame.contentWindow!, 'postMessage');
+    const writeText = vi.fn(async () => {});
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+    const fixture = TestBed.createComponent(AuthorWorkspaceNav);
+    fixture.componentRef.setInput('embeddedFrame', frame);
+    fixture.componentRef.setInput('embeddedDocumentId', 'local-development');
+    fixture.detectChanges();
+    const send = (data: unknown, source: Window | null = frame.contentWindow, origin = 'null') =>
+      window.dispatchEvent(new MessageEvent('message', { data, source, origin }));
+    const request = { type: 'lookahead:author-document:copy', version: 1, requestId: 7, text: 'git status' };
+    try {
+      send(request, window);
+      send(request, frame.contentWindow, location.origin);
+      send({ ...request, text: 'x'.repeat(100_001) });
+      send({ ...request, requestId: 'seven' });
+      await Promise.resolve();
+      expect(writeText).not.toHaveBeenCalled();
+      send(request);
+      await vi.waitFor(() =>
+        expect(reply).toHaveBeenCalledWith(
+          { type: 'lookahead:author-document:copy-result', version: 1, requestId: 7, copied: true },
+          '*',
+        ),
+      );
+      expect(writeText).toHaveBeenCalledWith('git status');
+      writeText.mockRejectedValueOnce(new Error('denied'));
+      send({ ...request, requestId: 8 });
+      await vi.waitFor(() =>
+        expect(reply).toHaveBeenCalledWith(
+          { type: 'lookahead:author-document:copy-result', version: 1, requestId: 8, copied: false },
+          '*',
+        ),
+      );
+    } finally {
+      fixture.destroy();
+      frame.remove();
+      Reflect.deleteProperty(navigator, 'clipboard');
     }
   });
 });

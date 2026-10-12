@@ -71,7 +71,7 @@
   --panel-line: #3c5f55;
   --panel-accent: #83d8b9;
   --path-learn: #006c73;
-  --path-look-ahead: #245a88;
+  --path-blaze: #245a88;
   /* Shared identity colors are separate from action, status and path semantics. */
   --identity-eyes: #087d69;
   --identity-wall: #236b9a;
@@ -151,7 +151,7 @@
   --panel-line: #4b5a70;
   --panel-accent: #ffba87;
   --path-learn: #70d6cd;
-  --path-look-ahead: #9dc9ff;
+  --path-blaze: #9dc9ff;
   --identity-eyes: #65dfc2;
   --identity-wall: #76c6ff;
   --identity-code: #ff9f90;
@@ -161,7 +161,7 @@
   --identity-arrow: #ffd16d;
   --card-title-learn: #ffba87;
   --card-title-grow: #ffba87;
-  --card-title-look-ahead: #ffba87;
+  --card-title-blaze: #ffba87;
 }
 
 /* Shared Harbor Light / Midnight & Apricot Dark across learner and author routes.
@@ -267,7 +267,7 @@ a {
      (5.6:1 on white), the dark theme's apricot #ffba87 on dark (8.8:1 on #192942, 7.6:1 on #22344e). */
   --card-title-learn: #a84e17;
   --card-title-grow: #a84e17;
-  --card-title-look-ahead: #a84e17;
+  --card-title-blaze: #a84e17;
   --card-scene-text-font: 'Avenir Next', Avenir, Bahnschrift, 'Trebuchet MS', system-ui, sans-serif;
   --card-scene-code-font:
     'JetBrains Mono', ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
@@ -298,9 +298,9 @@ a {
 .learning-map[data-path='grow'] {
   --card-title-color: var(--card-title-grow);
 }
-.look-ahead-catalog-reader,
-.learning-map[data-path='look-ahead'] {
-  --card-title-color: var(--card-title-look-ahead);
+.blaze-catalog-reader,
+.learning-map[data-path='blaze'] {
+  --card-title-color: var(--card-title-blaze);
 }
 
 /* Every learning card carries the same thin path-coloured line along its top edge, the accent
@@ -319,9 +319,9 @@ a {
 [data-path='grow'] {
   --card-top-accent: var(--path-grow);
 }
-.look-ahead-catalog-reader,
-[data-path='look-ahead'] {
-  --card-top-accent: var(--path-look-ahead);
+.blaze-catalog-reader,
+[data-path='blaze'] {
+  --card-top-accent: var(--path-blaze);
 }
 :where(main:not(.landing-page))
   :is(.course-card, .unit-card-frame, article.unit-card, .question-card) {
@@ -354,7 +354,7 @@ a {
   :root {
     --path-learn: CanvasText;
     --path-grow: CanvasText;
-    --path-look-ahead: CanvasText;
+    --path-blaze: CanvasText;
     --accent-focus: Highlight;
   }
 }

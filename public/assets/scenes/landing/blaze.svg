@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" data-story-ms="19500" viewBox="0 0 240 135" role="img" aria-label="Blaze ahead to design what the team delivers. AI joins the system, you choose how. A phone app calls a Feed service that reads from a database; too many reads pile up until a cache goes between the Feed service and the database and reads hit the cache; then an AI ranker is attached to the Feed service, with sorting by likes as its fallback. When the ranker times out, the likes fallback keeps the feed loading and the balance tips toward available, because a slightly stale feed beats an empty one; you set a 50 ms budget for the ranker and everything is green again">
+<style>
+.blaze-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); }
+.blaze-tm { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; fill: var(--scene-text, #28434a); }
+.blaze-b { font-weight: 700; }
+.blaze-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 1.5; }
+.blaze-acc { fill: var(--scene-accent, #006c73); }
+.blaze-mut { fill: var(--scene-muted, #536970); }
+.blaze-good { fill: var(--scene-good, #1f7a4d); }
+.blaze-bad { fill: var(--scene-bad, #b3261e); }
+.blaze-on-acc { fill: var(--scene-card, #ffffff); }
+.blaze-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 1.5; }
+.blaze-dash { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.blaze-spark { fill: var(--scene-accent, #006c73); }
+.blaze-ai-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.blaze-aibox { fill: var(--scene-card, #ffffff); stroke: var(--scene-accent, #006c73); stroke-width: 1.5; }
+.blaze-you-bg { fill: var(--scene-ink, #102a33); stroke: var(--scene-ink, #102a33); stroke-width: 1.5; }
+.blaze-you-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-card, #ffffff); font-weight: 700; }
+.blaze-bad-t { fill: var(--scene-bad, #b3261e); }
+.blaze-good-t { fill: var(--scene-good, #1f7a4d); }
+
+.blaze-svc { fill: var(--scene-card, #ffffff); stroke: var(--scene-ahead, #245a88); stroke-width: 2; }
+.blaze-cache-bx { fill: var(--scene-card, #ffffff); stroke: var(--scene-ahead, #245a88); stroke-width: 1.5; }
+.blaze-phone { fill: var(--scene-card, #ffffff); stroke: var(--scene-ink, #102a33); stroke-width: 1.5; }
+.blaze-screen { fill: var(--scene-accent-soft, #dcefed); }
+.blaze-db { fill: var(--scene-card, #ffffff); stroke: var(--scene-ink, #102a33); stroke-width: 1.5; }
+.blaze-note { fill: var(--scene-card, #ffffff); stroke: var(--scene-muted, #536970); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.blaze-alarm { fill: none; stroke: var(--scene-bad, #b3261e); stroke-width: 2; }
+.blaze-chev { fill: none; stroke: var(--scene-bad, #b3261e); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.blaze-bar { stroke: var(--scene-ahead, #245a88); stroke-width: 3; stroke-linecap: round; }
+.blaze-weight { fill: var(--scene-ahead, #245a88); }
+.blaze-okline { fill: none; stroke: var(--scene-good, #1f7a4d); stroke-width: 2; }
+.blaze-lit { fill: var(--scene-accent-soft, #dcefed); stroke: var(--scene-accent, #006c73); stroke-width: 1.5; }
+.blaze-play .blaze-r1 { animation: blaze-kf-r1 19.5s 1; }
+@keyframes blaze-kf-r1 { 0%, 7.69%, 0%, 7.69% { opacity: 0; } 10.97%, 21.64% { opacity: 1; } 24.92%, 89.74%, 100% { opacity: 0; } }
+.blaze-play .blaze-r2 { animation: blaze-kf-r2 19.5s 1; }
+@keyframes blaze-kf-r2 { 0%, 7.69%, 9.33% { opacity: 0; } 12.62%, 21.64% { opacity: 1; } 24.92%, 89.74%, 100% { opacity: 0; } }
+.blaze-play .blaze-r3 { animation: blaze-kf-r3 19.5s 1; }
+@keyframes blaze-kf-r3 { 0%, 7.69%, 11.79% { opacity: 0; } 15.08%, 21.64% { opacity: 1; } 24.92%, 89.74%, 100% { opacity: 0; } }
+.blaze-play .blaze-r4 { animation: blaze-kf-r4 19.5s 1; }
+@keyframes blaze-kf-r4 { 0%, 7.69%, 13.44% { opacity: 0; } 16.72%, 21.64% { opacity: 1; } 24.92%, 89.74%, 100% { opacity: 0; } }
+.blaze-play .blaze-warn { animation: blaze-kf-warn 19.5s 1; }
+@keyframes blaze-kf-warn { 0%, 7.69%, 15.08% { opacity: 0; } 18.36%, 23.28% { opacity: 1; } 26.56%, 89.74%, 100% { opacity: 0; } }
+.blaze-play .blaze-cache { animation: blaze-kf-cache 19.5s 1; }
+@keyframes blaze-kf-cache { 0%, 7.69%, 21.64% { opacity: 0; } 24.92%, 86.46% { opacity: 1; } 89.74%, 100%, 89.74%, 100% { opacity: 0; } }
+.blaze-play .blaze-hit { animation: blaze-kf-hit 19.5s 1; }
+@keyframes blaze-kf-hit { 0%, 7.69%, 24.92% { opacity: 0; } 28.21%, 43.79% { opacity: 1; } 47.08%, 89.74%, 100% { opacity: 0; } }
+.blaze-play .blaze-ai { animation: blaze-kf-ai 19.5s 1; }
+@keyframes blaze-kf-ai { 0%, 7.69%, 31.49% { opacity: 0; } 34.77%, 86.46% { opacity: 1; } 89.74%, 100%, 89.74%, 100% { opacity: 0; } }
+.blaze-play .blaze-fb { animation: blaze-kf-fb 19.5s 1; }
+@keyframes blaze-kf-fb { 0%, 7.69%, 34.77% { opacity: 0; } 38.05%, 86.46% { opacity: 1; } 89.74%, 100%, 89.74%, 100% { opacity: 0; } }
+.blaze-play .blaze-timeout { animation: blaze-kf-timeout 19.5s 1; }
+@keyframes blaze-kf-timeout { 0%, 7.69%, 43.79% { opacity: 0; } 47.08%, 52% { opacity: 1; } 55.28%, 89.74%, 100% { opacity: 0; } }
+.blaze-play .blaze-fblit { animation: blaze-kf-fblit 19.5s 1; }
+@keyframes blaze-kf-fblit { 0%, 7.69%, 45.44% { opacity: 0; } 48.72%, 62.67% { opacity: 1; } 65.95%, 89.74%, 100% { opacity: 0; } }
+.blaze-play .blaze-loads { animation: blaze-kf-loads 19.5s 1; }
+@keyframes blaze-kf-loads { 0%, 7.69%, 55.28% { opacity: 0; } 58.56%, 62.67% { opacity: 1; } 65.95%, 89.74%, 100% { opacity: 0; } }
+.blaze-play .blaze-pick { animation: blaze-kf-pick 19.5s 1; }
+@keyframes blaze-kf-pick { 0%, 7.69%, 52% { opacity: 0; } 55.28%, 86.46% { opacity: 1; } 89.74%, 100%, 89.74%, 100% { opacity: 0; } }
+.blaze-play .blaze-budget { animation: blaze-kf-budget 19.5s 1; }
+@keyframes blaze-kf-budget { 0%, 7.69%, 66.77% { opacity: 0; } 70.05%, 86.46% { opacity: 1; } 89.74%, 100%, 89.74%, 100% { opacity: 0; } }
+.blaze-play .blaze-green { animation: blaze-kf-green 19.5s 1; }
+@keyframes blaze-kf-green { 0%, 7.69%, 68.41% { opacity: 0; } 71.69%, 86.46% { opacity: 1; } 89.74%, 100%, 89.74%, 100% { opacity: 0; } }
+
+.blaze-beam { transform-box: view-box; transform-origin: 169px 114px; }
+.blaze-play .blaze-beam { animation: blaze-kf-beam 19.5s ease-in-out 1; }
+@keyframes blaze-kf-beam { 0%, 7.69%, 49.54% { transform: rotate(0deg); } 54.46%, 86.46% { transform: rotate(6deg); } 89.74%, 100% { transform: rotate(0deg); } }
+.blaze-sum-bg { fill: var(--scene-accent-soft, #dcefed); }
+.blaze-play .blaze-summary { animation: blaze-kf-summary 19.5s 1; }
+@keyframes blaze-kf-summary { 0%, 5.64% { opacity: 1; } 7.69%, 84.82% { opacity: 0; } 86.87%, 100% { opacity: 1; } }
+.blaze-play.blaze-paused * { animation-play-state: paused; }
+</style>
+<rect class="blaze-phone" x="39" y="2" width="22" height="34" rx="4"/><rect class="blaze-screen" x="42.5" y="7" width="15" height="22" rx="1.5"/><circle class="blaze-mut" cx="50" cy="32.5" r="1.5"/>
+<path class="blaze-wire" d="M50 36 V46"/>
+<rect class="blaze-svc" x="4" y="46" width="92" height="28" rx="6"/><text class="blaze-t blaze-b" x="50" y="64.5" font-size="13" text-anchor="middle">Feed service</text>
+<path class="blaze-wire" d="M96 60 H172"/>
+<g class="blaze-r1"><path class="blaze-chev" d="M108 55 l5 5 l-5 5"/></g><g class="blaze-r2"><path class="blaze-chev" d="M120 55 l5 5 l-5 5"/></g><g class="blaze-r3"><path class="blaze-chev" d="M132 55 l5 5 l-5 5"/></g><g class="blaze-r4"><path class="blaze-chev" d="M144 55 l5 5 l-5 5"/></g>
+<path class="blaze-db" d="M172 40 V80 A18 6 0 0 0 208 80 V40"/><ellipse class="blaze-db" cx="190" cy="40" rx="18" ry="6"/><text class="blaze-t blaze-b" x="190" y="68" font-size="13" text-anchor="middle">DB</text>
+<g class="blaze-warn"><rect class="blaze-alarm" x="166" y="29" width="48" height="62" rx="8"/><text class="blaze-t blaze-b blaze-bad-t" x="236" y="21" font-size="12" text-anchor="end">too many reads</text></g>
+<g class="blaze-hit"><text class="blaze-t blaze-b blaze-good-t" x="236" y="21" font-size="12" text-anchor="end">reads hit cache ✓</text></g>
+<g class="blaze-cache"><rect class="blaze-cache-bx" x="106" y="46" width="50" height="28" rx="6"/><text class="blaze-t blaze-b" x="131" y="64.5" font-size="13" text-anchor="middle">Cache</text></g>
+<g class="blaze-ai"><path class="blaze-wire" d="M50 74 V84"/><rect class="blaze-aibox" x="4" y="84" width="92" height="24" rx="6"/><g class="blaze-ai-mark" transform="translate(6.4 84)"><g transform="translate(0 5)"><path class="blaze-spark" d="M5.88 2.24 Q6.82 7.18 11.76 8.12 Q6.82 9.06 5.88 14 Q4.94 9.06 0 8.12 Q4.94 7.18 5.88 2.24Z M12.04 -0.14 Q12.42 1.86 14.42 2.24 Q12.42 2.62 12.04 4.62 Q11.66 2.62 9.66 2.24 Q11.66 1.86 12.04 -0.14Z M12.6 10.5 Q12.85 11.79 14.14 12.04 Q12.85 12.29 12.6 13.58 Q12.35 12.29 11.06 12.04 Q12.35 11.79 12.6 10.5Z"/></g><text class="blaze-ai-t" x="17" y="16.68" font-size="13">AI ranker</text></g></g>
+<g class="blaze-fb"><path class="blaze-dash" d="M50 108 V114"/><rect class="blaze-note" x="4" y="114" width="92" height="19" rx="6"/><text class="blaze-t blaze-mut" x="50" y="127.5" font-size="12" text-anchor="middle">fallback: likes</text></g>
+<g class="blaze-timeout"><rect class="blaze-alarm" x="1" y="81" width="98" height="30" rx="8"/><text class="blaze-t blaze-b blaze-bad-t" x="236" y="21" font-size="12" text-anchor="end">ranker timeout</text></g>
+<g class="blaze-fblit"><rect class="blaze-lit" x="4" y="114" width="92" height="19" rx="6"/><text class="blaze-t blaze-b" x="50" y="127.5" font-size="12" text-anchor="middle">fallback: likes</text></g>
+<g class="blaze-loads"><text class="blaze-t blaze-b blaze-good-t" x="236" y="21" font-size="12" text-anchor="end">feed loads ✓</text></g>
+<g class="blaze-budget"><rect class="blaze-you-bg" x="68" y="9" width="38" height="18" rx="9"/><text class="blaze-you-t" x="87" y="22.32" font-size="12" text-anchor="middle">You</text><text class="blaze-t" x="112" y="22.32" font-size="12">ranker budget 50 ms</text></g>
+<g class="blaze-green"><rect class="blaze-okline" x="1" y="81" width="98" height="30" rx="8"/></g>
+<path class="blaze-mut" d="M169 114 L161 126 H177 Z"/>
+<g class="blaze-beam"><path class="blaze-bar" d="M104 114 H234"/><rect class="blaze-weight" x="110" y="108" width="10" height="5" rx="1.5"/><rect class="blaze-weight" x="218" y="108" width="10" height="5" rx="1.5"/>
+<text class="blaze-t" x="104" y="104" font-size="12">Consistent</text><text class="blaze-t" x="223" y="104" font-size="12" text-anchor="end">Available</text><g class="blaze-pick"><text class="blaze-t blaze-b blaze-good-t" x="226" y="104" font-size="12">✓</text></g></g>
+<g class="blaze-summary"><rect class="blaze-sum-bg" x="0" y="0" width="240" height="135"/><text class="blaze-t blaze-b" x="22" y="32" font-size="16">Blaze ahead to design</text><text class="blaze-t blaze-b" x="22" y="52" font-size="16">what the team delivers.</text><g class="blaze-ai-mark" transform="translate(22 66)"><g transform="translate(0 4)"><path class="blaze-spark" d="M6.72 2.56 Q7.8 8.2 13.44 9.28 Q7.8 10.36 6.72 16 Q5.64 10.36 0 9.28 Q5.64 8.2 6.72 2.56Z M13.76 -0.16 Q14.2 2.12 16.48 2.56 Q14.2 3 13.76 5.28 Q13.32 3 11.04 2.56 Q13.32 2.12 13.76 -0.16Z M14.4 12 Q14.68 13.48 16.16 13.76 Q14.68 14.04 14.4 15.52 Q14.12 14.04 12.64 13.76 Q14.12 13.48 14.4 12Z"/></g><text class="blaze-ai-t" x="19" y="17.40" font-size="15">AI</text></g><text class="blaze-t" x="74" y="83" font-size="15">joins the system,</text><rect class="blaze-you-bg" x="22" y="98" width="44" height="24" rx="12"/><text class="blaze-you-t" x="44" y="115.04" font-size="14" text-anchor="middle">You</text><text class="blaze-t" x="74" y="115" font-size="15">choose how.</text></g>
+</svg>

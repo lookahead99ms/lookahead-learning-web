@@ -1169,7 +1169,7 @@ describe('Question canonical DSA navigation', () => {
     } as unknown as InterviewQuestion;
     const course: CourseContent = {
       id: 'design-fundamentals',
-      path: 'look-ahead',
+      path: 'blaze',
       title: 'Fundamentals',
       description: 'Building blocks.',
       version: '1',
@@ -1181,7 +1181,7 @@ describe('Question canonical DSA navigation', () => {
     content.getContentItem.mockReturnValueOnce(of(lesson));
     const harness = await RouterTestingHarness.create();
 
-    await harness.navigateByUrl('/look-ahead/design-fundamentals/design-fundamentals-caching', Question);
+    await harness.navigateByUrl('/blaze/design-fundamentals/design-fundamentals-caching', Question);
 
     const root = harness.routeNativeElement!;
     const lead = root.querySelector('.lesson-subtitle') as HTMLElement;
@@ -1242,7 +1242,7 @@ describe('Question canonical DSA navigation', () => {
             ],
             afterParagraph: 0,
           },
-          visual: { type: 'diagram', assetPath: '/content/look-ahead/design-rounds/visuals/arch.svg', alt: 'Three services' },
+          visual: { type: 'diagram', assetPath: '/content/blaze/design-rounds/visuals/arch.svg', alt: 'Three services' },
           visualTranscript: ['Gateway calls Checkout.', 'Checkout calls Reservation.'],
         },
       ],
@@ -1260,7 +1260,7 @@ describe('Question canonical DSA navigation', () => {
     } as unknown as InterviewQuestion;
     const course: CourseContent = {
       id: 'design-rounds',
-      path: 'look-ahead',
+      path: 'blaze',
       title: 'Design Rounds',
       description: 'Rounds.',
       version: '1',
@@ -1272,7 +1272,7 @@ describe('Question canonical DSA navigation', () => {
     content.getContentItem.mockReturnValueOnce(of(round));
     const harness = await RouterTestingHarness.create();
 
-    await harness.navigateByUrl('/look-ahead/design-rounds/design-rounds-reservation-design', Question);
+    await harness.navigateByUrl('/blaze/design-rounds/design-rounds-reservation-design', Question);
 
     const root = harness.routeNativeElement!;
     const heading = root.querySelector('h1.reader-question-title') as HTMLElement;
@@ -1288,7 +1288,7 @@ describe('Question canonical DSA navigation', () => {
     expect(steps[0].querySelector('p:not(.walkthrough-time) code')?.textContent).toBe('4');
     expect(steps[0].querySelector('strong')?.textContent).toBe('5 minutes');
     const image = steps[1].querySelector('figure img') as HTMLImageElement;
-    expect(image.getAttribute('src')).toBe('/content/look-ahead/design-rounds/visuals/arch.svg');
+    expect(image.getAttribute('src')).toBe('/content/blaze/design-rounds/visuals/arch.svg');
     expect(image.alt).toBe('Three services');
     expect(Array.from(steps[1].querySelectorAll('.walkthrough-transcript li')).map((li) => li.textContent)).toEqual([
       'Gateway calls Checkout.',

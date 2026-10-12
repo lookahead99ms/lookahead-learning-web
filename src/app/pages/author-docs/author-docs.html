@@ -1,0 +1,54 @@
+<app-platform-header />
+<main id="main-content" class="docs-page">
+  <aside class="workspace-sidebar">
+    <app-author-workspace-nav pageTitle="Documentation" pageId="docs" [outline]="outline" />
+  </aside>
+  <div class="workspace-content">
+    <header class="docs-hero">
+      <span class="hero-mark" aria-hidden="true">📚</span>
+      <div>
+        <p class="eyebrow">Private reference</p>
+        <h2 class="intro-heading">Find the page you need.</h2>
+        <p class="lede">
+          Pages are grouped by who usually starts there. Anyone with admin access can open all of
+          them.
+        </p>
+        <ul class="hero-facts" aria-label="About these pages">
+          <li><span aria-hidden="true">📄</span> {{ pageCount }} pages</li>
+          <li><span aria-hidden="true">👥</span> {{ groups.length }} reader groups</li>
+          <li><span aria-hidden="true">👁️</span> Read-only</li>
+        </ul>
+        <p class="context-note">
+          These pages describe the platform and its procedures; they do not run commands or report
+          live service health.
+        </p>
+      </div>
+    </header>
+    @for (group of groups; track group.id) {
+      <section
+        class="docs-group"
+        [attr.aria-labelledby]="'docs-' + group.id"
+        [style.--group-accent]="group.accent"
+      >
+        <div class="group-heading">
+          <span class="group-icon" aria-hidden="true">{{ group.icon }}</span>
+          <div>
+            <h2 [id]="'docs-' + group.id">{{ group.label }}</h2>
+            <p class="reader">{{ group.reader }}</p>
+          </div>
+        </div>
+        <nav class="page-grid" [attr.aria-label]="group.label + ' pages'">
+          @for (page of group.pages; track page.id) {
+            <a [routerLink]="page.href">
+              <span class="page-icon" aria-hidden="true">{{ page.icon }}</span>
+              <strong>{{ page.label }}</strong>
+              <span class="page-description">{{ page.description }}</span>
+              <span class="page-open" aria-hidden="true">Open →</span>
+            </a>
+          }
+        </nav>
+      </section>
+    }
+  </div>
+  <app-author-admin-menu pageId="docs" />
+</main>

@@ -53,13 +53,17 @@ describe('Landing', () => {
   it('starts paused for reduced motion and removes its preference listener on teardown', async () => {
     vi.useFakeTimers();
     const listeners = new Set<(event: MediaQueryListEvent) => void>();
-    vi.stubGlobal('matchMedia', (query: string) => ({
-      matches: query === '(prefers-reduced-motion: reduce)',
-      addEventListener: (_type: string, listener: (event: MediaQueryListEvent) => void) =>
-        listeners.add(listener),
-      removeEventListener: (_type: string, listener: (event: MediaQueryListEvent) => void) =>
-        listeners.delete(listener),
-    }));
+    // Only the reduced-motion query is counted: the platform theme also listens for the color scheme.
+    vi.stubGlobal('matchMedia', (query: string) => {
+      const reducedMotion = query === '(prefers-reduced-motion: reduce)';
+      return {
+        matches: reducedMotion,
+        addEventListener: (_type: string, listener: (event: MediaQueryListEvent) => void) =>
+          reducedMotion && listeners.add(listener),
+        removeEventListener: (_type: string, listener: (event: MediaQueryListEvent) => void) =>
+          reducedMotion && listeners.delete(listener),
+      };
+    });
     const fixture = TestBed.createComponent(Landing);
     fixture.detectChanges();
     const animations = captureAnimations(fixture.nativeElement);
@@ -207,7 +211,7 @@ describe('Landing', () => {
     fixture.detectChanges();
     const root: HTMLElement = fixture.nativeElement;
     const http = TestBed.inject(HttpTestingController);
-    for (const name of ['learn', 'grow', 'look-ahead']) {
+    for (const name of ['learn', 'grow', 'blaze']) {
       http
         .expectOne(`/assets/scenes/landing/${name}.svg`)
         .flush(
@@ -218,7 +222,7 @@ describe('Landing', () => {
     const scene = (name: string) =>
       root.querySelector(`app-card-scene[src="/assets/scenes/landing/${name}.svg"] svg`)!;
     const playing = () =>
-      ['learn', 'grow', 'look-ahead'].filter((name) => scene(name).classList.contains(`${name}-play`));
+      ['learn', 'grow', 'blaze'].filter((name) => scene(name).classList.contains(`${name}-play`));
 
     await vi.advanceTimersByTimeAsync(1499);
     expect(playing()).toEqual([]);
@@ -242,7 +246,7 @@ describe('Landing', () => {
     fixture.detectChanges();
     expect(scene('grow').classList.contains('grow-paused')).toBe(false);
     await vi.advanceTimersByTimeAsync(1000);
-    expect(playing()).toEqual(['learn', 'grow', 'look-ahead']);
+    expect(playing()).toEqual(['learn', 'grow', 'blaze']);
     fixture.destroy();
   });
 
@@ -383,10 +387,10 @@ describe('Landing', () => {
     expect(root.querySelectorAll('.discovery-feature')).toHaveLength(4);
     const discoveryLinks = [...root.querySelectorAll('.discovery-feature [data-card-primary]')];
     expect(discoveryLinks.map((link) => link.getAttribute('href'))).toEqual([
-      '/look-ahead/design-systems',
+      '/blaze/design-systems',
       '/search',
       '/study-plan',
-      '/look-ahead/ai-systems-architecture',
+      '/blaze/ai-systems-architecture',
     ]);
     expect(discoveryLinks.every((link) => link.tagName === 'A')).toBe(true);
     expect(root.querySelector('.discovery-feature a a')).toBeNull();
@@ -396,7 +400,7 @@ describe('Landing', () => {
     expect(root.querySelector('#hero-count')).toBeNull();
     expect(root.querySelector('.landing-footer a[href="/delivery-plan"]')).toBeNull();
     expect(root.querySelector('.discovery-feature a')?.getAttribute('href')).toBe(
-      '/look-ahead/design-systems',
+      '/blaze/design-systems',
     );
     expect(root.textContent).toContain('Audio and video are planned');
     expect(root.textContent).toContain('Standalone clone-and-run repositories are in preparation');
@@ -412,18 +416,18 @@ describe('Landing', () => {
       return card.querySelector('a')!;
     });
 
-    expect(links.map((link) => link.getAttribute('href'))).toEqual(['/learn', '/grow', '/look-ahead']);
+    expect(links.map((link) => link.getAttribute('href'))).toEqual(['/learn', '/grow', '/blaze']);
     expect(links.map((link) => link.querySelector('.number')?.textContent)).toEqual([
       'Learn',
       'Grow',
-      'Look Ahead',
+      'Blaze',
     ]);
     expect(
       links.map((link) => link.querySelector('app-card-scene')?.getAttribute('src')),
     ).toEqual([
       '/assets/scenes/landing/learn.svg',
       '/assets/scenes/landing/grow.svg',
-      '/assets/scenes/landing/look-ahead.svg',
+      '/assets/scenes/landing/blaze.svg',
     ]);
     for (const link of links) {
       expect(link.firstElementChild?.tagName).toBe('APP-CARD-SCENE');
@@ -458,7 +462,7 @@ describe('Landing', () => {
     const scenes = [
       'learn',
       'grow',
-      'look-ahead',
+      'blaze',
       'decision',
       'system-design',
       'topic-workbench',

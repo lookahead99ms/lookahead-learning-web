@@ -1,0 +1,42 @@
+<app-sidebar-toggle
+  side="right"
+  heading="Admin"
+  [open]="open()"
+  [controls]="contentId"
+  [label]="open() ? 'Close admin menu' : 'Open admin menu'"
+  (toggled)="open.set(!open())"
+/>
+<div class="admin-menu-content" [id]="contentId" [hidden]="!open()" [attr.inert]="open() ? null : ''">
+  <nav class="admin-links" aria-label="Admin navigation">
+    @for (page of workspaceLinks(); track page.id) {
+      <a [href]="page.href" [attr.aria-current]="currentState(page.id)"
+        ><span class="item-icon" aria-hidden="true">{{ page.icon }}</span
+        ><span>{{ page.label }}</span></a
+      >
+    }
+  </nav>
+  @if (onDocumentationPage()) {
+    <nav class="documentation-links" [attr.aria-labelledby]="contentId + '-docs'">
+      <p class="menu-label" [id]="contentId + '-docs'">Documentation pages</p>
+      @for (group of documentationGroups; track group.id) {
+        <p
+          class="documentation-group-label"
+          [id]="contentId + '-' + group.id"
+          [style.--group-accent]="group.accent"
+        >
+          <span aria-hidden="true">{{ group.icon }}</span> {{ group.label }}
+        </p>
+        <ul [attr.aria-labelledby]="contentId + '-' + group.id" [style.--group-accent]="group.accent">
+          @for (page of group.pages; track page.id) {
+            <li>
+              <a [href]="page.href" [attr.aria-current]="page.id === pageId() ? 'page' : null"
+                ><span class="item-icon" aria-hidden="true">{{ page.icon }}</span
+                ><span>{{ page.label }}</span></a
+              >
+            </li>
+          }
+        </ul>
+      }
+    </nav>
+  }
+</div>

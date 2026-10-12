@@ -15,6 +15,15 @@ export interface AuthorDocument {
   evidence: { label: string; href: string }[];
   sections: { title: string; anchor: string }[];
   references: { label: string; href: string }[];
+  /** Hash-addressed attachments offered by the admin page (the document sandbox cannot). */
+  downloads: AuthorDocumentDownload[];
+}
+
+export interface AuthorDocumentDownload {
+  label: string;
+  filename: string;
+  href: string;
+  bytes: number;
 }
 
 export type AuthorDocumentFailure =

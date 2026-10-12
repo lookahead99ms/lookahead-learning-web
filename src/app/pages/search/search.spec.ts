@@ -115,20 +115,20 @@ describe('Unified Search topic workbench', () => {
     expect(page.querySelector('.results-toolbar')).not.toBeNull();
   });
 
-  it('keeps canonical Look Ahead review URLs scoped with their course return link', async () => {
-    const lookAheadDocument: SearchDocument = {
-      ...document, path: 'look-ahead', courseId: 'resilience-production',
+  it('keeps canonical Blaze review URLs scoped with their course return link', async () => {
+    const blazeDocument: SearchDocument = {
+      ...document, path: 'blaze', courseId: 'resilience-production',
       courseTitle: 'Resilience in Production', moduleId: 'queues-backpressure',
       moduleTitle: 'Queues, Backpressure, and Fairness',
     };
-    content.getSearchIndex.mockReturnValue(of([lookAheadDocument]));
+    content.getSearchIndex.mockReturnValue(of([blazeDocument]));
     const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/search?kind=practice&path=look-ahead&course=resilience-production&module=queues-backpressure&unit=queues-backpressure', Search);
+    await harness.navigateByUrl('/search?kind=practice&path=blaze&course=resilience-production&module=queues-backpressure&unit=queues-backpressure', Search);
     harness.detectChanges();
-    expect(content.getSearchIndex).toHaveBeenCalledWith('look-ahead');
+    expect(content.getSearchIndex).toHaveBeenCalledWith('blaze');
     expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toBe('Review questions');
     expect(harness.routeNativeElement?.querySelector('.review-back')?.getAttribute('href'))
-      .toBe('/look-ahead/resilience-production#unit-queues-backpressure');
+      .toBe('/blaze/resilience-production#unit-queues-backpressure');
     expect(harness.routeNativeElement?.querySelector('form[role="search"]')).toBeNull();
   });
 
@@ -144,7 +144,7 @@ describe('Unified Search topic workbench', () => {
       harness.routeNativeElement?.querySelector<HTMLInputElement>('.search-input')?.ariaLabel,
     ).toBe('Search across the platform');
     expect(harness.routeNativeElement?.querySelector('.eyebrow')?.textContent?.trim()).toBe(
-      'Across Learn, Grow, and Look Ahead',
+      'Across Learn, Grow, and Blaze',
     );
     expect(harness.routeNativeElement?.querySelector('.search-intro')?.textContent?.trim()).toBe(
       'Find courses, lessons, interview questions, and practice in one place.',

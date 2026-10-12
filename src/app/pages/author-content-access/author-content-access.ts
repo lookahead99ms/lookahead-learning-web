@@ -17,7 +17,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
       <nav aria-label="Preview states" style="display:flex;flex-wrap:wrap;gap:20px;margin:24px 0">
         @for (state of states; track state) {
           <a
-            routerLink="/author/content-access"
+            routerLink="/admin/content-access"
             [queryParams]="{ state }"
             [attr.aria-current]="kind() === state ? 'page' : null"
             >{{ state }}</a
@@ -33,7 +33,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         />
       }
       <p>{{ retried ? 'Retry requested. In a real lesson, this starts a fresh read.' : '' }}</p>
-      <a routerLink="/author/operations">Open Author documentation</a>
+      <a routerLink="/admin/operations">Open documentation</a>
     </main>`,
 })
 export class AuthorContentAccess {
@@ -46,7 +46,7 @@ export class AuthorContentAccess {
     const value = this.query().get('state') as RecoveryKind;
     return this.states.includes(value) ? value : 'locked';
   });
-  readonly destination = computed(() => '/author/content-access?state=' + this.kind());
+  readonly destination = computed(() => '/admin/content-access?state=' + this.kind());
   readonly preview = {
     title: 'Designing a reliable message queue',
     description: 'A sample lesson preview for reviewing the access experience.',

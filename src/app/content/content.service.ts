@@ -143,8 +143,8 @@ export class ContentService {
    * Loads a course-card scene as SVG text from the same content origin as other
    * course assets. One request per path is shared by every card and page that uses it;
    * a failed load is forgotten so a later visit can try again.
-   * Look Ahead unit card scenes (/content/look-ahead/<course>/visuals/cards/<file>.svg)
-   * load their public copy under /assets/scenes/units/look-ahead/<course>/ first, because
+   * Blaze unit card scenes (/content/blaze/<course>/visuals/cards/<file>.svg)
+   * load their public copy under /assets/scenes/units/blaze/<course>/ first, because
    * content visuals need access and signed-out visitors should still see the scene; the
    * content path is the fallback when no public copy ships or it is not an SVG.
    */
@@ -355,7 +355,7 @@ export class ContentService {
   }
 
   private expandIndexRecord(path: ContentPath, record: ContentIndexRecord): SearchDocument {
-    const pathLabel = path === 'look-ahead' ? 'Look Ahead' : this.titleCase(path);
+    const pathLabel = path === 'blaze' ? 'Blaze' : this.titleCase(path);
     const discoveryKind =
       record.discoveryKind ??
       (record.contentType === 'theory' || record.contentType === 'dsa-pattern'
@@ -605,7 +605,7 @@ export class ContentService {
   }
 
   private validContentPath(value: string): value is ContentPath {
-    return value === 'learn' || value === 'grow' || value === 'look-ahead';
+    return value === 'learn' || value === 'grow' || value === 'blaze';
   }
 
   private hasDuplicates(values: string[]): boolean {

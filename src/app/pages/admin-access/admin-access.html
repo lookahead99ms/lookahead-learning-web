@@ -1,0 +1,44 @@
+<app-platform-header />
+<main id="main-content">
+  <p class="eyebrow">Owner tools</p><h1>People and access</h1>
+  <div class="access-layout"><section aria-label="Manage access">
+    <p>Assign roles and course access. These permissions never include another learner’s saved plans or progress.</p>
+    <p role="status" aria-live="polite">{{ notice() }}</p>
+    <fieldset [disabled]="busy()"><legend>Choose a person</legend>
+      <label>Exact email or username <input type="text" [(ngModel)]="query" autocomplete="off" /></label>
+      <button type="button" (click)="find()">Find existing account</button>
+      <label>Email before signup <input type="email" [(ngModel)]="pendingEmail" autocomplete="off" /></label>
+      <button type="button" (click)="invite()">Prepare pending access</button>
+      <p>Pending access requires verified email ownership through Cognito. Local signup does not verify email and cannot claim it. Pending access expires 14 days after it is saved. Saving it again renews this window. No invitation email is sent. New cloud-account onboarding is not active yet; a newly registered account cannot claim this access until that integration is enabled.</p>
+    </fieldset>
+    @if (draft; as selection) {
+      <h2>Review access for {{ recipient()?.displayName || selection.pendingEmail || selection.accountId }}</h2>
+      @if (selection.accountId) { <p>Account ID: {{ selection.accountId }}</p> }
+      <fieldset [disabled]="busy()"><legend>Roles</legend>
+        @for (role of roleOptions; track role.id) {
+          <label><input type="checkbox" [checked]="selection.roles.includes(role.id)" (change)="toggle('roles', role.id, $any($event.target).checked)" /> {{ role.label }} — {{ role.description }}</label>
+        }
+        <p>The owner role cannot be assigned here. Multiple selected roles combine their permissions.</p>
+      </fieldset>
+      <fieldset [disabled]="busy()"><legend>Course access</legend>
+        <label><input type="checkbox" [(ngModel)]="selection.fullCurriculum" /> Entire curriculum, including future courses</label>
+        @if (selection.roles.includes('tester')) { <p>Tester access includes the entire curriculum.</p> }
+        <div class="courses">
+          @for (topic of topics(); track topic) {
+            <label><input type="checkbox" [checked]="selection.topicGrants.includes(topic)" [disabled]="selection.fullCurriculum || selection.roles.includes('tester')" (change)="toggle('topicGrants', topic, $any($event.target).checked)" /> {{ topicLabel(topic) }}</label>
+          }
+        </div>
+        <p>Private previews require access to the entire curriculum because they can contain course material. Existing purchases or separate grants remain in effect.</p>
+      </fieldset>
+      <p>To remove this assignment’s access, clear its roles, entire-curriculum selection and selected courses, then save.</p>
+      <button class="primary-action" type="button" (click)="save()" [disabled]="busy()">Save access</button>
+    }
+    <h2>Saved assignments</h2><button type="button" (click)="reload()" [disabled]="busy()">Reload list</button>
+    @for (assignment of assignments(); track assignment.id) {
+      <article class="assignment"><p>{{ assignment.pendingEmail || assignment.accountId }} · {{ assignment.pendingEmail ? 'Pending verified sign-in' : 'Assigned' }}</p>
+        <p>{{ assignment.roles.join(', ') || 'No staff role' }} · {{ assignment.fullCurriculum || assignment.roles.includes('tester') ? 'Entire curriculum' : assignment.topicGrants.length + ' selected courses' }}</p>
+        <button type="button" (click)="recipient.set(null); edit(assignment)" [disabled]="busy()">Review assignment</button>
+      </article>
+    } @empty { <p>No saved assignments.</p> }
+  </section><app-author-admin-menu pageId="access" /></div>
+</main>

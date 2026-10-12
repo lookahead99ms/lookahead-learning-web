@@ -34,6 +34,20 @@ describe('PlatformHeader account disclosure', () => {
     expect(style.display).toBe('block');
   });
 
+  it('leaves Search, Study Plan and the theme switch to the page when asked (Manage account)', () => {
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    const element: HTMLElement = fixture.nativeElement;
+    expect(element.querySelector('.header-search-trigger')).not.toBeNull();
+    expect(element.querySelector('.theme-switch')).not.toBeNull();
+    fixture.componentRef.setInput('hideUtilities', true);
+    fixture.detectChanges();
+    expect(element.querySelector('.header-search-trigger')).toBeNull();
+    expect(element.querySelector('a.navigation-utility[href^="/study-plan"]')).toBeNull();
+    expect(element.querySelector('.theme-switch')).toBeNull();
+    expect(element.querySelector('.platform-navigation')).not.toBeNull();
+  });
+
   it('shows only Sign in when signed out or expired and only the account control when authenticated', () => {
     const store = TestBed.inject(StudyPlanAccount);
     const fixture = TestBed.createComponent(PlatformHeader);
@@ -254,13 +268,15 @@ describe('PlatformHeader account disclosure', () => {
     fixture.nativeElement.querySelector('.avatar-trigger-btn').click();
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.author-account-links')).toBeNull();
-    expect(fixture.nativeElement.querySelector('#account-menu a[href="/author"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('#account-menu a[href="/admin/previews"]')).toBeNull();
     accounts.account.update((account) => ({ ...account!, authorPreview: true }));
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.author-account-links')?.textContent).toContain(
-      'Author Previews',
+      'Previews',
     );
-    expect(fixture.nativeElement.querySelector('#account-menu a[href="/author"]')).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('#account-menu a[href="/admin/previews"]'),
+    ).not.toBeNull();
   });
 
   it('uses the display name without granting author access and keeps learner actions ordered', () => {
@@ -274,10 +290,10 @@ describe('PlatformHeader account disclosure', () => {
     expect(fixture.nativeElement.querySelector('.account-trigger-name').textContent).toBe('Author');
     expect(fixture.nativeElement.querySelector('.author-account-links')).toBeNull();
     expect(fixture.nativeElement.querySelector('a[href="/delivery-plan"]')).toBeNull();
-    expect(fixture.nativeElement.querySelector('a[href="/author/api"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('a[href="/admin/api"]')).toBeNull();
     const actions = [
       ...fixture.nativeElement.querySelector('[aria-label="Account links"]').children,
-    ].map((item: any) => item.textContent.trim());
+    ].map((item: any) => item.querySelector('.item-label').textContent.trim());
     expect(actions).toEqual(['View study plan', 'Manage account', 'Support and feedback']);
     expect(
       fixture.nativeElement
@@ -299,41 +315,38 @@ describe('PlatformHeader account disclosure', () => {
     store.account.update((account) => ({ ...account!, authorPreview: true }));
     fixture.detectChanges();
     const menu = fixture.nativeElement.querySelector('#account-menu') as HTMLElement;
-    const sectionLabel = menu.querySelector('a[href="/author/previews"]')!;
-    expect(sectionLabel.textContent?.trim()).toBe('Author Previews');
+    const sectionLabel = menu.querySelector('a[href="/admin/previews"]')!;
+    expect(sectionLabel.querySelector('.item-label')?.textContent?.trim()).toBe('Previews');
     expect(sectionLabel.tagName).toBe('A');
     expect(menu.querySelector('.author-account-links')?.getAttribute('aria-label')).toBe(
-      'Author tools',
+      'Admin tools',
     );
+    expect(menu.querySelector('.author-links-label')?.textContent?.trim()).toBe('Admin');
     expect(menu.textContent!.indexOf('Support and feedback')).toBeLessThan(
-      menu.textContent!.indexOf('Author Previews'),
+      menu.textContent!.indexOf('Previews'),
     );
     const authorLinks = menu.querySelector('.author-account-links')!;
     expect(
-      [...authorLinks.querySelectorAll(':scope > a')].map((item) => item.textContent?.trim()),
-    ).toEqual(['Author views', 'Author Previews', 'Delivery Plan']);
-    expect(menu.querySelector('.author-account-links a[href="/author"]')).not.toBeNull();
-    expect(menu.querySelector('.author-account-links a[href="/delivery-plan"]')).not.toBeNull();
-    expect(menu.querySelector('.author-documentation-label')?.textContent).toContain(
-      'Documentation',
-    );
-    expect(
-      [...menu.querySelectorAll('#account-documentation-links a')].map((link) =>
-        link.getAttribute('href'),
-      ),
+      [...authorLinks.querySelectorAll(':scope > a')].map((item) => [
+        item.querySelector('.item-label')?.textContent?.trim(),
+        item.getAttribute('href'),
+      ]),
     ).toEqual([
-      '/author/architecture',
-      '/author/local-development',
-      '/author/api',
-      '/author/operations',
+      ['Previews', '/admin/previews'],
+      ['Documentation', '/admin/docs'],
+      ['People and access', '/admin/access'],
+      ['Delivery Plan', '/delivery-plan'],
     ]);
+    // DLV-926: the documentation pages are listed on /admin/docs, not inside the dropdown.
+    expect(menu.querySelector('#account-documentation-links')).toBeNull();
+    expect(menu.querySelector('a[href="/author"]')).toBeNull();
     expect(menu.textContent).not.toContain('Mock interviews');
     expect(menu.textContent).not.toContain('Previews/unpublished work');
     expect(menu.querySelectorAll('a[href*="localhost"], a[href*="127.0.0.1"]')).toHaveLength(0);
   });
 
-  it('shows Documentation directly and marks the current document route', async () => {
-    vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue('/author/operations');
+  it('marks Documentation current on any documentation page', async () => {
+    vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue('/admin/operations');
     const store = TestBed.inject(StudyPlanAccount);
     store.account.set({
       accountId: 'test',
@@ -350,9 +363,10 @@ describe('PlatformHeader account disclosure', () => {
     accountTrigger.click();
     fixture.detectChanges();
     const current = fixture.nativeElement.querySelector(
-      '#account-documentation-links a[aria-current="page"]',
+      '.author-account-links a[aria-current="page"]',
     ) as HTMLAnchorElement;
-    expect(current.getAttribute('href')).toBe('/author/operations');
+    expect(current.getAttribute('href')).toBe('/admin/docs');
+    expect(fixture.nativeElement.querySelectorAll('[aria-current="page"]')).toHaveLength(1);
     current.dispatchEvent(
       new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
     );
@@ -412,10 +426,10 @@ describe('PlatformHeader account disclosure', () => {
     ] as HTMLAnchorElement[];
     expect(links.map((link) => link.getAttribute('href'))).toEqual([
       '/learn/hands-on-dsa',
-      '/look-ahead/system-design',
+      '/blaze/system-design',
       '/grow/ai-assisted-development',
       '/learn/core-java',
-      '/look-ahead/behavioral-carl',
+      '/blaze/behavioral-carl',
     ]);
     expect(fixture.nativeElement.querySelectorAll('.search-submit').length).toBe(1);
     expect(fixture.nativeElement.textContent).not.toContain('View all search results');
@@ -434,7 +448,7 @@ describe('PlatformHeader account disclosure', () => {
       [...fixture.nativeElement.querySelectorAll('.platform-navigation a')].map((a: Element) =>
         a.textContent?.trim(),
       ),
-    ).toEqual(['Learn', 'Grow', 'Look Ahead']);
+    ).toEqual(['Learn', 'Grow', 'Blaze']);
     trigger.focus();
     trigger.click();
     fixture.detectChanges();
@@ -504,7 +518,7 @@ describe('PlatformHeader account disclosure', () => {
     fixture.detectChanges();
     const links = fixture.nativeElement.querySelectorAll('.search-palette a');
     const link = links[links.length - 1] as HTMLAnchorElement;
-    expect(link.getAttribute('href')).toBe('/look-ahead/behavioral-carl');
+    expect(link.getAttribute('href')).toBe('/blaze/behavioral-carl');
     input.focus();
     input.dispatchEvent(
       new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true }),

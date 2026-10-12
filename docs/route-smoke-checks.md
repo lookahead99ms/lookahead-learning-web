@@ -19,7 +19,7 @@ Replace parameters with IDs discovered through the selected catalog, manifests, 
 | `/` | Landing page with navigation into learning, questions, planning, and delivery |
 | `/learn` | Learn catalog and expandable curriculum groups |
 | `/grow` | Grow catalog with production-engineering course links |
-| `/look-ahead` | Look Ahead catalog with architecture and leadership course links |
+| `/blaze` | Blaze catalog with architecture and leadership course links; old `/blaze/...` links open the same page and switch to `/blaze/...` |
 | `/search` | Cross-platform content discovery and matching results |
 | `/interview-questions` | Question-only discovery, expandable answers, and detailed question links |
 | `/study-plan` | Time/topic/access inputs and a generated plan with curriculum links |
@@ -28,23 +28,23 @@ Replace parameters with IDs discovered through the selected catalog, manifests, 
 | `/delivery` | Redirect to `/delivery-plan` |
 | `/learn/:courseId` | Learn course learning map |
 | `/grow/:courseId` | Grow course learning map |
-| `/look-ahead/:courseId` | Look Ahead course learning map |
+| `/blaze/:courseId` | Blaze course learning map |
 | `/learn/:courseId/module/:moduleId` | Learn module question list |
 | `/grow/:courseId/module/:moduleId` | Grow module question list |
-| `/look-ahead/:courseId/module/:moduleId` | Look Ahead module question list |
+| `/blaze/:courseId/module/:moduleId` | Blaze module question list |
 | `/learn/:courseId/:questionId` | Learn lesson, question, or DSA problem using its content contract |
 | `/grow/:courseId/:questionId` | Grow lesson or standalone answer |
-| `/look-ahead/:courseId/:questionId` | Look Ahead lesson or standalone answer |
+| `/blaze/:courseId/:questionId` | Blaze lesson or standalone answer |
 | `/learn/:courseId/section/theory` | Compatibility redirect to the course learning map |
 | `/learn/:courseId/section/:sectionId` | Legacy section/module navigation for a real section |
 | Unmatched route | Current router fallback redirects to Home; do not mistake that for the requested page loading |
 
-Static paths, module paths, and section paths must take precedence over generic course/question paths. Parameterized routes share components but still require representative checks in Learn, Grow, and Look Ahead.
+Static paths, module paths, and section paths must take precedence over generic course/question paths. Parameterized routes share components but still require representative checks in Learn, Grow, and Blaze.
 
 ## Minimum journey checks
 
 1. Follow Home to Learn, expand a group, open a course, and open a lesson. Confirm that the heading, content, and breadcrumbs refer to the selected item.
-2. Open a representative Grow and Look Ahead course, lesson, module, and standalone answer. A question grid is not a failed lesson if the URL explicitly selects a module.
+2. Open a representative Grow and Blaze course, lesson, module, and standalone answer. A question grid is not a failed lesson if the URL explicitly selects a module.
 3. Open the complete question library, then a course/module-filtered link. Wait for the index to finish loading, check the visible filter selections, expand an answer, and follow its detailed question link.
 4. Open global Search and verify that it includes content types beyond interview answers. Record the distinction from the question library; do not certify every search behavior through this smoke test.
 5. Follow a pattern's Practice action into Hands-On DSA. Verify the pattern query parameter and the selected problem set.
@@ -68,7 +68,7 @@ Route availability is only the baseline. Automated regression coverage uses the 
 
 | Test file | Protected behavior |
 | --- | --- |
-| `src/app/pages/content-route-regression.spec.ts` | Learn, Grow, and Look Ahead course/module/question route reuse; missing item IDs; failed-request recovery; stale content removal and superseded responses; legacy Learn sections |
+| `src/app/pages/content-route-regression.spec.ts` | Learn, Grow, and Blaze course/module/question route reuse; missing item IDs; failed-request recovery; stale content removal and superseded responses; legacy Learn sections |
 | `src/app/pages/search/search.spec.ts` | Search clearing, URL-driven visible state, Back/Forward, recreated-page state, repeated topic deselection, delayed filter options, first-submit scrolling, and on-demand answers |
 | `src/app/pages/hands-on-dsa/hands-on-dsa.spec.ts` | Practice-to-filter-to-problem-to-breadcrumb journey, repeated pattern deselection, collapsed defaults, deep links, catalog failures, and Surprise me eligibility/context |
 | `src/app/core/course-learning-map/course-learning-map.spec.ts` | Canonical Practice URLs and counted question-bank links |

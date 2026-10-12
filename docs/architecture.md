@@ -6,7 +6,7 @@ Look Ahead Learning Web is an Angular application shell for structured technical
 
 - **Learn** builds language, algorithm, data-structure, and tooling foundations.
 - **Grow** applies those foundations to production engineering capabilities.
-- **Look Ahead** prepares engineers for architecture, leadership, and changing industry practices.
+- **Blaze** prepares engineers for architecture, leadership, and changing industry practices.
 
 The public repository demonstrates the shell and its contracts. Authored curriculum is a separate protected asset.
 
@@ -141,7 +141,7 @@ The Gateway serves two separate boundaries: private immutable publications for
 document reading, and the Learning Domain API for account-owned review events.
 Angular renders the document in an iframe and owns the review controls outside it.
 
-`/author/previews/study-plan` binds review submissions to the canonical artifact
+`/admin/previews/study-plan` binds review submissions to the canonical artifact
 ID, version, owning ticket and source hash. The rendered HTML hash is separate
 publication provenance. `AuthorReviewApi` uses BFF CSRF and a UUID idempotency
 header; the server supplies actor and recording time. History remains in server
@@ -150,7 +150,7 @@ preserve the draft and require history reload plus an explicit replacement actio
 Uncertain retries reuse the same body and key. A successful receipt means recorded
 and pending reconciliation; it does not change delivery status or authorize Git.
 
-`/author/operations` displays a read-only document with parent-owned section and
+`/admin/operations` (and every other admin documentation route) displays a read-only document with parent-owned section and
 reference links. Repository and runbook links and supporting references remain
 in the main reading flow and appear in the heading outline. The Author pages
 share a continuous two-column layout while keeping protected HTML in its

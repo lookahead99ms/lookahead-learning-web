@@ -460,8 +460,8 @@ select {
   border-color: var(--path-grow);
 }
 
-.result-path[data-path='look-ahead'] {
-  border-color: var(--path-look-ahead);
+.result-path[data-path='blaze'] {
+  border-color: var(--path-blaze);
 }
 
 .result-title {

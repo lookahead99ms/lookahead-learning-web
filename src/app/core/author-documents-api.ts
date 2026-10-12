@@ -4,15 +4,26 @@ import { firstValueFrom, timeout } from 'rxjs';
 import { AUTHOR_PREVIEWS_BASE_URL } from './author-preview-config';
 import {
   AuthorDocument,
+  AuthorDocumentDownload,
   AuthorDocumentError,
   AuthorDocumentsClient,
 } from './author-documents-client';
 import { StudyPlanAccount } from '../pages/study-plan/study-plan-account';
 
 const publicationRoot = '/bff/author/previews/preview-directory/author-documents/';
-const documentIds = new Set(['study-plan-review', 'operations-reference', 'local-development']);
-// The Operations reference includes separate Local and cloud ownership sections.
-// Keep navigation bounded while accepting its 21-section published manifest.
+const documentIds = new Set([
+  'study-plan-review',
+  'operations-reference',
+  'local-development',
+  'reviewer-guide',
+  'screen-names',
+  'access-checks',
+  'authentication',
+  'aws-deployment',
+  'release-gates',
+  'production-support',
+]);
+// Keep navigation bounded while accepting the longest reference (AWS deployment).
 const maxDocumentSections = 32;
 type RecordValue = Record<string, unknown>;
 function object(value: unknown): RecordValue {
@@ -53,6 +64,20 @@ function reference(value: unknown): { label: string; href: string } {
   const externalLink = href.startsWith('https://') && !url.username && !url.password;
   if (!privateLink && !externalLink) throw new AuthorDocumentError('invalid');
   return { label, href };
+}
+
+function download(value: unknown): AuthorDocumentDownload {
+  const item = object(value),
+    filename = text(item['filename'], 100),
+    sha256 = hash(item['sha256']),
+    bytes = item['bytes'];
+  if (!/^[A-Za-z0-9_.-]+$/.test(filename) || filename.startsWith('.'))
+    throw new AuthorDocumentError('invalid');
+  if (typeof bytes !== 'number' || !Number.isSafeInteger(bytes) || bytes <= 0 || bytes > 5_000_000)
+    throw new AuthorDocumentError('invalid');
+  const href = `${publicationRoot}downloads/${sha256}/${filename}`;
+  if (item['href'] !== href) throw new AuthorDocumentError('invalid');
+  return { label: text(item['label']), filename, href, bytes };
 }
 
 /** Strictly constrain executable documents to the immutable protected publication. */
@@ -113,6 +138,7 @@ export function parseAuthorDocument(value: unknown, id: string): AuthorDocument 
     evidence: list(entry['evidence'] ?? [], 50).map(reference),
     sections,
     references: list(entry['links'], 50).map(reference),
+    downloads: list(entry['downloads'] ?? [], 10).map(download),
   };
 }
 
@@ -125,7 +151,7 @@ export class AuthorDocumentsApi implements AuthorDocumentsClient {
     if (this.base !== '/bff/author/previews/') throw new AuthorDocumentError('unpublished');
     const account = this.accounts.account();
     if (!account || this.accounts.sessionExpired()) throw new AuthorDocumentError('unauthorized');
-    if (account.authorPreview !== true) throw new AuthorDocumentError('forbidden');
+    if (!(account.permissions?.previewDocuments ?? account.authorPreview === true)) throw new AuthorDocumentError('forbidden');
     if (!documentIds.has(id)) throw new AuthorDocumentError('invalid');
     try {
       const value = await firstValueFrom(
@@ -136,7 +162,7 @@ export class AuthorDocumentsApi implements AuthorDocumentsClient {
         this.accounts.account()?.accountId !== account.accountId
       )
         throw new AuthorDocumentError('unauthorized');
-      if (this.accounts.account()?.authorPreview !== true)
+      if (!(this.accounts.account()?.permissions?.previewDocuments ?? this.accounts.account()?.authorPreview === true))
         throw new AuthorDocumentError('forbidden');
       return parseAuthorDocument(value, id);
     } catch (error) {

@@ -11,12 +11,12 @@ import {
   learningUnitCardErrors,
 } from './learning-unit-card-contract.mjs';
 
-const label = 'look-ahead/design-rounds: learning unit reservation-round';
+const label = 'blaze/design-rounds: learning unit reservation-round';
 const valid = {
   summary: '2 million fans try to reserve 60,000 seats when an event goes on sale.',
   level: 'Advanced',
   minutes: 45,
-  scene: '/content/look-ahead/design-systems/visuals/cards/reservation.svg',
+  scene: '/content/blaze/design-systems/visuals/cards/reservation.svg',
   sceneAlt: 'A seat turns from held to reserved while a second click is refused.',
   pillGroups: [
     { label: 'Patterns', items: ['Contention', 'Handling Bursts'] },
@@ -45,11 +45,11 @@ test('requires a local SVG scene path with alt text', () => {
     /scene must be/,
   );
   assert.match(
-    learningUnitCardErrors({ ...valid, scene: '/content/look-ahead/../x.svg' }, label)[0],
+    learningUnitCardErrors({ ...valid, scene: '/content/blaze/../x.svg' }, label)[0],
     /scene must be/,
   );
   assert.match(
-    learningUnitCardErrors({ ...valid, scene: '/content/look-ahead/cards/a.png' }, label)[0],
+    learningUnitCardErrors({ ...valid, scene: '/content/blaze/cards/a.png' }, label)[0],
     /scene must be/,
   );
   assert.match(
@@ -58,7 +58,7 @@ test('requires a local SVG scene path with alt text', () => {
   );
   assert.deepEqual(
     learningUnitCardErrors(
-      { ...valid, scene: '/assets/scenes/units/look-ahead/design-systems/reservation.svg' },
+      { ...valid, scene: '/assets/scenes/units/blaze/design-systems/reservation.svg' },
       label,
     ),
     [],
@@ -127,7 +127,7 @@ test('card drawings may carry words coloured from the scene tokens', () => {
     '<g fill="var(--scene-text,#28434a)"><text x="1" y="1" font-size="10">Madrid</text></g>',
   ].join('');
   assert.deepEqual(cardSceneTextErrors(scene(words), 'demo'), []);
-  // A 240-wide Look Ahead scene at its usual 14 units, and a large DSA value.
+  // A 240-wide Blaze scene at its usual 14 units, and a large DSA value.
   assert.deepEqual(
     cardSceneTextErrors(scene('<text font-size="14">Double room</text>', 240, 135), 'demo'),
     [],
@@ -253,7 +253,7 @@ test('card drawing words use their own tokens, never the title colour or weight'
   );
   assert.match(styles, /@property --card-scene-text-max \{\s*syntax: '<length>';/);
   assert.match(styles, /@property --card-scene-mark-max \{\s*syntax: '<length>';/);
-  for (const path of ['learn', 'grow', 'look-ahead']) {
+  for (const path of ['learn', 'grow', 'blaze']) {
     assert.match(
       styles,
       new RegExp(
@@ -264,7 +264,7 @@ test('card drawing words use their own tokens, never the title colour or weight'
   }
   // Card titles are apricot in both themes (user, 2026-10-02), never the drawing-text colour.
   assert.match(styles, /--card-title-learn: #a84e17;/);
-  assert.match(styles, /:root\[data-theme='dark'\][\s\S]*--card-title-look-ahead: #ffba87;/);
+  assert.match(styles, /:root\[data-theme='dark'\][\s\S]*--card-title-blaze: #ffba87;/);
   const catalog = readFileSync(join(webRoot, 'src/app/pages/catalog-experience.css'), 'utf8');
   const unitMap = readFileSync(
     join(webRoot, 'src/app/core/course-learning-map/course-learning-map.ts'),
@@ -293,9 +293,9 @@ test('card drawing words use their own tokens, never the title colour or weight'
 });
 
 // Every catalog course/group card and course unit card drawing shipped with the app, plus the
-// Look Ahead content card sources when the private content checkout sits next to this one.
+// Blaze content card sources when the private content checkout sits next to this one.
 const scenesRoot = new URL('../public/assets/scenes/', import.meta.url).pathname;
-const contentLookAhead = new URL('../../lookahead-learning-content/runtime/look-ahead/', import.meta.url)
+const contentBlaze = new URL('../../lookahead-learning-content/runtime/blaze/', import.meta.url)
   .pathname;
 const cardSceneDirs = ['courses', 'groups', 'units'].map((dir) => join(scenesRoot, dir));
 const walkSvgs = (dir) =>
@@ -316,12 +316,12 @@ test('every card drawing shipped with the app leaves its text to the card stylin
   assert.deepEqual(errors, []);
 });
 
-test('every Look Ahead content card drawing leaves its text to the card styling', (t) => {
-  if (!existsSync(contentLookAhead)) return t.skip('the content checkout is not next to this one');
-  const files = walkSvgs(contentLookAhead).filter((file) => file.includes('/visuals/cards/'));
+test('every Blaze content card drawing leaves its text to the card styling', (t) => {
+  if (!existsSync(contentBlaze)) return t.skip('the content checkout is not next to this one');
+  const files = walkSvgs(contentBlaze).filter((file) => file.includes('/visuals/cards/'));
   assert.ok(files.length > 0);
   const errors = files.flatMap((file) =>
-    cardSceneTextErrors(readFileSync(file, 'utf8'), relative(contentLookAhead, file)),
+    cardSceneTextErrors(readFileSync(file, 'utf8'), relative(contentBlaze, file)),
   );
   assert.deepEqual(errors, []);
 });

@@ -18,6 +18,8 @@ import {
   AuthorOutlineItem,
   AuthorWorkspaceNav,
 } from '../../core/author-workspace-nav/author-workspace-nav';
+import { AuthorAdminMenu } from '../../core/author-workspace-nav/author-admin-menu';
+import { AuthorDocHero } from '../../core/author-workspace-nav/author-doc-hero';
 import {
   AUTHOR_PREVIEWS_BASE_URL,
   apiReferencePreviewUrl,
@@ -74,9 +76,9 @@ const allowedDownloads = new Set(downloadSections.flatMap((section) => section.f
 
 @Component({
   selector: 'app-author-api',
-  imports: [PlatformHeader, AuthorWorkspaceNav],
+  imports: [PlatformHeader, AuthorWorkspaceNav, AuthorAdminMenu, AuthorDocHero],
   templateUrl: './author-api.html',
-  styleUrl: './author-api.css',
+  styleUrls: ['./author-api.css', '../../core/author-workspace-nav/reference-footer.css'],
 })
 export class AuthorApiPage {
   private readonly hostDocument = inject(DOCUMENT);
@@ -95,7 +97,7 @@ export class AuthorApiPage {
     'access-model', 'downloads',
   ];
   protected readonly authorized = computed(
-    () => this.accounts.account()?.authorPreview === true && !this.accounts.sessionExpired(),
+    () => (this.accounts.account()?.permissions?.previewDocuments ?? this.accounts.account()?.authorPreview === true) && !this.accounts.sessionExpired(),
   );
   protected readonly state = signal<'disabled' | 'loading' | 'ready' | 'error'>('disabled');
   protected readonly documentHeight = signal<number | null>(null);
@@ -134,10 +136,10 @@ export class AuthorApiPage {
       ['All endpoints', 'inventory'],
       ['Schemas', 'schemas'],
       ['Capabilities', 'capabilities'],
-    ].map(([label, anchor]) => ({ label, href: `/author/api#${anchor}` }));
+    ].map(([label, anchor]) => ({ label, href: `/admin/api#${anchor}` }));
     return [
       ...documentSections,
-      { label: 'Files and downloads', href: '/author/api#api-downloads' },
+      { label: 'Files and downloads', href: '/admin/api#api-downloads' },
     ];
   });
 
@@ -176,7 +178,7 @@ export class AuthorApiPage {
       if (!hostWindow) return;
       const hash = `#${childAnchor}`;
       if (hostWindow.location.hash !== hash)
-        hostWindow.history.pushState(null, '', `/author/api${hash}`);
+        hostWindow.history.pushState(null, '', `/admin/api${hash}`);
       this.navigationHash.set(hash);
       this.onEmbeddedSectionSelected(hash);
       return;

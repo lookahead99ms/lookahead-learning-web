@@ -81,7 +81,7 @@ const surfaces: { name: string; component: Type<unknown>; suffix: string; title:
 ];
 
 const routeCases = surfaces.flatMap((surface) =>
-  (surface.name === 'section' ? ['learn'] : ['learn', 'grow', 'look-ahead']).map((contentPath) => ({
+  (surface.name === 'section' ? ['learn'] : ['learn', 'grow', 'blaze']).map((contentPath) => ({
     ...surface,
     contentPath,
   })),

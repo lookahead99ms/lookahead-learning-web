@@ -38,10 +38,10 @@ describe('Header curriculum navigation', () => {
     };
     return { fixture, http, button };
   }
-  it('leaves hidden Look Ahead courses out of the menu, including More to explore', () => {
+  it('leaves hidden Blaze courses out of the menu, including More to explore', () => {
     const { fixture, http, button } = setup();
-    expand(button('Browse Look Ahead'));
-    http.expectOne('/content/look-ahead/navigation.json').flush({
+    expand(button('Browse Blaze'));
+    http.expectOne('/content/blaze/navigation.json').flush({
       courses: [
         { id: 'system-design', title: 'System Design', hasHighlights: false },
         { id: 'distributed-systems', title: 'Distributed Systems', hasHighlights: false },
@@ -296,7 +296,7 @@ describe('Header hover and touch behavior', () => {
     expect(modified.defaultPrevented).toBe(false);
     expect(link.getAttribute('href')).toBe('/learn');
   });
-  it.each(['learn', 'grow', 'look-ahead'])('opens a %s course on the first tap and preserves modified clicks', (path) => {
+  it.each(['learn', 'grow', 'blaze'])('opens a %s course on the first tap and preserves modified clicks', (path) => {
     const { fixture, http } = setup();
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
     expand(fixture.nativeElement.querySelector('#browse-' + path));
@@ -318,7 +318,7 @@ describe('Header hover and touch behavior', () => {
     expect(navigate).not.toHaveBeenCalled();
     fixture.destroy();
   });
-  it.each(['learn', 'grow', 'look-ahead'] as const)('shows the %s summary between Explore and Close as plain text', (path) => {
+  it.each(['learn', 'grow', 'blaze'] as const)('shows the %s summary between Explore and Close as plain text', (path) => {
     const { fixture, http } = setup();
     expand(fixture.nativeElement.querySelector('#browse-' + path));
     http.expectOne('/content/' + path + '/navigation.json').flush({ courses: [] });

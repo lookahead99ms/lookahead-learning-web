@@ -1,6 +1,6 @@
 import { GROW_COURSE_GROUPS } from './grow-course-groups';
 import { LEARN_COURSE_GROUPS } from './learn-course-groups';
-import { LOOK_AHEAD_COURSE_GROUPS } from './look-ahead-course-groups';
+import { BLAZE_COURSE_GROUPS } from './blaze-course-groups';
 
 export interface CatalogCourseGroup {
   id: string;
@@ -12,7 +12,7 @@ export interface CatalogCourseGroup {
 }
 
 /**
- * The catalog group a course is listed under on its path page (Learn, Grow or Look Ahead), or
+ * The catalog group a course is listed under on its path page (Learn, Grow or Blaze), or
  * null when no group lists it. Breadcrumbs use it for the group level between the path and the
  * course, linking to `/<path>?group=<id>`.
  */
@@ -32,7 +32,7 @@ function pathGroups(pathId: string): readonly CatalogCourseGroup[] {
     ? LEARN_COURSE_GROUPS
     : pathId === 'grow'
       ? GROW_COURSE_GROUPS
-      : pathId === 'look-ahead'
-        ? LOOK_AHEAD_COURSE_GROUPS
+      : pathId === 'blaze'
+        ? BLAZE_COURSE_GROUPS
         : [];
 }

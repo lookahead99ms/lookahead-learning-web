@@ -15,8 +15,8 @@ export const representativeRoutes = [
   { id: 'grow-vue', route: '/grow/vue', readyText: 'Vue.js Production Engineering' },
   { id: 'grow-nodejs', route: '/grow/nodejs', readyText: 'Node.js Backend Engineering' },
   {
-    id: 'look-ahead-system-design',
-    route: '/look-ahead/system-design',
+    id: 'blaze-system-design',
+    route: '/blaze/system-design',
     readyText: 'System Design',
   },
   {

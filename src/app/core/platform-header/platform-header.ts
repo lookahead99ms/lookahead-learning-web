@@ -16,17 +16,14 @@ import { StudyPlanAccount } from '../../pages/study-plan/study-plan-account';
 import { TopicShortcuts } from '../topic-shortcuts';
 import { FormsModule } from '@angular/forms';
 import { PlatformThemeService } from '../platform-theme';
+import { AccountThemePreference } from '../account-theme';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { ContentService } from '../../content/content.service';
 import { SearchDocument } from '../../content/content.models';
 import {
-  AUTHOR_PREVIEWS_BASE_URL,
-  architecturePreviewUrl,
-  apiReferencePreviewUrl,
-} from '../author-preview-config';
-import {
-  authorDocumentationLinks,
   authorWorkspaceLinks,
+  visibleAdminLinks,
+  isAuthorDocumentationRoute,
 } from '../author-workspace-nav/author-workspace-links';
 
 export function accountTriggerLabel(displayName: string | null | undefined): string {
@@ -393,7 +390,7 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         top: calc(100% + 10px);
         right: 0;
         z-index: 20;
-        width: min(280px, calc(100vw - 32px));
+        width: min(300px, calc(100vw - 32px));
         max-height: calc(100dvh - 100px);
         overflow-y: auto;
         padding: 16px 0;
@@ -405,6 +402,31 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
       .menu-user-header,
       .menu-section-group {
         padding: 0 20px;
+      }
+      .menu-user-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: -16px 0 0;
+        padding-block: 16px 14px;
+        border-radius: 14px 14px 0 0;
+        background: linear-gradient(
+          135deg,
+          color-mix(in srgb, var(--path-learn) 14%, transparent),
+          color-mix(in srgb, var(--path-blaze) 12%, transparent)
+        );
+      }
+      .user-avatar {
+        display: grid;
+        flex: 0 0 40px;
+        place-items: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--accent-strong);
+        color: var(--accent-on-primary);
+        font-size: 1.05rem;
+        font-weight: 800;
       }
       .user-display-name,
       .user-display-email {
@@ -445,42 +467,24 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         flex-direction: column;
         gap: 0;
       }
-      .dropdown-item-unavailable {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        gap: 4px 8px;
-        padding: 10px 20px;
-        color: var(--text-subtle);
-        font-size: 0.88rem;
-      }
-      .dropdown-item-unavailable small {
-        font-size: 0.72rem;
-      }
-      .author-documentation-label {
-        margin: 8px 20px 2px;
+      .author-links-label {
+        margin: 4px 20px 4px;
         color: var(--text-subtle);
         font-size: 0.7rem;
         font-weight: 750;
         letter-spacing: 0.08em;
         text-transform: uppercase;
       }
-      .author-documentation-links {
-        display: flex;
-        flex-direction: column;
-        margin: 0;
-        padding: 0 0 0 12px;
-        list-style: none;
-      }
-      .author-documentation-links .dropdown-item-link {
-        display: block;
-      }
       .user-display-name {
         overflow-wrap: anywhere;
       }
       .dropdown-item-link {
-        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 0 8px;
+        padding: 8px 12px;
+        border-radius: 10px;
         color: var(--text-body);
         font-size: 0.88rem;
         font-weight: 650;
@@ -490,6 +494,35 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
       .dropdown-item-link:focus-visible {
         color: var(--accent-link);
         background: var(--surface-subtle);
+      }
+      .dropdown-item-link[aria-current='page'] {
+        color: var(--text-strong);
+        background: var(--surface-muted);
+      }
+      .item-icon {
+        display: grid;
+        flex: 0 0 30px;
+        place-items: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        background: var(--surface-muted);
+        font-size: 0.95rem;
+        line-height: 1;
+      }
+      .dropdown-item-link:hover .item-icon,
+      .dropdown-item-link:focus-visible .item-icon {
+        background: var(--surface);
+        box-shadow: inset 0 0 0 1px var(--line);
+      }
+      .item-text {
+        display: grid;
+        min-width: 0;
+      }
+      .item-text small {
+        color: var(--text-subtle);
+        font-size: 0.74rem;
+        font-weight: 500;
       }
       .dropdown-item-link.logout-trigger {
         color: var(--danger);
@@ -731,13 +764,14 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
   ],
 })
 export class PlatformHeader implements AfterViewInit, OnDestroy {
-  protected readonly architectureHref = architecturePreviewUrl(inject(AUTHOR_PREVIEWS_BASE_URL));
-  protected readonly apiReferenceHref = apiReferencePreviewUrl(inject(AUTHOR_PREVIEWS_BASE_URL));
-  protected readonly authorWorkspaceLinks = authorWorkspaceLinks;
-  protected readonly authorDocumentationLinks = authorDocumentationLinks;
+  protected readonly authorWorkspaceLinks = computed(() => visibleAdminLinks(this.accounts.account()));
   protected readonly accounts = inject(StudyPlanAccount);
   protected readonly accountLabel = computed(() =>
     accountTriggerLabel(this.accounts.account()?.displayName),
+  );
+  /** First letter of the display name for the dropdown avatar; a person symbol otherwise. */
+  protected readonly accountInitial = computed(
+    () => [...(this.accounts.account()?.displayName?.trim() ?? '')][0]?.toUpperCase() ?? '👤',
   );
   protected onAuthenticationPage(): boolean {
     return ['/sign-in', '/sign-in/choose', '/sign-up'].includes(
@@ -773,7 +807,10 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
   }
 
   protected readonly theme = inject(PlatformThemeService);
+  protected readonly accountTheme = inject(AccountThemePreference);
   @Input() showSearch = false;
+  /** Manage account carries its own Search, Study Plan and Appearance controls (DLV-932). */
+  @Input() hideUtilities = false;
   private readonly router = inject(Router);
   private readonly content = inject(ContentService);
   private readonly elementRef: ElementRef<HTMLElement> = inject(ElementRef);
@@ -790,8 +827,11 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
     this.profileMenuOpen.set(false);
   }
   protected readonly profileMenuOpen = signal(false);
-  protected isCurrentAuthorDocument(href: string): boolean {
-    return this.router.url.split(/[?#]/, 1)[0] === href;
+  protected isCurrentAuthorArea(id: (typeof authorWorkspaceLinks)[number]['id']): boolean {
+    const path = this.router.url.split(/[?#]/, 1)[0];
+    if (id === 'docs') return isAuthorDocumentationRoute(path);
+    if (id === 'previews') return path.startsWith('/admin/previews');
+    return path === '/delivery-plan';
   }
 
   protected readonly signingOut = signal(false);
@@ -1053,7 +1093,7 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
   }
 
   private pathLabel(path: SearchDocument['path']): string {
-    return path === 'look-ahead' ? 'Look Ahead' : `${path[0].toUpperCase()}${path.slice(1)}`;
+    return path === 'blaze' ? 'Blaze' : `${path[0].toUpperCase()}${path.slice(1)}`;
   }
 
   private suggestionCourse(suggestion: HeaderSuggestion): string | null {

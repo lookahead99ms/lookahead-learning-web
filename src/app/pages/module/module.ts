@@ -264,8 +264,8 @@ export class Module implements OnInit {
   protected pathLabel(): string {
     return this.pathId() === 'grow'
       ? 'Grow'
-      : this.pathId() === 'look-ahead'
-        ? 'Look Ahead'
+      : this.pathId() === 'blaze'
+        ? 'Blaze'
         : 'Learn';
   }
 
@@ -288,7 +288,7 @@ export class Module implements OnInit {
                 ? 'Guide'
                 : 'Theory';
     const path =
-      this.pathId() === 'grow' ? 'Grow' : this.pathId() === 'learn' ? 'Learn' : 'Look Ahead';
+      this.pathId() === 'grow' ? 'Grow' : this.pathId() === 'learn' ? 'Learn' : 'Blaze';
     const seen = new Set<string>();
     return [path, contentType, question.difficulty, ...question.tags].filter((tag) => {
       const key = tag.toLowerCase();

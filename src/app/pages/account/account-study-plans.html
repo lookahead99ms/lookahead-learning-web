@@ -1,5 +1,10 @@
 <section class="learning-summary" aria-labelledby="learning-summary-heading">
-  <h2 id="learning-summary-heading">Learning summary</h2>
+  <div class="summary-heading">
+    <h2 id="learning-summary-heading">Study plans</h2>
+    @if (!(store.planSummariesState() === 'ready' && plans().length === 0)) {
+      <a class="create-plan-action" routerLink="/study-plan" [queryParams]="{ create: 1 }"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14" /></svg>Create study plan</a>
+    }
+  </div>
   @switch (store.planSummariesState()) {
     @case ('idle') {
       <p role="status">Your saved study plans have not loaded yet.</p>
@@ -12,7 +17,10 @@
     }
     @case ('ready') {
       @if (plans().length === 0) {
-        <p>No saved study plans yet. Open Study Plan to choose your goals and make a plan.</p>
+        <div class="empty-plans">
+          <p>No saved study plans yet. Choose your goals and the time you have, and we’ll lay out a day-by-day plan.</p>
+          <a class="create-plan-action primary" routerLink="/study-plan" [queryParams]="{ create: 1 }"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14" /></svg>Create a study plan</a>
+        </div>
       } @else {
         <p>{{ plans().length }} saved study {{ plans().length === 1 ? 'plan' : 'plans' }}</p>
       }
@@ -26,12 +34,22 @@
       @for (plan of plans(); track plan.planId) {
         <li class="navigation-card">
           <div class="plan-heading">
+            <span class="plan-badge" aria-hidden="true">
+              <svg viewBox="0 0 24 24" focusable="false">
+                <rect x="3.5" y="5" width="17" height="15" rx="2.5" />
+                <path d="M3.5 10h17M8 3v4M16 3v4M8 14h2M12 14h2M8 17h2" />
+              </svg>
+            </span>
             <h3>{{ plan.name }}</h3>
             <a
+              class="open-plan"
               data-card-primary
               [routerLink]="['/study-plan']"
               [queryParams]="{ plan: plan.planId }"
               [attr.aria-label]="'Open plan: ' + plan.name"
+              ><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M3 6.5c2.8-1.2 5.8-1 9 1 3.2-2 6.2-2.2 9-1V19c-2.8-1.2-5.8-1-9 1-3.2-2-6.2-2.2-9-1z" />
+                <path d="M12 7.5V20" /></svg
               >Open plan</a
             >
           </div>
@@ -40,6 +58,9 @@
               {{ progress.completed }} of {{ progress.total }}
               {{ progress.total === 1 ? 'session' : 'sessions' }} completed
             </p>
+            <span class="plan-meter" aria-hidden="true">
+              <span [style.inline-size.%]="progress.total ? (progress.completed / progress.total) * 100 : 0"></span>
+            </span>
           } @else {
             <p class="plan-progress unavailable">Session progress is not available yet.</p>
           }
@@ -47,19 +68,19 @@
             <dl class="plan-details">
               @if (plan.durationDays) {
                 <div>
-                  <dt>Duration</dt>
+                  <dt><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 3h10M7 21h10M8 3c0 4 8 5 8 9s-8 5-8 9M16 3c0 4-8 5-8 9s8 5 8 9" /></svg>Duration</dt>
                   <dd>{{ plan.durationDays }} {{ plan.durationDays === 1 ? 'day' : 'days' }}</dd>
                 </div>
               }
               @if (plan.dailyMinutes) {
                 <div>
-                  <dt>Daily time</dt>
+                  <dt><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="13" r="8" /><path d="M12 9v4l2.5 2M9.5 2.5h5" /></svg>Daily time</dt>
                   <dd>{{ plan.dailyMinutes }} min</dd>
                 </div>
               }
               @if (plan.updatedAt) {
                 <div>
-                  <dt>Last updated</dt>
+                  <dt><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 11a8 8 0 1 0-2.3 5.7" /><path d="M20 4v7h-7" /></svg>Last updated</dt>
                   <dd>
                     <time [attr.datetime]="plan.updatedAt">{{
                       plan.updatedAt | date: 'mediumDate'

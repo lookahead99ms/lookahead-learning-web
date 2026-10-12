@@ -12,9 +12,9 @@ describe('SceneAssets', () => {
 
   it('accepts only SVG files under /assets/scenes/', () => {
     expect(isSceneAssetPath('/assets/scenes/landing/learn.svg')).toBe(true);
-    expect(isSceneAssetPath('/assets/scenes/landing/look-ahead.svg')).toBe(true);
+    expect(isSceneAssetPath('/assets/scenes/landing/blaze.svg')).toBe(true);
     for (const path of [
-      '/content/look-ahead/x/a.svg',
+      '/content/blaze/x/a.svg',
       '/assets/code-presentation.js',
       '/assets/scenes/landing/learn.png',
       '/assets/scenes/../secret.svg',
@@ -27,15 +27,15 @@ describe('SceneAssets', () => {
     }
   });
 
-  it('maps Look Ahead unit card scenes to their public asset copies', () => {
+  it('maps Blaze unit card scenes to their public asset copies', () => {
     expect(
-      publicUnitScenePath('/content/look-ahead/design-systems/visuals/cards/reservation.svg'),
-    ).toBe('/assets/scenes/units/look-ahead/design-systems/reservation.svg');
+      publicUnitScenePath('/content/blaze/design-systems/visuals/cards/reservation.svg'),
+    ).toBe('/assets/scenes/units/blaze/design-systems/reservation.svg');
     for (const path of [
       '/content/grow/api-design/visuals/cards/a.svg',
-      '/content/look-ahead/design-systems/visuals/other/a.svg',
-      '/content/look-ahead/../visuals/cards/a.svg',
-      '/content/look-ahead/design-systems/visuals/cards/a.png',
+      '/content/blaze/design-systems/visuals/other/a.svg',
+      '/content/blaze/../visuals/cards/a.svg',
+      '/content/blaze/design-systems/visuals/cards/a.png',
     ]) {
       expect(publicUnitScenePath(path), path).toBeNull();
     }
@@ -63,7 +63,7 @@ describe('SceneAssets', () => {
   it('rejects other paths without a request', () => {
     let failed = false;
     TestBed.inject(SceneAssets)
-      .get('/content/look-ahead/x/a.svg')
+      .get('/content/blaze/x/a.svg')
       .subscribe({ error: () => (failed = true) });
     TestBed.inject(HttpTestingController).verify();
     expect(failed).toBe(true);

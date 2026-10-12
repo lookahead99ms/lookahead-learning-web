@@ -5,13 +5,13 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { of, throwError } from 'rxjs';
 import { CatalogOverviewItem } from '../content/content.models';
 import { ContentService } from '../content/content.service';
-import { LOOK_AHEAD_COURSE_GROUPS } from '../content/look-ahead-course-groups';
+import { BLAZE_COURSE_GROUPS } from '../content/blaze-course-groups';
 import {
   catalogMonogram,
   catalogQuestionCountDisplay,
 } from '../core/adaptive-catalog/adaptive-catalog';
 import { Grow } from './grow/grow';
-import { LookAhead } from './look-ahead/look-ahead';
+import { Blaze } from './blaze/blaze';
 
 describe('catalog question count display', () => {
   it.each([
@@ -51,7 +51,7 @@ describe('catalog scene fallback monogram', () => {
 
 for (const { path, courseId, component } of [
   { path: 'grow', courseId: 'advanced-java', component: Grow },
-  { path: 'look-ahead', courseId: 'resilience-production', component: LookAhead },
+  { path: 'blaze', courseId: 'resilience-production', component: Blaze },
 ]) {
   describe(`${path} curriculum counts`, () => {
     async function render(lessonCount: number, questionCount: number) {
@@ -109,9 +109,9 @@ for (const { path, courseId, component } of [
   });
 }
 
-describe('adaptive Look Ahead catalog', () => {
+describe('adaptive Blaze catalog', () => {
   it('keeps every section visible and features only the explicitly authored course', async () => {
-    const catalog: CatalogOverviewItem[] = LOOK_AHEAD_COURSE_GROUPS.flatMap((group) =>
+    const catalog: CatalogOverviewItem[] = BLAZE_COURSE_GROUPS.flatMap((group) =>
       group.courseIds.map((id) => ({
         id,
         title: id,
@@ -127,18 +127,18 @@ describe('adaptive Look Ahead catalog', () => {
     );
     await TestBed.configureTestingModule({
       providers: [
-        provideRouter([{ path: 'look-ahead', component: LookAhead }]),
+        provideRouter([{ path: 'blaze', component: Blaze }]),
         { provide: ContentService, useValue: { getCatalogOverview: () => of(catalog) } },
       ],
     }).compileComponents();
-    const harness = await RouterTestingHarness.create('/look-ahead');
+    const harness = await RouterTestingHarness.create('/blaze');
     const root = harness.routeNativeElement!;
 
     expect(root.querySelectorAll('.catalog-path-section')).toHaveLength(
-      LOOK_AHEAD_COURSE_GROUPS.length,
+      BLAZE_COURSE_GROUPS.length,
     );
     expect(root.querySelectorAll('.catalog-jump-nav a')).toHaveLength(
-      LOOK_AHEAD_COURSE_GROUPS.length,
+      BLAZE_COURSE_GROUPS.length,
     );
     expect(
       Array.from(root.querySelectorAll('.featured-catalog-card')).map((card) => card.id),
@@ -154,7 +154,7 @@ describe('adaptive Look Ahead catalog', () => {
   });
 });
 
-describe('hidden Look Ahead courses', () => {
+describe('hidden Blaze courses', () => {
   it('stay out of the catalog, its groups, the More to explore section and the counts', async () => {
     const item = (id: string): CatalogOverviewItem => ({
       id,
@@ -174,11 +174,11 @@ describe('hidden Look Ahead courses', () => {
     ];
     await TestBed.configureTestingModule({
       providers: [
-        provideRouter([{ path: 'look-ahead', component: LookAhead }]),
+        provideRouter([{ path: 'blaze', component: Blaze }]),
         { provide: ContentService, useValue: { getCatalogOverview: () => of(catalog) } },
       ],
     }).compileComponents();
-    const harness = await RouterTestingHarness.create('/look-ahead');
+    const harness = await RouterTestingHarness.create('/blaze');
     const root = harness.routeNativeElement!;
     for (const id of HIDDEN_COURSE_IDS) {
       expect(root.querySelector(`#${id.split(':')[1]}`)).toBeNull();
@@ -189,7 +189,7 @@ describe('hidden Look Ahead courses', () => {
   });
 });
 
-describe('planned Look Ahead course', () => {
+describe('planned Blaze course', () => {
   it('renders an unavailable course as a Planned card without a link', async () => {
     const catalog: CatalogOverviewItem[] = [
       {
@@ -216,11 +216,11 @@ describe('planned Look Ahead course', () => {
     ];
     await TestBed.configureTestingModule({
       providers: [
-        provideRouter([{ path: 'look-ahead', component: LookAhead }]),
+        provideRouter([{ path: 'blaze', component: Blaze }]),
         { provide: ContentService, useValue: { getCatalogOverview: () => of(catalog) } },
       ],
     }).compileComponents();
-    const harness = await RouterTestingHarness.create('/look-ahead');
+    const harness = await RouterTestingHarness.create('/blaze');
     const card = harness.routeNativeElement!.querySelector<HTMLElement>('#ai-collaborators')!;
 
     expect(card.tagName).toBe('ARTICLE');
