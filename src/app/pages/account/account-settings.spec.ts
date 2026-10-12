@@ -11,6 +11,8 @@ describe('Manage account', () => {
   let client: {
     loadProfile: ReturnType<typeof vi.fn>;
     updateDisplayName: ReturnType<typeof vi.fn>;
+    updateThemePreference: ReturnType<typeof vi.fn>;
+    updateProfileLinks: ReturnType<typeof vi.fn>;
     changePassword: ReturnType<typeof vi.fn>;
   };
 
@@ -20,6 +22,10 @@ describe('Manage account', () => {
       updateDisplayName: vi
         .fn()
         .mockImplementation(async (displayName: string) => ({ ...profile, displayName })),
+      updateThemePreference: vi.fn(),
+      updateProfileLinks: vi
+        .fn()
+        .mockImplementation(async (links: unknown) => ({ ...profile, links })),
       changePassword: vi.fn().mockResolvedValue(undefined),
     };
     TestBed.configureTestingModule({
@@ -85,7 +91,7 @@ describe('Manage account', () => {
     expect(text).not.toMatch(
       /private-account-id|authorPreview|Sign-in method|Subscription|Delete account|MFA/,
     );
-    expect(fixture.nativeElement.querySelector('input')).toBeNull();
+    expect(fixture.nativeElement.querySelector('input:not([type="radio"])')).toBeNull();
   });
 
   it('saves a trimmed name and announces it while keeping username and grants intact', async () => {
@@ -116,7 +122,7 @@ describe('Manage account', () => {
     fixture.detectChanges();
     expect(client.updateDisplayName).not.toHaveBeenCalled();
     expect(store.account()?.displayName).toBe(profile.displayName);
-    expect(fixture.nativeElement.querySelector('input')).toBeNull();
+    expect(fixture.nativeElement.querySelector('input:not([type="radio"])')).toBeNull();
   });
 
   it('preserves the name draft on a recoverable failure', async () => {
@@ -284,5 +290,144 @@ describe('Manage account', () => {
     openPassword();
     expectPasswordsCleared();
     expect(client.changePassword).not.toHaveBeenCalled();
+  });
+  it('offers light, dark and system themes and saves the choice through the account', async () => {
+    const save = vi
+      .spyOn(store, 'updateThemePreference')
+      .mockResolvedValue({ ...profile, themePreference: 'dark' });
+    const radios = [
+      ...(fixture.nativeElement.querySelectorAll(
+        'input[name="themePreference"]',
+      ) as NodeListOf<HTMLInputElement>),
+    ];
+    expect(radios.map((radio) => radio.value)).toEqual(['light', 'dark', 'system']);
+    expect(fixture.nativeElement.querySelector('.theme-options legend')?.textContent).toBe(
+      'Color theme',
+    );
+    radios[1].click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(save).toHaveBeenCalledWith('dark');
+    expect(document.documentElement.dataset['theme']).toBe('dark');
+    expect(radios[1].checked).toBe(true);
+    expect(fixture.nativeElement.textContent).toContain('Theme saved to your account.');
+    save.mockRejectedValueOnce(new AccountSettingsError('unconfirmed'));
+    radios[0].click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(document.documentElement.dataset['theme']).toBe('light');
+    expect(fixture.nativeElement.textContent).toContain('could not save it to your account');
+  });
+
+  it('shows each profile by its logo with an Add button and an unavailable Google connection', () => {
+    const rows = [...fixture.nativeElement.querySelectorAll('.connection-list li')] as HTMLElement[];
+    expect(rows.map((row) => row.dataset['platform'])).toEqual([
+      'google',
+      'github',
+      'linkedin',
+      'x',
+      'website',
+    ]);
+    // No visible platform names: the logo carries it, with the name kept for assistive technology.
+    expect(rows.map((row) => row.querySelector('.visually-hidden')?.textContent?.trim())).toEqual([
+      'Google:',
+      'GitHub:',
+      'LinkedIn:',
+      'X (Twitter):',
+      'Portfolio:',
+    ]);
+    for (const row of rows) {
+      expect(row.querySelector('.connection-logo svg')).not.toBeNull();
+      expect(row.querySelector('.connection-logo')?.getAttribute('aria-hidden')).toBe('true');
+    }
+    expect(
+      rows.slice(1).map((row) => row.querySelector('button')?.getAttribute('aria-label')),
+    ).toEqual(['Add GitHub', 'Add LinkedIn', 'Add X (Twitter)', 'Add Portfolio']);
+    const google = rows[0].querySelector('button')!;
+    expect(google.textContent?.trim()).toBe('Connect');
+    expect(google.disabled).toBe(true);
+    expect(rows[0].textContent).toContain('isn’t available');
+  });
+
+  it('shows membership from server grants without naming a paid plan', () => {
+    store.account.update((account) =>
+      account
+        ? { ...account, authorPreview: false, topicGrants: ['learn:core-java', 'grow:api-design'] }
+        : account,
+    );
+    fixture.detectChanges();
+    const membership = fixture.nativeElement.querySelector('.membership')!;
+    expect(membership.querySelector('.membership-level')?.textContent?.trim()).toBe(
+      'Course access',
+    );
+    expect(membership.textContent).toContain('2 courses across Learn and Grow.');
+    expect(membership.textContent).not.toMatch(/Standard|Plus|Pro\b|Select|Upgrade now/);
+    // Only the paths the grants cover, as path buttons.
+    expect(
+      [...membership.querySelectorAll('.path-action')].map((link) => [
+        (link as HTMLElement).querySelector('.path-name')?.textContent?.trim(),
+        link.getAttribute('href'),
+      ]),
+    ).toEqual([
+      ['Learn', '/learn'],
+      ['Grow', '/grow'],
+    ]);
+    expect(membership.textContent).not.toContain('Explore lessons from Home');
+  });
+
+  describe('with profile links', () => {
+    beforeEach(async () => {
+      client.loadProfile.mockResolvedValue({
+        ...profile,
+        links: { github: 'https://github.com/sample', linkedin: null, x: null, website: null },
+      });
+      fixture = TestBed.createComponent(AccountSettings);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+    });
+
+    it('lists saved links as external links that say they open a new tab', () => {
+      const links = fixture.nativeElement.querySelectorAll('.connection-text a');
+      expect(links).toHaveLength(1);
+      expect(links[0].getAttribute('href')).toBe('https://github.com/sample');
+      expect(links[0].getAttribute('target')).toBe('_blank');
+      expect(links[0].getAttribute('rel')).toContain('noopener');
+      expect(links[0].textContent).toContain('github.com/sample');
+      expect(links[0].textContent).toContain('(opens in a new tab)');
+    });
+
+    it('rejects a wrong address without calling the server, then saves normalized links', async () => {
+      fixture.nativeElement.querySelector('[data-link-button="linkedin"]').click();
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('input[name="github"]').value).toBe(
+        'https://github.com/sample',
+      );
+      fill('linkedin', 'https://example.com/in/sample');
+      fixture.nativeElement.querySelector('.links-form').dispatchEvent(new Event('submit'));
+      fixture.detectChanges();
+      expect(client.updateProfileLinks).not.toHaveBeenCalled();
+      expect(fixture.nativeElement.querySelector('#links-error')?.textContent).toContain('LinkedIn');
+      expect(
+        fixture.nativeElement.querySelector('input[name="linkedin"]').getAttribute('aria-invalid'),
+      ).toBe('true');
+      fill('linkedin', 'linkedin.com/in/sample');
+      fill('github', '');
+      fill('website', 'sample-portfolio.dev');
+      fixture.nativeElement.querySelector('.links-form').dispatchEvent(new Event('submit'));
+      await fixture.whenStable();
+      fixture.detectChanges();
+      expect(client.updateProfileLinks).toHaveBeenCalledWith({
+        github: null,
+        linkedin: 'https://linkedin.com/in/sample',
+        x: null,
+        website: 'https://sample-portfolio.dev',
+      });
+      expect(fixture.nativeElement.querySelectorAll('.connection-text a')).toHaveLength(2);
+      expect(
+        fixture.nativeElement.querySelector('[data-link-button="linkedin"]').getAttribute('aria-label'),
+      ).toBe('Edit LinkedIn');
+      expect(fixture.nativeElement.textContent).toContain('Your links have been saved.');
+    });
   });
 });

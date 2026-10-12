@@ -39,7 +39,7 @@ The contrast check measures solid semantic foreground/background pairs at 4.5:1
 for normal text and 3:1 for focus rings. It does not certify rendered overlays,
 opacity, editor themes or all accessibility requirements.
 
-On the working local frontend, check `/`, `/learn`, `/grow`, `/look-ahead`,
+On the working local frontend, check `/`, `/learn`, `/grow`, `/blaze`,
 `/search`, `/study-plan`, `/sign-in`, and authorized account/Author pages in both
 modes. Navigate between routes, reload, open menus, focus controls using the
 keyboard and inspect selected, empty, disabled and error states. Compare desktop

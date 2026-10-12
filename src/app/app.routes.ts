@@ -2,8 +2,11 @@ import { AUTHOR_DOCUMENTS_CLIENT } from './core/author-documents-client';
 import { AuthorDocumentsApi } from './core/author-documents-api';
 import { AUTHOR_REVIEW_CLIENT } from './pages/author-previews/author-review-client';
 import { AuthorReviewApi } from './pages/author-previews/author-review-api';
-import { Routes } from '@angular/router';
-import { authorGuard } from './core/author-access';
+import { inject } from '@angular/core';
+import { Router, Routes } from '@angular/router';
+import { PLATFORM_REVIEW_CLIENT } from './pages/admin-reviews/platform-review.model';
+import { ConnectedPlatformReviewClient } from './pages/admin-reviews/connected-platform-review-client';
+import { authorGuard, ownerGuard, staffGuard, deliveryGuard } from './core/author-access';
 import { SIGN_IN_CHALLENGE_CLIENT } from './pages/account/sign-in-challenge-client';
 import { SignInManagementApi } from './pages/account/sign-in-management-api';
 import type { DeliveryPlanPage } from './pages/delivery-plan/delivery-plan';
@@ -12,28 +15,49 @@ import { legacyInterviewSearchRedirect } from './content/search-route-compatibil
 import { retiredContentRedirect } from './content/retired-content-routes';
 
 export const routes: Routes = [
-  { path: 'author/content-access', canActivate: [authorGuard], loadComponent: () => import('./pages/author-content-access/author-content-access').then(page => page.AuthorContentAccess) },
+  { path: 'admin/access', canActivate: [ownerGuard], loadComponent: () => import('./pages/admin-access/admin-access').then(page => page.AdminAccessPage) },
+  { path: 'admin/content-access', canActivate: [staffGuard], loadComponent: () => import('./pages/author-content-access/author-content-access').then(page => page.AuthorContentAccess) },
   {
-    path: 'author/operations',
-    canActivate: [authorGuard],
+    path: 'admin/operations',
+    canActivate: [staffGuard],
     providers: [{ provide: AUTHOR_DOCUMENTS_CLIENT, useExisting: AuthorDocumentsApi }],
     loadComponent: () =>
       import('./pages/author-operations/author-operations').then(
         (page) => page.AuthorOperationsPage,
       ),
   },
-  {
-    path: 'author/local-development',
-    canActivate: [authorGuard],
-    data: { authorDocument: 'local-development' },
+  // DLV-926: each documentation route names one published private document.
+  ...(
+    [
+      ['admin/local-development', 'local-development'],
+      ['admin/review-guide', 'reviewer-guide'],
+      ['admin/screen-names', 'screen-names'],
+      ['admin/access-checks', 'access-checks'],
+      ['admin/authentication', 'authentication'],
+      ['admin/aws-deployment', 'aws-deployment'],
+      ['admin/release-gates', 'release-gates'],
+      ['admin/production-support', 'production-support'],
+    ] as const
+  ).map(([path, authorDocument]) => ({
+    path,
+    canActivate: [staffGuard],
+    data: { authorDocument },
     providers: [{ provide: AUTHOR_DOCUMENTS_CLIENT, useExisting: AuthorDocumentsApi }],
     loadComponent: () =>
       import('./pages/author-operations/author-operations').then(
         (page) => page.AuthorOperationsPage,
       ),
+  })),
+  // Platform reviews are a tab of Support and feedback; the old address opens that tab.
+  { path: 'admin/reviews', redirectTo: () => inject(Router).parseUrl('/support?view=reviews') },
+  {
+    path: 'admin/docs',
+    canActivate: [staffGuard],
+    loadComponent: () =>
+      import('./pages/author-docs/author-docs').then((page) => page.AuthorDocsPage),
   },
   {
-    path: 'author/previews/study-plan',
+    path: 'admin/previews/study-plan',
     canActivate: [authorGuard],
     providers: [{ provide: AUTHOR_REVIEW_CLIENT, useExisting: AuthorReviewApi }],
     loadComponent: () =>
@@ -46,28 +70,29 @@ export const routes: Routes = [
       import('./pages/account/sign-in-challenge').then((page) => page.SignInChallengePage),
   },
   {
-    path: 'author/previews',
-    canActivate: [authorGuard],
+    path: 'admin/previews',
+    canActivate: [staffGuard],
     loadComponent: () =>
       import('./pages/author-previews/author-previews').then((page) => page.AuthorPreviewsPage),
   },
   {
-    path: 'author/architecture',
-    canActivate: [authorGuard],
+    path: 'admin/architecture',
+    canActivate: [staffGuard],
     data: { architectureOnly: true },
     loadComponent: () =>
       import('./pages/author-previews/author-previews').then((page) => page.AuthorPreviewsPage),
   },
   {
-    path: 'author/api',
-    canActivate: [authorGuard],
+    path: 'admin/api',
+    canActivate: [staffGuard],
     loadComponent: () => import('./pages/author-api/author-api').then((page) => page.AuthorApiPage),
   },
-  {
-    path: 'author',
-    canActivate: [authorGuard],
-    loadComponent: () => import('./pages/author/author').then((page) => page.AuthorPage),
-  },
+  // DLV-926: the admin area lives under /admin; /admin itself opens Previews.
+  { path: 'admin', pathMatch: 'full', redirectTo: 'admin/previews' },
+  // Former /author addresses keep working (bookmarks, evidence, gateway sign-in return).
+  { path: 'author', pathMatch: 'full', redirectTo: 'admin/previews' },
+  { path: 'author/previews/study-plan', redirectTo: 'admin/previews/study-plan' },
+  { path: 'author/:page', redirectTo: 'admin/:page' },
   {
     path: 'sign-in',
     data: { accountMode: 'signin' },
@@ -80,6 +105,8 @@ export const routes: Routes = [
   },
   {
     path: 'support',
+    // DLV-928: the shared review service; the server decides owner, reviewer or no access.
+    providers: [{ provide: PLATFORM_REVIEW_CLIENT, useClass: ConnectedPlatformReviewClient }],
     loadComponent: () => import('./pages/support/support').then((page) => page.SupportPage),
   },
   {
@@ -109,7 +136,7 @@ export const routes: Routes = [
   },
   {
     path: 'delivery-plan',
-    canActivate: [authorGuard],
+    canActivate: [deliveryGuard],
     canDeactivate: [(page: DeliveryPlanPage) => page.canDeactivate()],
     loadComponent: () =>
       import('./pages/delivery-plan/delivery-plan').then((page) => page.DeliveryPlanPage),
@@ -132,36 +159,37 @@ export const routes: Routes = [
     data: { pathId: 'grow' },
     loadComponent: () => import('./pages/course/course').then((page) => page.Course),
   },
+  // Blaze catalog. Old /look-ahead/... links open here through CatalogUrlSerializer (core/catalog-url.ts).
   {
-    path: 'look-ahead',
-    loadComponent: () => import('./pages/look-ahead/look-ahead').then((page) => page.LookAhead),
+    path: 'blaze',
+    loadComponent: () => import('./pages/blaze/blaze').then((page) => page.Blaze),
   },
   {
-    path: 'look-ahead/ai-assisted-development/module/:moduleId',
+    path: 'blaze/ai-assisted-development/module/:moduleId',
     redirectTo: legacyAiModuleRedirect,
   },
   {
-    path: 'look-ahead/ai-assisted-development/:questionId',
+    path: 'blaze/ai-assisted-development/:questionId',
     redirectTo: legacyAiItemRedirect,
   },
   {
-    path: 'look-ahead/ai-assisted-development',
+    path: 'blaze/ai-assisted-development',
     redirectTo: 'grow/ai-assisted-development',
     pathMatch: 'full',
   },
   {
-    path: 'look-ahead/:courseId/module/:moduleId',
-    data: { pathId: 'look-ahead' },
+    path: 'blaze/:courseId/module/:moduleId',
+    data: { pathId: 'blaze' },
     loadComponent: () => import('./pages/module/module').then((page) => page.Module),
   },
   {
-    path: 'look-ahead/:courseId/:questionId',
-    data: { pathId: 'look-ahead' },
+    path: 'blaze/:courseId/:questionId',
+    data: { pathId: 'blaze' },
     loadComponent: () => import('./pages/question/question').then((page) => page.Question),
   },
   {
-    path: 'look-ahead/:courseId',
-    data: { pathId: 'look-ahead' },
+    path: 'blaze/:courseId',
+    data: { pathId: 'blaze' },
     loadComponent: () => import('./pages/course/course').then((page) => page.Course),
   },
   {

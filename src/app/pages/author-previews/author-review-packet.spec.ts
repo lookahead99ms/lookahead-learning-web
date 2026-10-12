@@ -25,6 +25,7 @@ const packet = {
   ],
   sections: [],
   references: [],
+  downloads: [],
 };
 describe('Study Plan review packet', () => {
   const account = signal<any>({ accountId: 'author', authorPreview: true });
@@ -61,7 +62,7 @@ describe('Study Plan review packet', () => {
     expect(fixture.nativeElement.textContent).toContain('1open decisions');
     expect(fixture.nativeElement.textContent).not.toContain(packet.remainingDecisions[0]);
     expect(
-      fixture.nativeElement.querySelector('a[href="/author/previews/study-plan"]'),
+      fixture.nativeElement.querySelector('a[href="/admin/previews/study-plan"]'),
     ).not.toBeNull();
     expect(fixture.nativeElement.querySelector('iframe')).toBeNull();
     expect(fixture.nativeElement.querySelector('form')).toBeNull();

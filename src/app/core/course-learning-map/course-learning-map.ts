@@ -714,7 +714,7 @@ export class CourseLearningMap {
   readonly lessonNav = input(false);
   /** Plain one-line guide for the System Design Ladder courses. */
   protected readonly ladderIntro = computed(() =>
-    this.pathId() === 'look-ahead' ? (LADDER_INTROS[this.courseId()] ?? null) : null,
+    this.pathId() === 'blaze' ? (LADDER_INTROS[this.courseId()] ?? null) : null,
   );
   protected readonly visibleUnits = computed(() => {
     const publishedModuleIds = new Set(this.course().modules.map((module) => module.id));

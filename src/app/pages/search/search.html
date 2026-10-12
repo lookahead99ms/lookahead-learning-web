@@ -13,7 +13,7 @@
         </div>
       } @else {
       <div>
-        <p class="eyebrow">Across Learn, Grow, and Look Ahead</p>
+        <p class="eyebrow">Across Learn, Grow, and Blaze</p>
         <h1 id="search-title">Search topics and questions.</h1>
         <p class="search-intro">
           Find courses, lessons, interview questions, and practice in one place.
@@ -62,7 +62,7 @@
                   <option value="all">All available content</option>
                   <option value="learn">Learn</option>
                   <option value="grow">Grow</option>
-                  <option value="look-ahead">Look Ahead</option>
+                  <option value="blaze">Blaze</option>
                 </select>
               </label>
               <label class="control"
@@ -150,7 +150,7 @@
                 >Group by
                 <select [ngModel]="groupBy()" (ngModelChange)="updateGroup($event)">
                   <option value="none">None</option>
-                  <option value="path">Learn / Grow / Look Ahead</option>
+                  <option value="path">Learn / Grow / Blaze</option>
                   <option value="course">Course</option>
                   <option value="module">Module</option>
                   <option value="tag">Primary tag</option>

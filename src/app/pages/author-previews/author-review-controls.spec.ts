@@ -23,6 +23,7 @@ const packet: AuthorDocument = {
   evidence: [],
   sections: [],
   references: [],
+  downloads: [],
 };
 function receipt(value: AuthorReviewSubmission) {
   return {

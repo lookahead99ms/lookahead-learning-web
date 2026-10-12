@@ -377,7 +377,7 @@ describe('CourseLearningMap unit cards', () => {
   const cardCourse: CourseContent = {
     ...course,
     id: 'design-rounds',
-    path: 'look-ahead',
+    path: 'blaze',
     title: 'Design Rounds',
     description: 'Interview practice.',
     reviewStatus: 'reviewed',
@@ -404,7 +404,7 @@ describe('CourseLearningMap unit cards', () => {
         summary: 'Hold a seat and never sell it twice.',
         level: 'Advanced' as const,
         minutes: 45,
-        scene: '/content/look-ahead/design-systems/visuals/cards/reservation.svg',
+        scene: '/content/blaze/design-systems/visuals/cards/reservation.svg',
         sceneAlt: 'A seat turns from held to reserved.',
         pillGroups: [
           { label: 'Patterns', items: ['Contention'] },
@@ -421,7 +421,7 @@ describe('CourseLearningMap unit cards', () => {
       practiceExperience: 'questionBank' as const,
       card: {
         summary: 'A 45-minute round.',
-        scene: '/content/look-ahead/design-systems/visuals/cards/reservation.svg',
+        scene: '/content/blaze/design-systems/visuals/cards/reservation.svg',
         sceneAlt: 'A seat turns from held to reserved.',
       },
     },
@@ -459,7 +459,7 @@ describe('CourseLearningMap unit cards', () => {
     if (initialUrl) await TestBed.inject(Router).navigateByUrl(initialUrl);
     const fixture = TestBed.createComponent(CourseLearningMap);
     fixture.componentRef.setInput('course', { ...cardCourse, id: courseId });
-    fixture.componentRef.setInput('pathId', 'look-ahead');
+    fixture.componentRef.setInput('pathId', 'blaze');
     fixture.componentRef.setInput('courseId', courseId);
     fixture.componentRef.setInput('units', mapUnits);
     fixture.detectChanges();
@@ -494,9 +494,9 @@ describe('CourseLearningMap unit cards', () => {
     const cards = Array.from(element.querySelectorAll<HTMLAnchorElement>('a.unit-card'));
 
     expect(cards.length).toBe(3);
-    expect(cards[0].getAttribute('href')).toBe('/look-ahead/design-rounds/lesson');
-    expect(cards[1].getAttribute('href')).toBe('/look-ahead/design-rounds/round-question');
-    expect(cards[2].getAttribute('href')).toBe('/look-ahead/design-rounds/module/plain-module');
+    expect(cards[0].getAttribute('href')).toBe('/blaze/design-rounds/lesson');
+    expect(cards[1].getAttribute('href')).toBe('/blaze/design-rounds/round-question');
+    expect(cards[2].getAttribute('href')).toBe('/blaze/design-rounds/module/plain-module');
     expect(element.querySelector('.unit-card-grid .learning-action')).toBeNull();
     expect(element.querySelector('.unit-card-grid app-interview-question-bank-link')).toBeNull();
     expect(cards[0].getAttribute('aria-labelledby')).toBe('unit-card-title-lesson-unit');
@@ -522,7 +522,7 @@ describe('CourseLearningMap unit cards', () => {
     ).toEqual(['unit-card-scene', 'unit-card-title', 'unit-card-summary']);
     // Drawing words take the shared card text styling; the map carries the path for the title colour.
     expect(card.querySelector('app-card-scene')?.classList).toContain('la-card-scene-card');
-    expect(element.querySelector('.learning-map')?.getAttribute('data-path')).toBe('look-ahead');
+    expect(element.querySelector('.learning-map')?.getAttribute('data-path')).toBe('blaze');
     // The level is plain text beside the title (not a pill, not in the meta line).
     const level = card.querySelector('.unit-card-level')!;
     expect(level.closest('.unit-card-meta')).toBeNull();
@@ -700,10 +700,10 @@ describe('CourseLearningMap unit cards', () => {
     );
     expect(plain.querySelector('.learning-action')).toBeNull();
     expect(sceneRequests).not.toContain(
-      '/assets/scenes/units/look-ahead/design-rounds/plain-unit.svg',
+      '/assets/scenes/units/blaze/design-rounds/plain-unit.svg',
     );
     TestBed.inject(HttpTestingController).expectOne(
-      '/assets/scenes/units/look-ahead/design-rounds/plain-unit.svg',
+      '/assets/scenes/units/blaze/design-rounds/plain-unit.svg',
     );
   });
 

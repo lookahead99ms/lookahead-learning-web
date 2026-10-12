@@ -117,7 +117,7 @@ describe('Account page management integration', () => {
     await mount('/account?returnTo=%2Flearn%23courses');
     const element = harness.routeNativeElement!;
     expect(element.querySelector('app-account-study-plans h3')?.textContent).toBe('Study Java');
-    expect(element.querySelector('app-account-study-plans a')?.getAttribute('href')).toBe(
+    expect(element.querySelector('app-account-study-plans .plan-heading a')?.getAttribute('href')).toBe(
       '/study-plan?plan=owned-plan',
     );
     expect(element.textContent).toContain('Session progress is not available yet.');
@@ -137,6 +137,78 @@ describe('Account page management integration', () => {
     expect(summary.textContent).toContain('No saved study plans yet');
     expect(summary.querySelectorAll('li')).toHaveLength(0);
     expect(summary.textContent).not.toContain('completed');
+  });
+
+  it('shows the learner identity and a side menu whose links reach every section', async () => {
+    await mount('/account?returnTo=%2Flearn%23courses');
+    const element = harness.routeNativeElement!;
+    expect(element.querySelector('.account-avatar')?.textContent?.trim()).toBe('SL');
+    expect(element.querySelector('.account-avatar')?.getAttribute('aria-hidden')).toBe('true');
+    expect(element.querySelector('.account-identity-meta')?.textContent).toContain(
+      'sample@example.test',
+    );
+    const menu = element.querySelector('nav.account-menu')!;
+    expect(menu.getAttribute('aria-label')).toBe('Account sections');
+    const links = [...menu.querySelectorAll('a')];
+    expect(links.map((link) => link.textContent?.trim())).toEqual([
+      'Study plans',
+      'Profile',
+      'Membership',
+      'Profiles and links',
+      'Security',
+      'Active sign-ins',
+    ]);
+    // Appearance lives inside the Profile card.
+    expect(element.querySelector('#profile #appearance')).not.toBeNull();
+    for (const link of links) {
+      const id = link.getAttribute('href')!.split('#')[1];
+      expect(link.getAttribute('href')).toBe('/account?returnTo=%2Flearn%23courses#' + id);
+      expect(element.querySelector('#' + id)).not.toBeNull();
+    }
+    expect(links[0].getAttribute('aria-current')).toBe('true');
+  });
+
+  it('greets the learner and shows membership and saved plans in the hero', async () => {
+    savedPlans = [
+      { planId: 'first-plan', goal: 'Study Java', revision: 1, updatedAt: '2026-09-18T12:00:00Z' },
+      { planId: 'second-plan', goal: 'Study Go', revision: 1, updatedAt: '2026-09-20T08:00:00Z' },
+    ];
+    await mount();
+    const hero = harness.routeNativeElement!.querySelector('.account-hero')!;
+    expect(hero.querySelector('h1')?.textContent).toContain('Manage account');
+    expect(hero.textContent).toContain('Welcome back, Sample.');
+    expect(hero.querySelector('nav.account-footer')).not.toBeNull();
+    const stats = [...hero.querySelectorAll('.hero-stats > div')].map((stat) => [
+      stat.querySelector('dt')?.textContent?.trim(),
+      stat.querySelector('dd')?.textContent?.trim(),
+    ]);
+    // The mocked /auth/me returns authorPreview: true.
+    expect(stats).toEqual([
+      ['Membership', 'Author'],
+      ['Saved plans', '2'],
+    ]);
+    expect(hero.textContent).not.toMatch(/Sessions completed|Last plan update/);
+    expect(harness.routeNativeElement!.querySelector('#access')).toBeNull();
+  });
+
+  it('jumps to a section from the side menu without navigating away', async () => {
+    await mount();
+    const element = harness.routeNativeElement!;
+    const target = element.querySelector<HTMLElement>('#sign-ins')!;
+    const scrollIntoView = vi.fn();
+    target.scrollIntoView = scrollIntoView;
+    const link = [...element.querySelectorAll<HTMLAnchorElement>('.account-menu a')].find(
+      (a) => a.textContent?.trim() === 'Active sign-ins',
+    )!;
+    const click = new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 });
+    link.dispatchEvent(click);
+    harness.detectChanges();
+    expect(click.defaultPrevented).toBe(true);
+    expect(scrollIntoView).toHaveBeenCalledWith(expect.objectContaining({ block: 'start' }));
+    expect(document.activeElement).toBe(target);
+    expect(link.getAttribute('aria-current')).toBe('true');
+    expect(element.querySelectorAll('.account-menu a[aria-current]')).toHaveLength(1);
+    expect(TestBed.inject(Router).url).toBe('/account');
   });
 
   it('routes a third login to the restricted chooser and clears the entered password', async () => {

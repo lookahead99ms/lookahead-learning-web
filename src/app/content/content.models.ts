@@ -1,5 +1,5 @@
 export type ContentReviewStatus = 'reviewed' | 'needs-review' | 'evolving' | 'planned';
-export type ContentPath = 'learn' | 'grow' | 'look-ahead';
+export type ContentPath = 'learn' | 'grow' | 'blaze';
 export type ContentType =
   | 'q-and-a'
   | 'theory'
@@ -327,7 +327,7 @@ export const LESSON_STAGES = [
 ] as const;
 
 /**
- * Look Ahead family patterns (DLV-408 follow-up). Each pattern has its own stage list; `slots` say
+ * Blaze family patterns (DLV-408 follow-up). Each pattern has its own stage list; `slots` say
  * which stage hosts the fixed blocks (scenario card, common mistakes, interview answer, checks and
  * practice, takeaways). system-v1 keeps the Learn and Grow flow unchanged.
  */
@@ -973,7 +973,7 @@ export interface FoundationLessonV1 extends InterviewQuestion {
   schemaVersion: 'foundation-lesson/v1';
   /** An introductory reading path followed by the full lesson inline. */
   beginnerGuide?: LessonTeachingGuide;
-  /** Practical Grow or decision-focused Look Ahead first reading path. */
+  /** Practical Grow or decision-focused Blaze first reading path. */
   teachingGuide?: LessonTeachingGuide;
   summary: string;
   /** Opt-in nine-stage layout; lessons without it render exactly as before. */
@@ -1076,7 +1076,7 @@ export function isFoundationLessonV1(item: InterviewQuestion): item is Foundatio
   return item.schemaVersion === 'foundation-lesson/v1';
 }
 
-/** A staged lesson: system-v1 (Learn and Grow) or one of the Look Ahead family patterns. */
+/** A staged lesson: system-v1 (Learn and Grow) or one of the Blaze family patterns. */
 export function lessonPatternDefinition(lesson: { lessonPattern?: string }): LessonPatternDefinition | null {
   return (lesson.lessonPattern && LESSON_PATTERNS[lesson.lessonPattern]) || null;
 }

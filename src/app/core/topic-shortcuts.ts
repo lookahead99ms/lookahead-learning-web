@@ -3,13 +3,13 @@ import { RouterLink } from '@angular/router';
 
 export const TOPIC_SHORTCUTS = [
   { label: 'DSA Practice', route: '/learn/hands-on-dsa' },
-  { label: 'System Design', route: '/look-ahead/system-design' },
+  { label: 'System Design', route: '/blaze/system-design' },
   {
     label: 'AI Engineering',
     route: '/grow/ai-assisted-development',
   },
   { label: 'Java Foundations', route: '/learn/core-java' },
-  { label: 'Behavioral Interviews', route: '/look-ahead/behavioral-carl' },
+  { label: 'Behavioral Interviews', route: '/blaze/behavioral-carl' },
 ] as const;
 
 @Component({

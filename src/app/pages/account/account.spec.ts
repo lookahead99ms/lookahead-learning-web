@@ -1,9 +1,17 @@
 import { beforeEach, expect, it } from 'vitest';
 import { safeAccountReturn } from './account';
+import { gatewayLoginUrl } from './account-navigation';
+it('sends Blaze returns to the gateway in their blaze data form', () => {
+  expect(gatewayLoginUrl('/blaze/design-systems?day=2')).toBe(
+    '/bff/login?returnTo=' + encodeURIComponent('/blaze/design-systems?day=2'),
+  );
+  expect(gatewayLoginUrl('/learn/core-java')).toBe('/bff/login?returnTo=%2Flearn%2Fcore-java');
+});
+
 it('keeps account navigation inside recognized learner routes', () => {
   expect(safeAccountReturn('/learn/core-java?day=2')).toBe('/learn/core-java?day=2');
   expect(safeAccountReturn('/support')).toBe('/support');
-  expect(safeAccountReturn('/author')).toBe('/author');
+  expect(safeAccountReturn('/admin')).toBe('/admin');
   expect(safeAccountReturn('/account')).toBe('/account');
   expect(safeAccountReturn('/delivery-plan')).toBe('/delivery-plan');
   expect(safeAccountReturn('/delivery-plan?view=roadmap')).toBe('/delivery-plan?view=roadmap');
@@ -15,6 +23,8 @@ it('keeps account navigation inside recognized learner routes', () => {
     '/study-plan/saved?id=example#details',
   );
   expect(safeAccountReturn('/grow#courses')).toBe('/grow#courses');
+  expect(safeAccountReturn('/blaze/design-systems?day=2')).toBe('/blaze/design-systems?day=2');
+  expect(safeAccountReturn('/look-ahead/design-systems')).toBe('/look-ahead/design-systems');
   expect(safeAccountReturn('/search?q=java%20spring')).toBe('/search?q=java%20spring');
   expect(safeAccountReturn(null)).toBe('/');
   for (const bad of [
@@ -39,7 +49,7 @@ it('keeps account navigation inside recognized learner routes', () => {
     '/learn/%',
     '/learn bad',
     '/learn/../sign-in',
-    '/author/%2e%2e/sign-in',
+    '/admin/%2e%2e/sign-in',
     '/learn/./java',
     '%2Flearn',
     '%2F',
@@ -146,7 +156,7 @@ it.each([
   ['/', '/'],
   ['/#paths', '/#paths'],
   ['/study-plan?plan=example', '/study-plan?plan=example'],
-  ['/author/architecture', '/author/architecture'],
+  ['/admin/architecture', '/admin/architecture'],
   ['/delivery-plan', '/delivery-plan'],
   ['/account', '/account'],
   ['https://outside.example', '/'],
@@ -350,4 +360,12 @@ it('uses the server-selected managed sign-in flow without a local password form'
   expect(link.textContent).toContain('Continue to secure sign-in');
   expect(link.getAttribute('href')).toBe('/bff/login?returnTo=%2Fstudy-plan');
   expect(fixture.nativeElement.querySelector('input[type="password"]')).toBeNull();
+});
+
+describe('gateway sign-in return for admin pages', () => {
+  it('sends /admin addresses to the gateway unchanged (DLV-928 allowlist)', () => {
+    expect(safeAccountReturn('/admin/docs?x=1#top')).toBe('/admin/docs?x=1#top');
+    expect(safeAccountReturn('/admin/reviews')).toBe('/admin/reviews');
+    expect(safeAccountReturn('/administrator')).toBe('/');
+  });
 });

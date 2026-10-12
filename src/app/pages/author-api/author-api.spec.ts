@@ -85,8 +85,8 @@ describe('Author API reference', () => {
     expect(frame.title).toBe('Backend API reference');
     expect(root.querySelector('.workspace-sidebar h1')?.textContent).toBe('API reference');
     expect(root.querySelector('.workspace-sidebar')).not.toBeNull();
-    expect(root.querySelector('a[href="/author/api#start-testing"]')).not.toBeNull();
-    expect(root.querySelector('a[href="/author/api#start-testing"]')?.getAttribute('target')).toBeNull();
+    expect(root.querySelector('a[href="/admin/api#start-testing"]')).not.toBeNull();
+    expect(root.querySelector('a[href="/admin/api#start-testing"]')?.getAttribute('target')).toBeNull();
     const fullPage = root.querySelector<HTMLAnchorElement>('a[target="_blank"]')!;
     expect(fullPage.getAttribute('href')).toBe(
       `${base}preview-directory/api/index.html?theme=light`,
@@ -133,13 +133,13 @@ describe('Author API reference', () => {
     const originalUrl = location.pathname + location.search + location.hash;
     const postMessage = vi.spyOn(frame.contentWindow!, 'postMessage');
     try {
-      history.replaceState(null, '', '/author/api');
+      history.replaceState(null, '', '/admin/api');
       window.dispatchEvent(new MessageEvent('message', {
         origin: 'null', source: frame.contentWindow,
         data: { type: 'lookahead:author-document:navigate', version: 1,
           documentId: 'api-reference', anchor: 'start-testing' },
       }));
-      expect(location.pathname + location.hash).toBe('/author/api#start-testing');
+      expect(location.pathname + location.hash).toBe('/admin/api#start-testing');
       expect(postMessage).toHaveBeenCalledWith({
         type: 'lookahead:author-document:anchor-request', version: 1,
         documentId: 'api-reference', anchor: 'start-testing',
@@ -232,7 +232,7 @@ describe('Author API reference', () => {
       fixture.detectChanges();
       expect(fixture.nativeElement.querySelector('iframe')).toBeNull();
       expect(fixture.nativeElement.querySelector('a[download]')).toBeNull();
-      expect(fixture.nativeElement.textContent).toContain('Author access required');
+      expect(fixture.nativeElement.textContent).toContain('Admin access required');
     },
   );
 

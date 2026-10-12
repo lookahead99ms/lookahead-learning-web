@@ -127,7 +127,7 @@ describe('Shared page sidebars', () => {
         {
           id: 'systems',
           title: 'Systems',
-          courses: [{ id: 'design', title: 'Design', url: '/look-ahead/design' }],
+          courses: [{ id: 'design', title: 'Design', url: '/blaze/design' }],
         },
       ],
     });

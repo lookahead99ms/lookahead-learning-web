@@ -36,7 +36,7 @@ export interface PageSectionLink {
 export function visibleSidebarTarget(element: HTMLElement): boolean {
   if (
     element.closest(
-      '[hidden], [aria-hidden="true"], dialog:not([open]), [role="dialog"], app-author-workspace-nav, app-page-sidebars, .hero-slide, a, button',
+      '[hidden], [aria-hidden="true"], dialog:not([open]), [role="dialog"], app-author-workspace-nav, app-author-admin-menu, app-page-sidebars, .hero-slide, a, button',
     )
   )
     return false;
@@ -440,7 +440,7 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
       return;
     }
     this.homepage.set(main.classList.contains('landing-page'));
-    this.learningPage.set(/^\/(learn|grow|look-ahead)(\/|$)/.test(this.document.location.pathname));
+    this.learningPage.set(/^\/(learn|grow|blaze|look-ahead)(\/|$)/.test(this.document.location.pathname));
     if (this.needsInventory) {
       this.needsInventory = false;
       this.authorNavigation.set(!!main.querySelector('app-author-workspace-nav'));

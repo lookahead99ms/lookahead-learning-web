@@ -2678,14 +2678,14 @@ export class FoundationLessonShell {
   readonly guideLabel = computed(() =>
     this.pathId() === 'grow'
       ? 'Guided implementation'
-      : this.pathId() === 'look-ahead'
+      : this.pathId() === 'blaze'
         ? 'Guided decision'
         : 'Guided first steps',
   );
   readonly exerciseLabel = computed(() =>
     this.pathId() === 'grow'
       ? 'Try it and verify'
-      : this.pathId() === 'look-ahead'
+      : this.pathId() === 'blaze'
         ? 'Make the decision'
         : 'Try one small change',
   );

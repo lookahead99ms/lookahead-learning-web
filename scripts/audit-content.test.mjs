@@ -248,8 +248,8 @@ test('CLI defaults to public demo content; external content must be explicit', (
 
 test('the real public demo audits successfully without inventing an absent path', async () => {
   const report = await auditContent(resolve(repositoryRoot, 'demo-content/runtime'));
-  assert.deepEqual(report.absentPaths, ['look-ahead']);
-  assert.equal(report.paths.find((path) => path.path === 'look-ahead').present, false);
+  assert.deepEqual(report.absentPaths, ['blaze']);
+  assert.equal(report.paths.find((path) => path.path === 'blaze').present, false);
   assert.equal(report.paths[0].courses, 1);
   assert.deepEqual(report.issues, []);
 });
@@ -264,7 +264,7 @@ async function fixture(t) {
     await mkdir(dirname(target), { recursive: true });
     await writeFile(target, JSON.stringify(value));
   }
-  for (const path of ['learn', 'grow', 'look-ahead']) await put(`${path}/catalog.json`, []);
+  for (const path of ['learn', 'grow', 'blaze']) await put(`${path}/catalog.json`, []);
   const data = course();
   await put('learn/catalog.json', [{ id: data.id }, { id: 'hands-on-dsa' }]);
   await put('learn/algorithmic-patterns/course.json', { ...data, questions: [] });

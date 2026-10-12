@@ -29,7 +29,7 @@ async function render(getCardScene: (path: string) => Observable<string>, src?: 
 
 describe('CardScene', () => {
   it('inlines the sanitized scene inside a labelled image area', async () => {
-    const fixture = await render(() => of(sceneSvg), '/content/look-ahead/x/visuals/cards/a.svg');
+    const fixture = await render(() => of(sceneSvg), '/content/blaze/x/visuals/cards/a.svg');
     const scene = fixture.nativeElement.querySelector('.la-card-scene') as HTMLElement;
 
     expect(scene.getAttribute('role')).toBe('img');
@@ -45,7 +45,7 @@ describe('CardScene', () => {
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180">' +
       '<style>.cs-m{font-family:Menlo,monospace}</style>' +
       '<text class="cs-m">ByteBuffer</text><text>file</text></svg>';
-    const fixture = await render(() => of(cardSvg), '/content/look-ahead/x/visuals/cards/a.svg');
+    const fixture = await render(() => of(cardSvg), '/content/blaze/x/visuals/cards/a.svg');
     const host = fixture.nativeElement as HTMLElement;
     expect(host.classList).not.toContain('la-card-scene-card');
     expect(host.querySelector('text[data-scene-code]')).toBeNull();
@@ -77,7 +77,7 @@ describe('CardScene', () => {
     const cardSvg =
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135">' +
       '<text style="font-size:16px">Charged once</text><text>7</text></svg>';
-    const fixture = await render(() => of(cardSvg), '/content/look-ahead/x/visuals/cards/a.svg');
+    const fixture = await render(() => of(cardSvg), '/content/blaze/x/visuals/cards/a.svg');
     const host = fixture.nativeElement as HTMLElement;
     expect(host.querySelector('svg')?.hasAttribute('data-card-text-fit')).toBe(false);
 
@@ -142,7 +142,7 @@ describe('CardScene', () => {
   it('shows the scene description on the scene background when loading fails', async () => {
     const fixture = await render(
       () => throwError(() => new Error('404')),
-      '/content/look-ahead/x/visuals/cards/missing.svg',
+      '/content/blaze/x/visuals/cards/missing.svg',
     );
     const scene = fixture.nativeElement.querySelector('.la-card-scene') as HTMLElement;
 
@@ -163,7 +163,7 @@ describe('CardScene', () => {
       ],
     }).compileComponents();
     const fixture = TestBed.createComponent(CardScene);
-    fixture.componentRef.setInput('src', '/content/look-ahead/x/visuals/cards/missing.svg');
+    fixture.componentRef.setInput('src', '/content/blaze/x/visuals/cards/missing.svg');
     fixture.componentRef.setInput('alt', 'Core Java illustration');
     fixture.componentRef.setInput('fallback', 'CJ');
     fixture.detectChanges();
@@ -180,13 +180,13 @@ describe('CardScene', () => {
   });
 
   it('falls back when the response is not an SVG document', async () => {
-    const fixture = await render(() => of('<html></html>'), '/content/look-ahead/x/a.svg');
+    const fixture = await render(() => of('<html></html>'), '/content/blaze/x/a.svg');
     expect(fixture.nativeElement.querySelector('.la-card-scene').dataset['state']).toBe('failed');
   });
 
   it('keeps the scene area while the scene is loading', async () => {
     const pending = new Subject<string>();
-    const fixture = await render(() => pending, '/content/look-ahead/x/a.svg');
+    const fixture = await render(() => pending, '/content/blaze/x/a.svg');
     const scene = fixture.nativeElement.querySelector('.la-card-scene') as HTMLElement;
 
     expect(scene.dataset['state']).toBe('loading');
@@ -242,7 +242,7 @@ describe('CardScene', () => {
   it('renders nothing for an optional scene whose file is missing or whose path is empty', async () => {
     const fixture = await render(
       () => throwError(() => new Error('404')),
-      '/content/look-ahead/x/visuals/cards/missing.svg',
+      '/content/blaze/x/visuals/cards/missing.svg',
     );
     fixture.componentRef.setInput('optional', true);
     fixture.componentRef.setInput('fallback', 'CJ');
@@ -258,7 +258,7 @@ describe('CardScene', () => {
   });
 
   it('shows an optional scene once it loads', async () => {
-    const fixture = await render(() => of(sceneSvg), '/content/look-ahead/x/visuals/cards/a.svg');
+    const fixture = await render(() => of(sceneSvg), '/content/blaze/x/visuals/cards/a.svg');
     fixture.componentRef.setInput('optional', true);
     fixture.detectChanges();
     const host = fixture.nativeElement as HTMLElement;

@@ -2,20 +2,21 @@ import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { AuthorWorkspaceNav } from '../../core/author-workspace-nav/author-workspace-nav';
+import { AuthorAdminMenu } from '../../core/author-workspace-nav/author-admin-menu';
 import { AuthorReviewPacket } from './author-review-packet';
 
 @Component({
   selector: 'app-author-review',
-  imports: [PlatformHeader, RouterLink, AuthorWorkspaceNav, AuthorReviewPacket],
+  imports: [PlatformHeader, RouterLink, AuthorWorkspaceNav, AuthorAdminMenu, AuthorReviewPacket],
   template: `<app-platform-header />
     <main id="main-content" class="review-page">
       <aside class="review-outline">
         <app-author-workspace-nav pageTitle="Study Plan review" [outline]="outline" />
       </aside>
       <div class="review-content">
-        <a routerLink="/author/previews">All author previews</a>
+        <a routerLink="/admin/previews">All previews</a>
         <header id="review-overview">
-          <p class="eyebrow">Author review workspace</p>
+          <p class="eyebrow">Admin review workspace</p>
           <h2>Study Plan experience</h2>
           <p class="lede">
             Review the learner-facing schedule first, then inspect its evidence and record a
@@ -26,6 +27,7 @@ import { AuthorReviewPacket } from './author-review-packet';
           <app-author-review-packet [expanded]="true" />
         </section>
       </div>
+      <app-author-admin-menu pageId="previews" />
     </main>`,
   styles: `
     :host {
@@ -36,7 +38,7 @@ import { AuthorReviewPacket } from './author-review-packet';
     }
     .review-page {
       display: grid;
-      grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+      grid-template-columns: minmax(220px, 280px) minmax(0, 1fr) minmax(220px, 260px);
       align-items: start;
       gap: 32px;
       max-width: 1600px;
@@ -49,6 +51,10 @@ import { AuthorReviewPacket } from './author-review-packet';
     }
     .review-content {
       min-width: 0;
+    }
+    app-author-admin-menu {
+      top: calc(var(--platform-header-height, 76px) + 24px);
+      padding-block-start: 0;
     }
     #review-overview,
     #review-packet {

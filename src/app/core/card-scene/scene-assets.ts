@@ -8,16 +8,16 @@ export function isSceneAssetPath(path: string): boolean {
 }
 
 /**
- * Public copy of a Look Ahead unit card scene. Content visuals need access, so card scenes
- * authored as /content/look-ahead/<course>/visuals/cards/<file>.svg are also shipped under
- * /assets/scenes/units/look-ahead/<course>/<file>.svg for signed-out visitors.
+ * Public copy of a Blaze unit card scene. Content visuals need access, so card scenes
+ * authored as /content/blaze/<course>/visuals/cards/<file>.svg are also shipped under
+ * /assets/scenes/units/blaze/<course>/<file>.svg for signed-out visitors.
  */
 export function publicUnitScenePath(path: string): string | null {
   const match =
-    /^\/content\/look-ahead\/([a-z0-9][a-z0-9-]*)\/visuals\/cards\/([a-z0-9][a-z0-9_-]*)\.svg$/i.exec(
+    /^\/content\/blaze\/([a-z0-9][a-z0-9-]*)\/visuals\/cards\/([a-z0-9][a-z0-9_-]*)\.svg$/i.exec(
       path,
     );
-  return match ? `/assets/scenes/units/look-ahead/${match[1]}/${match[2]}.svg` : null;
+  return match ? `/assets/scenes/units/blaze/${match[1]}/${match[2]}.svg` : null;
 }
 
 /** Loads and caches app scene SVG text. Failed requests are not cached. */

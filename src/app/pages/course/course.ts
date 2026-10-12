@@ -328,12 +328,12 @@ export class Course implements OnInit {
   protected readonly hasUnitCards = courseHasUnitCards;
 
   /**
-   * DLV-408: Look Ahead learning-map courses show the sticky side nav of every lesson.
+   * DLV-408: Blaze learning-map courses show the sticky side nav of every lesson.
    * Learn and Grow use the same map and can opt in here once reviewed.
    */
   protected lessonNav(course: CourseOutline): boolean {
     return (
-      this.pathId() === 'look-ahead' &&
+      this.pathId() === 'blaze' &&
       course.layout === 'learning-map' &&
       Boolean(course.learningUnits?.length)
     );
@@ -342,8 +342,8 @@ export class Course implements OnInit {
   protected pathLabel(): string {
     return this.pathId() === 'grow'
       ? 'Grow'
-      : this.pathId() === 'look-ahead'
-        ? 'Look Ahead'
+      : this.pathId() === 'blaze'
+        ? 'Blaze'
         : 'Learn';
   }
 

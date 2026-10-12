@@ -8,7 +8,7 @@
 .api-page {
   overflow-anchor: none;
   display: grid;
-  grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr) minmax(220px, 260px);
   align-items: start;
   flex: 1 0 auto;
   min-height: calc(100dvh - var(--platform-header-height, 76px));
@@ -71,18 +71,6 @@ a span {
   min-width: 0;
   gap: 16px;
   padding: 24px clamp(24px, 4vw, 72px) 64px;
-}
-.reference-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 8px 24px;
-  color: var(--text-subtle);
-  font-size: 0.85rem;
-}
-.reference-toolbar p {
-  margin: 0;
 }
 .api-workspace {
   min-height: 480px;

@@ -10,13 +10,15 @@ import {
 } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { firstValueFrom, timeout } from 'rxjs';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import {
   AuthorOutlineItem,
   AuthorWorkspaceNav,
 } from '../../core/author-workspace-nav/author-workspace-nav';
+import { AuthorAdminMenu } from '../../core/author-workspace-nav/author-admin-menu';
+import { AuthorDocHero } from '../../core/author-workspace-nav/author-doc-hero';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import { PlatformThemeService } from '../../core/platform-theme';
@@ -37,13 +39,22 @@ import {
   PreviewEntry,
   PreviewCollection,
   parsePreviewCollections,
+  previewInventoryDate,
 } from './preview-inventory';
 
 @Component({
   selector: 'app-author-previews',
-  imports: [PlatformHeader, AuthorWorkspaceNav, ArchitectureDiagramViewer, AuthorReviewPacket],
+  imports: [
+    PlatformHeader,
+    AuthorWorkspaceNav,
+    AuthorAdminMenu,
+    AuthorDocHero,
+    ArchitectureDiagramViewer,
+    AuthorReviewPacket,
+    RouterLink,
+  ],
   templateUrl: './author-previews.html',
-  styleUrl: './author-previews.css',
+  styleUrls: ['./author-previews.css', '../../core/author-workspace-nav/reference-footer.css'],
   host: { '[class.architecture-page]': 'architectureOnly' },
 })
 export class AuthorPreviewsPage {
@@ -56,16 +67,14 @@ export class AuthorPreviewsPage {
   private readonly navigationHash = signal(this.hostDocument.defaultView?.location.hash ?? '');
   private pendingArchitectureAnchor = this.hostDocument.defaultView?.location.hash ?? '';
   private readonly architectureSections = [
-    'platform-panel',
-    'backend-panel',
+    'overview-panel',
+    'components-panel',
+    'signin-panel',
+    'data-panel',
     'journeys-panel',
+    'publication-panel',
     'model-panel',
-    'flow-panel',
-    'candidate-panel',
-    'oauth-panel',
-    'trust-panel',
-    'environments-panel',
-    'development-panel',
+    'deferred-panel',
   ];
   protected readonly architectureOnly =
     inject(ActivatedRoute).snapshot.data['architectureOnly'] === true;
@@ -81,7 +90,7 @@ export class AuthorPreviewsPage {
   protected readonly architectureDocumentHref = computed(() => {
     if (
       !this.architectureOnly ||
-      !this.accounts.account()?.authorPreview ||
+      !(this.accounts.account()?.permissions?.previewDocuments ?? this.accounts.account()?.authorPreview === true) ||
       this.accounts.sessionExpired()
     )
       return null;
@@ -103,17 +112,15 @@ export class AuthorPreviewsPage {
   protected readonly architectureOutline = computed<AuthorOutlineItem[]>(() => {
     if (!this.architectureFrameHref()) return [];
     return [
-      ['Platform and repositories', 'platform-panel'],
-      ['Backend application', 'backend-panel'],
+      ['System overview', 'overview-panel'],
+      ['Runtime components', 'components-panel'],
+      ['Sign-in and authorization', 'signin-panel'],
+      ['Data ownership and failures', 'data-panel'],
       ['Request journeys', 'journeys-panel'],
-      ['Complete data model', 'model-panel'],
-      ['Delivery and operations', 'flow-panel'],
-      ['Three-app candidate', 'candidate-panel'],
-      ['Sign-in and requests', 'oauth-panel'],
-      ['Data and failure boundaries', 'trust-panel'],
-      ['Environments and repositories', 'environments-panel'],
-      ['Local setup & development', 'development-panel'],
-    ].map(([label, anchor]) => ({ label, href: `/author/architecture#${anchor}` }));
+      ['Content publication', 'publication-panel'],
+      ['Content data model', 'model-panel'],
+      ['Deferred boundaries', 'deferred-panel'],
+    ].map(([label, anchor]) => ({ label, href: `/admin/architecture#${anchor}` }));
   });
   protected readonly architectureNavigationHref = computed(() => {
     return this.architectureFrameHref();
@@ -175,7 +182,7 @@ export class AuthorPreviewsPage {
       const hash = `#${selected}`;
       const hostWindow = this.hostDocument.defaultView;
       if (hostWindow && hostWindow.location.hash !== hash) {
-        hostWindow.history.replaceState(null, '', `/author/architecture${hash}`);
+        hostWindow.history.replaceState(null, '', `/admin/architecture${hash}`);
         hostWindow.dispatchEvent(new HashChangeEvent('hashchange'));
       }
       this.navigationHash.set(hash);
@@ -237,6 +244,65 @@ export class AuthorPreviewsPage {
     this.documentPort?.close();
   }
   protected readonly collections = signal<PreviewCollection[]>([]);
+  protected readonly inventoryDate = signal<string | null>(null);
+  // The live application is the current design; these open the real pages.
+  protected readonly liveSurfaces = [
+    {
+      title: 'Learn',
+      description: 'Language foundations, DSA, object design and engineering tools.',
+      route: '/learn',
+    },
+    {
+      title: 'Grow',
+      description: 'Backend, frontend, security, AI engineering and delivery.',
+      route: '/grow',
+    },
+    {
+      title: 'Blaze',
+      description: 'Architecture, leadership, behavioral preparation and AI systems.',
+      route: '/blaze',
+    },
+    {
+      title: 'Pattern lessons',
+      description: 'Algorithmic Patterns: problem, walkthrough, variations and mistakes.',
+      route: '/learn/algorithmic-patterns',
+    },
+    {
+      title: 'Hands-on DSA',
+      description: 'Coding practice, source, trace and the guided debugger.',
+      route: '/learn/hands-on-dsa',
+    },
+    {
+      title: 'System design lessons',
+      description: 'Blaze design lessons built from tables and diagrams.',
+      route: '/blaze/system-design',
+    },
+    {
+      title: 'Search',
+      description: 'Find published lessons, questions, practice and supporting readers.',
+      route: '/search',
+    },
+    {
+      title: 'Support and feedback',
+      description: 'The feedback form and attachment experience.',
+      route: '/support',
+    },
+    {
+      title: 'Manage Account',
+      description: 'Profile, security, active sign-ins and learning summary.',
+      route: '/account',
+    },
+  ];
+  protected readonly savedPlan = computed(
+    () =>
+      this.accounts.plans().find((plan) => plan.goal === 'Author sample · Saved plan') ??
+      this.accounts.plans()[0],
+  );
+  protected readonly revisedPlan = computed(
+    () =>
+      this.accounts.plans().find((plan) => plan.goal === 'Author sample · Revised plan') ??
+      this.accounts.plans().find((plan) => plan.revision > 1),
+  );
   protected readonly groupNames = computed(() =>
     this.collections().map((collection) => collection.title),
   );
@@ -259,12 +325,14 @@ export class AuthorPreviewsPage {
   });
   protected readonly resultCount = computed(() => this.visibleCollections().length);
   protected readonly previewOutline = computed<AuthorOutlineItem[]>(() => {
-    if (!this.accounts.account()?.authorPreview || this.accounts.sessionExpired()) return [];
+    if (!(this.accounts.account()?.permissions?.previewDocuments ?? this.accounts.account()?.authorPreview === true) || this.accounts.sessionExpired()) return [];
     return [
+      { label: 'Current product', href: '#live-product' },
+      { label: 'Study Plan sample views', href: '#study-plan-views' },
       { label: 'Study Plan review', href: '#study-plan-review' },
+      { label: 'Design history', href: '#design-history' },
       ...(this.state() === 'ready'
         ? [
-            { label: 'Find a preview', href: '#preview-filters' },
             ...this.visibleCollections().map((collection) => ({
               label: collection.title,
               href: `#preview-${collection.id}`,
@@ -280,18 +348,20 @@ export class AuthorPreviewsPage {
 
   protected async load() {
     const url = previewManifestUrl(this.base);
-    if (!url || !this.accounts.account()?.authorPreview || this.accounts.sessionExpired()) {
+    if (!url || !(this.accounts.account()?.permissions?.previewDocuments ?? this.accounts.account()?.authorPreview === true) || this.accounts.sessionExpired()) {
       this.state.set('disabled');
       return;
     }
     this.state.set('loading');
     this.entries.set([]);
     this.collections.set([]);
+    this.inventoryDate.set(null);
     try {
       const manifest = await firstValueFrom(this.http.get<unknown>(url).pipe(timeout(10000)));
       const entries = parsePreviewInventory(manifest, this.base);
       this.entries.set(entries);
       this.collections.set(parsePreviewCollections(manifest, entries));
+      this.inventoryDate.set(previewInventoryDate(manifest));
       this.state.set('ready');
     } catch {
       this.state.set('error');

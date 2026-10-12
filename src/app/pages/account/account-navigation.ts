@@ -11,10 +11,15 @@ export function safeAccountReturn(value: string | null): string {
     return path === '/' ||
       path === '/account' ||
       path === '/delivery-plan' ||
-      /^\/(?:study-plan|learn|grow|look-ahead|search|support|author)(?:\/.*)?$/.test(path)
+      /^\/(?:study-plan|learn|grow|blaze|look-ahead|search|support|author|admin)(?:\/.*)?$/.test(path)
       ? value
       : '/';
   } catch {
     return '/';
   }
+}
+
+/** Gateway sign-in link that returns to `returnTo` afterwards. */
+export function gatewayLoginUrl(returnTo: string): string {
+  return '/bff/login?returnTo=' + encodeURIComponent(returnTo);
 }

@@ -106,12 +106,22 @@ function authorizeWorkingAuthor(request) {
     const check = httpRequest({
       hostname: '127.0.0.1',
       port: 4350,
-      method: 'HEAD',
-      path: '/bff/author/previews/preview-directory/manifest.json',
+      method: 'GET',
+      path: '/bff/api/v1/account/permissions',
       headers: { host: '127.0.0.1:4301', cookie: request.headers.cookie ?? '' },
     }, (response) => {
-      response.resume();
-      resolveStatus(response.statusCode);
+      if (response.statusCode !== 200) { response.resume(); resolveStatus(response.statusCode); return; }
+      let body = '';
+      response.setEncoding('utf8');
+      response.on('data', chunk => {
+        body += chunk;
+        if (body.length > 8192) { response.destroy(); resolveStatus(503); }
+      });
+      response.on('end', () => {
+        try { resolveStatus(JSON.parse(body).data ?? 503); }
+        catch { resolveStatus(503); }
+      });
+      response.on('error', () => resolveStatus(503));
     });
     check.setTimeout(10000, () => check.destroy());
     check.on('error', () => resolveStatus(503));

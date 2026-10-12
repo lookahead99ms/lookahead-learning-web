@@ -3,9 +3,9 @@
  * but learners no longer find them in catalogs, menus, search or study-plan offerings.
  */
 export const HIDDEN_COURSE_IDS: readonly string[] = [
-  'look-ahead:system-design',
-  'look-ahead:distributed-systems',
-  'look-ahead:scalability-performance',
+  'blaze:system-design',
+  'blaze:distributed-systems',
+  'blaze:scalability-performance',
 ];
 
 const HIDDEN = new Set<string>(HIDDEN_COURSE_IDS);

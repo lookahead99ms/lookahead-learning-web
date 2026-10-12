@@ -26,7 +26,7 @@
             ><span>open decisions</span>
           </p>
         </div>
-        <a class="review-link" routerLink="/author/previews/study-plan">Open Study Plan review</a>
+        <a class="review-link" routerLink="/admin/previews/study-plan">Open Study Plan review</a>
       } @else {
         <nav class="document-actions" aria-label="Study Plan review documents">
           @if (experienceHref(); as previewHref) {
@@ -91,7 +91,7 @@
         {{
           state() === 'unpublished'
             ? 'The review packet is not published yet.'
-            : 'The protected review packet is unavailable. Sign-in and author access must be confirmed.'
+            : 'The protected review packet is unavailable. Sign-in and admin access must be confirmed.'
         }}
       </p>
       <button type="button" (click)="load()">Reload review</button>

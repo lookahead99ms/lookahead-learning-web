@@ -33,7 +33,7 @@ const reference: AuthorDocument = {
       label: 'Startup runbook',
       href: 'https://github.com/example/infra/blob/main/docs/startup.md',
     },
-  ],
+  ],  downloads: [],
 };
 describe('Operations author view', () => {
   const account = signal<any>({ accountId: 'author', authorPreview: true });
@@ -74,7 +74,7 @@ describe('Operations author view', () => {
     fixture.detectChanges();
     expect(frame.getAttribute('src')).toBe(reference.href + '?theme=dark&layout=shared');
     expect(fixture.nativeElement.textContent).toContain('not live service health');
-    expect(fixture.nativeElement.textContent).toContain('Published author reference');
+    expect(fixture.nativeElement.textContent).toContain('Published reference');
     expect(fixture.nativeElement.textContent).toContain('Version operations/test.1');
     expect(
       fixture.nativeElement.querySelector('.reference-actions').getAttribute('aria-label'),
@@ -102,20 +102,86 @@ describe('Operations author view', () => {
     );
     expect(
       fixture.nativeElement.querySelector(
-        'a[href="/author/local-development"][aria-current="page"]',
+        'a[href="/admin/local-development"][aria-current="page"]',
       ),
     ).not.toBeNull();
   });
+  it('opens with a hero and keeps the published version in a footer below the document', async () => {
+    const fixture = await create();
+    const content = fixture.nativeElement.querySelector('.workspace-content') as HTMLElement;
+    const hero = content.querySelector('app-author-doc-hero') as HTMLElement;
+    expect(content.firstElementChild).toBe(hero);
+    expect(hero.querySelector('h2')!.textContent).toBe('Operations');
+    expect(hero.querySelector('.hero-group')!.textContent).toContain('Run and release');
+    expect(hero.textContent).toContain('For administrators');
+    const footer = content.querySelector('footer.reference-toolbar') as HTMLElement;
+    expect(footer.textContent).toContain('Version operations/test.1');
+    const panel = content.querySelector('.document-panel')!;
+    expect(panel.compareDocumentPosition(footer) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(content.lastElementChild).toBe(footer);
+  });
+  it('names inline guide links plainly outside Operations', async () => {
+    TestBed.overrideProvider(ActivatedRoute, {
+      useValue: { snapshot: { data: { authorDocument: 'local-development' } } },
+    });
+    const fixture = await create();
+    expect(fixture.nativeElement.querySelector('#runbooks-heading').textContent).toBe(
+      'Links in this guide',
+    );
+  });
+  it('shows no setup card outside Local setup', async () => {
+    load.mockResolvedValue({
+      ...reference,
+      downloads: [{ label: 'Script', filename: 'lookahead_setup.py', href: '/x', bytes: 10 }],
+    });
+    const fixture = await create();
+    expect(fixture.nativeElement.querySelector('.setup-card')).toBeNull();
+  });
+  it('offers the setup script in a collapsed card on Local setup', async () => {
+    const setup = {
+      label: 'One-command setup script',
+      filename: 'lookahead_setup.py',
+      href: `/bff/author/previews/preview-directory/author-documents/downloads/${'c'.repeat(64)}/lookahead_setup.py`,
+      bytes: 22_000,
+    };
+    load.mockResolvedValue({ ...reference, downloads: [setup] });
+    TestBed.overrideProvider(ActivatedRoute, {
+      useValue: { snapshot: { data: { authorDocument: 'local-development' } } },
+    });
+    const fixture = await create();
+    const card = fixture.nativeElement.querySelector('details.setup-card') as HTMLDetailsElement;
+    expect(card.open).toBe(false);
+    expect(card.querySelector('summary')!.textContent).toContain('One-command setup');
+    const link = card.querySelector('a.setup-download') as HTMLAnchorElement;
+    expect(link.getAttribute('href')).toBe(setup.href);
+    expect(link.getAttribute('download')).toBe('lookahead_setup.py');
+    expect(link.textContent).toContain('21 KB');
+    expect(
+      [...fixture.nativeElement.querySelectorAll('.heading-outline a')][0].getAttribute('href'),
+    ).toBe('/admin/local-development#one-command-setup');
+    const writeText = vi.fn(async () => {});
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+    try {
+      const copy = card.querySelector('.setup-commands button') as HTMLButtonElement;
+      copy.click();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      expect(writeText).toHaveBeenCalledWith('python3 lookahead_setup.py');
+      expect(copy.textContent!.trim()).toBe('Copied');
+    } finally {
+      Reflect.deleteProperty(navigator, 'clipboard');
+    }
+  });
   it('keeps a section deep link on the protected parent page', async () => {
     const previousUrl = location.pathname + location.search + location.hash;
-    history.replaceState(null, '', '/author/operations#repositories-runbooks');
+    history.replaceState(null, '', '/admin/operations#repositories-runbooks');
     try {
       const fixture = await create();
       expect(fixture.nativeElement.querySelector('iframe').getAttribute('src')).toBe(
         reference.href + '?theme=light&layout=shared',
       );
       const link = fixture.nativeElement.querySelector('.heading-outline a');
-      expect(link.getAttribute('href')).toBe('/author/operations#repositories-runbooks');
+      expect(link.getAttribute('href')).toBe('/admin/operations#repositories-runbooks');
       expect(link.getAttribute('target')).toBeNull();
     } finally {
       history.replaceState(null, '', previousUrl);
@@ -123,7 +189,7 @@ describe('Operations author view', () => {
   });
   it('sends an outline selection to the embedded document without opening another window', async () => {
     const previousUrl = location.pathname + location.search + location.hash;
-    history.replaceState(null, '', '/author/operations');
+    history.replaceState(null, '', '/admin/operations');
     try {
       const fixture = await create();
       const frame = fixture.nativeElement.querySelector('iframe') as HTMLIFrameElement;
@@ -158,10 +224,10 @@ describe('Operations author view', () => {
     );
     expect(fixture.nativeElement.querySelector('#supporting-references')).not.toBeNull();
     expect(
-      fixture.nativeElement.querySelector('a[href="/author/operations#runbooks-links"]'),
+      fixture.nativeElement.querySelector('a[href="/admin/operations#runbooks-links"]'),
     ).toBeNull();
     expect(
-      fixture.nativeElement.querySelector('a[href="/author/operations#supporting-references"]'),
+      fixture.nativeElement.querySelector('a[href="/admin/operations#supporting-references"]'),
     ).toBeNull();
   });
   it('sizes the shared document from a validated sandbox message', async () => {
@@ -212,7 +278,7 @@ describe('Operations author view', () => {
     account.set({ accountId: 'learner', authorPreview: false });
     const fixture = await create();
     expect(load).not.toHaveBeenCalled();
-    expect(fixture.nativeElement.textContent).toContain('Author access required');
+    expect(fixture.nativeElement.textContent).toContain('Admin access required');
   });
   it('shows missing publication honestly and retries only on request', async () => {
     load.mockRejectedValueOnce(new AuthorDocumentError('unpublished'));

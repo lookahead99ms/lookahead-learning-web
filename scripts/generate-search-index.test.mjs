@@ -392,43 +392,43 @@ test('counts lessons and questions separately from lesson/practice module contai
 
 test('passes a learning unit card through to the course locator unchanged', async (context) => {
   const root = await testRoot(context);
-  await addCourse(root, 'look-ahead');
+  await addCourse(root, 'blaze');
   const card = {
     summary: 'Hold a seat, confirm it after payment, never sell it twice.',
     level: 'Advanced',
     minutes: 45,
-    scene: '/content/look-ahead/design-systems/visuals/cards/reservation.svg',
+    scene: '/content/blaze/design-systems/visuals/cards/reservation.svg',
     sceneAlt: 'A seat turns from held to reserved while a second click is refused.',
     pillGroups: [
       { label: 'Patterns', items: ['Contention'] },
       { label: 'Fundamentals', items: ['Transactions', 'Caching'] },
     ],
   };
-  const coursePath = join(root, 'look-ahead/sample/course.json');
+  const coursePath = join(root, 'blaze/sample/course.json');
   const course = JSON.parse(await readFile(coursePath, 'utf8'));
   course.layout = 'learning-map';
   course.learningUnits = [
     { id: 'intro', title: 'Intro', description: 'Intro.', theoryModuleId: 'intro', card },
   ];
-  await writeJson(root, 'look-ahead/sample/course.json', course);
+  await writeJson(root, 'blaze/sample/course.json', course);
   await generateSearchIndex(root);
   const locator = JSON.parse(
-    await readFile(join(root, 'look-ahead/sample/content-locator.json'), 'utf8'),
+    await readFile(join(root, 'blaze/sample/content-locator.json'), 'utf8'),
   );
   assert.deepEqual(locator.course.learningUnits[0].card, card);
 });
 
-test('Learn uses authored important topics while Look Ahead retains its module preview', async (context) => {
+test('Learn uses authored important topics while Blaze retains its module preview', async (context) => {
   const root = await testRoot(context);
   await addCourse(root, 'learn', [' Runtime contracts ', 'Exceptions', 'runtime contracts']);
-  await addCourse(root, 'look-ahead', ['Do not replace modules']);
+  await addCourse(root, 'blaze', ['Do not replace modules']);
   await generateSearchIndex(root);
   const [learnCourse] = JSON.parse(await readFile(join(root, 'learn/catalog-overview.json')));
-  const [lookAheadCourse] = JSON.parse(
-    await readFile(join(root, 'look-ahead/catalog-overview.json')),
+  const [blazeCourse] = JSON.parse(
+    await readFile(join(root, 'blaze/catalog-overview.json')),
   );
   assert.deepEqual(learnCourse.topicPreview, ['Runtime contracts', 'Exceptions']);
-  assert.deepEqual(lookAheadCourse.topicPreview, ['Introduction']);
+  assert.deepEqual(blazeCourse.topicPreview, ['Introduction']);
 });
 
 test('generates only four authored course highlights and available course links', async (context) => {

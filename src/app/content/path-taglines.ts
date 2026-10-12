@@ -21,8 +21,8 @@ export const PATH_TAGLINES = {
     ai: 'writes with you,',
     you: 'you run it.',
   },
-  'look-ahead': {
-    headline: 'Look ahead to design what the team delivers.',
+  'blaze': {
+    headline: 'Blaze ahead to design what the team delivers.',
     ai: 'joins the system,',
     you: 'you choose how.',
   },

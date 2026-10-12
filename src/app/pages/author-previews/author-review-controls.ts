@@ -281,7 +281,7 @@ export class AuthorReviewControls {
         this.historyState.set('failed');
         this.state.set('failed');
         this.historyError.set(
-          'Sign-in and author access must be confirmed before recording a decision.',
+          'Sign-in and admin access must be confirmed before recording a decision.',
         );
         this.failure.set('Access could not be confirmed. Your comment is preserved.');
       } else if (error instanceof AuthorReviewError && error.kind === 'invalid') {

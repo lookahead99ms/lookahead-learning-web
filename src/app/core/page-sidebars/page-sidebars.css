@@ -510,9 +510,9 @@ button {
   --outline-path: var(--path-grow);
   --outline-course: var(--card-title-grow, var(--accent-strong));
 }
-.sidebar-lesson-nav[data-path='look-ahead'] {
-  --outline-path: var(--path-look-ahead);
-  --outline-course: var(--card-title-look-ahead, var(--accent-strong));
+.sidebar-lesson-nav[data-path='blaze'] {
+  --outline-path: var(--path-blaze);
+  --outline-course: var(--card-title-blaze, var(--accent-strong));
 }
 .outline-path > a {
   color: var(--outline-path);

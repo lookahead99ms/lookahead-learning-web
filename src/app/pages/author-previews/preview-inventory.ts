@@ -84,6 +84,20 @@ export function parsePreviewCollections(
   return collections.sort((a, b) => a.order - b.order);
 }
 
+/** The day the design inventory was last built, for an honest "as of" label. */
+export function previewInventoryDate(value: unknown): string | null {
+  const builtAt = (value as { builtAt?: unknown })?.builtAt;
+  if (typeof builtAt !== 'string' || !/^\d{4}-\d{2}-\d{2}T/.test(builtAt)) return null;
+  const date = new Date(builtAt);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
+}
+
 export function parsePreviewInventory(value: unknown, base: string): PreviewEntry[] {
   const manifestPath = previewManifestUrl(base);
   const data = value as { schemaVersion?: string; urlBase?: string; entries?: unknown[] };

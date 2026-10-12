@@ -176,7 +176,7 @@ describe('DeliveryPlanPage', () => {
     const reads = editor.load.mock.calls.length;
     page['refreshPlan']();
     expect(editor.load.mock.calls.length).toBe(reads);
-    expect(harness.routeNativeElement?.textContent).toContain('Author access required');
+    expect(harness.routeNativeElement?.textContent).toContain('Admin access required');
     expect(harness.routeNativeElement?.textContent).not.toContain('Deliver deliberately');
     expect(harness.routeNativeElement?.querySelector('.board-column')).toBeNull();
   });
@@ -221,7 +221,7 @@ describe('DeliveryPlanPage', () => {
     );
     expect(
       harness.routeNativeElement?.querySelector(
-        '.delivery-outline nav[aria-label="Author workspace navigation"]',
+        'app-author-admin-menu nav[aria-label="Admin navigation"]',
       ),
     ).not.toBeNull();
     expect(

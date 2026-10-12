@@ -1,10 +1,22 @@
 import { InjectionToken } from '@angular/core';
+import type { ThemePreference } from '../../core/platform-theme';
+
+/** Public profile links Identity stores; null means not set. */
+export interface ProfileLinks {
+  github: string | null;
+  linkedin: string | null;
+  x: string | null;
+  website: string | null;
+}
 
 /** UI contract. The transport maps only authoritative account-management responses. */
 export interface ManagedAccountProfile {
   displayName: string;
   username: string;
   signInMethod?: string;
+  /** Absent when Identity does not report it (older service). */
+  themePreference?: ThemePreference;
+  links?: ProfileLinks;
 }
 
 export interface PasswordChange {
@@ -15,6 +27,8 @@ export interface PasswordChange {
 
 export type AccountSettingsErrorKind =
   | 'invalid-name'
+  | 'invalid-link'
+  | 'invalid-preference'
   | 'password-policy'
   | 'password-common'
   | 'password-mismatch'
@@ -34,6 +48,8 @@ export class AccountSettingsError extends Error {
 export interface AccountSettingsClient {
   loadProfile(): Promise<ManagedAccountProfile>;
   updateDisplayName(displayName: string): Promise<ManagedAccountProfile>;
+  updateThemePreference(theme: ThemePreference): Promise<ManagedAccountProfile>;
+  updateProfileLinks(links: ProfileLinks): Promise<ManagedAccountProfile>;
   /** Resolves only after acknowledgement and clearing all client account state. */
   changePassword(change: PasswordChange): Promise<void>;
 }

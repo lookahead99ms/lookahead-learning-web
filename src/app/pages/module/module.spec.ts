@@ -108,7 +108,7 @@ describe('Module question labels', () => {
     await TestBed.configureTestingModule({
       providers: [
         provideRouter([
-          ...['learn', 'grow', 'look-ahead'].map((path) => ({
+          ...['learn', 'grow', 'blaze'].map((path) => ({
             path: `${path}/:courseId/module/:moduleId`,
             component: Module,
             data: { pathId: path },
@@ -159,7 +159,7 @@ describe('Module question labels', () => {
     expect(labels).not.toContain('Practice');
   });
 
-  for (const path of ['learn', 'grow', 'look-ahead']) {
+  for (const path of ['learn', 'grow', 'blaze']) {
     for (const [moduleId, questionId] of [
       ['streams', 'stream-concept'],
       ['streams-practice', 'stream-practice'],

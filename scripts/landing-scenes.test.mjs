@@ -14,10 +14,10 @@ const scenes = readdirSync(dir)
 
 test('all eight landing scenes are present', () => {
   assert.deepEqual(scenes.map((scene) => scene.name).sort(), [
+    'blaze',
     'decision',
     'grow',
     'learn',
-    'look-ahead',
     'project-guides',
     'study-plan',
     'system-design',
@@ -96,10 +96,10 @@ for (const { file, name, svg } of scenes) {
   });
 }
 
-// The Learn / Grow / Look Ahead path cards show their scenes about 276px wide on desktop.
+// The Learn / Grow / Blaze path cards show their scenes about 276px wide on desktop.
 // A 240x135 view box keeps every 12-unit label at 13px or more on screen at that width.
 test('path-card scenes use a 240x135 view box so their text renders at 13px or more', () => {
-  for (const name of ['learn', 'grow', 'look-ahead']) {
+  for (const name of ['learn', 'grow', 'blaze']) {
     const { svg } = scenes.find((scene) => scene.name === name);
     assert.match(svg, /viewBox="0 0 240 135"/, name);
     const sizes = [...svg.matchAll(/font-size="([\d.]+)"/g)].map((match) => Number(match[1]));
@@ -110,7 +110,7 @@ test('path-card scenes use a 240x135 view box so their text renders at 13px or m
 // Each path card rests on a summary card in large type (page load, reduced motion, and while
 // another card plays); the landing page plays one story at a time and the summary returns after it.
 test('path-card scenes open on a large-type summary that names AI and you', () => {
-  for (const name of ['learn', 'grow', 'look-ahead']) {
+  for (const name of ['learn', 'grow', 'blaze']) {
     const { svg } = scenes.find((scene) => scene.name === name);
     const summary = svg.split('\n').find((line) => line.startsWith(`<g class="${name}-summary">`));
     assert.ok(summary, name);
@@ -133,7 +133,7 @@ test('path-card scenes open on a large-type summary that names AI and you', () =
 });
 
 test('summary AI and You rows sit at the same height on all three path cards', () => {
-  const rows = ['learn', 'grow', 'look-ahead'].map((name) => {
+  const rows = ['learn', 'grow', 'blaze'].map((name) => {
     const summary = scenes.find((scene) => scene.name === name).svg.split('\n').find((line) => line.startsWith(`<g class="${name}-summary">`));
     return [
       summary.match(new RegExp(`<g class="${name}-ai-mark" transform="translate\\([\\d.]+ ([\\d.]+)\\)"`))[1],
@@ -145,7 +145,7 @@ test('summary AI and You rows sit at the same height on all three path cards', (
 });
 
 test('the three path stories have the same length so they stay in step', () => {
-  const lengths = ['learn', 'grow', 'look-ahead'].map(
+  const lengths = ['learn', 'grow', 'blaze'].map(
     (name) => scenes.find((scene) => scene.name === name).svg.match(/data-story-ms="(\d+)"/)[1],
   );
   assert.deepEqual(new Set(lengths).size, 1, lengths.join(', '));
@@ -153,7 +153,7 @@ test('the three path stories have the same length so they stay in step', () => {
 
 // One dialogue band for the Learn and Grow stories, fixed by role like the summary card: every AI
 // line sits on row 1 (y 4) and every You line on row 2 (y 27), at x 6, outside the summary card.
-// Look Ahead keeps its own system layout (status top right, full balance) and is exempt.
+// Blaze keeps its own system layout (status top right, full balance) and is exempt.
 test('learn and grow stories put AI lines on row 1 and You lines on row 2', () => {
   for (const name of ['learn', 'grow']) {
     const story = scenes

@@ -6,11 +6,19 @@ It does not redirect to a private preview or change account, subscription or
 content access policy.
 
 The homepage includes a fixed AI engineering headline, five original carousel
-slides, Learn/Grow/Look Ahead path entries, an optional engineering challenge,
+slides, Learn/Grow/Blaze path entries, an optional engineering challenge,
 and four discovery cards. Light mode uses Harbor teal; dark mode uses Midnight
 and Apricot. The palette is owned by the shared [platform theme](theme.md) in `src/styles.css`,
 so navigation and all other Angular routes follow the same selection. The
 homepage keeps its existing layout, engineering grid and slideshow.
+
+The three Learn/Grow/Blaze path cards carry their path colour (`--path-learn`,
+`--path-grow`, `--path-blaze`) as a soft tint and a 3px top rule, with a path icon
+badge beside the path name and the "Explore …" action drawn as a button. The
+whole card stays one link, so the action is a styled span rather than a nested
+control. This matches the Manage account path tiles and was approved by the user
+for these cards on 2026-10-12 (DLV-932), beyond the earlier marker-only path
+colour rule (DLV-801).
 
 Each discovery card uses its existing destination over the entire card surface,
 including its heading and description. The visible action remains a native link

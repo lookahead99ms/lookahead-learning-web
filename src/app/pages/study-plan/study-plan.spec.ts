@@ -2093,7 +2093,7 @@ describe('StudyPlanPage', () => {
       'Step 1Setup',
       'Step 2Learn',
       'Step 3Grow',
-      'Step 4Look Ahead',
+      'Step 4Blaze',
       'Step 5Review',
     ]);
     expect(steps[0].getAttribute('aria-current')).toBe('step');
@@ -2217,9 +2217,9 @@ describe('StudyPlanPage', () => {
       },
       {
         ...document('design-lesson', 'resilience-production', 'free'),
-        path: 'look-ahead',
+        path: 'blaze',
         courseTitle: 'System Design',
-        route: ['/', 'look-ahead', 'resilience-production', 'design-lesson'],
+        route: ['/', 'blaze', 'resilience-production', 'design-lesson'],
       },
     ];
     const variant = {
@@ -2234,7 +2234,7 @@ describe('StudyPlanPage', () => {
       scheduledMinutes: 900,
       selectedContentCount: 3,
       availableContentCount: 3,
-      topicIds: ['learn:core-java', 'grow:spring-boot', 'look-ahead:resilience-production'],
+      topicIds: ['learn:core-java', 'grow:spring-boot', 'blaze:resilience-production'],
     };
     TestBed.overrideProvider(ContentService, {
       useValue: {
@@ -2259,7 +2259,7 @@ describe('StudyPlanPage', () => {
                 topics: [
                   { id: 'learn:core-java', title: 'Core Java' },
                   { id: 'grow:spring-boot', title: 'Spring Boot' },
-                  { id: 'look-ahead:resilience-production', title: 'System Design' },
+                  { id: 'blaze:resilience-production', title: 'System Design' },
                 ],
                 recommendedVariantId: variant.templateId,
                 variants: [variant],
@@ -2318,7 +2318,7 @@ describe('StudyPlanPage', () => {
     expect([...page.selectedTopicIds()]).toEqual([
       'learn:core-java',
       'grow:spring-boot',
-      'look-ahead:resilience-production',
+      'blaze:resilience-production',
     ]);
     expect(TestBed.inject(Router).url).toContain('creation=custom');
     expect(TestBed.inject(Router).url).toContain('builderStep=learn');

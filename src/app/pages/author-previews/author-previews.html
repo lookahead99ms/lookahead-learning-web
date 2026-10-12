@@ -13,10 +13,11 @@
       />
     </aside>
     <div class="workspace-content">
+      <app-author-doc-hero pageId="architecture" />
       @if (!accounts.account()?.authorPreview || accounts.sessionExpired()) {
         <section class="state-panel">
-          <h2>Author access required</h2>
-          <p>Sign in with an account that has author access.</p>
+          <h2>Admin access required</h2>
+          <p>Sign in with an account that has admin access.</p>
         </section>
       } @else if (state() === 'disabled') {
         <section class="state-panel">
@@ -24,7 +25,7 @@
           <p>This application has no private preview service configured.</p>
         </section>
       } @else if (state() === 'loading') {
-        <p role="status" class="state-panel">Loading author previews…</p>
+        <p role="status" class="state-panel">Loading previews…</p>
       } @else if (state() === 'error') {
         <section class="state-panel" role="alert">
           <h2>Previews are unavailable</h2>
@@ -32,12 +33,6 @@
           <button type="button" (click)="load()">Try again</button>
         </section>
       } @else if (architectureDocumentUrl(); as documentUrl) {
-        <div class="reference-toolbar">
-          <p>Platform structure and current local boundaries</p>
-          <a [href]="architectureDocumentHref()!" target="_blank" rel="noopener noreferrer"
-            >Open full-page document <span>(new tab)</span></a
-          >
-        </div>
         <section class="architecture-workspace" aria-label="Canonical platform architecture">
           <iframe
             #architectureFrame
@@ -49,36 +44,118 @@
             (load)="connectDocument(architectureFrame)"
           ></iframe>
         </section>
+        <footer class="reference-toolbar">
+          <p>Platform structure and current local boundaries</p>
+          <a class="open-reference" [href]="architectureDocumentHref()!" target="_blank" rel="noopener noreferrer"
+            ><span class="open-icon" aria-hidden="true">↗</span> Open full-page document
+            <span class="new-tab">(new tab)</span></a
+          >
+        </footer>
       } @else {
         <p class="state-panel">The architecture preview is not available in this inventory.</p>
       }
     </div>
+    <app-author-admin-menu pageId="architecture" />
   } @else {
     <aside class="preview-outline">
       <app-author-workspace-nav
-        pageTitle="Author previews"
+        pageTitle="Previews"
         pageId="previews"
         [outline]="previewOutline()"
       />
     </aside>
     <div class="preview-content">
       <header>
-        <p class="eyebrow">Private design review</p>
-        <h2 class="preview-intro-heading">Explore the current work.</h2>
+        <p class="eyebrow">Private review</p>
+        <h2 class="preview-intro-heading">Review the current product.</h2>
         <p class="lede">
-          Revisit the latest design work, compare themes, and explore earlier iterations.
-        </p>
-        <p class="context-note">
-          Private local review · Opening a preview does not change the live application.
+          Start with the live pages. Earlier design studies are kept below as history.
         </p>
       </header>
       @if (accounts.account()?.authorPreview && !accounts.sessionExpired()) {
+        <section class="live-section" aria-labelledby="live-product">
+          <h2 id="live-product">Current product</h2>
+          <p>These open the real pages as they are today, with your admin access.</p>
+          <nav class="view-grid" aria-label="Current product pages">
+            @for (surface of liveSurfaces; track surface.route) {
+              <a [routerLink]="surface.route"
+                ><strong>{{ surface.title }}</strong
+                ><span>{{ surface.description }}</span></a
+              >
+            }
+          </nav>
+        </section>
+        <section class="live-section" aria-labelledby="study-plan-views">
+          <h2 id="study-plan-views">Study Plan sample views</h2>
+          <p>
+            The real Study Plan pages with sample plans owned by this account. Draft review opens
+            without saving.
+          </p>
+          <nav class="view-grid" aria-label="Study Plan sample views">
+            <a routerLink="/study-plan" [queryParams]="{ create: 1 }"
+              ><strong>Create a plan</strong
+              ><span>Career starting points, topics and daily budget.</span></a
+            >
+            <a
+              routerLink="/study-plan"
+              [queryParams]="{
+                create: 1,
+                authorView: 'draft',
+                topics: 'learn:core-java',
+                days: 30,
+                hours: 1,
+                approach: 'learning',
+              }"
+              ><strong>Review a draft</strong><span>A temporary plan ready for review.</span></a
+            >
+            @if (savedPlan(); as saved) {
+              <a routerLink="/study-plan" [queryParams]="{ plan: saved.planId, day: 1 }"
+                ><strong>Saved plan</strong
+                ><span>Progress, today’s session and account save state.</span></a
+              >
+              <a
+                routerLink="/study-plan"
+                [queryParams]="{ plan: saved.planId, authorView: 'schedule', day: 1 }"
+                ><strong>Weekly schedule</strong
+                ><span>The complete schedule, seven days at a time.</span></a
+              >
+            }
+            @if (revisedPlan(); as revised) {
+              <a routerLink="/study-plan" [queryParams]="{ plan: revised.planId, day: 2 }"
+                ><strong>Revised plan and recall</strong
+                ><span>Completed learning, recall and a revised deadline.</span></a
+              >
+              <a
+                routerLink="/study-plan"
+                [queryParams]="{ plan: revised.planId, authorView: 'recovery', day: 2 }"
+                ><strong>Recovery and revision history</strong
+                ><span>Make Room for Real Life and inspect past changes.</span></a
+              >
+            }
+          </nav>
+          @if (!savedPlan() || !revisedPlan()) {
+            <p class="context-note">
+              Some sample plans are unavailable. You can create a plan above; saved examples appear
+              here when prepared for this admin account.
+            </p>
+          }
+        </section>
         <div id="study-plan-review"><app-author-review-packet /></div>
+        <div class="history-heading">
+          <h2 id="design-history">Design history</h2>
+          <p>
+            Design studies and earlier alternatives, kept for reference. Many were replaced by the
+            live pages above. Opening one does not change the application.
+          </p>
+          @if (inventoryDate(); as built) {
+            <p class="context-note">Inventory last built {{ built }}.</p>
+          }
+        </div>
       }
       @if (!accounts.account()?.authorPreview || accounts.sessionExpired()) {
         <section class="state-panel">
-          <h2>Author access required</h2>
-          <p>Sign in with an account that has author access.</p>
+          <h2>Admin access required</h2>
+          <p>Sign in with an account that has admin access.</p>
         </section>
       } @else if (state() === 'disabled') {
         <section class="state-panel">
@@ -86,7 +163,7 @@
           <p>This application has no private preview service configured.</p>
         </section>
       } @else if (state() === 'loading') {
-        <p role="status" class="state-panel">Loading author previews…</p>
+        <p role="status" class="state-panel">Loading previews…</p>
       } @else if (state() === 'error') {
         <section class="state-panel" role="alert">
           <h2>Previews are unavailable</h2>
@@ -119,8 +196,8 @@
           {{ entries().length }} preserved previews
         </p>
         <p class="context-note">
-          Featured means current review focus. Selection status is shown separately. Preview links
-          open in a new tab.
+          Featured marks the lead study of each collection when the inventory was built. Selection
+          status is shown separately. Preview links open in a new tab.
         </p>
         @for (collection of visibleCollections(); track collection.id) {
           <section
@@ -133,7 +210,7 @@
               <p>{{ collection.summary }}</p>
             </div>
             <article class="featured-preview navigation-card">
-              <p class="eyebrow">Featured for review</p>
+              <p class="eyebrow">Featured study</p>
               <h3>{{ collection.featured.title }}</h3>
               <p class="featured-reason">{{ collection.featuredReason }}</p>
               <p class="review-status">Selection: {{ collection.featured.selectionLabel }}</p>
@@ -199,6 +276,7 @@
         }
       }
     </div>
+    <app-author-admin-menu pageId="previews" />
   }
 </main>
 @if (architectureDocumentHref(); as documentHref) {

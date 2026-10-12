@@ -1,9 +1,5 @@
 <app-platform-header />
 <main id="main-content" class="delivery-page">
-  <nav class="delivery-breadcrumbs" aria-label="Breadcrumb">
-    <a routerLink="/">Home</a><span>/</span><span aria-current="page">Delivery plan</span>
-  </nav>
-
   <aside class="delivery-outline">
     <app-author-workspace-nav
       pageTitle="Delivery plan"
@@ -12,11 +8,12 @@
       [outline]="plan() ? outline : []"
     />
   </aside>
+  <app-author-admin-menu pageId="delivery" />
 
   @if (!authorAccess()) {
     <section class="delivery-state" role="status">
-      <h1>Author access required</h1>
-      <p>Sign in with an account that has author access to view the delivery plan.</p>
+      <h1>Admin access required</h1>
+      <p>Sign in with an account that has admin access to view the delivery plan.</p>
     </section>
   } @else if (plan(); as deliveryPlan) {
     <header class="delivery-hero" id="delivery-overview">
@@ -117,7 +114,7 @@
               type="button"
               class="editor-primary"
               [disabled]="saving()"
-              (click)="openEditor()"
+              [hidden]="!canEdit()" (click)="openEditor()"
             >
               + New work item
             </button>
@@ -294,6 +291,7 @@
                               <option
                                 [value]="destination.id"
                                 [selected]="destination.id === item.statusId"
+                                [disabled]="!canMove(item, destination.id)"
                               >
                                 {{ destination.label }}
                               </option>
@@ -572,7 +570,7 @@
                 type="button"
                 class="editor-primary"
                 [disabled]="saving()"
-                (click)="openEditor(item)"
+                [hidden]="!canEdit(item)" (click)="openEditor(item)"
               >
                 Edit work item
               </button>

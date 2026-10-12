@@ -105,7 +105,7 @@ export function sceneTextLimit(maxPx: number, scale: number): string | null {
         --scene-bubble-out: var(--surface-accent);
         --scene-learn: var(--path-learn);
         --scene-grow: var(--path-grow);
-        --scene-ahead: var(--path-look-ahead);
+        --scene-ahead: var(--path-blaze);
         position: relative;
         display: grid;
         place-items: center;
@@ -334,7 +334,7 @@ export class CardScene {
 
   /**
    * App scenes are static assets; every other path goes through the content service,
-   * which serves public copies of Look Ahead unit card scenes first.
+   * which serves public copies of Blaze unit card scenes first.
    */
   private load(src: string): Observable<string> {
     return isSceneAssetPath(src)

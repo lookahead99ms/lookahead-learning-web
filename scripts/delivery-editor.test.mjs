@@ -394,3 +394,25 @@ test('handles missing and oversized evidence without exposing private disk locat
   await writeFile(file, 'x'.repeat(1024 * 1024 + 1));
   assert.equal((await request('GET', path)).status, 413);
 });
+
+test('staff workflow permissions deny testers, constrain admins and protect reviewer sign-off', async (t) => {
+  let permissions = { deliveryRead: false };
+  const { request, item, file } = await fixture(t, async () => permissions);
+  assert.equal((await request()).status, 403);
+  permissions = { deliveryRead: true, deliveryCreate: true, deliveryReview: true };
+  let current = await request();
+  assert.equal((await request('POST', '/work-items', { revision: current.body.revision, item: { ...item, statusId: 'done' } })).status, 403);
+  const created = await request('POST', '/work-items', { revision: current.body.revision, item: { ...item, statusId: 'review' } });
+  assert.equal(created.status, 201);
+  const plan = JSON.parse(await readFile(file, 'utf8'));
+  const saved = plan.workItems.find(row => row.title === item.title);
+  current = await request();
+  const payload = { revision: current.body.revision, item: { ...item, statusId: 'done' } };
+  assert.equal((await request('PUT', `/work-items/${saved.id}`, payload)).status, 403);
+  permissions = { deliveryRead: true, deliveryDone: true };
+  assert.equal((await request('POST', '/work-items', { revision: current.body.revision, item })).status, 403);
+  assert.equal((await request('PUT', `/work-items/${saved.id}`, { ...payload, item: { ...payload.item, title: 'Unapproved content rewrite' } })).status, 403);
+  assert.equal((await request('PUT', `/work-items/${saved.id}`, payload)).status, 200);
+  permissions = { deliveryRead: false };
+  assert.equal((await request()).status, 403);
+});

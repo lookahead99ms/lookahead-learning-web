@@ -14,7 +14,7 @@ import {
   AfterViewInit,
   OnDestroy,
 } from '@angular/core';
-import { authorDocumentationLinks, authorWorkspaceLinks } from './author-workspace-links';
+import { AuthorWorkspacePageId } from './author-workspace-links';
 import { SidebarToggle } from '../page-sidebars/sidebar-toggle';
 
 export interface AuthorOutlineItem {
@@ -22,12 +22,14 @@ export interface AuthorOutlineItem {
   href: string;
 }
 
-export type AuthorWorkspacePageId =
-  'author' | 'previews' | 'delivery' | 'architecture' | 'local-development' | 'operations' | 'api';
+export type { AuthorWorkspacePageId };
 
 let navigationInstance = 0;
 
-/** Shared author outline and direct navigation between protected workspace pages. */
+/**
+ * Left sidebar of every admin page: the page title and its "On this page" outline. Navigation
+ * between admin pages lives in the right-hand AuthorAdminMenu.
+ */
 @Component({
   selector: 'app-author-workspace-nav',
   imports: [SidebarToggle],
@@ -51,10 +53,6 @@ export class AuthorWorkspaceNav implements OnChanges, AfterViewInit, OnDestroy {
   private pendingFrame: number | null = null;
   private outlineRequest = 0;
   @Output() embeddedSectionSelected = new EventEmitter<string>();
-  protected readonly workspaceLinks = authorWorkspaceLinks;
-  protected readonly documentationLinks = authorDocumentationLinks;
-  protected readonly documentationOpen = signal(false);
-  protected readonly documentationId = `author-documentation-links-${++navigationInstance}`;
   protected readonly currentSection = signal(this.document.defaultView?.location.hash ?? '');
 
   constructor() {
@@ -91,12 +89,7 @@ export class AuthorWorkspaceNav implements OnChanges, AfterViewInit, OnDestroy {
     }
   }
 
-  protected get onDocumentationPage(): boolean {
-    return this.documentationLinks.some((page) => page.id === this.pageId);
-  }
-
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['pageId']) this.documentationOpen.set(this.onDocumentationPage);
     if (changes['embeddedFrame'] || changes['outline'] || changes['embeddedDocumentId'])
       this.embeddedPositions.clear();
     this.requestOutline();
@@ -155,6 +148,10 @@ export class AuthorWorkspaceNav implements OnChanges, AfterViewInit, OnDestroy {
       return;
     const data = event.data;
     if (!data || data.version !== 1) return;
+    if (data.type === 'lookahead:author-document:copy') {
+      void this.copyForDocument(event.source as Window, data);
+      return;
+    }
     if (
       (data.type === 'lookahead:author-document:height' &&
         data.documentId === this.embeddedDocumentId) ||
@@ -189,6 +186,26 @@ export class AuthorWorkspaceNav implements OnChanges, AfterViewInit, OnDestroy {
     }
     this.embeddedPositions = positions;
     this.scheduleScrollUpdate();
+  }
+
+  /**
+   * The scripts-only document sandbox has no clipboard access, so its Copy buttons ask this page to
+   * copy. The browser still requires the reader's click, which activates this page too.
+   */
+  private async copyForDocument(source: Window, data: { requestId?: unknown; text?: unknown }) {
+    const { requestId, text } = data;
+    if (!Number.isSafeInteger(requestId) || typeof text !== 'string' || text.length > 100_000) return;
+    let copied = false;
+    try {
+      await this.document.defaultView?.navigator.clipboard.writeText(text);
+      copied = !!this.document.defaultView;
+    } catch {
+      copied = false;
+    }
+    source.postMessage(
+      { type: 'lookahead:author-document:copy-result', version: 1, requestId, copied },
+      '*',
+    );
   }
 
   @HostListener('window:scroll')
@@ -228,10 +245,6 @@ export class AuthorWorkspaceNav implements OnChanges, AfterViewInit, OnDestroy {
       active = sections.at(-1)!;
     // Scrolling must not create history entries, move focus, or navigate the frame.
     this.currentSection.set(`#${active.id}`);
-  }
-
-  protected toggleDocumentation(): void {
-    this.documentationOpen.update((open) => !open);
   }
 
   protected sectionIsCurrent(item: AuthorOutlineItem): boolean {

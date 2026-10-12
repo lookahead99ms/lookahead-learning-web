@@ -11,7 +11,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ContentService } from '../../content/content.service';
 import {
   DeliveryEditorService,
@@ -32,6 +32,7 @@ import {
   AuthorOutlineItem,
   AuthorWorkspaceNav,
 } from '../../core/author-workspace-nav/author-workspace-nav';
+import { AuthorAdminMenu } from '../../core/author-workspace-nav/author-admin-menu';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 
 type DeliveryView = 'board' | 'backlog' | 'all-tickets' | 'roadmap' | 'decisions';
@@ -48,7 +49,7 @@ type WorkItemDraft = Omit<
 
 @Component({
   selector: 'app-delivery-plan',
-  imports: [PlatformHeader, AuthorWorkspaceNav, RouterLink, FormsModule],
+  imports: [PlatformHeader, AuthorWorkspaceNav, AuthorAdminMenu, FormsModule],
   templateUrl: './delivery-plan.html',
   styleUrl: './delivery-plan.css',
   host: { '(window:beforeunload)': 'onBeforeUnload($event)' },
@@ -61,7 +62,7 @@ export class DeliveryPlanPage implements OnInit {
   ];
   private readonly accounts = inject(StudyPlanAccount);
   protected readonly authorAccess = computed(
-    () => this.accounts.account()?.authorPreview === true && !this.accounts.sessionExpired(),
+    () => (this.accounts.account()?.permissions?.deliveryRead ?? this.accounts.account()?.authorPreview === true) && !this.accounts.sessionExpired(),
   );
   private readonly content = inject(ContentService);
   private readonly editor = inject(DeliveryEditorService);
@@ -253,8 +254,19 @@ export class DeliveryPlanPage implements OnInit {
     return `/__local/delivery/evidence/${encodeURIComponent(itemId)}/${encodeURIComponent(evidenceId)}`;
   }
 
+  protected canEdit(item?: DeliveryWorkItem): boolean {
+    const account = this.accounts.account(), permissions = account?.permissions;
+    if (!permissions) return account?.authorPreview === true;
+    return permissions.manageAccess || (!item && permissions.deliveryCreate);
+  }
+  protected canMove(item: DeliveryWorkItem, next: string): boolean {
+    const account = this.accounts.account(), permissions = account?.permissions;
+    if (!permissions) return account?.authorPreview === true;
+    return permissions.manageAccess || (next === 'done' ? permissions.deliveryDone && item.statusId === 'review'
+      : permissions.deliveryReview && item.statusId !== 'done' && next === 'review');
+  }
   protected openEditor(item?: DeliveryWorkItem): void {
-    if (!this.editable() || this.saving()) return;
+    if (!this.editable() || this.saving() || !this.canEdit(item)) return;
     const plan = this.plan()!;
     this.closeWorkItem();
     this.draftId = item?.id;
@@ -402,7 +414,7 @@ export class DeliveryPlanPage implements OnInit {
 
   protected moveItem(item: DeliveryWorkItem, statusId: string): void {
     if (!this.authorAccess()) return;
-    if (!this.editable() || this.saving() || item.statusId === statusId) return;
+    if (!this.editable() || this.saving() || item.statusId === statusId || !this.canMove(item, statusId)) return;
     const {
       title,
       summary,

@@ -57,6 +57,35 @@ describe('Private author-document boundary', () => {
     absolute.documents[0].content.href = value.href;
     expect(parseAuthorDocument(absolute, 'operations-reference')).toEqual(value);
   });
+  it('accepts only hash-addressed downloads inside the publication', () => {
+    const file = 'c'.repeat(64);
+    const entry = {
+      label: 'One-command setup script',
+      filename: 'lookahead_setup.py',
+      href: `${root}downloads/${file}/lookahead_setup.py`,
+      sha256: file,
+      bytes: 22_000,
+      sourcePath: 'tools/local-development/lookahead_setup.py',
+    };
+    const withDownloads = (downloads: unknown[]) => {
+      const publication = manifest();
+      (publication.documents[0] as Record<string, unknown>)['downloads'] = downloads;
+      return publication;
+    };
+    expect(parseAuthorDocument(manifest(), 'operations-reference').downloads).toEqual([]);
+    expect(parseAuthorDocument(withDownloads([entry]), 'operations-reference').downloads).toEqual([
+      { label: entry.label, filename: entry.filename, href: entry.href, bytes: entry.bytes },
+    ]);
+    for (const bad of [
+      { ...entry, href: 'https://outside.test/lookahead_setup.py' },
+      { ...entry, href: `${root}downloads/${file}/../index.html` },
+      { ...entry, filename: '../setup.py' },
+      { ...entry, filename: '.env' },
+      { ...entry, sha256: 'not-a-hash' },
+      { ...entry, bytes: -1 },
+    ])
+      expect(() => parseAuthorDocument(withDownloads([bad]), 'operations-reference')).toThrow();
+  });
   it('accepts the immutable Local setup document in the protected manifest', () => {
     const publication = manifest();
     publication.documents[0].id = 'local-development';

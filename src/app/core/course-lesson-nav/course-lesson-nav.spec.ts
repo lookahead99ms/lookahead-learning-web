@@ -11,7 +11,7 @@ function item(index: number, title = `Lesson ${index}`): CourseLessonNavItem {
     key: `lesson-${index}`,
     title,
     order: index.toString().padStart(2, '0'),
-    route: ['/', 'look-ahead', 'design-fundamentals', `lesson-${index}`],
+    route: ['/', 'blaze', 'design-fundamentals', `lesson-${index}`],
     queryParams: null,
     planned: false,
     children: [],
@@ -80,8 +80,8 @@ describe('CourseLessonNav', () => {
 
     const links = Array.from(list().querySelectorAll<HTMLAnchorElement>('a'));
     expect(links).toHaveLength(42);
-    expect(links[0].getAttribute('href')).toBe('/look-ahead/design-fundamentals/lesson-1');
-    expect(links[41].getAttribute('href')).toBe('/look-ahead/design-fundamentals/lesson-42');
+    expect(links[0].getAttribute('href')).toBe('/blaze/design-fundamentals/lesson-1');
+    expect(links[41].getAttribute('href')).toBe('/blaze/design-fundamentals/lesson-42');
     expect(links.map((link) => link.querySelector('.course-lesson-nav-text')?.textContent)).toEqual(
       Array.from({ length: 42 }, (_, index) => `Lesson ${index + 1}`),
     );

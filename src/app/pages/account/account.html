@@ -1,221 +1,304 @@
-<app-platform-header />
+<app-platform-header [hideUtilities]="authenticated()" />
 <main id="main-content" class="account-page" [class.manage-account]="authenticated()">
-  <!-- data-signature-column: the platform statements after the page line up with this column. -->
-  <section class="account-card" aria-labelledby="account-heading" data-signature-column>
-    <header class="account-intro">
-      <p class="eyebrow">Your learning account</p>
-      <h1 id="account-heading">
-        {{ authenticated() ? 'Manage account' : signup() ? 'Create your account' : 'Welcome back' }}
-      </h1>
-      @if (authenticated()) {
-        <p class="account-intro-copy">Your profile, sign-ins, and learning plans in one place.</p>
-      }
-    </header>
-    @if (authenticated()) {
-      @for (account of [store.account()!]; track account.accountId) {
-        <app-account-settings [returnTo]="returnTo()" />
-        <section class="settings-section" aria-labelledby="content-access-heading">
-          <h2 id="content-access-heading">Content access</h2>
-          <p>Access is checked when you open a lesson. @if (store.authOptions()?.managedLogin) {Contact the account administrator about course access.} @else {Online plan purchases and upgrades aren’t available in this local development version.}</p>
-          <p>You can return to your content or explore lessons from Home.</p>
-          <a routerLink="/">Explore from Home</a>
-        </section>
-        <app-active-sign-ins />
-        <app-account-study-plans />
-      }
-    } @else if (store.enabled) {
-      @if (signInCanceled) {
-        <p class="success-status" role="status">
-          Sign-in canceled. Your existing sign-ins are unchanged.
-        </p>
-      }
-      @if (passwordChanged) {
-        <p class="success-status" role="status">
-          Password changed. All sign-ins have ended, including this one. Sign in with your new
-          password.
-        </p>
-      }
-      <p>
-        {{
-          signup()
-            ? 'Create an account to save your plans and learning progress.'
-            : 'Sign in to continue your learning.'
-        }}
-      </p>
-      @if (store.authOptions()?.managedLogin) {
-        <p>Your password and account recovery are handled by the secure sign-in service.</p>
-        @if (formError()) { <p class="form-error" role="alert">{{ formError() }}</p> }
-        <a class="primary-action managed-login-action" [href]="managedLoginUrl()">Continue to secure sign-in</a>
-        <p class="managed-login-hint">If you need access, contact your account administrator.</p>
-      } @else {
-      <button type="button" class="google-button" disabled aria-describedby="google-status">
-        {{ signup() ? 'Sign up with Google' : 'Sign in with Google' }}
-      </button>
-      <p id="google-status" class="field-hint">Google sign-in is not connected yet.</p>
-      <div class="auth-divider">
-        <span>{{ signup() ? 'or use email' : 'or use email or username' }}</span>
-      </div>
-      <form (submit)="$event.preventDefault(); submit()" [attr.aria-busy]="store.busy()">
-        @if (signup()) {
-          <div class="name-fields">
-            <label
-              >First name<input
-                name="firstName"
-                autocomplete="given-name"
-                required
-                maxlength="79"
-                [value]="firstName()"
-                (input)="firstName.set($any($event.target).value)"
-            /></label>
-            <label
-              >Last name<input
-                name="lastName"
-                autocomplete="family-name"
-                required
-                maxlength="79"
-                [value]="lastName()"
-                (input)="lastName.set($any($event.target).value)"
-            /></label>
+  @if (authenticated()) {
+    @for (account of [store.account()!]; track account.accountId) {
+      <div class="account-workspace" [pageSidebarContext]="sidebarContext">
+        <div class="account-rail">
+          <div class="rail-identity">
+            <span class="account-avatar" aria-hidden="true">{{ initials(account.displayName) }}</span>
+            <p class="account-identity-meta">
+              <span class="account-identity-name">{{ account.displayName }}</span>
+              <span class="account-identity-username">{{ account.username }}</span>
+            </p>
           </div>
-        }
-        <label
-          >{{ signup() ? 'Email' : 'Email or username'
-          }}<input
-            name="email"
-            [type]="signup() ? 'email' : 'text'"
-            autocomplete="username"
-            required
-            maxlength="254"
-            autocapitalize="none"
-            spellcheck="false"
-            [value]="email()"
-            (input)="email.set($any($event.target).value)"
-        /></label>
-        <div class="password-field">
-          <label for="account-password">Password</label>
-          <div class="password-input">
-            <input
-              id="account-password"
-              name="password"
-              [type]="!signup() && passwordVisible() ? 'text' : 'password'"
-              [attr.autocomplete]="signup() ? 'new-password' : 'current-password'"
-              autocapitalize="none"
-              spellcheck="false"
-              required
-              [attr.minlength]="signup() ? 15 : null"
-              [attr.aria-describedby]="signup() ? 'password-hint' : null"
-              [value]="password()"
-              (input)="password.set($any($event.target).value)"
-            />
-            @if (!signup()) {
-              <button
-                type="button"
-                class="password-visibility"
-                aria-controls="account-password"
-                [attr.aria-label]="passwordVisible() ? 'Hide password' : 'Show password'"
-                (click)="passwordVisible.set(!passwordVisible())"
-              >
-                {{ passwordVisible() ? 'Hide' : 'Show' }}
-              </button>
-            }
+          <nav class="account-menu" aria-label="Account sections">
+            <ul>
+              @for (section of sections; track section.id) {
+                <li>
+                  <a
+                    [href]="sectionHref(section.id)"
+                    [attr.aria-current]="activeSection() === section.id ? 'true' : null"
+                    (click)="goToSection($event, section.id)"
+                  >
+                    <svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                      @switch (section.id) {
+                        @case ('study-plans') {
+                          <rect x="3.5" y="5" width="17" height="15" rx="2.5" />
+                          <path d="M3.5 10h17M8 3v4M16 3v4M8 14h3" />
+                        }
+                        @case ('profile') {
+                          <circle cx="12" cy="8.5" r="3.5" />
+                          <path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5" />
+                        }
+                        @case ('membership') {
+                          <path d="M12 3.5 14.4 8.4l5.4.8-3.9 3.8.9 5.4L12 15.9l-4.8 2.5.9-5.4-3.9-3.8 5.4-.8z" />
+                        }
+                        @case ('links') {
+                          <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1.2 1.2" /><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1.2-1.2" />
+                        }
+                        @case ('security') {
+                          <path d="M12 3.5 19 6v5.5c0 4.3-2.9 7.6-7 9-4.1-1.4-7-4.7-7-9V6z" />
+                          <path d="m9 12 2 2 4-4" />
+                        }
+                        @case ('sign-ins') {
+                          <rect x="3" y="5" width="18" height="11" rx="2" />
+                          <path d="M9 20h6M12 16v4" />
+                        }
+                      }
+                    </svg>
+                    <span>{{ section.label }}</span>
+                  </a>
+                </li>
+              }
+            </ul>
+          </nav>
+        </div>
+        <div class="account-content">
+          <section class="account-hero" aria-labelledby="account-heading">
+            <svg class="hero-art" viewBox="0 0 320 220" aria-hidden="true" focusable="false">
+              <circle cx="250" cy="40" r="150" />
+              <circle cx="250" cy="40" r="105" />
+              <circle cx="250" cy="40" r="60" />
+              <path d="M30 190c50-6 70-46 112-52s62 24 104 12 48-58 74-70" class="hero-route" />
+              <circle cx="142" cy="138" r="5" class="hero-stop" />
+              <circle cx="246" cy="150" r="5" class="hero-stop" />
+              <circle cx="320" cy="80" r="6" class="hero-stop current" />
+            </svg>
+            <div class="hero-text">
+              <p class="eyebrow">Your learning account</p>
+              <h1 id="account-heading">Manage account</h1>
+              <p class="hero-greeting">
+                Welcome back, {{ greetingName(account.displayName) }}. Your plans, profile, appearance
+                and sign-ins in one place.
+              </p>
+              <ng-container [ngTemplateOutlet]="learningActions" />
+            </div>
+            <dl class="hero-stats">
+              <div>
+                <dt>Membership</dt>
+                <dd>{{ membership(account).level }}</dd>
+              </div>
+              @if (savedPlanCount() !== null) {
+                <div>
+                  <dt>Saved plans</dt>
+                  <dd>{{ savedPlanCount() }}</dd>
+                </div>
+              }
+            </dl>
+          </section>
+          <div class="account-sections">
+            <app-account-study-plans id="study-plans" tabindex="-1" />
+            <app-account-settings [returnTo]="returnTo()" />
+            <app-active-sign-ins id="sign-ins" tabindex="-1" />
           </div>
         </div>
-        @if (signup()) {
-          <p id="password-hint" class="field-hint">
-            Use 15 to 128 characters. Spaces and password managers are welcome.
-          </p>
-          <label
-            >Confirm password<input
-              name="confirmPassword"
-              type="password"
-              autocomplete="new-password"
-              required
-              minlength="15"
-              [value]="confirmPassword()"
-              (input)="confirmPassword.set($any($event.target).value)"
-          /></label>
-          <label
-            >Country of residence<input
-              name="country"
-              list="registration-countries"
-              autocomplete="country-name"
-              required
-              maxlength="100"
-              placeholder="Search for your country"
-              aria-describedby="country-hint"
-              [value]="countryName()"
-              (input)="countryName.set($any($event.target).value)"
-          /></label>
-          <datalist id="registration-countries">
-            @for (country of countries; track country.code) {
-              <option [value]="country.name"></option>
-            }
-          </datalist>
-          <p id="country-hint" class="field-hint">Choose the country where you live.</p>
-        }
-        @if (formError() || store.error()) {
-          <p class="form-error" role="alert">{{ formError() || store.error() }}</p>
-        }
-        <button
-          [attr.aria-busy]="store.busy()"
-          class="primary-action"
-          type="submit"
-          [disabled]="
-            store.busy() ||
-            store.pending() ||
-            (signup() && store.authOptions()?.registration !== true)
-          "
-        >
-          {{
-            store.busy()
-              ? signup()
-                ? 'Creating account…'
-                : 'Signing in…'
-              : signup()
-                ? 'Create account'
-                : 'Sign in'
-          }}
-        </button>
-        @if (signup() && store.authOptions()?.registration !== true) {
-          <p class="field-hint" role="status">Registration is unavailable on this service.</p>
-        }
-      </form>
-      <p class="auth-switch">
-        @if (signup()) {
-          Already have an account?
-          <a
-            routerLink="/sign-in"
-            [queryParams]="{ returnTo: returnTo(), oauth: oauthContinuation() }"
-            >Sign in</a
-          >
-        } @else {
-          Don’t have an account?
-          <a
-            routerLink="/sign-up"
-            [queryParams]="{ returnTo: returnTo(), oauth: oauthContinuation() }"
-            >Sign up</a
-          >
-        }
-      </p>
-      }
-    } @else {
-      <p>
-        This standalone demo saves learning plans on this browser. Account sign-in is unavailable.
-      </p>
-      <a routerLink="/study-plan">Open Study Plan</a>
+      </div>
     }
-    <nav class="account-footer" aria-label="Learning actions">
-      <a class="return-action" [class.primary-action]="authenticated()" [routerLink]="returnUrl()">
-        {{ lessonReturn() ? 'Return to your lesson' : authenticated() ? 'Continue learning' : 'Return to learning' }}
-      </a>
-      @if (authenticated()) {
-        @if (returnTo() !== '/study-plan') {
-          <a class="return-action" routerLink="/study-plan">Study Plan</a>
+  } @else {
+    <!-- data-signature-column: the platform statements after the page line up with this column. -->
+    <section class="account-card" aria-labelledby="account-heading" data-signature-column>
+      <header class="account-intro">
+        <p class="eyebrow">Your learning account</p>
+        <h1 id="account-heading">{{ signup() ? 'Create your account' : 'Welcome back' }}</h1>
+      </header>
+      @if (store.enabled) {
+        @if (signInCanceled) {
+          <p class="success-status" role="status">
+            Sign-in canceled. Your existing sign-ins are unchanged.
+          </p>
         }
-        @if (returnTo() !== '/search') {
-          <a class="return-action" routerLink="/search">Search</a>
+        @if (passwordChanged) {
+          <p class="success-status" role="status">
+            Password changed. All sign-ins have ended, including this one. Sign in with your new
+            password.
+          </p>
         }
+        <p>
+          {{
+            signup()
+              ? 'Create an account to save your plans and learning progress.'
+              : 'Sign in to continue your learning.'
+          }}
+        </p>
+        @if (store.authOptions()?.managedLogin) {
+          <p>Your password and account recovery are handled by the secure sign-in service.</p>
+          @if (formError()) { <p class="form-error" role="alert">{{ formError() }}</p> }
+          <a class="primary-action managed-login-action" [href]="managedLoginUrl()">Continue to secure sign-in</a>
+          <p class="managed-login-hint">If you need access, contact your account administrator.</p>
+        } @else {
+        <button type="button" class="google-button" disabled aria-describedby="google-status">
+          {{ signup() ? 'Sign up with Google' : 'Sign in with Google' }}
+        </button>
+        <p id="google-status" class="field-hint">Google sign-in is not connected yet.</p>
+        <div class="auth-divider">
+          <span>{{ signup() ? 'or use email' : 'or use email or username' }}</span>
+        </div>
+        <form (submit)="$event.preventDefault(); submit()" [attr.aria-busy]="store.busy()">
+          @if (signup()) {
+            <div class="name-fields">
+              <label
+                >First name<input
+                  name="firstName"
+                  autocomplete="given-name"
+                  required
+                  maxlength="79"
+                  [value]="firstName()"
+                  (input)="firstName.set($any($event.target).value)"
+              /></label>
+              <label
+                >Last name<input
+                  name="lastName"
+                  autocomplete="family-name"
+                  required
+                  maxlength="79"
+                  [value]="lastName()"
+                  (input)="lastName.set($any($event.target).value)"
+              /></label>
+            </div>
+          }
+          <label
+            >{{ signup() ? 'Email' : 'Email or username'
+            }}<input
+              name="email"
+              [type]="signup() ? 'email' : 'text'"
+              autocomplete="username"
+              required
+              maxlength="254"
+              autocapitalize="none"
+              spellcheck="false"
+              [value]="email()"
+              (input)="email.set($any($event.target).value)"
+          /></label>
+          <div class="password-field">
+            <label for="account-password">Password</label>
+            <div class="password-input">
+              <input
+                id="account-password"
+                name="password"
+                [type]="!signup() && passwordVisible() ? 'text' : 'password'"
+                [attr.autocomplete]="signup() ? 'new-password' : 'current-password'"
+                autocapitalize="none"
+                spellcheck="false"
+                required
+                [attr.minlength]="signup() ? 15 : null"
+                [attr.aria-describedby]="signup() ? 'password-hint' : null"
+                [value]="password()"
+                (input)="password.set($any($event.target).value)"
+              />
+              @if (!signup()) {
+                <button
+                  type="button"
+                  class="password-visibility"
+                  aria-controls="account-password"
+                  [attr.aria-label]="passwordVisible() ? 'Hide password' : 'Show password'"
+                  (click)="passwordVisible.set(!passwordVisible())"
+                >
+                  {{ passwordVisible() ? 'Hide' : 'Show' }}
+                </button>
+              }
+            </div>
+          </div>
+          @if (signup()) {
+            <p id="password-hint" class="field-hint">
+              Use 15 to 128 characters. Spaces and password managers are welcome.
+            </p>
+            <label
+              >Confirm password<input
+                name="confirmPassword"
+                type="password"
+                autocomplete="new-password"
+                required
+                minlength="15"
+                [value]="confirmPassword()"
+                (input)="confirmPassword.set($any($event.target).value)"
+            /></label>
+            <label
+              >Country of residence<input
+                name="country"
+                list="registration-countries"
+                autocomplete="country-name"
+                required
+                maxlength="100"
+                placeholder="Search for your country"
+                aria-describedby="country-hint"
+                [value]="countryName()"
+                (input)="countryName.set($any($event.target).value)"
+            /></label>
+            <datalist id="registration-countries">
+              @for (country of countries; track country.code) {
+                <option [value]="country.name"></option>
+              }
+            </datalist>
+            <p id="country-hint" class="field-hint">Choose the country where you live.</p>
+          }
+          @if (formError() || store.error()) {
+            <p class="form-error" role="alert">{{ formError() || store.error() }}</p>
+          }
+          <button
+            [attr.aria-busy]="store.busy()"
+            class="primary-action"
+            type="submit"
+            [disabled]="
+              store.busy() ||
+              store.pending() ||
+              (signup() && store.authOptions()?.registration !== true)
+            "
+          >
+            {{
+              store.busy()
+                ? signup()
+                  ? 'Creating account…'
+                  : 'Signing in…'
+                : signup()
+                  ? 'Create account'
+                  : 'Sign in'
+            }}
+          </button>
+          @if (signup() && store.authOptions()?.registration !== true) {
+            <p class="field-hint" role="status">Registration is unavailable on this service.</p>
+          }
+        </form>
+        <p class="auth-switch">
+          @if (signup()) {
+            Already have an account?
+            <a
+              routerLink="/sign-in"
+              [queryParams]="{ returnTo: returnTo(), oauth: oauthContinuation() }"
+              >Sign in</a
+            >
+          } @else {
+            Don’t have an account?
+            <a
+              routerLink="/sign-up"
+              [queryParams]="{ returnTo: returnTo(), oauth: oauthContinuation() }"
+              >Sign up</a
+            >
+          }
+        </p>
+        }
+      } @else {
+        <p>
+          This standalone demo saves learning plans on this browser. Account sign-in is unavailable.
+        </p>
+        <a routerLink="/study-plan">Open Study Plan</a>
       }
-    </nav>
-  </section>
+      <ng-container [ngTemplateOutlet]="learningActions" />
+    </section>
+  }
 </main>
+
+<ng-template #learningActions>
+  <nav class="account-footer" aria-label="Learning actions">
+    <a class="return-action" [class.primary-action]="authenticated()" [routerLink]="returnUrl()">
+      {{ lessonReturn() ? 'Return to your lesson' : authenticated() ? 'Continue learning' : 'Return to learning' }}
+    </a>
+    @if (authenticated()) {
+      @if (returnTo() !== '/study-plan') {
+        <a class="return-action" routerLink="/study-plan">Study Plan</a>
+      }
+      @if (returnTo() !== '/search') {
+        <a class="return-action" routerLink="/search">Search</a>
+      }
+    }
+  </nav>
+</ng-template>

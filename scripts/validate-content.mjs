@@ -900,7 +900,7 @@ for (const file of contentFiles) {
     );
     continue;
   }
-  if (/^(learn|grow|look-ahead)\/[a-z0-9-]+\/downloads\//.test(label)) {
+  if (/^(learn|grow|blaze)\/[a-z0-9-]+\/downloads\//.test(label)) {
     // Lesson project bundles (2026-10-05): the page packs them into a .zip. Built and verified by
     // python3 tools/curriculum/build_lesson_projects.py --verify in the content repository.
     const project = JSON.parse(await readFile(file, 'utf8'));
@@ -1222,15 +1222,15 @@ async function fileExists(path) {
 }
 
 /**
- * The web app ships public copies of Look Ahead unit card scenes under
- * public/assets/scenes/units/look-ahead/<course>/<file>.svg and serves them first.
+ * The web app ships public copies of Blaze unit card scenes under
+ * public/assets/scenes/units/blaze/<course>/<file>.svg and serves them first.
  */
 function publicSceneCopy(assetPath) {
   const match =
-    /^\/content\/look-ahead\/([a-z0-9][a-z0-9-]*)\/visuals\/cards\/([a-z0-9][a-z0-9_-]*)\.svg$/i.exec(
+    /^\/content\/blaze\/([a-z0-9][a-z0-9-]*)\/visuals\/cards\/([a-z0-9][a-z0-9_-]*)\.svg$/i.exec(
       assetPath,
     );
-  return match ? join(publicScenesRoot, 'units/look-ahead', match[1], `${match[2]}.svg`) : null;
+  return match ? join(publicScenesRoot, 'units/blaze', match[1], `${match[2]}.svg`) : null;
 }
 
 for (const assetPath of referencedAssetPaths) {

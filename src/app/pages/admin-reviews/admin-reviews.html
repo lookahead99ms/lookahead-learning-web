@@ -1,0 +1,442 @@
+<div class="reviews-panel">
+  <header>
+    <p class="eyebrow">Private review</p>
+    <h2 class="intro-heading">
+      @if (showAll()) {
+        See what reviewers want to change.
+      } @else {
+        Tell us what should change.
+      }
+    </h2>
+    <p class="lede">
+      @if (showAll()) {
+        Each reviewer sees only their own items. You see all of them, newest day first. Open an
+        item to read it, see its images and set a status the reviewer will see.
+      } @else if (isOwner()) {
+        This is the view every reviewer gets. Items you add here also appear under All reviews
+        with your name.
+      } @else {
+        Add one item for each problem, change or idea. Attach screenshots when they help. Other
+        reviewers cannot see your items.
+      }
+    </p>
+  </header>
+
+  @if (state() === 'loading' && !viewer()) {
+    <p class="state-panel" role="status">Loading reviews…</p>
+  } @else if (state() === 'signed-out' || accounts.sessionExpired()) {
+    <section class="state-panel" role="alert">
+      <h2>Sign in again</h2>
+      <p>Your session ended. Sign in again to see your review items.</p>
+    </section>
+  } @else if (state() === 'denied') {
+    <section class="state-panel" role="alert">
+      <h2>Review access required</h2>
+      <p>This account is not set up as a platform reviewer. Ask the platform owner for access.</p>
+    </section>
+  } @else if (state() === 'error') {
+    <section class="state-panel" role="alert">
+      <h2>Reviews are unavailable</h2>
+      <p>The review items could not be loaded. Nothing was lost; try again.</p>
+      <button type="button" class="secondary" (click)="load()">Try again</button>
+    </section>
+  } @else {
+    @if (isOwner()) {
+      <div class="view-tabs" role="group" aria-label="Review view">
+        <button
+          type="button"
+          [attr.aria-pressed]="ownerView() === 'all'"
+          (click)="showOwnerView('all')"
+        >
+          All reviews <span class="tab-count">{{ items().length }}</span>
+        </button>
+        <button
+          type="button"
+          [attr.aria-pressed]="ownerView() === 'mine'"
+          (click)="showOwnerView('mine')"
+        >
+          My reviews <span class="tab-count">{{ ownItems().length }}</span>
+        </button>
+      </div>
+    }
+    <div id="review-view">
+      @if (showAll()) {
+        <section aria-labelledby="review-overview">
+          <h2 id="review-overview">Overview</h2>
+          @if (reviewers().length) {
+            <div class="table-scroll" role="region" aria-label="Items by reviewer" tabindex="0">
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col">Reviewer</th>
+                    <th scope="col">Items</th>
+                    @for (status of statuses; track status.id) {
+                      <th scope="col">{{ status.label }}</th>
+                    }
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (reviewer of reviewers(); track reviewer.id) {
+                    <tr>
+                      <th scope="row">
+                        <button
+                          type="button"
+                          class="link-button"
+                          (click)="reviewerFilter.set(reviewer.id)"
+                        >
+                          {{ reviewer.name }}
+                        </button>
+                      </th>
+                      <td>{{ reviewer.items.length }}</td>
+                      @for (status of statuses; track status.id) {
+                        <td>{{ countWith(reviewer.items, status.id) }}</td>
+                      }
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <p class="empty">No reviewer has added an item yet.</p>
+          }
+        </section>
+
+        <section aria-labelledby="review-items">
+          <h2 id="review-items">All review items</h2>
+          <div class="filters">
+            <label
+              >Reviewer
+              <select
+                [value]="reviewerFilter()"
+                (change)="reviewerFilter.set($any($event.target).value)"
+              >
+                <option value="">All reviewers</option>
+                @for (reviewer of reviewers(); track reviewer.id) {
+                  <option [value]="reviewer.id">{{ reviewer.name }}</option>
+                }
+              </select>
+            </label>
+            <label
+              >Status
+              <select
+                [value]="statusFilter()"
+                (change)="statusFilter.set($any($event.target).value)"
+              >
+                <option value="">All statuses</option>
+                @for (status of statuses; track status.id) {
+                  <option [value]="status.id">{{ status.label }}</option>
+                }
+              </select>
+            </label>
+            <label
+              >Type
+              <select
+                [value]="categoryFilter()"
+                (change)="categoryFilter.set($any($event.target).value)"
+              >
+                <option value="">All types</option>
+                @for (category of categories; track category.id) {
+                  <option [value]="category.id">{{ category.label }}</option>
+                }
+              </select>
+            </label>
+          </div>
+          <p class="result-count" role="status">
+            {{ visibleItems().length }} of {{ items().length }} items
+          </p>
+          <ng-container
+            *ngTemplateOutlet="
+              dayList;
+              context: { $implicit: allDays(), showReviewer: true, empty: 'No items match these filters.' }
+            "
+          />
+        </section>
+      } @else {
+        <section aria-labelledby="review-form" class="form-section">
+          <h2 id="review-form" tabindex="-1" #formHeading>
+            {{ editingId() ? 'Edit your review item' : 'Add a review item' }}
+          </h2>
+          <form (ngSubmit)="submit()" (paste)="onPaste($event)" novalidate>
+            <div class="form-grid">
+              <label
+                >Type
+                <select name="category" [(ngModel)]="category">
+                  @for (option of categories; track option.id) {
+                    <option [value]="option.id">{{ option.label }}</option>
+                  }
+                </select>
+              </label>
+              <label
+                >Page
+                <select name="page" [(ngModel)]="page">
+                  @for (option of pages; track option) {
+                    <option [value]="option">{{ option }}</option>
+                  }
+                </select>
+              </label>
+              <label
+                >How important
+                <select name="priority" [(ngModel)]="priority">
+                  @for (option of priorities; track option.id) {
+                    <option [value]="option.id">{{ option.label }}</option>
+                  }
+                </select>
+              </label>
+            </div>
+            <label
+              >Page address <span class="optional">(optional)</span>
+              <input
+                name="pageUrl"
+                [(ngModel)]="pageUrl"
+                placeholder="/learn/core-java"
+                autocomplete="off"
+              />
+            </label>
+            <label
+              >Title
+              <input name="title" [(ngModel)]="title" [maxlength]="limits.titleLength" required />
+            </label>
+            <label
+              >What you saw and what should change
+              <textarea
+                name="details"
+                rows="7"
+                [(ngModel)]="detailsText"
+                [maxlength]="limits.detailsLength"
+                required
+              ></textarea>
+              <span class="hint"
+                >{{ detailsText.length }} of {{ limits.detailsLength }} characters</span
+              >
+            </label>
+            <fieldset class="attachments-field">
+              <legend>Screenshots and images</legend>
+              <p class="hint">
+                PNG, JPEG or WebP, up to {{ limits.attachmentsPerItem }} images and 5 MB each. You
+                can also paste a screenshot into this form. Location details stored in a photo are
+                removed when it is saved.
+              </p>
+              <label class="file-picker"
+                >Choose images
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  multiple
+                  (change)="onFileInput($event)"
+                />
+              </label>
+              @if (keptAttachments().length || pendingFiles().length) {
+                <ul class="thumbnails" aria-label="Images on this item">
+                  @for (file of keptAttachments(); track file.id) {
+                    <li>
+                      @if (attachmentUrls()[file.id]; as url) {
+                        <img [src]="url" [alt]="file.name" />
+                      }
+                      <span>{{ file.name }}</span>
+                      <button type="button" class="link-button" (click)="removeKept(file.id)">
+                        Remove<span class="visually-hidden"> {{ file.name }}</span>
+                      </button>
+                    </li>
+                  }
+                  @for (pending of pendingFiles(); track pending.url; let index = $index) {
+                    <li>
+                      <img [src]="pending.url" [alt]="pending.file.name" />
+                      <span>{{ pending.file.name }} · {{ size(pending.file.size) }}</span>
+                      <button type="button" class="link-button" (click)="removePending(index)">
+                        Remove<span class="visually-hidden"> {{ pending.file.name }}</span>
+                      </button>
+                    </li>
+                  }
+                </ul>
+              }
+            </fieldset>
+            @if (formError()) {
+              <p class="form-error" role="alert">{{ formError() }}</p>
+            }
+            <div class="form-actions">
+              <button type="submit" class="primary" [disabled]="saving()">
+                {{ saving() ? 'Saving…' : editingId() ? 'Save changes' : 'Add item' }}
+              </button>
+              @if (editingId()) {
+                <button type="button" class="secondary" (click)="resetForm()">
+                  Cancel editing
+                </button>
+              }
+              <span role="status" class="form-status">{{ formStatus() }}</span>
+            </div>
+          </form>
+        </section>
+
+        <section aria-labelledby="review-items">
+          <h2 id="review-items">Your review items</h2>
+          <ng-container
+            *ngTemplateOutlet="
+              dayList;
+              context: { $implicit: ownDays(), showReviewer: false, empty: 'You have not added an item yet.' }
+            "
+          />
+        </section>
+      }
+      @if (nextBefore()) {
+        <div class="older">
+          <button
+            type="button"
+            class="secondary"
+            [disabled]="loadingOlder()"
+            (click)="loadOlder()"
+          >
+            {{ loadingOlder() ? 'Loading older days…' : 'Show older days' }}
+          </button>
+          <span role="status">{{ olderError() }}</span>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<ng-template #dayList let-days let-showReviewer="showReviewer" let-empty="empty">
+@for (day of days; track day.key) {
+  <section class="day" [attr.aria-labelledby]="'day-' + day.key">
+    <h3 class="day-heading" [id]="'day-' + day.key">
+      {{ day.label }}
+      <span class="day-count">{{ day.items.length === 1 ? '1 item' : day.items.length + ' items' }}</span>
+    </h3>
+    <ol class="item-list">
+      @for (summary of day.items; track summary.id) {
+        <li class="item-row" [class.open]="openId() === summary.id">
+          <button
+            type="button"
+            class="item-summary"
+            [attr.aria-expanded]="openId() === summary.id"
+            [attr.aria-controls]="'detail-' + summary.id"
+            (click)="toggle(summary)"
+          >
+            <span class="chevron" aria-hidden="true"></span>
+            <span class="summary-main">
+              <span class="summary-title">{{ summary.title }}</span>
+              <span class="summary-meta">
+                @if (showReviewer) {
+                  <strong>{{ summary.reviewerName }}</strong>
+                  <span>{{ summary.submitterRole === 'legacy' || !summary.submitterRole ? 'Earlier feedback' : summary.submitterRole }}</span> ·
+                }
+                {{ labelOf(categories, summary.category) }} · {{ summary.page }} ·
+                {{ labelOf(priorities, summary.priority) }} importance ·
+                {{ time(summary.createdAt) }}
+                @if (summary.attachmentCount) {
+                  · {{ images(summary.attachmentCount) }}
+                }
+              </span>
+            </span>
+            <span class="summary-status" [attr.data-status]="summary.status">
+              {{ labelOf(statuses, summary.status) }}
+            </span>
+            <span class="visually-hidden">
+              {{ openId() === summary.id ? 'Hide details' : 'Show details' }}
+            </span>
+          </button>
+          @if (openId() === summary.id) {
+            <div class="item-detail" [id]="'detail-' + summary.id">
+              @if (details()[summary.id]; as item) {
+                <ng-container
+                  *ngTemplateOutlet="itemBody; context: { $implicit: item, showReviewer: showReviewer }"
+                />
+              } @else if (detailState()[summary.id] === 'error') {
+                <p role="alert">
+                  The item could not be opened.
+                  <button type="button" class="link-button" (click)="loadDetail(summary.id)">
+                    Try again
+                  </button>
+                </p>
+              } @else {
+                <p class="hint" role="status">Loading the item…</p>
+              }
+            </div>
+          }
+        </li>
+      }
+    </ol>
+  </section>
+} @empty {
+  <p class="empty">{{ empty }}</p>
+}
+</ng-template>
+
+<ng-template #itemBody let-item let-showReviewer="showReviewer">
+<article class="item" [attr.aria-label]="item.title">
+  @if (item.pageUrl) {
+    <p class="item-url">Page address: <code>{{ item.pageUrl }}</code></p>
+  }
+  <p class="item-details">{{ item.details }}</p>
+  @if (item.attachments.length) {
+    <ul class="thumbnails" [attr.aria-label]="'Images for ' + item.title">
+      @for (attachment of item.attachments; track attachment.id) {
+        <li>
+          @if (attachmentUrls()[attachment.id]; as url) {
+            <button type="button" class="thumbnail-button" (click)="openImage(attachment)">
+              <img [src]="url" alt="" />
+              <span class="visually-hidden">Open image {{ attachment.name }}</span>
+            </button>
+          } @else {
+            <span class="thumbnail-placeholder" aria-hidden="true"></span>
+          }
+          <span>{{ attachment.name }} · {{ size(attachment.size) }}</span>
+        </li>
+      }
+    </ul>
+  }
+  @if (item.ownerNote) {
+    <p class="owner-note"><strong>Owner’s note:</strong> {{ item.ownerNote }}</p>
+  }
+  @if (showReviewer) {
+    <form class="triage" (ngSubmit)="saveTriage(item)">
+      <label
+        >Status
+        <select
+          [name]="'status-' + item.id"
+          [ngModel]="triageDrafts()[item.id].status"
+          (ngModelChange)="setTriage(item.id, { status: $event })"
+        >
+          @for (status of statuses; track status.id) {
+            <option [value]="status.id">{{ status.label }}</option>
+          }
+        </select>
+      </label>
+      <label class="triage-note"
+        >Note to the reviewer
+        <textarea
+          rows="2"
+          [name]="'note-' + item.id"
+          [maxlength]="limits.noteLength"
+          [ngModel]="triageDrafts()[item.id].note"
+          (ngModelChange)="setTriage(item.id, { note: $event })"
+        ></textarea>
+      </label>
+      <div class="triage-actions">
+        <button type="submit" class="secondary">Save status</button>
+        <span role="status">{{ triageMessage()[item.id] }}</span>
+      </div>
+    </form>
+  } @else if (item.status === 'new') {
+    <div class="item-actions">
+      <button type="button" class="secondary" (click)="edit(item)">
+        Edit<span class="visually-hidden"> {{ item.title }}</span>
+      </button>
+      <button type="button" class="secondary danger" (click)="remove(item)">
+        Delete<span class="visually-hidden"> {{ item.title }}</span>
+      </button>
+    </div>
+  } @else {
+    <p class="hint">The owner has reviewed this item, so it can no longer be changed.</p>
+  }
+</article>
+</ng-template>
+
+<dialog #imageDialog class="image-dialog" aria-label="Image" (close)="viewing.set(null)">
+@if (viewing(); as image) {
+  <div class="image-dialog-bar">
+    <p>{{ image.name }}</p>
+    <button type="button" class="secondary" (click)="closeImage()">Close</button>
+  </div>
+  <img [src]="image.url" [alt]="image.name" />
+}
+</dialog>
