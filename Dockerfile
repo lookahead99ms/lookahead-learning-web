@@ -32,6 +32,7 @@ RUN npm run build:protected \
 
 FROM nginxinc/nginx-unprivileged:stable-alpine-slim@sha256:3af0c10d960cc2502427fe1219c52989d309e7d65596869c60a34fd2fa2406f0
 COPY deployment/container/nginx.conf /etc/nginx/nginx.conf
+COPY deployment/container/nginx-lower-cost-dev.conf /etc/nginx/nginx-lower-cost-dev.conf
 COPY --chmod=0555 deployment/container/healthcheck.sh /opt/lookahead/healthcheck.sh
 COPY --from=build /build/dist/lookahead-learning-web/browser /usr/share/nginx/html
 USER 10001:10001

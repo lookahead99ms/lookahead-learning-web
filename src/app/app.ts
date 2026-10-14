@@ -1,3 +1,4 @@
+import { DevSessionNotice } from './core/dev-session-notice/dev-session-notice';
 import { DOCUMENT } from '@angular/common';
 import { Component, ViewEncapsulation, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
@@ -6,7 +7,7 @@ import { PageSidebars } from './core/page-sidebars/page-sidebars';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, PageSidebars],
+  imports: [RouterOutlet, PageSidebars, DevSessionNotice],
   templateUrl: './app.html',
   styleUrl: './app.css',
   encapsulation: ViewEncapsulation.None,
