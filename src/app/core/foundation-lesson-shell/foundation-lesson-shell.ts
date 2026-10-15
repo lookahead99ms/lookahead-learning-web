@@ -710,7 +710,19 @@ export function plainText(html: string): string {
     <ng-template #systemCode let-section let-stage="stage">
       @if (isLanguageTabs(section.codeTabs)) {
         <!-- DSA core courses: the same program in Java, Python and Go; one language choice for the page. -->
-        <div appConsoleBeside class="code-pair" [class.code-pair-centered]="lineCount(languageTab(section.codeTabs).source) <= 30">
+        <!-- DLV-935 guided project step: the guide (goal, prompt, mistakes, checks) reads full width first;
+             the step's code and its test console follow, also full width. -->
+        @if (section.guidedStep) {
+          <div class="explanation guided-step-guide">
+            <ng-container [ngTemplateOutlet]="guideParagraphs" [ngTemplateOutletContext]="{ $implicit: section }" />
+          </div>
+        }
+        <div
+          appConsoleBeside
+          class="code-pair"
+          [class.code-pair-guided]="section.guidedStep"
+          [class.code-pair-centered]="lineCount(languageTab(section.codeTabs).source) <= 30"
+        >
           <div class="code-pair-code">
             <ng-container [ngTemplateOutlet]="languageCode" [ngTemplateOutletContext]="{ $implicit: section.codeTabs, key: section.id, label: section.heading, console: false }" />
           </div>
@@ -719,18 +731,31 @@ export function plainText(html: string): string {
               <ng-container [ngTemplateOutlet]="runConsole" [ngTemplateOutletContext]="{ $implicit: output }" />
             </div>
           }
-          <div class="explanation code-pair-text">
-            @for (paragraph of section.body; track paragraph) {
+          @if (!section.guidedStep) {
+            <div class="explanation code-pair-text">
+              <ng-container [ngTemplateOutlet]="guideParagraphs" [ngTemplateOutletContext]="{ $implicit: section }" />
+            </div>
+          }
+        </div>
+        <ng-template #guideParagraphs let-section>
+          @for (paragraph of section.body; track paragraph) {
+            <!-- The prompt to paste into an AI tool is its own copyable block here too. -->
+            @if (promptText(paragraph); as prompt) {
+              <figure class="ai-prompt">
+                <figcaption>Prompt to give your AI tool<app-code-copy-button [code]="prompt" /></figcaption>
+                <p>{{ prompt }}</p>
+              </figure>
+            } @else {
               <div class="prose" [innerHTML]="cardPoints(paragraph, true)"></div>
             }
-            @if (section.callout?.title !== 'Example boundary' && section.callout; as callout) {
-              <aside class="lesson-callout" [attr.data-callout-type]="callout.type">
-                <strong>{{ callout.title }}</strong>
-                <p [innerHTML]="callout.text"></p>
-              </aside>
-            }
-          </div>
-        </div>
+          }
+          @if (section.callout?.title !== 'Example boundary' && section.callout; as callout) {
+            <aside class="lesson-callout" [attr.data-callout-type]="callout.type">
+              <strong>{{ callout.title }}</strong>
+              <p [innerHTML]="callout.text"></p>
+            </aside>
+          }
+        </ng-template>
       } @else if (section.codeTabs?.length) {
         @for (paragraph of section.body; track paragraph) {
           <div class="prose section-intro" [innerHTML]="cardPoints(paragraph, true)"></div>
@@ -2012,6 +2037,21 @@ export function plainText(html: string): string {
         }
         .algo-lesson .code-pair > .code-pair-text {
           margin-top: 0.75rem;
+        }
+      }
+      /* DLV-935 guided project steps: the guide first, then code and console full width. */
+      .guided-step-guide {
+        margin-bottom: 1.25rem;
+      }
+      @container lesson (min-width: 760px) {
+        .code-pair.code-pair-guided,
+        .code-pair.code-pair-guided.code-pair-centered:has(> .code-pair-console) {
+          grid-template-columns: minmax(0, 1fr);
+          grid-template-rows: none;
+          grid-template-areas: none;
+        }
+        .code-pair.code-pair-guided > * {
+          grid-area: auto;
         }
       }
       /* Language tabs sit on the code block's title bar. */

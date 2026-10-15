@@ -98,7 +98,6 @@ export const STUDY_PLAN_PRESETS: StudyPlanPreset[] = [
       'grow:api-design',
       'grow:ai-assisted-development',
       'grow:quality-engineering',
-      'blaze:ai-systems-architecture',
     ],
   },
   {
@@ -187,7 +186,6 @@ export const STUDY_PLAN_PRESETS: StudyPlanPreset[] = [
       'blaze:cloud-architecture',
       'blaze:resilience-production',
       'blaze:technical-leadership',
-      'blaze:ai-systems-architecture',
     ],
   },
 ];

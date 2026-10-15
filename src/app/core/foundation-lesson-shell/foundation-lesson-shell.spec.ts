@@ -691,6 +691,28 @@ describe('FoundationLessonShell system-v1 lessons (DLV-408)', () => {
     expect(fixture.nativeElement.querySelectorAll('#code .prose').length).toBe(1);
   });
 
+  it('shows the AI prompt of a guided step whose code is in Java and Python tabs (DLV-935)', () => {
+    const output = { tool: 'Test', title: 'Test: step 1', command: 'sh ./mvnw test', text: '[INFO] BUILD SUCCESS\n', exitCode: 0 };
+    fixture.componentRef.setInput('lesson', {
+      ...systemLesson,
+      sections: [
+        ...systemLesson.sections,
+        { id: 'step-1', stage: 'build', navLabel: 'Step 1 · MCP tools', heading: 'Step 1: Serve read-only tools',
+          body: ['<strong>Goal:</strong> read only.', '<strong>Prompt:</strong> "Write an MCP server named ops-tools."',
+            '<strong>Verify before Step 2:</strong><br>Four tools.<br>All read-only.'],
+          codeTabs: [
+            { id: 'java', title: 'OpsTools.java', language: 'java', source: 'class OpsTools {}', body: [], output },
+            { id: 'python', title: 'ops_tools.py', language: 'python', source: 'server = None', body: [], output },
+          ] },
+      ],
+    } as FoundationLessonV1);
+    fixture.detectChanges();
+    const step = fixture.nativeElement.querySelector('#step-1') as HTMLElement;
+    expect(step.querySelector('.ai-prompt p')?.textContent).toBe('Write an MCP server named ops-tools.');
+    expect(step.querySelector('.ai-prompt app-code-copy-button')).not.toBeNull();
+    expect(step.querySelectorAll('.code-pair-text .prose').length).toBe(2);
+  });
+
   it('labels each section with its stage and a short sidebar name', () => {
     const code = fixture.nativeElement.querySelector('#code') as HTMLElement;
     expect(normalizedText(code.querySelector('.stage-label')!)).toBe('BuildThe code');

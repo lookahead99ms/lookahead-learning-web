@@ -8,11 +8,12 @@ describe('career Study Plan starting points', () => {
     const result = resolveStudyPlanPreset(
       preset,
       topics,
-      new Set([preset.topicIds[0], preset.topicIds[4], 'forged:scope']),
+      new Set([preset.topicIds[0], preset.topicIds[3], 'forged:scope']),
     );
     expect(result.selectedIds).toEqual([preset.topicIds[0]]);
     expect(result.unavailableIds).toEqual(preset.topicIds.slice(1));
-    expect(preset.topicIds).toHaveLength(5);
+    // DLV-935: AI Builds is only in the two AI project plans, so this starting point has four topics.
+    expect(preset.topicIds).toHaveLength(4);
   });
   it('does not invent access when none of a starting point is available', () => {
     const preset = STUDY_PLAN_PRESETS[0];

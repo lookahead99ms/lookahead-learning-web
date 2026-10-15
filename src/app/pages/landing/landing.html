@@ -1,167 +1,103 @@
 <app-platform-header />
 <main id="main-content" class="landing-page">
   <div class="discovery-opening">
-    <h1 class="discovery-framing"><app-platform-signature /></h1>
-    <p class="signature-support"><app-learning-prompt /></p>
-    <section
-      class="hero-carousel"
-      aria-label="Five ways to grow as an engineer"
-      aria-roledescription="carousel"
-      (focusin)="pauseRotation()"
-      (pointerenter)="pauseRotation()"
-      (pointerdown)="interactWithHero($event)"
-    >
-      <div #heroSlides class="hero-slides">
-        @for (slide of slides; track slide.name; let i = $index) {
-          <article
-            class="hero-slide"
-            [class.active]="activeSlide() === i"
-            [class.transitioning]="
-              outgoingSlide() !== null && (activeSlide() === i || outgoingSlide() === i)
-            "
-            [attr.aria-hidden]="activeSlide() !== i"
-            [attr.inert]="activeSlide() === i ? null : ''"
-            [attr.aria-label]="i + 1 + ' of 5: ' + slide.name"
-            aria-roledescription="slide"
-          >
-            <div class="hero-copy">
-              <p class="eyebrow">{{ slide.eyebrow }}</p>
-              <h2 class="slide-title">
-                @for (line of slide.lines; track line) {
-                  <span>{{ line }} </span>
-                }
-              </h2>
-              <p class="lead">{{ slide.description }}</p>
-              <a
-                class="primary-action"
-                [routerLink]="slide.route"
-                [fragment]="slide.fragment"
-                [queryParams]="slide.query"
-                (click)="choosePath($event, slide.fragment)"
-                >{{ slide.action }}</a
-              >
-            </div>
-            <div class="hero-visual">
-              @switch (i) {
-                @case (0) {
-                  <p class="chapter">Your next chapter</p>
-                  <h2>Start where you are.<br />Build what comes next.</h2>
-                  <div class="detail-line">
-                    <span>Understand the fundamentals</span><span>Learn</span>
-                  </div>
-                  <div class="detail-line">
-                    <span>Handle production reality</span><span>Grow</span>
-                  </div>
-                  <div class="detail-line">
-                    <span>Lead the larger decision</span><span>Blaze</span>
-                  </div>
-                }
-                @case (1) {
-                  <p class="chapter">Today's discussion</p>
-                  <h2>Your service is slowing down.<br />What do you check first?</h2>
-                  <p>
-                    State your hypothesis. Choose a signal. Explain the trade-off. Revisit the
-                    decision when the evidence changes.
-                  </p>
-                  <div class="detail-line"><span>Production diagnosis</span><span>Grow</span></div>
-                  <div class="detail-line">
-                    <span>Architecture review</span><span>Blaze</span>
-                  </div>
-                }
-                @case (2) {
-                  <p class="chapter">A connected learning journey</p>
-                  <h2>When does a simple queue stop being enough?</h2>
-                  <p>
-                    Follow one question from data structures to production reliability to
-                    system-design judgment.
-                  </p>
-                  <p class="small">
-                    Queue fundamentals. Failure and retry behavior. Architecture trade-offs.
-                  </p>
-                }
-                @case (3) {
-                  <p class="chapter">Canonical DSA / reasoning in code</p>
-                  <h2>See the invariant, not just the answer.</h2>
-                  <pre><code>{{ windowExample }}</code></pre>
-                  <p class="small">
-                    An illustration of the reasoning. Open a problem to run its guided debugger.
-                  </p>
-                }
-                @case (4) {
-                  <p class="chapter">One plan / several kinds of growth</p>
-                  <div class="journey">
-                    <span>01</span>
-                    <div>
-                      <h2>Choose your direction</h2>
-                      <p>Goals, scope, and accessible topics.</p>
-                    </div>
-                  </div>
-                  <div class="journey">
-                    <span>02</span>
-                    <div>
-                      <h2>Make room for practice</h2>
-                      <p>A feasible schedule with review time.</p>
-                    </div>
-                  </div>
-                  <div class="journey">
-                    <span>03</span>
-                    <div>
-                      <h2>Keep your progress</h2>
-                      <p>Resume, reflect, and adjust your week.</p>
-                    </div>
-                  </div>
-                }
-              }
-            </div>
-          </article>
-        }
-      </div>
-      <div class="carousel-footer">
-        <div class="hero-controls">
-          <div class="hero-dots" role="group" aria-label="Hero slides">
-            @for (slide of slides; track slide.name; let i = $index) {
+    <div class="hero-stage">
+      <header class="hero-masthead">
+        <h1 class="discovery-framing"><app-platform-signature /></h1>
+        <p class="signature-support"><app-learning-prompt /></p>
+      </header>
+      <section
+        class="hero-carousel"
+        aria-label="Six ways to grow as an engineer"
+        aria-roledescription="carousel"
+        [attr.data-held]="playing() ? null : ''"
+        [style.--slide-ms]="slideMs + 'ms'"
+        (focusin)="heroFocusIn($event)"
+        (focusout)="heroFocusOut($event)"
+      >
+        <div #heroSlides class="hero-slides" [attr.aria-live]="playing() ? 'off' : 'polite'">
+          @for (slide of slides; track slide.tab; let i = $index) {
+            <article
+              class="hero-slide"
+              [attr.data-visual]="slide.visual"
+              [class.active]="activeSlide() === i"
+              [class.transitioning]="
+                outgoingSlide() !== null && (activeSlide() === i || outgoingSlide() === i)
+              "
+              [attr.aria-hidden]="activeSlide() !== i"
+              [attr.inert]="activeSlide() === i ? null : ''"
+              [attr.aria-label]="i + 1 + ' of ' + slides.length + ': ' + slide.label"
+              aria-roledescription="slide"
+            >
+              <div class="hero-copy">
+                <p class="eyebrow">{{ slide.eyebrow }}</p>
+                <h2 class="slide-title">
+                  @for (line of slide.lines; track line) {
+                    <span>{{ line }} </span>
+                  }
+                </h2>
+                <p class="lead">{{ slide.description }}</p>
+                <a
+                  class="primary-action"
+                  [routerLink]="slide.route"
+                  [fragment]="slide.fragment"
+                  [queryParams]="slide.query"
+                  (click)="choosePath($event, slide.fragment)"
+                  >{{ slide.action }}<span class="action-arrow" aria-hidden="true">→</span></a
+                >
+              </div>
+              <app-landing-hero-visual
+                class="hero-visual"
+                [visual]="slide.visual"
+                [active]="activeSlide() === i"
+                [reducedMotion]="reducedMotion()"
+              />
+            </article>
+          }
+        </div>
+        <div class="carousel-footer">
+          <div class="chapter-tabs" role="group" aria-label="Hero slides">
+            @for (slide of slides; track slide.tab; let i = $index) {
               <button
                 type="button"
-                [attr.aria-label]="'Show slide ' + (i + 1) + ': ' + slide.name"
+                class="chapter-tab"
+                [class.done]="i < activeSlide()"
+                [attr.aria-label]="'Show slide ' + (i + 1) + ': ' + slide.label"
                 [attr.aria-pressed]="activeSlide() === i"
-                (click)="selectSlide(i)"
+                (click)="goTo(i)"
               >
-                <span aria-hidden="true"></span>
+                <span class="chapter-track" aria-hidden="true">
+                  <span
+                    class="chapter-fill"
+                    [class.run]="activeSlide() === i && !reducedMotion()"
+                    (animationend)="chapterDone(i, $event)"
+                  ></span>
+                </span>
+                <span class="chapter-name" aria-hidden="true">{{ slide.tab }}</span>
               </button>
             }
           </div>
           <div class="hero-arrows">
             <button
               type="button"
-              data-rotation
-              (pointercancel)="clearRotationIntent()"
-              (pointerleave)="clearRotationIntent()"
-              (blur)="clearRotationIntent()"
-              [attr.aria-label]="paused() ? 'Play slideshow' : 'Pause slideshow'"
+              class="rotation-toggle"
+              [attr.aria-label]="rotationHeld() ? 'Play slideshow' : 'Pause slideshow'"
               [disabled]="reducedMotion()"
               (click)="toggleRotation()"
             >
-              <span aria-hidden="true">{{ paused() ? '▶' : 'Ⅱ' }}</span>
+              <span aria-hidden="true">{{ rotationHeld() ? '▶' : 'Ⅱ' }}</span>
             </button>
-            <button
-              type="button"
-              aria-label="Previous hero slide"
-              (click)="selectSlide(activeSlide() - 1)"
-            >
+            <button type="button" aria-label="Previous hero slide" (click)="goTo(activeSlide() - 1)">
               <span aria-hidden="true">←</span>
             </button>
-            <button
-              type="button"
-              aria-label="Next hero slide"
-              (click)="selectSlide(activeSlide() + 1)"
-            >
+            <button type="button" aria-label="Next hero slide" (click)="goTo(activeSlide() + 1)">
               <span aria-hidden="true">→</span>
             </button>
           </div>
         </div>
-      </div>
-    </section>
-    <section id="paths" class="section" tabindex="-1" aria-labelledby="paths-title">
+      </section>
+    </div>
+    <section id="paths" class="section home-paths" tabindex="-1" aria-labelledby="paths-title">
       <p class="eyebrow">Choose your direction</p>
       <h2 id="paths-title" data-sidebar-label="Discover your path">Learn. Grow. Blaze.</h2>
       <div class="three-columns">
@@ -234,8 +170,8 @@
       }
     </section>
   </div>
-  <app-engineering-challenge />
-  <section class="feature-discovery" aria-labelledby="feature-discovery-title">
+  <app-engineering-challenge class="home-challenge" />
+  <section class="feature-discovery home-explore" aria-labelledby="feature-discovery-title">
     <div class="feature-grid-heading">
       <div>
         <p class="eyebrow">Keep exploring</p>
@@ -332,7 +268,7 @@
       </article>
     </div>
   </section>
-  <section class="brand-story" aria-labelledby="brand-story-title">
+  <section class="brand-story home-essence" aria-labelledby="brand-story-title">
     <div class="brand-story-heading">
       <p class="brand-context">Our platform</p>
       <h2 id="brand-story-title" data-sidebar-label="The essence">The Essence of Look Ahead</h2>
@@ -369,7 +305,7 @@
       </div>
     </div>
   </section>
-  <footer class="landing-footer">
+  <footer class="landing-footer home-footer">
     <p>Learn. Grow. Blaze.</p>
   </footer>
 </main>

@@ -294,7 +294,7 @@ describe('Manage account', () => {
   it('offers light, dark and system themes and saves the choice through the account', async () => {
     const save = vi
       .spyOn(store, 'updateThemePreference')
-      .mockResolvedValue({ ...profile, themePreference: 'dark' });
+      .mockResolvedValue({ ...profile, themePreference: 'light' });
     const radios = [
       ...(fixture.nativeElement.querySelectorAll(
         'input[name="themePreference"]',
@@ -304,18 +304,20 @@ describe('Manage account', () => {
     expect(fixture.nativeElement.querySelector('.theme-options legend')?.textContent).toBe(
       'Color theme',
     );
-    radios[1].click();
-    await fixture.whenStable();
-    fixture.detectChanges();
-    expect(save).toHaveBeenCalledWith('dark');
-    expect(document.documentElement.dataset['theme']).toBe('dark');
+    // With nothing stored the platform starts dark.
     expect(radios[1].checked).toBe(true);
-    expect(fixture.nativeElement.textContent).toContain('Theme saved to your account.');
-    save.mockRejectedValueOnce(new AccountSettingsError('unconfirmed'));
     radios[0].click();
     await fixture.whenStable();
     fixture.detectChanges();
+    expect(save).toHaveBeenCalledWith('light');
     expect(document.documentElement.dataset['theme']).toBe('light');
+    expect(radios[0].checked).toBe(true);
+    expect(fixture.nativeElement.textContent).toContain('Theme saved to your account.');
+    save.mockRejectedValueOnce(new AccountSettingsError('unconfirmed'));
+    radios[1].click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(document.documentElement.dataset['theme']).toBe('dark');
     expect(fixture.nativeElement.textContent).toContain('could not save it to your account');
   });
 

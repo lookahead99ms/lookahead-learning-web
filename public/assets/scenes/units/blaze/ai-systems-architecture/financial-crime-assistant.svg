@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Several cash deposits just under the reporting threshold line pile up on a timeline, a case file gathers them, and an analyst stamps the decision">
+<style>
+.blaze-ai-systems-architecture-financial-crime-assistant-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.blaze-ai-systems-architecture-financial-crime-assistant-pull{animation:blaze-ai-systems-architecture-financial-crime-assistant-pull 6s ease-in-out infinite;animation-delay:-3s}
+.blaze-ai-systems-architecture-financial-crime-assistant-stamp{animation:blaze-ai-systems-architecture-financial-crime-assistant-stamp 6s ease-in-out infinite;animation-delay:-3s;transform-origin:268px 98px}
+@keyframes blaze-ai-systems-architecture-financial-crime-assistant-pull{0%,20%{stroke-dashoffset:24}60%,100%{stroke-dashoffset:0}}
+@keyframes blaze-ai-systems-architecture-financial-crime-assistant-stamp{0%,40%{transform:translateY(-14px) rotate(-12deg)}60%,100%{transform:translateY(0) rotate(-12deg)}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<path d="M14 54H176" stroke="var(--scene-bad,#b3261e)" stroke-width="2.5" stroke-dasharray="7 5"/>
+<rect x="14" y="30" width="46" height="16" rx="8" fill="var(--scene-bad,#b3261e)"/><text x="37" y="42" text-anchor="middle" style="font:700 11px ui-monospace,Menlo,monospace;fill:var(--scene-card,#fff)">10,000</text>
+<path d="M14 124H176" stroke="var(--scene-ink,#102a33)" stroke-width="3" stroke-linecap="round"/>
+<path d="M30 124v6M68 124v6M106 124v6M144 124v6" stroke="var(--scene-muted,#536970)" stroke-width="2.5" stroke-linecap="round"/>
+<g stroke="var(--scene-good,#1f7a4d)" stroke-width="2.5">
+<rect x="22" y="72" width="28" height="52" rx="4" fill="var(--scene-accent-soft,#dcefed)"/><rect x="60" y="68" width="28" height="56" rx="4" fill="var(--scene-accent-soft,#dcefed)"/><rect x="98" y="66" width="28" height="58" rx="4" fill="var(--scene-accent-soft,#dcefed)"/><rect x="136" y="70" width="28" height="54" rx="4" fill="var(--scene-accent-soft,#dcefed)"/>
+</g>
+<g fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="2.5"><circle cx="36" cy="98" r="7"/><circle cx="74" cy="96" r="7"/><circle cx="112" cy="95" r="7"/><circle cx="150" cy="97" r="7"/></g>
+<path class="blaze-ai-systems-architecture-financial-crime-assistant-pull" d="M166 90C186 90 186 90 198 90" fill="none" stroke="var(--scene-muted,#536970)" stroke-width="3" stroke-linecap="round" stroke-dasharray="6 6"/>
+<path d="M202 38h22l6 8h30a6 6 0 0 1 6 6v62a6 6 0 0 1-6 6h-58a6 6 0 0 1-6-6V44a6 6 0 0 1 6-6z" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/>
+<g fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="2"><rect x="212" y="60" width="16" height="10" rx="2"/><rect x="236" y="60" width="16" height="10" rx="2"/><rect x="212" y="76" width="16" height="10" rx="2"/><rect x="236" y="76" width="16" height="10" rx="2"/></g>
+<path d="M212 98h40M212 106h28" stroke="var(--scene-accent,#006c73)" stroke-width="3" stroke-linecap="round"/>
+<g class="blaze-ai-systems-architecture-financial-crime-assistant-stamp"><rect x="254" y="88" width="50" height="34" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-warn,#a15c00)" stroke-width="3"/><path d="M264 106l8 8 20-18" fill="none" stroke="var(--scene-warn,#a15c00)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="95" y="156" text-anchor="middle" class="blaze-ai-systems-architecture-financial-crime-assistant-t">Just under limit</text>
+<text x="252" y="156" text-anchor="middle" class="blaze-ai-systems-architecture-financial-crime-assistant-t">Analyst decides</text>
+</svg>

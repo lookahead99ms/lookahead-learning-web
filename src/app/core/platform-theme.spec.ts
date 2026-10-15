@@ -94,9 +94,31 @@ describe('PlatformThemeService system preference', () => {
     document.documentElement.removeAttribute('data-theme');
   });
 
-  it('starts on system and follows the device until the learner picks a theme', () => {
+  it('starts dark with nothing stored, even on a light device, and ignores device changes', () => {
+    prefersDark = false;
     const service = TestBed.inject(PlatformThemeService);
-    expect(service.preference()).toBe('system');
+    expect(service.preference()).toBe('dark');
+    expect(service.selected()).toBe('dark');
+    expect(document.documentElement.dataset['theme']).toBe('dark');
+    prefersDark = true;
+    listener?.();
+    prefersDark = false;
+    listener?.();
+    expect(service.selected()).toBe('dark');
+    expect(window.localStorage.getItem('look-ahead-theme-v1')).toBeNull();
+  });
+
+  it('lets a stored light choice win over the dark default', () => {
+    window.localStorage.setItem('look-ahead-theme-v1', 'light');
+    const service = TestBed.inject(PlatformThemeService);
+    expect(service.preference()).toBe('light');
+    expect(service.selected()).toBe('light');
+    expect(document.documentElement.dataset['theme']).toBe('light');
+  });
+
+  it('follows the device once the learner picks system, until they pick a theme', () => {
+    const service = TestBed.inject(PlatformThemeService);
+    service.setTheme('system');
     expect(service.selected()).toBe('dark');
     prefersDark = false;
     listener?.();

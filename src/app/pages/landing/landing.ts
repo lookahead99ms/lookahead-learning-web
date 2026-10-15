@@ -1,3 +1,4 @@
+import { LandingHeroVisual } from './landing-hero-visual';
 import { LearningPrompt } from '../../core/platform-signature/learning-prompt';
 import { PlatformSignature } from '../../core/platform-signature/platform-signature';
 import { DOCUMENT } from '@angular/common';
@@ -7,6 +8,7 @@ import {
   ElementRef,
   ViewChild,
   afterNextRender,
+  computed,
   inject,
   signal,
 } from '@angular/core';
@@ -23,32 +25,65 @@ import { PathSceneTimeline } from './path-scene-timeline';
 const PATH_SCENES = ['learn', 'grow', 'blaze'] as const;
 type PathScene = (typeof PATH_SCENES)[number];
 
+/** One hero slide: its copy on the left, and which card to draw on the right. */
+interface HeroSlide {
+  visual: 'choose' | 'plan' | 'reason' | 'design' | 'build' | 'diagnose';
+  /** The one word on the slide's chapter tab. */
+  tab: string;
+  label: string;
+  eyebrow: string;
+  lines: string[];
+  description: string;
+  action: string;
+  route: string;
+  fragment: string | undefined;
+  query: Record<string, string>;
+}
+
 @Component({
   selector: 'app-landing',
-  imports: [LearningPrompt, PlatformSignature, PlatformHeader, RouterLink, EngineeringChallenge, PlatformBrandIllustration, PlatformBrand, CardScene],
+  imports: [LandingHeroVisual, LearningPrompt, PlatformSignature, PlatformHeader, RouterLink, EngineeringChallenge, PlatformBrandIllustration, PlatformBrand, CardScene],
   templateUrl: './landing.html',
   styleUrl: './landing.css',
 })
+/**
+ * The homepage: a six-slide hero (copy on the left, a card on the right, chapter tabs as timers),
+ * then the Learn / Grow / Blaze path cards, the engineering challenge, Keep exploring and the essence.
+ */
 export class Landing {
   protected readonly tagline = (id: PathTaglineId): string => pathTaglineText(id);
   private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
-  private timer: ReturnType<typeof setTimeout> | undefined;
   private animations: Animation[] = [];
   private transitionId = 0;
-  private rotationIntent: boolean | undefined;
+  private resumedWhileFocused = false;
   @ViewChild('heroSlides') private heroSlides?: ElementRef<HTMLElement>;
   protected readonly activeSlide = signal(0);
   protected readonly outgoingSlide = signal<number | null>(null);
   protected readonly reducedMotion = signal(false);
+  /** The visitor stopped the slideshow with the pause button. */
   protected readonly paused = signal(false);
+  /** Keyboard focus is inside the hero (APG carousel: rotation stops while a keyboard user is in it). */
+  protected readonly focusHold = signal(false);
+  protected readonly pageHidden = signal(false);
+  private readonly ready = signal(false);
+  /** Each slide plays for 6 s; the chapter tab's progress bar is the timer. */
+  protected readonly slideMs = 6000;
+  protected readonly rotationHeld = computed(
+    () => this.paused() || this.focusHold() || this.reducedMotion(),
+  );
+  protected readonly playing = computed(
+    () => this.ready() && !this.rotationHeld() && !this.pageHidden(),
+  );
   /** The visitor paused the path-card scenes with the toggle. */
   protected readonly scenesPaused = signal(false);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private sceneTimeline: PathSceneTimeline<PathScene> | undefined;
-  protected readonly slides = [
+  protected readonly slides: readonly HeroSlide[] = [
     {
-      name: 'Pathfinder',
+      visual: 'choose',
+      tab: 'Choose',
+      label: 'Choose your path',
       eyebrow: 'For the engineer deciding where to begin',
       lines: ['Become the engineer', 'you can explain.'],
       description:
@@ -59,29 +94,22 @@ export class Landing {
       query: {},
     },
     {
-      name: 'Decision Room',
-      eyebrow: 'For the conversations that raise the bar',
-      lines: ['Practice the decisions', 'behind the title.'],
+      visual: 'plan',
+      tab: 'Plan',
+      label: 'Plan your weeks',
+      eyebrow: 'Ambition, with room for real life',
+      lines: ['A clear route through', 'everything you want', 'to become.'],
       description:
-        'Go beyond recalling answers. Rehearse production judgment, explain system-design trade-offs, and connect technical choices to leadership.',
-      action: 'Find a scenario to practice',
-      route: '/search',
-      fragment: undefined,
-      query: { kind: 'practice', format: 'debug' },
-    },
-    {
-      name: 'Fieldnotes',
-      eyebrow: 'Follow a better question',
-      lines: ['Good answers', 'begin with', 'better thinking.'],
-      description:
-        'A field guide to the models, failures, and trade-offs behind confident engineering. Read deeply. Try the idea. Explain what changed.',
-      action: 'Find a question worth exploring',
-      route: '/search',
+        'Turn broad ambition into a workable week. Bring foundations, production practice, design, and leadership into one learning plan.',
+      action: 'Shape my study plan',
+      route: '/study-plan',
       fragment: undefined,
       query: {},
     },
     {
-      name: 'Build Studio',
+      visual: 'reason',
+      tab: 'Reason',
+      label: 'Reasoning in code',
       eyebrow: 'For engineers who learn by doing',
       lines: ['Read the idea.', 'Run the system.', 'Own the decision.'],
       description:
@@ -92,38 +120,62 @@ export class Landing {
       query: {},
     },
     {
-      name: 'Journey Atlas',
-      eyebrow: 'Ambition, with room for real life',
-      lines: ['A clear route through', 'everything you want', 'to become.'],
+      visual: 'design',
+      tab: 'Design',
+      label: 'From queue to design',
+      eyebrow: 'Follow a better question',
+      lines: ['Good answers', 'begin with', 'better thinking.'],
       description:
-        'Turn broad ambition into a workable week. Bring foundations, production practice, design, and leadership into one learning plan.',
-      action: 'Shape my study plan',
-      route: '/study-plan',
+        'A field guide to the models, failures, and trade-offs behind confident engineering. Read deeply. Try the idea. Explain what changed.',
+      action: 'Find a question worth exploring',
+      route: '/search',
       fragment: undefined,
       query: {},
     },
+    {
+      visual: 'build',
+      tab: 'Build',
+      label: 'Build AI projects',
+      eyebrow: 'AI Builds',
+      lines: ['AI is part of your toolkit.', 'It does the heavy lifting. You make the call.'],
+      description:
+        'Let AI automate the routine work and find patterns in your data, like flagging possible fraud, while you design the system and decide what ships. Guided projects in Java and Python.',
+      action: 'Explore AI Builds',
+      route: '/blaze/ai-systems-architecture',
+      fragment: undefined,
+      query: {},
+    },
+    {
+      visual: 'diagnose',
+      tab: 'Diagnose',
+      label: 'Diagnose a slowdown',
+      eyebrow: 'For the conversations that raise the bar',
+      lines: ['Practice the decisions', 'behind the title.'],
+      description:
+        'Go beyond recalling answers. Rehearse production judgment, explain system-design trade-offs, and connect technical choices to leadership.',
+      action: 'Find a scenario to practice',
+      route: '/search',
+      fragment: undefined,
+      query: { kind: 'practice', format: 'debug' },
+    },
   ];
-  protected readonly windowExample =
-    'left = 0\nfor right in range(len(values)):\n    # Maintain the valid window\n    while window_is_invalid():\n        left += 1';
 
   constructor() {
     afterNextRender(() => {
       const view = this.document.defaultView;
       const motion = view?.matchMedia?.('(prefers-reduced-motion: reduce)');
       this.reducedMotion.set(motion?.matches ?? false);
-      this.paused.set(motion?.matches ?? false);
+      this.pageHidden.set(this.document.hidden);
       const timeline = this.startSceneTimeline(motion?.matches ?? false);
       const visibilityChanged = () => {
         if (this.document.hidden) this.settleTransition();
-        this.scheduleRotation();
+        this.pageHidden.set(this.document.hidden);
         timeline.setStopped('hidden', this.document.hidden);
       };
       const motionChanged = (event: MediaQueryListEvent) => {
         this.reducedMotion.set(event.matches);
         timeline.setStopped('reduced-motion', event.matches);
-        if (event.matches) this.paused.set(true);
         this.settleTransition();
-        this.scheduleRotation();
       };
       this.document.addEventListener('visibilitychange', visibilityChanged);
       motion?.addEventListener('change', motionChanged);
@@ -131,10 +183,9 @@ export class Landing {
         this.document.removeEventListener('visibilitychange', visibilityChanged);
         motion?.removeEventListener('change', motionChanged);
       });
-      this.scheduleRotation();
+      this.ready.set(true);
     });
     this.destroyRef.onDestroy(() => {
-      clearTimeout(this.timer);
       this.settleTransition();
       this.sceneTimeline?.destroy();
     });
@@ -187,14 +238,13 @@ export class Landing {
   }
 
   protected showSlide(index: number): void {
-    const next = (index + this.slides.length) % this.slides.length;
+    const count = this.slides.length;
+    const next = (index + count) % count;
     const previous = this.activeSlide();
-    if (next !== previous) {
-      this.settleTransition();
-      this.activeSlide.set(next);
-      this.animateTransition(previous, next);
-    }
-    this.scheduleRotation();
+    if (next === previous) return;
+    this.settleTransition();
+    this.activeSlide.set(next);
+    this.animateTransition(previous, next);
   }
 
   private settleTransition(): void {
@@ -221,7 +271,7 @@ export class Landing {
     const incoming = slides?.[next];
     if (!outgoing?.animate || !incoming?.animate) return;
     const transitionId = this.transitionId;
-    const timing = { duration: 420, easing: 'cubic-bezier(.22,.61,.36,1)', fill: 'both' as const };
+    const timing = { duration: 300, easing: 'cubic-bezier(.22,.61,.36,1)', fill: 'both' as const };
     this.outgoingSlide.set(previous);
     this.animations = [
       outgoing.animate([{ opacity: 1 }, { opacity: 0 }], timing),
@@ -233,36 +283,49 @@ export class Landing {
       .catch(() => {});
   }
 
+  /** The pause button: an explicit stop, or an explicit start that also lifts a keyboard-focus hold. */
   protected toggleRotation(): void {
     if (this.reducedMotion()) return;
-    this.paused.set(this.rotationIntent ?? !this.paused());
-    this.rotationIntent = undefined;
-    this.scheduleRotation();
-  }
-
-  protected pauseRotation(): void {
-    this.paused.set(true);
-    this.settleTransition();
-    this.scheduleRotation();
-  }
-
-  protected interactWithHero(event: PointerEvent): void {
-    // Play is the explicit opt-in after any other pointer interaction.
-    if ((event.target as HTMLElement | null)?.closest('[data-rotation]')) {
-      // Preserve the action that was visible before focus paused the carousel.
-      this.rotationIntent = !this.paused();
+    if (this.rotationHeld()) {
+      // Starting again while keyboard focus held it keeps it playing until focus leaves the hero.
+      this.resumedWhileFocused = this.focusHold();
+      this.paused.set(false);
+      this.focusHold.set(false);
     } else {
-      this.pauseRotation();
+      this.paused.set(true);
     }
   }
 
-  protected clearRotationIntent(): void {
-    this.rotationIntent = undefined;
+  /** Keyboard focus inside the hero holds the rotation; pointer clicks and hover never do. */
+  protected heroFocusIn(event: FocusEvent): void {
+    if (this.resumedWhileFocused) return;
+    const target = event.target as HTMLElement | null;
+    let keyboard = false;
+    try {
+      keyboard = !!target?.matches(':focus-visible');
+    } catch {
+      keyboard = true;
+    }
+    if (keyboard) this.focusHold.set(true);
   }
 
-  protected selectSlide(index: number): void {
-    this.pauseRotation();
+  protected heroFocusOut(event: FocusEvent): void {
+    const next = event.relatedTarget as Node | null;
+    if (next && (event.currentTarget as HTMLElement).contains(next)) return;
+    this.focusHold.set(false);
+    this.resumedWhileFocused = false;
+  }
+
+  /** Chapter tabs and arrows jump to a slide; the slideshow keeps playing from there. */
+  protected goTo(index: number): void {
     this.showSlide(index);
+  }
+
+  /** The active chapter's progress bar finished filling: advance (the bar is the timer). */
+  protected chapterDone(index: number, event: AnimationEvent): void {
+    if (event.target !== event.currentTarget) return;
+    if (index !== this.activeSlide() || !this.playing()) return;
+    this.showSlide(index + 1);
   }
 
   protected choosePath(event: Event, fragment?: string): void {
@@ -279,11 +342,5 @@ export class Landing {
       '',
       `/#${fragment}`,
     );
-  }
-
-  private scheduleRotation(): void {
-    clearTimeout(this.timer);
-    if (this.paused() || this.reducedMotion() || this.document.hidden) return;
-    this.timer = setTimeout(() => this.showSlide(this.activeSlide() + 1), 6000);
   }
 }

@@ -1,7 +1,10 @@
-import { Component, input, signal } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { LessonRunLocally } from '../../content/content.models';
+import { LessonLanguageDownload, LessonRunLocally } from '../../content/content.models';
+import { ReferenceLanguageService } from '../reference-language';
 import { zipStore } from '../zip/zip-store';
+
+const LANGUAGE_NAMES: Record<string, string> = { java: 'Java', python: 'Python', go: 'Go' };
 
 /**
  * Before you start (user review, 2026-10-05): the lessons to know first, as links that show only the title, and a closed
@@ -29,6 +32,36 @@ import { zipStore } from '../zip/zip-store';
       <details class="run-locally">
         <summary>Run it yourself</summary>
         <div class="run-locally-body">
+          @if (languageDownloads().length) {
+            <!-- DLV-935: one project per language; the choice is the page-wide reference language. -->
+            <div class="project-languages" role="group" aria-label="Project language">
+              @for (item of languageDownloads(); track item.language) {
+                <button type="button" [attr.aria-pressed]="item.language === activeDownload()?.language"
+                  (click)="languages.select(item.language)">{{ languageName(item.language) }}</button>
+              }
+            </div>
+          }
+          @if (activeDownload(); as active) {
+            <h4>What you need</h4>
+            <ul>
+              @for (item of active.requirements; track item) {
+                <li class="rich" [innerHTML]="item"></li>
+              }
+            </ul>
+            <button type="button" class="project-download" [disabled]="downloadState() === 'working'" (click)="downloadProject(active.href)">
+              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M3 13.5h10" /></svg>
+              {{ downloadState() === 'working' ? 'Preparing the zip…' : active.label }}
+            </button>
+            @if (downloadState() === 'failed') {
+              <p class="project-download-error" role="alert">The download did not start. Check that you are signed in, then try again.</p>
+            }
+            <h4>Open, run and test it</h4>
+            <ol>
+              @for (item of active.steps; track item) {
+                <li class="rich" [innerHTML]="item"></li>
+              }
+            </ol>
+          } @else {
           <h4>What you need</h4>
           <ul>
             @for (item of run.requirements; track item) {
@@ -58,6 +91,7 @@ import { zipStore } from '../zip/zip-store';
               <li class="rich" [innerHTML]="item"></li>
             }
           </ol>
+          }
         </div>
       </details>
     }
@@ -130,6 +164,33 @@ import { zipStore } from '../zip/zip-store';
         opacity: 0.7;
         cursor: progress;
       }
+      .project-languages {
+        display: inline-flex;
+        gap: 4px;
+        margin: 0.4rem 0 0.2rem;
+        padding: 3px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+      }
+      .project-languages button {
+        min-height: 32px;
+        padding: 4px 14px;
+        border: 0;
+        border-radius: 999px;
+        background: transparent;
+        color: var(--text-subtle);
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .project-languages button[aria-pressed='true'] {
+        background: var(--accent-strong);
+        color: var(--accent-on-primary);
+      }
+      .project-languages button:focus-visible {
+        outline: 3px solid var(--accent-focus);
+        outline-offset: 2px;
+      }
       .project-download-error {
         color: var(--code-danger, #b3261e);
         font-size: 0.85rem;
@@ -142,6 +203,17 @@ export class LessonStart {
   readonly runLocally = input<LessonRunLocally | null>(null);
 
   protected readonly downloadState = signal<'idle' | 'working' | 'failed'>('idle');
+  protected readonly languages = inject(ReferenceLanguageService);
+  protected readonly languageDownloads = computed<readonly LessonLanguageDownload[]>(() => this.runLocally()?.downloads ?? []);
+  /** The download for the page-wide reference language, or the first one when the lesson lacks it. */
+  protected readonly activeDownload = computed(() => {
+    const downloads = this.languageDownloads();
+    return downloads.find((item) => item.language === this.languages.selected()) ?? downloads[0] ?? null;
+  });
+
+  protected languageName(language: string): string {
+    return LANGUAGE_NAMES[language] ?? language;
+  }
 
   /**
    * Downloads the lesson's project: the content API serves it as a JSON bundle of text files (it has no
