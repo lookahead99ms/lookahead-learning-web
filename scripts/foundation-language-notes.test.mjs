@@ -36,3 +36,13 @@ test('Grow rejects absent, empty, malformed and duplicate notes', () => {
     assert.notEqual(foundationLanguageNoteErrors(notes, 'grow').length, 0);
   }
 });
+
+test('a lesson with Java and Python downloads covers exactly those languages (DLV-935)', () => {
+  const notes = [
+    { language: 'Java', note: 'Spring AI maps the reply to a record.' },
+    { language: 'Python', note: 'The MCP SDK runs the server in process for tests.' },
+  ];
+  assert.deepEqual(foundationLanguageNoteErrors(notes, 'blaze', ['java', 'python']), []);
+  assert.notEqual(foundationLanguageNoteErrors(notes.slice(0, 1), 'blaze', ['java', 'python']).length, 0);
+  assert.notEqual(foundationLanguageNoteErrors(notes, 'blaze').length, 0);
+});

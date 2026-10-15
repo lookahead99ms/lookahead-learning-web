@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A scanned claim form with a table has its fields boxed and extracted, and one low-confidence field is sent to a review tray">
+<style>
+.blaze-ai-systems-architecture-document-intelligence-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.blaze-ai-systems-architecture-document-intelligence-m{font:700 11px ui-monospace,Menlo,monospace;fill:var(--scene-card,#fff)}
+.blaze-ai-systems-architecture-document-intelligence-scan{animation:blaze-ai-systems-architecture-document-intelligence-scan 6s ease-in-out infinite;animation-delay:-3s}
+.blaze-ai-systems-architecture-document-intelligence-drop{animation:blaze-ai-systems-architecture-document-intelligence-drop 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes blaze-ai-systems-architecture-document-intelligence-scan{0%,100%{transform:translateY(0)}50%{transform:translateY(96px)}}
+@keyframes blaze-ai-systems-architecture-document-intelligence-drop{0%,25%{transform:translate(0,-10px);opacity:.3}55%,90%{transform:translate(0,0);opacity:1}100%{transform:translate(0,-10px);opacity:.3}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="14" y="14" width="124" height="130" rx="5" fill="var(--scene-card,#fff)" stroke="var(--scene-muted,#536970)" stroke-width="2.5"/>
+<rect x="24" y="24" width="44" height="7" rx="3" fill="var(--scene-muted,#536970)"/><path d="M24 40h104" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<path d="M24 52h104M24 72h104M24 92h104M24 112h104M24 132h104M24 52v80M62 52v80M100 52v80M128 52v80" stroke="var(--scene-line,#cfdfdc)" stroke-width="2" fill="none"/>
+<path d="M28 62h26M66 62h28M104 62h20M28 82h22M66 82h24M104 82h20M28 102h26M66 102h28M28 122h24M66 122h20" stroke="var(--scene-muted,#536970)" stroke-width="3.5" stroke-linecap="round"/>
+<rect x="23" y="55" width="36" height="14" rx="3" fill="none" stroke="var(--scene-link,#245a88)" stroke-width="2.5"/>
+<rect x="61" y="55" width="36" height="14" rx="3" fill="none" stroke="var(--scene-link,#245a88)" stroke-width="2.5"/>
+<rect x="99" y="75" width="28" height="14" rx="3" fill="none" stroke="var(--scene-link,#245a88)" stroke-width="2.5"/>
+<rect x="61" y="115" width="36" height="14" rx="3" fill="none" stroke="var(--scene-warn,#a15c00)" stroke-width="3" stroke-dasharray="5 3"/>
+<g class="blaze-ai-systems-architecture-document-intelligence-scan"><rect x="10" y="44" width="132" height="4" rx="2" fill="var(--scene-link,#245a88)" opacity=".6"/></g>
+<path d="M146 80h20" stroke="var(--scene-muted,#536970)" stroke-width="3" stroke-linecap="round"/><path d="M162 72l8 8-8 8" fill="none" stroke="var(--scene-muted,#536970)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="180" y="14" width="126" height="76" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/>
+<rect x="190" y="26" width="64" height="8" rx="3" fill="var(--scene-accent,#006c73)"/><path d="M268 29l5 5 10-11" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="190" y="48" width="50" height="8" rx="3" fill="var(--scene-accent,#006c73)"/><path d="M268 51l5 5 10-11" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="190" y="70" width="56" height="8" rx="3" fill="var(--scene-accent,#006c73)"/><path d="M268 73l5 5 10-11" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M97 129C120 140 150 118 190 112" fill="none" stroke="var(--scene-warn,#a15c00)" stroke-width="2.5" stroke-dasharray="5 4" stroke-linecap="round"/>
+<path d="M180 100h126v22a6 6 0 0 1-6 6h-114a6 6 0 0 1-6-6z" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2.5" stroke-linejoin="round"/>
+<g class="blaze-ai-systems-architecture-document-intelligence-drop"><rect x="196" y="97" width="60" height="20" rx="5" fill="var(--scene-warn,#a15c00)"/><text x="226" y="111" text-anchor="middle" class="blaze-ai-systems-architecture-document-intelligence-m">62%</text><circle cx="288" cy="107" r="9" fill="var(--scene-link,#245a88)"/><circle cx="288" cy="104" r="3" fill="var(--scene-card,#fff)"/><path d="M282 112a6 4 0 0 1 12 0z" fill="var(--scene-card,#fff)"/></g>
+<text x="76" y="166" text-anchor="middle" class="blaze-ai-systems-architecture-document-intelligence-t">Fields found</text>
+<text x="243" y="166" text-anchor="middle" class="blaze-ai-systems-architecture-document-intelligence-t">Review tray</text>
+</svg>

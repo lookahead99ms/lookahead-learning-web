@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A late shipment truck with a delay clock, a draining stock level heading for a stock-out date on the calendar, and an alternate supplier option waiting for the buyer to approve">
+<style>
+.blaze-ai-systems-architecture-supply-chain-assistant-t{font:700 16px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.blaze-ai-systems-architecture-supply-chain-assistant-hand{animation:blaze-ai-systems-architecture-supply-chain-assistant-hand 4s linear infinite;transform-origin:112px 38px}
+.blaze-ai-systems-architecture-supply-chain-assistant-drain{animation:blaze-ai-systems-architecture-supply-chain-assistant-drain 6s ease-in-out infinite;animation-delay:-3s;transform-origin:30px 134px}
+.blaze-ai-systems-architecture-supply-chain-assistant-ok{animation:blaze-ai-systems-architecture-supply-chain-assistant-ok 6s ease-in-out infinite;animation-delay:-3s}
+@keyframes blaze-ai-systems-architecture-supply-chain-assistant-hand{to{transform:rotate(360deg)}}
+@keyframes blaze-ai-systems-architecture-supply-chain-assistant-drain{0%,20%{transform:scaleY(1)}70%,100%{transform:scaleY(.55)}}
+@keyframes blaze-ai-systems-architecture-supply-chain-assistant-ok{0%,30%{stroke-width:2.5}60%,90%{stroke-width:5}100%{stroke-width:2.5}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<rect x="14" y="30" width="50" height="34" rx="4" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/>
+<path d="M64 40h18l10 12v12H64z" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5" stroke-linejoin="round"/>
+<circle cx="32" cy="68" r="7" fill="var(--scene-ink,#102a33)"/><circle cx="80" cy="68" r="7" fill="var(--scene-ink,#102a33)"/>
+<path d="M2 44h8M0 54h10" stroke="var(--scene-muted,#536970)" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="112" cy="38" r="15" fill="var(--scene-card,#fff)" stroke="var(--scene-bad,#b3261e)" stroke-width="3"/>
+<path d="M112 38V28" stroke="var(--scene-bad,#b3261e)" stroke-width="3" stroke-linecap="round"/><g class="blaze-ai-systems-architecture-supply-chain-assistant-hand"><path d="M112 38h9" stroke="var(--scene-bad,#b3261e)" stroke-width="3" stroke-linecap="round"/></g>
+<path d="M16 86v50h118" fill="none" stroke="var(--scene-ink,#102a33)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<g class="blaze-ai-systems-architecture-supply-chain-assistant-drain" fill="var(--scene-accent,#006c73)"><rect x="24" y="94" width="14" height="40" rx="2"/><rect x="48" y="100" width="14" height="34" rx="2"/><rect x="72" y="108" width="14" height="26" rx="2"/><rect x="96" y="118" width="14" height="16" rx="2"/></g>
+<path d="M24 98L112 128" stroke="var(--scene-bad,#b3261e)" stroke-width="2.5" stroke-dasharray="5 4" stroke-linecap="round" fill="none"/>
+<rect x="142" y="14" width="64" height="62" rx="7" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2.5"/>
+<path d="M142 21a7 7 0 0 1 7-7h50a7 7 0 0 1 7 7v10h-64z" fill="var(--scene-link,#245a88)"/>
+<g fill="var(--scene-line,#cfdfdc)"><rect x="150" y="40" width="9" height="7" rx="2"/><rect x="164" y="40" width="9" height="7" rx="2"/><rect x="178" y="40" width="9" height="7" rx="2"/><rect x="192" y="40" width="9" height="7" rx="2"/><rect x="150" y="54" width="9" height="7" rx="2"/><rect x="164" y="54" width="9" height="7" rx="2"/><rect x="150" y="66" width="9" height="6" rx="2"/><rect x="164" y="66" width="9" height="6" rx="2"/></g>
+<circle cx="188" cy="58" r="10" fill="none" stroke="var(--scene-bad,#b3261e)" stroke-width="3"/><path d="M182 52l12 12M194 52l-12 12" stroke="var(--scene-bad,#b3261e)" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M118 112L150 112" stroke="var(--scene-muted,#536970)" stroke-width="3" stroke-linecap="round"/>
+<rect x="154" y="88" width="152" height="52" rx="8" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/>
+<rect x="164" y="98" width="26" height="26" rx="6" fill="var(--scene-accent,#006c73)"/><path d="M172 111h10M178 105v12" stroke="var(--scene-card,#fff)" stroke-width="3" stroke-linecap="round"/>
+<path d="M198 105h50M198 117h34" stroke="var(--scene-accent,#006c73)" stroke-width="4" stroke-linecap="round"/>
+<circle class="blaze-ai-systems-architecture-supply-chain-assistant-ok" cx="282" cy="114" r="14" fill="var(--scene-card,#fff)" stroke="var(--scene-good,#1f7a4d)"/><path d="M275 114l5 5 9-10" fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="74" y="162" text-anchor="middle" class="blaze-ai-systems-architecture-supply-chain-assistant-t">Stock-out ahead</text>
+<text x="230" y="162" text-anchor="middle" class="blaze-ai-systems-architecture-supply-chain-assistant-t">Buyer approves</text>
+</svg>

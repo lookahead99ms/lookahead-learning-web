@@ -906,9 +906,14 @@ for (const file of contentFiles) {
     const project = JSON.parse(await readFile(file, 'utf8'));
     requireValue(/\/downloads\/[a-z0-9-]+-project\.json$/.test(label), `${label}: unexpected download path`);
     requireValue(project.schemaVersion === 'lesson-project/v1', `${label}: unsupported project schema`);
+    // DLV-935: a two-language lesson has one bundle per language, <lessonId>-<language>-project.json.
+    const bundleName = label.slice(label.lastIndexOf('/downloads/') + '/downloads/'.length, -'-project.json'.length);
+    const bundleLanguage = bundleName.startsWith(`${project.lessonId}-`) ? bundleName.slice(project.lessonId.length + 1) : '';
     requireValue(
-      label.endsWith(`/downloads/${project.lessonId}-project.json`) && project.zipName === `${project.lessonId}.zip`,
-      `${label}: a project must be named after its lesson`,
+      (bundleName === project.lessonId || ['java', 'python', 'go'].includes(bundleLanguage)) &&
+        project.zipName === `${bundleName}.zip` &&
+        project.root === bundleName,
+      `${label}: a project must be named after its lesson (and language)`,
     );
     requireValue(
       Array.isArray(project.files) &&
@@ -1013,7 +1018,37 @@ for (const file of contentFiles) {
         question.moduleId === module.id,
         `${moduleLabel}: ${question.id} has wrong moduleId`,
       );
-      if (question.runLocally !== undefined) {
+      if (question.runLocally?.downloads !== undefined) {
+        // DLV-935: one project per language. Each entry names its language once, in reference order
+        // (java, python, go), with its own label, requirements and steps, and a bundle that exists.
+        const downloads = question.runLocally.downloads;
+        requireValue(
+          question.runLocally.download === undefined && Array.isArray(downloads) && downloads.length >= 2,
+          `${moduleLabel}: ${question.id} runLocally needs either download or two or more downloads`,
+        );
+        const languages = downloads.map((entry) => entry.language);
+        requireValue(
+          languages.join() === ['java', 'python', 'go'].filter((language) => languages.includes(language)).join() &&
+            new Set(languages).size === languages.length,
+          `${moduleLabel}: ${question.id} runLocally.downloads languages must be unique, in java, python, go order`,
+        );
+        for (const entry of downloads) {
+          const expectedHref = `/content/${manifest.path}/${manifest.id}/downloads/${question.id}-${entry.language}-project.json`;
+          requireValue(
+            entry.href === expectedHref,
+            `${moduleLabel}: ${question.id} ${entry.language} download href must be ${expectedHref} (found ${entry.href})`,
+          );
+          requireValue(
+            typeof entry.label === 'string' && entry.label.trim() &&
+              [entry.requirements, entry.steps].every((list) => Array.isArray(list) && list.length > 0 && list.every((item) => typeof item === 'string' && item.trim())),
+            `${moduleLabel}: ${question.id} ${entry.language} download needs a label, requirements and steps`,
+          );
+          requireValue(
+            await fileExists(join(contentRoot, entry.href.slice('/content/'.length))),
+            `${moduleLabel}: ${question.id} ${entry.language} download ${entry.href} does not exist under the content root`,
+          );
+        }
+      } else if (question.runLocally !== undefined) {
         // "Run it yourself" download (2026-10-05): the bundle belongs to this lesson's own path and course,
         // and build_lesson_projects.py must have written it. A runLocally copied from another course's
         // lesson keeps that course in the href, and the page link 404s.
@@ -1933,7 +1968,11 @@ for (const { lesson, moduleLabel } of foundationLessons) {
     lesson.languageNotes.length === 0;
   for (const error of optionalLanguageNotes
     ? []
-    : foundationLanguageNoteErrors(lesson.languageNotes, moduleLabel.split('/')[0])) {
+    : foundationLanguageNoteErrors(
+        lesson.languageNotes,
+        moduleLabel.split('/')[0],
+        lesson.runLocally?.downloads?.map((item) => item.language),
+      )) {
     requireValue(false, `${label} ${error}`);
   }
   requireValue(lesson.reviewEvidence?.note, `${label} is missing review evidence`);

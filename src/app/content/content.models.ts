@@ -171,6 +171,8 @@ export interface TheorySection {
   cost?: string;
   /** A storyboard visual with the body beside it (stacked in a narrow column); code and tables follow below. */
   visualBeside?: boolean;
+  /** Guided project build step (DLV-935): the body reads full width above its Java | Python code and console. */
+  guidedStep?: boolean;
 }
 
 /** One rung of a practice ladder: a hands-on DSA problem and what it adds to the rung before. */
@@ -303,6 +305,21 @@ export interface LessonRunLocally {
   steps: string[];
   /** The project bundle (JSON) that the page packs into a .zip. */
   download?: { href: string; label?: string };
+  /**
+   * DLV-935: one complete project per language instead of `download`. The page shows the entry for the
+   * page-wide reference language, with that language's requirements and run steps.
+   */
+  downloads?: LessonLanguageDownload[];
+}
+
+export interface LessonLanguageDownload {
+  language: PatternLanguage;
+  href: string;
+  label: string;
+  /** What to install for this language's project. */
+  requirements: string[];
+  /** How to open, run and test this language's project. */
+  steps: string[];
 }
 
 export interface TheoryTable {
