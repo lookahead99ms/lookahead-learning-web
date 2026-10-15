@@ -1172,3 +1172,15 @@ Cognito identity; Local signup cannot claim them, and the page sends no email.
 The Delivery Plan editor remains loopback-only development tooling; restarting
 the managed frontend loads its updated operation-specific permission callback.
 This is not a production multiuser Delivery Plan service.
+
+### Lower-cost DEV serving candidate
+
+`deployment/container/nginx-lower-cost-dev.conf` is an optional configuration for
+Gateway-to-Web mTLS on8443 and loopback-only readiness on8081. It requires the
+Gateway client identity; it does not receive browser OAuth credentials. The
+ordinary container configuration remains separate. The protected frontend can
+show `/dev/session` notices and a CSRF-protected Leave DEV action; environments
+without that endpoint show no DEV controls.
+
+Infra owns the deployment inputs and start/stop runbook. This configuration is
+locally tested with synthetic credentials, not deployed or verified in AWS.
