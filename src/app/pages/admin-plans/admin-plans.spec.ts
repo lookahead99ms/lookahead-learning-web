@@ -27,7 +27,7 @@ describe('Plans and purchases (admin documentation, DLV-209)', () => {
   it('says nothing is sold and lays out like the other admin pages', () => {
     const main = root.querySelector('main')!;
     expect([...main.children].map((child) => child.tagName.toLowerCase())).toEqual(['aside', 'div', 'app-author-admin-menu']);
-    expect(text(root.querySelector('.status-note'))).toContain('nobody can buy and nothing is charged');
+    expect(text(root.querySelector('.status-note'))).toContain('No money is charged');
     expect([...root.querySelectorAll('.doc-section h2')].map(text)).toEqual([
       'How to review', 'How a learner buys', 'What a buyer sees in Manage account', 'Configured plans', 'Changing and renewing', 'Not built yet',
     ]);
@@ -40,8 +40,8 @@ describe('Plans and purchases (admin documentation, DLV-209)', () => {
       ['See the plans', 'Built'],
       ['Sign in, then choose a plan', 'Built'],
       ['Course Pass: pick 1–3 courses', 'Not built yet'],
-      ['Pay at checkout (Stripe)', 'Not built yet'],
-      ['The server records the purchase and opens the courses', 'Not built yet'],
+      ['Confirm a local mock payment', 'Built'],
+      ['The server records the purchase and opens the courses', 'Built'],
       ['See it in Manage account, with Renew and Upgrade', 'Built'],
       ['Reminder 7 to 10 days before access ends', 'Not built yet'],
     ]);

@@ -1374,3 +1374,7 @@ cleanup clears local account state. Cloud mode retains the fixed logout bridge.
 Expired account sessions go to `/sign-in?error=session-expired`; incorrect passwords
 stay on sign-in with an error. Anonymous browsing is not redirected. Interrupted
 saved-plan requests require explicit discard before another sign-in.
+
+## Connected local memberships (DLV-209)
+
+Pricing, Manage account and Admin Sales read the Domain membership API through the Gateway. Signed-in learners explicitly confirm simulated purchases after a server quote; no money is charged. Missing API support leaves reference prices visible and disables checkout. Owner controls server sales/prices; staff upgrades are server-authorized and cannot reduce access. Manual renewal creates another purchase; no automatic renewal, lifetime, notifications or real payments. Course Pass remains disabled pending its duration. The public demo remains independently renderable without an API.

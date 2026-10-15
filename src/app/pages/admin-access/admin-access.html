@@ -179,20 +179,7 @@
             <!-- DLV-209: purchases and plan assignments have no server records yet; say so plainly. -->
             <div class="panel membership-panel">
               <h3>Plans and purchases</h3>
-              <dl class="membership-facts">
-                <div>
-                  <dt>Plan or pass purchases</dt>
-                  <dd>None recorded. The server does not store purchases yet, so there is no plan, price paid, discount, activation date or expiry to show.</dd>
-                </div>
-                <div>
-                  <dt>Renewal</dt>
-                  <dd>Manual for every plan and pass. Nothing renews or charges automatically.</dd>
-                </div>
-                <div>
-                  <dt>Expiry reminders</dt>
-                  <dd>Not tracked. Reminders 7 to 10 days before expiry need notification support that does not exist yet.</dd>
-                </div>
-              </dl>
+              @if(draft?.accountId){<app-admin-memberships [accountId]="draft!.accountId" />} @else {<p>Purchases require an existing account.</p>}
               <p class="context-note">Course access on this form is an access grant, not a purchase.</p>
             </div>
             <div class="save-row">

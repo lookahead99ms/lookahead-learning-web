@@ -22,6 +22,7 @@ import {
 } from './account-settings-client';
 import { AccountThemePreference } from '../../core/account-theme';
 import { accountMembership, joinPaths } from './account-membership';
+import { MembershipApi } from '../../content/membership-api';
 import { AccountAccessRecords } from './account-access-records';
 import { PATH_TAGLINES } from '../../content/path-taglines';
 import { PlatformThemeService, ThemePreference } from '../../core/platform-theme';
@@ -89,10 +90,10 @@ export class AccountSettings implements OnDestroy {
   protected readonly savingTheme = signal(false);
   protected readonly themeStatus = signal('');
 
+  protected readonly membershipApi = inject(MembershipApi);
   protected readonly membership = computed(() => {
     const account = this.store.account();
-    // DLV-209: no purchase records yet; the server reports course grants only (proposed API pending).
-    return account ? accountMembership(account) : null;
+    return account ? accountMembership(account, this.membershipApi.records()) : null;
   });
   protected readonly joinPaths = joinPaths;
   // Each path's platform tagline, split as "Learn" + "to solve it on your own." (shared wording).

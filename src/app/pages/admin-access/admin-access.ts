@@ -6,6 +6,8 @@ import { AuthorAdminMenu } from '../../core/author-workspace-nav/author-admin-me
 import { AuthorOutlineItem, AuthorWorkspaceNav } from '../../core/author-workspace-nav/author-workspace-nav';
 import { ACCOUNT_FETCH, StudyPlanAccount } from '../study-plan/study-plan-account';
 
+import { AdminMemberships } from './admin-memberships';
+
 interface Assignment {
   id: string; accountId: string | null; pendingEmail: string | null;
   roles: string[]; topicGrants: string[]; fullCurriculum: boolean; revision: number;
@@ -14,7 +16,7 @@ interface Recipient { accountId: string; username: string; displayName: string; 
 
 @Component({
   selector: 'app-admin-access',
-  imports: [FormsModule, RouterLink, PlatformHeader, AuthorAdminMenu, AuthorWorkspaceNav],
+  imports: [AdminMemberships, FormsModule, RouterLink, PlatformHeader, AuthorAdminMenu, AuthorWorkspaceNav],
   templateUrl: './admin-access.html',
   styleUrl: './admin-access.css',
 })

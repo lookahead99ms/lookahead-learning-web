@@ -2,9 +2,8 @@
  * DLV-209: the agreed plan catalog (user decisions 2026-10-15). Pricing, Manage account and the
  * owner's People and access page all read this one list, so names, prices and terms cannot drift.
  *
- * Display data only. The server has no plans, purchases, prices or discounts yet: access is still
- * decided by its own course grants, checkout is not connected and nothing here is sent anywhere.
- * Undecided terms stay in `pending` and keep an offer off sale; nothing is invented to fill them.
+ * Fallback definitions for the public demo. Connected views use MembershipApi; the server
+ * owns prices, sales and access. Undecided terms keep an offer off sale.
  *
  * Renewal policy (final, 2026-10-15): nothing renews automatically. Access ends on its end date
  * and continues only when the learner buys again.
@@ -53,6 +52,7 @@ export interface PlanDefinition {
   renewal: RenewalPolicy;
   /** Terms the user has not decided yet. Any entry keeps the offer off sale. */
   pending: readonly string[];
+  onSale?: boolean;
 }
 
 export const CATALOG_NAMES: Readonly<Record<CatalogId, string>> = {
@@ -317,8 +317,8 @@ export interface PlanCatalogRow {
 }
 
 /** The configured catalog as one table row per plan, for staff pages. */
-export function planCatalogRows(): PlanCatalogRow[] {
-  return PLANS.map((plan) => ({
+export function planCatalogRows(plans: readonly PlanDefinition[] = PLANS): PlanCatalogRow[] {
+  return plans.map((plan) => ({
     id: plan.id,
     group: plan.group === 'promo' ? 'Promo' : 'Regular',
     name: plan.name,
@@ -331,7 +331,9 @@ export function planCatalogRows(): PlanCatalogRow[] {
         ? 'Available: any signed-in account'
         : !isOfferComplete(plan)
           ? `Pending: ${plan.pending.join(', ')}`
-          : plan.group === 'promo'
+          : plan.onSale !== undefined
+            ? (plan.onSale ? 'Available for local mock purchase' : 'Not currently on sale')
+            : plan.group === 'promo'
             ? 'Only during a sale; checkout not connected'
             : 'Not on sale: checkout not connected',
   }));

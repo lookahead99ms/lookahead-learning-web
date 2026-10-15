@@ -1,19 +1,9 @@
-import { DOCUMENT } from '@angular/common';
+import { MembershipApi } from './membership-api';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { StudyPlanAccount } from '../pages/study-plan/study-plan-account';
-import { PLANS, PlanDefinition, PlanId } from './membership-plans';
+import { PLANS, PlanId } from './membership-plans';
 
-/**
- * DLV-209 sales (user decisions 2026-10-15): 3–4 sales a year; a promo appears only while its
- * sale runs, never before. During a sale, Pricing shows the greeting and promo plans first and
- * the regular plans read-only below.
- *
- * There is no server support for sales or price changes yet (frontend design only), so:
- * - learners never see a sale: `activeSale()` is null for them;
- * - staff (authors and admins) can start a *preview* sale and preview price changes from
- *   Admin → Sales and prices. The preview is stored in this browser only and changes nothing for
- *   anyone else. The proposed server contract is in content DLV-209 evidence.
- */
+/** Server-owned sales. The legacy service name is retained for existing consumers. */
 export type SaleTemplateId = 'holiday' | 'spring' | 'graduation' | 'engineers-day';
 
 export interface SaleTemplate {
@@ -48,95 +38,33 @@ export interface ActiveSale {
   template: SaleTemplate;
   greeting: string;
   planIds: PlanId[];
-  /** Always true today: no sale is live for learners until the server supports it. */
-  preview: true;
+  /** False for server-backed sales; retained for isolated preview fixtures. */
+  preview: boolean;
 }
-
-interface StoredSale {
-  templateId: SaleTemplateId;
-  greeting: string;
-  planIds: PlanId[];
-}
-
-const SALE_KEY = 'lookahead.sale-preview.v1';
-const PRICE_KEY = 'lookahead.price-preview.v1';
 
 @Injectable({ providedIn: 'root' })
 export class SalePreview {
   private readonly accounts = inject(StudyPlanAccount);
-  private readonly view = inject(DOCUMENT).defaultView;
-  private readonly storedSale = signal<StoredSale | null>(this.read<StoredSale>(SALE_KEY));
-  private readonly storedPrices = signal<Partial<Record<PlanId, number>>>(
-    this.read<Partial<Record<PlanId, number>>>(PRICE_KEY) ?? {},
-  );
-
-  /** Authors and admins: the only people who can preview sales and prices. */
-  readonly isStaff = computed(() => {
-    const account = this.accounts.account();
-    if (!account || this.accounts.sessionExpired()) return false;
-    return account.authorPreview === true || account.permissions?.previewDocuments === true;
-  });
-
-  /** The sale shown on this page view: a staff preview, or nothing. */
-  readonly activeSale = computed<ActiveSale | null>(() => {
-    const stored = this.storedSale();
-    if (!stored || !this.isStaff()) return null;
-    const template = SALE_TEMPLATES.find((item) => item.id === stored.templateId);
-    const planIds = stored.planIds.filter((id) => PROMO_PLAN_IDS.includes(id));
-    if (!template || !planIds.length) return null;
-    return { template, greeting: stored.greeting.trim() || template.greeting, planIds, preview: true };
-  });
-
-  /** Plan prices with any staff price preview applied; learners always get the catalog. */
-  readonly plans = computed<readonly PlanDefinition[]>(() => {
-    const overrides = this.isStaff() ? this.storedPrices() : {};
-    return PLANS.map((plan) =>
-      overrides[plan.id] !== undefined ? { ...plan, priceCents: overrides[plan.id]! } : plan,
-    );
-  });
-
-  readonly priceOverrides = computed(() => (this.isStaff() ? this.storedPrices() : {}));
-
-  startSale(templateId: SaleTemplateId, greeting: string, planIds: PlanId[]): void {
-    const sale = { templateId, greeting, planIds };
-    this.storedSale.set(sale);
-    this.write(SALE_KEY, sale);
-  }
-
-  stopSale(): void {
-    this.storedSale.set(null);
-    this.write(SALE_KEY, null);
-  }
-
-  /** Whole cents only; null clears the preview for that plan. */
-  setPrice(planId: PlanId, cents: number | null): void {
-    const next = { ...this.storedPrices() };
-    if (cents === null || !Number.isInteger(cents) || cents < 0) delete next[planId];
-    else next[planId] = cents;
-    this.storedPrices.set(next);
-    this.write(PRICE_KEY, Object.keys(next).length ? next : null);
-  }
-
-  resetPrices(): void {
-    this.storedPrices.set({});
-    this.write(PRICE_KEY, null);
-  }
-
-  private read<T>(key: string): T | null {
+  readonly api = inject(MembershipApi);
+  readonly activeSale = signal<ActiveSale | null>(null);
+  readonly plans = this.api.plans;
+  readonly priceOverrides = signal<Partial<Record<PlanId, number>>>({});
+  readonly isStaff = computed(() => this.accounts.account()?.permissions?.manageAccess === true || this.accounts.account()?.authorPreview === true);
+  private saleId: string | null = null;
+  constructor(){void this.reload();}
+  async reload(){
     try {
-      const raw = this.view?.localStorage.getItem(key);
-      return raw ? (JSON.parse(raw) as T) : null;
-    } catch {
-      return null;
-    }
+      const sale=await this.api.request<{id:string;template:SaleTemplateId;greeting:string;planIds:PlanId[]} | null>('/sales/active');
+      this.saleId=sale?.id??null;
+      const template=SALE_TEMPLATES.find(t=>t.id===sale?.template);
+      this.activeSale.set(sale&&template?{template,greeting:sale.greeting,planIds:sale.planIds,preview:false}:null);
+    } catch {this.activeSale.set(null);}
   }
-
-  private write(key: string, value: unknown): void {
-    try {
-      if (value === null) this.view?.localStorage.removeItem(key);
-      else this.view?.localStorage.setItem(key, JSON.stringify(value));
-    } catch {
-      // Storage can be unavailable (private mode); the preview then lasts for this page only.
-    }
+  async startSale(templateId:SaleTemplateId,greeting:string,planIds:PlanId[],startsAt?:string,endsAt?:string){
+    if(!startsAt||!endsAt)throw new Error('Choose the sale start and end dates.');
+    await this.api.request('/admin/sales',{template:templateId,greeting,planIds,startsAt:new Date(startsAt).toISOString(),endsAt:new Date(endsAt).toISOString()});await this.reload();
   }
+  async stopSale(){if(!this.saleId)throw new Error('No active sale.');await this.api.request('/admin/sales/'+this.saleId+'/stop',{});await this.reload();}
+  async setPrice(planId:PlanId,cents:number|null){if(cents===null||!Number.isInteger(cents)||cents<1)throw new Error('Enter a positive price in cents.');await this.api.request('/admin/membership/plans/'+planId+'/price',{priceCents:cents});await this.api.refresh();}
+  async resetPrices(){throw new Error('Set each price explicitly; purchase history is never reset.');}
 }

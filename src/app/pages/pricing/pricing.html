@@ -14,11 +14,11 @@
           [disabled]="!salePreview()"
           (click)="staffView.set('sale')"
         >
-          Sale preview
+          Sale
         </button>
       </div>
       <a class="staff-link" routerLink="/admin/sales">{{
-        salePreview() ? 'Manage the sale preview' : 'Start a sale preview'
+        salePreview() ? 'Manage the sale' : 'Start a sale'
       }}</a>
     </div>
   }
@@ -31,8 +31,8 @@
       Nothing renews automatically: you renew by buying again.
     </p>
     <p class="sample-note" role="note">
-      <strong>Sample pricing — prices are not final.</strong>
-      Checkout isn’t connected yet, so nothing can be bought or charged.
+      <strong>Local payment simulation.</strong>
+      Purchases create local access records; nothing is charged.
     </p>
   </header>
 
@@ -40,7 +40,7 @@
     <section class="pricing-section sale-section" id="sale" aria-labelledby="sale-heading">
       @if (current.preview) {
         <p class="preview-flag" role="note">
-          <strong>Sale preview.</strong> Only you see this. Learners see no sale until sales are
+          <strong>Sale.</strong> Server sale. Learners see no sale until sales are
           supported on the server.
         </p>
       }
@@ -193,9 +193,9 @@
       <p class="eyebrow">{{ card.plan.name }} · {{ card.spokenPrice }}</p>
     }
     @if (signedIn()) {
-      <h2 id="checkout-notice-title">Payment connection in progress</h2>
-      <p id="checkout-notice-description">Checkout isn’t available yet, so nothing is charged.</p>
-      <p class="notice-detail">Prices on this page are a sample and may change.</p>
+      <h2 id="checkout-notice-title">Local payment simulation</h2>
+      <p id="checkout-notice-description">This creates a real local access record using a mock payment. No money is charged.</p>
+      <p class="notice-detail">Nothing renews automatically. You must purchase again to extend access.</p>
     } @else {
       <!-- Buying needs an account (user, 2026-10-15). -->
       <h2 id="checkout-notice-title">Sign in to buy a plan</h2>
@@ -203,7 +203,13 @@
         Plans belong to an account. Sign in, then come back here to choose your plan.
       </p>
     }
+    @if(signedIn() && membershipApi.records().length){<label>Existing access <select [(ngModel)]="replacesId" (ngModelChange)="prepareQuote()"><option value="">New purchase</option>@for(record of membershipApi.records();track record.id){@if(record.status==='active'){<option [value]="record.id">{{record.planId}} · {{record.endsAt}}</option>}}</select></label>}
+    @if(quote();as estimate){<p>Price: ${{(estimate.priceCents / 100).toFixed(2)}} · Ends {{estimate.endsAt | date:'mediumDate':'UTC'}} (UTC)</p>}
+    <p role="status">{{ purchaseStatus() || membershipApi.error() }}</p>
     <div class="action-row">
+      @if (signedIn()) {
+        <button class="action-button" type="button" [disabled]="purchasing() || !membershipApi.available() || !quote() || submitted()" (click)="purchase()">Confirm simulated purchase</button>
+      }
       @if (!signedIn()) {
         <a class="action-button" routerLink="/sign-in" [queryParams]="{ returnTo: '/pricing' }">Sign in</a>
       }

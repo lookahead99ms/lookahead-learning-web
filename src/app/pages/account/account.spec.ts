@@ -13,6 +13,7 @@ it('keeps account navigation inside recognized learner routes', () => {
   expect(safeAccountReturn('/support')).toBe('/support');
   expect(safeAccountReturn('/admin')).toBe('/admin');
   expect(safeAccountReturn('/account')).toBe('/account');
+  expect(safeAccountReturn('/pricing')).toBe('/pricing');
   expect(safeAccountReturn('/delivery-plan')).toBe('/delivery-plan');
   expect(safeAccountReturn('/delivery-plan?view=roadmap')).toBe('/delivery-plan?view=roadmap');
   expect(safeAccountReturn('/')).toBe('/');

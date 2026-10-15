@@ -387,7 +387,7 @@ describe('Manage account', () => {
     );
     fixture.detectChanges();
     const note = fixture.nativeElement.querySelector('.membership-note') as HTMLElement;
-    expect(note.textContent).toContain('Paid plans aren’t on sale yet, and nothing renews automatically.');
+    expect(note.textContent).toContain('Local purchases are simulated; nothing is charged or renewed automatically.');
     expect(fixture.nativeElement.querySelector('.membership-level')?.textContent?.trim()).toBe(
       'Free account',
     );

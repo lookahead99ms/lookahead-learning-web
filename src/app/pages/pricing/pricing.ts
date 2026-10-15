@@ -1,7 +1,9 @@
-import { NgTemplateOutlet } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import { Component, ElementRef, computed, inject, signal, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
+import { MembershipApi } from '../../content/membership-api';
 import { SalePreview } from '../../content/sale-preview';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import {
@@ -16,23 +18,33 @@ import {
   pricingCards,
 } from './pricing-plans';
 
-/**
- * DLV-209: plans and prices. Everyone can see them; buying needs an account (user, 2026-10-15),
- * so a signed-out visitor's Choose asks them to sign in first. Design only: for a signed-in
- * learner every Choose opens an honest notice that checkout is not connected. The page makes no
- * requests, posts no form, loads no payment script and stores nothing.
- *
- * Sales: promo plans appear only while a sale runs, above the regular plans, which stay visible
- * but read-only. No sale is live for learners yet; staff see their own sale preview and can
- * switch between it and the regular view.
- */
+/** Server-owned catalog and explicit local mock purchases; no real payment calls. */
 @Component({
   selector: 'app-pricing',
-  imports: [PlatformHeader, RouterLink, NgTemplateOutlet],
+  imports: [DatePipe, FormsModule, PlatformHeader, RouterLink, NgTemplateOutlet],
   templateUrl: './pricing.html',
   styleUrl: './pricing.css',
 })
 export class PricingPage {
+  protected readonly membershipApi=inject(MembershipApi);
+  protected readonly purchaseStatus=signal('');
+  protected readonly purchasing=signal(false);
+  protected readonly submitted=signal(false);
+  private quoteSequence=0;
+  private purchaseKey='';
+  protected replacesId='';
+  protected readonly quote=signal<{priceCents:number;endsAt:string}|null>(null);
+  protected async prepareQuote(){
+    const sequence=++this.quoteSequence;this.quote.set(null);this.purchaseStatus.set('');this.submitted.set(false);this.purchaseKey=crypto.randomUUID();const card=this.chosen();if(!card||!this.signedIn()||!this.membershipApi.available())return;
+    try{const quote=await this.membershipApi.request<{priceCents:number;endsAt:string}>('/account/purchases/quote',{planId:card.plan.id,replacesId:this.replacesId||null,chosenCourses:[]});if(sequence===this.quoteSequence)this.quote.set(quote);}catch(error){if(sequence===this.quoteSequence)this.purchaseStatus.set(error instanceof Error?error.message:'Quote unavailable.');}
+  }
+  protected async purchase(){
+    const card=this.chosen();if(!card||this.purchasing()||!this.membershipApi.available())return;
+    this.purchasing.set(true);
+    try{const result=await this.membershipApi.buy(card.plan.id,this.purchaseKey,this.replacesId||undefined,this.quote()?.priceCents);this.submitted.set(true);this.purchaseStatus.set(['succeeded','scheduled'].includes(result.status)?'Simulated purchase completed. No money was charged. Open Manage account to see your access.':'Payment simulation: '+result.status+' ('+result.providerStatus+'). No money was charged.');}
+    catch(error){this.purchaseStatus.set(error instanceof Error?error.message:'Purchase unavailable. Retry with the same request.');}
+    finally{this.purchasing.set(false);}
+  }
   private readonly accounts = inject(StudyPlanAccount);
   private readonly sales = inject(SalePreview);
   protected readonly freeFeatures = FREE_FEATURES;
@@ -66,6 +78,7 @@ export class PricingPage {
   protected choose(plan: PricingCard, event: Event): void {
     this.trigger = event.currentTarget as HTMLElement | null;
     this.chosen.set(plan);
+    this.purchaseKey=crypto.randomUUID();this.purchaseStatus.set('');this.replacesId=this.membershipApi.records().find(r=>r.status==='active')?.id??'';void this.prepareQuote();
     const dialog = this.notice().nativeElement;
     if (!dialog.open) {
       if (typeof dialog.showModal === 'function') dialog.showModal();

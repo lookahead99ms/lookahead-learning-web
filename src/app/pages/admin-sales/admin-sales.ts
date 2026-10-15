@@ -46,6 +46,8 @@ export class AdminSalesPage {
   ];
 
   protected selectedTemplate: SaleTemplateId = this.activeSale()?.template.id ?? 'holiday';
+  protected startsAt = '';
+  protected endsAt = '';
   protected greeting = this.activeSale()?.greeting ?? SALE_TEMPLATES[0].greeting;
   protected readonly includedPlans = signal<PlanId[]>(
     this.activeSale()?.planIds ?? [...PROMO_PLAN_IDS],
@@ -55,7 +57,7 @@ export class AdminSalesPage {
   /** One row per plan: its catalog price and the price being previewed, in dollars. */
   protected readonly priceRows = computed(() => {
     const overrides = this.sales.priceOverrides();
-    return PLANS.filter((plan) => plan.id !== 'free').map((plan) => ({
+    return this.sales.plans().filter((plan) => plan.id !== 'free').map((plan) => ({
       id: plan.id,
       name: plan.name,
       group: plan.group === 'promo' ? 'Sale' : 'Regular',
@@ -75,37 +77,35 @@ export class AdminSalesPage {
     );
   }
 
-  protected startSale(): void {
+  protected async startSale(): Promise<void> {
     if (!this.includedPlans().length) {
       this.notice.set('Choose at least one sale plan.');
       return;
     }
-    this.sales.startSale(this.selectedTemplate, this.greeting, this.includedPlans());
-    this.notice.set('Sale preview started. Open Pricing to see it; only you can see it.');
+    try { await this.sales.startSale(this.selectedTemplate, this.greeting, this.includedPlans(),this.startsAt,this.endsAt); this.notice.set('Sale saved on the local server.'); } catch(error) { this.notice.set(error instanceof Error?error.message:'Sale unavailable.'); }
   }
 
-  protected stopSale(): void {
-    this.sales.stopSale();
-    this.notice.set('Sale preview stopped.');
+  protected async stopSale(): Promise<void> {
+    try { await this.sales.stopSale(); this.notice.set('Sale stopped on the local server.'); } catch(error) { this.notice.set(error instanceof Error?error.message:'Sale unavailable.'); }
   }
 
   /** Dollars as typed ("59.99"); empty clears the preview for that plan. */
-  protected setPrice(id: PlanId, value: string): void {
+  protected async setPrice(id: PlanId, value: string): Promise<void> {
     const trimmed = value.trim();
     if (!trimmed) {
-      this.sales.setPrice(id, null);
+      this.notice.set('Enter an explicit price.');
       return;
     }
     if (!/^\d{1,4}(\.\d{1,2})?$/.test(trimmed)) {
       this.notice.set('Enter a price such as 59.99.');
       return;
     }
-    this.sales.setPrice(id, Math.round(Number(trimmed) * 100));
-    this.notice.set(`Previewing ${formatUsd(Math.round(Number(trimmed) * 100))} for this plan.`);
+    try { await this.sales.setPrice(id, Math.round(Number(trimmed) * 100)); this.notice.set('Price updated for new purchases only.'); } catch(error) { this.notice.set(error instanceof Error?error.message:'Price unavailable.'); }
   }
 
   protected resetPrices(): void {
-    this.sales.resetPrices();
+    this.notice.set('Set each price explicitly.');
+    return;
     this.notice.set('Prices are back to the catalog.');
   }
 }

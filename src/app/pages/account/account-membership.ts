@@ -33,9 +33,7 @@ export interface AccountMembership {
 }
 
 /**
- * DLV-209 proposed contract: one purchase of a plan, promo or pass, as the server would report
- * it. The server has no purchase records yet, so nothing produces these today; the shape is the
- * proposal in content docs/evidence/DLV-209-sample-pricing/membership-api-proposal.md.
+ * DLV-209 server-owned access record, independent of existing course grants.
  */
 export interface AccessRecord {
   id: string;

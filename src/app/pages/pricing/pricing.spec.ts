@@ -7,6 +7,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { PricingPage } from './pricing';
 import { START_FREE_ROUTE } from './pricing-plans';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
+import { MembershipApi } from '../../content/membership-api';
 import { SalePreview } from '../../content/sale-preview';
 
 const LEARNER = { accountId: 'learner', username: 'learner@example.test', displayName: 'Learner', topicGrants: [] };
@@ -51,7 +52,7 @@ describe('Sample pricing page (DLV-209)', () => {
   it('says the prices are a sample, under one page heading', () => {
     expect(root.querySelectorAll('h1')).toHaveLength(1);
     expect(text(root.querySelector('.sample-note'))).toContain(
-      'Sample pricing — prices are not final.',
+      'Local payment simulation.',
     );
     expect(root.querySelector('.sample-note')?.getAttribute('role')).toBe('note');
     expect([...root.querySelectorAll('h2')].map(text)).toEqual([
@@ -61,7 +62,7 @@ describe('Sample pricing page (DLV-209)', () => {
       'Changing and renewing',
       'Mock interviews',
       'Questions',
-      'Payment connection in progress',
+      'Local payment simulation',
     ]);
   });
 
@@ -176,14 +177,14 @@ describe('Sample pricing page (DLV-209)', () => {
       button.click();
       fixture.detectChanges();
       expect(dialog.open).toBe(true);
-      expect(text(dialog.querySelector('h2'))).toBe('Payment connection in progress');
+      expect(text(dialog.querySelector('h2'))).toBe('Local payment simulation');
       expect(text(dialog.querySelector('#checkout-notice-description'))).toBe(
-        'Checkout isn’t available yet, so nothing is charged.',
+        'This creates a real local access record using a mock payment. No money is charged.',
       );
       expect(text(dialog.querySelector('.eyebrow'))).toContain(
         text(button).replace('Choose ', ''),
       );
-      const close = dialog.querySelector<HTMLButtonElement>('button')!;
+      const close = [...dialog.querySelectorAll<HTMLButtonElement>('button')].find(b => text(b)==='Close')!;
       expect(text(close)).toBe('Close');
       expect(document.activeElement).toBe(close);
       close.click();
@@ -220,7 +221,7 @@ describe('Sample pricing page (DLV-209)', () => {
     for (const button of chooseButtons()) {
       button.click();
       fixture.detectChanges();
-      root.querySelector<HTMLButtonElement>('dialog button')!.click();
+      [...root.querySelectorAll<HTMLButtonElement>('dialog button')].find(b=>text(b)==='Close')!.click();
       fixture.detectChanges();
     }
     http.verify();
@@ -258,7 +259,7 @@ describe('Sample pricing page (DLV-209)', () => {
   describe('sales', () => {
     function startPreviewAs(account: Record<string, unknown> | null) {
       TestBed.inject(StudyPlanAccount).account.set(account as never);
-      TestBed.inject(SalePreview).startSale('holiday', 'Happy holidays', ['annual-promo', 'interview-pass-promo']);
+      if(account?.['authorPreview']) TestBed.inject(SalePreview).activeSale.set({template:{id:'holiday',name:'Holiday sale',greeting:'Happy holidays',emoji:'🎄'},greeting:'Happy holidays',planIds:['annual-promo','interview-pass-promo'],preview:false});
       fixture.detectChanges();
     }
 
@@ -272,7 +273,7 @@ describe('Sample pricing page (DLV-209)', () => {
     it('shows staff the sale on top, promo plans with the regular price, and regular plans read-only', () => {
       startPreviewAs({ ...LEARNER, authorPreview: true });
       const sale = root.querySelector('#sale')!;
-      expect(text(sale.querySelector('.preview-flag'))).toContain('Only you see this.');
+      expect(sale.querySelector('.preview-flag')).toBeNull();
       expect(text(sale.querySelector('h2'))).toBe('Happy holidays');
       expect(text(sale.querySelector('.sale-name'))).toContain('Holiday sale');
       expect([...sale.querySelectorAll('.plan-card')].map((card) => [

@@ -2,30 +2,26 @@
 <main id="main-content" class="sales-page">
   <aside class="workspace-sidebar">
     <app-author-workspace-nav pageTitle="Sales and prices" pageId="sales" [outline]="outline">
-      <p description>Preview · Start a sale and change prices on this browser only.</p>
+      <p description>Manage local sales and prices. Payments are simulated.</p>
     </app-author-workspace-nav>
   </aside>
   <div class="workspace-content">
     <app-author-doc-hero pageId="sales" />
 
-    <p class="status-note" role="note">
-      <strong>Preview only.</strong> Sales and price changes are not stored on the server yet, so
-      everything here stays on this browser. Only you see the result on
-      <a routerLink="/pricing">Pricing</a>; learners see the regular prices and no sale.
-    </p>
+    <p class="status-note" role="note">Sales and prices are stored on the local server. Only the owner can change them. Payment simulation charges nothing.</p>
     <p class="notice" role="status" aria-live="polite">{{ notice() }}</p>
 
-    <section class="doc-section" id="sale" aria-labelledby="sale-heading">
+    <label>Sale starts <input type="datetime-local" [(ngModel)]="startsAt" /></label><label>Sale ends <input type="datetime-local" [(ngModel)]="endsAt" /></label><section class="doc-section" id="sale" aria-labelledby="sale-heading">
       <h2 id="sale-heading">Sale</h2>
       @if (activeSale(); as sale) {
         <div class="sale-state running">
           <p>
             <span aria-hidden="true">{{ sale.template.emoji }}</span>
-            <strong>{{ sale.template.name }}</strong> preview is on: “{{ sale.greeting }}”.
+            <strong>{{ sale.template.name }}</strong> is active: “{{ sale.greeting }}”.
           </p>
           <div class="actions">
             <a class="action-link" routerLink="/pricing">See it on Pricing</a>
-            <button type="button" class="action-link" (click)="stopSale()">Stop sale preview</button>
+            <button type="button" class="action-link" (click)="stopSale()">Stop sale</button>
           </div>
         </div>
       } @else {
@@ -68,14 +64,14 @@
         }
       </fieldset>
       <button type="button" class="action-button" (click)="startSale()">
-        {{ activeSale() ? 'Update sale preview' : 'Start sale preview' }}
+        Start sale
       </button>
     </section>
 
     <section class="doc-section" id="prices" aria-labelledby="prices-heading">
       <h2 id="prices-heading">Default prices</h2>
       <p class="section-lede">
-        Type a new price to preview it on Pricing. Leave a box empty to use the catalog price.
+        Set a new price for future purchases. Existing purchases keep their recorded prices.
       </p>
       <div class="table-wrap" tabindex="0" role="region" aria-labelledby="prices-heading">
         <table class="price-table">
@@ -84,7 +80,7 @@
               <th scope="col">Plan</th>
               <th scope="col">Type</th>
               <th scope="col">Catalog price</th>
-              <th scope="col">Preview price (USD)</th>
+              <th scope="col">New price (USD)</th>
             </tr>
           </thead>
           <tbody>
@@ -98,7 +94,7 @@
                     type="text"
                     inputmode="decimal"
                     [value]="row.preview"
-                    [attr.aria-label]="'Preview price for ' + row.name"
+                    [attr.aria-label]="'New price for ' + row.name"
                     placeholder="—"
                     (change)="setPrice(row.id, $any($event.target).value)"
                   />
@@ -108,16 +104,12 @@
           </tbody>
         </table>
       </div>
-      <button type="button" class="action-link" (click)="resetPrices()">Reset all prices</button>
+
     </section>
 
     <section class="doc-section" id="not-built" aria-labelledby="not-built-heading">
       <h2 id="not-built-heading">What is not built</h2>
-      <ul class="gaps">
-        <li>Server storage for sales and prices, so a sale reaches learners. Proposed API: content DLV-209 evidence, <span class="mono">membership-api-proposal.md</span>.</li>
-        <li>Start and end dates that switch a sale on and off by themselves.</li>
-        <li>Checkout. Nothing can be bought or charged.</li>
-      </ul>
+      <ul class="gaps"><li>Real payments, refunds and tax handling are not enabled.</li><li>Course Pass duration and notification delivery remain pending.</li>      </ul>
       <p class="section-lede">See also <a routerLink="/admin/plans">Plans and purchases</a>.</p>
     </section>
   </div>

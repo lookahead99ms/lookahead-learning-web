@@ -8,6 +8,7 @@ import { registrationCountries, registrationCountryCode } from './countries';
 import { AccountSettings } from './account-settings';
 import { ACCOUNT_SETTINGS_CLIENT } from './account-settings-client';
 import { AccountStudyPlans } from './account-study-plans';
+import { MembershipApi } from '../../content/membership-api';
 import { accountMembership } from './account-membership';
 import { ActiveSignIns } from './active-sign-ins';
 import { ACTIVE_SIGN_INS_CLIENT } from './active-sign-ins-client';
@@ -102,7 +103,8 @@ export class AccountPage {
   protected readonly savedPlanCount = computed(() =>
     this.store.planSummariesState() === 'ready' ? this.store.plans().length : null,
   );
-  protected readonly membership = accountMembership;
+  private readonly membershipApi=inject(MembershipApi);
+  protected readonly membership = (account: Parameters<typeof accountMembership>[0]) => accountMembership(account,this.membershipApi.records());
   // The account rail takes the left edge, so the page statements and sidebars stay off this page.
   protected readonly sidebarContext: PageSidebarContextValue = { excluded: true };
   private readonly document = inject(DOCUMENT);

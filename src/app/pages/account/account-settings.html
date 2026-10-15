@@ -124,6 +124,7 @@
       <h2 id="membership-heading">Membership</h2>
       <span class="membership-level">{{ plan.level }}</span>
     </div>
+    <p role="status">{{membershipApi.error()}}</p>
     <p class="membership-scope">
       @if (plan.level === 'Author') {
         Full curriculum access for authoring and review@if (plan.courseCount) {: {{ plan.courseCount }} {{ plan.courseCount === 1 ? 'course' : 'courses' }} across {{ joinPaths(plan.paths) }}}.
@@ -142,7 +143,7 @@
       @if (store.authOptions()?.managedLogin) {
         For more course access, contact the account administrator.
       } @else {
-        Paid plans aren’t on sale yet, and nothing renews automatically.
+        Local purchases are simulated; nothing is charged or renewed automatically.
       }
     </p>
     @if (!store.authOptions()?.managedLogin) {

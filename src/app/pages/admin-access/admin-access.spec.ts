@@ -117,8 +117,8 @@ describe('People and access layout', () => {
     review.detectChanges(); await review.whenStable(); review.detectChanges();
     const reviewRoot = review.nativeElement as HTMLElement;
     const panel = reviewRoot.querySelector('.review-side .membership-panel')!;
-    expect(panel.textContent).toContain('None recorded.');
-    expect(panel.textContent).toContain('Not tracked.');
+    expect(panel.textContent).toContain('Purchases require an existing account.');
+    expect(panel.querySelector('app-admin-memberships')).toBeNull();
     expect(panel.textContent).not.toMatch(/sent|delivered|scheduled/i);
     expect([...reviewRoot.querySelectorAll('.review-main legend')].map(legend => legend.textContent?.trim())).toEqual(['Roles', 'Course access grants']);
   });

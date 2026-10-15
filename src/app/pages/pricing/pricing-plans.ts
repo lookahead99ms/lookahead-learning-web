@@ -157,6 +157,6 @@ export const PRICING_FAQ: readonly PricingQuestion[] = [
   {
     question: 'Can I buy a plan today?',
     answer:
-      'Not yet. We are still connecting payments, so checkout is not available and nothing is charged. Buying will need a free account. You can start free now.',
+      'Local development supports simulated purchases after sign-in. No money is charged. Real payments are not enabled.',
   },
 ];

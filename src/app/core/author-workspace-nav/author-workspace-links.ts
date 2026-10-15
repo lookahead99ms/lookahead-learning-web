@@ -70,7 +70,7 @@ export const authorDocumentationGroups: readonly AuthorDocumentationGroup[] = [
             id: 'sales',
             label: 'Sales and prices',
             href: '/admin/sales',
-            description: 'Start a sale and change prices as a preview on this browser.',
+            description: 'Manage server-owned sales and prices. Local payments are simulated.',
             icon: '🎉',
           },
         ],

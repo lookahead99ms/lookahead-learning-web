@@ -2,16 +2,14 @@
 <main id="main-content" class="plans-page">
   <aside class="workspace-sidebar">
     <app-author-workspace-nav pageTitle="Plans and purchases" pageId="plans" [outline]="outline">
-      <p description>Reference · The agreed plan catalog and where learners buy. Nothing here is sold yet.</p>
+      <p description>Reference · The agreed plan catalog and where learners buy. Local mock payments only.</p>
     </app-author-workspace-nav>
   </aside>
   <div class="workspace-content">
     <app-author-doc-hero pageId="plans" />
 
     <p class="status-note" role="note">
-      <strong>Design only.</strong> Payment is not connected and the server has no plans or purchases
-      yet, so nobody can buy and nothing is charged. Access still comes from course grants set on
-      People and access.
+      <strong>Local mock payments.</strong> The server stores purchases and catalog access. No money is charged. Existing course grants remain separate.
     </p>
 
     <section class="doc-section" id="how-to-review" aria-labelledby="how-to-review-heading">
@@ -24,19 +22,18 @@
           <strong>Choose a plan</strong> in Manage account. The header has no pricing link.
         </li>
         <li>
-          Start a sale preview on <a routerLink="/admin/sales">Sales and prices</a>, then open
-          Pricing: the sale is on top and the regular plans are read-only. Only you see it.
+          Start a sale on <a routerLink="/admin/sales">Sales and prices</a>, then open
+          Pricing: the sale is on top and the regular plans are read-only. The server publishes it during its configured dates.
         </li>
         <li>
           Open <a routerLink="/pricing">Pricing</a> and select a <strong>Choose …</strong> button to
-          see the checkout notice.
+          review and confirm a simulated purchase.
         </li>
         <li>
-          Open <a routerLink="/account" fragment="membership">Manage account → Membership</a>. Your
-          staff account has no purchases, so it shows your access, not a plan; the
-          <a href="#buyer-preview">sample below</a> shows what a buyer would see.
+          Open <a routerLink="/account" fragment="membership">Manage account → Membership</a>. The
+          <a routerLink="/admin/plans" fragment="buyer-preview">sample below</a> shows what a buyer would see.
         </li>
-        <li>Check the <a href="#configured-plans">configured plans</a> and the change rules.</li>
+        <li>Check the <a routerLink="/admin/plans" fragment="configured-plans">configured plans</a> and the change rules.</li>
       </ol>
     </section>
 
@@ -64,7 +61,7 @@
       <h2 id="buyer-preview-heading">What a buyer sees in Manage account</h2>
       <p class="section-lede">
         <strong>Sample data, not a real account.</strong> The Membership section of Manage account
-        renders these rows from purchase records once the server sends them. Renew and Upgrade lead
+        renders these rows from server purchase records. Renew and Upgrade lead
         to Pricing.
       </p>
       <div class="preview-frame">
@@ -74,7 +71,7 @@
     </section>
 
     <section class="doc-section" id="configured-plans" aria-labelledby="configured-plans-heading">
-      <h2 id="configured-plans-heading">Configured plans</h2>
+      <h2 id="configured-plans-heading">Configured plans</h2><p role="status">{{api.error()}}</p>
       <p class="section-lede">
         The one catalog Pricing, Manage account and People and access read. These are definitions,
         not purchases or access grants.
@@ -93,7 +90,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (row of rows; track row.id) {
+            @for (row of rows(); track row.id) {
               <tr [attr.data-plan]="row.id">
                 <th scope="row">{{ row.name }}</th>
                 <td>{{ row.group }}</td>
@@ -124,10 +121,10 @@
     <section class="doc-section" id="not-built" aria-labelledby="not-built-heading">
       <h2 id="not-built-heading">Not built yet</h2>
       <ul class="gaps">
-        <li><strong>Server plans and purchases.</strong> Proposed API: plan catalog, a learner’s purchases, and an owner view (DLV-209 evidence, <span class="mono">membership-api-proposal.md</span>).</li>
-        <li><strong>Checkout.</strong> Stripe is chosen; nothing is connected.</li>
+
+        <li><strong>Real payments.</strong> Only the local mock provider is enabled.</li>
         <li><strong>Course Pass course picker.</strong> Waits for the Course Pass length.</li>
-        <li><strong>Live sales.</strong> Sales and price changes are previews on one browser until the server stores them.</li>
+        <li><strong>Discount eligibility.</strong> Student and regional verification rules await a decision.</li>
         <li><strong>Expiry reminders.</strong> Schedule and channel (DLV-717).</li>
       </ul>
     </section>

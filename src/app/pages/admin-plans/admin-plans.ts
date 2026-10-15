@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { AuthorAdminMenu } from '../../core/author-workspace-nav/author-admin-menu';
@@ -7,6 +7,7 @@ import {
   AuthorOutlineItem,
   AuthorWorkspaceNav,
 } from '../../core/author-workspace-nav/author-workspace-nav';
+import { MembershipApi } from '../../content/membership-api';
 import { planCatalogRows } from '../../content/membership-plans';
 import { PLAN_RULES } from '../pricing/pricing-plans';
 import { AccountAccessRecords } from '../account/account-access-records';
@@ -42,21 +43,21 @@ export const PURCHASE_STEPS: readonly PurchaseStep[] = [
     built: false,
   },
   {
-    title: 'Pay at checkout (Stripe)',
+    title: 'Confirm a local mock payment',
     detail:
-      'Not connected. Today every Choose button opens “Payment connection in progress”, and nothing is charged.',
-    built: false,
+      'Local mock checkout is connected. No real Stripe requests or charges are made.',
+    built: true,
   },
   {
     title: 'The server records the purchase and opens the courses',
     detail:
-      'Not built. The server has no plans or purchases yet; it grants access only through course grants set on People and access.',
-    built: false,
+      'Local server stores purchases and opens catalog access atomically after mock payment success. Existing staff grants remain separate.',
+    built: true,
   },
   {
     title: 'See it in Manage account, with Renew and Upgrade',
     detail:
-      'Built in the web app: each purchase shows what it includes, price paid, discount, dates and “Expires … · Manual renewal”. It appears once the server sends purchase records; the preview below uses sample data.',
+      'Built in the web app: each purchase shows what it includes, price paid, discount, dates and “Expires … · Manual renewal”. Manage Account reads server purchase records; the preview below is labelled sample data.',
     built: true,
     link: { label: 'Open Manage account', href: '/account' },
   },
@@ -122,7 +123,8 @@ const SAMPLE_RECORDS: readonly AccessRecord[] = [
 })
 export class AdminPlansPage {
   protected readonly steps = PURCHASE_STEPS;
-  protected readonly rows = planCatalogRows();
+  protected readonly api=inject(MembershipApi);
+  protected readonly rows = computed(()=>planCatalogRows(this.api.plans()));
   protected readonly rules = PLAN_RULES;
   protected readonly sampleRecords = SAMPLE_RECORDS.map((record) => accessRecordView(record)!);
   protected readonly outline: readonly AuthorOutlineItem[] = [

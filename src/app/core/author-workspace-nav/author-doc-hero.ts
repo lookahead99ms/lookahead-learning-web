@@ -20,7 +20,7 @@ import { authorDocumentationGroups } from './author-workspace-links';
           <p class="hero-description">{{ current.page.description }}</p>
           <ul class="hero-facts" aria-label="About this page">
             <li><span aria-hidden="true">👥</span> {{ current.group.reader }}</li>
-            <li><span aria-hidden="true">👁️</span> Read-only</li>
+            <li><span aria-hidden="true">👁️</span> {{ pageId() === 'sales' ? 'Owner-managed changes' : 'Read-only' }}</li>
           </ul>
         </div>
       </header>
