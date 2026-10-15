@@ -120,6 +120,34 @@ describe('Operations author view', () => {
     expect(panel.compareDocumentPosition(footer) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(content.lastElementChild).toBe(footer);
   });
+  it('moves through a split reference with a section row and previous and next links', async () => {
+    TestBed.overrideProvider(ActivatedRoute, {
+      useValue: { snapshot: { data: { authorDocument: 'aws-dev-budget' } } },
+    });
+    load.mockResolvedValue({ ...reference, id: 'aws-dev-budget' });
+    const fixture = await create();
+    const content = fixture.nativeElement.querySelector('.workspace-content') as HTMLElement;
+    expect(load).toHaveBeenCalledWith('aws-dev-budget');
+    expect(content.querySelector('.hero-group')!.textContent).toContain('AWS deployment');
+    const section = content.querySelector('nav.section-pages') as HTMLElement;
+    expect(section.getAttribute('aria-label')).toBe('AWS deployment section pages');
+    expect(section.querySelector('.section-label')!.textContent).toContain('page 6 of 13');
+    const labels = [...section.querySelectorAll('a')].map((link) => link.textContent!.trim());
+    expect(labels[0]).toBe('Overview');
+    expect(labels).toContain('DEV budget');
+    expect(section.querySelector('a[aria-current="page"]')!.getAttribute('href')).toBe('/admin/aws-dev-budget');
+    const steps = content.querySelector('nav.section-steps') as HTMLElement;
+    expect(steps.querySelector('.section-previous')!.getAttribute('href')).toBe('/admin/aws-dev-permissions');
+    expect(steps.querySelector('.section-next')!.getAttribute('href')).toBe('/admin/aws-dev-status');
+    expect(steps.querySelector('.section-previous strong')!.textContent).toBe('DEV permissions');
+  });
+
+  it('shows no section row on a standalone reference', async () => {
+    const fixture = await create();
+    expect(fixture.nativeElement.querySelector('nav.section-pages')).toBeNull();
+    expect(fixture.nativeElement.querySelector('nav.section-steps')).toBeNull();
+  });
+
   it('names inline guide links plainly outside Operations', async () => {
     TestBed.overrideProvider(ActivatedRoute, {
       useValue: { snapshot: { data: { authorDocument: 'local-development' } } },

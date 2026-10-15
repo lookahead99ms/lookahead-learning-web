@@ -362,3 +362,93 @@ a.setup-download small {
     gap: 4px;
   }
 }
+
+/* Long references are split into a section of sub-pages; this row moves between them. */
+.section-pages {
+  display: block;
+  margin-block: 16px 4px;
+}
+.section-label {
+  margin: 0 0 8px;
+  color: var(--text-subtle);
+  font-size: 0.74rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.section-pages ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.section-pages a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 4px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--accent-link);
+  font-size: 0.84rem;
+  font-weight: 650;
+  text-decoration: none;
+}
+.section-pages a:hover {
+  border-color: var(--accent-strong);
+  background: var(--surface-muted);
+}
+.section-pages a:focus-visible,
+.section-steps a:focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 2px;
+}
+.section-pages a[aria-current='page'] {
+  border-color: var(--accent-strong);
+  background: var(--accent-strong);
+  color: var(--accent-on-primary);
+}
+.section-steps {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-block: 20px;
+}
+.section-steps a {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text-strong);
+  text-decoration: none;
+}
+.section-steps a:hover {
+  border-color: var(--accent-strong);
+}
+.section-steps .section-next {
+  grid-column: 2;
+  text-align: end;
+}
+.step-direction {
+  color: var(--text-subtle);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+:host-context([dir='rtl']) .step-arrow {
+  display: inline-block;
+  transform: scaleX(-1);
+}
+@media (max-width: 600px) {
+  .section-steps {
+    grid-template-columns: 1fr;
+  }
+  .section-steps .section-next {
+    grid-column: 1;
+  }
+}

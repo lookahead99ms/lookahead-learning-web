@@ -19,9 +19,23 @@ const documentIds = new Set([
   'screen-names',
   'access-checks',
   'authentication',
+  'authentication-walkthrough',
   'aws-deployment',
+  'aws-dev-plan',
+  'aws-dev-decisions',
+  'aws-dev-operations',
+  'aws-dev-permissions',
+  'aws-dev-budget',
+  'aws-dev-status',
+  'aws-dev-setup',
+  'aws-dev-workflow',
+  'aws-candidate-design',
+  'aws-candidate-files',
+  'aws-candidate-commands',
+  'aws-candidate-updates',
   'release-gates',
   'production-support',
+  'support-runbooks',
 ]);
 // Keep navigation bounded while accepting the longest reference (AWS deployment).
 const maxDocumentSections = 32;
@@ -85,7 +99,8 @@ export function parseAuthorDocument(value: unknown, id: string): AuthorDocument 
   if (!documentIds.has(id)) throw new AuthorDocumentError('invalid');
   const manifest = object(value);
   if (manifest['schemaVersion'] !== 1) throw new AuthorDocumentError('invalid');
-  const entries = list(manifest['documents'], 20).map(object);
+  // Sub-pages split long references, so the manifest holds more documents than the menu groups.
+  const entries = list(manifest['documents'], 40).map(object);
   if (new Set(entries.map((entry) => entry['id'])).size !== entries.length)
     throw new AuthorDocumentError('invalid');
   const entry = entries.find((entry) => entry['id'] === id);

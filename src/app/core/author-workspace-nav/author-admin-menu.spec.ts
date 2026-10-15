@@ -65,6 +65,37 @@ describe('AuthorAdminMenu', () => {
     expect(admin.compareDocumentPosition(docs) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
+  it("nests the open section's sub-pages under their parent and marks the parent as the section", () => {
+    const root = render('aws-dev-budget').nativeElement as HTMLElement;
+    const parent = root.querySelector<HTMLAnchorElement>('.documentation-links a[href="/admin/aws-deployment"]')!;
+    expect(parent.getAttribute('aria-current')).toBe('true');
+    const nested = parent.closest('li')!.querySelector('.subpages')!;
+    expect(nested.getAttribute('aria-label')).toBe('AWS deployment pages');
+    expect(hrefs(nested as HTMLElement, 'a')).toEqual([
+      '/admin/aws-dev-plan',
+      '/admin/aws-dev-decisions',
+      '/admin/aws-dev-operations',
+      '/admin/aws-dev-permissions',
+      '/admin/aws-dev-budget',
+      '/admin/aws-dev-status',
+      '/admin/aws-dev-setup',
+      '/admin/aws-dev-workflow',
+      '/admin/aws-candidate-design',
+      '/admin/aws-candidate-files',
+      '/admin/aws-candidate-commands',
+      '/admin/aws-candidate-updates',
+    ]);
+    expect(hrefs(root, '[aria-current="page"]')).toEqual(['/admin/aws-dev-budget']);
+    // Other sections stay collapsed to their parent link.
+    expect(root.querySelectorAll('.subpages')).toHaveLength(1);
+  });
+
+  it("shows a section's sub-pages on its parent page too", () => {
+    const root = render('production-support').nativeElement as HTMLElement;
+    expect(hrefs(root, '.subpages a')).toEqual(['/admin/support-runbooks']);
+    expect(hrefs(root, '[aria-current="page"]')).toEqual(['/admin/production-support']);
+  });
+
   it('keeps icons decorative and collapses behind its Admin toggle', () => {
     const fixture = render('operations');
     const root = fixture.nativeElement as HTMLElement;

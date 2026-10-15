@@ -43,6 +43,9 @@
               <span class="page-icon" aria-hidden="true">{{ page.icon }}</span>
               <strong>{{ page.label }}</strong>
               <span class="page-description">{{ page.description }}</span>
+              @if (page.children?.length; as more) {
+                <span class="page-subpages">Plus {{ more }} sub-page{{ more === 1 ? '' : 's' }}</span>
+              }
               <span class="page-open" aria-hidden="true">Open →</span>
             </a>
           }
