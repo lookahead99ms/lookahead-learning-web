@@ -13,6 +13,13 @@ export const BLAZE_COURSE_GROUPS: BlazeCourseGroup[] = [
     featuredLabel: 'New: start here',
   },
   {
+    id: 'frontend-design',
+    title: 'Frontend Design',
+    description:
+      'Design the client side of large products: components, state, data loading, rendering speed and accessibility.',
+    courseIds: ['frontend-system-design'],
+  },
+  {
     id: 'architecture-production',
     title: 'Production and Cloud',
     description:

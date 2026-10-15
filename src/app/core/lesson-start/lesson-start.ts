@@ -21,7 +21,7 @@ const LANGUAGE_NAMES: Record<string, string> = { java: 'Java', python: 'Python',
       <ul class="start-prerequisites">
         @for (item of prerequisites(); track item.href) {
           <li>
-            <a [routerLink]="item.href">{{ item.title }}</a>
+            <a class="action-chip" [routerLink]="item.href">{{ item.title }}</a>
           </li>
         }
       </ul>
@@ -105,11 +105,14 @@ const LANGUAGE_NAMES: Record<string, string> = { java: 'Java', python: 'Python',
         margin: 1rem 0 0.4rem;
         font-size: 0.95rem;
       }
+      /* DLV-937: each lesson to know first is a chip, not a bare underlined title. */
       .start-prerequisites {
-        display: grid;
-        gap: 6px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
         margin: 0;
-        padding-left: 1.2rem;
+        padding: 0;
+        list-style: none;
       }
       .run-locally {
         margin-top: 1rem;

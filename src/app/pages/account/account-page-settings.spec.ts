@@ -123,7 +123,7 @@ describe('Account page management integration', () => {
     expect(element.textContent).toContain('Session progress is not available yet.');
     expect(
       [...element.querySelectorAll('.account-footer a')].map((a) => a.getAttribute('href')),
-    ).toEqual(['/learn#courses', '/study-plan', '/search']);
+    ).toEqual(['/learn#courses', '/search']);
     expect(requests.filter((request) => request.path.includes('/plans'))).toEqual([
       { path: '/bff/api/v1/plans?limit=100', body: undefined },
     ]);

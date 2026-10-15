@@ -264,3 +264,9 @@ p {
     padding: 16px;
   }
 }
+
+.page-subpages {
+  color: var(--text-subtle);
+  font-size: 0.8rem;
+  font-weight: 650;
+}

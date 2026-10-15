@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A tech lead sends a design doc that opens with the decision; its open questions turn into checks and three approvers sign off one after another">
+<style>
+.tl-dd-loop{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-6.4s;animation-timing-function:ease-in-out}
+.tl-dd-send{animation-name:tl-dd-send}
+.tl-dd-out1{animation-name:tl-dd-out1}
+.tl-dd-out2{animation-name:tl-dd-out2}
+.tl-dd-out3{animation-name:tl-dd-out3}
+.tl-dd-open{animation-name:tl-dd-open}
+.tl-dd-done{animation-name:tl-dd-done}
+.tl-dd-ok1{animation-name:tl-dd-ok1}
+.tl-dd-ok2{animation-name:tl-dd-ok2}
+.tl-dd-ok3{animation-name:tl-dd-ok3}
+@keyframes tl-dd-send{0%{transform:translate(0,0);opacity:0}3%{opacity:1}16%{transform:translate(30px,0);opacity:1}19%,100%{transform:translate(30px,0);opacity:0}}
+@keyframes tl-dd-out1{0%,38%{transform:translate(0,0);opacity:0}40%{opacity:1}52%{transform:translate(66px,-50px);opacity:1}55%,100%{transform:translate(66px,-50px);opacity:0}}
+@keyframes tl-dd-out2{0%,46%{transform:translate(0,0);opacity:0}48%{opacity:1}60%{transform:translate(66px,0);opacity:1}63%,100%{transform:translate(66px,0);opacity:0}}
+@keyframes tl-dd-out3{0%,54%{transform:translate(0,0);opacity:0}56%{opacity:1}68%{transform:translate(66px,50px);opacity:1}71%,100%{transform:translate(66px,50px);opacity:0}}
+@keyframes tl-dd-open{0%,26%{opacity:1}34%,94%{opacity:0}100%{opacity:1}}
+@keyframes tl-dd-done{0%,26%{opacity:0}34%,92%{opacity:1}98%,100%{opacity:0}}
+@keyframes tl-dd-ok1{0%,53%{opacity:0;transform:scale(.4)}57%,92%{opacity:1;transform:scale(1)}98%,100%{opacity:0}}
+@keyframes tl-dd-ok2{0%,61%{opacity:0;transform:scale(.4)}65%,92%{opacity:1;transform:scale(1)}98%,100%{opacity:0}}
+@keyframes tl-dd-ok3{0%,69%{opacity:0;transform:scale(.4)}73%,92%{opacity:1;transform:scale(1)}98%,100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.tl-dd-loop{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g fill="var(--scene-ink,#102a33)" opacity=".09"><ellipse cx="44" cy="132" rx="36" ry="4"/><ellipse cx="140" cy="156" rx="44" ry="5"/><ellipse cx="262" cy="58" rx="20" ry="3"/><ellipse cx="262" cy="108" rx="20" ry="3"/><ellipse cx="262" cy="158" rx="20" ry="3"/></g>
+<circle cx="44" cy="66" r="12" fill="var(--scene-accent,#006c73)"/>
+<path d="M24 100c0-14 9-20 20-20s20 6 20 20z" fill="var(--scene-accent,#006c73)"/>
+<rect x="20" y="92" width="48" height="32" rx="3" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-ink,#102a33)" stroke-width="1.5"/>
+<rect x="20" y="92" width="48" height="32" rx="3" fill="var(--scene-ink,#102a33)" opacity=".08"/>
+<rect x="12" y="124" width="64" height="5" rx="2" fill="var(--scene-ink,#102a33)" opacity=".2"/>
+<path d="M70 108H98" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="3 4"/>
+<circle class="tl-dd-loop tl-dd-send" cx="68" cy="108" r="4" fill="var(--scene-accent,#006c73)"/>
+<path d="M102 30H160L180 50V148a4 4 0 0 1-4 4H106a4 4 0 0 1-4-4V34a4 4 0 0 1 4-4Z" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2" stroke-linejoin="round"/>
+<path d="M160 30V50H180" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-ink,#102a33)" stroke-width="2" stroke-linejoin="round"/>
+<rect x="110" y="40" width="46" height="24" rx="4" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2"/>
+<rect x="116" y="47" width="34" height="4" rx="2" fill="var(--scene-accent,#006c73)"/>
+<rect x="116" y="55" width="24" height="4" rx="2" fill="var(--scene-accent,#006c73)"/>
+<g fill="var(--scene-line,#cfdfdc)"><rect x="128" y="74" width="42" height="5" rx="2.5"/><rect x="128" y="88" width="36" height="5" rx="2.5"/><rect x="110" y="138" width="56" height="4" rx="2"/></g>
+<g class="tl-dd-loop tl-dd-open"><rect x="110" y="70" width="13" height="13" rx="3" fill="var(--scene-warn,#a15c00)"/><rect x="110" y="84" width="13" height="13" rx="3" fill="var(--scene-warn,#a15c00)"/>
+<text x="116.5" y="80.5" text-anchor="middle" font-size="11" font-weight="700" fill="var(--scene-card,#fff)">?</text><text x="116.5" y="94.5" text-anchor="middle" font-size="11" font-weight="700" fill="var(--scene-card,#fff)">?</text></g>
+<g class="tl-dd-loop tl-dd-done"><rect x="110" y="70" width="13" height="13" rx="3" fill="var(--scene-good,#1f7a4d)"/><rect x="110" y="84" width="13" height="13" rx="3" fill="var(--scene-good,#1f7a4d)"/>
+<path d="M113 76.5l2.5 2.5 4.5-5M113 90.5l2.5 2.5 4.5-5" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g stroke="var(--scene-ink,#102a33)" stroke-width="1.5" fill="var(--scene-card,#fff)"><rect x="112" y="108" width="14" height="10" rx="2"/><rect x="134" y="108" width="14" height="10" rx="2"/><rect x="156" y="108" width="14" height="10" rx="2" fill="var(--scene-accent-soft,#dcefed)"/></g>
+<path d="M126 113h8M148 113h8" stroke="var(--scene-ink,#102a33)" stroke-width="1.5"/>
+<rect x="112" y="124" width="44" height="4" rx="2" fill="var(--scene-muted,#536970)" opacity=".6"/>
+<path d="M182 90L246 42M182 90H246M182 90L246 140" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="3 4" fill="none"/>
+<circle class="tl-dd-loop tl-dd-out1" cx="182" cy="90" r="4" fill="var(--scene-accent,#006c73)"/>
+<circle class="tl-dd-loop tl-dd-out2" cx="182" cy="90" r="4" fill="var(--scene-accent,#006c73)"/>
+<circle class="tl-dd-loop tl-dd-out3" cx="182" cy="90" r="4" fill="var(--scene-accent,#006c73)"/>
+<g fill="var(--scene-link,#2f6fb3)"><circle cx="262" cy="32" r="9"/><path d="M248 56c0-10 6-14 14-14s14 4 14 14z"/></g>
+<g fill="var(--scene-grow,#b8457a)"><circle cx="262" cy="82" r="9"/><path d="M248 106c0-10 6-14 14-14s14 4 14 14z"/></g>
+<g fill="var(--scene-ahead,#2f6fb3)"><circle cx="262" cy="132" r="9"/><path d="M248 156c0-10 6-14 14-14s14 4 14 14z"/></g>
+<g class="tl-dd-loop tl-dd-ok1" style="transform-origin:292px 40px"><circle cx="292" cy="40" r="9" fill="var(--scene-good,#1f7a4d)"/><path d="M287.5 40l3 3 5-6" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g class="tl-dd-loop tl-dd-ok2" style="transform-origin:292px 90px"><circle cx="292" cy="90" r="9" fill="var(--scene-good,#1f7a4d)"/><path d="M287.5 90l3 3 5-6" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g class="tl-dd-loop tl-dd-ok3" style="transform-origin:292px 140px"><circle cx="292" cy="140" r="9" fill="var(--scene-good,#1f7a4d)"/><path d="M287.5 140l3 3 5-6" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+</svg>

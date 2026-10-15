@@ -1,0 +1,236 @@
+<app-platform-header />
+<main id="main-content" class="pricing-page">
+  @if (isStaff()) {
+    <!-- Staff only: compare the sale preview with the regular view. Learners never see this. -->
+    <div class="staff-bar" role="group" aria-label="Staff view">
+      <span class="staff-label">Staff view</span>
+      <div class="view-switch">
+        <button type="button" [attr.aria-pressed]="!sale()" (click)="staffView.set('regular')">
+          Regular prices
+        </button>
+        <button
+          type="button"
+          [attr.aria-pressed]="!!sale()"
+          [disabled]="!salePreview()"
+          (click)="staffView.set('sale')"
+        >
+          Sale preview
+        </button>
+      </div>
+      <a class="staff-link" routerLink="/admin/sales">{{
+        salePreview() ? 'Manage the sale preview' : 'Start a sale preview'
+      }}</a>
+    </div>
+  }
+
+  <header class="pricing-hero" data-signature-column>
+    <p class="eyebrow">Plans and pricing</p>
+    <h1>Start free. Pay for the catalogs you need.</h1>
+    <p class="lede">
+      Open lessons need no account. Yearly plans open Learn, Grow or both, and Complete adds Blaze.
+      Nothing renews automatically: you renew by buying again.
+    </p>
+    <p class="sample-note" role="note">
+      <strong>Sample pricing — prices are not final.</strong>
+      Checkout isn’t connected yet, so nothing can be bought or charged.
+    </p>
+  </header>
+
+  @if (sale(); as current) {
+    <section class="pricing-section sale-section" id="sale" aria-labelledby="sale-heading">
+      @if (current.preview) {
+        <p class="preview-flag" role="note">
+          <strong>Sale preview.</strong> Only you see this. Learners see no sale until sales are
+          supported on the server.
+        </p>
+      }
+      <p class="sale-name">
+        <span aria-hidden="true">{{ current.template.emoji }}</span> {{ current.template.name }}
+      </p>
+      <h2 id="sale-heading">{{ current.greeting }}</h2>
+      <p class="section-lede">
+        Sale prices for all of Learn, Grow and Blaze, for a limited time. Regular prices are below.
+      </p>
+      <ul class="plan-grid" aria-label="Sale plans">
+        @for (card of promos(); track card.plan.id) {
+          <ng-container *ngTemplateOutlet="planCard; context: { $implicit: card, readOnly: false }" />
+        }
+      </ul>
+    </section>
+  }
+
+  <section class="pricing-section free-plan" aria-labelledby="free-heading">
+    <div class="free-intro">
+      <h2 id="free-heading">Free</h2>
+      <p class="plan-price"><span class="amount">$0</span></p>
+      <p class="section-lede">What a free account gets.</p>
+      <a class="action-link" [routerLink]="startFree">Start free</a>
+    </div>
+    <ul class="free-features">
+      @for (feature of freeFeatures; track feature.title) {
+        <li>
+          <span class="check" aria-hidden="true"></span>
+          <span><strong>{{ feature.title }}</strong> {{ feature.detail }}</span>
+        </li>
+      }
+    </ul>
+  </section>
+
+  <section class="pricing-section" [class.read-only]="!!sale()" aria-labelledby="yearly-heading">
+    <h2 id="yearly-heading">Yearly plans</h2>
+    <p class="section-lede">
+      @if (sale()) {
+        Regular prices, for comparison. You can choose them again after the sale.
+      } @else {
+        One year of access per purchase, with manual renewal.
+      }
+    </p>
+    <ul class="plan-grid two-up" aria-label="Yearly plans">
+      @for (card of yearly(); track card.plan.id) {
+        <ng-container *ngTemplateOutlet="planCard; context: { $implicit: card, readOnly: !!sale() }" />
+      }
+    </ul>
+  </section>
+
+  <section class="pricing-section" [class.read-only]="!!sale()" aria-labelledby="passes-heading">
+    <h2 id="passes-heading">Passes</h2>
+    <p class="section-lede">
+      A fixed stretch of access for an interview, or only the courses you pick.
+    </p>
+    <ul class="plan-grid" aria-label="Passes">
+      @for (card of passes(); track card.plan.id) {
+        <ng-container *ngTemplateOutlet="planCard; context: { $implicit: card, readOnly: !!sale() }" />
+      }
+    </ul>
+  </section>
+
+  <section class="pricing-section plan-rules" aria-labelledby="rules-heading">
+    <h2 id="rules-heading">Changing and renewing</h2>
+    <dl>
+      @for (rule of rules; track rule.title) {
+        <div class="rule-item">
+          <dt>{{ rule.title }}</dt>
+          <dd>{{ rule.detail }}</dd>
+        </div>
+      }
+    </dl>
+  </section>
+
+  <ng-template #planCard let-card let-readOnly="readOnly">
+    <li class="plan-card" [attr.data-plan]="card.plan.id" [class.off-sale]="!card.canChoose">
+      <h3>{{ card.plan.name }}</h3>
+      <p class="plan-price" [id]="card.plan.id + '-price'">
+        <span class="amount" aria-hidden="true">{{ card.amount }}</span>
+        <span class="period" aria-hidden="true">{{ card.period }}</span>
+        <span class="visually-hidden">{{ card.spokenPrice }}</span>
+      </p>
+      @if (card.comparedWith) {
+        <p class="compared-with">{{ card.comparedWith }}</p>
+      }
+      <p class="plan-includes"><span class="includes-label">Includes</span> {{ card.includes }}</p>
+      <ul class="plan-terms">
+        @for (term of card.terms; track term) {
+          <li>{{ term }}</li>
+        }
+      </ul>
+      @if (!card.canChoose) {
+        <p class="off-sale-note">
+          <strong>Not on sale yet.</strong> {{ card.pendingNote }}
+        </p>
+      } @else if (readOnly) {
+        <p class="off-sale-note">Available again after the sale.</p>
+      } @else {
+        <button
+          type="button"
+          class="action-link"
+          aria-haspopup="dialog"
+          [attr.aria-describedby]="card.plan.id + '-price'"
+          (click)="choose(card, $event)"
+        >
+          Choose {{ card.plan.name }}
+        </button>
+      }
+    </li>
+  </ng-template>
+
+  <section class="pricing-section mock-interviews" aria-labelledby="mock-heading">
+    <div class="mock-heading">
+      <h2 id="mock-heading">Mock interviews</h2>
+      <p class="coming-later">Coming later</p>
+    </div>
+    <p class="section-lede">
+      <strong>Sold one at a time.</strong> Each mock interview is its own purchase. It is not part
+      of any plan or pass.
+    </p>
+    <p class="mock-formats-label">Formats we plan to offer:</p>
+    <ul class="mock-formats">
+      @for (format of mockFormats; track format) {
+        <li>{{ format }}</li>
+      }
+    </ul>
+  </section>
+
+  <section class="pricing-section faq" aria-labelledby="faq-heading">
+    <h2 id="faq-heading">Questions</h2>
+    <dl>
+      @for (item of faq; track item.question) {
+        <div class="faq-item">
+          <dt>{{ item.question }}</dt>
+          <dd>{{ item.answer }}</dd>
+        </div>
+      }
+    </dl>
+  </section>
+
+  <dialog
+    #notice
+    class="checkout-notice"
+    aria-labelledby="checkout-notice-title"
+    aria-describedby="checkout-notice-description"
+    (close)="returnFocus()"
+  >
+    @if (chosen(); as card) {
+      <p class="eyebrow">{{ card.plan.name }} · {{ card.spokenPrice }}</p>
+    }
+    @if (signedIn()) {
+      <h2 id="checkout-notice-title">Payment connection in progress</h2>
+      <p id="checkout-notice-description">Checkout isn’t available yet, so nothing is charged.</p>
+      <p class="notice-detail">Prices on this page are a sample and may change.</p>
+    } @else {
+      <!-- Buying needs an account (user, 2026-10-15). -->
+      <h2 id="checkout-notice-title">Sign in to buy a plan</h2>
+      <p id="checkout-notice-description">
+        Plans belong to an account. Sign in, then come back here to choose your plan.
+      </p>
+    }
+    <div class="action-row">
+      @if (!signedIn()) {
+        <a class="action-button" routerLink="/sign-in" [queryParams]="{ returnTo: '/pricing' }">Sign in</a>
+      }
+      <button
+        #noticeClose
+        type="button"
+        [class]="signedIn() ? 'action-button' : 'action-link'"
+        (click)="closeNotice()"
+      >
+        Close
+      </button>
+      @if (signedIn()) {
+        <a class="action-link" [routerLink]="startFree">Start free</a>
+      }
+    </div>
+    @if (!signedIn()) {
+      <!-- New learners sign up here and come back to Pricing to choose. -->
+      <p class="notice-signup">
+        Don’t have an account?
+        <a routerLink="/sign-up" [queryParams]="{ returnTo: '/pricing' }">Create a free account</a>
+      </p>
+    }
+    @if (signedIn()) {
+      <p class="notice-browse">
+        Or browse <a routerLink="/learn">Learn</a>, <a routerLink="/grow">Grow</a> or
+        <a routerLink="/blaze">Blaze</a>.
+      </p>
+    }
+  </dialog>
+</main>

@@ -76,4 +76,8 @@ Thumbs.db
 
 # Generated shared code renderer for embedded visuals
 /public/assets/code-presentation.js
+
+# Generated at build time by scripts/generate-seo-files.mjs (DLV-941)
+/public/robots.txt
+/public/sitemap.xml
 tools/release/__pycache__/

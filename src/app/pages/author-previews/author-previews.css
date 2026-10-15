@@ -192,12 +192,21 @@ a {
   color: var(--accent-link);
   text-underline-offset: 4px;
 }
+/* DLV-937: each preview link is a pill, not underlined text. */
 .preview-links a {
   display: inline-flex;
-  min-height: 44px;
+  min-height: 40px;
   align-items: center;
+  padding: 6px 16px;
+  border: 1px solid color-mix(in srgb, var(--accent-link) 40%, var(--line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-link) 8%, var(--surface));
   font-size: 14px;
   font-weight: 650;
+  text-decoration: none;
+}
+.preview-links a:hover {
+  border-color: var(--accent-link);
 }
 .preview-links span {
   color: var(--text-subtle);

@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A candidate at a laptop places three evidence cards on the Senior step of a three-step level ladder; the Senior step lights up and a check appears, while the Staff step stays empty">
+<style>
+.lvx-a{animation-duration:8s;animation-iteration-count:infinite;animation-timing-function:ease-in-out;animation-delay:-6s}
+.lvx-c1{animation-name:lvx-k1}.lvx-c2{animation-name:lvx-k2}.lvx-c3{animation-name:lvx-k3}
+.lvx-step{animation-name:lvx-lit}.lvx-ok{animation-name:lvx-ok}
+.lvx-t{font-family:system-ui,sans-serif;font-size:12px;font-weight:600;fill:var(--scene-text,#28434a)}
+@keyframes lvx-k1{0%,8%{transform:translate(0,0);opacity:0}10%{opacity:1;transform:translate(0,0)}24%,90%{transform:translate(152px,-34px);opacity:1}96%,100%{transform:translate(152px,-34px);opacity:0}}
+@keyframes lvx-k2{0%,20%{transform:translate(0,0);opacity:0}22%{opacity:1;transform:translate(0,0)}36%,90%{transform:translate(152px,-40px);opacity:1}96%,100%{transform:translate(152px,-40px);opacity:0}}
+@keyframes lvx-k3{0%,32%{transform:translate(0,0);opacity:0}34%{opacity:1;transform:translate(0,0)}48%,90%{transform:translate(152px,-46px);opacity:1}96%,100%{transform:translate(152px,-46px);opacity:0}}
+@keyframes lvx-lit{0%,50%{fill:var(--scene-line,#cfdfdc)}56%,92%{fill:var(--scene-accent-soft,#dcefed)}100%{fill:var(--scene-line,#cfdfdc)}}
+@keyframes lvx-ok{0%,54%{opacity:0}60%,92%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.lvx-a{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g fill="var(--scene-ink,#102a33)" opacity=".09"><ellipse cx="56" cy="160" rx="44" ry="6"/><ellipse cx="220" cy="161" rx="92" ry="7"/></g>
+<g>
+<circle cx="50" cy="72" r="12" fill="var(--scene-accent,#006c73)"/>
+<path d="M30 112c0-16 9-24 20-24s20 8 20 24z" fill="var(--scene-accent,#006c73)"/>
+<rect x="22" y="104" width="64" height="40" rx="4" fill="var(--scene-text,#28434a)"/>
+<rect x="26" y="108" width="56" height="32" rx="2" fill="var(--scene-accent-soft,#dcefed)"/>
+<rect x="16" y="144" width="78" height="7" rx="2" fill="var(--scene-ink,#102a33)" opacity=".22"/>
+<rect x="32" y="114" width="30" height="3" rx="1.5" fill="var(--scene-muted,#536970)"/>
+<rect x="32" y="121" width="40" height="3" rx="1.5" fill="var(--scene-muted,#536970)"/>
+<rect x="32" y="128" width="22" height="3" rx="1.5" fill="var(--scene-muted,#536970)"/>
+</g>
+<g>
+<rect x="136" y="122" width="56" height="36" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-muted,#536970)" stroke-width="1.5"/>
+<path d="M136 122l6-6h56l-6 6z" fill="var(--scene-card,#fff)" stroke="var(--scene-muted,#536970)" stroke-width="1.5"/>
+<path d="M192 122l6-6v36l-6 6z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect class="lvx-a lvx-step" x="192" y="94" width="56" height="64" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2"/>
+<path d="M192 94l6-6h56l-6 6z" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="1.5"/>
+<path d="M248 94l6-6v64l-6 6z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="248" y="64" width="56" height="94" fill="var(--scene-card,#fff)" stroke="var(--scene-muted,#536970)" stroke-width="1.5" stroke-dasharray="5 4"/>
+<path d="M248 64l6-6h50l-6 6z" fill="var(--scene-card,#fff)" stroke="var(--scene-muted,#536970)" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text class="lvx-t" x="164" y="146" text-anchor="middle">SDE II</text>
+<text class="lvx-t" x="220" y="146" text-anchor="middle">Senior</text>
+<text class="lvx-t" x="276" y="146" text-anchor="middle">Staff</text>
+</g>
+<g class="lvx-a lvx-c1"><g transform="translate(56 104)"><path d="M0 0h16l6 6v18H0z" fill="var(--scene-card,#fff)" stroke="var(--scene-link,#1f5f8b)" stroke-width="1.5"/><path d="M16 0v6h6" fill="none" stroke="var(--scene-link,#1f5f8b)" stroke-width="1.5"/><rect x="4" y="10" width="12" height="2.5" fill="var(--scene-link,#1f5f8b)"/><rect x="4" y="16" width="9" height="2.5" fill="var(--scene-link,#1f5f8b)"/></g></g>
+<g class="lvx-a lvx-c2"><g transform="translate(52 104)"><path d="M0 0h16l6 6v18H0z" fill="var(--scene-card,#fff)" stroke="var(--scene-link,#1f5f8b)" stroke-width="1.5"/><path d="M16 0v6h6" fill="none" stroke="var(--scene-link,#1f5f8b)" stroke-width="1.5"/><rect x="4" y="10" width="12" height="2.5" fill="var(--scene-link,#1f5f8b)"/><rect x="4" y="16" width="9" height="2.5" fill="var(--scene-link,#1f5f8b)"/></g></g>
+<g class="lvx-a lvx-c3"><g transform="translate(60 104)"><path d="M0 0h16l6 6v18H0z" fill="var(--scene-card,#fff)" stroke="var(--scene-link,#1f5f8b)" stroke-width="1.5"/><path d="M16 0v6h6" fill="none" stroke="var(--scene-link,#1f5f8b)" stroke-width="1.5"/><rect x="4" y="10" width="12" height="2.5" fill="var(--scene-link,#1f5f8b)"/><rect x="4" y="16" width="9" height="2.5" fill="var(--scene-link,#1f5f8b)"/></g></g>
+<g class="lvx-a lvx-ok"><circle cx="188" cy="50" r="11" fill="var(--scene-good,#1f7a4d)"/><path d="M182 50l4 4 8-8" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+</svg>

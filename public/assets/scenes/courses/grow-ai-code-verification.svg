@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="An AI assistant's diff calls a method that does not exist; the reviewer strikes that line for the real call, the tests turn green, and the reviewer approves the change">
+<style>
+.gaicv-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.gaicv-tm { font-family: ui-monospace, Menlo, monospace; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.gaicv-sh { fill: var(--scene-ink, #102a33); opacity: .08; }
+.gaicv-slab { fill: var(--scene-ink, #102a33); opacity: .14; }
+.gaicv-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 2; }
+.gaicv-ln { fill: var(--scene-line, #cfdfdc); }
+.gaicv-acc { fill: var(--scene-accent, #006c73); }
+.gaicv-good { fill: var(--scene-good, #1f7a4d); }
+.gaicv-bad { fill: var(--scene-bad, #b3261e); }
+.gaicv-addbg { fill: var(--scene-good, #1f7a4d); opacity: .14; }
+.gaicv-delbg { fill: var(--scene-bad, #b3261e); opacity: .12; }
+.gaicv-chip { fill: var(--scene-accent-soft, #dcefed); stroke: var(--scene-accent, #006c73); stroke-width: 1.5; }
+.gaicv-me { fill: var(--scene-link, #245a88); }
+.gaicv-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 2; stroke-dasharray: 4 5; }
+.gaicv-tick { fill: none; stroke: var(--scene-card, #ffffff); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.gaicv-a1 { animation: gaicv-kf-a1 8s ease-out infinite; }
+@keyframes gaicv-kf-a1 { 0%, 3% { opacity: 0; transform: translateX(-8px); } 9%, 95% { opacity: 1; transform: translateX(0); } 100% { opacity: 0; } }
+.gaicv-a2 { animation: gaicv-kf-a2 8s ease-out infinite; }
+@keyframes gaicv-kf-a2 { 0%, 9% { opacity: 0; transform: translateX(-8px); } 15%, 95% { opacity: 1; transform: translateX(0); } 100% { opacity: 0; } }
+.gaicv-lens { animation: gaicv-kf-lens 8s ease-in-out infinite; }
+@keyframes gaicv-kf-lens { 0%, 10% { transform: translate(132px, 52px); opacity: 0; } 13% { opacity: 1; } 28% { transform: translate(132px, 106px); opacity: 1; } 36%, 100% { transform: translate(132px, 106px); opacity: 0; } }
+.gaicv-flag { animation: gaicv-kf-flag 8s infinite; }
+@keyframes gaicv-kf-flag { 0%, 28% { opacity: 0; } 32%, 95% { opacity: 1; } 100% { opacity: 0; } }
+.gaicv-fix { animation: gaicv-kf-fix 8s ease-out infinite; }
+@keyframes gaicv-kf-fix { 0%, 38% { opacity: 0; transform: translateX(-8px); } 44%, 95% { opacity: 1; transform: translateX(0); } 100% { opacity: 0; } }
+.gaicv-dot { animation: gaicv-kf-dot 8s ease-in-out infinite; }
+@keyframes gaicv-kf-dot { 0%, 46% { transform: translate(0, 0); opacity: 0; } 47% { opacity: 1; } 55% { transform: translate(28px, 0); opacity: 1; } 56%, 100% { transform: translate(28px, 0); opacity: 0; } }
+.gaicv-t1 { animation: gaicv-kf-t1 8s infinite; }
+.gaicv-t2 { animation: gaicv-kf-t2 8s infinite; }
+.gaicv-t3 { animation: gaicv-kf-t3 8s infinite; }
+.gaicv-t4 { animation: gaicv-kf-t4 8s infinite; }
+@keyframes gaicv-kf-t1 { 0%, 56% { fill: var(--scene-line, #cfdfdc); } 58%, 96% { fill: var(--scene-good, #1f7a4d); } 100% { fill: var(--scene-line, #cfdfdc); } }
+@keyframes gaicv-kf-t2 { 0%, 59% { fill: var(--scene-line, #cfdfdc); } 61%, 96% { fill: var(--scene-good, #1f7a4d); } 100% { fill: var(--scene-line, #cfdfdc); } }
+@keyframes gaicv-kf-t3 { 0%, 62% { fill: var(--scene-line, #cfdfdc); } 64%, 96% { fill: var(--scene-good, #1f7a4d); } 100% { fill: var(--scene-line, #cfdfdc); } }
+@keyframes gaicv-kf-t4 { 0%, 65% { fill: var(--scene-line, #cfdfdc); } 67%, 96% { fill: var(--scene-good, #1f7a4d); } 100% { fill: var(--scene-line, #cfdfdc); } }
+.gaicv-ok { transform-box: fill-box; transform-origin: center; animation: gaicv-kf-ok 8s infinite; }
+@keyframes gaicv-kf-ok { 0%, 70% { opacity: 0; transform: scale(.5); } 75%, 95% { opacity: 1; transform: scale(1); } 100% { opacity: 0; } }
+
+.gaicv-a1, .gaicv-a2, .gaicv-lens, .gaicv-flag, .gaicv-fix, .gaicv-dot, .gaicv-t1, .gaicv-t2, .gaicv-t3, .gaicv-t4, .gaicv-ok { animation-delay: -6.56s; }
+@media (prefers-reduced-motion: reduce) { .gaicv-a1, .gaicv-a2, .gaicv-lens, .gaicv-flag, .gaicv-fix, .gaicv-dot, .gaicv-t1, .gaicv-t2, .gaicv-t3, .gaicv-t4, .gaicv-ok { animation-play-state: paused; } }
+</style>
+<rect x="0" y="0" width="320" height="180" rx="12" fill="var(--scene-card, #ffffff)"/>
+
+<!-- the diff the AI assistant wrote -->
+<ellipse class="gaicv-sh" cx="88" cy="166" rx="78" ry="5"/>
+<rect class="gaicv-slab" x="12" y="18" width="152" height="140" rx="8"/>
+<rect class="gaicv-box" x="12" y="14" width="152" height="140" rx="8"/>
+<text class="gaicv-tm" x="22" y="31" font-size="11" style="fill: var(--scene-accent, #006c73)">Refund.java</text>
+<path d="M13 38 H163" stroke="var(--scene-line, #cfdfdc)" stroke-width="1.5"/>
+<rect class="gaicv-ln" x="32" y="47" width="80" height="6" rx="3"/>
+<rect class="gaicv-delbg" x="14" y="60" width="148" height="16"/>
+<rect class="gaicv-bad" x="19" y="67" width="7" height="2.5"/>
+<rect class="gaicv-bad" x="32" y="65" width="90" height="6" rx="3" opacity=".7"/>
+<g class="gaicv-a1">
+  <rect class="gaicv-addbg" x="14" y="78" width="148" height="16"/>
+  <rect class="gaicv-good" x="19" y="85" width="7" height="2.5"/><rect class="gaicv-good" x="21.25" y="82.75" width="2.5" height="7"/>
+  <rect class="gaicv-good" x="32" y="83" width="104" height="6" rx="3"/>
+</g>
+<g class="gaicv-a2">
+  <rect class="gaicv-addbg" x="14" y="96" width="148" height="16"/>
+  <rect class="gaicv-good" x="19" y="103" width="7" height="2.5"/><rect class="gaicv-good" x="21.25" y="100.75" width="2.5" height="7"/>
+  <text class="gaicv-tm" x="32" y="108" font-size="10" style="fill: var(--scene-good, #1f7a4d)">pay.refundAll()</text>
+</g>
+<g class="gaicv-flag">
+  <path d="M30 104.5 H124" stroke="var(--scene-bad, #b3261e)" stroke-width="2" stroke-linecap="round"/>
+  <circle class="gaicv-bad" cx="148" cy="104" r="7"/>
+  <path class="gaicv-tick" d="M145 101 l6 6 M151 101 l-6 6"/>
+</g>
+<g class="gaicv-fix">
+  <rect class="gaicv-addbg" x="14" y="114" width="148" height="16"/>
+  <rect class="gaicv-good" x="19" y="121" width="7" height="2.5"/><rect class="gaicv-good" x="21.25" y="118.75" width="2.5" height="7"/>
+  <text class="gaicv-tm" x="32" y="126" font-size="10" style="fill: var(--scene-good, #1f7a4d)">pay.refund(id)</text>
+</g>
+<rect class="gaicv-ln" x="32" y="137" width="56" height="6" rx="3"/>
+
+<!-- the AI tool sits on the diff it wrote -->
+<g transform="translate(106 144)">
+  <rect class="gaicv-chip" width="54" height="22" rx="11"/>
+  <path class="gaicv-acc" d="M15 3 C16.5 9 18 10.5 24 11 C18 11.5 16.5 13 15 19 C13.5 13 12 11.5 6 11 C12 10.5 13.5 9 15 3 Z"/>
+  <text class="gaicv-t" x="28" y="15.5" font-size="12">AI</text>
+</g>
+
+<!-- the reviewer's lens checks each new call -->
+<g class="gaicv-lens">
+  <circle cx="0" cy="0" r="8" fill="none" stroke="var(--scene-link, #245a88)" stroke-width="2.5"/>
+  <path d="M6 6 L11 11" stroke="var(--scene-link, #245a88)" stroke-width="3" stroke-linecap="round"/>
+</g>
+
+<!-- tests run against the change -->
+<path class="gaicv-wire" d="M164 46 H196"/>
+<g class="gaicv-dot"><circle class="gaicv-acc" cx="166" cy="46" r="4"/></g>
+<ellipse class="gaicv-sh" cx="252" cy="80" rx="56" ry="4"/>
+<rect class="gaicv-slab" x="196" y="22" width="112" height="52" rx="8"/>
+<rect class="gaicv-box" x="196" y="18" width="112" height="52" rx="8"/>
+<text class="gaicv-t" x="206" y="35" font-size="12">tests</text>
+<circle class="gaicv-ln gaicv-t1" cx="214" cy="53" r="8"/><path class="gaicv-tick" d="M210.5 53 l2.5 2.5 l4.5 -5"/>
+<circle class="gaicv-ln gaicv-t2" cx="238" cy="53" r="8"/><path class="gaicv-tick" d="M234.5 53 l2.5 2.5 l4.5 -5"/>
+<circle class="gaicv-ln gaicv-t3" cx="262" cy="53" r="8"/><path class="gaicv-tick" d="M258.5 53 l2.5 2.5 l4.5 -5"/>
+<circle class="gaicv-ln gaicv-t4" cx="286" cy="53" r="8"/><path class="gaicv-tick" d="M282.5 53 l2.5 2.5 l4.5 -5"/>
+<path class="gaicv-wire" d="M252 74 V82"/>
+
+<!-- the reviewer decides -->
+<ellipse class="gaicv-sh" cx="258" cy="168" rx="46" ry="4"/>
+<circle class="gaicv-me" cx="258" cy="96" r="11"/>
+<path class="gaicv-me" d="M234 134 a24 22 0 0 1 48 0 Z"/>
+<rect class="gaicv-box" x="226" y="124" width="64" height="36" rx="4"/>
+<circle class="gaicv-ln" cx="258" cy="142" r="3"/>
+<rect class="gaicv-slab" x="218" y="160" width="80" height="5" rx="2.5"/>
+<g class="gaicv-ok">
+  <circle class="gaicv-good" cx="292" cy="98" r="11"/>
+  <path class="gaicv-tick" d="M286.5 98 l4 4 l7 -8" stroke-width="2.5"/>
+</g>
+</svg>

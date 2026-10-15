@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="An election results board shows a 300 to 300 tie; a changed line in the tally code travels to the test suite, where the first test fails and kills it, while a second change passes every test and gets a warning badge as a surviving mutant">
+<style>
+.tac-v{font:700 11px ui-monospace,Menlo,monospace;fill:var(--scene-ink,#102a33)}
+.tac-loop{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-5.8s;animation-timing-function:ease-in-out}
+.tac-m1{animation-name:tac-m1}
+.tac-m2{animation-name:tac-m2}
+.tac-kill{animation-name:tac-kill}
+.tac-ok{animation-name:tac-ok}
+.tac-warn{animation-name:tac-warn}
+.tac-hl1{animation-name:tac-hl1}
+.tac-hl2{animation-name:tac-hl2}
+@keyframes tac-m1{0%{transform:translate(0,0);opacity:0}4%{opacity:1}22%{transform:translate(70px,0);opacity:1}28%,100%{transform:translate(70px,0);opacity:0}}
+@keyframes tac-m2{0%,44%{transform:translate(0,0);opacity:0}48%{opacity:1}66%{transform:translate(70px,0);opacity:1}72%,100%{transform:translate(70px,0);opacity:0}}
+@keyframes tac-kill{0%,22%{opacity:0}28%,96%{opacity:1}100%{opacity:0}}
+@keyframes tac-ok{0%,22%{opacity:1}28%,96%{opacity:0}100%{opacity:1}}
+@keyframes tac-warn{0%,66%{opacity:0}72%,96%{opacity:1}100%{opacity:0}}
+@keyframes tac-hl1{0%{opacity:0}4%,26%{opacity:1}32%,100%{opacity:0}}
+@keyframes tac-hl2{0%,44%{opacity:0}48%,96%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.tac-loop{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g fill="var(--scene-ink,#102a33)" opacity=".09"><ellipse cx="58" cy="150" rx="44" ry="6"/><ellipse cx="160" cy="150" rx="34" ry="6"/><ellipse cx="262" cy="150" rx="46" ry="6"/></g>
+<!-- results board: a screen on a stand, with two equal bars and one short bar -->
+<path d="M18 40l6-6h82l-6 6Z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M100 40l6-6v70l-6 6Z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="18" y="40" width="82" height="70" rx="4" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<path d="M54 110h10l4 34H50Z" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-ink,#102a33)" stroke-width="1.5"/>
+<rect x="26" y="52" width="46" height="10" rx="2" fill="var(--scene-accent,#006c73)"/>
+<rect x="26" y="70" width="46" height="10" rx="2" fill="var(--scene-link,#2f6fb3)"/>
+<rect x="26" y="88" width="16" height="10" rx="2" fill="var(--scene-grow,#b8457a)"/>
+<text class="tac-v" x="75" y="61">300</text>
+<text class="tac-v" x="75" y="79">300</text>
+<!-- the tally code: a file with code lines, one of them changed -->
+<path d="M132 46h44l10 10v82h-54Z" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<path d="M176 46v10h10" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-ink,#102a33)" stroke-width="1.5"/>
+<path d="M140 66h30M140 78h38M140 90h24M140 102h34M140 114h28M140 126h36" stroke="var(--scene-line,#cfdfdc)" stroke-width="5" stroke-linecap="round"/>
+<rect class="tac-loop tac-hl1" x="137" y="73" width="44" height="10" rx="3" fill="var(--scene-warn,#a15c00)" opacity=".5"/>
+<rect class="tac-loop tac-hl2" x="137" y="109" width="44" height="10" rx="3" fill="var(--scene-warn,#a15c00)" opacity=".5"/>
+<!-- wire from the code to the tests, with each mutant travelling along it -->
+<path d="M190 78H230M190 114H230" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="3 5" opacity=".6"/>
+<circle class="tac-loop tac-m1" cx="160" cy="78" r="5" fill="var(--scene-bad,#b3261e)"/>
+<circle class="tac-loop tac-m2" cx="160" cy="114" r="5" fill="var(--scene-warn,#a15c00)"/>
+<!-- the test suite: a tray of three test cards with status lights -->
+<path d="M222 58l6-6h72l-6 6Z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M294 58l6-6v82l-6 6Z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="222" y="58" width="72" height="82" rx="4" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<g fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-ink,#102a33)" stroke-width="1"><rect x="230" y="66" width="56" height="18" rx="3"/><rect x="230" y="90" width="56" height="18" rx="3"/><rect x="230" y="114" width="56" height="18" rx="3"/></g>
+<path d="M238 75h26M238 99h30M238 123h22" stroke="var(--scene-muted,#536970)" stroke-width="3" stroke-linecap="round"/>
+<circle cx="278" cy="99" r="4" fill="var(--scene-good,#1f7a4d)"/>
+<circle cx="278" cy="123" r="4" fill="var(--scene-good,#1f7a4d)"/>
+<circle class="tac-loop tac-ok" cx="278" cy="75" r="4" fill="var(--scene-good,#1f7a4d)"/>
+<g class="tac-loop tac-kill"><circle cx="278" cy="75" r="6" fill="var(--scene-bad,#b3261e)"/><path d="M275 72l6 6M281 72l-6 6" stroke="var(--scene-card,#fff)" stroke-width="2" stroke-linecap="round"/></g>
+<!-- a mutant that every test let through: a warning badge on the code -->
+<g class="tac-loop tac-warn"><path d="M186 120l12 22h-24Z" fill="var(--scene-warn,#a15c00)"/><path d="M186 127v7M186 137v1" stroke="var(--scene-card,#fff)" stroke-width="2.5" stroke-linecap="round"/></g>
+</svg>

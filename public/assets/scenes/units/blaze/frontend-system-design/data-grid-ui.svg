@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Tsholofelo scrolls a large sheet on her laptop; a block of rows arrives from the server, she types 18.42 into the active cell, it shows as pending and then saved">
+<style>
+.dgrid-a{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-6.9s;animation-timing-function:ease-in-out}
+@media (prefers-reduced-motion: reduce){.dgrid-a{animation-play-state:paused!important}}
+.dgrid-scroll{animation-name:dgrid-scroll}
+@keyframes dgrid-scroll{0%{transform:translateY(0)}40%,100%{transform:translateY(-30px)}}
+.dgrid-block{animation-name:dgrid-block}
+@keyframes dgrid-block{0%,18%{opacity:0;transform:translateX(0)}22%{opacity:1}42%{opacity:1;transform:translateX(-40px)}46%,100%{opacity:0;transform:translateX(-40px)}}
+.dgrid-cell{animation-name:dgrid-cell}
+@keyframes dgrid-cell{0%,48%{opacity:0}52%,96%{opacity:1}100%{opacity:0}}
+.dgrid-wait{animation-name:dgrid-wait}
+@keyframes dgrid-wait{0%,56%{opacity:0}60%,74%{opacity:1}78%,100%{opacity:0}}
+.dgrid-ok{animation-name:dgrid-ok;transform-origin:212px 70px}
+@keyframes dgrid-ok{0%,76%{opacity:0;transform:scale(.6)}80%,96%{opacity:1;transform:scale(1)}100%{opacity:0}}
+</style>
+<defs><clipPath id="dgrid-body"><rect x="96" y="48" width="104" height="70"/></clipPath><clipPath id="dgrid-frozen"><rect x="76" y="48" width="20" height="70"/></clipPath></defs>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<ellipse cx="40" cy="158" rx="28" ry="5" fill="var(--scene-ink,#102a33)" opacity=".08"/>
+<ellipse cx="140" cy="150" rx="82" ry="6" fill="var(--scene-ink,#102a33)" opacity=".1"/>
+<ellipse cx="276" cy="140" rx="30" ry="5" fill="var(--scene-ink,#102a33)" opacity=".08"/>
+<circle cx="40" cy="90" r="13" fill="var(--scene-accent,#006c73)"/>
+<path d="M14 156c0-21 11-38 26-38s26 17 26 38Z" fill="var(--scene-accent,#006c73)"/>
+<rect x="68" y="26" width="140" height="102" rx="6" fill="var(--scene-ink,#102a33)"/>
+<rect x="76" y="34" width="124" height="86" rx="2" fill="var(--scene-card,#fff)"/>
+<path d="M56 128h164l-10 14H66Z" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-ink,#102a33)" stroke-width="1.5" stroke-linejoin="round"/>
+<path d="M66 142h144v3H66Z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="76" y="34" width="124" height="14" fill="var(--scene-line,#cfdfdc)"/>
+<g fill="var(--scene-muted,#536970)" opacity=".7"><rect x="100" y="39" width="14" height="3" rx="1.5"/><rect x="126" y="39" width="14" height="3" rx="1.5"/><rect x="152" y="39" width="14" height="3" rx="1.5"/><rect x="178" y="39" width="14" height="3" rx="1.5"/></g>
+<rect x="76" y="48" width="20" height="72" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<g clip-path="url(#dgrid-frozen)"><g class="dgrid-a dgrid-scroll" fill="var(--scene-ink,#102a33)" opacity=".5"><rect x="80" y="52" width="12" height="3" rx="1.5"/><rect x="80" y="62" width="12" height="3" rx="1.5"/><rect x="80" y="72" width="12" height="3" rx="1.5"/><rect x="80" y="82" width="12" height="3" rx="1.5"/><rect x="80" y="92" width="12" height="3" rx="1.5"/><rect x="80" y="102" width="12" height="3" rx="1.5"/><rect x="80" y="112" width="12" height="3" rx="1.5"/><rect x="80" y="122" width="12" height="3" rx="1.5"/><rect x="80" y="132" width="12" height="3" rx="1.5"/><rect x="80" y="142" width="12" height="3" rx="1.5"/></g></g>
+<g clip-path="url(#dgrid-body)"><g class="dgrid-a dgrid-scroll">
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="1"><path d="M96 58H200M96 68H200M96 78H200M96 88H200M96 98H200M96 108H200M96 118H200M96 128H200M96 138H200M96 148H200"/><path d="M122 48V150M148 48V150M174 48V150"/></g>
+<g fill="var(--scene-accent,#006c73)" opacity=".55"><rect x="100" y="52" width="16" height="3" rx="1.5"/><rect x="126" y="62" width="12" height="3" rx="1.5"/><rect x="152" y="72" width="16" height="3" rx="1.5"/><rect x="100" y="82" width="10" height="3" rx="1.5"/><rect x="178" y="92" width="14" height="3" rx="1.5"/><rect x="126" y="102" width="16" height="3" rx="1.5"/><rect x="152" y="112" width="10" height="3" rx="1.5"/><rect x="100" y="122" width="16" height="3" rx="1.5"/><rect x="178" y="132" width="12" height="3" rx="1.5"/><rect x="126" y="142" width="14" height="3" rx="1.5"/></g>
+</g></g>
+<g class="dgrid-a dgrid-cell"><rect x="148" y="78" width="26" height="10" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="1.6"/><text x="161" y="86" text-anchor="middle" font-family="system-ui,sans-serif" font-size="7.5" font-weight="700" fill="var(--scene-ink,#102a33)">18.42</text></g>
+<g class="dgrid-a dgrid-wait"><circle cx="178" cy="76" r="3" fill="var(--scene-warn,#9a6700)"/></g>
+<g class="dgrid-a dgrid-ok"><circle cx="212" cy="70" r="8" fill="var(--scene-good,#1f7a4d)"/><path d="M208 70l3 3 5-6" stroke="var(--scene-card,#fff)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+<path d="M222 92H252" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="3 5"/>
+<rect x="252" y="72" width="48" height="58" rx="5" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<path d="M252 72l8-8h48l-8 8Z" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-ink,#102a33)" stroke-width="2" stroke-linejoin="round"/>
+<path d="M300 72l8-8v58l-8 8Z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<g fill="var(--scene-line,#cfdfdc)"><rect x="258" y="82" width="28" height="6" rx="2"/><rect x="258" y="96" width="28" height="6" rx="2"/><rect x="258" y="110" width="28" height="6" rx="2"/></g>
+<g fill="var(--scene-good,#1f7a4d)"><circle cx="292" cy="85" r="2"/><circle cx="292" cy="99" r="2"/><circle cx="292" cy="113" r="2"/></g>
+<g class="dgrid-a dgrid-block"><rect x="244" y="84" width="20" height="16" rx="3" fill="var(--scene-accent,#006c73)"/><rect x="247" y="88" width="14" height="2.5" rx="1" fill="var(--scene-card,#fff)"/><rect x="247" y="93" width="10" height="2.5" rx="1" fill="var(--scene-card,#fff)"/></g>
+</svg>

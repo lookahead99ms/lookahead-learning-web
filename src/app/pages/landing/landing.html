@@ -37,14 +37,22 @@
                   }
                 </h2>
                 <p class="lead">{{ slide.description }}</p>
-                <a
-                  class="primary-action"
-                  [routerLink]="slide.route"
-                  [fragment]="slide.fragment"
-                  [queryParams]="slide.query"
-                  (click)="choosePath($event, slide.fragment)"
-                  >{{ slide.action }}<span class="action-arrow" aria-hidden="true">→</span></a
-                >
+                @if (slide.fragment) {
+                  <!-- A plain link: a router navigation here would scroll back to the top. -->
+                  <a
+                    class="primary-action"
+                    [href]="'/#' + slide.fragment"
+                    (click)="choosePath($event, slide.fragment)"
+                    >{{ slide.action }}<span class="action-arrow" aria-hidden="true">→</span></a
+                  >
+                } @else {
+                  <a
+                    class="primary-action"
+                    [routerLink]="slide.route"
+                    [queryParams]="slide.query"
+                    >{{ slide.action }}<span class="action-arrow" aria-hidden="true">→</span></a
+                  >
+                }
               </div>
               <app-landing-hero-visual
                 class="hero-visual"
@@ -196,7 +204,9 @@
               Connect constraints to choices, trade-offs and failure modes. Practice explaining the
               reasoning behind a design.
             </p>
-            <a data-card-primary routerLink="/blaze/design-systems">Explore system design</a>
+            <a data-card-primary class="feature-action" routerLink="/blaze/design-systems"
+              >Explore system design<span class="action-arrow" aria-hidden="true">→</span></a
+            >
             <p class="feature-availability">
               Written walkthroughs available. Audio and video are planned.
             </p>
@@ -217,7 +227,9 @@
               Bring explanations, interview questions and practical reasoning together around the
               subject you want to understand.
             </p>
-            <a data-card-primary routerLink="/search">Find a topic</a>
+            <a data-card-primary class="feature-action" routerLink="/search"
+              >Find a topic<span class="action-arrow" aria-hidden="true">→</span></a
+            >
             <p class="feature-availability">One subject. Several ways to learn.</p>
           </div>
         </div>
@@ -236,7 +248,9 @@
               Choose your scope, make room for practice and review, and adjust your plan when your week
               changes.
             </p>
-            <a data-card-primary routerLink="/study-plan">Shape my study plan</a>
+            <a data-card-primary class="feature-action" routerLink="/study-plan"
+              >Shape my study plan<span class="action-arrow" aria-hidden="true">→</span></a
+            >
             <p class="feature-availability">
               Completing a task and demonstrating mastery are different milestones.
             </p>
@@ -257,8 +271,8 @@
               Trace AI applications through architecture, implementation, tests and operating decisions.
               Then make the design your own.
             </p>
-            <a data-card-primary routerLink="/blaze/ai-systems-architecture"
-              >Explore project guides</a
+            <a data-card-primary class="feature-action" routerLink="/blaze/ai-systems-architecture"
+              >Explore project guides<span class="action-arrow" aria-hidden="true">→</span></a
             >
             <p class="feature-availability">
               Curriculum guides available. Standalone clone-and-run repositories are in preparation.
@@ -268,6 +282,8 @@
       </article>
     </div>
   </section>
+  <!-- DLV-209 (user, 2026-10-15): plans and prices for every visitor, just before the Essence. -->
+  <app-home-pricing />
   <section class="brand-story home-essence" aria-labelledby="brand-story-title">
     <div class="brand-story-heading">
       <p class="brand-context">Our platform</p>

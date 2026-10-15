@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A wall thermostat reading 19.5 degrees sends a reading as a v2 record onto a Kafka topic tray that still holds an older v1 record; a schema registry above the tray shows v1 and v2 stored with a check, and the v2 record travels on to a person's laptop, where the energy report chart updates and a check appears">
+<style>
+.kse-t{font:600 11px system-ui,sans-serif;fill:var(--scene-muted,#4d6268)}
+.kse-m{font:700 10px ui-monospace,Menlo,monospace;fill:var(--scene-text,#102a33)}
+.kse-loop{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-6s;animation-timing-function:linear}
+.kse-a{animation-name:kse-a}
+@keyframes kse-a{0%{transform:translate(0,0);opacity:0}4%{opacity:1}26%{transform:translate(78px,26px);opacity:1}30%,100%{transform:translate(78px,26px);opacity:0}}
+.kse-b{animation-name:kse-b}
+@keyframes kse-b{0%,30%{transform:translate(0,0);opacity:0}32%{opacity:1}58%{transform:translate(66px,18px);opacity:1}97%{transform:translate(66px,18px);opacity:1}100%{transform:translate(66px,18px);opacity:0}}
+.kse-c{animation-name:kse-c}
+@keyframes kse-c{0%,16%{opacity:0}20%,97%{opacity:1}100%{opacity:0}}
+.kse-d{animation-name:kse-d}
+@keyframes kse-d{0%,60%{opacity:0}64%,97%{opacity:1}100%{opacity:0}}
+.kse-e{animation-name:kse-e;transform-origin:284px 94px}
+@keyframes kse-e{0%,58%{transform:scaleY(0.4)}64%,97%{transform:scaleY(1)}100%{transform:scaleY(0.4)}}
+@media (prefers-reduced-motion:reduce){.kse-loop{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<!-- wall plate with a round thermostat -->
+<ellipse cx="44" cy="132" rx="30" ry="5" fill="var(--scene-ink,#102a33)" opacity="0.08"/>
+<rect x="14" y="52" width="60" height="70" rx="8" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M74 60l4-4v62l-4 4Z" fill="var(--scene-ink,#102a33)" opacity="0.14"/>
+<circle cx="44" cy="87" r="24" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2.5"/>
+<circle cx="44" cy="87" r="18" fill="var(--scene-accent-soft,#dcefed)"/>
+<text class="kse-m" x="44" y="91" text-anchor="middle" font-size="12">19.5°</text>
+<circle cx="44" cy="106" r="2" fill="var(--scene-good,#1f7a4d)"/>
+<!-- wires -->
+<path d="M80 90H122M190 120H222" stroke="var(--scene-muted,#4d6268)" stroke-width="1.5" stroke-dasharray="3 5" fill="none" opacity="0.6"/>
+<!-- schema registry: a small server with two stored versions -->
+<ellipse cx="160" cy="62" rx="40" ry="4" fill="var(--scene-ink,#102a33)" opacity="0.08"/>
+<path d="M124 18l5-5h66l-5 5Z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M190 18l5-5v38l-5 5Z" fill="var(--scene-ink,#102a33)" opacity="0.14"/>
+<rect x="124" y="18" width="66" height="38" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<rect x="130" y="24" width="44" height="11" rx="2" fill="var(--scene-accent-soft,#dcefed)"/>
+<rect x="130" y="39" width="44" height="11" rx="2" fill="var(--scene-accent-soft,#dcefed)"/>
+<text class="kse-m" x="152" y="33" text-anchor="middle" font-size="9">v1</text>
+<text class="kse-m" x="152" y="48" text-anchor="middle" font-size="9">v2</text>
+<circle cx="182" cy="26" r="2" fill="var(--scene-good,#1f7a4d)"/>
+<g class="kse-loop kse-c"><circle cx="198" cy="48" r="7" fill="var(--scene-good,#1f7a4d)"/><path d="M194.5 48l2.5 2.5 4.5-5" stroke="var(--scene-card,#fff)" stroke-width="1.8" fill="none" stroke-linecap="round"/></g>
+<path d="M157 58v20" stroke="var(--scene-muted,#4d6268)" stroke-width="1.5" stroke-dasharray="3 4" opacity="0.6"/>
+<!-- the topic: a tray of record cards -->
+<ellipse cx="158" cy="146" rx="44" ry="5" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<path d="M118 136h80l-6 6h-68Z" fill="var(--scene-ink,#102a33)" opacity="0.14"/>
+<rect x="118" y="80" width="80" height="56" rx="4" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<rect x="126" y="100" width="28" height="30" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-muted,#4d6268)" stroke-width="1.2"/>
+<rect x="126" y="100" width="28" height="7" rx="2" fill="var(--scene-muted,#4d6268)"/>
+<text class="kse-m" x="140" y="121" text-anchor="middle">v1</text>
+<!-- the v2 record: thermostat to the tray, then the tray to the laptop -->
+<g class="kse-loop kse-a"><g transform="translate(80 74)"><rect width="28" height="30" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="1.4"/><rect width="28" height="7" rx="2" fill="var(--scene-accent,#006c73)"/><text class="kse-m" x="14" y="21" text-anchor="middle">v2</text></g></g>
+<g class="kse-loop kse-b"><g transform="translate(158 100)"><rect width="28" height="30" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="1.4"/><rect width="28" height="7" rx="2" fill="var(--scene-accent,#006c73)"/><text class="kse-m" x="14" y="21" text-anchor="middle">v2</text></g></g>
+<!-- a person behind a laptop with the energy report -->
+<ellipse cx="276" cy="152" rx="40" ry="5" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<circle cx="292" cy="44" r="9" fill="var(--scene-link,#1f5f8b)"/>
+<path d="M274 76a18 18 0 0 1 36 0V96H274Z" fill="var(--scene-link,#1f5f8b)"/>
+<rect x="246" y="58" width="64" height="44" rx="4" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<g fill="var(--scene-accent,#006c73)"><rect x="256" y="80" width="8" height="14" rx="1"/><rect x="268" y="74" width="8" height="20" rx="1"/></g>
+<g class="kse-loop kse-e"><rect x="280" y="66" width="8" height="28" rx="1" fill="var(--scene-grow,#b8457a)"/></g>
+<path d="M240 102h78l-6 8h-66Z" fill="var(--scene-line,#cfdfdc)"/>
+<g class="kse-loop kse-d"><circle cx="232" cy="66" r="7" fill="var(--scene-good,#1f7a4d)"/><path d="M228.5 66l2.5 2.5 4.5-5" stroke="var(--scene-card,#fff)" stroke-width="1.8" fill="none" stroke-linecap="round"/></g>
+</svg>

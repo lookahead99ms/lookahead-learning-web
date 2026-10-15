@@ -10,12 +10,12 @@ import { CodingSolutionTabs } from '../coding-solution-tabs/coding-solution-tabs
     <section class="coding-problem-detail" aria-label="Coding problem workspace">
       <div class="coding-problem-links">
         @if (relatedArticleId()) {
-          <a [routerLink]="['/', pathId(), courseId(), relatedArticleId()]"
+          <a class="action-link" [routerLink]="['/', pathId(), courseId(), relatedArticleId()]"
             >← Review related theory</a
           >
         }
         @if (leetcodeUrl()) {
-          <a [href]="leetcodeUrl()" target="_blank" rel="noopener noreferrer"
+          <a class="action-link" [href]="leetcodeUrl()" target="_blank" rel="noopener noreferrer"
             >Open the original problem source ↗</a
           >
         }
@@ -129,19 +129,11 @@ import { CodingSolutionTabs } from '../coding-solution-tabs/coding-solution-tabs
         gap: 10px;
         margin: 0 0 12px;
       }
-      .coding-problem-links a {
-        color: var(--accent-link);
-        font-size: 0.82rem;
-        font-weight: 800;
-        text-decoration: none;
-      }
-      .coding-problem-links a:last-child {
-        color: var(--warning);
-      }
-      .coding-problem-links a:hover,
-      .coding-problem-links a:focus-visible {
-        text-decoration: underline;
-
+      /* DLV-937: both links are pill buttons (.action-link). */
+      .coding-problem-links .action-link {
+        min-height: 40px;
+        padding: 8px 16px;
+        font-size: 0.85rem;
       }
       .practice-brief {
         margin: 0 0 14px;

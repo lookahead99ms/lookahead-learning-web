@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A shopper taps an ad on a phone; the click is written once to the Kafka log and a retried copy is refused, the click filter commits it with a COMMIT marker, and the advertiser's spend rises once, from $2.80 to $3.20">
+<style>
+.keo-t{font:600 9px system-ui,sans-serif;fill:var(--scene-muted,#4d6268)}
+.keo-v{font:700 13px ui-monospace,Menlo,monospace;fill:var(--scene-ink,#102a33)}
+.keo-m{font:700 9px system-ui,sans-serif;fill:var(--scene-card,#fff)}
+.keo-loop{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-6.6s;animation-timing-function:linear}
+.keo-tap{animation-name:keo-tap;transform-origin:55px 121px}
+@keyframes keo-tap{0%,2%,12%,100%{transform:scale(1)}6%{transform:scale(1.3)}}
+.keo-click{animation-name:keo-click}
+@keyframes keo-click{0%,6%{transform:translate(0,0);opacity:0}8%{transform:translate(0,0);opacity:1}22%{transform:translate(66px,-28px);opacity:1}24%,100%{transform:translate(66px,-28px);opacity:0}}
+.keo-dup{animation-name:keo-dup}
+@keyframes keo-dup{0%,26%{transform:translate(0,0);opacity:0}28%{transform:translate(0,0);opacity:1}38%{transform:translate(52px,-22px);opacity:1}42%,100%{transform:translate(46px,-6px);opacity:0}}
+.keo-no{animation-name:keo-no}
+@keyframes keo-no{0%,37%{opacity:0}40%,56%{opacity:1}60%,100%{opacity:0}}
+.keo-cell{animation-name:keo-cell}
+@keyframes keo-cell{0%,22%{opacity:0}24%,97%{opacity:1}100%{opacity:0}}
+.keo-commit{animation-name:keo-commit}
+@keyframes keo-commit{0%,46%{opacity:0}49%,97%{opacity:1}100%{opacity:0}}
+.keo-out{animation-name:keo-out}
+@keyframes keo-out{0%,50%{transform:translate(0,0);opacity:0}52%{transform:translate(0,0);opacity:1}62%{transform:translate(52px,6px);opacity:1}72%{transform:translate(104px,-6px);opacity:1}74%,100%{transform:translate(104px,-6px);opacity:0}}
+.keo-old{animation-name:keo-old}
+@keyframes keo-old{0%,73%{opacity:1}75%,100%{opacity:0}}
+.keo-new{animation-name:keo-new}
+@keyframes keo-new{0%,73%{opacity:0}75%,97%{opacity:1}100%{opacity:0}}
+.keo-led{animation-name:keo-led}
+@keyframes keo-led{0%,52%,60%,100%{opacity:1}56%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.keo-loop{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<!-- shopper holding a phone with an ad -->
+<ellipse cx="42" cy="156" rx="30" ry="6" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<circle cx="42" cy="38" r="12" fill="var(--scene-link,#245a88)"/>
+<path d="M20 72a22 22 0 0 1 44 0Z" fill="var(--scene-link,#245a88)"/>
+<rect x="18" y="64" width="48" height="84" rx="8" fill="var(--scene-ink,#102a33)"/>
+<rect x="22" y="70" width="40" height="70" rx="4" fill="var(--scene-card,#fff)"/>
+<rect x="25" y="74" width="34" height="30" rx="3" fill="var(--scene-accent-soft,#dcefed)"/>
+<path d="M30 98l8-12 6 8 4-5 7 9Z" fill="var(--scene-accent,#006c73)"/>
+<rect x="27" y="110" width="30" height="12" rx="6" fill="var(--scene-grow,#a84328)"/>
+<text class="keo-m" x="39" y="119" text-anchor="middle">Shop</text>
+<path d="M27 130H52" stroke="var(--scene-line,#cfdfdc)" stroke-width="4" stroke-linecap="round"/>
+<g class="keo-loop keo-tap"><circle cx="55" cy="121" r="4" fill="none" stroke="var(--scene-grow,#a84328)" stroke-width="2"/></g>
+<!-- wires -->
+<path d="M66 110L96 84M168 84L190 92M234 92L254 84" stroke="var(--scene-muted,#4d6268)" stroke-width="1.5" stroke-dasharray="3 5" fill="none" opacity="0.6"/>
+<!-- Kafka log: a partition of records, with the transaction's COMMIT marker -->
+<ellipse cx="132" cy="112" rx="42" ry="5" fill="var(--scene-ink,#102a33)" opacity="0.08"/>
+<path d="M94 66l6-6h74l-6 6Z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M168 66l6-6v36l-6 6Z" fill="var(--scene-ink,#102a33)" opacity="0.14"/>
+<rect x="94" y="66" width="74" height="36" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<rect x="99" y="72" width="14" height="24" rx="2" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)"/>
+<rect x="116" y="72" width="14" height="24" rx="2" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)"/>
+<rect class="keo-loop keo-cell" x="133" y="72" width="14" height="24" rx="2" fill="var(--scene-accent,#006c73)" opacity="0"/>
+<g class="keo-loop keo-commit" opacity="0"><rect x="150" y="72" width="13" height="24" rx="2" fill="var(--scene-good,#24755c)"/><text class="keo-m" x="156.5" y="87.5" text-anchor="middle">C</text></g>
+<text class="keo-t" x="131" y="56" text-anchor="middle">ad-clicks</text>
+<!-- the retried copy is refused -->
+<g class="keo-loop keo-no" opacity="0"><circle cx="118" cy="118" r="8" fill="var(--scene-bad,#ac3f45)"/><path d="M114 114l8 8M122 114l-8 8" stroke="var(--scene-card,#fff)" stroke-width="2" stroke-linecap="round"/></g>
+<!-- click filter server -->
+<ellipse cx="212" cy="122" rx="26" ry="5" fill="var(--scene-ink,#102a33)" opacity="0.08"/>
+<path d="M190 78l6-6h40l-6 6Z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M230 78l6-6v36l-6 6Z" fill="var(--scene-ink,#102a33)" opacity="0.14"/>
+<rect x="190" y="78" width="40" height="36" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<path d="M196 89H216M196 101H216" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"/>
+<circle class="keo-loop keo-led" cx="223" cy="89" r="2.5" fill="var(--scene-good,#24755c)"/>
+<circle cx="223" cy="101" r="2.5" fill="var(--scene-good,#24755c)"/>
+<text class="keo-t" x="212" y="134" text-anchor="middle">filter</text>
+<!-- the advertiser's bill -->
+<ellipse cx="282" cy="140" rx="28" ry="5" fill="var(--scene-ink,#102a33)" opacity="0.08"/>
+<path d="M256 44h40l10 10v82h-50Z" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<path d="M296 44v10h10" fill="none" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<text class="keo-t" x="262" y="66">c-42</text>
+<path d="M262 74H292M262 82H284" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"/>
+<text class="keo-t" x="262" y="100">spend</text>
+<text class="keo-v keo-loop keo-old" x="281" y="118" text-anchor="middle">$2.80</text>
+<text class="keo-v keo-loop keo-new" x="281" y="118" text-anchor="middle" opacity="0">$3.20</text>
+<g class="keo-loop keo-new" opacity="0"><circle cx="300" cy="130" r="8" fill="var(--scene-good,#24755c)"/><path d="M296 130l3 3 5-6" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<!-- messages: the click, its retried copy, the billable click -->
+<circle class="keo-loop keo-click" cx="70" cy="112" r="4.5" fill="var(--scene-accent,#006c73)" opacity="0"/>
+<circle class="keo-loop keo-dup" cx="70" cy="112" r="4.5" fill="var(--scene-warn,#8c6100)" opacity="0"/>
+<circle class="keo-loop keo-out" cx="150" cy="86" r="4.5" fill="var(--scene-good,#24755c)" opacity="0"/>
+</svg>

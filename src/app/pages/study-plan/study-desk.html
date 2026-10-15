@@ -211,7 +211,7 @@
                   <summary>Related lessons for a targeted refresh</summary>
                   @for (link of entry.refreshLinks; track link.title) {
                     <p>
-                      <a [routerLink]="link.route">{{ link.title }}</a>
+                      <a class="action-chip" [routerLink]="link.route">{{ link.title }}</a>
                     </p>
                   }
                 </details>

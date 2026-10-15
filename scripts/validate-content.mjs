@@ -13,6 +13,7 @@ import { buildHandsOnDsaIndex } from './generate-hands-on-dsa-index.mjs';
 import { foundationLanguageNoteErrors } from './foundation-language-notes.mjs';
 import { includesBaselineSolutionLanguages } from './solution-language-contract.mjs';
 import { cardSceneTextErrors, learningUnitCardErrors } from './learning-unit-card-contract.mjs';
+import { accessLevelErrors, accessLevelsFile, learningUnitIds } from './access-levels-contract.mjs';
 
 const repositoryRoot = fileURLToPath(new URL('../', import.meta.url));
 const requestedRoot = process.argv[2];
@@ -838,12 +839,15 @@ for (const file of contentFiles) {
 const readyMadeTemplateCount = await validateReadyMadeCatalog(contentFiles);
 const courseIdsByPath = new Map();
 const catalogItemsByPath = new Map();
+// DLV-942: learning unit IDs per "path/course", for the public access levels.
+const unitIdsByCourse = new Map();
 for (const file of contentFiles) {
   const label = relative(contentRoot, file);
   if (basename(file) === 'course.json') {
     const manifest = JSON.parse(await readFile(file, 'utf8'));
     if (!courseIdsByPath.has(manifest.path)) courseIdsByPath.set(manifest.path, new Set());
     courseIdsByPath.get(manifest.path).add(manifest.id);
+    unitIdsByCourse.set(`${manifest.path}/${manifest.id}`, learningUnitIds(manifest));
   } else if (basename(file) === 'catalog.json') {
     const pathId = label.split('/')[0];
     const catalog = JSON.parse(await readFile(file, 'utf8'));
@@ -873,6 +877,12 @@ for (const file of contentFiles) {
     /^study-plans\/templates\/[a-z0-9-]+\.json$/.test(label)
   )
     continue;
+  if (label === accessLevelsFile) {
+    // DLV-942: unit IDs and levels only, derived in the content repository from its sample policy.
+    for (const error of accessLevelErrors(JSON.parse(await readFile(file, 'utf8')), unitIdsByCourse))
+      requireValue(false, error);
+    continue;
+  }
   if (
     [
       'learn/hands-on-dsa-preparation.json',

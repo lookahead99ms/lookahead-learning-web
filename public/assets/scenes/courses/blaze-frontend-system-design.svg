@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="On a desktop page a typed query opens a suggestion list over a scrolling feed while grid images load row by row, the phone shows the same feed in one column, and the search node lights up in the component tree">
+<style>
+.bfsd-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.bfsd-tm { font-family: ui-monospace, Menlo, monospace; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.bfsd-sh { fill: var(--scene-ink, #102a33); opacity: .08; }
+.bfsd-slab { fill: var(--scene-ink, #102a33); opacity: .14; }
+.bfsd-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 2; }
+.bfsd-node { fill: var(--scene-card, #ffffff); stroke: var(--scene-muted, #536970); stroke-width: 1.5; }
+.bfsd-ln { fill: var(--scene-line, #cfdfdc); }
+.bfsd-soft { fill: var(--scene-accent-soft, #dcefed); }
+.bfsd-acc { fill: var(--scene-accent, #006c73); }
+.bfsd-mut { fill: var(--scene-muted, #536970); opacity: .45; }
+.bfsd-field { fill: var(--scene-card, #ffffff); stroke: var(--scene-accent, #006c73); stroke-width: 1.5; }
+.bfsd-trunk { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 1.5; }
+
+.bfsd-k1 { animation: bfsd-kf-k1 7s infinite; }
+.bfsd-k2 { animation: bfsd-kf-k2 7s infinite; }
+.bfsd-k3 { animation: bfsd-kf-k3 7s infinite; }
+@keyframes bfsd-kf-k1 { 0%, 8% { fill-opacity: 0; } 10%, 92% { fill-opacity: 1; } 96%, 100% { fill-opacity: 0; } }
+@keyframes bfsd-kf-k2 { 0%, 15% { fill-opacity: 0; } 17%, 92% { fill-opacity: 1; } 96%, 100% { fill-opacity: 0; } }
+@keyframes bfsd-kf-k3 { 0%, 22% { fill-opacity: 0; } 24%, 92% { fill-opacity: 1; } 96%, 100% { fill-opacity: 0; } }
+.bfsd-drop { animation: bfsd-kf-drop 7s ease-out infinite; }
+@keyframes bfsd-kf-drop { 0%, 28% { opacity: 0; transform: translateY(-4px); } 33%, 88% { opacity: 1; transform: translateY(0); } 92%, 100% { opacity: 0; transform: translateY(0); } }
+.bfsd-hot { animation: bfsd-kf-hot 7s infinite; }
+@keyframes bfsd-kf-hot { 0%, 9% { opacity: 0; } 12%, 88% { opacity: 1; } 92%, 100% { opacity: 0; } }
+.bfsd-scroll { animation: bfsd-kf-scroll 7s linear infinite; }
+@keyframes bfsd-kf-scroll { 0% { transform: translateY(0); } 100% { transform: translateY(-34px); } }
+.bfsd-pscroll { animation: bfsd-kf-pscroll 7s linear infinite; }
+@keyframes bfsd-kf-pscroll { 0% { transform: translateY(0); } 100% { transform: translateY(-30px); } }
+.bfsd-r1 { animation: bfsd-kf-r1 7s infinite; }
+.bfsd-r2 { animation: bfsd-kf-r2 7s infinite; }
+.bfsd-r3 { animation: bfsd-kf-r3 7s infinite; }
+@keyframes bfsd-kf-r1 { 0%, 38% { opacity: 0; } 42%, 94% { opacity: 1; } 98%, 100% { opacity: 0; } }
+@keyframes bfsd-kf-r2 { 0%, 48% { opacity: 0; } 52%, 94% { opacity: 1; } 98%, 100% { opacity: 0; } }
+@keyframes bfsd-kf-r3 { 0%, 58% { opacity: 0; } 62%, 94% { opacity: 1; } 98%, 100% { opacity: 0; } }
+
+.bfsd-k1, .bfsd-k2, .bfsd-k3, .bfsd-drop, .bfsd-hot, .bfsd-scroll, .bfsd-pscroll, .bfsd-r1, .bfsd-r2, .bfsd-r3 { animation-delay: -4.62s; }
+@media (prefers-reduced-motion: reduce) { .bfsd-k1, .bfsd-k2, .bfsd-k3, .bfsd-drop, .bfsd-hot, .bfsd-scroll, .bfsd-pscroll, .bfsd-r1, .bfsd-r2, .bfsd-r3 { animation-play-state: paused; } }
+</style>
+<defs>
+  <clipPath id="bfsd-clip-feed"><rect x="18" y="62" width="88" height="90"/></clipPath>
+  <clipPath id="bfsd-clip-phone"><rect x="214" y="60" width="48" height="96"/></clipPath>
+  <g id="bfsd-post">
+    <rect class="bfsd-box" x="20" y="0" width="84" height="30" rx="4"/>
+    <circle class="bfsd-soft" cx="30" cy="10" r="5"/>
+    <rect class="bfsd-ln" x="40" y="7" width="44" height="5" rx="2.5"/>
+    <rect class="bfsd-ln" x="26" y="19" width="70" height="5" rx="2.5"/>
+  </g>
+  <g id="bfsd-ppost">
+    <rect class="bfsd-box" x="216" y="0" width="44" height="26" rx="3"/>
+    <circle class="bfsd-soft" cx="224" cy="9" r="4"/>
+    <rect class="bfsd-ln" x="231" y="6" width="22" height="4" rx="2"/>
+    <rect class="bfsd-ln" x="220" y="16" width="34" height="4" rx="2"/>
+  </g>
+  <g id="bfsd-tile"><rect class="bfsd-soft" width="22" height="22" rx="3"/><circle class="bfsd-acc" cx="15" cy="7" r="3"/><path class="bfsd-acc" d="M2 20 L9 11 L14 17 L17 14 L21 20 Z" opacity=".7"/></g>
+</defs>
+<rect x="0" y="0" width="320" height="180" rx="12" fill="var(--scene-card, #ffffff)"/>
+
+<!-- desktop page -->
+<ellipse class="bfsd-sh" cx="104" cy="166" rx="96" ry="5"/>
+<rect class="bfsd-slab" x="10" y="18" width="188" height="144" rx="8"/>
+<rect class="bfsd-box" x="10" y="14" width="188" height="144" rx="8"/>
+<circle class="bfsd-mut" cx="21" cy="24" r="3"/><circle class="bfsd-mut" cx="30" cy="24" r="3"/><circle class="bfsd-mut" cx="39" cy="24" r="3"/>
+<path d="M11 32 H197" stroke="var(--scene-line, #cfdfdc)" stroke-width="1.5"/>
+
+<!-- scrolling feed -->
+<g clip-path="url(#bfsd-clip-feed)">
+  <g class="bfsd-scroll">
+    <use href="#bfsd-post" y="64"/><use href="#bfsd-post" y="98"/><use href="#bfsd-post" y="132"/><use href="#bfsd-post" y="166"/>
+  </g>
+</g>
+
+<!-- image grid loading row by row -->
+<g class="bfsd-ln" opacity=".55">
+  <rect x="112" y="64" width="22" height="22" rx="3"/><rect x="139" y="64" width="22" height="22" rx="3"/><rect x="166" y="64" width="22" height="22" rx="3"/>
+  <rect x="112" y="91" width="22" height="22" rx="3"/><rect x="139" y="91" width="22" height="22" rx="3"/><rect x="166" y="91" width="22" height="22" rx="3"/>
+  <rect x="112" y="118" width="22" height="22" rx="3"/><rect x="139" y="118" width="22" height="22" rx="3"/><rect x="166" y="118" width="22" height="22" rx="3"/>
+</g>
+<g class="bfsd-r1"><use href="#bfsd-tile" x="112" y="64"/><use href="#bfsd-tile" x="139" y="64"/><use href="#bfsd-tile" x="166" y="64"/></g>
+<g class="bfsd-r2"><use href="#bfsd-tile" x="112" y="91"/><use href="#bfsd-tile" x="139" y="91"/><use href="#bfsd-tile" x="166" y="91"/></g>
+<g class="bfsd-r3"><use href="#bfsd-tile" x="112" y="118"/><use href="#bfsd-tile" x="139" y="118"/><use href="#bfsd-tile" x="166" y="118"/></g>
+
+<!-- typeahead: search box and its suggestion list, drawn over the page -->
+<rect class="bfsd-field" x="20" y="38" width="120" height="18" rx="9"/>
+<circle cx="31" cy="46.5" r="3.5" fill="none" stroke="var(--scene-accent, #006c73)" stroke-width="1.6"/>
+<path d="M33.5 49 L36 51.5" stroke="var(--scene-accent, #006c73)" stroke-width="1.6" stroke-linecap="round"/>
+<text class="bfsd-tm" x="42" y="51" font-size="11"><tspan class="bfsd-k1">k</tspan><tspan class="bfsd-k2">a</tspan><tspan class="bfsd-k3">f</tspan></text>
+<g class="bfsd-drop">
+  <rect class="bfsd-slab" x="20" y="62" width="120" height="50" rx="5"/>
+  <rect class="bfsd-field" x="20" y="59" width="120" height="50" rx="5"/>
+  <rect class="bfsd-soft" x="22" y="62" width="116" height="14" rx="3"/>
+  <rect class="bfsd-acc" x="28" y="66" width="16" height="6" rx="3"/><rect class="bfsd-ln" x="46" y="66" width="40" height="6" rx="3"/>
+  <rect class="bfsd-acc" x="28" y="82" width="16" height="6" rx="3"/><rect class="bfsd-ln" x="46" y="82" width="58" height="6" rx="3"/>
+  <rect class="bfsd-acc" x="28" y="97" width="16" height="6" rx="3"/><rect class="bfsd-ln" x="46" y="97" width="30" height="6" rx="3"/>
+</g>
+
+<!-- phone: the same feed in one column -->
+<ellipse class="bfsd-sh" cx="238" cy="170" rx="32" ry="4"/>
+<rect class="bfsd-slab" x="210" y="32" width="56" height="134" rx="10"/>
+<rect class="bfsd-box" x="210" y="28" width="56" height="134" rx="10"/>
+<rect class="bfsd-mut" x="230" y="33" width="16" height="3" rx="1.5"/>
+<rect class="bfsd-field" x="216" y="41" width="44" height="14" rx="7"/>
+<circle cx="224" cy="47.5" r="2.8" fill="none" stroke="var(--scene-accent, #006c73)" stroke-width="1.4"/>
+<g clip-path="url(#bfsd-clip-phone)">
+  <g class="bfsd-pscroll">
+    <use href="#bfsd-ppost" y="62"/><use href="#bfsd-ppost" y="92"/><use href="#bfsd-ppost" y="122"/><use href="#bfsd-ppost" y="152"/>
+  </g>
+</g>
+
+<!-- component tree: the search node re-renders -->
+<ellipse class="bfsd-sh" cx="294" cy="134" rx="20" ry="3"/>
+<path class="bfsd-trunk" d="M282 48 V120 M282 68 H288 M282 94 H288 M282 120 H288"/>
+<rect class="bfsd-node" x="274" y="34" width="26" height="14" rx="3"/>
+<rect class="bfsd-ln" x="279" y="39" width="16" height="4" rx="2"/>
+<rect class="bfsd-node" x="288" y="60" width="24" height="16" rx="3"/>
+<rect class="bfsd-hot" x="288" y="60" width="24" height="16" rx="3" fill="var(--scene-accent-soft, #dcefed)" stroke="var(--scene-accent, #006c73)" stroke-width="2"/>
+<circle cx="297" cy="67" r="3" fill="none" stroke="var(--scene-accent, #006c73)" stroke-width="1.5"/>
+<path d="M299 69 L302 72" stroke="var(--scene-accent, #006c73)" stroke-width="1.5" stroke-linecap="round"/>
+<rect class="bfsd-node" x="288" y="86" width="24" height="16" rx="3"/>
+<rect class="bfsd-ln" x="293" y="90" width="14" height="3" rx="1.5"/><rect class="bfsd-ln" x="293" y="95" width="10" height="3" rx="1.5"/>
+<rect class="bfsd-node" x="288" y="112" width="24" height="16" rx="3"/>
+<g class="bfsd-ln"><rect x="294" y="115" width="5" height="4.5" rx="1"/><rect x="301" y="115" width="5" height="4.5" rx="1"/><rect x="294" y="121.5" width="5" height="4.5" rx="1"/><rect x="301" y="121.5" width="5" height="4.5" rx="1"/></g>
+</svg>

@@ -1,0 +1,77 @@
+:host {
+  display: block;
+}
+.access-records {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.access-record {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.access-record[data-status='expired'] {
+  border-style: dashed;
+}
+.record-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 16px;
+}
+.record-heading h3 {
+  margin: 0;
+  color: var(--text-strong);
+  font-size: 1.05rem;
+}
+.record-ends {
+  margin: 0;
+  color: var(--text-strong);
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+.record-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+  gap: 8px 18px;
+  margin: 0;
+}
+.record-facts dt {
+  color: var(--text-subtle);
+  font-size: 0.78rem;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.record-facts dd {
+  margin: 2px 0 0;
+  color: var(--text-strong);
+  overflow-wrap: anywhere;
+}
+.record-discount {
+  color: var(--text-subtle);
+  font-size: 0.9rem;
+}
+.record-note {
+  margin: 0;
+  color: var(--text-subtle);
+  font-size: 0.9rem;
+}
+.record-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 12px;
+}
+@media (max-width: 560px) {
+  .record-actions {
+    flex-direction: column;
+  }
+}

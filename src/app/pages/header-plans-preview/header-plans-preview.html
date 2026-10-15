@@ -1,0 +1,170 @@
+<app-platform-header />
+<main id="main-content" class="preview-page">
+  <header class="page-intro">
+    <p class="eyebrow">Staff preview</p>
+    <h1>Header options for plans</h1>
+    <p class="mock-note" role="note">
+      <strong>These are mockups, not the live header.</strong> Each picture is drawn and cannot be
+      clicked. Every option is shown three ways: to a free or signed-out visitor, during a sale, and
+      to a paid member, then again at phone width.
+    </p>
+    <p class="facts">
+      Plans: {{ plans.join(' · ') }} a year, and nothing renews by itself. Sales run 3–4 times a
+      year and appear only while one is on; “{{ sale.emoji }} {{ sale.name }}” is an example name.
+    </p>
+    <nav class="option-index" aria-label="Options on this page">
+      @for (option of options; track option.id) {
+        <a [href]="'#option-' + option.id">Option {{ option.letter }}: {{ option.name }}</a>
+      }
+    </nav>
+  </header>
+
+  @for (option of options; track option.id) {
+    <section
+      class="option"
+      [id]="'option-' + option.id"
+      [attr.data-option]="option.id"
+      [attr.aria-labelledby]="'option-' + option.id + '-heading'"
+    >
+      <h2 [id]="'option-' + option.id + '-heading'">
+        <span class="option-letter">Option {{ option.letter }}</span> {{ option.name }}
+      </h2>
+      <p class="option-idea">{{ option.idea }}</p>
+
+      <div class="trade-offs">
+        <div>
+          <h3>Good</h3>
+          <ul>
+            @for (point of option.pros; track point) {
+              <li>{{ point }}</li>
+            }
+          </ul>
+        </div>
+        <div>
+          <h3>Watch out</h3>
+          <ul>
+            @for (point of option.cons; track point) {
+              <li>{{ point }}</li>
+            }
+          </ul>
+        </div>
+      </div>
+
+      <h3 class="view-heading">Desktop</h3>
+      <div class="desktop-states">
+        @for (state of option.states; track state.label) {
+          <figure class="state" [attr.data-state]="state.state">
+            <figcaption>
+              <strong class="state-label">{{ state.label }}</strong>
+              <span class="state-summary">{{ state.summary }}</span>
+            </figcaption>
+            <div class="mock-frame">
+              <ng-container
+                *ngTemplateOutlet="mock; context: { $implicit: state.header, phone: false }"
+              />
+            </div>
+          </figure>
+        }
+      </div>
+
+      <h3 class="view-heading">Phone, 390 pixels wide</h3>
+      <div class="phone-states">
+        @for (state of option.states; track state.label) {
+          <figure class="state phone-state" [attr.data-state]="state.state">
+            <figcaption>
+              <strong class="state-label">{{ state.label }}</strong>
+            </figcaption>
+            <ng-container
+              *ngTemplateOutlet="mock; context: { $implicit: state.header, phone: true }"
+            />
+          </figure>
+        }
+      </div>
+    </section>
+  }
+</main>
+
+<!-- One static picture of a header. Hidden from assistive tech and inert: the caption describes it. -->
+<ng-template #mock let-header let-phone="phone">
+  <div class="mock" [class.phone]="phone" aria-hidden="true" inert>
+    <div class="mock-bar">
+      <span class="mock-brand"><app-platform-brand /></span>
+      <span class="mock-nav"><span>Learn</span><span>Grow</span><span>Blaze</span></span>
+      <span class="mock-tools">
+        <span class="mock-search">Search<kbd>⌘K</kbd></span>
+        @if (header.studyPlan) {
+          <span class="mock-link mock-slot">Study Plan</span>
+        }
+        @if (header.group; as group) {
+          <span class="mock-group mock-slot">
+            @for (segment of group; track segment.label) {
+              <span class="mock-segment" [class.accent]="segment.tone === 'accent'">{{
+                phone && segment.phoneLabel ? segment.phoneLabel : segment.label
+              }}</span>
+            }
+          </span>
+        }
+        <span class="mock-theme">
+          <span [class.on]="theme.selected() === 'light'">Light</span>
+          <span [class.on]="theme.selected() === 'dark'">Dark</span>
+        </span>
+      </span>
+      <span class="mock-account">
+        @if (header.greeting) {
+          <span class="mock-greeting">{{ header.greeting }}</span>
+        }
+        @switch (header.account.kind) {
+          @case ('sign-in') {
+            <span class="mock-button primary">Sign in</span>
+          }
+          @case ('sign-in-sign-up') {
+            <span class="mock-button quiet">Sign in</span>
+            <span class="mock-button primary">Sign up free</span>
+          }
+          @default {
+            <span class="mock-chip">
+              @if (header.account.dot) {
+                <span class="mock-dot"></span>
+              }
+              Sam
+              <span class="mock-chevron">{{ header.menu ? '▴' : '▾' }}</span>
+            </span>
+          }
+        }
+      </span>
+    </div>
+    @if (header.strip; as strip) {
+      <div class="mock-strip">
+        <span class="mock-strip-text"
+          >{{ strip.text }}<span class="mock-strip-separator"> · </span
+          ><span class="mock-strip-action">{{ strip.action }}</span></span
+        >
+        <span class="mock-close">×</span>
+      </div>
+    }
+    <div class="mock-page" [class.with-menu]="!!header.menu">
+      <span class="mock-line wide"></span>
+      <span class="mock-line"></span>
+      <span class="mock-line short"></span>
+      @if (header.menu; as menu) {
+        <span class="mock-menu">
+          <span class="mock-menu-head">
+            <span class="mock-avatar">S</span>
+            <span class="mock-menu-name"
+              >Sam Rivera<small>Your study plans and progress</small></span
+            >
+          </span>
+          @for (item of menu; track item.label) {
+            <span class="mock-menu-item" [class.accent]="item.accent">
+              <span class="mock-menu-icon">{{ item.icon }}</span>
+              <span class="mock-menu-text"
+                ><span class="mock-menu-label">{{ item.label }}</span
+                ><small>{{ item.detail }}</small></span
+              >
+            </span>
+          }
+        </span>
+      }
+    </div>
+  </div>
+</ng-template>

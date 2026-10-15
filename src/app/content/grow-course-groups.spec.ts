@@ -9,9 +9,9 @@ describe('Grow course placement', () => {
     expect(frontend?.courseIds).not.toContain('nodejs');
   });
 
-  it('places practical AI in one dedicated Grow group', () => {
+  it('places practical AI and AI code verification in one dedicated Grow group', () => {
     const ai = GROW_COURSE_GROUPS.find((group) => group.id === 'ai-engineering');
-    expect(ai?.courseIds).toEqual(['ai-assisted-development']);
+    expect(ai?.courseIds).toEqual(['ai-assisted-development', 'ai-code-verification']);
   });
 
   it('keeps the public demo course out of every Grow group', () => {

@@ -69,6 +69,38 @@ describe('StudyPlanAccount transport and isolation', () => {
   let me: boolean;
   let nextPlan: AccountPlan;
   let fetcher: ReturnType<typeof vi.fn>;
+  it('activates managed invitations with session CSRF before loading grants and plans', async () => {
+    me = true;
+    const original = fetcher.getMockImplementation() as (path: string, options: RequestInit) => Promise<Response>;
+    fetcher.mockImplementation(async (path: string, options: RequestInit) => {
+      if (path === '/api/v1/auth/options') return json({ oauth: true, managedLogin: true });
+      if (path.endsWith('/auth/invitations/activate')) {
+        expect(options.method).toBe('POST');
+        expect(options.headers).toMatchObject({ 'X-CSRF-TOKEN': 'test-csrf' });
+        expect(options.body).toBeUndefined();
+        return json({ accountId: 'account-a', username: 'synthetic', displayName: 'Synthetic', topicGrants: ['learn:core-java'] });
+      }
+      return original(path, options);
+    });
+    await store.initialize();
+    expect(store.account()?.topicGrants).toEqual(['learn:core-java']);
+    const paths = fetcher.mock.calls.map(([path]) => path);
+    expect(paths.indexOf('/bff/api/v1/auth/invitations/activate')).toBeLessThan(paths.indexOf('/bff/api/v1/account-catalog'));
+    expect(fetcher.mock.calls.filter(([path]) => path.endsWith('/auth/invitations/activate'))).toHaveLength(1);
+  });
+  it.each([403, 409, 503])('stops restoration when invitation activation fails with %s', async (status) => {
+    me = true;
+    const original = fetcher.getMockImplementation() as (path: string, options: RequestInit) => Promise<Response>;
+    fetcher.mockImplementation(async (path: string, options: RequestInit) => {
+      if (path === '/api/v1/auth/options') return json({ oauth: true, managedLogin: true });
+      if (path.endsWith('/auth/invitations/activate')) return new Response(null, { status });
+      return original(path, options);
+    });
+    await store.initialize();
+    expect(store.errorStatus()).toBe(status);
+    expect(fetcher.mock.calls.some(([path]) => path.endsWith('/account-catalog'))).toBe(false);
+    expect(fetcher.mock.calls.filter(([path]) => path.endsWith('/auth/me'))).toHaveLength(1);
+  });
   beforeEach(() => {
     mutations = [];
     failMutation = 0;
@@ -415,24 +447,44 @@ describe('StudyPlanAccount transport and isolation', () => {
     expect(store.plans()).toEqual([]);
   });
 
-  it('preserves the validated server-directed OAuth logout and rejects an external redirect', async () => {
+  it('closes Local Identity with its own CSRF token instead of navigating to a stale ID-token hint', async () => {
     await store.login('demo-a', 'test');
     store.authOptions.set({ registration: false, google: false, oauth: true });
-    const transport = fetcher.getMockImplementation() as (
-      path: string,
-      options: RequestInit,
-    ) => Promise<Response>;
-    let destination = new URL('/connect/logout?request=synthetic', window.location.origin).href;
-    fetcher.mockImplementation((path: string, options: RequestInit) =>
-      path.endsWith('/auth/logout')
-        ? Promise.resolve(json({ logoutUrl: destination }))
-        : transport(path, options),
-    );
+    fetcher.mockClear();
+    fetcher.mockImplementation(async (path: string, options: RequestInit) => {
+      if (path.endsWith('/auth/csrf')) return json({ token: path.startsWith('/bff') ? 'bff-token' : 'identity-token', headerName: 'X-CSRF-TOKEN' });
+      if (path === '/bff/api/v1/auth/logout') {
+        expect(options.headers).toMatchObject({ 'X-CSRF-TOKEN': 'bff-token' });
+        return json({ logoutUrl: 'https://untrusted.invalid/connect/logout?id_token_hint=stale' });
+      }
+      expect(path).toBe('/api/v1/auth/logout');
+      expect(options.method).toBe('POST');
+      expect(options.headers).toMatchObject({ 'X-CSRF-TOKEN': 'identity-token' });
+      return new Response(null, { status: 204 });
+    });
     expect(await store.logout()).toBe(true);
-    expect(store.logoutRedirectPending()).toBe(true);
-    destination = 'https://external.example/connect/logout';
-    expect(await store.logout()).toBe(false);
+    expect(fetcher.mock.calls.map(([path]) => path)).toEqual([
+      '/bff/api/v1/auth/csrf', '/bff/api/v1/auth/logout', '/api/v1/auth/csrf', '/api/v1/auth/logout',
+    ]);
     expect(store.logoutRedirectPending()).toBe(false);
+    expect(store.account()).toBeNull();
+  });
+
+  it('retries Identity cleanup after BFF logout completed and rejects partial success', async () => {
+    await store.login('demo-a', 'test');
+    store.authOptions.set({ registration: false, google: false, oauth: true });
+    let identityAvailable = false;
+    fetcher.mockImplementation(async (path: string) => {
+      if (path.startsWith('/bff')) return new Response(null, { status: 401 });
+      if (path.endsWith('/csrf')) return json({ token: 'identity-token', headerName: 'X-CSRF-TOKEN' });
+      return new Response(null, { status: identityAvailable ? 204 : 503 });
+    });
+    expect(await store.logout()).toBe(false);
+    expect(store.account()).not.toBeNull();
+    expect(store.errorStatus()).toBe(503);
+    identityAvailable = true;
+    expect(await store.logout()).toBe(true);
+    expect(store.account()).toBeNull();
   });
 
   it('accepts only the configured same-origin managed logout bridge', async () => {

@@ -605,9 +605,11 @@ export function previewSummary(text: string): string {
       .problem-preview-status {
         color: var(--text-subtle);
       }
+      /* DLV-937: a compact pill (.action-link). */
       .problem-preview-open {
-        color: var(--accent-link);
-        font-weight: 800;
+        min-height: 36px;
+        padding: 6px 14px;
+        font-size: 0.86rem;
       }
       @media (max-width: 700px) {
         .problem-table,

@@ -682,10 +682,31 @@ select {
 }
 
 .metadata-link {
-  color: var(--link);
+  color: var(--accent-link);
   text-decoration: none;
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
+}
+
+/* Values in the preview's details list keep a soft underline so they read as links. */
+.summary-metadata .metadata-link {
+  text-decoration: underline;
+  text-decoration-color: var(--link-underline);
+}
+
+/* DLV-937: course and difficulty under a result are small chips, so they read as filters. */
+.result-context .metadata-link:not(.result-path) {
+  padding: 2px 9px;
+  border: 1px solid color-mix(in srgb, var(--accent-link) 30%, var(--line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-link) 7%, var(--surface));
+  text-decoration: none;
+}
+
+.result-context .metadata-link:not(.result-path):hover,
+.summary-subjects .metadata-link:hover {
+  border-color: var(--accent-link);
+  text-decoration-line: none;
 }
 
 .result-context .metadata-link,
@@ -697,8 +718,8 @@ select {
 .metadata-link:hover,
 .metadata-link:focus-visible {
   color: var(--search-primary);
-  text-decoration-thickness: 2px;
-  text-decoration: underline;
+  text-decoration-line: underline;
+  text-decoration-color: currentColor;
 }
 
 .metadata-link:focus-visible {
@@ -763,7 +784,9 @@ select {
 }
 
 .show-more-results {
-  margin-top: 14px;
+  /* Button placement rule: one action closing a list sits centred. */
+  display: block;
+  margin: 14px auto 0;
 }
 
 .empty-state,
@@ -1269,21 +1292,24 @@ select {
   gap: 16px 24px;
   margin-top: 16px;
 }
+/* DLV-937: both review links are pill buttons, not underlined text. */
 .review-navigation a {
   display: inline-flex;
   align-items: center;
   box-sizing: border-box;
   min-height: 44px;
   min-width: 0;
-  padding-block: 8px;
-  color: var(--accent-link);
+  padding: 8px 18px;
+  border: 1.5px solid var(--accent-strong);
+  border-radius: 999px;
+  color: var(--accent-strong);
+  background: color-mix(in srgb, var(--accent-strong) 10%, transparent);
   font-size: 0.9rem;
-  font-weight: 700;
-  line-height: 1.5;
-  text-decoration: underline;
-  text-underline-offset: 4px;
-  text-decoration-thickness: 1px;
+  font-weight: 750;
+  line-height: 1.3;
+  text-decoration: none;
   overflow-wrap: anywhere;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 .review-navigation .review-back { text-align: start; }
 .review-navigation .review-search {
@@ -1292,11 +1318,11 @@ select {
   text-align: end;
 }
 .review-navigation a:hover {
-  color: var(--text-strong);
-  text-decoration-thickness: 2px;
+  color: var(--accent-on-primary);
+  background: var(--accent-strong);
 }
 .review-navigation a:focus-visible {
-  outline: 3px solid var(--accent-link);
+  outline: 3px solid var(--accent-focus);
   outline-offset: 3px;
 }
 @media (max-width: 540px) {

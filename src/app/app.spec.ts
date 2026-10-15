@@ -1,4 +1,6 @@
-import { provideRouter } from '@angular/router';
+import { vi } from 'vitest';
+import { StudyPlanAccount } from './pages/study-plan/study-plan-account';
+import { Router, provideRouter } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
 import { App } from './app';
 
@@ -43,4 +45,29 @@ describe('App', () => {
 
     history.replaceState(null, '', originalPath || '/');
   });
+});
+
+it('sends an expired session to sign-in without redirecting anonymous browsing', async () => {
+  await TestBed.configureTestingModule({ imports: [App], providers: [provideRouter([])] }).compileComponents();
+  const router = TestBed.inject(Router);
+  const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+  const fixture = TestBed.createComponent(App);
+  fixture.detectChanges();
+  expect(navigate).not.toHaveBeenCalled();
+  TestBed.inject(StudyPlanAccount).sessionExpired.set(true);
+  fixture.detectChanges();
+  expect(navigate).toHaveBeenCalledExactlyOnceWith(['/sign-in'], {
+    queryParams: { error: 'session-expired' }, replaceUrl: true,
+  });
+});
+
+it('keeps rejected credentials on the existing sign-in page', async () => {
+  await TestBed.configureTestingModule({ imports: [App], providers: [provideRouter([])] }).compileComponents();
+  const router = TestBed.inject(Router);
+  vi.spyOn(router, 'url', 'get').mockReturnValue('/sign-in');
+  const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+  TestBed.inject(StudyPlanAccount).sessionExpired.set(true);
+  const fixture = TestBed.createComponent(App);
+  fixture.detectChanges();
+  expect(navigate).not.toHaveBeenCalled();
 });

@@ -29,10 +29,22 @@
         <ul [attr.aria-labelledby]="contentId + '-' + group.id" [style.--group-accent]="group.accent">
           @for (page of group.pages; track page.id) {
             <li>
-              <a [href]="page.href" [attr.aria-current]="page.id === pageId() ? 'page' : null"
+              <a [href]="page.href" [attr.aria-current]="documentationState(page.id)"
                 ><span class="item-icon" aria-hidden="true">{{ page.icon }}</span
                 ><span>{{ page.label }}</span></a
               >
+              @if (page.children && section()?.parent?.id === page.id) {
+                <ul class="subpages" [attr.aria-label]="page.label + ' pages'">
+                  @for (child of page.children; track child.id) {
+                    <li>
+                      <a [href]="child.href" [attr.aria-current]="child.id === pageId() ? 'page' : null"
+                        ><span class="item-icon" aria-hidden="true">{{ child.icon }}</span
+                        ><span>{{ child.label }}</span></a
+                      >
+                    </li>
+                  }
+                </ul>
+              }
             </li>
           }
         </ul>

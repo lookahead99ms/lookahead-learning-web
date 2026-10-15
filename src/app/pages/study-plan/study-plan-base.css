@@ -36,17 +36,64 @@ button {
   font: inherit;
   color: inherit;
 }
-input[type='text'],
+input:is([type='text'], :not([type])),
 textarea,
 select {
   min-width: 0;
   width: 100%;
   border: 1px solid var(--line);
-  border-radius: 7px;
-  background: var(--surface);
+  border-radius: 10px;
+  background-color: var(--surface);
   color: var(--text-strong);
-  padding: 11px;
-  font-size: 13px;
+  padding: 11px 12px;
+  font-size: 14px;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+/* One select look for every plan control: a drawn chevron, a clear hover and a quiet lock. */
+select {
+  min-height: 46px;
+  padding-inline-end: 40px;
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--text-subtle) 50%),
+    linear-gradient(135deg, var(--text-subtle) 50%, transparent 50%);
+  background-position:
+    calc(100% - 20px) 50%,
+    calc(100% - 15px) 50%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  font-weight: 600;
+  cursor: pointer;
+}
+select:hover:not(:disabled),
+input:is([type='text'], :not([type])):hover:not(:disabled) {
+  border-color: var(--accent-strong);
+}
+select:focus,
+input:is([type='text'], :not([type])):focus,
+textarea:focus {
+  border-color: var(--accent-strong);
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-strong) 26%, transparent);
+}
+select:disabled,
+input:is([type='text'], :not([type])):disabled {
+  border-style: dashed;
+  background-color: var(--surface-muted);
+  color: var(--text-subtle);
+  cursor: not-allowed;
+}
+option:disabled {
+  color: var(--text-subtle);
+}
+@media (prefers-reduced-motion: reduce) {
+  input:is([type='text'], :not([type])),
+  textarea,
+  select {
+    transition: none;
+  }
 }
 button {
   cursor: pointer;
@@ -81,9 +128,7 @@ a {
 }
 a:focus-visible,
 button:focus-visible,
-input:focus-visible,
-textarea:focus-visible,
-select:focus-visible,
+input:not([type='text'], :not([type])):focus-visible,
 summary:focus-visible {
   outline: 3px solid var(--accent-focus);
   outline-offset: 4px;

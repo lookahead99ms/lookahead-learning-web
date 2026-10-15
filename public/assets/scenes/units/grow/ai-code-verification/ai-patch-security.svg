@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A reviewer reads an AI-written sign-up patch line by line and flags the line that logs the whole request; only after that line is fixed does the patch reach the sign-up form, which gets a check">
+<style>
+.aps-t{font:600 10px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.aps-scan{animation:aps-scan 8s ease-in-out infinite;animation-delay:-2.6s}
+@keyframes aps-scan{0%{transform:translate(0,0);opacity:0}4%{transform:translate(0,0);opacity:1}30%,56%{transform:translate(0,36px);opacity:1}72%,92%{transform:translate(0,72px);opacity:1}100%{transform:translate(0,72px);opacity:0}}
+.aps-flag{animation:aps-flag 8s ease-in-out infinite;animation-delay:-2.6s}
+@keyframes aps-flag{0%,26%{opacity:0}30%,52%{opacity:1}56%,100%{opacity:0}}
+.aps-fix{animation:aps-fix 8s ease-in-out infinite;animation-delay:-2.6s}
+@keyframes aps-fix{0%,54%{opacity:0}58%,94%{opacity:1}100%{opacity:0}}
+.aps-dot{animation:aps-dot 8s linear infinite;animation-delay:-2.6s}
+@keyframes aps-dot{0%,60%{transform:translate(0,0);opacity:0}62%{transform:translate(0,0);opacity:1}72%{transform:translate(26px,0);opacity:1}75%,100%{transform:translate(26px,0);opacity:0}}
+.aps-ok{animation:aps-ok 8s ease-in-out infinite;animation-delay:-2.6s}
+@keyframes aps-ok{0%,74%{opacity:0}78%,94%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.aps-scan,.aps-flag,.aps-fix,.aps-dot,.aps-ok{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<!-- the reviewer behind a laptop -->
+<ellipse cx="44" cy="146" rx="28" ry="5" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<circle cx="44" cy="94" r="11" fill="var(--scene-accent,#006c73)"/>
+<path d="M26 124a18 18 0 0 1 36 0Z" fill="var(--scene-accent,#006c73)"/>
+<path d="M22 124h44l-4 16H26Z" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-ink,#102a33)" stroke-width="1.5"/>
+<path d="M68 118H104M194 100H222" fill="none" stroke="var(--scene-muted,#5f7478)" stroke-width="1.5" stroke-dasharray="3 4"/>
+<!-- the AI-written patch: a diff document -->
+<ellipse cx="150" cy="158" rx="44" ry="5" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<path d="M108 26h72l12 12v114h-84Z" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="1.5"/>
+<path d="M180 26v12h12" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-ink,#102a33)" stroke-width="1.5"/>
+<rect x="114" y="33" width="22" height="13" rx="3" fill="var(--scene-accent-soft,#dcefed)"/>
+<text class="aps-t" x="118" y="43">AI</text>
+<g class="aps-flag"><rect x="111" y="88" width="78" height="12" rx="2" fill="var(--scene-warn,#a15c00)" opacity="0.28"/></g>
+<g class="aps-fix"><rect x="111" y="88" width="78" height="12" rx="2" fill="var(--scene-good,#1f7a4d)" opacity="0.22"/></g>
+<g fill="var(--scene-good,#1f7a4d)"><rect x="114" y="55" width="6" height="6" rx="1"/><rect x="114" y="67" width="6" height="6" rx="1"/><rect x="114" y="103" width="6" height="6" rx="1"/><rect x="114" y="127" width="6" height="6" rx="1"/></g>
+<g fill="var(--scene-bad,#b3261e)"><rect x="114" y="79" width="6" height="6" rx="1"/><rect x="114" y="91" width="6" height="6" rx="1"/><rect x="114" y="115" width="6" height="6" rx="1"/></g>
+<path d="M126 58h44M126 70h52M126 82h36M126 94h50M126 106h40M126 118h30M126 130h46M126 142h24" stroke="var(--scene-line,#cfdfdc)" stroke-width="4" stroke-linecap="round"/>
+<!-- the reviewer's lens moves down the diff -->
+<g class="aps-scan"><circle cx="198" cy="58" r="8" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/><path d="M204 64l6 6" stroke="var(--scene-ink,#102a33)" stroke-width="3" stroke-linecap="round"/></g>
+<!-- the flagged line: a cross, then a check after the fix -->
+<g class="aps-flag"><circle cx="100" cy="94" r="7" fill="var(--scene-bad,#b3261e)"/><path d="M97 91l6 6M103 91l-6 6" stroke="var(--scene-card,#fff)" stroke-width="2" stroke-linecap="round"/></g>
+<g class="aps-fix"><circle cx="100" cy="94" r="7" fill="var(--scene-good,#1f7a4d)"/><path d="M97 94l2 2 4-4" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2" stroke-linecap="round"/></g>
+<!-- the sign-up form the patch serves -->
+<ellipse cx="266" cy="156" rx="38" ry="5" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<rect x="228" y="148" width="80" height="4" fill="var(--scene-ink,#102a33)" opacity="0.14"/>
+<rect x="224" y="44" width="82" height="104" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="1.5"/>
+<path d="M224 56v-6a6 6 0 0 1 6-6h70a6 6 0 0 1 6 6v6Z" fill="var(--scene-accent,#006c73)"/>
+<rect x="232" y="64" width="66" height="15" rx="3" fill="none" stroke="var(--scene-line,#cfdfdc)" stroke-width="1.5"/>
+<text class="aps-t" x="236" y="75">lena.dev</text>
+<rect x="232" y="86" width="66" height="15" rx="3" fill="none" stroke="var(--scene-line,#cfdfdc)" stroke-width="1.5"/>
+<path d="M237 93.5h38" stroke="var(--scene-line,#cfdfdc)" stroke-width="4" stroke-linecap="round"/>
+<rect x="232" y="108" width="66" height="15" rx="3" fill="none" stroke="var(--scene-line,#cfdfdc)" stroke-width="1.5"/>
+<g fill="var(--scene-muted,#5f7478)"><circle cx="239" cy="115.5" r="2"/><circle cx="246" cy="115.5" r="2"/><circle cx="253" cy="115.5" r="2"/><circle cx="260" cy="115.5" r="2"/></g>
+<rect x="232" y="128" width="66" height="13" rx="6.5" fill="var(--scene-accent,#006c73)"/>
+<path d="M293 41v-4a5 5 0 0 1 10 0v4" fill="none" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<rect x="290" y="40" width="16" height="12" rx="2" fill="var(--scene-link,#2457a6)"/>
+<!-- the reviewed patch travels to the form, which gets a check -->
+<circle class="aps-dot" cx="196" cy="100" r="4" fill="var(--scene-accent,#006c73)"/>
+<g class="aps-ok"><circle cx="306" cy="140" r="8" fill="var(--scene-good,#1f7a4d)"/><path d="M302 140l3 3 5-5" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2" stroke-linecap="round"/></g>
+</svg>

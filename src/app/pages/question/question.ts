@@ -228,16 +228,9 @@ import { catalogGroupForCourse, nextCatalogGroup } from '../../content/catalog-c
       .practice-return {
         display: flex;
         flex-wrap: wrap;
-        gap: 12px 24px;
+        gap: 10px 12px;
         margin: 0 0 16px;
       }
-      .practice-return a {
-        text-decoration: underline;
-        text-underline-offset: 4px;
-        color: var(--search-primary);
-        font-weight: 700;
-      }
-      .practice-return a:focus-visible,
       .practice-reference > summary:focus-visible {
         outline: 3px solid var(--search-primary);
         outline-offset: 4px;
@@ -1067,7 +1060,7 @@ import { catalogGroupForCourse, nextCatalogGroup } from '../../content/catalog-c
       }
       .question-review-navigation {
         display: flex;
-        align-items: baseline;
+        align-items: center;
         justify-content: space-between;
         flex-wrap: wrap;
         gap: 12px 24px;
@@ -1076,24 +1069,10 @@ import { catalogGroupForCourse, nextCatalogGroup } from '../../content/catalog-c
       .question-review-navigation .practice-return { margin: 0; }
       .question-review-navigation .related-theory-link {
         margin: 0 0 0 auto;
-        text-align: end;
         min-width: 0;
-        overflow-wrap: anywhere;
-        text-decoration: underline;
-        text-underline-offset: 4px;
       }
       .related-theory-link {
-        display: inline-flex;
         margin: 0 0 18px;
-        color: var(--search-primary);
-        font-size: 0.86rem;
-        font-weight: 800;
-        text-decoration: none;
-      }
-      .related-theory-link:hover,
-      .related-theory-link:focus-visible {
-        color: var(--search-hover);
-        text-decoration: underline;
       }
       @media (max-width: 980px) {
         .question-inner-navigation {

@@ -127,19 +127,29 @@
     <p class="membership-scope">
       @if (plan.level === 'Author') {
         Full curriculum access for authoring and review@if (plan.courseCount) {: {{ plan.courseCount }} {{ plan.courseCount === 1 ? 'course' : 'courses' }} across {{ joinPaths(plan.paths) }}}.
+      } @else if (plan.level === 'Paid membership') {
+        Your plans and passes are below.
       } @else if (plan.courseCount) {
-        {{ plan.courseCount }} {{ plan.courseCount === 1 ? 'course' : 'courses' }} across {{ joinPaths(plan.paths) }}.
+        Access to {{ plan.courseCount }} individual {{ plan.courseCount === 1 ? 'course' : 'courses' }} across {{ joinPaths(plan.paths) }}. This is not a paid plan.
       } @else {
-        Free account. Locked lessons show what they need when you open them.
+        Free account: Open and Free with account lessons. Paid lessons show what they need when you open them.
       }
     </p>
+    @if (plan.records.length) {
+      <app-account-access-records [records]="plan.records" />
+    }
     <p class="membership-note">
       @if (store.authOptions()?.managedLogin) {
         For more course access, contact the account administrator.
       } @else {
-        Paid plans and upgrades are coming later. Access is checked each time you open a lesson.
+        Paid plans aren’t on sale yet, and nothing renews automatically.
       }
     </p>
+    @if (!store.authOptions()?.managedLogin) {
+      <p class="membership-buy">
+        <a class="action-button" routerLink="/pricing">{{ plan.level === 'Paid membership' ? 'See plans' : 'Choose a plan' }}</a>
+      </p>
+    }
     <nav class="membership-paths" aria-labelledby="membership-paths-label">
       <p id="membership-paths-label" class="membership-paths-label">Browse your courses</p>
       <ul>

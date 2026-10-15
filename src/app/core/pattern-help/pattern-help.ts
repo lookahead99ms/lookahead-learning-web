@@ -69,7 +69,7 @@ const MAP_SOURCE = { path: 'learn', course: 'algorithmic-patterns', lesson: 'alg
             @if (revealedNow()) {
               <div class="answer">
                 <h4>{{ patternName() }}</h4>
-                <a class="lesson-link" [routerLink]="lessonRoute()" [queryParams]="lessonQuery()" target="_blank" rel="noopener"
+                <a class="lesson-link action-link" [routerLink]="lessonRoute()" [queryParams]="lessonQuery()" target="_blank" rel="noopener"
                   >{{ patternName() }} lesson<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9 3h4v4M13 3 7.5 8.5M12 9.5V13H3V4h3.5" /></svg
                   ><span class="visually-hidden"> (opens in a new tab)</span></a
                 >
@@ -233,11 +233,8 @@ const MAP_SOURCE = { path: 'learn', course: 'algorithmic-patterns', lesson: 'alg
         background: var(--surface-muted);
       }
       .lesson-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        color: var(--accent-link);
-        font-weight: 700;
+        min-height: 40px;
+        padding: 8px 16px;
       }
       .lesson-link svg {
         width: 15px;

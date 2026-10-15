@@ -22,6 +22,7 @@ import {
 } from './account-settings-client';
 import { AccountThemePreference } from '../../core/account-theme';
 import { accountMembership, joinPaths } from './account-membership';
+import { AccountAccessRecords } from './account-access-records';
 import { PATH_TAGLINES } from '../../content/path-taglines';
 import { PlatformThemeService, ThemePreference } from '../../core/platform-theme';
 import {
@@ -35,7 +36,7 @@ type PasswordField = keyof PasswordChange;
 
 @Component({
   selector: 'app-account-settings',
-  imports: [NgTemplateOutlet, RouterLink],
+  imports: [NgTemplateOutlet, RouterLink, AccountAccessRecords],
   templateUrl: './account-settings.html',
   styleUrl: './account-settings.css',
 })
@@ -90,6 +91,7 @@ export class AccountSettings implements OnDestroy {
 
   protected readonly membership = computed(() => {
     const account = this.store.account();
+    // DLV-209: no purchase records yet; the server reports course grants only (proposed API pending).
     return account ? accountMembership(account) : null;
   });
   protected readonly joinPaths = joinPaths;

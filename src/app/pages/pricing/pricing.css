@@ -1,0 +1,486 @@
+:host {
+  display: block;
+  min-height: 100dvh;
+  background: var(--surface-page);
+  color: var(--text-body);
+}
+.pricing-page {
+  box-sizing: border-box;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 32px clamp(16px, 4vw, 40px) 72px;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.eyebrow {
+  margin: 0;
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+h1 {
+  margin: 10px 0 12px;
+  color: var(--text-strong);
+  font-size: clamp(30px, 4.4vw, 48px);
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+}
+h2 {
+  margin: 0 0 8px;
+  color: var(--text-strong);
+  font-size: clamp(22px, 2.6vw, 28px);
+  letter-spacing: -0.02em;
+}
+.lede,
+.section-lede {
+  max-width: 680px;
+  margin: 0;
+  line-height: 1.6;
+}
+.lede {
+  font-size: 17px;
+}
+
+/* Hero: neutral surface; the three path colours appear only as one thin rule. */
+.pricing-hero {
+  position: relative;
+  margin-bottom: 28px;
+  padding: clamp(24px, 4vw, 44px);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--surface);
+  overflow: hidden;
+}
+.pricing-hero::before {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    var(--path-learn) 0 33.3%,
+    var(--path-grow) 33.3% 66.6%,
+    var(--path-blaze) 66.6%
+  );
+  content: '';
+}
+.sample-note {
+  max-width: 680px;
+  margin: 20px 0 0;
+  padding: 12px 16px;
+  border: 1px solid color-mix(in srgb, var(--warning) 45%, var(--line));
+  border-inline-start-width: 4px;
+  border-radius: 8px;
+  background: var(--warning-surface);
+  color: var(--text-strong);
+  line-height: 1.5;
+}
+
+.pricing-section {
+  margin: 0 0 24px;
+  padding: clamp(20px, 3vw, 32px);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: 0 12px 32px var(--shadow);
+}
+
+/* Free */
+.free-plan {
+  display: grid;
+  grid-template-columns: minmax(200px, 280px) minmax(0, 1fr);
+  gap: 20px 40px;
+  align-items: start;
+}
+.free-intro {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+.free-intro .action-link {
+  margin-top: 8px;
+}
+.free-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 14px 24px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.free-features li {
+  display: flex;
+  gap: 10px;
+  line-height: 1.5;
+}
+.free-features strong {
+  display: block;
+  color: var(--text-strong);
+}
+.check {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 3px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--success) 16%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--success) 50%, transparent);
+  position: relative;
+}
+.check::after {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  width: 4px;
+  height: 7px;
+  border: solid var(--success);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  content: '';
+}
+
+/* Plans and passes */
+.plan-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* Four yearly plans read as two rows of two, never three and a lone fourth. */
+.plan-grid.two-up {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+}
+@media (min-width: 700px) {
+  .plan-grid.two-up {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.plan-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-page);
+}
+.plan-card h3 {
+  margin: 0;
+  color: var(--text-strong);
+  font-size: 18px;
+}
+.plan-price {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+}
+.amount {
+  color: var(--text-strong);
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+.period {
+  color: var(--text-subtle);
+  font-size: 15px;
+  font-weight: 650;
+}
+.plan-includes {
+  margin: 0;
+  color: var(--text-strong);
+  font-weight: 700;
+  line-height: 1.5;
+}
+/* A plain label, not a pill. */
+.includes-label {
+  display: block;
+  color: var(--text-subtle);
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.plan-terms {
+  flex: 1;
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  margin: 0;
+  padding: 10px 0 0;
+  border-top: 1px solid var(--line);
+  list-style: none;
+  color: var(--text-subtle);
+  font-size: 14px;
+}
+.plan-terms li::before {
+  margin-inline-end: 8px;
+  color: var(--text-subtle);
+  content: '–';
+  content: '–' / '';
+}
+.plan-card button {
+  width: 100%;
+  margin-top: 6px;
+}
+.off-sale-note {
+  margin: 6px 0 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--surface-muted, color-mix(in srgb, var(--text-subtle) 8%, transparent));
+  color: var(--text-subtle);
+  font-size: 14px;
+  line-height: 1.45;
+}
+.off-sale-note strong {
+  color: var(--text-strong);
+}
+
+/* Changing and renewing */
+.plan-rules dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 18px 28px;
+  margin: 16px 0 0;
+}
+.rule-item {
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.plan-rules dt {
+  color: var(--text-strong);
+  font-weight: 750;
+}
+.plan-rules dd {
+  margin: 6px 0 0;
+  line-height: 1.55;
+}
+
+/* Staff only: switch between the sale preview and the regular view. */
+.staff-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  font-size: 14px;
+}
+.staff-label {
+  color: var(--text-subtle);
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+.view-switch {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.view-switch button {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 0;
+  background: transparent;
+  color: var(--text-strong);
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+.view-switch button[aria-pressed='true'] {
+  background: var(--accent-strong);
+  color: var(--surface);
+}
+.view-switch button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.view-switch button:focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: -3px;
+}
+.staff-link {
+  color: var(--accent-link);
+  font-weight: 700;
+}
+
+/* Sale: greeting and promo plans above the regular ones. */
+.sale-section {
+  border: 2px solid color-mix(in srgb, var(--accent-strong) 55%, var(--line));
+  background:
+    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--accent-strong) 12%, transparent), transparent 22rem),
+    var(--surface);
+}
+.preview-flag {
+  margin: 0 0 14px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--warning-surface);
+  color: var(--text-strong);
+  font-size: 14px;
+}
+.sale-name {
+  margin: 0 0 4px;
+  color: var(--accent-strong);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.sale-section h2 {
+  font-size: clamp(26px, 3.4vw, 36px);
+}
+.compared-with {
+  margin: 0;
+  color: var(--text-subtle);
+  font-size: 14px;
+}
+/* During a sale the regular plans stay readable but quieter. */
+.read-only .plan-card {
+  background: var(--surface);
+}
+
+/* Mock interviews */
+.mock-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 16px;
+  margin-bottom: 8px;
+}
+.mock-heading h2 {
+  margin: 0;
+}
+.coming-later {
+  margin: 0;
+  color: var(--warning);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.mock-formats-label {
+  margin: 16px 0 6px;
+  color: var(--text-strong);
+  font-weight: 700;
+}
+.mock-formats {
+  margin: 0;
+  padding-inline-start: 20px;
+  line-height: 1.7;
+}
+
+/* FAQ */
+.faq dl {
+  display: grid;
+  gap: 18px;
+  margin: 16px 0 0;
+}
+.faq-item {
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+.faq dt {
+  color: var(--text-strong);
+  font-weight: 750;
+}
+.faq dd {
+  max-width: 72ch;
+  margin: 6px 0 0;
+  line-height: 1.6;
+}
+
+/* Checkout notice */
+.checkout-notice {
+  width: min(480px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: 28px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text-body);
+  box-shadow: 0 24px 80px var(--shadow);
+}
+.checkout-notice::backdrop {
+  background: color-mix(in srgb, var(--surface-page) 70%, transparent);
+  backdrop-filter: blur(2px);
+}
+.checkout-notice h2 {
+  margin: 10px 0 8px;
+  font-size: 24px;
+}
+.checkout-notice p {
+  margin: 0 0 12px;
+  line-height: 1.55;
+}
+#checkout-notice-description {
+  color: var(--text-strong);
+  font-weight: 650;
+}
+.notice-signup {
+  margin: 4px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  color: var(--text-body);
+}
+/* A prose link: styled accent text with an underline, never default blue. */
+.notice-signup a {
+  color: var(--accent-strong);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.notice-detail,
+.notice-browse {
+  color: var(--text-subtle);
+  font-size: 14px;
+}
+/* Centred like the lock-screen dialog (user, 2026-10-15). */
+.checkout-notice {
+  text-align: center;
+}
+.checkout-notice .action-row {
+  justify-content: center;
+  margin: 20px 0 16px;
+}
+
+@media (max-width: 760px) {
+  .free-plan {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 420px) {
+  .pricing-page {
+    padding-inline: 16px;
+  }
+  .checkout-notice {
+    padding: 22px 18px;
+  }
+  .checkout-notice .action-row > * {
+    flex: 1 1 100%;
+  }
+}
+@media (forced-colors: active) {
+  .check::after {
+    border-color: CanvasText;
+  }
+}

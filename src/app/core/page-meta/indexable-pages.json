@@ -1,0 +1,5 @@
+{
+  "//": "DLV-941: public pages outside the catalogs. true = indexed and listed in sitemap.xml; false = meta robots noindex and left out of the sitemap. Read by page-meta-routes.ts and scripts/generate-seo-files.mjs.",
+  "start-free": true,
+  "pricing": false
+}

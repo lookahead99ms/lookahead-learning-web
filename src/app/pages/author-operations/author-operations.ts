@@ -26,6 +26,7 @@ import { AuthorAdminMenu } from '../../core/author-workspace-nav/author-admin-me
 import { AuthorDocHero } from '../../core/author-workspace-nav/author-doc-hero';
 import {
   authorDocumentPages,
+  authorDocumentationSection,
   authorDocumentationLinks,
   isAuthorDocumentPageId,
 } from '../../core/author-workspace-nav/author-workspace-links';
@@ -65,6 +66,11 @@ export class AuthorOperationsPage implements OnDestroy {
   protected readonly documentId = this.page.documentId;
   private readonly link = authorDocumentationLinks.find((page) => page.id === this.pageId)!;
   protected readonly pageTitle = this.link.label;
+  /** Sub-pages of a long reference read as one section, in order. */
+  protected readonly section = authorDocumentationSection(this.pageId);
+  protected readonly sectionIndex = this.section?.pages.findIndex((page) => page.id === this.pageId) ?? -1;
+  protected readonly previousPage = this.section && this.sectionIndex > 0 ? this.section.pages[this.sectionIndex - 1] : null;
+  protected readonly nextPage = this.section?.pages[this.sectionIndex + 1] ?? null;
   protected readonly pageRoute = this.link.href;
   protected readonly documentFrame = viewChild<ElementRef<HTMLIFrameElement>>('documentFrame');
   private destroyed = false;

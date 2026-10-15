@@ -257,13 +257,16 @@
           <p>
             {{
               authoredPlanStep() === 'review'
-                ? 'Confirm the selected courses, preview the schedule, or copy everything into a custom plan.'
+                ? freeAccount()
+                  ? 'See the courses in this plan and preview its schedule.'
+                  : 'Confirm the selected courses, preview the schedule, or copy everything into a custom plan.'
                 : 'Choose a path, a preparation window, and your available hours per day.'
             }}
           </p>
         </div>
         <button type="button" (click)="backToPlanTypes()">Back to plan types</button>
       </header>
+      <ng-container [ngTemplateOutlet]="freePreviewNote" />
       @if (readyMadeStatus() === 'loading' && !readyMadeCatalog()) {
         <p role="status">Loading authored plans…</p>
       } @else if (readyMadeStatus() === 'error' && !readyMadeCatalog()) {
@@ -271,7 +274,7 @@
           <p>{{ readyMadeMessage() }}</p>
           <button type="button" (click)="loadReadyMadeCatalog()">Try loading plans again</button>
         </div>
-      } @else if (!readyMadeCatalog()?.paths?.length) {
+      } @else if (!readyMadePaths().length) {
         <p role="status">No authored plans are available. You can create a custom plan instead.</p>
       } @else if (authoredPlanStep() === 'select') {
         <div class="ready-made-controls">
@@ -282,9 +285,16 @@
               [value]="selectedReadyMadePathId()"
               (change)="chooseReadyMadePath($any($event.target).value)"
             >
-              <option value="">Choose a path</option>
-              @for (path of readyMadeCatalog()!.paths; track path.id) {
-                <option [value]="path.id">{{ path.title }}</option>
+              @if (!freeAccount()) {
+                <option value="">Choose a path</option>
+              }
+              @for (path of readyMadePaths(); track path.id) {
+                <option [value]="path.id" [selected]="path.id === selectedReadyMadePathId()">
+                  {{ path.title
+                  }}{{
+                    freeAccount() && path.id !== freeStarterId ? ' · Subscription required' : ''
+                  }}
+                </option>
               }
             </select>
           </div>
@@ -296,9 +306,17 @@
               [value]="selectedReadyMadeDays() ?? ''"
               (change)="chooseReadyMadeDays($any($event.target).value)"
             >
-              <option value="">Choose days</option>
-              @for (days of readyMadeDurations(); track days) {
-                <option [value]="days">{{ days }} days</option>
+              @if (!freeAccount()) {
+                <option value="">Choose days</option>
+              }
+              @for (days of readyMadeDayOptions(); track days) {
+                <option
+                  [value]="days"
+                  [selected]="days === selectedReadyMadeDays()"
+                  [disabled]="freeAccount() && days !== freeDays"
+                >
+                  {{ days }} days{{ freeAccount() && days !== freeDays ? ' · Locked' : '' }}
+                </option>
               }
             </select>
           </div>
@@ -310,10 +328,18 @@
               [value]="selectedReadyMadeHours() ?? ''"
               (change)="chooseReadyMadeHours($any($event.target).value)"
             >
-              <option value="">Choose hours</option>
-              @for (hours of readyMadeHours(); track hours) {
-                <option [value]="hours">
-                  {{ hours }} {{ hours === 1 ? 'hour' : 'hours' }} per day
+              @if (!freeAccount()) {
+                <option value="">Choose hours</option>
+              }
+              @for (hours of readyMadeHourOptions(); track hours) {
+                <option
+                  [value]="hours"
+                  [selected]="hours === selectedReadyMadeHours()"
+                  [disabled]="freeAccount() && hours !== freeHours"
+                >
+                  {{ hours }} {{ hours === 1 ? 'hour' : 'hours' }} per day{{
+                    freeAccount() && hours !== freeHours ? ' · Locked' : ''
+                  }}
                 </option>
               }
             </select>
@@ -321,17 +347,25 @@
         </div>
         @if (readyMadePath(); as path) {
           <div class="ready-made-details">
+            @if (freeAccount() && path.id !== freeStarterId) {
+              <p class="subscription-required">
+                <strong>Subscription required.</strong> You can look inside this plan and preview a
+                7-day sample of it.
+              </p>
+            }
             <p class="ready-made-summary">{{ path.summary }}</p>
             @if (readyMadeVariant(); as variant) {
               <p class="intended-use">
                 <strong>{{ variant.durationDays }} days:</strong> {{ variant.intendedUse }}
               </p>
-              <p>
-                Selected content: {{ variant.selectedContentCount }} of
-                {{ variant.availableContentCount }} available items ·
-                {{ variant.scheduledMinutes }} scheduled minutes. Availability is a ceiling, so the
-                schedule may leave time unused.
-              </p>
+              @if (path.id !== freeStarterId) {
+                <p>
+                  Selected content: {{ variant.selectedContentCount }} of
+                  {{ variant.availableContentCount }} available items ·
+                  {{ variant.scheduledMinutes }} scheduled minutes. Availability is a ceiling, so
+                  the schedule may leave time unused.
+                </p>
+              }
               @if (variant.intensive) {
                 <p class="intensive-note">
                   This intensive option requires deliberate selection. It includes recovery and
@@ -353,7 +387,7 @@
               [disabled]="!readyMadeVariant() || readyMadeStatus() === 'loading' || editsLocked()"
               (click)="reviewAuthoredPlan()"
             >
-              Review authored plan
+              {{ freeAccount() ? 'Look inside this plan' : 'Review authored plan' }}
             </button>
           </div>
         }
@@ -364,6 +398,12 @@
         @if (readyMadeVariant(); as variant) {
           <section class="authored-plan-review" aria-labelledby="authored-review-heading">
             <h3 id="authored-review-heading">{{ path.title }}</h3>
+            @if (freeAccount() && path.id !== freeStarterId) {
+              <p class="subscription-required">
+                <strong>Subscription required.</strong> These are the plan's courses. The preview is
+                a 7-day sample at one hour a day.
+              </p>
+            }
             <p>{{ path.summary }}</p>
             <dl class="builder-setup-summary">
               <div>
@@ -411,7 +451,11 @@
             <div class="authored-review-actions">
               <button type="button" (click)="editAuthoredSelection()">Back to path options</button>
               <div>
-                <button type="button" (click)="customizeAuthoredPlan()">Customize this plan</button>
+                @if (!freeAccount()) {
+                  <button type="button" (click)="customizeAuthoredPlan()">
+                    Customize this plan
+                  </button>
+                }
                 <button
                   type="button"
                   class="primary"
@@ -419,7 +463,13 @@
                   [attr.aria-busy]="readyMadeStatus() === 'loading'"
                   (click)="previewReadyMadePlan()"
                 >
-                  Preview authored schedule
+                  {{
+                    !freeAccount()
+                      ? 'Preview authored schedule'
+                      : path.id === freeStarterId
+                        ? 'Preview free plan'
+                        : 'Preview 7-day sample'
+                  }}
                 </button>
               </div>
             </div>
@@ -455,6 +505,7 @@
           </div>
           <button type="button" (click)="backToPlanTypes()">Back to plan types</button>
         </header>
+        <ng-container [ngTemplateOutlet]="freePreviewNote" />
 
         <nav class="builder-progress" aria-label="Study plan creation steps">
           <ol>
@@ -490,6 +541,7 @@
                     <input
                       maxlength="160"
                       aria-label="Plan name"
+                      [disabled]="freeAccount()"
                       [value]="creationPlanName()"
                       (input)="setPlanName($any($event.target).value)"
                       aria-describedby="creation-name-help"
@@ -508,13 +560,18 @@
                       type="text"
                       maxlength="160"
                       required
+                      [disabled]="freeAccount()"
                       [value]="goal()"
                       (input)="setGoal($any($event.target).value)"
                     />
                   </label>
                   <label class="field setup-approach">
                     Plan approach
-                    <select [value]="goalType()" (change)="setGoalType($any($event.target).value)">
+                    <select
+                      [value]="goalType()"
+                      [disabled]="freeAccount()"
+                      (change)="setGoalType($any($event.target).value)"
+                    >
                       <option value="interview">Interview preparation</option>
                       <option value="learning">Learn foundations and build depth</option>
                     </select>
@@ -526,8 +583,14 @@
                         <option [value]="days()">{{ days() }} days (extended)</option>
                       }
                       @for (option of durations; track option) {
-                        <option [value]="option" [selected]="days() === option">
-                          {{ option }} days
+                        <option
+                          [value]="option"
+                          [selected]="days() === option"
+                          [disabled]="freeAccount() && option !== freeDays"
+                        >
+                          {{ option }} days{{
+                            freeAccount() && option !== freeDays ? ' · Locked' : ''
+                          }}
                         </option>
                       }
                     </select>
@@ -536,8 +599,13 @@
                     Hours each day
                     <select [value]="dailyHours()" (change)="setHours($any($event.target).value)">
                       @for (option of hours; track option) {
-                        <option [value]="option" [selected]="dailyHours() === option">
-                          {{ option }} {{ option === 1 ? 'hour' : 'hours' }}
+                        <option
+                          [value]="option"
+                          [selected]="dailyHours() === option"
+                          [disabled]="freeAccount() && option !== freeHours"
+                        >
+                          {{ option }} {{ option === 1 ? 'hour' : 'hours'
+                          }}{{ freeAccount() && option !== freeHours ? ' · Locked' : '' }}
                         </option>
                       }
                     </select>
@@ -576,7 +644,9 @@
             @case ('review') {
               <div class="builder-review">
                 <p class="eyebrow">Step 5 of 5</p>
-                <h3 #wizardHeading id="wizard-step-heading" tabindex="-1">Review and save</h3>
+                <h3 #wizardHeading id="wizard-step-heading" tabindex="-1">
+                  {{ freeAccount() ? 'Review and preview' : 'Review and save' }}
+                </h3>
                 <p>
                   Check the direction and course mix. Reviewing creates a temporary schedule; saving
                   remains a separate final action.
@@ -665,7 +735,7 @@
               [disabled]="!canGenerate()"
               (click)="generatePlan()"
             >
-              Review complete schedule
+              {{ freeAccount() ? 'Preview schedule' : 'Review complete schedule' }}
             </button>
           }
         </div>
@@ -683,7 +753,13 @@
           <p>
             {{ selectedCountFor(path) }} selected. You can leave this section empty and continue.
           </p>
-          <p class="access-message">{{ access.description }}</p>
+          <p class="access-message">
+            {{
+              freeAccount()
+                ? 'The free starter courses are selected. Other courses need a subscription.'
+                : access.description
+            }}
+          </p>
           @if (loadingError()) {
             <div role="alert">
               <p>{{ loadingError() }}</p>
@@ -696,7 +772,7 @@
               Access could not be checked. Your saved plan is preserved; new sessions are
               unavailable until access returns.
             </p>
-          } @else {
+          } @else if (!freeAccount()) {
             <div class="fieldset-actions">
               <button type="button" (click)="selectAllTopicsFor(path)">Select available</button>
               <button type="button" (click)="clearTopicsFor(path)">Clear this section</button>
@@ -708,11 +784,15 @@
           >
             <legend class="visually-hidden">{{ pathLabel(path) }} published offerings</legend>
             @for (topic of topicsFor(path); track topic.id) {
-              <label class="offering" [class.unavailable]="!availableTopicIds().has(topic.id)">
+              <label
+                class="offering"
+                [class.unavailable]="!availableTopicIds().has(topic.id)"
+                [class.read-only]="freeAccount()"
+              >
                 <input
                   type="checkbox"
                   [checked]="selectedTopicIds().has(topic.id)"
-                  [disabled]="!availableTopicIds().has(topic.id)"
+                  [disabled]="!availableTopicIds().has(topic.id) || freeAccount()"
                   (change)="toggleTopic(topic, $any($event.target).checked)"
                 />
                 <span>
@@ -722,6 +802,8 @@
                   }
                   @if (!availableTopicIds().has(topic.id)) {
                     <small>{{ unavailableReason(topic) }}</small>
+                  } @else if (freeAccount() && !selectedTopicIds().has(topic.id)) {
+                    <small>Free lessons · not in the free starter plan</small>
                   }
                 </span>
               </label>
@@ -788,13 +870,13 @@
     <header class="draft-heading">
       <p class="eyebrow">Temporary draft</p>
       <h2 id="draft-heading" tabindex="-1" autofocus>Review your plan</h2>
-      @if (!saved()) {
+      @if (!saved() && !freeAccount()) {
         <label class="field"
           >Plan name<input
             maxlength="160"
             [value]="review.name ?? creationPlanName()"
             (input)="setDraftName($any($event.target).value)"
-            [disabled]="editsLocked()"
+            [disabled]="editsLocked() || freeAccount()"
         /></label>
         @if (nameError()) {
           <p role="alert">{{ nameError() }}</p>
@@ -821,11 +903,13 @@
         <div class="draft-scroll-content">
           <p>
             {{
-              accountMode()
-                ? 'Your account changes only when you save.'
-                : accountStore.enabled
-                  ? 'Sign in to save this plan to your account.'
-                  : 'Save keeps this plan on this browser.'
+              freeAccount()
+                ? 'A preview of the schedule. Nothing is saved to your account.'
+                : accountMode()
+                  ? 'Your account changes only when you save.'
+                  : accountStore.enabled
+                    ? 'Sign in to save this plan to your account.'
+                    : 'Save keeps this plan on this browser.'
             }}
           </p>
           @if (review.snapshot.template; as authored) {
@@ -980,6 +1064,8 @@
           <button type="button" class="primary" (click)="continueToSignIn()">
             Continue to sign in
           </button>
+        } @else if (freeAccount()) {
+          <a class="primary-link" href="/account">Get course access to save</a>
         } @else {
           <button
             type="button"
@@ -995,6 +1081,11 @@
           Edit selections
         </button>
       </div>
+      @if (freeAccount()) {
+        <p class="draft-save-note" role="status">
+          This is a preview. Free accounts can explore plans but cannot save them.
+        </p>
+      }
       @if (review.readyMade && !readyMadeAdoptionAvailable() && !accountStore.pending()) {
         <p class="draft-save-note" role="status">
           Saving authored schedules is not available yet. You can review this draft now.
@@ -1304,3 +1395,19 @@
     </details>
   }
 </dialog>
+
+<ng-template #freePreviewNote>
+  @if (freeAccount()) {
+    <aside class="free-preview-note" aria-label="Free account preview">
+      <span class="free-preview-icon" aria-hidden="true">👀</span>
+      <div>
+        <p><strong>Preview only on a free account.</strong></p>
+        <p>
+          You can explore every plan and preview its schedule. Choosing other options and saving a
+          plan need a subscription.
+        </p>
+      </div>
+      <a class="free-preview-action" href="/account">Manage account and access</a>
+    </aside>
+  }
+</ng-template>

@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A partner app sends four requests to an API gateway: the first three each spend a token from the client's bucket and wait in the request queue for a worker server, and the fourth finds the bucket empty and is refused with 429">
+<style>
+.cdp-a{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-6.4s;animation-timing-function:ease-in-out}
+.cdp-v{font:700 11px ui-monospace,Menlo,monospace;fill:var(--scene-bad,#b3261e);text-anchor:middle}
+.cdp-d1{animation-name:cdp-go1}
+.cdp-d2{animation-name:cdp-go2}
+.cdp-d3{animation-name:cdp-go3}
+.cdp-d4{animation-name:cdp-go4}
+.cdp-t1{animation-name:cdp-spend1}
+.cdp-t2{animation-name:cdp-spend2}
+.cdp-t3{animation-name:cdp-spend3}
+.cdp-c1{animation-name:cdp-card1}
+.cdp-c2{animation-name:cdp-card2}
+.cdp-c3{animation-name:cdp-card3}
+.cdp-no{animation-name:cdp-no}
+@keyframes cdp-go1{0%{transform:translate(0,0);opacity:0}2%{opacity:1}14%{transform:translate(52px,0);opacity:1}16%,100%{transform:translate(52px,0);opacity:0}}
+@keyframes cdp-go2{0%,20%{transform:translate(0,0);opacity:0}22%{opacity:1}34%{transform:translate(52px,0);opacity:1}36%,100%{transform:translate(52px,0);opacity:0}}
+@keyframes cdp-go3{0%,40%{transform:translate(0,0);opacity:0}42%{opacity:1}54%{transform:translate(52px,0);opacity:1}56%,100%{transform:translate(52px,0);opacity:0}}
+@keyframes cdp-go4{0%,60%{transform:translate(0,0);opacity:0}62%{opacity:1}72%{transform:translate(52px,0);opacity:1}74%,100%{transform:translate(52px,0);opacity:0}}
+@keyframes cdp-spend1{0%,14%{opacity:1}17%,95%{opacity:0}100%{opacity:1}}
+@keyframes cdp-spend2{0%,34%{opacity:1}37%,95%{opacity:0}100%{opacity:1}}
+@keyframes cdp-spend3{0%,54%{opacity:1}57%,95%{opacity:0}100%{opacity:1}}
+@keyframes cdp-card1{0%,15%{transform:translate(0,0);opacity:0}17%{opacity:1}30%,93%{transform:translate(28px,34px);opacity:1}97%,100%{transform:translate(28px,34px);opacity:0}}
+@keyframes cdp-card2{0%,35%{transform:translate(0,0);opacity:0}37%{opacity:1}50%,93%{transform:translate(46px,34px);opacity:1}97%,100%{transform:translate(46px,34px);opacity:0}}
+@keyframes cdp-card3{0%,55%{transform:translate(0,0);opacity:0}57%{opacity:1}70%,93%{transform:translate(64px,34px);opacity:1}97%,100%{transform:translate(64px,34px);opacity:0}}
+@keyframes cdp-no{0%,73%{opacity:0}76%,93%{opacity:1}97%,100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.cdp-a{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g fill="var(--scene-ink,#102a33)" opacity=".09"><ellipse cx="32" cy="128" rx="26" ry="5"/><ellipse cx="160" cy="146" rx="52" ry="7"/><ellipse cx="250" cy="152" rx="36" ry="5"/><ellipse cx="286" cy="110" rx="26" ry="5"/></g>
+<g fill="none" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="4 4"><path d="M62 92H112"/><path d="M208 104L226 124"/><path d="M276 126L282 108"/></g>
+<circle cx="28" cy="78" r="9" fill="var(--scene-accent,#006c73)"/><path d="M12 124q0-30 16-30t16 30z" fill="var(--scene-accent,#006c73)"/>
+<rect x="40" y="80" width="16" height="26" rx="3" fill="var(--scene-ink,#102a33)"/><rect x="42" y="83" width="12" height="18" rx="1.5" fill="var(--scene-accent-soft,#dcefed)"/>
+<circle class="cdp-a cdp-d1" cx="60" cy="92" r="4.5" fill="var(--scene-accent,#006c73)"/>
+<circle class="cdp-a cdp-d2" cx="60" cy="92" r="4.5" fill="var(--scene-accent,#006c73)"/>
+<circle class="cdp-a cdp-d3" cx="60" cy="92" r="4.5" fill="var(--scene-accent,#006c73)"/>
+<circle class="cdp-a cdp-d4" cx="60" cy="92" r="4.5" fill="var(--scene-accent,#006c73)"/>
+<path d="M114 52l12-10h84l-12 10z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M198 52l12-10v88l-12 10z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="114" y="52" width="84" height="88" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"><path d="M122 62h40"/></g>
+<g fill="var(--scene-good,#1f7a4d)"><circle cx="186" cy="62" r="3"/><circle cx="176" cy="62" r="3"/></g>
+<path d="M128 80h56l-7 44h-42z" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2" stroke-linejoin="round"/>
+<path d="M156 70v6" stroke="var(--scene-accent,#006c73)" stroke-width="2" stroke-linecap="round"/>
+<circle class="cdp-a cdp-t1" cx="144" cy="114" r="6" fill="var(--scene-warn,#a15c00)"/>
+<circle class="cdp-a cdp-t2" cx="157" cy="114" r="6" fill="var(--scene-warn,#a15c00)"/>
+<circle class="cdp-a cdp-t3" cx="170" cy="114" r="6" fill="var(--scene-warn,#a15c00)"/>
+<path d="M218 144h64l-6 8h-52z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="218" y="122" width="64" height="22" rx="3" fill="none" stroke="var(--scene-muted,#536970)" stroke-width="2"/>
+<g class="cdp-a cdp-c1"><rect x="196" y="96" width="14" height="18" rx="2" fill="var(--scene-card,#fff)" stroke="var(--scene-link,#1f5f8b)" stroke-width="2"/><rect x="196" y="96" width="14" height="5" rx="2" fill="var(--scene-link,#1f5f8b)"/></g>
+<g class="cdp-a cdp-c2"><rect x="196" y="96" width="14" height="18" rx="2" fill="var(--scene-card,#fff)" stroke="var(--scene-link,#1f5f8b)" stroke-width="2"/><rect x="196" y="96" width="14" height="5" rx="2" fill="var(--scene-link,#1f5f8b)"/></g>
+<g class="cdp-a cdp-c3"><rect x="196" y="96" width="14" height="18" rx="2" fill="var(--scene-card,#fff)" stroke="var(--scene-link,#1f5f8b)" stroke-width="2"/><rect x="196" y="96" width="14" height="5" rx="2" fill="var(--scene-link,#1f5f8b)"/></g>
+<path d="M266 46l10-8h30l-10 8z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M296 46l10-8v58l-10 8z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="266" y="46" width="30" height="58" rx="2" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"><path d="M271 58h14M271 70h14M271 82h14"/></g>
+<g fill="var(--scene-good,#1f7a4d)"><circle cx="290" cy="58" r="2.5"/><circle cx="290" cy="70" r="2.5"/><circle cx="290" cy="82" r="2.5"/></g>
+<g class="cdp-a cdp-no"><circle cx="76" cy="62" r="11" fill="var(--scene-bad,#b3261e)"/><path d="M71.5 57.5l9 9M80.5 57.5l-9 9" stroke="var(--scene-card,#fff)" stroke-width="2.5" stroke-linecap="round"/><text class="cdp-v" x="76" y="44">429</text></g>
+</svg>

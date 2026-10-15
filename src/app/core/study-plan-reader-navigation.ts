@@ -13,12 +13,13 @@ import { studyDayQueue, findStudyActivity, validStudyLog } from '../content/stud
   imports: [RouterLink],
   template: `@if (valid()) {
     <nav class="plan-reader-navigation" aria-label="Study Plan navigation">
-      <a routerLink="/study-plan" [queryParams]="{ day: day(), plan: planId, activity: activity() }"
+      <a class="action-link" routerLink="/study-plan" [queryParams]="{ day: day(), plan: planId, activity: activity() }"
         >Back to Study Plan · Day {{ day() }}</a
       >
       @if (!problemRows()) {
         @if (next(); as item) {
           <a
+            class="action-button"
             [routerLink]="item.route"
             [queryParams]="{ day: day(), plan: planId, activity: item.id }"
             >Next in plan: {{ item.title }} →</a
@@ -41,10 +42,9 @@ import { studyDayQueue, findStudyActivity, validStudyLog } from '../content/stud
         border: 1px solid var(--line);
         background: var(--surface);
       }
-      a {
-        color: var(--accent-link);
-        min-height: 44px;
-        align-content: center;
+      /* DLV-937: back to the plan is a secondary pill; the next session is the primary button. */
+      .plan-reader-navigation {
+        align-items: center;
       }
     `,
   ],

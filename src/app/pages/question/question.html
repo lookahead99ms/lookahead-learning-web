@@ -14,10 +14,10 @@
   <ng-template #discoveryReturn>
   @if (returnDestination(); as destination) {
     <nav class="practice-return" aria-label="Discovery return navigation">
-      <a [routerLink]="destination">{{ returnLabel() }}</a>
+      <a class="action-link" [routerLink]="destination">{{ returnLabel() }}</a>
       @if (reviewModuleDestination(); as moduleDestination) {
-        <a [routerLink]="moduleDestination">Back to {{ reviewModuleLabel() }}</a>
-        <a routerLink="/search">Search all content</a>
+        <a class="action-link" [routerLink]="moduleDestination">Back to {{ reviewModuleLabel() }}</a>
+        <a class="action-link" routerLink="/search">Search all content</a>
       }
     </nav>
   }
@@ -376,7 +376,7 @@
           <ng-container [ngTemplateOutlet]="discoveryReturn" />
           @if (!(studioPilot() || focusStudio()) && item.relatedArticleId; as articleId) {
             <a
-              class="related-theory-link"
+              class="related-theory-link action-link"
               [routerLink]="['/', pathId(), courseId(), articleId]"
               [queryParams]="returnQueryParams()"
               >Review theory: {{ relatedArticleTitle(item) }}</a

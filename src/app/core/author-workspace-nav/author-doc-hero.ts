@@ -12,6 +12,9 @@ import { authorDocumentationGroups } from './author-workspace-links';
         <div class="hero-copy">
           <p class="hero-group">
             <span aria-hidden="true">{{ current.group.icon }}</span> {{ current.group.label }}
+            @if (current.parent) {
+              <span class="hero-parent">· {{ current.parent.label }}</span>
+            }
           </p>
           <h2>{{ current.page.label }}</h2>
           <p class="hero-description">{{ current.page.description }}</p>
@@ -134,8 +137,11 @@ export class AuthorDocHero {
   readonly pageId = input.required<string>();
   protected readonly entry = computed(() => {
     for (const group of authorDocumentationGroups) {
-      const page = group.pages.find((item) => item.id === this.pageId());
-      if (page) return { group, page };
+      for (const page of group.pages) {
+        if (page.id === this.pageId()) return { group, page, parent: null };
+        const child = page.children?.find((item) => item.id === this.pageId());
+        if (child) return { group, page: child, parent: page };
+      }
     }
     return null;
   });

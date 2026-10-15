@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="One week of streams goes into the old and the refactored chart code; the old chart lists track 258 above 638, the new chart swaps the two tied tracks and gets a red mismatch badge">
+<style>
+.rfx-t{font:600 11px system-ui,sans-serif;fill:var(--scene-muted,#536970)}
+.rfx-v{font:700 11px ui-monospace,Menlo,monospace;fill:var(--scene-ink,#102a33)}
+.rfx-loop{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-6.6s;animation-timing-function:ease-in-out}
+.rfx-dot1{animation-name:rfx-dot1}
+.rfx-dot2{animation-name:rfx-dot2}
+.rfx-old{animation-name:rfx-old}
+.rfx-new{animation-name:rfx-new}
+.rfx-bad{animation-name:rfx-bad}
+@keyframes rfx-dot1{0%{transform:translate(0,0);opacity:0}4%{opacity:1}24%{transform:translate(52px,-30px);opacity:1}28%,100%{transform:translate(52px,-30px);opacity:0}}
+@keyframes rfx-dot2{0%{transform:translate(0,0);opacity:0}4%{opacity:1}24%{transform:translate(52px,30px);opacity:1}28%,100%{transform:translate(52px,30px);opacity:0}}
+@keyframes rfx-old{0%,30%{opacity:0;transform:translate(-8px,0)}40%,96%{opacity:1;transform:translate(0,0)}100%{opacity:0}}
+@keyframes rfx-new{0%,42%{opacity:0;transform:translate(-8px,0)}52%,96%{opacity:1;transform:translate(0,0)}100%{opacity:0}}
+@keyframes rfx-bad{0%,62%{opacity:0}70%,96%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.rfx-loop{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<!-- one week of streams: a document with rows -->
+<ellipse cx="44" cy="136" rx="30" ry="5" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<path d="M18 52h40l10 10v70h-50Z" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<path d="M58 52v10h10" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-ink,#102a33)" stroke-width="1.5"/>
+<rect x="18" y="52" width="6" height="80" fill="var(--scene-link,#2f6fb3)"/>
+<rect x="30" y="72" width="10" height="6" rx="1" fill="var(--scene-accent,#006c73)"/><rect x="44" y="72" width="18" height="6" rx="1" fill="var(--scene-line,#cfdfdc)"/>
+<rect x="30" y="86" width="10" height="6" rx="1" fill="var(--scene-accent,#006c73)"/><rect x="44" y="86" width="14" height="6" rx="1" fill="var(--scene-line,#cfdfdc)"/>
+<rect x="30" y="100" width="10" height="6" rx="1" fill="var(--scene-accent,#006c73)"/><rect x="44" y="100" width="14" height="6" rx="1" fill="var(--scene-line,#cfdfdc)"/>
+<rect x="30" y="114" width="10" height="6" rx="1" fill="var(--scene-accent,#006c73)"/><rect x="44" y="114" width="10" height="6" rx="1" fill="var(--scene-line,#cfdfdc)"/>
+<!-- wires to the two versions of the chart code -->
+<path d="M72 92L124 62M72 92L124 122" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="3 5" opacity="0.6" fill="none"/>
+<circle class="rfx-loop rfx-dot1" cx="72" cy="92" r="4.5" fill="var(--scene-link,#2f6fb3)"/>
+<circle class="rfx-loop rfx-dot2" cx="72" cy="92" r="4.5" fill="var(--scene-grow,#b8457a)"/>
+<!-- old code: a server box -->
+<ellipse cx="148" cy="84" rx="26" ry="4" fill="var(--scene-ink,#102a33)" opacity="0.08"/>
+<path d="M124 42l6-6h38l-6 6Z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M162 42l6-6v36l-6 6Z" fill="var(--scene-ink,#102a33)" opacity="0.14"/>
+<rect x="124" y="42" width="38" height="36" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<text class="rfx-t" x="131" y="57">old</text>
+<circle cx="131" cy="69" r="2.5" fill="var(--scene-good,#1f7a4d)"/><circle cx="139" cy="69" r="2.5" fill="var(--scene-good,#1f7a4d)"/>
+<!-- new code: a server box -->
+<ellipse cx="148" cy="146" rx="26" ry="4" fill="var(--scene-ink,#102a33)" opacity="0.08"/>
+<path d="M124 104l6-6h38l-6 6Z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M162 104l6-6v36l-6 6Z" fill="var(--scene-ink,#102a33)" opacity="0.14"/>
+<rect x="124" y="104" width="38" height="36" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<text class="rfx-t" x="130" y="119">new</text>
+<circle cx="131" cy="131" r="2.5" fill="var(--scene-good,#1f7a4d)"/><circle cx="139" cy="131" r="2.5" fill="var(--scene-good,#1f7a4d)"/>
+<!-- old chart: 258 above 638 -->
+<g class="rfx-loop rfx-old">
+<ellipse cx="236" cy="86" rx="46" ry="4" fill="var(--scene-ink,#102a33)" opacity="0.08"/>
+<rect x="190" y="30" width="92" height="52" rx="5" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<rect x="190" y="30" width="92" height="8" rx="3" fill="var(--scene-accent,#006c73)"/>
+<text class="rfx-v" x="198" y="56">1 258</text><rect x="244" y="49" width="28" height="7" rx="1" fill="var(--scene-accent-soft,#dcefed)"/>
+<text class="rfx-v" x="198" y="74">2 638</text><rect x="244" y="67" width="28" height="7" rx="1" fill="var(--scene-accent-soft,#dcefed)"/>
+<circle cx="288" cy="34" r="8" fill="var(--scene-good,#1f7a4d)"/>
+<path d="M284 34l3 3 5-6" stroke="var(--scene-card,#fff)" stroke-width="2" fill="none" stroke-linecap="round"/>
+</g>
+<!-- new chart: the tied tracks swapped -->
+<g class="rfx-loop rfx-new">
+<ellipse cx="236" cy="152" rx="46" ry="4" fill="var(--scene-ink,#102a33)" opacity="0.08"/>
+<rect x="190" y="96" width="92" height="52" rx="5" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<rect x="190" y="96" width="92" height="8" rx="3" fill="var(--scene-grow,#b8457a)"/>
+<rect x="194" y="111" width="84" height="32" rx="3" fill="var(--scene-warn,#a15c00)" opacity="0.16"/>
+<text class="rfx-v" x="198" y="122">1 638</text><rect x="244" y="115" width="28" height="7" rx="1" fill="var(--scene-accent-soft,#dcefed)"/>
+<text class="rfx-v" x="198" y="140">2 258</text><rect x="244" y="133" width="28" height="7" rx="1" fill="var(--scene-accent-soft,#dcefed)"/>
+</g>
+<g class="rfx-loop rfx-bad">
+<circle cx="288" cy="100" r="9" fill="var(--scene-bad,#b3261e)"/>
+<path d="M284 96l8 8M292 96l-8 8" stroke="var(--scene-card,#fff)" stroke-width="2.2" stroke-linecap="round"/>
+</g>
+</svg>

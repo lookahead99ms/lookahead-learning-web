@@ -1,44 +1,211 @@
 <app-platform-header />
-<main id="main-content">
-  <p class="eyebrow">Owner tools</p><h1>People and access</h1>
-  <div class="access-layout"><section aria-label="Manage access">
-    <p>Assign roles and course access. These permissions never include another learner’s saved plans or progress.</p>
-    <p role="status" aria-live="polite">{{ notice() }}</p>
-    <fieldset [disabled]="busy()"><legend>Choose a person</legend>
-      <label>Exact email or username <input type="text" [(ngModel)]="query" autocomplete="off" /></label>
-      <button type="button" (click)="find()">Find existing account</button>
-      <label>Email before signup <input type="email" [(ngModel)]="pendingEmail" autocomplete="off" /></label>
-      <button type="button" (click)="invite()">Prepare pending access</button>
-      <p>Pending access requires verified email ownership through Cognito. Local signup does not verify email and cannot claim it. Pending access expires 14 days after it is saved. Saving it again renews this window. No invitation email is sent. New cloud-account onboarding is not active yet; a newly registered account cannot claim this access until that integration is enabled.</p>
-    </fieldset>
-    @if (draft; as selection) {
-      <h2>Review access for {{ recipient()?.displayName || selection.pendingEmail || selection.accountId }}</h2>
-      @if (selection.accountId) { <p>Account ID: {{ selection.accountId }}</p> }
-      <fieldset [disabled]="busy()"><legend>Roles</legend>
-        @for (role of roleOptions; track role.id) {
-          <label><input type="checkbox" [checked]="selection.roles.includes(role.id)" (change)="toggle('roles', role.id, $any($event.target).checked)" /> {{ role.label }} — {{ role.description }}</label>
-        }
-        <p>The owner role cannot be assigned here. Multiple selected roles combine their permissions.</p>
-      </fieldset>
-      <fieldset [disabled]="busy()"><legend>Course access</legend>
-        <label><input type="checkbox" [(ngModel)]="selection.fullCurriculum" /> Entire curriculum, including future courses</label>
-        @if (selection.roles.includes('tester')) { <p>Tester access includes the entire curriculum.</p> }
-        <div class="courses">
-          @for (topic of topics(); track topic) {
-            <label><input type="checkbox" [checked]="selection.topicGrants.includes(topic)" [disabled]="selection.fullCurriculum || selection.roles.includes('tester')" (change)="toggle('topicGrants', topic, $any($event.target).checked)" /> {{ topicLabel(topic) }}</label>
+<main id="main-content" class="access-page">
+  <aside class="workspace-sidebar">
+    <app-author-workspace-nav pageTitle="People and access" pageId="access" [outline]="outline()" />
+  </aside>
+  <div class="workspace-content">
+    <header class="access-hero">
+      <span class="hero-mark" aria-hidden="true">🔐</span>
+      <div>
+        <p class="eyebrow">Owner tools</p>
+        <h2 class="intro-heading">Give people the access they need.</h2>
+        <p class="lede">
+          Assign roles and course access. These permissions never include another learner’s saved
+          plans or progress.
+        </p>
+        <ul class="hero-facts" aria-label="About this page">
+          <li>{{ assignments().length }} saved assignment{{ assignments().length === 1 ? '' : 's' }}</li>
+          <li>Owner only</li>
+          <li>Applies on the next request</li>
+        </ul>
+      </div>
+    </header>
+
+    <section class="how-access" aria-labelledby="how-access-heading">
+      <h2 id="how-access-heading" class="how-heading">How access works</h2>
+      <ul class="how-grid">
+        <li class="how-card">
+          <span class="how-icon" aria-hidden="true">🧑‍💼</span>
+          <h3>Staff roles</h3>
+          <p>Tester, Reviewer and Admin open staff tools. Choosing Admin also selects the entire curriculum.</p>
+        </li>
+        <li class="how-card">
+          <span class="how-icon" aria-hidden="true">📚</span>
+          <h3>Course access grants</h3>
+          <p>Open chosen courses, or the entire curriculum, for one person. A grant is not a purchase and costs nothing.</p>
+        </li>
+        <li class="how-card">
+          <span class="how-icon" aria-hidden="true">🏷️</span>
+          <h3>Plans and purchases</h3>
+          <p>Paid plans are designed but not on sale, so no one has bought one yet.</p>
+          <a class="how-link" routerLink="/admin/plans">See plans and purchases</a>
+        </li>
+      </ul>
+    </section>
+
+    <p class="notice" role="status" aria-live="polite" [class.has-notice]="notice()">{{ notice() }}</p>
+
+    <div class="work-grid">
+      <section class="access-section" id="choose-person" aria-labelledby="choose-person-heading">
+        <div class="section-heading">
+          <span class="section-icon" aria-hidden="true">👤</span>
+          <div>
+            <h2 id="choose-person-heading">Choose a person</h2>
+            <p class="section-note">Find an account that already exists, or prepare access for an email before signup.</p>
+          </div>
+        </div>
+        <fieldset class="choose-grid" [disabled]="busy()">
+          <legend class="visually-hidden">Choose a person</legend>
+          <div class="panel">
+            <h3>Existing account</h3>
+            <label>Exact email or username <input type="text" [(ngModel)]="query" autocomplete="off" /></label>
+            <button class="primary-action" type="button" (click)="find()">Find existing account</button>
+          </div>
+          <div class="panel">
+            <h3>Before signup</h3>
+            <label>Email before signup <input type="email" [(ngModel)]="pendingEmail" autocomplete="off" /></label>
+            <button class="secondary-action" type="button" (click)="invite()">Prepare pending access</button>
+          </div>
+        </fieldset>
+        <p class="context-note">
+          Pending access requires verified email ownership through Cognito. Local signup does not
+          verify email and cannot claim it. Pending access expires 14 days after it is saved. Saving it
+          again renews this window. No invitation email is sent. New cloud-account onboarding is not
+          active yet; a newly registered account cannot claim this access until that integration is
+          enabled.
+        </p>
+      </section>
+
+      <section class="access-section" id="saved-assignments" aria-labelledby="saved-assignments-heading">
+        <div class="section-heading with-action">
+          <span class="section-icon" aria-hidden="true">🗂️</span>
+          <div>
+            <h2 id="saved-assignments-heading">Saved assignments</h2>
+            <p class="section-note">Everyone who has a staff role or course access from this page.</p>
+          </div>
+          <button class="secondary-action" type="button" (click)="reload()" [disabled]="busy()">Reload list</button>
+        </div>
+        <div class="assignment-list">
+          @for (assignment of assignments(); track assignment.id) {
+            <article class="assignment" [class.pending]="assignment.pendingEmail">
+              <div class="assignment-text">
+                <p class="assignment-who">{{ assignment.pendingEmail || assignment.accountId }}</p>
+                <p class="assignment-state">
+                  <span class="state-dot" aria-hidden="true"></span>
+                  {{ assignment.pendingEmail ? 'Pending verified sign-in' : 'Assigned' }}
+                </p>
+                <p class="assignment-grants">
+                  {{ roleNames(assignment.roles) }} ·
+                  {{ assignment.fullCurriculum || assignment.roles.includes('tester') ? 'Entire curriculum' : assignment.topicGrants.length + ' selected courses' }}
+                </p>
+              </div>
+              <button class="secondary-action" type="button" (click)="recipient.set(null); edit(assignment)" [disabled]="busy()">
+                Review assignment
+              </button>
+            </article>
+          } @empty {
+            <p class="empty">No saved assignments.</p>
           }
         </div>
-        <p>Private previews require access to the entire curriculum because they can contain course material. Existing purchases or separate grants remain in effect.</p>
-      </fieldset>
-      <p>To remove this assignment’s access, clear its roles, entire-curriculum selection and selected courses, then save.</p>
-      <button class="primary-action" type="button" (click)="save()" [disabled]="busy()">Save access</button>
+      </section>
+    </div>
+
+    @if (draft; as selection) {
+      <section class="access-section review" id="review-access" aria-labelledby="review-access-heading">
+        <div class="section-heading">
+          <span class="section-icon" aria-hidden="true">✅</span>
+          <div>
+            <h2 id="review-access-heading">
+              Review access for {{ recipient()?.displayName || selection.pendingEmail || selection.accountId }}
+            </h2>
+            @if (selection.accountId) {
+              <p class="section-note">Account ID: <span class="mono">{{ selection.accountId }}</span></p>
+            } @else {
+              <p class="section-note">Pending verified sign-in</p>
+            }
+          </div>
+        </div>
+
+        <div class="review-grid">
+          <div class="review-main">
+            <fieldset class="panel" [disabled]="busy()">
+              <legend>Roles</legend>
+              <div class="role-grid">
+                @for (role of roleOptions; track role.id) {
+                  <label class="role-option">
+                    <input
+                      type="checkbox"
+                      [checked]="selection.roles.includes(role.id)"
+                      (change)="toggle('roles', role.id, $any($event.target).checked)"
+                    />
+                    <span class="role-text"><strong>{{ role.label }}</strong><span>{{ role.description }}</span></span>
+                  </label>
+                }
+              </div>
+              <p class="context-note">
+                The owner role cannot be assigned here. Multiple selected roles combine their permissions.
+                Choosing Admin also selects the entire curriculum; you can clear it before saving.
+              </p>
+            </fieldset>
+
+            <fieldset class="panel" [disabled]="busy()">
+              <legend>Course access grants</legend>
+              <label class="full-curriculum">
+                <input type="checkbox" [(ngModel)]="selection.fullCurriculum" /> Entire curriculum, including future courses
+              </label>
+              @if (selection.roles.includes('tester')) {
+                <p class="context-note">Tester access includes the entire curriculum.</p>
+              }
+              <div class="courses" role="group" aria-label="Courses">
+                @for (topic of topics(); track topic) {
+                  <label>
+                    <input
+                      type="checkbox"
+                      [checked]="selection.topicGrants.includes(topic)"
+                      [disabled]="selection.fullCurriculum || selection.roles.includes('tester')"
+                      (change)="toggle('topicGrants', topic, $any($event.target).checked)"
+                    />
+                    {{ topicLabel(topic) }}
+                  </label>
+                }
+              </div>
+              <p class="context-note">
+                Private previews require access to the entire curriculum because they can contain course
+                material. Grants saved elsewhere remain in effect.
+              </p>
+            </fieldset>
+          </div>
+          <div class="review-side">
+            <!-- DLV-209: purchases and plan assignments have no server records yet; say so plainly. -->
+            <div class="panel membership-panel">
+              <h3>Plans and purchases</h3>
+              <dl class="membership-facts">
+                <div>
+                  <dt>Plan or pass purchases</dt>
+                  <dd>None recorded. The server does not store purchases yet, so there is no plan, price paid, discount, activation date or expiry to show.</dd>
+                </div>
+                <div>
+                  <dt>Renewal</dt>
+                  <dd>Manual for every plan and pass. Nothing renews or charges automatically.</dd>
+                </div>
+                <div>
+                  <dt>Expiry reminders</dt>
+                  <dd>Not tracked. Reminders 7 to 10 days before expiry need notification support that does not exist yet.</dd>
+                </div>
+              </dl>
+              <p class="context-note">Course access on this form is an access grant, not a purchase.</p>
+            </div>
+            <div class="save-row">
+              <button class="primary-action" type="button" (click)="save()" [disabled]="busy()">Save access</button>
+              <p class="context-note">
+                To remove this assignment’s access, clear its roles, entire-curriculum selection and
+                selected courses, then save.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
     }
-    <h2>Saved assignments</h2><button type="button" (click)="reload()" [disabled]="busy()">Reload list</button>
-    @for (assignment of assignments(); track assignment.id) {
-      <article class="assignment"><p>{{ assignment.pendingEmail || assignment.accountId }} · {{ assignment.pendingEmail ? 'Pending verified sign-in' : 'Assigned' }}</p>
-        <p>{{ assignment.roles.join(', ') || 'No staff role' }} · {{ assignment.fullCurriculum || assignment.roles.includes('tester') ? 'Entire curriculum' : assignment.topicGrants.length + ' selected courses' }}</p>
-        <button type="button" (click)="recipient.set(null); edit(assignment)" [disabled]="busy()">Review assignment</button>
-      </article>
-    } @empty { <p>No saved assignments.</p> }
-  </section><app-author-admin-menu pageId="access" /></div>
+  </div>
+  <app-author-admin-menu pageId="access" />
 </main>

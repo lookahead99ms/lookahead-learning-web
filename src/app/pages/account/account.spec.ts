@@ -139,7 +139,7 @@ it.each([
   ] as HTMLAnchorElement[];
   expect(links.map((link) => link.getAttribute('href'))).toEqual([
     returnTo,
-    ...['/study-plan', '/search'].filter((route) => route !== returnTo),
+    ...['/search'].filter((route) => route !== returnTo),
   ]);
   expect(fixture.nativeElement.querySelector('nav.account-footer').getAttribute('aria-label')).toBe(
     'Learning actions',

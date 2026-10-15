@@ -6,6 +6,7 @@ import {
   visibleAdminLinks,
   AuthorWorkspacePageId,
   isAuthorDocumentationPage,
+  authorDocumentationSection,
 } from './author-workspace-links';
 import { SidebarToggle } from '../page-sidebars/sidebar-toggle';
 
@@ -36,6 +37,15 @@ export class AuthorAdminMenu {
   protected readonly workspaceLinks = computed(() => visibleAdminLinks(this.accounts.account()));
   protected readonly documentationGroups = authorDocumentationGroups;
   protected readonly onDocumentationPage = computed(() => isAuthorDocumentationPage(this.pageId()));
+
+  /** The parent page and sub-pages around the open page, when it belongs to one. */
+  protected readonly section = computed(() => authorDocumentationSection(this.pageId()));
+
+  /** A parent page is the current section while one of its sub-pages is open. */
+  protected documentationState(id: string): 'page' | 'true' | null {
+    if (id === this.pageId()) return 'page';
+    return this.section()?.parent.id === id ? 'true' : null;
+  }
 
   /** The open page is "page"; Documentation is the current section on any single document. */
   protected currentState(id: string): 'page' | 'true' | null {

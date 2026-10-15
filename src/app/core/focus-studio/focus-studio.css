@@ -108,6 +108,13 @@
 .problem-rail a {
   font-size: 12px;
 }
+/* DLV-937: the source link is a compact pill, not bare text. */
+.problem-rail .source-action {
+  min-height: 36px;
+  margin-top: 4px;
+  padding: 6px 14px;
+  border-width: 1px;
+}
 .problem-peek .problem-rail {
   position: fixed;
   left: 20px;

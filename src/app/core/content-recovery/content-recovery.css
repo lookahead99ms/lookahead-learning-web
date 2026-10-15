@@ -70,15 +70,30 @@
   color: var(--text);
   font-weight: 750;
 }
+/* DLV-209: which plans include this premium lesson, for signed-out visitors and for signed-in
+   learners without access. */
+.locked-note .plans-line,
+dialog .plans-line {
+  margin: 4px 0 12px;
+  color: var(--text-subtle);
+  font-weight: 600;
+}
+.locked-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+/* DLV-209: one row, Go back on the left edge and Home on the right edge. */
 .recovery-links {
   display: flex;
-  gap: 24px;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
   margin-top: 28px;
 }
-.recovery a {
-  color: var(--accent-link);
-  font-weight: 700;
+.recovery a.primary-action {
   min-height: 44px;
   display: inline-flex;
   align-items: center;
@@ -96,6 +111,14 @@
   min-height: 44px;
   max-width: 100%;
   text-align: center;
+}
+/* DLV-209: the main actions, centred as one row that wraps on small screens. */
+.dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
 }
 .recovery :focus-visible {
   outline: 3px solid var(--accent-focus);
@@ -144,7 +167,8 @@ dialog h2 {
   .recovery {
     margin: 16px auto;
   }
-  .primary-action {
+  .primary-action,
+  .plans-action {
     width: 100%;
   }
 }

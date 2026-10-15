@@ -24,7 +24,7 @@ COPY --chown=10001:10001 package.json package-lock.json ./
 RUN npm ci --include=prod --include=dev --include=optional --include=peer --no-audit --no-fund
 COPY --chown=10001:10001 angular.json tsconfig*.json ./
 COPY --chown=10001:10001 src ./src
-COPY --chown=10001:10001 scripts/build.mjs scripts/build-code-presentation.mjs ./scripts/
+COPY --chown=10001:10001 scripts/build.mjs scripts/build-code-presentation.mjs scripts/generate-seo-files.mjs scripts/generate-route-snapshots.mjs ./scripts/
 COPY --chown=10001:10001 scripts/container/verify-static.mjs ./scripts/container/
 COPY --chown=10001:10001 public ./public
 RUN npm run build:protected \

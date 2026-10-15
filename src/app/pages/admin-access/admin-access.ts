@@ -1,7 +1,9 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { AuthorAdminMenu } from '../../core/author-workspace-nav/author-admin-menu';
+import { AuthorOutlineItem, AuthorWorkspaceNav } from '../../core/author-workspace-nav/author-workspace-nav';
 import { ACCOUNT_FETCH, StudyPlanAccount } from '../study-plan/study-plan-account';
 
 interface Assignment {
@@ -12,30 +14,9 @@ interface Recipient { accountId: string; username: string; displayName: string; 
 
 @Component({
   selector: 'app-admin-access',
-  imports: [FormsModule, PlatformHeader, AuthorAdminMenu],
+  imports: [FormsModule, RouterLink, PlatformHeader, AuthorAdminMenu, AuthorWorkspaceNav],
   templateUrl: './admin-access.html',
-  styles: [`
-    main { max-width: 1100px; margin: auto; padding: 32px 24px; }
-    .access-layout { display: grid; grid-template-columns: minmax(0,1fr) 240px; gap: 40px; }
-    section { min-width: 0; } p { line-height: 1.6; overflow-wrap: anywhere; }
-    label { display: block; margin: 12px 0; line-height: 1.5; }
-    input[type=text], input[type=email], button { box-sizing: border-box; min-height: 44px;
-      padding: 10px 14px; border: 1px solid var(--line); border-radius: 8px; font: inherit;
-      color: var(--text-strong); background: var(--surface); }
-    input[type=text], input[type=email] { display: block; width: 100%; max-width: 36rem; margin-top: 8px; }
-    input[type=checkbox] { accent-color: var(--accent-strong); margin-inline-end: 8px; }
-    fieldset { min-width: 0; margin: 24px 0; padding: 16px; border: 1px solid var(--line); }
-    legend { padding-inline: 8px; font-weight: 600; }
-    button { margin: 8px 12px 8px 0; cursor: pointer; }
-    button:hover:not(:disabled) { background: var(--surface-muted); }
-    button:disabled { opacity: .65; cursor: not-allowed; }
-    button:focus-visible, input:focus-visible { outline: 3px solid var(--accent-focus); outline-offset: 3px; }
-    .primary-action { background: var(--accent-strong); color: var(--accent-on-primary); }
-    .primary-action:hover:not(:disabled) { background: color-mix(in srgb, var(--accent-strong) 90%, var(--text-strong)); }
-    .courses { max-height: 300px; overflow: auto; }
-    .assignment { border-bottom: 1px solid var(--line); padding: 16px 0; overflow-wrap: anywhere; }
-    @media(max-width: 800px) { .access-layout { grid-template-columns: 1fr; } main { padding: 24px 16px; } }
-  `],
+  styleUrl: './admin-access.css',
 })
 export class AdminAccessPage implements OnInit {
   private readonly transport = inject(ACCOUNT_FETCH);
@@ -50,6 +31,19 @@ export class AdminAccessPage implements OnInit {
     { id: 'reviewer', label: 'Reviewer', description: 'Admin documents and previews; read the Delivery Plan and mark reviewed stories Done.' },
     { id: 'admin', label: 'Admin', description: 'Triage feedback, read admin documents, create stories and move them to Review.' },
   ];
+  private static readonly baseOutline: readonly AuthorOutlineItem[] = [
+    { label: 'Choose a person', href: '#choose-person' },
+    { label: 'Saved assignments', href: '#saved-assignments' },
+  ];
+  private static readonly reviewOutline: readonly AuthorOutlineItem[] = [
+    AdminAccessPage.baseOutline[0],
+    { label: 'Review access', href: '#review-access' },
+    AdminAccessPage.baseOutline[1],
+  ];
+  /** Stable arrays, so the outline only changes when the review section appears or goes. */
+  outline(): readonly AuthorOutlineItem[] {
+    return this.draft ? AdminAccessPage.reviewOutline : AdminAccessPage.baseOutline;
+  }
   query = '';
   pendingEmail = '';
   draft: Assignment | null = null;
@@ -89,6 +83,13 @@ export class AdminAccessPage implements OnInit {
   toggle(field: 'roles' | 'topicGrants', value: string, checked: boolean) {
     if (!this.draft) return;
     this.draft[field] = checked ? [...new Set([...this.draft[field], value])] : this.draft[field].filter(item => item !== value);
+    // Admins get the entire curriculum by default (user, 2026-10-15). It is saved as an explicit
+    // grant through the existing contract and can be cleared before saving.
+    if (field === 'roles' && value === 'admin' && checked) this.draft.fullCurriculum = true;
+  }
+  /** "Admin, Reviewer", or "No staff role". */
+  roleNames(roles: readonly string[]): string {
+    return roles.map(role => this.roleOptions.find(option => option.id === role)?.label ?? role).join(', ') || 'No staff role';
   }
   async save() {
     if (!this.draft || this.busy()) return;

@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A city bus with fleet number 1042 sends GPS reports through a gateway server into a Kafka topic with three partition lanes; each report from bus 1042 is appended to the same lane, p11, one after the other, and the countdown sign at the stop changes from 4 min to 3 min">
+<style>
+.kpk-t{font:600 10px system-ui,sans-serif;fill:var(--scene-muted,#4d6268)}
+.kpk-m{font:700 10px ui-monospace,Menlo,monospace;fill:var(--scene-text,#102a33)}
+.kpk-r{font:700 8px system-ui,sans-serif;fill:var(--scene-card,#fff)}
+.kpk-s{font:700 13px ui-monospace,Menlo,monospace;fill:var(--scene-warn,#b26a00)}
+.kpk-loop{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-7.2s;animation-timing-function:linear}
+.kpk-d1{animation-name:kpk-d1}
+@keyframes kpk-d1{0%,4%{transform:translate(0,0);opacity:0}6%{opacity:1}16%{transform:translate(58px,-20px);opacity:1}22%{transform:translate(104px,31px);opacity:1}30%{transform:translate(161px,31px);opacity:1}32%,100%{transform:translate(161px,31px);opacity:0}}
+.kpk-d2{animation-name:kpk-d2}
+@keyframes kpk-d2{0%,36%{transform:translate(0,0);opacity:0}38%{opacity:1}48%{transform:translate(58px,-20px);opacity:1}54%{transform:translate(104px,31px);opacity:1}62%{transform:translate(177px,31px);opacity:1}64%,100%{transform:translate(177px,31px);opacity:0}}
+.kpk-c1{animation-name:kpk-c1}
+@keyframes kpk-c1{0%,29%{opacity:0}31%,97%{opacity:1}100%{opacity:0}}
+.kpk-c2{animation-name:kpk-c2}
+@keyframes kpk-c2{0%,61%{opacity:0}63%,97%{opacity:1}100%{opacity:0}}
+.kpk-old{animation-name:kpk-old}
+@keyframes kpk-old{0%,65%{opacity:1}67%,98%{opacity:0}100%{opacity:1}}
+.kpk-new{animation-name:kpk-new}
+@keyframes kpk-new{0%,65%{opacity:0}67%,98%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.kpk-loop{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<!-- road -->
+<path d="M0 150H96" stroke="var(--scene-line,#cfdfdc)" stroke-width="3"/>
+<!-- city bus 1042 with a GPS antenna -->
+<ellipse cx="48" cy="150" rx="40" ry="5" fill="var(--scene-ink,#102a33)" opacity="0.1"/>
+<path d="M58 104V94" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<circle cx="58" cy="92" r="3" fill="var(--scene-accent,#006c73)"/>
+<path d="M64 86a9 9 0 0 1 0 12M68 82a15 15 0 0 1 0 20" stroke="var(--scene-accent,#006c73)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+<path d="M12 104h70l4 4v4H12Z" fill="var(--scene-line,#cfdfdc)"/>
+<rect x="10" y="108" width="78" height="34" rx="5" fill="var(--scene-accent,#006c73)"/>
+<rect x="15" y="113" width="12" height="12" rx="2" fill="var(--scene-card,#fff)" opacity="0.9"/>
+<rect x="31" y="113" width="12" height="12" rx="2" fill="var(--scene-card,#fff)" opacity="0.9"/>
+<rect x="47" y="113" width="12" height="12" rx="2" fill="var(--scene-card,#fff)" opacity="0.9"/>
+<rect x="64" y="113" width="20" height="22" rx="2" fill="var(--scene-card,#fff)" opacity="0.9"/>
+<text x="38" y="138" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="8" font-weight="700" fill="var(--scene-card,#fff)">1042</text>
+<circle cx="26" cy="144" r="6" fill="var(--scene-ink,#102a33)"/><circle cx="26" cy="144" r="2" fill="var(--scene-line,#cfdfdc)"/>
+<circle cx="72" cy="144" r="6" fill="var(--scene-ink,#102a33)"/><circle cx="72" cy="144" r="2" fill="var(--scene-line,#cfdfdc)"/>
+<!-- wires: bus to gateway, gateway to the topic -->
+<path d="M66 92L112 72M128 84L164 114" stroke="var(--scene-muted,#4d6268)" stroke-width="1.5" stroke-dasharray="3 5" fill="none" opacity="0.6"/>
+<!-- GPS gateway server -->
+<ellipse cx="124" cy="96" rx="22" ry="4" fill="var(--scene-ink,#102a33)" opacity="0.08"/>
+<path d="M104 60l5-5h34l-5 5Z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M138 60l5-5v26l-5 5Z" fill="var(--scene-ink,#102a33)" opacity="0.14"/>
+<rect x="104" y="60" width="34" height="26" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<path d="M109 68H126M109 77H126" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"/>
+<circle cx="132" cy="68" r="2.2" fill="var(--scene-good,#1f7a4d)"/><circle cx="132" cy="77" r="2.2" fill="var(--scene-good,#1f7a4d)"/>
+<!-- topic vehicle-positions: three partition lanes, each an append-only row of records -->
+<ellipse cx="208" cy="140" rx="52" ry="5" fill="var(--scene-ink,#102a33)" opacity="0.08"/>
+<path d="M160 40l6-6h92l-6 6Z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M252 40l6-6v92l-6 6Z" fill="var(--scene-ink,#102a33)" opacity="0.14"/>
+<rect x="160" y="40" width="92" height="92" rx="5" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<text class="kpk-t" x="166" y="54">p5</text>
+<text class="kpk-t" x="166" y="84">p9</text>
+<text class="kpk-t" x="166" y="114">p11</text>
+<g fill="var(--scene-line,#cfdfdc)">
+<rect x="184" y="58" width="14" height="14" rx="2"/><rect x="202" y="58" width="14" height="14" rx="2"/><rect x="220" y="58" width="14" height="14" rx="2"/>
+<rect x="184" y="88" width="14" height="14" rx="2"/><rect x="202" y="88" width="14" height="14" rx="2"/>
+</g>
+<rect x="184" y="118" width="14" height="10" rx="2" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="1.2"/>
+<rect x="202" y="118" width="14" height="10" rx="2" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="1.2"/>
+<rect class="kpk-loop kpk-c1" x="220" y="118" width="14" height="10" rx="2" fill="var(--scene-accent,#006c73)"/>
+<rect class="kpk-loop kpk-c2" x="238" y="118" width="10" height="10" rx="2" fill="var(--scene-accent,#006c73)"/>
+<!-- countdown sign at the stop -->
+<path d="M268 150V108" stroke="var(--scene-ink,#102a33)" stroke-width="3"/>
+<ellipse cx="268" cy="152" rx="20" ry="4" fill="var(--scene-ink,#102a33)" opacity="0.08"/>
+<path d="M258 74l4-4h46l-4 4Z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M304 74l4-4v30l-4 4Z" fill="var(--scene-ink,#102a33)" opacity="0.14"/>
+<rect x="258" y="74" width="46" height="34" rx="3" fill="var(--scene-ink,#102a33)"/>
+<text class="kpk-r" x="264" y="86">1</text>
+<text class="kpk-s kpk-loop kpk-old" x="281" y="102" text-anchor="middle" opacity="0">4 min</text>
+<text class="kpk-s kpk-loop kpk-new" x="281" y="102" text-anchor="middle">3 min</text>
+<!-- one GPS report of bus 1042, bus to gateway to lane p11 -->
+<g class="kpk-loop kpk-d1" opacity="0"><circle cx="66" cy="92" r="4.5" fill="var(--scene-accent,#006c73)"/></g>
+<g class="kpk-loop kpk-d2" opacity="0"><circle cx="66" cy="92" r="4.5" fill="var(--scene-accent,#006c73)"/></g>
+</svg>

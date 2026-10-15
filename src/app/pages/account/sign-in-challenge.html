@@ -93,7 +93,7 @@
       <button type="button" (click)="load()">Refresh list</button>
     }
     @if (state() === 'expired') {
-      <a routerLink="/sign-in" [queryParams]="{ returnTo }">Start sign-in again</a>
+      <a class="action-button" routerLink="/sign-in" [queryParams]="{ returnTo }">Start sign-in again</a>
     }
     <p class="status" role="status" aria-live="polite">
       {{
