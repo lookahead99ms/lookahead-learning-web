@@ -10,18 +10,23 @@ export function isThemePreference(value: unknown): value is ThemePreference {
   return value === 'light' || value === 'dark' || value === 'system';
 }
 
+/**
+ * The color theme. With nothing stored the platform starts dark (not the device setting); a stored
+ * `light`, `dark` or `system` choice always wins. src/index.html applies the same rule before the
+ * app starts, so the first paint already has the right theme.
+ */
 @Injectable({ providedIn: 'root' })
 export class PlatformThemeService {
   private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
   /** The theme on screen now (a `system` preference resolved to light or dark). */
-  readonly selected = signal<PlatformTheme>('light');
-  readonly preference = signal<ThemePreference>('system');
+  readonly selected = signal<PlatformTheme>('dark');
+  readonly preference = signal<ThemePreference>('dark');
   private readonly darkScheme = this.document.defaultView?.matchMedia?.('(prefers-color-scheme: dark)');
 
   constructor() {
     const view = this.document.defaultView;
-    let initial: ThemePreference = 'system';
+    let initial: ThemePreference = 'dark';
     try {
       const stored = view?.localStorage.getItem(themeKey);
       if (isThemePreference(stored)) initial = stored;

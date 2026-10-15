@@ -1,167 +1,467 @@
 <app-platform-header />
 <main id="main-content" class="landing-page">
   <div class="discovery-opening">
-    <h1 class="discovery-framing"><app-platform-signature /></h1>
-    <p class="signature-support"><app-learning-prompt /></p>
-    <section
-      class="hero-carousel"
-      aria-label="Five ways to grow as an engineer"
-      aria-roledescription="carousel"
-      (focusin)="pauseRotation()"
-      (pointerenter)="pauseRotation()"
-      (pointerdown)="interactWithHero($event)"
-    >
-      <div #heroSlides class="hero-slides">
-        @for (slide of slides; track slide.name; let i = $index) {
-          <article
-            class="hero-slide"
-            [class.active]="activeSlide() === i"
-            [class.transitioning]="
-              outgoingSlide() !== null && (activeSlide() === i || outgoingSlide() === i)
-            "
-            [attr.aria-hidden]="activeSlide() !== i"
-            [attr.inert]="activeSlide() === i ? null : ''"
-            [attr.aria-label]="i + 1 + ' of 5: ' + slide.name"
-            aria-roledescription="slide"
-          >
-            <div class="hero-copy">
-              <p class="eyebrow">{{ slide.eyebrow }}</p>
-              <h2 class="slide-title">
-                @for (line of slide.lines; track line) {
-                  <span>{{ line }} </span>
-                }
-              </h2>
-              <p class="lead">{{ slide.description }}</p>
-              <a
-                class="primary-action"
-                [routerLink]="slide.route"
-                [fragment]="slide.fragment"
-                [queryParams]="slide.query"
-                (click)="choosePath($event, slide.fragment)"
-                >{{ slide.action }}</a
-              >
-            </div>
-            <div class="hero-visual">
-              @switch (i) {
-                @case (0) {
-                  <p class="chapter">Your next chapter</p>
-                  <h2>Start where you are.<br />Build what comes next.</h2>
-                  <div class="detail-line">
-                    <span>Understand the fundamentals</span><span>Learn</span>
-                  </div>
-                  <div class="detail-line">
-                    <span>Handle production reality</span><span>Grow</span>
-                  </div>
-                  <div class="detail-line">
-                    <span>Lead the larger decision</span><span>Blaze</span>
-                  </div>
-                }
-                @case (1) {
-                  <p class="chapter">Today's discussion</p>
-                  <h2>Your service is slowing down.<br />What do you check first?</h2>
-                  <p>
-                    State your hypothesis. Choose a signal. Explain the trade-off. Revisit the
-                    decision when the evidence changes.
-                  </p>
-                  <div class="detail-line"><span>Production diagnosis</span><span>Grow</span></div>
-                  <div class="detail-line">
-                    <span>Architecture review</span><span>Blaze</span>
-                  </div>
-                }
-                @case (2) {
-                  <p class="chapter">A connected learning journey</p>
-                  <h2>When does a simple queue stop being enough?</h2>
-                  <p>
-                    Follow one question from data structures to production reliability to
-                    system-design judgment.
-                  </p>
-                  <p class="small">
-                    Queue fundamentals. Failure and retry behavior. Architecture trade-offs.
-                  </p>
-                }
-                @case (3) {
-                  <p class="chapter">Canonical DSA / reasoning in code</p>
-                  <h2>See the invariant, not just the answer.</h2>
-                  <pre><code>{{ windowExample }}</code></pre>
-                  <p class="small">
-                    An illustration of the reasoning. Open a problem to run its guided debugger.
-                  </p>
-                }
-                @case (4) {
-                  <p class="chapter">One plan / several kinds of growth</p>
-                  <div class="journey">
-                    <span>01</span>
-                    <div>
-                      <h2>Choose your direction</h2>
-                      <p>Goals, scope, and accessible topics.</p>
+    <div class="hero-stage">
+      <header class="hero-masthead">
+        <h1 class="discovery-framing"><app-platform-signature /></h1>
+        <p class="signature-support"><app-learning-prompt /></p>
+      </header>
+      <section
+        class="hero-carousel"
+        aria-label="Six ways to grow as an engineer"
+        aria-roledescription="carousel"
+        [attr.data-held]="playing() ? null : ''"
+        [style.--slide-ms]="slideMs + 'ms'"
+        (focusin)="heroFocusIn($event)"
+        (focusout)="heroFocusOut($event)"
+      >
+        <div #heroSlides class="hero-slides" [attr.aria-live]="playing() ? 'off' : 'polite'">
+          @for (slide of slides; track slide.tab; let i = $index) {
+            <article
+              class="hero-slide"
+              [attr.data-visual]="slide.visual"
+              [class.active]="activeSlide() === i"
+              [class.transitioning]="
+                outgoingSlide() !== null && (activeSlide() === i || outgoingSlide() === i)
+              "
+              [attr.aria-hidden]="activeSlide() !== i"
+              [attr.inert]="activeSlide() === i ? null : ''"
+              [attr.aria-label]="i + 1 + ' of ' + slides.length + ': ' + slide.label"
+              aria-roledescription="slide"
+            >
+              <div class="hero-copy">
+                <p class="eyebrow">{{ slide.eyebrow }}</p>
+                <h2 class="slide-title">
+                  @for (line of slide.lines; track line) {
+                    <span>{{ line }} </span>
+                  }
+                </h2>
+                <p class="lead">{{ slide.description }}</p>
+                <a
+                  class="primary-action"
+                  [routerLink]="slide.route"
+                  [fragment]="slide.fragment"
+                  [queryParams]="slide.query"
+                  (click)="choosePath($event, slide.fragment)"
+                  >{{ slide.action }}<span class="action-arrow" aria-hidden="true">→</span></a
+                >
+              </div>
+              <div class="hero-visual">
+                @switch (slide.visual) {
+                  @case ('choose') {
+                    <p class="chapter">Your next chapter</p>
+                    <div class="visual-body">
+                      <h2>Start where you are.<br />Build what comes next.</h2>
+                      <ul class="hv-paths">
+                        <li class="hv-path" data-path="learn">
+                          <span class="hv-path-icon" aria-hidden="true"
+                            ><svg viewBox="0 0 24 24" focusable="false"><path d="M4 6.5 12 3l8 3.5-8 3.5z" /><path d="M7 8.3v5.2c1.4 1.5 3 2.2 5 2.2s3.6-.7 5-2.2V8.3M20 6.5v6" /></svg
+                          ></span>
+                          <span class="hv-path-text">
+                            <span class="hv-path-title">Understand the fundamentals</span>
+                            <span class="hv-path-desc"
+                              >Language foundations, interview questions and DSA you step through
+                              in a visual debugger.</span
+                            >
+                          </span>
+                          <span class="hv-tag">Learn</span>
+                        </li>
+                        <li class="hv-path" data-path="grow">
+                          <span class="hv-path-icon" aria-hidden="true"
+                            ><svg viewBox="0 0 24 24" focusable="false"><path d="M4 19h16" /><path d="M7 15v4M12 11v8M17 6v13" /><path d="m5 11 5-5 3 3 6-6" /></svg
+                          ></span>
+                          <span class="hv-path-text">
+                            <span class="hv-path-title">Handle production reality</span>
+                            <span class="hv-path-desc"
+                              >Implementation, operational failures, diagnosis, security and
+                              delivery scenarios.</span
+                            >
+                          </span>
+                          <span class="hv-tag">Grow</span>
+                        </li>
+                        <li class="hv-path" data-path="blaze">
+                          <span class="hv-path-icon" aria-hidden="true"
+                            ><svg viewBox="0 0 24 24" focusable="false"><path d="M12 3c3 3.5 4.5 6.4 4.5 9.2A4.5 4.5 0 0 1 12 17a4.5 4.5 0 0 1-4.5-4.8C7.5 10 8.6 8 10 6.6c.3 2 1 3.2 2.2 3.8C12.5 8 12.4 5.6 12 3z" /><path d="M9 21h6" /></svg
+                          ></span>
+                          <span class="hv-path-text">
+                            <span class="hv-path-title">Lead the larger decision</span>
+                            <span class="hv-path-desc"
+                              >System design, leadership, behavioral reasoning and AI
+                              engineering.</span
+                            >
+                          </span>
+                          <span class="hv-tag">Blaze</span>
+                        </li>
+                      </ul>
                     </div>
-                  </div>
-                  <div class="journey">
-                    <span>02</span>
-                    <div>
-                      <h2>Make room for practice</h2>
-                      <p>A feasible schedule with review time.</p>
+                  }
+                  @case ('build') {
+                    <p class="chapter">Blaze / AI Builds</p>
+                    <div class="visual-body">
+                      <h2>AI is one more service.</h2>
+                      <figure class="hv-stack">
+                        <svg
+                          class="hv-stack-art hv-stack-wide"
+                          viewBox="0 0 440 280"
+                          role="img"
+                          aria-label="An application: a client calls an API service, which uses a database, a queue, search and an AI model side by side"
+                          focusable="false"
+                        >
+                          <g class="hv-stack-wire">
+                            <path d="M220 54V88" />
+                            <path d="M214 82 220 90 226 82" />
+                            <path d="M220 140V168M55 168H385M55 168V198M165 168V198M275 168V198M385 168V198" />
+                          </g>
+                          <path class="hv-stack-call" d="M220 54V168H385V198">
+                            @if (!reducedMotion()) {
+                              <animate attributeName="opacity" values="0;1;1;0;0" keyTimes="0;0.35;0.55;0.9;1" dur="3.2s" repeatCount="indefinite" />
+                            }
+                          </path>
+                          <g class="hv-stack-box">
+                            <rect x="165" y="12" width="110" height="42" rx="10" />
+                            <rect x="125" y="92" width="190" height="48" rx="10" />
+                            <rect x="5" y="198" width="100" height="74" rx="12" />
+                            <rect x="115" y="198" width="100" height="74" rx="12" />
+                            <rect x="225" y="198" width="100" height="74" rx="12" />
+                          </g>
+                          <rect class="hv-stack-ai" x="335" y="198" width="100" height="74" rx="12" />
+                          <g class="hv-stack-icon">
+                            <ellipse cx="55" cy="217" rx="12" ry="4" />
+                            <path d="M43 217v12c0 2.2 5.4 4 12 4s12-1.8 12-4v-12" />
+                            <rect x="147" y="211" width="9" height="15" rx="2" />
+                            <rect x="160" y="211" width="9" height="15" rx="2" />
+                            <rect x="173" y="211" width="9" height="15" rx="2" />
+                            <circle cx="272" cy="218" r="7.5" />
+                            <path d="M277.5 223.5 284 230" />
+                          </g>
+                          <path
+                            class="hv-stack-spark"
+                            d="M385 207 388.2 216.8 398 220 388.2 223.2 385 233 381.8 223.2 372 220 381.8 216.8Z"
+                          />
+                          <g class="hv-stack-text">
+                            <text x="220" y="38">Client</text>
+                            <text x="220" y="121">API / Service</text>
+                            <text x="55" y="257">Database</text>
+                            <text x="165" y="257">Queue</text>
+                            <text x="275" y="257">Search</text>
+                          </g>
+                          <text class="hv-stack-ai-text" x="385" y="257">AI model</text>
+                          @if (!reducedMotion()) {
+                            <circle class="hv-stack-dot" r="5" cx="0" cy="0">
+                              <animateMotion path="M220 54V168H385V198" keyPoints="0;1;1;0;0" keyTimes="0;0.4;0.5;0.9;1" calcMode="linear" dur="3.2s" repeatCount="indefinite" />
+                            </circle>
+                          }
+                        </svg>
+                        <svg
+                          class="hv-stack-art hv-stack-tall"
+                          viewBox="0 0 300 314"
+                          role="img"
+                          aria-label="An application: a client calls an API service, which uses a database, a queue, search and an AI model side by side"
+                          focusable="false"
+                        >
+                          <g class="hv-stack-wire">
+                            <path d="M150 50V80" />
+                            <path d="M144 74 150 82 156 74" />
+                            <path d="M150 126V278M130 199H170M130 278H170" />
+                          </g>
+                          <path class="hv-stack-call" d="M150 50V278H170">
+                            @if (!reducedMotion()) {
+                              <animate attributeName="opacity" values="0;1;1;0;0" keyTimes="0;0.35;0.55;0.9;1" dur="3.2s" repeatCount="indefinite" />
+                            }
+                          </path>
+                          <g class="hv-stack-box">
+                            <rect x="95" y="8" width="110" height="42" rx="10" />
+                            <rect x="55" y="84" width="190" height="42" rx="10" />
+                            <rect x="10" y="166" width="120" height="66" rx="12" />
+                            <rect x="170" y="166" width="120" height="66" rx="12" />
+                            <rect x="10" y="245" width="120" height="66" rx="12" />
+                          </g>
+                          <rect class="hv-stack-ai" x="170" y="245" width="120" height="66" rx="12" />
+                          <g class="hv-stack-icon">
+                            <g transform="translate(70 189)">
+                              <ellipse cx="0" cy="-6" rx="12" ry="4" />
+                              <path d="M-12 -6v12c0 2.2 5.4 4 12 4s12-1.8 12-4v-12" />
+                            </g>
+                            <g transform="translate(230 189)">
+                              <rect x="-18.5" y="-8" width="9" height="15" rx="2" />
+                              <rect x="-4.5" y="-8" width="9" height="15" rx="2" />
+                              <rect x="9.5" y="-8" width="9" height="15" rx="2" />
+                            </g>
+                            <g transform="translate(70 268)">
+                              <circle cx="-3" cy="-2" r="7.5" />
+                              <path d="M2.5 3.5 9 10" />
+                            </g>
+                          </g>
+                          <path
+                            class="hv-stack-spark"
+                            transform="translate(230 267)"
+                            d="M0 -12 3 -3 12 0 3 3 0 12 -3 3 -12 0 -3 -3Z"
+                          />
+                          <g class="hv-stack-text">
+                            <text x="150" y="34">Client</text>
+                            <text x="150" y="110">API / Service</text>
+                            <text x="70" y="220">Database</text>
+                            <text x="230" y="220">Queue</text>
+                            <text x="70" y="299">Search</text>
+                          </g>
+                          <text class="hv-stack-ai-text" x="230" y="299">AI model</text>
+                          @if (!reducedMotion()) {
+                            <circle class="hv-stack-dot" r="5" cx="0" cy="0">
+                              <animateMotion path="M150 50V278H170" keyPoints="0;1;1;0;0" keyTimes="0;0.4;0.5;0.9;1" calcMode="linear" dur="3.2s" repeatCount="indefinite" />
+                            </circle>
+                          }
+                        </svg>
+                      </figure>
+                      <div class="hv-build-foot">
+                        <ul class="hv-tiles" aria-label="Example projects">
+                          @for (tile of aiTiles; track tile) {
+                            <li>{{ tile }}</li>
+                          }
+                          <li class="hv-tile-more">+ more</li>
+                        </ul>
+                        <ul class="hv-checks">
+                          @for (item of aiChecklist; track item) {
+                            <li>{{ item }}</li>
+                          }
+                        </ul>
+                      </div>
                     </div>
-                  </div>
-                  <div class="journey">
-                    <span>03</span>
-                    <div>
-                      <h2>Keep your progress</h2>
-                      <p>Resume, reflect, and adjust your week.</p>
+                  }
+                  @case ('diagnose') {
+                    <p class="chapter">Today's discussion</p>
+                    <div class="visual-body">
+                      <h2>Your service is slowing down.<br />What do you check first?</h2>
+                      <figure class="hv-chart">
+                        <svg
+                          class="hv-chart-art"
+                          viewBox="0 0 300 100"
+                          preserveAspectRatio="none"
+                          role="img"
+                          aria-label="Sketch: request latency stays flat, then climbs steadily after a point in time"
+                          focusable="false"
+                        >
+                          <path class="hv-chart-grid" d="M0 25H300M0 50H300M0 75H300" vector-effect="non-scaling-stroke" />
+                          <path class="hv-chart-mark" d="M160 4V100" vector-effect="non-scaling-stroke" />
+                          <g class="hv-chart-trace">
+                            <path
+                              class="hv-chart-area"
+                              d="M0 80 L30 78 L60 81 L90 77 L120 79 L150 76 L170 68 L190 55 L210 43 L230 33 L250 28 L275 22 L300 18 V100 H0 Z"
+                            />
+                            <path
+                              class="hv-chart-line"
+                              d="M0 80 L30 78 L60 81 L90 77 L120 79 L150 76 L170 68 L190 55 L210 43 L230 33 L250 28 L275 22 L300 18"
+                              vector-effect="non-scaling-stroke"
+                            />
+                          </g>
+                        </svg>
+                        <span class="hv-chart-label hv-chart-y" aria-hidden="true">Latency</span>
+                        <span class="hv-chart-label hv-chart-x" aria-hidden="true">Time →</span>
+                        <span class="hv-chart-label hv-chart-note" aria-hidden="true"
+                          >Slowdown starts</span
+                        >
+                      </figure>
+                      <ol class="hv-steps">
+                        <li><b>Hypothesis</b><span>State what you think changed.</span></li>
+                        <li><b>Signal</b><span>Choose the evidence that would confirm it.</span></li>
+                        <li><b>Trade-off</b><span>Explain the cost of the fix you pick.</span></li>
+                      </ol>
+                      <p class="hv-foot">Revisit the decision when the evidence changes.</p>
+                      <p class="hv-foot-tags">
+                        <span><span class="hv-tag" data-path="grow">Grow</span> Production diagnosis</span>
+                        <span><span class="hv-tag" data-path="blaze">Blaze</span> Architecture review</span>
+                      </p>
                     </div>
-                  </div>
+                  }
+                  @case ('design') {
+                    <p class="chapter">A connected learning journey</p>
+                    <div class="visual-body">
+                      <h2>When does a simple queue stop being enough?</h2>
+                      <p class="hv-intro">
+                        Follow one question from data structures to production reliability to
+                        system-design judgment.
+                      </p>
+                      <div
+                        class="hv-queue"
+                        role="img"
+                        aria-label="Sketch: a producer adds work to a bounded queue and a consumer takes it in order"
+                      >
+                        <span class="hv-queue-row" aria-hidden="true">
+                          <span class="hv-queue-end">Producer</span>
+                          <span class="hv-queue-arrow">→</span>
+                          <span class="hv-queue-slots">
+                            <span class="filled">4</span><span class="filled">3</span
+                            ><span class="filled">2</span><span class="filled">1</span><span></span
+                            ><span></span>
+                          </span>
+                          <span class="hv-queue-arrow">→</span>
+                          <span class="hv-queue-end">Consumer</span>
+                        </span>
+                        <span class="hv-queue-labels" aria-hidden="true">
+                          <span>enqueue</span><span>bounded, first in first out</span
+                          ><span>dequeue</span>
+                        </span>
+                      </div>
+                      <ol class="hv-ladder">
+                        <li data-path="learn">
+                          <span class="hv-rung" aria-hidden="true">1</span>
+                          <span class="hv-ladder-text">
+                            <span class="hv-ladder-title"
+                              >Queue fundamentals <span class="hv-tag">Learn</span></span
+                            >
+                            <span class="hv-ladder-desc"
+                              >First in, first out: enqueue, dequeue and a bounded buffer.</span
+                            >
+                          </span>
+                        </li>
+                        <li data-path="grow">
+                          <span class="hv-rung" aria-hidden="true">2</span>
+                          <span class="hv-ladder-text">
+                            <span class="hv-ladder-title"
+                              >Failure and retry <span class="hv-tag">Grow</span></span
+                            >
+                            <span class="hv-ladder-desc"
+                              >A consumer fails: retry now, or back off and queue the work?</span
+                            >
+                          </span>
+                        </li>
+                        <li data-path="blaze">
+                          <span class="hv-rung" aria-hidden="true">3</span>
+                          <span class="hv-ladder-text">
+                            <span class="hv-ladder-title"
+                              >Architecture trade-off <span class="hv-tag">Blaze</span></span
+                            >
+                            <span class="hv-ladder-desc"
+                              >When a durable broker earns its place, and what ordering and
+                              delivery guarantees cost.</span
+                            >
+                          </span>
+                        </li>
+                      </ol>
+                    </div>
+                  }
+                  @case ('reason') {
+                    <p class="chapter">Canonical DSA / reasoning in code</p>
+                    <div class="visual-body">
+                      <h2>See the invariant, not just the answer.</h2>
+                      <pre
+                        class="hv-code"
+                      ><code>@for (line of windowLines; track $index) {<span class="hv-code-line" [class.invariant]="$index === invariantLine">{{ line }}@if ($index === invariantLine) {<span class="hv-invariant-tag">invariant</span>}</span>}</code></pre>
+                      <div
+                        class="hv-window"
+                        role="img"
+                        aria-label="Sketch: a window between the left and right pointers over a row of values"
+                      >
+                        <span class="hv-window-cells" aria-hidden="true">
+                          @for (cell of windowCells; track $index) {
+                            <span
+                              class="hv-cell"
+                              [class.in-window]="$index >= windowLeft && $index <= windowRight"
+                              >{{ cell }}</span
+                            >
+                          }
+                          <span class="hv-window-frame"></span>
+                        </span>
+                        <span class="hv-pointers" aria-hidden="true">
+                          <span class="hv-pointer hv-pointer-left">↑ left</span>
+                          <span class="hv-pointer hv-pointer-right">↑ right</span>
+                        </span>
+                      </div>
+                      <ul class="hv-moves">
+                        <li><b>right</b><span>Steps forward to grow the window.</span></li>
+                        <li><b>left</b><span>Steps forward only until the window is valid again.</span></li>
+                        <li><b>cost</b><span>Neither pointer moves back, so the scan is O(n).</span></li>
+                      </ul>
+                      <p class="small">
+                        An illustration of the reasoning. Open a problem to run its guided debugger.
+                      </p>
+                    </div>
+                  }
+                  @case ('plan') {
+                    <p class="chapter">One plan / several kinds of growth</p>
+                    <div class="visual-body">
+                      <div class="journey">
+                        <span>01</span>
+                        <div>
+                          <h2>Choose your direction</h2>
+                          <p>Goals, scope, and accessible topics.</p>
+                        </div>
+                      </div>
+                      <div class="journey">
+                        <span>02</span>
+                        <div>
+                          <h2>Make room for practice</h2>
+                          <p>A feasible schedule with review time.</p>
+                        </div>
+                      </div>
+                      <div class="journey">
+                        <span>03</span>
+                        <div>
+                          <h2>Keep your progress</h2>
+                          <p>Resume, reflect, and adjust your week.</p>
+                        </div>
+                      </div>
+                      <div class="hv-week">
+                        <ol class="hv-week-days" aria-label="An example week">
+                          @for (entry of exampleWeek; track entry.day) {
+                            <li [attr.data-kind]="entry.kind">
+                              <b>{{ entry.day }}</b><span>{{ entry.task }}</span>
+                            </li>
+                          }
+                        </ol>
+                        <p class="hv-week-note">
+                          An example week: Wednesday gets busy, so the quiz moves to Thursday.
+                        </p>
+                      </div>
+                    </div>
+                  }
                 }
-              }
-            </div>
-          </article>
-        }
-      </div>
-      <div class="carousel-footer">
-        <div class="hero-controls">
-          <div class="hero-dots" role="group" aria-label="Hero slides">
-            @for (slide of slides; track slide.name; let i = $index) {
+              </div>
+            </article>
+          }
+        </div>
+        <div class="carousel-footer">
+          <div class="chapter-tabs" role="group" aria-label="Hero slides">
+            @for (slide of slides; track slide.tab; let i = $index) {
               <button
                 type="button"
-                [attr.aria-label]="'Show slide ' + (i + 1) + ': ' + slide.name"
+                class="chapter-tab"
+                [class.done]="i < activeSlide()"
+                [attr.aria-label]="'Show slide ' + (i + 1) + ': ' + slide.label"
                 [attr.aria-pressed]="activeSlide() === i"
-                (click)="selectSlide(i)"
+                (click)="goTo(i)"
               >
-                <span aria-hidden="true"></span>
+                <span class="chapter-track" aria-hidden="true">
+                  <span
+                    class="chapter-fill"
+                    [class.run]="activeSlide() === i && !reducedMotion()"
+                    (animationend)="chapterDone(i, $event)"
+                  ></span>
+                </span>
+                <span class="chapter-name" aria-hidden="true">{{ slide.tab }}</span>
               </button>
             }
           </div>
           <div class="hero-arrows">
             <button
               type="button"
-              data-rotation
-              (pointercancel)="clearRotationIntent()"
-              (pointerleave)="clearRotationIntent()"
-              (blur)="clearRotationIntent()"
-              [attr.aria-label]="paused() ? 'Play slideshow' : 'Pause slideshow'"
+              class="rotation-toggle"
+              [attr.aria-label]="rotationHeld() ? 'Play slideshow' : 'Pause slideshow'"
               [disabled]="reducedMotion()"
               (click)="toggleRotation()"
             >
-              <span aria-hidden="true">{{ paused() ? '▶' : 'Ⅱ' }}</span>
+              <span aria-hidden="true">{{ rotationHeld() ? '▶' : 'Ⅱ' }}</span>
             </button>
-            <button
-              type="button"
-              aria-label="Previous hero slide"
-              (click)="selectSlide(activeSlide() - 1)"
-            >
+            <button type="button" aria-label="Previous hero slide" (click)="goTo(activeSlide() - 1)">
               <span aria-hidden="true">←</span>
             </button>
-            <button
-              type="button"
-              aria-label="Next hero slide"
-              (click)="selectSlide(activeSlide() + 1)"
-            >
+            <button type="button" aria-label="Next hero slide" (click)="goTo(activeSlide() + 1)">
               <span aria-hidden="true">→</span>
             </button>
           </div>
         </div>
-      </div>
-    </section>
-    <section id="paths" class="section" tabindex="-1" aria-labelledby="paths-title">
+      </section>
+    </div>
+    <section id="paths" class="section home-paths" tabindex="-1" aria-labelledby="paths-title">
       <p class="eyebrow">Choose your direction</p>
       <h2 id="paths-title" data-sidebar-label="Discover your path">Learn. Grow. Blaze.</h2>
       <div class="three-columns">
@@ -234,8 +534,8 @@
       }
     </section>
   </div>
-  <app-engineering-challenge />
-  <section class="feature-discovery" aria-labelledby="feature-discovery-title">
+  <app-engineering-challenge class="home-challenge" />
+  <section class="feature-discovery home-explore" aria-labelledby="feature-discovery-title">
     <div class="feature-grid-heading">
       <div>
         <p class="eyebrow">Keep exploring</p>
@@ -332,7 +632,7 @@
       </article>
     </div>
   </section>
-  <section class="brand-story" aria-labelledby="brand-story-title">
+  <section class="brand-story home-essence" aria-labelledby="brand-story-title">
     <div class="brand-story-heading">
       <p class="brand-context">Our platform</p>
       <h2 id="brand-story-title" data-sidebar-label="The essence">The Essence of Look Ahead</h2>
@@ -369,7 +669,7 @@
       </div>
     </div>
   </section>
-  <footer class="landing-footer">
+  <footer class="landing-footer home-footer">
     <p>Learn. Grow. Blaze.</p>
   </footer>
 </main>

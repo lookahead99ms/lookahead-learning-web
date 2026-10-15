@@ -1,12 +1,71 @@
+/* The homepage. Top to bottom:
+   - the hero: the platform signature, then six slides with copy on the left and a dark card on the
+     right; each chapter tab is that slide's timer. In the light theme the hero sits on a white
+     sheet with a sand panel behind the card; the dark theme keeps a quiet wash;
+   - "Learn. Grow. Blaze.": the path cards on a tinted block under a gradient heading;
+   - the engineering challenge and "Make your next step count" as bento tiles;
+   - the essence on a warm block, and the footer with a gradient rule.
+   Each part is scoped to its own section class (.hero-*, .home-paths, .home-challenge,
+   .home-explore, .home-essence, .home-footer) and local tokens use the --home- prefix. Dark values
+   follow the platform theme. */
 :host {
   display: block;
   min-height: 100vh;
   --muted: var(--text-body);
+  /* Hero. */
+  --home-gutter: clamp(20px, 3vw, 64px);
+  --home-hero-radius: 22px;
+  --home-panel-top: color-mix(in srgb, var(--panel-background) 82%, #000);
+  --home-glow-strength: 34%;
+  --home-track: color-mix(in srgb, var(--text-strong) 14%, transparent);
+  --home-hero-shadow: 0 30px 60px -28px color-mix(in srgb, var(--panel-background) 70%, transparent);
+  /* Path colors that stay readable on the dark hero card (the light-theme path tokens are dark). */
+  --home-panel-learn: #83d8b9;
+  --home-panel-grow: #f4ad92;
+  --home-panel-blaze: #a9cdf5;
+  /* Paths, essence and footer. */
+  --home-grad-text: linear-gradient(100deg, #006c73 0%, #4338ca 52%, #a3460a 100%);
+  --home-grad-bar: linear-gradient(90deg, #0a8f8a, #4f46e5 60%, #f59e0b);
+  --home-paths-block:
+    radial-gradient(55% 80% at 0% 0%, #7fd6cf47, transparent 60%),
+    radial-gradient(50% 80% at 100% 100%, #a5b4fc4d, transparent 60%),
+    #f8fafc;
+  --home-paths-shadow: 0 18px 40px -28px #1e1b4b80;
+  --home-brand-block: #fbf6ee;
+  /* Bento tiles. */
+  --home-gap: clamp(12px, 1.1vw, 18px);
+  --home-tile-radius: 22px;
+  --home-tile-edge: color-mix(in srgb, var(--platform-edge) 85%, var(--text-subtle));
+  --home-shade: #0d2a2e;
+  --home-tile-shadow:
+    0 1px 2px color-mix(in srgb, var(--home-shade) 7%, transparent),
+    0 18px 40px -26px color-mix(in srgb, var(--home-shade) 45%, transparent);
+  --home-tile: var(--surface);
   background: var(--surface-page);
   color: var(--text-strong);
   font:
     16px/1.6 system-ui,
     sans-serif;
+}
+:host-context(:root[data-theme='dark']) {
+  --home-panel-top: color-mix(in srgb, var(--panel-background) 70%, #000);
+  --home-glow-strength: 24%;
+  --home-track: color-mix(in srgb, var(--text-strong) 18%, transparent);
+  --home-hero-shadow: 0 30px 60px -30px #000c;
+  --home-panel-learn: var(--path-learn);
+  --home-panel-grow: var(--path-grow);
+  --home-panel-blaze: var(--path-blaze);
+  --home-grad-text: linear-gradient(100deg, #70d6cd 0%, #b4b2ff 52%, #ffba87 100%);
+  --home-grad-bar: linear-gradient(90deg, #70d6cd, #a5a3ff 60%, #ffba87);
+  --home-paths-block:
+    radial-gradient(55% 80% at 0% 0%, #0f766e40, transparent 60%),
+    radial-gradient(50% 80% at 100% 100%, #4338ca4d, transparent 60%),
+    #131f38;
+  --home-paths-shadow: 0 18px 40px -28px #000000b3;
+  --home-brand-block: #15213a;
+  /* Shadows stay dark (the light text token would make them glow). */
+  --home-shade: #000;
+  --home-tile-edge: var(--platform-edge);
 }
 *,
 *::before,
@@ -32,62 +91,101 @@ button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
+.eyebrow {
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent-strong);
+}
+
+/* ---------- Page frame: fill the window right of the section nav ---------- */
 .landing-page {
   max-width: 1320px;
   margin: auto;
   padding: 16px 32px 28px;
 }
+/* Keep the left section column for the page navigation and give everything else to the page.
+   The homepage has no right sidebar, so no right column is reserved. */
+@media (min-width: 1100px) {
+  main.landing-page[data-sidebar-columns] {
+    --reader-sidebar-space: clamp(256px, 17vw, 320px);
+    width: calc(100% - var(--reader-sidebar-space)) !important;
+    max-width: none !important;
+    margin-inline: var(--reader-sidebar-space) 0 !important;
+    padding: 20px var(--home-gutter) 28px clamp(12px, 1.4vw, 28px);
+  }
+}
+
+/* ---------- Hero: copy on the left, the slide's card on the right ---------- */
 .discovery-opening {
   position: relative;
   isolation: isolate;
 }
+/* One quiet wash behind the hero; nothing in it moves. */
 .discovery-opening::before {
   content: '';
   position: absolute;
   z-index: -1;
-  inset: -14px -20px 0;
-  background-image:
-    linear-gradient(color-mix(in srgb, var(--accent-strong) 6%, transparent) 1px, transparent 1px),
-    linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--accent-strong) 6%, transparent) 1px,
-      transparent 1px
+  inset: -20px calc(-1 * var(--home-gutter)) auto -12px;
+  height: min(100%, 980px);
+  background:
+    radial-gradient(
+      closest-side at 30% 52%,
+      color-mix(in srgb, var(--accent-strong) 10%, transparent),
+      transparent
+    ),
+    radial-gradient(
+      closest-side at 80% 40%,
+      color-mix(in srgb, var(--accent-link) 7%, transparent),
+      transparent
     );
-  background-size: 36px 36px;
-  mask-image: linear-gradient(#0008, #0004 65%, transparent);
-  opacity: 0.5;
   pointer-events: none;
+}
+.hero-stage {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100svh - 128px);
+}
+.hero-masthead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 32px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--platform-edge-soft, var(--platform-edge));
 }
 .discovery-framing {
   font:
-    750 clamp(23px, 2.4vw, 33px)/1.2 system-ui,
+    750 clamp(22px, 2vw, 32px)/1.2 system-ui,
     sans-serif;
   letter-spacing: -0.04em;
-  margin: 0 0 20px;
-  padding: 5px 0 8px;
+  margin: 0;
 }
-.discovery-framing span {
-  color: var(--accent-strong);
-  background: linear-gradient(transparent 76%, var(--surface-accent) 76%);
-}
-.eyebrow {
-  font-size: 10px;
-  font-weight: 750;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  color: var(--accent-strong);
+.signature-support {
+  margin: 0;
+  color: var(--text-subtle);
+  font-size: clamp(15px, 1.1vw, 18px);
+  line-height: 1.5;
 }
 .hero-carousel {
   position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding-top: clamp(20px, 2.6vh, 32px);
 }
 .hero-slides {
   display: grid;
+  flex: 1;
 }
 .hero-slide {
   grid-area: 1/1;
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
-  gap: 48px;
+  grid-template-columns: minmax(0, 55fr) minmax(0, 45fr);
+  gap: clamp(28px, 3.4vw, 64px);
+  min-height: clamp(430px, calc(100svh - 330px), 780px);
   visibility: hidden;
   pointer-events: none;
 }
@@ -99,194 +197,1010 @@ button:disabled {
   visibility: visible;
   will-change: opacity;
 }
+.hero-slide[data-visual='choose'] {
+  --chapter-glow: var(--path-learn);
+}
+.hero-slide[data-visual='diagnose'] {
+  --chapter-glow: var(--path-grow);
+}
+.hero-slide[data-visual='design'] {
+  --chapter-glow: var(--path-blaze);
+}
+.hero-slide[data-visual='reason'] {
+  --chapter-glow: var(--panel-accent);
+}
+.hero-slide[data-visual='build'] {
+  --chapter-glow: var(--path-blaze);
+}
+.hero-slide[data-visual='plan'] {
+  --chapter-glow: var(--identity-ai, var(--accent-strong));
+}
 .hero-copy {
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   align-items: flex-start;
   min-width: 0;
+  padding-block: 8px 16px;
 }
 .hero-copy .eyebrow {
-  min-height: 22px;
   margin: 0;
 }
 .slide-title {
   font:
-    750 clamp(33px, 3.5vw, 46px)/1.08 system-ui,
+    800 clamp(36px, 10.2cqi, 108px)/1.02 system-ui,
     sans-serif;
-  letter-spacing: -0.035em;
-  margin: 12px 0 16px;
+  letter-spacing: -0.045em;
+  margin: 0.32em 0 0.36em;
+  text-wrap: balance;
+}
+/* The AI Builds headline is longer than the others; a smaller size keeps it on two or three lines. */
+.hero-slide[data-visual='build'] .slide-title {
+  font-size: clamp(34px, 7.2cqi, 84px);
 }
 .slide-title span {
   display: block;
 }
+.slide-title span:last-child {
+  color: var(--accent-strong);
+}
 .hero-copy .lead {
-  font-size: 16px;
-  margin: 0 0 18px;
-  max-width: 46ch;
+  font-size: clamp(16px, 3.1cqi, 21px);
+  line-height: 1.6;
+  margin: 0 0 clamp(24px, 3.4vh, 36px);
+  max-width: 48ch;
 }
 .primary-action {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
   width: fit-content;
-  padding: 10px 18px;
-  min-height: 44px;
-  border-radius: 6px;
+  min-height: 54px;
+  padding: 14px 26px;
+  border-radius: 12px;
   background: var(--accent-strong);
   color: var(--accent-on-primary);
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 750;
   text-decoration: none;
+  box-shadow: 0 14px 28px -16px color-mix(in srgb, var(--accent-strong) 80%, transparent);
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
 }
 .primary-action:hover {
   background: var(--search-hover);
 }
-.hero-copy .primary-action {
-  margin-top: auto;
+.action-arrow {
+  transition: transform 0.15s ease;
 }
+.primary-action:hover .action-arrow {
+  transform: translateX(3px);
+}
+
+/* The right half: one dark card per slide. The card's body grows to the card's height, and on
+   every slide one part of it (the path rows, the chart, the ladder, the window sketch, the
+   plan steps) takes the spare room, so no slide shows an empty band. */
 .hero-visual {
+  container-type: inline-size;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(14px, 3cqi, 24px);
   min-width: 0;
-  padding: 22px 26px;
+  overflow: hidden;
+  padding: clamp(24px, 2.6vw, 44px);
   border: 1px solid var(--panel-line);
-  border-radius: 12px;
-  background: var(--panel-background);
+  border-radius: var(--home-hero-radius);
+  background:
+    radial-gradient(
+      circle at 88% 12%,
+      color-mix(in srgb, var(--chapter-glow) var(--home-glow-strength), transparent),
+      transparent 58%
+    ),
+    linear-gradient(165deg, var(--home-panel-top), var(--panel-background) 70%);
   color: var(--panel-ink);
+  box-shadow: var(--home-hero-shadow);
+}
+.hero-visual .chapter {
+  margin: 0;
+  color: var(--panel-accent);
+  font:
+    600 13px/1.5 ui-monospace,
+    monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+.visual-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
 }
 .hero-visual h2 {
   font:
-    700 23px/1.25 system-ui,
+    750 clamp(22px, 6.4cqi, 46px)/1.14 system-ui,
     sans-serif;
-  margin: 14px 0;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+  color: var(--panel-ink);
+  margin: 0 0 clamp(12px, 3cqi, 22px);
 }
 .hero-visual p {
   color: var(--panel-muted);
-  font-size: 14px;
+  font-size: clamp(14px, 3cqi, 18px);
+  line-height: 1.55;
+  margin: 0 0 12px;
 }
-.hero-visual .chapter {
-  margin-top: 0;
-  font:
-    12px/1.6 ui-monospace,
-    monospace;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+.hero-visual p.small {
+  font-size: clamp(13px, 2.4cqi, 15px);
+  margin: 0;
 }
-.hero-visual pre {
-  margin: 18px 0;
+.hero-visual [data-path='learn'] {
+  --hv-path: var(--home-panel-learn);
 }
-.hero-visual code {
+.hero-visual [data-path='grow'] {
+  --hv-path: var(--home-panel-grow);
+}
+.hero-visual [data-path='blaze'] {
+  --hv-path: var(--home-panel-blaze);
+}
+.hv-tag {
+  display: inline-block;
+  flex: none;
+  padding: 1px 10px;
+  border: 1px solid color-mix(in srgb, var(--hv-path, var(--panel-accent)) 55%, transparent);
+  border-radius: 999px;
+  color: var(--hv-path, var(--panel-accent));
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+  vertical-align: 0.12em;
+}
+/* Choose: the three paths, each with an icon and what you do there. */
+.hv-paths {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.hv-path {
+  display: grid;
+  flex: 1;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(12px, 3cqi, 20px);
+  padding: clamp(10px, 2.4cqi, 18px) 0;
+  border-top: 1px solid var(--panel-line);
+}
+.hv-path-icon {
+  display: grid;
+  place-items: center;
+  width: clamp(38px, 8.4cqi, 52px);
+  aspect-ratio: 1;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--hv-path) 16%, transparent);
+  color: var(--hv-path);
+}
+.hv-path-icon svg {
+  width: 56%;
+  height: 56%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.hv-path-title {
   display: block;
+  color: var(--panel-ink);
+  font-size: clamp(15px, 3.6cqi, 21px);
+  font-weight: 650;
+  line-height: 1.35;
+}
+.hv-path-desc {
+  display: block;
+  margin-top: 3px;
+  color: var(--panel-muted);
+  font-size: clamp(13px, 2.7cqi, 16px);
+  line-height: 1.5;
+}
+/* Diagnose: a latency sketch, then the hypothesis, signal and trade-off checklist. */
+.hv-chart {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: clamp(110px, 26cqi, 260px);
+  margin: 0 0 clamp(12px, 2.6cqi, 20px);
+  padding: 30px 14px 26px;
+  border: 1px solid var(--panel-line);
+  border-radius: 14px;
+  background: color-mix(in srgb, #000 16%, transparent);
+}
+.hv-chart-art {
+  display: block;
+  flex: 1;
+  width: 100%;
+  min-height: 60px;
+  overflow: visible;
+}
+.hv-chart-grid {
+  fill: none;
+  stroke: var(--panel-line);
+  stroke-width: 1;
+}
+.hv-chart-mark {
+  fill: none;
+  stroke: var(--panel-muted);
+  stroke-width: 1.2;
+  stroke-dasharray: 4 4;
+}
+.hv-chart-area {
+  fill: color-mix(in srgb, var(--home-panel-grow) 16%, transparent);
+}
+.hv-chart-line {
+  fill: none;
+  stroke: var(--home-panel-grow);
+  stroke-width: 2.6;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+/* The card's one gentle motion: the trace draws in once when its slide appears. */
+.hero-slide.active .hv-chart-trace {
+  animation: home-trace 1.4s cubic-bezier(0.3, 0.6, 0.3, 1) both;
+}
+@keyframes home-trace {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+.hv-chart-label {
+  position: absolute;
+  color: var(--panel-muted);
+  font:
+    600 11px/1.2 ui-monospace,
+    monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.hv-chart-y {
+  top: 9px;
+  left: 14px;
+}
+.hv-chart-x {
+  right: 14px;
+  bottom: 7px;
+}
+.hv-chart-note {
+  top: 9px;
+  left: calc(14px + (100% - 28px) * 0.533 + 8px);
+  color: var(--home-panel-grow);
+}
+.hv-steps {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.hv-steps li {
+  display: grid;
+  grid-template-columns: clamp(118px, 26cqi, 150px) minmax(0, 1fr);
+  align-items: baseline;
+  gap: 12px;
+  padding: clamp(8px, 1.8cqi, 12px) 0;
+  border-top: 1px solid var(--panel-line);
+  font-size: clamp(14px, 3cqi, 17px);
+  line-height: 1.45;
+}
+.hv-steps b {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   color: var(--panel-accent);
+  font:
+    700 12px/1.4 ui-monospace,
+    monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.hv-steps b::before {
+  content: '✓';
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid currentColor;
+  border-radius: 4px;
+  font-size: 10px;
+  letter-spacing: 0;
+}
+.hv-steps span {
+  color: var(--panel-ink);
+}
+.hero-visual .hv-foot {
+  margin: clamp(10px, 2cqi, 14px) 0 0;
+  padding-top: clamp(10px, 2cqi, 14px);
+  border-top: 1px solid var(--panel-line);
+  font-size: clamp(13px, 2.7cqi, 16px);
+}
+.hero-visual .hv-foot-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin: 4px 0 0;
+  font-size: clamp(13px, 2.5cqi, 15px);
+}
+/* Design: one question as a three-step ladder from Learn to Blaze. */
+.hv-queue {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  min-height: clamp(84px, 18cqi, 190px);
+  margin: 4px 0 clamp(14px, 3cqi, 22px);
+  padding: 14px;
+  border: 1px solid var(--panel-line);
+  border-radius: 14px;
+  background: color-mix(in srgb, #000 16%, transparent);
+}
+.hv-queue-row {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: clamp(6px, 1.6cqi, 10px);
+}
+.hv-queue-end {
+  padding: 6px clamp(8px, 2cqi, 12px);
+  border: 1px solid var(--panel-line);
+  border-radius: 8px;
+  color: var(--panel-ink);
+  font-size: clamp(12px, 2.6cqi, 15px);
+  font-weight: 650;
+}
+.hv-queue-arrow {
+  color: var(--panel-muted);
+}
+.hv-queue-slots {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
+  border: 2px solid var(--home-panel-learn);
+  border-radius: 10px;
+}
+.hv-queue-slots span {
+  display: grid;
+  place-items: center;
+  height: clamp(26px, 6.4cqi, 38px);
+  border: 1px dashed var(--panel-line);
+  border-radius: 6px;
+  color: var(--panel-ink);
+  font:
+    600 clamp(12px, 2.6cqi, 15px) / 1 ui-monospace,
+    monospace;
+}
+.hv-queue-slots span.filled {
+  border: 0;
+  background: color-mix(in srgb, var(--home-panel-learn) 22%, transparent);
+}
+.hv-queue-labels {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--panel-muted);
+  font:
+    600 11px/1.3 ui-monospace,
+    monospace;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.hv-ladder {
+  --rung: clamp(32px, 7cqi, 42px);
+  --rise: clamp(26px, 8cqi, 56px);
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.hv-ladder li {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--rung) minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(12px, 3cqi, 18px);
+  padding-bottom: clamp(12px, 3cqi, 20px);
+}
+.hv-ladder li:last-child {
+  flex: none;
+  padding-bottom: 0;
+}
+.hv-ladder li:nth-child(2) {
+  margin-left: var(--rise);
+}
+.hv-ladder li:nth-child(3) {
+  margin-left: calc(var(--rise) * 2);
+}
+/* An elbow from each rung down to the next one. */
+.hv-ladder li:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: calc(var(--rung) + 4px);
+  left: calc(var(--rung) / 2 - 1px);
+  width: calc(var(--rise) - var(--rung) / 2 - 2px);
+  height: calc(100% - var(--rung) / 2 - 4px);
+  border-bottom: 2px solid var(--panel-line);
+  border-left: 2px solid var(--panel-line);
+  border-bottom-left-radius: 12px;
+}
+.hv-rung {
+  display: grid;
+  place-items: center;
+  width: var(--rung);
+  aspect-ratio: 1;
+  border: 2px solid var(--hv-path);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--hv-path) 14%, var(--panel-background));
+  color: var(--hv-path);
+  font-weight: 800;
+}
+.hv-ladder-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  color: var(--panel-ink);
+  font-size: clamp(15px, 3.6cqi, 21px);
+  font-weight: 650;
+  line-height: 1.35;
+}
+.hv-ladder-desc {
+  display: block;
+  margin-top: 4px;
+  color: var(--panel-muted);
+  font-size: clamp(13px, 2.7cqi, 16px);
+  line-height: 1.5;
+}
+/* Reason: the code with its invariant line marked, and a small window sketch. */
+.hv-code {
+  margin: 0 0 clamp(12px, 3cqi, 20px);
+  padding: 14px 18px;
+  border: 1px solid var(--panel-line);
+  border-left: 3px solid var(--panel-accent);
+  border-radius: 12px;
+  background: color-mix(in srgb, #000 22%, transparent);
+  overflow-x: auto;
+}
+.hv-code code {
+  display: block;
+  color: var(--panel-muted);
   background: transparent;
   font:
-    13px/1.9 ui-monospace,
+    clamp(12px, 2.9cqi, 17px) / 1.8 ui-monospace,
     monospace;
+}
+.hv-code-line {
+  display: block;
+  margin-inline: -8px;
+  padding-inline: 8px;
+  border-radius: 6px;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
-.detail-line {
-  display: flex;
-  justify-content: space-between;
-  gap: 15px;
-  padding: 14px 0;
-  font-size: 14px;
-  border-bottom: 1px solid var(--panel-line);
+.hv-code-line.invariant {
+  background: color-mix(in srgb, var(--panel-accent) 18%, transparent);
+  color: var(--panel-ink);
+  font-weight: 650;
 }
+.hv-invariant-tag {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--panel-accent);
+  color: var(--panel-background);
+  font-size: 10.5px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  line-height: 1.7;
+  text-transform: uppercase;
+  vertical-align: 0.15em;
+}
+.hv-window {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  min-height: clamp(96px, 22cqi, 200px);
+  margin-bottom: clamp(10px, 2.4cqi, 16px);
+  padding: 14px;
+  border: 1px solid var(--panel-line);
+  border-radius: 14px;
+  background: color-mix(in srgb, #000 16%, transparent);
+}
+.hv-moves {
+  display: grid;
+  margin: 0 0 clamp(10px, 2.4cqi, 16px);
+  padding: 0;
+  list-style: none;
+}
+.hv-moves li {
+  display: grid;
+  grid-template-columns: clamp(52px, 12cqi, 72px) minmax(0, 1fr);
+  align-items: baseline;
+  gap: 10px;
+  padding: clamp(5px, 1.2cqi, 8px) 0;
+  border-top: 1px solid var(--panel-line);
+  color: var(--panel-ink);
+  font-size: clamp(13px, 2.8cqi, 16px);
+  line-height: 1.45;
+}
+.hv-moves b {
+  color: var(--panel-accent);
+  font:
+    700 12px/1.4 ui-monospace,
+    monospace;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.hv-window-cells,
+.hv-pointers {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: clamp(4px, 1.4cqi, 8px);
+}
+.hv-window-cells {
+  position: relative;
+}
+.hv-cell {
+  display: grid;
+  place-items: center;
+  height: clamp(32px, 8cqi, 48px);
+  border: 1px solid var(--panel-line);
+  border-radius: 8px;
+  color: var(--panel-muted);
+  font:
+    600 clamp(13px, 3cqi, 17px) / 1 ui-monospace,
+    monospace;
+}
+.hv-cell.in-window {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--panel-accent) 20%, transparent);
+  color: var(--panel-ink);
+}
+.hv-window-frame {
+  position: absolute;
+  inset: -4px;
+  grid-column: 3 / 7;
+  grid-row: 1;
+  border: 2px solid var(--panel-accent);
+  border-radius: 11px;
+  pointer-events: none;
+}
+.hv-pointer {
+  grid-row: 1;
+  color: var(--panel-accent);
+  font:
+    600 12px/1.3 ui-monospace,
+    monospace;
+  text-align: center;
+  white-space: nowrap;
+}
+.hv-pointer-left {
+  grid-column: 3;
+}
+.hv-pointer-right {
+  grid-column: 6;
+}
+/* Plan: the three plan steps and an example week. */
 .journey {
   display: grid;
-  grid-template-columns: 35px 1fr;
+  flex: 1;
+  grid-template-columns: 48px 1fr;
+  align-items: center;
   gap: 16px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--panel-line);
+  padding: clamp(10px, 2.2cqi, 16px) 0;
+  border-top: 1px solid var(--panel-line);
 }
 .journey > span {
   color: var(--panel-accent);
   font:
-    25px/1.4 Georgia,
+    clamp(24px, 5cqi, 34px)/1.2 Georgia,
     serif;
 }
-.journey h2 {
+.hero-visual .journey h2 {
   margin: 0;
-  font-size: 18px;
+  font-size: clamp(18px, 4.6cqi, 27px);
 }
-.journey p {
-  margin: 6px 0 0;
+.hero-visual .journey p {
+  margin: 4px 0 0;
 }
-.carousel-footer {
-  margin-top: 17px;
+.hv-week {
+  padding-top: clamp(12px, 2.6cqi, 18px);
+  border-top: 1px solid var(--panel-line);
 }
-.hero-controls {
+.hv-week-days {
   display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 15px;
-  min-height: 44px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: clamp(4px, 1.4cqi, 8px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
-.hero-dots,
-.hero-arrows {
-  display: flex;
+.hv-week-days li {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  text-align: center;
 }
-.hero-dots button {
+.hv-week-days b {
+  color: var(--panel-muted);
+  font-size: 12px;
+  font-weight: 650;
+}
+.hv-week-days span {
   display: grid;
   place-items: center;
-  width: 35px;
-  height: 44px;
+  height: clamp(30px, 6.4cqi, 40px);
+  overflow: hidden;
+  border: 1px solid var(--panel-line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--panel-accent) 14%, transparent);
+  color: var(--panel-ink);
+  font-size: clamp(11px, 2.4cqi, 13px);
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hv-week-days [data-kind='busy'] span {
+  border-style: dashed;
+  background: transparent;
+  color: var(--panel-muted);
+}
+.hv-week-days [data-kind='quiz'] span {
+  border-color: var(--panel-accent);
+  background: var(--panel-accent);
+  color: var(--panel-background);
+}
+.hero-visual .hv-week-note {
+  margin: 10px 0 0;
+  font-size: clamp(13px, 2.5cqi, 15px);
+}
+
+/* Build (AI Builds): an application where the AI model is one service among others. A request
+   travels Client → API → AI model and back (SVG animation, left out under reduced motion), then a
+   few example projects and what each guided project gives you. */
+.hv-stack {
+  position: relative;
+  flex: 1;
+  min-height: clamp(150px, 36cqi, 300px);
+  margin: 0;
+  border: 1px solid var(--panel-line);
+  border-radius: 14px;
+  background: color-mix(in srgb, #000 16%, transparent);
+}
+.hv-stack-art {
+  position: absolute;
+  inset: clamp(10px, 2.4cqi, 16px);
+  width: calc(100% - 2 * clamp(10px, 2.4cqi, 16px));
+  height: calc(100% - 2 * clamp(10px, 2.4cqi, 16px));
+}
+.hv-stack-tall {
+  display: none;
+}
+.hv-stack-wire {
+  fill: none;
+  stroke: var(--panel-muted);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.hv-stack-call {
+  fill: none;
+  stroke: var(--panel-accent);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+}
+.hv-stack-dot {
+  fill: var(--panel-accent);
+  stroke: var(--panel-background);
+  stroke-width: 2;
+}
+.hv-stack-box rect {
+  fill: color-mix(in srgb, var(--panel-ink) 6%, var(--panel-background));
+  stroke: var(--panel-line);
+  stroke-width: 1.4;
+}
+.hv-stack-ai {
+  fill: color-mix(in srgb, var(--panel-accent) 22%, var(--panel-background));
+  stroke: var(--panel-accent);
+  stroke-width: 2;
+}
+.hero-slide.active .hv-stack-ai {
+  animation: home-ai-pulse 3.2s ease-in-out infinite;
+}
+@keyframes home-ai-pulse {
+  0%,
+  30%,
+  100% {
+    stroke-width: 2;
+    fill: color-mix(in srgb, var(--panel-accent) 22%, var(--panel-background));
+  }
+  45% {
+    stroke-width: 4;
+    fill: color-mix(in srgb, var(--panel-accent) 36%, var(--panel-background));
+  }
+}
+.hv-stack-icon {
+  fill: none;
+  stroke: var(--panel-muted);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.hv-stack-spark {
+  fill: var(--panel-accent);
+}
+.hv-stack-text text,
+.hv-stack-ai-text {
+  fill: var(--panel-ink);
+  font:
+    600 14px system-ui,
+    sans-serif;
+  text-anchor: middle;
+}
+.hv-stack-ai-text {
+  font-weight: 750;
+}
+.hv-build-foot {
+  display: grid;
+  gap: clamp(10px, 2.4cqi, 16px);
+  margin-top: clamp(12px, 2.6cqi, 18px);
+}
+.hv-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(6px, 1.4cqi, 8px);
+  margin: 0;
   padding: 0;
+  list-style: none;
+}
+.hv-tiles li {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  min-height: clamp(36px, 8cqi, 46px);
+  padding: 4px 10px;
+  border: 1px solid var(--panel-line);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--panel-accent) 9%, transparent);
+  color: var(--panel-ink);
+  font-size: clamp(12.5px, 2.6cqi, 15px);
+  font-weight: 600;
+  line-height: 1.25;
+}
+.hv-tiles li.hv-tile-more {
+  justify-content: center;
+  border-style: dashed;
+  background: transparent;
+  color: var(--panel-muted);
+}
+.hv-checks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 14px;
+  margin: 0;
+  padding: clamp(10px, 2.2cqi, 14px) 0 0;
+  border-top: 1px solid var(--panel-line);
+  list-style: none;
+}
+.hv-checks li {
+  display: flex;
+  gap: 8px;
+  color: var(--panel-ink);
+  font-size: clamp(13px, 2.6cqi, 15px);
+  line-height: 1.4;
+}
+.hv-checks li::before {
+  content: '✓';
+  flex: none;
+  color: var(--home-panel-learn);
+  font-weight: 800;
+}
+/* A wide card puts the checklist to the right of the tiles. */
+@container (min-width: 600px) {
+  .hv-build-foot {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    align-items: stretch;
+  }
+  .hv-checks {
+    grid-template-columns: minmax(0, 1fr);
+    align-content: center;
+    padding: 0 0 0 clamp(14px, 2.6cqi, 22px);
+    border-top: 0;
+    border-left: 1px solid var(--panel-line);
+  }
+}
+/* A narrow card (phone) gets the taller drawing so labels stay readable, two tile columns, and
+   one checklist column. */
+@container (max-width: 360px) {
+  .hv-stack {
+    min-height: 300px;
+  }
+  .hv-stack-wide {
+    display: none;
+  }
+  .hv-stack-tall {
+    display: block;
+  }
+  .hv-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .hv-queue-labels span:nth-child(2) {
+    display: none;
+  }
+  .hv-checks {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Chapter tabs: each one is the slide's timer and names what the slide is about. */
+.carousel-footer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 24px;
+  margin-top: clamp(18px, 2.6vh, 28px);
+}
+.chapter-tabs {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: clamp(8px, 1.2vw, 20px);
+}
+.chapter-tab {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: baseline;
+  gap: 12px 10px;
+  min-width: 0;
+  min-height: 48px;
+  padding: 0 0 4px;
   border: 0;
+  border-radius: 4px;
   background: transparent;
   color: var(--text-subtle);
+  text-align: start;
 }
-.hero-dots button span {
-  width: 10px;
-  height: 10px;
-  border: 1.5px solid currentColor;
-  border-radius: 50%;
+.chapter-tab:hover {
+  color: var(--text-strong);
 }
-.hero-dots button[aria-pressed='true'] {
+.chapter-track {
+  grid-column: 1 / -1;
+  display: block;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--home-track);
+}
+.chapter-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent-strong);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+.chapter-tab.done .chapter-fill {
+  transform: scaleX(1);
+  opacity: 0.45;
+}
+.chapter-tab[aria-pressed='true'] .chapter-fill:not(.run) {
+  transform: scaleX(1);
+}
+.chapter-fill.run {
+  animation: home-chapter-fill var(--slide-ms, 6000ms) linear forwards;
+}
+.hero-carousel[data-held] .chapter-fill.run {
+  animation-play-state: paused;
+}
+@keyframes home-chapter-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.chapter-name {
+  overflow: hidden;
+  font-size: clamp(14px, 1vw, 17px);
+  font-weight: 600;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chapter-tab[aria-pressed='true'] {
+  color: var(--text-strong);
+}
+.chapter-tab[aria-pressed='true'] .chapter-track {
+  background: color-mix(in srgb, var(--accent-strong) 26%, transparent);
+}
+.chapter-tab[aria-pressed='true'] .chapter-name {
   color: var(--accent-strong);
-}
-.hero-dots button[aria-pressed='true'] span {
-  background: currentColor;
+  font-weight: 800;
 }
 .hero-arrows {
-  gap: 4px;
+  display: flex;
+  gap: 6px;
 }
 .hero-arrows button {
-  min-width: 44px;
-  height: 44px;
+  min-width: 48px;
+  height: 48px;
   padding: 0;
   background: var(--surface);
   border: 1px solid var(--platform-edge);
   color: var(--text-strong);
-  border-radius: 6px;
+  border-radius: 12px;
 }
 .hero-arrows button:hover:not(:disabled) {
   background: var(--surface-muted);
   border-color: var(--accent-strong);
 }
-#paths {
-  /* Clear space after the carousel controls so they read as part of the slideshow (DLV-932, user-approved). */
-  padding: 44px 0 24px;
+
+/* ---------- Learn. Grow. Blaze.: tinted block, gradient heading ---------- */
+#paths.home-paths {
+  margin-top: clamp(28px, 3vw, 48px);
+  padding: clamp(28px, 3vw, 48px);
+  border: 1px solid var(--platform-edge-soft);
+  border-radius: 32px;
+  background: var(--home-paths-block);
   scroll-margin-top: 90px;
 }
-#paths > .eyebrow {
-  margin: 0 0 2px;
+.home-paths > .eyebrow {
+  margin: 0 0 4px;
+  font-size: 11px;
 }
-#paths > h2 {
+.home-paths > h2 {
   font:
-    700 22px/1.2 system-ui,
+    800 clamp(30px, 3vw, 52px)/1.08 'Avenir Next',
+    'Segoe UI',
+    system-ui,
     sans-serif;
-  letter-spacing: -0.025em;
-  margin: 0 0 13px;
+  letter-spacing: -0.04em;
+  margin: 0 0 clamp(18px, 2vw, 28px);
+  background: var(--home-grad-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  width: fit-content;
 }
 /* Small, quiet control for the path-card scene timeline. */
-.path-motion {
+.home-paths .path-motion {
   display: flex;
   justify-content: flex-end;
-  margin-top: 8px;
+  margin-top: 12px;
 }
-.path-motion-toggle {
-  min-height: 32px;
-  padding: 4px 12px;
+.home-paths .path-motion-toggle {
+  min-height: 36px;
+  padding: 4px 14px;
   border: 1px solid var(--platform-edge);
-  border-radius: 6px;
+  border-radius: 999px;
   background: var(--surface);
   color: var(--text-body);
   font:
@@ -294,75 +1208,78 @@ button:disabled {
     sans-serif;
   cursor: pointer;
 }
-.path-motion-toggle:hover {
+.home-paths .path-motion-toggle:hover {
   border-color: var(--accent-strong);
   background: var(--surface-muted);
   color: var(--text-strong);
 }
-.path-motion-toggle:focus-visible {
+.home-paths .path-motion-toggle:focus-visible {
   outline: 2px solid var(--accent-focus, var(--accent-strong));
   outline-offset: 2px;
 }
-.three-columns {
+.home-paths .three-columns {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  gap: clamp(12px, 1.4vw, 24px);
 }
-.card {
+.home-paths .card {
   --path-color: var(--path-learn);
   container-type: inline-size;
   min-width: 0;
 }
-.card:nth-child(2) {
+.home-paths .card:nth-child(2) {
   --path-color: var(--path-grow);
 }
-.card:nth-child(3) {
+.home-paths .card:nth-child(3) {
   --path-color: var(--path-blaze);
 }
-.card-link {
+.home-paths .card-link {
   display: flex;
   flex-direction: column;
   height: 100%;
   overflow: hidden;
-  /* Path tint and top rule (DLV-932, user-approved 2026-10-12; matches the Manage account path tiles). */
   background:
-    radial-gradient(circle at 85% 100%, color-mix(in srgb, var(--path-color) 22%, transparent), transparent 55%),
+    radial-gradient(
+      circle at 85% 100%,
+      color-mix(in srgb, var(--path-color) 22%, transparent),
+      transparent 55%
+    ),
     linear-gradient(
       160deg,
       color-mix(in srgb, var(--path-color) 12%, var(--surface)),
       color-mix(in srgb, var(--path-color) 4%, var(--surface))
     );
   border: 1px solid var(--platform-edge);
-  border-top: 3px solid var(--path-color);
-  border-radius: 12px;
+  border-top: 4px solid var(--path-color);
+  border-radius: 22px;
   color: var(--text-strong);
   text-decoration: none;
-  box-shadow: var(--platform-shadow);
+  box-shadow: var(--home-paths-shadow);
   transition:
     border-color 0.18s ease,
     transform 0.18s ease;
 }
-.card-link:hover {
+.home-paths .card-link:hover {
   border-color: color-mix(in srgb, var(--path-color) 70%, var(--platform-edge));
   border-top-color: var(--path-color);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
 }
-.direction-scene {
+.home-paths .direction-scene {
   --card-scene-ratio: 16 / 9;
   border-bottom: 1px solid var(--platform-edge-soft);
 }
-.card-body {
+.home-paths .card-body {
   display: flex;
   flex: 1;
   flex-direction: column;
-  padding: 15px 20px;
+  padding: 18px 22px 22px;
 }
 @container (min-width: 560px) {
-  .card-link {
+  .home-paths .card-link {
     display: grid;
     grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
   }
-  .direction-scene {
+  .home-paths .direction-scene {
     --card-scene-ratio: auto;
     display: grid;
     order: 2;
@@ -370,34 +1287,37 @@ button:disabled {
     border-bottom: 0;
     border-left: 1px solid var(--platform-edge-soft);
   }
-  .card-body {
+  .home-paths .card-body {
     justify-content: center;
     padding: 20px 24px;
   }
-  .card-action {
+  .home-paths .card-action {
     margin-top: 4px;
   }
 }
-.card .number {
+.home-paths .number {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 20px;
-  font-weight: 800;
+  font:
+    800 24px/1.2 'Avenir Next',
+    'Segoe UI',
+    system-ui,
+    sans-serif;
   letter-spacing: -0.02em;
   margin: 0 0 8px;
 }
-.path-badge {
+.home-paths .path-badge {
   display: grid;
   place-items: center;
   flex: none;
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
   background: color-mix(in srgb, var(--path-color) 18%, var(--surface));
   color: var(--path-color);
 }
-.path-badge svg {
+.home-paths .path-badge svg {
   width: 22px;
   height: 22px;
   fill: none;
@@ -406,249 +1326,268 @@ button:disabled {
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-.card h3 {
-  font-size: 14px;
-  font-weight: 650;
+.home-paths .card h3 {
+  font-size: 16px;
+  font-weight: 700;
   margin: 0 0 6px;
 }
-.card p:not(.number) {
-  margin: 0 0 10px;
-  font-size: 12px;
+.home-paths .card p:not(.number) {
+  margin: 0 0 12px;
+  font-size: 14px;
   line-height: 1.55;
 }
 /* Looks like a button; the whole card is the one link, so this stays a span (no nested control). */
-.card-action {
+.home-paths .card-action {
   align-self: flex-start;
   display: inline-flex;
   align-items: center;
-  min-height: 36px;
-  box-sizing: border-box;
+  min-height: 40px;
   margin-top: auto;
-  padding: 6px 14px;
-  border: 1px solid var(--accent-strong);
-  border-radius: 8px;
+  padding: 8px 18px;
+  border-radius: 999px;
   background: var(--accent-strong);
   color: var(--accent-on-primary);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   text-decoration: none;
 }
-.card-link:hover .card-action {
+.home-paths .card-link:hover .card-action {
   background: color-mix(in srgb, var(--accent-strong) 88%, var(--text-strong));
 }
-.feature-discovery {
-  margin: 0 0 36px;
+
+/* ---------- Challenge and next steps: bento tiles ---------- */
+app-engineering-challenge.home-challenge {
+  margin-top: clamp(28px, 3vw, 44px);
 }
-.feature-grid-heading {
+:host ::ng-deep app-engineering-challenge.home-challenge .practice-disclosure {
+  margin-bottom: clamp(32px, 3.4vw, 52px);
+  border-color: var(--home-tile-edge);
+  border-radius: var(--home-tile-radius);
+  box-shadow: var(--home-tile-shadow);
+  overflow: hidden;
+}
+:host ::ng-deep app-engineering-challenge.home-challenge summary {
+  border-radius: var(--home-tile-radius) var(--home-tile-radius) 0 0;
+}
+.home-explore {
+  margin: 0 0 clamp(28px, 3vw, 48px);
+}
+.home-explore .feature-grid-heading {
   display: flex;
   flex-wrap: wrap;
   align-items: end;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
-.feature-grid-heading .eyebrow {
+.home-explore .feature-grid-heading .eyebrow {
   margin: 0 0 6px;
+  font-size: 11px;
+  letter-spacing: 0.13em;
 }
-.feature-grid-heading h2 {
+.home-explore .feature-grid-heading h2 {
   font:
-    750 29px/1.2 system-ui,
+    750 clamp(26px, 2.2vw, 34px)/1.2 system-ui,
     sans-serif;
   letter-spacing: -0.035em;
   margin: 0;
 }
-.feature-grid-heading > p {
+.home-explore .feature-grid-heading > p {
   margin: 0;
-  font-size: 13px;
+  font-size: 14px;
 }
-.feature-grid {
+/* Bento rhythm: wide, narrow / narrow, wide (7/5 then 5/7); each row's tiles share a height. */
+.home-explore .feature-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 560px), 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--home-gap);
 }
-.discovery-feature {
+.home-explore .discovery-feature {
+  grid-column: span 7;
   container-type: inline-size;
   min-width: 0;
   overflow: hidden;
-  background: linear-gradient(155deg, var(--surface) 55%, var(--platform-surface-soft));
-  border: 1px solid var(--platform-edge-soft);
-  border-radius: 12px;
-  box-shadow: var(--platform-shadow);
+  background: linear-gradient(155deg, var(--home-tile) 55%, var(--platform-surface-soft));
+  border: 1px solid var(--home-tile-edge);
+  border-radius: var(--home-tile-radius);
+  box-shadow: var(--home-tile-shadow);
 }
-.discovery-feature:focus-within {
+.home-explore .discovery-feature:nth-child(2),
+.home-explore .discovery-feature:nth-child(3) {
+  grid-column: span 5;
+}
+.home-explore .discovery-feature:focus-within {
   border-color: var(--accent-strong);
 }
-.feature-layout {
+/* Every tile reads drawing first, then copy; equal drawing heights keep each row even. */
+.home-explore .feature-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
   height: 100%;
 }
-.feature-scene {
+.home-explore .feature-scene {
   --card-scene-ratio: auto;
   display: grid;
-  order: 2;
-  min-height: 210px;
-  border-left: 1px solid var(--platform-edge-soft);
+  height: clamp(180px, 12vw, 220px);
+  border-bottom: 1px solid var(--platform-edge-soft);
 }
-.feature-body {
+.home-explore .feature-body {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding: 24px;
+  padding: clamp(22px, 2vw, 30px);
 }
-@container (max-width: 560px) {
-  .feature-layout {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto 1fr;
-  }
-  .feature-scene {
-    --card-scene-ratio: 16 / 8;
-    order: 0;
-    min-height: 0;
-    border-left: 0;
-    border-bottom: 1px solid var(--platform-edge-soft);
-  }
-}
-.feature-name {
+.home-explore .feature-name {
   color: var(--accent-strong);
   font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.025em;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   margin: 0;
 }
-.discovery-feature h3 {
+.home-explore .discovery-feature h3 {
   font:
-    750 25px/1.25 system-ui,
+    750 clamp(22px, 1.7vw, 27px)/1.22 system-ui,
     sans-serif;
   letter-spacing: -0.025em;
-  margin: 14px 0 10px;
-  max-width: 29ch;
+  margin: 12px 0 10px;
+  max-width: 26ch;
 }
-.feature-description {
-  font-size: 14px;
-  line-height: 1.7;
+.home-explore .feature-description {
+  font-size: 14.5px;
+  line-height: 1.65;
   margin: 0 0 22px;
   max-width: 55ch;
 }
-.discovery-feature a {
+.home-explore .discovery-feature a {
   margin-top: auto;
   width: fit-content;
-  font-weight: 650;
+  font-weight: 700;
   font-size: 14px;
 }
-.feature-availability {
+.home-explore .feature-availability {
   margin: 16px 0 0;
   padding-top: 12px;
   border-top: 1px solid var(--platform-edge-soft);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.5;
 }
-.brand-story {
+
+/* ---------- The essence: warm cream block ---------- */
+.home-essence {
+  /* The illustration's cutouts match this block instead of the page. */
+  --identity-cutout: var(--home-brand-block);
   display: grid;
   justify-items: center;
   gap: clamp(24px, 3vw, 32px);
-  padding-block: clamp(48px, 6vw, 72px);
-  border-top: 1px solid var(--platform-edge-soft);
+  padding: clamp(48px, 6vw, 80px) clamp(20px, 4vw, 64px);
+  border-radius: 32px;
+  background: var(--home-brand-block);
+  border: 1px solid var(--platform-edge-soft);
   text-align: center;
 }
-.brand-story-heading {
+.home-essence .brand-story-heading {
   display: grid;
   gap: 6px;
 }
-.brand-story .brand-context {
+.home-essence .brand-context {
   font-size: 12px;
   font-weight: 600;
   line-height: 1.4;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
-.brand-story h2 {
+.home-essence h2 {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
   line-height: 1.4;
   letter-spacing: -0.02em;
 }
-.brand-story app-platform-brand-illustration {
-  width: min(100%, 760px);
+.home-essence app-platform-brand-illustration {
+  width: min(100%, 860px);
 }
-.brand-story-copy {
+.home-essence .brand-story-copy {
   display: grid;
   justify-items: center;
   gap: clamp(18px, 2.5vw, 24px);
-  width: min(100%, 760px);
+  width: min(100%, 860px);
 }
-.brand-story p {
+.home-essence p {
   margin: 0;
   color: var(--text-subtle);
   text-wrap: balance;
 }
-.brand-line {
+.home-essence .brand-line {
   display: block;
 }
-.brand-story .brand-opening,
-.brand-story .brand-learning,
-.brand-story .brand-principle,
-.brand-story .brand-obstacle {
+.home-essence .brand-opening,
+.home-essence .brand-learning,
+.home-essence .brand-principle,
+.home-essence .brand-obstacle {
   font-family: 'Avenir Next', 'Segoe UI', system-ui, sans-serif;
 }
-.brand-story .brand-opening {
+.home-essence .brand-opening {
   color: var(--text-strong);
-  font-size: clamp(32px, 4vw, 46px);
-  font-weight: 650;
-  line-height: 1.15;
+  font-size: clamp(36px, 4.6vw, 64px);
+  font-weight: 750;
+  line-height: 1.1;
   letter-spacing: -0.045em;
 }
-.brand-opening span {
-  color: var(--accent-strong);
+.home-essence .brand-opening span {
+  background: var(--home-grad-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
-.brand-story .brand-learning {
+.home-essence .brand-learning {
   color: var(--text-strong);
-  font-size: clamp(20px, 2.4vw, 28px);
+  font-size: clamp(20px, 2.4vw, 30px);
   font-weight: 500;
   line-height: 1.45;
   letter-spacing: -0.025em;
 }
-.brand-learning strong {
+.home-essence .brand-learning strong {
   font-weight: 650;
 }
-.brand-learn {
+.home-essence .brand-learn {
   color: var(--path-learn);
 }
-.brand-code {
+.home-essence .brand-code {
   color: var(--identity-code);
 }
-.brand-explore {
+.home-essence .brand-explore {
   color: var(--identity-eyes);
 }
-.brand-disciplines {
+.home-essence .brand-disciplines {
   color: var(--identity-ai);
   font-weight: 600;
 }
-.brand-story .brand-growth {
-  font-size: clamp(16px, 1.7vw, 19px);
+.home-essence .brand-growth {
+  font-size: clamp(16px, 1.7vw, 20px);
   line-height: 1.65;
 }
-.brand-growth strong {
+.home-essence .brand-growth strong {
   color: var(--text-strong);
   font-weight: 600;
 }
-.brand-growth .brand-grow {
+.home-essence .brand-growth .brand-grow {
   color: var(--path-grow);
   font-weight: 700;
 }
-.brand-principles {
+.home-essence .brand-principles {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   gap: 24px;
   width: 100%;
 }
-.brand-principles-logo {
+.home-essence .brand-principles-logo {
   justify-self: center;
 }
-.brand-story .brand-principle,
-.brand-story .brand-obstacle {
+.home-essence .brand-principle,
+.home-essence .brand-obstacle {
   position: relative;
   padding-top: 24px;
   color: var(--text-strong);
@@ -657,69 +1596,129 @@ button:disabled {
   line-height: 1.5;
   letter-spacing: -0.015em;
 }
-.brand-principle::before,
-.brand-obstacle::before {
+.home-essence .brand-principle::before,
+.home-essence .brand-obstacle::before {
   content: '';
   position: absolute;
   inset-block-start: 0;
   inset-inline-start: calc(50% - 24px);
   width: 48px;
-  border-top: 2px solid var(--platform-edge);
+  border-top: 3px solid transparent;
+  border-image: var(--home-grad-bar) 1;
 }
-.brand-principle strong {
+.home-essence .brand-principle strong,
+.home-essence .brand-obstacle strong {
   color: var(--identity-wall);
   font-weight: 650;
 }
-.brand-principle em {
+.home-essence .brand-principle em {
   color: var(--identity-ai);
   font-weight: 600;
 }
-.brand-obstacle strong {
-  color: var(--identity-wall);
-  font-weight: 650;
-}
-.brand-obstacle em {
+.home-essence .brand-obstacle em {
   color: var(--identity-arrow);
   font-weight: 600;
   font-style: italic;
 }
-.landing-footer {
-  border-top: 1px solid var(--platform-edge-soft);
+
+/* ---------- Footer: gradient rule ---------- */
+.home-footer {
+  margin-top: 28px;
+  border-top: 3px solid transparent;
+  border-image: var(--home-grad-bar) 1;
   padding: 20px 0;
   font-size: 13px;
+}
+
+/* ---------- Narrower screens ---------- */
+@media (max-width: 1099px) {
+  .hero-stage {
+    min-height: 0;
+  }
+  .hero-slide {
+    min-height: 460px;
+  }
+}
+@media (max-width: 1023px) {
+  .home-explore .discovery-feature,
+  .home-explore .discovery-feature:nth-child(2),
+  .home-explore .discovery-feature:nth-child(3) {
+    grid-column: 1 / -1;
+  }
 }
 @media (max-width: 800px) {
   .landing-page {
     padding: 16px 20px;
+  }
+  .discovery-opening::before {
+    inset-inline: -16px;
+  }
+  .hero-masthead {
+    padding-bottom: 14px;
   }
   .discovery-framing {
     font-size: 26px;
     line-height: 1.25;
   }
   .hero-slide {
-    grid-template-columns: 1fr;
-    gap: 22px;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    gap: 24px;
+    min-height: 0;
   }
   .slide-title {
-    font-size: clamp(30px, 6vw, 42px);
+    font-size: clamp(34px, 10.4cqi, 56px);
   }
-  #paths {
-    padding-top: 32px;
+  #paths.home-paths {
+    padding: 24px 18px;
+    border-radius: 26px;
   }
-  .three-columns {
+  .home-paths .three-columns {
     grid-template-columns: 1fr;
   }
-  .discovery-opening::before {
-    inset-inline: 0;
-  }
-  .feature-body {
-    padding: 22px;
+  .home-essence {
+    border-radius: 26px;
   }
 }
 @media (max-width: 640px) {
-  .brand-principles {
+  .home-essence .brand-principles {
     grid-template-columns: 1fr;
     gap: 20px;
+  }
+  .home-explore .feature-grid-heading {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .carousel-footer {
+    gap: 10px;
+  }
+  .chapter-tabs {
+    gap: 6px;
+  }
+  .chapter-tab {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  /* On a phone the six words take the full row and the arrows go below them. */
+  .carousel-footer {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .hero-arrows {
+    justify-self: end;
+  }
+  .chapter-tab {
+    gap: 8px;
+  }
+  .chapter-name {
+    font-size: 12px;
+    text-overflow: clip;
+  }
+  .hero-arrows {
+    gap: 4px;
+  }
+  .hero-arrows button {
+    min-width: 44px;
+    height: 44px;
   }
 }
 @media (max-width: 400px) {
@@ -727,15 +1726,90 @@ button:disabled {
     padding-inline: 16px;
   }
   .hero-visual {
-    padding: 20px;
-  }
-  .hero-controls {
-    gap: 5px;
-  }
-  .hero-dots button {
-    width: 29px;
+    padding: 22px 18px;
   }
 }
+/* ---------- Light theme: paper and sand ----------
+   No color washes. The hero sits on one white sheet with a crisp warm sand panel on its right,
+   ruled with a faint teal grid; the dark slide card overlaps the panel's edge. A thin teal-to-amber
+   rule runs along the top. Color comes from clean shapes and the brand teal, plus one warm accent
+   (the eyebrow). The dark theme keeps its own hero. */
+:host-context(:root:not([data-theme='dark'])) .discovery-opening::before {
+  display: none;
+}
+:host-context(:root:not([data-theme='dark'])) .hero-stage {
+  --home-track: #0b3b4224;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: clamp(18px, 2.6vh, 36px) clamp(22px, 3.6vw, 64px) clamp(14px, 2vh, 24px);
+  border: 1px solid #dce6e5;
+  border-radius: 28px;
+  background: #ffffff;
+  box-shadow:
+    0 1px 2px #0d2a2e0f,
+    0 28px 56px -34px #0d2a2e59;
+}
+/* The sand panel and its grid. */
+:host-context(:root:not([data-theme='dark'])) .hero-stage::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 0 auto;
+  z-index: -1;
+  width: 36%;
+  pointer-events: none;
+  background:
+    linear-gradient(#0b6b7012 1px, transparent 1px) 0 0 / 32px 32px,
+    linear-gradient(90deg, #0b6b7012 1px, transparent 1px) 0 0 / 32px 32px,
+    #f4eee3;
+  border-left: 1px solid #e6dccb;
+}
+/* The thin rule along the top. */
+:host-context(:root:not([data-theme='dark'])) .hero-stage::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+  pointer-events: none;
+  background: linear-gradient(90deg, #0a8f8a, #0a8f8a 55%, #e8a33d);
+}
+:host-context(:root:not([data-theme='dark'])) .hero-masthead {
+  padding-bottom: 14px;
+  border-bottom-color: #e3ebea;
+}
+:host-context(:root:not([data-theme='dark'])) .hero-carousel {
+  padding-top: clamp(12px, 1.8vh, 28px);
+}
+:host-context(:root:not([data-theme='dark'])) .hero-slide {
+  min-height: clamp(400px, calc(100svh - 410px), 720px);
+}
+:host-context(:root:not([data-theme='dark'])) .hero-visual {
+  padding: clamp(20px, 2vw, 40px);
+  box-shadow: 0 30px 60px -30px #0d2a2e8c;
+}
+:host-context(:root:not([data-theme='dark'])) .hero-copy .eyebrow {
+  color: #a8590f;
+}
+:host-context(:root:not([data-theme='dark'])) .hero-arrows button {
+  background: #ffffffd9;
+}
+/* On narrow screens the card sits below the text, so the sand panel moves under it. */
+@media (max-width: 1099px) {
+  :host-context(:root:not([data-theme='dark'])) .hero-stage::before {
+    inset: auto 0 0;
+    width: auto;
+    height: 52%;
+    border-left: 0;
+    border-top: 1px solid #e6dccb;
+  }
+}
+@media (max-width: 640px) {
+  :host-context(:root:not([data-theme='dark'])) .hero-stage {
+    padding: 22px 16px 16px;
+    border-radius: 22px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -750,11 +1824,16 @@ button:disabled {
     background: none;
     text-decoration: underline;
   }
-}
-
-.signature-support {
-  margin: -8px 0 24px;
-  color: var(--text-subtle);
-  font-size: 1rem;
-  line-height: 1.5;
+  .chapter-fill {
+    background: Highlight;
+  }
+  .home-paths > h2,
+  .home-essence .brand-opening span {
+    background: none;
+    color: CanvasText;
+  }
+  .hv-cell.in-window,
+  .hv-code-line.invariant {
+    outline: 1px solid CanvasText;
+  }
 }

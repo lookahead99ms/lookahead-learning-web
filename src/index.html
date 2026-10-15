@@ -6,6 +6,20 @@
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <script>
+      // Same rule as PlatformThemeService, before the app starts: the learner's stored choice,
+      // otherwise dark. Without it the first paint would use the light tokens.
+      (function () {
+        var theme = 'dark';
+        try {
+          var stored = localStorage.getItem('look-ahead-theme-v1');
+          if (stored === 'light') theme = 'light';
+          else if (stored === 'system')
+            theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        } catch (e) {}
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
+    </script>
   </head>
   <body>
     <app-root></app-root>
