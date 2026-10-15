@@ -1184,3 +1184,11 @@ without that endpoint show no DEV controls.
 
 Infra owns the deployment inputs and start/stop runbook. This configuration is
 locally tested with synthetic credentials, not deployed or verified in AWS.
+
+### Landing component styles
+
+The landing page owns carousel rotation, navigation, theme layout and page sections.
+`src/app/pages/landing/landing-hero-visual.ts` owns the six presentational hero cards,
+their illustration styles and fixtures. The parent passes the visual, active state
+and reduced-motion preference. Keep card styles with this component; production
+builds enforce the existing 28 kB warning / 32 kB error component-style budgets.
