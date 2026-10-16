@@ -146,6 +146,17 @@ describe('StudyPlanAccount transport and isolation', () => {
     store = TestBed.inject(StudyPlanAccount);
   });
 
+  it('sends explicit creation dates and revision-guarded lifecycle transitions', async () => {
+    await store.login('demo-a', 'test');
+    await store.save(local, 'update-plan', undefined, '2026-10-20');
+    expect(JSON.parse(mutations.at(-1)!.options.body as string).startDate).toBe('2026-10-20');
+    await store.lifecycle('active', '2026-11-01');
+    expect(mutations.at(-1)!.path).toContain('/plans/plan-a/lifecycle');
+    expect(JSON.parse(mutations.at(-1)!.options.body as string)).toEqual({ expectedRevision: 1, state: 'active', startDate: '2026-11-01' });
+    await store.lifecycle('archived');
+    expect(JSON.parse(mutations.at(-1)!.options.body as string)).toEqual({ expectedRevision: 1, state: 'archived' });
+  });
+
   it('persists a custom creation name and uses the revision-guarded name-only endpoint', async () => {
     await store.login('demo-a', 'test');
     nextPlan = { ...result, name: 'Mine', planNumber: 3 };

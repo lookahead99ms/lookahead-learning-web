@@ -1378,3 +1378,23 @@ saved-plan requests require explicit discard before another sign-in.
 ## Connected local memberships (DLV-209)
 
 Pricing, Manage account and Admin Sales read the Domain membership API through the Gateway. Signed-in learners explicitly confirm simulated purchases after a server quote; no money is charged. Missing API support leaves reference prices visible and disables checkout. Owner controls server sales/prices; staff upgrades are server-authorized and cannot reduce access. Manual renewal creates another purchase; no automatic renewal, lifetime, notifications or real payments. Course Pass remains disabled pending its duration. The public demo remains independently renderable without an API.
+
+### Local managed test accounts and dated plans (DLV-961 / DLV-705)
+
+The connected Local API exposes 35 managed test accounts, excluding the existing
+owner: 27 learners, two co-authors and six admins. People and access displays roles,
+derived membership labels and Domain change attribution. Owner/admin resets require
+an exact username confirmation; learner01–10 also offer the original fixture preset.
+Ordinary seed runs preserve existing account data. Co-authors can read staff access
+and purchase information but cannot change roles, reset accounts or grant upgrades.
+
+When the API advertises `dated-plan-v1` and `ready-made-template-v1`, the planner
+saves reviewed ready-made templates with an explicit UTC start date. The plan detail
+shows server-computed lifecycle dates and supports completion, archive and dated
+reactivation. Server-side reservations limit active plans, overlapping daily time
+and shared course scope. Opening a view never extends a schedule. Progress and
+history survive archive; legacy undated plans require explicit activation. The
+standalone demo keeps its browser-local behavior and does not claim account sync.
+
+Validation: `npm run test:coverage` enforces 85% line coverage; connected plan,
+role and reset changes also require the owning API and Local integration checks.

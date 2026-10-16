@@ -60,6 +60,25 @@
           </div>
         }
       </div>
+      @if (datedPlans() && accountStore.active()?.lifecycle; as lifecycle) {
+        <section class="panel plan-lifecycle" aria-label="Plan schedule and status">
+          <p>Plan status: {{ lifecycle.state }}</p>
+          @if (lifecycle.startDate) {
+            <p>Starts {{ lifecycle.startDate }} · Ends before {{ lifecycle.endDateExclusive }} (UTC)</p>
+            <p>Archives {{ lifecycle.archiveDate }}. Progress and history are retained.</p>
+          }
+          @if (lifecycle.state !== 'active') {
+            <label>Start date (UTC) <input type="date" [value]="startDate()" (input)="startDate.set($any($event.target).value)" /></label>
+            <p>Activation checks your current course access and other active plans.</p>
+            <div class="draft-actions"><button type="button" [disabled]="editsLocked() || !startDate()" (click)="changeLifecycle('active')">Activate plan</button></div>
+          } @else {
+            <div class="draft-actions">
+              <button type="button" [disabled]="editsLocked()" (click)="changeLifecycle('completed')">Mark plan complete</button>
+              <button type="button" [disabled]="editsLocked()" (click)="changeLifecycle('archived')">Archive plan</button>
+            </div>
+          }
+        </section>
+      }
       @if (plan(); as headerPlan) {
         <section
           class="active-plan-overview panel"
@@ -1047,6 +1066,10 @@
       </div>
       @if (accountStore.error()) {
         <p role="alert">{{ accountStore.error() }}</p>
+      }
+      @if (datedPlans() && !accountStore.active()) {
+        <label>Start date (UTC) <input type="date" [value]="startDate()" (input)="startDate.set($any($event.target).value)" [disabled]="editsLocked()" /></label>
+        <p>The saved dates reserve your selected courses and daily time. Opening a plan never extends its schedule.</p>
       }
       <div class="draft-actions">
         @if (accountStore.pending()) {

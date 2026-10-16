@@ -96,6 +96,20 @@ describe('StudyPlanPage', () => {
     }).compileComponents();
   });
 
+  it('uses the explicit activation date and blocks lifecycle changes while edits are locked', async () => {
+    const harness = await RouterTestingHarness.create();
+    const page: any = await harness.navigateByUrl('/study-plan', StudyPlanPage);
+    const store = TestBed.inject(StudyPlanAccount);
+    const mutation = vi.spyOn(store, 'lifecycle').mockResolvedValue(null);
+    vi.spyOn(page, 'editsLocked').mockReturnValue(false);
+    page.startDate.set('2026-10-14');
+    await page.changeLifecycle('active');
+    expect(mutation).toHaveBeenCalledWith('active', '2026-10-14');
+    vi.mocked(page.editsLocked).mockReturnValue(true);
+    await page.changeLifecycle('archived');
+    expect(mutation).toHaveBeenCalledTimes(1);
+  });
+
   it('updates the suggested name until edited and preserves the entire custom name', async () => {
     const harness = await RouterTestingHarness.create();
     const page: any = await harness.navigateByUrl(

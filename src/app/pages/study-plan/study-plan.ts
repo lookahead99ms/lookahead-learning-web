@@ -104,6 +104,13 @@ export class StudyPlanPage implements OnInit {
   private readonly router = inject(Router);
   protected readonly access = inject(STUDY_PLAN_ACCESS);
   protected readonly accountStore = inject(StudyPlanAccount);
+  protected readonly startDate = signal(new Date().toISOString().slice(0, 10));
+  protected readonly datedPlans = computed(() => this.accountMode() && !!this.accountStore.catalog()?.planLifecyclePolicies?.includes('dated-plan-v1'));
+  protected async changeLifecycle(state: 'active' | 'archived' | 'completed'): Promise<void> {
+    if (this.editsLocked()) return;
+    const result = await this.accountStore.lifecycle(state, this.startDate());
+    if (result) this.acceptAccountPlan(result);
+  }
   protected readonly loginName = signal('');
   protected readonly loginPassword = signal('');
   protected readonly importAvailable = signal(false);
@@ -499,7 +506,7 @@ export class StudyPlanPage implements OnInit {
       return;
     }
     if (this.accountMode()) {
-      const result = await this.accountStore.save(draft);
+      const result = await this.accountStore.save(draft, 'update-plan', undefined, this.datedPlans() ? this.startDate() : undefined);
       if (!result) return;
       this.acceptAccountPlan(result);
     } else {

@@ -122,8 +122,9 @@
   <section id="membership" class="settings-section membership" tabindex="-1" aria-labelledby="membership-heading">
     <div class="section-heading membership-heading">
       <h2 id="membership-heading">Membership</h2>
-      <span class="membership-level">{{ plan.level }}</span>
+      <span class="membership-level">{{ membershipApi.accessLabel() || plan.level }}</span>
     </div>
+    <p>Role: {{ store.account()?.permissions?.feedbackRole || 'Learner' }}</p>
     <p role="status">{{membershipApi.error()}}</p>
     <p class="membership-scope">
       @if (plan.level === 'Author') {

@@ -7,7 +7,7 @@
     <header class="access-hero">
       <span class="hero-mark" aria-hidden="true">🔐</span>
       <div>
-        <p class="eyebrow">Owner tools</p>
+        <p class="eyebrow">People and access</p>
         <h2 class="intro-heading">Give people the access they need.</h2>
         <p class="lede">
           Assign roles and course access. These permissions never include another learner’s saved
@@ -15,7 +15,7 @@
         </p>
         <ul class="hero-facts" aria-label="About this page">
           <li>{{ assignments().length }} saved assignment{{ assignments().length === 1 ? '' : 's' }}</li>
-          <li>Owner only</li>
+          <li>Only the owner can change roles and course grants</li>
           <li>Applies on the next request</li>
         </ul>
       </div>
@@ -27,7 +27,7 @@
         <li class="how-card">
           <span class="how-icon" aria-hidden="true">🧑‍💼</span>
           <h3>Staff roles</h3>
-          <p>Tester, Reviewer and Admin open staff tools. Choosing Admin also selects the entire curriculum.</p>
+          <p>Co-authors can read author tools. Admins can manage test accounts. Both have the entire curriculum; only the owner changes roles and grants.</p>
         </li>
         <li class="how-card">
           <span class="how-icon" aria-hidden="true">📚</span>
@@ -37,7 +37,7 @@
         <li class="how-card">
           <span class="how-icon" aria-hidden="true">🏷️</span>
           <h3>Plans and purchases</h3>
-          <p>Paid plans are designed but not on sale, so no one has bought one yet.</p>
+          <p>Local purchases use mock payments. Review plan access and purchase history without charging real money.</p>
           <a class="how-link" routerLink="/admin/plans">See plans and purchases</a>
         </li>
       </ul>
@@ -45,6 +45,8 @@
 
     <p class="notice" role="status" aria-live="polite" [class.has-notice]="notice()">{{ notice() }}</p>
 
+    <app-test-accounts />
+    @if (canReadAssignments()) {
     <div class="work-grid">
       <section class="access-section" id="choose-person" aria-labelledby="choose-person-heading">
         <div class="section-heading">
@@ -64,7 +66,7 @@
           <div class="panel">
             <h3>Before signup</h3>
             <label>Email before signup <input type="email" [(ngModel)]="pendingEmail" autocomplete="off" /></label>
-            <button class="secondary-action" type="button" (click)="invite()">Prepare pending access</button>
+            <button class="secondary-action" type="button" [disabled]="!canManage()" (click)="invite()">Prepare pending access</button>
           </div>
         </fieldset>
         <p class="context-note">
@@ -128,7 +130,7 @@
 
         <div class="review-grid">
           <div class="review-main">
-            <fieldset class="panel" [disabled]="busy()">
+            <fieldset class="panel" [disabled]="busy() || !canManage()">
               <legend>Roles</legend>
               <div class="role-grid">
                 @for (role of roleOptions; track role.id) {
@@ -148,7 +150,7 @@
               </p>
             </fieldset>
 
-            <fieldset class="panel" [disabled]="busy()">
+            <fieldset class="panel" [disabled]="busy() || !canManage()">
               <legend>Course access grants</legend>
               <label class="full-curriculum">
                 <input type="checkbox" [(ngModel)]="selection.fullCurriculum" /> Entire curriculum, including future courses
@@ -179,11 +181,11 @@
             <!-- DLV-209: purchases and plan assignments have no server records yet; say so plainly. -->
             <div class="panel membership-panel">
               <h3>Plans and purchases</h3>
-              @if(draft?.accountId){<app-admin-memberships [accountId]="draft!.accountId" />} @else {<p>Purchases require an existing account.</p>}
+              @if(draft?.accountId){<app-admin-memberships [accountId]="draft!.accountId" [readOnly]="!canManage()" />} @else {<p>Purchases require an existing account.</p>}
               <p class="context-note">Course access on this form is an access grant, not a purchase.</p>
             </div>
             <div class="save-row">
-              <button class="primary-action" type="button" (click)="save()" [disabled]="busy()">Save access</button>
+              <button class="primary-action" type="button" (click)="save()" [disabled]="busy() || !canManage()">Save access</button>
               <p class="context-note">
                 To remove this assignment’s access, clear its roles, entire-curriculum selection and
                 selected courses, then save.
@@ -192,6 +194,7 @@
           </div>
         </div>
       </section>
+    }
     }
   </div>
   <app-author-admin-menu pageId="access" />

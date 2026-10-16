@@ -31,7 +31,7 @@ describe('People and access', () => {
   beforeEach(() => {
     requests = []; saveStatus = 200;
     TestBed.configureTestingModule({ providers: [
-      { provide: StudyPlanAccount, useValue: { apiPath: (path: string) => '/bff/api/v1' + path } },
+      { provide: StudyPlanAccount, useValue: { account: signal({permissions:permissions({manageAccess:true})}), apiPath: (path: string) => '/bff/api/v1' + path } },
       { provide: ACCOUNT_FETCH, useValue: async (path: string, init?: RequestInit) => {
         requests.push({ path, init });
         if (path.endsWith('/auth/csrf')) return Response.json({ data: { headerName: 'X-CSRF-TOKEN', token: 'synthetic-csrf' } });
@@ -94,11 +94,11 @@ describe('People and access layout', () => {
     expect([...main.children].map(child => child.tagName.toLowerCase().replace(/^div$/, 'div.' + child.className)))
       .toEqual(['aside', 'div.workspace-content', 'app-author-admin-menu']);
     expect(main.querySelector('aside app-author-workspace-nav')).not.toBeNull();
-    expect(fixture.componentInstance.outline().map(item => item.href)).toEqual(['#choose-person', '#saved-assignments']);
+    expect(fixture.componentInstance.outline().map(item => item.href)).toEqual(['#test-accounts', '#choose-person', '#saved-assignments']);
     fixture.componentInstance.invite();
-    expect(fixture.componentInstance.outline().map(item => item.href)).toEqual(['#choose-person', '#saved-assignments']);
+    expect(fixture.componentInstance.outline().map(item => item.href)).toEqual(['#test-accounts', '#choose-person', '#saved-assignments']);
     fixture.componentInstance.pendingEmail = 'person@example.invalid'; fixture.componentInstance.invite();
-    expect(fixture.componentInstance.outline().map(item => item.href)).toEqual(['#choose-person', '#review-access', '#saved-assignments']);
+    expect(fixture.componentInstance.outline().map(item => item.href)).toEqual(['#test-accounts', '#choose-person', '#review-access', '#saved-assignments']);
   });
   it('explains roles, grants and plans, links plans to the documentation and shows no purchases (DLV-209)', async () => {
     const fixture = TestBed.createComponent(AdminAccessPage);
@@ -106,6 +106,7 @@ describe('People and access layout', () => {
     const root = fixture.nativeElement as HTMLElement;
     expect([...root.querySelectorAll('.how-card h3')].map(h => h.textContent?.trim())).toEqual(['Staff roles', 'Course access grants', 'Plans and purchases']);
     expect(root.querySelector('.how-link')?.getAttribute('href')).toBe('/admin/plans');
+    expect(root.textContent).toContain('Local purchases use mock payments');
     // The catalog table lives on the Plans and purchases documentation page now.
     expect(root.querySelector('#configured-plans, .plan-table')).toBeNull();
     // Find and the saved list sit side by side.
@@ -121,5 +122,16 @@ describe('People and access layout', () => {
     expect(panel.querySelector('app-admin-memberships')).toBeNull();
     expect(panel.textContent).not.toMatch(/sent|delivered|scheduled/i);
     expect([...reviewRoot.querySelectorAll('.review-main legend')].map(legend => legend.textContent?.trim())).toEqual(['Roles', 'Course access grants']);
+  });
+});
+
+describe('test account admin outline', () => {
+  it('only links sections that the admin can access', () => {
+    TestBed.configureTestingModule({ providers: [
+      { provide: StudyPlanAccount, useValue: { account: signal({ permissions: permissions({ feedbackRole: 'admin' }) }) } },
+      { provide: ACCOUNT_FETCH, useValue: async () => Response.json({ data: [] }) },
+    ] });
+    const page = TestBed.runInInjectionContext(() => new AdminAccessPage());
+    expect(page.outline().map(item => item.href)).toEqual(['#test-accounts']);
   });
 });

@@ -430,6 +430,7 @@ export function isAuthorDocumentationPage(pageId: string | null | undefined): bo
 
 export function visibleAdminLinks(account: StudyAccount | null) {
   return authorWorkspaceLinks.filter(page => {
+    if (page.id === 'access' && (account?.permissions?.triageFeedback || account?.permissions?.feedbackRole === 'co-author')) return true;
     const permission = page.id === 'access' ? 'manageAccess' : page.id === 'delivery' ? 'deliveryRead' : 'previewDocuments';
     return account?.permissions?.[permission] ?? account?.authorPreview === true;
   });

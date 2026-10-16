@@ -40,3 +40,12 @@ function permissionGuard(permission: 'manageAccess' | 'previewDocuments' | 'deli
 export const ownerGuard = permissionGuard('manageAccess');
 export const staffGuard = permissionGuard('previewDocuments');
 export const deliveryGuard = permissionGuard('deliveryRead');
+
+export const accessGuard: CanActivateFn = async (_route, state) => {
+  const accounts = inject(StudyPlanAccount), router = inject(Router);
+  await accounts.initialize();
+  const account = accounts.account();
+  if (!account || accounts.sessionExpired()) return router.createUrlTree(['/sign-in'], { queryParams: { returnTo: state.url } });
+  const permissions = account.permissions;
+  return !!(permissions?.manageAccess || permissions?.triageFeedback || permissions?.feedbackRole === 'co-author' || (!permissions && account.authorPreview)) || router.createUrlTree(['/study-plan']);
+};

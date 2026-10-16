@@ -83,7 +83,12 @@ export interface AccountRegistration {
   confirmPassword: string;
   countryCode: string;
 }
+export interface PlanLifecycle {
+  state: 'unactivated' | 'active' | 'archived' | 'completed';
+  startDate?: string; endDateExclusive?: string; archiveDate?: string; configuredDailyMinutes?: number;
+}
 export interface AccountPlan {
+  lifecycle?: PlanLifecycle;
   name?: string;
   planNumber?: number;
   planId: string;
@@ -160,6 +165,7 @@ interface CatalogPins {
   rankingVersions: string[];
   topicIds: string[];
   readyMadePlanPolicies?: string[];
+  planLifecyclePolicies?: string[];
 }
 export const ACCOUNT_FETCH = new InjectionToken<typeof fetch>('Account API transport', {
   providedIn: 'root',
@@ -637,10 +643,12 @@ export class StudyPlanAccount implements AccountSettingsClient {
     saved: SavedPlan,
     reason: 'update-plan' | 'recovery' | 'extend-deadline' = 'update-plan',
     recovery?: RecoveryMetadata,
+    startDate?: string,
   ): Promise<AccountPlan | null> {
     const active = this.active();
     const body = {
       goal: saved.goal,
+      ...(!active && startDate ? { startDate } : {}),
       ...(!active && saved.customName && saved.name ? { name: saved.name.trim() } : {}),
       snapshot: saved.snapshot,
       provenance: active && reason !== 'update-plan' ? active.provenance : this.provenance(saved),
@@ -658,6 +666,13 @@ export class StudyPlanAccount implements AccountSettingsClient {
           },
         })
       : this.mutate('/plans', body);
+  }
+  lifecycle(state: 'active' | 'archived' | 'completed', startDate?: string): Promise<AccountPlan | null> {
+    const active = this.active();
+    if (!active) return Promise.resolve(null);
+    return this.mutate(`/plans/${active.planId}/lifecycle`, {
+      expectedRevision: active.revision, state, ...(state === 'active' ? { startDate } : {}),
+    });
   }
   rename(name: string): Promise<AccountPlan | null> {
     const active = this.active();

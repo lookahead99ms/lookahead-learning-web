@@ -12,9 +12,10 @@ export class MembershipApi {
   readonly available=signal(false);
   readonly error=signal('');
   readonly records=signal<AccessRecord[]>([]);
+  readonly accessLabel=signal<string | null>(null);
   constructor(){
     void this.refresh();
-    effect(()=>{const account=this.accounts.account();this.records.set([]);if(account)void this.loadRecords(account.accountId);});
+    effect(()=>{const account=this.accounts.account();this.records.set([]);this.accessLabel.set(null);if(account){void this.loadRecords(account.accountId);void this.loadAccessLabel(account.accountId);}});
   }
   async request<T>(path:string,body?:unknown,key?:string):Promise<T>{
     const headers:Record<string,string>={};
@@ -32,5 +33,6 @@ export class MembershipApi {
   }
   async refresh(){try{const plans=await this.request<PlanDefinition[]>('/membership/plans');if(!Array.isArray(plans)||!plans.length)throw new Error('Catalog unavailable');this.plans.set(plans);this.available.set(true);this.error.set('');}catch{this.available.set(false);this.error.set('Membership service unavailable. Displayed prices are reference only; purchases are disabled.');}}
   async loadRecords(owner:string){try{const records=await this.request<AccessRecord[]>('/account/access-records');if(this.accounts.account()?.accountId===owner)this.records.set(records);}catch{if(this.accounts.account()?.accountId===owner)this.error.set('Purchase records could not be loaded.');}}
-  async buy(planId:PlanId,key:string,replacesId?:string,expectedPriceCents?:number){const p=await this.request<{status:string;providerStatus:string}>('/account/purchases',{planId,replacesId:replacesId??null,chosenCourses:[],expectedPriceCents},key);const owner=this.accounts.account()?.accountId;if(owner){await this.loadRecords(owner);if(['succeeded','scheduled'].includes(p.status)){const account=await this.request<NonNullable<ReturnType<typeof this.accounts.account>>>('/auth/me');if(this.accounts.account()?.accountId===owner&&account.accountId===owner)this.accounts.account.set(account);}}return p;}
+  async loadAccessLabel(owner:string){try{const summary=await this.request<{label:string}>('/account/access-summary');if(this.accounts.account()?.accountId===owner && typeof summary?.label==='string')this.accessLabel.set(summary.label);}catch{if(this.accounts.account()?.accountId===owner)this.accessLabel.set(null);}}
+  async buy(planId:PlanId,key:string,replacesId?:string,expectedPriceCents?:number){const p=await this.request<{status:string;providerStatus:string}>('/account/purchases',{planId,replacesId:replacesId??null,chosenCourses:[],expectedPriceCents},key);const owner=this.accounts.account()?.accountId;if(owner){await this.loadRecords(owner);await this.loadAccessLabel(owner);if(['succeeded','scheduled'].includes(p.status)){const account=await this.request<NonNullable<ReturnType<typeof this.accounts.account>>>('/auth/me');if(this.accounts.account()?.accountId===owner&&account.accountId===owner)this.accounts.account.set(account);}}return p;}
 }

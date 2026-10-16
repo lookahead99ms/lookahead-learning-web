@@ -15,10 +15,16 @@ describe('Membership transport',()=>{
       {provide:ACCOUNT_FETCH,useValue:async(path:string,init?:RequestInit)=>{
         calls.push({path,init});
         if(path.endsWith('/auth/csrf'))return new Response(JSON.stringify({data:{headerName:'X-CSRF-TOKEN',token:'test-csrf'}}),{status:failCsrf?403:200});
-        const data=path.endsWith('/membership/plans')?PLANS:path.endsWith('/purchases')?{status:'pending',providerStatus:'requires_action'}:[];
+        const data=path.endsWith('/access-summary')?{label:'Regular · Learn'}:path.endsWith('/membership/plans')?PLANS:path.endsWith('/purchases')?{status:'pending',providerStatus:'requires_action'}:[];
         return new Response(JSON.stringify({data}));
       }}
     ]});
+  });
+  it('loads derived labels only for the current account and clears them on sign-out',async()=>{
+    account.set({accountId:'a'});const api=TestBed.inject(MembershipApi);
+    await api.loadAccessLabel('a');expect(api.accessLabel()).toBe('Regular · Learn');
+    account.set({accountId:'b'});api.accessLabel.set(null);await api.loadAccessLabel('a');expect(api.accessLabel()).toBeNull();
+    account.set(null);TestBed.tick();expect(api.accessLabel()).toBeNull();
   });
   it('loads server catalog and sends a session CSRF token and stable purchase key',async()=>{
     const api=TestBed.inject(MembershipApi);await api.refresh();

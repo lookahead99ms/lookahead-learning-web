@@ -1248,3 +1248,9 @@
 .builder-step .offering.read-only.unavailable {
   border-style: dashed;
 }
+
+.plan-lifecycle .draft-actions { justify-content: center; }
+@media (max-width: 640px) {
+  .plan-lifecycle .draft-actions { flex-direction: column; }
+  .plan-lifecycle .draft-actions button { width: 100%; }
+}

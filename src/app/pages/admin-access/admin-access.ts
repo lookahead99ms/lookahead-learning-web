@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
@@ -6,6 +6,7 @@ import { AuthorAdminMenu } from '../../core/author-workspace-nav/author-admin-me
 import { AuthorOutlineItem, AuthorWorkspaceNav } from '../../core/author-workspace-nav/author-workspace-nav';
 import { ACCOUNT_FETCH, StudyPlanAccount } from '../study-plan/study-plan-account';
 
+import { TestAccounts } from './test-accounts';
 import { AdminMemberships } from './admin-memberships';
 
 interface Assignment {
@@ -16,23 +17,27 @@ interface Recipient { accountId: string; username: string; displayName: string; 
 
 @Component({
   selector: 'app-admin-access',
-  imports: [AdminMemberships, FormsModule, RouterLink, PlatformHeader, AuthorAdminMenu, AuthorWorkspaceNav],
+  imports: [TestAccounts, AdminMemberships, FormsModule, RouterLink, PlatformHeader, AuthorAdminMenu, AuthorWorkspaceNav],
   templateUrl: './admin-access.html',
   styleUrl: './admin-access.css',
 })
 export class AdminAccessPage implements OnInit {
   private readonly transport = inject(ACCOUNT_FETCH);
   private readonly accounts = inject(StudyPlanAccount);
+  readonly canManage = computed(() => this.accounts.account()?.permissions?.manageAccess ?? this.accounts.account()?.authorPreview === true);
+  readonly canReadAssignments = computed(() => this.canManage() || this.accounts.account()?.permissions?.feedbackRole === 'co-author');
   readonly assignments = signal<Assignment[]>([]);
   readonly topics = signal<string[]>([]);
   readonly notice = signal('');
   readonly busy = signal(false);
   readonly recipient = signal<Recipient | null>(null);
   readonly roleOptions = [
+    { id: 'co-author', label: 'Co-author', description: 'Read all curriculum, admin documents, previews, Delivery Plan and People and access. Cannot publish, change roles or reset accounts.' },
     { id: 'tester', label: 'Tester', description: 'All courses and feedback submission. No admin pages or Delivery Plan.' },
     { id: 'reviewer', label: 'Reviewer', description: 'Admin documents and previews; read the Delivery Plan and mark reviewed stories Done.' },
     { id: 'admin', label: 'Admin', description: 'Triage feedback, read admin documents, create stories and move them to Review.' },
   ];
+  private static readonly testOutline: readonly AuthorOutlineItem[] = [{ label: 'Test accounts', href: '#test-accounts' }];
   private static readonly baseOutline: readonly AuthorOutlineItem[] = [
     { label: 'Choose a person', href: '#choose-person' },
     { label: 'Saved assignments', href: '#saved-assignments' },
@@ -44,7 +49,7 @@ export class AdminAccessPage implements OnInit {
   ];
   /** Stable arrays, so the outline only changes when the review section appears or goes. */
   outline(): readonly AuthorOutlineItem[] {
-    return this.draft ? AdminAccessPage.reviewOutline : AdminAccessPage.baseOutline;
+    return [...AdminAccessPage.testOutline, ...(this.canReadAssignments() ? (this.draft ? AdminAccessPage.reviewOutline : AdminAccessPage.baseOutline) : [])];
   }
   query = '';
   pendingEmail = '';
@@ -56,6 +61,7 @@ export class AdminAccessPage implements OnInit {
   }
   async ngOnInit() { await this.reload(); }
   async reload() {
+    if (!this.canReadAssignments()) return;
     this.busy.set(true);
     try {
       const [assignments, topics] = await Promise.all([
@@ -94,7 +100,7 @@ export class AdminAccessPage implements OnInit {
     return roles.map(role => this.roleOptions.find(option => option.id === role)?.label ?? role).join(', ') || 'No staff role';
   }
   async save() {
-    if (!this.draft || this.busy()) return;
+    if (!this.canManage() || !this.draft || this.busy()) return;
     this.busy.set(true); this.notice.set('');
     try {
       const saved = await this.request<Assignment>('/admin/access', this.draft);

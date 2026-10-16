@@ -6,7 +6,7 @@ import { inject } from '@angular/core';
 import { Router, Routes } from '@angular/router';
 import { PLATFORM_REVIEW_CLIENT } from './pages/admin-reviews/platform-review.model';
 import { ConnectedPlatformReviewClient } from './pages/admin-reviews/connected-platform-review-client';
-import { authorGuard, ownerGuard, staffGuard, deliveryGuard } from './core/author-access';
+import { authorGuard, accessGuard, staffGuard, deliveryGuard } from './core/author-access';
 import { SIGN_IN_CHALLENGE_CLIENT } from './pages/account/sign-in-challenge-client';
 import { SignInManagementApi } from './pages/account/sign-in-management-api';
 import type { DeliveryPlanPage } from './pages/delivery-plan/delivery-plan';
@@ -15,7 +15,7 @@ import { legacyInterviewSearchRedirect } from './content/search-route-compatibil
 import { retiredContentRedirect } from './content/retired-content-routes';
 
 export const routes: Routes = [
-  { path: 'admin/access', canActivate: [ownerGuard], loadComponent: () => import('./pages/admin-access/admin-access').then(page => page.AdminAccessPage) },
+  { path: 'admin/access', canActivate: [accessGuard], loadComponent: () => import('./pages/admin-access/admin-access').then(page => page.AdminAccessPage) },
   // DLV-209: plan catalog and purchase flow reference for authors and admins (staff).
   { path: 'admin/plans', canActivate: [staffGuard], loadComponent: () => import('./pages/admin-plans/admin-plans').then(page => page.AdminPlansPage) },
   // DLV-209: sale and price previews for authors and admins (this browser only; no server support yet).
