@@ -26,6 +26,7 @@ export interface TestAccountRow {
   lastChangedAt: string;
   legacyPresetAvailable: boolean;
   creatorId?: string;
+  canDelete?: boolean;
 }
 
 type History = { state: 'loading' } | { state: 'error' } | { state: 'ready'; items: AccessRecordView[] };
@@ -73,14 +74,18 @@ export class TestAccounts implements OnInit {
   readonly creating = signal(false);
   readonly createKey = signal<string|null>(null);
   readonly deleting = signal<TestAccountRow|null>(null);
+  readonly downgradingReal = signal<DirectoryRow | null>(null);
+  readonly deletingReal = signal<DirectoryRow | null>(null);
   createPassword = '';
   deleteConfirmation = '';
+  realConfirmation = '';
   readonly rows = signal<TestAccountRow[]>([]);
   readonly directoryAccounts = signal<DirectoryAccount[]>([]);
   readonly notice = signal('');
   readonly busy = signal(false);
   readonly loaded = signal(false);
   readonly selected = signal<TestAccountRow | null>(null);
+  readonly selectedKey = signal<string | null>(null);
   readonly pending = signal<{
     key: string;
     expectedRevision: number;
@@ -119,6 +124,7 @@ export class TestAccounts implements OnInit {
   readonly visible = computed(() =>
     this.inView().filter((row) => matchesFilter(row, this.query(), this.role())),
   );
+  readonly selectedRow = computed(() => this.visible().find((row) => row.key === this.selectedKey()) ?? null);
 
   ngOnInit() {
     void this.load();
@@ -146,6 +152,17 @@ export class TestAccounts implements OnInit {
     this.preset = 'scenario';
   }
 
+  choose(row: DirectoryRow) {
+    if (this.busy() || this.pending()) return;
+    this.selectedKey.set(this.selectedKey() === row.key ? null : row.key);
+    this.selected.set(null);
+    this.deleting.set(null);
+    this.downgradingReal.set(null);
+    this.deletingReal.set(null);
+    this.realConfirmation = '';
+    this.expanded.set(null);
+  }
+
   cancel() {
     this.selected.set(null);
     this.pending.set(null);
@@ -156,6 +173,7 @@ export class TestAccounts implements OnInit {
     this.busy.set(true);
     try {
       this.rows.set(await this.api.request<TestAccountRow[]>('/admin/test-accounts'));
+      this.selectedKey.set(null);
       if(this.view()==='test' && this.canCreate())this.allowance.set(await this.api.request('/admin/test-accounts/allowance'));
       this.notice.set('');
       this.directoryAccounts.set([]);
@@ -175,10 +193,7 @@ export class TestAccounts implements OnInit {
   }
 
   mayDelete(row: TestAccountRow): boolean {
-    if(row.roles.length || row.username==='author@lookahead.test')return false;
-    const account=this.accounts.account();
-    const role=account?.permissions?.feedbackRole ?? (account?.authorPreview?'owner':'user');
-    return role==='owner'||role==='co-author'||!!(account&&row.creatorId===account.accountId);
+    return row.canDelete === true;
   }
 
   async create() {
@@ -202,6 +217,30 @@ export class TestAccounts implements OnInit {
       this.deleting.set(null);this.deleteConfirmation='';this.busy.set(false);await this.load();
       this.notice.set(`${row.username} deleted. Its login and test data are gone; the creator's lifetime count remains.`);
     } catch {this.notice.set('Deletion was not confirmed. Retry the same account.');}
+    finally {this.busy.set(false);}
+  }
+
+  async downgradeReal() {
+    const row=this.downgradingReal();
+    if(!row?.accountId||row.isTest||row.isSelf||row.canDowngrade!==true||this.realConfirmation!=='DOWNGRADE'||this.busy())return;
+    this.busy.set(true);
+    try {
+      await this.api.request(`/admin/accounts/${row.accountId}/downgrade`,{confirmation:'DOWNGRADE'});
+      this.downgradingReal.set(null);this.realConfirmation='';this.busy.set(false);await this.load();
+      this.notice.set(`${row.name} now has free learner access. Purchase history remains.`);
+    } catch {this.notice.set('Downgrade was not confirmed. Refresh and retry.');}
+    finally {this.busy.set(false);}
+  }
+
+  async deleteReal() {
+    const row=this.deletingReal();
+    if(!row?.accountId||row.isTest||row.isSelf||row.canDelete!==true||this.realConfirmation!=='DELETE'||this.busy())return;
+    this.busy.set(true);
+    try {
+      await this.api.request(`/admin/accounts/${row.accountId}/delete`,{confirmation:'DELETE'});
+      this.deletingReal.set(null);this.realConfirmation='';this.busy.set(false);await this.load();
+      this.notice.set(`${row.name} deleted. Sign-in and learner plans are gone; purchase audit remains.`);
+    } catch {this.notice.set('Deletion was not confirmed. Refresh and retry the same account.');}
     finally {this.busy.set(false);}
   }
 

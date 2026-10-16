@@ -1404,7 +1404,11 @@ Ordinary seed runs preserve existing account data. Co-authors can read staff acc
 and purchase information but cannot change roles, reset accounts or grant upgrades.
 
 DLV-962 adds Create test account and protected Delete
-to this Local staff screen. A new learner receives a generated independent Local
+to this Local staff screen. Each row has one selection checkbox; the selected
+account's Details, Give access, Reset and permitted Delete actions appear
+together above the list. Domain calculates deletion permission: the owner may
+delete another managed account, co-authors may delete admins and learners,
+admins may delete learners, and learners may delete none. A new learner receives a generated independent Local
 username; staff supply an initial password that the UI clears after confirmed
 creation. The screen shows the current actor's remaining lifetime allowance and
 the creator of each generated learner. Deletion asks for the exact username,
@@ -1425,3 +1429,10 @@ Validation: `npm run test:coverage` enforces 85% line coverage; connected plan,
 role and reset changes also require the owning API and Local integration checks.
 
 People and access merges the owner-only paginated `/bff/api/v1/admin/accounts` directory with managed test-account metadata and existing assignments. Non-owner operators keep their existing server-permitted sources. Failed owner enumeration is disclosed as a partial list; current access and role remain separate.
+On the People tab, the Local/DEV owner may select a real account and confirm
+**Downgrade to free**, which revokes staff roles, grants and current or scheduled
+paid access while preserving the account, plans and purchase history. A
+separate **Delete learner** action appears for a free Local real account;
+it disables sign-in and erases plans and progress while retaining purchase
+audit. The owner's own account is protected. DEV deletion is absent because
+provider-owned identity disabling remains an operator action.

@@ -27,6 +27,7 @@ export interface DirectoryTestAccount {
   lastChangedAt: string;
   legacyPresetAvailable: boolean;
   creatorId?: string;
+  canDelete?: boolean;
 }
 
 /** The signed-in operator, from the account session. */
@@ -45,6 +46,7 @@ export interface DirectoryAccount {
   accountId: string; username: string; displayName: string; email: string | null;
   roles: string[]; testAccount: boolean; fullCurriculum: boolean;
   access: { label: string; labels: string[]; grantedCourseIds: string[] };
+  canDowngrade?: boolean; canDelete?: boolean;
 }
 
 export interface DirectoryRow {
@@ -61,6 +63,8 @@ export interface DirectoryRow {
   changedBy: string | null;
   changedAt: string | null;
   test: DirectoryTestAccount | null;
+  canDowngrade?: boolean;
+  canDelete?: boolean;
 }
 
 export const ROLE_FILTERS = ['Author (owner)', 'Co-author', 'Admin', 'Reviewer', 'Tester', 'Learner'] as const;
@@ -189,6 +193,7 @@ export function directoryRows(
       changedBy: test.lastChangedBy,
       changedAt: test.lastChangedAt,
       test,
+      canDelete: test.canDelete,
     });
     seen.add(test.accountId);
   }
@@ -210,6 +215,8 @@ export function directoryRows(
       changedBy: null,
       changedAt: null,
       test: null,
+      canDowngrade: false,
+      canDelete: false,
     });
     if (assignment.accountId) seen.add(assignment.accountId);
   }
@@ -229,6 +236,8 @@ export function directoryRows(
       changedBy: null,
       changedAt: null,
       test: null,
+      canDowngrade: false,
+      canDelete: false,
     });
   }
 
@@ -240,6 +249,8 @@ export function directoryRows(
       roles: roleNames(account.roles),
       access: plainAccess(account.access.labels, account.access.grantedCourseIds, titles, account.fullCurriculum),
       isTest: account.testAccount,
+      canDowngrade: account.canDowngrade,
+      canDelete: account.canDelete,
     };
     if (existing) Object.assign(existing, current);
     else rows.push({ ...current, key: account.accountId, accountId: account.accountId,

@@ -62,6 +62,32 @@
 
   <p class="notice" role="status">{{ notice() }}</p>
 
+  @if (selectedRow(); as chosen) {
+    <div class="selection-toolbar" aria-label="Selected account actions">
+      <p><strong>{{ chosen.name }}</strong> selected</p>
+      <div class="selection-actions">
+        @if (chosen.accountId && !chosen.pending) {
+          <button type="button" class="action-link" [attr.aria-expanded]="expanded() === chosen.key" [attr.aria-controls]="'history-' + chosen.key" (click)="toggle(chosen)">{{ expanded() === chosen.key ? 'Hide details' : 'Details' }}</button>
+        }
+        @if (canGive() && chosen.accountId && !chosen.pending && !chosen.isSelf) {
+          <button type="button" class="action-link" (click)="giveAccess.emit(chosen)">Give access</button>
+        }
+        @if (chosen.test && canReset()) {
+          <button type="button" class="action-link" [disabled]="busy() || !!pending()" (click)="select(chosen.test)">Reset</button>
+        }
+        @if (chosen.test && mayDelete(chosen.test)) {
+          <button type="button" class="action-link" [disabled]="busy()" (click)="deleting.set(chosen.test); deleteConfirmation=''">Delete</button>
+        }
+        @if (!chosen.isTest && chosen.canDowngrade && !chosen.isSelf) {
+          <button type="button" class="action-link" [disabled]="busy()" (click)="downgradingReal.set(chosen); realConfirmation=''">Downgrade to free</button>
+        }
+        @if (!chosen.isTest && chosen.canDelete && !chosen.isSelf) {
+          <button type="button" class="action-link" [disabled]="busy()" (click)="deletingReal.set(chosen); realConfirmation=''">Delete learner</button>
+        }
+      </div>
+    </div>
+  }
+
   @if (!loaded()) {
     <p class="empty">{{ testView ? 'Loading test accounts…' : 'Loading people…' }}</p>
   } @else if (!visible().length) {
@@ -71,16 +97,22 @@
       <caption class="visually-hidden">{{ testView ? 'Test accounts' : 'People' }}, their roles and their current access</caption>
       <thead>
         <tr>
+          <th scope="col">Select</th>
           <th scope="col">Person</th>
           <th scope="col">Role</th>
           <th scope="col">Access now</th>
           <th scope="col">Last changed</th>
-          <th scope="col"><span class="visually-hidden">Actions</span></th>
         </tr>
       </thead>
       <tbody>
         @for (row of visible(); track row.key) {
-          <tr [class.self]="row.isSelf" [attr.data-account]="row.name">
+          <tr [class.self]="row.isSelf" [class.selected-row]="selectedKey() === row.key" [attr.data-account]="row.name">
+            <td class="select-cell" data-label="Select">
+              <label>
+                <span class="visually-hidden">Select {{ row.name }}</span>
+                <input type="checkbox" [checked]="selectedKey() === row.key" [disabled]="busy() || !!pending()" (change)="choose(row)" />
+              </label>
+            </td>
             <th scope="row" data-label="Person">
               <span class="person">{{ row.name }}</span>
               @if (row.isSelf) {
@@ -102,35 +134,6 @@
               </ul>
             </td>
             <td data-label="Last changed">{{ changedText(row) }}</td>
-            <td class="row-actions">
-              @if (row.accountId && !row.pending) {
-                <button
-                  type="button"
-                  class="action-link"
-                  [attr.aria-expanded]="expanded() === row.key"
-                  [attr.aria-controls]="'history-' + row.key"
-                  (click)="toggle(row)"
-                >
-                  {{ expanded() === row.key ? 'Hide details' : 'Details' }}
-                </button>
-              }
-              @if (canGive() && row.accountId && !row.pending && !row.isSelf) {
-                <button type="button" class="action-link" (click)="giveAccess.emit(row)">Give access</button>
-              }
-              @if (row.test && canReset()) {
-                <button
-                  type="button"
-                  class="action-link"
-                  [disabled]="busy() || !!pending()"
-                  (click)="select(row.test)"
-                >
-                  Reset
-                </button>
-              }
-              @if (row.test && mayDelete(row.test)) {
-                <button type="button" class="action-link" [disabled]="busy()" (click)="deleting.set(row.test); deleteConfirmation=''">Delete</button>
-              }
-            </td>
           </tr>
           @if (expanded() === row.key) {
             <tr class="history-row">
@@ -206,6 +209,28 @@
       <div class="actions">
         <button type="button" class="action-button" [disabled]="busy() || deleteConfirmation !== row.username" (click)="deleteAccount()">Confirm deletion</button>
         <button type="button" class="action-link" [disabled]="busy()" (click)="deleting.set(null)">Cancel</button>
+      </div>
+    </div>
+  }
+  @if (!testView && downgradingReal(); as row) {
+    <div class="reset-panel">
+      <h3>Downgrade {{ row.name }} to a free learner</h3>
+      <p>This removes staff roles and course grants, and ends current or scheduled paid access. The account, study plans and purchase history remain.</p>
+      <label>Type DOWNGRADE to confirm <input [(ngModel)]="realConfirmation" autocomplete="off" /></label>
+      <div class="actions">
+        <button type="button" class="action-button" [disabled]="busy() || realConfirmation !== 'DOWNGRADE'" (click)="downgradeReal()">Confirm downgrade</button>
+        <button type="button" class="action-link" [disabled]="busy()" (click)="downgradingReal.set(null)">Cancel</button>
+      </div>
+    </div>
+  }
+  @if (!testView && deletingReal(); as row) {
+    <div class="reset-panel">
+      <h3>Delete learner {{ row.name }}</h3>
+      <p>This disables Local sign-in and erases saved plans and progress. Purchase history remains for audit. This cannot be undone.</p>
+      <label>Type DELETE to confirm <input [(ngModel)]="realConfirmation" autocomplete="off" /></label>
+      <div class="actions">
+        <button type="button" class="action-button" [disabled]="busy() || realConfirmation !== 'DELETE'" (click)="deleteReal()">Confirm deletion</button>
+        <button type="button" class="action-link" [disabled]="busy()" (click)="deletingReal.set(null)">Cancel</button>
       </div>
     </div>
   }
