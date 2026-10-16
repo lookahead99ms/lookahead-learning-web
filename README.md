@@ -384,6 +384,17 @@ narrow mobile. Ready-made plans keep their separate picker and adoption guard;
 the custom builder does not impose ready-made foundation policy on learner-selected
 plans.
 
+Signed-in free accounts see one Free starter plan and can inspect read-only
+samples of authored plans. The free schedule is fixed to seven days and one hour
+per day; other duration and hour choices remain visible but locked. Free starter
+and custom free-content drafts offer an explicit account save. Paid-plan samples
+remain preview-only. The matching Domain implementation enforces two active
+free-content plans, three successful deletions per rolling 21 days, and 15
+lifetime free-plan creations including imports. The working Local stack behind
+4301 runs this implementation as of 2026-10-16. The dashboard separates archived plans and
+confirms deletion. The proposed 30-day archive after paid access loss remains
+open DLV-938 work.
+
 ### Active Study Plan
 
 Open `/study-plan?plan=<id>` to continue a saved account plan. The page uses
@@ -542,11 +553,14 @@ legacy `/delivery` redirect, and is absent from the public landing footer.
 ### Local author previews
 
 For an account with the server-provided `authorPreview` capability, the **Admin**
-portion of the account menu has three links: **Previews** (`/admin/previews`),
-**Documentation** (`/admin/docs`) and **Delivery Plan**. Platform reviews are a
-tab of **Support and feedback** (`/support?view=reviews`); see below. The Documentation home lists eleven protected pages in three
+portion of the account menu lists, in this order, **Documentation** (`/admin/docs`),
+**Previews** (`/admin/previews`), **Delivery Plan** and **People and access**
+(`/admin/access`). Each link appears only when the server-provided permissions allow it
+(`previewDocuments`, `deliveryRead`, `manageAccess`; co-authors and feedback triagers
+also see People and access). Platform reviews are a
+tab of **Support and feedback** (`/support?view=reviews`); see below. The Documentation home lists twelve protected pages in three
 reader groups: Start here (Reviewer guide, Pages & screen names, Content access
-checks), How it works (Architecture, Sign-in & authentication, API reference) and
+checks, Plans and purchases with its Sales and prices sub-page), How it works (Architecture, Sign-in & authentication, API reference) and
 Run and release (Local setup & development, Release gates, AWS deployment,
 Operations, Production support). Each documentation page lists the same groups in the
 right-hand admin menu, below the Admin links; other admin pages show the Admin
@@ -802,8 +816,9 @@ The admin documentation routes (`/admin/review-guide`, `/admin/screen-names`, `/
 Previews, Documentation, Delivery Plan and every documentation page use three columns,
 including while the Delivery Plan is loading or unavailable. The left sidebar holds the
 page title and “On this page”, the headings in the current view. The right sidebar is the
-Admin menu (Previews, Documentation, Delivery Plan); on a documentation page it also lists
-the eleven reference pages in their three reader groups. The Delivery Plan hero sits in the
+Admin menu (Documentation, Previews, Delivery Plan, People and access, each shown only when
+permitted); on a documentation page it also lists the twelve reference pages in their three
+reader groups. The Delivery Plan hero sits in the
 centre column so both sidebars start beside it. Narrow viewports stack the Admin menu,
 then the outline, above the content. The desktop sidebars stay beside the article as the
 page scrolls. It scrolls independently only when its links are
@@ -1388,6 +1403,20 @@ an exact username confirmation; learner01–10 also offer the original fixture p
 Ordinary seed runs preserve existing account data. Co-authors can read staff access
 and purchase information but cannot change roles, reset accounts or grant upgrades.
 
+DLV-962 adds Create test account and protected Delete
+to this Local staff screen. Each row has one selection checkbox; the selected
+account's Details, Give access, Reset and permitted Delete actions appear
+together above the list. Domain calculates deletion permission: the owner may
+delete another managed account, co-authors may delete admins and learners,
+admins may delete learners, and learners may delete none. A new learner receives a generated independent Local
+username; staff supply an initial password that the UI clears after confirmed
+creation. The screen shows the current actor's remaining lifetime allowance and
+the creator of each generated learner. Deletion asks for the exact username,
+immediately disables login, erases that learner's plans and progress, and keeps
+the creation counted. The working Local stack behind 4301 runs this flow;
+the public browser-only demo remains separate. One author-created learner was
+verified with independent sign-in on 2026-10-16.
+
 When the API advertises `dated-plan-v1` and `ready-made-template-v1`, the planner
 saves reviewed ready-made templates with an explicit UTC start date. The plan detail
 shows server-computed lifecycle dates and supports completion, archive and dated
@@ -1400,3 +1429,10 @@ Validation: `npm run test:coverage` enforces 85% line coverage; connected plan,
 role and reset changes also require the owning API and Local integration checks.
 
 People and access merges the owner-only paginated `/bff/api/v1/admin/accounts` directory with managed test-account metadata and existing assignments. Non-owner operators keep their existing server-permitted sources. Failed owner enumeration is disclosed as a partial list; current access and role remain separate.
+On the People tab, the Local/DEV owner may select a real account and confirm
+**Downgrade to free**, which revokes staff roles, grants and current or scheduled
+paid access while preserving the account, plans and purchase history. A
+separate **Delete learner** action appears for a free Local real account;
+it disables sign-in and erases plans and progress while retaining purchase
+audit. The owner's own account is protected. DEV deletion is absent because
+provider-owned identity disabling remains an operator action.

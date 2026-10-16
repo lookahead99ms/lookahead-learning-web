@@ -939,6 +939,11 @@
   margin-bottom: 0;
   font-size: clamp(21px, 2vw, 25px);
 }
+.plan-card-access {
+  margin: 14px 0 0;
+  color: var(--text-subtle);
+  line-height: 1.5;
+}
 .plan-card-focus {
   margin-top: 22px;
   padding-top: 18px;
@@ -1052,6 +1057,73 @@
   margin-top: auto;
   min-height: 44px;
   width: 100%;
+}
+.plan-card-delete {
+  min-height: 44px;
+  width: 100%;
+  margin-top: 8px;
+}
+.plan-archive {
+  margin-top: 32px;
+}
+.plan-archive > p {
+  color: var(--text-subtle);
+}
+.plan-archive-list {
+  display: grid;
+  gap: 12px;
+}
+.plan-archive-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.plan-archive-item h3,
+.plan-archive-item p {
+  margin: 0;
+}
+.plan-archive-actions {
+  display: flex;
+  gap: 10px;
+}
+@media (max-width: 640px) {
+  .plan-archive-item,
+  .plan-archive-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .plan-archive-actions button {
+    width: 100%;
+  }
+}
+.plan-delete-dialog {
+  width: min(520px, calc(100vw - 32px));
+  max-height: 85dvh;
+  overflow: auto;
+  padding: clamp(18px, 4vw, 32px);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface-page);
+  color: var(--text-strong);
+}
+.plan-delete-dialog::backdrop {
+  background: rgb(8 25 31 / 0.55);
+  backdrop-filter: blur(6px);
+}
+.plan-delete-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 24px;
+}
+@media (max-width: 640px) {
+  .plan-delete-actions {
+    flex-direction: column;
+  }
+  .plan-delete-actions button {
+    width: 100%;
+  }
 }
 .plan-type-panel,
 .ready-made-panel {

@@ -31,6 +31,16 @@ export class MembershipApi {
     if(!response.ok)throw new Error(result.message??result.error?.message??'Membership service unavailable. Try again.');
     return result.data as T;
   }
+  async remove<T>(path:string):Promise<T>{
+    const csrf=await this.transport('/bff/api/v1/auth/csrf',{credentials:'same-origin',cache:'no-store'});
+    if(!csrf.ok)throw new Error('Session verification failed. Sign in again.');
+    const token=(await csrf.json()).data;
+    if(typeof token?.headerName!=='string'||typeof token?.token!=='string')throw new Error('Session verification failed.');
+    const response=await this.transport('/bff/api/v1'+path,{method:'DELETE',headers:{[token.headerName]:token.token},credentials:'same-origin',cache:'no-store'});
+    const result=await response.json();
+    if(!response.ok)throw new Error(result.message??result.error?.message??'Membership service unavailable. Try again.');
+    return result.data as T;
+  }
   async refresh(){try{const plans=await this.request<PlanDefinition[]>('/membership/plans');if(!Array.isArray(plans)||!plans.length)throw new Error('Catalog unavailable');this.plans.set(plans);this.available.set(true);this.error.set('');}catch{this.available.set(false);this.error.set('Membership service unavailable. Displayed prices are reference only; purchases are disabled.');}}
   async loadRecords(owner:string){try{const records=await this.request<AccessRecord[]>('/account/access-records');if(this.accounts.account()?.accountId===owner)this.records.set(records);}catch{if(this.accounts.account()?.accountId===owner)this.error.set('Purchase records could not be loaded.');}}
   async loadAccessLabel(owner:string){try{const summary=await this.request<{label:string}>('/account/access-summary');if(this.accounts.account()?.accountId===owner && typeof summary?.label==='string')this.accessLabel.set(summary.label);}catch{if(this.accounts.account()?.accountId===owner)this.accessLabel.set(null);}}
