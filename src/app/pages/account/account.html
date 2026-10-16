@@ -76,7 +76,7 @@
             <dl class="hero-stats">
               <div>
                 <dt>Membership</dt>
-                <dd>{{ membership(account).level }}</dd>
+                <dd>{{ membershipName(account) }}</dd>
               </div>
               @if (savedPlanCount() !== null) {
                 <div>

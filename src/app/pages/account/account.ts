@@ -9,7 +9,7 @@ import { AccountSettings } from './account-settings';
 import { ACCOUNT_SETTINGS_CLIENT } from './account-settings-client';
 import { AccountStudyPlans } from './account-study-plans';
 import { MembershipApi } from '../../content/membership-api';
-import { accountMembership } from './account-membership';
+import { accountMembership, membershipName } from './account-membership';
 import { ActiveSignIns } from './active-sign-ins';
 import { ACTIVE_SIGN_INS_CLIENT } from './active-sign-ins-client';
 import { SignInManagementApi } from './sign-in-management-api';
@@ -104,6 +104,7 @@ export class AccountPage {
     this.store.planSummariesState() === 'ready' ? this.store.plans().length : null,
   );
   private readonly membershipApi=inject(MembershipApi);
+  protected readonly membershipName = (account: Parameters<typeof membershipName>[0]) => membershipName(account, this.membershipApi.records());
   protected readonly membership = (account: Parameters<typeof accountMembership>[0]) => accountMembership(account,this.membershipApi.records());
   // The account rail takes the left edge, so the page statements and sidebars stay off this page.
   protected readonly sidebarContext: PageSidebarContextValue = { excluded: true };
