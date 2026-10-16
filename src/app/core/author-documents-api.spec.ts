@@ -86,6 +86,22 @@ describe('Private author-document boundary', () => {
     ])
       expect(() => parseAuthorDocument(withDownloads([bad]), 'operations-reference')).toThrow();
   });
+  it('accepts every sub-page document in a manifest larger than the menu groups', () => {
+    const publication = manifest();
+    const template = publication.documents[0];
+    const ids = ['aws-dev-plan', 'aws-dev-decisions', 'aws-dev-operations', 'aws-dev-permissions', 'aws-dev-budget', 'aws-dev-status',
+      'aws-dev-setup', 'aws-dev-workflow', 'aws-candidate-design', 'aws-candidate-files', 'aws-candidate-commands',
+      'aws-candidate-updates', 'authentication-walkthrough', 'support-runbooks'];
+    publication.documents = [template, ...ids.map((id) => ({
+      ...template, id, content: { ...template.content, href: `${root}${id}/${sha}/index.html` },
+    }))];
+    // 24 documents are published today; pad past the old 20-document ceiling.
+    for (let index = 0; publication.documents.length < 25; index++)
+      publication.documents.push({ ...template, id: `padding-${index}` });
+    for (const id of ids) expect(parseAuthorDocument(publication, id).href).toBe(`${root}${id}/${sha}/index.html`);
+    publication.documents = Array.from({ length: 41 }, (_, index) => ({ ...template, id: `doc-${index}` }));
+    expect(() => parseAuthorDocument(publication, 'aws-dev-plan')).toThrow();
+  });
   it('accepts the immutable Local setup document in the protected manifest', () => {
     const publication = manifest();
     publication.documents[0].id = 'local-development';

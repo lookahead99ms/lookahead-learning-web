@@ -62,13 +62,12 @@ li {
   max-width: 74ch;
   margin: 0;
 }
+/* DLV-937: a compact pill (.action-link). */
 .source-link {
-  min-height: 42px;
+  min-height: 40px;
   box-sizing: border-box;
-  padding: 11px 8px;
-  color: var(--warning);
-  font-size: 0.76rem;
-  font-weight: 800;
+  padding: 8px 14px;
+  font-size: 0.78rem;
   white-space: nowrap;
 }
 .source-attribution {

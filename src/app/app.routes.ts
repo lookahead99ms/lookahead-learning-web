@@ -6,7 +6,7 @@ import { inject } from '@angular/core';
 import { Router, Routes } from '@angular/router';
 import { PLATFORM_REVIEW_CLIENT } from './pages/admin-reviews/platform-review.model';
 import { ConnectedPlatformReviewClient } from './pages/admin-reviews/connected-platform-review-client';
-import { authorGuard, ownerGuard, staffGuard, deliveryGuard } from './core/author-access';
+import { authorGuard, accessGuard, staffGuard, deliveryGuard } from './core/author-access';
 import { SIGN_IN_CHALLENGE_CLIENT } from './pages/account/sign-in-challenge-client';
 import { SignInManagementApi } from './pages/account/sign-in-management-api';
 import type { DeliveryPlanPage } from './pages/delivery-plan/delivery-plan';
@@ -15,7 +15,11 @@ import { legacyInterviewSearchRedirect } from './content/search-route-compatibil
 import { retiredContentRedirect } from './content/retired-content-routes';
 
 export const routes: Routes = [
-  { path: 'admin/access', canActivate: [ownerGuard], loadComponent: () => import('./pages/admin-access/admin-access').then(page => page.AdminAccessPage) },
+  { path: 'admin/access', canActivate: [accessGuard], loadComponent: () => import('./pages/admin-access/admin-access').then(page => page.AdminAccessPage) },
+  // DLV-209: plan catalog and purchase flow reference for authors and admins (staff).
+  { path: 'admin/plans', canActivate: [staffGuard], loadComponent: () => import('./pages/admin-plans/admin-plans').then(page => page.AdminPlansPage) },
+  // DLV-209: sale and price previews for authors and admins (this browser only; no server support yet).
+  { path: 'admin/sales', canActivate: [staffGuard], loadComponent: () => import('./pages/admin-sales/admin-sales').then(page => page.AdminSalesPage) },
   { path: 'admin/content-access', canActivate: [staffGuard], loadComponent: () => import('./pages/author-content-access/author-content-access').then(page => page.AuthorContentAccess) },
   {
     path: 'admin/operations',
@@ -34,9 +38,23 @@ export const routes: Routes = [
       ['admin/screen-names', 'screen-names'],
       ['admin/access-checks', 'access-checks'],
       ['admin/authentication', 'authentication'],
+      ['admin/authentication-walkthrough', 'authentication-walkthrough'],
       ['admin/aws-deployment', 'aws-deployment'],
+      ['admin/aws-dev-plan', 'aws-dev-plan'],
+      ['admin/aws-dev-decisions', 'aws-dev-decisions'],
+      ['admin/aws-dev-operations', 'aws-dev-operations'],
+      ['admin/aws-dev-permissions', 'aws-dev-permissions'],
+      ['admin/aws-dev-budget', 'aws-dev-budget'],
+      ['admin/aws-dev-status', 'aws-dev-status'],
+      ['admin/aws-dev-setup', 'aws-dev-setup'],
+      ['admin/aws-dev-workflow', 'aws-dev-workflow'],
+      ['admin/aws-candidate-design', 'aws-candidate-design'],
+      ['admin/aws-candidate-files', 'aws-candidate-files'],
+      ['admin/aws-candidate-commands', 'aws-candidate-commands'],
+      ['admin/aws-candidate-updates', 'aws-candidate-updates'],
       ['admin/release-gates', 'release-gates'],
       ['admin/production-support', 'production-support'],
+      ['admin/support-runbooks', 'support-runbooks'],
     ] as const
   ).map(([path, authorDocument]) => ({
     path,
@@ -113,10 +131,71 @@ export const routes: Routes = [
     path: 'account',
     loadComponent: () => import('./pages/account/account').then((page) => page.AccountPage),
   },
+  // DLV-209: sample pricing (design only; checkout is not connected and nothing is charged).
+  // Everyone can see prices; buying needs an account, so Choose asks signed-out visitors to sign in.
+  {
+    path: 'pricing',
+    title: 'Pricing | LookAhead',
+    loadComponent: () => import('./pages/pricing/pricing').then((page) => page.PricingPage),
+  },
+  // DLV-937: the landing redesign candidates, kept for comparison; the home page below now uses preview 7.
+  {
+    path: 'preview/landing/1',
+    loadComponent: () =>
+      import('./pages/landing-previews/preview-1/preview-1').then((page) => page.LandingPreview1),
+  },
+  {
+    path: 'preview/landing/2',
+    loadComponent: () =>
+      import('./pages/landing-previews/preview-2/preview-2').then((page) => page.LandingPreview2),
+  },
+  {
+    path: 'preview/landing/3',
+    loadComponent: () =>
+      import('./pages/landing-previews/preview-3/preview-3').then((page) => page.LandingPreview3),
+  },
+  {
+    path: 'preview/landing/4',
+    loadComponent: () =>
+      import('./pages/landing-previews/preview-4/preview-4').then((page) => page.LandingPreview4),
+  },
+  {
+    path: 'preview/landing/5',
+    loadComponent: () =>
+      import('./pages/landing-previews/preview-5/preview-5').then((page) => page.LandingPreview5),
+  },
+  {
+    path: 'preview/landing/6',
+    loadComponent: () =>
+      import('./pages/landing-previews/preview-6/preview-6').then((page) => page.LandingPreview6),
+  },
+  {
+    path: 'preview/landing/7',
+    loadComponent: () =>
+      import('./pages/landing-previews/preview-7/preview-7').then((page) => page.LandingPreview7),
+  },
+  // DLV-209: the plans section is now on the home page itself.
+  { path: 'preview/landing/pricing', redirectTo: '/' },
+  // Staff-only mockups of header designs that point people to paid plans (user, 2026-10-15).
+  {
+    path: 'preview/header-plans',
+    canActivate: [staffGuard],
+    title: 'Header options for plans | LookAhead',
+    loadComponent: () =>
+      import('./pages/header-plans-preview/header-plans-preview').then(
+        (page) => page.HeaderPlansPreview,
+      ),
+  },
   {
     path: '',
     pathMatch: 'full',
     loadComponent: () => import('./pages/landing/landing').then((page) => page.Landing),
+  },
+  // DLV-942: every open and free unit, linked from the catalogs.
+  {
+    path: 'start-free',
+    loadComponent: () =>
+      import('./pages/start-free/start-free').then((page) => page.StartFreePage),
   },
   { path: 'learn', loadComponent: () => import('./pages/learn/learn').then((page) => page.Learn) },
   { path: 'grow', loadComponent: () => import('./pages/grow/grow').then((page) => page.Grow) },

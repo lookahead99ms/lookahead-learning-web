@@ -1,0 +1,31 @@
+<section id="pricing" class="home-pricing" tabindex="-1" aria-labelledby="pricing-title">
+  <p class="eyebrow">Plans and pricing</p>
+  <h2 id="pricing-title" data-sidebar-label="Pricing">Start free. Unlock what you need.</h2>
+  <p class="lede">
+    Open lessons need no account. Pick a yearly plan for the catalogs you want. Nothing renews
+    automatically.
+  </p>
+  <ul class="cards">
+    @for (card of cards(); track card.id) {
+      <li class="card" [class.sale]="!!card.greeting" [attr.data-plan]="card.id">
+        <h3>{{ card.name }}</h3>
+        @if (card.greeting) {
+          <p class="greeting">{{ card.greeting }}</p>
+        }
+        <p class="price"><span class="amount">{{ card.amount }}</span> <span class="period">{{ card.period }}</span></p>
+        @if (card.comparedWith) {
+          <p class="compared">{{ card.comparedWith }}</p>
+        }
+        <p class="includes">{{ card.includes }}</p>
+      </li>
+    }
+  </ul>
+  <p class="passes">
+    Preparing for interviews? <strong>Interview Sprint</strong> opens everything for 100 days for
+    {{ sprintPrice() }}, paid once.
+  </p>
+  <div class="actions">
+    <a class="action-button" routerLink="/pricing">See all plans</a>
+    <a class="action-link" routerLink="/start-free">Start free</a>
+  </div>
+</section>

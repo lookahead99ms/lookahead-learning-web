@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Mónica holds her phone; the product page arrives from the edge server with the jacket photo first, she picks size M, taps Add to cart, the request goes to the server and comes back, and the cart shows 1 with a check">
+<style>
+.fsdm-t{font-family:system-ui,sans-serif;font-weight:700;fill:var(--scene-ink,#102a33)}
+.fsdm-m{font-family:system-ui,sans-serif;font-weight:600;fill:var(--scene-muted,#536970)}
+.fsdm-a{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-6.6s;animation-timing-function:ease-in-out}
+@media (prefers-reduced-motion: reduce){.fsdm-a{animation-play-state:paused!important}}
+.fsdm-in{animation-name:fsdm-in}
+@keyframes fsdm-in{0%{opacity:0;transform:translate(0,0)}3%{opacity:1}16%{opacity:1;transform:translate(-48px,0)}19%,100%{opacity:0;transform:translate(-48px,0)}}
+.fsdm-photo{animation-name:fsdm-photo}
+@keyframes fsdm-photo{0%,16%{opacity:0}21%,96%{opacity:1}100%{opacity:0}}
+.fsdm-sel{animation-name:fsdm-sel}
+@keyframes fsdm-sel{0%,32%{opacity:0}36%,96%{opacity:1}100%{opacity:0}}
+.fsdm-btn{animation-name:fsdm-btn;transform-box:fill-box;transform-origin:center}
+@keyframes fsdm-btn{0%,50%{transform:scale(1)}53%{transform:scale(.92)}57%,100%{transform:scale(1)}}
+.fsdm-out{animation-name:fsdm-out}
+@keyframes fsdm-out{0%,55%{opacity:0;transform:translate(0,0)}57%{opacity:1}67%{opacity:1;transform:translate(48px,0)}69%,100%{opacity:0;transform:translate(48px,0)}}
+.fsdm-back{animation-name:fsdm-back}
+@keyframes fsdm-back{0%,69%{opacity:0;transform:translate(0,0)}71%{opacity:1}79%{opacity:1;transform:translate(-48px,0)}81%,100%{opacity:0;transform:translate(-48px,0)}}
+.fsdm-ok{animation-name:fsdm-ok}
+@keyframes fsdm-ok{0%,79%{opacity:0;transform:translateY(6px)}83%,96%{opacity:1;transform:none}100%{opacity:0}}
+.fsdm-zero{animation-name:fsdm-zero}
+@keyframes fsdm-zero{0%,79%{opacity:1}82%,97%{opacity:0}100%{opacity:1}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<ellipse cx="44" cy="166" rx="34" ry="5" fill="var(--scene-ink,#102a33)" opacity=".08"/>
+<ellipse cx="128" cy="170" rx="50" ry="5" fill="var(--scene-ink,#102a33)" opacity=".1"/>
+<ellipse cx="268" cy="150" rx="40" ry="6" fill="var(--scene-ink,#102a33)" opacity=".1"/>
+<circle cx="44" cy="76" r="15" fill="var(--scene-accent,#006c73)"/>
+<path d="M14 166 C14 116 74 116 74 166 Z" fill="var(--scene-accent,#006c73)"/>
+<rect x="86" y="18" width="84" height="150" rx="12" fill="var(--scene-ink,#102a33)" opacity=".86"/>
+<rect x="91" y="26" width="74" height="134" rx="6" fill="var(--scene-card,#fff)"/>
+<rect x="91" y="26" width="74" height="12" rx="3" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M150 29 h9 l-1.5 6 h-6 z" fill="none" stroke="var(--scene-ink,#102a33)" stroke-width="1.4"/>
+<circle cx="160" cy="29" r="5" fill="var(--scene-accent,#006c73)"/>
+<text x="160" y="32" text-anchor="middle" font-size="8" class="fsdm-a fsdm-zero" style="fill:var(--scene-card,#fff)" font-family="system-ui,sans-serif" font-weight="700">0</text>
+<text x="160" y="32" text-anchor="middle" font-size="8" class="fsdm-a fsdm-ok" style="fill:var(--scene-card,#fff)" font-family="system-ui,sans-serif" font-weight="700">1</text>
+<rect x="96" y="42" width="64" height="52" rx="4" fill="var(--scene-accent-soft,#dcefed)"/>
+<g class="fsdm-a fsdm-photo">
+<path d="M116 52 l12 -4 l12 4 l8 12 l-6 4 l-3 -5 v25 h-22 v-25 l-3 5 l-6 -4 z" fill="var(--scene-link,#245a88)"/>
+<path d="M128 48 v39" stroke="var(--scene-card,#fff)" stroke-width="1.4"/>
+</g>
+<rect x="96" y="99" width="40" height="5" rx="2.5" fill="var(--scene-line,#cfdfdc)"/>
+<text x="96" y="118" font-size="11" class="fsdm-t">89,95 €</text>
+<g>
+<rect x="96" y="124" width="18" height="14" rx="3" fill="none" stroke="var(--scene-line,#cfdfdc)" stroke-width="1.4"/>
+<rect x="119" y="124" width="18" height="14" rx="3" fill="none" stroke="var(--scene-line,#cfdfdc)" stroke-width="1.4"/>
+<rect x="142" y="124" width="18" height="14" rx="3" fill="none" stroke="var(--scene-line,#cfdfdc)" stroke-width="1.4"/>
+<text x="105" y="134" text-anchor="middle" font-size="9" class="fsdm-m">S</text>
+<text x="128" y="134" text-anchor="middle" font-size="9" class="fsdm-m">M</text>
+<text x="151" y="134" text-anchor="middle" font-size="9" class="fsdm-m">L</text>
+<rect class="fsdm-a fsdm-sel" x="118" y="123" width="20" height="16" rx="4" fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="2.4"/>
+</g>
+<rect class="fsdm-a fsdm-btn" x="96" y="143" width="64" height="12" rx="6" fill="var(--scene-accent,#006c73)"/>
+<path d="M178 92 H226" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="4 4"/>
+<circle class="fsdm-a fsdm-in" cx="226" cy="92" r="5" fill="var(--scene-link,#245a88)"/>
+<circle class="fsdm-a fsdm-out" cx="178" cy="92" r="5" fill="var(--scene-accent,#006c73)"/>
+<circle class="fsdm-a fsdm-back" cx="226" cy="92" r="5" fill="var(--scene-good,#1f7a4d)"/>
+<path d="M236 52 l12 -8 h50 l-12 8 z" fill="var(--scene-line,#cfdfdc)"/>
+<path d="M286 52 l12 -8 v92 l-12 8 z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<rect x="236" y="52" width="50" height="92" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="1.6"/>
+<rect x="242" y="62" width="38" height="9" rx="2" fill="var(--scene-line,#cfdfdc)"/>
+<rect x="242" y="78" width="38" height="9" rx="2" fill="var(--scene-line,#cfdfdc)"/>
+<rect x="242" y="94" width="38" height="9" rx="2" fill="var(--scene-line,#cfdfdc)"/>
+<circle cx="275" cy="66.5" r="2" fill="var(--scene-good,#1f7a4d)"/>
+<circle cx="275" cy="82.5" r="2" fill="var(--scene-good,#1f7a4d)"/>
+<circle cx="275" cy="98.5" r="2" fill="var(--scene-good,#1f7a4d)"/>
+<text x="261" y="128" text-anchor="middle" font-size="11" class="fsdm-m">edge</text>
+<g class="fsdm-a fsdm-ok">
+<circle cx="182" cy="140" r="10" fill="var(--scene-good,#1f7a4d)"/>
+<path d="M177 140 l3.5 3.5 l6.5 -7" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2.2"/>
+</g>
+</svg>

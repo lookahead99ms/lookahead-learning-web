@@ -52,7 +52,6 @@
   line-height: 1.75;
   overflow-wrap: anywhere;
 }
-.focus-studio .source-link,
 .focus-studio .source-attribution {
   display: inline-block;
   margin-top: 12px;
@@ -62,7 +61,9 @@
   color: var(--text-subtle);
 }
 .focus-studio .source-link {
-  color: var(--accent-link);
+  margin-top: 12px;
+  white-space: normal;
+  font-size: 12px;
 }
 .focus-studio .contract-grid {
   grid-template-columns: minmax(0, 1fr);

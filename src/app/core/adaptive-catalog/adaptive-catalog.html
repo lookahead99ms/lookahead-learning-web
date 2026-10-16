@@ -43,6 +43,12 @@
                   {{ action.label }}
                 </a>
               }
+              <!-- DLV-942: only when this path has published open or free units. -->
+              @if (pathHasFreeUnits()) {
+                <a class="catalog-secondary-action catalog-start-free-action" routerLink="/start-free">
+                  Start free
+                </a>
+              }
             </div>
           </div>
           <dl
@@ -130,6 +136,8 @@
               @for (item of groupItems; track item.id) {
                 @let titleId = config().path + '-course-' + item.id + '-title';
                 @let descriptionId = config().path + '-course-' + item.id + '-description';
+                @let freeLessons = freeLessonsFor(item);
+                @let freeId = config().path + '-course-' + item.id + '-free';
                 <li class="catalog-course-item">
                   @if (item.available !== false) {
                     <a
@@ -138,7 +146,11 @@
                       [id]="item.id"
                       [routerLink]="['/', config().path, item.id]"
                       [attr.aria-labelledby]="titleId"
-                      [attr.aria-describedby]="item.description ? descriptionId : null"
+                      [attr.aria-describedby]="
+                        [item.description ? descriptionId : '', freeLessons ? freeId : '']
+                          .join(' ')
+                          .trim() || null
+                      "
                     >
                       <app-card-scene
                         card
@@ -157,6 +169,10 @@
                             [id]="descriptionId"
                             [innerHTML]="descriptionFor(item)"
                           ></p>
+                        }
+                        <!-- DLV-942: plain text, only when the course has open or free units. -->
+                        @if (freeLessons) {
+                          <p class="catalog-course-free" [id]="freeId">{{ freeLessons }}</p>
                         }
                         @if (
                           (item.reviewStatus ?? 'reviewed') !== 'reviewed' ||

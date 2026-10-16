@@ -159,7 +159,7 @@
       <p>{{ fixture().explanation }}</p>
     </section>
     @if (problem().practice.sourceUrl; as url) {
-      <a [href]="url" target="_blank" rel="noopener noreferrer"
+      <a class="action-link source-action" [href]="url" target="_blank" rel="noopener noreferrer"
         >Original problem source (opens in a new tab)</a
       >
     }

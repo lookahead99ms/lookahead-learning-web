@@ -1,0 +1,43 @@
+<ul class="access-records" aria-label="Your plans and passes">
+  @for (record of records(); track record.id) {
+    <li class="access-record" [attr.data-status]="record.status">
+      <div class="record-heading">
+        <h3>{{ record.name }}</h3>
+        @if (record.ends) {
+          <p class="record-ends">{{ record.ends }}</p>
+        }
+      </div>
+      <dl class="record-facts">
+        <div><dt>Includes</dt><dd>{{ record.includes }}</dd></div>
+        <div><dt>Length</dt><dd>{{ record.duration }}</dd></div>
+        <div>
+          <dt>Paid</dt>
+          <dd>
+            {{ record.paid }}
+            @if (record.discount) {
+              <span class="record-discount">({{ record.discount }})</span>
+            }
+          </dd>
+        </div>
+        @if (record.started) {
+          <div><dt>Started</dt><dd>{{ record.started }}</dd></div>
+        }
+      </dl>
+      @if (record.changeFrom) {
+        <p class="record-note">{{ record.changeFrom }}</p>
+      }
+      @if (record.canRenew || record.upgrades.length) {
+        <div class="record-actions">
+          @if (record.canRenew) {
+            <a class="action-link" routerLink="/pricing" [attr.aria-label]="'Renew ' + record.name">Renew</a>
+          }
+          @if (record.upgrades.length) {
+            <a class="action-link" routerLink="/pricing" [attr.aria-label]="'Upgrade ' + record.name + ' to ' + record.upgrades.join(' or ')">
+              Upgrade to {{ record.upgrades.join(' or ') }}
+            </a>
+          }
+        </div>
+      }
+    </li>
+  }
+</ul>

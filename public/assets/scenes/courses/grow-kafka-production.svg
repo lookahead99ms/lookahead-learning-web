@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A producer writes an event to partition p2 of a topic, the consumer group member that owns p2 fails on it, and the event moves to a retry topic and then to the dead-letter topic while the other partitions keep flowing">
+<style>
+.gkp-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.gkp-tm { font-family: ui-monospace, Menlo, monospace; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.gkp-sh { fill: var(--scene-ink, #102a33); opacity: .08; }
+.gkp-slab { fill: var(--scene-ink, #102a33); opacity: .14; }
+.gkp-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 2; }
+.gkp-ln { fill: var(--scene-line, #cfdfdc); }
+.gkp-soft { fill: var(--scene-accent-soft, #dcefed); }
+.gkp-acc { fill: var(--scene-accent, #006c73); }
+.gkp-good { fill: var(--scene-good, #1f7a4d); }
+.gkp-bad { fill: var(--scene-bad, #b3261e); }
+.gkp-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 2; stroke-dasharray: 4 5; }
+.gkp-x { fill: none; stroke: var(--scene-card, #ffffff); stroke-width: 2; stroke-linecap: round; }
+
+.gkp-m1 { animation: gkp-kf-m1 8s ease-in-out infinite; }
+@keyframes gkp-kf-m1 { 0% { transform: translate(0, 0); opacity: 0; } 3% { opacity: 1; } 16% { transform: translate(11px, 17px); opacity: 1; } 18%, 100% { transform: translate(11px, 17px); opacity: 0; } }
+.gkp-new { animation: gkp-kf-new 8s infinite; }
+@keyframes gkp-kf-new { 0%, 17% { opacity: 0; } 21%, 95% { opacity: 1; } 100% { opacity: 0; } }
+.gkp-m2 { animation: gkp-kf-m2 8s ease-in-out infinite; }
+@keyframes gkp-kf-m2 { 0%, 24% { transform: translate(0, 0); opacity: 0; } 25% { opacity: 1; } 34% { transform: translate(26px, 0); opacity: 1; } 35%, 100% { transform: translate(26px, 0); opacity: 0; } }
+.gkp-fail { animation: gkp-kf-fail 8s infinite; }
+@keyframes gkp-kf-fail { 0%, 35% { opacity: 0; } 38%, 95% { opacity: 1; } 100% { opacity: 0; } }
+.gkp-m3 { animation: gkp-kf-m3 8s linear infinite; }
+@keyframes gkp-kf-m3 { 0%, 41% { transform: translate(0, 0); opacity: 0; } 42% { opacity: 1; } 45% { transform: translate(0, 16px); } 54% { transform: translate(-90px, 16px); } 57% { transform: translate(-90px, 28px); opacity: 1; } 58%, 100% { transform: translate(-90px, 28px); opacity: 0; } }
+.gkp-retry { animation: gkp-kf-retry 8s infinite; }
+@keyframes gkp-kf-retry { 0%, 56% { opacity: 0; transform: translateY(-6px); } 60%, 95% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; } }
+.gkp-m4 { animation: gkp-kf-m4 8s ease-in-out infinite; }
+@keyframes gkp-kf-m4 { 0%, 63% { transform: translate(0, 0); opacity: 0; } 64% { opacity: 1; } 71% { transform: translate(28px, 0); opacity: 1; } 72%, 100% { transform: translate(28px, 0); opacity: 0; } }
+.gkp-dead { animation: gkp-kf-dead 8s infinite; }
+@keyframes gkp-kf-dead { 0%, 70% { opacity: 0; transform: translateY(-6px); } 74%, 95% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; } }
+.gkp-ok0 { animation: gkp-kf-ok 8s linear infinite; }
+.gkp-ok1 { animation: gkp-kf-ok1 8s linear infinite; }
+@keyframes gkp-kf-ok { 0%, 4% { transform: translate(0, 0); opacity: 0; } 6% { opacity: 1; } 18% { transform: translate(26px, 0); opacity: 1; } 20%, 100% { transform: translate(26px, 0); opacity: 0; } }
+@keyframes gkp-kf-ok1 { 0%, 46% { transform: translate(0, 0); opacity: 0; } 48% { opacity: 1; } 60% { transform: translate(26px, 0); opacity: 1; } 62%, 100% { transform: translate(26px, 0); opacity: 0; } }
+
+.gkp-m1, .gkp-new, .gkp-m2, .gkp-fail, .gkp-m3, .gkp-retry, .gkp-m4, .gkp-dead, .gkp-ok0, .gkp-ok1 { animation-delay: -6.4s; }
+@media (prefers-reduced-motion: reduce) { .gkp-m1, .gkp-new, .gkp-m2, .gkp-fail, .gkp-m3, .gkp-retry, .gkp-m4, .gkp-dead, .gkp-ok0, .gkp-ok1 { animation-play-state: paused; } }
+</style>
+<rect x="0" y="0" width="320" height="180" rx="12" fill="var(--scene-card, #ffffff)"/>
+<defs>
+  <g id="gkp-log">
+    <rect class="gkp-slab" x="84" y="3" width="124" height="26" rx="5"/>
+    <rect class="gkp-box" x="84" y="0" width="124" height="26" rx="5"/>
+    <rect class="gkp-soft" x="110" y="5" width="14" height="16" rx="2"/>
+    <rect class="gkp-soft" x="128" y="5" width="14" height="16" rx="2"/>
+    <rect class="gkp-soft" x="146" y="5" width="14" height="16" rx="2"/>
+    <rect class="gkp-soft" x="164" y="5" width="14" height="16" rx="2"/>
+  </g>
+  <g id="gkp-member">
+    <path class="gkp-ln" d="M240 0 L245 -5 H301 L296 0 Z"/>
+    <path class="gkp-slab" d="M296 0 L301 -5 V17 L296 22 Z"/>
+    <rect class="gkp-box" x="240" y="0" width="56" height="22" rx="3"/>
+    <rect class="gkp-ln" x="247" y="8" width="28" height="6" rx="3"/>
+  </g>
+</defs>
+
+<!-- producer -->
+<ellipse class="gkp-sh" cx="40" cy="124" rx="28" ry="4"/>
+<path class="gkp-ln" d="M14 62 L22 54 H62 L54 62 Z"/>
+<path class="gkp-slab" d="M54 62 L62 54 V108 L54 116 Z"/>
+<rect class="gkp-box" x="14" y="62" width="40" height="54" rx="3"/>
+<rect class="gkp-ln" x="20" y="72" width="20" height="5" rx="2.5"/><circle class="gkp-good" cx="46" cy="74.5" r="2.5"/>
+<rect class="gkp-ln" x="20" y="86" width="20" height="5" rx="2.5"/><circle class="gkp-good" cx="46" cy="88.5" r="2.5"/>
+<rect class="gkp-ln" x="20" y="100" width="20" height="5" rx="2.5"/><circle class="gkp-good" cx="46" cy="102.5" r="2.5"/>
+<path class="gkp-wire" d="M62 84 C74 84 72 33 84 33 M62 84 C72 84 74 67 84 67 M62 84 C72 84 74 101 84 101"/>
+
+<!-- topic: three partition logs -->
+<ellipse class="gkp-sh" cx="146" cy="124" rx="64" ry="4"/>
+<use href="#gkp-log" y="20"/>
+<use href="#gkp-log" y="54"/>
+<use href="#gkp-log" y="88"/>
+<text class="gkp-tm" x="91" y="37" font-size="11">p0</text>
+<text class="gkp-tm" x="91" y="71" font-size="11">p1</text>
+<text class="gkp-tm" x="91" y="105" font-size="11">p2</text>
+<rect class="gkp-soft" x="182" y="25" width="14" height="16" rx="2"/>
+<rect class="gkp-soft" x="182" y="59" width="14" height="16" rx="2"/>
+<rect class="gkp-acc gkp-new" x="182" y="93" width="14" height="16" rx="2"/>
+<g class="gkp-m1"><rect class="gkp-acc" x="60" y="80" width="12" height="8" rx="2"/></g>
+
+<!-- consumer group: one member per partition -->
+<rect x="228" y="10" width="84" height="110" rx="10" fill="none" stroke="var(--scene-accent, #006c73)" stroke-width="1.5" stroke-dasharray="4 4"/>
+<path class="gkp-wire" d="M208 33 H238 M208 67 H238 M208 101 H238"/>
+<g class="gkp-ok0"><circle class="gkp-good" cx="210" cy="33" r="3.5"/></g>
+<g class="gkp-ok1"><circle class="gkp-good" cx="210" cy="67" r="3.5"/></g>
+<g class="gkp-m2"><rect class="gkp-acc" x="208" y="97" width="12" height="8" rx="2"/></g>
+<use href="#gkp-member" y="22"/>
+<use href="#gkp-member" y="56"/>
+<use href="#gkp-member" y="90"/>
+<circle class="gkp-good" cx="287" cy="33" r="2.5"/>
+<circle class="gkp-good" cx="287" cy="67" r="2.5"/>
+<circle class="gkp-good" cx="287" cy="101" r="2.5"/>
+<g class="gkp-fail">
+  <circle class="gkp-bad" cx="287" cy="101" r="2.5"/>
+  <circle class="gkp-bad" cx="302" cy="90" r="8"/>
+  <path class="gkp-x" d="M299 87 l6 6 M305 87 l-6 6"/>
+</g>
+
+<!-- retry topic, then the dead-letter topic -->
+<path class="gkp-wire" d="M256 112 V128 H166 V140"/>
+<path class="gkp-wire" d="M202 156 H232"/>
+<g class="gkp-m3"><rect class="gkp-bad" x="250" y="110" width="12" height="8" rx="2"/></g>
+<g class="gkp-m4"><rect class="gkp-bad" x="200" y="152" width="12" height="8" rx="2"/></g>
+
+<ellipse class="gkp-sh" cx="166" cy="172" rx="38" ry="3.5"/>
+<rect class="gkp-box" x="142" y="138" width="12" height="16" rx="2"/>
+<g class="gkp-retry"><rect class="gkp-box" x="158" y="136" width="12" height="18" rx="2" style="stroke: var(--scene-bad, #b3261e)"/><rect class="gkp-bad" x="158" y="136" width="12" height="4" rx="2"/></g>
+<rect class="gkp-slab" x="130" y="149" width="72" height="20" rx="5"/>
+<rect class="gkp-box" x="130" y="146" width="72" height="20" rx="5"/>
+<text class="gkp-t" x="166" y="160" font-size="11" text-anchor="middle">retry</text>
+
+<ellipse class="gkp-sh" cx="268" cy="172" rx="40" ry="3.5"/>
+<rect class="gkp-box" x="242" y="138" width="12" height="16" rx="2"/>
+<rect class="gkp-box" x="256" y="140" width="12" height="14" rx="2"/>
+<g class="gkp-dead"><rect class="gkp-box" x="272" y="136" width="12" height="18" rx="2" style="stroke: var(--scene-bad, #b3261e)"/><rect class="gkp-bad" x="272" y="136" width="12" height="4" rx="2"/></g>
+<rect class="gkp-slab" x="232" y="149" width="72" height="20" rx="5"/>
+<rect class="gkp-box" x="232" y="146" width="72" height="20" rx="5"/>
+<text class="gkp-t" x="268" y="160" font-size="11" text-anchor="middle">dead letter</text>
+</svg>

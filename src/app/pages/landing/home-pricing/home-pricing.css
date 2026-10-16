@@ -1,0 +1,132 @@
+:host {
+  display: block;
+}
+.home-pricing {
+  margin: 0 0 clamp(28px, 3vw, 48px);
+  padding: clamp(28px, 3vw, 48px);
+  border: 1px solid var(--platform-edge-soft, var(--line));
+  border-radius: 32px;
+  background: var(--home-paths-block, var(--surface));
+  scroll-margin-top: 90px;
+}
+.home-pricing:focus {
+  outline: none;
+}
+.eyebrow {
+  margin: 0 0 4px;
+  color: var(--accent-strong);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+h2 {
+  width: fit-content;
+  margin: 0 auto 10px;
+  background: var(--home-grad-text, var(--text-strong));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font:
+    800 clamp(28px, 2.8vw, 46px)/1.08 'Avenir Next',
+    'Segoe UI',
+    system-ui,
+    sans-serif;
+  letter-spacing: -0.04em;
+}
+.eyebrow,
+.lede,
+.passes {
+  text-align: center;
+}
+.lede {
+  max-width: 62ch;
+  margin: 0 auto 22px;
+  line-height: 1.6;
+}
+.cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0 0 18px;
+  padding: 0;
+  list-style: none;
+}
+.card {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+}
+.card.sale {
+  border: 2px solid var(--accent-strong);
+}
+h3 {
+  margin: 0;
+  color: var(--text-strong);
+  font-size: 17px;
+}
+.greeting {
+  margin: 0;
+  color: var(--accent-strong);
+  font-weight: 750;
+}
+.price {
+  margin: 4px 0 0;
+}
+.amount {
+  color: var(--text-strong);
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+.period,
+.compared,
+.includes {
+  color: var(--text-subtle);
+  font-size: 14px;
+}
+.compared,
+.includes {
+  margin: 0;
+}
+.includes {
+  color: var(--text-strong);
+  font-weight: 650;
+}
+.passes {
+  margin: 0 0 18px;
+  line-height: 1.6;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px 14px;
+}
+@media (max-width: 980px) {
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 520px) {
+  .cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .home-pricing {
+    border-radius: 22px;
+  }
+}
+/* Button placement rule on phones: actions stack full width, primary on top. */
+@media (max-width: 560px) {
+  .actions {
+    flex-direction: column;
+  }
+  .actions > * {
+    width: 100%;
+  }
+}

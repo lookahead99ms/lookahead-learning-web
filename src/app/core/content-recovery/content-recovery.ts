@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { safeAccountReturn } from '../../pages/account/account-navigation';
+import { CatalogId, plansIncluding } from '../../content/membership-plans';
 
 export type RecoveryKind = 'sign-in' | 'locked' | 'planned' | 'temporary' | 'missing';
 export interface RecoveryPreview {
@@ -72,6 +73,24 @@ export class ContentRecovery {
         missing: 'The link may be out of date. Go back or explore from Home.',
       })[this.kind()],
   );
+  /**
+   * DLV-209: for premium content, the plans that include its catalog (read from the address,
+   * /learn/... -> Learn). Everyone may see prices (user, 2026-10-15): signed-out visitors as well as
+   * signed-in learners without access; buying still needs an account. Never shown for temporary,
+   * missing or planned content.
+   */
+  protected readonly includedIn = computed(() => {
+    if (!this.locked() || !this.preview().premium) return null;
+    const catalog = (this.destination() || this.router.url).split(/[?#]/, 1)[0].split('/')[1];
+    const plans = ['learn', 'grow', 'blaze'].includes(catalog)
+      ? plansIncluding(catalog as CatalogId)
+      : null;
+    if (!plans) return null;
+    const names = plans.names.length < 2
+      ? plans.names[0]
+      : `${plans.names.slice(0, -1).join(', ')} and ${plans.names.at(-1)}`;
+    return `Included in ${names}, from ${plans.from}.`;
+  });
   constructor() {
     afterNextRender(() => this.openDialog());
   }

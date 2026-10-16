@@ -14,9 +14,20 @@
     </div>
     <div class="locked-note">
       <p>{{ heading() }}</p>
-      <button #reopen type="button" class="primary-action" (click)="openDialog()">
-        {{ kind() === 'sign-in' ? 'Sign-in options' : 'View access options' }}
-      </button>
+      @if (includedIn(); as included) {
+        <p class="plans-line">{{ included }}</p>
+      }
+      <!-- DLV-209: the main actions sit centred in one row (wrapping on small screens). -->
+      <div class="locked-actions recovery-actions">
+        <button #reopen type="button" class="primary-action" (click)="openDialog()">
+          {{ kind() === 'sign-in' ? 'Sign-in options' : 'View access options' }}
+        </button>
+        @if (kind() === 'sign-in') {
+          <a class="action-link plans-action" routerLink="/" fragment="pricing">See pricing</a>
+        } @else if (includedIn()) {
+          <a class="action-link plans-action" routerLink="/pricing">See plans</a>
+        }
+      </div>
     </div>
   } @else {
     <h1 id="recovery-title">{{ heading() }}</h1>
@@ -28,8 +39,9 @@
       <a class="primary-action" routerLink="/search">Explore available lessons</a>
     }
   }
+  <!-- Go back on the left edge, Home on the right edge. -->
   <nav class="recovery-links" aria-label="Continue exploring">
-    <a [routerLink]="backUrl">Go back</a><a routerLink="/">Home</a>
+    <a class="action-link" [routerLink]="backUrl">Go back</a><a class="action-link" routerLink="/">Home</a>
   </nav>
   @if (locked()) {
     <dialog
@@ -49,14 +61,26 @@
       <p class="eyebrow">{{ kind() === 'sign-in' ? 'Your learning journey' : 'Account access' }}</p>
       <h2 id="access-title">{{ heading() }}</h2>
       <p id="access-description">{{ description() }}</p>
-      <a
-        class="primary-action"
-        [routerLink]="kind() === 'sign-in' ? '/sign-in' : '/account'"
-        [queryParams]="{ returnTo: returnTo() }"
-        >{{ kind() === 'sign-in' ? 'Sign in' : 'Manage account and access' }}</a
-      >
+      @if (includedIn(); as included) {
+        <p class="plans-line">{{ included }}</p>
+      }
+      <div class="dialog-actions recovery-actions">
+        <a
+          class="primary-action"
+          [routerLink]="kind() === 'sign-in' ? '/sign-in' : '/account'"
+          [queryParams]="{ returnTo: returnTo() }"
+          >{{ kind() === 'sign-in' ? 'Sign in' : 'Manage account and access' }}</a
+        >
+        <!-- DLV-209: everyone may see prices, so signed-out visitors get the pricing page next to
+             Sign in; premium content links to it too. Other denials stay neutral. -->
+        @if (kind() === 'sign-in') {
+          <a class="action-link plans-action" routerLink="/" fragment="pricing">See pricing</a>
+        } @else if (preview().premium) {
+          <a class="action-link plans-action" routerLink="/pricing">See plans and pricing</a>
+        }
+      </div>
       <nav class="recovery-links" aria-label="Access dialog navigation">
-        <a [routerLink]="backUrl">Go back</a><a routerLink="/">Home</a>
+        <a class="action-link" [routerLink]="backUrl">Go back</a><a class="action-link" routerLink="/">Home</a>
       </nav>
     </dialog>
   }

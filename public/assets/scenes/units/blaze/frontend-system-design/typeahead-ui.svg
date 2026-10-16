@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Mbali types cordless d on her phone; the suggestions for cordless d fill the list under the box, and a late answer for an older query arrives after them and is dropped">
+<style>
+.tah-a{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-6s;animation-timing-function:ease-in-out}
+@media (prefers-reduced-motion: reduce){.tah-a{animation-play-state:paused!important}}
+.tah-fresh{animation-name:tah-fresh}
+@keyframes tah-fresh{0%,10%{opacity:0;transform:translateX(0)}14%{opacity:1;transform:translateX(0)}34%{opacity:1;transform:translateX(-52px)}38%,100%{opacity:0;transform:translateX(-52px)}}
+.tah-list{animation-name:tah-list}
+@keyframes tah-list{0%,34%{opacity:0}38%,94%{opacity:1}100%{opacity:0}}
+.tah-ok{animation-name:tah-ok}
+@keyframes tah-ok{0%,36%{opacity:0}40%,92%{opacity:1}96%,100%{opacity:0}}
+.tah-late{animation-name:tah-late}
+@keyframes tah-late{0%,42%{opacity:0;transform:translateX(0)}46%{opacity:1;transform:translateX(0)}62%,90%{opacity:1;transform:translateX(-40px)}94%,100%{opacity:0;transform:translateX(-40px)}}
+.tah-no{animation-name:tah-no}
+@keyframes tah-no{0%,62%{opacity:0}66%,90%{opacity:1}94%,100%{opacity:0}}
+.tah-caret{animation-name:tah-caret;animation-timing-function:steps(1)}
+@keyframes tah-caret{0%,25%,50%,75%{opacity:1}12%,37%,62%,87%{opacity:0}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<ellipse cx="48" cy="160" rx="32" ry="5" fill="var(--scene-ink,#102a33)" opacity=".08"/>
+<ellipse cx="132" cy="173" rx="50" ry="4" fill="var(--scene-ink,#102a33)" opacity=".1"/>
+<ellipse cx="276" cy="140" rx="30" ry="5" fill="var(--scene-ink,#102a33)" opacity=".08"/>
+<circle cx="46" cy="84" r="14" fill="var(--scene-accent,#006c73)"/>
+<path d="M18 156c0-22 12-40 28-40s28 18 28 40Z" fill="var(--scene-accent,#006c73)"/>
+<path d="M68 134l20-6" stroke="var(--scene-accent,#006c73)" stroke-width="8" stroke-linecap="round"/>
+<rect x="86" y="14" width="92" height="156" rx="12" fill="var(--scene-ink,#102a33)"/>
+<rect x="91" y="26" width="82" height="134" rx="4" fill="var(--scene-accent-soft,#dcefed)"/>
+<rect x="124" y="18" width="16" height="3" rx="1.5" fill="var(--scene-line,#cfdfdc)"/>
+<rect x="95" y="31" width="74" height="17" rx="8.5" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="1.5"/>
+<text x="102" y="43" font-family="system-ui,sans-serif" font-size="9" fill="var(--scene-ink,#102a33)">cordless d</text>
+<rect class="tah-a tah-caret" x="149" y="34" width="1.5" height="11" fill="var(--scene-accent,#006c73)"/>
+<g class="tah-a tah-list">
+<rect x="95" y="52" width="74" height="13" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="1.2"/>
+<rect x="99" y="56.5" width="24" height="4" rx="2" fill="var(--scene-accent,#006c73)"/><rect x="125" y="56.5" width="24" height="4" rx="2" fill="var(--scene-muted,#536970)" opacity=".55"/>
+<rect x="95" y="67" width="74" height="13" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)"/>
+<rect x="99" y="71.5" width="24" height="4" rx="2" fill="var(--scene-accent,#006c73)"/><rect x="125" y="71.5" width="34" height="4" rx="2" fill="var(--scene-muted,#536970)" opacity=".55"/>
+<rect x="95" y="82" width="74" height="13" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)"/>
+<rect x="99" y="86.5" width="24" height="4" rx="2" fill="var(--scene-accent,#006c73)"/><rect x="125" y="86.5" width="18" height="4" rx="2" fill="var(--scene-muted,#536970)" opacity=".55"/>
+</g>
+<g fill="var(--scene-card,#fff)" opacity=".85">
+<rect x="95" y="112" width="7" height="9" rx="1.5"/><rect x="104" y="112" width="7" height="9" rx="1.5"/><rect x="113" y="112" width="7" height="9" rx="1.5"/><rect x="122" y="112" width="7" height="9" rx="1.5"/><rect x="131" y="112" width="7" height="9" rx="1.5"/><rect x="140" y="112" width="7" height="9" rx="1.5"/><rect x="149" y="112" width="7" height="9" rx="1.5"/><rect x="158" y="112" width="7" height="9" rx="1.5"/>
+<rect x="99" y="124" width="7" height="9" rx="1.5"/><rect x="108" y="124" width="7" height="9" rx="1.5"/><rect x="117" y="124" width="7" height="9" rx="1.5"/><rect x="126" y="124" width="7" height="9" rx="1.5"/><rect x="135" y="124" width="7" height="9" rx="1.5"/><rect x="144" y="124" width="7" height="9" rx="1.5"/><rect x="153" y="124" width="7" height="9" rx="1.5"/>
+<rect x="104" y="136" width="7" height="9" rx="1.5"/><rect x="113" y="136" width="7" height="9" rx="1.5"/><rect x="122" y="136" width="7" height="9" rx="1.5"/><rect x="131" y="136" width="7" height="9" rx="1.5"/><rect x="140" y="136" width="7" height="9" rx="1.5"/><rect x="149" y="136" width="7" height="9" rx="1.5"/>
+<rect x="110" y="148" width="44" height="8" rx="1.5"/>
+</g>
+<path d="M182 76H246" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="3 5"/>
+<path d="M182 112H246" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="3 5"/>
+<rect x="252" y="66" width="48" height="62" rx="5" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<path d="M252 66l8-8h48l-8 8Z" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-ink,#102a33)" stroke-width="2" stroke-linejoin="round"/>
+<path d="M300 66l8-8v62l-8 8Z" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<g fill="var(--scene-line,#cfdfdc)"><rect x="258" y="76" width="28" height="6" rx="2"/><rect x="258" y="90" width="28" height="6" rx="2"/><rect x="258" y="104" width="28" height="6" rx="2"/></g>
+<g fill="var(--scene-good,#1f7a4d)"><circle cx="292" cy="79" r="2"/><circle cx="292" cy="93" r="2"/><circle cx="292" cy="107" r="2"/></g>
+<g class="tah-a tah-fresh"><rect x="232" y="69" width="20" height="15" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-accent,#006c73)" stroke-width="1.5"/><rect x="232" y="69" width="20" height="4" rx="1.5" fill="var(--scene-accent,#006c73)"/><rect x="235" y="76" width="12" height="2.5" rx="1" fill="var(--scene-accent,#006c73)"/></g>
+<g class="tah-a tah-late"><rect x="232" y="105" width="20" height="15" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-muted,#536970)" stroke-width="1.5"/><rect x="232" y="105" width="20" height="4" rx="1.5" fill="var(--scene-muted,#536970)"/><rect x="235" y="112" width="8" height="2.5" rx="1" fill="var(--scene-muted,#536970)"/></g>
+<g class="tah-a tah-ok"><circle cx="190" cy="56" r="8" fill="var(--scene-good,#1f7a4d)"/><path d="M186 56l3 3 5-6" stroke="var(--scene-card,#fff)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g class="tah-a tah-no"><circle cx="214" cy="98" r="8" fill="var(--scene-bad,#b3261e)"/><path d="M210.5 94.5l7 7M217.5 94.5l-7 7" stroke="var(--scene-card,#fff)" stroke-width="2" stroke-linecap="round"/></g>
+</svg>

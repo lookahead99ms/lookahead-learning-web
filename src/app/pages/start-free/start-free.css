@@ -1,0 +1,428 @@
+:host {
+  display: block;
+  min-height: 100dvh;
+  background: var(--surface-page);
+  color: var(--text-body);
+}
+.start-free-shell {
+  display: grid;
+  gap: 32px;
+  box-sizing: border-box;
+  /* Fill the shared content column (user, 2026-10-15: expand width). */
+  width: 100%;
+  padding: 28px 0 72px;
+}
+@media (max-width: 900px) {
+  .start-free-shell {
+    padding-inline: 16px;
+  }
+}
+p {
+  margin: 0;
+  line-height: 1.55;
+}
+/* Hero: neutral surface; the three path colours appear only as one thin rule. */
+.staff-note {
+  padding: 10px 14px;
+  border: 1px dashed color-mix(in srgb, var(--accent-strong) 50%, var(--line));
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text-body);
+  font-size: 0.92rem;
+}
+.start-free-hero {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  text-align: center;
+  overflow: hidden;
+  padding: clamp(24px, 4vw, 44px);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--accent-strong) 12%, transparent), transparent 24rem),
+    var(--surface);
+}
+.start-free-hero::before {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+  background: linear-gradient(90deg, var(--path-learn) 0 33.3%, var(--path-grow) 33.3% 66.6%, var(--path-blaze) 66.6%);
+  content: '';
+}
+.eyebrow {
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.start-free-hero h1 {
+  margin: 0;
+  color: var(--text-strong);
+  font-size: clamp(30px, 4.2vw, 46px);
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+}
+.lede {
+  max-width: 72ch;
+  font-size: 17px;
+}
+/* Passive counts: plain text with separators, not pills. */
+.hero-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 22px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--text-subtle);
+}
+.hero-stats strong {
+  color: var(--text-strong);
+  font-size: 1.35rem;
+  font-variant-numeric: tabular-nums;
+}
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px 14px;
+}
+.start-free-status p + p {
+  margin-top: 6px;
+}
+/* Each section is its own card: heading and note on the left, its one action on the right. */
+.start-free-group,
+.start-free-missing {
+  padding: clamp(20px, 3vw, 32px);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--surface);
+  scroll-margin-top: 90px;
+}
+.group-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 20px;
+  margin-bottom: 16px;
+}
+.group-title {
+  display: grid;
+  gap: 4px;
+}
+.group-heading .action-button,
+.group-heading .action-button:hover {
+  color: var(--accent-on-primary);
+}
+.group-heading h2 {
+  margin: 0;
+  color: var(--text-strong);
+  font-size: clamp(22px, 2.4vw, 28px);
+  letter-spacing: -0.02em;
+}
+.start-free-note {
+  color: var(--text-subtle);
+}
+/* Free lessons as cards; the path colour is a thin top rule only. */
+/* Full rows of four on desktop, two on tablets, one on phones. */
+.start-free-list {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.missing-courses {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.start-free-item,
+.missing-course {
+  --path-color: var(--path-learn);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--path-color);
+  border-radius: 16px;
+  background: var(--surface);
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+[data-path='grow'] {
+  --path-color: var(--path-grow);
+}
+[data-path='blaze'] {
+  --path-color: var(--path-blaze);
+}
+.start-free-item:hover,
+.start-free-item:focus-within {
+  border-color: var(--accent-strong);
+  border-top-color: var(--path-color);
+  transform: translateY(-2px);
+}
+/* The whole card opens the lesson; the link text stays the accessible name. */
+.start-free-link {
+  color: var(--text-strong);
+  font-size: 1.08rem;
+  font-weight: 750;
+  line-height: 1.35;
+  text-decoration: none;
+}
+/* Compact cards: one-line course, up to two title lines, the action right below; each row is
+   as tall as its longest title, so short titles leave no gap. */
+.start-free-item {
+  gap: 6px;
+  padding: 16px 18px;
+}
+.start-free-item .start-free-meta {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.start-free-item .start-free-link {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.show-more {
+  justify-self: center;
+  margin-top: 14px;
+}
+.start-free-link::after {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  content: '';
+}
+.start-free-link:focus-visible {
+  outline: none;
+}
+.start-free-item:has(.start-free-link:focus-visible) {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 3px;
+}
+/* Passive metadata: plain muted text; the access level is never a pill. */
+.start-free-meta {
+  color: var(--text-subtle);
+  font-size: 0.85rem;
+}
+.start-free-access {
+  font-weight: 650;
+}
+.start-free-cta {
+  color: var(--accent-link);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+/* What you're missing: quieter cards with locked unit names. */
+.start-free-missing:focus {
+  outline: none;
+}
+.missing-courses {
+  margin-bottom: 0;
+}
+/* The curated bento fills a 4×6 grid exactly: one big, two wide, three tall, eleven small.
+   Rows have a fixed height so every tile is full; long lists end in "and N more". */
+.missing-courses.bento {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-rows: 250px;
+  grid-template-areas:
+    'alg alg sql spring'
+    'dist aieng git spring'
+    'sec react docker fund'
+    'sec systems systems cloud'
+    'aicv systems systems cloud'
+    'sysd stories aibuild aibuild';
+}
+.bento [data-area='alg'] { grid-area: alg; }
+.bento [data-area='sql'] { grid-area: sql; }
+.bento [data-area='spring'] { grid-area: spring; }
+.bento [data-area='dist'] { grid-area: dist; }
+.bento [data-area='aieng'] { grid-area: aieng; }
+.bento [data-area='git'] { grid-area: git; }
+.bento [data-area='react'] { grid-area: react; }
+.bento [data-area='docker'] { grid-area: docker; }
+.bento [data-area='aicv'] { grid-area: aicv; }
+.bento [data-area='sysd'] { grid-area: sysd; }
+.bento [data-area='systems'] { grid-area: systems; }
+.bento [data-area='fund'] { grid-area: fund; }
+.bento [data-area='stories'] { grid-area: stories; }
+.bento [data-area='sec'] { grid-area: sec; }
+.bento [data-area='cloud'] { grid-area: cloud; }
+.bento [data-area='aibuild'] { grid-area: aibuild; }
+/* Wide tiles with long lists use two columns. */
+.missing-course[data-columns='2'] .locked-units {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 18px;
+}
+.missing-course:is([data-size='big'], [data-size='wide']) h3 {
+  font-size: 1.3rem;
+}
+@media (max-width: 1100px) {
+  .missing-courses.bento {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 215px;
+    grid-template-areas:
+      'alg alg'
+      'sql spring'
+      'dist spring'
+      'aieng git'
+      'sec react'
+      'sec docker'
+      'aicv fund'
+      'sysd cloud'
+      'stories cloud'
+      'systems systems'
+      'systems systems'
+      'aibuild aibuild';
+  }
+}
+@media (max-width: 560px) {
+  .missing-courses.bento {
+    grid-template-columns: minmax(0, 1fr);
+    grid-auto-rows: auto;
+    grid-template-areas:
+      'alg' 'sql' 'spring' 'dist' 'aieng' 'git' 'sec' 'react' 'docker' 'fund' 'systems' 'cloud'
+      'aicv' 'sysd' 'stories' 'aibuild';
+  }
+  .missing-course[data-columns='2'] .locked-units {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.missing-course {
+  min-height: 0;
+  overflow: hidden;
+}
+/* On phones tiles stack; each keeps a fixed height by size. */
+@media (max-width: 560px) {
+  .bento .missing-course { height: 250px; }
+  .bento .missing-course:is([data-size='tall'], [data-size='wide']) { height: 320px; }
+  .bento .missing-course[data-size='big'] { height: 440px; }
+}
+.missing-course h3 {
+  margin: 0;
+  font-size: 1.08rem;
+}
+.missing-course h3 a {
+  color: var(--text-strong);
+  text-decoration: none;
+}
+.missing-course h3 a:hover {
+  text-decoration: underline;
+}
+.locked-units {
+  display: grid;
+  gap: 6px;
+  /* The list may shrink to the tile's spare height; fitShowcase hides what does not fit, and
+     "and N more" follows the list directly. */
+  flex: 0 1 auto;
+  min-height: 0;
+  align-content: start;
+  overflow: hidden;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.locked-units li[hidden] {
+  display: none;
+}
+.locked-units li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.locked-units a {
+  color: var(--text-body);
+  text-decoration: none;
+}
+.locked-units a:hover,
+.locked-units a:focus-visible {
+  color: var(--accent-link);
+  text-decoration: underline;
+}
+.lock {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  transform: translateY(2px);
+  fill: none;
+  stroke: var(--text-subtle);
+  stroke-width: 2;
+}
+.more {
+  color: var(--text-subtle);
+  font-size: 0.9rem;
+}
+.plans-line {
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+  color: var(--text-strong);
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+.start-free-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@media (max-width: 1100px) {
+  .start-free-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 560px) {
+  .start-free-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .start-free-item {
+    transition: none;
+  }
+  .start-free-item:hover,
+  .start-free-item:focus-within {
+    transform: none;
+  }
+}
+/* A shared reader rule recolours links inside page headers; keep the shared button colours. */
+.start-free-hero .action-button,
+.start-free-hero .action-button:hover,
+.start-free-hero .action-link:hover {
+  color: var(--accent-on-primary);
+}
+.start-free-hero .action-link {
+  color: var(--accent-strong);
+}
+.start-free-group {
+  display: grid;
+}
+/* Button placement rule on phones: actions stack full width, primary on top. */
+@media (max-width: 560px) {
+  .hero-actions {
+    flex-direction: column;
+    align-self: stretch;
+  }
+  .hero-actions > *,
+  .group-heading > a {
+    width: 100%;
+  }
+}

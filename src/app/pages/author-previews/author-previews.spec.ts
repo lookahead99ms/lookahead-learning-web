@@ -17,7 +17,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import { PlatformThemeService } from '../../core/platform-theme';
 import { routes } from '../../app.routes';
-import { authorGuard, staffGuard, deliveryGuard, ownerGuard } from '../../core/author-access';
+import { authorGuard, staffGuard, deliveryGuard, accessGuard } from '../../core/author-access';
 import { environment as publicEnvironment } from '../../../environments/environment.production';
 import { environment as demoEnvironment } from '../../../environments/environment.demo';
 
@@ -132,7 +132,7 @@ describe('private preview inventory contract', () => {
     for (const path of ['admin/previews', 'admin/architecture', 'admin/api'])
       expect(routes.find((route) => route.path === path)?.canActivate).toContain(staffGuard);
     expect(routes.find(route => route.path === 'delivery-plan')?.canActivate).toContain(deliveryGuard);
-    expect(routes.find(route => route.path === 'admin/access')?.canActivate).toContain(ownerGuard);
+    expect(routes.find(route => route.path === 'admin/access')?.canActivate).toContain(accessGuard);
     expect(routes.find(route => route.path === 'admin/previews/study-plan')?.canActivate).toContain(authorGuard);
   });
 });

@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { signal } from '@angular/core';
-import { authorGuard, signedInGuard } from './author-access';
+import { authorGuard, signedInGuard, accessGuard } from './author-access';
 import { StudyPlanAccount } from '../pages/study-plan/study-plan-account';
 
 describe('author workspace access', () => {
@@ -22,6 +22,16 @@ describe('author workspace access', () => {
   });
   const access = () =>
     TestBed.runInInjectionContext(() => authorGuard({} as any, { url: '/admin' } as any));
+  it('shows access readers only their server-authorized surface', async () => {
+    const reader = () => TestBed.runInInjectionContext(() => accessGuard({} as any, {url:'/admin/access'} as any));
+    for (const permissions of [{manageAccess:true},{triageFeedback:true},{feedbackRole:'co-author'}]) {
+      account.set({permissions});expect(await reader()).toBe(true);
+    }
+    for (const permissions of [{feedbackRole:'tester'},{feedbackRole:'reviewer'},{}]) {
+      account.set({permissions});expect(TestBed.inject(Router).serializeUrl(await reader() as any)).toBe('/study-plan');
+    }
+    account.set(null);expect(TestBed.inject(Router).serializeUrl(await reader() as any)).toContain('/sign-in?');
+  });
   it('preserves the admin destination through sign-in', async () => {
     expect(TestBed.inject(Router).serializeUrl((await access()) as any)).toBe(
       '/sign-in?returnTo=%2Fadmin',

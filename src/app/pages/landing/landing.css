@@ -705,11 +705,30 @@ app-engineering-challenge.home-challenge {
   margin: 0 0 22px;
   max-width: 55ch;
 }
-.home-explore .discovery-feature a {
-  margin-top: auto;
+/* A button, not a text link: an outlined pill that fills on hover. */
+.home-explore .feature-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   width: fit-content;
-  font-weight: 700;
+  min-height: 44px;
+  margin-top: auto;
+  padding: 10px 20px;
+  border: 1.5px solid var(--accent-strong);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-strong) 10%, transparent);
+  color: var(--accent-strong);
   font-size: 14px;
+  font-weight: 750;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.home-explore .feature-action:hover {
+  background: var(--accent-strong);
+  color: var(--accent-on-primary);
+}
+.home-explore .feature-action:hover .action-arrow {
+  transform: translateX(3px);
 }
 .home-explore .feature-availability {
   margin: 16px 0 0;

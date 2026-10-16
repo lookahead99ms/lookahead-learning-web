@@ -170,6 +170,13 @@ footer {
   font-weight: 700;
   text-decoration: none;
 }
+/* DLV-937: a breadcrumb shows it is a link on hover and focus. */
+.back-link:hover,
+.breadcrumbs a:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--link-underline);
+  text-underline-offset: 0.22em;
+}
 .catalog-sticky-utility,
 .module-sticky-utility,
 .question-sticky-utility {
@@ -512,9 +519,16 @@ footer {
   font-weight: 800;
   text-decoration: none;
 }
+/* DLV-937: the parent course or module above a title is a small tinted chip. */
+a.reader-module {
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-link) 10%, transparent);
+  transition: background-color 0.15s ease;
+}
 a.reader-module:hover,
 a.reader-module:focus-visible {
-  text-decoration: underline;
+  background: color-mix(in srgb, var(--accent-link) 20%, transparent);
 }
 .reader-sticky-stack {
   display: grid;

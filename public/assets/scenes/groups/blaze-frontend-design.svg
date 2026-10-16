@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 200" role="img" aria-label="A change in the component tree re-renders only the grid branch, and item 3 of that grid updates on a desktop, a tablet and a phone, where the same items flow into three, two and one columns">
+<style>
+.bfdg-t { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--scene-ink, #102a33); font-weight: 700; }
+.bfdg-tm { font-family: ui-monospace, Menlo, monospace; fill: var(--scene-muted, #536970); font-weight: 700; }
+.bfdg-sh { fill: var(--scene-ink, #102a33); opacity: .08; }
+.bfdg-slab { fill: var(--scene-ink, #102a33); opacity: .14; }
+.bfdg-box { fill: var(--scene-card, #ffffff); stroke: var(--scene-line, #cfdfdc); stroke-width: 2; }
+.bfdg-node { fill: var(--scene-card, #ffffff); stroke: var(--scene-muted, #536970); stroke-width: 1.6; }
+.bfdg-ln { fill: var(--scene-line, #cfdfdc); }
+.bfdg-soft { fill: var(--scene-accent-soft, #dcefed); }
+.bfdg-acc { fill: var(--scene-accent, #006c73); }
+.bfdg-mut { fill: var(--scene-muted, #536970); opacity: .45; }
+.bfdg-tile { fill: var(--scene-line, #cfdfdc); opacity: .55; }
+.bfdg-on { fill: var(--scene-accent-soft, #dcefed); stroke: var(--scene-accent, #006c73); stroke-width: 2; }
+.bfdg-edge { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 1.6; }
+.bfdg-wire { fill: none; stroke: var(--scene-muted, #536970); stroke-width: 2; stroke-dasharray: 4 5; }
+
+.bfdg-dot1 { animation: bfdg-kf-dot1 7s linear infinite; }
+@keyframes bfdg-kf-dot1 { 0%, 4% { transform: translate(0, 0); opacity: 0; } 5% { opacity: 1; } 10% { transform: translate(0, 16px); } 20% { transform: translate(49px, 16px); } 25% { transform: translate(49px, 30px); opacity: 1; } 26%, 100% { transform: translate(49px, 30px); opacity: 0; } }
+.bfdg-hot { animation: bfdg-kf-hot 7s infinite; }
+@keyframes bfdg-kf-hot { 0%, 24% { opacity: 0; } 28%, 92% { opacity: 1; } 96%, 100% { opacity: 0; } }
+.bfdg-dot2 { animation: bfdg-kf-dot2 7s ease-in-out infinite; }
+@keyframes bfdg-kf-dot2 { 0%, 28% { transform: translate(0, 0); opacity: 0; } 29% { opacity: 1; } 38% { transform: translate(24px, 0); opacity: 1; } 39%, 100% { transform: translate(24px, 0); opacity: 0; } }
+.bfdg-u1 { animation: bfdg-kf-u1 7s infinite; }
+.bfdg-u2 { animation: bfdg-kf-u2 7s infinite; }
+.bfdg-u3 { animation: bfdg-kf-u3 7s infinite; }
+@keyframes bfdg-kf-u1 { 0%, 38% { opacity: 0; } 42%, 92% { opacity: 1; } 96%, 100% { opacity: 0; } }
+@keyframes bfdg-kf-u2 { 0%, 44% { opacity: 0; } 48%, 92% { opacity: 1; } 96%, 100% { opacity: 0; } }
+@keyframes bfdg-kf-u3 { 0%, 50% { opacity: 0; } 54%, 92% { opacity: 1; } 96%, 100% { opacity: 0; } }
+
+.bfdg-dot1, .bfdg-hot, .bfdg-dot2, .bfdg-u1, .bfdg-u2, .bfdg-u3 { animation-delay: -4.9s; }
+@media (prefers-reduced-motion: reduce) { .bfdg-dot1, .bfdg-hot, .bfdg-dot2, .bfdg-u1, .bfdg-u2, .bfdg-u3 { animation-play-state: paused; } }
+</style>
+
+<!-- component tree -->
+<ellipse class="bfdg-sh" cx="86" cy="158" rx="76" ry="5"/>
+<path class="bfdg-edge" d="M84 44 V60 M35 60 H133 M35 60 V74 M84 60 V74 M133 60 V74 M133 110 V119 M117 119 H149 M117 119 V128 M149 119 V128"/>
+<rect class="bfdg-slab" x="56" y="21" width="56" height="26" rx="6"/>
+<rect class="bfdg-node" x="56" y="18" width="56" height="26" rx="6"/>
+<text class="bfdg-t" x="84" y="35.5" font-size="13" text-anchor="middle">App</text>
+
+<rect class="bfdg-slab" x="14" y="77" width="42" height="36" rx="6"/>
+<rect class="bfdg-node" x="14" y="74" width="42" height="36" rx="6"/>
+<rect x="20" y="86" width="30" height="12" rx="6" fill="none" stroke="var(--scene-accent, #006c73)" stroke-width="1.5"/>
+<circle cx="27" cy="92" r="2.4" fill="none" stroke="var(--scene-accent, #006c73)" stroke-width="1.3"/>
+
+<rect class="bfdg-slab" x="63" y="77" width="42" height="36" rx="6"/>
+<rect class="bfdg-node" x="63" y="74" width="42" height="36" rx="6"/>
+<rect class="bfdg-ln" x="70" y="81" width="28" height="5" rx="2.5"/><rect class="bfdg-ln" x="70" y="90" width="22" height="5" rx="2.5"/><rect class="bfdg-ln" x="70" y="99" width="26" height="5" rx="2.5"/>
+
+<rect class="bfdg-slab" x="112" y="77" width="42" height="36" rx="6"/>
+<rect class="bfdg-node" x="112" y="74" width="42" height="36" rx="6"/>
+<rect class="bfdg-slab" x="105" y="131" width="24" height="20" rx="4"/>
+<rect class="bfdg-node" x="105" y="128" width="24" height="20" rx="4"/>
+<rect class="bfdg-slab" x="137" y="131" width="24" height="20" rx="4"/>
+<rect class="bfdg-node" x="137" y="128" width="24" height="20" rx="4"/>
+<g class="bfdg-hot">
+  <rect class="bfdg-on" x="112" y="74" width="42" height="36" rx="6"/>
+  <rect class="bfdg-on" x="105" y="128" width="24" height="20" rx="4"/>
+  <rect class="bfdg-on" x="137" y="128" width="24" height="20" rx="4"/>
+</g>
+<g class="bfdg-acc" opacity=".8"><rect x="121" y="81" width="10" height="10" rx="2"/><rect x="135" y="81" width="10" height="10" rx="2"/><rect x="121" y="94" width="10" height="10" rx="2"/><rect x="135" y="94" width="10" height="10" rx="2"/></g>
+<rect class="bfdg-soft" x="111" y="133" width="12" height="10" rx="2"/><rect class="bfdg-soft" x="143" y="133" width="12" height="10" rx="2"/>
+<g class="bfdg-dot1"><circle class="bfdg-acc" cx="84" cy="44" r="4.5"/></g>
+<text class="bfdg-t" x="86" y="186" font-size="15" text-anchor="middle">components</text>
+
+<!-- the grid branch feeds every layout -->
+<path class="bfdg-wire" d="M156 92 H180"/>
+<g class="bfdg-dot2"><circle class="bfdg-acc" cx="156" cy="92" r="4.5"/></g>
+
+<!-- desktop: three columns -->
+<ellipse class="bfdg-sh" cx="255" cy="142" rx="52" ry="4"/>
+<rect class="bfdg-slab" x="247" y="120" width="16" height="12"/>
+<rect class="bfdg-slab" x="228" y="131" width="54" height="6" rx="3"/>
+<rect class="bfdg-slab" x="180" y="28" width="150" height="96" rx="6"/>
+<rect class="bfdg-box" x="180" y="24" width="150" height="96" rx="6"/>
+<rect class="bfdg-soft" x="188" y="32" width="134" height="10" rx="3"/>
+<rect class="bfdg-tile" x="188" y="48" width="40" height="28" rx="4"/><rect class="bfdg-tile" x="234" y="48" width="40" height="28" rx="4"/><rect class="bfdg-tile" x="280" y="48" width="40" height="28" rx="4"/>
+<rect class="bfdg-tile" x="188" y="82" width="40" height="28" rx="4"/><rect class="bfdg-tile" x="234" y="82" width="40" height="28" rx="4"/><rect class="bfdg-tile" x="280" y="82" width="40" height="28" rx="4"/>
+<g class="bfdg-u1"><rect class="bfdg-on" x="280" y="48" width="40" height="28" rx="4"/></g>
+<text class="bfdg-tm" font-size="11" text-anchor="middle"><tspan x="208" y="66">1</tspan><tspan x="254" y="66">2</tspan><tspan x="300" y="66">3</tspan><tspan x="208" y="100">4</tspan><tspan x="254" y="100">5</tspan><tspan x="300" y="100">6</tspan></text>
+<text class="bfdg-tm" x="255" y="158" font-size="11" text-anchor="middle">1280</text>
+
+<!-- tablet: two columns -->
+<ellipse class="bfdg-sh" cx="377" cy="142" rx="38" ry="4"/>
+<rect class="bfdg-slab" x="344" y="48" width="66" height="92" rx="8"/>
+<rect class="bfdg-box" x="344" y="44" width="66" height="92" rx="8"/>
+<rect class="bfdg-soft" x="350" y="51" width="54" height="7" rx="3"/>
+<rect class="bfdg-tile" x="350" y="63" width="25" height="20" rx="3"/><rect class="bfdg-tile" x="379" y="63" width="25" height="20" rx="3"/>
+<rect class="bfdg-tile" x="350" y="87" width="25" height="20" rx="3"/><rect class="bfdg-tile" x="379" y="87" width="25" height="20" rx="3"/>
+<rect class="bfdg-tile" x="350" y="111" width="25" height="20" rx="3"/><rect class="bfdg-tile" x="379" y="111" width="25" height="20" rx="3"/>
+<g class="bfdg-u2"><rect class="bfdg-on" x="350" y="87" width="25" height="20" rx="3"/></g>
+<text class="bfdg-tm" font-size="11" text-anchor="middle"><tspan x="362.5" y="77">1</tspan><tspan x="391.5" y="77">2</tspan><tspan x="362.5" y="101">3</tspan><tspan x="391.5" y="101">4</tspan><tspan x="362.5" y="125">5</tspan><tspan x="391.5" y="125">6</tspan></text>
+<text class="bfdg-tm" x="377" y="158" font-size="11" text-anchor="middle">768</text>
+
+<!-- phone: one column -->
+<ellipse class="bfdg-sh" cx="444" cy="142" rx="26" ry="4"/>
+<rect class="bfdg-slab" x="422" y="60" width="44" height="80" rx="8"/>
+<rect class="bfdg-box" x="422" y="56" width="44" height="80" rx="8"/>
+<rect class="bfdg-mut" x="436" y="60" width="16" height="3" rx="1.5"/>
+<rect class="bfdg-tile" x="428" y="70" width="32" height="17" rx="3"/>
+<rect class="bfdg-tile" x="428" y="91" width="32" height="17" rx="3"/>
+<rect class="bfdg-tile" x="428" y="112" width="32" height="17" rx="3"/>
+<g class="bfdg-u3"><rect class="bfdg-on" x="428" y="112" width="32" height="17" rx="3"/></g>
+<text class="bfdg-tm" font-size="11" text-anchor="middle"><tspan x="444" y="82.5">1</tspan><tspan x="444" y="103.5">2</tspan><tspan x="444" y="124.5">3</tspan></text>
+<text class="bfdg-tm" x="444" y="158" font-size="11" text-anchor="middle">375</text>
+
+<text class="bfdg-t" x="323" y="186" font-size="15" text-anchor="middle">breakpoints</text>
+</svg>

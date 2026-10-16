@@ -21,6 +21,13 @@ import {
   reviewStatusLabel,
 } from '../../content/content.models';
 import { questionsForModule } from '../../content/question-discovery';
+import {
+  AccessLevel,
+  AccessLevels,
+  accessLabelFor,
+  accessViewerFor,
+} from '../../content/access-levels';
+import { StudyPlanAccount } from '../../pages/study-plan/study-plan-account';
 import { CardScene } from '../card-scene/card-scene';
 import { CourseLessonNav, CourseLessonNavItem } from '../course-lesson-nav/course-lesson-nav';
 import { evenGridColumns } from '../even-grid';
@@ -56,8 +63,14 @@ interface UnitCardEntry {
   sceneAlt: string;
   initials: string;
   meta: string[];
+  /** DLV-942: who can open the unit; null when no access levels are published or it is planned. */
+  access: AccessLevel | null;
+  /** DLV-209: the label this viewer sees for `access`; null shows no label. */
+  accessText: string | null;
   /** The meta line shows only when it has something to say (a sub-unit label or planned). */
   hasMeta: boolean;
+  /** Title, then the access label when one shows: the card link's accessible name. */
+  labelledBy: string;
   /** Level, meta and summary ids, in reading order, for the card's accessible description. */
   describedBy: string;
   route: string[];
@@ -167,6 +180,35 @@ interface UnitCardEntry {
                         }
                       </span>
                     }
+                    <!-- DLV-942: who can open the unit. Passive metadata, so plain text, never a pill;
+                         it is part of the card link's accessible name. DLV-209: the text depends on
+                         who is looking, and it sits over the card's top-right corner so nothing moves. -->
+                    @if (entry.accessText; as accessText) {
+                      <span
+                        class="unit-card-access"
+                        [id]="'unit-card-access-' + entry.key"
+                        [attr.data-access-level]="entry.access"
+                      >
+                        @if (entry.access === 'pro') {
+                          <svg
+                            class="unit-card-access-lock"
+                            aria-hidden="true"
+                            viewBox="0 0 12 12"
+                            width="11"
+                            height="11"
+                          >
+                            <rect x="2" y="5.5" width="8" height="5.5" rx="1" fill="currentColor" />
+                            <path
+                              d="M4 5.5V4a2 2 0 0 1 4 0v1.5"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="1.4"
+                            />
+                          </svg>
+                        }
+                        <span class="unit-card-access-prefix">Access: </span>{{ accessText }}
+                      </span>
+                    }
                   </div>
                 </ng-template>
                 <ng-template #cardFamilies>
@@ -206,7 +248,7 @@ interface UnitCardEntry {
                   <article
                     class="unit-card unit-card-planned"
                     [id]="'unit-' + entry.unit.id"
-                    [attr.aria-labelledby]="'unit-card-title-' + entry.key"
+                    [attr.aria-labelledby]="entry.labelledBy"
                     [attr.aria-describedby]="entry.describedBy"
                   >
                     <ng-container *ngTemplateOutlet="cardContent" />
@@ -220,7 +262,7 @@ interface UnitCardEntry {
                       [id]="'unit-' + entry.unit.id"
                       [routerLink]="entry.route"
                       [queryParams]="entry.queryParams"
-                      [attr.aria-labelledby]="'unit-card-title-' + entry.key"
+                      [attr.aria-labelledby]="entry.labelledBy"
                       [attr.aria-describedby]="entry.describedBy"
                     >
                       <ng-container *ngTemplateOutlet="cardContent" />
@@ -511,6 +553,39 @@ interface UnitCardEntry {
         content: '·';
         margin-right: 8px;
       }
+      /* DLV-942, DLV-209: the access label sits over the card's empty top-right corner, out of
+         the flow so nothing in the card moves. Plain text on a faint backing for contrast over
+         the drawing, not a badge: no border, no rounded pill. */
+      a.unit-card {
+        position: relative;
+      }
+      .unit-card-access {
+        position: absolute;
+        top: 10px;
+        right: 12px;
+        z-index: 1;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 6px;
+        color: var(--text-subtle);
+        background: color-mix(in srgb, var(--surface) 88%, transparent);
+        font-size: 0.76rem;
+        font-weight: 650;
+        line-height: 1.4;
+        pointer-events: none;
+      }
+      .unit-card-access-lock {
+        flex: none;
+      }
+      .unit-card-access-prefix {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+      }
       /* Title row: the name, and the level right-aligned beside it. A title too long for one line
          pushes the level under it. */
       .unit-card-title-row {
@@ -712,6 +787,17 @@ export class CourseLearningMap {
   readonly units = input.required<CourseLearningUnit[]>();
   /** Shows the sticky side nav listing every lesson of the course. */
   readonly lessonNav = input(false);
+  /** DLV-942: published unit access levels; null shows no access labels. */
+  readonly accessLevels = input<AccessLevels | null>(null);
+  private readonly accounts = inject(StudyPlanAccount);
+  /** DLV-209: who is looking at this course's labels; an expired session counts as signed out. */
+  private readonly accessViewer = computed(() =>
+    accessViewerFor(
+      this.accounts.sessionExpired() ? null : this.accounts.account(),
+      this.pathId(),
+      this.courseId(),
+    ),
+  );
   /** Plain one-line guide for the System Design Ladder courses. */
   protected readonly ladderIntro = computed(() =>
     this.pathId() === 'blaze' ? (LADDER_INTROS[this.courseId()] ?? null) : null,
@@ -880,6 +966,9 @@ export class CourseLearningMap {
       : this.unitTarget(unit);
     // Cards carry no counts or minutes (user review, 2026-10-03): only a sub-unit label.
     const meta = label ? [label] : [];
+    const levels = this.accessLevels();
+    const access = levels && !planned ? levels.levelFor(this.pathId(), this.courseId(), unit.id) : null;
+    const accessText = access ? accessLabelFor(access, this.accessViewer()) : null;
     const hasMeta = meta.length > 0 || planned;
     const describedBy = [
       ...(card?.level ? [`unit-card-level-${key}`] : []),
@@ -897,7 +986,12 @@ export class CourseLearningMap {
       sceneAlt: card?.sceneAlt ?? '',
       initials: initials(unit.title),
       meta,
+      access,
+      accessText,
       hasMeta,
+      labelledBy: [`unit-card-title-${key}`, ...(accessText ? [`unit-card-access-${key}`] : [])].join(
+        ' ',
+      ),
       describedBy,
       ...target,
     };

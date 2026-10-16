@@ -831,6 +831,7 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
     const path = this.router.url.split(/[?#]/, 1)[0];
     if (id === 'docs') return isAuthorDocumentationRoute(path);
     if (id === 'previews') return path.startsWith('/admin/previews');
+    if (id === 'access') return path === '/admin/access';
     return path === '/delivery-plan';
   }
 

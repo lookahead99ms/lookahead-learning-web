@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="An engineer adds a result chart, a design document and a teammate's note to the three stories of her promotion packet, and a committee of three marks it approved">
+<style>
+.pr-promo-a{animation-duration:8s;animation-iteration-count:infinite;animation-timing-function:ease-in-out;animation-delay:-6.4s;animation-fill-mode:both}
+.pr-promo-c1{animation-name:pr-promo-in1}.pr-promo-c2{animation-name:pr-promo-in2}.pr-promo-c3{animation-name:pr-promo-in3}
+.pr-promo-k1{stroke-dasharray:24;animation-name:pr-promo-ck1}.pr-promo-k2{stroke-dasharray:24;animation-name:pr-promo-ck2}.pr-promo-k3{stroke-dasharray:24;animation-name:pr-promo-ck3}
+.pr-promo-dot{animation-name:pr-promo-go}
+.pr-promo-ok{animation-name:pr-promo-pop;transform-box:fill-box;transform-origin:center}
+.pr-promo-tag{font-family:system-ui,sans-serif;font-size:11px;font-weight:700;fill:var(--scene-card,#fff)}
+@keyframes pr-promo-in1{0%,8%{opacity:0;transform:translateX(-58px)}22%,92%{opacity:1;transform:translateX(0)}100%{opacity:0}}
+@keyframes pr-promo-in2{0%,22%{opacity:0;transform:translateX(-58px)}36%,92%{opacity:1;transform:translateX(0)}100%{opacity:0}}
+@keyframes pr-promo-in3{0%,36%{opacity:0;transform:translateX(-58px)}50%,92%{opacity:1;transform:translateX(0)}100%{opacity:0}}
+@keyframes pr-promo-ck1{0%,22%{stroke-dashoffset:24}28%,92%{stroke-dashoffset:0}100%{stroke-dashoffset:24}}
+@keyframes pr-promo-ck2{0%,36%{stroke-dashoffset:24}42%,92%{stroke-dashoffset:0}100%{stroke-dashoffset:24}}
+@keyframes pr-promo-ck3{0%,50%{stroke-dashoffset:24}56%,92%{stroke-dashoffset:0}100%{stroke-dashoffset:24}}
+@keyframes pr-promo-go{0%,56%{opacity:0;transform:translateX(0)}58%{opacity:1}70%{opacity:1;transform:translateX(36px)}72%,100%{opacity:0;transform:translateX(36px)}}
+@keyframes pr-promo-pop{0%,70%{opacity:0;transform:scale(.4)}76%,92%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1)}}
+@media (prefers-reduced-motion: reduce){.pr-promo-a{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g fill="var(--scene-ink,#102a33)" opacity=".09"><ellipse cx="50" cy="152" rx="36" ry="6"/><ellipse cx="150" cy="160" rx="50" ry="6"/><ellipse cx="266" cy="152" rx="48" ry="6"/></g>
+<!-- The engineer behind her laptop -->
+<circle cx="50" cy="66" r="11" fill="var(--scene-accent,#006c73)"/>
+<path d="M28 104c3-20 41-20 44 0z" fill="var(--scene-accent,#006c73)"/>
+<rect x="26" y="98" width="48" height="28" rx="4" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-muted,#536970)" stroke-width="1.5"/>
+<rect x="20" y="126" width="60" height="6" rx="2" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<circle cx="50" cy="111" r="3" fill="var(--scene-card,#fff)"/>
+<!-- The packet: three stories, each gets its evidence and a check -->
+<rect x="106" y="38" width="90" height="116" rx="3" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<path d="M102 34h72l14 14v102h-86z" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2.5"/>
+<path d="M174 34v14h14" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<rect x="110" y="42" width="40" height="14" rx="3" fill="var(--scene-ahead,#2f6fb3)"/>
+<text class="pr-promo-tag" x="130" y="53" text-anchor="middle">Staff</text>
+<g stroke="var(--scene-muted,#536970)" stroke-width="5" stroke-linecap="round" opacity=".5"><path d="M112 74h22M112 104h22M112 134h22"/></g>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="1.5" fill="none" stroke-dasharray="3 3"><rect x="140" y="62" width="30" height="24" rx="4"/><rect x="140" y="92" width="30" height="24" rx="4"/><rect x="140" y="122" width="30" height="24" rx="4"/></g>
+<!-- Evidence 1: a result chart that falls -->
+<g class="pr-promo-a pr-promo-c1"><rect x="140" y="62" width="30" height="24" rx="4" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="1.5"/>
+<rect x="146" y="67" width="6" height="15" fill="var(--scene-bad,#b4442c)"/><rect x="158" y="77" width="6" height="5" fill="var(--scene-good,#1f7a4d)"/></g>
+<!-- Evidence 2: a design document -->
+<g class="pr-promo-a pr-promo-c2"><rect x="140" y="92" width="30" height="24" rx="4" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="1.5"/>
+<path d="M149 96h9l4 4v12h-13z" fill="var(--scene-card,#fff)" stroke="var(--scene-link,#1f5f8b)" stroke-width="1.5"/><path d="M152 104h7M152 108h5" stroke="var(--scene-link,#1f5f8b)" stroke-width="1.5"/></g>
+<!-- Evidence 3: a note from a teammate on another team -->
+<g class="pr-promo-a pr-promo-c3"><rect x="140" y="122" width="30" height="24" rx="4" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="1.5"/>
+<path d="M146 127h18a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-11l-4 4v-4h-3a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2z" fill="var(--scene-grow,#7a4fb3)"/></g>
+<g fill="none" stroke="var(--scene-good,#1f7a4d)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+<path class="pr-promo-a pr-promo-k1" d="M175 74l4 5 7-10"/><path class="pr-promo-a pr-promo-k2" d="M175 104l4 5 7-10"/><path class="pr-promo-a pr-promo-k3" d="M175 134l4 5 7-10"/></g>
+<!-- The packet travels to the committee -->
+<path d="M192 94h34" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="4 4"/>
+<circle class="pr-promo-a pr-promo-dot" cx="192" cy="94" r="4" fill="var(--scene-ahead,#2f6fb3)"/>
+<!-- The committee behind its desk -->
+<circle cx="244" cy="92" r="9" fill="var(--scene-muted,#536970)"/><path d="M230 120c2-14 26-14 28 0z" fill="var(--scene-muted,#536970)"/>
+<circle cx="268" cy="88" r="9" fill="var(--scene-link,#1f5f8b)"/><path d="M254 116c2-14 26-14 28 0z" fill="var(--scene-link,#1f5f8b)"/>
+<circle cx="292" cy="92" r="9" fill="var(--scene-grow,#7a4fb3)"/><path d="M278 120c2-14 26-14 28 0z" fill="var(--scene-grow,#7a4fb3)"/>
+<rect x="226" y="118" width="84" height="18" rx="3" fill="var(--scene-line,#cfdfdc)"/>
+<rect x="226" y="136" width="84" height="6" rx="2" fill="var(--scene-ink,#102a33)" opacity=".14"/>
+<g class="pr-promo-a pr-promo-ok"><circle cx="268" cy="56" r="13" fill="var(--scene-good,#1f7a4d)"/><path d="M261 56l5 5 9-10" fill="none" stroke="var(--scene-card,#fff)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+</svg>

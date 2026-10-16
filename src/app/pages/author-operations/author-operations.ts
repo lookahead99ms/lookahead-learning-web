@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { DomSanitizer } from '@angular/platform-browser';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   AUTHOR_DOCUMENTS_CLIENT,
   AuthorDocument,
@@ -26,6 +26,7 @@ import { AuthorAdminMenu } from '../../core/author-workspace-nav/author-admin-me
 import { AuthorDocHero } from '../../core/author-workspace-nav/author-doc-hero';
 import {
   authorDocumentPages,
+  authorDocumentationSection,
   authorDocumentationLinks,
   isAuthorDocumentPageId,
 } from '../../core/author-workspace-nav/author-workspace-links';
@@ -36,8 +37,7 @@ import {
   embeddedAnchor,
   embeddedAnchorPosition,
   requestEmbeddedAnchor,
-  scrollToEmbeddedAnchor,
-} from '../../core/author-embedded-anchor';
+  scrollToEmbeddedAnchor, embeddedPageRoute } from '../../core/author-embedded-anchor';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 
 // Long operator references wrap beyond 30,000px on narrow screens. Keep a
@@ -56,6 +56,7 @@ export class AuthorOperationsPage implements OnDestroy {
   private readonly documents = inject(AUTHOR_DOCUMENTS_CLIENT);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly theme = inject(PlatformThemeService);
+  private readonly router = inject(Router);
   // Routes name one of the published private documents; anything else is Operations.
   protected readonly pageId = ((value: unknown) =>
     isAuthorDocumentPageId(value) ? value : 'operations')(
@@ -65,6 +66,11 @@ export class AuthorOperationsPage implements OnDestroy {
   protected readonly documentId = this.page.documentId;
   private readonly link = authorDocumentationLinks.find((page) => page.id === this.pageId)!;
   protected readonly pageTitle = this.link.label;
+  /** Sub-pages of a long reference read as one section, in order. */
+  protected readonly section = authorDocumentationSection(this.pageId);
+  protected readonly sectionIndex = this.section?.pages.findIndex((page) => page.id === this.pageId) ?? -1;
+  protected readonly previousPage = this.section && this.sectionIndex > 0 ? this.section.pages[this.sectionIndex - 1] : null;
+  protected readonly nextPage = this.section?.pages[this.sectionIndex + 1] ?? null;
   protected readonly pageRoute = this.link.href;
   protected readonly documentFrame = viewChild<ElementRef<HTMLIFrameElement>>('documentFrame');
   private destroyed = false;
@@ -210,6 +216,11 @@ export class AuthorOperationsPage implements OnDestroy {
     if (data?.type === 'lookahead:author-document:api-navigate' && data.version === 1 && data.documentId === this.documentId) {
       const endpoint = apiEndpointAnchor(data.anchor);
       if (endpoint) this.hostDocument.defaultView?.location.assign(`/admin/api#${endpoint}`);
+      return;
+    }
+    const route = embeddedPageRoute(data, this.documentId);
+    if (route) {
+      void this.router.navigateByUrl(route);
       return;
     }
     const anchor = embeddedAnchor(

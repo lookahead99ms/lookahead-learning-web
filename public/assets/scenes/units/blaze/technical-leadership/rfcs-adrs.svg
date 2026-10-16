@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Three reviewers comment on an RFC, it is accepted, an ADR file lands in each of three team repositories, and one ADR is superseded by a newer one"><style>
+.tlra-loop{animation-duration:8s;animation-iteration-count:infinite;animation-timing-function:ease-in-out;animation-delay:-6.8s}
+.tlra-c1{animation-name:tlra-c1}.tlra-c2{animation-name:tlra-c2}.tlra-c3{animation-name:tlra-c3}
+.tlra-ok{animation-name:tlra-ok}.tlra-d1{animation-name:tlra-d1}.tlra-d2{animation-name:tlra-d2}.tlra-d3{animation-name:tlra-d3}
+.tlra-file{animation-name:tlra-file}.tlra-old{animation-name:tlra-old}.tlra-new{animation-name:tlra-new}
+.tlra-t{font:700 12px system-ui,sans-serif;fill:var(--scene-card,#fff)}
+.tlra-s{font:700 9px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+@keyframes tlra-c1{0%,6%{opacity:0;transform:translateY(4px)}12%,92%{opacity:1;transform:translateY(0)}97%,100%{opacity:0}}
+@keyframes tlra-c2{0%,14%{opacity:0;transform:translateY(4px)}20%,92%{opacity:1;transform:translateY(0)}97%,100%{opacity:0}}
+@keyframes tlra-c3{0%,22%{opacity:0;transform:translateY(4px)}28%,92%{opacity:1;transform:translateY(0)}97%,100%{opacity:0}}
+@keyframes tlra-ok{0%,34%{opacity:0;transform:scale(1.5)}40%,92%{opacity:1;transform:scale(1)}97%,100%{opacity:0;transform:scale(1)}}
+@keyframes tlra-d1{0%,42%{opacity:0;transform:translate(0,0)}44%{opacity:1;transform:translate(0,0)}56%{opacity:1;transform:translate(84px,-48px)}58%,100%{opacity:0;transform:translate(84px,-48px)}}
+@keyframes tlra-d2{0%,42%{opacity:0;transform:translate(0,0)}44%{opacity:1;transform:translate(0,0)}56%{opacity:1;transform:translate(84px,-8px)}58%,100%{opacity:0;transform:translate(84px,-8px)}}
+@keyframes tlra-d3{0%,42%{opacity:0;transform:translate(0,0)}44%{opacity:1;transform:translate(0,0)}56%{opacity:1;transform:translate(84px,32px)}58%,100%{opacity:0;transform:translate(84px,32px)}}
+@keyframes tlra-file{0%,55%{opacity:0;transform:translateY(-6px)}60%,92%{opacity:1;transform:translateY(0)}97%,100%{opacity:0}}
+@keyframes tlra-old{0%,70%{opacity:0}75%,92%{opacity:1}97%,100%{opacity:0}}
+@keyframes tlra-new{0%,72%{opacity:0;transform:translateX(10px)}78%,92%{opacity:1;transform:translateX(0)}97%,100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.tlra-loop{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g fill="var(--scene-ink,#102a33)" opacity=".09"><ellipse cx="78" cy="160" rx="54" ry="6"/><ellipse cx="256" cy="62" rx="44" ry="4"/><ellipse cx="256" cy="114" rx="44" ry="4"/><ellipse cx="256" cy="166" rx="44" ry="4"/></g>
+<g fill="var(--scene-ink,#102a33)"><g opacity=".9"><circle cx="30" cy="22" r="7" fill="var(--scene-accent,#006c73)"/><path d="M19 40a11 9 0 0 1 22 0Z" fill="var(--scene-accent,#006c73)"/><circle cx="62" cy="22" r="7" fill="var(--scene-link,#2f6fb3)"/><path d="M51 40a11 9 0 0 1 22 0Z" fill="var(--scene-link,#2f6fb3)"/><circle cx="94" cy="22" r="7" fill="var(--scene-grow,#b8457a)"/><path d="M83 40a11 9 0 0 1 22 0Z" fill="var(--scene-grow,#b8457a)"/></g></g>
+<path d="M36 50H108L124 66V152a5 5 0 0 1-5 5H41a5 5 0 0 1-5-5Z" fill="var(--scene-ink,#102a33)" opacity=".14" transform="translate(3 3)"/>
+<path d="M36 50H108L124 66V152a5 5 0 0 1-5 5H41a5 5 0 0 1-5-5Z" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M108 50V66H124" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-ink,#102a33)" stroke-width="2.5" stroke-linejoin="round"/>
+<rect x="44" y="58" width="44" height="18" rx="4" fill="var(--scene-ahead,#2f6fb3)"/><text class="tlra-t" x="66" y="71.5" text-anchor="middle">RFC</text>
+<g stroke="var(--scene-line,#cfdfdc)" stroke-width="5" stroke-linecap="round"><path d="M48 90H112M48 104H106M48 118H112M48 132H94"/></g>
+<g class="tlra-loop tlra-c1"><rect x="78" y="84" width="24" height="12" rx="6" fill="var(--scene-accent,#006c73)"/><path d="M84 96l-3 5 7-5Z" fill="var(--scene-accent,#006c73)"/></g>
+<g class="tlra-loop tlra-c2"><rect x="86" y="104" width="24" height="12" rx="6" fill="var(--scene-link,#2f6fb3)"/><path d="M92 116l-3 5 7-5Z" fill="var(--scene-link,#2f6fb3)"/></g>
+<g class="tlra-loop tlra-c3"><rect x="70" y="124" width="24" height="12" rx="6" fill="var(--scene-grow,#b8457a)"/><path d="M76 136l-3 5 7-5Z" fill="var(--scene-grow,#b8457a)"/></g>
+<g class="tlra-loop tlra-ok" style="transform-origin:120px 146px"><circle cx="120" cy="146" r="13" fill="var(--scene-good,#1f7a4d)"/><path d="M113 146l5 5 9-10" fill="none" stroke="var(--scene-card,#fff)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g fill="none" stroke="var(--scene-muted,#536970)" stroke-width="1.6" stroke-dasharray="3 4"><path d="M128 92L212 44"/><path d="M128 104L212 96"/><path d="M128 116L212 148"/></g>
+<g fill="var(--scene-ahead,#2f6fb3)"><circle class="tlra-loop tlra-d1" cx="128" cy="92" r="3.5"/><circle class="tlra-loop tlra-d2" cx="128" cy="104" r="3.5"/><circle class="tlra-loop tlra-d3" cx="128" cy="116" r="3.5"/></g>
+<g id="tlra-folders" stroke="var(--scene-ink,#102a33)" stroke-width="2" stroke-linejoin="round">
+<path d="M214 26h22l5 6h43v26h-70Z" fill="var(--scene-accent-soft,#dcefed)"/>
+<path d="M214 78h22l5 6h43v26h-70Z" fill="var(--scene-accent-soft,#dcefed)"/>
+<path d="M214 130h22l5 6h43v26h-70Z" fill="var(--scene-accent-soft,#dcefed)"/></g>
+<g class="tlra-loop tlra-file"><path d="M222 34h20l5 5v16h-25Z" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="1.6" stroke-linejoin="round"/><text class="tlra-s" x="234.5" y="50" text-anchor="middle">19</text></g>
+<g class="tlra-loop tlra-file"><path d="M222 86h20l5 5v16h-25Z" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="1.6" stroke-linejoin="round"/><text class="tlra-s" x="234.5" y="102" text-anchor="middle">11</text></g>
+<g class="tlra-loop tlra-file"><path d="M222 138h20l5 5v16h-25Z" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="1.6" stroke-linejoin="round"/><text class="tlra-s" x="234.5" y="154" text-anchor="middle">5</text></g>
+<g class="tlra-loop tlra-old"><path d="M219 104l31-17" stroke="var(--scene-warn,#a15c00)" stroke-width="3" stroke-linecap="round"/></g>
+<g class="tlra-loop tlra-new"><path d="M254 86h20l5 5v16h-25Z" fill="var(--scene-card,#fff)" stroke="var(--scene-good,#1f7a4d)" stroke-width="2" stroke-linejoin="round"/><text class="tlra-s" x="266.5" y="102" text-anchor="middle">16</text></g>
+</svg>

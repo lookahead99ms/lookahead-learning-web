@@ -815,3 +815,139 @@ pre:has(> .learning-code[data-code-language='go']) { background:#14161a; }
   line-height: 1.7;
   white-space: pre-wrap;
 }
+
+/* DLV-937 Styled links (user, 2026-10-15): no clickable value is left as the browser's plain
+   blue underlined text.
+   1. Every link starts from the theme's link colour and a soft, offset underline that turns
+      solid on hover. :where() keeps this at zero specificity, so any component rule wins and
+      already-designed links keep their look.
+   2. A link that stands on its own as an action is a button: .action-button (filled, the
+      primary action) or .action-link (tinted outline pill, a secondary action). .action-chip is
+      the compact pill for a list of short destinations (prerequisites, related courses).
+   3. Links inside running text (lesson prose, references, legal copy) stay inline and
+      underlined, with the accent colour and a light tint on hover. */
+:root {
+  --link-underline: color-mix(in srgb, var(--accent-link) 45%, transparent);
+  --link-hover-tint: color-mix(in srgb, var(--accent-link) 12%, transparent);
+}
+:where(a[href]) {
+  color: var(--accent-link);
+  text-decoration-line: underline;
+  text-decoration-thickness: 0.08em;
+  text-decoration-color: var(--link-underline);
+  text-underline-offset: 0.22em;
+}
+:where(a[href]:hover) {
+  text-decoration-color: currentColor;
+}
+/* A plain link in text gets a light tint on hover so the target is obvious. */
+:where(:is(p, li, td, dd, blockquote, figcaption) a[href]:not([class]):hover) {
+  border-radius: 3px;
+  background-color: var(--link-hover-tint);
+  box-shadow: 0 0 0 2px var(--link-hover-tint);
+}
+.action-button,
+.action-link,
+.action-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  max-width: 100%;
+  min-height: 44px;
+  padding: 10px 20px;
+  border: 1.5px solid var(--accent-strong);
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 750;
+  line-height: 1.25;
+  text-align: center;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+.action-button {
+  background: var(--accent-strong);
+  color: var(--accent-on-primary);
+}
+.action-button:hover {
+  color: var(--accent-on-primary);
+  background: color-mix(in srgb, var(--accent-strong) 84%, var(--text-strong));
+  border-color: color-mix(in srgb, var(--accent-strong) 84%, var(--text-strong));
+}
+.action-link {
+  background: color-mix(in srgb, var(--accent-strong) 10%, transparent);
+  color: var(--accent-strong);
+}
+.action-link:hover {
+  background: var(--accent-strong);
+  color: var(--accent-on-primary);
+}
+.action-chip {
+  min-height: 40px;
+  padding: 8px 16px;
+  border-width: 1px;
+  border-color: color-mix(in srgb, var(--accent-link) 40%, var(--line));
+  background: color-mix(in srgb, var(--accent-link) 8%, var(--surface));
+  color: var(--accent-link);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-align: start;
+}
+.action-chip:hover {
+  color: var(--accent-link);
+  border-color: var(--accent-link);
+  background: color-mix(in srgb, var(--accent-link) 16%, var(--surface));
+}
+:is(.action-button, .action-link, .action-chip):focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 3px;
+}
+:is(.action-button, .action-link, .action-chip) > svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+/* Optional trailing arrow: a hidden <span class="action-arrow">, or .has-arrow when the
+   link's text content must stay exactly its label. */
+.action-arrow,
+.has-arrow::after {
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+.has-arrow::after {
+  content: '→';
+  content: '→' / '';
+}
+:is(.action-button, .action-link, .action-chip):hover :is(.action-arrow),
+:is(.action-button, .action-link, .action-chip).has-arrow:hover::after {
+  transform: translateX(3px);
+}
+/* A row of actions: wraps on narrow screens, never overflows. */
+.action-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .action-arrow,
+  .has-arrow::after,
+  :is(.action-button, .action-link, .action-chip) {
+    transition: none;
+  }
+  :is(.action-button, .action-link, .action-chip):hover .action-arrow,
+  :is(.action-button, .action-link, .action-chip).has-arrow:hover::after {
+    transform: none;
+  }
+}
+@media (forced-colors: active) {
+  :is(.action-button, .action-link, .action-chip) {
+    border-color: LinkText;
+  }
+}

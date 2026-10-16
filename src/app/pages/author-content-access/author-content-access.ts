@@ -14,9 +14,10 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         Author preview with synthetic metadata. These controls do not change your access or load a
         protected lesson.
       </p>
-      <nav aria-label="Preview states" style="display:flex;flex-wrap:wrap;gap:20px;margin:24px 0">
+      <nav aria-label="Preview states" style="display:flex;flex-wrap:wrap;gap:10px;margin:24px 0">
         @for (state of states; track state) {
           <a
+            class="action-chip"
             routerLink="/admin/content-access"
             [queryParams]="{ state }"
             [attr.aria-current]="kind() === state ? 'page' : null"
@@ -33,8 +34,18 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         />
       }
       <p>{{ retried ? 'Retry requested. In a real lesson, this starts a fresh read.' : '' }}</p>
-      <a routerLink="/admin/operations">Open documentation</a>
+      <a class="action-link" routerLink="/admin/operations">Open documentation</a>
     </main>`,
+  styles: [
+    `
+      /* DLV-937: the state being previewed is the filled chip. */
+      .action-chip[aria-current='page'] {
+        border-color: var(--accent-strong);
+        background: var(--accent-strong);
+        color: var(--accent-on-primary);
+      }
+    `,
+  ],
 })
 export class AuthorContentAccess {
   private readonly route = inject(ActivatedRoute);

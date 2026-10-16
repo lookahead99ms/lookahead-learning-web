@@ -38,8 +38,10 @@ import {
   OnInit,
   ViewChild,
   computed,
+  effect,
   inject,
   signal,
+  untracked,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ContentPath, SearchDocument } from '../../content/content.models';
@@ -63,6 +65,16 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { StudyPlanOverview } from './study-plan-overview';
 import { StudyPlanTypeChoice } from './study-plan-type-choice';
 import { STUDY_PLAN_ACCESS } from './study-plan-access';
+import {
+  FREE_PREVIEW_DAYS,
+  FREE_PREVIEW_HOURS,
+  FREE_STARTER_PATH_ID,
+  freeStarterPath,
+  freeStarterTopics,
+  isFreeAccount,
+  isFreeDocument,
+  isPlannable,
+} from './study-plan-free-preview';
 
 import {
   AccountPlan,
@@ -92,6 +104,13 @@ export class StudyPlanPage implements OnInit {
   private readonly router = inject(Router);
   protected readonly access = inject(STUDY_PLAN_ACCESS);
   protected readonly accountStore = inject(StudyPlanAccount);
+  protected readonly startDate = signal(new Date().toISOString().slice(0, 10));
+  protected readonly datedPlans = computed(() => this.accountMode() && !!this.accountStore.catalog()?.planLifecyclePolicies?.includes('dated-plan-v1'));
+  protected async changeLifecycle(state: 'active' | 'archived' | 'completed'): Promise<void> {
+    if (this.editsLocked()) return;
+    const result = await this.accountStore.lifecycle(state, this.startDate());
+    if (result) this.acceptAccountPlan(result);
+  }
   protected readonly loginName = signal('');
   protected readonly loginPassword = signal('');
   protected readonly importAvailable = signal(false);
@@ -473,7 +492,7 @@ export class StudyPlanPage implements OnInit {
   }
   protected async saveDraft(): Promise<void> {
     const draft = this.draft();
-    if (!draft || this.editsLocked()) return;
+    if (!draft || this.editsLocked() || this.freeAccount()) return;
     this.nameError.set(planNameError(draft.name ?? this.creationPlanName()));
     if (this.nameError()) return;
     if (draft.readyMade && this.accountMode() && !this.readyMadeAdoptionAvailable()) {
@@ -487,7 +506,7 @@ export class StudyPlanPage implements OnInit {
       return;
     }
     if (this.accountMode()) {
-      const result = await this.accountStore.save(draft);
+      const result = await this.accountStore.save(draft, 'update-plan', undefined, this.datedPlans() ? this.startDate() : undefined);
       if (!result) return;
       this.acceptAccountPlan(result);
     } else {
@@ -514,7 +533,9 @@ export class StudyPlanPage implements OnInit {
   private restoreDraftIntent(): void {
     if (this.route.snapshot.queryParamMap.get('create') !== '1') return;
     try {
-      const value = JSON.parse(upgradeLegacyCatalogJson(window.sessionStorage.getItem(DRAFT_INTENT_KEY) ?? 'null'));
+      const value = JSON.parse(
+        upgradeLegacyCatalogJson(window.sessionStorage.getItem(DRAFT_INTENT_KEY) ?? 'null'),
+      );
       if (
         !value ||
         typeof value.goal !== 'string' ||
@@ -749,9 +770,66 @@ export class StudyPlanPage implements OnInit {
   protected readonly selectedReadyMadePathId = signal('');
   protected readonly selectedReadyMadeDays = signal<ReadyMadeDuration | null>(null);
   protected readonly selectedReadyMadeHours = signal<number | null>(null);
-  protected readonly readyMadePath = computed(() =>
-    this.readyMadeCatalog()?.paths.find((path) => path.id === this.selectedReadyMadePathId()),
+  /** Signed-in accounts without course access browse every plan read-only and never save. */
+  protected readonly freeAccount = computed(
+    () => this.accountMode() && isFreeAccount(this.accountStore.account()),
   );
+  protected readonly freeDays = FREE_PREVIEW_DAYS;
+  protected readonly freeHours = FREE_PREVIEW_HOURS;
+  protected readonly freeStarterId = FREE_STARTER_PATH_ID;
+  protected readonly freeStarter = computed(() =>
+    freeStarterPath(freeStarterTopics(this.topics(), this.documents() ?? [])),
+  );
+  /** Keeps a free account's choices at the free starter selection: one week, one hour a day. */
+  private readonly freeSelection = effect(() => {
+    if (!this.freeAccount()) return;
+    const starter = this.freeStarter();
+    const catalogReady = !!this.readyMadeCatalog();
+    const days = this.days(),
+      hours = this.dailyHours(),
+      type = this.goalType(),
+      selected = this.selectedTopicIds();
+    untracked(() => {
+      if (days !== FREE_PREVIEW_DAYS) this.days.set(FREE_PREVIEW_DAYS);
+      if (hours !== FREE_PREVIEW_HOURS) this.dailyHours.set(FREE_PREVIEW_HOURS);
+      if (type !== 'learning') this.goalType.set('learning');
+      const ids = starter.topics.map(({ id }) => id);
+      if (ids.length && (selected.size !== ids.length || ids.some((id) => !selected.has(id))))
+        this.selectedTopicIds.set(new Set(ids));
+      if (this.goal() !== starter.title) this.goal.set(starter.title);
+      if (catalogReady && !this.readyMadePath()) {
+        this.selectedReadyMadePathId.set(FREE_STARTER_PATH_ID);
+        this.selectedReadyMadeDays.set(FREE_PREVIEW_DAYS);
+        this.selectedReadyMadeHours.set(FREE_PREVIEW_HOURS);
+      }
+    });
+  });
+  /** The free starter plan is listed first, and only for free accounts. */
+  protected readonly readyMadePaths = computed(() => {
+    const paths = this.readyMadeCatalog()?.paths ?? [];
+    return this.freeAccount() ? [this.freeStarter(), ...paths] : paths;
+  });
+  protected readonly readyMadePath = computed(() =>
+    this.readyMadePaths().find((path) => path.id === this.selectedReadyMadePathId()),
+  );
+  /** Free accounts see every window and hour option, with all but one week at one hour locked. */
+  protected readonly readyMadeDayOptions = computed<number[]>(() =>
+    this.freeAccount()
+      ? this.catalogVariantValues('durationDays', FREE_PREVIEW_DAYS)
+      : this.readyMadeDurations(),
+  );
+  protected readonly readyMadeHourOptions = computed<number[]>(() =>
+    this.freeAccount()
+      ? this.catalogVariantValues('dailyHours', FREE_PREVIEW_HOURS)
+      : this.readyMadeHours(),
+  );
+  /** Every window or hour value offered by any published plan, plus the free one, smallest first. */
+  private catalogVariantValues(field: 'durationDays' | 'dailyHours', free: number): number[] {
+    const values = (this.readyMadeCatalog()?.paths ?? []).flatMap((path) =>
+      path.variants.map((variant) => variant[field]),
+    );
+    return [...new Set<number>([free, ...values])].sort((a, b) => a - b);
+  }
   protected readonly readyMadeDurations = computed(() => [
     ...new Set((this.readyMadePath()?.variants ?? []).map((variant) => variant.durationDays)),
   ]);
@@ -842,7 +920,7 @@ export class StudyPlanPage implements OnInit {
   protected async customizeAuthoredPlan(): Promise<void> {
     const variant = this.readyMadeVariant();
     const path = this.readyMadePath();
-    if (!variant || !path || this.editsLocked()) return;
+    if (!variant || !path || this.editsLocked() || this.freeAccount()) return;
     const available = this.availableTopicIds();
     const topicIds = this.readyMadeSelectedCourses()
       .map((topic) => topic.id)
@@ -877,7 +955,9 @@ export class StudyPlanPage implements OnInit {
     const catalog = this.readyMadeCatalog();
     if (!catalog) return;
     const params = this.route.snapshot.queryParamMap;
-    const path = catalog.paths.find((candidate) => candidate.id === params.get('authoredPath'));
+    const path = this.readyMadePaths().find(
+      (candidate) => candidate.id === params.get('authoredPath'),
+    );
     if (!path) return;
     const days = Number(params.get('authoredDays')) as ReadyMadeDuration;
     const hours = Number(params.get('authoredHours'));
@@ -909,13 +989,15 @@ export class StudyPlanPage implements OnInit {
   );
   protected chooseReadyMadePath(pathId: string): void {
     this.selectedReadyMadePathId.set(pathId);
-    this.selectedReadyMadeDays.set(null);
-    this.selectedReadyMadeHours.set(null);
+    // Free accounts may look inside any plan, always at the one size they can preview.
+    this.selectedReadyMadeDays.set(this.freeAccount() ? FREE_PREVIEW_DAYS : null);
+    this.selectedReadyMadeHours.set(this.freeAccount() ? FREE_PREVIEW_HOURS : null);
     this.authoredPlanStep.set('select');
     this.readyMadeMessage.set('');
   }
   protected chooseReadyMadeDays(value: string): void {
     const days = Number(value) as ReadyMadeDuration;
+    if (this.freeAccount() && days !== FREE_PREVIEW_DAYS) return;
     const compatible = this.readyMadeDurations().includes(days);
     this.selectedReadyMadeDays.set(compatible ? days : null);
     this.authoredPlanStep.set('select');
@@ -932,6 +1014,7 @@ export class StudyPlanPage implements OnInit {
   }
   protected chooseReadyMadeHours(value: string): void {
     const hours = Number(value);
+    if (this.freeAccount() && hours !== FREE_PREVIEW_HOURS) return;
     this.selectedReadyMadeHours.set(this.readyMadeHours().includes(hours) ? hours : null);
     this.authoredPlanStep.set('select');
     this.readyMadeMessage.set(
@@ -965,6 +1048,14 @@ export class StudyPlanPage implements OnInit {
     const variant = this.readyMadeVariant();
     const path = this.readyMadePath();
     if (!variant || !path || this.editsLocked()) return;
+    if (this.freeAccount()) {
+      this.previewForFreeAccount(
+        path.id,
+        path.title,
+        variant.topicIds ?? path.topics.map((t) => t.id),
+      );
+      return;
+    }
     this.readyMadeStatus.set('loading');
     this.readyMadeMessage.set('Loading the authored schedule…');
     this.content
@@ -1084,6 +1175,7 @@ export class StudyPlanPage implements OnInit {
       ),
   );
   protected setPlanName(value: string): void {
+    if (this.freeAccount()) return;
     this.customPlanName.set(value);
     this.nameError.set(planNameError(value));
     this.persistWizardDraft();
@@ -1183,12 +1275,18 @@ export class StudyPlanPage implements OnInit {
         )
       : [],
   );
+  /** Items a plan may be built from: granted items, or free items for a preview-only account. */
+  private readonly planningDocuments = computed(() =>
+    this.freeAccount()
+      ? (this.documents() ?? []).filter((item) => isPlannable(item) && isFreeDocument(item))
+      : this.availableDocuments(),
+  );
   protected readonly availableTopicIds = computed(
     () =>
       new Set(
         this.topics()
           .filter((topic) =>
-            this.availableDocuments().some((item) => studyPlanMatchesTopic(item, topic)),
+            this.planningDocuments().some((item) => studyPlanMatchesTopic(item, topic)),
           )
           .map(({ id }) => id),
       ),
@@ -1200,7 +1298,7 @@ export class StudyPlanPage implements OnInit {
     this.topics().some(
       (topic) =>
         this.selectedTopicIds().has(topic.id) &&
-        this.availableDocuments().some(
+        this.planningDocuments().some(
           (item) => item.contentType === 'dsa-problem' && studyPlanMatchesTopic(item, topic),
         ),
     ),
@@ -1561,11 +1659,12 @@ export class StudyPlanPage implements OnInit {
     return index === current ? 'current' : index < current ? 'complete' : 'upcoming';
   }
   protected setGoal(value: string): void {
+    if (this.freeAccount()) return;
     this.goal.set(value);
     this.persistWizardDraft();
   }
   protected setGoalType(value: string): void {
-    if (value !== 'learning' && value !== 'interview') return;
+    if ((value !== 'learning' && value !== 'interview') || this.freeAccount()) return;
     this.goalType.set(value);
     this.persistWizardDraft();
   }
@@ -1737,15 +1836,17 @@ export class StudyPlanPage implements OnInit {
     }
   }
   protected setDays(value: string): void {
+    if (this.freeAccount() && Number(value) !== FREE_PREVIEW_DAYS) return;
     this.days.set(Number(value));
     this.persistWizardDraft();
   }
   protected setHours(value: string): void {
+    if (this.freeAccount() && Number(value) !== FREE_PREVIEW_HOURS) return;
     this.dailyHours.set(Number(value));
     this.persistWizardDraft();
   }
   protected toggleTopic(topic: StudyPlanTopic, checked: boolean): void {
-    if (!this.availableTopicIds().has(topic.id)) return;
+    if (!this.availableTopicIds().has(topic.id) || this.freeAccount()) return;
     const next = new Set(this.selectedTopicIds());
     if (checked) next.add(topic.id);
     else next.delete(topic.id);
@@ -1761,6 +1862,7 @@ export class StudyPlanPage implements OnInit {
     this.persistWizardDraft();
   }
   protected selectAllTopicsFor(path: ContentPath): void {
+    if (this.freeAccount()) return;
     const next = new Set(this.selectedTopicIds());
     for (const topic of this.topicsFor(path))
       if (this.availableTopicIds().has(topic.id)) next.add(topic.id);
@@ -1768,6 +1870,7 @@ export class StudyPlanPage implements OnInit {
     this.persistWizardDraft();
   }
   protected clearTopicsFor(path: ContentPath): void {
+    if (this.freeAccount()) return;
     const ids = new Set(this.topicsFor(path).map((topic) => topic.id));
     this.selectedTopicIds.set(new Set([...this.selectedTopicIds()].filter((id) => !ids.has(id))));
     this.persistWizardDraft();
@@ -1781,6 +1884,7 @@ export class StudyPlanPage implements OnInit {
   protected unavailableReason(topic: StudyPlanTopic): string {
     if (this.access.status() === 'loading') return 'Checking available access';
     if (this.access.status() === 'error') return 'Access could not be checked';
+    if (this.freeAccount()) return 'Subscription required';
     return (this.documents() ?? []).some((item) => studyPlanMatchesTopic(item, topic))
       ? 'Not available with current access'
       : 'No published study sessions yet';
@@ -1836,6 +1940,66 @@ export class StudyPlanPage implements OnInit {
   }
   protected readonly pendingSessions = computed(() => this.dailyQueue()?.deferred ?? []);
 
+  /**
+   * Builds a one-week, one-hour preview for a free account from the lesson index; authored
+   * templates need course access, so a paid plan's preview is a sample built from its courses.
+   */
+  private previewForFreeAccount(pathId: string, title: string, topicIds: string[]): void {
+    const documents = (this.documents() ?? []).filter(
+      (item) => isPlannable(item) && (pathId !== FREE_STARTER_PATH_ID || isFreeDocument(item)),
+    );
+    const topics = this.topics().filter((topic) => topicIds.includes(topic.id));
+    const usesDsa = documents.some(
+      (item) =>
+        item.contentType === 'dsa-problem' &&
+        topics.some((topic) => studyPlanMatchesTopic(item, topic)),
+    );
+    if (usesDsa && this.rankingStatus() !== 'ready') {
+      this.readyMadeMessage.set(
+        this.rankingStatus() === 'error'
+          ? 'The reviewed DSA order could not be loaded, so this preview cannot be built yet.'
+          : 'Loading the reviewed DSA order before building this preview…',
+      );
+      return;
+    }
+    const snapshot = buildStudyPlan(
+      documents,
+      {
+        days: FREE_PREVIEW_DAYS,
+        goalType: 'learning',
+        familiarity: {},
+        completedContentIds: [],
+        needsReviewContentIds: [],
+        dailyHours: FREE_PREVIEW_HOURS,
+        topicIds: topics.map(({ id }) => id),
+        accessTopicIds: topics.map(({ id }) => id),
+      },
+      this.topics(),
+      this.studyOrder,
+      this.interviewOrder,
+    );
+    this.draft.set({
+      schemaVersion: 'study-plan-local/v1',
+      revision: 0,
+      goal: title,
+      name: title,
+      customName: false,
+      rankingVersion: this.rankingVersion,
+      catalogVersion: null,
+      snapshot,
+      completedIds: [],
+      shiftedDays: 0,
+      history: [],
+    });
+    this.selectedDay.set(1);
+    this.readyMadeMessage.set(
+      pathId === FREE_STARTER_PATH_ID
+        ? 'Free starter plan loaded for preview.'
+        : 'A 7-day sample of this plan loaded for preview. The full plan needs a subscription.',
+    );
+    this.openDraftDialog();
+  }
+
   protected async generatePlan(): Promise<void> {
     if (!this.canGenerate()) return;
     const active = this.accountStore.active();
@@ -1849,7 +2013,7 @@ export class StudyPlanPage implements OnInit {
       );
       return;
     }
-    const selectedDsa = this.availableDocuments().filter(
+    const selectedDsa = this.planningDocuments().filter(
       (item) =>
         item.contentType === 'dsa-problem' &&
         this.topics().some(
@@ -1866,7 +2030,7 @@ export class StudyPlanPage implements OnInit {
     }
     const topicIds = [...this.selectedTopicIds()].filter((id) => this.availableTopicIds().has(id));
     const snapshot = buildStudyPlan(
-      this.availableDocuments(),
+      this.planningDocuments(),
       {
         days: this.days(),
         variationKey:

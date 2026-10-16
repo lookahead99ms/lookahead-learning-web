@@ -36,12 +36,17 @@
             <h1 class="module-context-title">{{ currentModule.title }}</h1>
           }
           <p class="module-description">{{ currentModule.description }}</p>
+          @if (moduleAccessText(); as accessText) {
+            <p class="module-access" [attr.data-access-level]="moduleAccess()">
+              Access: {{ accessText }}
+            </p>
+          }
         </section>
         <nav class="module-navigation-bar" aria-label="Module navigation">
           @if (!isFirstModuleInTrack()) {
             @if (previousModule(); as previous) {
               <a
-                class="module-previous-link"
+                class="module-previous-link action-link"
                 [routerLink]="['/', pathId(), courseId(), 'module', previous.id]"
               >
                 ← Previous module: <strong>{{ previous.title }}</strong>
@@ -52,14 +57,14 @@
             @if (!isLastModuleInTrack()) {
               @if (nextModule(); as next) {
                 <a
-                  class="module-next-link"
+                  class="module-next-link action-link"
                   [routerLink]="['/', pathId(), courseId(), 'module', next.id]"
                 >
                   Next module: {{ next.title }} »
                 </a>
               }
             } @else {
-              <a class="module-catalog-link" [routerLink]="catalogRoute()">📁 View all modules</a>
+              <a class="module-catalog-link action-link" [routerLink]="catalogRoute()">📁 View all modules</a>
             }
           </div>
         </nav>

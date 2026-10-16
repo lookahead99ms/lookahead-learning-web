@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="An assistant's patch for password reset passes through git diff -w; the indentation noise drops away and the reviewer's screen flags the token lifetime changed from 15 minutes to 24 hours">
+<style>
+.rad-t{font:600 11px system-ui,sans-serif;fill:var(--scene-ink,#102a33)}
+.rad-code{font:600 11px ui-monospace,Menlo,monospace;fill:var(--scene-ink,#102a33)}
+.rad-bad{font:600 11px ui-monospace,Menlo,monospace;fill:var(--scene-bad,#ac3f45)}
+.rad-loop{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-6.6s}
+.rad-dot{animation-name:rad-dot;animation-timing-function:linear}
+@keyframes rad-dot{0%,8%{transform:translate(0,0);opacity:0}12%{opacity:1}36%{transform:translate(96px,0);opacity:1}40%,100%{transform:translate(96px,0);opacity:0}}
+.rad-noise{animation-name:rad-noise;animation-timing-function:ease-in-out}
+@keyframes rad-noise{0%,30%{opacity:1}44%,92%{opacity:.25}100%{opacity:1}}
+.rad-row{animation-name:rad-row;animation-timing-function:ease-in-out}
+@keyframes rad-row{0%,40%{opacity:0}48%,94%{opacity:1}100%{opacity:0}}
+.rad-badge{animation-name:rad-badge;animation-timing-function:ease-out;transform-box:fill-box;transform-origin:center}
+@keyframes rad-badge{0%,52%{opacity:0;transform:scale(.4)}60%,94%{opacity:1;transform:scale(1)}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.rad-loop{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<!-- the assistant's patch: a stack of documents full of changed lines -->
+<ellipse cx="50" cy="156" rx="34" ry="5" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<rect x="24" y="40" width="58" height="108" rx="5" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="1.5"/>
+<path d="M18 34h48l10 10v100H18Z" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<path d="M66 34v10h10" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-ink,#102a33)" stroke-width="1.5"/>
+<text class="rad-t" x="24" y="27">patch</text>
+<g class="rad-noise rad-loop" stroke-width="4" stroke-linecap="round">
+<path d="M26 56h36M26 66h28M26 76h40M26 86h22M26 96h34M26 106h30M26 116h38M26 126h24M26 136h32" stroke="var(--scene-good,#24755c)" opacity=".55"/>
+<path d="M30 61h30M30 71h24M30 81h34M30 91h18M30 101h28M30 111h26M30 121h30M30 131h20" stroke="var(--scene-bad,#ac3f45)" opacity=".45"/>
+</g>
+<!-- the filter: git diff -w drops indentation-only changes -->
+<path d="M80 92H112M150 92H196" fill="none" stroke="var(--scene-muted,#536970)" stroke-width="1.5" stroke-dasharray="3 4"/>
+<ellipse cx="131" cy="156" rx="22" ry="4" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<path d="M112 70h38l-12 26v22h-14V96Z" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="2" stroke-linejoin="round"/>
+<text class="rad-code" x="123" y="86">-w</text>
+<circle class="rad-dot rad-loop" cx="88" cy="92" r="4" fill="var(--scene-accent,#006c73)"/>
+<!-- the reviewer behind a laptop; the screen keeps only the real changes -->
+<ellipse cx="256" cy="158" rx="54" ry="5" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<circle cx="276" cy="30" r="11" fill="var(--scene-link,#245a88)"/>
+<path d="M256 62a20 20 0 0 1 40 0Z" fill="var(--scene-link,#245a88)"/>
+<rect x="198" y="60" width="104" height="72" rx="6" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<path d="M190 132h120l-6 10H196Z" fill="var(--scene-line,#cfdfdc)" stroke="var(--scene-ink,#102a33)" stroke-width="1.5"/>
+<rect x="206" y="68" width="84" height="12" rx="3" fill="var(--scene-good,#24755c)" opacity=".25"/>
+<text class="rad-code" x="209" y="77">+ limit 5/h</text>
+<g class="rad-row rad-loop">
+<rect x="206" y="86" width="72" height="14" rx="3" fill="var(--scene-bad,#ac3f45)" opacity=".14"/>
+<text class="rad-bad" x="209" y="97">15m → 24h</text>
+</g>
+<path d="M208 112h56M208 122h40" stroke="var(--scene-line,#cfdfdc)" stroke-width="4" stroke-linecap="round"/>
+<g class="rad-badge rad-loop">
+<circle cx="290" cy="93" r="9" fill="var(--scene-bad,#ac3f45)"/>
+<path d="M286 89l8 8M294 89l-8 8" stroke="var(--scene-card,#fff)" stroke-width="2" stroke-linecap="round"/>
+</g>
+</svg>

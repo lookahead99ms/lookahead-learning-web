@@ -1,0 +1,157 @@
+<app-platform-header />
+<main id="main-content" class="content-page start-free-page">
+  <div class="start-free-shell">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <a routerLink="/">Home</a><span>/</span><span aria-current="page">Start free</span>
+    </nav>
+
+    @if (staffView()) {
+      <p class="staff-note" role="note">
+        <strong>Staff view.</strong> You see this page as a visitor does, with everything shown.
+        Signed-in learners see only what fits their access.
+      </p>
+    }
+    <header class="start-free-hero">
+      <p class="eyebrow">Start free</p>
+      <h1 class="reader-question-title">Start learning today, free.</h1>
+      <p class="lede">
+        Read the open lessons now. A free account unlocks more. When you want the whole course,
+        a plan opens every lesson.
+      </p>
+      @if (state() === 'ready') {
+        <ul class="hero-stats" aria-label="What you can read">
+          <li><strong>{{ counts().open }}</strong> open to everyone</li>
+          <li><strong>{{ counts().free }}</strong> more with a free account</li>
+          @if (counts().paid) {
+            <li><strong>{{ counts().paid }}+</strong> more with a plan</li>
+          }
+        </ul>
+      }
+      <div class="hero-actions">
+        @if (showAsVisitor()) {
+          <a class="action-button" routerLink="/sign-up">Create a free account</a>
+        }
+        <!-- DLV-209 (user, 2026-10-15): a way to every plan from here. -->
+        <a [class]="showAsVisitor() ? 'action-link' : 'action-button'" routerLink="/pricing">See all plans</a>
+      </div>
+    </header>
+
+    @switch (state()) {
+      @case ('loading') {
+        <p class="start-free-status" role="status">Loading free lessons…</p>
+      }
+      @case ('unavailable') {
+        <section class="start-free-status" role="status">
+          <p>The free lesson list is not available right now.</p>
+          <p>
+            Browse <a routerLink="/learn">Learn</a>, <a routerLink="/grow">Grow</a> or
+            <a routerLink="/blaze">Blaze</a> instead.
+          </p>
+        </section>
+      }
+      @default {
+        @for (group of groups(); track group.level) {
+          <section
+            class="start-free-group"
+            [attr.data-access-level]="group.level"
+            [attr.aria-labelledby]="'start-free-' + group.level"
+          >
+            <!-- Heading on the left, the section's one action on the right (Sign in is in the header). -->
+            <div class="group-heading">
+              <div class="group-title">
+                <h2 [id]="'start-free-' + group.level">{{ group.heading }}</h2>
+                @if (group.level === 'open') {
+                  <p class="start-free-note">No account needed.</p>
+                } @else if (!showAsVisitor()) {
+                  <p class="start-free-note">Your account can read these.</p>
+                } @else {
+                  <p class="start-free-note">Read these with a free account.</p>
+                }
+              </div>
+              @if (group.level === 'free' && showAsVisitor()) {
+                <a class="action-button" routerLink="/sign-up" [queryParams]="{ returnTo: '/start-free' }">Create a free account</a>
+              }
+            </div>
+            <ul class="start-free-list">
+              @for (item of visibleItems(group); track item.key) {
+                <li class="start-free-item" [attr.data-path]="item.pathLabel.toLowerCase()">
+                  <!-- The section heading already says the level; it stays for screen readers. -->
+                  <p class="start-free-meta" [id]="'start-free-meta-' + $index + '-' + group.level">
+                    {{ item.pathLabel }} · {{ item.courseTitle }}<span class="start-free-hidden"> ·
+                    <span class="start-free-access" [attr.data-access-level]="item.level">{{
+                      label(item.level)
+                    }}</span></span>
+                  </p>
+                  <a
+                    class="start-free-link"
+                    [routerLink]="item.route"
+                    [fragment]="item.fragment"
+                    [attr.aria-describedby]="'start-free-meta-' + $index + '-' + group.level"
+                    >{{ item.unitTitle
+                    }}<span class="start-free-hidden">, {{ label(item.level) }}</span></a
+                  >
+                  <span class="start-free-cta" aria-hidden="true">{{
+                    group.level === 'open' ? 'Read now' : 'Sign in to read'
+                  }}</span>
+                </li>
+              }
+            </ul>
+            @if (visibleItems(group).length < group.items.length) {
+              <button type="button" class="action-link show-more" (click)="showAll(group.level)">
+                Show {{ group.items.length - visibleItems(group).length }} more
+              </button>
+            }
+          </section>
+        }
+
+        @if (paidCourses().length) {
+          <section id="missing" class="start-free-missing" tabindex="-1" aria-labelledby="missing-heading">
+            <div class="group-heading">
+              <div class="group-title">
+                <h2 id="missing-heading">What you’re missing</h2>
+                <p class="start-free-note">
+                  A few of the most wanted courses. A plan opens every lesson in them.
+                </p>
+              </div>
+              <a class="action-button" routerLink="/pricing">See all plans</a>
+            </div>
+            <ul #showcase class="missing-courses" [class.bento]="showcaseComplete()">
+              @for (course of paidCourses(); track course.key) {
+                <li
+                  class="missing-course"
+                  [attr.data-path]="course.path"
+                  [attr.data-area]="course.area"
+                  [attr.data-size]="course.size"
+                  [attr.data-columns]="course.columns"
+                >
+                  <p class="start-free-meta">{{ course.pathLabel }}</p>
+                  <h3>
+                    <a [routerLink]="course.courseRoute">{{ course.courseTitle }}</a>
+                  </h3>
+                  <ul class="locked-units" [attr.aria-label]="'Paid units in ' + course.courseTitle">
+                    @for (unit of course.units; track unit.key) {
+                      <li>
+                        <svg class="lock" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                          <rect x="5" y="11" width="14" height="9" rx="2" />
+                          <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+                        </svg>
+                        <a [routerLink]="course.courseRoute" [fragment]="unit.fragment"
+                          >{{ unit.title }}<span class="start-free-hidden">, Paid plan</span></a
+                        >
+                      </li>
+                    }
+                  </ul>
+                  <!-- Text and visibility are set by fitShowcase after layout. -->
+                  <p class="more" [attr.data-more]="course.more">and {{ course.more }} more</p>
+                  @if (course.size === 'small' ? course.fromPrice : course.plansLine; as plans) {
+                    <p class="plans-line" [attr.title]="course.plansLine">{{ plans }}</p>
+                  }
+                </li>
+              }
+            </ul>
+          </section>
+        }
+      }
+    }
+  </div>
+</main>

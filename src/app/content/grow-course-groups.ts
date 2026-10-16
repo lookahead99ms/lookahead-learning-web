@@ -29,6 +29,7 @@ export const GROW_COURSE_GROUPS: GrowCourseGroup[] = [
       'application-security',
       'microservices',
       'distributed-systems',
+      'kafka-production',
       'technical-scenarios',
     ],
   },
@@ -43,7 +44,7 @@ export const GROW_COURSE_GROUPS: GrowCourseGroup[] = [
     title: 'AI Engineering',
     description:
       'Build bounded AI capabilities with explicit evidence, evaluation, security, and operational ownership.',
-    courseIds: ['ai-assisted-development'],
+    courseIds: ['ai-assisted-development', 'ai-code-verification'],
   },
   {
     id: 'cloud-delivery',

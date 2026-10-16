@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Two infeed lanes at a parcel hub take turns: a green light lets the north lane put parcel N2 on the sorter belt, then the south lane puts S2, so the belt reads N1, S1, N2, S2 in order">
+<style>
+.tord-a{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-3s;animation-timing-function:ease-in-out}
+.tord-t{font:600 11px system-ui,sans-serif;fill:var(--scene-muted,#536970);text-anchor:middle}
+.tord-v{font:700 11px ui-monospace,Menlo,monospace;fill:var(--scene-card,#fff);text-anchor:middle}
+.tord-n{animation-name:tord-north}
+.tord-s{animation-name:tord-south}
+.tord-gn{animation-name:tord-green-n}
+.tord-gs{animation-name:tord-green-s}
+.tord-ok{animation-name:tord-ok}
+.tord-rn{animation-name:tord-red-n}
+.tord-rs{animation-name:tord-red-s}
+@keyframes tord-north{0%,6%{transform:translate(0,0);opacity:1}24%{transform:translate(128px,44px);opacity:1}88%{transform:translate(128px,44px);opacity:1}94%,100%{transform:translate(128px,44px);opacity:0}}
+@keyframes tord-south{0%,30%{transform:translate(0,0);opacity:1}48%{transform:translate(160px,-42px);opacity:1}88%{transform:translate(160px,-42px);opacity:1}94%,100%{transform:translate(160px,-42px);opacity:0}}
+@keyframes tord-green-n{0%,26%{opacity:1}29%,94%{opacity:0}97%,100%{opacity:1}}
+@keyframes tord-green-s{0%,26%{opacity:0}29%,52%{opacity:1}55%,100%{opacity:0}}
+@keyframes tord-red-n{0%,26%{opacity:0}29%,94%{opacity:1}97%,100%{opacity:0}}
+@keyframes tord-red-s{0%,26%{opacity:1}29%,52%{opacity:0}55%,100%{opacity:1}}
+@keyframes tord-ok{0%,54%{opacity:0;transform:scale(.6)}58%,90%{opacity:1;transform:scale(1)}95%,100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.tord-a{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<g fill="var(--scene-ink,#102a33)" opacity=".08"><ellipse cx="72" cy="64" rx="60" ry="5"/><ellipse cx="72" cy="150" rx="60" ry="5"/><ellipse cx="226" cy="108" rx="84" ry="6"/></g>
+<g fill="var(--scene-line,#cfdfdc)"><rect x="14" y="48" width="118" height="10" rx="5"/><rect x="14" y="134" width="118" height="10" rx="5"/><rect x="146" y="92" width="162" height="10" rx="5"/></g>
+<g fill="var(--scene-ink,#102a33)" opacity=".14"><rect x="14" y="58" width="118" height="4" rx="2"/><rect x="14" y="144" width="118" height="4" rx="2"/><rect x="146" y="102" width="162" height="4" rx="2"/></g>
+<g fill="var(--scene-muted,#536970)"><circle cx="26" cy="53" r="2"/><circle cx="50" cy="53" r="2"/><circle cx="74" cy="53" r="2"/><circle cx="98" cy="53" r="2"/><circle cx="122" cy="53" r="2"/><circle cx="26" cy="139" r="2"/><circle cx="50" cy="139" r="2"/><circle cx="74" cy="139" r="2"/><circle cx="98" cy="139" r="2"/><circle cx="122" cy="139" r="2"/><circle cx="160" cy="97" r="2"/><circle cx="190" cy="97" r="2"/><circle cx="220" cy="97" r="2"/><circle cx="250" cy="97" r="2"/><circle cx="280" cy="97" r="2"/></g>
+<path d="M132 58L150 92M132 134L150 102" fill="none" stroke="var(--scene-muted,#536970)" stroke-width="2" stroke-dasharray="4 4"/>
+<text class="tord-t" x="40" y="34">north</text>
+<text class="tord-t" x="40" y="170">south</text>
+<rect x="136" y="22" width="14" height="30" rx="4" fill="var(--scene-ink,#102a33)"/><circle cx="143" cy="31" r="4" fill="var(--scene-line,#cfdfdc)"/><circle class="tord-a tord-rn" cx="143" cy="31" r="4" fill="var(--scene-bad,#b3261e)"/><circle cx="143" cy="43" r="4" fill="var(--scene-line,#cfdfdc)"/>
+<circle class="tord-a tord-gn" cx="143" cy="43" r="4" fill="var(--scene-good,#1f7a4d)"/>
+<rect x="136" y="140" width="14" height="30" rx="4" fill="var(--scene-ink,#102a33)"/><circle cx="143" cy="149" r="4" fill="var(--scene-line,#cfdfdc)"/><circle class="tord-a tord-rs" cx="143" cy="149" r="4" fill="var(--scene-bad,#b3261e)"/><circle cx="143" cy="161" r="4" fill="var(--scene-line,#cfdfdc)"/>
+<circle class="tord-a tord-gs" cx="143" cy="161" r="4" fill="var(--scene-good,#1f7a4d)"/>
+<g><rect x="160" y="74" width="24" height="18" rx="2" fill="var(--scene-accent,#006c73)"/><text class="tord-v" x="172" y="87">N1</text></g>
+<g><rect x="192" y="74" width="24" height="18" rx="2" fill="var(--scene-link,#1f5f8b)"/><text class="tord-v" x="204" y="87">S1</text></g>
+<g class="tord-a tord-n"><rect x="96" y="30" width="24" height="18" rx="2" fill="var(--scene-accent,#006c73)"/><text class="tord-v" x="108" y="43">N2</text></g>
+<g class="tord-a tord-s"><rect x="96" y="116" width="24" height="18" rx="2" fill="var(--scene-link,#1f5f8b)"/><text class="tord-v" x="108" y="129">S2</text></g>
+<g class="tord-a tord-ok" style="transform-box:fill-box;transform-origin:center"><circle cx="292" cy="62" r="10" fill="var(--scene-good,#1f7a4d)"/><path d="M287 62l3.5 3.5 6.5-7" fill="none" stroke="var(--scene-card,#fff)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+<rect x="262" y="118" width="46" height="36" rx="4" fill="var(--scene-card,#fff)" stroke="var(--scene-line,#cfdfdc)" stroke-width="2"/>
+<path d="M268 128h34M268 136h34M268 144h22" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"/>
+</svg>

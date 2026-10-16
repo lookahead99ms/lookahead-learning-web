@@ -1,0 +1,139 @@
+<app-platform-header />
+<main id="main-content" class="plans-page">
+  <aside class="workspace-sidebar">
+    <app-author-workspace-nav pageTitle="Plans and purchases" pageId="plans" [outline]="outline">
+      <p description>Reference · The agreed plan catalog and where learners buy. Local mock payments only.</p>
+    </app-author-workspace-nav>
+  </aside>
+  <div class="workspace-content">
+    <app-author-doc-hero pageId="plans" />
+
+    <p class="status-note" role="note">
+      <strong>Local mock payments.</strong> The server stores purchases and catalog access. No money is charged. Existing course grants remain separate.
+    </p>
+
+    <section class="doc-section" id="how-to-review" aria-labelledby="how-to-review-heading">
+      <h2 id="how-to-review-heading">How to review</h2>
+      <ol class="review-steps">
+        <li>
+          Look for the ways in: the <a routerLink="/" fragment="pricing">plans section</a> on the
+          home page (before the Essence), <a routerLink="/start-free">Start free</a> → What you’re
+          missing, and the lock screen on a locked lesson. Signed in, also
+          <strong>Choose a plan</strong> in Manage account. The header has no pricing link.
+        </li>
+        <li>
+          Start a sale on <a routerLink="/admin/sales">Sales and prices</a>, then open
+          Pricing: the sale is on top and the regular plans are read-only. The server publishes it during its configured dates.
+        </li>
+        <li>
+          Open <a routerLink="/pricing">Pricing</a> and select a <strong>Choose …</strong> button to
+          review and confirm a simulated purchase.
+        </li>
+        <li>
+          Open <a routerLink="/account" fragment="membership">Manage account → Membership</a>. The
+          <a routerLink="/admin/plans" fragment="buyer-preview">sample below</a> shows what a buyer would see.
+        </li>
+        <li>
+          Compare viewers. Your staff account sees everything: every plan, including sale plans
+          (marked staff-only), and the full Start free page. A signed-in learner sees only what fits:
+          "Your plan", "Upgrade to …", and smaller plans "available from" the last 7 days of their
+          plan.
+        </li>
+        <li>Check the <a routerLink="/admin/plans" fragment="configured-plans">configured plans</a> and the change rules.</li>
+      </ol>
+    </section>
+
+    <section class="doc-section" id="purchase-flow" aria-labelledby="purchase-flow-heading">
+      <h2 id="purchase-flow-heading">How a learner buys</h2>
+      <p class="section-lede">Each step says whether it exists today.</p>
+      <ol class="flow">
+        @for (step of steps; track step.title; let index = $index) {
+          <li class="flow-step" [class.built]="step.built">
+            <span class="step-number" aria-hidden="true">{{ index + 1 }}</span>
+            <div class="step-body">
+              <h3>{{ step.title }}</h3>
+              <p class="step-state">{{ step.built ? 'Built' : 'Not built yet' }}</p>
+              <p>{{ step.detail }}</p>
+              @if (step.link; as link) {
+                <a class="action-link" [routerLink]="link.href">{{ link.label }}</a>
+              }
+            </div>
+          </li>
+        }
+      </ol>
+    </section>
+
+    <section class="doc-section" id="buyer-preview" aria-labelledby="buyer-preview-heading">
+      <h2 id="buyer-preview-heading">What a buyer sees in Manage account</h2>
+      <p class="section-lede">
+        <strong>Sample data, not a real account.</strong> The Membership section of Manage account
+        renders these rows from server purchase records. Renew and Upgrade lead
+        to Pricing.
+      </p>
+      <div class="preview-frame">
+        <p class="preview-label">Preview · Membership · Paid membership</p>
+        <app-account-access-records [records]="sampleRecords" />
+      </div>
+    </section>
+
+    <section class="doc-section" id="configured-plans" aria-labelledby="configured-plans-heading">
+      <h2 id="configured-plans-heading">Configured plans</h2><p role="status">{{api.error()}}</p>
+      <p class="section-lede">
+        The one catalog Pricing, Manage account and People and access read. These are definitions,
+        not purchases or access grants.
+      </p>
+      <div class="plan-table-wrap" tabindex="0" role="region" aria-labelledby="configured-plans-heading">
+        <table class="plan-table">
+          <thead>
+            <tr>
+              <th scope="col">Plan</th>
+              <th scope="col">Type</th>
+              <th scope="col">Price</th>
+              <th scope="col">Access</th>
+              <th scope="col">Length</th>
+              <th scope="col">Renewal</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.id) {
+              <tr [attr.data-plan]="row.id">
+                <th scope="row">{{ row.name }}</th>
+                <td>{{ row.group }}</td>
+                <td>{{ row.price }}</td>
+                <td>{{ row.access }}</td>
+                <td>{{ row.duration }}</td>
+                <td>{{ row.renewal }}</td>
+                <td>{{ row.status }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="doc-section" id="plan-rules" aria-labelledby="plan-rules-heading">
+      <h2 id="plan-rules-heading">Changing and renewing</h2>
+      <dl class="rules">
+        @for (rule of rules; track rule.title) {
+          <div>
+            <dt>{{ rule.title }}</dt>
+            <dd>{{ rule.detail }}</dd>
+          </div>
+        }
+      </dl>
+    </section>
+
+    <section class="doc-section" id="not-built" aria-labelledby="not-built-heading">
+      <h2 id="not-built-heading">Not built yet</h2>
+      <ul class="gaps">
+
+        <li><strong>Real payments.</strong> Only the local mock provider is enabled.</li>
+        <li><strong>Course Pass course picker.</strong> Waits for the Course Pass length.</li>
+        <li><strong>Discount eligibility.</strong> Student and regional verification rules await a decision.</li>
+        <li><strong>Expiry reminders.</strong> Schedule and channel (DLV-717).</li>
+      </ul>
+    </section>
+  </div>
+  <app-author-admin-menu pageId="plans" />
+</main>

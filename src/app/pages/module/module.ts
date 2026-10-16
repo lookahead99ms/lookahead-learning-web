@@ -15,6 +15,14 @@ import {
 import { catalogGroupForCourse } from '../../content/catalog-course-groups';
 import { ContentService } from '../../content/content.service';
 import { isTheoryArticle } from '../../content/question-discovery';
+import {
+  AccessLevel,
+  AccessLevelsService,
+  accessLabelFor,
+  accessViewerFor,
+} from '../../content/access-levels';
+import { StudyPlanAccount } from '../study-plan/study-plan-account';
+import { flattenLearningUnits } from '../../content/learning-units';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 
 @Component({
@@ -64,20 +72,17 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         padding-bottom: 8px;
         border-bottom: 1px solid var(--line);
       }
-      .module-previous-link {
-        min-width: 0;
-        color: var(--muted);
-        font-size: 0.75rem;
-        line-height: 18px;
-        text-decoration: none;
+      /* DLV-937: previous, next and "all modules" are pill buttons (.action-link). */
+      .module-previous-link,
+      .module-catalog-link,
+      .module-next-link {
+        min-height: 40px;
+        padding: 8px 16px;
+        font-size: 0.82rem;
+        text-align: start;
       }
       .module-previous-link strong {
-        font-weight: 600;
-      }
-      .module-previous-link:hover,
-      .module-previous-link:focus-visible {
-        color: var(--search-hover);
-
+        font-weight: 750;
       }
       .module-action-group {
         display: flex;
@@ -87,50 +92,12 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         min-width: 0;
         margin-left: auto;
       }
-      .module-catalog-link,
-      .module-next-link {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        height: 32px;
-        box-sizing: border-box;
-        padding: 6px 12px;
-        border-radius: 8px;
-        font-size: 0.75rem;
-        line-height: 18px;
-        text-decoration: none;
-        white-space: nowrap;
-      }
-      .module-catalog-link {
-        border: 1px solid var(--line);
-        color: var(--text-strong);
-        background: var(--surface);
-        font-weight: 500;
-      }
-      .module-next-link {
-        display: inline;
-        height: auto;
-        padding: 0;
-        border: 0;
-        border-radius: 0;
-        color: var(--muted);
-        background: transparent;
-        font-size: 0.75rem;
-        font-weight: 600;
-        line-height: 18px;
-        text-decoration: none;
-        white-space: normal;
-      }
-      .module-catalog-link:hover,
-      .module-catalog-link:focus-visible {
-        background: var(--surface-subtle);
-
-      }
-      .module-next-link:hover,
-      .module-next-link:focus-visible {
-        color: var(--search-hover);
-        background: transparent;
-
+      /* DLV-942: who can open this module's unit, as plain text (never a pill). */
+      .module-access {
+        margin: 6px 0 0;
+        color: var(--text-subtle);
+        font-size: 0.86rem;
+        font-weight: 650;
       }
       .module-context-title {
         margin: 0 0 6px;
@@ -179,6 +146,33 @@ export class Module implements OnInit {
   protected readonly retryLoad = new Subject<void>();
   protected readonly reviewStatusLabel = reviewStatusLabel;
   protected readonly navTitle = navTitle;
+  private readonly accessLevels = inject(AccessLevelsService).levels;
+  private readonly accounts = inject(StudyPlanAccount);
+  /** DLV-942: the access level of the unit that owns this module; null when unknown. */
+  protected readonly moduleAccess = computed<AccessLevel | null>(() => {
+    const levels = this.accessLevels();
+    const course = this.course();
+    const moduleId = this.module()?.id;
+    if (!levels || !course || !moduleId) return null;
+    const unit = flattenLearningUnits(course.learningUnits ?? []).find(
+      (candidate) =>
+        !candidate.planned &&
+        [candidate.theoryModuleId, candidate.questionModuleId, candidate.practiceModuleId].includes(
+          moduleId,
+        ),
+    );
+    return unit ? levels.levelFor(this.pathId(), this.courseId(), unit.id) : null;
+  });
+  /**
+   * DLV-209: the access line for whoever is looking; null hides it. Signed-out visitors see every
+   * level, signed-in learners only "Paid plan" on a course they cannot open.
+   */
+  protected readonly moduleAccessText = computed(() => {
+    const access = this.moduleAccess();
+    if (!access) return null;
+    const account = this.accounts.sessionExpired() ? null : this.accounts.account();
+    return accessLabelFor(access, accessViewerFor(account, this.pathId(), this.courseId()));
+  });
 
   ngOnInit(): void {
     merge(this.route.paramMap, this.retryLoad.pipe(map(() => this.route.snapshot.paramMap)))

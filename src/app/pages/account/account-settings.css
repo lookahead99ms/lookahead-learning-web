@@ -559,6 +559,11 @@ input:focus-visible,
   color: var(--text-strong);
   font-weight: 600;
 }
+.membership-buy {
+  margin: 2px 0 4px;
+  /* Button placement rule: one action closing a block sits centred. */
+  text-align: center;
+}
 .membership-note {
   font-size: 0.9rem;
 }

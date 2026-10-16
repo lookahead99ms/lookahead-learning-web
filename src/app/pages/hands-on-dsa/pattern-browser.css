@@ -267,13 +267,23 @@
   height: 100%;
   background: var(--success);
 }
+/* DLV-937: the pattern's lesson is an outlined button beside Next unsolved. */
 .lesson-link {
-  color: var(--accent-link);
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 6px 14px;
+  border: 1px solid var(--accent-strong);
+  border-radius: 9px;
+  color: var(--accent-strong);
+  background: color-mix(in srgb, var(--accent-strong) 10%, transparent);
+  font-size: 0.86rem;
   font-weight: 800;
   text-decoration: none;
 }
 .lesson-link:hover {
-  text-decoration: underline;
+  color: var(--accent-on-primary);
+  background: var(--accent-strong);
 }
 /* Next unsolved sits on its own row; its title gives way first on a narrow pane. The table's
    column headers sort the pattern, as in All problems. */

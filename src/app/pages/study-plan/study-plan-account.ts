@@ -83,7 +83,12 @@ export interface AccountRegistration {
   confirmPassword: string;
   countryCode: string;
 }
+export interface PlanLifecycle {
+  state: 'unactivated' | 'active' | 'archived' | 'completed';
+  startDate?: string; endDateExclusive?: string; archiveDate?: string; configuredDailyMinutes?: number;
+}
 export interface AccountPlan {
+  lifecycle?: PlanLifecycle;
   name?: string;
   planNumber?: number;
   planId: string;
@@ -160,6 +165,7 @@ interface CatalogPins {
   rankingVersions: string[];
   topicIds: string[];
   readyMadePlanPolicies?: string[];
+  planLifecyclePolicies?: string[];
 }
 export const ACCOUNT_FETCH = new InjectionToken<typeof fetch>('Account API transport', {
   providedIn: 'root',
@@ -362,6 +368,7 @@ export class StudyPlanAccount implements AccountSettingsClient {
     if (error.status === 401 || error.code === 'CSRF_INVALID') {
       if (this.account()?.accountId === owner) {
         this.clearAccount();
+        this.sessionExpired.set(true);
         this.error.set('Your session expired. Sign in again to manage your account.');
       }
       return new AccountSettingsError('session-expired');
@@ -447,7 +454,17 @@ export class StudyPlanAccount implements AccountSettingsClient {
     this.busy.set(true);
     try {
       await this.loadAuthOptions();
-      this.account.set(await this.request<StudyAccount>('/auth/me'));
+      const account = await this.request<StudyAccount>('/auth/me');
+      this.account.set(account);
+      if (this.authOptions()?.managedLogin) {
+        await this.refreshCsrf();
+        const activated = await this.request<StudyAccount>('/auth/invitations/activate', {
+          method: 'POST',
+          headers: this.csrfHeaders(),
+        });
+        this.verifyProfileOwner(activated, account.accountId);
+        this.account.set(activated);
+      }
       await this.loadAccount();
     } catch (error) {
       // Only the initial identity check may mean signed out. A later catalog or
@@ -507,15 +524,32 @@ export class StudyPlanAccount implements AccountSettingsClient {
     this.busy.set(true);
     this.error.set('');
     try {
-      await this.refreshCsrf();
-      const result = await this.request<{ logoutUrl?: string } | undefined>('/auth/logout', {
-        method: 'POST',
-        headers: this.csrfHeaders(),
-      });
+      const localOAuth = this.authOptions()?.oauth && !this.authOptions()?.managedLogin;
+      let result: { logoutUrl?: string } | undefined;
+      try {
+        await this.refreshCsrf();
+        result = await this.request<{ logoutUrl?: string } | undefined>('/auth/logout', {
+          method: 'POST',
+          headers: this.csrfHeaders(),
+        });
+      } catch (error) {
+        // The BFF may already be gone after a partial logout. Identity must still
+        // be closed; an absent BFF session alone does not prove full sign-out.
+        if (!(localOAuth && error instanceof AccountApiError && error.status === 401)) throw error;
+      }
+      if (localOAuth) {
+        // Refresh can replace the provider's stored ID token while OidcUser still
+        // holds the original hint. Use Identity's existing session/CSRF logout.
+        await this.refreshCsrf(true);
+        await this.request('/auth/logout', {
+          method: 'POST',
+          headers: this.csrfHeaders(),
+        }, true);
+      }
       this.clearAccount();
-      if (this.authOptions()?.oauth && result?.logoutUrl) {
+      if (this.authOptions()?.managedLogin && result?.logoutUrl) {
         const target = new URL(result.logoutUrl);
-        if (target.origin !== window.location.origin || !(target.pathname === '/connect/logout' || (this.authOptions()?.managedLogin === true && target.pathname === '/bff/logout/complete' && !target.search && !target.hash)))
+        if (target.origin !== window.location.origin || target.pathname !== '/bff/logout/complete' || target.search || target.hash)
           throw new Error('Invalid logout destination');
         this.logoutRedirectPending.set(true);
         window.location.assign(target.href);
@@ -523,7 +557,7 @@ export class StudyPlanAccount implements AccountSettingsClient {
       return true;
     } catch (error) {
       this.logoutRedirectPending.set(false);
-      if (error instanceof AccountApiError && error.status === 401) {
+      if (error instanceof AccountApiError && error.status === 401 && (!this.authOptions()?.oauth || this.authOptions()?.managedLogin)) {
         this.clearAccount();
         return true;
       }
@@ -609,10 +643,12 @@ export class StudyPlanAccount implements AccountSettingsClient {
     saved: SavedPlan,
     reason: 'update-plan' | 'recovery' | 'extend-deadline' = 'update-plan',
     recovery?: RecoveryMetadata,
+    startDate?: string,
   ): Promise<AccountPlan | null> {
     const active = this.active();
     const body = {
       goal: saved.goal,
+      ...(!active && startDate ? { startDate } : {}),
       ...(!active && saved.customName && saved.name ? { name: saved.name.trim() } : {}),
       snapshot: saved.snapshot,
       provenance: active && reason !== 'update-plan' ? active.provenance : this.provenance(saved),
@@ -630,6 +666,13 @@ export class StudyPlanAccount implements AccountSettingsClient {
           },
         })
       : this.mutate('/plans', body);
+  }
+  lifecycle(state: 'active' | 'archived' | 'completed', startDate?: string): Promise<AccountPlan | null> {
+    const active = this.active();
+    if (!active) return Promise.resolve(null);
+    return this.mutate(`/plans/${active.planId}/lifecycle`, {
+      expectedRevision: active.revision, state, ...(state === 'active' ? { startDate } : {}),
+    });
   }
   rename(name: string): Promise<AccountPlan | null> {
     const active = this.active();

@@ -111,6 +111,19 @@ a {
 .document-actions a {
   gap: 6px;
 }
+/* DLV-937: the second document link is an outlined button beside the filled one. */
+.document-actions a:not(.primary-link) {
+  padding: 10px 18px;
+  border: 1.5px solid var(--accent-strong);
+  border-radius: 6px;
+  color: var(--accent-strong);
+  background: color-mix(in srgb, var(--accent-strong) 10%, transparent);
+  text-decoration: none;
+}
+.document-actions a:not(.primary-link):hover {
+  color: var(--accent-on-primary);
+  background: var(--accent-strong);
+}
 .document-actions span,
 .evidence-grid span {
   font-weight: 400;
@@ -171,6 +184,11 @@ iframe {
 .evidence-grid a {
   padding: 14px 16px;
   background: var(--surface);
+  text-decoration: none;
+}
+.evidence-grid a:hover {
+  background: var(--surface-muted);
+  text-decoration: underline;
 }
 button {
   min-height: 44px;

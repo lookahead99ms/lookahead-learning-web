@@ -13,9 +13,9 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         <h1>This address does not match a learning page.</h1>
         <p>The link may be outdated, incomplete, or typed incorrectly.</p>
         <nav aria-label="Page recovery">
-          <a routerLink="/">Return home</a>
-          <a routerLink="/search">Search the platform</a>
-          <a routerLink="/learn">Browse Learn</a>
+          <a class="action-button" routerLink="/">Return home</a>
+          <a class="action-link" routerLink="/search">Search the platform</a>
+          <a class="action-link" routerLink="/learn">Browse Learn</a>
         </nav>
       </section>
     </main>
@@ -25,7 +25,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
       nav {
         display: flex;
         flex-wrap: wrap;
-        gap: 12px 20px;
+        gap: 12px;
         margin-top: 24px;
       }
     `,

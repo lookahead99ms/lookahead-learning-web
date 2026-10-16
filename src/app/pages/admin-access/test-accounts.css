@@ -1,0 +1,249 @@
+:host {
+  display: block;
+}
+.directory {
+  margin: 0 0 40px;
+  padding: clamp(18px, 2.5vw, 28px);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  scroll-margin-top: calc(var(--platform-header-height, 76px) + 16px);
+}
+.directory-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 20px;
+  margin-bottom: 14px;
+}
+.directory-heading h2 {
+  margin: 0 0 4px;
+  color: var(--text-strong);
+  font-size: 22px;
+}
+.note,
+.empty,
+.count,
+.sub {
+  color: var(--text-subtle);
+  font-size: 14px;
+}
+.note {
+  max-width: 72ch;
+  margin: 0;
+  line-height: 1.5;
+}
+.directory-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px 16px;
+  margin-bottom: 12px;
+}
+.tool {
+  display: grid;
+  gap: 4px;
+  color: var(--text-strong);
+  font-size: 14px;
+  font-weight: 650;
+}
+.tool input,
+.tool select,
+.reset-panel input,
+.reset-panel select {
+  box-sizing: border-box;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-page);
+  color: var(--text-strong);
+  font: inherit;
+}
+.tool input {
+  width: min(320px, 100%);
+}
+.count {
+  margin: 0 0 10px auto;
+}
+.notice:empty {
+  display: none;
+}
+.notice {
+  margin: 0 0 10px;
+  color: var(--text-strong);
+  font-weight: 650;
+}
+.directory-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.directory-table th,
+.directory-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  text-align: start;
+  vertical-align: top;
+}
+.directory-table thead th {
+  background: var(--surface-muted);
+  color: var(--text-strong);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.directory-table tbody th {
+  font-weight: 400;
+}
+.person {
+  display: block;
+  color: var(--text-strong);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.sub {
+  display: block;
+}
+tr.self > * {
+  background: color-mix(in srgb, var(--accent-strong) 6%, transparent);
+}
+/* Passive metadata: plain list, never pills. */
+.access-list {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--text-strong);
+}
+.row-actions {
+  white-space: nowrap;
+  text-align: end;
+}
+.row-actions button + button {
+  margin-inline-start: 8px;
+}
+.history-row td {
+  background: var(--surface-page);
+}
+.history {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.history li {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) minmax(0, 2fr) minmax(0, 2fr) minmax(0, 1fr);
+  gap: 4px 14px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.history li[data-status='expired'] {
+  border-style: dashed;
+  color: var(--text-subtle);
+}
+.reset-panel {
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--warning) 45%, var(--line));
+  border-radius: 14px;
+}
+.reset-panel fieldset {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.reset-panel legend {
+  color: var(--text-strong);
+  font-weight: 750;
+}
+.reset-panel label {
+  display: grid;
+  gap: 4px;
+}
+/* Two related actions side by side, centred (button placement rule). */
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 14px;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+/* Phones and narrow columns: each person becomes a card with labelled lines. */
+@media (max-width: 760px) {
+  .directory-table thead {
+    display: none;
+  }
+  .directory-table,
+  .directory-table tbody,
+  .directory-table tr,
+  .directory-table th,
+  .directory-table td {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .directory-table tbody tr:not(.history-row) {
+    margin-top: 10px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+  }
+  .directory-table td[data-label]::before {
+    display: block;
+    color: var(--text-subtle);
+    font-size: 12px;
+    font-weight: 700;
+    content: attr(data-label);
+  }
+  .directory-table th,
+  .directory-table td {
+    border-bottom: 0;
+  }
+  .row-actions {
+    display: flex !important;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .row-actions button + button {
+    margin-inline-start: 0;
+  }
+  .history li {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .actions {
+    flex-direction: column;
+  }
+  .count {
+    margin-left: 0;
+  }
+}
+
+/* Prose link: styled, never default blue (links-as-buttons rule). */
+.prose-link {
+  color: var(--accent-link);
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.prose-link:hover {
+  color: var(--text-strong);
+}
+.prose-link:focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}

@@ -362,8 +362,12 @@ describe('Manage account', () => {
     expect(membership.querySelector('.membership-level')?.textContent?.trim()).toBe(
       'Course access',
     );
-    expect(membership.textContent).toContain('2 courses across Learn and Grow.');
-    expect(membership.textContent).not.toMatch(/Standard|Plus|Pro\b|Select|Upgrade now/);
+    expect(membership.textContent).toContain(
+      'Access to 2 individual courses across Learn and Grow. This is not a paid plan.',
+    );
+    expect(membership.textContent).not.toMatch(/Standard|Plus|Pro\b|Select|Upgrade now|renews (each|every)/);
+    // No purchase records from the server, so no plan rows and no Renew action.
+    expect(membership.querySelector('app-account-access-records')).toBeNull();
     // Only the paths the grants cover, as path buttons.
     expect(
       [...membership.querySelectorAll('.path-action')].map((link) => [
@@ -375,6 +379,22 @@ describe('Manage account', () => {
       ['Grow', '/grow'],
     ]);
     expect(membership.textContent).not.toContain('Explore lessons from Home');
+  });
+
+  it('links the membership note to the sample pricing page (DLV-209)', () => {
+    store.account.update((account) =>
+      account ? { ...account, authorPreview: false, topicGrants: [] } : account,
+    );
+    fixture.detectChanges();
+    const note = fixture.nativeElement.querySelector('.membership-note') as HTMLElement;
+    expect(note.textContent).toContain('Local purchases are simulated; nothing is charged or renewed automatically.');
+    expect(fixture.nativeElement.querySelector('.membership-level')?.textContent?.trim()).toBe(
+      'Free account',
+    );
+    const link = fixture.nativeElement.querySelector('.membership-buy a') as HTMLAnchorElement;
+    expect(link.textContent?.trim()).toBe('Choose a plan');
+    expect(link.classList).toContain('action-button');
+    expect(link.getAttribute('href')).toBe('/pricing');
   });
 
   describe('with profile links', () => {

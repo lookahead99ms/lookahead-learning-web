@@ -21,7 +21,9 @@ import {
   ProfileLinks,
 } from './account-settings-client';
 import { AccountThemePreference } from '../../core/account-theme';
-import { accountMembership, joinPaths } from './account-membership';
+import { accountMembership, accountRoleLabel, membershipName, joinPaths } from './account-membership';
+import { MembershipApi } from '../../content/membership-api';
+import { AccountAccessRecords } from './account-access-records';
 import { PATH_TAGLINES } from '../../content/path-taglines';
 import { PlatformThemeService, ThemePreference } from '../../core/platform-theme';
 import {
@@ -35,7 +37,7 @@ type PasswordField = keyof PasswordChange;
 
 @Component({
   selector: 'app-account-settings',
-  imports: [NgTemplateOutlet, RouterLink],
+  imports: [NgTemplateOutlet, RouterLink, AccountAccessRecords],
   templateUrl: './account-settings.html',
   styleUrl: './account-settings.css',
 })
@@ -88,11 +90,14 @@ export class AccountSettings implements OnDestroy {
   protected readonly savingTheme = signal(false);
   protected readonly themeStatus = signal('');
 
+  protected readonly membershipApi = inject(MembershipApi);
+  protected readonly membershipName = computed(() => { const account = this.store.account(); return account ? membershipName(account, this.membershipApi.records()) : ''; });
   protected readonly membership = computed(() => {
     const account = this.store.account();
-    return account ? accountMembership(account) : null;
+    return account ? accountMembership(account, this.membershipApi.records()) : null;
   });
   protected readonly joinPaths = joinPaths;
+  protected readonly accountRoleLabel = accountRoleLabel;
   // Each path's platform tagline, split as "Learn" + "to solve it on your own." (shared wording).
   private readonly catalogPaths = (['learn', 'grow', 'blaze'] as const).map((id) => {
     const headline = PATH_TAGLINES[id].headline;

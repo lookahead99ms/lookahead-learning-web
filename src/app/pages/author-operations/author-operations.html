@@ -15,6 +15,22 @@
   </aside>
   <div class="workspace-content">
     <app-author-doc-hero [pageId]="pageId" />
+    @if (section; as current) {
+      <nav class="section-pages" [attr.aria-label]="current.parent.label + ' section pages'">
+        <p class="section-label">
+          {{ current.parent.label }} section · page {{ sectionIndex + 1 }} of {{ current.pages.length }}
+        </p>
+        <ol>
+          @for (item of current.pages; track item.id) {
+            <li>
+              <a [routerLink]="item.href" [attr.aria-current]="item.id === pageId ? 'page' : null">{{
+                item.id === current.parent.id ? 'Overview' : item.label
+              }}</a>
+            </li>
+          }
+        </ol>
+      </nav>
+    }
     @if (!authorized() || state() === 'forbidden') {
       <section class="state-panel" role="alert">
         <h2>Admin access required</h2>
@@ -24,7 +40,7 @@
       <section class="state-panel" role="alert">
         <h2>Sign in again</h2>
         <p>Your sign-in could not be confirmed.</p>
-        <a routerLink="/sign-in" [queryParams]="{ returnTo: pageRoute }"
+        <a class="action-button" routerLink="/sign-in" [queryParams]="{ returnTo: pageRoute }"
           >Sign in to view {{ pageTitle }}</a
         >
       </section>
@@ -139,6 +155,22 @@
           </ul>
         </section>
       }
+      @if (previousPage || nextPage) {
+        <nav class="section-steps" [attr.aria-label]="section!.parent.label + ' previous and next pages'">
+          @if (previousPage; as previous) {
+            <a class="section-previous" [routerLink]="previous.href"
+              ><span class="step-direction"><span class="step-arrow" aria-hidden="true">←</span> Previous</span>
+              <strong>{{ previous.label }}</strong></a
+            >
+          }
+          @if (nextPage; as next) {
+            <a class="section-next" [routerLink]="next.href"
+              ><span class="step-direction">Next <span class="step-arrow" aria-hidden="true">→</span></span>
+              <strong>{{ next.label }}</strong></a
+            >
+          }
+        </nav>
+      }
       <footer class="reference-toolbar">
         <div class="reference-identity">
           <p class="reference-label">Published reference</p>
@@ -150,7 +182,7 @@
             <span class="new-tab">(new tab)</span></a
           >
           @if (pageId === 'access-checks') {
-            <a routerLink="/admin/content-access" [queryParams]="{ state: 'locked' }"
+            <a class="action-link" routerLink="/admin/content-access" [queryParams]="{ state: 'locked' }"
               >Review content access states</a
             >
           }

@@ -410,7 +410,7 @@ button:disabled {
   padding: 0;
   border: 0;
 }
-a {
+a:not([class*='action']) {
   color: var(--accent-link);
 }
 .return-action {

@@ -2,10 +2,10 @@ import type { StudyAccount } from '../../pages/study-plan/study-plan-account';
 export const authorDocumentationHome = '/admin/docs';
 
 export const authorWorkspaceLinks = [
-  { id: 'previews', label: 'Previews', href: '/admin/previews', icon: '👀' },
   { id: 'docs', label: 'Documentation', href: authorDocumentationHome, icon: '📚' },
-  { id: 'access', label: 'People and access', href: '/admin/access', icon: '🔐' },
+  { id: 'previews', label: 'Previews', href: '/admin/previews', icon: '👀' },
   { id: 'delivery', label: 'Delivery Plan', href: '/delivery-plan', icon: '🗺️' },
+  { id: 'access', label: 'People and access', href: '/admin/access', icon: '🔐' },
 ] as const;
 
 export interface AuthorDocumentationPage {
@@ -15,6 +15,8 @@ export interface AuthorDocumentationPage {
   description: string;
   /** Decorative symbol shown beside the title; never the only way to tell pages apart. */
   icon: string;
+  /** Sub-pages that split a long reference into readable topics; listed under this page. */
+  children?: readonly AuthorDocumentationPage[];
 }
 
 export interface AuthorDocumentationGroup {
@@ -57,6 +59,22 @@ export const authorDocumentationGroups: readonly AuthorDocumentationGroup[] = [
         description: 'What a learner sees when a lesson is locked, planned or missing.',
         icon: '🔒',
       },
+      {
+        id: 'plans',
+        label: 'Plans and purchases',
+        href: '/admin/plans',
+        description: 'The plan catalog, where learners buy, and what a buyer sees.',
+        icon: '🏷️',
+        children: [
+          {
+            id: 'sales',
+            label: 'Sales and prices',
+            href: '/admin/sales',
+            description: 'Manage server-owned sales and prices. Local payments are simulated.',
+            icon: '🎉',
+          },
+        ],
+      },
     ],
   },
   {
@@ -77,8 +95,17 @@ export const authorDocumentationGroups: readonly AuthorDocumentationGroup[] = [
         id: 'authentication',
         label: 'Sign-in & authentication',
         href: '/admin/authentication',
-        description: 'The OIDC and PKCE sign-in flow, one request at a time.',
+        description: 'The OIDC and PKCE sign-in flow: the parts, the sequence and what to keep apart.',
         icon: '🔑',
+        children: [
+          {
+            id: 'authentication-walkthrough',
+            label: 'Sign-in walkthrough',
+            href: '/admin/authentication-walkthrough',
+            description: 'Sign in to Identity, then the gateway, then read protected content, one request at a time.',
+            icon: '👣',
+          },
+        ],
       },
       {
         id: 'api',
@@ -114,8 +141,94 @@ export const authorDocumentationGroups: readonly AuthorDocumentationGroup[] = [
         id: 'aws-deployment',
         label: 'AWS deployment',
         href: '/admin/aws-deployment',
-        description: 'The DEV and PROD cloud design, commands and open gates.',
+        description: 'The DEV plan, its decisions, what is built and verified, and the earlier candidate.',
         icon: '☁️',
+        children: [
+          {
+            id: 'aws-dev-plan',
+            label: 'DEV plan',
+            href: '/admin/aws-dev-plan',
+            description: 'What runs where in DEV, the network boundary and how to read each statement.',
+            icon: '📐',
+          },
+          {
+            id: 'aws-dev-decisions',
+            label: 'DEV decisions',
+            href: '/admin/aws-dev-decisions',
+            description: 'All 36 accepted decisions and later refinements: options, choice and why.',
+            icon: '⚖️',
+          },
+          {
+            id: 'aws-dev-operations',
+            label: 'How DEV runs',
+            href: '/admin/aws-dev-operations',
+            description: 'Sign-in sessions, release slots, certificates, and starting and stopping DEV.',
+            icon: '🔄',
+          },
+          {
+            id: 'aws-dev-permissions',
+            label: 'DEV permissions',
+            href: '/admin/aws-dev-permissions',
+            description: 'Bootstrap and final policies, what they deny and the manual check before start.',
+            icon: '🛡️',
+          },
+          {
+            id: 'aws-dev-budget',
+            label: 'DEV budget',
+            href: '/admin/aws-dev-budget',
+            description: 'The 80/100 dollar rule, the annual-domain exception and the cost model.',
+            icon: '💵',
+          },
+          {
+            id: 'aws-dev-status',
+            label: 'DEV status',
+            href: '/admin/aws-dev-status',
+            description: 'What is verified, how it was verified and every gate still open.',
+            icon: '📍',
+          },
+          {
+            id: 'aws-dev-setup',
+            label: 'DEV setup log',
+            href: '/admin/aws-dev-setup',
+            description: 'AWS account and IAM setup commands, with what each returned.',
+            icon: '🧾',
+          },
+          {
+            id: 'aws-dev-workflow',
+            label: 'DEV workflow log',
+            href: '/admin/aws-dev-workflow',
+            description: 'The identity-only GitHub workflow runs and setup troubleshooting.',
+            icon: '🔁',
+          },
+          {
+            id: 'aws-candidate-design',
+            label: 'Candidate design',
+            href: '/admin/aws-candidate-design',
+            description: 'The earlier candidate: content delivery, auth, creation order and direction.',
+            icon: '📦',
+          },
+          {
+            id: 'aws-candidate-files',
+            label: 'Candidate files and IAM',
+            href: '/admin/aws-candidate-files',
+            description: 'Where the candidate files live, task and JVM settings, and IAM roles.',
+            icon: '🗂️',
+          },
+          {
+            id: 'aws-candidate-commands',
+            label: 'Candidate commands',
+            href: '/admin/aws-candidate-commands',
+            description: 'Validation, create, shutdown and rollback procedures for the candidate.',
+            icon: '⌨️',
+          },
+          {
+            id: 'aws-candidate-updates',
+            label: 'Candidate updates',
+            href: '/admin/aws-candidate-updates',
+            description: 'Dated 2026-10-09 additions: encryption, endpoints, logging, database jobs.',
+            icon: '🗓️',
+          },
+        ],
       },
       {
         id: 'operations',
@@ -130,18 +243,52 @@ export const authorDocumentationGroups: readonly AuthorDocumentationGroup[] = [
         href: '/admin/production-support',
         description: 'Triage, severity and runbooks for incidents and learner requests.',
         icon: '🚑',
+        children: [
+          {
+            id: 'support-runbooks',
+            label: 'Support runbooks',
+            href: '/admin/support-runbooks',
+            description: 'Eight runbooks: confirm the problem, check, fix safely and verify.',
+            icon: '📒',
+          },
+        ],
       },
     ],
   },
 ];
 
+/** Every documentation page, sub-pages included, in reading order. */
 export const authorDocumentationLinks: readonly AuthorDocumentationPage[] =
-  authorDocumentationGroups.flatMap((group) => group.pages);
+  authorDocumentationGroups.flatMap((group) =>
+    group.pages.flatMap((page) => [page, ...(page.children ?? [])]),
+  );
+
+export interface AuthorDocumentationSection {
+  parent: AuthorDocumentationPage;
+  /** The parent first, then its sub-pages, in reading order. */
+  pages: readonly AuthorDocumentationPage[];
+}
+
+/** The section a page belongs to when it is, or has, sub-pages; null for a standalone page. */
+export function authorDocumentationSection(
+  pageId: string | null | undefined,
+): AuthorDocumentationSection | null {
+  for (const group of authorDocumentationGroups) {
+    for (const parent of group.pages) {
+      const children = parent.children ?? [];
+      if (children.length && (parent.id === pageId || children.some((page) => page.id === pageId)))
+        return { parent, pages: [parent, ...children] };
+    }
+  }
+  return null;
+}
 
 export type AuthorWorkspacePageId =
   | (typeof authorWorkspaceLinks)[number]['id']
   | 'architecture'
   | 'api'
+  | 'plans'
+  | 'sales'
   | AuthorDocumentPageId;
 
 /** Published private documents rendered by the shared document page, keyed by route page id. */
@@ -171,6 +318,11 @@ export const authorDocumentPages = {
     summary: 'Read-only guide · Worktrees, builds, Docker, ports, and verification.',
     frameTitle: 'Worktrees, builds, Docker, ports and verification',
   },
+  'authentication-walkthrough': {
+    documentId: 'authentication-walkthrough',
+    summary: 'Read-only reference · Checked against source, not a live sign-in test.',
+    frameTitle: 'OIDC and PKCE sign-in, one request at a time',
+  },
   operations: {
     documentId: 'operations-reference',
     summary: 'Read-only reference · Documented topology and procedures, not live service health.',
@@ -178,8 +330,68 @@ export const authorDocumentPages = {
   },
   'aws-deployment': {
     documentId: 'aws-deployment',
-    summary: 'Read-only reference · Local candidates only; nothing is deployed to AWS.',
-    frameTitle: 'AWS DEV and PROD design, commands and fallbacks',
+    summary: 'Read-only section · DEV built and tested locally; nothing deployed to AWS.',
+    frameTitle: 'AWS deployment section overview and current state',
+  },
+  'aws-dev-plan': {
+    documentId: 'aws-dev-plan',
+    summary: 'Read-only reference · Accepted and built locally; not deployed.',
+    frameTitle: 'Accepted DEV plan, network boundary and statement states',
+  },
+  'aws-dev-decisions': {
+    documentId: 'aws-dev-decisions',
+    summary: 'Read-only reference · 36 decisions and later refinements; live checks pending.',
+    frameTitle: 'DEV decision register with alternatives and rationale',
+  },
+  'aws-dev-operations': {
+    documentId: 'aws-dev-operations',
+    summary: 'Read-only reference · Built and tested locally; never run in AWS.',
+    frameTitle: 'DEV sessions, release slots, certificates and shutdown',
+  },
+  'aws-dev-permissions': {
+    documentId: 'aws-dev-permissions',
+    summary: 'Read-only reference · Review candidates; nothing installed in AWS.',
+    frameTitle: 'DEV permission phases, final policies and pre-start check',
+  },
+  'aws-dev-budget': {
+    documentId: 'aws-dev-budget',
+    summary: 'Read-only reference · Conditional estimate, not a bill or a cap.',
+    frameTitle: 'DEV budget rule, domain exception and cost model',
+  },
+  'aws-dev-status': {
+    documentId: 'aws-dev-status',
+    summary: 'Read-only reference · Live and local checks, kept apart, and open gates.',
+    frameTitle: 'DEV checkpoints, evidence labels and remaining gates',
+  },
+  'aws-dev-setup': {
+    documentId: 'aws-dev-setup',
+    summary: 'Read-only log · AWS setup commands and observed outputs.',
+    frameTitle: 'DEV AWS account and IAM setup commands and outputs',
+  },
+  'aws-dev-workflow': {
+    documentId: 'aws-dev-workflow',
+    summary: 'Read-only log · GitHub workflow runs and troubleshooting.',
+    frameTitle: 'DEV identity workflow runs and setup troubleshooting',
+  },
+  'aws-candidate-design': {
+    documentId: 'aws-candidate-design',
+    summary: 'Read-only reference · Earlier candidate; the DEV plan wins where they differ.',
+    frameTitle: 'Earlier candidate content delivery, auth and creation order',
+  },
+  'aws-candidate-files': {
+    documentId: 'aws-candidate-files',
+    summary: 'Read-only reference · Earlier candidate; nothing deployed.',
+    frameTitle: 'Earlier candidate files, task settings and IAM roles',
+  },
+  'aws-candidate-commands': {
+    documentId: 'aws-candidate-commands',
+    summary: 'Read-only reference · Earlier candidate procedures; nothing deployed.',
+    frameTitle: 'Earlier candidate commands, rollback and common issues',
+  },
+  'aws-candidate-updates': {
+    documentId: 'aws-candidate-updates',
+    summary: 'Read-only reference · Dated candidate additions; nothing deployed.',
+    frameTitle: 'Earlier candidate encryption, endpoints, logging and database jobs',
   },
   'release-gates': {
     documentId: 'release-gates',
@@ -188,8 +400,13 @@ export const authorDocumentPages = {
   },
   'production-support': {
     documentId: 'production-support',
+    summary: 'Support guide · Local steps usable now; DEV/PROD steps need an approved deployment.',
+    frameTitle: 'Production support rules, severity, triage and health checks',
+  },
+  'support-runbooks': {
+    documentId: 'support-runbooks',
     summary: 'Runbooks · Local steps usable now; DEV/PROD steps need an approved deployment.',
-    frameTitle: 'Production support triage, severity and runbooks',
+    frameTitle: 'Production support runbooks',
   },
 } as const;
 
@@ -213,6 +430,7 @@ export function isAuthorDocumentationPage(pageId: string | null | undefined): bo
 
 export function visibleAdminLinks(account: StudyAccount | null) {
   return authorWorkspaceLinks.filter(page => {
+    if (page.id === 'access' && (account?.permissions?.triageFeedback || account?.permissions?.feedbackRole === 'co-author')) return true;
     const permission = page.id === 'access' ? 'manageAccess' : page.id === 'delivery' ? 'deliveryRead' : 'previewDocuments';
     return account?.permissions?.[permission] ?? account?.authorPreview === true;
   });

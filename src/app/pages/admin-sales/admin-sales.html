@@ -1,0 +1,117 @@
+<app-platform-header />
+<main id="main-content" class="sales-page">
+  <aside class="workspace-sidebar">
+    <app-author-workspace-nav pageTitle="Sales and prices" pageId="sales" [outline]="outline">
+      <p description>Manage local sales and prices. Payments are simulated.</p>
+    </app-author-workspace-nav>
+  </aside>
+  <div class="workspace-content">
+    <app-author-doc-hero pageId="sales" />
+
+    <p class="status-note" role="note">Sales and prices are stored on the local server. Only the owner can change them. Payment simulation charges nothing.</p>
+    <p class="notice" role="status" aria-live="polite">{{ notice() }}</p>
+
+    <label>Sale starts <input type="datetime-local" [(ngModel)]="startsAt" /></label><label>Sale ends <input type="datetime-local" [(ngModel)]="endsAt" /></label><section class="doc-section" id="sale" aria-labelledby="sale-heading">
+      <h2 id="sale-heading">Sale</h2>
+      @if (activeSale(); as sale) {
+        <div class="sale-state running">
+          <p>
+            <span aria-hidden="true">{{ sale.template.emoji }}</span>
+            <strong>{{ sale.template.name }}</strong> is active: “{{ sale.greeting }}”.
+          </p>
+          <div class="actions">
+            <a class="action-link" routerLink="/pricing">See it on Pricing</a>
+            <button type="button" class="action-link" (click)="stopSale()">Stop sale</button>
+          </div>
+        </div>
+      } @else {
+        <p class="sale-state">No sale is running. Learners see only the regular prices.</p>
+      }
+
+      <fieldset class="panel">
+        <legend>Occasion</legend>
+        <div class="template-grid">
+          @for (template of templates; track template.id) {
+            <label class="template-option">
+              <input
+                type="radio"
+                name="sale-template"
+                [checked]="selectedTemplate === template.id"
+                (change)="chooseTemplate(template.id)"
+              />
+              <span aria-hidden="true" class="template-emoji">{{ template.emoji }}</span>
+              <span><strong>{{ template.name }}</strong><span class="hint">{{ template.greeting }}</span></span>
+            </label>
+          }
+        </div>
+        <label class="field">
+          Greeting shown on Pricing
+          <input type="text" [(ngModel)]="greeting" maxlength="60" />
+        </label>
+      </fieldset>
+
+      <fieldset class="panel">
+        <legend>Sale plans</legend>
+        @for (plan of promoPlans; track plan.id) {
+          <label class="check-row">
+            <input
+              type="checkbox"
+              [checked]="includedPlans().includes(plan.id)"
+              (change)="togglePlan(plan.id, $any($event.target).checked)"
+            />
+            {{ plan.name }}
+          </label>
+        }
+      </fieldset>
+      <button type="button" class="action-button" (click)="startSale()">
+        Start sale
+      </button>
+    </section>
+
+    <section class="doc-section" id="prices" aria-labelledby="prices-heading">
+      <h2 id="prices-heading">Default prices</h2>
+      <p class="section-lede">
+        Set a new price for future purchases. Existing purchases keep their recorded prices.
+      </p>
+      <div class="table-wrap" tabindex="0" role="region" aria-labelledby="prices-heading">
+        <table class="price-table">
+          <thead>
+            <tr>
+              <th scope="col">Plan</th>
+              <th scope="col">Type</th>
+              <th scope="col">Catalog price</th>
+              <th scope="col">New price (USD)</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of priceRows(); track row.id) {
+              <tr [attr.data-plan]="row.id">
+                <th scope="row">{{ row.name }}</th>
+                <td>{{ row.group }}</td>
+                <td>{{ row.catalog }}</td>
+                <td>
+                  <input
+                    type="text"
+                    inputmode="decimal"
+                    [value]="row.preview"
+                    [attr.aria-label]="'New price for ' + row.name"
+                    placeholder="—"
+                    (change)="setPrice(row.id, $any($event.target).value)"
+                  />
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+    </section>
+
+    <section class="doc-section" id="not-built" aria-labelledby="not-built-heading">
+      <h2 id="not-built-heading">What is not built</h2>
+      <ul class="gaps"><li>Real payments, refunds and tax handling are not enabled.</li><li>Course Pass duration and notification delivery remain pending.</li>      </ul>
+      <p class="section-lede">See also <a routerLink="/admin/plans">Plans and purchases</a>.</p>
+    </section>
+  </div>
+  <app-author-admin-menu pageId="sales" />
+</main>

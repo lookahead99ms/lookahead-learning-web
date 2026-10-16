@@ -61,9 +61,24 @@ a span {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  gap: 8px;
 }
+/* DLV-937: each download is a chip with a download mark, not underlined text. */
 .download-links a {
+  min-height: 40px;
+  padding: 6px 14px;
+  border: 1px solid color-mix(in srgb, var(--accent-link) 40%, var(--line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-link) 8%, var(--surface));
   line-height: 1.45;
+  text-decoration: none;
+}
+.download-links a::before {
+  content: '↓';
+  content: '↓' / '';
+}
+.download-links a:hover {
+  border-color: var(--accent-link);
 }
 .workspace-content {
   display: flex;

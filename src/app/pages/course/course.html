@@ -72,7 +72,7 @@
                           @for (item of backgroundCourses().slice(0, 3); track item.id) {
                             <li>
                               @if (item.available) {
-                                <a [routerLink]="['/', item.path, item.id]">{{ item.title }}</a>
+                                <a class="action-chip" [routerLink]="['/', item.path, item.id]">{{ item.title }}</a>
                               } @else {
                                 <span class="unavailable">{{ item.title }} (coming next)</span>
                               }
@@ -88,7 +88,7 @@
                               @for (item of backgroundCourses().slice(3); track item.id) {
                                 <li>
                                   @if (item.available) {
-                                    <a [routerLink]="['/', item.path, item.id]">{{ item.title }}</a>
+                                    <a class="action-chip" [routerLink]="['/', item.path, item.id]">{{ item.title }}</a>
                                   } @else {
                                     <span class="unavailable">{{ item.title }} (coming next)</span>
                                   }
@@ -113,7 +113,7 @@
                         <strong>{{ currentCourse.title }}</strong>
                         @if (learningGroup(); as group) {
                           <a
-                            class="course-group-return"
+                            class="course-group-return action-link"
                             [routerLink]="['/', pathId()]"
                             [queryParams]="browseQueryParams()"
                             >Browse {{ group.title }}</a
@@ -131,7 +131,7 @@
                         <ul class="course-relationship-list">
                           <li>
                             @if (item.available) {
-                              <a [routerLink]="['/', item.path, item.id]">{{ item.title }}</a>
+                              <a class="action-link has-arrow" [routerLink]="['/', item.path, item.id]">{{ item.title }}</a>
                             } @else {
                               <span class="unavailable">{{ item.title }} (coming next)</span>
                             }
@@ -147,7 +147,7 @@
                               @for (other of otherDirectionCourses(); track other.id) {
                                 <li>
                                   @if (other.available) {
-                                    <a [routerLink]="['/', other.path, other.id]">{{
+                                    <a class="action-chip" [routerLink]="['/', other.path, other.id]">{{
                                       other.title
                                     }}</a>
                                   } @else {
@@ -178,6 +178,7 @@
               [courseId]="courseId()"
               [units]="currentCourse.learningUnits"
               [lessonNav]="lessonNav(currentCourse)"
+              [accessLevels]="accessLevels()"
             >
               @if (
                 currentCourse.learningPath &&

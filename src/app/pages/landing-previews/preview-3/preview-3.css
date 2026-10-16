@@ -1,0 +1,1159 @@
+/* DLV-937 preview 3, "Bento grid": the first screen is one large hero tile with a few doors into
+   the product around it; the sections below use the same rounded tile language. Colors come
+   from the global tokens, so light and dark themes follow the platform theme. */
+:host {
+  display: block;
+  min-height: 100vh;
+  --muted: var(--text-body);
+  --p3-gap: clamp(12px, 1.1vw, 18px);
+  --p3-radius: 22px;
+  --p3-radius-inner: 14px;
+  --p3-edge: color-mix(in srgb, var(--platform-edge) 85%, var(--text-subtle));
+  --p3-shade: #0d2a2e;
+  --p3-shadow:
+    0 1px 2px color-mix(in srgb, var(--p3-shade) 7%, transparent),
+    0 18px 40px -26px color-mix(in srgb, var(--p3-shade) 45%, transparent);
+  --p3-shadow-lift:
+    0 1px 2px color-mix(in srgb, var(--p3-shade) 8%, transparent),
+    0 24px 48px -24px color-mix(in srgb, var(--p3-shade) 50%, transparent);
+  --p3-tile: var(--surface);
+  background: var(--surface-page);
+  color: var(--text-strong);
+  font:
+    16px/1.6 system-ui,
+    sans-serif;
+}
+/* Dark theme: shadows stay dark (the light text token would make them glow). */
+:host-context(html[data-theme='dark']) {
+  --p3-shade: #000;
+  --p3-edge: var(--platform-edge);
+}
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+a {
+  color: var(--accent-link);
+  text-underline-offset: 5px;
+}
+p {
+  color: var(--text-body);
+}
+button {
+  font: inherit;
+  cursor: pointer;
+}
+:where(a, button, [tabindex]):focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 4px;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---------- Page frame: fill the width, keep the left section nav ---------- */
+.landing-page {
+  max-width: 1320px;
+  margin: auto;
+  padding: 16px 32px 28px;
+}
+/* The shared shell reserves a column on both sides (the right one is empty on the home page).
+   This preview keeps the left column for the section nav and gives the right one to the page. */
+@media (min-width: 1100px) {
+  .landing-page[data-sidebar-columns] {
+    --p3-nav-space: clamp(256px, 15.5vw, 296px);
+    width: calc(100% - var(--p3-nav-space)) !important;
+    max-width: 1720px !important;
+    margin-inline: var(--p3-nav-space) 0 !important;
+    padding: 18px clamp(24px, 2.6vw, 48px) 28px 4px;
+  }
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--accent-strong);
+}
+.tile {
+  min-width: 0;
+  border: 1px solid var(--p3-edge);
+  border-radius: var(--p3-radius);
+  background: var(--p3-tile);
+  box-shadow: var(--p3-shadow);
+}
+
+/* ---------- First screen: the bento ---------- */
+.bento {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(280px, 24%, 400px);
+  grid-template-areas:
+    'hero plan'
+    'hero ai'
+    'paths paths';
+  gap: var(--p3-gap);
+}
+.hero-tile {
+  grid-area: hero;
+}
+.door-plan {
+  grid-area: plan;
+}
+.door-ai {
+  grid-area: ai;
+}
+.paths-band {
+  grid-area: paths;
+}
+
+/* Hero tile: the one focal point. */
+.hero-tile {
+  container: hero / inline-size;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: clamp(22px, 2.4vw, 40px) clamp(22px, 2.6vw, 44px) clamp(16px, 1.6vw, 24px);
+  background:
+    radial-gradient(
+      120% 90% at 100% 0%,
+      color-mix(in srgb, var(--accent-strong) 13%, transparent),
+      transparent 55%
+    ),
+    radial-gradient(
+      90% 80% at 0% 100%,
+      color-mix(in srgb, var(--path-blaze) 9%, transparent),
+      transparent 60%
+    ),
+    var(--p3-tile);
+}
+.hero-tile::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--accent-strong) 7%, transparent) 1px, transparent 1px),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--accent-strong) 7%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 40px 40px;
+  mask-image: radial-gradient(80% 70% at 70% 20%, #000a, transparent 75%);
+  pointer-events: none;
+}
+.hero-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 24px;
+  padding-bottom: clamp(14px, 1.4vw, 20px);
+  margin-bottom: clamp(18px, 2vw, 30px);
+  border-bottom: 1px solid color-mix(in srgb, var(--p3-edge) 70%, transparent);
+}
+.discovery-framing {
+  font:
+    750 clamp(22px, 1.9vw, 30px)/1.2 system-ui,
+    sans-serif;
+  letter-spacing: -0.035em;
+  margin: 0;
+}
+.signature-support {
+  margin: 0;
+  color: var(--text-subtle);
+  font-size: clamp(15px, 1.1vw, 17px);
+  line-height: 1.5;
+}
+.hero-carousel {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+.hero-slides {
+  display: grid;
+  flex: 1;
+}
+.hero-slide {
+  grid-area: 1/1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.18fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(24px, 3cqi, 48px);
+  visibility: hidden;
+  pointer-events: none;
+}
+.hero-slide.active {
+  visibility: visible;
+  pointer-events: auto;
+}
+.hero-slide.transitioning {
+  visibility: visible;
+  will-change: opacity, transform;
+}
+.hero-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+.hero-copy .eyebrow {
+  margin: 0;
+}
+.slide-title {
+  font:
+    780 clamp(34px, 5.3cqi, 66px)/1.04 system-ui,
+    sans-serif;
+  letter-spacing: -0.04em;
+  margin: 14px 0 18px;
+  text-wrap: balance;
+}
+.slide-title span {
+  display: block;
+}
+.slide-title span:last-child {
+  color: var(--accent-strong);
+}
+.hero-copy .lead {
+  font-size: clamp(15px, 1.15vw, 18px);
+  line-height: 1.6;
+  margin: 0 0 24px;
+  max-width: 48ch;
+}
+.primary-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  padding: 12px 20px;
+  min-height: 48px;
+  border-radius: 999px;
+  background: var(--accent-strong);
+  color: var(--accent-on-primary);
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 10px 22px -14px var(--accent-strong);
+  transition: background-color 0.15s ease;
+}
+.primary-action:hover {
+  background: var(--search-hover);
+}
+.action-arrow {
+  transition: transform 0.15s ease;
+}
+.primary-action:hover .action-arrow {
+  transform: translateX(3px);
+}
+.hero-visual {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  padding: clamp(20px, 2.2cqi, 32px) clamp(20px, 2.6cqi, 34px);
+  border: 1px solid var(--panel-line);
+  border-radius: var(--p3-radius-inner);
+  background:
+    radial-gradient(
+      100% 60% at 100% 0%,
+      color-mix(in srgb, var(--panel-accent) 14%, transparent),
+      transparent 70%
+    ),
+    var(--panel-background);
+  color: var(--panel-ink);
+  box-shadow: 0 22px 40px -28px color-mix(in srgb, var(--p3-shade) 80%, transparent);
+}
+.hero-visual h2 {
+  font:
+    700 clamp(19px, 2.3cqi, 26px)/1.25 system-ui,
+    sans-serif;
+  letter-spacing: -0.02em;
+  margin: 12px 0;
+}
+.hero-visual p {
+  color: var(--panel-muted);
+  font-size: 14px;
+}
+.hero-visual .chapter {
+  margin: 0;
+  color: var(--panel-accent);
+  font:
+    12px/1.6 ui-monospace,
+    monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.hero-visual pre {
+  margin: 14px 0;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--p3-shade) 28%, transparent);
+}
+.hero-visual code {
+  display: block;
+  color: var(--panel-accent);
+  background: transparent;
+  font:
+    13px/1.85 ui-monospace,
+    monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.detail-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 12px 0;
+  font-size: 14px;
+  border-bottom: 1px solid var(--panel-line);
+}
+.detail-line span:last-child {
+  color: var(--panel-accent);
+  font-weight: 650;
+}
+.journey {
+  display: grid;
+  grid-template-columns: 35px 1fr;
+  gap: 14px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--panel-line);
+}
+.journey > span {
+  color: var(--panel-accent);
+  font:
+    24px/1.4 Georgia,
+    serif;
+}
+.journey h2 {
+  margin: 0;
+  font-size: 17px;
+}
+.journey p {
+  margin: 4px 0 0;
+}
+
+/* Controls: one progress segment per slide (named), then pause / previous / next. */
+.hero-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 20px;
+  margin-top: clamp(18px, 2vw, 28px);
+}
+.hero-progress {
+  display: flex;
+  gap: 8px;
+  min-width: 0;
+}
+.progress-step {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 7px;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 0 6px;
+  border: 0;
+  background: transparent;
+  color: var(--text-subtle);
+  text-align: start;
+}
+.progress-name {
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.progress-step:hover .progress-name,
+.progress-step.current .progress-name {
+  color: var(--text-strong);
+}
+.progress-track {
+  display: block;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-subtle) 26%, transparent);
+}
+.progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent-strong);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+/* Before the current slide: complete. The current one fills over 4 s (driven from the
+   component); when nothing is playing it simply shows as complete. */
+.progress-step.done .progress-fill {
+  transform: scaleX(1);
+  opacity: 0.45;
+}
+.progress-step.current .progress-fill {
+  transform: scaleX(1);
+}
+.progress-step:focus-visible {
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+.hero-arrows {
+  display: flex;
+  gap: 6px;
+}
+.hero-arrows button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: var(--p3-tile);
+  border: 1px solid var(--p3-edge);
+  color: var(--text-strong);
+  border-radius: 999px;
+}
+.hero-arrows button svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.hero-arrows button:hover:not(:disabled) {
+  background: var(--surface-muted);
+  border-color: var(--accent-strong);
+}
+
+/* Doors: compact tiles that each lead into one part of the product. Static. */
+.door {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: clamp(18px, 1.6vw, 26px);
+  color: var(--text-strong);
+  text-decoration: none;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
+.door-plan {
+  --door-color: var(--accent-strong);
+  background:
+    radial-gradient(
+      110% 80% at 100% 100%,
+      color-mix(in srgb, var(--door-color) 12%, transparent),
+      transparent 60%
+    ),
+    var(--p3-tile);
+}
+.door-ai {
+  --door-color: var(--identity-ai);
+  background:
+    radial-gradient(
+      110% 80% at 100% 100%,
+      color-mix(in srgb, var(--door-color) 12%, transparent),
+      transparent 60%
+    ),
+    var(--p3-tile);
+}
+.door:hover {
+  border-color: color-mix(in srgb, var(--door-color) 60%, var(--p3-edge));
+  box-shadow: var(--p3-shadow-lift);
+  transform: translateY(-2px);
+}
+.door-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.door-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--door-color) 15%, var(--p3-tile));
+  color: var(--door-color);
+}
+.door-icon svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.door-name {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.door-line {
+  color: var(--text-body);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.door-visual {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  min-height: 64px;
+}
+.door-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent-link);
+  font-size: 14px;
+  font-weight: 700;
+}
+.door:hover .door-action span {
+  transform: translateX(3px);
+}
+.door-action span {
+  transition: transform 0.15s ease;
+}
+/* Study Plan mini week (decorative). */
+.week {
+  gap: 6px;
+}
+.week > span {
+  display: grid;
+  flex: 1;
+  gap: 4px;
+  justify-items: center;
+}
+.week b {
+  color: var(--text-subtle);
+  font-size: 11px;
+  font-weight: 650;
+}
+.week i {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 34px;
+  border: 1px solid var(--p3-edge);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent-strong) 16%, var(--p3-tile));
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 700;
+}
+.week .busy i {
+  background: var(--surface-muted);
+  color: var(--text-subtle);
+}
+.week .quiz i {
+  border-color: var(--accent-strong);
+  background: var(--accent-strong);
+  color: var(--accent-on-primary);
+}
+/* AI Project Guides mini pipeline (decorative). */
+.flow {
+  flex-wrap: wrap;
+  gap: 8px 0;
+  font-size: 12px;
+  font-weight: 650;
+}
+.flow > span:not(.link, .check) {
+  padding: 5px 10px;
+  border: 1px solid var(--p3-edge);
+  border-radius: 8px;
+  background: var(--p3-tile);
+}
+.flow .model {
+  border-color: var(--door-color);
+  color: var(--door-color);
+}
+.flow .link {
+  flex: 1 1 8px;
+  max-width: 22px;
+  height: 1.5px;
+  background: var(--p3-edge);
+}
+.flow .check {
+  flex-basis: 100%;
+  padding: 5px 10px;
+  border-radius: 8px;
+  background: var(--surface-muted);
+  color: var(--text-body);
+  font:
+    600 12px/1.4 ui-monospace,
+    monospace;
+}
+.flow .check b {
+  color: var(--success);
+}
+
+/* Paths band: Learn, Grow and Blaze as three equal tiles under the hero. */
+#paths {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  padding-top: 18px;
+  scroll-margin-top: 90px;
+}
+#paths:focus-visible {
+  outline-offset: 6px;
+  border-radius: var(--p3-radius);
+}
+.paths-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+}
+.paths-heading .eyebrow {
+  margin: 0;
+}
+.paths-heading h2 {
+  font:
+    750 clamp(22px, 1.8vw, 28px)/1.2 system-ui,
+    sans-serif;
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+.path-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--p3-gap);
+}
+.card {
+  --path-color: var(--path-learn);
+  container-type: inline-size;
+  overflow: hidden;
+}
+.card:nth-child(2) {
+  --path-color: var(--path-grow);
+}
+.card:nth-child(3) {
+  --path-color: var(--path-blaze);
+}
+.card-link {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-radius: inherit;
+  background:
+    radial-gradient(
+      circle at 90% 100%,
+      color-mix(in srgb, var(--path-color) 18%, transparent),
+      transparent 55%
+    ),
+    linear-gradient(
+      160deg,
+      color-mix(in srgb, var(--path-color) 9%, var(--p3-tile)),
+      var(--p3-tile)
+    );
+  box-shadow: inset 0 4px 0 var(--path-color);
+  color: var(--text-strong);
+  text-decoration: none;
+}
+.card {
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
+.card:hover {
+  border-color: color-mix(in srgb, var(--path-color) 60%, var(--p3-edge));
+  box-shadow: var(--p3-shadow-lift);
+  transform: translateY(-2px);
+}
+.card-link:focus-visible {
+  outline-offset: -4px;
+}
+.direction-scene {
+  /* A capped drawing height keeps the path taglines smaller than the hero on wide screens. */
+  --card-scene-ratio: auto;
+  display: grid;
+  height: clamp(150px, 10.5vw, 200px);
+  margin: 4px 0 0;
+  border-bottom: 1px solid var(--platform-edge-soft);
+}
+/* The static (summary) frame of each path drawing sits on --surface-accent; match it so the
+   drawing has no side bars when the tile is wider than the drawing. */
+:host ::ng-deep .direction-scene .la-card-scene {
+  background: var(--surface-accent);
+}
+.card-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 16px 22px 20px;
+}
+@container (min-width: 560px) {
+  .card-link {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  }
+  .direction-scene {
+    order: 2;
+    height: auto;
+    min-height: 170px;
+    margin: 4px 0 0;
+    border-bottom: 0;
+    border-left: 1px solid var(--platform-edge-soft);
+  }
+  .card-body {
+    justify-content: center;
+    padding: 20px 24px;
+  }
+}
+.card .number {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0 0 8px;
+}
+.path-badge {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--path-color) 18%, var(--p3-tile));
+  color: var(--path-color);
+}
+.path-badge svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.card h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 6px;
+}
+.card p:not(.number) {
+  margin: 0 0 14px;
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+/* Looks like a button; the whole card is the one link, so this stays a span (no nested control). */
+.card-action {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  margin-top: auto;
+  padding: 7px 16px;
+  border-radius: 999px;
+  background: var(--accent-strong);
+  color: var(--accent-on-primary);
+  font-size: 13px;
+  font-weight: 700;
+}
+.card-link:hover .card-action {
+  background: color-mix(in srgb, var(--accent-strong) 88%, var(--text-strong));
+}
+
+/* ---------- Below the first screen ---------- */
+app-engineering-challenge {
+  margin-top: clamp(28px, 3vw, 44px);
+}
+:host ::ng-deep app-engineering-challenge .practice-disclosure {
+  margin-bottom: clamp(32px, 3.4vw, 52px);
+  border-color: var(--p3-edge);
+  border-radius: var(--p3-radius);
+  box-shadow: var(--p3-shadow);
+  overflow: hidden;
+}
+:host ::ng-deep app-engineering-challenge summary {
+  border-radius: var(--p3-radius) var(--p3-radius) 0 0;
+}
+.feature-discovery {
+  margin: 0 0 36px;
+}
+.feature-grid-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.feature-grid-heading .eyebrow {
+  margin: 0 0 6px;
+}
+.feature-grid-heading h2 {
+  font:
+    750 clamp(26px, 2.2vw, 34px)/1.2 system-ui,
+    sans-serif;
+  letter-spacing: -0.035em;
+  margin: 0;
+}
+.feature-grid-heading > p {
+  margin: 0;
+  font-size: 14px;
+}
+/* Bento rhythm: wide, narrow / narrow, wide. */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--p3-gap);
+}
+.discovery-feature {
+  grid-column: span 7;
+  container-type: inline-size;
+  min-width: 0;
+  overflow: hidden;
+  background: linear-gradient(155deg, var(--p3-tile) 55%, var(--platform-surface-soft));
+  border: 1px solid var(--p3-edge);
+  border-radius: var(--p3-radius);
+  box-shadow: var(--p3-shadow);
+}
+.discovery-feature:nth-child(2),
+.discovery-feature:nth-child(3) {
+  grid-column: span 5;
+}
+.discovery-feature:focus-within {
+  border-color: var(--accent-strong);
+}
+/* Every feature tile reads drawing first, then copy; equal drawing heights keep each row even. */
+.feature-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  height: 100%;
+}
+.feature-scene {
+  --card-scene-ratio: auto;
+  display: grid;
+  height: clamp(180px, 12vw, 220px);
+  border-bottom: 1px solid var(--platform-edge-soft);
+}
+.feature-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: clamp(22px, 2vw, 30px);
+}
+.feature-name {
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0;
+}
+.discovery-feature h3 {
+  font:
+    750 clamp(22px, 1.7vw, 27px)/1.22 system-ui,
+    sans-serif;
+  letter-spacing: -0.025em;
+  margin: 12px 0 10px;
+  max-width: 26ch;
+}
+.feature-description {
+  font-size: 14.5px;
+  line-height: 1.65;
+  margin: 0 0 22px;
+  max-width: 55ch;
+}
+.discovery-feature a {
+  margin-top: auto;
+  width: fit-content;
+  font-weight: 700;
+  font-size: 14px;
+}
+.feature-availability {
+  margin: 16px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--platform-edge-soft);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* The essence: one wide tile. */
+.brand-story {
+  display: grid;
+  justify-items: center;
+  gap: clamp(24px, 3vw, 32px);
+  padding: clamp(40px, 5vw, 72px) clamp(20px, 4vw, 64px);
+  border: 1px solid var(--p3-edge);
+  border-radius: calc(var(--p3-radius) + 6px);
+  background:
+    radial-gradient(
+      70% 60% at 50% 0%,
+      color-mix(in srgb, var(--accent-strong) 9%, transparent),
+      transparent 70%
+    ),
+    var(--p3-tile);
+  box-shadow: var(--p3-shadow);
+  text-align: center;
+}
+.brand-story-heading {
+  display: grid;
+  gap: 6px;
+}
+.brand-story .brand-context {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.brand-story h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -0.02em;
+}
+.brand-story app-platform-brand-illustration {
+  width: min(100%, 760px);
+}
+.brand-story-copy {
+  display: grid;
+  justify-items: center;
+  gap: clamp(18px, 2.5vw, 24px);
+  width: min(100%, 760px);
+}
+.brand-story p {
+  margin: 0;
+  color: var(--text-subtle);
+  text-wrap: balance;
+}
+.brand-line {
+  display: block;
+}
+.brand-story .brand-opening,
+.brand-story .brand-learning,
+.brand-story .brand-principle,
+.brand-story .brand-obstacle {
+  font-family: 'Avenir Next', 'Segoe UI', system-ui, sans-serif;
+}
+.brand-story .brand-opening {
+  color: var(--text-strong);
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: 650;
+  line-height: 1.15;
+  letter-spacing: -0.045em;
+}
+.brand-opening span {
+  color: var(--accent-strong);
+}
+.brand-story .brand-learning {
+  color: var(--text-strong);
+  font-size: clamp(20px, 2.4vw, 28px);
+  font-weight: 500;
+  line-height: 1.45;
+  letter-spacing: -0.025em;
+}
+.brand-learning strong {
+  font-weight: 650;
+}
+.brand-learn {
+  color: var(--path-learn);
+}
+.brand-code {
+  color: var(--identity-code);
+}
+.brand-explore {
+  color: var(--identity-eyes);
+}
+.brand-disciplines {
+  color: var(--identity-ai);
+  font-weight: 600;
+}
+.brand-story .brand-growth {
+  font-size: clamp(16px, 1.7vw, 19px);
+  line-height: 1.65;
+}
+.brand-growth strong {
+  color: var(--text-strong);
+  font-weight: 600;
+}
+.brand-growth .brand-grow {
+  color: var(--path-grow);
+  font-weight: 700;
+}
+.brand-principles {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+}
+.brand-principles-logo {
+  justify-self: center;
+}
+.brand-story .brand-principle,
+.brand-story .brand-obstacle {
+  position: relative;
+  padding-top: 24px;
+  color: var(--text-strong);
+  font-size: clamp(18px, 2vw, 22px);
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: -0.015em;
+}
+.brand-principle::before,
+.brand-obstacle::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: calc(50% - 24px);
+  width: 48px;
+  border-top: 2px solid var(--platform-edge);
+}
+.brand-principle strong {
+  color: var(--identity-wall);
+  font-weight: 650;
+}
+.brand-principle em {
+  color: var(--identity-ai);
+  font-weight: 600;
+}
+.brand-obstacle strong {
+  color: var(--identity-wall);
+  font-weight: 650;
+}
+.brand-obstacle em {
+  color: var(--identity-arrow);
+  font-weight: 600;
+  font-style: italic;
+}
+.landing-footer {
+  margin-top: 28px;
+  padding: 20px 4px;
+  font-size: 13px;
+}
+
+/* ---------- Narrower screens ---------- */
+/* The hero takes the full row; the two doors sit side by side under it. */
+@media (max-width: 1359px) {
+  .bento {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      'hero hero'
+      'plan ai'
+      'paths paths';
+  }
+}
+@container hero (max-width: 640px) {
+  /* Stacked: the panel takes any spare height, so no gap opens between copy and panel. */
+  .hero-slide {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    align-items: stretch;
+    gap: 22px;
+  }
+  .journey {
+    padding: 6px 0;
+  }
+  .journey p {
+    margin-top: 2px;
+  }
+  .slide-title {
+    font-size: clamp(30px, 8.6cqi, 44px);
+  }
+  .progress-name {
+    display: none;
+  }
+}
+@media (max-width: 1023px) {
+  .path-tiles {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .discovery-feature,
+  .discovery-feature:nth-child(2),
+  .discovery-feature:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 800px) {
+  .landing-page {
+    padding: 16px 20px;
+  }
+}
+@media (max-width: 640px) {
+  .bento {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'hero'
+      'plan'
+      'ai'
+      'paths';
+  }
+  .hero-head {
+    flex-direction: column;
+    gap: 6px;
+  }
+  .discovery-framing {
+    font-size: 24px;
+  }
+  .brand-principles {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .paths-heading {
+    flex-direction: column;
+    gap: 2px;
+  }
+}
+@media (max-width: 400px) {
+  .landing-page {
+    padding-inline: 16px;
+  }
+  .hero-tile {
+    padding: 20px 18px 14px;
+  }
+  .hero-visual {
+    padding: 18px;
+  }
+  .hero-controls {
+    gap: 10px;
+  }
+  .hero-progress {
+    gap: 5px;
+  }
+  .hero-arrows {
+    gap: 4px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation: none !important;
+    transition: none !important;
+  }
+}
+@media (forced-colors: active) {
+  .tile,
+  .brand-story {
+    border-color: CanvasText;
+  }
+  .progress-fill {
+    background: Highlight;
+  }
+  .progress-track {
+    border: 1px solid CanvasText;
+  }
+}

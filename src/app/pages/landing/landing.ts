@@ -17,6 +17,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { EngineeringChallenge } from './engineering-challenge';
 import { PlatformBrandIllustration } from '../../core/platform-brand/platform-brand-illustration';
 import { PlatformBrand } from '../../core/platform-brand/platform-brand';
+import { HomePricing } from './home-pricing/home-pricing';
 import { CardScene } from '../../core/card-scene/card-scene';
 import { PathTaglineId, pathTaglineText } from '../../content/path-taglines';
 import { PathSceneTimeline } from './path-scene-timeline';
@@ -42,7 +43,7 @@ interface HeroSlide {
 
 @Component({
   selector: 'app-landing',
-  imports: [LandingHeroVisual, LearningPrompt, PlatformSignature, PlatformHeader, RouterLink, EngineeringChallenge, PlatformBrandIllustration, PlatformBrand, CardScene],
+  imports: [LandingHeroVisual, LearningPrompt, PlatformSignature, PlatformHeader, RouterLink, EngineeringChallenge, PlatformBrandIllustration, PlatformBrand, CardScene, HomePricing],
   templateUrl: './landing.html',
   styleUrl: './landing.css',
 })
@@ -184,11 +185,28 @@ export class Landing {
         motion?.removeEventListener('change', motionChanged);
       });
       this.ready.set(true);
+      this.scrollToSection();
     });
     this.destroyRef.onDestroy(() => {
       this.settleTransition();
       this.sceneTimeline?.destroy();
     });
+  }
+
+  /**
+   * Arriving at /#pricing (the lock screen's See pricing) or /#paths opens that section. It waits
+   * a frame because the router's scroll restoration moves to the top after the navigation.
+   */
+  private scrollToSection(): void {
+    const id = this.document.location?.hash.slice(1);
+    if (id !== 'pricing' && id !== 'paths') return;
+    const view = this.document.defaultView;
+    const scroll = () => {
+      const target = this.document.getElementById(id);
+      target?.focus({ preventScroll: true });
+      target?.scrollIntoView?.({ block: 'start' });
+    };
+    view?.setTimeout(() => view.requestAnimationFrame(scroll), 0);
   }
 
   protected toggleScenes(): void {

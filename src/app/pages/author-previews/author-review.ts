@@ -14,7 +14,7 @@ import { AuthorReviewPacket } from './author-review-packet';
         <app-author-workspace-nav pageTitle="Study Plan review" [outline]="outline" />
       </aside>
       <div class="review-content">
-        <a routerLink="/admin/previews">All previews</a>
+        <a class="action-link" routerLink="/admin/previews">All previews</a>
         <header id="review-overview">
           <p class="eyebrow">Admin review workspace</p>
           <h2>Study Plan experience</h2>
@@ -60,7 +60,7 @@ import { AuthorReviewPacket } from './author-review-packet';
     #review-packet {
       scroll-margin-top: calc(var(--platform-header-height, 76px) + 16px);
     }
-    a {
+    a:not([class*='action']) {
       display: inline-flex;
       align-items: center;
       min-height: 44px;

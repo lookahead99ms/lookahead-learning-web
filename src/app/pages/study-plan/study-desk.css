@@ -434,7 +434,7 @@ summary {
   align-content: center;
 }
 .references p {
-  margin-top: 12px;
+  margin: 8px 0 0;
 }
 @media (prefers-reduced-motion: reduce) {
   .disclosure-chevron,

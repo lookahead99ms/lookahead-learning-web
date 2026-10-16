@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Web servers write log lines into the six partitions of the app-logs topic; a third indexer joins the group and only partitions 4 and 5 move to it, while the other four keep flowing to their indexers and on to the search cluster">
+<style>
+.kcg-t{font:600 9px system-ui,sans-serif;fill:var(--scene-muted,#4d6268)}
+.kcg-loop{animation-duration:8s;animation-iteration-count:infinite;animation-delay:-6.4s;animation-timing-function:linear}
+.kcg-d0{animation-name:kcg-d0}
+@keyframes kcg-d0{0%{transform:translate(0,0);opacity:0}3%{opacity:1}38%{transform:translate(46px,0px);opacity:1}40%,48%{transform:translate(46px,0px);opacity:0}49%{transform:translate(0,0);opacity:0}52%{opacity:1}88%{transform:translate(46px,0px);opacity:1}90%,100%{transform:translate(46px,0px);opacity:0}}
+.kcg-d1{animation-name:kcg-d1}
+@keyframes kcg-d1{0%{transform:translate(0,0);opacity:0}3%{opacity:1}38%{transform:translate(46px,-18px);opacity:1}40%,48%{transform:translate(46px,-18px);opacity:0}49%{transform:translate(0,0);opacity:0}52%{opacity:1}88%{transform:translate(46px,-18px);opacity:1}90%,100%{transform:translate(46px,-18px);opacity:0}}
+.kcg-d2{animation-name:kcg-d2}
+@keyframes kcg-d2{0%{transform:translate(0,0);opacity:0}3%{opacity:1}38%{transform:translate(46px,12px);opacity:1}40%,48%{transform:translate(46px,12px);opacity:0}49%{transform:translate(0,0);opacity:0}52%{opacity:1}88%{transform:translate(46px,12px);opacity:1}90%,100%{transform:translate(46px,12px);opacity:0}}
+.kcg-d3{animation-name:kcg-d3}
+@keyframes kcg-d3{0%{transform:translate(0,0);opacity:0}3%{opacity:1}38%{transform:translate(46px,-6px);opacity:1}40%,48%{transform:translate(46px,-6px);opacity:0}49%{transform:translate(0,0);opacity:0}52%{opacity:1}88%{transform:translate(46px,-6px);opacity:1}90%,100%{transform:translate(46px,-6px);opacity:0}}
+.kcg-d4{animation-name:kcg-d4}
+@keyframes kcg-d4{0%{transform:translate(0,0);opacity:0}3%{opacity:1}24%{transform:translate(46px,-24px);opacity:1}26%,54%{transform:translate(46px,-24px);opacity:0}55%{transform:translate(0,0);opacity:0}58%{opacity:1}88%{transform:translate(46px,24px);opacity:1}90%,100%{transform:translate(46px,24px);opacity:0}}
+.kcg-d5{animation-name:kcg-d5}
+@keyframes kcg-d5{0%{transform:translate(0,0);opacity:0}3%{opacity:1}24%{transform:translate(46px,-42px);opacity:1}26%,54%{transform:translate(46px,-42px);opacity:0}55%{transform:translate(0,0);opacity:0}58%{opacity:1}88%{transform:translate(46px,6px);opacity:1}90%,100%{transform:translate(46px,6px);opacity:0}}
+.kcg-old{animation-name:kcg-old}@keyframes kcg-old{0%,30%{opacity:.6}36%,97%{opacity:0}100%{opacity:.6}}
+.kcg-new{animation-name:kcg-new}@keyframes kcg-new{0%,36%{opacity:0}42%,97%{opacity:.6}100%{opacity:0}}
+.kcg-pod{animation-name:kcg-pod}@keyframes kcg-pod{0%,28%{opacity:0}34%,97%{opacity:1}100%{opacity:0}}
+.kcg-ok{animation-name:kcg-ok}@keyframes kcg-ok{0%,70%{opacity:0}74%,97%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.kcg-loop{animation-play-state:paused}}
+</style>
+<rect width="320" height="180" fill="var(--scene-card,#fff)"/>
+<!-- web servers writing log lines -->
+<ellipse cx="40" cy="148" rx="30" ry="5" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<path d="M14 54l6-6h40l-6 6Z" fill="var(--scene-line,#cfdfdc)"/><path d="M54 54l6-6v86l-6 6Z" fill="var(--scene-ink,#102a33)" opacity="0.14"/>
+<rect x="14" y="54" width="40" height="86" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<path d="M20 64H40" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"/><circle cx="47" cy="64" r="2.2" fill="var(--scene-good,#1f7a4d)"/>
+<path d="M20 83H40" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"/><circle cx="47" cy="83" r="2.2" fill="var(--scene-good,#1f7a4d)"/>
+<path d="M20 102H40" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"/><circle cx="47" cy="102" r="2.2" fill="var(--scene-good,#1f7a4d)"/>
+<path d="M20 121H40" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"/><circle cx="47" cy="121" r="2.2" fill="var(--scene-good,#1f7a4d)"/>
+<g><path d="M22 20h18l6 6v18H22Z" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="1.5"/><path d="M40 20v6h6" fill="none" stroke="var(--scene-ink,#102a33)" stroke-width="1.5"/><path d="M26 31H40M26 36H42M26 41H36" stroke="var(--scene-muted,#4d6268)" stroke-width="1.5" stroke-linecap="round"/></g>
+<path d="M60 92H90" stroke="var(--scene-muted,#4d6268)" stroke-width="1.5" stroke-dasharray="3 5" fill="none" opacity="0.6"/>
+<!-- the app-logs topic: six partitions -->
+<text class="kcg-t" x="92" y="34">app-logs</text>
+<ellipse cx="122" cy="154" rx="34" ry="5" fill="var(--scene-ink,#102a33)" opacity="0.08"/>
+<rect x="88" y="40" width="64" height="108" rx="5" fill="var(--scene-line,#cfdfdc)"/>
+<rect x="88" y="146" width="64" height="4" rx="2" fill="var(--scene-ink,#102a33)" opacity="0.14"/>
+<rect x="94" y="42" width="54" height="12" rx="3" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="1.2"/>
+<rect x="98" y="45" width="6" height="6" rx="1" fill="var(--scene-accent,#006c73)" opacity="0.5"/>
+<rect x="107" y="45" width="6" height="6" rx="1" fill="var(--scene-accent,#006c73)" opacity="0.5"/>
+<rect x="116" y="45" width="6" height="6" rx="1" fill="var(--scene-accent,#006c73)" opacity="0.5"/>
+<rect x="94" y="60" width="54" height="12" rx="3" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="1.2"/>
+<rect x="98" y="63" width="6" height="6" rx="1" fill="var(--scene-accent,#006c73)" opacity="0.5"/>
+<rect x="107" y="63" width="6" height="6" rx="1" fill="var(--scene-accent,#006c73)" opacity="0.5"/>
+<rect x="116" y="63" width="6" height="6" rx="1" fill="var(--scene-accent,#006c73)" opacity="0.5"/>
+<rect x="94" y="78" width="54" height="12" rx="3" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="1.2"/>
+<rect x="98" y="81" width="6" height="6" rx="1" fill="var(--scene-accent,#006c73)" opacity="0.5"/>
+<rect x="107" y="81" width="6" height="6" rx="1" fill="var(--scene-accent,#006c73)" opacity="0.5"/>
+<rect x="116" y="81" width="6" height="6" rx="1" fill="var(--scene-accent,#006c73)" opacity="0.5"/>
+<rect x="94" y="96" width="54" height="12" rx="3" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="1.2"/>
+<rect x="98" y="99" width="6" height="6" rx="1" fill="var(--scene-accent,#006c73)" opacity="0.5"/>
+<rect x="107" y="99" width="6" height="6" rx="1" fill="var(--scene-accent,#006c73)" opacity="0.5"/>
+<rect x="116" y="99" width="6" height="6" rx="1" fill="var(--scene-accent,#006c73)" opacity="0.5"/>
+<rect x="94" y="114" width="54" height="12" rx="3" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="1.2"/>
+<rect x="98" y="117" width="6" height="6" rx="1" fill="var(--scene-accent,#006c73)" opacity="0.5"/>
+<rect x="107" y="117" width="6" height="6" rx="1" fill="var(--scene-accent,#006c73)" opacity="0.5"/>
+<rect x="116" y="117" width="6" height="6" rx="1" fill="var(--scene-accent,#006c73)" opacity="0.5"/>
+<rect x="94" y="132" width="54" height="12" rx="3" fill="var(--scene-accent-soft,#dcefed)" stroke="var(--scene-accent,#006c73)" stroke-width="1.2"/>
+<rect x="98" y="135" width="6" height="6" rx="1" fill="var(--scene-accent,#006c73)" opacity="0.5"/>
+<rect x="107" y="135" width="6" height="6" rx="1" fill="var(--scene-accent,#006c73)" opacity="0.5"/>
+<rect x="116" y="135" width="6" height="6" rx="1" fill="var(--scene-accent,#006c73)" opacity="0.5"/>
+<!-- each partition has one indexer; partitions 4 and 5 move to the new indexer -->
+<path d="M150 48L196 48 M150 66L196 48 M150 84L196 96 M150 102L196 96" stroke="var(--scene-muted,#4d6268)" stroke-width="1.5" stroke-dasharray="3 4" fill="none" opacity="0.6"/>
+<path class="kcg-loop kcg-old" d="M150 120L196 96M150 138L196 96" stroke="var(--scene-muted,#4d6268)" stroke-width="1.5" stroke-dasharray="3 4" fill="none" opacity="0"/>
+<path class="kcg-loop kcg-new" d="M150 120L196 144M150 138L196 144" stroke="var(--scene-grow,#b8457a)" stroke-width="1.5" stroke-dasharray="3 4" fill="none" opacity="0.6"/>
+<!-- three indexers; the third has just joined -->
+<g><ellipse cx="218.0" cy="67" rx="22.0" ry="3" fill="var(--scene-ink,#102a33)" opacity="0.08"/><path d="M196 34l5-5h40l-5 5Z" fill="var(--scene-line,#cfdfdc)"/><path d="M236 34l5-5v28l-5 5Z" fill="var(--scene-ink,#102a33)" opacity="0.14"/><rect x="196" y="34" width="40" height="28" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/><path d="M202 43H222M202 52H222" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"/><circle cx="229" cy="43" r="2.2" fill="var(--scene-good,#1f7a4d)"/><circle cx="229" cy="52" r="2.2" fill="var(--scene-good,#1f7a4d)"/></g>
+<g><ellipse cx="218.0" cy="115" rx="22.0" ry="3" fill="var(--scene-ink,#102a33)" opacity="0.08"/><path d="M196 82l5-5h40l-5 5Z" fill="var(--scene-line,#cfdfdc)"/><path d="M236 82l5-5v28l-5 5Z" fill="var(--scene-ink,#102a33)" opacity="0.14"/><rect x="196" y="82" width="40" height="28" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/><path d="M202 91H222M202 100H222" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"/><circle cx="229" cy="91" r="2.2" fill="var(--scene-good,#1f7a4d)"/><circle cx="229" cy="100" r="2.2" fill="var(--scene-good,#1f7a4d)"/></g>
+<g class="kcg-loop kcg-pod"><ellipse cx="218.0" cy="163" rx="22.0" ry="3" fill="var(--scene-ink,#102a33)" opacity="0.08"/><path d="M196 130l5-5h40l-5 5Z" fill="var(--scene-line,#cfdfdc)"/><path d="M236 130l5-5v28l-5 5Z" fill="var(--scene-ink,#102a33)" opacity="0.14"/><rect x="196" y="130" width="40" height="28" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/><path d="M202 139H222M202 148H222" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"/><circle cx="229" cy="139" r="2.2" fill="var(--scene-good,#1f7a4d)"/><circle cx="229" cy="148" r="2.2" fill="var(--scene-good,#1f7a4d)"/></g>
+<path d="M241 48L262 86M241 96H262M241 144L262 106" stroke="var(--scene-muted,#4d6268)" stroke-width="1.5" stroke-dasharray="3 5" fill="none" opacity="0.6"/>
+<!-- the search cluster -->
+<ellipse cx="288" cy="140" rx="26" ry="5" fill="var(--scene-ink,#102a33)" opacity="0.09"/>
+<path d="M262 64l6-6h40l-6 6Z" fill="var(--scene-line,#cfdfdc)"/><path d="M302 64l6-6v66l-6 6Z" fill="var(--scene-ink,#102a33)" opacity="0.14"/>
+<rect x="262" y="64" width="40" height="68" rx="3" fill="var(--scene-card,#fff)" stroke="var(--scene-ink,#102a33)" stroke-width="2"/>
+<circle cx="279" cy="84" r="8" fill="none" stroke="var(--scene-accent,#006c73)" stroke-width="2.5"/><path d="M285 90l7 7" stroke="var(--scene-accent,#006c73)" stroke-width="3" stroke-linecap="round"/>
+<path d="M268 108H296M268 117H290M268 126H294" stroke="var(--scene-line,#cfdfdc)" stroke-width="3" stroke-linecap="round"/>
+<g class="kcg-loop kcg-ok"><circle cx="302" cy="64" r="9" fill="var(--scene-good,#1f7a4d)"/><path d="M298 64l3 3 6-6" stroke="var(--scene-card,#fff)" stroke-width="2.2" stroke-linecap="round" fill="none"/></g>
+<!-- log lines travelling from each partition to its indexer -->
+<g class="kcg-loop kcg-d0"><circle cx="150" cy="48" r="3" fill="var(--scene-accent,#006c73)"/></g>
+<g class="kcg-loop kcg-d1"><circle cx="150" cy="66" r="3" fill="var(--scene-accent,#006c73)"/></g>
+<g class="kcg-loop kcg-d2"><circle cx="150" cy="84" r="3" fill="var(--scene-accent,#006c73)"/></g>
+<g class="kcg-loop kcg-d3"><circle cx="150" cy="102" r="3" fill="var(--scene-accent,#006c73)"/></g>
+<g class="kcg-loop kcg-d4"><circle cx="150" cy="120" r="3" fill="var(--scene-accent,#006c73)"/></g>
+<g class="kcg-loop kcg-d5"><circle cx="150" cy="138" r="3" fill="var(--scene-accent,#006c73)"/></g>
+</svg>

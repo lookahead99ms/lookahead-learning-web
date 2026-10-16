@@ -26,6 +26,7 @@ import {
   reviewStatusLabel,
 } from '../../content/content.models';
 import { ContentService } from '../../content/content.service';
+import { AccessLevelsService, freeLessonsLabel } from '../../content/access-levels';
 
 export interface CatalogAction {
   label: string;
@@ -116,6 +117,17 @@ export function catalogMonogram(title: string): string {
   imports: [CardScene, ContentRecovery, RouterLink, PageSidebarContextDirective],
   templateUrl: './adaptive-catalog.html',
   styleUrl: '../../pages/catalog-experience.css',
+  styles: [
+    `
+      /* DLV-942: "3 free lessons" is passive metadata: plain text, no pill or border. */
+      .harbor-catalog .catalog-course-card .catalog-course-free {
+        margin: 0;
+        color: var(--text-subtle);
+        font-size: 0.86rem;
+        font-weight: 650;
+      }
+    `,
+  ],
 })
 export class AdaptiveCatalog implements OnInit {
   private readonly content = inject(ContentService);
@@ -124,6 +136,8 @@ export class AdaptiveCatalog implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  /** DLV-942: published unit access levels; null shows no free-lesson lines. */
+  private readonly accessLevels = inject(AccessLevelsService).levels;
   private pendingGroupId: string | null = null;
   private navigationScrollPending = true;
   private scrollRequest?: AfterRenderRef;
@@ -167,6 +181,16 @@ export class AdaptiveCatalog implements OnInit {
     })).filter((group) => group.courses.length > 0),
   }));
   protected readonly reviewStatusLabel = reviewStatusLabel;
+  protected readonly pathHasFreeUnits = computed(
+    () => this.accessLevels()?.entries().some((entry) => entry.path === this.config().path) ?? false,
+  );
+
+  /** "3 free lessons" when the course has open or free units; null otherwise or without data. */
+  protected freeLessonsFor(item: CatalogOverviewItem): string | null {
+    const levels = this.accessLevels();
+    if (!levels || !item.id || item.available === false) return null;
+    return freeLessonsLabel(levels.freeUnitCount(this.config().path, item.id));
+  }
 
   ngOnInit(): void {
     this.loadCatalog();

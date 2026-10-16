@@ -16,14 +16,16 @@ describe('Blaze course placement', () => {
     expect(ladder.description.trim().length).toBeGreaterThan(0);
   });
 
-  it('groups the rest into operating systems, leading and communicating, and AI', () => {
+  it('groups the rest into frontend design, operating systems, leading and communicating, and AI', () => {
     expect(BLAZE_COURSE_GROUPS.map((group) => [group.id, group.title])).toEqual([
       ['design-ladder', 'System Design Ladder'],
+      ['frontend-design', 'Frontend Design'],
       ['architecture-production', 'Production and Cloud'],
       ['lead-communicate', 'Lead and Communicate'],
       ['ai', 'AI'],
     ]);
     const byId = new Map(BLAZE_COURSE_GROUPS.map((group) => [group.id, group]));
+    expect(byId.get('frontend-design')?.courseIds).toEqual(['frontend-system-design']);
     expect(byId.get('architecture-production')?.courseIds).toEqual([
       'resilience-production',
       'cloud-architecture',

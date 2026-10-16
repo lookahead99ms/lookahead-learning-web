@@ -24,6 +24,7 @@ import { CatalogCourseGroup, catalogGroupForCourse } from '../../content/catalog
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { CourseLearningMap } from '../../core/course-learning-map/course-learning-map';
 import { courseHasUnitCards } from '../../content/learning-units';
+import { AccessLevelsService } from '../../content/access-levels';
 
 @Component({
   selector: 'app-course',
@@ -181,36 +182,17 @@ import { courseHasUnitCards } from '../../content/learning-units';
       }
       .course-relationship-list {
         display: grid;
+        justify-items: start;
         gap: 10px;
         margin: 0;
         padding: 0;
         list-style: none;
       }
-      .course-relationship-list a,
-      .course-relationship-list .unavailable {
-        color: var(--text-strong);
-        font-weight: 700;
-        text-decoration: none;
-      }
-      .course-relationship-list a {
-        color: var(--accent-link);
-      }
-      .course-relationship-list a:hover,
-      .course-relationship-list a:focus-visible {
-        color: var(--search-hover);
-        text-decoration: underline;
-        text-underline-offset: 3px;
-      }
+      /* DLV-937: related courses are chips (.action-chip) and the recommended next course is
+         the step's one clear action (.action-link with an arrow). */
       .course-relationship-list .unavailable {
         color: var(--text-subtle);
-      }
-      /* The recommended next course is the step's one clear action. */
-      .course-next-column > .course-relationship-list a {
-        font-size: 1.12rem;
-        font-weight: 800;
-      }
-      .course-next-column > .course-relationship-list a::after {
-        content: ' →';
+        font-weight: 700;
       }
       .course-direction-reason {
         margin: 4px 0 0;
@@ -252,11 +234,10 @@ import { courseHasUnitCards } from '../../content/learning-units';
         line-height: 1.3;
       }
       .course-group-return {
-        color: var(--accent-link);
-        font-size: 0.84rem;
-        font-weight: 650;
-        text-decoration: underline;
-        text-underline-offset: 3px;
+        min-height: 40px;
+        margin-top: 4px;
+        padding: 8px 16px;
+        font-size: 0.86rem;
       }
       /* The side nav takes a column, so the map keeps room for its card grid. */
       .course-reader.course-reader-with-nav {
@@ -310,6 +291,8 @@ export class Course implements OnInit {
   private readonly contentService = inject(ContentService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
+  /** DLV-942: Open / Free with account / Paid labels on the unit cards; null shows none. */
+  protected readonly accessLevels = inject(AccessLevelsService).levels;
   protected readonly course = signal<CourseOutline | null>(null);
   protected readonly courseId = signal('');
   protected readonly pathId = signal('learn');

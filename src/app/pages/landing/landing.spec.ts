@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { vi } from 'vitest';
 import { ContentService } from '../../content/content.service';
@@ -458,9 +458,12 @@ describe('Landing', () => {
     fixture.detectChanges();
     const root: HTMLElement = fixture.nativeElement;
     document.body.appendChild(root);
+    // A router navigation would run the router's scroll restoration and jump back to the top.
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl');
     const event = new MouseEvent('click', { bubbles: true, cancelable: true });
     root.querySelector('.hero-slide.active .primary-action')!.dispatchEvent(event);
     expect(event.defaultPrevented).toBe(true);
+    expect(navigate).not.toHaveBeenCalled();
     expect(document.activeElement?.id).toBe('paths');
     expect(scrollIntoView).toHaveBeenCalledWith({ block: 'start' });
     expect(replaceState.mock.lastCall?.slice(1)).toEqual(['', '/#paths']);
@@ -495,7 +498,7 @@ describe('Landing', () => {
       [...root.querySelectorAll('[data-sidebar-label]')].map((heading) =>
         heading.getAttribute('data-sidebar-label'),
       ),
-    ).toEqual(['Discover your path', 'Test your judgment', 'Find your next step', 'The essence']);
+    ).toEqual(['Discover your path', 'Test your judgment', 'Find your next step', 'Pricing', 'The essence']);
     fixture.destroy();
   });
 

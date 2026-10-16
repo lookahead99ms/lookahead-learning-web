@@ -62,3 +62,30 @@ export function apiEndpointAnchor(value: unknown): string | null {
     /^endpoint-(identity|gateway-bff|domain-api)-(get|post|put|patch|delete|head|options)-[a-z0-9-]+$/.test(value)
     ? value : null;
 }
+
+/** First path segments of app pages an admin document may open (user, 2026-10-16). */
+const DOCUMENT_PAGE_ROOTS = new Set([
+  '', 'admin', 'account', 'pricing', 'start-free', 'learn', 'grow', 'blaze', 'search',
+  'interview-questions', 'study-plan', 'delivery-plan', 'support', 'sign-in', 'sign-up', 'preview',
+]);
+const DOCUMENT_PAGE_ROUTE = /^\/[a-z0-9/-]*(\?[a-z]+=[a-z0-9-]+(&[a-z]+=[a-z0-9-]+)*)?(#[a-z0-9-]+)?$/;
+
+/**
+ * A page link clicked in the active embedded document ("People and access → Test accounts").
+ * Only same-site paths on known pages are accepted; anything else is ignored.
+ */
+export function embeddedPageRoute(data: unknown, documentId: string): string | null {
+  if (!data || typeof data !== 'object') return null;
+  const message = data as Record<string, unknown>;
+  const route = message['route'];
+  if (
+    message['type'] !== 'lookahead:author-document:page-navigate' ||
+    message['version'] !== 1 ||
+    message['documentId'] !== documentId ||
+    typeof route !== 'string' ||
+    route.length > 200 ||
+    route.includes('//') ||
+    !DOCUMENT_PAGE_ROUTE.test(route)
+  ) return null;
+  return DOCUMENT_PAGE_ROOTS.has(route.slice(1).split(/[/?#]/)[0]) ? route : null;
+}

@@ -244,9 +244,48 @@ Useful routes:
 | `/study-plan`                      | Study Plan creation, review and progress                                 |
 | `/sign-in`, `/sign-up`, `/account` | Account entry and profile surfaces                                       |
 | `/support`                         | Support and feedback surface                                             |
+| `/pricing`                         | Sample plans and prices (DLV-209); design only, checkout not connected   |
 
 The three Learn, Grow, and Blaze cards on `/` are full-area native links to
 their catalog routes, including keyboard focus and normal browser new-tab actions.
+
+`/pricing` is a design sample of the agreed plan catalog (DLV-209). The catalog has
+one source, `src/app/content/membership-plans.ts`, which Pricing, the `/account`
+Membership section and the owner's People and access page all read. It holds yearly
+plans (Learn, Grow, Advance, Complete), passes (Interview Sprint, Course Pass), promo
+plans (Monthly, Annual and Interview Pass Promo) and the change rules.
+
+- Nothing renews automatically; every paid row shows "Manual renewal".
+- Offers with undecided terms (Course Pass length, promo eligibility and sale end dates)
+  show "Not on sale yet" and have no Choose button.
+- Every other Choose button opens a native dialog saying checkout isn't available and
+  nothing is charged. The page makes no requests, posts no form, loads no payment
+  script and stores no choice.
+- Everyone can see prices; buying needs an account (user, 2026-10-15). A signed-out visitor's
+  **Choose …** opens "Sign in to buy a plan" (Sign in / Create account, returning to
+  `/pricing`).
+- Ways in:
+  - the plans section on the home page, just before the Essence (`/#pricing`, which the home
+    page scrolls to on arrival); during a sale its first card is the sale;
+  - `/start-free` → **What you're missing** (paid units of the same courses, with the plans
+    that include them);
+  - the lock screen and dialog (**See pricing** → `/#pricing` when signed out; **See plans** →
+    `/pricing` with "Included in …" when signed in);
+  - **Choose a plan** in `/account` → Membership.
+  - The header has no pricing link (user, 2026-10-15). The three mockups stay on
+    `/preview/header-plans` for reference.
+- **Sales** (`src/app/content/sale-preview.ts`): promo plans appear only while a sale runs. They
+  show above the regular plans, which stay read-only, with the regular price for comparison.
+  - No server support exists, so learners never see a sale.
+  - Authors and admins start a sale preview and preview prices on `/admin/sales`. It is stored
+    in their browser only, and `/pricing` gives them a Regular / Sale preview switch.
+- **Unit-card labels follow the viewer:** signed out sees Open / Sign in to read / Paid plan;
+  signed in sees "Paid plan" only on courses they cannot open.
+- `/account` separates a free account, individual course access and a paid membership.
+- Its purchase list (`account-access-records`) renders only from purchase records, which
+  the server does not provide yet. The proposed API is in the content repository's DLV-209
+  evidence.
+- Access is still decided by the server's course grants.
 
 The Blaze catalog (formerly Look Ahead, renamed in DLV-931) lives at `/blaze` with the
 data id `blaze`: `/content/blaze/...` assets, topic ids such as `blaze:system-design`, and
@@ -589,6 +628,94 @@ as the document scrolls, separately from the current Author workspace page.
 Tracking does not rewrite the URL or move keyboard focus. Embedded references
 report visible heading offsets through a bounded, source-checked message exchange.
 
+## Search engines and link previews (DLV-941, phase 1)
+
+**Titles and meta tags.** `src/index.html` ships the home title
+`LookAhead | Learn. Grow. Blaze.` and a default description, so a client that
+does not run JavaScript still sees both. After every navigation,
+`PageTitleStrategy` (`src/app/core/page-meta/`, registered in `app.config.ts`)
+sets the page's `<title>`, meta description, canonical link, Open Graph
+(`og:title`, `og:description`, `og:type`, `og:url`, `og:image`, `og:site_name`)
+and Twitter card tags through `PageMetaService`:
+
+- Static pages are described in `page-meta-routes.ts`, keyed by the route's
+  configured path; `app.routes.ts` needs no meta data. A route `title` overrides
+  the table. The home page keeps its title.
+- Course, module, section and lesson pages first show their catalog's meta, then
+  their own once `PublicPageMetadata` has loaded the course's public
+  `content-locator.json` (one request per course per session). Titles read
+  `Lesson | Course | LookAhead` and `Course | Learn | LookAhead`.
+- Account, sign-in, sign-up, support, study plan, delivery plan, admin, landing
+  previews, Search and unknown addresses get `robots: noindex`.
+- Public pages outside the catalogs carry a one-line flag in
+  `src/app/core/page-meta/indexable-pages.json`, read by both the meta tags and
+  the sitemap: `start-free` is `true` (indexed, listed); `pricing` is `false`
+  (noindex, not listed) while its prices are a sample. Flip the flag to change it.
+- Canonical and `og:url` are the current origin plus the path, without query or
+  fragment. `og:image` is a shipped card scene: the landing scene for a catalog,
+  the course scene for a course, and an authored `/assets/scenes/` unit scene
+  for module and lesson pages (otherwise the course scene).
+
+**Privacy boundary.** Meta text uses only metadata that signed-out visitors
+already receive: catalog/course/module/section/unit titles and descriptions and
+lesson titles from the public-tier course locator. `PublicPageMetadata` requests
+nothing else (no lesson detail, answer slides or other grant-protected file) and
+copies only allowlisted title/description fields, so a protected lesson body,
+answer, summary or code cannot reach a meta tag. `page-meta.spec.ts` and
+`page-title-strategy.spec.ts` enforce this.
+
+**robots.txt and sitemap.xml.** `scripts/build.mjs` runs
+`scripts/generate-seo-files.mjs` (also `npm run seo:files`) before `ng build`,
+writing the Git-ignored `public/robots.txt` and `public/sitemap.xml` that Angular
+copies to the site root:
+
+- `robots.txt` allows everything public and disallows `/admin`, `/author`,
+  `/account`, `/delivery-plan`, `/delivery`, `/sign-in*`, `/sign-up`, `/support`,
+  `/study-plan` and `/preview/`. `/content/` stays crawlable because pages render
+  from it.
+- `sitemap.xml` needs absolute URLs, so it is written only when
+  `LOOKAHEAD_SITE_ORIGIN` is set to the production origin (for example
+  `LOOKAHEAD_SITE_ORIGIN=https://www.example.com npm run build:protected`). The
+  origin is not decided yet; when the variable is unset, the build writes no
+  sitemap, removes an old one, and `robots.txt` has no `Sitemap:` line. A value
+  with a path, query or credentials fails the build.
+- It lists home, the Learn/Grow/Blaze catalogs, pages flagged `true` in
+  `indexable-pages.json`, every available catalog course
+  that is not hidden, and the lesson routes of units listed in `publicUnits` of
+  the content's `policies/content-samples.json` (looked up inside or next to the
+  content root), minus retired lessons. Registered-free units need an account and
+  are not listed. Without that policy file, only catalog and course pages are
+  listed.
+- Content source: a protected build reads `LOOKAHEAD_CONTENT_ROOT`, other builds
+  the runtime copy `content:sync` prepared in `public/content` (then
+  `LOOKAHEAD_CONTENT_ROOT`, then the demo). `npm run test:seo-files` covers the
+  generator.
+- `ng serve` serves the files only after a build or `npm run seo:files` has
+  written them.
+
+**Phase 2: per-page HTML files (lighter option, 2026-10-15).** After a successful
+`ng build`, `scripts/build.mjs` runs `scripts/generate-route-snapshots.mjs`, which writes
+`<route>/index.html` into the build output for every sitemap page except home.
+
+- **What a page file holds:** the built shell with that page's title, description,
+  `og:*` and `twitter:*` tags, plus a short plain-text summary (heading, description and
+  links) inside `<app-root>`. Angular replaces the summary when the app starts.
+- **Serving:** nginx already serves these files (`try_files $uri $uri/ /index.html`).
+  The root `index.html` stays the generic shell, because it is also the fallback for
+  account, admin and unknown addresses.
+- **Where the text comes from:** public metadata only. `src/app/core/page-meta/public-page-text.json`
+  is shared with the app's title strategy, and the rest is `catalog.json`, `course.json`
+  unit titles and descriptions, and the titles of lessons in public units. No lesson body,
+  answer, summary or code goes into a page file.
+- **Origin:** canonical, `og:url` and `og:image` are written only with
+  `LOOKAHEAD_SITE_ORIGIN`.
+- **Not covered:** full lesson text (that would need Angular SSR/prerender), raster preview
+  images, and a link-preview validator check. Card scenes are SVG, which several unfurlers
+  (Facebook, LinkedIn, X) do not accept for `og:image`.
+- `ng serve` does not use these files; check them in `dist/` after a build.
+- `npm run test:seo-files` covers both generators. The deployed origin and hosting are
+  DLV-913 and DLV-914.
+
 ## Verification
 
 For a frontend-only change, run affected unit/component checks, a build, and a
@@ -830,6 +957,38 @@ button gesture and selection-copy fallback; iframe permissions are unchanged.
 
 
 Content failures share `ContentRecovery`: authentication, access denial, planned content, missing pages and retryable failures have distinct messages. The locked preview contains only public metadata and decorative placeholders; protected bodies are never downloaded for blur. Sign-in and Manage Account preserve a validated return URL. `/author/content-access` is a capability-guarded synthetic review page linked from Author Operations. It does not change entitlements, create subscriptions, send email or enable checkout.
+
+### Access labels and Start free (DLV-942)
+
+Visitors see who can open a unit before they click. The levels come from the
+content repository's sample policy (`policies/content-samples.json`) as the
+public metadata file `/content/access-levels.json`: unit IDs (`path/course/unit`)
+mapped to `open` or `free`, with every other unit Paid (`defaultLevel`, the server tier `pro`). The
+content repository generates it (`tools/utilities/build_access_levels.py`), the
+static sync copies it into `public/content/`, and the protected publication lists
+it as a `public` asset, so the Domain API serves it to anyone through the existing
+`/content/**` route. Nothing about access is hardcoded in this app, and the labels
+never hide content, change routing or grant access; the server still decides
+every request.
+
+- Course pages: each unit card shows one plain-text label, **Open**, **Free with
+  account** or **Paid** (no pill or border). The card link's accessible name is the
+  title plus "Access: <level>". Planned units have no label.
+- Module pages: "Access: <level>" for the unit that owns the module.
+- Catalog course cards: a plain line such as "3 free lessons" only when the course
+  has open or free units, included in the card's accessible description. The
+  catalog hero links to **Start free** when the path has any.
+- `/start-free` lists every open unit, then every free-with-account unit, linking
+  to the unit's first lesson (or its card on the course page). Open units are public
+  in the protected publication, so the first visit needs no sign-in.
+
+`AccessLevelsService` (`src/app/content/access-levels.ts`) loads the file once.
+A missing or malformed file shows no labels: the public demo has no access file,
+and a protected publication built before DLV-942 returns 404 for it until the
+publication is rebuilt. `node scripts/validate-content.mjs` checks the file
+(`scripts/access-levels-contract.mjs`): only unit IDs and levels, and every unit
+must exist in its course. Contract tests:
+`node --test scripts/access-levels-contract.test.mjs`.
 
 ### Study-plan names
 
@@ -1192,3 +1351,52 @@ The landing page owns carousel rotation, navigation, theme layout and page secti
 their illustration styles and fixtures. The parent passes the visual, active state
 and reduced-motion preference. Keep card styles with this component; production
 builds enforce the existing 28 kB warning / 32 kB error component-style budgets.
+
+
+DLV-930 invitation activation: `GET /api/v1/auth/me` does not claim staff access.
+Managed sign-in restoration first reads the account, then submits the bodyless
+`POST /bff/api/v1/auth/invitations/activate` with the session CSRF token, and loads
+current grants/plans from the returned account. Gateway forwards only POST without
+query parameters to Domain `/api/v1/auth/invitations/activate` using its server-held
+bearer. Domain requires account scope and uses only provider-verified principal
+email. No eligible invitation is a no-op; retries/concurrent claims append one
+claim event. Conflicting existing assignments return 409. The flow does not change
+the sign-in return URL or enable first-time cloud admission. Local signup still
+cannot prove mailbox ownership. Deploy Domain and Gateway before the updated Web
+client; do not use the old mutating GET as fallback if POST fails.
+
+### Local sign-out and expired sessions
+
+Local OAuth sign-out closes the BFF session, then obtains Identity CSRF and posts
+to Identity logout through the same browser origin. It does not follow the returned
+legacy ID-token-hint URL, which can become stale after refresh. Only confirmed
+cleanup clears local account state. Cloud mode retains the fixed logout bridge.
+Expired account sessions go to `/sign-in?error=session-expired`; incorrect passwords
+stay on sign-in with an error. Anonymous browsing is not redirected. Interrupted
+saved-plan requests require explicit discard before another sign-in.
+
+## Connected local memberships (DLV-209)
+
+Pricing, Manage account and Admin Sales read the Domain membership API through the Gateway. Signed-in learners explicitly confirm simulated purchases after a server quote; no money is charged. Missing API support leaves reference prices visible and disables checkout. Owner controls server sales/prices; staff upgrades are server-authorized and cannot reduce access. Manual renewal creates another purchase; no automatic renewal, lifetime, notifications or real payments. Course Pass remains disabled pending its duration. The public demo remains independently renderable without an API.
+
+### Local managed test accounts and dated plans (DLV-961 / DLV-705)
+
+The connected Local API exposes 35 managed test accounts, excluding the existing
+owner: 27 learners, two co-authors and six admins. People and access displays roles,
+derived membership labels and Domain change attribution. Owner/admin resets require
+an exact username confirmation; learner01–10 also offer the original fixture preset.
+Ordinary seed runs preserve existing account data. Co-authors can read staff access
+and purchase information but cannot change roles, reset accounts or grant upgrades.
+
+When the API advertises `dated-plan-v1` and `ready-made-template-v1`, the planner
+saves reviewed ready-made templates with an explicit UTC start date. The plan detail
+shows server-computed lifecycle dates and supports completion, archive and dated
+reactivation. Server-side reservations limit active plans, overlapping daily time
+and shared course scope. Opening a view never extends a schedule. Progress and
+history survive archive; legacy undated plans require explicit activation. The
+standalone demo keeps its browser-local behavior and does not claim account sync.
+
+Validation: `npm run test:coverage` enforces 85% line coverage; connected plan,
+role and reset changes also require the owning API and Local integration checks.
+
+People and access merges the owner-only paginated `/bff/api/v1/admin/accounts` directory with managed test-account metadata and existing assignments. Non-owner operators keep their existing server-permitted sources. Failed owner enumeration is disclosed as a partial list; current access and role remain separate.

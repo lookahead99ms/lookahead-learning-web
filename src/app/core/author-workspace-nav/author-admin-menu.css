@@ -27,11 +27,14 @@ app-sidebar-toggle {
 .admin-menu-content[hidden] {
   display: none;
 }
+/* Override the app-wide `nav { gap: 30px }` so the menu reads as one compact list. */
 nav {
   display: flex;
   flex-direction: column;
+  gap: 2px;
 }
 .documentation-links {
+  gap: 0;
   padding-top: 16px;
   border-top: 1px solid var(--line);
 }
@@ -110,6 +113,23 @@ ul {
 ul a {
   min-height: 40px;
   font-size: 0.84rem;
+}
+/* Sub-pages of the open section sit under their parent on a thin guide line. */
+.subpages {
+  margin: 2px 0 6px 21px;
+  padding-inline-start: 6px;
+  border-inline-start: 1px solid var(--line);
+}
+.subpages a {
+  min-height: 36px;
+  padding-block: 4px;
+  font-size: 0.8rem;
+}
+.subpages .item-icon {
+  flex-basis: 22px;
+  width: 22px;
+  height: 22px;
+  font-size: 0.78rem;
 }
 @media (max-width: 900px) {
   :host {

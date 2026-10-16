@@ -1,0 +1,173 @@
+@let testView = view() === 'test';
+<section [id]="testView ? 'test-accounts' : 'people'" class="directory" aria-labelledby="directory-title">
+  <!-- Heading on the left, the section's one action on the right (button placement rule). -->
+  <div class="directory-heading">
+    <div>
+      <h2 id="directory-title">{{ testView ? 'Test accounts' : 'People' }}</h2>
+      @if (testView) {
+        <p class="note">
+          The managed Local accounts for checking what each plan and role sees. Reset puts one back
+          to its default setup. New test accounts come from the Infra seed script, not this page.
+          Sign-in names, the seed script and password changes are in
+          <a class="prose-link" routerLink="/admin/local-development" fragment="managed-test-accounts-and-saved-plans">Local setup → Managed test accounts and saved plans</a>.
+        </p>
+      } @else {
+        <p class="note">
+          Real accounts you are allowed to see, with their role and the access they have now. A role
+          decides what someone can do here; access comes from plans, passes and course grants.
+        </p>
+      }
+    </div>
+    <button type="button" class="action-link" [disabled]="busy()" (click)="load()">Refresh</button>
+  </div>
+
+  <div class="directory-tools">
+    <label class="tool">
+      Search
+      <input type="search" [ngModel]="query()" (ngModelChange)="query.set($event)" placeholder="Name, role or plan" autocomplete="off" />
+    </label>
+    <label class="tool">
+      Role
+      <select [ngModel]="role()" (ngModelChange)="role.set($event)">
+        <option value="">All roles</option>
+        @for (name of roleFilters(); track name) {
+          <option [value]="name">{{ name }}</option>
+        }
+      </select>
+    </label>
+    <p class="count" aria-live="polite">{{ visible().length }} of {{ inView().length }}</p>
+  </div>
+
+  <p class="notice" role="status">{{ notice() }}</p>
+
+  @if (!loaded()) {
+    <p class="empty">{{ testView ? 'Loading test accounts…' : 'Loading people…' }}</p>
+  } @else if (!visible().length) {
+    <p class="empty">{{ inView().length ? 'Nobody matches this search.' : 'No accounts to show.' }}</p>
+  } @else {
+    <table class="directory-table">
+      <caption class="visually-hidden">{{ testView ? 'Test accounts' : 'People' }}, their roles and their current access</caption>
+      <thead>
+        <tr>
+          <th scope="col">Person</th>
+          <th scope="col">Role</th>
+          <th scope="col">Access now</th>
+          <th scope="col">Last changed</th>
+          <th scope="col"><span class="visually-hidden">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of visible(); track row.key) {
+          <tr [class.self]="row.isSelf" [attr.data-account]="row.name">
+            <th scope="row" data-label="Person">
+              <span class="person">{{ row.name }}</span>
+              @if (row.isSelf) {
+                <span class="sub">You</span>
+              }
+              @if (row.detail) {
+                <span class="sub">{{ row.detail }}</span>
+              }
+            </th>
+            <td data-label="Role">{{ row.roles.join(', ') }}</td>
+            <td data-label="Access now">
+              <ul class="access-list">
+                @for (name of row.access; track name) {
+                  <li>{{ name }}</li>
+                }
+              </ul>
+            </td>
+            <td data-label="Last changed">{{ changedText(row) }}</td>
+            <td class="row-actions">
+              @if (row.accountId && !row.pending) {
+                <button
+                  type="button"
+                  class="action-link"
+                  [attr.aria-expanded]="expanded() === row.key"
+                  [attr.aria-controls]="'history-' + row.key"
+                  (click)="toggle(row)"
+                >
+                  {{ expanded() === row.key ? 'Hide details' : 'Details' }}
+                </button>
+              }
+              @if (canGive() && row.accountId && !row.pending && !row.isSelf) {
+                <button type="button" class="action-link" (click)="giveAccess.emit(row)">Give access</button>
+              }
+              @if (row.test && canReset()) {
+                <button
+                  type="button"
+                  class="action-link"
+                  [disabled]="busy() || !!pending()"
+                  (click)="select(row.test)"
+                >
+                  Reset
+                </button>
+              }
+            </td>
+          </tr>
+          @if (expanded() === row.key) {
+            <tr class="history-row">
+              <td colspan="5" [id]="'history-' + row.key">
+                @switch (historyOf(row)?.state) {
+                  @case ('loading') {
+                    <p class="empty">Loading purchase history…</p>
+                  }
+                  @case ('error') {
+                    <p class="empty">Purchase history is unavailable. Try again later.</p>
+                  }
+                  @default {
+                    @let history = historyOf(row);
+                    @if (history?.state === 'ready' && history.items.length) {
+                      <ul class="history">
+                        @for (item of history.items; track item.id) {
+                          <li [attr.data-status]="item.status">
+                            <strong>{{ item.name }}</strong>
+                            <span>{{ item.includes }}</span>
+                            <span>{{ item.ends ?? item.duration }}</span>
+                            <span>Paid {{ item.paid }}@if (item.discount) { ({{ item.discount }}) }</span>
+                          </li>
+                        }
+                      </ul>
+                    } @else {
+                      <p class="empty">No plans or passes. Access comes from roles or course grants only.</p>
+                    }
+                  }
+                }
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  }
+
+  @if (testView && selected(); as row) {
+    <div class="reset-panel">
+      <fieldset [disabled]="busy() || !!pending()">
+        <legend>Reset {{ row.username }}</legend>
+        <p>
+          This replaces this test account’s plans, progress and access. Purchase and reset audit
+          history remain. Its password and profile stay unchanged.
+        </p>
+        <label>
+          Defaults
+          <select [(ngModel)]="preset">
+            <option value="scenario">Learner scenario</option>
+            @if (row.legacyPresetAvailable) {
+              <option value="legacy">Original test learner options</option>
+            }
+          </select>
+        </label>
+        <label>
+          Type {{ row.username }} to confirm
+          <input [(ngModel)]="confirmation" autocomplete="off" />
+        </label>
+      </fieldset>
+      <div class="actions">
+        <button type="button" class="action-button" [disabled]="busy() || confirmation !== row.username" (click)="reset()">
+          {{ pending() ? 'Retry same reset' : 'Confirm reset' }}
+        </button>
+        <button type="button" class="action-link" [disabled]="busy()" (click)="cancel()">Cancel</button>
+      </div>
+    </div>
+  }
+</section>

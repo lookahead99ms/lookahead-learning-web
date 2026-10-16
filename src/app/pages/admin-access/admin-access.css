@@ -1,0 +1,598 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background: var(--surface-page);
+  color: var(--text-body);
+}
+/* Same three columns as the other admin pages: outline, content, Admin menu. */
+.access-page {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr) minmax(220px, 260px);
+  align-items: start;
+  min-height: calc(100dvh - var(--platform-header-height, 76px));
+}
+.workspace-sidebar {
+  position: sticky;
+  top: var(--platform-header-height, 76px);
+  max-height: calc(100dvh - var(--platform-header-height, 76px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 24px;
+  border-inline-end: 1px solid var(--line);
+}
+.workspace-content {
+  min-width: 0;
+  /* Use the width: two columns of work instead of one narrow column (user, 2026-10-15). */
+  max-width: 1360px;
+  padding: 24px clamp(20px, 3vw, 48px) 64px;
+}
+p {
+  margin: 0;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+h2,
+h3,
+strong {
+  color: var(--text-strong);
+}
+h2 {
+  margin: 0 0 4px;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+}
+h3 {
+  margin: 0 0 4px;
+  font-size: 16px;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.mono {
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 0.92em;
+}
+
+/* Hero */
+.access-hero {
+  position: relative;
+  display: grid;
+  gap: 24px;
+  overflow: hidden;
+  margin-bottom: 24px;
+  padding: clamp(22px, 3vw, 36px);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      color-mix(in srgb, var(--accent-strong) 14%, transparent),
+      transparent 22rem
+    ),
+    radial-gradient(
+      circle at 0% 100%,
+      color-mix(in srgb, var(--path-learn) 12%, transparent),
+      transparent 20rem
+    ),
+    var(--surface);
+}
+.hero-top {
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(16px, 2.5vw, 28px);
+}
+.hero-top > div {
+  max-width: 880px;
+}
+.hero-mark {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--accent-strong) 12%, var(--surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-strong) 30%, transparent);
+  font-size: 2rem;
+}
+.eyebrow {
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.intro-heading {
+  margin: 8px 0 12px;
+  font-size: clamp(28px, 3.2vw, 38px);
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+}
+.lede {
+  font-size: 17px;
+}
+
+/* Status message */
+.notice:not(.has-notice) {
+  display: none;
+}
+.notice {
+  margin-bottom: 24px;
+  padding: 12px 16px;
+  border: 1px solid color-mix(in srgb, var(--accent-strong) 40%, var(--line));
+  border-inline-start-width: 4px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--accent-strong) 8%, var(--surface));
+  color: var(--text-strong);
+}
+
+/* Sections */
+.access-section {
+  margin-bottom: 40px;
+  scroll-margin-top: calc(var(--platform-header-height, 76px) + 16px);
+}
+.section-heading {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+  padding-inline-start: 14px;
+  border-inline-start: 4px solid var(--accent-strong);
+}
+.section-heading.with-action > div {
+  flex: 1;
+  min-width: 0;
+}
+.section-icon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--accent-strong) 12%, var(--surface));
+  font-size: 1.4rem;
+}
+.section-note,
+.context-note,
+.empty {
+  color: var(--text-subtle);
+  font-size: 14px;
+}
+.access-section > .context-note {
+  margin-top: 14px;
+}
+
+/* Panels and form fields */
+fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+fieldset.panel legend {
+  float: left;
+  width: 100%;
+  margin-bottom: 4px;
+  padding: 0;
+  color: var(--text-strong);
+  font-size: 16px;
+  font-weight: 700;
+}
+fieldset.panel legend + * {
+  clear: both;
+}
+.choose-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.choose-grid .panel {
+  margin: 0;
+}
+.choose-grid .panel button {
+  align-self: flex-start;
+  margin-top: auto;
+}
+label {
+  display: block;
+  line-height: 1.5;
+}
+input[type='text'],
+input[type='email'] {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 8px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-page);
+  color: var(--text-strong);
+  font: inherit;
+}
+input[type='checkbox'] {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin: 2px 10px 0 0;
+  accent-color: var(--accent-strong);
+}
+button:focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 3px;
+}
+/* Text fields: one ring on the field itself, never around its label. */
+input[type='text']:focus,
+input[type='email']:focus {
+  border-color: var(--accent-strong);
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-strong) 28%, transparent);
+}
+/* Checkboxes sit inside a clickable card or row, so the card shows keyboard focus. */
+input[type='checkbox']:focus-visible {
+  outline: none;
+}
+.role-option:has(input:focus-visible),
+.courses label:has(input:focus-visible),
+.full-curriculum:has(input:focus-visible) {
+  border-radius: 8px;
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 2px;
+}
+.role-option:has(input:focus-visible) {
+  border-radius: 12px;
+}
+
+/* Buttons: shared teal primary, quiet bordered secondary. */
+button {
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 10px 18px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease;
+}
+.primary-action {
+  border-color: var(--accent-strong);
+  background: var(--accent-strong);
+  color: var(--accent-on-primary);
+}
+.primary-action:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent-strong) 88%, var(--text-strong));
+}
+.secondary-action {
+  background: var(--surface);
+  color: var(--text-strong);
+}
+.secondary-action:hover:not(:disabled) {
+  border-color: var(--accent-strong);
+  background: var(--surface-muted);
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Roles: each role is a selectable card. */
+.role-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.role-option {
+  display: flex;
+  align-items: flex-start;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-page);
+  cursor: pointer;
+  transition: border-color 140ms ease;
+}
+.role-option:hover {
+  border-color: var(--accent-strong);
+}
+.role-option:has(input:checked) {
+  border-color: var(--accent-strong);
+  background: color-mix(in srgb, var(--accent-strong) 8%, var(--surface));
+  box-shadow: inset 0 0 0 1px var(--accent-strong);
+}
+.role-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--text-subtle);
+  font-size: 14px;
+}
+.role-text strong {
+  font-size: 15px;
+}
+
+/* Courses */
+.full-curriculum {
+  display: flex;
+  align-items: flex-start;
+  font-weight: 650;
+  color: var(--text-strong);
+}
+.courses {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 2px 16px;
+  max-height: 320px;
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-page);
+}
+.courses label {
+  display: flex;
+  align-items: flex-start;
+  padding: 6px 4px;
+  font-size: 14px;
+}
+.courses label:has(input:disabled) {
+  color: var(--text-subtle);
+}
+.save-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+}
+
+/* Saved assignments */
+.assignment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.assignment {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border: 1px solid var(--line);
+  border-inline-start: 4px solid var(--success);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.assignment.pending {
+  border-inline-start-color: var(--warning);
+}
+.assignment-text {
+  flex: 1;
+  min-width: 0;
+}
+.assignment-who {
+  color: var(--text-strong);
+  font-weight: 650;
+}
+.assignment-state {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-subtle);
+  font-size: 13px;
+}
+.state-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+}
+.pending .state-dot {
+  background: var(--warning);
+}
+.assignment-grants {
+  font-size: 14px;
+}
+.assignment button {
+  flex: 0 0 auto;
+}
+
+/* Tabs (user, 2026-10-16): Give access first; account lists only when chosen. Underlined, and
+   scrollable on narrow screens. */
+.access-tabs {
+  display: flex;
+  gap: 4px;
+  margin: 0 0 24px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--line);
+  scrollbar-width: thin;
+}
+.access-tabs button {
+  flex: 0 0 auto;
+  margin-bottom: -1px;
+  padding: 12px 18px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: var(--text-subtle);
+  cursor: pointer;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.access-tabs button:hover {
+  color: var(--text-strong);
+}
+.access-tabs button[aria-selected='true'] {
+  border-bottom-color: var(--accent-strong);
+  color: var(--text-strong);
+}
+.access-tabs button:focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: -3px;
+  border-radius: 8px 8px 0 0;
+}
+
+/* How access works: three plain explainer cards inside the hero. */
+.how-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.how-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface-page) 55%, transparent);
+}
+.how-card h3 {
+  margin: 2px 0 0;
+  font-size: 15px;
+}
+.how-card p {
+  color: var(--text-subtle);
+  font-size: 14px;
+}
+.how-icon {
+  font-size: 1.4rem;
+}
+.how-link {
+  align-self: flex-start;
+  margin-top: auto;
+  padding-top: 6px;
+  color: var(--accent-link);
+  font-size: 14px;
+  font-weight: 700;
+}
+/* Saved assignments read as table rows when there is room: who, state, access, action. */
+@media (min-width: 1100px) {
+  .assignment-text {
+    display: grid;
+    grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.2fr) minmax(0, 1.6fr);
+    gap: 4px 20px;
+    align-items: center;
+  }
+  .assignment-who {
+    overflow-wrap: anywhere;
+  }
+}
+/* Review: roles and courses on the left, purchases and Save on the right. */
+.review-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr);
+  gap: 0 24px;
+  align-items: start;
+}
+.review-side {
+  position: sticky;
+  top: calc(var(--platform-header-height, 76px) + 16px);
+}
+@media (prefers-reduced-motion: reduce) {
+  button,
+  .role-option {
+    transition: none;
+  }
+}
+@media (max-width: 1280px) {
+  .role-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 1180px) {
+  .review-grid {
+    grid-template-columns: 1fr;
+  }
+  .review-side {
+    position: static;
+  }
+}
+@media (max-width: 760px) {
+  .how-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 900px) {
+  .access-page {
+    grid-template-columns: 1fr;
+  }
+  .workspace-sidebar {
+    position: static;
+    max-height: min(55dvh, 520px);
+    border-inline-end: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .workspace-content {
+    padding: 24px 16px 48px;
+  }
+}
+@media (max-width: 640px) {
+  /* Four tabs never fit one phone row: two by two, nothing hidden off-screen. */
+  .access-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    overflow: visible;
+  }
+  .access-tabs button {
+    padding-inline: 8px;
+    white-space: normal;
+  }
+  .choose-grid {
+    grid-template-columns: 1fr;
+  }
+  .hero-top {
+    flex-direction: column;
+  }
+  .section-heading.with-action {
+    flex-wrap: wrap;
+  }
+  .section-heading.with-action > button {
+    margin-inline-start: 58px;
+  }
+  .assignment {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* DLV-209: plans and purchases (honest empty state). */
+.membership-panel h3 {
+  margin: 0 0 10px;
+  font-size: 16px;
+}
+.membership-facts {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 10px;
+}
+.membership-facts dt {
+  color: var(--text-strong);
+  font-weight: 700;
+}
+.membership-facts dd {
+  margin: 2px 0 0;
+  line-height: 1.5;
+}

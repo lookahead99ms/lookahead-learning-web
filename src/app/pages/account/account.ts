@@ -8,7 +8,8 @@ import { registrationCountries, registrationCountryCode } from './countries';
 import { AccountSettings } from './account-settings';
 import { ACCOUNT_SETTINGS_CLIENT } from './account-settings-client';
 import { AccountStudyPlans } from './account-study-plans';
-import { accountMembership } from './account-membership';
+import { MembershipApi } from '../../content/membership-api';
+import { accountMembership, membershipName } from './account-membership';
 import { ActiveSignIns } from './active-sign-ins';
 import { ACTIVE_SIGN_INS_CLIENT } from './active-sign-ins-client';
 import { SignInManagementApi } from './sign-in-management-api';
@@ -71,7 +72,9 @@ export class AccountPage {
   protected readonly lastName = signal('');
   protected readonly countryName = signal('');
   protected readonly formError = signal(
-    this.route.snapshot.queryParamMap.get('error') === 'oauth'
+    this.route.snapshot.queryParamMap.get('error') === 'session-expired'
+      ? 'Your session expired. Sign in again to continue.'
+      : this.route.snapshot.queryParamMap.get('error') === 'oauth'
       ? 'Sign-in could not be completed. Please try again.'
       : this.route.snapshot.queryParamMap.get('error') === 'admission'
         ? 'Application access could not be confirmed. If this persists, contact the account administrator.'
@@ -100,7 +103,9 @@ export class AccountPage {
   protected readonly savedPlanCount = computed(() =>
     this.store.planSummariesState() === 'ready' ? this.store.plans().length : null,
   );
-  protected readonly membership = accountMembership;
+  private readonly membershipApi=inject(MembershipApi);
+  protected readonly membershipName = (account: Parameters<typeof membershipName>[0]) => membershipName(account, this.membershipApi.records());
+  protected readonly membership = (account: Parameters<typeof accountMembership>[0]) => accountMembership(account,this.membershipApi.records());
   // The account rail takes the left edge, so the page statements and sidebars stay off this page.
   protected readonly sidebarContext: PageSidebarContextValue = { excluded: true };
   private readonly document = inject(DOCUMENT);

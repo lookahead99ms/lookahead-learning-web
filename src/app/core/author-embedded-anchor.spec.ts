@@ -1,4 +1,4 @@
-import { apiEndpointAnchor, embeddedAnchor, embeddedAnchorPosition, embeddedChildNavigation, requestEmbeddedAnchor, scrollToEmbeddedAnchor } from './author-embedded-anchor';
+import { apiEndpointAnchor, embeddedAnchor, embeddedPageRoute, embeddedAnchorPosition, embeddedChildNavigation, requestEmbeddedAnchor, scrollToEmbeddedAnchor } from './author-embedded-anchor';
 
 describe('embedded Author section navigation', () => {
   it('keeps section headings below the wrapped mobile header', () => {
@@ -41,6 +41,23 @@ describe('embedded Author section navigation', () => {
     expect(embeddedChildNavigation(message, 'api-reference', ['start-testing'])).toBe('start-testing');
     expect(embeddedChildNavigation({ ...message, anchor: 'unknown' }, 'api-reference', ['start-testing'])).toBeNull();
     expect(embeddedChildNavigation({ ...message, documentId: 'operations-reference' }, 'api-reference', ['start-testing'])).toBeNull();
+  });
+});
+
+describe('page links in admin documents', () => {
+  const message = (route: unknown, overrides: Record<string, unknown> = {}) =>
+    ({ type: 'lookahead:author-document:page-navigate', version: 1, documentId: 'reviewer-guide', route, ...overrides });
+  it('opens known pages with an optional tab and section', () => {
+    for (const route of ['/admin/access?tab=test', '/admin/local-development#managed-test-accounts-and-saved-plans', '/pricing', '/', '/study-plan?view=plans', '/learn/core-java'])
+      expect(embeddedPageRoute(message(route), 'reviewer-guide')).toBe(route);
+  });
+  it('ignores other senders, other sites and unknown pages', () => {
+    for (const route of ['https://example.com', '//example.com/admin', '/unknown-page', '/admin/../x', '/admin?tab=<b>', 'admin/access', '/' + 'a'.repeat(200), 7])
+      expect(embeddedPageRoute(message(route), 'reviewer-guide')).toBeNull();
+    expect(embeddedPageRoute(message('/pricing'), 'screen-names')).toBeNull();
+    expect(embeddedPageRoute(message('/pricing', { version: 2 }), 'reviewer-guide')).toBeNull();
+    expect(embeddedPageRoute(message('/pricing', { type: 'lookahead:author-document:navigate' }), 'reviewer-guide')).toBeNull();
+    expect(embeddedPageRoute(null, 'reviewer-guide')).toBeNull();
   });
 });
 
