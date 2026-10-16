@@ -105,6 +105,20 @@ describe('People and access layout', () => {
     fixture.componentInstance.selectTab('people');
     expect(fixture.componentInstance.outline().map(item => item.href)).toEqual(['#people']);
   });
+  it('fills the centre column on wide monitors while notes keep a readable line length', async () => {
+    const fixture = TestBed.createComponent(AdminAccessPage);
+    fixture.detectChanges(); await fixture.whenStable(); fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const rules = Array.from(document.styleSheets)
+      .flatMap(sheet => Array.from(sheet.cssRules))
+      .filter((rule): rule is CSSStyleRule => rule instanceof CSSStyleRule);
+    const maxWidths = (element: Element) =>
+      rules.filter(rule => element.matches(rule.selectorText) && rule.style.getPropertyValue('max-width'))
+        .map(rule => rule.style.getPropertyValue('max-width'));
+    // A fixed cap left a wide empty band before the Admin menu on large monitors (2026-10-16).
+    expect(maxWidths(root.querySelector('.workspace-content')!)).toEqual([]);
+    expect(maxWidths(root.querySelector('.context-note')!)).toEqual(['110ch']);
+  });
   it('explains roles, grants and plans, links plans to the documentation and shows no purchases (DLV-209)', async () => {
     const fixture = TestBed.createComponent(AdminAccessPage);
     fixture.detectChanges(); await fixture.whenStable(); fixture.detectChanges();
