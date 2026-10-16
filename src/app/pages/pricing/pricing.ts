@@ -4,7 +4,7 @@ import { Component, ElementRef, computed, inject, signal, viewChild } from '@ang
 import { RouterLink } from '@angular/router';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { MembershipApi } from '../../content/membership-api';
-import { SalePreview } from '../../content/sale-preview';
+import { PROMO_PLAN_IDS, SalePreview } from '../../content/sale-preview';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import {
   FREE_FEATURES,
@@ -12,9 +12,11 @@ import {
   PASS_IDS,
   PLAN_RULES,
   PRICING_FAQ,
+  CardState,
   PricingCard,
   START_FREE_ROUTE,
   YEARLY_IDS,
+  cardState,
   pricingCards,
 } from './pricing-plans';
 
@@ -68,6 +70,13 @@ export class PricingPage {
   protected readonly promos = computed(() =>
     pricingCards(this.sales.plans(), this.sale()?.planIds ?? []),
   );
+  /** Every sale plan, for the staff-only section shown when no sale runs. */
+  protected readonly allPromos = computed(() => pricingCards(this.sales.plans(), PROMO_PLAN_IDS));
+
+  /** Staff see every plan as choosable; a learner's own plan and change rules shape theirs. */
+  protected stateOf(card: PricingCard): CardState {
+    return cardState(card.plan, this.membershipApi.records(), { staff: this.isStaff() });
+  }
 
   /** The plan whose Choose button opened the notice, for the notice's own wording. */
   protected readonly chosen = signal<PricingCard | null>(null);

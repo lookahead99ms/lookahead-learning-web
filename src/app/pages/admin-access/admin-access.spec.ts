@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
+import { Location } from '@angular/common';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { AdminAccessPage } from './admin-access';
 import { ACCOUNT_FETCH, StudyPlanAccount, StaffPermissions } from '../study-plan/study-plan-account';
@@ -94,11 +95,15 @@ describe('People and access layout', () => {
     expect([...main.children].map(child => child.tagName.toLowerCase().replace(/^div$/, 'div.' + child.className)))
       .toEqual(['aside', 'div.workspace-content', 'app-author-admin-menu']);
     expect(main.querySelector('aside app-author-workspace-nav')).not.toBeNull();
-    expect(fixture.componentInstance.outline().map(item => item.href)).toEqual(['#test-accounts', '#choose-person', '#saved-assignments']);
+    expect(fixture.componentInstance.outline().map(item => item.href)).toEqual(['#choose-person']);
     fixture.componentInstance.invite();
-    expect(fixture.componentInstance.outline().map(item => item.href)).toEqual(['#test-accounts', '#choose-person', '#saved-assignments']);
+    expect(fixture.componentInstance.outline().map(item => item.href)).toEqual(['#choose-person']);
     fixture.componentInstance.pendingEmail = 'person@example.invalid'; fixture.componentInstance.invite();
-    expect(fixture.componentInstance.outline().map(item => item.href)).toEqual(['#test-accounts', '#choose-person', '#review-access', '#saved-assignments']);
+    expect(fixture.componentInstance.outline().map(item => item.href)).toEqual(['#choose-person', '#review-access']);
+    fixture.componentInstance.selectTab('saved');
+    expect(fixture.componentInstance.outline().map(item => item.href)).toEqual(['#saved-assignments']);
+    fixture.componentInstance.selectTab('people');
+    expect(fixture.componentInstance.outline().map(item => item.href)).toEqual(['#people']);
   });
   it('explains roles, grants and plans, links plans to the documentation and shows no purchases (DLV-209)', async () => {
     const fixture = TestBed.createComponent(AdminAccessPage);
@@ -110,7 +115,12 @@ describe('People and access layout', () => {
     // The catalog table lives on the Plans and purchases documentation page now.
     expect(root.querySelector('#configured-plans, .plan-table')).toBeNull();
     // Find and the saved list sit side by side.
-    expect([...root.querySelectorAll('.work-grid > section')].map(section => section.id)).toEqual(['choose-person', 'saved-assignments']);
+    // How access works sits in the hero; the hero has no facts line.
+    expect(root.querySelectorAll('.access-hero .how-card')).toHaveLength(3);
+    expect(root.querySelector('.hero-facts')).toBeNull();
+    expect(root.querySelector('.access-hero .lede')?.textContent).toContain('Only the owner changes roles and course access');
+    // Give access holds only Choose a person; the saved list has its own tab.
+    expect([...root.querySelectorAll('#access-panel > section')].map(section => section.id)).toEqual(['choose-person']);
 
     // The draft is a plain field, so open it in a fresh page before its first render.
     const review = TestBed.createComponent(AdminAccessPage);
@@ -125,13 +135,172 @@ describe('People and access layout', () => {
   });
 });
 
-describe('test account admin outline', () => {
-  it('only links sections that the admin can access', () => {
+describe('People and access tabs', () => {
+  it('opens on Give access, shows the test accounts only when chosen, and moves with the arrow keys', async () => {
     TestBed.configureTestingModule({ providers: [
-      { provide: StudyPlanAccount, useValue: { account: signal({ permissions: permissions({ feedbackRole: 'admin' }) }) } },
+      provideRouter([]),
+      { provide: StudyPlanAccount, useValue: { account: signal({ accountId: 'owner', username: 'owner', displayName: 'Owner', topicGrants: [], permissions: permissions({ manageAccess: true }) }), apiPath: (path: string) => '/bff/api/v1' + path } },
+      { provide: ACCOUNT_FETCH, useValue: async () => Response.json({ data: [] }) },
+    ] }).overrideComponent(AdminAccessPage, { remove: { imports: [PlatformHeader] }, add: { imports: [HeaderStub] } });
+    const fixture = TestBed.createComponent(AdminAccessPage);
+    fixture.detectChanges(); await fixture.whenStable(); fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const tabs = () => [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    expect(tabs().map(tab => [tab.textContent?.trim(), tab.getAttribute('aria-selected')])).toEqual([
+      ['Give access', 'true'], ['Saved assignments', 'false'], ['Test accounts', 'false'], ['People', 'false'],
+    ]);
+    expect(root.querySelector('#access-panel #choose-person')).not.toBeNull();
+    expect(root.querySelector('app-test-accounts')).toBeNull();
+
+    tabs()[1].click(); fixture.detectChanges(); await fixture.whenStable(); fixture.detectChanges();
+    expect(root.querySelector('#access-panel #saved-assignments h2')?.textContent).toBe('Saved assignments');
+    expect(root.querySelector('#saved-assignments .section-note')?.textContent?.trim()).toBe('0 people have a staff role or course access from this page.');
+    expect(root.querySelector('#saved-assignments .empty')?.textContent).toBe('No saved assignments.');
+    expect(root.querySelector('#choose-person')).toBeNull();
+
+    tabs()[2].click(); fixture.detectChanges(); await fixture.whenStable(); fixture.detectChanges();
+    expect(root.querySelector('#access-panel #test-accounts h2')?.textContent).toBe('Test accounts');
+    expect(root.querySelector('#choose-person')).toBeNull();
+    expect(root.querySelector('#access-panel')?.getAttribute('aria-labelledby')).toBe('access-tab-test');
+
+    const page = fixture.componentInstance;
+    page.onTabKey(new KeyboardEvent('keydown', { key: 'ArrowRight' })); expect(page.tab()).toBe('people');
+    page.onTabKey(new KeyboardEvent('keydown', { key: 'ArrowRight' })); expect(page.tab()).toBe('assign');
+    page.onTabKey(new KeyboardEvent('keydown', { key: 'ArrowLeft' })); expect(page.tab()).toBe('people');
+    page.onTabKey(new KeyboardEvent('keydown', { key: 'ArrowLeft' })); expect(page.tab()).toBe('test');
+    page.onTabKey(new KeyboardEvent('keydown', { key: 'End' })); expect(page.tab()).toBe('people');
+    page.onTabKey(new KeyboardEvent('keydown', { key: 'Home' })); expect(page.tab()).toBe('assign');
+    page.onTabKey(new KeyboardEvent('keydown', { key: 'End' })); expect(page.tab()).toBe('people');
+    page.onTabKey(new KeyboardEvent('keydown', { key: 'a' })); expect(page.tab()).toBe('people');
+    fixture.detectChanges(); await fixture.whenStable(); fixture.detectChanges();
+    expect(root.querySelector('#access-panel #people h2')?.textContent).toBe('People');
+  });
+
+  it('opens Give access for a person chosen on another tab, from their saved assignment or by lookup', async () => {
+    const saved = { id: 's1', accountId: 'saved-id', pendingEmail: null, roles: ['reviewer'], topicGrants: [], fullCurriculum: false, revision: 2 };
+    const paths: string[] = [];
+    TestBed.configureTestingModule({ providers: [
+      { provide: StudyPlanAccount, useValue: { account: signal({ permissions: permissions({ manageAccess: true }) }), apiPath: (path: string) => path } },
+      { provide: ACCOUNT_FETCH, useValue: async (path: string, init?: RequestInit) => {
+        paths.push(path + (init?.body ? ' ' + init.body : ''));
+        if (path.endsWith('/auth/csrf')) return Response.json({ data: { headerName: 'X-CSRF-TOKEN', token: 't' } });
+        if (path.endsWith('/lookup')) return Response.json({ data: { accountId: 'new-id', username: 'learner07', displayName: 'learner07', email: null } });
+        return Response.json({ data: path === '/admin/access' ? [saved] : [] });
+      } },
+    ] });
+    const page = TestBed.runInInjectionContext(() => new AdminAccessPage());
+    await page.reload();
+    const row = (accountId: string, name: string) => ({ key: accountId, accountId, name, detail: null, roles: ['Learner'], access: ['Free'], isTest: true, isSelf: false, pending: false, changedBy: null, changedAt: null, test: null });
+
+    page.selectTab('test');
+    await page.giveAccessTo(row('saved-id', 'reviewer01'));
+    expect(page.tab()).toBe('assign');
+    expect(page.draft).toMatchObject({ id: 's1', roles: ['reviewer'] });
+    expect(page.recipient()?.displayName).toBe('reviewer01');
+    expect(paths.some(path => path.endsWith('/lookup'))).toBe(false);
+
+    await page.giveAccessTo(row('new-id', 'learner07'));
+    expect(paths.find(path => path.includes('/lookup'))).toContain('"query":"learner07"');
+    expect(page.draft).toMatchObject({ accountId: 'new-id', roles: [], revision: 0 });
+
+    page.selectTab('saved');
+    page.review(page.assignments()[0]);
+    expect(page.tab()).toBe('assign');
+    expect(page.draft).toMatchObject({ id: 's1' });
+    expect(page.recipient()).toBeNull();
+    expect(page.nameOf(page.draft!)).toBe('Account saved-id');
+
+    page.draft = null;
+    await page.giveAccessTo({ ...row('x', 'x'), accountId: null as unknown as string });
+    expect(page.draft).toBeNull();
+  });
+});
+
+describe('Saved assignments', () => {
+  const assignment = (id: string, accountId: string | null, roles: string[], pendingEmail: string | null = null) =>
+    ({ id, accountId, pendingEmail, roles, topicGrants: [], fullCurriculum: false, revision: 1 });
+  const saved = [
+    assignment('1', 'learner-id', []), assignment('2', 'admin-id', ['admin']), assignment('3', null, ['reviewer'], 'new@example.test'),
+    assignment('4', 'real-id', ['admin']), assignment('5', 'coauthor-id', ['co-author', 'reviewer']), assignment('6', 'unknown-id-123', ['tester']),
+  ];
+  const setup = (manageAccess: boolean, directory: 'ok' | 'down' = 'ok') => {
+    TestBed.configureTestingModule({ providers: [
+      { provide: StudyPlanAccount, useValue: { account: signal({ accountId: 'owner-id', username: 'author', permissions: permissions({ manageAccess, feedbackRole: manageAccess ? 'owner' : 'co-author' }) }), apiPath: (path: string) => path } },
+      { provide: ACCOUNT_FETCH, useValue: async (path: string) => {
+        if (path === '/admin/access') return Response.json({ data: saved });
+        if (path === '/admin/test-accounts') return Response.json({ data: [
+          { accountId: 'learner-id', username: 'learner03' }, { accountId: 'admin-id', username: 'admin01' }, { accountId: 'coauthor-id', username: 'coauthor01' },
+        ] });
+        if (path.startsWith('/admin/accounts')) return directory === 'ok'
+          ? Response.json({ data: { accounts: [{ accountId: 'real-id', username: 'sam.k' }], page: 0, hasNext: false } })
+          : new Response('', { status: 500 });
+        return Response.json({ data: [] });
+      } },
+    ] });
+    return TestBed.runInInjectionContext(() => new AdminAccessPage());
+  };
+
+  it('shows usernames instead of account IDs, sorted by role then name, pending last', async () => {
+    const page = setup(true);
+    await page.reload(); await page.loadNames();
+    expect(page.sortedAssignments().map(row => page.nameOf(row))).toEqual([
+      'coauthor01', 'admin01', 'sam.k', 'Account unknown-', 'learner03', 'new@example.test',
+    ]);
+    expect(page.names().get('owner-id')).toBe('author');
+    expect([saved[0], { ...saved[0], topicGrants: ['learn:a'] }, { ...saved[0], topicGrants: ['learn:a', 'grow:b'] }, saved[5], { ...saved[0], fullCurriculum: true }]
+      .map(row => page.courseText(row))).toEqual(['No course access', '1 selected course', '2 selected courses', 'Entire curriculum', 'Entire curriculum']);
+  });
+
+  it('falls back to short IDs when the owner directory cannot load, and co-authors never ask for it', async () => {
+    const owner = setup(true, 'down');
+    await owner.reload(); await owner.loadNames();
+    expect(owner.nameOf(saved[3])).toBe('Account real-id');
+    expect(owner.nameOf(saved[1])).toBe('admin01');
+    TestBed.resetTestingModule();
+    const coauthor = setup(false);
+    await coauthor.reload(); await coauthor.loadNames();
+    expect(coauthor.nameOf(saved[3])).toBe('Account real-id');
+    expect(coauthor.nameOf(saved[0])).toBe('learner03');
+  });
+});
+
+describe('People and access links', () => {
+  const setup = (tab: string | null, feedbackRole = 'owner') => {
+    const replaceState = vi.fn();
+    TestBed.configureTestingModule({ providers: [
+      { provide: StudyPlanAccount, useValue: { account: signal({ permissions: permissions({ manageAccess: feedbackRole === 'owner', triageFeedback: feedbackRole === 'admin', feedbackRole }) }) } },
+      { provide: ACCOUNT_FETCH, useValue: async () => Response.json({ data: [] }) },
+      { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: convertToParamMap(tab ? { tab } : {}) } } },
+      { provide: Location, useValue: { replaceState } },
+    ] });
+    return { page: TestBed.runInInjectionContext(() => new AdminAccessPage()), replaceState };
+  };
+  it('opens the tab named in the address and keeps the address in step', () => {
+    const { page, replaceState } = setup('test');
+    expect(page.tab()).toBe('test');
+    page.selectTab('saved');
+    expect(replaceState).toHaveBeenLastCalledWith('/admin/access', 'tab=saved');
+    page.selectTab('assign');
+    expect(replaceState).toHaveBeenLastCalledWith('/admin/access', '');
+  });
+  it('ignores unknown tabs and tabs the person cannot see', () => {
+    expect(setup('nonsense').page.tab()).toBe('assign');
+    TestBed.resetTestingModule();
+    expect(setup('saved', 'admin').page.tab()).toBe('test');
+  });
+});
+
+describe('test account admin outline', () => {
+  it('admins without the saved assignments start on Test accounts', () => {
+    TestBed.configureTestingModule({ providers: [
+      { provide: StudyPlanAccount, useValue: { account: signal({ permissions: permissions({ feedbackRole: 'admin', triageFeedback: true }) }) } },
       { provide: ACCOUNT_FETCH, useValue: async () => Response.json({ data: [] }) },
     ] });
     const page = TestBed.runInInjectionContext(() => new AdminAccessPage());
+    expect(page.tabs().map(tab => tab.label)).toEqual(['Test accounts', 'People']);
+    expect(page.tab()).toBe('test');
+    page.selectTab('assign');
+    expect(page.tab()).toBe('test');
     expect(page.outline().map(item => item.href)).toEqual(['#test-accounts']);
   });
 });

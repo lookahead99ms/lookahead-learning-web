@@ -358,6 +358,16 @@ h2 {
   background: var(--surface);
 }
 
+.plan-state {
+  margin: 6px 0 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--success) 12%, transparent);
+  color: var(--text-strong);
+  font-size: 14px;
+  text-align: center;
+}
+
 /* Mock interviews */
 .mock-heading {
   display: flex;

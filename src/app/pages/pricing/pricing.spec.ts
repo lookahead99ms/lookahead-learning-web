@@ -297,4 +297,36 @@ describe('Sample pricing page (DLV-209)', () => {
       expect(root.querySelector('.staff-link')?.getAttribute('href')).toBe('/admin/sales');
     });
   });
+
+  describe('who sees what (DLV-209, 2026-10-16)', () => {
+    it('shows staff every sale plan, marked staff-only, when no sale runs', () => {
+      TestBed.inject(StudyPlanAccount).account.set({ ...LEARNER, authorPreview: true } as never);
+      fixture.detectChanges();
+      const section = root.querySelector('.staff-promos')!;
+      expect(text(section.querySelector('.preview-flag'))).toContain('Staff only.');
+      expect([...section.querySelectorAll('.plan-card h3')].map(text)).toEqual([
+        'Monthly Promo',
+        'Annual Promo',
+        'Interview Pass Promo',
+      ]);
+      expect(section.querySelector('button')).toBeNull();
+      expect(section.querySelector('a')?.getAttribute('href')).toBe('/admin/sales');
+    });
+
+    it('shows a signed-in learner their plan, upgrades, and smaller plans only near renewal', () => {
+      const endsAt = new Date(Date.now() + 120 * 24 * 60 * 60 * 1000).toISOString();
+      TestBed.inject(MembershipApi).records.set([
+        { id: 'r1', planId: 'learn', courses: [], startsAt: endsAt, endsAt, status: 'active', pricePaidCents: 6999, discount: null },
+      ] as never);
+      fixture.detectChanges();
+      const card = (id: string) => root.querySelector(`.plan-card[data-plan="${id}"]`)!;
+      expect(text(card('learn').querySelector('.plan-state'))).toContain('Your plan.');
+      expect(card('learn').querySelector('button')).toBeNull();
+      expect(text(card('advance').querySelector('button'))).toBe('Upgrade to Advance');
+      expect(text(card('grow').querySelector('.off-sale-note'))).toContain('in the last 7 days of your plan');
+      expect(card('grow').querySelector('button')).toBeNull();
+      expect(text(card('interview-sprint').querySelector('button'))).toBe('Choose Interview Sprint');
+      expect(root.querySelector('.staff-promos')).toBeNull();
+    });
+  });
 });

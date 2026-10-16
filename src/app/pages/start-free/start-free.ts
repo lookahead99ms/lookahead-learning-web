@@ -22,6 +22,7 @@ import {
 } from '../../content/access-levels';
 import { CatalogId, plansIncluding } from '../../content/membership-plans';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
+import { SalePreview } from '../../content/sale-preview';
 import { CourseLearningUnit, CourseOutline } from '../../content/content.models';
 import { ContentService } from '../../content/content.service';
 import { flattenLearningUnits } from '../../content/learning-units';
@@ -278,10 +279,14 @@ export class StartFreePage implements OnInit {
   protected readonly signedIn = computed(
     () => !!this.accounts.account() && !this.accounts.sessionExpired(),
   );
+  /** Authors and admins (user, 2026-10-16): they always see everything a visitor would. */
+  protected readonly staffView = inject(SalePreview).isStaff;
+  /** Visitors and staff see the full page; a signed-in learner sees what fits their access. */
+  protected readonly showAsVisitor = computed(() => !this.signedIn() || this.staffView());
   protected readonly paidCourses = computed(() => {
     const loaded = this.loaded();
     if (!loaded) return [];
-    const account = this.signedIn() ? this.accounts.account() : null;
+    const account = this.showAsVisitor() ? null : this.accounts.account();
     return startFreeShowcase(
       loaded.levels,
       loaded.outlines,

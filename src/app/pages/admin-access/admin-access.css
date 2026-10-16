@@ -61,9 +61,8 @@ h3 {
 /* Hero */
 .access-hero {
   position: relative;
-  display: flex;
-  align-items: flex-start;
-  gap: clamp(16px, 2.5vw, 28px);
+  display: grid;
+  gap: 24px;
   overflow: hidden;
   margin-bottom: 24px;
   padding: clamp(22px, 3vw, 36px);
@@ -82,7 +81,12 @@ h3 {
     ),
     var(--surface);
 }
-.access-hero > div {
+.hero-top {
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(16px, 2.5vw, 28px);
+}
+.hero-top > div {
   max-width: 880px;
 }
 .hero-mark {
@@ -111,22 +115,6 @@ h3 {
 }
 .lede {
   font-size: 17px;
-}
-/* Passive facts: plain labels with separators, not pills. */
-.hero-facts {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 0;
-  margin: 16px 0 0;
-  padding: 0;
-  list-style: none;
-  color: var(--text-subtle);
-  font-size: 14px;
-  font-weight: 600;
-}
-.hero-facts li:not(:last-child)::after {
-  margin-inline: 10px;
-  content: '·';
 }
 
 /* Status message */
@@ -426,18 +414,48 @@ button:disabled {
   flex: 0 0 auto;
 }
 
-/* How access works: three plain explainer cards. */
-.how-access {
-  margin-bottom: 28px;
+/* Tabs (user, 2026-10-16): Give access first; account lists only when chosen. Underlined, and
+   scrollable on narrow screens. */
+.access-tabs {
+  display: flex;
+  gap: 4px;
+  margin: 0 0 24px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--line);
+  scrollbar-width: thin;
 }
-.how-heading {
-  margin-bottom: 12px;
-  font-size: 18px;
+.access-tabs button {
+  flex: 0 0 auto;
+  margin-bottom: -1px;
+  padding: 12px 18px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: var(--text-subtle);
+  cursor: pointer;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
 }
+.access-tabs button:hover {
+  color: var(--text-strong);
+}
+.access-tabs button[aria-selected='true'] {
+  border-bottom-color: var(--accent-strong);
+  color: var(--text-strong);
+}
+.access-tabs button:focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: -3px;
+  border-radius: 8px 8px 0 0;
+}
+
+/* How access works: three plain explainer cards inside the hero. */
 .how-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
+  gap: 12px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -445,11 +463,15 @@ button:disabled {
 .how-card {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 16px 18px;
+  gap: 4px;
+  padding: 14px 16px;
   border: 1px solid var(--line);
   border-radius: 14px;
-  background: var(--surface);
+  background: color-mix(in srgb, var(--surface-page) 55%, transparent);
+}
+.how-card h3 {
+  margin: 2px 0 0;
+  font-size: 15px;
 }
 .how-card p {
   color: var(--text-subtle);
@@ -465,11 +487,6 @@ button:disabled {
   color: var(--accent-link);
   font-size: 14px;
   font-weight: 700;
-}
-/* Find someone, then everyone saved, each across the full width. */
-.work-grid {
-  display: grid;
-  gap: 0;
 }
 /* Saved assignments read as table rows when there is room: who, state, access, action. */
 @media (min-width: 1100px) {
@@ -533,10 +550,20 @@ button:disabled {
   }
 }
 @media (max-width: 640px) {
+  /* Four tabs never fit one phone row: two by two, nothing hidden off-screen. */
+  .access-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    overflow: visible;
+  }
+  .access-tabs button {
+    padding-inline: 8px;
+    white-space: normal;
+  }
   .choose-grid {
     grid-template-columns: 1fr;
   }
-  .access-hero {
+  .hero-top {
     flex-direction: column;
   }
   .section-heading.with-action {

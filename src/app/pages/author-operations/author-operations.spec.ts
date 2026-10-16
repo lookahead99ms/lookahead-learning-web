@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
 import { AuthorOperationsPage } from './author-operations';
 import {
@@ -257,6 +257,19 @@ describe('Operations author view', () => {
     expect(
       fixture.nativeElement.querySelector('a[href="/admin/operations#supporting-references"]'),
     ).toBeNull();
+  });
+  it('opens a page link from the document through the router, and ignores anything else', async () => {
+    const fixture = await create();
+    const frame = fixture.nativeElement.querySelector('iframe') as HTMLIFrameElement;
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+    const send = (data: unknown, origin = 'null') =>
+      window.dispatchEvent(new MessageEvent('message', { origin, source: frame.contentWindow, data }));
+    const link = { type: 'lookahead:author-document:page-navigate', version: 1, documentId: 'operations-reference', route: '/admin/access?tab=test' };
+    send(link, 'https://example.test');
+    send({ ...link, route: 'https://example.com' });
+    expect(navigate).not.toHaveBeenCalled();
+    send(link);
+    expect(navigate).toHaveBeenCalledWith('/admin/access?tab=test');
   });
   it('sizes the shared document from a validated sandbox message', async () => {
     const fixture = await create();

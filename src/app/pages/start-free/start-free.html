@@ -5,6 +5,12 @@
       <a routerLink="/">Home</a><span>/</span><span aria-current="page">Start free</span>
     </nav>
 
+    @if (staffView()) {
+      <p class="staff-note" role="note">
+        <strong>Staff view.</strong> You see this page as a visitor does, with everything shown.
+        Signed-in learners see only what fits their access.
+      </p>
+    }
     <header class="start-free-hero">
       <p class="eyebrow">Start free</p>
       <h1 class="reader-question-title">Start learning today, free.</h1>
@@ -22,11 +28,11 @@
         </ul>
       }
       <div class="hero-actions">
-        @if (!signedIn()) {
+        @if (showAsVisitor()) {
           <a class="action-button" routerLink="/sign-up">Create a free account</a>
         }
         <!-- DLV-209 (user, 2026-10-15): a way to every plan from here. -->
-        <a [class]="signedIn() ? 'action-button' : 'action-link'" routerLink="/pricing">See all plans</a>
+        <a [class]="showAsVisitor() ? 'action-link' : 'action-button'" routerLink="/pricing">See all plans</a>
       </div>
     </header>
 
@@ -56,13 +62,13 @@
                 <h2 [id]="'start-free-' + group.level">{{ group.heading }}</h2>
                 @if (group.level === 'open') {
                   <p class="start-free-note">No account needed.</p>
-                } @else if (signedIn()) {
+                } @else if (!showAsVisitor()) {
                   <p class="start-free-note">Your account can read these.</p>
                 } @else {
                   <p class="start-free-note">Read these with a free account.</p>
                 }
               </div>
-              @if (group.level === 'free' && !signedIn()) {
+              @if (group.level === 'free' && showAsVisitor()) {
                 <a class="action-button" routerLink="/sign-up" [queryParams]="{ returnTo: '/start-free' }">Create a free account</a>
               }
             </div>

@@ -59,6 +59,22 @@
     </section>
   }
 
+  @if (isStaff() && !sale()) {
+    <!-- Staff see every plan (user, 2026-10-16); learners see sale plans only during a sale. -->
+    <section class="pricing-section staff-promos" aria-labelledby="staff-promos-heading">
+      <h2 id="staff-promos-heading">Sale plans</h2>
+      <p class="preview-flag" role="note">
+        <strong>Staff only.</strong> Learners see these only while a sale runs. Start one on
+        <a routerLink="/admin/sales">Sales and prices</a>.
+      </p>
+      <ul class="plan-grid" aria-label="Sale plans">
+        @for (card of allPromos(); track card.plan.id) {
+          <ng-container *ngTemplateOutlet="planCard; context: { $implicit: card, readOnly: true }" />
+        }
+      </ul>
+    </section>
+  }
+
   <section class="pricing-section free-plan" aria-labelledby="free-heading">
     <div class="free-intro">
       <h2 id="free-heading">Free</h2>
@@ -140,15 +156,24 @@
       } @else if (readOnly) {
         <p class="off-sale-note">Available again after the sale.</p>
       } @else {
-        <button
-          type="button"
-          class="action-link"
-          aria-haspopup="dialog"
-          [attr.aria-describedby]="card.plan.id + '-price'"
-          (click)="choose(card, $event)"
-        >
-          Choose {{ card.plan.name }}
-        </button>
+        <!-- What this viewer can do with the plan: staff and visitors choose any plan; a learner
+             sees their plan, upgrades, and smaller plans only near renewal (user, 2026-10-16). -->
+        @let state = stateOf(card);
+        @if (state.kind === 'current') {
+          <p class="plan-state"><strong>Your plan.</strong> @if (state.ends) { Expires {{ state.ends }}. }</p>
+        } @else if (state.kind === 'later') {
+          <p class="off-sale-note">Available from {{ state.from }}, in the last 7 days of your plan.</p>
+        } @else {
+          <button
+            type="button"
+            class="action-link"
+            aria-haspopup="dialog"
+            [attr.aria-describedby]="card.plan.id + '-price'"
+            (click)="choose(card, $event)"
+          >
+            {{ state.label }}
+          </button>
+        }
       }
     </li>
   </ng-template>

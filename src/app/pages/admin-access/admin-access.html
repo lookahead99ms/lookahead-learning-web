@@ -4,30 +4,24 @@
     <app-author-workspace-nav pageTitle="People and access" pageId="access" [outline]="outline()" />
   </aside>
   <div class="workspace-content">
+    <!-- How access works sits in the hero (user, 2026-10-16), so the tabs come straight after it. -->
     <header class="access-hero">
-      <span class="hero-mark" aria-hidden="true">🔐</span>
-      <div>
-        <p class="eyebrow">People and access</p>
-        <h2 class="intro-heading">Give people the access they need.</h2>
-        <p class="lede">
-          Assign roles and course access. These permissions never include another learner’s saved
-          plans or progress.
-        </p>
-        <ul class="hero-facts" aria-label="About this page">
-          <li>{{ assignments().length }} saved assignment{{ assignments().length === 1 ? '' : 's' }}</li>
-          <li>Only the owner can change roles and course grants</li>
-          <li>Applies on the next request</li>
-        </ul>
+      <div class="hero-top">
+        <span class="hero-mark" aria-hidden="true">🔐</span>
+        <div>
+          <p class="eyebrow">People and access</p>
+          <h2 class="intro-heading">Give people the access they need.</h2>
+          <p class="lede">
+            Only the owner changes roles and course access. A change applies the next time the
+            person loads a page, and never shows anyone another learner’s plans or progress.
+          </p>
+        </div>
       </div>
-    </header>
-
-    <section class="how-access" aria-labelledby="how-access-heading">
-      <h2 id="how-access-heading" class="how-heading">How access works</h2>
-      <ul class="how-grid">
+      <ul class="how-grid" aria-label="How access works">
         <li class="how-card">
           <span class="how-icon" aria-hidden="true">🧑‍💼</span>
           <h3>Staff roles</h3>
-          <p>Co-authors can read author tools. Admins can manage test accounts. Both have the entire curriculum; only the owner changes roles and grants.</p>
+          <p>Co-authors read the author tools. Admins manage test accounts. Both get the entire curriculum.</p>
         </li>
         <li class="how-card">
           <span class="how-icon" aria-hidden="true">📚</span>
@@ -37,17 +31,72 @@
         <li class="how-card">
           <span class="how-icon" aria-hidden="true">🏷️</span>
           <h3>Plans and purchases</h3>
-          <p>Local purchases use mock payments. Review plan access and purchase history without charging real money.</p>
+          <p>Local purchases use mock payments, so no real money is charged.</p>
           <a class="how-link" routerLink="/admin/plans">See plans and purchases</a>
         </li>
       </ul>
-    </section>
+    </header>
+
+    <div class="access-tabs" role="tablist" aria-label="People and access" (keydown)="onTabKey($event)">
+      @for (item of tabs(); track item.id) {
+        <button
+          type="button"
+          role="tab"
+          [id]="'access-tab-' + item.id"
+          aria-controls="access-panel"
+          [attr.aria-selected]="tab() === item.id"
+          [attr.tabindex]="tab() === item.id ? 0 : -1"
+          (click)="selectTab(item.id)"
+        >
+          {{ item.label }}
+        </button>
+      }
+    </div>
 
     <p class="notice" role="status" aria-live="polite" [class.has-notice]="notice()">{{ notice() }}</p>
 
-    <app-test-accounts />
-    @if (canReadAssignments()) {
-    <div class="work-grid">
+    <div class="access-panel" id="access-panel" role="tabpanel" [attr.aria-labelledby]="'access-tab-' + tab()">
+    @if (tab() === 'test' || tab() === 'people') {
+      <app-test-accounts
+        [view]="tab() === 'test' ? 'test' : 'people'"
+        [assignments]="assignments()"
+        (giveAccess)="giveAccessTo($event)"
+      />
+    } @else if (tab() === 'saved') {
+      <section class="access-section" id="saved-assignments" aria-labelledby="saved-assignments-heading">
+        <div class="section-heading with-action">
+          <span class="section-icon" aria-hidden="true">🗂️</span>
+          <div>
+            <h2 id="saved-assignments-heading">Saved assignments</h2>
+            <p class="section-note">
+              {{ assignments().length }} {{ assignments().length === 1 ? 'person has' : 'people have' }} a staff role or course access from this page.
+            </p>
+          </div>
+          <button class="secondary-action" type="button" (click)="reload()" [disabled]="busy()">Reload list</button>
+        </div>
+        <div class="assignment-list">
+          @for (assignment of sortedAssignments(); track assignment.id) {
+            <article class="assignment" [class.pending]="assignment.pendingEmail">
+              <div class="assignment-text">
+                <p class="assignment-who">{{ nameOf(assignment) }}</p>
+                <p class="assignment-state">
+                  <span class="state-dot" aria-hidden="true"></span>
+                  {{ assignment.pendingEmail ? 'Pending verified sign-in' : 'Assigned' }}
+                </p>
+                <p class="assignment-grants">
+                  {{ roleNames(assignment.roles) }} · {{ courseText(assignment) }}
+                </p>
+              </div>
+              <button class="secondary-action" type="button" (click)="review(assignment)" [disabled]="busy()">
+                Review assignment
+              </button>
+            </article>
+          } @empty {
+            <p class="empty">No saved assignments.</p>
+          }
+        </div>
+      </section>
+    } @else {
       <section class="access-section" id="choose-person" aria-labelledby="choose-person-heading">
         <div class="section-heading">
           <span class="section-icon" aria-hidden="true">👤</span>
@@ -78,39 +127,6 @@
         </p>
       </section>
 
-      <section class="access-section" id="saved-assignments" aria-labelledby="saved-assignments-heading">
-        <div class="section-heading with-action">
-          <span class="section-icon" aria-hidden="true">🗂️</span>
-          <div>
-            <h2 id="saved-assignments-heading">Saved assignments</h2>
-            <p class="section-note">Everyone who has a staff role or course access from this page.</p>
-          </div>
-          <button class="secondary-action" type="button" (click)="reload()" [disabled]="busy()">Reload list</button>
-        </div>
-        <div class="assignment-list">
-          @for (assignment of assignments(); track assignment.id) {
-            <article class="assignment" [class.pending]="assignment.pendingEmail">
-              <div class="assignment-text">
-                <p class="assignment-who">{{ assignment.pendingEmail || assignment.accountId }}</p>
-                <p class="assignment-state">
-                  <span class="state-dot" aria-hidden="true"></span>
-                  {{ assignment.pendingEmail ? 'Pending verified sign-in' : 'Assigned' }}
-                </p>
-                <p class="assignment-grants">
-                  {{ roleNames(assignment.roles) }} ·
-                  {{ assignment.fullCurriculum || assignment.roles.includes('tester') ? 'Entire curriculum' : assignment.topicGrants.length + ' selected courses' }}
-                </p>
-              </div>
-              <button class="secondary-action" type="button" (click)="recipient.set(null); edit(assignment)" [disabled]="busy()">
-                Review assignment
-              </button>
-            </article>
-          } @empty {
-            <p class="empty">No saved assignments.</p>
-          }
-        </div>
-      </section>
-    </div>
 
     @if (draft; as selection) {
       <section class="access-section review" id="review-access" aria-labelledby="review-access-heading">
@@ -118,7 +134,7 @@
           <span class="section-icon" aria-hidden="true">✅</span>
           <div>
             <h2 id="review-access-heading">
-              Review access for {{ recipient()?.displayName || selection.pendingEmail || selection.accountId }}
+              Review access for {{ recipient()?.displayName || nameOf(selection) }}
             </h2>
             @if (selection.accountId) {
               <p class="section-note">Account ID: <span class="mono">{{ selection.accountId }}</span></p>
@@ -196,6 +212,8 @@
       </section>
     }
     }
+    </div>
+
   </div>
   <app-author-admin-menu pageId="access" />
 </main>

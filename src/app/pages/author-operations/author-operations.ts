@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { DomSanitizer } from '@angular/platform-browser';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   AUTHOR_DOCUMENTS_CLIENT,
   AuthorDocument,
@@ -37,8 +37,7 @@ import {
   embeddedAnchor,
   embeddedAnchorPosition,
   requestEmbeddedAnchor,
-  scrollToEmbeddedAnchor,
-} from '../../core/author-embedded-anchor';
+  scrollToEmbeddedAnchor, embeddedPageRoute } from '../../core/author-embedded-anchor';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 
 // Long operator references wrap beyond 30,000px on narrow screens. Keep a
@@ -57,6 +56,7 @@ export class AuthorOperationsPage implements OnDestroy {
   private readonly documents = inject(AUTHOR_DOCUMENTS_CLIENT);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly theme = inject(PlatformThemeService);
+  private readonly router = inject(Router);
   // Routes name one of the published private documents; anything else is Operations.
   protected readonly pageId = ((value: unknown) =>
     isAuthorDocumentPageId(value) ? value : 'operations')(
@@ -216,6 +216,11 @@ export class AuthorOperationsPage implements OnDestroy {
     if (data?.type === 'lookahead:author-document:api-navigate' && data.version === 1 && data.documentId === this.documentId) {
       const endpoint = apiEndpointAnchor(data.anchor);
       if (endpoint) this.hostDocument.defaultView?.location.assign(`/admin/api#${endpoint}`);
+      return;
+    }
+    const route = embeddedPageRoute(data, this.documentId);
+    if (route) {
+      void this.router.navigateByUrl(route);
       return;
     }
     const anchor = embeddedAnchor(

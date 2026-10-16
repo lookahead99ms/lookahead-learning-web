@@ -6,6 +6,8 @@
 import {
   CHANGE_WINDOW_DAYS,
   PlanDefinition,
+  changeWindowOpens,
+  planChange,
   PlanId,
   REMINDER_WINDOW_DAYS,
   durationLabel,
@@ -160,3 +162,55 @@ export const PRICING_FAQ: readonly PricingQuestion[] = [
       'Local development supports simulated purchases after sign-in. No money is charged. Real payments are not enabled.',
   },
 ];
+
+/** What a plan card offers this viewer (user, 2026-10-16: show signed-in learners what fits). */
+export type CardState =
+  | { kind: 'choose'; label: string }
+  | { kind: 'current'; ends: string | null }
+  | { kind: 'upgrade'; label: string }
+  | { kind: 'later'; from: string };
+
+export interface CardRecord {
+  planId: string;
+  status: string;
+  endsAt: string | null;
+}
+
+const dayFormat = new Intl.DateTimeFormat('en-GB', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+
+function day(value: string | null): string | null {
+  if (!value) return null;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : dayFormat.format(parsed);
+}
+
+/**
+ * Staff and visitors can choose any plan. A learner with an active yearly plan sees that plan as
+ * theirs, larger plans as upgrades (any time), and smaller or different ones as available only in
+ * the last CHANGE_WINDOW_DAYS before their plan ends. Passes and sale plans keep Choose.
+ */
+export function cardState(
+  plan: PlanDefinition,
+  records: readonly CardRecord[],
+  options: { staff: boolean; now?: Date },
+): CardState {
+  const choose: CardState = { kind: 'choose', label: `Choose ${plan.name}` };
+  if (options.staff) return choose;
+  const active = records.find(
+    (record) => record.status === 'active' && YEARLY_IDS.includes(record.planId as PlanId),
+  );
+  if (!active || !YEARLY_IDS.includes(plan.id)) return choose;
+  if (active.planId === plan.id) return { kind: 'current', ends: day(active.endsAt) };
+  const change = planChange(active.planId as PlanId, plan.id);
+  if (change === 'upgrade') return { kind: 'upgrade', label: `Upgrade to ${plan.name}` };
+  if (!active.endsAt) return choose;
+  const opens = changeWindowOpens(new Date(active.endsAt));
+  return (options.now ?? new Date()) >= opens
+    ? { kind: 'choose', label: `Choose ${plan.name} for next year` }
+    : { kind: 'later', from: day(opens.toISOString())! };
+}

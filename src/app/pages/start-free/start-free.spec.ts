@@ -6,7 +6,8 @@ import { Observable, of, throwError } from 'rxjs';
 import { AccessLevels, AccessLevelsService, parseAccessLevels } from '../../content/access-levels';
 import { CourseLearningUnit, CourseOutline } from '../../content/content.models';
 import { ContentService } from '../../content/content.service';
-import { MISSING_SHOWCASE, StartFreePage, startFreeGroups, startFreeShowcase, startFreeTarget } from './start-free';
+import { StudyPlanAccount } from '../study-plan/study-plan-account';
+import { MISSING_SHOWCASE, StartFreePage, fitShowcase, startFreeGroups, startFreeShowcase, startFreeTarget } from './start-free';
 
 function outline(path: string, id: string, title: string, units: CourseLearningUnit[]): CourseOutline {
   return {
@@ -122,6 +123,43 @@ describe('startFreeShowcase (what you are missing)', () => {
   });
 });
 
+describe('fitShowcase (every tile full, no cut-off lines)', () => {
+  /** A tile whose list ends at y=100 and whose units end at the given y positions. */
+  function tile(bottoms: number[], baseMore: number): HTMLElement {
+    const li = document.createElement('li');
+    const units = document.createElement('ul');
+    units.className = 'locked-units';
+    units.getBoundingClientRect = () => ({ bottom: 100 }) as DOMRect;
+    for (const bottom of bottoms) {
+      const item = document.createElement('li');
+      item.getBoundingClientRect = () => ({ bottom }) as DOMRect;
+      units.append(item);
+    }
+    const more = document.createElement('p');
+    more.className = 'more';
+    more.dataset['more'] = String(baseMore);
+    li.append(units, more);
+    return li;
+  }
+
+  it('hides the units that do not fit and counts them in "and N more"', () => {
+    const list = document.createElement('ul');
+    const full = tile([40, 80, 120, 160], 3);
+    const fits = tile([30, 60], 0);
+    list.append(full, fits, document.createElement('li'));
+    fitShowcase(list);
+    expect([...full.querySelectorAll('.locked-units > li')].map((item) => (item as HTMLElement).hidden)).toEqual([
+      false,
+      false,
+      true,
+      true,
+    ]);
+    expect(full.querySelector('.more')?.textContent).toBe('and 5 more');
+    expect(fits.querySelector<HTMLElement>('.more')!.style.visibility).toBe('hidden');
+    expect(fits.querySelector('.more')?.textContent).toBe('');
+  });
+});
+
 describe('startFreeGroups', () => {
   it('lists Open units first, then Free with account, Learn before Blaze, with lesson routes', () => {
     const groups = startFreeGroups(
@@ -232,6 +270,63 @@ describe('StartFreePage', () => {
     ]);
     expect(getCourseOutline).toHaveBeenCalledTimes(requested.size);
     expect(root.textContent).not.toContain('Lost');
+  });
+
+  it('shows staff the full visitor page, and a signed-in learner only what fits (DLV-209)', async () => {
+    const { root, harness } = await render(levels);
+    const accounts = TestBed.inject(StudyPlanAccount);
+    const heroLinks = () => [...root.querySelectorAll('.hero-actions a')].map((link) => link.textContent?.trim());
+
+    // A signed-in learner: no sign-up prompts, and the free section says their account can read it.
+    accounts.account.set({ accountId: 'learner', username: 'l', displayName: 'L', topicGrants: [] } as never);
+    harness.detectChanges();
+    expect(root.querySelector('.staff-note')).toBeNull();
+    expect(heroLinks()).toEqual(['See all plans']);
+    expect(root.querySelector('[data-access-level="free"] .start-free-note')?.textContent?.trim()).toBe(
+      'Your account can read these.',
+    );
+
+    // An author sees everything a visitor does, with a note saying so.
+    accounts.account.set({ accountId: 'author', username: 'a', displayName: 'A', topicGrants: [], authorPreview: true } as never);
+    harness.detectChanges();
+    expect(root.querySelector('.staff-note')?.textContent).toContain('Staff view.');
+    expect(heroLinks()).toEqual(['Create a free account', 'See all plans']);
+    expect(root.querySelector('[data-access-level="free"] .group-heading a')?.textContent?.trim()).toBe(
+      'Create a free account',
+    );
+  });
+
+  it('renders a showcase course and refits its tiles when the grid resizes (DLV-209)', async () => {
+    const observed: Element[] = [];
+    let resize: (() => void) | undefined;
+    class FakeResizeObserver {
+      constructor(callback: () => void) {
+        resize = callback;
+      }
+      observe(target: Element) {
+        observed.push(target);
+      }
+      disconnect() {}
+    }
+    vi.stubGlobal('ResizeObserver', FakeResizeObserver);
+    outlines['learn/sql'] = outline('learn', 'sql', 'SQL Fundamentals', [
+      unit('joins', 'Joins and Aggregation'),
+      unit('windows', 'Window Functions'),
+    ]);
+    try {
+      const { root, harness } = await render(levels);
+      harness.detectChanges();
+      await harness.fixture.whenStable();
+      const missing = root.querySelector('#missing')!;
+      expect(missing.querySelector('.missing-course h3')?.textContent?.trim()).toBe('SQL Fundamentals');
+      expect(missing.querySelector('.group-heading a')?.getAttribute('href')).toBe('/pricing');
+      expect(observed).toContain(missing.querySelector('.missing-courses'));
+      resize?.();
+      expect(missing.querySelector('.more')).not.toBeNull();
+    } finally {
+      delete outlines['learn/sql'];
+      vi.unstubAllGlobals();
+    }
   });
 
   it('shows full rows of four and keeps the rest behind Show more (DLV-209)', async () => {
