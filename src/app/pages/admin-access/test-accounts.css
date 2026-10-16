@@ -22,6 +22,18 @@
   color: var(--text-strong);
   font-size: 22px;
 }
+.heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.directory > .note {
+  margin-bottom: 12px;
+}
+@media (max-width: 600px) {
+  .heading-actions { width: 100%; flex-direction: column; align-items: stretch; }
+  .heading-actions button { width: 100%; }
+}
 .note,
 .empty,
 .count,

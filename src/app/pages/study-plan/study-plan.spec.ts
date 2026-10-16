@@ -608,6 +608,8 @@ describe('StudyPlanPage', () => {
         goal: 'Plan ' + index,
         revision: 1,
         updatedAt: '2099-01-01',
+        accessNeeded: index === 1,
+        lifecycle: index === 1 ? { state: 'archived' } : { state: 'active' },
         card: index
           ? undefined
           : {
@@ -633,7 +635,8 @@ describe('StudyPlanPage', () => {
     harness.detectChanges();
     expect(page.setupVisible()).toBe(false);
     expect(page.progressVisible()).toBe(false);
-    expect(harness.routeNativeElement!.querySelectorAll('.plan-card')).toHaveLength(5);
+    expect(harness.routeNativeElement!.querySelectorAll('.plan-card')).toHaveLength(4);
+    expect(harness.routeNativeElement!.querySelectorAll('.plan-archive-item')).toHaveLength(1);
     expect(harness.routeNativeElement!.querySelector('.plan-card')?.textContent).toContain(
       '3 / 20',
     );
@@ -654,12 +657,25 @@ describe('StudyPlanPage', () => {
     expect(cards[0].querySelector('[data-card-primary]')?.getAttribute('aria-label')).toBe(
       'Continue plan: Plan 0',
     );
+    expect(cards[0].textContent).not.toContain('Course access needed');
+    expect(harness.routeNativeElement!.querySelector('.plan-archive-item')?.textContent).toContain('Plan 1');
+    expect(harness.routeNativeElement!.querySelector('.plan-archive-item')?.textContent).toContain('Course access needed');
     const disclosure = focus.querySelector('summary') as HTMLElement;
     disclosure.click();
     harness.detectChanges();
     expect(focus.querySelector('details')?.open).toBe(true);
     expect(account.active()).toBe(original);
     expect(open).not.toHaveBeenCalled();
+    const deletion = vi.spyOn(account, 'deletePlan').mockImplementation(async (planId: string) => {
+      account.plans.update((plans) => plans.filter((plan) => plan.planId !== planId));
+      return true;
+    });
+    page.askDeletePlan(account.plans()[0]);
+    harness.detectChanges();
+    expect(harness.routeNativeElement!.querySelector('.plan-delete-dialog')?.textContent).toContain('cannot be undone');
+    await page.confirmDeletePlan();
+    expect(deletion).toHaveBeenCalledWith('p0', 1);
+    expect(account.plans()).toHaveLength(4);
   });
 
   it('always exposes Review schedule and does not offer Apply for a no-op diagnostic', async () => {
@@ -2753,6 +2769,23 @@ describe('StudyPlanPage', () => {
         'Get course access to save',
       );
       expect(dialog.textContent).not.toContain('Save to my account');
+    });
+
+    it('offers account saving for the free starter and sends the free draft through the account API', async () => {
+      const { harness, page, save, root } = await open([]);
+      save.mockResolvedValue(null);
+      page.chooseReadyMadePath('free-starter');
+      page.previewReadyMadePlan();
+      harness.detectChanges();
+      expect(page.freeDraftSaveable()).toBe(true);
+      const dialog = window.document.querySelector('.draft-review-dialog') as HTMLElement;
+      expect(dialog.textContent).toContain('Save to my account');
+      expect(dialog.textContent).toContain('15 free plans in total');
+      await page.saveDraft();
+      expect(save).toHaveBeenCalledOnce();
+      expect(save.mock.calls[0][0].readyMade).toBeUndefined();
+      expect(page.draft()).not.toBeNull();
+      expect(root().querySelector('.free-preview-note')?.textContent).toContain('two active free plans');
     });
 
     it('keeps the custom builder at the free starter selection', async () => {

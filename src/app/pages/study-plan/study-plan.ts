@@ -78,6 +78,7 @@ import {
 
 import {
   AccountPlan,
+  PlanSummary,
   PlanActivity,
   RecoveryMetadata,
   SavedPlan,
@@ -256,6 +257,47 @@ export class StudyPlanPage implements OnInit {
       };
     }),
   );
+  protected readonly currentPlanCards = computed(() =>
+    this.planCards().filter((card) => card.lifecycle?.state !== 'archived'),
+  );
+  protected readonly archivedPlanCards = computed(() =>
+    this.planCards().filter((card) => card.lifecycle?.state === 'archived'),
+  );
+  @ViewChild('deleteDialog') private deleteDialog?: ElementRef<HTMLDialogElement>;
+  protected readonly deletingPlan = signal<PlanSummary | null>(null);
+  protected askDeletePlan(plan: PlanSummary): void {
+    if (this.editsLocked()) return;
+    this.deletingPlan.set(plan);
+    this.deleteDialog?.nativeElement.showModal?.();
+  }
+  protected closeDeletePlan(): void {
+    if (this.accountStore.busy() || this.accountStore.pending()) return;
+    this.deleteDialog?.nativeElement.close?.();
+    this.deletingPlan.set(null);
+  }
+  protected async confirmDeletePlan(): Promise<void> {
+    const plan = this.deletingPlan();
+    if (!plan || this.editsLocked()) return;
+    if (!await this.accountStore.deletePlan(plan.planId, plan.revision)) return;
+    this.deleteDialog?.nativeElement.close?.();
+    this.deletingPlan.set(null);
+    this.displayPlanDashboard();
+  }
+  protected async retryDeletePlan(): Promise<void> {
+    if (!this.deletingPlan() || !this.accountStore.pending()) return;
+    await this.accountStore.retry();
+    if (!this.accountStore.pending()) {
+      this.deleteDialog?.nativeElement.close?.();
+      this.deletingPlan.set(null);
+      this.displayPlanDashboard();
+    }
+  }
+  protected discardDeleteRequest(): void {
+    if (this.accountStore.busy()) return;
+    this.accountStore.discardPending();
+    this.deleteDialog?.nativeElement.close?.();
+    this.deletingPlan.set(null);
+  }
   protected async showAllPlans(): Promise<void> {
     if (!this.accountMode() || this.editsLocked()) return;
     this.displayPlanDashboard();
@@ -492,7 +534,7 @@ export class StudyPlanPage implements OnInit {
   }
   protected async saveDraft(): Promise<void> {
     const draft = this.draft();
-    if (!draft || this.editsLocked() || this.freeAccount()) return;
+    if (!draft || this.editsLocked() || (this.freeAccount() && !this.freeDraftSaveable())) return;
     this.nameError.set(planNameError(draft.name ?? this.creationPlanName()));
     if (this.nameError()) return;
     if (draft.readyMade && this.accountMode() && !this.readyMadeAdoptionAvailable()) {
@@ -770,10 +812,11 @@ export class StudyPlanPage implements OnInit {
   protected readonly selectedReadyMadePathId = signal('');
   protected readonly selectedReadyMadeDays = signal<ReadyMadeDuration | null>(null);
   protected readonly selectedReadyMadeHours = signal<number | null>(null);
-  /** Signed-in accounts without course access browse every plan read-only and never save. */
+  /** Signed-in accounts without course access can save free-content plans. */
   protected readonly freeAccount = computed(
     () => this.accountMode() && isFreeAccount(this.accountStore.account()),
   );
+  protected readonly freeDraftSaveable = signal(false);
   protected readonly freeDays = FREE_PREVIEW_DAYS;
   protected readonly freeHours = FREE_PREVIEW_HOURS;
   protected readonly freeStarterId = FREE_STARTER_PATH_ID;
@@ -1991,6 +2034,7 @@ export class StudyPlanPage implements OnInit {
       shiftedDays: 0,
       history: [],
     });
+    this.freeDraftSaveable.set(pathId === FREE_STARTER_PATH_ID);
     this.selectedDay.set(1);
     this.readyMadeMessage.set(
       pathId === FREE_STARTER_PATH_ID
@@ -2087,6 +2131,7 @@ export class StudyPlanPage implements OnInit {
         },
       ],
     });
+    this.freeDraftSaveable.set(this.freeAccount());
     this.selectedDay.set(1);
     this.openDraftDialog();
     this.status.set('Review your temporary draft. Save when you are ready.');

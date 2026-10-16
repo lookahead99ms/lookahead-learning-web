@@ -80,7 +80,7 @@ describe('Test account maintenance',()=>{
   const root=fixture.nativeElement as HTMLElement;
   expect(root.querySelector('section')?.id).toBe('test-accounts');
   expect(root.querySelector('h2')?.textContent).toBe('Test accounts');
-  expect(root.textContent).toContain('New test accounts come from the Infra seed script');
+  expect(root.textContent).toContain('Staff can create independent learner logins here');
   const guide=root.querySelector('a.prose-link') as HTMLAnchorElement;
   expect(guide.textContent).toContain('Managed test accounts and saved plans');
   expect(guide.getAttribute('href')).toBe('/admin/local-development#managed-test-accounts-and-saved-plans');
@@ -88,6 +88,20 @@ describe('Test account maintenance',()=>{
   expect(give).toHaveLength(2);give[1].click();expect(given).toEqual(['learner09']);
   account.set({permissions:{feedbackRole:'co-author'}});fixture.detectChanges();
   expect([...root.querySelectorAll('button')].some(b=>b.textContent?.trim()==='Give access')).toBe(false);
+ });
+ it('creates with one retry key and deletes only an authorized learner',async()=>{
+  account.set({accountId:'owner-1',permissions:{feedbackRole:'owner',manageAccess:true}});
+  component.createPassword='synthetic-learner-fixture-only';
+  request.mockRejectedValueOnce(new Error('uncertain'));
+  await component.create();const key=component.createKey();expect(key).toBeTruthy();
+  request.mockResolvedValueOnce({username:'test-0123456789abcdef01234567'});
+  await component.create();expect(component.createKey()).toBeNull();
+  expect(request.mock.calls[0][1]).toEqual(request.mock.calls[1][1]);
+  const remove=vi.fn(async()=>({deleted:true}));(component as any).api.remove=remove;
+  component.deleting.set(row);component.deleteConfirmation=row.username;
+  await component.deleteAccount();expect(remove).toHaveBeenCalledWith('/admin/test-accounts/test-id');
+  expect(component.notice()).toContain('lifetime count remains');
+  expect(component.mayDelete({...row,username:'admin01',roles:['admin']})).toBe(false);
  });
  it('discloses a partial directory and clears previous owner results after failure',async()=>{
   account.set({permissions:{manageAccess:true}});

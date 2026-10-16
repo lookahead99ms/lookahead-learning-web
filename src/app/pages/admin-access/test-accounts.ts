@@ -25,6 +25,7 @@ export interface TestAccountRow {
   lastChangedBy: string;
   lastChangedAt: string;
   legacyPresetAvailable: boolean;
+  creatorId?: string;
 }
 
 type History = { state: 'loading' } | { state: 'error' } | { state: 'ready'; items: AccessRecordView[] };
@@ -67,6 +68,13 @@ export class TestAccounts implements OnInit {
       !!this.accounts.account()?.permissions?.manageAccess ||
       !!this.accounts.account()?.permissions?.triageFeedback,
   );
+  readonly canCreate = computed(() => ['owner', 'co-author', 'admin'].includes(this.accounts.account()?.permissions?.feedbackRole ?? (this.accounts.account()?.authorPreview ? 'owner' : 'user')));
+  readonly allowance = signal<{limit:number;used:number;remaining:number}|null>(null);
+  readonly creating = signal(false);
+  readonly createKey = signal<string|null>(null);
+  readonly deleting = signal<TestAccountRow|null>(null);
+  createPassword = '';
+  deleteConfirmation = '';
   readonly rows = signal<TestAccountRow[]>([]);
   readonly directoryAccounts = signal<DirectoryAccount[]>([]);
   readonly notice = signal('');
@@ -118,6 +126,7 @@ export class TestAccounts implements OnInit {
   }
 
   actorName(id: string) {
+    if(this.accounts.account()?.accountId===id)return 'You';
     return this.rows().find((row) => row.accountId === id)?.username ?? id;
   }
 
@@ -147,6 +156,7 @@ export class TestAccounts implements OnInit {
     this.busy.set(true);
     try {
       this.rows.set(await this.api.request<TestAccountRow[]>('/admin/test-accounts'));
+      if(this.view()==='test' && this.canCreate())this.allowance.set(await this.api.request('/admin/test-accounts/allowance'));
       this.notice.set('');
       this.directoryAccounts.set([]);
       if (this.accounts.account()?.permissions?.manageAccess) {
@@ -162,6 +172,37 @@ export class TestAccounts implements OnInit {
       this.busy.set(false);
       this.loaded.set(true);
     }
+  }
+
+  mayDelete(row: TestAccountRow): boolean {
+    if(row.roles.length || row.username==='author@lookahead.test')return false;
+    const account=this.accounts.account();
+    const role=account?.permissions?.feedbackRole ?? (account?.authorPreview?'owner':'user');
+    return role==='owner'||role==='co-author'||!!(account&&row.creatorId===account.accountId);
+  }
+
+  async create() {
+    if(!this.canCreate()||this.busy()||this.createPassword.length<15)return;
+    const key=this.createKey()??crypto.randomUUID();this.createKey.set(key);this.busy.set(true);
+    try {
+      const created=await this.api.request<{username:string}>('/admin/test-accounts',{key,password:this.createPassword});
+      this.createKey.set(null);this.createPassword='';this.creating.set(false);
+      this.busy.set(false);await this.load();this.notice.set(`${created.username} created. Share its password through your local test setup.`);
+    } catch {
+      this.notice.set('Creation was not confirmed. Retry with the same password and request key.');
+    } finally {this.busy.set(false);}
+  }
+
+  async deleteAccount() {
+    const row=this.deleting();
+    if(!row||!this.mayDelete(row)||this.busy()||this.deleteConfirmation!==row.username)return;
+    this.busy.set(true);
+    try {
+      await this.api.remove(`/admin/test-accounts/${row.accountId}`);
+      this.deleting.set(null);this.deleteConfirmation='';this.busy.set(false);await this.load();
+      this.notice.set(`${row.username} deleted. Its login and test data are gone; the creator's lifetime count remains.`);
+    } catch {this.notice.set('Deletion was not confirmed. Retry the same account.');}
+    finally {this.busy.set(false);}
   }
 
   /** Course titles from the public catalogs, for "Java Foundations (Learn)". */

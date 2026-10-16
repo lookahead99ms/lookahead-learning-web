@@ -49,11 +49,9 @@
         </div>
         @if (accountMode() && !accountStore.sessionExpired()) {
           <div class="progress-heading-actions">
-            @if (accountStore.plans().length > 1) {
-              <button type="button" [disabled]="editsLocked()" (click)="showAllPlans()">
-                All study plans
-              </button>
-            }
+            <button type="button" [disabled]="editsLocked()" (click)="showAllPlans()">
+              All study plans
+            </button>
             <button type="button" [disabled]="editsLocked()" (click)="newAccountPlan()">
               Create another plan
             </button>
@@ -107,18 +105,21 @@
   @if (dashboardVisible() && accountMode() && !accountStore.sessionExpired()) {
     <section class="plan-dashboard" aria-labelledby="plans-heading">
       <div class="dashboard-heading">
-        <h2 id="plans-heading">Choose a plan to continue</h2>
+        <h2 id="plans-heading">Your current plans</h2>
         <button type="button" [disabled]="editsLocked()" (click)="newAccountPlan()">
           Create another plan
         </button>
       </div>
       <div class="plan-card-grid">
-        @for (card of planCards(); track card.planId) {
+        @for (card of currentPlanCards(); track card.planId) {
           <article class="plan-card panel navigation-card">
             <div class="plan-card-heading">
-              <p class="eyebrow">Saved study plan</p>
+              <p class="eyebrow">{{ card.lifecycle?.state === 'archived' ? 'Archive' : 'Saved study plan' }}</p>
               <h3>{{ card.name }}</h3>
             </div>
+            @if (card.accessNeeded) {
+              <p class="plan-card-access">Course access needed to open paid lessons. Your saved plan and progress remain here.</p>
+            }
             @if (card.loaded) {
               <section class="plan-card-focus" aria-label="Plan focus areas">
                 <h4>Focus areas</h4>
@@ -174,19 +175,60 @@
               class="primary"
               [disabled]="editsLocked()"
               data-card-primary
-              [attr.aria-label]="'Continue plan: ' + card.name"
+              [attr.aria-label]="(card.lifecycle?.state === 'archived' || card.accessNeeded ? 'Review saved plan: ' : 'Continue plan: ') + card.name"
               (click)="continuePlan(card.planId)"
             >
-              Continue plan
+              {{ card.lifecycle?.state === 'archived' || card.accessNeeded ? 'Review saved plan' : 'Continue plan' }}
+            </button>
+            <button type="button" class="plan-card-delete" [disabled]="editsLocked()" (click)="askDeletePlan(card)">
+              Delete plan
             </button>
           </article>
         }
       </div>
+      @if (archivedPlanCards().length) {
+        <section class="plan-archive" aria-labelledby="plan-archive-heading">
+          <h2 id="plan-archive-heading">Archive</h2>
+          <p>Your archived plans and progress stay available to review.</p>
+          <div class="plan-archive-list">
+            @for (card of archivedPlanCards(); track card.planId) {
+              <article class="plan-archive-item panel">
+                <div>
+                  <h3>{{ card.name }}</h3>
+                  @if (card.accessNeeded) {
+                    <p>Course access needed to open paid lessons.</p>
+                  }
+                </div>
+                <div class="plan-archive-actions">
+                  <button type="button" [disabled]="editsLocked()" (click)="continuePlan(card.planId)">Review saved plan</button>
+                  <button type="button" [disabled]="editsLocked()" (click)="askDeletePlan(card)">Delete plan</button>
+                </div>
+              </article>
+            }
+          </div>
+        </section>
+      }
       @if (visibleStatus() && !adjustmentStatus()) {
         <p class="context-status" role="status">{{ visibleStatus() }}</p>
       }
     </section>
   }
+  <dialog #deleteDialog class="plan-delete-dialog" aria-labelledby="delete-plan-heading" (cancel)="$event.preventDefault(); closeDeletePlan()">
+    @if (deletingPlan(); as target) {
+      <h2 id="delete-plan-heading">Delete {{ target.name || target.goal }}?</h2>
+      <p>This removes the saved schedule and progress. This action cannot be undone.</p>
+      @if (accountStore.error()) { <p role="alert">{{ accountStore.error() }}</p> }
+      <div class="plan-delete-actions">
+        @if (accountStore.pending()) {
+          <button type="button" class="primary" [disabled]="accountStore.busy()" (click)="retryDeletePlan()">Retry the same request</button>
+          <button type="button" [disabled]="accountStore.busy()" (click)="discardDeleteRequest()">Discard pending request</button>
+        } @else {
+          <button type="button" class="primary" [disabled]="accountStore.busy()" (click)="confirmDeletePlan()">Delete plan</button>
+          <button type="button" [disabled]="accountStore.busy()" (click)="closeDeletePlan()">Keep plan</button>
+        }
+      </div>
+    }
+  </dialog>
   @if (
     accountStore.enabled &&
     accountReady() &&
@@ -664,7 +706,7 @@
               <div class="builder-review">
                 <p class="eyebrow">Step 5 of 5</p>
                 <h3 #wizardHeading id="wizard-step-heading" tabindex="-1">
-                  {{ freeAccount() ? 'Review and preview' : 'Review and save' }}
+                  {{ freeAccount() ? 'Review free plan' : 'Review and save' }}
                 </h3>
                 <p>
                   Check the direction and course mix. Reviewing creates a temporary schedule; saving
@@ -923,7 +965,9 @@
           <p>
             {{
               freeAccount()
-                ? 'A preview of the schedule. Nothing is saved to your account.'
+                ? freeDraftSaveable()
+                  ? 'Your account changes only when you save this free plan.'
+                  : 'A preview of the schedule. Nothing is saved to your account.'
                 : accountMode()
                   ? 'Your account changes only when you save.'
                   : accountStore.enabled
@@ -1087,7 +1131,7 @@
           <button type="button" class="primary" (click)="continueToSignIn()">
             Continue to sign in
           </button>
-        } @else if (freeAccount()) {
+        } @else if (freeAccount() && !freeDraftSaveable()) {
           <a class="primary-link" href="/account">Get course access to save</a>
         } @else {
           <button
@@ -1106,7 +1150,11 @@
       </div>
       @if (freeAccount()) {
         <p class="draft-save-note" role="status">
-          This is a preview. Free accounts can explore plans but cannot save them.
+          @if (freeDraftSaveable()) {
+            Free accounts can keep two active free plans and make 15 free plans in total, including imports.
+          } @else {
+            This paid-plan sample is for preview. Get course access to save its full schedule.
+          }
         </p>
       }
       @if (review.readyMade && !readyMadeAdoptionAvailable() && !accountStore.pending()) {
@@ -1424,10 +1472,10 @@
     <aside class="free-preview-note" aria-label="Free account preview">
       <span class="free-preview-icon" aria-hidden="true">👀</span>
       <div>
-        <p><strong>Preview only on a free account.</strong></p>
+        <p><strong>Free plan available.</strong></p>
         <p>
-          You can explore every plan and preview its schedule. Choosing other options and saving a
-          plan need a subscription.
+          Save up to two active free plans. You can preview other plans; their full schedules and
+          paid lessons require course access.
         </p>
       </div>
       <a class="free-preview-action" href="/account">Manage account and access</a>

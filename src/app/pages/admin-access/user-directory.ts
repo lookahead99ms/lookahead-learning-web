@@ -26,6 +26,7 @@ export interface DirectoryTestAccount {
   lastChangedBy: string;
   lastChangedAt: string;
   legacyPresetAvailable: boolean;
+  creatorId?: string;
 }
 
 /** The signed-in operator, from the account session. */

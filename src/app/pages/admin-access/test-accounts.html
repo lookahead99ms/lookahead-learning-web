@@ -7,7 +7,7 @@
       @if (testView) {
         <p class="note">
           The managed Local accounts for checking what each plan and role sees. Reset puts one back
-          to its default setup. New test accounts come from the Infra seed script, not this page.
+          to its default setup. Staff can create independent learner logins here.
           Sign-in names, the seed script and password changes are in
           <a class="prose-link" routerLink="/admin/local-development" fragment="managed-test-accounts-and-saved-plans">Local setup → Managed test accounts and saved plans</a>.
         </p>
@@ -18,8 +18,30 @@
         </p>
       }
     </div>
-    <button type="button" class="action-link" [disabled]="busy()" (click)="load()">Refresh</button>
+    <div class="heading-actions">
+      @if (testView && canCreate()) {
+        <button type="button" class="action-button" [disabled]="busy() || allowance()?.remaining === 0" (click)="creating.set(true)">Create test account</button>
+      }
+      <button type="button" class="action-link" [disabled]="busy()" (click)="load()">Refresh</button>
+    </div>
   </div>
+
+  @if (testView && canCreate()) {
+    @if (allowance(); as quota) {
+      <p class="note">Lifetime creations: {{ quota.used }} used · @if (quota.limit === 2147483647) { unlimited } @else { {{ quota.remaining }} remaining of {{ quota.limit }} }. Deleting an account does not restore a creation.</p>
+    }
+  }
+  @if (testView && creating()) {
+    <div class="reset-panel">
+      <h3>Create learner test account</h3>
+      <p>A unique Local sign-in name will be generated. Save the password for this test learner. The account starts without paid access.</p>
+      <label>Initial password <input type="password" [(ngModel)]="createPassword" autocomplete="new-password" minlength="15" /></label>
+      <div class="actions">
+        <button type="button" class="action-button" [disabled]="busy() || createPassword.length < 15" (click)="create()">{{ createKey() ? 'Retry creation' : 'Create account' }}</button>
+        <button type="button" class="action-link" [disabled]="busy()" (click)="creating.set(false)">Cancel</button>
+      </div>
+    </div>
+  }
 
   <div class="directory-tools">
     <label class="tool">
@@ -67,6 +89,9 @@
               @if (row.detail) {
                 <span class="sub">{{ row.detail }}</span>
               }
+              @if (testView && row.test?.creatorId; as creatorId) {
+                <span class="sub">Created by {{ actorName(creatorId) }}</span>
+              }
             </th>
             <td data-label="Role">{{ row.roles.join(', ') }}</td>
             <td data-label="Access now">
@@ -101,6 +126,9 @@
                 >
                   Reset
                 </button>
+              }
+              @if (row.test && mayDelete(row.test)) {
+                <button type="button" class="action-link" [disabled]="busy()" (click)="deleting.set(row.test); deleteConfirmation=''">Delete</button>
               }
             </td>
           </tr>
@@ -167,6 +195,17 @@
           {{ pending() ? 'Retry same reset' : 'Confirm reset' }}
         </button>
         <button type="button" class="action-link" [disabled]="busy()" (click)="cancel()">Cancel</button>
+      </div>
+    </div>
+  }
+  @if (testView && deleting(); as row) {
+    <div class="reset-panel">
+      <h3>Delete {{ row.username }}</h3>
+      <p>This immediately disables login and erases this learner's test plans and progress. It does not restore the creator's lifetime allowance.</p>
+      <label>Type {{ row.username }} to confirm <input [(ngModel)]="deleteConfirmation" autocomplete="off" /></label>
+      <div class="actions">
+        <button type="button" class="action-button" [disabled]="busy() || deleteConfirmation !== row.username" (click)="deleteAccount()">Confirm deletion</button>
+        <button type="button" class="action-link" [disabled]="busy()" (click)="deleting.set(null)">Cancel</button>
       </div>
     </div>
   }

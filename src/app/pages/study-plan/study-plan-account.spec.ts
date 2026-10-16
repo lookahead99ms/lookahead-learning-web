@@ -434,13 +434,53 @@ describe('StudyPlanAccount transport and isolation', () => {
     expect(store.active()).toBeNull();
     await store.save(local);
     expect(mutations[0].path).toBe('/api/v1/plans');
-    expect(JSON.parse(mutations[0].options.body as string).progress).toBeUndefined();
+    const create = JSON.parse(mutations[0].options.body as string);
+    expect(create.progress).toBeUndefined();
+    expect(create.startDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     await store.logout();
     expect(store.account()).toBeNull();
     expect(store.active()).toBeNull();
     expect(store.catalog()).toBeNull();
     expect(store.plans()).toEqual([]);
     expect(store.planSummariesState()).toBe('idle');
+  });
+
+  it('retries an uncertain deletion with the same key and quoted revision', async () => {
+    await store.login('demo-a', 'test');
+    store.plans.set([{ planId: 'plan-a', goal: 'Prepare Java', revision: 1, updatedAt: '' }]);
+    const original = fetcher.getMockImplementation() as (path: string, options: RequestInit) => Promise<Response>;
+    let attempts = 0;
+    fetcher.mockImplementation(async (path: string, options: RequestInit) => {
+      if (path.endsWith('/plans/plan-a') && options.method === 'DELETE') {
+        mutations.push({ path, options });
+        return ++attempts === 1 ? new Response(null, { status: 503 }) : new Response(null, { status: 204 });
+      }
+      return original(path, options);
+    });
+    expect(await store.deletePlan('plan-a', 1)).toBe(false);
+    expect(store.pending()).toBe(true);
+    await store.retry();
+    expect(store.pending()).toBe(false);
+    expect(store.plans()).toEqual([]);
+    expect(mutations).toHaveLength(2);
+    expect(mutations[0].options.headers).toMatchObject({ 'If-Match': '"revision-1"' });
+    expect(mutations[0].options.body).toBeUndefined();
+    expect((mutations[0].options.headers as Record<string, string>)['Idempotency-Key']).toBe(
+      (mutations[1].options.headers as Record<string, string>)['Idempotency-Key'],
+    );
+  });
+
+  it('explains a free-plan slot refusal instead of calling it a revision conflict', async () => {
+    await store.login('demo-a', 'test');
+    const original = fetcher.getMockImplementation() as (path: string, options: RequestInit) => Promise<Response>;
+    fetcher.mockImplementation(async (path: string, options: RequestInit) =>
+      path.endsWith('/plans') && options.method === 'POST'
+        ? new Response(JSON.stringify({ code: 'FREE_ACTIVE_PLAN_LIMIT' }), { status: 409 })
+        : original(path, options),
+    );
+    await store.save(local);
+    expect(store.error()).toContain('two active free plans');
+    expect(store.error()).not.toContain('changed elsewhere');
   });
 
   it('signs out through the unchanged CSRF-protected gateway contract', async () => {
