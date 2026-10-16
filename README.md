@@ -1398,3 +1398,5 @@ standalone demo keeps its browser-local behavior and does not claim account sync
 
 Validation: `npm run test:coverage` enforces 85% line coverage; connected plan,
 role and reset changes also require the owning API and Local integration checks.
+
+People and access merges the owner-only paginated `/bff/api/v1/admin/accounts` directory with managed test-account metadata and existing assignments. Non-owner operators keep their existing server-permitted sources. Failed owner enumeration is disclosed as a partial list; current access and role remain separate.
