@@ -49,6 +49,15 @@ describe('Sample pricing page (DLV-209)', () => {
     return [...root.querySelectorAll<HTMLButtonElement>('.plan-card button')];
   }
 
+  it('fills the space between the sidebars on large monitors and shows the four yearly plans in one row', () => {
+    // Component styles are emitted as <style> elements; read them as written (2026-10-16).
+    const css = [...document.querySelectorAll('style')].map(style => style.textContent ?? '').join('\n').replace(/\s+/g, ' ');
+    expect(root.querySelector('main')?.classList).toContain('pricing-page');
+    expect(css).toMatch(/@media \(min-width: 1100px\) \{ \.pricing-page\[data-sidebar-columns\]\[[^\]]+\] \{ max-width: min\(1840px, calc\(100% - 2 \* var\(--reader-sidebar-space\)\)\) !important; \}/);
+    expect(css).toMatch(/@media \(min-width: 1900px\) \{ \.plan-grid\.two-up\[[^\]]+\] \{ grid-template-columns: repeat\(4, minmax\(0, 1fr\)\); \}/);
+    expect(root.querySelectorAll('.plan-grid.two-up > li')).toHaveLength(4);
+  });
+
   it('says the prices are a sample, under one page heading', () => {
     expect(root.querySelectorAll('h1')).toHaveLength(1);
     expect(text(root.querySelector('.sample-note'))).toContain(

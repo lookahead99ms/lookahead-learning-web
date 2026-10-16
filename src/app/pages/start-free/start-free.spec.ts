@@ -224,6 +224,14 @@ describe('StartFreePage', () => {
     return { root: harness.routeNativeElement as HTMLElement, getCourseOutline, harness };
   }
 
+  it('fills the space between the sidebars on large monitors instead of the 1440px reader', async () => {
+    const { root } = await render(levels);
+    // Component styles are emitted as <style> elements; read them as written (2026-10-16).
+    const css = [...document.querySelectorAll('style')].map(style => style.textContent ?? '').join('\n').replace(/\s+/g, ' ');
+    expect(root.querySelector('main')?.classList).toContain('start-free-page');
+    expect(css).toMatch(/@media \(min-width: 1100px\) \{ \.start-free-page\[data-sidebar-columns\]\[[^\]]+\] \{ max-width: min\(1840px, calc\(100% - 2 \* var\(--reader-sidebar-space\)\)\) !important; \}/);
+  });
+
   it('lists every open and free unit with plain labels and level-bearing link names', async () => {
     const { root, getCourseOutline } = await render(levels);
 

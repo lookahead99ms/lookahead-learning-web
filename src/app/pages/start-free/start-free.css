@@ -12,6 +12,13 @@
   width: 100%;
   padding: 28px 0 72px;
 }
+/* A card page, not a reading page: on large monitors it fills the space between the docked
+   sidebars, up to 1840px, instead of the shared 1440px reader (user, 2026-10-16). */
+@media (min-width: 1100px) {
+  .start-free-page[data-sidebar-columns] {
+    max-width: min(1840px, calc(100% - 2 * var(--reader-sidebar-space))) !important;
+  }
+}
 @media (max-width: 900px) {
   .start-free-shell {
     padding-inline: 16px;

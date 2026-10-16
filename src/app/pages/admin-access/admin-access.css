@@ -22,8 +22,8 @@
 }
 .workspace-content {
   min-width: 0;
-  /* Use the width: two columns of work instead of one narrow column (user, 2026-10-15). */
-  max-width: 1360px;
+  /* Fill the centre column up to the Admin menu, like the other admin pages; a fixed cap left
+     a wide empty band on large monitors (user, 2026-10-16). Prose keeps its own line length. */
   padding: 24px clamp(20px, 3vw, 48px) 64px;
 }
 p {
@@ -161,6 +161,7 @@ h3 {
 .section-note,
 .context-note,
 .empty {
+  max-width: 110ch;
   color: var(--text-subtle);
   font-size: 14px;
 }
