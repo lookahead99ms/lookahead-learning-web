@@ -38,7 +38,7 @@
 }
 .plan-type-card strong {
   color: var(--text-strong);
-  font-size: clamp(21px, 2.2vw, 28px);
+  font-size: clamp(1.3125rem, 0.91rem + 0.94vw, 1.75rem);
   letter-spacing: -0.025em;
 }
 .plan-type-card > span:last-child {

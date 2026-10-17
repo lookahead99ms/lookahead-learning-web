@@ -1,8 +1,9 @@
 import { htmlText } from '../html-text';
-import { Component, ElementRef, effect, inject, input, output, signal, viewChild } from '@angular/core';
+import { Component, ElementRef, Injector, afterNextRender, effect, inject, input, output, signal, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom, switchMap } from 'rxjs';
 import { ContentService } from '../../content/content.service';
+import { ScrollLock } from '../scroll-lock/scroll-lock';
 
 interface Signal {
   key: string;
@@ -19,12 +20,16 @@ const MAP_SOURCE = { path: 'learn', course: 'algorithmic-patterns', lesson: 'alg
  * signal from the problem and sees the patterns that fit, when each fits and what to check first; nothing is
  * chosen for them. "Show this problem's pattern" reveals the answer one click away. Opening, choosing or
  * revealing never changes progress.
+ *
+ * After "Show the pattern" (user, 2026-10-16) the answer is one compact row: the pattern's name once
+ * and a small secondary "Learn more" button that opens its lesson in a new tab. The page behind the
+ * dialog does not scroll while it is open (shared ScrollLock).
  */
 @Component({
   selector: 'app-pattern-help',
-  imports: [RouterLink],
+  imports: [RouterLink, ScrollLock],
   template: `
-    <dialog #dialog class="pattern-help" aria-labelledby="pattern-help-title" (close)="closed.emit()">
+    <dialog #dialog appScrollLock class="pattern-help" aria-labelledby="pattern-help-title" (close)="closed.emit()">
       <div class="shell">
         <div class="head">
           <div>
@@ -67,13 +72,14 @@ const MAP_SOURCE = { path: 'learn', course: 'algorithmic-patterns', lesson: 'alg
           <section class="reveal-box">
             <h3>2. Or show this problem's pattern</h3>
             @if (revealedNow()) {
-              <div class="answer">
-                <h4>{{ patternName() }}</h4>
-                <a class="lesson-link action-link" [routerLink]="lessonRoute()" [queryParams]="lessonQuery()" target="_blank" rel="noopener"
-                  >{{ patternName() }} lesson<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9 3h4v4M13 3 7.5 8.5M12 9.5V13H3V4h3.5" /></svg
+              <p #answer class="answer" tabindex="-1">
+                <span class="answer-name"><span class="visually-hidden">This problem's pattern: </span>{{ patternName() }}</span>
+                <a class="lesson-link" [routerLink]="lessonRoute()" [queryParams]="lessonQuery()" target="_blank" rel="noopener"
+                  >Learn more<span class="visually-hidden"> about {{ patternName() }}</span
+                  ><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9 3h4v4M13 3 7.5 8.5M12 9.5V13H3V4h3.5" /></svg
                   ><span class="visually-hidden"> (opens in a new tab)</span></a
                 >
-              </div>
+              </p>
             } @else {
               <button type="button" class="reveal" (click)="reveal()">Show the pattern</button>
             }
@@ -227,18 +233,61 @@ const MAP_SOURCE = { path: 'learn', course: 'algorithmic-patterns', lesson: 'alg
         padding-top: 14px;
         border-top: 1px solid var(--line);
       }
+      /* One compact row: the name once, then a small secondary "Learn more" (user, 2026-10-16). */
       .answer {
-        padding: 12px 14px;
-        border-radius: 12px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px 12px;
+        margin: 0;
+        padding: 8px 8px 8px 14px;
+        border: 1px solid var(--line);
+        border-left: 3px solid var(--accent-strong);
+        border-radius: 10px;
         background: var(--surface-muted);
       }
+      .answer:focus {
+        outline: none;
+      }
+      .answer:focus-visible {
+        outline: 3px solid var(--accent-focus);
+        outline-offset: 2px;
+      }
+      .answer-name {
+        min-width: 0;
+        color: var(--text-strong);
+        font-size: 1rem;
+        font-weight: 700;
+        overflow-wrap: anywhere;
+      }
       .lesson-link {
-        min-height: 40px;
-        padding: 8px 16px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 32px;
+        padding: 4px 12px;
+        border: 1px solid var(--accent-strong);
+        border-radius: 8px;
+        background: var(--surface);
+        color: var(--accent-strong);
+        font-size: 0.85rem;
+        font-weight: 700;
+        line-height: 1.2;
+        text-decoration: none;
+        white-space: nowrap;
+      }
+      .lesson-link:hover {
+        background: color-mix(in srgb, var(--accent-strong) 12%, var(--surface));
+      }
+      @media (pointer: coarse) {
+        .lesson-link {
+          min-height: 40px;
+        }
       }
       .lesson-link svg {
-        width: 15px;
-        height: 15px;
+        width: 14px;
+        height: 14px;
         fill: none;
         stroke: currentColor;
         stroke-width: 1.8;
@@ -295,6 +344,8 @@ export class PatternHelp {
   protected readonly revealedNow = signal(false);
   private readonly content = inject(ContentService);
   private readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
+  private readonly answer = viewChild<ElementRef<HTMLElement>>('answer');
+  private readonly injector = inject(Injector);
   private loaded = false;
 
   constructor() {
@@ -318,6 +369,8 @@ export class PatternHelp {
   protected reveal(): void {
     this.revealedNow.set(true);
     this.reveal$.emit();
+    // The button that had focus is gone; the answer row takes it so it is read out.
+    afterNextRender(() => this.answer()?.nativeElement.focus(), { injector: this.injector });
   }
 
   protected close(): void {

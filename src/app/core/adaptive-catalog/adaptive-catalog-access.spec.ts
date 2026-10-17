@@ -89,8 +89,11 @@ describe('Catalog free lesson lines', () => {
   it('links to Start free from the catalog hero when the path has free units', async () => {
     const root = await render(levels);
 
-    const link = root.querySelector<HTMLAnchorElement>('.catalog-start-free-action');
-    expect(link?.textContent?.trim()).toBe('Start free');
+    // DLV-803: Start free is the last link of the hero's text line, in sentence case there.
+    const link = root.querySelector<HTMLAnchorElement>(
+      '.catalog-more-actions .catalog-start-free-action',
+    );
+    expect(link?.textContent?.trim()).toBe('start free');
     expect(link?.getAttribute('href')).toBe('/start-free');
   });
 

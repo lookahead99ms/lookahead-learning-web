@@ -35,24 +35,52 @@ preserve these groups. The mobile header scales the icon and title;
 forced-color modes retain the text name. The home link keeps its accessible
 name and keyboard focus. `public/favicon.svg` uses the same standalone symbol.
 
-The homepage also displays the illustrated title in a static closing section
-after Keep exploring and before the footer. “Our platform” introduces the heading
-“The Essence of Look Ahead”; the page sidebar calls it “The essence” to distinguish
-the platform story from the Blaze catalog. `PlatformBrandIllustration` keeps
-that artwork separate from navigation branding, scales without cropping, and
-uses the shared identity colors. The heading and caption provide real text;
-decorative SVG shapes are hidden from assistive technology. The illustration's
-aspect ratio reserves its layout space, and forced-color mode retains the text.
-The illustrated E uses circuit terminals for Explore and Engineering; the final A
-combines a structural frame with a three-node branch for Algorithms and Architecture.
-The closing statement connects those themes to learning and engineering growth,
-followed by “Understand the obstacle. Find the way.” and “Understand the invariant.
-Practice the reasoning.” The compact logo sits between them on desktop; they
-stack with the logo between them at narrow widths.
-The illustration's continuous arrow now curves around the top of its wall as well.
-The statement uses the header's local Avenir Next font stack for display lines,
-system text for supporting copy, shared theme colors for emphasis, and deliberate
-line groups that can wrap naturally on small screens. No web fonts are downloaded.
+The homepage closes with the Essence card, after Pricing and before the footer.
+“Our platform” and the heading “The Essence of Look Ahead” stay in the page for
+screen readers and the sidebar link “The essence”; visually, the wordmark is the
+title and the compact symbol sits in the card's corner. The card plays in order
+once most of it is on screen (three quarters of the card, or of the screen when
+the card is taller). If the reader leaves before it finishes, it starts over from
+the first letter when they come back:
+
+1. `WordmarkKey` tells the wordmark's story one change at a time. It starts as
+   the plain word LOOKAHEAD, with a normal L, in the text colour. Then each symbol
+   appears above its letter with a soft glow in its own colour and descends onto
+   it, with its own caption: the eyes onto the O's (look), the wall onto the K's
+   stem (the obstacle), the code brackets onto the K and the H (code), AI onto the
+   A and the H's first stroke (AI, in code), the circuit onto the E (explore and
+   engineer), the algorithm frame onto the A (algorithms and architecture) and
+   the door into the D (the way through). No letter dims; each keeps its colour
+   until its symbol lands. Once everything is in place every meaning shows
+   together, and only then does the L become the path and draw through it all to
+   the door: the way through comes once you have the rest. As it draws, the
+   wordmark reads as one sentence, its key words in their symbols' colours: "Look
+   ahead to the obstacle, put AI to work in your code, explore and engineer with
+   algorithms and architecture, and find the way through." The sentence then moves
+   to the space under the steps and stays there.
+2. `EssenceSteps` draws in three statements, each verb in its catalog color and
+   each outcome in a contrasting identity color: Grow your engineering
+   capabilities, Strengthen your competencies, Build expertise in your chosen
+   specializations.
+3. The staircase builds one step at a time: the step appears with its way of
+   thinking (Understand the Obstacle, Find the Way, Understand the Invariant,
+   Practice the Reasoning), then its circle and the line above it (Learn to Code,
+   And Explore, AI Algorithms Architecture, Look Ahead), then an SVG arrow draws
+   the line: up from the step before, turning right along the new step, and
+   resting at its end, pointing right. On the top step it runs to the end.
+
+Once settled, the card loops while it is on screen, starting from the summary:
+every symbol stays in place, the path lifts, the plain L returns and every meaning
+shows again (the statements step aside while the meanings use their strip; the
+sentence is not repeated, it already stands under the steps); then the L becomes
+the path and draws to the door, the stairs' arrow runs the whole staircase in two
+seconds, each step's dot pulsing as it passes, and after a short rest the round
+repeats. Leaving the screen puts the wordmark back together and stops the loop. Three buttons sit in the
+corner: pause/play (pause freezes everything where it is, like pausing a video;
+play carries on from there), skip to the end (the finished card at once) and
+replay (the whole card again from the plain word). With reduced motion everything
+is shown at once with the wordmark's meanings listed under it, nothing loops, and
+there are no motion buttons.
 
 Learn, Grow and Blaze open compact course directories. Course links open their
 canonical route on the first click or tap; they do not expand a Course Highlights

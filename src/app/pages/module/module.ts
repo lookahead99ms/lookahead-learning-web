@@ -102,7 +102,8 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
       .module-context-title {
         margin: 0 0 6px;
         color: var(--text-strong);
-        font-size: clamp(1.35rem, 2.1vw, 2rem);
+        /* DLV-803: rem base, so browser zoom enlarges the title. */
+        font-size: clamp(1.35rem, 1.1rem + 0.9vw, 2rem);
         line-height: 1.2;
         letter-spacing: -0.025em;
       }

@@ -1,10 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { signal } from '@angular/core';
+import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { StudyPlanReaderNavigation } from './study-plan-reader-navigation';
 import { StudyPlanAccount } from '../pages/study-plan/study-plan-account';
+import { StudyPlanApproaches } from '../content/study-plan-approaches';
 
 const assignment = (id: string, kind: 'new' | 'review' = 'new') => ({
   id,
@@ -143,5 +144,79 @@ describe('Study Plan reader navigation', () => {
     await TestBed.inject(StudyPlanAccount).initialize();
     harness.detectChanges();
     expect(nav.valid()).toBe(false);
+  });
+});
+
+// DLV-962: the plan schedules one approach; the learner may open another approach of its family.
+@Component({
+  imports: [StudyPlanReaderNavigation],
+  template: `<app-study-plan-reader-navigation [approachFamily]="family()" />`,
+})
+class ApproachPage {
+  readonly family = signal<{ problemId: string; siblingRoutes: string[][] } | null>({
+    problemId: 'current-approach-2',
+    siblingRoutes: [['/', 'learn', 'course', 'current']],
+  });
+  readonly nav = viewChild.required(StudyPlanReaderNavigation);
+}
+
+describe('Study Plan reader navigation on another approach', () => {
+  let storage: PropertyDescriptor | undefined;
+  let plan: ReturnType<typeof saved>;
+  beforeEach(async () => {
+    plan = saved();
+    storage = Object.getOwnPropertyDescriptor(window, 'localStorage');
+    Object.defineProperty(window, 'localStorage', {
+      configurable: true,
+      value: { getItem: () => JSON.stringify(plan), setItem: () => undefined },
+    });
+    await TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: 'learn/course/:activity', component: ApproachPage }]),
+        {
+          provide: StudyPlanAccount,
+          useValue: {
+            account: signal(null),
+            sessionExpired: signal(false),
+            initialize: vi.fn().mockResolvedValue(undefined),
+          },
+        },
+      ],
+    }).compileComponents();
+  });
+  afterEach(() => {
+    if (storage) Object.defineProperty(window, 'localStorage', storage);
+  });
+
+  async function open(url: string) {
+    const harness = await RouterTestingHarness.create();
+    const page = await harness.navigateByUrl(url, ApproachPage);
+    await TestBed.inject(StudyPlanAccount).initialize();
+    harness.detectChanges();
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    return { harness, page };
+  }
+
+  it('keeps the plan context and remembers the approach opened', async () => {
+    const choose = vi.spyOn(TestBed.inject(StudyPlanApproaches), 'choose').mockImplementation(() => undefined);
+    const { harness, page } = await open('/learn/course/current-approach-2?plan=browser&day=2&activity=current');
+    expect(page.nav().valid()).toBe(true);
+    expect(harness.routeNativeElement!.querySelector('a')?.getAttribute('href')).toBe(
+      '/study-plan?day=2&plan=browser&activity=current',
+    );
+    expect(choose).toHaveBeenCalledWith('local:browser', 'current', 'current-approach-2');
+    // Not a sibling of the scheduled problem: the plan context does not apply.
+    page.family.set({ problemId: 'other', siblingRoutes: [['/', 'learn', 'course', 'unrelated']] });
+    harness.detectChanges();
+    expect(page.nav().valid()).toBe(false);
+  });
+
+  it('keeps the approach a finished item was completed with', async () => {
+    plan.completedIds = ['original', 'current'];
+    const choose = vi.spyOn(TestBed.inject(StudyPlanApproaches), 'choose').mockImplementation(() => undefined);
+    const { page } = await open('/learn/course/current-approach-2?plan=browser&day=2&activity=current');
+    expect(page.nav().valid()).toBe(true);
+    expect(choose).not.toHaveBeenCalled();
   });
 });

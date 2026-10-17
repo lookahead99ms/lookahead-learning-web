@@ -176,6 +176,35 @@
       },
       "modules": {},
       "units": {}
+    },
+    {
+      "path": "learn",
+      "courseId": "algorithmic-patterns",
+      "reason": "DLV-965: six duplicate DSA problems were merged into the problem that keeps teaching the same task; each old question route opens the kept problem.",
+      "lessons": {
+        "algorithmic-graph-traversal-topo-shortest-paths-floyd-warshall": "dsa-catalog-all-pairs-shortest-path",
+        "dsa-catalog-largest-sum-contiguous-subarray": "algorithmic-dp-state-transition-optimization-kadane-maximum-subarray",
+        "dsa-catalog-largest-sum-contiguous-subarray-approach-2": "dsa-catalog-kadane-maximum-subarray-approach-2",
+        "dsa-catalog-cycle-detection-in-directed-graph": "dsa-catalog-directed-cycle-detection",
+        "dsa-catalog-cycle-detection-directed-graph-approach-2": "dsa-catalog-directed-cycle-detection-approach-2",
+        "dsa-catalog-delete-middle-element-of-stack": "dsa-catalog-delete-middle-of-stack",
+        "dsa-catalog-same-tree-check-dfs-variant": "dsa-catalog-same-tree-approach-2"
+      },
+      "modules": {},
+      "units": {}
     }
-  ]
+  ],
+  "problems": {
+    "reason": "DLV-965: canonical DSA problem ids retired by a merge, each mapped to the problem that now teaches the same task. Saved practice progress under a retired id is read as progress on the kept problem (core/practice-progress).",
+    "ids": {
+      "algorithmic-floyd-warshall-all-pairs-shortest-paths": "algorithmic-all-pairs-shortest-path",
+      "algorithmic-sort-an-array-with-merge-sort": "algorithmic-sort-an-array",
+      "algorithmic-largest-sum-contiguous-subarray": "algorithmic-kadane-maximum-subarray",
+      "algorithmic-largest-sum-contiguous-subarray-approach-2": "algorithmic-kadane-maximum-subarray-approach-2",
+      "algorithmic-cycle-detection-directed-graph": "algorithmic-directed-cycle-detection",
+      "algorithmic-cycle-detection-directed-graph-approach-2": "algorithmic-directed-cycle-detection-approach-2",
+      "algorithmic-delete-middle-element-stack": "algorithmic-delete-middle-stack",
+      "algorithmic-same-tree-check": "algorithmic-same-tree-approach-2"
+    }
+  }
 }

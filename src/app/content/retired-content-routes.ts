@@ -1,6 +1,7 @@
 import { inject } from '@angular/core';
 import {
   CanActivateFn,
+  DefaultUrlSerializer,
   Params,
   Router,
   UrlSegment,
@@ -8,6 +9,11 @@ import {
   UrlTree,
 } from '@angular/router';
 import retiredContent from './retired-content-ids.json';
+import {
+  PATTERN_CONTEXT_PARAM,
+  isPatternContextToken,
+  patternContextToken,
+} from './pattern-context';
 
 /**
  * Ids a course retired when it was restructured, each mapped to the id that now teaches the
@@ -61,8 +67,52 @@ function replaceGroupId(value: string, courses: readonly RetiredCourseIds[]): st
 }
 
 /**
+ * DLV-962: the URL form of one `?pattern=` value. An old readable group id is moved off a retired
+ * unit and then made opaque; an opaque id of a retired group becomes the opaque id of its
+ * replacement; any other opaque id is kept.
+ */
+function patternContextParam(value: string, courses: readonly RetiredCourseIds[]): string {
+  if (!value) return value;
+  if (!isPatternContextToken(value)) return patternContextToken(replaceGroupId(value, courses));
+  for (const course of courses) {
+    for (const [retired, current] of Object.entries(course.units)) {
+      if (patternContextToken(`${course.courseId}:${retired}`) === value) {
+        return patternContextToken(`${course.courseId}:${current}`);
+      }
+    }
+  }
+  return value;
+}
+
+/** Rewrites `?pattern=` (one value or several) in place; true when anything changed. */
+function normalizePatternParams(params: Params, courses: readonly RetiredCourseIds[]): boolean {
+  const value = params[PATTERN_CONTEXT_PARAM];
+  const next =
+    typeof value === 'string'
+      ? patternContextParam(value, courses)
+      : Array.isArray(value)
+        ? value.map((entry) => patternContextParam(String(entry), courses))
+        : value;
+  if (JSON.stringify(next) === JSON.stringify(value)) return false;
+  params[PATTERN_CONTEXT_PARAM] = next;
+  return true;
+}
+
+/** A problem page's `returnTo` (the catalog URL it came from) may carry `?pattern=` too. */
+function normalizeReturnTo(value: unknown, courses: readonly RetiredCourseIds[]): unknown {
+  if (typeof value !== 'string' || !value.startsWith('/')) return value;
+  const serializer = new DefaultUrlSerializer();
+  const tree = serializer.parse(value);
+  const params: Params = { ...tree.queryParams };
+  if (!normalizePatternParams(params, courses)) return value;
+  tree.queryParams = params;
+  return serializer.serialize(tree);
+}
+
+/**
  * Returns the URL a retired lesson, module, unit anchor or group filter now lives at, keeping
- * every other query parameter and the fragment. Returns null when nothing in the URL is retired.
+ * every other query parameter and the fragment. A readable `?pattern=` id (DLV-962) is also
+ * rewritten to its opaque context id. Returns null when nothing in the URL needs to change.
  */
 export function retiredContentTarget(
   url: UrlTree,
@@ -98,11 +148,11 @@ export function retiredContentTarget(
     }
   }
 
-  // Hands-On DSA group filter, on the catalog and on the problem pages it links to.
-  const pattern = queryParams['pattern'];
-  if (typeof pattern === 'string') queryParams['pattern'] = replaceGroupId(pattern, courses);
-  else if (Array.isArray(pattern)) {
-    queryParams['pattern'] = pattern.map((value) => replaceGroupId(String(value), courses));
+  // Hands-On DSA group filter, on the catalog and on the problem pages it links to. DLV-962: an
+  // old readable id is rewritten to the opaque context id, here and inside `returnTo`.
+  normalizePatternParams(queryParams, courses);
+  if (queryParams['returnTo'] !== undefined) {
+    queryParams['returnTo'] = normalizeReturnTo(queryParams['returnTo'], courses);
   }
 
   // Search's course filters: /search?path=learn&course=algorithmic-patterns&module=...&unit=...

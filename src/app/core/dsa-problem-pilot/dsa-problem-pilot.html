@@ -182,22 +182,28 @@
             "
           />
         </div>
-        <details class="help-panel">
+        <!-- No spoilers (user, 2026-10-16): hints and the solution name the method, so they enter the
+             page only when the learner opens them. -->
+        <details #hintsPanel class="help-panel" (toggle)="hintsPanel.open && hintsOpened.set(true)">
           <summary>Need a hint? <span>Three progressive hints</span></summary>
-          @for (hint of practice().hints; track $index; let index = $index) {
-            <details>
-              <summary>Reveal hint {{ index + 1 }}</summary>
-              <p>{{ hint }}</p>
-            </details>
+          @if (hintsOpened()) {
+            @for (hint of practice().hints; track $index; let index = $index) {
+              <details>
+                <summary>Reveal hint {{ index + 1 }}</summary>
+                <p>{{ hint }}</p>
+              </details>
+            }
           }
         </details>
-        <details class="help-panel">
+        <details #solutionPanel class="help-panel" (toggle)="solutionPanel.open && solutionOpened.set(true)">
           <summary>View solution <span>Java, Python, Go, and complexity</span></summary>
-          <app-coding-solution-tabs
-            [solutions]="solutions()"
-            [complexity]="complexity()"
-            [showPractice]="false"
-          />
+          @if (solutionOpened()) {
+            <app-coding-solution-tabs
+              [solutions]="solutions()"
+              [complexity]="complexity()"
+              [showPractice]="false"
+            />
+          }
         </details>
       </section>
 
@@ -217,6 +223,7 @@
             </p>
           </div>
         </div>
+        @if (guidedOpened()) {
         <section class="reasoning-frame" aria-label="Reasoning frame">
           <div class="reasoning-invariant">
             <span>Invariant</span>
@@ -238,6 +245,7 @@
             </article>
           </div>
         </section>
+        }
         <div
           #focusDialog
           class="guided-trace-stage"

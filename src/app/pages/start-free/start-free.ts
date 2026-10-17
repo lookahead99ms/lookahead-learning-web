@@ -27,6 +27,7 @@ import { CourseLearningUnit, CourseOutline } from '../../content/content.models'
 import { ContentService } from '../../content/content.service';
 import { flattenLearningUnits } from '../../content/learning-units';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
+import { catalogQuestionCountDisplay } from '../../core/adaptive-catalog/adaptive-catalog';
 
 /** One open or free unit with its title and the page it opens. */
 export interface StartFreeItem {
@@ -250,6 +251,15 @@ export function fitShowcase(list: HTMLElement): void {
 }
 
 /**
+ * The lessons a plan adds, as a conservative promise: a clean total stays exact, any other total
+ * shows a lower milestone with "+" (203 → "200+"), using the shared catalog count rule.
+ */
+export function paidLessonsShown(paid: number): string {
+  const shown = catalogQuestionCountDisplay(paid);
+  return `${shown.value}${shown.minimum ? '+' : ''}`;
+}
+
+/**
  * DLV-942: every open and free unit, so a visitor can start without meeting a locked page.
  * DLV-209 (user, 2026-10-15): styled as cards, with a "What you're missing" section showing the
  * paid units of the same courses and the plans that include them. The server still decides every
@@ -307,6 +317,8 @@ export class StartFreePage implements OnInit {
       paid: this.paidCourses().reduce((total, course) => total + course.paidTotal, 0),
     };
   });
+  protected readonly paidShown = computed(() => paidLessonsShown(this.counts().paid));
+
 
   private readonly showcase = viewChild<ElementRef<HTMLElement>>('showcase');
 

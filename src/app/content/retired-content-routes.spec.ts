@@ -1,3 +1,5 @@
+import { Location } from '@angular/common';
+import { SpyLocation, provideLocationMocks } from '@angular/common/testing';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { DefaultUrlSerializer, provideRouter, Route, Router } from '@angular/router';
@@ -9,6 +11,7 @@ import {
   retiredContentRedirect,
   retiredContentTarget,
 } from './retired-content-routes';
+import { patternContextToken } from './pattern-context';
 
 const serializer = new DefaultUrlSerializer();
 const target = (url: string) => {
@@ -57,12 +60,118 @@ describe('retired content routes', () => {
   });
 
   it('moves a retired Hands-On DSA group filter and keeps the other filters', () => {
+    // DLV-962: the replacement is written as its opaque context id.
+    const dynamicProgramming = patternContextToken('algorithmic-patterns:dynamic-programming');
+    const linkedLists = patternContextToken('algorithmic-patterns:linked-lists');
     expect(
       target('/learn/hands-on-dsa?pattern=algorithmic-patterns:two-dimensional-dp&difficulty=Advanced&page=2'),
-    ).toBe('/learn/hands-on-dsa?pattern=algorithmic-patterns:dynamic-programming&difficulty=Advanced&page=2');
+    ).toBe(`/learn/hands-on-dsa?pattern=${dynamicProgramming}&difficulty=Advanced&page=2`);
     expect(
       target('/learn/algorithmic-patterns/some-problem?pattern=algorithmic-patterns:list-reversal'),
-    ).toBe('/learn/algorithmic-patterns/some-problem?pattern=algorithmic-patterns:linked-lists');
+    ).toBe(`/learn/algorithmic-patterns/some-problem?pattern=${linkedLists}`);
+  });
+
+  describe('opaque pattern context (DLV-962)', () => {
+    // Synthetic course tables and ids only.
+    const courses: RetiredCourseIds[] = [
+      {
+        path: 'learn',
+        courseId: 'demo-course',
+        lessons: {},
+        modules: {},
+        units: { 'old-unit': 'new-unit' },
+      },
+    ];
+    const at = (url: string) => {
+      const tree = retiredContentTarget(serializer.parse(url), courses);
+      return tree ? serializer.serialize(tree) : null;
+    };
+    const current = patternContextToken('demo-course:current-unit');
+
+    it('rewrites an old readable id to the opaque id and keeps every other parameter', () => {
+      expect(at('/learn/demo-course/demo-problem?pattern=demo-course:current-unit&mode=surprise')).toBe(
+        `/learn/demo-course/demo-problem?pattern=${current}&mode=surprise`,
+      );
+      expect(at('/learn/hands-on-dsa?view=groups&pattern=demo-course:current-unit')).toBe(
+        `/learn/hands-on-dsa?view=groups&pattern=${current}`,
+      );
+    });
+
+    it('leaves a URL that already carries the opaque id alone, so it never redirects twice', () => {
+      expect(at(`/learn/demo-course/demo-problem?pattern=${current}`)).toBeNull();
+      expect(at('/learn/demo-course/demo-problem')).toBeNull();
+    });
+
+    it('moves an old readable id off a retired unit, then makes it opaque', () => {
+      expect(at('/learn/hands-on-dsa?pattern=demo-course:old-unit')).toBe(
+        `/learn/hands-on-dsa?pattern=${patternContextToken('demo-course:new-unit')}`,
+      );
+    });
+
+    it('moves the opaque id of a retired unit to the opaque id of its replacement', () => {
+      expect(at(`/learn/hands-on-dsa?pattern=${patternContextToken('demo-course:old-unit')}`)).toBe(
+        `/learn/hands-on-dsa?pattern=${patternContextToken('demo-course:new-unit')}`,
+      );
+    });
+
+    it('rewrites the pattern inside returnTo, so the problem URL never names it', () => {
+      const result = at(
+        `/learn/demo-course/demo-problem?pattern=demo-course:current-unit&returnTo=${encodeURIComponent(
+          '/learn/hands-on-dsa?view=groups&pattern=demo-course:current-unit&q=sum',
+        )}`,
+      )!;
+      expect(result).not.toContain('current-unit');
+      const tree = serializer.parse(result);
+      expect(tree.queryParams['pattern']).toBe(current);
+      const returnTo = serializer.parse(tree.queryParams['returnTo']);
+      expect(returnTo.queryParams).toEqual({ view: 'groups', pattern: current, q: 'sum' });
+    });
+
+    it('keeps a returnTo without a pattern, or one that is not an app path, as it is', () => {
+      expect(
+        at(`/learn/demo-course/demo-problem?returnTo=${encodeURIComponent('/learn/hands-on-dsa?q=sum')}`),
+      ).toBeNull();
+      expect(
+        at(`/learn/demo-course/demo-problem?returnTo=${encodeURIComponent('https://example.test/?pattern=x:y')}`),
+      ).toBeNull();
+    });
+
+    it('normalises an old link in the router, records only the opaque URL and keeps it on Back/Forward', async () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideRouter([
+            { path: 'learn/:courseId/:questionId', canActivate: [retiredContentRedirect], component: Page },
+          ]),
+          provideLocationMocks(),
+        ],
+      });
+      const harness = await RouterTestingHarness.create();
+      const router = TestBed.inject(Router);
+      router.setUpLocationChangeListener();
+      const location = TestBed.inject(Location) as SpyLocation;
+      const token = patternContextToken('demo-course:current-unit');
+
+      await harness.navigateByUrl('/learn/demo-course/first?pattern=demo-course:current-unit');
+      expect(router.url).toBe(`/learn/demo-course/first?pattern=${token}`);
+      await harness.navigateByUrl(`/learn/demo-course/second?pattern=${token}`);
+      expect(location.urlChanges.join(' ')).not.toContain('current-unit');
+
+      location.back();
+      await vi.waitFor(() => expect(router.url).toBe(`/learn/demo-course/first?pattern=${token}`));
+      location.forward();
+      await vi.waitFor(() => expect(router.url).toBe(`/learn/demo-course/second?pattern=${token}`));
+      expect(location.path()).toBe(`/learn/demo-course/second?pattern=${token}`);
+    });
+
+    it('rewrites every value of a repeated pattern parameter', () => {
+      const tree = serializer.parse(
+        at('/learn/hands-on-dsa?pattern=demo-course:current-unit&pattern=demo-course:old-unit')!,
+      );
+      expect(tree.queryParams['pattern']).toEqual([
+        current,
+        patternContextToken('demo-course:new-unit'),
+      ]);
+    });
   });
 
   it('moves retired Search course filters', () => {
@@ -78,7 +187,7 @@ describe('retired content routes', () => {
     '/learn/another-course/algorithmic-difference-arrays',
     '/blaze/algorithmic-patterns/algorithmic-difference-arrays',
     '/learn/algorithmic-patterns/module/theory-prefix-state',
-    '/learn/hands-on-dsa?pattern=algorithmic-patterns:prefix-state',
+    `/learn/hands-on-dsa?pattern=${patternContextToken('algorithmic-patterns:prefix-state')}`,
     '/learn/algorithmic-patterns/constructor',
     '/search?q=difference-arrays',
   ])('leaves %s alone', (url) => {

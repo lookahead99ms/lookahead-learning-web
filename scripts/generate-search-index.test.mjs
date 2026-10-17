@@ -2,7 +2,12 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { test } from 'node:test';
-import { generateSearchIndex } from './generate-search-index.mjs';
+import {
+  compactPreview,
+  decodeHtmlEntities,
+  generateSearchIndex,
+  plainPreviewText,
+} from './generate-search-index.mjs';
 
 async function writeJson(root, path, value) {
   const target = join(root, path);
@@ -530,4 +535,98 @@ test('reads every redirect entry of a course, not only the first', async () => {
   // The moved questions stay searchable in the courses they moved to.
   assert.equal(isRetiredDocument(document('core-java', 'java-pass-by-value'), courses), false);
   assert.equal(isRetiredDocument(document('solid-design-patterns', 'singleton-pattern'), courses), false);
+});
+
+test('preview text keeps comparison operators and generics that are not HTML tags', () => {
+  assert.equal(
+    plainPreviewText('Count pairs i<j with a[i] > a[j].'),
+    'Count pairs i<j with a[i] > a[j].',
+  );
+  assert.equal(
+    plainPreviewText('If a < b and c > d, swap them.'),
+    'If a < b and c > d, swap them.',
+  );
+  assert.equal(plainPreviewText('start <= t and t < end'), 'start <= t and t < end');
+  assert.equal(
+    plainPreviewText('1 << k sets bit k; x >> 1 halves it'),
+    '1 << k sets bit k; x >> 1 halves it',
+  );
+  assert.equal(plainPreviewText('i<b and c>d'), 'i<b and c>d');
+  assert.equal(
+    plainPreviewText('Return List<String>, Map<K, V> or Optional<T>.'),
+    'Return List<String>, Map<K, V> or Optional<T>.',
+  );
+  assert.equal(plainPreviewText('W + R > N'), 'W + R > N');
+});
+
+test('preview text removes real tags and comments without leaving stray spaces', () => {
+  assert.equal(
+    plainPreviewText('Use <code>ReentrantLock</code>, then <strong>release</strong> it.'),
+    'Use ReentrantLock, then release it.',
+  );
+  assert.equal(plainPreviewText('<strong>Two</strong>-pointer'), 'Two-pointer');
+  assert.equal(
+    plainPreviewText('first line<br>second<br/>third<br />end'),
+    'first line second third end',
+  );
+  assert.equal(plainPreviewText('<p class="lead">one</p><p>two</p>'), 'one two');
+  assert.equal(
+    plainPreviewText('See <a href="/learn/core-java" target="_blank">Core Java</a> first.'),
+    'See Core Java first.',
+  );
+  assert.equal(
+    plainPreviewText("<code class='k'>n</code> <samp>ok</samp> <em>now</em>"),
+    'n ok now',
+  );
+  assert.equal(plainPreviewText('a <!-- reviewer note --> b'), 'a b');
+  assert.equal(plainPreviewText('  spaced \n\t out  '), 'spaced out');
+  assert.equal(plainPreviewText(undefined), '');
+});
+
+test('preview text decodes entities once, after tags are removed', () => {
+  assert.equal(
+    plainPreviewText('<code>List&lt;String&gt;</code> &amp; i &lt; j'),
+    'List<String> & i < j',
+  );
+  // An escaped tag is text the author wanted to show, not markup to remove.
+  assert.equal(plainPreviewText('Write &lt;br&gt; for a break.'), 'Write <br> for a break.');
+  assert.equal(decodeHtmlEntities('&amp;lt;'), '&lt;');
+  assert.equal(
+    decodeHtmlEntities('3 &times; 4 &le; 13 &#8805; &#x2192; &nbsp;x'),
+    '3 × 4 ≤ 13 ≥ →  x',
+  );
+  assert.equal(decodeHtmlEntities('&bogus; &#0; &#x110000;'), '&bogus; &#0; &#x110000;');
+  assert.equal(decodeHtmlEntities('Q&A and AT&T'), 'Q&A and AT&T');
+});
+
+test('compact previews keep operators when they are cut to length', () => {
+  const statement = `Return the number of pairs (i, j) with i<j and nums[i] > nums[j]. ${'More text. '.repeat(40)}`;
+  const preview = compactPreview(statement);
+  assert.ok(
+    preview.startsWith('Return the number of pairs (i, j) with i<j and nums[i] > nums[j].'),
+  );
+  assert.equal(preview.length, 280);
+  assert.ok(preview.endsWith('…'));
+});
+
+test('indexes statement text with comparisons instead of dropping it as a tag', async (context) => {
+  const root = await testRoot(context);
+  await addCourse(root, 'learn');
+  await writeJson(root, 'learn/sample/modules/intro.json', [
+    {
+      id: 'inversions',
+      moduleId: 'intro',
+      title: 'Count inversions',
+      difficulty: 'Beginner',
+      tags: [],
+      summary: 'Count pairs i<j where a[i] > a[j], using a <code>List&lt;Integer&gt;</code>.',
+      interviewAnswer: 'Merge sort counts them in O(n log n).',
+      followUps: [],
+    },
+  ]);
+
+  await generateSearchIndex(root);
+  const shard = JSON.parse(await readFile(join(root, 'indexes/learn.json'), 'utf8'));
+  const document = shard.documents.find(({ contentId }) => contentId === 'inversions');
+  assert.equal(document.preview, 'Count pairs i<j where a[i] > a[j], using a List<Integer>.');
 });

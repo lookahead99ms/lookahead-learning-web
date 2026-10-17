@@ -473,6 +473,76 @@ describe('Landing', () => {
     fixture.destroy();
   });
 
+  it('plays the Essence in order: the wordmark, then its statements and steps, replay included', () => {
+    const fixture = TestBed.createComponent(Landing);
+    fixture.detectChanges();
+    const root: HTMLElement = fixture.nativeElement;
+    const essence = root.querySelector('.home-essence');
+    expect(
+      [...(essence?.children ?? [])].map((child) => child.tagName.toLowerCase()).filter((tag) => tag.startsWith('app-')),
+    ).toEqual(['app-platform-brand', 'app-wordmark-key', 'app-essence-steps']);
+    expect(essence?.querySelector('app-platform-brand.essence-corner-mark')?.getAttribute('aria-hidden')).toBe('true');
+    expect(essence?.querySelector('app-platform-brand-illustration')).toBeNull();
+    expect(essence?.querySelector('.brand-story-copy')).toBeNull();
+    expect(essence?.querySelector('.brand-context')?.textContent).toBe('Our platform');
+    expect(root.querySelector('#brand-story-title')?.textContent).toBe('The Essence of Look Ahead');
+    // The statements and steps wait for the wordmark, and hide again when it replays.
+    const steps = essence?.querySelector('app-essence-steps');
+    const key = fixture.debugElement.query((node) => node.name === 'app-wordmark-key');
+    expect(steps?.getAttribute('data-state')).toBe('hidden');
+    key.triggerEventHandler('finished');
+    fixture.detectChanges();
+    expect(steps?.getAttribute('data-state')).toBe('shown');
+    // The wordmark's sentence settles below the steps and stays; the loop sends the stairs'
+    // arrow up again after each light along the wordmark; pausing marks the card.
+    const sentence = essence?.querySelector('.essence-sentence');
+    expect(sentence?.classList.contains('shown')).toBe(true);
+    expect(sentence?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+      'Look ahead to the obstacle, put AI to work in your code, explore and engineer with algorithms and architecture, and find the way through.',
+    );
+    expect(
+      [...(sentence?.querySelectorAll<HTMLElement>('.essence-key-word') ?? [])].map((word) => word.textContent),
+    ).toEqual(['Look', 'obstacle', 'AI', 'code', 'explore', 'engineer', 'algorithms', 'architecture', 'the way through']);
+    const stepsNode = fixture.debugElement.query((node) => node.name === 'app-essence-steps');
+    stepsNode.triggerEventHandler('settled');
+    fixture.detectChanges();
+    key.triggerEventHandler('passed');
+    fixture.detectChanges();
+    expect(stepsNode.componentInstance.loop()).toBe(1);
+    key.triggerEventHandler('stillChange', true);
+    fixture.detectChanges();
+    expect(essence?.getAttribute('data-motion')).toBe('still');
+    expect(stepsNode.componentInstance.still()).toBe(true);
+    key.triggerEventHandler('stillChange', false);
+    // In a loop round the statements step aside for the wordmark's captions, then return.
+    key.triggerEventHandler('cycle', 'apart');
+    fixture.detectChanges();
+    expect(steps?.hasAttribute('data-away')).toBe(true);
+    key.triggerEventHandler('cycle', 'joined');
+    fixture.detectChanges();
+    expect(steps?.hasAttribute('data-away')).toBe(false);
+    // Skipping to the end jumps everything to finished for a moment, then motion works again.
+    vi.useFakeTimers();
+    key.triggerEventHandler('cycle', 'apart');
+    key.triggerEventHandler('skipped');
+    fixture.detectChanges();
+    expect(essence?.hasAttribute('data-skip')).toBe(true);
+    expect(steps?.hasAttribute('data-away')).toBe(false);
+    expect(stepsNode.componentInstance.instant()).toBe(true);
+    vi.advanceTimersByTime(100);
+    fixture.detectChanges();
+    expect(essence?.hasAttribute('data-skip')).toBe(false);
+    vi.useRealTimers();
+    key.triggerEventHandler('restarted');
+    fixture.detectChanges();
+    expect(essence?.hasAttribute('data-skip')).toBe(false);
+    expect(steps?.getAttribute('data-state')).toBe('hidden');
+    expect(sentence?.classList.contains('shown')).toBe(false);
+    expect(stepsNode.componentInstance.loop()).toBe(0);
+    expect(essence?.getAttribute('data-motion')).toBeNull();
+    fixture.destroy();
+  });
+
   it('keeps the page sections, their section-nav labels and the signature', () => {
     const fixture = TestBed.createComponent(Landing);
     fixture.detectChanges();
@@ -488,12 +558,16 @@ describe('Landing', () => {
     expect(root.querySelector('#paths.home-paths')).not.toBeNull();
     expect(root.querySelector('app-engineering-challenge.home-challenge')).not.toBeNull();
     expect(root.querySelector('.feature-discovery.home-explore')).not.toBeNull();
+    expect(root.querySelector('.brand-story.home-essence app-wordmark-key')).not.toBeNull();
+    // The footer: "Learn. Grow. Blaze." with the reasoning pair beside it, its only place on the
+    // site (user, 2026-10-17).
+    const footer = root.querySelector('.landing-footer.home-footer');
+    expect(footer?.querySelector('p')?.textContent?.trim()).toBe('Learn. Grow. Blaze.');
     expect(
-      root.querySelector('.brand-story.home-essence app-platform-brand-illustration'),
-    ).not.toBeNull();
-    expect(root.querySelector('.landing-footer.home-footer')?.textContent?.trim()).toBe(
-      'Learn. Grow. Blaze.',
-    );
+      [...(footer?.querySelectorAll('.footer-statements > *') ?? [])].map((statement) =>
+        statement.textContent?.replace(/\s+/g, ' ').trim(),
+      ),
+    ).toEqual(['Understand the obstacle. Find the way.', 'Know why it works. Know when it won’t.']);
     expect(
       [...root.querySelectorAll('[data-sidebar-label]')].map((heading) =>
         heading.getAttribute('data-sidebar-label'),
@@ -645,6 +719,135 @@ describe('Landing', () => {
       expect(link.querySelector('a, button, input, select, textarea, [tabindex]')).toBeNull();
       expect(link.querySelector('.card-action')).not.toBeNull();
     }
+    fixture.destroy();
+  });
+
+  it('keeps each direction card scene above its text at every card width', () => {
+    const fixture = TestBed.createComponent(Landing);
+    fixture.detectChanges();
+    // Component styles are emitted as <style> elements; read them as written (user, 2026-10-16:
+    // the cards must look the same on every monitor).
+    const css = [...document.querySelectorAll('style')].map((style) => style.textContent ?? '').join('\n').replace(/\s+/g, ' ');
+    expect(css).toMatch(/\.home-paths\[[^\]]+\] \.direction-scene\[[^\]]+\] \{ --card-scene-ratio: 16 \/ 9;/);
+    expect(css).not.toMatch(/@container[^{]*\{[^@]*\.direction-scene[^{]*\{[^}]*order:/);
+    fixture.destroy();
+  });
+
+  /** The emitted styles of the Home components (page, hero card, challenge, pricing), whitespace collapsed. */
+  function homeStyles(): string[] {
+    const markers = ['.hero-stage[', '.hv-paths[', '.practice-disclosure[', '.home-pricing['];
+    return [...document.querySelectorAll('style')]
+      .map((style) => (style.textContent ?? '').replace(/\s+/g, ' '))
+      .filter((css) => markers.some((marker) => css.includes(marker)));
+  }
+
+  it('sizes the hero to the window below the header so the chapter strip stays above the fold', () => {
+    const fixture = TestBed.createComponent(Landing);
+    fixture.detectChanges();
+    const css = homeStyles().join('\n');
+    // DLV-803: the stage fills the window below the 85px header (a floor, so taller content grows
+    // the hero instead of clipping it), capped near a balanced card on a large monitor.
+    expect(css).toContain('--home-header-height: 85px;');
+    expect(css).toMatch(
+      /\.hero-stage\[[^\]]+\] \{ display: flex; flex-direction: column; min-height: min\( ?calc\(100svh - var\(--home-header-height\) - var\(--home-top-pad\) - var\(--home-fold-gap\)\), calc\(44cqi \+ 140px\) ?\); \}/,
+    );
+    expect(css).not.toContain('calc(100svh - 128px)');
+    // The slide takes the stage's height; no vh-based slide minimum pushes the strip down on a
+    // wide screen (the light theme keeps its minimum only where the slides stack).
+    expect(css).toMatch(/\.hero-slide\[[^\]]+\] \{ grid-area: 1\/1; [^}]*min-height: 0;/);
+    expect(css).toMatch(
+      /@media \(max-width: 1099px\) \{ :root:not\(\[data-theme=\\?"dark\\?"\]\)[^{]*\.hero-slide\[[^\]]+\] \{ min-height: clamp\(400px, calc\(100svh - 410px\), 720px\); \} \}/,
+    );
+    // Vertical rhythm and the card's padding follow the window height.
+    expect(css).toMatch(/\.hero-visual\[[^\]]+\] \{[^}]*padding: clamp\(18px, min\(2\.6vw, 2\.6svh\), 44px\);/);
+    expect(css).toMatch(/\.carousel-footer\[[^\]]+\] \{[^}]*margin-top: clamp\(8px, 1\.4svh, 28px\);/);
+    fixture.destroy();
+  });
+
+  it('lets each hero card shrink its flexible part on a short window instead of overflowing', () => {
+    const fixture = TestBed.createComponent(Landing);
+    fixture.detectChanges();
+    const css = homeStyles().join('\n');
+    expect(css).toMatch(/--hv-gap: clamp\(8px, min\(3cqi, 1\.2svh\), 22px\);/);
+    expect(css).toMatch(/\.hv-chart\[[^\]]+\] \{[^}]*min-height: min\(clamp\(110px, 26cqi, 260px\), 18svh\);/);
+    // The latency sketch fills the room it is given rather than its 3:1 drawing height.
+    expect(css).toMatch(/\.hv-chart-art\[[^\]]+\] \{[^}]*flex: 1 1 0;[^}]*min-height: 44px;/);
+    expect(css).toMatch(/\.hv-queue\[[^\]]+\] \{[^}]*min-height: min\(clamp\(84px, 18cqi, 190px\), 10svh\);/);
+    expect(css).toMatch(/\.hv-window\[[^\]]+\] \{[^}]*min-height: min\(clamp\(96px, 22cqi, 200px\), 10svh\);/);
+    // A small laptop gives the card half the row so its rows wrap less.
+    expect(css).toMatch(
+      /@media \(min-width: 1100px\) and \(max-width: 1399px\) \{ \.hero-slide\[[^\]]+\] \{ grid-template-columns: minmax\(0, 1fr\) minmax\(0, 1fr\); \} \}/,
+    );
+    fixture.destroy();
+  });
+
+  it('gives the hero headlines a rem base so browser zoom enlarges them', () => {
+    const fixture = TestBed.createComponent(Landing);
+    fixture.detectChanges();
+    const css = homeStyles().join('\n');
+    expect(css).toMatch(
+      /\.slide-title\[[^\]]+\] \{ font: 800 clamp\(2\.25rem, min\(3\.0625rem \+ 2\.5cqi, 10\.6cqi\), 6\.75rem\)\/1\.02 system-ui/,
+    );
+    expect(css).toMatch(/\.discovery-framing\[[^\]]+\] \{ font: 750 clamp\(22px, 1\.05rem \+ 0\.875vw, 32px\)\/1\.2/);
+    expect(css).toMatch(/\.hero-copy\[[^\]]+\] \.lead\[[^\]]+\] \{ font-size: clamp\(1rem, 0\.8rem \+ 1\.1cqi, 1\.3125rem\);/);
+    expect(css).not.toContain('10.2cqi');
+    fixture.destroy();
+  });
+
+  it('never sizes Home text with a bare viewport or container term', () => {
+    const fixture = TestBed.createComponent(Landing);
+    fixture.detectChanges();
+    const styles = homeStyles();
+    expect(styles.length).toBeGreaterThanOrEqual(4);
+    const fluid = /\d(?:vw|vh|svh|dvh|lvh|vmin|vmax|cqi|cqw|cqh)\b/;
+    const offenders: string[] = [];
+    let checked = 0;
+    for (const css of styles) {
+      for (const [, value] of css.matchAll(/(?:^|[;{\s])font(?:-size)?:\s*([^;}]+)/g)) {
+        if (!fluid.test(value)) continue;
+        checked++;
+        // Every clamp's preferred (middle) term must carry a rem base when it scales with the
+        // window or the card: a bare 10cqi stays the same rendered size at any zoom level.
+        for (const [, args] of value.matchAll(/clamp\(((?:[^()]|\([^()]*(?:\([^()]*\))*[^()]*\))*)\)/g)) {
+          const parts: string[] = [];
+          let depth = 0;
+          let current = '';
+          for (const char of args) {
+            if (char === '(') depth++;
+            if (char === ')') depth--;
+            if (char === ',' && depth === 0) {
+              parts.push(current.trim());
+              current = '';
+            } else current += char;
+          }
+          parts.push(current.trim());
+          const middle = parts[1] ?? '';
+          if (fluid.test(middle) && !/rem\b/.test(middle)) offenders.push(value.trim());
+        }
+        if (!/clamp\(/.test(value) && !/rem\b/.test(value)) offenders.push(value.trim());
+      }
+    }
+    expect(checked).toBeGreaterThan(20);
+    expect(offenders).toEqual([]);
+    fixture.destroy();
+  });
+
+  it('centres every Home section in the shared fixed-width page frame', () => {
+    const fixture = TestBed.createComponent(Landing);
+    fixture.detectChanges();
+    const css = homeStyles().join('\n');
+    // DLV-803 (user, 2026-10-16): a centred, fixed-width page; side margins grow on a big monitor.
+    expect(css).toMatch(
+      /main\.landing-page\[[^\]]+\] > \*\[[^\]]+\] \{ max-width: var\(--page-max-browse, 80rem\); margin-inline: auto; \}/,
+    );
+    expect(css).toMatch(/--home-frame: min\(100%, var\(--site-frame-max, 100rem\)\);/);
+    expect(css).toMatch(
+      /width: calc\(var\(--home-frame\) - var\(--reader-sidebar-space\)\) !important; max-width: none !important; margin-inline: calc\(var\(--home-frame-inset\) \+ var\(--reader-sidebar-space\)\) auto !important;/,
+    );
+    // The nav column and the gutters stop growing at the frame width.
+    expect(css).toContain('--reader-sidebar-space: clamp(256px, 17vw, 17rem);');
+    expect(css).toContain('--home-gutter: clamp(20px, 3vw, 3rem);');
+    expect(css).not.toContain('76vw');
     fixture.destroy();
   });
 

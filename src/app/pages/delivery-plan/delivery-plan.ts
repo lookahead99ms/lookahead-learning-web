@@ -34,6 +34,7 @@ import {
 } from '../../core/author-workspace-nav/author-workspace-nav';
 import { AuthorAdminMenu } from '../../core/author-workspace-nav/author-admin-menu';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
+import { ScrollLock } from '../../core/scroll-lock/scroll-lock';
 
 type DeliveryView = 'board' | 'backlog' | 'all-tickets' | 'roadmap' | 'decisions';
 type WorkItemDraft = Omit<
@@ -49,7 +50,7 @@ type WorkItemDraft = Omit<
 
 @Component({
   selector: 'app-delivery-plan',
-  imports: [PlatformHeader, AuthorWorkspaceNav, AuthorAdminMenu, FormsModule],
+  imports: [PlatformHeader, AuthorWorkspaceNav, AuthorAdminMenu, FormsModule, ScrollLock],
   templateUrl: './delivery-plan.html',
   styleUrl: './delivery-plan.css',
   host: { '(window:beforeunload)': 'onBeforeUnload($event)' },

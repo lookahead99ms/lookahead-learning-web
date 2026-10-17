@@ -11,11 +11,12 @@ import {
   signal,
 } from '@angular/core';
 import { DsaProblemV2 } from '../../content/content.models';
+import { OptimalApproaches } from '../optimal-approaches/optimal-approaches';
 
 /** Teaching is read from the protected problem; the UI never embeds curriculum. */
 @Component({
   selector: 'app-studio-approach',
-  imports: [LearningCode,NgTemplateOutlet],
+  imports: [LearningCode, NgTemplateOutlet, OptimalApproaches],
   template: `<article class="approach-overview" aria-label="Understand the approach">
     <p class="eyebrow">Understand the question first</p>
     <h2>{{ problem().title }}</h2>
@@ -155,6 +156,7 @@ import { DsaProblemV2 } from '../../content/content.models';
       <p>{{ problem().practice.canonicalApproach.whyOptimal }}</p>
       <h3>Changed assumptions</h3>
       <p>{{ problem().practice.canonicalApproach.whenAssumptionChanges }}</p>
+      <app-optimal-approaches [family]="problem().approachFamily" variant="block" idPrefix="approach-tab-approaches" />
     </details>
   </article>`,
   styleUrl: './studio-approach.css',

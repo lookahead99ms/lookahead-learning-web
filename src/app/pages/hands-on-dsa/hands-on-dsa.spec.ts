@@ -1,3 +1,4 @@
+import { Location } from '@angular/common';
 import { TestBed } from '@angular/core/testing';
 import { NavigationEnd, Router, Scroll, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
@@ -17,6 +18,7 @@ import { PageSidebarContext } from '../../core/page-sidebars/page-sidebar-contex
 import { Course } from '../course/course';
 import { Question } from '../question/question';
 import { HandsOnDsa } from './hands-on-dsa';
+import { patternContextToken } from '../../content/pattern-context';
 
 const question = (id: string, moduleId: string): InterviewQuestion => ({
   id,
@@ -227,6 +229,21 @@ describe('Hands-On DSA route contracts', () => {
 
   afterEach(() => vi.restoreAllMocks());
 
+  it('keeps a rem base in the hero title so browser zoom enlarges it (DLV-803)', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/learn/hands-on-dsa', HandsOnDsa);
+    expect(harness.routeNativeElement!.querySelector('.practice-hero h1')).not.toBeNull();
+    const css = [...document.querySelectorAll('style')]
+      .map((style) => style.textContent ?? '')
+      .join('\n')
+      .replace(/\s+/g, ' ');
+    expect(css).toMatch(
+      /\.practice-hero\[[^\]]+\] h1\[[^\]]+\] \{[^}]*font-size: clamp\(2rem, 2\.2rem \+ 1\.65vw, 3\.8rem\);/,
+    );
+    expect(css).toContain('font-size: clamp(1rem, 0.95rem + 0.25vw, 1.18rem);');
+    expect(css).not.toContain('clamp(2rem, 4vw, 3.8rem)');
+  });
+
   it('uses a semantic table with both stable orders and hidden pattern names by default', async () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/learn/hands-on-dsa', HandsOnDsa);
@@ -306,7 +323,7 @@ describe('Hands-On DSA route contracts', () => {
     await harness.navigateByUrl('/learn/hands-on-dsa?pattern=algorithmic-patterns:hashing');
     harness.detectChanges();
     expect(TestBed.inject(Router).url).toBe(
-      '/learn/hands-on-dsa?pattern=algorithmic-patterns:hashing',
+      `/learn/hands-on-dsa?pattern=${patternContextToken('algorithmic-patterns:hashing')}`,
     );
     // This test covers the legacy question shell after proving the indexed
     // catalog route. Canonical fast-path behavior has focused tests below.
@@ -315,7 +332,7 @@ describe('Hands-On DSA route contracts', () => {
     await harness.fixture.whenStable();
     harness.detectChanges();
     expect(TestBed.inject(Router).url).toBe(
-      '/learn/algorithmic-patterns/hashing-complete?pattern=algorithmic-patterns:hashing&returnTo=%2Flearn%2Fhands-on-dsa%3Fpattern%3Dalgorithmic-patterns:hashing',
+      `/learn/algorithmic-patterns/hashing-complete?pattern=${patternContextToken('algorithmic-patterns:hashing')}&returnTo=%2Flearn%2Fhands-on-dsa%3Fpattern%3D${patternContextToken('algorithmic-patterns:hashing')}`,
     );
     const breadcrumbs = [
       ...harness.routeNativeElement!.querySelectorAll<HTMLAnchorElement>('.breadcrumbs a'),
@@ -324,11 +341,11 @@ describe('Hands-On DSA route contracts', () => {
       (link) => link.textContent.trim() === 'Hands-On DSA',
     )!;
     const patternBreadcrumb = breadcrumbs.find((link) =>
-      link.getAttribute('href')?.includes('pattern=algorithmic-patterns:hashing'),
+      link.getAttribute('href')?.includes(`pattern=${patternContextToken('algorithmic-patterns:hashing')}`),
     )!;
     expect(libraryBreadcrumb.getAttribute('href')).toBe('/learn/hands-on-dsa');
     expect(patternBreadcrumb.getAttribute('href')).toBe(
-      '/learn/hands-on-dsa?pattern=algorithmic-patterns:hashing',
+      `/learn/hands-on-dsa?pattern=${patternContextToken('algorithmic-patterns:hashing')}`,
     );
     expect(
       harness.routeNativeElement!.querySelector('.breadcrumbs [aria-current="page"]')!.textContent,
@@ -336,7 +353,7 @@ describe('Hands-On DSA route contracts', () => {
     patternBreadcrumb.click();
     await harness.fixture.whenStable();
     expect(TestBed.inject(Router).url).toBe(
-      '/learn/hands-on-dsa?pattern=algorithmic-patterns:hashing',
+      `/learn/hands-on-dsa?pattern=${patternContextToken('algorithmic-patterns:hashing')}`,
     );
   });
 
@@ -421,7 +438,7 @@ describe('Hands-On DSA route contracts', () => {
     await harness.fixture.whenStable();
     harness.detectChanges();
     let params = new URL('http://localhost' + TestBed.inject(Router).url).searchParams;
-    expect(params.get('pattern')).toBe(catalog.groups[0].id);
+    expect(params.get('pattern')).toBe(patternContextToken(catalog.groups[0].id));
     expect(params.has('page')).toBe(false);
     expect(document.activeElement).toBe(select);
     const allPatterns = harness.routeNativeElement!.querySelector<HTMLAnchorElement>(
@@ -625,7 +642,7 @@ describe('Hands-On DSA route contracts', () => {
     catalog = paginatedIndex(80);
     const harness = await RouterTestingHarness.create();
     const context =
-      'sort=study-order&scope=365&difficulty=Beginner&q=Problem&pattern=algorithmic-patterns:hashing';
+      `sort=study-order&scope=365&difficulty=Beginner&q=Problem&pattern=${patternContextToken('algorithmic-patterns:hashing')}`;
     await harness.navigateByUrl('/learn/hands-on-dsa?' + context + '&page=2', HandsOnDsa);
     const next = harness.routeNativeElement!.querySelector<HTMLAnchorElement>('.pagination-next')!;
     expect(next.getAttribute('href')).toBe('/learn/hands-on-dsa?' + context + '&page=3');
@@ -697,7 +714,7 @@ describe('Hands-On DSA route contracts', () => {
     const root = harness.routeNativeElement!;
     // The old grouping URL is rewritten in place to the grouped view, keeping the pattern.
     expect(Object.fromEntries(searchParams(TestBed.inject(Router)))).toEqual({
-      pattern: 'algorithmic-patterns:hashing',
+      pattern: patternContextToken('algorithmic-patterns:hashing'),
       patterns: 'show',
       view: 'groups',
     });
@@ -757,7 +774,7 @@ describe('Hands-On DSA route contracts', () => {
     // Rows never repeat the pattern under each title.
     expect(root.querySelector('.pattern-problem-row .problem-pattern')).toBeNull();
     const link = root.querySelector<HTMLAnchorElement>('.pattern-problem-row .problem-link')!;
-    expect(new URL(link.href).searchParams.get('pattern')).toBe('algorithmic-patterns:second');
+    expect(new URL(link.href).searchParams.get('pattern')).toBe(patternContextToken('algorithmic-patterns:second'));
   });
 
   it('switches back to All problems without a redundant sort parameter', async () => {
@@ -799,7 +816,7 @@ describe('Hands-On DSA route contracts', () => {
     harness.detectChanges();
     expect(Object.fromEntries(searchParams(TestBed.inject(Router)))).toEqual({
       view: 'groups',
-      pattern: 'algorithmic-patterns:two-pointers',
+      pattern: patternContextToken('algorithmic-patterns:two-pointers'),
       sort: 'interview-rank',
     });
     expect(root.querySelector('app-pattern-browser')).not.toBeNull();
@@ -1312,7 +1329,7 @@ describe('Hands-On DSA route contracts', () => {
       await press('ArrowDown');
       await press('Enter');
       await settle(harness);
-      expect(searchParams(TestBed.inject(Router)).get('pattern')).toBe('core-data-structures:pattern-3');
+      expect(searchParams(TestBed.inject(Router)).get('pattern')).toBe(patternContextToken('core-data-structures:pattern-3'));
       expect(options(root)[2].getAttribute('aria-selected')).toBe('true');
       expect(root.querySelector('#pattern-detail-title')!.textContent).toContain('Pattern 3');
     });
@@ -1329,13 +1346,13 @@ describe('Hands-On DSA route contracts', () => {
         view: 'groups',
         patterns: 'show',
         difficulty: 'Beginner',
-        pattern: 'algorithmic-patterns:pattern-20',
+        pattern: patternContextToken('algorithmic-patterns:pattern-20'),
       });
       expect(root.querySelector('#pattern-detail-title')!.textContent).toContain('Named pattern 20');
       // Problem links return here, to the same pattern.
       const link = root.querySelector<HTMLAnchorElement>('.pattern-problem-row .problem-link')!;
       expect(new URL(link.href).searchParams.get('returnTo')).toContain(
-        'pattern=algorithmic-patterns:pattern-20',
+        `pattern=${patternContextToken('algorithmic-patterns:pattern-20')}`,
       );
 
       // A deep link (or Back to it) opens the same pattern.
@@ -1347,6 +1364,42 @@ describe('Hands-On DSA route contracts', () => {
       await harness.navigateByUrl('/learn/hands-on-dsa?view=groups', HandsOnDsa);
       expect(root.querySelector('[aria-selected="true"]')!.getAttribute('data-pattern-id')).toBe(
         'core-data-structures:pattern-1',
+      );
+    });
+
+    it('carries the chosen pattern as an opaque id: no link or URL names it while names are hidden (DLV-962)', async () => {
+      catalog = thirtyNinePatterns();
+      const harness = await RouterTestingHarness.create();
+      const router = TestBed.inject(Router);
+      router.setUpLocationChangeListener();
+      // An old readable link still opens its pattern, and is rewritten to the opaque id.
+      await harness.navigateByUrl('/learn/hands-on-dsa?view=groups&pattern=core-data-structures:pattern-4', HandsOnDsa);
+      const root = harness.routeNativeElement!;
+      const exposed = () => [
+        router.url,
+        ...[...root.querySelectorAll<HTMLAnchorElement>('a[href]')].map((link) =>
+          decodeURIComponent(link.getAttribute('href')!),
+        ),
+      ];
+      const fourth = patternContextToken('core-data-structures:pattern-4');
+      expect(searchParams(router).get('pattern')).toBe(fourth);
+      expect(root.querySelector('[aria-selected="true"]')!.getAttribute('data-pattern-id')).toBe(
+        'core-data-structures:pattern-4',
+      );
+      for (const value of exposed()) expect(value).not.toMatch(/pattern-\d|Named pattern/);
+      const link = root.querySelector<HTMLAnchorElement>('.pattern-problem-row .problem-link')!;
+      expect(new URL(link.href).searchParams.get('pattern')).toBe(fourth);
+
+      // Choosing another pattern writes its opaque id; Back returns to the first one.
+      root.querySelector<HTMLElement>('[data-pattern-id="core-data-structures:pattern-7"]')!.click();
+      await settle(harness);
+      expect(searchParams(router).get('pattern')).toBe(patternContextToken('core-data-structures:pattern-7'));
+      for (const value of exposed()) expect(value).not.toMatch(/pattern-\d|Named pattern/);
+      TestBed.inject(Location).back();
+      await vi.waitFor(() => expect(searchParams(router).get('pattern')).toBe(fourth));
+      await settle(harness);
+      expect(root.querySelector('[aria-selected="true"]')!.getAttribute('data-pattern-id')).toBe(
+        'core-data-structures:pattern-4',
       );
     });
 
@@ -1412,7 +1465,7 @@ describe('Hands-On DSA route contracts', () => {
       await settle(harness);
       expect(searchParams(router).has('sort')).toBe(false);
       expect(titles()).toEqual(['Problem 2.1', 'Problem 2.2', 'Problem 2.3']);
-      expect(searchParams(router).get('pattern')).toBe('core-data-structures:pattern-2');
+      expect(searchParams(router).get('pattern')).toBe(patternContextToken('core-data-structures:pattern-2'));
     });
 
     it('carries the column sort across patterns and both views', async () => {
@@ -1433,7 +1486,7 @@ describe('Hands-On DSA route contracts', () => {
       // Another pattern keeps the sort.
       root.querySelector<HTMLElement>('[data-pattern-id="core-data-structures:pattern-5"]')!.click();
       await settle(harness);
-      expect(searchParams(router).get('pattern')).toBe('core-data-structures:pattern-5');
+      expect(searchParams(router).get('pattern')).toBe(patternContextToken('core-data-structures:pattern-5'));
       expect(searchParams(router).get('sort')).toBe('interview-rank-descending');
       expect(
         root.querySelector('.pattern-problems [data-sort-column="interview"]')!.closest('th')!.getAttribute('aria-sort'),
@@ -1636,7 +1689,7 @@ describe('Hands-On DSA route contracts', () => {
 
       root.querySelector<HTMLElement>('[data-pattern-id="algorithmic-patterns:pattern-25"]')!.click();
       await settle(harness);
-      expect(searchParams(router).get('pattern')).toBe('algorithmic-patterns:pattern-25');
+      expect(searchParams(router).get('pattern')).toBe(patternContextToken('algorithmic-patterns:pattern-25'));
       expect(panes().getAttribute('data-screen')).toBe('detail');
       // The pattern list is hidden on this screen, so focus moves to the pattern's heading.
       expect(document.activeElement).toBe(root.querySelector('#pattern-detail-title'));
@@ -1937,7 +1990,7 @@ describe('Hands-On DSA route contracts', () => {
       expect(next().textContent!.replace(/\s+/g, ' ').trim()).toBe('Next unsolved Problem 2');
       expect(next().getAttribute('aria-label')).toBe('Next unsolved: Problem 2');
       expect(new URL(next().href).pathname).toBe('/learn/algorithmic-patterns/problem-2');
-      expect(new URL(next().href).searchParams.get('pattern')).toBe('algorithmic-patterns:hashing');
+      expect(new URL(next().href).searchParams.get('pattern')).toBe(patternContextToken('algorithmic-patterns:hashing'));
 
       // Interview priority puts Problem 3 (rank 2) before Problem 2 (rank 3).
       root.querySelector<HTMLButtonElement>('.pattern-problems [data-sort-column="interview"]')!.click();

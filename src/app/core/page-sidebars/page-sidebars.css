@@ -778,35 +778,6 @@ button {
   white-space: nowrap;
 }
 
-/* Bottom-corner statements: fixed in the side gutters like the top ones, below any sidebar. */
-.corner-signature {
-  position: fixed;
-  bottom: 12px;
-  box-sizing: border-box;
-  padding: 8px 16px;
-  z-index: 44;
-  font-size: 1.05rem;
-  line-height: 1.55;
-  pointer-events: none;
-}
-.corner-signature-left {
-  inset-inline-start: 6px;
-}
-/* Lines up with the top statement, which leaves room for the left sidebar toggle. */
-.corner-signature-left.beside-toggle {
-  padding-inline-start: 24px;
-}
-.corner-signature-right {
-  inset-inline-end: 6px;
-  display: flex;
-  justify-content: flex-end;
-}
-@media (max-height: 560px) {
-  .corner-signature {
-    display: none;
-  }
-}
-
 /* Narrow layouts disclose both sections in normal flow, ahead of the reader. */
 :host(.inline-sidebars) {
   display: flex;
@@ -841,4 +812,35 @@ button {
   width: 100% !important;
   max-width: none;
   padding-top: 12px;
+}
+
+/* DLV-803: a docked panel still spans its whole gutter (it never takes width from the reader),
+   but on a wide monitor its heading and content keep a sidebar's width and sit next to the
+   reader, so the outline and Practice & review frame the lesson instead of hugging the window
+   edges with an empty band between. The statements stay in the corners. */
+.page-sidebar.docked:not(.homepage) > :is(.sidebar-heading, .sidebar-content) {
+  box-sizing: border-box;
+  max-width: var(--sidebar-panel-max, 22.5rem);
+}
+.left.docked:not(.homepage) > :is(.sidebar-heading, .sidebar-content) {
+  margin-inline-start: auto;
+}
+.right.docked > :is(.sidebar-heading, .sidebar-content) {
+  margin-inline-end: auto;
+}
+/* DLV-803: in flow, the two sections share one row when it is wide enough (a laptop at 150-200%
+   zoom), so their closed heading rows take one line above the lesson instead of two. Phones
+   keep them stacked. */
+@media (min-width: 40rem) {
+  :host(.inline-sidebars) {
+    flex-flow: row wrap;
+    align-items: flex-start;
+  }
+  :host(.inline-sidebars) .page-sidebar:not(.homepage) {
+    flex: 1 1 18rem;
+    min-width: 0;
+  }
+  :host(.inline-sidebars) .signature-strip {
+    flex: 1 0 100%;
+  }
 }

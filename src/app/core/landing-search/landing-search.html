@@ -13,13 +13,19 @@
         <button class="landing-search-stage search" type="button" (click)="submit()" aria-label="Search all content">⌕</button>
       </div>
       <div class="landing-search-results">
+        @if (correctedQuery(); as fixed) {
+          <p class="landing-search-correction" role="status">No matches for “{{ query().trim() }}”. Showing matches for “{{ fixed }}”.</p>
+        }
         @for (suggestion of suggestions(); track suggestion.type + suggestion.label) {
           <button class="landing-search-result" type="button" role="option" (click)="choose(suggestion)">
             <span class="landing-search-result-type">{{ suggestion.type }}</span>
             <strong class="landing-search-result-label">{{ suggestion.label }}</strong>
             @if (suggestion.detail; as detail) { <span class="landing-search-result-detail">{{ detail }}</span> }
           </button>
-        } @empty { <p class="landing-search-empty">Start typing to search all learning content.</p> }
+        } @empty {
+          @if (query().trim()) { <p class="landing-search-empty">No matches for “{{ query().trim() }}”.</p> }
+          @else { <p class="landing-search-empty">Start typing to search all learning content.</p> }
+        }
       </div>
       <footer class="landing-search-hint"><span>Press <kbd>Esc</kbd> to close</span><span>Enter to search all results</span></footer>
     </div>

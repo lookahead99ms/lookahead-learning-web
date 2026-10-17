@@ -22,6 +22,7 @@ import { FocusStudio } from '../focus-studio/focus-studio';
 import { CodingSolutionTabs } from '../coding-solution-tabs/coding-solution-tabs';
 import { GuidedAlgorithmTrace } from '../guided-algorithm-trace/guided-algorithm-trace';
 import { ReferenceLanguageService } from '../reference-language';
+import { ScrollLockService } from '../scroll-lock/scroll-lock';
 
 @Component({
   selector: 'app-dsa-problem-pilot',
@@ -39,7 +40,9 @@ export class DsaProblemPilot {
   private readonly focusDialog = viewChild<ElementRef<HTMLElement>>('focusDialog');
   private focusOrigin: HTMLElement | null = null;
   private focusScrollY = 0;
-  private previousBodyOverflow = '';
+  /** The shared body scroll lock, held while focus mode is open (user, 2026-10-16). */
+  private readonly scrollLock = inject(ScrollLockService);
+  private releaseScroll: (() => void) | null = null;
   readonly problem = input.required<PatternProblemV1>();
   readonly entryMode = input<'guided' | 'practice'>('practice');
   readonly showProblemHeading = input(true);
@@ -60,6 +63,13 @@ export class DsaProblemPilot {
       : null;
   });
   protected readonly mode = signal<'guided' | 'practice' | 'recall'>('practice');
+  /**
+   * No spoilers (user, 2026-10-16): the reasoning frame ("Why this variant" names the method), the
+   * hints and the solution render only after the learner opens them.
+   */
+  protected readonly guidedOpened = signal(false);
+  protected readonly hintsOpened = signal(false);
+  protected readonly solutionOpened = signal(false);
   protected readonly briefHidden = signal(false);
   protected readonly focusMode = signal(false);
   protected readonly fixtureIndex = signal(0);
@@ -107,6 +117,10 @@ export class DsaProblemPilot {
     effect(() => {
       this.problem().id;
       this.mode.set(this.entryMode());
+      // A page opened straight into guided mode asked for the reasoning.
+      this.guidedOpened.set(this.entryMode() === 'guided');
+      this.hintsOpened.set(false);
+      this.solutionOpened.set(false);
       this.fixtureIndex.set(0);
       this.briefHidden.set(false);
     });
@@ -152,6 +166,7 @@ export class DsaProblemPilot {
   protected selectMode(mode: 'guided' | 'practice' | 'recall'): void {
     if (mode !== 'guided') this.releaseFocusMode(false);
     this.mode.set(mode);
+    if (mode === 'guided') this.guidedOpened.set(true);
     this.revealModeContent(mode);
   }
 
@@ -176,8 +191,7 @@ export class DsaProblemPilot {
     this.focusOrigin =
       (event.currentTarget as HTMLElement | null) ?? this.focusEntry()?.nativeElement ?? null;
     this.focusScrollY = window.scrollY;
-    this.previousBodyOverflow = this.document.body.style.overflow;
-    this.document.body.style.overflow = 'hidden';
+    this.releaseScroll ??= this.scrollLock.lock();
     this.focusMode.set(true);
     queueMicrotask(() => this.focusExit()?.nativeElement.focus());
     window.requestAnimationFrame(() => this.focusExit()?.nativeElement.focus());
@@ -299,7 +313,8 @@ export class DsaProblemPilot {
     if (!this.focusMode()) return;
     const focusOrigin = this.focusOrigin;
     this.focusMode.set(false);
-    this.document.body.style.overflow = this.previousBodyOverflow;
+    this.releaseScroll?.();
+    this.releaseScroll = null;
     if (!restorePosition) return;
 
     window.scrollTo({ top: this.focusScrollY, left: window.scrollX, behavior: 'auto' });

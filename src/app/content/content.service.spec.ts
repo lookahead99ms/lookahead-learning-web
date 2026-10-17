@@ -134,6 +134,32 @@ describe('ContentService canonical DSA details', () => {
     http.verify();
   });
 
+  it('loads the pattern finder index once, and retries after a failed or malformed response', () => {
+    TestBed.configureTestingModule({
+      providers: [ContentService, provideHttpClient(), provideHttpClientTesting()],
+    });
+    const service = TestBed.inject(ContentService);
+    const http = TestBed.inject(HttpTestingController);
+    const href = '/content/learn/algorithmic-patterns/pattern-recognition-index.json';
+    const loaded: number[] = [];
+    const failed: string[] = [];
+    const valid = { schemaVersion: 'pattern-recognition-index/v1', units: [], vocabulary: [], problems: [] };
+
+    service.getPatternRecognitionIndex().subscribe({ error: (error) => failed.push(error.message ?? 'http') });
+    http.expectOne(href).flush('', { status: 404, statusText: 'Not Found' });
+    service.getPatternRecognitionIndex().subscribe({ error: (error) => failed.push(error.message) });
+    http.expectOne(href).flush({ ...valid, schemaVersion: 'pattern-recognition-index/v0' });
+    service.getPatternRecognitionIndex().subscribe((index) => loaded.push(index.problems.length));
+    http.expectOne(href).flush(valid);
+    service.getPatternRecognitionIndex().subscribe((index) => loaded.push(index.problems.length));
+    http.expectNone(href);
+
+    expect(failed).toHaveLength(2);
+    expect(failed[1]).toBe('The pattern finder index version is unavailable.');
+    expect(loaded).toEqual([0, 0]);
+    http.verify();
+  });
+
   it('shares the entry bound across generated items and canonical DSA details', () => {
     TestBed.configureTestingModule({
       providers: [ContentService, provideHttpClient(), provideHttpClientTesting()],

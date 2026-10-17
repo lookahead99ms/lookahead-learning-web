@@ -109,11 +109,80 @@ function questionLanguages(question) {
   );
 }
 
-function compactPreview(value) {
-  const plainText = String(value ?? '')
-    .replace(/<[^>]*>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+// Inline elements authors use in summaries, statements and descriptions. Removing one joins the
+// text either side ("<strong>Two</strong>-pointer" reads "Two-pointer").
+const inlineTagNames =
+  'a|abbr|b|cite|code|del|dfn|em|i|ins|kbd|mark|q|s|samp|small|span|strong|sub|sup|u|var';
+// Elements that break a line or a block; removing one leaves a space between the words.
+const blockTagNames =
+  'blockquote|br|dd|div|dl|dt|figcaption|figure|h[1-6]|hr|li|ol|p|pre|section|table|tbody|td|th|thead|tr|ul|wbr';
+// A real tag: a known element name, then only well-formed attributes with quoted values. So
+// "i<j", "a < b and c > d", "x <= y", "1 << k" and generics such as List<String> or
+// Map<K, V> are statement text and survive; "<b and c>" is not a tag because its attributes
+// have no quoted values.
+const tagAttributes = String.raw`(?:\s+[a-z_:][\w:.-]*\s*=\s*(?:"[^"]*"|'[^']*'))*\s*\/?`;
+const inlineTagPattern = new RegExp(String.raw`<\/?(?:${inlineTagNames})${tagAttributes}>`, 'gi');
+const blockTagPattern = new RegExp(String.raw`<\/?(?:${blockTagNames})${tagAttributes}>`, 'gi');
+const htmlCommentPattern = /<!--[\s\S]*?-->/g;
+const namedEntities = {
+  amp: '&',
+  lt: '<',
+  gt: '>',
+  quot: '"',
+  apos: "'",
+  nbsp: ' ',
+  times: '×',
+  divide: '÷',
+  minus: '−',
+  plusmn: '±',
+  le: '≤',
+  ge: '≥',
+  ne: '≠',
+  larr: '←',
+  rarr: '→',
+  harr: '↔',
+  middot: '·',
+  hellip: '…',
+  ndash: '–',
+  mdash: '—',
+  lsquo: '‘',
+  rsquo: '’',
+  ldquo: '“',
+  rdquo: '”',
+  deg: '°',
+  copy: '©',
+};
+
+/** Decodes HTML entities once, so "&amp;lt;" becomes the text "&lt;", not "<". */
+export function decodeHtmlEntities(value) {
+  return value.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (entity, name) => {
+    if (name[0] === '#') {
+      const code =
+        name[1] === 'x' || name[1] === 'X'
+          ? Number.parseInt(name.slice(2), 16)
+          : Number.parseInt(name.slice(1), 10);
+      return Number.isFinite(code) && code > 0 && code <= 0x10ffff
+        ? String.fromCodePoint(code)
+        : entity;
+    }
+    return namedEntities[name.toLowerCase()] ?? entity;
+  });
+}
+
+/**
+ * Plain text from authored HTML: real tags and comments removed, entities decoded, spaces
+ * collapsed. Comparison operators and generics in statement text are kept.
+ */
+export function plainPreviewText(value) {
+  const withoutTags = String(value ?? '')
+    .replace(htmlCommentPattern, ' ')
+    .replace(blockTagPattern, ' ')
+    .replace(inlineTagPattern, '');
+  return decodeHtmlEntities(withoutTags).replace(/\s+/g, ' ').trim();
+}
+
+export function compactPreview(value) {
+  const plainText = plainPreviewText(value);
   return plainText.length <= previewCharacterLimit
     ? plainText
     : `${plainText.slice(0, previewCharacterLimit - 1).trimEnd()}…`;

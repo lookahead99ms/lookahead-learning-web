@@ -22,14 +22,12 @@ export class Grow {
       'Learn to design, deliver, diagnose, secure, and operate the systems a senior engineer is trusted to own.',
     actionsLabel: 'Grow starting points',
     primaryAction: { label: 'Start with Spring Boot', routerLink: '/grow/spring-boot' },
-    secondaryActions: [
-      {
-        label: 'Practice Grow questions',
-        routerLink: '/interview-questions',
-        queryParams: { path: 'grow' },
-      },
-      { label: 'Build a study plan', routerLink: '/study-plan' },
-    ],
+    alternativeAction: {
+      label: 'Practice Grow questions',
+      routerLink: '/interview-questions',
+      queryParams: { path: 'grow' },
+    },
+    moreActions: [{ label: 'build a study plan', routerLink: '/study-plan' }],
     metricsLabel: 'Grow curriculum depth',
     courseMetricLabel: 'capability courses',
     lessonMetricLabel: 'deep-dive lessons',

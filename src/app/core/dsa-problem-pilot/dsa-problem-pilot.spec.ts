@@ -258,6 +258,43 @@ describe('DsaProblemPilot mode tabs', () => {
     }
   });
 
+  it('keeps the method name, hints and solution out of the page until the learner opens them (no spoilers)', async () => {
+    await TestBed.configureTestingModule({ imports: [DsaProblemPilot] }).compileComponents();
+    const fixture = TestBed.createComponent(DsaProblemPilot);
+    fixture.componentRef.setInput('problem', twoSumProblem());
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const root = fixture.nativeElement as HTMLElement;
+    // First view (practice): no variation, rationale, hint text or reference code anywhere in the markup.
+    expect(root.innerHTML).not.toContain('Complement lookup');
+    expect(root.innerHTML).not.toContain('Remember earlier values');
+    expect(root.innerHTML).not.toContain('Ask what value would complete');
+    expect(root.querySelector('.reasoning-frame')).toBeNull();
+    const [hints, solution] = [...root.querySelectorAll<HTMLDetailsElement>('details.help-panel')];
+    expect(solution.querySelector('app-coding-solution-tabs')).toBeNull();
+    hints.open = true;
+    hints.dispatchEvent(new Event('toggle'));
+    fixture.detectChanges();
+    expect(hints.textContent).toContain('Ask what value would complete');
+    solution.open = true;
+    solution.dispatchEvent(new Event('toggle'));
+    fixture.detectChanges();
+    expect(solution.querySelector('app-coding-solution-tabs')).not.toBeNull();
+    // Opening Guided practice is asking for the reasoning.
+    const descriptor = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollIntoView');
+    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', { configurable: true, value: vi.fn() });
+    try {
+      [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')].find((tab) => tab.textContent?.includes('Guided'))!.click();
+      fixture.detectChanges();
+      expect(root.querySelector('.reasoning-frame')?.textContent).toContain('Complement lookup');
+      // Let the tab row's reveal frame run while scrollIntoView exists.
+      await new Promise((resolve) => setTimeout(resolve, 40));
+    } finally {
+      if (descriptor) Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', descriptor);
+      else Reflect.deleteProperty(HTMLElement.prototype, 'scrollIntoView');
+    }
+  });
+
   it('places the invariant and canonical rationale before the expandable debugger', async () => {
     await TestBed.configureTestingModule({ imports: [DsaProblemPilot] }).compileComponents();
     const fixture = TestBed.createComponent(DsaProblemPilot);
@@ -769,5 +806,21 @@ describe('Focus Studio state retention', () => {
     fixture.detectChanges();
     expect(root.querySelector('.brief-toggle')).toBeNull();
     expect(root.querySelectorAll('.mode-tabs [role="tab"]')).toHaveLength(2);
+  });
+
+  it('keeps a rem base in the selected problem title, so browser zoom enlarges it (DLV-803)', async () => {
+    await TestBed.configureTestingModule({ imports: [DsaProblemPilot] }).compileComponents();
+    const fixture = TestBed.createComponent(DsaProblemPilot);
+    fixture.componentRef.setInput('problem', twoSumProblem());
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const css = [...document.querySelectorAll('style')]
+      .map((style) => style.textContent ?? '')
+      .join('\n')
+      .replace(/\s+/g, ' ');
+    expect(css).toMatch(/h3\[[^\]]+\] \{ margin: 5px 0 10px; font-size: clamp\(1\.45rem, 1\.2rem \+ 0\.6vw, 1\.8rem\); \}/);
+    // A bare viewport middle term barely grows with zoom: the viewport shrinks as the zoom rises.
+    expect(css).not.toContain('clamp(1.45rem, 2.5vw, 1.8rem)');
+    fixture.destroy();
   });
 });

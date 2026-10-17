@@ -29,8 +29,9 @@ import {
 } from '../../content/access-levels';
 import { StudyPlanAccount } from '../../pages/study-plan/study-plan-account';
 import { CardScene } from '../card-scene/card-scene';
+import { patternContextQuery } from '../../content/pattern-context';
 import { CourseLessonNav, CourseLessonNavItem } from '../course-lesson-nav/course-lesson-nav';
-import { evenGridColumns } from '../even-grid';
+import { evenGridColumnVars, evenGridColumns } from '../even-grid';
 
 const LADDER_INTROS: Record<string, string> = {
   'design-fundamentals':
@@ -125,6 +126,7 @@ interface UnitCardEntry {
           <ul
             class="unit-card-grid"
             [attr.data-columns]="lessonNav() ? null : gridColumns(shownCards().length)"
+            [style]="lessonNav() ? null : gridColumnVars(shownCards().length)"
           >
             @for (entry of shownCards(); track entry.key) {
               <li
@@ -319,7 +321,8 @@ interface UnitCardEntry {
       .unit-card-banner-title {
         margin: 0;
         color: var(--text-strong);
-        font-size: clamp(1.9rem, 3.4vw, 2.6rem);
+        /* DLV-803: rem base above the vw term at 1920px, so browser zoom enlarges the title. */
+        font-size: clamp(1.9rem, 1.45rem + 1.2vw, 2.6rem);
         letter-spacing: -0.01em;
         line-height: 1.12;
         text-wrap: balance;
@@ -331,10 +334,27 @@ interface UnitCardEntry {
         font-size: 1.04rem;
         line-height: 1.55;
       }
+      /* DLV-803: cards no narrower than 25rem fill the row, so browser zoom changes the column
+         count (3 on a 1512px laptop at 100%, 4 on a 2560px monitor, 2 when zoomed to 150%), up
+         to 5. The container queries below find how many cards fit and read the even count for
+         that capacity (--even-cols-<n>, even-grid.ts), so 4 cards are 2×2 or a row of 4. */
       .unit-card-grid {
+        --unit-card-min: 25rem;
+        --unit-grid-gap: 1.25rem;
+        --unit-columns: 1;
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 20px;
+        grid-template-columns: repeat(
+          auto-fill,
+          minmax(
+            max(
+              min(100%, var(--unit-card-min)),
+              (100% - (var(--unit-columns) - 1) * var(--unit-grid-gap)) / var(--unit-columns) -
+                0.1px
+            ),
+            1fr
+          )
+        );
+        gap: var(--unit-grid-gap);
         margin: 0;
         padding: 0;
         list-style: none;
@@ -424,7 +444,7 @@ interface UnitCardEntry {
       /* --card-title-size: the title's size, also read by the card drawing (card-scene.ts) to
          keep its words smaller than the title. */
       .unit-card-item {
-        --card-title-size: 1.3rem;
+        --card-title-size: 1.4rem;
         display: grid;
         min-width: 0;
       }
@@ -527,6 +547,17 @@ interface UnitCardEntry {
       .unit-card-scene {
         border-bottom: 1px solid var(--line);
       }
+      /* DLV-803 balance review: in the multi-column grid the drawing is capped at Home-card
+         size (13rem tall, 16:9, so about 370 × 208px at 100%) and centred in a band of the card's
+         colour, so a wide card (2 columns) no longer gives its artwork a 353px-tall band. A rem
+         cap, so browser zoom enlarges it with the text. Narrow cards (phones, 3 columns) keep a
+         full-width drawing. The side-nav row and the single-card row keep their drawing column. */
+      .unit-card-grid[data-columns]:not([data-columns='1']) .unit-card-scene {
+        --unit-scene-max-height: 13rem;
+        --card-scene-max-width: calc(var(--unit-scene-max-height) * 16 / 9);
+        --card-scene-radius: 12px;
+        padding: 0.5rem;
+      }
       .unit-card-body {
         display: flex;
         flex-direction: column;
@@ -613,7 +644,7 @@ interface UnitCardEntry {
         margin: 0;
         color: var(--card-title-color, var(--text-strong));
         font-weight: var(--card-title-weight, 800);
-        font-size: var(--card-title-size, 1.3rem);
+        font-size: var(--card-title-size, 1.4rem);
         line-height: 1.25;
         text-wrap: balance;
       }
@@ -674,11 +705,28 @@ interface UnitCardEntry {
         color: var(--accent-on-primary);
         background: var(--accent-strong);
       }
-      /* Without the side nav, the column count follows the card count (data-columns,
-         even-grid.ts; user review #1, #2): 2 cards share the full width, 4 are 2×2, one card
-         gets the whole row with its drawing beside the text. */
-      .unit-card-grid[data-columns='2'] {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+      /* Without the side nav, the column count follows the card count (even-grid.ts; user
+         review #1, #2): 2 cards share the full width, 4 are 2×2 or a row of 4, one card gets the
+         whole row with its drawing beside the text. Capacity: n × 25rem plus n - 1 gaps. */
+      @container (min-width: 51.25rem) {
+        .unit-card-grid {
+          --unit-columns: var(--even-cols-2, 2);
+        }
+      }
+      @container (min-width: 77.5rem) {
+        .unit-card-grid {
+          --unit-columns: var(--even-cols-3, 3);
+        }
+      }
+      @container (min-width: 103.75rem) {
+        .unit-card-grid {
+          --unit-columns: var(--even-cols-4, 4);
+        }
+      }
+      @container (min-width: 130rem) {
+        .unit-card-grid {
+          --unit-columns: var(--even-cols-5, 5);
+        }
       }
       .unit-card-grid[data-columns='1'] {
         grid-template-columns: minmax(0, 1fr);
@@ -703,16 +751,7 @@ interface UnitCardEntry {
           padding: 28px 32px;
         }
       }
-      @container (max-width: 940px) {
-        .unit-card-grid:not([data-columns='1']) {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-      }
       @container (max-width: 580px) {
-        .unit-card-grid,
-        .unit-card-grid[data-columns] {
-          grid-template-columns: minmax(0, 1fr);
-        }
         .unit-card-banner {
           padding: 24px 22px;
         }
@@ -829,6 +868,8 @@ export class CourseLearningMap {
   );
 
   protected readonly gridColumns = evenGridColumns;
+  /** DLV-803: even column counts per row capacity; CSS picks one from the map's width. */
+  protected readonly gridColumnVars = evenGridColumnVars;
 
   /** Every lesson in course order for the side nav; a family's sub-units nest under it. */
   protected readonly navItems = computed<CourseLessonNavItem[]>(() => {
@@ -1057,7 +1098,7 @@ export class CourseLearningMap {
 
   private practiceQueryParams(unit: CourseLearningUnit): Record<string, string> | null {
     return this.pathId() === 'learn' && !this.usesQuestionBankPractice(unit)
-      ? { pattern: `${this.courseId()}:${unit.id}` }
+      ? patternContextQuery(`${this.courseId()}:${unit.id}`)
       : null;
   }
 

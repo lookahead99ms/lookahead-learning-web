@@ -12,3 +12,18 @@ export function evenGridColumns(count: number, max = 3): number {
   }
   return max;
 }
+
+/**
+ * DLV-803: the even column count for every row capacity a responsive card grid can reach, as
+ * CSS custom properties (`--even-cols-2: 2; --even-cols-3: 2; …`). CSS works out the capacity
+ * from the grid's width and a rem card minimum (container queries), then reads the matching
+ * value, so browser zoom changes the number of columns while 4 cards still pair up as 2×2 or a
+ * row of 4, never 3 + 1.
+ */
+export function evenGridColumnVars(count: number, maxCapacity = 5): string {
+  const vars: string[] = [];
+  for (let capacity = 2; capacity <= maxCapacity; capacity++) {
+    vars.push(`--even-cols-${capacity}: ${evenGridColumns(count, capacity)}`);
+  }
+  return vars.join('; ');
+}

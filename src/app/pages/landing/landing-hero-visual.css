@@ -1,5 +1,13 @@
 /* Styles owned by the hero-card illustration component. */
 *, *::before, *::after { box-sizing: border-box; }
+/* DLV-803: the space between a card's parts follows the card's width but never takes more than a
+   small share of the window height, so every slide fits above the fold on a laptop. The card's
+   flexible part (path rows, chart, queue, window sketch, stack drawing, plan steps) takes any spare
+   room; its minimum is capped by the window height too. */
+:host {
+  --hv-gap: clamp(8px, min(3cqi, 1.2svh), 22px);
+  --hv-inset: clamp(8px, 1.4svh, 14px);
+}
 :host .chapter {
   margin: 0;
   color: var(--panel-accent);
@@ -17,21 +25,21 @@
 }
 :host h2 {
   font:
-    750 clamp(22px, 6.4cqi, 46px)/1.14 system-ui,
+    750 clamp(22px, 0.518rem + 4.21cqi, 46px)/1.14 system-ui,
     sans-serif;
   letter-spacing: -0.03em;
   text-wrap: balance;
   color: var(--panel-ink);
-  margin: 0 0 clamp(12px, 3cqi, 22px);
+  margin: 0 0 var(--hv-gap);
 }
 :host p {
   color: var(--panel-muted);
-  font-size: clamp(14px, 3cqi, 18px);
+  font-size: clamp(14px, 0.243rem + 1.97cqi, 18px);
   line-height: 1.55;
   margin: 0 0 12px;
 }
 :host p.small {
-  font-size: clamp(13px, 2.4cqi, 15px);
+  font-size: clamp(13px, 0.194rem + 1.58cqi, 15px);
   margin: 0;
 }
 :host [data-path='learn'] {
@@ -95,7 +103,7 @@
 .hv-path-title {
   display: block;
   color: var(--panel-ink);
-  font-size: clamp(15px, 3.6cqi, 21px);
+  font-size: clamp(15px, 0.292rem + 2.37cqi, 21px);
   font-weight: 650;
   line-height: 1.35;
 }
@@ -103,7 +111,7 @@
   display: block;
   margin-top: 3px;
   color: var(--panel-muted);
-  font-size: clamp(13px, 2.7cqi, 16px);
+  font-size: clamp(13px, 0.219rem + 1.77cqi, 16px);
   line-height: 1.5;
 }
 /* Diagnose: a latency sketch, then the hypothesis, signal and trade-off checklist. */
@@ -112,8 +120,8 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  min-height: clamp(110px, 26cqi, 260px);
-  margin: 0 0 clamp(12px, 2.6cqi, 20px);
+  min-height: min(clamp(110px, 26cqi, 260px), 18svh);
+  margin: 0 0 var(--hv-gap);
   padding: 30px 14px 26px;
   border: 1px solid var(--panel-line);
   border-radius: 14px;
@@ -121,9 +129,10 @@
 }
 .hv-chart-art {
   display: block;
-  flex: 1;
+  flex: 1 1 0;
   width: 100%;
-  min-height: 60px;
+  height: auto;
+  min-height: 44px;
   overflow: visible;
 }
 .hv-chart-grid {
@@ -195,7 +204,7 @@
   gap: 12px;
   padding: clamp(8px, 1.8cqi, 12px) 0;
   border-top: 1px solid var(--panel-line);
-  font-size: clamp(14px, 3cqi, 17px);
+  font-size: clamp(14px, 0.243rem + 1.97cqi, 17px);
   line-height: 1.45;
 }
 .hv-steps b {
@@ -225,17 +234,17 @@
   color: var(--panel-ink);
 }
 :host .hv-foot {
-  margin: clamp(10px, 2cqi, 14px) 0 0;
-  padding-top: clamp(10px, 2cqi, 14px);
+  margin: var(--hv-inset) 0 0;
+  padding-top: var(--hv-inset);
   border-top: 1px solid var(--panel-line);
-  font-size: clamp(13px, 2.7cqi, 16px);
+  font-size: clamp(13px, 0.219rem + 1.77cqi, 16px);
 }
 :host .hv-foot-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 6px 18px;
   margin: 4px 0 0;
-  font-size: clamp(13px, 2.5cqi, 15px);
+  font-size: clamp(13px, 0.203rem + 1.64cqi, 15px);
 }
 /* Design: one question as a three-step ladder from Learn to Blaze. */
 .hv-queue {
@@ -244,9 +253,9 @@
   flex-direction: column;
   justify-content: center;
   gap: 10px;
-  min-height: clamp(84px, 18cqi, 190px);
-  margin: 4px 0 clamp(14px, 3cqi, 22px);
-  padding: 14px;
+  min-height: min(clamp(84px, 18cqi, 190px), 10svh);
+  margin: 4px 0 var(--hv-gap);
+  padding: var(--hv-inset);
   border: 1px solid var(--panel-line);
   border-radius: 14px;
   background: color-mix(in srgb, #000 16%, transparent);
@@ -262,7 +271,7 @@
   border: 1px solid var(--panel-line);
   border-radius: 8px;
   color: var(--panel-ink);
-  font-size: clamp(12px, 2.6cqi, 15px);
+  font-size: clamp(12px, 0.211rem + 1.71cqi, 15px);
   font-weight: 650;
 }
 .hv-queue-arrow {
@@ -284,7 +293,7 @@
   border-radius: 6px;
   color: var(--panel-ink);
   font:
-    600 clamp(12px, 2.6cqi, 15px) / 1 ui-monospace,
+    600 clamp(12px, 0.211rem + 1.71cqi, 15px) / 1 ui-monospace,
     monospace;
 }
 .hv-queue-slots span.filled {
@@ -317,7 +326,7 @@
   grid-template-columns: var(--rung) minmax(0, 1fr);
   align-items: start;
   gap: clamp(12px, 3cqi, 18px);
-  padding-bottom: clamp(12px, 3cqi, 20px);
+  padding-bottom: var(--hv-gap);
 }
 .hv-ladder li:last-child {
   flex: none;
@@ -358,7 +367,7 @@
   align-items: center;
   gap: 4px 10px;
   color: var(--panel-ink);
-  font-size: clamp(15px, 3.6cqi, 21px);
+  font-size: clamp(15px, 0.292rem + 2.37cqi, 21px);
   font-weight: 650;
   line-height: 1.35;
 }
@@ -366,13 +375,13 @@
   display: block;
   margin-top: 4px;
   color: var(--panel-muted);
-  font-size: clamp(13px, 2.7cqi, 16px);
+  font-size: clamp(13px, 0.219rem + 1.77cqi, 16px);
   line-height: 1.5;
 }
 /* Reason: the code with its invariant line marked, and a small window sketch. */
 .hv-code {
-  margin: 0 0 clamp(12px, 3cqi, 20px);
-  padding: 14px 18px;
+  margin: 0 0 var(--hv-gap);
+  padding: var(--hv-inset) 18px;
   border: 1px solid var(--panel-line);
   border-left: 3px solid var(--panel-accent);
   border-radius: 12px;
@@ -384,7 +393,7 @@
   color: var(--panel-muted);
   background: transparent;
   font:
-    clamp(12px, 2.9cqi, 17px) / 1.8 ui-monospace,
+    clamp(12px, 0.235rem + 1.91cqi, 17px) / 1.6 ui-monospace,
     monospace;
 }
 .hv-code-line {
@@ -420,16 +429,16 @@
   flex-direction: column;
   justify-content: center;
   gap: 8px;
-  min-height: clamp(96px, 22cqi, 200px);
-  margin-bottom: clamp(10px, 2.4cqi, 16px);
-  padding: 14px;
+  min-height: min(clamp(96px, 22cqi, 200px), 10svh);
+  margin-bottom: var(--hv-gap);
+  padding: var(--hv-inset);
   border: 1px solid var(--panel-line);
   border-radius: 14px;
   background: color-mix(in srgb, #000 16%, transparent);
 }
 .hv-moves {
   display: grid;
-  margin: 0 0 clamp(10px, 2.4cqi, 16px);
+  margin: 0 0 var(--hv-gap);
   padding: 0;
   list-style: none;
 }
@@ -441,7 +450,7 @@
   padding: clamp(5px, 1.2cqi, 8px) 0;
   border-top: 1px solid var(--panel-line);
   color: var(--panel-ink);
-  font-size: clamp(13px, 2.8cqi, 16px);
+  font-size: clamp(13px, 0.227rem + 1.84cqi, 16px);
   line-height: 1.45;
 }
 .hv-moves b {
@@ -469,7 +478,7 @@
   border-radius: 8px;
   color: var(--panel-muted);
   font:
-    600 clamp(13px, 3cqi, 17px) / 1 ui-monospace,
+    600 clamp(13px, 0.243rem + 1.97cqi, 17px) / 1 ui-monospace,
     monospace;
 }
 .hv-cell.in-window {
@@ -514,12 +523,12 @@
 .journey > span {
   color: var(--panel-accent);
   font:
-    clamp(24px, 5cqi, 34px)/1.2 Georgia,
+    clamp(24px, 0.405rem + 3.29cqi, 34px)/1.2 Georgia,
     serif;
 }
 :host .journey h2 {
   margin: 0;
-  font-size: clamp(18px, 4.6cqi, 27px);
+  font-size: clamp(18px, 0.373rem + 3.02cqi, 27px);
 }
 :host .journey p {
   margin: 4px 0 0;
@@ -556,7 +565,7 @@
   border-radius: 8px;
   background: color-mix(in srgb, var(--panel-accent) 14%, transparent);
   color: var(--panel-ink);
-  font-size: clamp(11px, 2.4cqi, 13px);
+  font-size: clamp(11px, 0.194rem + 1.58cqi, 13px);
   font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -573,7 +582,7 @@
 }
 :host .hv-week-note {
   margin: 10px 0 0;
-  font-size: clamp(13px, 2.5cqi, 15px);
+  font-size: clamp(13px, 0.203rem + 1.64cqi, 15px);
 }
 
 /* Build (AI Builds): an application where the AI model is one service among others. A request
@@ -666,7 +675,7 @@
 .hv-build-foot {
   display: grid;
   gap: clamp(10px, 2.4cqi, 16px);
-  margin-top: clamp(12px, 2.6cqi, 18px);
+  margin-top: var(--hv-gap);
 }
 .hv-tiles {
   display: grid;
@@ -686,7 +695,7 @@
   border-radius: 10px;
   background: color-mix(in srgb, var(--panel-accent) 9%, transparent);
   color: var(--panel-ink);
-  font-size: clamp(12.5px, 2.6cqi, 15px);
+  font-size: clamp(12.5px, 0.211rem + 1.71cqi, 15px);
   font-weight: 600;
   line-height: 1.25;
 }
@@ -709,7 +718,7 @@
   display: flex;
   gap: 8px;
   color: var(--panel-ink);
-  font-size: clamp(13px, 2.6cqi, 15px);
+  font-size: clamp(13px, 0.211rem + 1.71cqi, 15px);
   line-height: 1.4;
 }
 .hv-checks li::before {

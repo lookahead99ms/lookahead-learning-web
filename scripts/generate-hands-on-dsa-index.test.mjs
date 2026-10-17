@@ -6,6 +6,7 @@ import { test } from 'node:test';
 import {
   applyHandsOnPreparationPlan,
   applyHandsOnRankingPlan,
+  approachFamilySummaries,
   buildHandsOnDsaIndex,
 } from './generate-hands-on-dsa-index.mjs';
 
@@ -275,10 +276,68 @@ test('rejects excluded evidence sources and incomplete rank sequences', () => {
 
   const allowedPlan = structuredClone(basePlan);
   allowedPlan.sourceRegistry[0].includedInRanking = true;
-  allowedPlan.problems[1].interviewRank = 3;
+  allowedPlan.problems[1].studyOrder = 3;
   assert.throws(
     () => applyHandsOnRankingPlan(groups, allowedPlan),
-    /interviewRank values must be contiguous from 1/,
+    /studyOrder values must be contiguous from 1/,
+  );
+  // DLV-965 (2026-10-17): a merged problem leaves a gap in the interview ranks, which is allowed.
+  const gapPlan = structuredClone(basePlan);
+  gapPlan.sourceRegistry[0].includedInRanking = true;
+  gapPlan.problems[1].interviewRank = 3;
+  assert.equal(applyHandsOnRankingPlan(groups, gapPlan).groups[0].problems[1].interviewRank, 3);
+  // Two unrelated problems still cannot share a rank.
+  const clashPlan = structuredClone(basePlan);
+  clashPlan.sourceRegistry[0].includedInRanking = true;
+  clashPlan.problems[1].interviewRank = 1;
+  assert.throws(() => applyHandsOnRankingPlan(groups, clashPlan), /duplicate interviewRank 1/);
+});
+
+test('an Approach-N problem shares its original\'s interview rank and keeps its own study order (DLV-965)', () => {
+  const groups = [{ id: 'one', problems: [{ id: 'alpha' }, { id: 'alpha-approach-2' }, { id: 'beta' }] }];
+  const entry = (problemId, interviewRank, studyOrder) => ({
+    problemId,
+    interviewRank,
+    studyOrder,
+    rankingVersion: 'candidate',
+    lastReviewedAt: '2026-09-06',
+    evidenceConfidence: 'low',
+    rankingReasons: ['Reason.'],
+    sourceSignals: [
+      { sourceId: 'owned', signalType: 'owned-editorial-rubric', observedAt: '2026-09-06', contribution: 'Rubric.' },
+    ],
+  });
+  const plan = {
+    schemaVersion: 'hands-on-dsa-ranking/v1',
+    rankingVersion: 'candidate',
+    status: 'candidate',
+    catalogTarget: 730,
+    publishedProblemCount: 3,
+    lastReviewedAt: '2026-09-06',
+    methodology: 'Synthetic test methodology.',
+    sourceRegistry: [
+      {
+        id: 'owned',
+        kind: 'owned-editorial',
+        includedInRanking: true,
+        accessPolicy: 'owned',
+        automationPolicy: 'allowed',
+        agePolicy: 'Refresh on release.',
+        limitations: 'Editorial.',
+        contribution: 'Rubric.',
+        description: 'Owned source.',
+      },
+    ],
+    problems: [entry('alpha', 1, 1), entry('alpha-approach-2', 1, 2), entry('beta', 2, 3)],
+  };
+  const ranked = applyHandsOnRankingPlan(groups, plan).groups[0].problems;
+  assert.deepEqual(
+    ranked.map(({ id, interviewRank, studyOrder }) => ({ id, interviewRank, studyOrder })),
+    [
+      { id: 'alpha', interviewRank: 1, studyOrder: 1 },
+      { id: 'alpha-approach-2', interviewRank: 1, studyOrder: 2 },
+      { id: 'beta', interviewRank: 2, studyOrder: 3 },
+    ],
   );
 });
 
@@ -422,4 +481,43 @@ test('emits an empty index when the optional DSA courses are absent', async () =
 
   assert.deepEqual(index.totals, { groups: 0, problemPlacements: 0, distinctProblems: 0 });
   assert.deepEqual(index.groups, []);
+});
+
+test('carries approach families as sibling locations only, without patterns or bounds', () => {
+  const sibling = (problemId, approach) => ({
+    problemId,
+    approach,
+    title: `Grid Count (Approach-${approach})`,
+    path: 'learn',
+    courseId: 'algorithmic-patterns',
+    questionId: `route-${problemId}`,
+    pattern: 'SPOILER_PATTERN',
+    complexity: { time: 'O(n)', space: 'O(1)' },
+    whenToPrefer: 'SPOILER_REASON',
+  });
+  const problems = new Map([
+    [
+      'grid-count',
+      { id: 'grid-count', approachFamily: { approach: 1, bestProblemId: 'grid-count', siblings: [sibling('grid-count-approach-3', 3), sibling('grid-count-approach-2', 2)] } },
+    ],
+    ['plain', { id: 'plain' }],
+    ['broken', { id: 'broken', approachFamily: { approach: 1, bestProblemId: 'broken', siblings: [{ problemId: 'x' }] } }],
+  ]);
+  const families = approachFamilySummaries(problems);
+  assert.deepEqual(Object.keys(families), ['grid-count']);
+  assert.deepEqual(
+    families['grid-count'].siblings.map(({ problemId, approach }) => [problemId, approach]),
+    [
+      ['grid-count-approach-2', 2],
+      ['grid-count-approach-3', 3],
+    ],
+  );
+  assert.equal(families['grid-count'].siblings[0].questionId, 'route-grid-count-approach-2');
+  assert.doesNotMatch(JSON.stringify(families), /SPOILER|O\(n\)/);
+});
+
+test('the built index always carries an approachFamilies map', async () => {
+  const root = await fixture();
+  const index = await buildHandsOnDsaIndex(root, ['learn/algorithmic-patterns']);
+  assert.deepEqual(index.approachFamilies, {});
 });

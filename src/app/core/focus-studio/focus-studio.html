@@ -7,6 +7,7 @@
   [style.--rail-share]="railShare() + '%'"
   [style.--reference-share]="effectiveShare() + '%'"
   [style.--peek-top]="peekTop() + 'px'"
+  [style.--peek-left]="peekLeft() + 'px'"
   [attr.aria-label]="problem().title + ' Focus Studio'"
 >
   <header class="studio-heading">
@@ -56,6 +57,11 @@
     <!-- Practice tools (user-approved preview, 2026-10-05): a timed attempt, browser-only. -->
     <app-studio-timer [timer]="timer" [available]="mode() === 'practice'" (start)="startTimer()" />
       <div class="workspace-actions" role="group" aria-label="Solution and visualization">
+        <!-- DLV-965 (user, 2026-10-16): the approach switch moved from the title row to sit beside "Show
+             solution", same look and size; it names no pattern or method (no spoilers). -->
+        @if (hasOtherApproaches()) {
+          <app-optimal-approaches class="workspace-approach-switch" [family]="problem().approachFamily" variant="label" />
+        }
         @for (action of actions(); track action) {
         @switch (action) {
           @case ('locked') {
@@ -98,6 +104,23 @@
             </button>
           }
         }
+        }
+        <!-- Once the solution or the approach is open: jump to the "Other optimal approaches" card. -->
+        @if (otherApproachesShown()) {
+          <button
+            type="button"
+            class="action-other-approaches"
+            title="Jump to the other approaches with the same optimal bounds"
+            (click)="showOtherApproaches()"
+          >
+            <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M10 6h10M10 12h10M10 18h10" />
+              <circle cx="5" cy="6" r="1.4" />
+              <circle cx="5" cy="12" r="1.4" />
+              <circle cx="5" cy="18" r="1.4" />
+            </svg>
+            Other optimal solutions
+          </button>
         }
       </div>
   </header>
@@ -189,7 +212,11 @@
       [attr.aria-labelledby]="problem().id + '-studio-tab-approach'"
       [hidden]="mode() !== 'approach' || gated()"
     >
-      <app-studio-approach [problem]="problem()" />
+      <!-- No spoilers (user, 2026-10-16): the approach names the method, so it is not even in the page
+           until the learner opens this tab. -->
+      @if (opened().has('approach')) {
+        <app-studio-approach [problem]="problem()" />
+      }
     </section>
     @if (gated()) {
       <app-studio-timer-gate
@@ -325,6 +352,7 @@
         >
           <!-- Recall as a card grid (user-approved preview, option B, 2026-10-06): two columns of cards,
                then the connected ideas and Finish and review at the full workspace width. -->
+          @if (opened().has('recall')) {
           <app-studio-recall-grid [problemId]="problem().id" [cards]="recallCards()" />
           <details class="context-disclosure recall-connected">
             <summary>Keep these ideas connected</summary>
@@ -341,6 +369,7 @@
             <h4>When the contract changes</h4>
             <p>{{ problem().practice.canonicalApproach.whenAssumptionChanges }}</p>
           </details>
+          }
           <!-- Finish and review (rating, review date, notes, next problems), supplied by the problem page. -->
           <ng-content select="[studioFinish]" />
         </section>
@@ -477,6 +506,8 @@
       >{{ problem().practice.canonicalApproach.whenAssumptionChanges }}
     </p>
   </details>
+  <!-- DLV-965: the other equally optimal approaches, shown only with the approach rationale. -->
+  <app-optimal-approaches [family]="problem().approachFamily" variant="block" idPrefix="rationale-approaches" />
   <details class="rationale-card mistakes-card" open>
     <summary>
       <svg

@@ -284,44 +284,56 @@
   </section>
   <!-- DLV-209 (user, 2026-10-15): plans and prices for every visitor, just before the Essence. -->
   <app-home-pricing />
-  <section class="brand-story home-essence" aria-labelledby="brand-story-title">
+  <!-- The Essence (user, 2026-10-16/17): the wordmark explains itself and joins, the three
+       statements draw in, then the arrow climbs the steps from the obstacle to "Look ahead". -->
+  <section
+    #essenceCard
+    class="brand-story home-essence"
+    [attr.data-motion]="essenceStill() ? 'still' : null"
+    [attr.data-skip]="essenceSkip() ? '' : null"
+    aria-labelledby="brand-story-title"
+  >
     <div class="brand-story-heading">
       <p class="brand-context">Our platform</p>
       <h2 id="brand-story-title" data-sidebar-label="The essence">The Essence of Look Ahead</h2>
     </div>
-    <app-platform-brand-illustration aria-hidden="true" />
-    <div class="brand-story-copy">
-      <p class="brand-opening">Look <span>ahead.</span></p>
-      <p class="brand-learning">
-        <span class="brand-line">
-          <strong class="brand-learn">Learn</strong> to <strong class="brand-code">code</strong>
-          and <strong class="brand-explore">explore</strong>
-        </span>
-        <span class="brand-line brand-disciplines">AI, algorithms, and architecture.</span>
-      </p>
-      <p class="brand-growth">
-        <span class="brand-line">
-          <strong class="brand-grow">Grow</strong> your <strong>engineering capabilities</strong>,
-        </span>
-        <span class="brand-line">strengthen your <strong>competencies</strong>, and</span>
-        <span class="brand-line">
-          build expertise in your chosen <strong>specializations</strong>.
-        </span>
-      </p>
-      <div class="brand-principles">
-        <p class="brand-obstacle">
-          <span class="brand-line">Understand the <strong>obstacle.</strong></span>
-          <span class="brand-line">Find the <em>way.</em></span>
-        </p>
-        <app-platform-brand class="symbol-only brand-principles-logo" aria-hidden="true" />
-        <p class="brand-principle">
-          <span class="brand-line">Understand the <strong>invariant.</strong></span>
-          <span class="brand-line">Practice the <em>reasoning.</em></span>
-        </p>
-      </div>
-    </div>
+    <app-platform-brand class="symbol-only essence-corner-mark" aria-hidden="true" />
+    <app-wordmark-key
+      [stage]="essenceCard"
+      [settled]="essenceSettled()"
+      [still]="essenceStill()"
+      (restarted)="essenceRestart()"
+      (finished)="essenceFinished()"
+      (stillChange)="essenceStill.set($event)"
+      (passed)="essenceLoop.update((round) => round + 1)"
+      (skipped)="essenceSkipToEnd()"
+      (cycle)="essenceCycle($event)"
+    />
+    <app-essence-steps
+      [play]="essenceWordmarkDone()"
+      [still]="essenceStill()"
+      [loop]="essenceLoop()"
+      [instant]="essenceSkip()"
+      [away]="essenceAway()"
+      (settled)="essenceSettled.set(true)"
+    />
+    <!-- The wordmark as one sentence: it moves here from under the wordmark and stays. -->
+    <p class="essence-sentence" [class.shown]="essenceSentence()">
+      @for (line of essenceSentenceLines; track $index) {
+        <span class="essence-sentence-line">
+          @for (part of line; track $index) {
+            <span [class.essence-key-word]="part.colour" [style.color]="part.colour ?? null">{{ part.text }}</span>
+          }
+        </span>{{ ' ' }}
+      }
+    </p>
   </section>
+  <!-- The reasoning pair lives here only (user, 2026-10-17): out of the header and page margins. -->
   <footer class="landing-footer home-footer">
     <p>Learn. Grow. Blaze.</p>
+    <p class="footer-statements">
+      <app-reasoning-prompt variant="reasoning" />
+      <app-learning-prompt />
+    </p>
   </footer>
 </main>

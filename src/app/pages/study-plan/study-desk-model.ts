@@ -64,4 +64,19 @@ export interface StudyDeskEntry extends StudyDeskActivity {
   outcome: string;
   note: string;
   refreshLinks: { title: string; route: string[] }[];
+  /**
+   * DLV-962: present when the problem has several equally optimal approaches. Numbers and routes
+   * only (no spoilers); `chosen` is the one the learner last opened from this plan item, or the
+   * plan's own problem.
+   */
+  approaches?: StudyDeskApproach[];
+  /** The approach the learner used, when the item is complete and a choice was recorded. */
+  usedApproach?: number;
+}
+
+export interface StudyDeskApproach {
+  approach: number;
+  problemId: string;
+  route: string[];
+  chosen: boolean;
 }

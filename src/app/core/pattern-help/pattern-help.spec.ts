@@ -94,17 +94,43 @@ describe('PatternHelp', () => {
     root.querySelector<HTMLButtonElement>('.reveal')!.click();
     fixture.detectChanges();
     expect(fixture.componentInstance.revealed()).toBe(true);
-    expect(root.querySelector('.answer h4')?.textContent).toBe('Two Pointers');
+    // One compact row (user, 2026-10-16): the name once, then a small "Learn more" button.
+    const answer = root.querySelector<HTMLElement>('.answer')!;
+    expect(answer.querySelector('h4')).toBeNull();
+    expect(answer.querySelector('.answer-name')?.textContent).toBe("This problem's pattern: Two Pointers");
+    const visibleText = (element: Element): string =>
+      [...element.childNodes]
+        .filter((node) => !(node instanceof HTMLElement && node.classList.contains('visually-hidden')))
+        .map((node) => (node instanceof HTMLElement ? visibleText(node) : (node.textContent ?? '')))
+        .join('');
+    expect(visibleText(answer).match(/Two Pointers/g)).toHaveLength(1);
     const link = root.querySelector<HTMLAnchorElement>('.lesson-link')!;
-    expect(link.textContent).toContain('Two Pointers lesson');
-    expect(link.textContent).not.toContain('Open the');
-    expect(link.textContent).toContain('(opens in a new tab)');
+    expect(visibleText(link).trim()).toBe('Learn more');
+    expect(link.textContent?.replace(/\s+/g, ' ').trim()).toBe('Learn more about Two Pointers (opens in a new tab)');
+    expect(link.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
+    expect(link.classList).not.toContain('action-link');
     expect(link.getAttribute('href')).toBe('/learn/algorithmic-patterns/two-pointers');
     expect(link.getAttribute('target')).toBe('_blank');
+    // Focus moves from the vanished button to the answer row.
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    fixture.detectChanges();
+    expect(document.activeElement).toBe(answer);
     // Hiding the pattern in the header hides it here too.
     fixture.componentInstance.revealed.set(false);
     fixture.detectChanges();
     expect(root.querySelector('.answer')).toBeNull();
+  });
+
+  it('locks the page behind the dialog while it is open', async () => {
+    const { fixture, root } = await setup();
+    const { ScrollLockService } = await import('../scroll-lock/scroll-lock');
+    const lock = TestBed.inject(ScrollLockService);
+    expect(lock.locked()).toBe(true);
+    expect(document.body.style.overflow).toBe('hidden');
+    root.querySelector<HTMLButtonElement>('.close')!.click();
+    fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(lock.locked()).toBe(false);
   });
 
   it('still offers the reveal when the signals do not load', async () => {

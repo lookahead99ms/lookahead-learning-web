@@ -136,6 +136,7 @@ const LANGUAGE_NAMES: Record<string, string> = { java: 'Java', python: 'Python',
         color: var(--text-subtle);
       }
       .run-locally-body :is(ul, ol) {
+        max-width: var(--reading-measure, 72ch);
         margin: 0;
         padding-left: 1.2rem;
         line-height: 1.6;
