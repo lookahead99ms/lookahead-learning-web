@@ -934,6 +934,109 @@ describe('StudyPlanPage', () => {
     expect(harness.routeNativeElement!.textContent).toContain('Continue to Learn');
   });
 
+  it('sizes the planner for browser zoom without changing the plan', async () => {
+    // DLV-803: browser zoom changes the CSS viewport, so the planner uses the shared browse width
+    // and gutter, course and plan grids fill as many columns as fit, and every fluid heading keeps
+    // a rem base so zooming in still enlarges it.
+    await TestBed.inject(StudyPlanAccount).initialize();
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/study-plan?create=1&creation=choice', StudyPlanPage);
+    harness.detectChanges();
+    expect(harness.routeNativeElement!.textContent).toContain('How would you like to begin?');
+    const css = [...window.document.querySelectorAll('style')]
+      .map((style) => style.textContent ?? '')
+      .filter((text) => /\.(study-plan-page|plan-type-grid)|h1\[/.test(text))
+      .join('\n')
+      .replace(/\s+/g, ' ');
+    expect(css).toMatch(
+      /\.study-plan-page\[[^\]]+\] \{[^}]*max-width: var\(--page-max-browse\);[^}]*padding: 48px var\(--page-gutter\) 64px;/,
+    );
+    expect(css).not.toMatch(/\.study-plan-page\[[^\]]+\] \{[^}]*4vw/);
+    expect(css).toMatch(
+      /\.builder-step\[[^\]]+\] \.offering-checklist\[[^\]]+\] \{[^}]*grid-template-columns: repeat\(auto-fill, minmax\(min\(100%, 15rem\), 1fr\)\);/,
+    );
+    expect(css).toMatch(
+      /\.plan-card-grid\[[^\]]+\] \{[^}]*grid-template-columns: repeat\(auto-fill, minmax\(min\(100%, 22rem\), 1fr\)\);/,
+    );
+    // DLV-803 balance review: the title is sized to stay on one line so the form starts on screen.
+    expect(css).toMatch(/h1\[[^\]]+\] \{[^}]*font-size: clamp\(2rem, 1\.5rem \+ 1\.2vw, 2\.75rem\);/);
+    expect(css).toMatch(/\.plan-type-card\[[^\]]+\] strong\[[^\]]+\] \{[^}]*font-size: clamp\(/);
+    const fluidType = [...css.matchAll(/font-size: clamp\(([^;]+)\);/g)].map((match) => match[1]);
+    expect(fluidType.length).toBeGreaterThanOrEqual(10);
+    for (const args of fluidType) expect(args.split(',')[1], args).toMatch(/rem/);
+  });
+
+  it('opens plan setup with one heading and one line before the first inputs', async () => {
+    // DLV-803 balance review: the builder card keeps one heading with its own action on that line
+    // and one line of guidance; the step tabs number the step, so no "Step 1 of 5" eyebrow repeats.
+    await TestBed.inject(StudyPlanAccount).initialize();
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/study-plan', StudyPlanPage);
+    harness.detectChanges();
+    const root = harness.routeNativeElement as HTMLElement;
+    expect(root.querySelector('.intro')!.classList).toContain('creation-intro');
+    const headings = [...root.querySelectorAll('main h1, main h2, main h3')].map(
+      (heading) => `${heading.tagName}:${heading.textContent!.trim()}`,
+    );
+    expect(headings).toEqual([
+      'H1:A plan that bends with your week.',
+      'H2:Build your own plan',
+      'H3:Plan setup',
+    ]);
+    const header = root.querySelector('.plan-builder > .builder-header')!;
+    expect(header.querySelector('.eyebrow')).toBeNull();
+    const titleRow = header.querySelector('.builder-title-row')!;
+    expect(titleRow.querySelector('h2#builder-heading')).not.toBeNull();
+    expect(titleRow.querySelector('button')!.textContent!.trim()).toBe('Back to plan types');
+    const guidance = [...header.querySelectorAll(':scope > p')];
+    expect(guidance).toHaveLength(1);
+    expect(guidance[0].textContent!.replace(/\s+/g, ' ').trim()).toBe(
+      'Choose one part at a time. Your selections remain a temporary draft until you review the schedule and save it.',
+    );
+    const stepHeading = root.querySelector('.builder-step .builder-step-heading')!;
+    expect(stepHeading.querySelector('h3#wizard-step-heading')!.textContent!.trim()).toBe('Plan setup');
+    expect(stepHeading.querySelector('p')!.textContent!.trim()).toBe(
+      'Start with the outcome and time you can realistically protect.',
+    );
+    expect(root.querySelector('.builder-step .eyebrow')).toBeNull();
+    expect(root.textContent).not.toContain('Step 1 of 5');
+    expect(root.textContent).not.toContain('Start with the time you actually have.');
+    // The step tabs still say which step is current.
+    const current = root.querySelector('.builder-progress [aria-current="step"]')!;
+    expect(current.querySelector('span')!.textContent!.trim()).toBe('Step 1');
+    expect(current.querySelector('strong')!.textContent!.trim()).toBe('Setup');
+    // The heading order stays h1 > h2 > h3, so the step heading must render smaller than the card's.
+    const css = [...window.document.querySelectorAll('style')]
+      .map((style) => style.textContent ?? '')
+      .filter((text) => /\.builder-step\[/.test(text))
+      .join('\n')
+      .replace(/\s+/g, ' ');
+    expect(css).toMatch(
+      /\.builder-step\[[^\]]+\] h3\[[^\]]+\] \{[^}]*font-size: clamp\(1\.125rem, 0\.95rem \+ 0\.4vw, 1\.375rem\);/,
+    );
+    expect(css).toMatch(/\.builder-title-row\[[^\]]+\] > button\[[^\]]+\] \{[^}]*min-height: 44px;/);
+  });
+
+  it('opens every later step with its heading and line, without a repeated step count', async () => {
+    await TestBed.inject(StudyPlanAccount).initialize();
+    const harness = await RouterTestingHarness.create();
+    const page: any = await harness.navigateByUrl('/study-plan', StudyPlanPage);
+    harness.detectChanges();
+    const root = harness.routeNativeElement as HTMLElement;
+    for (const [step, title] of [
+      ['learn', 'Choose Learn courses'],
+      ['review', 'Review and save'],
+    ]) {
+      await page.goToWizardStep(step, false);
+      harness.detectChanges();
+      const heading = root.querySelector('.builder-step .builder-step-heading')!;
+      expect(heading.querySelector('h3#wizard-step-heading')!.textContent!.trim()).toBe(title);
+      expect(heading.querySelector('p')).not.toBeNull();
+      expect(root.querySelector('.builder-step .eyebrow')).toBeNull();
+      expect(root.textContent).not.toMatch(/Step \d of 5/);
+    }
+  });
+
   it('keeps the current viewport when a learner selects a wizard step directly', async () => {
     const harness = await RouterTestingHarness.create();
     const page: any = await harness.navigateByUrl('/study-plan', StudyPlanPage);
@@ -1154,6 +1257,113 @@ describe('StudyPlanPage', () => {
     await (page as any).saveDraft();
     expect((page as any).plan().uniqueNewItems).toBe(1);
     expect((page as any).plan().days[0].assignments[0].id).toBe('canonical-array');
+  });
+
+  it('offers every approach of a family item and completes the item with either one (DLV-962)', async () => {
+    const problem: SearchDocument = {
+      ...document('grid-count', 'algorithmic-patterns', 'free'),
+      contentType: 'dsa-problem',
+      discoveryKind: 'practice',
+    };
+    const index = (families?: object) => ({
+      groups: [{ problems: [{ id: 'grid-count', studyOrder: 1 }] }],
+      ranking: { status: 'released', rankingVersion: 'rank-v1' },
+      ...(families ? { approachFamilies: families } : {}),
+    });
+    const families = {
+      'grid-count': {
+        approach: 1,
+        bestProblemId: 'grid-count',
+        siblings: [
+          {
+            problemId: 'grid-count-approach-2',
+            approach: 2,
+            title: 'grid-count (Approach-2)',
+            path: 'learn',
+            courseId: 'algorithmic-patterns',
+            questionId: 'grid-count-approach-2-route',
+          },
+        ],
+      },
+    };
+    const build = async (withFamilies: boolean) => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          { provide: ACCOUNT_FETCH, useValue: async () => new Response(null, { status: 401 }) },
+          {
+            provide: StudyPlanAccount,
+            useFactory: () => {
+              const account = new StudyPlanAccount();
+              Object.defineProperty(account, 'enabled', { value: false, configurable: true });
+              return account;
+            },
+          },
+          provideRouter([
+            { path: 'study-plan', component: StudyPlanPage },
+            { path: 'exit', component: PlannerExit },
+          ]),
+          {
+            provide: ContentService,
+            useValue: {
+              ...service,
+              getSearchIndex: () => of([problem]),
+              getHandsOnDsaIndex: () => of(index(withFamilies ? families : undefined)),
+            },
+          },
+          provideHttpClient(),
+          provideHttpClientTesting(),
+        ],
+      });
+      window.localStorage.clear();
+      await TestBed.inject(StudyPlanAccount).initialize();
+      const harness = await RouterTestingHarness.create();
+      const page: any = await harness.navigateByUrl(
+        '/study-plan?topics=learn:algorithmic-patterns&days=7&hours=1',
+        StudyPlanPage,
+      );
+      await page.generatePlan();
+      await page.saveDraft();
+      harness.detectChanges();
+      await new Promise((resolve) => setTimeout(resolve));
+      harness.detectChanges();
+      return { harness, page };
+    };
+    // The plan itself never changes: same items, minutes and order with or without families.
+    const plain = await build(false);
+    const plainDays = JSON.stringify(plain.page.plan().days);
+    expect(plain.page.deskEntries()[0].approaches).toBeUndefined();
+    const { harness, page } = await build(true);
+    expect(JSON.stringify(page.plan().days)).toBe(plainDays);
+
+    const item = page.plan().days[0].assignments[0];
+    const entry = () => page.deskEntries().find((candidate: any) => candidate.assignment.id === item.id);
+    expect(entry().approaches.map((option: any) => [option.approach, option.chosen])).toEqual([
+      [1, true],
+      [2, false],
+    ]);
+    const segments = [
+      ...harness.routeNativeElement!.querySelectorAll<HTMLAnchorElement>('.approach-switch a.segment'),
+    ];
+    expect(segments.map((link) => link.textContent?.trim())).toEqual(['Approach 1', 'Approach 2']);
+    expect(segments[1].getAttribute('href')).toBe(
+      `/learn/algorithmic-patterns/grid-count-approach-2-route?plan=browser&day=1&activity=${item.id}`,
+    );
+
+    // The learner picks Approach 2 and completes the plan item: the item is complete.
+    page.chooseDeskApproach({ entry: entry(), problemId: 'grid-count-approach-2' });
+    expect(entry().route).toEqual(['/', 'learn', 'algorithmic-patterns', 'grid-count-approach-2-route']);
+    page.toggleCompletion(item);
+    harness.detectChanges();
+    expect(entry().completed).toBe(true);
+    expect(entry().usedApproach).toBe(2);
+    expect(page.completion().done).toBe(1);
+    expect(harness.routeNativeElement!.textContent).toContain('Completed with Approach 2.');
+
+    // A completion recorded against the sibling problem counts for the plan's problem.
+    page.saved.set({ ...page.saved(), completedIds: ['grid-count-approach-2'] });
+    expect(page.completedIds().has('grid-count')).toBe(true);
+    expect(page.completedIds().has(item.id)).toBe(false);
   });
 
   it('waits for the released DSA ordering and supports retry without changing an existing plan', async () => {
@@ -2722,6 +2932,22 @@ describe('StudyPlanPage', () => {
         root: () => harness.routeNativeElement as HTMLElement,
       };
     }
+
+    it('keeps Back to plan types on the authored heading line', async () => {
+      // DLV-803 balance review: the card's own action sits at the right of its heading.
+      const { root } = await open([]);
+      const header = root().querySelector('.ready-made-panel > .creation-path-heading')!;
+      expect(header.querySelector('.eyebrow')!.textContent!.trim()).toBe('Authored study plan');
+      const titleRow = header.querySelector('.builder-title-row')!;
+      expect(titleRow.querySelector('h2#ready-made-heading')!.textContent!.trim()).toBe(
+        'Choose a preparation path',
+      );
+      expect(titleRow.querySelector('button')!.textContent!.trim()).toBe('Back to plan types');
+      expect(header.querySelector(':scope > p:last-child')!.textContent!.trim()).toBe(
+        'Choose a path, a preparation window, and your available hours per day.',
+      );
+      expect(root().querySelector('.intro')!.classList).toContain('creation-intro');
+    });
 
     it('pre-selects the free starter plan and keeps every other plan visible but marked', async () => {
       const { page, root } = await open([]);

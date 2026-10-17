@@ -1,4 +1,5 @@
 import { DsaProblemNavigation, DsaProblemPlacement, PatternProblemV1 } from './content.models';
+import { matchesPatternContext } from './pattern-context';
 
 export const FOCUS_STUDIO_PATTERN = 'core-data-structures:arrays';
 
@@ -19,7 +20,10 @@ export function usesFocusStudio(
   if (!contexts.some(({ handsOnPatternId }) => handsOnPatternId === FOCUS_STUDIO_PATTERN)) {
     return false;
   }
-  const requested = contexts.find(({ handsOnPatternId }) => handsOnPatternId === requestedPattern);
+  // `requestedPattern` is the `?pattern=` value: an opaque context id or an old readable id.
+  const requested = contexts.find(({ handsOnPatternId }) =>
+    matchesPatternContext(requestedPattern, handsOnPatternId),
+  );
   if (requested) return requested.handsOnPatternId === FOCUS_STUDIO_PATTERN;
   if (
     canonical.placements?.some(

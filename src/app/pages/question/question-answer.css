@@ -1,4 +1,6 @@
 /* The non-DSA branch alone owns this surface. DSA and theory keep their shells. */
+/* DLV-803: answer prose keeps the shared reading measure (--reading-measure, 72ch) on every
+   monitor; panels, code and tables still use the full column. */
 .non-dsa-answer-layout {
   display: flex;
   flex-direction: column;
@@ -20,7 +22,7 @@
   margin: 0 0 14px;
 }
 .non-dsa-answer-layout .reader-interview-panel p {
-  max-width: 112ch;
+  max-width: var(--reading-measure, 72ch);
   margin: 0;
   line-height: 1.8;
   overflow-wrap: anywhere;
@@ -48,7 +50,7 @@
 }
 .non-dsa-answer-layout .explanation-panel p:not(.panel-label) {
   margin: 0 0 20px;
-  max-width: 90ch;
+  max-width: var(--reading-measure, 72ch);
   line-height: 1.8;
   overflow-wrap: anywhere;
 }
@@ -107,7 +109,7 @@
   font-weight: 650;
 }
 .non-dsa-answer-layout .answer-version-notes li {
-  max-width: 90ch;
+  max-width: var(--reading-measure, 72ch);
   line-height: 1.8;
   overflow-wrap: anywhere;
 }
@@ -189,7 +191,7 @@
   overflow-wrap: anywhere;
 }
 .walkthrough-step p:not(.walkthrough-time) {
-  max-width: 90ch;
+  max-width: var(--reading-measure, 72ch);
   margin: 0 0 14px;
   line-height: 1.8;
   overflow-wrap: anywhere;

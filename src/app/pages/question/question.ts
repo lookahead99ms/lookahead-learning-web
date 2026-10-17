@@ -24,6 +24,7 @@ import {
   CourseModule,
   CourseOutline,
   CourseSection,
+  DsaApproachFamily,
   DsaProblemNavigation,
   DsaProblemNavigationLink,
   FoundationLessonV1,
@@ -58,6 +59,11 @@ import {
   orderedTheoryArticles,
   unitSceneForModule,
 } from '../../content/learning-units';
+import {
+  matchesPatternContext,
+  patternContextQuery,
+  patternContextToken,
+} from '../../content/pattern-context';
 import { authenticCodingVisual, relatedPracticeItems } from '../../content/pattern-experience';
 import { questionModuleIdForArticle, questionsForModule } from '../../content/question-discovery';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
@@ -139,7 +145,7 @@ import { catalogGroupForCourse, nextCatalogGroup } from '../../content/catalog-c
         text-align: start;
       }
       .studio-pilot-page .reader-question-panel .reader-question-title {
-        font-size: clamp(1.6rem, 2.6vw, 2.2rem);
+        font-size: clamp(1.6rem, 1.4rem + 0.9vw, 2.2rem);
         font-weight: 600;
         line-height: 1.2;
         letter-spacing: -0.01em;
@@ -197,7 +203,7 @@ import { catalogGroupForCourse, nextCatalogGroup } from '../../content/catalog-c
       .focus-studio-page .reader-question-title {
         margin: 0;
         font:
-          500 clamp(30px, 3vw, 42px) / 1.15 Georgia,
+          500 clamp(30px, 1.5rem + 1.1vw, 42px) / 1.15 Georgia,
           serif;
         letter-spacing: -0.03em;
         text-wrap: pretty;
@@ -814,6 +820,12 @@ import { catalogGroupForCourse, nextCatalogGroup } from '../../content/catalog-c
       .article-title-row .reader-question-title {
         min-width: 0;
       }
+      /* DLV-803: Grow and Look Ahead titles keep a rem base, so browser zoom enlarges them
+         (the shared clamp(1.35rem, 2.1vw, 2rem) held them at 32px from 100% to 150%). Learn
+         uses the Harbor title in styles.css; the DSA studio pages keep their own titles. */
+      main:not(.harbor-learn, .focus-studio-page) .article-title-row .reader-question-title {
+        font-size: clamp(1.35rem, 1.25rem + 0.75vw, 2rem);
+      }
       .lesson-subtitle {
         margin: 6px 0 0;
         max-width: 62ch;
@@ -838,7 +850,7 @@ import { catalogGroupForCourse, nextCatalogGroup } from '../../content/catalog-c
       .theory-section h2 {
         margin: 0 0 12px;
         color: var(--text-strong);
-        font-size: clamp(1.35rem, 3vw, 1.76rem);
+        font-size: clamp(1.35rem, 1.05rem + 0.8vw, 1.76rem);
         font-weight: 650;
         letter-spacing: -0.012em;
         line-height: 1.24;
@@ -1326,10 +1338,14 @@ export class Question implements OnInit {
       : false;
   });
 
+  /**
+   * DLV-962: the pattern travels as an opaque context id, so a hovered link or the address bar
+   * never names it before the learner reveals it.
+   */
   protected returnQueryParams(pattern?: string): Record<string, string> {
     const destination = this.returnDestination();
     return {
-      ...(pattern ? { pattern } : {}),
+      ...patternContextQuery(pattern),
       ...(destination ? { returnTo: this.router.serializeUrl(destination) } : {}),
     };
   }
@@ -1532,7 +1548,9 @@ export class Question implements OnInit {
     const text = this.canonicalProblem(item)?.description ?? '';
     return htmlText(text).trim();
   }
+  /** `?pattern=`: the opaque context id (DLV-962), or an old readable id from before it. */
   protected readonly navigationContextId = signal('');
+  protected readonly patternContextToken = patternContextToken;
   protected readonly handsOnPatternTitles = signal<Record<string, string>>({});
   private readonly focusStudioNeighbors = signal<
     Record<string, Pick<DsaProblemNavigation, 'previous' | 'next'>>
@@ -1571,13 +1589,32 @@ export class Question implements OnInit {
     return lesson.essentialProblems?.find(({ id }) => id === reference.problemId) ?? null;
   }
 
+  /** DLV-962: lets a study-plan item scheduled as another approach keep its plan context here. */
+  protected readonly readerApproachFamily = computed(() => {
+    const item = this.question();
+    const problem = item ? this.canonicalProblem(item) : null;
+    const family = item ? this.approachFamily(item) : null;
+    if (!problem || !family?.siblings?.length) return null;
+    return {
+      problemId: problem.id,
+      siblingRoutes: family.siblings.map((sibling) => ['/', sibling.path, sibling.courseId, sibling.questionId]),
+    };
+  });
+
+  /** DLV-965: the problem's other equally optimal approaches, when it belongs to a family. */
+  protected approachFamily(item: InterviewQuestion): DsaApproachFamily | null {
+    return (this.canonicalProblem(item) as { approachFamily?: DsaApproachFamily } | null)?.approachFamily ?? null;
+  }
+
   protected canonicalNavigation(item: InterviewQuestion): DsaProblemNavigation | null {
     const navigation = (this.canonicalProblem(item) as { navigation?: DsaProblemNavigation } | null)
       ?.navigation;
     if (!navigation) return null;
     const contexts = [navigation, ...(navigation.alternates ?? [])];
     const context =
-      contexts.find(({ handsOnPatternId }) => handsOnPatternId === this.navigationContextId()) ??
+      contexts.find(({ handsOnPatternId }) =>
+        matchesPatternContext(this.navigationContextId(), handsOnPatternId),
+      ) ??
       (this.focusStudio()
         ? contexts.find(({ handsOnPatternId }) => handsOnPatternId === FOCUS_STUDIO_PATTERN)
         : null) ??
@@ -2181,7 +2218,10 @@ export class Question implements OnInit {
         );
         const groups = [...index.groups].sort((left, right) => {
           const requestedContext = this.navigationContextId();
-          return Number(right.id === requestedContext) - Number(left.id === requestedContext);
+          return (
+            Number(matchesPatternContext(requestedContext, right.id)) -
+            Number(matchesPatternContext(requestedContext, left.id))
+          );
         });
         for (const group of groups) {
           const summary = group.problems.find(

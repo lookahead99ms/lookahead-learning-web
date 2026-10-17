@@ -85,6 +85,12 @@ import {
   StudyPlanAccount,
   savedAccountPlan,
 } from './study-plan-account';
+import { ScrollLock } from '../../core/scroll-lock/scroll-lock';
+import {
+  PlanProblemItem,
+  StudyPlanApproaches,
+  approachCompletedIds,
+} from '../../content/study-plan-approaches';
 
 const STORAGE_KEY = 'look-ahead.study-plan.v1';
 const DRAFT_INTENT_KEY = 'look-ahead.study-plan-draft-intent.v1';
@@ -94,7 +100,7 @@ type AuthoredPlanStep = 'select' | 'review';
 
 @Component({
   selector: 'app-study-plan',
-  imports: [PlatformHeader, NgTemplateOutlet, StudyDesk, StudyPlanOverview, StudyPlanTypeChoice],
+  imports: [PlatformHeader, NgTemplateOutlet, StudyDesk, StudyPlanOverview, StudyPlanTypeChoice, ScrollLock],
   templateUrl: './study-plan.html',
   styleUrls: ['./study-plan-base.css', './study-plan.css'],
 })
@@ -105,6 +111,7 @@ export class StudyPlanPage implements OnInit {
   private readonly router = inject(Router);
   protected readonly access = inject(STUDY_PLAN_ACCESS);
   protected readonly accountStore = inject(StudyPlanAccount);
+  private readonly approaches = inject(StudyPlanApproaches);
   protected readonly startDate = signal(new Date().toISOString().slice(0, 10));
   protected readonly datedPlans = computed(() => this.accountMode() && !!this.accountStore.catalog()?.planLifecyclePolicies?.includes('dated-plan-v1'));
   protected async changeLifecycle(state: 'active' | 'archived' | 'completed'): Promise<void> {
@@ -1439,20 +1446,66 @@ export class StudyPlanPage implements OnInit {
     const studyDay = entry.outsideWindow
       ? (this.deskModel()?.anchorDay ?? 1)
       : Math.max(entry.day, this.deskModel()?.anchorDay ?? 1);
+    const sourceId = this.sourceId(assignment);
+    const completed =
+      this.completedIds().has(assignment.id) ||
+      this.saved()?.sessionOutcomes?.[assignment.id] === 'completed';
+    const ownRoute = this.currentRoute(assignment);
+    // DLV-962: an approach family offers every approach; the item and its timing never change.
+    const members = this.approaches.families().get(sourceId) ?? [];
+    const chosenId = members.length
+      ? this.approaches.chosen(this.deskPlanKey(), assignment.id)
+      : undefined;
+    const chosen = members.find(({ problemId }) => problemId === chosenId);
+    const approaches = members.map((member) => ({
+      approach: member.approach,
+      problemId: member.problemId,
+      route: member.problemId === sourceId && ownRoute.length ? ownRoute : member.route,
+      chosen: member.problemId === (chosen?.problemId ?? sourceId),
+    }));
     return {
       ...entry,
-      sourceId: this.sourceId(assignment),
-      route: this.currentRoute(assignment),
+      sourceId,
+      route: approaches.find((option) => option.chosen)?.route ?? ownRoute,
       query: this.planLink(assignment, studyDay),
       unavailableReason: this.assignmentUnavailableReason(assignment),
-      completed:
-        this.completedIds().has(assignment.id) ||
-        this.saved()?.sessionOutcomes?.[assignment.id] === 'completed',
+      completed,
       outcome: this.outcome(assignment),
       note: this.reviewNote(assignment),
       refreshLinks: this.refreshLinks(assignment),
+      ...(approaches.length ? { approaches } : {}),
+      ...(completed && chosen ? { usedApproach: chosen.approach } : {}),
     };
   }
+  protected chooseDeskApproach(event: { entry: StudyDeskEntry; problemId: string }): void {
+    this.approaches.choose(this.deskPlanKey(), event.entry.assignment.id, event.problemId);
+  }
+  /** Every DSA problem the plan schedules, once, for approach-family lookup. */
+  private readonly planProblems = computed<PlanProblemItem[]>(() => {
+    const plan = this.saved()?.snapshot;
+    if (!plan) return [];
+    const items = new Map<string, PlanProblemItem>();
+    for (const assignment of [
+      ...plan.days.flatMap((day) => day.assignments),
+      ...(plan.futureReviews ?? []),
+    ]) {
+      const problemId = this.sourceId(assignment);
+      if (assignment.contentType === 'dsa-problem' && !items.has(problemId))
+        items.set(problemId, { problemId, title: assignment.title, route: assignment.route });
+    }
+    return [...items.values()];
+  });
+  private readonly approachLookup = effect(() => {
+    const all = this.planProblems();
+    if (!all.length) return;
+    const visibleIds = new Set(
+      (this.deskModel()?.entries ?? [])
+        .filter((entry) => entry.day === this.selectedDay() || entry.assignment.id === this.deskModel()?.resume?.assignment.id)
+        .map((entry) => this.sourceId(entry.assignment)),
+    );
+    const visible = all.filter(({ problemId }) => visibleIds.has(problemId));
+    untracked(() => void this.approaches.resolve(all, visible));
+  });
   protected completeDeskActivity(entry: StudyDeskEntry): void {
     if (!entry.outsideWindow) this.toggleCompletion(entry.assignment, Number(entry.query['day']));
   }
@@ -1520,7 +1573,10 @@ export class StudyPlanPage implements OnInit {
       },
     ].filter((section) => section.assignments.length > 0);
   });
-  protected readonly completedIds = computed(() => new Set(this.saved()?.completedIds ?? []));
+  /** DLV-962: completing any approach of a family counts for the plan's problem. */
+  protected readonly completedIds = computed(() =>
+    approachCompletedIds(new Set(this.saved()?.completedIds ?? []), this.approaches.families()),
+  );
   protected readonly completion = computed(() => {
     const assignments = this.plan()?.days.flatMap(({ assignments }) => assignments) ?? [];
     const done = assignments.filter(

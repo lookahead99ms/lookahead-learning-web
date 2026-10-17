@@ -185,6 +185,24 @@ describe('course-scoped page meta (public metadata only)', () => {
     expect(page.image).toBe('/assets/scenes/courses/learn-core-java.svg');
   });
 
+  it('never names a coding problem\'s pattern: no unit or module description or scene (no spoilers)', () => {
+    const metadata = course();
+    metadata.items.push({ id: 'synthetic-problem', moduleId: 'java-platform', title: 'Synthetic Problem', contentType: 'dsa-problem' });
+    const page = dynamicPageMeta(
+      { kind: 'lesson', path: 'learn', courseId: 'core-java', itemId: 'synthetic-problem' },
+      metadata,
+    );
+    expect(page).toEqual({
+      title: 'Synthetic Problem | Java Foundations | LookAhead',
+      description: `Coding problem from Java Foundations: Synthetic Problem. ${metadata.description}`,
+      image: '/assets/scenes/courses/learn-core-java.svg',
+      type: 'article',
+    });
+    for (const hidden of [metadata.units[0].description, metadata.modules[0].title, metadata.modules[0].description]) {
+      expect(JSON.stringify(page)).not.toContain(hidden);
+    }
+  });
+
   it('describes modules and sections, and falls back to the course for unknown ids', () => {
     const module = dynamicPageMeta(
       { kind: 'module', path: 'learn', courseId: 'core-java', moduleId: 'java-platform' },

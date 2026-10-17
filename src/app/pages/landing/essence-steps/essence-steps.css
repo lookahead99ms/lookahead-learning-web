@@ -1,0 +1,412 @@
+:host {
+  /* When the stairs start: after the three statements have been drawn in. */
+  --stairs-start: 2.8s;
+  /* Each step gets a slot: the step appears, then its circle and label (--step-label later), then
+     the arrow climbs up to it, turns right and runs to its end (--step-lead later, for --step-draw). The travel keyframes
+     below assume these values: four slots of 2.9s, travel from 1.4s to 2.5s of each. */
+  --step-slot: 2.9s;
+  --step-label: 0.7s;
+  --step-lead: 1.4s;
+  --step-draw: 1.1s;
+  /* How much higher each step sits than the one before it, and the room for the top label. */
+  --rise: 64px;
+  --top-label: 64px;
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  container-type: inline-size;
+  font-family: 'Avenir Next', 'Segoe UI', system-ui, sans-serif;
+}
+p {
+  margin: 0;
+}
+
+/* The growth line sits above the climb. */
+.essence-climb {
+  display: grid;
+  gap: 8px;
+}
+
+/* ---------- Growth: one line, three phrases; verb in a catalog colour, outcome in a contrasting one ---------- */
+.essence-growth {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: 6px 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: clamp(16px, 0.9rem + 0.35vw, 19px);
+  line-height: 1.45;
+}
+.essence-growth li {
+  display: flex;
+  align-items: baseline;
+  white-space: nowrap;
+  color: color-mix(in srgb, var(--line-colour) 62%, var(--text-strong));
+}
+/* Each statement is drawn in from left to right, one after another, star first. */
+.essence-growth li {
+  opacity: 0;
+  clip-path: inset(-6px 100% -6px 0);
+}
+:host([data-state='shown']) .essence-growth li {
+  opacity: 1;
+  clip-path: inset(-6px -6px -6px 0);
+  transition:
+    opacity 0.3s ease calc(var(--phrase) * 0.85s),
+    clip-path 0.9s ease-in-out calc(var(--phrase) * 0.85s);
+}
+/* A star between phrases, shading from one phrase's outcome colour into the next verb's. */
+.essence-growth li + li::before {
+  content: '✦';
+  margin-inline: 18px;
+  background: linear-gradient(90deg, var(--previous-colour), var(--line-colour));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-size: 0.85em;
+}
+.essence-growth strong {
+  color: var(--line-colour);
+  font-weight: 700;
+}
+
+/* ---------- The staircase ---------- */
+.essence-stairs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(3, var(--rise)) auto;
+  margin: 0;
+  padding: var(--top-label) 0 0;
+  list-style: none;
+}
+.essence-stairs li {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 4px;
+  min-width: 0;
+  padding: 0 12px 28px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--step-colour) 16%, transparent),
+    color-mix(in srgb, var(--step-colour) 3%, transparent)
+  );
+}
+.essence-stairs li:nth-child(1) {
+  grid-area: 4 / 1 / 5 / 2;
+  border-end-start-radius: 16px;
+}
+.essence-stairs li:nth-child(2) {
+  grid-area: 3 / 2 / 5 / 3;
+}
+.essence-stairs li:nth-child(3) {
+  grid-area: 2 / 3 / 5 / 4;
+}
+.essence-stairs li:nth-child(4) {
+  grid-area: 1 / 4 / 5 / 5;
+  border-end-end-radius: 16px;
+}
+/* The label rests on its step and never changes the step's height. */
+.essence-step-label {
+  position: absolute;
+  inset-block-end: 100%;
+  inset-inline: 16px;
+  padding-block-end: 14px;
+  color: var(--text-strong);
+  font-size: clamp(15px, 0.85rem + 0.35vw, 18px);
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  text-align: center;
+  text-wrap: balance;
+}
+.essence-step-label strong {
+  font-weight: 650;
+}
+/* The climb ends on the platform's name, larger than the other labels. */
+.essence-step-label.is-final {
+  padding-block-end: 12px;
+  font-size: clamp(24px, 1.2rem + 1vw, 32px);
+  font-weight: 650;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+.essence-step-label.is-final strong {
+  font-weight: 750;
+}
+.essence-gradient {
+  background: var(--home-grad-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+/* ---------- The stair line: SVG, drawn step by step ---------- */
+.essence-stairs-frame {
+  position: relative;
+}
+.essence-line {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.essence-line path {
+  opacity: 0;
+  stroke-dasharray: 1 2;
+  stroke-dashoffset: 1;
+}
+:host([data-state='shown']) .essence-line path {
+  opacity: 1;
+  stroke-dashoffset: 0;
+  transition:
+    opacity 0s linear calc(var(--stairs-start) + var(--step) * var(--step-slot) + var(--step-lead)),
+    stroke-dashoffset var(--step-draw) ease-in-out
+      calc(var(--stairs-start) + var(--step) * var(--step-slot) + var(--step-lead));
+}
+
+/* The arrow rides the tip of the line: it travels one step, stops while the step appears, then goes on. */
+.essence-traveller {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  width: 20px;
+  height: 20px;
+  offset-anchor: 14px 10px;
+  offset-rotate: auto;
+  offset-distance: 0%;
+  color: var(--colour-0);
+  opacity: 0;
+  pointer-events: none;
+}
+.essence-traveller svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+:host([data-state='shown']) .essence-traveller {
+  /* Unseen while it waits for the statements; it appears as it sets off. */
+  animation:
+    essence-travel calc(4 * var(--step-slot)) linear var(--stairs-start) both,
+    essence-appear 0.3s ease calc(var(--stairs-start) + var(--step-lead)) forwards;
+}
+@keyframes essence-appear {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes essence-travel {
+  0%,
+  12.07% {
+    offset-distance: 0%;
+    color: var(--colour-0);
+    animation-timing-function: ease-in-out;
+  }
+  21.55%,
+  37.06% {
+    offset-distance: var(--stop-0);
+    color: var(--colour-0);
+  }
+  37.07% {
+    offset-distance: var(--stop-0);
+    color: var(--colour-1);
+    animation-timing-function: ease-in-out;
+  }
+  46.55%,
+  62.06% {
+    offset-distance: var(--stop-1);
+    color: var(--colour-1);
+  }
+  62.07% {
+    offset-distance: var(--stop-1);
+    color: var(--colour-2);
+    animation-timing-function: ease-in-out;
+  }
+  71.55%,
+  87.06% {
+    offset-distance: var(--stop-2);
+    color: var(--colour-2);
+  }
+  87.07% {
+    offset-distance: var(--stop-2);
+    color: var(--colour-3);
+    animation-timing-function: ease-in-out;
+  }
+  96.55%,
+  100% {
+    offset-distance: 100%;
+    color: var(--colour-3);
+  }
+}
+
+/* Loop rounds: the arrow runs the drawn line in one go (driven from the component), and each
+   step's dot sends out a pulse as the arrow passes. */
+:host([data-state='shown']) .essence-traveller.is-loop {
+  animation: none;
+  opacity: 1;
+  offset-distance: 100%;
+  color: var(--colour-3);
+}
+.essence-dot {
+  position: relative;
+}
+.essence-pulse {
+  position: absolute;
+  inset: -3px;
+  border: 2px solid var(--step-colour);
+  border-radius: 50%;
+  opacity: 0;
+  animation: essence-pulse 1.2s ease-out var(--pulse-at) both;
+}
+@keyframes essence-pulse {
+  0% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.4);
+  }
+}
+
+/* Skipped to the end: statements and steps finished at once, the arrow resting on the top step. */
+:host-context([data-skip]) .essence-growth li,
+:host-context([data-skip]) .essence-line path,
+:host-context([data-skip]) .essence-stairs li,
+:host-context([data-skip]) .essence-step-label,
+:host-context([data-skip]) .essence-dot {
+  transition: none !important;
+}
+:host([data-rested]) .essence-traveller:not(.is-loop) {
+  animation: none;
+  opacity: 1;
+  offset-distance: 100%;
+  color: var(--colour-3);
+}
+
+/* The statements step aside while the wordmark retells its story; its captions use their strip. */
+:host([data-state='shown'][data-away]) .essence-growth li {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+/* Each step appears first, then its circle and label, then the arrow climbs to it and runs along it. */
+.essence-stairs li,
+.essence-step-label,
+.essence-dot {
+  opacity: 0;
+}
+:host([data-state='shown']) .essence-stairs li {
+  opacity: 1;
+  transition: opacity 0.5s ease calc(var(--stairs-start) + var(--step) * var(--step-slot));
+}
+:host([data-state='shown']) .essence-step-label,
+:host([data-state='shown']) .essence-dot {
+  opacity: 1;
+  transition: opacity 0.5s ease calc(var(--stairs-start) + var(--step) * var(--step-slot) + var(--step-label));
+}
+/* Without the drawn line (stacked steps on phones), each step carries its own tread. */
+.essence-stairs-frame:not(.has-line) .essence-stairs li {
+  border-block-start: 3px solid var(--step-colour);
+}
+.essence-stairs-frame:not(.has-line) .essence-dot {
+  margin-block-start: -11.5px;
+}
+.essence-dot {
+  box-sizing: border-box;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 12px;
+  border: 3px solid var(--step-colour);
+  border-radius: 50%;
+  background: var(--home-brand-block);
+}
+.essence-verb {
+  color: var(--text-subtle);
+  font-size: 15px;
+  line-height: 1.3;
+}
+.essence-word {
+  color: var(--step-colour);
+  font-size: clamp(21px, 1.1rem + 0.8vw, 28px);
+  font-weight: 650;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  text-transform: capitalize;
+}
+
+/* Narrow: each phrase on its own line, without the stars. */
+@container (max-width: 760px) {
+  .essence-growth {
+    flex-direction: column;
+    align-items: center;
+  }
+  .essence-growth li {
+    white-space: normal;
+    text-align: center;
+  }
+  .essence-growth li + li::before {
+    content: none;
+  }
+}
+
+/* Narrow: the wordmark's meanings are a list below it, so the statements never step aside. */
+@container (max-width: 600px) {
+  :host([data-state='shown'][data-away]) .essence-growth li {
+    opacity: 1;
+  }
+}
+
+/* Phones: the steps stack in climbing order, each with its own tread. */
+@container (max-width: 560px) {
+  .essence-stairs {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+    gap: 52px;
+    padding-block-start: 40px;
+  }
+  .essence-stairs li:nth-child(n) {
+    grid-area: auto;
+    border-radius: 0 0 16px 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .essence-pulse {
+    display: none;
+  }
+  .essence-growth li,
+  .essence-line path,
+  .essence-stairs li,
+  .essence-step-label,
+  .essence-dot,
+  :host([data-state]) .essence-dot,
+  :host([data-state]) .essence-growth li,
+  :host([data-state]) .essence-line path,
+  :host([data-state]) .essence-stairs li,
+  :host([data-state]) .essence-step-label {
+    transition: none;
+  }
+  :host([data-state='shown']) .essence-traveller {
+    animation: none;
+    opacity: 1;
+    offset-distance: 100%;
+    color: var(--colour-3);
+  }
+}
+
+@media (forced-colors: active) {
+  .essence-gradient,
+  .essence-growth li + li::before {
+    background: none;
+    color: CanvasText;
+  }
+}

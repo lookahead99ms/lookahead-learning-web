@@ -177,6 +177,26 @@ describe('Header curriculum navigation', () => {
     }
     fixture.destroy();
   });
+  it('marks the path you are in with its own colour anywhere inside it (DLV-803)', () => {
+    vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue('/grow/spring-boot/rest-clients?x=1');
+    const { fixture } = setup();
+    const links = [...fixture.nativeElement.querySelectorAll('.path-entry > a')] as HTMLAnchorElement[];
+    expect(links.map((a) => [a.textContent?.trim(), a.getAttribute('aria-current')])).toEqual([
+      ['Learn', null],
+      ['Grow', 'page'],
+      ['Blaze', null],
+    ]);
+    expect(links.map((a) => a.style.getPropertyValue('--entry-path-color'))).toEqual([
+      'var(--path-learn)',
+      'var(--path-grow)',
+      'var(--path-blaze)',
+    ]);
+    const css = [...document.querySelectorAll('style')].map((style) => style.textContent ?? '').join('\n').replace(/\s+/g, ' ');
+    expect(css).toMatch(
+      /\.path-entry\[[^\]]+\] > a\[aria-current\]\[[^\]]+\] \{ font-weight: 800; text-decoration: underline; text-decoration-color: var\(--entry-path-color, var\(--accent-strong\)\); text-decoration-thickness: 3px;/,
+    );
+    fixture.destroy();
+  });
   it('keeps long course names, unassigned destinations and current-location semantics', () => {
     const { fixture, http, button } = setup();
     const longTitle =

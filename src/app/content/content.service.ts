@@ -36,6 +36,10 @@ import { validateAnswerSlideDeck } from './answer-slide-contract';
 import { DeliveryPlan } from './delivery-plan.models';
 import { publicUnitScenePath } from '../core/card-scene/scene-assets';
 import type { HandsOnDsaIndex } from './hands-on-dsa';
+import { isRecognitionIndex, RecognitionIndex } from '../core/pattern-finder/pattern-finder';
+
+/** The pattern finder's problem cards, published with the Algorithmic Patterns course. */
+export const PATTERN_RECOGNITION_INDEX_HREF = '/content/learn/algorithmic-patterns/pattern-recognition-index.json';
 
 export const CONTENT_DETAIL_CACHE_MAX_ENTRIES = 8;
 export const CONTENT_DETAIL_CACHE_MAX_BYTES = 4 * 1024 * 1024;
@@ -221,6 +225,30 @@ export class ContentService {
 
   getHandsOnDsaIndex(): Observable<HandsOnDsaIndex> {
     return this.handsOnDsaIndex$;
+  }
+
+  private patternRecognitionIndex$?: Observable<RecognitionIndex>;
+
+  /**
+   * The pattern finder's cards, loaded once on first use. A failed or malformed response is not
+   * kept, so the next map that opens tries again; the map hides the finder meanwhile.
+   */
+  getPatternRecognitionIndex(): Observable<RecognitionIndex> {
+    const href = PATTERN_RECOGNITION_INDEX_HREF;
+    this.patternRecognitionIndex$ ??= (
+      this.protectedContent ? this.protectedRequest<unknown>(href) : this.http.get<unknown>(href)
+    ).pipe(
+      map((index) => {
+        if (!isRecognitionIndex(index)) throw new Error('The pattern finder index version is unavailable.');
+        return index;
+      }),
+      catchError((error) => {
+        this.patternRecognitionIndex$ = undefined;
+        return throwError(() => error);
+      }),
+      shareReplay({ bufferSize: 1, refCount: false }),
+    );
+    return this.patternRecognitionIndex$;
   }
 
   getReadyMadeStudyPlans(): Observable<ReadyMadeCatalog> {

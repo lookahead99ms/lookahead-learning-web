@@ -17,37 +17,58 @@
           class="catalog-context-panel catalog-depth-hero"
           [class]="config().path + '-catalog'"
         >
-          <div class="catalog-depth-copy">
+          <!-- DLV-803: the title and the scoreboard share the first row; the copy spans below. -->
+          <div class="catalog-depth-heading">
             <p class="catalog-path-label">{{ config().eyebrow }}</p>
             <h1 class="reader-question-title">{{ config().title }}</h1>
-            <p>
+          </div>
+          <div class="catalog-depth-copy">
+            <p class="catalog-depth-description">
               <strong class="catalog-highlight">{{ config().highlight }}</strong>
               {{ config().description }}
             </p>
-            <div class="catalog-primary-actions" [attr.aria-label]="config().actionsLabel">
-              <a
-                class="catalog-primary-action"
-                [class.blaze-action]="config().path === 'blaze'"
-                [routerLink]="config().primaryAction.routerLink"
-                [queryParams]="config().primaryAction.queryParams"
-                (click)="repeatJump($event, config().primaryAction.groupId)"
-              >
-                {{ config().primaryAction.label }}
-              </a>
-              @for (action of config().secondaryActions; track action.label) {
+            <!-- DLV-803 Button Placement: the primary and its alternative as two buttons, the
+                 other destinations as one text line below. -->
+            <div
+              class="catalog-primary-actions"
+              role="group"
+              [attr.aria-label]="config().actionsLabel"
+            >
+              <div class="catalog-action-row">
+                <a
+                  class="catalog-primary-action"
+                  [class.blaze-action]="config().path === 'blaze'"
+                  [routerLink]="config().primaryAction.routerLink"
+                  [queryParams]="config().primaryAction.queryParams"
+                  (click)="repeatJump($event, config().primaryAction.groupId)"
+                >
+                  {{ config().primaryAction.label }}
+                </a>
                 <a
                   class="catalog-secondary-action"
-                  [routerLink]="action.routerLink"
-                  [queryParams]="action.queryParams"
+                  [routerLink]="config().alternativeAction.routerLink"
+                  [queryParams]="config().alternativeAction.queryParams"
                 >
-                  {{ action.label }}
+                  {{ config().alternativeAction.label }}
                 </a>
-              }
-              <!-- DLV-942: only when this path has published open or free units. -->
-              @if (pathHasFreeUnits()) {
-                <a class="catalog-secondary-action catalog-start-free-action" routerLink="/start-free">
-                  Start free
-                </a>
+              </div>
+              @if (moreActions().length) {
+                <!-- DLV-942: "start free" joins the line only when this path has free units. -->
+                <p class="catalog-more-actions">
+                  Or
+                  @for (action of moreActions(); track action.routerLink; let first = $first) {
+                    @if (!first) {
+                      or
+                    }
+                    <a
+                      class="catalog-text-action"
+                      [class.catalog-start-free-action]="action.routerLink === '/start-free'"
+                      [routerLink]="action.routerLink"
+                      [queryParams]="action.queryParams"
+                      >{{ action.label }}</a
+                    >
+                  }
+                </p>
               }
             </div>
           </div>
@@ -132,6 +153,7 @@
               class="course-grid catalog-course-grid adaptive-catalog-course-grid"
               role="list"
               [attr.data-columns]="gridColumns(groupItems.length)"
+              [style]="gridColumnVars(groupItems.length)"
             >
               @for (item of groupItems; track item.id) {
                 @let titleId = config().path + '-course-' + item.id + '-title';

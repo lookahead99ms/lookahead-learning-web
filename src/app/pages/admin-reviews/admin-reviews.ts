@@ -30,6 +30,7 @@ import {
   reviewStatuses,
   reviewedPages,
 } from './platform-review.model';
+import { ScrollLock } from '../../core/scroll-lock/scroll-lock';
 
 interface PendingFile {
   file: File;
@@ -50,7 +51,7 @@ interface DayGroup {
  */
 @Component({
   selector: 'app-admin-reviews',
-  imports: [FormsModule, NgTemplateOutlet],
+  imports: [FormsModule, NgTemplateOutlet, ScrollLock],
   templateUrl: './admin-reviews.html',
   styleUrl: './admin-reviews.css',
 })

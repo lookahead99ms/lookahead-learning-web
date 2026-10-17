@@ -35,6 +35,7 @@ import {
   nextColumnSort,
 } from './catalog-sort';
 import { PatternBrowser, PatternEntry } from './pattern-browser';
+import { patternContextQuery, patternContextToken } from '../../content/pattern-context';
 import { PracticeProgressStrip } from './practice-progress-strip';
 
 /** Inline row preview, loaded on demand from the problem's canonical detail. */
@@ -116,14 +117,15 @@ export function previewSummary(text: string): string {
         margin: 0 0 10px;
         color: var(--practice-ink);
         font-family: 'Avenir Next', Avenir, 'Segoe UI', sans-serif;
-        font-size: clamp(2rem, 4vw, 3.8rem);
+        /* DLV-803: rem base above the vw term at 1920px, so browser zoom enlarges the title. */
+        font-size: clamp(2rem, 2.2rem + 1.65vw, 3.8rem);
         line-height: 1.04;
         letter-spacing: -0.055em;
       }
       .practice-hero > p {
         max-width: 740px;
         margin: 0;
-        font-size: clamp(1rem, 1vw + 0.72rem, 1.18rem);
+        font-size: clamp(1rem, 0.95rem + 0.25vw, 1.18rem);
         line-height: 1.65;
       }
       .practice-proof {
@@ -1140,7 +1142,7 @@ export class HandsOnDsa implements OnInit {
   protected updatePattern(value: string): void {
     const pattern = this.groups().find((group) => group.id === value)?.id ?? '';
     this.patternId.set(pattern);
-    this.updateCatalogParams({ pattern: pattern || null });
+    this.updateCatalogParams({ pattern: patternContextToken(pattern) || null });
   }
 
   protected updateDifficulty(value: string): void {
@@ -1213,7 +1215,7 @@ export class HandsOnDsa implements OnInit {
   }
 
   protected choosePattern(id: string): void {
-    this.updateCatalogParams({ pattern: id });
+    this.updateCatalogParams({ pattern: patternContextToken(id) || null });
   }
 
   /** Phone: back from one pattern to the pattern list. */
@@ -1303,8 +1305,9 @@ export class HandsOnDsa implements OnInit {
     }
   }
 
+  /** DLV-962: the pattern travels as an opaque context id, never by name. */
   protected problemQueryParams(pattern: string): Record<string, string> {
-    return { pattern, returnTo: this.router.url };
+    return { ...patternContextQuery(pattern), returnTo: this.router.url };
   }
 
   private canonicalizePage(): void {

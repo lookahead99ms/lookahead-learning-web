@@ -1,5 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import { DestroyRef, Injectable, InjectionToken, computed, inject, signal } from '@angular/core';
+import retiredContent from '../../content/retired-content-ids.json';
 
 /**
  * Hands-On DSA practice progress, kept in this browser only (current milestone: browser-local
@@ -94,6 +95,30 @@ function validRecord(value: unknown): value is PracticeRecord {
   );
 }
 
+/**
+ * Problem ids retired by a merge (DLV-965), each mapped to the problem that now teaches the same
+ * task. The table lives in retired-content-ids.json next to the route redirects.
+ */
+export const RETIRED_PROBLEM_IDS: Readonly<Record<string, string>> = retiredContent.problems.ids;
+
+/**
+ * Progress saved under a retired problem id counts for the kept problem. A record the learner
+ * already has on the kept problem wins; the retired key is dropped either way, so the next save
+ * writes only current ids.
+ */
+export function followMergedProblems(
+  records: Record<string, PracticeRecord>,
+  merged: Readonly<Record<string, string>> = RETIRED_PROBLEM_IDS,
+): Record<string, PracticeRecord> {
+  const followed = { ...records };
+  for (const [retired, kept] of Object.entries(merged)) {
+    if (!Object.hasOwn(followed, retired)) continue;
+    if (!Object.hasOwn(followed, kept)) followed[kept] = followed[retired];
+    delete followed[retired];
+  }
+  return followed;
+}
+
 /** Parses saved progress, keeping only well-formed records; anything else reads as empty. */
 export function parsePracticeProgress(raw: string | null): Record<string, PracticeRecord> {
   if (!raw) return {};
@@ -101,8 +126,10 @@ export function parsePracticeProgress(raw: string | null): Record<string, Practi
     const saved = JSON.parse(raw) as SavedProgress | null;
     if (saved?.schemaVersion !== SCHEMA_VERSION || !saved.problems || typeof saved.problems !== 'object')
       return {};
-    return Object.fromEntries(
-      Object.entries(saved.problems).filter(([id, record]) => id && validRecord(record)),
+    return followMergedProblems(
+      Object.fromEntries(
+        Object.entries(saved.problems).filter(([id, record]) => id && validRecord(record)),
+      ),
     );
   } catch {
     return {};

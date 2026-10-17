@@ -1,6 +1,6 @@
 <app-platform-header />
 <main id="main-content" class="study-plan-page" [class.progress-page]="progressVisible()">
-  <section class="intro">
+  <section class="intro" [class.creation-intro]="setupVisible()">
     <p class="eyebrow">Adaptive Compass / Study plans</p>
     @if (progressVisible()) {
       <div class="progress-title-row">
@@ -213,7 +213,7 @@
       }
     </section>
   }
-  <dialog #deleteDialog class="plan-delete-dialog" aria-labelledby="delete-plan-heading" (cancel)="$event.preventDefault(); closeDeletePlan()">
+  <dialog appScrollLock #deleteDialog class="plan-delete-dialog" aria-labelledby="delete-plan-heading" (cancel)="$event.preventDefault(); closeDeletePlan()">
     @if (deletingPlan(); as target) {
       <h2 id="delete-plan-heading">Delete {{ target.name || target.goal }}?</h2>
       <p>This removes the saved schedule and progress. This action cannot be undone.</p>
@@ -305,9 +305,10 @@
   }
   @if (setupVisible() && creationMode() === 'authored') {
     <section class="ready-made-panel panel" aria-labelledby="ready-made-heading">
+      <!-- DLV-803: the card's own action sits on the heading's line. -->
       <header class="creation-path-heading">
-        <div>
-          <p class="eyebrow">Authored study plan</p>
+        <p class="eyebrow">Authored study plan</p>
+        <div class="builder-title-row">
           <h2 id="ready-made-heading">
             {{
               authoredPlanStep() === 'review'
@@ -315,17 +316,17 @@
                 : 'Choose a preparation path'
             }}
           </h2>
-          <p>
-            {{
-              authoredPlanStep() === 'review'
-                ? freeAccount()
-                  ? 'See the courses in this plan and preview its schedule.'
-                  : 'Confirm the selected courses, preview the schedule, or copy everything into a custom plan.'
-                : 'Choose a path, a preparation window, and your available hours per day.'
-            }}
-          </p>
+          <button type="button" (click)="backToPlanTypes()">Back to plan types</button>
         </div>
-        <button type="button" (click)="backToPlanTypes()">Back to plan types</button>
+        <p>
+          {{
+            authoredPlanStep() === 'review'
+              ? freeAccount()
+                ? 'See the courses in this plan and preview its schedule.'
+                : 'Confirm the selected courses, preview the schedule, or copy everything into a custom plan.'
+              : 'Choose a path, a preparation window, and your available hours per day.'
+          }}
+        </p>
       </header>
       <ng-container [ngTemplateOutlet]="freePreviewNote" />
       @if (readyMadeStatus() === 'loading' && !readyMadeCatalog()) {
@@ -555,16 +556,17 @@
   >
     @if (setupVisible() && creationMode() === 'custom') {
       <section class="plan-builder panel" aria-labelledby="builder-heading">
+        <!-- DLV-803: one heading and one line before the steps; the card's own action sits on
+             the heading's line. -->
         <header class="builder-header">
-          <div>
-            <p class="eyebrow">Build your own plan</p>
-            <h2 id="builder-heading">Start with the time you actually have.</h2>
-            <p>
-              Choose one part at a time. Your selections remain a temporary draft until you review
-              the schedule and save it.
-            </p>
+          <div class="builder-title-row">
+            <h2 id="builder-heading">Build your own plan</h2>
+            <button type="button" (click)="backToPlanTypes()">Back to plan types</button>
           </div>
-          <button type="button" (click)="backToPlanTypes()">Back to plan types</button>
+          <p>
+            Choose one part at a time. Your selections remain a temporary draft until you review the
+            schedule and save it.
+          </p>
         </header>
         <ng-container [ngTemplateOutlet]="freePreviewNote" />
 
@@ -593,9 +595,10 @@
           @switch (wizardStep()) {
             @case ('setup') {
               <div>
-                <p class="eyebrow">Step 1 of 5</p>
-                <h3 #wizardHeading id="wizard-step-heading" tabindex="-1">Plan setup</h3>
-                <p>Start with the outcome and time you can realistically protect.</p>
+                <div class="builder-step-heading">
+                  <h3 #wizardHeading id="wizard-step-heading" tabindex="-1">Plan setup</h3>
+                  <p>Start with the outcome and time you can realistically protect.</p>
+                </div>
                 <div class="setup-fields">
                   <label class="field setup-goal">
                     <span>Plan name</span>
@@ -687,31 +690,32 @@
             @case ('learn') {
               <ng-container
                 [ngTemplateOutlet]="pathSelections"
-                [ngTemplateOutletContext]="{ path: 'learn', stepNumber: 2 }"
+                [ngTemplateOutletContext]="{ path: 'learn' }"
               />
             }
             @case ('grow') {
               <ng-container
                 [ngTemplateOutlet]="pathSelections"
-                [ngTemplateOutletContext]="{ path: 'grow', stepNumber: 3 }"
+                [ngTemplateOutletContext]="{ path: 'grow' }"
               />
             }
             @case ('blaze') {
               <ng-container
                 [ngTemplateOutlet]="pathSelections"
-                [ngTemplateOutletContext]="{ path: 'blaze', stepNumber: 4 }"
+                [ngTemplateOutletContext]="{ path: 'blaze' }"
               />
             }
             @case ('review') {
               <div class="builder-review">
-                <p class="eyebrow">Step 5 of 5</p>
-                <h3 #wizardHeading id="wizard-step-heading" tabindex="-1">
-                  {{ freeAccount() ? 'Review free plan' : 'Review and save' }}
-                </h3>
-                <p>
-                  Check the direction and course mix. Reviewing creates a temporary schedule; saving
-                  remains a separate final action.
-                </p>
+                <div class="builder-step-heading">
+                  <h3 #wizardHeading id="wizard-step-heading" tabindex="-1">
+                    {{ freeAccount() ? 'Review free plan' : 'Review and save' }}
+                  </h3>
+                  <p>
+                    Check the direction and course mix. Reviewing creates a temporary schedule;
+                    saving remains a separate final action.
+                  </p>
+                </div>
                 <dl class="builder-setup-summary">
                   <div>
                     <dt>Goal</dt>
@@ -805,15 +809,16 @@
         }
       </section>
 
-      <ng-template #pathSelections let-path="path" let-stepNumber="stepNumber">
+      <ng-template #pathSelections let-path="path">
         <div>
-          <p class="eyebrow">Step {{ stepNumber }} of 5</p>
-          <h3 #wizardHeading id="wizard-step-heading" tabindex="-1">
-            Choose {{ pathLabel(path) }} courses
-          </h3>
-          <p>
-            {{ selectedCountFor(path) }} selected. You can leave this section empty and continue.
-          </p>
+          <div class="builder-step-heading">
+            <h3 #wizardHeading id="wizard-step-heading" tabindex="-1">
+              Choose {{ pathLabel(path) }} courses
+            </h3>
+            <p>
+              {{ selectedCountFor(path) }} selected. You can leave this section empty and continue.
+            </p>
+          </div>
           <p class="access-message">
             {{
               freeAccount()
@@ -908,6 +913,7 @@
             (complete)="completeDeskActivity($event)"
             (record)="recordDeskActivity($event)"
             (note)="saveReviewNote($event.entry.assignment, $event.text)"
+            (chooseApproach)="chooseDeskApproach($event)"
             (selectDay)="selectedDay.set($event)"
           />
         }
@@ -919,7 +925,7 @@
   </div>
 </main>
 
-<dialog
+<dialog appScrollLock
   #draftDialog
   class="plan-review-dialog draft-review-dialog"
   aria-labelledby="draft-heading"
@@ -1166,7 +1172,7 @@
   }
 </dialog>
 
-<dialog
+<dialog appScrollLock
   #recoveryDialog
   class="plan-review-dialog recovery-dialog"
   aria-labelledby="recovery-heading"
@@ -1420,7 +1426,7 @@
   }
 </dialog>
 
-<dialog
+<dialog appScrollLock
   #scheduleDialog
   class="plan-review-dialog schedule-dialog"
   aria-labelledby="schedule-heading"

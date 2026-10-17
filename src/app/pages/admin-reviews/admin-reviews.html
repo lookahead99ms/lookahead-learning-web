@@ -431,7 +431,7 @@
 </article>
 </ng-template>
 
-<dialog #imageDialog class="image-dialog" aria-label="Image" (close)="viewing.set(null)">
+<dialog appScrollLock #imageDialog class="image-dialog" aria-label="Image" (close)="viewing.set(null)">
 @if (viewing(); as image) {
   <div class="image-dialog-bar">
     <p>{{ image.name }}</p>

@@ -15,6 +15,7 @@ import {
   architectureDiagrams,
   connectArchitectureFrame,
 } from './architecture-diagram-protocol';
+import { ScrollLockService } from '../../core/scroll-lock/scroll-lock';
 
 @Component({
   selector: 'app-architecture-diagram-viewer',
@@ -59,7 +60,9 @@ export class ArchitectureDiagramViewer {
   private timer?: ReturnType<typeof setTimeout>;
   private animationFrame = 0;
   private fitting = true;
-  private priorOverflow = '';
+  /** The shared body scroll lock (user, 2026-10-16), taken before the dialog opens. */
+  private readonly scrollLock = inject(ScrollLockService);
+  private releaseScroll: (() => void) | null = null;
   private priorFocus: HTMLElement | null = null;
   private priorScroll = { x: 0, y: 0 };
   private drag: { id: number; x: number; y: number; left: number; top: number } | null = null;
@@ -68,8 +71,7 @@ export class ArchitectureDiagramViewer {
   ngAfterViewInit() {
     this.priorFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     this.priorScroll = { x: window.scrollX, y: window.scrollY };
-    this.priorOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    this.releaseScroll = this.scrollLock.lock();
     this.dialog().nativeElement.showModal();
     this.observer = new ResizeObserver(() => {
       const viewport = this.viewport().nativeElement;
@@ -249,7 +251,8 @@ export class ArchitectureDiagramViewer {
     this.port?.close();
     this.port = null;
     if (this.dialog().nativeElement.open) this.dialog().nativeElement.close();
-    document.body.style.overflow = this.priorOverflow;
+    this.releaseScroll?.();
+    this.releaseScroll = null;
     if (this.priorFocus?.isConnected) this.priorFocus.focus({ preventScroll: true });
     window.scrollTo(this.priorScroll.x, this.priorScroll.y);
   }

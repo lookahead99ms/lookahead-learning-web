@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { vi } from 'vitest';
 import { StudyDesk } from './study-desk';
 import { StudyDeskEntry } from './study-desk-model';
@@ -63,6 +63,24 @@ describe('Study Desk', () => {
     await fixture.whenStable();
     return fixture;
   }
+
+  it('fills activity columns by width and keeps desk headings zoomable', async () => {
+    // DLV-803: activities fill as many 16rem columns as the desk allows and reflow when zoomed
+    // in; fluid headings keep a rem base so browser zoom still enlarges them.
+    const fixture = await setup();
+    expect((fixture.nativeElement as HTMLElement).querySelectorAll('.activity-card-grid > .activity-card')).toHaveLength(2);
+    const css = [...window.document.querySelectorAll('style')]
+      .map((style) => style.textContent ?? '')
+      .filter((text) => text.includes('.desk-layout'))
+      .join('\n')
+      .replace(/\s+/g, ' ');
+    expect(css).toMatch(
+      /\.activity-card-grid\[[^\]]+\] \{[^}]*grid-template-columns: repeat\(auto-fill, minmax\(min\(100%, 16rem\), 1fr\)\);/,
+    );
+    const fluidType = [...css.matchAll(/font-size: clamp\(([^;]+)\);/g)].map((match) => match[1]);
+    expect(fluidType).toHaveLength(2);
+    for (const args of fluidType) expect(args.split(',')[1], args).toMatch(/rem/);
+  });
 
   it('renders every actual activity for the selected day as a card with its full strategy', async () => {
     const first = entry('first');
@@ -222,5 +240,64 @@ describe('Study Desk', () => {
     const root = fixture.nativeElement as HTMLElement;
     expect(root.querySelector('[data-desk-activity="second"]')?.classList).toContain('current');
     expect(root.querySelector('.resume-row')).toBeNull();
+  });
+  describe('approach families (DLV-962)', () => {
+    const family = (chosen: 1 | 2, extra: Partial<StudyDeskEntry> = {}) => {
+      const result = entry('grid-item', {
+        route: ['/', 'learn', 'sample-course', chosen === 1 ? 'grid-count-route' : 'grid-count-approach-2-route'],
+        approaches: [
+          { approach: 1, problemId: 'grid-count', route: ['/', 'learn', 'sample-course', 'grid-count-route'], chosen: chosen === 1 },
+          { approach: 2, problemId: 'grid-count-approach-2', route: ['/', 'learn', 'sample-course', 'grid-count-approach-2-route'], chosen: chosen === 2 },
+        ],
+        ...extra,
+      });
+      result.assignment = { ...result.assignment, title: 'Grid Count (Approach-1)', contentType: 'dsa-problem' };
+      return result;
+    };
+
+    it('offers every approach as a numbered link with the plan context, without naming a method', async () => {
+      const fixture = await setup([family(2)]);
+      const host = fixture.nativeElement as HTMLElement;
+      const segments = [...host.querySelectorAll<HTMLAnchorElement>('.approach-switch a.segment')];
+      expect(segments.map((link) => link.textContent?.trim())).toEqual(['Approach 1', 'Approach 2']);
+      expect(segments.map((link) => link.getAttribute('aria-current'))).toEqual([null, 'true']);
+      expect(segments[1].getAttribute('aria-label')).toBe('Approach 2 of 2, your choice: Grid Count (Approach-1)');
+      expect(segments[0].getAttribute('href')).toBe(
+        '/learn/sample-course/grid-count-route?plan=saved-plan&day=1&activity=grid-item',
+      );
+      expect(segments[1].getAttribute('href')).toBe(
+        '/learn/sample-course/grid-count-approach-2-route?plan=saved-plan&day=1&activity=grid-item',
+      );
+      const open = host.querySelector<HTMLAnchorElement>('[data-card-primary]')!;
+      expect(open.getAttribute('href')).toContain('grid-count-approach-2-route');
+      const card = host.querySelector('.activity-card')!.textContent ?? '';
+      expect(card).toContain('2 equally optimal approaches. Choose one; either completes this activity.');
+      // No spoilers: nothing names a pattern, a method or bounds before the learner tries.
+      expect(card).not.toMatch(/union|find|dfs|bfs|pattern|O\(/i);
+    });
+
+    it('reports the approach the learner opens, from a segment or the primary link', async () => {
+      const fixture = await setup([family(1)]);
+      vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+      const chosen = vi.fn();
+      fixture.componentInstance.chooseApproach.subscribe(chosen);
+      const host = fixture.nativeElement as HTMLElement;
+      host.querySelectorAll<HTMLAnchorElement>('.approach-switch a.segment')[1].dispatchEvent(
+        new MouseEvent('click', { button: 0, cancelable: true }),
+      );
+      host.querySelector<HTMLAnchorElement>('[data-card-primary]')!.dispatchEvent(
+        new MouseEvent('click', { button: 0, cancelable: true }),
+      );
+      expect(chosen.mock.calls.map(([event]) => event.problemId)).toEqual(['grid-count-approach-2', 'grid-count']);
+    });
+
+    it('says which approach completed the item, and shows no switch for other items', async () => {
+      const fixture = await setup([family(2, { completed: true, usedApproach: 2 }), entry('plain')]);
+      const host = fixture.nativeElement as HTMLElement;
+      const cards = [...host.querySelectorAll('.activity-card')];
+      expect(cards[0].textContent).toContain('Completed with Approach 2. You can revisit this material.');
+      expect(cards[1].querySelector('.approach-switch')).toBeNull();
+      expect(cards[0].querySelector('[data-desk-action="complete-grid-item"]')?.textContent?.trim()).toBe('Undo completion');
+    });
   });
 });

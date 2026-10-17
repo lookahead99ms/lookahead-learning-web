@@ -13,7 +13,12 @@
   min-height: 100vh;
   --muted: var(--text-body);
   /* Hero. */
-  --home-gutter: clamp(20px, 3vw, 64px);
+  --home-gutter: clamp(20px, 3vw, 3rem);
+  /* DLV-803: the hero fills the window below the platform header (85px) and the page's top
+     padding, leaving a small gap above the fold, so the chapter strip is always in view. */
+  --home-header-height: 85px;
+  --home-top-pad: clamp(8px, 1.6svh, 20px);
+  --home-fold-gap: 8px;
   --home-hero-radius: 22px;
   --home-panel-top: color-mix(in srgb, var(--panel-background) 82%, #000);
   --home-glow-strength: 34%;
@@ -99,21 +104,33 @@ button:disabled {
   color: var(--accent-strong);
 }
 
-/* ---------- Page frame: fill the window right of the section nav ---------- */
+/* ---------- Page frame: a centred, fixed-width page (DLV-803) ----------
+   User decision 2026-10-16: the section nav and the page sit together in one centred frame
+   (--site-frame-max) and the side margins grow on a bigger monitor; nothing grows with the
+   window past the frame. On a laptop (up to 1600px) the frame is the window, so the page is as
+   before. Zooming out shrinks the frame inside wider margins; zooming in reflows. */
 .landing-page {
   max-width: 1320px;
   margin: auto;
   padding: 16px 32px 28px;
 }
-/* Keep the left section column for the page navigation and give everything else to the page.
-   The homepage has no right sidebar, so no right column is reserved. */
+/* Each section keeps the shared content width, centred in the page area. */
+main.landing-page > * {
+  max-width: var(--page-max-browse, 80rem);
+  margin-inline: auto;
+}
+/* Keep the left section column for the page navigation and give the rest of the frame to the
+   page. The homepage has no right sidebar, so no right column is reserved. */
 @media (min-width: 1100px) {
   main.landing-page[data-sidebar-columns] {
-    --reader-sidebar-space: clamp(256px, 17vw, 320px);
-    width: calc(100% - var(--reader-sidebar-space)) !important;
+    /* The nav column and the gutters stop growing at the frame width (1600px). */
+    --reader-sidebar-space: clamp(256px, 17vw, 17rem);
+    --home-frame: min(100%, var(--site-frame-max, 100rem));
+    --home-frame-inset: max(0px, (100% - var(--site-frame-max, 100rem)) / 2);
+    width: calc(var(--home-frame) - var(--reader-sidebar-space)) !important;
     max-width: none !important;
-    margin-inline: var(--reader-sidebar-space) 0 !important;
-    padding: 20px var(--home-gutter) 28px clamp(12px, 1.4vw, 28px);
+    margin-inline: calc(var(--home-frame-inset) + var(--reader-sidebar-space)) auto !important;
+    padding: var(--home-top-pad) var(--home-gutter) 28px clamp(12px, 1.4vw, 1.4rem);
   }
 }
 
@@ -121,6 +138,8 @@ button:disabled {
 .discovery-opening {
   position: relative;
   isolation: isolate;
+  /* The hero's height cap below reads the hero's width. */
+  container-type: inline-size;
 }
 /* One quiet wash behind the hero; nothing in it moves. */
 .discovery-opening::before {
@@ -145,7 +164,13 @@ button:disabled {
 .hero-stage {
   display: flex;
   flex-direction: column;
-  min-height: calc(100svh - 128px);
+  /* Fill the window below the header, but not past a balanced card on a large monitor (about
+     half the hero's width plus the masthead and chapter strip). This is a floor, not a height:
+     taller content (zoomed in, short windows) grows the hero instead of clipping it. */
+  min-height: min(
+    calc(100svh - var(--home-header-height) - var(--home-top-pad) - var(--home-fold-gap)),
+    calc(44cqi + 140px)
+  );
 }
 .hero-masthead {
   display: flex;
@@ -153,12 +178,12 @@ button:disabled {
   align-items: baseline;
   justify-content: space-between;
   gap: 4px 32px;
-  padding-bottom: 18px;
+  padding-bottom: clamp(8px, 1.4svh, 18px);
   border-bottom: 1px solid var(--platform-edge-soft, var(--platform-edge));
 }
 .discovery-framing {
   font:
-    750 clamp(22px, 2vw, 32px)/1.2 system-ui,
+    750 clamp(22px, 1.05rem + 0.875vw, 32px)/1.2 system-ui,
     sans-serif;
   letter-spacing: -0.04em;
   margin: 0;
@@ -166,7 +191,7 @@ button:disabled {
 .signature-support {
   margin: 0;
   color: var(--text-subtle);
-  font-size: clamp(15px, 1.1vw, 18px);
+  font-size: clamp(15px, 0.58rem + 0.48vw, 18px);
   line-height: 1.5;
 }
 .hero-carousel {
@@ -174,7 +199,7 @@ button:disabled {
   display: flex;
   flex: 1;
   flex-direction: column;
-  padding-top: clamp(20px, 2.6vh, 32px);
+  padding-top: clamp(10px, 1.8svh, 32px);
 }
 .hero-slides {
   display: grid;
@@ -185,7 +210,8 @@ button:disabled {
   display: grid;
   grid-template-columns: minmax(0, 55fr) minmax(0, 45fr);
   gap: clamp(28px, 3.4vw, 64px);
-  min-height: clamp(430px, calc(100svh - 330px), 780px);
+  /* The stage sets the height; the slide fills it (narrow screens set their own minimum). */
+  min-height: 0;
   visibility: hidden;
   pointer-events: none;
 }
@@ -227,9 +253,11 @@ button:disabled {
 .hero-copy .eyebrow {
   margin: 0;
 }
+/* A rem base so zooming in enlarges the headline; the second term keeps each line on one line in
+   a narrow column (a 13-inch laptop) so the slide stays above the fold. */
 .slide-title {
   font:
-    800 clamp(36px, 10.2cqi, 108px)/1.02 system-ui,
+    800 clamp(2.25rem, min(3.0625rem + 2.5cqi, 10.6cqi), 6.75rem)/1.02 system-ui,
     sans-serif;
   letter-spacing: -0.045em;
   margin: 0.32em 0 0.36em;
@@ -237,7 +265,7 @@ button:disabled {
 }
 /* The AI Builds headline is longer than the others; a smaller size keeps it on two or three lines. */
 .hero-slide[data-visual='build'] .slide-title {
-  font-size: clamp(34px, 7.2cqi, 84px);
+  font-size: clamp(2.125rem, 2rem + 2.1cqi, 5.25rem);
 }
 .slide-title span {
   display: block;
@@ -246,7 +274,7 @@ button:disabled {
   color: var(--accent-strong);
 }
 .hero-copy .lead {
-  font-size: clamp(16px, 3.1cqi, 21px);
+  font-size: clamp(1rem, 0.8rem + 1.1cqi, 1.3125rem);
   line-height: 1.6;
   margin: 0 0 clamp(24px, 3.4vh, 36px);
   max-width: 48ch;
@@ -288,10 +316,10 @@ button:disabled {
   isolation: isolate;
   display: flex;
   flex-direction: column;
-  gap: clamp(14px, 3cqi, 24px);
+  gap: clamp(8px, 1.2svh, 24px);
   min-width: 0;
   overflow: hidden;
-  padding: clamp(24px, 2.6vw, 44px);
+  padding: clamp(18px, min(2.6vw, 2.6svh), 44px);
   border: 1px solid var(--panel-line);
   border-radius: var(--home-hero-radius);
   background:
@@ -310,7 +338,7 @@ button:disabled {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: end;
   gap: 24px;
-  margin-top: clamp(18px, 2.6vh, 28px);
+  margin-top: clamp(8px, 1.4svh, 28px);
 }
 .chapter-tabs {
   display: grid;
@@ -324,7 +352,8 @@ button:disabled {
   align-items: baseline;
   gap: 12px 10px;
   min-width: 0;
-  min-height: 48px;
+  /* 48px targets; a short window takes them down to 44px so the strip stays above the fold. */
+  min-height: clamp(44px, 6.4svh, 48px);
   padding: 0 0 4px;
   border: 0;
   border-radius: 4px;
@@ -374,7 +403,7 @@ button:disabled {
 }
 .chapter-name {
   overflow: hidden;
-  font-size: clamp(14px, 1vw, 17px);
+  font-size: clamp(14px, 0.53rem + 0.44vw, 17px);
   font-weight: 600;
   line-height: 1.3;
   text-overflow: ellipsis;
@@ -395,8 +424,8 @@ button:disabled {
   gap: 6px;
 }
 .hero-arrows button {
-  min-width: 48px;
-  height: 48px;
+  min-width: clamp(44px, 6.4svh, 48px);
+  height: clamp(44px, 6.4svh, 48px);
   padding: 0;
   background: var(--surface);
   border: 1px solid var(--platform-edge);
@@ -423,7 +452,7 @@ button:disabled {
 }
 .home-paths > h2 {
   font:
-    800 clamp(30px, 3vw, 52px)/1.08 'Avenir Next',
+    800 clamp(30px, 1.59rem + 1.32vw, 52px)/1.08 'Avenir Next',
     'Segoe UI',
     system-ui,
     sans-serif;
@@ -519,27 +548,6 @@ button:disabled {
   flex-direction: column;
   padding: 18px 22px 22px;
 }
-@container (min-width: 560px) {
-  .home-paths .card-link {
-    display: grid;
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-  }
-  .home-paths .direction-scene {
-    --card-scene-ratio: auto;
-    display: grid;
-    order: 2;
-    min-height: 170px;
-    border-bottom: 0;
-    border-left: 1px solid var(--platform-edge-soft);
-  }
-  .home-paths .card-body {
-    justify-content: center;
-    padding: 20px 24px;
-  }
-  .home-paths .card-action {
-    margin-top: 4px;
-  }
-}
 .home-paths .number {
   display: flex;
   align-items: center;
@@ -632,7 +640,7 @@ app-engineering-challenge.home-challenge {
 }
 .home-explore .feature-grid-heading h2 {
   font:
-    750 clamp(26px, 2.2vw, 34px)/1.2 system-ui,
+    750 clamp(26px, 1.163rem + 0.97vw, 34px)/1.2 system-ui,
     sans-serif;
   letter-spacing: -0.035em;
   margin: 0;
@@ -693,7 +701,7 @@ app-engineering-challenge.home-challenge {
 }
 .home-explore .discovery-feature h3 {
   font:
-    750 clamp(22px, 1.7vw, 27px)/1.22 system-ui,
+    750 clamp(22px, 0.9rem + 0.75vw, 27px)/1.22 system-ui,
     sans-serif;
   letter-spacing: -0.025em;
   margin: 12px 0 10px;
@@ -739,9 +747,12 @@ app-engineering-challenge.home-challenge {
 }
 
 /* ---------- The essence: warm cream block ---------- */
+/* The animated wordmark is the title; the heading stays for screen readers and the page
+   sidebar, and the symbol sits in the corner. */
 .home-essence {
-  /* The illustration's cutouts match this block instead of the page. */
+  /* The wordmark's cutouts match this block instead of the page. */
   --identity-cutout: var(--home-brand-block);
+  position: relative;
   display: grid;
   justify-items: center;
   gap: clamp(24px, 3vw, 32px);
@@ -752,149 +763,97 @@ app-engineering-challenge.home-challenge {
   text-align: center;
 }
 .home-essence .brand-story-heading {
-  display: grid;
-  gap: 6px;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
-.home-essence .brand-context {
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.4;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+.home-essence .essence-corner-mark {
+  position: absolute;
+  inset-block-start: 24px;
+  inset-inline-end: 24px;
 }
-.home-essence h2 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  line-height: 1.4;
-  letter-spacing: -0.02em;
+@media (max-width: 720px) {
+  .home-essence .essence-corner-mark {
+    display: none;
+  }
 }
-.home-essence app-platform-brand-illustration {
-  width: min(100%, 860px);
-}
-.home-essence .brand-story-copy {
-  display: grid;
-  justify-items: center;
-  gap: clamp(18px, 2.5vw, 24px);
-  width: min(100%, 860px);
-}
-.home-essence p {
+/* The wordmark's sentence settles in the space under the steps and stays there. */
+.home-essence .essence-sentence {
+  position: absolute;
+  inset-block-end: 20px;
+  inset-inline: 160px;
   margin: 0;
   color: var(--text-subtle);
+  font-family: 'Avenir Next', 'Segoe UI', system-ui, sans-serif;
+  font-size: clamp(14px, 0.8rem + 0.25vw, 16px);
+  line-height: 1.45;
+  text-align: center;
   text-wrap: balance;
+  opacity: 0;
+  transform: translateY(-14px);
+  transition:
+    opacity 0.8s ease 0.3s,
+    transform 0.8s ease 0.3s;
 }
-.home-essence .brand-line {
+.home-essence[data-skip] .essence-sentence {
+  transition: none;
+}
+.home-essence .essence-sentence.shown {
+  opacity: 1;
+  transform: none;
+}
+.home-essence .essence-sentence-line {
   display: block;
 }
-.home-essence .brand-opening,
-.home-essence .brand-learning,
-.home-essence .brand-principle,
-.home-essence .brand-obstacle {
-  font-family: 'Avenir Next', 'Segoe UI', system-ui, sans-serif;
-}
-.home-essence .brand-opening {
-  color: var(--text-strong);
-  font-size: clamp(36px, 4.6vw, 64px);
-  font-weight: 750;
-  line-height: 1.1;
-  letter-spacing: -0.045em;
-}
-.home-essence .brand-opening span {
-  background: var(--home-grad-text);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-.home-essence .brand-learning {
-  color: var(--text-strong);
-  font-size: clamp(20px, 2.4vw, 30px);
-  font-weight: 500;
-  line-height: 1.45;
-  letter-spacing: -0.025em;
-}
-.home-essence .brand-learning strong {
-  font-weight: 650;
-}
-.home-essence .brand-learn {
-  color: var(--path-learn);
-}
-.home-essence .brand-code {
-  color: var(--identity-code);
-}
-.home-essence .brand-explore {
-  color: var(--identity-eyes);
-}
-.home-essence .brand-disciplines {
-  color: var(--identity-ai);
-  font-weight: 600;
-}
-.home-essence .brand-growth {
-  font-size: clamp(16px, 1.7vw, 20px);
-  line-height: 1.65;
-}
-.home-essence .brand-growth strong {
-  color: var(--text-strong);
-  font-weight: 600;
-}
-.home-essence .brand-growth .brand-grow {
-  color: var(--path-grow);
+.home-essence .essence-key-word {
   font-weight: 700;
 }
-.home-essence .brand-principles {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: center;
-  gap: 24px;
-  width: 100%;
+/* Narrower cards: the sentence takes its own place under the steps, clear of the corner buttons. */
+@media (max-width: 1100px) {
+  .home-essence .essence-sentence {
+    position: static;
+    margin-block-end: 36px;
+  }
 }
-.home-essence .brand-principles-logo {
-  justify-self: center;
-}
-.home-essence .brand-principle,
-.home-essence .brand-obstacle {
-  position: relative;
-  padding-top: 24px;
-  color: var(--text-strong);
-  font-size: clamp(18px, 2vw, 22px);
-  font-weight: 500;
-  line-height: 1.5;
-  letter-spacing: -0.015em;
-}
-.home-essence .brand-principle::before,
-.home-essence .brand-obstacle::before {
-  content: '';
-  position: absolute;
-  inset-block-start: 0;
-  inset-inline-start: calc(50% - 24px);
-  width: 48px;
-  border-top: 3px solid transparent;
-  border-image: var(--home-grad-bar) 1;
-}
-.home-essence .brand-principle strong,
-.home-essence .brand-obstacle strong {
-  color: var(--identity-wall);
-  font-weight: 650;
-}
-.home-essence .brand-principle em {
-  color: var(--identity-ai);
-  font-weight: 600;
-}
-.home-essence .brand-obstacle em {
-  color: var(--identity-arrow);
-  font-weight: 600;
-  font-style: italic;
+@media (prefers-reduced-motion: reduce) {
+  .home-essence .essence-sentence {
+    transition: none;
+  }
 }
 
 /* ---------- Footer: gradient rule ---------- */
 .home-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 32px;
   margin-top: 28px;
   border-top: 3px solid transparent;
   border-image: var(--home-grad-bar) 1;
   padding: 20px 0;
   font-size: 13px;
 }
+.home-footer p {
+  margin: 0;
+}
+/* The reasoning pair, next to "Learn. Grow. Blaze.": the only place it appears (user, 2026-10-17). */
+.home-footer .footer-statements {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 24px;
+}
 
 /* ---------- Narrower screens ---------- */
+/* A small laptop: the card takes half the row so its rows wrap less and the slide stays short. */
+@media (min-width: 1100px) and (max-width: 1399px) {
+  .hero-slide {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
 @media (max-width: 1099px) {
   .hero-stage {
     min-height: 0;
@@ -931,7 +890,7 @@ app-engineering-challenge.home-challenge {
     min-height: 0;
   }
   .slide-title {
-    font-size: clamp(34px, 10.4cqi, 56px);
+    font-size: clamp(2.125rem, 1.25rem + 5cqi, 3.5rem);
   }
   #paths.home-paths {
     padding: 24px 18px;
@@ -945,10 +904,6 @@ app-engineering-challenge.home-challenge {
   }
 }
 @media (max-width: 640px) {
-  .home-essence .brand-principles {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
   .home-explore .feature-grid-heading {
     flex-direction: column;
     align-items: flex-start;
@@ -1006,7 +961,7 @@ app-engineering-challenge.home-challenge {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  padding: clamp(18px, 2.6vh, 36px) clamp(22px, 3.6vw, 64px) clamp(14px, 2vh, 24px);
+  padding: clamp(8px, 1.2svh, 36px) clamp(22px, 3.6vw, 64px) clamp(6px, 1svh, 24px);
   border: 1px solid #dce6e5;
   border-radius: 28px;
   background: #ffffff;
@@ -1038,17 +993,19 @@ app-engineering-challenge.home-challenge {
   background: linear-gradient(90deg, #0a8f8a, #0a8f8a 55%, #e8a33d);
 }
 :host-context(:root:not([data-theme='dark'])) .hero-masthead {
-  padding-bottom: 14px;
+  padding-bottom: clamp(8px, 1.4svh, 14px);
   border-bottom-color: #e3ebea;
 }
 :host-context(:root:not([data-theme='dark'])) .hero-carousel {
-  padding-top: clamp(12px, 1.8vh, 28px);
+  padding-top: clamp(8px, 1.4svh, 28px);
 }
-:host-context(:root:not([data-theme='dark'])) .hero-slide {
-  min-height: clamp(400px, calc(100svh - 410px), 720px);
+@media (max-width: 1099px) {
+  :host-context(:root:not([data-theme='dark'])) .hero-slide {
+    min-height: clamp(400px, calc(100svh - 410px), 720px);
+  }
 }
 :host-context(:root:not([data-theme='dark'])) .hero-visual {
-  padding: clamp(20px, 2vw, 40px);
+  padding: clamp(18px, min(2vw, 2.6svh), 40px);
   box-shadow: 0 30px 60px -30px #0d2a2e8c;
 }
 :host-context(:root:not([data-theme='dark'])) .hero-copy .eyebrow {
@@ -1056,6 +1013,12 @@ app-engineering-challenge.home-challenge {
 }
 :host-context(:root:not([data-theme='dark'])) .hero-arrows button {
   background: #ffffffd9;
+}
+/* A small laptop: a narrower sheet margin leaves the slide its width (and so its height). */
+@media (min-width: 1100px) and (max-width: 1399px) {
+  :host-context(:root:not([data-theme='dark'])) .hero-stage {
+    padding-inline: clamp(16px, 2vw, 28px);
+  }
 }
 /* On narrow screens the card sits below the text, so the sand panel moves under it. */
 @media (max-width: 1099px) {
@@ -1091,9 +1054,17 @@ app-engineering-challenge.home-challenge {
   .chapter-fill {
     background: Highlight;
   }
-  .home-paths > h2,
-  .home-essence .brand-opening span {
+  .home-paths > h2 {
     background: none;
     color: CanvasText;
+  }
+  /* Without the wordmark's colours, the Essence heading shows as text. */
+  .home-essence .brand-story-heading {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
   }
 }

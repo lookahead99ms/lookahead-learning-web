@@ -64,7 +64,8 @@
   min-width: 0;
 }
 .problem-rail h2 {
-  font-size: clamp(22px, 2vw, 32px);
+  /* DLV-803: a rem base keeps the title growing with browser zoom. */
+  font-size: clamp(22px, 1.25rem + 0.5vw, 32px);
   line-height: 1.18;
   letter-spacing: -0.035em;
   margin: 14px 0 20px;
@@ -117,7 +118,8 @@
 }
 .problem-peek .problem-rail {
   position: fixed;
-  left: 20px;
+  /* DLV-803: under its Problem button, inside the centred page frame, not at the screen edge. */
+  left: var(--peek-left, 20px);
   top: var(--peek-top);
   width: min(390px, calc(100vw - 40px));
   max-height: calc(100dvh - var(--peek-top) - 20px);
@@ -1262,4 +1264,19 @@ button[aria-label^='Restart'] {
 .workspace-toolbar { min-height: 36px; padding-block: 4px; }
 @media (max-width: 700px) {
   .studio-heading > app-studio-timer { margin-inline-start: 0; }
+}
+
+/* DLV-965 (user, 2026-10-16): the approach switch sits beside "Show solution" at its own (header
+   Light / Dark) size; "Other optimal solutions" is a secondary action like "Visualize solution". */
+.workspace-actions > app-optimal-approaches {
+  flex: 0 0 auto;
+  max-width: 100%;
+}
+.workspace-actions button.action-other-approaches {
+  background: var(--surface);
+  color: var(--accent-link);
+  border: 1px solid currentColor;
+}
+.workspace-actions button.action-other-approaches:hover {
+  background: var(--surface-accent);
 }

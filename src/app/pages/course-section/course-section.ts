@@ -23,7 +23,8 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
         margin: 0 0 3px;
       }
       .section-title {
-        font-size: clamp(1.35rem, 2.1vw, 2rem);
+        /* DLV-803: rem base, so browser zoom enlarges the title. */
+        font-size: clamp(1.35rem, 1.1rem + 0.9vw, 2rem);
       }
       .section-description {
         margin: 6px 0 0;

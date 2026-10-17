@@ -97,7 +97,7 @@ import { FoundationLessonV1, LearningScenario } from '../../content/content.mode
       h2 {
         margin: 8px 0 14px;
         color: var(--lesson-ink);
-        font-size: clamp(1.28rem, 1.6vw, 1.68rem);
+        font-size: clamp(1.28rem, 0.95rem + 0.75vw, 1.68rem);
         line-height: 1.2;
       }
       :host > p:not(.section-label) {

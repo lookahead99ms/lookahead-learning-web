@@ -17,6 +17,7 @@ import { Router, RouterLink } from '@angular/router';
 import { HandsOnDsaIndexGroup, HandsOnDsaIndexProblem, HandsOnSort } from '../../content/hands-on-dsa';
 import { PracticeProgressService } from '../../core/practice-progress/practice-progress';
 import { PracticeStatusMark } from '../../core/practice-progress/practice-status-mark';
+import { patternContextQuery } from '../../content/pattern-context';
 import {
   SORT_COLUMNS,
   SortColumn,
@@ -385,8 +386,9 @@ export class PatternBrowser {
     return `pattern-preview-${problemId.replace(/[^a-zA-Z0-9_-]/g, '-')}`;
   }
 
+  /** DLV-962: the pattern travels as an opaque context id, never by name. */
   protected problemQueryParams(pattern: string): Record<string, string> {
-    return { pattern, returnTo: this.router.url };
+    return { ...patternContextQuery(pattern), returnTo: this.router.url };
   }
 
   protected choose(id: string): void {

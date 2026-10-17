@@ -1,5 +1,6 @@
 import { LandingHeroVisual } from './landing-hero-visual';
 import { LearningPrompt } from '../../core/platform-signature/learning-prompt';
+import { ReasoningPrompt } from '../../core/platform-signature/reasoning-prompt';
 import { PlatformSignature } from '../../core/platform-signature/platform-signature';
 import { DOCUMENT } from '@angular/common';
 import {
@@ -15,12 +16,13 @@ import {
 import { RouterLink } from '@angular/router';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { EngineeringChallenge } from './engineering-challenge';
-import { PlatformBrandIllustration } from '../../core/platform-brand/platform-brand-illustration';
 import { PlatformBrand } from '../../core/platform-brand/platform-brand';
 import { HomePricing } from './home-pricing/home-pricing';
 import { CardScene } from '../../core/card-scene/card-scene';
 import { PathTaglineId, pathTaglineText } from '../../content/path-taglines';
 import { PathSceneTimeline } from './path-scene-timeline';
+import { EssenceSteps } from './essence-steps/essence-steps';
+import { KEY_SENTENCE, KeyCycle, WordmarkKey } from './wordmark-key/wordmark-key';
 
 /** The path cards whose scenes share one timeline, in play order. */
 const PATH_SCENES = ['learn', 'grow', 'blaze'] as const;
@@ -43,7 +45,7 @@ interface HeroSlide {
 
 @Component({
   selector: 'app-landing',
-  imports: [LandingHeroVisual, LearningPrompt, PlatformSignature, PlatformHeader, RouterLink, EngineeringChallenge, PlatformBrandIllustration, PlatformBrand, CardScene, HomePricing],
+  imports: [LandingHeroVisual, LearningPrompt, ReasoningPrompt, PlatformSignature, PlatformHeader, RouterLink, EngineeringChallenge, PlatformBrand, CardScene, HomePricing, EssenceSteps, WordmarkKey],
   templateUrl: './landing.html',
   styleUrl: './landing.css',
 })
@@ -54,6 +56,21 @@ interface HeroSlide {
 export class Landing {
   protected readonly tagline = (id: PathTaglineId): string => pathTaglineText(id);
   private readonly document = inject(DOCUMENT);
+  /** The Essence wordmark has finished, so its statements and steps can play. */
+  protected readonly essenceWordmarkDone = signal(false);
+  /** The whole Essence has played; from now on it loops while on screen. */
+  protected readonly essenceSettled = signal(false);
+  /** The reader paused the Essence's motion. */
+  protected readonly essenceStill = signal(false);
+  /** The reader skipped to the end: for a moment, everything jumps to finished without motion. */
+  protected readonly essenceSkip = signal(false);
+  /** The wordmark is retelling its story with captions, so the statements step aside. */
+  protected readonly essenceAway = signal(false);
+  /** The closing sentence, shown under the steps once the wordmark has finished. */
+  protected readonly essenceSentence = signal(false);
+  protected readonly essenceSentenceLines = KEY_SENTENCE;
+  /** Loop rounds so far; each sends the stairs' arrow up again after the wordmark's light. */
+  protected readonly essenceLoop = signal(0);
   private readonly destroyRef = inject(DestroyRef);
   private animations: Animation[] = [];
   private transitionId = 0;
@@ -360,5 +377,33 @@ export class Landing {
       '',
       `/#${fragment}`,
     );
+  }
+
+  /** The Essence starts again from the first letter. */
+  protected essenceRestart(): void {
+    this.essenceWordmarkDone.set(false);
+    this.essenceSentence.set(false);
+    this.essenceSettled.set(false);
+    this.essenceSkip.set(false);
+    this.essenceAway.set(false);
+    this.essenceLoop.set(0);
+  }
+
+  /** The wordmark is whole: its sentence settles below the steps, and the statements and steps play. */
+  protected essenceFinished(): void {
+    this.essenceWordmarkDone.set(true);
+    this.essenceSentence.set(true);
+  }
+
+  /** Skip to the end: jump everything to finished, then let motion work again for later rounds. */
+  protected essenceSkipToEnd(): void {
+    this.essenceAway.set(false);
+    this.essenceSkip.set(true);
+    setTimeout(() => this.essenceSkip.set(false), 100);
+  }
+
+  /** Follow the wordmark's loop: statements aside while it retells its story, back once whole. */
+  protected essenceCycle(phase: KeyCycle): void {
+    this.essenceAway.set(phase === 'apart');
   }
 }

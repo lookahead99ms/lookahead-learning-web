@@ -12,7 +12,9 @@
   height: 100%;
   min-height: 0;
   flex-direction: column;
-  width: min(1460px, 92vw);
+  /* DLV-803: the shared fixed browse width, centred, so laptops and large monitors show the same
+     page at 100% with wider side margins; zooming in reflows inside the gutter. */
+  width: min(var(--page-max-browse), 100% - 2 * var(--page-gutter));
   margin: 0 auto;
 }
 
@@ -37,7 +39,8 @@
 h1 {
   margin: 0;
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(1.75rem, 2.5vw, 2rem);
+  /* rem base + small vw term: zooming in still enlarges the heading (DLV-803). */
+  font-size: clamp(1.75rem, 1.04rem + 1.07vw, 2rem);
   font-weight: 700;
   line-height: 1.15;
   letter-spacing: -0.025em;
@@ -189,7 +192,7 @@ select:focus {
 
 .search-toolbar {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
   gap: 12px;
 }
 
@@ -306,6 +309,13 @@ select {
   font-size: 0.76rem;
 }
 
+/* A spelling fix is named next to the count, so the count always describes the words used. */
+.search-correction {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
 .sort-control {
   display: flex;
   align-items: center;
@@ -355,6 +365,18 @@ select {
 
 .result-group {
   margin: 0;
+}
+
+/* DLV-803: results fill as many readable 44rem columns as the shell allows. At the fixed browse
+   width that is one column on every monitor at 100%; zooming in keeps one narrower column. */
+.result-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 44rem), 1fr));
+  column-gap: 1.5rem;
+}
+
+.result-group > .group-title {
+  grid-column: 1 / -1;
 }
 
 .group-title {
@@ -606,7 +628,7 @@ select {
   margin: 0;
   overflow-wrap: anywhere;
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(1.5rem, 2.2vw, 1.7rem);
+  font-size: clamp(1.5rem, 0.884rem + 0.91vw, 1.7rem);
   line-height: 1.2;
 }
 
@@ -648,6 +670,7 @@ select {
 }
 
 .summary-copy {
+  max-width: var(--reading-measure);
   margin: 0;
   color: var(--muted);
   font-size: 0.92rem;
@@ -798,6 +821,36 @@ select {
   border-radius: 6px;
   color: var(--muted);
   background: var(--surface);
+}
+
+.empty-state p {
+  margin: 0;
+}
+
+.empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+/* The second action of the pair stays quiet; Search keeps one primary per block. */
+.empty-actions .clear-filters:not(.primary) {
+  border-color: var(--line);
+  color: inherit;
+  background: transparent;
+}
+
+.empty-actions .clear-filters:not(.primary):hover,
+.empty-actions .clear-filters:not(.primary):focus-visible {
+  border-color: var(--search-primary);
+  background: transparent;
+}
+
+@media (max-width: 480px) {
+  .empty-actions {
+    flex-direction: column;
+  }
 }
 
 .preview-dialog {
@@ -1077,6 +1130,7 @@ select {
 
 .result-row-summary,
 .result-open-state {
+  max-width: var(--reading-measure);
   color: var(--muted);
   font-size: 0.78rem;
   font-weight: 400;

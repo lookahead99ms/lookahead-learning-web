@@ -12,7 +12,9 @@ export const handsOnCoursePaths = [
 
 const preparationPlanPath = 'learn/hands-on-dsa-preparation.json';
 const rankingPlanPath = 'learn/hands-on-dsa-ranking.json';
-const supportedCatalogTargets = new Set([730, 782]);
+// Approved catalog targets: the 730 and 782 releases, 785 for the DLV-965 Approach-N pilot and 862 for its
+// full rollout (2026-10-16).
+const supportedCatalogTargets = new Set([730, 782, 785, 862, 863, 858]);
 
 async function readJson(path) {
   return JSON.parse(await readFile(path, 'utf8'));
@@ -94,7 +96,9 @@ export function applyHandsOnRankingPlan(groups, plan, { required = false } = {})
     throw new Error(`${rankingPlanPath}: lastReviewedAt must use YYYY-MM-DD`);
   }
   if (!supportedCatalogTargets.has(plan.catalogTarget)) {
-    throw new Error(`${rankingPlanPath}: catalogTarget must be one of 730 or 782`);
+    throw new Error(
+      `${rankingPlanPath}: catalogTarget must be one of ${[...supportedCatalogTargets].join(', ')}`,
+    );
   }
   if (!isNonEmptyString(plan.methodology)) {
     throw new Error(`${rankingPlanPath}: methodology is required`);
@@ -136,7 +140,10 @@ export function applyHandsOnRankingPlan(groups, plan, { required = false } = {})
   }
 
   const rankingById = new Map();
-  const interviewRanks = new Set();
+  // DLV-965 (user decision 2026-10-17): an Approach-N problem shares its original's interview rank, so a
+  // rank may repeat within one approach family only; a merged problem leaves a gap in the ranks.
+  const approachOriginal = (problemId) => problemId.replace(/-approach-(?:[2-9]|[1-9]\d+)$/, '');
+  const interviewRanks = new Map();
   const studyOrders = new Set();
   for (const item of plan.problems) {
     if (!discoveredProblems.has(item?.problemId)) {
@@ -151,7 +158,10 @@ export function applyHandsOnRankingPlan(groups, plan, { required = false } = {})
     if (!Number.isInteger(item.studyOrder) || item.studyOrder < 1) {
       throw new Error(`${rankingPlanPath}: invalid studyOrder for ${item.problemId}`);
     }
-    if (interviewRanks.has(item.interviewRank)) {
+    if (
+      interviewRanks.has(item.interviewRank) &&
+      interviewRanks.get(item.interviewRank) !== approachOriginal(item.problemId)
+    ) {
       throw new Error(`${rankingPlanPath}: duplicate interviewRank ${item.interviewRank}`);
     }
     if (studyOrders.has(item.studyOrder)) {
@@ -197,7 +207,7 @@ export function applyHandsOnRankingPlan(groups, plan, { required = false } = {})
       }
     }
     rankingById.set(item.problemId, item);
-    interviewRanks.add(item.interviewRank);
+    interviewRanks.set(item.interviewRank, approachOriginal(item.problemId));
     studyOrders.add(item.studyOrder);
   }
 
@@ -210,9 +220,6 @@ export function applyHandsOnRankingPlan(groups, plan, { required = false } = {})
     throw new Error(`${rankingPlanPath}: expected ${discoveredProblems.size} ranked problems`);
   }
   for (let expected = 1; expected <= discoveredProblems.size; expected += 1) {
-    if (!interviewRanks.has(expected)) {
-      throw new Error(`${rankingPlanPath}: interviewRank values must be contiguous from 1`);
-    }
     if (!studyOrders.has(expected)) {
       throw new Error(`${rankingPlanPath}: studyOrder values must be contiguous from 1`);
     }
@@ -322,6 +329,46 @@ function problemSummary(problem, placement) {
     questionId: placement.questionId,
     route: [`/${placement.path}`, placement.courseId, placement.questionId],
   };
+}
+
+/**
+ * DLV-962 (user decision 2026-10-17): study plans keep their items, but an item whose problem has
+ * several equally optimal approaches lets the learner choose one. The web needs only who the
+ * siblings are and where they live, so the index carries that much: no pattern, no method, no
+ * complexity (the plan shows the choice before the learner tries, so it must not spoil anything).
+ * Derived from each canonical problem's `approachFamily`; content data is never changed here.
+ */
+export function approachFamilySummaries(canonicalProblems) {
+  const families = {};
+  for (const problem of [...canonicalProblems.values()].sort((a, b) => a.id.localeCompare(b.id))) {
+    const family = problem.approachFamily;
+    if (!family || !Number.isInteger(family.approach) || !Array.isArray(family.siblings)) continue;
+    const siblings = family.siblings
+      .filter(
+        (sibling) =>
+          isNonEmptyString(sibling?.problemId) &&
+          Number.isInteger(sibling.approach) &&
+          isNonEmptyString(sibling.path) &&
+          isNonEmptyString(sibling.courseId) &&
+          isNonEmptyString(sibling.questionId),
+      )
+      .map((sibling) => ({
+        problemId: sibling.problemId,
+        approach: sibling.approach,
+        title: sibling.title,
+        path: sibling.path,
+        courseId: sibling.courseId,
+        questionId: sibling.questionId,
+      }))
+      .sort((left, right) => left.approach - right.approach);
+    if (!siblings.length) continue;
+    families[problem.id] = {
+      approach: family.approach,
+      bestProblemId: family.bestProblemId,
+      siblings,
+    };
+  }
+  return families;
 }
 
 export async function buildHandsOnDsaIndex(
@@ -460,6 +507,7 @@ export async function buildHandsOnDsaIndex(
     },
     ranking: rankedCatalog.ranking,
     groups: rankedCatalog.groups,
+    approachFamilies: approachFamilySummaries(canonicalProblems),
   };
 }
 

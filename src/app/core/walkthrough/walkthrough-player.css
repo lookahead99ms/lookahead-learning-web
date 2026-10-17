@@ -217,8 +217,11 @@ button svg {
   flex: 1 1 auto;
   min-height: 0;
 }
+/* DLV-803: in a short column (a zoomed-in or short window) the code box keeps its lines first;
+   the idea list gives up its height before the code does, and scrolls inside. */
 .wt-right .ideas {
-  flex: 0 0 auto;
+  flex: 0 12 auto;
+  min-height: min(7.5rem, 30dvh);
   max-height: calc((100dvh - var(--wt-pin)) * 0.4);
   overflow-y: auto;
 }
@@ -472,16 +475,15 @@ button svg {
   .controls {
     gap: 6px;
   }
-  .step-count {
-    order: 2;
+  /* DLV-803: with the Code pane, the controls and the caption stay pinned above the code they
+     step through, and the code box fits the window under them. */
+  .walkthrough[data-pane='code'] .wt-left {
+    position: sticky;
+    top: var(--wt-pin);
+    z-index: 4;
   }
-  .scrubber {
-    order: 3;
-    flex-basis: 100%;
-  }
-  .restart,
-  .mode-switch {
-    order: 4;
+  .walkthrough[data-pane='code'] .wt-right {
+    --wt-code-height: max(10.5em, calc(100dvh - var(--wt-pin) - var(--wt-controls-h, 60px) - var(--wt-caption-h, 96px) - 5em));
   }
   .wt-stage {
     padding: 10px;
@@ -492,6 +494,21 @@ button svg {
   .example select {
     flex: 1 1 auto;
     max-width: none;
+  }
+}
+/* DLV-803: a zoomed-in player (up to 760 px) lets the controls wrap in their own order, which keeps
+   them to one or two rows; only at phone width does the scrubber take a row of its own. */
+@container walkthrough (max-width: 520px) {
+  .step-count {
+    order: 2;
+  }
+  .scrubber {
+    order: 3;
+    flex-basis: 100%;
+  }
+  .restart,
+  .mode-switch {
+    order: 4;
   }
 }
 @media (prefers-reduced-motion: reduce) {

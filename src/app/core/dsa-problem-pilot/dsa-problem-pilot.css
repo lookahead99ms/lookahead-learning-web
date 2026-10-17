@@ -44,7 +44,7 @@ h5 {
 }
 h3 {
   margin: 5px 0 10px;
-  font-size: clamp(1.45rem, 2.5vw, 1.8rem);
+  font-size: clamp(1.45rem, 1.2rem + 0.6vw, 1.8rem);
 }
 h4 {
   margin: 4px 0 12px;

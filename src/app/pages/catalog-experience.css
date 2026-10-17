@@ -1,10 +1,18 @@
+/*
+ * DLV-803 balance review (2026-10-16): a compact hero, so the first course group starts on the
+ * first screen of a 14" laptop. The eyebrow and title share the first row with the scoreboard;
+ * the tagline, description and actions span the hero below them.
+ */
 .catalog-depth-hero {
-  margin: 18px 0 22px;
-  padding: clamp(22px, 3.5vw, 42px);
+  margin: 8px 0 22px;
+  padding: 18px clamp(20px, 2.4vw, 36px);
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.6fr);
-  align-items: center;
-  gap: clamp(24px, 4vw, 58px);
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'heading board'
+    'copy copy';
+  align-items: end;
+  gap: 8px clamp(20px, 2.2vw, 36px);
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 22px;
@@ -27,12 +35,18 @@
     linear-gradient(135deg, var(--surface), var(--surface-accent));
 }
 
+.catalog-depth-heading {
+  grid-area: heading;
+  min-width: 0;
+}
+
 .catalog-depth-copy {
+  grid-area: copy;
   min-width: 0;
 }
 
 .catalog-path-label {
-  margin: 0 0 9px !important;
+  margin: 0 0 6px !important;
   color: var(--accent-strong) !important;
   font-size: 0.72rem !important;
   font-weight: 850;
@@ -49,32 +63,81 @@
   color: var(--accent-strong) !important;
 }
 
+/* DLV-803: about 52px on a 1512px laptop, 53px at 1920 and 55px at 2560. The rem base is far
+   larger than the vw term, so browser zoom still enlarges it (150% about 1.4x, 200% about 1.9x). */
 .catalog-depth-hero .reader-question-title {
-  font-size: clamp(2.45rem, 5vw, 4.6rem);
-  letter-spacing: -0.055em;
+  font-size: clamp(2.4rem, 2.9rem + 0.35vw, 3.5rem);
+  line-height: 1.04;
+  letter-spacing: -0.05em;
+}
+/* Phones and 300-400% zoom: about 40px, still a rem base. */
+@media (max-width: 30rem) {
+  .catalog-depth-hero .reader-question-title {
+    font-size: clamp(2.2rem, 1.7rem + 2.5vw, 2.8rem);
+  }
 }
 
-.catalog-depth-hero .catalog-depth-copy > p:last-of-type {
+.catalog-depth-hero .catalog-depth-copy > .catalog-depth-description {
   max-width: 710px;
-  margin: 10px 0 0;
+  margin: 0;
   color: var(--text-subtle);
   font-size: 1rem;
-  line-height: 1.65;
+  line-height: 1.5;
 }
 
 .catalog-depth-hero .catalog-highlight {
   display: block;
-  margin-bottom: 3px;
+  margin-bottom: 2px;
   color: var(--text-strong);
-  font-size: 1.13rem;
+  font-size: 1.08rem;
+  line-height: 1.4;
 }
 
+/* DLV-803 Button Placement: the primary and its alternative side by side, primary first; the
+   other destinations as one text line below them. */
 .catalog-primary-actions {
-  margin-top: 22px;
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.catalog-action-row {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 10px 16px;
+  gap: 10px 12px;
+}
+
+.catalog-more-actions {
+  margin: 0;
+  color: var(--text-subtle);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* Links inside that sentence: the platform's prose link (link colour, offset underline, tint on
+   hover), not a button, pill or arrow. */
+.catalog-text-action {
+  border-radius: 3px;
+  color: var(--accent-link);
+  font-weight: 700;
+  text-decoration-line: underline;
+  text-decoration-thickness: 0.08em;
+  text-decoration-color: var(--link-underline);
+  text-underline-offset: 0.22em;
+}
+
+.catalog-text-action:hover {
+  text-decoration-color: currentColor;
+  background-color: var(--link-hover-tint);
+  box-shadow: 0 0 0 2px var(--link-hover-tint);
+}
+
+.catalog-text-action:focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 2px;
 }
 
 .catalog-primary-action,
@@ -151,10 +214,12 @@
 }
 
 .catalog-scoreboard {
+  grid-area: board;
+  justify-self: end;
   margin: 0;
-  padding: 5px;
+  padding: 4px;
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(3, auto);
   border: 1px solid var(--border-strong);
   border-radius: 16px;
   background: var(--surface);
@@ -172,23 +237,20 @@
 }
 
 .catalog-scoreboard > div {
-  padding: 13px 16px;
-  display: grid;
-  grid-template-columns: 58px minmax(0, 1fr);
-  align-items: baseline;
-  gap: 10px;
-  border-bottom: 1px solid var(--line);
+  padding: 8px 14px;
+  border-right: 1px solid var(--line);
 }
 
 .catalog-scoreboard > div:last-child {
-  border-bottom: 0;
+  border-right: 0;
 }
 
 .catalog-scoreboard dt {
   color: var(--accent-strong);
-  font-size: 1.55rem;
+  font-size: 1.45rem;
   font-weight: 850;
   letter-spacing: -0.04em;
+  line-height: 1.15;
 }
 
 .blaze-scoreboard dt {
@@ -200,7 +262,8 @@
 }
 
 .catalog-scoreboard dd {
-  margin: 0;
+  max-width: 7.5rem;
+  margin: 2px 0 0;
   color: var(--muted);
   font-size: 0.77rem;
   font-weight: 750;
@@ -280,7 +343,7 @@ main[data-sidebar-nav-shown] .catalog-jump-nav {
   width: fit-content;
   margin: 0;
   color: var(--text-strong);
-  font-size: clamp(1.45rem, 2.5vw, 2rem);
+  font-size: clamp(1.45rem, 1.15rem + 0.9vw, 2rem);
   letter-spacing: -0.035em;
 }
 
@@ -327,6 +390,60 @@ main[data-sidebar-nav-shown] .catalog-jump-nav {
   box-shadow: 0 8px 20px var(--shadow);
 }
 
+/*
+ * DLV-803: when the hero is narrower than about 860px (a zoomed-in laptop with the sidebars
+ * docked, 1100-1420px, or an undocked window under 980px), the scoreboard moves under the copy
+ * as one full-width row of three, so the copy keeps its measure.
+ */
+@media (max-width: 980px), (min-width: 1100px) and (max-width: 1420px) {
+  .catalog-depth-hero {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'heading'
+      'copy'
+      'board';
+    align-items: start;
+    gap: 14px;
+  }
+
+  .catalog-scoreboard {
+    justify-self: stretch;
+    margin-top: 4px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .catalog-scoreboard > div {
+    padding: 10px 14px;
+  }
+
+  .catalog-scoreboard dd {
+    max-width: none;
+  }
+}
+
+/* Phones and narrow windows: the two buttons stack full width, primary on top; the text line
+   follows them. */
+@media (max-width: 980px) {
+  .catalog-depth-hero .catalog-depth-copy {
+    max-width: none;
+  }
+
+  .catalog-primary-actions {
+    align-items: stretch;
+  }
+
+  .catalog-action-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .catalog-primary-action,
+  .catalog-secondary-action {
+    width: 100%;
+    text-align: center;
+  }
+}
+
 @media (max-width: 700px) {
   .catalog-depth-hero {
     margin-top: 12px;
@@ -335,29 +452,9 @@ main[data-sidebar-nav-shown] .catalog-jump-nav {
     border-radius: 16px;
   }
 
-  .catalog-primary-actions {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .catalog-primary-action {
-    width: 100%;
-  }
-
-  .catalog-scoreboard {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
   .catalog-scoreboard > div {
     padding: 11px 8px;
-    display: block;
-    border-right: 1px solid var(--line);
-    border-bottom: 0;
     text-align: center;
-  }
-
-  .catalog-scoreboard > div:last-child {
-    border-right: 0;
   }
 
   .catalog-scoreboard dt {
@@ -390,6 +487,30 @@ main[data-sidebar-nav-shown] .catalog-jump-nav {
   .catalog-path-summary {
     text-align: left;
     white-space: normal;
+  }
+}
+
+/*
+ * DLV-803 (user decision 2026-10-16: centred fixed-width page). A catalog keeps one width on
+ * every monitor and the side margins grow on a larger screen. Without docked sidebars it takes
+ * the browsing content column (--page-max-browse). With them docked, the whole frame (section
+ * nav + catalog + right column) is at most --site-frame-max: each sidebar column stays 18% of
+ * that frame (272px on a 1512px laptop, at most 18rem) instead of 18% of the window, so the nav
+ * sits next to the catalog on a large monitor and the course grid keeps 3 columns at 100% on
+ * 1512, 1920 and 2560px screens. Zooming out shrinks the page inside wider margins; zooming in
+ * narrows the window below the frame, so the grid reflows to 2 columns, then 1.
+ */
+main.harbor-catalog.content-page {
+  max-width: var(--page-max-browse, 1440px);
+  padding-inline: var(--page-gutter, clamp(16px, 4vw, 64px));
+}
+@media (min-width: 1100px) {
+  main.harbor-catalog.content-page[data-sidebar-columns] {
+    --reader-sidebar-space: clamp(248px, 18vw, 18rem);
+    max-width: min(
+      var(--page-max-browse, 1440px),
+      calc(min(100%, var(--site-frame-max, 100rem)) - 2 * var(--reader-sidebar-space))
+    ) !important;
   }
 }
 
@@ -455,7 +576,6 @@ main[data-sidebar-nav-shown] .catalog-jump-nav {
   transform: translateX(-50%);
 }
 
-
 @media (max-width: 700px) {
   .harbor-catalog .catalog-path-section {
     margin-top: 56px;
@@ -505,7 +625,7 @@ main[data-sidebar-nav-shown] .catalog-jump-nav {
 
 /* --card-title-size: the title's size, also read by the card drawing to keep its words smaller. */
 .harbor-catalog .catalog-group-card {
-  --card-title-size: clamp(1.5rem, 2.6vw, 2.1rem);
+  --card-title-size: clamp(1.5rem, 1.2rem + 0.95vw, 2.1rem);
 }
 .harbor-catalog .catalog-group-card .catalog-path-title {
   margin: 0;
@@ -537,19 +657,85 @@ main[data-sidebar-nav-shown] .catalog-jump-nav {
   font-variant-numeric: tabular-nums;
 }
 
-/* Columns follow the group's course count (data-columns, even-grid.ts): 2 → 2, 4 → 2×2,
-   3/5/6 → 3; one course gets the whole row as a wide card. */
+/*
+ * DLV-803: the grid fills its row with cards no narrower than a rem minimum, so a narrower
+ * window (browser zoom in, a tablet) reflows it to fewer, larger columns, up to 5 on a wide one.
+ * Columns still follow the group's course count (even-grid.ts, user review #1, #2): the
+ * container queries below find how many cards fit (the capacity) and read --even-cols-<capacity>
+ * from the grid's inline style, so 4 courses are 2×2 or a row of 4, never 3 + 1. One course gets
+ * the whole row as a wide card.
+ * With the reader sidebars docked (1100px and wider) they already take about a third of the
+ * window, so the minimum is smaller there: 3 columns on a 1512px laptop at 100%, as before.
+ */
 .harbor-catalog .adaptive-catalog-course-grid {
+  --catalog-card-min: 17.5rem;
+  --catalog-grid-gap: 1.25rem;
+  --catalog-columns: 1;
   width: 100%;
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(
+      max(
+        min(100%, var(--catalog-card-min)),
+        (100% - (var(--catalog-columns) - 1) * var(--catalog-grid-gap)) / var(--catalog-columns) -
+          0.1px
+      ),
+      1fr
+    )
+  );
+  gap: var(--catalog-grid-gap);
   list-style: none;
 }
-.harbor-catalog .adaptive-catalog-course-grid[data-columns='2'] {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+/* Capacity breakpoints: n cards of --catalog-card-min plus n - 1 gaps (17.5rem undocked). */
+@container (min-width: 36.25rem) {
+  .harbor-catalog .adaptive-catalog-course-grid {
+    --catalog-columns: var(--even-cols-2, 2);
+  }
+}
+@container (min-width: 55rem) {
+  .harbor-catalog .adaptive-catalog-course-grid {
+    --catalog-columns: var(--even-cols-3, 3);
+  }
+}
+@container (min-width: 73.75rem) {
+  .harbor-catalog .adaptive-catalog-course-grid {
+    --catalog-columns: var(--even-cols-4, 4);
+  }
+}
+@container (min-width: 92.5rem) {
+  .harbor-catalog .adaptive-catalog-course-grid {
+    --catalog-columns: var(--even-cols-5, 5);
+  }
+}
+/* Docked sidebars: 14.5rem cards. These selectors outrank the ones above, so the largest docked
+   capacity that fits wins. */
+@media (min-width: 1100px) {
+  main.harbor-catalog[data-sidebar-columns] .adaptive-catalog-course-grid {
+    --catalog-card-min: 14.5rem;
+  }
+  @container (min-width: 30.25rem) {
+    main.harbor-catalog[data-sidebar-columns] .adaptive-catalog-course-grid {
+      --catalog-columns: var(--even-cols-2, 2);
+    }
+  }
+  @container (min-width: 46rem) {
+    main.harbor-catalog[data-sidebar-columns] .adaptive-catalog-course-grid {
+      --catalog-columns: var(--even-cols-3, 3);
+    }
+  }
+  @container (min-width: 61.75rem) {
+    main.harbor-catalog[data-sidebar-columns] .adaptive-catalog-course-grid {
+      --catalog-columns: var(--even-cols-4, 4);
+    }
+  }
+  @container (min-width: 77.5rem) {
+    main.harbor-catalog[data-sidebar-columns] .adaptive-catalog-course-grid {
+      --catalog-columns: var(--even-cols-5, 5);
+    }
+  }
 }
 .harbor-catalog .adaptive-catalog-course-grid[data-columns='1'] {
   grid-template-columns: minmax(0, 1fr);
@@ -703,12 +889,6 @@ main[data-sidebar-nav-shown] .catalog-jump-nav {
   color: var(--text-subtle);
 }
 
-@container (max-width: 720px) {
-  .harbor-catalog .adaptive-catalog-course-grid:not([data-columns='1']) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
 @container (max-width: 640px) {
   .harbor-catalog .catalog-group-card {
     grid-template-columns: minmax(0, 1fr);
@@ -717,13 +897,6 @@ main[data-sidebar-nav-shown] .catalog-jump-nav {
 
   .catalog-group-scene {
     max-width: 360px;
-  }
-}
-
-@container (max-width: 460px) {
-  .harbor-catalog .adaptive-catalog-course-grid,
-  .harbor-catalog .adaptive-catalog-course-grid[data-columns] {
-    grid-template-columns: minmax(0, 1fr);
   }
 }
 

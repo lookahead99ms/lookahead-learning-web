@@ -27,14 +27,12 @@ export class Learn {
       queryParams: { group: LEARN_COURSE_GROUPS[0]!.id },
       groupId: LEARN_COURSE_GROUPS[0]!.id,
     },
-    secondaryActions: [
-      {
-        label: 'Practice Learn questions',
-        routerLink: '/interview-questions',
-        queryParams: { path: 'learn' },
-      },
-      { label: 'Build a study plan', routerLink: '/study-plan' },
-    ],
+    alternativeAction: {
+      label: 'Practice Learn questions',
+      routerLink: '/interview-questions',
+      queryParams: { path: 'learn' },
+    },
+    moreActions: [{ label: 'build a study plan', routerLink: '/study-plan' }],
     metricsLabel: 'Learn curriculum depth',
     courseMetricLabel: 'foundation courses',
     lessonMetricLabel: 'guided lessons',

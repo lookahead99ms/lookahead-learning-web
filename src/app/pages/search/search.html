@@ -228,6 +228,11 @@
                 results().length === 1 ? '' : 's'
               }}
             </p>
+            @if (correctedWords(); as fixed) {
+              <p class="search-correction">
+                No results for “{{ query().trim() }}”. Showing results for “{{ fixed.join(' ') }}”.
+              </p>
+            }
           </section>
           <label class="sort-control"
             >Sort by
@@ -390,10 +395,34 @@
               }
             </details>
           </ng-template>
+        } @else if (reviewContext() || !submittedQuery()) {
+          <div class="empty-state">
+            <p>No results match those filters. Try a broader subject or clear the filters.</p>
+            @if (!reviewContext() && selectedFilterCount()) {
+              <div class="empty-actions">
+                <button class="clear-filters" type="button" (click)="clearFilters()">Clear filters</button>
+              </div>
+            }
+          </div>
         } @else {
-          <p class="empty-state">
-            No results match those filters. Try a broader subject or clear the filters.
-          </p>
+          <div class="empty-state">
+            @if (selectedFilterCount()) {
+              <p>No results for “{{ query().trim() }}” with the current filters.</p>
+            } @else {
+              <p>
+                No results for “{{ query().trim() }}”. Check the spelling, or try a shorter or broader
+                word such as a topic name.
+              </p>
+            }
+            <div class="empty-actions">
+              @if (selectedFilterCount()) {
+                <button class="clear-filters primary" type="button" (click)="searchEverywhere()">
+                  Search all content
+                </button>
+              }
+              <button class="clear-filters" type="button" (click)="clearFilters()">Clear search</button>
+            </div>
+          </div>
         }
       }
     </section>

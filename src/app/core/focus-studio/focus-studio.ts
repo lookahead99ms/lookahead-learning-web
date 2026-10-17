@@ -22,6 +22,7 @@ import { GuidedAlgorithmTrace } from '../guided-algorithm-trace/guided-algorithm
 import { traceSnapshot } from '../guided-algorithm-trace/trace-model';
 import { CodeCopyButton } from '../code-copy-button/code-copy-button';
 import { StudioApproach } from './studio-approach';
+import { OptimalApproaches } from '../optimal-approaches/optimal-approaches';
 import { StudioFallbackWalkthrough } from './studio-fallback-walkthrough';
 import {
   StudioMode,
@@ -49,6 +50,17 @@ import { RecallCardView, StudioRecallGrid } from './studio-recall-grid';
 import { PracticeProgressService } from '../practice-progress/practice-progress';
 
 type StudioAction = 'solution' | 'close-visualization' | 'visualize' | 'locked';
+
+/** The problem peek's width: min(390px, 100vw - 40px) in focus-studio.css. */
+const PEEK_WIDTH = 390;
+/**
+ * DLV-803: the peek opens under its Problem button, which sits inside the centred page frame, so on
+ * a wide monitor it never lands in the empty margin at the screen edge. It stays fully on screen.
+ */
+export function peekLeft(buttonLeft: number, viewportWidth: number): number {
+  const width = Math.min(PEEK_WIDTH, viewportWidth - 40);
+  return Math.round(Math.max(12, Math.min(buttonLeft, viewportWidth - width - 20)));
+}
 
 /**
  * Recall card tags (card grid, 2026-10-06). A rewritten card names its kind; its tag is that kind.
@@ -92,6 +104,7 @@ function templateRecall(id: string): { tag: string; kind: DsaRecallKind } {
     GuidedAlgorithmTrace,
     CodeCopyButton,
     StudioApproach,
+    OptimalApproaches,
     StudioFallbackWalkthrough,
     DsaStory,
     StudioTimer,
@@ -153,6 +166,7 @@ export class FocusStudio {
   protected readonly problemPinned = computed(() => this.state().problemExpanded);
   protected readonly peek = signal(false);
   protected readonly peekTop = signal(160);
+  protected readonly peekLeft = signal(20);
   protected readonly hintCount = signal(0);
   /** Hints stay closed until the learner opens them (the Hints button or H). */
   protected readonly hintsVisible = signal(false);
@@ -297,6 +311,26 @@ export class FocusStudio {
         return ['visualize'];
     }
   });
+  /**
+   * Tabs the learner has opened on this problem. No spoilers (user, 2026-10-16): the Approach and
+   * Recall panels name the method (variation, selected approach, invariant, rationale), so they are
+   * rendered only once the learner opens them, not hidden in the page from the first view.
+   */
+  protected readonly opened = signal<ReadonlySet<StudioMode>>(new Set<StudioMode>(['practice']));
+  /** DLV-965: this problem belongs to a family of equally optimal approaches. */
+  protected readonly hasOtherApproaches = computed(() => !!this.problem().approachFamily?.siblings?.length);
+  /**
+   * "Other optimal solutions" (user, 2026-10-16): offered once the learner has the solution open or
+   * is on the Approach tab, the two places that show the "Other optimal approaches" card. Never
+   * during a timed attempt's gate.
+   */
+  protected readonly otherApproachesShown = computed(
+    () =>
+      this.hasOtherApproaches() &&
+      !this.gated() &&
+      !this.locked() &&
+      ((this.current().revealed && this.mode() !== 'visual') || this.mode() === 'approach'),
+  );
   protected readonly modes: { id: StudioMode; label: string; description: string }[] = [
     { id: 'practice', label: 'Try it yourself', description: 'Write your own solution and test your reasoning against the examples (1)' },
     { id: 'approach', label: 'Approach', description: 'Review the invariant, reasoning and complexity of the canonical approach (2)' },
@@ -342,6 +376,13 @@ export class FocusStudio {
       this.hintCount.set(0);
       this.hintsVisible.set(false);
       this.peek.set(false);
+      this.opened.set(new Set<StudioMode>(['practice']));
+    });
+    effect(() => {
+      const mode = this.mode();
+      untracked(() => {
+        if (!this.opened().has(mode)) this.opened.update((modes) => new Set(modes).add(mode));
+      });
     });
     // The walkthrough opens on the story's animated example until the learner picks another.
     effect(() => {
@@ -517,6 +558,28 @@ export class FocusStudio {
       this.patch({ revealed: true });
     }
   }
+  /**
+   * Scrolls to the visible "Other optimal approaches" card (the solution's rationale first, then the
+   * Approach tab's "Why it works" disclosure, which opens) and moves focus to its heading. Smooth
+   * scrolling only when the learner has not asked for reduced motion.
+   */
+  protected showOtherApproaches(): void {
+    const host = this.host.nativeElement;
+    const cards = [
+      ...host.querySelectorAll<HTMLElement>('.reference-rationale .other-approaches, .compare-rationale .other-approaches'),
+      ...host.querySelectorAll<HTMLElement>('app-studio-approach .other-approaches'),
+    ];
+    const card = cards.find((candidate) => !candidate.closest('[hidden]'));
+    if (!card) return;
+    const disclosure = card.closest('details');
+    if (disclosure && !disclosure.open) disclosure.open = true;
+    const heading = card.querySelector<HTMLElement>('.other-approaches-heading') ?? card;
+    const reduced = !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    requestAnimationFrame(() => {
+      heading.scrollIntoView?.({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+      heading.focus({ preventScroll: true });
+    });
+  }
   /** Reveals the next hint; the first one opened marks the problem started on this device. */
   protected revealHint(): void {
     this.markStarted();
@@ -647,9 +710,9 @@ export class FocusStudio {
   protected showPeek(event?: PointerEvent): void {
     clearTimeout(this.peekTimer);
     if (this.problemPinned() || (event && event.pointerType !== 'mouse')) return;
-    this.peekTop.set(
-      (this.problemButton()?.nativeElement.getBoundingClientRect().bottom ?? 140) + 8,
-    );
+    const button = this.problemButton()?.nativeElement.getBoundingClientRect();
+    this.peekTop.set((button?.bottom ?? 140) + 8);
+    this.peekLeft.set(peekLeft(button?.left ?? 20, window.innerWidth));
     this.peek.set(true);
   }
   protected leavePeek(): void {

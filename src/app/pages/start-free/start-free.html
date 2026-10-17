@@ -23,7 +23,9 @@
           <li><strong>{{ counts().open }}</strong> open to everyone</li>
           <li><strong>{{ counts().free }}</strong> more with a free account</li>
           @if (counts().paid) {
-            <li><strong>{{ counts().paid }}+</strong> more with a plan</li>
+            <li>
+              <strong [attr.title]="counts().paid + ' lessons'">{{ paidShown() }}</strong> more with a plan
+            </li>
           }
         </ul>
       }

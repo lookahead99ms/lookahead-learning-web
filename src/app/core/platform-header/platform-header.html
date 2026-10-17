@@ -1,4 +1,7 @@
-<header class="content-header platform-header" [class.with-search]="showSearch">
+<header
+  class="content-header platform-header"
+  [class.with-search]="showSearch"
+>
   <a class="brand" routerLink="/" aria-label="Look Ahead home">
     <app-platform-brand aria-hidden="true" />
   </a>
@@ -59,6 +62,7 @@
       <form
         class="header-search-form"
         id="header-search-palette"
+        appScrollLock
         [attr.role]="paletteOpen() ? 'dialog' : null"
         [attr.aria-modal]="paletteOpen() ? 'true' : null"
         aria-label="Quick search"
@@ -94,6 +98,11 @@
           <div class="header-search-suggestions" role="group" aria-label="Search suggestions">
             <app-topic-shortcuts (selected)="closeSearchPalette(false)" />
             <div class="dynamic-suggestions">
+              @if (correctedQuery(); as fixed) {
+                <p class="header-search-empty header-search-correction">
+                  Showing matches for “{{ fixed }}”
+                </p>
+              }
               @for (suggestion of visibleSuggestions(); track suggestion.type + suggestion.label) {
                 @if (suggestion.route) {
                   <a

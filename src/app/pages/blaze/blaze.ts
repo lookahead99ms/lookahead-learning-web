@@ -25,14 +25,12 @@ export class Blaze {
       label: 'Start the System Design Ladder',
       routerLink: '/blaze/design-fundamentals',
     },
-    secondaryActions: [
-      {
-        label: 'Practice senior questions',
-        routerLink: '/interview-questions',
-        queryParams: { path: 'blaze' },
-      },
-      { label: 'Build a study plan', routerLink: '/study-plan' },
-    ],
+    alternativeAction: {
+      label: 'Practice senior questions',
+      routerLink: '/interview-questions',
+      queryParams: { path: 'blaze' },
+    },
+    moreActions: [{ label: 'build a study plan', routerLink: '/study-plan' }],
     metricsLabel: 'Blaze curriculum depth',
     courseMetricLabel: 'senior-ready courses',
     lessonMetricLabel: 'decision lessons',

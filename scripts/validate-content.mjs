@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { basename, dirname, extname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
+  approachFamilyErrors,
   canonicalFixtureCoverageErrors,
   materializeCanonicalReferences,
   primaryPracticePlacement,
@@ -859,6 +860,10 @@ canonicalDsaProblemCount = canonicalDsaProblems.size;
 const canonicalAliases = new Set();
 for (const [id, problem] of canonicalDsaProblems) {
   validateCanonicalDsaProblem(problem, `learn/dsa-problems/${id}.json`);
+  // DLV-965: Approach-N problems and their family links must agree in both directions.
+  for (const error of approachFamilyErrors(problem, canonicalDsaProblems)) {
+    requireValue(false, `learn/dsa-problems/${id}.json: ${error}`);
+  }
   for (const alias of problem.aliases) {
     requireValue(!canonicalAliases.has(alias), `Duplicate canonical DSA alias ${alias}`);
     canonicalAliases.add(alias);

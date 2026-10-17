@@ -1,0 +1,274 @@
+:host {
+  display: grid;
+  justify-items: center;
+  width: 100%;
+  container-type: inline-size;
+  font-family: 'Avenir Next', 'Segoe UI', system-ui, sans-serif;
+}
+/* The drawing is decorative; the heading and list carry its meaning for screen readers. */
+.key-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.key-drawing {
+  /* The captions hang below the wordmark over the statements' strip (the statements step aside
+     while the story is told), so the card keeps one height while the wordmark loops. */
+  --caption-room: calc(min(100%, 680px) * 50 / 644);
+  display: block;
+  width: min(100%, 680px);
+  height: auto;
+  margin-block-end: calc(-1 * var(--caption-room));
+  overflow: visible;
+  opacity: 1;
+  transition: opacity 0.8s ease;
+}
+:host([data-state='hidden']) .key-drawing {
+  opacity: 0;
+}
+
+/* ---------- One change at a time ---------- */
+/* Plain letters are in the text colour; a letter takes its colour, or its symbol, on its turn. */
+.plain,
+.recolour {
+  stroke: var(--text-strong);
+}
+.recolour {
+  transition: stroke 0.8s ease;
+}
+.recolour.lit {
+  stroke: var(--lit);
+}
+.swap-out,
+.swap-in {
+  transition: opacity 0.8s ease;
+}
+.swap-out.lit,
+.swap-in {
+  opacity: 0;
+}
+.swap-in.lit {
+  opacity: 1;
+}
+/* Letters a symbol lands on hand over to it as it arrives, not before. */
+.land {
+  transition-delay: 1.4s;
+}
+
+/* Each symbol appears above its letter with a soft glow in its own colour, descends, and
+   settles onto the letter. Going back (a new loop round) it simply fades away. */
+.key-symbol {
+  opacity: 0;
+  transform: translateY(-64px);
+  transition:
+    opacity 0.5s ease,
+    transform 0s linear 0.5s;
+}
+.key-symbol.lit {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.6s ease,
+    transform 1.1s cubic-bezier(0.45, 0, 0.2, 1) 0.5s;
+}
+/* Only the symbol landing now glows; returning to the summary in a loop never re-lights them. */
+.key-symbol.landing {
+  animation: key-glow 2.2s ease-out both;
+}
+@keyframes key-glow {
+  0%,
+  45% {
+    filter: drop-shadow(0 0 6px var(--glow));
+  }
+  100% {
+    filter: none;
+  }
+}
+
+/* The path comes last: it draws from the L through everything to the door. */
+.key-shaft {
+  opacity: 0;
+  stroke-dasharray: 1 2;
+  stroke-dashoffset: 1;
+  transition:
+    opacity 0.4s ease,
+    stroke-dashoffset 0s linear 0.4s;
+}
+.key-shaft.lit {
+  opacity: 1;
+  stroke-dashoffset: 0;
+  transition:
+    opacity 0s,
+    stroke-dashoffset 2.2s ease-in-out;
+}
+.key-arrowhead {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.key-arrowhead.lit {
+  opacity: 1;
+  transition: opacity 0.3s ease 2.1s;
+}
+
+/* Each change's caption shows only while it happens. */
+.key-caption {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.key-caption.on {
+  opacity: 1;
+  transition: opacity 0.5s ease 0.3s;
+}
+.key-meaning {
+  fill: var(--text-strong);
+  font-size: 14px;
+  font-weight: 600;
+}
+/* All the meanings together are set a little smaller, so neighbours never touch. */
+.key-summary .key-meaning {
+  font-size: 13px;
+}
+/* The closing sentence: plain words in the text colour, key words in their symbols' colours. */
+.key-sentence .key-meaning {
+  font-size: 13.5px;
+  font-weight: 500;
+}
+.key-sentence .key-word {
+  font-weight: 700;
+}
+
+/* A replay starts from nothing: no fading back, no undrawing. */
+:host([data-state='hidden']) .key-drawing *,
+:host([data-state='hidden']) .key-drawing {
+  transition: none;
+}
+
+/* Pause/play and replay sit in the Essence card's corner, as icons. */
+.key-controls {
+  position: absolute;
+  inset-block-end: 20px;
+  inset-inline-end: 20px;
+  display: flex;
+  gap: 8px;
+}
+.key-control {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--platform-edge);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-subtle);
+  cursor: pointer;
+}
+.key-control svg {
+  width: 18px;
+  height: 18px;
+}
+.key-control:hover {
+  border-color: var(--text-subtle);
+  color: var(--text-strong);
+}
+.key-control:focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+
+/* Skipped to the end: the finished wordmark at once (the loop's light still runs later). */
+:host-context([data-skip]) .key-drawing,
+:host-context([data-skip]) .recolour,
+:host-context([data-skip]) .swap-out,
+:host-context([data-skip]) .swap-in,
+:host-context([data-skip]) .key-symbol,
+:host-context([data-skip]) .key-shaft,
+:host-context([data-skip]) .key-arrowhead,
+:host-context([data-skip]) .key-caption {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Screen readers always get the list; sighted readers get it where the captions are too small
+   (phones) or never animate (reduced motion). */
+.key-list {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@container (max-width: 600px) {
+  .key-caption {
+    display: none;
+  }
+  .key-drawing {
+    margin-block-end: calc(-1 * var(--caption-room) + 20px);
+  }
+  .key-list {
+    position: static;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 16px;
+    width: 100%;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
+    list-style: none;
+    color: var(--text-strong);
+    font-size: 14px;
+    text-align: start;
+  }
+  .key-list li {
+    display: grid;
+    grid-template-columns: 2.4em minmax(0, 1fr);
+    align-items: baseline;
+  }
+  .key-list strong {
+    color: var(--text-subtle);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+  }
+}
+:host([data-reduced]) .key-drawing {
+  margin-block-end: 20px;
+}
+:host([data-reduced]) .key-list {
+  position: static;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 20px;
+  width: 100%;
+  height: auto;
+  margin: 0 0 8px;
+  padding: 0;
+  overflow: visible;
+  clip-path: none;
+  list-style: none;
+  color: var(--text-strong);
+  font-size: 14px;
+}
+:host([data-reduced]) .key-list strong {
+  margin-inline-end: 6px;
+  color: var(--text-subtle);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .key-drawing,
+  .key-drawing * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

@@ -19,11 +19,12 @@ import {
   cardState,
   pricingCards,
 } from './pricing-plans';
+import { ScrollLock } from '../../core/scroll-lock/scroll-lock';
 
 /** Server-owned catalog and explicit local mock purchases; no real payment calls. */
 @Component({
   selector: 'app-pricing',
-  imports: [DatePipe, FormsModule, PlatformHeader, RouterLink, NgTemplateOutlet],
+  imports: [DatePipe, FormsModule, PlatformHeader, RouterLink, NgTemplateOutlet, ScrollLock],
   templateUrl: './pricing.html',
   styleUrl: './pricing.css',
 })

@@ -97,7 +97,9 @@
               <p class="small">
                 {{
                   entry.completed
-                    ? 'Completed. You can revisit this material.'
+                    ? entry.usedApproach
+                      ? 'Completed with Approach ' + entry.usedApproach + '. You can revisit this material.'
+                      : 'Completed. You can revisit this material.'
                     : entry.outcome === 'needs-review'
                       ? 'Marked for another review.'
                       : entry.outcome === 'attempted'
@@ -127,12 +129,38 @@
               @if (entry.unavailableReason) {
                 <p class="unavailable">{{ entry.unavailableReason }}</p>
               } @else {
+                @if (entry.approaches?.length) {
+                  <div class="approach-choice">
+                    <p class="small approach-choice-note">
+                      {{ entry.approaches!.length }} equally optimal approaches. Choose one; either
+                      completes this activity.
+                    </p>
+                    <nav
+                      class="approach-switch"
+                      [attr.aria-label]="'Approaches for ' + entry.assignment.title"
+                    >
+                      @for (option of entry.approaches; track option.problemId) {
+                        <a
+                          class="segment"
+                          [routerLink]="option.route"
+                          [queryParams]="entry.query"
+                          [attr.aria-current]="option.chosen ? 'true' : null"
+                          [attr.aria-label]="approachLabel(entry, option)"
+                          [attr.data-desk-approach]="option.approach"
+                          (click)="chooseApproach.emit({ entry, problemId: option.problemId })"
+                          >Approach {{ option.approach }}</a
+                        >
+                      }
+                    </nav>
+                  </div>
+                }
                 <div class="activity-actions">
                   <a
                     class="primary content-action"
                     data-card-primary
                     [routerLink]="entry.route"
                     [queryParams]="entry.query"
+                    (click)="openChosen(entry)"
                     [attr.aria-label]="openMaterialLabel(entry) + ': ' + entry.assignment.title"
                     >{{ openMaterialLabel(entry) }}</a
                   >

@@ -184,6 +184,13 @@ describe('Learn catalog', () => {
     ).toContain('Choose a starting foundation');
     expect(hero.querySelector('a[href="/interview-questions?path=learn"]')).not.toBeNull();
     expect(hero.querySelector('a[href="/study-plan"]')).not.toBeNull();
+    // DLV-803: the primary and its alternative are the two buttons; the study plan is a text line.
+    expect(
+      [...hero.querySelectorAll('.catalog-action-row > a')].map((a) => a.getAttribute('href')),
+    ).toEqual(['/learn?group=language-foundations', '/interview-questions?path=learn']);
+    expect(
+      hero.querySelector('.catalog-more-actions a[href="/study-plan"]')?.textContent?.trim(),
+    ).toBe('build a study plan');
     expect(harness.routeNativeElement!.querySelectorAll('.catalog-path-section')).toHaveLength(
       LEARN_COURSE_GROUPS.length,
     );
@@ -243,6 +250,62 @@ describe('Learn catalog', () => {
     // The title colour follows the path (--card-title-color is set on the Learn catalog).
     expect(harness.routeNativeElement!.querySelector('.learn-catalog-reader')).not.toBeNull();
     expect(groupCard.querySelector('app-card-scene')?.classList).toContain('la-card-scene-card');
+  });
+
+  it('sizes catalogs for browser zoom: centred fixed frame, auto-fill rem grid, rem-based titles', async () => {
+    const harness = await RouterTestingHarness.create('/learn');
+    await ready(harness);
+    const root = harness.routeNativeElement!;
+    // Component styles are emitted as <style> elements; read them as written (DLV-803).
+    const css = [...document.querySelectorAll('style')]
+      .map((style) => style.textContent ?? '')
+      .join('\n')
+      .replace(/\s+/g, ' ');
+
+    // Each grid carries the even column count for every row capacity (4 courses: 2×2 or 4).
+    const section = root.querySelector<HTMLElement>('#learn-group-language-foundations')!;
+    const grid = section.querySelector<HTMLElement>('.adaptive-catalog-course-grid')!;
+    const count = grid.children.length;
+    expect(count).toBe(
+      LEARN_COURSE_GROUPS.find((group) => group.id === 'language-foundations')!.courseIds.length,
+    );
+    expect(grid.style.getPropertyValue('--even-cols-3').trim()).toBe(
+      String(count === 4 ? 2 : Math.min(count, 3)),
+    );
+    expect(grid.style.getPropertyValue('--even-cols-5').trim()).not.toBe('');
+
+    // The grid fills each row with cards no narrower than a rem minimum; no fixed column count.
+    expect(css).toMatch(
+      /\.adaptive-catalog-course-grid\[[^\]]+\] \{ --catalog-card-min: 17\.5rem;[^}]*grid-template-columns: repeat\(\s?auto-fill, minmax\(\s?max\(\s?min\(100%, var\(--catalog-card-min\)\),/,
+    );
+    expect(css).not.toMatch(
+      /\.adaptive-catalog-course-grid\[[^\]]+\] \{[^}]*repeat\(3, minmax\(0, 1fr\)\)/,
+    );
+    // Capacity breakpoints are rem-based and read the even count for that capacity.
+    expect(css).toMatch(
+      /@container \(min-width: 55rem\) \{ \.harbor-catalog\[[^\]]+\] \.adaptive-catalog-course-grid\[[^\]]+\] \{ --catalog-columns: var\(--even-cols-3, 3\); \}/,
+    );
+    expect(css).toMatch(
+      /main\.harbor-catalog\[data-sidebar-columns\]\[[^\]]+\] \.adaptive-catalog-course-grid\[[^\]]+\] \{ --catalog-card-min: 14\.5rem; \}/,
+    );
+    // Centred fixed frame: the browsing column, and with docked sidebars at most the site frame.
+    expect(css).toMatch(
+      /main\.harbor-catalog\.content-page\[[^\]]+\] \{ max-width: var\(--page-max-browse, 1440px\); padding-inline: var\(--page-gutter/,
+    );
+    expect(css).toMatch(
+      /main\.harbor-catalog\.content-page\[data-sidebar-columns\]\[[^\]]+\] \{ --reader-sidebar-space: clamp\(248px, 18vw, 18rem\); max-width: min\(\s?var\(--page-max-browse, 1440px\), calc\(min\(100%, var\(--site-frame-max, 100rem\)\) - 2 \* var\(--reader-sidebar-space\)\)\s?\) !important; \}/,
+    );
+    // Fluid titles keep a rem base so zooming in enlarges them (never a bare vw middle term).
+    expect(css).toMatch(
+      /\.catalog-depth-hero\[[^\]]+\] \.reader-question-title\[[^\]]+\] \{ font-size: clamp\(2\.4rem, 2\.9rem \+ 0\.35vw, 3\.5rem\);/,
+    );
+    expect(css).toContain('--card-title-size: clamp(1.5rem, 1.2rem + 0.95vw, 2.1rem);');
+    expect(css).toContain('font-size: clamp(1.45rem, 1.15rem + 0.9vw, 2rem);');
+    expect(css).not.toMatch(/font-size: clamp\([^,()]+, -?[\d.]+vw,/);
+    // A narrow hero puts the scoreboard under the copy as one row of three.
+    expect(css).toMatch(
+      /@media \(max-width: 980px\), \(min-width: 1100px\) and \(max-width: 1420px\) \{ \.catalog-depth-hero\[[^\]]+\] \{ grid-template-columns: minmax\(0, 1fr\);/,
+    );
   });
 
   it('requests group and course scenes from the app scene assets', async () => {
