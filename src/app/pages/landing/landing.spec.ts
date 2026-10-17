@@ -17,6 +17,32 @@ const LABELS = [
   'Diagnose a slowdown',
 ];
 
+function clampPreferredTerms(value: string): string[] {
+  const terms: string[] = [];
+  for (let start = value.indexOf('clamp('); start !== -1; start = value.indexOf('clamp(', start + 6)) {
+    const parts: string[] = [];
+    let current = '';
+    let depth = 1;
+    for (let index = start + 6; index < value.length; index++) {
+      const char = value[index];
+      if (char === '(') depth++;
+      if (char === ')') depth--;
+      if (depth === 0) {
+        parts.push(current.trim());
+        if (parts.length === 3) terms.push(parts[1]);
+        break;
+      }
+      if (char === ',' && depth === 1) {
+        parts.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+  }
+  return terms;
+}
+
 describe('Landing', () => {
   function captureAnimations(root: HTMLElement) {
     const animations: Array<{
@@ -808,20 +834,7 @@ describe('Landing', () => {
         checked++;
         // Every clamp's preferred (middle) term must carry a rem base when it scales with the
         // window or the card: a bare 10cqi stays the same rendered size at any zoom level.
-        for (const [, args] of value.matchAll(/clamp\(((?:[^()]|\([^()]*(?:\([^()]*\))*[^()]*\))*)\)/g)) {
-          const parts: string[] = [];
-          let depth = 0;
-          let current = '';
-          for (const char of args) {
-            if (char === '(') depth++;
-            if (char === ')') depth--;
-            if (char === ',' && depth === 0) {
-              parts.push(current.trim());
-              current = '';
-            } else current += char;
-          }
-          parts.push(current.trim());
-          const middle = parts[1] ?? '';
+        for (const middle of clampPreferredTerms(value)) {
           if (fluid.test(middle) && !/rem\b/.test(middle)) offenders.push(value.trim());
         }
         if (!/clamp\(/.test(value) && !/rem\b/.test(value)) offenders.push(value.trim());
@@ -830,6 +843,14 @@ describe('Landing', () => {
     expect(checked).toBeGreaterThan(20);
     expect(offenders).toEqual([]);
     fixture.destroy();
+  });
+
+  it('reads nested clamp terms without backtracking and ignores incomplete values', () => {
+    expect(clampPreferredTerms('clamp(1rem, min(2rem + 3cqi, calc(4rem + 2vw)), 5rem)'))
+      .toEqual(['min(2rem + 3cqi, calc(4rem + 2vw))']);
+    expect(clampPreferredTerms('clamp(1rem, 10cqi, 3rem) clamp(1rem, 1rem + 2vw, 4rem)'))
+      .toEqual(['10cqi', '1rem + 2vw']);
+    expect(clampPreferredTerms('clamp(1rem, min(2cqi, 3rem)')).toEqual([]);
   });
 
   it('centres every Home section in the shared fixed-width page frame', () => {
