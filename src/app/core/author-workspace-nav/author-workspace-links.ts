@@ -201,6 +201,20 @@ export const authorDocumentationGroups: readonly AuthorDocumentationGroup[] = [
             icon: '🔁',
           },
           {
+            id: 'aws-dev-procedures',
+            label: 'DEV procedures',
+            href: '/admin/aws-dev-procedures',
+            description: 'Who runs AWS changes, and repeatable steps for budget, stacks, upload, audit and cleanup.',
+            icon: '📋',
+          },
+          {
+            id: 'aws-dev-records',
+            label: 'DEV execution records',
+            href: '/admin/aws-dev-records',
+            description: 'What was created in AWS on 2026-10-17 and 2026-10-18, and what is prepared but not run.',
+            icon: '🗂️',
+          },
+          {
             id: 'aws-candidate-design',
             label: 'Candidate design',
             href: '/admin/aws-candidate-design',
@@ -372,6 +386,16 @@ export const authorDocumentPages = {
     documentId: 'aws-dev-workflow',
     summary: 'Read-only log · GitHub workflow runs and troubleshooting.',
     frameTitle: 'DEV identity workflow runs and setup troubleshooting',
+  },
+  'aws-dev-procedures': {
+    documentId: 'aws-dev-procedures',
+    summary: 'Read-only reference · Procedure templates; nothing here runs a command.',
+    frameTitle: 'DEV AWS procedures, execution order and cleanup template',
+  },
+  'aws-dev-records': {
+    documentId: 'aws-dev-records',
+    summary: 'Read-only log · Dated AWS execution records; cleanup not run.',
+    frameTitle: 'DEV AWS execution records and prepared, unrun work',
   },
   'aws-candidate-design': {
     documentId: 'aws-candidate-design',
