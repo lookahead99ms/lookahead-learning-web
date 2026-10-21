@@ -1464,3 +1464,27 @@ separate **Delete learner** action appears for a free Local real account;
 it disables sign-in and erases plans and progress while retaining purchase
 audit. The owner's own account is protected. DEV deletion is absent because
 provider-owned identity disabling remains an operator action.
+
+### Workflow run identification and approval context
+
+Actions run titles include the workflow name, branch, event and run number so
+parallel workflows are distinguishable in All workflows. Existing run history
+is unchanged. Approval issues, where produced, show exact source commit links
+and associated PRs merged into main. Push-triggered approvals include the
+verified push range when available; manual/pinned sources are explicitly scoped
+to their exact revision, not claimed as a delta since the previous deployment.
+The central Content/Infra approval flows retain this snapshot with the approval
+receipt and disclose lookup failures or bounded/truncated results. Runtime APIs,
+workflow triggers, AWS grants and existing approval commands are unchanged.
+
+### Angular build-tool security patches
+
+The Angular CLI minimum is 22.2.2, which replaces the affected MCP server SDK.
+Angular's build package still pins Vite 8.3.0, so a scoped override resolves its
+Vite dependency to 8.3.5. This addresses the launch-editor advisories without
+changing the Angular major version or relaxing the dependency gate. Remove the
+override when Angular supplies a patched compatible Vite release, then rerun
+`npm run security:dependencies`, `npm run test:security-gates`,
+`npm run test:coverage`, and `npm run build:ci`. The live audit covers development
+as well as production dependencies; a historical clean scan is not a guarantee
+against newly published advisories.

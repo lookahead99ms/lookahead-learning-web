@@ -90,7 +90,7 @@
   },
   "devDependencies": {
     "@angular/build": "^22.2.0",
-    "@angular/cli": "^22.2.0",
+    "@angular/cli": "^22.2.2",
     "@angular/compiler-cli": "^22.2.0",
     "@vitest/coverage-v8": "4.1.11",
     "esbuild": "0.28.2",
@@ -106,5 +106,10 @@
     "fsevents@2.3.3": true,
     "lmdb@3.5.6": true,
     "msgpackr-extract@3.0.4": true
+  },
+  "overrides": {
+    "@angular/build": {
+      "vite": "8.3.5"
+    }
   }
 }
