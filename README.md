@@ -1464,3 +1464,15 @@ separate **Delete learner** action appears for a free Local real account;
 it disables sign-in and erases plans and progress while retaining purchase
 audit. The owner's own account is protected. DEV deletion is absent because
 provider-owned identity disabling remains an operator action.
+
+### Workflow run identification and approval context
+
+Actions run titles include the workflow name, branch, event and run number so
+parallel workflows are distinguishable in All workflows. Existing run history
+is unchanged. Approval issues, where produced, show exact source commit links
+and associated PRs merged into main. Push-triggered approvals include the
+verified push range when available; manual/pinned sources are explicitly scoped
+to their exact revision, not claimed as a delta since the previous deployment.
+The central Content/Infra approval flows retain this snapshot with the approval
+receipt and disclose lookup failures or bounded/truncated results. Runtime APIs,
+workflow triggers, AWS grants and existing approval commands are unchanged.
