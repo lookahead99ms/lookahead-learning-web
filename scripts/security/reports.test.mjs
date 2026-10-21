@@ -128,3 +128,19 @@ test('CodeQL rejects malformed scope properties', () => {
   report.runs[0].properties = [];
   assert.throws(() => checkSarif(report), /Invalid analysis scope/);
 });
+
+// Development-only advisories must still block CI, including multiple affected
+// locations of one package and inherited findings on the parent tooling.
+test('npm rejects the build-tool advisory pattern across multiple package locations', () => {
+  const fixture = lock();
+  fixture.packages['node_modules/tooling/node_modules/transitive'] = { version: '2.0.0', dev: true };
+  const inventory = lockInventory(fixture);
+  const report = audit('high');
+  report.vulnerabilities.transitive.nodes.push('node_modules/tooling/node_modules/transitive');
+  report.vulnerabilities.tooling = { name: 'tooling', severity: 'high', isDirect: true,
+    via: ['transitive'], nodes: ['node_modules/tooling'] };
+  report.metadata.dependencies.total = 4;
+  report.metadata.vulnerabilities.high = 2;
+  report.metadata.vulnerabilities.total = 2;
+  assert.equal(checkAudit(report, inventory).passed, false);
+});

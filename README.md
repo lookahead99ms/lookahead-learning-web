@@ -1476,3 +1476,15 @@ to their exact revision, not claimed as a delta since the previous deployment.
 The central Content/Infra approval flows retain this snapshot with the approval
 receipt and disclose lookup failures or bounded/truncated results. Runtime APIs,
 workflow triggers, AWS grants and existing approval commands are unchanged.
+
+### Angular build-tool security patches
+
+The Angular CLI minimum is 22.2.2, which replaces the affected MCP server SDK.
+Angular's build package still pins Vite 8.3.0, so a scoped override resolves its
+Vite dependency to 8.3.5. This addresses the launch-editor advisories without
+changing the Angular major version or relaxing the dependency gate. Remove the
+override when Angular supplies a patched compatible Vite release, then rerun
+`npm run security:dependencies`, `npm run test:security-gates`,
+`npm run test:coverage`, and `npm run build:ci`. The live audit covers development
+as well as production dependencies; a historical clean scan is not a guarantee
+against newly published advisories.
