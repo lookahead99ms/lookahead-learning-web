@@ -73,6 +73,18 @@ describe('CardScene', () => {
     }
   });
 
+  it('lets a card cap and round its drawing through unset custom properties (DLV-803)', async () => {
+    await render(() => of(sceneSvg), '/content/blaze/x/visuals/cards/a.svg');
+    const css = Array.from(document.querySelectorAll('style'))
+      .map((style) => style.textContent ?? '')
+      .join('\n')
+      .replace(/\s+/g, ' ');
+    // Defaults keep every other card unchanged: full width, square corners.
+    expect(css).toMatch(
+      /\.la-card-scene \{[^}]*aspect-ratio: var\(--card-scene-ratio, 16 \/ 9\); width: 100%;[^}]*max-width: var\(--card-scene-max-width, none\); margin-inline: auto; border-radius: var\(--card-scene-radius, 0\);/,
+    );
+  });
+
   it('caps drawing text below the card title in card mode only', async () => {
     const cardSvg =
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 135">' +

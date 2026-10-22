@@ -20,11 +20,23 @@ import { AccountThemePreference } from '../account-theme';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { ContentService } from '../../content/content.service';
 import { SearchDocument } from '../../content/content.models';
+import { withoutHiddenCourseDocuments } from '../../content/hidden-courses';
+import {
+  closestSearchWords,
+  foldSearchText,
+  hasSearchWord,
+  matchesSearchWords,
+  searchDocumentText,
+  searchRank,
+  searchVocabulary,
+  searchWords,
+} from '../search-text';
 import {
   authorWorkspaceLinks,
   visibleAdminLinks,
   isAuthorDocumentationRoute,
 } from '../author-workspace-nav/author-workspace-links';
+import { ScrollLock } from '../scroll-lock/scroll-lock';
 
 export function accountTriggerLabel(displayName: string | null | undefined): string {
   const name = displayName?.trim().replace(/\s+/g, ' ');
@@ -41,6 +53,8 @@ type HeaderSuggestion = {
   route?: string[];
   queryParams?: Record<string, string>;
   detail?: string;
+  /** Relevance of the item behind a row, when the row is one indexed item. */
+  rank?: number;
 };
 
 const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
@@ -85,6 +99,7 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
 @Component({
   selector: 'app-platform-header',
   imports: [
+    ScrollLock,
     PlatformBrand,
     HeaderNavigation,
     TopicShortcuts,
@@ -101,6 +116,13 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         top: 0;
         z-index: 50;
         flex-shrink: 0;
+      }
+      /* DLV-803: in a short window (a laptop zoomed to 150-200%) the header wraps to two rows and
+         would cover a third of the screen; it scrolls away with the page instead. */
+      @media (max-height: 32.5rem) {
+        :host {
+          position: relative;
+        }
       }
       .platform-header {
         background: var(--surface-page);
@@ -132,7 +154,8 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
       .header-search-form.search-palette {
         position: fixed;
         z-index: 81;
-        top: 88px;
+        /* DLV-803: closer to the top in a short window (high zoom) so suggestions still show. */
+        top: min(88px, 12dvh);
         left: 50%;
         width: min(760px, calc(100vw - 32px));
         transform: translateX(-50%);
@@ -142,7 +165,7 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         font-size: 1rem;
       }
       .header-search-form.search-palette .header-search-suggestions {
-        max-height: calc(100dvh - 180px);
+        max-height: calc(100dvh - min(88px, 12dvh) - 66px);
         overflow-y: auto;
         top: calc(100% - 1px);
         padding: 14px;
@@ -554,7 +577,9 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
         align-items: center;
         gap: 24px;
-        padding: 12px 4%;
+        /* DLV-803: wider than the page frame, the row lines up with the centred page
+           (--site-frame-max) like the content below it; laptops keep 4%. */
+        padding: 12px max(4%, (100% - var(--site-frame-max, 100rem)) / 2);
         min-height: 76px;
       }
       .platform-header .brand {
@@ -792,18 +817,27 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
     const header = this.elementRef.nativeElement.querySelector<HTMLElement>('.platform-header');
     const page = this.elementRef.nativeElement.parentElement;
     if (!header || !page) return;
+    const view = page.ownerDocument.defaultView;
+    // Sticky bars below the header use this as their top offset, so it is 0 while the header
+    // scrolls with the page (short windows, DLV-803).
     const updateHeight = () => {
       const height = header.getBoundingClientRect().height;
-      if (height > 0) page.style.setProperty('--platform-header-height', `${height}px`);
+      const sticky = view?.getComputedStyle(this.elementRef.nativeElement).position !== 'relative';
+      if (height > 0) page.style.setProperty('--platform-header-height', `${sticky ? height : 0}px`);
     };
     updateHeight();
     if (typeof ResizeObserver !== 'undefined') {
       this.headerResizeObserver = new ResizeObserver(updateHeight);
       this.headerResizeObserver.observe(header);
     }
+    const shortWindow = view?.matchMedia?.('(max-height: 32.5rem)');
+    shortWindow?.addEventListener?.('change', updateHeight);
+    this.stopShortWindowWatch = () => shortWindow?.removeEventListener?.('change', updateHeight);
   }
+  private stopShortWindowWatch?: () => void;
   ngOnDestroy(): void {
     this.headerResizeObserver?.disconnect();
+    this.stopShortWindowWatch?.();
   }
 
   protected readonly theme = inject(PlatformThemeService);
@@ -861,18 +895,49 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
   protected readonly suggestionsOpen = signal(false);
   protected readonly paletteOpen = signal(false);
   protected readonly searchDocuments = signal<SearchDocument[]>([]);
+  private readonly foldedDocuments = computed(() =>
+    this.searchDocuments().map((document) => ({
+      document,
+      text: searchDocumentText(document),
+    })),
+  );
+  private readonly suggestionVocabulary = computed(() =>
+    searchVocabulary(this.foldedDocuments().map(({ text }) => text)),
+  );
+  /** The same matching rule as the Search page, including its spelling fix (search-text.ts). */
+  private readonly suggestionWords = computed(() => {
+    const words = searchWords(this.searchQuery());
+    const documents = this.foldedDocuments();
+    if (!words.length || documents.some(({ text }) => matchesSearchWords(text, words)))
+      return { words, corrected: false };
+    const fixed = closestSearchWords(words, this.suggestionVocabulary(), (word) =>
+      documents.some(({ text }) => hasSearchWord(text, word)),
+    );
+    return fixed && documents.some(({ text }) => matchesSearchWords(text, fixed))
+      ? { words: fixed, corrected: true }
+      : { words, corrected: false };
+  });
+  protected readonly correctedQuery = computed(() => {
+    const { words, corrected } = this.suggestionWords();
+    return corrected ? words.join(' ') : null;
+  });
   protected readonly visibleSuggestions = computed(() => {
-    const query = this.searchQuery().trim().toLowerCase();
-    const matchingDocuments = this.searchDocuments()
-      .filter((document) => !query || document.searchableText.includes(query))
+    const { words } = this.suggestionWords();
+    const matchingDocuments = this.foldedDocuments()
+      .filter(({ text }) => matchesSearchWords(text, words))
+      .map(({ document }) => ({ document, score: this.documentScore(document, words) }))
       .sort(
         (left, right) =>
-          this.documentScore(right, query) - this.documentScore(left, query) ||
-          left.title.localeCompare(right.title),
-      );
-    const documents = this.spreadAcrossCourses(matchingDocuments).slice(0, 20);
-    if (!documents.length) return query ? [] : HEADER_SUGGESTIONS.slice(0, 6);
-    return this.diverseSuggestions(documents);
+          right.score - left.score || left.document.title.localeCompare(right.document.title),
+      )
+      .map(({ document }) => document);
+    // With a query, the 20 most relevant items are kept first and only then spread across
+    // courses, so the spread never pushes a strong title match out for a weak one.
+    const documents = words.length
+      ? this.spreadAcrossCourses(matchingDocuments.slice(0, 20))
+      : this.spreadAcrossCourses(matchingDocuments).slice(0, 20);
+    if (!documents.length) return words.length ? [] : HEADER_SUGGESTIONS.slice(0, 6);
+    return this.diverseSuggestions(documents, words);
   });
 
   protected openSuggestions(): void {
@@ -915,6 +980,8 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
 
   @HostListener('document:keydown', ['$event'])
   protected toggleSearchPalette(event: KeyboardEvent): void {
+    if ((event.key === 'ArrowDown' || event.key === 'ArrowUp') && this.moveSuggestionFocus(event))
+      return;
     if (this.paletteOpen() && event.key === 'Tab') {
       const controls = [
         ...this.elementRef.nativeElement.querySelectorAll<HTMLElement>(
@@ -952,6 +1019,30 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
     event.preventDefault();
     if (this.paletteOpen()) this.closeSearchPalette();
     else this.openSearchPalette();
+  }
+
+  /** Arrow keys move between the search box and the suggestion rows; Enter opens a row. */
+  private moveSuggestionFocus(event: KeyboardEvent): boolean {
+    if (!this.suggestionsOpen() || event.altKey || event.metaKey || event.ctrlKey) return false;
+    const form = this.elementRef.nativeElement.querySelector<HTMLElement>('.header-search-form');
+    const active = this.elementRef.nativeElement.ownerDocument.activeElement;
+    if (!form || !(active instanceof HTMLElement) || !form.contains(active)) return false;
+    const input = form.querySelector<HTMLElement>('.header-search-input');
+    const rows = [
+      ...form.querySelectorAll<HTMLElement>('.dynamic-suggestions .header-search-suggestion'),
+    ];
+    if (!input || !rows.length) return false;
+    const stops = [input, ...rows];
+    const current = stops.indexOf(active);
+    const next =
+      event.key === 'ArrowDown'
+        ? Math.min(current + 1, stops.length - 1)
+        : current <= 0
+          ? 0
+          : current - 1;
+    event.preventDefault();
+    stops[next].focus();
+    return true;
   }
 
   private openSearchPalette(): void {
@@ -995,9 +1086,11 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
   private loadSearchIndex(): void {
     if (this.searchIndexLoaded) return;
     this.searchIndexLoaded = true;
-    this.content
-      .getSearchIndex()
-      .subscribe({ next: (documents) => this.searchDocuments.set(documents) });
+    // Retired courses stay out of quick search, as they do on the Search page.
+    this.content.getSearchIndex().subscribe({
+      next: (documents) => this.searchDocuments.set(withoutHiddenCourseDocuments(documents)),
+      error: () => (this.searchIndexLoaded = false),
+    });
   }
 
   private suggestionScore(suggestion: HeaderSuggestion, query: string): number {
@@ -1009,7 +1102,10 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
     return 0;
   }
 
-  private diverseSuggestions(documents: SearchDocument[]): HeaderSuggestion[] {
+  private diverseSuggestions(
+    documents: SearchDocument[],
+    words: readonly string[] = [],
+  ): HeaderSuggestion[] {
     const candidates: HeaderSuggestion[] = [
       ...documents.map((document) => ({
         type: this.documentType(document),
@@ -1020,6 +1116,7 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
             : `${document.courseTitle} · ${document.moduleTitle}`,
         query: document.title,
         route: document.route,
+        rank: this.documentScore(document, words),
       })),
       ...documents
         .filter((document) => !document.discoveryKind)
@@ -1052,7 +1149,13 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
     const unique = new Map<string, HeaderSuggestion>();
     for (const candidate of candidates)
       unique.set(`${candidate.type}:${candidate.label.toLowerCase()}`, candidate);
-    const available = [...unique.values()];
+    // With a query, rows follow relevance: exact titles first, unrelated subjects last.
+    const scores = new Map<HeaderSuggestion, number>();
+    for (const candidate of unique.values())
+      scores.set(candidate, words.length ? this.suggestionRank(candidate, words) : 1);
+    const available = [...unique.values()].sort(
+      (left, right) => scores.get(right)! - scores.get(left)!,
+    );
     const result: HeaderSuggestion[] = [];
     const usedCourses = new Set<string>();
     for (const type of [
@@ -1064,7 +1167,12 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
       'Tool',
       'Module',
     ] as const) {
-      const matching = available.filter((item) => item.type === type);
+      // One row per type only when its title holds every typed word; weak matches wait.
+      const matching = available.filter(
+        (item) =>
+          item.type === type &&
+          (!words.length || matchesSearchWords(foldSearchText(item.label), words)),
+      );
       const candidate =
         matching.find((item) => {
           const course = this.suggestionCourse(item);
@@ -1080,7 +1188,19 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
       if (result.length === 8) break;
       if (!result.includes(candidate)) result.push(candidate);
     }
-    return result;
+    return words.length
+      ? result.sort((left, right) => scores.get(right)! - scores.get(left)!)
+      : result;
+  }
+
+  private suggestionRank(suggestion: HeaderSuggestion, words: readonly string[]): number {
+    const kind =
+      suggestion.type === 'Course' ? 'course' : suggestion.type === 'Topic' ? 'topic' : undefined;
+    const rank = suggestion.rank ?? searchRank({ title: suggestion.label, kind }, words);
+    // A subject of a matching item that does not itself hold the words ranks last.
+    return suggestion.type === 'Topic' && !matchesSearchWords(foldSearchText(suggestion.label), words)
+      ? Math.min(rank, 0.5)
+      : rank;
   }
 
   private documentType(document: SearchDocument): HeaderSuggestion['type'] {
@@ -1102,17 +1222,17 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
     return route?.[0] === '/' && route.length >= 3 ? `${route[1]}:${route[2]}` : null;
   }
 
-  private documentScore(document: SearchDocument, query: string): number {
-    if (!query) return document.contentType === 'theory' ? 3 : 1;
-    const title = document.title.toLowerCase();
-    if (title === query) return 100;
-    if (title.includes(query)) return 80;
-    if (
-      document.moduleTitle.toLowerCase().includes(query) ||
-      document.courseTitle.toLowerCase().includes(query)
-    )
-      return 60;
-    return 20;
+  private documentScore(document: SearchDocument, words: readonly string[]): number {
+    if (!words.length) return document.contentType === 'theory' ? 3 : 1;
+    return searchRank(
+      {
+        title: document.title,
+        subjects: document.subjects ?? document.tags,
+        context: [document.moduleTitle, document.courseTitle],
+        kind: document.discoveryKind,
+      },
+      words,
+    );
   }
 
   private spreadAcrossCourses(documents: SearchDocument[]): SearchDocument[] {

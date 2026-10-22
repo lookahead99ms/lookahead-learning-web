@@ -7,7 +7,15 @@ import { AccessLevels, AccessLevelsService, parseAccessLevels } from '../../cont
 import { CourseLearningUnit, CourseOutline } from '../../content/content.models';
 import { ContentService } from '../../content/content.service';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
-import { MISSING_SHOWCASE, StartFreePage, fitShowcase, startFreeGroups, startFreeShowcase, startFreeTarget } from './start-free';
+import {
+  MISSING_SHOWCASE,
+  StartFreePage,
+  fitShowcase,
+  paidLessonsShown,
+  startFreeGroups,
+  startFreeShowcase,
+  startFreeTarget,
+} from './start-free';
 
 function outline(path: string, id: string, title: string, units: CourseLearningUnit[]): CourseOutline {
   return {
@@ -363,5 +371,13 @@ describe('StartFreePage', () => {
     );
     expect(root.querySelectorAll('.start-free-link')).toHaveLength(0);
     expect(getCourseOutline).not.toHaveBeenCalled();
+  });
+
+  it('promises the lessons a plan adds conservatively: clean totals exact, others a lower milestone', () => {
+    expect(paidLessonsShown(203)).toBe('200+');
+    expect(paidLessonsShown(249)).toBe('225+');
+    expect(paidLessonsShown(200)).toBe('200');
+    expect(paidLessonsShown(87)).toBe('85+');
+    expect(paidLessonsShown(7)).toBe('7');
   });
 });

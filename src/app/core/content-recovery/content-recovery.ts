@@ -11,6 +11,7 @@ import {
 import { Router, RouterLink } from '@angular/router';
 import { safeAccountReturn } from '../../pages/account/account-navigation';
 import { CatalogId, plansIncluding } from '../../content/membership-plans';
+import { ScrollLock } from '../scroll-lock/scroll-lock';
 
 export type RecoveryKind = 'sign-in' | 'locked' | 'planned' | 'temporary' | 'missing';
 export interface RecoveryPreview {
@@ -29,7 +30,7 @@ export function recoveryKind(error: unknown, preview?: RecoveryPreview): Recover
 
 @Component({
   selector: 'app-content-recovery',
-  imports: [RouterLink],
+  imports: [RouterLink, ScrollLock],
   templateUrl: './content-recovery.html',
   styleUrl: './content-recovery.css',
 })

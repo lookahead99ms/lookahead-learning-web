@@ -3,31 +3,17 @@
 @let leftSignature = enabled() && !homepage() && (!showLeft() || leftInline) && !authorNavigation();
 @let rightSignature =
   enabled() && !homepage() && !authorNavigation() && (!showRight() || rightInline);
-<!-- Four corners (user review, 2026-10-04), paired in rows because people scan a row at a time:
+<!-- Four statements (user review, 2026-10-04), paired in rows because people scan a row at a time:
      the top row is the AI promise (Build with AI · Review what AI writes), the bottom row the
-     reasoning habit (Understand the obstacle · Know why it works). The bottom corners sit in any
-     gutter wide enough to hold them, whether or not a sidebar is open there; the sidebars stop
-     short of them. -->
-@let cornerLeft = enabled() && !homepage() && !authorNavigation() && !leftInline;
-@let cornerRight = enabled() && !homepage() && !authorNavigation() && !rightInline;
-@if (cornerLeft) {
-  <div
-    class="corner-signature corner-signature-left"
-    [class.beside-toggle]="showLeft()"
-    [style.width.px]="leftWidth()"
-  >
-    <app-reasoning-prompt variant="reasoning" [stacked]="true" />
-  </div>
-}
-@if (cornerRight) {
-  <div class="corner-signature corner-signature-right" [style.width.px]="rightWidth()">
-    <app-learning-prompt [stacked]="true" />
-  </div>
-}
+     reasoning habit (Understand the obstacle · Know why it works). DLV-803 (user, 2026-10-16:
+     keep all four): the top row stays at the top of the side gutters; the bottom row closes the
+     page as one row after it, lined up with the page's content column, instead of being fixed in
+     the window's bottom corners, where on a wide monitor it floated far from the content. -->
 @if (leftSignature && !leftInline) {
   <div
     class="standalone-signature standalone-signature-left"
     [style.top.px]="headerBottom()"
+    [style.inset-inline-start.px]="leftInset()"
     [style.width.px]="leftWidth()"
   >
     <app-platform-signature [stacked]="true" />
@@ -37,6 +23,7 @@
   <div
     class="standalone-signature standalone-signature-right"
     [style.top.px]="headerBottom()"
+    [style.inset-inline-end.px]="rightInset()"
     [style.width.px]="rightWidth()"
   >
     <app-reasoning-prompt variant="ai" [stacked]="true" />
@@ -61,20 +48,6 @@
         <app-reasoning-prompt variant="ai" />
       </div>
     }
-    @if (leftSignature && leftInline && !cornerLeft) {
-      <div
-        class="standalone-signature standalone-signature-left inline-signature reasoning-signature"
-      >
-        <app-reasoning-prompt variant="reasoning" />
-      </div>
-    }
-    @if (rightSignature && rightInline && !cornerRight) {
-      <div
-        class="standalone-signature standalone-signature-right inline-signature reasoning-signature"
-      >
-        <app-learning-prompt />
-      </div>
-    }
   </div>
 }
 @if (enabled()) {
@@ -83,13 +56,13 @@
       id="page-sidebar-left"
       class="page-sidebar left"
       [class.homepage]="homepage()"
-      [style.inset-inline-start.px]="leftOpen() ? leftInset() : 6"
+      [style.inset-inline-start.px]="leftInset()"
       [style.width.px]="leftWidth()"
       [class.open]="leftOpen()"
       [class.docked]="leftDocked()"
       [style.top.px]="headerBottom()"
       [style.max-height]="
-        'calc(100dvh - ' + (headerBottom() + 8 + (cornerLeft ? cornerReserve : 0)) + 'px)'
+        'calc(100dvh - ' + (headerBottom() + 8) + 'px)'
       "
       aria-label="Page sections"
     >
@@ -173,13 +146,13 @@
       id="page-sidebar-right"
       class="page-sidebar right"
       [class.statement-only]="!hasRightContent()"
-      [style.inset-inline-end.px]="rightOpen() ? rightInset() : 6"
+      [style.inset-inline-end.px]="rightInset()"
       [style.width.px]="rightWidth()"
       [class.open]="rightOpen()"
       [class.docked]="rightDocked()"
       [style.top.px]="headerBottom()"
       [style.max-height]="
-        'calc(100dvh - ' + (headerBottom() + 8 + (cornerRight ? cornerReserve : 0)) + 'px)'
+        'calc(100dvh - ' + (headerBottom() + 8) + 'px)'
       "
       aria-label="Practice with this page"
     >
@@ -391,7 +364,7 @@
   @if (recall().length) {
     <!-- Quick recall (2026-10-05): one question at a time in a modal dialog; the answer stays hidden until
          Reveal answer; the position is kept while the learner stays on the lesson. -->
-    <dialog
+    <dialog appScrollLock
       #recallDialog
       class="recall-dialog"
       aria-labelledby="recall-dialog-title"

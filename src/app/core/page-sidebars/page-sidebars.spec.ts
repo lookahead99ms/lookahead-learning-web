@@ -6,7 +6,9 @@ import {
   PageSidebars,
   canDockSidebar,
   collectPageSections,
+  sidebarInset,
   sidebarPageTitle,
+  siteFrameWidth,
 } from './page-sidebars';
 
 describe('Shared page sidebars', () => {
@@ -81,7 +83,11 @@ describe('Shared page sidebars', () => {
     fixture = TestBed.createComponent(PageSidebars);
     root.append(fixture.nativeElement);
     flush();
-    // Most interaction tests begin with the learner's explicit collapsed choice.
+    // In flow both sections start closed (DLV-803). Most interaction tests begin with the
+    // learner's explicit collapsed choice, so open and close each once.
+    button('Open left sidebar').click();
+    button('Open right sidebar').click();
+    flush();
     button('Close left sidebar').click();
     button('Close right sidebar').click();
     flush();
@@ -104,7 +110,8 @@ describe('Shared page sidebars', () => {
     refresh();
     expect(root.querySelector('.page-sidebar')).toBeNull();
     expect(root.querySelector('.standalone-signature app-platform-signature')).not.toBeNull();
-    expect(root.querySelector('.standalone-signature app-learning-prompt')).not.toBeNull();
+    expect(root.querySelector('.standalone-signature app-reasoning-prompt')).not.toBeNull();
+    expect(root.querySelector('app-learning-prompt')).toBeNull();
     expect(root.querySelector('app-sidebar-toggle')).toBeNull();
     expect(main.hasAttribute('data-sidebar-edge-controls')).toBe(false);
     expect(main.querySelector('h1')?.textContent).toBe('Sample lesson');
@@ -396,7 +403,8 @@ describe('Shared page sidebars', () => {
     expect(root.querySelector('.page-sidebar')).toBeNull();
     expect(root.querySelector('app-sidebar-toggle')).toBeNull();
     expect(root.querySelector('app-platform-signature')).not.toBeNull();
-    expect(root.querySelector('app-learning-prompt')).not.toBeNull();
+    expect(root.querySelector('app-reasoning-prompt')).not.toBeNull();
+    expect(root.querySelector('app-learning-prompt')).toBeNull();
   });
 
   it('uses the centered error message gutter for readable standalone text', () => {
@@ -442,10 +450,10 @@ describe('Shared page sidebars', () => {
     vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(1800);
     vi.mocked(main.getBoundingClientRect).mockReturnValue({ left: 0, right: 1800 } as DOMRect);
     refresh();
-    // All four corner statements join the strip: the two promises and the reasoning habit.
-    expect(root.querySelectorAll('.standalone-signature.inline-signature').length).toBe(4);
-    expect(root.querySelectorAll('.signature-strip app-reasoning-prompt').length).toBe(2);
-    expect(root.querySelector('.corner-signature')).toBeNull();
+    // The two promises join the strip; the reasoning pair now closes Home's footer only.
+    expect(root.querySelectorAll('.standalone-signature.inline-signature').length).toBe(2);
+    expect(root.querySelectorAll('.signature-strip app-reasoning-prompt').length).toBe(1);
+    expect(root.querySelector('.corner-signature, app-learning-prompt')).toBeNull();
   });
 
   it('lines the in-flow statements up with the page content column in one strip', () => {
@@ -474,8 +482,6 @@ describe('Shared page sidebars', () => {
     expect(parts).toEqual([
       'standalone-signature standalone-signature-left inline-signature',
       'standalone-signature standalone-signature-right inline-signature',
-      'standalone-signature standalone-signature-left inline-signature reasoning-signature',
-      'standalone-signature standalone-signature-right inline-signature reasoning-signature',
     ]);
     expect(strip.querySelector('app-platform-signature')?.classList).not.toContain('stacked');
 
@@ -509,6 +515,7 @@ describe('Shared page sidebars', () => {
     vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(1800);
     vi.mocked(main.getBoundingClientRect).mockReturnValue({ left: 300, right: 1500 } as DOMRect);
     refresh();
+    // Nothing is in flow: the promises stay docked, and the reasoning pair is not on this page.
     expect(root.querySelector('.signature-strip')).toBeNull();
     expect(root.querySelectorAll('.standalone-signature:not(.inline-signature)').length).toBe(2);
   });
@@ -526,15 +533,25 @@ describe('Shared page sidebars', () => {
     );
   });
 
-  it('opens both sections in flow by default without docking space', () => {
+  it('starts both in-flow sections closed so the page title opens the first screen', () => {
+    // DLV-803: without docking gutters (phones, a laptop at 150% zoom and up) two open sections
+    // pushed the lesson title below the fold; their heading rows stay, one activation away.
     fixture.destroy();
     fixture = TestBed.createComponent(PageSidebars);
     root.append(fixture.nativeElement);
     flush();
-    expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
-    expect(button('Close right sidebar').getAttribute('aria-expanded')).toBe('true');
+    expect(button('Open left sidebar').getAttribute('aria-expanded')).toBe('false');
+    expect(button('Open right sidebar').getAttribute('aria-expanded')).toBe('false');
+    expect(root.querySelector('#page-sidebar-left-content')?.hasAttribute('hidden')).toBe(true);
+    expect(root.querySelector('#page-sidebar-right-content')?.hasAttribute('hidden')).toBe(true);
     expect(fixture.nativeElement.classList.contains('inline-sidebars')).toBe(true);
     expect(main.previousElementSibling).toBe(fixture.nativeElement);
+    button('Open left sidebar').click();
+    button('Open right sidebar').click();
+    flush();
+    expect(button('Close left sidebar').getAttribute('aria-expanded')).toBe('true');
+    expect(button('Close right sidebar').getAttribute('aria-expanded')).toBe('true');
+    expect(root.querySelector('#page-sidebar-left-content')?.hasAttribute('hidden')).toBe(false);
     button('Close left sidebar').click();
     flush();
     expect(button('Open left sidebar').textContent).toContain('Sample lesson');
@@ -576,7 +593,7 @@ describe('Shared page sidebars', () => {
     expect(main.style.getPropertyValue('--sidebar-end-space')).toBe('');
   });
 
-  it('shows the reasoning statements in the two bottom corners of wide gutters', () => {
+  it('leaves the reasoning statements off the page when the gutters are wide (Home footer only)', () => {
     vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(2400);
     vi.mocked(main.getBoundingClientRect).mockReturnValue({
       left: 540,
@@ -590,17 +607,10 @@ describe('Shared page sidebars', () => {
       toJSON: () => ({}),
     });
     refresh();
-    const corners = Array.from(root.querySelectorAll<HTMLElement>('.corner-signature'));
-    expect(corners).toHaveLength(2);
-    expect(corners[0].classList).toContain('corner-signature-left');
-    expect(corners[1].classList).toContain('corner-signature-right');
-    expect(corners[0].textContent?.replace(/\s+/g, ' ').trim()).toBe(
-      'Understand the obstacle. Find the way.',
-    );
-    expect(corners[1].textContent?.replace(/\s+/g, ' ').trim()).toBe(
-      'Know why it works. Know when it won’t.',
-    );
-    expect(root.querySelector('.signature-strip app-reasoning-prompt')).toBeNull();
+    // The reasoning pair (user, 2026-10-17) now closes Home's footer only: no corner row here.
+    expect(root.querySelector('.corner-signature, .closing-signature')).toBeNull();
+    expect(root.textContent).not.toContain('Understand the obstacle');
+    expect(root.textContent).not.toContain('Know why it works');
     expect(
       root.querySelector('#page-sidebar-left .sidebar-heading .sidebar-title')?.textContent,
     ).toBe('Sample lesson');
@@ -614,13 +624,14 @@ describe('Shared page sidebars', () => {
         ?.textContent?.replace(/\s+/g, ' ')
         .trim(),
     ).toBe('Review what AI writes. Know where it can fail.');
-    // An open sidebar stops short of its bottom corner.
+    // With no statement fixed in the bottom corner, an open sidebar keeps the full height below
+    // the header (DLV-803; it used to stop 96px short of the corner).
     button('Open left sidebar').click();
     flush();
     const reserved = Number(
       /- (\d+)px/.exec(root.querySelector<HTMLElement>('#page-sidebar-left')!.style.maxHeight)?.[1],
     );
-    expect(reserved).toBeGreaterThanOrEqual(96 + 8);
+    expect(reserved).toBeLessThan(96 + 8);
   });
 
   it('keeps both statements visible when navigation and practice are collapsed', () => {
@@ -630,10 +641,10 @@ describe('Shared page sidebars', () => {
         ?.closest('[hidden], [inert]'),
     ).toBeNull();
     expect(
-      root.querySelector('.standalone-signature app-learning-prompt')?.closest('[hidden], [inert]'),
+      root.querySelector('.standalone-signature app-reasoning-prompt')?.closest('[hidden], [inert]'),
     ).toBeNull();
     expect(root.querySelector('.standalone-signature app-platform-signature')).not.toBeNull();
-    expect(root.querySelector('.standalone-signature app-learning-prompt')).not.toBeNull();
+    expect(root.querySelector('.standalone-signature app-reasoning-prompt')).not.toBeNull();
     expect(root.querySelector('#page-sidebar-left-content')?.hasAttribute('hidden')).toBe(true);
     expect(root.querySelector('#page-sidebar-right-content')?.hasAttribute('hidden')).toBe(true);
   });
@@ -737,6 +748,81 @@ describe('Shared page sidebars', () => {
     expect(canDockSidebar(248)).toBe(true);
     expect(canDockSidebar(247.99)).toBe(true);
     expect(canDockSidebar(-10)).toBe(false);
+  });
+
+  it('docks panels at the edge of the centred site frame on monitors wider than it', () => {
+    // DLV-803 (user, 2026-10-16): one centred, fixed-width page; the margins grow instead.
+    expect(siteFrameWidth('100rem', 16)).toBe(1600);
+    expect(siteFrameWidth(' 1600px', 16)).toBe(1600);
+    expect(siteFrameWidth('', 16)).toBe(Infinity);
+    expect(siteFrameWidth('80vw', 16)).toBe(Infinity);
+    // Laptops up to the frame width keep the window edge.
+    expect(sidebarInset(272, 1512, 1600)).toBe(6);
+    expect(sidebarInset(272, 1600, 1600)).toBe(6);
+    expect(sidebarInset(540, 2400, Infinity)).toBe(6);
+    // 2560px: the frame starts at 480px, so the panel starts there and reaches the reader.
+    expect(sidebarInset(752, 2560, 1600)).toBe(486);
+    // A page wider than the frame still leaves the panel the 248px it needs.
+    expect(sidebarInset(400, 2560, 1600)).toBe(152);
+  });
+
+  it('frames the docked panels and statements beside a centred reader without resizing it', () => {
+    document.documentElement.style.setProperty('--site-frame-max', '100rem');
+    try {
+      vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(2560);
+      vi.mocked(main.getBoundingClientRect).mockReturnValue({
+        left: 752,
+        right: 1808,
+        width: 1056,
+        top: 76,
+        bottom: 900,
+        height: 824,
+        x: 752,
+        y: 76,
+        toJSON: () => ({}),
+      });
+      refresh();
+      button('Open left sidebar').click();
+      button('Open right sidebar').click();
+      flush();
+      const left = root.querySelector<HTMLElement>('#page-sidebar-left')!;
+      const right = root.querySelector<HTMLElement>('#page-sidebar-right')!;
+      expect(left.classList.contains('docked')).toBe(true);
+      expect(left.style.insetInlineStart).toBe('486px');
+      expect(left.style.width).toBe('266px');
+      expect(right.style.insetInlineEnd).toBe('486px');
+      expect(right.style.width).toBe('266px');
+      // No closing row of statements after the page (user, 2026-10-17: Home footer only).
+      expect(root.querySelector('.closing-signature')).toBeNull();
+      // A closed panel keeps its place, so its toggle does not jump to the window edge.
+      button('Close left sidebar').click();
+      flush();
+      expect(left.style.insetInlineStart).toBe('486px');
+      // The reader is never resized by the sidebars.
+      expect(main.style.width).toBe('');
+      expect(main.style.maxWidth).toBe('');
+    } finally {
+      document.documentElement.style.removeProperty('--site-frame-max');
+    }
+  });
+
+  it('has no styles left for the old corner statements (user, 2026-10-17)', () => {
+    const css = [...document.querySelectorAll('style')].map((style) => style.textContent ?? '').join('\n');
+    expect(css).not.toContain('closing-signature');
+    expect(css).not.toContain('corner-signature');
+  });
+
+  it('keeps docked panel content beside the reader and in-flow headings on one row', () => {
+    const css = [...document.querySelectorAll('style')]
+      .map((style) => style.textContent ?? '')
+      .join('\n')
+      .replace(/\s+/g, ' ');
+    expect(css).toMatch(
+      /\.page-sidebar\.docked\[[^\]]+\]:not\(\.homepage\) > :is\(\.sidebar-heading\[[^\]]+\], \.sidebar-content\[[^\]]+\]\) \{ box-sizing: border-box; max-width: var\(--sidebar-panel-max, 22\.5rem\); \}/,
+    );
+    expect(css).toMatch(/\.left\.docked\[[^\]]+\]:not\(\.homepage\) > :is\([^)]*\) \{ margin-inline-start: auto; \}/);
+    expect(css).toMatch(/\.right\.docked\[[^\]]+\] > :is\([^)]*\) \{ margin-inline-end: auto; \}/);
+    expect(css).toMatch(/@media \(min-width: 40rem\) \{ \.inline-sidebars\[[^\]]+\] \{ flex-flow: row wrap;/);
   });
 
   it('keeps expanded in-flow sections interactive without modal keyboard behavior', () => {
@@ -1020,7 +1106,7 @@ describe('Shared page sidebars', () => {
     expect(root.querySelector('.standalone-signature')).toBeNull();
   });
 
-  it('shows the styled learning prompt on catalogs before opening a lesson', () => {
+  it('shows the AI statement, not the learning prompt, on catalogs before opening a lesson', () => {
     const previous = location.href;
     try {
       history.replaceState(null, '', '/grow');
@@ -1030,9 +1116,11 @@ describe('Shared page sidebars', () => {
       root.append(fixture.nativeElement);
       flush();
       expect(root.querySelector('#page-sidebar-right app-sidebar-toggle')).toBeNull();
-      expect(root.querySelector('.standalone-signature app-learning-prompt')?.textContent).toBe(
-        'Know why it works. Know when it won’t.',
-      );
+      expect(
+        root.querySelector('.standalone-signature app-reasoning-prompt')?.textContent?.replace(/\s+/g, ' ').trim(),
+      ).toBe('Review what AI writes. Know where it can fail.');
+      // "Know why it works. Know when it won't." now closes Home's footer only (user, 2026-10-17).
+      expect(root.querySelector('app-learning-prompt')).toBeNull();
       expect(root.querySelector('.recall-reveal')).toBeNull();
     } finally {
       history.replaceState(null, '', previous);

@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { ContentService } from '../../content/content.service';
 import { PlatformHeader, accountTriggerLabel } from './platform-header';
 import { AUTHOR_PREVIEWS_BASE_URL } from '../author-preview-config';
@@ -23,6 +23,21 @@ describe('PlatformHeader account disclosure', () => {
       ],
     }).compileComponents();
     vi.spyOn(TestBed.inject(StudyPlanAccount), 'initialize').mockResolvedValue();
+  });
+
+  it('keeps statements out of the header: everything in the bar goes somewhere (user, 2026-10-17)', () => {
+    const url = vi.spyOn(TestBed.inject(Router), 'url', 'get');
+    for (const path of ['/', '/grow/spring-boot?tab=x', '/start-free', '/admin/access']) {
+      url.mockReturnValue(path);
+      const fixture = TestBed.createComponent(PlatformHeader);
+      fixture.detectChanges();
+      const header = fixture.nativeElement.querySelector('.platform-header') as HTMLElement;
+      expect(header.querySelector('app-reasoning-prompt, app-learning-prompt, .header-statement')).toBeNull();
+      expect(header.classList.contains('with-statements')).toBe(false);
+      expect(header.textContent).not.toContain('Understand the obstacle');
+      expect(header.textContent).not.toContain('Know why it works');
+      fixture.destroy();
+    }
   });
 
   it('keeps the component wrapper sticky so it can follow the full page', () => {
@@ -627,6 +642,145 @@ describe('PlatformHeader account disclosure', () => {
       }),
     );
   });
+
+  describe('quick search matching (DLV-962 search audit)', () => {
+    function doc(id: string, title: string, extra: Partial<SearchDocument> = {}): SearchDocument {
+      return {
+        id,
+        contentId: id,
+        path: 'learn',
+        courseId: `course-${id}`,
+        courseTitle: `Course ${id}`,
+        moduleId: 'module',
+        moduleTitle: 'Module',
+        title,
+        contentType: 'q-and-a',
+        discoveryKind: 'practice',
+        practiceFormat: 'explain',
+        subjects: [],
+        tags: [],
+        filterTags: [],
+        languages: [],
+        preview: '',
+        access: { tier: 'free' },
+        searchableText: title.toLowerCase(),
+        route: ['/', 'learn', `course-${id}`, id],
+        ...extra,
+      };
+    }
+
+    async function quickSearch(documents: SearchDocument[], query: string) {
+      vi.spyOn(TestBed.inject(ContentService), 'getSearchIndex').mockReturnValue(of(documents));
+      const fixture = TestBed.createComponent(PlatformHeader);
+      fixture.detectChanges();
+      (fixture.nativeElement.querySelector('.header-search-trigger') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      const input = fixture.nativeElement.querySelector('.header-search-input') as HTMLInputElement;
+      input.value = query;
+      input.dispatchEvent(new Event('input'));
+      await fixture.whenStable();
+      fixture.detectChanges();
+      const rows = () =>
+        [
+          ...fixture.nativeElement.querySelectorAll('.dynamic-suggestions .header-search-suggestion'),
+        ] as HTMLElement[];
+      const labels = () =>
+        rows().map((row) => row.querySelector('.suggestion-label')?.textContent?.trim());
+      return { fixture, input, rows, labels };
+    }
+
+    const graphIndex = [
+      doc('bridges', 'Bridges in a network', {
+        subjects: ['Networks'],
+        searchableText: 'bridges in a network graphs',
+      }),
+      doc('cycles', 'Directed graph cycles'),
+      doc('graphs', 'Graphs', { discoveryKind: 'topic', contentType: 'guide' }),
+    ];
+
+    it('keeps retired courses out of quick search, as on the Search page', async () => {
+      const { labels } = await quickSearch(
+        [
+          doc('retired', 'Retired design lesson', { path: 'blaze', courseId: 'system-design' }),
+          doc('visible', 'Visible design lesson'),
+        ],
+        'design lesson',
+      );
+      expect(labels()).toContain('Visible design lesson');
+      expect(labels()).not.toContain('Retired design lesson');
+    });
+
+    it('lists the exact title first and an unrelated subject of a match last', async () => {
+      const { labels } = await quickSearch(graphIndex, 'graphs');
+      expect(labels()[0]).toBe('Graphs');
+      expect(labels()).toContain('Directed graph cycles');
+      expect(labels()[labels().length - 1]).toBe('Networks');
+    });
+
+    it('moves between the search box and the suggestion rows with the arrow keys', async () => {
+      const { fixture, input, rows } = await quickSearch(graphIndex, 'graphs');
+      const press = (key: string, target: HTMLElement, init: KeyboardEventInit = {}) => {
+        const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init });
+        target.dispatchEvent(event);
+        return event;
+      };
+      input.focus();
+      expect(press('ArrowDown', input).defaultPrevented).toBe(true);
+      expect(document.activeElement).toBe(rows()[0]);
+      press('ArrowDown', rows()[0]);
+      expect(document.activeElement).toBe(rows()[1]);
+      const last = rows()[rows().length - 1];
+      last.focus();
+      press('ArrowDown', last);
+      expect(document.activeElement).toBe(last);
+      rows()[1].focus();
+      press('ArrowUp', rows()[1]);
+      expect(document.activeElement).toBe(rows()[0]);
+      press('ArrowUp', rows()[0]);
+      expect(document.activeElement).toBe(input);
+      press('ArrowUp', input);
+      expect(document.activeElement).toBe(input);
+      expect(press('ArrowDown', input, { altKey: true }).defaultPrevented).toBe(false);
+      const outside = document.createElement('button');
+      document.body.append(outside);
+      outside.focus();
+      expect(press('ArrowDown', outside).defaultPrevented).toBe(false);
+      outside.remove();
+      fixture.destroy();
+    });
+
+    it('names the closest spelling when the typed words find nothing', async () => {
+      const { fixture, labels } = await quickSearch(graphIndex, 'grpahs');
+      expect(
+        fixture.nativeElement.querySelector('.header-search-correction')?.textContent?.trim(),
+      ).toBe('Showing matches for “graphs”');
+      expect(labels()[0]).toBe('Graphs');
+    });
+
+    it('leaves arrow keys alone when nothing is suggested and retries a failed index load', async () => {
+      const getSearchIndex = vi
+        .spyOn(TestBed.inject(ContentService), 'getSearchIndex')
+        .mockReturnValueOnce(throwError(() => new Error('offline')))
+        .mockReturnValue(of([]));
+      const fixture = TestBed.createComponent(PlatformHeader);
+      fixture.detectChanges();
+      const trigger = fixture.nativeElement.querySelector('.header-search-trigger') as HTMLButtonElement;
+      trigger.click();
+      fixture.detectChanges();
+      const input = fixture.nativeElement.querySelector('.header-search-input') as HTMLInputElement;
+      input.value = 'zzqq';
+      input.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+      input.focus();
+      const event = new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true });
+      input.dispatchEvent(event);
+      expect(event.defaultPrevented).toBe(false);
+      expect(fixture.nativeElement.querySelector('.header-search-empty')?.textContent).toContain(
+        'Press Enter to search all content.',
+      );
+      expect(getSearchIndex).toHaveBeenCalledTimes(2);
+    });
+  });
 });
 
 describe('PlatformHeader sticky context sizing', () => {
@@ -670,6 +824,62 @@ describe('PlatformHeader sticky context sizing', () => {
       measure.mockRestore();
       vi.unstubAllGlobals();
     }
+  });
+
+  it('gives sticky bars a zero offset while a short window lets the header scroll away (DLV-803)', async () => {
+    const listeners = new Set<() => void>();
+    const shortWindow = {
+      matches: false,
+      addEventListener: (_: string, fn: () => void) => listeners.add(fn),
+      removeEventListener: (_: string, fn: () => void) => listeners.delete(fn),
+    };
+    // Other services may watch other queries; only the short-window query gets these listeners.
+    const otherQuery = { matches: false, addEventListener: () => {}, removeEventListener: () => {} };
+    const matchMedia = vi.fn((query: string) =>
+      (query === '(max-height: 32.5rem)' ? shortWindow : otherQuery) as unknown as MediaQueryList,
+    );
+    vi.stubGlobal('matchMedia', matchMedia);
+    const measure = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(() => ({ height: 140 }) as DOMRect);
+    try {
+      await TestBed.configureTestingModule({
+        imports: [PlatformHeader],
+        providers: [
+          provideRouter([]),
+          provideHttpClient(),
+          { provide: ContentService, useValue: { getSearchIndex: () => of([]) } },
+        ],
+      }).compileComponents();
+      vi.spyOn(TestBed.inject(StudyPlanAccount), 'initialize').mockResolvedValue();
+      const fixture = TestBed.createComponent(PlatformHeader);
+      fixture.detectChanges();
+      const page = fixture.nativeElement.parentElement as HTMLElement;
+      const host = fixture.nativeElement as HTMLElement;
+      expect(matchMedia).toHaveBeenCalledWith('(max-height: 32.5rem)');
+      expect(page.style.getPropertyValue('--platform-header-height')).toBe('140px');
+      // The short-window media rule makes the host relative; the offset follows it.
+      host.style.position = 'relative';
+      listeners.forEach((fn) => fn());
+      expect(page.style.getPropertyValue('--platform-header-height')).toBe('0px');
+      host.style.position = '';
+      listeners.forEach((fn) => fn());
+      expect(page.style.getPropertyValue('--platform-header-height')).toBe('140px');
+      fixture.destroy();
+      expect(listeners.size).toBe(0);
+    } finally {
+      measure.mockRestore();
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('lets the header scroll with the page in a short window and lines its row up with the site frame', () => {
+    const styles = (PlatformHeader as unknown as { ɵcmp: { styles: string[] } }).ɵcmp.styles.join('\n').replace(/\s+/g, ' ');
+    expect(styles).toMatch(/@media \(max-height: 32\.5rem\) \{ \[_nghost-%COMP%\] \{ position: relative; \} \}/);
+    expect(styles).toContain('padding: 12px max(4%, (100% - var(--%NS%site-frame-max, 100rem)) / 2);');
+    // At 400% zoom (a 180px-tall window) the search palette still leaves room for suggestions.
+    expect(styles).toContain('top: min(88px, 12dvh);');
+    expect(styles).toContain('max-height: calc(100dvh - min(88px, 12dvh) - 66px);');
   });
 });
 

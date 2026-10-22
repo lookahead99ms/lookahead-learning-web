@@ -1,6 +1,6 @@
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { upgradeLegacyCatalogJson } from './catalog-url';
-import { Component, DestroyRef, OnInit, computed, inject, input, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   StudyPlanAccount,
@@ -8,6 +8,13 @@ import {
   savedAccountPlan,
 } from '../pages/study-plan/study-plan-account';
 import { studyDayQueue, findStudyActivity, validStudyLog } from '../content/study-plan-daily';
+import { StudyPlanApproaches } from '../content/study-plan-approaches';
+
+/** DLV-962: this page's problem and the routes of its equally optimal siblings. */
+export interface ReaderApproachFamily {
+  problemId: string;
+  siblingRoutes: string[][];
+}
 @Component({
   selector: 'app-study-plan-reader-navigation',
   imports: [RouterLink],
@@ -55,6 +62,12 @@ export class StudyPlanReaderNavigation implements OnInit {
   private readonly router = inject(Router);
   private readonly account = inject(StudyPlanAccount);
   readonly problemRows = input(false);
+  /**
+   * DLV-962: a plan item scheduled as one approach may be opened as any approach of its family, so
+   * the plan context stays valid on a sibling's page, and the approach opened is remembered.
+   */
+  readonly approachFamily = input<ReaderApproachFamily | null>(null);
+  private readonly approaches = inject(StudyPlanApproaches);
   readonly planId = this.route.snapshot.queryParamMap.get('plan') ?? '';
   readonly day = signal(Number(this.route.snapshot.queryParamMap.get('day')));
   private readonly saved = signal<SavedPlan | null>(null);
@@ -75,11 +88,25 @@ export class StudyPlanReaderNavigation implements OnInit {
     )
       return null;
     const item = findStudyActivity(saved.snapshot, this.activity(), this.day());
-    return item &&
-      this.router.serializeUrl(this.router.createUrlTree(item.route)) ===
-        this.router.url.split('?')[0]
+    if (!item) return null;
+    const itemUrl = this.router.serializeUrl(this.router.createUrlTree(item.route));
+    if (itemUrl === this.router.url.split('?')[0]) return item;
+    const family = this.approachFamily();
+    return family?.siblingRoutes.some(
+      (route) => this.router.serializeUrl(this.router.createUrlTree(route)) === itemUrl,
+    )
       ? item
       : null;
+  });
+  private readonly rememberApproach = effect(() => {
+    const item = this.current(),
+      family = this.approachFamily(),
+      saved = this.saved();
+    if (!item || !family?.siblingRoutes.length || !saved) return;
+    // A finished item keeps the approach it was completed with.
+    if (saved.completedIds.includes(item.id) || saved.sessionOutcomes?.[item.id] === 'completed') return;
+    const planKey = `${this.account.account()?.accountId ?? 'local'}:${this.planId}`;
+    untracked(() => this.approaches.choose(planKey, item.id, family.problemId));
   });
   readonly problemNeighbors = computed(() => {
     const current = this.current(),

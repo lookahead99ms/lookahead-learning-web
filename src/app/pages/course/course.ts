@@ -32,6 +32,17 @@ import { AccessLevelsService } from '../../content/access-levels';
   templateUrl: './course.html',
   styles: [
     `
+      /* DLV-803 (centred fixed-width page, user 2026-10-16): a course overview is a browsing
+         page, so it takes the shared content column (--page-max-browse, 80rem) on every monitor,
+         with the margins growing on a larger screen; a narrower window (zoom in) keeps the
+         gutter and reflows the cards. The learning map inside fills the column. Courses with
+         the side lesson list keep their own fixed width (below). */
+      .course-page > .course-reader:not(.course-reader-with-nav) {
+        width: min(var(--page-max-browse, 1180px), 100% - 2 * var(--page-gutter, 6vw));
+      }
+      .course-page > .course-reader > .module-question-list {
+        width: 100%;
+      }
       .course-section-tile {
         min-height: 220px;
         display: flex;

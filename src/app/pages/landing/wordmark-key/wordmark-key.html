@@ -1,0 +1,149 @@
+<h3 class="key-title" id="wordmark-key-title">Inside the wordmark</h3>
+<svg
+  class="key-drawing"
+  viewBox="-6 30 644 180"
+  fill="none"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+>
+  <!-- The plain word. A letter hands over as its symbol lands on it; the rest keep their colour. -->
+  <path class="plain swap-out" [class.lit]="lit('path')" d="M8 60 V138 H36" stroke-width="7" />
+  <g class="swap-out land" [class.lit]="lit('eyes')">
+    <circle class="plain" cx="55.75" cy="98" r="13" stroke-width="5" />
+    <circle class="plain" cx="93.75" cy="98" r="13" stroke-width="5" />
+  </g>
+  <path class="plain swap-out land" [class.lit]="lit('wall')" d="M151 58 V138" stroke-width="7" />
+  <path class="plain swap-out land" [class.lit]="lit('code')" d="M183 58 L156 100 L183 138" stroke-width="7" />
+  <path class="plain swap-out land" [class.lit]="lit('ai')" d="M204 138 L230 58 L256 138 M217 100 H243" stroke-width="7" />
+  <path class="recolour land" [class.lit]="lit('ai')" style="--lit: var(--identity-h)" d="M323 58 V138" stroke-width="7" />
+  <path class="plain swap-out land" [class.lit]="lit('e')" d="M363 58 V138 M363 58 H410 M363 98 H405 M363 138 H410" stroke-width="7" />
+  <path class="plain swap-out land" [class.lit]="lit('a')" d="M440 138 L470 58 L500 138 M451 108 H489" stroke-width="7" />
+  <path class="recolour land" [class.lit]="lit('door')" style="--lit: var(--identity-ai)" d="M543 58 V138 H563 C593 138 612 123 612 98 C612 73 593 58 563 58 Z" stroke-width="7" />
+
+  <!-- The symbols: each appears above its letter, glowing in its own colour, and descends onto it. -->
+  <g class="key-symbol" [class.lit]="lit('eyes')" [class.landing]="now('eyes')" style="--glow: var(--identity-eyes)">
+    @for (x of [19.45, 57.45]; track x) {
+        <g [attr.transform]="'translate(' + x + ' 51.25) scale(0.55)'">
+          <path d="M34 85 C48 65 72 65 88 85 C72 103 48 103 34 85 Z" stroke="var(--identity-eyes)" stroke-width="3.8" />
+          <path d="M34 85 C48 65 72 65 88 85" stroke="var(--identity-eyes)" stroke-width="5.5" />
+          <path d="M37 81 Q31 79 29 74 M44 75 Q38 72 37 68" stroke="var(--identity-eyes)" stroke-width="3.5" />
+          <circle cx="66" cy="85" r="7.8" stroke="var(--identity-eyes)" stroke-width="2.5" />
+          <circle cx="66" cy="85" r="3.4" fill="var(--identity-eyes)" />
+        </g>
+      }
+  </g>
+  <g class="key-symbol" [class.lit]="lit('wall')" [class.landing]="now('wall')" style="--glow: var(--identity-wall)">
+    <rect x="144" y="54" width="14" height="88" rx="1.5" fill="var(--identity-wall)" />
+    <path d="M144 71 H158 M144 89 H158 M144 107 H158 M144 125 H158 M151 54 V71 M151 89 V107 M151 125 V142" stroke="var(--identity-cutout)" stroke-width="1.4" />
+  </g>
+  <g class="key-symbol" [class.lit]="lit('code')" [class.landing]="now('code')" style="--glow: var(--identity-code)">
+    <path d="M183 78 L151 100 L183 122 M291 78 L323 100 L291 122" stroke="var(--identity-code)" stroke-width="4.8" />
+  </g>
+  <g class="key-symbol" [class.lit]="lit('e')" [class.landing]="now('e')" style="--glow: var(--identity-ai)">
+    <path d="M363 58 V138 M363 58 H407 L416 67 M363 98 H410 M363 138 H407 L416 129" stroke="var(--identity-ai)" stroke-width="7" />
+    @for (y of [67, 98, 129]; track y) {
+      <circle cx="416" [attr.cy]="y" r="4.5" fill="var(--identity-cutout)" stroke="var(--identity-ai)" stroke-width="3" />
+    }
+  </g>
+  <g class="key-symbol" [class.lit]="lit('a')" [class.landing]="now('a')" style="--glow: var(--identity-ai)">
+    <path d="M440 138 L470 58 L500 138" stroke="var(--identity-ai)" stroke-width="7" />
+    <path d="M451 108 H489" stroke="var(--identity-ai)" stroke-width="6" />
+    <path d="M470 91 V99 M458 104 V99 H482 V104" stroke="var(--identity-ai)" stroke-width="2.8" />
+    @for (node of [[470, 87], [458, 108], [482, 108]]; track node) {
+      <circle [attr.cx]="node[0]" [attr.cy]="node[1]" r="4" fill="var(--identity-cutout)" stroke="var(--identity-ai)" stroke-width="2.8" />
+    }
+  </g>
+  <g class="key-symbol" [class.lit]="lit('door')" [class.landing]="now('door')" style="--glow: var(--identity-wall)">
+    <path d="M552 66 L565 80 V115 L552 129 Z" fill="var(--identity-door)" stroke="var(--identity-wall)" stroke-width="3" />
+    <circle cx="561" cy="96" r="1.6" fill="var(--identity-wall)" />
+  </g>
+
+  <!-- The path comes last: the L becomes it and it runs through everything to the door. -->
+  <g class="key-line">
+    <path class="key-shaft" [class.lit]="lit('path')" pathLength="1" d="M20 62 V121 Q20 140 39 140 H91 Q115 140 128 113 Q134 100 134 83 V65 Q134 45 151 45 H158 Q174 45 174 62 V64 Q174 68 179 68 H184 Q192 68 192 76 V90 Q192 100 202 100 H319 C341 100 332 153 356 153 H493 C518 153 513 110 543 110 H588" stroke="var(--identity-arrow)" stroke-width="6.5" />
+    <path class="key-arrowhead" [class.lit]="lit('path')" d="M579 101 L588 110 L579 119" stroke="var(--identity-arrow)" stroke-width="6.5" />
+  </g>
+  <!-- Above the line, as in the wordmark: the H's crossbar, and AI with the I the H shares. -->
+  <path class="plain swap-out land" [class.lit]="lit('ai')" d="M278 58 V138" stroke-width="7" />
+  <path class="recolour land" [class.lit]="lit('ai')" style="--lit: var(--identity-h)" d="M278 100 H323" stroke-width="7" />
+  <g class="key-symbol" [class.lit]="lit('ai')" [class.landing]="now('ai')" style="--glow: var(--identity-ai)">
+    <path d="M204 138 L230 58 L256 138 M217 100 H243 M278 58 V138" stroke="var(--identity-ai)" stroke-width="7" />
+  </g>
+
+  <!-- One meaning at a time while it changes; then all of them together, before the path. -->
+  @for (item of explained; track item.id) {
+    <text class="key-caption" [class.on]="now(item.id)" [attr.x]="item.centre" y="184" text-anchor="middle">
+      @for (line of item.caption; track line; let row = $index) {
+        <tspan class="key-meaning" [attr.x]="item.centre" [attr.y]="184 + row * 17">{{ line }}</tspan>
+      }
+    </text>
+  }
+  @for (item of summary; track item.centre) {
+    <text class="key-caption key-summary" [class.on]="now('summary')" [attr.x]="item.centre" y="184" text-anchor="middle">
+      @for (line of item.lines; track line; let row = $index) {
+        <tspan class="key-meaning" [attr.x]="item.centre" [attr.y]="184 + row * 16">{{ line }}</tspan>
+      }
+    </text>
+  }
+  <!-- As the L becomes the path, the whole wordmark reads as one sentence; it then moves below. -->
+  <text class="key-caption key-sentence" [class.on]="now('path') && !inLoop()" x="314" y="184" text-anchor="middle">
+    @for (line of sentence; track $index; let row = $index) {
+      <tspan class="key-meaning" x="314" [attr.y]="184 + row * 18">
+        @for (part of line; track $index) {
+          <tspan [class.key-word]="part.colour" [style.fill]="part.colour ?? null">{{ part.text }}</tspan>
+        }
+      </tspan>
+    }
+  </text>
+</svg>
+<ol class="key-list" aria-labelledby="wordmark-key-title">
+  @for (item of listed; track item.id) {
+    <li><strong>{{ item.letters }}</strong> {{ item.listed ?? item.caption.join(' ') }}</li>
+  }
+</ol>
+<div class="key-controls">
+  @if (!reducedMotion()) {
+    <button
+      type="button"
+      class="key-control"
+      [attr.aria-label]="still() ? 'Play the animation' : 'Pause the animation'"
+      [attr.title]="still() ? 'Play the animation' : 'Pause the animation'"
+      [attr.aria-pressed]="still()"
+      (click)="toggleStill()"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+        @if (still()) {
+          <path d="M8 5.5 L18.5 12 L8 18.5 Z" />
+        } @else {
+          <path d="M9 6 V18 M15 6 V18" />
+        }
+      </svg>
+    </button>
+    <button
+      type="button"
+      class="key-control key-skip"
+      aria-label="Skip to the end"
+      title="Skip to the end"
+      (click)="skipToEnd()"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+        <path d="M6 5.5 L15 12 L6 18.5 Z" />
+        <path d="M18 5.5 V18.5" />
+      </svg>
+    </button>
+    <button
+      type="button"
+      class="key-control key-replay"
+      aria-label="Replay the Essence"
+      title="Replay the Essence"
+      (click)="replay()"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+        <path d="M20 12a8 8 0 1 1-2.34-5.66" />
+        <path d="M20 4v5h-5" />
+      </svg>
+    </button>
+  }
+</div>

@@ -5,6 +5,7 @@ import { WalkthroughCode } from './walkthrough-code';
 import {
   WalkthroughCodeLine,
   codeScrollTop,
+  pinnedCover,
   exampleLabel,
   firstSentence,
   walkthroughKey,
@@ -75,6 +76,28 @@ describe('walkthrough text helpers', () => {
     expect(codeScrollTop(box, 120, 24)).toBeNull();
     expect(codeScrollTop(box, 290, 24)).toBe(190);
     expect(codeScrollTop({ scrollTop: 400, clientHeight: 300 }, 100, 24)).toBe(0);
+  });
+
+  it('keeps the current line below the controls pinned above the code on a narrow player (DLV-803)', () => {
+    const host = document.createElement('section');
+    host.className = 'walkthrough';
+    host.innerHTML = '<div class="wt-left"></div><pre></pre>';
+    document.body.append(host);
+    const left = host.querySelector<HTMLElement>('.wt-left')!;
+    const box = host.querySelector('pre')!;
+    const rect = (top: number, bottom: number, x = 0, width = 600) =>
+      ({ top, bottom, left: x, right: x + width, height: bottom - top, width }) as DOMRect;
+    vi.spyOn(box, 'getBoundingClientRect').mockReturnValue(rect(250, 600));
+    const cover = vi.spyOn(left, 'getBoundingClientRect').mockReturnValue(rect(90, 240));
+    // Not pinned: only the page header covers the box.
+    expect(pinnedCover(box, 90)).toBe(90);
+    left.style.position = 'sticky';
+    // Pinned above the code (Code pane): the visible area starts under the controls and caption.
+    expect(pinnedCover(box, 90)).toBe(240);
+    // A column beside the code (two-column player) never covers it.
+    cover.mockReturnValue(rect(90, 700, 620, 500));
+    expect(pinnedCover(box, 90)).toBe(90);
+    host.remove();
   });
 });
 
@@ -255,6 +278,61 @@ describe('WalkthroughPlayer', () => {
     expect(switchButtons.map((button) => button.getAttribute('aria-pressed'))).toEqual(['false', 'true']);
     const css = [...document.querySelectorAll('style')].map((style) => style.textContent ?? '').join('\n');
     expect(css).toContain('@container walkthrough (max-width: 760px)');
+  });
+
+  describe('layout at every browser zoom (DLV-803)', () => {
+    // Component styles are emitted as <style> elements; read them as written, one space apart.
+    const styles = () => {
+      render();
+      return [...document.querySelectorAll('style')]
+        .map((style) => style.textContent ?? '')
+        .join('\n')
+        .replace(/\s+/g, ' ');
+    };
+    const block = (css: string, query: string) => {
+      const start = css.indexOf(query);
+      expect(start, query).toBeGreaterThan(-1);
+      let depth = 0;
+      for (let index = css.indexOf('{', start); index < css.length; index++) {
+        if (css[index] === '{') depth++;
+        if (css[index] === '}' && --depth === 0) return css.slice(start, index + 1);
+      }
+      return css.slice(start);
+    };
+
+    it('gives the code box the right column first; the idea list shrinks and scrolls', () => {
+      const css = styles();
+      expect(css).toMatch(/\.wt-right\[[^\]]+\] \.ideas\[[^\]]+\] \{ flex: 0 12 auto; min-height: min\(7\.5rem, 30dvh\);/);
+    });
+
+    it('keeps drawing and code as two columns inside the centred page frame, never a third', () => {
+      const css = styles();
+      expect(css).toMatch(/\.wt-grid\[[^\]]+\] \{ display: grid; grid-template-columns: minmax\(0, 1\.25fr\) minmax\(300px, 1fr\);/);
+      expect(css).not.toContain('@container walkthrough (min-width');
+    });
+
+    it('keeps the step controls and caption pinned above the code it steps through on a narrow player', () => {
+      const narrow = block(styles(), '@container walkthrough (max-width: 760px)');
+      expect(narrow).toMatch(/\.walkthrough\[data-pane='?code'?\]\[[^\]]+\] \.wt-left\[[^\]]+\] \{ position: sticky; top: var\(--wt-pin\); z-index: 4; \}/);
+      // The code box fits the window under them, so the current line and the controls share a screen.
+      expect(narrow).toMatch(
+        /--wt-code-height: max\(10\.5em, calc\(100dvh - var\(--wt-pin\) - var\(--wt-controls-h, 60px\) - var\(--wt-caption-h, 96px\) - 5em\)\)/,
+      );
+    });
+
+    it('wraps the controls naturally on a zoomed-in player; the scrubber takes its own row only at phone width', () => {
+      const css = styles();
+      const narrow = block(css, '@container walkthrough (max-width: 760px)');
+      expect(narrow).not.toContain('flex-basis: 100%');
+      const phone = block(css, '@container walkthrough (max-width: 520px)');
+      expect(phone).toMatch(/\.scrubber\[[^\]]+\] \{ order: 3; flex-basis: 100%; \}/);
+    });
+
+    it('sizes every player text in px that browser zoom scales, never a viewport unit', () => {
+      const css = styles();
+      expect(css).toMatch(/--wt-fs-s: 13px; --wt-fs-m: 14px; --wt-fs-l: 16px;/);
+      expect(css).not.toMatch(/font(-size)?:[^;]*\d(vw|vh|vi|cqi|cqw)\b/);
+    });
   });
 
   it('labels the code with its language and copies the source', () => {

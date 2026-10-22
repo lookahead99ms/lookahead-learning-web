@@ -44,7 +44,7 @@
     <a class="action-link" [routerLink]="backUrl">Go back</a><a class="action-link" routerLink="/">Home</a>
   </nav>
   @if (locked()) {
-    <dialog
+    <dialog appScrollLock
       #accessDialog
       aria-labelledby="access-title"
       aria-describedby="access-description"

@@ -744,7 +744,9 @@ a.reader-module:focus-visible {
   max-width: none;
   margin: 0;
   display: block;
-  font-size: clamp(1.35rem, 2.1vw, 2rem);
+  /* DLV-803: a rem base, so browser zoom enlarges the title (about 1.4x at 150%, 1.6x at 200%
+     on a laptop) instead of a bare 2.1vw holding it near one size. */
+  font-size: clamp(1.35rem, 1.2rem + 0.75vw, 2rem);
   line-height: 1.18;
   letter-spacing: -0.025em;
 }

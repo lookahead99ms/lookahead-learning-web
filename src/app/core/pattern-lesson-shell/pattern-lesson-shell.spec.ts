@@ -4,6 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { PatternLessonV1 } from '../../content/content.models';
 import { PatternLessonShell } from './pattern-lesson-shell';
+import { patternContextToken } from '../../content/pattern-context';
 
 @Component({ selector: 'app-pattern-problem-workbench', template: '' })
 class WorkbenchStub { readonly problems = input<unknown[]>([]); }
@@ -51,6 +52,17 @@ describe('pattern beginner teaching flow', () => {
     const link = fixture.nativeElement.querySelector('a[href*="interview-questions"]') as HTMLAnchorElement;
     expect(link.getAttribute('href')).toContain('module=sample-checks');
     expect(link.getAttribute('href')).toContain('unit=sample-unit');
+  });
+
+  it('links to its Hands-On pattern by the opaque context id, never by the pattern id (DLV-962)', async () => {
+    const fixture = await render(sampleLesson());
+    fixture.componentRef.setInput('practicePatternId', 'sample-course:sample-unit');
+    fixture.detectChanges();
+    const link = (fixture.nativeElement as HTMLElement).querySelector<HTMLAnchorElement>('.practice-hub-link')!;
+    expect(link.getAttribute('href')).toBe(
+      `/learn/hands-on-dsa?pattern=${patternContextToken('sample-course:sample-unit')}`,
+    );
+    expect(link.getAttribute('href')).not.toContain('sample-unit');
   });
 
   it('places definition and outcomes before the example, with one reminder before checks', async () => {

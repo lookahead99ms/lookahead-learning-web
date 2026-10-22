@@ -93,6 +93,22 @@ export function codeScrollTop(
   return Math.max(0, Math.round(lineTop - visible.top - (visible.bottom - visible.top) / 3));
 }
 
+/**
+ * DLV-803: the top of the window area the code box can use. Below the page's pinned header (pin),
+ * and, on a narrow player showing the code, below the controls and caption pinned above it, so
+ * the current line is never kept "in view" underneath them.
+ */
+export function pinnedCover(box: Element, pin: number): number {
+  const left = box.closest('.walkthrough')?.querySelector<HTMLElement>('.wt-left');
+  if (!left || getComputedStyle(left).position !== 'sticky') return pin;
+  const cover = left.getBoundingClientRect();
+  const rect = box.getBoundingClientRect();
+  // Only a block sitting above the box (stacked layout) covers it; a column beside it does not.
+  return cover.height > 0 && cover.bottom <= rect.bottom && cover.right > rect.left && cover.left < rect.right
+    ? Math.max(pin, cover.bottom)
+    : pin;
+}
+
 /** The reference implementation's lines with the current one and the ones that already ran. */
 export function codeLines(
   problem: PatternProblemV1,

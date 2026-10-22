@@ -145,6 +145,22 @@ describe('Course learning path', () => {
     );
   });
 
+  it('takes the shared fixed browsing column so the card grid reflows only with zoom (DLV-803)', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/learn/core-java', Course);
+    expect(harness.routeNativeElement!.querySelector('main')?.classList).toContain('course-page');
+    const css = [...document.querySelectorAll('style')]
+      .map((style) => style.textContent ?? '')
+      .join('\n')
+      .replace(/\s+/g, ' ');
+    expect(css).toMatch(
+      /\.course-page\[[^\]]+\] > \.course-reader\[[^\]]+\]:not\(\.course-reader-with-nav\) \{ width: min\(var\(--page-max-browse, 1180px\), 100% - 2 \* var\(--page-gutter, 6vw\)\); \}/,
+    );
+    expect(css).toMatch(
+      /\.course-page\[[^\]]+\] > \.course-reader\[[^\]]+\] > \.module-question-list\[[^\]]+\] \{ width: 100%; \}/,
+    );
+  });
+
   it('renders a next-only map without an empty background column', async () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/learn/core-java', Course);

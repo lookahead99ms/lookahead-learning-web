@@ -1,6 +1,7 @@
 import { signal } from '@angular/core';
+import { Location } from '@angular/common';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { Observable, of, throwError } from 'rxjs';
 import { routes } from '../../app.routes';
@@ -15,6 +16,7 @@ import {
 } from '../../content/content.models';
 import { ContentService } from '../../content/content.service';
 import { HandsOnDsaIndex } from '../../content/hands-on-dsa';
+import { patternContextToken } from '../../content/pattern-context';
 import { Question } from './question';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 
@@ -776,11 +778,13 @@ describe('Question canonical DSA navigation', () => {
     expect(root.querySelector('app-pattern-help dialog')?.hasAttribute('open')).toBe(true);
     expect(root.querySelector('app-pattern-help h2')?.textContent).toBe('Meeting Rooms');
     await revealPattern(harness);
-    // After reveal, the header offers only the named lesson link with its new-tab cue.
-    expect(root.querySelector('app-pattern-help .answer h4')?.textContent).toBe('Hashing');
+    // After reveal, the header offers only the named lesson link with its new-tab cue: one element,
+    // "Learn more about <pattern>" (user, 2026-10-16), the name shown once.
+    expect(root.querySelector('app-pattern-help .answer .answer-name')?.textContent).toContain('Hashing');
     expect(root.querySelector('.pattern-help-open')).toBeNull();
     const lesson = root.querySelector<HTMLAnchorElement>('.pattern-lesson-open')!;
-    expect(lesson.textContent).toContain('Hashing lesson');
+    expect(lesson.textContent?.replace(/\s+/g, ' ').trim()).toBe('Learn more about Hashing (opens in a new tab)');
+    expect(lesson.textContent).not.toContain('lesson');
     expect(lesson.textContent).not.toContain('Open the');
     expect(lesson.textContent).toContain('(opens in a new tab)');
     expect(lesson.getAttribute('href')).toBe('/learn/algorithmic-patterns/algorithmic-hashing-lookup');
@@ -792,6 +796,61 @@ describe('Question canonical DSA navigation', () => {
     await harness.navigateByUrl('/learn/algorithmic-patterns/algorithmic-two-sum', Question);
     expect(harness.routeNativeElement!.querySelector('.pattern-help-open')).not.toBeNull();
     expect(harness.routeNativeElement!.querySelector('.pattern-lesson-open')).toBeNull();
+  });
+
+  it('names no pattern or method anywhere on a problem page before the learner asks (user, 2026-10-16)', async () => {
+    const selected: CanonicalRouteCase = {
+      problemId: 'dsa-catalog-meeting-rooms',
+      title: 'Meeting Rooms',
+      courseId: 'algorithmic-patterns',
+    };
+    content.getHandsOnDsaIndex.mockReturnValueOnce(of(indexFor(selected)));
+    const problem = canonicalProblem(selected);
+    problem.navigation!.lesson.title = 'Hashing: Retain the useful lookup state';
+    problem.approachFamily = {
+      approach: 1,
+      bestProblemId: selected.problemId,
+      siblings: [
+        {
+          problemId: 'dsa-catalog-meeting-rooms-approach-2',
+          approach: 2,
+          title: 'Meeting Rooms (Approach-2)',
+          path: 'learn',
+          courseId: 'algorithmic-patterns',
+          questionId: 'dsa-catalog-meeting-rooms-approach-2',
+          pattern: 'Sweep Line',
+          complexity: { time: 'O(n)', space: 'O(n)' },
+          whenToPrefer: 'Prefer the sweep when overlaps are counted.',
+        },
+      ],
+    };
+    content.getDsaProblem.mockReturnValueOnce(of(problem));
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl(`/learn/${selected.courseId}/${selected.problemId}`, Question);
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    const root = harness.routeNativeElement!;
+    const SPOILER = /Hashing|Sweep|sweep|variation|Retain useful prior state|Track the required state/;
+    const attributes = [...root.querySelectorAll('*')]
+      .flatMap((element) => ['title', 'aria-label', 'aria-description', 'alt'].map((name) => element.getAttribute(name) ?? ''))
+      .join(' ');
+    // Not in the text, not in any title or accessible name, not even in hidden markup.
+    expect(root.textContent).not.toMatch(SPOILER);
+    expect(attributes).not.toMatch(SPOILER);
+    expect(root.innerHTML).not.toMatch(SPOILER);
+    expect(document.title).not.toMatch(SPOILER);
+    expect(root.querySelector('.breadcrumbs')?.textContent?.replace(/\s+/g, '')).toContain('Hands-OnDSA/MeetingRooms');
+    // The approach switch is in the workspace, not the title row, and says only "Approach N".
+    expect(root.querySelector('.problem-pattern-actions app-optimal-approaches')).toBeNull();
+    const segments = [...root.querySelectorAll('.workspace-actions .approach-switch .segment')];
+    expect(segments.map((segment) => segment.textContent?.trim())).toEqual(['Approach 1', 'Approach 2']);
+    expect(segments[0].getAttribute('aria-label')).toBe('Approach 1 of 2, this page');
+    // After the learner reveals, the pattern shows as before.
+    root.querySelector<HTMLButtonElement>('.pattern-help-open')!.click();
+    harness.detectChanges();
+    await revealPattern(harness);
+    expect(root.querySelector('.breadcrumbs')?.textContent).toContain('Hashing');
+    expect(root.querySelector('.pattern-lesson-open')?.textContent).toContain('Learn more about Hashing');
   });
 
   it('navigates from the last result on one page to the first on the next', async () => {
@@ -921,7 +980,7 @@ describe('Question canonical DSA navigation', () => {
         ...root.querySelectorAll<HTMLAnchorElement>('.breadcrumbs a'),
       ].find((link) => link.textContent.trim() === 'Hashing');
       expect(patternBreadcrumb?.getAttribute('href')).toBe(
-        '/learn/hands-on-dsa?pattern=algorithmic-patterns:hashing-lookup',
+        `/learn/hands-on-dsa?pattern=${patternContextToken('algorithmic-patterns:hashing-lookup')}`,
       );
       expect(root.querySelector('.pattern-lesson-open')?.getAttribute('href')).toBe(
         '/learn/algorithmic-patterns/algorithmic-hashing-lookup',
@@ -935,7 +994,7 @@ describe('Question canonical DSA navigation', () => {
         expect(previous?.classList.contains('problem-nav-card')).toBe(true);
         expect(previous?.textContent).toContain(testCase.previous.title);
         expect(previous?.getAttribute('href')).toBe(
-          `/learn/${testCase.previous.courseId}/${testCase.previous.questionId}?pattern=algorithmic-patterns:hashing-lookup`,
+          `/learn/${testCase.previous.courseId}/${testCase.previous.questionId}?pattern=${patternContextToken('algorithmic-patterns:hashing-lookup')}`,
         );
       } else {
         expect(previous).toBeNull();
@@ -944,7 +1003,7 @@ describe('Question canonical DSA navigation', () => {
         expect(next?.classList.contains('problem-nav-card')).toBe(true);
         expect(next?.textContent).toContain(testCase.next.title);
         expect(next?.getAttribute('href')).toBe(
-          `/learn/${testCase.next.courseId}/${testCase.next.questionId}?pattern=algorithmic-patterns:hashing-lookup`,
+          `/learn/${testCase.next.courseId}/${testCase.next.questionId}?pattern=${patternContextToken('algorithmic-patterns:hashing-lookup')}`,
         );
       } else {
         expect(next).toBeNull();
@@ -997,7 +1056,7 @@ describe('Question canonical DSA navigation', () => {
     );
     expect(
       breadcrumbs.find((link) => link.textContent.trim() === 'Graphs')?.getAttribute('href'),
-    ).toBe('/learn/hands-on-dsa?pattern=algorithmic-patterns:hashing-lookup');
+    ).toBe(`/learn/hands-on-dsa?pattern=${patternContextToken('algorithmic-patterns:hashing-lookup')}`);
   });
 
   it('does not fetch unrelated course modules when indexed problem detail loading fails', async () => {
@@ -1030,7 +1089,7 @@ describe('Question canonical DSA navigation', () => {
       (link) => link.textContent.trim() === 'Prefix State',
     );
     expect(patternBreadcrumb?.getAttribute('href')).toBe(
-      '/learn/hands-on-dsa?pattern=algorithmic-patterns:prefix-state',
+      `/learn/hands-on-dsa?pattern=${patternContextToken('algorithmic-patterns:prefix-state')}`,
     );
     expect(root.querySelector('.pattern-lesson-open')?.getAttribute('href')).toBe(
       '/learn/algorithmic-patterns/algorithmic-prefix-state',
@@ -1038,6 +1097,90 @@ describe('Question canonical DSA navigation', () => {
     expect(linkWithText(root, 'All Prefix State problems')).toBeUndefined();
     expect(root.querySelector('.question-inner-navigation .previous')).toBeNull();
     expect(root.querySelector('.question-inner-navigation .next')).toBeNull();
+  });
+
+  describe('opaque pattern context (DLV-962)', () => {
+    const readable = 'algorithmic-patterns:prefix-state';
+    const token = patternContextToken(readable);
+    /** Every href on the page and the address bar, which must not name the pattern. */
+    const exposed = (harness: RouterTestingHarness) => [
+      TestBed.inject(Router).url,
+      ...[...harness.routeNativeElement!.querySelectorAll<HTMLAnchorElement>('a[href]')].map(
+        (link) => decodeURIComponent(link.getAttribute('href')!),
+      ),
+    ];
+
+    it('rewrites an old ?pattern= link to the opaque id and keeps the same context', async () => {
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl(
+        `/learn/algorithmic-patterns/algorithmic-two-sum?pattern=${readable}`,
+        Question,
+      );
+      expect(TestBed.inject(Router).url).toBe(
+        `/learn/algorithmic-patterns/algorithmic-two-sum?pattern=${token}`,
+      );
+      await revealPattern(harness);
+      const breadcrumb = [
+        ...harness.routeNativeElement!.querySelectorAll<HTMLAnchorElement>('.breadcrumbs a'),
+      ].find((link) => link.textContent.trim() === 'Prefix State');
+      expect(breadcrumb?.getAttribute('href')).toBe(`/learn/hands-on-dsa?pattern=${token}`);
+    });
+
+    it('names no pattern in any link or in the URL before the learner reveals it', async () => {
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl(
+        `/learn/algorithmic-patterns/algorithmic-two-sum?pattern=${readable}`,
+        Question,
+      );
+      for (const value of exposed(harness)) {
+        expect(value).not.toContain('prefix-state');
+        expect(value).not.toContain('hashing-lookup');
+        expect(value).not.toMatch(/pattern=[a-z-]+:/);
+      }
+    });
+
+    it('keeps Previous/Next on the same list, with opaque links, when opened from an opaque link', async () => {
+      const selected = routeCases[1];
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl(
+        `/learn/${selected.courseId}/${selected.problemId}?pattern=${patternContextToken('algorithmic-patterns:hashing-lookup')}`,
+        Question,
+      );
+      const root = harness.routeNativeElement!;
+      const previous = root.querySelector<HTMLAnchorElement>('.problem-nav-cards .previous');
+      const next = root.querySelector<HTMLAnchorElement>('.problem-nav-cards .next');
+      const hashing = patternContextToken('algorithmic-patterns:hashing-lookup');
+      expect(previous?.getAttribute('href')).toBe(
+        `/learn/${containsDuplicate.courseId}/${containsDuplicate.questionId}?pattern=${hashing}`,
+      );
+      expect(next?.getAttribute('href')).toBe(
+        `/learn/${firstUnique.courseId}/${firstUnique.questionId}?pattern=${hashing}`,
+      );
+      for (const value of exposed(harness)) expect(value).not.toContain('hashing-lookup');
+    });
+
+    it('opens the opaque URL directly (reload, shared link, new tab) in the same context, and keeps it on Back', async () => {
+      const harness = await RouterTestingHarness.create();
+      const router = TestBed.inject(Router);
+      router.setUpLocationChangeListener();
+      const url = `/learn/algorithmic-patterns/algorithmic-two-sum?pattern=${token}`;
+      await harness.navigateByUrl(url, Question);
+      expect(router.url).toBe(url);
+      await revealPattern(harness);
+      const crumbs = () =>
+        [...harness.routeNativeElement!.querySelectorAll<HTMLAnchorElement>('.breadcrumbs a')].map(
+          (link) => link.textContent.trim(),
+        );
+      expect(crumbs()).toContain('Prefix State');
+
+      await harness.navigateByUrl('/learn/algorithmic-patterns/algorithmic-first-unique-character', Question);
+      TestBed.inject(Location).back();
+      await vi.waitFor(() => expect(router.url).toBe(url));
+      harness.detectChanges();
+      await harness.fixture.whenStable();
+      await revealPattern(harness);
+      expect(crumbs()).toContain('Prefix State');
+    });
   });
 
   it('preserves authored Arrays context, discovery and adjacent links in the selected V12 pilot', async () => {
@@ -1085,10 +1228,10 @@ describe('Question canonical DSA navigation', () => {
       'http://localhost',
     );
     expect(returnLink.pathname).toBe('/learn/hands-on-dsa');
-    expect(returnLink.searchParams.get('pattern')).toBe('core-data-structures:arrays');
+    expect(returnLink.searchParams.get('pattern')).toBe(patternContextToken('core-data-structures:arrays'));
     expect(returnLink.searchParams.get('page')).toBe('2');
     expect(root.querySelector<HTMLAnchorElement>('.problem-nav-card.next')?.href).toContain(
-      'pattern=core-data-structures:arrays',
+      `pattern=${patternContextToken('core-data-structures:arrays')}`,
     );
     expect(root.querySelectorAll('.mode-tabs [role="tab"]')).toHaveLength(4);
     await harness.navigateByUrl(
@@ -1134,7 +1277,7 @@ describe('Question canonical DSA navigation', () => {
       firstUnique.title,
     );
     expect(root.querySelector<HTMLAnchorElement>('.problem-nav-card.next')?.href).toContain(
-      'pattern=core-data-structures:arrays',
+      `pattern=${patternContextToken('core-data-structures:arrays')}`,
     );
   });
 

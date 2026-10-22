@@ -22,6 +22,15 @@ a[aria-current] {
   color: var(--text-strong);
   font-weight: 700;
 }
+/* DLV-803 (user, 2026-10-16): the path you are in reads at a glance from the header: bold strong
+   ink plus a thin underline in that path's colour (path colour as a small marker only). */
+.path-entry > a[aria-current] {
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-color: var(--entry-path-color, var(--accent-strong));
+  text-decoration-thickness: 3px;
+  text-underline-offset: 9px;
+}
 button {
   cursor: pointer;
   background: transparent;

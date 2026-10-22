@@ -31,6 +31,16 @@ import {
   SearchDocument,
 } from '../../content/content.models';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
+import {
+  closestSearchWords,
+  hasSearchWord,
+  matchesSearchWords,
+  plainSearchText,
+  searchDocumentText,
+  searchRank,
+  searchVocabulary,
+  searchWords,
+} from '../../core/search-text';
 
 type SearchSort = 'relevance' | 'title' | 'difficulty';
 type SearchGroup = 'none' | 'path' | 'course' | 'module' | 'tag' | 'content-type';
@@ -192,12 +202,45 @@ export class Search implements OnInit, AfterViewInit {
       );
   });
 
+  /** Folded searchable text per item id, built once per loaded index. */
+  private readonly foldedTexts = computed(
+    () => new Map(this.questions().map((item) => [item.id, searchDocumentText(item)])),
+  );
+
+  private foldedText(result: SearchDocument): string {
+    return this.foldedTexts().get(result.id) ?? searchDocumentText(result);
+  }
+
+  /** The words typed into Search; see search-text.ts for the matching rule. */
+  protected readonly typedWords = computed(() => searchWords(this.submittedQuery()));
+
+  private readonly vocabulary = computed(() => searchVocabulary(this.foldedTexts().values()));
+
+  /**
+   * The closest spelling of the typed words, used only when the typed words find nothing in the
+   * current scope and the fixed words do. The page names the words it used (DLV-962 search audit).
+   */
+  protected readonly correctedWords = computed(() => {
+    const words = this.typedWords();
+    if (!words.length) return null;
+    const scope = this.unqueriedScopeResults();
+    if (scope.some((result) => matchesSearchWords(this.foldedText(result), words))) return null;
+    const texts = [...this.foldedTexts().values()];
+    const fixed = closestSearchWords(words, this.vocabulary(), (word) =>
+      texts.some((text) => hasSearchWord(text, word)),
+    );
+    return fixed && scope.some((result) => matchesSearchWords(this.foldedText(result), fixed))
+      ? fixed
+      : null;
+  });
+
+  protected readonly searchedWords = computed(() => this.correctedWords() ?? this.typedWords());
+
   protected readonly scopeResults = computed(() => {
-    const query = this.submittedQuery();
-    return this.unqueriedScopeResults()
-      .map((result) => ({ result, score: this.score(result, query) }))
-      .filter(({ score }) => !query || score > 0)
-      .map(({ result }) => result);
+    const words = this.searchedWords();
+    return this.unqueriedScopeResults().filter((result) =>
+      matchesSearchWords(this.foldedText(result), words),
+    );
   });
 
   protected readonly availableTags = computed(() => {
@@ -268,13 +311,14 @@ export class Search implements OnInit, AfterViewInit {
       // Internal updates already changed the filters; keep any unsubmitted text.
       // Navigation info is transient, unlike history state used by Back/Forward.
       if (this.router.currentNavigation()?.extras.info === this.urlSyncInfo) return;
-      const initialQuery = params.get('q')?.trim().toLowerCase() ?? '';
+      // Keep the visitor's own casing in the box; matching ignores case.
+      const initialQuery = params.get('q')?.trim() ?? '';
       const initialTags = [...params.getAll('tag'), ...(params.get('tags')?.split(',') ?? [])]
         .map((tag) => tag.trim())
         .filter(Boolean);
       this.reviewUnit.set(params.get('unit') ?? '');
       this.query.set(initialQuery);
-      this.submittedQuery.set(initialQuery);
+      this.submittedQuery.set(this.normalize(initialQuery));
       const initialPath =
         this.pathForFilter(params.get('path') ?? '') ??
         initialTags
@@ -322,7 +366,7 @@ export class Search implements OnInit, AfterViewInit {
     const selectedTags = this.selectedTags();
     const matches = this.scopeResults()
       .filter((result) => [...selectedTags].every((tag) => this.hasFilter(result, tag)))
-      .map((result) => ({ result, score: this.score(result, this.submittedQuery()) }));
+      .map((result) => ({ result, score: this.score(result, this.searchedWords()) }));
 
     return matches
       .sort((left, right) => {
@@ -504,6 +548,25 @@ export class Search implements OnInit, AfterViewInit {
     this.selectedTags.set(new Set());
     this.sortBy.set('relevance');
     this.groupBy.set('none');
+    this.resetVisibleResults();
+    if (hadScopedPath) this.loadIndex('all');
+    this.syncUrl();
+  }
+
+  /** Keep the query and drop every filter, for a filtered search that found nothing. */
+  protected searchEverywhere(): void {
+    const hadScopedPath = this.selectedPath() !== 'all';
+    this.reviewUnit.set('');
+    this.selectedPath.set('all');
+    this.selectedCourseId.set('all');
+    this.selectedModuleId.set('all');
+    this.selectedDifficulty.set('all');
+    this.selectedLanguage.set('all');
+    this.selectedContentType.set('all');
+    this.selectedDiscoveryKind.set('all');
+    this.selectedPracticeFormat.set('all');
+    this.selectedTags.set(new Set());
+    this.tagQuery.set('');
     this.resetVisibleResults();
     if (hadScopedPath) this.loadIndex('all');
     this.syncUrl();
@@ -749,9 +812,9 @@ export class Search implements OnInit, AfterViewInit {
     });
   }
 
+  /** Index previews are plain text; "i<j" in a problem statement is text, not a tag. */
   protected preview(result: SearchDocument): string {
-    const parsed = new DOMParser().parseFromString(result.preview, 'text/html');
-    return (parsed.body.textContent ?? '').replace(/\s+/g, ' ').trim();
+    return plainSearchText(result.preview);
   }
 
   protected resultRowSummary(result: SearchDocument): string {
@@ -879,7 +942,7 @@ export class Search implements OnInit, AfterViewInit {
 
   protected resultCardTitle(result: SearchDocument): string {
     return result.contentType === 'dsa-problem' && result.preview.trim()
-      ? result.preview.trim()
+      ? this.preview(result)
       : result.title;
   }
 
@@ -1147,16 +1210,17 @@ export class Search implements OnInit, AfterViewInit {
       .then(() => afterNavigation?.());
   }
 
-  private score(result: SearchDocument, query: string): number {
-    if (!query) return 1;
-    const title = result.title.toLowerCase();
-    const tags = result.tags.join(' ').toLowerCase();
-    let score = 0;
-    if (title === query) score += 100;
-    if (title.includes(query)) score += 60;
-    if (tags.includes(query)) score += 40;
-    if (result.searchableText.includes(query)) score += 10;
-    return score;
+  private score(result: SearchDocument, words: readonly string[]): number {
+    return searchRank(
+      {
+        title: result.title,
+        subjects: [...(result.subjects ?? []), ...result.tags],
+        context: [result.courseTitle, result.moduleTitle],
+        kind: this.discoveryKind(result),
+        text: this.foldedText(result),
+      },
+      words,
+    );
   }
 
   private difficultyScore(difficulty: SearchDocument['difficulty']): number {

@@ -8,6 +8,7 @@ import {
   isPatternLesson,
 } from './content.models';
 import { flattenLearningUnits } from './learning-units';
+import { matchesPatternContext } from './pattern-context';
 
 export type HandsOnDifficulty = InterviewQuestion['difficulty'] | 'All';
 export type HandsOnReadiness = 'All' | 'Guided' | 'Practice-ready' | 'Catalogued';
@@ -84,6 +85,25 @@ export interface HandsOnDsaIndex {
     lastReviewedAt: string | null;
   };
   groups: HandsOnDsaIndexGroup[];
+  /**
+   * DLV-962: problemId -> where its equally optimal siblings live. Present (possibly empty) in an
+   * index built after 2026-10-17; absent in an older one, so readers fall back to problem details.
+   */
+  approachFamilies?: Record<string, HandsOnApproachFamily>;
+}
+
+/** Locations only: no pattern, method or bounds, because study plans show it before an attempt. */
+export interface HandsOnApproachFamily {
+  approach: number;
+  bestProblemId: string;
+  siblings: {
+    problemId: string;
+    approach: number;
+    title: string;
+    path: string;
+    courseId: string;
+    questionId: string;
+  }[];
 }
 
 export interface HandsOnDsaGroup {
@@ -306,10 +326,11 @@ export function resolveHandsOnDsaIndexGroup(
   patternId: string,
 ): HandsOnDsaIndexGroup | null {
   if (!patternId) return null;
+  // `patternId` is the opaque `?pattern=` context id (DLV-962) or an old readable id.
   return (
-    groups.find((group) => group.id === patternId) ??
-    groups.find((group) => group.lessonId === patternId) ??
-    groups.find((group) => group.unitId === patternId) ??
+    groups.find((group) => matchesPatternContext(patternId, group.id)) ??
+    groups.find((group) => matchesPatternContext(patternId, group.lessonId)) ??
+    groups.find((group) => matchesPatternContext(patternId, group.unitId)) ??
     null
   );
 }
@@ -327,7 +348,9 @@ export function filterHandsOnDsaIndexGroups(
   matchPatternText = true,
 ): HandsOnDsaIndexGroup[] {
   const normalizedQuery = query.trim().toLowerCase();
-  const scopeLimit = scope === '730' ? 782 : Number(scope);
+  // Full Library ('782', and the retired '730' value) means every released problem, so a catalogue that
+  // grows past 782 (DLV-965 Approach-N problems) stays visible; the numbered tiers are rank cut-offs.
+  const scopeLimit = scope === '782' || scope === '730' ? Number.POSITIVE_INFINITY : Number(scope);
   const filtered = groups.flatMap((group) => {
     const groupMatches =
       matchPatternText &&
@@ -400,6 +423,10 @@ function problemComparator(
           : rightOrder == null
             ? -1
             : (leftOrder - rightOrder) * (sort.endsWith('-descending') ? -1 : 1);
+      // Approach-N problems share their original's interview rank (DLV-965): keep approach order.
+      if (result === 0 && field === 'interviewRank' && left.studyOrder != null && right.studyOrder != null) {
+        result = left.studyOrder - right.studyOrder;
+      }
     } else if (sort === 'difficulty-ascending') {
       result = difficultyOrder[left.difficulty] - difficultyOrder[right.difficulty];
     } else if (sort === 'difficulty-descending') {

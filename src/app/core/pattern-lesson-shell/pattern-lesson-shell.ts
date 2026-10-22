@@ -10,6 +10,7 @@ import {
 import { InteractiveTheoryVisual } from '../interactive-theory-visual/interactive-theory-visual';
 import { InterviewQuestionBankLink } from '../interview-question-bank-link/interview-question-bank-link';
 import { PatternCodeTabs } from '../pattern-code-tabs/pattern-code-tabs';
+import { patternContextQuery } from '../../content/pattern-context';
 import { PatternProblemWorkbench } from '../pattern-problem-workbench/pattern-problem-workbench';
 import { PatternUnderstandingChecks } from '../pattern-understanding-checks/pattern-understanding-checks';
 
@@ -413,7 +414,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
         <a
           class="practice-hub-link"
           routerLink="/learn/hands-on-dsa"
-          [queryParams]="{ pattern: practicePatternId() }"
+          [queryParams]="practicePatternQuery()"
           >Open this pattern in Hands-On DSA</a
         >
         <div class="practice-grid">
@@ -577,7 +578,7 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
       .lesson-section h2 {
         margin: 0 0 13px;
         color: var(--lesson-ink);
-        font-size: clamp(1.3rem, 2.3vw, 1.72rem);
+        font-size: clamp(1.3rem, 1rem + 0.8vw, 1.72rem);
         line-height: 1.25;
       }
       .lesson-section > p {
@@ -1069,6 +1070,10 @@ export class PatternLessonShell {
   readonly pathId = input.required<string>();
   readonly courseId = input.required<string>();
   readonly practicePatternId = input.required<string>();
+  /** DLV-962: the catalog link names the pattern by its opaque context id. */
+  protected readonly practicePatternQuery = computed(() =>
+    patternContextQuery(this.practicePatternId()),
+  );
   readonly questionModuleId = input<string | null>(null);
   readonly returnUnit = input('');
   readonly questionCount = input(0);

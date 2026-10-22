@@ -898,8 +898,32 @@ export interface DsaProblemV2 extends Omit<
   fixtures: DsaProblemFixtureV2[];
   practice: PatternProblemPractice;
   teaching?: DsaTeachingV1;
+  /**
+   * DLV-965: the problem's approach family when another approach has the same optimal time and
+   * space. Each equally optimal approach is its own canonical problem (`<id>-approach-<N>`); the
+   * original is Approach 1, the best approach for the problem's own pattern.
+   */
+  approachFamily?: DsaApproachFamily;
   /** Derived by the compatibility loader from the primary practice placement. */
   practiceQuestionId?: string;
+}
+
+/** One other member of an approach family: a link plus what the learner needs to choose between them. */
+export interface DsaApproachSibling extends DsaProblemNavigationLink {
+  /** 1 is the original and best approach; 2, 3, ... are the Approach-N problems. */
+  approach: number;
+  /** The Recognize the Pattern unit this approach is taught in. */
+  pattern: string;
+  /** The shared optimal bounds, repeated so the link can show them without loading the sibling. */
+  complexity: { time: string; space: string };
+  /** One plain line: when to prefer this sibling over the problem that links to it. */
+  whenToPrefer: string;
+}
+
+export interface DsaApproachFamily {
+  approach: number;
+  bestProblemId: string;
+  siblings: DsaApproachSibling[];
 }
 
 export type UnderstandingCheckCategory =

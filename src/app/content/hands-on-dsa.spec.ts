@@ -2,12 +2,16 @@ import { describe, expect, it } from 'vitest';
 import {
   buildHandsOnDsaGroups,
   filterHandsOnDsaGroups,
+  filterHandsOnDsaIndexGroups,
   handsOnReadinessCounts,
+  type HandsOnTierScope,
   rankedHandsOnDsaIndexProblems,
   resolveHandsOnDsaGroup,
+  resolveHandsOnDsaIndexGroup,
   type HandsOnDsaIndexGroup,
   uniqueHandsOnProblemCount,
 } from './hands-on-dsa';
+import { patternContextToken } from './pattern-context';
 import {
   CourseContent,
   InterviewQuestion,
@@ -122,6 +126,45 @@ describe('Hands-On DSA projection', () => {
     );
   });
 
+  it('keeps every released rank in the Full Library scope while numbered tiers cut off (DLV-965)', () => {
+    const problem = (id: string, interviewRank: number) => ({
+      id,
+      title: id,
+      description: '',
+      difficulty: 'Intermediate' as const,
+      variation: '',
+      invariantAdaptation: '',
+      version: 'v1',
+      questionId: id,
+      route: ['/learn', 'algorithmic-patterns', id],
+      interviewRank,
+      studyOrder: interviewRank,
+    });
+    const groups = [
+      {
+        id: 'algorithmic-patterns:prefix-state',
+        courseId: 'algorithmic-patterns',
+        courseTitle: 'Algorithmic Patterns',
+        title: 'Prefix Sums',
+        description: '',
+        unitId: 'prefix-state',
+        practiceModuleId: 'practice-difference-arrays',
+        lessonId: 'algorithmic-prefix-state',
+        lessonTitle: 'Prefix Sums',
+        tags: [],
+        hasGuidedLesson: true,
+        preparationOrder: 1,
+        problems: [problem('first', 12), problem('second-approach-2', 783)],
+      },
+    ] as unknown as HandsOnDsaIndexGroup[];
+    const ids = (scope: HandsOnTierScope) =>
+      filterHandsOnDsaIndexGroups(groups, '', 'All', scope).flatMap((group) => group.problems.map((item) => item.id));
+    expect(ids('782')).toEqual(['first', 'second-approach-2']);
+    expect(ids('730')).toEqual(['first', 'second-approach-2']);
+    expect(ids('600')).toEqual(['first']);
+    expect(ids('150')).toEqual(['first']);
+  });
+
   it('filters by problem text and difficulty without duplicating groups', () => {
     const groups = buildHandsOnDsaGroups(course());
 
@@ -200,6 +243,15 @@ describe('Hands-On DSA projection', () => {
         ({ difficulty }) => difficulty,
       ),
     ).toEqual(['Advanced', 'Intermediate', 'Beginner']);
+    // DLV-965: Approach-N problems share their original's interview rank; study order keeps approach order.
+    difficultyGroup.problems[2].interviewRank = difficultyGroup.problems[0].interviewRank;
+    expect(
+      rankedHandsOnDsaIndexProblems([difficultyGroup], 'interview-rank').map(({ id }) => id),
+    ).toEqual(['advanced', 'intermediate', 'beginner']);
+    expect(
+      rankedHandsOnDsaIndexProblems([difficultyGroup], 'interview-rank-descending').map(({ id }) => id),
+    ).toEqual(['beginner', 'advanced', 'intermediate']);
+    difficultyGroup.problems[2].interviewRank = 3;
     difficultyGroup.problems[1].interviewRank = undefined;
     difficultyGroup.problems[1].studyOrder = undefined;
     for (const sort of ['interview-rank-descending', 'study-order-descending'] as const) {
@@ -255,5 +307,30 @@ describe('Hands-On DSA projection', () => {
     expect(
       filterHandsOnDsaGroups(withReference, '', 'All', 'Guided')[0].continuationProblems,
     ).toEqual([referenced]);
+  });
+});
+
+describe('resolveHandsOnDsaIndexGroup with opaque pattern context (DLV-962)', () => {
+  // Synthetic groups: only the fields the resolver reads matter.
+  const groups = [
+    { id: 'demo-course:first-unit', lessonId: 'demo-first-lesson', unitId: 'first-unit' },
+    { id: 'demo-course:second-unit', lessonId: 'demo-second-lesson', unitId: 'second-unit' },
+  ] as unknown as HandsOnDsaIndexGroup[];
+
+  it('resolves the opaque id of a group, its lesson or its unit', () => {
+    expect(resolveHandsOnDsaIndexGroup(groups, patternContextToken('demo-course:second-unit'))).toBe(groups[1]);
+    expect(resolveHandsOnDsaIndexGroup(groups, patternContextToken('demo-second-lesson'))).toBe(groups[1]);
+    expect(resolveHandsOnDsaIndexGroup(groups, patternContextToken('first-unit'))).toBe(groups[0]);
+  });
+
+  it('still resolves the old readable ids', () => {
+    expect(resolveHandsOnDsaIndexGroup(groups, 'demo-course:first-unit')).toBe(groups[0]);
+    expect(resolveHandsOnDsaIndexGroup(groups, 'demo-second-lesson')).toBe(groups[1]);
+    expect(resolveHandsOnDsaIndexGroup(groups, 'second-unit')).toBe(groups[1]);
+  });
+
+  it('resolves nothing for no value or an unknown one', () => {
+    expect(resolveHandsOnDsaIndexGroup(groups, '')).toBeNull();
+    expect(resolveHandsOnDsaIndexGroup(groups, patternContextToken('demo-course:unknown'))).toBeNull();
   });
 });

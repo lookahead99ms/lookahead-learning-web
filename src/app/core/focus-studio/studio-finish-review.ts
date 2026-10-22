@@ -15,7 +15,9 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { catchError, map, of } from 'rxjs';
+import { DsaApproachFamily } from '../../content/content.models';
 import { ContentService } from '../../content/content.service';
+import { OptimalApproaches } from '../optimal-approaches/optimal-approaches';
 import { rankedHandsOnDsaIndexProblems } from '../../content/hands-on-dsa';
 import {
   PRACTICE_RATINGS,
@@ -26,6 +28,7 @@ import {
   reviewDateLabel,
 } from '../practice-progress/practice-progress';
 import { PracticeStatusMark } from '../practice-progress/practice-status-mark';
+import { patternContextToken } from '../../content/pattern-context';
 import { RecallCheckStore, RecallSuggestion, recallSuggestion } from './recall-check';
 
 /** Notes save this long after the last keystroke. */
@@ -42,7 +45,7 @@ export const NOTES_SAVE_DELAY_MS = 600;
  */
 @Component({
   selector: 'app-studio-finish-review',
-  imports: [RouterLink, PracticeStatusMark],
+  imports: [RouterLink, PracticeStatusMark, OptimalApproaches],
   template: `
     <section class="finish" [attr.aria-labelledby]="ids().title">
       <header>
@@ -111,6 +114,12 @@ export const NOTES_SAVE_DELAY_MS = 600;
           <p class="hint" [id]="ids().notesHelp">Notes save as you type.</p>
         </div>
 
+        @if (approachFamily()?.siblings?.length) {
+          <div class="block">
+            <h4 [id]="ids().approaches">Other optimal approaches</h4>
+            <app-optimal-approaches [family]="approachFamily()" variant="finish" [named]="approachesNamed()" />
+          </div>
+        }
         @if (next().length) {
           <div class="block">
             <h4 [id]="ids().next">
@@ -441,7 +450,16 @@ export class StudioFinishReview {
   readonly patternId = input('');
   /** Only a revealed pattern may be named; otherwise the list stays neutral. */
   readonly patternRevealed = input(false);
+  /** DLV-965: the problem's other equally optimal approaches, one "also solvable" line each. */
+  readonly approachFamily = input<DsaApproachFamily | null | undefined>(null);
 
+  /**
+   * No spoilers (user, 2026-10-16): the other approaches' patterns are named only after the learner
+   * revealed this problem's pattern or solved it; before that the lines stay neutral.
+   */
+  protected readonly approachesNamed = computed(
+    () => this.patternRevealed() || this.record()?.status === 'solved',
+  );
   protected readonly ratings = PRACTICE_RATINGS;
   protected readonly reviewChoices = REVIEW_CHOICES;
   protected readonly record = computed(() => this.progress.records()[this.problemId()]);
@@ -476,6 +494,7 @@ export class StudioFinishReview {
       notes: `${base}-notes`,
       notesHelp: `${base}-notes-help`,
       next: `${base}-next`,
+      approaches: `${base}-approaches`,
       clear: `${base}-clear`,
     };
   });
@@ -510,7 +529,8 @@ export class StudioFinishReview {
   protected readonly linkQuery = computed(() => {
     const returnTo = this.queryParams().get('returnTo');
     return {
-      pattern: this.placement()?.group.id ?? null,
+      // DLV-962: an opaque context id, so the links never name the pattern.
+      pattern: patternContextToken(this.placement()?.group.id) || null,
       ...(returnTo ? { returnTo } : {}),
     };
   });

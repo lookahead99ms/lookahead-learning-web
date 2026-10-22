@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DsaProblemV2 } from '../../content/content.models';
-import { FocusStudio } from './focus-studio';
+import { FocusStudio, peekLeft } from './focus-studio';
 import { complexityVerdict, leadingBigO } from './practice-tools';
 import { of } from 'rxjs';
 import { DsaStoryLoader } from '../dsa-story/dsa-story-loader';
@@ -374,6 +375,188 @@ describe('production Focus Studio controls', () => {
       'A mistake',
     ]);
   });
+  it('lists the other optimal approaches only with the approach rationale (DLV-965)', async () => {
+    const family = {
+      approach: 1,
+      bestProblemId: sample.id,
+      siblings: [
+        {
+          problemId: `${sample.id}-approach-2`,
+          approach: 2,
+          title: 'Synthetic state fixture (Approach-2)',
+          path: 'learn',
+          courseId: 'algorithmic-patterns',
+          questionId: 'synthetic-approach-2-record',
+          pattern: 'Pattern B',
+          complexity: { time: 'O(n)', space: 'O(1)' },
+          whenToPrefer: 'Prefer B when range questions follow.',
+        },
+      ],
+    };
+    // The family links are router links; the other studio tests render without a router.
+    TestBed.configureTestingModule({ providers: [provideRouter([])] });
+    const { root, click } = await setup({ ...sample, approachFamily: family } as DsaProblemV2);
+    // Nothing spoils the problem before the learner opens the solution: the only copy before that
+    // sits in the hidden Approach tab, which the learner opens on purpose.
+    const visible = () =>
+      [...root.querySelectorAll('.other-approaches')].filter((block) => !block.closest('[hidden]'));
+    expect(visible()).toEqual([]);
+    await click('Show solution');
+    expect(visible()).toHaveLength(1);
+    const block = root.querySelector('.compare-rationale app-optimal-approaches .other-approaches')!;
+    expect(block).not.toBeNull();
+    expect(block.querySelector('h4')?.textContent).toBe('Other optimal approaches');
+    expect(block.querySelector('a')?.getAttribute('href')).toBe(
+      '/learn/algorithmic-patterns/synthetic-approach-2-record',
+    );
+    expect(block.textContent).toContain('Prefer B when range questions follow.');
+    // The rationale sits after the cost chips and the Why-this-approach card.
+    const rationale = root.querySelector('.compare-rationale')!;
+    const order = [...rationale.children].map((child) => child.tagName.toLowerCase());
+    expect(order.indexOf('app-optimal-approaches')).toBeGreaterThan(order.indexOf('details'));
+    // A problem without a family renders no block at all.
+    const plain = await setup();
+    await plain.click('Show solution');
+    expect(plain.root.querySelector('.other-approaches')).toBeNull();
+    expect(plain.root.querySelector('app-optimal-approaches')?.textContent?.trim() ?? '').toBe('');
+  });
+
+  describe('approach switch and no spoilers (user, 2026-10-16)', () => {
+    const family = {
+      approach: 2,
+      bestProblemId: 'synthetic-best',
+      siblings: [
+        {
+          problemId: 'synthetic-best',
+          approach: 1,
+          title: 'Synthetic state fixture',
+          path: 'learn',
+          courseId: 'algorithmic-patterns',
+          questionId: 'synthetic-best-record',
+          pattern: 'Secret Pattern Alpha',
+          complexity: { time: 'O(n)', space: 'O(1)' },
+          whenToPrefer: 'Prefer the secret alpha method when only the best value is needed.',
+        },
+      ],
+    };
+    // Every approach-naming field carries a marker, so any leak before the learner asks is caught.
+    const secretive = () => {
+      const problem = structuredClone({ ...sample, approachFamily: family }) as DsaProblemV2;
+      problem.variation = 'Secret Variation Method';
+      problem.invariantAdaptation = 'Secret invariant adaptation.';
+      problem.trace.invariant = 'Secret trace invariant.';
+      problem.practice.hints = ['Secret hint one', 'Secret hint two'];
+      problem.practice.canonicalApproach = {
+        whyThisApproach: 'Secret why this approach.',
+        whyOptimal: 'Secret why optimal.',
+        whenAssumptionChanges: 'Secret when it changes.',
+      };
+      return problem;
+    };
+    const SECRET = /Secret|alpha/i;
+    const shown = (root: HTMLElement) => {
+      const parts: string[] = [];
+      const walk = (element: Element) => {
+        if (element.closest('[hidden]')) return;
+        for (const name of ['title', 'aria-label', 'aria-description', 'placeholder', 'alt'])
+          if (element.getAttribute(name)) parts.push(element.getAttribute(name)!);
+        for (const node of element.childNodes)
+          if (node.nodeType === Node.TEXT_NODE) parts.push(node.textContent ?? '');
+          else if (node instanceof Element) walk(node);
+      };
+      walk(root);
+      return parts.join(' ');
+    };
+
+    beforeEach(() => {
+      TestBed.configureTestingModule({ providers: [provideRouter([])] });
+    });
+
+    it('puts the switch beside Show solution and names no pattern or method before the learner asks', async () => {
+      const { root } = await setup(secretive());
+      const actions = root.querySelector('.workspace-actions')!;
+      const children = [...actions.children].map((child) => child.tagName.toLowerCase());
+      expect(children[0]).toBe('app-optimal-approaches');
+      expect(actions.querySelector('button.reveal')?.textContent?.trim()).toBe('Show solution');
+      const segments = [...actions.querySelectorAll('.approach-switch .segment')];
+      expect(segments.map((segment) => segment.textContent?.trim())).toEqual(['Approach 1', 'Approach 2']);
+      expect(segments[1].getAttribute('aria-label')).toBe('Approach 2 of 2, this page');
+      expect(segments[0].getAttribute('href')).toBe('/learn/algorithmic-patterns/synthetic-best-record');
+      // Nothing on first view, visible or hidden, names the method: not even in the markup.
+      expect(shown(root)).not.toMatch(SECRET);
+      expect(root.innerHTML).not.toMatch(SECRET);
+      expect(root.querySelector('app-studio-approach')).toBeNull();
+      expect(root.querySelector('app-studio-recall-grid')).toBeNull();
+      expect(root.querySelector('button.action-other-approaches')).toBeNull();
+    });
+
+    it('shows the approach only once the learner opens its tab, and hints only when opened', async () => {
+      const { root, click } = await setup(secretive());
+      await click('Show hints panel');
+      expect(shown(root)).not.toMatch(SECRET);
+      await click('Reveal hint');
+      expect(shown(root)).toContain('Secret hint one');
+      expect(shown(root)).not.toContain('Secret hint two');
+      await click('Approach');
+      expect(root.querySelector('app-studio-approach')).not.toBeNull();
+      expect(shown(root)).toContain('Secret Variation Method');
+    });
+
+    it('jumps to the Other optimal approaches card once the solution is open and focuses its heading', async () => {
+      const scroll = vi.fn();
+      const prior = Element.prototype.scrollIntoView;
+      Element.prototype.scrollIntoView = scroll;
+      try {
+        const { root, click } = await setup(secretive());
+        await click('Show solution');
+        const jump = root.querySelector<HTMLButtonElement>('button.action-other-approaches')!;
+        expect(jump.textContent?.trim()).toBe('Other optimal solutions');
+        // It follows the solution toggle, which keeps its place.
+        const buttons = [...root.querySelectorAll('.workspace-actions > button')];
+        expect(buttons.indexOf(jump)).toBe(buttons.findIndex((button) => button.classList.contains('reveal')) + 1);
+        jump.click();
+        await new Promise((resolve) => setTimeout(resolve, 40));
+        const heading = root.querySelector('.compare-rationale .other-approaches-heading');
+        expect(document.activeElement).toBe(heading);
+        expect(scroll).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' });
+      } finally {
+        Element.prototype.scrollIntoView = prior;
+      }
+    });
+
+    it('opens the Approach tab disclosure to reach the card, without smooth scrolling under reduced motion', async () => {
+      const scroll = vi.fn();
+      const prior = Element.prototype.scrollIntoView;
+      Element.prototype.scrollIntoView = scroll;
+      try {
+        const { root, click } = await setup(secretive());
+        await click('Approach');
+        // Stubbed after the editor exists: it needs a full MediaQueryList.
+        vi.stubGlobal('matchMedia', (query: string) => ({ matches: query.includes('reduce') }));
+        const disclosure = root.querySelector<HTMLDetailsElement>('app-studio-approach details')!;
+        expect(disclosure.open).toBe(false);
+        await click('Other optimal solutions');
+        await new Promise((resolve) => setTimeout(resolve, 40));
+        expect(disclosure.open).toBe(true);
+        expect(document.activeElement).toBe(root.querySelector('app-studio-approach .other-approaches-heading'));
+        expect(scroll).toHaveBeenCalledWith({ behavior: 'auto', block: 'start' });
+      } finally {
+        Element.prototype.scrollIntoView = prior;
+        vi.unstubAllGlobals();
+      }
+    });
+
+    it('offers no jump on the Visual walkthrough or for a problem without a family', async () => {
+      const { root, click } = await setup(secretive());
+      await click('Visual walkthrough');
+      expect(root.querySelector('button.action-other-approaches')).toBeNull();
+      const plain = await setup();
+      await plain.click('Show solution');
+      expect(plain.root.querySelector('.workspace-actions app-optimal-approaches')).toBeNull();
+      expect(plain.root.querySelector('button.action-other-approaches')).toBeNull();
+    });
+  });
+
   it('shortens a mistake that restates the invariant shown above it', async () => {
     const problem = structuredClone(sample);
     problem.invariantAdaptation = 'At most k zeroes stay in the window.';
@@ -1470,5 +1653,40 @@ describe('Try it yourself layout', () => {
     // With the solution open the prediction leaves and the legend stays under the editor.
     await click('Show solution');
     expect(below()).toEqual(['app-studio-editor', 'app-studio-shortcuts']);
+  });
+
+  it('keeps a rem or px base under the problem title size, so browser zoom enlarges it (DLV-803)', async () => {
+    const { fixture } = await setup();
+    const css = [...document.querySelectorAll('style')]
+      .map((style) => style.textContent ?? '')
+      .join('\n')
+      .replace(/\s+/g, ' ');
+    expect(css).toMatch(/\.problem-rail\[[^\]]+\] h2\[[^\]]+\] \{ font-size: clamp\(22px, 1\.25rem \+ 0\.5vw, 32px\);/);
+    expect(css).not.toContain('clamp(22px, 2vw, 32px)');
+    fixture.destroy();
+  });
+
+  it('opens the problem peek under its button inside the centred frame, fully on screen (DLV-803)', async () => {
+    // A 2560 px monitor with a centred frame: the button sits far from the screen edge.
+    expect(peekLeft(480, 2560)).toBe(480);
+    // Near the right edge the peek moves left so all 390 px stay on screen.
+    expect(peekLeft(1200, 1280)).toBe(1280 - 390 - 20);
+    // A zoomed-in 320 px viewport: the peek is 280 px wide and keeps a 12 px margin at least.
+    expect(peekLeft(4, 320)).toBe(12);
+    expect(peekLeft(200, 320)).toBe(20);
+    const { fixture, root, click } = await setup();
+    await click('Problem');
+    const button = root.querySelector<HTMLButtonElement>('.problem-toggle')!;
+    vi.spyOn(button, 'getBoundingClientRect').mockReturnValue({ left: 300, bottom: 200 } as DOMRect);
+    const event = new Event('pointerenter');
+    Object.defineProperty(event, 'pointerType', { value: 'mouse' });
+    button.dispatchEvent(event);
+    fixture.detectChanges();
+    const studio = root.querySelector<HTMLElement>('.studio')!;
+    expect(studio.style.getPropertyValue('--peek-top')).toBe('208px');
+    expect(studio.style.getPropertyValue('--peek-left')).toBe(`${peekLeft(300, window.innerWidth)}px`);
+    const css = [...document.querySelectorAll('style')].map((style) => style.textContent ?? '').join('\n').replace(/\s+/g, ' ');
+    expect(css).toMatch(/\.problem-peek\[[^\]]+\] \.problem-rail\[[^\]]+\] \{ position: fixed; left: var\(--peek-left, 20px\); top: var\(--peek-top\);/);
+    fixture.destroy();
   });
 });

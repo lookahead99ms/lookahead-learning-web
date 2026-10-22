@@ -4,6 +4,8 @@ import {
   PRACTICE_PROGRESS_KEY,
   PracticeProgressService,
   PracticeRecord,
+  RETIRED_PROBLEM_IDS,
+  followMergedProblems,
   isReviewDue,
   parsePracticeProgress,
   reviewDateLabel,
@@ -129,6 +131,44 @@ describe('PracticeProgressService', () => {
     progress.markStarted('two-sum');
     expect(progress.record('two-sum')?.status).toBe('started');
     expect(progress.persisted()).toBe(false);
+  });
+
+  describe('merged problems (DLV-965)', () => {
+    const merged = { 'old-problem': 'kept-problem', 'old-approach-2': 'kept-approach-2' };
+
+    it('reads progress saved under a retired id as progress on the kept problem', () => {
+      const followed = followMergedProblems({ 'old-problem': record({ status: 'solved' }) }, merged);
+      expect(followed['kept-problem']?.status).toBe('solved');
+      expect(followed).not.toHaveProperty('old-problem');
+    });
+
+    it('keeps the record the learner already has on the kept problem and drops the retired key', () => {
+      const followed = followMergedProblems(
+        { 'old-problem': record({ status: 'solved' }), 'kept-problem': record({ status: 'started' }) },
+        merged,
+      );
+      expect(followed['kept-problem']?.status).toBe('started');
+      expect(Object.keys(followed)).toEqual(['kept-problem']);
+    });
+
+    it('leaves progress alone when no retired id is present', () => {
+      const records = { 'two-sum': record() };
+      expect(followMergedProblems(records, merged)).toEqual(records);
+    });
+
+    it('applies the real table when parsing, so the catalog and the problem page agree', () => {
+      const [retired, kept] = Object.entries(RETIRED_PROBLEM_IDS)[0];
+      const parsed = parsePracticeProgress(payload({ [retired]: record({ status: 'solved' }) }));
+      expect(parsed[kept]?.status).toBe('solved');
+      expect(parsed).not.toHaveProperty(retired);
+    });
+
+    it('maps every retired id to a current id, never to itself or to another retired id', () => {
+      for (const [retired, kept] of Object.entries(RETIRED_PROBLEM_IDS)) {
+        expect(kept).not.toBe(retired);
+        expect(RETIRED_PROBLEM_IDS).not.toHaveProperty(kept);
+      }
+    });
   });
 
   it('ignores malformed saved progress and keeps only valid records', () => {

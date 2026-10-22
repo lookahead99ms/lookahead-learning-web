@@ -1,4 +1,3 @@
-import { LearningPrompt } from '../platform-signature/learning-prompt';
 import { ReasoningPrompt } from '../platform-signature/reasoning-prompt';
 import { PlatformSignature } from '../platform-signature/platform-signature';
 import { DOCUMENT } from '@angular/common';
@@ -21,6 +20,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, RouterLink, Router } from '@angular/router';
 import { PageSidebarContext } from './page-sidebar-context';
 import { SidebarToggle } from './sidebar-toggle';
+import { ScrollLock } from '../scroll-lock/scroll-lock';
 
 export interface PageSectionLink {
   id: string;
@@ -119,6 +119,25 @@ export function practiceIcon(label: string): string {
   return 'section';
 }
 
+/**
+ * Where a docked panel starts, from the window edge. Inside the centred site frame
+ * (--site-frame-max, DLV-803: a bank-site page whose margins grow on bigger monitors) the panel
+ * sits at the frame's edge, next to the reader, instead of at the window edge; it keeps at least
+ * the 248px a docked panel needs. Without a frame, or on a window no wider than it, 6px as before.
+ */
+export function sidebarInset(space: number, viewport: number, frame: number): number {
+  const frameStart = Number.isFinite(frame) && frame > 0 ? Math.max(0, (viewport - frame) / 2) : 0;
+  return Math.round(Math.max(6, Math.min(frameStart + 6, space - 248)));
+}
+
+/** The site frame width in CSS px from a token such as "100rem" or "1600px"; Infinity if unset. */
+export function siteFrameWidth(token: string, rootFontSize: number): number {
+  const value = parseFloat(token);
+  if (!Number.isFinite(value) || value <= 0) return Infinity;
+  if (/rem\s*$/.test(token)) return value * (rootFontSize || 16);
+  return /px\s*$/.test(token) ? value : Infinity;
+}
+
 export function canDockSidebar(space: number, width = 224): boolean {
   // Browser zoom can round a reserved gutter down by a fraction of a CSS pixel.
   return space + 0.5 >= width + 24;
@@ -127,9 +146,9 @@ export function canDockSidebar(space: number, width = 224): boolean {
 @Component({
   selector: 'app-page-sidebars',
   imports: [
+    ScrollLock,
     NgTemplateOutlet,
     RouterLink,
-    LearningPrompt,
     PlatformSignature,
     ReasoningPrompt,
     SidebarToggle,
@@ -181,7 +200,6 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
   protected readonly leftOpen = signal(false);
   protected readonly rightOpen = signal(false);
   /** Room the sidebars leave at the bottom of the window for a corner statement. */
-  protected readonly cornerReserve = 96;
   protected readonly leftDocked = signal(false);
   protected readonly rightDocked = signal(false);
   protected readonly headerBottom = signal(76);
@@ -283,6 +301,8 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
   /** On such a page, the learner's last open/close choice; kept across query-only navigation. */
   private leftMemory: { path: string; open: boolean } | null = null;
   private reflowing = false;
+  /** This page has already shown its sections open beside the reader (DLV-803). */
+  private shownBeside = false;
   private returnFocus: HTMLElement | null = null;
   private clearanceMain: HTMLElement | null = null;
 
@@ -293,6 +313,7 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
         this.leftMemory = null;
       this.expandedGroups.set(new Set());
       this.leftChosen = this.rightChosen = false;
+      this.shownBeside = false;
       this.leftOpen.set(false);
       this.rightOpen.set(false);
       this.recallIndex.set(0);
@@ -508,10 +529,17 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
     const rtl = this.document.defaultView!.getComputedStyle(main).direction === 'rtl';
     const startSpace = rtl ? width - bounds.right : bounds.left;
     const endSpace = rtl ? bounds.left : width - bounds.right;
-    this.leftInset.set(6);
-    this.rightInset.set(6);
     const leftDocked = canDockSidebar(startSpace);
     const rightDocked = canDockSidebar(endSpace);
+    const rootStyle = this.document.defaultView!.getComputedStyle(this.document.documentElement);
+    const frame = siteFrameWidth(
+      rootStyle.getPropertyValue('--site-frame-max'),
+      parseFloat(rootStyle.fontSize),
+    );
+    const leftInset = leftDocked ? sidebarInset(startSpace, width, frame) : 6;
+    const rightInset = rightDocked ? sidebarInset(endSpace, width, frame) : 6;
+    this.leftInset.set(leftInset);
+    this.rightInset.set(rightInset);
     // A page can ask for its left column below a width (collapseLeftBelow). While the page holds
     // that column, the gutter the panel would get back mirrors the end gutter, which the page
     // reserves the same way.
@@ -532,18 +560,24 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
         : null,
     );
     if (this.inlineLayout()) this.clearEdgeClearance();
-    this.leftWidth.set(leftDocked ? startSpace - 6 : Math.min(280, width - 24));
-    this.rightWidth.set(rightDocked ? endSpace - 6 : Math.min(280, width - 24));
+    this.leftWidth.set(leftDocked ? startSpace - leftInset : Math.min(280, width - 24));
+    this.rightWidth.set(rightDocked ? endSpace - rightInset : Math.min(280, width - 24));
     this.leftDocked.set(leftDocked);
     this.rightDocked.set(rightDocked);
     const remembered =
       this.leftMemory?.path === this.document.location.pathname && collapseBelow > 0
         ? this.leftMemory.open
         : null;
+    // A page that opens in flow (no docking gutters: phones, or a laptop at 150% zoom and up)
+    // starts both sections closed, so the page title and the start of the lesson open the first
+    // screen; each heading row still opens its section (DLV-803, 2026-10-16). Sections already
+    // shown open beside the reader keep that state when the window loses its gutters.
+    if (!this.inlineLayout()) this.shownBeside = true;
+    const startOpen = this.shownBeside;
     if (this.homepage()) this.leftOpen.set(true);
     else if (!this.leftChosen && remembered !== null)
       this.leftOpen.set(remembered && (leftDocked || this.leftReclaimable));
-    else if (!this.leftChosen) this.leftOpen.set(true);
+    else if (!this.leftChosen) this.leftOpen.set(startOpen);
     // Handing the column over (or back) moves the page; measure again before anything paints.
     if (this.syncNavShown() && !this.reflowing) {
       this.reflowing = true;
@@ -554,7 +588,7 @@ export class PageSidebars implements AfterViewInit, OnDestroy {
       }
       return;
     }
-    if (!this.rightChosen) this.rightOpen.set(true);
+    if (!this.rightChosen) this.rightOpen.set(startOpen);
     const visible = this.sections().filter((section) => visibleSidebarTarget(section.target));
     // Track the reading area below both the platform header and sticky lesson tools.
     // A section already occupying that area must not leave the previous item selected.

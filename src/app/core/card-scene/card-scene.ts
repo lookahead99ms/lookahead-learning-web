@@ -111,6 +111,11 @@ export function sceneTextLimit(maxPx: number, scale: number): string | null {
         place-items: center;
         aspect-ratio: var(--card-scene-ratio, 16 / 9);
         width: 100%;
+        /* DLV-803: a card can cap the drawing's width (and so, through the ratio, its height)
+           and round it; the drawing then sits centred in the card's band. Unset elsewhere. */
+        max-width: var(--card-scene-max-width, none);
+        margin-inline: auto;
+        border-radius: var(--card-scene-radius, 0);
         overflow: hidden;
         background: var(--scene-bg);
         color: var(--scene-text);

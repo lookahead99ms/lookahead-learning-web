@@ -8,6 +8,7 @@
       [href]="'/' + path.id"
       [id]="'browse-' + path.id"
       [attr.aria-current]="currentPath(path.id) ? 'page' : null"
+      [style.--entry-path-color]="'var(--path-' + path.id + ')'"
       [attr.aria-expanded]="activePath() === path.id"
       [attr.aria-controls]="'navigation-' + path.id"
       aria-describedby="navigation-help"

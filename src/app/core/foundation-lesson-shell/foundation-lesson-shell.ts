@@ -1480,7 +1480,7 @@ export function plainText(html: string): string {
       .lesson-section h2 {
         margin: 8px 0 14px;
         color: var(--lesson-ink);
-        font-size: clamp(1.28rem, 1.6vw, 1.68rem);
+        font-size: clamp(1.28rem, 0.95rem + 0.75vw, 1.68rem);
         line-height: 1.2;
       }
       .lesson-section > p:not(.section-label),
@@ -1505,8 +1505,9 @@ export function plainText(html: string): string {
       /* DLV-408 system lessons: one reading column, one card after another. Stages group
          sections under a numbered divider; nothing sits side by side. */
       .system {
-        /* Cards use their full width; tables, code and prompts break up long text. */
-        --reading-width: none;
+        /* Cards use their full width for tables, code, diagrams and prompts; prose keeps a
+           readable line (DLV-803: ~130 characters a line on a 2560px monitor before). */
+        --reading-width: var(--reading-measure, 72ch);
         display: flex;
         flex-direction: column;
         gap: 3rem;

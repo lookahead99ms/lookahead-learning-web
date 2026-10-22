@@ -88,8 +88,11 @@ export function dynamicPageMeta(
     case 'lesson': {
       const item = course.items.find(({ id }) => id === target.itemId);
       if (!item) return coursePage;
-      const unit = unitFor(course, item.moduleId);
-      const module = course.modules.find(({ id }) => id === item.moduleId);
+      // No spoilers (user, 2026-10-16): a coding problem's unit and module are its pattern, so its
+      // meta uses only the course's description and scene, never the unit's or module's.
+      const problem = item.contentType === 'dsa-problem';
+      const unit = problem ? undefined : unitFor(course, item.moduleId);
+      const module = problem ? undefined : course.modules.find(({ id }) => id === item.moduleId);
       const context = unit?.description || module?.description || course.description;
       const lead = `${contentKind(item.contentType)} from ${course.title}: ${sentence(item.title)}`;
       return {

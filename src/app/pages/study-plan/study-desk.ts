@@ -11,7 +11,7 @@ import {
   signal,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { StudyDeskEntry } from './study-desk-model';
+import { StudyDeskApproach, StudyDeskEntry } from './study-desk-model';
 
 @Component({
   selector: 'app-study-desk',
@@ -33,6 +33,8 @@ export class StudyDesk {
   }>();
   readonly note = output<{ entry: StudyDeskEntry; text: string }>();
   readonly selectDay = output<number>();
+  /** DLV-962: the learner opened this approach of the item's problem family. */
+  readonly chooseApproach = output<{ entry: StudyDeskEntry; problemId: string }>();
   private readonly injector = inject(Injector);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   protected readonly selectedId = signal('');
@@ -186,6 +188,14 @@ export class StudyDesk {
       default:
         return 'Open material';
     }
+  }
+  protected openChosen(entry: StudyDeskEntry): void {
+    const chosen = entry.approaches?.find((option) => option.chosen);
+    if (chosen) this.chooseApproach.emit({ entry, problemId: chosen.problemId });
+  }
+  protected approachLabel(entry: StudyDeskEntry, option: StudyDeskApproach): string {
+    const total = entry.approaches?.length ?? 1;
+    return `Approach ${option.approach} of ${total}${option.chosen ? ', your choice' : ''}: ${entry.assignment.title}`;
   }
   protected offeringLabel(entry: StudyDeskEntry): string {
     const { courseTitle, topicTitle } = entry.assignment;

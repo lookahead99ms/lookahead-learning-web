@@ -202,7 +202,9 @@ test('derived DSA counts match the real frontend helper on synthetic content', a
   // pulling private curriculum into tests or CI.
   const { transpileModule, ModuleKind, ScriptTarget } = await import('typescript');
   const urls = new Map();
-  for (const name of ['content.models', 'learning-units', 'hands-on-dsa']) {
+  // Load the real helpers in dependency order. A data: URL cannot resolve a
+  // relative import, so every runtime dependency must receive its own URL.
+  for (const name of ['content.models', 'learning-units', 'pattern-context', 'hands-on-dsa']) {
     let source = await readFile(resolve(repositoryRoot, `src/app/content/${name}.ts`), 'utf8');
     for (const [dependency, url] of urls)
       source = source.replaceAll(`'./${dependency}'`, `'${url}'`);

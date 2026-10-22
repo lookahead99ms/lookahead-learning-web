@@ -28,7 +28,7 @@ h2 {
   background-clip: text;
   color: transparent;
   font:
-    800 clamp(28px, 2.8vw, 46px)/1.08 'Avenir Next',
+    800 clamp(28px, 1.48rem + 1.23vw, 46px)/1.08 'Avenir Next',
     'Segoe UI',
     system-ui,
     sans-serif;

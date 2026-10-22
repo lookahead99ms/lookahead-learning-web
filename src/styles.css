@@ -359,6 +359,26 @@ a {
   }
 }
 
+/* Responsive frame (DLV-803; user decision 2026-10-16: centred fixed-width page, like most bank
+   and product sites). The page keeps one width on every monitor and the side margins grow on a
+   larger screen. Browser zoom changes the CSS viewport, not rem or px, so:
+   - zooming out shrinks the page inside wider margins and shows more of it at once;
+   - zooming in narrows the CSS viewport below the frame, so the layout reflows (fewer columns,
+     sidebars collapse) instead of clipping;
+   - fluid type keeps a rem base (never a bare vw/cqi middle term), so zooming in enlarges it;
+   - first-screen blocks size to the window height so key controls stay above the fold. */
+:root {
+  --page-gutter: clamp(16px, 0.5rem + 2vw, 56px);
+  /* The whole page: left section nav + content + any right sidebar, and the header's inner row,
+     centred as one block so the logo, nav and content share the same left and right edges. */
+  --site-frame-max: 100rem;
+  /* The content column of browsing pages (Home sections, catalogs, Search, Study Plan). */
+  --page-max-browse: 80rem;
+  /* Prose line length; reading columns never widen with the window. */
+  --reading-measure: 72ch;
+  --card-min: 20rem;
+}
+
 /* Shared Harbor catalog composition; course/lesson refinements remain Learn-scoped. */
 /* In-page clearance for sidebar edge controls when no outer gutter exists. */
 main[data-sidebar-edge-controls] {
@@ -378,12 +398,21 @@ main:is(.harbor-learn, .harbor-catalog) .question-reader {
 }
 main:is(.harbor-learn, .harbor-catalog) .reader-question-title,
 main:is(.harbor-learn, .harbor-catalog) .module-context-title {
-  font-size: clamp(2rem, 4.2vw, 4rem);
+  /* DLV-803: the rem term is at least the vw term up to a 1920px screen, so browser zoom
+     enlarges the title (about 1.3x at 150%, 1.5x at 200%) instead of holding it at 4rem. */
+  font-size: clamp(2rem, 2rem + 1.6vw, 4rem);
   line-height: 1.08;
   letter-spacing: -0.045em;
   font-weight: 780;
   text-wrap: balance;
   overflow-wrap: anywhere;
+}
+/* Phones and 300-400% zoom: about 30px, still a rem base. */
+@media (max-width: 30rem) {
+  main:is(.harbor-learn, .harbor-catalog) .reader-question-title,
+  main:is(.harbor-learn, .harbor-catalog) .module-context-title {
+    font-size: clamp(1.75rem, 1.25rem + 2.5vw, 2.25rem);
+  }
 }
 main:is(.harbor-learn, .harbor-catalog) .catalog-depth-copy {
   max-width: 740px;
@@ -401,7 +430,7 @@ main:is(.harbor-learn, .harbor-catalog) .catalog-path-section {
   margin-top: 48px;
 }
 main:is(.harbor-learn, .harbor-catalog) .catalog-path-title {
-  font-size: clamp(1.6rem, 2.5vw, 2.2rem);
+  font-size: clamp(1.6rem, 1.45rem + 0.6vw, 2.2rem);
   letter-spacing: -0.025em;
 }
 main:is(.harbor-learn, .harbor-catalog) .catalog-path-heading {
@@ -625,13 +654,15 @@ main.harbor-learn .guided-trace:not(.focus-mode) .source-panel pre {
   }
 }
 
+/* DLV-803: Search sizes its own centred shell (--page-max-browse and --page-gutter), so the Learn
+   path adds no second cap or gutter and the page keeps one width whichever path is selected. */
 main.harbor-learn.search-page {
-  max-width: 1440px;
+  max-width: none;
   margin-inline: auto;
-  padding-inline: clamp(16px, 4vw, 64px);
+  padding-inline: 0;
 }
 main.harbor-learn .search-hero h1 {
-  font-size: clamp(2rem, 4.2vw, 4rem);
+  font-size: clamp(2rem, 2rem + 1.6vw, 4rem);
   line-height: 1.1;
   letter-spacing: -0.045em;
 }
@@ -656,13 +687,17 @@ main.harbor-learn .harbor-course-layout .learning-map {
   margin-inline: 0;
 }
 
-/* Desktop reader sidebars have dedicated columns, even when toggled closed. */
+/* Desktop reader sidebars have dedicated columns, even when toggled closed. DLV-803: on a
+   monitor wider than the site frame, both columns and the page keep their frame-width sizes and
+   sit together in the middle (page-sidebars docks the panels at the frame edge); up to the
+   frame width (100rem) the sizes are unchanged (18vw). */
 @media (min-width: 1100px) {
   main[data-sidebar-columns] {
     box-sizing: border-box;
-    --reader-sidebar-space: clamp(248px, 18vw, 360px);
-    width: calc(100% - 2 * var(--reader-sidebar-space)) !important;
-    max-width: min(1440px, calc(100% - 2 * var(--reader-sidebar-space))) !important;
+    --reader-frame: min(100%, var(--site-frame-max, 100rem));
+    --reader-sidebar-space: clamp(248px, 0.18 * min(100vw, var(--site-frame-max, 100rem)), 360px);
+    width: calc(var(--reader-frame) - 2 * var(--reader-sidebar-space)) !important;
+    max-width: min(1440px, calc(var(--reader-frame) - 2 * var(--reader-sidebar-space))) !important;
     margin-inline: auto !important;
   }
   main[data-sidebar-columns] > :is(.question-reader, .catalog-hero, .question-list, .page-message) {
@@ -678,6 +713,23 @@ main.harbor-learn .harbor-course-layout .learning-map {
   main.content-page[data-sidebar-columns]:has(.system) {
     --reader-sidebar-space: 256px;
     padding-inline: 16px;
+  }
+}
+
+/* DLV-803 (user, 2026-10-16): a lesson is one centred, fixed-width page, like a bank site.
+   Wider than the site frame (--site-frame-max), the outline, the lesson column and Practice &
+   review keep the layout they have at the frame width and sit together in the middle; only the
+   margins grow (page-sidebars docks its panels at the frame edge). Up to the frame width
+   nothing changes. The sidebars keep their own columns and never take the lesson's width.
+   The DSA studio pages keep their own wide workspace. */
+@media (min-width: 1100px) {
+  main.reader-page[data-sidebar-columns]:has(> .question-detail-reader):not(.focus-studio-page) {
+    --reader-frame: min(100%, var(--site-frame-max, 100rem));
+    width: calc(var(--reader-frame) - 2 * var(--reader-sidebar-space)) !important;
+    max-width: min(1440px, calc(var(--reader-frame) - 2 * var(--reader-sidebar-space))) !important;
+  }
+  main.reader-page[data-sidebar-columns]:has(> .question-detail-reader):not(.focus-studio-page, :has(.system)) {
+    --reader-sidebar-space: clamp(248px, 0.18 * min(100vw, var(--site-frame-max, 100rem)), 360px);
   }
 }
 
@@ -739,6 +791,9 @@ pre:has(> .learning-code[data-code-language='go']) { background:#14161a; }
   font-weight: 600;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
+  /* A long name (UnsupportedClassVersionError) breaks inside a 320px column (400% zoom)
+     instead of pushing the page sideways. */
+  overflow-wrap: anywhere;
 }
 .system :is(.prose, .lesson-table) samp {
   font-family: var(--lesson-mono);

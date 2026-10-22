@@ -12,6 +12,7 @@ import {
 } from '../practice-progress/practice-progress';
 import { NOTES_SAVE_DELAY_MS, StudioFinishReview } from './studio-finish-review';
 import { RecallCheckStore } from './recall-check';
+import { patternContextToken } from '../../content/pattern-context';
 
 function problem(id: string, studyOrder: number, difficulty: 'Beginner' | 'Intermediate' = 'Beginner') {
   return {
@@ -117,6 +118,51 @@ describe('Finish and review', () => {
     const saved = () => JSON.parse(values.get(PRACTICE_PROGRESS_KEY) ?? 'null')?.problems ?? {};
     return { fixture, root, button, saved };
   }
+
+  it('names the other optimal approaches in one line each, only when the problem has a family (DLV-965)', () => {
+    const fixture = TestBed.createComponent(StudioFinishReview);
+    fixture.componentRef.setInput('problemId', 'p1');
+    fixture.componentRef.setInput('approachFamily', {
+      approach: 1,
+      bestProblemId: 'p1',
+      siblings: [
+        {
+          problemId: 'p1-approach-2',
+          approach: 2,
+          title: 'Problem p1 (Approach-2)',
+          path: 'learn',
+          courseId: 'algorithmic-patterns',
+          questionId: 'p1-approach-2',
+          pattern: 'Pattern B',
+          complexity: { time: 'O(n)', space: 'O(1)' },
+          whenToPrefer: 'Prefer B when range questions follow.',
+        },
+      ],
+    });
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const block = root.querySelector('.also-optimal')!;
+    expect(block).not.toBeNull();
+    // No spoilers (user, 2026-10-16): before the pattern is revealed or the problem solved, no pattern name.
+    expect(block.textContent?.replace(/\s+/g, ' ').trim()).toBe('Another optimal approach: Problem p1 (Approach-2)');
+    expect(root.textContent).not.toContain('Pattern B');
+    fixture.componentRef.setInput('patternRevealed', true);
+    fixture.detectChanges();
+    expect(block.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+      'Also solvable optimally with Pattern B: Problem p1 (Approach-2)',
+    );
+    // Solving the problem names it too, even without the reveal.
+    fixture.componentRef.setInput('patternRevealed', false);
+    TestBed.inject(PracticeProgressService).rate('p1', 'Solved on my own');
+    fixture.detectChanges();
+    expect(block.textContent).toContain('Also solvable optimally with Pattern B');
+    expect(block.querySelector('a')?.getAttribute('href')).toBe('/learn/algorithmic-patterns/p1-approach-2');
+    expect(root.querySelector('h4[id$="-approaches"]')?.textContent).toBe('Other optimal approaches');
+    fixture.componentRef.setInput('approachFamily', null);
+    fixture.detectChanges();
+    expect(root.querySelector('.also-optimal')).toBeNull();
+    expect(root.querySelector('h4[id$="-approaches"]')).toBeNull();
+  });
 
   it('rates the attempt with pressed buttons and marks the problem solved', () => {
     const { fixture, root, button, saved } = render();
@@ -342,7 +388,9 @@ describe('Finish and review', () => {
       'Intermediate',
     ]);
     const link = items[0].querySelector('a')!;
-    expect(link.getAttribute('href')).toBe('/learn/algorithmic-patterns/p3?pattern=arrays');
+    expect(link.getAttribute('href')).toBe(`/learn/algorithmic-patterns/p3?pattern=${patternContextToken('arrays')}`);
+    // DLV-962: the link carries an opaque context id, so hovering it never names the pattern.
+    expect(link.getAttribute('href')).not.toContain('arrays');
     expect(items[1].querySelector('app-practice-status-mark')!.getAttribute('data-status')).toBe('solved');
     expect(items[0].querySelector('app-practice-status-mark')).toBeNull();
 

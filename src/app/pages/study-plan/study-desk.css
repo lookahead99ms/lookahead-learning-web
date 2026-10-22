@@ -21,7 +21,7 @@ h4 {
   line-height: 1.25;
 }
 h2 {
-  font-size: clamp(28px, 3vw, 38px);
+  font-size: clamp(1.75rem, 1.235rem + 1.27vw, 2.375rem);
   letter-spacing: -0.035em;
 }
 h3 {
@@ -256,7 +256,9 @@ button:disabled {
 }
 .activity-card-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* DLV-803: as many 16rem activity columns as the desk allows (two on a laptop); one when
+     zoomed in. */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
   gap: 18px;
 }
 .activity-card {
@@ -316,7 +318,7 @@ button:disabled {
   background: var(--surface-muted);
 }
 #desk-item-heading {
-  font-size: clamp(23px, 2.4vw, 30px);
+  font-size: clamp(1.4375rem, 0.975rem + 1vw, 1.875rem);
   margin-bottom: 22px;
   scroll-margin-top: 110px;
 }
@@ -482,5 +484,58 @@ summary {
   }
   .activities button {
     flex: 1 1 105px;
+  }
+}
+
+/* DLV-962: an approach family's choice, in the problem page's approach switch style (the header's
+   Light / Dark switch): the chosen approach is filled, the others are outlined links. Numbers only,
+   never a pattern or a method, because it is on screen before the learner tries. */
+.approach-choice {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+  margin: 4px 0 2px;
+}
+.approach-choice-note {
+  margin: 0;
+}
+.approach-switch {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid var(--accent-strong);
+  border-radius: 10px;
+  background: var(--surface);
+}
+.approach-switch a.segment {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 6px 14px;
+  border-radius: 7px;
+  color: var(--accent-strong);
+  background: transparent;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.approach-switch a.segment:hover {
+  background: color-mix(in srgb, var(--accent-strong) 12%, var(--surface));
+}
+.approach-switch a.segment[aria-current='true'] {
+  color: var(--accent-on-primary);
+  background: var(--accent-strong);
+}
+.approach-switch a.segment:focus-visible {
+  outline: 3px solid var(--accent-focus, var(--accent-strong));
+  outline-offset: 2px;
+}
+@media (pointer: coarse) {
+  .approach-switch a.segment {
+    min-height: 40px;
+    min-width: 44px;
   }
 }

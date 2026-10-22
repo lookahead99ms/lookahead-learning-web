@@ -7,6 +7,7 @@ import { CourseContent, CourseLearningUnit, InterviewQuestion } from '../../cont
 import { of } from 'rxjs';
 import { ContentService } from '../../content/content.service';
 import { CourseLearningMap } from './course-learning-map';
+import { patternContextToken } from '../../content/pattern-context';
 
 function question(id: string, order: number): InterviewQuestion {
   return {
@@ -111,6 +112,31 @@ describe('CourseLearningMap', () => {
     expect(element().querySelector('app-interview-question-bank-link')).toBeNull();
     expect(element().querySelector('details')).toBeNull();
     expect(element().querySelectorAll('a.unit-card')).toHaveLength(1);
+  });
+
+  it('reflows the card grid with browser zoom from a rem minimum and keeps a rem-based title (DLV-803)', () => {
+    const grid = element().querySelector<HTMLElement>('.unit-card-grid')!;
+    // One card: the whole row; every capacity still resolves to one column.
+    expect(grid.getAttribute('data-columns')).toBe('1');
+    expect(grid.style.getPropertyValue('--even-cols-3').trim()).toBe('1');
+    const css = [...document.querySelectorAll('style')]
+      .map((style) => style.textContent ?? '')
+      .join('\n')
+      .replace(/\s+/g, ' ');
+    expect(css).toMatch(
+      /\.unit-card-grid\[[^\]]+\] \{ --unit-card-min: 25rem;[^}]*grid-template-columns: repeat\(\s?auto-fill, minmax\(\s?max\(\s?min\(100%, var\(--unit-card-min\)\),/,
+    );
+    expect(css).toMatch(
+      /@container \(min-width: 77\.5rem\) \{ \.unit-card-grid\[[^\]]+\] \{ --unit-columns: var\(--even-cols-3, 3\); \}/,
+    );
+    expect(css).not.toMatch(/\.unit-card-grid\[[^\]]+\] \{[^}]*repeat\(3, minmax\(0, 1fr\)\)/);
+    expect(css).toContain('font-size: clamp(1.9rem, 1.45rem + 1.2vw, 2.6rem);');
+    // With the side lesson list the grid stays one card per row (DLV-408): no capacity vars.
+    fixture.componentRef.setInput('lessonNav', true);
+    fixture.detectChanges();
+    const navGrid = element().querySelector<HTMLElement>('.unit-card-grid')!;
+    expect(navGrid.getAttribute('data-columns')).toBeNull();
+    expect(navGrid.style.getPropertyValue('--even-cols-3')).toBe('');
   });
 
   it('builds the card from unit data and links the whole card to its lesson', () => {
@@ -226,7 +252,8 @@ describe('CourseLearningMap', () => {
     fixture.detectChanges();
 
     const card = cardFor('hashing-lookup');
-    expect(card.getAttribute('href')).toBe('/learn/hands-on-dsa?pattern=course:hashing-lookup');
+    expect(card.getAttribute('href')).toBe(`/learn/hands-on-dsa?pattern=${patternContextToken('course:hashing-lookup')}`);
+    expect(card.getAttribute('href')).not.toContain('hashing-lookup');
     // Cards carry no practice counts (user review, 2026-10-03).
     expect(metaText(card)).toEqual([]);
   });
@@ -261,10 +288,10 @@ describe('CourseLearningMap', () => {
     fixture.detectChanges();
 
     expect(cardFor('fast-slow-pointers').getAttribute('href')).toBe(
-      '/learn/hands-on-dsa?pattern=algorithmic-patterns:fast-slow-pointers',
+      `/learn/hands-on-dsa?pattern=${patternContextToken('algorithmic-patterns:fast-slow-pointers')}`,
     );
     expect(cardFor('list-reversal').getAttribute('href')).toBe(
-      '/learn/hands-on-dsa?pattern=algorithmic-patterns:list-reversal',
+      `/learn/hands-on-dsa?pattern=${patternContextToken('algorithmic-patterns:list-reversal')}`,
     );
     expect(metaText(cardFor('list-reversal'))).toEqual(['Subpattern 2']);
     for (const card of Array.from(element().querySelectorAll('a.unit-card'))) {
@@ -481,6 +508,36 @@ describe('CourseLearningMap unit cards', () => {
     // The banner carries no lesson or round count (user review, 2026-10-03).
     expect(banner.querySelector('.unit-card-banner-count')).toBeNull();
     expect(banner.textContent).not.toMatch(/\d+ (?:rounds?|lessons?)\b/);
+  });
+
+  it('caps the drawing at Home-card size in the multi-column grid and gives the title more presence (DLV-803)', async () => {
+    const element = await render('design-rounds');
+    const grid = element.querySelector<HTMLElement>('.unit-card-grid')!;
+    // Three cards: a multi-column grid, so the scene band cap applies to every card scene.
+    expect(grid.getAttribute('data-columns')).toBe('3');
+    expect(grid.querySelectorAll('app-card-scene.unit-card-scene')).toHaveLength(3);
+    const css = [...document.querySelectorAll('style')]
+      .map((style) => style.textContent ?? '')
+      .join('\n')
+      .replace(/\s+/g, ' ');
+    // A rem cap (zoom enlarges it with the text): 13rem tall at 16:9, centred in the band.
+    expect(css).toMatch(
+      /\.unit-card-grid\[data-columns\]\[[^\]]+\]:not\(\[data-columns=["']1["']\]\) \.unit-card-scene\[[^\]]+\] \{ --unit-scene-max-height: 13rem; --card-scene-max-width: calc\(var\(--unit-scene-max-height\) \* 16 \/ 9\); --card-scene-radius: 12px; padding: 0\.5rem; \}/,
+    );
+    // The title is the strongest text: 1.4rem, which also sets the drawing-text cap.
+    expect(css).toMatch(/\.unit-card-item\[[^\]]+\] \{ --card-title-size: 1\.4rem;/);
+    expect(css).toMatch(/\.unit-card-title\[[^\]]+\] \{[^}]*font-size: var\(--card-title-size, 1\.4rem\);/);
+    expect(css).not.toContain('--card-title-size: 1.3rem');
+
+    // The side-nav row (DLV-408) has no data-columns, so it keeps its drawing column.
+    lastFixture.componentRef.setInput('lessonNav', true);
+    lastFixture.detectChanges();
+    expect(element.querySelector('.unit-card-grid')?.hasAttribute('data-columns')).toBe(false);
+  });
+
+  it('keeps the full drawing beside the text for a single-card course (DLV-803)', async () => {
+    const element = await render('design-rounds', units.slice(0, 1));
+    expect(element.querySelector('.unit-card-grid')?.getAttribute('data-columns')).toBe('1');
   });
 
   it('shows no lesson count in the banner for courses without a custom noun', async () => {

@@ -1,7 +1,7 @@
 import { Component, DestroyRef, ElementRef, afterNextRender, computed, effect, inject, input, viewChild } from '@angular/core';
 import { PatternLanguage } from '../../content/content.models';
 import { CodeCopyButton } from '../code-copy-button/code-copy-button';
-import { WalkthroughCodeLine, codeScrollTop } from './walkthrough.model';
+import { WalkthroughCodeLine, codeScrollTop, pinnedCover } from './walkthrough.model';
 
 let nextCodeId = 0;
 const LANGUAGE_LABELS: Record<PatternLanguage, string> = { java: 'Java', python: 'Python', go: 'Go' };
@@ -178,7 +178,7 @@ export class WalkthroughCode {
     if (!line) return;
     // On a short screen the page can cut the box: keep the line in the part that is on screen.
     const rect = box.getBoundingClientRect();
-    const pin = parseFloat(getComputedStyle(box).getPropertyValue('--stage-top')) || 0;
+    const pin = pinnedCover(box, parseFloat(getComputedStyle(box).getPropertyValue('--stage-top')) || 0);
     const height = box.ownerDocument.defaultView?.innerHeight ?? Infinity;
     const top = Math.max(0, pin - rect.top);
     const bottom = Math.min(box.clientHeight, height - rect.top);

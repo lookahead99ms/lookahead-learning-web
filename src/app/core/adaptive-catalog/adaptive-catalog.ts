@@ -15,7 +15,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink, Scroll } from '@angular/router';
 import { CardScene } from '../card-scene/card-scene';
-import { evenGridColumns } from '../even-grid';
+import { evenGridColumnVars, evenGridColumns } from '../even-grid';
 import { PageSidebarContextDirective } from '../page-sidebars/page-sidebar-context';
 import { withoutHiddenCourses } from '../../content/hidden-courses';
 import { CatalogCourseGroup } from '../../content/catalog-course-groups';
@@ -42,8 +42,14 @@ export interface AdaptiveCatalogConfig {
   highlight: string;
   description: string;
   actionsLabel: string;
+  /** DLV-803 Button Placement: the primary and its alternative are the two hero buttons. */
   primaryAction: CatalogAction;
-  secondaryActions: CatalogAction[];
+  alternativeAction: CatalogAction;
+  /**
+   * Further destinations, shown as one text line under the buttons ("Or build a study plan or
+   * start free"); labels are lower-case because they sit inside that sentence.
+   */
+  moreActions: CatalogAction[];
   metricsLabel: string;
   courseMetricLabel: string;
   lessonMetricLabel: string;
@@ -57,6 +63,9 @@ export interface AdaptiveCatalogConfig {
   errorDescription: string;
   loadingDescription: string;
 }
+
+/** DLV-942: the hero's Start free destination, offered only when the path has free units. */
+export const START_FREE_ACTION: CatalogAction = { label: 'start free', routerLink: '/start-free' };
 
 export interface CatalogQuestionCountDisplay {
   value: number;
@@ -167,23 +176,43 @@ export class AdaptiveCatalog implements OnInit {
   protected readonly monogram = catalogMonogram;
   /** 2 or 3 columns from the group's course count, so no row ends with one lonely card. */
   protected readonly gridColumns = evenGridColumns;
+  /** DLV-803: even column counts per row capacity; CSS picks one from the grid's width. */
+  protected readonly gridColumnVars = evenGridColumnVars;
   protected readonly sidebarContext = computed(() => ({
     excluded: false,
-    groupLabel: this.config().path === 'learn' ? 'Foundation Tracks'
-      : this.config().path === 'grow' ? 'Production Capabilities' : 'Senior-readiness Tracks',
-    groups: this.sections().map((group) => ({
-      id: group.id,
-      sectionId: `${this.config().path}-group-${group.id}-heading`,
-      title: group.title,
-      courses: this.itemsFor(group, this.catalog() ?? [])
-        .filter((item) => item.available !== false)
-        .flatMap((item) => item.id ? [{ id: item.id, title: item.title, url: `/${this.config().path}/${item.id}` }] : []),
-    })).filter((group) => group.courses.length > 0),
+    groupLabel:
+      this.config().path === 'learn'
+        ? 'Foundation Tracks'
+        : this.config().path === 'grow'
+          ? 'Production Capabilities'
+          : 'Senior-readiness Tracks',
+    groups: this.sections()
+      .map((group) => ({
+        id: group.id,
+        sectionId: `${this.config().path}-group-${group.id}-heading`,
+        title: group.title,
+        courses: this.itemsFor(group, this.catalog() ?? [])
+          .filter((item) => item.available !== false)
+          .flatMap((item) =>
+            item.id
+              ? [{ id: item.id, title: item.title, url: `/${this.config().path}/${item.id}` }]
+              : [],
+          ),
+      }))
+      .filter((group) => group.courses.length > 0),
   }));
   protected readonly reviewStatusLabel = reviewStatusLabel;
   protected readonly pathHasFreeUnits = computed(
-    () => this.accessLevels()?.entries().some((entry) => entry.path === this.config().path) ?? false,
+    () =>
+      this.accessLevels()
+        ?.entries()
+        .some((entry) => entry.path === this.config().path) ?? false,
   );
+  /** DLV-803: the hero's text line; "start free" joins it when the path has free units. */
+  protected readonly moreActions = computed<readonly CatalogAction[]>(() => [
+    ...this.config().moreActions,
+    ...(this.pathHasFreeUnits() ? [START_FREE_ACTION] : []),
+  ]);
 
   /** "3 free lessons" when the course has open or free units; null otherwise or without data. */
   protected freeLessonsFor(item: CatalogOverviewItem): string | null {
@@ -227,7 +256,10 @@ export class AdaptiveCatalog implements OnInit {
           this.catalog.set(withoutHiddenCourses(this.config().path, catalog));
           if (this.pendingGroupId) this.scrollToGroup(this.pendingGroupId);
         },
-        error: (error) => { this.recovery.set(recoveryKind(error)); this.error.set(this.config().errorDescription); },
+        error: (error) => {
+          this.recovery.set(recoveryKind(error));
+          this.error.set(this.config().errorDescription);
+        },
       });
   }
 

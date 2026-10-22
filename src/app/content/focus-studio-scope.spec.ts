@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DsaProblemV2 } from './content.models';
 import { FOCUS_STUDIO_PATTERN, usesFocusStudio } from './focus-studio-scope';
+import { patternContextToken } from './pattern-context';
 
 const arraysRoute = {
   path: 'learn',
@@ -41,6 +42,12 @@ describe('Focus Studio Arrays rollout boundary', () => {
     expect(usesFocusStudio(sharedProblem, arraysRoute, 'algorithmic-patterns:greedy')).toBe(false);
     expect(usesFocusStudio(sharedProblem, sharedRoute, 'invented')).toBe(false);
     expect(usesFocusStudio(sharedProblem, arraysRoute, 'invented')).toBe(true);
+  });
+  it('reads the opaque ?pattern= context id the same way as the readable id (DLV-962)', () => {
+    expect(usesFocusStudio(sharedProblem, sharedRoute, patternContextToken(FOCUS_STUDIO_PATTERN))).toBe(true);
+    expect(
+      usesFocusStudio(sharedProblem, arraysRoute, patternContextToken('algorithmic-patterns:greedy')),
+    ).toBe(false);
   });
   it('cannot opt unrelated problems into the pilot through a URL flag', () => {
     const unrelated = {
