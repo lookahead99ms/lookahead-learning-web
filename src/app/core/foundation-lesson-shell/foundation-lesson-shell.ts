@@ -3,7 +3,9 @@ import { LearningCode } from '../learning-code';
 import { codeLanguageLabel } from '../focus-studio/code-presentation';
 import { Component, DestroyRef, computed, inject, input, signal } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs';
 import { evenGridColumns } from '../even-grid';
 import {
   ContentItemSummary,
@@ -25,7 +27,6 @@ import { PatternUnderstandingChecks } from '../pattern-understanding-checks/patt
 import { isReferenceLanguage, ReferenceLanguageService } from '../reference-language';
 import { LessonStoryboard } from '../lesson-storyboard/lesson-storyboard';
 import { changeCount, fileRows, pairFiles } from './split-diff';
-import { ConsoleBeside } from './console-beside';
 import { LessonTabItem, LessonTabs } from '../lesson-tabs/lesson-tabs';
 import { PatternMap } from '../pattern-map/pattern-map';
 import { LessonStart } from '../lesson-start/lesson-start';
@@ -53,7 +54,6 @@ export function plainText(html: string): string {
     RouterLink,
     CodeCopyButton,
     CodingSolutionTabs,
-    ConsoleBeside,
     InteractiveTheoryVisual,
     InterviewQuestionBankLink,
     LessonStoryboard,
@@ -166,7 +166,15 @@ export function plainText(html: string): string {
     }
     }
     <ng-template #systemLesson>
-      <article class="foundation-lesson system" [class.algo-lesson]="isAlgo()" aria-label="Lesson">
+      <article class="foundation-lesson system" [class.algo-lesson]="isAlgo()" [attr.data-code-width]="codeWidth()" aria-label="Lesson">
+        @if (codeWidthPreview()) {
+          <!-- Preview only (?codeWidth=prose|full): compare the two code widths on the same page. -->
+          <nav class="code-width-switch" aria-label="Code width preview">
+            <span>Code width</span>
+            <a routerLink="." [queryParams]="{ codeWidth: 'prose' }" queryParamsHandling="merge" [attr.aria-current]="codeWidth() === 'prose' ? 'true' : null">Prose column</a>
+            <a routerLink="." [queryParams]="{ codeWidth: 'full' }" queryParamsHandling="merge" [attr.aria-current]="codeWidth() === 'full' ? 'true' : null">Full card</a>
+          </nav>
+        }
         @for (stage of stages(); track stage.id) {
           <section
             class="lesson-stage"
@@ -705,31 +713,23 @@ export function plainText(html: string): string {
         }
       </section>
     </ng-template>
-    <!-- DLV-408: code on the left, the explanation beside it; the run console sits under the explanation, level
-         with the end of the code, when it fits there, and under the code otherwise. Tables and visuals below. -->
+    <!-- Code reads top to bottom: the lead-in paragraph(s), the code at the full content width, the run console
+         right under the code it came from, then the paragraphs that explain the run (codeAfterParagraph picks
+         the split; default: after the first paragraph). Tables and visuals follow below. -->
     <ng-template #systemCode let-section let-stage="stage">
       @if (isLanguageTabs(section.codeTabs)) {
         <!-- DSA core courses: the same program in Java, Python and Go; one language choice for the page. -->
-        <div appConsoleBeside class="code-pair" [class.code-pair-centered]="lineCount(languageTab(section.codeTabs).source) <= 30">
-          <div class="code-pair-code">
+        <div class="code-stack">
+          <ng-container [ngTemplateOutlet]="stackProse" [ngTemplateOutletContext]="{ $implicit: section, from: 0, to: codeAfter(section), callout: false }" />
+          <div class="code-stack-code">
             <ng-container [ngTemplateOutlet]="languageCode" [ngTemplateOutletContext]="{ $implicit: section.codeTabs, key: section.id, label: section.heading, console: false }" />
           </div>
           @if (languageTab(section.codeTabs).output; as output) {
-            <div class="code-pair-console">
+            <div class="code-stack-console">
               <ng-container [ngTemplateOutlet]="runConsole" [ngTemplateOutletContext]="{ $implicit: output }" />
             </div>
           }
-          <div class="explanation code-pair-text">
-            @for (paragraph of section.body; track paragraph) {
-              <div class="prose" [innerHTML]="cardPoints(paragraph, true)"></div>
-            }
-            @if (section.callout?.title !== 'Example boundary' && section.callout; as callout) {
-              <aside class="lesson-callout" [attr.data-callout-type]="callout.type">
-                <strong>{{ callout.title }}</strong>
-                <p [innerHTML]="callout.text"></p>
-              </aside>
-            }
-          </div>
+          <ng-container [ngTemplateOutlet]="stackProse" [ngTemplateOutletContext]="{ $implicit: section, from: codeAfter(section), to: section.body.length, callout: true }" />
         </div>
       } @else if (section.codeTabs?.length) {
         @for (paragraph of section.body; track paragraph) {
@@ -751,16 +751,15 @@ export function plainText(html: string): string {
         </div>
         @if (currentTab(section); as tab) {
           <div
-            class="code-pair"
-            [class.code-pair-centered]="lineCount(tab.source) <= 30"
+            class="code-stack"
             role="tabpanel"
             [id]="section.id + '-panel'"
             [attr.aria-labelledby]="section.id + '-tab-' + tab.id"
           >
-            <div class="code-pair-code">
+            <div class="code-stack-code">
               <ng-container [ngTemplateOutlet]="codeBlock" [ngTemplateOutletContext]="{ $implicit: tab }" />
             </div>
-            <div class="explanation code-pair-text">
+            <div class="explanation code-stack-text">
               @for (paragraph of tab.body; track paragraph) {
                 <div class="prose" [innerHTML]="cardPoints(paragraph, true)"></div>
               }
@@ -768,33 +767,17 @@ export function plainText(html: string): string {
           </div>
         }
       } @else {
-        <div appConsoleBeside class="code-pair" [class.code-pair-centered]="lineCount(section.code.source) <= 30">
-          <div class="code-pair-code">
+        <div class="code-stack">
+          <ng-container [ngTemplateOutlet]="stackProse" [ngTemplateOutletContext]="{ $implicit: section, from: 0, to: codeAfter(section), callout: false }" />
+          <div class="code-stack-code">
             <ng-container [ngTemplateOutlet]="codeBlock" [ngTemplateOutletContext]="{ $implicit: section.code }" />
           </div>
           @if (section.output; as output) {
-            <div class="code-pair-console">
+            <div class="code-stack-console">
               <ng-container [ngTemplateOutlet]="runConsole" [ngTemplateOutletContext]="{ $implicit: output }" />
             </div>
           }
-          <div class="explanation code-pair-text">
-            @for (paragraph of section.body; track paragraph) {
-              @if (promptText(paragraph); as prompt) {
-                <figure class="ai-prompt">
-                  <figcaption>Prompt to give your AI tool<app-code-copy-button [code]="prompt" /></figcaption>
-                  <p>{{ prompt }}</p>
-                </figure>
-              } @else {
-                <div class="prose" [innerHTML]="cardPoints(paragraph, true)"></div>
-              }
-            }
-            @if (section.callout?.title !== 'Example boundary' && section.callout; as callout) {
-              <aside class="lesson-callout" [attr.data-callout-type]="callout.type">
-                <strong>{{ callout.title }}</strong>
-                <p [innerHTML]="callout.text"></p>
-              </aside>
-            }
-          </div>
+          <ng-container [ngTemplateOutlet]="stackProse" [ngTemplateOutletContext]="{ $implicit: section, from: codeAfter(section), to: section.body.length, callout: true }" />
         </div>
       }
       @if (besideVisual(section)) {
@@ -935,6 +918,36 @@ export function plainText(html: string): string {
       ></ol>
     </ng-template>
     <!-- Small titled cards after the body: side by side when the lesson column is wide, stacked otherwise. -->
+    <!-- The paragraphs of a code section in [from, to): before the code the lead-in, after it the explanation. -->
+    <ng-template #stackProse let-section let-from="from" let-to="to" let-callout="callout">
+      @if (to > from) {
+        <div class="explanation code-stack-text">
+          @for (paragraph of section.body.slice(from, to); track paragraph) {
+            @if (promptText(paragraph); as prompt) {
+              <figure class="ai-prompt">
+                <figcaption>Prompt to give your AI tool<app-code-copy-button [code]="prompt" /></figcaption>
+                <p>{{ prompt }}</p>
+              </figure>
+            } @else {
+              <div class="prose" [innerHTML]="cardPoints(paragraph, true)"></div>
+            }
+          }
+          @if (callout && section.callout?.title !== 'Example boundary' && section.callout; as callout) {
+            <aside class="lesson-callout" [attr.data-callout-type]="callout.type">
+              <strong>{{ callout.title }}</strong>
+              <p [innerHTML]="callout.text"></p>
+            </aside>
+          }
+        </div>
+      } @else if (callout && section.callout?.title !== 'Example boundary' && section.callout; as callout) {
+        <div class="explanation code-stack-text">
+          <aside class="lesson-callout" [attr.data-callout-type]="callout.type">
+            <strong>{{ callout.title }}</strong>
+            <p [innerHTML]="callout.text"></p>
+          </aside>
+        </div>
+      }
+    </ng-template>
     <ng-template #sectionCards let-section>
       @if (section.cards?.length) {
         <div class="section-cards">
@@ -1633,81 +1646,92 @@ export function plainText(html: string): string {
       .system {
         container: lesson / inline-size;
       }
-      /* Code on the left, the explanation beside it; tables, visuals and transcripts
-         run full width below. */
       .system .code-section {
         display: flex;
         flex-direction: column;
         gap: 1.5rem;
       }
-      /* Narrow: code, its run console right under it, then the explanation (source order). */
-      .code-pair {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr);
-        gap: 0.75rem;
-      }
-      .code-pair-code {
+      /* One flow: lead-in, code at the content width, its console right under it, then the explanation. */
+      .code-stack {
         display: flex;
         min-width: 0;
         flex-direction: column;
         gap: 0.75rem;
       }
-      .code-pair-console {
+      .code-stack-code {
+        display: flex;
+        min-width: 0;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+      .code-stack-console {
         min-width: 0;
       }
-      .code-pair-text {
+      .code-stack-text {
         min-width: 0;
-        margin-top: 0.75rem;
       }
-      .system .code-pair .foundation-code pre {
-        max-height: min(80vh, 48rem);
+      .code-stack > .code-stack-text + .code-stack-code,
+      .code-stack > .code-stack-console + .code-stack-text,
+      .code-stack > .code-stack-code + .code-stack-text {
+        margin-top: 0.5rem;
+      }
+      /* The whole file shows; long lines wrap with a hanging indent instead of a scroll box. */
+      .system .code-stack .foundation-code pre {
+        max-height: none;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+      /* The .code-line spans arrive through innerHTML, so their wrapping rules live in styles.css. */
+      /* Full card: the code and its console run edge to edge across the card; the prose keeps its measure. */
+      .system[data-code-width='full'] .code-stack-code,
+      .system[data-code-width='full'] .code-stack-console {
+        margin-inline: calc(-1 * var(--card-pad-x));
+      }
+      .system[data-code-width='full'] .code-stack-code .foundation-code,
+      .system[data-code-width='full'] .code-stack-console .run-console {
+        border-inline: 0;
+        border-radius: 0;
+      }
+      .system[data-code-width='full'] .code-stack-console .run-console-note {
+        margin-inline: var(--card-pad-x);
+      }
+      .system[data-code-width='full'] .code-stack .code-tabs,
+      .system[data-code-width='full'] .code-stack .language-tabs {
+        margin-inline: 0;
+      }
+      /* Preview switch (?codeWidth=): two buttons, bottom right, out of the reading column. */
+      .code-width-switch {
+        position: fixed;
+        right: 1rem;
+        bottom: 1rem;
+        z-index: 20;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--surface);
+        box-shadow: 0 8px 22px var(--shadow);
+        font-size: 0.85rem;
+      }
+      .code-width-switch span {
+        color: var(--text-subtle);
+      }
+      .code-width-switch a {
+        padding: 0.3rem 0.8rem;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        color: var(--text-strong);
+        font-weight: 600;
+        text-decoration: none;
+      }
+      .code-width-switch a[aria-current='true'] {
+        border-color: var(--lesson-teal);
+        background: var(--lesson-teal);
+        color: #fff;
       }
       @container lesson (min-width: 760px) {
-        .code-pair {
-          grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
-          grid-template-areas: 'code text';
-          gap: 0.75rem 2rem;
-          align-items: start;
-        }
-        .code-pair-code {
-          grid-area: code;
-        }
-        .code-pair-console {
-          grid-area: console;
-        }
-        .code-pair-text {
-          grid-area: text;
-          margin-top: 0;
-        }
-        /* Short code: the explanation sits level with the middle of the code. */
-        .code-pair.code-pair-centered {
-          align-items: center;
-        }
-        /* With a console it stays under the code and the explanation spans both; the
-           last row takes any spare height, so no gap opens between code and console. */
-        .code-pair:has(> .code-pair-console) {
-          grid-template-rows: auto 1fr;
-          grid-template-areas: 'code text' 'console text';
-        }
-        .code-pair.code-pair-centered:has(> .code-pair-console) {
-          grid-template-rows: 1fr auto auto 1fr;
-          grid-template-areas: '. text' 'code text' 'console text' '. text';
-          align-items: start;
-        }
-        .code-pair.code-pair-centered:has(> .code-pair-console) > .code-pair-text {
-          align-self: center;
-        }
-        /* The explanation leaves room (ConsoleBeside measures it): the console moves
-           under the explanation, its bottom level with the end of the code. */
-        .code-pair.console-beside,
-        .code-pair.code-pair-centered.console-beside {
-          grid-template-rows: 1fr auto;
-          grid-template-areas: 'code text' 'code console';
-        }
-        .code-pair.console-beside > .code-pair-console {
-          align-self: end;
-          margin-top: 0.75rem;
-        }
         .system .lesson-section .pitfall-list {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1973,17 +1997,6 @@ export function plainText(html: string): string {
       .pair-side-output .lesson-table-wrap {
         margin: 0;
       }
-      /* Long code: the explanation starts level with the first line of code, not the title bar. */
-      .system .code-pair .foundation-code header {
-        box-sizing: border-box;
-        min-height: 2.9rem;
-      }
-      /* Only beside the code: stacked on a narrow lesson, the explanation follows without a gap. */
-      @container lesson (min-width: 760px) {
-        .code-pair:not(.code-pair-centered) > .code-pair-text {
-          padding-top: calc(2.9rem + 1px + 16px);
-        }
-      }
       .section-intro {
         margin-bottom: 0.25rem;
       }
@@ -1998,21 +2011,6 @@ export function plainText(html: string): string {
       }
       .system .concept-visual {
         margin-top: 1.5rem;
-      }
-      /* algo-pattern-v1: the code is the lesson, so it runs full width with its explanation below. */
-      @container lesson (min-width: 760px) {
-        .algo-lesson .code-pair,
-        .algo-lesson .code-pair.code-pair-centered:has(> .code-pair-console) {
-          grid-template-columns: minmax(0, 1fr);
-          grid-template-rows: none;
-          grid-template-areas: none;
-        }
-        .algo-lesson .code-pair > * {
-          grid-area: auto;
-        }
-        .algo-lesson .code-pair > .code-pair-text {
-          margin-top: 0.75rem;
-        }
       }
       /* Language tabs sit on the code block's title bar. */
       .language-tabs {
@@ -2975,6 +2973,17 @@ export class FoundationLessonShell {
   protected lineCount(source: string | undefined): number {
     return source ? source.split('\n').length : 0;
   }
+
+  /** The code follows body[codeAfterParagraph]; default: after the first paragraph (the "what we run" sentence). */
+  protected codeAfter(section: TheorySection): number {
+    return Math.min(Math.max((section.codeAfterParagraph ?? 0) + 1, 0), section.body.length);
+  }
+
+  private readonly route = inject(ActivatedRoute);
+  /** ?codeWidth=prose|full; anything else reads as prose. */
+  private readonly codeWidthParam = toSignal(this.route.queryParamMap.pipe(map((params) => params.get('codeWidth'))), { initialValue: null });
+  readonly codeWidth = computed(() => (this.codeWidthParam() === 'full' ? 'full' : 'prose'));
+  readonly codeWidthPreview = computed(() => this.codeWidthParam() !== null);
 
   protected tableAfter(section: TheorySection): number {
     const last = section.body.length - 1;

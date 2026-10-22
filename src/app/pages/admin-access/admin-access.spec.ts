@@ -1,4 +1,7 @@
+import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
+import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { AdminAccessPage } from './admin-access';
 import { ACCOUNT_FETCH, StudyPlanAccount, StaffPermissions } from '../study-plan/study-plan-account';
 import { visibleAdminLinks } from '../../core/author-workspace-nav/author-workspace-links';
@@ -16,7 +19,7 @@ describe('staff navigation', () => {
   });
   it('keeps assignment controls owner-only even for admins and reviewers', () => {
     expect(visibleAdminLinks({ ...account, permissions: permissions({ previewDocuments: true, deliveryRead: true }) }).map(row => row.id))
-      .toEqual(['previews', 'docs', 'delivery']);
+      .toEqual(['docs', 'previews', 'delivery']);
     expect(visibleAdminLinks({ ...account, authorPreview: true, permissions: permissions({}) })).toEqual([]);
   });
 });
@@ -55,5 +58,31 @@ describe('People and access', () => {
     saveStatus = 409; await page.save();
     expect(page.notice()).toContain('Access changed');
     expect(page.draft?.revision).toBe(0); expect(page.assignments()).toEqual([]);
+  });
+});
+
+@Component({ selector: 'app-platform-header', template: '' })
+class HeaderStub {}
+
+describe('People and access layout', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({ providers: [
+      provideRouter([]),
+      { provide: StudyPlanAccount, useValue: { account: signal({ accountId: 'owner', username: 'owner', displayName: 'Owner', topicGrants: [], permissions: permissions({ manageAccess: true, previewDocuments: true, deliveryRead: true }) }), apiPath: (path: string) => '/bff/api/v1' + path } },
+      { provide: ACCOUNT_FETCH, useValue: async () => Response.json({ data: [] }) },
+    ] }).overrideComponent(AdminAccessPage, { remove: { imports: [PlatformHeader] }, add: { imports: [HeaderStub] } });
+  });
+  it('lays out like the other admin pages: outline, content, then the Admin menu', async () => {
+    const fixture = TestBed.createComponent(AdminAccessPage);
+    fixture.detectChanges(); await fixture.whenStable(); fixture.detectChanges();
+    const main = fixture.nativeElement.querySelector('main') as HTMLElement;
+    expect([...main.children].map(child => child.tagName.toLowerCase().replace(/^div$/, 'div.' + child.className)))
+      .toEqual(['aside', 'div.workspace-content', 'app-author-admin-menu']);
+    expect(main.querySelector('aside app-author-workspace-nav')).not.toBeNull();
+    expect(fixture.componentInstance.outline().map(item => item.href)).toEqual(['#choose-person', '#saved-assignments']);
+    fixture.componentInstance.invite();
+    expect(fixture.componentInstance.outline().map(item => item.href)).toEqual(['#choose-person', '#saved-assignments']);
+    fixture.componentInstance.pendingEmail = 'person@example.invalid'; fixture.componentInstance.invite();
+    expect(fixture.componentInstance.outline().map(item => item.href)).toEqual(['#choose-person', '#review-access', '#saved-assignments']);
   });
 });

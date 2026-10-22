@@ -18,10 +18,10 @@ describe('AuthorAdminMenu', () => {
   it('lists the admin pages and marks the open one', () => {
     const root = render('delivery').nativeElement as HTMLElement;
     expect(hrefs(root, 'nav[aria-label="Admin navigation"] a')).toEqual([
-      '/admin/previews',
       '/admin/docs',
-      '/admin/access',
+      '/admin/previews',
       '/delivery-plan',
+      '/admin/access',
     ]);
     expect(root.querySelector('[aria-current="page"] span:last-child')?.textContent).toBe(
       'Delivery Plan',

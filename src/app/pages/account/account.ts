@@ -71,7 +71,9 @@ export class AccountPage {
   protected readonly lastName = signal('');
   protected readonly countryName = signal('');
   protected readonly formError = signal(
-    this.route.snapshot.queryParamMap.get('error') === 'oauth'
+    this.route.snapshot.queryParamMap.get('error') === 'session-expired'
+      ? 'Your session expired. Sign in again to continue.'
+      : this.route.snapshot.queryParamMap.get('error') === 'oauth'
       ? 'Sign-in could not be completed. Please try again.'
       : this.route.snapshot.queryParamMap.get('error') === 'admission'
         ? 'Application access could not be confirmed. If this persists, contact the account administrator.'

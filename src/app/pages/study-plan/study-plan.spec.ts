@@ -594,6 +594,8 @@ describe('StudyPlanPage', () => {
         goal: 'Plan ' + index,
         revision: 1,
         updatedAt: '2099-01-01',
+        accessNeeded: index === 1,
+        lifecycle: index === 1 ? { state: 'archived' } : { state: 'active' },
         card: index
           ? undefined
           : {
@@ -619,7 +621,8 @@ describe('StudyPlanPage', () => {
     harness.detectChanges();
     expect(page.setupVisible()).toBe(false);
     expect(page.progressVisible()).toBe(false);
-    expect(harness.routeNativeElement!.querySelectorAll('.plan-card')).toHaveLength(5);
+    expect(harness.routeNativeElement!.querySelectorAll('.plan-card')).toHaveLength(4);
+    expect(harness.routeNativeElement!.querySelectorAll('.plan-archive-item')).toHaveLength(1);
     expect(harness.routeNativeElement!.querySelector('.plan-card')?.textContent).toContain(
       '3 / 20',
     );
@@ -640,12 +643,25 @@ describe('StudyPlanPage', () => {
     expect(cards[0].querySelector('[data-card-primary]')?.getAttribute('aria-label')).toBe(
       'Continue plan: Plan 0',
     );
+    expect(cards[0].textContent).not.toContain('Course access needed');
+    expect(harness.routeNativeElement!.querySelector('.plan-archive-item')?.textContent).toContain('Plan 1');
+    expect(harness.routeNativeElement!.querySelector('.plan-archive-item')?.textContent).toContain('Course access needed');
     const disclosure = focus.querySelector('summary') as HTMLElement;
     disclosure.click();
     harness.detectChanges();
     expect(focus.querySelector('details')?.open).toBe(true);
     expect(account.active()).toBe(original);
     expect(open).not.toHaveBeenCalled();
+    const deletion = vi.spyOn(account, 'deletePlan').mockImplementation(async (planId: string) => {
+      account.plans.update((plans) => plans.filter((plan) => plan.planId !== planId));
+      return true;
+    });
+    page.askDeletePlan(account.plans()[0]);
+    harness.detectChanges();
+    expect(harness.routeNativeElement!.querySelector('.plan-delete-dialog')?.textContent).toContain('cannot be undone');
+    await page.confirmDeletePlan();
+    expect(deletion).toHaveBeenCalledWith('p0', 1);
+    expect(account.plans()).toHaveLength(4);
   });
 
   it('always exposes Review schedule and does not offer Apply for a no-op diagnostic', async () => {
@@ -2046,7 +2062,7 @@ describe('StudyPlanPage', () => {
       accountId: 'synthetic',
       username: 'synthetic',
       displayName: 'Synthetic',
-      topicGrants: [],
+      topicGrants: ['learn:core-java'],
     });
     const save = vi.spyOn(accounts, 'save');
     const importPlan = vi.spyOn(accounts, 'importLocal');
@@ -2582,7 +2598,7 @@ describe('StudyPlanPage', () => {
       accountId: 'synthetic',
       username: 'synthetic',
       displayName: 'Synthetic',
-      topicGrants: [],
+      topicGrants: ['learn:core-java'],
     });
     const save = vi.spyOn(accounts, 'save');
 
@@ -2610,5 +2626,177 @@ describe('StudyPlanPage', () => {
     expect(harness.routeNativeElement!.textContent).toContain('Choose a preparation path');
     expect(page.saved()).toBeNull();
     expect(page.draft()).toBeNull();
+  });
+
+  describe('free account preview (DLV-938)', () => {
+    const variant = {
+      templateId: 'java-d7-h1',
+      templateVersion: 'template-v1',
+      durationDays: 7,
+      dailyHours: 1,
+      intensive: false,
+      intendedUse: 'Interview revision',
+      href: '/content/study-plans/templates/java-d7-h1.json',
+      sha256: 'sha-test',
+      scheduledMinutes: 60,
+      selectedContentCount: 2,
+      availableContentCount: 2,
+      topicIds: ['learn:core-java', 'learn:modern-java'],
+    };
+    const catalog = {
+      schemaVersion: 'study-plan-picker/v1',
+      catalogVersion: 'picker-v1',
+      availabilityUnit: 'hours-per-day',
+      durationOptions: [7, 21],
+      pendingOptions: [],
+      paths: [
+        {
+          id: 'java',
+          title: 'Java preparation',
+          summary: 'Focused Java revision.',
+          roleLevel: 'Engineer',
+          startingKnowledge: [],
+          outcomes: [],
+          uncoveredScope: [],
+          topics: [
+            { id: 'learn:core-java', title: 'Core Java' },
+            { id: 'learn:modern-java', title: 'Modern Java' },
+          ],
+          recommendedVariantId: variant.templateId,
+          variants: [
+            variant,
+            { ...variant, templateId: 'java-d7-h2', dailyHours: 2 },
+            { ...variant, templateId: 'java-d21-h1', durationDays: 21 },
+          ],
+        },
+      ],
+    };
+
+    async function open(topicGrants: string[]) {
+      const template = vi.fn(() => throwError(() => new Error('Templates need course access')));
+      TestBed.overrideProvider(ContentService, {
+        useValue: {
+          ...service,
+          getReadyMadeStudyPlans: () => of(catalog),
+          getReadyMadeStudyPlan: template,
+        },
+      });
+      const accounts = TestBed.inject(StudyPlanAccount);
+      Object.defineProperty(accounts, 'enabled', { value: true });
+      vi.spyOn(accounts, 'initialize').mockResolvedValue();
+      // The server lists every free lesson as a content grant, for free and paid accounts alike.
+      accounts.account.set({
+        accountId: 'synthetic',
+        username: 'synthetic',
+        displayName: 'Synthetic',
+        topicGrants,
+        contentGrants: ['available-lesson'],
+      });
+      const save = vi.spyOn(accounts, 'save');
+      const harness = await RouterTestingHarness.create();
+      const page: any = await harness.navigateByUrl(
+        '/study-plan?create=1&creation=authored',
+        StudyPlanPage,
+      );
+      await Promise.resolve();
+      harness.detectChanges();
+      return {
+        harness,
+        page,
+        save,
+        template,
+        root: () => harness.routeNativeElement as HTMLElement,
+      };
+    }
+
+    it('pre-selects the free starter plan and keeps every other plan visible but marked', async () => {
+      const { page, root } = await open([]);
+      expect(page.freeAccount()).toBe(true);
+      expect(page.readyMadePaths().map((path: { id: string }) => path.id)).toEqual([
+        'free-starter',
+        'java',
+      ]);
+      expect(page.selectedReadyMadePathId()).toBe('free-starter');
+      expect(page.freeStarter().topics.map((topic: { id: string }) => topic.id)).toEqual([
+        'learn:core-java',
+      ]);
+      const options = [...root().querySelectorAll<HTMLOptionElement>('#ready-made-path option')];
+      expect(options.map((option) => option.textContent!.trim())).toEqual([
+        'Free starter plan',
+        'Java preparation · Subscription required',
+      ]);
+      const days = [...root().querySelectorAll<HTMLOptionElement>('#ready-made-days option')];
+      expect(days.map((option) => [option.value, option.disabled])).toEqual([
+        ['7', false],
+        ['21', true],
+      ]);
+      expect(root().querySelector('.free-preview-note a[href="/account"]')).not.toBeNull();
+    });
+
+    it('lets a free account look inside a paid plan at one week and one hour, but never save', async () => {
+      const { harness, page, save, template, root } = await open([]);
+      page.chooseReadyMadePath('java');
+      page.chooseReadyMadeDays('21');
+      page.chooseReadyMadeHours('2');
+      expect([page.selectedReadyMadeDays(), page.selectedReadyMadeHours()]).toEqual([7, 1]);
+      expect(page.readyMadeVariant()?.templateId).toBe('java-d7-h1');
+      page.previewReadyMadePlan();
+      harness.detectChanges();
+      expect(template).not.toHaveBeenCalled();
+      expect(page.draft()?.snapshot.config.days).toBe(7);
+      expect(page.draft()?.snapshot.config.dailyHours).toBe(1);
+      expect(page.draft()?.readyMade).toBeUndefined();
+      expect(root().textContent).not.toContain('Customize this plan');
+      await page.saveDraft();
+      expect(save).not.toHaveBeenCalled();
+      expect(page.saved()).toBeNull();
+      const dialog = window.document.querySelector('.draft-review-dialog') as HTMLElement;
+      expect(dialog.querySelector('a.primary-link')?.textContent?.trim()).toBe(
+        'Get course access to save',
+      );
+      expect(dialog.textContent).not.toContain('Save to my account');
+    });
+
+    it('offers account saving for the free starter and sends the free draft through the account API', async () => {
+      const { harness, page, save, root } = await open([]);
+      save.mockResolvedValue(null);
+      page.chooseReadyMadePath('free-starter');
+      page.previewReadyMadePlan();
+      harness.detectChanges();
+      expect(page.freeDraftSaveable()).toBe(true);
+      const dialog = window.document.querySelector('.draft-review-dialog') as HTMLElement;
+      expect(dialog.textContent).toContain('Save to my account');
+      expect(dialog.textContent).toContain('15 free plans in total');
+      await page.saveDraft();
+      expect(save).toHaveBeenCalledOnce();
+      expect(save.mock.calls[0][0].readyMade).toBeUndefined();
+      expect(page.draft()).not.toBeNull();
+      expect(root().querySelector('.free-preview-note')?.textContent).toContain('two active free plans');
+    });
+
+    it('keeps the custom builder at the free starter selection', async () => {
+      const { page } = await open([]);
+      page.setDays('21');
+      page.setHours('2');
+      page.setGoalType('interview');
+      page.toggleTopic(page.topics()[0], false);
+      expect([page.days(), page.dailyHours(), page.goalType()]).toEqual([7, 1, 'learning']);
+      expect([...page.selectedTopicIds()]).toEqual(['learn:core-java']);
+      expect(
+        page.unavailableReason(
+          page.topics().find((topic: { id: string }) => topic.id === 'learn:modern-java'),
+        ),
+      ).toBe('Subscription required');
+    });
+
+    it('never shows the free starter plan to an account with course access', async () => {
+      const { page, root } = await open(['learn:core-java']);
+      expect(page.freeAccount()).toBe(false);
+      expect(page.readyMadePaths().map((path: { id: string }) => path.id)).toEqual(['java']);
+      expect(root().querySelector('.free-preview-note')).toBeNull();
+      page.chooseReadyMadePath('java');
+      page.chooseReadyMadeDays('21');
+      expect(page.selectedReadyMadeDays()).toBe(21);
+    });
   });
 });

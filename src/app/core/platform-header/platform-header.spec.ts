@@ -332,10 +332,10 @@ describe('PlatformHeader account disclosure', () => {
         item.getAttribute('href'),
       ]),
     ).toEqual([
-      ['Previews', '/admin/previews'],
       ['Documentation', '/admin/docs'],
-      ['People and access', '/admin/access'],
+      ['Previews', '/admin/previews'],
       ['Delivery Plan', '/delivery-plan'],
+      ['People and access', '/admin/access'],
     ]);
     // DLV-926: the documentation pages are listed on /admin/docs, not inside the dropdown.
     expect(menu.querySelector('#account-documentation-links')).toBeNull();
@@ -374,6 +374,25 @@ describe('PlatformHeader account disclosure', () => {
     await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
     expect(fixture.nativeElement.querySelector('#account-menu')).toBeNull();
     expect(document.activeElement).toBe(accountTrigger);
+  });
+
+  it('marks People and access current only on its own page', () => {
+    vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue('/admin/access');
+    TestBed.inject(StudyPlanAccount).account.set({
+      accountId: 'test',
+      username: 'author@example.test',
+      displayName: 'Author',
+      authorPreview: true,
+      topicGrants: [],
+    });
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    fixture.nativeElement.querySelector('.avatar-trigger-btn').click();
+    fixture.detectChanges();
+    const current = [
+      ...fixture.nativeElement.querySelectorAll('.author-account-links a[aria-current="page"]'),
+    ].map((link: HTMLAnchorElement) => link.getAttribute('href'));
+    expect(current).toEqual(['/admin/access']);
   });
 
   it('returns focus to the account trigger when Escape closes the panel', async () => {

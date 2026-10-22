@@ -27,11 +27,14 @@ app-sidebar-toggle {
 .admin-menu-content[hidden] {
   display: none;
 }
+/* Override the app-wide `nav { gap: 30px }` so the menu reads as one compact list. */
 nav {
   display: flex;
   flex-direction: column;
+  gap: 2px;
 }
 .documentation-links {
+  gap: 0;
   padding-top: 16px;
   border-top: 1px solid var(--line);
 }

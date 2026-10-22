@@ -463,15 +463,7 @@
   min-width: 0;
   gap: 8px;
 }
-.ready-made-controls select {
-  width: 100%;
-  min-height: 46px;
-  padding: 10px 12px;
-  border: 1px solid var(--line);
-  border-radius: 7px;
-  background: var(--surface);
-  color: var(--text-strong);
-}
+
 .ready-made-details {
   margin-top: 22px;
   padding-top: 20px;
@@ -726,12 +718,21 @@
 }
 .setup-fields {
   display: grid;
-  grid-template-columns:
-    minmax(280px, 1.65fr) minmax(210px, 1.1fr) minmax(160px, 0.7fr)
-    minmax(150px, 0.7fr);
+  /* Name and goal share the first row; approach, window and hours share the second. */
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 16px;
-  align-items: end;
+  align-items: start;
   margin-top: 24px;
+}
+.setup-fields > .field,
+.setup-fields > [role='alert'] {
+  grid-column: span 2;
+}
+.setup-fields > .setup-goal {
+  grid-column: span 3;
+}
+.setup-fields > [role='alert'] {
+  grid-column: 1 / -1;
 }
 .setup-fields .field {
   margin: 0;
@@ -875,6 +876,10 @@
   .setup-fields {
     grid-template-columns: minmax(0, 1fr);
   }
+  .setup-fields > .field,
+  .setup-fields > .setup-goal {
+    grid-column: auto;
+  }
   .builder-step .offering-checklist {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -933,6 +938,11 @@
 .plan-card h3 {
   margin-bottom: 0;
   font-size: clamp(21px, 2vw, 25px);
+}
+.plan-card-access {
+  margin: 14px 0 0;
+  color: var(--text-subtle);
+  line-height: 1.5;
 }
 .plan-card-focus {
   margin-top: 22px;
@@ -1048,6 +1058,73 @@
   min-height: 44px;
   width: 100%;
 }
+.plan-card-delete {
+  min-height: 44px;
+  width: 100%;
+  margin-top: 8px;
+}
+.plan-archive {
+  margin-top: 32px;
+}
+.plan-archive > p {
+  color: var(--text-subtle);
+}
+.plan-archive-list {
+  display: grid;
+  gap: 12px;
+}
+.plan-archive-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.plan-archive-item h3,
+.plan-archive-item p {
+  margin: 0;
+}
+.plan-archive-actions {
+  display: flex;
+  gap: 10px;
+}
+@media (max-width: 640px) {
+  .plan-archive-item,
+  .plan-archive-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .plan-archive-actions button {
+    width: 100%;
+  }
+}
+.plan-delete-dialog {
+  width: min(520px, calc(100vw - 32px));
+  max-height: 85dvh;
+  overflow: auto;
+  padding: clamp(18px, 4vw, 32px);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface-page);
+  color: var(--text-strong);
+}
+.plan-delete-dialog::backdrop {
+  background: rgb(8 25 31 / 0.55);
+  backdrop-filter: blur(6px);
+}
+.plan-delete-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 24px;
+}
+@media (max-width: 640px) {
+  .plan-delete-actions {
+    flex-direction: column;
+  }
+  .plan-delete-actions button {
+    width: 100%;
+  }
+}
 .plan-type-panel,
 .ready-made-panel {
   margin-bottom: 28px;
@@ -1162,4 +1239,84 @@
 }
 .plan-name-editor button {
   margin-inline-end: 0.5rem;
+}
+
+/* DLV-938: free accounts preview plans read-only. */
+.free-preview-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  margin: 0 0 22px;
+  padding: 14px 18px;
+  border: 1px solid color-mix(in srgb, var(--accent-strong) 40%, var(--line));
+  border-inline-start-width: 4px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--accent-strong) 8%, var(--surface));
+}
+.free-preview-note > div {
+  flex: 1 1 320px;
+  min-width: 0;
+}
+.free-preview-note p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.free-preview-note strong {
+  color: var(--text-strong);
+}
+.free-preview-icon {
+  font-size: 1.5rem;
+}
+.free-preview-action,
+.primary-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid var(--search-primary);
+  border-radius: 8px;
+  font-weight: 650;
+  text-decoration: none;
+}
+.free-preview-action {
+  background: var(--surface);
+  color: var(--text-strong);
+}
+.free-preview-action:hover {
+  background: var(--surface-subtle);
+}
+.primary-link {
+  background: var(--search-primary);
+  color: var(--accent-on-primary);
+}
+.primary-link:hover {
+  background: var(--search-hover);
+}
+.draft-actions .primary-link {
+  flex: 1;
+}
+.subscription-required {
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  border-inline-start: 3px solid var(--warning);
+  border-radius: 0 8px 8px 0;
+  background: var(--warning-surface, var(--surface-muted));
+  color: var(--text-body);
+  font-size: 14px;
+}
+.subscription-required strong {
+  color: var(--text-strong);
+}
+.builder-step .offering.read-only {
+  cursor: default;
+}
+.builder-step .offering.read-only:has(input:checked) {
+  border-color: var(--accent-strong);
+  background: color-mix(in srgb, var(--accent-strong) 8%, var(--surface));
+}
+.builder-step .offering.read-only.unavailable {
+  border-style: dashed;
 }

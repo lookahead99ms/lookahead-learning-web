@@ -620,6 +620,89 @@ function validateCanonicalDsaProblem(problem, label) {
   );
 }
 
+const glossaryLessonTitles = new Map();
+async function glossaryLessonTitle(pathId, courseId) {
+  const key = `${pathId}/${courseId}`;
+  if (!glossaryLessonTitles.has(key)) {
+    const titles = new Map();
+    const courseRoot = join(contentRoot, pathId, courseId);
+    if (await fileExists(join(courseRoot, 'course.json'))) {
+      const manifest = JSON.parse(await readFile(join(courseRoot, 'course.json'), 'utf8'));
+      const moduleTitles = new Map((manifest.modules ?? []).map((module) => [module.id, module.title]));
+      for (const moduleFile of await filesWithExtension(join(courseRoot, 'modules'), '.json')) {
+        for (const record of JSON.parse(await readFile(moduleFile, 'utf8'))) {
+          if (record?.contentType === 'theory' && typeof record.id === 'string') {
+            titles.set(record.id, moduleTitles.get(record.moduleId) ?? record.title);
+          }
+        }
+      }
+    }
+    glossaryLessonTitles.set(key, titles);
+  }
+  return glossaryLessonTitles.get(key);
+}
+
+async function glossaryCoursesForLesson(pathId, lessonId) {
+  const found = [];
+  for (const entry of await readdir(join(contentRoot, pathId), { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const titles = await glossaryLessonTitle(pathId, entry.name);
+    found.push(titles.has(lessonId));
+  }
+  return found;
+}
+
+async function validateGlossary(glossary, label, pathId) {
+  requireValue(glossary?.schemaVersion === 'glossary/v1', `${label}: unsupported glossary schema`);
+  requireValue(glossary.path === pathId, `${label}: glossary path must be ${pathId}`);
+  requireValue(
+    Array.isArray(glossary.terms) && glossary.terms.length > 0 && glossary.terms.length <= 200,
+    `${label}: a glossary needs 1 to 200 terms`,
+  );
+  const ids = new Set();
+  const forms = new Map();
+  for (const term of glossary.terms) {
+    const termLabel = `${label}: term ${term?.id ?? 'unknown'}`;
+    requireValue(typeof term?.id === 'string' && /^[a-z0-9-]+$/.test(term.id) && !ids.has(term.id), `${termLabel}: id missing or repeated`);
+    ids.add(term.id);
+    requireValue(typeof term.term === 'string' && term.term.trim(), `${termLabel}: label is empty`);
+    requireValue(
+      typeof term.definition === 'string' && term.definition.trim() && !/[<>]/.test(term.definition),
+      `${termLabel}: definition must be plain text`,
+    );
+    requireValue(term.definition.split(/\s+/).length <= 60, `${termLabel}: definition is over 60 words`);
+    requireValue(Array.isArray(term.match) && term.match.length > 0, `${termLabel}: match list is empty`);
+    for (const form of term.match) {
+      requireValue(typeof form === 'string' && form.trim() && form === form.trim(), `${termLabel}: bad match form`);
+      const key = form === form.toUpperCase() ? form : form.toLowerCase();
+      requireValue(!forms.has(key) || forms.get(key) === term.id, `${termLabel}: match "${form}" is already used by ${forms.get(key)}`);
+      forms.set(key, term.id);
+    }
+    requireValue(Array.isArray(term.lessons) && term.lessons.length > 0, `${termLabel}: no lessons linked`);
+    for (const skipped of term.skipLessons ?? []) {
+      requireValue(typeof skipped === 'string' && /^[a-z0-9-]+$/.test(skipped), `${termLabel}: bad skipLessons entry`);
+      const [courseId] = skipped.split('-');
+      let known = false;
+      for (const candidate of await glossaryCoursesForLesson(pathId, skipped)) known = known || candidate;
+      requireValue(known || courseId, `${termLabel}: unknown skipped lesson ${skipped}`);
+    }
+    for (const lesson of term.lessons) {
+      requireValue(
+        typeof lesson?.courseId === 'string' && /^[a-z0-9-]+$/.test(lesson.courseId) && typeof lesson.lessonId === 'string',
+        `${termLabel}: lesson link needs courseId and lessonId`,
+      );
+      const linkPath = lesson.path ?? pathId;
+      requireValue(/^(learn|grow|blaze)$/.test(linkPath), `${termLabel}: bad lesson path ${linkPath}`);
+      const titles = await glossaryLessonTitle(linkPath, lesson.courseId);
+      requireValue(titles.has(lesson.lessonId), `${termLabel}: unknown lesson ${lesson.courseId}/${lesson.lessonId}`);
+      requireValue(
+        titles.get(lesson.lessonId) === lesson.title,
+        `${termLabel}: lesson ${lesson.lessonId} is titled "${titles.get(lesson.lessonId)}", not "${lesson.title}"`,
+      );
+    }
+  }
+}
+
 function isInterviewQuestion(item) {
   return !isTheoryArticle(item) && item?.contentType !== 'dsa-pattern';
 }
@@ -898,6 +981,13 @@ for (const file of contentFiles) {
       Array.isArray(story.steps) && story.steps.length > 0,
       `${label}: a story needs steps`,
     );
+    continue;
+  }
+  if (/^(learn|grow|blaze)\/glossary\.json$/.test(label)) {
+    // Glossary (2026-10-22): terms a lesson may use before the lesson that teaches them. The lesson
+    // page shows the definition on hover and lists the lessons on click. Lesson titles must match
+    // the course manifest so a rename cannot leave a stale label in the dialog.
+    await validateGlossary(JSON.parse(await readFile(file, 'utf8')), label, label.split('/')[0]);
     continue;
   }
   if (/^(learn|grow|blaze)\/[a-z0-9-]+\/downloads\//.test(label)) {

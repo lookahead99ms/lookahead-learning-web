@@ -231,6 +231,10 @@
             </datalist>
             <p id="country-hint" class="field-hint">Choose the country where you live.</p>
           }
+          @if (store.sessionExpired() && store.pending()) {
+            <p class="field-hint">A saved-plan request was interrupted. Discard that pending request before signing in again; your browser plan stays here.</p>
+            <button type="button" class="secondary-action" [disabled]="store.busy()" (click)="store.discardPending()">Discard pending request</button>
+          }
           @if (formError() || store.error()) {
             <p class="form-error" role="alert">{{ formError() || store.error() }}</p>
           }
@@ -293,9 +297,7 @@
       {{ lessonReturn() ? 'Return to your lesson' : authenticated() ? 'Continue learning' : 'Return to learning' }}
     </a>
     @if (authenticated()) {
-      @if (returnTo() !== '/study-plan') {
-        <a class="return-action" routerLink="/study-plan">Study Plan</a>
-      }
+      <!-- Study plans have their own section on this page, so no separate Study Plan action. -->
       @if (returnTo() !== '/search') {
         <a class="return-action" routerLink="/search">Search</a>
       }

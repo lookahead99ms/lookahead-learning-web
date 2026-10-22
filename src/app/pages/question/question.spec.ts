@@ -300,6 +300,7 @@ describe('Question canonical DSA navigation', () => {
   const content = {
     getCatalog: vi.fn(() => of(routeCases.map(({ courseId, title }) => ({ id: courseId, title })))),
     getCourseOutline: vi.fn((_: string, courseId: string) => of(outlineFor(courseFor(courseId)))),
+    getGlossary: vi.fn(() => of([])),
     getContentItem: vi.fn((summary: ContentItemSummary) => {
       for (const { courseId } of routeCases) {
         const question = courseFor(courseId).questions.find(({ id }) => id === summary.id);

@@ -126,6 +126,9 @@ export type PlanActivity =
 export interface PlanSummary {
   name?: string;
   planNumber?: number;
+  freeContentPlan?: boolean;
+  accessNeeded?: boolean;
+  lifecycle?: { state: 'active' | 'archived' | 'completed' | 'unactivated'; archiveDate?: string };
   card?: {
     schemaVersion: 'plan-card/v1';
     metadataStatus: 'available' | 'unavailable';
@@ -172,6 +175,7 @@ class AccountApiError extends Error {
   constructor(
     readonly status: number,
     readonly code?: string,
+    readonly detail?: string,
   ) {
     super(`Account request failed (${status})`);
   }
@@ -199,7 +203,7 @@ export class StudyPlanAccount implements AccountSettingsClient {
     null,
   );
   private csrf: { token: string; headerName: string } | null = null;
-  private mutation: { path: string; body: unknown; key: string; owner: string } | null = null;
+  private mutation: { path: string; method: 'POST' | 'DELETE'; body?: unknown; revision?: number; key: string; owner: string } | null = null;
   private initialization: Promise<void> | null = null;
 
   async loadProfile(): Promise<ManagedAccountProfile> {
@@ -362,6 +366,7 @@ export class StudyPlanAccount implements AccountSettingsClient {
     if (error.status === 401 || error.code === 'CSRF_INVALID') {
       if (this.account()?.accountId === owner) {
         this.clearAccount();
+        this.sessionExpired.set(true);
         this.error.set('Your session expired. Sign in again to manage your account.');
       }
       return new AccountSettingsError('session-expired');
@@ -507,15 +512,32 @@ export class StudyPlanAccount implements AccountSettingsClient {
     this.busy.set(true);
     this.error.set('');
     try {
-      await this.refreshCsrf();
-      const result = await this.request<{ logoutUrl?: string } | undefined>('/auth/logout', {
-        method: 'POST',
-        headers: this.csrfHeaders(),
-      });
+      const localOAuth = this.authOptions()?.oauth && !this.authOptions()?.managedLogin;
+      let result: { logoutUrl?: string } | undefined;
+      try {
+        await this.refreshCsrf();
+        result = await this.request<{ logoutUrl?: string } | undefined>('/auth/logout', {
+          method: 'POST',
+          headers: this.csrfHeaders(),
+        });
+      } catch (error) {
+        // The BFF may already be gone after a partial logout. Identity must still
+        // be closed; an absent BFF session alone does not prove full sign-out.
+        if (!(localOAuth && error instanceof AccountApiError && error.status === 401)) throw error;
+      }
+      if (localOAuth) {
+        // Refresh can replace the provider's stored ID token while OidcUser still
+        // holds the original hint. Use Identity's existing session/CSRF logout.
+        await this.refreshCsrf(true);
+        await this.request('/auth/logout', {
+          method: 'POST',
+          headers: this.csrfHeaders(),
+        }, true);
+      }
       this.clearAccount();
-      if (this.authOptions()?.oauth && result?.logoutUrl) {
+      if (this.authOptions()?.managedLogin && result?.logoutUrl) {
         const target = new URL(result.logoutUrl);
-        if (target.origin !== window.location.origin || !(target.pathname === '/connect/logout' || (this.authOptions()?.managedLogin === true && target.pathname === '/bff/logout/complete' && !target.search && !target.hash)))
+        if (target.origin !== window.location.origin || target.pathname !== '/bff/logout/complete' || target.search || target.hash)
           throw new Error('Invalid logout destination');
         this.logoutRedirectPending.set(true);
         window.location.assign(target.href);
@@ -523,7 +545,7 @@ export class StudyPlanAccount implements AccountSettingsClient {
       return true;
     } catch (error) {
       this.logoutRedirectPending.set(false);
-      if (error instanceof AccountApiError && error.status === 401) {
+      if (error instanceof AccountApiError && error.status === 401 && (!this.authOptions()?.oauth || this.authOptions()?.managedLogin)) {
         this.clearAccount();
         return true;
       }
@@ -598,6 +620,15 @@ export class StudyPlanAccount implements AccountSettingsClient {
   newPlan(): void {
     if (!this.busy() && !this.pending()) this.active.set(null);
   }
+  async deletePlan(planId: string, revision: number): Promise<boolean> {
+    const owner = this.account()?.accountId;
+    if (!owner || this.busy() || this.pending() || !this.plans().some((plan) => plan.planId === planId && plan.revision === revision))
+      return false;
+    this.mutation = { path: '/plans/' + encodeURIComponent(planId), method: 'DELETE', revision, key: crypto.randomUUID(), owner };
+    this.pending.set(true);
+    await this.retry();
+    return !this.pending();
+  }
   importLocal(saved: SavedPlan): Promise<AccountPlan | null> {
     return this.mutate('/plans/imports', {
       sourceSchemaVersion: saved.schemaVersion,
@@ -629,7 +660,7 @@ export class StudyPlanAccount implements AccountSettingsClient {
             deferredContentIds: [],
           },
         })
-      : this.mutate('/plans', body);
+      : this.mutate('/plans', { ...body, startDate: new Date().toISOString().slice(0, 10) });
   }
   rename(name: string): Promise<AccountPlan | null> {
     const active = this.active();
@@ -671,7 +702,7 @@ export class StudyPlanAccount implements AccountSettingsClient {
       );
       return null;
     }
-    this.mutation = { path, body: structuredClone(body), key: crypto.randomUUID(), owner };
+    this.mutation = { path, method: 'POST', body: structuredClone(body), key: crypto.randomUUID(), owner };
     this.pending.set(true);
     return this.retry();
   }
@@ -683,15 +714,24 @@ export class StudyPlanAccount implements AccountSettingsClient {
     this.errorStatus.set(null);
     try {
       await this.refreshCsrf();
-      const result = await this.request<AccountPlan>(mutation.path, {
-        method: 'POST',
+      const result = await this.request<AccountPlan | undefined>(mutation.path, {
+        method: mutation.method,
         headers: {
           ...this.csrfHeaders(),
-          'Content-Type': 'application/json',
+          ...(mutation.method === 'POST' ? { 'Content-Type': 'application/json' } : { 'If-Match': `"revision-${mutation.revision}"` }),
           'Idempotency-Key': mutation.key,
         },
-        body: JSON.stringify(mutation.body),
+        ...(mutation.method === 'POST' ? { body: JSON.stringify(mutation.body) } : {}),
       });
+      if (mutation.method === 'DELETE') {
+        const deletedId = decodeURIComponent(mutation.path.slice('/plans/'.length));
+        if (this.active()?.planId === deletedId) this.active.set(null);
+        this.plans.update((plans) => plans.filter((plan) => plan.planId !== deletedId));
+        this.mutation = null;
+        this.pending.set(false);
+        return null;
+      }
+      if (!result) throw new AccountApiError(503);
       this.active.set(result);
       if (result.planNumber)
         this.nextPlanNumber.update((next) => Math.max(next, result.planNumber! + 1));
@@ -748,22 +788,34 @@ export class StudyPlanAccount implements AccountSettingsClient {
     });
     if (!response.ok) {
       let code: string | undefined;
+      let detail: string | undefined;
       try {
         const body = await response.json();
         if (typeof body?.code === 'string') code = body.code;
+        if (code === 'FREE_DELETE_LIMIT' && typeof body?.message === 'string' && body.message.length <= 240)
+          detail = body.message;
       } catch {
         // Status-only responses remain valid errors; do not expose transport bodies.
       }
-      throw new AccountApiError(response.status, code);
+      throw new AccountApiError(response.status, code, detail);
     }
     return response.status === 204 ? (undefined as T) : (await response.json()).data;
   }
   private showError(error: unknown, login = false): void {
     const status = error instanceof AccountApiError ? error.status : 0;
+    const code = error instanceof AccountApiError ? error.code : undefined;
     this.errorStatus.set(status);
     if (status === 401 && !login) this.sessionExpired.set(true);
     this.error.set(
-      status === 401
+      code === 'FREE_DELETE_LIMIT'
+        ? (error as AccountApiError).detail ?? 'You have used three deletions in the last 21 days. Your plan is unchanged.'
+        : code === 'FREE_ACTIVE_PLAN_LIMIT'
+          ? 'You can keep two active free plans. Archive or delete one before saving another.'
+          : code === 'FREE_LIFETIME_PLAN_LIMIT'
+            ? 'This account has used its 15 free plan creations, including imports.'
+            : code === 'COURSE_ACCESS_REQUIRED'
+              ? 'Get course access before saving a plan with paid lessons.'
+              : status === 401
         ? login
           ? 'Sign-in failed. Check your account credentials.'
           : 'Your session expired. Discard the pending request and sign in again to reload saved work.'

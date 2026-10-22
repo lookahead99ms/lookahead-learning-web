@@ -1,8 +1,9 @@
 import { DevSessionNotice } from './core/dev-session-notice/dev-session-notice';
 import { DOCUMENT } from '@angular/common';
-import { Component, ViewEncapsulation, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, ViewEncapsulation, effect, inject } from '@angular/core';
+import { Router, RouterOutlet } from '@angular/router';
 import { PlatformThemeService } from './core/platform-theme';
+import { StudyPlanAccount } from './pages/study-plan/study-plan-account';
 import { PageSidebars } from './core/page-sidebars/page-sidebars';
 
 @Component({
@@ -15,6 +16,20 @@ import { PageSidebars } from './core/page-sidebars/page-sidebars';
 export class App {
   private readonly theme = inject(PlatformThemeService);
   private readonly document = inject(DOCUMENT);
+
+  constructor() {
+    const account = inject(StudyPlanAccount);
+    const router = inject(Router);
+    effect(() => {
+      if (!account.sessionExpired()) return;
+      const path = router.url.split(/[?#]/)[0];
+      if (path === '/sign-in' || path === '/sign-in/choose') return;
+      void router.navigate(['/sign-in'], {
+        queryParams: { error: 'session-expired' },
+        replaceUrl: true,
+      });
+    });
+  }
 
   protected skipLinkHref(): string {
     const { pathname, search } = this.document.location;

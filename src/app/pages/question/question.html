@@ -399,6 +399,8 @@
         />
       } @else if (foundationLesson(item); as lesson) {
         <app-foundation-lesson-shell
+          [appGlossaryTerms]="pathId()"
+          [glossaryLesson]="item.id"
           [lesson]="lesson"
           [checks]="foundationChecks(lesson)"
           [practiceItems]="foundationPractice(lesson)"

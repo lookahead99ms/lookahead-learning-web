@@ -2,10 +2,10 @@ import type { StudyAccount } from '../../pages/study-plan/study-plan-account';
 export const authorDocumentationHome = '/admin/docs';
 
 export const authorWorkspaceLinks = [
-  { id: 'previews', label: 'Previews', href: '/admin/previews', icon: '👀' },
   { id: 'docs', label: 'Documentation', href: authorDocumentationHome, icon: '📚' },
-  { id: 'access', label: 'People and access', href: '/admin/access', icon: '🔐' },
+  { id: 'previews', label: 'Previews', href: '/admin/previews', icon: '👀' },
   { id: 'delivery', label: 'Delivery Plan', href: '/delivery-plan', icon: '🗺️' },
+  { id: 'access', label: 'People and access', href: '/admin/access', icon: '🔐' },
 ] as const;
 
 export interface AuthorDocumentationPage {

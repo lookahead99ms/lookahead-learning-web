@@ -74,7 +74,7 @@ The guide supplies the article outline and sidebar recall. Grow uses practical
 verification exercises; Blaze uses decision exercises. Scenarios render as
 wrapped text, while Learn code examples remain copyable. Introductory sections share the full lesson’s typography, section surfaces, and
 responsive padding, with aligned content edges. The outline includes both introductory and full-lesson sections. Detailed material and
-practice stay visible in the same reading flow. Code and scenario examples sit on the left on wide screens; explanations flow beside them and continue below to use available space. At narrow widths the reader stacks them in source order. Walkthroughs and explicit multiple points inside explanation cards use semantic bullet lists, preserving headings and single prose explanations. Unguided foundation lessons put concrete sections before
+practice stay visible in the same reading flow. Code reads top to bottom: the lead-in paragraph, the code at the content width, its run console right under it, then the paragraphs that explain the run (`codeAfterParagraph` moves the split). Long lines wrap with a hanging indent; the whole file shows, nothing scrolls inside the page. At narrow widths the reader stacks them in source order. Walkthroughs and explicit multiple points inside explanation cards use semantic bullet lists, preserving headings and single prose explanations. Unguided foundation lessons put concrete sections before
 the abstract model. There is no learner execution service. Proprietary guide
 content belongs in the private Content repo.
 
@@ -344,6 +344,18 @@ Course choices use a three-column desktop grid, two columns on tablet and one on
 narrow mobile. Ready-made plans keep their separate picker and adoption guard;
 the custom builder does not impose ready-made foundation policy on learner-selected
 plans.
+
+Signed-in free accounts see one Free starter plan and can inspect read-only samples
+of authored plans. Their free schedule is fixed to seven days and one hour per day;
+other duration and hour choices stay visible but locked. Free starter and custom
+free-content drafts now offer an explicit account save. Paid-plan samples remain
+preview-only and are labelled Subscription required. The Domain API candidate on
+the matching DLV-938 task branch enforces two active free-content plans, three
+successful deletions per rolling 21 days, and 15 lifetime free-plan creations
+including imports. The shared Local stack has not been rebuilt with that candidate.
+Paid lesson access already locks on grant loss; the additional 30-day access-loss
+archive clock remains open DLV-938 work. The candidate dashboard has a separate
+Archive section for owner-readable plans and a confirmation flow for deletion.
 
 ### Active Study Plan
 
@@ -916,9 +928,12 @@ Shared lesson components (`src/app/core/`):
   and records no progress), then a **Where you are** outline (path, group, course,
   previous/current/next lesson, next course and group). The lesson column width
   does not change.
-- `even-grid.ts`, `foundation-lesson-shell/console-beside.ts` and
-  `platform-signature/reasoning-prompt.ts` — even card grids, a run console beside
-  the explanation when it fits, and the paired corner statements.
+- `even-grid.ts` and `platform-signature/reasoning-prompt.ts` — even card grids
+  and the paired corner statements. `learning-code.ts` wraps each highlighted source
+  line in a `.code-line` span so long lines wrap with a hanging indent.
+- Code width preview: `?codeWidth=prose|full` on a system lesson shows a switch
+  (bottom right) between code at the prose width and code spanning the card edge to
+  edge; without the parameter the lesson uses the prose width and shows no switch.
 
 Hands-On DSA (`src/app/pages/hands-on-dsa/`, `src/app/core/focus-studio/`):
 
@@ -1184,3 +1199,13 @@ without that endpoint show no DEV controls.
 
 Infra owns the deployment inputs and start/stop runbook. This configuration is
 locally tested with synthetic credentials, not deployed or verified in AWS.
+
+### Local sign-out and expired sessions
+
+Local OAuth sign-out closes the BFF session, then obtains Identity CSRF and posts
+to Identity logout through the same browser origin. It does not follow the returned
+legacy ID-token-hint URL, which can become stale after refresh. Only confirmed
+cleanup clears local account state. Cloud mode retains the fixed logout bridge.
+Expired account sessions go to `/sign-in?error=session-expired`; incorrect passwords
+stay on sign-in with an error. Anonymous browsing is not redirected. Interrupted
+saved-plan requests require explicit discard before another sign-in.
