@@ -1264,8 +1264,12 @@ Application installation still uses the canonical `package-lock.json` and npm CI
 The existing esbuild0.28.2 tool is now declared directly because our presentation
 build imports it directly; its version and archive integrity are unchanged.
 Compilation and serving images use the requested target platform (`linux/amd64`
-in CI). Only compiled browser assets are copied into the pinned NGINX serving
-image. Node is build tooling; application API services remain Java/Spring. No AWS
+in CI). Only compiled browser assets are copied into the NGINX serving image,
+assembled from the same digest-pinned Alpine 3.23 base with exact patched
+NGINX, musl, zlib, PCRE2 and OpenSSL package versions declared in the Dockerfile.
+The final-image scan requires all seven pinned OS package versions in its
+inventory, in addition to the unchanged vulnerability and secret gates.
+The runtime uses UID 10001 and starts NGINX directly with read-only configuration. Node is build tooling; application API services remain Java/Spring. No AWS
 SDK, credentials, private curriculum, local preview, source map or API server is
 packaged in the frontend. Local npm development commands and configurations are
 unchanged.
