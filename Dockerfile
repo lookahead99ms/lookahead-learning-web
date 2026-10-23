@@ -30,7 +30,7 @@ COPY --chown=10001:10001 public ./public
 RUN npm run build:protected \
     && node scripts/container/verify-static.mjs dist/lookahead-learning-web/browser
 
-FROM nginxinc/nginx-unprivileged:stable-alpine-slim@sha256:3af0c10d960cc2502427fe1219c52989d309e7d65596869c60a34fd2fa2406f0
+FROM nginxinc/nginx-unprivileged:stable-alpine-slim@sha256:5d8bb9437d74a600ec5dbf90c035451c724dc33eac8d3a71078f6f8612c345f6
 COPY deployment/container/nginx.conf /etc/nginx/nginx.conf
 COPY deployment/container/nginx-lower-cost-dev.conf /etc/nginx/nginx-lower-cost-dev.conf
 COPY --chmod=0555 deployment/container/healthcheck.sh /opt/lookahead/healthcheck.sh
