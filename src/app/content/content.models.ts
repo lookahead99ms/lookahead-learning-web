@@ -143,6 +143,8 @@ export interface TheorySection {
   sidebar?: boolean;
   /** A small comparison table (cells allow inline HTML), shown after body[afterParagraph]. */
   table?: TheoryTable;
+  /** System lessons: index of the body paragraph the code (and its console) follows; default 0, the lead-in. */
+  codeAfterParagraph?: number;
   /** System lessons: what the code printed, shown as a run console under the code. */
   output?: TheoryOutput;
   /** System lessons: several files shown as tabs, each with its own explanation. */
@@ -1384,6 +1386,36 @@ export interface CourseContentLocator {
 export interface CourseOutline extends CourseManifest {
   questions: ContentItemSummary[];
   moduleDetailRefs: CourseModuleDetailReference[];
+}
+
+/** Glossary (2026-10-22): a term a lesson may use before the lesson that teaches it.
+ * The lesson page shows the definition on hover and lists the lessons on click. */
+export interface GlossaryLessonLink {
+  /** Catalog path of the lesson when it is not the glossary's own path (a Grow term taught in Blaze). */
+  path?: string;
+  courseId: string;
+  lessonId: string;
+  /** The lesson title as the course manifest publishes it; the content validator keeps it in step. */
+  title: string;
+}
+
+export interface GlossaryTerm {
+  id: string;
+  /** Label shown in the tooltip and dialog, e.g. "Shard". */
+  term: string;
+  /** Word forms to mark in lesson text. A form written in capitals (CDN) matches only in capitals. */
+  match: string[];
+  /** Plain text, no HTML. */
+  definition: string;
+  lessons: GlossaryLessonLink[];
+  /** Lessons where the word means something else (a Raft log "index"), so the term is never marked there. */
+  skipLessons?: string[];
+}
+
+export interface Glossary {
+  schemaVersion: 'glossary/v1';
+  path: ContentPath;
+  terms: GlossaryTerm[];
 }
 
 export interface CatalogItem {

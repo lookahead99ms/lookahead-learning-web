@@ -80,6 +80,7 @@ import { PatternEssentialProblems } from '../../core/pattern-essential-problems/
 import { PatternLessonShell } from '../../core/pattern-lesson-shell/pattern-lesson-shell';
 import { CodeCopyButton } from '../../core/code-copy-button/code-copy-button';
 import { FoundationLessonShell } from '../../core/foundation-lesson-shell/foundation-lesson-shell';
+import { GlossaryTerms } from '../../core/glossary/glossary-terms';
 import { EvidenceAnswerTabs } from '../../core/evidence-answer-tabs/evidence-answer-tabs';
 import { DsaProblemPilot } from '../../core/dsa-problem-pilot/dsa-problem-pilot';
 import { CardScene } from '../../core/card-scene/card-scene';
@@ -104,6 +105,7 @@ import { catalogGroupForCourse, nextCatalogGroup } from '../../content/catalog-c
     PatternEssentialProblems,
     PatternLessonShell,
     FoundationLessonShell,
+    GlossaryTerms,
     CodeCopyButton,
     EvidenceAnswerTabs,
     DsaProblemPilot,

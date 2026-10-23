@@ -1,4 +1,5 @@
-import { provideRouter } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
+import { of } from 'rxjs';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import {
   FoundationLessonV1,
@@ -583,14 +584,21 @@ describe('FoundationLessonShell system-v1 lessons (DLV-408)', () => {
     click.mockRestore();
   });
 
-  it('puts code and its run console beside the explanation, with the table below', () => {
+  it('stacks the lead-in, the code, its run console and the explanation, with the table below', () => {
     const section = fixture.nativeElement.querySelector('#code') as HTMLElement;
     expect(section.classList).toContain('code-section');
-    const pair = section.querySelector('.code-pair') as HTMLElement;
-    expect(pair.querySelector('.code-pair-code .foundation-code')).not.toBeNull();
-    // The console is its own grid item, so it can sit under the code or under the explanation.
-    const console = pair.querySelector(':scope > .code-pair-console .run-console') as HTMLElement;
-    expect(pair.querySelector('.code-pair-code .run-console')).toBeNull();
+    const stack = section.querySelector('.code-stack') as HTMLElement;
+    // One flow, top to bottom: first paragraph, code, console, the rest of the body.
+    expect(Array.from(stack.children).map((child) => child.className)).toEqual([
+      'explanation code-stack-text',
+      'code-stack-code',
+      'code-stack-console',
+      'explanation code-stack-text',
+    ]);
+    expect(stack.children[0].querySelector('.prose')?.textContent).toBe('Send requests.');
+    expect(stack.querySelector('.code-stack-code .foundation-code header span')?.textContent).toBe('Matcher.java');
+    const console = stack.querySelector(':scope > .code-stack-console .run-console') as HTMLElement;
+    expect(stack.querySelector('.code-stack-code .run-console')).toBeNull();
     expect(console.querySelector('.run-console-tool')?.textContent).toBe('Run');
     // No decorative rerun/stop gutter.
     expect(console.querySelector('.run-console-gutter, .run-rerun, .run-stop')).toBeNull();
@@ -598,9 +606,55 @@ describe('FoundationLessonShell system-v1 lessons (DLV-408)', () => {
     expect(console.querySelector('.run-command')?.textContent).toBe('java Matcher.java');
     expect(Array.from(console.querySelectorAll('.run-line')).map((line) => line.textContent)).toEqual(['Eligible: D1']);
     expect(console.querySelector('.run-exit')?.textContent).toBe('Process finished with exit code 0');
-    expect(pair.querySelector('.code-pair-text .prose')?.textContent).toBe('Send requests.');
-    expect(pair.classList).toContain('code-pair-centered');
-    expect(pair.nextElementSibling?.classList).toContain('lesson-table-wrap');
+    // The prompt paragraph follows the run it explains.
+    expect(stack.children[3].querySelector('.ai-prompt p')?.textContent).toBe('Write a <Driver> filter.');
+    expect(stack.nextElementSibling?.classList).toContain('lesson-table-wrap');
+    // Code lines are wrapped so a long line can hang-indent instead of scrolling.
+    expect(stack.querySelectorAll('.foundation-code pre .code-line').length).toBe(1);
+  });
+
+  it('moves the code to the paragraph codeAfterParagraph names, and keeps the callout after the code', () => {
+    const section = systemLesson.sections.find((candidate) => candidate.id === 'code')!;
+    fixture.componentRef.setInput('lesson', {
+      ...systemLesson,
+      sections: systemLesson.sections.map((candidate) =>
+        candidate.id === 'code'
+          ? { ...section, body: ['One.', 'Two.', 'Three.'], codeAfterParagraph: 1, callout: { type: 'tip', title: 'Note', text: 'Keep it.' } }
+          : candidate,
+      ),
+    });
+    fixture.detectChanges();
+    const stack = fixture.nativeElement.querySelector('#code .code-stack') as HTMLElement;
+    const texts = (index: number) => Array.from(stack.children[index].querySelectorAll('.prose')).map((prose) => prose.textContent);
+    expect(texts(0)).toEqual(['One.', 'Two.']);
+    expect(stack.children[1].className).toBe('code-stack-code');
+    expect(texts(3)).toEqual(['Three.']);
+    expect(stack.children[3].querySelector('.lesson-callout strong')?.textContent).toBe('Note');
+    expect(stack.children[0].querySelector('.lesson-callout')).toBeNull();
+  });
+
+  it('clamps codeAfterParagraph to the body: code first when the body is empty, callout still shown', () => {
+    const section = systemLesson.sections.find((candidate) => candidate.id === 'code')!;
+    fixture.componentRef.setInput('lesson', {
+      ...systemLesson,
+      sections: systemLesson.sections.map((candidate) =>
+        candidate.id === 'code' ? { ...section, body: [], codeAfterParagraph: 7, callout: { type: 'tip', title: 'Note', text: 'Keep it.' } } : candidate,
+      ),
+    });
+    fixture.detectChanges();
+    const stack = fixture.nativeElement.querySelector('#code .code-stack') as HTMLElement;
+    expect(Array.from(stack.children).map((child) => child.className)).toEqual([
+      'code-stack-code',
+      'code-stack-console',
+      'explanation code-stack-text',
+    ]);
+    expect(stack.children[2].querySelector('.lesson-callout strong')?.textContent).toBe('Note');
+  });
+
+  it('uses the card width for code by default and shows no width switch', () => {
+    const article = fixture.nativeElement.querySelector('article.system') as HTMLElement;
+    expect(article.getAttribute('data-code-width')).toBe('full');
+    expect(article.querySelector('.code-width-switch')).toBeNull();
   });
 
   it('shows one file tab at a time with its own explanation and arrow-key navigation', () => {
@@ -609,12 +663,12 @@ describe('FoundationLessonShell system-v1 lessons (DLV-408)', () => {
     expect(tabs.map((tab) => tab.textContent?.trim())).toEqual(['Request.java', 'Errors.java']);
     expect(tabs.map((tab) => tab.getAttribute('aria-selected'))).toEqual(['true', 'false']);
     const panel = () => section.querySelector('[role="tabpanel"]') as HTMLElement;
-    expect(panel().querySelector('.code-pair-text')?.textContent).toContain('The request record.');
+    expect(panel().querySelector('.code-stack-text')?.textContent).toContain('The request record.');
     tabs[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
     fixture.detectChanges();
     expect(tabs[1].getAttribute('aria-selected')).toBe('true');
     expect(panel().getAttribute('aria-labelledby')).toBe('fix-tab-errors');
-    expect(panel().querySelector('.code-pair-text')?.textContent).toContain('The error advice.');
+    expect(panel().querySelector('.code-stack-text')?.textContent).toContain('The error advice.');
     expect(panel().querySelector('.foundation-code header span')?.textContent).toBe('Errors.java');
   });
 
@@ -693,24 +747,39 @@ describe('FoundationLessonShell system-v1 lessons (DLV-408)', () => {
 
   it('shows the AI prompt of a guided step whose code is in Java and Python tabs (DLV-935)', () => {
     const output = { tool: 'Test', title: 'Test: step 1', command: 'sh ./mvnw test', text: '[INFO] BUILD SUCCESS\n', exitCode: 0 };
-    fixture.componentRef.setInput('lesson', {
-      ...systemLesson,
-      sections: [
-        ...systemLesson.sections,
-        { id: 'step-1', stage: 'build', navLabel: 'Step 1 · MCP tools', heading: 'Step 1: Serve read-only tools',
-          body: ['<strong>Goal:</strong> read only.', '<strong>Prompt:</strong> "Write an MCP server named ops-tools."',
-            '<strong>Verify before Step 2:</strong><br>Four tools.<br>All read-only.'],
-          codeTabs: [
-            { id: 'java', title: 'OpsTools.java', language: 'java', source: 'class OpsTools {}', body: [], output },
-            { id: 'python', title: 'ops_tools.py', language: 'python', source: 'server = None', body: [], output },
-          ] },
+    const step = (guidedStep: boolean) => ({
+      id: 'step-1', stage: 'build', navLabel: 'Step 1 · MCP tools', heading: 'Step 1: Serve read-only tools', guidedStep,
+      body: ['<strong>Goal:</strong> read only.', '<strong>Prompt:</strong> "Write an MCP server named ops-tools."',
+        '<strong>Verify before Step 2:</strong><br>Four tools.<br>All read-only.'],
+      callout: { type: 'tip', title: 'Common mistake', text: 'Writing tools.' },
+      codeTabs: [
+        { id: 'java', title: 'OpsTools.java', language: 'java', source: 'class OpsTools {}', body: [], output },
+        { id: 'python', title: 'ops_tools.py', language: 'python', source: 'server = None', body: [], output },
       ],
-    } as FoundationLessonV1);
+    });
+    fixture.componentRef.setInput('lesson', { ...systemLesson, sections: [...systemLesson.sections, step(true)] } as FoundationLessonV1);
     fixture.detectChanges();
-    const step = fixture.nativeElement.querySelector('#step-1') as HTMLElement;
-    expect(step.querySelector('.ai-prompt p')?.textContent).toBe('Write an MCP server named ops-tools.');
-    expect(step.querySelector('.ai-prompt app-code-copy-button')).not.toBeNull();
-    expect(step.querySelectorAll('.code-pair-text .prose').length).toBe(2);
+    const section = fixture.nativeElement.querySelector('#step-1') as HTMLElement;
+    expect(section.querySelector('.ai-prompt p')?.textContent).toBe('Write an MCP server named ops-tools.');
+    expect(section.querySelector('.ai-prompt app-code-copy-button')).not.toBeNull();
+    expect(section.querySelectorAll('.code-stack-text .prose').length).toBe(2);
+    // A guided step reads its whole guide first (goal, prompt, checks, the mistake callout), then the code and its test console.
+    const stack = section.querySelector('.code-stack') as HTMLElement;
+    expect(stack.classList).toContain('code-stack-guided');
+    expect(Array.from(stack.children).map((child) => child.className)).toEqual(['explanation code-stack-text', 'code-stack-code', 'code-stack-console']);
+    expect(stack.children[0].querySelector('.lesson-callout strong')?.textContent).toBe('Common mistake');
+    expect(stack.querySelector('.code-stack-console .run-console-tool')?.textContent).toBe('Test');
+
+    // Not a guided step: the first paragraph leads in, the rest explain the run, the callout closes it.
+    fixture.componentRef.setInput('lesson', { ...systemLesson, sections: [...systemLesson.sections, step(false)] } as FoundationLessonV1);
+    fixture.detectChanges();
+    const plain = fixture.nativeElement.querySelector('#step-1 .code-stack') as HTMLElement;
+    expect(plain.classList).not.toContain('code-stack-guided');
+    expect(Array.from(plain.children).map((child) => child.className)).toEqual([
+      'explanation code-stack-text', 'code-stack-code', 'code-stack-console', 'explanation code-stack-text',
+    ]);
+    expect(plain.children[0].querySelectorAll('.prose').length).toBe(1);
+    expect(plain.children[3].querySelector('.lesson-callout strong')?.textContent).toBe('Common mistake');
   });
 
   it('labels each section with its stage and a short sidebar name', () => {
@@ -1090,7 +1159,7 @@ describe('FoundationLessonShell system-v1 lessons (DLV-408)', () => {
       const panel = variation.querySelector('[role="tabpanel"]') as HTMLElement;
       expect(panel.getAttribute('aria-labelledby')).toBe('v-lang-java');
       expect(panel.querySelector('.foundation-code header span')?.textContent).toBe('cycle_start.java');
-      expect(variation.querySelector('.code-pair-console .run-console .run-command')?.textContent).toBe('java cycle_start.java');
+      expect(variation.querySelector('.code-stack-console .run-console .run-command')?.textContent).toBe('java cycle_start.java');
 
       (variation.querySelector('#v-lang-python') as HTMLButtonElement).click();
       fixture.detectChanges();
@@ -1185,6 +1254,39 @@ describe('FoundationLessonShell system-v1 lessons (DLV-408)', () => {
       expect(wrong.getAttribute('aria-pressed')).toBe('false');
       expect(item.querySelector('.spot-right')?.textContent).toBe('Right: Fast and slow pointers.');
       expect(item.querySelector('.spot-result')?.textContent).toContain('One next node each.');
+    });
+  });
+
+  describe('code width preview (?codeWidth=)', () => {
+    async function render(codeWidth: string) {
+      TestBed.resetTestingModule();
+      await TestBed.configureTestingModule({
+        imports: [FoundationLessonShell],
+        providers: [provideRouter([]), { provide: ActivatedRoute, useValue: { queryParamMap: of(convertToParamMap({ codeWidth })) } }],
+      }).compileComponents();
+      const preview = TestBed.createComponent(FoundationLessonShell);
+      preview.componentRef.setInput('lesson', systemLesson);
+      preview.componentRef.setInput('checks', checks);
+      preview.componentRef.setInput('practiceItems', practiceItems);
+      preview.componentRef.setInput('pathId', 'grow');
+      preview.componentRef.setInput('courseId', 'spring-framework');
+      preview.detectChanges();
+      return preview.nativeElement.querySelector('article.system') as HTMLElement;
+    }
+
+    it('caps the code at the prose measure for codeWidth=prose and offers both widths as buttons', async () => {
+      const article = await render('prose');
+      expect(article.getAttribute('data-code-width')).toBe('prose');
+      const links = Array.from(article.querySelectorAll('.code-width-switch a')) as HTMLAnchorElement[];
+      expect(links.map((link) => link.textContent)).toEqual(['Full card', 'Prose width']);
+      expect(links.map((link) => link.getAttribute('aria-current'))).toEqual([null, 'true']);
+      expect(links[0].getAttribute('href')).toContain('codeWidth=full');
+    });
+
+    it('reads any other value as the card width, with the switch still shown', async () => {
+      const article = await render('wide');
+      expect(article.getAttribute('data-code-width')).toBe('full');
+      expect(article.querySelector('.code-width-switch a[aria-current="true"]')?.textContent).toBe('Full card');
     });
   });
 });
