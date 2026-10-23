@@ -29,6 +29,8 @@ const documentIds = new Set([
   'aws-dev-status',
   'aws-dev-setup',
   'aws-dev-workflow',
+  'aws-dev-procedures',
+  'aws-dev-records',
   'aws-candidate-design',
   'aws-candidate-files',
   'aws-candidate-commands',

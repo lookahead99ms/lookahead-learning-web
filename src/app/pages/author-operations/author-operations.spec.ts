@@ -131,7 +131,7 @@ describe('Operations author view', () => {
     expect(content.querySelector('.hero-group')!.textContent).toContain('AWS deployment');
     const section = content.querySelector('nav.section-pages') as HTMLElement;
     expect(section.getAttribute('aria-label')).toBe('AWS deployment section pages');
-    expect(section.querySelector('.section-label')!.textContent).toContain('page 6 of 13');
+    expect(section.querySelector('.section-label')!.textContent).toContain('page 6 of 15');
     const labels = [...section.querySelectorAll('a')].map((link) => link.textContent!.trim());
     expect(labels[0]).toBe('Overview');
     expect(labels).toContain('DEV budget');
@@ -140,6 +140,21 @@ describe('Operations author view', () => {
     expect(steps.querySelector('.section-previous')!.getAttribute('href')).toBe('/admin/aws-dev-permissions');
     expect(steps.querySelector('.section-next')!.getAttribute('href')).toBe('/admin/aws-dev-status');
     expect(steps.querySelector('.section-previous strong')!.textContent).toBe('DEV permissions');
+  });
+
+  it('places DEV procedures and execution records after the workflow log', async () => {
+    TestBed.overrideProvider(ActivatedRoute, {
+      useValue: { snapshot: { data: { authorDocument: 'aws-dev-procedures' } } },
+    });
+    load.mockResolvedValue({ ...reference, id: 'aws-dev-procedures' });
+    const fixture = await create();
+    const content = fixture.nativeElement.querySelector('.workspace-content') as HTMLElement;
+    expect(load).toHaveBeenCalledWith('aws-dev-procedures');
+    expect(content.querySelector('nav.section-pages .section-label')!.textContent).toContain('page 10 of 15');
+    const steps = content.querySelector('nav.section-steps') as HTMLElement;
+    expect(steps.querySelector('.section-previous')!.getAttribute('href')).toBe('/admin/aws-dev-workflow');
+    expect(steps.querySelector('.section-next')!.getAttribute('href')).toBe('/admin/aws-dev-records');
+    expect(steps.querySelector('.section-next strong')!.textContent).toBe('DEV execution records');
   });
 
   it('shows no section row on a standalone reference', async () => {
