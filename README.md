@@ -1121,9 +1121,8 @@ Shared lesson components (`src/app/core/`):
 - `even-grid.ts` and `platform-signature/reasoning-prompt.ts` — even card grids
   and the paired corner statements. `learning-code.ts` wraps each highlighted source
   line in a `.code-line` span so long lines wrap with a hanging indent.
-- Code width preview: `?codeWidth=prose|full` on a system lesson shows a switch
-  (bottom right) between code at the prose width and code spanning the card edge to
-  edge; without the parameter the lesson uses the prose width and shows no switch.
+- Code width: code and its run console use the card's content width while prose keeps
+  the 72-character reading measure (user decision, 2026-10-22).
 
 Hands-On DSA (`src/app/pages/hands-on-dsa/`, `src/app/core/focus-studio/`):
 

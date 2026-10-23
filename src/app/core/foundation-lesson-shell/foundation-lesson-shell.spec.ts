@@ -1,5 +1,4 @@
-import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { provideRouter } from '@angular/router';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import {
   FoundationLessonV1,
@@ -651,12 +650,6 @@ describe('FoundationLessonShell system-v1 lessons (DLV-408)', () => {
     expect(stack.children[2].querySelector('.lesson-callout strong')?.textContent).toBe('Note');
   });
 
-  it('uses the card width for code by default and shows no width switch', () => {
-    const article = fixture.nativeElement.querySelector('article.system') as HTMLElement;
-    expect(article.getAttribute('data-code-width')).toBe('full');
-    expect(article.querySelector('.code-width-switch')).toBeNull();
-  });
-
   it('shows one file tab at a time with its own explanation and arrow-key navigation', () => {
     const section = fixture.nativeElement.querySelector('#fix') as HTMLElement;
     const tabs = Array.from(section.querySelectorAll('[role="tab"]')) as HTMLButtonElement[];
@@ -1257,36 +1250,4 @@ describe('FoundationLessonShell system-v1 lessons (DLV-408)', () => {
     });
   });
 
-  describe('code width preview (?codeWidth=)', () => {
-    async function render(codeWidth: string) {
-      TestBed.resetTestingModule();
-      await TestBed.configureTestingModule({
-        imports: [FoundationLessonShell],
-        providers: [provideRouter([]), { provide: ActivatedRoute, useValue: { queryParamMap: of(convertToParamMap({ codeWidth })) } }],
-      }).compileComponents();
-      const preview = TestBed.createComponent(FoundationLessonShell);
-      preview.componentRef.setInput('lesson', systemLesson);
-      preview.componentRef.setInput('checks', checks);
-      preview.componentRef.setInput('practiceItems', practiceItems);
-      preview.componentRef.setInput('pathId', 'grow');
-      preview.componentRef.setInput('courseId', 'spring-framework');
-      preview.detectChanges();
-      return preview.nativeElement.querySelector('article.system') as HTMLElement;
-    }
-
-    it('caps the code at the prose measure for codeWidth=prose and offers both widths as buttons', async () => {
-      const article = await render('prose');
-      expect(article.getAttribute('data-code-width')).toBe('prose');
-      const links = Array.from(article.querySelectorAll('.code-width-switch a')) as HTMLAnchorElement[];
-      expect(links.map((link) => link.textContent)).toEqual(['Full card', 'Prose width']);
-      expect(links.map((link) => link.getAttribute('aria-current'))).toEqual([null, 'true']);
-      expect(links[0].getAttribute('href')).toContain('codeWidth=full');
-    });
-
-    it('reads any other value as the card width, with the switch still shown', async () => {
-      const article = await render('wide');
-      expect(article.getAttribute('data-code-width')).toBe('full');
-      expect(article.querySelector('.code-width-switch a[aria-current="true"]')?.textContent).toBe('Full card');
-    });
-  });
 });

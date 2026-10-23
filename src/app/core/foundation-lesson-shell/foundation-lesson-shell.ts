@@ -3,9 +3,7 @@ import { LearningCode } from '../learning-code';
 import { codeLanguageLabel } from '../focus-studio/code-presentation';
 import { Component, DestroyRef, computed, inject, input, signal } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { map } from 'rxjs';
+import { RouterLink } from '@angular/router';
 import { evenGridColumns } from '../even-grid';
 import {
   ContentItemSummary,
@@ -166,15 +164,7 @@ export function plainText(html: string): string {
     }
     }
     <ng-template #systemLesson>
-      <article class="foundation-lesson system" [class.algo-lesson]="isAlgo()" [attr.data-code-width]="codeWidth()" aria-label="Lesson">
-        @if (codeWidthPreview()) {
-          <!-- Preview only (?codeWidth=full|prose): compare code at the card width with code capped at the prose measure. -->
-          <nav class="code-width-switch" aria-label="Code width preview">
-            <span>Code width</span>
-            <a routerLink="." [queryParams]="{ codeWidth: 'full' }" queryParamsHandling="merge" [attr.aria-current]="codeWidth() === 'full' ? 'true' : null">Full card</a>
-            <a routerLink="." [queryParams]="{ codeWidth: 'prose' }" queryParamsHandling="merge" [attr.aria-current]="codeWidth() === 'prose' ? 'true' : null">Prose width</a>
-          </nav>
-        }
+      <article class="foundation-lesson system" [class.algo-lesson]="isAlgo()" aria-label="Lesson">
         @for (stage of stages(); track stage.id) {
           <section
             class="lesson-stage"
@@ -1649,7 +1639,7 @@ export function plainText(html: string): string {
         gap: 1.5rem;
       }
       /* One flow: lead-in, code at the card width, its console right under it, then the explanation. Prose keeps
-         the reading measure (DLV-803); the code and console use the card so lines rarely wrap. */
+         the reading measure (DLV-803); the code and console use the card width (user decision 2026-10-22). */
       .code-stack {
         display: flex;
         min-width: 0;
@@ -1677,43 +1667,6 @@ export function plainText(html: string): string {
         max-height: none;
         white-space: pre-wrap;
         overflow-wrap: anywhere;
-      }
-      /* Preview option: the code and its console capped at the prose measure. */
-      .system[data-code-width='prose'] .code-stack-code,
-      .system[data-code-width='prose'] .code-stack-console {
-        max-width: var(--reading-width);
-      }
-      /* Preview switch (?codeWidth=): two buttons, bottom right, out of the reading column. */
-      .code-width-switch {
-        position: fixed;
-        right: 1rem;
-        bottom: 1rem;
-        z-index: 20;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 0.75rem;
-        border: 1px solid var(--line);
-        border-radius: 999px;
-        background: var(--surface);
-        box-shadow: 0 8px 22px var(--shadow);
-        font-size: 0.85rem;
-      }
-      .code-width-switch span {
-        color: var(--text-subtle);
-      }
-      .code-width-switch a {
-        padding: 0.3rem 0.8rem;
-        border: 1px solid var(--line);
-        border-radius: 999px;
-        color: var(--text-strong);
-        font-weight: 600;
-        text-decoration: none;
-      }
-      .code-width-switch a[aria-current='true'] {
-        border-color: var(--lesson-teal);
-        background: var(--lesson-teal);
-        color: #fff;
       }
       @container lesson (min-width: 760px) {
         .system .lesson-section .pitfall-list {
@@ -2966,12 +2919,6 @@ export class FoundationLessonShell {
     if (section.guidedStep) return section.body.length;
     return Math.min(Math.max((section.codeAfterParagraph ?? 0) + 1, 0), section.body.length);
   }
-
-  private readonly route = inject(ActivatedRoute);
-  /** ?codeWidth=full|prose; anything else reads as full (the card width). */
-  private readonly codeWidthParam = toSignal(this.route.queryParamMap.pipe(map((params) => params.get('codeWidth'))), { initialValue: null });
-  readonly codeWidth = computed(() => (this.codeWidthParam() === 'prose' ? 'prose' : 'full'));
-  readonly codeWidthPreview = computed(() => this.codeWidthParam() !== null);
 
   protected tableAfter(section: TheorySection): number {
     const last = section.body.length - 1;
