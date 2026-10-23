@@ -29,6 +29,8 @@ import {
   CourseContentLocator,
   CourseOutline,
   DsaProblemV2,
+  Glossary,
+  GlossaryTerm,
   InterviewQuestion,
   SearchDocument,
 } from './content.models';
@@ -312,6 +314,28 @@ export class ContentService {
     return this.getCachedDetail<AnswerSlideDeckV1>(reference).pipe(
       map((deck) => validateAnswerSlideDeck(deck, reference, summary.detailRef, question)),
     );
+  }
+
+  private readonly glossaries = new Map<string, Observable<GlossaryTerm[]>>();
+
+  /** Glossary terms for one catalog path (blaze/glossary.json). A path without a glossary, a failed
+   * request or a malformed file yields no terms rather than an error, so lesson pages never break on it. */
+  getGlossary(pathId: string): Observable<GlossaryTerm[]> {
+    if (!this.validSlug(pathId)) return of([]);
+    let request = this.glossaries.get(pathId);
+    if (!request) {
+      request = this.http.get<Glossary>(`/content/${pathId}/glossary.json`).pipe(
+        map((glossary) =>
+          glossary?.schemaVersion === 'glossary/v1' && Array.isArray(glossary.terms)
+            ? glossary.terms.filter(isGlossaryTerm)
+            : [],
+        ),
+        catchError(() => of([])),
+        shareReplay({ bufferSize: 1, refCount: false }),
+      );
+      this.glossaries.set(pathId, request);
+    }
+    return request;
   }
 
   getCatalog(pathId: string): Observable<CatalogItem[]> {
@@ -662,4 +686,25 @@ export class ContentService {
       map((essentialProblems) => ({ ...question, essentialProblems })),
     );
   }
+}
+
+function isGlossaryTerm(term: GlossaryTerm | null | undefined): term is GlossaryTerm {
+  return (
+    typeof term?.id === 'string' &&
+    typeof term.term === 'string' &&
+    typeof term.definition === 'string' &&
+    Array.isArray(term.match) &&
+    term.match.every((form) => typeof form === 'string') &&
+    (term.skipLessons === undefined ||
+      (Array.isArray(term.skipLessons) && term.skipLessons.every((lesson) => typeof lesson === 'string'))) &&
+    Array.isArray(term.lessons) &&
+    term.lessons.length > 0 &&
+    term.lessons.every(
+      (lesson) =>
+        typeof lesson?.courseId === 'string' &&
+        typeof lesson.lessonId === 'string' &&
+        typeof lesson.title === 'string' &&
+        (lesson.path === undefined || typeof lesson.path === 'string'),
+    )
+  );
 }

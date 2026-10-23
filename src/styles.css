@@ -759,6 +759,10 @@ main.harbor-learn.content-page.hands-on-dsa-page {
 /* The same language palettes used by the Hands-on DSA editor and trace. */
 pre:has(> .learning-code) { background: var(--code-bg); color: var(--code-ink); overflow-x: auto; }
 .learning-code { font-weight: 400; white-space: pre; tab-size: 4; }
+/* System lessons stack the code at the card width: the whole file shows and a long line wraps with a hanging
+   indent instead of a scroll box. The line spans come from the LearningCode directive (innerHTML, so global). */
+.system .code-stack .learning-code { white-space: pre-wrap; overflow-wrap: anywhere; }
+.system .code-stack .learning-code .code-line { display: inline-block; box-sizing: border-box; width: 100%; padding-left: 3ch; text-indent: -3ch; white-space: pre-wrap; overflow-wrap: anywhere; vertical-align: top; }
 .learning-code[data-code-language='java'] { --syntax-keyword:#c792ea; --syntax-string:#c3e88d; --syntax-number:#f78c6c; --syntax-comment:#8ba3af; --syntax-type:#ffcb6b; color:#b2ccd6; }
 pre:has(> .learning-code[data-code-language='java']) { background:#263238; }
 .learning-code[data-code-language='python'] { --syntax-keyword:#c678dd; --syntax-string:#98c379; --syntax-number:#d19a66; --syntax-comment:#9198a5; --syntax-type:#e5c07b; color:#abb2bf; }
@@ -1004,5 +1008,159 @@ pre:has(> .learning-code[data-code-language='go']) { background:#14161a; }
 @media (forced-colors: active) {
   :is(.action-button, .action-link, .action-chip) {
     border-color: LinkText;
+  }
+}
+
+/* Glossary terms (2026-10-22). A lesson term the reader may not have met yet, marked by the
+   GlossaryTerms directive inside innerHTML prose, which component styles cannot reach. Hover or
+   focus shows the meaning in a tooltip; activating opens a dialog that lists the lessons. */
+/* At rest a term looks like the prose around it. Only the first mention of each term on the page
+   carries a faint dotted line (a muted colour at low opacity), so a page never reads like a paper
+   full of links; later mentions still answer hover and click. The accent appears on hover and
+   focus only. */
+.glossary-term {
+  all: unset;
+  cursor: help;
+  border-radius: 3px;
+  text-decoration: underline dotted transparent;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  transition: text-decoration-color 0.15s ease, background-color 0.15s ease;
+}
+.glossary-term-first {
+  text-decoration-color: color-mix(in srgb, var(--text-subtle) 45%, transparent);
+}
+.glossary-term:hover,
+.glossary-term:focus-visible {
+  background: color-mix(in srgb, var(--accent-strong) 10%, transparent);
+  text-decoration-color: var(--accent-strong);
+}
+.glossary-term:focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 2px;
+}
+.glossary-tip {
+  position: fixed;
+  z-index: 60;
+  max-width: min(360px, calc(100vw - 16px));
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text-body);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 22%);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  pointer-events: none;
+}
+.glossary-tip[hidden] {
+  display: none;
+}
+.glossary-tip-term {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--text-strong);
+}
+.glossary-tip-hint {
+  display: block;
+  margin-top: 6px;
+  color: var(--text-subtle);
+  font-size: 0.78rem;
+}
+.glossary-dialog {
+  width: min(560px, calc(100vw - 32px));
+  max-height: calc(100dvh - 48px);
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--text-body);
+  box-shadow: 0 24px 64px rgb(0 0 0 / 30%);
+}
+.glossary-dialog::backdrop {
+  background: rgb(12 24 30 / 55%);
+}
+.glossary-dialog-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.glossary-eyebrow {
+  margin: 0;
+  color: var(--text-subtle);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.glossary-dialog-head h2 {
+  margin: 2px 0 0;
+  font-size: 1.05rem;
+}
+.glossary-close {
+  flex: 0 0 auto;
+  min-height: 36px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--text-strong);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+.glossary-dialog-body {
+  padding: 18px 20px 20px;
+  overflow-y: auto;
+}
+.glossary-definition {
+  margin: 0 0 16px;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+.glossary-read {
+  margin: 0 0 10px;
+  text-align: center;
+  color: var(--text-subtle);
+  font-size: 0.88rem;
+}
+.glossary-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+.glossary-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 8px 16px;
+  border-radius: 9px;
+  background: var(--accent-strong);
+  color: var(--accent-on-primary);
+  font-weight: 700;
+  text-decoration: none;
+}
+.glossary-link:hover {
+  filter: brightness(1.08);
+}
+.glossary-dialog :focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 2px;
+}
+@media (max-width: 640px) {
+  .glossary-dialog {
+    width: 100vw;
+    max-width: 100vw;
+    margin: auto 0 0;
+    border-radius: 16px 16px 0 0;
+  }
+  .glossary-links {
+    flex-direction: column;
+  }
+  .glossary-link {
+    justify-content: center;
   }
 }

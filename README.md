@@ -102,7 +102,7 @@ The guide supplies the article outline and sidebar recall. Grow uses practical
 verification exercises; Blaze uses decision exercises. Scenarios render as
 wrapped text, while Learn code examples remain copyable. Introductory sections share the full lesson’s typography, section surfaces, and
 responsive padding, with aligned content edges. The outline includes both introductory and full-lesson sections. Detailed material and
-practice stay visible in the same reading flow. Code and scenario examples sit on the left on wide screens; explanations flow beside them and continue below to use available space. At narrow widths the reader stacks them in source order. Walkthroughs and explicit multiple points inside explanation cards use semantic bullet lists, preserving headings and single prose explanations. Unguided foundation lessons put concrete sections before
+practice stay visible in the same reading flow. Code reads top to bottom: the lead-in paragraph, the code at the content width, its run console right under it, then the paragraphs that explain the run (`codeAfterParagraph` moves the split). Long lines wrap with a hanging indent; the whole file shows, nothing scrolls inside the page. At narrow widths the reader stacks them in source order. Walkthroughs and explicit multiple points inside explanation cards use semantic bullet lists, preserving headings and single prose explanations. Unguided foundation lessons put concrete sections before
 the abstract model. There is no learner execution service. Proprietary guide
 content belongs in the private Content repo.
 
@@ -1118,9 +1118,11 @@ Shared lesson components (`src/app/core/`):
   and records no progress), then a **Where you are** outline (path, group, course,
   previous/current/next lesson, next course and group). The lesson column width
   does not change.
-- `even-grid.ts`, `foundation-lesson-shell/console-beside.ts` and
-  `platform-signature/reasoning-prompt.ts` — even card grids, a run console beside
-  the explanation when it fits, and the paired corner statements.
+- `even-grid.ts` and `platform-signature/reasoning-prompt.ts` — even card grids
+  and the paired corner statements. `learning-code.ts` wraps each highlighted source
+  line in a `.code-line` span so long lines wrap with a hanging indent.
+- Code width: code and its run console use the card's content width while prose keeps
+  the 72-character reading measure (user decision, 2026-10-22).
 
 Hands-On DSA (`src/app/pages/hands-on-dsa/`, `src/app/core/focus-studio/`):
 
@@ -1262,8 +1264,12 @@ Application installation still uses the canonical `package-lock.json` and npm CI
 The existing esbuild0.28.2 tool is now declared directly because our presentation
 build imports it directly; its version and archive integrity are unchanged.
 Compilation and serving images use the requested target platform (`linux/amd64`
-in CI). Only compiled browser assets are copied into the pinned NGINX serving
-image. Node is build tooling; application API services remain Java/Spring. No AWS
+in CI). Only compiled browser assets are copied into the NGINX serving image,
+assembled from the same digest-pinned Alpine 3.23 base with exact patched
+NGINX, musl, zlib, PCRE2 and OpenSSL package versions declared in the Dockerfile.
+The final-image scan requires all seven pinned OS package versions in its
+inventory, in addition to the unchanged vulnerability and secret gates.
+The runtime uses UID 10001 and starts NGINX directly with read-only configuration. Node is build tooling; application API services remain Java/Spring. No AWS
 SDK, credentials, private curriculum, local preview, source map or API server is
 packaged in the frontend. Local npm development commands and configurations are
 unchanged.

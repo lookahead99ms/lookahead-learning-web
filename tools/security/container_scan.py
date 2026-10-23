@@ -25,8 +25,10 @@ LIMIT = 200 * 1024 * 1024
 SAFE_FAILURE_REASONS = frozenset({
     'Dockerfile configuration coverage missing',
     'Expected exactly one exported image manifest',
-    'Expected pinned Alpine toolchain and unprivileged NGINX runtime',
+    'Expected pinned Alpine toolchain and runtime bases',
     'Complete toolchain package coverage missing',
+    'Pinned runtime package inventory missing',
+    'Complete runtime package coverage missing',
     'Complete builder dependency coverage missing',
     'Complete npm CLI dependency coverage missing',
     'Exported image has no configuration',
@@ -105,8 +107,8 @@ def executable():
 
 def base_images(text):
     images = re.findall(r'^FROM\s+(?:--platform=\S+\s+)?(\S+)', text, re.M | re.I)
-    if len(images) != 3 or not re.fullmatch(r'alpine:3.23@sha256:[a-f0-9]{64}', images[0]) or images[1] != 'toolchain' or not re.fullmatch(r'nginxinc/nginx-unprivileged:stable-alpine-slim@sha256:[a-f0-9]{64}', images[2]):
-        raise ValueError('Expected pinned Alpine toolchain and unprivileged NGINX runtime')
+    if len(images) != 3 or not re.fullmatch(r'alpine:3.23@sha256:[a-f0-9]{64}', images[0]) or images[1] != 'toolchain' or not re.fullmatch(r'alpine:3.23@sha256:[a-f0-9]{64}', images[2]):
+        raise ValueError('Expected pinned Alpine toolchain and runtime bases')
     return [images[0], images[2]]
 
 
@@ -242,6 +244,15 @@ def local_config_id(target):
 
 
 def stage_coverage(document, stage):
+    if stage == 'applicationImage':
+        runtime = (ROOT / 'Dockerfile').read_text().rsplit('FROM ', 1)[1]
+        expected = set(re.findall(r'\b(nginx|musl|musl-utils|zlib|pcre2|libssl3|libcrypto3)=([0-9][a-zA-Z0-9.+_~-]*)', runtime))
+        if {name for name, version in expected} != {'nginx', 'musl', 'musl-utils', 'zlib', 'pcre2', 'libssl3', 'libcrypto3'}:
+            raise ValueError('Pinned runtime package inventory missing')
+        actual = {(p.get('Name'), p.get('Version')) for r in document['Results']
+                  if r.get('Class') == 'os-pkgs' for p in r.get('Packages', [])}
+        if not expected <= actual:
+            raise ValueError('Complete runtime package coverage missing')
     if stage in ('toolchainImage', 'builderImage'):
         packages = [p for r in document['Results'] for p in r.get('Packages', [])]
         if not any(p.get('Name') == 'nodejs' and p.get('Version', '').startswith('24.') for p in packages) or not any(p.get('Name') == 'npm' and p.get('Version') == '11.17.0' and p.get('FilePath') == 'opt/npm/package.json' for p in packages):
@@ -308,8 +319,8 @@ def main():
     else:
         if any(not value or not re.fullmatch(r'sha256:[a-f0-9]{64}', value) for value in (args.image, args.toolchain, args.builder)):
             raise ValueError('Immutable local image ID from build iidfile required')
-        for image in base_images((ROOT / 'Dockerfile').read_text()):
-            scan('image', image)
+        for stage, image in zip(('builderBase', 'runtimeBase'), base_images((ROOT / 'Dockerfile').read_text())):
+            scan('image', image, stage=stage)
         scan('image', args.toolchain, local=True, stage='toolchainImage')
         scan('image', args.builder, local=True, stage='builderImage')
         scan('image', args.image, local=True)

@@ -48,6 +48,8 @@ export const routes: Routes = [
       ['admin/aws-dev-status', 'aws-dev-status'],
       ['admin/aws-dev-setup', 'aws-dev-setup'],
       ['admin/aws-dev-workflow', 'aws-dev-workflow'],
+      ['admin/aws-dev-procedures', 'aws-dev-procedures'],
+      ['admin/aws-dev-records', 'aws-dev-records'],
       ['admin/aws-candidate-design', 'aws-candidate-design'],
       ['admin/aws-candidate-files', 'aws-candidate-files'],
       ['admin/aws-candidate-commands', 'aws-candidate-commands'],

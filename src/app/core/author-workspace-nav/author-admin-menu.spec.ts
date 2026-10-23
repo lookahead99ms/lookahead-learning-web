@@ -81,6 +81,8 @@ describe('AuthorAdminMenu', () => {
       '/admin/aws-dev-status',
       '/admin/aws-dev-setup',
       '/admin/aws-dev-workflow',
+      '/admin/aws-dev-procedures',
+      '/admin/aws-dev-records',
       '/admin/aws-candidate-design',
       '/admin/aws-candidate-files',
       '/admin/aws-candidate-commands',

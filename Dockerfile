@@ -1,5 +1,5 @@
 # Exact toolchain, compiler and serving images are scanned independently.
-FROM alpine:3.23@sha256:85fe1e81d6758c208f3e1eed4338a1997e19d4be002d4dd32d3100c9a8c010a0 AS toolchain
+FROM alpine:3.23@sha256:21f3e19bafab57a9ff7aa9dd571dac72f868370472c10f450cc0416cc1aca553 AS toolchain
 RUN apk add --no-cache nodejs=24.18.1-r0
 COPY scripts/container/prepare-npm-cli.mjs /opt/lookahead/prepare-npm-cli.mjs
 COPY deployment/container/npm-cli-lock.json /opt/npm/package-lock.json
@@ -30,7 +30,12 @@ COPY --chown=10001:10001 public ./public
 RUN npm run build:protected \
     && node scripts/container/verify-static.mjs dist/lookahead-learning-web/browser
 
-FROM nginxinc/nginx-unprivileged:stable-alpine-slim@sha256:3af0c10d960cc2502427fe1219c52989d309e7d65596869c60a34fd2fa2406f0
+FROM alpine:3.23@sha256:21f3e19bafab57a9ff7aa9dd571dac72f868370472c10f450cc0416cc1aca553 AS runtime
+RUN apk add --no-cache nginx=1.28.3-r7 musl=1.2.5-r24 musl-utils=1.2.5-r24 \
+      zlib=1.3.2-r1 pcre2=10.49-r0 libssl3=3.5.9-r0 libcrypto3=3.5.9-r0 \
+    && addgroup -S -g 10001 web \
+    && adduser -S -D -H -u 10001 -G web web \
+    && mkdir -p /usr/share/nginx/html
 COPY deployment/container/nginx.conf /etc/nginx/nginx.conf
 COPY deployment/container/nginx-lower-cost-dev.conf /etc/nginx/nginx-lower-cost-dev.conf
 COPY --chmod=0555 deployment/container/healthcheck.sh /opt/lookahead/healthcheck.sh
@@ -40,5 +45,5 @@ WORKDIR /usr/share/nginx/html
 EXPOSE 8080
 STOPSIGNAL SIGQUIT
 HEALTHCHECK --interval=15s --timeout=5s --start-period=60s --retries=3 CMD ["/opt/lookahead/healthcheck.sh"]
-# Bypass the upstream writable configuration/envsubst entrypoint.
+# Start NGINX directly; runtime configuration remains read-only.
 ENTRYPOINT ["nginx", "-g", "daemon off;"]

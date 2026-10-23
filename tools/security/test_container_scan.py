@@ -23,6 +23,15 @@ def config_report():
 
 
 class ContainerGateTests(unittest.TestCase):
+    def test_runtime_configuration_copies_are_in_build_context(self):
+        dockerfile = (scan.ROOT / 'Dockerfile').read_text()
+        allowlist = (scan.ROOT / '.dockerignore').read_text().splitlines()
+        for config in ('nginx.conf', 'nginx-lower-cost-dev.conf', 'healthcheck.sh'):
+            source = 'deployment/container/' + config
+            self.assertIn(source, dockerfile)
+            self.assertIn('!' + source, allowlist)
+            self.assertTrue((scan.ROOT / source).is_file())
+
     def test_failure_diagnostics_do_not_publish_untrusted_error_text(self):
         for reason in scan.SAFE_FAILURE_REASONS:
             self.assertIn(reason, scan.failure_message(ValueError(reason)))
@@ -60,7 +69,7 @@ class ContainerGateTests(unittest.TestCase):
         with self.assertRaises(ValueError): scan.report_gate(report, 'config')
 
     def test_pinned_bases_include_platform_qualified_builder(self):
-        valid = 'FROM alpine:3.23@sha256:' + 'a' * 64 + ' AS toolchain\nFROM toolchain AS build\nFROM nginxinc/nginx-unprivileged:stable-alpine-slim@sha256:' + 'b' * 64
+        valid = 'FROM alpine:3.23@sha256:' + 'a' * 64 + ' AS toolchain\nFROM toolchain AS build\nFROM alpine:3.23@sha256:' + 'b' * 64
         self.assertEqual(2, len(scan.base_images(valid)))
         for invalid in (valid.replace('@sha256:' + 'a' * 64, ''), valid.splitlines()[0], valid.replace('alpine:3.23', 'alpine:latest'), valid.replace('FROM toolchain AS build', 'FROM node:latest AS build')):
             with self.assertRaises(ValueError): scan.base_images(invalid)
@@ -69,16 +78,38 @@ class ContainerGateTests(unittest.TestCase):
         ids = ['sha256:' + char * 64 for char in 'abc']
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            root.joinpath('Dockerfile').write_text('FROM alpine:3.23@sha256:' + 'd' * 64 + ' AS toolchain\nFROM toolchain AS build\nFROM nginxinc/nginx-unprivileged:stable-alpine-slim@sha256:' + 'e' * 64)
+            root.joinpath('Dockerfile').write_text('FROM alpine:3.23@sha256:' + 'd' * 64 + ' AS toolchain\nFROM toolchain AS build\nFROM alpine:3.23@sha256:' + 'e' * 64)
             args = ['container_scan.py', 'images', '--image', ids[0], '--toolchain', ids[1], '--builder', ids[2]]
             with patch.object(scan, 'ROOT', root), patch.object(scan.sys, 'argv', args), patch.object(scan, 'scan') as run:
                 scan.main()
                 self.assertEqual(5, run.call_count)
+                self.assertEqual(run.call_args_list[0].kwargs, {'stage': 'builderBase'})
+                self.assertEqual(run.call_args_list[1].kwargs, {'stage': 'runtimeBase'})
                 self.assertEqual(run.call_args_list[2].kwargs, {'local': True, 'stage': 'toolchainImage'})
                 self.assertEqual(run.call_args_list[3].kwargs, {'local': True, 'stage': 'builderImage'})
             with patch.object(scan.sys, 'argv', args[:-2]), patch.object(scan, 'scan') as run:
                 with self.assertRaises(ValueError): scan.main()
                 run.assert_not_called()
+
+    def test_runtime_inventory_requires_all_pinned_patched_os_packages(self):
+        versions = {'nginx': '1.28.3-r7', 'musl': '1.2.5-r24', 'musl-utils': '1.2.5-r24',
+                    'zlib': '1.3.2-r1', 'pcre2': '10.49-r0', 'libssl3': '3.5.9-r0', 'libcrypto3': '3.5.9-r0'}
+        document = {'Results': [{'Class': 'os-pkgs', 'Packages': [
+            {'Name': name, 'Version': version} for name, version in versions.items()]}]}
+        scan.stage_coverage(document, 'applicationImage')
+        for package in document['Results'][0]['Packages']:
+            original = package['Version']
+            package['Version'] = '0.0.0-r0'
+            with self.subTest(package=package['Name']), self.assertRaisesRegex(ValueError, 'runtime package coverage'):
+                scan.stage_coverage(document, 'applicationImage')
+            package['Version'] = original
+        document['Results'][0]['Class'] = 'lang-pkgs'
+        with self.assertRaisesRegex(ValueError, 'runtime package coverage'):
+            scan.stage_coverage(document, 'applicationImage')
+        with tempfile.TemporaryDirectory() as directory, patch.object(scan, 'ROOT', Path(directory)):
+            Path(directory, 'Dockerfile').write_text('FROM alpine:3.23\nRUN apk add nginx')
+            with self.assertRaisesRegex(ValueError, 'Pinned runtime package inventory'):
+                scan.stage_coverage(document, 'applicationImage')
 
     def test_stage_inventory_requires_node_npm_cli_and_target_application_packages(self):
         document = {'Results': [{'Packages': [{'Name': 'nodejs', 'Version': '24.18.1-r0'}, {'Name': 'npm', 'Version': '11.17.0', 'FilePath': 'opt/npm/package.json'}]}]}
@@ -133,7 +164,13 @@ class ContainerGateTests(unittest.TestCase):
                 self.assertIn('--input', command)
                 self.assertNotIn('--image-src', command)
                 self.assertEqual('image.tar', Path(command[command.index('--input') + 1]).name)
-                Path(command[command.index('--output') + 1]).write_text(scan.json.dumps(image_report()))
+                report = image_report()
+                report['Results'][0]['Packages'] = [
+                    {'Name': name, 'Version': version} for name, version in {
+                        'nginx': '1.28.3-r7', 'musl': '1.2.5-r24', 'musl-utils': '1.2.5-r24',
+                        'zlib': '1.3.2-r1', 'pcre2': '10.49-r0', 'libssl3': '3.5.9-r0',
+                        'libcrypto3': '3.5.9-r0'}.items()]
+                Path(command[command.index('--output') + 1]).write_text(scan.json.dumps(report))
                 return subprocess.CompletedProcess(command, 0, b'', b'')
             with patch.object(scan.subprocess, 'run', side_effect=run), patch.object(scan, 'export_local_image') as export, patch.object(scan, 'archive_config_id', return_value='sha256:' + 'c' * 64):
                 scan.scan('image', 'sha256:' + 'a' * 64, local=True)
