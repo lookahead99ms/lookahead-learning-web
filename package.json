@@ -92,13 +92,13 @@
     "@angular/build": "^22.2.0",
     "@angular/cli": "^22.2.2",
     "@angular/compiler-cli": "^22.2.0",
-    "@vitest/coverage-v8": "4.1.11",
+    "@vitest/coverage-v8": "4.1.12",
     "esbuild": "0.28.2",
     "jsdom": "^28.0.0",
     "marked": "18.0.11",
     "prettier": "^3.8.1",
     "typescript": "~6.0.2",
-    "vitest": "^4.0.8"
+    "vitest": "^4.1.12"
   },
   "allowScripts": {
     "@parcel/watcher@2.6.0": true,
