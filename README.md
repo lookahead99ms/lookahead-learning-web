@@ -1498,11 +1498,13 @@ against newly published advisories.
 The test-tool lockfile uses Undici 7.30.1 through jsdom, fast-uri 3.1.9,
 and matching Vitest/coverage-v8 4.1.12 packages. These compatible patches fix
 the reported HTTP-parser, URI-normalization and mock-registration advisories.
-`npm run test:security-gates` includes a loopback regression for
+`npm run test:security-runtime`, run after `npm ci`, includes a loopback regression for
 [GHSA-xjj6-f33q-929c](https://github.com/nodejs/undici/security/advisories/GHSA-xjj6-f33q-929c):
 a truncated response with excessive content encodings must reject the request
 without terminating the caller. The dependency scan still checks the complete
 lockfile and blocks High/Critical findings or incomplete scan coverage.
+The earlier `test:security-gates` suite uses synthetic fixtures and Node built-ins
+only, so CI can check the gates before installing project dependencies.
 
 ### Calendar image releases
 

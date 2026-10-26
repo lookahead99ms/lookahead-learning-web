@@ -124,6 +124,9 @@ jobs:
       - name: Install dependencies
         run: npm ci --include=prod --include=dev --include=optional --include=peer --no-audit --no-fund
 
+      - name: Test installed dependency security regressions
+        run: npm run test:security-runtime
+
       - name: Verify private-content boundary
         run: npm run validate:source-boundary
 

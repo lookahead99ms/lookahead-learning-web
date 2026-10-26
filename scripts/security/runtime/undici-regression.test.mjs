@@ -25,7 +25,7 @@ test('excessive content encodings and a truncated response cannot crash the fetc
     console.log('rejection contained');
   `;
   const result = spawnSync(process.execPath, ['--input-type=module', '-e', script], {
-    cwd: new URL('../../', import.meta.url), encoding: 'utf8', timeout: 10_000,
+    cwd: new URL('../../../', import.meta.url), encoding: 'utf8', timeout: 10_000,
   });
   assert.ifError(result.error);
   assert.equal(result.signal, null);

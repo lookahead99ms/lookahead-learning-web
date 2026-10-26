@@ -62,7 +62,8 @@
     "test:order": "ng test --watch=false --runner-config=vitest.stress.config.ts",
     "test:coverage": "ng test --watch=false --coverage && node scripts/container/check-runtime-coverage.mjs",
     "test:container-boundary": "node --test scripts/container/*.test.mjs",
-    "test:container": "node scripts/container/smoke.mjs"
+    "test:container": "node scripts/container/smoke.mjs",
+    "test:security-runtime": "node --test scripts/security/runtime/*.test.mjs"
   },
   "private": true,
   "packageManager": "npm@11.17.0",

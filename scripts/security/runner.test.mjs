@@ -6,6 +6,19 @@ import { delimiter, join } from 'node:path';
 import { test } from 'node:test';
 import { scanSecrets } from './scan-secrets.mjs';
 
+test('CI runs synthetic gates before installation and dependency regressions afterwards', () => {
+  const workflow = readFileSync(new URL('../../.github/workflows/ci.yml', import.meta.url), 'utf8');
+  const manifest = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf8'));
+  const synthetic = workflow.indexOf('run: npm run test:security-gates');
+  const install = workflow.indexOf('run: npm ci ');
+  const runtime = workflow.indexOf('run: npm run test:security-runtime');
+  const coverage = workflow.indexOf('run: npm run test:coverage');
+  assert.ok(synthetic >= 0 && synthetic < install, 'Synthetic gates must run before installation');
+  assert.ok(install < runtime && runtime < coverage, 'Dependency regressions must run after installation and before app tests');
+  assert.equal(manifest.scripts['test:security-gates'], 'node --test scripts/security/*.test.mjs');
+  assert.equal(manifest.scripts['test:security-runtime'], 'node --test scripts/security/runtime/*.test.mjs');
+});
+
 test('a failed dependency scan replaces stale successful evidence and exits nonzero', () => {
   const directory = mkdtempSync(join(tmpdir(), 'dependency-failure-'));
   try {
