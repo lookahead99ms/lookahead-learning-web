@@ -1494,3 +1494,16 @@ override when Angular supplies a patched compatible Vite release, then rerun
 `npm run test:coverage`, and `npm run build:ci`. The live audit covers development
 as well as production dependencies; a historical clean scan is not a guarantee
 against newly published advisories.
+
+### Calendar image releases
+
+DEV image releases use one shared `lookahead-dev-ecr` repository and `web-vyyyy.mm.dd.hh.<00-nn>` tags. The source Git tag omits `web-`. UTC counters start at `00` each hour independently per app. Run `python3 tools/release/release_version.py next --app web` to suggest the next version from remote Git tags; this does not create or reserve a tag. Publish the exact source tag through the user-owned Git cycle, then supply it as `release-version` to the manual release workflow on main. CI verifies the tag/source before building and retains app/version/source/config/archive/manifest provenance. Deployment still selects an immutable digest. Prefixes organize images; IAM upload scope covers the shared repository.
+Web builds embed `release.json` from `LOOKAHEAD_RELEASE_VERSION` and `LOOKAHEAD_SOURCE_REVISION`; npm package version remains semantic. Local builds omit release metadata.
+
+
+DEV image publication uses the existing shared deployment role with an
+`image-publish-*` session name required by its trust policy. The role explicitly
+restricts these sessions to ECR publication operations; the workflow retains its
+additional repository-scoped session policy, existing approval and scan gates.
+Infra owns the reviewed policy update and registry provisioning. These local
+workflow changes do not install IAM policies or publish an image.

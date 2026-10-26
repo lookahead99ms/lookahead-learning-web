@@ -4,6 +4,9 @@ run-name: "${{ github.workflow }} | ${{ github.head_ref || github.ref_name }} | 
 on:
   workflow_call:
     inputs:
+      release-version:
+        type: string
+        default: ''
       export-image:
         type: boolean
         default: false
@@ -25,6 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 55
     env:
+      RELEASE_VERSION: ${{ inputs.release-version }}
       CODEQL_ACTION_DIFF_INFORMED_QUERIES: 'false'
       CODEQL_ACTION_OVERLAY_ANALYSIS: 'false'
 
@@ -71,8 +75,31 @@ jobs:
       - name: Verify dependency vulnerabilities and SBOM coverage
         run: npm run security:dependencies
 
+      - name: Set up Python for release verification
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.14'
+
+      - name: Install hash-locked release coverage tooling
+        run: |
+          python -m pip install --only-binary=:all: --require-hashes -r tools/release/requirements-coverage.txt
+
       - name: Verify immutable image binding
-        run: python3 -m unittest discover -s tools/release -p 'test_*.py'
+        env:
+          COVERAGE_FILE: ${{ runner.temp }}/web-release.coverage
+        run: |
+          python -m coverage run --source=tools/release -m unittest discover -s tools/release -p 'test_*.py'
+          python -m coverage report --include='*/release_version.py,*/image.py,*/registry.py' --fail-under=85
+
+      - name: Verify Git release tag before building
+        if: inputs.export-image == true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 tools/release/release_version.py check --app web
+
+      - name: Verify web release metadata
+        run: node --test --experimental-test-coverage --test-coverage-lines=85 --test-coverage-include=scripts/release-metadata.mjs scripts/release-metadata.test.mjs
+
 
       - name: Initialize JavaScript and TypeScript analysis
         uses: github/codeql-action/init@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4
@@ -132,9 +159,9 @@ jobs:
 
       - name: Build and verify protected Web container locally
         run: |
-          docker build --platform linux/amd64 --iidfile /tmp/lookahead-web-image-id .
-          docker build --platform linux/amd64 --target toolchain --iidfile /tmp/lookahead-web-toolchain-id .
-          docker build --platform linux/amd64 --target build --iidfile /tmp/lookahead-web-builder-id .
+          docker build --build-arg "RELEASE_VERSION=${RELEASE_VERSION:-dev}" --build-arg "SOURCE_REVISION=$GITHUB_SHA" --platform linux/amd64 --iidfile /tmp/lookahead-web-image-id .
+          docker build --build-arg "RELEASE_VERSION=${RELEASE_VERSION:-dev}" --build-arg "SOURCE_REVISION=$GITHUB_SHA" --platform linux/amd64 --target toolchain --iidfile /tmp/lookahead-web-toolchain-id .
+          docker build --build-arg "RELEASE_VERSION=${RELEASE_VERSION:-dev}" --build-arg "SOURCE_REVISION=$GITHUB_SHA" --platform linux/amd64 --target build --iidfile /tmp/lookahead-web-builder-id .
           npm run test:container -- "$(cat /tmp/lookahead-web-image-id)"
 
       - name: Scan pinned OS bases and exact toolchain, builder and Web images
