@@ -3,7 +3,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { isDeepStrictEqual } from 'node:util';
-export const fixedDependencies = Object.freeze({ 'brace-expansion': '5.0.12', 'http-cache-semantics': '4.3.0', 'ip-address': '10.7.3', tar: '$tar', undici: '6.29.0' });
+export const fixedDependencies = Object.freeze({ 'brace-expansion': '5.0.12', 'http-cache-semantics': '4.3.0', 'ip-address': '10.7.4', tar: '$tar', undici: '6.29.1' });
 export function prepareNpmCli(source, lock) {
   if (source.name !== 'npm' || source.version !== '11.17.0' || lock.name !== 'npm' || lock.version !== '11.17.0' || lock.lockfileVersion !== 3) throw new Error('Reviewed npm source and CLI lock required');
   const manifest = structuredClone(source);

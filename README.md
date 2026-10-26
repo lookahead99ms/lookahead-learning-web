@@ -1249,7 +1249,7 @@ not deployed Cognito or RDS connectivity.
 ### Protected Web container
 
 The Dockerfile builds `production,protected` Angular with a digest-pinned Alpine
-3.23 base, exact Node24 distribution package and npm11.17.0 CLI source verified
+3.23 base, exact Node24 package `nodejs=24.22.1-r0` and npm11.17.0 CLI source verified
 against its SHA256 archive checksum. The CLI production dependencies are rebuilt
 from the reviewed `deployment/container/npm-cli-lock.json`, with real maintained
 fixes for brace expansion, HTTP cache semantics, IP parsing, tar and Undici.
@@ -1259,6 +1259,11 @@ retains its package manifest and exact SHA512 archive integrity. The verified
 bootstrap is temporary within one build instruction; it is removed after the
 fixed frozen CLI graph is installed and does not persist in an image layer.
 CLI source code/version stays npm11.17.0; dependency versions are reported honestly.
+The CLI lock includes Undici6.29.1 and ip-address10.7.4 security patches.
+Alpine branch repositories replace older package revisions; a base-image digest
+does not freeze later `apk add` downloads. Keep exact package pins, review updates
+when a version is retired, and rebuild/scan the actual images. Toolchain and builder
+inventories must contain the exact Node package declared in the Dockerfile.
 
 Application installation still uses the canonical `package-lock.json` and npm CI.
 The existing esbuild0.28.2 tool is now declared directly because our presentation
