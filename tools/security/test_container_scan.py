@@ -112,14 +112,27 @@ class ContainerGateTests(unittest.TestCase):
                 scan.stage_coverage(document, 'applicationImage')
 
     def test_stage_inventory_requires_node_npm_cli_and_target_application_packages(self):
-        document = {'Results': [{'Packages': [{'Name': 'nodejs', 'Version': '24.18.1-r0'}, {'Name': 'npm', 'Version': '11.17.0', 'FilePath': 'opt/npm/package.json'}]}]}
+        document = {'Results': [{'Packages': [{'Name': 'nodejs', 'Version': '24.22.1-r0'}, {'Name': 'npm', 'Version': '11.17.0', 'FilePath': 'opt/npm/package.json'}]}]}
         with self.assertRaises(ValueError): scan.stage_coverage({'Results': [{'Packages': []}]}, 'toolchainImage')
         with tempfile.TemporaryDirectory() as directory, patch.object(scan, 'ROOT', Path(directory)):
+            dockerfile = Path(directory, 'Dockerfile')
+            dockerfile.write_text('FROM alpine:3.23 AS toolchain\nRUN apk add --no-cache nodejs=24.22.1-r0\nFROM toolchain AS build\n')
             cli_path = Path(directory, 'deployment/container'); cli_path.mkdir(parents=True)
             cli_path.joinpath('npm-cli-lock.json').write_text(scan.json.dumps({'packages': {'': {}, 'node_modules/tool': {'version': '1.0.0'}}}))
             with self.assertRaises(ValueError): scan.stage_coverage(document, 'toolchainImage')
             document['Results'][0]['Packages'].append({'Name': 'tool', 'Version': '1.0.0', 'FilePath': 'opt/npm/node_modules/tool/package.json'})
             scan.stage_coverage(document, 'toolchainImage')
+            for version in ('24.18.1-r0', '24.22.0-r0', '25.0.0-r0'):
+                document['Results'][0]['Packages'][0]['Version'] = version
+                with self.subTest(node=version), self.assertRaisesRegex(ValueError, 'toolchain package coverage'):
+                    scan.stage_coverage(document, 'toolchainImage')
+            document['Results'][0]['Packages'][0]['Version'] = '24.22.1-r0'
+            original = dockerfile.read_text()
+            for value in ('nodejs', 'nodejs=latest', 'nodejs=24.22.1-r0 nodejs=24.18.1-r0'):
+                dockerfile.write_text(original.replace('nodejs=24.22.1-r0', value))
+                with self.subTest(pin=value), self.assertRaisesRegex(ValueError, 'toolchain package coverage'):
+                    scan.stage_coverage(document, 'toolchainImage')
+            dockerfile.write_text(original)
             Path(directory, 'package-lock.json').write_text(scan.json.dumps({'packages': {'': {}, 'node_modules/@sample/a': {'version': '1.2.3'}, 'node_modules/mac-only': {'version': '1.0.0', 'os': ['darwin']}}}))
             with self.assertRaises(ValueError): scan.stage_coverage(document, 'builderImage')
             document['Results'][0]['Packages'].append({'Name': '@sample/a', 'Version': '1.2.3', 'FilePath': 'build/node_modules/@sample/a/package.json'})

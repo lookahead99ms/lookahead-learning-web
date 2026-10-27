@@ -255,7 +255,9 @@ def stage_coverage(document, stage):
             raise ValueError('Complete runtime package coverage missing')
     if stage in ('toolchainImage', 'builderImage'):
         packages = [p for r in document['Results'] for p in r.get('Packages', [])]
-        if not any(p.get('Name') == 'nodejs' and p.get('Version', '').startswith('24.') for p in packages) or not any(p.get('Name') == 'npm' and p.get('Version') == '11.17.0' and p.get('FilePath') == 'opt/npm/package.json' for p in packages):
+        toolchain = (ROOT / 'Dockerfile').read_text().split('FROM toolchain AS build', 1)[0]
+        node_versions = re.findall(r'\bnodejs=(24\.\d+\.\d+-r\d+)\b', toolchain)
+        if len(node_versions) != 1 or not any(p.get('Name') == 'nodejs' and p.get('Version') == node_versions[0] for p in packages) or not any(p.get('Name') == 'npm' and p.get('Version') == '11.17.0' and p.get('FilePath') == 'opt/npm/package.json' for p in packages):
             raise ValueError('Complete toolchain package coverage missing')
         cli = json.loads((ROOT / 'deployment/container/npm-cli-lock.json').read_text())['packages']
         expected_cli = {(name.rsplit('node_modules/', 1)[-1], item['version']) for name, item in cli.items() if name}

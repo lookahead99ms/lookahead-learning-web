@@ -1,4 +1,5 @@
 import './build-code-presentation.mjs';
+import { writeReleaseMetadata } from './release-metadata.mjs';
 import { spawn } from 'node:child_process';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -34,6 +35,7 @@ child.once('exit', async (code, signal) => {
   if (code !== 0 || process.argv.includes('--watch')) return;
   // DLV-941 phase 2: one HTML file per public page, with its own tags and a plain summary.
   try {
+    await writeReleaseMetadata(resolve(repositoryRoot, 'dist/lookahead-learning-web/browser'));
     await writeRouteSnapshots({ protectedBuild: isProtectedBuild(process.argv.slice(2)) });
   } catch (error) {
     console.error(error instanceof Error ? error.message : error);

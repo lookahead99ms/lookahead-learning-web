@@ -1249,7 +1249,7 @@ not deployed Cognito or RDS connectivity.
 ### Protected Web container
 
 The Dockerfile builds `production,protected` Angular with a digest-pinned Alpine
-3.23 base, exact Node24 distribution package and npm11.17.0 CLI source verified
+3.23 base, exact Node24 package `nodejs=24.22.1-r0` and npm11.17.0 CLI source verified
 against its SHA256 archive checksum. The CLI production dependencies are rebuilt
 from the reviewed `deployment/container/npm-cli-lock.json`, with real maintained
 fixes for brace expansion, HTTP cache semantics, IP parsing, tar and Undici.
@@ -1259,6 +1259,11 @@ retains its package manifest and exact SHA512 archive integrity. The verified
 bootstrap is temporary within one build instruction; it is removed after the
 fixed frozen CLI graph is installed and does not persist in an image layer.
 CLI source code/version stays npm11.17.0; dependency versions are reported honestly.
+The CLI lock includes Undici6.29.1 and ip-address10.7.4 security patches.
+Alpine branch repositories replace older package revisions; a base-image digest
+does not freeze later `apk add` downloads. Keep exact package pins, review updates
+when a version is retired, and rebuild/scan the actual images. Toolchain and builder
+inventories must contain the exact Node package declared in the Dockerfile.
 
 Application installation still uses the canonical `package-lock.json` and npm CI.
 The existing esbuild0.28.2 tool is now declared directly because our presentation
@@ -1494,3 +1499,27 @@ override when Angular supplies a patched compatible Vite release, then rerun
 `npm run test:coverage`, and `npm run build:ci`. The live audit covers development
 as well as production dependencies; a historical clean scan is not a guarantee
 against newly published advisories.
+
+The test-tool lockfile uses Undici 7.30.1 through jsdom, fast-uri 3.1.9,
+and matching Vitest/coverage-v8 4.1.12 packages. These compatible patches fix
+the reported HTTP-parser, URI-normalization and mock-registration advisories.
+`npm run test:security-runtime`, run after `npm ci`, includes a loopback regression for
+[GHSA-xjj6-f33q-929c](https://github.com/nodejs/undici/security/advisories/GHSA-xjj6-f33q-929c):
+a truncated response with excessive content encodings must reject the request
+without terminating the caller. The dependency scan still checks the complete
+lockfile and blocks High/Critical findings or incomplete scan coverage.
+The earlier `test:security-gates` suite uses synthetic fixtures and Node built-ins
+only, so CI can check the gates before installing project dependencies.
+
+### Calendar image releases
+
+DEV image releases use one shared `lookahead-dev-ecr` repository and `web-vyyyy.mm.dd.hh.<00-nn>` tags. The source Git tag omits `web-`. UTC counters start at `00` each hour independently per app. Run `python3 tools/release/release_version.py next --app web` to suggest the next version from remote Git tags; this does not create or reserve a tag. Publish the exact source tag through the user-owned Git cycle, then supply it as `release-version` to the manual release workflow on main. CI verifies the tag/source before building and retains app/version/source/config/archive/manifest provenance. Deployment still selects an immutable digest. Prefixes organize images; IAM upload scope covers the shared repository.
+Web builds embed `release.json` from `LOOKAHEAD_RELEASE_VERSION` and `LOOKAHEAD_SOURCE_REVISION`; npm package version remains semantic. Local builds omit release metadata.
+
+
+DEV image publication uses the existing shared deployment role with an
+`image-publish-*` session name required by its trust policy. The role explicitly
+restricts these sessions to ECR publication operations; the workflow retains its
+additional repository-scoped session policy, existing approval and scan gates.
+Infra owns the reviewed policy update and registry provisioning. These local
+workflow changes do not install IAM policies or publish an image.
