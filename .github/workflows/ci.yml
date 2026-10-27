@@ -10,6 +10,11 @@ on:
       export-image:
         type: boolean
         default: false
+      source-sha:
+        type: string
+        required: false
+        default: ''
+        description: Tag-resolved application commit to build; empty builds the triggering commit
   push:
     branches: [main]
   pull_request:
@@ -29,15 +34,21 @@ jobs:
     timeout-minutes: 55
     env:
       RELEASE_VERSION: ${{ inputs.release-version }}
+      SOURCE_SHA: ${{ inputs.source-sha || github.sha }}
       CODEQL_ACTION_DIFF_INFORMED_QUERIES: 'false'
       CODEQL_ACTION_OVERLAY_ANALYSIS: 'false'
 
     steps:
-      - name: Check out source
+      - name: Check out the selected source
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
+          ref: ${{ inputs.source-sha || github.sha }}
           persist-credentials: false
           fetch-depth: 0
+
+      - name: Fetch the executed workflow commit for image binding
+        if: inputs.export-image == true
+        run: git fetch --depth 1 origin "$GITHUB_SHA"
 
       - name: Set up Node.js 24
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
@@ -162,9 +173,9 @@ jobs:
 
       - name: Build and verify protected Web container locally
         run: |
-          docker build --build-arg "RELEASE_VERSION=${RELEASE_VERSION:-dev}" --build-arg "SOURCE_REVISION=$GITHUB_SHA" --platform linux/amd64 --iidfile /tmp/lookahead-web-image-id .
-          docker build --build-arg "RELEASE_VERSION=${RELEASE_VERSION:-dev}" --build-arg "SOURCE_REVISION=$GITHUB_SHA" --platform linux/amd64 --target toolchain --iidfile /tmp/lookahead-web-toolchain-id .
-          docker build --build-arg "RELEASE_VERSION=${RELEASE_VERSION:-dev}" --build-arg "SOURCE_REVISION=$GITHUB_SHA" --platform linux/amd64 --target build --iidfile /tmp/lookahead-web-builder-id .
+          docker build --build-arg "RELEASE_VERSION=${RELEASE_VERSION:-dev}" --build-arg "SOURCE_REVISION=$SOURCE_SHA" --platform linux/amd64 --iidfile /tmp/lookahead-web-image-id .
+          docker build --build-arg "RELEASE_VERSION=${RELEASE_VERSION:-dev}" --build-arg "SOURCE_REVISION=$SOURCE_SHA" --platform linux/amd64 --target toolchain --iidfile /tmp/lookahead-web-toolchain-id .
+          docker build --build-arg "RELEASE_VERSION=${RELEASE_VERSION:-dev}" --build-arg "SOURCE_REVISION=$SOURCE_SHA" --platform linux/amd64 --target build --iidfile /tmp/lookahead-web-builder-id .
           npm run test:container -- "$(cat /tmp/lookahead-web-image-id)"
 
       - name: Scan pinned OS bases and exact toolchain, builder and Web images
@@ -178,7 +189,7 @@ jobs:
         if: inputs.export-image == true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: release-image-${{ github.sha }}
+          name: release-image-${{ inputs.source-sha || github.sha }}
           path: ${{ runner.temp }}/release-image/
           retention-days: 1
           if-no-files-found: error
