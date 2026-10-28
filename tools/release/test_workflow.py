@@ -64,6 +64,9 @@ class ReleaseWorkflowTests(unittest.TestCase):
         ci = (root / '.github/workflows/ci.yml').read_text()
         self.assertTagDrivenSource(workflow, ci, 'web')
         self.assertIn('COVERAGE_FILE: ${{ runner.temp }}/web-release.coverage', ci)
+        # The called CI shares the caller's github.ref, so a group without the workflow name let the pipeline's verify cancel the
+        # plain CI run on the same push (Web run #4, 2026-10-28). Gateway and Domain already key the group by workflow name.
+        self.assertIn('group: learning-web-ci-${{ github.workflow }}-${{ github.ref }}', ci)
         self.assertIn('--fail-under=85', ci)
         sast = 'Enforce CodeQL severity'
         self.assertLess(ci.index(sast), ci.index('Export the exact scanned release image'))
