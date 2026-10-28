@@ -11,7 +11,8 @@ export function releaseMetadata(env = process.env) {
   if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 13) !== `${match[1]}-${match[2]}-${match[3]}T${match[4]}`) {
     throw new Error('Invalid release UTC date');
   }
-  return { app: 'web', releaseVersion: version, buildVersion: version.slice(1), revision };
+  // DLV-914: releaseTag is the calendar Git tag the pipeline cut (same value as releaseVersion, named for operators).
+  return { app: 'web', releaseVersion: version, releaseTag: version, buildVersion: version.slice(1), revision };
 }
 
 export async function writeReleaseMetadata(directory, env = process.env) {

@@ -9,7 +9,11 @@ test('embeds exact release/source without touching npm semantic version', async 
   const dir = await mkdtemp(join(tmpdir(), 'web-release-'));
   try {
     await writeReleaseMetadata(dir, env);
-    assert.deepEqual(JSON.parse(await readFile(join(dir, 'release.json'))), { app: 'web', releaseVersion: env.LOOKAHEAD_RELEASE_VERSION, buildVersion: '2026.10.26.20.00', revision: env.LOOKAHEAD_SOURCE_REVISION });
+    const served = JSON.parse(await readFile(join(dir, 'release.json')));
+    assert.deepEqual(served, { app: 'web', releaseVersion: env.LOOKAHEAD_RELEASE_VERSION, releaseTag: env.LOOKAHEAD_RELEASE_VERSION, buildVersion: '2026.10.26.20.00', revision: env.LOOKAHEAD_SOURCE_REVISION });
+    // The served file carries the full calendar tag (with the v) the merge-driven pipeline cut.
+    assert.match(served.releaseTag, /^v\d{4}\.\d{2}\.\d{2}\.\d{2}\.(?:\d{2}|[1-9]\d{2,})$/);
+    assert.equal(served.releaseTag, `v${served.buildVersion}`);
     await assert.rejects(writeReleaseMetadata(dir, env));
   } finally { await rm(dir, { recursive: true }); }
 });

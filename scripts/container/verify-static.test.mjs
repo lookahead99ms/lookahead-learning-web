@@ -50,3 +50,16 @@ test('rejects a file replaced with a symlink immediately before opening', () => 
   try { await assert.rejects(verifyStatic(root), { code: 'ELOOP' }); }
   finally { replacement.mock.restore(); }
 }));
+
+test('a served release.json must carry the calendar release tag bound to its source', () => fixture(async root => {
+  const release = { app: 'web', releaseVersion: 'v2026.10.27.14.01', releaseTag: 'v2026.10.27.14.01', buildVersion: '2026.10.27.14.01', revision: 'a'.repeat(40) };
+  await writeFile(join(root, 'release.json'), JSON.stringify(release));
+  assert.equal((await verifyStatic(root)).fileCount, 3);
+  for (const broken of [{ ...release, releaseTag: 'v2026.10.27.14.02' }, { ...release, buildVersion: '1.0.0' }, { ...release, app: 'domain' },
+    { ...release, revision: 'main' }, { ...release, releaseVersion: 'latest', releaseTag: 'latest' }, [release]]) {
+    await writeFile(join(root, 'release.json'), JSON.stringify(broken));
+    await assert.rejects(verifyStatic(root), /release\.json/);
+  }
+  await writeFile(join(root, 'release.json'), '{not json');
+  await assert.rejects(verifyStatic(root), /release\.json is not JSON/);
+}));

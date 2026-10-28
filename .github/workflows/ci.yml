@@ -100,7 +100,7 @@ jobs:
           COVERAGE_FILE: ${{ runner.temp }}/web-release.coverage
         run: |
           python -m coverage run --source=tools/release -m unittest discover -s tools/release -p 'test_*.py'
-          python -m coverage report --include='*/release_version.py,*/image.py,*/registry.py' --fail-under=85
+          python -m coverage report --include='*/release_version.py,*/pipeline_tag.py,*/image.py,*/registry.py' --fail-under=85
 
       - name: Verify Git release tag before building
         if: inputs.export-image == true
