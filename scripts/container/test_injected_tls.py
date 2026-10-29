@@ -1,0 +1,99 @@
+"""Opt-in real Web image tests with disposable synthetic certificates, no AWS calls."""
+import json
+import os
+from pathlib import Path
+import subprocess
+import tempfile
+import time
+import unittest
+
+IMAGE = os.environ.get('WEB_TLS_TEST_IMAGE')
+
+
+@unittest.skipUnless(IMAGE, 'Set WEB_TLS_TEST_IMAGE to a locally built immutable image')
+class WebInjectedTlsTests(unittest.TestCase):
+    def setUp(self):
+        self.scratch=tempfile.TemporaryDirectory();self.root=Path(self.scratch.name)
+        self.addCleanup(self.scratch.cleanup)
+        self.openssl('req','-x509','-newkey','rsa:2048','-nodes','-keyout','ca.key','-out','ca.pem','-days','5','-subj','/CN=Synthetic root','-addext','basicConstraints=critical,CA:TRUE')
+        self.openssl('genpkey','-algorithm','RSA','-pkeyopt','rsa_keygen_bits:2048','-out','server.key')
+        self.leaf()
+        self.image=json.loads(self.docker('image','inspect',IMAGE).stdout)[0]['Id']
+
+    def openssl(self,*arguments):
+        subprocess.run(['openssl',*arguments],cwd=self.root,check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+
+    def leaf(self, name='web-blue.lookahead-dev.internal', purpose='serverAuth', period='valid'):
+        self.openssl('req','-new','-key','server.key','-out','server.csr','-subj','/CN='+name)
+        (self.root/'extensions').write_text('basicConstraints=critical,CA:FALSE\nsubjectAltName=DNS:'+name+'\nextendedKeyUsage='+purpose+'\n')
+        if period in ('expired', 'future'):
+            # `ca` supports explicit validity dates on CI's OpenSSL 3.0 too.
+            (self.root/'index').write_text('')
+            (self.root/'serial').write_text('01\n')
+            (self.root/'ca.conf').write_text(
+                '[ca]\ndefault_ca=fixture\n[fixture]\ndatabase=index\nserial=serial\n'
+                'new_certs_dir=.\ncertificate=ca.pem\nprivate_key=ca.key\n'
+                'default_md=sha256\npolicy=subject\n[subject]\ncommonName=supplied\n')
+            start, end = ('20000101000000Z', '20010101000000Z') if period == 'expired' else ('20990101000000Z', '20990103000000Z')
+            self.openssl('ca','-batch','-notext','-config','ca.conf','-in','server.csr',
+                         '-out','server.pem','-extfile','extensions','-startdate',start,'-enddate',end)
+        else:
+            self.openssl('x509','-req','-in','server.csr','-CA','ca.pem','-CAkey','ca.key',
+                         '-CAcreateserial','-out','server.pem','-extfile','extensions',
+                         '-days','1' if period == 'short' else '3')
+
+    def docker(self,*arguments,environment=None,check=True):
+        return subprocess.run(['docker',*arguments],env=environment,text=True,capture_output=True,check=check,timeout=60)
+
+    def environment(self):
+        return {**os.environ,'LOOKAHEAD_TLS_SCHEMA':'lookahead-tls/v1','LOOKAHEAD_TLS_SERVER_NAME':'web-blue.lookahead-dev.internal',
+            'LOOKAHEAD_TLS_SERVER_CERTIFICATE':(self.root/'server.pem').read_text(),'LOOKAHEAD_TLS_SERVER_KEY':(self.root/'server.key').read_text(),
+            'LOOKAHEAD_TLS_TRUST':(self.root/'ca.pem').read_text()}
+
+    def start(self,environment):
+        args=['run','--detach','--read-only','--network','none','--cap-drop','ALL','--security-opt','no-new-privileges',
+              '--tmpfs','/tmp:rw,noexec,nosuid,size=16m','--entrypoint','/opt/lookahead/start-tls.sh']
+        for name in sorted(environment):
+            if name.startswith('LOOKAHEAD_TLS_'):args.extend(['--env',name])
+        container=self.docker(*args,self.image,environment=environment).stdout.strip()
+        self.addCleanup(lambda:self.docker('rm','--force','--volumes',container))
+        return container
+
+    def test_valid_unprivileged_read_only_image_starts_nginx_with_protected_files(self):
+        container=self.start(self.environment())
+        for _ in range(100):
+            result=self.docker('exec',container,'wget','-qO-','http://127.0.0.1:8081/health',check=False)
+            if result.returncode==0:break
+            state=json.loads(self.docker('inspect',container).stdout)[0]['State']
+            self.assertTrue(state['Running'],self.docker('logs',container).stdout)
+            time.sleep(0.1)
+        self.assertEqual(json.loads(result.stdout),{'status':'UP'})
+        self.assertEqual(self.docker('exec',container,'stat','-c','%u:%g:%a','/run/credentials/server.key').stdout.strip(),'10001:10001:400')
+        self.assertEqual(self.docker('exec',container,'stat','-c','%a','/run/credentials').stdout.strip(),'700')
+        self.assertNotEqual(self.docker('exec',container,'touch','/etc/unwanted-write',check=False).returncode,0)
+        logs=self.docker('logs',container).stdout
+        self.assertIn('Web TLS validation succeeded',logs);self.assertNotIn('BEGIN',logs)
+        # Report only boolean success; never print the process environment.
+        self.assertEqual(self.docker('exec',container,'sh','-c',"if tr '\\0' '\\n' < /proc/1/environ | grep -q '^LOOKAHEAD_TLS_'; then exit 1; fi").returncode,0)
+
+    def test_invalid_material_never_starts_nginx_or_logs_secrets(self):
+        for case in ['missing','wrong-host','purpose','key','trust','short','expired','future','schema']:
+            with self.subTest(case=case):
+                self.leaf(purpose='clientAuth' if case=='purpose' else 'serverAuth',period=case if case in ['short','expired','future'] else 'valid')
+                environment=self.environment()
+                if case=='missing':environment.pop('LOOKAHEAD_TLS_SERVER_KEY')
+                if case=='wrong-host':environment['LOOKAHEAD_TLS_SERVER_NAME']='web-green.lookahead-dev.internal'
+                if case=='key':environment['LOOKAHEAD_TLS_SERVER_KEY']=(self.root/'ca.key').read_text()
+                if case=='trust':environment['LOOKAHEAD_TLS_TRUST']=(self.root/'server.pem').read_text()
+                if case=='schema':environment['LOOKAHEAD_TLS_SCHEMA']='invalid'
+                container=self.start(environment)
+                self.assertEqual(self.docker('wait',container).stdout.strip(),'1')
+                logs=self.docker('logs',container);output=logs.stdout+logs.stderr
+                self.assertIn('Web TLS validation failed; startup denied',output)
+                self.assertNotIn('BEGIN',output);self.assertNotIn('validation succeeded',output)
+
+
+if __name__ == '__main__':
+    if not IMAGE:
+        raise SystemExit('WEB_TLS_TEST_IMAGE must select the locally built image')
+    unittest.main()

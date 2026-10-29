@@ -177,6 +177,7 @@ jobs:
           docker build --build-arg "RELEASE_VERSION=${RELEASE_VERSION:-dev}" --build-arg "SOURCE_REVISION=$SOURCE_SHA" --platform linux/amd64 --target toolchain --iidfile /tmp/lookahead-web-toolchain-id .
           docker build --build-arg "RELEASE_VERSION=${RELEASE_VERSION:-dev}" --build-arg "SOURCE_REVISION=$SOURCE_SHA" --platform linux/amd64 --target build --iidfile /tmp/lookahead-web-builder-id .
           npm run test:container -- "$(cat /tmp/lookahead-web-image-id)"
+          WEB_TLS_TEST_IMAGE="$(cat /tmp/lookahead-web-image-id)" python3 scripts/container/test_injected_tls.py -v
 
       - name: Scan pinned OS bases and exact toolchain, builder and Web images
         run: python3 tools/security/container_scan.py images --toolchain "$(cat /tmp/lookahead-web-toolchain-id)" --builder "$(cat /tmp/lookahead-web-builder-id)" --image "$(cat /tmp/lookahead-web-image-id)"

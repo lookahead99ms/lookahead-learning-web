@@ -25,6 +25,7 @@
 !deployment/container/nginx.conf
 !deployment/container/nginx-lower-cost-dev.conf
 !deployment/container/healthcheck.sh
+!deployment/container/start-tls.sh
 !.dockerignore
 scripts/data/
 src/**/*.js
