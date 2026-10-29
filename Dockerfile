@@ -40,12 +40,15 @@ LABEL org.opencontainers.image.version="$RELEASE_VERSION" \
       org.opencontainers.image.revision="$SOURCE_REVISION" \
       com.lookahead.app="web"
 RUN apk add --no-cache nginx=1.28.3-r7 musl=1.2.5-r24 musl-utils=1.2.5-r24 \
-      zlib=1.3.2-r1 pcre2=10.49-r0 libssl3=3.5.9-r0 libcrypto3=3.5.9-r0 \
+      zlib=1.3.2-r1 pcre2=10.49-r0 libssl3=3.5.9-r0 libcrypto3=3.5.9-r0 openssl=3.5.9-r0 \
     && addgroup -S -g 10001 web \
     && adduser -S -D -H -u 10001 -G web web \
-    && mkdir -p /usr/share/nginx/html
+    && mkdir -p /usr/share/nginx/html /run/credentials \
+    && chown 10001:10001 /run/credentials \
+    && chmod 0700 /run/credentials
 COPY deployment/container/nginx.conf /etc/nginx/nginx.conf
 COPY deployment/container/nginx-lower-cost-dev.conf /etc/nginx/nginx-lower-cost-dev.conf
+COPY --chmod=0555 deployment/container/start-tls.sh /opt/lookahead/start-tls.sh
 COPY --chmod=0555 deployment/container/healthcheck.sh /opt/lookahead/healthcheck.sh
 COPY --from=build /build/dist/lookahead-learning-web/browser /usr/share/nginx/html
 USER 10001:10001

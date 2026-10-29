@@ -35,7 +35,7 @@ function fixture({ unhealthy = false, fallbackPath, privateFile = false } = {}) 
     }
     assert.equal(args[0], 'exec');
     if (args[2] === 'id') return ok('10001\n');
-    if (args[2] === 'find') return ok('/opt/lookahead/healthcheck.sh\n');
+    if (args[2] === 'find') return ok('/opt/lookahead/start-tls.sh\n/opt/lookahead/healthcheck.sh\n');
     if (args[2] === 'sh') return ok('');
     assert.equal(args[2], 'wget');
     const path = new URL(args.at(-1)).pathname;

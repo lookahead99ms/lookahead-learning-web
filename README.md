@@ -1401,6 +1401,15 @@ ordinary container configuration remains separate. The protected frontend can
 show `/dev/session` notices and a CSRF-protected Leave DEV action; environments
 without that endpoint show no DEV controls.
 
+Infra selects `/opt/lookahead/start-tls.sh` for this mode. ECS injects the versioned
+`LOOKAHEAD_TLS_{SCHEMA,SERVER_CERTIFICATE,SERVER_KEY,TRUST}` fields and public
+`LOOKAHEAD_TLS_SERVER_NAME`. Startup validates the exact server identity, validity,
+one-day remaining lifetime, EKU, CA chain and matching PKCS8 key, then writes mode
+0400 files on the dedicated UID-10001-owned `/run/credentials` mount. The root
+filesystem remains read-only; `/tmp` and that mount are explicitly writable.
+Secret variables are removed before NGINX is launched, and errors reveal no values.
+Run `WEB_TLS_TEST_IMAGE=<local-image-id> python3 scripts/container/test_injected_tls.py -v`
+after building the image; CI runs the same synthetic positive/negative checks.
 Infra owns the deployment inputs and start/stop runbook. This configuration is
 locally tested with synthetic credentials, not deployed or verified in AWS.
 
