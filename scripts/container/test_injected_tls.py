@@ -77,7 +77,7 @@ class WebInjectedTlsTests(unittest.TestCase):
         self.assertEqual(self.docker('exec',container,'sh','-c',"if tr '\\0' '\\n' < /proc/1/environ | grep -q '^LOOKAHEAD_TLS_'; then exit 1; fi").returncode,0)
 
     def test_invalid_material_never_starts_nginx_or_logs_secrets(self):
-        for case in ['missing','wrong-host','purpose','key','trust','short','expired','future','schema']:
+        for case in ['missing','wrong-host','purpose','key','trust','short','expired','future','schema','pkcs1']:
             with self.subTest(case=case):
                 self.leaf(purpose='clientAuth' if case=='purpose' else 'serverAuth',period=case if case in ['short','expired','future'] else 'valid')
                 environment=self.environment()
@@ -86,6 +86,9 @@ class WebInjectedTlsTests(unittest.TestCase):
                 if case=='key':environment['LOOKAHEAD_TLS_SERVER_KEY']=(self.root/'ca.key').read_text()
                 if case=='trust':environment['LOOKAHEAD_TLS_TRUST']=(self.root/'server.pem').read_text()
                 if case=='schema':environment['LOOKAHEAD_TLS_SCHEMA']='invalid'
+                if case=='pkcs1':
+                    self.openssl('pkey','-in','server.key','-traditional','-out','traditional.key')
+                    environment['LOOKAHEAD_TLS_SERVER_KEY']=(self.root/'traditional.key').read_text()
                 container=self.start(environment)
                 self.assertEqual(self.docker('wait',container).stdout.strip(),'1')
                 logs=self.docker('logs',container);output=logs.stdout+logs.stderr

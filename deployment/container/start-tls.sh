@@ -18,7 +18,6 @@ case "$serverName" in web-blue.lookahead-dev.internal|web-green.lookahead-dev.in
 for value in "$certificate" "$privateKey" "$trust"; do
     [ -n "$value" ] && [ "${#value}" -le 65536 ] || fail
 done
-case "$privateKey" in '-----BEGIN PRIVATE KEY-----'*) ;; *) fail ;; esac
 [ -d "$credentialDirectory" ] && [ ! -L "$credentialDirectory" ] || fail
 [ -z "$(ls -A "$credentialDirectory")" ] || fail
 chmod 700 "$credentialDirectory" || fail
@@ -31,6 +30,8 @@ printf '%s\n' "$trust" > "$stage/trust.pem"
 unset certificate privateKey trust value
 validate() {
     cd "$stage" || return 1
+    # Require a PKCS8 PEM header before OpenSSL performs key parsing and matching.
+    head -n 1 server.key | tr -d '\r' | grep -Eq '^-{5}BEGIN PRIVATE KEY-{5}$' || return 1
     # Split public chains to check every supplied certificate, including validity.
     for bundle in server trust; do
         input=server.crt
