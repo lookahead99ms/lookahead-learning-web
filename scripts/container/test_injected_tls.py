@@ -52,7 +52,10 @@ class WebInjectedTlsTests(unittest.TestCase):
 
     def start(self,environment):
         args=['run','--detach','--read-only','--network','none','--cap-drop','ALL','--security-opt','no-new-privileges',
-              '--tmpfs','/tmp:rw,noexec,nosuid,size=16m','--entrypoint','/opt/lookahead/start-tls.sh']
+              '--tmpfs','/tmp:rw,noexec,nosuid,size=16m',
+              # The ECS task definition mounts the empty `credentials` task volume here; the image root stays read-only.
+              '--tmpfs','/run/credentials:rw,noexec,nosuid,nodev,size=1m,mode=0700,uid=10001,gid=10001',
+              '--entrypoint','/opt/lookahead/start-tls.sh']
         for name in sorted(environment):
             if name.startswith('LOOKAHEAD_TLS_'):args.extend(['--env',name])
         container=self.docker(*args,self.image,environment=environment).stdout.strip()
