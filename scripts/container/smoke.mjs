@@ -161,8 +161,8 @@ export async function smokeImage(imageReference, { docker = localDocker, scratch
     copiedRoot = await mkdtemp(join(scratchRoot, 'web-image-smoke-'));
     run(['cp', `${id}:${webRoot}/.`, copiedRoot]);
     const artifacts = await verifyStatic(copiedRoot);
-    const runtimeFiles = run(['exec', id, 'find', '/opt/lookahead', '-type', 'f']).trim().split('\n');
-    assert.deepEqual(runtimeFiles, ['/opt/lookahead/healthcheck.sh'], 'Unexpected runtime helper files');
+    const runtimeFiles = run(['exec', id, 'find', '/opt/lookahead', '-type', 'f']).trim().split('\n').sort();
+    assert.deepEqual(runtimeFiles, ['/opt/lookahead/healthcheck.sh', '/opt/lookahead/start-tls.sh'], 'Unexpected runtime helper files');
     run(['exec', id, 'sh', '-c', 'for p in /workspace /build /app /src /node_modules /usr/local/lib/node_modules; do test ! -e "$p" || exit 1; done; for tool in node npm npx git; do ! command -v "$tool" >/dev/null 2>&1 || exit 1; done']);
     return { schema: 'lookahead-web-container-smoke/v1', checkedAt: new Date().toISOString(),
       buildArtifactDigest: imageReference, resolvedDockerId: image.Id, dockerHealth: 'healthy', user: 10001,

@@ -51,7 +51,6 @@ COPY deployment/container/nginx-lower-cost-dev.conf /etc/nginx/nginx-lower-cost-
 COPY --chmod=0555 deployment/container/start-tls.sh /opt/lookahead/start-tls.sh
 COPY --chmod=0555 deployment/container/healthcheck.sh /opt/lookahead/healthcheck.sh
 COPY --from=build /build/dist/lookahead-learning-web/browser /usr/share/nginx/html
-VOLUME ["/run/credentials"]
 USER 10001:10001
 WORKDIR /usr/share/nginx/html
 EXPOSE 8080
