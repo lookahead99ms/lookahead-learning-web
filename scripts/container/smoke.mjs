@@ -10,6 +10,7 @@ import { verifyStatic } from './verify-static.mjs';
 const immutableId = /^sha256:[a-f0-9]{64}$/;
 const containerId = /^[a-f0-9]{64}$/;
 const webRoot = '/usr/share/nginx/html';
+export const credentialMount = '/run/credentials';
 export const deniedPaths = [
   '/api', '/api/', '/api/auth/session', '/bff', '/bff/', '/bff/test',
   '/oauth2', '/oauth2/authorization/cognito', '/login/oauth2', '/login/oauth2/code/cognito',
@@ -86,7 +87,8 @@ export async function smokeImage(imageReference, { docker = localDocker, scratch
   const image = JSON.parse(run(['image', 'inspect', imageReference]))[0];
   assert(immutableId.test(image.Id), 'Image inspection did not resolve an immutable config ID');
   assert.match(image.Config.User ?? '', /^10001(?::10001)?$/, 'Image must default to nonroot user10001');
-  assert.equal(Object.keys(image.Config.Volumes ?? {}).length, 0, 'Image must not create anonymous volumes');
+  // DLV-914: the one declared volume is the ECS credential mount whose UID-10001 ownership the image initializes.
+  assert.deepEqual(Object.keys(image.Config.Volumes ?? {}), [credentialMount], 'Only the ECS credential mount may be a declared volume');
   assert(image.Config.Healthcheck?.Test?.length && image.Config.Healthcheck.Test[0] !== 'NONE', 'Image must define a Docker healthcheck');
   const owner = randomUUID();
   let id;
@@ -95,7 +97,9 @@ export async function smokeImage(imageReference, { docker = localDocker, scratch
     id = run(['create', '--pull=never', '--name', `lookahead-web-smoke-${owner}`, '--label', `lookahead.smoke.owner=${owner}`,
       '--network', 'none', '--read-only', '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges:true',
       '--user', '10001:10001', '--pids-limit', '64', '--memory', '128m',
-      '--tmpfs', '/tmp:rw,nosuid,nodev,noexec,size=16m,mode=1777', image.Id]).trim();
+      '--tmpfs', '/tmp:rw,nosuid,nodev,noexec,size=16m,mode=1777',
+      // Mount the declared credential volume as an owned tmpfs so no anonymous Docker volume is created.
+      '--tmpfs', `${credentialMount}:rw,nosuid,nodev,noexec,size=1m,mode=0700,uid=10001,gid=10001`, image.Id]).trim();
     assert(containerId.test(id), 'Docker returned an invalid container ID');
     run(['start', id]);
     let inspected;
@@ -115,7 +119,7 @@ export async function smokeImage(imageReference, { docker = localDocker, scratch
     assert(inspected.HostConfig.CapDrop?.includes('ALL'));
     assert(inspected.HostConfig.SecurityOpt?.includes('no-new-privileges:true'));
     assert.equal(Object.keys(inspected.HostConfig.PortBindings ?? {}).length, 0, 'No host ports may be published');
-    assert.equal(Object.keys(inspected.HostConfig.Tmpfs ?? {}).join(), '/tmp', 'Only the owned tmpfs is permitted');
+    assert.deepEqual(Object.keys(inspected.HostConfig.Tmpfs ?? {}).sort(), [credentialMount, '/tmp'], 'Only the owned tmpfs mounts are permitted');
     assert.equal(run(['exec', id, 'id', '-u']).trim(), '10001');
     assert.equal(run(['exec', id, 'id', '-g']).trim(), '10001');
 

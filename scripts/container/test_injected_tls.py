@@ -23,9 +23,10 @@ class WebInjectedTlsTests(unittest.TestCase):
     def openssl(self,*arguments):
         subprocess.run(['openssl',*arguments],cwd=self.root,check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
 
-    def leaf(self, name='web-blue.lookahead-dev.internal', purpose='serverAuth', period='valid'):
+    def leaf(self, name='web-blue.lookahead-dev.internal', purpose='serverAuth', period='valid', names=None):
         self.openssl('req','-new','-key','server.key','-out','server.csr','-subj','/CN='+name)
-        (self.root/'extensions').write_text('basicConstraints=critical,CA:FALSE\nsubjectAltName=DNS:'+name+'\nextendedKeyUsage='+purpose+'\n')
+        san=','.join('DNS:'+n for n in (names or [name]))
+        (self.root/'extensions').write_text('basicConstraints=critical,CA:FALSE\nsubjectAltName='+san+'\nextendedKeyUsage='+purpose+'\n')
         if period in ('expired', 'future'):
             # `ca` supports explicit validity dates on CI's OpenSSL 3.0 too.
             (self.root/'index').write_text('')
@@ -50,17 +51,61 @@ class WebInjectedTlsTests(unittest.TestCase):
             'LOOKAHEAD_TLS_SERVER_CERTIFICATE':(self.root/'server.pem').read_text(),'LOOKAHEAD_TLS_SERVER_KEY':(self.root/'server.key').read_text(),
             'LOOKAHEAD_TLS_TRUST':(self.root/'ca.pem').read_text()}
 
-    def start(self,environment):
+    OWNED_MOUNT=['--tmpfs','/run/credentials:rw,noexec,nosuid,nodev,size=1m,mode=0700,uid=10001,gid=10001']
+    # AWS documents a Fargate bind mount as root-owned 0755 unless the image declares the path with VOLUME.
+    ROOT_OWNED_MOUNT=['--mount','type=tmpfs,destination=/run/credentials,tmpfs-mode=0755']
+
+    def start(self,environment,mount=OWNED_MOUNT):
         args=['run','--detach','--read-only','--network','none','--cap-drop','ALL','--security-opt','no-new-privileges',
               '--tmpfs','/tmp:rw,noexec,nosuid,size=16m',
               # The ECS task definition mounts the empty `credentials` task volume here; the image root stays read-only.
-              '--tmpfs','/run/credentials:rw,noexec,nosuid,nodev,size=1m,mode=0700,uid=10001,gid=10001',
+              *mount,
               '--entrypoint','/opt/lookahead/start-tls.sh']
         for name in sorted(environment):
             if name.startswith('LOOKAHEAD_TLS_'):args.extend(['--env',name])
         container=self.docker(*args,self.image,environment=environment).stdout.strip()
         self.addCleanup(lambda:self.docker('rm','--force','--volumes',container))
         return container
+
+    def wait_for_health(self,container):
+        for _ in range(100):
+            result=self.docker('exec',container,'wget','-qO-','http://127.0.0.1:8081/health',check=False)
+            if result.returncode==0:return result
+            state=json.loads(self.docker('inspect',container).stdout)[0]['State']
+            self.assertTrue(state['Running'],self.docker('logs',container).stdout)
+            time.sleep(0.1)
+        return result
+
+    def test_declared_volume_initializes_credential_ownership_without_an_explicit_mount(self):
+        # DLV-914: ECS copies the VOLUME path's UID-10001 ownership into the task's empty bind mount; Docker does the same
+        # for the anonymous volume it creates here. The container is removed with --volumes.
+        self.assertEqual(json.loads(self.docker('image','inspect',IMAGE).stdout)[0]['Config'].get('Volumes'),{'/run/credentials':{}})
+        container=self.start(self.environment(),mount=[])
+        self.assertEqual(json.loads(self.wait_for_health(container).stdout),{'status':'UP'})
+        self.assertEqual(self.docker('exec',container,'stat','-c','%u:%g:%a','/run/credentials').stdout.strip(),'10001:10001:700')
+        self.assertEqual(self.docker('exec',container,'stat','-c','%u:%g:%a','/run/credentials/server.key').stdout.strip(),'10001:10001:400')
+
+    def test_one_leaf_listing_both_slot_sans_serves_either_slot(self):
+        # User decision 2026-10-30: one lookahead-dev-web-tls version whose leaf lists both exact slot SANs is bound to both slot stacks.
+        slots=['web-blue.lookahead-dev.internal','web-green.lookahead-dev.internal']
+        self.leaf(names=slots)
+        for server in slots:
+            with self.subTest(server=server):
+                environment=self.environment();environment['LOOKAHEAD_TLS_SERVER_NAME']=server
+                container=self.start(environment)
+                self.assertEqual(json.loads(self.wait_for_health(container).stdout),{'status':'UP'})
+                self.assertIn('Web TLS validation succeeded',self.docker('logs',container).stdout)
+        environment=self.environment();environment['LOOKAHEAD_TLS_SERVER_NAME']='web.lookahead-dev.internal'
+        container=self.start(environment)
+        self.assertEqual(self.docker('wait',container).stdout.strip(),'1')
+        self.assertIn('Web TLS validation failed; startup denied',self.docker('logs',container).stdout+self.docker('logs',container).stderr)
+
+    def test_root_owned_empty_mount_denies_startup_without_leaking_material(self):
+        container=self.start(self.environment(),mount=self.ROOT_OWNED_MOUNT)
+        self.assertEqual(self.docker('wait',container).stdout.strip(),'1')
+        logs=self.docker('logs',container);output=logs.stdout+logs.stderr
+        self.assertIn('Web TLS validation failed; startup denied',output)
+        self.assertNotIn('BEGIN',output);self.assertNotIn('validation succeeded',output)
 
     def test_valid_unprivileged_read_only_image_starts_nginx_with_protected_files(self):
         container=self.start(self.environment())
