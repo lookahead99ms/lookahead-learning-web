@@ -1,6 +1,6 @@
 # Exact toolchain, compiler and serving images are scanned independently.
 FROM alpine:3.23@sha256:21f3e19bafab57a9ff7aa9dd571dac72f868370472c10f450cc0416cc1aca553 AS toolchain
-RUN apk add --no-cache nodejs=24.22.1-r0
+RUN apk add --no-cache nodejs=24.22.1-r1
 COPY scripts/container/prepare-npm-cli.mjs /opt/lookahead/prepare-npm-cli.mjs
 COPY deployment/container/npm-cli-lock.json /opt/npm/package-lock.json
 # Bootstrap stays inside this RUN; only the genuinely patched locked CLI persists.
