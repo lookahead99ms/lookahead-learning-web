@@ -145,6 +145,13 @@ export const authorDocumentationGroups: readonly AuthorDocumentationGroup[] = [
         icon: '☁️',
         children: [
           {
+            id: 'aws-environment-journey',
+            label: 'Environment journey',
+            href: '/admin/aws-environment-journey',
+            description: 'How DEV got here in 36 steps, what is next, and how to do it again for PROD.',
+            icon: '🧭',
+          },
+          {
             id: 'aws-dev-plan',
             label: 'DEV plan',
             href: '/admin/aws-dev-plan',
@@ -346,6 +353,11 @@ export const authorDocumentPages = {
     documentId: 'aws-deployment',
     summary: 'Read-only section · DEV built and tested locally; nothing deployed to AWS.',
     frameTitle: 'AWS deployment section overview and current state',
+  },
+  'aws-environment-journey': {
+    documentId: 'aws-environment-journey',
+    summary: 'Read-only reference · Evidence reviewed 2026-10-29; the database is verified, no application is deployed.',
+    frameTitle: 'The DEV environment journey, next gates and reuse paths',
   },
   'aws-dev-plan': {
     documentId: 'aws-dev-plan',

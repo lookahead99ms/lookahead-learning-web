@@ -73,6 +73,7 @@ describe('AuthorAdminMenu', () => {
     const nested = parent.closest('li')!.querySelector('.subpages')!;
     expect(nested.getAttribute('aria-label')).toBe('AWS deployment pages');
     expect(hrefs(nested as HTMLElement, 'a')).toEqual([
+      '/admin/aws-environment-journey',
       '/admin/aws-dev-plan',
       '/admin/aws-dev-decisions',
       '/admin/aws-dev-operations',
