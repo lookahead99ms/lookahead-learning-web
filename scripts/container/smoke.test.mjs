@@ -4,7 +4,7 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { smokeImage, parseResponse, assertPrivateBundle, deniedPaths, requireLocalEngine, assertOperationalLogs } from './smoke.mjs';
+import { smokeImage, parseResponse, assertPrivateBundle, deniedPaths, requireLocalEngine, assertOperationalLogs, credentialMount } from './smoke.mjs';
 
 const reference = 'sha256:' + 'a'.repeat(64);
 const resolvedDockerId = 'sha256:' + 'b'.repeat(64);
@@ -15,18 +15,18 @@ function response(status, body, headers = {}) {
     stderr: `Connecting to127.0.0.1\n  HTTP/1.1 ${status} Response\n` + Object.entries(headers).map(([k, v]) => `  ${k}: ${v}\n`).join('') };
 }
 
-function fixture({ unhealthy = false, fallbackPath, privateFile = false } = {}) {
+function fixture({ unhealthy = false, fallbackPath, privateFile = false, volumes = { [credentialMount]: {} } } = {}) {
   const calls = [];
   const docker = args => {
     calls.push(args);
     const ok = stdout => ({ status: 0, stdout, stderr: '' });
     if (args[0] === 'context') return ok(JSON.stringify([{ Endpoints: { docker: { Host: 'unix:///var/run/docker.sock' } } }]));
-    if (args[0] === 'image') return ok(JSON.stringify([{ Id: resolvedDockerId, Config: { User: '10001:10001', Healthcheck: { Test: ['CMD', '/opt/lookahead/healthcheck.sh'] } } }]));
+    if (args[0] === 'image') return ok(JSON.stringify([{ Id: resolvedDockerId, Config: { User: '10001:10001', Volumes: volumes, Healthcheck: { Test: ['CMD', '/opt/lookahead/healthcheck.sh'] } } }]));
     if (args[0] === 'create') return ok(id + '\n');
     if (args[0] === 'logs') return ok(JSON.stringify({ event: 'http_access', time: '2026-10-09T00:00:00Z', requestId: 'a'.repeat(32), method: 'GET', status: '404', bytes: '9', durationSeconds: '0.001' }) + '\n');
     if (args[0] === 'start' || args[0] === 'rm') return ok('');
     if (args[0] === 'container') return ok(JSON.stringify([{ Image: resolvedDockerId, State: { Running: true, Health: { Status: unhealthy ? 'unhealthy' : 'healthy' } },
-      HostConfig: { NetworkMode: 'none', ReadonlyRootfs: true, CapDrop: ['ALL'], SecurityOpt: ['no-new-privileges:true'], Tmpfs: { '/tmp': 'rw' } } }]));
+      HostConfig: { NetworkMode: 'none', ReadonlyRootfs: true, CapDrop: ['ALL'], SecurityOpt: ['no-new-privileges:true'], Tmpfs: { '/tmp': 'rw', [credentialMount]: 'rw' } } }]));
     if (args[0] === 'cp') {
       writeFileSync(join(args[2], 'index.html'), index);
       writeFileSync(join(args[2], 'main-ABCDEFGH.js'), 'console.log("public application")');
@@ -88,8 +88,21 @@ test('checks immutable config identity, all denied routes, hardening and cleanup
   assert(create.includes('--pull=never') && create.includes('--read-only') && create.includes('--cap-drop'));
   assert.equal(create.at(-1), resolvedDockerId);
   assert(!create.includes('-p') && !create.includes('--publish'));
+  // DLV-914: the declared credential volume is mounted as an owned tmpfs, never as an anonymous Docker volume.
+  assert(create.some(arg => arg.startsWith(`${credentialMount}:`) && arg.includes('uid=10001') && arg.includes('mode=0700')), 'Credential tmpfs missing');
   assert.deepEqual(calls.at(-1), ['rm', '-f', id]);
 });
+
+// DLV-914: ECS copies a declared VOLUME path's ownership into the Fargate bind mount; the image must declare exactly that path.
+for (const [name, volumes] of [['no volume', {}], ['an extra volume', { [credentialMount]: {}, '/data': {} }], ['a different volume', { '/data': {} }]]) {
+  test(`rejects an image declaring ${name} before creating a container`, async t => {
+    const scratchRoot = await mkdtemp(join(tmpdir(), 'web-smoke-test-'));
+    t.after(() => rm(scratchRoot, { recursive: true, force: true }));
+    const { docker, calls } = fixture({ volumes });
+    await assert.rejects(smokeImage(reference, { docker, scratchRoot, environment: {} }), /credential mount/);
+    assert(!calls.some(args => args[0] === 'create'), 'No container may be created for a rejected image');
+  });
+}
 
 for (const [name, options, failure] of [
   ['Docker reports unhealthy', { unhealthy: true }, /healthcheck failed/],

@@ -1310,13 +1310,18 @@ artifact boundary. It does not start or replace a local frontend/backend service
 The image listens on8080 and checks `/health`; NGINX exits gracefully on SIGQUIT.
 The image and ECS contract use `/opt/lookahead/healthcheck.sh`.
 
-The ALB routes `/api`, `/bff`, `/content`, authentication and protocol requests to
-Gateway. Direct requests to reserved paths on Web return404; they never receive
+Web serves static files only. In the retained ALB candidate (`nginx.conf`, port 8080)
+the load balancer routes `/api`, `/bff`, `/content`, authentication and protocol
+requests to Gateway; in the accepted lower-cost DEV design (`nginx-lower-cost-dev.conf`,
+mTLS 8443) the Gateway itself proxies GET/HEAD shell and asset requests to Web after
+DEV admission and never forwards cookies, Authorization or the query string. In both
+configurations direct requests to reserved paths on Web return404; they never receive
 SPA fallback. Other extensionless routes receive the Angular shell, while missing
 static files return404. HTML and unhashed assets use `no-store`; fingerprinted
-JS/CSS use browser-private immutable caching, never shared cache permission.
-DEV whole-site admission remains an ALB responsibility. A locally passing image
-cannot verify real admission, DNS/TLS, Cognito callbacks or origin isolation.
+JS/CSS use browser-private immutable caching, never shared cache permission (the
+DEV Gateway proxy re-labels every proxied response `no-store`). DEV whole-site
+admission is a Gateway responsibility. A locally passing image cannot verify real
+admission, DNS/TLS, Cognito callbacks or origin isolation.
 
 CI builds this protected image, executes the smoke gate, and scans configuration,
 both pinned bases and the exact immutable built image with app-owned Trivy tooling,
@@ -1412,6 +1417,61 @@ Run `WEB_TLS_TEST_IMAGE=<local-image-id> python3 scripts/container/test_injected
 after building the image; CI runs the same synthetic positive/negative checks.
 Infra owns the deployment inputs and start/stop runbook. This configuration is
 locally tested with synthetic credentials, not deployed or verified in AWS.
+
+The Dockerfile declares `VOLUME ["/run/credentials"]` after creating that directory
+as UID 10001 mode 0700. Amazon ECS copies a `VOLUME` path's contents and ownership
+into the task's empty bind mount when the `containerPath` matches; without the
+declaration a Fargate bind mount is root-owned 0755 and `start-tls.sh` fails at its
+first `chmod` with `Web TLS validation failed; startup denied`. The image test covers
+both the declared-volume start without an explicit mount and the root-owned-mount
+denial; the container smoke mounts the declared path as an owned tmpfs so no
+anonymous Docker volume is created. The user confirmed this packaging on
+October 30, 2026. Fargate behavior itself is documented, not yet observed: DLV-918
+owns the first-task observation of `10001:10001:700`.
+
+### DEV activation preparation (DLV-914, October 30, 2026)
+
+The DEV task definition Infra generates for this application (`aws/compute/lower_cost_dev_workloads.py`,
+written to `aws/ingress/templates/dev/web.template.json`) runs the image with `EntryPoint`
+`/opt/lookahead/start-tls.sh` and an empty `Command`, `LOOKAHEAD_ENVIRONMENT=dev`,
+`LOOKAHEAD_RUNTIME_MODE=lower-cost-dev` and `LOOKAHEAD_TLS_SERVER_NAME=web-<slot>.lookahead-dev.internal`,
+and injects `LOOKAHEAD_TLS_SCHEMA`, `LOOKAHEAD_TLS_SERVER_CERTIFICATE`, `LOOKAHEAD_TLS_SERVER_KEY` and
+`LOOKAHEAD_TLS_TRUST` from one immutable version of the `lookahead-dev-web-tls` secret
+(`${TlsSecretArn}:<field>::${TlsSecretVersionId}`). Family and service are `lookahead-dev-web-<slot>`,
+Fargate 1.4.0, 0.25 vCPU / 512 MiB, UID 10001, read-only root, all capabilities dropped, writable
+task volumes at `/tmp` and `/run/credentials`, container port 8443, stop timeout 30 s, start timeout
+120 s, desired count 0, Cloud Map registration `web-<slot>.lookahead-dev.internal` (A record, 30 s TTL)
+and `awslogs` to the `LogGroupName` parameter with stream prefix `web`. The ECS health command is
+`/opt/lookahead/healthcheck.sh`, which probes loopback HTTP `127.0.0.1:8081/health` in this mode. The
+only inbound rule is TCP 8443 from `lookahead-dev-gateway-sg`; the Gateway presents the client
+certificate `CN=gateway.lookahead-dev.internal` and verifies the server name. Web makes no AWS call
+and needs nothing from the shared task role; the execution role needs `GetSecretValue` on that exact
+secret version, log-stream writes to the `/lookahead/dev/web` log group and the shared `lookahead-dev-ecr`
+pull (`web-v<calendar tag>` images). User decision (October 30, 2026): one `lookahead-dev-web-tls`
+version serves both slots; its leaf lists both exact SANs `web-blue.lookahead-dev.internal` and
+`web-green.lookahead-dev.internal`, and both slot stacks bind that version. `start-tls.sh` accepts a
+SAN list that contains the slot's exact name and still rejects any other name; the image test covers
+both slots and a non-slot name against one dual-SAN leaf. Infra binds the exact secret ARN/version and
+log permissions. The first compatible image must come from `main` after this batch is merged.
+
+The browser build (`production,protected`) ships `apiBaseUrl=/api`, `authorPreviewsBaseUrl=/bff/author/previews/`,
+`accountPlansEnabled=true` and `protectedContent=true` only; no credential, client secret, AWS value,
+hostname or pool identifier is compiled in. Optional build inputs are `LOOKAHEAD_RELEASE_VERSION` and
+`LOOKAHEAD_SOURCE_REVISION` (served as `/release.json`) and `LOOKAHEAD_SITE_ORIGIN` (sitemap only).
+The shell polls `GET /dev/session` every 30 s and treats 200 JSON as the status, 401 or 503 as "keep the
+last status" and 404 as "no DEV control"; Leave DEV fetches `/dev/csrf`, posts `/dev/leave` with
+`X-CSRF-TOKEN` and follows only an `https://*.amazoncognito.com/logout` destination. Membership and
+account calls use `/bff/api/v1/**` and `/api/v1/**` with the session CSRF token; saved progress goes
+through `/bff/api/v1/plans/**`. Dormant learner-code execution is unchanged: no Run control is shown and
+no execution request is sent.
+
+`deployment/service.yaml` remains the retained `lookahead-service/v2` candidate for Infra's older
+planner (port 8080, plain NGINX entry point); it is not the DEV task contract above and is left
+unchanged for that consumer. The release pipeline's optional `DEV_VERIFY_URL` cannot target this
+application in DEV: the candidate slot is reachable only from the Gateway inside the VPC and every
+public route requires admission, so the variable stays unset and functional proof comes from Infra's
+finite verifier. Exact bindings, findings and remaining gates are recorded in the private Content
+handoff `docs/evidence/DLV-914-web-activation-preparation-20261030/`.
 
 ### Landing component styles
 

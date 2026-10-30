@@ -34,7 +34,7 @@ Browser
 
 The active frontend must not redirect into the archived frontend. During local development, relative `/content` requests resolve to synchronized, ignored runtime assets. The future deployment shape keeps one browser origin and routes `/api` and `/content` to their owning services through a reverse proxy or gateway.
 
-The Angular frontend can be packaged as static files in an Nginx or Caddy container. Private curriculum must not be baked into a public image; production content belongs behind the authenticated content boundary, while local container development may use a read-only content mount.
+The Angular frontend is packaged as static files in the repository's NGINX image (`Dockerfile`, `deployment/container/`): plain HTTP 8080 for the retained ALB candidate, or Gateway-only mTLS 8443 with injected, validated TLS material for the lower-cost DEV design (see README → Lower-cost DEV serving candidate). Private curriculum must not be baked into a public image; production content belongs behind the authenticated content boundary, while local container development may use a read-only content mount.
 
 ## Content modes
 
