@@ -1,0 +1,312 @@
+@if (preview()) {
+<nav class="preview-bar" aria-label="Hero candidate navigation">
+  <a routerLink="/preview/hero" class="bar-link">← All five</a>
+  <p class="bar-title">
+    <span class="bar-number">0{{ variant() }}</span> {{ info().name }}
+    <span class="bar-palette">{{ info().palette }}</span>
+  </p>
+  <div class="bar-steps">
+    <a routerLink="/" class="bar-link">Home as served</a>
+    <a routerLink="/preview/hero/0" class="bar-link">Previous hero</a>
+    @if (variant() > 1) {
+      <a [routerLink]="'/preview/hero/' + (variant() - 1)" class="bar-link">Previous</a>
+    }
+    @if (variant() < 5) {
+      <a [routerLink]="'/preview/hero/' + (variant() + 1)" class="bar-link">Next</a>
+    }
+  </div>
+</nav>
+}
+@switch (variant()) {
+  @case (1) {
+    <section class="hero v1" aria-label="Introduction">
+      <div class="v1-copy">
+        <p class="kicker"><app-platform-signature /></p>
+        <h1 class="title">
+          <span>{{ slides[0].title[0] }}</span>
+          <span class="accent">{{ slides[0].title[1] }}</span>
+        </h1>
+        <p class="lead">{{ slides[0].lead }}</p>
+        <div class="actions">
+          <a class="btn primary" href="/#paths" (click)="openPaths($event)">
+            Choose a path<span class="arrow" aria-hidden="true">→</span>
+          </a>
+          <a class="btn ghost" routerLink="/study-plan">Shape my plan</a>
+        </div>
+      </div>
+      <app-landing-hero-visual
+        class="hero-card hero-slide v1-card"
+        visual="choose"
+        [active]="true"
+        [reducedMotion]="reducedMotion()"
+      />
+      <nav class="direction-row" aria-label="Six ways to grow">
+        @for (slide of slides; track slide.tab) {
+          @if (slide.paths) {
+            <a href="/#paths" (click)="openPaths($event)">
+              <strong>{{ slide.tab }}</strong><span>{{ slide.short }}</span>
+            </a>
+          } @else {
+            <a [routerLink]="slide.route" [queryParams]="slide.query ?? {}">
+              <strong>{{ slide.tab }}</strong><span>{{ slide.short }}</span>
+            </a>
+          }
+        }
+      </nav>
+    </section>
+  }
+  @case (2) {
+    <section class="hero v2" aria-label="Introduction">
+      <div class="chip-row" role="group" aria-label="Six ways to grow">
+        @for (slide of slides; track slide.tab; let i = $index) {
+          <button type="button" class="chip" [attr.aria-pressed]="active() === i" (click)="goTo(i)">
+            {{ slide.tab }}
+          </button>
+        }
+      </div>
+      <div class="v2-panel" [attr.data-visual]="current().visual">
+        <div class="v2-copy">
+          <h1 class="title">
+            <span>{{ current().title[0] }}</span>
+            <span class="accent">{{ current().title[1] }}</span>
+          </h1>
+          <p class="lead">{{ current().lead }}</p>
+          @if (current().paths) {
+            <a class="btn primary" href="/#paths" (click)="openPaths($event)">
+              {{ current().action }}<span class="arrow" aria-hidden="true">→</span>
+            </a>
+          } @else {
+            <a class="btn primary" [routerLink]="current().route" [queryParams]="current().query ?? {}">
+              {{ current().action }}<span class="arrow" aria-hidden="true">→</span>
+            </a>
+          }
+        </div>
+        <div class="card-stack v2-card">
+          @for (slide of slides; track slide.tab; let i = $index) {
+            <app-landing-hero-visual
+              class="hero-card hero-slide"
+              [attr.aria-hidden]="active() !== i"
+              [attr.inert]="active() === i ? null : ''"
+              [visual]="slide.visual"
+              [active]="active() === i"
+              [reducedMotion]="reducedMotion()"
+            />
+          }
+        </div>
+      </div>
+    </section>
+  }
+  @case (3) {
+    <section class="hero v3" aria-label="Introduction">
+      <p class="kicker"><app-platform-signature /></p>
+      <h1 class="title">
+        <span>Know why it works.</span>
+        <span class="accent">Know when it won’t.</span>
+      </h1>
+      <p class="lead">Understand it, apply it, defend the decision.</p>
+      <div class="actions">
+        <a class="btn primary" href="/#paths" (click)="openPaths($event)">
+          Choose a path<span class="arrow" aria-hidden="true">→</span>
+        </a>
+        <a class="text-link" routerLink="/start-free">See what is free</a>
+      </div>
+      <nav class="direction-grid" aria-label="Six ways to grow">
+        @for (slide of slides; track slide.tab) {
+          @if (slide.paths) {
+            <a class="direction-card" [attr.data-visual]="slide.visual" href="/#paths" (click)="openPaths($event)">
+              <span class="dot" aria-hidden="true"></span>
+              <strong>{{ slide.tab }}</strong>
+              <span>{{ slide.short }}</span>
+            </a>
+          } @else {
+            <a class="direction-card" [attr.data-visual]="slide.visual" [routerLink]="slide.route" [queryParams]="slide.query ?? {}">
+              <span class="dot" aria-hidden="true"></span>
+              <strong>{{ slide.tab }}</strong>
+              <span>{{ slide.short }}</span>
+            </a>
+          }
+        }
+      </nav>
+    </section>
+  }
+  @case (4) {
+    <section
+      class="hero v4"
+      aria-label="Six ways to grow as an engineer"
+      aria-roledescription="carousel"
+      [attr.data-held]="heldAttr()"
+      (mouseenter)="hold(true)"
+      (mouseleave)="hold(false)"
+      (focusin)="hold(true)"
+      (focusout)="hold(false)"
+    >
+      <div class="v4-slide" [attr.data-visual]="current().visual" aria-live="polite">
+        <div class="v4-copy">
+          <h1 class="title">
+            <span>{{ current().title[0] }}</span>
+            <span class="accent">{{ current().title[1] }}</span>
+          </h1>
+          <p class="lead">{{ current().lead }}</p>
+          @if (current().paths) {
+            <a class="btn primary" href="/#paths" (click)="openPaths($event)">
+              {{ current().action }}<span class="arrow" aria-hidden="true">→</span>
+            </a>
+          } @else {
+            <a class="btn primary" [routerLink]="current().route" [queryParams]="current().query ?? {}">
+              {{ current().action }}<span class="arrow" aria-hidden="true">→</span>
+            </a>
+          }
+        </div>
+        <div class="card-stack v4-card">
+          @for (slide of slides; track slide.tab; let i = $index) {
+            <app-landing-hero-visual
+              class="hero-card hero-slide"
+              [attr.aria-hidden]="active() !== i"
+              [attr.inert]="active() === i ? null : ''"
+              [visual]="slide.visual"
+              [active]="active() === i"
+              [reducedMotion]="reducedMotion()"
+            />
+          }
+        </div>
+      </div>
+      <div class="v4-footer">
+        <div class="dot-tabs" role="group" aria-label="Hero slides">
+          @for (slide of slides; track slide.tab; let i = $index) {
+            <button
+              type="button"
+              class="dot-tab"
+              [class.done]="i < active()"
+              [attr.aria-pressed]="active() === i"
+              [attr.aria-label]="'Show slide ' + (i + 1) + ': ' + slide.tab"
+              (click)="goTo(i)"
+            >
+              <span class="dot-track" aria-hidden="true">
+                <span
+                  class="fill"
+                  [class.run]="active() === i && !reducedMotion()"
+                  (animationend)="fillDone(i, $event)"
+                ></span>
+              </span>
+              <span class="dot-name" aria-hidden="true">{{ slide.tab }}</span>
+            </button>
+          }
+        </div>
+        <div class="v4-arrows">
+          <button
+            type="button"
+            [attr.aria-label]="pausedByButton() ? 'Play slideshow' : 'Pause slideshow'"
+            [disabled]="reducedMotion()"
+            (click)="togglePause()"
+          >
+            <span aria-hidden="true">{{ pausedByButton() ? '▶' : 'Ⅱ' }}</span>
+          </button>
+          <button type="button" aria-label="Previous hero slide" (click)="goTo(active() - 1)">
+            <span aria-hidden="true">←</span>
+          </button>
+          <button type="button" aria-label="Next hero slide" (click)="goTo(active() + 1)">
+            <span aria-hidden="true">→</span>
+          </button>
+        </div>
+      </div>
+    </section>
+  }
+  @case (5) {
+    <section
+      class="hero v5"
+      [class.daylight]="tone() === 'auto'"
+      aria-label="Six ways to grow as an engineer"
+      aria-roledescription="carousel"
+      [attr.data-held]="heldAttr()"
+      (mouseenter)="hold(true)"
+      (mouseleave)="hold(false)"
+      (focusin)="hold(true)"
+      (focusout)="hold(false)"
+    >
+      <div class="v5-grid" [attr.data-visual]="current().visual" aria-live="polite">
+        <div class="v5-copy">
+          <p class="kicker"><app-platform-signature /></p>
+          <h1 class="title">
+            <span>{{ current().title[0] }}</span>
+            <span class="accent">{{ current().title[1] }}</span>
+          </h1>
+          <p class="lead">{{ current().lead }}</p>
+          <div class="actions">
+            @if (current().paths) {
+              <a class="btn primary" href="/#paths" (click)="openPaths($event)">
+                {{ current().action }}<span class="arrow" aria-hidden="true">→</span>
+              </a>
+            } @else {
+              <a class="btn primary" [routerLink]="current().route" [queryParams]="current().query ?? {}">
+                {{ current().action }}<span class="arrow" aria-hidden="true">→</span>
+              </a>
+            }
+            <a class="btn ghost" routerLink="/start-free">Start free</a>
+          </div>
+          @if (preview()) {
+            <ul class="proof-strip" aria-label="What you get">
+              @for (point of proofPoints; track point) {
+                <li>{{ point }}</li>
+              }
+            </ul>
+          }
+        </div>
+        <div class="card-stack v5-card">
+          @for (slide of slides; track slide.tab; let i = $index) {
+            <app-landing-hero-visual
+              class="hero-card hero-slide"
+              [attr.aria-hidden]="active() !== i"
+              [attr.inert]="active() === i ? null : ''"
+              [visual]="slide.visual"
+              [active]="active() === i"
+              [reducedMotion]="reducedMotion()"
+            />
+          }
+        </div>
+      </div>
+      <div class="v5-footer">
+        <div class="chip-row dark" role="group" aria-label="Six ways to grow">
+          @for (slide of slides; track slide.tab; let i = $index) {
+            @if (i > 0) {
+              <span class="chip-sep" aria-hidden="true"></span>
+            }
+            <button
+              type="button"
+              class="chip"
+              [class.done]="i < active()"
+              [attr.aria-pressed]="active() === i"
+              [attr.aria-label]="'Show slide ' + (i + 1) + ': ' + slide.tab"
+              (click)="goTo(i)"
+            >
+              <span class="chip-symbol" aria-hidden="true">{{ slide.symbol }}</span>
+              <span class="chip-name" aria-hidden="true">{{ slide.tab }}</span>
+              <span class="chip-track" aria-hidden="true">
+                <span
+                  class="fill"
+                  [class.run]="active() === i && !reducedMotion()"
+                  (animationend)="fillDone(i, $event)"
+                ></span>
+              </span>
+            </button>
+          }
+        </div>
+        <div class="v5-arrows">
+          <button
+            type="button"
+            [attr.aria-label]="pausedByButton() ? 'Play slideshow' : 'Pause slideshow'"
+            [disabled]="reducedMotion()"
+            (click)="togglePause()"
+          >
+            <span aria-hidden="true">{{ pausedByButton() ? '▶' : 'Ⅱ' }}</span>
+          </button>
+          <button type="button" aria-label="Previous hero slide" (click)="goTo(active() - 1)">
+            <span aria-hidden="true">←</span>
+          </button>
+          <button type="button" aria-label="Next hero slide" (click)="goTo(active() + 1)">
+            <span aria-hidden="true">→</span>
+          </button>
+        </div>
+      </div>
+    </section>
+  }
+}

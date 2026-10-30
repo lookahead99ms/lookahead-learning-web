@@ -13,7 +13,10 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs';
+import { HeroCandidate, HeroVariantId, heroVariantFrom } from '../landing-previews/hero/hero-candidate';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { EngineeringChallenge } from './engineering-challenge';
 import { PlatformBrand } from '../../core/platform-brand/platform-brand';
@@ -45,7 +48,8 @@ interface HeroSlide {
 
 @Component({
   selector: 'app-landing',
-  imports: [LandingHeroVisual, LearningPrompt, ReasoningPrompt, PlatformSignature, PlatformHeader, RouterLink, EngineeringChallenge, PlatformBrand, CardScene, HomePricing, EssenceSteps, WordmarkKey],
+  imports: [
+    HeroCandidate, LandingHeroVisual, LearningPrompt, ReasoningPrompt, PlatformSignature, PlatformHeader, RouterLink, EngineeringChallenge, PlatformBrand, CardScene, HomePricing, EssenceSteps, WordmarkKey],
   templateUrl: './landing.html',
   styleUrl: './landing.css',
 })
@@ -95,6 +99,20 @@ export class Landing {
   );
   /** The visitor paused the path-card scenes with the toggle. */
   protected readonly scenesPaused = signal(false);
+  /**
+   * The home route serves hero candidate 5, the night statement, theme-aware and without the
+   * comparison bar (user, 2026-10-30). /preview/hero/N shows candidate N with the bar in its navy
+   * tone (user, 2026-10-29); /preview/hero/0 keeps the previous carousel for comparison.
+   */
+  protected readonly heroVariant = toSignal(
+    inject(ActivatedRoute).paramMap.pipe(map((params) => heroVariantFrom(params.get('variant')))),
+    { initialValue: null },
+  );
+  protected readonly heroPreview = computed(() => this.heroVariant() !== null);
+  protected readonly homeHero = computed<HeroVariantId>(() => {
+    const selection = this.heroVariant();
+    return selection === null || selection === 'classic' ? 5 : selection;
+  });
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private sceneTimeline: PathSceneTimeline<PathScene> | undefined;
   protected readonly slides: readonly HeroSlide[] = [

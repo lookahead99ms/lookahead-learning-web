@@ -1,0 +1,148 @@
+/* Five hero candidates for the home page (user, 2026-10-29): less text, a smaller headline,
+   a more modern surface. Shared tokens first, then one block per variant. The hero card
+   (app-landing-hero-visual) keeps its own internals; the card surface is styled here, like the
+   home page does, so the card looks the same wherever it is placed. */
+:host {
+  display: block;
+  min-height: 100vh;
+  background: var(--surface-page);
+  color: var(--text-strong);
+  font:
+    16px/1.6 system-ui,
+    sans-serif;
+  --hp-gutter: clamp(20px, 3vw, 3rem);
+  --hp-radius: 22px;
+  --hp-indigo: #4f46e5;
+  --hp-mint: #70d6cd;
+  --hp-amber: #c2410c;
+  --hp-navy: #0a2540;
+  --hp-navy-deep: #071a30;
+  /* Card tokens the hero illustration expects from its page. */
+  --home-hero-radius: 22px;
+  --home-panel-top: color-mix(in srgb, var(--panel-background) 82%, #000);
+  --home-glow-strength: 34%;
+  --home-hero-shadow: 0 30px 60px -28px color-mix(in srgb, var(--panel-background) 70%, transparent);
+  --home-panel-learn: #83d8b9;
+  --home-panel-grow: #f4ad92;
+  --home-panel-blaze: #a9cdf5;
+  --chapter-glow: var(--panel-accent);
+}
+:host-context(:root[data-theme='dark']) {
+  --home-panel-top: color-mix(in srgb, var(--panel-background) 70%, #000);
+  --home-glow-strength: 24%;
+  --home-hero-shadow: 0 30px 60px -30px #000c;
+  --home-panel-learn: var(--path-learn);
+  --home-panel-grow: var(--path-grow);
+  --home-panel-blaze: var(--path-blaze);
+  --hp-indigo: #a5a3ff;
+  --hp-amber: #ffba87;
+}
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+a {
+  color: var(--accent-link);
+  text-underline-offset: 5px;
+}
+p {
+  color: var(--text-body);
+}
+button {
+  font: inherit;
+  cursor: pointer;
+}
+:where(a, button, [tabindex]):focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 4px;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.eyebrow {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent-strong);
+}
+
+/* ---------- Index page ---------- */
+.preview-index {
+  width: min(100%, var(--site-frame-max, 1180px));
+  margin: 0 auto;
+  padding: clamp(28px, 4vw, 56px) var(--hp-gutter) 64px;
+}
+.preview-index h1 {
+  margin: 0 0 10px;
+  font:
+    800 clamp(28px, 1.4rem + 1.6vw, 44px)/1.1 system-ui,
+    sans-serif;
+  letter-spacing: -0.035em;
+}
+.index-lead {
+  max-width: 62ch;
+  margin: 0 0 28px;
+  font-size: 17px;
+}
+.variant-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.variant-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  padding: 18px 22px;
+  border: 1px solid var(--platform-edge);
+  border-radius: 16px;
+  background: var(--surface);
+  color: inherit;
+  text-decoration: none;
+  box-shadow: var(--platform-shadow);
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+.variant-card:hover {
+  border-color: var(--accent-strong);
+  transform: translateY(-1px);
+}
+.variant-number {
+  font:
+    800 13px/1 ui-monospace,
+    monospace;
+  color: var(--accent-strong);
+  letter-spacing: 0.08em;
+}
+.variant-text {
+  display: grid;
+  gap: 3px;
+}
+.variant-text strong {
+  font-size: 18px;
+}
+.variant-text span {
+  color: var(--text-body);
+}
+.variant-text small {
+  color: var(--text-subtle);
+  font-size: 13px;
+}
+.variant-arrow {
+  color: var(--accent-strong);
+  font-size: 22px;
+}
+.index-note {
+  margin: 28px 0 0;
+  color: var(--text-subtle);
+  font-size: 14px;
+}
+
