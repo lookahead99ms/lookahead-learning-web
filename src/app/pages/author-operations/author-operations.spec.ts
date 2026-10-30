@@ -131,7 +131,7 @@ describe('Operations author view', () => {
     expect(content.querySelector('.hero-group')!.textContent).toContain('AWS deployment');
     const section = content.querySelector('nav.section-pages') as HTMLElement;
     expect(section.getAttribute('aria-label')).toBe('AWS deployment section pages');
-    expect(section.querySelector('.section-label')!.textContent).toContain('page 6 of 15');
+    expect(section.querySelector('.section-label')!.textContent).toContain('page 7 of 16');
     const labels = [...section.querySelectorAll('a')].map((link) => link.textContent!.trim());
     expect(labels[0]).toBe('Overview');
     expect(labels).toContain('DEV budget');
@@ -150,7 +150,7 @@ describe('Operations author view', () => {
     const fixture = await create();
     const content = fixture.nativeElement.querySelector('.workspace-content') as HTMLElement;
     expect(load).toHaveBeenCalledWith('aws-dev-procedures');
-    expect(content.querySelector('nav.section-pages .section-label')!.textContent).toContain('page 10 of 15');
+    expect(content.querySelector('nav.section-pages .section-label')!.textContent).toContain('page 11 of 16');
     const steps = content.querySelector('nav.section-steps') as HTMLElement;
     expect(steps.querySelector('.section-previous')!.getAttribute('href')).toBe('/admin/aws-dev-workflow');
     expect(steps.querySelector('.section-next')!.getAttribute('href')).toBe('/admin/aws-dev-records');

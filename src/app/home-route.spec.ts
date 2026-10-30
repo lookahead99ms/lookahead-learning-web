@@ -49,13 +49,14 @@ describe('canonical homepage', () => {
     await harness.navigateByUrl('/', Landing);
     expect(TestBed.inject(Router).url).toBe('/');
     expect(harness.routeNativeElement?.querySelectorAll('h1')).toHaveLength(1);
-    expect(
-      harness.routeNativeElement?.querySelector('h1')?.textContent?.trim(),
-    ).toBe('Build with AI. Understand what you ship.');
-    expect(
-      harness.routeNativeElement?.querySelector('.hero-slide.active h2.slide-title')
-        ?.textContent,
-    ).toContain('Become the engineer');
+    // The home page serves hero candidate 5 (2026-10-30): the active slide's two-line title is the page's only h1.
+    const title = harness.routeNativeElement?.querySelector('app-hero-candidate .hero.v5.daylight h1.title');
+    expect([...(title?.querySelectorAll('span') ?? [])].map((line) => line.textContent?.trim())).toEqual([
+      'Become the engineer',
+      'you can explain.',
+    ]);
+    expect(harness.routeNativeElement?.querySelector('.card-stack > .hero-slide.active')).not.toBeNull();
+    expect(harness.routeNativeElement?.querySelector('.preview-bar')).toBeNull();
     expect(
       harness.routeNativeElement
         ?.querySelector('a[aria-label="Look Ahead home"]')

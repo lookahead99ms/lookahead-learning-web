@@ -1,0 +1,29 @@
+<app-platform-header />
+<main id="main-content" class="landing-page preview-index">
+  <p class="eyebrow">Home page hero · five candidates</p>
+  <h1>Pick the hero you want on the home page.</h1>
+  <p class="index-lead">
+    Each candidate replaces only the hero; the rest of the home page, with every button working, is
+    the real page. Open one, resize the window, switch the theme, then tell me which direction to
+    take.
+  </p>
+  <ol class="variant-list">
+    @for (item of variants; track item.id) {
+      <li>
+        <a class="variant-card" [routerLink]="'/preview/hero/' + item.id">
+          <span class="variant-number">0{{ item.id }}</span>
+          <span class="variant-text">
+            <strong>{{ item.name }}</strong>
+            <span>{{ item.summary }}</span>
+            <small>{{ item.palette }}</small>
+          </span>
+          <span class="variant-arrow" aria-hidden="true">→</span>
+        </a>
+      </li>
+    }
+  </ol>
+  <p class="index-note">
+    The home page serves candidate 05, theme-aware: <a routerLink="/">open it</a>. The previous
+    carousel is kept at <a routerLink="/preview/hero/0">/preview/hero/0</a> to compare.
+  </p>
+</main>

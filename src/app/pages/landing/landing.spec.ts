@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Router, provideRouter } from '@angular/router';
+import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { vi } from 'vitest';
 import { ContentService } from '../../content/content.service';
@@ -82,6 +82,15 @@ describe('Landing', () => {
     fixture.detectChanges();
   }
 
+  /** The previous carousel is kept at /preview/hero/0 (the home route serves hero candidate 5 since 2026-10-30). */
+  const classicHeroRoute = {
+    provide: ActivatedRoute,
+    useValue: {
+      paramMap: of(convertToParamMap({ variant: '0' })),
+      snapshot: { paramMap: convertToParamMap({ variant: '0' }), data: {} },
+    },
+  };
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [Landing],
@@ -90,6 +99,7 @@ describe('Landing', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: ContentService, useValue: { getSearchIndex: () => of([]) } },
+        classicHeroRoute,
       ],
     }).compileComponents();
   });

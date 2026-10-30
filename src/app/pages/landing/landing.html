@@ -1,6 +1,13 @@
 <app-platform-header />
 <main id="main-content" class="landing-page">
   <div class="discovery-opening">
+    @if (heroVariant() !== 'classic') {
+      <app-hero-candidate
+        [variant]="homeHero()"
+        [preview]="heroPreview()"
+        [tone]="heroPreview() ? 'night' : 'auto'"
+      />
+    } @else {
     <div class="hero-stage">
       <header class="hero-masthead">
         <h1 class="discovery-framing"><app-platform-signature /></h1>
@@ -105,6 +112,7 @@
         </div>
       </section>
     </div>
+    }
     <section id="paths" class="section home-paths" tabindex="-1" aria-labelledby="paths-title">
       <p class="eyebrow">Choose your direction</p>
       <h2 id="paths-title" data-sidebar-label="Discover your path">Learn. Grow. Blaze.</h2>

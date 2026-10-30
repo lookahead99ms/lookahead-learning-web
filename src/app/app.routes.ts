@@ -40,6 +40,7 @@ export const routes: Routes = [
       ['admin/authentication', 'authentication'],
       ['admin/authentication-walkthrough', 'authentication-walkthrough'],
       ['admin/aws-deployment', 'aws-deployment'],
+      ['admin/aws-environment-journey', 'aws-environment-journey'],
       ['admin/aws-dev-plan', 'aws-dev-plan'],
       ['admin/aws-dev-decisions', 'aws-dev-decisions'],
       ['admin/aws-dev-operations', 'aws-dev-operations'],
@@ -175,6 +176,19 @@ export const routes: Routes = [
     path: 'preview/landing/7',
     loadComponent: () =>
       import('./pages/landing-previews/preview-7/preview-7').then((page) => page.LandingPreview7),
+  },
+  // Five hero candidates for the home page (user, 2026-10-29); the home page is unchanged.
+  {
+    path: 'preview/hero',
+    title: 'Hero candidates | LookAhead',
+    loadComponent: () =>
+      import('./pages/landing-previews/hero/hero-preview').then((page) => page.LandingHeroPreview),
+  },
+  {
+    // The real home page with its hero replaced by candidate N; every other control is live.
+    path: 'preview/hero/:variant',
+    title: 'Hero candidate | LookAhead',
+    loadComponent: () => import('./pages/landing/landing').then((page) => page.Landing),
   },
   // DLV-209: the plans section is now on the home page itself.
   { path: 'preview/landing/pricing', redirectTo: '/' },

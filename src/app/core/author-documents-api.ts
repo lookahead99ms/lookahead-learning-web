@@ -21,6 +21,7 @@ const documentIds = new Set([
   'authentication',
   'authentication-walkthrough',
   'aws-deployment',
+  'aws-environment-journey',
   'aws-dev-plan',
   'aws-dev-decisions',
   'aws-dev-operations',

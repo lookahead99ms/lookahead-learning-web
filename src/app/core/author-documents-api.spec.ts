@@ -89,7 +89,7 @@ describe('Private author-document boundary', () => {
   it('accepts every sub-page document in a manifest larger than the menu groups', () => {
     const publication = manifest();
     const template = publication.documents[0];
-    const ids = ['aws-dev-plan', 'aws-dev-decisions', 'aws-dev-operations', 'aws-dev-permissions', 'aws-dev-budget', 'aws-dev-status',
+    const ids = ['aws-environment-journey', 'aws-dev-plan', 'aws-dev-decisions', 'aws-dev-operations', 'aws-dev-permissions', 'aws-dev-budget', 'aws-dev-status',
       'aws-dev-setup', 'aws-dev-workflow', 'aws-dev-procedures', 'aws-dev-records', 'aws-candidate-design', 'aws-candidate-files', 'aws-candidate-commands',
       'aws-candidate-updates', 'authentication-walkthrough', 'support-runbooks'];
     publication.documents = [template, ...ids.map((id) => ({
