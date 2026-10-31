@@ -87,8 +87,8 @@ export async function smokeImage(imageReference, { docker = localDocker, scratch
   const image = JSON.parse(run(['image', 'inspect', imageReference]))[0];
   assert(immutableId.test(image.Id), 'Image inspection did not resolve an immutable config ID');
   assert.match(image.Config.User ?? '', /^10001(?::10001)?$/, 'Image must default to nonroot user10001');
-  // DLV-914: the one declared volume is the ECS credential mount whose UID-10001 ownership the image initializes.
-  assert.deepEqual(Object.keys(image.Config.Volumes ?? {}), [credentialMount], 'Only the ECS credential mount may be a declared volume');
+  // DLV-914/DLV-968: the declared volumes are the two ECS task mounts whose UID-10001 ownership the image initializes.
+  assert.deepEqual(Object.keys(image.Config.Volumes ?? {}).sort(), [credentialMount, '/tmp'], 'Only the ECS credential mount and /tmp may be declared volumes');
   assert(image.Config.Healthcheck?.Test?.length && image.Config.Healthcheck.Test[0] !== 'NONE', 'Image must define a Docker healthcheck');
   const owner = randomUUID();
   let id;

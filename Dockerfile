@@ -45,15 +45,20 @@ RUN apk add --no-cache nginx=1.28.3-r7 musl=1.2.5-r24 musl-utils=1.2.5-r24 \
     && adduser -S -D -H -u 10001 -G web web \
     && mkdir -p /usr/share/nginx/html /run/credentials \
     && chown 10001:10001 /run/credentials \
-    && chmod 0700 /run/credentials
+    && chmod 0700 /run/credentials \
+    && chown 10001:10001 /tmp \
+    && chmod 1777 /tmp
 COPY deployment/container/nginx.conf /etc/nginx/nginx.conf
 COPY deployment/container/nginx-lower-cost-dev.conf /etc/nginx/nginx-lower-cost-dev.conf
 COPY --chmod=0555 deployment/container/start-tls.sh /opt/lookahead/start-tls.sh
 COPY --chmod=0555 deployment/container/healthcheck.sh /opt/lookahead/healthcheck.sh
 COPY --from=build /build/dist/lookahead-learning-web/browser /usr/share/nginx/html
 # ECS copies a VOLUME path's ownership into the task's empty bind mount; without it the Fargate
-# mount at /run/credentials is root-owned 0755 and start-tls.sh (UID 10001) cannot publish files.
-VOLUME ["/run/credentials"]
+# mount at /run/credentials is root-owned 0755 and start-tls.sh (UID 10001) cannot publish files,
+# and the mount at /tmp is root-owned 0755 so NGINX (UID 10001) cannot write its pid and temp paths (DLV-968).
+# /tmp keeps the conventional sticky 1777 mode: Docker gives an unparameterised tmpfs the directory's mode, so local
+# stacks that mount `/tmp:rw,noexec,nosuid,size=…` stay writable; only the ownership is new.
+VOLUME ["/run/credentials", "/tmp"]
 USER 10001:10001
 WORKDIR /usr/share/nginx/html
 EXPOSE 8080

@@ -54,10 +54,14 @@ class WebInjectedTlsTests(unittest.TestCase):
     OWNED_MOUNT=['--tmpfs','/run/credentials:rw,noexec,nosuid,nodev,size=1m,mode=0700,uid=10001,gid=10001']
     # AWS documents a Fargate bind mount as root-owned 0755 unless the image declares the path with VOLUME.
     ROOT_OWNED_MOUNT=['--mount','type=tmpfs,destination=/run/credentials,tmpfs-mode=0755']
+    # Docker gives an unparameterised tmpfs the declared directory's mode (1777 here) with root ownership, as local stacks rely on.
+    TMP_MOUNT=['--tmpfs','/tmp:rw,noexec,nosuid,size=16m']
+    # DLV-968: the same Fargate shape at /tmp, where NGINX writes its pid file and temp paths.
+    ROOT_OWNED_TMP_MOUNT=['--mount','type=tmpfs,destination=/tmp,tmpfs-mode=0755']
 
-    def start(self,environment,mount=OWNED_MOUNT):
+    def start(self,environment,mount=OWNED_MOUNT,tmp=TMP_MOUNT):
         args=['run','--detach','--read-only','--network','none','--cap-drop','ALL','--security-opt','no-new-privileges',
-              '--tmpfs','/tmp:rw,noexec,nosuid,size=16m',
+              *tmp,
               # The ECS task definition mounts the empty `credentials` task volume here; the image root stays read-only.
               *mount,
               '--entrypoint','/opt/lookahead/start-tls.sh']
@@ -79,11 +83,22 @@ class WebInjectedTlsTests(unittest.TestCase):
     def test_declared_volume_initializes_credential_ownership_without_an_explicit_mount(self):
         # DLV-914: ECS copies the VOLUME path's UID-10001 ownership into the task's empty bind mount; Docker does the same
         # for the anonymous volume it creates here. The container is removed with --volumes.
-        self.assertEqual(json.loads(self.docker('image','inspect',IMAGE).stdout)[0]['Config'].get('Volumes'),{'/run/credentials':{}})
-        container=self.start(self.environment(),mount=[])
+        # DLV-968: /tmp is declared the same way, so the Fargate `applicationTmp` mount is writable by NGINX.
+        self.assertEqual(json.loads(self.docker('image','inspect',IMAGE).stdout)[0]['Config'].get('Volumes'),{'/run/credentials':{},'/tmp':{}})
+        container=self.start(self.environment(),mount=[],tmp=[])
         self.assertEqual(json.loads(self.wait_for_health(container).stdout),{'status':'UP'})
         self.assertEqual(self.docker('exec',container,'stat','-c','%u:%g:%a','/run/credentials').stdout.strip(),'10001:10001:700')
         self.assertEqual(self.docker('exec',container,'stat','-c','%u:%g:%a','/run/credentials/server.key').stdout.strip(),'10001:10001:400')
+        self.assertEqual(self.docker('exec',container,'stat','-c','%u:%g:%a','/tmp').stdout.strip(),'10001:10001:1777')
+        self.assertEqual(self.docker('exec',container,'stat','-c','%u','/tmp/nginx.pid').stdout.strip(),'10001')
+
+    def test_root_owned_empty_tmp_mount_stops_nginx_without_leaking_material(self):
+        # Reproduces the Fargate failure fixed by DLV-968: a root-owned 0755 bind mount at /tmp denies the pid file.
+        container=self.start(self.environment(),tmp=self.ROOT_OWNED_TMP_MOUNT)
+        self.assertNotEqual(self.docker('wait',container).stdout.strip(),'0')
+        logs=self.docker('logs',container);output=logs.stdout+logs.stderr
+        self.assertRegex(output,r'"/tmp/[^"]+" failed \(13: Permission denied\)')
+        self.assertNotIn('BEGIN',output)
 
     def test_one_leaf_listing_both_slot_sans_serves_either_slot(self):
         # User decision 2026-10-30: one lookahead-dev-web-tls version whose leaf lists both exact slot SANs is bound to both slot stacks.
