@@ -15,7 +15,7 @@ function response(status, body, headers = {}) {
     stderr: `Connecting to127.0.0.1\n  HTTP/1.1 ${status} Response\n` + Object.entries(headers).map(([k, v]) => `  ${k}: ${v}\n`).join('') };
 }
 
-function fixture({ unhealthy = false, fallbackPath, privateFile = false, volumes = { [credentialMount]: {} } } = {}) {
+function fixture({ unhealthy = false, fallbackPath, privateFile = false, volumes = { '/tmp': {}, [credentialMount]: {} } } = {}) {
   const calls = [];
   const docker = args => {
     calls.push(args);
@@ -93,8 +93,9 @@ test('checks immutable config identity, all denied routes, hardening and cleanup
   assert.deepEqual(calls.at(-1), ['rm', '-f', id]);
 });
 
-// DLV-914: ECS copies a declared VOLUME path's ownership into the Fargate bind mount; the image must declare exactly that path.
-for (const [name, volumes] of [['no volume', {}], ['an extra volume', { [credentialMount]: {}, '/data': {} }], ['a different volume', { '/data': {} }]]) {
+// DLV-914/DLV-968: ECS copies a declared VOLUME path's ownership into the Fargate bind mount; the image must declare exactly the two task mounts.
+for (const [name, volumes] of [['no volume', {}], ['only the credential mount', { [credentialMount]: {} }], ['only /tmp', { '/tmp': {} }],
+  ['an extra volume', { [credentialMount]: {}, '/tmp': {}, '/data': {} }], ['a different volume', { '/data': {} }]]) {
   test(`rejects an image declaring ${name} before creating a container`, async t => {
     const scratchRoot = await mkdtemp(join(tmpdir(), 'web-smoke-test-'));
     t.after(() => rm(scratchRoot, { recursive: true, force: true }));
