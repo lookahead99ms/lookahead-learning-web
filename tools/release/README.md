@@ -66,7 +66,7 @@ secret ARNs and version ids, Cloud Map names, the flip mode, the observation win
    candidate, renders the parameters and the resource preview, and writes `plan.json` with its
    digest (artifact `deploy-plan`).
 3. **Approve DEV deploy** (`approve-deploy`): no credentials; `deploy.py approve` opens the owner
-   issue bound to that plan: `APPROVE DEPLOY <plan digest>` within 40 minutes, `REJECT` stops.
+   issue bound to that plan: `APPROVE DEPLOY <image tag>` (for example `domain-v2026.11.01.03.00`) within 40 minutes, `REJECT` stops; the plan digest is in the issue body and the receipt.
 4. **Deploy to DEV** (`deploy-dev`, environment `dev`): `deploy.py verify` rechecks the approval,
    the plan digest, the template and the configuration before OIDC; the deploy session
    `<app>-deploy-<run>-1` (60 minutes) runs `deploy.py execute`,
