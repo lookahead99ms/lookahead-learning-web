@@ -63,7 +63,8 @@
     "test:coverage": "ng test --watch=false --coverage && node scripts/container/check-runtime-coverage.mjs",
     "test:container-boundary": "node --test scripts/container/*.test.mjs",
     "test:container": "node scripts/container/smoke.mjs",
-    "test:security-runtime": "node --test scripts/security/runtime/*.test.mjs"
+    "test:security-runtime": "node --test scripts/security/runtime/*.test.mjs",
+    "test:gateway-contract": "node scripts/release/check-gateway-contract.mjs scripts/release/contracts/domain-api-v1.json dist/lookahead-learning-web/browser"
   },
   "private": true,
   "packageManager": "npm@11.17.0",

@@ -100,7 +100,7 @@ jobs:
           COVERAGE_FILE: ${{ runner.temp }}/web-release.coverage
         run: |
           python -m coverage run --source=tools/release -m unittest discover -s tools/release -p 'test_*.py'
-          python -m coverage report --include='*/release_version.py,*/pipeline_tag.py,*/image.py,*/registry.py,*/consumer_contract.py' --fail-under=85
+          python -m coverage report --include='*/release_version.py,*/pipeline_tag.py,*/image.py,*/registry.py' --fail-under=85
 
       - name: Verify Git release tag before building
         if: inputs.export-image == true
@@ -171,18 +171,8 @@ jobs:
       - name: Test the Gateway contract check with synthetic output
         run: node --test scripts/release/check-gateway-contract.test.mjs
 
-      - name: Fetch the Gateway consumer contract at its newest release tag
-        env:
-          GH_TOKEN: ${{ secrets.CROSS_REPO_READ_TOKEN }}
-        run: python3 tools/release/consumer_contract.py fetch --output "$RUNNER_TEMP/gateway-contract/domain-api-v1.json"
-
-      - name: Verify the built site serves every Web path the Gateway forwards
-        run: |
-          if [ -f "$RUNNER_TEMP/gateway-contract/domain-api-v1.json" ]; then
-            node scripts/release/check-gateway-contract.mjs "$RUNNER_TEMP/gateway-contract/domain-api-v1.json" dist/lookahead-learning-web/browser
-          else
-            echo "Gateway contract unavailable (CROSS_REPO_READ_TOKEN unset); Web path check skipped"
-          fi
+      - name: Verify the built site serves every Web path the Gateway forwards (committed contract copy)
+        run: npm run test:gateway-contract
 
       - name: Test protected container artifact boundary
         run: npm run test:container-boundary
