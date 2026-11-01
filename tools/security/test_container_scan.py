@@ -19,7 +19,16 @@ def image_report():
 
 
 def config_report():
-    return {'SchemaVersion': 2, 'Results': [{'Class': 'config', 'Target': 'Dockerfile', 'MisconfSummary': {'Successes': 1}}]}
+    return {'SchemaVersion': 2, 'Results': [{'Class': 'config', 'Target': 'Dockerfile', 'MisconfSummary': {'Successes': 1}},
+                                             {'Class': 'config', 'Target': 'deployment/dev/service.template.json', 'MisconfSummary': {'Successes': 26, 'Failures': 0},
+                                              'ExperimentalModifiedFindings': [{'Status': 'ignored', 'Finding': {'ID': 'AWS-0035', 'Severity': 'HIGH'}}]}]}
+
+
+def exception(**changes):
+    item = {'checkId': 'AVD-AWS-0035', 'target': 'deployment/dev/service.template.json', 'expiresAt': '2027-01-31', 'ticket': 'DLV-968',
+            'rationale': 'Synthetic fixture: every ECS volume without EFSVolumeConfiguration is flagged; the template has no EFS volume.'}
+    item.update(changes)
+    return {'version': 1, 'exceptions': [item]}
 
 
 class ContainerGateTests(unittest.TestCase):
@@ -153,6 +162,45 @@ class ContainerGateTests(unittest.TestCase):
                 (output / 'trivy').write_bytes(b'substitution')
                 with self.assertRaises(ValueError): scan.executable()
                 with self.assertRaises(ValueError): scan.verified_binary(archive, '0' * 64)
+
+    def test_misconfiguration_exceptions_load_only_when_exact_current_and_targeted(self):
+        import datetime, json
+        today = datetime.date(2026, 11, 1)
+        with tempfile.TemporaryDirectory() as directory:
+            policy = Path(directory) / 'misconfiguration-exceptions.json'
+            policy.write_text(json.dumps(exception()))
+            loaded = scan.load_misconfiguration_exceptions(policy, today)
+            self.assertEqual(['AVD-AWS-0035'], [check for check, _ in loaded])
+            for bad in (exception(expiresAt='2026-10-31'), exception(checkId='CVE-2026-1'), exception(ticket='nope'), exception(rationale='short'),
+                        exception(target='../etc/passwd'), exception(target='deployment/dev/missing.json'), {'version': 2, 'exceptions': []},
+                        {'version': 1, 'exceptions': [{**exception()['exceptions'][0], 'extra': 1}]},
+                        {'version': 1, 'exceptions': exception()['exceptions'] * 2}):
+                policy.write_text(json.dumps(bad))
+                with self.subTest(bad=bad), self.assertRaises(ValueError):
+                    scan.load_misconfiguration_exceptions(policy, today)
+            self.assertEqual({}, scan.load_misconfiguration_exceptions(Path(directory) / 'absent.json', today))
+        committed = scan.load_misconfiguration_exceptions(today=today)
+        self.assertEqual({('AVD-AWS-0035', 'deployment/dev/service.template.json')}, set(committed))
+
+    def test_config_scan_writes_the_ignore_file_shows_suppressed_and_requires_each_exception_to_be_exercised(self):
+        with tempfile.TemporaryDirectory() as directory, patch.object(scan, 'OUT', Path(directory)), patch.object(scan, 'executable', return_value='fixture'):
+            seen = {}
+            def run(command, **kwargs):
+                seen['command'] = command
+                Path(command[command.index('--output') + 1]).write_text(scan.json.dumps(config_report()))
+                return subprocess.CompletedProcess(command, 0, b'', b'')
+            with patch.object(scan.subprocess, 'run', side_effect=run):
+                scan.scan('config')
+            self.assertIn('--show-suppressed', seen['command'])
+            self.assertEqual('AVD-AWS-0035 exp:2027-01-31\n', (Path(directory) / 'ignore').read_text())
+            unused = config_report(); unused['Results'][1]['ExperimentalModifiedFindings'] = []
+            def run_unused(command, **kwargs):
+                Path(command[command.index('--output') + 1]).write_text(scan.json.dumps(unused))
+                return subprocess.CompletedProcess(command, 0, b'', b'')
+            with patch.object(scan.subprocess, 'run', side_effect=run_unused), self.assertRaises(ValueError):
+                scan.scan('config')
+        with self.assertRaisesRegex(ValueError, 'not exercised'):
+            scan.exceptions_exercised({'Results': []}, {('AVD-AWS-0035', 'deployment/dev/service.template.json'): {}})
 
     def test_scan_removes_stale_result_and_disables_environment_suppressions(self):
         with tempfile.TemporaryDirectory() as directory, patch.object(scan, 'OUT', Path(directory)), patch.object(scan, 'executable', return_value='fixture'), patch.dict(scan.os.environ, {'TRIVY_IGNORE_UNFIXED': 'true'}):

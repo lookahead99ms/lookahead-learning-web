@@ -168,6 +168,12 @@ jobs:
       - name: Build public demo application
         run: npm run build:ci
 
+      - name: Test the Gateway contract check with synthetic output
+        run: node --test scripts/release/check-gateway-contract.test.mjs
+
+      - name: Verify the built site serves every Web path the Gateway forwards (committed contract copy)
+        run: npm run test:gateway-contract
+
       - name: Test protected container artifact boundary
         run: npm run test:container-boundary
 

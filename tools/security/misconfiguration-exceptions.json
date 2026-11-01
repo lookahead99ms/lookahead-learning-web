@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "exceptions": [
+    {
+      "checkId": "AVD-AWS-0035",
+      "target": "deployment/dev/service.template.json",
+      "expiresAt": "2027-01-31",
+      "ticket": "DLV-968",
+      "rationale": "trivy flags every ECS task-definition volume that has no EFSVolumeConfiguration as an unencrypted EFS volume. The slot template's volumes (applicationTmp, credentials) are Fargate ephemeral bind mounts with no EFS at all, so there is nothing to encrypt in transit. Reviewed again when the pinned trivy is bumped."
+    }
+  ]
+}
