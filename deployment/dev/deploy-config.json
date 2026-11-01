@@ -1,0 +1,60 @@
+{
+  "schema": "lookahead-app-deploy-config/v1",
+  "app": "web",
+  "service": "web",
+  "account": "509614632283",
+  "region": "us-east-2",
+  "imageRepository": "509614632283.dkr.ecr.us-east-2.amazonaws.com/lookahead-dev-ecr",
+  "deployRoleArn": "arn:aws:iam::509614632283:role/lookahead-dev-deploy",
+  "cloudFormationRoleArn": "arn:aws:iam::509614632283:role/lookahead-dev-cfn-provision",
+  "sessionPrefix": "web-deploy",
+  "cluster": "arn:aws:ecs:us-east-2:509614632283:cluster/lookahead-dev-cluster",
+  "clusterName": "lookahead-dev-cluster",
+  "logGroup": "/lookahead/dev/web",
+  "namespaceName": "lookahead-dev.internal",
+  "slots": {
+    "blue": {
+      "stack": "lookahead-dev-web-blue",
+      "discoveryService": "web-blue",
+      "discoveryServiceArn": "arn:aws:servicediscovery:us-east-2:509614632283:service/srv-su6az3ccq2vgys3g"
+    },
+    "green": {
+      "stack": "lookahead-dev-web-green",
+      "discoveryService": "web-green",
+      "discoveryServiceArn": "arn:aws:servicediscovery:us-east-2:509614632283:service/srv-hvzfyodq4ivmanwb"
+    }
+  },
+  "flip": {
+    "mode": "alias",
+    "serviceName": "web",
+    "serviceId": "srv-5lykyhk4ep6zjkzq",
+    "instanceId": "stable",
+    "hostnameSuffix": ".lookahead-dev.internal",
+    "serviceArn": "arn:aws:servicediscovery:us-east-2:509614632283:service/srv-5lykyhk4ep6zjkzq"
+  },
+  "coupling": {
+    "listenerStack": "lookahead-dev-ingress",
+    "gatewayServicePrefix": "lookahead-dev-gateway-",
+    "note": "Phase 1: the Gateway reaches web-<its own slot>; a slot a running Gateway uses is never rebuilt, and the previous slot is retired only when no Gateway runs on it (removed in phase 2, DLV-968 T12)."
+  },
+  "observationMinutes": 15,
+  "probeUrl": "https://dev.devlookahead.com/",
+  "parameters": {
+    "Cluster": "arn:aws:ecs:us-east-2:509614632283:cluster/lookahead-dev-cluster",
+    "ApplicationSubnets": "subnet-0cce664b4200b0081,subnet-0ea67dc66d4debb56",
+    "ServiceSecurityGroup": "sg-029c6985cec3e7482",
+    "TaskRoleArn": "arn:aws:iam::509614632283:role/lookahead-dev-app-task",
+    "ExecutionRoleArn": "arn:aws:iam::509614632283:role/lookahead-dev-ecs-execution",
+    "TlsSecretArn": "arn:aws:secretsmanager:us-east-2:509614632283:secret:lookahead-dev-web-tls-pX1NCN",
+    "TlsVersion": "98331e44-009a-4d74-a6b5-22124e75c170",
+    "LogGroupName": "/lookahead/dev/web"
+  },
+  "slotParameters": {
+    "DiscoveryServiceArn": "discoveryServiceArn"
+  },
+  "logFailurePatterns": [
+    "ERROR",
+    "startup denied",
+    "AccessDeniedException"
+  ]
+}

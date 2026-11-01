@@ -18,6 +18,7 @@ import urllib.request
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / '.codex-scratch/security/container'
 PINS = Path(__file__).with_name('tools.json')
+MISCONFIGURATION_EXCEPTIONS = Path(__file__).with_name('misconfiguration-exceptions.json')
 LIMIT = 200 * 1024 * 1024
 
 
@@ -272,12 +273,48 @@ def stage_coverage(document, stage):
                 raise ValueError('Complete builder dependency coverage missing')
 
 
+def load_misconfiguration_exceptions(path=MISCONFIGURATION_EXCEPTIONS, today=None):
+    """Reviewed trivy misconfiguration checks ignored for one named file until a date; fails closed on any malformed or expired entry."""
+    import datetime
+    today = today or datetime.date.today()
+    document = json.loads(path.read_text()) if path.exists() else {'version': 1, 'exceptions': []}
+    if document.get('version') != 1 or not isinstance(document.get('exceptions'), list):
+        raise ValueError('Misconfiguration exception policy is malformed')
+    result = {}
+    for item in document['exceptions']:
+        if not isinstance(item, dict) or set(item) != {'checkId', 'target', 'expiresAt', 'ticket', 'rationale'}:
+            raise ValueError('Misconfiguration exception needs exactly checkId, target, expiresAt, ticket and rationale')
+        if not re.fullmatch(r'AVD-[A-Z0-9]+-[0-9]{4}', item['checkId']) or not re.fullmatch(r'[A-Z]+-[0-9]+', item['ticket']) or len(item['rationale'].strip()) < 40:
+            raise ValueError('Misconfiguration exception needs an AVD check id, a ticket and a reviewed rationale')
+        target = PurePosixPath(item['target'])
+        if target.is_absolute() or '..' in target.parts or not (ROOT / target).is_file():
+            raise ValueError('Misconfiguration exception target must be a tracked file inside the repository')
+        expires = datetime.date.fromisoformat(item['expiresAt'])
+        if today > expires:
+            raise ValueError('Misconfiguration exception expired; review it again or remove it')
+        if (item['checkId'], item['target']) in result:
+            raise ValueError('Duplicate misconfiguration exception')
+        result[(item['checkId'], item['target'])] = item
+    return result
+
+
+def exceptions_exercised(document, exceptions):
+    """Every ignored check must appear as a suppressed finding on its target (`--show-suppressed`); a stale entry fails closed."""
+    for (check, target), item in exceptions.items():
+        result = next((r for r in document.get('Results', []) if r.get('Class') == 'config' and r.get('Target') == target), None)
+        suppressed = [m for m in (result or {}).get('ExperimentalModifiedFindings') or [] if m.get('Status') == 'ignored'
+                      and (m.get('Finding') or {}).get('ID') in (check, check.removeprefix('AVD-'))]
+        if not suppressed:
+            raise ValueError('Misconfiguration exception ' + check + ' for ' + target + ' was not exercised; remove it')
+
+
 def scan(kind, target=None, local=False, stage=None):
     stage = stage or ('configuration' if kind != 'image' else ('applicationImage' if local else ('builderBase' if target.startswith('alpine:') else 'runtimeBase')))
     print(json.dumps({'containerScanStage': stage}), flush=True)
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / 'trivy.yaml').write_text('{}\n')
-    (OUT / 'ignore').write_text('')
+    exceptions = load_misconfiguration_exceptions() if kind != 'image' else {}
+    (OUT / 'ignore').write_text(''.join(check + ' exp:' + item['expiresAt'] + '\n' for (check, _), item in sorted(exceptions.items())))
     report = OUT / (kind + '-' + hashlib.sha256((target or '.').encode()).hexdigest()[:12] + '.json')
     report.unlink(missing_ok=True)
     common = ['--config', str(OUT / 'trivy.yaml'), '--ignorefile', str(OUT / 'ignore'),
@@ -293,18 +330,20 @@ def scan(kind, target=None, local=False, stage=None):
             args = ['image', '--image-src', 'remote', '--platform', 'linux/amd64',
                     '--scanners', 'vuln,secret', '--list-all-pkgs', *common, target]
         else:
-            args = ['fs', '--scanners', 'misconfig,secret', '--skip-dirs', '.git,.codex-scratch,node_modules,dist,coverage', *common, '.']
+            args = ['fs', '--scanners', 'misconfig,secret', '--show-suppressed', '--skip-dirs', '.git,.codex-scratch,node_modules,dist,coverage', *common, '.']
         clean_env = {k: v for k, v in os.environ.items() if not k.startswith('TRIVY_')}
         result = subprocess.run([executable(), *args], cwd=ROOT, env=clean_env, capture_output=True, timeout=960)
         (report.with_suffix('.log')).write_bytes(result.stdout + result.stderr)
         if result.returncode:
             raise ValueError('Scanner failed; private diagnostics retained locally')
     document = json.loads(report.read_text())
+    if exceptions:
+        exceptions_exercised(document, exceptions)
     counts = report_gate(document, kind)
     stage_coverage(document, stage)
     if kind == 'image':
         image_identity(document, target, config_id)
-    print(json.dumps({'scan': kind, 'counts': counts}))
+    print(json.dumps({'scan': kind, 'counts': counts, 'ignoredChecks': sorted({check for check, _ in exceptions})}))
 
 
 def main():
