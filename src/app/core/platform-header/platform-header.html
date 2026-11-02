@@ -18,6 +18,7 @@
         aria-haspopup="dialog"
         [attr.aria-expanded]="paletteOpen()"
         aria-keyshortcuts="Meta+K Control+K"
+        [appHeaderHint]="'Search lessons, problems and plans. Shortcut: ' + searchShortcut + '.'"
         (click)="toggleSearch($event)"
       >
         <span class="navigation-utility-label">Search</span>
@@ -29,12 +30,14 @@
         [queryParams]="{ view: 'plans' }"
         routerLinkActive="active"
         ariaCurrentWhenActive="page"
+        appHeaderHint="Your schedule and progress across courses."
         ><span class="navigation-utility-label">Study Plan</span></a
       >
       <div class="theme-switch" role="group" aria-label="Color theme">
         <button
           type="button"
           [attr.aria-pressed]="theme.selected() === 'light'"
+          appHeaderHint="Light colors."
           (click)="accountTheme.choose('light')"
         >
           Light
@@ -42,6 +45,7 @@
         <button
           type="button"
           [attr.aria-pressed]="theme.selected() === 'dark'"
+          appHeaderHint="Dark colors."
           (click)="accountTheme.choose('dark')"
         >
           Dark
@@ -147,7 +151,11 @@
     }
 
     @if ((!accounts.account() || accounts.sessionExpired()) && !onAuthenticationPage()) {
-      <a class="sign-in-button" routerLink="/sign-in" [queryParams]="{ returnTo: accountReturn() }"
+      <a
+        class="sign-in-button"
+        routerLink="/sign-in"
+        [queryParams]="{ returnTo: accountReturn() }"
+        appHeaderHint="Sign in to save progress and plans to your account."
         >Sign in</a
       >
     } @else if (accounts.account() && !accounts.sessionExpired()) {
@@ -160,6 +168,7 @@
           "
           aria-controls="account-menu"
           [attr.aria-expanded]="profileMenuOpen()"
+          appHeaderHint="Your account: study plan, settings, support and sign out."
           (click)="toggleProfileMenu()"
         >
           <span class="account-trigger-name">{{ accountLabel() }}</span>
