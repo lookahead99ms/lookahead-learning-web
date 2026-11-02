@@ -108,6 +108,14 @@ export class Landing {
     inject(ActivatedRoute).paramMap.pipe(map((params) => heroVariantFrom(params.get('variant')))),
     { initialValue: null },
   );
+  /**
+   * DLV-969 (2026-11-02): a DEV sign-in that is not admitted yet lands on `/?access=pending`; the
+   * page then opens with one notice that the sign-in worked and the owner's approval is pending.
+   */
+  protected readonly accessPending = toSignal(
+    inject(ActivatedRoute).queryParamMap.pipe(map((params) => params.get('access') === 'pending')),
+    { initialValue: false },
+  );
   protected readonly heroPreview = computed(() => this.heroVariant() !== null);
   protected readonly homeHero = computed<HeroVariantId>(() => {
     const selection = this.heroVariant();

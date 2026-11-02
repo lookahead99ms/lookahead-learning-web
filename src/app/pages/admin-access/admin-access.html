@@ -56,7 +56,66 @@
     <p class="notice" role="status" aria-live="polite" [class.has-notice]="notice()">{{ notice() }}</p>
 
     <div class="access-panel" id="access-panel" role="tabpanel" [attr.aria-labelledby]="'access-tab-' + tab()">
-    @if (tab() === 'test' || tab() === 'people') {
+    @if (tab() === 'waiting') {
+      <!-- DLV-969 (2026-11-02): people who signed in to DEV but wait for the owner's admission. -->
+      <section class="access-section" id="waiting-for-access" aria-labelledby="waiting-for-access-heading">
+        <div class="section-heading with-action">
+          <span class="section-icon" aria-hidden="true">⏳</span>
+          <div>
+            <h2 id="waiting-for-access-heading">Waiting for access</h2>
+            <p class="section-note">
+              People who signed in but are not admitted yet. A request that nobody admits is removed after {{ expiryHours() }} hours.
+            </p>
+          </div>
+          <button class="secondary-action" type="button" (click)="loadWaiting()" [disabled]="busy()">Refresh</button>
+        </div>
+        @if (waiting().length) {
+          <table class="waiting-table">
+            <caption class="visually-hidden">People waiting for access, when they asked and when the request is removed</caption>
+            <thead>
+              <tr>
+                <th scope="col">Person</th>
+                <th scope="col">Email</th>
+                <th scope="col">Requested</th>
+                <th scope="col">Expires</th>
+                <th scope="col">Admit as</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of waiting(); track row.accountId) {
+                <tr [attr.data-account]="row.username">
+                  <th scope="row" data-label="Person">
+                    <span class="person">{{ row.displayName }}</span>
+                    @if (row.username !== row.displayName) {
+                      <span class="sub">{{ row.username }}</span>
+                    }
+                  </th>
+                  <td data-label="Email">{{ row.email || 'No verified email' }}</td>
+                  <td data-label="Requested">{{ timeText(row.requestedAt) }}</td>
+                  <td data-label="Expires">{{ expiresText(row) }}</td>
+                  <td data-label="Admit as">
+                    <div class="admit-cell">
+                      <label>
+                        <span class="visually-hidden">Role for {{ row.displayName }}</span>
+                        <select [ngModel]="admitRole[row.accountId] ?? ''" (ngModelChange)="admitRole[row.accountId] = $event" [disabled]="busy()">
+                          <option value="">Learner</option>
+                          @for (role of admitRoleOptions; track role.id) {
+                            <option [value]="role.id">{{ role.label }}</option>
+                          }
+                        </select>
+                      </label>
+                      <button class="primary-action" type="button" (click)="admit(row)" [disabled]="busy()">Admit</button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <p class="empty">Nobody is waiting for access.</p>
+        }
+      </section>
+    } @else if (tab() === 'test' || tab() === 'people') {
       <app-test-accounts
         [view]="tab() === 'test' ? 'test' : 'people'"
         [assignments]="assignments()"

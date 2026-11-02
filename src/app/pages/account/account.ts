@@ -77,14 +77,15 @@ export class AccountPage {
       : this.route.snapshot.queryParamMap.get('error') === 'oauth'
       ? 'Sign-in could not be completed. Please try again.'
       : this.route.snapshot.queryParamMap.get('error') === 'admission'
-        ? 'Application access could not be confirmed. If this persists, contact the account administrator.'
+        ? 'Your account is not admitted yet. If you have just requested access, the owner has to approve it first.'
         : '',
   );
   protected readonly oauthContinuation = computed(() =>
     this.query().get('oauth') === 'continue' ? 'continue' : null,
   );
   protected readonly countries = registrationCountries;
-  protected readonly managedLoginUrl = computed(() => gatewayLoginUrl(this.returnTo()));
+  protected readonly googleLoginUrl = computed(() => gatewayLoginUrl(this.returnTo(), 'google'));
+  protected readonly passwordLoginUrl = computed(() => gatewayLoginUrl(this.returnTo(), 'password'));
   protected readonly passwordChanged =
     this.router.currentNavigation()?.extras.state?.['passwordChanged'] === true;
   protected readonly signInCanceled =

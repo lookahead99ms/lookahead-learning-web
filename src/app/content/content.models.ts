@@ -17,6 +17,7 @@ export type PatternLanguage = 'java' | 'python' | 'go';
 
 export interface ContentAccess {
   tier: 'free' | 'premium';
+  /** Set by the publication build: public items keep their full text in the search indexes. */
   public?: boolean;
   scopes?: string[];
   subscriptionIds?: string[];

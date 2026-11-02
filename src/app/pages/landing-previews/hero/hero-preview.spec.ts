@@ -37,6 +37,8 @@ describe('Hero candidates for the home page', () => {
           provide: ActivatedRoute,
           useValue: {
             paramMap: of(convertToParamMap(variant === null ? {} : { variant })),
+            // DLV-969: the home page also reads ?access=pending from the route.
+            queryParamMap: of(convertToParamMap({})),
             snapshot: { paramMap: convertToParamMap(variant === null ? {} : { variant }), data: {} },
           },
         },

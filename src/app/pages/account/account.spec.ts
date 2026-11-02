@@ -357,10 +357,47 @@ it('uses the server-selected managed sign-in flow without a local password form'
   vi.spyOn(store, 'loadAuthOptions').mockResolvedValue();
   store.authOptions.set({ registration: false, google: false, oauth: true, managedLogin: true });
   const fixture = TestBed.createComponent(AccountPage); fixture.detectChanges();
-  const link = fixture.nativeElement.querySelector('a[href^="/bff/login"]');
-  expect(link.textContent).toContain('Continue to secure sign-in');
-  expect(link.getAttribute('href')).toBe('/bff/login?returnTo=%2Fstudy-plan');
+  const links = [...fixture.nativeElement.querySelectorAll('a[href^="/bff/login"]')] as HTMLAnchorElement[];
+  expect(links.map((link) => link.textContent?.trim())).toEqual(['Sign in with email and password']);
+  expect(links[0].getAttribute('href')).toBe('/bff/login?provider=password&returnTo=%2Fstudy-plan');
+  expect(fixture.nativeElement.querySelector('.managed-login-hint').textContent.trim()).toBe(
+    'If you need access, contact your account administrator.',
+  );
   expect(fixture.nativeElement.querySelector('input[type="password"]')).toBeNull();
+});
+
+/** DLV-969: once the Gateway reports Google, our page offers it first and Cognito's page is skipped for both buttons. */
+it('offers Continue with Google above the password button when Google is switched on', () => {
+  const queryParamMap = convertToParamMap({ returnTo: '/learn' });
+  TestBed.configureTestingModule({
+    imports: [AccountPage],
+    providers: [provideRouter([]), provideHttpClient(), { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap, data: { accountMode: 'signup' } }, queryParamMap: of(queryParamMap), data: of({ accountMode: 'signup' }) } }],
+  });
+  const store = TestBed.inject(StudyPlanAccount);
+  Object.defineProperty(store, 'enabled', { value: true });
+  vi.spyOn(store, 'loadAuthOptions').mockResolvedValue();
+  store.authOptions.set({ registration: false, google: true, oauth: true, managedLogin: true });
+  const fixture = TestBed.createComponent(AccountPage); fixture.detectChanges();
+  const links = [...fixture.nativeElement.querySelectorAll('a[href^="/bff/login"]')] as HTMLAnchorElement[];
+  expect(links.map((link) => link.textContent?.trim())).toEqual(['Continue with Google', 'Sign in with email and password']);
+  expect(links.map((link) => link.getAttribute('href'))).toEqual([
+    '/bff/login?provider=google&returnTo=%2Flearn',
+    '/bff/login?provider=password&returnTo=%2Flearn',
+  ]);
+  expect(links[0].querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
+  expect(fixture.nativeElement.querySelector('.auth-divider').textContent.trim()).toBe('or');
+  expect(fixture.nativeElement.querySelector('.managed-login-hint').textContent.trim()).toBe(
+    'New to Look Ahead? Continue with Google. The owner approves each new account before it opens.',
+  );
+  expect(fixture.nativeElement.querySelector('button.google-button')).toBeNull();
+});
+
+describe('gateway sign-in link', () => {
+  it('names the provider only when one was chosen', () => {
+    expect(gatewayLoginUrl('/a b')).toBe('/bff/login?returnTo=%2Fa%20b');
+    expect(gatewayLoginUrl('/', 'google')).toBe('/bff/login?provider=google&returnTo=%2F');
+    expect(gatewayLoginUrl('/', 'password')).toBe('/bff/login?provider=password&returnTo=%2F');
+  });
 });
 
 describe('gateway sign-in return for admin pages', () => {
@@ -369,4 +406,20 @@ describe('gateway sign-in return for admin pages', () => {
     expect(safeAccountReturn('/admin/reviews')).toBe('/admin/reviews');
     expect(safeAccountReturn('/administrator')).toBe('/');
   });
+});
+
+/** DLV-969 (2026-11-02): the Gateway sends a sign-in that Domain has not admitted to `/account?error=admission`. */
+it('tells an unadmitted person that the owner has to approve their request first', () => {
+  const queryParamMap = convertToParamMap({ error: 'admission' });
+  TestBed.configureTestingModule({
+    imports: [AccountPage],
+    providers: [provideRouter([]), provideHttpClient(), { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap, data: { accountMode: 'signin' } }, queryParamMap: of(queryParamMap), data: of({ accountMode: 'signin' }) } }],
+  });
+  const store = TestBed.inject(StudyPlanAccount);
+  Object.defineProperty(store, 'enabled', { value: true });
+  vi.spyOn(store, 'loadAuthOptions').mockResolvedValue();
+  store.authOptions.set({ registration: false, google: false, oauth: true, managedLogin: true });
+  const fixture = TestBed.createComponent(AccountPage); fixture.detectChanges();
+  expect(fixture.nativeElement.querySelector('.form-error[role="alert"]').textContent.trim())
+    .toBe('Your account is not admitted yet. If you have just requested access, the owner has to approve it first.');
 });
