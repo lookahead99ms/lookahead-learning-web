@@ -100,16 +100,25 @@ class WebInjectedTlsTests(unittest.TestCase):
         self.assertRegex(output,r'"/tmp/[^"]+" failed \(13: Permission denied\)')
         self.assertNotIn('BEGIN',output)
 
-    def test_one_leaf_listing_both_slot_sans_serves_either_slot(self):
-        # User decision 2026-10-30: one lookahead-dev-web-tls version whose leaf lists both exact slot SANs is bound to both slot stacks.
-        slots=['web-blue.lookahead-dev.internal','web-green.lookahead-dev.internal']
-        self.leaf(names=slots)
-        for server in slots:
+    def test_one_leaf_listing_the_stable_and_slot_sans_serves_any_listed_name(self):
+        # DLV-968 S1 (2026-11-01): one lookahead-dev-web-tls version whose leaf lists the stable name and, during the transition,
+        # both slot names; the container accepts exactly the name the task definition injects and refuses an unlisted one.
+        names=['web.lookahead-dev.internal','web-blue.lookahead-dev.internal','web-green.lookahead-dev.internal']
+        self.leaf(names=names)
+        for server in names:
             with self.subTest(server=server):
                 environment=self.environment();environment['LOOKAHEAD_TLS_SERVER_NAME']=server
                 container=self.start(environment)
                 self.assertEqual(json.loads(self.wait_for_health(container).stdout),{'status':'UP'})
                 self.assertIn('Web TLS validation succeeded',self.docker('logs',container).stdout)
+        environment=self.environment();environment['LOOKAHEAD_TLS_SERVER_NAME']='web-red.lookahead-dev.internal'
+        container=self.start(environment)
+        self.assertEqual(self.docker('wait',container).stdout.strip(),'1')
+        self.assertIn('Web TLS validation failed; startup denied',self.docker('logs',container).stdout+self.docker('logs',container).stderr)
+
+    def test_stable_name_is_refused_while_the_leaf_lists_only_slot_names(self):
+        # Until the S1 leaf is uploaded, a task injecting the stable name must not start on the old slot-only leaf.
+        self.leaf(names=['web-blue.lookahead-dev.internal','web-green.lookahead-dev.internal'])
         environment=self.environment();environment['LOOKAHEAD_TLS_SERVER_NAME']='web.lookahead-dev.internal'
         container=self.start(environment)
         self.assertEqual(self.docker('wait',container).stdout.strip(),'1')

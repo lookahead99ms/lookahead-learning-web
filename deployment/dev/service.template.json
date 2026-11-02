@@ -1,23 +1,16 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "DLV-968: one DEV web slot owned by the Web repository: ECS task definition lookahead-dev-web-<Slot> and ECS service lookahead-dev-web-<Slot> on the existing cluster, network, log group, credentials and IAM roles; nothing else is created.",
+  "Description": "DLV-968: the DEV web application, one ECS service with rolling updates, owned by the Web repository: task definition family lookahead-dev-web and ECS service lookahead-dev-web on the existing cluster, network, log group, credentials and IAM roles; nothing else is created.",
   "Metadata": {
     "Owner": "lookahead99ms/lookahead-learning-web",
     "Ticket": "DLV-968",
     "Resources": [
-      "AWS::ECS::TaskDefinition lookahead-dev-web-<Slot>",
-      "AWS::ECS::Service lookahead-dev-web-<Slot>"
+      "AWS::ECS::TaskDefinition lookahead-dev-web",
+      "AWS::ECS::Service lookahead-dev-web"
     ],
-    "Deploy": "tools/release/deploy.py renders change sets app-<run>-candidate / -retire against this template; DesiredCount is 1 for the serving or candidate slot and 0 for the retired slot"
+    "Deploy": "tools/release/deploy.py renders one change set app-<run> against this template; a deploy is an ECS rolling update (surge to two tasks, circuit-breaker rollback); DesiredCount 1 serves, 0 parks the service (user decision V, 2026-11-01)"
   },
   "Parameters": {
-    "Slot": {
-      "Type": "String",
-      "AllowedValues": [
-        "blue",
-        "green"
-      ]
-    },
     "Cluster": {
       "Type": "String"
     },
@@ -69,9 +62,7 @@
     "Task": {
       "Type": "AWS::ECS::TaskDefinition",
       "Properties": {
-        "Family": {
-          "Fn::Sub": "lookahead-dev-web-${Slot}"
-        },
+        "Family": "lookahead-dev-web",
         "RequiresCompatibilities": [
           "FARGATE"
         ],
@@ -187,9 +178,7 @@
               },
               {
                 "Name": "LOOKAHEAD_TLS_SERVER_NAME",
-                "Value": {
-                  "Fn::Sub": "web-${Slot}.lookahead-dev.internal"
-                }
+                "Value": "web.lookahead-dev.internal"
               }
             ],
             "HealthCheck": {
@@ -217,9 +206,7 @@
     "Service": {
       "Type": "AWS::ECS::Service",
       "Properties": {
-        "ServiceName": {
-          "Fn::Sub": "lookahead-dev-web-${Slot}"
-        },
+        "ServiceName": "lookahead-dev-web",
         "Cluster": {
           "Ref": "Cluster"
         },
@@ -237,7 +224,7 @@
           "MaximumPercent": 200,
           "DeploymentCircuitBreaker": {
             "Enable": true,
-            "Rollback": false
+            "Rollback": true
           }
         },
         "NetworkConfiguration": {
