@@ -152,6 +152,13 @@ export const authorDocumentationGroups: readonly AuthorDocumentationGroup[] = [
             icon: '🧭',
           },
           {
+            id: 'dynamodb-migration',
+            label: 'DynamoDB migration',
+            href: '/admin/dynamodb-migration',
+            description: 'Four tables, identity-first migration steps, validation gates and recovery.',
+            icon: '🗄️',
+          },
+          {
             id: 'aws-dev-plan',
             label: 'DEV plan',
             href: '/admin/aws-dev-plan',
@@ -353,6 +360,11 @@ export const authorDocumentPages = {
     documentId: 'aws-deployment',
     summary: 'Read-only section · DEV built and tested locally; nothing deployed to AWS.',
     frameTitle: 'AWS deployment section overview and current state',
+  },
+  'dynamodb-migration': {
+    documentId: 'dynamodb-migration',
+    summary: 'Read-only plan · Local implementation in progress; cutover follows identity verification and migration gates.',
+    frameTitle: 'DynamoDB tables, migration steps, validation gates and recovery',
   },
   'aws-environment-journey': {
     documentId: 'aws-environment-journey',

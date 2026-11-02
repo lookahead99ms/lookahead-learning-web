@@ -74,6 +74,7 @@ describe('AuthorAdminMenu', () => {
     expect(nested.getAttribute('aria-label')).toBe('AWS deployment pages');
     expect(hrefs(nested as HTMLElement, 'a')).toEqual([
       '/admin/aws-environment-journey',
+      '/admin/dynamodb-migration',
       '/admin/aws-dev-plan',
       '/admin/aws-dev-decisions',
       '/admin/aws-dev-operations',
@@ -92,6 +93,13 @@ describe('AuthorAdminMenu', () => {
     expect(hrefs(root, '[aria-current="page"]')).toEqual(['/admin/aws-dev-budget']);
     // Other sections stay collapsed to their parent link.
     expect(root.querySelectorAll('.subpages')).toHaveLength(1);
+  });
+
+  it('marks DynamoDB migration as the current AWS deployment sub-page', () => {
+    const root = render('dynamodb-migration').nativeElement as HTMLElement;
+    expect(hrefs(root, '[aria-current="page"]')).toEqual(['/admin/dynamodb-migration']);
+    expect(root.querySelector('a[href="/admin/aws-deployment"]')?.getAttribute('aria-current')).toBe('true');
+    expect(root.querySelector('.subpages')?.textContent).toContain('DynamoDB migration');
   });
 
   it("shows a section's sub-pages on its parent page too", () => {
