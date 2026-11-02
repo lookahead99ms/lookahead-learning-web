@@ -1,5 +1,5 @@
 {
-  "schema": "lookahead-app-deploy-config/v1",
+  "schema": "lookahead-app-deploy-config/v2",
   "app": "web",
   "service": "web",
   "account": "509614632283",
@@ -10,33 +10,16 @@
   "sessionPrefix": "web-deploy",
   "cluster": "arn:aws:ecs:us-east-2:509614632283:cluster/lookahead-dev-cluster",
   "clusterName": "lookahead-dev-cluster",
+  "stack": "lookahead-dev-web",
   "logGroup": "/lookahead/dev/web",
   "namespaceName": "lookahead-dev.internal",
-  "slots": {
-    "blue": {
-      "stack": "lookahead-dev-web-blue",
-      "discoveryService": "web-blue",
-      "discoveryServiceArn": "arn:aws:servicediscovery:us-east-2:509614632283:service/srv-su6az3ccq2vgys3g"
-    },
-    "green": {
-      "stack": "lookahead-dev-web-green",
-      "discoveryService": "web-green",
-      "discoveryServiceArn": "arn:aws:servicediscovery:us-east-2:509614632283:service/srv-hvzfyodq4ivmanwb"
-    }
-  },
-  "flip": {
-    "mode": "alias",
+  "discovery": {
     "serviceName": "web",
     "serviceId": "srv-5lykyhk4ep6zjkzq",
-    "instanceId": "stable",
-    "hostnameSuffix": ".lookahead-dev.internal",
-    "serviceArn": "arn:aws:servicediscovery:us-east-2:509614632283:service/srv-5lykyhk4ep6zjkzq"
+    "serviceArn": "arn:aws:servicediscovery:us-east-2:509614632283:service/srv-5lykyhk4ep6zjkzq",
+    "note": "Cloud Map A/MULTIVALUE service web (network change set dlv-968-single-service-discovery-3, 2026-11-01); ECS registers the task."
   },
-  "coupling": {
-    "listenerStack": "lookahead-dev-ingress",
-    "gatewayServicePrefix": "lookahead-dev-gateway-",
-    "note": "Phase 1: the Gateway reaches web-<its own slot>; a slot a running Gateway uses is never rebuilt, and the previous slot is retired only when no Gateway runs on it (removed in phase 2, DLV-968 T12)."
-  },
+  "targetGroupArn": null,
   "observationMinutes": 15,
   "probeUrl": "https://dev.devlookahead.com/",
   "parameters": {
@@ -46,11 +29,9 @@
     "TaskRoleArn": "arn:aws:iam::509614632283:role/lookahead-dev-app-task",
     "ExecutionRoleArn": "arn:aws:iam::509614632283:role/lookahead-dev-ecs-execution",
     "TlsSecretArn": "arn:aws:secretsmanager:us-east-2:509614632283:secret:lookahead-dev-web-tls-pX1NCN",
-    "TlsVersion": "98331e44-009a-4d74-a6b5-22124e75c170",
-    "LogGroupName": "/lookahead/dev/web"
-  },
-  "slotParameters": {
-    "DiscoveryServiceArn": "discoveryServiceArn"
+    "TlsVersion": "595faec5-9cf3-4296-abd1-1dc58729fb72",
+    "LogGroupName": "/lookahead/dev/web",
+    "DiscoveryServiceArn": "arn:aws:servicediscovery:us-east-2:509614632283:service/srv-5lykyhk4ep6zjkzq"
   },
   "logFailurePatterns": [
     "ERROR",

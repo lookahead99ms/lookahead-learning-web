@@ -14,7 +14,7 @@ unset LOOKAHEAD_TLS_SCHEMA LOOKAHEAD_TLS_SERVER_CERTIFICATE LOOKAHEAD_TLS_SERVER
 credentialDirectory=/run/credentials
 [ "$#" -eq 0 ] || fail
 [ "$schema" = lookahead-tls/v1 ] || fail
-case "$serverName" in web-blue.lookahead-dev.internal|web-green.lookahead-dev.internal) ;; *) fail ;; esac
+case "$serverName" in web.lookahead-dev.internal|web-blue.lookahead-dev.internal|web-green.lookahead-dev.internal) ;; *) fail ;; esac  # stable name first (DLV-968 decision V); slot names until the slot stacks are gone
 for value in "$certificate" "$privateKey" "$trust"; do
     [ -n "$value" ] && [ "${#value}" -le 65536 ] || fail
 done
