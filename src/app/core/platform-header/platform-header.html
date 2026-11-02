@@ -3,7 +3,7 @@
   [class.with-search]="showSearch"
 >
   <a class="brand" routerLink="/" aria-label="Look Ahead home">
-    <app-platform-brand aria-hidden="true" />
+    <app-platform-brand aria-hidden="true" [mark]="devSession.status() ? 'DEV' : null" />
   </a>
   <nav class="platform-navigation" aria-label="Main navigation">
     <app-header-navigation (opened)="closeForNavigation()" />
@@ -148,6 +148,22 @@
           </div>
         }
       </form>
+    }
+
+    @if (devSession.status()) {
+      <button
+        class="leave-dev-button"
+        type="button"
+        appHeaderHint="Sign out of the DEV environment and return to its gate."
+        [disabled]="devSession.leaving()"
+        [attr.aria-busy]="devSession.leaving()"
+        (click)="devSession.leave()"
+      >
+        Leave DEV
+      </button>
+      @if (devSession.error()) {
+        <span class="leave-dev-error" role="alert">{{ devSession.error() }}</span>
+      }
     }
 
     @if ((!accounts.account() || accounts.sessionExpired()) && !onAuthenticationPage()) {
