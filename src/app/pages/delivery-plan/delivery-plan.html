@@ -118,6 +118,8 @@
             >
               + New work item
             </button>
+          } @else if (published()) {
+            <p class="published-copy">Published copy, read-only; edit on the local workstation.</p>
           } @else {
             <p>
               Read-only view. Start with <code>npm run start:private</code> to edit the private
@@ -545,6 +547,8 @@
                         >
                         <a [href]="evidenceUrl(item.id, report.id) + '?download=1'">Download .md</a>
                       </div>
+                    } @else if (published()) {
+                      <p>Published copy, read-only; open this report on the local workstation.</p>
                     } @else {
                       <p>Start the private local app to open this report.</p>
                     }
@@ -731,7 +735,7 @@
   } @else if (error()) {
     <section class="delivery-state error" role="alert">
       <span>Plan unavailable</span>
-      <h1>The delivery control room needs its local data.</h1>
+      <h1>{{ errorTitle() }}</h1>
       <p>{{ error() }}</p>
     </section>
   } @else {

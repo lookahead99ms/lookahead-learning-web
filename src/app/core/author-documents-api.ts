@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom, timeout } from 'rxjs';
 import { AUTHOR_PREVIEWS_BASE_URL } from './author-preview-config';
+import { PROTECTED_CONTENT } from '../content/content-delivery';
 import {
   AuthorDocument,
   AuthorDocumentDownload,
@@ -10,7 +11,11 @@ import {
 } from './author-documents-client';
 import { StudyPlanAccount } from '../pages/study-plan/study-plan-account';
 
-const publicationRoot = '/bff/author/previews/preview-directory/author-documents/';
+/** Local workstation: the preview directory stage served by the local previews proxy. */
+export const localPublicationRoot = '/bff/author/previews/preview-directory/author-documents/';
+/** Protected (cloud) build: the staff section of the Content publication Domain serves. */
+export const staffPublicationRoot = '/content/staff/author-documents/';
+const publicationRoots = [localPublicationRoot, staffPublicationRoot];
 const documentIds = new Set([
   'study-plan-review',
   'operations-reference',
@@ -74,7 +79,7 @@ function reference(value: unknown): { label: string; href: string } {
   if (/[\\\s]/.test(href)) throw new AuthorDocumentError('invalid');
   const url = new URL(href, 'https://private.invalid');
   const privateLink =
-    href.startsWith('/bff/author/previews/') &&
+    (href.startsWith('/bff/author/previews/') || href.startsWith('/content/staff/')) &&
     !href.includes('%') &&
     !href.split('/').includes('..') &&
     url.origin === 'https://private.invalid';
@@ -83,7 +88,18 @@ function reference(value: unknown): { label: string; href: string } {
   return { label, href };
 }
 
-function download(value: unknown): AuthorDocumentDownload {
+/**
+ * The manifest is one file published under both roots, so a stored href may name either known
+ * root; the returned href always uses the root this build reads from.
+ */
+function publishedHref(stored: unknown, relative: string, root: string): string {
+  const href = text(stored, 2000);
+  if (!publicationRoots.some((candidate) => href === candidate + relative))
+    throw new AuthorDocumentError('invalid');
+  return root + relative;
+}
+
+function download(value: unknown, root: string): AuthorDocumentDownload {
   const item = object(value),
     filename = text(item['filename'], 100),
     sha256 = hash(item['sha256']),
@@ -92,13 +108,17 @@ function download(value: unknown): AuthorDocumentDownload {
     throw new AuthorDocumentError('invalid');
   if (typeof bytes !== 'number' || !Number.isSafeInteger(bytes) || bytes <= 0 || bytes > 5_000_000)
     throw new AuthorDocumentError('invalid');
-  const href = `${publicationRoot}downloads/${sha256}/${filename}`;
-  if (item['href'] !== href) throw new AuthorDocumentError('invalid');
+  const href = publishedHref(item['href'], `downloads/${sha256}/${filename}`, root);
   return { label: text(item['label']), filename, href, bytes };
 }
 
 /** Strictly constrain executable documents to the immutable protected publication. */
-export function parseAuthorDocument(value: unknown, id: string): AuthorDocument {
+export function parseAuthorDocument(
+  value: unknown,
+  id: string,
+  root: string = localPublicationRoot,
+): AuthorDocument {
+  if (!publicationRoots.includes(root)) throw new AuthorDocumentError('invalid');
   if (!documentIds.has(id)) throw new AuthorDocumentError('invalid');
   const manifest = object(value);
   if (manifest['schemaVersion'] !== 1) throw new AuthorDocumentError('invalid');
@@ -124,9 +144,7 @@ export function parseAuthorDocument(value: unknown, id: string): AuthorDocument 
   const htmlSha256 = hash(content['sha256']);
   const sourceSha256 =
     provenance['sourceSha256'] === undefined ? undefined : hash(provenance['sourceSha256']);
-  const relativeHref = `${id}/${htmlSha256}/index.html`;
-  const href = text(content['href'], 2000);
-  if (href !== publicationRoot + relativeHref) throw new AuthorDocumentError('invalid');
+  const href = publishedHref(content['href'], `${id}/${htmlSha256}/index.html`, root);
   const sections = list(entry['sections'], maxDocumentSections).map((value) => {
     const item = object(value),
       fragment = text(item['fragment'], 101),
@@ -142,7 +160,7 @@ export function parseAuthorDocument(value: unknown, id: string): AuthorDocument 
     id,
     htmlSha256,
     sourceSha256,
-    href: publicationRoot + relativeHref,
+    href,
     title: text(entry['title']),
     version: text(entry['version']),
     owningTicket: text(entry['ticket'], 40),
@@ -156,7 +174,7 @@ export function parseAuthorDocument(value: unknown, id: string): AuthorDocument 
     evidence: list(entry['evidence'] ?? [], 50).map(reference),
     sections,
     references: list(entry['links'], 50).map(reference),
-    downloads: list(entry['downloads'] ?? [], 10).map(download),
+    downloads: list(entry['downloads'] ?? [], 10).map((item) => download(item, root)),
   };
 }
 
@@ -165,15 +183,21 @@ export class AuthorDocumentsApi implements AuthorDocumentsClient {
   private readonly http = inject(HttpClient);
   private readonly accounts = inject(StudyPlanAccount);
   private readonly base = inject(AUTHOR_PREVIEWS_BASE_URL);
+  private readonly protectedContent = inject(PROTECTED_CONTENT);
+  /** The protected build reads the Content publication; local builds need the previews proxy. */
+  private get root(): string {
+    return this.protectedContent ? staffPublicationRoot : localPublicationRoot;
+  }
   async load(id: string): Promise<AuthorDocument> {
-    if (this.base !== '/bff/author/previews/') throw new AuthorDocumentError('unpublished');
+    if (!this.protectedContent && this.base !== '/bff/author/previews/')
+      throw new AuthorDocumentError('unpublished');
     const account = this.accounts.account();
     if (!account || this.accounts.sessionExpired()) throw new AuthorDocumentError('unauthorized');
     if (!(account.permissions?.previewDocuments ?? account.authorPreview === true)) throw new AuthorDocumentError('forbidden');
     if (!documentIds.has(id)) throw new AuthorDocumentError('invalid');
     try {
       const value = await firstValueFrom(
-        this.http.get<unknown>(publicationRoot + 'manifest.json').pipe(timeout(10000)),
+        this.http.get<unknown>(this.root + 'manifest.json').pipe(timeout(10000)),
       );
       if (
         this.accounts.sessionExpired() ||
@@ -182,7 +206,7 @@ export class AuthorDocumentsApi implements AuthorDocumentsClient {
         throw new AuthorDocumentError('unauthorized');
       if (!(this.accounts.account()?.permissions?.previewDocuments ?? this.accounts.account()?.authorPreview === true))
         throw new AuthorDocumentError('forbidden');
-      return parseAuthorDocument(value, id);
+      return parseAuthorDocument(value, id, this.root);
     } catch (error) {
       if (error instanceof AuthorDocumentError) throw error;
       if (error instanceof HttpErrorResponse) {
