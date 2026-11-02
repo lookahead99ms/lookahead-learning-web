@@ -37,6 +37,7 @@ import {
   isAuthorDocumentationRoute,
 } from '../author-workspace-nav/author-workspace-links';
 import { ScrollLock } from '../scroll-lock/scroll-lock';
+import { HeaderHint } from './header-hint';
 
 export function accountTriggerLabel(displayName: string | null | undefined): string {
   const name = displayName?.trim().replace(/\s+/g, ' ');
@@ -100,6 +101,7 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
   selector: 'app-platform-header',
   imports: [
     ScrollLock,
+    HeaderHint,
     PlatformBrand,
     HeaderNavigation,
     TopicShortcuts,
@@ -662,6 +664,46 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
       }
       .header-utilities .profile-dropdown-container {
         margin: 0;
+      }
+      /* DLV-968: quiet descriptions for the header utilities (see HeaderHint). Out of flow and
+         positioned from the item's own box, so it adds no layout and nothing in the header clips
+         it; it sits in the header's stacking context, above the page the header overlaps. */
+      .header-hint {
+        position: absolute;
+        z-index: 60;
+        max-width: 16rem;
+        padding: 6px 10px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+        color: var(--text-body);
+        box-shadow: 0 6px 18px var(--shadow);
+        font:
+          400 0.8rem/1.4 system-ui,
+          sans-serif;
+        text-align: start;
+        white-space: normal;
+        pointer-events: none;
+        opacity: 0;
+        visibility: hidden;
+        transition:
+          opacity 150ms ease,
+          visibility 0s linear 150ms;
+      }
+      .header-hint.is-visible {
+        opacity: 1;
+        visibility: visible;
+        transition-delay: 0s;
+      }
+      @media (hover: none) {
+        .header-hint {
+          transition: none;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .header-hint {
+          transition: none;
+        }
       }
       .platform-header.with-search .header-search-form:not(.search-palette) {
         position: relative;

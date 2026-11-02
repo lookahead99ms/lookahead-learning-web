@@ -897,3 +897,194 @@ it.each([
 ])('formats account trigger %s as %s without exposing an email', (name, expected) => {
   expect(accountTriggerLabel(name)).toBe(expected);
 });
+
+describe('PlatformHeader utility hints (DLV-968)', () => {
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [PlatformHeader],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        { provide: AUTHOR_PREVIEWS_BASE_URL, useValue: '/bff/author/previews/' },
+        { provide: ContentService, useValue: { getSearchIndex: () => of([]) } },
+      ],
+    }).compileComponents();
+    vi.spyOn(TestBed.inject(StudyPlanAccount), 'initialize').mockResolvedValue();
+  });
+
+  /** The element `aria-describedby` points at, which must be the hint rendered next to the item. */
+  function hintFor(element: HTMLElement, item: Element | null): HTMLElement {
+    expect(item).not.toBeNull();
+    const id = (item as HTMLElement).getAttribute('aria-describedby');
+    expect(id).toBeTruthy();
+    const hint = element.querySelector(`#${id}`) as HTMLElement | null;
+    expect(hint).not.toBeNull();
+    expect(hint!.classList.contains('header-hint')).toBe(true);
+    expect(hint!.getAttribute('role')).toBe('tooltip');
+    expect(item!.nextElementSibling).toBe(hint);
+    expect(item!.hasAttribute('title')).toBe(false);
+    return hint!;
+  }
+
+  it('describes Search, Study Plan and both theme buttons with a hidden hint next to each item', () => {
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    const element: HTMLElement = fixture.nativeElement;
+    const [light, dark] = Array.from(element.querySelectorAll('.theme-switch button'));
+    expect(hintFor(element, element.querySelector('.header-search-trigger')).textContent).toContain(
+      'Search lessons, problems and plans.',
+    );
+    expect(
+      hintFor(element, element.querySelector('a.navigation-utility[href^="/study-plan"]')).textContent,
+    ).toBe('Your schedule and progress across courses.');
+    expect(hintFor(element, light).textContent).toBe('Light colors.');
+    expect(hintFor(element, dark).textContent).toBe('Dark colors.');
+    for (const hint of Array.from(element.querySelectorAll('.header-hint'))) {
+      expect(hint.classList.contains('is-visible')).toBe(false);
+    }
+    expect(element.querySelectorAll('.header-hint').length).toBe(5);
+  });
+
+  it('names the keyboard shortcut shown in the Search button inside its hint', () => {
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    const element: HTMLElement = fixture.nativeElement;
+    const trigger = element.querySelector('.header-search-trigger') as HTMLButtonElement;
+    const shortcut = trigger.querySelector('kbd')!.textContent!.trim();
+    expect(['⌘K', 'Ctrl K']).toContain(shortcut);
+    expect(hintFor(element, trigger).textContent).toBe(
+      `Search lessons, problems and plans. Shortcut: ${shortcut}.`,
+    );
+  });
+
+  it('describes Sign in when signed out and the account trigger when signed in', () => {
+    const store = TestBed.inject(StudyPlanAccount);
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    const element: HTMLElement = fixture.nativeElement;
+    expect(hintFor(element, element.querySelector('.sign-in-button')).textContent).toBe(
+      'Sign in to save progress and plans to your account.',
+    );
+    store.account.set({
+      accountId: 'test',
+      username: 'test@example.test',
+      displayName: 'Test Learner',
+      topicGrants: [],
+    });
+    fixture.detectChanges();
+    expect(element.querySelector('.sign-in-button')).toBeNull();
+    const trigger = element.querySelector('.avatar-trigger-btn') as HTMLButtonElement;
+    expect(hintFor(element, trigger).textContent).toBe(
+      'Your account: study plan, settings, support and sign out.',
+    );
+    expect(trigger.getAttribute('aria-label')).toBe('Test account menu');
+    expect(element.querySelectorAll('.header-hint').length).toBe(5);
+  });
+
+  it('shows the hint on hover and keyboard focus, and hides it on leave, click and Escape', () => {
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    const element: HTMLElement = fixture.nativeElement;
+    const link = element.querySelector('a.navigation-utility[href^="/study-plan"]') as HTMLAnchorElement;
+    const hint = hintFor(element, link);
+    vi.spyOn(link, 'matches').mockImplementation((selector) => selector === ':focus-visible');
+
+    link.dispatchEvent(new Event('mouseenter'));
+    expect(hint.classList.contains('is-visible')).toBe(true);
+    link.dispatchEvent(new Event('mouseleave'));
+    expect(hint.classList.contains('is-visible')).toBe(false);
+
+    link.dispatchEvent(new Event('focusin'));
+    expect(hint.classList.contains('is-visible')).toBe(true);
+    link.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    expect(hint.classList.contains('is-visible')).toBe(false);
+    link.dispatchEvent(new Event('focusout'));
+
+    link.dispatchEvent(new Event('mouseenter'));
+    expect(hint.classList.contains('is-visible')).toBe(true);
+    link.dispatchEvent(new Event('click'));
+    expect(hint.classList.contains('is-visible')).toBe(false);
+    // Still hovered after the click: the hint stays down until the pointer leaves and returns.
+    link.dispatchEvent(new Event('focusin'));
+    expect(hint.classList.contains('is-visible')).toBe(false);
+    link.dispatchEvent(new Event('focusout'));
+    link.dispatchEvent(new Event('mouseleave'));
+    link.dispatchEvent(new Event('mouseenter'));
+    expect(hint.classList.contains('is-visible')).toBe(true);
+    link.dispatchEvent(new Event('mouseleave'));
+  });
+
+  it('opens nothing for a focus that is not focus-visible (a mouse click on the item)', () => {
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    const element: HTMLElement = fixture.nativeElement;
+    const [light] = Array.from(element.querySelectorAll('.theme-switch button')) as HTMLButtonElement[];
+    const hint = hintFor(element, light);
+    vi.spyOn(light, 'matches').mockReturnValue(false);
+    light.dispatchEvent(new Event('focusin'));
+    expect(hint.classList.contains('is-visible')).toBe(false);
+  });
+
+  it('does not hover-open on a touch-only device and keeps taps unblocked', () => {
+    const matchMedia = vi.fn((query: string) => ({ matches: false, media: query }) as MediaQueryList);
+    Object.defineProperty(window, 'matchMedia', { value: matchMedia, configurable: true, writable: true });
+    try {
+      const fixture = TestBed.createComponent(PlatformHeader);
+      fixture.detectChanges();
+      const element: HTMLElement = fixture.nativeElement;
+      const trigger = element.querySelector('.header-search-trigger') as HTMLButtonElement;
+      const hint = hintFor(element, trigger);
+      trigger.dispatchEvent(new Event('mouseenter'));
+      expect(matchMedia).toHaveBeenCalledWith('(hover: hover)');
+      expect(hint.classList.contains('is-visible')).toBe(false);
+      expect(getComputedStyle(hint).pointerEvents).toBe('none');
+    } finally {
+      // jsdom has no matchMedia of its own; remove the stub so other specs see the real state.
+      delete (window as unknown as { matchMedia?: unknown }).matchMedia;
+    }
+  });
+
+  it('places the hint under the item and pulls it back inside the viewport near the right edge', () => {
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    const element: HTMLElement = fixture.nativeElement;
+    const link = element.querySelector('a.navigation-utility[href^="/study-plan"]') as HTMLAnchorElement;
+    const hint = hintFor(element, link);
+    const rect = (left: number, top: number, width: number, height: number) =>
+      ({ left, top, width, height, right: left + width, bottom: top + height }) as DOMRect;
+    vi.spyOn(link, 'getBoundingClientRect').mockReturnValue(rect(100, 10, 80, 44));
+    vi.spyOn(hint, 'getBoundingClientRect').mockReturnValue(rect(20, 30, 200, 40));
+    const clientWidth = vi.spyOn(document.documentElement, 'clientWidth', 'get');
+
+    clientWidth.mockReturnValue(1200);
+    link.dispatchEvent(new Event('mouseenter'));
+    expect(hint.style.left).toBe('80px');
+    expect(hint.style.top).toBe('30px');
+    link.dispatchEvent(new Event('mouseleave'));
+
+    clientWidth.mockReturnValue(240);
+    link.dispatchEvent(new Event('mouseenter'));
+    // 240 - 8 - 200 = 32 for the item's left edge, minus the hint's own origin (20).
+    expect(hint.style.left).toBe('12px');
+    link.dispatchEvent(new Event('mouseleave'));
+
+    clientWidth.mockReturnValue(0);
+    link.dispatchEvent(new Event('mouseenter'));
+    expect(hint.style.left).toBe('80px');
+  });
+
+  it('removes each hint with its item instead of leaving it in the header', () => {
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    const element: HTMLElement = fixture.nativeElement;
+    expect(element.querySelectorAll('.header-hint').length).toBe(5);
+    fixture.componentRef.setInput('hideUtilities', true);
+    fixture.detectChanges();
+    expect(element.querySelectorAll('.header-hint').length).toBe(1);
+    expect(element.querySelector('.header-hint')!.textContent).toBe(
+      'Sign in to save progress and plans to your account.',
+    );
+    fixture.destroy();
+    expect(document.querySelectorAll('.header-hint').length).toBe(0);
+  });
+});
