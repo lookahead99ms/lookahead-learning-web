@@ -7,6 +7,7 @@ import { PlatformHeader, accountTriggerLabel } from './platform-header';
 import { AUTHOR_PREVIEWS_BASE_URL } from '../author-preview-config';
 import { StudyPlanAccount } from '../../pages/study-plan/study-plan-account';
 import { SearchDocument } from '../../content/content.models';
+import { DevSession } from '../dev-session-notice/dev-session';
 
 describe('PlatformHeader account disclosure', () => {
   beforeEach(async () => {
@@ -1086,5 +1087,54 @@ describe('PlatformHeader utility hints (DLV-968)', () => {
     );
     fixture.destroy();
     expect(document.querySelectorAll('.header-hint').length).toBe(0);
+  });
+});
+
+describe('PlatformHeader DEV session (user decision 2026-11-02)', () => {
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [PlatformHeader],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        { provide: AUTHOR_PREVIEWS_BASE_URL, useValue: '/bff/author/previews/' },
+        { provide: ContentService, useValue: { getSearchIndex: () => of([]) } },
+      ],
+    }).compileComponents();
+    vi.spyOn(TestBed.inject(StudyPlanAccount), 'initialize').mockResolvedValue();
+  });
+
+  it('shows no DEV mark and no Leave DEV outside a DEV session', () => {
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.identity-mark')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.leave-dev-button')).toBeNull();
+    expect(fixture.nativeElement.querySelector('app-platform-brand').getAttribute('aria-label')).toBe('LookAhead');
+  });
+
+  it('marks the brand "DEV" and offers Leave DEV beside Sign in while the DEV session is admitted', async () => {
+    const session = TestBed.inject(DevSession);
+    session.status.set({ dev: true, deadline: '2026-11-06T04:00:00Z', warning: false, maintenance: false });
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    const mark = fixture.nativeElement.querySelector('.identity-mark') as HTMLElement;
+    expect(mark.textContent?.trim()).toBe('DEV');
+    expect(fixture.nativeElement.querySelector('app-platform-brand').getAttribute('aria-label')).toBe('LookAhead DEV');
+    const leave = fixture.nativeElement.querySelector('.header-utilities > .leave-dev-button') as HTMLButtonElement;
+    expect(leave.textContent?.trim()).toBe('Leave DEV');
+    expect(leave.disabled).toBe(false);
+    const hint = document.getElementById(leave.getAttribute('aria-describedby') ?? '');
+    expect(hint?.textContent).toContain('Sign out of the DEV environment');
+    const signIn = fixture.nativeElement.querySelector('.sign-in-button') as HTMLElement;
+    expect(leave.compareDocumentPosition(signIn) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const leaveSpy = vi.spyOn(session, 'leave').mockResolvedValue();
+    leave.click();
+    expect(leaveSpy).toHaveBeenCalledTimes(1);
+    session.leaving.set(true);
+    session.error.set('Unable to confirm sign-out. Retry Leave DEV.');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect((fixture.nativeElement.querySelector('.leave-dev-button') as HTMLButtonElement).disabled).toBe(true);
+    expect(fixture.nativeElement.querySelector('.leave-dev-error')?.textContent).toContain('Retry Leave DEV');
   });
 });

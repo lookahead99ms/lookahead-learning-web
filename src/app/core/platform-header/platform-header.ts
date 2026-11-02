@@ -38,6 +38,7 @@ import {
 } from '../author-workspace-nav/author-workspace-links';
 import { ScrollLock } from '../scroll-lock/scroll-lock';
 import { HeaderHint } from './header-hint';
+import { DevSession } from '../dev-session-notice/dev-session';
 
 export function accountTriggerLabel(displayName: string | null | undefined): string {
   const name = displayName?.trim().replace(/\s+/g, ' ');
@@ -312,6 +313,37 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
       .profile-dropdown-container {
         position: relative;
         margin-left: 8px;
+      }
+      /* DEV only: sign out of the environment and return to its gate (user decision 2026-11-02). */
+      .header-utilities > .leave-dev-button {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 12px;
+        margin-left: 8px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+        color: var(--text-body);
+        font: inherit;
+        font-size: 0.8rem;
+        font-weight: 700;
+        white-space: nowrap;
+        cursor: pointer;
+      }
+      .header-utilities > .leave-dev-button:hover,
+      .header-utilities > .leave-dev-button:focus-visible {
+        border-color: var(--accent-strong);
+        color: var(--accent-strong);
+      }
+      .header-utilities > .leave-dev-button:disabled {
+        opacity: 0.6;
+        cursor: progress;
+      }
+      .header-utilities > .leave-dev-error {
+        font-size: 0.75rem;
+        color: var(--danger);
+        max-width: 14rem;
       }
       .study-plan-link {
         margin-left: auto;
@@ -769,6 +801,16 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
           grid-row: 1;
           justify-self: end;
         }
+        .header-utilities > .leave-dev-button {
+          grid-column: 3;
+          grid-row: 2;
+          justify-self: end;
+          margin-left: 0;
+        }
+        .header-utilities > .leave-dev-error {
+          grid-column: 1 / -1;
+          grid-row: 4;
+        }
         .header-utilities > .sign-in-button {
           display: inline-flex;
         }
@@ -833,6 +875,7 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
 export class PlatformHeader implements AfterViewInit, OnDestroy {
   protected readonly authorWorkspaceLinks = computed(() => visibleAdminLinks(this.accounts.account()));
   protected readonly accounts = inject(StudyPlanAccount);
+  protected readonly devSession = inject(DevSession);
   protected readonly accountLabel = computed(() =>
     accountTriggerLabel(this.accounts.account()?.displayName),
   );

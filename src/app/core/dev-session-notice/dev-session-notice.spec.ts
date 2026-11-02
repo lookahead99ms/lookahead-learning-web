@@ -10,14 +10,22 @@ describe('DEV session status', () => {
 
 describe('DEV session notices', () => {
   afterEach(() => { TestBed.resetTestingModule(); vi.unstubAllGlobals(); });
-  it('renders the Eastern cutoff and an actionable leave button', () => {
+  it('renders the Eastern cutoff as a slim notice; Leave DEV lives in the header since 2026-11-02', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ status: 404 }));
     const fixture = TestBed.createComponent(DevSessionNotice);
     fixture.componentInstance.status.set({dev:true,deadline:'2026-10-15T04:00:00Z',warning:true,maintenance:false});
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('DEV shuts down at');
     expect(fixture.nativeElement.textContent).toContain('12:00 AM');
-    expect(fixture.nativeElement.querySelector('button').textContent).toContain('Leave DEV');
+    expect(fixture.nativeElement.querySelector('button')).toBeNull();
+  });
+  it('shows nothing for an ordinary admitted session: the header carries the DEV mark instead (user, 2026-11-02)', () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ status: 404 }));
+    const fixture = TestBed.createComponent(DevSessionNotice);
+    fixture.componentInstance.status.set({dev:true,deadline:'2026-10-15T04:00:00Z',warning:false,maintenance:false});
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('aside')).toBeNull();
+    expect(fixture.nativeElement.textContent.trim()).toBe('');
   });
   it('shows the protected maintenance hold instead of promising immediate shutdown', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ status: 404 }));

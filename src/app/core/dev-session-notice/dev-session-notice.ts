@@ -1,34 +1,34 @@
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject } from '@angular/core';
 import { environment } from '../../../environments/environment';
+import { DevSession, parseDevStatus } from './dev-session';
 
-export interface DevSessionStatus { dev: true; deadline: string; warning: boolean; maintenance: boolean }
-export function parseDevStatus(value: unknown): DevSessionStatus | null {
-  if (!value || typeof value !== 'object') return null;
-  const v = value as Record<string, unknown>;
-  if (v['dev'] !== true || typeof v['deadline'] !== 'string' || typeof v['warning'] !== 'boolean' || typeof v['maintenance'] !== 'boolean') return null;
-  if (v['deadline'] && !Number.isFinite(Date.parse(v['deadline']))) return null;
-  return v as unknown as DevSessionStatus;
-}
+export { parseDevStatus } from './dev-session';
+export type { DevSessionStatus } from './dev-session';
+
+/**
+ * Polls the Gateway's `/dev/session` and shows a slim notice only when DEV is about to shut down or is in maintenance.
+ * The everyday "test environment" line and the Leave DEV button moved into the header (user decision 2026-11-02):
+ * the brand reads "LookAhead DEV" and "Leave DEV" sits beside Sign in.
+ */
 @Component({
   selector: 'app-dev-session-notice',
   template: `@if (status(); as session) {
-    <aside aria-label="DEV session" class="dev-session-notice">
-      <span>DEV</span>
-      <span role="status">@if (session.maintenance) { Maintenance is in progress. You may need to sign in again. }
-        @else if (session.warning) { DEV shuts down at {{ deadlineLabel() }}. Save your work. }
-        @else { Test environment. Saved progress persists when DEV stops. }</span>
-      <button type="button" (click)="leave()" [disabled]="leaving()">Leave DEV</button>
-      @if (error()) { <span role="alert">{{ error() }}</span> }
-    </aside>
+    @if (session.maintenance || session.warning) {
+      <aside aria-label="DEV session" class="dev-session-notice">
+        <span class="dev-session-label">DEV</span>
+        <span role="status">@if (session.maintenance) { Maintenance is in progress. You may need to sign in again. }
+          @else { DEV shuts down at {{ deadlineLabel() }}. Save your work. }</span>
+      </aside>
+    }
   }`,
-  styles: `.dev-session-notice { display:flex; flex-wrap:wrap; align-items:center; gap:.75rem; padding:.6rem 1rem; border-bottom:1px solid currentColor; font-size:.875rem; }
-    .dev-session-notice button { margin-inline-start:auto; padding:.4rem .7rem; font:inherit; cursor:pointer; }
-    .dev-session-notice button:focus-visible { outline:2px solid currentColor; outline-offset:3px; }`,
+  styles: `.dev-session-notice { display:flex; flex-wrap:wrap; align-items:center; gap:.75rem; padding:.5rem 1rem; border-bottom:1px solid var(--line); background: var(--surface-muted); color: var(--text-body); font-size:.875rem; }
+    .dev-session-label { font-weight: 700; letter-spacing: .08em; font-size: .72rem; color: var(--text-subtle); }`,
 })
 export class DevSessionNotice {
-  readonly status = signal<DevSessionStatus | null>(null);
-  readonly leaving = signal(false);
-  readonly error = signal('');
+  private readonly session = inject(DevSession);
+  readonly status = this.session.status;
+  readonly leaving = this.session.leaving;
+  readonly error = this.session.error;
   private readonly destroyRef = inject(DestroyRef);
   private destroyed = false;
   private timer: ReturnType<typeof setTimeout> | undefined;
@@ -50,18 +50,5 @@ export class DevSessionNotice {
       this.timer = setTimeout(() => { if (!this.destroyed) void this.poll(); }, 30000);
     }
   }
-  async leave(): Promise<void> {
-    this.leaving.set(true); this.error.set('');
-    try {
-      const csrfResponse = await fetch('/dev/csrf', { credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.timeout(5000) });
-      if (!csrfResponse.ok) throw new Error();
-      const csrf = await csrfResponse.json();
-      if (csrf.headerName !== 'X-CSRF-TOKEN' || typeof csrf.token !== 'string') throw new Error();
-      const response = await fetch('/dev/leave', { method: 'POST', credentials: 'same-origin', headers: { 'X-CSRF-TOKEN': csrf.token }, signal: AbortSignal.timeout(10000) });
-      if (!response.ok) throw new Error();
-      const result = await response.json(); const destination = new URL(result.logoutUrl);
-      if (destination.protocol !== 'https:' || !destination.hostname.endsWith('.amazoncognito.com') || destination.pathname !== '/logout') throw new Error();
-      window.location.assign(destination.href);
-    } catch { this.error.set('Unable to confirm sign-out. Retry Leave DEV.'); this.leaving.set(false); }
-  }
+  leave(): Promise<void> { return this.session.leave(); }
 }
