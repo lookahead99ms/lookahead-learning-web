@@ -328,6 +328,8 @@
                         }
                         @if (result.access.tier === 'premium') {
                           <span>Premium</span>
+                        } @else if (!showsText(result)) {
+                          <span class="access-label">Sign in to read</span>
                         }
                       </nav>
                       @if (compactPreview() && previewSelected(result)) {

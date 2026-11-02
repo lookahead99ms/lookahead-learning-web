@@ -597,3 +597,100 @@ button:disabled {
   margin: 2px 0 0;
   line-height: 1.5;
 }
+
+/* DLV-969 (2026-11-02): Waiting for access. The same table shape as Test accounts and People;
+   the Admit menu and button sit together in the last column. */
+.waiting-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.waiting-table th,
+.waiting-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  text-align: start;
+  vertical-align: top;
+}
+.waiting-table thead th {
+  background: var(--surface-muted);
+  color: var(--text-strong);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.waiting-table tbody th {
+  font-weight: 400;
+}
+.waiting-table .person {
+  display: block;
+  color: var(--text-strong);
+  font-weight: 700;
+}
+.waiting-table .sub {
+  display: block;
+  color: var(--text-subtle);
+}
+.admit-cell {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.admit-cell label {
+  display: inline-flex;
+}
+.admit-cell select {
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-page);
+  color: var(--text-strong);
+  font: inherit;
+}
+.admit-cell select:focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 2px;
+}
+.admit-cell button {
+  padding-inline: 14px;
+}
+/* Phones and narrow columns: each waiting person becomes a card with labelled lines. */
+@media (max-width: 760px) {
+  .waiting-table thead {
+    display: none;
+  }
+  .waiting-table,
+  .waiting-table tbody,
+  .waiting-table tr,
+  .waiting-table th,
+  .waiting-table td {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .waiting-table tbody tr {
+    margin-top: 10px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+  }
+  .waiting-table td[data-label]::before {
+    display: block;
+    color: var(--text-subtle);
+    font-size: 12px;
+    font-weight: 700;
+    content: attr(data-label);
+  }
+  .waiting-table th,
+  .waiting-table td {
+    border-bottom: 0;
+  }
+  .admit-cell,
+  .admit-cell label,
+  .admit-cell select,
+  .admit-cell button {
+    width: 100%;
+  }
+}

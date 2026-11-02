@@ -1068,3 +1068,58 @@ app-engineering-challenge.home-challenge {
     white-space: normal;
   }
 }
+
+/* ---------- DLV-969 (2026-11-02): "/?access=pending" after an unadmitted DEV sign-in ----------
+   One quiet notice above the hero; every rule stays under .access-pending and uses the theme
+   tokens, so the light and dark pages both read it the same way. */
+.access-pending {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 18px 22px;
+  border: 1px solid color-mix(in srgb, var(--accent-strong) 40%, var(--platform-edge, var(--line)));
+  border-inline-start-width: 4px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--accent-strong) 8%, var(--surface));
+  color: var(--text-strong);
+}
+.access-pending h2 {
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+}
+.access-pending p {
+  max-width: 72ch;
+  margin: 0;
+  color: var(--text-body);
+  font-size: 15px;
+}
+.access-pending .access-pending-action {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 44px;
+  margin-top: 4px;
+  padding: 10px 20px;
+  border: 1.5px solid var(--accent-strong);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-strong) 10%, transparent);
+  color: var(--accent-strong);
+  font-size: 14px;
+  font-weight: 750;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.access-pending .access-pending-action:hover {
+  background: var(--accent-strong);
+  color: var(--accent-on-primary);
+}
+@media (max-width: 640px) {
+  .access-pending {
+    padding: 16px;
+  }
+  .access-pending .access-pending-action {
+    width: 100%;
+    justify-content: center;
+  }
+}

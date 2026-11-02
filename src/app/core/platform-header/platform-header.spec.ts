@@ -501,6 +501,19 @@ describe('PlatformHeader account disclosure', () => {
     expect(document.activeElement).toBe(trigger);
     expect(trigger.getAttribute('aria-expanded')).toBe('false');
   });
+  it('focuses the palette input without scrolling the page (DLV-969, ⌘K from the Study Plan review step)', async () => {
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    const focus = vi.spyOn(HTMLElement.prototype, 'focus');
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }));
+    fixture.detectChanges();
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    const input = fixture.nativeElement.querySelector('.header-search-input') as HTMLInputElement;
+    expect(input).not.toBeNull();
+    const call = focus.mock.calls.find((_, index) => focus.mock.instances[index] === input);
+    expect(call?.[0]).toEqual({ preventScroll: true });
+    focus.mockRestore();
+  });
 
   it.each([{ metaKey: true }, { ctrlKey: true }])(
     'uses the same quick search for shortcut %s',

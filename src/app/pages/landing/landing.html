@@ -1,5 +1,17 @@
 <app-platform-header />
 <main id="main-content" class="landing-page">
+  @if (accessPending()) {
+    <!-- DLV-969 (2026-11-02): the Gateway sends an unadmitted DEV sign-in back here with ?access=pending. -->
+    <aside class="access-pending" role="status" aria-live="polite">
+      <h2>Your sign-in worked</h2>
+      <p>
+        Access to Look Ahead is waiting for the owner's approval. You can read the open lessons
+        meanwhile; once you are admitted, sign in again and everything opens. A request that is not
+        approved within 48 hours is removed.
+      </p>
+      <a class="access-pending-action" routerLink="/learn">Browse open lessons</a>
+    </aside>
+  }
   <div class="discovery-opening">
     @if (heroVariant() !== 'classic') {
       <app-hero-candidate

@@ -1138,10 +1138,12 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
     this.loadSearchIndex();
     this.paletteOpen.set(true);
     this.suggestionsOpen.set(true);
+    // DLV-969 (2026-11-02): the input sits in the sticky header, so a plain focus() scrolls the window to the
+    // header's static position (the page jumped on ⌘K from the Study Plan review step). Keep the page where it is.
     requestAnimationFrame(() =>
       this.elementRef.nativeElement
         .querySelector<HTMLInputElement>('.header-search-input')
-        ?.focus(),
+        ?.focus({ preventScroll: true }),
     );
   }
 

@@ -343,6 +343,38 @@ button:disabled {
   outline: 3px solid var(--accent-focus);
   outline-offset: 3px;
 }
+/* DLV-969: Google's own button colours (light theme), the same in both page themes. */
+.google-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 46px;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  box-sizing: border-box;
+  border: 1px solid #747775;
+  border-radius: 8px;
+  background: #fff;
+  color: #1f1f1f;
+  font-weight: 600;
+  text-decoration: none;
+}
+.google-action svg {
+  flex: none;
+  width: 20px;
+  height: 20px;
+}
+.google-action:hover {
+  background: #f2f2f2;
+}
+.google-action:focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 3px;
+}
+.google-action + .auth-divider {
+  margin-bottom: 16px;
+}
 .managed-login-hint {
   margin: 8px 0 0;
   color: var(--text-subtle);

@@ -306,6 +306,21 @@ export class Search implements OnInit, AfterViewInit {
       .filter((group) => group.results.length > 0);
   });
 
+  protected readonly signedOut = computed(
+    () => !this.accounts.account() || this.accounts.sessionExpired(),
+  );
+
+  // The first result of the current order; selecting another row never moves the text to it, so a
+  // signed-out visitor cannot reveal every item one click at a time (user decision, 2026-11-02).
+  private readonly firstRenderedResult = computed(() => this.groups()[0]?.results[0] ?? null);
+
+  /** Signed-out visitors read the text of public items and of the first result only (2026-11-02). */
+  protected showsText(result: SearchDocument): boolean {
+    if (!this.signedOut() || result.access.public === true) return true;
+    const first = this.firstRenderedResult();
+    return !!first && this.resultKey(first) === this.resultKey(result);
+  }
+
   ngOnInit(): void {
     this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       // Internal updates already changed the filters; keep any unsubmitted text.
@@ -818,7 +833,7 @@ export class Search implements OnInit, AfterViewInit {
   }
 
   protected resultRowSummary(result: SearchDocument): string {
-    if (result.contentType === 'q-and-a') return '';
+    if (result.contentType === 'q-and-a' || !this.showsText(result)) return '';
     const description = this.preview(result);
     return description.localeCompare(this.resultCardTitle(result).replace(/\s+/g, ' ').trim(), undefined, {
       sensitivity: 'base',
@@ -826,6 +841,8 @@ export class Search implements OnInit, AfterViewInit {
   }
 
   protected summaryText(result: SearchDocument): string {
+    if (!this.showsText(result))
+      return 'Sign in to read this item. Signed-out visitors see one preview per tab.';
     if (result.contentType !== 'q-and-a' || this.practiceFormat(result) !== 'explain') {
       return this.preview(result) || 'Open this item to see its full content.';
     }
