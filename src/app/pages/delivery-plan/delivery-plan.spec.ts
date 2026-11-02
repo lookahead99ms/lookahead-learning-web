@@ -8,6 +8,8 @@ import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import { ContentService } from '../../content/content.service';
 import { DeliveryPlan } from '../../content/delivery-plan.models';
 import { DeliveryEditorService, DeliverySnapshot } from '../../content/delivery-editor.service';
+import { DeliveryPublicationService } from '../../content/delivery-publication.service';
+import { PROTECTED_CONTENT } from '../../content/content-delivery';
 import { SearchDocument } from '../../content/content.models';
 import { DeliveryPlanPage } from './delivery-plan';
 import { routes } from '../../app.routes';
@@ -128,12 +130,18 @@ describe('DeliveryPlanPage', () => {
     load: vi.fn<() => Observable<DeliverySnapshot>>(),
     save: vi.fn(),
   };
+  const publication = { load: vi.fn<() => Observable<DeliverySnapshot>>() };
+  // Read lazily when the page first injects PROTECTED_CONTENT, so a nested beforeEach can flip it.
+  let protectedBuild = false;
 
   beforeEach(async () => {
     vi.restoreAllMocks();
     vi.clearAllMocks();
     editor.load.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 404 })));
     editor.save.mockReset();
+    publication.load.mockReset();
+    publication.load.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 404 })));
+    protectedBuild = false;
     HTMLDialogElement.prototype.showModal = function () {
       this.setAttribute('open', '');
     };
@@ -153,6 +161,8 @@ describe('DeliveryPlanPage', () => {
         ]),
         { provide: ContentService, useValue: content },
         { provide: DeliveryEditorService, useValue: editor },
+        { provide: DeliveryPublicationService, useValue: publication },
+        { provide: PROTECTED_CONTENT, useFactory: () => protectedBuild },
       ],
     }).compileComponents();
     const accounts = TestBed.inject(StudyPlanAccount);
@@ -187,6 +197,7 @@ describe('DeliveryPlanPage', () => {
     harness.detectChanges();
 
     expect(content.getDeliveryPlan).toHaveBeenCalledOnce();
+    expect(publication.load).not.toHaveBeenCalled();
     expect(harness.routeNativeElement?.textContent).toContain('Read-only view');
     expect(
       harness.routeNativeElement?.querySelectorAll('.delivery-outline .heading-outline a'),
@@ -858,5 +869,114 @@ describe('DeliveryPlanPage', () => {
     saved.next({ plan, revision: 'revision-2', workItemId: 'TEST-1' });
     saved.complete();
     expect(await TestBed.inject(Router).navigateByUrl('/away')).toBe(true);
+  });
+
+  describe('protected build (no local editor, Content publication served by Domain)', () => {
+    const snapshot = structuredClone(plan);
+    snapshot.workItems[0].evidence = [
+      { id: 'report', title: 'Route inventory report', path: 'docs/evidence/report.md' },
+    ];
+    beforeEach(() => {
+      protectedBuild = true;
+      publication.load.mockReturnValue(of({ plan: snapshot, revision: 'published-1' }));
+    });
+
+    async function publishedBoard(status = 404): Promise<RouterTestingHarness> {
+      editor.load.mockReturnValue(throwError(() => new HttpErrorResponse({ status })));
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl('/delivery-plan', DeliveryPlanPage);
+      harness.detectChanges();
+      return harness;
+    }
+
+    it.each([404, 0])(
+      'shows the published copy read-only when the local editor answers %s',
+      async (status) => {
+        const harness = await publishedBoard(status);
+        const root = harness.routeNativeElement!;
+        expect(publication.load).toHaveBeenCalledOnce();
+        expect(content.getDeliveryPlan).not.toHaveBeenCalled();
+        expect(root.textContent).toContain('Deliver deliberately');
+        expect(root.textContent).toContain(
+          'Published copy, read-only; edit on the local workstation.',
+        );
+        expect(root.textContent).not.toContain('npm run start:private');
+        expect(root.textContent).not.toContain('Local editing enabled');
+        // Every editing control stays off: create, refresh, status moves and drag.
+        expect(root.querySelector('.editor-toolbar .editor-primary')).toBeNull();
+        expect(root.querySelector('.editor-toolbar .editor-secondary')).toBeNull();
+        expect(root.querySelector('.quick-move select')).toBeNull();
+        expect(root.querySelector('.work-item-card')!.getAttribute('draggable')).toBe('false');
+        const dialog = await openTicket(harness);
+        expect(dialog.querySelector('.dialog-footer button')).toBeNull();
+        expect(dialog.textContent).toContain('Read-only plan');
+        expect(dialog.querySelector('.evidence-section a')).toBeNull();
+        expect(dialog.querySelector('.evidence-section')!.textContent).toContain(
+          'open this report on the local workstation',
+        );
+        expect(editor.save).not.toHaveBeenCalled();
+      },
+    );
+
+    it('keeps a reachable local editor editable in a connected protected workstation', async () => {
+      editor.load.mockReturnValue(of({ plan, revision: 'revision-1' }));
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl('/delivery-plan', DeliveryPlanPage);
+      harness.detectChanges();
+      expect(publication.load).not.toHaveBeenCalled();
+      expect(harness.routeNativeElement!.textContent).toContain('Local editing enabled');
+      expect(harness.routeNativeElement!.querySelector('.editor-toolbar .editor-primary')).not.toBeNull();
+    });
+
+    it('ignores programmatic edit attempts on the published copy', async () => {
+      const harness = await publishedBoard();
+      const page = harness.fixture.debugElement.query((node) => node.componentInstance instanceof DeliveryPlanPage)
+        .componentInstance as DeliveryPlanPage;
+      page['openEditor']();
+      page['moveItem'](snapshot.workItems[0], 'done');
+      harness.detectChanges();
+      expect(editor.save).not.toHaveBeenCalled();
+      expect(harness.routeNativeElement!.querySelector('.editor-dialog')!.hasAttribute('open')).toBe(false);
+    });
+
+    it.each([
+      [401, 'Sign in again to read the published delivery plan.'],
+      [403, 'Your role cannot read the published delivery plan.'],
+    ])('explains a Domain %s on the published copy', async (status, message) => {
+      publication.load.mockReturnValue(throwError(() => new HttpErrorResponse({ status })));
+      const harness = await publishedBoard();
+      const root = harness.routeNativeElement!;
+      expect(root.textContent).toContain('The published delivery plan is not available to this account.');
+      expect(root.textContent).toContain(message);
+      expect(root.textContent).not.toContain('needs its local data');
+      expect(root.querySelector('app-author-admin-menu nav[aria-label="Admin navigation"]')).not.toBeNull();
+    });
+
+    it('reports a missing publication without blaming the local workstation', async () => {
+      publication.load.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 404 })));
+      const harness = await publishedBoard();
+      expect(harness.routeNativeElement!.textContent).toContain(
+        'The published delivery plan could not be loaded.',
+      );
+    });
+
+    it('keeps the local-editor JSON error path unchanged', async () => {
+      const harness = await publishedBoard(500);
+      expect(publication.load).not.toHaveBeenCalled();
+      expect(harness.routeNativeElement!.textContent).toContain(
+        'The local editor could not read the private plan.',
+      );
+    });
+
+    it('drops a published copy that arrives after author access is lost', async () => {
+      const pending = new Subject<DeliverySnapshot>();
+      publication.load.mockReturnValue(pending);
+      const harness = await publishedBoard();
+      TestBed.inject(StudyPlanAccount).account.set(null);
+      pending.next({ plan: snapshot, revision: 'published-1' });
+      pending.complete();
+      harness.detectChanges();
+      expect(harness.routeNativeElement!.textContent).not.toContain('Deliver deliberately');
+    });
   });
 });

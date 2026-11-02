@@ -2,12 +2,18 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { AuthorDocumentsApi, parseAuthorDocument } from './author-documents-api';
+import {
+  AuthorDocumentsApi,
+  parseAuthorDocument,
+  staffPublicationRoot,
+} from './author-documents-api';
 import { AUTHOR_PREVIEWS_BASE_URL } from './author-preview-config';
+import { PROTECTED_CONTENT } from '../content/content-delivery';
 import { StudyPlanAccount } from '../pages/study-plan/study-plan-account';
 
 const sha = 'a'.repeat(64);
 const root = '/bff/author/previews/preview-directory/author-documents/';
+const staffRoot = '/content/staff/author-documents/';
 function manifest() {
   return {
     schemaVersion: 1,
@@ -145,6 +151,42 @@ describe('Private author-document boundary', () => {
     missing.documents[0].version = '';
     expect(() => parseAuthorDocument(missing, 'operations-reference')).toThrow();
   });
+  it('resolves the same manifest under the staff publication root', () => {
+    expect(staffPublicationRoot).toBe(staffRoot);
+    const value = parseAuthorDocument(manifest(), 'operations-reference', staffRoot);
+    expect(value.href).toBe(`${staffRoot}operations-reference/${sha}/index.html`);
+    const rewritten = manifest();
+    rewritten.documents[0].content.href = value.href;
+    expect(parseAuthorDocument(rewritten, 'operations-reference', staffRoot)).toEqual(value);
+    // The local root still refuses a staff href it does not serve.
+    expect(parseAuthorDocument(rewritten, 'operations-reference').href).toBe(
+      `${root}operations-reference/${sha}/index.html`,
+    );
+    for (const bad of [
+      `/content/staff/operations-reference/${sha}/index.html`,
+      `/content/operations-reference/${sha}/index.html`,
+    ]) {
+      const value = manifest();
+      value.documents[0].content.href = bad;
+      expect(() => parseAuthorDocument(value, 'operations-reference', staffRoot)).toThrow();
+    }
+    expect(() => parseAuthorDocument(manifest(), 'operations-reference', '/content/')).toThrow();
+  });
+  it('rewrites hash-addressed downloads to the staff root and accepts staff evidence links', () => {
+    const file = 'c'.repeat(64);
+    const publication = manifest();
+    (publication.documents[0] as Record<string, unknown>)['downloads'] = [
+      { label: 'Setup', filename: 'setup.py', href: `${root}downloads/${file}/setup.py`, sha256: file, bytes: 10 },
+    ];
+    publication.documents[0].links.push({ label: 'Evidence', href: `${staffRoot}evidence/index.html`, external: false });
+    const value = parseAuthorDocument(publication, 'operations-reference', staffRoot);
+    expect(value.downloads[0].href).toBe(`${staffRoot}downloads/${file}/setup.py`);
+    expect(value.references[1].href).toBe(`${staffRoot}evidence/index.html`);
+    (publication.documents[0] as Record<string, unknown>)['downloads'] = [
+      { label: 'Setup', filename: 'setup.py', href: `/content/downloads/${file}/setup.py`, sha256: file, bytes: 10 },
+    ];
+    expect(() => parseAuthorDocument(publication, 'operations-reference', staffRoot)).toThrow();
+  });
 });
 
 describe('Author-document transport', () => {
@@ -208,5 +250,69 @@ describe('Author-document transport', () => {
       .expectOne(root + 'manifest.json')
       .flush(manifest());
     await expect(result).rejects.toMatchObject({ kind: 'unauthorized' });
+  });
+});
+
+describe('Author-document transport in the protected build', () => {
+  const account = signal<any>({ accountId: 'author', permissions: { previewDocuments: true } });
+  const sessionExpired = signal(false);
+  beforeEach(() => {
+    account.set({ accountId: 'author', permissions: { previewDocuments: true } });
+    sessionExpired.set(false);
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: StudyPlanAccount, useValue: { account, sessionExpired } },
+        { provide: AUTHOR_PREVIEWS_BASE_URL, useValue: '' },
+        { provide: PROTECTED_CONTENT, useValue: true },
+      ],
+    });
+  });
+  afterEach(() => TestBed.inject(HttpTestingController).verify());
+  it('reads the staff manifest from the Content publication without the local previews base', async () => {
+    const result = TestBed.inject(AuthorDocumentsApi).load('operations-reference');
+    const request = TestBed.inject(HttpTestingController).expectOne(staffRoot + 'manifest.json');
+    expect(request.request.method).toBe('GET');
+    request.flush(manifest());
+    const value = await result;
+    expect(value.id).toBe('operations-reference');
+    expect(value.href).toBe(`${staffRoot}operations-reference/${sha}/index.html`);
+    TestBed.inject(HttpTestingController).expectNone(root + 'manifest.json');
+  });
+  it.each([null, { accountId: 'learner', permissions: { previewDocuments: false } }])(
+    'still makes no request without capability: %s',
+    async (value) => {
+      account.set(value);
+      await expect(
+        TestBed.inject(AuthorDocumentsApi).load('operations-reference'),
+      ).rejects.toMatchObject({ kind: value ? 'forbidden' : 'unauthorized' });
+      TestBed.inject(HttpTestingController).expectNone(staffRoot + 'manifest.json');
+    },
+  );
+  it('rejects an unknown document id before any request', async () => {
+    await expect(TestBed.inject(AuthorDocumentsApi).load('secrets')).rejects.toMatchObject({
+      kind: 'invalid',
+    });
+    TestBed.inject(HttpTestingController).expectNone(staffRoot + 'manifest.json');
+  });
+  it.each([
+    [401, 'unauthorized'],
+    [403, 'forbidden'],
+    [404, 'unpublished'],
+    [500, 'unavailable'],
+  ])('maps a Domain %s to the existing page message', async (status, kind) => {
+    const result = TestBed.inject(AuthorDocumentsApi).load('operations-reference');
+    TestBed.inject(HttpTestingController)
+      .expectOne(staffRoot + 'manifest.json')
+      .flush({ message: 'denied' }, { status: status as number, statusText: 'Failure' });
+    await expect(result).rejects.toMatchObject({ kind });
+  });
+  it('rejects a manifest that points outside both publication roots', async () => {
+    const result = TestBed.inject(AuthorDocumentsApi).load('operations-reference');
+    const value = manifest();
+    value.documents[0].content.href = `https://outside.test/operations-reference/${sha}/index.html`;
+    TestBed.inject(HttpTestingController).expectOne(staffRoot + 'manifest.json').flush(value);
+    await expect(result).rejects.toMatchObject({ kind: 'invalid' });
   });
 });

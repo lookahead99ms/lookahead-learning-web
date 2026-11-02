@@ -13,6 +13,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ContentService } from '../../content/content.service';
+import { PROTECTED_CONTENT } from '../../content/content-delivery';
+import { DeliveryPublicationService } from '../../content/delivery-publication.service';
 import {
   DeliveryEditorService,
   DeliverySnapshot,
@@ -67,6 +69,8 @@ export class DeliveryPlanPage implements OnInit {
   );
   private readonly content = inject(ContentService);
   private readonly editor = inject(DeliveryEditorService);
+  private readonly publication = inject(DeliveryPublicationService);
+  private readonly protectedContent = inject(PROTECTED_CONTENT);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -79,6 +83,8 @@ export class DeliveryPlanPage implements OnInit {
   private writeGeneration = 0;
   private backdropPointerStart: HTMLDialogElement | null = null;
   protected readonly editable = signal(false);
+  /** The board shows the published staff copy; every editing control stays off. */
+  protected readonly published = signal(false);
   protected readonly saving = signal(false);
   protected readonly notice = signal('');
   protected readonly saveError = signal('');
@@ -91,6 +97,7 @@ export class DeliveryPlanPage implements OnInit {
 
   protected readonly plan = signal<DeliveryPlan | null>(null);
   protected readonly error = signal('');
+  protected readonly errorTitle = signal('The delivery control room needs its local data.');
   protected readonly view = signal<DeliveryView>('board');
   protected readonly query = signal('');
   protected readonly stageFilter = signal('current');
@@ -184,6 +191,10 @@ export class DeliveryPlanPage implements OnInit {
         },
         error: (error: HttpErrorResponse) => {
           if ([0, 200, 404, 502, 503, 504].includes(error.status)) {
+            if (this.protectedContent) {
+              this.loadPublishedCopy();
+              return;
+            }
             this.content
               .getDeliveryPlan()
               .pipe(takeUntilDestroyed(this.destroyRef))
@@ -199,6 +210,34 @@ export class DeliveryPlanPage implements OnInit {
               'The local editor could not read the private plan. Check its JSON and the server terminal before saving.',
             );
           }
+        },
+      });
+  }
+
+  /** No local editor in the protected build: read the staff copy Domain publishes. */
+  private loadPublishedCopy(): void {
+    this.publication
+      .load()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (snapshot) => {
+          if (!this.authorAccess()) return;
+          this.published.set(true);
+          this.acceptSnapshot(snapshot);
+        },
+        error: (error: HttpErrorResponse) => {
+          if (error.status === 401 || error.status === 403) {
+            this.errorTitle.set('The published delivery plan is not available to this account.');
+            this.error.set(
+              error.status === 401
+                ? 'Sign in again to read the published delivery plan.'
+                : 'Your role cannot read the published delivery plan. Ask an owner or admin for staff documents access.',
+            );
+            return;
+          }
+          this.error.set(
+            'The published delivery plan could not be loaded. Check the latest Content release and try again.',
+          );
         },
       });
   }
