@@ -19,7 +19,11 @@ export function safeAccountReturn(value: string | null): string {
   }
 }
 
-/** Gateway sign-in link that returns to `returnTo` afterwards. */
-export function gatewayLoginUrl(returnTo: string): string {
-  return '/bff/login?returnTo=' + encodeURIComponent(returnTo);
+/** The sign-in a person picks on our own page (DLV-969); the Gateway then skips Cognito's page. */
+export type SignInProvider = 'google' | 'password';
+
+/** Gateway sign-in link that returns to `returnTo` afterwards, optionally straight to one provider. */
+export function gatewayLoginUrl(returnTo: string, provider?: SignInProvider): string {
+  const chosen = provider ? 'provider=' + provider + '&' : '';
+  return '/bff/login?' + chosen + 'returnTo=' + encodeURIComponent(returnTo);
 }

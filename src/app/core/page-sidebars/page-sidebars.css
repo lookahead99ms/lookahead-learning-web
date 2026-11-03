@@ -118,9 +118,13 @@
   padding-block-start: 16px;
 }
 @media (max-width: 1099px) {
+  /* On phones the homepage outline is a full-width tab bar under the header: flush with the
+     header's bottom edge and the window's sides, so no page content shows between them (user,
+     2026-11-03). The 8px below the header (headerBottom) is for the floating panels. */
   .left.homepage.open {
-    inset-inline: 6px auto;
-    width: calc(100vw - 12px) !important;
+    inset-inline: 0 !important;
+    width: auto !important;
+    margin-block-start: -8px;
     max-width: none;
     height: 48px;
     overflow: hidden;

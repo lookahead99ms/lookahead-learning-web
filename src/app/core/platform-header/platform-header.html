@@ -2,9 +2,49 @@
   class="content-header platform-header"
   [class.with-search]="showSearch"
 >
-  <a class="brand" routerLink="/" aria-label="Look Ahead home">
-    <app-platform-brand aria-hidden="true" [mark]="devSession.status() ? 'DEV' : null" />
-  </a>
+  <!-- DLV-969 (user, 2026-11-03): leaving DEV belongs to the environment, so it hangs off the DEV mark; Sign out in the
+       account menu only switches accounts (for example to a test account) and stays inside DEV. -->
+  <div class="brand-area">
+    <a class="brand" routerLink="/" aria-label="Look Ahead home">
+      <app-platform-brand aria-hidden="true" [mark]="!devSession.status() && devSession.gated() ? 'DEV' : null" />
+    </a>
+    @if (devSession.status()) {
+      <div class="dev-environment" (click)="$event.stopPropagation()">
+        <button
+          type="button"
+          class="dev-environment-trigger"
+          aria-label="DEV environment"
+          aria-controls="dev-environment-panel"
+          [attr.aria-expanded]="devPanelOpen()"
+          (click)="toggleDevPanel()"
+        >
+          DEV<span class="dev-environment-chevron" aria-hidden="true">{{ devPanelOpen() ? '▴' : '▾' }}</span>
+        </button>
+        @if (devPanelOpen()) {
+          <div id="dev-environment-panel" class="dev-environment-panel" role="group" aria-label="DEV environment">
+            <p class="dev-environment-title">Look Ahead DEV</p>
+            <p>Our internal preview for invited members.</p>
+            <button
+              type="button"
+              class="dev-exit-button"
+              aria-describedby="dev-exit-note"
+              [disabled]="devSession.leaving()"
+              [attr.aria-busy]="devSession.leaving()"
+              (click)="devSession.leave()"
+            >
+              {{ devSession.leaving() ? 'Exiting…' : 'Exit DEV environment' }}
+            </button>
+            <p id="dev-exit-note" class="dev-environment-note">
+              Signs you out of DEV and returns you to its gate. To switch accounts and stay in DEV, use Sign out in your account menu.
+            </p>
+            @if (devSession.error()) {
+              <p class="dev-environment-error" role="alert">{{ devSession.error() }}</p>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
   <nav class="platform-navigation" aria-label="Main navigation">
     <app-header-navigation (opened)="closeForNavigation()" />
   </nav>
@@ -150,23 +190,10 @@
       </form>
     }
 
-    @if (devSession.status()) {
-      <button
-        class="leave-dev-button"
-        type="button"
-        appHeaderHint="Sign out of the DEV environment and return to its gate."
-        [disabled]="devSession.leaving()"
-        [attr.aria-busy]="devSession.leaving()"
-        (click)="devSession.leave()"
-      >
-        Leave DEV
-      </button>
-      @if (devSession.error()) {
-        <span class="leave-dev-error" role="alert">{{ devSession.error() }}</span>
-      }
-    }
-
-    @if ((!accounts.account() || accounts.sessionExpired()) && !onAuthenticationPage()) {
+    @if (!accounts.sessionKnown() && !onAuthenticationPage()) {
+      <!-- DLV-969: hold the Sign in slot, invisible, until the identity check answers; no flash, no layout shift. -->
+      <span class="sign-in-button session-pending" aria-hidden="true">Sign in</span>
+    } @else if ((!accounts.account() || accounts.sessionExpired()) && !onAuthenticationPage()) {
       <a
         class="sign-in-button"
         routerLink="/sign-in"

@@ -445,6 +445,7 @@ describe('Unified Search topic workbench', () => {
       { ...document, id: 'same', title: 'Trace an invariant', preview: 'Trace an invariant', contentType: 'theory', discoveryKind: 'lesson' },
       { ...document, id: 'different', title: 'Review an invariant', preview: 'Try a concrete input.', contentType: 'theory', discoveryKind: 'lesson' },
     ]));
+    TestBed.inject(StudyPlanAccount).account.set({ accountId: 'reader' } as never);
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/search', Search);
     harness.detectChanges();
@@ -452,6 +453,116 @@ describe('Unified Search topic workbench', () => {
     const different = harness.routeNativeElement!.querySelector('[data-result-id="different"]')!;
     expect(same.querySelector('.result-row-summary')).toBeNull();
     expect(different.querySelector('.result-row-summary')?.textContent).toBe('Try a concrete input.');
+  });
+
+  describe('signed-out text gate (one preview per tab, 2026-11-02)', () => {
+    const lesson = (id: string, title: string, preview: string, extra: Partial<SearchDocument> = {}): SearchDocument => ({
+      ...document, id, contentId: id, title, preview, contentType: 'theory', discoveryKind: 'lesson',
+      practiceFormat: undefined, searchableText: title.toLowerCase(), ...extra,
+    });
+    const index = [
+      lesson('alpha', 'Alpha lesson', 'Alpha teaser.'),
+      lesson('beta', 'Beta lesson', 'Beta teaser.'),
+      lesson('gamma', 'Gamma design exercise', 'Gamma statement.', {
+        contentType: 'system-design', discoveryKind: 'practice', practiceFormat: 'design', access: { tier: 'premium' },
+      }),
+    ];
+    const rowSummary = (harness: RouterTestingHarness, id: string) =>
+      harness.routeNativeElement!.querySelector(`[data-result-id="${id}"] .result-row-summary`)?.textContent ?? null;
+    const context = (harness: RouterTestingHarness, id: string) =>
+      harness.routeNativeElement!.querySelector(`[data-result-id="${id}"]`)!.closest('.result-card')!
+        .querySelector('.result-context')!.textContent!.replace(/\s+/g, ' ');
+    const render = async (): Promise<RouterTestingHarness> => {
+      content.getSearchIndex.mockReturnValue(of(index));
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl('/search', Search);
+      harness.detectChanges();
+      return harness;
+    };
+
+    it('shows the text of the first result only and labels the rest', async () => {
+      const harness = await render();
+      expect(rowSummary(harness, 'alpha')).toBe('Alpha teaser.');
+      expect(rowSummary(harness, 'beta')).toBeNull();
+      expect(rowSummary(harness, 'gamma')).toBeNull();
+      expect(context(harness, 'alpha')).not.toContain('Sign in to read');
+      expect(context(harness, 'beta')).toContain('Sign in to read');
+      expect(harness.routeNativeElement!.querySelector('[data-result-id="beta"]')!.closest('.result-card')!
+        .querySelector('.result-context .access-label')?.textContent).toBe('Sign in to read');
+      expect(context(harness, 'gamma')).toContain('Premium');
+      expect(context(harness, 'gamma')).not.toContain('Sign in to read');
+    });
+
+    it('moves the one visible text to the first result of the selected activity tab', async () => {
+      const harness = await render();
+      [...harness.routeNativeElement!.querySelectorAll<HTMLButtonElement>('.activity-filters button')]
+        .find((button) => button.textContent?.trim() === 'Practice')!.click();
+      await harness.fixture.whenStable();
+      harness.detectChanges();
+      expect(harness.routeNativeElement!.querySelectorAll('.result-card')).toHaveLength(1);
+      expect(rowSummary(harness, 'gamma')).toBe('Gamma statement.');
+      expect(context(harness, 'gamma')).not.toContain('Sign in to read');
+      (harness.routeDebugElement!.componentInstance as Search as any).selectActivity('theory');
+      harness.detectChanges();
+      expect(rowSummary(harness, 'alpha')).toBe('Alpha teaser.');
+      expect(rowSummary(harness, 'beta')).toBeNull();
+    });
+
+    it('always shows the text of a public item', async () => {
+      index[1] = lesson('beta', 'Beta lesson', 'Beta teaser.', { access: { tier: 'free', public: true } });
+      try {
+        const harness = await render();
+        expect(rowSummary(harness, 'alpha')).toBe('Alpha teaser.');
+        expect(rowSummary(harness, 'beta')).toBe('Beta teaser.');
+        expect(context(harness, 'beta')).not.toContain('Sign in to read');
+        expect(rowSummary(harness, 'gamma')).toBeNull();
+      } finally {
+        index[1] = lesson('beta', 'Beta lesson', 'Beta teaser.');
+      }
+    });
+
+    it('keeps every row summary for a signed-in visitor and hides them again when the session expires', async () => {
+      const accounts = TestBed.inject(StudyPlanAccount);
+      accounts.account.set({ accountId: 'reader' } as never);
+      const harness = await render();
+      expect(rowSummary(harness, 'alpha')).toBe('Alpha teaser.');
+      expect(rowSummary(harness, 'beta')).toBe('Beta teaser.');
+      expect(rowSummary(harness, 'gamma')).toBe('Gamma statement.');
+      expect(harness.routeNativeElement!.querySelector('.access-label')).toBeNull();
+      accounts.sessionExpired.set(true);
+      harness.detectChanges();
+      expect(rowSummary(harness, 'beta')).toBeNull();
+      expect(context(harness, 'beta')).toContain('Sign in to read');
+    });
+
+    it('explains the gate in the preview pane of a hidden item', async () => {
+      vi.stubGlobal('matchMedia', () => ({ matches: true }));
+      const harness = await render();
+      harness.routeNativeElement!.querySelector<HTMLButtonElement>('[data-result-id="beta"]')!.click();
+      harness.detectChanges();
+      expect(harness.routeNativeElement!.querySelector('.inline-preview .summary-copy')?.textContent?.trim()).toBe(
+        'Sign in to read this item. Signed-out visitors see one preview per tab.',
+      );
+      harness.routeNativeElement!.querySelector<HTMLButtonElement>('.summary-close')!.click();
+      harness.detectChanges();
+      harness.routeNativeElement!.querySelector<HTMLButtonElement>('[data-result-id="alpha"]')!.click();
+      harness.detectChanges();
+      expect(harness.routeNativeElement!.querySelector('.inline-preview .summary-copy')?.textContent?.trim()).toBe(
+        'Alpha teaser.',
+      );
+    });
+
+    it('keeps the text on the first result in order when another row is pinned on desktop', async () => {
+      const harness = await render();
+      harness.routeNativeElement!.querySelector<HTMLButtonElement>('[data-result-id="beta"]')!.click();
+      harness.detectChanges();
+      // Clicking a row never reveals it: the signed-out visitor still reads one item per tab.
+      expect(harness.routeNativeElement!.querySelector('.summary-pane .summary-copy')?.textContent?.trim()).toBe(
+        'Sign in to read this item. Signed-out visitors see one preview per tab.',
+      );
+      expect(harness.routeNativeElement!.querySelector('.pinned-selection .result-row-summary')).toBeNull();
+      expect(rowSummary(harness, 'alpha')).toBe('Alpha teaser.');
+    });
   });
 
   it('uses one inline mobile preview and restores the exact row trigger on close', async () => {

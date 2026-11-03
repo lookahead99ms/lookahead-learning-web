@@ -76,6 +76,15 @@ export class TestAccounts implements OnInit {
   readonly deleting = signal<TestAccountRow|null>(null);
   readonly downgradingReal = signal<DirectoryRow | null>(null);
   readonly deletingReal = signal<DirectoryRow | null>(null);
+  /** DLV-969: the owner's Disable or Delete for a DEV sign-in account, waiting for its typed confirmation. */
+  readonly removing = signal<{ row: DirectoryRow; action: 'disable' | 'remove' } | null>(null);
+  /** Shown beside each button and as its hover text (user, 2026-11-03). Disable is the strongest. */
+  readonly removalText = {
+    disable: 'Strongest. Blocks every sign-in, with email or Google, and closes their open DEV session within 5 minutes. They cannot ask for access again until you enable them.',
+    enable: 'Lets them sign in again with the same account, roles and progress.',
+    remove: 'Removes them from sign-in and erases their plans and progress. If they sign in again with the same email or Google account, they appear in Waiting for access as a new person.',
+  } as const;
+  removalConfirmation = '';
   createPassword = '';
   deleteConfirmation = '';
   realConfirmation = '';
@@ -242,6 +251,36 @@ export class TestAccounts implements OnInit {
       this.notice.set(`${row.name} deleted. Sign-in and learner plans are gone; purchase audit remains.`);
     } catch {this.notice.set('Deletion was not confirmed. Refresh and retry the same account.');}
     finally {this.busy.set(false);}
+  }
+
+  startRemoval(row: DirectoryRow, action: 'disable' | 'remove') {
+    this.removing.set({ row, action }); this.removalConfirmation = ''; this.notice.set('');
+  }
+  /** Disable needs DISABLE typed, Delete needs DELETE; Enable is one click because it only gives back what was there. */
+  async confirmRemoval() {
+    const pending = this.removing(), word = pending?.action === 'disable' ? 'DISABLE' : 'DELETE';
+    if (!pending?.row.accountId || pending.row.isSelf || this.removalConfirmation !== word || this.busy()) return;
+    const { row, action } = pending;
+    if (action === 'disable' ? !row.canDisable : !row.canRemove) return;
+    this.busy.set(true);
+    try {
+      await this.api.request(`/admin/accounts/${row.accountId}/${action}`, { confirmation: word });
+      this.removing.set(null); this.removalConfirmation = ''; this.busy.set(false); await this.load();
+      this.notice.set(action === 'disable'
+        ? `${row.name} is disabled. Every sign-in is blocked and their open session closes within 5 minutes.`
+        : `${row.name} is deleted. If they sign in again, they appear in Waiting for access as a new person.`);
+    } catch { this.notice.set(action === 'disable' ? 'Disable was not confirmed. Refresh and retry.' : 'Deletion was not confirmed. Refresh and retry the same account.'); }
+    finally { this.busy.set(false); }
+  }
+  async enable(row: DirectoryRow) {
+    if (!row.accountId || !row.canEnable || this.busy()) return;
+    this.busy.set(true);
+    try {
+      await this.api.request(`/admin/accounts/${row.accountId}/enable`, {});
+      this.busy.set(false); await this.load();
+      this.notice.set(`${row.name} can sign in again.`);
+    } catch { this.notice.set('Enable was not confirmed. Refresh and retry.'); }
+    finally { this.busy.set(false); }
   }
 
   /** Course titles from the public catalogs, for "Java Foundations (Learn)". */

@@ -10,13 +10,18 @@ export function parseDevStatus(value: unknown): DevSessionStatus | null {
 }
 
 /**
- * The DEV session as the Gateway reports it (`/dev/session`): shared between the header (DEV mark beside the brand,
- * "Leave DEV" beside Sign in; user decision 2026-11-02) and the slim notice that appears only for a shutdown warning
+ * The DEV session as the Gateway reports it (`/dev/session`): shared between the header (the DEV mark beside the brand
+ * opens "Exit DEV environment", user decision 2026-11-03) and the slim notice that appears only for a shutdown warning
  * or a maintenance hold. `DevSessionNotice` owns the polling; this service owns the state and the sign-out.
  */
 @Injectable({ providedIn: 'root' })
 export class DevSession {
   readonly status = signal<DevSessionStatus | null>(null);
+  /**
+   * DLV-969: true once the Gateway answered `/dev/session` at all (200, 401 or 503), so this is DEV behind the gate even
+   * when this browser is not admitted yet (a person waiting for approval). Ordinary delivery answers 404 and stays false.
+   */
+  readonly gated = signal(false);
   readonly leaving = signal(false);
   readonly error = signal('');
   async leave(): Promise<void> {
@@ -31,6 +36,6 @@ export class DevSession {
       const result = await response.json(); const destination = new URL(result.logoutUrl);
       if (destination.protocol !== 'https:' || !destination.hostname.endsWith('.amazoncognito.com') || destination.pathname !== '/logout') throw new Error();
       window.location.assign(destination.href);
-    } catch { this.error.set('Unable to confirm sign-out. Retry Leave DEV.'); this.leaving.set(false); }
+    } catch { this.error.set('Unable to confirm leaving DEV. Retry Exit DEV environment.'); this.leaving.set(false); }
   }
 }

@@ -17,46 +17,118 @@
           </p>
         </div>
       </div>
-      <ul class="how-grid" aria-label="How access works">
-        <li class="how-card">
-          <span class="how-icon" aria-hidden="true">🧑‍💼</span>
-          <h3>Staff roles</h3>
-          <p>Co-authors read the author tools. Admins manage test accounts. Both get the entire curriculum.</p>
-        </li>
-        <li class="how-card">
-          <span class="how-icon" aria-hidden="true">📚</span>
-          <h3>Course access grants</h3>
-          <p>Open chosen courses, or the entire curriculum, for one person. A grant is not a purchase and costs nothing.</p>
-        </li>
-        <li class="how-card">
-          <span class="how-icon" aria-hidden="true">🏷️</span>
-          <h3>Plans and purchases</h3>
-          <p>Local purchases use mock payments, so no real money is charged.</p>
-          <a class="how-link" routerLink="/admin/plans">See plans and purchases</a>
-        </li>
-      </ul>
+      <!-- Folded by default so the tasks come first; one click opens it (user, 2026-11-03). -->
+      <details class="how-access">
+        <summary>How access works</summary>
+        <ul class="how-grid" aria-label="How access works">
+          <li class="how-card">
+            <span class="how-icon" aria-hidden="true">🧑‍💼</span>
+            <h3>Staff roles</h3>
+            <p>Co-authors read the author tools. Admins manage test accounts. Both get the entire curriculum.</p>
+          </li>
+          <li class="how-card">
+            <span class="how-icon" aria-hidden="true">📚</span>
+            <h3>Course access grants</h3>
+            <p>Open chosen courses, or the entire curriculum, for one person. A grant is not a purchase and costs nothing.</p>
+          </li>
+          <li class="how-card">
+            <span class="how-icon" aria-hidden="true">🏷️</span>
+            <h3>Plans and purchases</h3>
+            <p>Local purchases use mock payments, so no real money is charged.</p>
+            <a class="how-link" routerLink="/admin/plans">See plans and purchases</a>
+          </li>
+        </ul>
+      </details>
     </header>
 
-    <div class="access-tabs" role="tablist" aria-label="People and access" (keydown)="onTabKey($event)">
-      @for (item of tabs(); track item.id) {
-        <button
-          type="button"
-          role="tab"
-          [id]="'access-tab-' + item.id"
-          aria-controls="access-panel"
-          [attr.aria-selected]="tab() === item.id"
-          [attr.tabindex]="tab() === item.id ? 0 : -1"
-          (click)="selectTab(item.id)"
-        >
-          {{ item.label }}
-        </button>
-      }
+    <!-- One row at every width; a chevron shows on an edge that hides tabs, as in lesson tabs (user, 2026-11-03). -->
+    <div class="tab-strip">
+      <button type="button" class="tab-more left" [hidden]="!moreBefore()" aria-label="Scroll to earlier tabs" (click)="scrollTabs(-1)">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8.5 4 4.5 8l4 4M12.5 4l-4 4 4 4" /></svg>
+      </button>
+      <div #tabList class="access-tabs" role="tablist" aria-label="People and access" (keydown)="onTabKey($event)" (scroll)="updateTabEdges()">
+        @for (item of tabs(); track item.id) {
+          <button
+            type="button"
+            role="tab"
+            [id]="'access-tab-' + item.id"
+            aria-controls="access-panel"
+            [attr.aria-selected]="tab() === item.id"
+            [attr.tabindex]="tab() === item.id ? 0 : -1"
+            (click)="selectTab(item.id)"
+          >
+            {{ item.label }}
+          </button>
+        }
+      </div>
+      <button type="button" class="tab-more right" [hidden]="!moreAfter()" aria-label="Scroll to more tabs" (click)="scrollTabs(1)">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 4l4 4-4 4M7.5 4l4 4-4 4" /></svg>
+      </button>
     </div>
 
     <p class="notice" role="status" aria-live="polite" [class.has-notice]="notice()">{{ notice() }}</p>
 
     <div class="access-panel" id="access-panel" role="tabpanel" [attr.aria-labelledby]="'access-tab-' + tab()">
-    @if (tab() === 'test' || tab() === 'people') {
+    @if (tab() === 'waiting') {
+      <!-- DLV-969 (2026-11-02): people who signed in to DEV but wait for the owner's admission. -->
+      <section class="access-section" id="waiting-for-access" aria-labelledby="waiting-for-access-heading">
+        <div class="section-heading with-action">
+          <span class="section-icon" aria-hidden="true">⏳</span>
+          <div>
+            <h2 id="waiting-for-access-heading">Waiting for access</h2>
+            <p class="section-note">
+              People who signed in but are not admitted yet. A request that nobody admits is removed after {{ expiryHours() }} hours.
+            </p>
+          </div>
+          <button class="secondary-action" type="button" (click)="loadWaiting()" [disabled]="busy()">Refresh</button>
+        </div>
+        @if (waiting().length) {
+          <table class="waiting-table">
+            <caption class="visually-hidden">People waiting for access, when they asked and when the request is removed</caption>
+            <thead>
+              <tr>
+                <th scope="col">Person</th>
+                <th scope="col">Email</th>
+                <th scope="col">Requested</th>
+                <th scope="col">Expires</th>
+                <th scope="col">Admit as</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of waiting(); track row.accountId) {
+                <tr [attr.data-account]="row.username">
+                  <th scope="row" data-label="Person">
+                    <span class="person">{{ row.displayName }}</span>
+                    @if (row.username !== row.displayName) {
+                      <span class="sub">{{ row.username }}</span>
+                    }
+                  </th>
+                  <td data-label="Email">{{ row.email || 'No verified email' }}</td>
+                  <td data-label="Requested">{{ timeText(row.requestedAt) }}</td>
+                  <td data-label="Expires">{{ expiresText(row) }}</td>
+                  <td data-label="Admit as">
+                    <div class="admit-cell">
+                      <label>
+                        <span class="visually-hidden">Role for {{ row.displayName }}</span>
+                        <select [ngModel]="admitRole[row.accountId] ?? ''" (ngModelChange)="admitRole[row.accountId] = $event" [disabled]="busy()">
+                          <option value="">Learner</option>
+                          @for (role of admitRoleOptions; track role.id) {
+                            <option [value]="role.id">{{ role.label }}</option>
+                          }
+                        </select>
+                      </label>
+                      <button class="primary-action" type="button" (click)="admit(row)" [disabled]="busy()">Admit</button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <p class="empty">Nobody is waiting for access.</p>
+        }
+      </section>
+    } @else if (tab() === 'test' || tab() === 'people') {
       <app-test-accounts
         [view]="tab() === 'test' ? 'test' : 'people'"
         [assignments]="assignments()"
@@ -76,20 +148,22 @@
         </div>
         <div class="assignment-list">
           @for (assignment of sortedAssignments(); track assignment.id) {
-            <article class="assignment" [class.pending]="assignment.pendingEmail">
+            <article class="assignment" [class.pending]="assignment.pendingEmail || assignment.pending">
               <div class="assignment-text">
                 <p class="assignment-who">{{ nameOf(assignment) }}</p>
                 <p class="assignment-state">
                   <span class="state-dot" aria-hidden="true"></span>
-                  {{ assignment.pendingEmail ? 'Pending verified sign-in' : 'Assigned' }}
+                  {{ assignment.pendingEmail || assignment.pending ? 'Pending verified sign-in' : 'Assigned' }}
                 </p>
                 <p class="assignment-grants">
                   {{ roleNames(assignment.roles) }} · {{ courseText(assignment) }}
                 </p>
               </div>
-              <button class="secondary-action" type="button" (click)="review(assignment)" [disabled]="busy()">
-                Review assignment
-              </button>
+              @if (canManage()) {
+                <button class="secondary-action" type="button" (click)="review(assignment)" [disabled]="busy()">
+                  Review assignment
+                </button>
+              }
             </article>
           } @empty {
             <p class="empty">No saved assignments.</p>

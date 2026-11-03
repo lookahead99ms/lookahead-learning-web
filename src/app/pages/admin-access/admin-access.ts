@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, DestroyRef, ElementRef, afterRenderEffect, inject, signal, computed, OnInit, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Location } from '@angular/common';
@@ -13,12 +13,18 @@ import { AdminMemberships } from './admin-memberships';
 
 interface Assignment {
   id: string; accountId: string | null; pendingEmail: string | null;
+  /** DLV-969: a co-author gets the role label, never the account id or invitation email. */
+  label?: string; pending?: boolean;
   roles: string[]; topicGrants: string[]; fullCurriculum: boolean; revision: number;
 }
 interface Recipient { accountId: string; username: string; displayName: string; email: string | null; }
+/** DLV-969 (2026-11-02): one account that signed in but is not admitted yet (`GET /admin/access/waiting`). */
+export interface WaitingRow { accountId: string; username: string; displayName: string; email: string | null; requestedAt: string; expiresAt: string; }
 /** Page tabs (user, 2026-10-16): giving access first, the account lists only when asked for. */
-type AccessTab = 'assign' | 'saved' | 'test' | 'people';
-const TAB_LABELS: Record<AccessTab, string> = { assign: 'Give access', saved: 'Saved assignments', test: 'Test accounts', people: 'People' };
+type AccessTab = 'assign' | 'saved' | 'waiting' | 'test' | 'people';
+const TAB_LABELS: Record<AccessTab, string> = { assign: 'Give access', saved: 'Saved assignments', waiting: 'Waiting for access', test: 'Test accounts', people: 'People' };
+/** Requested and expiry times, in UTC so every operator reads the same clock: "2 Nov 2026, 14:05 UTC". */
+const timeFormat = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC', timeZoneName: 'short' });
 
 @Component({
   selector: 'app-admin-access',
@@ -52,11 +58,22 @@ export class AdminAccessPage implements OnInit {
     { id: 'reviewer', label: 'Reviewer', description: 'Admin documents and previews; read the Delivery Plan and mark reviewed stories Done.' },
     { id: 'admin', label: 'Admin', description: 'Triage feedback, read admin documents, create stories and move them to Review.' },
   ];
+  /**
+   * DLV-969 (2026-11-02): accounts waiting for admission, owner only. Learner (no staff role) is the
+   * default at admission; the staff roles are the ones this page already knows, in the Admit menu's order.
+   */
+  readonly waiting = signal<WaitingRow[]>([]);
+  /** How long a request waits before the server removes it; the server's value replaces the default. */
+  readonly expiryHours = signal(48);
+  readonly admitRoleOptions = ['co-author', 'admin', 'reviewer', 'tester'].map(id => this.roleOptions.find(option => option.id === id)!);
+  /** The role chosen in each waiting row's Admit menu, by account ID ('' = Learner). */
+  admitRole: Record<string, string> = {};
   private static readonly choose: AuthorOutlineItem = { label: 'Choose a person', href: '#choose-person' };
   private static readonly outlines: Record<AccessTab | 'review', readonly AuthorOutlineItem[]> = {
     assign: [AdminAccessPage.choose],
     review: [AdminAccessPage.choose, { label: 'Review access', href: '#review-access' }],
     saved: [{ label: 'Saved assignments', href: '#saved-assignments' }],
+    waiting: [{ label: 'Waiting for access', href: '#waiting-for-access' }],
     test: [{ label: 'Test accounts', href: '#test-accounts' }],
     people: [{ label: 'People', href: '#people' }],
   };
@@ -65,10 +82,18 @@ export class AdminAccessPage implements OnInit {
     const tab = this.tab();
     return AdminAccessPage.outlines[tab === 'assign' && this.draft ? 'review' : tab];
   }
-  /** Give access needs the saved assignments, which only the owner and co-authors may read. */
-  readonly tabs = computed(() =>
-    (this.canReadAssignments() ? (['assign', 'saved', 'test', 'people'] as const) : (['test', 'people'] as const))
-      .map(id => ({ id, label: TAB_LABELS[id] })));
+  /**
+   * Give access needs the saved assignments, which only the owner and co-authors may read. Waiting
+   * for access is the owner's: first, with a count, while someone waits; after Saved assignments otherwise.
+   */
+  readonly tabs = computed(() => {
+    // Give access finds people by email or username, so it is the owner's alone (DLV-969, 2026-11-03).
+    const base: readonly AccessTab[] = this.canManage() ? ['assign', 'saved', 'test', 'people']
+      : this.canReadAssignments() ? ['saved', 'test', 'people'] : ['test', 'people'];
+    const count = this.waiting().length;
+    const ids = !this.canManage() ? base : count ? ['waiting' as const, ...base] : [...base.slice(0, 2), 'waiting' as const, ...base.slice(2)];
+    return ids.map(id => ({ id, label: id === 'waiting' && count ? `${TAB_LABELS[id]} · ${count}` : TAB_LABELS[id] }));
+  });
   private readonly location = inject(Location, { optional: true });
   /** `/admin/access?tab=test` opens that tab, so documentation can link straight to it. */
   private readonly chosenTab = signal<AccessTab | null>(
@@ -83,6 +108,40 @@ export class AdminAccessPage implements OnInit {
     this.chosenTab.set(tab);
     // Keep the address shareable without a navigation: the page stays where it is.
     this.location?.replaceState('/admin/access', tab === this.tabs()[0].id ? '' : `tab=${tab}`);
+  }
+  /** The tab row scrolls when it is wider than the column; a chevron shows only on an edge that hides tabs. */
+  readonly moreBefore = signal(false);
+  readonly moreAfter = signal(false);
+  private readonly tabList = viewChild<ElementRef<HTMLElement>>('tabList');
+  private tabResize?: ResizeObserver;
+  constructor() {
+    inject(DestroyRef).onDestroy(() => this.tabResize?.disconnect());
+    // After each render that changes the tabs (the waiting count moves Waiting first), keep the chosen tab in view.
+    afterRenderEffect(() => { this.tabs(); this.revealTab(this.tab()); });
+  }
+  /** Scroll the tab row, never the page, so the chosen tab is fully in view and clear of the edge chevrons. */
+  private revealTab(tab: AccessTab) {
+    const list = this.tabList()?.nativeElement, button = list?.ownerDocument.getElementById('access-tab-' + tab);
+    if (!list || !button) return;
+    const Observer = list.ownerDocument.defaultView?.ResizeObserver;
+    if (!this.tabResize && Observer) { this.tabResize = new Observer(() => this.updateTabEdges()); this.tabResize.observe(list); }
+    const chevron = 48, start = button.offsetLeft - list.offsetLeft, end = start + button.offsetWidth;
+    if (start - chevron < list.scrollLeft) list.scrollLeft = Math.max(0, start - chevron);
+    else if (end + chevron > list.scrollLeft + list.clientWidth) list.scrollLeft = end + chevron - list.clientWidth;
+    this.updateTabEdges();
+  }
+  updateTabEdges() {
+    const list = this.tabList()?.nativeElement;
+    if (!list) return;
+    const max = list.scrollWidth - list.clientWidth;
+    this.moreBefore.set(list.scrollLeft > 2);
+    this.moreAfter.set(max > 2 && list.scrollLeft < max - 2);
+  }
+  scrollTabs(direction: 1 | -1) {
+    const list = this.tabList()?.nativeElement;
+    if (!list) return;
+    list.scrollLeft += direction * list.clientWidth * 0.7;
+    this.updateTabEdges();
   }
   /** Arrow keys, Home and End move between tabs (WAI-ARIA tabs pattern). */
   onTabKey(event: KeyboardEvent) {
@@ -129,8 +188,8 @@ export class AdminAccessPage implements OnInit {
   }
   async ngOnInit() { await this.reload(); }
   /** Pending email, username, or a short account ID when no list could name the account. */
-  nameOf(row: Pick<Assignment, 'accountId' | 'pendingEmail'>): string {
-    return row.pendingEmail ?? (row.accountId ? accountName(row.accountId, this.names()) : '');
+  nameOf(row: Pick<Assignment, 'accountId' | 'pendingEmail' | 'label'>): string {
+    return row.label ?? row.pendingEmail ?? (row.accountId ? accountName(row.accountId, this.names()) : '');
   }
   /** Usernames from the test accounts, the owner directory and the signed-in account. Names are a nicety: failures leave short IDs. */
   async loadNames() {
@@ -158,6 +217,52 @@ export class AdminAccessPage implements OnInit {
       void this.loadNames();
     } catch (error) { this.notice.set(this.message(error)); }
     finally { this.busy.set(false); }
+    if (this.canManage()) await this.loadWaiting();
+  }
+  /** DLV-969: the waiting list is the owner's; when it cannot load, the rest of the page still works. */
+  async loadWaiting() {
+    try {
+      const data = await this.request<{ waiting?: WaitingRow[]; expiryHours?: number }>('/admin/access/waiting');
+      this.waiting.set(data.waiting ?? []);
+      if (typeof data.expiryHours === 'number') this.expiryHours.set(data.expiryHours);
+    } catch (error) { this.notice.set(this.message(error)); }
+  }
+  /** Admits one waiting account with the chosen role (none = Learner); the row leaves the list and Saved assignments reloads. */
+  async admit(row: WaitingRow) {
+    if (!this.canManage() || this.busy()) return;
+    const role = this.admitRole[row.accountId] ?? '';
+    this.busy.set(true); this.notice.set('');
+    try {
+      await this.request('/admin/access/admit', { accountId: row.accountId, roles: role ? [role] : [] }, {
+        404: 'This request was already removed. Refresh the list.',
+        409: `${row.displayName} is already admitted.`,
+        422: 'Choose a known role.',
+        403: 'Only the owner can admit people.',
+      });
+      // Stay on this tab even when the list empties and it moves back behind Saved assignments.
+      this.chosenTab.set('waiting');
+      this.waiting.update(rows => rows.filter(item => item.accountId !== row.accountId));
+      delete this.admitRole[row.accountId];
+      this.busy.set(false);
+      await this.reload();
+      this.notice.set(`${row.displayName} admitted as ${this.admitLabel(role)}. It applies to their next sign-in.`);
+    } catch (error) { this.notice.set(this.message(error)); }
+    finally { this.busy.set(false); }
+  }
+  /** "Learner" for no staff role, else the role's label. */
+  admitLabel(role: string): string { return role ? this.roleNames([role]) : 'Learner'; }
+  /** "2 Nov 2026, 14:05 UTC", or a dash when the server sent no usable time. */
+  timeText(iso: string): string {
+    const time = Date.parse(iso);
+    return Number.isFinite(time) ? timeFormat.format(time) : '—';
+  }
+  /** "in 31 h" while the request waits; the date when that is far off; "Due for removal" once it has passed. */
+  expiresText(row: Pick<WaitingRow, 'expiresAt'>, now = Date.now()): string {
+    const hours = (Date.parse(row.expiresAt) - now) / 3_600_000;
+    if (!Number.isFinite(hours)) return '—';
+    if (hours <= 0) return 'Due for removal';
+    if (hours < 1) return 'in less than 1 h';
+    return hours < 72 ? `in ${Math.round(hours)} h` : this.timeText(row.expiresAt);
   }
   async find() {
     this.busy.set(true); this.notice.set(''); this.draft = null; this.recipient.set(null);
@@ -208,7 +313,8 @@ export class AdminAccessPage implements OnInit {
     return { id: crypto.randomUUID(), accountId, pendingEmail, roles: [], topicGrants: [], fullCurriculum: false, revision: 0 };
   }
   private message(error: unknown) { return error instanceof Error ? error.message : 'Access service is unavailable. Retry shortly.'; }
-  private async request<T>(path: string, body?: unknown): Promise<T> {
+  /** GET without a body, POST with one; `messages` lets a call name what a status means for it. */
+  private async request<T>(path: string, body?: unknown, messages: Partial<Record<number, string>> = {}): Promise<T> {
     const headers: Record<string, string> = {};
     if (body !== undefined) {
       const csrf = await this.transport(this.accounts.apiPath('/auth/csrf'), { credentials: 'same-origin', cache: 'no-store' });
@@ -221,10 +327,10 @@ export class AdminAccessPage implements OnInit {
       method: body === undefined ? 'GET' : 'POST', headers,
       body: body === undefined ? undefined : JSON.stringify(body), credentials: 'same-origin', cache: 'no-store',
     });
-    if (!response.ok) throw new Error(response.status === 409 ? 'Access changed since you loaded it. Reload the list and select the recipient again.'
+    if (!response.ok) throw new Error(messages[response.status] ?? (response.status === 409 ? 'Access changed since you loaded it. Reload the list and select the recipient again.'
       : response.status === 404 ? 'No enabled account matches that exact email or username.'
       : response.status === 403 ? 'Only the owner can manage access.'
-      : response.status === 422 ? 'Check the recipient, roles and course selection.' : 'Access service is unavailable. Retry shortly.');
+      : response.status === 422 ? 'Check the recipient, roles and course selection.' : 'Access service is unavailable. Retry shortly.'));
     return (await response.json()).data as T;
   }
 }

@@ -1,0 +1,35 @@
+<div class="brand-story-heading">
+  <p class="brand-context">Our platform</p>
+  <h2 id="brand-story-title" data-sidebar-label="The essence">The Essence of Look Ahead</h2>
+</div>
+<app-platform-brand class="symbol-only essence-corner-mark" aria-hidden="true" />
+<app-wordmark-key
+  [stage]="stage"
+  [settled]="settled()"
+  [still]="still()"
+  [autoplay]="autoplay()"
+  (restarted)="restart()"
+  (finished)="finished()"
+  (stillChange)="still.set($event)"
+  (passed)="loop.update((round) => round + 1)"
+  (skipped)="skipToEnd()"
+  (cycle)="cycle($event)"
+/>
+<app-essence-steps
+  [play]="wordmarkDone()"
+  [still]="still()"
+  [loop]="loop()"
+  [instant]="skip()"
+  [away]="away()"
+  (settled)="settled.set(true)"
+/>
+<!-- The wordmark as one sentence: it moves here from under the wordmark and stays. -->
+<p class="essence-sentence" [class.shown]="sentence()">
+  @for (line of sentenceLines; track $index) {
+    <span class="essence-sentence-line">
+      @for (part of line; track $index) {
+        <span [class.essence-key-word]="part.colour" [style.color]="part.colour ?? null">{{ part.text }}</span>
+      }
+    </span>{{ ' ' }}
+  }
+</p>

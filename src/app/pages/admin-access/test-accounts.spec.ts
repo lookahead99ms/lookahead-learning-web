@@ -143,6 +143,95 @@ describe('Test account maintenance',()=>{
   expect(request).toHaveBeenCalledWith('/admin/accounts/real-id/delete',{confirmation:'DELETE'});
   expect(root.querySelector('tr[data-account="real-user"]')).toBeNull();
  });
+ it('offers Disable (strongest, with a warning mark) and Delete, each explained on screen and on hover (DLV-969)',async()=>{
+  account.set({accountId:'owner',username:'author',topicGrants:[],permissions:{manageAccess:true,feedbackRole:'owner'}});
+  let state:'active'|'disabled'|'deleted'='active';
+  const cloud={accountId:'cloud-id',username:'alex@example.com',displayName:'Alex',email:'alex@example.com',roles:['user'],testAccount:false,fullCurriculum:false,
+    access:{label:'Free',labels:['Free'],grantedCourseIds:[]},canDowngrade:false,canDelete:false};
+  request.mockImplementation(async(path:string)=>{
+    if(path==='/admin/test-accounts')return [];
+    if(path.endsWith('/disable')){state='disabled';return {};}
+    if(path.endsWith('/enable')){state='active';return {};}
+    if(path.endsWith('/remove')){state='deleted';return {};}
+    return {accounts:state==='deleted'?[]:[state==='active'?{...cloud,signIn:'active',canDisable:true,canRemove:true}:{...cloud,signIn:'disabled',canEnable:true,canRemove:true}],page:0,hasNext:false};
+  });
+  TestBed.resetTestingModule();
+  TestBed.configureTestingModule({providers:[provideRouter([]),{provide:MembershipApi,useValue:{request}},{provide:StudyPlanAccount,useValue:{account}}]});
+  const fixture=TestBed.createComponent(TestAccounts);fixture.detectChanges();await fixture.whenStable();fixture.detectChanges();
+  const root=fixture.nativeElement as HTMLElement,page=fixture.componentInstance;
+  const choose=()=>{(root.querySelector('tr[data-account="alex@example.com"] input[type="checkbox"]') as HTMLInputElement).click();fixture.detectChanges();};
+  const option=(label:string)=>[...root.querySelectorAll<HTMLElement>('.removal-option')].find(item=>item.querySelector('button')?.textContent?.includes(label));
+  choose();
+  const removal=root.querySelector('.removal')!;
+  expect(removal.getAttribute('aria-label')).toBe('Remove access for alex@example.com');
+  expect([...removal.querySelectorAll('.removal-option button')].map(button=>button.textContent?.replace(/\s+/g,' ').trim())).toEqual(['⚠ Disable','Delete']);
+  const disable=option('Disable')!.querySelector('button')!;
+  expect(disable.classList).toContain('danger-button');
+  expect(disable.getAttribute('title')).toBe(page.removalText.disable);
+  expect(option('Disable')!.querySelector('p')?.textContent).toBe(page.removalText.disable);
+  expect(page.removalText.disable).toMatch(/^Strongest\. Blocks every sign-in/);
+  expect(document.getElementById(disable.getAttribute('aria-describedby')!)?.textContent).toBe(page.removalText.disable);
+  expect(option('Delete')!.querySelector('button')!.getAttribute('title')).toBe(page.removalText.remove);
+  expect(option('Delete')!.querySelector('p')?.textContent).toContain('appear in Waiting for access as a new person');
+  // Disable asks for DISABLE before it calls the Domain.
+  disable.click();fixture.detectChanges();
+  const panel=root.querySelector('.removal + .reset-panel.danger-panel')!;
+  expect(panel.querySelector('h3')?.textContent?.replace(/\s+/g,' ').trim()).toBe('⚠ Disable alex@example.com');
+  const confirm=()=>[...panel.querySelectorAll<HTMLButtonElement>('.actions button')][0];
+  expect(confirm().disabled).toBe(true);
+  page.removalConfirmation='DELETE';await page.confirmRemoval();
+  expect(request).not.toHaveBeenCalledWith('/admin/accounts/cloud-id/disable',expect.anything());
+  page.removalConfirmation='DISABLE';fixture.detectChanges();expect(confirm().disabled).toBe(false);
+  confirm().click();await fixture.whenStable();fixture.detectChanges();
+  expect(request).toHaveBeenCalledWith('/admin/accounts/cloud-id/disable',{confirmation:'DISABLE'});
+  expect(page.notice()).toBe('alex@example.com is disabled. Every sign-in is blocked and their open session closes within 5 minutes.');
+  expect(root.querySelector('tr[data-account="alex@example.com"] .state-badge.disabled')?.textContent?.replace(/\s+/g,' ').trim()).toBe('⚠ Disabled');
+  // A disabled account offers Enable (one click) instead of Disable.
+  choose();
+  expect([...root.querySelectorAll('.removal-option button')].map(button=>button.textContent?.trim())).toEqual(['Enable','Delete']);
+  expect(option('Enable')!.querySelector('p')?.textContent).toBe(page.removalText.enable);
+  option('Enable')!.querySelector('button')!.click();await fixture.whenStable();fixture.detectChanges();
+  expect(request).toHaveBeenCalledWith('/admin/accounts/cloud-id/enable',{});
+  expect(page.notice()).toBe('alex@example.com can sign in again.');
+  // Delete asks for DELETE; the person leaves the list.
+  choose();option('Delete')!.querySelector('button')!.click();fixture.detectChanges();
+  expect(root.querySelector('.removal + .reset-panel')?.classList).not.toContain('danger-panel');
+  expect(root.querySelector('.removal + .reset-panel')?.textContent).toContain('Purchase history stays for the audit.');
+  page.removalConfirmation='DELETE';await page.confirmRemoval();fixture.detectChanges();
+  expect(request).toHaveBeenCalledWith('/admin/accounts/cloud-id/remove',{confirmation:'DELETE'});
+  expect(page.notice()).toBe('alex@example.com is deleted. If they sign in again, they appear in Waiting for access as a new person.');
+  expect(root.querySelector('tr[data-account="alex@example.com"]')).toBeNull();
+ });
+ it('keeps removal off for yourself, for an older Domain without the flags, and reports failures (DLV-969)',async()=>{
+  account.set({accountId:'owner',username:'author',topicGrants:[],permissions:{manageAccess:true,feedbackRole:'owner'}});
+  const old={accountId:'old-id',username:'old@example.com',displayName:'Old',email:null,roles:['user'],testAccount:false,fullCurriculum:false,
+    access:{label:'Free',labels:['Free'],grantedCourseIds:[]}};
+  request.mockImplementation(async(path:string)=>{
+    if(path==='/admin/test-accounts')return [];
+    if(path.startsWith('/admin/accounts/'))throw new Error('down');
+    return {accounts:[old],page:0,hasNext:false};
+  });
+  TestBed.resetTestingModule();
+  TestBed.configureTestingModule({providers:[provideRouter([]),{provide:MembershipApi,useValue:{request}},{provide:StudyPlanAccount,useValue:{account}}]});
+  const fixture=TestBed.createComponent(TestAccounts);fixture.detectChanges();await fixture.whenStable();fixture.detectChanges();
+  const root=fixture.nativeElement as HTMLElement,page=fixture.componentInstance;
+  (root.querySelector('tr[data-account="old@example.com"] input[type="checkbox"]') as HTMLInputElement).click();fixture.detectChanges();
+  expect(root.querySelector('.removal')).toBeNull();
+  const row=page.selectedRow()!;
+  expect([row.disabled,row.canDisable,row.canEnable,row.canRemove]).toEqual([false,false,false,false]);
+  // Nothing is sent without the Domain's permission, for yourself, or without a selection.
+  page.startRemoval(row,'disable');page.removalConfirmation='DISABLE';await page.confirmRemoval();
+  page.startRemoval({...row,isSelf:true,canDisable:true},'disable');page.removalConfirmation='DISABLE';await page.confirmRemoval();
+  await page.enable(row);page.removing.set(null);await page.confirmRemoval();
+  expect(request.mock.calls.filter(([path])=>String(path).startsWith('/admin/accounts/'))).toEqual([]);
+  // A failed call keeps the panel and says so.
+  page.startRemoval({...row,canDisable:true},'disable');page.removalConfirmation='DISABLE';await page.confirmRemoval();
+  expect(page.notice()).toBe('Disable was not confirmed. Refresh and retry.');expect(page.removing()).not.toBeNull();
+  page.startRemoval({...row,canRemove:true},'remove');page.removalConfirmation='DELETE';await page.confirmRemoval();
+  expect(page.notice()).toBe('Deletion was not confirmed. Refresh and retry the same account.');
+  await page.enable({...row,canEnable:true});expect(page.notice()).toBe('Enable was not confirmed. Refresh and retry.');
+  expect(page.busy()).toBe(false);
+ });
  it('discloses a partial directory and clears previous owner results after failure',async()=>{
   account.set({permissions:{manageAccess:true}});
   request.mockImplementation(async(path:string)=>path==='/admin/test-accounts'?[row]:{accounts:[],page:0,hasNext:true});

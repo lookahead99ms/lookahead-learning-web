@@ -105,6 +105,58 @@ describe('People and access layout', () => {
     fixture.componentInstance.selectTab('people');
     expect(fixture.componentInstance.outline().map(item => item.href)).toEqual(['#people']);
   });
+  it('puts the tasks first: How access works is folded in the hero until opened (user, 2026-11-03)', async () => {
+    const fixture = TestBed.createComponent(AdminAccessPage);
+    fixture.detectChanges(); await fixture.whenStable(); fixture.detectChanges();
+    const details = (fixture.nativeElement as HTMLElement).querySelector<HTMLDetailsElement>('.access-hero details.how-access')!;
+    expect(details.open).toBe(false);
+    expect(details.querySelector('summary')?.textContent?.trim()).toBe('How access works');
+    expect(details.querySelectorAll('.how-grid .how-card')).toHaveLength(3);
+  });
+
+  it('keeps the tabs on one row and shows a chevron only on an edge that hides tabs (user, 2026-11-03)', async () => {
+    const fixture = TestBed.createComponent(AdminAccessPage);
+    fixture.detectChanges(); await fixture.whenStable(); fixture.detectChanges();
+    const page = fixture.componentInstance, root = fixture.nativeElement as HTMLElement;
+    const list = root.querySelector<HTMLElement>('.tab-strip > .access-tabs[role="tablist"]')!;
+    const chevrons = () => [...root.querySelectorAll<HTMLButtonElement>('.tab-strip > .tab-more')].map(button => button.hidden);
+    // jsdom has no layout: everything fits, so no chevron shows.
+    expect(chevrons()).toEqual([true, true]);
+    Object.defineProperty(list, 'scrollWidth', { configurable: true, value: 600 });
+    Object.defineProperty(list, 'clientWidth', { configurable: true, value: 300 });
+    page.updateTabEdges(); fixture.detectChanges();
+    expect(chevrons()).toEqual([true, false]);
+    root.querySelector<HTMLButtonElement>('.tab-more.right')!.click(); fixture.detectChanges();
+    expect(list.scrollLeft).toBe(210);
+    expect(chevrons()).toEqual([false, false]);
+    list.scrollLeft = 300; list.dispatchEvent(new Event('scroll')); fixture.detectChanges();
+    expect(chevrons()).toEqual([false, true]);
+    root.querySelector<HTMLButtonElement>('.tab-more.left')!.click(); fixture.detectChanges();
+    expect(list.scrollLeft).toBe(90);
+    expect(root.querySelector('.tab-more.right')?.getAttribute('aria-label')).toBe('Scroll to more tabs');
+    expect(root.querySelector('.tab-more.left')?.getAttribute('aria-label')).toBe('Scroll to earlier tabs');
+  });
+
+  it('lays sections out by the column width, so the waiting list never runs under the Admin menu (user, 2026-11-03)', () => {
+    const fs = (globalThis as unknown as { process: { getBuiltinModule(id: string): unknown } }).process
+      .getBuiltinModule('node:fs') as { readFileSync(path: string, encoding: 'utf8'): string };
+    const css = fs.readFileSync('src/app/pages/admin-access/admin-access.css', 'utf8').replace(/\s+/g, ' ');
+    expect(css).toContain('.access-panel { container: access-panel / inline-size; }');
+    expect(css).toContain('@container access-panel (max-width: 760px) { .waiting-table thead { display: none; }');
+    expect(css).toContain('@container access-panel (max-width: 560px) { .section-heading.with-action { grid-template-columns: auto minmax(0, 1fr); }');
+    expect(css).toContain('overflow-wrap: anywhere; text-align: start;');
+    // People and Test accounts follow the same column: long names wrap, cards under 560px.
+    const people = fs.readFileSync('src/app/pages/admin-access/test-accounts.css', 'utf8').replace(/\s+/g, ' ');
+    expect(people).toContain('@container access-panel (max-width: 560px) { .directory-table thead { display: none; }');
+    expect(people).toContain('.directory-table tbody th { font-weight: 400; /* Only the person\'s long emails break mid-word, so the table stays inside its card (user, 2026-11-03). */ overflow-wrap: anywhere; }');
+    expect(people).not.toMatch(/\.person \{[^}]*nowrap/);
+    // The waiting card is a grid: person; Email, Requested, Expires; Admit as (user, 2026-11-03).
+    expect(css).toContain("grid-template-areas: 'person person person' 'email requested expires' 'admit admit admit';");
+    expect(css).toContain("@container access-panel (max-width: 480px) { .waiting-table tbody tr { grid-template-areas: 'person person' 'email email' 'requested expires' 'admit admit';");
+    // Tabs never wrap into a grid on phones any more; the row scrolls.
+    expect(css).not.toMatch(/\.access-tabs \{ display: grid;/);
+  });
+
   it('fills the centre column on wide monitors while notes keep a readable line length', async () => {
     const fixture = TestBed.createComponent(AdminAccessPage);
     fixture.detectChanges(); await fixture.whenStable(); fixture.detectChanges();
@@ -160,8 +212,9 @@ describe('People and access tabs', () => {
     fixture.detectChanges(); await fixture.whenStable(); fixture.detectChanges();
     const root = fixture.nativeElement as HTMLElement;
     const tabs = () => [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    // DLV-969: with nobody waiting, the owner's Waiting for access sits after Saved assignments.
     expect(tabs().map(tab => [tab.textContent?.trim(), tab.getAttribute('aria-selected')])).toEqual([
-      ['Give access', 'true'], ['Saved assignments', 'false'], ['Test accounts', 'false'], ['People', 'false'],
+      ['Give access', 'true'], ['Saved assignments', 'false'], ['Waiting for access', 'false'], ['Test accounts', 'false'], ['People', 'false'],
     ]);
     expect(root.querySelector('#access-panel #choose-person')).not.toBeNull();
     expect(root.querySelector('app-test-accounts')).toBeNull();
@@ -173,6 +226,11 @@ describe('People and access tabs', () => {
     expect(root.querySelector('#choose-person')).toBeNull();
 
     tabs()[2].click(); fixture.detectChanges(); await fixture.whenStable(); fixture.detectChanges();
+    expect(root.querySelector('#access-panel #waiting-for-access h2')?.textContent).toBe('Waiting for access');
+    expect(root.querySelector('#waiting-for-access .empty')?.textContent).toBe('Nobody is waiting for access.');
+    expect(root.querySelector('#waiting-for-access .section-note')?.textContent).toContain('removed after 48 hours');
+
+    tabs()[3].click(); fixture.detectChanges(); await fixture.whenStable(); fixture.detectChanges();
     expect(root.querySelector('#access-panel #test-accounts h2')?.textContent).toBe('Test accounts');
     expect(root.querySelector('#choose-person')).toBeNull();
     expect(root.querySelector('#access-panel')?.getAttribute('aria-labelledby')).toBe('access-tab-test');
@@ -278,6 +336,32 @@ describe('Saved assignments', () => {
   });
 });
 
+describe('Saved assignments for a co-author (DLV-969)', () => {
+  // What the Domain sends a non-owner: the role label, never the account id or the invitation email.
+  const shared = [
+    { id: 'a1', accountId: null, pendingEmail: null, label: 'Co-author 2', pending: false, roles: ['co-author'], topicGrants: [], fullCurriculum: false, revision: 1 },
+    { id: 'a2', accountId: null, pendingEmail: null, label: 'Pending invitation', pending: true, roles: ['tester'], topicGrants: [], fullCurriculum: true, revision: 1 },
+  ];
+  it('shows labels, marks the invitation pending and offers no Review assignment', async () => {
+    TestBed.configureTestingModule({ providers: [
+      provideRouter([]),
+      { provide: StudyPlanAccount, useValue: { account: signal({ accountId: 'coauthor-id', username: 'co', topicGrants: [], permissions: permissions({ feedbackRole: 'co-author' }) }), apiPath: (path: string) => path } },
+      { provide: ACCOUNT_FETCH, useValue: async (path: string) => Response.json({ data: path === '/admin/access' ? shared : [] }) },
+      { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: convertToParamMap({ tab: 'saved' }) } } },
+    ] }).overrideComponent(AdminAccessPage, { remove: { imports: [PlatformHeader] }, add: { imports: [HeaderStub] } });
+    const fixture = TestBed.createComponent(AdminAccessPage);
+    fixture.detectChanges(); await fixture.whenStable();
+    await fixture.componentInstance.reload(); fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    expect([...root.querySelectorAll('.assignment-who')].map(name => name.textContent?.trim())).toEqual(['Co-author 2', 'Pending invitation']);
+    expect([...root.querySelectorAll('.assignment')].map(row => row.classList.contains('pending'))).toEqual([false, true]);
+    expect(root.querySelector('.assignment-state')?.textContent?.trim()).toBe('Assigned');
+    expect([...root.querySelectorAll('.assignment-state')][1].textContent?.trim()).toBe('Pending verified sign-in');
+    expect(root.textContent).not.toContain('Review assignment');
+    expect([...root.querySelectorAll('[role="tab"]')].map(tab => tab.textContent?.trim())).toEqual(['Saved assignments', 'Test accounts', 'People']);
+  });
+});
+
 describe('People and access links', () => {
   const setup = (tab: string | null, feedbackRole = 'owner') => {
     const replaceState = vi.fn();
@@ -316,5 +400,182 @@ describe('test account admin outline', () => {
     page.selectTab('assign');
     expect(page.tab()).toBe('test');
     expect(page.outline().map(item => item.href)).toEqual(['#test-accounts']);
+  });
+});
+
+/** DLV-969 (2026-11-02): people who signed in to DEV but wait for the owner's admission. */
+describe('Waiting for access', () => {
+  const alex = { accountId: 'alex-id', username: 'alex.example', displayName: 'Alex Example', email: 'alex@example.test', requestedAt: '2026-11-02T14:05:00Z', expiresAt: '2026-11-04T14:05:00Z' };
+  const sam = { accountId: 'sam-id', username: 'sam.k', displayName: 'sam.k', email: null, requestedAt: '2026-11-02T09:00:00Z', expiresAt: '2026-11-04T09:00:00Z' };
+  let requests: { path: string; init?: RequestInit }[];
+  let waiting: unknown;
+  let waitingStatus: number;
+  let admitStatus: number;
+  const setup = (feedbackRole: 'owner' | 'co-author', tab: string | null = null) => {
+    requests = [];
+    TestBed.configureTestingModule({ providers: [
+      provideRouter([]),
+      { provide: StudyPlanAccount, useValue: { account: signal({ accountId: 'owner-id', username: 'author', displayName: 'Author', topicGrants: [], permissions: permissions({ manageAccess: feedbackRole === 'owner', feedbackRole }) }), apiPath: (path: string) => path } },
+      { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: convertToParamMap(tab ? { tab } : {}) } } },
+      { provide: Location, useValue: { replaceState: vi.fn() } },
+      { provide: ACCOUNT_FETCH, useValue: async (path: string, init?: RequestInit) => {
+        requests.push({ path, init });
+        if (path === '/auth/csrf') return Response.json({ data: { headerName: 'X-CSRF-TOKEN', token: 'synthetic-csrf' } });
+        if (path === '/admin/access/waiting') return waitingStatus === 200 ? Response.json({ data: waiting }) : new Response('', { status: waitingStatus });
+        if (path === '/admin/access/admit') return admitStatus === 200
+          ? Response.json({ data: { ...JSON.parse(init!.body as string), admittedAt: '2026-11-02T15:00:00Z' } })
+          : new Response('', { status: admitStatus });
+        if (path === '/admin/access') return Response.json({ data: [{ id: 's1', accountId: 'saved-id', pendingEmail: null, roles: ['reviewer'], topicGrants: [], fullCurriculum: false, revision: 1 }] });
+        return Response.json({ data: [] });
+      } },
+    ] }).overrideComponent(AdminAccessPage, { remove: { imports: [PlatformHeader] }, add: { imports: [HeaderStub] } });
+  };
+  const admitCalls = () => requests.filter(row => row.path === '/admin/access/admit');
+  beforeEach(() => { waiting = { waiting: [alex, sam], expiryHours: 48 }; waitingStatus = 200; admitStatus = 200; });
+
+  it('sits after Saved assignments while nobody waits, first with a count once somebody does, and never for co-authors', async () => {
+    waiting = { waiting: [] };
+    setup('owner');
+    const page = TestBed.runInInjectionContext(() => new AdminAccessPage());
+    await page.reload();
+    expect(page.tabs().map(tab => tab.id)).toEqual(['assign', 'saved', 'waiting', 'test', 'people']);
+    expect(page.tab()).toBe('assign');
+    waiting = { waiting: [alex, sam], expiryHours: 72 };
+    await page.loadWaiting();
+    expect(page.tabs().map(tab => tab.label)).toEqual(['Waiting for access · 2', 'Give access', 'Saved assignments', 'Test accounts', 'People']);
+    expect(page.tab()).toBe('waiting');
+    expect(page.expiryHours()).toBe(72);
+    expect(page.outline().map(item => item.href)).toEqual(['#waiting-for-access']);
+    page.onTabKey(new KeyboardEvent('keydown', { key: 'ArrowRight' })); expect(page.tab()).toBe('assign');
+    page.onTabKey(new KeyboardEvent('keydown', { key: 'Home' })); expect(page.tab()).toBe('waiting');
+    page.onTabKey(new KeyboardEvent('keydown', { key: 'ArrowLeft' })); expect(page.tab()).toBe('people');
+
+    TestBed.resetTestingModule();
+    setup('co-author');
+    const coauthor = TestBed.runInInjectionContext(() => new AdminAccessPage());
+    await coauthor.reload();
+    // Give access finds people by email or username, so it is the owner's alone (DLV-969, 2026-11-03).
+    expect(coauthor.tabs().map(tab => tab.id)).toEqual(['saved', 'test', 'people']);
+    expect(coauthor.tab()).toBe('saved');
+    expect(requests.some(row => row.path === '/admin/access/waiting')).toBe(false);
+    expect(coauthor.assignments()).toHaveLength(1);
+  });
+
+  it('opens from ?tab=waiting even while the list is empty, and keeps loading the page when the list fails', async () => {
+    waitingStatus = 500;
+    setup('owner', 'waiting');
+    const page = TestBed.runInInjectionContext(() => new AdminAccessPage());
+    await page.reload();
+    expect(page.tab()).toBe('waiting');
+    expect(page.waiting()).toEqual([]);
+    expect(page.assignments()).toHaveLength(1);
+    expect(page.notice()).toBe('Access service is unavailable. Retry shortly.');
+  });
+
+  it('admits with the chosen role through a CSRF-protected write, removes the row and reloads the saved list', async () => {
+    setup('owner');
+    const page = TestBed.runInInjectionContext(() => new AdminAccessPage());
+    await page.reload();
+    expect(page.tab()).toBe('waiting');
+    const listLoads = () => requests.filter(row => row.path === '/admin/access').length;
+    const before = listLoads();
+    page.admitRole['alex-id'] = 'reviewer';
+    await page.admit(alex);
+    const write = admitCalls()[0];
+    expect(write.init?.method).toBe('POST');
+    expect(write.init?.headers).toMatchObject({ 'X-CSRF-TOKEN': 'synthetic-csrf' });
+    expect(JSON.parse(write.init?.body as string)).toEqual({ accountId: 'alex-id', roles: ['reviewer'] });
+    expect(page.notice()).toBe('Alex Example admitted as Reviewer. It applies to their next sign-in.');
+    expect(listLoads()).toBe(before + 1);
+    expect(page.admitRole['alex-id']).toBeUndefined();
+    // The server list is the truth after a reload; here it still names both, so the second admit works on it.
+    waiting = { waiting: [sam] };
+    await page.loadWaiting();
+    expect(page.waiting().map(row => row.accountId)).toEqual(['sam-id']);
+    await page.admit(sam);
+    expect(JSON.parse(admitCalls()[1].init?.body as string)).toEqual({ accountId: 'sam-id', roles: [] });
+    expect(page.notice()).toBe('sam.k admitted as Learner. It applies to their next sign-in.');
+    // The list is empty now and the tab moved behind Saved assignments, but the owner stays on it.
+    waiting = { waiting: [] };
+    await page.loadWaiting();
+    expect(page.tabs()[0].id).toBe('assign');
+    expect(page.tab()).toBe('waiting');
+    expect(page.busy()).toBe(false);
+  });
+
+  it('names what each refusal means and leaves the row in place', async () => {
+    setup('owner');
+    const page = TestBed.runInInjectionContext(() => new AdminAccessPage());
+    await page.reload();
+    const expected: [number, string][] = [
+      [404, 'This request was already removed. Refresh the list.'],
+      [409, 'Alex Example is already admitted.'],
+      [422, 'Choose a known role.'],
+      [403, 'Only the owner can admit people.'],
+      [500, 'Access service is unavailable. Retry shortly.'],
+    ];
+    for (const [status, message] of expected) {
+      admitStatus = status;
+      await page.admit(alex);
+      expect(page.notice()).toBe(message);
+      expect(page.waiting()).toHaveLength(2);
+    }
+    expect(admitCalls()).toHaveLength(expected.length);
+    page.busy.set(true);
+    await page.admit(alex);
+    expect(admitCalls()).toHaveLength(expected.length);
+  });
+
+  it('formats requested and expiry times the same for every operator', () => {
+    setup('owner');
+    const page = TestBed.runInInjectionContext(() => new AdminAccessPage());
+    const now = Date.parse('2026-11-03T07:05:00Z');
+    expect(page.timeText(alex.requestedAt)).toBe('2 Nov 2026, 14:05 UTC');
+    expect(page.timeText('not a date')).toBe('—');
+    expect(page.expiresText(alex, now)).toBe('in 31 h');
+    expect(page.expiresText({ expiresAt: '2026-11-03T07:35:00Z' }, now)).toBe('in less than 1 h');
+    expect(page.expiresText({ expiresAt: '2026-11-03T07:00:00Z' }, now)).toBe('Due for removal');
+    expect(page.expiresText({ expiresAt: '2026-11-10T07:05:00Z' }, now)).toBe('10 Nov 2026, 07:05 UTC');
+    expect(page.expiresText({ expiresAt: '' }, now)).toBe('—');
+    expect(page.admitLabel('')).toBe('Learner');
+    expect(page.admitLabel('co-author')).toBe('Co-author');
+    expect(page.admitRoleOptions.map(option => option.label)).toEqual(['Co-author', 'Admin', 'Reviewer', 'Tester']);
+  });
+
+  it('renders the waiting people as rows with an Admit menu, and admits from the row', async () => {
+    setup('owner');
+    const fixture = TestBed.createComponent(AdminAccessPage);
+    fixture.detectChanges(); await fixture.whenStable();
+    // The waiting list loads after the assignments; wait for the whole reload before reading the tabs.
+    await fixture.componentInstance.reload(); fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    expect(tabs[0].textContent?.trim()).toBe('Waiting for access · 2');
+    expect(tabs[0].getAttribute('aria-selected')).toBe('true');
+    expect(root.querySelector('#access-panel')?.getAttribute('aria-labelledby')).toBe('access-tab-waiting');
+    const section = root.querySelector('#waiting-for-access')!;
+    expect(section.querySelector('.section-heading.with-action button')?.textContent?.trim()).toBe('Refresh');
+    expect(section.querySelector('.section-note')?.textContent?.trim())
+      .toBe('People who signed in but are not admitted yet. A request that nobody admits is removed after 48 hours.');
+    const rows = [...section.querySelectorAll<HTMLTableRowElement>('tbody tr')];
+    expect(rows.map(row => row.getAttribute('data-account'))).toEqual(['alex.example', 'sam.k']);
+    expect([...rows[0].querySelectorAll('th span')].map(span => span.textContent)).toEqual(['Alex Example', 'alex.example']);
+    expect([...rows[1].querySelectorAll('th span')].map(span => span.textContent)).toEqual(['sam.k']);
+    expect(rows[0].querySelector('[data-label="Email"]')?.textContent).toBe('alex@example.test');
+    expect(rows[1].querySelector('[data-label="Email"]')?.textContent).toBe('No verified email');
+    expect(rows[0].querySelector('[data-label="Requested"]')?.textContent).toBe('2 Nov 2026, 14:05 UTC');
+    const select = rows[0].querySelector<HTMLSelectElement>('select')!;
+    expect([...select.options].map(option => [option.value, option.textContent])).toEqual([
+      ['', 'Learner'], ['co-author', 'Co-author'], ['admin', 'Admin'], ['reviewer', 'Reviewer'], ['tester', 'Tester'],
+    ]);
+    select.value = 'admin'; select.dispatchEvent(new Event('change')); fixture.detectChanges();
+    expect(fixture.componentInstance.admitRole['alex-id']).toBe('admin');
+    waiting = { waiting: [sam] };
+    rows[0].querySelector<HTMLButtonElement>('button')!.click();
+    await fixture.whenStable(); fixture.detectChanges();
+    expect(JSON.parse(admitCalls()[0].init?.body as string)).toEqual({ accountId: 'alex-id', roles: ['admin'] });
+    expect(root.querySelector('.notice')?.textContent).toBe('Alex Example admitted as Admin. It applies to their next sign-in.');
+    expect([...root.querySelectorAll('#waiting-for-access tbody tr')].map(row => row.getAttribute('data-account'))).toEqual(['sam.k']);
+    expect(root.querySelector('[role="tab"]')?.textContent?.trim()).toBe('Waiting for access · 1');
   });
 });

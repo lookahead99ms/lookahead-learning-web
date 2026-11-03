@@ -1,0 +1,106 @@
+/* The essence: warm cream block. Moved unchanged from landing.css (DLV-969) so the homepage and
+   /welcome render the same card. The block colour comes from the page: --home-brand-block. */
+/* The animated wordmark is the title; the heading stays for screen readers and the page
+   sidebar, and the symbol sits in the corner. */
+:host {
+  /* The wordmark's cutouts match this block instead of the page. */
+  --identity-cutout: var(--home-brand-block);
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: clamp(24px, 3vw, 32px);
+  padding: clamp(48px, 6vw, 80px) clamp(20px, 4vw, 64px);
+  border-radius: 32px;
+  background: var(--home-brand-block);
+  border: 1px solid var(--platform-edge-soft);
+  text-align: center;
+}
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+p {
+  color: var(--text-body);
+}
+.brand-story-heading {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.essence-corner-mark {
+  position: absolute;
+  inset-block-start: 24px;
+  inset-inline-end: 24px;
+}
+@media (max-width: 720px) {
+  .essence-corner-mark {
+    display: none;
+  }
+}
+/* The wordmark's sentence settles in the space under the steps and stays there. */
+.essence-sentence {
+  position: absolute;
+  inset-block-end: 20px;
+  inset-inline: 160px;
+  margin: 0;
+  color: var(--text-subtle);
+  font-family: 'Avenir Next', 'Segoe UI', system-ui, sans-serif;
+  font-size: clamp(14px, 0.8rem + 0.25vw, 16px);
+  line-height: 1.45;
+  text-align: center;
+  text-wrap: balance;
+  opacity: 0;
+  transform: translateY(-14px);
+  transition:
+    opacity 0.8s ease 0.3s,
+    transform 0.8s ease 0.3s;
+}
+:host([data-skip]) .essence-sentence {
+  transition: none;
+}
+.essence-sentence.shown {
+  opacity: 1;
+  transform: none;
+}
+.essence-sentence-line {
+  display: block;
+}
+.essence-key-word {
+  font-weight: 700;
+}
+/* Narrower cards: the sentence takes its own place under the steps, clear of the corner buttons. */
+@media (max-width: 1100px) {
+  .essence-sentence {
+    position: static;
+    margin-block-end: 36px;
+  }
+}
+@media (max-width: 800px) {
+  :host {
+    border-radius: 26px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation: none !important;
+    transition: none !important;
+  }
+}
+@media (forced-colors: active) {
+  /* Without the wordmark's colours, the Essence heading shows as text. */
+  .brand-story-heading {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
+  }
+}

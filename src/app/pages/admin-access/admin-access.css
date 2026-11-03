@@ -62,7 +62,7 @@ h3 {
 .access-hero {
   position: relative;
   display: grid;
-  gap: 24px;
+  gap: 16px;
   overflow: hidden;
   margin-bottom: 24px;
   padding: clamp(22px, 3vw, 36px);
@@ -93,12 +93,12 @@ h3 {
   display: grid;
   flex: 0 0 auto;
   place-items: center;
-  width: 64px;
-  height: 64px;
-  border-radius: 18px;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
   background: color-mix(in srgb, var(--accent-strong) 12%, var(--surface));
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-strong) 30%, transparent);
-  font-size: 2rem;
+  font-size: 1.6rem;
 }
 .eyebrow {
   color: var(--accent-strong);
@@ -108,13 +108,42 @@ h3 {
   text-transform: uppercase;
 }
 .intro-heading {
-  margin: 8px 0 12px;
-  font-size: clamp(28px, 3.2vw, 38px);
+  margin: 6px 0 8px;
+  font-size: clamp(24px, 2.6vw, 32px);
   line-height: 1.15;
   letter-spacing: -0.035em;
 }
 .lede {
-  font-size: 17px;
+  font-size: 16px;
+}
+/* How access works: folded under the lede; open, it shows the three explainer cards. */
+.how-access summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  color: var(--accent-link);
+  cursor: pointer;
+  font-weight: 700;
+  list-style: none;
+}
+.how-access summary::-webkit-details-marker {
+  display: none;
+}
+.how-access summary::before {
+  content: '▸';
+  transition: transform 150ms ease;
+}
+.how-access[open] summary::before {
+  transform: rotate(90deg);
+}
+.how-access summary:focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+.how-access[open] .how-grid {
+  margin-top: 8px;
 }
 
 /* Status message */
@@ -144,9 +173,9 @@ h3 {
   padding-inline-start: 14px;
   border-inline-start: 4px solid var(--accent-strong);
 }
-.section-heading.with-action > div {
-  flex: 1;
-  min-width: 0;
+.section-heading.with-action {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
 }
 .section-icon {
   display: grid;
@@ -415,27 +444,31 @@ button:disabled {
   flex: 0 0 auto;
 }
 
-/* Tabs (user, 2026-10-16): Give access first; account lists only when chosen. Underlined, and
-   scrollable on narrow screens. */
+/* Tabs (user, 2026-10-16): Give access first; account lists only when chosen. Underlined, one row
+   at every width; the row scrolls when it is wider than the column (user, 2026-11-03). */
+.tab-strip {
+  position: relative;
+  margin: 0 0 24px;
+}
 .access-tabs {
   display: flex;
-  gap: 4px;
-  margin: 0 0 24px;
+  gap: 2px;
   overflow-x: auto;
   border-bottom: 1px solid var(--line);
-  scrollbar-width: thin;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
 }
 .access-tabs button {
   flex: 0 0 auto;
   margin-bottom: -1px;
-  padding: 12px 18px;
+  padding: 12px 14px;
   border: 0;
   border-bottom: 3px solid transparent;
   background: transparent;
   color: var(--text-subtle);
   cursor: pointer;
   font: inherit;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   white-space: nowrap;
 }
@@ -450,6 +483,69 @@ button:disabled {
   outline: 3px solid var(--accent-focus);
   outline-offset: -3px;
   border-radius: 8px 8px 0 0;
+}
+
+/* Edge chevrons, as in lesson tabs: shown only on an edge that hides tabs. */
+.tab-more {
+  position: absolute;
+  top: 0;
+  bottom: 1px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  width: 48px;
+  padding: 0 4px;
+  border: 0;
+  color: var(--accent-strong);
+  cursor: pointer;
+}
+.tab-more[hidden] {
+  display: none;
+}
+.tab-more.right {
+  right: 0;
+  justify-content: flex-end;
+  background: linear-gradient(90deg, transparent, var(--surface-page) 55%);
+}
+.tab-more.left {
+  left: 0;
+  justify-content: flex-start;
+  background: linear-gradient(270deg, transparent, var(--surface-page) 55%);
+}
+.tab-more svg {
+  width: 22px;
+  height: 22px;
+  padding: 3px;
+  border-radius: 50%;
+  background: var(--surface-muted);
+  box-shadow: 0 0 0 1px var(--line);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.tab-more:hover svg {
+  background: var(--accent-strong);
+  color: var(--accent-on-primary);
+}
+.tab-more:focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: -3px;
+}
+/* The tab panel is a size container: its sections lay out by the column's width, not the window's,
+   so nothing spills under the Admin menu on a laptop (user, 2026-11-03). */
+.access-panel {
+  container: access-panel / inline-size;
+}
+@container access-panel (max-width: 560px) {
+  .section-heading.with-action {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .section-heading.with-action > button {
+    grid-column: 2;
+    justify-self: start;
+  }
 }
 
 /* How access works: three plain explainer cards inside the hero. */
@@ -514,8 +610,12 @@ button:disabled {
 }
 @media (prefers-reduced-motion: reduce) {
   button,
-  .role-option {
+  .role-option,
+  .how-access summary::before {
     transition: none;
+  }
+  .access-tabs {
+    scroll-behavior: auto;
   }
 }
 @media (max-width: 1280px) {
@@ -551,27 +651,11 @@ button:disabled {
   }
 }
 @media (max-width: 640px) {
-  /* Four tabs never fit one phone row: two by two, nothing hidden off-screen. */
-  .access-tabs {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    overflow: visible;
-  }
-  .access-tabs button {
-    padding-inline: 8px;
-    white-space: normal;
-  }
   .choose-grid {
     grid-template-columns: 1fr;
   }
-  .hero-top {
-    flex-direction: column;
-  }
-  .section-heading.with-action {
-    flex-wrap: wrap;
-  }
-  .section-heading.with-action > button {
-    margin-inline-start: 58px;
+  .hero-mark {
+    display: none;
   }
   .assignment {
     flex-direction: column;
@@ -596,4 +680,146 @@ button:disabled {
 .membership-facts dd {
   margin: 2px 0 0;
   line-height: 1.5;
+}
+
+/* DLV-969 (2026-11-02): Waiting for access. The same table shape as Test accounts and People;
+   the Admit menu and button sit together in the last column. */
+.waiting-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.waiting-table th,
+.waiting-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  overflow-wrap: anywhere;
+  text-align: start;
+  vertical-align: top;
+}
+.waiting-table thead th {
+  background: var(--surface-muted);
+  color: var(--text-strong);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.waiting-table tbody th {
+  font-weight: 400;
+}
+.waiting-table .person {
+  display: block;
+  color: var(--text-strong);
+  font-weight: 700;
+}
+.waiting-table .sub {
+  display: block;
+  color: var(--text-subtle);
+}
+.admit-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.admit-cell label {
+  display: inline-flex;
+}
+.admit-cell select {
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-page);
+  color: var(--text-strong);
+  font: inherit;
+}
+.admit-cell select:focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 2px;
+}
+.admit-cell button {
+  padding-inline: 14px;
+}
+/* Narrow columns (phones, and laptops with both side columns): each waiting person is a card on a
+   grid (user, 2026-11-03). The person on top; Email, Requested and Expires as one labelled row;
+   then Admit as, with the menu and the Admit button side by side. */
+@container access-panel (max-width: 760px) {
+  .waiting-table thead {
+    display: none;
+  }
+  .waiting-table,
+  .waiting-table tbody {
+    display: block;
+  }
+  .waiting-table tbody tr {
+    display: grid;
+    grid-template-areas:
+      'person person person'
+      'email requested expires'
+      'admit admit admit';
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 0.8fr);
+    gap: 14px 18px;
+    margin-top: 12px;
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--surface);
+  }
+  .waiting-table th,
+  .waiting-table td {
+    display: block;
+    padding: 0;
+    border-bottom: 0;
+  }
+  .waiting-table tbody th {
+    grid-area: person;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .waiting-table td[data-label='Email'] {
+    grid-area: email;
+  }
+  .waiting-table td[data-label='Requested'] {
+    grid-area: requested;
+  }
+  .waiting-table td[data-label='Expires'] {
+    grid-area: expires;
+  }
+  .waiting-table td[data-label='Admit as'] {
+    grid-area: admit;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+  }
+  .waiting-table td[data-label]::before {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--text-subtle);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    content: attr(data-label);
+  }
+  .admit-cell label {
+    flex: 0 1 260px;
+    min-width: 0;
+  }
+  .admit-cell select {
+    width: 100%;
+  }
+}
+/* Phones: Email takes its own line; Requested and Expires share the next one. */
+@container access-panel (max-width: 480px) {
+  .waiting-table tbody tr {
+    grid-template-areas:
+      'person person'
+      'email email'
+      'requested expires'
+      'admit admit';
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .admit-cell label {
+    flex: 1 1 auto;
+  }
 }

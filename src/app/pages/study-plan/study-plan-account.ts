@@ -15,12 +15,21 @@ import { isThemePreference, ThemePreference } from '../../core/platform-theme';
 const profileLinkKeys = ['github', 'linkedin', 'x', 'website'] as const;
 
 /** Maps Identity's profile view to the UI contract, dropping fields it does not recognize. */
+/** Cognito's own name for an account made through Google ("Google_1176…"): an internal id, never shown to the person. */
+export function isProviderUsername(username: string | null | undefined): boolean {
+  return /^google_/i.test(username ?? '');
+}
+
 function managedProfile(profile: ManagedAccountProfile): ManagedAccountProfile {
   const result: ManagedAccountProfile = {
     displayName: profile.displayName,
     username: profile.username,
   };
   if (isThemePreference(profile.themePreference)) result.themePreference = profile.themePreference;
+  // DLV-969: an account made through Google shows its Gmail and Google as connected. Cognito names it "Google_<id>",
+  // so the name alone tells, also before the Domain reports the method.
+  if (profile.signInMethod === 'google' || isProviderUsername(profile.username)) result.signInMethod = 'google';
+  if (typeof profile.email === 'string' && profile.email) result.email = profile.email;
   const links = profile.links as Partial<Record<string, unknown>> | undefined;
   if (links && typeof links === 'object') {
     result.links = Object.fromEntries(
@@ -201,11 +210,13 @@ export class StudyPlanAccount implements AccountSettingsClient {
   readonly error = signal('');
   readonly errorStatus = signal<number | null>(null);
   readonly sessionExpired = signal(false);
+  /** False until the first identity check answers (signed in or not), so the header does not flash Sign in for a signed-in visitor. */
+  readonly sessionKnown = signal(!this.enabled);
   readonly signInLimit = signal(false);
   readonly logoutRedirectPending = signal(false);
   readonly pending = signal(false);
   readonly catalog = signal<CatalogPins | null>(null);
-  readonly authOptions = signal<{ registration: boolean; google: boolean; oauth?: boolean; managedLogin?: boolean } | null>(
+  readonly authOptions = signal<{ registration: boolean; google: boolean; oauth?: boolean; managedLogin?: boolean; password?: boolean } | null>(
     null,
   );
   private csrf: { token: string; headerName: string } | null = null;
@@ -460,6 +471,7 @@ export class StudyPlanAccount implements AccountSettingsClient {
       await this.loadAuthOptions();
       const account = await this.request<StudyAccount>('/auth/me');
       this.account.set(account);
+      this.sessionKnown.set(true);
       if (this.authOptions()?.managedLogin) {
         await this.refreshCsrf();
         const activated = await this.request<StudyAccount>('/auth/invitations/activate', {
@@ -476,6 +488,7 @@ export class StudyPlanAccount implements AccountSettingsClient {
       if (this.account() || !(error instanceof AccountApiError && error.status === 401))
         this.showError(error);
     } finally {
+      this.sessionKnown.set(true);
       this.busy.set(false);
     }
   }

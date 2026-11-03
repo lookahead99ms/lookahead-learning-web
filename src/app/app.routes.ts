@@ -115,6 +115,17 @@ export const routes: Routes = [
   { path: 'author', pathMatch: 'full', redirectTo: 'admin/previews' },
   { path: 'author/previews/study-plan', redirectTo: 'admin/previews/study-plan' },
   { path: 'author/:page', redirectTo: 'admin/:page' },
+  // DLV-969: the steps of our own email-and-password sign-in and sign-up (shown when the Gateway offers them).
+  ...(['forgot', 'reset', 'new-password', 'code'] as const).map((step) => ({
+    path: 'sign-in/' + step,
+    data: { passwordStep: step },
+    loadComponent: () => import('./pages/account/password-step').then((page) => page.PasswordStepPage),
+  })),
+  {
+    path: 'sign-up/confirm',
+    data: { passwordStep: 'confirm' },
+    loadComponent: () => import('./pages/account/password-step').then((page) => page.PasswordStepPage),
+  },
   {
     path: 'sign-in',
     data: { accountMode: 'signin' },
@@ -207,6 +218,11 @@ export const routes: Routes = [
     path: '',
     pathMatch: 'full',
     loadComponent: () => import('./pages/landing/landing').then((page) => page.Landing),
+  },
+  // DLV-969: the Essence on its own; with ?access=pending, the page a waiting sign-in lands on.
+  {
+    path: 'welcome',
+    loadComponent: () => import('./pages/welcome/welcome').then((page) => page.WelcomePage),
   },
   // DLV-942: every open and free unit, linked from the catalogs.
   {

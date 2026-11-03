@@ -168,6 +168,17 @@ describe('Account page management integration', () => {
     expect(links[0].getAttribute('aria-current')).toBe('true');
   });
 
+  it('never shows a Google account\'s internal name under the person\'s name (DLV-969)', async () => {
+    await mount();
+    const store = TestBed.inject(StudyPlanAccount);
+    store.account.update((account) => (account ? { ...account, username: 'google_117602686039' } : account));
+    harness.detectChanges();
+    const element = harness.routeNativeElement!;
+    expect(element.querySelector('.account-identity-name')?.textContent?.trim()).toBe('Sample Learner');
+    expect(element.querySelector('.account-identity-username')).toBeNull();
+    expect(element.querySelector('.account-identity-meta')?.textContent).not.toContain('google_');
+  });
+
   it('greets the learner and shows membership and saved plans in the hero', async () => {
     savedPlans = [
       { planId: 'first-plan', goal: 'Study Java', revision: 1, updatedAt: '2026-09-18T12:00:00Z' },

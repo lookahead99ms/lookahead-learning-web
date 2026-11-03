@@ -3,7 +3,7 @@ import { Component, computed, effect, ElementRef, inject, signal } from '@angula
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
-import { StudyPlanAccount } from '../study-plan/study-plan-account';
+import { StudyPlanAccount, isProviderUsername } from '../study-plan/study-plan-account';
 import { registrationCountries, registrationCountryCode } from './countries';
 import { AccountSettings } from './account-settings';
 import { ACCOUNT_SETTINGS_CLIENT } from './account-settings-client';
@@ -13,6 +13,8 @@ import { accountMembership, membershipName } from './account-membership';
 import { ActiveSignIns } from './active-sign-ins';
 import { ACTIVE_SIGN_INS_CLIENT } from './active-sign-ins-client';
 import { SignInManagementApi } from './sign-in-management-api';
+import { PasswordAccountForm } from './password-account-form';
+import { SignInBrand } from './sign-in-brand';
 
 import { gatewayLoginUrl, safeAccountReturn } from './account-navigation';
 import {
@@ -31,6 +33,8 @@ export { safeAccountReturn } from './account-navigation';
     AccountSettings,
     AccountStudyPlans,
     ActiveSignIns,
+    PasswordAccountForm,
+    SignInBrand,
   ],
   providers: [
     { provide: ACCOUNT_SETTINGS_CLIENT, useExisting: StudyPlanAccount },
@@ -77,14 +81,15 @@ export class AccountPage {
       : this.route.snapshot.queryParamMap.get('error') === 'oauth'
       ? 'Sign-in could not be completed. Please try again.'
       : this.route.snapshot.queryParamMap.get('error') === 'admission'
-        ? 'Application access could not be confirmed. If this persists, contact the account administrator.'
+        ? 'Your account is not admitted yet. If you have just requested access, the owner has to approve it first.'
         : '',
   );
   protected readonly oauthContinuation = computed(() =>
     this.query().get('oauth') === 'continue' ? 'continue' : null,
   );
   protected readonly countries = registrationCountries;
-  protected readonly managedLoginUrl = computed(() => gatewayLoginUrl(this.returnTo()));
+  protected readonly googleLoginUrl = computed(() => gatewayLoginUrl(this.returnTo(), 'google'));
+  protected readonly passwordLoginUrl = computed(() => gatewayLoginUrl(this.returnTo(), 'password'));
   protected readonly passwordChanged =
     this.router.currentNavigation()?.extras.state?.['passwordChanged'] === true;
   protected readonly signInCanceled =
@@ -134,6 +139,7 @@ export class AccountPage {
   protected greetingName(name: string): string {
     return name.trim().split(/\s+/)[0] || 'there';
   }
+  protected readonly providerUsername = isProviderUsername;
   protected initials(name: string): string {
     const words = name.trim().split(/\s+/).filter(Boolean);
     return words

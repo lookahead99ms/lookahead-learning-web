@@ -125,12 +125,13 @@
 }
 .directory-table tbody th {
   font-weight: 400;
+  /* Only the person's long emails break mid-word, so the table stays inside its card (user, 2026-11-03). */
+  overflow-wrap: anywhere;
 }
 .person {
   display: block;
   color: var(--text-strong);
   font-weight: 700;
-  white-space: nowrap;
 }
 .sub {
   display: block;
@@ -205,8 +206,9 @@ tr.self > * {
   clip-path: inset(50%);
   white-space: nowrap;
 }
-/* Phones and narrow columns: each person becomes a card with labelled lines. */
-@media (max-width: 760px) {
+/* Phones and narrow columns: each person becomes a card with labelled lines. By the column's width
+   (the page's access-panel container), so a laptop with both side menus gets cards too (user, 2026-11-03). */
+@container access-panel (max-width: 560px) {
   .directory-table thead {
     display: none;
   }
@@ -262,4 +264,106 @@ tr.self > * {
   outline: 3px solid var(--accent-focus);
   outline-offset: 2px;
   border-radius: 4px;
+}
+
+/* DLV-969 (user, 2026-11-03): removing access. Each option is its button with its effect beside it;
+   Disable is the strongest, so it carries the warning mark and the danger colour. */
+.removal {
+  display: grid;
+  gap: 12px;
+  margin: 0 0 16px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+.removal h3 {
+  margin: 0;
+  font-size: 15px;
+}
+.removal-option {
+  display: grid;
+  grid-template-columns: 9rem minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+.removal-option p {
+  margin: 0;
+  color: var(--text-subtle);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.removal-option > button {
+  width: 100%;
+}
+.danger-button,
+.caution-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+.danger-button {
+  border: 1px solid var(--danger);
+  background: var(--danger);
+  color: var(--surface-page);
+}
+.caution-button {
+  border: 1px solid var(--danger);
+  background: transparent;
+  color: var(--danger);
+}
+.danger-button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--danger) 85%, var(--text-strong));
+}
+.caution-button:hover:not(:disabled) {
+  background: var(--danger-surface);
+}
+.danger-button:focus-visible,
+.caution-button:focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 2px;
+}
+.danger-button:disabled,
+.caution-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.warning-mark {
+  font-size: 1.1em;
+  line-height: 1;
+}
+.removal + .reset-panel {
+  margin: 0 0 16px;
+}
+.danger-panel {
+  border-color: var(--danger);
+  background: var(--danger-surface);
+}
+.state-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: fit-content;
+  margin-top: 4px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.state-badge.disabled {
+  border: 1px solid var(--danger);
+  color: var(--danger);
+}
+@media (max-width: 640px) {
+  .removal-option {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
 }

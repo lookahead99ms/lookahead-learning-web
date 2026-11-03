@@ -118,6 +118,21 @@ describe('WordmarkKey', () => {
     expect(observed[0].disconnect).not.toHaveBeenCalled();
   });
 
+  it('with autoplay, starts as soon as any of the card shows, without waiting for a scroll (/welcome)', () => {
+    stubBrowser(false);
+    const fixture = TestBed.createComponent(WordmarkKey);
+    fixture.componentRef.setInput('autoplay', true);
+    fixture.detectChanges();
+    TestBed.tick();
+    fixture.detectChanges();
+    scrollIntoView(fixture, 0);
+    advance(fixture, KEY_RESET_MS);
+    expect(state(fixture)).toBe('hidden');
+    scrollIntoView(fixture, 0.2);
+    advance(fixture, KEY_RESET_MS);
+    expect(state(fixture)).toBe('telling');
+  });
+
   it('brings each symbol down onto its letter, one at a time, each with its own caption', () => {
     stubBrowser(false);
     const fixture = render();

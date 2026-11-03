@@ -87,6 +87,7 @@ describe('Landing', () => {
     provide: ActivatedRoute,
     useValue: {
       paramMap: of(convertToParamMap({ variant: '0' })),
+      queryParamMap: of(convertToParamMap({})),
       snapshot: { paramMap: convertToParamMap({ variant: '0' }), data: {} },
     },
   };
@@ -595,6 +596,9 @@ describe('Landing', () => {
     expect(root.querySelector('app-engineering-challenge.home-challenge')).not.toBeNull();
     expect(root.querySelector('.feature-discovery.home-explore')).not.toBeNull();
     expect(root.querySelector('.brand-story.home-essence app-wordmark-key')).not.toBeNull();
+    // The homepage Essence still waits until most of the card is on screen; only /welcome starts on load.
+    const essence = fixture.debugElement.query((node) => node.name === 'section' && node.nativeElement.classList.contains('home-essence'));
+    expect(essence.componentInstance.autoplay()).toBe(false);
     // The footer: "Learn. Grow. Blaze." with the reasoning pair beside it, its only place on the
     // site (user, 2026-10-17).
     const footer = root.querySelector('.landing-footer.home-footer');
@@ -923,5 +927,57 @@ describe('Landing', () => {
     expect(root.querySelectorAll('.la-card-scene[data-state="ready"] svg')).toHaveLength(8);
     http.verify();
     fixture.destroy();
+  });
+});
+
+/** DLV-969 (2026-11-02): an unadmitted DEV sign-in comes back to `/?access=pending`. */
+describe('Landing access-pending notice', () => {
+  const route = (query: Record<string, string>) => ({
+    provide: ActivatedRoute,
+    useValue: {
+      paramMap: of(convertToParamMap({})),
+      queryParamMap: of(convertToParamMap(query)),
+      snapshot: { paramMap: convertToParamMap({}), queryParamMap: convertToParamMap(query), data: {} },
+    },
+  });
+  const render = async (query: Record<string, string>) => {
+    await TestBed.configureTestingModule({
+      imports: [Landing],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: ContentService, useValue: { getSearchIndex: () => of([]) } },
+        route(query),
+      ],
+    }).compileComponents();
+    const fixture = TestBed.createComponent(Landing);
+    fixture.detectChanges();
+    return fixture.nativeElement as HTMLElement;
+  };
+
+  it('opens with the notice, before the hero, only when the address says access is pending', async () => {
+    const root = await render({ access: 'pending' });
+    const main = root.querySelector('main.landing-page')!;
+    const notice = main.firstElementChild as HTMLElement;
+    expect(notice.matches('aside.access-pending')).toBe(true);
+    expect(notice.getAttribute('role')).toBe('status');
+    expect(notice.getAttribute('aria-live')).toBe('polite');
+    expect(notice.nextElementSibling?.classList.contains('discovery-opening')).toBe(true);
+    expect(notice.querySelector('h2')?.textContent).toBe('Your sign-in worked');
+    expect(notice.textContent).toContain("waiting for the owner's approval");
+    expect(notice.textContent).toContain('not approved within 48 hours is removed');
+    const link = notice.querySelector<HTMLAnchorElement>('a.access-pending-action')!;
+    expect(link.textContent?.trim()).toBe('Browse open lessons');
+    expect(link.getAttribute('href')).toBe('/learn');
+    expect(main.querySelectorAll('.access-pending')).toHaveLength(1);
+  });
+
+  it('shows nothing for other values of the parameter or without it', async () => {
+    expect((await render({ access: 'granted' })).querySelector('.access-pending')).toBeNull();
+    TestBed.resetTestingModule();
+    const root = await render({});
+    expect(root.querySelector('.access-pending')).toBeNull();
+    expect(root.querySelector('main.landing-page')?.firstElementChild?.classList.contains('discovery-opening')).toBe(true);
   });
 });
