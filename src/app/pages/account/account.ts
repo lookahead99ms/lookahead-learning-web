@@ -13,6 +13,8 @@ import { accountMembership, membershipName } from './account-membership';
 import { ActiveSignIns } from './active-sign-ins';
 import { ACTIVE_SIGN_INS_CLIENT } from './active-sign-ins-client';
 import { SignInManagementApi } from './sign-in-management-api';
+import { PasswordAccountForm } from './password-account-form';
+import { SignInBrand } from './sign-in-brand';
 
 import { gatewayLoginUrl, safeAccountReturn } from './account-navigation';
 import {
@@ -31,6 +33,8 @@ export { safeAccountReturn } from './account-navigation';
     AccountSettings,
     AccountStudyPlans,
     ActiveSignIns,
+    PasswordAccountForm,
+    SignInBrand,
   ],
   providers: [
     { provide: ACCOUNT_SETTINGS_CLIENT, useExisting: StudyPlanAccount },

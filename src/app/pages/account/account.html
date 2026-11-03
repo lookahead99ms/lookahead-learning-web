@@ -1,5 +1,5 @@
 <app-platform-header [hideUtilities]="authenticated()" />
-<main id="main-content" class="account-page" [class.manage-account]="authenticated()">
+<main id="main-content" class="account-page" [class.manage-account]="authenticated()" [class.auth-page]="!authenticated()">
   @if (authenticated()) {
     @for (account of [store.account()!]; track account.accountId) {
       <div class="account-workspace" [pageSidebarContext]="sidebarContext">
@@ -96,7 +96,9 @@
     }
   } @else {
     <!-- data-signature-column: the platform statements after the page line up with this column. -->
-    <section class="account-card" aria-labelledby="account-heading" data-signature-column>
+    <section class="account-card auth-split" aria-labelledby="account-heading" data-signature-column>
+      <app-sign-in-brand class="auth-brand" />
+      <div class="auth-form">
       <header class="account-intro">
         <p class="eyebrow">Your learning account</p>
         <h1 id="account-heading">{{ signup() ? 'Create your account' : 'Welcome back' }}</h1>
@@ -120,7 +122,15 @@
               : 'Sign in to continue your learning.'
           }}
         </p>
-        @if (store.authOptions()?.managedLogin) {
+        @if (store.authOptions()?.managedLogin && store.authOptions()?.password) {
+          <app-password-account-form
+            [mode]="signup() ? 'signup' : 'signin'"
+            [returnTo]="returnTo()"
+            [google]="!!store.authOptions()?.google"
+            [googleUrl]="googleLoginUrl()"
+            [initialError]="formError()"
+          />
+        } @else if (store.authOptions()?.managedLogin) {
           @if (formError()) { <p class="form-error" role="alert">{{ formError() }}</p> }
           @if (store.authOptions()?.google) {
             <a class="google-action" [href]="googleLoginUrl()">
@@ -304,6 +314,7 @@
         <a class="action-link" routerLink="/study-plan">Open Study Plan</a>
       }
       <ng-container [ngTemplateOutlet]="learningActions" />
+      </div>
     </section>
   }
 </main>

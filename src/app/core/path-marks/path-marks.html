@@ -1,0 +1,16 @@
+<ul class="path-marks">
+  @for (path of paths; track path.id) {
+    <li [class]="'path-mark path-' + path.id">
+      <span class="path-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" focusable="false">
+          @switch (path.id) {
+            @case ('learn') { <path d="M4 6.5 12 3l8 3.5-8 3.5z" /><path d="M7 8.3v5.2c1.4 1.5 3 2.2 5 2.2s3.6-.7 5-2.2V8.3M20 6.5v6" /> }
+            @case ('grow') { <path d="M4 19h16" /><path d="M7 15v4M12 11v8M17 6v13" /><path d="m5 11 5-5 3 3 6-6" /> }
+            @case ('blaze') { <path d="M12 3c3 3.5 4.5 6.4 4.5 9.2A4.5 4.5 0 0 1 12 17a4.5 4.5 0 0 1-4.5-4.8C7.5 10 8.6 8 10 6.6c.3 2 1 3.2 2.2 3.8C12.5 8 12.4 5.6 12 3z" /><path d="M9 21h6" /> }
+          }
+        </svg>
+      </span>
+      <span class="path-text"><b>{{ path.label }}</b> {{ path.line }}</span>
+    </li>
+  }
+</ul>

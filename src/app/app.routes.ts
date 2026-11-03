@@ -114,6 +114,17 @@ export const routes: Routes = [
   { path: 'author', pathMatch: 'full', redirectTo: 'admin/previews' },
   { path: 'author/previews/study-plan', redirectTo: 'admin/previews/study-plan' },
   { path: 'author/:page', redirectTo: 'admin/:page' },
+  // DLV-969: the steps of our own email-and-password sign-in and sign-up (shown when the Gateway offers them).
+  ...(['forgot', 'reset', 'new-password', 'code'] as const).map((step) => ({
+    path: 'sign-in/' + step,
+    data: { passwordStep: step },
+    loadComponent: () => import('./pages/account/password-step').then((page) => page.PasswordStepPage),
+  })),
+  {
+    path: 'sign-up/confirm',
+    data: { passwordStep: 'confirm' },
+    loadComponent: () => import('./pages/account/password-step').then((page) => page.PasswordStepPage),
+  },
   {
     path: 'sign-in',
     data: { accountMode: 'signin' },
