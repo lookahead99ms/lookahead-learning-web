@@ -16,7 +16,7 @@ const failure = (status: number, code: string) =>
 describe('Account settings identity boundary', () => {
   let store: StudyPlanAccount;
   let fetcher: ReturnType<typeof vi.fn>;
-  let profile: { accountId: string; username: string; displayName: string };
+  let profile: { accountId: string; username: string; displayName: string; signInMethod?: string; email?: string | null };
   let passwordReply: () => Response;
   const passwordChange = {
     currentPassword: 'legacy',
@@ -63,6 +63,18 @@ describe('Account settings identity boundary', () => {
       username: profile.username,
     });
     expect(fetcher.mock.calls[0][0]).toBe('/api/v1/account/profile');
+  });
+
+  it('keeps Google as the sign-in method and the verified Gmail, and nothing else the service guessed (DLV-969)', async () => {
+    Object.assign(profile, { username: 'Google_109384756', signInMethod: 'google', email: 'learner@gmail.example' });
+    expect(await store.loadProfile()).toEqual({
+      displayName: profile.displayName, username: 'Google_109384756', signInMethod: 'google', email: 'learner@gmail.example',
+    });
+    // Cognito's own name tells a Google account apart even when today's Domain says "cognito" and sends no email.
+    Object.assign(profile, { signInMethod: 'cognito', email: '' });
+    expect(await store.loadProfile()).toEqual({ displayName: profile.displayName, username: 'Google_109384756', signInMethod: 'google' });
+    Object.assign(profile, { username: 'learner@example.test' });
+    expect(await store.loadProfile()).toEqual({ displayName: profile.displayName, username: 'learner@example.test' });
   });
 
   it('posts only the display name with Identity CSRF, then refreshes Domain-composed grants', async () => {

@@ -161,6 +161,8 @@ export class WordmarkKey {
   readonly settled = input(false);
   /** The reader paused: everything holds where it is until play. */
   readonly still = input(false);
+  /** Play as soon as any of the card is on screen, not only once most of it is (/welcome, DLV-969). */
+  readonly autoplay = input(false);
   /** The wordmark starts (again) from nothing. */
   readonly restarted = output<void>();
   /** The line has reached the door; what follows the wordmark can begin. */
@@ -228,7 +230,7 @@ export class WordmarkKey {
    */
   private seen(share: number): void {
     this.onScreen.set(share > 0);
-    if (!this.started && share >= STAGE_SHOWN) {
+    if (!this.started && (share >= STAGE_SHOWN || (this.autoplay() && share > 0))) {
       this.play();
     } else if (this.started && share === 0 && !this.settled() && !this.still()) {
       this.timer.clear();

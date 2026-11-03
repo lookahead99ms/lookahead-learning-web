@@ -15,12 +15,21 @@ import { isThemePreference, ThemePreference } from '../../core/platform-theme';
 const profileLinkKeys = ['github', 'linkedin', 'x', 'website'] as const;
 
 /** Maps Identity's profile view to the UI contract, dropping fields it does not recognize. */
+/** Cognito's own name for an account made through Google ("Google_1176…"): an internal id, never shown to the person. */
+export function isProviderUsername(username: string | null | undefined): boolean {
+  return /^google_/i.test(username ?? '');
+}
+
 function managedProfile(profile: ManagedAccountProfile): ManagedAccountProfile {
   const result: ManagedAccountProfile = {
     displayName: profile.displayName,
     username: profile.username,
   };
   if (isThemePreference(profile.themePreference)) result.themePreference = profile.themePreference;
+  // DLV-969: an account made through Google shows its Gmail and Google as connected. Cognito names it "Google_<id>",
+  // so the name alone tells, also before the Domain reports the method.
+  if (profile.signInMethod === 'google' || isProviderUsername(profile.username)) result.signInMethod = 'google';
+  if (typeof profile.email === 'string' && profile.email) result.email = profile.email;
   const links = profile.links as Partial<Record<string, unknown>> | undefined;
   if (links && typeof links === 'object') {
     result.links = Object.fromEntries(

@@ -77,6 +77,38 @@ describe('People directory helpers (DLV-961)', () => {
     expect(directoryRows({ accountId: 'me', username: 'me', role: 'owner' }, [{ id: 's', accountId: 'me', pendingEmail: null, roles: ['admin'], topicGrants: [], fullCurriculum: true }], [], titles)[0].name).toBe('me');
   });
 
+  it('names a co-author\'s assignments by their labels and keeps an invitation pending (DLV-969)', () => {
+    const rows = directoryRows({ accountId: 'co', username: 'co', role: 'co-author' }, [
+      { id: 'a1', accountId: null, pendingEmail: null, label: 'Admin 1', pending: false, roles: ['admin'], topicGrants: [], fullCurriculum: true },
+      { id: 'a2', accountId: null, pendingEmail: null, label: 'Pending invitation', pending: true, roles: ['tester'], topicGrants: [], fullCurriculum: false },
+    ], [], titles);
+    const named = rows.filter(row => !row.isSelf);
+    expect(named.map(row => [row.name, row.pending, row.detail, row.accountId])).toEqual([
+      ['Admin 1', false, null, null], ['Pending invitation', true, 'Waiting for a verified sign-in', null],
+    ]);
+    // Their own assignment comes back with their account id and name: they always see themselves.
+    const own = directoryRows({ accountId: 'co', username: 'co@example.invalid', displayName: 'Co Author', role: 'co-author' }, [
+      { id: 'a0', accountId: 'co', pendingEmail: null, label: 'Co Author', pending: false, roles: ['co-author'], topicGrants: [], fullCurriculum: false },
+      { id: 'a1', accountId: null, pendingEmail: null, label: 'Co-author 2', pending: false, roles: ['co-author'], topicGrants: [], fullCurriculum: false },
+    ], [], titles);
+    expect(own.map(row => [row.name, row.isSelf])).toEqual(expect.arrayContaining([['co@example.invalid', true], ['Co-author 2', false]]));
+    expect(own).toHaveLength(2);
+  });
+
+  it('carries the owner\'s Disable, Enable and Delete options from the directory (DLV-969)', () => {
+    const account = (id: string, extra: object) => ({ accountId: id, username: id + '@gmail.invalid', displayName: id, email: id + '@gmail.invalid', roles: [],
+      testAccount: false, fullCurriculum: false, access: { label: 'Free', labels: ['Free'], grantedCourseIds: [] }, ...extra });
+    const rows = directoryRows({ accountId: 'me', username: 'me', role: 'owner' }, [], [], titles, [
+      account('active', { signIn: 'active', canDisable: true, canRemove: true }),
+      account('off', { signIn: 'disabled', canEnable: true, canRemove: true }),
+      account('older', {}),
+    ]);
+    const flags = (id: string) => { const row = rows.find(item => item.accountId === id)!; return [row.disabled, row.canDisable, row.canEnable, row.canRemove]; };
+    expect(flags('active')).toEqual([false, true, false, true]);
+    expect(flags('off')).toEqual([true, false, true, true]);
+    expect(flags('older')).toEqual([false, false, false, false]);
+  });
+
   it('filters by role and by name, role or plan text', () => {
     const [row] = directoryRows(null, [], [test('learner05', { access: { label: 'Regular · Learn', labels: ['Regular · Learn'] } })], titles);
     expect(matchesFilter(row, '', '')).toBe(true);

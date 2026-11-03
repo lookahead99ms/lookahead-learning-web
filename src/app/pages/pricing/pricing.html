@@ -78,7 +78,7 @@
   <section class="pricing-section free-plan" aria-labelledby="free-heading">
     <div class="free-intro">
       <h2 id="free-heading">Free</h2>
-      <p class="plan-price"><span class="amount">$0</span></p>
+      <p class="plan-price"><span class="amount price-figure">$0</span></p>
       <p class="section-lede">What a free account gets.</p>
       <a class="action-link" [routerLink]="startFree">Start free</a>
     </div>
@@ -136,12 +136,12 @@
     <li class="plan-card" [attr.data-plan]="card.plan.id" [class.off-sale]="!card.canChoose">
       <h3>{{ card.plan.name }}</h3>
       <p class="plan-price" [id]="card.plan.id + '-price'">
-        <span class="amount" aria-hidden="true">{{ card.amount }}</span>
+        <span class="amount price-figure" aria-hidden="true">{{ card.amount }}</span>
         <span class="period" aria-hidden="true">{{ card.period }}</span>
         <span class="visually-hidden">{{ card.spokenPrice }}</span>
       </p>
       @if (card.comparedWith) {
-        <p class="compared-with">{{ card.comparedWith }}</p>
+        <p class="compared-with price-figure">{{ card.comparedWith }}</p>
       }
       <p class="plan-includes"><span class="includes-label">Includes</span> {{ card.includes }}</p>
       <ul class="plan-terms">
@@ -215,7 +215,7 @@
     (close)="returnFocus()"
   >
     @if (chosen(); as card) {
-      <p class="eyebrow">{{ card.plan.name }} · {{ card.spokenPrice }}</p>
+      <p class="eyebrow">{{ card.plan.name }} · <span class="price-figure">{{ card.spokenPrice }}</span></p>
     }
     @if (signedIn()) {
       <h2 id="checkout-notice-title">Local payment simulation</h2>
@@ -229,7 +229,7 @@
       </p>
     }
     @if(signedIn() && membershipApi.records().length){<label>Existing access <select [(ngModel)]="replacesId" (ngModelChange)="prepareQuote()"><option value="">New purchase</option>@for(record of membershipApi.records();track record.id){@if(record.status==='active'){<option [value]="record.id">{{record.planId}} · {{record.endsAt}}</option>}}</select></label>}
-    @if(quote();as estimate){<p>Price: ${{(estimate.priceCents / 100).toFixed(2)}} · Ends {{estimate.endsAt | date:'mediumDate':'UTC'}} (UTC)</p>}
+    @if(quote();as estimate){<p>Price: <span class="price-figure">${{(estimate.priceCents / 100).toFixed(2)}}</span> · Ends {{estimate.endsAt | date:'mediumDate':'UTC'}} (UTC)</p>}
     <p role="status">{{ purchaseStatus() || membershipApi.error() }}</p>
     <div class="action-row">
       @if (signedIn()) {

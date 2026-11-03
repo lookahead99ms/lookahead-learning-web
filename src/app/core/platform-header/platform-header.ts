@@ -318,37 +318,6 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         position: relative;
         margin-left: 8px;
       }
-      /* DEV only: sign out of the environment and return to its gate (user decision 2026-11-02). */
-      .header-utilities > .leave-dev-button {
-        min-height: 44px;
-        display: inline-flex;
-        align-items: center;
-        padding: 8px 12px;
-        margin-left: 8px;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: var(--surface);
-        color: var(--text-body);
-        font: inherit;
-        font-size: 0.8rem;
-        font-weight: 700;
-        white-space: nowrap;
-        cursor: pointer;
-      }
-      .header-utilities > .leave-dev-button:hover,
-      .header-utilities > .leave-dev-button:focus-visible {
-        border-color: var(--accent-strong);
-        color: var(--accent-strong);
-      }
-      .header-utilities > .leave-dev-button:disabled {
-        opacity: 0.6;
-        cursor: progress;
-      }
-      .header-utilities > .leave-dev-error {
-        font-size: 0.75rem;
-        color: var(--danger);
-        max-width: 14rem;
-      }
       .study-plan-link {
         margin-left: auto;
         padding: 8px 11px;
@@ -620,14 +589,104 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         padding: 12px max(4%, (100% - var(--site-frame-max, 100rem)) / 2);
         min-height: 76px;
       }
+      /* The brand link and, in an admitted DEV session, the DEV control beside it (DLV-969). */
+      .platform-header .brand-area {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        justify-self: start;
+        min-width: 0;
+        max-width: 100%;
+      }
       .platform-header .brand {
         display: inline-flex;
         align-items: center;
-        justify-self: start;
         min-width: 0;
         min-height: 48px;
         max-width: 100%;
         text-decoration: none;
+      }
+      .dev-environment-trigger {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        min-height: 32px;
+        align-self: flex-end;
+        margin-bottom: 2px;
+        padding: 4px 6px;
+        border: 1px solid transparent;
+        border-radius: 6px;
+        background: transparent;
+        color: var(--text-subtle);
+        cursor: pointer;
+        font: 700 11px/1 'Avenir Next', 'Segoe UI', system-ui, sans-serif;
+        letter-spacing: 0.12em;
+      }
+      .dev-environment-trigger:hover,
+      .dev-environment-trigger[aria-expanded='true'] {
+        border-color: var(--line);
+        color: var(--accent-strong);
+      }
+      .dev-environment-trigger:focus-visible,
+      .dev-exit-button:focus-visible {
+        outline: 3px solid var(--accent-focus);
+        outline-offset: 2px;
+      }
+      .dev-environment-chevron {
+        font-size: 9px;
+        letter-spacing: 0;
+      }
+      .dev-environment-panel {
+        position: absolute;
+        top: calc(100% + 6px);
+        left: 0;
+        z-index: 70;
+        display: grid;
+        gap: 8px;
+        width: min(20rem, calc(100vw - 32px));
+        padding: 14px 16px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--surface);
+        box-shadow: 0 10px 28px var(--shadow);
+        color: var(--text-body);
+        font-size: 0.85rem;
+        line-height: 1.45;
+      }
+      .dev-environment-panel p {
+        margin: 0;
+      }
+      .dev-environment-title {
+        color: var(--text-strong);
+        font-weight: 700;
+      }
+      .dev-exit-button {
+        min-height: 44px;
+        padding: 8px 14px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: var(--surface-muted);
+        color: var(--text-strong);
+        cursor: pointer;
+        font: inherit;
+        font-weight: 700;
+      }
+      .dev-exit-button:hover:not(:disabled) {
+        border-color: var(--accent-strong);
+        color: var(--accent-strong);
+      }
+      .dev-exit-button:disabled {
+        opacity: 0.6;
+        cursor: progress;
+      }
+      .dev-environment-note {
+        color: var(--text-subtle);
+        font-size: 0.8rem;
+      }
+      .dev-environment-error {
+        color: var(--danger);
+        font-size: 0.8rem;
       }
       .platform-navigation {
         display: flex;
@@ -768,9 +827,11 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
           padding: 8px 5%;
           gap: 2px 10px;
         }
-        .platform-header .brand {
+        .platform-header .brand-area {
           grid-column: 1 / 3;
           grid-row: 1;
+        }
+        .platform-header .brand {
           min-height: 44px;
         }
         .header-utilities {
@@ -804,16 +865,6 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
           grid-column: 3;
           grid-row: 1;
           justify-self: end;
-        }
-        .header-utilities > .leave-dev-button {
-          grid-column: 3;
-          grid-row: 2;
-          justify-self: end;
-          margin-left: 0;
-        }
-        .header-utilities > .leave-dev-error {
-          grid-column: 1 / -1;
-          grid-row: 4;
         }
         .header-utilities > .sign-in-button {
           display: inline-flex;
@@ -887,8 +938,9 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
   protected readonly accountInitial = computed(
     () => [...(this.accounts.account()?.displayName?.trim() ?? '')][0]?.toUpperCase() ?? '👤',
   );
+  /** Pages without the header's Sign in: the sign-in pages themselves, and /welcome, where a person waits for approval (DLV-969). */
   protected onAuthenticationPage(): boolean {
-    return ['/sign-in', '/sign-in/choose', '/sign-up'].includes(
+    return ['/sign-in', '/sign-in/choose', '/sign-up', '/welcome'].includes(
       this.router.url.split(/[?#]/, 1)[0],
     );
   }
@@ -1343,7 +1395,15 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
     return result;
   }
 
+  /** DLV-969: the small panel under the DEV mark that offers Exit DEV environment. */
+  protected readonly devPanelOpen = signal(false);
+  protected toggleDevPanel(): void {
+    this.profileMenuOpen.set(false);
+    this.devPanelOpen.update((open) => !open);
+  }
+
   protected toggleProfileMenu(): void {
+    this.devPanelOpen.set(false);
     this.navigation?.close();
     this.closeSearchPalette(false);
     const willOpen = !this.profileMenuOpen();
@@ -1353,7 +1413,13 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
   @HostListener('document:keydown.escape')
   protected closeOverlays(): void {
     const restoreAccountFocus = this.profileMenuOpen();
+    const restoreDevFocus = this.devPanelOpen();
     this.profileMenuOpen.set(false);
+    this.devPanelOpen.set(false);
+    if (restoreDevFocus)
+      requestAnimationFrame(() =>
+        (this.elementRef.nativeElement.querySelector('.dev-environment-trigger') as HTMLButtonElement | null)?.focus(),
+      );
     this.closeSearchPalette();
     if (restoreAccountFocus) {
       requestAnimationFrame(() => {
@@ -1380,6 +1446,8 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
     const searchForm = this.elementRef.nativeElement.querySelector('.header-search-form');
     if (this.profileMenuOpen() && profileContainer && !path.includes(profileContainer))
       this.profileMenuOpen.set(false);
+    const devEnvironment = this.elementRef.nativeElement.querySelector('.dev-environment');
+    if (this.devPanelOpen() && devEnvironment && !path.includes(devEnvironment)) this.devPanelOpen.set(false);
     if (this.suggestionsOpen() && searchForm && !path.includes(searchForm)) {
       if (!this.showSearch) this.closeSearchPalette();
       else this.closeInlineSearch();

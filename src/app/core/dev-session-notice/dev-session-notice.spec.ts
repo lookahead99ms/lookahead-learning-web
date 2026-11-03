@@ -40,7 +40,7 @@ describe('DEV session notices', () => {
     const fetchMock=vi.fn().mockResolvedValue({status:404,ok:false});vi.stubGlobal('fetch',fetchMock);
     const fixture=TestBed.createComponent(DevSessionNotice);
     await fixture.componentInstance.leave();
-    expect(fixture.componentInstance.error()).toContain('Unable to confirm sign-out');
+    expect(fixture.componentInstance.error()).toContain('Unable to confirm leaving DEV');
     expect(fixture.componentInstance.leaving()).toBe(false);
     expect(fetchMock.mock.calls.some(call => call[0] === '/dev/leave')).toBe(false);
   });
@@ -99,6 +99,18 @@ describe('DEV session polling contract', () => {
       TestBed.resetTestingModule();
     }
   });
+  it('marks the page root data-dev while the DEV gate answers, so prices blur until hovered (user, 2026-11-03)', () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ status: 404 }));
+    const fixture = TestBed.createComponent(DevSessionNotice);
+    const session = TestBed.inject(DevSession), root = document.documentElement;
+    fixture.detectChanges();
+    expect(root.hasAttribute('data-dev')).toBe(false);
+    session.gated.set(true); TestBed.tick();
+    expect(root.hasAttribute('data-dev')).toBe(true);
+    session.gated.set(false); TestBed.tick();
+    expect(root.hasAttribute('data-dev')).toBe(false);
+    fixture.destroy();
+  });
   it('stops polling on 404 because ordinary delivery has no DEV control', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ status: 404, ok: false }));
     const { fixture, component, poll, polls } = notice();
@@ -119,7 +131,7 @@ describe('DEV session polling contract', () => {
     expect(component.status()).toEqual(admitted);
     fixture.destroy();
   });
-  it('refuses a Leave DEV logout destination that is not the Cognito managed logout', async () => {
+  it('refuses an Exit DEV logout destination that is not the Cognito managed logout', async () => {
     for (const logoutUrl of ['https://evil.example/logout', 'https://lookahead.auth.us-east-2.amazoncognito.com/oauth2/authorize', 'http://lookahead.auth.us-east-2.amazoncognito.com/logout']) {
       const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
         if (url === '/dev/csrf') return { ok: true, json: async () => ({ headerName: 'X-CSRF-TOKEN', token: 'synthetic' }) };
@@ -129,7 +141,7 @@ describe('DEV session polling contract', () => {
       vi.stubGlobal('fetch', fetchMock);
       const { fixture, component } = notice();
       await component.leave();
-      expect(component.error()).toContain('Unable to confirm sign-out');
+      expect(component.error()).toContain('Unable to confirm leaving DEV');
       expect(component.leaving()).toBe(false);
       fixture.destroy();
     }

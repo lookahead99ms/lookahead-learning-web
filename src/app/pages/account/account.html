@@ -8,7 +8,10 @@
             <span class="account-avatar" aria-hidden="true">{{ initials(account.displayName) }}</span>
             <p class="account-identity-meta">
               <span class="account-identity-name">{{ account.displayName }}</span>
-              <span class="account-identity-username">{{ account.username }}</span>
+              <!-- DLV-969: a Google account's Cognito name ("google_1176…") is an internal id, not shown. -->
+              @if (!providerUsername(account.username)) {
+                <span class="account-identity-username">{{ account.username }}</span>
+              }
             </p>
           </div>
           <nav class="account-menu" aria-label="Account sections">

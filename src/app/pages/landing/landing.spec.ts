@@ -596,6 +596,9 @@ describe('Landing', () => {
     expect(root.querySelector('app-engineering-challenge.home-challenge')).not.toBeNull();
     expect(root.querySelector('.feature-discovery.home-explore')).not.toBeNull();
     expect(root.querySelector('.brand-story.home-essence app-wordmark-key')).not.toBeNull();
+    // The homepage Essence still waits until most of the card is on screen; only /welcome starts on load.
+    const essence = fixture.debugElement.query((node) => node.name === 'section' && node.nativeElement.classList.contains('home-essence'));
+    expect(essence.componentInstance.autoplay()).toBe(false);
     // The footer: "Learn. Grow. Blaze." with the reasoning pair beside it, its only place on the
     // site (user, 2026-10-17).
     const footer = root.querySelector('.landing-footer.home-footer');

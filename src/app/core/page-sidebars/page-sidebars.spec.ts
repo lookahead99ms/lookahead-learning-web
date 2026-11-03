@@ -825,6 +825,17 @@ describe('Shared page sidebars', () => {
     expect(css).toMatch(/@media \(min-width: 40rem\) \{ \.inline-sidebars\[[^\]]+\] \{ flex-flow: row wrap;/);
   });
 
+  it('on phones, sets the homepage tab bar flush under the header and across the window (user, 2026-11-03)', () => {
+    const css = [...document.querySelectorAll('style')]
+      .map((style) => style.textContent ?? '')
+      .join('\n')
+      .replace(/\s+/g, ' ');
+    // headerBottom() leaves 8px for the floating panels; the full-width bar takes it back, so no page shows through.
+    expect(css).toMatch(
+      /@media \(max-width: 1099px\) \{ \.left\.homepage\.open\[[^\]]+\] \{ inset-inline: 0 !important; width: auto !important; margin-block-start: -8px;/,
+    );
+  });
+
   it('keeps expanded in-flow sections interactive without modal keyboard behavior', () => {
     const contentBefore = main.innerHTML;
     const open = button('Open left sidebar');
