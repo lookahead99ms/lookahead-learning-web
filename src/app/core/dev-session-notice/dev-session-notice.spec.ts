@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 import { DevSessionNotice, DevSessionStatus, parseDevStatus } from './dev-session-notice';
-import { DevSession } from './dev-session';
+import { DevSession, onGatePage } from './dev-session';
 describe('DEV session status', () => {
   it('requires the explicit DEV response and valid deadline', () => {
     expect(parseDevStatus({ dev: true, deadline: '2026-10-15T04:00:00Z', warning: true, maintenance: false })?.warning).toBe(true);
@@ -110,6 +110,25 @@ describe('DEV session polling contract', () => {
     session.gated.set(false); TestBed.tick();
     expect(root.hasAttribute('data-dev')).toBe(false);
     fixture.destroy();
+  });
+  it('knows after the first answer whether this browser is outside the DEV gate (DLV-969)', async () => {
+    const session = () => TestBed.inject(DevSession);
+    for (const [status, outside] of [[404, false], [401, true], [503, true], [200, false]] as const) {
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ status, ok: status === 200, json: async () => admitted }));
+      const { fixture, poll } = notice();
+      session().known.set(false);
+      expect(session().outsideGate()).toBe(true);
+      await poll();
+      expect(session().known()).toBe(true);
+      expect(session().outsideGate()).toBe(outside);
+      fixture.destroy();
+      TestBed.resetTestingModule();
+    }
+    expect(onGatePage('/sign-in?returnTo=%2F')).toBe(true);
+    expect(onGatePage('/sign-up/confirm')).toBe(true);
+    expect(onGatePage('/welcome#top')).toBe(true);
+    expect(onGatePage('/sign-inside')).toBe(false);
+    expect(onGatePage('/learn')).toBe(false);
   });
   it('stops polling on 404 because ordinary delivery has no DEV control', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ status: 404, ok: false }));

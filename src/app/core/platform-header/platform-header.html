@@ -5,9 +5,16 @@
   <!-- DLV-969 (user, 2026-11-03): leaving DEV belongs to the environment, so it hangs off the DEV mark; Sign out in the
        account menu only switches accounts (for example to a test account) and stays inside DEV. -->
   <div class="brand-area">
-    <a class="brand" routerLink="/" aria-label="Look Ahead home">
-      <app-platform-brand aria-hidden="true" [mark]="!devSession.status() && devSession.gated() ? 'DEV' : null" />
-    </a>
+    @if (beforeAdmission()) {
+      <!-- DLV-969 (owner, 2026-11-03): before admission the logo leads nowhere; the platform is behind the gate. -->
+      <span class="brand" role="img" aria-label="Look Ahead">
+        <app-platform-brand aria-hidden="true" [mark]="!devSession.status() && devSession.gated() ? 'DEV' : null" />
+      </span>
+    } @else {
+      <a class="brand" routerLink="/" aria-label="Look Ahead home">
+        <app-platform-brand aria-hidden="true" [mark]="!devSession.status() && devSession.gated() ? 'DEV' : null" />
+      </a>
+    }
     @if (devSession.status()) {
       <div class="dev-environment" (click)="$event.stopPropagation()">
         <button
@@ -46,10 +53,10 @@
     }
   </div>
   <nav class="platform-navigation" aria-label="Main navigation">
-    <app-header-navigation (opened)="closeForNavigation()" />
+    <app-header-navigation [locked]="beforeAdmission()" (opened)="closeForNavigation()" />
   </nav>
   <div class="header-utilities">
-    @if (!hideUtilities) {
+    @if (!hideUtilities && !beforeAdmission()) {
       <button
         class="header-search-trigger navigation-utility"
         type="button"
@@ -73,6 +80,8 @@
         appHeaderHint="Your schedule and progress across courses."
         ><span class="navigation-utility-label">Study Plan</span></a
       >
+    }
+    @if (!hideUtilities) {
       <div class="theme-switch" role="group" aria-label="Color theme">
         <button
           type="button"
@@ -211,7 +220,7 @@
           "
           aria-controls="account-menu"
           [attr.aria-expanded]="profileMenuOpen()"
-          appHeaderHint="Your account: study plan, settings, support and sign out."
+          [appHeaderHint]="beforeAdmission() ? 'Your account: sign out to use a different account.' : 'Your account: study plan, settings, support and sign out.'"
           (click)="toggleProfileMenu()"
         >
           <span class="account-trigger-name">{{ accountLabel() }}</span>
@@ -227,7 +236,9 @@
                 </p>
                 <p class="user-display-email">
                   {{
-                    accounts.account()
+                    beforeAdmission()
+                      ? 'Sign out to use a different account.'
+                      : accounts.account()
                       ? 'Your study plans and progress'
                       : accounts.enabled
                         ? 'Sign in to save account progress.'
@@ -236,49 +247,52 @@
                 </p>
               </div>
             </div>
-            <div class="menu-divider"></div>
-            <nav class="dropdown-links-list" aria-label="Account links">
-              <a
-                routerLink="/study-plan"
-                [queryParams]="{ view: 'plans' }"
-                class="dropdown-item-link"
-                (click)="closeForNavigation()"
-                ><span class="item-icon" aria-hidden="true">📅</span
-                ><span class="item-text"
-                  ><span class="item-label">View study plan</span
-                  ><small>Schedule and progress</small></span
-                ></a
-              >
-              <a routerLink="/account" class="dropdown-item-link" (click)="closeForNavigation()"
-                ><span class="item-icon" aria-hidden="true">👤</span
-                ><span class="item-text"
-                  ><span class="item-label">Manage account</span
-                  ><small>Profile, sign-in and access</small></span
-                ></a
-              >
-              <a routerLink="/support" class="dropdown-item-link" (click)="closeForNavigation()"
-                ><span class="item-icon" aria-hidden="true">💬</span
-                ><span class="item-text"
-                  ><span class="item-label">Support and feedback</span
-                  ><small>Report a problem or share an idea</small></span
-                ></a
-              >
-            </nav>
-            @if (authorWorkspaceLinks().length) {
+            <!-- DLV-969 (owner, 2026-11-03): before admission the menu leads nowhere; Sign out stays to switch accounts. -->
+            @if (!beforeAdmission()) {
               <div class="menu-divider"></div>
-              <nav class="dropdown-links-list author-account-links" aria-label="Admin tools">
-                <p class="author-links-label">Admin</p>
-                @for (page of authorWorkspaceLinks(); track page.id) {
-                  <a
-                    [routerLink]="page.href"
-                    class="dropdown-item-link"
-                    [attr.aria-current]="isCurrentAuthorArea(page.id) ? 'page' : null"
-                    (click)="closeForNavigation()"
-                    ><span class="item-icon" aria-hidden="true">{{ page.icon }}</span
-                    ><span class="item-label">{{ page.label }}</span></a
-                  >
-                }
+              <nav class="dropdown-links-list" aria-label="Account links">
+                <a
+                  routerLink="/study-plan"
+                  [queryParams]="{ view: 'plans' }"
+                  class="dropdown-item-link"
+                  (click)="closeForNavigation()"
+                  ><span class="item-icon" aria-hidden="true">📅</span
+                  ><span class="item-text"
+                    ><span class="item-label">View study plan</span
+                    ><small>Schedule and progress</small></span
+                  ></a
+                >
+                <a routerLink="/account" class="dropdown-item-link" (click)="closeForNavigation()"
+                  ><span class="item-icon" aria-hidden="true">👤</span
+                  ><span class="item-text"
+                    ><span class="item-label">Manage account</span
+                    ><small>Profile, sign-in and access</small></span
+                  ></a
+                >
+                <a routerLink="/support" class="dropdown-item-link" (click)="closeForNavigation()"
+                  ><span class="item-icon" aria-hidden="true">💬</span
+                  ><span class="item-text"
+                    ><span class="item-label">Support and feedback</span
+                    ><small>Report a problem or share an idea</small></span
+                  ></a
+                >
               </nav>
+              @if (authorWorkspaceLinks().length) {
+                <div class="menu-divider"></div>
+                <nav class="dropdown-links-list author-account-links" aria-label="Admin tools">
+                  <p class="author-links-label">Admin</p>
+                  @for (page of authorWorkspaceLinks(); track page.id) {
+                    <a
+                      [routerLink]="page.href"
+                      class="dropdown-item-link"
+                      [attr.aria-current]="isCurrentAuthorArea(page.id) ? 'page' : null"
+                      (click)="closeForNavigation()"
+                      ><span class="item-icon" aria-hidden="true">{{ page.icon }}</span
+                      ><span class="item-label">{{ page.label }}</span></a
+                    >
+                  }
+                </nav>
+              }
             }
             <div class="account-session-actions">
               <button

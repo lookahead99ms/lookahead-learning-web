@@ -8,7 +8,8 @@ import { AuthorOutlineItem, AuthorWorkspaceNav } from '../../core/author-workspa
 import { ACCOUNT_FETCH, StudyPlanAccount } from '../study-plan/study-plan-account';
 
 import { TestAccounts } from './test-accounts';
-import { DirectoryRow, accountName, loadDirectory } from './user-directory';
+import { DirectoryAccount, DirectoryRow, accountName, loadDirectory, personLines } from './user-directory';
+import { isProviderUsername } from '../study-plan/study-plan-account';
 import { AdminMemberships } from './admin-memberships';
 
 interface Assignment {
@@ -191,6 +192,25 @@ export class AdminAccessPage implements OnInit {
   nameOf(row: Pick<Assignment, 'accountId' | 'pendingEmail' | 'label'>): string {
     return row.label ?? row.pendingEmail ?? (row.accountId ? accountName(row.accountId, this.names()) : '');
   }
+  /** The owner sees a person's email (a Google account's Gmail) under their name; others never get one. */
+  emailOf(row: Pick<Assignment, 'accountId'>): string | null {
+    const person = row.accountId ? this.people().get(row.accountId) : undefined;
+    return person?.email && person.email !== this.nameOf({ accountId: row.accountId, pendingEmail: null }) ? person.email : null;
+  }
+  /** Cognito's name for a Google account, never shown to a person. */
+  internalName(username: string): boolean { return isProviderUsername(username); }
+  /** The owner's directory accounts by id: names, emails and the Disable/Enable/Delete options. */
+  readonly people = signal<ReadonlyMap<string, DirectoryAccount>>(new Map());
+  removable(accountId: string): boolean {
+    const person = this.people().get(accountId);
+    return !!person && (person.canDisable === true || person.canEnable === true || person.canRemove === true);
+  }
+  /** The person People opens with selected, from a saved assignment's "Disable or delete". */
+  readonly focusAccount = signal<string | null>(null);
+  openPerson(accountId: string) {
+    this.focusAccount.set(accountId);
+    this.selectTab('people');
+  }
   /** Usernames from the test accounts, the owner directory and the signed-in account. Names are a nicety: failures leave short IDs. */
   async loadNames() {
     const names = new Map<string, string>();
@@ -199,7 +219,9 @@ export class AdminAccessPage implements OnInit {
     } catch { /* short IDs */ }
     if (this.accounts.account()?.permissions?.manageAccess) {
       try {
-        for (const row of await loadDirectory(path => this.request(path))) names.set(row.accountId, row.username);
+        const directory = await loadDirectory(path => this.request(path));
+        for (const row of directory) names.set(row.accountId, personLines(row).name);
+        this.people.set(new Map(directory.map(row => [row.accountId, row])));
       } catch { /* short IDs */ }
     }
     const self = this.accounts.account();

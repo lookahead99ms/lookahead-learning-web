@@ -105,6 +105,20 @@ export async function loadDirectory(request: <T>(path: string) => Promise<T>): P
 }
 
 /** An account's username when a list could name it, otherwise a short ID. */
+/**
+ * How the owner sees a person (DLV-969, owner 2026-11-03): their name first, then their email (a Google account's Gmail).
+ * Cognito's own name for a Google account ("google_1176…") is an internal id and never shown; a readable username
+ * (an email or a test login) is used when there is no name.
+ */
+export function personLines(account: { username: string; displayName?: string | null; email?: string | null }): { name: string; detail: string | null } {
+  const internal = /^google_/i.test(account.username);
+  const display = account.displayName?.trim() && account.displayName !== account.username ? account.displayName.trim() : '';
+  const name = display || account.email || (internal ? 'Google account' : account.username);
+  const details = [account.email && account.email !== name ? account.email : '',
+    !internal && account.username !== name && account.username !== account.email ? account.username : ''].filter(Boolean);
+  return { name, detail: details.join(' · ') || null };
+}
+
 export function accountName(accountId: string, names: ReadonlyMap<string, string>): string {
   return names.get(accountId) ?? `Account ${accountId.slice(0, 8)}`;
 }
@@ -257,9 +271,10 @@ export function directoryRows(
 
   for (const account of accounts) {
     const existing = rows.find(row => row.accountId === account.accountId);
+    const lines = personLines(account);
     const current = {
-      name: account.username,
-      detail: [account.displayName !== account.username ? account.displayName : '', account.email ?? ''].filter(Boolean).join(' · ') || null,
+      name: lines.name,
+      detail: lines.detail,
       roles: roleNames(account.roles),
       access: plainAccess(account.access.labels, account.access.grantedCourseIds, titles, account.fullCurriculum),
       isTest: account.testAccount,

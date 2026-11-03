@@ -38,6 +38,35 @@ describe('Header curriculum navigation', () => {
     };
     return { fixture, http, button };
   }
+  it('before admission a path shows only its tagline: no link, no Explore all, no course request (DLV-969)', () => {
+    const fixture = TestBed.createComponent(HeaderNavigation);
+    fixture.componentRef.setInput('locked', true);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate');
+    const learn = root.querySelector('#browse-learn') as HTMLButtonElement;
+    expect(learn.tagName).toBe('BUTTON');
+    expect(root.querySelector('a')).toBeNull();
+    learn.click();
+    fixture.detectChanges();
+    const panel = root.querySelector('#navigation-learn') as HTMLElement;
+    expect(learn.getAttribute('aria-expanded')).toBe('true');
+    expect(panel.querySelector('.panel-tagline')?.textContent).toContain('AI');
+    expect(panel.querySelector('.panel-close')).not.toBeNull();
+    expect(panel.querySelector('.panel-explore')).toBeNull();
+    expect(panel.textContent).not.toContain('temporarily unavailable');
+    expect(panel.textContent).not.toContain('Loading courses');
+    expect(panel.querySelector('.navigation-groups')).toBeNull();
+    // A second click closes it; nothing ever navigates (afterEach also proves no course request was made).
+    learn.click();
+    fixture.detectChanges();
+    expect(root.querySelector('#navigation-learn')).toBeNull();
+    (root.querySelector('#browse-grow') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(root.querySelector('#navigation-grow .panel-tagline')).not.toBeNull();
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
   it('leaves hidden Blaze courses out of the menu, including More to explore', () => {
     const { fixture, http, button } = setup();
     expand(button('Browse Blaze'));

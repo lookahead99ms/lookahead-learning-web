@@ -4,6 +4,19 @@
     (pointerenter)="hoverPath($event, path.id)"
     (pointerleave)="leaveSurface($event)"
   >
+    @if (locked()) {
+      <!-- DLV-969 (owner, 2026-11-03): before admission a path is a word that shows its tagline, never a way in. -->
+      <button
+        type="button"
+        class="path-locked"
+        [id]="'browse-' + path.id"
+        [style.--entry-path-color]="'var(--path-' + path.id + ')'"
+        [attr.aria-expanded]="activePath() === path.id"
+        [attr.aria-controls]="'navigation-' + path.id"
+        (pointerdown)="rememberPointer($event)"
+        (click)="togglePath(path.id)"
+      >{{ path.label }}</button>
+    } @else {
     <a
       [href]="'/' + path.id"
       [id]="'browse-' + path.id"
@@ -17,6 +30,7 @@
       (keydown)="openWithKeyboard($event, path.id)"
       >{{ path.label }}</a
     >
+    }
   </span>
   @if (activePath() === path.id) {
     <section
@@ -32,9 +46,11 @@
       [attr.aria-label]="'Browse ' + path.label"
     >
       <div class="panel-heading">
-        <a class="panel-action panel-explore" [routerLink]="'/' + path.id"
-          >Explore all {{ path.label }}</a
-        >
+        @if (!locked()) {
+          <a class="panel-action panel-explore" [routerLink]="'/' + path.id"
+            >Explore all {{ path.label }}</a
+          >
+        }
         <p class="panel-tagline">
           <span class="panel-tagline-pill"
             ><strong class="panel-tagline-head">{{ taglines[path.id].headline }}</strong>
@@ -62,6 +78,9 @@
           <span class="navigation-utility-label"> Close</span>
         </button>
       </div>
+      @if (locked()) {
+        <!-- Only the tagline before admission: the course list is behind the gate. -->
+      } @else {
       @if (loading()) {
         <p role="status">Loading courses…</p>
       }
@@ -99,6 +118,7 @@
         <p role="status">
           No courses are available here yet. Explore the path overview to continue.
         </p>
+      }
       }
     </section>
   }

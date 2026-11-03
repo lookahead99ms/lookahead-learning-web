@@ -38,7 +38,7 @@ import {
 } from '../author-workspace-nav/author-workspace-links';
 import { ScrollLock } from '../scroll-lock/scroll-lock';
 import { HeaderHint } from './header-hint';
-import { DevSession } from '../dev-session-notice/dev-session';
+import { DevSession, onGatePage } from '../dev-session-notice/dev-session';
 
 export function accountTriggerLabel(displayName: string | null | undefined): string {
   const name = displayName?.trim().replace(/\s+/g, ' ');
@@ -938,6 +938,14 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
   protected readonly accountInitial = computed(
     () => [...(this.accounts.account()?.displayName?.trim() ?? '')][0]?.toUpperCase() ?? '👤',
   );
+  /**
+   * DLV-969 (owner, 2026-11-03): a DEV visitor not admitted yet, on a page they can open (sign-in and its steps,
+   * sign-up, /welcome). The logo and Learn/Grow/Blaze lead nowhere, Search, Study Plan and the search shortcut
+   * are gone, and a signed-in visitor's account menu holds only Sign out; only the theme stays.
+   */
+  protected beforeAdmission(): boolean {
+    return onGatePage(this.router.url) && this.devSession.outsideGate();
+  }
   /** Pages without the header's Sign in: the sign-in pages themselves, and /welcome, where a person waits for approval (DLV-969). */
   protected onAuthenticationPage(): boolean {
     return ['/sign-in', '/sign-in/choose', '/sign-up', '/welcome'].includes(
@@ -1145,6 +1153,7 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
       event.defaultPrevented ||
       event.repeat ||
       event.altKey ||
+      this.beforeAdmission() ||
       (event.key ?? '').toLowerCase() !== 'k' ||
       (!event.metaKey && !event.ctrlKey)
     )

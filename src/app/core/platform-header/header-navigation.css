@@ -316,3 +316,19 @@ p {
 .path-entry > a[aria-expanded='true'] {
   color: var(--accent-strong);
 }
+
+/* DLV-969: before admission a path is a plain word with its tagline; it looks like the links it replaces. */
+.path-entry > .path-locked {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 6px;
+  color: var(--muted);
+  cursor: default;
+  font:
+    500 13px/1.2 system-ui,
+    sans-serif;
+}
+.path-entry > .path-locked[aria-expanded='true'] {
+  color: var(--accent-strong);
+}

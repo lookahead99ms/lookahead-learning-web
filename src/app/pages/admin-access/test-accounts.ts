@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, OnInit, output, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, OnInit, output, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
@@ -59,6 +59,13 @@ export class TestAccounts implements OnInit {
   readonly assignments = input<readonly DirectoryAssignment[]>([]);
   /** Which tab this list fills. */
   readonly view = input<'test' | 'people'>('people');
+  /** DLV-969: select this account once the list has it (Saved assignments → "Disable or delete"). */
+  readonly focusAccount = input<string | null>(null);
+  private readonly focusing = effect(() => {
+    const id = this.focusAccount();
+    const row = id ? this.inView().find(item => item.accountId === id) : undefined;
+    if (row) untracked(() => this.selectedKey.set(row.key));
+  });
   /** The owner asked to change this person's roles or course grants. */
   readonly giveAccess = output<DirectoryRow>();
   readonly canGive = computed(
@@ -180,11 +187,18 @@ export class TestAccounts implements OnInit {
   async load() {
     if (this.busy()) return;
     this.busy.set(true);
+    this.selectedKey.set(null);
+    this.notice.set('');
     try {
-      this.rows.set(await this.api.request<TestAccountRow[]>('/admin/test-accounts'));
-      this.selectedKey.set(null);
-      if(this.view()==='test' && this.canCreate())this.allowance.set(await this.api.request('/admin/test-accounts/allowance'));
-      this.notice.set('');
+      // Test accounts and the owner's People directory load independently (DLV-969, 2026-11-03): in DEV test accounts
+      // stay switched off until their IAM grant (S28), and that must not hide the directory's names or Disable/Delete.
+      try {
+        this.rows.set(await this.api.request<TestAccountRow[]>('/admin/test-accounts'));
+        if(this.view()==='test' && this.canCreate())this.allowance.set(await this.api.request('/admin/test-accounts/allowance'));
+      } catch {
+        this.rows.set([]);
+        if (this.view() === 'test') this.notice.set('Test account maintenance is unavailable in this environment.');
+      }
       this.directoryAccounts.set([]);
       if (this.accounts.account()?.permissions?.manageAccess) {
         try {
@@ -193,13 +207,12 @@ export class TestAccounts implements OnInit {
           this.notice.set('The full People directory could not be loaded. Only existing assignments and test accounts are shown. Refresh to retry.');
         }
       }
-    } catch {
-      this.notice.set('Test account maintenance is unavailable in this environment.');
     } finally {
       this.busy.set(false);
       this.loaded.set(true);
     }
   }
+
 
   mayDelete(row: TestAccountRow): boolean {
     return row.canDelete === true;

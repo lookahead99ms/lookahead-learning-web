@@ -1,5 +1,6 @@
 import { beforeEach, expect, it } from 'vitest';
 import { safeAccountReturn } from './account';
+import { DevSession } from '../../core/dev-session-notice/dev-session';
 import { gatewayLoginUrl } from './account-navigation';
 it('sends Blaze returns to the gateway in their blaze data form', () => {
   expect(gatewayLoginUrl('/blaze/design-systems?day=2')).toBe(
@@ -441,4 +442,30 @@ it('shows our own email-and-password form when the Gateway offers it', () => {
   expect(form.querySelector('a.google-action').getAttribute('href')).toBe('/bff/login?provider=google&returnTo=%2Flearn');
   expect(form.querySelector('#account-email')).not.toBeNull();
   expect(fixture.nativeElement.querySelector('.managed-login-action')).toBeNull();
+});
+
+it('offers no way back into learning before the DEV gate admits this browser (DLV-969)', () => {
+  const queryParamMap = convertToParamMap({ returnTo: '/learn' });
+  TestBed.configureTestingModule({
+    imports: [AccountPage],
+    providers: [
+      provideRouter([]),
+      provideHttpClient(),
+      { provide: ActivatedRoute, useValue: { queryParamMap: of(queryParamMap), data: of({}), snapshot: { queryParamMap, data: {} } } },
+      { provide: ContentService, useValue: { getSearchIndex: () => of([]) } },
+    ],
+  });
+  const store = TestBed.inject(StudyPlanAccount);
+  vi.spyOn(store, 'initialize').mockResolvedValue();
+  vi.spyOn(store, 'loadAuthOptions').mockResolvedValue();
+  const session = TestBed.inject(DevSession);
+  session.gated.set(true);
+  const fixture = TestBed.createComponent(AccountPage);
+  fixture.detectChanges();
+  expect(fixture.nativeElement.querySelector('.account-footer')).toBeNull();
+  expect(fixture.nativeElement.textContent).not.toContain('Return to learning');
+  // Once admitted (or outside DEV), the way back returns.
+  session.status.set({ dev: true, deadline: '', warning: false, maintenance: false });
+  fixture.detectChanges();
+  expect(fixture.nativeElement.querySelector('.account-footer a')?.textContent?.trim()).toBe('Return to learning');
 });
