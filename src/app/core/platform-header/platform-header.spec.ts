@@ -68,6 +68,8 @@ describe('PlatformHeader account disclosure', () => {
   it('holds an invisible Sign in slot until the identity check answers, then shows the real state (DLV-969)', () => {
     const store = TestBed.inject(StudyPlanAccount);
     store.sessionKnown.set(false);
+    // No hint from a previous visit (DLV-969 S37): with one, the header shows it instead of the invisible slot.
+    store.headerHint.set(null);
     const fixture = TestBed.createComponent(PlatformHeader);
     fixture.detectChanges();
     const pending = fixture.nativeElement.querySelector('.sign-in-button.session-pending');

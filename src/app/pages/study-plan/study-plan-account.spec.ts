@@ -152,6 +152,8 @@ describe('StudyPlanAccount transport and isolation', () => {
     });
     TestBed.configureTestingModule({ providers: [{ provide: ACCOUNT_FETCH, useValue: fetcher }] });
     store = TestBed.inject(StudyPlanAccount);
+    // These tests count account requests; a header hint left in shared storage (DLV-969 S37) would add an early one.
+    store.headerHint.set(null);
   });
 
   it('sends explicit creation dates and revision-guarded lifecycle transitions', async () => {
