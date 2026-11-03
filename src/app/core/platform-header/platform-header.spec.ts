@@ -24,6 +24,7 @@ describe('PlatformHeader account disclosure', () => {
       ],
     }).compileComponents();
     vi.spyOn(TestBed.inject(StudyPlanAccount), 'initialize').mockResolvedValue();
+    TestBed.inject(StudyPlanAccount).sessionKnown.set(true);
   });
 
   it('keeps statements out of the header: everything in the bar goes somewhere (user, 2026-10-17)', () => {
@@ -62,6 +63,23 @@ describe('PlatformHeader account disclosure', () => {
     expect(element.querySelector('a.navigation-utility[href^="/study-plan"]')).toBeNull();
     expect(element.querySelector('.theme-switch')).toBeNull();
     expect(element.querySelector('.platform-navigation')).not.toBeNull();
+  });
+
+  it('holds an invisible Sign in slot until the identity check answers, then shows the real state (DLV-969)', () => {
+    const store = TestBed.inject(StudyPlanAccount);
+    store.sessionKnown.set(false);
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    const pending = fixture.nativeElement.querySelector('.sign-in-button.session-pending');
+    expect(pending).not.toBeNull();
+    expect(pending.tagName).toBe('SPAN');
+    expect(pending.getAttribute('aria-hidden')).toBe('true');
+    expect(fixture.nativeElement.querySelector('a.sign-in-button')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.avatar-trigger-btn')).toBeNull();
+    store.sessionKnown.set(true);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.session-pending')).toBeNull();
+    expect(fixture.nativeElement.querySelector('a.sign-in-button')).not.toBeNull();
   });
 
   it('shows only Sign in when signed out or expired and only the account control when authenticated', () => {
@@ -825,6 +843,7 @@ describe('PlatformHeader sticky context sizing', () => {
         ],
       }).compileComponents();
       vi.spyOn(TestBed.inject(StudyPlanAccount), 'initialize').mockResolvedValue();
+      TestBed.inject(StudyPlanAccount).sessionKnown.set(true);
       const fixture = TestBed.createComponent(PlatformHeader);
       fixture.detectChanges();
       const page = fixture.nativeElement.parentElement as HTMLElement;
@@ -866,6 +885,7 @@ describe('PlatformHeader sticky context sizing', () => {
         ],
       }).compileComponents();
       vi.spyOn(TestBed.inject(StudyPlanAccount), 'initialize').mockResolvedValue();
+      TestBed.inject(StudyPlanAccount).sessionKnown.set(true);
       const fixture = TestBed.createComponent(PlatformHeader);
       fixture.detectChanges();
       const page = fixture.nativeElement.parentElement as HTMLElement;
@@ -924,6 +944,7 @@ describe('PlatformHeader utility hints (DLV-968)', () => {
       ],
     }).compileComponents();
     vi.spyOn(TestBed.inject(StudyPlanAccount), 'initialize').mockResolvedValue();
+    TestBed.inject(StudyPlanAccount).sessionKnown.set(true);
   });
 
   /** The element `aria-describedby` points at, which must be the hint rendered next to the item. */
@@ -1115,6 +1136,7 @@ describe('PlatformHeader DEV session (user decision 2026-11-02)', () => {
       ],
     }).compileComponents();
     vi.spyOn(TestBed.inject(StudyPlanAccount), 'initialize').mockResolvedValue();
+    TestBed.inject(StudyPlanAccount).sessionKnown.set(true);
   });
 
   it('shows no DEV mark and no Leave DEV outside a DEV session', () => {
@@ -1123,6 +1145,14 @@ describe('PlatformHeader DEV session (user decision 2026-11-02)', () => {
     expect(fixture.nativeElement.querySelector('.identity-mark')).toBeNull();
     expect(fixture.nativeElement.querySelector('.leave-dev-button')).toBeNull();
     expect(fixture.nativeElement.querySelector('app-platform-brand').getAttribute('aria-label')).toBe('LookAhead');
+  });
+
+  it('marks the brand "DEV" for a visitor the DEV gate has not admitted yet, without Leave DEV (DLV-969)', () => {
+    TestBed.inject(DevSession).gated.set(true);
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-platform-brand').getAttribute('aria-label')).toBe('LookAhead DEV');
+    expect(fixture.nativeElement.querySelector('.leave-dev-button')).toBeNull();
   });
 
   it('marks the brand "DEV" and offers Leave DEV beside Sign in while the DEV session is admitted', async () => {

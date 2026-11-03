@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 import { DevSessionNotice, DevSessionStatus, parseDevStatus } from './dev-session-notice';
+import { DevSession } from './dev-session';
 describe('DEV session status', () => {
   it('requires the explicit DEV response and valid deadline', () => {
     expect(parseDevStatus({ dev: true, deadline: '2026-10-15T04:00:00Z', warning: true, maintenance: false })?.warning).toBe(true);
@@ -84,6 +85,18 @@ describe('DEV session polling contract', () => {
       expect(json).not.toHaveBeenCalled();
       expect(polls()).toBe(1);
       fixture.destroy();
+    }
+  });
+  it('marks the DEV gate as present for 200, 401 and 503, never for 404 (DLV-969)', async () => {
+    for (const [status, expected] of [[200, true], [401, true], [503, true], [404, false]] as const) {
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ status, ok: status === 200, json: async () => admitted }));
+      const { fixture, poll } = notice();
+      const session = TestBed.inject(DevSession);
+      session.gated.set(false);
+      await poll();
+      expect(session.gated()).toBe(expected);
+      fixture.destroy();
+      TestBed.resetTestingModule();
     }
   });
   it('stops polling on 404 because ordinary delivery has no DEV control', async () => {

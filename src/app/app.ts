@@ -23,7 +23,8 @@ export class App {
     effect(() => {
       if (!account.sessionExpired()) return;
       const path = router.url.split(/[?#]/)[0];
-      if (path === '/sign-in' || path === '/sign-in/choose') return;
+      // /welcome is for people who are not signed in yet (DLV-969): it never sends them away.
+      if (path === '/sign-in' || path === '/sign-in/choose' || path === '/welcome') return;
       void router.navigate(['/sign-in'], {
         queryParams: { error: 'session-expired' },
         replaceUrl: true,

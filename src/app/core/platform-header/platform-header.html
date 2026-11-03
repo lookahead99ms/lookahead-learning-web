@@ -3,7 +3,7 @@
   [class.with-search]="showSearch"
 >
   <a class="brand" routerLink="/" aria-label="Look Ahead home">
-    <app-platform-brand aria-hidden="true" [mark]="devSession.status() ? 'DEV' : null" />
+    <app-platform-brand aria-hidden="true" [mark]="devSession.status() || devSession.gated() ? 'DEV' : null" />
   </a>
   <nav class="platform-navigation" aria-label="Main navigation">
     <app-header-navigation (opened)="closeForNavigation()" />
@@ -166,7 +166,10 @@
       }
     }
 
-    @if ((!accounts.account() || accounts.sessionExpired()) && !onAuthenticationPage()) {
+    @if (!accounts.sessionKnown() && !onAuthenticationPage()) {
+      <!-- DLV-969: hold the Sign in slot, invisible, until the identity check answers; no flash, no layout shift. -->
+      <span class="sign-in-button session-pending" aria-hidden="true">Sign in</span>
+    } @else if ((!accounts.account() || accounts.sessionExpired()) && !onAuthenticationPage()) {
       <a
         class="sign-in-button"
         routerLink="/sign-in"

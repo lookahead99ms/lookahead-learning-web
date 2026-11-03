@@ -423,3 +423,22 @@ it('tells an unadmitted person that the owner has to approve their request first
   expect(fixture.nativeElement.querySelector('.form-error[role="alert"]').textContent.trim())
     .toBe('Your account is not admitted yet. If you have just requested access, the owner has to approve it first.');
 });
+
+/** DLV-969: once the Gateway offers password sign-in, our own form replaces the hand-off button. */
+it('shows our own email-and-password form when the Gateway offers it', () => {
+  const queryParamMap = convertToParamMap({ returnTo: '/learn' });
+  TestBed.configureTestingModule({
+    imports: [AccountPage],
+    providers: [provideRouter([]), provideHttpClient(), { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap, data: { accountMode: 'signin' } }, queryParamMap: of(queryParamMap), data: of({ accountMode: 'signin' }) } }],
+  });
+  const store = TestBed.inject(StudyPlanAccount);
+  Object.defineProperty(store, 'enabled', { value: true });
+  vi.spyOn(store, 'loadAuthOptions').mockResolvedValue();
+  store.authOptions.set({ registration: true, google: true, oauth: true, managedLogin: true, password: true });
+  const fixture = TestBed.createComponent(AccountPage); fixture.detectChanges();
+  const form = fixture.nativeElement.querySelector('app-password-account-form');
+  expect(form).not.toBeNull();
+  expect(form.querySelector('a.google-action').getAttribute('href')).toBe('/bff/login?provider=google&returnTo=%2Flearn');
+  expect(form.querySelector('#account-email')).not.toBeNull();
+  expect(fixture.nativeElement.querySelector('.managed-login-action')).toBeNull();
+});

@@ -71,3 +71,14 @@ it('keeps rejected credentials on the existing sign-in page', async () => {
   fixture.detectChanges();
   expect(navigate).not.toHaveBeenCalled();
 });
+
+it('never sends a waiting person away from /welcome (DLV-969)', async () => {
+  await TestBed.configureTestingModule({ imports: [App], providers: [provideRouter([])] }).compileComponents();
+  const router = TestBed.inject(Router);
+  vi.spyOn(router, 'url', 'get').mockReturnValue('/welcome?access=pending');
+  const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+  TestBed.inject(StudyPlanAccount).sessionExpired.set(true);
+  const fixture = TestBed.createComponent(App);
+  fixture.detectChanges();
+  expect(navigate).not.toHaveBeenCalled();
+});

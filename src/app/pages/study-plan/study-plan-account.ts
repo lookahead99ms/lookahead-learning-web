@@ -201,11 +201,13 @@ export class StudyPlanAccount implements AccountSettingsClient {
   readonly error = signal('');
   readonly errorStatus = signal<number | null>(null);
   readonly sessionExpired = signal(false);
+  /** False until the first identity check answers (signed in or not), so the header does not flash Sign in for a signed-in visitor. */
+  readonly sessionKnown = signal(!this.enabled);
   readonly signInLimit = signal(false);
   readonly logoutRedirectPending = signal(false);
   readonly pending = signal(false);
   readonly catalog = signal<CatalogPins | null>(null);
-  readonly authOptions = signal<{ registration: boolean; google: boolean; oauth?: boolean; managedLogin?: boolean } | null>(
+  readonly authOptions = signal<{ registration: boolean; google: boolean; oauth?: boolean; managedLogin?: boolean; password?: boolean } | null>(
     null,
   );
   private csrf: { token: string; headerName: string } | null = null;
@@ -460,6 +462,7 @@ export class StudyPlanAccount implements AccountSettingsClient {
       await this.loadAuthOptions();
       const account = await this.request<StudyAccount>('/auth/me');
       this.account.set(account);
+      this.sessionKnown.set(true);
       if (this.authOptions()?.managedLogin) {
         await this.refreshCsrf();
         const activated = await this.request<StudyAccount>('/auth/invitations/activate', {
@@ -476,6 +479,7 @@ export class StudyPlanAccount implements AccountSettingsClient {
       if (this.account() || !(error instanceof AccountApiError && error.status === 401))
         this.showError(error);
     } finally {
+      this.sessionKnown.set(true);
       this.busy.set(false);
     }
   }

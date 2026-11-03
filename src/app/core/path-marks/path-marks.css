@@ -1,0 +1,42 @@
+.path-marks {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.path-mark {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  color: var(--text);
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+.path-learn { --path-mark: var(--path-learn); }
+.path-grow { --path-mark: var(--path-grow); }
+.path-blaze { --path-mark: var(--path-blaze); }
+.path-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  inline-size: 34px;
+  block-size: 34px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--path-mark) 16%, transparent);
+  color: var(--path-mark);
+}
+.path-icon svg {
+  inline-size: 18px;
+  block-size: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.path-text b {
+  color: var(--text-strong);
+  font-weight: 700;
+}

@@ -746,83 +746,7 @@ app-engineering-challenge.home-challenge {
   line-height: 1.5;
 }
 
-/* ---------- The essence: warm cream block ---------- */
-/* The animated wordmark is the title; the heading stays for screen readers and the page
-   sidebar, and the symbol sits in the corner. */
-.home-essence {
-  /* The wordmark's cutouts match this block instead of the page. */
-  --identity-cutout: var(--home-brand-block);
-  position: relative;
-  display: grid;
-  justify-items: center;
-  gap: clamp(24px, 3vw, 32px);
-  padding: clamp(48px, 6vw, 80px) clamp(20px, 4vw, 64px);
-  border-radius: 32px;
-  background: var(--home-brand-block);
-  border: 1px solid var(--platform-edge-soft);
-  text-align: center;
-}
-.home-essence .brand-story-heading {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-.home-essence .essence-corner-mark {
-  position: absolute;
-  inset-block-start: 24px;
-  inset-inline-end: 24px;
-}
-@media (max-width: 720px) {
-  .home-essence .essence-corner-mark {
-    display: none;
-  }
-}
-/* The wordmark's sentence settles in the space under the steps and stays there. */
-.home-essence .essence-sentence {
-  position: absolute;
-  inset-block-end: 20px;
-  inset-inline: 160px;
-  margin: 0;
-  color: var(--text-subtle);
-  font-family: 'Avenir Next', 'Segoe UI', system-ui, sans-serif;
-  font-size: clamp(14px, 0.8rem + 0.25vw, 16px);
-  line-height: 1.45;
-  text-align: center;
-  text-wrap: balance;
-  opacity: 0;
-  transform: translateY(-14px);
-  transition:
-    opacity 0.8s ease 0.3s,
-    transform 0.8s ease 0.3s;
-}
-.home-essence[data-skip] .essence-sentence {
-  transition: none;
-}
-.home-essence .essence-sentence.shown {
-  opacity: 1;
-  transform: none;
-}
-.home-essence .essence-sentence-line {
-  display: block;
-}
-.home-essence .essence-key-word {
-  font-weight: 700;
-}
-/* Narrower cards: the sentence takes its own place under the steps, clear of the corner buttons. */
-@media (max-width: 1100px) {
-  .home-essence .essence-sentence {
-    position: static;
-    margin-block-end: 36px;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .home-essence .essence-sentence {
-    transition: none;
-  }
-}
+/* The essence: its card styles live with the EssenceStory component (DLV-969). */
 
 /* ---------- Footer: gradient rule ---------- */
 .home-footer {
@@ -898,9 +822,6 @@ app-engineering-challenge.home-challenge {
   }
   .home-paths .three-columns {
     grid-template-columns: 1fr;
-  }
-  .home-essence {
-    border-radius: 26px;
   }
 }
 @media (max-width: 640px) {
@@ -1057,15 +978,6 @@ app-engineering-challenge.home-challenge {
   .home-paths > h2 {
     background: none;
     color: CanvasText;
-  }
-  /* Without the wordmark's colours, the Essence heading shows as text. */
-  .home-essence .brand-story-heading {
-    position: static;
-    width: auto;
-    height: auto;
-    overflow: visible;
-    clip-path: none;
-    white-space: normal;
   }
 }
 

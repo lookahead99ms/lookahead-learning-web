@@ -296,6 +296,10 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         font-size: 0.68rem;
       }
 
+      .header-utilities > .sign-in-button.session-pending {
+        visibility: hidden;
+      }
+
       .header-utilities > .sign-in-button {
         min-height: 44px;
         display: inline-flex;
