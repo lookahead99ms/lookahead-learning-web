@@ -635,6 +635,7 @@ describe('Question canonical DSA navigation', () => {
       useValue: {
         account: signal(null),
         sessionExpired: signal(false),
+        sessionKnown: signal(true),
         initialize: vi.fn().mockResolvedValue(undefined),
       },
     });

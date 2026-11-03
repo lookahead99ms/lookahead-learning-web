@@ -166,7 +166,10 @@
       }
     }
 
-    @if ((!accounts.account() || accounts.sessionExpired()) && !onAuthenticationPage()) {
+    @if (!accounts.sessionKnown() && !onAuthenticationPage()) {
+      <!-- DLV-969: hold the Sign in slot, invisible, until the identity check answers; no flash, no layout shift. -->
+      <span class="sign-in-button session-pending" aria-hidden="true">Sign in</span>
+    } @else if ((!accounts.account() || accounts.sessionExpired()) && !onAuthenticationPage()) {
       <a
         class="sign-in-button"
         routerLink="/sign-in"

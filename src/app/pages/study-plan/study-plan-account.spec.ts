@@ -88,6 +88,13 @@ describe('StudyPlanAccount transport and isolation', () => {
     expect(paths.indexOf('/bff/api/v1/auth/invitations/activate')).toBeLessThan(paths.indexOf('/bff/api/v1/account-catalog'));
     expect(fetcher.mock.calls.filter(([path]) => path.endsWith('/auth/invitations/activate'))).toHaveLength(1);
   });
+  it.each([true, false])('knows the session state once the identity check answers (signed in: %s) (DLV-969)', async (signedIn) => {
+    me = signedIn;
+    expect(store.sessionKnown()).toBe(false);
+    await store.initialize();
+    expect(store.sessionKnown()).toBe(true);
+    expect(store.account() !== null).toBe(signedIn);
+  });
   it.each([403, 409, 503])('stops restoration when invitation activation fails with %s', async (status) => {
     me = true;
     const original = fetcher.getMockImplementation() as (path: string, options: RequestInit) => Promise<Response>;
