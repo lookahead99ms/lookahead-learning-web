@@ -5,6 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { MembershipApi } from '../../content/membership-api';
 import { ContentService } from '../../content/content.service';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
+import { DevSession } from '../../core/dev-session-notice/dev-session';
 import { AccessRecord, AccessRecordView, accessRecordView } from '../account/account-membership';
 import {
   DirectoryAssignment,
@@ -15,6 +16,15 @@ import {
   loadDirectory,
   matchesFilter,
 } from './user-directory';
+
+/** GET /admin/test-accounts/allowance; DLV-969 S35 adds the scenarios and, for the owner in DEV, the roster. */
+export interface TestAccountAllowance {
+  limit: number;
+  used: number;
+  remaining: number;
+  roster?: { total: number; ready: number; deleted: number } | null;
+  scenarios?: { id: string; label: string; roles: string[] }[] | null;
+}
 
 export interface TestAccountRow {
   accountId: string;
@@ -77,7 +87,18 @@ export class TestAccounts implements OnInit {
       !!this.accounts.account()?.permissions?.triageFeedback,
   );
   readonly canCreate = computed(() => ['owner', 'co-author', 'admin'].includes(this.accounts.account()?.permissions?.feedbackRole ?? (this.accounts.account()?.authorPreview ? 'owner' : 'user')));
-  readonly allowance = signal<{limit:number;used:number;remaining:number}|null>(null);
+  readonly allowance = signal<TestAccountAllowance|null>(null);
+  private readonly devSession = inject(DevSession);
+  /** DLV-969 S35: DEV test accounts have no sign-in of their own; staff use them from the sign-in page. */
+  readonly dev = computed(() => this.devSession.status() !== null || this.devSession.gated());
+  /** The scenario a new test account starts from (DLV-969 S35); the first is a free learner without a plan. */
+  createScenario = 'learner01';
+  /** The owner's DEV roster progress while it is being created. */
+  readonly rosterBusy = signal(false);
+  readonly roster = computed(() => {
+    const status = this.allowance()?.roster;
+    return status ? { ...status, remaining: Math.max(0, status.total - status.ready - status.deleted) } : null;
+  });
   readonly creating = signal(false);
   readonly createKey = signal<string|null>(null);
   readonly deleting = signal<TestAccountRow|null>(null);
@@ -218,16 +239,45 @@ export class TestAccounts implements OnInit {
     return row.canDelete === true;
   }
 
+  /** DEV needs no password (the account never signs in); Local still sets one for the Local Identity service. */
+  mayCreate(): boolean {
+    return this.canCreate() && !this.busy() && !!this.createScenario && (this.dev() || this.createPassword.length >= 15);
+  }
+
   async create() {
-    if(!this.canCreate()||this.busy()||this.createPassword.length<15)return;
+    if(!this.mayCreate())return;
     const key=this.createKey()??crypto.randomUUID();this.createKey.set(key);this.busy.set(true);
+    const dev=this.dev();
     try {
-      const created=await this.api.request<{username:string}>('/admin/test-accounts',{key,password:this.createPassword});
+      const created=await this.api.request<{username:string}>('/admin/test-accounts',dev?{key,scenario:this.createScenario}:{key,password:this.createPassword,scenario:this.createScenario});
       this.createKey.set(null);this.createPassword='';this.creating.set(false);
-      this.busy.set(false);await this.load();this.notice.set(`${created.username} created. Share its password through your local test setup.`);
+      this.busy.set(false);await this.load();
+      this.notice.set(dev
+        ? `${created.username} created. To use it, sign out (not Exit DEV) and choose it under Use a test account.`
+        : `${created.username} created. Share its password through your local test setup.`);
     } catch {
-      this.notice.set('Creation was not confirmed. Retry with the same password and request key.');
+      this.notice.set(dev ? 'Creation was not confirmed. Retry; the same request key is reused.' : 'Creation was not confirmed. Retry with the same password and request key.');
     } finally {this.busy.set(false);}
+  }
+
+  /**
+   * DLV-969 S35 (owner, DEV): creates Local's 35-account roster, a few accounts per call, until every one exists.
+   * A failed call stops with a message; Create again continues where it stopped.
+   */
+  async createRoster() {
+    if(!this.dev()||!this.roster()||this.busy()||this.rosterBusy())return;
+    this.rosterBusy.set(true);this.notice.set('');
+    try {
+      for(let calls=0;calls<20;calls++){
+        const status=await this.api.request<{total:number;ready:number;deleted:number}>('/admin/test-accounts',{roster:true});
+        this.allowance.update((quota)=>quota?{...quota,roster:status}:quota);
+        if(status.total-status.ready-status.deleted<=0)break;
+      }
+      this.rosterBusy.set(false);await this.load();
+      this.notice.set('The test roster is ready. To use an account, sign out (not Exit DEV) and choose it under Use a test account.');
+    } catch(failure) {
+      this.notice.set((failure instanceof Error&&failure.message?failure.message+' ':'')+'The roster stopped part way. Create again to continue.');
+    } finally {this.rosterBusy.set(false);}
   }
 
   async deleteAccount() {

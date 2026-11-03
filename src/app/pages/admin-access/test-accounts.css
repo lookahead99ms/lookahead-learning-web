@@ -175,7 +175,7 @@ tr.self > * {
   color: var(--text-subtle);
 }
 .reset-panel {
-  margin-top: 18px;
+  margin: 18px 0;
   padding: 16px;
   border: 1px solid color-mix(in srgb, var(--warning) 45%, var(--line));
   border-radius: 14px;
@@ -193,7 +193,13 @@ tr.self > * {
 }
 .reset-panel label {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 4px;
+}
+/* DLV-969 S35: long scenario names stay inside the panel. */
+.reset-panel select {
+  width: 100%;
+  min-width: 0;
 }
 /* Two related actions side by side, centred (button placement rule). */
 .actions {
@@ -369,5 +375,37 @@ tr.self > * {
   .removal-option {
     grid-template-columns: 1fr;
     gap: 6px;
+  }
+}
+/* DLV-969 S35: the owner's DEV roster; the action sits right of the heading and stacks on phones. */
+.roster-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 18px 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-muted);
+}
+.roster-card h3 {
+  margin: 0 0 4px;
+}
+.roster-card p {
+  margin: 0;
+  color: var(--text-subtle);
+  font-size: 0.9rem;
+}
+.roster-card code {
+  overflow-wrap: anywhere;
+}
+.roster-card .action-button {
+  flex: none;
+}
+@media (max-width: 640px) {
+  .roster-card {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
