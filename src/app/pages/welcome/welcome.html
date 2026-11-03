@@ -3,7 +3,11 @@
   @if (accessPending()) {
     <aside class="access-pending" role="status" aria-live="polite">
       <h2>Your sign-in worked</h2>
-      <p>The owner has to approve your access before you can use Look Ahead. Sign in again once you hear back.</p>
+      @if (dev()) {
+        <p>This is Look Ahead DEV, our internal preview for invited members. The owner approves each person before DEV opens. Sign in again once you hear back.</p>
+      } @else {
+        <p>The owner has to approve your access before you can use Look Ahead. Sign in again once you hear back.</p>
+      }
     </aside>
   }
   <section appEssenceStory></section>

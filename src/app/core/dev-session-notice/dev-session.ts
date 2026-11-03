@@ -17,6 +17,11 @@ export function parseDevStatus(value: unknown): DevSessionStatus | null {
 @Injectable({ providedIn: 'root' })
 export class DevSession {
   readonly status = signal<DevSessionStatus | null>(null);
+  /**
+   * DLV-969: true once the Gateway answered `/dev/session` at all (200, 401 or 503), so this is DEV behind the gate even
+   * when this browser is not admitted yet (a person waiting for approval). Ordinary delivery answers 404 and stays false.
+   */
+  readonly gated = signal(false);
   readonly leaving = signal(false);
   readonly error = signal('');
   async leave(): Promise<void> {

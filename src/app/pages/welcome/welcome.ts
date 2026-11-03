@@ -1,7 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs';
+import { DevSession } from '../../core/dev-session-notice/dev-session';
 import { PageSidebarContextDirective, PageSidebarContextValue } from '../../core/page-sidebars/page-sidebar-context';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { LearningPrompt } from '../../core/platform-signature/learning-prompt';
@@ -25,6 +26,9 @@ export class WelcomePage {
     inject(ActivatedRoute).queryParamMap.pipe(map((query) => query.get('access') === 'pending')),
     { initialValue: false },
   );
+  private readonly devSession = inject(DevSession);
+  /** DEV behind the gate (admitted or still waiting): say plainly that this is the internal preview (user, 2026-11-02). */
+  protected readonly dev = computed(() => this.devSession.status() !== null || this.devSession.gated());
   /** No section navigation or page statements beside the card. */
   protected readonly sidebarContext: PageSidebarContextValue = { excluded: true };
 }

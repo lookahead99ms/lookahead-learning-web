@@ -44,6 +44,7 @@ export class DevSessionNotice {
     try {
       const response = await fetch('/dev/session', { credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.timeout(5000) });
       if (response.status === 404) return; // Ordinary local/prod delivery has no DEV control.
+      this.session.gated.set(true); // 200, 401 or 503: the DEV gate answered, admitted or not.
       if (response.ok) this.status.set(parseDevStatus(await response.json()));
     } catch { /* A failed poll must not claim a changed shutdown deadline. */ }
     if (!this.destroyed) {

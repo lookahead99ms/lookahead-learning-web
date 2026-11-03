@@ -1147,6 +1147,14 @@ describe('PlatformHeader DEV session (user decision 2026-11-02)', () => {
     expect(fixture.nativeElement.querySelector('app-platform-brand').getAttribute('aria-label')).toBe('LookAhead');
   });
 
+  it('marks the brand "DEV" for a visitor the DEV gate has not admitted yet, without Leave DEV (DLV-969)', () => {
+    TestBed.inject(DevSession).gated.set(true);
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-platform-brand').getAttribute('aria-label')).toBe('LookAhead DEV');
+    expect(fixture.nativeElement.querySelector('.leave-dev-button')).toBeNull();
+  });
+
   it('marks the brand "DEV" and offers Leave DEV beside Sign in while the DEV session is admitted', async () => {
     const session = TestBed.inject(DevSession);
     session.status.set({ dev: true, deadline: '2026-11-06T04:00:00Z', warning: false, maintenance: false });
