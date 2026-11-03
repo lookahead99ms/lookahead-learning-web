@@ -464,8 +464,11 @@ it('offers no way back into learning before the DEV gate admits this browser (DL
   fixture.detectChanges();
   expect(fixture.nativeElement.querySelector('.account-footer')).toBeNull();
   expect(fixture.nativeElement.textContent).not.toContain('Return to learning');
-  // Once admitted (or outside DEV), the way back returns.
+  // DLV-969 S35: no test accounts before the gate is open either.
+  expect(fixture.nativeElement.querySelector('app-test-account-picker')).toBeNull();
+  // Once admitted (or outside DEV), the way back returns, and inside the open gate staff may use a test account.
   session.status.set({ dev: true, deadline: '', warning: false, maintenance: false });
   fixture.detectChanges();
   expect(fixture.nativeElement.querySelector('.account-footer a')?.textContent?.trim()).toBe('Return to learning');
+  expect(fixture.nativeElement.querySelector('app-test-account-picker')).not.toBeNull();
 });
