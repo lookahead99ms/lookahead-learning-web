@@ -1,0 +1,82 @@
+/* /welcome: the homepage's Essence card on its own, with the pending notice above it and the
+   homepage footer below. The --home- tokens repeat the homepage's values (landing.css) so the card
+   and the footer rule look the same here; nothing on the homepage depends on this file. */
+:host {
+  display: block;
+  min-height: 100vh;
+  --home-brand-block: #fbf6ee;
+  --home-grad-bar: linear-gradient(90deg, #0a8f8a, #4f46e5 60%, #f59e0b);
+  background: var(--surface-page);
+  color: var(--text-strong);
+  font:
+    16px/1.6 system-ui,
+    sans-serif;
+}
+:host-context(:root[data-theme='dark']) {
+  --home-brand-block: #15213a;
+  --home-grad-bar: linear-gradient(90deg, #70d6cd, #a5a3ff 60%, #ffba87);
+}
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+p {
+  color: var(--text-body);
+}
+.welcome-page {
+  display: grid;
+  gap: 24px;
+  max-width: var(--page-max-browse, 80rem);
+  margin: auto;
+  padding: 24px 32px 28px;
+}
+/* The same quiet notice as the homepage's ?access=pending notice. */
+.access-pending {
+  display: grid;
+  gap: 8px;
+  padding: 18px 22px;
+  border: 1px solid color-mix(in srgb, var(--accent-strong) 40%, var(--platform-edge, var(--line)));
+  border-inline-start-width: 4px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--accent-strong) 8%, var(--surface));
+  color: var(--text-strong);
+}
+.access-pending h2 {
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+}
+.access-pending p {
+  max-width: 72ch;
+  margin: 0;
+  color: var(--text-body);
+  font-size: 15px;
+}
+.welcome-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 32px;
+  border-top: 3px solid transparent;
+  border-image: var(--home-grad-bar) 1;
+  padding: 20px 0;
+  font-size: 13px;
+}
+.welcome-footer p {
+  margin: 0;
+}
+.welcome-footer .footer-statements {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 24px;
+}
+@media (max-width: 640px) {
+  .welcome-page {
+    padding: 16px 16px 24px;
+  }
+  .access-pending {
+    padding: 16px;
+  }
+}

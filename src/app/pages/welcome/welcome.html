@@ -1,0 +1,17 @@
+<app-platform-header />
+<main id="main-content" class="welcome-page" [pageSidebarContext]="sidebarContext">
+  @if (accessPending()) {
+    <aside class="access-pending" role="status" aria-live="polite">
+      <h2>Your sign-in worked</h2>
+      <p>The owner has to approve your access before you can use Look Ahead. Sign in again once you hear back.</p>
+    </aside>
+  }
+  <section appEssenceStory></section>
+  <footer class="welcome-footer">
+    <p>Learn. Grow. Blaze.</p>
+    <p class="footer-statements">
+      <app-reasoning-prompt variant="reasoning" />
+      <app-learning-prompt />
+    </p>
+  </footer>
+</main>

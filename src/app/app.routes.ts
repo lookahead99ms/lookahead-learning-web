@@ -207,6 +207,11 @@ export const routes: Routes = [
     pathMatch: 'full',
     loadComponent: () => import('./pages/landing/landing').then((page) => page.Landing),
   },
+  // DLV-969: the Essence on its own; with ?access=pending, the page a waiting sign-in lands on.
+  {
+    path: 'welcome',
+    loadComponent: () => import('./pages/welcome/welcome').then((page) => page.WelcomePage),
+  },
   // DLV-942: every open and free unit, linked from the catalogs.
   {
     path: 'start-free',
