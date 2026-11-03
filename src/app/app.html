@@ -2,3 +2,9 @@
 <app-dev-session-notice />
 <router-outlet />
 <app-page-sidebars />
+@if (readiness.veil()) {
+  <!-- DLV-969 S37 (owner, 2026-11-03): the page appears all at once, so it waits behind this until it is complete. -->
+  <div class="page-veil" role="status" aria-label="Loading the page">
+    <app-platform-brand class="page-veil-brand" />
+  </div>
+}

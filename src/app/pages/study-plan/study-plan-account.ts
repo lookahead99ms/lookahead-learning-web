@@ -2,6 +2,7 @@ import { StudyLogEntry } from '../../content/study-plan-daily';
 import { Injectable, InjectionToken, effect, inject, signal } from '@angular/core';
 import { StudyPlanRecoveryPreview } from '../../content/study-plan-recovery';
 import { environment } from '../../../environments/environment';
+import { PageReadiness } from '../../core/page-readiness/page-readiness';
 import { StudyPlan } from '../../content/study-plan';
 import {
   AccountSettingsClient,
@@ -181,10 +182,11 @@ interface CatalogPins {
 }
 export const ACCOUNT_FETCH = new InjectionToken<typeof fetch>('Account API transport', {
   providedIn: 'root',
-  factory:
-    () =>
-    (...args) =>
-      fetch(...args),
+  factory: () => {
+    // DLV-969 S37: account requests made while a page loads hold the page until they answer.
+    const readiness = inject(PageReadiness);
+    return (...args) => readiness.track(fetch(...args));
+  },
 });
 class AccountApiError extends Error {
   constructor(
