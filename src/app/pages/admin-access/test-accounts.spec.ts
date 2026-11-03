@@ -5,6 +5,7 @@ import { vi } from 'vitest';
 import { TestAccounts, TestAccountRow } from './test-accounts';
 import { MembershipApi } from '../../content/membership-api';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
+import { DevSession } from '../../core/dev-session-notice/dev-session';
 const row:TestAccountRow={accountId:'test-id',username:'learner09',roles:[],revision:3,access:{label:'Free'},lastChangedBy:'seed',lastChangedAt:'2026-10-16',legacyPresetAvailable:true,canDelete:true};
 describe('Test account maintenance',()=>{
  let request:ReturnType<typeof vi.fn>;let account:ReturnType<typeof signal<any>>;let component:TestAccounts;
@@ -264,5 +265,84 @@ describe('Test account maintenance',()=>{
   account.set({permissions:{manageAccess:true}});
   request.mockImplementation(async(path:string)=>path==='/admin/test-accounts'?[row]:{accounts:[],page:0,hasNext:true});
   await component.load();expect(component.notice()).toContain('full People directory could not be loaded');expect(component.directoryAccounts()).toEqual([]);
+ });
+ /** DLV-969 S35: DEV test accounts are database-only; the roster is the owner's alone, and only in DEV. */
+ describe('in DEV',()=>{
+  const scenarios=[{id:'learner01',label:'Free · no study plan',roles:[]},{id:'learner05',label:'Learn · active · ready-made plan · in progress',roles:[]},{id:'admin',label:'Admin with the full curriculum',roles:['admin']}];
+  function page(allowance:Record<string,unknown>,dev=true){
+   TestBed.resetTestingModule();
+   TestBed.configureTestingModule({providers:[provideRouter([]),{provide:MembershipApi,useValue:{request}},{provide:StudyPlanAccount,useValue:{account}}]});
+   if(dev)TestBed.inject(DevSession).status.set({dev:true,deadline:'',warning:false,maintenance:false});
+   request.mockImplementation(async(path:string)=>path==='/admin/test-accounts/allowance'?allowance:[]);
+   const fixture=TestBed.createComponent(TestAccounts);fixture.componentRef.setInput('view','test');
+   return fixture;
+  }
+  async function shown(fixture:ReturnType<typeof page>){fixture.detectChanges();await fixture.whenStable();fixture.detectChanges();return fixture.nativeElement as HTMLElement;}
+  beforeEach(()=>account.set({accountId:'owner-1',permissions:{feedbackRole:'owner',manageAccess:true}}));
+
+  it('the owner creates the 35-account roster, a few per call, until every account exists',async()=>{
+   const fixture=page({limit:2147483647,used:0,remaining:2147483647,roster:{total:35,ready:0,deleted:0},scenarios});
+   const root=await shown(fixture);
+   const card=root.querySelector('.roster-card')!;
+   expect(card.textContent).toContain('0 of 35 ready');
+   expect(root.querySelector('.note')?.textContent).toContain('sign out (not Exit DEV)');
+   let ready=0;
+   request.mockImplementation(async(path:string,body?:any)=>{
+    if(body?.roster){ready=Math.min(35,ready+5);return {total:35,ready,deleted:0};}
+    return path==='/admin/test-accounts/allowance'?{limit:2147483647,used:0,remaining:2147483647,roster:{total:35,ready,deleted:0},scenarios}:[];
+   });
+   (card.querySelector('button') as HTMLButtonElement).click();
+   await fixture.whenStable();fixture.detectChanges();
+   expect(request.mock.calls.filter(([,body])=>body?.roster).length).toBe(7);
+   expect(fixture.componentInstance.notice()).toContain('The test roster is ready');
+   // Every account exists: the card stays as a record, without a button.
+   expect(root.querySelector('.roster-card')?.textContent).toContain('35 of 35 ready');
+   expect(root.querySelector('.roster-card button')).toBeNull();
+  });
+
+  it('a stopped roster says so and continues with the remaining accounts',async()=>{
+   const fixture=page({limit:2147483647,used:0,remaining:2147483647,roster:{total:35,ready:10,deleted:1},scenarios});
+   const root=await shown(fixture);
+   expect(root.querySelector('.roster-card')?.textContent).toContain('1 deleted (not created again)');
+   expect(root.querySelector('.roster-card button')?.textContent?.trim()).toBe('Create the other 24');
+   request.mockRejectedValueOnce(new Error('Test accounts are unavailable. Retry shortly.'));
+   await fixture.componentInstance.createRoster();
+   expect(fixture.componentInstance.notice()).toBe('Test accounts are unavailable. Retry shortly. The roster stopped part way. Create again to continue.');
+   expect(fixture.componentInstance.rosterBusy()).toBe(false);
+   request.mockRejectedValueOnce('no message');
+   await fixture.componentInstance.createRoster();
+   expect(fixture.componentInstance.notice()).toBe('The roster stopped part way. Create again to continue.');
+  });
+
+  it('nobody but the owner sees the roster, and nobody sees it outside DEV',async()=>{
+   account.set({accountId:'admin-1',permissions:{feedbackRole:'admin',manageAccess:true}});
+   expect((await shown(page({limit:10,used:0,remaining:10,roster:null,scenarios}))).querySelector('.roster-card')).toBeNull();
+   account.set({accountId:'owner-1',permissions:{feedbackRole:'owner',manageAccess:true}});
+   const local=page({limit:2147483647,used:0,remaining:2147483647,roster:{total:35,ready:0,deleted:0},scenarios},false);
+   expect((await shown(local)).querySelector('.roster-card')).toBeNull();
+   await local.componentInstance.createRoster();
+   expect(request.mock.calls.some(([,body])=>body?.roster)).toBe(false);
+  });
+
+  it('a new test account starts from a scenario and needs no password',async()=>{
+   const fixture=page({limit:10,used:0,remaining:10,roster:null,scenarios});
+   const root=await shown(fixture);const component=fixture.componentInstance;
+   component.creating.set(true);fixture.detectChanges();
+   const panel=root.querySelector('.reset-panel')!;
+   expect([...panel.querySelectorAll('option')].map(option=>option.textContent)).toEqual(['learner01 · Free · no study plan','learner05 · Learn · active · ready-made plan · in progress','admin · Admin with the full curriculum']);
+   expect(panel.querySelector('input[type="password"]')).toBeNull();
+   expect(component.mayCreate()).toBe(true);
+   component.createScenario='learner05';
+   request.mockImplementation(async(path:string,body?:any)=>body?{username:'test-0a1b2c3d4e@lookahead.dev'}:path==='/admin/test-accounts/allowance'?{limit:10,used:1,remaining:9,scenarios}:[]);
+   await component.create();
+   const call=request.mock.calls.find(([path,body])=>path==='/admin/test-accounts'&&body)!;
+   expect(call[1]).toEqual({key:expect.any(String),scenario:'learner05'});
+   expect(component.notice()).toBe('test-0a1b2c3d4e@lookahead.dev created. To use it, sign out (not Exit DEV) and choose it under Use a test account.');
+   request.mockRejectedValueOnce(new Error('uncertain'));
+   await component.create();
+   expect(component.notice()).toBe('Creation was not confirmed. Retry; the same request key is reused.');
+   component.createScenario='';
+   expect(component.mayCreate()).toBe(false);
+  });
  });
 });

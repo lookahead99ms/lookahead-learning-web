@@ -4,7 +4,13 @@
   <div class="directory-heading">
     <div>
       <h2 id="directory-title">{{ testView ? 'Test accounts' : 'People' }}</h2>
-      @if (testView) {
+      @if (testView && dev()) {
+        <p class="note">
+          Test accounts for checking what each plan and role sees in DEV. They have no sign-in or password of their own:
+          sign out (not Exit DEV) and choose one under Use a test account on the sign-in page. Each starts from a scenario;
+          Reset puts a roster account back to its scenario.
+        </p>
+      } @else if (testView) {
         <p class="note">
           The managed Local accounts for checking what each plan and role sees. Reset puts one back
           to its default setup. Staff can create independent learner logins here.
@@ -28,16 +34,46 @@
 
   @if (testView && canCreate()) {
     @if (allowance(); as quota) {
-      <p class="note">Lifetime creations: {{ quota.used }} used · @if (quota.limit === 2147483647) { unlimited } @else { {{ quota.remaining }} remaining of {{ quota.limit }} }. Deleting an account does not restore a creation.</p>
+      <p class="note">Lifetime creations: {{ quota.used }} used · @if (quota.limit === 2147483647) {<span>unlimited</span>} @else {<span>{{ quota.remaining }} remaining of {{ quota.limit }}</span>}. Deleting an account does not restore a creation.</p>
     }
+  }
+  @if (testView && dev() && roster(); as progress) {
+    <!-- DLV-969 S35 (owner only, DEV only): the Domain sends the roster's progress to the owner alone, and only in DEV. -->
+    <div class="roster-card">
+      <div>
+        <h3>Test roster</h3>
+        <p>
+          The 35 accounts Local has: 27 learners, each in a different scenario, 2 co-authors and 6 admins, as
+          <code>learner01&#64;lookahead.dev</code> and so on. {{ progress.ready }} of {{ progress.total }} ready@if (progress.deleted) {, {{ progress.deleted }} deleted (not created again)}.
+        </p>
+      </div>
+      @if (progress.remaining > 0) {
+        <button type="button" class="action-button" [disabled]="busy() || rosterBusy()" [attr.aria-busy]="rosterBusy()" (click)="createRoster()">
+          {{ rosterBusy() ? 'Creating… ' + progress.ready + ' of ' + progress.total : progress.ready ? 'Create the other ' + progress.remaining : 'Create test roster' }}
+        </button>
+      }
+    </div>
   }
   @if (testView && creating()) {
     <div class="reset-panel">
-      <h3>Create learner test account</h3>
-      <p>A unique Local sign-in name will be generated. Save the password for this test learner. The account starts without paid access.</p>
-      <label>Initial password <input type="password" [(ngModel)]="createPassword" autocomplete="new-password" minlength="15" /></label>
+      <h3>Create test account</h3>
+      @if (dev()) {
+        <p>A unique name on lookahead.dev is generated. Choose the scenario it starts from; you can only choose roles up to your own.</p>
+      } @else {
+        <p>A unique Local sign-in name will be generated. Save the password for this test learner. Choose the scenario it starts from.</p>
+      }
+      <label>Scenario
+        <select [(ngModel)]="createScenario">
+          @for (scenario of allowance()?.scenarios ?? []; track scenario.id) {
+            <option [value]="scenario.id">{{ scenario.id }} · {{ scenario.label }}</option>
+          }
+        </select>
+      </label>
+      @if (!dev()) {
+        <label>Initial password <input type="password" [(ngModel)]="createPassword" autocomplete="new-password" minlength="15" /></label>
+      }
       <div class="actions">
-        <button type="button" class="action-button" [disabled]="busy() || createPassword.length < 15" (click)="create()">{{ createKey() ? 'Retry creation' : 'Create account' }}</button>
+        <button type="button" class="action-button" [disabled]="!mayCreate()" (click)="create()">{{ createKey() ? 'Retry creation' : 'Create account' }}</button>
         <button type="button" class="action-link" [disabled]="busy()" (click)="creating.set(false)">Cancel</button>
       </div>
     </div>
