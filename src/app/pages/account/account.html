@@ -97,7 +97,7 @@
   } @else {
     <!-- data-signature-column: the platform statements after the page line up with this column. -->
     <section class="account-card auth-split" aria-labelledby="account-heading" data-signature-column>
-      <app-sign-in-brand class="auth-brand" />
+      <app-sign-in-brand class="auth-brand" [variant]="signup() ? 'sign-up' : 'sign-in'" />
       <div class="auth-form">
       <header class="account-intro">
         <p class="eyebrow">Your learning account</p>
