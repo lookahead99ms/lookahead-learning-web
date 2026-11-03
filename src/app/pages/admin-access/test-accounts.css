@@ -123,6 +123,10 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
+.directory-table th[scope='row'] {
+  /* Room for a name over an email, so an address breaks only when it must (DLV-969). */
+  min-width: 13rem;
+}
 .directory-table tbody th {
   font-weight: 400;
   /* Only the person's long emails break mid-word, so the table stays inside its card (user, 2026-11-03). */

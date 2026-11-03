@@ -99,7 +99,7 @@
                 <tr [attr.data-account]="row.username">
                   <th scope="row" data-label="Person">
                     <span class="person">{{ row.displayName }}</span>
-                    @if (row.username !== row.displayName) {
+                    @if (row.username !== row.displayName && !internalName(row.username)) {
                       <span class="sub">{{ row.username }}</span>
                     }
                   </th>
@@ -132,6 +132,7 @@
       <app-test-accounts
         [view]="tab() === 'test' ? 'test' : 'people'"
         [assignments]="assignments()"
+        [focusAccount]="tab() === 'people' ? focusAccount() : null"
         (giveAccess)="giveAccessTo($event)"
       />
     } @else if (tab() === 'saved') {
@@ -150,7 +151,12 @@
           @for (assignment of sortedAssignments(); track assignment.id) {
             <article class="assignment" [class.pending]="assignment.pendingEmail || assignment.pending">
               <div class="assignment-text">
-                <p class="assignment-who">{{ nameOf(assignment) }}</p>
+                <div class="assignment-person">
+                  <p class="assignment-who">{{ nameOf(assignment) }}</p>
+                  @if (emailOf(assignment); as email) {
+                    <p class="assignment-email">{{ email }}</p>
+                  }
+                </div>
                 <p class="assignment-state">
                   <span class="state-dot" aria-hidden="true"></span>
                   {{ assignment.pendingEmail || assignment.pending ? 'Pending verified sign-in' : 'Assigned' }}
@@ -160,9 +166,17 @@
                 </p>
               </div>
               @if (canManage()) {
-                <button class="secondary-action" type="button" (click)="review(assignment)" [disabled]="busy()">
-                  Review assignment
-                </button>
+                <div class="assignment-actions">
+                  <button class="secondary-action" type="button" (click)="review(assignment)" [disabled]="busy()">
+                    Review assignment
+                  </button>
+                  @if (assignment.accountId && removable(assignment.accountId)) {
+                    <!-- DLV-969: Disable or Delete lives on People, with its explanations; this opens it on this person. -->
+                    <button class="secondary-action" type="button" (click)="openPerson(assignment.accountId)" [disabled]="busy()">
+                      Disable or delete
+                    </button>
+                  }
+                </div>
               }
             </article>
           } @empty {
@@ -209,6 +223,9 @@
           <div>
             <h2 id="review-access-heading">
               Review access for {{ recipient()?.displayName || nameOf(selection) }}
+              @if (selection.accountId && emailOf(selection); as email) {
+                <span class="review-email">{{ email }}</span>
+              }
             </h2>
             @if (selection.accountId) {
               <p class="section-note">Account ID: <span class="mono">{{ selection.accountId }}</span></p>

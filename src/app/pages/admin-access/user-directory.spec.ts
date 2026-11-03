@@ -1,4 +1,4 @@
-import { DirectoryAssignment, DirectoryTestAccount, courseLabel, directoryRows, matchesFilter, plainAccess } from './user-directory';
+import { DirectoryAssignment, DirectoryTestAccount, courseLabel, directoryRows, matchesFilter, personLines, plainAccess } from './user-directory';
 
 const titles = new Map([
   ['learn:core-java', 'Java Foundations'],
@@ -107,6 +107,17 @@ describe('People directory helpers (DLV-961)', () => {
     expect(flags('active')).toEqual([false, true, false, true]);
     expect(flags('off')).toEqual([true, false, true, true]);
     expect(flags('older')).toEqual([false, false, false, false]);
+  });
+
+  it('names a person the human way for the owner: name, then email; never Cognito\'s google_ id (DLV-969)', () => {
+    expect(personLines({ username: 'google_117602686039', displayName: 'Priya Raman', email: 'priya@gmail.example' }))
+      .toEqual({ name: 'Priya Raman', detail: 'priya@gmail.example' });
+    expect(personLines({ username: 'google_117602686039', displayName: 'google_117602686039', email: 'priya@gmail.example' }))
+      .toEqual({ name: 'priya@gmail.example', detail: null });
+    expect(personLines({ username: 'google_1', displayName: '', email: null })).toEqual({ name: 'Google account', detail: null });
+    expect(personLines({ username: 'sam@example.test', displayName: 'Sam K', email: 'sam@example.test' })).toEqual({ name: 'Sam K', detail: 'sam@example.test' });
+    expect(personLines({ username: 'learner09', displayName: 'learner09', email: null })).toEqual({ name: 'learner09', detail: null });
+    expect(personLines({ username: 'real-user', displayName: 'Real User', email: 'real@example.test' })).toEqual({ name: 'Real User', detail: 'real@example.test · real-user' });
   });
 
   it('filters by role and by name, role or plan text', () => {

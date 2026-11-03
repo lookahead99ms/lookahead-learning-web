@@ -336,6 +336,41 @@ describe('Saved assignments', () => {
   });
 });
 
+describe('Saved assignments for the owner (DLV-969)', () => {
+  const saved = [{ id: 'a1', accountId: 'priya-id', pendingEmail: null, roles: ['co-author'], topicGrants: [], fullCurriculum: false, revision: 1 }];
+  const directory = [{ accountId: 'priya-id', username: 'google_113773373524221303247', displayName: 'Priya Raman', email: 'priya@gmail.example',
+    roles: ['co-author'], testAccount: false, fullCurriculum: false, access: { label: 'Free', labels: ['Free'], grantedCourseIds: [] },
+    signIn: 'active', canDisable: true, canRemove: true }];
+  it('shows the name and Gmail, never the google_ id, and opens Disable or delete on People for that person', async () => {
+    TestBed.configureTestingModule({ providers: [
+      provideRouter([]),
+      { provide: StudyPlanAccount, useValue: { account: signal({ accountId: 'owner-id', username: 'author', topicGrants: [], permissions: permissions({ manageAccess: true, feedbackRole: 'owner' }) }), apiPath: (path: string) => path } },
+      { provide: ACCOUNT_FETCH, useValue: async (path: string) => Response.json({ data:
+        path === '/admin/access' ? saved : path.startsWith('/admin/accounts') ? { accounts: directory, page: 0, hasNext: false }
+        : path === '/admin/test-accounts' ? undefined : [] }, { status: path === '/admin/test-accounts' ? 403 : 200 }) },
+      { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: convertToParamMap({ tab: 'saved' }) } } },
+    ] }).overrideComponent(AdminAccessPage, { remove: { imports: [PlatformHeader] }, add: { imports: [HeaderStub] } });
+    const fixture = TestBed.createComponent(AdminAccessPage);
+    fixture.detectChanges(); await fixture.whenStable();
+    await fixture.componentInstance.reload(); await fixture.componentInstance.loadNames(); fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    expect(root.querySelector('.assignment-who')?.textContent?.trim()).toBe('Priya Raman');
+    expect(root.querySelector('.assignment-email')?.textContent?.trim()).toBe('priya@gmail.example');
+    expect(root.textContent).not.toContain('google_1137');
+    const buttons = [...root.querySelectorAll<HTMLButtonElement>('.assignment-actions button')];
+    expect(buttons.map(button => button.textContent?.trim())).toEqual(['Review assignment', 'Disable or delete']);
+    buttons[1].click(); fixture.detectChanges();
+    expect(fixture.componentInstance.tab()).toBe('people');
+    expect(fixture.componentInstance.focusAccount()).toBe('priya-id');
+    // The review heading names the person with their Gmail too.
+    fixture.componentInstance.review(saved[0] as never); fixture.detectChanges();
+    expect(root.querySelector('#review-access-heading')?.textContent).toContain('priya@gmail.example');
+    expect(fixture.componentInstance.internalName('google_1')).toBe(true);
+    expect(fixture.componentInstance.internalName('sam@example.test')).toBe(false);
+    expect(fixture.componentInstance.removable('unknown')).toBe(false);
+  });
+});
+
 describe('Saved assignments for a co-author (DLV-969)', () => {
   // What the Domain sends a non-owner: the role label, never the account id or the invitation email.
   const shared = [

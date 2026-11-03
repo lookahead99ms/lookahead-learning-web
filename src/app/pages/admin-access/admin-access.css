@@ -585,16 +585,41 @@ button:disabled {
   font-size: 14px;
   font-weight: 700;
 }
-/* Saved assignments read as table rows when there is room: who, state, access, action. */
-@media (min-width: 1100px) {
+/* Saved assignments read as table rows when the column has room: person (name over email), state, access,
+   then the actions stacked on the right (DLV-969: by the column's width, not the window's). */
+@container access-panel (min-width: 640px) {
   .assignment-text {
     display: grid;
-    grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.2fr) minmax(0, 1.6fr);
+    grid-template-columns: minmax(0, 1.8fr) minmax(0, 0.9fr) minmax(0, 1.3fr);
     gap: 4px 20px;
     align-items: center;
   }
-  .assignment-who {
-    overflow-wrap: anywhere;
+}
+.assignment-person {
+  min-width: 0;
+}
+.assignment-who,
+.assignment-email {
+  overflow-wrap: anywhere;
+}
+.assignment-email {
+  color: var(--text-subtle);
+  font-size: 13px;
+}
+.assignment-actions {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+@container access-panel (max-width: 639px) {
+  .assignment {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .assignment-actions {
+    flex-flow: row wrap;
   }
 }
 /* Review: roles and courses on the left, purchases and Save on the right. */
@@ -657,10 +682,17 @@ button:disabled {
   .hero-mark {
     display: none;
   }
-  .assignment {
-    flex-direction: column;
-    align-items: stretch;
-  }
+}
+
+/* The review heading carries the person's email under their name (DLV-969). */
+.review-email {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-subtle);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
 }
 
 /* DLV-209: plans and purchases (honest empty state). */

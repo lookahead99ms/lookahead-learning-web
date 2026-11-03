@@ -46,7 +46,8 @@ describe('Test account maintenance',()=>{
   await component.toggle(component.people().find(person=>!person.accountId)??{...learner,accountId:null});
  });
  it('shows when purchase history cannot load, and survives a failed catalog',async()=>{
-  request.mockRejectedValue(new Error('down'));await component.load();expect(component.notice()).toContain('unavailable');
+  // The People view never shows the Test accounts note; it only loses the test rows (DLV-969).
+  request.mockRejectedValue(new Error('down'));await component.load();expect(component.notice()).toBe('');expect(component.rows()).toEqual([]);
   const learner={key:'k',accountId:'acc',name:'x',detail:null,roles:['Learner'],access:['Free'],isTest:false,isSelf:false,pending:false,changedBy:null,changedAt:null,test:null};
   await component.toggle(learner);expect(component.historyOf(learner)?.state).toBe('error');
   await component.loadTitles();expect(component.titles().size).toBe(0);
@@ -57,7 +58,7 @@ describe('Test account maintenance',()=>{
   request.mockImplementation(async(path:string)=>path==='/admin/test-accounts'?[row]:path.endsWith('page=0')?{accounts:[real],page:0,hasNext:true}:{accounts:[{...real,accountId:'test-id',username:'learner09',testAccount:true}],page:1,hasNext:false});
   await component.load();
   expect(component.notice()).toBe('');expect(component.people().filter(p=>p.accountId==='test-id')).toHaveLength(1);
-  expect(component.people().find(p=>p.accountId==='real')).toMatchObject({name:'real-user',roles:['Learner'],access:['Learn'],isTest:false,test:null});
+  expect(component.people().find(p=>p.accountId==='real')).toMatchObject({name:'Real User',detail:'real@example.test · real-user',roles:['Learner'],access:['Learn'],isTest:false,test:null});
   expect(component.people().find(p=>p.accountId==='test-id')?.test).toEqual(row);
   expect(request).toHaveBeenCalledWith('/admin/accounts?query=&page=1');
  });
@@ -130,18 +131,18 @@ describe('Test account maintenance',()=>{
   TestBed.configureTestingModule({providers:[provideRouter([]),{provide:MembershipApi,useValue:{request}},{provide:StudyPlanAccount,useValue:{account}}]});
   const fixture=TestBed.createComponent(TestAccounts);fixture.detectChanges();await fixture.whenStable();fixture.detectChanges();
   const root=fixture.nativeElement as HTMLElement;
-  (root.querySelector('tr[data-account="real-user"] input[type="checkbox"]') as HTMLInputElement).click();fixture.detectChanges();
+  (root.querySelector('tr[data-account="Real User"] input[type="checkbox"]') as HTMLInputElement).click();fixture.detectChanges();
   expect(root.querySelector('.selection-toolbar')?.textContent).toContain('Downgrade to free');
   expect(root.querySelector('.selection-toolbar')?.textContent).not.toContain('Delete learner');
   [...root.querySelectorAll<HTMLButtonElement>('.selection-actions button')].find(button=>button.textContent?.includes('Downgrade'))?.click();fixture.detectChanges();
   fixture.componentInstance.realConfirmation='DOWNGRADE';await fixture.componentInstance.downgradeReal();fixture.detectChanges();
   expect(request).toHaveBeenCalledWith('/admin/accounts/real-id/downgrade',{confirmation:'DOWNGRADE'});
-  (root.querySelector('tr[data-account="real-user"] input[type="checkbox"]') as HTMLInputElement).click();fixture.detectChanges();
+  (root.querySelector('tr[data-account="Real User"] input[type="checkbox"]') as HTMLInputElement).click();fixture.detectChanges();
   expect(root.querySelector('.selection-toolbar')?.textContent).toContain('Delete learner');
   fixture.componentInstance.deletingReal.set(fixture.componentInstance.selectedRow());
   fixture.componentInstance.realConfirmation='DELETE';await fixture.componentInstance.deleteReal();fixture.detectChanges();
   expect(request).toHaveBeenCalledWith('/admin/accounts/real-id/delete',{confirmation:'DELETE'});
-  expect(root.querySelector('tr[data-account="real-user"]')).toBeNull();
+  expect(root.querySelector('tr[data-account="Real User"]')).toBeNull();
  });
  it('offers Disable (strongest, with a warning mark) and Delete, each explained on screen and on hover (DLV-969)',async()=>{
   account.set({accountId:'owner',username:'author',topicGrants:[],permissions:{manageAccess:true,feedbackRole:'owner'}});
@@ -159,11 +160,11 @@ describe('Test account maintenance',()=>{
   TestBed.configureTestingModule({providers:[provideRouter([]),{provide:MembershipApi,useValue:{request}},{provide:StudyPlanAccount,useValue:{account}}]});
   const fixture=TestBed.createComponent(TestAccounts);fixture.detectChanges();await fixture.whenStable();fixture.detectChanges();
   const root=fixture.nativeElement as HTMLElement,page=fixture.componentInstance;
-  const choose=()=>{(root.querySelector('tr[data-account="alex@example.com"] input[type="checkbox"]') as HTMLInputElement).click();fixture.detectChanges();};
+  const choose=()=>{(root.querySelector('tr[data-account="Alex"] input[type="checkbox"]') as HTMLInputElement).click();fixture.detectChanges();};
   const option=(label:string)=>[...root.querySelectorAll<HTMLElement>('.removal-option')].find(item=>item.querySelector('button')?.textContent?.includes(label));
   choose();
   const removal=root.querySelector('.removal')!;
-  expect(removal.getAttribute('aria-label')).toBe('Remove access for alex@example.com');
+  expect(removal.getAttribute('aria-label')).toBe('Remove access for Alex');
   expect([...removal.querySelectorAll('.removal-option button')].map(button=>button.textContent?.replace(/\s+/g,' ').trim())).toEqual(['⚠ Disable','Delete']);
   const disable=option('Disable')!.querySelector('button')!;
   expect(disable.classList).toContain('danger-button');
@@ -176,7 +177,7 @@ describe('Test account maintenance',()=>{
   // Disable asks for DISABLE before it calls the Domain.
   disable.click();fixture.detectChanges();
   const panel=root.querySelector('.removal + .reset-panel.danger-panel')!;
-  expect(panel.querySelector('h3')?.textContent?.replace(/\s+/g,' ').trim()).toBe('⚠ Disable alex@example.com');
+  expect(panel.querySelector('h3')?.textContent?.replace(/\s+/g,' ').trim()).toBe('⚠ Disable Alex');
   const confirm=()=>[...panel.querySelectorAll<HTMLButtonElement>('.actions button')][0];
   expect(confirm().disabled).toBe(true);
   page.removalConfirmation='DELETE';await page.confirmRemoval();
@@ -184,23 +185,23 @@ describe('Test account maintenance',()=>{
   page.removalConfirmation='DISABLE';fixture.detectChanges();expect(confirm().disabled).toBe(false);
   confirm().click();await fixture.whenStable();fixture.detectChanges();
   expect(request).toHaveBeenCalledWith('/admin/accounts/cloud-id/disable',{confirmation:'DISABLE'});
-  expect(page.notice()).toBe('alex@example.com is disabled. Every sign-in is blocked and their open session closes within 5 minutes.');
-  expect(root.querySelector('tr[data-account="alex@example.com"] .state-badge.disabled')?.textContent?.replace(/\s+/g,' ').trim()).toBe('⚠ Disabled');
+  expect(page.notice()).toBe('Alex is disabled. Every sign-in is blocked and their open session closes within 5 minutes.');
+  expect(root.querySelector('tr[data-account="Alex"] .state-badge.disabled')?.textContent?.replace(/\s+/g,' ').trim()).toBe('⚠ Disabled');
   // A disabled account offers Enable (one click) instead of Disable.
   choose();
   expect([...root.querySelectorAll('.removal-option button')].map(button=>button.textContent?.trim())).toEqual(['Enable','Delete']);
   expect(option('Enable')!.querySelector('p')?.textContent).toBe(page.removalText.enable);
   option('Enable')!.querySelector('button')!.click();await fixture.whenStable();fixture.detectChanges();
   expect(request).toHaveBeenCalledWith('/admin/accounts/cloud-id/enable',{});
-  expect(page.notice()).toBe('alex@example.com can sign in again.');
+  expect(page.notice()).toBe('Alex can sign in again.');
   // Delete asks for DELETE; the person leaves the list.
   choose();option('Delete')!.querySelector('button')!.click();fixture.detectChanges();
   expect(root.querySelector('.removal + .reset-panel')?.classList).not.toContain('danger-panel');
   expect(root.querySelector('.removal + .reset-panel')?.textContent).toContain('Purchase history stays for the audit.');
   page.removalConfirmation='DELETE';await page.confirmRemoval();fixture.detectChanges();
   expect(request).toHaveBeenCalledWith('/admin/accounts/cloud-id/remove',{confirmation:'DELETE'});
-  expect(page.notice()).toBe('alex@example.com is deleted. If they sign in again, they appear in Waiting for access as a new person.');
-  expect(root.querySelector('tr[data-account="alex@example.com"]')).toBeNull();
+  expect(page.notice()).toBe('Alex is deleted. If they sign in again, they appear in Waiting for access as a new person.');
+  expect(root.querySelector('tr[data-account="Alex"]')).toBeNull();
  });
  it('keeps removal off for yourself, for an older Domain without the flags, and reports failures (DLV-969)',async()=>{
   account.set({accountId:'owner',username:'author',topicGrants:[],permissions:{manageAccess:true,feedbackRole:'owner'}});
@@ -215,7 +216,7 @@ describe('Test account maintenance',()=>{
   TestBed.configureTestingModule({providers:[provideRouter([]),{provide:MembershipApi,useValue:{request}},{provide:StudyPlanAccount,useValue:{account}}]});
   const fixture=TestBed.createComponent(TestAccounts);fixture.detectChanges();await fixture.whenStable();fixture.detectChanges();
   const root=fixture.nativeElement as HTMLElement,page=fixture.componentInstance;
-  (root.querySelector('tr[data-account="old@example.com"] input[type="checkbox"]') as HTMLInputElement).click();fixture.detectChanges();
+  (root.querySelector('tr[data-account="Old"] input[type="checkbox"]') as HTMLInputElement).click();fixture.detectChanges();
   expect(root.querySelector('.removal')).toBeNull();
   const row=page.selectedRow()!;
   expect([row.disabled,row.canDisable,row.canEnable,row.canRemove]).toEqual([false,false,false,false]);
@@ -231,6 +232,33 @@ describe('Test account maintenance',()=>{
   expect(page.notice()).toBe('Deletion was not confirmed. Refresh and retry the same account.');
   await page.enable({...row,canEnable:true});expect(page.notice()).toBe('Enable was not confirmed. Refresh and retry.');
   expect(page.busy()).toBe(false);
+ });
+ it('names everyone from the directory even when test accounts are switched off, as in DEV today (DLV-969)',async()=>{
+  account.set({accountId:'owner',username:'author',topicGrants:[],permissions:{manageAccess:true,feedbackRole:'owner'}});
+  const coauthor={accountId:'co-id',username:'google_1176',displayName:'Priya Raman',email:'priya@gmail.example',roles:['co-author'],testAccount:false,fullCurriculum:false,
+    access:{label:'Free',labels:['Free'],grantedCourseIds:[]},signIn:'active',canDisable:true,canRemove:true};
+  request.mockImplementation(async(path:string)=>{
+    if(path.startsWith('/admin/test-accounts'))throw new Error('Test account maintenance is disabled.');
+    return {accounts:[coauthor],page:0,hasNext:false};
+  });
+  TestBed.resetTestingModule();
+  TestBed.configureTestingModule({providers:[provideRouter([]),{provide:MembershipApi,useValue:{request}},{provide:StudyPlanAccount,useValue:{account}}]});
+  const fixture=TestBed.createComponent(TestAccounts);fixture.detectChanges();await fixture.whenStable();fixture.detectChanges();
+  const root=fixture.nativeElement as HTMLElement,page=fixture.componentInstance;
+  expect(request).toHaveBeenCalledWith('/admin/accounts?query=&page=0');
+  // The owner sees the name and the Gmail, never Cognito's google_ id.
+  const row=root.querySelector('tr[data-account="Priya Raman"]')!;
+  expect(row.querySelector('.person')?.textContent).toBe('Priya Raman');
+  expect(row.textContent).toContain('priya@gmail.example');
+  expect(row.textContent).not.toContain('google_1176');
+  expect(root.textContent).not.toContain('Test account maintenance is unavailable');
+  expect(root.textContent).not.toContain('Account co-id');
+  (row.querySelector('input[type="checkbox"]') as HTMLInputElement).click();fixture.detectChanges();
+  expect([...root.querySelectorAll('.removal-option button')].map(button=>button.textContent?.replace(/\s+/g,' ').trim())).toEqual(['⚠ Disable','Delete']);
+  // On the Test accounts tab the same failure is said once, and the list is simply empty.
+  fixture.componentRef.setInput('view','test');await page.load();fixture.detectChanges();
+  expect(page.notice()).toBe('Test account maintenance is unavailable in this environment.');
+  expect(page.rows()).toEqual([]);
  });
  it('discloses a partial directory and clears previous owner results after failure',async()=>{
   account.set({permissions:{manageAccess:true}});
