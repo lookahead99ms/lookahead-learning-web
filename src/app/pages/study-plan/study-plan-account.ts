@@ -1,5 +1,5 @@
 import { StudyLogEntry } from '../../content/study-plan-daily';
-import { Injectable, InjectionToken, inject, signal } from '@angular/core';
+import { Injectable, InjectionToken, effect, inject, signal } from '@angular/core';
 import { StudyPlanRecoveryPreview } from '../../content/study-plan-recovery';
 import { environment } from '../../../environments/environment';
 import { StudyPlan } from '../../content/study-plan';
@@ -196,7 +196,34 @@ class AccountApiError extends Error {
   }
 }
 
-/** Account state stays in memory; anonymous browser storage is never repurposed. */
+/**
+ * DLV-969 S37 (user, 2026-11-03): what the header last knew in this browser, your display name or signed out, so the
+ * next page load can show it at once while the identity check runs. The check always replaces it, and it holds
+ * nothing else: no account id, plans or progress.
+ */
+export type HeaderHint = ({ signedIn: true; displayName: string } | { signedIn: false }) & { gateway?: boolean };
+const HEADER_HINT_KEY = 'lookahead.header-hint';
+export function readHeaderHint(): HeaderHint | null {
+  try {
+    const value = JSON.parse(globalThis.localStorage?.getItem(HEADER_HINT_KEY) ?? 'null');
+    // Which address answered last time: through the Gateway (/bff) or not.
+    const gateway = typeof value?.gateway === 'boolean' ? { gateway: value.gateway as boolean } : {};
+    if (value?.signedIn === false) return { signedIn: false, ...gateway };
+    if (value?.signedIn === true && typeof value.displayName === 'string') return { signedIn: true, displayName: value.displayName.slice(0, 160), ...gateway };
+  } catch {
+    // Blocked or corrupt storage: no hint, the header waits as before.
+  }
+  return null;
+}
+function writeHeaderHint(hint: HeaderHint): void {
+  try {
+    globalThis.localStorage?.setItem(HEADER_HINT_KEY, JSON.stringify(hint));
+  } catch {
+    // Storage may be blocked; the hint is only a speed-up.
+  }
+}
+
+/** Account state stays in memory; the only thing kept in browser storage is the header hint above. */
 @Injectable({ providedIn: 'root' })
 export class StudyPlanAccount implements AccountSettingsClient {
   readonly enabled = environment.accountPlansEnabled;
@@ -220,6 +247,18 @@ export class StudyPlanAccount implements AccountSettingsClient {
     null,
   );
   private csrf: { token: string; headerName: string } | null = null;
+  /** The header's state from the previous visit (DLV-969 S37); read once, never updated during this visit. */
+  readonly headerHint = signal<HeaderHint | null>(this.enabled ? readHeaderHint() : null);
+
+  constructor() {
+    // Once the identity check has answered, remember the outcome for the next page load.
+    effect(() => {
+      if (!this.enabled || !this.sessionKnown()) return;
+      const account = this.account();
+      const gateway = !!this.authOptions()?.oauth;
+      writeHeaderHint(account && !this.sessionExpired() ? { signedIn: true, displayName: account.displayName ?? '', gateway } : { signedIn: false, gateway });
+    });
+  }
   private mutation: { path: string; method: 'POST' | 'DELETE'; body?: unknown; revision?: number; key: string; owner: string } | null = null;
   private initialization: Promise<void> | null = null;
 
@@ -468,8 +507,14 @@ export class StudyPlanAccount implements AccountSettingsClient {
   private async restoreSession(): Promise<void> {
     this.busy.set(true);
     try {
-      await this.loadAuthOptions();
-      const account = await this.request<StudyAccount>('/auth/me');
+      // DLV-969 S37: ask who you are at once, at the address that answered last time, while the sign-in options load.
+      // If the options say the address changed, that early answer is dropped and the question asked again.
+      const options = this.loadAuthOptions();
+      const guess = this.headerHint()?.gateway;
+      const early = guess === undefined ? null : this.request<StudyAccount>('/auth/me', {}, false, guess ? '/bff/api/v1' : '/api/v1');
+      early?.catch(() => undefined); // a dropped early answer must not surface as an error
+      await options;
+      const account = await (early && guess === !!this.authOptions()?.oauth ? early : this.request<StudyAccount>('/auth/me'));
       this.account.set(account);
       this.sessionKnown.set(true);
       if (this.authOptions()?.managedLogin) {
@@ -811,8 +856,8 @@ export class StudyPlanAccount implements AccountSettingsClient {
   apiPath(path: string): string {
     return (this.authOptions()?.oauth ? '/bff/api/v1' : '/api/v1') + path;
   }
-  private async request<T>(path: string, options: RequestInit = {}, identity = false): Promise<T> {
-    const response = await this.transport(identity ? '/api/v1' + path : this.apiPath(path), {
+  private async request<T>(path: string, options: RequestInit = {}, identity = false, base?: string): Promise<T> {
+    const response = await this.transport(identity ? '/api/v1' + path : base ? base + path : this.apiPath(path), {
       ...options,
       headers: {
         ...options.headers,

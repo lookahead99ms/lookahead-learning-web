@@ -12,3 +12,12 @@ if (!testGlobal[testBedSetup]) {
     errorOnUnknownProperties: true,
   });
 }
+
+// DLV-969 S37: the header hint lives in browser storage; each test starts without one, whatever ran before it.
+beforeEach(() => {
+  try {
+    globalThis.localStorage?.removeItem('lookahead.header-hint');
+  } catch {
+    // No storage in this environment: nothing to clear.
+  }
+});
