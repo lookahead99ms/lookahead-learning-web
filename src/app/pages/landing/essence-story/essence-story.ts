@@ -1,4 +1,4 @@
-import { Component, ElementRef, inject, signal } from '@angular/core';
+import { Component, ElementRef, inject, input, signal } from '@angular/core';
 import { PlatformBrand } from '../../../core/platform-brand/platform-brand';
 import { EssenceSteps } from '../essence-steps/essence-steps';
 import { KEY_SENTENCE, KeyCycle, WordmarkKey } from '../wordmark-key/wordmark-key';
@@ -40,6 +40,8 @@ export class EssenceStory {
   protected readonly sentenceLines = KEY_SENTENCE;
   /** Loop rounds so far; each sends the stairs' arrow up again after the wordmark's light. */
   protected readonly loop = signal(0);
+  /** Start on page load instead of waiting for most of the card to scroll into view (/welcome; the homepage keeps waiting). */
+  readonly autoplay = input(false);
 
   /** The Essence starts again from the first letter. */
   protected restart(): void {

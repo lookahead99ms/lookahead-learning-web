@@ -38,6 +38,9 @@ describe('WelcomePage', () => {
     const main = root.querySelector('main#main-content.welcome-page');
     expect([...(main?.children ?? [])].map((child) => child.tagName.toLowerCase())).toEqual(['aside', 'section', 'footer']);
     expect(main?.querySelector('section.brand-story.home-essence app-wordmark-key')).not.toBeNull();
+    // The Essence starts on load here, not after a scroll as on the homepage (user, 2026-11-03).
+    const story = fixture.debugElement.query((node) => node.name === 'section' && node.nativeElement.classList.contains('home-essence'));
+    expect(story.componentInstance.autoplay()).toBe(true);
     expect(root.querySelector('.welcome-footer p')?.textContent?.trim()).toBe('Learn. Grow. Blaze.');
     expect(root.querySelectorAll('.welcome-footer .footer-statements > *')).toHaveLength(2);
   });
