@@ -72,7 +72,7 @@
       <div>
         <dt>Sign-in email or username</dt>
         <dd>
-          <span>{{ details.username }}</span>
+          <span>{{ details.email || (details.signInMethod === 'google' ? 'Your Google account' : details.username) }}</span>
           <span class="detail-note">
             <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
               <rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" />
@@ -84,7 +84,7 @@
       @if (details.signInMethod) {
         <div>
           <dt>Sign-in method</dt>
-          <dd>{{ details.signInMethod }}</dd>
+          <dd>{{ details.signInMethod === 'google' ? 'Google' : details.signInMethod }}</dd>
         </div>
       }
     </dl>
@@ -249,22 +249,29 @@
           </span>
           <span class="visually-hidden">Google:</span>
           <div class="connection-text">
-            <span id="google-connection-status" class="connection-empty">
-              {{
-                store.authOptions()?.google
-                  ? 'Linking Google sign-in isn’t available yet.'
-                  : 'Google sign-in isn’t available yet.'
-              }}
-            </span>
+            @if (profile()?.signInMethod === 'google') {
+              <!-- DLV-969: made through Google, so Google is this account's sign-in. Linking Google to a password account is not offered. -->
+              <span id="google-connection-status" class="connection-connected">Connected{{ profile()?.email ? ' as ' + profile()?.email : '' }}</span>
+            } @else {
+              <span id="google-connection-status" class="connection-empty">
+                {{
+                  store.authOptions()?.google
+                    ? 'Linking Google sign-in isn’t available yet.'
+                    : 'Google sign-in isn’t available yet.'
+                }}
+              </span>
+            }
           </div>
-          <button
-            type="button"
-            disabled
-            aria-label="Connect Google"
-            aria-describedby="google-connection-status"
-          >
-            Connect
-          </button>
+          @if (profile()?.signInMethod !== 'google') {
+            <button
+              type="button"
+              disabled
+              aria-label="Connect Google"
+              aria-describedby="google-connection-status"
+            >
+              Connect
+            </button>
+          }
         </li>
         @for (field of linkFields; track field.key) {
           <li [attr.data-platform]="field.key">
@@ -304,7 +311,15 @@
     <h2 id="security-heading">Security</h2>
   </div>
   @if (profile()) {
-    @if (!changingPassword()) {
+    @if (profile()?.signInMethod === 'google') {
+      <!-- DLV-969: a Google account has no Look Ahead password; Google keeps it safe. -->
+      <div class="security-row">
+        <div>
+          <h3>Password</h3>
+          <p>You sign in with Google, so there is no Look Ahead password to change. Manage it in your Google account.</p>
+        </div>
+      </div>
+    } @else if (!changingPassword()) {
       <div class="security-row">
         <div>
           <h3>Password</h3>

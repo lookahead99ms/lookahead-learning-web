@@ -344,6 +344,13 @@ input:focus-visible,
   color: var(--text-subtle);
   font-size: 0.88rem;
 }
+/* DLV-969: an account made through Google shows the Gmail it signs in with. */
+.connection-connected {
+  color: var(--text-strong);
+  font-size: 0.88rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
 .connection-text a {
   display: inline-flex;
   align-items: center;

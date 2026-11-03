@@ -13,7 +13,10 @@ export interface ProfileLinks {
 export interface ManagedAccountProfile {
   displayName: string;
   username: string;
+  /** 'google' for an account made through Google (DLV-969); the page then shows Google as connected. */
   signInMethod?: string;
+  /** The provider-verified email, for a Google account its Gmail; absent when the service has none. */
+  email?: string;
   /** Absent when Identity does not report it (older service). */
   themePreference?: ThemePreference;
   links?: ProfileLinks;

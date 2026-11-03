@@ -3,7 +3,7 @@ import { Component, computed, effect, ElementRef, inject, signal } from '@angula
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
-import { StudyPlanAccount } from '../study-plan/study-plan-account';
+import { StudyPlanAccount, isProviderUsername } from '../study-plan/study-plan-account';
 import { registrationCountries, registrationCountryCode } from './countries';
 import { AccountSettings } from './account-settings';
 import { ACCOUNT_SETTINGS_CLIENT } from './account-settings-client';
@@ -139,6 +139,7 @@ export class AccountPage {
   protected greetingName(name: string): string {
     return name.trim().split(/\s+/)[0] || 'there';
   }
+  protected readonly providerUsername = isProviderUsername;
   protected initials(name: string): string {
     const words = name.trim().split(/\s+/).filter(Boolean);
     return words

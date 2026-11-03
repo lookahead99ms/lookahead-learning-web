@@ -351,6 +351,41 @@ describe('Manage account', () => {
     expect(rows[0].textContent).toContain('isn’t available');
   });
 
+  it('shows a Google account its Gmail, Google as connected, and no password to change (DLV-969)', async () => {
+    client.loadProfile.mockResolvedValue({ ...profile, username: 'Google_109384756', signInMethod: 'google', email: 'learner@gmail.example' });
+    fixture = TestBed.createComponent(AccountSettings);
+    fixture.detectChanges(); await fixture.whenStable(); fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const detail = (label: string) => [...root.querySelectorAll('.profile-details > div')]
+      .find((row) => row.querySelector('dt')?.textContent?.trim() === label)?.querySelector('dd')?.textContent?.replace(/\s+/g, ' ').trim();
+    expect(detail('Sign-in email or username')).toContain('learner@gmail.example');
+    expect(detail('Sign-in email or username')).not.toContain('Google_109384756');
+    expect(detail('Sign-in method')).toBe('Google');
+    const google = root.querySelector('.connection-list li[data-platform="google"]') as HTMLElement;
+    expect(google.querySelector('.connection-connected')?.textContent?.trim()).toBe('Connected as learner@gmail.example');
+    expect(google.querySelector('button')).toBeNull();
+    expect(root.textContent).toContain('You sign in with Google, so there is no Look Ahead password to change.');
+    expect([...root.querySelectorAll('button')].some((button) => button.textContent?.trim() === 'Change password')).toBe(false);
+  });
+
+  it('shows "Your Google account" when the service has no Gmail for a Google account', async () => {
+    client.loadProfile.mockResolvedValue({ ...profile, username: 'Google_109384756', signInMethod: 'google' });
+    fixture = TestBed.createComponent(AccountSettings);
+    fixture.detectChanges(); await fixture.whenStable(); fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const details = [...root.querySelectorAll('.profile-details')].map((list) => list.textContent).join(' ');
+    expect(details).toContain('Your Google account');
+    expect(details).not.toContain('Google_109384756');
+    expect(root.querySelector('.connection-connected')?.textContent?.trim()).toBe('Connected');
+  });
+
+  it('keeps the password row and an unavailable Google link for an email account', () => {
+    const root = fixture.nativeElement as HTMLElement;
+    expect(root.querySelector('.connection-connected')).toBeNull();
+    expect([...root.querySelectorAll('button')].some((button) => button.textContent?.trim() === 'Change password')).toBe(true);
+    expect(root.querySelector('.profile-details')?.textContent).not.toContain('Sign-in method');
+  });
+
   it('shows membership from server grants without naming a paid plan', () => {
     store.account.update((account) =>
       account
