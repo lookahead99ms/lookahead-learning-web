@@ -128,7 +128,7 @@ describe('PlatformHeader account disclosure', () => {
     expect(fixture.nativeElement.querySelector('.avatar-trigger-btn')).not.toBeNull();
   });
 
-  it.each(['/sign-in/choose', '/sign-up'])(
+  it.each(['/sign-in/choose', '/sign-up', '/welcome', '/welcome?access=pending'])(
     'does not repeat authentication actions in the header on %s',
     (url) => {
       vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue(url);
@@ -1139,45 +1139,63 @@ describe('PlatformHeader DEV session (user decision 2026-11-02)', () => {
     TestBed.inject(StudyPlanAccount).sessionKnown.set(true);
   });
 
-  it('shows no DEV mark and no Leave DEV outside a DEV session', () => {
+  it('shows no DEV mark and no DEV control outside a DEV session', () => {
     const fixture = TestBed.createComponent(PlatformHeader);
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.identity-mark')).toBeNull();
-    expect(fixture.nativeElement.querySelector('.leave-dev-button')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.dev-environment')).toBeNull();
     expect(fixture.nativeElement.querySelector('app-platform-brand').getAttribute('aria-label')).toBe('LookAhead');
   });
 
-  it('marks the brand "DEV" for a visitor the DEV gate has not admitted yet, without Leave DEV (DLV-969)', () => {
+  it('marks the brand "DEV" for a visitor the DEV gate has not admitted yet, with nothing to exit (DLV-969)', () => {
     TestBed.inject(DevSession).gated.set(true);
     const fixture = TestBed.createComponent(PlatformHeader);
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('app-platform-brand').getAttribute('aria-label')).toBe('LookAhead DEV');
-    expect(fixture.nativeElement.querySelector('.leave-dev-button')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.identity-mark')?.textContent?.trim()).toBe('DEV');
+    expect(fixture.nativeElement.querySelector('.dev-environment')).toBeNull();
   });
 
-  it('marks the brand "DEV" and offers Leave DEV beside Sign in while the DEV session is admitted', async () => {
+  it('opens Exit DEV environment from the DEV mark beside the brand while the DEV session is admitted (user, 2026-11-03)', async () => {
     const session = TestBed.inject(DevSession);
     session.status.set({ dev: true, deadline: '2026-11-06T04:00:00Z', warning: false, maintenance: false });
     const fixture = TestBed.createComponent(PlatformHeader);
     fixture.detectChanges();
-    const mark = fixture.nativeElement.querySelector('.identity-mark') as HTMLElement;
-    expect(mark.textContent?.trim()).toBe('DEV');
-    expect(fixture.nativeElement.querySelector('app-platform-brand').getAttribute('aria-label')).toBe('LookAhead DEV');
-    const leave = fixture.nativeElement.querySelector('.header-utilities > .leave-dev-button') as HTMLButtonElement;
-    expect(leave.textContent?.trim()).toBe('Leave DEV');
-    expect(leave.disabled).toBe(false);
-    const hint = document.getElementById(leave.getAttribute('aria-describedby') ?? '');
-    expect(hint?.textContent).toContain('Sign out of the DEV environment');
-    const signIn = fixture.nativeElement.querySelector('.sign-in-button') as HTMLElement;
-    expect(leave.compareDocumentPosition(signIn) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    const leaveSpy = vi.spyOn(session, 'leave').mockResolvedValue();
-    leave.click();
-    expect(leaveSpy).toHaveBeenCalledTimes(1);
+    const root = fixture.nativeElement as HTMLElement;
+    // The control sits beside the home link, never inside it, and Leave DEV is no longer a header button.
+    const trigger = root.querySelector('.brand-area > .dev-environment > .dev-environment-trigger') as HTMLButtonElement;
+    expect(trigger.textContent?.replace(/\s+/g, '')).toBe('DEV▾');
+    expect(trigger.getAttribute('aria-label')).toBe('DEV environment');
+    expect(root.querySelector('.brand .dev-environment-trigger')).toBeNull();
+    expect(root.querySelector('.leave-dev-button')).toBeNull();
+    expect(root.querySelector('.identity-mark')).toBeNull();
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    trigger.click(); fixture.detectChanges();
+    expect(trigger.getAttribute('aria-expanded')).toBe('true');
+    const panel = root.querySelector('#dev-environment-panel') as HTMLElement;
+    expect(panel.querySelector('.dev-environment-title')?.textContent).toBe('Look Ahead DEV');
+    const exit = panel.querySelector('.dev-exit-button') as HTMLButtonElement;
+    expect(exit.textContent?.trim()).toBe('Exit DEV environment');
+    expect(document.getElementById(exit.getAttribute('aria-describedby')!)?.textContent).toContain('To switch accounts and stay in DEV, use Sign out');
+    const leave = vi.spyOn(session, 'leave').mockResolvedValue();
+    exit.click();
+    expect(leave).toHaveBeenCalledOnce();
     session.leaving.set(true);
-    session.error.set('Unable to confirm sign-out. Retry Leave DEV.');
-    fixture.detectChanges();
-    await fixture.whenStable();
-    expect((fixture.nativeElement.querySelector('.leave-dev-button') as HTMLButtonElement).disabled).toBe(true);
-    expect(fixture.nativeElement.querySelector('.leave-dev-error')?.textContent).toContain('Retry Leave DEV');
+    session.error.set('Unable to confirm leaving DEV. Retry Exit DEV environment.');
+    fixture.detectChanges(); await fixture.whenStable();
+    expect((root.querySelector('.dev-exit-button') as HTMLButtonElement).disabled).toBe(true);
+    expect(root.querySelector('.dev-exit-button')?.textContent?.trim()).toBe('Exiting…');
+    expect(root.querySelector('.dev-environment-error')?.textContent).toContain('Retry Exit DEV environment');
+    // A click inside keeps it open; outside, Escape or opening the account menu closes it.
+    panel.click(); fixture.detectChanges();
+    expect(root.querySelector('#dev-environment-panel')).not.toBeNull();
+    document.body.click(); fixture.detectChanges();
+    expect(root.querySelector('#dev-environment-panel')).toBeNull();
+    trigger.click(); fixture.detectChanges();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })); fixture.detectChanges();
+    expect(root.querySelector('#dev-environment-panel')).toBeNull();
+    trigger.click(); fixture.detectChanges();
+    trigger.click(); fixture.detectChanges();
+    expect(root.querySelector('#dev-environment-panel')).toBeNull();
   });
 });
