@@ -12,9 +12,9 @@
         @if (card.greeting) {
           <p class="greeting">{{ card.greeting }}</p>
         }
-        <p class="price"><span class="amount">{{ card.amount }}</span> <span class="period">{{ card.period }}</span></p>
+        <p class="price"><span class="amount price-figure">{{ card.amount }}</span> <span class="period">{{ card.period }}</span></p>
         @if (card.comparedWith) {
-          <p class="compared">{{ card.comparedWith }}</p>
+          <p class="compared price-figure">{{ card.comparedWith }}</p>
         }
         <p class="includes">{{ card.includes }}</p>
       </li>
@@ -22,7 +22,7 @@
   </ul>
   <p class="passes">
     Preparing for interviews? <strong>Interview Sprint</strong> opens everything for 100 days for
-    {{ sprintPrice() }}, paid once.
+    <span class="price-figure">{{ sprintPrice() }}</span>, paid once.
   </p>
   <div class="actions">
     <a class="action-button" routerLink="/pricing">See all plans</a>

@@ -49,6 +49,18 @@ describe('Sample pricing page (DLV-209)', () => {
     return [...root.querySelectorAll<HTMLButtonElement>('.plan-card button')];
   }
 
+  it('marks every price as a price figure; in DEV styles.css blurs it until hovered (user, 2026-11-03)', () => {
+    const amounts = [...root.querySelectorAll('.amount')];
+    expect(amounts.length).toBeGreaterThan(1);
+    for (const amount of amounts) expect(amount.classList).toContain('price-figure');
+    for (const compared of root.querySelectorAll('.compared-with')) expect(compared.classList).toContain('price-figure');
+    const fs = (globalThis as unknown as { process: { getBuiltinModule(id: string): unknown } }).process
+      .getBuiltinModule('node:fs') as { readFileSync(path: string, encoding: 'utf8'): string };
+    const css = fs.readFileSync('src/styles.css', 'utf8').replace(/\s+/g, ' ');
+    expect(css).toContain(':root[data-dev] .price-figure { filter: blur(0.45em);');
+    expect(css).toContain(':root[data-dev] .price-figure:hover, :root[data-dev] [data-plan]:hover .price-figure, :root[data-dev] [data-plan]:focus-within .price-figure { filter: none; }');
+  });
+
   it('fills the space between the sidebars on large monitors and shows the four yearly plans in one row', () => {
     // Component styles are emitted as <style> elements; read them as written (2026-10-16).
     const css = [...document.querySelectorAll('style')].map(style => style.textContent ?? '').join('\n').replace(/\s+/g, ' ');

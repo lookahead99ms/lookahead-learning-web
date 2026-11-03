@@ -1164,3 +1164,20 @@ pre:has(> .learning-code[data-code-language='go']) { background:#14161a; }
     justify-content: center;
   }
 }
+
+/* DLV-969: in DEV (the Gateway's gate answers, <html data-dev>) learner-facing prices stay blurred until
+   hovered, or until their plan card holds keyboard focus (user, 2026-11-03). Admin pages show them plainly. */
+:root[data-dev] .price-figure {
+  filter: blur(0.45em);
+  transition: filter 150ms ease;
+}
+:root[data-dev] .price-figure:hover,
+:root[data-dev] [data-plan]:hover .price-figure,
+:root[data-dev] [data-plan]:focus-within .price-figure {
+  filter: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root[data-dev] .price-figure {
+    transition: none;
+  }
+}
