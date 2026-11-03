@@ -1160,6 +1160,40 @@ describe('PlatformHeader DEV session (user decision 2026-11-02)', () => {
     },
   );
 
+  it('before admission, a signed-in visitor’s account menu holds only Sign out; after admission it has every link', () => {
+    vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue('/welcome?access=pending');
+    const session = TestBed.inject(DevSession);
+    session.gated.set(true);
+    TestBed.inject(StudyPlanAccount).account.set({
+      accountId: 'waiting',
+      username: 'google_1137',
+      displayName: 'Waiting Person',
+      topicGrants: [],
+      authorPreview: true,
+    });
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const trigger = root.querySelector('.avatar-trigger-btn') as HTMLButtonElement;
+    expect(root.querySelector('#' + trigger.getAttribute('aria-describedby'))?.textContent).toBe(
+      'Your account: sign out to use a different account.',
+    );
+    trigger.click();
+    fixture.detectChanges();
+    const menu = root.querySelector('#account-menu') as HTMLElement;
+    expect(menu.querySelector('a')).toBeNull();
+    expect(menu.querySelector('.user-display-email')?.textContent?.trim()).toBe(
+      'Sign out to use a different account.',
+    );
+    expect(menu.querySelector('.account-sign-out')).not.toBeNull();
+
+    session.status.set({ dev: true, deadline: '2026-11-05T00:00:00Z', warning: false, maintenance: false });
+    fixture.detectChanges();
+    expect(menu.querySelector('a[href="/account"]')).not.toBeNull();
+    expect(menu.querySelector('a[href="/support"]')).not.toBeNull();
+    expect(menu.querySelector('.author-account-links')).not.toBeNull();
+  });
+
   it('starts restricted on a gate page until the DEV gate first answers, then follows admission', () => {
     vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue('/sign-in');
     const session = TestBed.inject(DevSession);
