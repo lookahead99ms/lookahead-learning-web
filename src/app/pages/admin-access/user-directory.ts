@@ -11,6 +11,9 @@ export interface DirectoryAssignment {
   id: string;
   accountId: string | null;
   pendingEmail: string | null;
+  /** DLV-969: what a non-owner is sent instead of the account and email ("Co-author 2", "Pending invitation"). */
+  label?: string;
+  pending?: boolean;
   roles: string[];
   topicGrants: string[];
   fullCurriculum: boolean;
@@ -47,6 +50,11 @@ export interface DirectoryAccount {
   roles: string[]; testAccount: boolean; fullCurriculum: boolean;
   access: { label: string; labels: string[]; grantedCourseIds: string[] };
   canDowngrade?: boolean; canDelete?: boolean;
+  /**
+   * DLV-969 (DEV sign-in accounts): whether the account can sign in now, and which of the owner's
+   * removal actions apply. Absent from an older Domain, so the buttons stay hidden.
+   */
+  signIn?: 'active' | 'disabled'; canDisable?: boolean; canEnable?: boolean; canRemove?: boolean;
 }
 
 export interface DirectoryRow {
@@ -65,6 +73,11 @@ export interface DirectoryRow {
   test: DirectoryTestAccount | null;
   canDowngrade?: boolean;
   canDelete?: boolean;
+  /** DLV-969: sign-in is switched off for this account (Disable). */
+  disabled?: boolean;
+  canDisable?: boolean;
+  canEnable?: boolean;
+  canRemove?: boolean;
 }
 
 export const ROLE_FILTERS = ['Author (owner)', 'Co-author', 'Admin', 'Reviewer', 'Tester', 'Learner'] as const;
@@ -202,16 +215,17 @@ export function directoryRows(
     if (assignment.accountId && seen.has(assignment.accountId)) continue;
     const full = assignment.fullCurriculum || assignment.roles.includes('tester');
     const isSelf = !!assignment.accountId && assignment.accountId === self?.accountId;
+    const pending = !!assignment.pendingEmail || assignment.pending === true;
     rows.push({
       key: assignment.id,
       accountId: assignment.accountId,
-      name: isSelf ? self!.username : (assignment.pendingEmail ?? accountName(assignment.accountId!, new Map())),
-      detail: assignment.pendingEmail ? 'Waiting for a verified sign-in' : null,
+      name: isSelf ? self!.username : (assignment.label ?? assignment.pendingEmail ?? accountName(assignment.accountId!, new Map())),
+      detail: pending ? 'Waiting for a verified sign-in' : null,
       roles: roleNames(assignment.roles),
       access: plainAccess([], assignment.topicGrants, titles, full),
       isTest: false,
       isSelf,
-      pending: !!assignment.pendingEmail,
+      pending,
       changedBy: null,
       changedAt: null,
       test: null,
@@ -251,6 +265,10 @@ export function directoryRows(
       isTest: account.testAccount,
       canDowngrade: account.canDowngrade,
       canDelete: account.canDelete,
+      disabled: account.signIn === 'disabled',
+      canDisable: account.canDisable === true,
+      canEnable: account.canEnable === true,
+      canRemove: account.canRemove === true,
     };
     if (existing) Object.assign(existing, current);
     else rows.push({ ...current, key: account.accountId, accountId: account.accountId,

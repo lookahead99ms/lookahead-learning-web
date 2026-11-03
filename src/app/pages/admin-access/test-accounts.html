@@ -86,6 +86,50 @@
         }
       </div>
     </div>
+    @if (!chosen.isSelf && (chosen.canDisable || chosen.canEnable || chosen.canRemove)) {
+      <!-- DLV-969 (user, 2026-11-03): each action says what it does beside the button and on hover. -->
+      <div class="removal" role="group" [attr.aria-label]="'Remove access for ' + chosen.name">
+        <h3>Remove access for {{ chosen.name }}</h3>
+        @if (chosen.canDisable) {
+          <div class="removal-option strongest">
+            <button type="button" class="danger-button" [title]="removalText.disable" aria-describedby="removal-disable" [disabled]="busy()" (click)="startRemoval(chosen, 'disable')">
+              <span class="warning-mark" aria-hidden="true">⚠</span> Disable
+            </button>
+            <p id="removal-disable">{{ removalText.disable }}</p>
+          </div>
+        }
+        @if (chosen.canEnable) {
+          <div class="removal-option">
+            <button type="button" class="action-button" [title]="removalText.enable" aria-describedby="removal-enable" [disabled]="busy()" (click)="enable(chosen)">Enable</button>
+            <p id="removal-enable">{{ removalText.enable }}</p>
+          </div>
+        }
+        @if (chosen.canRemove) {
+          <div class="removal-option">
+            <button type="button" class="caution-button" [title]="removalText.remove" aria-describedby="removal-remove" [disabled]="busy()" (click)="startRemoval(chosen, 'remove')">Delete</button>
+            <p id="removal-remove">{{ removalText.remove }}</p>
+          </div>
+        }
+      </div>
+    @if (!testView && removing()?.row?.key === chosen.key ? removing() : null; as pending) {
+      @let disabling = pending.action === 'disable';
+      @let word = disabling ? 'DISABLE' : 'DELETE';
+      <div class="reset-panel" [class.danger-panel]="disabling">
+        <h3>@if (disabling) {<span aria-hidden="true">⚠ </span>Disable {{ pending.row.name }}} @else {Delete {{ pending.row.name }}}</h3>
+        <p>{{ disabling ? removalText.disable : removalText.remove }}</p>
+        @if (!disabling) {
+          <p>Purchase history stays for the audit.</p>
+        }
+        <label>Type {{ word }} to confirm <input [(ngModel)]="removalConfirmation" autocomplete="off" /></label>
+        <div class="actions">
+          <button type="button" [class]="disabling ? 'danger-button' : 'caution-button'" [disabled]="busy() || removalConfirmation !== word" (click)="confirmRemoval()">
+            {{ disabling ? 'Confirm disable' : 'Confirm deletion' }}
+          </button>
+          <button type="button" class="action-link" [disabled]="busy()" (click)="removing.set(null)">Cancel</button>
+        </div>
+      </div>
+    }
+    }
   }
 
   @if (!loaded()) {
@@ -120,6 +164,9 @@
               }
               @if (row.detail) {
                 <span class="sub">{{ row.detail }}</span>
+              }
+              @if (row.disabled) {
+                <span class="state-badge disabled"><span aria-hidden="true">⚠</span> Disabled</span>
               }
               @if (testView && row.test?.creatorId; as creatorId) {
                 <span class="sub">Created by {{ actorName(creatorId) }}</span>
