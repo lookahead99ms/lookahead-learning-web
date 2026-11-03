@@ -105,6 +105,58 @@ describe('People and access layout', () => {
     fixture.componentInstance.selectTab('people');
     expect(fixture.componentInstance.outline().map(item => item.href)).toEqual(['#people']);
   });
+  it('puts the tasks first: How access works is folded in the hero until opened (user, 2026-11-03)', async () => {
+    const fixture = TestBed.createComponent(AdminAccessPage);
+    fixture.detectChanges(); await fixture.whenStable(); fixture.detectChanges();
+    const details = (fixture.nativeElement as HTMLElement).querySelector<HTMLDetailsElement>('.access-hero details.how-access')!;
+    expect(details.open).toBe(false);
+    expect(details.querySelector('summary')?.textContent?.trim()).toBe('How access works');
+    expect(details.querySelectorAll('.how-grid .how-card')).toHaveLength(3);
+  });
+
+  it('keeps the tabs on one row and shows a chevron only on an edge that hides tabs (user, 2026-11-03)', async () => {
+    const fixture = TestBed.createComponent(AdminAccessPage);
+    fixture.detectChanges(); await fixture.whenStable(); fixture.detectChanges();
+    const page = fixture.componentInstance, root = fixture.nativeElement as HTMLElement;
+    const list = root.querySelector<HTMLElement>('.tab-strip > .access-tabs[role="tablist"]')!;
+    const chevrons = () => [...root.querySelectorAll<HTMLButtonElement>('.tab-strip > .tab-more')].map(button => button.hidden);
+    // jsdom has no layout: everything fits, so no chevron shows.
+    expect(chevrons()).toEqual([true, true]);
+    Object.defineProperty(list, 'scrollWidth', { configurable: true, value: 600 });
+    Object.defineProperty(list, 'clientWidth', { configurable: true, value: 300 });
+    page.updateTabEdges(); fixture.detectChanges();
+    expect(chevrons()).toEqual([true, false]);
+    root.querySelector<HTMLButtonElement>('.tab-more.right')!.click(); fixture.detectChanges();
+    expect(list.scrollLeft).toBe(210);
+    expect(chevrons()).toEqual([false, false]);
+    list.scrollLeft = 300; list.dispatchEvent(new Event('scroll')); fixture.detectChanges();
+    expect(chevrons()).toEqual([false, true]);
+    root.querySelector<HTMLButtonElement>('.tab-more.left')!.click(); fixture.detectChanges();
+    expect(list.scrollLeft).toBe(90);
+    expect(root.querySelector('.tab-more.right')?.getAttribute('aria-label')).toBe('Scroll to more tabs');
+    expect(root.querySelector('.tab-more.left')?.getAttribute('aria-label')).toBe('Scroll to earlier tabs');
+  });
+
+  it('lays sections out by the column width, so the waiting list never runs under the Admin menu (user, 2026-11-03)', () => {
+    const fs = (globalThis as unknown as { process: { getBuiltinModule(id: string): unknown } }).process
+      .getBuiltinModule('node:fs') as { readFileSync(path: string, encoding: 'utf8'): string };
+    const css = fs.readFileSync('src/app/pages/admin-access/admin-access.css', 'utf8').replace(/\s+/g, ' ');
+    expect(css).toContain('.access-panel { container: access-panel / inline-size; }');
+    expect(css).toContain('@container access-panel (max-width: 760px) { .waiting-table thead { display: none; }');
+    expect(css).toContain('@container access-panel (max-width: 560px) { .section-heading.with-action { grid-template-columns: auto minmax(0, 1fr); }');
+    expect(css).toContain('overflow-wrap: anywhere; text-align: start;');
+    // People and Test accounts follow the same column: long names wrap, cards under 560px.
+    const people = fs.readFileSync('src/app/pages/admin-access/test-accounts.css', 'utf8').replace(/\s+/g, ' ');
+    expect(people).toContain('@container access-panel (max-width: 560px) { .directory-table thead { display: none; }');
+    expect(people).toContain('.directory-table tbody th { font-weight: 400; /* Only the person\'s long emails break mid-word, so the table stays inside its card (user, 2026-11-03). */ overflow-wrap: anywhere; }');
+    expect(people).not.toMatch(/\.person \{[^}]*nowrap/);
+    // The waiting card is a grid: person; Email, Requested, Expires; Admit as (user, 2026-11-03).
+    expect(css).toContain("grid-template-areas: 'person person person' 'email requested expires' 'admit admit admit';");
+    expect(css).toContain("@container access-panel (max-width: 480px) { .waiting-table tbody tr { grid-template-areas: 'person person' 'email email' 'requested expires' 'admit admit';");
+    // Tabs never wrap into a grid on phones any more; the row scrolls.
+    expect(css).not.toMatch(/\.access-tabs \{ display: grid;/);
+  });
+
   it('fills the centre column on wide monitors while notes keep a readable line length', async () => {
     const fixture = TestBed.createComponent(AdminAccessPage);
     fixture.detectChanges(); await fixture.whenStable(); fixture.detectChanges();
@@ -284,6 +336,32 @@ describe('Saved assignments', () => {
   });
 });
 
+describe('Saved assignments for a co-author (DLV-969)', () => {
+  // What the Domain sends a non-owner: the role label, never the account id or the invitation email.
+  const shared = [
+    { id: 'a1', accountId: null, pendingEmail: null, label: 'Co-author 2', pending: false, roles: ['co-author'], topicGrants: [], fullCurriculum: false, revision: 1 },
+    { id: 'a2', accountId: null, pendingEmail: null, label: 'Pending invitation', pending: true, roles: ['tester'], topicGrants: [], fullCurriculum: true, revision: 1 },
+  ];
+  it('shows labels, marks the invitation pending and offers no Review assignment', async () => {
+    TestBed.configureTestingModule({ providers: [
+      provideRouter([]),
+      { provide: StudyPlanAccount, useValue: { account: signal({ accountId: 'coauthor-id', username: 'co', topicGrants: [], permissions: permissions({ feedbackRole: 'co-author' }) }), apiPath: (path: string) => path } },
+      { provide: ACCOUNT_FETCH, useValue: async (path: string) => Response.json({ data: path === '/admin/access' ? shared : [] }) },
+      { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: convertToParamMap({ tab: 'saved' }) } } },
+    ] }).overrideComponent(AdminAccessPage, { remove: { imports: [PlatformHeader] }, add: { imports: [HeaderStub] } });
+    const fixture = TestBed.createComponent(AdminAccessPage);
+    fixture.detectChanges(); await fixture.whenStable();
+    await fixture.componentInstance.reload(); fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    expect([...root.querySelectorAll('.assignment-who')].map(name => name.textContent?.trim())).toEqual(['Co-author 2', 'Pending invitation']);
+    expect([...root.querySelectorAll('.assignment')].map(row => row.classList.contains('pending'))).toEqual([false, true]);
+    expect(root.querySelector('.assignment-state')?.textContent?.trim()).toBe('Assigned');
+    expect([...root.querySelectorAll('.assignment-state')][1].textContent?.trim()).toBe('Pending verified sign-in');
+    expect(root.textContent).not.toContain('Review assignment');
+    expect([...root.querySelectorAll('[role="tab"]')].map(tab => tab.textContent?.trim())).toEqual(['Saved assignments', 'Test accounts', 'People']);
+  });
+});
+
 describe('People and access links', () => {
   const setup = (tab: string | null, feedbackRole = 'owner') => {
     const replaceState = vi.fn();
@@ -376,7 +454,9 @@ describe('Waiting for access', () => {
     setup('co-author');
     const coauthor = TestBed.runInInjectionContext(() => new AdminAccessPage());
     await coauthor.reload();
-    expect(coauthor.tabs().map(tab => tab.id)).toEqual(['assign', 'saved', 'test', 'people']);
+    // Give access finds people by email or username, so it is the owner's alone (DLV-969, 2026-11-03).
+    expect(coauthor.tabs().map(tab => tab.id)).toEqual(['saved', 'test', 'people']);
+    expect(coauthor.tab()).toBe('saved');
     expect(requests.some(row => row.path === '/admin/access/waiting')).toBe(false);
     expect(coauthor.assignments()).toHaveLength(1);
   });

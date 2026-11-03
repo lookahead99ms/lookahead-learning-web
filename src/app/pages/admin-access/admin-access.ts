@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, DestroyRef, ElementRef, afterRenderEffect, inject, signal, computed, OnInit, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Location } from '@angular/common';
@@ -13,6 +13,8 @@ import { AdminMemberships } from './admin-memberships';
 
 interface Assignment {
   id: string; accountId: string | null; pendingEmail: string | null;
+  /** DLV-969: a co-author gets the role label, never the account id or invitation email. */
+  label?: string; pending?: boolean;
   roles: string[]; topicGrants: string[]; fullCurriculum: boolean; revision: number;
 }
 interface Recipient { accountId: string; username: string; displayName: string; email: string | null; }
@@ -85,7 +87,9 @@ export class AdminAccessPage implements OnInit {
    * for access is the owner's: first, with a count, while someone waits; after Saved assignments otherwise.
    */
   readonly tabs = computed(() => {
-    const base: readonly AccessTab[] = this.canReadAssignments() ? ['assign', 'saved', 'test', 'people'] : ['test', 'people'];
+    // Give access finds people by email or username, so it is the owner's alone (DLV-969, 2026-11-03).
+    const base: readonly AccessTab[] = this.canManage() ? ['assign', 'saved', 'test', 'people']
+      : this.canReadAssignments() ? ['saved', 'test', 'people'] : ['test', 'people'];
     const count = this.waiting().length;
     const ids = !this.canManage() ? base : count ? ['waiting' as const, ...base] : [...base.slice(0, 2), 'waiting' as const, ...base.slice(2)];
     return ids.map(id => ({ id, label: id === 'waiting' && count ? `${TAB_LABELS[id]} · ${count}` : TAB_LABELS[id] }));
@@ -104,6 +108,40 @@ export class AdminAccessPage implements OnInit {
     this.chosenTab.set(tab);
     // Keep the address shareable without a navigation: the page stays where it is.
     this.location?.replaceState('/admin/access', tab === this.tabs()[0].id ? '' : `tab=${tab}`);
+  }
+  /** The tab row scrolls when it is wider than the column; a chevron shows only on an edge that hides tabs. */
+  readonly moreBefore = signal(false);
+  readonly moreAfter = signal(false);
+  private readonly tabList = viewChild<ElementRef<HTMLElement>>('tabList');
+  private tabResize?: ResizeObserver;
+  constructor() {
+    inject(DestroyRef).onDestroy(() => this.tabResize?.disconnect());
+    // After each render that changes the tabs (the waiting count moves Waiting first), keep the chosen tab in view.
+    afterRenderEffect(() => { this.tabs(); this.revealTab(this.tab()); });
+  }
+  /** Scroll the tab row, never the page, so the chosen tab is fully in view and clear of the edge chevrons. */
+  private revealTab(tab: AccessTab) {
+    const list = this.tabList()?.nativeElement, button = list?.ownerDocument.getElementById('access-tab-' + tab);
+    if (!list || !button) return;
+    const Observer = list.ownerDocument.defaultView?.ResizeObserver;
+    if (!this.tabResize && Observer) { this.tabResize = new Observer(() => this.updateTabEdges()); this.tabResize.observe(list); }
+    const chevron = 48, start = button.offsetLeft - list.offsetLeft, end = start + button.offsetWidth;
+    if (start - chevron < list.scrollLeft) list.scrollLeft = Math.max(0, start - chevron);
+    else if (end + chevron > list.scrollLeft + list.clientWidth) list.scrollLeft = end + chevron - list.clientWidth;
+    this.updateTabEdges();
+  }
+  updateTabEdges() {
+    const list = this.tabList()?.nativeElement;
+    if (!list) return;
+    const max = list.scrollWidth - list.clientWidth;
+    this.moreBefore.set(list.scrollLeft > 2);
+    this.moreAfter.set(max > 2 && list.scrollLeft < max - 2);
+  }
+  scrollTabs(direction: 1 | -1) {
+    const list = this.tabList()?.nativeElement;
+    if (!list) return;
+    list.scrollLeft += direction * list.clientWidth * 0.7;
+    this.updateTabEdges();
   }
   /** Arrow keys, Home and End move between tabs (WAI-ARIA tabs pattern). */
   onTabKey(event: KeyboardEvent) {
@@ -150,8 +188,8 @@ export class AdminAccessPage implements OnInit {
   }
   async ngOnInit() { await this.reload(); }
   /** Pending email, username, or a short account ID when no list could name the account. */
-  nameOf(row: Pick<Assignment, 'accountId' | 'pendingEmail'>): string {
-    return row.pendingEmail ?? (row.accountId ? accountName(row.accountId, this.names()) : '');
+  nameOf(row: Pick<Assignment, 'accountId' | 'pendingEmail' | 'label'>): string {
+    return row.label ?? row.pendingEmail ?? (row.accountId ? accountName(row.accountId, this.names()) : '');
   }
   /** Usernames from the test accounts, the owner directory and the signed-in account. Names are a nicety: failures leave short IDs. */
   async loadNames() {
