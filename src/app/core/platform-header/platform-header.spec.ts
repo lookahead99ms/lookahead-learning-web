@@ -1139,6 +1139,56 @@ describe('PlatformHeader DEV session (user decision 2026-11-02)', () => {
     TestBed.inject(StudyPlanAccount).sessionKnown.set(true);
   });
 
+  it.each(['/sign-in', '/sign-up/confirm', '/sign-in/forgot', '/welcome?access=pending'])(
+    'before admission on %s, the logo and paths lead nowhere and only the theme stays (owner, 2026-11-03)',
+    (url) => {
+      vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue(url);
+      TestBed.inject(DevSession).gated.set(true);
+      const fixture = TestBed.createComponent(PlatformHeader);
+      fixture.detectChanges();
+      const root = fixture.nativeElement as HTMLElement;
+      expect(root.querySelector('a.brand')).toBeNull();
+      expect(root.querySelector('span.brand')?.getAttribute('aria-label')).toBe('Look Ahead');
+      expect(root.querySelector('app-header-navigation .path-locked')).not.toBeNull();
+      expect(root.querySelector('app-header-navigation a')).toBeNull();
+      expect(root.querySelector('.header-search-trigger')).toBeNull();
+      expect(root.querySelector('a[href^="/study-plan"]')).toBeNull();
+      expect(root.querySelector('.theme-switch')).not.toBeNull();
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }));
+      fixture.detectChanges();
+      expect(root.querySelector('.search-palette')).toBeNull();
+    },
+  );
+
+  it('starts restricted on a gate page until the DEV gate first answers, then follows admission', () => {
+    vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue('/sign-in');
+    const session = TestBed.inject(DevSession);
+    session.known.set(false);
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    expect(root.querySelector('a.brand')).toBeNull();
+    // Ordinary delivery (no DEV gate): the full header.
+    session.known.set(true);
+    fixture.detectChanges();
+    expect(root.querySelector('a.brand')?.getAttribute('href')).toBe('/');
+    expect(root.querySelector('.header-search-trigger')).not.toBeNull();
+    // Admitted in DEV: the full header too.
+    session.gated.set(true);
+    session.status.set({ dev: true, deadline: '', warning: false, maintenance: false });
+    fixture.detectChanges();
+    expect(root.querySelector('a.brand')).not.toBeNull();
+    expect(root.querySelector('app-header-navigation a[href="/learn"]')).not.toBeNull();
+  });
+
+  it('keeps the full header off the gate pages, where only admitted visitors arrive', () => {
+    vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue('/learn');
+    TestBed.inject(DevSession).gated.set(true);
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('a.brand')).not.toBeNull();
+  });
+
   it('shows no DEV mark and no DEV control outside a DEV session', () => {
     const fixture = TestBed.createComponent(PlatformHeader);
     fixture.detectChanges();

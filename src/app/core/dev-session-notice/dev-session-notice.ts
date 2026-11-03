@@ -47,9 +47,10 @@ export class DevSessionNotice {
   private async poll(): Promise<void> {
     try {
       const response = await fetch('/dev/session', { credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.timeout(5000) });
-      if (response.status === 404) return; // Ordinary local/prod delivery has no DEV control.
+      if (response.status === 404) { this.session.known.set(true); return; } // Ordinary local/prod delivery has no DEV control.
       this.session.gated.set(true); // 200, 401 or 503: the DEV gate answered, admitted or not.
       if (response.ok) this.status.set(parseDevStatus(await response.json()));
+      this.session.known.set(true);
     } catch { /* A failed poll must not claim a changed shutdown deadline. */ }
     if (!this.destroyed) {
       this.timer = setTimeout(() => { if (!this.destroyed) void this.poll(); }, 30000);

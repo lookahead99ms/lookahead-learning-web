@@ -6,6 +6,7 @@ import {
   OnDestroy,
   computed,
   inject,
+  input,
   output,
   signal,
 } from '@angular/core';
@@ -35,6 +36,11 @@ export class HeaderNavigation implements OnDestroy {
   private readonly element: ElementRef<HTMLElement> = inject(ElementRef);
   private readonly router = inject(Router);
   readonly opened = output<void>();
+  /**
+   * DLV-969 (owner, 2026-11-03): true for a DEV visitor not admitted yet. Learn, Grow and Blaze then only show their
+   * tagline: no link, no "Explore all", no course list (the gate would refuse it).
+   */
+  readonly locked = input(false);
   protected readonly taglines = PATH_TAGLINES;
   protected readonly aiLabel = AI_LABEL;
   protected readonly aiSparkles = AI_SPARKLES_PATH;
@@ -79,6 +85,7 @@ export class HeaderNavigation implements OnDestroy {
     this.close();
     this.opened.emit();
     this.activePath.set(path);
+    if (this.locked()) return;
     this.loading.set(true);
     this.request = this.data.courses(path).subscribe({
       next: (value) => {
@@ -90,6 +97,12 @@ export class HeaderNavigation implements OnDestroy {
         this.loading.set(false);
       },
     });
+  }
+  /** Locked paths: a click or tap opens or closes the tagline; it never navigates. */
+  protected togglePath(path: string): void {
+    this.pointerType = '';
+    if (this.activePath() === path) this.close();
+    else this.openPath(path);
   }
   protected rememberPointer(event: PointerEvent): void {
     this.pointerType = event.pointerType;

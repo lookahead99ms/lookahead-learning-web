@@ -4,6 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { StudyPlanAccount, isProviderUsername } from '../study-plan/study-plan-account';
+import { DevSession } from '../../core/dev-session-notice/dev-session';
 import { registrationCountries, registrationCountryCode } from './countries';
 import { AccountSettings } from './account-settings';
 import { ACCOUNT_SETTINGS_CLIENT } from './account-settings-client';
@@ -65,6 +66,7 @@ export class AccountPage {
   protected readonly signup = computed(
     () => this.routeData()['accountMode'] === 'signup' || this.query().get('mode') === 'signup',
   );
+  protected readonly devSession = inject(DevSession);
   protected readonly authenticated = computed(
     () => !!this.store.account() && !this.store.sessionExpired(),
   );

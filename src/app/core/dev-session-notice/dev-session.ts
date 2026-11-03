@@ -1,4 +1,14 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, computed, signal } from '@angular/core';
+import { environment } from '../../../environments/environment';
+
+/**
+ * DLV-969 (owner, 2026-11-03): the pages a DEV visitor can open before the owner admits them. They match the Gateway's
+ * DevAdmission.OPEN_PAGES: our sign-in and sign-up pages and /welcome, where a waiting account lands.
+ */
+export function onGatePage(url: string): boolean {
+  const path = url.split(/[?#]/, 1)[0];
+  return path === '/welcome' || path === '/sign-in' || path.startsWith('/sign-in/') || path === '/sign-up' || path.startsWith('/sign-up/');
+}
 
 export interface DevSessionStatus { dev: true; deadline: string; warning: boolean; maintenance: boolean }
 export function parseDevStatus(value: unknown): DevSessionStatus | null {
@@ -22,6 +32,13 @@ export class DevSession {
    * when this browser is not admitted yet (a person waiting for approval). Ordinary delivery answers 404 and stays false.
    */
   readonly gated = signal(false);
+  /** True once the first `/dev/session` answer arrived; ordinary delivery has no DEV gate and knows that at once. */
+  readonly known = signal(!environment.protectedContent);
+  /**
+   * True while this browser is outside the DEV gate: until the first answer, and afterwards while the gate answers but
+   * this browser is not admitted. Pages before admission then offer nothing that leads into the platform.
+   */
+  readonly outsideGate = computed(() => !this.known() || (this.gated() && !this.status()));
   readonly leaving = signal(false);
   readonly error = signal('');
   async leave(): Promise<void> {
