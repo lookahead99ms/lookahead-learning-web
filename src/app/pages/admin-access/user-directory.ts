@@ -233,7 +233,8 @@ export function directoryRows(
     rows.push({
       key: assignment.id,
       accountId: assignment.accountId,
-      name: isSelf ? self!.username : (assignment.label ?? assignment.pendingEmail ?? accountName(assignment.accountId!, new Map())),
+      // Your own row names you as a person, never by Cognito's internal google_… id (DLV-969, user 2026-11-03).
+      name: isSelf ? personLines(self!).name : (assignment.label ?? assignment.pendingEmail ?? accountName(assignment.accountId!, new Map())),
       detail: pending ? 'Waiting for a verified sign-in' : null,
       roles: roleNames(assignment.roles),
       access: plainAccess([], assignment.topicGrants, titles, full),
@@ -251,11 +252,12 @@ export function directoryRows(
 
   if (self && !seen.has(self.accountId)) {
     const owner = self.role === 'owner';
+    const lines = personLines(self);
     rows.push({
       key: self.accountId,
       accountId: self.accountId,
-      name: self.username,
-      detail: self.displayName && self.displayName !== self.username ? self.displayName : null,
+      name: lines.name,
+      detail: lines.detail,
       roles: roleNames([self.role ?? 'user']),
       access: plainAccess([], self.topicGrants ?? [], titles, owner || !!self.fullCurriculum),
       isTest: false,

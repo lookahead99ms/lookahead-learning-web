@@ -54,7 +54,7 @@ describe('People directory helpers (DLV-961)', () => {
       titles,
     );
     expect(rows.map((row) => [row.name, row.roles.join(', '), row.access.join(' + ')])).toEqual([
-      ['author', 'Author (owner)', 'Full curriculum'],
+      ['The Author', 'Author (owner)', 'Full curriculum'],
       ['coauthor01', 'Co-author', 'Free'],
       ['admin01', 'Admin', 'Full curriculum'],
       ['Account real-lea', 'Learner', 'Java Foundations (Learn)'],
@@ -63,7 +63,7 @@ describe('People directory helpers (DLV-961)', () => {
       ['new@example.test', 'Reviewer', 'Free'],
     ]);
     expect(rows[0].isSelf).toBe(true);
-    expect(rows[0].detail).toBe('The Author');
+    expect(rows[0].detail).toBe('author');
     expect(rows.find((row) => row.name === 'new@example.test')?.pending).toBe(true);
     expect(rows.find((row) => row.name === 'learner12')?.detail).toBe('Test account');
   });
@@ -91,8 +91,21 @@ describe('People directory helpers (DLV-961)', () => {
       { id: 'a0', accountId: 'co', pendingEmail: null, label: 'Co Author', pending: false, roles: ['co-author'], topicGrants: [], fullCurriculum: false },
       { id: 'a1', accountId: null, pendingEmail: null, label: 'Co-author 2', pending: false, roles: ['co-author'], topicGrants: [], fullCurriculum: false },
     ], [], titles);
-    expect(own.map(row => [row.name, row.isSelf])).toEqual(expect.arrayContaining([['co@example.invalid', true], ['Co-author 2', false]]));
+    expect(own.map(row => [row.name, row.isSelf])).toEqual(expect.arrayContaining([['Co Author', true], ['Co-author 2', false]]));
     expect(own).toHaveLength(2);
+  });
+
+  it('names you as a person on your own row, never by Cognito\'s google_ id (DLV-969, user 2026-11-03)', () => {
+    const google = { accountId: 'me', username: 'google_117602686039051948589', role: 'co-author' };
+    const assigned = [{ id: 'a0', accountId: 'me', pendingEmail: null, label: 'Ravi Kumar', pending: false, roles: ['co-author'], topicGrants: [], fullCurriculum: false }];
+    const named = directoryRows({ ...google, displayName: 'Ravi Kumar' }, assigned, [], titles);
+    expect(named.map(row => [row.name, row.isSelf])).toEqual([['Ravi Kumar', true]]);
+    const alone = directoryRows({ ...google, displayName: 'Ravi Kumar' }, [], [], titles);
+    expect([alone[0].name, alone[0].detail]).toEqual(['Ravi Kumar', null]);
+    // Without a name yet: a plain label, still never the internal id.
+    const unnamed = directoryRows(google, [], [], titles);
+    expect(unnamed[0].name).toBe('Google account');
+    expect(JSON.stringify([named, alone, unnamed])).not.toContain('google_');
   });
 
   it('carries the owner\'s Disable, Enable and Delete options from the directory (DLV-969)', () => {

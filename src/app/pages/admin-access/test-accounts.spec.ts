@@ -33,8 +33,8 @@ describe('Test account maintenance',()=>{
    {id:'r2',planId:'grow',courses:[],startsAt:'2027-01-01T00:00:00Z',endsAt:'2028-01-01T00:00:00Z',status:'scheduled',pricePaidCents:9999,discount:null}];
   request.mockImplementation(async(path:string)=>path.endsWith('/access-records')?records:[{...row,username:'learner12',access:{label:'Regular · Advance',labels:['Regular · Advance'],grantedCourseIds:[]}}]);
   await component.load();
-  expect(component.people().map(person=>[person.name,person.roles[0],person.access[0]])).toEqual([['author','Author (owner)','Full curriculum'],['learner12','Learner','Advance']]);
-  component.query.set('full curr');expect(component.visible().map(person=>person.name)).toEqual(['author']);
+  expect(component.people().map(person=>[person.name,person.roles[0],person.access[0]])).toEqual([['Author','Author (owner)','Full curriculum'],['learner12','Learner','Advance']]);
+  component.query.set('full curr');expect(component.visible().map(person=>person.name)).toEqual(['Author']);
   component.role.set('Admin');expect(component.visible()).toEqual([]);component.role.set('');component.query.set('');
   const learner=component.people()[1];
   expect(component.changedText(learner)).toBe('Default setup, 16 Oct 2026');expect(component.changedText(component.people()[0])).toBe('—');
