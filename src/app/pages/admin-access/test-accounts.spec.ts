@@ -314,6 +314,14 @@ describe('Test account maintenance',()=>{
    expect(fixture.componentInstance.notice()).toBe('The roster stopped part way. Create again to continue.');
   });
 
+  it('says how many learners still wait for their study plan, in plain words (DLV-969 S37)',async()=>{
+   const note=async(withoutPlan?:number)=>(await shown(page({limit:2147483647,used:0,remaining:2147483647,roster:{total:35,ready:35,deleted:0,withoutPlan},scenarios}))).querySelector('.roster-plans')?.textContent?.replace(/\s+/g,' ').trim()??null;
+   expect(await note(25)).toBe('25 learners don’t have their study plan yet: DEV has no study plans published. After the content release, Reset each one to add its plan.');
+   expect(await note(1)).toBe('1 learner doesn’t have their study plan yet: DEV has no study plans published. After the content release, Reset each one to add its plan.');
+   expect(await note(0)).toBeNull();
+   expect(await note(undefined)).toBeNull();
+  });
+
   it('nobody but the owner sees the roster, and nobody sees it outside DEV',async()=>{
    account.set({accountId:'admin-1',permissions:{feedbackRole:'admin',manageAccess:true}});
    expect((await shown(page({limit:10,used:0,remaining:10,roster:null,scenarios}))).querySelector('.roster-card')).toBeNull();

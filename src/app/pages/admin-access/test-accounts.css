@@ -397,6 +397,9 @@ tr.self > * {
   color: var(--text-subtle);
   font-size: 0.9rem;
 }
+.roster-card .roster-plans {
+  margin-top: 6px;
+}
 .roster-card code {
   overflow-wrap: anywhere;
 }
