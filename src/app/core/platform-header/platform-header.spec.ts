@@ -210,8 +210,11 @@ describe('PlatformHeader account disclosure', () => {
     expect(fixture.nativeElement.querySelector('[role="menuitem"]')).toBeNull();
   });
 
-  /** DLV-969 (owner, 2026-11-04): staff switch to a test account from this menu, and come back from it. */
-  it('offers Switch to a test account to staff inside DEV, and Back to my account while one is in use', () => {
+  /**
+   * DLV-969 (owner, 2026-11-04): anyone signed in to DEV switches to a test account from this menu, and comes back
+   * from it. Owner decision 2026-11-04: the owner, co-authors and admins switch; learners, reviewers and testers never do.
+   */
+  it('offers Switch to a test account to the owner, co-authors and admins inside DEV, never to learners, reviewers or testers', () => {
     const sessions = TestBed.inject(TestSessions);
     const refresh = vi.spyOn(sessions, 'refresh').mockResolvedValue();
     const open = vi.spyOn(sessions, 'open').mockResolvedValue();
@@ -227,17 +230,27 @@ describe('PlatformHeader account disclosure', () => {
       return root.querySelector('#account-menu') as HTMLElement;
     };
     fixture.detectChanges();
-    // Outside DEV, or a learner inside DEV: nothing to switch to, and nobody asks the Gateway.
+    // Outside DEV: nothing to switch to, and nobody asks the Gateway.
     expect(menu().textContent).not.toContain('test account');
+    expect(root.querySelector('.test-switch')).toBeNull();
     expect(refresh).not.toHaveBeenCalled();
+    // A learner inside DEV never gets it; neither does a reviewer or a tester.
     dev.status.set({ dev: true, deadline: '', warning: false, maintenance: false });
     fixture.detectChanges();
-    expect(root.querySelector('#account-menu')?.textContent).not.toContain('Switch to a test account');
+    expect(root.querySelector('#account-menu .test-switch')).toBeNull();
     expect(refresh).toHaveBeenCalledTimes(1);
+    store.account.set({ accountId: 'reviewer', username: 'r@example.test', displayName: 'R', topicGrants: [], permissions: { feedbackRole: 'reviewer', previewDocuments: true } } as never);
+    fixture.detectChanges();
+    expect(root.querySelector('#account-menu .test-switch')).toBeNull();
+    store.account.set({ accountId: 'tester', username: 't@example.test', displayName: 'T', topicGrants: [], permissions: { feedbackRole: 'tester', fullCurriculum: true } } as never);
+    fixture.detectChanges();
+    expect(root.querySelector('#account-menu .test-switch')).toBeNull();
+    refresh.mockClear();
+    refresh.mockResolvedValue();
     // The owner inside DEV.
     store.account.set({ accountId: 'owner', username: 'author@example.test', displayName: 'Author', topicGrants: [], authorPreview: true });
     fixture.detectChanges();
-    expect(refresh).toHaveBeenCalledTimes(2);
+    expect(refresh).toHaveBeenCalledTimes(1);
     const item = root.querySelector('.test-switch') as HTMLButtonElement;
     expect(item.textContent).toContain('Switch to a test account');
     expect(root.querySelector('.account-sign-out')?.textContent).toContain('Sign out');
@@ -266,6 +279,30 @@ describe('PlatformHeader account disclosure', () => {
     fixture.detectChanges();
     expect(using.querySelector('.user-display-email')?.textContent?.trim()).toBe('Test account');
     expect(dev.status()).not.toBeNull();
+  });
+
+  it('hides Switch to a test account when signed out in DEV and once DEV status goes away (DLV-969)', () => {
+    vi.spyOn(TestBed.inject(TestSessions), 'refresh').mockResolvedValue();
+    const store = TestBed.inject(StudyPlanAccount);
+    const dev = TestBed.inject(DevSession);
+    dev.status.set({ dev: true, deadline: '', warning: false, maintenance: false });
+    store.account.set(null);
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    // Signed out: no account menu to hold it, and no switcher either.
+    expect(root.querySelector('.test-switch')).toBeNull();
+    expect(root.querySelector('app-test-account-switcher')).toBeNull();
+    expect(root.textContent).not.toContain('Switch to a test account');
+    // An admin signed in to DEV has it (a learner never does); when DEV status goes away it goes too.
+    store.account.set({ accountId: 'admin', username: 'admin@example.test', displayName: 'Admin One', topicGrants: [], permissions: { feedbackRole: 'admin' } } as never);
+    fixture.detectChanges();
+    (root.querySelector('.avatar-trigger-btn') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(root.querySelector('#account-menu .test-switch')).not.toBeNull();
+    dev.status.set(null);
+    fixture.detectChanges();
+    expect(root.querySelector('.test-switch')).toBeNull();
   });
 
   it('routes both Study Plan entry points to the saved-plan chooser', () => {

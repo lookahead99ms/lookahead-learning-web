@@ -2,6 +2,10 @@ import { DOCUMENT } from '@angular/common';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { MembershipApi } from '../../content/membership-api';
 import { StudyPlanAccount } from '../../pages/study-plan/study-plan-account';
+import type { SwitcherUpgrade } from '../../content/upgrade-markers';
+import { sameSitePath } from './same-site-path';
+
+export { sameSitePath };
 
 /** One test account the gate holder may use (Domain DevTestSessions.Usable). */
 export interface UsableTestAccount {
@@ -10,6 +14,8 @@ export interface UsableTestAccount {
   displayName: string;
   roles: string[];
   scenario: string | null;
+  /** DLV-969 (owner, 2026-11-04): who upgraded this account through an approved request; null or absent when nobody did. */
+  upgradedBy?: SwitcherUpgrade | null;
 }
 
 /**
@@ -80,7 +86,12 @@ export class TestSessions {
     return this.accounts()?.find((account) => account.accountId === accountId) ?? null;
   }
 
-  async use(account: UsableTestAccount): Promise<void> {
+  /**
+   * Opens the platform as this test account. `next` (DLV-969, owner 2026-11-04), when it is a same-site path, is where
+   * to land instead of the Gateway's answer: Switch to Learner06 after a review goes back to the page the purchase
+   * started from.
+   */
+  async use(account: UsableTestAccount, next?: string | null): Promise<void> {
     if (this.starting() || this.returning()) return;
     this.starting.set(account.accountId);
     this.error.set('');
@@ -88,21 +99,24 @@ export class TestSessions {
     if (!this.active()) this.remember(this.signedIn.account()?.displayName ?? null);
     try {
       const started = await this.api.request<{ next?: string }>('/auth/test-session', { accountId: account.accountId });
-      this.go(started?.next);
+      this.go(sameSitePath(next) ?? started?.next);
     } catch (failure) {
       this.error.set(message(failure, 'The test account could not be opened. Try again.'));
       this.starting.set(null);
     }
   }
 
-  /** Back to the staff sign-in this test session started from; the Gateway sends the sign-in page if it expired. */
-  async back(): Promise<void> {
+  /**
+   * Back to the staff sign-in this test session started from; the Gateway sends the sign-in page if it expired. `next`,
+   * when it is a same-site path, overrides the Gateway's answer (Review request lands on People and access).
+   */
+  async back(next?: string | null): Promise<void> {
     if (this.returning() || this.starting()) return;
     this.returning.set(true);
     this.error.set('');
     try {
       const ended = await this.api.request<{ next?: string }>('/auth/test-session/end', {});
-      this.go(ended?.next);
+      this.go(sameSitePath(next) ?? ended?.next);
     } catch (failure) {
       this.error.set(message(failure, 'Could not go back to your account. Try again.'));
       this.returning.set(false);
@@ -130,10 +144,10 @@ export class TestSessions {
 
   private go(next: string | undefined): void {
     // Only a same-site path: never an address the answer could point elsewhere.
-    const target = typeof next === 'string' && /^\/(?!\/)/.test(next) ? next : '/';
-    this.document.defaultView?.location.assign(target);
+    this.document.defaultView?.location.assign(sameSitePath(next) ?? '/');
   }
 }
+
 
 function message(failure: unknown, fallback: string): string {
   return failure instanceof Error && failure.message ? failure.message : fallback;

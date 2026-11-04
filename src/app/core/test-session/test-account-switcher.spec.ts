@@ -96,6 +96,26 @@ describe('TestAccountSwitcher', () => {
     expect(root.querySelector('.switcher-foot')).toBeNull();
   });
 
+  it('shows who upgraded an account, so others are careful, and keeps it selectable (DLV-969)', () => {
+    sessions.accounts.set([
+      { ...learner(5, 'Learn · active'), upgradedBy: { self: false, label: 'Admin 2', plan: 'Grow', approvedAt: '2026-11-04T10:00:00Z' } },
+      { ...learner(6, 'Learn · active'), upgradedBy: { self: true, label: 'Owner', plan: 'Advance', approvedAt: '2026-11-04T10:00:00Z' } },
+      { ...learner(8, 'Grow · active'), upgradedBy: { self: false, label: 'Admin 2', name: 'Priya Rao', plan: 'Grow', approvedAt: '' } },
+      { ...learner(9, 'Learn · active'), upgradedBy: null },
+    ]);
+    const { root } = render();
+    const rows = [...root.querySelectorAll<HTMLButtonElement>('.switcher-row')];
+    expect(rows.map((row) => row.querySelector('.row-upgrade')?.textContent?.trim() ?? null)).toEqual([
+      'Upgraded by Admin 2 · Grow',
+      'Upgraded by you · Advance',
+      'Upgraded by Priya Rao (Admin 2) · Grow',
+      null,
+    ]);
+    expect(rows[0].disabled).toBe(false);
+    rows[0].click();
+    expect(sessions.use).toHaveBeenCalledWith(expect.objectContaining({ accountId: 'id-learner5' }));
+  });
+
   it('filters by plan and by words across every tab', () => {
     const { fixture, root, names, button } = render();
     button('.switcher-plans button', 'Learn').click();
@@ -144,6 +164,52 @@ describe('TestAccountSwitcher', () => {
     expect(tabs()[2].getAttribute('aria-selected')).toBe('true');
   });
 
+  it('shows a learner only Learners: no tab for a kind of account their role cannot use (owner, 2026-11-04)', () => {
+    sessions.accounts.set(list.filter((item) => !item.roles.length));
+    const { fixture, root, names } = render();
+    const tabs = () => [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    expect(tabs().map((tab) => tab.textContent?.replace(/\s+/g, ' ').trim())).toEqual(['Learners 5']);
+    expect(names()).toHaveLength(5);
+    // Plan chips stay on Learners.
+    expect(root.querySelector('.switcher-plans')).not.toBeNull();
+    // The arrow keys stay on the only tab.
+    tabs()[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    fixture.detectChanges();
+    expect(tabs()).toHaveLength(1);
+    expect(tabs()[0].getAttribute('aria-selected')).toBe('true');
+    expect(root.querySelector('#switcher-list')?.getAttribute('aria-labelledby')).toBe('switcher-tab-learners');
+  });
+
+  it('shows an admin Learners and Admins, and the arrow keys move across those two only', () => {
+    sessions.accounts.set(list.filter((item) => !item.roles.includes('co-author')));
+    const { fixture, root, names } = render();
+    const tabs = () => [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    expect(tabs().map((tab) => tab.textContent?.replace(/\s+/g, ' ').trim())).toEqual(['Learners 5', 'Admins 1']);
+    tabs()[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    fixture.detectChanges();
+    expect(tabs()[1].getAttribute('aria-selected')).toBe('true');
+    expect(tabs()[1].textContent).toContain('Admins');
+    expect(names()).toEqual(['Admin01']);
+    expect(root.querySelector('.switcher-plans')).toBeNull();
+    // Right again wraps to Learners, not to a hidden Co-authors tab; Left from Learners wraps to Admins.
+    tabs()[1].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    fixture.detectChanges();
+    expect(tabs()[0].getAttribute('aria-selected')).toBe('true');
+    tabs()[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+    fixture.detectChanges();
+    expect(tabs()[1].getAttribute('aria-selected')).toBe('true');
+    expect(root.querySelector('#switcher-tab-co-authors')).toBeNull();
+  });
+
+  it('opens on the first visible tab when Learners has nobody this person may use', () => {
+    sessions.accounts.set(list.filter((item) => item.roles.length));
+    const { root, names } = render();
+    expect([...root.querySelectorAll('[role="tab"]')].map((tab) => tab.textContent?.replace(/\s+/g, ' ').trim()))
+      .toEqual(['Co-authors 1', 'Admins 1']);
+    expect(root.querySelector('[role="tab"][aria-selected="true"]')?.textContent).toContain('Co-authors');
+    expect(names()).toEqual(['Coauthor01']);
+  });
+
   it('uses the chosen account, and marks the one in use without offering it', () => {
     const { fixture, root } = render();
     (root.querySelectorAll('.switcher-row')[1] as HTMLButtonElement).click();
@@ -181,9 +247,14 @@ describe('TestAccountSwitcher', () => {
     sessions.accounts.set(null);
     const { fixture, root } = render();
     expect(root.querySelector('.switcher-empty')?.textContent).toBe('Loading test accounts…');
+    expect(root.querySelector('[role="tablist"]')).toBeNull();
     sessions.accounts.set([]);
     fixture.detectChanges();
     expect(root.querySelector('.switcher-empty')?.textContent).toBe('No test accounts here for your role.');
+    // Every tab empty: no tab list, and the list is not a tab panel of a missing tab.
+    expect(root.querySelector('[role="tab"]')).toBeNull();
+    expect(root.querySelector('#switcher-list')?.hasAttribute('role')).toBe(false);
+    expect(root.querySelector('#switcher-list')?.hasAttribute('aria-labelledby')).toBe(false);
     (root.querySelector('.switcher-close') as HTMLButtonElement).click();
     fixture.detectChanges();
     expect(root.querySelector('dialog')?.hasAttribute('open')).toBe(false);

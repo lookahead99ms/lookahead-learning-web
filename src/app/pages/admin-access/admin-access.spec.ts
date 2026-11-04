@@ -410,12 +410,12 @@ describe('Saved assignments for a co-author (DLV-969)', () => {
 });
 
 describe('People and access links', () => {
-  const setup = (tab: string | null, feedbackRole = 'owner') => {
+  const setup = (tab: string | null, feedbackRole = 'owner', extra: Record<string, string> = {}) => {
     const replaceState = vi.fn();
     TestBed.configureTestingModule({ providers: [
       { provide: StudyPlanAccount, useValue: { account: signal({ permissions: permissions({ manageAccess: feedbackRole === 'owner', triageFeedback: feedbackRole === 'admin', feedbackRole }) }) } },
       { provide: ACCOUNT_FETCH, useValue: async () => Response.json({ data: [] }) },
-      { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: convertToParamMap(tab ? { tab } : {}) } } },
+      { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: convertToParamMap({ ...(tab ? { tab } : {}), ...extra }) } } },
       { provide: Location, useValue: { replaceState } },
     ] });
     return { page: TestBed.runInInjectionContext(() => new AdminAccessPage()), replaceState };
@@ -427,6 +427,34 @@ describe('People and access links', () => {
     expect(replaceState).toHaveBeenLastCalledWith('/admin/access', 'tab=saved');
     page.selectTab('assign');
     expect(replaceState).toHaveBeenLastCalledWith('/admin/access', '');
+  });
+  it('opens Test accounts on the request a Review request names, once, and takes it out of the address (DLV-969)', () => {
+    for (const role of ['owner', 'admin']) {
+      TestBed.resetTestingModule();
+      const { page, replaceState } = setup('test', role, { request: 'pur-9', return: '/grow/java/streams?unit=2', account: 'acc-06' });
+      expect(page.tab()).toBe('test');
+      expect(page.requestReview()).toEqual({ purchaseId: 'pur-9', returnTo: '/grow/java/streams?unit=2', accountId: 'acc-06' });
+      // The address keeps only the tab, so a reload does not open the review again.
+      expect(replaceState).toHaveBeenCalledExactlyOnceWith('/admin/access', 'tab=test');
+    }
+    // A review opens Test accounts even without the tab, and an unsafe return path is dropped.
+    TestBed.resetTestingModule();
+    const { page, replaceState } = setup(null, 'owner', { request: 'pur-9', return: '//elsewhere.example' });
+    expect(page.tab()).toBe('test');
+    expect(page.requestReview()).toEqual({ purchaseId: 'pur-9', returnTo: null, accountId: null });
+    expect(replaceState).toHaveBeenCalledExactlyOnceWith('/admin/access', 'tab=test');
+  });
+  it('leaves the address alone without review values, and clears stray ones without opening anything', () => {
+    const { page, replaceState } = setup('saved');
+    expect(page.requestReview()).toBeNull();
+    expect(replaceState).not.toHaveBeenCalled();
+    TestBed.resetTestingModule();
+    const stray = setup('saved', 'owner', { return: '/learn' });
+    expect(stray.page.requestReview()).toBeNull();
+    expect(stray.page.tab()).toBe('saved');
+    expect(stray.replaceState).toHaveBeenCalledExactlyOnceWith('/admin/access', 'tab=saved');
+    TestBed.resetTestingModule();
+    expect(setup(null, 'owner', { account: 'acc-06' }).replaceState).toHaveBeenCalledExactlyOnceWith('/admin/access', '');
   });
   it('ignores unknown tabs and tabs the person cannot see', () => {
     expect(setup('nonsense').page.tab()).toBe('assign');

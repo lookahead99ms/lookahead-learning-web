@@ -155,6 +155,20 @@ describe('EssenceSteps', () => {
     expect(root.getAttribute('data-state')).toBe('hidden');
   });
 
+  it('keeps the line and the arrow in the frame\'s own units when the Essence is zoomed to fit the screen', () => {
+    // DLV-969 (owner, 2026-11-04): /welcome and locked pages scale the Essence with CSS zoom; on-screen boxes shrink with
+    // it but the drawing does not, so measurements are divided by the scale (here 0.5: 400px on screen, 800px own width).
+    const { fixture, resized } = renderWithObservers();
+    const frame = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>('.essence-stairs-frame')!;
+    Object.defineProperty(frame, 'offsetWidth', { configurable: true, value: 800 });
+    resized();
+    const traveller = (fixture.componentInstance as unknown as { traveller(): StairTraveller }).traveller();
+    expect(traveller.route).toBe('M0 488 H200 V360 H400 V232 H600 V104 H800');
+    // Same proportions as unzoomed (the one-pixel rest before each corner is a smaller share of a longer line).
+    [16.7, 44.4, 72.1, 100].forEach((stop, index) => expect(traveller.stops[index]).toBeCloseTo(stop, 0));
+    expect(traveller.stops.at(-1)).toBe(100);
+  });
+
   it('sends one arrow along the whole line, stopping where each step ends', () => {
     const { fixture } = renderWithObservers();
     const traveller = (fixture.componentInstance as unknown as { traveller(): StairTraveller }).traveller();

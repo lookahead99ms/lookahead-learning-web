@@ -159,7 +159,7 @@ export const PRICING_FAQ: readonly PricingQuestion[] = [
   {
     question: 'Can I buy a plan today?',
     answer:
-      'Local development supports simulated purchases after sign-in. No money is charged. Real payments are not enabled.',
+      'Local development supports simulated purchases after sign-in. In DEV, only test accounts can buy, and the owner or an admin approves each request. No money is charged. Real payments are not enabled.',
   },
 ];
 

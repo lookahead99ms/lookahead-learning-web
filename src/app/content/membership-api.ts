@@ -2,7 +2,15 @@ import { Injectable, inject, signal, effect } from '@angular/core';
 import { ACCOUNT_FETCH, StudyPlanAccount } from '../pages/study-plan/study-plan-account';
 import { PLANS, PlanDefinition, PlanId } from './membership-plans';
 import type { AccessRecord } from '../pages/account/account-membership';
+import { awaitingOwner, requestAlreadyWaiting } from './purchase-requests';
 
+/**
+ * A refused membership or admin request; `status` is the HTTP status, so a caller can tell 404 (an older release) apart,
+ * and `code` the server's error code when it sends one (PURCHASE_REQUEST_PENDING).
+ */
+export class MembershipRequestError extends Error {
+  constructor(message:string,readonly status:number,readonly code:string|null=null){super(message);this.name='MembershipRequestError';}
+}
 export interface Purchase extends AccessRecord { providerStatus: string; status: AccessRecord['status']; }
 @Injectable({providedIn:'root'})
 export class MembershipApi {
@@ -13,9 +21,14 @@ export class MembershipApi {
   readonly error=signal('');
   readonly records=signal<AccessRecord[]>([]);
   readonly accessLabel=signal<string | null>(null);
+  /** DLV-969 (owner, 2026-11-04): this account has a purchase request waiting for the owner (DEV test accounts). */
+  readonly requestWaiting=signal(false);
+  /** The access records when the request was seen waiting; a changed list means the owner approved it. */
+  private waitingRecords:string|null=null;
+  private markWaiting(){this.requestWaiting.set(true);this.waitingRecords=recordsKey(this.records());}
   constructor(){
     void this.refresh();
-    effect(()=>{const account=this.accounts.account();this.records.set([]);this.accessLabel.set(null);if(account){void this.loadRecords(account.accountId);void this.loadAccessLabel(account.accountId);}});
+    effect(()=>{const account=this.accounts.account();this.records.set([]);this.accessLabel.set(null);this.requestWaiting.set(false);this.waitingRecords=null;if(account){void this.loadRecords(account.accountId);void this.loadAccessLabel(account.accountId);}});
   }
   async request<T>(path:string,body?:unknown,key?:string):Promise<T>{
     const headers:Record<string,string>={};
@@ -27,8 +40,9 @@ export class MembershipApi {
       headers[token.headerName]=token.token;headers['Content-Type']='application/json';if(key)headers['Idempotency-Key']=key;
     }
     const response=await this.transport('/bff/api/v1'+path,{method:body===undefined?'GET':'POST',headers,credentials:'same-origin',cache:'no-store',body:body===undefined?undefined:JSON.stringify(body)});
-    const result=await response.json();
-    if(!response.ok)throw new Error(result.message??result.error?.message??'Membership service unavailable. Try again.');
+    // A refusal may have no JSON body (a 404 from an older release); it still throws with its HTTP status.
+    const result=response.ok?await response.json():await response.json().catch(()=>({}));
+    if(!response.ok)throw new MembershipRequestError(result.message??result.error?.message??'Membership service unavailable. Try again.',response.status,errorCode(result));
     return result.data as T;
   }
   async remove<T>(path:string):Promise<T>{
@@ -42,7 +56,26 @@ export class MembershipApi {
     return result.data as T;
   }
   async refresh(){try{const plans=await this.request<PlanDefinition[]>('/membership/plans');if(!Array.isArray(plans)||!plans.length)throw new Error('Catalog unavailable');this.plans.set(plans);this.available.set(true);this.error.set('');}catch{this.available.set(false);this.error.set('Membership service unavailable. Displayed prices are reference only; purchases are disabled.');}}
-  async loadRecords(owner:string){try{const records=await this.request<AccessRecord[]>('/account/access-records');if(this.accounts.account()?.accountId===owner)this.records.set(records);}catch{if(this.accounts.account()?.accountId===owner)this.error.set('Purchase records could not be loaded.');}}
+  async loadRecords(owner:string){try{const records=await this.request<AccessRecord[]>('/account/access-records');if(this.accounts.account()?.accountId===owner){this.records.set(records);if(this.requestWaiting()&&this.waitingRecords!==null&&recordsKey(records)!==this.waitingRecords){this.requestWaiting.set(false);this.waitingRecords=null;}}}catch{if(this.accounts.account()?.accountId===owner)this.error.set('Purchase records could not be loaded.');}}
   async loadAccessLabel(owner:string){try{const summary=await this.request<{label:string}>('/account/access-summary');if(this.accounts.account()?.accountId===owner && typeof summary?.label==='string')this.accessLabel.set(summary.label);}catch{if(this.accounts.account()?.accountId===owner)this.accessLabel.set(null);}}
-  async buy(planId:PlanId,key:string,replacesId?:string,expectedPriceCents?:number){const p=await this.request<{status:string;providerStatus:string}>('/account/purchases',{planId,replacesId:replacesId??null,chosenCourses:[],expectedPriceCents},key);const owner=this.accounts.account()?.accountId;if(owner){await this.loadRecords(owner);await this.loadAccessLabel(owner);if(['succeeded','scheduled'].includes(p.status)){const account=await this.request<NonNullable<ReturnType<typeof this.accounts.account>>>('/auth/me');if(this.accounts.account()?.accountId===owner&&account.accountId===owner)this.accounts.account.set(account);}}return p;}
+  async buy(planId:PlanId,key:string,replacesId?:string,expectedPriceCents?:number){
+    let p:{status:string;providerStatus:string};
+    try{p=await this.request<{status:string;providerStatus:string}>('/account/purchases',{planId,replacesId:replacesId??null,chosenCourses:[],expectedPriceCents},key);}
+    catch(failure){if(requestAlreadyWaiting(failure))this.markWaiting();throw failure;}
+    const owner=this.accounts.account()?.accountId;if(owner){await this.loadRecords(owner);await this.loadAccessLabel(owner);if(['succeeded','scheduled'].includes(p.status)){const account=await this.request<NonNullable<ReturnType<typeof this.accounts.account>>>('/auth/me');if(this.accounts.account()?.accountId===owner&&account.accountId===owner)this.accounts.account.set(account);}}
+    // DEV test accounts: the purchase is a request until the owner or an admin approves it; marked after the reload so
+    // the records it remembers are the ones from before the decision.
+    if(awaitingOwner(p))this.markWaiting();
+    return p;}
+}
+
+/** The server's error code, from `{ code }` or `{ error: { code } }`; null when it sends none. */
+function errorCode(result:unknown):string|null{
+  const body=result as {code?:unknown;error?:{code?:unknown}}|null;
+  const code=body?.code??body?.error?.code;
+  return typeof code==='string'?code:null;
+}
+
+function recordsKey(records:readonly AccessRecord[]):string{
+  return records.map(record=>record.id+':'+record.status+':'+(record.supersededAt??'')).join('|');
 }

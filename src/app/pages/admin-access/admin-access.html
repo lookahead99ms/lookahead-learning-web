@@ -24,7 +24,7 @@
           <li class="how-card">
             <span class="how-icon" aria-hidden="true">🧑‍💼</span>
             <h3>Staff roles</h3>
-            <p>Co-authors read the author tools. Admins manage test accounts. Both get the entire curriculum.</p>
+            <p>Co-authors read the author tools. Admins manage test admins and test learners. Both get the entire curriculum.</p>
           </li>
           <li class="how-card">
             <span class="how-icon" aria-hidden="true">📚</span>
@@ -135,6 +135,8 @@
         [view]="tab() === 'test' ? 'test' : 'people'"
         [assignments]="assignments()"
         [focusAccount]="tab() === 'people' ? focusAccount() : null"
+        [review]="tab() === 'test' ? requestReview() : null"
+        (reviewOpened)="requestReview.set(null)"
         (giveAccess)="giveAccessTo($event)"
       />
     } @else if (tab() === 'saved') {

@@ -227,6 +227,13 @@
   color: var(--text-subtle);
   font-size: 0.85rem;
 }
+.row-upgrade {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-body);
+  font-size: 0.8rem;
+  font-weight: 650;
+}
 .row-plan {
   padding: 1px 8px;
   border-radius: 6px;

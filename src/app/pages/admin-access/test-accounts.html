@@ -44,7 +44,7 @@
         <h3>Test roster</h3>
         <p>
           The 35 accounts Local has: 27 learners, each in a different scenario, 2 co-authors and 6 admins, as
-          <code>learner01&#64;lookahead.dev</code> and so on. {{ progress.ready }} of {{ progress.total }} ready@if (progress.deleted) {, {{ progress.deleted }} deleted (not created again)}.
+          <code>learner01&#64;lookahead.dev</code> and so on. {{ progress.ready }} of {{ progress.total }} ready@if (restorable()) {, {{ progress.deleted }} deleted — Restore brings them back} @else if (progress.deleted) {, {{ progress.deleted }} deleted (not created again)}.
         </p>
         @if (progress.withoutPlan) {
           <!-- DLV-969 S37: learners created before DEV had study plans; Reset all gives each its plan. -->
@@ -60,6 +60,10 @@
           <button type="button" class="action-button" [disabled]="busy() || rosterBusy()" [attr.aria-busy]="rosterBusy()" (click)="createRoster()">
             {{ rosterBusy() ? 'Creating… ' + progress.ready + ' of ' + progress.total : progress.ready ? 'Create the other ' + progress.remaining : 'Create test roster' }}
           </button>
+        }
+        @if (restorable()) {
+          <!-- DLV-969 (owner, 2026-11-04): the owner brings deleted roster accounts back, after one typed confirmation. -->
+          <button type="button" class="action-link" [disabled]="busy() || rosterBusy() || !!rosterRestore()" (click)="openRosterRestore()">Restore {{ restorable() }}</button>
         }
         @if (rosterRows().length && canReset()) {
           <button type="button" class="action-link" [disabled]="busy() || rosterBusy() || !!rosterReset()" (click)="openRosterReset()">Reset all</button>
@@ -82,22 +86,37 @@
         </div>
       </div>
     }
+    @if (rosterRestore(); as restoring) {
+      <div class="reset-panel roster-restore">
+        <h3>Restore {{ restoring.total === 1 ? '1 deleted roster account' : restoring.total + ' deleted roster accounts' }}</h3>
+        <p>Each comes back with its scenario: learners get their membership, purchases and study plan; staff get their role.</p>
+        <label>Type RESTORE to confirm <input [(ngModel)]="rosterRestoreConfirmation" autocomplete="off" [disabled]="busy()" /></label>
+        <div class="actions">
+          <button type="button" class="action-button" [disabled]="busy() || rosterRestoreConfirmation !== 'RESTORE'" [attr.aria-busy]="busy()" (click)="restoreRoster()">
+            {{ busy() ? 'Restoring…' : 'Restore ' + restoring.total }}
+          </button>
+          <button type="button" class="action-link" [disabled]="busy()" (click)="rosterRestore.set(null)">Cancel</button>
+        </div>
+      </div>
+    }
   }
   @if (testView && creating()) {
     <div class="reset-panel">
       <h3>Create test account</h3>
       @if (dev()) {
-        <p>A unique name on lookahead.dev is generated. Choose the scenario it starts from; you can only choose roles up to your own.</p>
+        <p>A unique name on lookahead.dev is generated. Choose the learner scenario it starts from.</p>
       } @else {
-        <p>A unique Local sign-in name will be generated. Save the password for this test learner. Choose the scenario it starts from.</p>
+        <p>A unique Local sign-in name will be generated. Save the password for this test learner. Choose the learner scenario it starts from.</p>
       }
       <label>Scenario
         <select [(ngModel)]="createScenario">
-          @for (scenario of allowance()?.scenarios ?? []; track scenario.id) {
+          @for (scenario of learnerScenarios(); track scenario.id) {
             <option [value]="scenario.id">{{ scenario.id }} · {{ scenario.label }}</option>
           }
         </select>
       </label>
+      <!-- DLV-969 (owner, 2026-11-04): every role, the owner included, creates learners only. -->
+      <p class="learner-only">New test accounts are learners. Staff test accounts come from the roster.</p>
       @if (!dev()) {
         <label>Initial password <input type="password" [(ngModel)]="createPassword" autocomplete="new-password" minlength="15" /></label>
       }
@@ -106,6 +125,100 @@
         <button type="button" class="action-link" [disabled]="busy()" (click)="creating.set(false)">Cancel</button>
       </div>
     </div>
+  }
+
+  @if (testView && canDecide() && (dev() || purchaseRequests().length || result())) {
+    <!-- DLV-969 (owner, 2026-11-04): DEV test accounts' purchases wait here for the owner or an admin. Co-authors and
+         everyone else never see this; the Domain sends pendingPurchase to the owner and admins only. -->
+    @let requests = purchaseRequests();
+    <section class="purchase-requests" aria-labelledby="purchase-requests-title">
+      <div class="purchase-requests-heading">
+        <h3 id="purchase-requests-title">Purchase requests</h3>
+        <p class="request-count" aria-live="polite">
+          @if (requests.length) {
+            {{ requests.length === 1 ? '1 purchase request waiting' : requests.length + ' purchase requests waiting' }}
+          } @else {
+            No purchase requests waiting
+          }
+        </p>
+      </div>
+      <p class="note">
+        In DEV only test accounts can buy. Each Subscribe, Upgrade or Change waits here; Approve changes the plan exactly
+        like a purchase, Decline leaves it as it is. Nothing is charged.
+      </p>
+      @if (requests.length) {
+        <ul class="request-list">
+          @for (item of requests; track item.request.purchaseId) {
+            <!-- data-plan: DEV blurs prices until the row is hovered or focused, as on Pricing. -->
+            <!-- Review request (DLV-969): the card it opened on is highlighted and focusable, so focus starts there. -->
+            @let reviewed = highlighted() === item.request.purchaseId;
+            <li
+              class="request-item"
+              [class.highlighted]="reviewed"
+              [attr.tabindex]="reviewed ? -1 : null"
+              [attr.aria-current]="reviewed ? 'true' : null"
+              [attr.aria-label]="reviewed ? 'Request to review: ' + item.row.username + ', ' + item.words : null"
+              [attr.data-purchase]="item.request.purchaseId"
+              [attr.data-plan]="item.request.toPlan.code"
+            >
+              <dl class="request-facts">
+                <div><dt>Account</dt><dd class="request-account">{{ item.row.username }}</dd></div>
+                <div><dt>Request</dt><dd class="request-words">{{ item.words }}</dd></div>
+                @if (item.term) {
+                  <div><dt>Term</dt><dd>{{ item.term }}</dd></div>
+                }
+                <div>
+                  <dt>Price</dt>
+                  <dd><span class="request-price price-figure">{{ item.price }}</span>@if (item.difference) {<span class="request-difference price-figure"> ({{ item.difference }})</span>}</dd>
+                </div>
+                <div><dt>Submitted by</dt><dd>{{ item.by }}</dd></div>
+                <div><dt>When</dt><dd>{{ item.requested }}</dd></div>
+              </dl>
+              <div class="request-actions">
+                <button type="button" class="action-button" [disabled]="busy() || !!pending()" [attr.aria-label]="'Approve (mock payment): ' + item.row.username + ', ' + item.words" (click)="decide(item, 'approve')">Approve (mock payment)</button>
+                <button type="button" class="action-link" [disabled]="busy() || !!pending() || declining()?.request?.purchaseId === item.request.purchaseId" [attr.aria-label]="'Decline: ' + item.row.username + ', ' + item.words" (click)="startDecline(item)">Decline</button>
+              </div>
+              @if (declining()?.request?.purchaseId === item.request.purchaseId) {
+                <div class="reset-panel decline-panel">
+                  <h4>Decline {{ item.row.username }}’s request ({{ item.words }})?</h4>
+                  <p>{{ item.row.username }} keeps its plan. It can send a new request afterwards.</p>
+                  <div class="actions">
+                    <button type="button" class="action-button" [disabled]="busy()" (click)="decide(item, 'decline')">Confirm decline</button>
+                    <button type="button" class="action-link" [disabled]="busy()" (click)="declining.set(null)">Cancel</button>
+                  </div>
+                </div>
+              }
+            </li>
+          }
+        </ul>
+      }
+      @if (result(); as done) {
+        <!-- DLV-969 (owner wording, 2026-11-04): what the decision did and how to verify it. Two related actions centred,
+             primary first; Close as a text line below (button placement rule); phones stack. -->
+        <div class="decision-result" [class.declined]="done.decision === 'decline'" role="status" tabindex="-1">
+          @if (done.decision === 'approve') {
+            <p>
+              <strong>Mock payment successful — {{ done.name }} now has {{ done.plan }}.</strong>
+              To verify it, switch to {{ done.name }} and open <strong class="inline-strong">Manage account → Membership</strong> from the account menu.
+            </p>
+          } @else {
+            <p><strong>Declined — {{ done.name }} keeps its current plan.</strong></p>
+          }
+          @if (dev()) {
+            <div class="actions">
+              <button type="button" class="action-button" [disabled]="switching()" [attr.aria-busy]="switching()" (click)="switchToResult()">Switch to {{ done.name }}</button>
+              <button type="button" class="action-link" [disabled]="switching()" (click)="switchToAnother()">Switch to another test account</button>
+            </div>
+          }
+          <p class="result-close">
+            <button type="button" class="text-button" (click)="result.set(null)">Close</button>
+          </p>
+          @if (switchError()) {
+            <p class="result-error" role="alert">{{ switchError() }}</p>
+          }
+        </div>
+      }
+    </section>
   }
 
   <div class="directory-tools">
@@ -170,6 +283,17 @@
               @if (row.disabled) {
                 <span class="state-badge disabled"><span aria-hidden="true">⚠</span> Disabled</span>
               }
+              @if (testView && hasRequest(row.test)) {
+                <span class="state-badge request-badge">Purchase request waiting</span>
+              }
+              @if (testView && upgradeOf(row.test); as upgrade) {
+                <span class="upgrade-marker">
+                  <span class="state-badge upgrade-badge">{{ upgrade.line }}</span>
+                  @if (upgrade.approved) {
+                    <span class="approved-by">{{ upgrade.approved }}</span>
+                  }
+                </span>
+              }
               @if (testView && row.test?.creatorId; as creatorId) {
                 <span class="sub">Created by {{ actorName(creatorId) }}</span>
               }
@@ -199,8 +323,8 @@
                       @if (canGive() && chosen.accountId && !chosen.pending && !chosen.isSelf) {
                         <button type="button" class="action-link" (click)="giveAccess.emit(chosen)">Give access</button>
                       }
-                      @if (chosen.test && canReset()) {
-                        <button type="button" class="action-link" [disabled]="busy() || !!pending()" (click)="select(chosen.test)">Reset</button>
+                      @if (chosen.test && mayReset(chosen.test)) {
+                        <button type="button" class="action-link" [disabled]="busy() || !!pending()" (click)="select(chosen.test)">{{ dev() ? 'Reset to its scenario' : 'Reset' }}</button>
                       }
                       @if (chosen.test && mayDelete(chosen.test)) {
                         <button type="button" class="action-link" [disabled]="busy() || !!pending()" (click)="startDelete(chosen.test)">Delete</button>
@@ -216,11 +340,19 @@
                   @if (testView && selected(); as row) {
                     <div class="reset-panel">
                       <fieldset [disabled]="busy() || !!pending()">
-                        <legend>Reset {{ row.username }}</legend>
-                        <p>
-                          This replaces this test account’s plans, progress and access. Purchase and reset audit
-                          history remain. Its password and profile stay unchanged.
-                        </p>
+                        @if (dev()) {
+                          <!-- DLV-969 (owner wording, 2026-11-04). -->
+                          <legend>Reset {{ row.username }} to its scenario</legend>
+                          <p class="reset-explanation">
+                            Puts it back exactly as its scenario starts: plan, purchases and study plan. Clears the upgrade marker.
+                          </p>
+                        } @else {
+                          <legend>Reset {{ row.username }}</legend>
+                          <p>
+                            This replaces this test account’s plans, progress and access. Purchase and reset audit
+                            history remain. Its password and profile stay unchanged.
+                          </p>
+                        }
                         <label>
                           Defaults
                           <select [(ngModel)]="preset">

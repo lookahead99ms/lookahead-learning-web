@@ -949,16 +949,22 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
   protected readonly devSession = inject(DevSession);
   protected readonly testSessions = inject(TestSessions);
   /**
-   * DLV-969 (owner, 2026-11-04): Switch to a test account, for staff inside DEV and for anyone already using a test
-   * account. The Gateway and Domain still decide which accounts, if any, this person may use.
+   * DLV-969 (owner, 2026-11-04): Switch to a test account, for every signed-in account inside DEV (learners too) and for
+   * anyone already using a test account. Which accounts each person may use is the Domain's rule (owner: all; co-author:
+   * all but the owner; admin: test admins and learners; everyone else: test learners), so Web never filters by role.
    */
-  protected readonly canSwitchAccount = computed(
-    () =>
-      !!this.devSession.status() &&
-      (this.testSessions.active() ||
-        ['owner', 'co-author', 'admin'].includes(this.accounts.account()?.permissions?.feedbackRole ?? '') ||
-        !!this.accounts.account()?.authorPreview),
-  );
+  /**
+   * DLV-969 (owner, 2026-11-04): the owner, co-authors and admins switch; learners, reviewers and testers never do.
+   * The Domain decides which test accounts each may use.
+   */
+  protected readonly canSwitchAccount = computed(() => {
+    if (!this.devSession.status()) return false;
+    if (this.testSessions.active()) return true;
+    const account = this.accounts.account();
+    const permissions = account?.permissions;
+    if (!permissions) return !!account?.authorPreview;
+    return ['owner', 'co-author', 'admin'].includes(permissions.feedbackRole ?? '') || permissions.manageAccess;
+  });
   private readonly testSessionCheck = effect(() => {
     // Once per signed-in account inside DEV: is this a test session, and whose sign-in waits behind it.
     const accountId = this.accounts.account()?.accountId;

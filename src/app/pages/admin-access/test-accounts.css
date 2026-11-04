@@ -463,3 +463,212 @@ tr.self > * {
   font-size: inherit;
   font-weight: 750;
 }
+/* DLV-969 (owner, 2026-11-04): the learner-only line sits quietly under the scenario picker. */
+.reset-panel .learner-only {
+  margin: 6px 0 0;
+  color: var(--text-subtle);
+  font-size: 0.92em;
+}
+/* DLV-969 (owner, 2026-11-04): DEV purchase requests for the owner and admins, above the list. Each request reads
+   left to right; its own actions sit at its right edge and stack on phones (button placement rule). */
+.purchase-requests {
+  margin: 18px 0;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--warning) 45%, var(--line));
+  border-radius: 14px;
+  background: var(--surface-muted);
+}
+.purchase-requests-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 16px;
+}
+.purchase-requests h3 {
+  margin: 0;
+}
+.request-count {
+  margin: 0;
+  color: var(--text-strong);
+  font-weight: 700;
+}
+.purchase-requests > .note {
+  margin: 6px 0 0;
+  color: var(--text-subtle);
+  font-size: 0.9rem;
+}
+.request-list {
+  display: grid;
+  gap: 10px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.request-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+/* Labelled facts: Account, Request, Term, Price, Submitted by, When. */
+.request-facts {
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px 16px;
+  min-width: 0;
+  margin: 0;
+}
+.request-facts dt {
+  color: var(--text-subtle);
+  font-size: 12px;
+  font-weight: 700;
+}
+.request-facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.request-account,
+.request-words {
+  color: var(--text-strong);
+  font-weight: 700;
+}
+.request-price {
+  font-weight: 700;
+}
+.request-difference {
+  color: var(--text-subtle);
+}
+.request-actions {
+  display: flex;
+  flex: none;
+  gap: 10px;
+}
+.request-item .decline-panel {
+  flex-basis: 100%;
+  margin: 4px 0 0;
+}
+.reset-panel h4 {
+  margin: 0 0 10px;
+  color: var(--text-strong);
+  font-size: inherit;
+  font-weight: 750;
+}
+.decline-panel p {
+  margin: 0;
+}
+.state-badge.request-badge {
+  border: 1px solid var(--warning);
+  color: var(--text-body);
+  background: color-mix(in srgb, var(--warning) 14%, var(--surface));
+}
+@media (max-width: 640px) {
+  .request-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  .request-actions button {
+    width: 100%;
+  }
+}
+/* DLV-969 (owner, 2026-11-04): the request a test account's Review request opened on. */
+.request-item.highlighted {
+  border-color: var(--accent-strong);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-strong) 22%, transparent);
+  background: color-mix(in srgb, var(--accent-strong) 5%, var(--surface));
+}
+.request-item.highlighted:focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 3px;
+}
+/* What Approve or Decline did, under the requests: two related actions centred, Close as a text line below. */
+.decision-result {
+  margin: 14px 0 0;
+  padding: 14px 16px;
+  border: 1px solid color-mix(in srgb, var(--success) 50%, var(--line));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--success) 9%, var(--surface));
+  text-align: center;
+}
+.decision-result.declined {
+  border-color: var(--line);
+  background: var(--surface);
+}
+.decision-result:focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 3px;
+}
+.decision-result p {
+  max-width: 72ch;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+.decision-result strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text-strong);
+}
+.decision-result strong.inline-strong {
+  display: inline;
+  margin: 0;
+}
+.decision-result .actions {
+  flex-wrap: wrap;
+}
+.result-close {
+  margin-top: 8px;
+}
+.text-button {
+  padding: 4px 8px;
+  border: 0;
+  background: none;
+  color: var(--accent-strong);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.text-button:focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+.result-error {
+  margin-top: 8px;
+  color: var(--text-strong);
+  font-weight: 650;
+}
+/* Upgraded through an approved request: others should be careful before using or resetting it. */
+.upgrade-marker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+}
+.state-badge.upgrade-badge {
+  border: 1px solid color-mix(in srgb, var(--accent-strong) 55%, var(--line));
+  color: var(--text-body);
+  background: color-mix(in srgb, var(--accent-strong) 10%, var(--surface));
+}
+.approved-by {
+  color: var(--text-subtle);
+  font-size: 12px;
+}
+.reset-explanation {
+  max-width: 60ch;
+}
+@media (max-width: 640px) {
+  .decision-result .actions {
+    flex-direction: column;
+  }
+  .decision-result .actions button {
+    width: 100%;
+  }
+}

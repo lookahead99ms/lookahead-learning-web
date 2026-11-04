@@ -3,12 +3,17 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
+import { RouterTestingHarness } from '@angular/router/testing';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { PricingPage } from './pricing';
 import { START_FREE_ROUTE } from './pricing-plans';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import { MembershipApi } from '../../content/membership-api';
 import { SalePreview } from '../../content/sale-preview';
+import { PLANS } from '../../content/membership-plans';
+import { ACCOUNT_FETCH } from '../study-plan/study-plan-account';
+import { DevSession } from '../../core/dev-session-notice/dev-session';
+import { TestSessions } from '../../core/test-session/test-sessions';
 
 const LEARNER = { accountId: 'learner', username: 'learner@example.test', displayName: 'Learner', topicGrants: [] };
 
@@ -348,6 +353,234 @@ describe('Sample pricing page (DLV-209)', () => {
       expect(card('grow').querySelector('button')).toBeNull();
       expect(text(card('interview-sprint').querySelector('button'))).toBe('Choose Interview Sprint');
       expect(root.querySelector('.staff-promos')).toBeNull();
+    });
+  });
+
+  // DLV-969 (owner, 2026-11-04): in DEV only test accounts buy, and each purchase waits for the owner or an admin.
+  describe('DEV purchase requests', () => {
+    let purchase: () => Response;
+    let calls: { path: string; body: unknown }[];
+    async function open(options: { dev: boolean; testAccount: boolean }) {
+      TestBed.resetTestingModule();
+      calls = [];
+      TestBed.configureTestingModule({
+        imports: [PricingPage],
+        providers: [
+          provideRouter([]),
+          provideHttpClient(),
+          provideHttpClientTesting(),
+          {
+            provide: ACCOUNT_FETCH,
+            useValue: async (path: string, init?: RequestInit) => {
+              calls.push({ path, body: init?.body ? JSON.parse(init.body as string) : undefined });
+              const json = (data: unknown) => new Response(JSON.stringify({ data }));
+              if (path.endsWith('/auth/csrf')) return json({ headerName: 'X-CSRF-TOKEN', token: 't' });
+              if (path.endsWith('/membership/plans')) return json(PLANS);
+              if (path.endsWith('/account/purchases/quote')) return json({ priceCents: 14499, endsAt: '2027-11-04T00:00:00Z' });
+              if (path.endsWith('/account/purchases')) return purchase();
+              if (path.endsWith('/auth/test-session/end')) return json({ next: '/admin/access?tab=test' });
+              if (path.endsWith('/access-summary')) return json({ label: 'Free' });
+              return json([]);
+            },
+          },
+        ],
+      });
+      TestBed.overrideComponent(PricingPage, { remove: { imports: [PlatformHeader] }, add: { imports: [HeaderStub] } });
+      TestBed.inject(StudyPlanAccount).account.set({ ...LEARNER, accountId: 'tester', displayName: 'Learner 07' });
+      if (options.dev) TestBed.inject(DevSession).gated.set(true);
+      if (options.testAccount) TestBed.inject(TestSessions).status.set({ active: true, canReturn: true, holderName: 'Owner' });
+      const api = TestBed.inject(MembershipApi);
+      await api.refresh();
+      fixture = TestBed.createComponent(PricingPage);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      root = fixture.nativeElement as HTMLElement;
+      return api;
+    }
+    /** The fake transport answers on later tasks (CSRF, then the call), so let a few pass. */
+    async function settle() {
+      for (let turn = 0; turn < 6; turn++) {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        fixture.detectChanges();
+      }
+    }
+    async function choose(name: string) {
+      chooseButtons().find((button) => text(button) === name)!.click();
+      await settle();
+    }
+    function dialogButton(name: string): HTMLButtonElement | undefined {
+      return [...root.querySelectorAll<HTMLButtonElement>('dialog button')].find((button) => text(button) === name);
+    }
+    async function send() {
+      const button = dialogButton('Send purchase request')!;
+      expect(button.disabled).toBe(false);
+      button.click();
+      await settle();
+    }
+
+    it('says so on the page and in the FAQ', async () => {
+      await open({ dev: true, testAccount: true });
+      expect(text(root.querySelector('.sample-note'))).toBe(
+        'DEV purchase requests. Only test accounts can buy here. Each purchase is a request that the owner or an admin approves; nothing is charged.',
+      );
+      expect(text(root.querySelector('.faq dl'))).toContain('In DEV, only test accounts can buy, and the owner or an admin approves each request.');
+    });
+
+    it('sends a test account’s purchase as a request and walks staff through approving it', async () => {
+      purchase = () => new Response(JSON.stringify({ data: { id: 'pur-9', status: 'pending', providerStatus: 'awaiting_owner_approval' } }));
+      const api = await open({ dev: true, testAccount: true });
+      await choose('Choose Advance');
+      const dialog = root.querySelector('dialog')!;
+      expect(text(dialog.querySelector('h2'))).toBe('Send a purchase request');
+      expect(text(dialog.querySelector('#checkout-notice-description'))).toBe(
+        'In DEV the owner or an admin approves purchases for test accounts. Your plan changes once it is approved. No money is charged.',
+      );
+      expect(dialogButton('Confirm simulated purchase')).toBeUndefined();
+      await send();
+      expect(calls.find((call) => call.path.endsWith('/account/purchases'))?.body).toMatchObject({ planId: 'advance', expectedPriceCents: 14499 });
+      const sent = dialog.querySelector('.request-sent')!;
+      expect(sent.getAttribute('role')).toBe('status');
+      // DLV-969 (owner wording, 2026-11-04): where to approve it, and where to check the result later.
+      const lines = [...sent.querySelectorAll('p')].map(text);
+      expect(lines[0]).toBe(
+        'Request sent — mock payment waiting for approval. Review it in People and access in your own account, and approve or decline it there.',
+      );
+      expect(lines[1]).toBe('To check the result later, open Manage account → Membership in Learner 07’s account menu.');
+      expect(text(sent)).not.toMatch(/switch back|continue learning/i);
+      expect(text(dialog)).not.toContain('Simulated purchase completed');
+      // As the test account People and access is not open to it, so the notice names the page instead of linking it.
+      expect(sent.querySelector('a')).toBeNull();
+      expect(api.requestWaiting()).toBe(true);
+      expect(dialogButton('Request waiting for approval')?.disabled).toBe(true);
+
+      // One primary action: Review request ends the test session with the menu's own back(), landing on the request.
+      // The one-time notice goes and stays gone, and nothing is stored.
+      const back = vi.spyOn(TestBed.inject(TestSessions), 'back').mockResolvedValue();
+      const setItem = vi.spyOn(Storage.prototype, 'setItem');
+      const address = window.location.href;
+      const buttons = [...sent.querySelectorAll<HTMLButtonElement>('button')];
+      expect(buttons.map(text)).toEqual(['Review request']);
+      expect(buttons[0].type).toBe('button');
+      buttons[0].click();
+      await settle();
+      expect(back).toHaveBeenCalledExactlyOnceWith('/admin/access?tab=test&request=pur-9&return=%2Fpricing&account=tester');
+      expect(root.querySelector('.request-sent')).toBeNull();
+      expect(text(dialog)).not.toContain('Request sent');
+      expect(setItem).not.toHaveBeenCalled();
+      expect(window.location.href).toBe(address);
+      setItem.mockRestore();
+    });
+
+    it('Review request leaves out a purchase id the answer did not send', async () => {
+      purchase = () => new Response(JSON.stringify({ data: { status: 'pending', providerStatus: 'awaiting_owner_approval' } }));
+      await open({ dev: true, testAccount: true });
+      await choose('Choose Learn');
+      await send();
+      const back = vi.spyOn(TestBed.inject(TestSessions), 'back').mockResolvedValue();
+      root.querySelector<HTMLButtonElement>('.request-sent button')!.click();
+      await settle();
+      expect(back).toHaveBeenCalledExactlyOnceWith('/admin/access?tab=test&return=%2Fpricing&account=tester');
+    });
+
+    describe('where the purchase started', () => {
+      @Component({ selector: 'app-locked-lesson', template: '' })
+      class LockedLesson {}
+      async function harness() {
+        TestBed.resetTestingModule();
+        TestBed.configureTestingModule({
+          providers: [
+            provideRouter([
+              { path: 'grow/java/streams', component: LockedLesson },
+              { path: 'pricing', component: PricingPage },
+            ]),
+            provideHttpClient(),
+            provideHttpClientTesting(),
+            { provide: ACCOUNT_FETCH, useValue: async () => new Response(JSON.stringify({ data: [] })) },
+          ],
+        });
+        TestBed.overrideComponent(PricingPage, { remove: { imports: [PlatformHeader] }, add: { imports: [HeaderStub] } });
+        return RouterTestingHarness.create();
+      }
+
+      it('is the page that sent the learner to Pricing (a locked lesson)', async () => {
+        const router = await harness();
+        await router.navigateByUrl('/grow/java/streams?unit=2');
+        const page = await router.navigateByUrl('/pricing', PricingPage);
+        expect(page.startedFrom).toBe('/grow/java/streams?unit=2');
+      });
+
+      it('is a same-site returnTo when the address has one, and Pricing itself otherwise', async () => {
+        const router = await harness();
+        expect((await router.navigateByUrl('/pricing?returnTo=%2Fgrow%2Fjava%2Fstreams', PricingPage)).startedFrom).toBe('/grow/java/streams');
+        TestBed.resetTestingModule();
+        const direct = await harness();
+        expect((await direct.navigateByUrl('/pricing', PricingPage)).startedFrom).toBe('/pricing');
+        for (const returnTo of ['//elsewhere.example', 'https://elsewhere.example/', '/\\elsewhere.example']) {
+          TestBed.resetTestingModule();
+          const unsafe = await harness();
+          const page = await unsafe.navigateByUrl('/pricing?returnTo=' + encodeURIComponent(returnTo), PricingPage);
+          expect(page.startedFrom).toBe('/pricing');
+        }
+      });
+    });
+
+    it('explains a waiting request instead of sending another, after the 409', async () => {
+      purchase = () =>
+        new Response(JSON.stringify({ status: 409, code: 'PURCHASE_REQUEST_PENDING', message: 'A request is already waiting for the owner or an admin.' }), { status: 409 });
+      await open({ dev: true, testAccount: true });
+      await choose('Choose Learn');
+      await send();
+      const dialog = root.querySelector('dialog')!;
+      expect(text(dialog.querySelector('[role="status"]'))).toBe('A request is already waiting for the owner or an admin.');
+      expect(dialogButton('Request waiting for approval')?.disabled).toBe(true);
+      expect(dialogButton('Send purchase request')).toBeUndefined();
+
+      // Choosing another plan says it is waiting, and the click sends nothing.
+      dialogButton('Close')!.click();
+      await choose('Choose Grow');
+      expect(text(dialog.querySelector('[role="status"]'))).toBe(
+        'A request is already waiting for the owner or an admin. Your plan changes once it is approved.',
+      );
+      const before = calls.filter((call) => call.path.endsWith('/account/purchases')).length;
+      await (fixture.componentInstance as unknown as { purchase(): Promise<void> }).purchase();
+      await settle();
+      expect(calls.filter((call) => call.path.endsWith('/account/purchases'))).toHaveLength(before);
+    });
+
+    it('tells a real account in DEV that purchases are for test accounts, and offers nothing to send', async () => {
+      await open({ dev: true, testAccount: false });
+      await choose('Choose Learn');
+      const dialog = root.querySelector('dialog')!;
+      expect(text(dialog.querySelector('h2'))).toBe('Purchases in DEV are for test accounts');
+      expect(text(dialog.querySelector('#checkout-notice-description'))).toBe(
+        'In DEV, purchases are for test accounts; the owner or an admin approves them. To try a plan, choose Switch to a test account in your account menu.',
+      );
+      expect(dialogButton('Send purchase request')).toBeUndefined();
+      expect(dialogButton('Confirm simulated purchase')).toBeUndefined();
+      expect(calls.some((call) => call.path.includes('/account/purchases'))).toBe(false);
+    });
+
+    it('shows the 403 PURCHASES_TEST_ACCOUNTS_ONLY refusal in the server’s words', async () => {
+      purchase = () =>
+        new Response(JSON.stringify({ status: 403, code: 'PURCHASES_TEST_ACCOUNTS_ONLY', message: 'In DEV, purchases are for test accounts; an owner or admin approves them.' }), { status: 403 });
+      const api = await open({ dev: true, testAccount: true });
+      await choose('Choose Learn');
+      await send();
+      expect(text(root.querySelector('dialog [role="status"]'))).toBe('In DEV, purchases are for test accounts; an owner or admin approves them.');
+      expect(api.requestWaiting()).toBe(false);
+    });
+
+    it('keeps the Local simulated purchase unchanged', async () => {
+      purchase = () => new Response(JSON.stringify({ data: { status: 'succeeded', providerStatus: 'mock_succeeded' } }));
+      await open({ dev: false, testAccount: false });
+      expect(text(root.querySelector('.sample-note'))).toContain('Local payment simulation.');
+      await choose('Choose Learn');
+      dialogButton('Confirm simulated purchase')!.click();
+      await settle();
+      expect(text(root.querySelector('dialog [role="status"]'))).toBe(
+        'Simulated purchase completed. No money was charged. Open Manage account to see your access.',
+      );
+      expect(root.querySelector('.request-sent')).toBeNull();
     });
   });
 });
