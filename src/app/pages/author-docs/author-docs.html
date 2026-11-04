@@ -1,7 +1,7 @@
 <app-platform-header />
 <main id="main-content" class="docs-page">
   <aside class="workspace-sidebar">
-    <app-author-workspace-nav pageTitle="Documentation" pageId="docs" [outline]="outline" />
+    <app-author-workspace-nav pageTitle="Documentation" pageId="docs" [outline]="outline()" />
   </aside>
   <div class="workspace-content">
     <header class="docs-hero">
@@ -14,8 +14,8 @@
           them.
         </p>
         <ul class="hero-facts" aria-label="About these pages">
-          <li><span aria-hidden="true">📄</span> {{ pageCount }} pages</li>
-          <li><span aria-hidden="true">👥</span> {{ groups.length }} reader groups</li>
+          <li><span aria-hidden="true">📄</span> {{ pageCount() }} pages</li>
+          <li><span aria-hidden="true">👥</span> {{ groups().length }} reader groups</li>
           <li><span aria-hidden="true">👁️</span> Read-only</li>
         </ul>
         <p class="context-note">
@@ -24,7 +24,7 @@
         </p>
       </div>
     </header>
-    @for (group of groups; track group.id) {
+    @for (group of groups(); track group.id) {
       <section
         class="docs-group"
         [attr.aria-labelledby]="'docs-' + group.id"

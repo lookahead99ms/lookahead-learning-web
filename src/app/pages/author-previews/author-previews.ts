@@ -20,6 +20,7 @@ import {
 import { AuthorAdminMenu } from '../../core/author-workspace-nav/author-admin-menu';
 import { AuthorDocHero } from '../../core/author-workspace-nav/author-doc-hero';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
+import { canSeePreviews } from '../../core/author-workspace-nav/author-workspace-links';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import { PlatformThemeService } from '../../core/platform-theme';
 import {
@@ -60,6 +61,8 @@ import {
 export class AuthorPreviewsPage {
   private readonly hostDocument = inject(DOCUMENT);
   protected readonly accounts = inject(StudyPlanAccount);
+  /** DLV-969 (owner, 2026-11-04): the owner and co-authors; the route already keeps everyone else out. */
+  protected readonly canView = computed(() => canSeePreviews(this.accounts.account()));
   private readonly http = inject(HttpClient);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly base = inject(AUTHOR_PREVIEWS_BASE_URL);

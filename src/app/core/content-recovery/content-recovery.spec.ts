@@ -36,18 +36,17 @@ describe('Content recovery', () => {
     f.detectChanges();
     await f.whenStable();
     const root = f.nativeElement as HTMLElement;
-    expect(root.textContent).toContain('Unlock this premium content');
+    expect(root.textContent).toContain('Subscribe to read this');
+    expect(root.textContent).toContain('Subscribe to a plan that includes it');
+    expect(root.textContent).not.toContain('owner');
     expect(root.textContent).not.toContain('Pro access');
     expect(root.querySelector('.locked-preview')?.textContent?.trim()).toBe('');
     expect(root.querySelector('.locked-preview')?.getAttribute('aria-hidden')).toBe('true');
+    // DLV-969 (owner, 2026-11-04): the way in is a subscription, so the dialog's one action is See plans.
     const link = root.querySelector<HTMLAnchorElement>('dialog a.primary-action')!;
-    expect(link.getAttribute('href')).toBe(
-      '/account?returnTo=%2Fgrow%2Fsample%2Flesson%3Fmode%3Dreview%23example',
-    );
-    // DLV-209: premium content also offers the sample pricing page.
-    const plans = root.querySelector<HTMLAnchorElement>('dialog a.plans-action')!;
-    expect(plans.textContent?.trim()).toBe('See plans and pricing');
-    expect(plans.getAttribute('href')).toBe('/pricing');
+    expect(link.textContent?.trim()).toBe('See plans');
+    expect(link.getAttribute('href')).toBe('/pricing');
+    expect(root.querySelector('dialog a[href^="/account"]')).toBeNull();
     const dialog = root.querySelector('dialog')!;
     expect(dialog.open).toBe(true);
     root.querySelector<HTMLButtonElement>('.close-action')!.click();
@@ -68,11 +67,12 @@ describe('Content recovery', () => {
     f.componentRef.setInput('destination', '//evil.test/lesson');
     f.detectChanges();
     await f.whenStable();
-    expect(f.nativeElement.textContent).toContain('Your account can’t open this content');
+    expect(f.nativeElement.textContent).toContain('Your plan doesn’t include this lesson');
     expect(f.nativeElement.textContent).not.toContain('premium');
-    expect(f.nativeElement.querySelector('dialog a.primary-action').getAttribute('href')).toBe(
-      '/account?returnTo=%2F',
-    );
+    expect(f.nativeElement.querySelector('dialog a.primary-action').getAttribute('href')).toBe('/pricing');
+    f.componentRef.setInput('kind', 'sign-in');
+    f.detectChanges();
+    expect(f.nativeElement.querySelector('dialog a.primary-action').getAttribute('href')).toBe('/sign-in?returnTo=%2F');
     expect(f.nativeElement.querySelector('a[href="/pricing"]')).toBeNull();
   });
   it('offers a signed-out visitor the home page plans next to Sign in (DLV-209)', async () => {

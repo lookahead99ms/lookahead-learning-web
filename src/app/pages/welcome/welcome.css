@@ -24,9 +24,10 @@
 p {
   color: var(--text-body);
 }
+/* The page fits the screen: welcome.ts scales the Essence to the height that is left. */
 .welcome-page {
   display: grid;
-  gap: 24px;
+  gap: 20px;
   max-width: var(--page-max-browse, 80rem);
   margin: auto;
   padding: 24px 32px 28px;
@@ -46,6 +47,10 @@ p {
   margin: 0;
   font-size: 18px;
   letter-spacing: -0.01em;
+}
+.access-pending a {
+  color: var(--accent-strong);
+  font-weight: 650;
 }
 .access-pending p {
   max-width: 72ch;

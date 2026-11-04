@@ -56,7 +56,8 @@ export class ContentRecovery {
     () =>
       ({
         'sign-in': 'Sign in to continue',
-        locked: this.preview().premium ? 'Unlock this premium content' : 'Access required',
+        // DLV-969 (owner, 2026-11-04): a lesson outside your plan is a subscription, never an approval or an access request.
+        locked: 'Subscribe to read this',
         planned: 'This lesson isn’t available yet',
         temporary: 'We couldn’t load this content',
         missing: 'We couldn’t find this page',
@@ -67,8 +68,8 @@ export class ContentRecovery {
       ({
         'sign-in': 'Sign in to check your access. We’ll bring you back to this page.',
         locked: this.preview().premium
-          ? 'This content requires eligible course access. Manage your account to review your current access and options.'
-          : 'Your account can’t open this content. Manage your account to review your access.',
+          ? 'This lesson is part of a paid plan. Subscribe to a plan that includes it to keep reading.'
+          : 'Your plan doesn’t include this lesson. Subscribe to a plan that includes it to read it.',
         planned: 'Explore other published lessons while this content is being prepared.',
         temporary: 'Please try again. You can also go back or explore from Home.',
         missing: 'The link may be out of date. Go back or explore from Home.',

@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { signal } from '@angular/core';
-import { authorGuard, signedInGuard, accessGuard } from './author-access';
+import { authorGuard, signedInGuard, accessGuard, previewsGuard } from './author-access';
 import { StudyPlanAccount } from '../pages/study-plan/study-plan-account';
 
 describe('author workspace access', () => {
@@ -28,9 +28,22 @@ describe('author workspace access', () => {
       account.set({permissions});expect(await reader()).toBe(true);
     }
     for (const permissions of [{feedbackRole:'tester'},{feedbackRole:'reviewer'},{}]) {
-      account.set({permissions});expect(TestBed.inject(Router).serializeUrl(await reader() as any)).toBe('/study-plan');
+      account.set({permissions});expect(TestBed.inject(Router).serializeUrl(await reader() as any)).toBe('/welcome?access=denied');
     }
     account.set(null);expect(TestBed.inject(Router).serializeUrl(await reader() as any)).toContain('/sign-in?');
+  });
+  it('opens Previews and Architecture to the owner and co-authors only, and sends everyone else to the no-access page', async () => {
+    const previews = () => TestBed.runInInjectionContext(() => previewsGuard({} as any, { url: '/admin/architecture' } as any));
+    const router = () => TestBed.inject(Router);
+    for (const value of [{ authorPreview: true }, { permissions: { feedbackRole: 'co-author', previewDocuments: true } }]) {
+      account.set(value); expect(await previews()).toBe(true);
+    }
+    for (const role of ['admin', 'reviewer', 'tester']) {
+      account.set({ permissions: { feedbackRole: role, previewDocuments: role !== 'tester' } });
+      expect(router().serializeUrl(await previews() as any)).toBe('/welcome?access=denied');
+    }
+    account.set(null);
+    expect(router().serializeUrl(await previews() as any)).toBe('/sign-in?returnTo=%2Fadmin%2Farchitecture');
   });
   it('preserves the admin destination through sign-in', async () => {
     expect(TestBed.inject(Router).serializeUrl((await access()) as any)).toBe(
@@ -43,7 +56,7 @@ describe('author workspace access', () => {
       displayName: 'Author',
       topicGrants: ['learn:core-java'],
     });
-    expect(TestBed.inject(Router).serializeUrl((await access()) as any)).toBe('/study-plan');
+    expect(TestBed.inject(Router).serializeUrl((await access()) as any)).toBe('/welcome?access=denied');
   });
   it('accepts the authenticated server capability and rejects it after session expiry', async () => {
     account.set({ authorPreview: true });

@@ -90,7 +90,7 @@ export class AdminAccessPage implements OnInit {
   readonly tabs = computed(() => {
     // Give access finds people by email or username, so it is the owner's alone (DLV-969, 2026-11-03).
     const base: readonly AccessTab[] = this.canManage() ? ['assign', 'saved', 'test', 'people']
-      : this.canReadAssignments() ? ['saved', 'test', 'people'] : ['test', 'people'];
+      : this.canReadAssignments() ? ['saved', 'test', 'people'] : ['test'];
     const count = this.waiting().length;
     const ids = !this.canManage() ? base : count ? ['waiting' as const, ...base] : [...base.slice(0, 2), 'waiting' as const, ...base.slice(2)];
     return ids.map(id => ({ id, label: id === 'waiting' && count ? `${TAB_LABELS[id]} · ${count}` : TAB_LABELS[id] }));

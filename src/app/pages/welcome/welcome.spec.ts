@@ -6,7 +6,7 @@ import { of } from 'rxjs';
 import { ContentService } from '../../content/content.service';
 import { DevSession } from '../../core/dev-session-notice/dev-session';
 import { PageSidebarContext } from '../../core/page-sidebars/page-sidebar-context';
-import { WelcomePage } from './welcome';
+import { WelcomePage, fitEssence } from './welcome';
 
 function render(query: Record<string, string>) {
   TestBed.configureTestingModule({
@@ -45,6 +45,18 @@ describe('WelcomePage', () => {
     expect(root.querySelectorAll('.welcome-footer .footer-statements > *')).toHaveLength(2);
   });
 
+  it('says plainly when a page is not open to the account, above the Essence, instead of opening the Study Plan', () => {
+    const fixture = render({ access: 'denied' });
+    const root: HTMLElement = fixture.nativeElement;
+    const notice = root.querySelector('aside.access-pending');
+    expect(notice?.getAttribute('role')).toBe('status');
+    expect(notice?.querySelector('h2')?.textContent?.trim()).toBe('This page isn’t open to your account');
+    expect(notice?.textContent).toContain('Everything you can open is in the menu above, or go Home.');
+    expect(notice?.querySelector('a')?.getAttribute('href')).toBe('/');
+    expect(notice?.textContent).not.toContain('Your sign-in worked');
+    expect(root.querySelector('section.home-essence')).not.toBeNull();
+  });
+
   it('shows only the Essence without the query, with no side navigation and no content requests', () => {
     const fixture = render({});
     const root: HTMLElement = fixture.nativeElement;
@@ -74,5 +86,34 @@ describe('WelcomePage', () => {
   it('ignores any other access value', () => {
     const root: HTMLElement = render({ access: 'granted' }).nativeElement;
     expect(root.querySelector('.access-pending')).toBeNull();
+  });
+
+  it('scales the Essence to the height left on screen, never below readable, and leaves phones alone', () => {
+    const host = document.createElement('div');
+    host.innerHTML = '<main class="welcome-page"><section class="home-essence"></section><footer class="welcome-footer"></footer></main>';
+    const essence = host.querySelector<HTMLElement>('section')!;
+    const box = (top: number, height: number) => ({ top, height } as DOMRect);
+    essence.getBoundingClientRect = () => box(250, 740);
+    host.querySelector<HTMLElement>('footer')!.getBoundingClientRect = () => box(0, 64);
+    const view = window as unknown as { innerWidth: number; innerHeight: number };
+    const [width, height] = [view.innerWidth, view.innerHeight];
+    try {
+      Object.assign(view, { innerWidth: 1440, innerHeight: 900 });
+      fitEssence(host);
+      expect(Number(essence.style.getPropertyValue('zoom'))).toBeCloseTo((900 - 250 - 64) / 740, 2);
+      Object.assign(view, { innerHeight: 400 });
+      fitEssence(host);
+      expect(essence.style.getPropertyValue('zoom')).toBe('0.45');
+      Object.assign(view, { innerWidth: 390, innerHeight: 844 });
+      fitEssence(host);
+      expect(essence.style.getPropertyValue('zoom')).toBe('1');
+      essence.getBoundingClientRect = () => box(250, 0);
+      Object.assign(view, { innerWidth: 1440 });
+      fitEssence(host);
+      expect(essence.style.getPropertyValue('zoom')).toBe('1');
+      fitEssence(document.createElement('div'));
+    } finally {
+      Object.assign(view, { innerWidth: width, innerHeight: height });
+    }
   });
 });
