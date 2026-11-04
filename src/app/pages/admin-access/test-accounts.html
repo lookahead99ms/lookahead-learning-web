@@ -47,19 +47,41 @@
           <code>learner01&#64;lookahead.dev</code> and so on. {{ progress.ready }} of {{ progress.total }} ready@if (progress.deleted) {, {{ progress.deleted }} deleted (not created again)}.
         </p>
         @if (progress.withoutPlan) {
-          <!-- DLV-969 S37: DEV has no study plans published yet, so these learners were created without their plan. -->
+          <!-- DLV-969 S37: learners created before DEV had study plans; Reset all gives each its plan. -->
           <p class="roster-plans">
             {{ progress.withoutPlan === 1 ? '1 learner doesn’t' : progress.withoutPlan + ' learners don’t' }} have their study plan
-            yet: DEV has no study plans published. After the content release, Reset each one to add its plan.
+            yet, because they were created before DEV had study plans. Reset all gives each one its plan.
           </p>
         }
+        <p class="roster-note">Roster accounts are never deleted; Reset puts one back to its scenario.</p>
       </div>
-      @if (progress.remaining > 0) {
-        <button type="button" class="action-button" [disabled]="busy() || rosterBusy()" [attr.aria-busy]="rosterBusy()" (click)="createRoster()">
-          {{ rosterBusy() ? 'Creating… ' + progress.ready + ' of ' + progress.total : progress.ready ? 'Create the other ' + progress.remaining : 'Create test roster' }}
-        </button>
-      }
+      <div class="roster-actions">
+        @if (progress.remaining > 0) {
+          <button type="button" class="action-button" [disabled]="busy() || rosterBusy()" [attr.aria-busy]="rosterBusy()" (click)="createRoster()">
+            {{ rosterBusy() ? 'Creating… ' + progress.ready + ' of ' + progress.total : progress.ready ? 'Create the other ' + progress.remaining : 'Create test roster' }}
+          </button>
+        }
+        @if (rosterRows().length && canReset()) {
+          <button type="button" class="action-link" [disabled]="busy() || rosterBusy() || !!rosterReset()" (click)="openRosterReset()">Reset all</button>
+        }
+      </div>
     </div>
+    @if (rosterReset(); as progress) {
+      <div class="reset-panel roster-reset">
+        <h3>Reset all {{ progress.total }} roster accounts</h3>
+        <p>
+          Each one goes back to its scenario: learners get their membership, purchases and study plan again; staff get their role.
+          Their current plans, progress and access are replaced. Purchase and reset history remain.
+        </p>
+        <label>Type RESET ALL to confirm <input [(ngModel)]="rosterResetConfirmation" autocomplete="off" [disabled]="busy()" /></label>
+        <div class="actions">
+          <button type="button" class="action-button" [disabled]="busy() || rosterResetConfirmation !== 'RESET ALL'" [attr.aria-busy]="busy()" (click)="resetRoster()">
+            {{ busy() && progress.done < progress.total ? 'Resetting… ' + progress.done + ' of ' + progress.total : 'Reset all ' + progress.total }}
+          </button>
+          <button type="button" class="action-link" [disabled]="busy()" (click)="rosterReset.set(null)">Cancel</button>
+        </div>
+      </div>
+    }
   }
   @if (testView && creating()) {
     <div class="reset-panel">
@@ -104,140 +126,6 @@
   </div>
 
   <p class="notice" role="status">{{ notice() }}</p>
-
-  @if (selectedRow(); as chosen) {
-    <div class="selection-toolbar" aria-label="Selected account actions">
-      <p><strong>{{ chosen.name }}</strong> selected</p>
-      <div class="selection-actions">
-        @if (chosen.accountId && !chosen.pending) {
-          <button type="button" class="action-link" [attr.aria-expanded]="expanded() === chosen.key" [attr.aria-controls]="'history-' + chosen.key" (click)="toggle(chosen)">{{ expanded() === chosen.key ? 'Hide details' : 'Details' }}</button>
-        }
-        @if (canGive() && chosen.accountId && !chosen.pending && !chosen.isSelf) {
-          <button type="button" class="action-link" (click)="giveAccess.emit(chosen)">Give access</button>
-        }
-        @if (chosen.test && canReset()) {
-          <button type="button" class="action-link" [disabled]="busy() || !!pending()" (click)="select(chosen.test)">Reset</button>
-        }
-        @if (chosen.test && mayDelete(chosen.test)) {
-          <button type="button" class="action-link" [disabled]="busy() || !!pending()" (click)="startDelete(chosen.test)">Delete</button>
-        }
-        @if (!chosen.isTest && chosen.canDowngrade && !chosen.isSelf) {
-          <button type="button" class="action-link" [disabled]="busy()" (click)="startDowngrade(chosen)">Downgrade to free</button>
-        }
-        @if (!chosen.isTest && chosen.canDelete && !chosen.isSelf) {
-          <button type="button" class="action-link" [disabled]="busy()" (click)="startRealDelete(chosen)">Delete learner</button>
-        }
-      </div>
-    </div>
-    <!-- DLV-969 (2026-11-04): confirmations open right under the toolbar that started them, never below the table. -->
-    @if (testView && selected(); as row) {
-      <div class="reset-panel">
-        <fieldset [disabled]="busy() || !!pending()">
-          <legend>Reset {{ row.username }}</legend>
-          <p>
-            This replaces this test account’s plans, progress and access. Purchase and reset audit
-            history remain. Its password and profile stay unchanged.
-          </p>
-          <label>
-            Defaults
-            <select [(ngModel)]="preset">
-              <option value="scenario">Learner scenario</option>
-              @if (row.legacyPresetAvailable) {
-                <option value="legacy">Original test learner options</option>
-              }
-            </select>
-          </label>
-          <label>
-            Type {{ row.username }} to confirm
-            <input [(ngModel)]="confirmation" autocomplete="off" />
-          </label>
-        </fieldset>
-        <div class="actions">
-          <button type="button" class="action-button" [disabled]="busy() || confirmation !== row.username" (click)="reset()">
-            {{ pending() ? 'Retry same reset' : 'Confirm reset' }}
-          </button>
-          <button type="button" class="action-link" [disabled]="busy()" (click)="cancel()">Cancel</button>
-        </div>
-      </div>
-    }
-    @if (testView && deleting(); as row) {
-      <div class="reset-panel">
-        <h3>Delete {{ row.username }}</h3>
-        <p>This immediately disables login and erases this learner's test plans and progress. It does not restore the creator's lifetime allowance.</p>
-        <label>Type {{ row.username }} to confirm <input [(ngModel)]="deleteConfirmation" autocomplete="off" /></label>
-        <div class="actions">
-          <button type="button" class="action-button" [disabled]="busy() || deleteConfirmation !== row.username" (click)="deleteAccount()">Confirm deletion</button>
-          <button type="button" class="action-link" [disabled]="busy()" (click)="deleting.set(null)">Cancel</button>
-        </div>
-      </div>
-    }
-    @if (!testView && downgradingReal(); as row) {
-      <div class="reset-panel">
-        <h3>Downgrade {{ row.name }} to a free learner</h3>
-        <p>This removes staff roles and course grants, and ends current or scheduled paid access. The account, study plans and purchase history remain.</p>
-        <label>Type DOWNGRADE to confirm <input [(ngModel)]="realConfirmation" autocomplete="off" /></label>
-        <div class="actions">
-          <button type="button" class="action-button" [disabled]="busy() || realConfirmation !== 'DOWNGRADE'" (click)="downgradeReal()">Confirm downgrade</button>
-          <button type="button" class="action-link" [disabled]="busy()" (click)="downgradingReal.set(null)">Cancel</button>
-        </div>
-      </div>
-    }
-    @if (!testView && deletingReal(); as row) {
-      <div class="reset-panel">
-        <h3>Delete learner {{ row.name }}</h3>
-        <p>This disables Local sign-in and erases saved plans and progress. Purchase history remains for audit. This cannot be undone.</p>
-        <label>Type DELETE to confirm <input [(ngModel)]="realConfirmation" autocomplete="off" /></label>
-        <div class="actions">
-          <button type="button" class="action-button" [disabled]="busy() || realConfirmation !== 'DELETE'" (click)="deleteReal()">Confirm deletion</button>
-          <button type="button" class="action-link" [disabled]="busy()" (click)="deletingReal.set(null)">Cancel</button>
-        </div>
-      </div>
-    }
-    @if (!chosen.isSelf && (chosen.canDisable || chosen.canEnable || chosen.canRemove)) {
-      <!-- DLV-969 (user, 2026-11-03): each action says what it does beside the button and on hover. -->
-      <div class="removal" role="group" [attr.aria-label]="'Remove access for ' + chosen.name">
-        <h3>Remove access for {{ chosen.name }}</h3>
-        @if (chosen.canDisable) {
-          <div class="removal-option strongest">
-            <button type="button" class="danger-button" [title]="removalText.disable" aria-describedby="removal-disable" [disabled]="busy()" (click)="startRemoval(chosen, 'disable')">
-              <span class="warning-mark" aria-hidden="true">⚠</span> Disable
-            </button>
-            <p id="removal-disable">{{ removalText.disable }}</p>
-          </div>
-        }
-        @if (chosen.canEnable) {
-          <div class="removal-option">
-            <button type="button" class="action-button" [title]="removalText.enable" aria-describedby="removal-enable" [disabled]="busy()" (click)="enable(chosen)">Enable</button>
-            <p id="removal-enable">{{ removalText.enable }}</p>
-          </div>
-        }
-        @if (chosen.canRemove) {
-          <div class="removal-option">
-            <button type="button" class="caution-button" [title]="removalText.remove" aria-describedby="removal-remove" [disabled]="busy()" (click)="startRemoval(chosen, 'remove')">Delete</button>
-            <p id="removal-remove">{{ removalText.remove }}</p>
-          </div>
-        }
-      </div>
-    @if (!testView && removing()?.row?.key === chosen.key ? removing() : null; as pending) {
-      @let disabling = pending.action === 'disable';
-      @let word = disabling ? 'DISABLE' : 'DELETE';
-      <div class="reset-panel" [class.danger-panel]="disabling">
-        <h3>@if (disabling) {<span aria-hidden="true">⚠ </span>Disable {{ pending.row.name }}} @else {Delete {{ pending.row.name }}}</h3>
-        <p>{{ disabling ? removalText.disable : removalText.remove }}</p>
-        @if (!disabling) {
-          <p>Purchase history stays for the audit.</p>
-        }
-        <label>Type {{ word }} to confirm <input [(ngModel)]="removalConfirmation" autocomplete="off" /></label>
-        <div class="actions">
-          <button type="button" [class]="disabling ? 'danger-button' : 'caution-button'" [disabled]="busy() || removalConfirmation !== word" (click)="confirmRemoval()">
-            {{ disabling ? 'Confirm disable' : 'Confirm deletion' }}
-          </button>
-          <button type="button" class="action-link" [disabled]="busy()" (click)="removing.set(null)">Cancel</button>
-        </div>
-      </div>
-    }
-    }
-  }
 
   @if (!loaded()) {
     <p class="empty">{{ testView ? 'Loading test accounts…' : 'Loading people…' }}</p>
@@ -289,6 +177,146 @@
             </td>
             <td data-label="Last changed">{{ changedText(row) }}</td>
           </tr>
+          <!-- DLV-969 (owner, 2026-11-04): the selected account's actions and confirmations open in the row under it,
+               so a pick near the bottom of a long list never sends you back to the top. -->
+          @if (selectedKey() === row.key) {
+            <tr class="selection-row">
+              <td colspan="5">
+                @if (selectedRow(); as chosen) {
+                  <div class="selection-toolbar" aria-label="Selected account actions">
+                    <p><strong>{{ chosen.name }}</strong> selected</p>
+                    <div class="selection-actions">
+                      @if (chosen.accountId && !chosen.pending) {
+                        <button type="button" class="action-link" [attr.aria-expanded]="expanded() === chosen.key" [attr.aria-controls]="'history-' + chosen.key" (click)="toggle(chosen)">{{ expanded() === chosen.key ? 'Hide details' : 'Details' }}</button>
+                      }
+                      @if (canGive() && chosen.accountId && !chosen.pending && !chosen.isSelf) {
+                        <button type="button" class="action-link" (click)="giveAccess.emit(chosen)">Give access</button>
+                      }
+                      @if (chosen.test && canReset()) {
+                        <button type="button" class="action-link" [disabled]="busy() || !!pending()" (click)="select(chosen.test)">Reset</button>
+                      }
+                      @if (chosen.test && mayDelete(chosen.test)) {
+                        <button type="button" class="action-link" [disabled]="busy() || !!pending()" (click)="startDelete(chosen.test)">Delete</button>
+                      }
+                      @if (!chosen.isTest && chosen.canDowngrade && !chosen.isSelf) {
+                        <button type="button" class="action-link" [disabled]="busy()" (click)="startDowngrade(chosen)">Downgrade to free</button>
+                      }
+                      @if (!chosen.isTest && chosen.canDelete && !chosen.isSelf) {
+                        <button type="button" class="action-link" [disabled]="busy()" (click)="startRealDelete(chosen)">Delete learner</button>
+                      }
+                    </div>
+                  </div>
+                  @if (testView && selected(); as row) {
+                    <div class="reset-panel">
+                      <fieldset [disabled]="busy() || !!pending()">
+                        <legend>Reset {{ row.username }}</legend>
+                        <p>
+                          This replaces this test account’s plans, progress and access. Purchase and reset audit
+                          history remain. Its password and profile stay unchanged.
+                        </p>
+                        <label>
+                          Defaults
+                          <select [(ngModel)]="preset">
+                            <option value="scenario">Learner scenario</option>
+                            @if (row.legacyPresetAvailable) {
+                              <option value="legacy">Original test learner options</option>
+                            }
+                          </select>
+                        </label>
+                        <label>
+                          Type {{ row.username }} to confirm
+                          <input [(ngModel)]="confirmation" autocomplete="off" />
+                        </label>
+                      </fieldset>
+                      <div class="actions">
+                        <button type="button" class="action-button" [disabled]="busy() || confirmation !== row.username" (click)="reset()">
+                          {{ pending() ? 'Retry same reset' : 'Confirm reset' }}
+                        </button>
+                        <button type="button" class="action-link" [disabled]="busy()" (click)="cancel()">Cancel</button>
+                      </div>
+                    </div>
+                  }
+                  @if (testView && deleting(); as row) {
+                    <div class="reset-panel">
+                      <h3>Delete {{ row.username }}</h3>
+                      <p>This immediately disables login and erases this learner's test plans and progress. It does not restore the creator's lifetime allowance.</p>
+                      <label>Type {{ row.username }} to confirm <input [(ngModel)]="deleteConfirmation" autocomplete="off" /></label>
+                      <div class="actions">
+                        <button type="button" class="action-button" [disabled]="busy() || deleteConfirmation !== row.username" (click)="deleteAccount()">Confirm deletion</button>
+                        <button type="button" class="action-link" [disabled]="busy()" (click)="deleting.set(null)">Cancel</button>
+                      </div>
+                    </div>
+                  }
+                  @if (!testView && downgradingReal(); as row) {
+                    <div class="reset-panel">
+                      <h3>Downgrade {{ row.name }} to a free learner</h3>
+                      <p>This removes staff roles and course grants, and ends current or scheduled paid access. The account, study plans and purchase history remain.</p>
+                      <label>Type DOWNGRADE to confirm <input [(ngModel)]="realConfirmation" autocomplete="off" /></label>
+                      <div class="actions">
+                        <button type="button" class="action-button" [disabled]="busy() || realConfirmation !== 'DOWNGRADE'" (click)="downgradeReal()">Confirm downgrade</button>
+                        <button type="button" class="action-link" [disabled]="busy()" (click)="downgradingReal.set(null)">Cancel</button>
+                      </div>
+                    </div>
+                  }
+                  @if (!testView && deletingReal(); as row) {
+                    <div class="reset-panel">
+                      <h3>Delete learner {{ row.name }}</h3>
+                      <p>This disables Local sign-in and erases saved plans and progress. Purchase history remains for audit. This cannot be undone.</p>
+                      <label>Type DELETE to confirm <input [(ngModel)]="realConfirmation" autocomplete="off" /></label>
+                      <div class="actions">
+                        <button type="button" class="action-button" [disabled]="busy() || realConfirmation !== 'DELETE'" (click)="deleteReal()">Confirm deletion</button>
+                        <button type="button" class="action-link" [disabled]="busy()" (click)="deletingReal.set(null)">Cancel</button>
+                      </div>
+                    </div>
+                  }
+                  @if (!chosen.isSelf && (chosen.canDisable || chosen.canEnable || chosen.canRemove)) {
+                    <!-- DLV-969 (user, 2026-11-03): each action says what it does beside the button and on hover. -->
+                    <div class="removal" role="group" [attr.aria-label]="'Remove access for ' + chosen.name">
+                      <h3>Remove access for {{ chosen.name }}</h3>
+                      @if (chosen.canDisable) {
+                        <div class="removal-option strongest">
+                          <button type="button" class="danger-button" [title]="removalText.disable" aria-describedby="removal-disable" [disabled]="busy()" (click)="startRemoval(chosen, 'disable')">
+                            <span class="warning-mark" aria-hidden="true">⚠</span> Disable
+                          </button>
+                          <p id="removal-disable">{{ removalText.disable }}</p>
+                        </div>
+                      }
+                      @if (chosen.canEnable) {
+                        <div class="removal-option">
+                          <button type="button" class="action-button" [title]="removalText.enable" aria-describedby="removal-enable" [disabled]="busy()" (click)="enable(chosen)">Enable</button>
+                          <p id="removal-enable">{{ removalText.enable }}</p>
+                        </div>
+                      }
+                      @if (chosen.canRemove) {
+                        <div class="removal-option">
+                          <button type="button" class="caution-button" [title]="removalText.remove" aria-describedby="removal-remove" [disabled]="busy()" (click)="startRemoval(chosen, 'remove')">Delete</button>
+                          <p id="removal-remove">{{ removalText.remove }}</p>
+                        </div>
+                      }
+                    </div>
+                  @if (!testView && removing()?.row?.key === chosen.key ? removing() : null; as pending) {
+                    @let disabling = pending.action === 'disable';
+                    @let word = disabling ? 'DISABLE' : 'DELETE';
+                    <div class="reset-panel" [class.danger-panel]="disabling">
+                      <h3>@if (disabling) {<span aria-hidden="true">⚠ </span>Disable {{ pending.row.name }}} @else {Delete {{ pending.row.name }}}</h3>
+                      <p>{{ disabling ? removalText.disable : removalText.remove }}</p>
+                      @if (!disabling) {
+                        <p>Purchase history stays for the audit.</p>
+                      }
+                      <label>Type {{ word }} to confirm <input [(ngModel)]="removalConfirmation" autocomplete="off" /></label>
+                      <div class="actions">
+                        <button type="button" [class]="disabling ? 'danger-button' : 'caution-button'" [disabled]="busy() || removalConfirmation !== word" (click)="confirmRemoval()">
+                          {{ disabling ? 'Confirm disable' : 'Confirm deletion' }}
+                        </button>
+                        <button type="button" class="action-link" [disabled]="busy()" (click)="removing.set(null)">Cancel</button>
+                      </div>
+                    </div>
+                  }
+                  }
+                }
+              </td>
+            </tr>
+          }
           @if (expanded() === row.key) {
             <tr class="history-row">
               <td colspan="5" [id]="'history-' + row.key">
