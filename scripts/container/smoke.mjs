@@ -40,17 +40,27 @@ export function parseResponse(result) {
   return { status, headers, body: result.stdout };
 }
 
-export function assertOperationalLogs(logs, marker) {
+export const accessLogFields = ['event', 'time', 'level', 'service', 'requestId', 'method', 'path', 'status', 'bytes', 'durationSeconds'];
+const nginxRequestId = /^[a-f0-9]{32}$/;
+const gatewayRequestId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+/** DLV-969: access lines carry the path (never the query string) and Gateway's X-Request-Id when it is a canonical UUID. */
+export function assertOperationalLogs(logs, marker, { gatewayId } = {}) {
   assert(!logs.includes(marker), 'Private request marker leaked into container logs');
   const records = logs.split('\n').filter(line => line.startsWith('{')).map(line => JSON.parse(line));
   const access = records.filter(record => record.event === 'http_access');
   assert(access.some(record => record.status === '404'), 'Denied requests must emit access logs');
-  const fields = ['event', 'time', 'requestId', 'method', 'status', 'bytes', 'durationSeconds'].sort();
   for (const record of access) {
-    assert.deepEqual(Object.keys(record).sort(), fields, 'Unexpected access-log field');
-    assert.match(record.requestId, /^[a-f0-9]{32}$/);
+    assert.deepEqual(Object.keys(record), accessLogFields, 'Unexpected access-log field');
+    assert(nginxRequestId.test(record.requestId) || gatewayRequestId.test(record.requestId), 'Malformed access-log request ID');
     assert.match(record.status, /^[1-5][0-9]{2}$/);
+    assert.equal(record.level, record.status.startsWith('5') ? 'WARN' : 'INFO', 'Access-log level must follow status');
+    assert.equal(record.service, 'web');
+    assert.match(record.path, /^\/[^?#]*$/, 'Access-log path must exclude the query string');
     assert(['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'OTHER'].includes(record.method), 'Unbounded HTTP method in logs');
+  }
+  if (gatewayId !== undefined) {
+    assert(access.some(record => record.requestId === gatewayId), "Gateway's request ID was not reused in access logs");
   }
   return access.length;
 }
@@ -153,12 +163,17 @@ export async function smokeImage(imageReference, { docker = localDocker, scratch
       assert(!response.body.includes('<app-root') && response.body !== index.body, 'Denied path returned the application shell');
     }
 
+    // The path is logged by design; the marker rides only in the query string, headers and a malformed request ID.
     const privateMarker = 'privacy-probe-' + owner;
     const privateResponse = parseResponse(docker(['exec', id, 'wget', '-S', '-O', '-', '-T', '5',
       '--header', `Cookie: synthetic=${privateMarker}`, '--header', `Authorization: Bearer ${privateMarker}`,
-      `http://127.0.0.1:8080/api/${privateMarker}?code=${privateMarker}`]));
+      '--header', `X-Request-Id: ${privateMarker}`, `http://127.0.0.1:8080/api/privacy-probe?code=${privateMarker}`]));
     assert.equal(privateResponse.status, 404);
-    const operationalLogRecords = assertOperationalLogs(run(['logs', id]), privateMarker);
+    const gatewayId = randomUUID();
+    const traced = parseResponse(docker(['exec', id, 'wget', '-S', '-O', '-', '-T', '5',
+      '--header', `X-Request-Id: ${gatewayId}`, 'http://127.0.0.1:8080/health']));
+    assert.equal(traced.status, 200);
+    const operationalLogRecords = assertOperationalLogs(run(['logs', id]), privateMarker, { gatewayId });
 
     // Copy only static bytes into an owned scratch directory and reuse the build-boundary verifier.
     await mkdir(scratchRoot, { recursive: true });
