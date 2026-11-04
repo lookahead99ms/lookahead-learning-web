@@ -10,6 +10,7 @@ import {
   ManagedAccountProfile,
   PasswordChange,
   ProfileLinks,
+  readSignInMethods,
 } from '../account/account-settings-client';
 import { isThemePreference, ThemePreference } from '../../core/platform-theme';
 
@@ -27,10 +28,14 @@ function managedProfile(profile: ManagedAccountProfile): ManagedAccountProfile {
     username: profile.username,
   };
   if (isThemePreference(profile.themePreference)) result.themePreference = profile.themePreference;
-  // DLV-969: an account made through Google shows its Gmail and Google as connected. Cognito names it "Google_<id>",
-  // so the name alone tells, also before the Domain reports the method.
-  if (profile.signInMethod === 'google' || isProviderUsername(profile.username)) result.signInMethod = 'google';
+  // DLV-969: the method of this session as the Domain reports it. Only when it reports none does Cognito's own name
+  // for a Google account ("Google_<id>") stand in for Google.
+  if (profile.signInMethod === 'google' || profile.signInMethod === 'cognito') result.signInMethod = profile.signInMethod;
+  else if (!profile.signInMethod && isProviderUsername(profile.username)) result.signInMethod = 'google';
   if (typeof profile.email === 'string' && profile.email) result.email = profile.email;
+  // DLV-969 account linking: every method of the account, only when the Domain reports them.
+  const methods = readSignInMethods(profile.signInMethods);
+  if (methods.length) result.signInMethods = methods;
   const links = profile.links as Partial<Record<string, unknown>> | undefined;
   if (links && typeof links === 'object') {
     result.links = Object.fromEntries(

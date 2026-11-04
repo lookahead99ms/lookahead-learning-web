@@ -4,6 +4,7 @@ import { ACCOUNT_FETCH } from '../study-plan/study-plan-account';
 import {
   maskEmail,
   meetsPasswordRules,
+  mergeNext,
   PasswordSignInApi,
   PasswordSignInError,
   problemMessage,
@@ -57,6 +58,10 @@ describe('PasswordSignInApi', () => {
       [{ step: 'CODE_SENT' }, { kind: 'code-sent', destination: '' }],
       [{ step: 'SIGN_IN' }, { kind: 'sign-in' }],
       [{ step: 'SIGNED_IN', next: 'https://elsewhere.example' }, { kind: 'signed-in', next: '/' }],
+      // DLV-969 S36.8: only a literal true offers the merge; anything else changes nothing.
+      [{ step: 'SIGNED_IN', next: '/learn', mergeAvailable: true }, { kind: 'signed-in', next: '/learn', mergeAvailable: true }],
+      [{ step: 'SIGNED_IN', next: '/learn', mergeAvailable: 'true' }, { kind: 'signed-in', next: '/learn' }],
+      [{ step: 'SIGNED_IN', next: '/learn', mergeAvailable: false }, { kind: 'signed-in', next: '/learn' }],
     ] as const;
     let index = 0;
     const { client } = api(() => json(200, { data: steps[index][0] }));
@@ -115,5 +120,13 @@ describe('PasswordSignInApi', () => {
     expect(problemMessage('credentials')).toBe("That email and password don't match.");
     for (const problem of ['not-confirmed', 'code', 'code-expired', 'password-rules', 'exists', 'too-many', 'expired', 'unavailable'] as const)
       expect(problemMessage(problem).length).toBeGreaterThan(10);
+  });
+});
+
+describe('mergeNext', () => {
+  it('returns the next path only for a signed-in step that offers the merge', () => {
+    expect(mergeNext({ kind: 'signed-in', next: '/learn', mergeAvailable: true })).toBe('/learn');
+    expect(mergeNext({ kind: 'signed-in', next: '/learn' })).toBeNull();
+    expect(mergeNext({ kind: 'sign-in' })).toBeNull();
   });
 });

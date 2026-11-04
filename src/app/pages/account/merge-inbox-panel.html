@@ -1,0 +1,32 @@
+<section class="merge-inbox" aria-labelledby="merge-inbox-text">
+  @if (titled()) {
+    <h2 class="merge-panel-title">Check your inbox</h2>
+  }
+  <p id="merge-inbox-text">
+    Check your inbox to confirm it's you. We sent an email to
+    {{ masked() || 'the address you signed in with' }}.
+  </p>
+  @if (error()) {
+    <p class="form-error" role="alert">{{ error() }}</p>
+  }
+  <button
+    type="button"
+    class="primary-action merge-resend"
+    [disabled]="busy() || wait() > 0"
+    [attr.aria-busy]="busy()"
+    aria-describedby="merge-inbox-wait"
+    (click)="send()"
+  >
+    Send the email again
+  </button>
+  <p id="merge-inbox-wait" class="merge-wait">
+    @if (wait() > 0) {
+      You can send it again in {{ wait() }} s.
+    }
+  </p>
+  @if (next()) {
+    <p class="step-links">
+      <a class="merge-continue" [href]="next()">Continue for now</a>
+    </p>
+  }
+</section>

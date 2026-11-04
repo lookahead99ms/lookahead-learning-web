@@ -160,6 +160,13 @@
               @if (row.detail) {
                 <span class="sub">{{ row.detail }}</span>
               }
+              <!-- DLV-969 account linking: the owner's directory only; other operators never receive these. -->
+              @if (row.signInLabels?.length) {
+                <span class="sign-in-labels"><span class="visually-hidden">Sign-in methods: </span>@for (label of row.signInLabels; track label) {<span class="method-label">{{ label }}</span>}</span>
+              }
+              @if (row.sameEmail) {
+                <span class="same-email-flag"><span aria-hidden="true">⚠</span> {{ row.sameEmail }}</span>
+              }
               @if (row.disabled) {
                 <span class="state-badge disabled"><span aria-hidden="true">⚠</span> Disabled</span>
               }

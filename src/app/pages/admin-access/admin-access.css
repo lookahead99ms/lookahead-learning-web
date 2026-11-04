@@ -748,6 +748,25 @@ button:disabled {
   display: block;
   color: var(--text-subtle);
 }
+/* DLV-969 account linking: the same plain labels and flag as on People. */
+.waiting-table .sign-in-labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+  margin-top: 2px;
+  color: var(--text-subtle);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.waiting-table .same-email-flag {
+  display: block;
+  margin-top: 4px;
+  color: var(--warning);
+  font-size: 13px;
+  font-weight: 700;
+}
 .admit-cell {
   display: flex;
   align-items: center;

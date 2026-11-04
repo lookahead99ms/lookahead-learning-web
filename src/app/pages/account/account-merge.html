@@ -1,0 +1,194 @@
+<app-platform-header />
+<main id="main-content" class="account-page merge-page" [class.merge-wide]="view() === 'choose'">
+  <section class="account-card merge-card" aria-labelledby="merge-heading" [attr.aria-busy]="view() === 'loading'">
+    <header class="account-intro">
+      <p class="eyebrow">Your learning account</p>
+      <h1 id="merge-heading">{{ heading[view()] }}</h1>
+    </header>
+    @switch (view()) {
+      @case ('loading') {
+        <p role="status">Loading your accounts…</p>
+      }
+      @case ('sign-in') {
+        <p>Sign in with any account that uses this email. Then you choose which one to keep.</p>
+        @if (store.authOptions()?.managedLogin && store.authOptions()?.password) {
+          <app-password-account-form
+            mode="signin"
+            [returnTo]="returnTo"
+            [google]="!!store.authOptions()?.google"
+            [googleUrl]="googleUrl"
+          />
+        } @else if (store.authOptions()?.managedLogin) {
+          @if (store.authOptions()?.google) {
+            <a class="google-action" [href]="googleUrl">Continue with Google</a>
+          }
+          <a class="managed-login-action" [href]="loginUrl">Sign in</a>
+        } @else {
+          <div class="merge-actions merge-actions-single">
+            <a class="return-action primary-action" routerLink="/sign-in" [queryParams]="{ returnTo }">Sign in</a>
+          </div>
+        }
+      }
+      @case ('choose') {
+        @if (merge(); as details) {
+          <p>
+            These accounts all use {{ details.email }}. Keep one. The others are deleted with their study plans and
+            progress, and this can't be undone.
+          </p>
+          <form class="merge-form" (submit)="$event.preventDefault(); submit()" [attr.aria-busy]="busy()">
+            <fieldset class="merge-choice">
+              <legend>Choose the account to keep</legend>
+              <div class="merge-candidates">
+                @for (candidate of details.candidates; track candidate.accountId) {
+                  <article
+                    class="merge-candidate"
+                    [class.kept]="keep() === candidate.accountId"
+                    [class.dropped]="!!keep() && keep() !== candidate.accountId"
+                  >
+                    <h2 class="merge-candidate-name" [id]="'merge-name-' + $index">{{ candidate.displayName || 'No name' }}</h2>
+                    @if (candidate.paidMembership) {
+                      <p class="merge-paid">Paid membership</p>
+                    }
+                    <dl class="merge-facts">
+                      <div>
+                        <dt>Sign-in methods</dt>
+                        <dd>
+                          @for (method of candidate.signInMethods; track method.provider + (method.email ?? '')) {
+                            <span class="merge-method">{{ methodLabel(method) }}</span>
+                          } @empty {
+                            <span>None reported</span>
+                          }
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>Access</dt>
+                        <dd>{{ candidate.admitted ? 'Admitted' : 'Waiting for access' }}</dd>
+                      </div>
+                      <div>
+                        <dt>Created</dt>
+                        <dd><time [attr.datetime]="candidate.createdAt">{{ date(candidate.createdAt) }}</time></dd>
+                      </div>
+                      <div>
+                        <dt>Last sign-in</dt>
+                        <dd>
+                          @if (candidate.lastSignInAt) {
+                            <time [attr.datetime]="candidate.lastSignInAt">{{ date(candidate.lastSignInAt) }}</time>
+                          } @else {
+                            Not yet
+                          }
+                        </dd>
+                      </div>
+                    </dl>
+                    <h3 class="merge-plans-title">Study plans</h3>
+                    @if (candidate.studyPlans.length) {
+                      <ul class="merge-plans">
+                        @for (plan of candidate.studyPlans; track plan.id) {
+                          <li>
+                            <span class="merge-plan-title">{{ plan.title }}</span>
+                            <span class="merge-plan-progress">{{ plan.progressPercent }}% done</span>
+                            <span class="merge-plan-bar" aria-hidden="true"><span [style.width.%]="plan.progressPercent"></span></span>
+                          </li>
+                        }
+                      </ul>
+                    } @else {
+                      <p class="merge-empty">No study plans</p>
+                    }
+                    @if (!!keep() && keep() !== candidate.accountId) {
+                      <p class="merge-deleted" role="note">{{ deletedNote(candidate) }}</p>
+                    }
+                    <label class="merge-keep">
+                      <input
+                        type="radio"
+                        name="keep"
+                        [value]="candidate.accountId"
+                        [checked]="keep() === candidate.accountId"
+                        [attr.aria-labelledby]="'merge-name-' + $index + ' merge-keep-' + $index"
+                        (change)="choose(candidate.accountId)"
+                      />
+                      <span [id]="'merge-keep-' + $index">Keep this account</span>
+                    </label>
+                  </article>
+                }
+              </div>
+            </fieldset>
+            <label class="merge-confirm"
+              >Type {{ word }} to confirm<input
+                id="merge-confirm"
+                name="confirm"
+                autocomplete="off"
+                autocapitalize="characters"
+                spellcheck="false"
+                maxlength="20"
+                [value]="confirmation()"
+                (input)="confirmation.set($any($event.target).value)"
+            /></label>
+            @if (error()) {
+              <p class="form-error" role="alert">{{ error() }}</p>
+            }
+            @if (!canMerge() && !busy()) {
+              <p id="merge-hint" class="field-hint merge-hint">Choose an account and type MERGE.</p>
+            }
+            <div class="merge-actions">
+              <a class="return-action" routerLink="/account">Cancel</a>
+              <button
+                type="submit"
+                class="merge-button"
+                [disabled]="!canMerge()"
+                [attr.aria-busy]="busy()"
+                [attr.aria-describedby]="!canMerge() && !busy() ? 'merge-hint' : null"
+              >
+                {{ busy() ? 'Merging…' : 'Merge' }}
+              </button>
+            </div>
+          </form>
+        }
+      }
+      @case ('invalid') {
+        <p>This link has expired or was already used.</p>
+        @if (error()) {
+          <p class="form-error" role="alert">{{ error() }}</p>
+        }
+        <div class="merge-actions merge-actions-single">
+          <button type="button" class="primary-action" [disabled]="busy()" [attr.aria-busy]="busy()" (click)="sendNewEmail()">
+            Send a new email
+          </button>
+        </div>
+      }
+      @case ('inbox') {
+        <app-merge-inbox-panel
+          [email]="email()"
+          [alreadySent]="inboxSent()"
+          [next]="inboxNext()"
+          [titled]="false"
+          (sent)="offerSent()"
+        />
+      }
+      @case ('conflict') {
+        <p>One of these accounts changed or was disabled. Reload to see the latest. If this keeps happening, the owner has to sort it out.</p>
+        <div class="merge-actions merge-actions-single">
+          <button type="button" class="primary-action" (click)="load()">Reload</button>
+        </div>
+      }
+      @case ('not-candidate') {
+        <p>That account can't be kept here. Reload and choose again.</p>
+        <div class="merge-actions merge-actions-single">
+          <button type="button" class="primary-action" (click)="load()">Reload</button>
+        </div>
+      }
+      @case ('unavailable') {
+        <p>We couldn't load your accounts right now.</p>
+        <div class="merge-actions merge-actions-single">
+          <button type="button" class="primary-action" (click)="load()">Reload</button>
+        </div>
+      }
+      @case ('done') {
+        <p class="success-status" role="status">Accounts merged. Sign in again with any of your methods.</p>
+        <div class="merge-actions merge-actions-single">
+          <button type="button" class="primary-action" [disabled]="busy()" [attr.aria-busy]="busy()" (click)="signInAgain()">
+            Sign in again
+          </button>
+        </div>
+      }
+    }
+  </section>
+</main>

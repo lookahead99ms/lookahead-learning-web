@@ -142,6 +142,11 @@ export const routes: Routes = [
     providers: [{ provide: PLATFORM_REVIEW_CLIENT, useClass: ConnectedPlatformReviewClient }],
     loadComponent: () => import('./pages/support/support').then((page) => page.SupportPage),
   },
+  // DLV-969 S36.8: the link in the merge email; choose the account to keep.
+  {
+    path: 'account/merge',
+    loadComponent: () => import('./pages/account/account-merge').then((page) => page.AccountMergePage),
+  },
   {
     path: 'account',
     loadComponent: () => import('./pages/account/account').then((page) => page.AccountPage),

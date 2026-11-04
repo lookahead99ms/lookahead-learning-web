@@ -8,7 +8,8 @@ import { AuthorOutlineItem, AuthorWorkspaceNav } from '../../core/author-workspa
 import { ACCOUNT_FETCH, StudyPlanAccount } from '../study-plan/study-plan-account';
 
 import { TestAccounts } from './test-accounts';
-import { DirectoryAccount, DirectoryRow, accountName, loadDirectory, personLines } from './user-directory';
+import { DirectoryAccount, DirectoryRow, accountName, loadDirectory, personLines, sameEmailCount, sameEmailText, signInLabels } from './user-directory';
+import { AccountSignInMethod } from '../account/account-settings-client';
 import { isProviderUsername } from '../study-plan/study-plan-account';
 import { AdminMemberships } from './admin-memberships';
 
@@ -20,7 +21,11 @@ interface Assignment {
 }
 interface Recipient { accountId: string; username: string; displayName: string; email: string | null; }
 /** DLV-969 (2026-11-02): one account that signed in but is not admitted yet (`GET /admin/access/waiting`). */
-export interface WaitingRow { accountId: string; username: string; displayName: string; email: string | null; requestedAt: string; expiresAt: string; }
+export interface WaitingRow {
+  accountId: string; username: string; displayName: string; email: string | null; requestedAt: string; expiresAt: string;
+  /** DLV-969 account linking, owner only; absent from an older Domain. */
+  signInMethods?: AccountSignInMethod[]; sameEmailAccounts?: number;
+}
 /** Page tabs (user, 2026-10-16): giving access first, the account lists only when asked for. */
 type AccessTab = 'assign' | 'saved' | 'waiting' | 'test' | 'people';
 const TAB_LABELS: Record<AccessTab, string> = { assign: 'Give access', saved: 'Saved assignments', waiting: 'Waiting for access', test: 'Test accounts', people: 'People' };
@@ -196,6 +201,13 @@ export class AdminAccessPage implements OnInit {
   emailOf(row: Pick<Assignment, 'accountId'>): string | null {
     const person = row.accountId ? this.people().get(row.accountId) : undefined;
     return person?.email && person.email !== this.nameOf({ accountId: row.accountId, pendingEmail: null }) ? person.email : null;
+  }
+  /** "Google", "Password" for a waiting row; empty when the Domain sends none. */
+  methodLabels(row: WaitingRow): string[] { return signInLabels(row.signInMethods); }
+  /** "Same Gmail as 1 other account" when other accounts share this row's verified email, else ''. */
+  sameEmail(row: WaitingRow): string {
+    const count = sameEmailCount(row.sameEmailAccounts);
+    return count ? sameEmailText(count, row.email) : '';
   }
   /** Cognito's name for a Google account, never shown to a person. */
   internalName(username: string): boolean { return isProviderUsername(username); }

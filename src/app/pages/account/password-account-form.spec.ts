@@ -1,9 +1,11 @@
+import { DOCUMENT } from '@angular/common';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { describe, expect, it, vi } from 'vitest';
 import { followStep, PasswordAccountForm } from './password-account-form';
-import { PasswordSignInApi, PasswordSignInError, PasswordStep } from './password-sign-in-api';
+import { PasswordSignInApi, PasswordSignInError, PasswordStep, mergeNext } from './password-sign-in-api';
+import { AccountMergeClient } from './account-merge-client';
 
 function fakeApi(result: () => Promise<PasswordStep>) {
   return {
@@ -80,6 +82,39 @@ describe('PasswordAccountForm', () => {
     expect(view.navigate).toHaveBeenCalledWith(['/sign-up/confirm'], { queryParams: { returnTo: '/learn' } });
   });
 
+  it('reminds people who joined with Google only after a wrong email or password (DLV-969 account linking)', async () => {
+    const hint = 'Joined with Google? Use Continue with Google.';
+    let problem: 'credentials' | 'too-many' = 'credentials';
+    const api = fakeApi(async () => { throw new PasswordSignInError(problem); });
+    const view = mount('signin', api, { google: true, googleUrl: '/bff/login?provider=google' });
+    const hintText = () => view.element.querySelector('.error-hint')?.textContent?.trim() ?? null;
+    expect(hintText()).toBeNull();
+    view.type('#account-email', 'priya@gmail.com');
+    view.type('#account-password', 'wrong');
+    await view.submit();
+    expect(view.element.querySelector('.form-error')!.textContent!.trim()).toBe("That email and password don't match.");
+    expect(hintText()).toBe(hint);
+    // Another failure replaces the error, and the hint goes with it.
+    problem = 'too-many';
+    await view.submit();
+    expect(view.element.querySelector('.form-error')!.textContent).toContain('Too many attempts');
+    expect(hintText()).toBeNull();
+  });
+
+  it('gives no Google hint where Google is not offered, or for a message passed in by the page', async () => {
+    const api = fakeApi(async () => { throw new PasswordSignInError('credentials'); });
+    const view = mount('signin', api);
+    view.type('#account-email', 'priya@example.com');
+    view.type('#account-password', 'wrong');
+    await view.submit();
+    expect(view.element.querySelector('.form-error')).not.toBeNull();
+    expect(view.element.querySelector('.error-hint')).toBeNull();
+    TestBed.resetTestingModule();
+    const passed = mount('signin', fakeApi(async () => ({ kind: 'sign-in' })), { google: true, initialError: 'Your session expired. Sign in again to continue.' });
+    expect(passed.element.querySelector('.form-error')).not.toBeNull();
+    expect(passed.element.querySelector('.error-hint')).toBeNull();
+  });
+
   it('creates an account with name, email and a password that meets the pool rules', async () => {
     const api = fakeApi(async () => ({ kind: 'code-sent', destination: 'a***@e***' }));
     const view = mount('signup', api);
@@ -107,6 +142,49 @@ describe('PasswordAccountForm', () => {
     view.type('#account-password', 'x');
     await view.submit();
     expect(view.element.querySelector('.form-error')!.textContent).toContain("isn't available right now");
+  });
+});
+
+describe('PasswordAccountForm merge offer (DLV-969 S36.8)', () => {
+  it('shows Check your inbox instead of leaving when the sign-in reports another account', async () => {
+    const api = fakeApi(async () => ({ kind: 'signed-in', next: '/learn', mergeAvailable: true }));
+    const client = { requestMergeEmail: vi.fn(async () => ({ kind: 'sent' as const })) };
+    TestBed.configureTestingModule({ providers: [{ provide: AccountMergeClient, useValue: client }] });
+    const view = mount('signin', api);
+    view.type('#account-email', 'priya@gmail.com');
+    view.type('#account-password', 'Secret-Passw0rd!');
+    api.email.set('priya@gmail.com');
+    await view.submit();
+    await view.fixture.whenStable();
+    view.fixture.detectChanges();
+    expect(view.element.querySelector('form')).toBeNull();
+    expect(view.element.textContent).toContain("Check your inbox to confirm it's you. We sent an email to p•••a@gmail.com.");
+    expect(client.requestMergeEmail).toHaveBeenCalledTimes(1);
+    expect(view.element.querySelector('a.merge-continue')!.getAttribute('href')).toBe('/learn');
+    expect(view.navigate).not.toHaveBeenCalled();
+  });
+
+  it('never offers the email on the way to the merge page, and keeps the link', async () => {
+    const assign = vi.fn();
+    const client = { requestMergeEmail: vi.fn(async () => ({ kind: 'sent' as const })) };
+    for (const next of ['/account/merge?token=' + 'T'.repeat(43), '/account/merge', '/account/merge?offer=1']) {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({ providers: [{ provide: AccountMergeClient, useValue: client }] });
+      TestBed.overrideComponent(PasswordAccountForm, {
+        add: { providers: [{ provide: DOCUMENT, useValue: { defaultView: { location: { assign } } } }] },
+      });
+      const api = fakeApi(async () => ({ kind: 'signed-in', next, mergeAvailable: true }));
+      const page = mount('signin', api);
+      page.type('#account-email', 'priya@gmail.com');
+      page.type('#account-password', 'Secret-Passw0rd!');
+      await page.submit();
+      expect(page.element.querySelector('app-merge-inbox-panel')).toBeNull();
+      expect(assign).toHaveBeenLastCalledWith(next);
+    }
+    expect(client.requestMergeEmail).not.toHaveBeenCalled();
+    expect(mergeNext({ kind: 'signed-in', next: '/learn' })).toBeNull();
+    // Only the merge page itself: a lookalike path still gets the offer.
+    expect(mergeNext({ kind: 'signed-in', next: '/account/merger', mergeAvailable: true })).toBe('/account/merger');
   });
 });
 

@@ -1,3 +1,4 @@
+import { DOCUMENT } from '@angular/common';
 import { CUSTOM_ELEMENTS_SCHEMA, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter, Router, RouterLink } from '@angular/router';
@@ -5,6 +6,7 @@ import { of } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 import { PasswordSignInApi, PasswordSignInError, PasswordStep } from './password-sign-in-api';
 import { PasswordStepKind, PasswordStepPage } from './password-step';
+import { StudyPlanAccount } from '../study-plan/study-plan-account';
 
 function fakeApi(email: string, result: () => Promise<PasswordStep>) {
   return {
@@ -19,17 +21,26 @@ function fakeApi(email: string, result: () => Promise<PasswordStep>) {
   };
 }
 
-function mount(kind: PasswordStepKind, api: ReturnType<typeof fakeApi>) {
+function mount(kind: PasswordStepKind, api: ReturnType<typeof fakeApi>, google = true) {
+  const assign = vi.fn();
+  const accounts = { authOptions: signal(google ? { managedLogin: true, password: true, google: true } : null), loadAuthOptions: vi.fn(async () => undefined) };
   const queryParamMap = convertToParamMap({ returnTo: '/learn' });
   TestBed.configureTestingModule({
     imports: [PasswordStepPage],
     providers: [
       provideRouter([]),
       { provide: PasswordSignInApi, useValue: api },
+      { provide: StudyPlanAccount, useValue: accounts },
       { provide: ActivatedRoute, useValue: { snapshot: { data: { passwordStep: kind }, queryParamMap }, queryParamMap: of(queryParamMap) } },
     ],
   });
-  TestBed.overrideComponent(PasswordStepPage, { set: { imports: [RouterLink], schemas: [CUSTOM_ELEMENTS_SCHEMA] } });
+  TestBed.overrideComponent(PasswordStepPage, {
+    set: {
+      imports: [RouterLink],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
+      providers: [{ provide: DOCUMENT, useValue: { defaultView: { location: { assign } } } }],
+    },
+  });
   const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
   const fixture = TestBed.createComponent(PasswordStepPage);
   fixture.detectChanges();
@@ -46,7 +57,7 @@ function mount(kind: PasswordStepKind, api: ReturnType<typeof fakeApi>) {
     fixture.detectChanges();
   };
   const text = () => element.textContent!.replace(/\s+/g, ' ');
-  return { fixture, element, type, submit, navigate, text };
+  return { fixture, element, type, submit, navigate, text, assign, accounts };
 }
 
 describe('PasswordStepPage', () => {
@@ -86,6 +97,9 @@ describe('PasswordStepPage', () => {
     const view = mount('forgot', api);
     expect(view.element.querySelector('h1')!.textContent).toBe('Reset your password');
     expect(view.text()).toContain("Enter your email. If it has an account, we'll send a code.");
+    // DLV-969 account linking: Google sign-in has no password to reset.
+    expect(view.element.querySelector('.google-reset-hint')!.textContent!.trim())
+      .toBe('If you joined with Google, there is no password to reset. Use Continue with Google.');
     view.type('#step-email', 'priya@example.com');
     await view.submit();
     expect(api.forgot).toHaveBeenCalledWith('priya@example.com');
@@ -97,6 +111,7 @@ describe('PasswordStepPage', () => {
     const api = fakeApi('priya@example.com', async () => ({ kind: 'sign-in' }));
     api.destination.set('p***@e***');
     const view = mount('reset', api);
+    expect(view.element.querySelector('.google-reset-hint')).toBeNull();
     expect(view.text()).toContain('Enter the code we sent to p***@e*** and choose a new password.');
     view.type('#step-code', '654321');
     view.type('#step-new-password', 'weak');
@@ -134,6 +149,41 @@ describe('PasswordStepPage', () => {
     api.codeMethod.set('email');
     view.fixture.detectChanges();
     expect(view.text()).toContain('Enter the 6-digit code we emailed you.');
+  });
+
+  it('shows Check your inbox when the finished sign-in reports another account (DLV-969 S36.8)', async () => {
+    const api = fakeApi('priya@gmail.com', async () => ({ kind: 'signed-in', next: '/learn', mergeAvailable: true }));
+    const view = mount('code', api);
+    view.type('#step-code', '111111');
+    await view.submit();
+    expect(api.respond).toHaveBeenCalledWith({ code: '111111' });
+    expect(view.element.querySelector('app-merge-inbox-panel')).not.toBeNull();
+    expect(view.element.querySelector('form')).toBeNull();
+    expect(view.navigate).not.toHaveBeenCalled();
+  });
+
+  it('never shows Check your inbox on the way to the merge page, and keeps the link (code, new password, reset)', async () => {
+    const next = '/account/merge?token=' + 'T'.repeat(43);
+    const answers: Record<string, [string, string][]> = {
+      code: [['#step-code', '111111']],
+      'new-password': [['#step-new-password', 'Good-Passw0rd-123']],
+      reset: [['#step-code', '654321'], ['#step-new-password', 'Good-Passw0rd-123']],
+    };
+    for (const [kind, fields] of Object.entries(answers)) {
+      TestBed.resetTestingModule();
+      const api = fakeApi('priya@gmail.com', async () => ({ kind: 'signed-in', next, mergeAvailable: true }));
+      const view = mount(kind as PasswordStepKind, api);
+      for (const [selector, value] of fields) view.type(selector, value);
+      await view.submit();
+      expect(view.element.querySelector('app-merge-inbox-panel')).toBeNull();
+      expect(view.assign).toHaveBeenCalledWith(next);
+    }
+  });
+
+  it('shows the Google reset hint only where Continue with Google is offered', async () => {
+    const view = mount('forgot', fakeApi('', async () => ({ kind: 'sign-in' })), false);
+    expect(view.element.querySelector('.google-reset-hint')).toBeNull();
+    expect(view.accounts.loadAuthOptions).toHaveBeenCalled();
   });
 
   it('reports a failed resend', async () => {
