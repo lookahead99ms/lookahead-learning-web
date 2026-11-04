@@ -287,7 +287,7 @@ export class TestAccounts implements OnInit {
       this.createKey.set(null);this.createPassword='';this.creating.set(false);
       this.busy.set(false);await this.load();
       this.notice.set(dev
-        ? `${created.username} created. To use it, sign out (not Exit DEV) and choose it under Use a test account.`
+        ? `${created.username} created. To use it, choose Switch to a test account in your account menu.`
         : `${created.username} created. Share its password through your local test setup.`);
     } catch {
       this.notice.set(dev ? 'Creation was not confirmed. Retry; the same request key is reused.' : 'Creation was not confirmed. Retry with the same password and request key.');
@@ -308,7 +308,7 @@ export class TestAccounts implements OnInit {
         if(status.total-status.ready-status.deleted<=0)break;
       }
       this.rosterBusy.set(false);await this.load();
-      this.notice.set('The test roster is ready. To use an account, sign out (not Exit DEV) and choose it under Use a test account.');
+      this.notice.set('The test roster is ready. To use an account, choose Switch to a test account in your account menu.');
     } catch(failure) {
       this.notice.set(reason(failure)+'The roster stopped part way. Create again to continue.');
     } finally {this.rosterBusy.set(false);}

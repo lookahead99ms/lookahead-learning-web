@@ -7,8 +7,10 @@ import {
   Input,
   ViewChild,
   computed,
+  effect,
   inject,
   signal,
+  untracked,
 } from '@angular/core';
 import { HeaderNavigation } from './header-navigation';
 import { PlatformBrand } from '../platform-brand/platform-brand';
@@ -39,6 +41,9 @@ import {
 import { ScrollLock } from '../scroll-lock/scroll-lock';
 import { HeaderHint } from './header-hint';
 import { DevSession, onGatePage } from '../dev-session-notice/dev-session';
+import { TestSessions } from '../test-session/test-sessions';
+import { TestAccountSwitcher } from '../test-session/test-account-switcher';
+import { TestSessionBar } from '../test-session/test-session-bar';
 
 export function accountTriggerLabel(displayName: string | null | undefined): string {
   const name = displayName?.trim().replace(/\s+/g, ' ');
@@ -103,6 +108,8 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
   imports: [
     ScrollLock,
     HeaderHint,
+    TestAccountSwitcher,
+    TestSessionBar,
     PlatformBrand,
     HeaderNavigation,
     TopicShortcuts,
@@ -529,6 +536,15 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         color: var(--text-strong);
         background: var(--surface-muted);
       }
+      /* DLV-969: Switch to a test account is a button that reads like the links around it. */
+      button.dropdown-item-link {
+        width: calc(100% - 16px);
+        border: 0;
+        background: none;
+        font-family: inherit;
+        text-align: start;
+        cursor: pointer;
+      }
       .item-icon {
         display: grid;
         flex: 0 0 30px;
@@ -931,6 +947,23 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
   protected readonly authorWorkspaceLinks = computed(() => visibleAdminLinks(this.accounts.account()));
   protected readonly accounts = inject(StudyPlanAccount);
   protected readonly devSession = inject(DevSession);
+  protected readonly testSessions = inject(TestSessions);
+  /**
+   * DLV-969 (owner, 2026-11-04): Switch to a test account, for staff inside DEV and for anyone already using a test
+   * account. The Gateway and Domain still decide which accounts, if any, this person may use.
+   */
+  protected readonly canSwitchAccount = computed(
+    () =>
+      !!this.devSession.status() &&
+      (this.testSessions.active() ||
+        ['owner', 'co-author', 'admin'].includes(this.accounts.account()?.permissions?.feedbackRole ?? '') ||
+        !!this.accounts.account()?.authorPreview),
+  );
+  private readonly testSessionCheck = effect(() => {
+    // Once per signed-in account inside DEV: is this a test session, and whose sign-in waits behind it.
+    const accountId = this.accounts.account()?.accountId;
+    if (this.devSession.status() && accountId) untracked(() => void this.testSessions.refresh());
+  });
   protected readonly accountLabel = computed(() =>
     accountTriggerLabel(this.accounts.account()?.displayName),
   );
@@ -1025,6 +1058,11 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
 
   protected readonly signingOut = signal(false);
   protected readonly signOutError = signal('');
+
+  protected openTestAccounts(): void {
+    this.profileMenuOpen.set(false);
+    void this.testSessions.open();
+  }
 
   protected async signOut(): Promise<void> {
     if (this.signingOut() || this.accounts.busy() || this.accounts.pending()) return;
