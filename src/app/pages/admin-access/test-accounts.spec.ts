@@ -345,7 +345,7 @@ describe('Test account maintenance',()=>{
    const root=await shown(fixture);
    const card=root.querySelector('.roster-card')!;
    expect(card.textContent).toContain('0 of 35 ready');
-   expect(root.querySelector('.note')?.textContent).toContain('sign out (not Exit DEV)');
+   expect(root.querySelector('.note')?.textContent).toContain('Switch to a test account in your account menu');
    let ready=0;
    request.mockImplementation(async(path:string,body?:any)=>{
     if(body?.roster){ready=Math.min(35,ready+5);return {total:35,ready,deleted:0};}
@@ -449,7 +449,7 @@ describe('Test account maintenance',()=>{
    await component.create();
    const call=request.mock.calls.find(([path,body])=>path==='/admin/test-accounts'&&body)!;
    expect(call[1]).toEqual({key:expect.any(String),scenario:'learner05'});
-   expect(component.notice()).toBe('test-0a1b2c3d4e@lookahead.dev created. To use it, sign out (not Exit DEV) and choose it under Use a test account.');
+   expect(component.notice()).toBe('test-0a1b2c3d4e@lookahead.dev created. To use it, choose Switch to a test account in your account menu.');
    request.mockRejectedValueOnce(new Error('uncertain'));
    await component.create();
    expect(component.notice()).toBe('Creation was not confirmed. Retry; the same request key is reused.');

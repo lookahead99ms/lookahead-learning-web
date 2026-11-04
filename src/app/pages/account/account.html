@@ -316,10 +316,6 @@
         </p>
         <a class="action-link" routerLink="/study-plan">Open Study Plan</a>
       }
-      @if (store.enabled && !signup() && devSession.status()) {
-        <!-- DLV-969 S35: inside the open DEV gate, staff may use a test account instead of signing in. -->
-        <app-test-account-picker />
-      }
       @if (!devSession.outsideGate()) {
         <!-- DLV-969 (owner, 2026-11-03): no way back into learning before the DEV gate admits this browser. -->
         <ng-container [ngTemplateOutlet]="learningActions" />

@@ -8,6 +8,7 @@ import { AUTHOR_PREVIEWS_BASE_URL } from '../author-preview-config';
 import { StudyPlanAccount } from '../../pages/study-plan/study-plan-account';
 import { SearchDocument } from '../../content/content.models';
 import { DevSession } from '../dev-session-notice/dev-session';
+import { TestSessions } from '../test-session/test-sessions';
 
 describe('PlatformHeader account disclosure', () => {
   beforeEach(async () => {
@@ -207,6 +208,64 @@ describe('PlatformHeader account disclosure', () => {
     expect(fixture.nativeElement.querySelector('#account-menu')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('[role="menu"]')).toBeNull();
     expect(fixture.nativeElement.querySelector('[role="menuitem"]')).toBeNull();
+  });
+
+  /** DLV-969 (owner, 2026-11-04): staff switch to a test account from this menu, and come back from it. */
+  it('offers Switch to a test account to staff inside DEV, and Back to my account while one is in use', () => {
+    const sessions = TestBed.inject(TestSessions);
+    const refresh = vi.spyOn(sessions, 'refresh').mockResolvedValue();
+    const open = vi.spyOn(sessions, 'open').mockResolvedValue();
+    const back = vi.spyOn(sessions, 'back').mockResolvedValue();
+    const store = TestBed.inject(StudyPlanAccount);
+    const dev = TestBed.inject(DevSession);
+    store.account.set({ accountId: 'learner', username: 'learner@example.test', displayName: 'Priya Raman', topicGrants: [] });
+    const fixture = TestBed.createComponent(PlatformHeader);
+    const root = fixture.nativeElement as HTMLElement;
+    const menu = () => {
+      (root.querySelector('.avatar-trigger-btn') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      return root.querySelector('#account-menu') as HTMLElement;
+    };
+    fixture.detectChanges();
+    // Outside DEV, or a learner inside DEV: nothing to switch to, and nobody asks the Gateway.
+    expect(menu().textContent).not.toContain('test account');
+    expect(refresh).not.toHaveBeenCalled();
+    dev.status.set({ dev: true, deadline: '', warning: false, maintenance: false });
+    fixture.detectChanges();
+    expect(root.querySelector('#account-menu')?.textContent).not.toContain('Switch to a test account');
+    expect(refresh).toHaveBeenCalledTimes(1);
+    // The owner inside DEV.
+    store.account.set({ accountId: 'owner', username: 'author@example.test', displayName: 'Author', topicGrants: [], authorPreview: true });
+    fixture.detectChanges();
+    expect(refresh).toHaveBeenCalledTimes(2);
+    const item = root.querySelector('.test-switch') as HTMLButtonElement;
+    expect(item.textContent).toContain('Switch to a test account');
+    expect(root.querySelector('.account-sign-out')?.textContent).toContain('Sign out');
+    item.click();
+    fixture.detectChanges();
+    expect(open).toHaveBeenCalled();
+    expect(root.querySelector('#account-menu')).toBeNull();
+    // A co-author or admin sees it too.
+    store.account.set({ accountId: 'admin', username: 'admin@example.test', displayName: 'Admin One', topicGrants: [], permissions: { feedbackRole: 'admin' } } as never);
+    fixture.detectChanges();
+    expect(menu().querySelector('.test-switch')).not.toBeNull();
+    // Using a test account: who you are, Switch test account, and Back to my account in place of Sign out.
+    sessions.status.set({ active: true, canReturn: true, holderName: 'Author' });
+    store.account.set({ accountId: 'id-learner05', username: 'learner05@lookahead.dev', displayName: 'Learner05', topicGrants: [] });
+    fixture.detectChanges();
+    const using = root.querySelector('#account-menu') as HTMLElement;
+    expect(using.querySelector('.user-display-email')?.textContent?.trim()).toBe('Test account · you are Author');
+    expect(using.querySelector('.test-switch')?.textContent).toContain('Switch test account');
+    expect(using.textContent).not.toContain('Sign out');
+    (using.querySelector('.account-back') as HTMLButtonElement).click();
+    expect(back).toHaveBeenCalled();
+    sessions.returning.set(true);
+    fixture.detectChanges();
+    expect(using.querySelector('.account-back')?.textContent).toContain('Going back…');
+    sessions.status.set({ active: true, canReturn: false, holderName: null });
+    fixture.detectChanges();
+    expect(using.querySelector('.user-display-email')?.textContent?.trim()).toBe('Test account');
+    expect(dev.status()).not.toBeNull();
   });
 
   it('routes both Study Plan entry points to the saved-plan chooser', () => {
@@ -1297,7 +1356,7 @@ describe('PlatformHeader DEV session (user decision 2026-11-02)', () => {
     expect(panel.querySelector('.dev-environment-title')?.textContent).toBe('Look Ahead DEV');
     const exit = panel.querySelector('.dev-exit-button') as HTMLButtonElement;
     expect(exit.textContent?.trim()).toBe('Exit DEV environment');
-    expect(document.getElementById(exit.getAttribute('aria-describedby')!)?.textContent).toContain('To switch accounts and stay in DEV, use Sign out');
+    expect(document.getElementById(exit.getAttribute('aria-describedby')!)?.textContent).toContain('To see DEV as a test account, use Switch to a test account in your account menu.');
     const leave = vi.spyOn(session, 'leave').mockResolvedValue();
     exit.click();
     expect(leave).toHaveBeenCalledOnce();

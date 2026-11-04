@@ -16,7 +16,6 @@ import { ACTIVE_SIGN_INS_CLIENT } from './active-sign-ins-client';
 import { SignInManagementApi } from './sign-in-management-api';
 import { PasswordAccountForm } from './password-account-form';
 import { SignInBrand } from './sign-in-brand';
-import { TestAccountPicker } from './test-account-picker';
 
 import { gatewayLoginUrl, safeAccountReturn } from './account-navigation';
 import {
@@ -37,7 +36,6 @@ export { safeAccountReturn } from './account-navigation';
     ActiveSignIns,
     PasswordAccountForm,
     SignInBrand,
-    TestAccountPicker,
   ],
   providers: [
     { provide: ACCOUNT_SETTINGS_CLIENT, useExisting: StudyPlanAccount },

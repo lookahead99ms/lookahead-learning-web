@@ -42,7 +42,7 @@
               {{ devSession.leaving() ? 'Exiting…' : 'Exit DEV environment' }}
             </button>
             <p id="dev-exit-note" class="dev-environment-note">
-              Signs you out of DEV and returns you to its gate. To switch accounts and stay in DEV, use Sign out in your account menu.
+              Signs you out of DEV and returns you to its gate. To see DEV as a test account, use Switch to a test account in your account menu.
             </p>
             @if (devSession.error()) {
               <p class="dev-environment-error" role="alert">{{ devSession.error() }}</p>
@@ -247,7 +247,9 @@
                 </p>
                 <p class="user-display-email">
                   {{
-                    beforeAdmission()
+                    testSessions.active()
+                      ? (testSessions.status()?.holderName ? 'Test account · you are ' + testSessions.status()?.holderName : 'Test account')
+                      : beforeAdmission()
                       ? 'Sign out to use a different account.'
                       : accounts.account()
                       ? 'Your study plans and progress'
@@ -305,7 +307,34 @@
                 </nav>
               }
             }
+            @if (canSwitchAccount() && !beforeAdmission()) {
+              <!-- DLV-969 (owner, 2026-11-04): staff look at DEV through a test account without signing out. -->
+              <div class="menu-divider"></div>
+              <div class="dropdown-links-list" role="group" aria-label="Test accounts">
+                <button type="button" class="dropdown-item-link test-switch" (click)="openTestAccounts()"
+                  ><span class="item-icon" aria-hidden="true">🔁</span
+                  ><span class="item-text"
+                    ><span class="item-label">{{ testSessions.active() ? 'Switch test account' : 'Switch to a test account' }}</span
+                    ><small>See DEV as a learner, co-author or admin</small></span
+                  ></button
+                >
+              </div>
+            }
             <div class="account-session-actions">
+              @if (testSessions.active()) {
+                <button
+                  class="account-sign-out account-back"
+                  type="button"
+                  [disabled]="testSessions.returning()"
+                  [attr.aria-busy]="testSessions.returning()"
+                  (click)="testSessions.back()"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M10 6l-6 6 6 6M4 12h11a5 5 0 0 1 5 5v1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  <span>{{ testSessions.returning() ? 'Going back…' : 'Back to my account' }}</span>
+                </button>
+              } @else {
               <button
                 class="account-sign-out"
                 type="button"
@@ -324,6 +353,7 @@
                 </svg>
                 <span>{{ signingOut() ? 'Signing out…' : 'Sign out' }}</span>
               </button>
+              }
               @if (signOutError()) {
                 <p class="account-sign-out-error" role="alert">{{ signOutError() }}</p>
               }
@@ -334,3 +364,13 @@
     }
   </div>
 </header>
+<!-- DLV-969 (owner, 2026-11-04): which test account is in use stays in view under the header. Both load only when
+     needed, so nobody else downloads them. -->
+@defer (when testSessions.active()) {
+  <app-test-session-bar />
+}
+@if (canSwitchAccount()) {
+  @defer (when testSessions.pickerOpen()) {
+    <app-test-account-switcher />
+  }
+}

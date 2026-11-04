@@ -1,0 +1,100 @@
+<dialog appScrollLock #dialog class="switcher" aria-labelledby="switcher-title" aria-describedby="switcher-note" (close)="sessions.close()">
+  <div class="switcher-shell">
+    <div class="switcher-head">
+      <div>
+        <p class="switcher-eyebrow">DEV · Test accounts</p>
+        <h2 id="switcher-title">{{ sessions.active() ? 'Switch test account' : 'Switch to a test account' }}</h2>
+        <p id="switcher-note" class="switcher-note">
+          See the platform exactly as this account does. @if (holder(); as name) {You stay signed in as {{ name }}; }
+          @else {Your own sign-in stays; }<strong>Back to my account</strong> in the account menu returns you.
+        </p>
+      </div>
+      <button type="button" class="switcher-close" aria-label="Close" [disabled]="!!sessions.starting()" (click)="sessions.close()">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+      </button>
+    </div>
+
+    <div class="switcher-tools">
+      <label class="switcher-search">
+        <span class="visually-hidden">Find a test account</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8" /><path d="M16 16l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /></svg>
+        <input type="search" [value]="query()" (input)="query.set($any($event.target).value)" placeholder="Find by name, plan or scenario" autocomplete="off" />
+      </label>
+      <div class="switcher-tabs" role="tablist" aria-label="Kind of account">
+        @for (item of tabs; track item.id; let index = $index) {
+          <button
+            type="button"
+            role="tab"
+            [id]="'switcher-tab-' + item.id"
+            aria-controls="switcher-list"
+            [attr.aria-selected]="tab() === item.id"
+            [attr.tabindex]="tab() === item.id ? 0 : -1"
+            (click)="chooseTab(item.id)"
+            (keydown)="tabKey($event, index)"
+          >
+            {{ item.title }} <span class="tab-count">{{ counts()[item.id] }}</span>
+          </button>
+        }
+      </div>
+      @if (tab() === 'learners' && plans().length > 1) {
+        <div class="switcher-plans" role="group" aria-label="Plan">
+          <button type="button" [attr.aria-pressed]="!plan()" (click)="plan.set(null)">All plans</button>
+          @for (name of plans(); track name) {
+            <button type="button" [attr.aria-pressed]="plan() === name" [attr.data-plan]="name" (click)="plan.set(plan() === name ? null : name)">{{ name }}</button>
+          }
+        </div>
+      }
+    </div>
+
+    <div id="switcher-list" class="switcher-list" role="tabpanel" [attr.aria-labelledby]="'switcher-tab-' + tab()">
+      @if (sessions.accounts() === null) {
+        <p class="switcher-empty">Loading test accounts…</p>
+      } @else {
+        <ul>
+          @for (account of shown(); track account.accountId) {
+            @let current = account.accountId === currentId();
+            <li>
+              <button
+                type="button"
+                class="switcher-row"
+                [class.current]="current"
+                [disabled]="!!sessions.starting() || current"
+                [attr.aria-busy]="sessions.starting() === account.accountId"
+                (click)="use(account)"
+              >
+                <span class="row-mark" aria-hidden="true">{{ initials(account) }}</span>
+                <span class="row-text">
+                  <span class="row-name">{{ account.displayName }}<span class="row-user">{{ account.username }}</span></span>
+                  <span class="row-detail">
+                    @if (planOf(account); as name) {
+                      <span class="row-plan" [attr.data-plan]="name">{{ name }}</span>
+                    } @else if (account.roles.length) {
+                      <span class="row-plan" data-plan="staff">{{ label(account) }}</span>
+                    }
+                    <span>{{ detail(account) }}</span>
+                  </span>
+                </span>
+                <span class="row-action">
+                  {{ current ? 'In use' : sessions.starting() === account.accountId ? 'Opening…' : 'Use' }}
+                </span>
+              </button>
+            </li>
+          } @empty {
+            <li class="switcher-empty">{{ query().trim() ? 'No test account matches.' : 'No test accounts here for your role.' }}</li>
+          }
+        </ul>
+      }
+    </div>
+
+    @if (sessions.error()) {
+      <p class="switcher-error" role="alert">{{ sessions.error() }}</p>
+    }
+    @if (sessions.active()) {
+      <div class="switcher-foot">
+        <button type="button" class="action-link" [disabled]="sessions.returning() || !!sessions.starting()" (click)="sessions.back()">
+          {{ sessions.returning() ? 'Going back…' : 'Back to my account' }}
+        </button>
+      </div>
+    }
+  </div>
+</dialog>
