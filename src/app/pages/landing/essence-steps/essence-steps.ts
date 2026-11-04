@@ -160,8 +160,11 @@ export class EssenceSteps {
       this.traveller.set(null);
       return;
     }
-    const x = (value: number) => Math.round((value - box.left) * 10) / 10;
-    const y = (value: number) => Math.round((value - box.top) * 10) / 10;
+    // On-screen boxes include any CSS zoom on the way up (/welcome and locked pages scale the Essence to fit), while the
+    // drawing uses the frame's own units: divide by the scale so the line and the arrow reach the last step at any zoom.
+    const scale = frame!.offsetWidth > 0 ? box.width / frame!.offsetWidth : 1;
+    const x = (value: number) => Math.round(((value - box.left) / scale) * 10) / 10;
+    const y = (value: number) => Math.round(((value - box.top) / scale) * 10) / 10;
     // Each step is drawn once it has appeared: up the riser from the step before, then along it.
     this.lines.set(
       steps.map((step, index) => {

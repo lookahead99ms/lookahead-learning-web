@@ -580,6 +580,16 @@ input:focus-visible,
 .membership-note {
   font-size: 0.9rem;
 }
+/* DLV-969: a DEV test account's purchase request waiting for approval. */
+.membership-request {
+  margin: 0;
+  padding: 8px 12px;
+  border-inline-start: 3px solid var(--warning);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--warning) 12%, var(--surface));
+  color: var(--text-body);
+  font-size: 0.9rem;
+}
 .membership-paths {
   flex: 1;
   display: flex;

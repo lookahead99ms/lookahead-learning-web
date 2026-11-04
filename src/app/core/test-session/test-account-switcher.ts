@@ -2,6 +2,7 @@ import { Component, ElementRef, computed, effect, inject, signal, untracked, vie
 import { ScrollLock } from '../scroll-lock/scroll-lock';
 import { StudyPlanAccount } from '../../pages/study-plan/study-plan-account';
 import { TestSessions, UsableTestAccount, roleLabel, scenarioDetail, scenarioPlan } from './test-sessions';
+import { switcherUpgradeLine, switcherUpgradeOf } from '../../content/upgrade-markers';
 
 type Tab = 'learners' | 'co-authors' | 'admins';
 
@@ -33,6 +34,11 @@ export class TestAccountSwitcher {
   protected readonly label = roleLabel;
   protected readonly detail = scenarioDetail;
   protected readonly planOf = scenarioPlan;
+  /** "Upgraded by Admin 2 · Grow", "Upgraded by you · Grow"; null when nobody upgraded it. */
+  protected upgradeOf(account: UsableTestAccount): string | null {
+    const marker = switcherUpgradeOf(account);
+    return marker ? switcherUpgradeLine(marker) : null;
+  }
 
   private readonly all = computed(() => this.sessions.accounts() ?? []);
   /** Tabs holding at least one account this person may use, before any search; none while loading or empty. */

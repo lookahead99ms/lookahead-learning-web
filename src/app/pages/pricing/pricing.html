@@ -30,10 +30,18 @@
       Open lessons need no account. Yearly plans open Learn, Grow or both, and Complete adds Blaze.
       Nothing renews automatically: you renew by buying again.
     </p>
-    <p class="sample-note" role="note">
-      <strong>Local payment simulation.</strong>
-      Purchases create local access records; nothing is charged.
-    </p>
+    @if (dev()) {
+      <!-- DLV-969 (owner, 2026-11-04): in DEV only test accounts buy, and each purchase waits for approval. -->
+      <p class="sample-note" role="note">
+        <strong>DEV purchase requests.</strong>
+        Only test accounts can buy here. Each purchase is a request that the owner or an admin approves; nothing is charged.
+      </p>
+    } @else {
+      <p class="sample-note" role="note">
+        <strong>Local payment simulation.</strong>
+        Purchases create local access records; nothing is charged.
+      </p>
+    }
   </header>
 
   @if (sale(); as current) {
@@ -217,7 +225,14 @@
     @if (chosen(); as card) {
       <p class="eyebrow">{{ card.plan.name }} · <span class="price-figure">{{ card.spokenPrice }}</span></p>
     }
-    @if (signedIn()) {
+    @if (signedIn() && mode() === 'request') {
+      <h2 id="checkout-notice-title">Send a purchase request</h2>
+      <p id="checkout-notice-description">In DEV the owner or an admin approves purchases for test accounts. Your plan changes once it is approved. No money is charged.</p>
+      <p class="notice-detail">Nothing renews automatically. You must purchase again to extend access.</p>
+    } @else if (signedIn() && mode() === 'real') {
+      <h2 id="checkout-notice-title">Purchases in DEV are for test accounts</h2>
+      <p id="checkout-notice-description">In DEV, purchases are for test accounts; the owner or an admin approves them. To try a plan, choose Switch to a test account in your account menu.</p>
+    } @else if (signedIn()) {
       <h2 id="checkout-notice-title">Local payment simulation</h2>
       <p id="checkout-notice-description">This creates a real local access record using a mock payment. No money is charged.</p>
       <p class="notice-detail">Nothing renews automatically. You must purchase again to extend access.</p>
@@ -228,11 +243,31 @@
         Plans belong to an account. Sign in, then come back here to choose your plan.
       </p>
     }
-    @if(signedIn() && membershipApi.records().length){<label>Existing access <select [(ngModel)]="replacesId" (ngModelChange)="prepareQuote()"><option value="">New purchase</option>@for(record of membershipApi.records();track record.id){@if(record.status==='active'){<option [value]="record.id">{{record.planId}} · {{record.endsAt}}</option>}}</select></label>}
+    @if(signedIn() && mode() !== 'real' && membershipApi.records().length){<label>Existing access <select [(ngModel)]="replacesId" (ngModelChange)="prepareQuote()"><option value="">New purchase</option>@for(record of membershipApi.records();track record.id){@if(record.status==='active'){<option [value]="record.id">{{record.planId}} · {{record.endsAt}}</option>}}</select></label>}
     @if(quote();as estimate){<p>Price: <span class="price-figure">${{(estimate.priceCents / 100).toFixed(2)}}</span> · Ends {{estimate.endsAt | date:'mediumDate':'UTC'}} (UTC)</p>}
-    <p role="status">{{ purchaseStatus() || membershipApi.error() }}</p>
+    @if (requestSent(); as sent) {
+      <!-- DLV-969 (owner wording, 2026-11-04): staff usually test learners, so the notice says where it is approved and
+           where to check the result. Review request ends the test session and opens that request. -->
+      <div class="request-sent" role="status">
+        <p>
+          <strong>Request sent — mock payment waiting for approval.</strong>
+          Review it in <strong class="inline-strong">People and access</strong> in your own account, and approve or decline it there.
+        </p>
+        <p class="request-later">
+          To check the result later, open <strong class="inline-strong">Manage account → Membership</strong> in {{ sent.name }}’s account menu.
+        </p>
+        <p class="request-back">
+          <button type="button" class="request-back-button" [disabled]="testSessions.returning()" [attr.aria-busy]="testSessions.returning()" (click)="reviewRequest(sent)">Review request</button>
+        </p>
+      </div>
+    } @else {
+      <p role="status">{{ purchaseStatus() || (signedIn() && mode() === 'request' && membershipApi.requestWaiting() ? waitingMessage : '') || membershipApi.error() }}</p>
+    }
     <div class="action-row">
-      @if (signedIn()) {
+      @if (signedIn() && mode() === 'request') {
+        <!-- While a request waits, the button says so instead of sending another. -->
+        <button class="action-button" type="button" [disabled]="purchasing() || !membershipApi.available() || !quote() || submitted() || membershipApi.requestWaiting()" (click)="purchase()">{{ membershipApi.requestWaiting() ? 'Request waiting for approval' : 'Send purchase request' }}</button>
+      } @else if (signedIn() && mode() === 'local') {
         <button class="action-button" type="button" [disabled]="purchasing() || !membershipApi.available() || !quote() || submitted()" (click)="purchase()">Confirm simulated purchase</button>
       }
       @if (!signedIn()) {

@@ -24,6 +24,9 @@ import {
 import { AccountThemePreference } from '../../core/account-theme';
 import { accountMembership, accountRoleLabel, membershipName, joinPaths } from './account-membership';
 import { MembershipApi } from '../../content/membership-api';
+import { DevSession } from '../../core/dev-session-notice/dev-session';
+import { TestSessions } from '../../core/test-session/test-sessions';
+import { REQUEST_WAITING_MESSAGE } from '../../content/purchase-requests';
 import { AccountAccessRecords } from './account-access-records';
 import { PATH_TAGLINES } from '../../content/path-taglines';
 import { PlatformThemeService, ThemePreference } from '../../core/platform-theme';
@@ -128,6 +131,16 @@ export class AccountSettings implements OnDestroy {
     const account = this.store.account();
     return account ? accountMembership(account, this.membershipApi.records()) : null;
   });
+  private readonly devSession = inject(DevSession);
+  private readonly testSessions = inject(TestSessions);
+  /**
+   * DLV-969 (owner, 2026-11-04): a DEV test account in use. Its purchases are requests the owner or an admin approves,
+   * so Manage account offers plans even though DEV signs in through managed login.
+   */
+  protected readonly devTestAccount = computed(
+    () => (this.devSession.status() !== null || this.devSession.gated()) && this.testSessions.active(),
+  );
+  protected readonly requestWaitingMessage = REQUEST_WAITING_MESSAGE;
   protected readonly joinPaths = joinPaths;
   protected readonly accountRoleLabel = accountRoleLabel;
   // Each path's platform tagline, split as "Learn" + "to solve it on your own." (shared wording).

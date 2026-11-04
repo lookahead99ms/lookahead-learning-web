@@ -4,7 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 import { MembershipApi } from '../../content/membership-api';
 import { StudyPlanAccount } from '../../pages/study-plan/study-plan-account';
-import { TestSessions, UsableTestAccount, roleLabel, scenarioDetail, scenarioPlan } from './test-sessions';
+import { TestSessions, UsableTestAccount, roleLabel, sameSitePath, scenarioDetail, scenarioPlan } from './test-sessions';
 
 const learner: UsableTestAccount = {
   accountId: 'id-learner05', username: 'learner05@lookahead.dev', displayName: 'Learner05', roles: [], scenario: 'Learn · active · ready-made plan · in progress',
@@ -85,6 +85,45 @@ describe('TestSessions', () => {
       await sessions.use(learner);
       expect(assign).toHaveBeenLastCalledWith('/');
       sessions.starting.set(null);
+    }
+  });
+
+  it('lands on a same-site next path instead of the Gateway’s answer, for back() and use() (DLV-969)', async () => {
+    const review = '/admin/access?tab=test&request=pur-9&return=%2Fgrow%2Fjava&account=id-learner05';
+    request.mockResolvedValueOnce({ next: '/sign-in' });
+    await sessions.back(review);
+    expect(request).toHaveBeenLastCalledWith('/auth/test-session/end', {});
+    expect(assign).toHaveBeenLastCalledWith(review);
+    sessions.returning.set(false);
+    request.mockResolvedValueOnce({ next: '/' });
+    await sessions.use(learner, '/grow/java/streams');
+    expect(request).toHaveBeenLastCalledWith('/auth/test-session', { accountId: 'id-learner05' });
+    expect(assign).toHaveBeenLastCalledWith('/grow/java/streams');
+    sessions.starting.set(null);
+    // Anything that is not a single leading "/" is ignored: the Gateway's answer (itself checked) is used instead.
+    for (const next of ['//elsewhere.example', 'https://elsewhere.example/', '/\\elsewhere.example', 'learn', '', null, undefined]) {
+      request.mockResolvedValueOnce({ next: '/learn' });
+      await sessions.use(learner, next);
+      expect(assign).toHaveBeenLastCalledWith('/learn');
+      sessions.starting.set(null);
+      request.mockResolvedValueOnce({ next: '//elsewhere.example' });
+      await sessions.back(next);
+      expect(assign).toHaveBeenLastCalledWith('/');
+      sessions.returning.set(false);
+    }
+    // A failed end keeps you where you are, even with a next path.
+    request.mockRejectedValueOnce(new Error('Gateway down'));
+    assign.mockClear();
+    await sessions.back(review);
+    expect(assign).not.toHaveBeenCalled();
+    expect(sessions.error()).toBe('Gateway down');
+  });
+
+  it('accepts only same-site paths', () => {
+    expect(sameSitePath('/')).toBe('/');
+    expect(sameSitePath('/grow/java?unit=2#top')).toBe('/grow/java?unit=2#top');
+    for (const value of ['//host', '/\\host', 'https://host/', 'javascript:alert(1)', 'grow', '', '/a\nb', '/a\u0000', 42, null, undefined]) {
+      expect(sameSitePath(value)).toBeNull();
     }
   });
 

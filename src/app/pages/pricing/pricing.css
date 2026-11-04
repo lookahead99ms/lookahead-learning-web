@@ -477,6 +477,52 @@ h2 {
   color: var(--text-subtle);
   font-size: 14px;
 }
+/* DLV-969 (owner wording, 2026-11-04): a sent DEV purchase request, with the steps to approve it. */
+.request-sent {
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  border: 1px solid color-mix(in srgb, var(--warning) 50%, var(--line));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--warning) 10%, var(--surface));
+  text-align: start;
+}
+.request-sent p {
+  margin: 0;
+}
+.request-sent strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text-strong);
+}
+.request-sent strong.inline-strong {
+  display: inline;
+  margin: 0;
+}
+.request-sent .request-later {
+  margin-top: 6px;
+  color: var(--text-subtle);
+  font-size: 0.92rem;
+}
+/* Its one action, centred under the message (button placement rule): ends the test session and opens the request. */
+.request-sent .request-back {
+  margin-top: 10px;
+  text-align: center;
+}
+.request-sent .request-back-button {
+  min-height: 34px;
+  padding: 4px 16px;
+  border: 1px solid var(--text-strong);
+  border-radius: 999px;
+  background: var(--text-strong);
+  color: var(--surface);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.request-sent .request-back-button:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
 /* Centred like the lock-screen dialog (user, 2026-10-15). */
 .checkout-notice {
   text-align: center;

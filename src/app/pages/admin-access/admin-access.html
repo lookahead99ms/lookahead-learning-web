@@ -135,6 +135,8 @@
         [view]="tab() === 'test' ? 'test' : 'people'"
         [assignments]="assignments()"
         [focusAccount]="tab() === 'people' ? focusAccount() : null"
+        [review]="tab() === 'test' ? requestReview() : null"
+        (reviewOpened)="requestReview.set(null)"
         (giveAccess)="giveAccessTo($event)"
       />
     } @else if (tab() === 'saved') {

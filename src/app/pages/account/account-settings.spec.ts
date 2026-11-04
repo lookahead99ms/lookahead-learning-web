@@ -3,6 +3,9 @@ import { provideRouter, Router } from '@angular/router';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import { AccountSettings } from './account-settings';
 import { ACCOUNT_SETTINGS_CLIENT, AccountSettingsError } from './account-settings-client';
+import { MembershipApi } from '../../content/membership-api';
+import { DevSession } from '../../core/dev-session-notice/dev-session';
+import { TestSessions } from '../../core/test-session/test-sessions';
 
 describe('Manage account', () => {
   let fixture: ComponentFixture<AccountSettings>;
@@ -484,6 +487,46 @@ describe('Manage account', () => {
     expect(link.textContent?.trim()).toBe('Choose a plan');
     expect(link.classList).toContain('action-button');
     expect(link.getAttribute('href')).toBe('/pricing');
+  });
+
+  // DLV-969 (owner, 2026-11-04): a DEV test account's purchases are requests the owner or an admin approves.
+  describe('DEV purchase requests', () => {
+    function learner(): HTMLElement {
+      store.account.update((account) => (account ? { ...account, authorPreview: false, topicGrants: [] } : account));
+      fixture.detectChanges();
+      return fixture.nativeElement.querySelector('.membership') as HTMLElement;
+    }
+
+    it('says a request is waiting for approval while one is', () => {
+      let membership = learner();
+      expect(membership.querySelector('.membership-request')).toBeNull();
+      TestBed.inject(MembershipApi).requestWaiting.set(true);
+      fixture.detectChanges();
+      membership = fixture.nativeElement.querySelector('.membership') as HTMLElement;
+      const waiting = membership.querySelector('.membership-request')!;
+      expect(waiting.getAttribute('role')).toBe('status');
+      expect(waiting.textContent?.trim()).toBe(
+        'A request is already waiting for the owner or an admin. Your plan changes once it is approved.',
+      );
+    });
+
+    it('offers plans to a DEV test account, as requests, even with managed sign-in', () => {
+      store.authOptions.set({ registration: false, google: false, managedLogin: true });
+      let membership = learner();
+      // A real DEV account keeps the administrator note and no plan button.
+      expect(membership.querySelector('.membership-note')?.textContent).toContain('For more course access, contact the account administrator.');
+      expect(membership.querySelector('.membership-buy')).toBeNull();
+      TestBed.inject(DevSession).gated.set(true);
+      TestBed.inject(TestSessions).status.set({ active: true, canReturn: true, holderName: 'Owner' });
+      fixture.detectChanges();
+      membership = fixture.nativeElement.querySelector('.membership') as HTMLElement;
+      expect(membership.querySelector('.membership-note')?.textContent?.trim()).toBe(
+        'In DEV, purchases for test accounts are requests: the owner or an admin approves them, and nothing is charged.',
+      );
+      const link = membership.querySelector('.membership-buy a') as HTMLAnchorElement;
+      expect(link.textContent?.trim()).toBe('Choose a plan');
+      expect(link.getAttribute('href')).toBe('/pricing');
+    });
   });
 
   describe('with profile links', () => {

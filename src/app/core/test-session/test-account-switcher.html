@@ -75,6 +75,10 @@
                     }
                     <span>{{ detail(account) }}</span>
                   </span>
+                  <!-- DLV-969 (owner, 2026-11-04): someone upgraded it through an approved request; still selectable. -->
+                  @if (upgradeOf(account); as upgraded) {
+                    <span class="row-upgrade">{{ upgraded }}</span>
+                  }
                 </span>
                 <span class="row-action">
                   {{ current ? 'In use' : sessions.starting() === account.accountId ? 'Opening…' : 'Use' }}

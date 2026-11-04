@@ -12,6 +12,7 @@ import { DirectoryAccount, DirectoryRow, accountName, loadDirectory, personLines
 import { AccountSignInMethod } from '../account/account-settings-client';
 import { isProviderUsername } from '../study-plan/study-plan-account';
 import { AdminMemberships } from './admin-memberships';
+import { RequestReview, REVIEW_PARAMS, REVIEW_PATH, requestReviewOf } from '../../content/purchase-requests';
 
 interface Assignment {
   id: string; accountId: string | null; pendingEmail: string | null;
@@ -101,10 +102,15 @@ export class AdminAccessPage implements OnInit {
     return ids.map(id => ({ id, label: id === 'waiting' && count ? `${TAB_LABELS[id]} · ${count}` : TAB_LABELS[id] }));
   });
   private readonly location = inject(Location, { optional: true });
-  /** `/admin/access?tab=test` opens that tab, so documentation can link straight to it. */
+  private readonly address = inject(ActivatedRoute, { optional: true })?.snapshot.queryParamMap;
+  /**
+   * DLV-969 (owner, 2026-11-04): `?request=<purchaseId>&return=<path>&account=<id>` from a test account's Review request.
+   * Read once: the Test accounts tab opens on that request, and the values leave the address so a reload does not repeat it.
+   */
+  readonly requestReview = signal<RequestReview | null>(this.address ? requestReviewOf(this.address) : null);
+  /** `/admin/access?tab=test` opens that tab, so documentation can link straight to it; a review always opens Test accounts. */
   private readonly chosenTab = signal<AccessTab | null>(
-    ((tab: string | null | undefined) => (tab && tab in TAB_LABELS ? (tab as AccessTab) : null))(
-      inject(ActivatedRoute, { optional: true })?.snapshot.queryParamMap.get('tab')),
+    this.requestReview() ? 'test' : ((tab: string | null | undefined) => (tab && tab in TAB_LABELS ? (tab as AccessTab) : null))(this.address?.get('tab')),
   );
   readonly tab = computed<AccessTab>(() => {
     const chosen = this.chosenTab();
@@ -124,6 +130,9 @@ export class AdminAccessPage implements OnInit {
     inject(DestroyRef).onDestroy(() => this.tabResize?.disconnect());
     // After each render that changes the tabs (the waiting count moves Waiting first), keep the chosen tab in view.
     afterRenderEffect(() => { this.tabs(); this.revealTab(this.tab()); });
+    // The review values leave the address (the tab stays), so a reload does not open the review again.
+    const chosen = this.chosenTab();
+    if (this.address && Object.values(REVIEW_PARAMS).some(name => this.address!.has(name))) this.location?.replaceState(REVIEW_PATH, chosen ? `tab=${chosen}` : '');
   }
   /** Scroll the tab row, never the page, so the chosen tab is fully in view and clear of the edge chevrons. */
   private revealTab(tab: AccessTab) {

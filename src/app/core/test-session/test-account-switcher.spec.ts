@@ -96,6 +96,26 @@ describe('TestAccountSwitcher', () => {
     expect(root.querySelector('.switcher-foot')).toBeNull();
   });
 
+  it('shows who upgraded an account, so others are careful, and keeps it selectable (DLV-969)', () => {
+    sessions.accounts.set([
+      { ...learner(5, 'Learn · active'), upgradedBy: { self: false, label: 'Admin 2', plan: 'Grow', approvedAt: '2026-11-04T10:00:00Z' } },
+      { ...learner(6, 'Learn · active'), upgradedBy: { self: true, label: 'Owner', plan: 'Advance', approvedAt: '2026-11-04T10:00:00Z' } },
+      { ...learner(8, 'Grow · active'), upgradedBy: { self: false, label: 'Admin 2', name: 'Priya Rao', plan: 'Grow', approvedAt: '' } },
+      { ...learner(9, 'Learn · active'), upgradedBy: null },
+    ]);
+    const { root } = render();
+    const rows = [...root.querySelectorAll<HTMLButtonElement>('.switcher-row')];
+    expect(rows.map((row) => row.querySelector('.row-upgrade')?.textContent?.trim() ?? null)).toEqual([
+      'Upgraded by Admin 2 · Grow',
+      'Upgraded by you · Advance',
+      'Upgraded by Priya Rao (Admin 2) · Grow',
+      null,
+    ]);
+    expect(rows[0].disabled).toBe(false);
+    rows[0].click();
+    expect(sessions.use).toHaveBeenCalledWith(expect.objectContaining({ accountId: 'id-learner5' }));
+  });
+
   it('filters by plan and by words across every tab', () => {
     const { fixture, root, names, button } = render();
     button('.switcher-plans button', 'Learn').click();

@@ -6,6 +6,7 @@ import { TestAccounts, TestAccountRow } from './test-accounts';
 import { MembershipApi, MembershipRequestError } from '../../content/membership-api';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import { DevSession } from '../../core/dev-session-notice/dev-session';
+import { TestSessions } from '../../core/test-session/test-sessions';
 const row:TestAccountRow={accountId:'test-id',username:'learner09',roles:[],revision:3,access:{label:'Free'},lastChangedBy:'seed',lastChangedAt:'2026-10-16',legacyPresetAvailable:true,canDelete:true};
 describe('Test account maintenance',()=>{
  let request:ReturnType<typeof vi.fn>;let account:ReturnType<typeof signal<any>>;let component:TestAccounts;
@@ -626,5 +627,349 @@ describe('People sign-in methods (DLV-969 account linking)',()=>{
   expect(request.mock.calls.some(([path])=>String(path).startsWith('/admin/accounts'))).toBe(false);
   expect(root.querySelector('.sign-in-labels, .same-email-flag')).toBeNull();
   expect(root.textContent).not.toContain('@gmail.com');
+ });
+});
+
+// DLV-969 (owner, 2026-11-04): DEV test accounts' purchases wait in People and access for the owner or an admin.
+describe('Purchase requests on Test accounts',()=>{
+ const waiting=(id:string,username:string,pendingPurchase:Record<string,unknown>|null):TestAccountRow=>({...row,accountId:id,username,pendingPurchase:pendingPurchase as never});
+ const advance={purchaseId:'pur-2',kind:'upgrade',fromPlan:{code:'learn',name:'Learn'},toPlan:{code:'advance',name:'Advance'},priceCents:14499,differenceCents:4500,startsAt:'2026-11-04T00:00:00Z',endsAt:'2027-11-04T00:00:00Z',requestedAt:'2026-11-04T10:30:00Z',requestedBy:{self:false,label:'Admin 2',name:'Priya Rao'}};
+ const learn={purchaseId:'pur-1',kind:'new',fromPlan:null,toPlan:{code:'learn',name:'Learn'},priceCents:6999,startsAt:'2026-11-04T00:00:00Z',endsAt:'2027-11-04T00:00:00Z',requestedAt:'2026-11-04T09:15:00Z',requestedBy:{self:true,label:'Owner'}};
+ let rows:TestAccountRow[];let request:ReturnType<typeof vi.fn>;let opened:number;
+ const usable=[{accountId:'acc-07',username:'learner07@lookahead.dev',displayName:'Learner07',roles:[],scenario:'Free · no study plan'},
+  {accountId:'acc-12',username:'learner12@lookahead.dev',displayName:'Learner12',roles:[],scenario:'Learn · active'}];
+ async function render(feedbackRole:'owner'|'admin'|'co-author'|'user',options:{dev?:boolean;manageAccess?:boolean;review?:{purchaseId:string;returnTo:string|null;accountId:string|null}}={}){
+  request=vi.fn(async(path:string,body?:unknown)=>{
+   if(path==='/auth/test-accounts')return usable;
+   if(path==='/admin/test-accounts'&&body&&typeof body==='object'&&'purchaseDecision' in body){
+    const {purchaseId}=(body as {purchaseDecision:{purchaseId:string}}).purchaseDecision;
+    rows=rows.map(item=>item.pendingPurchase?.purchaseId===purchaseId?{...item,pendingPurchase:null}:item);return {};
+   }
+   if(path==='/admin/test-accounts')return rows;
+   if(path==='/admin/test-accounts/allowance')return {limit:10,used:0,remaining:10,roster:null,scenarios:[]};
+   return {accounts:[],page:0,hasNext:false};
+  });
+  const account=signal<any>({accountId:'me',username:'staff',displayName:'Staff',topicGrants:[],permissions:{manageAccess:options.manageAccess??feedbackRole==='owner',feedbackRole}});
+  TestBed.configureTestingModule({providers:[provideRouter([]),{provide:MembershipApi,useValue:{request}},{provide:StudyPlanAccount,useValue:{account}}]});
+  if(options.dev??true)TestBed.inject(DevSession).status.set({dev:true,deadline:'',warning:false,maintenance:false});
+  const fixture=TestBed.createComponent(TestAccounts);fixture.componentRef.setInput('view','test');
+  if(options.review)fixture.componentRef.setInput('review',options.review);
+  opened=0;fixture.componentInstance.reviewOpened.subscribe(()=>opened++);
+  fixture.detectChanges();await fixture.whenStable();fixture.detectChanges();
+  return fixture;
+ }
+ const text=(element:Element|null|undefined)=>(element?.textContent??'').replace(/\s+/g,' ').trim();
+ const buttons=(root:Element,name:string)=>[...root.querySelectorAll<HTMLButtonElement>('button')].filter(button=>text(button)===name);
+ async function settle(fixture:ReturnType<typeof TestBed.createComponent<TestAccounts>>){await fixture.whenStable();fixture.detectChanges();}
+ beforeEach(()=>{rows=[waiting('acc-12','learner12',advance),waiting('acc-07','learner07',learn),waiting('acc-03','learner03',null)];});
+
+ for(const role of ['owner','admin'] as const){
+  it(`shows the ${role} each waiting request, oldest first, with plan, kind, price and time`,async()=>{
+   const fixture=await render(role);const root=fixture.nativeElement as HTMLElement;
+   const area=root.querySelector('.purchase-requests')!;
+   expect(text(area.querySelector('h3'))).toBe('Purchase requests');
+   expect(text(area.querySelector('.request-count'))).toBe('2 purchase requests waiting');
+   const facts=(item:Element)=>[...item.querySelectorAll('.request-facts > div')].map(fact=>[text(fact.querySelector('dt')),text(fact.querySelector('dd'))]);
+   const items=[...area.querySelectorAll('.request-item')];
+   expect(facts(items[0])).toEqual([
+    ['Account','learner07'],['Request','New plan: Learn'],['Term','4 Nov 2026 – 4 Nov 2027'],['Price','$69.99'],
+    ['Submitted by','You'],['When','4 Nov 2026, 09:15 UTC'],
+   ]);
+   // The owner sees who an admin is; an admin sees the role label only.
+   expect(facts(items[1])).toEqual([
+    ['Account','learner12'],['Request','Upgrade: Learn → Advance'],['Term','4 Nov 2026 – 4 Nov 2027'],['Price','$144.99 (difference $45.00)'],
+    ['Submitted by',role==='owner'?'Priya Rao (Admin 2)':'Admin 2'],['When','4 Nov 2026, 10:30 UTC'],
+   ]);
+   if(role==='admin')expect(area.textContent).not.toContain('Priya Rao');
+   const first=area.querySelector('.request-item')!;
+   expect([...first.querySelectorAll('.request-actions button')].map(button=>[text(button),button.className])).toEqual([
+    ['Approve (mock payment)','action-button'],['Decline','action-link'],
+   ]);
+   // The waiting accounts carry a badge in the list too; the others don't.
+   expect(text(root.querySelector('tr[data-account="learner12"] .request-badge'))).toBe('Purchase request waiting');
+   expect(root.querySelector('tr[data-account="learner03"] .request-badge')).toBeNull();
+  });
+ }
+
+ it('approves with the exact body, refreshes, and shows the result with the ways to verify it',async()=>{
+  const fixture=await render('admin');const root=fixture.nativeElement as HTMLElement;const list=fixture.componentInstance;
+  buttons(root.querySelector('.request-item[data-purchase="pur-1"]')!,'Approve (mock payment)')[0].click();
+  await settle(fixture);await settle(fixture);
+  expect(request).toHaveBeenCalledWith('/admin/test-accounts',{purchaseDecision:{purchaseId:'pur-1',decision:'approve'}});
+  expect(request.mock.calls.filter(([path,body])=>path==='/admin/test-accounts'&&body===undefined)).toHaveLength(2);
+  expect(text(root.querySelector('.request-count'))).toBe('1 purchase request waiting');
+  // DLV-969 (owner wording, 2026-11-04): the result panel, in the test account's display name from the switcher list.
+  const done=root.querySelector('.purchase-requests .decision-result')!;
+  expect(done.getAttribute('role')).toBe('status');
+  expect(text(done.querySelector('p'))).toBe(
+   'Mock payment successful — Learner07 now has Learn. To verify it, switch to Learner07 and open Manage account → Membership from the account menu.');
+  expect(text(done.querySelector('strong'))).toBe('Mock payment successful — Learner07 now has Learn.');
+  expect(text(root.querySelector('.notice'))).toBe('');
+  // Two related actions centred, primary first; Close as a text line below.
+  expect([...done.querySelectorAll('.actions button')].map(button=>[text(button),button.className])).toEqual([
+   ['Switch to Learner07','action-button'],['Switch to another test account','action-link'],
+  ]);
+  expect(text(done.querySelector('.result-close button'))).toBe('Close');
+  expect(document.activeElement).toBe(done);
+  expect(root.textContent).not.toMatch(/continue learning/i);
+  // A refresh keeps the result; Close dismisses it.
+  await list.load();fixture.detectChanges();expect(root.querySelector('.decision-result')).not.toBeNull();
+  buttons(done,'Close')[0].click();fixture.detectChanges();
+  expect(root.querySelector('.decision-result')).toBeNull();expect(list.result()).toBeNull();
+ });
+
+ it('Switch to the test account goes to its home when the request was opened directly',async()=>{
+  const fixture=await render('owner');const root=fixture.nativeElement as HTMLElement;
+  const use=vi.spyOn(TestBed.inject(TestSessions),'use').mockResolvedValue();
+  buttons(root.querySelector('.request-item[data-purchase="pur-1"]')!,'Approve (mock payment)')[0].click();
+  await settle(fixture);await settle(fixture);
+  buttons(root,'Switch to Learner07')[0].click();await settle(fixture);
+  expect(use).toHaveBeenCalledExactlyOnceWith(usable[0],'/');
+ });
+
+ it('Switch to another test account opens the account menu’s switcher',async()=>{
+  const fixture=await render('admin');const root=fixture.nativeElement as HTMLElement;
+  const sessions=TestBed.inject(TestSessions);const open=vi.spyOn(sessions,'open');
+  buttons(root.querySelector('.request-item[data-purchase="pur-1"]')!,'Approve (mock payment)')[0].click();
+  await settle(fixture);await settle(fixture);
+  buttons(root,'Switch to another test account')[0].click();await settle(fixture);
+  expect(open).toHaveBeenCalledOnce();expect(sessions.pickerOpen()).toBe(true);
+ });
+
+ it('switches with the account it knows when the switcher list does not have it, and shows why a switch failed',async()=>{
+  const fixture=await render('owner');const root=fixture.nativeElement as HTMLElement;const list=fixture.componentInstance;
+  const sessions=TestBed.inject(TestSessions);
+  rows=rows.map(item=>item.accountId==='acc-07'?{...item,accountId:'acc-gone'}:item);await list.load();fixture.detectChanges();
+  const use=vi.spyOn(sessions,'use').mockImplementation(async()=>{sessions.error.set('Your role cannot use this test account.');});
+  buttons(root.querySelector('.request-item[data-purchase="pur-1"]')!,'Approve (mock payment)')[0].click();
+  await settle(fixture);await settle(fixture);
+  expect(text(root.querySelector('.decision-result strong'))).toBe('Mock payment successful — learner07 now has Learn.');
+  buttons(root,'Switch to learner07')[0].click();await settle(fixture);
+  expect(use).toHaveBeenCalledExactlyOnceWith({accountId:'acc-gone',username:'learner07',displayName:'learner07',roles:[],scenario:null},'/');
+  expect(text(root.querySelector('.decision-result [role="alert"]'))).toBe('Your role cannot use this test account.');
+  // Without a result nothing switches.
+  list.result.set(null);use.mockClear();await list.switchToResult();expect(use).not.toHaveBeenCalled();
+ });
+
+ describe('opened from a Review request',()=>{
+  let scroll:ReturnType<typeof vi.fn>;
+  const original=Element.prototype.scrollIntoView;
+  beforeEach(()=>{scroll=vi.fn();Element.prototype.scrollIntoView=scroll as never;});
+  afterEach(()=>{Element.prototype.scrollIntoView=original;});
+
+  it('scrolls to, highlights and focuses that request once, and tells the page',async()=>{
+   const fixture=await render('admin',{review:{purchaseId:'pur-2',returnTo:'/grow/java/streams',accountId:'acc-12'}});
+   const root=fixture.nativeElement as HTMLElement;const list=fixture.componentInstance;
+   await settle(fixture);
+   const card=root.querySelector<HTMLElement>('.request-item[data-purchase="pur-2"]')!;
+   expect(card.classList).toContain('highlighted');
+   expect(card.getAttribute('tabindex')).toBe('-1');
+   expect(card.getAttribute('aria-current')).toBe('true');
+   expect(card.getAttribute('aria-label')).toBe('Request to review: learner12, Upgrade: Learn → Advance');
+   expect(root.querySelectorAll('.request-item.highlighted')).toHaveLength(1);
+   expect(root.querySelector('.request-item[data-purchase="pur-1"]')!.hasAttribute('tabindex')).toBe(false);
+   expect(document.activeElement).toBe(card);
+   expect(scroll).toHaveBeenCalledExactlyOnceWith({block:'center',behavior:'smooth'});
+   expect(opened).toBe(1);
+   // A refresh does not open it again.
+   await list.load();await settle(fixture);
+   expect(scroll).toHaveBeenCalledOnce();expect(opened).toBe(1);expect(list.notice()).toBe('');
+  });
+
+  it('Switch to the test account after approving goes back to the page the purchase started from',async()=>{
+   const fixture=await render('owner',{review:{purchaseId:'pur-2',returnTo:'/grow/java/streams',accountId:'acc-12'}});
+   const root=fixture.nativeElement as HTMLElement;await settle(fixture);
+   const use=vi.spyOn(TestBed.inject(TestSessions),'use').mockResolvedValue();
+   buttons(root.querySelector('.request-item[data-purchase="pur-2"]')!,'Approve (mock payment)')[0].click();
+   await settle(fixture);await settle(fixture);
+   expect(text(root.querySelector('.decision-result strong'))).toBe('Mock payment successful — Learner12 now has Advance.');
+   expect(root.querySelector('.request-item.highlighted')).toBeNull();
+   buttons(root,'Switch to Learner12')[0].click();await settle(fixture);
+   expect(use).toHaveBeenCalledExactlyOnceWith(usable[1],'/grow/java/streams');
+  });
+
+  it('keeps the return path to its own request, and never goes to an unsafe one',async()=>{
+   let fixture=await render('owner',{review:{purchaseId:'pur-2',returnTo:'/grow/java/streams',accountId:'acc-12'}});
+   let root=fixture.nativeElement as HTMLElement;await settle(fixture);
+   let use=vi.spyOn(TestBed.inject(TestSessions),'use').mockResolvedValue();
+   buttons(root.querySelector('.request-item[data-purchase="pur-1"]')!,'Approve (mock payment)')[0].click();
+   await settle(fixture);await settle(fixture);
+   buttons(root,'Switch to Learner07')[0].click();await settle(fixture);
+   expect(use).toHaveBeenCalledExactlyOnceWith(usable[0],'/');
+   TestBed.resetTestingModule();rows=[waiting('acc-12','learner12',advance)];
+   fixture=await render('owner',{review:{purchaseId:'pur-2',returnTo:'//elsewhere.example',accountId:'acc-12'}});
+   root=fixture.nativeElement as HTMLElement;await settle(fixture);
+   use=vi.spyOn(TestBed.inject(TestSessions),'use').mockResolvedValue();
+   buttons(root.querySelector('.request-item[data-purchase="pur-2"]')!,'Approve (mock payment)')[0].click();
+   await settle(fixture);await settle(fixture);
+   buttons(root,'Switch to Learner12')[0].click();await settle(fixture);
+   expect(use).toHaveBeenCalledExactlyOnceWith(usable[1],'/');
+  });
+
+  it('says so when the request is no longer waiting',async()=>{
+   const fixture=await render('admin',{review:{purchaseId:'pur-gone',returnTo:'/learn',accountId:'acc-07'}});
+   const root=fixture.nativeElement as HTMLElement;await settle(fixture);
+   expect(text(root.querySelector('.notice'))).toBe('That purchase request is no longer waiting. It may already be approved or declined.');
+   expect(root.querySelector('.request-item.highlighted')).toBeNull();
+   expect(scroll).not.toHaveBeenCalled();expect(opened).toBe(1);
+  });
+ });
+
+ it('declines only after its one-click confirmation, with one confirmation open at a time',async()=>{
+  const fixture=await render('owner');const root=fixture.nativeElement as HTMLElement;const list=fixture.componentInstance;
+  const item=list.purchaseRequests().find(entry=>entry.request.purchaseId==='pur-2')!;
+  // Without the confirmation, Decline sends nothing.
+  await list.decide(item,'decline');expect(request).not.toHaveBeenCalledWith('/admin/test-accounts',expect.objectContaining({purchaseDecision:expect.anything()}));
+  buttons(root.querySelector('.request-item[data-purchase="pur-2"]')!,'Decline')[0].click();fixture.detectChanges();
+  expect(root.querySelectorAll('.decline-panel')).toHaveLength(1);
+  expect(text(root.querySelector('.decline-panel h4'))).toBe('Decline learner12’s request (Upgrade: Learn → Advance)?');
+  // Opening another confirmation closes this one, and the other way round.
+  list.startDelete(rows[0]);fixture.detectChanges();expect(root.querySelector('.decline-panel')).toBeNull();expect(list.deleting()).toBe(rows[0]);
+  buttons(root.querySelector('.request-item[data-purchase="pur-1"]')!,'Decline')[0].click();fixture.detectChanges();
+  expect(list.deleting()).toBeNull();expect(root.querySelectorAll('.decline-panel')).toHaveLength(1);
+  buttons(root.querySelector('.request-item[data-purchase="pur-2"]')!,'Decline')[0].click();fixture.detectChanges();
+  expect(root.querySelectorAll('.decline-panel')).toHaveLength(1);
+  expect(root.querySelector('.request-item[data-purchase="pur-2"] .decline-panel')).not.toBeNull();
+  buttons(root,'Cancel')[0].click();fixture.detectChanges();expect(root.querySelector('.decline-panel')).toBeNull();
+  buttons(root.querySelector('.request-item[data-purchase="pur-2"]')!,'Decline')[0].click();fixture.detectChanges();
+  buttons(root,'Confirm decline')[0].click();await settle(fixture);await settle(fixture);
+  expect(request).toHaveBeenCalledWith('/admin/test-accounts',{purchaseDecision:{purchaseId:'pur-2',decision:'decline'}});
+  const done=root.querySelector('.decision-result')!;
+  expect(text(done.querySelector('p'))).toBe('Declined — Learner12 keeps its current plan.');
+  expect(done.classList).toContain('declined');
+  expect(text(done)).not.toContain('Manage account');
+  expect([...done.querySelectorAll('button')].map(text)).toEqual(['Switch to Learner12','Switch to another test account','Close']);
+  expect(text(root.querySelector('.request-count'))).toBe('1 purchase request waiting');
+ });
+
+ it('says a refusal in the server’s words, and anything else as not confirmed',async()=>{
+  const fixture=await render('admin');const list=fixture.componentInstance;
+  const item=list.purchaseRequests()[0];
+  request.mockRejectedValueOnce(new MembershipRequestError('Only the owner or an admin can approve purchase requests.',403,'PURCHASE_APPROVAL_FORBIDDEN'));
+  await list.decide(item,'approve');
+  expect(list.notice()).toBe('Only the owner or an admin can approve purchase requests.');
+  request.mockRejectedValueOnce(new Error('Network down'));
+  await list.decide(item,'approve');expect(list.notice()).toBe('Network down Approval was not confirmed. Refresh and retry.');
+  list.startDecline(item);request.mockRejectedValueOnce(new Error(''));
+  await list.decide(item,'decline');expect(list.notice()).toBe('Decline was not confirmed. Refresh and retry.');
+ });
+
+ it('shows an empty state in DEV and nothing in Local when no request waits',async()=>{
+  rows=[waiting('acc-03','learner03',null)];
+  let root=(await render('owner')).nativeElement as HTMLElement;
+  expect(text(root.querySelector('.purchase-requests .request-count'))).toBe('No purchase requests waiting');
+  expect(root.querySelector('.request-list')).toBeNull();
+  TestBed.resetTestingModule();
+  root=(await render('owner',{dev:false})).nativeElement as HTMLElement;
+  expect(root.querySelector('.purchase-requests')).toBeNull();
+ });
+
+ it('counts one request in the singular',async()=>{
+  rows=[waiting('acc-07','learner07',learn)];
+  const root=(await render('owner')).nativeElement as HTMLElement;
+  expect(text(root.querySelector('.request-count'))).toBe('1 purchase request waiting');
+ });
+
+ for(const role of ['co-author','user'] as const){
+  it(`shows a ${role} nothing of purchase requests, even if a row carries one`,async()=>{
+   const fixture=await render(role,{manageAccess:false});const root=fixture.nativeElement as HTMLElement;const list=fixture.componentInstance;
+   expect(root.querySelector('.purchase-requests, .request-badge')).toBeNull();
+   expect(root.textContent).not.toMatch(/Purchase request|Approve \(mock payment\)/);
+   expect(list.purchaseRequests()).toEqual([]);
+   await list.decide({row:rows[0],request:advance as never,words:'',term:null,price:'',difference:null,by:'',requested:''},'approve');
+   expect(request).not.toHaveBeenCalledWith('/admin/test-accounts',expect.objectContaining({purchaseDecision:expect.anything()}));
+  });
+ }
+});
+
+// DLV-969 (owner, 2026-11-04): an approved request marks the test account; Reset is reserved for the owner and the upgrader.
+describe('Upgrade markers and Reset on Test accounts',()=>{
+ const upgraded=(by:Record<string,unknown>,approvedBy:Record<string,unknown>|null=null)=>({...by,approvedBy,plan:{code:'grow',name:'Grow'},kind:'upgrade',approvedAt:'2026-11-04T10:30:00Z'});
+ let rows:TestAccountRow[];let request:ReturnType<typeof vi.fn>;
+ async function render(feedbackRole:'owner'|'admin'|'co-author',options:{dev?:boolean}={}){
+  request=vi.fn(async(path:string)=>{
+   if(path==='/admin/test-accounts')return rows;
+   if(path==='/admin/test-accounts/allowance')return {limit:10,used:0,remaining:10,roster:null,scenarios:[]};
+   if(path.endsWith('/reset'))return {};
+   return {accounts:[],page:0,hasNext:false};
+  });
+  const account=signal<any>({accountId:'me',username:'staff',displayName:'Staff',topicGrants:[],permissions:{manageAccess:feedbackRole==='owner',triageFeedback:feedbackRole!=='co-author',feedbackRole}});
+  TestBed.configureTestingModule({providers:[provideRouter([]),{provide:MembershipApi,useValue:{request}},{provide:StudyPlanAccount,useValue:{account}}]});
+  if(options.dev??true)TestBed.inject(DevSession).status.set({dev:true,deadline:'',warning:false,maintenance:false});
+  const fixture=TestBed.createComponent(TestAccounts);fixture.componentRef.setInput('view','test');
+  fixture.detectChanges();await fixture.whenStable();fixture.detectChanges();
+  return fixture;
+ }
+ const text=(element:Element|null|undefined)=>(element?.textContent??'').replace(/\s+/g,' ').trim();
+ const actions=(root:Element)=>[...root.querySelectorAll('.selection-actions button')].map(text);
+ function pick(fixture:ReturnType<typeof TestBed.createComponent<TestAccounts>>,username:string){
+  const list=fixture.componentInstance;list.choose(list.visible().find(row=>row.name===username)!);fixture.detectChanges();
+ }
+ beforeEach(()=>{rows=[
+  {...row,accountId:'acc-06',username:'learner06',upgradedBy:upgraded({self:false,label:'Admin 2',name:'Priya Rao'},{self:true,label:'Owner'}),canReset:true},
+  {...row,accountId:'acc-07',username:'learner07',upgradedBy:upgraded({self:true,label:'Admin 2'},{self:true,label:'Admin 2'}),canReset:false},
+  {...row,accountId:'acc-08',username:'learner08'},
+ ];});
+
+ it('shows the owner who upgraded each account, with the name, and who approved it when someone else did',async()=>{
+  const root=(await render('owner')).nativeElement as HTMLElement;
+  expect(text(root.querySelector('tr[data-account="learner06"] .upgrade-badge'))).toBe('Upgraded by Priya Rao (Admin 2) · Grow · 4 Nov');
+  expect(text(root.querySelector('tr[data-account="learner06"] .approved-by'))).toBe('approved by you');
+  expect(text(root.querySelector('tr[data-account="learner07"] .upgrade-badge'))).toBe('Upgraded by You · Grow · 4 Nov');
+  expect(root.querySelector('tr[data-account="learner07"] .approved-by')).toBeNull();
+  expect(root.querySelector('tr[data-account="learner08"] .upgrade-marker')).toBeNull();
+ });
+
+ it('shows an admin the role label only',async()=>{
+  const root=(await render('admin')).nativeElement as HTMLElement;
+  expect(text(root.querySelector('tr[data-account="learner06"] .upgrade-badge'))).toBe('Upgraded by Admin 2 · Grow · 4 Nov');
+  expect(root.textContent).not.toContain('Priya Rao');
+ });
+
+ it('offers Reset to its scenario only when the row allows it, falling back to today’s rule without canReset',async()=>{
+  const fixture=await render('admin');const root=fixture.nativeElement as HTMLElement;const list=fixture.componentInstance;
+  pick(fixture,'learner06');expect(actions(root)).toContain('Reset to its scenario');
+  pick(fixture,'learner07');expect(actions(root)).not.toContain('Reset to its scenario');
+  // canReset false: nothing opens even when asked directly.
+  list.select(rows[1]);expect(list.selected()).toBeNull();
+  pick(fixture,'learner08');expect(actions(root)).toContain('Reset to its scenario');
+  TestBed.resetTestingModule();
+  const coauthor=await render('co-author');pick(coauthor,'learner08');
+  expect(actions(coauthor.nativeElement)).not.toContain('Reset to its scenario');
+  // The row's own answer wins over the role: a co-author the Domain allows sees it.
+  coauthor.componentInstance.rows.update(all=>all.map(item=>item.accountId==='acc-08'?{...item,canReset:true}:item));
+  coauthor.detectChanges();expect(actions(coauthor.nativeElement)).toContain('Reset to its scenario');
+ });
+
+ it('explains the reset to its scenario and keeps the typed username',async()=>{
+  const fixture=await render('owner');const root=fixture.nativeElement as HTMLElement;const list=fixture.componentInstance;
+  pick(fixture,'learner06');
+  [...root.querySelectorAll<HTMLButtonElement>('.selection-actions button')].find(button=>text(button)==='Reset to its scenario')!.click();
+  fixture.detectChanges();
+  const panel=root.querySelector('.reset-panel')!;
+  expect(text(panel.querySelector('legend'))).toBe('Reset learner06 to its scenario');
+  expect(text(panel.querySelector('.reset-explanation'))).toBe('Puts it back exactly as its scenario starts: plan, purchases and study plan. Clears the upgrade marker.');
+  expect(text(panel.querySelector('label:last-of-type'))).toContain('Type learner06 to confirm');
+  await list.reset();expect(request).not.toHaveBeenCalledWith(expect.stringMatching(/\/reset$/),expect.anything());
+  list.confirmation='learner06';await list.reset();
+  expect(request).toHaveBeenCalledWith('/admin/test-accounts/acc-06/reset',expect.objectContaining({confirmation:'learner06',preset:'scenario'}));
+  expect(list.notice()).toBe('learner06 reset.');
+ });
+
+ it('says the RESET_RESERVED refusal in the server’s words and does not offer the same reset again',async()=>{
+  const fixture=await render('admin');const list=fixture.componentInstance;
+  list.select(rows[0]);list.confirmation='learner06';
+  request.mockRejectedValueOnce(new MembershipRequestError('Only the owner or Admin 2, who upgraded this account, can reset it.',403,'RESET_RESERVED'));
+  await list.reset();
+  expect(list.notice()).toBe('Only the owner or Admin 2, who upgraded this account, can reset it.');
+  expect(list.pending()).toBeNull();expect(list.selected()).toBeNull();
+ });
+
+ it('keeps the Local wording for Reset',async()=>{
+  const fixture=await render('owner',{dev:false});const root=fixture.nativeElement as HTMLElement;
+  pick(fixture,'learner08');expect(actions(root)).toContain('Reset');
+  fixture.componentInstance.select(rows[2]);fixture.detectChanges();
+  expect(text(root.querySelector('.reset-panel legend'))).toBe('Reset learner08');
+  expect(root.querySelector('.reset-explanation')).toBeNull();
  });
 });

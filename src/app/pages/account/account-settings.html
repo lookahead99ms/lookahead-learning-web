@@ -151,14 +151,19 @@
     @if (plan.records.length) {
       <app-account-access-records [records]="plan.records" />
     }
+    @if (membershipApi.requestWaiting()) {
+      <p class="membership-request" role="status">{{ requestWaitingMessage }}</p>
+    }
     <p class="membership-note">
-      @if (store.authOptions()?.managedLogin) {
+      @if (devTestAccount()) {
+        In DEV, purchases for test accounts are requests: the owner or an admin approves them, and nothing is charged.
+      } @else if (store.authOptions()?.managedLogin) {
         For more course access, contact the account administrator.
       } @else {
         Local purchases are simulated; nothing is charged or renewed automatically.
       }
     </p>
-    @if (!store.authOptions()?.managedLogin) {
+    @if (!store.authOptions()?.managedLogin || devTestAccount()) {
       <p class="membership-buy">
         <a class="action-button" routerLink="/pricing">{{ plan.level === 'Paid membership' ? 'See plans' : 'Choose a plan' }}</a>
       </p>
