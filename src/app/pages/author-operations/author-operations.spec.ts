@@ -106,6 +106,24 @@ describe('Operations author view', () => {
       ),
     ).not.toBeNull();
   });
+  it('loads DynamoDB migration from the protected publication with its own menu and sandbox', async () => {
+    TestBed.overrideProvider(ActivatedRoute, {
+      useValue: { snapshot: { data: { authorDocument: 'dynamodb-migration' } } },
+    });
+    const migration = {
+      ...reference,
+      id: 'dynamodb-migration',
+      href: reference.href.replaceAll('operations-reference', 'dynamodb-migration'),
+    };
+    load.mockResolvedValue(migration);
+    const fixture = await create();
+    expect(load).toHaveBeenCalledWith('dynamodb-migration');
+    expect(fixture.nativeElement.querySelector('h1').textContent).toBe('DynamoDB migration');
+    expect(fixture.nativeElement.querySelector('iframe').getAttribute('src')).toBe(migration.href + '?theme=light&layout=shared');
+    expect(fixture.nativeElement.querySelector('iframe').getAttribute('sandbox')).toBe('allow-scripts');
+    expect(fixture.nativeElement.textContent).toContain('cutover follows identity verification');
+    expect(fixture.nativeElement.querySelector('a[href="/admin/dynamodb-migration"][aria-current="page"]')).not.toBeNull();
+  });
   it('opens with a hero and keeps the published version in a footer below the document', async () => {
     const fixture = await create();
     const content = fixture.nativeElement.querySelector('.workspace-content') as HTMLElement;
@@ -131,7 +149,7 @@ describe('Operations author view', () => {
     expect(content.querySelector('.hero-group')!.textContent).toContain('AWS deployment');
     const section = content.querySelector('nav.section-pages') as HTMLElement;
     expect(section.getAttribute('aria-label')).toBe('AWS deployment section pages');
-    expect(section.querySelector('.section-label')!.textContent).toContain('page 7 of 16');
+    expect(section.querySelector('.section-label')!.textContent).toContain('page 8 of 17');
     const labels = [...section.querySelectorAll('a')].map((link) => link.textContent!.trim());
     expect(labels[0]).toBe('Overview');
     expect(labels).toContain('DEV budget');
@@ -150,7 +168,7 @@ describe('Operations author view', () => {
     const fixture = await create();
     const content = fixture.nativeElement.querySelector('.workspace-content') as HTMLElement;
     expect(load).toHaveBeenCalledWith('aws-dev-procedures');
-    expect(content.querySelector('nav.section-pages .section-label')!.textContent).toContain('page 11 of 16');
+    expect(content.querySelector('nav.section-pages .section-label')!.textContent).toContain('page 12 of 17');
     const steps = content.querySelector('nav.section-steps') as HTMLElement;
     expect(steps.querySelector('.section-previous')!.getAttribute('href')).toBe('/admin/aws-dev-workflow');
     expect(steps.querySelector('.section-next')!.getAttribute('href')).toBe('/admin/aws-dev-records');

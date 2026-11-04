@@ -40,6 +40,7 @@ export const routes: Routes = [
       ['admin/authentication', 'authentication'],
       ['admin/authentication-walkthrough', 'authentication-walkthrough'],
       ['admin/aws-deployment', 'aws-deployment'],
+      ['admin/dynamodb-migration', 'dynamodb-migration'],
       ['admin/aws-environment-journey', 'aws-environment-journey'],
       ['admin/aws-dev-plan', 'aws-dev-plan'],
       ['admin/aws-dev-decisions', 'aws-dev-decisions'],

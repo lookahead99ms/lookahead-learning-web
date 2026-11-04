@@ -26,6 +26,7 @@ const documentIds = new Set([
   'authentication',
   'authentication-walkthrough',
   'aws-deployment',
+  'dynamodb-migration',
   'aws-environment-journey',
   'aws-dev-plan',
   'aws-dev-decisions',

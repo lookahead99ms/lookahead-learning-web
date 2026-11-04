@@ -841,6 +841,9 @@ the public demo has no review service.
 
 The admin documentation routes (`/admin/review-guide`, `/admin/screen-names`, `/admin/access-checks`, `/admin/authentication`, `/admin/local-development`, `/admin/operations`, `/admin/aws-deployment`, `/admin/release-gates` and `/admin/production-support`) read protected, immutable author-documents through the Gateway with one shared page component. Operations covers Local environments, deployment order, rollback and repositories; the cloud candidate, release gates, authentication walkthrough and production support runbooks each have their own page. Neither executes commands or reports live service health. The public demo has no publication configured. The source documents remain outside this repository.
 
+AWS deployment includes `/admin/dynamodb-migration` (DynamoDB migration). It reads the protected Content document `dynamodb-migration`; release both this Web navigation and the matching Content publication before expecting the page to be available. The guide covers the four tables, identity-first sequencing, validation gates and user-run cutover/recovery. This navigation change does not activate DynamoDB or authorize an AWS run.
+
+
 Previews, Documentation, Delivery Plan and every documentation page use three columns,
 including while the Delivery Plan is loading or unavailable. The left sidebar holds the
 page title and “On this page”, the headings in the current view. The right sidebar is the

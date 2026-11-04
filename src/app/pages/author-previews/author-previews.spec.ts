@@ -129,8 +129,9 @@ describe('private preview inventory contract', () => {
     expect(demoEnvironment.authorPreviewsBaseUrl).toBe('');
   });
   it('uses distinct server capabilities for staff, delivery and owner routes', () => {
-    for (const path of ['admin/previews', 'admin/architecture', 'admin/api'])
+    for (const path of ['admin/previews', 'admin/architecture', 'admin/api', 'admin/dynamodb-migration'])
       expect(routes.find((route) => route.path === path)?.canActivate).toContain(staffGuard);
+    expect(routes.find(route => route.path === 'admin/dynamodb-migration')?.data?.['authorDocument']).toBe('dynamodb-migration');
     expect(routes.find(route => route.path === 'delivery-plan')?.canActivate).toContain(deliveryGuard);
     expect(routes.find(route => route.path === 'admin/access')?.canActivate).toContain(accessGuard);
     expect(routes.find(route => route.path === 'admin/previews/study-plan')?.canActivate).toContain(authorGuard);
