@@ -5,6 +5,7 @@
   display: block;
   min-height: 100vh;
   --home-brand-block: #fbf6ee;
+  --home-grad-text: linear-gradient(100deg, #006c73 0%, #4338ca 52%, #a3460a 100%);
   --home-grad-bar: linear-gradient(90deg, #0a8f8a, #4f46e5 60%, #f59e0b);
   background: var(--surface-page);
   color: var(--text-strong);
@@ -14,6 +15,7 @@
 }
 :host-context(:root[data-theme='dark']) {
   --home-brand-block: #15213a;
+  --home-grad-text: linear-gradient(100deg, #70d6cd 0%, #b4b2ff 52%, #ffba87 100%);
   --home-grad-bar: linear-gradient(90deg, #70d6cd, #a5a3ff 60%, #ffba87);
 }
 *,
@@ -24,9 +26,10 @@
 p {
   color: var(--text-body);
 }
+/* The page fits the screen: welcome.ts scales the Essence to the height that is left. */
 .welcome-page {
   display: grid;
-  gap: 24px;
+  gap: 20px;
   max-width: var(--page-max-browse, 80rem);
   margin: auto;
   padding: 24px 32px 28px;
@@ -46,6 +49,10 @@ p {
   margin: 0;
   font-size: 18px;
   letter-spacing: -0.01em;
+}
+.access-pending a {
+  color: var(--accent-strong);
+  font-weight: 650;
 }
 .access-pending p {
   max-width: 72ch;

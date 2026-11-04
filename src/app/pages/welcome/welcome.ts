@@ -1,8 +1,9 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, ElementRef, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
 import { DevSession } from '../../core/dev-session-notice/dev-session';
+import { keepEssenceFitted } from '../../core/essence-fit/essence-fit';
 import { PageSidebarContextDirective, PageSidebarContextValue } from '../../core/page-sidebars/page-sidebar-context';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { LearningPrompt } from '../../core/platform-signature/learning-prompt';
@@ -17,18 +18,27 @@ import { EssenceStory } from '../landing/essence-story/essence-story';
  */
 @Component({
   selector: 'app-welcome-page',
-  imports: [PlatformHeader, EssenceStory, LearningPrompt, ReasoningPrompt, PageSidebarContextDirective],
+  imports: [PlatformHeader, RouterLink, EssenceStory, LearningPrompt, ReasoningPrompt, PageSidebarContextDirective],
   templateUrl: './welcome.html',
   styleUrl: './welcome.css',
 })
 export class WelcomePage {
-  protected readonly accessPending = toSignal(
-    inject(ActivatedRoute).queryParamMap.pipe(map((query) => query.get('access') === 'pending')),
-    { initialValue: false },
+  private readonly access = toSignal(
+    inject(ActivatedRoute).queryParamMap.pipe(map((query) => query.get('access'))),
+    { initialValue: null },
   );
+  protected readonly accessPending = computed(() => this.access() === 'pending');
+  /** DLV-969 (owner, 2026-11-04): where a page your account cannot open sends you, instead of the Study Plan. */
+  protected readonly accessDenied = computed(() => this.access() === 'denied');
   private readonly devSession = inject(DevSession);
   /** DEV behind the gate (admitted or still waiting): say plainly that this is the internal preview (user, 2026-11-02). */
   protected readonly dev = computed(() => this.devSession.status() !== null || this.devSession.gated());
   /** No section navigation or page statements beside the card. */
   protected readonly sidebarContext: PageSidebarContextValue = { excluded: true };
+
+  constructor() {
+    // DLV-969 (owner, 2026-11-04): the page fits the screen without scrolling.
+    keepEssenceFitted(inject<ElementRef<HTMLElement>>(ElementRef).nativeElement);
+  }
 }
+

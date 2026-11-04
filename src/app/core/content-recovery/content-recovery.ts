@@ -1,7 +1,6 @@
 import {
   Component,
   ElementRef,
-  afterNextRender,
   computed,
   inject,
   input,
@@ -12,6 +11,8 @@ import { Router, RouterLink } from '@angular/router';
 import { safeAccountReturn } from '../../pages/account/account-navigation';
 import { CatalogId, plansIncluding } from '../../content/membership-plans';
 import { ScrollLock } from '../scroll-lock/scroll-lock';
+import { keepEssenceFitted } from '../essence-fit/essence-fit';
+import { EssenceStory } from '../../pages/landing/essence-story/essence-story';
 
 export type RecoveryKind = 'sign-in' | 'locked' | 'planned' | 'temporary' | 'missing';
 export interface RecoveryPreview {
@@ -30,7 +31,7 @@ export function recoveryKind(error: unknown, preview?: RecoveryPreview): Recover
 
 @Component({
   selector: 'app-content-recovery',
-  imports: [RouterLink, ScrollLock],
+  imports: [RouterLink, ScrollLock, EssenceStory],
   templateUrl: './content-recovery.html',
   styleUrl: './content-recovery.css',
 })
@@ -56,7 +57,8 @@ export class ContentRecovery {
     () =>
       ({
         'sign-in': 'Sign in to continue',
-        locked: this.preview().premium ? 'Unlock this premium content' : 'Access required',
+        // DLV-969 (owner, 2026-11-04): a lesson outside your plan is a subscription, never an approval or an access request.
+        locked: 'Subscribe to read this',
         planned: 'This lesson isn’t available yet',
         temporary: 'We couldn’t load this content',
         missing: 'We couldn’t find this page',
@@ -67,8 +69,8 @@ export class ContentRecovery {
       ({
         'sign-in': 'Sign in to check your access. We’ll bring you back to this page.',
         locked: this.preview().premium
-          ? 'This content requires eligible course access. Manage your account to review your current access and options.'
-          : 'Your account can’t open this content. Manage your account to review your access.',
+          ? 'This lesson is part of a paid plan. Subscribe to a plan that includes it to keep reading.'
+          : 'Your plan doesn’t include this lesson. Subscribe to a plan that includes it to read it.',
         planned: 'Explore other published lessons while this content is being prepared.',
         temporary: 'Please try again. You can also go back or explore from Home.',
         missing: 'The link may be out of date. Go back or explore from Home.',
@@ -93,7 +95,8 @@ export class ContentRecovery {
     return `Included in ${names}, from ${plans.from}.`;
   });
   constructor() {
-    afterNextRender(() => this.openDialog());
+    // DLV-969 (owner, 2026-11-04): the page shows the way in and the Essence; the options dialog opens only when asked.
+    keepEssenceFitted(inject<ElementRef<HTMLElement>>(ElementRef).nativeElement);
   }
   protected openDialog(): void {
     const dialog = this.dialog()?.nativeElement;

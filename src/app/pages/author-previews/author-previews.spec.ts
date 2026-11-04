@@ -17,7 +17,7 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import { PlatformThemeService } from '../../core/platform-theme';
 import { routes } from '../../app.routes';
-import { authorGuard, staffGuard, deliveryGuard, accessGuard } from '../../core/author-access';
+import { authorGuard, staffGuard, previewsGuard, deliveryGuard, accessGuard } from '../../core/author-access';
 import { environment as publicEnvironment } from '../../../environments/environment.production';
 import { environment as demoEnvironment } from '../../../environments/environment.demo';
 
@@ -129,8 +129,10 @@ describe('private preview inventory contract', () => {
     expect(demoEnvironment.authorPreviewsBaseUrl).toBe('');
   });
   it('uses distinct server capabilities for staff, delivery and owner routes', () => {
-    for (const path of ['admin/previews', 'admin/architecture', 'admin/api'])
-      expect(routes.find((route) => route.path === path)?.canActivate).toContain(staffGuard);
+    expect(routes.find((route) => route.path === 'admin/api')?.canActivate).toContain(staffGuard);
+    for (const path of ['admin/previews', 'admin/architecture'])
+      expect(routes.find((route) => route.path === path)?.canActivate).toContain(previewsGuard);
+    expect(routes.find((route) => route.path === 'admin')?.redirectTo).toBe('admin/docs');
     expect(routes.find(route => route.path === 'delivery-plan')?.canActivate).toContain(deliveryGuard);
     expect(routes.find(route => route.path === 'admin/access')?.canActivate).toContain(accessGuard);
     expect(routes.find(route => route.path === 'admin/previews/study-plan')?.canActivate).toContain(authorGuard);

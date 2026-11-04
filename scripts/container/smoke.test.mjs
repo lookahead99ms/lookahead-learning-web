@@ -15,15 +15,21 @@ function response(status, body, headers = {}) {
     stderr: `Connecting to127.0.0.1\n  HTTP/1.1 ${status} Response\n` + Object.entries(headers).map(([k, v]) => `  ${k}: ${v}\n`).join('') };
 }
 
-function fixture({ unhealthy = false, fallbackPath, privateFile = false, volumes = { '/tmp': {}, [credentialMount]: {} } } = {}) {
+function accessRecord(changes = {}) {
+  return { event: 'http_access', time: '2026-10-09T00:00:00Z', level: 'INFO', service: 'web', requestId: 'a'.repeat(32),
+    method: 'GET', path: '/api/privacy-probe', status: '404', bytes: '9', durationSeconds: '0.001', ...changes };
+}
+
+function fixture({ unhealthy = false, fallbackPath, privateFile = false, volumes = { '/tmp': {}, [credentialMount]: {} }, echoGatewayId = true } = {}) {
   const calls = [];
+  const logs = [accessRecord()];
   const docker = args => {
     calls.push(args);
     const ok = stdout => ({ status: 0, stdout, stderr: '' });
     if (args[0] === 'context') return ok(JSON.stringify([{ Endpoints: { docker: { Host: 'unix:///var/run/docker.sock' } } }]));
     if (args[0] === 'image') return ok(JSON.stringify([{ Id: resolvedDockerId, Config: { User: '10001:10001', Volumes: volumes, Healthcheck: { Test: ['CMD', '/opt/lookahead/healthcheck.sh'] } } }]));
     if (args[0] === 'create') return ok(id + '\n');
-    if (args[0] === 'logs') return ok(JSON.stringify({ event: 'http_access', time: '2026-10-09T00:00:00Z', requestId: 'a'.repeat(32), method: 'GET', status: '404', bytes: '9', durationSeconds: '0.001' }) + '\n');
+    if (args[0] === 'logs') return ok(logs.map(record => JSON.stringify(record)).join('\n') + '\n');
     if (args[0] === 'start' || args[0] === 'rm') return ok('');
     if (args[0] === 'container') return ok(JSON.stringify([{ Image: resolvedDockerId, State: { Running: true, Health: { Status: unhealthy ? 'unhealthy' : 'healthy' } },
       HostConfig: { NetworkMode: 'none', ReadonlyRootfs: true, CapDrop: ['ALL'], SecurityOpt: ['no-new-privileges:true'], Tmpfs: { '/tmp': 'rw', [credentialMount]: 'rw' } } }]));
@@ -39,6 +45,10 @@ function fixture({ unhealthy = false, fallbackPath, privateFile = false, volumes
     if (args[2] === 'sh') return ok('');
     assert.equal(args[2], 'wget');
     const path = new URL(args.at(-1)).pathname;
+    const supplied = args.find(arg => arg.startsWith('X-Request-Id: '))?.slice('X-Request-Id: '.length);
+    if (supplied && echoGatewayId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(supplied)) {
+      logs.push(accessRecord({ requestId: supplied, path, status: path === '/health' ? '200' : '404', bytes: '16' }));
+    }
     if (path === '/health') return response(200, '{"status":"UP"}\n');
     if (['/', '/index.html', '/learn/deep', fallbackPath].includes(path)) return response(200, index, { 'Content-Type': 'text/html', 'Cache-Control': 'no-store' });
     if (path === '/main-ABCDEFGH.js') return response(200, 'console.log("public application")', { 'Content-Type': 'application/javascript', 'Cache-Control': 'private, max-age=31536000, immutable' });
@@ -121,9 +131,57 @@ for (const [name, options, failure] of [
 }
 
 test('operational logs reject private content and unexpected fields', () => {
-  const record = { event: 'http_access', time: '2026-10-09T00:00:00Z', requestId: 'a'.repeat(32), method: 'GET', status: '404', bytes: '9', durationSeconds: '0.001' };
+  const record = accessRecord();
+  const line = changes => JSON.stringify({ ...record, ...changes });
   assert.equal(assertOperationalLogs(JSON.stringify(record), 'synthetic-secret'), 1);
-  assert.throws(() => assertOperationalLogs(JSON.stringify({ ...record, uri: '/private' }), 'synthetic-secret'), /Unexpected/);
+  assert.throws(() => assertOperationalLogs(line({ uri: '/private' }), 'synthetic-secret'), /Unexpected/);
   assert.throws(() => assertOperationalLogs(JSON.stringify(record) + '\nsynthetic-secret', 'synthetic-secret'), /leaked/);
   assert.throws(() => assertOperationalLogs('', 'synthetic-secret'), /emit/);
+  // Field order is part of the contract that CloudWatch queries and the other services share.
+  const { level, ...withoutLevel } = record;
+  assert.throws(() => assertOperationalLogs(JSON.stringify({ ...withoutLevel, level }), 'synthetic-secret'), /Unexpected/);
+});
+
+test('operational logs keep the path without its query string', () => {
+  assert.equal(assertOperationalLogs(JSON.stringify(accessRecord({ path: '/assets/main-ABCDEFGH.js' })), 'synthetic-secret'), 1);
+  assert.throws(() => assertOperationalLogs(JSON.stringify(accessRecord({ path: '/api/x?code=1' })), 'synthetic-secret'), /query string/);
+  assert.throws(() => assertOperationalLogs(JSON.stringify(accessRecord({ path: 'GET /api HTTP/1.1' })), 'synthetic-secret'), /query string/);
+});
+
+test('operational logs carry the web service name and a status-derived level', () => {
+  const lines = [accessRecord(), accessRecord({ status: '503', level: 'WARN' })].map(record => JSON.stringify(record)).join('\n');
+  assert.equal(assertOperationalLogs(lines, 'synthetic-secret'), 2);
+  assert.throws(() => assertOperationalLogs([accessRecord(), accessRecord({ status: '503' })].map(record => JSON.stringify(record)).join('\n'), 'synthetic-secret'), /level/);
+  assert.throws(() => assertOperationalLogs(JSON.stringify(accessRecord({ level: 'WARN' })), 'synthetic-secret'), /level/);
+  assert.throws(() => assertOperationalLogs(JSON.stringify(accessRecord({ service: 'gateway' })), 'synthetic-secret'));
+});
+
+test("operational logs reuse Gateway's canonical request ID and reject other shapes", () => {
+  const gatewayId = '3f2b8c1e-1d2a-4b7e-9c1a-5e6f7a8b9c0d';
+  const lines = [accessRecord(), accessRecord({ requestId: gatewayId, path: '/health', status: '200' })].map(record => JSON.stringify(record)).join('\n');
+  assert.equal(assertOperationalLogs(lines, 'synthetic-secret', { gatewayId }), 2);
+  assert.throws(() => assertOperationalLogs(JSON.stringify(accessRecord()), 'synthetic-secret', { gatewayId }), /not reused/);
+  for (const requestId of ['3F2B8C1E-1D2A-4B7E-9C1A-5E6F7A8B9C0D', 'not-a-request-id', '']) {
+    assert.throws(() => assertOperationalLogs(JSON.stringify(accessRecord({ requestId })), 'synthetic-secret'), /request ID/);
+  }
+});
+
+test('smoke probe sends the private marker only outside the logged path and checks request-ID reuse', async t => {
+  const scratchRoot = await mkdtemp(join(tmpdir(), 'web-smoke-test-'));
+  t.after(() => rm(scratchRoot, { recursive: true, force: true }));
+  const { docker, calls } = fixture();
+  await smokeImage(reference, { docker, scratchRoot, environment: {} });
+  const probe = calls.find(args => args.some(arg => arg.startsWith('Cookie: synthetic=')));
+  const marker = probe.find(arg => arg.startsWith('Cookie: synthetic=')).slice('Cookie: synthetic='.length);
+  assert.equal(new URL(probe.at(-1)).pathname.includes(marker), false, 'The logged path must not carry the private marker');
+  assert(probe.includes(`X-Request-Id: ${marker}`), 'A malformed request ID must be probed');
+  assert(calls.some(args => args.at(-1) === 'http://127.0.0.1:8080/health' && args.some(arg => /^X-Request-Id: [0-9a-f-]{36}$/.test(arg))));
+});
+
+test('smoke fails when nginx does not reuse the Gateway request ID', async t => {
+  const scratchRoot = await mkdtemp(join(tmpdir(), 'web-smoke-test-'));
+  t.after(() => rm(scratchRoot, { recursive: true, force: true }));
+  const { docker, calls } = fixture({ echoGatewayId: false });
+  await assert.rejects(smokeImage(reference, { docker, scratchRoot, environment: {} }), /not reused/);
+  assert.deepEqual(calls.at(-1), ['rm', '-f', id]);
 });

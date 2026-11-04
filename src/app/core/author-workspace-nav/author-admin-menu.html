@@ -18,7 +18,7 @@
   @if (onDocumentationPage()) {
     <nav class="documentation-links" [attr.aria-labelledby]="contentId + '-docs'">
       <p class="menu-label" [id]="contentId + '-docs'">Documentation pages</p>
-      @for (group of documentationGroups; track group.id) {
+      @for (group of documentationGroups(); track group.id) {
         <p
           class="documentation-group-label"
           [id]="contentId + '-' + group.id"

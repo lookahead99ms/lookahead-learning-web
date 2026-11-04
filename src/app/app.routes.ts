@@ -6,7 +6,7 @@ import { inject } from '@angular/core';
 import { Router, Routes } from '@angular/router';
 import { PLATFORM_REVIEW_CLIENT } from './pages/admin-reviews/platform-review.model';
 import { ConnectedPlatformReviewClient } from './pages/admin-reviews/connected-platform-review-client';
-import { authorGuard, accessGuard, staffGuard, deliveryGuard } from './core/author-access';
+import { authorGuard, accessGuard, staffGuard, deliveryGuard, previewsGuard } from './core/author-access';
 import { SIGN_IN_CHALLENGE_CLIENT } from './pages/account/sign-in-challenge-client';
 import { SignInManagementApi } from './pages/account/sign-in-management-api';
 import type { DeliveryPlanPage } from './pages/delivery-plan/delivery-plan';
@@ -92,13 +92,13 @@ export const routes: Routes = [
   },
   {
     path: 'admin/previews',
-    canActivate: [staffGuard],
+    canActivate: [previewsGuard],
     loadComponent: () =>
       import('./pages/author-previews/author-previews').then((page) => page.AuthorPreviewsPage),
   },
   {
     path: 'admin/architecture',
-    canActivate: [staffGuard],
+    canActivate: [previewsGuard],
     data: { architectureOnly: true },
     loadComponent: () =>
       import('./pages/author-previews/author-previews').then((page) => page.AuthorPreviewsPage),
@@ -108,10 +108,11 @@ export const routes: Routes = [
     canActivate: [staffGuard],
     loadComponent: () => import('./pages/author-api/author-api').then((page) => page.AuthorApiPage),
   },
-  // DLV-926: the admin area lives under /admin; /admin itself opens Previews.
-  { path: 'admin', pathMatch: 'full', redirectTo: 'admin/previews' },
+  // DLV-926: the admin area lives under /admin. DLV-969 (2026-11-04): /admin opens Documentation, which every staff role
+  // can read; Previews is the owner's and co-authors' only.
+  { path: 'admin', pathMatch: 'full', redirectTo: 'admin/docs' },
   // Former /author addresses keep working (bookmarks, evidence, gateway sign-in return).
-  { path: 'author', pathMatch: 'full', redirectTo: 'admin/previews' },
+  { path: 'author', pathMatch: 'full', redirectTo: 'admin/docs' },
   { path: 'author/previews/study-plan', redirectTo: 'admin/previews/study-plan' },
   { path: 'author/:page', redirectTo: 'admin/:page' },
   // DLV-969: the steps of our own email-and-password sign-in and sign-up (shown when the Gateway offers them).

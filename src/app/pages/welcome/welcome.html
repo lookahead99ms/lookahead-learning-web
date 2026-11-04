@@ -10,6 +10,12 @@
       }
     </aside>
   }
+  @if (accessDenied()) {
+    <aside class="access-pending" role="status" aria-live="polite">
+      <h2>This page isn’t open to your account</h2>
+      <p>Your role doesn’t include it, so it isn’t in your menus either. Everything you can open is in the menu above, or go <a routerLink="/">Home</a>.</p>
+    </aside>
+  }
   <section appEssenceStory [autoplay]="true"></section>
   <footer class="welcome-footer">
     <p>Learn. Grow. Blaze.</p>

@@ -464,8 +464,31 @@ export function isAuthorDocumentationPage(pageId: string | null | undefined): bo
   return authorDocumentationLinks.some((page) => page.id === pageId);
 }
 
+/**
+ * DLV-969 (owner, 2026-11-04): Previews and Architecture are for the owner and co-authors only. Admins, reviewers and
+ * testers never see them in a menu or list, and the route sends them to Documentation.
+ */
+export function canSeePreviews(account: StudyAccount | null): boolean {
+  // The server's staff permissions decide when present (the owner manages access); older answers carry only the flag.
+  const permissions = account?.permissions;
+  if (permissions) return permissions.manageAccess || permissions.feedbackRole === 'co-author';
+  return account?.authorPreview === true;
+}
+
+/** Documentation pages only the owner and co-authors open. */
+const previewOnlyPages: ReadonlySet<string> = new Set(['architecture']);
+
+/** The documentation groups this account may open; a page it cannot open is not listed at all. */
+export function visibleDocumentationGroups(account: StudyAccount | null): readonly AuthorDocumentationGroup[] {
+  if (canSeePreviews(account)) return authorDocumentationGroups;
+  return authorDocumentationGroups
+    .map((group) => ({ ...group, pages: group.pages.filter((page) => !previewOnlyPages.has(page.id)) }))
+    .filter((group) => group.pages.length > 0);
+}
+
 export function visibleAdminLinks(account: StudyAccount | null) {
   return authorWorkspaceLinks.filter(page => {
+    if (page.id === 'previews') return canSeePreviews(account);
     if (page.id === 'access' && (account?.permissions?.triageFeedback || account?.permissions?.feedbackRole === 'co-author')) return true;
     const permission = page.id === 'access' ? 'manageAccess' : page.id === 'delivery' ? 'deliveryRead' : 'previewDocuments';
     return account?.permissions?.[permission] ?? account?.authorPreview === true;

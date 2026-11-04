@@ -45,6 +45,18 @@ describe('WelcomePage', () => {
     expect(root.querySelectorAll('.welcome-footer .footer-statements > *')).toHaveLength(2);
   });
 
+  it('says plainly when a page is not open to the account, above the Essence, instead of opening the Study Plan', () => {
+    const fixture = render({ access: 'denied' });
+    const root: HTMLElement = fixture.nativeElement;
+    const notice = root.querySelector('aside.access-pending');
+    expect(notice?.getAttribute('role')).toBe('status');
+    expect(notice?.querySelector('h2')?.textContent?.trim()).toBe('This page isn’t open to your account');
+    expect(notice?.textContent).toContain('Everything you can open is in the menu above, or go Home.');
+    expect(notice?.querySelector('a')?.getAttribute('href')).toBe('/');
+    expect(notice?.textContent).not.toContain('Your sign-in worked');
+    expect(root.querySelector('section.home-essence')).not.toBeNull();
+  });
+
   it('shows only the Essence without the query, with no side navigation and no content requests', () => {
     const fixture = render({});
     const root: HTMLElement = fixture.nativeElement;

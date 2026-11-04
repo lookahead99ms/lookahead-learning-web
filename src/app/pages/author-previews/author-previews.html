@@ -14,7 +14,7 @@
     </aside>
     <div class="workspace-content">
       <app-author-doc-hero pageId="architecture" />
-      @if (!accounts.account()?.authorPreview || accounts.sessionExpired()) {
+      @if (!canView() || accounts.sessionExpired()) {
         <section class="state-panel">
           <h2>Admin access required</h2>
           <p>Sign in with an account that has admin access.</p>
@@ -72,7 +72,7 @@
           Start with the live pages. Earlier design studies are kept below as history.
         </p>
       </header>
-      @if (accounts.account()?.authorPreview && !accounts.sessionExpired()) {
+      @if (canView() && !accounts.sessionExpired()) {
         <section class="live-section" aria-labelledby="live-product">
           <h2 id="live-product">Current product</h2>
           <p>These open the real pages as they are today, with your admin access.</p>
@@ -152,7 +152,7 @@
           }
         </div>
       }
-      @if (!accounts.account()?.authorPreview || accounts.sessionExpired()) {
+      @if (!canView() || accounts.sessionExpired()) {
         <section class="state-panel">
           <h2>Admin access required</h2>
           <p>Sign in with an account that has admin access.</p>

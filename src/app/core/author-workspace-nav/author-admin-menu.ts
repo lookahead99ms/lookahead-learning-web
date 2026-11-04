@@ -1,9 +1,9 @@
 import { DOCUMENT } from '@angular/common';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import {
-  authorDocumentationGroups,
   authorWorkspaceLinks,
   visibleAdminLinks,
+  visibleDocumentationGroups,
   AuthorWorkspacePageId,
   isAuthorDocumentationPage,
   authorDocumentationSection,
@@ -35,7 +35,7 @@ export class AuthorAdminMenu {
   protected readonly contentId = `author-admin-menu-${this.instance}`;
   private readonly accounts = inject(StudyPlanAccount);
   protected readonly workspaceLinks = computed(() => visibleAdminLinks(this.accounts.account()));
-  protected readonly documentationGroups = authorDocumentationGroups;
+  protected readonly documentationGroups = computed(() => visibleDocumentationGroups(this.accounts.account()));
   protected readonly onDocumentationPage = computed(() => isAuthorDocumentationPage(this.pageId()));
 
   /** The parent page and sub-pages around the open page, when it belongs to one. */

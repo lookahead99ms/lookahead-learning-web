@@ -166,7 +166,8 @@ describe.each(routeCases)(
         expect(harness.routeNativeElement?.textContent).not.toContain('An example answer.');
         expect(harness.routeNativeElement?.textContent).toContain('Sample question');
         const link = harness.routeNativeElement!.querySelector<HTMLAnchorElement>('dialog a.primary-action')!;
-        expect(link.getAttribute('href')).toBe(`${status === 401 ? '/sign-in' : '/account'}?returnTo=${encodeURIComponent(destination)}`);
+        // DLV-969 (owner, 2026-11-04): signed out, sign in and come back; signed in without the lesson, subscribe.
+        expect(link.getAttribute('href')).toBe(status === 401 ? `/sign-in?returnTo=${encodeURIComponent(destination)}` : '/pricing');
         expect(harness.routeNativeElement?.textContent).not.toContain('Pro access');
       });
     }

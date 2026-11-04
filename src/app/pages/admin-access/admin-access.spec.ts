@@ -5,7 +5,7 @@ import { Location } from '@angular/common';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { AdminAccessPage } from './admin-access';
 import { ACCOUNT_FETCH, StudyPlanAccount, StaffPermissions } from '../study-plan/study-plan-account';
-import { visibleAdminLinks } from '../../core/author-workspace-nav/author-workspace-links';
+import { canSeePreviews, visibleAdminLinks, visibleDocumentationGroups } from '../../core/author-workspace-nav/author-workspace-links';
 
 const permissions = (overrides: Partial<StaffPermissions>): StaffPermissions => ({
   manageAccess: false, previewDocuments: false, deliveryRead: false, deliveryCreate: false,
@@ -18,9 +18,21 @@ describe('staff navigation', () => {
   it('keeps tester curriculum access out of every admin menu', () => {
     expect(visibleAdminLinks({ ...account, permissions: permissions({ fullCurriculum: true, feedbackRole: 'tester' }) })).toEqual([]);
   });
+  it('lists Architecture only for the owner and co-authors, and drops nothing else', () => {
+    const pages = (value: object) => visibleDocumentationGroups(value as never).flatMap(group => group.pages.map(page => page.id));
+    const all = pages({ ...account, authorPreview: true });
+    expect(all).toContain('architecture');
+    expect(pages({ ...account, permissions: permissions({ previewDocuments: true, feedbackRole: 'co-author' }) })).toEqual(all);
+    const admin = pages({ ...account, permissions: permissions({ previewDocuments: true, feedbackRole: 'admin' }) });
+    expect(admin).toEqual(all.filter(id => id !== 'architecture'));
+    expect(canSeePreviews(null)).toBe(false);
+  });
   it('keeps assignment controls owner-only even for admins and reviewers', () => {
+    // DLV-969 (owner, 2026-11-04): Previews is the owner's and co-authors' only, so other staff never see it listed.
     expect(visibleAdminLinks({ ...account, permissions: permissions({ previewDocuments: true, deliveryRead: true }) }).map(row => row.id))
-      .toEqual(['docs', 'previews', 'delivery']);
+      .toEqual(['docs', 'delivery']);
+    expect(visibleAdminLinks({ ...account, permissions: permissions({ previewDocuments: true, deliveryRead: true, feedbackRole: 'co-author' }) }).map(row => row.id))
+      .toEqual(['docs', 'previews', 'delivery', 'access']);
     expect(visibleAdminLinks({ ...account, authorPreview: true, permissions: permissions({}) })).toEqual([]);
   });
 });
@@ -430,7 +442,8 @@ describe('test account admin outline', () => {
       { provide: ACCOUNT_FETCH, useValue: async () => Response.json({ data: [] }) },
     ] });
     const page = TestBed.runInInjectionContext(() => new AdminAccessPage());
-    expect(page.tabs().map(tab => tab.label)).toEqual(['Test accounts', 'People']);
+    // DLV-969 (owner, 2026-11-04): admins see no People list, so the tab is not shown at all.
+    expect(page.tabs().map(tab => tab.label)).toEqual(['Test accounts']);
     expect(page.tab()).toBe('test');
     page.selectTab('assign');
     expect(page.tab()).toBe('test');
