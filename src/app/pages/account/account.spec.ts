@@ -14,6 +14,8 @@ it('keeps account navigation inside recognized learner routes', () => {
   expect(safeAccountReturn('/support')).toBe('/support');
   expect(safeAccountReturn('/admin')).toBe('/admin');
   expect(safeAccountReturn('/account')).toBe('/account');
+  // DLV-969 S36.8: the merge link comes back to itself after sign-in.
+  expect(safeAccountReturn('/account/merge?token=abc_-1')).toBe('/account/merge?token=abc_-1');
   expect(safeAccountReturn('/pricing')).toBe('/pricing');
   expect(safeAccountReturn('/delivery-plan')).toBe('/delivery-plan');
   expect(safeAccountReturn('/delivery-plan?view=roadmap')).toBe('/delivery-plan?view=roadmap');

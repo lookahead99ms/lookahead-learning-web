@@ -1,0 +1,216 @@
+/* DLV-969 S36.8: the account-merge screens. Scoped to these components; nothing here reaches other pages. */
+.account-page.merge-page {
+  max-width: 640px;
+}
+.account-page.merge-page.merge-wide {
+  max-width: 1120px;
+}
+.merge-panel-title {
+  margin: 0 0 4px;
+  font-size: 1.2rem;
+}
+.merge-inbox {
+  display: grid;
+  gap: 12px;
+}
+.merge-inbox p {
+  margin: 0;
+}
+.merge-wait {
+  min-height: 1.6em;
+  color: var(--text-subtle);
+  font-size: 0.85rem;
+}
+.merge-form {
+  display: grid;
+  gap: 20px;
+}
+.merge-choice {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.merge-choice legend {
+  margin-bottom: 12px;
+  padding: 0;
+  font-weight: 700;
+}
+.merge-candidates {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+.merge-candidate {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+.merge-candidate.kept {
+  border-color: var(--accent-strong);
+  box-shadow: 0 0 0 1px var(--accent-strong);
+}
+.merge-candidate.dropped {
+  border-color: var(--danger);
+}
+.merge-candidate-name {
+  margin: 0;
+  font-size: 1.1rem;
+  overflow-wrap: anywhere;
+}
+.merge-facts {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  font-size: 0.9rem;
+}
+.merge-facts div {
+  display: grid;
+  grid-template-columns: 8.5em minmax(0, 1fr);
+  gap: 8px;
+}
+.merge-facts dt {
+  color: var(--text-subtle);
+}
+.merge-facts dd {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin: 0;
+}
+.merge-method {
+  padding: 1px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 0.8rem;
+}
+.merge-plans-title {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+}
+.merge-plans {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9rem;
+}
+.merge-plans li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 8px;
+}
+.merge-plan-title {
+  overflow-wrap: anywhere;
+}
+.merge-plan-progress {
+  color: var(--text-subtle);
+  font-variant-numeric: tabular-nums;
+}
+.merge-plan-bar {
+  grid-column: 1 / -1;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  overflow: hidden;
+}
+.merge-plan-bar span {
+  display: block;
+  height: 100%;
+  background: var(--accent-strong);
+}
+.merge-empty {
+  margin: 0;
+  color: var(--text-subtle);
+  font-size: 0.9rem;
+}
+.merge-deleted {
+  margin: 0;
+  padding: 10px 12px;
+  border-inline-start: 3px solid var(--danger);
+  background: var(--danger-surface);
+  color: var(--danger);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.merge-keep {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  cursor: pointer;
+}
+.merge-keep input {
+  width: 20px;
+  height: 20px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  accent-color: var(--accent-strong);
+}
+.merge-confirm {
+  max-width: 320px;
+}
+.merge-confirm input {
+  letter-spacing: 0.12em;
+}
+.merge-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.merge-actions-single {
+  justify-content: flex-start;
+  margin-top: 8px;
+}
+.merge-button {
+  min-width: 140px;
+  border: 1px solid var(--danger);
+  background: var(--danger);
+  color: var(--surface-page);
+  font-weight: 700;
+}
+.merge-button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--danger) 85%, var(--text-strong));
+}
+.merge-button:focus-visible,
+.merge-keep input:focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 3px;
+}
+@media (max-width: 480px) {
+  .merge-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .merge-actions > * {
+    width: 100%;
+  }
+  .merge-facts div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+  }
+}
+.merge-hint {
+  margin: 0;
+}
+.merge-paid {
+  align-self: flex-start;
+  margin: -4px 0 0;
+  padding: 1px 10px;
+  border: 1px solid var(--accent-strong);
+  border-radius: 999px;
+  color: var(--accent-strong);
+  font-size: 0.8rem;
+  font-weight: 700;
+}

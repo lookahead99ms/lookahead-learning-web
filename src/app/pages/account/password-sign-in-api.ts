@@ -7,8 +7,11 @@ import { ACCOUNT_FETCH } from '../study-plan/study-plan-account';
  * ConfirmForgotPassword) and keeps every token server-side; the browser only sees the next step.
  */
 export type PasswordStep =
-  /** Signed in: leave the page for this same-origin path (the Gateway decides, for example the DEV pending notice). */
-  | { kind: 'signed-in'; next: string }
+  /**
+   * Signed in: leave the page for this same-origin path (the Gateway decides, for example the DEV pending notice).
+   * mergeAvailable (DLV-969 S36.8): another account uses the same verified email; the page offers the merge email first.
+   */
+  | { kind: 'signed-in'; next: string; mergeAvailable?: true }
   /** Cognito asks an account created by the owner to choose its own password. */
   | { kind: 'new-password' }
   /** Cognito asks for a code from an authenticator app or an email. */
@@ -91,6 +94,19 @@ export function safeNext(value: unknown): string {
   return typeof value === 'string' && value.startsWith('/') && !value.startsWith('//') && !value.includes('\\')
     ? value
     : '/';
+}
+
+/** The merge page itself, with or without a query (the same rule as the Gateway's mergeOffer). */
+export function isMergePath(path: string): boolean {
+  return path === '/account/merge' || path.startsWith('/account/merge?');
+}
+
+/**
+ * The path a signed-in step goes to when it also offers the merge email (DLV-969 S36.8); otherwise null. Never on the
+ * way to the merge page: asking for a new email there would close the link the person is about to open.
+ */
+export function mergeNext(step: PasswordStep): string | null {
+  return step.kind === 'signed-in' && step.mergeAvailable === true && !isMergePath(step.next) ? step.next : null;
 }
 
 export function maskEmail(email: string): string {
@@ -185,7 +201,7 @@ export class PasswordSignInApi {
 function step(data: any): PasswordStep {
   switch (data?.step) {
     case 'SIGNED_IN':
-      return { kind: 'signed-in', next: safeNext(data.next) };
+      return { kind: 'signed-in', next: safeNext(data.next), ...(data.mergeAvailable === true ? { mergeAvailable: true as const } : {}) };
     case 'NEW_PASSWORD':
       return { kind: 'new-password' };
     case 'APP_CODE':

@@ -75,17 +75,19 @@ class CandidateTests(unittest.TestCase):
             def comment(text, edited=False):
                 stamp = f.github.now.replace(microsecond=0).isoformat()
                 return {'id': 9, 'user': {'login': m.approval.OWNER}, 'body': text, 'created_at': stamp, 'updated_at': stamp[:-6] + '+01:00' if edited else stamp}
-            def run(comments):
+            def run(comments, env=None):
                 f.github.autoApprove = False
                 def get(repository, path, payload=None):
                     if path == 'issues/3/comments?per_page=100':
                         return comments
                     return f.github.get(repository, path, payload)
-                return m.decide('dev', f.env, verification, get, lambda: f.github.now, lambda _: None)
+                return m.decide('dev', env or f.env, verification, get, lambda: f.github.now, lambda _: None)
             kept = run([comment(keep)])
             self.assertEqual((kept['decision'], kept['commentId'], kept['stage'], kept['schema']), ('keep', 9, 'dev', m.SCHEMA_DECISION))
             body = f.github.data['issues/3']['body']
             self.assertIn('### What this run does', body); self.assertIn(back, body); self.assertIn('`REJECT` stops this run', body)
+            self.assertIn('after 15 minutes with no decision the run fails', body)
+            self.assertEqual(m.approval.timestamp(kept['expiresAt']) - m.approval.timestamp(kept['createdAt']), timedelta(minutes=15))
             self.assertLess(body.index('### What this run does'), body.index('| Item | Detail |'))
             self.assertEqual(run([comment(back)])['decision'], 'rollback')
             with self.assertRaisesRegex(ValueError, 'rejected'): run([comment('REJECT', edited=True)])
@@ -96,7 +98,15 @@ class CandidateTests(unittest.TestCase):
             # Expired window and changed issue body fail closed on the recheck path.
             receipt = {k: kept[k] for k in ('schema', 'stage', 'runId', 'planDigest', 'createdAt', 'expiresAt', 'issue')}
             self.assertIsNone(m.decision('dev', plan, verification, receipt, f.env, f.github.get, f.github.now))
-            with self.assertRaisesRegex(ValueError, 'expired'): m.decision('dev', plan, verification, receipt, f.env, f.github.get, f.github.now + timedelta(minutes=41))
+            self.assertIsNone(m.decision('dev', plan, verification, receipt, f.env, f.github.get, f.github.now + timedelta(minutes=14, seconds=59)))
+            with self.assertRaisesRegex(ValueError, 'expired'): m.decision('dev', plan, verification, receipt, f.env, f.github.get, f.github.now + timedelta(minutes=15))
+            # The decision window follows APPROVAL_VALID_MINUTES at both ends; a value changed in between fails closed.
+            longer = dict(f.env, APPROVAL_VALID_MINUTES='20')
+            with self.assertRaisesRegex(ValueError, 'Decision window changed'): m.decision('dev', plan, verification, receipt, longer, f.github.get, f.github.now)
+            twenty = run([comment(keep)], longer)
+            self.assertEqual(timedelta(minutes=20), m.approval.timestamp(twenty['expiresAt']) - m.approval.timestamp(twenty['createdAt']))
+            self.assertIn('after 20 minutes with no decision the run fails', f.github.data['issues/3']['body'])
+            with self.assertRaisesRegex(ValueError, 'APPROVAL_VALID_MINUTES must be'): run([comment(keep)], dict(f.env, APPROVAL_VALID_MINUTES='61'))
             f.github.data['issues/3']['body'] += ' edited'
             with self.assertRaisesRegex(ValueError, 'issue changed'): m.decision('dev', plan, verification, receipt, f.env, f.github.get, f.github.now)
 

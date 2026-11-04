@@ -389,6 +389,25 @@ tr.self > * {
   border: 1px solid var(--danger);
   color: var(--danger);
 }
+/* DLV-969 account linking (owner only): passive labels, so plain text, never pills. */
+.sign-in-labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+  margin-top: 2px;
+  color: var(--text-subtle);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.same-email-flag {
+  display: block;
+  margin-top: 4px;
+  color: var(--warning);
+  font-size: 13px;
+  font-weight: 700;
+}
 @media (max-width: 640px) {
   .removal-option {
     grid-template-columns: 1fr;

@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { ACCOUNT_FETCH, AccountPlan, StudyPlanAccount } from '../study-plan/study-plan-account';
-import { AccountSettingsError } from './account-settings-client';
+import { AccountSettingsError, accountSignInMethods, readSignInMethods } from './account-settings-client';
 
 const json = (data: unknown) =>
   new Response(JSON.stringify({ data }), {
@@ -16,7 +16,7 @@ const failure = (status: number, code: string) =>
 describe('Account settings identity boundary', () => {
   let store: StudyPlanAccount;
   let fetcher: ReturnType<typeof vi.fn>;
-  let profile: { accountId: string; username: string; displayName: string; signInMethod?: string; email?: string | null };
+  let profile: { accountId: string; username: string; displayName: string; signInMethod?: string; email?: string | null; signInMethods?: unknown };
   let passwordReply: () => Response;
   const passwordChange = {
     currentPassword: 'legacy',
@@ -70,11 +70,61 @@ describe('Account settings identity boundary', () => {
     expect(await store.loadProfile()).toEqual({
       displayName: profile.displayName, username: 'Google_109384756', signInMethod: 'google', email: 'learner@gmail.example',
     });
-    // Cognito's own name tells a Google account apart even when today's Domain says "cognito" and sends no email.
+    // The Domain's method wins: a "Google_…" name signed in with the password stays a password session.
     Object.assign(profile, { signInMethod: 'cognito', email: '' });
+    expect(await store.loadProfile()).toEqual({ displayName: profile.displayName, username: 'Google_109384756', signInMethod: 'cognito' });
+    // Only when the Domain reports no method does Cognito's own name stand in for Google.
+    Object.assign(profile, { signInMethod: undefined });
     expect(await store.loadProfile()).toEqual({ displayName: profile.displayName, username: 'Google_109384756', signInMethod: 'google' });
-    Object.assign(profile, { username: 'learner@example.test' });
+    Object.assign(profile, { signInMethod: 'something-else' });
+    expect(await store.loadProfile()).toEqual({ displayName: profile.displayName, username: 'Google_109384756' });
+    Object.assign(profile, { username: 'learner@example.test', signInMethod: undefined });
     expect(await store.loadProfile()).toEqual({ displayName: profile.displayName, username: 'learner@example.test' });
+  });
+
+  it('keeps every reported sign-in method, Google first, and drops unknown or repeated ones (DLV-969 account linking)', async () => {
+    Object.assign(profile, {
+      signInMethod: 'cognito', email: 'learner@gmail.com',
+      signInMethods: [
+        { provider: 'cognito', email: 'learner@gmail.com' },
+        { provider: 'google', email: 'learner@gmail.com' },
+        { provider: 'google', email: 'learner@gmail.com' },
+        { provider: 'saml', email: 'learner@gmail.com' },
+        { provider: 'cognito', email: 42 },
+        null,
+        'google',
+      ],
+    });
+    expect(await store.loadProfile()).toEqual({
+      // The Domain reported this session's method, so it is kept (DLV-969 review: the Domain's method wins).
+      displayName: profile.displayName, username: profile.username, signInMethod: 'cognito', email: 'learner@gmail.com',
+      signInMethods: [
+        { provider: 'google', email: 'learner@gmail.com' },
+        { provider: 'cognito', email: 'learner@gmail.com' },
+        { provider: 'cognito' },
+      ],
+    });
+    // One method, or a list that is not a list: only well-formed entries reach the page.
+    Object.assign(profile, { signInMethods: [{ provider: 'cognito', email: 'learner@gmail.com' }] });
+    expect((await store.loadProfile()).signInMethods).toEqual([{ provider: 'cognito', email: 'learner@gmail.com' }]);
+    Object.assign(profile, { signInMethods: 'google' });
+    expect((await store.loadProfile()).signInMethods).toBeUndefined();
+    Object.assign(profile, { signInMethods: [{ provider: 'unknown' }] });
+    expect((await store.loadProfile()).signInMethods).toBeUndefined();
+  });
+
+  it('falls back to the method of this session when the service sends no list, and guesses nothing without one', () => {
+    const base = { displayName: 'Sample', username: 'sample@example.test' };
+    expect(accountSignInMethods({ ...base, signInMethod: 'google', email: 'learner@gmail.com' }))
+      .toEqual([{ provider: 'google', email: 'learner@gmail.com' }]);
+    expect(accountSignInMethods({ ...base, signInMethod: 'google' })).toEqual([{ provider: 'google' }]);
+    expect(accountSignInMethods({ ...base, signInMethod: 'cognito', email: 'sample@example.test' }))
+      .toEqual([{ provider: 'cognito', email: 'sample@example.test' }]);
+    expect(accountSignInMethods(base)).toEqual([]);
+    expect(accountSignInMethods({ ...base, signInMethods: [], signInMethod: 'google' })).toEqual([{ provider: 'google' }]);
+    expect(accountSignInMethods({ ...base, signInMethod: 'google', signInMethods: [{ provider: 'cognito' }, { provider: 'google' }] }))
+      .toEqual([{ provider: 'google' }, { provider: 'cognito' }]);
+    expect(readSignInMethods(undefined)).toEqual([]);
   });
 
   it('posts only the display name with Identity CSRF, then refreshes Domain-composed grants', async () => {

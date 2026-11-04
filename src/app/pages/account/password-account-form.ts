@@ -1,8 +1,10 @@
 import { DOCUMENT } from '@angular/common';
-import { Component, inject, input, signal } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { MergeInboxPanel } from './merge-inbox-panel';
 import {
   meetsPasswordRules,
+  mergeNext,
   PASSWORD_RULES,
   PasswordSignInApi,
   PasswordSignInError,
@@ -49,7 +51,7 @@ export async function followStep(
 
 @Component({
   selector: 'app-password-account-form',
-  imports: [RouterLink],
+  imports: [RouterLink, MergeInboxPanel],
   templateUrl: './password-account-form.html',
   styleUrl: './account.css',
 })
@@ -71,6 +73,14 @@ export class PasswordAccountForm {
   protected readonly passwordVisible = signal(false);
   protected readonly busy = signal(false);
   protected readonly error = signal('');
+  /** DLV-969 S36.8: set when the sign-in reports another account with this email; the form gives way to "Check your inbox". */
+  protected readonly mergeNext = signal<string | null>(null);
+  /** The last sign-in failed on a wrong email or password. */
+  private readonly wrongCredentials = signal(false);
+  /** DLV-969: after a wrong password, remind people who joined with Google, when Google is offered here. */
+  protected readonly googleHint = computed(
+    () => this.mode() === 'signin' && this.google() && this.wrongCredentials() && !!this.error(),
+  );
   protected readonly notice: string;
 
   constructor() {
@@ -86,6 +96,7 @@ export class PasswordAccountForm {
   protected async submit(): Promise<void> {
     if (this.busy()) return;
     this.error.set('');
+    this.wrongCredentials.set(false);
     this.passwordVisible.set(false);
     const password = this.password();
     if (this.mode() === 'signup' && !meetsPasswordRules(password)) {
@@ -105,6 +116,11 @@ export class PasswordAccountForm {
             })
           : await this.api.signIn(this.email(), password, this.returnTo());
       this.password.set('');
+      const merge = mergeNext(step);
+      if (merge !== null) {
+        this.mergeNext.set(merge);
+        return;
+      }
       await followStep(
         step,
         { router: this.router, document: this.document, returnTo: this.returnTo(), after: this.mode() === 'signup' ? 'sign-up' : 'sign-in' },
@@ -117,7 +133,9 @@ export class PasswordAccountForm {
         await this.router.navigate([PASSWORD_STEP_ROUTES.confirm], { queryParams: { returnTo: this.returnTo() } });
         return;
       }
-      this.error.set(problemMessage(error instanceof PasswordSignInError ? error.problem : 'unavailable'));
+      const problem = error instanceof PasswordSignInError ? error.problem : 'unavailable';
+      this.wrongCredentials.set(problem === 'credentials');
+      this.error.set(problemMessage(problem));
     } finally {
       this.busy.set(false);
     }

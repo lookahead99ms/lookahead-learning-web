@@ -103,7 +103,9 @@
                       <span class="sub">{{ row.username }}</span>
                     }
                   </th>
-                  <td data-label="Email">{{ row.email || 'No verified email' }}</td>
+                  <!-- DLV-969 account linking: how this person signs in, and other accounts on the same verified email. -->
+                  @let labels = methodLabels(row);
+                  <td data-label="Email">{{ row.email || 'No verified email' }}@if (labels.length) {<span class="sign-in-labels"><span class="visually-hidden">Sign-in methods: </span>@for (label of labels; track label) {<span class="method-label">{{ label }}</span>}</span>}@if (sameEmail(row); as flag) {<span class="same-email-flag"><span aria-hidden="true">⚠</span> {{ flag }}</span>}</td>
                   <td data-label="Requested">{{ timeText(row.requestedAt) }}</td>
                   <td data-label="Expires">{{ expiresText(row) }}</td>
                   <td data-label="Admit as">

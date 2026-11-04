@@ -458,3 +458,40 @@ describe('Test account maintenance',()=>{
   });
  });
 });
+
+describe('People sign-in methods (DLV-969 account linking)',()=>{
+ const real=(id:string,extra:object={})=>({accountId:id,username:id,displayName:'Person '+id,email:id+'@gmail.com',roles:['user'],testAccount:false,fullCurriculum:false,access:{label:'Free',labels:['Free'],grantedCourseIds:[]},...extra});
+ const directory={accounts:[
+  real('linked',{sameEmailAccounts:1,signInMethods:[{provider:'cognito',email:'linked@gmail.com'},{provider:'google',email:'linked@gmail.com'}]}),
+  real('google-only',{sameEmailAccounts:0,signInMethods:[{provider:'google',email:'google-only@gmail.com'}]}),
+  real('older'),
+ ],page:0,hasNext:false};
+ async function render(feedbackRole:'owner'|'co-author'){
+  const request=vi.fn(async(path:string)=>path.startsWith('/admin/accounts')?directory:path==='/admin/test-accounts'?[row]:[]);
+  const account=signal<any>({accountId:'me',username:'author',topicGrants:[],permissions:{manageAccess:feedbackRole==='owner',feedbackRole}});
+  TestBed.configureTestingModule({providers:[provideRouter([]),{provide:MembershipApi,useValue:{request}},{provide:StudyPlanAccount,useValue:{account}}]});
+  const fixture=TestBed.createComponent(TestAccounts);fixture.componentRef.setInput('view','people');
+  await fixture.componentInstance.load();fixture.detectChanges();await fixture.whenStable();fixture.detectChanges();
+  return {root:fixture.nativeElement as HTMLElement,request};
+ }
+ const person=(root:HTMLElement,id:string)=>root.querySelector(`tr[data-account="Person ${id}"] th[data-label="Person"]`) as HTMLElement|null;
+ it('shows the owner each person\'s methods as plain labels and flags the same Gmail',async()=>{
+  const {root}=await render('owner');
+  const linked=person(root,'linked')!;
+  expect([...linked.querySelectorAll('.method-label')].map(label=>label.textContent)).toEqual(['Google','Password']);
+  expect(linked.querySelector('.same-email-flag')?.textContent?.trim()).toBe('⚠ Same Gmail as 1 other account');
+  const google=person(root,'google-only')!;
+  expect([...google.querySelectorAll('.method-label')].map(label=>label.textContent)).toEqual(['Google']);
+  expect(google.querySelector('.same-email-flag')).toBeNull();
+  // An older Domain sends neither: the row stays as it was.
+  expect(person(root,'older')!.querySelector('.sign-in-labels, .same-email-flag')).toBeNull();
+  // Passive labels, never buttons or links.
+  expect(root.querySelector('.sign-in-labels button, .sign-in-labels a')).toBeNull();
+ });
+ it('gives other operators no identity data: no directory, no methods, no flag',async()=>{
+  const {root,request}=await render('co-author');
+  expect(request.mock.calls.some(([path])=>String(path).startsWith('/admin/accounts'))).toBe(false);
+  expect(root.querySelector('.sign-in-labels, .same-email-flag')).toBeNull();
+  expect(root.textContent).not.toContain('@gmail.com');
+ });
+});

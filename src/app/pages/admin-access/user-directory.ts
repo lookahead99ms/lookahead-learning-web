@@ -1,4 +1,5 @@
 import { accountRoleLabel } from '../account/account-membership';
+import { AccountSignInMethod, readSignInMethods } from '../account/account-settings-client';
 
 /**
  * DLV-961 People directory (user, 2026-10-16): every account the signed-in operator may inspect,
@@ -55,6 +56,8 @@ export interface DirectoryAccount {
    * removal actions apply. Absent from an older Domain, so the buttons stay hidden.
    */
   signIn?: 'active' | 'disabled'; canDisable?: boolean; canEnable?: boolean; canRemove?: boolean;
+  /** DLV-969 account linking, owner only: every way into the account, and how many other accounts share its verified email. */
+  signInMethods?: AccountSignInMethod[]; sameEmailAccounts?: number;
 }
 
 export interface DirectoryRow {
@@ -78,6 +81,10 @@ export interface DirectoryRow {
   canDisable?: boolean;
   canEnable?: boolean;
   canRemove?: boolean;
+  /** DLV-969, owner's directory only: "Google", "Password". Other operators never get these. */
+  signInLabels?: string[];
+  /** DLV-969, owner's directory only: "Same Gmail as 1 other account" when other accounts share the verified email. */
+  sameEmail?: string;
 }
 
 export const ROLE_FILTERS = ['Author (owner)', 'Co-author', 'Admin', 'Reviewer', 'Tester', 'Learner'] as const;
@@ -117,6 +124,22 @@ export function personLines(account: { username: string; displayName?: string | 
   const details = [account.email && account.email !== name ? account.email : '',
     !internal && account.username !== name && account.username !== account.email ? account.username : ''].filter(Boolean);
   return { name, detail: details.join(' · ') || null };
+}
+
+/** Short labels for the owner's rows: "Google", "Password"; one each, Google first. */
+export function signInLabels(methods: unknown): string[] {
+  return [...new Set(readSignInMethods(methods).map((method) => (method.provider === 'google' ? 'Google' : 'Password')))];
+}
+
+/** A whole count above zero, or 0 for anything else the server sent. */
+export function sameEmailCount(value: unknown): number {
+  return typeof value === 'number' && Number.isInteger(value) && value > 0 ? value : 0;
+}
+
+/** "Same Gmail as 1 other account"; "Same email as 2 other accounts" when the address is not a Gmail. */
+export function sameEmailText(count: number, email: string | null | undefined): string {
+  const kind = /@(gmail|googlemail)\.com$/i.test(email ?? '') ? 'Gmail' : 'email';
+  return `Same ${kind} as ${count} other account${count === 1 ? '' : 's'}`;
 }
 
 export function accountName(accountId: string, names: ReadonlyMap<string, string>): string {
@@ -286,6 +309,9 @@ export function directoryRows(
       canDisable: account.canDisable === true,
       canEnable: account.canEnable === true,
       canRemove: account.canRemove === true,
+      signInLabels: signInLabels(account.signInMethods),
+      sameEmail: sameEmailCount(account.sameEmailAccounts)
+        ? sameEmailText(sameEmailCount(account.sameEmailAccounts), account.email) : undefined,
     };
     if (existing) Object.assign(existing, current);
     else rows.push({ ...current, key: account.accountId, accountId: account.accountId,

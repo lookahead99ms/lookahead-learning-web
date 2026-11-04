@@ -626,4 +626,32 @@ describe('Waiting for access', () => {
     expect([...root.querySelectorAll('#waiting-for-access tbody tr')].map(row => row.getAttribute('data-account'))).toEqual(['sam.k']);
     expect(root.querySelector('[role="tab"]')?.textContent?.trim()).toBe('Waiting for access · 1');
   });
+
+  it('shows the owner each waiting person\'s sign-in methods and flags other accounts on the same Gmail (DLV-969 account linking)', async () => {
+    const linked = { ...alex, email: 'alex@gmail.com', sameEmailAccounts: 1,
+      signInMethods: [{ provider: 'cognito', email: 'alex@gmail.com' }, { provider: 'google', email: 'alex@gmail.com' }] };
+    const many = { ...sam, accountId: 'many-id', username: 'many', email: 'many@example.test', sameEmailAccounts: 3, signInMethods: [{ provider: 'cognito' }] };
+    waiting = { waiting: [linked, { ...sam, sameEmailAccounts: 0 }, many] };
+    setup('owner');
+    const fixture = TestBed.createComponent(AdminAccessPage);
+    fixture.detectChanges(); await fixture.whenStable();
+    await fixture.componentInstance.reload(); fixture.detectChanges();
+    const rows = [...(fixture.nativeElement as HTMLElement).querySelectorAll<HTMLTableRowElement>('#waiting-for-access tbody tr')];
+    const email = (row: HTMLElement) => row.querySelector('[data-label="Email"]')!;
+    expect(email(rows[0]).firstChild?.textContent).toBe('alex@gmail.com');
+    expect([...email(rows[0]).querySelectorAll('.method-label')].map(label => label.textContent)).toEqual(['Google', 'Password']);
+    expect(email(rows[0]).querySelector('.sign-in-labels .visually-hidden')?.textContent).toBe('Sign-in methods: ');
+    expect(email(rows[0]).querySelector('.same-email-flag')?.textContent?.trim()).toBe('⚠ Same Gmail as 1 other account');
+    // No count and no methods from the Domain: the cell is only the email, as before.
+    expect(email(rows[1]).textContent).toBe('No verified email');
+    expect(email(rows[1]).querySelector('.sign-in-labels, .same-email-flag')).toBeNull();
+    expect([...email(rows[2]).querySelectorAll('.method-label')].map(label => label.textContent)).toEqual(['Password']);
+    expect(email(rows[2]).querySelector('.same-email-flag')?.textContent?.trim()).toBe('⚠ Same email as 3 other accounts');
+    // Malformed counts never raise a flag.
+    const page = fixture.componentInstance;
+    expect(page.sameEmail({ ...alex, sameEmailAccounts: -1 })).toBe('');
+    expect(page.sameEmail({ ...alex, sameEmailAccounts: 1.5 })).toBe('');
+    expect(page.sameEmail(alex)).toBe('');
+    expect(page.methodLabels(alex)).toEqual([]);
+  });
 });

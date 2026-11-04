@@ -1,5 +1,6 @@
 """Tests for the per-application DEV deploy tool (one ECS service per application, ECS rolling updates); AWS and GitHub are
 injected fakes, nothing is called for real."""
+from datetime import timedelta
 import json
 from pathlib import Path
 import shutil
@@ -242,11 +243,12 @@ class PlanTests(DeployFixture):
             self.assertEqual([('Modify', 'AWS::ECS::Service'), ('Modify', 'AWS::CloudFormation::Stack')], [(r['action'], r['type']) for r in parked['resources']])
             self.assertIn('directly', parked['resources'][0]['note'])
             self.assertEqual(self.config['stack'] + ' to zero tasks while the stack is ' + status, m.headline(parked)['change'])
-            text = m.gist(parked)
+            start = self.now.replace(microsecond=0)
+            receipt = {'createdAt': start.isoformat(), 'expiresAt': (start + timedelta(minutes=10)).isoformat(), 'validMinutes': 15}
+            text = m.gist(parked, receipt)
             for phrase in ('ecs update-service', 'ecs:UpdateService', '30 minutes', 'UPDATE_ROLLBACK_FAILED', 'desired_count 1'):
                 self.assertIn(phrase, text)
-            stamp = self.now.replace(microsecond=0).isoformat()
-            self.assertIn('park of a busy stack', m.body(parked, {'createdAt': stamp, 'expiresAt': stamp}))
+            self.assertIn('park of a busy stack', m.body(parked, receipt))
         self.aws.serving('old')
         self.assertEqual((False, None), (self.planned(count='0')['busyStackPark'], self.planned(count='0')['busyStackStatus']))
 
@@ -369,6 +371,47 @@ class ApprovalTests(DeployFixture):
         self.github.comment = lambda: {'id': 7, 'user': {'login': 'someone'}, 'body': 'APPROVE DEPLOY ' + planned['imageTag'], 'created_at': '2026-01-01T00:00:00+00:00', 'updated_at': '2026-01-01T00:00:00+00:00'}
         with self.assertRaises(TimeoutError):
             self.approved(planned)
+
+    def test_answer_at_minute_nine_stays_valid_for_fifteen_minutes_from_the_comment(self):
+        planned = self.planned()
+        start = self.now
+        self.github.autoApprove = False
+        def later(_):
+            self.github.now = start + timedelta(minutes=9)
+            stamp = self.github.now.replace(microsecond=0).isoformat()
+            self.github.comments = [{'id': 7, 'user': {'login': owner.OWNER}, 'body': 'APPROVE DEPLOY ' + planned['imageTag'], 'created_at': stamp, 'updated_at': stamp}]
+        receipt = m.approve(planned, self.env, self.root, self.get, now=self.clock, sleep=later)
+        self.assertEqual((7, 'deploy', (start + timedelta(minutes=9)).isoformat(), 15), (receipt['commentId'], receipt['mode'], receipt['approvedAt'], receipt['validMinutes']))
+        self.assertIn('Answer within 10 minutes of this issue being created; the answer then stays valid for 15 minutes from your comment', m.gist(planned, receipt))
+        m.verify(planned, receipt, self.env, self.root, self.get, start + timedelta(minutes=20))
+        m.verify(planned, receipt, self.env, self.root, self.get, start + timedelta(minutes=23, seconds=59))
+        with self.assertRaisesRegex(ValueError, 'older than its validity window'):
+            m.verify(planned, receipt, self.env, self.root, self.get, start + timedelta(minutes=24))
+        with self.assertRaisesRegex(ValueError, 'comment time changed'):
+            m.verify(planned, {**receipt, 'approvedAt': start.isoformat()}, self.env, self.root, self.get, start + timedelta(minutes=20))
+
+    def test_repository_variables_set_the_windows_but_never_the_duplicate_image_wait(self):
+        env = dict(self.env, APPROVAL_WAIT_MINUTES='3', APPROVAL_VALID_MINUTES='20')
+        self.assertEqual(timedelta(minutes=3), m.approvalWindow({'unchanged': False}, env))
+        self.assertEqual(timedelta(minutes=5), m.approvalWindow({'unchanged': True}, env))
+        with self.assertRaisesRegex(ValueError, 'APPROVAL_WAIT_MINUTES must be a whole number of minutes from 2 to 15'):
+            m.approvalWindow({'unchanged': False}, dict(env, APPROVAL_WAIT_MINUTES='16'))
+        planned = self.planned(); start = self.now.replace(microsecond=0)
+        receipt = m.approve(planned, env, self.root, self.get, now=self.clock, sleep=lambda s: None)
+        self.assertEqual(((start + timedelta(minutes=3)).isoformat(), 20), (receipt['expiresAt'], receipt['validMinutes']))
+        self.assertIn('Answer within 3 minutes of this issue being created; the answer then stays valid for 20 minutes from your comment', self.github.data['issues/3']['body'])
+        m.verify(planned, receipt, env, self.root, self.get, start + timedelta(minutes=19, seconds=59))
+        with self.assertRaisesRegex(ValueError, 'older than its validity window'):
+            m.verify(planned, receipt, env, self.root, self.get, start + timedelta(minutes=20))
+        with self.assertRaisesRegex(ValueError, 'windows changed since the issue was opened'):
+            m.verify(planned, receipt, self.env, self.root, self.get, self.now)
+        # A duplicate image keeps its five-minute wait whatever the variable says, and prints the validity it was given.
+        self.aws.serving('b')
+        duplicate = self.planned()
+        self.assertTrue(duplicate['unchanged'])
+        receipt = m.approve(duplicate, env, self.root, self.get, now=self.clock, sleep=lambda s: None)
+        self.assertEqual((start + timedelta(minutes=5)).isoformat(), receipt['expiresAt'])
+        self.assertIn('answer within 5 minutes; silence or `REJECT` closes this issue with nothing done. An answer stays valid for 20 minutes', self.github.data['issues/3']['body'])
 
 
 class ExecuteTests(DeployFixture):

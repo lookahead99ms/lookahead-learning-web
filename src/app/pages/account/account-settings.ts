@@ -12,9 +12,10 @@ import {
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { StudyPlanAccount } from '../study-plan/study-plan-account';
+import { isProviderUsername, StudyPlanAccount } from '../study-plan/study-plan-account';
 import {
   ACCOUNT_SETTINGS_CLIENT,
+  accountSignInMethods,
   AccountSettingsError,
   ManagedAccountProfile,
   PasswordChange,
@@ -52,6 +53,37 @@ export class AccountSettings implements OnDestroy {
   private destroyed = false;
 
   protected readonly profile = signal<ManagedAccountProfile | null>(null);
+  /** DLV-969: every way into this account; linking happens at sign-in, so there is nothing to add here. */
+  protected readonly signInMethods = computed(() => {
+    const profile = this.profile();
+    if (!profile) return [];
+    return accountSignInMethods(profile).map((method) => ({
+      provider: method.provider,
+      label: method.provider === 'google' ? 'Google' : 'Email and password',
+      // A method without an email shows its name alone; the username is never shown in its place.
+      email: method.email ?? '',
+    }));
+  });
+  protected readonly providerUsername = isProviderUsername;
+  /** This session came through Google. */
+  protected readonly googleSession = computed(() => this.profile()?.signInMethod === 'google');
+  /**
+   * The account has a Look Ahead password unless the reported methods leave it out (Google only).
+   * With nothing reported, the page stays as it was: a password account.
+   */
+  protected readonly hasPassword = computed(() => {
+    const methods = this.signInMethods();
+    return !methods.length || methods.some((method) => method.provider === 'cognito');
+  });
+  /**
+   * Linking needs the same verified Gmail, so the note is left out for an email-and-password-only
+   * account on another address: there, Google sign-in would not reach this account.
+   */
+  protected readonly linkingNote = computed(() =>
+    this.signInMethods().some(
+      (method) => method.provider === 'google' || /@(gmail|googlemail)\.com$/i.test(method.email),
+    ),
+  );
   protected readonly loading = signal(true);
   protected readonly loadError = signal('');
   protected readonly editingName = signal(false);

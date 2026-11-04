@@ -23,6 +23,12 @@ PINNED = {'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1', 'actions/
           'actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333', 'actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97',
           'aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd'}
 GATE = "--include='*/release_version.py,*/pipeline_tag.py,*/image.py,*/registry.py,*/issue_template.py,*/owner_approval.py,*/owner_release.py,*/candidate.py,*/issue_close.py,*/deploy.py' --fail-under=85"
+# Every job that waits for or rechecks an owner approval passes the two optional repository variables through; unset gives ''.
+APPROVAL_VARS = {'APPROVAL_WAIT_MINUTES': '${{ vars.APPROVAL_WAIT_MINUTES }}', 'APPROVAL_VALID_MINUTES': '${{ vars.APPROVAL_VALID_MINUTES }}'}
+
+
+def approvalVars(job):
+    return {key: job.get('env', {}).get(key) for key in APPROVAL_VARS}
 
 
 def load(name):
@@ -172,9 +178,11 @@ class StageContractTests(unittest.TestCase):
         self.assertEqual(['release', 'build'], approve['needs'])
         self.assertEqual("always() && needs.build.result == 'success' && (" + A + " == 'full' || " + A + " == 'publish')", approve['if'])
         self.assertEqual({'contents': 'read', 'actions': 'read', 'issues': 'write', 'pull-requests': 'read'}, approve['permissions'])
+        self.assertEqual(20, approve['timeout-minutes'])  # a hung 10-minute owner wait never bills more than 20 runner minutes
         self.assertNotIn('environment', approve)
         self.assertEqual([], uses(approve, 'aws-actions/'))
-        self.assertEqual({'RELEASE_VERSION': '${{ needs.release.outputs.release-version }}', 'SOURCE_SHA': '${{ needs.release.outputs.source-sha }}', 'GH_TOKEN': '${{ github.token }}'}, approve['env'])
+        self.assertEqual({'RELEASE_VERSION': '${{ needs.release.outputs.release-version }}', 'SOURCE_SHA': '${{ needs.release.outputs.source-sha }}', 'GH_TOKEN': '${{ github.token }}',
+                          **APPROVAL_VARS}, approve['env'])
         downloads = {s['with']['name']: s['with']['path'] for s in uses(approve, 'actions/download-artifact@')}
         self.assertEqual({'release-source': '${{ runner.temp }}', 'release-image-${{ needs.release.outputs.source-sha }}': '${{ runner.temp }}/release-image'}, downloads)
         checkouts = [(s['with']['ref'], s['with'].get('path'), s['with']['persist-credentials']) for s in uses(approve, 'actions/checkout@')]
@@ -192,6 +200,8 @@ class StageContractTests(unittest.TestCase):
         self.assertEqual('dev', publish['environment'])
         self.assertEqual({'contents': 'read', 'actions': 'read', 'issues': 'write', 'pull-requests': 'read', 'id-token': 'write'}, publish['permissions'])
         self.assertEqual('1', publish['env']['AWS_MAX_ATTEMPTS'])
+        self.assertEqual(APPROVAL_VARS, approvalVars(publish))  # the recheck reads the same windows as the wait
+        self.assertEqual({}, {k: v for k, v in approvalVars(self.jobs['record']).items() if v})  # no wait or recheck there
         commands = runs(publish)
         oidc = next(i for i, s in enumerate(publish['steps']) if str(s.get('uses', '')).startswith('aws-actions/configure-aws-credentials@'))
         order = names(publish)
@@ -270,6 +280,8 @@ class RecoverWorkflowTests(unittest.TestCase):
     def test_one_approval_then_five_stages_each_in_its_own_session(self):
         approve, recover = self.jobs['approve-recovery'], self.jobs['recover-dev']
         self.assertNotIn('environment', approve); self.assertEqual([], uses(approve, 'aws-actions/'))
+        self.assertEqual(20, approve['timeout-minutes'])  # 10-minute owner wait plus checkout, never more
+        self.assertEqual((APPROVAL_VARS, APPROVAL_VARS), (approvalVars(approve), approvalVars(recover)))
         self.assertIn('--match "Recover"', approve['steps'][-1]['run'])
         self.assertEqual((['plan-recovery', 'approve-recovery'], 'dev'), (recover['needs'], recover['environment']))
         order = names(recover)
@@ -347,6 +359,8 @@ class DeployWorkflowTests(unittest.TestCase):
         approve = self.jobs['approve-deploy']
         self.assertEqual((['plan-dev'], "always() && needs.plan-dev.result == 'success'"), (approve['needs'], approve['if']))
         self.assertEqual({'contents': 'read', 'actions': 'read', 'issues': 'write', 'pull-requests': 'read'}, approve['permissions'])
+        self.assertEqual(20, approve['timeout-minutes'])  # 10-minute owner wait plus checkout, never more
+        self.assertEqual((APPROVAL_VARS, APPROVAL_VARS), (approvalVars(approve), approvalVars(self.jobs['deploy-dev'])))
         self.assertNotIn('environment', approve); self.assertEqual([], uses(approve, 'aws-actions/'))
         self.assertIn('deploy.py approve --plan "$RUNNER_TEMP/deploy-plan/plan.json" --receipt "$RUNNER_TEMP/deploy-approval/approval.json"', '\n'.join(runs(approve)))
         self.assertEqual({'deploy-plan': '${{ runner.temp }}/deploy-plan'}, {s['with']['name']: s['with']['path'] for s in uses(approve, 'actions/download-artifact@')})

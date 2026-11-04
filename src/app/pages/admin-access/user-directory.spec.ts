@@ -1,4 +1,4 @@
-import { DirectoryAssignment, DirectoryTestAccount, courseLabel, directoryRows, matchesFilter, personLines, plainAccess } from './user-directory';
+import { DirectoryAssignment, DirectoryTestAccount, courseLabel, directoryRows, matchesFilter, personLines, plainAccess, sameEmailCount, sameEmailText, signInLabels } from './user-directory';
 
 const titles = new Map([
   ['learn:core-java', 'Java Foundations'],
@@ -120,6 +120,36 @@ describe('People directory helpers (DLV-961)', () => {
     expect(flags('active')).toEqual([false, true, false, true]);
     expect(flags('off')).toEqual([true, false, true, true]);
     expect(flags('older')).toEqual([false, false, false, false]);
+  });
+
+  it('carries the owner\'s sign-in methods and same-email flag from the directory only (DLV-969 account linking)', () => {
+    const account = (id: string, extra: object) => ({ accountId: id, username: id, displayName: id, email: id + '@gmail.com', roles: [],
+      testAccount: false, fullCurriculum: false, access: { label: 'Free', labels: ['Free'], grantedCourseIds: [] }, ...extra });
+    const rows = directoryRows({ accountId: 'me', username: 'me', role: 'owner' }, [
+      { id: 'a1', accountId: 'linked', pendingEmail: null, roles: ['tester'], topicGrants: [], fullCurriculum: false },
+    ], [], titles, [
+      account('linked', { sameEmailAccounts: 2, signInMethods: [{ provider: 'cognito', email: 'linked@gmail.com' }, { provider: 'google', email: 'linked@gmail.com' }] }),
+      account('single', { sameEmailAccounts: 0, signInMethods: [{ provider: 'google', email: 'single@gmail.com' }] }),
+      account('older', {}),
+    ]);
+    const row = (id: string) => rows.find(item => item.accountId === id)!;
+    expect([row('linked').signInLabels, row('linked').sameEmail]).toEqual([['Google', 'Password'], 'Same Gmail as 2 other accounts']);
+    expect([row('single').signInLabels, row('single').sameEmail]).toEqual([['Google'], undefined]);
+    expect([row('older').signInLabels, row('older').sameEmail]).toEqual([[], undefined]);
+    // Rows that do not come from the owner's directory never carry identity data.
+    const coauthor = directoryRows({ accountId: 'co', username: 'co', role: 'co-author' }, [
+      { id: 'a1', accountId: null, pendingEmail: null, label: 'Tester 1', pending: false, roles: ['tester'], topicGrants: [], fullCurriculum: false },
+    ], [test('learner01')], titles);
+    expect(coauthor.every(item => item.signInLabels === undefined && item.sameEmail === undefined)).toBe(true);
+  });
+
+  it('labels methods once each and words the same-email flag by the address', () => {
+    expect(signInLabels([{ provider: 'cognito', email: 'a@x.test' }, { provider: 'cognito', email: 'b@x.test' }, { provider: 'google' }])).toEqual(['Google', 'Password']);
+    expect(signInLabels(undefined)).toEqual([]);
+    expect([sameEmailCount(1), sameEmailCount(0), sameEmailCount(-2), sameEmailCount(2.5), sameEmailCount('3')]).toEqual([1, 0, 0, 0, 0]);
+    expect(sameEmailText(1, 'Sam@GoogleMail.com')).toBe('Same Gmail as 1 other account');
+    expect(sameEmailText(4, 'sam@example.test')).toBe('Same email as 4 other accounts');
+    expect(sameEmailText(1, null)).toBe('Same email as 1 other account');
   });
 
   it('names a person the human way for the owner: name, then email; never Cognito\'s google_ id (DLV-969)', () => {
