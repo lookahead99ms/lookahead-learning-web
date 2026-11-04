@@ -119,13 +119,13 @@
           <button type="button" class="action-link" [disabled]="busy() || !!pending()" (click)="select(chosen.test)">Reset</button>
         }
         @if (chosen.test && mayDelete(chosen.test)) {
-          <button type="button" class="action-link" [disabled]="busy()" (click)="deleting.set(chosen.test); deleteConfirmation=''">Delete</button>
+          <button type="button" class="action-link" [disabled]="busy() || !!pending()" (click)="startDelete(chosen.test)">Delete</button>
         }
         @if (!chosen.isTest && chosen.canDowngrade && !chosen.isSelf) {
-          <button type="button" class="action-link" [disabled]="busy()" (click)="downgradingReal.set(chosen); realConfirmation=''">Downgrade to free</button>
+          <button type="button" class="action-link" [disabled]="busy()" (click)="startDowngrade(chosen)">Downgrade to free</button>
         }
         @if (!chosen.isTest && chosen.canDelete && !chosen.isSelf) {
-          <button type="button" class="action-link" [disabled]="busy()" (click)="deletingReal.set(chosen); realConfirmation=''">Delete learner</button>
+          <button type="button" class="action-link" [disabled]="busy()" (click)="startRealDelete(chosen)">Delete learner</button>
         }
       </div>
     </div>

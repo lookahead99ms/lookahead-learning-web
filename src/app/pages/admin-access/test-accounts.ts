@@ -185,20 +185,45 @@ export class TestAccounts implements OnInit {
 
   select(row: TestAccountRow) {
     if (!this.canReset() || this.pending()) return;
+    this.closeConfirmations();
     this.selected.set(row);
-    this.confirmation = '';
     this.preset = 'scenario';
+  }
+
+  // DLV-969 (2026-11-04): one confirmation at a time; opening one closes any other.
+  startDelete(row: TestAccountRow) {
+    if (this.pending()) return;
+    this.closeConfirmations();
+    this.deleting.set(row);
+  }
+
+  startDowngrade(row: DirectoryRow) {
+    this.closeConfirmations();
+    this.downgradingReal.set(row);
+  }
+
+  startRealDelete(row: DirectoryRow) {
+    this.closeConfirmations();
+    this.deletingReal.set(row);
   }
 
   choose(row: DirectoryRow) {
     if (this.busy() || this.pending()) return;
     this.selectedKey.set(this.selectedKey() === row.key ? null : row.key);
+    this.closeConfirmations();
+    this.expanded.set(null);
+  }
+
+  private closeConfirmations() {
     this.selected.set(null);
     this.deleting.set(null);
     this.downgradingReal.set(null);
     this.deletingReal.set(null);
+    this.removing.set(null);
+    this.confirmation = '';
+    this.deleteConfirmation = '';
     this.realConfirmation = '';
-    this.expanded.set(null);
+    this.removalConfirmation = '';
   }
 
   cancel() {
@@ -318,7 +343,7 @@ export class TestAccounts implements OnInit {
   }
 
   startRemoval(row: DirectoryRow, action: 'disable' | 'remove') {
-    this.removing.set({ row, action }); this.removalConfirmation = ''; this.notice.set('');
+    this.closeConfirmations(); this.removing.set({ row, action }); this.notice.set('');
   }
   /** Disable needs DISABLE typed, Delete needs DELETE; Enable is one click because it only gives back what was there. */
   async confirmRemoval() {
