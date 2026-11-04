@@ -2847,6 +2847,9 @@ describe('StudyPlanPage', () => {
     harness.detectChanges();
     expect(page.readyMadeStatus()).toBe('error');
     expect(harness.routeNativeElement!.textContent).toContain('could not be loaded');
+    // Said once, in the alert that carries the retry button.
+    expect(harness.routeNativeElement!.textContent!.split('Ready-made plans could not be loaded').length - 1).toBe(1);
+    expect(harness.routeNativeElement!.querySelectorAll('[role="alert"]').length).toBe(1);
     expect(harness.routeNativeElement!.textContent).toContain('Choose a preparation path');
     expect(page.saved()).toBeNull();
     expect(page.draft()).toBeNull();

@@ -95,6 +95,21 @@ describe('Test account maintenance',()=>{
   expect([...root.querySelectorAll('.selection-actions button')].map(b=>b.textContent?.trim())).toEqual(['Details','Give access','Reset','Delete']);
   const give=[...root.querySelectorAll<HTMLButtonElement>('.selection-actions button')].find(b=>b.textContent?.trim()==='Give access');
   give?.click();expect(given).toEqual(['learner09']);
+  // DLV-969 (2026-11-04): Reset and Delete open their confirmation right under the toolbar, above the long table.
+  const action=(label:string)=>[...root.querySelectorAll<HTMLButtonElement>('.selection-actions button')].find(b=>b.textContent?.trim()===label)!;
+  const opensUnderTheToolbar=(title:string)=>{
+    const panel=root.querySelector('.selection-toolbar')!.nextElementSibling as HTMLElement;
+    expect(panel.classList).toContain('reset-panel');
+    expect(panel.textContent).toContain(title);
+    expect(panel.compareDocumentPosition(root.querySelector('table')!)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  };
+  action('Reset').click();fixture.detectChanges();
+  opensUnderTheToolbar('Reset learner09');
+  [...root.querySelectorAll<HTMLButtonElement>('.reset-panel button')].find(b=>b.textContent?.trim()==='Cancel')!.click();fixture.detectChanges();
+  expect(root.querySelector('.reset-panel')).toBeNull();
+  action('Delete').click();fixture.detectChanges();
+  opensUnderTheToolbar('Delete learner09');
+  [...root.querySelectorAll<HTMLButtonElement>('.reset-panel button')].find(b=>b.textContent?.trim()==='Cancel')!.click();fixture.detectChanges();
   const selectAdmin=root.querySelector('tr[data-account="admin01"] input[type="checkbox"]') as HTMLInputElement;
   selectAdmin.click();fixture.detectChanges();
   expect(selectLearner.checked).toBe(false);
@@ -117,6 +132,20 @@ describe('Test account maintenance',()=>{
   expect(component.notice()).toContain('lifetime count remains');
   expect(component.mayDelete({...row,username:'admin01',roles:['admin'],canDelete:false})).toBe(false);
  });
+ it('says why a reset or a deletion was refused, in the server\'s own words',async()=>{
+  account.set({accountId:'owner-1',permissions:{feedbackRole:'owner',manageAccess:true}});
+  component.select(row);component.confirmation=row.username;
+  request.mockRejectedValueOnce(new Error('Test account changed; reload before resetting'));
+  await component.reset();
+  expect(component.notice()).toBe('Test account changed; reload before resetting Reset was not confirmed. Retry the same reset, or cancel and refresh before another change.');
+  (component as any).api.remove=vi.fn(async()=>{throw new Error('Your role cannot delete this test account.');});
+  component.deleting.set(row);component.deleteConfirmation=row.username;
+  await component.deleteAccount();
+  expect(component.notice()).toBe('Your role cannot delete this test account. Deletion was not confirmed. Retry the same account.');
+  (component as any).api.remove=vi.fn(async()=>{throw 'no message';});
+  await component.deleteAccount();
+  expect(component.notice()).toBe('Deletion was not confirmed. Retry the same account.');
+ });
  it('offers owner downgrade before real learner deletion from the selection toolbar',async()=>{
   account.set({accountId:'owner',username:'author',topicGrants:[],permissions:{manageAccess:true,feedbackRole:'owner'}});
   let state:'admin'|'free'|'deleted'='admin';
@@ -136,6 +165,7 @@ describe('Test account maintenance',()=>{
   expect(root.querySelector('.selection-toolbar')?.textContent).toContain('Downgrade to free');
   expect(root.querySelector('.selection-toolbar')?.textContent).not.toContain('Delete learner');
   [...root.querySelectorAll<HTMLButtonElement>('.selection-actions button')].find(button=>button.textContent?.includes('Downgrade'))?.click();fixture.detectChanges();
+  expect(root.querySelector('.selection-toolbar')!.nextElementSibling?.textContent).toContain('Downgrade Real User to a free learner');
   fixture.componentInstance.realConfirmation='DOWNGRADE';await fixture.componentInstance.downgradeReal();fixture.detectChanges();
   expect(request).toHaveBeenCalledWith('/admin/accounts/real-id/downgrade',{confirmation:'DOWNGRADE'});
   (root.querySelector('tr[data-account="Real User"] input[type="checkbox"]') as HTMLInputElement).click();fixture.detectChanges();

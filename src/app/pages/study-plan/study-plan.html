@@ -538,12 +538,15 @@
           </section>
         }
       }
-      <p
-        class="ready-made-message"
-        [attr.role]="readyMadeStatus() === 'error' ? 'alert' : 'status'"
-      >
-        {{ readyMadeMessage() }}
-      </p>
+      @if (!(readyMadeStatus() === 'error' && !readyMadeCatalog())) {
+        <!-- The load failure already has its own alert with the retry button above. -->
+        <p
+          class="ready-made-message"
+          [attr.role]="readyMadeStatus() === 'error' ? 'alert' : 'status'"
+        >
+          {{ readyMadeMessage() }}
+        </p>
+      }
       @if (visibleStatus() && !adjustmentStatus()) {
         <p class="context-status" role="status">{{ visibleStatus() }}</p>
       }

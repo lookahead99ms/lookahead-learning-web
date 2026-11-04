@@ -277,7 +277,7 @@ export class TestAccounts implements OnInit {
       this.rosterBusy.set(false);await this.load();
       this.notice.set('The test roster is ready. To use an account, sign out (not Exit DEV) and choose it under Use a test account.');
     } catch(failure) {
-      this.notice.set((failure instanceof Error&&failure.message?failure.message+' ':'')+'The roster stopped part way. Create again to continue.');
+      this.notice.set(reason(failure)+'The roster stopped part way. Create again to continue.');
     } finally {this.rosterBusy.set(false);}
   }
 
@@ -289,7 +289,7 @@ export class TestAccounts implements OnInit {
       await this.api.remove(`/admin/test-accounts/${row.accountId}`);
       this.deleting.set(null);this.deleteConfirmation='';this.busy.set(false);await this.load();
       this.notice.set(`${row.username} deleted. Its login and test data are gone; the creator's lifetime count remains.`);
-    } catch {this.notice.set('Deletion was not confirmed. Retry the same account.');}
+    } catch (failure) {this.notice.set(reason(failure)+'Deletion was not confirmed. Retry the same account.');}
     finally {this.busy.set(false);}
   }
 
@@ -409,12 +409,17 @@ export class TestAccounts implements OnInit {
         return next;
       });
       this.notice.set(row.username + ' reset.');
-    } catch {
+    } catch (failure) {
       this.notice.set(
-        'Reset was not confirmed. Retry the same reset, or cancel and refresh before another change.',
+        reason(failure) + 'Reset was not confirmed. Retry the same reset, or cancel and refresh before another change.',
       );
     } finally {
       this.busy.set(false);
     }
   }
+}
+
+/** DLV-969: the server's own reason ("Confirm the exact test username…") leads the notice, so a refusal says why. */
+function reason(failure: unknown): string {
+  return failure instanceof Error && failure.message ? failure.message + ' ' : '';
 }
