@@ -286,9 +286,10 @@ def approvalCommand(planned):
     return approvalCommands(planned)[planned['choices'][0]]
 
 
-def approvalWindow(planned):
-    """A duplicate image is usually an accident: five minutes to answer, then the issue closes with nothing done (user decision 2026-11-02)."""
-    return timedelta(minutes=5 if planned['unchanged'] else 40)
+def approvalWindow(planned, env):
+    """APPROVAL_WAIT_MINUTES (default 10) for the owner to answer. A duplicate image is usually an accident: a fixed five minutes,
+    then the issue closes with nothing done (user decision 2026-11-02)."""
+    return timedelta(minutes=5) if planned['unchanged'] else owner.windows(env)[0]
 
 
 def headline(planned):
@@ -302,8 +303,9 @@ def headline(planned):
     return {'env': 'DEV', 'action': action, 'subject': planned['imageTag'], 'change': change}
 
 
-def gist(planned):
+def gist(planned, receipt):
     t = issueTemplate.text
+    wait, valid = (owner.wholeMinutes(window) for window in owner.receiptWindows(receipt))
     serving = ('1. Recheck the tag, the plan digest, the template and the configuration; then assume `' + t(planned['deployRoleArn']) + '` as session `'
                + t(planned['sessionName']) + '` (at most 60 minutes).',
                '2. Change set `' + t(planned['changeSet']) + '` on stack `' + t(planned['stack']) + '`: task definition with image `'
@@ -328,7 +330,8 @@ def gist(planned):
     if planned['unchanged']:
         commands = approvalCommands(planned)
         lines = ['**Warning: duplicate image.** `' + t(planned['stack']) + '` already runs `' + t(planned['imageTag']) + '` at DesiredCount ' + str(planned['desiredCount'])
-                 + '. Nothing changes unless you answer within 5 minutes; silence or `REJECT` closes this issue with nothing done.']
+                 + '. Nothing changes unless you answer within ' + str(wait) + ' minutes; silence or `REJECT` closes this issue with nothing done. '
+                 'An answer stays valid for ' + str(valid) + ' minutes from your comment, within which the deploy job rechecks it.']
         if 'refresh' in commands:
             lines.append('- `' + commands['refresh'] + '`: restart on the same image. Change set `' + t(planned['changeSet']) + '` sets the template parameter RefreshToken to `'
                          + t(planned['refreshToken']) + '`, CloudFormation registers a new task definition revision and ECS performs the rolling update (the new task reads '
@@ -337,7 +340,7 @@ def gist(planned):
         lines.append('- `REJECT`: this was an accident; nothing happens.')
         return '\n'.join(lines)
     return head + ' No IAM, network, database or secret changes.\n\n' + '\n'.join(serving if planned['desiredCount'] == 1 else parked) \
-        + '\n\nRollback is a new run of this workflow with the previous tag. Approval expires 40 minutes after this issue is created.'
+        + '\n\nRollback is a new run of this workflow with the previous tag. Answer within ' + str(wait) + ' minutes of this issue being created; the answer then stays valid for ' + str(valid) + ' minutes from your comment, within which the deploy job rechecks it before any AWS credentials.'
 
 
 def body(planned, receipt):
@@ -345,7 +348,7 @@ def body(planned, receipt):
     shown = [('**' + key + '**', owner.commitLink(planned, planned[key]) if key in ('sourceSha', 'workflowSha') else '`' + issueTemplate.text(str(planned[key])) + '`')
              for key in fields if planned.get(key) is not None]
     return issueTemplate.render(
-        headline=headline(planned), gist=gist(planned), resources=planned['resources'],
+        headline=headline(planned), gist=gist(planned, receipt), resources=planned['resources'],
         overview=('**Duplicate image: choose refresh, verify or reject**\n\nThe stack already serves this image. `' + approvalCommands(planned)[planned['choices'][0]]
                   + '` is the primary answer shown below' + ('; `' + approvalCommands(planned)['verify'] + '` verifies without changing AWS' if 'refresh' in planned['choices'] else '')
                   + '; `REJECT` or no answer within 5 minutes closes this issue with nothing done.') if planned['unchanged'] else
@@ -367,17 +370,21 @@ def body(planned, receipt):
 
 def decision(planned, receipt, env, root, get=owner.api, now=None):
     validatePlan(planned, env, root, get)
-    return selectedApproval(planned, receipt, get, now)
+    return selectedApproval(planned, receipt, env, get, now)
 
 
-def selectedApproval(planned, receipt, get=owner.api, now=None, render=None, commands=None, window=None):
+def selectedApproval(planned, receipt, env, get=owner.api, now=None, render=None, commands=None, window=None):
     """The owner's live answer on the approval issue of this receipt, or None while there is none. `render`, `commands` and `window`
-    default to this deploy's issue body, commands and window; `05 · Recover DEV` passes its own."""
+    default to this deploy's issue body, commands and window; `05 · Recover DEV` passes its own. The windows are read from `env`
+    here as well as at approval time, so a repository variable changed in between fails the recheck closed."""
     render, commands, window = render or body, commands or approvalCommands, window or approvalWindow
     now = now or utc()
+    wait, valid = window(planned, env), owner.windows(env)[1]
     created, expires = owner.timestamp(receipt['createdAt']), owner.timestamp(receipt['expiresAt'])
     require(receipt.get('schema') == SCHEMA_RECEIPT and receipt.get('planDigest') == planned['planDigest'] and receipt.get('runId') == planned['runId']
-            and created <= now < expires and timedelta(0) < expires - created <= window(planned), 'Approval expired or binding changed')
+            and created <= now < expires + valid, 'Approval expired or binding changed')
+    require(owner.receiptWindows(receipt) == (wait, valid),
+            'Approval windows changed since the issue was opened (' + owner.WAIT_MINUTES[0] + ' / ' + owner.VALID_MINUTES[0] + ')')
     issue = get(planned['repository'], 'issues/' + str(receipt['issue']))
     require(issue.get('state') == 'open' and not issue.get('pull_request') and issue.get('user', {}).get('login') == 'github-actions[bot]'
             and issue.get('body') == render(planned, receipt), 'Approval issue changed')
@@ -394,21 +401,22 @@ def selectedApproval(planned, receipt, get=owner.api, now=None, render=None, com
             continue
         when = owner.timestamp(comment['created_at'])
         if created <= when <= now and when < expires and command in commands:
-            selected = (comment['id'], commands[command])
-    return selected
+            selected = ((comment['id'], commands[command]), when)
+    return owner.answered(receipt, selected, now, expires, valid)
 
 
 def approve(planned, env, root, get=owner.api, now=lambda: utc(), sleep=time.sleep):
     validatePlan(planned, env, root, get)
+    wait, valid = approvalWindow(planned, env), owner.windows(env)[1]
     start = now().replace(microsecond=0)
     receipt = {'schema': SCHEMA_RECEIPT, 'runId': planned['runId'], 'planDigest': planned['planDigest'],
-               'createdAt': start.isoformat(), 'expiresAt': (start + approvalWindow(planned)).isoformat()}
+               'createdAt': start.isoformat(), 'expiresAt': (start + wait).isoformat(), 'validMinutes': owner.wholeMinutes(valid)}
     preview = body(planned, receipt)
     require(len(preview) < 60000, 'Approval preview too large')
     issue = get(planned['repository'], 'issues', {'title': issueTemplate.title(headline(planned), planned['runId']), 'body': preview})
     receipt['issue'] = issue['number']
     print('https://github.com/' + planned['repository'] + '/issues/' + str(receipt['issue']), flush=True)
-    for _ in range(int(approvalWindow(planned).total_seconds()) // 20):
+    for _ in range(int(wait.total_seconds()) // 20):
         selected = decision(planned, receipt, env, root, get, now())
         if selected is not None:
             return {**receipt, 'commentId': selected[0], 'mode': selected[1]}

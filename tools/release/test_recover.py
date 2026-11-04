@@ -1,5 +1,6 @@
 """`05 · Recover DEV` (tools/release/recover.py): park, deploy the target, fall back, park again. AWS and GitHub are the injected
 fakes of test_deploy; nothing is called for real."""
+from datetime import timedelta
 import json
 from pathlib import Path
 import tempfile
@@ -126,6 +127,16 @@ class ApprovalTests(RecoverFixture):
         for phrase in ('APPROVE RECOVER ' + planned['imageTag'], 'app-12-park-final', 'web-deploy-12-5', planned['fallbackImageTag'], 'Park', 'Fallback'):
             self.assertIn(phrase, issue['body'])
         m.verify(planned, receipt, self.env, self.root, self.get, self.now)
+        # The approval is valid for 15 minutes from the owner comment (here the issue's own second), then refused.
+        self.assertEqual(receipt['approvedAt'], self.now.replace(microsecond=0).isoformat())
+        self.assertIn('stays valid for 15 minutes from your comment', issue['body'])
+        m.verify(planned, receipt, self.env, self.root, self.get, self.now + timedelta(minutes=14, seconds=59))
+        with self.assertRaisesRegex(ValueError, 'older than its validity window'):
+            m.verify(planned, receipt, self.env, self.root, self.get, self.now + timedelta(minutes=15))
+        # The windows come from the repository variables at both ends; a value changed in between fails the recheck closed.
+        self.assertEqual((timedelta(minutes=4), 15), (m.window(planned, dict(self.env, APPROVAL_WAIT_MINUTES='4')), receipt['validMinutes']))
+        with self.assertRaisesRegex(ValueError, 'windows changed since the issue was opened'):
+            m.verify(planned, receipt, dict(self.env, APPROVAL_VALID_MINUTES='20'), self.root, self.get, self.now)
         self.github.comment = lambda: {'id': 8, 'user': {'login': owner.OWNER}, 'body': 'REJECT', 'created_at': receipt['createdAt'], 'updated_at': receipt['createdAt']}
         self.github.comments = [self.github.comment()]
         with self.assertRaisesRegex(ValueError, 'Owner rejected'):

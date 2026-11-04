@@ -15,6 +15,10 @@ import time
 OWNER = 'lookahead99ms'
 ACCOUNT = '509614632283'
 REGION = 'us-east-2'
+# Optional repository variables, passed as job env by every workflow job that waits for or rechecks an approval:
+# (name, default, lowest, highest) in whole minutes. Unset or empty means the default; anything else fails closed.
+WAIT_MINUTES = ('APPROVAL_WAIT_MINUTES', 10, 2, 15)    # owner answer after the issue opens; 15 keeps the 20-minute approve jobs inside their cap
+VALID_MINUTES = ('APPROVAL_VALID_MINUTES', 15, 5, 60)  # an answer stays valid this long after the comment; the keep-or-rollback decision uses it too
 # Publisher workflows per repository. Infra: the manual `08 · Database Job Images` and `00 · Infra Pipeline` that calls it.
 # Apps: one numbered pipeline (`01 · Full`, release.yml) on merge push or dispatch, and `03 · Publish` (publish.yml) that
 # calls it. `workflow_call` keeps GITHUB_WORKFLOW_REF and the run `path` on the caller. The app is derived, never typed.
@@ -157,9 +161,39 @@ def pullRequestTable(plan):
                                [('[#' + str(r['number']) + '](' + r['url'] + ')', issueTemplate.text(r['title']), 'into main') for r in rows])
 
 
-def gist(plan):
+def minutes(env, setting):
+    """One optional whole-minute setting from the environment: unset or empty means the default, anything else must be an
+    integer within the bounds, otherwise the run fails closed naming the variable."""
+    name, default, low, high = setting
+    raw = str(env.get(name, '') or '').strip()
+    if not raw:
+        return timedelta(minutes=default)
+    require(re.fullmatch('[0-9]{1,3}', raw) and low <= int(raw) <= high,
+            name + ' must be a whole number of minutes from ' + str(low) + ' to ' + str(high) + ' (got ' + raw[:20] + ')')
+    return timedelta(minutes=int(raw))
+
+
+def windows(env):
+    """(wait, valid): how long the owner has to answer after the issue opens, and how long an answer then stays valid."""
+    return minutes(env, WAIT_MINUTES), minutes(env, VALID_MINUTES)
+
+
+def wholeMinutes(delta):
+    return int(delta.total_seconds()) // 60
+
+
+def receiptWindows(receipt):
+    """The windows the owner was shown: the answer window from the receipt's own times and the validity it records. The issue
+    body prints both from the receipt, so a receipt with other numbers no longer matches the issue and fails closed."""
+    valid = receipt.get('validMinutes')
+    require(isinstance(valid, int) and not isinstance(valid, bool) and valid > 0, 'Approval receipt lacks its validity window')
+    return timestamp(receipt['expiresAt']) - timestamp(receipt['createdAt']), timedelta(minutes=valid)
+
+
+def gist(plan, receipt):
     """Plain-language description, read before any table: what this run does, in order, and why."""
     t = issueTemplate.text
+    wait, valid = (wholeMinutes(window) for window in receiptWindows(receipt))
     app = plan.get('app') or PUBLISHERS.get(plan.get('repository'), ('', 'application'))[1]
     files = ', '.join('`' + t(name) + '`' for name in sorted(plan.get('files') or {}))
     lines = ['**Business change:** the tested ' + t(app) + ' image `' + t(plan['imageTag']) + '` (release `' + t(plan['releaseVersion'])
@@ -173,7 +207,8 @@ def gist(plan):
              '4. Read the published digest back from ECR and retain the publication receipt and proof files (' + (files or 'none listed') + ') as run artifacts.',
              '',
              'No service, task or SQL job is started; no IAM role, repository or stack is created or changed; existing image tags are never '
-             'deleted or rebuilt; approval expires 40 minutes after this issue is created.']
+             'deleted or rebuilt. Answer within ' + str(wait) + ' minutes of this issue being created; the answer then stays valid for '
+             + str(valid) + ' minutes from your comment, within which the publish job rechecks it.']
     return '\n'.join(lines)
 
 
@@ -185,7 +220,7 @@ def body(plan, receipt):
     # A plan opened by the merge-driven pipeline says so first (`pipeline` is the caller note); the gate is unchanged.
     opened = (issueTemplate.text(plan['pipeline']) + '\n\n') if plan.get('pipeline') else ''
     return issueTemplate.render(
-        headline=headline(plan), gist=gist(plan), resources=[],
+        headline=headline(plan), gist=gist(plan, receipt), resources=[],
         overview=opened + '**Publish the verified DEV image**\n\nAuthorize one upload of the tested image shown below. '
             'Publishing enables later selection; it does not deploy services, run SQL, install IAM or create repositories. '
             'Without approval, no upload occurs.',
@@ -209,13 +244,31 @@ def timestamp(value):
     return result
 
 
+def answered(receipt, selected, now, expires, valid):
+    """The live owner answer, or None while the owner may still answer. `selected` is (answer, when) for the newest matching
+    owner comment. The owner has the wait window from issue creation to answer (`expires`); once answered, the approval stays
+    `valid` after the comment, so an answer at minute 9 still leaves the following job its whole recheck window. The receipt
+    records the comment time as `approvedAt` (added here when an older receipt lacks it) and must keep naming that comment."""
+    if selected is None:
+        require(now < expires, 'Approval window closed without an owner answer')
+        return None
+    answer, when = selected
+    require(now < when + valid, 'Approval expired: the owner comment is older than its validity window')
+    if receipt.get('approvedAt') is None:
+        receipt['approvedAt'] = when.isoformat()
+    require(timestamp(receipt['approvedAt']) == when, 'Approval comment time changed')
+    return answer
+
+
 def decision(plan, receipt, env, get=api, now=None):
     validatePlan(plan, env, get)
     now = now or datetime.now(timezone.utc)
+    wait, valid = windows(env)
     created, expires = timestamp(receipt['createdAt']), timestamp(receipt['expiresAt'])
     require(receipt.get('schema') == 'image-owner-decision/v1' and receipt.get('planDigest') == digest(plan)
-            and receipt.get('runId') == plan['runId'] and created <= now < expires
-            and timedelta(0) < expires - created <= timedelta(minutes=40), 'Approval expired or binding changed')
+            and receipt.get('runId') == plan['runId'] and created <= now < expires + valid, 'Approval expired or binding changed')
+    require(receiptWindows(receipt) == (wait, valid),
+            'Approval windows changed since the issue was opened (' + WAIT_MINUTES[0] + ' / ' + VALID_MINUTES[0] + ')')
     issue = get(plan['repository'], 'issues/' + str(receipt['issue']))
     require(issue.get('state') == 'open' and not issue.get('pull_request')
             and issue.get('user', {}).get('login') == 'github-actions[bot]'
@@ -235,24 +288,25 @@ def decision(plan, receipt, env, get=api, now=None):
             continue
         when = timestamp(comment['created_at'])
         if created <= when <= now and when < expires and command == 'APPROVE IMAGE ' + plan['imageTag']:
-            selected = comment['id']
-    return selected
+            selected = (comment['id'], when)
+    return answered(receipt, selected, now, expires, valid)
 
 
 def approve(plan, env, get=api, now=lambda: datetime.now(timezone.utc), sleep=time.sleep):
     validatePlan(plan, env, get)
     # GitHub issue/comment timestamps have whole-second precision. Align the
     # receipt before rendering so same-second creation is valid without extending expiry.
+    wait, valid = windows(env)
     start = now().replace(microsecond=0)
     receipt = {'schema': 'image-owner-decision/v1', 'runId': plan['runId'], 'planDigest': digest(plan),
-               'createdAt': start.isoformat(), 'expiresAt': (start + timedelta(minutes=40)).isoformat()}
+               'createdAt': start.isoformat(), 'expiresAt': (start + wait).isoformat(), 'validMinutes': wholeMinutes(valid)}
     preview = body(plan, receipt)
     require(len(preview) < 60000, 'Approval preview too large')
     issue = get(plan['repository'], 'issues', {'title': issueTemplate.title(headline(plan), plan['runId']), 'body': preview})
     receipt['issue'] = issue['number']
     # A nonsecret review URL is useful while the job waits; no approval is posted by this tool.
     print('https://github.com/' + plan['repository'] + '/issues/' + str(receipt['issue']), flush=True)
-    for _ in range(120):
+    for _ in range(int(wait.total_seconds()) // 20):
         selected = decision(plan, receipt, env, get, now())
         if selected is not None:
             return {**receipt, 'commentId': selected}
