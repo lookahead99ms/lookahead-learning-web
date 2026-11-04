@@ -40,14 +40,19 @@ describe('Content recovery', () => {
     expect(root.textContent).toContain('Subscribe to a plan that includes it');
     expect(root.textContent).not.toContain('owner');
     expect(root.textContent).not.toContain('Pro access');
-    expect(root.querySelector('.locked-preview')?.textContent?.trim()).toBe('');
-    expect(root.querySelector('.locked-preview')?.getAttribute('aria-hidden')).toBe('true');
+    // DLV-969 (owner, 2026-11-04): the Essence plays where the blurred placeholder was; nothing of the lesson is drawn.
+    expect(root.querySelector('.locked-preview')).toBeNull();
+    expect(root.querySelector('.recovery.with-essence > section.home-essence app-wordmark-key')).not.toBeNull();
     // DLV-969 (owner, 2026-11-04): the way in is a subscription, so the dialog's one action is See plans.
     const link = root.querySelector<HTMLAnchorElement>('dialog a.primary-action')!;
     expect(link.textContent?.trim()).toBe('See plans');
     expect(link.getAttribute('href')).toBe('/pricing');
     expect(root.querySelector('dialog a[href^="/account"]')).toBeNull();
+    // The options dialog opens only when asked, so the Essence is not covered on arrival.
     const dialog = root.querySelector('dialog')!;
+    expect(dialog.open).toBe(false);
+    root.querySelector<HTMLButtonElement>('.locked-note button')!.click();
+    f.detectChanges();
     expect(dialog.open).toBe(true);
     root.querySelector<HTMLButtonElement>('.close-action')!.click();
     f.detectChanges();

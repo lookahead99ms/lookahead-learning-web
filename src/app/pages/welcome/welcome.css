@@ -5,6 +5,7 @@
   display: block;
   min-height: 100vh;
   --home-brand-block: #fbf6ee;
+  --home-grad-text: linear-gradient(100deg, #006c73 0%, #4338ca 52%, #a3460a 100%);
   --home-grad-bar: linear-gradient(90deg, #0a8f8a, #4f46e5 60%, #f59e0b);
   background: var(--surface-page);
   color: var(--text-strong);
@@ -14,6 +15,7 @@
 }
 :host-context(:root[data-theme='dark']) {
   --home-brand-block: #15213a;
+  --home-grad-text: linear-gradient(100deg, #70d6cd 0%, #b4b2ff 52%, #ffba87 100%);
   --home-grad-bar: linear-gradient(90deg, #70d6cd, #a5a3ff 60%, #ffba87);
 }
 *,

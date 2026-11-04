@@ -6,7 +6,7 @@ import { of } from 'rxjs';
 import { ContentService } from '../../content/content.service';
 import { DevSession } from '../../core/dev-session-notice/dev-session';
 import { PageSidebarContext } from '../../core/page-sidebars/page-sidebar-context';
-import { WelcomePage, fitEssence } from './welcome';
+import { WelcomePage } from './welcome';
 
 function render(query: Record<string, string>) {
   TestBed.configureTestingModule({
@@ -86,34 +86,5 @@ describe('WelcomePage', () => {
   it('ignores any other access value', () => {
     const root: HTMLElement = render({ access: 'granted' }).nativeElement;
     expect(root.querySelector('.access-pending')).toBeNull();
-  });
-
-  it('scales the Essence to the height left on screen, never below readable, and leaves phones alone', () => {
-    const host = document.createElement('div');
-    host.innerHTML = '<main class="welcome-page"><section class="home-essence"></section><footer class="welcome-footer"></footer></main>';
-    const essence = host.querySelector<HTMLElement>('section')!;
-    const box = (top: number, height: number) => ({ top, height } as DOMRect);
-    essence.getBoundingClientRect = () => box(250, 740);
-    host.querySelector<HTMLElement>('footer')!.getBoundingClientRect = () => box(0, 64);
-    const view = window as unknown as { innerWidth: number; innerHeight: number };
-    const [width, height] = [view.innerWidth, view.innerHeight];
-    try {
-      Object.assign(view, { innerWidth: 1440, innerHeight: 900 });
-      fitEssence(host);
-      expect(Number(essence.style.getPropertyValue('zoom'))).toBeCloseTo((900 - 250 - 64) / 740, 2);
-      Object.assign(view, { innerHeight: 400 });
-      fitEssence(host);
-      expect(essence.style.getPropertyValue('zoom')).toBe('0.45');
-      Object.assign(view, { innerWidth: 390, innerHeight: 844 });
-      fitEssence(host);
-      expect(essence.style.getPropertyValue('zoom')).toBe('1');
-      essence.getBoundingClientRect = () => box(250, 0);
-      Object.assign(view, { innerWidth: 1440 });
-      fitEssence(host);
-      expect(essence.style.getPropertyValue('zoom')).toBe('1');
-      fitEssence(document.createElement('div'));
-    } finally {
-      Object.assign(view, { innerWidth: width, innerHeight: height });
-    }
   });
 });

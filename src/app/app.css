@@ -152,6 +152,11 @@ footer {
   min-height: 100vh;
   background: var(--surface-page);
 }
+/* DLV-969 (owner, 2026-11-04): a locked or missing page fits the screen; a full-screen minimum under the header always
+   scrolled. Only pages that show the recovery panel change. */
+.content-page:has(> app-content-recovery) {
+  min-height: 0;
+}
 .content-header {
   min-height: 76px;
   padding: 0 6vw;

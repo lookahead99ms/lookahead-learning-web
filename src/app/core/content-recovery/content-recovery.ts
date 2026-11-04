@@ -1,7 +1,6 @@
 import {
   Component,
   ElementRef,
-  afterNextRender,
   computed,
   inject,
   input,
@@ -12,6 +11,8 @@ import { Router, RouterLink } from '@angular/router';
 import { safeAccountReturn } from '../../pages/account/account-navigation';
 import { CatalogId, plansIncluding } from '../../content/membership-plans';
 import { ScrollLock } from '../scroll-lock/scroll-lock';
+import { keepEssenceFitted } from '../essence-fit/essence-fit';
+import { EssenceStory } from '../../pages/landing/essence-story/essence-story';
 
 export type RecoveryKind = 'sign-in' | 'locked' | 'planned' | 'temporary' | 'missing';
 export interface RecoveryPreview {
@@ -30,7 +31,7 @@ export function recoveryKind(error: unknown, preview?: RecoveryPreview): Recover
 
 @Component({
   selector: 'app-content-recovery',
-  imports: [RouterLink, ScrollLock],
+  imports: [RouterLink, ScrollLock, EssenceStory],
   templateUrl: './content-recovery.html',
   styleUrl: './content-recovery.css',
 })
@@ -94,7 +95,8 @@ export class ContentRecovery {
     return `Included in ${names}, from ${plans.from}.`;
   });
   constructor() {
-    afterNextRender(() => this.openDialog());
+    // DLV-969 (owner, 2026-11-04): the page shows the way in and the Essence; the options dialog opens only when asked.
+    keepEssenceFitted(inject<ElementRef<HTMLElement>>(ElementRef).nativeElement);
   }
   protected openDialog(): void {
     const dialog = this.dialog()?.nativeElement;

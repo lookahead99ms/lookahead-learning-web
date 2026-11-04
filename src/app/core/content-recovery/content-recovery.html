@@ -1,17 +1,10 @@
-<section class="recovery" aria-labelledby="recovery-title">
+<section class="recovery" [class.with-essence]="locked()" aria-labelledby="recovery-title">
   @if (locked()) {
     <p class="eyebrow">{{ kind() === 'sign-in' ? 'Continue learning' : 'Protected content' }}</p>
     <h1 id="recovery-title">{{ preview().title || 'Continue your learning' }}</h1>
     @if (preview().description) {
       <p class="summary">{{ preview().description }}</p>
     }
-    <div class="locked-preview" aria-hidden="true">
-      <div class="placeholder-title"></div>
-      @for (line of [1, 2, 3, 4, 5, 6, 7]; track line) {
-        <div class="placeholder-line"></div>
-      }
-      <div class="placeholder-box"></div>
-    </div>
     <div class="locked-note">
       <p>{{ heading() }}</p>
       @if (includedIn(); as included) {
@@ -29,6 +22,8 @@
         }
       </div>
     </div>
+    <!-- DLV-969 (owner, 2026-11-04): the Essence plays here instead of a blurred placeholder, fitted to the screen. -->
+    <section appEssenceStory [autoplay]="true"></section>
   } @else {
     <h1 id="recovery-title">{{ heading() }}</h1>
     <p role="status">{{ description() }}</p>
