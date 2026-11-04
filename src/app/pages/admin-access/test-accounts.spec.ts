@@ -109,6 +109,16 @@ describe('Test account maintenance',()=>{
   expect(root.querySelector('.reset-panel')).toBeNull();
   action('Delete').click();fixture.detectChanges();
   opensUnderTheToolbar('Delete learner09');
+  // DLV-969 (2026-11-04): one confirmation at a time; switching from Delete to Reset and back closes the other, typed text and all.
+  (root.querySelector('.reset-panel input') as HTMLInputElement).value='learner09';
+  fixture.componentInstance.deleteConfirmation='learner09';
+  action('Reset').click();fixture.detectChanges();
+  expect(root.querySelectorAll('.reset-panel')).toHaveLength(1);
+  opensUnderTheToolbar('Reset learner09');
+  action('Delete').click();fixture.detectChanges();
+  expect(root.querySelectorAll('.reset-panel')).toHaveLength(1);
+  opensUnderTheToolbar('Delete learner09');
+  expect(fixture.componentInstance.deleteConfirmation).toBe('');
   [...root.querySelectorAll<HTMLButtonElement>('.reset-panel button')].find(b=>b.textContent?.trim()==='Cancel')!.click();fixture.detectChanges();
   const selectAdmin=root.querySelector('tr[data-account="admin01"] input[type="checkbox"]') as HTMLInputElement;
   selectAdmin.click();fixture.detectChanges();
@@ -146,6 +156,21 @@ describe('Test account maintenance',()=>{
   await component.deleteAccount();
   expect(component.notice()).toBe('Deletion was not confirmed. Retry the same account.');
  });
+ it('keeps one confirmation open at a time, whichever action opened it (DLV-969)',()=>{
+  account.set({accountId:'owner-1',permissions:{feedbackRole:'owner',manageAccess:true}});
+  const person={key:'p',name:'Real User'} as any;
+  const open=()=>[component.selected(),component.deleting(),component.downgradingReal(),component.deletingReal(),component.removing()].filter(Boolean).length;
+  component.select(row);component.confirmation=row.username;
+  component.startDelete(row);expect(open()).toBe(1);expect(component.deleting()).toBe(row);expect(component.confirmation).toBe('');
+  component.startDowngrade(person);expect(open()).toBe(1);expect(component.downgradingReal()).toBe(person);
+  component.realConfirmation='DOWNGRADE';
+  component.startRealDelete(person);expect(open()).toBe(1);expect(component.deletingReal()).toBe(person);expect(component.realConfirmation).toBe('');
+  component.startRemoval(person,'disable');expect(open()).toBe(1);expect(component.removing()).toEqual({row:person,action:'disable'});
+  component.select(row);expect(open()).toBe(1);expect(component.selected()).toBe(row);
+  // An uncertain reset keeps its panel for the retry; Delete waits until it is retried or cancelled.
+  component.pending.set({} as any);
+  component.startDelete(row);expect(component.selected()).toBe(row);expect(component.deleting()).toBeNull();
+ });
  it('offers owner downgrade before real learner deletion from the selection toolbar',async()=>{
   account.set({accountId:'owner',username:'author',topicGrants:[],permissions:{manageAccess:true,feedbackRole:'owner'}});
   let state:'admin'|'free'|'deleted'='admin';
@@ -170,7 +195,9 @@ describe('Test account maintenance',()=>{
   expect(request).toHaveBeenCalledWith('/admin/accounts/real-id/downgrade',{confirmation:'DOWNGRADE'});
   (root.querySelector('tr[data-account="Real User"] input[type="checkbox"]') as HTMLInputElement).click();fixture.detectChanges();
   expect(root.querySelector('.selection-toolbar')?.textContent).toContain('Delete learner');
-  fixture.componentInstance.deletingReal.set(fixture.componentInstance.selectedRow());
+  [...root.querySelectorAll<HTMLButtonElement>('.selection-actions button')].find(b=>b.textContent?.trim()==='Delete learner')!.click();fixture.detectChanges();
+  expect(root.querySelectorAll('.reset-panel')).toHaveLength(1);
+  expect(root.querySelector('.selection-toolbar')!.nextElementSibling?.textContent).toContain('Delete learner Real User');
   fixture.componentInstance.realConfirmation='DELETE';await fixture.componentInstance.deleteReal();fixture.detectChanges();
   expect(request).toHaveBeenCalledWith('/admin/accounts/real-id/delete',{confirmation:'DELETE'});
   expect(root.querySelector('tr[data-account="Real User"]')).toBeNull();

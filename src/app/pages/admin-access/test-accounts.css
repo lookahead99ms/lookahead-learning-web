@@ -412,3 +412,10 @@ tr.self > * {
     align-items: stretch;
   }
 }
+/* DLV-969 (2026-11-04): every confirmation heading matches the Reset legend. */
+.reset-panel h3 {
+  margin: 0 0 10px;
+  color: var(--text-strong);
+  font-size: inherit;
+  font-weight: 750;
+}
