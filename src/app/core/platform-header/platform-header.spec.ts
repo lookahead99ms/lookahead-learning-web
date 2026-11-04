@@ -68,6 +68,8 @@ describe('PlatformHeader account disclosure', () => {
   it('holds an invisible Sign in slot until the identity check answers, then shows the real state (DLV-969)', () => {
     const store = TestBed.inject(StudyPlanAccount);
     store.sessionKnown.set(false);
+    // No hint from a previous visit (DLV-969 S37): with one, the header shows it instead of the invisible slot.
+    store.headerHint.set(null);
     const fixture = TestBed.createComponent(PlatformHeader);
     fixture.detectChanges();
     const pending = fixture.nativeElement.querySelector('.sign-in-button.session-pending');
@@ -80,6 +82,41 @@ describe('PlatformHeader account disclosure', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.session-pending')).toBeNull();
     expect(fixture.nativeElement.querySelector('a.sign-in-button')).not.toBeNull();
+  });
+
+  it('shows what this browser last knew while the identity check runs, then the real state (DLV-969 S37)', () => {
+    const store = TestBed.inject(StudyPlanAccount);
+    store.sessionKnown.set(false);
+    store.headerHint.set({ signedIn: true, displayName: 'Mohiddin Shaik', gateway: true });
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const remembered = root.querySelector('.session-remembered')!;
+    expect(remembered.querySelector('.account-trigger-name')?.textContent).toBe('Mohiddin');
+    expect(remembered.getAttribute('aria-hidden')).toBe('true');
+    expect(root.querySelector('a.sign-in-button')).toBeNull();
+    // The check answers: the real account control replaces the remembered name.
+    store.account.set({ accountId: 'a', username: 'google_1', displayName: 'Mohiddin Shaik', topicGrants: [] });
+    store.sessionKnown.set(true);
+    fixture.detectChanges();
+    expect(root.querySelector('.session-remembered')).toBeNull();
+    expect(root.querySelector('button.avatar-trigger-btn .account-trigger-name')?.textContent).toBe('Mohiddin');
+  });
+
+  it('shows Sign in at once when this browser last saw a signed-out visitor, and corrects it if they are signed in', () => {
+    const store = TestBed.inject(StudyPlanAccount);
+    store.sessionKnown.set(false);
+    store.headerHint.set({ signedIn: false, gateway: true });
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    expect(root.querySelector('a.sign-in-button')?.getAttribute('href')).toContain('/sign-in');
+    expect(root.querySelector('.session-pending')).toBeNull();
+    store.account.set({ accountId: 'a', username: 'learner', displayName: 'Priya Raman', topicGrants: [] });
+    store.sessionKnown.set(true);
+    fixture.detectChanges();
+    expect(root.querySelector('a.sign-in-button')).toBeNull();
+    expect(root.querySelector('button.avatar-trigger-btn')).not.toBeNull();
   });
 
   it('shows only Sign in when signed out or expired and only the account control when authenticated', () => {

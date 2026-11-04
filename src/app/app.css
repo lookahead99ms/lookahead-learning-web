@@ -1269,3 +1269,29 @@ a.reader-module:focus-visible {
 [data-path="grow"] .next-stack .cta-button {
   background: var(--accent-strong);
 }
+
+/* DLV-969 S37: while a page loads, everything but the veil is hidden (layout kept), then all of it appears at once. */
+html[data-page-loading] app-root > :not(.page-veil) {
+  visibility: hidden;
+}
+.page-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  background: var(--surface-page);
+}
+.page-veil-brand {
+  animation: page-veil-breathe 1.6s ease-in-out infinite;
+}
+@keyframes page-veil-breathe {
+  50% {
+    opacity: 0.45;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-veil-brand {
+    animation: none;
+  }
+}

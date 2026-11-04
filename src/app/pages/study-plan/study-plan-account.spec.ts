@@ -5,6 +5,7 @@ import {
   AccountPlan,
   SavedPlan,
   StudyPlanAccount,
+  readHeaderHint,
   savedAccountPlan,
 } from './study-plan-account';
 
@@ -151,6 +152,8 @@ describe('StudyPlanAccount transport and isolation', () => {
     });
     TestBed.configureTestingModule({ providers: [{ provide: ACCOUNT_FETCH, useValue: fetcher }] });
     store = TestBed.inject(StudyPlanAccount);
+    // These tests count account requests; a header hint left in shared storage (DLV-969 S37) would add an early one.
+    store.headerHint.set(null);
   });
 
   it('sends explicit creation dates and revision-guarded lifecycle transitions', async () => {
@@ -632,5 +635,96 @@ describe('StudyPlanAccount transport and isolation', () => {
     expect(await store.login('demo-b', 'test')).toBe(true);
     expect(store.active()).toBeNull();
     expect(store.error()).toContain('could not confirm');
+  });
+});
+
+/** DLV-969 S37 (user, 2026-11-03): the header shows what this browser last knew at once, and the identity check starts early. */
+describe('StudyPlanAccount header hint', () => {
+  const person = { accountId: 'account-m', username: 'google_117602686039051948589', displayName: 'Mohiddin Shaik', topicGrants: [] };
+  const key = 'lookahead.header-hint';
+  /** The test environment has no localStorage; each test gets its own in-memory one. */
+  function memoryStorage(): Storage {
+    const items = new Map<string, string>();
+    return {
+      getItem: (name: string) => items.get(name) ?? null,
+      setItem: (name: string, value: string) => void items.set(name, String(value)),
+      removeItem: (name: string) => void items.delete(name),
+      clear: () => items.clear(),
+      key: (index: number) => [...items.keys()][index] ?? null,
+      get length() { return items.size; },
+    };
+  }
+  beforeEach(() => vi.stubGlobal('localStorage', memoryStorage()));
+  afterEach(() => vi.unstubAllGlobals());
+  function store(fetcher: ReturnType<typeof vi.fn>) {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: [{ provide: ACCOUNT_FETCH, useValue: fetcher }] });
+    return TestBed.inject(StudyPlanAccount);
+  }
+  const signedIn = (oauth: boolean) =>
+    vi.fn(async (path: string) =>
+      path === '/api/v1/auth/options' ? json({ oauth, managedLogin: false }) : path.endsWith('/auth/me') ? json(person) : json([]));
+
+  it('remembers who was signed in, then that they signed out, for the next page load', async () => {
+    const first = store(signedIn(true));
+    expect(first.headerHint()).toBeNull();
+    await first.initialize();
+    TestBed.tick();
+    expect(JSON.parse(localStorage.getItem(key)!)).toEqual({ signedIn: true, displayName: 'Mohiddin Shaik', gateway: true });
+    expect(store(signedIn(true)).headerHint()).toEqual({ signedIn: true, displayName: 'Mohiddin Shaik', gateway: true });
+    const out = store(vi.fn(async (path: string) =>
+      path === '/api/v1/auth/options' ? json({ oauth: true }) : new Response(null, { status: 401 })));
+    await out.initialize();
+    TestBed.tick();
+    expect(JSON.parse(localStorage.getItem(key)!)).toEqual({ signedIn: false, gateway: true });
+  });
+
+  it('reads back only a well-formed hint, and keeps working when storage is blocked', () => {
+    for (const bad of ['{not json', '{"signedIn":"yes"}', '{"signedIn":true}', '42'])
+      expect((localStorage.setItem(key, bad), readHeaderHint())).toBeNull();
+    localStorage.setItem(key, JSON.stringify({ signedIn: true, displayName: 'x'.repeat(400), accountId: 'never-kept' }));
+    expect(readHeaderHint()).toEqual({ signedIn: true, displayName: 'x'.repeat(160) });
+    localStorage.setItem(key, JSON.stringify({ signedIn: false, gateway: 'yes' }));
+    expect(readHeaderHint()).toEqual({ signedIn: false });
+    const blockedStorage = { ...memoryStorage(), getItem: () => { throw new Error('blocked'); }, setItem: () => { throw new Error('blocked'); } };
+    vi.stubGlobal('localStorage', blockedStorage);
+    expect(readHeaderHint()).toBeNull();
+    const blocked = store(signedIn(true));
+    expect(() => { void blocked.initialize(); TestBed.tick(); }).not.toThrow();
+  });
+
+  it('asks who you are before the sign-in options answer, at the address that answered last time', async () => {
+    localStorage.setItem(key, JSON.stringify({ signedIn: true, displayName: 'Mohiddin Shaik', gateway: true }));
+    let answerOptions!: () => void;
+    const calls: string[] = [];
+    const fetcher = vi.fn((path: string) => {
+      calls.push(path);
+      if (path === '/api/v1/auth/options')
+        return new Promise<Response>((resolve) => (answerOptions = () => resolve(json({ oauth: true, managedLogin: false }))));
+      return Promise.resolve(path.endsWith('/auth/me') ? json(person) : json([]));
+    });
+    const early = store(fetcher);
+    const started = early.initialize();
+    await Promise.resolve();
+    expect(calls.slice(0, 2).sort()).toEqual(['/api/v1/auth/options', '/bff/api/v1/auth/me']);
+    answerOptions();
+    await started;
+    expect(early.account()?.displayName).toBe('Mohiddin Shaik');
+    expect(calls.filter((path) => path.endsWith('/auth/me'))).toEqual(['/bff/api/v1/auth/me']);
+  });
+
+  it('drops the early answer and asks again when the sign-in options say the address changed', async () => {
+    localStorage.setItem(key, JSON.stringify({ signedIn: true, displayName: 'Mohiddin Shaik', gateway: false }));
+    const fetcher = vi.fn(async (path: string) => {
+      if (path === '/api/v1/auth/options') return json({ oauth: true, managedLogin: false });
+      if (path === '/api/v1/auth/me') return new Response(null, { status: 404 });
+      return path === '/bff/api/v1/auth/me' ? json(person) : json([]);
+    });
+    const moved = store(fetcher);
+    await moved.initialize();
+    expect(fetcher.mock.calls.map(([path]) => path).filter((path) => path.endsWith('/auth/me'))).toEqual(['/api/v1/auth/me', '/bff/api/v1/auth/me']);
+    expect(moved.account()?.accountId).toBe('account-m');
+    // The dropped early answer (404) never becomes the page's error.
+    expect(moved.errorStatus()).not.toBe(404);
   });
 });

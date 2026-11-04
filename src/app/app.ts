@@ -5,10 +5,12 @@ import { Router, RouterOutlet } from '@angular/router';
 import { PlatformThemeService } from './core/platform-theme';
 import { StudyPlanAccount } from './pages/study-plan/study-plan-account';
 import { PageSidebars } from './core/page-sidebars/page-sidebars';
+import { PageReadiness } from './core/page-readiness/page-readiness';
+import { PlatformBrand } from './core/platform-brand/platform-brand';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, PageSidebars, DevSessionNotice],
+  imports: [RouterOutlet, PageSidebars, DevSessionNotice, PlatformBrand],
   templateUrl: './app.html',
   styleUrl: './app.css',
   encapsulation: ViewEncapsulation.None,
@@ -16,8 +18,12 @@ import { PageSidebars } from './core/page-sidebars/page-sidebars';
 export class App {
   private readonly theme = inject(PlatformThemeService);
   private readonly document = inject(DOCUMENT);
+  /** DLV-969 S37: a page is shown only once everything it asked for has arrived. */
+  protected readonly readiness = inject(PageReadiness);
 
   constructor() {
+    const root = this.document.documentElement;
+    effect(() => root.toggleAttribute('data-page-loading', this.readiness.loading()));
     const account = inject(StudyPlanAccount);
     const router = inject(Router);
     effect(() => {

@@ -934,6 +934,11 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
   protected readonly accountLabel = computed(() =>
     accountTriggerLabel(this.accounts.account()?.displayName),
   );
+  /** DLV-969 S37: the name this browser last showed, while the identity check runs; null without a signed-in hint. */
+  protected readonly rememberedLabel = computed(() => {
+    const hint = this.accounts.headerHint();
+    return hint?.signedIn ? accountTriggerLabel(hint.displayName) : null;
+  });
   /** First letter of the display name for the dropdown avatar; a person symbol otherwise. */
   protected readonly accountInitial = computed(
     () => [...(this.accounts.account()?.displayName?.trim() ?? '')][0]?.toUpperCase() ?? '👤',

@@ -33,8 +33,8 @@ describe('Test account maintenance',()=>{
    {id:'r2',planId:'grow',courses:[],startsAt:'2027-01-01T00:00:00Z',endsAt:'2028-01-01T00:00:00Z',status:'scheduled',pricePaidCents:9999,discount:null}];
   request.mockImplementation(async(path:string)=>path.endsWith('/access-records')?records:[{...row,username:'learner12',access:{label:'Regular · Advance',labels:['Regular · Advance'],grantedCourseIds:[]}}]);
   await component.load();
-  expect(component.people().map(person=>[person.name,person.roles[0],person.access[0]])).toEqual([['author','Author (owner)','Full curriculum'],['learner12','Learner','Advance']]);
-  component.query.set('full curr');expect(component.visible().map(person=>person.name)).toEqual(['author']);
+  expect(component.people().map(person=>[person.name,person.roles[0],person.access[0]])).toEqual([['Author','Author (owner)','Full curriculum'],['learner12','Learner','Advance']]);
+  component.query.set('full curr');expect(component.visible().map(person=>person.name)).toEqual(['Author']);
   component.role.set('Admin');expect(component.visible()).toEqual([]);component.role.set('');component.query.set('');
   const learner=component.people()[1];
   expect(component.changedText(learner)).toBe('Default setup, 16 Oct 2026');expect(component.changedText(component.people()[0])).toBe('—');
@@ -312,6 +312,14 @@ describe('Test account maintenance',()=>{
    request.mockRejectedValueOnce('no message');
    await fixture.componentInstance.createRoster();
    expect(fixture.componentInstance.notice()).toBe('The roster stopped part way. Create again to continue.');
+  });
+
+  it('says how many learners still wait for their study plan, in plain words (DLV-969 S37)',async()=>{
+   const note=async(withoutPlan?:number)=>(await shown(page({limit:2147483647,used:0,remaining:2147483647,roster:{total:35,ready:35,deleted:0,withoutPlan},scenarios}))).querySelector('.roster-plans')?.textContent?.replace(/\s+/g,' ').trim()??null;
+   expect(await note(25)).toBe('25 learners don’t have their study plan yet: DEV has no study plans published. After the content release, Reset each one to add its plan.');
+   expect(await note(1)).toBe('1 learner doesn’t have their study plan yet: DEV has no study plans published. After the content release, Reset each one to add its plan.');
+   expect(await note(0)).toBeNull();
+   expect(await note(undefined)).toBeNull();
   });
 
   it('nobody but the owner sees the roster, and nobody sees it outside DEV',async()=>{

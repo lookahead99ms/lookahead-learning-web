@@ -22,7 +22,8 @@ export interface TestAccountAllowance {
   limit: number;
   used: number;
   remaining: number;
-  roster?: { total: number; ready: number; deleted: number } | null;
+  /** withoutPlan (DLV-969 S37): ready learners whose scenario has a study plan they don't have yet. */
+  roster?: { total: number; ready: number; deleted: number; withoutPlan?: number } | null;
   scenarios?: { id: string; label: string; roles: string[] }[] | null;
 }
 
@@ -269,7 +270,7 @@ export class TestAccounts implements OnInit {
     this.rosterBusy.set(true);this.notice.set('');
     try {
       for(let calls=0;calls<20;calls++){
-        const status=await this.api.request<{total:number;ready:number;deleted:number}>('/admin/test-accounts',{roster:true});
+        const status=await this.api.request<{total:number;ready:number;deleted:number;withoutPlan?:number}>('/admin/test-accounts',{roster:true});
         this.allowance.update((quota)=>quota?{...quota,roster:status}:quota);
         if(status.total-status.ready-status.deleted<=0)break;
       }

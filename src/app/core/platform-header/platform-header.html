@@ -200,8 +200,19 @@
     }
 
     @if (!accounts.sessionKnown() && !onAuthenticationPage()) {
-      <!-- DLV-969: hold the Sign in slot, invisible, until the identity check answers; no flash, no layout shift. -->
-      <span class="sign-in-button session-pending" aria-hidden="true">Sign in</span>
+      <!-- DLV-969 S37 (user, 2026-11-03): while the identity check runs, show what this browser last knew at once: your
+           name, or Sign in. The check replaces it. Without a hint, hold the slot invisibly as before (no flash). -->
+      @if (rememberedLabel(); as label) {
+        <span class="avatar-trigger-btn session-remembered" aria-hidden="true">
+          <span class="account-trigger-name">{{ label }}</span>
+          <span class="avatar-chevron" aria-hidden="true">▾</span>
+        </span>
+      } @else if (accounts.headerHint()?.signedIn === false) {
+        <a class="sign-in-button" routerLink="/sign-in" [queryParams]="{ returnTo: accountReturn() }"
+          appHeaderHint="Sign in to save progress and plans to your account.">Sign in</a>
+      } @else {
+        <span class="sign-in-button session-pending" aria-hidden="true">Sign in</span>
+      }
     } @else if ((!accounts.account() || accounts.sessionExpired()) && !onAuthenticationPage()) {
       <a
         class="sign-in-button"

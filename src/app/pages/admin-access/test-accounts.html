@@ -46,6 +46,13 @@
           The 35 accounts Local has: 27 learners, each in a different scenario, 2 co-authors and 6 admins, as
           <code>learner01&#64;lookahead.dev</code> and so on. {{ progress.ready }} of {{ progress.total }} ready@if (progress.deleted) {, {{ progress.deleted }} deleted (not created again)}.
         </p>
+        @if (progress.withoutPlan) {
+          <!-- DLV-969 S37: DEV has no study plans published yet, so these learners were created without their plan. -->
+          <p class="roster-plans">
+            {{ progress.withoutPlan === 1 ? '1 learner doesn’t' : progress.withoutPlan + ' learners don’t' }} have their study plan
+            yet: DEV has no study plans published. After the content release, Reset each one to add its plan.
+          </p>
+        }
       </div>
       @if (progress.remaining > 0) {
         <button type="button" class="action-button" [disabled]="busy() || rosterBusy()" [attr.aria-busy]="rosterBusy()" (click)="createRoster()">
