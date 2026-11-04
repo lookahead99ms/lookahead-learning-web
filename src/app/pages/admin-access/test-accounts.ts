@@ -36,6 +36,8 @@ export interface TestAccountRow {
   lastChangedBy: string;
   lastChangedAt: string;
   legacyPresetAvailable: boolean;
+  /** 'created' for a single created account; a roster account carries its preset ('scenario' in DEV). */
+  initialization?: string;
   creatorId?: string;
   canDelete?: boolean;
 }
@@ -100,6 +102,11 @@ export class TestAccounts implements OnInit {
     const status = this.allowance()?.roster;
     return status ? { ...status, remaining: Math.max(0, status.total - status.ready - status.deleted) } : null;
   });
+  /** DLV-969 (owner, 2026-11-04): Reset all, typed once; done counts the resets sent so far. */
+  readonly rosterReset = signal<{ open: boolean; done: number; total: number } | null>(null);
+  rosterResetConfirmation = '';
+  /** The DEV roster's accounts in the list: every test account except single created ones. */
+  readonly rosterRows = computed(() => this.rows().filter((row) => !!row.creatorId && row.initialization !== 'created'));
   readonly creating = signal(false);
   readonly createKey = signal<string|null>(null);
   readonly deleting = signal<TestAccountRow|null>(null);
@@ -220,6 +227,7 @@ export class TestAccounts implements OnInit {
     this.downgradingReal.set(null);
     this.deletingReal.set(null);
     this.removing.set(null);
+    if (!this.rosterReset()?.done) this.rosterReset.set(null);
     this.confirmation = '';
     this.deleteConfirmation = '';
     this.realConfirmation = '';
@@ -304,6 +312,48 @@ export class TestAccounts implements OnInit {
     } catch(failure) {
       this.notice.set(reason(failure)+'The roster stopped part way. Create again to continue.');
     } finally {this.rosterBusy.set(false);}
+  }
+
+  openRosterReset() {
+    this.closeConfirmations();
+    this.rosterResetConfirmation = '';
+    this.rosterReset.set({ open: true, done: 0, total: this.rosterRows().length });
+  }
+
+  /**
+   * DLV-969 (owner, 2026-11-04): every roster account back to its scenario, one reset request each, so learners
+   * created before the study plans were published get theirs. A refusal is named and the rest carry on.
+   */
+  async resetRoster() {
+    const rows = this.rosterRows();
+    if (!this.dev() || !this.roster() || this.busy() || !rows.length || this.rosterResetConfirmation !== 'RESET ALL') return;
+    this.busy.set(true);
+    this.notice.set('');
+    const refused: string[] = [];
+    this.rosterReset.set({ open: true, done: 0, total: rows.length });
+    for (const row of rows) {
+      try {
+        await this.api.request('/admin/test-accounts/' + row.accountId + '/reset', {
+          key: crypto.randomUUID(),
+          expectedRevision: row.revision,
+          confirmation: row.username,
+          preset: 'scenario',
+        });
+      } catch (failure) {
+        refused.push(row.username + (reason(failure) ? ' (' + reason(failure).trim() + ')' : ''));
+      }
+      this.rosterReset.update((progress) => progress && { ...progress, done: progress.done + 1 });
+    }
+    this.rosterReset.set(null);
+    this.rosterResetConfirmation = '';
+    this.busy.set(false);
+    await this.load();
+    this.history.set({});
+    this.notice.set(
+      refused.length
+        ? `${rows.length - refused.length} of ${rows.length} reset. Not reset: ${refused.join(', ')}. Reset all again to retry.`
+        : `All ${rows.length} roster accounts are back to their scenarios.`,
+    );
   }
 
   async deleteAccount() {

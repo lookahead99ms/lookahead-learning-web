@@ -95,13 +95,15 @@ describe('Test account maintenance',()=>{
   expect([...root.querySelectorAll('.selection-actions button')].map(b=>b.textContent?.trim())).toEqual(['Details','Give access','Reset','Delete']);
   const give=[...root.querySelectorAll<HTMLButtonElement>('.selection-actions button')].find(b=>b.textContent?.trim()==='Give access');
   give?.click();expect(given).toEqual(['learner09']);
-  // DLV-969 (2026-11-04): Reset and Delete open their confirmation right under the toolbar, above the long table.
+  // DLV-969 (owner, 2026-11-04): the toolbar and its confirmations open in the row right under the selected account.
+  expect(root.querySelector('tr[data-account="learner09"]')!.nextElementSibling!.matches('tr.selection-row')).toBe(true);
+  expect(root.querySelectorAll('.selection-row')).toHaveLength(1);
   const action=(label:string)=>[...root.querySelectorAll<HTMLButtonElement>('.selection-actions button')].find(b=>b.textContent?.trim()===label)!;
   const opensUnderTheToolbar=(title:string)=>{
     const panel=root.querySelector('.selection-toolbar')!.nextElementSibling as HTMLElement;
     expect(panel.classList).toContain('reset-panel');
     expect(panel.textContent).toContain(title);
-    expect(panel.compareDocumentPosition(root.querySelector('table')!)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(panel.closest('tr')!.previousElementSibling!.getAttribute('data-account')).toBe('learner09');
   };
   action('Reset').click();fixture.detectChanges();
   opensUnderTheToolbar('Reset learner09');
@@ -124,6 +126,7 @@ describe('Test account maintenance',()=>{
   selectAdmin.click();fixture.detectChanges();
   expect(selectLearner.checked).toBe(false);
   expect(root.querySelector('.selection-toolbar')?.textContent).toContain('admin01 selected');
+  expect(root.querySelector('.selection-row')!.previousElementSibling!.getAttribute('data-account')).toBe('admin01');
   expect(root.querySelector('.selection-toolbar')?.textContent).not.toContain('Delete');
   account.set({permissions:{feedbackRole:'co-author'}});fixture.detectChanges();
   expect([...root.querySelectorAll('button')].some(b=>b.textContent?.trim()==='Give access')).toBe(false);
@@ -373,10 +376,54 @@ describe('Test account maintenance',()=>{
 
   it('says how many learners still wait for their study plan, in plain words (DLV-969 S37)',async()=>{
    const note=async(withoutPlan?:number)=>(await shown(page({limit:2147483647,used:0,remaining:2147483647,roster:{total:35,ready:35,deleted:0,withoutPlan},scenarios}))).querySelector('.roster-plans')?.textContent?.replace(/\s+/g,' ').trim()??null;
-   expect(await note(25)).toBe('25 learners don’t have their study plan yet: DEV has no study plans published. After the content release, Reset each one to add its plan.');
-   expect(await note(1)).toBe('1 learner doesn’t have their study plan yet: DEV has no study plans published. After the content release, Reset each one to add its plan.');
+   expect(await note(25)).toBe('25 learners don’t have their study plan yet, because they were created before DEV had study plans. Reset all gives each one its plan.');
+   expect(await note(1)).toBe('1 learner doesn’t have their study plan yet, because they were created before DEV had study plans. Reset all gives each one its plan.');
    expect(await note(0)).toBeNull();
    expect(await note(undefined)).toBeNull();
+  });
+
+  it('Reset all puts every roster account back to its scenario after one typed confirmation (DLV-969)',async()=>{
+   const roster=(name:string,revision:number)=>({...row,accountId:name+'-id',username:name+'@lookahead.dev',revision,initialization:'scenario',creatorId:'owner-1'});
+   const listed=[roster('learner01',3),roster('learner02',4),roster('admin01',2),{...row,accountId:'made-id',username:'test-1@lookahead.dev',initialization:'created',creatorId:'owner-1'}];
+   const allowance={limit:2147483647,used:0,remaining:2147483647,roster:{total:35,ready:3,deleted:0,withoutPlan:2},scenarios};
+   const fixture=page(allowance);
+   request.mockImplementation(async(path:string)=>path==='/admin/test-accounts/allowance'?allowance:path==='/admin/test-accounts'?listed:{accounts:[],page:0,hasNext:false});
+   const root=await shown(fixture);const component=fixture.componentInstance;
+   expect(root.querySelector('.roster-note')?.textContent).toContain('never deleted');
+   const resetAll=[...root.querySelectorAll<HTMLButtonElement>('.roster-card button')].find(b=>b.textContent?.trim()==='Reset all')!;
+   // Opening it closes any confirmation that was open on a row.
+   component.select(listed[0] as any);
+   resetAll.click();fixture.detectChanges();
+   expect(component.selected()).toBeNull();
+   const panel=root.querySelector('.roster-reset')!;
+   expect(panel.querySelector('h3')?.textContent).toBe('Reset all 3 roster accounts');
+   const confirm=[...panel.querySelectorAll<HTMLButtonElement>('button')].find(b=>b.textContent?.includes('Reset all 3'))!;
+   expect(confirm.disabled).toBe(true);
+   await component.resetRoster();
+   expect(request.mock.calls.some(([path])=>String(path).endsWith('/reset'))).toBe(false);
+   component.rosterResetConfirmation='RESET ALL';
+   request.mockImplementation(async(path:string,body?:any)=>{
+    if(path==='/admin/test-accounts/admin01-id/reset')throw new Error('Test account changed; reload before resetting');
+    return path==='/admin/test-accounts/allowance'?allowance:path==='/admin/test-accounts'?listed:body?{}:{accounts:[],page:0,hasNext:false};
+   });
+   await component.resetRoster();
+   const resets=request.mock.calls.filter(([path])=>String(path).endsWith('/reset'));
+   expect(resets.map(([path])=>path)).toEqual(['/admin/test-accounts/learner01-id/reset','/admin/test-accounts/learner02-id/reset','/admin/test-accounts/admin01-id/reset']);
+   expect(resets[0][1]).toEqual({key:expect.any(String),expectedRevision:3,confirmation:'learner01@lookahead.dev',preset:'scenario'});
+   expect(component.notice()).toBe('2 of 3 reset. Not reset: admin01@lookahead.dev (Test account changed; reload before resetting). Reset all again to retry.');
+   expect(component.rosterReset()).toBeNull();
+   expect(component.rosterResetConfirmation).toBe('');
+   component.openRosterReset();component.rosterResetConfirmation='RESET ALL';
+   request.mockImplementation(async(path:string,body?:any)=>{
+    if(path==='/admin/test-accounts/admin01-id/reset')throw 'no message';
+    return path==='/admin/test-accounts/allowance'?allowance:path==='/admin/test-accounts'?listed:body?{}:{accounts:[],page:0,hasNext:false};
+   });
+   await component.resetRoster();
+   expect(component.notice()).toBe('2 of 3 reset. Not reset: admin01@lookahead.dev. Reset all again to retry.');
+   component.openRosterReset();component.rosterResetConfirmation='RESET ALL';
+   request.mockImplementation(async(path:string,body?:any)=>path==='/admin/test-accounts/allowance'?allowance:path==='/admin/test-accounts'?listed:body?{}:{accounts:[],page:0,hasNext:false});
+   await component.resetRoster();
+   expect(component.notice()).toBe('All 3 roster accounts are back to their scenarios.');
   });
 
   it('nobody but the owner sees the roster, and nobody sees it outside DEV',async()=>{
