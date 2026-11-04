@@ -308,14 +308,15 @@
               }
             }
             @if (canSwitchAccount() && !beforeAdmission()) {
-              <!-- DLV-969 (owner, 2026-11-04): staff look at DEV through a test account without signing out. -->
+              <!-- DLV-969 (owner, 2026-11-04): anyone signed in to DEV looks at it through a test account without signing out;
+                   the Domain lists only the accounts their role may use. -->
               <div class="menu-divider"></div>
               <div class="dropdown-links-list" role="group" aria-label="Test accounts">
                 <button type="button" class="dropdown-item-link test-switch" (click)="openTestAccounts()"
                   ><span class="item-icon" aria-hidden="true">🔁</span
                   ><span class="item-text"
                     ><span class="item-label">{{ testSessions.active() ? 'Switch test account' : 'Switch to a test account' }}</span
-                    ><small>See DEV as a learner, co-author or admin</small></span
+                    ><small>See DEV as another test account</small></span
                   ></button
                 >
               </div>

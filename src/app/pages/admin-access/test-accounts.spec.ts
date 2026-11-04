@@ -3,7 +3,7 @@ import { provideRouter } from '@angular/router';
 import { signal } from '@angular/core';
 import { vi } from 'vitest';
 import { TestAccounts, TestAccountRow } from './test-accounts';
-import { MembershipApi } from '../../content/membership-api';
+import { MembershipApi, MembershipRequestError } from '../../content/membership-api';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import { DevSession } from '../../core/dev-session-notice/dev-session';
 const row:TestAccountRow={accountId:'test-id',username:'learner09',roles:[],revision:3,access:{label:'Free'},lastChangedBy:'seed',lastChangedAt:'2026-10-16',legacyPresetAvailable:true,canDelete:true};
@@ -363,7 +363,8 @@ describe('Test account maintenance',()=>{
   it('a stopped roster says so and continues with the remaining accounts',async()=>{
    const fixture=page({limit:2147483647,used:0,remaining:2147483647,roster:{total:35,ready:10,deleted:1},scenarios});
    const root=await shown(fixture);
-   expect(root.querySelector('.roster-card')?.textContent).toContain('1 deleted (not created again)');
+   // The owner is told Restore brings the deleted one back (DLV-969, 2026-11-04).
+   expect(root.querySelector('.roster-card')?.textContent).toContain('1 deleted — Restore brings them back');
    expect(root.querySelector('.roster-card button')?.textContent?.trim()).toBe('Create the other 24');
    request.mockRejectedValueOnce(new Error('Test accounts are unavailable. Retry shortly.'));
    await fixture.componentInstance.createRoster();
@@ -426,6 +427,105 @@ describe('Test account maintenance',()=>{
    expect(component.notice()).toBe('All 3 roster accounts are back to their scenarios.');
   });
 
+  /** DLV-969 (owner, 2026-11-04): Restore brings deleted roster accounts back with their scenarios. */
+  describe('Restore',()=>{
+   const allowance=(deleted:number)=>({limit:2147483647,used:0,remaining:2147483647,roster:{total:35,ready:35-deleted,deleted},scenarios});
+   const buttons=(root:HTMLElement,selector:string)=>[...root.querySelectorAll<HTMLButtonElement>(selector)];
+   const restoreButton=(root:HTMLElement)=>buttons(root,'.roster-card button').find(b=>b.textContent?.trim().startsWith('Restore'));
+
+   it('the owner restores the deleted roster accounts after typing RESTORE once',async()=>{
+    let deleted=3;
+    const page2=page(allowance(3));
+    request.mockImplementation(async(path:string,body?:any)=>{
+     if(path==='/admin/test-accounts'&&body?.restoreRoster){deleted=0;return {restored:3};}
+     return path==='/admin/test-accounts/allowance'?allowance(deleted):path==='/admin/test-accounts'?[]:body?{}:{accounts:[],page:0,hasNext:false};
+    });
+    const root=await shown(page2);const component=page2.componentInstance;
+    expect(root.querySelector('.roster-card')?.textContent?.replace(/\s+/g,' ')).toContain('32 of 35 ready, 3 deleted — Restore brings them back.');
+    expect(root.querySelector('.roster-card')?.textContent).not.toContain('not created again');
+    const open=restoreButton(root)!;
+    expect(open.textContent?.trim()).toBe('Restore 3');
+    // Opening it closes any other confirmation, such as Reset all.
+    component.openRosterReset();page2.detectChanges();
+    open.click();page2.detectChanges();
+    expect(component.rosterReset()).toBeNull();
+    const panel=root.querySelector('.roster-restore')!;
+    expect(panel.querySelector('h3')?.textContent).toBe('Restore 3 deleted roster accounts');
+    expect(panel.querySelector('p')?.textContent).toBe('Each comes back with its scenario: learners get their membership, purchases and study plan; staff get their role.');
+    expect(panel.querySelector('label')?.textContent).toContain('Type RESTORE to confirm');
+    const confirm=buttons(panel as HTMLElement,'.actions button');
+    expect(confirm.map(b=>b.textContent?.trim())).toEqual(['Restore 3','Cancel']);
+    expect(confirm[0].disabled).toBe(true);
+    // Nothing is sent until RESTORE is typed exactly.
+    component.rosterRestoreConfirmation='restore';await component.restoreRoster();
+    expect(request.mock.calls.some(([path,body])=>path==='/admin/test-accounts'&&(body as any)?.restoreRoster)).toBe(false);
+    const input=panel.querySelector('input') as HTMLInputElement;
+    input.value='RESTORE';input.dispatchEvent(new Event('input'));page2.detectChanges();
+    expect(confirm[0].disabled).toBe(false);
+    confirm[0].click();
+    await page2.whenStable();page2.detectChanges();
+    expect(request).toHaveBeenCalledWith('/admin/test-accounts',{restoreRoster:true,confirm:'RESTORE'});
+    expect(component.notice()).toBe('Restored 3 roster accounts.');
+    expect(root.querySelector('.notice')?.textContent).toBe('Restored 3 roster accounts.');
+    expect(component.rosterRestore()).toBeNull();
+    expect(component.rosterRestoreConfirmation).toBe('');
+    // The list was loaded again: nothing deleted, so no Restore and the plain count.
+    expect(root.querySelector('.roster-card')?.textContent).toContain('35 of 35 ready.');
+    expect(restoreButton(root)).toBeUndefined();
+    expect(root.querySelector('.roster-restore')).toBeNull();
+   });
+
+   it('names one account in the singular and falls back to the deleted count when the Domain sends no number',async()=>{
+    const fixture=page(allowance(1));
+    const root=await shown(fixture);const component=fixture.componentInstance;
+    restoreButton(root)!.click();fixture.detectChanges();
+    expect(root.querySelector('.roster-restore h3')?.textContent).toBe('Restore 1 deleted roster account');
+    request.mockImplementation(async(path:string,body?:any)=>path==='/admin/test-accounts/allowance'?allowance(0):body?null:[]);
+    component.rosterRestoreConfirmation='RESTORE';await component.restoreRoster();
+    expect(component.notice()).toBe('Restored 1 roster account.');
+   });
+
+   it('says an older Domain has no Restore yet (404), and keeps the panel open on other refusals',async()=>{
+    const fixture=page(allowance(2));
+    const root=await shown(fixture);const component=fixture.componentInstance;
+    component.openRosterRestore();component.rosterRestoreConfirmation='RESTORE';
+    request.mockRejectedValueOnce(new MembershipRequestError('Only the owner can restore the roster.',403));
+    await component.restoreRoster();
+    expect(component.notice()).toBe('Only the owner can restore the roster. Restore was not confirmed. Refresh and retry.');
+    expect(component.rosterRestore()).toEqual({total:2});
+    expect(component.busy()).toBe(false);
+    request.mockRejectedValueOnce(new MembershipRequestError('Not found',404));
+    await component.restoreRoster();
+    fixture.detectChanges();
+    expect(component.notice()).toBe('Restore needs the newer Domain release.');
+    expect(root.querySelector('.notice')?.textContent).toBe('Restore needs the newer Domain release.');
+    expect(component.rosterRestore()).toBeNull();
+    // Cancel closes it without a request.
+    component.openRosterRestore();fixture.detectChanges();
+    buttons(root,'.roster-restore .actions button').find(b=>b.textContent?.trim()==='Cancel')!.click();fixture.detectChanges();
+    expect(root.querySelector('.roster-restore')).toBeNull();
+    expect(request.mock.calls.filter(([path,body])=>path==='/admin/test-accounts'&&(body as any)?.restoreRoster)).toHaveLength(2);
+   });
+
+   it('offers no Restore when nothing is deleted, nor to anyone but the owner',async()=>{
+    expect(restoreButton(await shown(page(allowance(0))))).toBeUndefined();
+    // An admin given a roster status by mistake still gets no Restore, and the old wording.
+    account.set({accountId:'admin-1',permissions:{feedbackRole:'admin',manageAccess:false,triageFeedback:true}});
+    const fixture=page(allowance(2));
+    const root=await shown(fixture);
+    expect(root.querySelector('.roster-card')?.textContent).toContain('2 deleted (not created again)');
+    expect(restoreButton(root)).toBeUndefined();
+    fixture.componentInstance.openRosterRestore();
+    expect(fixture.componentInstance.rosterRestore()).toBeNull();
+    fixture.componentInstance.rosterRestoreConfirmation='RESTORE';
+    await fixture.componentInstance.restoreRoster();
+    expect(request.mock.calls.some(([path,body])=>path==='/admin/test-accounts'&&(body as any)?.restoreRoster)).toBe(false);
+    // authorPreview without a feedback role counts as the owner, as elsewhere on this page.
+    account.set({accountId:'owner-1',authorPreview:true});
+    expect(restoreButton(await shown(page(allowance(2))))?.textContent?.trim()).toBe('Restore 2');
+   });
+  });
+
   it('nobody but the owner sees the roster, and nobody sees it outside DEV',async()=>{
    account.set({accountId:'admin-1',permissions:{feedbackRole:'admin',manageAccess:true}});
    expect((await shown(page({limit:10,used:0,remaining:10,roster:null,scenarios}))).querySelector('.roster-card')).toBeNull();
@@ -441,7 +541,10 @@ describe('Test account maintenance',()=>{
    const root=await shown(fixture);const component=fixture.componentInstance;
    component.creating.set(true);fixture.detectChanges();
    const panel=root.querySelector('.reset-panel')!;
-   expect([...panel.querySelectorAll('option')].map(option=>option.textContent)).toEqual(['learner01 · Free · no study plan','learner05 · Learn · active · ready-made plan · in progress','admin · Admin with the full curriculum']);
+   // Learners only (owner, 2026-11-04): the admin scenario is never offered, even to the owner.
+   expect([...panel.querySelectorAll('option')].map(option=>option.textContent)).toEqual(['learner01 · Free · no study plan','learner05 · Learn · active · ready-made plan · in progress']);
+   expect(panel.querySelector('.learner-only')?.textContent).toBe('New test accounts are learners. Staff test accounts come from the roster.');
+   expect(panel.textContent).not.toContain('roles up to your own');
    expect(panel.querySelector('input[type="password"]')).toBeNull();
    expect(component.mayCreate()).toBe(true);
    component.createScenario='learner05';
@@ -455,6 +558,36 @@ describe('Test account maintenance',()=>{
    expect(component.notice()).toBe('Creation was not confirmed. Retry; the same request key is reused.');
    component.createScenario='';
    expect(component.mayCreate()).toBe(false);
+  });
+
+  it('every role picks from learner scenarios only, and a staff scenario is never sent (DLV-969, owner 2026-11-04)',async()=>{
+   const staffScenarios=[...scenarios,{id:'coauthor',label:'Co-author with the full curriculum',roles:['co-author']},{id:'reviewer',label:'Reviewer',roles:['reviewer']}];
+   for(const feedbackRole of ['owner','co-author','admin']){
+    account.set({accountId:feedbackRole+'-1',permissions:{feedbackRole,manageAccess:feedbackRole==='owner',triageFeedback:true}});
+    const fixture=page({limit:10,used:0,remaining:10,roster:null,scenarios:staffScenarios});
+    const root=await shown(fixture);const component=fixture.componentInstance;
+    component.creating.set(true);fixture.detectChanges();
+    expect([...root.querySelectorAll('.reset-panel option')].map(option=>option.getAttribute('value'))).toEqual(['learner01','learner05']);
+    expect(component.learnerScenarios().map(scenario=>scenario.id)).toEqual(['learner01','learner05']);
+    // A staff scenario chosen some other way is not sent.
+    component.createScenario='admin';
+    expect(component.mayCreate()).toBe(false);
+    await component.create();
+    expect(request.mock.calls.some(([path,body])=>path==='/admin/test-accounts'&&body)).toBe(false);
+   }
+  });
+
+  it('shows the server\'s learner-only refusal in its own words',async()=>{
+   const fixture=page({limit:10,used:0,remaining:10,roster:null,scenarios});
+   const root=await shown(fixture);const component=fixture.componentInstance;
+   component.creating.set(true);fixture.detectChanges();
+   request.mockRejectedValueOnce(new MembershipRequestError('Only learner test accounts can be created. Staff test accounts come from the roster.',403));
+   await component.create();fixture.detectChanges();
+   expect(component.notice()).toBe('Only learner test accounts can be created. Staff test accounts come from the roster.');
+   expect(root.querySelector('.notice')?.textContent).toBe('Only learner test accounts can be created. Staff test accounts come from the roster.');
+   // A refusal is final: the next try is a new request.
+   expect(component.createKey()).toBeNull();
+   expect(component.busy()).toBe(false);
   });
  });
 });

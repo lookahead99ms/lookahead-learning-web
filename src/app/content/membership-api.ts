@@ -3,6 +3,10 @@ import { ACCOUNT_FETCH, StudyPlanAccount } from '../pages/study-plan/study-plan-
 import { PLANS, PlanDefinition, PlanId } from './membership-plans';
 import type { AccessRecord } from '../pages/account/account-membership';
 
+/** A refused membership or admin request; `status` is the HTTP status, so a caller can tell 404 (an older release) apart. */
+export class MembershipRequestError extends Error {
+  constructor(message:string,readonly status:number){super(message);this.name='MembershipRequestError';}
+}
 export interface Purchase extends AccessRecord { providerStatus: string; status: AccessRecord['status']; }
 @Injectable({providedIn:'root'})
 export class MembershipApi {
@@ -27,8 +31,9 @@ export class MembershipApi {
       headers[token.headerName]=token.token;headers['Content-Type']='application/json';if(key)headers['Idempotency-Key']=key;
     }
     const response=await this.transport('/bff/api/v1'+path,{method:body===undefined?'GET':'POST',headers,credentials:'same-origin',cache:'no-store',body:body===undefined?undefined:JSON.stringify(body)});
-    const result=await response.json();
-    if(!response.ok)throw new Error(result.message??result.error?.message??'Membership service unavailable. Try again.');
+    // A refusal may have no JSON body (a 404 from an older release); it still throws with its HTTP status.
+    const result=response.ok?await response.json():await response.json().catch(()=>({}));
+    if(!response.ok)throw new MembershipRequestError(result.message??result.error?.message??'Membership service unavailable. Try again.',response.status);
     return result.data as T;
   }
   async remove<T>(path:string):Promise<T>{

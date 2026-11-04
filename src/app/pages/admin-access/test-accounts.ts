@@ -2,7 +2,7 @@ import { Component, computed, effect, inject, input, OnInit, output, signal, unt
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
-import { MembershipApi } from '../../content/membership-api';
+import { MembershipApi, MembershipRequestError } from '../../content/membership-api';
 import { ContentService } from '../../content/content.service';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import { DevSession } from '../../core/dev-session-notice/dev-session';
@@ -89,6 +89,11 @@ export class TestAccounts implements OnInit {
       !!this.accounts.account()?.permissions?.manageAccess ||
       !!this.accounts.account()?.permissions?.triageFeedback,
   );
+  /** DLV-969 (owner, 2026-11-04): Restore on the Test roster card is the owner's alone. */
+  readonly isOwner = computed(() => {
+    const account = this.accounts.account();
+    return (account?.permissions?.feedbackRole ?? (account?.authorPreview ? 'owner' : 'user')) === 'owner';
+  });
   readonly canCreate = computed(() => ['owner', 'co-author', 'admin'].includes(this.accounts.account()?.permissions?.feedbackRole ?? (this.accounts.account()?.authorPreview ? 'owner' : 'user')));
   readonly allowance = signal<TestAccountAllowance|null>(null);
   private readonly devSession = inject(DevSession);
@@ -96,6 +101,13 @@ export class TestAccounts implements OnInit {
   readonly dev = computed(() => this.devSession.status() !== null || this.devSession.gated());
   /** The scenario a new test account starts from (DLV-969 S35); the first is a free learner without a plan. */
   createScenario = 'learner01';
+  /**
+   * DLV-969 (owner, 2026-11-04): Create test account makes learners only, for every role, the owner included. Staff test
+   * accounts come from the fixed roster, so scenarios with a staff role are never offered (the Domain refuses them too).
+   */
+  readonly learnerScenarios = computed(() =>
+    (this.allowance()?.scenarios ?? []).filter((scenario) => !scenario.roles.some((role) => STAFF_ROLES.includes(role))),
+  );
   /** The owner's DEV roster progress while it is being created. */
   readonly rosterBusy = signal(false);
   readonly roster = computed(() => {
@@ -105,6 +117,11 @@ export class TestAccounts implements OnInit {
   /** DLV-969 (owner, 2026-11-04): Reset all, typed once; done counts the resets sent so far. */
   readonly rosterReset = signal<{ open: boolean; done: number; total: number } | null>(null);
   rosterResetConfirmation = '';
+  /** DLV-969 (owner, 2026-11-04): Restore brings deleted roster accounts back with their scenarios, typed once. */
+  readonly rosterRestore = signal<{ total: number } | null>(null);
+  rosterRestoreConfirmation = '';
+  /** Deleted roster accounts the owner can bring back; 0 for anyone else. */
+  readonly restorable = computed(() => (this.isOwner() ? this.roster()?.deleted ?? 0 : 0));
   /** The DEV roster's accounts in the list: every test account except single created ones. */
   readonly rosterRows = computed(() => this.rows().filter((row) => !!row.creatorId && row.initialization !== 'created'));
   readonly creating = signal(false);
@@ -228,6 +245,8 @@ export class TestAccounts implements OnInit {
     this.deletingReal.set(null);
     this.removing.set(null);
     if (!this.rosterReset()?.done) this.rosterReset.set(null);
+    this.rosterRestore.set(null);
+    this.rosterRestoreConfirmation = '';
     this.confirmation = '';
     this.deleteConfirmation = '';
     this.realConfirmation = '';
@@ -275,7 +294,9 @@ export class TestAccounts implements OnInit {
 
   /** DEV needs no password (the account never signs in); Local still sets one for the Local Identity service. */
   mayCreate(): boolean {
-    return this.canCreate() && !this.busy() && !!this.createScenario && (this.dev() || this.createPassword.length >= 15);
+    const scenarios = this.allowance()?.scenarios;
+    const learner = !scenarios?.length || this.learnerScenarios().some((scenario) => scenario.id === this.createScenario);
+    return this.canCreate() && !this.busy() && !!this.createScenario && learner && (this.dev() || this.createPassword.length >= 15);
   }
 
   async create() {
@@ -289,8 +310,14 @@ export class TestAccounts implements OnInit {
       this.notice.set(dev
         ? `${created.username} created. To use it, choose Switch to a test account in your account menu.`
         : `${created.username} created. Share its password through your local test setup.`);
-    } catch {
-      this.notice.set(dev ? 'Creation was not confirmed. Retry; the same request key is reused.' : 'Creation was not confirmed. Retry with the same password and request key.');
+    } catch (failure) {
+      // A refusal (403 TEST_ACCOUNT_LEARNER_ONLY: "Only learner test accounts can be created…") is said in the server's words.
+      if (failure instanceof MembershipRequestError && failure.status === 403) {
+        this.createKey.set(null);
+        this.notice.set(failure.message);
+      } else {
+        this.notice.set(dev ? 'Creation was not confirmed. Retry; the same request key is reused.' : 'Creation was not confirmed. Retry with the same password and request key.');
+      }
     } finally {this.busy.set(false);}
   }
 
@@ -354,6 +381,44 @@ export class TestAccounts implements OnInit {
         ? `${rows.length - refused.length} of ${rows.length} reset. Not reset: ${refused.join(', ')}. Reset all again to retry.`
         : `All ${rows.length} roster accounts are back to their scenarios.`,
     );
+  }
+
+  openRosterRestore() {
+    if (!this.restorable()) return;
+    this.closeConfirmations();
+    this.rosterRestore.set({ total: this.restorable() });
+  }
+
+  /**
+   * DLV-969 (owner, 2026-11-04): one request brings every deleted roster account back with its scenario. The Domain
+   * checks the typed word and the owner again; an older Domain without the endpoint answers 404.
+   */
+  async restoreRoster() {
+    const pending = this.rosterRestore();
+    if (!pending || !this.dev() || !this.restorable() || this.busy() || this.rosterRestoreConfirmation !== 'RESTORE') return;
+    this.busy.set(true);
+    this.notice.set('');
+    try {
+      // The route the Gateway already forwards (its allowlist is in a pinned file), as roster creation does with roster: true.
+      const result = await this.api.request<{ restored?: number } | null>('/admin/test-accounts', { restoreRoster: true, confirm: 'RESTORE' });
+      const restored = typeof result?.restored === 'number' ? result.restored : pending.total;
+      this.rosterRestore.set(null);
+      this.rosterRestoreConfirmation = '';
+      this.busy.set(false);
+      await this.load();
+      this.history.set({});
+      this.notice.set(`Restored ${restored} roster account${restored === 1 ? '' : 's'}.`);
+    } catch (failure) {
+      if (failure instanceof MembershipRequestError && failure.status === 404) {
+        this.rosterRestore.set(null);
+        this.rosterRestoreConfirmation = '';
+        this.notice.set('Restore needs the newer Domain release.');
+      } else {
+        this.notice.set(reason(failure) + 'Restore was not confirmed. Refresh and retry.');
+      }
+    } finally {
+      this.busy.set(false);
+    }
   }
 
   async deleteAccount() {
@@ -493,6 +558,9 @@ export class TestAccounts implements OnInit {
     }
   }
 }
+
+/** Roles that make a scenario a staff one; Create test account never offers those (DLV-969, owner 2026-11-04). */
+const STAFF_ROLES: readonly string[] = ['owner', 'co-author', 'admin', 'reviewer', 'tester'];
 
 /** DLV-969: the server's own reason ("Confirm the exact test username…") leads the notice, so a refusal says why. */
 function reason(failure: unknown): string {

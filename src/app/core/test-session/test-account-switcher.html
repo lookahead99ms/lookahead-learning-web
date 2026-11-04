@@ -20,22 +20,24 @@
         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8" /><path d="M16 16l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /></svg>
         <input type="search" [value]="query()" (input)="query.set($any($event.target).value)" placeholder="Find by name, plan or scenario" autocomplete="off" />
       </label>
-      <div class="switcher-tabs" role="tablist" aria-label="Kind of account">
-        @for (item of tabs; track item.id; let index = $index) {
-          <button
-            type="button"
-            role="tab"
-            [id]="'switcher-tab-' + item.id"
-            aria-controls="switcher-list"
-            [attr.aria-selected]="tab() === item.id"
-            [attr.tabindex]="tab() === item.id ? 0 : -1"
-            (click)="chooseTab(item.id)"
-            (keydown)="tabKey($event, index)"
-          >
-            {{ item.title }} <span class="tab-count">{{ counts()[item.id] }}</span>
-          </button>
-        }
-      </div>
+      @if (tabs().length) {
+        <div class="switcher-tabs" role="tablist" aria-label="Kind of account">
+          @for (item of tabs(); track item.id; let index = $index) {
+            <button
+              type="button"
+              role="tab"
+              [id]="'switcher-tab-' + item.id"
+              aria-controls="switcher-list"
+              [attr.aria-selected]="tab() === item.id"
+              [attr.tabindex]="tab() === item.id ? 0 : -1"
+              (click)="chooseTab(item.id)"
+              (keydown)="tabKey($event, index)"
+            >
+              {{ item.title }} <span class="tab-count">{{ counts()[item.id] }}</span>
+            </button>
+          }
+        </div>
+      }
       @if (tab() === 'learners' && plans().length > 1) {
         <div class="switcher-plans" role="group" aria-label="Plan">
           <button type="button" [attr.aria-pressed]="!plan()" (click)="plan.set(null)">All plans</button>
@@ -46,7 +48,7 @@
       }
     </div>
 
-    <div id="switcher-list" class="switcher-list" role="tabpanel" [attr.aria-labelledby]="'switcher-tab-' + tab()">
+    <div id="switcher-list" class="switcher-list" [attr.role]="tabs().length ? 'tabpanel' : null" [attr.aria-labelledby]="tabs().length ? 'switcher-tab-' + tab() : null">
       @if (sessions.accounts() === null) {
         <p class="switcher-empty">Loading test accounts…</p>
       } @else {

@@ -44,7 +44,7 @@
         <h3>Test roster</h3>
         <p>
           The 35 accounts Local has: 27 learners, each in a different scenario, 2 co-authors and 6 admins, as
-          <code>learner01&#64;lookahead.dev</code> and so on. {{ progress.ready }} of {{ progress.total }} ready@if (progress.deleted) {, {{ progress.deleted }} deleted (not created again)}.
+          <code>learner01&#64;lookahead.dev</code> and so on. {{ progress.ready }} of {{ progress.total }} ready@if (restorable()) {, {{ progress.deleted }} deleted — Restore brings them back} @else if (progress.deleted) {, {{ progress.deleted }} deleted (not created again)}.
         </p>
         @if (progress.withoutPlan) {
           <!-- DLV-969 S37: learners created before DEV had study plans; Reset all gives each its plan. -->
@@ -60,6 +60,10 @@
           <button type="button" class="action-button" [disabled]="busy() || rosterBusy()" [attr.aria-busy]="rosterBusy()" (click)="createRoster()">
             {{ rosterBusy() ? 'Creating… ' + progress.ready + ' of ' + progress.total : progress.ready ? 'Create the other ' + progress.remaining : 'Create test roster' }}
           </button>
+        }
+        @if (restorable()) {
+          <!-- DLV-969 (owner, 2026-11-04): the owner brings deleted roster accounts back, after one typed confirmation. -->
+          <button type="button" class="action-link" [disabled]="busy() || rosterBusy() || !!rosterRestore()" (click)="openRosterRestore()">Restore {{ restorable() }}</button>
         }
         @if (rosterRows().length && canReset()) {
           <button type="button" class="action-link" [disabled]="busy() || rosterBusy() || !!rosterReset()" (click)="openRosterReset()">Reset all</button>
@@ -82,22 +86,37 @@
         </div>
       </div>
     }
+    @if (rosterRestore(); as restoring) {
+      <div class="reset-panel roster-restore">
+        <h3>Restore {{ restoring.total === 1 ? '1 deleted roster account' : restoring.total + ' deleted roster accounts' }}</h3>
+        <p>Each comes back with its scenario: learners get their membership, purchases and study plan; staff get their role.</p>
+        <label>Type RESTORE to confirm <input [(ngModel)]="rosterRestoreConfirmation" autocomplete="off" [disabled]="busy()" /></label>
+        <div class="actions">
+          <button type="button" class="action-button" [disabled]="busy() || rosterRestoreConfirmation !== 'RESTORE'" [attr.aria-busy]="busy()" (click)="restoreRoster()">
+            {{ busy() ? 'Restoring…' : 'Restore ' + restoring.total }}
+          </button>
+          <button type="button" class="action-link" [disabled]="busy()" (click)="rosterRestore.set(null)">Cancel</button>
+        </div>
+      </div>
+    }
   }
   @if (testView && creating()) {
     <div class="reset-panel">
       <h3>Create test account</h3>
       @if (dev()) {
-        <p>A unique name on lookahead.dev is generated. Choose the scenario it starts from; you can only choose roles up to your own.</p>
+        <p>A unique name on lookahead.dev is generated. Choose the learner scenario it starts from.</p>
       } @else {
-        <p>A unique Local sign-in name will be generated. Save the password for this test learner. Choose the scenario it starts from.</p>
+        <p>A unique Local sign-in name will be generated. Save the password for this test learner. Choose the learner scenario it starts from.</p>
       }
       <label>Scenario
         <select [(ngModel)]="createScenario">
-          @for (scenario of allowance()?.scenarios ?? []; track scenario.id) {
+          @for (scenario of learnerScenarios(); track scenario.id) {
             <option [value]="scenario.id">{{ scenario.id }} · {{ scenario.label }}</option>
           }
         </select>
       </label>
+      <!-- DLV-969 (owner, 2026-11-04): every role, the owner included, creates learners only. -->
+      <p class="learner-only">New test accounts are learners. Staff test accounts come from the roster.</p>
       @if (!dev()) {
         <label>Initial password <input type="password" [(ngModel)]="createPassword" autocomplete="new-password" minlength="15" /></label>
       }

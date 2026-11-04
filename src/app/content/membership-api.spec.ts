@@ -1,6 +1,6 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { MembershipApi } from './membership-api';
+import { MembershipApi, MembershipRequestError } from './membership-api';
 import { PLANS } from './membership-plans';
 import { ACCOUNT_FETCH, StudyPlanAccount } from '../pages/study-plan/study-plan-account';
 
@@ -45,6 +45,16 @@ describe('Membership transport',()=>{
     const api=TestBed.inject(MembershipApi);failCsrf=true;
     await expect(api.buy('learn','blocked-request')).rejects.toThrow('Session verification failed');
     expect(calls.some(c=>c.path.endsWith('/purchases'))).toBe(false);
+  });
+  it('throws refusals with their HTTP status, with or without a JSON body (DLV-969)',async()=>{
+    TestBed.overrideProvider(ACCOUNT_FETCH,{useValue:async(path:string)=>path.endsWith('/auth/csrf')
+      ?new Response(JSON.stringify({data:{headerName:'X-CSRF-TOKEN',token:'test-csrf'}}))
+      :path.endsWith('/missing')?new Response('Not Found',{status:404}):new Response(JSON.stringify({message:'Type RESTORE to confirm.'}),{status:400})});
+    const api=TestBed.inject(MembershipApi);
+    const missing=await api.request('/missing',{}).catch((failure)=>failure);
+    expect(missing).toBeInstanceOf(MembershipRequestError);
+    expect(missing).toMatchObject({status:404,message:'Membership service unavailable. Try again.'});
+    await expect(api.request('/refused',{})).rejects.toMatchObject({status:400,message:'Type RESTORE to confirm.'});
   });
   it('keeps reference prices but disables buying when the catalog is unavailable',async()=>{
     TestBed.overrideProvider(ACCOUNT_FETCH,{useValue:async()=>{throw new Error('offline');}});
