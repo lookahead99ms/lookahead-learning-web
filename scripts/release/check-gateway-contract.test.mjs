@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-import { checkGatewayContract, classify, readWebPaths, resolvePath } from './check-gateway-contract.mjs';
+import { checkGatewayContract, classify, readWebPaths, resolvePath, ROUTE_RULE, routeRuleIssues } from './check-gateway-contract.mjs';
 
 function contract(webPaths) {
   return JSON.stringify({ schema: 'gateway-domain-contract/v1', calls: [{ id: 'auth-me', method: 'GET', path: '/api/v1/auth/me' }], webPaths });
@@ -75,3 +75,19 @@ test('checks every contract path against the built output', () => fixture(async 
   await writeFile(blocked, contract(['/bff/login']));
   await assert.rejects(checkGatewayContract(blocked, browser), /answered 404/);
 }));
+
+test('DLV-969: both container configs serve route snapshots without a redirect', async () => {
+  // A bare $uri/ makes nginx answer 301 /learn -> /learn/; the DEV Gateway refuses redirects, so /learn opened by URL was a 502.
+  for (const name of ['nginx.conf', 'nginx-lower-cost-dev.conf']) {
+    const text = await readFile(new URL(`../../deployment/container/${name}`, import.meta.url), 'utf8');
+    assert.deepEqual(routeRuleIssues(text), [], name);
+  }
+  assert.deepEqual(routeRuleIssues(`location / { ${ROUTE_RULE} }`), []);
+  assert.deepEqual(routeRuleIssues('location / { try_files $uri $uri/ /index.html; }'), [
+    'missing page fallback: ' + ROUTE_RULE,
+    'try_files uses $uri/, which redirects route snapshot folders',
+  ]);
+  assert.deepEqual(routeRuleIssues(`location / { ${ROUTE_RULE} } location /x { try_files $uri/; }`), [
+    'try_files uses $uri/, which redirects route snapshot folders',
+  ]);
+});

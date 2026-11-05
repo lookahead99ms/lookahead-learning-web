@@ -9,9 +9,22 @@ import { pathToFileURL } from 'node:url';
  * (deployment/container/nginx.conf and nginx-lower-cost-dev.conf):
  * - Gateway-owned prefixes, dotfiles and key material answer 404, so a contract path there is an error;
  * - a path with an extension, or under /assets/ or /formatters/, must be an existing file (`try_files $uri =404`);
- * - any other GET resolves `$uri` (a file), `$uri/` (a route snapshot `<route>/index.html`, generate-route-snapshots.mjs)
- *   or the application shell /index.html (`try_files $uri $uri/ /index.html`).
+ * - any other GET resolves `$uri` (a file), `$uri/index.html` (a route snapshot, generate-route-snapshots.mjs)
+ *   or the application shell /index.html (`try_files $uri $uri/index.html /index.html`). Never `$uri/`: nginx answers
+ *   a folder without a trailing slash with a 301, which the DEV Gateway refuses to relay (502).
+ * `routeRuleIssues` checks both container configs keep that rule.
  */
+/** The one fallback rule for app pages; `$uri/` would redirect snapshot folders (DLV-969). */
+export const ROUTE_RULE = 'try_files $uri $uri/index.html /index.html;';
+
+/** Problems with a container nginx config's page fallback: it must use ROUTE_RULE and never a bare `$uri/`. */
+export function routeRuleIssues(text) {
+  const issues = [];
+  if (!text.includes(ROUTE_RULE)) issues.push('missing page fallback: ' + ROUTE_RULE);
+  if (/try_files[^;]*\$uri\/(?:\s|;)/.test(text)) issues.push('try_files uses $uri/, which redirects route snapshot folders');
+  return issues;
+}
+
 export const GATEWAY_OWNED = /^\/(?:api|bff|content|auth|oauth2|login|logout|local-previews)(?:\/|$)/;
 export const HIDDEN = /\/\./;
 export const KEY_MATERIAL = /\.(?:map|pem|key|p12|pfx|jks|keystore)$/i;
