@@ -10,7 +10,8 @@
  *   titles and descriptions, and the titles of lessons in public units. No lesson body, answer,
  *   summary or code is read into a page file.
  * - The summary sits inside <app-root>; Angular replaces it when the app starts, so visitors see
- *   the normal page. nginx already serves `<route>/index.html` (try_files $uri $uri/ /index.html).
+ *   the normal page. nginx serves `<route>/index.html` directly (try_files $uri $uri/index.html /index.html).
+ *   SNAPSHOT_STYLE keeps the summary hidden while JavaScript starts the app, so visitors see no flash.
  * - Canonical, og:url and og:image need absolute URLs, so they are written only when
  *   LOOKAHEAD_SITE_ORIGIN is set (the production domain is undecided, DLV-913).
  */
@@ -264,6 +265,10 @@ export function renderSnapshot(shell, page, { origin, siteName }) {
     `<meta name="twitter:title" content="${escapeHtml(title)}" />`,
     `<meta name="twitter:description" content="${escapeHtml(description)}" />`,
     ...(image ? [`<meta name="twitter:image" content="${escapeHtml(image)}" />`] : []),
+    // DLV-969: the summary is for crawlers and link previews. A browser running JavaScript keeps it hidden, so a page
+    // opened by URL boots like every other page instead of flashing plain text until Angular replaces <app-root>;
+    // without JavaScript it shows. Inline because the full stylesheet loads after first paint (media="print").
+    SNAPSHOT_STYLE,
   ];
   let head = shell
     .replace(/<title>[\s\S]*?<\/title>/, '')
@@ -281,6 +286,10 @@ export function renderSnapshot(shell, page, { origin, siteName }) {
   if (!/<app-root([^>]*)><\/app-root>/.test(head)) throw new Error('The built shell has no empty <app-root>');
   return head.replace(/<app-root([^>]*)><\/app-root>/, `<app-root$1>${summary}</app-root>`);
 }
+
+/** Hides the crawler summary while the app starts; shows it only when JavaScript is off (DLV-969). */
+export const SNAPSHOT_STYLE =
+  '<style>.route-snapshot{display:none}</style><noscript><style>.route-snapshot{display:block}</style></noscript>';
 
 /** Writes `<route>/index.html` for every public page into the build output. */
 export async function writeRouteSnapshots({
