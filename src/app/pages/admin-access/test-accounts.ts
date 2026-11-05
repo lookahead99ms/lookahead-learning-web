@@ -10,6 +10,7 @@ import { AccessRecord, AccessRecordView, accessRecordView } from '../account/acc
 import { approvedLine, canResetOf, resetReserved, upgradeLine, upgradeMarkerOf } from '../../content/upgrade-markers';
 import { PendingPurchase, pendingPurchaseOf } from '../../content/purchase-requests';
 import { viewerRole } from './purchase-requests-panel';
+import { githubDisplay } from '../../core/github-account/github-account';
 import {
   DirectoryAssignment,
   DirectoryAccount,
@@ -609,6 +610,22 @@ export class TestAccounts implements OnInit {
       this.notice.set(`${row.name} can sign in again.`);
     } catch { this.notice.set('Enable was not confirmed. Refresh and retry.'); }
     finally { this.busy.set(false); }
+  }
+
+  /** DLV-969 (owner, 2026-11-05): the row whose GitHub address was just copied, for a short "Copied" on its button. */
+  readonly copiedGithub = signal<string | null>(null);
+  protected readonly githubLabel = githubDisplay;
+
+  /** Copies the person's GitHub address for the repository invitation. The clipboard may be refused; then the link stays to select. */
+  async copyGithub(row: DirectoryRow): Promise<void> {
+    if (!row.github) return;
+    try {
+      await navigator.clipboard.writeText(row.github);
+      this.copiedGithub.set(row.key);
+      setTimeout(() => { if (this.copiedGithub() === row.key) this.copiedGithub.set(null); }, 2000);
+    } catch {
+      this.copiedGithub.set(null);
+    }
   }
 
   /** True when this test account has a request the viewer may decide; drives the row's badge. */

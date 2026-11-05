@@ -143,6 +143,23 @@ describe('People directory helpers (DLV-961)', () => {
     expect(coauthor.every(item => item.signInLabels === undefined && item.sameEmail === undefined)).toBe(true);
   });
 
+  it('carries the GitHub address from the owner\'s directory only, never for test accounts (DLV-969, owner 2026-11-05)', () => {
+    const account = (id: string, extra: object) => ({ accountId: id, username: id, displayName: id, email: null, roles: [],
+      testAccount: false, fullCurriculum: false, access: { label: 'Free', labels: ['Free'], grantedCourseIds: [] }, ...extra });
+    const rows = directoryRows({ accountId: 'me', username: 'me', role: 'owner' }, [], [], titles, [
+      account('given', { github: 'https://github.com/given-person' }),
+      account('none', { github: null }),
+      account('odd', { github: 'https://example.com/x' }),
+      account('older', {}),
+      account('fixture', { testAccount: true, github: 'https://github.com/fixture' }),
+    ]);
+    const github = (id: string) => rows.find(item => item.accountId === id)!.github;
+    expect([github('given'), github('none'), github('odd'), github('older'), github('fixture')])
+      .toEqual(['https://github.com/given-person', null, null, undefined, undefined]);
+    const coauthor = directoryRows({ accountId: 'co', username: 'co', role: 'co-author' }, [], [test('learner01')], titles);
+    expect(coauthor.every(item => item.github === undefined)).toBe(true);
+  });
+
   it('labels methods once each and words the same-email flag by the address', () => {
     expect(signInLabels([{ provider: 'cognito', email: 'a@x.test' }, { provider: 'cognito', email: 'b@x.test' }, { provider: 'google' }])).toEqual(['Google', 'Password']);
     expect(signInLabels(undefined)).toEqual([]);

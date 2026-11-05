@@ -254,6 +254,20 @@
               @if (row.sameEmail) {
                 <span class="same-email-flag"><span aria-hidden="true">⚠</span> {{ row.sameEmail }}</span>
               }
+              <!-- DLV-969 (owner, 2026-11-05): the GitHub account for repository access; the owner's directory only. -->
+              @if (row.github !== undefined) {
+                <span class="github-line">
+                  <span class="github-label">GitHub</span>
+                  @if (row.github) {
+                    <a [href]="row.github" target="_blank" rel="noopener noreferrer">{{ githubLabel(row.github) }}</a>
+                    <button class="copy-github" type="button" (click)="copyGithub(row)" [attr.aria-label]="'Copy the GitHub address of ' + row.name">
+                      {{ copiedGithub() === row.key ? 'Copied' : 'Copy' }}
+                    </button>
+                  } @else {
+                    <span class="github-missing">Not given</span>
+                  }
+                </span>
+              }
               @if (row.disabled) {
                 <span class="state-badge disabled"><span aria-hidden="true">⚠</span> Disabled</span>
               }

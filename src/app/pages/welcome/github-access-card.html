@@ -1,0 +1,38 @@
+<section class="github-card" aria-labelledby="github-card-title">
+  <h2 id="github-card-title">Your GitHub account</h2>
+  @if (done() === 'saved') {
+    <p role="status">Saved. The owner can now add you to the repositories and workflows you work on.</p>
+  } @else if (done() === 'later') {
+    <p role="status">No problem. You can add it any time in <a routerLink="/account">Account settings</a>.</p>
+  } @else {
+    <p class="github-note">
+      Look Ahead's code, content and release workflows live in private GitHub repositories. If your role needs them, the
+      owner adds your GitHub account to the repositories and workflows you work on. No GitHub account? Choose Not now.
+      You can add it any time in Account settings, and the owner may ask for it later.
+    </p>
+    <form class="github-form" (submit)="$event.preventDefault(); save()">
+      <label for="github-account">GitHub username or profile address</label>
+      <input
+        id="github-account"
+        name="github"
+        type="text"
+        inputmode="url"
+        autocomplete="off"
+        autocapitalize="off"
+        spellcheck="false"
+        placeholder="octocat or https://github.com/octocat"
+        [(ngModel)]="value"
+        [disabled]="busy()"
+        [attr.aria-invalid]="error() ? 'true' : null"
+        [attr.aria-describedby]="error() ? 'github-account-error' : null"
+      />
+      @if (error()) {
+        <p id="github-account-error" class="github-error" role="alert">{{ error() }}</p>
+      }
+      <div class="github-actions">
+        <button class="action-button" type="submit" [disabled]="busy()">{{ busy() ? 'Saving…' : 'Save' }}</button>
+        <button class="action-link" type="button" (click)="later()" [disabled]="busy()">Not now</button>
+      </div>
+    </form>
+  }
+</section>

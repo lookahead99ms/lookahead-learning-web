@@ -1,3 +1,4 @@
+import { githubDisplay } from '../../core/github-account/github-account';
 import { accountRoleLabel } from '../account/account-membership';
 import { AccountSignInMethod, readSignInMethods } from '../account/account-settings-client';
 
@@ -58,6 +59,8 @@ export interface DirectoryAccount {
   signIn?: 'active' | 'disabled'; canDisable?: boolean; canEnable?: boolean; canRemove?: boolean;
   /** DLV-969 account linking, owner only: every way into the account, and how many other accounts share its verified email. */
   signInMethods?: AccountSignInMethod[]; sameEmailAccounts?: number;
+  /** DLV-969 (owner, 2026-11-05), owner only: the person's GitHub profile address, null when not given; absent for test accounts. */
+  github?: string | null;
 }
 
 export interface DirectoryRow {
@@ -85,6 +88,11 @@ export interface DirectoryRow {
   signInLabels?: string[];
   /** DLV-969, owner's directory only: "Same Gmail as 1 other account" when other accounts share the verified email. */
   sameEmail?: string;
+  /**
+   * DLV-969 (owner, 2026-11-05), owner's directory only: the GitHub profile address to add the person to repositories,
+   * null for "Not given". Undefined (not shown) for test accounts, pending rows and an older Domain.
+   */
+  github?: string | null;
 }
 
 export const ROLE_FILTERS = ['Author (owner)', 'Co-author', 'Admin', 'Reviewer', 'Tester', 'Learner'] as const;
@@ -312,6 +320,7 @@ export function directoryRows(
       signInLabels: signInLabels(account.signInMethods),
       sameEmail: sameEmailCount(account.sameEmailAccounts)
         ? sameEmailText(sameEmailCount(account.sameEmailAccounts), account.email) : undefined,
+      github: githubOf(account),
     };
     if (existing) Object.assign(existing, current);
     else rows.push({ ...current, key: account.accountId, accountId: account.accountId,
@@ -319,6 +328,12 @@ export function directoryRows(
   }
 
   return rows.sort((left, right) => roleRank(left) - roleRank(right) || byName(left, right));
+}
+
+/** The owner's GitHub column: a valid GitHub profile address, null for none, undefined when not reported or a test account. */
+function githubOf(account: DirectoryAccount): string | null | undefined {
+  if (account.testAccount || !('github' in account)) return undefined;
+  return githubDisplay(account.github) ? (account.github as string).trim() : null;
 }
 
 /** Search by name, role or access text; role filter by human role name. */
