@@ -70,18 +70,59 @@
 
     <div class="access-panel" id="access-panel" role="tabpanel" [attr.aria-labelledby]="'access-tab-' + tab()">
     @if (tab() === 'waiting') {
-      <!-- DLV-969 (2026-11-02): people who signed in to DEV but wait for the owner's admission. -->
+      <!-- DLV-969 (2026-11-02): people who signed in to DEV but wait for the owner's admission. Owner, DEV test
+           2026-11-04: with the test accounts' purchase requests as a second sub-tab, for the owner and admins. -->
+      @let view = waitingView();
       <section class="access-section" id="waiting-for-access" aria-labelledby="waiting-for-access-heading">
         <div class="section-heading with-action">
           <span class="section-icon" aria-hidden="true">⏳</span>
           <div>
             <h2 id="waiting-for-access-heading">Waiting for access</h2>
-            <p class="section-note">
-              People who signed in but are not admitted yet. A request that nobody admits is removed after {{ expiryHours() }} hours.
-            </p>
+            @if (view === 'access') {
+              <p class="section-note">
+                People who signed in but are not admitted yet. A request that nobody admits is removed after {{ expiryHours() }} hours.
+              </p>
+            } @else {
+              <p class="section-note">
+                In DEV only test accounts can buy. Each Subscribe, Upgrade or Change waits here; Approve changes the plan exactly
+                like a purchase, Decline leaves it as it is. Nothing is charged.
+              </p>
+            }
           </div>
-          <button class="secondary-action" type="button" (click)="loadWaiting()" [disabled]="busy()">Refresh</button>
+          @if (view === 'access') {
+            <button class="secondary-action" type="button" (click)="loadWaiting()" [disabled]="busy()">Refresh</button>
+          } @else {
+            <button class="secondary-action" type="button" (click)="loadPurchases()" [disabled]="purchasesBusy()">Refresh</button>
+          }
         </div>
+        @if (waitingViews().length > 1 || view === 'purchases') {
+          <div class="waiting-tabs" role="tablist" aria-label="Waiting for access" (keydown)="onWaitingKey($event)">
+            @for (item of waitingViews(); track item.id) {
+              <button
+                type="button"
+                role="tab"
+                [id]="'waiting-tab-' + item.id"
+                aria-controls="waiting-panel"
+                [attr.aria-selected]="view === item.id"
+                [attr.tabindex]="view === item.id ? 0 : -1"
+                (click)="selectWaitingView(item.id)"
+              >
+                {{ item.label }} <span class="tab-count">{{ item.count }}</span>
+              </button>
+            }
+          </div>
+        }
+        <div id="waiting-panel" [attr.role]="waitingViews().length > 1 || view === 'purchases' ? 'tabpanel' : null" [attr.aria-labelledby]="waitingViews().length > 1 || view === 'purchases' ? 'waiting-tab-' + view : null">
+        @if (view === 'purchases') {
+          <app-purchase-requests
+            [rows]="purchaseRows()"
+            [loaded]="purchasesLoaded()"
+            [loadError]="purchasesError()"
+            [review]="requestReview()"
+            (reviewOpened)="requestReview.set(null)"
+            (reload)="loadPurchases()"
+          />
+        } @else {
         @if (waiting().length) {
           <table class="waiting-table">
             <caption class="visually-hidden">People waiting for access, when they asked and when the request is removed</caption>
@@ -129,14 +170,14 @@
         } @else {
           <p class="empty">Nobody is waiting for access.</p>
         }
+        }
+        </div>
       </section>
     } @else if (tab() === 'test' || tab() === 'people') {
       <app-test-accounts
         [view]="tab() === 'test' ? 'test' : 'people'"
         [assignments]="assignments()"
         [focusAccount]="tab() === 'people' ? focusAccount() : null"
-        [review]="tab() === 'test' ? requestReview() : null"
-        (reviewOpened)="requestReview.set(null)"
         (giveAccess)="giveAccessTo($event)"
       />
     } @else if (tab() === 'saved') {

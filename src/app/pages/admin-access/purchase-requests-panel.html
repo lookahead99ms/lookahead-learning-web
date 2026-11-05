@@ -1,0 +1,99 @@
+@if (canDecide()) {
+  @let requests = purchaseRequests();
+  <div class="purchase-requests">
+    <p class="request-count" aria-live="polite">
+      @if (!loaded()) {
+        Loading purchase requests…
+      } @else if (requests.length) {
+        {{ requests.length === 1 ? '1 purchase request waiting' : requests.length + ' purchase requests waiting' }}
+      } @else {
+        No purchase requests waiting
+      }
+    </p>
+    @if (loadError()) {
+      <p class="request-error" role="alert">{{ loadError() }}</p>
+    }
+    <p class="notice" role="status">{{ notice() }}</p>
+
+    @if (result(); as done) {
+      <!-- DLV-969 (owner wording, 2026-11-04): what the decision did and how to verify it. Two related actions centred,
+           primary first; Close as a text line below (button placement rule); phones stack. -->
+      <div class="decision-result" [class.declined]="done.decision === 'decline'" role="status" tabindex="-1">
+        @if (done.decision === 'approve') {
+          <p>
+            <strong>Mock payment successful — {{ done.name }} now has {{ done.plan }}.</strong>
+            To verify it, switch to {{ done.name }} and open <strong class="inline-strong">Manage account → Membership</strong> from the account menu.
+          </p>
+        } @else {
+          <p><strong>Declined — {{ done.name }} keeps its current plan.</strong></p>
+        }
+        @if (dev()) {
+          <div class="actions">
+            <button type="button" class="action-button" [disabled]="switching()" [attr.aria-busy]="switching()" (click)="switchToResult()">Switch to {{ done.name }}</button>
+            <button type="button" class="action-link" [disabled]="switching()" (click)="switchToAnother()">Switch to another test account</button>
+          </div>
+        }
+        <p class="result-close">
+          <button type="button" class="text-button" (click)="result.set(null)">Close</button>
+        </p>
+        @if (switchError()) {
+          <p class="result-error" role="alert">{{ switchError() }}</p>
+        }
+      </div>
+    }
+
+    @if (requests.length) {
+      <ul class="request-list">
+        @for (item of requests; track item.request.purchaseId) {
+          <!-- data-plan: DEV blurs prices until the row is hovered or focused, as on Pricing. -->
+          <!-- Review request (DLV-969): the card it opened on is highlighted and focusable, so focus starts there. -->
+          @let reviewed = highlighted() === item.request.purchaseId;
+          @let failed = failureOf(item);
+          <li
+            class="request-item"
+            [class.highlighted]="reviewed"
+            [class.failed]="!!failed"
+            [attr.tabindex]="reviewed ? -1 : null"
+            [attr.aria-current]="reviewed ? 'true' : null"
+            [attr.aria-label]="reviewed ? 'Request to review: ' + item.row.username + ', ' + item.words : null"
+            [attr.data-purchase]="item.request.purchaseId"
+            [attr.data-plan]="item.request.toPlan.code"
+          >
+            <dl class="request-facts">
+              <div><dt>Account</dt><dd class="request-account">{{ item.row.username }}</dd></div>
+              <div><dt>Request</dt><dd class="request-words">{{ item.words }}</dd></div>
+              @if (item.term) {
+                <div><dt>Term</dt><dd>{{ item.term }}</dd></div>
+              }
+              <div>
+                <dt>Price</dt>
+                <dd><span class="request-price price-figure">{{ item.price }}</span>@if (item.difference) {<span class="request-difference price-figure"> ({{ item.difference }})</span>}</dd>
+              </div>
+              <div><dt>Submitted by</dt><dd>{{ item.by }}</dd></div>
+              <div><dt>When</dt><dd>{{ item.requested }}</dd></div>
+            </dl>
+            <div class="request-actions">
+              <button type="button" class="action-button" [disabled]="busy()" [attr.aria-busy]="busy() && !declining()" [attr.aria-label]="'Approve (mock payment): ' + item.row.username + ', ' + item.words" (click)="decide(item, 'approve')">Approve (mock payment)</button>
+              <button type="button" class="action-link" [disabled]="busy() || declining()?.request?.purchaseId === item.request.purchaseId" [attr.aria-label]="'Decline: ' + item.row.username + ', ' + item.words" (click)="startDecline(item)">Decline</button>
+            </div>
+            @if (declining()?.request?.purchaseId === item.request.purchaseId) {
+              <div class="decline-panel">
+                <h4>Decline {{ item.row.username }}’s request ({{ item.words }})?</h4>
+                <p>{{ item.row.username }} keeps its plan. It can send a new request afterwards.</p>
+                @if (failed) {
+                  <p class="request-error" role="alert">{{ failed }}</p>
+                }
+                <div class="actions">
+                  <button type="button" class="action-button" [disabled]="busy()" [attr.aria-busy]="busy()" (click)="decide(item, 'decline')">Confirm decline</button>
+                  <button type="button" class="action-link" [disabled]="busy()" (click)="cancelDecline()">Cancel</button>
+                </div>
+              </div>
+            } @else if (failed) {
+              <p class="request-error" role="alert">{{ failed }}</p>
+            }
+          </li>
+        }
+      </ul>
+    }
+  </div>
+}

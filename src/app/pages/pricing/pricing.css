@@ -431,105 +431,585 @@ h2 {
   line-height: 1.6;
 }
 
-/* Checkout notice */
-.checkout-notice {
-  width: min(480px, calc(100vw - 32px));
+/* DLV-969 (owner, 2026-11-04): checkout. One dialog, Plan → Review → Payment, the same in every environment; only
+   the payment step differs. A fixed width and a minimum height keep the steps from resizing the dialog. */
+.checkout {
+  box-sizing: border-box;
+  width: min(560px, calc(100vw - 32px));
+  max-width: none;
   max-height: calc(100dvh - 32px);
-  padding: 28px;
-  overflow: auto;
+  padding: 0;
+  overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 20px;
   background: var(--surface);
   color: var(--text-body);
-  box-shadow: 0 24px 80px var(--shadow);
+  box-shadow: 0 32px 80px rgb(0 0 0 / 28%);
 }
-.checkout-notice::backdrop {
-  background: color-mix(in srgb, var(--surface-page) 70%, transparent);
-  backdrop-filter: blur(2px);
+.checkout::backdrop {
+  background: rgb(12 24 30 / 55%);
+  backdrop-filter: blur(3px);
 }
-.checkout-notice h2 {
-  margin: 10px 0 8px;
-  font-size: 24px;
+.checkout-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: min(620px, calc(100dvh - 34px));
+  max-height: calc(100dvh - 34px);
 }
-.checkout-notice p {
-  margin: 0 0 12px;
-  line-height: 1.55;
+.checkout-head {
+  padding: 22px 28px 18px;
+  border-bottom: 1px solid var(--line);
 }
-#checkout-notice-description {
+.checkout-eyebrow {
+  margin: 0;
+  color: var(--text-subtle);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+/* A slim step indicator: number, label and a thin bar under each step. */
+.checkout-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.checkout-steps li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding-bottom: 10px;
+  border-bottom: 3px solid var(--line);
+  color: var(--text-subtle);
+  font-size: 13px;
+  font-weight: 700;
+}
+.checkout-steps li.is-current {
+  border-bottom-color: var(--accent-strong);
   color: var(--text-strong);
-  font-weight: 650;
 }
-.notice-signup {
-  margin: 4px 0 0;
-  padding-top: 14px;
-  border-top: 1px solid var(--line);
+.checkout-steps li.is-done {
+  border-bottom-color: color-mix(in srgb, var(--accent-strong) 45%, var(--line));
   color: var(--text-body);
 }
-/* A prose link: styled accent text with an underline, never default blue. */
+.step-mark {
+  position: relative;
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  box-sizing: border-box;
+  border: 1.5px solid var(--line);
+  border-radius: 50%;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.is-current .step-mark {
+  border-color: var(--accent-strong);
+  background: var(--accent-strong);
+  color: var(--accent-on-primary);
+}
+.is-done .step-mark {
+  border-color: color-mix(in srgb, var(--accent-strong) 60%, var(--line));
+  background: color-mix(in srgb, var(--accent-strong) 14%, transparent);
+}
+.is-done .step-mark::after {
+  width: 4px;
+  height: 8px;
+  margin-top: -2px;
+  border: solid var(--accent-strong);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  content: '';
+}
+.step-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.checkout-body {
+  flex: 1;
+  min-height: 0;
+  padding: 22px 28px 20px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.checkout-body h2 {
+  margin: 0 0 6px;
+  font-size: 22px;
+  letter-spacing: -0.015em;
+}
+/* The step heading takes focus when the step changes; it is not a control, so it shows no ring. */
+.checkout-body h2:focus {
+  outline: none;
+}
+.checkout-body p {
+  margin: 0;
+  line-height: 1.55;
+}
+.checkout-lede {
+  margin-bottom: 18px !important;
+  color: var(--text-subtle);
+}
+.checkout-body strong {
+  color: var(--text-strong);
+}
+
+/* Plan step: the chosen plan as a selected option. */
+.plan-pick {
+  padding: 16px 18px;
+  border: 2px solid var(--accent-strong);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--accent-strong) 6%, var(--surface));
+}
+.plan-pick-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+.plan-pick-check {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent-strong);
+}
+.plan-pick-check::after {
+  width: 4px;
+  height: 8px;
+  margin-top: -2px;
+  border: solid var(--accent-on-primary);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  content: '';
+}
+.checkout-body .plan-pick-name {
+  color: var(--text-strong);
+  font-size: 17px;
+  font-weight: 800;
+}
+.plan-pick-price {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  color: var(--text-strong);
+  font-size: 20px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.plan-pick-price .period,
+.order-total .period {
+  font-size: 13px;
+}
+.plan-pick-terms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 10px 0 0 32px;
+  padding: 0;
+  list-style: none;
+  color: var(--text-subtle);
+  font-size: 14px;
+}
+.plan-pick-terms li + li::before {
+  margin-inline-end: 14px;
+  content: '·';
+  content: '·' / '';
+}
+.checkout-field {
+  display: grid;
+  gap: 6px;
+  margin-top: 18px;
+}
+.field-label {
+  color: var(--text-strong);
+  font-size: 14px;
+  font-weight: 700;
+}
+.checkout-field select {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-page);
+  color: var(--text-body);
+  font: inherit;
+}
+.checkout-field select:focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 2px;
+}
+.checkout-body .checkout-aside {
+  margin-top: 20px;
+  color: var(--text-subtle);
+  font-size: 14px;
+}
+/* Prose links: styled accent text with an underline, never default blue. */
+.checkout-aside a,
 .notice-signup a {
   color: var(--accent-strong);
   font-weight: 700;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
-.notice-detail,
-.notice-browse {
+
+/* Order summary. */
+.order {
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface-page);
+}
+.order-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px 16px;
+}
+.checkout-body .order-label {
+  color: var(--text-subtle);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.checkout-body .order-name {
+  margin-top: 2px;
+  color: var(--text-strong);
+  font-size: 18px;
+  font-weight: 800;
+}
+.order-opens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.order-opens li {
+  --catalog: var(--accent-strong);
+  padding: 3px 10px;
+  border: 1px solid color-mix(in srgb, var(--catalog) 45%, var(--line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--catalog) 10%, transparent);
+  color: var(--catalog);
+  font-size: 12px;
+  font-weight: 750;
+}
+.order-opens li[data-catalog='learn'] {
+  --catalog: var(--path-learn);
+}
+.order-opens li[data-catalog='grow'] {
+  --catalog: var(--path-grow);
+}
+.order-opens li[data-catalog='blaze'] {
+  --catalog: var(--path-blaze);
+}
+:root[data-theme='dark'] .order-opens li[data-catalog='learn'] {
+  --catalog: var(--sidebar-course-text);
+}
+:root[data-theme='dark'] .order-opens li[data-catalog='blaze'] {
+  --catalog: var(--accent-link);
+}
+.checkout-body .order-opens-text {
+  color: var(--text-body);
+  font-size: 14px;
+  font-weight: 700;
+}
+.order-rows {
+  display: grid;
+  gap: 10px;
+  margin: 16px 0 0;
+  padding-top: 14px;
+  border-top: 1px dashed var(--line);
+}
+.order-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 14px;
+}
+.order-row dt {
+  color: var(--text-subtle);
+}
+.order-row dd {
+  margin: 0;
+  color: var(--text-strong);
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+.order-row.is-credit dd {
+  color: var(--success);
+}
+.order-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.order.is-compact .order-total {
+  margin-top: 12px;
+}
+.order-total-label {
+  color: var(--text-strong);
+  font-size: 15px;
+  font-weight: 750;
+}
+.order-total-price {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  min-height: 38px;
+  color: var(--text-strong);
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  transition: opacity 0.15s ease;
+}
+.order-total-price .period {
+  color: var(--text-subtle);
+  font-weight: 650;
+  letter-spacing: 0;
+}
+/* The list price stands in until the server's quote arrives; same size, so nothing moves. */
+.order-total-price.is-pending {
+  opacity: 0.5;
+}
+.checkout-body .order-note {
+  margin-top: 8px;
+  color: var(--text-subtle);
+  font-size: 13px;
+}
+
+/* Payment step. */
+.checkout-body .env-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0 16px;
+  padding: 5px 12px;
+  border: 1px solid color-mix(in srgb, var(--warning) 40%, var(--line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--warning) 10%, var(--surface));
+  color: var(--text-strong);
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+}
+.env-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--warning);
+}
+.checkout-body .env-badge.is-local {
+  border-color: color-mix(in srgb, var(--accent-strong) 40%, var(--line));
+  background: color-mix(in srgb, var(--accent-strong) 8%, var(--surface));
+}
+.env-badge.is-local .env-dot {
+  background: var(--accent-strong);
+}
+.dev-checkout-text {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+  color: var(--text-body);
+}
+.checkout-body .dev-checkout-lead {
+  font-size: 15px;
+}
+.payment-panel {
+  display: grid;
+  gap: 8px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-page);
+}
+.checkout-body .payment-lead {
+  font-size: 16px;
+}
+.payment-method {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+.card-chip {
+  flex: none;
+  width: 42px;
+  height: 28px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, var(--path-learn), var(--path-blaze));
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 20%);
+}
+.checkout-body .method-name {
+  color: var(--text-strong);
+  font-weight: 750;
+}
+.checkout-body .method-note {
   color: var(--text-subtle);
   font-size: 14px;
 }
-/* DLV-969 (owner wording, 2026-11-04): a sent DEV purchase request, with the steps to approve it. */
-.request-sent {
-  margin: 0 0 12px;
-  padding: 12px 14px;
-  border: 1px solid color-mix(in srgb, var(--warning) 50%, var(--line));
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--warning) 10%, var(--surface));
-  text-align: start;
+.payment-result {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 14px 16px;
+  border: 1px solid color-mix(in srgb, var(--warning) 45%, var(--line));
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--warning) 8%, var(--surface));
 }
-.request-sent p {
-  margin: 0;
+.payment-result.is-ok {
+  border-color: color-mix(in srgb, var(--success) 45%, var(--line));
+  background: color-mix(in srgb, var(--success) 9%, var(--surface));
 }
-.request-sent strong {
+.payment-result strong {
   display: block;
-  margin-bottom: 4px;
-  color: var(--text-strong);
 }
-.request-sent strong.inline-strong {
-  display: inline;
-  margin: 0;
+.result-mark {
+  position: relative;
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  border-radius: 50%;
+  background: var(--warning);
 }
-.request-sent .request-later {
-  margin-top: 6px;
-  color: var(--text-subtle);
-  font-size: 0.92rem;
+.is-ok .result-mark {
+  background: var(--success);
 }
-/* Its one action, centred under the message (button placement rule): ends the test session and opens the request. */
-.request-sent .request-back {
-  margin-top: 10px;
-  text-align: center;
+.is-ok .result-mark::after {
+  width: 4px;
+  height: 9px;
+  margin-top: -2px;
+  border: solid var(--surface);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  content: '';
 }
-.request-sent .request-back-button {
-  min-height: 34px;
-  padding: 4px 16px;
-  border: 1px solid var(--text-strong);
-  border-radius: 999px;
-  background: var(--text-strong);
-  color: var(--surface);
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
+.checkout-body .checkout-status {
+  margin-top: 14px;
+  color: var(--text-body);
+  font-size: 14px;
 }
-.request-sent .request-back-button:disabled {
-  opacity: 0.6;
+.checkout-status:empty {
+  display: none;
+}
+.checkout-body .checkout-error {
+  margin-top: 12px;
+  color: var(--danger);
+  font-size: 14px;
+}
+
+/* Footer: Back on the left and the next step on the right; a closing pair is centred. */
+.checkout-foot {
+  /* A footer element: block here, whatever global footer layout says, so the row spans the dialog. */
+  display: block;
+  padding: 16px 28px 20px;
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+}
+.checkout-foot .action-row {
+  gap: 12px;
+}
+.foot-split {
+  justify-content: space-between;
+}
+.foot-centred {
+  justify-content: center;
+}
+.checkout-foot :is(.action-button, .action-link) {
+  min-width: 120px;
+}
+.checkout-foot :is(.action-button, .action-link):disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.checkout-foot :is(.action-button, .action-link)[aria-busy='true'] {
   cursor: progress;
 }
-/* Centred like the lock-screen dialog (user, 2026-10-15). */
-.checkout-notice {
+.notice-signup {
+  margin: 14px 0 0;
+  color: var(--text-body);
+  font-size: 14px;
   text-align: center;
 }
-.checkout-notice .action-row {
-  justify-content: center;
-  margin: 20px 0 16px;
+
+/* Phones: a bottom sheet, actions stacked at full width with the next step on top. */
+@media (max-width: 520px) {
+  .checkout {
+    width: 100vw;
+    max-height: calc(100dvh - 24px);
+    margin: auto 0 0;
+    border-width: 1px 0 0;
+    border-radius: 20px 20px 0 0;
+  }
+  .checkout-shell {
+    min-height: min(560px, calc(100dvh - 26px));
+    max-height: calc(100dvh - 26px);
+  }
+  .checkout-head,
+  .checkout-body {
+    padding-inline: 18px;
+  }
+  .checkout-foot {
+    padding: 14px 18px calc(16px + env(safe-area-inset-bottom));
+  }
+  .checkout-foot .action-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .checkout-foot .foot-split {
+    flex-direction: column-reverse;
+  }
+  .checkout-foot .action-row > * {
+    width: 100%;
+  }
+  .order {
+    padding: 16px;
+  }
+  .order-total-price {
+    font-size: 26px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .order-total-price {
+    transition: none;
+  }
+}
+@media (forced-colors: active) {
+  .checkout-steps li.is-current {
+    border-bottom-color: Highlight;
+  }
+  .plan-pick-check::after,
+  .is-done .step-mark::after,
+  .is-ok .result-mark::after {
+    border-color: CanvasText;
+  }
 }
 
 @media (max-width: 760px) {
@@ -540,12 +1020,6 @@ h2 {
 @media (max-width: 420px) {
   .pricing-page {
     padding-inline: 16px;
-  }
-  .checkout-notice {
-    padding: 22px 18px;
-  }
-  .checkout-notice .action-row > * {
-    flex: 1 1 100%;
   }
 }
 @media (forced-colors: active) {

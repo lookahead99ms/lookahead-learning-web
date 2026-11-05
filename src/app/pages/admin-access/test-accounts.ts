@@ -1,4 +1,4 @@
-import { Component, ElementRef, Injector, afterNextRender, computed, effect, inject, input, OnInit, output, signal, untracked } from '@angular/core';
+import { Component, computed, effect, inject, input, OnInit, output, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
@@ -7,21 +7,9 @@ import { ContentService } from '../../content/content.service';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import { DevSession } from '../../core/dev-session-notice/dev-session';
 import { AccessRecord, AccessRecordView, accessRecordView } from '../account/account-membership';
-import { TestSessions, UsableTestAccount } from '../../core/test-session/test-sessions';
-import { sameSitePath } from '../../core/test-session/same-site-path';
 import { approvedLine, canResetOf, resetReserved, upgradeLine, upgradeMarkerOf } from '../../content/upgrade-markers';
-import {
-  PendingPurchase,
-  PurchaseDecision,
-  RequestReview,
-  decidePurchase,
-  pendingPurchaseOf,
-  requestPrice,
-  requestTerm,
-  requestWords,
-  requestedText,
-  submittedBy,
-} from '../../content/purchase-requests';
+import { PendingPurchase, pendingPurchaseOf } from '../../content/purchase-requests';
+import { viewerRole } from './purchase-requests-panel';
 import {
   DirectoryAssignment,
   DirectoryAccount,
@@ -37,8 +25,12 @@ export interface TestAccountAllowance {
   limit: number;
   used: number;
   remaining: number;
-  /** withoutPlan (DLV-969 S37): ready learners whose scenario has a study plan they don't have yet. */
-  roster?: { total: number; ready: number; deleted: number; withoutPlan?: number } | null;
+  /**
+   * withoutPlan (DLV-969 S37): ready learners whose scenario has a study plan they don't have yet. changed (owner,
+   * 2026-11-04): ready roster accounts that differ from their scenario, so Reset all has something to do; absent from an
+   * older Domain, which keeps Reset all available.
+   */
+  roster?: { total: number; ready: number; deleted: number; withoutPlan?: number; changed?: number } | null;
   scenarios?: { id: string; label: string; roles: string[] }[] | null;
 }
 
@@ -63,31 +55,18 @@ export interface TestAccountRow {
   canReset?: boolean;
 }
 
-/** DLV-969 (owner wording, 2026-11-04): what Approve or Decline did, with the way into the test account. */
-export interface DecisionResult {
-  decision: PurchaseDecision;
-  accountId: string;
-  /** The test account's display name ("Learner06"), or its username when the switcher list does not have it. */
-  name: string;
-  plan: string;
-  /** Where Switch lands: the page the purchase started from when this review came from Review request, else "/". */
-  next: string;
-}
-
-/** One waiting purchase request with the test account that sent it. */
-export interface PurchaseRequestItem {
-  row: TestAccountRow;
-  request: PendingPurchase;
-  /** "Upgrade: Learn → Advance". */
-  words: string;
-  /** "4 Nov 2026 – 4 Nov 2027", or null. */
-  term: string | null;
-  price: string;
-  /** "difference $45.00" for an upgrade, when sent. */
-  difference: string | null;
-  /** "You", the role label, or (owner only) the name with its label. */
-  by: string;
-  requested: string;
+/** The test-account list's tabs, as in the account menu's switcher (owner, 2026-11-04). */
+export type ListTab = 'learners' | 'co-authors' | 'admins';
+const LIST_TABS: readonly { id: ListTab; title: string }[] = [
+  { id: 'learners', title: 'Learners' },
+  { id: 'co-authors', title: 'Co-authors' },
+  { id: 'admins', title: 'Admins' },
+];
+/** A co-author or admin test account goes under its role; every other one is a learner, as in the switcher. */
+export function listTabOf(row: Pick<DirectoryRow, 'roles'>): ListTab {
+  if (row.roles.includes('Co-author')) return 'co-authors';
+  if (row.roles.includes('Admin')) return 'admins';
+  return 'learners';
 }
 
 type History = { state: 'loading' } | { state: 'error' } | { state: 'ready'; items: AccessRecordView[] };
@@ -127,43 +106,6 @@ export class TestAccounts implements OnInit {
     const row = id ? this.inView().find(item => item.accountId === id) : undefined;
     if (row) untracked(() => this.selectedKey.set(row.key));
   });
-  /**
-   * DLV-969 (owner, 2026-11-04): the request a test account's Review request opened the page on. Once the list has it,
-   * the card is scrolled to, highlighted and focused, once; `reviewOpened` tells the page the address was used.
-   */
-  readonly review = input<RequestReview | null>(null);
-  readonly reviewOpened = output<void>();
-  /** The request card highlighted for the review. */
-  readonly highlighted = signal<string | null>(null);
-  /** The review this list opened, kept for Switch after the decision (the page clears its own copy). */
-  private opened: RequestReview | null = null;
-  private readonly injector = inject(Injector);
-  private readonly host = inject(ElementRef, { optional: true });
-  private readonly opening = effect(() => {
-    const review = this.review();
-    if (!review || review === this.opened || !this.loaded() || this.busy()) return;
-    untracked(() => {
-      this.opened = review;
-      this.reviewOpened.emit();
-      const item = this.purchaseRequests().find((entry) => entry.request.purchaseId === review.purchaseId);
-      if (!item) {
-        this.notice.set('That purchase request is no longer waiting. It may already be approved or declined.');
-        return;
-      }
-      this.highlighted.set(review.purchaseId);
-      afterNextRender(() => this.reveal(review.purchaseId), { injector: this.injector });
-    });
-  });
-  /** Scrolls the request card into view and focuses it, so a keyboard user starts on it. */
-  private reveal(purchaseId: string) {
-    const root = this.host?.nativeElement as HTMLElement | undefined;
-    const card = [...(root?.querySelectorAll<HTMLElement>('.request-item') ?? [])].find((item) => item.dataset['purchase'] === purchaseId);
-    card?.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
-    card?.focus({ preventScroll: true });
-  }
-  /** The panel after Approve or Decline; Close dismisses it. */
-  readonly result = signal<DecisionResult | null>(null);
-  private readonly sessions = inject(TestSessions);
   /** The owner asked to change this person's roles or course grants. */
   readonly giveAccess = output<DirectoryRow>();
   readonly canGive = computed(
@@ -174,44 +116,14 @@ export class TestAccounts implements OnInit {
       !!this.accounts.account()?.permissions?.manageAccess ||
       !!this.accounts.account()?.permissions?.triageFeedback,
   );
-  /** DLV-969 (owner, 2026-11-04): Restore on the Test roster card is the owner's alone. */
-  readonly isOwner = computed(() => {
-    const account = this.accounts.account();
-    return (account?.permissions?.feedbackRole ?? (account?.authorPreview ? 'owner' : 'user')) === 'owner';
-  });
+  /** DLV-969 (owner, 2026-11-04): Restore and Reset all are the owner's alone. */
+  readonly isOwner = computed(() => viewerRole(this.accounts.account()) === 'owner');
   /**
-   * DLV-969 (owner, 2026-11-04): the owner and admins approve or decline DEV purchase requests; co-authors and everyone
-   * else see nothing of them. The Domain decides again (403 PURCHASE_APPROVAL_FORBIDDEN).
+   * DLV-969 (owner, 2026-11-04): the owner and admins see which test accounts have a purchase request waiting (the
+   * requests themselves are on Waiting for access → Purchase requests); co-authors and everyone else see nothing of them.
    */
-  readonly canDecide = computed(() => {
-    const account = this.accounts.account();
-    return ['owner', 'admin'].includes(account?.permissions?.feedbackRole ?? (account?.authorPreview ? 'owner' : 'user'));
-  });
-  /** Waiting purchase requests, oldest first, for the owner and admins; empty for anyone else. */
-  readonly purchaseRequests = computed<PurchaseRequestItem[]>(() => {
-    if (!this.canDecide()) return [];
-    const owner = this.isOwner();
-    return this.rows()
-      .map((row) => ({ row, request: pendingPurchaseOf(row) }))
-      .filter((item): item is { row: TestAccountRow; request: PendingPurchase } => item.request !== null)
-      .sort((a, b) => a.request.requestedAt.localeCompare(b.request.requestedAt))
-      .map(({ row, request }) => ({
-        row,
-        request,
-        words: requestWords(request),
-        term: requestTerm(request),
-        price: requestPrice(request.priceCents),
-        difference:
-          request.kind === 'upgrade' && request.differenceCents !== null
-            ? `difference ${requestPrice(request.differenceCents)}`
-            : null,
-        by: submittedBy(request, owner),
-        requested: requestedText(request.requestedAt),
-      }));
-  });
-  /** The request whose Decline is waiting for its one-click confirmation. */
-  readonly declining = signal<PurchaseRequestItem | null>(null);
-  readonly canCreate = computed(() => ['owner', 'co-author', 'admin'].includes(this.accounts.account()?.permissions?.feedbackRole ?? (this.accounts.account()?.authorPreview ? 'owner' : 'user')));
+  readonly canDecide = computed(() => ['owner', 'admin'].includes(viewerRole(this.accounts.account())));
+  readonly canCreate = computed(() => ['owner', 'co-author', 'admin'].includes(viewerRole(this.accounts.account())));
   readonly allowance = signal<TestAccountAllowance|null>(null);
   private readonly devSession = inject(DevSession);
   /** DLV-969 S35: DEV test accounts have no sign-in of their own; staff use them from the sign-in page. */
@@ -239,6 +151,26 @@ export class TestAccounts implements OnInit {
   rosterRestoreConfirmation = '';
   /** Deleted roster accounts the owner can bring back; 0 for anyone else. */
   readonly restorable = computed(() => (this.isOwner() ? this.roster()?.deleted ?? 0 : 0));
+  /** The owner's Restore and Reset all, in DEV with the roster status (owner, 2026-11-04). */
+  readonly ownerRoster = computed(() => this.isOwner() && this.dev() && !!this.roster());
+  /**
+   * Reset all has something to do: roster accounts listed, and the Domain's `changed` count is not 0. An older Domain
+   * without `changed` keeps it available.
+   */
+  readonly resettable = computed(() => this.rosterRows().length > 0 && this.roster()?.changed !== 0);
+  /**
+   * Why Reset all is greyed out, as a line under its own line and as its hover text (owner, 2026-11-04). Restore is not
+   * shown at all when nothing is deleted: the status line says so.
+   */
+  readonly rosterHints = computed(() => {
+    if (!this.ownerRoster() || this.resettable()) return { reset: '' };
+    return { reset: this.rosterRows().length ? 'Nothing to reset: every roster account is at its scenario' : 'Nothing to reset' };
+  });
+  /**
+   * DLV-969 (owner, DEV test 2026-11-04): why the open confirmation's action failed, shown inside that panel. One panel is
+   * open at a time, so one message serves them all; opening or closing a panel clears it.
+   */
+  readonly panelError = signal('');
   /** The DEV roster's accounts in the list: every test account except single created ones. */
   readonly rosterRows = computed(() => this.rows().filter((row) => !!row.creatorId && row.initialization !== 'created'));
   readonly creating = signal(false);
@@ -276,6 +208,8 @@ export class TestAccounts implements OnInit {
 
   readonly query = signal('');
   readonly role = signal('');
+  /** The test-account list's tab, Learners first; `listTab` falls back to the first tab that has accounts. */
+  private readonly chosenListTab = signal<ListTab>('learners');
   readonly titles = signal<ReadonlyMap<string, string>>(new Map());
   readonly expanded = signal<string | null>(null);
   readonly history = signal<Record<string, History>>({});
@@ -296,12 +230,30 @@ export class TestAccounts implements OnInit {
   });
   /** Test accounts on the Test accounts tab; everyone else on People. */
   readonly inView = computed(() => this.people().filter((row) => row.isTest === (this.view() === 'test')));
-  /** Only the roles somebody in this list has. */
+  /** Only the roles somebody in this list has (People's Role menu). */
   readonly roleFilters = computed(() =>
     ROLE_FILTERS.filter((name) => this.inView().some((row) => row.roles.includes(name))),
   );
+  /** Test accounts tab (owner, 2026-11-04): Learners, Co-authors and Admins with at least one account, as in the switcher. */
+  readonly listTabs = computed(() => {
+    if (this.view() !== 'test') return [];
+    const present = new Set(this.inView().map(listTabOf));
+    return LIST_TABS.filter((tab) => present.has(tab.id));
+  });
+  readonly listTab = computed<ListTab>(() => {
+    const tabs = this.listTabs();
+    return tabs.some((tab) => tab.id === this.chosenListTab()) ? this.chosenListTab() : (tabs[0]?.id ?? this.chosenListTab());
+  });
+  /** How many accounts in each tab match the search, so a match on another tab is easy to find. */
+  readonly listCounts = computed(() => {
+    const counts: Record<ListTab, number> = { learners: 0, 'co-authors': 0, admins: 0 };
+    for (const row of this.inView()) if (matchesFilter(row, this.query(), '')) counts[listTabOf(row)]++;
+    return counts;
+  });
+  /** The rows the search works on: the chosen tab on Test accounts, everyone on People. */
+  readonly inTab = computed(() => (this.view() === 'test' && this.listTabs().length ? this.inView().filter((row) => listTabOf(row) === this.listTab()) : this.inView()));
   readonly visible = computed(() =>
-    this.inView().filter((row) => matchesFilter(row, this.query(), this.role())),
+    this.inTab().filter((row) => matchesFilter(row, this.query(), this.view() === 'test' ? '' : this.role())),
   );
   readonly selectedRow = computed(() => this.visible().find((row) => row.key === this.selectedKey()) ?? null);
 
@@ -369,9 +321,38 @@ export class TestAccounts implements OnInit {
     this.expanded.set(null);
   }
 
-  private closeConfirmations() {
+  /** Learners, Co-authors or Admins; a selection on the tab left behind is dropped with its confirmations. */
+  chooseListTab(tab: ListTab) {
+    if (this.busy() || this.pending() || tab === this.listTab()) return;
+    this.chosenListTab.set(tab);
+    this.selectedKey.set(null);
+    this.expanded.set(null);
+    this.closeConfirmations();
+  }
+
+  /** Arrow keys, Home and End move between the list's tabs (WAI-ARIA tabs pattern). */
+  listTabKey(event: KeyboardEvent) {
+    const ids = this.listTabs().map((tab) => tab.id), index = ids.indexOf(this.listTab());
+    const next = ({ ArrowRight: index + 1, ArrowLeft: index - 1, Home: 0, End: ids.length - 1 } as Record<string, number>)[event.key];
+    if (next === undefined || !ids.length) return;
+    event.preventDefault();
+    const id = ids[(next + ids.length) % ids.length];
+    this.chooseListTab(id);
+    (event.currentTarget as HTMLElement | null)?.querySelector<HTMLElement>('#list-tab-' + id)?.focus();
+  }
+
+  /** Create test account opens its panel under the button row, closing any other confirmation. */
+  openCreate() {
+    if (!this.canCreate() || this.busy()) return;
+    this.closeConfirmations();
+    this.creating.set(true);
+  }
+
+  /** Every confirmation closes the same way: no panel, no typed words, no message left behind. */
+  closeConfirmations() {
+    this.panelError.set('');
+    this.creating.set(false);
     this.selected.set(null);
-    this.declining.set(null);
     this.deleting.set(null);
     this.downgradingReal.set(null);
     this.deletingReal.set(null);
@@ -388,6 +369,7 @@ export class TestAccounts implements OnInit {
   cancel() {
     this.selected.set(null);
     this.pending.set(null);
+    this.panelError.set('');
   }
 
   async load() {
@@ -434,7 +416,7 @@ export class TestAccounts implements OnInit {
   async create() {
     if(!this.mayCreate())return;
     const key=this.createKey()??crypto.randomUUID();this.createKey.set(key);this.busy.set(true);
-    const dev=this.dev();
+    const dev=this.dev();this.panelError.set('');
     try {
       const created=await this.api.request<{username:string}>('/admin/test-accounts',dev?{key,scenario:this.createScenario}:{key,password:this.createPassword,scenario:this.createScenario});
       this.createKey.set(null);this.createPassword='';this.creating.set(false);
@@ -443,12 +425,13 @@ export class TestAccounts implements OnInit {
         ? `${created.username} created. To use it, choose Switch to a test account in your account menu.`
         : `${created.username} created. Share its password through your local test setup.`);
     } catch (failure) {
-      // A refusal (403 TEST_ACCOUNT_LEARNER_ONLY: "Only learner test accounts can be created…") is said in the server's words.
+      // The panel stays open with the reason inside it. A refusal (403 TEST_ACCOUNT_LEARNER_ONLY: "Only learner test
+      // accounts can be created…") is said in the server's words, and the next try is a new request.
       if (failure instanceof MembershipRequestError && failure.status === 403) {
         this.createKey.set(null);
-        this.notice.set(failure.message);
+        this.panelError.set(failure.message);
       } else {
-        this.notice.set(dev ? 'Creation was not confirmed. Retry; the same request key is reused.' : 'Creation was not confirmed. Retry with the same password and request key.');
+        this.panelError.set(reason(failure) + (dev ? 'Creation was not confirmed. Retry; the same request key is reused.' : 'Creation was not confirmed. Retry with the same password and request key.'));
       }
     } finally {this.busy.set(false);}
   }
@@ -474,6 +457,7 @@ export class TestAccounts implements OnInit {
   }
 
   openRosterReset() {
+    if (!this.resettable()) return;
     this.closeConfirmations();
     this.rosterResetConfirmation = '';
     this.rosterReset.set({ open: true, done: 0, total: this.rosterRows().length });
@@ -488,6 +472,7 @@ export class TestAccounts implements OnInit {
     if (!this.dev() || !this.roster() || this.busy() || !rows.length || this.rosterResetConfirmation !== 'RESET ALL') return;
     this.busy.set(true);
     this.notice.set('');
+    this.panelError.set('');
     const refused: string[] = [];
     this.rosterReset.set({ open: true, done: 0, total: rows.length });
     for (const row of rows) {
@@ -502,6 +487,13 @@ export class TestAccounts implements OnInit {
         refused.push(row.username + (reason(failure) ? ' (' + reason(failure).trim() + ')' : ''));
       }
       this.rosterReset.update((progress) => progress && { ...progress, done: progress.done + 1 });
+    }
+    if (refused.length === rows.length) {
+      // Nothing was reset: the panel stays, with the reasons inside it.
+      this.rosterReset.set({ open: true, done: 0, total: rows.length });
+      this.busy.set(false);
+      this.panelError.set(`None reset. Not reset: ${refused.join(', ')}. Refresh and retry.`);
+      return;
     }
     this.rosterReset.set(null);
     this.rosterResetConfirmation = '';
@@ -530,6 +522,7 @@ export class TestAccounts implements OnInit {
     if (!pending || !this.dev() || !this.restorable() || this.busy() || this.rosterRestoreConfirmation !== 'RESTORE') return;
     this.busy.set(true);
     this.notice.set('');
+    this.panelError.set('');
     try {
       // The route the Gateway already forwards (its allowlist is in a pinned file), as roster creation does with roster: true.
       const result = await this.api.request<{ restored?: number } | null>('/admin/test-accounts', { restoreRoster: true, confirm: 'RESTORE' });
@@ -541,13 +534,12 @@ export class TestAccounts implements OnInit {
       this.history.set({});
       this.notice.set(`Restored ${restored} roster account${restored === 1 ? '' : 's'}.`);
     } catch (failure) {
-      if (failure instanceof MembershipRequestError && failure.status === 404) {
-        this.rosterRestore.set(null);
-        this.rosterRestoreConfirmation = '';
-        this.notice.set('Restore needs the newer Domain release.');
-      } else {
-        this.notice.set(reason(failure) + 'Restore was not confirmed. Refresh and retry.');
-      }
+      // The panel stays open with the reason inside it (owner, DEV test 2026-11-04).
+      this.panelError.set(
+        failure instanceof MembershipRequestError && failure.status === 404
+          ? 'Restore needs the newer Domain release.'
+          : reason(failure) + 'Restore was not confirmed. Refresh and retry.',
+      );
     } finally {
       this.busy.set(false);
     }
@@ -556,36 +548,36 @@ export class TestAccounts implements OnInit {
   async deleteAccount() {
     const row=this.deleting();
     if(!row||!this.mayDelete(row)||this.busy()||this.deleteConfirmation!==row.username)return;
-    this.busy.set(true);
+    this.busy.set(true);this.panelError.set('');
     try {
       await this.api.remove(`/admin/test-accounts/${row.accountId}`);
       this.deleting.set(null);this.deleteConfirmation='';this.busy.set(false);await this.load();
       this.notice.set(`${row.username} deleted. Its login and test data are gone; the creator's lifetime count remains.`);
-    } catch (failure) {this.notice.set(reason(failure)+'Deletion was not confirmed. Retry the same account.');}
+    } catch (failure) {this.panelError.set(reason(failure)+'Deletion was not confirmed. Retry the same account.');}
     finally {this.busy.set(false);}
   }
 
   async downgradeReal() {
     const row=this.downgradingReal();
     if(!row?.accountId||row.isTest||row.isSelf||row.canDowngrade!==true||this.realConfirmation!=='DOWNGRADE'||this.busy())return;
-    this.busy.set(true);
+    this.busy.set(true);this.panelError.set('');
     try {
       await this.api.request(`/admin/accounts/${row.accountId}/downgrade`,{confirmation:'DOWNGRADE'});
       this.downgradingReal.set(null);this.realConfirmation='';this.busy.set(false);await this.load();
       this.notice.set(`${row.name} now has free learner access. Purchase history remains.`);
-    } catch {this.notice.set('Downgrade was not confirmed. Refresh and retry.');}
+    } catch (failure) {this.panelError.set(reason(failure)+'Downgrade was not confirmed. Refresh and retry.');}
     finally {this.busy.set(false);}
   }
 
   async deleteReal() {
     const row=this.deletingReal();
     if(!row?.accountId||row.isTest||row.isSelf||row.canDelete!==true||this.realConfirmation!=='DELETE'||this.busy())return;
-    this.busy.set(true);
+    this.busy.set(true);this.panelError.set('');
     try {
       await this.api.request(`/admin/accounts/${row.accountId}/delete`,{confirmation:'DELETE'});
       this.deletingReal.set(null);this.realConfirmation='';this.busy.set(false);await this.load();
       this.notice.set(`${row.name} deleted. Sign-in and learner plans are gone; purchase audit remains.`);
-    } catch {this.notice.set('Deletion was not confirmed. Refresh and retry the same account.');}
+    } catch (failure) {this.panelError.set(reason(failure)+'Deletion was not confirmed. Refresh and retry the same account.');}
     finally {this.busy.set(false);}
   }
 
@@ -598,14 +590,14 @@ export class TestAccounts implements OnInit {
     if (!pending?.row.accountId || pending.row.isSelf || this.removalConfirmation !== word || this.busy()) return;
     const { row, action } = pending;
     if (action === 'disable' ? !row.canDisable : !row.canRemove) return;
-    this.busy.set(true);
+    this.busy.set(true);this.panelError.set('');
     try {
       await this.api.request(`/admin/accounts/${row.accountId}/${action}`, { confirmation: word });
       this.removing.set(null); this.removalConfirmation = ''; this.busy.set(false); await this.load();
       this.notice.set(action === 'disable'
         ? `${row.name} is disabled. Every sign-in is blocked and their open session closes within 5 minutes.`
         : `${row.name} is deleted. If they sign in again, they appear in Waiting for access as a new person.`);
-    } catch { this.notice.set(action === 'disable' ? 'Disable was not confirmed. Refresh and retry.' : 'Deletion was not confirmed. Refresh and retry the same account.'); }
+    } catch (failure) { this.panelError.set(reason(failure) + (action === 'disable' ? 'Disable was not confirmed. Refresh and retry.' : 'Deletion was not confirmed. Refresh and retry the same account.')); }
     finally { this.busy.set(false); }
   }
   async enable(row: DirectoryRow) {
@@ -623,84 +615,6 @@ export class TestAccounts implements OnInit {
   hasRequest(row: TestAccountRow | null): boolean {
     return !!row && this.canDecide() && pendingPurchaseOf(row) !== null;
   }
-
-  startDecline(item: PurchaseRequestItem) {
-    if (this.busy() || this.pending()) return;
-    this.closeConfirmations();
-    this.declining.set(item);
-  }
-
-  /** Approve is one click (the owner or admin chose to); Decline comes here after its confirmation. */
-  async decide(item: PurchaseRequestItem, decision: PurchaseDecision) {
-    if (!this.canDecide() || this.busy() || this.pending()) return;
-    if (decision === 'decline' && this.declining()?.request.purchaseId !== item.request.purchaseId) return;
-    if (decision === 'approve') this.closeConfirmations();
-    this.busy.set(true);
-    this.result.set(null);
-    try {
-      await decidePurchase(this.api, item.request.purchaseId, decision);
-      this.declining.set(null);
-      this.busy.set(false);
-      await this.load();
-      this.history.update((all) => {
-        const next = { ...all };
-        delete next[item.row.accountId];
-        return next;
-      });
-      // DLV-969 (owner wording, 2026-11-04): the result says how to verify it, with Switch to the test account. Switch
-      // goes back to the page the purchase started from only when this is the request Review request opened.
-      const reviewed = this.opened?.purchaseId === item.request.purchaseId ? sameSitePath(this.opened.returnTo) : null;
-      const usable = await this.usable(item.row.accountId);
-      this.result.set({
-        decision,
-        accountId: item.row.accountId,
-        name: usable?.displayName || item.row.username,
-        plan: item.request.toPlan.name,
-        next: reviewed ?? '/',
-      });
-      this.highlighted.set(null);
-      afterNextRender(() => (this.host?.nativeElement as HTMLElement | undefined)?.querySelector<HTMLElement>('.decision-result')?.focus(), { injector: this.injector });
-    } catch (failure) {
-      // 403 PURCHASE_APPROVAL_FORBIDDEN ("Only the owner or an admin can approve purchase requests.") in the server's words.
-      this.notice.set(
-        failure instanceof MembershipRequestError && failure.status === 403
-          ? failure.message
-          : reason(failure) + (decision === 'approve' ? 'Approval' : 'Decline') + ' was not confirmed. Refresh and retry.',
-      );
-    } finally {
-      this.busy.set(false);
-    }
-  }
-
-  /** The switcher's own entry for this test account (its display name), loading the list once; null when it is not there. */
-  private async usable(accountId: string): Promise<UsableTestAccount | null> {
-    if (!this.dev()) return null;
-    if (this.sessions.accounts() === null) await this.sessions.load();
-    return this.sessions.accounts()?.find((account) => account.accountId === accountId) ?? null;
-  }
-
-  /** Switch to Learner06: starts the test session, landing on the page the purchase started from or Learner06's home. */
-  async switchToResult() {
-    const result = this.result();
-    if (!result) return;
-    const account: UsableTestAccount = (await this.usable(result.accountId)) ?? {
-      accountId: result.accountId,
-      username: result.name,
-      displayName: result.name,
-      roles: [],
-      scenario: null,
-    };
-    await this.sessions.use(account, result.next);
-  }
-
-  /** Switch to another test account: the account menu's own dialog. */
-  switchToAnother() {
-    void this.sessions.open();
-  }
-
-  /** Busy or failed state of the switch, from the shared test sessions. */
-  readonly switching = computed(() => !!this.sessions.starting() || this.sessions.returning());
-  readonly switchError = this.sessions.error;
 
   /** Course titles from the public catalogs, for "Java Foundations (Learn)". */
   async loadTitles() {
@@ -752,7 +666,7 @@ export class TestAccounts implements OnInit {
       preset: this.preset,
     };
     this.pending.set(request);
-    this.busy.set(true);
+    this.busy.set(true);this.panelError.set('');
     try {
       await this.api.request('/admin/test-accounts/' + row.accountId + '/reset', request);
       this.cancel();
@@ -765,12 +679,13 @@ export class TestAccounts implements OnInit {
       });
       this.notice.set(row.username + ' reset.');
     } catch (failure) {
-      // 403 RESET_RESERVED: "Only the owner or Admin 2, who upgraded this account, can reset it." Retrying cannot help.
+      // 403 RESET_RESERVED: "Only the owner or Admin 2, who upgraded this account, can reset it." Retrying cannot help, so
+      // the same reset is not offered again; the panel stays with the reason inside it.
       if (resetReserved(failure)) {
-        this.cancel();
-        this.notice.set((failure as Error).message);
+        this.pending.set(null);
+        this.panelError.set((failure as Error).message);
       } else {
-        this.notice.set(
+        this.panelError.set(
           reason(failure) + 'Reset was not confirmed. Retry the same reset, or cancel and refresh before another change.',
         );
       }

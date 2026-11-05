@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { Location } from '@angular/common';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
+import { DevSession } from '../../core/dev-session-notice/dev-session';
 import { AdminAccessPage } from './admin-access';
 import { ACCOUNT_FETCH, StudyPlanAccount, StaffPermissions } from '../study-plan/study-plan-account';
 import { canSeePreviews, visibleAdminLinks, visibleDocumentationGroups } from '../../core/author-workspace-nav/author-workspace-links';
@@ -410,7 +411,7 @@ describe('Saved assignments for a co-author (DLV-969)', () => {
 });
 
 describe('People and access links', () => {
-  const setup = (tab: string | null, feedbackRole = 'owner', extra: Record<string, string> = {}) => {
+  const setup = (tab: string | null, feedbackRole = 'owner', extra: Record<string, string> = {}, dev = false) => {
     const replaceState = vi.fn();
     TestBed.configureTestingModule({ providers: [
       { provide: StudyPlanAccount, useValue: { account: signal({ permissions: permissions({ manageAccess: feedbackRole === 'owner', triageFeedback: feedbackRole === 'admin', feedbackRole }) }) } },
@@ -418,6 +419,7 @@ describe('People and access links', () => {
       { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: convertToParamMap({ ...(tab ? { tab } : {}), ...extra }) } } },
       { provide: Location, useValue: { replaceState } },
     ] });
+    if (dev) TestBed.inject(DevSession).gated.set(true);
     return { page: TestBed.runInInjectionContext(() => new AdminAccessPage()), replaceState };
   };
   it('opens the tab named in the address and keeps the address in step', () => {
@@ -428,21 +430,30 @@ describe('People and access links', () => {
     page.selectTab('assign');
     expect(replaceState).toHaveBeenLastCalledWith('/admin/access', '');
   });
-  it('opens Test accounts on the request a Review request names, once, and takes it out of the address (DLV-969)', () => {
+  it('opens Waiting for access → Purchase requests on the request a Review request names, once, and takes it out of the address (DLV-969)', () => {
     for (const role of ['owner', 'admin']) {
       TestBed.resetTestingModule();
-      const { page, replaceState } = setup('test', role, { request: 'pur-9', return: '/grow/java/streams?unit=2', account: 'acc-06' });
-      expect(page.tab()).toBe('test');
+      const { page, replaceState } = setup('waiting', role, { view: 'purchases', request: 'pur-9', return: '/grow/java/streams?unit=2', account: 'acc-06' }, true);
+      expect(page.tab()).toBe('waiting');
+      expect(page.waitingView()).toBe('purchases');
       expect(page.requestReview()).toEqual({ purchaseId: 'pur-9', returnTo: '/grow/java/streams?unit=2', accountId: 'acc-06' });
-      // The address keeps only the tab, so a reload does not open the review again.
-      expect(replaceState).toHaveBeenCalledExactlyOnceWith('/admin/access', 'tab=test');
+      // The address keeps only the tab and sub-tab, so a reload does not open the review again.
+      expect(replaceState).toHaveBeenCalledExactlyOnceWith('/admin/access', 'tab=waiting&view=purchases');
     }
-    // A review opens Test accounts even without the tab, and an unsafe return path is dropped.
+    // The older Test accounts form (owner, before 2026-11-04 DEV testing) lands in the same place.
     TestBed.resetTestingModule();
-    const { page, replaceState } = setup(null, 'owner', { request: 'pur-9', return: '//elsewhere.example' });
-    expect(page.tab()).toBe('test');
+    const old = setup('test', 'admin', { request: 'pur-9', return: '/grow/java', account: 'acc-06' }, true);
+    expect(old.page.tab()).toBe('waiting');
+    expect(old.page.waitingView()).toBe('purchases');
+    expect(old.page.requestReview()).toEqual({ purchaseId: 'pur-9', returnTo: '/grow/java', accountId: 'acc-06' });
+    expect(old.replaceState).toHaveBeenCalledExactlyOnceWith('/admin/access', 'tab=waiting&view=purchases');
+    // A review opens it even without the tab, and an unsafe return path is dropped.
+    TestBed.resetTestingModule();
+    const { page, replaceState } = setup(null, 'owner', { request: 'pur-9', return: '//elsewhere.example' }, true);
+    expect(page.tab()).toBe('waiting');
+    expect(page.waitingView()).toBe('purchases');
     expect(page.requestReview()).toEqual({ purchaseId: 'pur-9', returnTo: null, accountId: null });
-    expect(replaceState).toHaveBeenCalledExactlyOnceWith('/admin/access', 'tab=test');
+    expect(replaceState).toHaveBeenCalledExactlyOnceWith('/admin/access', 'tab=waiting&view=purchases');
   });
   it('leaves the address alone without review values, and clears stray ones without opening anything', () => {
     const { page, replaceState } = setup('saved');
@@ -681,5 +692,171 @@ describe('Waiting for access', () => {
     expect(page.sameEmail({ ...alex, sameEmailAccounts: 1.5 })).toBe('');
     expect(page.sameEmail(alex)).toBe('');
     expect(page.methodLabels(alex)).toEqual([]);
+  });
+});
+
+/**
+ * DLV-969 (owner, DEV test 2026-11-04): Waiting for access has two sub-tabs. DEV access (waiting people) is the owner's;
+ * Purchase requests is the owner's and the admins'. Admins never ask for the owner-only waiting list.
+ */
+describe('Waiting for access sub-tabs', () => {
+  const alex = { accountId: 'alex-id', username: 'alex.example', displayName: 'Alex Example', email: 'alex@example.test', requestedAt: '2026-11-02T14:05:00Z', expiresAt: '2026-11-04T14:05:00Z' };
+  const purchase = (id: string, at: string) => ({ purchaseId: id, kind: 'new', fromPlan: null, toPlan: { code: 'learn', name: 'Learn' }, priceCents: 6999, requestedAt: at, requestedBy: { self: false, label: 'Admin 2' } });
+  const testRow = (id: string, pendingPurchase: unknown) => ({ accountId: id, username: id + '@lookahead.dev', roles: [], revision: 1, access: { label: 'Free' }, lastChangedBy: 'seed', lastChangedAt: '2026-10-16', legacyPresetAvailable: false, pendingPurchase });
+  let requests: string[];
+  let testAccounts: unknown;
+  let testStatus: number;
+  let waiting: unknown;
+  let replaceState: ReturnType<typeof vi.fn>;
+  const setup = (feedbackRole: 'owner' | 'admin' | 'co-author', options: { dev?: boolean; tab?: string; view?: string } = {}) => {
+    requests = [];
+    replaceState = vi.fn();
+    TestBed.configureTestingModule({ providers: [
+      provideRouter([]),
+      { provide: StudyPlanAccount, useValue: { account: signal({ accountId: 'me', username: 'staff', displayName: 'Staff', topicGrants: [], permissions: permissions({ manageAccess: feedbackRole === 'owner', triageFeedback: feedbackRole !== 'co-author', feedbackRole }) }), apiPath: (path: string) => path } },
+      { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: convertToParamMap({ ...(options.tab ? { tab: options.tab } : {}), ...(options.view ? { view: options.view } : {}) }) } } },
+      { provide: Location, useValue: { replaceState } },
+      { provide: ACCOUNT_FETCH, useValue: async (path: string) => {
+        requests.push(path);
+        if (path === '/admin/access/waiting') return Response.json({ data: waiting });
+        if (path === '/admin/test-accounts') return testStatus === 200 ? Response.json({ data: testAccounts }) : new Response('', { status: testStatus });
+        if (path === '/admin/test-accounts/allowance') return Response.json({ data: { limit: 10, used: 0, remaining: 10, roster: null, scenarios: [] } });
+        return Response.json({ data: [] });
+      } },
+    ] }).overrideComponent(AdminAccessPage, { remove: { imports: [PlatformHeader] }, add: { imports: [HeaderStub] } });
+    if (options.dev ?? true) TestBed.inject(DevSession).gated.set(true);
+  };
+  beforeEach(() => {
+    waiting = { waiting: [alex], expiryHours: 48 };
+    testAccounts = [testRow('learner07', purchase('pur-1', '2026-11-04T09:00:00Z')), testRow('learner12', purchase('pur-2', '2026-11-04T10:00:00Z')), testRow('learner03', null)];
+    testStatus = 200;
+  });
+  const text = (element: Element | null | undefined) => (element?.textContent ?? '').replace(/\s+/g, ' ').trim();
+
+  it('gives the owner DEV access and Purchase requests, with each count and their sum on the tab label', async () => {
+    setup('owner');
+    const page = TestBed.runInInjectionContext(() => new AdminAccessPage());
+    await page.ngOnInit();
+    expect(requests).toContain('/admin/access/waiting');
+    expect(page.tabs()[0]).toEqual({ id: 'waiting', label: 'Waiting for access · 3' });
+    expect(page.waitingViews()).toEqual([{ id: 'access', label: 'DEV access', count: 1 }, { id: 'purchases', label: 'Purchase requests', count: 2 }]);
+    expect(page.waitingView()).toBe('access');
+    page.selectWaitingView('purchases');
+    expect(page.waitingView()).toBe('purchases');
+    expect(replaceState).toHaveBeenLastCalledWith('/admin/access', 'tab=waiting&view=purchases');
+    page.onWaitingKey(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
+    expect(page.waitingView()).toBe('access');
+    page.onWaitingKey(new KeyboardEvent('keydown', { key: 'End' }));
+    expect(page.waitingView()).toBe('purchases');
+    page.onWaitingKey(new KeyboardEvent('keydown', { key: 'Tab' }));
+    expect(page.waitingView()).toBe('purchases');
+    // Nobody waits for DEV access but purchases do: the sub-tab opens on Purchase requests.
+    TestBed.resetTestingModule();
+    waiting = { waiting: [] };
+    setup('owner');
+    const quiet = TestBed.runInInjectionContext(() => new AdminAccessPage());
+    await quiet.ngOnInit();
+    expect(quiet.tabs()[0].label).toBe('Waiting for access · 2');
+    expect(quiet.waitingView()).toBe('purchases');
+  });
+
+  it('shows an admin Waiting for access with Purchase requests alone, and never asks for the waiting people', async () => {
+    setup('admin');
+    const page = TestBed.runInInjectionContext(() => new AdminAccessPage());
+    await page.ngOnInit();
+    expect(requests).not.toContain('/admin/access/waiting');
+    expect(requests).toContain('/admin/test-accounts');
+    expect(page.tabs().map(tab => tab.label)).toEqual(['Waiting for access · 2', 'Test accounts']);
+    expect(page.waitingViews().map(view => view.id)).toEqual(['purchases']);
+    expect(page.waitingView()).toBe('purchases');
+    // ?view=access is not theirs: it stays on Purchase requests.
+    TestBed.resetTestingModule();
+    testAccounts = [testRow('learner03', null)];
+    setup('admin', { tab: 'waiting', view: 'access' });
+    const none = TestBed.runInInjectionContext(() => new AdminAccessPage());
+    await none.ngOnInit();
+    expect(none.tabs().map(tab => tab.label)).toEqual(['Test accounts', 'Waiting for access']);
+    expect(none.tab()).toBe('waiting');
+    expect(none.waitingView()).toBe('purchases');
+    // Even asked directly, the page does not call the owner-only list for an admin.
+    await none.loadWaiting();
+    expect(requests).not.toContain('/admin/access/waiting');
+    expect(none.waiting()).toEqual([]);
+  });
+
+  it('renders the admin’s sub-tab and the requests, and loads them again after a decision', async () => {
+    setup('admin');
+    const fixture = TestBed.createComponent(AdminAccessPage);
+    fixture.detectChanges(); await fixture.whenStable(); fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const section = root.querySelector('#waiting-for-access')!;
+    expect(text(section.querySelector('h2'))).toBe('Waiting for access');
+    expect(text(section.querySelector('.section-note'))).toContain('In DEV only test accounts can buy.');
+    expect([...section.querySelectorAll('.waiting-tabs [role="tab"]')].map(text)).toEqual(['Purchase requests 2']);
+    expect(section.querySelector('#waiting-panel')?.getAttribute('aria-labelledby')).toBe('waiting-tab-purchases');
+    expect(section.querySelector('.waiting-table')).toBeNull();
+    expect(text(section.querySelector('app-purchase-requests .request-count'))).toBe('2 purchase requests waiting');
+    expect(section.querySelectorAll('app-purchase-requests .request-item')).toHaveLength(2);
+    const loads = () => requests.filter(path => path === '/admin/test-accounts').length;
+    const before = loads();
+    section.querySelector<HTMLButtonElement>('.section-heading.with-action button')!.click();
+    await fixture.whenStable();
+    expect(loads()).toBe(before + 1);
+    // A failed load is said inside the panel.
+    testStatus = 500;
+    await fixture.componentInstance.loadPurchases(); fixture.detectChanges();
+    expect(text(section.querySelector('app-purchase-requests [role="alert"]'))).toBe('Purchase requests could not be loaded. Refresh to retry.');
+    testStatus = 200;
+    await fixture.componentInstance.loadPurchases(); fixture.detectChanges();
+    expect(section.querySelector('app-purchase-requests [role="alert"]')).toBeNull();
+  });
+
+  it('switches the owner between DEV access and Purchase requests', async () => {
+    setup('owner', { tab: 'waiting' });
+    const fixture = TestBed.createComponent(AdminAccessPage);
+    fixture.detectChanges(); await fixture.whenStable();
+    await fixture.componentInstance.reload(); fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const subTabs = () => [...root.querySelectorAll<HTMLButtonElement>('.waiting-tabs [role="tab"]')];
+    expect(subTabs().map(text)).toEqual(['DEV access 1', 'Purchase requests 2']);
+    expect(subTabs().map(tab => tab.getAttribute('aria-selected'))).toEqual(['true', 'false']);
+    expect(root.querySelector('.waiting-table')).not.toBeNull();
+    expect(root.querySelector('app-purchase-requests')).toBeNull();
+    subTabs()[1].click(); fixture.detectChanges();
+    expect(root.querySelector('.waiting-table')).toBeNull();
+    expect(root.querySelector('app-purchase-requests')).not.toBeNull();
+    expect(replaceState).toHaveBeenLastCalledWith('/admin/access', 'tab=waiting&view=purchases');
+    subTabs()[1].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true })); fixture.detectChanges();
+    expect(root.querySelector('.waiting-table')).not.toBeNull();
+    expect(document.activeElement?.id).toBe('waiting-tab-access');
+  });
+
+  it('shows co-authors no purchase requests and no Waiting for access', async () => {
+    setup('co-author');
+    const page = TestBed.runInInjectionContext(() => new AdminAccessPage());
+    await page.ngOnInit();
+    expect(page.canDecide()).toBe(false);
+    expect(page.purchaseCount()).toBe(0);
+    expect(page.waitingViews()).toEqual([]);
+    expect(page.tabs().map(tab => tab.id)).toEqual(['saved', 'test', 'people']);
+    expect(requests).not.toContain('/admin/access/waiting');
+    await page.loadPurchases();
+    expect(page.purchaseRows()).toEqual([]);
+  });
+
+  it('outside DEV keeps Waiting for access as it was: no sub-tabs for the owner, no tab for an admin', async () => {
+    testAccounts = [testRow('learner03', null)];
+    setup('owner', { dev: false, tab: 'waiting' });
+    const fixture = TestBed.createComponent(AdminAccessPage);
+    fixture.detectChanges(); await fixture.whenStable();
+    await fixture.componentInstance.reload(); fixture.detectChanges();
+    expect(fixture.componentInstance.waitingViews().map(view => view.id)).toEqual(['access']);
+    expect((fixture.nativeElement as HTMLElement).querySelector('.waiting-tabs')).toBeNull();
+    expect((fixture.nativeElement as HTMLElement).querySelector('#waiting-panel')?.getAttribute('role')).toBeNull();
+    TestBed.resetTestingModule();
+    setup('admin', { dev: false });
+    const admin = TestBed.runInInjectionContext(() => new AdminAccessPage());
+    await admin.ngOnInit();
+    expect(admin.tabs().map(tab => tab.id)).toEqual(['test']);
   });
 });

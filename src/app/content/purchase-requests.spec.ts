@@ -139,12 +139,12 @@ describe('DEV purchase requests contract (DLV-969, owner 2026-11-04)', () => {
   it('builds the Review request address with the purchase, a same-site return path and the account', () => {
     expect(REVIEW_PARAMS).toEqual({ request: 'request', returnTo: 'return', account: 'account' });
     expect(reviewRequestUrl({ purchaseId: 'pur-9', returnTo: '/grow/java/streams?unit=2', accountId: 'acc-06' })).toBe(
-      '/admin/access?tab=test&request=pur-9&return=%2Fgrow%2Fjava%2Fstreams%3Funit%3D2&account=acc-06',
+      '/admin/access?tab=waiting&view=purchases&request=pur-9&return=%2Fgrow%2Fjava%2Fstreams%3Funit%3D2&account=acc-06',
     );
     for (const returnTo of ['//elsewhere.example', 'https://elsewhere.example/', '/\\elsewhere.example', 'grow', null]) {
-      expect(reviewRequestUrl({ purchaseId: 'pur-9', returnTo, accountId: 'acc-06' })).toBe('/admin/access?tab=test&request=pur-9&account=acc-06');
+      expect(reviewRequestUrl({ purchaseId: 'pur-9', returnTo, accountId: 'acc-06' })).toBe('/admin/access?tab=waiting&view=purchases&request=pur-9&account=acc-06');
     }
-    expect(reviewRequestUrl({})).toBe('/admin/access?tab=test');
+    expect(reviewRequestUrl({})).toBe('/admin/access?tab=waiting&view=purchases');
   });
 
   it('reads the review back from the address, dropping an unsafe return path', () => {
@@ -156,6 +156,10 @@ describe('DEV purchase requests contract (DLV-969, owner 2026-11-04)', () => {
       purchaseId: 'pur-9', returnTo: null, accountId: null,
     });
     expect(requestReviewOf(address('/admin/access?tab=test&return=%2Flearn&account=acc-06'))).toBeNull();
+    // The older Test accounts form (before the owner moved purchase requests, 2026-11-04) still reads the same review.
+    expect(requestReviewOf(address('/admin/access?tab=test&request=pur-9&return=%2Flearn&account=acc-06'))).toEqual({
+      purchaseId: 'pur-9', returnTo: '/learn', accountId: 'acc-06',
+    });
     expect(requestReviewOf(address('/admin/access?request=%20%20'))).toBeNull();
   });
 });

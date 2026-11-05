@@ -208,12 +208,17 @@ export function decidePurchase(
 }
 
 /**
- * DLV-969 (owner, 2026-11-04): Review request on the request-sent notice ends the test session and lands here, on the
- * request in People and access → Test accounts. The address is the only place these values travel; the page reads them
- * once and removes them.
+ * DLV-969 (owner, 2026-11-04): Go to People and access on the DEV checkout screen ends the test session and lands here, on the
+ * request in People and access → Waiting for access → Purchase requests (owner update after DEV testing, same day; the
+ * older `tab=test&request=` address still opens it there). The address is the only place these values travel; the page
+ * reads them once and removes them.
  */
 export const REVIEW_PARAMS = { request: 'request', returnTo: 'return', account: 'account' } as const;
 export const REVIEW_PATH = '/admin/access';
+/** The tab and sub-tab a review opens: `tab=waiting&view=purchases`. */
+export const REVIEW_TAB = 'waiting';
+export const REVIEW_VIEW_PARAM = 'view';
+export const REVIEW_VIEW = 'purchases';
 
 /** Which request to open, and where Switch to the test account should land afterwards. */
 export interface RequestReview {
@@ -224,11 +229,11 @@ export interface RequestReview {
 }
 
 /**
- * "/admin/access?tab=test&request=<purchaseId>&return=<path>&account=<testAccountId>". A `returnTo` that is not a
- * same-site path is left out; a missing purchase id or account is left out too.
+ * "/admin/access?tab=waiting&view=purchases&request=<purchaseId>&return=<path>&account=<testAccountId>". A `returnTo`
+ * that is not a same-site path is left out; a missing purchase id or account is left out too.
  */
 export function reviewRequestUrl(review: { purchaseId?: string | null; returnTo?: string | null; accountId?: string | null }): string {
-  const params = new URLSearchParams({ tab: 'test' });
+  const params = new URLSearchParams({ tab: REVIEW_TAB, [REVIEW_VIEW_PARAM]: REVIEW_VIEW });
   if (review.purchaseId) params.set(REVIEW_PARAMS.request, review.purchaseId);
   const returnTo = sameSitePath(review.returnTo);
   if (returnTo) params.set(REVIEW_PARAMS.returnTo, returnTo);
