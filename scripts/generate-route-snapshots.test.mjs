@@ -10,6 +10,7 @@ import {
   readPublicPageText,
   renderSnapshot,
   writeRouteSnapshots,
+  SNAPSHOT_STYLE,
 } from './generate-route-snapshots.mjs';
 
 const SECRET = 'PROTECTED-LESSON-BODY';
@@ -135,6 +136,10 @@ test('renders one set of head tags and a summary inside app-root, escaping text'
   assert.match(html, /<meta name="twitter:card" content="summary_large_image" \/>/);
   assert.match(html, /<app-root><main class="route-snapshot"><h1>A &quot;quoted&quot; lesson<\/h1><p>Uses &amp; &quot;quotes&quot;.<\/p><ul><li><a href="\/learn">Learn<\/a><\/li><\/ul><\/main><\/app-root>/);
   assert.match(html, /<script src="main-ABC123\.js" type="module"><\/script>/);
+  // DLV-969: the summary stays hidden while JavaScript starts the app; it shows only without JavaScript.
+  assert.equal(html.split(SNAPSHOT_STYLE).length - 1, 1);
+  assert.ok(html.indexOf(SNAPSHOT_STYLE) < html.indexOf('</head>'));
+  assert.ok(html.indexOf(SNAPSHOT_STYLE) < html.indexOf('<app-root>'));
   const withoutOrigin = renderSnapshot(SHELL, { path: '/learn', title: 'Learn | LookAhead', description: 'D', heading: 'Learn', image: '/assets/scenes/landing/learn.svg' }, { origin: null, siteName: 'LookAhead' });
   assert.doesNotMatch(withoutOrigin, /canonical|og:url|og:image|twitter:image/);
   assert.match(withoutOrigin, /<meta name="twitter:card" content="summary" \/>/);
