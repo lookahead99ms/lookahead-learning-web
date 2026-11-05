@@ -714,6 +714,53 @@ button:disabled {
   line-height: 1.5;
 }
 
+/* DLV-969 (owner, DEV test 2026-11-04): Waiting for access → DEV access | Purchase requests, in the switcher's look:
+   underlined tabs with a count pill, under the section heading. */
+.waiting-tabs {
+  display: flex;
+  gap: 4px;
+  margin: 0 0 16px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--line);
+}
+.waiting-tabs button {
+  flex: none;
+  margin-bottom: -1px;
+  padding: 10px 12px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--text-subtle);
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+.waiting-tabs button:hover {
+  color: var(--text-strong);
+}
+.waiting-tabs button[aria-selected='true'] {
+  border-bottom-color: var(--accent-strong);
+  color: var(--text-strong);
+}
+.waiting-tabs button:focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: -3px;
+  border-radius: 6px 6px 0 0;
+}
+.waiting-tabs .tab-count {
+  margin-left: 4px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  color: var(--text-subtle);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.waiting-tabs button[aria-selected='true'] .tab-count {
+  background: color-mix(in srgb, var(--accent-strong) 14%, var(--surface));
+  color: var(--text-strong);
+}
+
 /* DLV-969 (2026-11-02): Waiting for access. The same table shape as Test accounts and People;
    the Admit menu and button sit together in the last column. */
 .waiting-table {

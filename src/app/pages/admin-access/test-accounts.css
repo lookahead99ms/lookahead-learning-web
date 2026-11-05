@@ -414,46 +414,234 @@ tr.self > * {
     gap: 6px;
   }
 }
-/* DLV-969 S35: the owner's DEV roster; the action sits right of the heading and stacks on phones. */
+/* DLV-969 (owner, 2026-11-04): Test accounts opens with two cards of equal height in one row, Test accounts and Test
+   roster; by the column's width (the page's access-panel container) they stack one above the other. Each card has a
+   small header row, its description, then its action rows behind a subtle divider. */
+.test-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 16px;
+}
+.test-cards.single {
+  grid-template-columns: minmax(0, 1fr);
+}
+.test-card,
 .roster-card {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin: 18px 0;
-  padding: 16px;
+  flex-direction: column;
+  min-width: 0;
+  padding: 20px 22px;
   border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--surface-muted);
+  border-radius: 16px;
+  background: var(--surface-page);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 4%);
 }
-.roster-card h3 {
-  margin: 0 0 4px;
+.card-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
 }
+.card-mark {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  font-size: 17px;
+}
+.card-heading h2,
+.card-heading h3 {
+  margin: 0;
+  color: var(--text-strong);
+  font-size: 18px;
+  letter-spacing: -0.01em;
+}
+/* The description grows, so both cards' action rows line up at the bottom. */
+.card-body {
+  display: grid;
+  flex: 1;
+  align-content: start;
+  gap: 8px;
+}
+.test-card .note,
 .roster-card p {
   margin: 0;
   color: var(--text-subtle);
   font-size: 0.9rem;
-}
-.roster-card .roster-plans,
-.roster-card .roster-note {
-  margin-top: 6px;
+  line-height: 1.5;
 }
 .roster-card code {
   overflow-wrap: anywhere;
 }
-.roster-card .action-button {
-  flex: none;
-}
-.roster-actions {
+/* Action rows: right-aligned, secondary before primary, behind a subtle divider. */
+.card-actions {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.roster-lines {
+  display: grid;
+  margin-top: 16px;
+  border-top: 1px solid var(--line);
+}
+/* A line and the button that acts on it, on one row; the button wraps under the line when the card is narrow. */
+.roster-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  min-height: 44px;
+  padding: 10px 0;
+}
+.roster-line + .roster-line {
+  border-top: 1px dashed var(--line);
+}
+.roster-line > p,
+.roster-line-text {
+  flex: 1 1 10rem;
+  min-width: 0;
+}
+.roster-line-text {
+  display: grid;
+  gap: 2px;
+}
+.roster-line .action-link {
   flex: none;
-  flex-direction: column;
-  gap: 8px;
+  min-width: 104px;
+  margin-left: auto;
+  padding-inline: 18px;
+}
+.roster-card .roster-status,
+.roster-card .roster-status strong {
+  color: var(--text-strong);
+  font-size: 0.95rem;
+}
+.roster-card .roster-note {
+  color: var(--text-body);
+}
+.roster-card .line-hint {
+  font-size: 0.8rem;
+}
+.roster-lines + .roster-actions {
+  margin-top: 0;
+}
+/* Greyed out: Restore with nothing deleted, Reset all with nothing changed, anything while busy. */
+.directory :is(.action-button, .action-link):disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  filter: grayscale(0.85);
+}
+.directory .action-button:disabled:hover {
+  border-color: var(--accent-strong);
+  background: var(--accent-strong);
+}
+.directory .action-link:disabled:hover {
+  background: color-mix(in srgb, var(--accent-strong) 10%, transparent);
+  color: var(--accent-strong);
+}
+/* The one confirmation that is open, full width under both cards. */
+.action-panel {
+  margin: 16px 0 0;
+  background: var(--surface);
+}
+/* A failed action says why inside its own panel, which stays open (owner, DEV test 2026-11-04). */
+.panel-error {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--danger) 45%, var(--line));
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--danger) 9%, var(--surface));
+  color: var(--text-strong);
+  font-weight: 650;
+}
+.test-view > .notice {
+  margin-top: 16px;
+}
+/* Learners, Co-authors and Admins, in the switcher's look: underlined tabs with a count pill. */
+.list-tabs {
+  display: flex;
+  gap: 4px;
+  margin: 20px 0 14px;
+  border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+}
+.list-tabs button {
+  flex: none;
+  margin-bottom: -1px;
+  padding: 10px 12px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--text-subtle);
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+.list-tabs button[aria-selected='true'] {
+  border-bottom-color: var(--accent-strong);
+  color: var(--text-strong);
+}
+.list-tabs button:focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: -3px;
+  border-radius: 6px 6px 0 0;
+}
+.list-tabs button:disabled {
+  cursor: not-allowed;
+}
+.tab-count {
+  margin-left: 4px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  color: var(--text-subtle);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.list-tabs button[aria-selected='true'] .tab-count {
+  background: color-mix(in srgb, var(--accent-strong) 14%, var(--surface));
+  color: var(--text-strong);
+}
+@container access-panel (max-width: 760px) {
+  .test-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+/* Phones: actions stack at full width, the primary on top. */
+@container access-panel (max-width: 560px) {
+  .card-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+  .card-actions button,
+  .roster-line .action-link {
+    width: 100%;
+    margin-left: 0;
+  }
 }
 @media (max-width: 640px) {
-  .roster-card {
-    flex-direction: column;
+  .test-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .card-actions {
+    flex-direction: column-reverse;
     align-items: stretch;
+  }
+  .card-actions button,
+  .roster-line .action-link {
+    width: 100%;
+    margin-left: 0;
   }
 }
 /* DLV-969 (2026-11-04): every confirmation heading matches the Reset legend. */
@@ -469,181 +657,11 @@ tr.self > * {
   color: var(--text-subtle);
   font-size: 0.92em;
 }
-/* DLV-969 (owner, 2026-11-04): DEV purchase requests for the owner and admins, above the list. Each request reads
-   left to right; its own actions sit at its right edge and stack on phones (button placement rule). */
-.purchase-requests {
-  margin: 18px 0;
-  padding: 16px;
-  border: 1px solid color-mix(in srgb, var(--warning) 45%, var(--line));
-  border-radius: 14px;
-  background: var(--surface-muted);
-}
-.purchase-requests-heading {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 4px 16px;
-}
-.purchase-requests h3 {
-  margin: 0;
-}
-.request-count {
-  margin: 0;
-  color: var(--text-strong);
-  font-weight: 700;
-}
-.purchase-requests > .note {
-  margin: 6px 0 0;
-  color: var(--text-subtle);
-  font-size: 0.9rem;
-}
-.request-list {
-  display: grid;
-  gap: 10px;
-  margin: 14px 0 0;
-  padding: 0;
-  list-style: none;
-}
-.request-item {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px 16px;
-  padding: 12px 14px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface);
-}
-/* Labelled facts: Account, Request, Term, Price, Submitted by, When. */
-.request-facts {
-  display: grid;
-  flex: 1;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 8px 16px;
-  min-width: 0;
-  margin: 0;
-}
-.request-facts dt {
-  color: var(--text-subtle);
-  font-size: 12px;
-  font-weight: 700;
-}
-.request-facts dd {
-  margin: 0;
-  overflow-wrap: anywhere;
-}
-.request-account,
-.request-words {
-  color: var(--text-strong);
-  font-weight: 700;
-}
-.request-price {
-  font-weight: 700;
-}
-.request-difference {
-  color: var(--text-subtle);
-}
-.request-actions {
-  display: flex;
-  flex: none;
-  gap: 10px;
-}
-.request-item .decline-panel {
-  flex-basis: 100%;
-  margin: 4px 0 0;
-}
-.reset-panel h4 {
-  margin: 0 0 10px;
-  color: var(--text-strong);
-  font-size: inherit;
-  font-weight: 750;
-}
-.decline-panel p {
-  margin: 0;
-}
+/* A test account with a purchase request waiting (the requests are on Waiting for access → Purchase requests). */
 .state-badge.request-badge {
   border: 1px solid var(--warning);
   color: var(--text-body);
   background: color-mix(in srgb, var(--warning) 14%, var(--surface));
-}
-@media (max-width: 640px) {
-  .request-actions {
-    flex-direction: column;
-    width: 100%;
-  }
-  .request-actions button {
-    width: 100%;
-  }
-}
-/* DLV-969 (owner, 2026-11-04): the request a test account's Review request opened on. */
-.request-item.highlighted {
-  border-color: var(--accent-strong);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-strong) 22%, transparent);
-  background: color-mix(in srgb, var(--accent-strong) 5%, var(--surface));
-}
-.request-item.highlighted:focus-visible {
-  outline: 3px solid var(--accent-focus);
-  outline-offset: 3px;
-}
-/* What Approve or Decline did, under the requests: two related actions centred, Close as a text line below. */
-.decision-result {
-  margin: 14px 0 0;
-  padding: 14px 16px;
-  border: 1px solid color-mix(in srgb, var(--success) 50%, var(--line));
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--success) 9%, var(--surface));
-  text-align: center;
-}
-.decision-result.declined {
-  border-color: var(--line);
-  background: var(--surface);
-}
-.decision-result:focus-visible {
-  outline: 3px solid var(--accent-focus);
-  outline-offset: 3px;
-}
-.decision-result p {
-  max-width: 72ch;
-  margin: 0 auto;
-  line-height: 1.5;
-}
-.decision-result strong {
-  display: block;
-  margin-bottom: 4px;
-  color: var(--text-strong);
-}
-.decision-result strong.inline-strong {
-  display: inline;
-  margin: 0;
-}
-.decision-result .actions {
-  flex-wrap: wrap;
-}
-.result-close {
-  margin-top: 8px;
-}
-.text-button {
-  padding: 4px 8px;
-  border: 0;
-  background: none;
-  color: var(--accent-strong);
-  font: inherit;
-  font-weight: 700;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  cursor: pointer;
-}
-.text-button:focus-visible {
-  outline: 3px solid var(--accent-focus);
-  outline-offset: 2px;
-  border-radius: 6px;
-}
-.result-error {
-  margin-top: 8px;
-  color: var(--text-strong);
-  font-weight: 650;
 }
 /* Upgraded through an approved request: others should be careful before using or resetting it. */
 .upgrade-marker {
@@ -664,11 +682,4 @@ tr.self > * {
 .reset-explanation {
   max-width: 60ch;
 }
-@media (max-width: 640px) {
-  .decision-result .actions {
-    flex-direction: column;
-  }
-  .decision-result .actions button {
-    width: 100%;
-  }
-}
+

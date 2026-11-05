@@ -89,7 +89,7 @@ describe('TestSessions', () => {
   });
 
   it('lands on a same-site next path instead of the Gateway’s answer, for back() and use() (DLV-969)', async () => {
-    const review = '/admin/access?tab=test&request=pur-9&return=%2Fgrow%2Fjava&account=id-learner05';
+    const review = '/admin/access?tab=waiting&view=purchases&request=pur-9&return=%2Fgrow%2Fjava&account=id-learner05';
     request.mockResolvedValueOnce({ next: '/sign-in' });
     await sessions.back(review);
     expect(request).toHaveBeenLastCalledWith('/auth/test-session/end', {});

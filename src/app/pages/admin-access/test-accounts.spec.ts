@@ -6,7 +6,6 @@ import { TestAccounts, TestAccountRow } from './test-accounts';
 import { MembershipApi, MembershipRequestError } from '../../content/membership-api';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import { DevSession } from '../../core/dev-session-notice/dev-session';
-import { TestSessions } from '../../core/test-session/test-sessions';
 const row:TestAccountRow={accountId:'test-id',username:'learner09',roles:[],revision:3,access:{label:'Free'},lastChangedBy:'seed',lastChangedAt:'2026-10-16',legacyPresetAvailable:true,canDelete:true};
 describe('Test account maintenance',()=>{
  let request:ReturnType<typeof vi.fn>;let account:ReturnType<typeof signal<any>>;let component:TestAccounts;
@@ -88,7 +87,10 @@ describe('Test account maintenance',()=>{
   expect(guide.textContent).toContain('Managed test accounts and saved plans');
   expect(guide.getAttribute('href')).toBe('/admin/local-development#managed-test-accounts-and-saved-plans');
   expect(root.querySelector('.row-actions')).toBeNull();
-  expect(root.querySelectorAll('tbody input[type="checkbox"]')).toHaveLength(2);
+  // DLV-969 (owner, 2026-11-04): Learners and Admins tabs with counts, no Role menu; Learners opens first.
+  expect([...root.querySelectorAll('.list-tabs [role="tab"]')].map(tab=>tab.textContent?.replace(/\s+/g,' ').trim())).toEqual(['Learners 1','Admins 1']);
+  expect(root.querySelector('.directory-tools select')).toBeNull();
+  expect(root.querySelectorAll('tbody input[type="checkbox"]')).toHaveLength(1);
   expect(root.querySelector('.selection-toolbar')).toBeNull();
   const selectLearner=root.querySelector('tr[data-account="learner09"] input[type="checkbox"]') as HTMLInputElement;
   selectLearner.click();fixture.detectChanges();
@@ -123,9 +125,12 @@ describe('Test account maintenance',()=>{
   opensUnderTheToolbar('Delete learner09');
   expect(fixture.componentInstance.deleteConfirmation).toBe('');
   [...root.querySelectorAll<HTMLButtonElement>('.reset-panel button')].find(b=>b.textContent?.trim()==='Cancel')!.click();fixture.detectChanges();
+  // Another tab drops the selection and shows that tab's accounts.
+  root.querySelector<HTMLButtonElement>('#list-tab-admins')!.click();fixture.detectChanges();
+  expect(root.querySelector('.selection-toolbar')).toBeNull();
+  expect(root.querySelector('tr[data-account="learner09"]')).toBeNull();
   const selectAdmin=root.querySelector('tr[data-account="admin01"] input[type="checkbox"]') as HTMLInputElement;
   selectAdmin.click();fixture.detectChanges();
-  expect(selectLearner.checked).toBe(false);
   expect(root.querySelector('.selection-toolbar')?.textContent).toContain('admin01 selected');
   expect(root.querySelector('.selection-row')!.previousElementSibling!.getAttribute('data-account')).toBe('admin01');
   expect(root.querySelector('.selection-toolbar')?.textContent).not.toContain('Delete');
@@ -151,14 +156,18 @@ describe('Test account maintenance',()=>{
   component.select(row);component.confirmation=row.username;
   request.mockRejectedValueOnce(new Error('Test account changed; reload before resetting'));
   await component.reset();
-  expect(component.notice()).toBe('Test account changed; reload before resetting Reset was not confirmed. Retry the same reset, or cancel and refresh before another change.');
+  // DLV-969 (owner, DEV test 2026-11-04): the reason stays inside the open panel, not in the page notice.
+  expect(component.panelError()).toBe('Test account changed; reload before resetting Reset was not confirmed. Retry the same reset, or cancel and refresh before another change.');
+  expect(component.notice()).toBe('');expect(component.selected()).toBe(row);
+  component.cancel();expect(component.panelError()).toBe('');
   (component as any).api.remove=vi.fn(async()=>{throw new Error('Your role cannot delete this test account.');});
   component.deleting.set(row);component.deleteConfirmation=row.username;
   await component.deleteAccount();
-  expect(component.notice()).toBe('Your role cannot delete this test account. Deletion was not confirmed. Retry the same account.');
+  expect(component.panelError()).toBe('Your role cannot delete this test account. Deletion was not confirmed. Retry the same account.');
+  expect(component.deleting()).toBe(row);
   (component as any).api.remove=vi.fn(async()=>{throw 'no message';});
   await component.deleteAccount();
-  expect(component.notice()).toBe('Deletion was not confirmed. Retry the same account.');
+  expect(component.panelError()).toBe('Deletion was not confirmed. Retry the same account.');
  });
  it('keeps one confirmation open at a time, whichever action opened it (DLV-969)',()=>{
   account.set({accountId:'owner-1',permissions:{feedbackRole:'owner',manageAccess:true}});
@@ -245,7 +254,14 @@ describe('Test account maintenance',()=>{
   page.removalConfirmation='DELETE';await page.confirmRemoval();
   expect(request).not.toHaveBeenCalledWith('/admin/accounts/cloud-id/disable',expect.anything());
   page.removalConfirmation='DISABLE';fixture.detectChanges();expect(confirm().disabled).toBe(false);
+  // DLV-969 (owner, DEV test 2026-11-04): a failure keeps the panel open with the server's message inside it.
+  request.mockRejectedValueOnce(new Error('Request body is not valid JSON'));
   confirm().click();await fixture.whenStable();fixture.detectChanges();
+  expect(panel.querySelector('.panel-error')?.textContent).toBe('Request body is not valid JSON Disable was not confirmed. Refresh and retry.');
+  expect(panel.querySelector('.panel-error')?.getAttribute('role')).toBe('alert');
+  expect(root.querySelector('.removal + .reset-panel.danger-panel')).toBe(panel);
+  confirm().click();await fixture.whenStable();fixture.detectChanges();
+  expect(root.querySelector('.reset-panel')).toBeNull();
   expect(request).toHaveBeenCalledWith('/admin/accounts/cloud-id/disable',{confirmation:'DISABLE'});
   expect(page.notice()).toBe('Alex is disabled. Every sign-in is blocked and their open session closes within 5 minutes.');
   expect(root.querySelector('tr[data-account="Alex"] .state-badge.disabled')?.textContent?.replace(/\s+/g,' ').trim()).toBe('⚠ Disabled');
@@ -289,9 +305,9 @@ describe('Test account maintenance',()=>{
   expect(request.mock.calls.filter(([path])=>String(path).startsWith('/admin/accounts/'))).toEqual([]);
   // A failed call keeps the panel and says so.
   page.startRemoval({...row,canDisable:true},'disable');page.removalConfirmation='DISABLE';await page.confirmRemoval();
-  expect(page.notice()).toBe('Disable was not confirmed. Refresh and retry.');expect(page.removing()).not.toBeNull();
-  page.startRemoval({...row,canRemove:true},'remove');page.removalConfirmation='DELETE';await page.confirmRemoval();
-  expect(page.notice()).toBe('Deletion was not confirmed. Refresh and retry the same account.');
+  expect(page.panelError()).toBe('down Disable was not confirmed. Refresh and retry.');expect(page.removing()).not.toBeNull();
+  page.startRemoval({...row,canRemove:true},'remove');expect(page.panelError()).toBe('');page.removalConfirmation='DELETE';await page.confirmRemoval();
+  expect(page.panelError()).toBe('down Deletion was not confirmed. Refresh and retry the same account.');
   await page.enable({...row,canEnable:true});expect(page.notice()).toBe('Enable was not confirmed. Refresh and retry.');
   expect(page.busy()).toBe(false);
  });
@@ -352,21 +368,20 @@ describe('Test account maintenance',()=>{
     if(body?.roster){ready=Math.min(35,ready+5);return {total:35,ready,deleted:0};}
     return path==='/admin/test-accounts/allowance'?{limit:2147483647,used:0,remaining:2147483647,roster:{total:35,ready,deleted:0},scenarios}:[];
    });
-   (card.querySelector('button') as HTMLButtonElement).click();
+   (card.querySelector('.roster-actions button') as HTMLButtonElement).click();
    await fixture.whenStable();fixture.detectChanges();
    expect(request.mock.calls.filter(([,body])=>body?.roster).length).toBe(7);
    expect(fixture.componentInstance.notice()).toContain('The test roster is ready');
    // Every account exists: the card stays as a record, without a button.
-   expect(root.querySelector('.roster-card')?.textContent).toContain('35 of 35 ready');
-   expect(root.querySelector('.roster-card button')).toBeNull();
+   expect(root.querySelector('.roster-status')?.textContent?.trim()).toBe('35 of 35 ready.');
+   expect(root.querySelector('.roster-actions')).toBeNull();
   });
 
   it('a stopped roster says so and continues with the remaining accounts',async()=>{
    const fixture=page({limit:2147483647,used:0,remaining:2147483647,roster:{total:35,ready:10,deleted:1},scenarios});
    const root=await shown(fixture);
-   // The owner is told Restore brings the deleted one back (DLV-969, 2026-11-04).
-   expect(root.querySelector('.roster-card')?.textContent).toContain('1 deleted — Restore brings them back');
-   expect(root.querySelector('.roster-card button')?.textContent?.trim()).toBe('Create the other 24');
+   expect(root.querySelector('.roster-card')?.textContent?.replace(/\s+/g,' ')).toContain('10 of 35 ready, 1 deleted.');
+   expect(root.querySelector('.roster-actions button')?.textContent?.trim()).toBe('Create the other 24');
    request.mockRejectedValueOnce(new Error('Test accounts are unavailable. Retry shortly.'));
    await fixture.componentInstance.createRoster();
    expect(fixture.componentInstance.notice()).toBe('Test accounts are unavailable. Retry shortly. The roster stopped part way. Create again to continue.');
@@ -393,6 +408,8 @@ describe('Test account maintenance',()=>{
    const root=await shown(fixture);const component=fixture.componentInstance;
    expect(root.querySelector('.roster-note')?.textContent).toContain('never deleted');
    const resetAll=[...root.querySelectorAll<HTMLButtonElement>('.roster-card button')].find(b=>b.textContent?.trim()==='Reset all')!;
+   // An older Domain without roster.changed keeps Reset all available.
+   expect(resetAll.disabled).toBe(false);
    // Opening it closes any confirmation that was open on a row.
    component.select(listed[0] as any);
    resetAll.click();fixture.detectChanges();
@@ -442,7 +459,7 @@ describe('Test account maintenance',()=>{
      return path==='/admin/test-accounts/allowance'?allowance(deleted):path==='/admin/test-accounts'?[]:body?{}:{accounts:[],page:0,hasNext:false};
     });
     const root=await shown(page2);const component=page2.componentInstance;
-    expect(root.querySelector('.roster-card')?.textContent?.replace(/\s+/g,' ')).toContain('32 of 35 ready, 3 deleted — Restore brings them back.');
+    expect(root.querySelector('.roster-card')?.textContent?.replace(/\s+/g,' ')).toContain('32 of 35 ready, 3 deleted.');
     expect(root.querySelector('.roster-card')?.textContent).not.toContain('not created again');
     const open=restoreButton(root)!;
     expect(open.textContent?.trim()).toBe('Restore 3');
@@ -470,8 +487,9 @@ describe('Test account maintenance',()=>{
     expect(root.querySelector('.notice')?.textContent).toBe('Restored 3 roster accounts.');
     expect(component.rosterRestore()).toBeNull();
     expect(component.rosterRestoreConfirmation).toBe('');
-    // The list was loaded again: nothing deleted, so no Restore and the plain count.
-    expect(root.querySelector('.roster-card')?.textContent).toContain('35 of 35 ready.');
+    // The counts were loaded again at once: nothing deleted, so the line says so, Restore is gone, and so is the panel.
+    expect(request.mock.calls.filter(([path])=>path==='/admin/test-accounts/allowance').length).toBeGreaterThanOrEqual(2);
+    expect(root.querySelector('.roster-status')?.textContent?.trim()).toBe('35 of 35 ready.');
     expect(restoreButton(root)).toBeUndefined();
     expect(root.querySelector('.roster-restore')).toBeNull();
    });
@@ -490,32 +508,42 @@ describe('Test account maintenance',()=>{
     const fixture=page(allowance(2));
     const root=await shown(fixture);const component=fixture.componentInstance;
     component.openRosterRestore();component.rosterRestoreConfirmation='RESTORE';
-    request.mockRejectedValueOnce(new MembershipRequestError('Only the owner can restore the roster.',403));
-    await component.restoreRoster();
-    expect(component.notice()).toBe('Only the owner can restore the roster. Restore was not confirmed. Refresh and retry.');
+    request.mockRejectedValueOnce(new MembershipRequestError('Request body is not valid JSON',400));
+    await component.restoreRoster();fixture.detectChanges();
+    // DLV-969 (owner, DEV test 2026-11-04): the panel stays open, with the server's message inside it.
+    expect(component.panelError()).toBe('Request body is not valid JSON Restore was not confirmed. Refresh and retry.');
+    expect(root.querySelector('.roster-restore .panel-error')?.textContent).toBe('Request body is not valid JSON Restore was not confirmed. Refresh and retry.');
+    expect(root.querySelector('.roster-restore .panel-error')?.getAttribute('role')).toBe('alert');
+    expect(component.notice()).toBe('');
     expect(component.rosterRestore()).toEqual({total:2});
     expect(component.busy()).toBe(false);
     request.mockRejectedValueOnce(new MembershipRequestError('Not found',404));
     await component.restoreRoster();
     fixture.detectChanges();
-    expect(component.notice()).toBe('Restore needs the newer Domain release.');
-    expect(root.querySelector('.notice')?.textContent).toBe('Restore needs the newer Domain release.');
-    expect(component.rosterRestore()).toBeNull();
-    // Cancel closes it without a request.
+    expect(root.querySelector('.roster-restore .panel-error')?.textContent).toBe('Restore needs the newer Domain release.');
+    expect(component.rosterRestore()).toEqual({total:2});
+    // Cancel closes it, and its message, without a request.
+    buttons(root,'.roster-restore .actions button').find(b=>b.textContent?.trim()==='Cancel')!.click();fixture.detectChanges();
+    expect(root.querySelector('.roster-restore')).toBeNull();expect(component.panelError()).toBe('');
     component.openRosterRestore();fixture.detectChanges();
     buttons(root,'.roster-restore .actions button').find(b=>b.textContent?.trim()==='Cancel')!.click();fixture.detectChanges();
     expect(root.querySelector('.roster-restore')).toBeNull();
     expect(request.mock.calls.filter(([path,body])=>path==='/admin/test-accounts'&&(body as any)?.restoreRoster)).toHaveLength(2);
    });
 
-   it('offers no Restore when nothing is deleted, nor to anyone but the owner',async()=>{
-    expect(restoreButton(await shown(page(allowance(0))))).toBeUndefined();
-    // An admin given a roster status by mistake still gets no Restore, and the old wording.
+   it('hides Restore when nothing is deleted, and offers it to nobody but the owner',async()=>{
+    const none=page(allowance(0));const empty=await shown(none);
+    expect(empty.querySelector('.roster-status')?.textContent?.trim()).toBe('35 of 35 ready.');
+    expect(restoreButton(empty)).toBeUndefined();
+    none.componentInstance.openRosterRestore();expect(none.componentInstance.rosterRestore()).toBeNull();
+    // An admin given a roster status by mistake still gets no Restore or Reset all.
     account.set({accountId:'admin-1',permissions:{feedbackRole:'admin',manageAccess:false,triageFeedback:true}});
     const fixture=page(allowance(2));
     const root=await shown(fixture);
-    expect(root.querySelector('.roster-card')?.textContent).toContain('2 deleted (not created again)');
+    expect(root.querySelector('.roster-card')?.textContent).toContain('33 of 35 ready, 2 deleted.');
     expect(restoreButton(root)).toBeUndefined();
+    expect(buttons(root,'.test-actions button').map(b=>b.textContent?.trim())).toEqual(['Refresh','Create test account']);
+    expect(buttons(root,'.roster-card button')).toHaveLength(0);
     fixture.componentInstance.openRosterRestore();
     expect(fixture.componentInstance.rosterRestore()).toBeNull();
     fixture.componentInstance.rosterRestoreConfirmation='RESTORE';
@@ -524,6 +552,203 @@ describe('Test account maintenance',()=>{
     // authorPreview without a feedback role counts as the owner, as elsewhere on this page.
     account.set({accountId:'owner-1',authorPreview:true});
     expect(restoreButton(await shown(page(allowance(2))))?.textContent?.trim()).toBe('Restore 2');
+   });
+  });
+
+  /** DLV-969 (owner, 2026-11-04): two cards with their own actions, one panel under both, a tabbed list. */
+  describe('layout',()=>{
+   const roster=(name:string,roles:string[]=[])=>({...row,accountId:name+'-id',username:name+'@lookahead.dev',roles,initialization:'scenario',creatorId:'owner-1'});
+   const listed=[roster('learner01'),roster('learner02'),roster('learner03'),roster('coauthor01',['co-author']),roster('admin01',['admin']),roster('admin02',['admin'])];
+   const allowance=(extra:Record<string,unknown>={})=>({limit:2147483647,used:4,remaining:2147483647,roster:{total:35,ready:33,deleted:2,changed:3,withoutPlan:0,...extra},scenarios});
+   function layout(quota:Record<string,unknown>){
+    const fixture=page(quota);
+    request.mockImplementation(async(path:string,body?:any)=>path==='/admin/test-accounts/allowance'?quota:path==='/admin/test-accounts'&&!body?listed:body?{}:{accounts:[],page:0,hasNext:false});
+    return fixture;
+   }
+   const labels=(root:HTMLElement,selector:string)=>[...root.querySelectorAll<HTMLButtonElement>(selector+' button')].map(b=>b.textContent?.trim());
+   const action=(root:HTMLElement,label:string)=>[...root.querySelectorAll<HTMLButtonElement>('.test-cards button')].find(b=>b.textContent?.trim().startsWith(label))!;
+
+   it('puts Test accounts and Test roster side by side, each with its own actions next to the line they act on',async()=>{
+    const root=await shown(layout(allowance()));
+    const cards=root.querySelector('.test-cards')!;
+    expect(cards.classList).not.toContain('single');
+    expect([...cards.children].map(card=>card.className)).toEqual(['test-card','roster-card']);
+    const left=cards.children[0] as HTMLElement,right=cards.children[1] as HTMLElement;
+    expect(left.querySelector('.card-heading h2')?.textContent).toBe('Test accounts');
+    expect(left.textContent).toContain('Switch to a test account in your account menu');
+    expect(left.querySelector('.lifetime')?.textContent?.replace(/\s+/g,' ')).toContain('Lifetime creations: 4 used · unlimited');
+    // Test accounts: its two actions at the bottom of the card, Refresh (secondary) then Create test account (primary).
+    const own=left.querySelector('.card-actions')!;
+    expect(own.getAttribute('role')).toBe('group');
+    expect(own.previousElementSibling?.classList).toContain('card-body');
+    expect(labels(left,'.card-actions')).toEqual(['Refresh','Create test account']);
+    expect([...own.querySelectorAll('button')].map(b=>b.className)).toEqual(['action-link','action-button']);
+    // Test roster: Restore beside the status line, Reset all beside the line about resetting.
+    expect(right.querySelector('.card-heading h3')?.textContent).toBe('Test roster');
+    const lines=[...right.querySelectorAll('.roster-line')];
+    expect(lines.map(line=>[line.querySelector('p')?.textContent?.replace(/\s+/g,' ').trim(),labels(line as HTMLElement,'')])).toEqual([
+     ['33 of 35 ready, 2 deleted.',['Restore 2']],
+     ['Roster accounts are never deleted; Reset puts one back to its scenario.',['Reset all']],
+    ]);
+    expect([...right.querySelectorAll<HTMLButtonElement>('button')].map(b=>b.disabled)).toEqual([false,false]);
+    expect(right.querySelector('.line-hint')).toBeNull();
+    // No separate row of buttons under the cards, no old heading buttons and no Role menu on this tab.
+    expect(cards.nextElementSibling?.classList.contains('test-actions')).toBe(false);
+    expect(root.querySelector('.test-actions-hint')).toBeNull();
+    expect(root.querySelector('.directory-heading, .heading-actions')).toBeNull();
+    expect(root.querySelector('.directory-tools select')).toBeNull();
+   });
+
+   it('says "35 of 35 ready." without Restore when nothing is deleted, and greys Reset all when nothing changed',async()=>{
+    let root=await shown(layout(allowance({changed:0,deleted:0,ready:35})));
+    expect(root.querySelector('.roster-status')?.textContent?.trim()).toBe('35 of 35 ready.');
+    expect(root.querySelector('.roster-line')?.querySelector('button')).toBeNull();
+    expect(action(root,'Restore')).toBeUndefined();
+    expect(action(root,'Reset all').disabled).toBe(true);
+    expect(action(root,'Reset all').getAttribute('title')).toBe('Nothing to reset: every roster account is at its scenario');
+    expect(root.querySelector('#reset-hint')?.textContent).toBe('Nothing to reset: every roster account is at its scenario');
+    expect(root.querySelector('#reset-hint')?.closest('.roster-line')).toBe(action(root,'Reset all').closest('.roster-line'));
+    expect(action(root,'Reset all').getAttribute('aria-describedby')).toBe('reset-hint');
+    expect(action(root,'Create test account').disabled).toBe(false);
+    expect(action(root,'Refresh').disabled).toBe(false);
+    // openRosterReset sends nothing and opens nothing while there is nothing to reset.
+    const fixture=layout(allowance({changed:0}));root=await shown(fixture);
+    fixture.componentInstance.openRosterReset();expect(fixture.componentInstance.rosterReset()).toBeNull();
+    // Without the changed field (older Domain) Reset all stays available.
+    root=await shown(layout(allowance({changed:undefined})));
+    expect(action(root,'Reset all').disabled).toBe(false);
+    expect(action(root,'Reset all').getAttribute('title')).toBe('Put every roster account back to its scenario');
+    expect(root.querySelector('#reset-hint')).toBeNull();
+   });
+
+   it('reloads the counts at once after Reset all, so the lines and buttons update',async()=>{
+    let changed=3;
+    const fixture=page(allowance());
+    request.mockImplementation(async(path:string,body?:any)=>{
+     if(String(path).endsWith('/reset')){changed=0;return {};}
+     return path==='/admin/test-accounts/allowance'?allowance({changed}):path==='/admin/test-accounts'&&!body?listed:body?{}:{accounts:[],page:0,hasNext:false};
+    });
+    const root=await shown(fixture);const component=fixture.componentInstance;
+    expect(action(root,'Reset all').disabled).toBe(false);
+    action(root,'Reset all').click();fixture.detectChanges();
+    component.rosterResetConfirmation='RESET ALL';await component.resetRoster();fixture.detectChanges();
+    expect(action(root,'Reset all').disabled).toBe(true);
+    expect(root.querySelector('#reset-hint')?.textContent).toBe('Nothing to reset: every roster account is at its scenario');
+   });
+
+   it('opens one panel at a time, full width under both cards, closes it on success and reports the result',async()=>{
+    const fixture=layout(allowance());
+    const root=await shown(fixture);const component=fixture.componentInstance;
+    const panels=()=>[...root.querySelectorAll('.action-panel')];
+    const underButtons=()=>{
+     expect(panels()).toHaveLength(1);
+     let sibling=root.querySelector('.test-cards')!.nextElementSibling;
+     while(sibling&&!sibling.classList.contains('action-panel'))sibling=sibling.nextElementSibling;
+     expect(sibling).toBe(panels()[0]);
+     // The panel comes before the list.
+     expect(panels()[0].compareDocumentPosition(root.querySelector('.directory-table')!)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    };
+    action(root,'Create test account').click();fixture.detectChanges();
+    underButtons();expect(panels()[0].classList).toContain('create-panel');
+    expect(action(root,'Create test account').getAttribute('aria-expanded')).toBe('true');
+    action(root,'Restore 2').click();fixture.detectChanges();
+    underButtons();expect(panels()[0].classList).toContain('roster-restore');expect(component.creating()).toBe(false);
+    action(root,'Reset all').click();fixture.detectChanges();
+    underButtons();expect(panels()[0].classList).toContain('roster-reset');expect(component.rosterRestore()).toBeNull();
+    // Choosing a row's action closes the top panel too.
+    component.select(listed[0] as any);fixture.detectChanges();
+    expect(panels()).toHaveLength(0);
+    // Create succeeds: the panel goes and the notice says what happened.
+    action(root,'Create test account').click();fixture.detectChanges();
+    request.mockImplementation(async(path:string,body?:any)=>body?{username:'test-1@lookahead.dev'}:path==='/admin/test-accounts/allowance'?allowance():path==='/admin/test-accounts'?listed:{accounts:[],page:0,hasNext:false});
+    [...panels()[0].querySelectorAll<HTMLButtonElement>('button')].find(b=>b.textContent?.trim()==='Create account')!.click();
+    await fixture.whenStable();fixture.detectChanges();
+    expect(panels()).toHaveLength(0);
+    expect(root.querySelector('.notice')?.textContent).toBe('test-1@lookahead.dev created. To use it, choose Switch to a test account in your account menu.');
+    // Reset all succeeds: the panel goes and the notice reports it.
+    action(root,'Reset all').click();fixture.detectChanges();
+    component.rosterResetConfirmation='RESET ALL';await component.resetRoster();fixture.detectChanges();
+    expect(panels()).toHaveLength(0);
+    expect(component.notice()).toBe('All 6 roster accounts are back to their scenarios.');
+   });
+
+   it('keeps a failed panel open with the server message inside it',async()=>{
+    const fixture=layout(allowance());
+    const root=await shown(fixture);const component=fixture.componentInstance;
+    action(root,'Create test account').click();fixture.detectChanges();
+    request.mockRejectedValueOnce(new MembershipRequestError('Request body is not valid JSON',400));
+    await component.create();fixture.detectChanges();
+    expect(root.querySelector('.create-panel .panel-error')?.textContent).toBe('Request body is not valid JSON Creation was not confirmed. Retry; the same request key is reused.');
+    expect(root.querySelector('.notice')?.textContent).toBe('');
+    // Every reset refused: Reset all keeps its panel, with each reason inside it.
+    action(root,'Reset all').click();fixture.detectChanges();
+    expect(component.panelError()).toBe('');
+    request.mockImplementation(async(path:string,body?:any)=>{
+     if(String(path).endsWith('/reset'))throw new MembershipRequestError('Request body is not valid JSON',400);
+     return path==='/admin/test-accounts/allowance'?allowance():path==='/admin/test-accounts'?listed:body?{}:{accounts:[],page:0,hasNext:false};
+    });
+    component.rosterResetConfirmation='RESET ALL';await component.resetRoster();fixture.detectChanges();
+    expect(component.rosterReset()).toEqual({open:true,done:0,total:6});
+    expect(root.querySelector('.roster-reset .panel-error')?.textContent).toContain('None reset. Not reset: learner01@lookahead.dev (Request body is not valid JSON)');
+    expect(component.busy()).toBe(false);
+   });
+
+   it('splits the list into Learners, Co-authors and Admins with counts, and searches within the tab',async()=>{
+    const fixture=layout(allowance());
+    const root=await shown(fixture);const component=fixture.componentInstance;
+    const tabs=()=>[...root.querySelectorAll<HTMLButtonElement>('.list-tabs [role="tab"]')];
+    const names=()=>[...root.querySelectorAll('tbody tr[data-account]')].map(tr=>tr.getAttribute('data-account'));
+    expect(root.querySelector('.list-tabs')?.getAttribute('role')).toBe('tablist');
+    expect(tabs().map(tab=>tab.textContent?.replace(/\s+/g,' ').trim())).toEqual(['Learners 3','Co-authors 1','Admins 2']);
+    expect(tabs().map(tab=>tab.getAttribute('aria-selected'))).toEqual(['true','false','false']);
+    expect(root.querySelector('#test-account-list')?.getAttribute('aria-labelledby')).toBe('list-tab-learners');
+    expect(names()).toEqual(['learner01@lookahead.dev','learner02@lookahead.dev','learner03@lookahead.dev']);
+    expect(root.querySelector('.count')?.textContent).toBe('3 of 3');
+    tabs()[2].click();fixture.detectChanges();
+    expect(names()).toEqual(['admin01@lookahead.dev','admin02@lookahead.dev']);
+    expect(root.querySelector('#test-account-list')?.getAttribute('aria-labelledby')).toBe('list-tab-admins');
+    // The search works within the tab; the counts say how many match on each tab.
+    component.query.set('02');fixture.detectChanges();
+    expect(names()).toEqual(['admin02@lookahead.dev']);
+    expect(root.querySelector('.count')?.textContent).toBe('1 of 2');
+    expect(tabs().map(tab=>tab.textContent?.replace(/\s+/g,' ').trim())).toEqual(['Learners 1','Co-authors 0','Admins 1']);
+    component.query.set('coauthor');fixture.detectChanges();
+    expect(root.querySelector('.empty')?.textContent).toBe('Nobody matches this search.');
+    // Arrow keys move between tabs.
+    root.querySelector('.list-tabs')!.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowLeft'}));fixture.detectChanges();
+    expect(component.listTab()).toBe('co-authors');
+    expect(names()).toEqual(['coauthor01@lookahead.dev']);
+    root.querySelector('.list-tabs')!.dispatchEvent(new KeyboardEvent('keydown',{key:'Home'}));fixture.detectChanges();
+    expect(component.listTab()).toBe('learners');
+    root.querySelector('.list-tabs')!.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter'}));
+    expect(component.listTab()).toBe('learners');
+    // Selection and its actions stay under the selected row.
+    component.query.set('');fixture.detectChanges();
+    (root.querySelector('tr[data-account="learner02@lookahead.dev"] input[type="checkbox"]') as HTMLInputElement).click();fixture.detectChanges();
+    expect(root.querySelector('tr[data-account="learner02@lookahead.dev"]')!.nextElementSibling!.matches('tr.selection-row')).toBe(true);
+    // While a reset waits for its retry the tabs stay put.
+    component.pending.set({} as any);component.chooseListTab('admins');expect(component.listTab()).toBe('learners');
+   });
+
+   it('shows only the tabs that have accounts, and none in People',async()=>{
+    const fixture=page(allowance());
+    request.mockImplementation(async(path:string)=>path==='/admin/test-accounts/allowance'?allowance():path==='/admin/test-accounts'?[roster('learner01')]:{accounts:[],page:0,hasNext:false});
+    const root=await shown(fixture);
+    expect([...root.querySelectorAll('.list-tabs [role="tab"]')].map(tab=>tab.textContent?.replace(/\s+/g,' ').trim())).toEqual(['Learners 1']);
+    fixture.componentInstance.chooseListTab('admins');expect(fixture.componentInstance.listTab()).toBe('learners');
+    fixture.componentRef.setInput('view','people');fixture.detectChanges();
+    expect(root.querySelector('.list-tabs')).toBeNull();
+    expect(fixture.componentInstance.listTabs()).toEqual([]);
+    expect(root.querySelector('.directory-tools select')).not.toBeNull();
+   });
+
+   it('shows the Test accounts card across the row when there is no roster card',async()=>{
+    account.set({accountId:'admin-1',username:'admin01',permissions:{feedbackRole:'admin',triageFeedback:true}});
+    const root=await shown(layout({limit:10,used:1,remaining:9,roster:null,scenarios}));
+    expect(root.querySelector('.test-cards')?.classList).toContain('single');
+    expect(root.querySelector('.roster-card')).toBeNull();
+    expect(labels(root,'.test-card .card-actions')).toEqual(['Refresh','Create test account']);
+    expect(root.querySelector('.lifetime')?.textContent?.replace(/\s+/g,' ')).toContain('1 used · 9 remaining of 10');
    });
   });
 
@@ -554,9 +779,11 @@ describe('Test account maintenance',()=>{
    const call=request.mock.calls.find(([path,body])=>path==='/admin/test-accounts'&&body)!;
    expect(call[1]).toEqual({key:expect.any(String),scenario:'learner05'});
    expect(component.notice()).toBe('test-0a1b2c3d4e@lookahead.dev created. To use it, choose Switch to a test account in your account menu.');
+   component.creating.set(true);
    request.mockRejectedValueOnce(new Error('uncertain'));
    await component.create();
-   expect(component.notice()).toBe('Creation was not confirmed. Retry; the same request key is reused.');
+   expect(component.panelError()).toBe('uncertain Creation was not confirmed. Retry; the same request key is reused.');
+   expect(component.creating()).toBe(true);
    component.createScenario='';
    expect(component.mayCreate()).toBe(false);
   });
@@ -584,8 +811,11 @@ describe('Test account maintenance',()=>{
    component.creating.set(true);fixture.detectChanges();
    request.mockRejectedValueOnce(new MembershipRequestError('Only learner test accounts can be created. Staff test accounts come from the roster.',403));
    await component.create();fixture.detectChanges();
-   expect(component.notice()).toBe('Only learner test accounts can be created. Staff test accounts come from the roster.');
-   expect(root.querySelector('.notice')?.textContent).toBe('Only learner test accounts can be created. Staff test accounts come from the roster.');
+   // The panel stays open with the refusal inside it (owner, DEV test 2026-11-04).
+   expect(component.panelError()).toBe('Only learner test accounts can be created. Staff test accounts come from the roster.');
+   expect(root.querySelector('.create-panel .panel-error')?.textContent).toBe('Only learner test accounts can be created. Staff test accounts come from the roster.');
+   expect(root.querySelector('.notice')?.textContent).not.toContain('Only learner test accounts');
+   expect(component.creating()).toBe(true);
    // A refusal is final: the next try is a new request.
    expect(component.createKey()).toBeNull();
    expect(component.busy()).toBe(false);
@@ -631,253 +861,37 @@ describe('People sign-in methods (DLV-969 account linking)',()=>{
 });
 
 // DLV-969 (owner, 2026-11-04): DEV test accounts' purchases wait in People and access for the owner or an admin.
+// DLV-969 (owner, DEV test 2026-11-04): the requests themselves moved to Waiting for access → Purchase requests
+// (purchase-requests-panel.spec.ts); Test accounts keeps only the badge on each waiting account.
 describe('Purchase requests on Test accounts',()=>{
  const waiting=(id:string,username:string,pendingPurchase:Record<string,unknown>|null):TestAccountRow=>({...row,accountId:id,username,pendingPurchase:pendingPurchase as never});
- const advance={purchaseId:'pur-2',kind:'upgrade',fromPlan:{code:'learn',name:'Learn'},toPlan:{code:'advance',name:'Advance'},priceCents:14499,differenceCents:4500,startsAt:'2026-11-04T00:00:00Z',endsAt:'2027-11-04T00:00:00Z',requestedAt:'2026-11-04T10:30:00Z',requestedBy:{self:false,label:'Admin 2',name:'Priya Rao'}};
- const learn={purchaseId:'pur-1',kind:'new',fromPlan:null,toPlan:{code:'learn',name:'Learn'},priceCents:6999,startsAt:'2026-11-04T00:00:00Z',endsAt:'2027-11-04T00:00:00Z',requestedAt:'2026-11-04T09:15:00Z',requestedBy:{self:true,label:'Owner'}};
- let rows:TestAccountRow[];let request:ReturnType<typeof vi.fn>;let opened:number;
- const usable=[{accountId:'acc-07',username:'learner07@lookahead.dev',displayName:'Learner07',roles:[],scenario:'Free · no study plan'},
-  {accountId:'acc-12',username:'learner12@lookahead.dev',displayName:'Learner12',roles:[],scenario:'Learn · active'}];
- async function render(feedbackRole:'owner'|'admin'|'co-author'|'user',options:{dev?:boolean;manageAccess?:boolean;review?:{purchaseId:string;returnTo:string|null;accountId:string|null}}={}){
-  request=vi.fn(async(path:string,body?:unknown)=>{
-   if(path==='/auth/test-accounts')return usable;
-   if(path==='/admin/test-accounts'&&body&&typeof body==='object'&&'purchaseDecision' in body){
-    const {purchaseId}=(body as {purchaseDecision:{purchaseId:string}}).purchaseDecision;
-    rows=rows.map(item=>item.pendingPurchase?.purchaseId===purchaseId?{...item,pendingPurchase:null}:item);return {};
-   }
-   if(path==='/admin/test-accounts')return rows;
-   if(path==='/admin/test-accounts/allowance')return {limit:10,used:0,remaining:10,roster:null,scenarios:[]};
-   return {accounts:[],page:0,hasNext:false};
-  });
-  const account=signal<any>({accountId:'me',username:'staff',displayName:'Staff',topicGrants:[],permissions:{manageAccess:options.manageAccess??feedbackRole==='owner',feedbackRole}});
+ const advance={purchaseId:'pur-2',kind:'upgrade',fromPlan:{code:'learn',name:'Learn'},toPlan:{code:'advance',name:'Advance'},priceCents:14499,requestedAt:'2026-11-04T10:30:00Z',requestedBy:{self:false,label:'Admin 2'}};
+ let rows:TestAccountRow[];let request:ReturnType<typeof vi.fn>;
+ async function render(feedbackRole:'owner'|'admin'|'co-author'|'user'){
+  request=vi.fn(async(path:string)=>path==='/admin/test-accounts'?rows:path==='/admin/test-accounts/allowance'?{limit:10,used:0,remaining:10,roster:null,scenarios:[]}:{accounts:[],page:0,hasNext:false});
+  const account=signal<any>({accountId:'me',username:'staff',displayName:'Staff',topicGrants:[],permissions:{manageAccess:feedbackRole==='owner',feedbackRole}});
   TestBed.configureTestingModule({providers:[provideRouter([]),{provide:MembershipApi,useValue:{request}},{provide:StudyPlanAccount,useValue:{account}}]});
-  if(options.dev??true)TestBed.inject(DevSession).status.set({dev:true,deadline:'',warning:false,maintenance:false});
+  TestBed.inject(DevSession).status.set({dev:true,deadline:'',warning:false,maintenance:false});
   const fixture=TestBed.createComponent(TestAccounts);fixture.componentRef.setInput('view','test');
-  if(options.review)fixture.componentRef.setInput('review',options.review);
-  opened=0;fixture.componentInstance.reviewOpened.subscribe(()=>opened++);
   fixture.detectChanges();await fixture.whenStable();fixture.detectChanges();
-  return fixture;
+  return fixture.nativeElement as HTMLElement;
  }
  const text=(element:Element|null|undefined)=>(element?.textContent??'').replace(/\s+/g,' ').trim();
- const buttons=(root:Element,name:string)=>[...root.querySelectorAll<HTMLButtonElement>('button')].filter(button=>text(button)===name);
- async function settle(fixture:ReturnType<typeof TestBed.createComponent<TestAccounts>>){await fixture.whenStable();fixture.detectChanges();}
- beforeEach(()=>{rows=[waiting('acc-12','learner12',advance),waiting('acc-07','learner07',learn),waiting('acc-03','learner03',null)];});
-
+ beforeEach(()=>{rows=[waiting('acc-12','learner12',advance),waiting('acc-03','learner03',null)];});
  for(const role of ['owner','admin'] as const){
-  it(`shows the ${role} each waiting request, oldest first, with plan, kind, price and time`,async()=>{
-   const fixture=await render(role);const root=fixture.nativeElement as HTMLElement;
-   const area=root.querySelector('.purchase-requests')!;
-   expect(text(area.querySelector('h3'))).toBe('Purchase requests');
-   expect(text(area.querySelector('.request-count'))).toBe('2 purchase requests waiting');
-   const facts=(item:Element)=>[...item.querySelectorAll('.request-facts > div')].map(fact=>[text(fact.querySelector('dt')),text(fact.querySelector('dd'))]);
-   const items=[...area.querySelectorAll('.request-item')];
-   expect(facts(items[0])).toEqual([
-    ['Account','learner07'],['Request','New plan: Learn'],['Term','4 Nov 2026 – 4 Nov 2027'],['Price','$69.99'],
-    ['Submitted by','You'],['When','4 Nov 2026, 09:15 UTC'],
-   ]);
-   // The owner sees who an admin is; an admin sees the role label only.
-   expect(facts(items[1])).toEqual([
-    ['Account','learner12'],['Request','Upgrade: Learn → Advance'],['Term','4 Nov 2026 – 4 Nov 2027'],['Price','$144.99 (difference $45.00)'],
-    ['Submitted by',role==='owner'?'Priya Rao (Admin 2)':'Admin 2'],['When','4 Nov 2026, 10:30 UTC'],
-   ]);
-   if(role==='admin')expect(area.textContent).not.toContain('Priya Rao');
-   const first=area.querySelector('.request-item')!;
-   expect([...first.querySelectorAll('.request-actions button')].map(button=>[text(button),button.className])).toEqual([
-    ['Approve (mock payment)','action-button'],['Decline','action-link'],
-   ]);
-   // The waiting accounts carry a badge in the list too; the others don't.
+  it(`marks the ${role}’s waiting accounts in the list, with no request section on this tab`,async()=>{
+   const root=await render(role);
    expect(text(root.querySelector('tr[data-account="learner12"] .request-badge'))).toBe('Purchase request waiting');
    expect(root.querySelector('tr[data-account="learner03"] .request-badge')).toBeNull();
+   expect(root.querySelector('.purchase-requests, .request-item, .decision-result')).toBeNull();
+   expect(root.textContent).not.toContain('Approve (mock payment)');
   });
  }
-
- it('approves with the exact body, refreshes, and shows the result with the ways to verify it',async()=>{
-  const fixture=await render('admin');const root=fixture.nativeElement as HTMLElement;const list=fixture.componentInstance;
-  buttons(root.querySelector('.request-item[data-purchase="pur-1"]')!,'Approve (mock payment)')[0].click();
-  await settle(fixture);await settle(fixture);
-  expect(request).toHaveBeenCalledWith('/admin/test-accounts',{purchaseDecision:{purchaseId:'pur-1',decision:'approve'}});
-  expect(request.mock.calls.filter(([path,body])=>path==='/admin/test-accounts'&&body===undefined)).toHaveLength(2);
-  expect(text(root.querySelector('.request-count'))).toBe('1 purchase request waiting');
-  // DLV-969 (owner wording, 2026-11-04): the result panel, in the test account's display name from the switcher list.
-  const done=root.querySelector('.purchase-requests .decision-result')!;
-  expect(done.getAttribute('role')).toBe('status');
-  expect(text(done.querySelector('p'))).toBe(
-   'Mock payment successful — Learner07 now has Learn. To verify it, switch to Learner07 and open Manage account → Membership from the account menu.');
-  expect(text(done.querySelector('strong'))).toBe('Mock payment successful — Learner07 now has Learn.');
-  expect(text(root.querySelector('.notice'))).toBe('');
-  // Two related actions centred, primary first; Close as a text line below.
-  expect([...done.querySelectorAll('.actions button')].map(button=>[text(button),button.className])).toEqual([
-   ['Switch to Learner07','action-button'],['Switch to another test account','action-link'],
-  ]);
-  expect(text(done.querySelector('.result-close button'))).toBe('Close');
-  expect(document.activeElement).toBe(done);
-  expect(root.textContent).not.toMatch(/continue learning/i);
-  // A refresh keeps the result; Close dismisses it.
-  await list.load();fixture.detectChanges();expect(root.querySelector('.decision-result')).not.toBeNull();
-  buttons(done,'Close')[0].click();fixture.detectChanges();
-  expect(root.querySelector('.decision-result')).toBeNull();expect(list.result()).toBeNull();
- });
-
- it('Switch to the test account goes to its home when the request was opened directly',async()=>{
-  const fixture=await render('owner');const root=fixture.nativeElement as HTMLElement;
-  const use=vi.spyOn(TestBed.inject(TestSessions),'use').mockResolvedValue();
-  buttons(root.querySelector('.request-item[data-purchase="pur-1"]')!,'Approve (mock payment)')[0].click();
-  await settle(fixture);await settle(fixture);
-  buttons(root,'Switch to Learner07')[0].click();await settle(fixture);
-  expect(use).toHaveBeenCalledExactlyOnceWith(usable[0],'/');
- });
-
- it('Switch to another test account opens the account menu’s switcher',async()=>{
-  const fixture=await render('admin');const root=fixture.nativeElement as HTMLElement;
-  const sessions=TestBed.inject(TestSessions);const open=vi.spyOn(sessions,'open');
-  buttons(root.querySelector('.request-item[data-purchase="pur-1"]')!,'Approve (mock payment)')[0].click();
-  await settle(fixture);await settle(fixture);
-  buttons(root,'Switch to another test account')[0].click();await settle(fixture);
-  expect(open).toHaveBeenCalledOnce();expect(sessions.pickerOpen()).toBe(true);
- });
-
- it('switches with the account it knows when the switcher list does not have it, and shows why a switch failed',async()=>{
-  const fixture=await render('owner');const root=fixture.nativeElement as HTMLElement;const list=fixture.componentInstance;
-  const sessions=TestBed.inject(TestSessions);
-  rows=rows.map(item=>item.accountId==='acc-07'?{...item,accountId:'acc-gone'}:item);await list.load();fixture.detectChanges();
-  const use=vi.spyOn(sessions,'use').mockImplementation(async()=>{sessions.error.set('Your role cannot use this test account.');});
-  buttons(root.querySelector('.request-item[data-purchase="pur-1"]')!,'Approve (mock payment)')[0].click();
-  await settle(fixture);await settle(fixture);
-  expect(text(root.querySelector('.decision-result strong'))).toBe('Mock payment successful — learner07 now has Learn.');
-  buttons(root,'Switch to learner07')[0].click();await settle(fixture);
-  expect(use).toHaveBeenCalledExactlyOnceWith({accountId:'acc-gone',username:'learner07',displayName:'learner07',roles:[],scenario:null},'/');
-  expect(text(root.querySelector('.decision-result [role="alert"]'))).toBe('Your role cannot use this test account.');
-  // Without a result nothing switches.
-  list.result.set(null);use.mockClear();await list.switchToResult();expect(use).not.toHaveBeenCalled();
- });
-
- describe('opened from a Review request',()=>{
-  let scroll:ReturnType<typeof vi.fn>;
-  const original=Element.prototype.scrollIntoView;
-  beforeEach(()=>{scroll=vi.fn();Element.prototype.scrollIntoView=scroll as never;});
-  afterEach(()=>{Element.prototype.scrollIntoView=original;});
-
-  it('scrolls to, highlights and focuses that request once, and tells the page',async()=>{
-   const fixture=await render('admin',{review:{purchaseId:'pur-2',returnTo:'/grow/java/streams',accountId:'acc-12'}});
-   const root=fixture.nativeElement as HTMLElement;const list=fixture.componentInstance;
-   await settle(fixture);
-   const card=root.querySelector<HTMLElement>('.request-item[data-purchase="pur-2"]')!;
-   expect(card.classList).toContain('highlighted');
-   expect(card.getAttribute('tabindex')).toBe('-1');
-   expect(card.getAttribute('aria-current')).toBe('true');
-   expect(card.getAttribute('aria-label')).toBe('Request to review: learner12, Upgrade: Learn → Advance');
-   expect(root.querySelectorAll('.request-item.highlighted')).toHaveLength(1);
-   expect(root.querySelector('.request-item[data-purchase="pur-1"]')!.hasAttribute('tabindex')).toBe(false);
-   expect(document.activeElement).toBe(card);
-   expect(scroll).toHaveBeenCalledExactlyOnceWith({block:'center',behavior:'smooth'});
-   expect(opened).toBe(1);
-   // A refresh does not open it again.
-   await list.load();await settle(fixture);
-   expect(scroll).toHaveBeenCalledOnce();expect(opened).toBe(1);expect(list.notice()).toBe('');
-  });
-
-  it('Switch to the test account after approving goes back to the page the purchase started from',async()=>{
-   const fixture=await render('owner',{review:{purchaseId:'pur-2',returnTo:'/grow/java/streams',accountId:'acc-12'}});
-   const root=fixture.nativeElement as HTMLElement;await settle(fixture);
-   const use=vi.spyOn(TestBed.inject(TestSessions),'use').mockResolvedValue();
-   buttons(root.querySelector('.request-item[data-purchase="pur-2"]')!,'Approve (mock payment)')[0].click();
-   await settle(fixture);await settle(fixture);
-   expect(text(root.querySelector('.decision-result strong'))).toBe('Mock payment successful — Learner12 now has Advance.');
-   expect(root.querySelector('.request-item.highlighted')).toBeNull();
-   buttons(root,'Switch to Learner12')[0].click();await settle(fixture);
-   expect(use).toHaveBeenCalledExactlyOnceWith(usable[1],'/grow/java/streams');
-  });
-
-  it('keeps the return path to its own request, and never goes to an unsafe one',async()=>{
-   let fixture=await render('owner',{review:{purchaseId:'pur-2',returnTo:'/grow/java/streams',accountId:'acc-12'}});
-   let root=fixture.nativeElement as HTMLElement;await settle(fixture);
-   let use=vi.spyOn(TestBed.inject(TestSessions),'use').mockResolvedValue();
-   buttons(root.querySelector('.request-item[data-purchase="pur-1"]')!,'Approve (mock payment)')[0].click();
-   await settle(fixture);await settle(fixture);
-   buttons(root,'Switch to Learner07')[0].click();await settle(fixture);
-   expect(use).toHaveBeenCalledExactlyOnceWith(usable[0],'/');
-   TestBed.resetTestingModule();rows=[waiting('acc-12','learner12',advance)];
-   fixture=await render('owner',{review:{purchaseId:'pur-2',returnTo:'//elsewhere.example',accountId:'acc-12'}});
-   root=fixture.nativeElement as HTMLElement;await settle(fixture);
-   use=vi.spyOn(TestBed.inject(TestSessions),'use').mockResolvedValue();
-   buttons(root.querySelector('.request-item[data-purchase="pur-2"]')!,'Approve (mock payment)')[0].click();
-   await settle(fixture);await settle(fixture);
-   buttons(root,'Switch to Learner12')[0].click();await settle(fixture);
-   expect(use).toHaveBeenCalledExactlyOnceWith(usable[1],'/');
-  });
-
-  it('says so when the request is no longer waiting',async()=>{
-   const fixture=await render('admin',{review:{purchaseId:'pur-gone',returnTo:'/learn',accountId:'acc-07'}});
-   const root=fixture.nativeElement as HTMLElement;await settle(fixture);
-   expect(text(root.querySelector('.notice'))).toBe('That purchase request is no longer waiting. It may already be approved or declined.');
-   expect(root.querySelector('.request-item.highlighted')).toBeNull();
-   expect(scroll).not.toHaveBeenCalled();expect(opened).toBe(1);
-  });
- });
-
- it('declines only after its one-click confirmation, with one confirmation open at a time',async()=>{
-  const fixture=await render('owner');const root=fixture.nativeElement as HTMLElement;const list=fixture.componentInstance;
-  const item=list.purchaseRequests().find(entry=>entry.request.purchaseId==='pur-2')!;
-  // Without the confirmation, Decline sends nothing.
-  await list.decide(item,'decline');expect(request).not.toHaveBeenCalledWith('/admin/test-accounts',expect.objectContaining({purchaseDecision:expect.anything()}));
-  buttons(root.querySelector('.request-item[data-purchase="pur-2"]')!,'Decline')[0].click();fixture.detectChanges();
-  expect(root.querySelectorAll('.decline-panel')).toHaveLength(1);
-  expect(text(root.querySelector('.decline-panel h4'))).toBe('Decline learner12’s request (Upgrade: Learn → Advance)?');
-  // Opening another confirmation closes this one, and the other way round.
-  list.startDelete(rows[0]);fixture.detectChanges();expect(root.querySelector('.decline-panel')).toBeNull();expect(list.deleting()).toBe(rows[0]);
-  buttons(root.querySelector('.request-item[data-purchase="pur-1"]')!,'Decline')[0].click();fixture.detectChanges();
-  expect(list.deleting()).toBeNull();expect(root.querySelectorAll('.decline-panel')).toHaveLength(1);
-  buttons(root.querySelector('.request-item[data-purchase="pur-2"]')!,'Decline')[0].click();fixture.detectChanges();
-  expect(root.querySelectorAll('.decline-panel')).toHaveLength(1);
-  expect(root.querySelector('.request-item[data-purchase="pur-2"] .decline-panel')).not.toBeNull();
-  buttons(root,'Cancel')[0].click();fixture.detectChanges();expect(root.querySelector('.decline-panel')).toBeNull();
-  buttons(root.querySelector('.request-item[data-purchase="pur-2"]')!,'Decline')[0].click();fixture.detectChanges();
-  buttons(root,'Confirm decline')[0].click();await settle(fixture);await settle(fixture);
-  expect(request).toHaveBeenCalledWith('/admin/test-accounts',{purchaseDecision:{purchaseId:'pur-2',decision:'decline'}});
-  const done=root.querySelector('.decision-result')!;
-  expect(text(done.querySelector('p'))).toBe('Declined — Learner12 keeps its current plan.');
-  expect(done.classList).toContain('declined');
-  expect(text(done)).not.toContain('Manage account');
-  expect([...done.querySelectorAll('button')].map(text)).toEqual(['Switch to Learner12','Switch to another test account','Close']);
-  expect(text(root.querySelector('.request-count'))).toBe('1 purchase request waiting');
- });
-
- it('says a refusal in the server’s words, and anything else as not confirmed',async()=>{
-  const fixture=await render('admin');const list=fixture.componentInstance;
-  const item=list.purchaseRequests()[0];
-  request.mockRejectedValueOnce(new MembershipRequestError('Only the owner or an admin can approve purchase requests.',403,'PURCHASE_APPROVAL_FORBIDDEN'));
-  await list.decide(item,'approve');
-  expect(list.notice()).toBe('Only the owner or an admin can approve purchase requests.');
-  request.mockRejectedValueOnce(new Error('Network down'));
-  await list.decide(item,'approve');expect(list.notice()).toBe('Network down Approval was not confirmed. Refresh and retry.');
-  list.startDecline(item);request.mockRejectedValueOnce(new Error(''));
-  await list.decide(item,'decline');expect(list.notice()).toBe('Decline was not confirmed. Refresh and retry.');
- });
-
- it('shows an empty state in DEV and nothing in Local when no request waits',async()=>{
-  rows=[waiting('acc-03','learner03',null)];
-  let root=(await render('owner')).nativeElement as HTMLElement;
-  expect(text(root.querySelector('.purchase-requests .request-count'))).toBe('No purchase requests waiting');
-  expect(root.querySelector('.request-list')).toBeNull();
-  TestBed.resetTestingModule();
-  root=(await render('owner',{dev:false})).nativeElement as HTMLElement;
-  expect(root.querySelector('.purchase-requests')).toBeNull();
- });
-
- it('counts one request in the singular',async()=>{
-  rows=[waiting('acc-07','learner07',learn)];
-  const root=(await render('owner')).nativeElement as HTMLElement;
-  expect(text(root.querySelector('.request-count'))).toBe('1 purchase request waiting');
- });
-
  for(const role of ['co-author','user'] as const){
   it(`shows a ${role} nothing of purchase requests, even if a row carries one`,async()=>{
-   const fixture=await render(role,{manageAccess:false});const root=fixture.nativeElement as HTMLElement;const list=fixture.componentInstance;
-   expect(root.querySelector('.purchase-requests, .request-badge')).toBeNull();
-   expect(root.textContent).not.toMatch(/Purchase request|Approve \(mock payment\)/);
-   expect(list.purchaseRequests()).toEqual([]);
-   await list.decide({row:rows[0],request:advance as never,words:'',term:null,price:'',difference:null,by:'',requested:''},'approve');
-   expect(request).not.toHaveBeenCalledWith('/admin/test-accounts',expect.objectContaining({purchaseDecision:expect.anything()}));
+   const root=await render(role);
+   expect(root.querySelector('.request-badge')).toBeNull();
+   expect(root.textContent).not.toMatch(/Purchase request/);
   });
  }
 });
@@ -961,8 +975,10 @@ describe('Upgrade markers and Reset on Test accounts',()=>{
   list.select(rows[0]);list.confirmation='learner06';
   request.mockRejectedValueOnce(new MembershipRequestError('Only the owner or Admin 2, who upgraded this account, can reset it.',403,'RESET_RESERVED'));
   await list.reset();
-  expect(list.notice()).toBe('Only the owner or Admin 2, who upgraded this account, can reset it.');
-  expect(list.pending()).toBeNull();expect(list.selected()).toBeNull();
+  // The panel stays with the reason inside it; the same reset is not offered again (no retry request kept).
+  expect(list.panelError()).toBe('Only the owner or Admin 2, who upgraded this account, can reset it.');
+  expect(list.notice()).toBe('');
+  expect(list.pending()).toBeNull();expect(list.selected()).toBe(rows[0]);
  });
 
  it('keeps the Local wording for Reset',async()=>{

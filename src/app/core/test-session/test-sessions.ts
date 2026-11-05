@@ -108,7 +108,7 @@ export class TestSessions {
 
   /**
    * Back to the staff sign-in this test session started from; the Gateway sends the sign-in page if it expired. `next`,
-   * when it is a same-site path, overrides the Gateway's answer (Review request lands on People and access).
+   * when it is a same-site path, overrides the Gateway's answer (Go to People and access on the DEV checkout screen lands there).
    */
   async back(next?: string | null): Promise<void> {
     if (this.returning() || this.starting()) return;

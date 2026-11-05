@@ -7,12 +7,14 @@ import { AuthorAdminMenu } from '../../core/author-workspace-nav/author-admin-me
 import { AuthorOutlineItem, AuthorWorkspaceNav } from '../../core/author-workspace-nav/author-workspace-nav';
 import { ACCOUNT_FETCH, StudyPlanAccount } from '../study-plan/study-plan-account';
 
-import { TestAccounts } from './test-accounts';
+import { TestAccountRow, TestAccounts } from './test-accounts';
+import { PurchaseRequestsPanel, viewerRole } from './purchase-requests-panel';
+import { DevSession } from '../../core/dev-session-notice/dev-session';
 import { DirectoryAccount, DirectoryRow, accountName, loadDirectory, personLines, sameEmailCount, sameEmailText, signInLabels } from './user-directory';
 import { AccountSignInMethod } from '../account/account-settings-client';
 import { isProviderUsername } from '../study-plan/study-plan-account';
 import { AdminMemberships } from './admin-memberships';
-import { RequestReview, REVIEW_PARAMS, REVIEW_PATH, requestReviewOf } from '../../content/purchase-requests';
+import { RequestReview, REVIEW_PARAMS, REVIEW_PATH, REVIEW_TAB, REVIEW_VIEW, REVIEW_VIEW_PARAM, pendingPurchaseOf, requestReviewOf } from '../../content/purchase-requests';
 
 interface Assignment {
   id: string; accountId: string | null; pendingEmail: string | null;
@@ -30,12 +32,18 @@ export interface WaitingRow {
 /** Page tabs (user, 2026-10-16): giving access first, the account lists only when asked for. */
 type AccessTab = 'assign' | 'saved' | 'waiting' | 'test' | 'people';
 const TAB_LABELS: Record<AccessTab, string> = { assign: 'Give access', saved: 'Saved assignments', waiting: 'Waiting for access', test: 'Test accounts', people: 'People' };
+/**
+ * DLV-969 (owner, DEV test 2026-11-04): Waiting for access has two sub-tabs. DEV access is the owner's (people waiting
+ * for admission); Purchase requests is the owner's and the admins' (test accounts' purchases waiting for approval).
+ */
+type WaitingView = 'access' | 'purchases';
+const WAITING_LABELS: Record<WaitingView, string> = { access: 'DEV access', purchases: 'Purchase requests' };
 /** Requested and expiry times, in UTC so every operator reads the same clock: "2 Nov 2026, 14:05 UTC". */
 const timeFormat = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC', timeZoneName: 'short' });
 
 @Component({
   selector: 'app-admin-access',
-  imports: [TestAccounts, AdminMemberships, FormsModule, RouterLink, PlatformHeader, AuthorAdminMenu, AuthorWorkspaceNav],
+  imports: [TestAccounts, PurchaseRequestsPanel, AdminMemberships, FormsModule, RouterLink, PlatformHeader, AuthorAdminMenu, AuthorWorkspaceNav],
   templateUrl: './admin-access.html',
   styleUrl: './admin-access.css',
 })
@@ -44,6 +52,28 @@ export class AdminAccessPage implements OnInit {
   private readonly accounts = inject(StudyPlanAccount);
   readonly canManage = computed(() => this.accounts.account()?.permissions?.manageAccess ?? this.accounts.account()?.authorPreview === true);
   readonly canReadAssignments = computed(() => this.canManage() || this.accounts.account()?.permissions?.feedbackRole === 'co-author');
+  /** DLV-969 (owner, 2026-11-04): the owner and admins approve or decline DEV purchase requests; nobody else sees them. */
+  readonly canDecide = computed(() => ['owner', 'admin'].includes(viewerRole(this.accounts.account())));
+  private readonly devSession = inject(DevSession);
+  readonly dev = computed(() => this.devSession.status() !== null || this.devSession.gated());
+  /** `GET /admin/test-accounts` for the purchase requests, loaded for the owner and admins only. */
+  readonly purchaseRows = signal<TestAccountRow[]>([]);
+  readonly purchasesLoaded = signal(false);
+  readonly purchasesBusy = signal(false);
+  readonly purchasesError = signal('');
+  /** Purchase requests waiting: the count on Waiting for access and on its Purchase requests sub-tab. */
+  readonly purchaseCount = computed(() => (this.canDecide() ? this.purchaseRows().filter(row => pendingPurchaseOf(row) !== null).length : 0));
+  /** Purchase requests exist in DEV; in Local a purchase completes at once, so the sub-tab shows only if one waits. */
+  readonly showPurchases = computed(() => this.canDecide() && (this.dev() || this.purchaseCount() > 0));
+  /** The sub-tabs this person has: the owner both (DEV access first), an admin Purchase requests alone. */
+  readonly waitingViews = computed(() => {
+    const views: WaitingView[] = this.canManage() ? ['access'] : [];
+    if (this.showPurchases()) views.push('purchases');
+    return views.map(id => {
+      const count = id === 'access' ? this.waiting().length : this.purchaseCount();
+      return { id, label: WAITING_LABELS[id], count };
+    });
+  });
   readonly assignments = signal<Assignment[]>([]);
   /** Account ID to username, so saved assignments show who they are for (user, 2026-10-16). */
   readonly names = signal<ReadonlyMap<string, string>>(new Map());
@@ -97,21 +127,51 @@ export class AdminAccessPage implements OnInit {
     // Give access finds people by email or username, so it is the owner's alone (DLV-969, 2026-11-03).
     const base: readonly AccessTab[] = this.canManage() ? ['assign', 'saved', 'test', 'people']
       : this.canReadAssignments() ? ['saved', 'test', 'people'] : ['test'];
-    const count = this.waiting().length;
-    const ids = !this.canManage() ? base : count ? ['waiting' as const, ...base] : [...base.slice(0, 2), 'waiting' as const, ...base.slice(2)];
+    // Admins see Waiting for access for the purchase requests alone (owner, 2026-11-04); co-authors never see it.
+    const count = (this.canManage() ? this.waiting().length : 0) + (this.showPurchases() ? this.purchaseCount() : 0);
+    const ids = !this.canManage() && !this.showPurchases() ? base
+      : count ? ['waiting' as const, ...base]
+      : this.canManage() ? [...base.slice(0, 2), 'waiting' as const, ...base.slice(2)] : [...base, 'waiting' as const];
     return ids.map(id => ({ id, label: id === 'waiting' && count ? `${TAB_LABELS[id]} · ${count}` : TAB_LABELS[id] }));
   });
   private readonly location = inject(Location, { optional: true });
   private readonly address = inject(ActivatedRoute, { optional: true })?.snapshot.queryParamMap;
   /**
-   * DLV-969 (owner, 2026-11-04): `?request=<purchaseId>&return=<path>&account=<id>` from a test account's Review request.
-   * Read once: the Test accounts tab opens on that request, and the values leave the address so a reload does not repeat it.
+   * DLV-969 (owner, 2026-11-04): `?tab=waiting&view=purchases&request=<purchaseId>&return=<path>&account=<id>` from a
+   * test account's Go to People and access (DEV checkout screen); the older `?tab=test&request=…` form lands in the same place. Read once: Waiting for
+   * access → Purchase requests opens on that request, and the values leave the address so a reload does not repeat it.
    */
   readonly requestReview = signal<RequestReview | null>(this.address ? requestReviewOf(this.address) : null);
-  /** `/admin/access?tab=test` opens that tab, so documentation can link straight to it; a review always opens Test accounts. */
+  /** `/admin/access?tab=test` opens that tab, so documentation can link straight to it; a review always opens Waiting for access. */
   private readonly chosenTab = signal<AccessTab | null>(
-    this.requestReview() ? 'test' : ((tab: string | null | undefined) => (tab && tab in TAB_LABELS ? (tab as AccessTab) : null))(this.address?.get('tab')),
+    this.requestReview() ? REVIEW_TAB : ((tab: string | null | undefined) => (tab && tab in TAB_LABELS ? (tab as AccessTab) : null))(this.address?.get('tab')),
   );
+  /** `&view=purchases` (or `access`) opens that sub-tab of Waiting for access; a review always opens Purchase requests. */
+  private readonly chosenView = signal<WaitingView | null>(
+    this.requestReview() ? REVIEW_VIEW : ((view: string | null | undefined) => (view && view in WAITING_LABELS ? (view as WaitingView) : null))(this.address?.get(REVIEW_VIEW_PARAM)),
+  );
+  /** The sub-tab shown: the chosen one when this person has it; else DEV access, or Purchase requests when only they wait. */
+  readonly waitingView = computed<WaitingView>(() => {
+    const ids = this.waitingViews().map(view => view.id), chosen = this.chosenView();
+    if (chosen && ids.includes(chosen)) return chosen;
+    if (ids.includes('access') && ids.includes('purchases') && !this.waiting().length && this.purchaseCount()) return 'purchases';
+    return ids[0] ?? 'access';
+  });
+  selectWaitingView(view: WaitingView) {
+    this.chosenView.set(view);
+    this.chosenTab.set('waiting');
+    this.location?.replaceState('/admin/access', `tab=waiting&${REVIEW_VIEW_PARAM}=${view}`);
+  }
+  /** Arrow keys, Home and End move between the sub-tabs (WAI-ARIA tabs pattern). */
+  onWaitingKey(event: KeyboardEvent) {
+    const ids = this.waitingViews().map(view => view.id), index = ids.indexOf(this.waitingView());
+    const next = ({ ArrowRight: index + 1, ArrowLeft: index - 1, Home: 0, End: ids.length - 1 } as Record<string, number>)[event.key];
+    if (next === undefined || !ids.length) return;
+    event.preventDefault();
+    const id = ids[(next + ids.length) % ids.length];
+    this.selectWaitingView(id);
+    (document.getElementById('waiting-tab-' + id) as HTMLElement | null)?.focus();
+  }
   readonly tab = computed<AccessTab>(() => {
     const chosen = this.chosenTab();
     return this.tabs().find(tab => tab.id === chosen)?.id ?? this.tabs()[0].id;
@@ -130,9 +190,12 @@ export class AdminAccessPage implements OnInit {
     inject(DestroyRef).onDestroy(() => this.tabResize?.disconnect());
     // After each render that changes the tabs (the waiting count moves Waiting first), keep the chosen tab in view.
     afterRenderEffect(() => { this.tabs(); this.revealTab(this.tab()); });
-    // The review values leave the address (the tab stays), so a reload does not open the review again.
+    // The review values leave the address (the tab stays), so a reload does not open the review again. The older
+    // `tab=test&request=` form is redirected to Waiting for access → Purchase requests.
     const chosen = this.chosenTab();
-    if (this.address && Object.values(REVIEW_PARAMS).some(name => this.address!.has(name))) this.location?.replaceState(REVIEW_PATH, chosen ? `tab=${chosen}` : '');
+    if (this.address && Object.values(REVIEW_PARAMS).some(name => this.address!.has(name))) {
+      this.location?.replaceState(REVIEW_PATH, this.requestReview() ? `tab=${REVIEW_TAB}&${REVIEW_VIEW_PARAM}=${REVIEW_VIEW}` : chosen ? `tab=${chosen}` : '');
+    }
   }
   /** Scroll the tab row, never the page, so the chosen tab is fully in view and clear of the edge chevrons. */
   private revealTab(tab: AccessTab) {
@@ -201,7 +264,24 @@ export class AdminAccessPage implements OnInit {
     const abbreviations: Record<string, string> = { ai: 'AI', api: 'API', aws: 'AWS', cicd: 'CI/CD', dsa: 'DSA', jvm: 'JVM', oop: 'OOP', sql: 'SQL', nosql: 'NoSQL', solid: 'SOLID', carl: 'CARL', nodejs: 'Node.js' };
     return topic.split(':').map(part => part.split('-').map(word => abbreviations[word] ?? word[0].toUpperCase() + word.slice(1)).join(' ')).join(' · ');
   }
-  async ngOnInit() { await this.reload(); }
+  async ngOnInit() { await Promise.all([this.reload(), this.loadPurchases()]); }
+  /**
+   * DLV-969 (owner, 2026-11-04): the test accounts' waiting purchase requests, for the owner and admins only (the Domain
+   * sends `pendingPurchase` to them alone). The owner-only waiting-people list is never asked for here.
+   */
+  async loadPurchases() {
+    if (!this.canDecide()) return;
+    this.purchasesBusy.set(true);
+    try {
+      this.purchaseRows.set(await this.request<TestAccountRow[]>('/admin/test-accounts'));
+      this.purchasesError.set('');
+    } catch {
+      this.purchasesError.set('Purchase requests could not be loaded. Refresh to retry.');
+    } finally {
+      this.purchasesBusy.set(false);
+      this.purchasesLoaded.set(true);
+    }
+  }
   /** Pending email, username, or a short account ID when no list could name the account. */
   nameOf(row: Pick<Assignment, 'accountId' | 'pendingEmail' | 'label'>): string {
     return row.label ?? row.pendingEmail ?? (row.accountId ? accountName(row.accountId, this.names()) : '');
@@ -264,6 +344,7 @@ export class AdminAccessPage implements OnInit {
   }
   /** DLV-969: the waiting list is the owner's; when it cannot load, the rest of the page still works. */
   async loadWaiting() {
+    if (!this.canManage()) return;
     try {
       const data = await this.request<{ waiting?: WaitingRow[]; expiryHours?: number }>('/admin/access/waiting');
       this.waiting.set(data.waiting ?? []);

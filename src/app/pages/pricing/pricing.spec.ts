@@ -50,6 +50,10 @@ describe('Sample pricing page (DLV-209)', () => {
   function text(element: Element | null): string {
     return (element?.textContent ?? '').replace(/\s+/g, ' ').trim();
   }
+  /** An element's children read as words, for rows whose parts sit side by side ("Total" "$69.99/year"). */
+  function words(element: Element | null): string {
+    return [...(element?.children ?? [])].map(text).filter(Boolean).join(' ');
+  }
   function chooseButtons(): HTMLButtonElement[] {
     return [...root.querySelectorAll<HTMLButtonElement>('.plan-card button')];
   }
@@ -88,7 +92,7 @@ describe('Sample pricing page (DLV-209)', () => {
       'Changing and renewing',
       'Mock interviews',
       'Questions',
-      'Local payment simulation',
+      'Your plan',
     ]);
   });
 
@@ -192,27 +196,30 @@ describe('Sample pricing page (DLV-209)', () => {
     expect(answers).toContain('It is planned.');
   });
 
-  it('opens an honest notice from every Choose button and returns focus on Close', () => {
+  it('opens the checkout on its Plan step from every Choose button and returns focus on Close', () => {
     const dialog = root.querySelector('dialog')!;
     expect(dialog.open).toBe(false);
     expect(dialog.getAttribute('aria-labelledby')).toBe('checkout-notice-title');
     expect(dialog.getAttribute('aria-describedby')).toBe('checkout-notice-description');
+    // The page outline skips [role="dialog"], so the checkout's step headings never appear in the sidebar.
+    expect(dialog.getAttribute('role')).toBe('dialog');
     for (const button of chooseButtons()) {
       expect(button.getAttribute('aria-haspopup')).toBe('dialog');
       button.focus();
       button.click();
       fixture.detectChanges();
       expect(dialog.open).toBe(true);
-      expect(text(dialog.querySelector('h2'))).toBe('Local payment simulation');
-      expect(text(dialog.querySelector('#checkout-notice-description'))).toBe(
-        'This creates a real local access record using a mock payment. No money is charged.',
-      );
-      expect(text(dialog.querySelector('.eyebrow'))).toContain(
-        text(button).replace('Choose ', ''),
-      );
-      const close = [...dialog.querySelectorAll<HTMLButtonElement>('button')].find(b => text(b)==='Close')!;
-      expect(text(close)).toBe('Close');
+      const name = text(button).replace('Choose ', '');
+      expect(text(dialog.querySelector('#checkout-notice-title'))).toBe('Your plan');
+      expect(text(dialog.querySelector('#checkout-notice-description'))).toMatch(new RegExp(`^${name} opens .+\\.$`));
+      expect(text(dialog.querySelector('.plan-pick-name'))).toBe(name);
+      // A slim Plan → Review → Payment indicator, with the current step marked for assistive technology.
+      const steps = [...dialog.querySelectorAll('.checkout-steps li')];
+      expect(steps.map((step) => text(step.querySelector('.step-label')))).toEqual(['Plan', 'Review', 'Payment']);
+      expect(steps.map((step) => step.getAttribute('aria-current'))).toEqual(['step', null, null]);
+      const close = [...dialog.querySelectorAll<HTMLButtonElement>('button')].find(b=>text(b)==='Close')!;
       expect(document.activeElement).toBe(close);
+      expect(words(dialog.querySelector('.foot-split'))).toBe('Close Continue');
       close.click();
       fixture.detectChanges();
       expect(dialog.open).toBe(false);
@@ -220,7 +227,7 @@ describe('Sample pricing page (DLV-209)', () => {
     }
   });
 
-  it('returns focus when Escape closes the notice, and links back to Start free and catalogs', () => {
+  it('returns focus when Escape closes the checkout, and links back to Start free and catalogs', () => {
     const annual = chooseButtons()[3];
     annual.click();
     fixture.detectChanges();
@@ -233,6 +240,10 @@ describe('Sample pricing page (DLV-209)', () => {
       ['Grow', '/grow'],
       ['Blaze', '/blaze'],
     ]);
+    // Escape is not held back when nothing is being sent.
+    const cancel = new Event('cancel', { cancelable: true });
+    dialog.dispatchEvent(cancel);
+    expect(cancel.defaultPrevented).toBe(false);
     // A native dialog closes itself on Escape and then fires "close".
     dialog.open = false;
     dialog.dispatchEvent(new Event('close'));
@@ -259,6 +270,24 @@ describe('Sample pricing page (DLV-209)', () => {
     setItem.mockRestore();
   });
 
+  it('reviews the order without the server, but needs its quote to go on to payment', () => {
+    chooseButtons()[0].click();
+    fixture.detectChanges();
+    const dialog = root.querySelector('dialog')!;
+    [...dialog.querySelectorAll<HTMLButtonElement>('button')].find((b) => text(b) === 'Continue')!.click();
+    fixture.detectChanges();
+    expect(text(dialog.querySelector('#checkout-notice-title'))).toBe('Review your order');
+    expect(document.activeElement).toBe(dialog.querySelector('#checkout-notice-title'));
+    // The list price and the plan's length stand in, marked as pending, until a quote arrives.
+    expect(words(dialog.querySelector('.order-total'))).toBe('Total $69.99/year');
+    expect(dialog.querySelector('.order-total-price')?.classList).toContain('is-pending');
+    expect(words(dialog.querySelector('.order-row'))).toBe('Access 1 year of access');
+    expect([...dialog.querySelectorAll('.order-opens li')].map(text)).toEqual(['Learn']);
+    const pay = [...dialog.querySelectorAll<HTMLButtonElement>('button')].find((b) => text(b) === 'Continue to payment')!;
+    expect(pay.disabled).toBe(true);
+    expect(text(dialog.querySelector('.checkout-status'))).not.toBe('');
+  });
+
   it('asks a signed-out visitor to sign in before buying, and shows no payment wording', async () => {
     TestBed.inject(StudyPlanAccount).account.set(null);
     fixture.detectChanges();
@@ -269,6 +298,8 @@ describe('Sample pricing page (DLV-209)', () => {
     const dialog = root.querySelector('dialog')!;
     expect(dialog.open).toBe(true);
     expect(text(dialog.querySelector('h2'))).toBe('Sign in to buy a plan');
+    expect(dialog.querySelector('.checkout-steps')).toBeNull();
+    expect(text(dialog.querySelector('.plan-pick-name'))).toBe('Learn');
     expect(
       [...dialog.querySelectorAll('.action-row > *')].map((action) => [text(action), action.getAttribute('href')]),
     ).toEqual([
@@ -279,7 +310,7 @@ describe('Sample pricing page (DLV-209)', () => {
     const signup = dialog.querySelector('.notice-signup')!;
     expect(text(signup)).toBe('Don’t have an account? Create a free account');
     expect(signup.querySelector('a')?.getAttribute('href')).toBe('/sign-up?returnTo=%2Fpricing');
-    expect(text(dialog)).not.toContain('Payment connection');
+    expect(text(dialog)).not.toMatch(/Payment connection|Continue to payment|Pay \$/);
   });
 
   describe('sales', () => {
@@ -356,10 +387,16 @@ describe('Sample pricing page (DLV-209)', () => {
     });
   });
 
-  // DLV-969 (owner, 2026-11-04): in DEV only test accounts buy, and each purchase waits for the owner or an admin.
-  describe('DEV purchase requests', () => {
+  // DLV-969 (owner, 2026-11-04): the checkout looks like production everywhere; only the payment step differs. Local pays
+  // with the mock provider, production says payments are not enabled yet, and a DEV test account's purchase becomes a
+  // request that the owner or an admin completes.
+  describe('checkout steps and the payment step by environment', () => {
     let purchase: () => Response;
+    let quote: (body: Record<string, unknown>) => Record<string, unknown>;
+    let records: unknown[];
     let calls: { path: string; body: unknown }[];
+    const OWNER_TEXT =
+      'This is DEV, so no payment is taken. Learner 07 is a test account. The owner or an admin completes this purchase: go back to your own account, open People and access → Waiting for access → Purchase requests, and approve or decline it.';
     async function open(options: { dev: boolean; testAccount: boolean }) {
       TestBed.resetTestingModule();
       calls = [];
@@ -372,12 +409,14 @@ describe('Sample pricing page (DLV-209)', () => {
           {
             provide: ACCOUNT_FETCH,
             useValue: async (path: string, init?: RequestInit) => {
-              calls.push({ path, body: init?.body ? JSON.parse(init.body as string) : undefined });
+              const body = init?.body ? JSON.parse(init.body as string) : undefined;
+              calls.push({ path, body });
               const json = (data: unknown) => new Response(JSON.stringify({ data }));
               if (path.endsWith('/auth/csrf')) return json({ headerName: 'X-CSRF-TOKEN', token: 't' });
               if (path.endsWith('/membership/plans')) return json(PLANS);
-              if (path.endsWith('/account/purchases/quote')) return json({ priceCents: 14499, endsAt: '2027-11-04T00:00:00Z' });
+              if (path.endsWith('/account/purchases/quote')) return json(quote(body));
               if (path.endsWith('/account/purchases')) return purchase();
+              if (path.endsWith('/account/access-records')) return json(records);
               if (path.endsWith('/auth/test-session/end')) return json({ next: '/admin/access?tab=test' });
               if (path.endsWith('/access-summary')) return json({ label: 'Free' });
               return json([]);
@@ -395,8 +434,15 @@ describe('Sample pricing page (DLV-209)', () => {
       fixture.detectChanges();
       await fixture.whenStable();
       root = fixture.nativeElement as HTMLElement;
+      await settle();
       return api;
     }
+    beforeEach(() => {
+      records = [];
+      // Local and DEV quotes say `mock: true`, as the Domain sends them.
+      quote = () => ({ priceCents: 14499, startsAt: '2026-11-04T00:00:00Z', endsAt: '2027-11-04T00:00:00Z', renewal: 'manual', mock: true });
+      purchase = () => new Response(JSON.stringify({ data: { id: 'pur-9', status: 'pending', providerStatus: 'awaiting_owner_approval' } }));
+    });
     /** The fake transport answers on later tasks (CSRF, then the call), so let a few pass. */
     async function settle() {
       for (let turn = 0; turn < 6; turn++) {
@@ -408,14 +454,26 @@ describe('Sample pricing page (DLV-209)', () => {
       chooseButtons().find((button) => text(button) === name)!.click();
       await settle();
     }
+    function dialog(): HTMLDialogElement {
+      return root.querySelector('dialog')!;
+    }
     function dialogButton(name: string): HTMLButtonElement | undefined {
       return [...root.querySelectorAll<HTMLButtonElement>('dialog button')].find((button) => text(button) === name);
     }
-    async function send() {
-      const button = dialogButton('Send purchase request')!;
+    async function press(name: string) {
+      const button = dialogButton(name)!;
       expect(button.disabled).toBe(false);
       button.click();
       await settle();
+    }
+    function title(): string {
+      return text(dialog().querySelector('#checkout-notice-title'));
+    }
+    function purchases() {
+      return calls.filter((call) => call.path.endsWith('/account/purchases'));
+    }
+    function current(): string {
+      return text(dialog().querySelector('.checkout-steps [aria-current="step"] .step-label'));
     }
 
     it('says so on the page and in the FAQ', async () => {
@@ -426,60 +484,209 @@ describe('Sample pricing page (DLV-209)', () => {
       expect(text(root.querySelector('.faq dl'))).toContain('In DEV, only test accounts can buy, and the owner or an admin approves each request.');
     });
 
-    it('sends a test account’s purchase as a request and walks staff through approving it', async () => {
-      purchase = () => new Response(JSON.stringify({ data: { id: 'pur-9', status: 'pending', providerStatus: 'awaiting_owner_approval' } }));
+    it('walks Plan → Review → Payment and back, moving focus to each step’s heading', async () => {
+      await open({ dev: false, testAccount: false });
+      await choose('Choose Advance');
+      expect([title(), current()]).toEqual(['Your plan', 'Plan']);
+      await press('Continue');
+      expect([title(), current()]).toEqual(['Review your order', 'Review']);
+      expect(document.activeElement).toBe(dialog().querySelector('#checkout-notice-title'));
+      expect(dialog().querySelector('.checkout-steps li.is-done .visually-hidden')?.textContent).toBe('(done)');
+      // The order summary: what it opens, the term from the quote, the price, and manual renewal.
+      expect([...dialog().querySelectorAll('.order-opens li')].map(text)).toEqual(['Learn', 'Grow']);
+      expect([...dialog().querySelectorAll('.order-row')].map(words)).toEqual([
+        'Access 4 Nov 2026 – 4 Nov 2027',
+        'Renewal Renews manually. Nothing is charged again automatically.',
+      ]);
+      expect(words(dialog().querySelector('.order-total'))).toBe('Total $144.99/year');
+      expect(dialog().querySelector('.order-total-price')?.classList).not.toContain('is-pending');
+      await press('Back');
+      expect(title()).toBe('Your plan');
+      await press('Continue');
+      await press('Continue to payment');
+      expect([title(), current()]).toEqual(['Payment', 'Payment']);
+      expect(document.activeElement).toBe(dialog().querySelector('#checkout-notice-title'));
+      await press('Back');
+      expect(title()).toBe('Review your order');
+      // Moving through the steps sends nothing.
+      expect(purchases()).toHaveLength(0);
+    });
+
+    it('pays with the Local mock provider, as a payment step that says no money is charged', async () => {
+      purchase = () => new Response(JSON.stringify({ data: { status: 'succeeded', providerStatus: 'mock_succeeded' } }));
+      quote = () => ({ priceCents: 6999, endsAt: '2027-11-04T00:00:00Z', mock: true });
+      await open({ dev: false, testAccount: false });
+      expect(text(root.querySelector('.sample-note'))).toContain('Local payment simulation.');
+      await choose('Choose Learn');
+      await press('Continue');
+      await press('Continue to payment');
+      expect(text(dialog().querySelector('.env-badge'))).toBe('Local · Mock payment');
+      expect(text(dialog().querySelector('#checkout-notice-description'))).toBe(
+        'This is Local, so a mock provider takes the payment. No money is charged.',
+      );
+      expect(words(dialog().querySelector('.foot-split'))).toBe('Back Pay $69.99');
+      await press('Pay $69.99');
+      expect(purchases()[0].body).toMatchObject({ planId: 'learn', expectedPriceCents: 6999, replacesId: null });
+      expect(text(dialog().querySelector('.payment-result'))).toBe(
+        'Payment complete Simulated purchase completed. No money was charged. Open Manage account to see your access.',
+      );
+      expect(dialog().querySelector('.payment-result')?.getAttribute('role')).toBe('status');
+      expect([...dialog().querySelectorAll('.checkout-foot .action-row > *')].map((a) => [text(a), a.getAttribute('href')])).toEqual([
+        ['Open Manage account', '/account'],
+        ['Close', null],
+      ]);
+      expect(dialogButton('Back')).toBeUndefined();
+    });
+
+    it('says a mock payment that did not complete in the provider’s words', async () => {
+      purchase = () => new Response(JSON.stringify({ data: { status: 'failed', providerStatus: 'requires_payment_method' } }));
+      await open({ dev: false, testAccount: false });
+      await choose('Choose Grow');
+      await press('Continue');
+      await press('Continue to payment');
+      await press('Pay $144.99');
+      expect(text(dialog().querySelector('.payment-result'))).toBe(
+        'Payment not completed Payment simulation: failed (requires_payment_method). No money was charged.',
+      );
+      expect(dialogButton('Back')?.disabled).toBe(true);
+      expect(dialogButton('Close')?.className).toBe('action-button');
+    });
+
+    it('says a refused Local payment in the server’s words and keeps the payment step', async () => {
+      purchase = () => new Response(JSON.stringify({ message: 'The price changed. Review the order again.' }), { status: 409 });
+      await open({ dev: false, testAccount: false });
+      await choose('Choose Learn');
+      await press('Continue');
+      await press('Continue to payment');
+      await press('Pay $144.99');
+      expect(title()).toBe('Payment');
+      expect(text(dialog().querySelector('.checkout-status'))).toBe('The price changed. Review the order again.');
+    });
+
+    it('in production, where the quote is not the mock, says payments are not enabled yet and offers nothing to pay', async () => {
+      quote = () => ({ priceCents: 6999, endsAt: '2027-11-04T00:00:00Z' });
+      await open({ dev: false, testAccount: false });
+      await choose('Choose Learn');
+      await press('Continue');
+      expect(words(dialog().querySelector('.order-total'))).toBe('Total $69.99/year');
+      await press('Continue to payment');
+      expect(title()).toBe('Payment');
+      expect(text(dialog().querySelector('#checkout-notice-description'))).toBe('Payments are not enabled yet.');
+      expect(text(dialog().querySelector('.payment-panel'))).toContain('You cannot buy a plan here yet, and nothing is charged.');
+      expect(dialog().querySelector('.env-badge')).toBeNull();
+      expect(words(dialog().querySelector('.foot-split'))).toBe('Back Close');
+      expect(dialogButton('Pay $69.99')).toBeUndefined();
+      expect(purchases()).toHaveLength(0);
+    });
+
+    it('shows an upgrade’s credit for the time left, the amount due and the end date it keeps', async () => {
+      records = [{ id: 'r1', planId: 'learn', courses: [], startsAt: '2026-05-04T00:00:00Z', endsAt: '2027-05-04T00:00:00Z', status: 'active', pricePaidCents: 6999, discount: null }];
+      quote = (body) =>
+        body['replacesId']
+          ? { priceCents: 3999, startsAt: new Date().toISOString(), endsAt: '2027-05-04T00:00:00Z', mock: true }
+          : { priceCents: 14499, startsAt: new Date().toISOString(), endsAt: '2028-05-04T00:00:00Z', mock: true };
+      await open({ dev: false, testAccount: false });
+      await choose('Upgrade to Advance');
+      const quotes = calls.filter((call) => call.path.endsWith('/purchases/quote'));
+      expect(quotes.at(-1)?.body).toMatchObject({ planId: 'advance', replacesId: 'r1' });
+      const select = dialog().querySelector('select')!;
+      expect([...select.options].map((option) => text(option))).toEqual(['New purchase', 'Change my Learn plan (ends 4 May 2027)']);
+      await press('Continue');
+      const rows = [...dialog().querySelectorAll('.order-row')].map(words);
+      expect(rows[0]).toMatch(/^Access \d+ \w+ 2026 – 4 May 2027$/);
+      expect(rows.slice(1)).toEqual([
+        'Advance $144.99',
+        'Credit for the time left on Learn −$105.00',
+        'Renewal Renews manually. Nothing is charged again automatically.',
+      ]);
+      expect(words(dialog().querySelector('.order-total'))).toBe('Due today $39.99');
+      expect(text(dialog().querySelector('.order-note'))).toBe('You pay the difference for the time left. Your end date stays 4 May 2027.');
+      await press('Continue to payment');
+      expect(dialogButton('Pay $39.99')).toBeDefined();
+
+      // A new purchase instead: a fresh quote, and no upgrade lines.
+      await press('Back');
+      await press('Back');
+      const choice = dialog().querySelector('select')!;
+      choice.value = '';
+      choice.dispatchEvent(new Event('change'));
+      await settle();
+      expect(calls.filter((call) => call.path.endsWith('/purchases/quote')).at(-1)?.body).toMatchObject({ replacesId: null });
+      await press('Continue');
+      expect(words(dialog().querySelector('.order-total'))).toBe('Total $144.99/year');
+      expect(dialog().querySelector('.order-note')).toBeNull();
+    });
+
+    it('shows a test account the DEV checkout screen once its purchase is waiting for approval', async () => {
       const api = await open({ dev: true, testAccount: true });
       await choose('Choose Advance');
-      const dialog = root.querySelector('dialog')!;
-      expect(text(dialog.querySelector('h2'))).toBe('Send a purchase request');
-      expect(text(dialog.querySelector('#checkout-notice-description'))).toBe(
-        'In DEV the owner or an admin approves purchases for test accounts. Your plan changes once it is approved. No money is charged.',
-      );
-      expect(dialogButton('Confirm simulated purchase')).toBeUndefined();
-      await send();
-      expect(calls.find((call) => call.path.endsWith('/account/purchases'))?.body).toMatchObject({ planId: 'advance', expectedPriceCents: 14499 });
-      const sent = dialog.querySelector('.request-sent')!;
-      expect(sent.getAttribute('role')).toBe('status');
-      // DLV-969 (owner wording, 2026-11-04): where to approve it, and where to check the result later.
-      const lines = [...sent.querySelectorAll('p')].map(text);
-      expect(lines[0]).toBe(
-        'Request sent — mock payment waiting for approval. Review it in People and access in your own account, and approve or decline it there.',
-      );
-      expect(lines[1]).toBe('To check the result later, open Manage account → Membership in Learner 07’s account menu.');
-      expect(text(sent)).not.toMatch(/switch back|continue learning/i);
-      expect(text(dialog)).not.toContain('Simulated purchase completed');
-      // As the test account People and access is not open to it, so the notice names the page instead of linking it.
-      expect(sent.querySelector('a')).toBeNull();
+      // Plan and Review look as they do in production: no request wording.
+      expect(title()).toBe('Your plan');
+      await press('Continue');
+      expect(title()).toBe('Review your order');
+      expect(text(dialog())).not.toMatch(/Review request|Send purchase request|purchase request/i);
+      expect(purchases()).toHaveLength(0);
+      await press('Continue to payment');
+      // Behind the scenes the purchase is sent, and becomes a request; the DEV screen comes once it exists.
+      expect(purchases()).toHaveLength(1);
+      expect(purchases()[0].body).toMatchObject({ planId: 'advance', expectedPriceCents: 14499 });
       expect(api.requestWaiting()).toBe(true);
-      expect(dialogButton('Request waiting for approval')?.disabled).toBe(true);
+      expect([title(), current()]).toEqual(['Payment', 'Payment']);
+      const screen = dialog().querySelector('[data-dev-checkout]')!;
+      expect(text(screen.querySelector('.env-badge'))).toBe('DEV · Test account · No payment');
+      expect(text(screen.querySelector('.order-name'))).toBe('Advance');
+      expect(words(screen.querySelector('.order-total'))).toBe('Total $144.99/year');
+      const status = screen.querySelector('#checkout-notice-description')!;
+      expect(status.getAttribute('role')).toBe('status');
+      expect(text(status)).toBe(OWNER_TEXT);
+      expect(text(dialog())).not.toMatch(/Review request|Send purchase request|Simulated purchase completed|Pay \$/);
+      expect(screen.querySelector('a')).toBeNull();
+      expect([...dialog().querySelectorAll('.checkout-foot button')].map(text)).toEqual(['Go to People and access', 'Close']);
+      expect(dialog().querySelector('.checkout-foot .foot-centred')).not.toBeNull();
 
-      // One primary action: Review request ends the test session with the menu's own back(), landing on the request.
-      // The one-time notice goes and stays gone, and nothing is stored.
-      const back = vi.spyOn(TestBed.inject(TestSessions), 'back').mockResolvedValue();
+      // Escape waits while the test session is ending.
+      const sessions = TestBed.inject(TestSessions);
+      sessions.returning.set(true);
+      const cancel = new Event('cancel', { cancelable: true });
+      dialog().dispatchEvent(cancel);
+      expect(cancel.defaultPrevented).toBe(true);
+      sessions.returning.set(false);
+      fixture.detectChanges();
+
+      // Go to People and access ends the test session with the menu's own back(), landing on the request. Nothing is stored.
+      const back = vi.spyOn(sessions, 'back').mockResolvedValue();
       const setItem = vi.spyOn(Storage.prototype, 'setItem');
       const address = window.location.href;
-      const buttons = [...sent.querySelectorAll<HTMLButtonElement>('button')];
-      expect(buttons.map(text)).toEqual(['Review request']);
-      expect(buttons[0].type).toBe('button');
-      buttons[0].click();
-      await settle();
-      expect(back).toHaveBeenCalledExactlyOnceWith('/admin/access?tab=test&request=pur-9&return=%2Fpricing&account=tester');
-      expect(root.querySelector('.request-sent')).toBeNull();
-      expect(text(dialog)).not.toContain('Request sent');
+      await press('Go to People and access');
+      expect(back).toHaveBeenCalledExactlyOnceWith('/admin/access?tab=waiting&view=purchases&request=pur-9&return=%2Fpricing&account=tester');
       expect(setItem).not.toHaveBeenCalled();
       expect(window.location.href).toBe(address);
       setItem.mockRestore();
+
+      // Close closes the checkout.
+      await press('Close');
+      expect(dialog().open).toBe(false);
     });
 
-    it('Review request leaves out a purchase id the answer did not send', async () => {
+    it('shows a failed switch back inside the DEV screen', async () => {
+      await open({ dev: true, testAccount: true });
+      await choose('Choose Learn');
+      await press('Continue');
+      await press('Continue to payment');
+      TestBed.inject(TestSessions).error.set('Could not go back to your account. Try again.');
+      fixture.detectChanges();
+      expect(text(dialog().querySelector('[data-dev-checkout] [role="alert"]'))).toBe('Could not go back to your account. Try again.');
+    });
+
+    it('Go to People and access leaves out a purchase id the answer did not send', async () => {
       purchase = () => new Response(JSON.stringify({ data: { status: 'pending', providerStatus: 'awaiting_owner_approval' } }));
       await open({ dev: true, testAccount: true });
       await choose('Choose Learn');
-      await send();
+      await press('Continue');
+      await press('Continue to payment');
       const back = vi.spyOn(TestBed.inject(TestSessions), 'back').mockResolvedValue();
-      root.querySelector<HTMLButtonElement>('.request-sent button')!.click();
-      await settle();
-      expect(back).toHaveBeenCalledExactlyOnceWith('/admin/access?tab=test&return=%2Fpricing&account=tester');
+      await press('Go to People and access');
+      expect(back).toHaveBeenCalledExactlyOnceWith('/admin/access?tab=waiting&view=purchases&return=%2Fpricing&account=tester');
     });
 
     describe('where the purchase started', () => {
@@ -524,63 +731,92 @@ describe('Sample pricing page (DLV-209)', () => {
       });
     });
 
-    it('explains a waiting request instead of sending another, after the 409', async () => {
+
+    it('after the 409, shows the same DEV screen saying a purchase is already waiting, and sends no second one', async () => {
       purchase = () =>
         new Response(JSON.stringify({ status: 409, code: 'PURCHASE_REQUEST_PENDING', message: 'A request is already waiting for the owner or an admin.' }), { status: 409 });
-      await open({ dev: true, testAccount: true });
+      const api = await open({ dev: true, testAccount: true });
       await choose('Choose Learn');
-      await send();
-      const dialog = root.querySelector('dialog')!;
-      expect(text(dialog.querySelector('[role="status"]'))).toBe('A request is already waiting for the owner or an admin.');
-      expect(dialogButton('Request waiting for approval')?.disabled).toBe(true);
-      expect(dialogButton('Send purchase request')).toBeUndefined();
-
-      // Choosing another plan says it is waiting, and the click sends nothing.
-      dialogButton('Close')!.click();
-      await choose('Choose Grow');
-      expect(text(dialog.querySelector('[role="status"]'))).toBe(
-        'A request is already waiting for the owner or an admin. Your plan changes once it is approved.',
+      await press('Continue');
+      await press('Continue to payment');
+      expect(api.requestWaiting()).toBe(true);
+      const screen = dialog().querySelector('[data-dev-checkout]')!;
+      expect(text(screen.querySelector('.env-badge'))).toBe('DEV · Test account · No payment');
+      expect(words(screen.querySelector('#checkout-notice-description'))).toBe(
+        'A purchase for this account is already waiting for approval. ' + OWNER_TEXT,
       );
-      const before = calls.filter((call) => call.path.endsWith('/account/purchases')).length;
+      // The waiting purchase may be for another plan, so this screen does not show the chosen plan as its order.
+      expect(screen.querySelector('.order')).toBeNull();
+      expect([...dialog().querySelectorAll('.checkout-foot button')].map(text)).toEqual(['Go to People and access', 'Close']);
+      const back = vi.spyOn(TestBed.inject(TestSessions), 'back').mockResolvedValue();
+      await press('Go to People and access');
+      expect(back).toHaveBeenCalledExactlyOnceWith('/admin/access?tab=waiting&view=purchases&return=%2Fpricing&account=tester');
+
+      // Another plan while it waits: the same steps, then the same screen, and nothing is sent.
+      await press('Close');
+      await choose('Choose Grow');
+      expect(title()).toBe('Your plan');
+      const before = purchases().length;
+      await press('Continue');
+      await press('Continue to payment');
+      expect(purchases()).toHaveLength(before);
+      expect(text(dialog().querySelector('.dev-checkout-lead'))).toBe('A purchase for this account is already waiting for approval.');
       await (fixture.componentInstance as unknown as { purchase(): Promise<void> }).purchase();
       await settle();
-      expect(calls.filter((call) => call.path.endsWith('/account/purchases'))).toHaveLength(before);
+      expect(purchases()).toHaveLength(before);
     });
 
-    it('tells a real account in DEV that purchases are for test accounts, and offers nothing to send', async () => {
+    it('lets a real account in DEV through the same steps, and its payment step says purchases are for test accounts only', async () => {
       await open({ dev: true, testAccount: false });
       await choose('Choose Learn');
-      const dialog = root.querySelector('dialog')!;
-      expect(text(dialog.querySelector('h2'))).toBe('Purchases in DEV are for test accounts');
-      expect(text(dialog.querySelector('#checkout-notice-description'))).toBe(
+      expect(title()).toBe('Your plan');
+      await press('Continue');
+      await press('Continue to payment');
+      expect(title()).toBe('Payment');
+      expect(text(dialog().querySelector('.env-badge'))).toBe('DEV · No payment');
+      expect(text(dialog().querySelector('#checkout-notice-description'))).toBe('Purchases in DEV are for test accounts only.');
+      expect(text(dialog().querySelector('.payment-panel'))).toContain(
         'In DEV, purchases are for test accounts; the owner or an admin approves them. To try a plan, choose Switch to a test account in your account menu.',
       );
-      expect(dialogButton('Send purchase request')).toBeUndefined();
-      expect(dialogButton('Confirm simulated purchase')).toBeUndefined();
+      expect(words(dialog().querySelector('.foot-split'))).toBe('Back Close');
+      expect(calls.some((call) => call.path.includes('/account/purchases'))).toBe(false);
+      await (fixture.componentInstance as unknown as { purchase(): Promise<void> }).purchase();
       expect(calls.some((call) => call.path.includes('/account/purchases'))).toBe(false);
     });
 
-    it('shows the 403 PURCHASES_TEST_ACCOUNTS_ONLY refusal in the server’s words', async () => {
+    it('keeps a test account on Review with the 403 PURCHASES_TEST_ACCOUNTS_ONLY refusal in the server’s words', async () => {
       purchase = () =>
         new Response(JSON.stringify({ status: 403, code: 'PURCHASES_TEST_ACCOUNTS_ONLY', message: 'In DEV, purchases are for test accounts; an owner or admin approves them.' }), { status: 403 });
       const api = await open({ dev: true, testAccount: true });
       await choose('Choose Learn');
-      await send();
-      expect(text(root.querySelector('dialog [role="status"]'))).toBe('In DEV, purchases are for test accounts; an owner or admin approves them.');
+      await press('Continue');
+      await press('Continue to payment');
+      expect(title()).toBe('Review your order');
+      expect(text(dialog().querySelector('.checkout-status'))).toBe('In DEV, purchases are for test accounts; an owner or admin approves them.');
       expect(api.requestWaiting()).toBe(false);
     });
 
-    it('keeps the Local simulated purchase unchanged', async () => {
-      purchase = () => new Response(JSON.stringify({ data: { status: 'succeeded', providerStatus: 'mock_succeeded' } }));
+    it('says a quote the server refused, and keeps Continue to payment disabled', async () => {
+      quote = () => {
+        throw new Error('unused');
+      };
       await open({ dev: false, testAccount: false });
-      expect(text(root.querySelector('.sample-note'))).toContain('Local payment simulation.');
+      const component = fixture.componentInstance as unknown as { membershipApi: MembershipApi };
+      vi.spyOn(component.membershipApi, 'request').mockRejectedValueOnce(new Error('Sale is not active'));
       await choose('Choose Learn');
-      dialogButton('Confirm simulated purchase')!.click();
-      await settle();
-      expect(text(root.querySelector('dialog [role="status"]'))).toBe(
-        'Simulated purchase completed. No money was charged. Open Manage account to see your access.',
-      );
-      expect(root.querySelector('.request-sent')).toBeNull();
+      await press('Continue');
+      expect(text(dialog().querySelector('.checkout-status'))).toBe('Sale is not active');
+      expect(dialogButton('Continue to payment')?.disabled).toBe(true);
+    });
+
+    it('a test account whose purchase completes at once sees the payment result', async () => {
+      purchase = () => new Response(JSON.stringify({ data: { status: 'succeeded', providerStatus: 'mock_succeeded' } }));
+      await open({ dev: true, testAccount: true });
+      await choose('Choose Learn');
+      await press('Continue');
+      await press('Continue to payment');
+      expect(title()).toBe('Payment');
+      expect(text(dialog().querySelector('.payment-result'))).toContain('Payment complete');
     });
   });
 });
