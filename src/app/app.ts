@@ -7,6 +7,7 @@ import { StudyPlanAccount } from './pages/study-plan/study-plan-account';
 import { PageSidebars } from './core/page-sidebars/page-sidebars';
 import { PageReadiness } from './core/page-readiness/page-readiness';
 import { PlatformBrand } from './core/platform-brand/platform-brand';
+import { GithubPrompt } from './core/github-account/github-account';
 
 @Component({
   selector: 'app-root',
@@ -26,6 +27,8 @@ export class App {
     effect(() => root.toggleAttribute('data-page-loading', this.readiness.loading()));
     const account = inject(StudyPlanAccount);
     const router = inject(Router);
+    // DLV-969 (owner, 2026-11-05): staff without a GitHub account on file see the Welcome card once per browser session.
+    inject(GithubPrompt).start();
     effect(() => {
       if (!account.sessionExpired()) return;
       const path = router.url.split(/[?#]/)[0];

@@ -401,6 +401,36 @@ tr.self > * {
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
+/* DLV-969: the owner's GitHub line under a person's name. */
+.github-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin-top: 4px;
+  font-size: 13px;
+}
+.github-label {
+  color: var(--text-subtle);
+  font-weight: 700;
+}
+.github-missing {
+  color: var(--text-subtle);
+}
+.copy-github {
+  min-height: 28px;
+  padding: 2px 10px;
+  border: 1px solid color-mix(in srgb, var(--accent-link) 40%, var(--line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-link) 8%, var(--surface));
+  color: var(--accent-link);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.copy-github:hover {
+  border-color: var(--accent-link);
+}
 .same-email-flag {
   display: block;
   margin-top: 4px;

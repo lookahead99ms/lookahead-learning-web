@@ -860,6 +860,51 @@ describe('People sign-in methods (DLV-969 account linking)',()=>{
  });
 });
 
+describe('People GitHub accounts (DLV-969, owner 2026-11-05)',()=>{
+ const real=(id:string,extra:object={})=>({accountId:id,username:id,displayName:'Person '+id,email:null,roles:['user'],testAccount:false,fullCurriculum:false,access:{label:'Free',labels:['Free'],grantedCourseIds:[]},...extra});
+ const directory={accounts:[real('given',{github:'https://github.com/given-person'}),real('none',{github:null}),real('older')],page:0,hasNext:false};
+ async function render(feedbackRole:'owner'|'co-author'){
+  const request=vi.fn(async(path:string)=>path.startsWith('/admin/accounts')?directory:path==='/admin/test-accounts'?[row]:[]);
+  const account=signal<any>({accountId:'me',username:'author',topicGrants:[],permissions:{manageAccess:feedbackRole==='owner',feedbackRole}});
+  TestBed.configureTestingModule({providers:[provideRouter([]),{provide:MembershipApi,useValue:{request}},{provide:StudyPlanAccount,useValue:{account}}]});
+  const fixture=TestBed.createComponent(TestAccounts);fixture.componentRef.setInput('view','people');
+  await fixture.componentInstance.load();fixture.detectChanges();await fixture.whenStable();fixture.detectChanges();
+  return {root:fixture.nativeElement as HTMLElement,fixture};
+ }
+ const person=(root:HTMLElement,id:string)=>root.querySelector(`tr[data-account="Person ${id}"] th[data-label="Person"]`) as HTMLElement|null;
+ afterEach(()=>vi.restoreAllMocks());
+ it('shows the owner each GitHub account as a link with Copy, or Not given',async()=>{
+  const writeText=vi.fn(async()=>undefined);Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText}});
+  const {root,fixture}=await render('owner');
+  const given=person(root,'given')!.querySelector('.github-line')!;
+  expect(given.querySelector('.github-label')?.textContent).toBe('GitHub');
+  const link=given.querySelector('a')!;
+  expect([link.getAttribute('href'),link.textContent,link.getAttribute('rel'),link.getAttribute('target')]).toEqual(['https://github.com/given-person','github.com/given-person','noopener noreferrer','_blank']);
+  const copy=given.querySelector('button.copy-github') as HTMLButtonElement;
+  expect([copy.textContent?.trim(),copy.getAttribute('aria-label')]).toEqual(['Copy','Copy the GitHub address of Person given']);
+  copy.click();await fixture.whenStable();fixture.detectChanges();
+  expect(writeText).toHaveBeenCalledWith('https://github.com/given-person');
+  expect(copy.textContent?.trim()).toBe('Copied');
+  expect(person(root,'none')!.querySelector('.github-missing')?.textContent).toBe('Not given');
+  expect(person(root,'older')!.querySelector('.github-line')).toBeNull();
+ });
+ it('keeps the link to select when the clipboard is refused',async()=>{
+  Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:vi.fn(async()=>{throw new Error('denied');})}});
+  const {root,fixture}=await render('owner');
+  const copy=person(root,'given')!.querySelector('button.copy-github') as HTMLButtonElement;
+  copy.click();await fixture.whenStable();fixture.detectChanges();
+  expect(copy.textContent?.trim()).toBe('Copy');
+  expect(person(root,'given')!.querySelector('a')).not.toBeNull();
+  await fixture.componentInstance.copyGithub({key:'x',github:null} as never);
+  expect(fixture.componentInstance.copiedGithub()).toBeNull();
+ });
+ it('gives other operators no GitHub accounts at all',async()=>{
+  const {root}=await render('co-author');
+  expect(root.querySelector('.github-line')).toBeNull();
+  expect(root.textContent).not.toContain('github.com');
+ });
+});
+
 // DLV-969 (owner, 2026-11-04): DEV test accounts' purchases wait in People and access for the owner or an admin.
 // DLV-969 (owner, DEV test 2026-11-04): the requests themselves moved to Waiting for access → Purchase requests
 // (purchase-requests-panel.spec.ts); Test accounts keeps only the badge on each waiting account.
