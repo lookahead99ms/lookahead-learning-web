@@ -238,10 +238,15 @@ export class SupportRequestForm implements OnDestroy {
       });
       const body = await result.json();
       if (body.data?.reference) {
+        // DLV-971 (owner, 2026-11-06): every request is also an item under Team Reviews, whatever the mail status.
+        // "recorded" (Domain, 202): kept for Team Reviews while support mail is not switched on, so no email was sent.
+        const status = body.data.status;
         this.receipt.set(
-          (body.data.status === 'accepted'
-            ? 'The mail server accepted your message. '
-            : 'Delivery could not be confirmed. This request will not be sent again automatically. ') +
+          (status === 'accepted'
+            ? 'The mail server accepted your message. Request recorded. The owner and admins see it under Team Reviews; we also reply by email. '
+            : status === 'recorded'
+              ? 'Request recorded. The owner and admins see it under Team Reviews. Email replies are not switched on yet, so there is no email for this one. '
+              : 'Delivery could not be confirmed. This request will not be sent again automatically. Request recorded. The owner and admins see it under Team Reviews; we also reply by email. ') +
             'Reference: ' +
             body.data.reference,
         );

@@ -71,6 +71,46 @@ describe('support request recovery', () => {
   });
 });
 
+describe('support request receipt (DLV-971)', () => {
+  const recorded = 'Request recorded. The owner and admins see it under Team Reviews; we also reply by email. ';
+  it('says the request is under Team Reviews after an accepted send', async () => {
+    const transport = vi
+      .fn()
+      .mockResolvedValueOnce(token())
+      .mockResolvedValueOnce(response({ data: { reference: 'SUP-1', status: 'accepted' } }, 202));
+    const page = setup(transport);
+    await page.submit();
+    expect((page as any).receipt()).toBe(
+      'The mail server accepted your message. ' + recorded + 'Reference: SUP-1',
+    );
+    expect((page as any).error()).toBe('');
+  });
+  it('says the request is under Team Reviews with no email when the Domain answers recorded (mail not configured)', async () => {
+    const transport = vi
+      .fn()
+      .mockResolvedValueOnce(token())
+      .mockResolvedValueOnce(response({ data: { reference: 'SUP-3', status: 'recorded' } }, 202));
+    const page = setup(transport);
+    await page.submit();
+    expect((page as any).receipt()).toBe(
+      'Request recorded. The owner and admins see it under Team Reviews. Email replies are not switched on yet, so there is no email for this one. Reference: SUP-3',
+    );
+  });
+  it('says the request is under Team Reviews even when mail delivery is unconfirmed', async () => {
+    const transport = vi
+      .fn()
+      .mockResolvedValueOnce(token())
+      .mockResolvedValueOnce(response({ data: { reference: 'SUP-2', status: 'unconfirmed' } }, 202));
+    const page = setup(transport);
+    await page.submit();
+    expect((page as any).receipt()).toBe(
+      'Delivery could not be confirmed. This request will not be sent again automatically. ' +
+        recorded +
+        'Reference: SUP-2',
+    );
+  });
+});
+
 describe('support request form layout (DLV-971)', () => {
   function render() {
     TestBed.configureTestingModule({

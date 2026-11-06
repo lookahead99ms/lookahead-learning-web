@@ -112,6 +112,58 @@ describe('ConnectedPlatformReviewClient', () => {
     expect((await client.list().catch((error) => error)).kind).toBe('unauthorized');
   });
 
+  it('passes the kind, request type and reference of a learner request through unchanged (DLV-971)', async () => {
+    const stored = {
+      id: itemId,
+      kind: 'request',
+      requestType: 'question',
+      reference: 'SUP-42',
+      submitterRole: 'user',
+      category: 'idea',
+      page: 'Support',
+      status: 'new',
+    };
+    responses.push(json(200, { data: stored }));
+    expect(await client.item(itemId)).toEqual(stored);
+    responses.push(json(200, { data: { items: [{ ...stored, attachmentCount: 0 }], nextBefore: null } }));
+    const page = await client.list();
+    expect(page.items[0]).toEqual(expect.objectContaining({ kind: 'request', requestType: 'question', reference: 'SUP-42' }));
+    // A review arrives without the fields; nothing is invented.
+    responses.push(json(200, { data: { id: itemId, category: 'problem' } }));
+    const review = await client.item(itemId);
+    expect(review.kind).toBeUndefined();
+    expect(review.reference).toBeUndefined();
+  });
+
+  it('promotes an item with CSRF and an Idempotency-Key and returns the ticket with the stored item (DLV-971)', async () => {
+    responses.push(json(200, { data: { token: 't', headerName: 'X-CSRF-TOKEN' } }));
+    responses.push(json(201, { data: { ticketId: 'DLV-0042', item: { id: itemId, ticketId: 'DLV-0042', ticketStatus: 'Backlog' } } }));
+    const result = await client.promote(itemId);
+    expect(calls[1].url).toBe(`/bff/api/v1/platform-reviews/${itemId}/promote`);
+    expect(calls[1].init.method).toBe('POST');
+    expect(calls[1].init.headers).toEqual(expect.objectContaining({ 'X-CSRF-TOKEN': 't' }));
+    expect((calls[1].init.headers as Record<string, string>)['Idempotency-Key']).toMatch(/[0-9a-f-]{36}/);
+    expect(calls[1].init.body).toBeUndefined();
+    expect(result).toEqual({ ticketId: 'DLV-0042', item: { id: itemId, ticketId: 'DLV-0042', ticketStatus: 'Backlog' } });
+    // Already promoted: the Domain's 409 reaches the page as a conflict.
+    responses.push(json(200, { data: { token: 't', headerName: 'X-CSRF-TOKEN' } }));
+    responses.push(json(409, { code: 'PLATFORM_REVIEW_PROMOTED', message: 'This item already has a ticket.' }));
+    expect(await client.promote(itemId).catch((error) => error)).toEqual(
+      new PlatformReviewError('conflict', 'This item already has a ticket.'),
+    );
+  });
+
+  it('accepts the numbered record ids of the runtime stores and still rejects anything else (DLV-971)', async () => {
+    for (const id of ['REV-000001', 'SUP-000001']) {
+      responses.push(json(200, { data: { id } }));
+      expect(await client.item(id)).toEqual({ id });
+      expect(calls.at(-1)!.url).toBe(`/bff/api/v1/platform-reviews/${id}`);
+    }
+    for (const id of ['REV-1', 'DLV-000001', 'rev-000001', 'REV-000001/x', '']) {
+      expect((await client.item(id).catch((error) => error)).kind).toBe('not-found');
+    }
+  });
+
   it('pages older days and shows images through blob URLs', async () => {
     responses.push(json(200, { data: { items: [], nextBefore: null } }));
     await client.list('2026-09-01');

@@ -815,6 +815,88 @@
 .save-notice:empty {
   display: none;
 }
+/* DLV-971 runtime stores: the published copy standing in for a DEV plan not uploaded yet. */
+.plan-notice {
+  margin: 0;
+  padding: 8px 20px;
+  color: var(--text-subtle);
+  font-size: 0.85rem;
+}
+/* The ticket a /delivery-plan#<id> link asked for. */
+.work-item-container.highlighted .work-item-card,
+.ticket-results li.highlighted .ticket-row {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+.work-item-card.blocked .card-footer em.conflict-mark,
+.card-footer em.conflict-mark {
+  color: var(--warning);
+}
+.ticket-origin {
+  margin: 0 25px 12px;
+  font-size: 0.85rem;
+}
+.ticket-origin a {
+  color: var(--accent-strong);
+  font-weight: 650;
+}
+.conflict-banner {
+  margin: 0 25px 18px;
+  padding: 14px 16px;
+  border: 1px solid var(--warning);
+  border-radius: 10px;
+  background: var(--warning-surface, color-mix(in srgb, var(--warning) 12%, transparent));
+}
+.conflict-banner h3 {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+}
+.conflict-banner > p {
+  margin: 0 0 12px;
+  font-size: 0.85rem;
+}
+.conflict-diff {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+.conflict-diff div {
+  display: grid;
+  grid-template-columns: minmax(100px, 150px) minmax(0, 1fr);
+  gap: 4px 12px;
+  font-size: 0.85rem;
+}
+.conflict-diff dt {
+  font-weight: 700;
+}
+.conflict-diff dd {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+}
+.conflict-diff dd b {
+  display: inline-block;
+  min-width: 42px;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.diff-local {
+  color: var(--text-subtle);
+}
+.conflict-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+@media (max-width: 640px) {
+  .conflict-diff div {
+    grid-template-columns: 1fr;
+  }
+  .conflict-actions button {
+    flex: 1 1 100%;
+  }
+}
 .board-column.drop-target {
   outline: 3px solid var(--accent-focus);
   outline-offset: -3px;

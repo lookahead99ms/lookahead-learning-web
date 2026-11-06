@@ -9,6 +9,8 @@ import { ContentService } from '../../content/content.service';
 import { DeliveryPlan } from '../../content/delivery-plan.models';
 import { DeliveryEditorService, DeliverySnapshot } from '../../content/delivery-editor.service';
 import { DeliveryPublicationService } from '../../content/delivery-publication.service';
+import { DeliveryDevPlanService, DeliveryPlanApiError } from '../../content/delivery-dev-plan.service';
+import { DevSession } from '../../core/dev-session-notice/dev-session';
 import { PROTECTED_CONTENT } from '../../content/content-delivery';
 import { SearchDocument } from '../../content/content.models';
 import { DeliveryPlanPage } from './delivery-plan';
@@ -131,6 +133,7 @@ describe('DeliveryPlanPage', () => {
     save: vi.fn(),
   };
   const publication = { load: vi.fn<() => Observable<DeliverySnapshot>>() };
+  const devApi = { load: vi.fn(), create: vi.fn(), update: vi.fn(), resolveConflict: vi.fn() };
   // Read lazily when the page first injects PROTECTED_CONTENT, so a nested beforeEach can flip it.
   let protectedBuild = false;
 
@@ -141,6 +144,10 @@ describe('DeliveryPlanPage', () => {
     editor.save.mockReset();
     publication.load.mockReset();
     publication.load.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 404 })));
+    devApi.load.mockReset();
+    devApi.create.mockReset();
+    devApi.update.mockReset();
+    devApi.resolveConflict.mockReset();
     protectedBuild = false;
     HTMLDialogElement.prototype.showModal = function () {
       this.setAttribute('open', '');
@@ -162,6 +169,7 @@ describe('DeliveryPlanPage', () => {
         { provide: ContentService, useValue: content },
         { provide: DeliveryEditorService, useValue: editor },
         { provide: DeliveryPublicationService, useValue: publication },
+        { provide: DeliveryDevPlanService, useValue: devApi },
         { provide: PROTECTED_CONTENT, useFactory: () => protectedBuild },
       ],
     }).compileComponents();
@@ -217,6 +225,26 @@ describe('DeliveryPlanPage', () => {
     expect(harness.routeNativeElement?.textContent).toContain('Future stage from JSON');
     expect(harness.routeNativeElement?.textContent).toContain('A sequence from data');
     expect(TestBed.inject(Router).url).toBe('/delivery-plan?view=roadmap');
+  });
+
+  it('opens All tickets, clears the filters and marks the ticket a /delivery-plan#<id> link names (DLV-971)', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/delivery-plan?stage=foundation#TEST-2', DeliveryPlanPage);
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    const root = harness.routeNativeElement!;
+    expect(TestBed.inject(Router).url).toBe('/delivery-plan?view=all-tickets');
+    const marked = root.querySelector('li#ticket-TEST-2');
+    expect(marked?.classList.contains('highlighted')).toBe(true);
+    expect(marked?.textContent).toContain('Keep another item');
+    expect(root.querySelectorAll('.ticket-results li.highlighted')).toHaveLength(1);
+    // An unknown id changes nothing.
+    await harness.navigateByUrl('/away', OtherPage);
+    await harness.navigateByUrl('/delivery-plan#DLV-9999', DeliveryPlanPage);
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    expect(TestBed.inject(Router).url).toBe('/delivery-plan#DLV-9999');
+    expect(harness.routeNativeElement!.querySelector('.highlighted')).toBeNull();
   });
 
   it('keeps author navigation available when private delivery data is unavailable', async () => {
@@ -977,6 +1005,441 @@ describe('DeliveryPlanPage', () => {
       pending.complete();
       harness.detectChanges();
       expect(harness.routeNativeElement!.textContent).not.toContain('Deliver deliberately');
+    });
+  });
+
+  describe('DEV plan (the Domain serves and edits delivery/plan.json; DLV-971 runtime stores)', () => {
+    const owner = {
+      manageAccess: true, previewDocuments: true, deliveryRead: true,
+      deliveryCreate: true, deliveryReview: true, deliveryDone: true,
+      triageFeedback: true, fullCurriculum: true, feedbackRole: 'owner',
+    };
+    const reader = { ...owner, manageAccess: false, deliveryCreate: false, deliveryReview: false, deliveryDone: false, feedbackRole: 'reviewer' };
+    const devItem = (change: Partial<DeliveryPlan['workItems'][number]> = {}) => ({
+      ...structuredClone(plan.workItems[0]),
+      updatedAt: '2026-11-06T09:30:00.000Z',
+      createdIn: 'dev' as const,
+      updatedIn: 'dev' as const,
+      origin: null,
+      pendingLocal: null,
+      ...change,
+    });
+    const devPlan = (items = [devItem(), structuredClone(plan.workItems[1])], version = 7): DeliveryPlan => ({
+      ...structuredClone(plan),
+      version,
+      workItems: items,
+    });
+
+    beforeEach(() => {
+      protectedBuild = true;
+      TestBed.inject(DevSession).gated.set(true);
+      TestBed.inject(StudyPlanAccount).account.update((account) => ({ ...account!, permissions: owner }));
+      devApi.load.mockResolvedValue(devPlan());
+    });
+    afterEach(() => {
+      TestBed.inject(DevSession).gated.set(false);
+      TestBed.inject(DevSession).status.set(null);
+    });
+
+    async function devBoard(): Promise<RouterTestingHarness> {
+      const harness = await RouterTestingHarness.create();
+      await harness.navigateByUrl('/delivery-plan', DeliveryPlanPage);
+      await harness.fixture.whenStable();
+      harness.detectChanges();
+      return harness;
+    }
+    /** The harness allows one instance per test; leaving and returning recreates the page. */
+    async function reopen(harness: RouterTestingHarness, url = '/delivery-plan') {
+      await harness.navigateByUrl('/away', OtherPage);
+      await harness.navigateByUrl(url, DeliveryPlanPage);
+      await settle(harness);
+      return harness.routeNativeElement!;
+    }
+    async function settle(harness: RouterTestingHarness) {
+      for (let pass = 0; pass < 3; pass++) {
+        await new Promise((resolve) => setTimeout(resolve));
+        await harness.fixture.whenStable();
+        harness.detectChanges();
+      }
+    }
+    function submitEditor(harness: RouterTestingHarness) {
+      harness.routeNativeElement!.querySelector('form')!.dispatchEvent(new Event('submit', { cancelable: true }));
+      return settle(harness);
+    }
+    const fieldNames = (root: Element) =>
+      [...root.querySelectorAll<HTMLElement>('.editor-fields [name]')].map((field) => field.getAttribute('name'));
+
+    it('reads the plan from the DEV API behind the gate and lets the owner edit a ticket with the plan version', async () => {
+      const harness = await devBoard();
+      const root = harness.routeNativeElement!;
+      expect(devApi.load).toHaveBeenCalledOnce();
+      expect(publication.load).not.toHaveBeenCalled();
+      expect(editor.load).toHaveBeenCalledOnce();
+      expect(root.textContent).toContain('Editing the plan on DEV');
+      expect(root.textContent).not.toContain('Published copy');
+      expect(root.querySelector('.editor-toolbar .editor-primary')?.textContent?.trim()).toBe('+ New ticket');
+      expect(root.querySelector('.editor-toolbar .editor-primary')?.hasAttribute('hidden')).toBe(false);
+      expect(root.querySelector('.quick-move select')).not.toBeNull();
+      expect(root.querySelector('.work-item-card')!.getAttribute('draggable')).toBe('true');
+
+      const dialog = await openTicket(harness);
+      expect(dialog.querySelector('.dialog-footer span')?.textContent).toBe('updated on DEV · 6 Nov');
+      expect(dialog.querySelector('.ticket-origin')).toBeNull();
+      expect(dialog.querySelector('.conflict-banner')).toBeNull();
+      const edit = dialog.querySelector<HTMLButtonElement>('.dialog-footer .editor-primary')!;
+      expect(edit.textContent?.trim()).toBe('Edit ticket');
+      edit.click();
+      await settle(harness);
+      expect(root.querySelector('#editor-title')?.textContent?.trim()).toBe('Edit ticket');
+      expect(root.textContent).toContain('Saves go to the plan on DEV.');
+      expect(fieldNames(root)).toEqual(['title', 'summary', 'type', 'priority', 'stage', 'status', 'labels', 'notes']);
+      // The status select offers the ticket's own column and the moves this account may make.
+      expect([...root.querySelectorAll<HTMLOptionElement>('[name="status"] option')].map((option) => option.disabled)).toEqual([false, false, false]);
+      await fill(harness, 'title', 'Edited on DEV');
+      await fill(harness, 'labels', 'board, dev');
+      devApi.update.mockResolvedValue({
+        version: 8,
+        item: devItem({ title: 'Edited on DEV', labels: ['board', 'dev'] }),
+      });
+      await submitEditor(harness);
+      expect(devApi.update).toHaveBeenCalledWith(
+        'TEST-1',
+        7,
+        expect.objectContaining({
+          title: 'Edited on DEV',
+          labels: ['board', 'dev'],
+          // Fields the DEV form does not show keep their stored values.
+          acceptanceCriteria: ['All configured columns render.'],
+          dependencies: [],
+          blockedBy: [],
+        }),
+      );
+      expect(root.querySelector('.editor-dialog')!.hasAttribute('open')).toBe(false);
+      expect(root.textContent).toContain('TEST-1 saved to the plan on DEV.');
+      expect(root.textContent).toContain('Edited on DEV');
+      expect(editor.save).not.toHaveBeenCalled();
+    });
+
+    it('creates a ticket from the small form: title, outcome, type, priority and stage', async () => {
+      const harness = await devBoard();
+      const root = harness.routeNativeElement!;
+      root.querySelector<HTMLButtonElement>('.editor-toolbar .editor-primary')!.click();
+      await settle(harness);
+      expect(root.querySelector('#editor-title')?.textContent?.trim()).toBe('New ticket');
+      expect(fieldNames(root)).toEqual(['title', 'summary', 'type', 'priority', 'stage']);
+      expect(root.querySelector('[type="submit"]')?.textContent?.trim()).toBe('Save ticket');
+      await submitEditor(harness);
+      expect(root.textContent).toContain('Add a title and an outcome.');
+      expect(devApi.create).not.toHaveBeenCalled();
+      await fill(harness, 'title', 'A DEV ticket');
+      await fill(harness, 'summary', 'Raised on the page.');
+      await fill(harness, 'type', 'bug');
+      devApi.create.mockResolvedValue({
+        version: 8,
+        item: devItem({ id: 'DLV-0042', title: 'A DEV ticket', summary: 'Raised on the page.', type: 'bug', statusId: 'backlog' }),
+      });
+      await submitEditor(harness);
+      expect(devApi.create).toHaveBeenCalledWith(
+        7,
+        expect.objectContaining({
+          title: 'A DEV ticket',
+          summary: 'Raised on the page.',
+          type: 'bug',
+          stageId: 'foundation',
+          statusId: 'backlog',
+          priorityId: 'P1',
+          acceptanceCriteria: [],
+          labels: [],
+        }),
+      );
+      expect(root.textContent).toContain('DLV-0042 saved to the plan on DEV.');
+      expect(root.textContent).toContain('Showing 2 of 3 work items');
+    });
+
+    it('reloads the plan on a version conflict and asks for the change again, keeping the draft', async () => {
+      const harness = await devBoard();
+      const root = harness.routeNativeElement!;
+      root.querySelector<HTMLButtonElement>('.editor-toolbar .editor-primary')!.click();
+      await settle(harness);
+      await fill(harness, 'title', 'Second writer');
+      await fill(harness, 'summary', 'Collides.');
+      devApi.create.mockRejectedValueOnce(new DeliveryPlanApiError(409, 'VERSION_CONFLICT'));
+      devApi.load.mockResolvedValueOnce(devPlan([devItem({ title: 'Changed by someone else' }), structuredClone(plan.workItems[1])], 9));
+      await submitEditor(harness);
+      expect(devApi.load).toHaveBeenCalledTimes(2);
+      expect(root.querySelector('.editor-error')?.textContent).toContain('Someone changed the plan; reloaded, apply your change again.');
+      expect((root.querySelector('[name="title"]') as HTMLInputElement).value).toBe('Second writer');
+      expect((root.querySelector('[type="submit"]') as HTMLButtonElement).disabled).toBe(false);
+      expect(root.textContent).toContain('Changed by someone else');
+      devApi.create.mockResolvedValueOnce({ version: 10, item: devItem({ id: 'DLV-0043', title: 'Second writer' }) });
+      await submitEditor(harness);
+      expect(devApi.create).toHaveBeenLastCalledWith(9, expect.objectContaining({ title: 'Second writer' }));
+      expect(root.querySelector('.editor-dialog')!.hasAttribute('open')).toBe(false);
+      // A refused save keeps the draft with a plain message.
+      root.querySelector<HTMLButtonElement>('.editor-toolbar .editor-primary')!.click();
+      await settle(harness);
+      await fill(harness, 'title', 'Refused');
+      await fill(harness, 'summary', 'Refused.');
+      devApi.create.mockRejectedValueOnce(new DeliveryPlanApiError(403, 'FORBIDDEN'));
+      await submitEditor(harness);
+      expect(root.querySelector('.editor-error')?.textContent).toContain('Your role cannot make this change on DEV.');
+      devApi.create.mockRejectedValueOnce(new DeliveryPlanApiError(0, null));
+      await submitEditor(harness);
+      expect(root.querySelector('.editor-error')?.textContent).toContain('Save failed. Your draft is retained; try again.');
+    });
+
+    it('moves a card on DEV with the plan version, and reloads on a conflict', async () => {
+      const harness = await devBoard();
+      const root = harness.routeNativeElement!;
+      const select = root.querySelector('.quick-move select') as HTMLSelectElement;
+      devApi.update.mockResolvedValueOnce({ version: 8, item: devItem({ statusId: 'done' }) });
+      select.value = 'done';
+      select.dispatchEvent(new Event('change'));
+      await settle(harness);
+      expect(devApi.update).toHaveBeenCalledWith('TEST-1', 7, expect.objectContaining({ statusId: 'done', title: 'Render a data-driven board' }));
+      expect(root.textContent).toContain('TEST-1 moved to Done on DEV.');
+      expect(root.querySelectorAll('.board-column')[2].textContent).toContain('Render a data-driven board');
+      // The version advanced with the write; a later conflict reloads and says so.
+      devApi.update.mockRejectedValueOnce(new DeliveryPlanApiError(409, 'VERSION_CONFLICT'));
+      devApi.load.mockResolvedValueOnce(devPlan([devItem({ statusId: 'done' }), structuredClone(plan.workItems[1])], 12));
+      const back = root.querySelector('.quick-move select') as HTMLSelectElement;
+      back.value = 'in-progress';
+      back.dispatchEvent(new Event('change'));
+      await settle(harness);
+      expect(devApi.update).toHaveBeenLastCalledWith('TEST-1', 8, expect.objectContaining({ statusId: 'in-progress' }));
+      expect(root.textContent).toContain('Someone changed the plan; reloaded, apply your change again.');
+      devApi.update.mockRejectedValueOnce(new DeliveryPlanApiError(500, null));
+      back.value = 'in-progress';
+      back.dispatchEvent(new Event('change'));
+      await settle(harness);
+      expect(root.textContent).toContain('Move could not be saved. The item stays in its original column.');
+      // Refresh board reads DEV again and reports the version it found.
+      devApi.load.mockResolvedValueOnce(devPlan([devItem({ statusId: 'done' }), structuredClone(plan.workItems[1])], 12));
+      root.querySelector<HTMLButtonElement>('.editor-toolbar .editor-secondary')!.click();
+      await settle(harness);
+      expect(root.textContent).toContain('Board is up to date.');
+      devApi.load.mockResolvedValueOnce(devPlan([devItem({ statusId: 'done' }), structuredClone(plan.workItems[1])], 13));
+      root.querySelector<HTMLButtonElement>('.editor-toolbar .editor-secondary')!.click();
+      await settle(harness);
+      expect(root.textContent).toContain('Board refreshed from DEV.');
+      devApi.load.mockRejectedValueOnce(new DeliveryPlanApiError(0, null));
+      root.querySelector<HTMLButtonElement>('.editor-toolbar .editor-secondary')!.click();
+      await settle(harness);
+      expect(root.textContent).toContain('The plan on DEV could not be refreshed. Current data is retained.');
+      expect(editor.load).toHaveBeenCalledOnce();
+    });
+
+    it('shows the published copy with a notice until the first DEV plan is uploaded, and outside the gate', async () => {
+      devApi.load.mockRejectedValueOnce(new DeliveryPlanApiError(404, 'DELIVERY_PLAN_MISSING'));
+      publication.load.mockReturnValue(of({ plan: structuredClone(plan), revision: 'published-1' }));
+      const harness = await devBoard();
+      let root = harness.routeNativeElement!;
+      expect(devApi.load).toHaveBeenCalledOnce();
+      expect(publication.load).toHaveBeenCalledOnce();
+      expect(root.querySelector('.plan-notice')?.textContent?.trim()).toBe(
+        'The plan on DEV has not been uploaded yet; showing the published copy.',
+      );
+      expect(root.textContent).toContain('Published copy, read-only; edit on the local workstation.');
+      expect(root.querySelector('.editor-toolbar .editor-primary')).toBeNull();
+      // Outside the DEV gate the API is never asked.
+      TestBed.inject(DevSession).gated.set(false);
+      devApi.load.mockClear();
+      publication.load.mockClear();
+      root = await reopen(harness);
+      expect(devApi.load).not.toHaveBeenCalled();
+      expect(publication.load).toHaveBeenCalledOnce();
+      expect(root.querySelector('.plan-notice')).toBeNull();
+      // An admitted session (status set) counts as DEV like the bare gate does.
+      TestBed.inject(DevSession).status.set({ dev: true, deadline: '', warning: false, maintenance: false });
+      devApi.load.mockClear();
+      await reopen(harness);
+      expect(devApi.load).toHaveBeenCalledOnce();
+    });
+
+    it('waits for the first DEV gate answer on a direct link, and gives up on the publication after a while', async () => {
+      vi.useFakeTimers();
+      try {
+        const session = TestBed.inject(DevSession);
+        session.gated.set(false);
+        session.known.set(false);
+        publication.load.mockReturnValue(of({ plan: structuredClone(plan), revision: 'published-1' }));
+        const harness = await RouterTestingHarness.create();
+        await harness.navigateByUrl('/delivery-plan', DeliveryPlanPage);
+        harness.detectChanges();
+        expect(devApi.load).not.toHaveBeenCalled();
+        expect(publication.load).not.toHaveBeenCalled();
+        session.gated.set(true);
+        session.known.set(true);
+        await vi.advanceTimersByTimeAsync(10);
+        harness.detectChanges();
+        expect(devApi.load).toHaveBeenCalledOnce();
+        expect(publication.load).not.toHaveBeenCalled();
+        session.gated.set(false);
+        session.known.set(false);
+        devApi.load.mockClear();
+        await harness.navigateByUrl('/away', OtherPage);
+        await harness.navigateByUrl('/delivery-plan', DeliveryPlanPage);
+        await vi.advanceTimersByTimeAsync(3100);
+        harness.detectChanges();
+        expect(devApi.load).not.toHaveBeenCalled();
+        expect(publication.load).toHaveBeenCalledOnce();
+      } finally {
+        vi.useRealTimers();
+        TestBed.inject(DevSession).known.set(true);
+      }
+    });
+
+    it.each([
+      [401, 'Sign in again to read the delivery plan on DEV.'],
+      [403, 'Your role cannot read the delivery plan on DEV.'],
+      [500, 'The plan on DEV could not be loaded. Try again.'],
+    ])('explains a DEV plan the Domain answers %s and never falls back silently', async (status, message) => {
+      devApi.load.mockRejectedValueOnce(new DeliveryPlanApiError(status, null));
+      const harness = await devBoard();
+      const root = harness.routeNativeElement!;
+      expect(publication.load).not.toHaveBeenCalled();
+      expect(root.textContent).toContain('The delivery plan on DEV is not available.');
+      expect(root.textContent).toContain(message);
+      expect(root.querySelector('app-author-admin-menu nav[aria-label="Admin navigation"]')).not.toBeNull();
+    });
+
+    it('links a promoted ticket to the review or learner request it came from', async () => {
+      devApi.load.mockResolvedValue(
+        devPlan([
+          devItem({ origin: { id: 'REV-000001', kind: 'review' } }),
+          { ...structuredClone(plan.workItems[1]), origin: { id: 'SUP-000001', kind: 'request' } },
+        ]),
+      );
+      const harness = await devBoard();
+      let dialog = await openTicket(harness);
+      let origin = dialog.querySelector<HTMLAnchorElement>('.ticket-origin a')!;
+      expect(origin.textContent?.trim()).toBe('From review REV-000001');
+      expect(origin.getAttribute('href')).toBe('/support?view=reviews#REV-000001');
+      const page = harness.fixture.debugElement.query((node) => node.componentInstance instanceof DeliveryPlanPage)
+        .componentInstance as DeliveryPlanPage;
+      page['closeWorkItem']();
+      await switchView(harness, 'All tickets');
+      harness.routeNativeElement!.querySelectorAll<HTMLButtonElement>('.ticket-row')[1].click();
+      await settle(harness);
+      dialog = harness.routeNativeElement!.querySelector<HTMLDialogElement>('.work-item-dialog')!;
+      origin = dialog.querySelector<HTMLAnchorElement>('.ticket-origin a')!;
+      expect(origin.textContent?.trim()).toBe('From learner request SUP-000001');
+      expect(origin.getAttribute('href')).toBe('/support?view=reviews#SUP-000001');
+      // A ticket without stamps keeps the plain date line.
+      expect(dialog.querySelector('.dialog-footer span')?.textContent).toBe('Updated 2026-09-03');
+    });
+
+    it('shows an unmerged local edit as a field diff and resolves it with Keep DEV or Take local', async () => {
+      const conflicted = devItem({
+        pendingLocal: devItem({
+          title: 'Local title',
+          labels: ['board', 'local'],
+          notes: ['A note written locally'],
+          updatedIn: 'local',
+          pendingLocal: null,
+        }),
+      });
+      devApi.load.mockResolvedValue(devPlan([conflicted, structuredClone(plan.workItems[1])]));
+      const harness = await devBoard();
+      const root = harness.routeNativeElement!;
+      expect(root.querySelector('.work-item-card .conflict-mark')?.textContent).toBe('Local edit pending');
+      let dialog = await openTicket(harness);
+      const banner = dialog.querySelector('.conflict-banner')!;
+      expect(banner.querySelector('h3')?.textContent).toBe('A local edit of this ticket was not merged');
+      const rows = [...banner.querySelectorAll('.conflict-diff div')].map((row) => ({
+        field: row.querySelector('dt')?.textContent,
+        dev: row.querySelector('.diff-dev')?.textContent?.replace(/\s+/g, ' ').trim(),
+        local: row.querySelector('.diff-local')?.textContent?.replace(/\s+/g, ' ').trim(),
+      }));
+      expect(rows).toEqual([
+        { field: 'Title', dev: 'DEV Render a data-driven board', local: 'Local Local title' },
+        { field: 'Labels', dev: 'DEV board', local: 'Local board, local' },
+        { field: 'Notes', dev: 'DEV —', local: 'Local A note written locally' },
+      ]);
+      const buttons = [...banner.querySelectorAll<HTMLButtonElement>('.conflict-actions button')];
+      expect(buttons.map((button) => button.textContent?.trim())).toEqual(['Keep DEV', 'Take local']);
+      devApi.resolveConflict.mockResolvedValueOnce({ version: 8, item: devItem() });
+      buttons[0].click();
+      await settle(harness);
+      expect(devApi.resolveConflict).toHaveBeenCalledWith('TEST-1', 7, 'dev');
+      expect(dialog.querySelector('.conflict-banner')).toBeNull();
+      expect(root.textContent).toContain('TEST-1: kept the DEV version; the local edit was dropped.');
+      expect(root.querySelector('.conflict-mark')).toBeNull();
+
+      // Take local, from a fresh load with the conflict back.
+      devApi.load.mockResolvedValue(devPlan([conflicted, structuredClone(plan.workItems[1])]));
+      const second = harness;
+      await reopen(second);
+      dialog = await openTicket(second);
+      devApi.resolveConflict.mockResolvedValueOnce({
+        version: 8,
+        item: devItem({ title: 'Local title', labels: ['board', 'local'], notes: ['A note written locally'] }),
+      });
+      [...dialog.querySelectorAll<HTMLButtonElement>('.conflict-actions button')][1].click();
+      await settle(second);
+      expect(devApi.resolveConflict).toHaveBeenLastCalledWith('TEST-1', 7, 'local');
+      expect(dialog.querySelector('.conflict-banner')).toBeNull();
+      expect(dialog.querySelector('h2')?.textContent).toBe('Local title');
+      expect(second.routeNativeElement!.textContent).toContain('TEST-1: took the local edit.');
+
+      // A conflict while resolving reloads; any other failure leaves the ticket as it was.
+      devApi.load.mockResolvedValue(devPlan([conflicted, structuredClone(plan.workItems[1])]));
+      const third = harness;
+      await reopen(third);
+      dialog = await openTicket(third);
+      devApi.resolveConflict.mockRejectedValueOnce(new DeliveryPlanApiError(409, 'VERSION_CONFLICT'));
+      devApi.load.mockResolvedValueOnce(devPlan([conflicted, structuredClone(plan.workItems[1])], 9));
+      dialog.querySelector<HTMLButtonElement>('.conflict-actions button')!.click();
+      await settle(third);
+      expect(third.routeNativeElement!.textContent).toContain('Someone changed the plan; reloaded, apply your change again.');
+      expect(dialog.querySelector('.conflict-banner')).not.toBeNull();
+      devApi.resolveConflict.mockRejectedValueOnce(new DeliveryPlanApiError(500, null));
+      dialog.querySelector<HTMLButtonElement>('.conflict-actions button')!.click();
+      await settle(third);
+      expect(third.routeNativeElement!.textContent).toContain('The conflict could not be resolved. The ticket is unchanged; try again.');
+      expect(devApi.resolveConflict).toHaveBeenLastCalledWith('TEST-1', 9, 'dev');
+    });
+
+    it('keeps the DEV plan read-only for a reviewer: no create, edit, move, drag or conflict buttons', async () => {
+      TestBed.inject(StudyPlanAccount).account.update((account) => ({ ...account!, permissions: reader }));
+      devApi.load.mockResolvedValue(
+        devPlan([devItem({ pendingLocal: devItem({ title: 'Local title', pendingLocal: null }) }), structuredClone(plan.workItems[1])]),
+      );
+      const harness = await devBoard();
+      const root = harness.routeNativeElement!;
+      expect(root.textContent).toContain('The plan on DEV, read-only for your role.');
+      expect(root.textContent).not.toContain('Editing the plan on DEV');
+      expect(root.querySelector('.editor-toolbar .editor-primary')?.hasAttribute('hidden')).toBe(true);
+      expect(root.querySelector('.quick-move select')).toBeNull();
+      expect(root.querySelector('.work-item-card')!.getAttribute('draggable')).toBe('false');
+      const dialog = await openTicket(harness);
+      expect(dialog.querySelector('.dialog-footer button')).toBeNull();
+      expect(dialog.textContent).toContain('Read-only plan');
+      expect(dialog.querySelector('.conflict-banner h3')?.textContent).toBe('A local edit of this ticket was not merged');
+      expect(dialog.querySelector('.conflict-actions')).toBeNull();
+      const page = harness.fixture.debugElement.query((node) => node.componentInstance instanceof DeliveryPlanPage)
+        .componentInstance as DeliveryPlanPage;
+      page['openEditor'](devItem());
+      page['moveItem'](devItem(), 'done');
+      await page['resolveConflict'](devItem(), 'dev');
+      harness.detectChanges();
+      expect(devApi.update).not.toHaveBeenCalled();
+      expect(devApi.resolveConflict).not.toHaveBeenCalled();
+      expect(root.querySelector('.editor-dialog')!.hasAttribute('open')).toBe(false);
+      // An admin with deliveryCreate edits cards and moves to review, but may not close.
+      TestBed.inject(StudyPlanAccount).account.update((account) => ({
+        ...account!,
+        permissions: { ...reader, deliveryCreate: true, deliveryReview: true },
+      }));
+      const admin = harness;
+      const adminRoot = await reopen(admin);
+      expect(adminRoot.querySelector('.editor-toolbar .editor-primary')?.hasAttribute('hidden')).toBe(false);
+      const adminDialog = await openTicket(admin);
+      expect(adminDialog.querySelector('.dialog-footer .editor-primary')?.textContent?.trim()).toBe('Edit ticket');
+      expect(adminDialog.querySelector('.conflict-actions')).not.toBeNull();
+      adminDialog.querySelector<HTMLButtonElement>('.dialog-footer .editor-primary')!.click();
+      await settle(admin);
+      expect([...adminRoot.querySelectorAll<HTMLOptionElement>('[name="status"] option')].map((option) => option.disabled)).toEqual([true, false, true]);
     });
   });
 });

@@ -49,6 +49,50 @@ export const reviewedPages = [
   'Other',
 ] as const;
 
+/**
+ * DLV-971 (owner, 2026-11-06): a learner's support request (Report a problem / Share feedback / Ask a question) is
+ * stored as an item of kind "request" beside the reviews; absent or null means a review.
+ */
+export const reviewKinds = ['review', 'request'] as const;
+export type ReviewKind = (typeof reviewKinds)[number];
+
+export const requestTypes = [
+  { id: 'problem', label: 'Problem' },
+  { id: 'feedback', label: 'Feedback' },
+  { id: 'question', label: 'Question' },
+] as const;
+export type RequestType = (typeof requestTypes)[number]['id'];
+
+export function isRequest(item: { kind?: ReviewKind | null }): boolean {
+  return item.kind === 'request';
+}
+
+/**
+ * DLV-971 runtime stores (owner, 2026-11-06): once the owner (or an admin, for a learner request) promotes an item, the
+ * Domain adds a ticket to the DEV delivery plan and stamps the record with `ticketId`; `ticketStatus` is that ticket's
+ * current workflow status, read when the item is listed. Null until promoted.
+ */
+export interface TicketLink {
+  ticketId?: string | null;
+  ticketStatus?: string | null;
+}
+
+/** The ticket pill text: "DLV-0042 · In progress"; the id alone when the status is not known; empty when not promoted. */
+export function ticketPill(item: TicketLink): string {
+  if (!item.ticketId) return '';
+  return item.ticketStatus ? `${item.ticketId} · ${item.ticketStatus}` : item.ticketId;
+}
+
+/** The row badge of a learner request: "Learner request · Problem"; empty for a review. */
+export function kindBadge(item: {
+  kind?: ReviewKind | null;
+  requestType?: RequestType | null;
+}): string {
+  if (!isRequest(item)) return '';
+  const type = item.requestType ? labelOf(requestTypes, item.requestType) : '';
+  return type ? `Learner request · ${type}` : 'Learner request';
+}
+
 export const reviewLimits = {
   titleLength: 120,
   detailsLength: 5000,
@@ -66,7 +110,7 @@ export interface ReviewAttachment {
   size: number;
 }
 
-export interface PlatformReviewItem {
+export interface PlatformReviewItem extends TicketLink {
   id: string;
   reviewerId: string;
   reviewerName: string;
@@ -80,12 +124,17 @@ export interface PlatformReviewItem {
   attachments: ReviewAttachment[];
   status: ReviewStatus;
   ownerNote: string;
+  /** "request" for a learner's support request; absent or null means a review. */
+  kind?: ReviewKind | null;
+  requestType?: RequestType | null;
+  /** The support receipt reference; present on requests. */
+  reference?: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
 /** One row of the day-grouped list; details and images load when the row is opened. */
-export interface PlatformReviewSummary {
+export interface PlatformReviewSummary extends TicketLink {
   id: string;
   reviewerId: string;
   reviewerName: string;
@@ -98,6 +147,11 @@ export interface PlatformReviewSummary {
   attachmentCount: number;
   /** True when the owner has written a note. */
   ownerNote: boolean;
+  /** "request" for a learner's support request; absent or null means a review. */
+  kind?: ReviewKind | null;
+  requestType?: RequestType | null;
+  /** The support receipt reference; present on requests. */
+  reference?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -129,6 +183,12 @@ export interface PlatformReviewViewer {
   displayName: string;
 }
 
+/** The Domain's answer to a promote: the new ticket id and the item as stored afterwards. */
+export interface PromoteResult {
+  ticketId: string;
+  item: PlatformReviewItem;
+}
+
 export type PlatformReviewFailure =
   'unauthorized' | 'forbidden' | 'not-found' | 'invalid' | 'conflict' | 'unavailable';
 export class PlatformReviewError extends Error {
@@ -149,6 +209,11 @@ export interface PlatformReviewClient {
   save(draft: PlatformReviewDraft, id?: string): Promise<PlatformReviewItem>;
   remove(id: string): Promise<void>;
   triage(id: string, status: ReviewStatus, ownerNote: string): Promise<PlatformReviewItem>;
+  /**
+   * Adds a ticket to the DEV delivery plan from this item (owner: any item; admin: a learner request). Throws a
+   * `conflict` error when the item already has a ticket.
+   */
+  promote(id: string): Promise<PromoteResult>;
   /** A URL the browser can display; revoke it with `releaseAttachmentUrl`. */
   attachmentUrl(item: PlatformReviewItem, attachment: ReviewAttachment): Promise<string>;
   releaseAttachmentUrl(url: string): void;

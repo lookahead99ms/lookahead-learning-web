@@ -872,6 +872,16 @@ decides owner, reviewer or no access; an account without a role sees only Contac
 support. Invited reviewers do not need admin access. The page needs the Gateway and Domain API;
 the public demo has no review service.
 
+**Promote to ticket** (DLV-971 runtime stores): an open item offers the button to
+whoever may set its status (the owner on any item, an admin on a learner request) until
+it has a ticket. It calls `POST /bff/api/v1/platform-reviews/{id}/promote`; the Domain
+adds the ticket to the DEV delivery plan and answers the item with `ticketId` and
+`ticketStatus`. The item then shows the pill `DLV-0042 · <status>` (text in the row
+button, a link in the open item) to `/delivery-plan#DLV-0042`, which opens All tickets
+and marks that ticket. A 409 means someone promoted it first; the item is reloaded.
+Record ids may be UUIDs or the runtime-store numbers (`REV-000001`, `SUP-000001`). A
+`/support?view=reviews#<id>` link opens that item under Team Reviews.
+
 ## Private Operations reference
 
 The admin documentation routes (`/admin/review-guide`, `/admin/screen-names`, `/admin/access-checks`, `/admin/authentication`, `/admin/local-development`, `/admin/operations`, `/admin/aws-deployment`, `/admin/release-gates` and `/admin/production-support`) read protected, immutable author-documents through the Gateway with one shared page component. Operations covers Local environments, deployment order, rollback and repositories; the cloud candidate, release gates, authentication walkthrough and production support runbooks each have their own page. Neither executes commands or reports live service health. The public demo has no publication configured. The source documents remain outside this repository.
@@ -911,6 +921,22 @@ document frame keeps its script-only sandbox without adding a second visual page
 The working `/delivery-plan` requires an active author session. Signed-out
 visitors go to sign-in and return to the plan afterward; its public JSON fallback
 is intentionally unavailable on the protected working origin.
+
+On DEV (behind the `/dev/session` gate; DLV-971 runtime stores) the page reads the plan
+from `GET /bff/api/v1/delivery/plan` once the local editor probe answers 404. Until the
+owner uploads the first plan (404 `DELIVERY_PLAN_MISSING`), and outside DEV, the
+published copy stands in with the line "The plan on DEV has not been uploaded yet;
+showing the published copy." Owner and admins (`deliveryCreate` or `manageAccess`)
+edit cards in place: title, outcome, status within the moves their delivery
+permissions allow, priority, stage, labels and notes, saved with the plan's
+`version` as `expectedVersion` (`POST`/`PUT /delivery/plan/work-items[/{id}]`); a
+409 reloads the plan and says "Someone changed the plan; reloaded, apply your change
+again." with the draft kept. **+ New ticket** is the small form (title, outcome, type,
+priority, stage). A promoted ticket shows "From review REV-000001" or "From learner
+request SUP-000001" linking to Team Reviews; a ticket with an unmerged local edit shows
+"A local edit of this ticket was not merged" with the differing fields and
+**Keep DEV** / **Take local** (`POST .../resolve-conflict`). Stamped tickets show
+"updated on DEV · 6 Nov". Reviewers and co-authors keep the read-only board.
 
 The manifest uses `schemaVersion: 1` with `documents[]`. HTML URLs must match the published document ID and content SHA-256 under `/bff/author/previews/preview-directory/author-documents/`. The iframe allows scripts for theme selection and the shared Operations height report; the parent accepts that report only from its active sandboxed frame with the expected document ID and bounded size. External references are ordinary labeled new-tab links in the Angular parent. HTTP authentication, authorization, missing publication and service failures remain distinct.
 

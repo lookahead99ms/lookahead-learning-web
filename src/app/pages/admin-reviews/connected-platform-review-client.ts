@@ -7,11 +7,16 @@ import {
   PlatformReviewItem,
   PlatformReviewPage,
   PlatformReviewViewer,
+  PromoteResult,
   ReviewAttachment,
   ReviewStatus,
 } from './platform-review.model';
 
-const id = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+/**
+ * A stored item id: the UUIDs of today's records, or the numbered record ids of the runtime stores (REV-000001 for a
+ * review, SUP-000001 for a learner request; DLV-971, owner 2026-11-06).
+ */
+const id = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|(?:REV|SUP)-\d{6})$/;
 
 /**
  * DLV-928: the shared review service behind the Gateway session. Writes send the session's CSRF
@@ -71,6 +76,13 @@ export class ConnectedPlatformReviewClient implements PlatformReviewClient {
         'Idempotency-Key': crypto.randomUUID(),
       },
       body: JSON.stringify({ status, ownerNote }),
+    });
+  }
+
+  async promote(itemId: string): Promise<PromoteResult> {
+    return this.json(`/${this.checked(itemId)}/promote`, {
+      method: 'POST',
+      headers: { ...(await this.csrf()), 'Idempotency-Key': crypto.randomUUID() },
     });
   }
 
