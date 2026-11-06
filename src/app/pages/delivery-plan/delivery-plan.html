@@ -118,6 +118,23 @@
             >
               + New work item
             </button>
+          } @else if (dev()) {
+            <button
+              type="button"
+              class="editor-secondary"
+              [disabled]="saving()"
+              (click)="refreshPlan()"
+            >
+              Refresh board
+            </button>
+            <button
+              type="button"
+              class="editor-primary"
+              [disabled]="saving()"
+              [hidden]="!canEdit()" (click)="openEditor()"
+            >
+              + New ticket
+            </button>
           } @else if (published()) {
             <p class="published-copy">Published copy, read-only; edit on the local workstation.</p>
           } @else {
@@ -133,6 +150,17 @@
           Local editing enabled. Saved changes appear automatically every 5 seconds. Use Refresh
           board to check now.
         </p>
+      } @else if (dev()) {
+        <p class="refresh-help">
+          @if (canEdit()) {
+            Editing the plan on DEV. Saves go to DEV at once; local edits reach it through the inbox sync.
+          } @else {
+            The plan on DEV, read-only for your role.
+          }
+        </p>
+      }
+      @if (planNotice()) {
+        <p class="plan-notice" role="status">{{ planNotice() }}</p>
       }
       <p class="save-notice" role="status" aria-live="polite">
         {{ saving() ? 'Saving to private JSON...' : notice() }}
@@ -247,11 +275,16 @@
                 }
                 <div class="work-item-list">
                   @for (item of itemsForStatus(status.id); track item.id) {
-                    <div class="work-item-container" [class.dragging]="draggedItemId() === item.id">
+                    <div
+                      class="work-item-container"
+                      [id]="'ticket-' + item.id"
+                      [class.dragging]="draggedItemId() === item.id"
+                      [class.highlighted]="highlightedId() === item.id"
+                    >
                       <button
                         class="work-item-card"
                         type="button"
-                        [attr.draggable]="editable() && !saving()"
+                        [attr.draggable]="canDrag(item)"
                         (dragstart)="startDrag($event, item)"
                         (dragend)="endDrag()"
                         [class.blocked]="item.blockedBy.length"
@@ -273,14 +306,16 @@
                         </span>
                         <span class="card-footer">
                           <b [attr.data-priority]="item.priorityId">{{ item.priorityId }}</b>
-                          @if (item.blockedBy.length) {
+                          @if (item.pendingLocal) {
+                            <em class="conflict-mark">Local edit pending</em>
+                          } @else if (item.blockedBy.length) {
                             <em>Blocked</em>
                           } @else {
                             <em>{{ item.acceptanceCriteria.length }} acceptance checks</em>
                           }
                         </span>
                       </button>
-                      @if (editable()) {
+                      @if (writable() && canMoveAnywhere(item)) {
                         <label class="quick-move">
                           <span>Move to</span>
                           <select
@@ -317,7 +352,7 @@
             [attr.aria-label]="view() === 'backlog' ? 'Backlog tickets' : 'All tickets'"
           >
             @for (item of filteredItems(); track item.id) {
-              <li>
+              <li [id]="'ticket-' + item.id" [class.highlighted]="highlightedId() === item.id">
                 <button type="button" class="ticket-row" (click)="openWorkItem(item)">
                   <span class="ticket-identity"
                     ><b>{{ item.id }}</b
@@ -489,6 +524,58 @@
               <strong>Blocked</strong>
             }
           </div>
+          @if (item.origin; as origin) {
+            <p class="ticket-origin">
+              <a routerLink="/support" [queryParams]="{ view: 'reviews' }" [fragment]="origin.id">
+                {{ originLabel(origin) }}
+              </a>
+            </p>
+          }
+          @if (item.pendingLocal) {
+            <section class="conflict-banner" role="alert" aria-label="Unmerged local edit">
+              <h3>A local edit of this ticket was not merged</h3>
+              <p>
+                The ticket changed on DEV and locally since the same version. DEV is shown; the
+                fields below differ.
+              </p>
+              <dl class="conflict-diff">
+                @for (row of conflictFields(item); track row.field) {
+                  <div>
+                    <dt>{{ row.field }}</dt>
+                    <dd>
+                      <span class="diff-dev"><b>DEV</b> {{ row.dev || '—' }}</span>
+                      <span class="diff-local"><b>Local</b> {{ row.local || '—' }}</span>
+                    </dd>
+                  </div>
+                } @empty {
+                  <div>
+                    <dt>No field differs</dt>
+                    <dd>Both versions read the same; Keep DEV clears this notice.</dd>
+                  </div>
+                }
+              </dl>
+              @if (dev() && canEdit(item)) {
+                <div class="conflict-actions">
+                  <button
+                    type="button"
+                    class="editor-primary"
+                    [disabled]="saving()"
+                    (click)="resolveConflict(item, 'dev')"
+                  >
+                    Keep DEV
+                  </button>
+                  <button
+                    type="button"
+                    class="editor-secondary"
+                    [disabled]="saving()"
+                    (click)="resolveConflict(item, 'local')"
+                  >
+                    Take local
+                  </button>
+                </div>
+              }
+            </section>
+          }
           <section>
             <h3>Outcome</h3>
             <p>{{ item.summary }}</p>
@@ -549,6 +636,8 @@
                       </div>
                     } @else if (published()) {
                       <p>Published copy, read-only; open this report on the local workstation.</p>
+                    } @else if (dev()) {
+                      <p>Open this report on the local workstation.</p>
                     } @else {
                       <p>Start the private local app to open this report.</p>
                     }
@@ -568,7 +657,7 @@
             </section>
           }
           <footer class="dialog-footer">
-            <span>Updated {{ item.updatedAt }}</span>
+            <span>{{ updatedLine(item) }}</span>
             @if (editable()) {
               <button
                 type="button"
@@ -577,6 +666,10 @@
                 [hidden]="!canEdit(item)" (click)="openEditor(item)"
               >
                 Edit work item
+              </button>
+            } @else if (dev() && canEdit(item)) {
+              <button type="button" class="editor-primary" [disabled]="saving()" (click)="openEditor(item)">
+                Edit ticket
               </button>
             } @else {
               <strong>Read-only plan</strong>
@@ -598,7 +691,9 @@
           <header class="dialog-header">
             <div>
               <span>{{ draftId ?? 'ID assigned on save' }}</span>
-              <h2 id="editor-title">{{ draftId ? 'Edit work item' : 'New work item' }}</h2>
+              <h2 id="editor-title">
+                {{ dev() ? (draftId ? 'Edit ticket' : 'New ticket') : draftId ? 'Edit work item' : 'New work item' }}
+              </h2>
             </div>
             <button
               type="button"
@@ -610,8 +705,13 @@
             </button>
           </header>
           <p class="editor-help">
-            Saves update the private delivery-plan JSON, not Git. Workflow columns track progress;
-            delivery stages group the scope.
+            @if (dev()) {
+              Saves go to the plan on DEV. Workflow columns track progress; delivery stages group
+              the scope.
+            } @else {
+              Saves update the private delivery-plan JSON, not Git. Workflow columns track progress;
+              delivery stages group the scope.
+            }
           </p>
           <fieldset class="editor-fields" [disabled]="saving()">
             <label class="full-width"
@@ -652,40 +752,50 @@
                 }
               </select></label
             >
-            <label
-              >Workflow column
-              <select name="status" [(ngModel)]="form.statusId">
-                @for (status of deliveryPlan.workflow; track status.id) {
-                  <option [value]="status.id">{{ status.label }}</option>
-                }
-              </select></label
-            >
-            <label class="full-width"
-              >Acceptance criteria
-              <small>One testable outcome per line. At least one required.</small>
-              <textarea
-                name="criteria"
-                [(ngModel)]="form.acceptanceCriteria"
-                required
-                rows="4"
-              ></textarea>
-            </label>
-            <label class="full-width"
-              >Labels <small>Separate labels with commas.</small
-              ><input name="labels" [(ngModel)]="form.labels"
-            /></label>
-            <label
-              >Depends on <small>Existing IDs, separated by commas.</small
-              ><input name="dependencies" [(ngModel)]="form.dependencies"
-            /></label>
-            <label
-              >Blocked by <small>Existing IDs, separated by commas.</small
-              ><input name="blockers" [(ngModel)]="form.blockedBy"
-            /></label>
-            <label class="full-width"
-              >Notes <small>One note per line.</small
-              ><textarea name="notes" [(ngModel)]="form.notes" rows="3"></textarea>
-            </label>
+            @if (!dev() || draftId) {
+              <label
+                >Workflow column
+                <select name="status" [(ngModel)]="form.statusId">
+                  @for (status of deliveryPlan.workflow; track status.id) {
+                    <option [value]="status.id" [disabled]="!statusAllowed(status.id)">{{ status.label }}</option>
+                  }
+                </select></label
+              >
+            }
+            @if (!dev()) {
+              <label class="full-width"
+                >Acceptance criteria
+                <small>One testable outcome per line. At least one required.</small>
+                <textarea
+                  name="criteria"
+                  [(ngModel)]="form.acceptanceCriteria"
+                  required
+                  rows="4"
+                ></textarea>
+              </label>
+            }
+            @if (!dev() || draftId) {
+              <label class="full-width"
+                >Labels <small>Separate labels with commas.</small
+                ><input name="labels" [(ngModel)]="form.labels"
+              /></label>
+            }
+            @if (!dev()) {
+              <label
+                >Depends on <small>Existing IDs, separated by commas.</small
+                ><input name="dependencies" [(ngModel)]="form.dependencies"
+              /></label>
+              <label
+                >Blocked by <small>Existing IDs, separated by commas.</small
+                ><input name="blockers" [(ngModel)]="form.blockedBy"
+              /></label>
+            }
+            @if (!dev() || draftId) {
+              <label class="full-width"
+                >Notes <small>One note per line.</small
+                ><textarea name="notes" [(ngModel)]="form.notes" rows="3"></textarea>
+              </label>
+            }
           </fieldset>
           @if (saveError()) {
             <div class="editor-error" role="alert">
@@ -726,7 +836,7 @@
               Cancel
             </button>
             <button type="submit" class="editor-primary" [disabled]="saving() || conflict()">
-              {{ saving() ? 'Saving...' : 'Save work item' }}
+              {{ saving() ? 'Saving...' : dev() ? 'Save ticket' : 'Save work item' }}
             </button>
           </footer>
         </form>

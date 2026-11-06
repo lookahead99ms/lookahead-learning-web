@@ -55,7 +55,7 @@ The sibling path is the local convention, not a production dependency. Set `LOOK
 
 ## Delivery plan boundary
 
-`/delivery-plan` first probes `/__local/delivery/plan`. The private launcher starts a dependency-free Node HTTP companion bound to loopback and proxies this namespace through Angular. Workflow columns, priorities, stages, work items, decisions, and interruption rules remain data-defined. When no local companion exists, the route falls back to read-only `/content/delivery/delivery-plan.json` through `ContentService`.
+`/delivery-plan` first probes `/__local/delivery/plan`. The private launcher starts a dependency-free Node HTTP companion bound to loopback and proxies this namespace through Angular. Workflow columns, priorities, stages, work items, decisions, and interruption rules remain data-defined. When no local companion exists, the route falls back to read-only `/content/delivery/delivery-plan.json` through `ContentService`. In the protected build the fallback is the published staff copy, except behind the DEV gate, where `DeliveryDevPlanService` reads and writes the Domain-served plan (`/bff/api/v1/delivery/plan`, version-checked writes, conflict resolution for unmerged local edits; DLV-971 runtime stores); a DEV plan not uploaded yet falls back to the published copy with a notice.
 
 Humans can create and edit stories, tasks, epics, defects, research items, and decisions; change their delivery stage; and move cards across workflow columns by dragging or using the accessible Move selector. A work item of type Decision is not an architecture-decision record: the separate decisions and roadmap definitions are still edited in JSON.
 
