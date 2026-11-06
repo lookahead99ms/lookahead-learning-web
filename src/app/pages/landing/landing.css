@@ -559,6 +559,8 @@ main.landing-page > * {
     sans-serif;
   letter-spacing: -0.02em;
   margin: 0 0 8px;
+  /* The path's own colour (DLV-922, owner 2026-11-05): dark on the light theme, pastel on the dark one, like the card's top edge. */
+  color: var(--path-color);
 }
 .home-paths .path-badge {
   display: grid;

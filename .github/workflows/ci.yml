@@ -111,6 +111,8 @@ jobs:
       - name: Verify web release metadata
         run: node --test --experimental-test-coverage --test-coverage-lines=85 --test-coverage-include=scripts/release-metadata.mjs scripts/release-metadata.test.mjs
 
+      - name: Test the Content paths contract and verify the committed copy matches the source
+        run: npm run test:content-paths
 
       - name: Initialize JavaScript and TypeScript analysis
         uses: github/codeql-action/init@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4

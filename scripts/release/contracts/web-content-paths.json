@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "web-content-paths/v1",
+  "paths": [
+    "/content/access-levels.json",
+    "/content/content-index-manifest.json",
+    "/content/hands-on-dsa-index.json",
+    "/content/indexes/blaze.json",
+    "/content/learn/algorithmic-patterns/pattern-recognition-index.json",
+    "/content/learn/algorithmic-patterns/visuals/algorithm-family-lab.html",
+    "/content/learn/algorithmic-patterns/visuals/backtracking-choice-lab.html",
+    "/content/learn/algorithmic-patterns/visuals/binary-search-lab.html",
+    "/content/learn/algorithmic-patterns/visuals/divide-conquer-lab.html",
+    "/content/learn/algorithmic-patterns/visuals/dp-table-lab.html",
+    "/content/learn/algorithmic-patterns/visuals/fast-slow-pointers-lab.html",
+    "/content/learn/algorithmic-patterns/visuals/greedy-choice-lab.html",
+    "/content/learn/algorithmic-patterns/visuals/interval-merge-lab.html",
+    "/content/learn/algorithmic-patterns/visuals/monotonic-lab.html",
+    "/content/learn/algorithmic-patterns/visuals/shortest-path-lab.html",
+    "/content/learn/algorithmic-patterns/visuals/topo-order-lab.html",
+    "/content/learn/core-data-structures/visuals/array-code-debugger.html",
+    "/content/learn/core-data-structures/visuals/graph-bfs-dfs-lab.html",
+    "/content/learn/core-data-structures/visuals/hash-table-code-debugger.html",
+    "/content/learn/core-data-structures/visuals/linked-reference-code-debugger.html",
+    "/content/learn/core-data-structures/visuals/stack-queue-code-debugger.html",
+    "/content/learn/core-data-structures/visuals/trie-prefix-lab.html",
+    "/content/learn/core-data-structures/visuals/union-find-compression-lab.html",
+    "/content/staff/delivery-plan.json",
+    "/content/study-plans/index.json"
+  ]
+}
