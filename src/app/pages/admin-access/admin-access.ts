@@ -166,7 +166,7 @@ export class AdminAccessPage implements OnInit {
   readonly tabs = computed(() => {
     // Give access finds people by email or username, so it is the owner's alone (DLV-969, 2026-11-03).
     const base: readonly AccessTab[] = this.canManage() ? ['assign', 'saved', 'test', 'people']
-      : this.canReadAssignments() ? ['saved', 'test', 'people'] : ['test'];
+      : this.canReadAssignments() ? ['test', 'saved', 'people'] : ['test']; // co-authors open on Test accounts (owner, 2026-11-06)
     // Admins see Waiting for access for the purchase requests alone (owner, 2026-11-04); co-authors never see it.
     const count = (this.canManage() ? this.waiting().length : 0) + (this.showPurchases() ? this.purchaseCount() : 0);
     const ids = !this.canManage() && !this.showPurchases() ? base

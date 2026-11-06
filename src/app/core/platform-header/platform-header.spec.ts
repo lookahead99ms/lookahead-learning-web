@@ -525,10 +525,10 @@ describe('PlatformHeader account disclosure', () => {
       ]),
     ).toEqual([
       ['Documentation', '/admin/docs'],
-      ['Previews', '/admin/previews'],
-      ['Support tickets and feedback', '/admin/feedback'],
       ['Delivery Plan', '/delivery-plan'],
-      ['People and access', '/admin/access'],
+      ['Tickets & feedback', '/admin/feedback'],
+      ['People & Access', '/admin/access'],
+      ['Previews', '/admin/previews'],
     ]);
     // DLV-926: the documentation pages are listed on /admin/docs, not inside the dropdown.
     expect(menu.querySelector('#account-documentation-links')).toBeNull();

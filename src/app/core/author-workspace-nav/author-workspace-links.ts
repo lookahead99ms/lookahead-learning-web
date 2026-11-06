@@ -1,14 +1,22 @@
 import type { StudyAccount } from '../../pages/study-plan/study-plan-account';
 export const authorDocumentationHome = '/admin/docs';
 
+/**
+ * The admin menu in the owner's order (2026-11-06): Documentation, Delivery Plan, Tickets & feedback (the page "Support
+ * tickets and feedback"), People & Access (admins and co-authors see it as Test Accounts; the page opens on that tab for
+ * them), and Previews last, for the owner and co-authors only.
+ */
 export const authorWorkspaceLinks = [
   { id: 'docs', label: 'Documentation', href: authorDocumentationHome, icon: '📚' },
-  { id: 'previews', label: 'Previews', href: '/admin/previews', icon: '👀' },
-  // DLV-971 (owner, 2026-11-06): the former Team Reviews tab of Support, as its own admin page.
-  { id: 'feedback', label: 'Support tickets and feedback', href: '/admin/feedback', icon: '🗂️' },
   { id: 'delivery', label: 'Delivery Plan', href: '/delivery-plan', icon: '🗺️' },
-  { id: 'access', label: 'People and access', href: '/admin/access', icon: '🔐' },
+  // DLV-971 (owner, 2026-11-06): the former Team Reviews tab of Support, as its own admin page.
+  { id: 'feedback', label: 'Tickets & feedback', href: '/admin/feedback', icon: '🗂️' },
+  { id: 'access', label: 'People & Access', href: '/admin/access', icon: '🔐' },
+  { id: 'previews', label: 'Previews', href: '/admin/previews', icon: '👀' },
 ] as const;
+
+/** The access entry as admins and co-authors see it: the test-account roster, not people. */
+export const testAccountsLink = { id: 'access', label: 'Test Accounts', href: '/admin/access', icon: '🧪' } as const;
 
 export interface AuthorDocumentationPage {
   id: string;
@@ -506,11 +514,15 @@ export function visibleDocumentationGroups(account: StudyAccount | null): readon
     .filter((group) => group.pages.length > 0);
 }
 
-export function visibleAdminLinks(account: StudyAccount | null) {
-  return authorWorkspaceLinks.filter(page => {
-    if (page.id === 'previews') return canSeePreviews(account);
-    if (page.id === 'access' && (account?.permissions?.triageFeedback || account?.permissions?.feedbackRole === 'co-author')) return true;
-    const permission = page.id === 'access' ? 'manageAccess' : page.id === 'delivery' ? 'deliveryRead' : 'previewDocuments';
-    return account?.permissions?.[permission] ?? account?.authorPreview === true;
-  });
+export function visibleAdminLinks(account: StudyAccount | null): readonly AuthorWorkspaceLink[] {
+  return authorWorkspaceLinks
+    .filter(page => {
+      if (page.id === 'previews') return canSeePreviews(account);
+      if (page.id === 'access' && (account?.permissions?.triageFeedback || account?.permissions?.feedbackRole === 'co-author')) return true;
+      const permission = page.id === 'access' ? 'manageAccess' : page.id === 'delivery' ? 'deliveryRead' : 'previewDocuments';
+      return account?.permissions?.[permission] ?? account?.authorPreview === true;
+    })
+    .map(page => (page.id === 'access' && account?.permissions && !account.permissions.manageAccess ? testAccountsLink : page));
 }
+
+export type AuthorWorkspaceLink = (typeof authorWorkspaceLinks)[number] | typeof testAccountsLink;

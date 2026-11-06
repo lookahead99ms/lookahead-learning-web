@@ -31,9 +31,12 @@ describe('staff navigation', () => {
   it('keeps assignment controls owner-only even for admins and reviewers', () => {
     // DLV-969 (owner, 2026-11-04): Previews is the owner's and co-authors' only, so other staff never see it listed.
     expect(visibleAdminLinks({ ...account, permissions: permissions({ previewDocuments: true, deliveryRead: true }) }).map(row => row.id))
-      .toEqual(['docs', 'feedback', 'delivery']);
+      .toEqual(['docs', 'delivery', 'feedback']);
     expect(visibleAdminLinks({ ...account, permissions: permissions({ previewDocuments: true, deliveryRead: true, feedbackRole: 'co-author' }) }).map(row => row.id))
-      .toEqual(['docs', 'previews', 'feedback', 'delivery', 'access']);
+      .toEqual(['docs', 'delivery', 'feedback', 'access', 'previews']);
+    // Admins and co-authors see the access entry as Test Accounts; the owner as People & Access.
+    expect(visibleAdminLinks({ ...account, permissions: permissions({ previewDocuments: true, deliveryRead: true, feedbackRole: 'co-author' }) }).find(row => row.id === 'access')?.label).toBe('Test Accounts');
+    expect(visibleAdminLinks({ ...account, permissions: permissions({ previewDocuments: true, deliveryRead: true, manageAccess: true }) }).find(row => row.id === 'access')?.label).toBe('People & Access');
     expect(visibleAdminLinks({ ...account, authorPreview: true, permissions: permissions({}) })).toEqual([]);
   });
 });
@@ -406,7 +409,7 @@ describe('Saved assignments for a co-author (DLV-969)', () => {
     expect(root.querySelector('.assignment-state')?.textContent?.trim()).toBe('Assigned');
     expect([...root.querySelectorAll('.assignment-state')][1].textContent?.trim()).toBe('Pending verified sign-in');
     expect(root.textContent).not.toContain('Review assignment');
-    expect([...root.querySelectorAll('[role="tab"]')].map(tab => tab.textContent?.trim())).toEqual(['Saved assignments', 'Test accounts', 'People']);
+    expect([...root.querySelectorAll('[role="tab"]')].map(tab => tab.textContent?.trim())).toEqual(['Test accounts', 'Saved assignments', 'People']);
   });
 });
 
@@ -546,8 +549,8 @@ describe('Waiting for access', () => {
     const coauthor = TestBed.runInInjectionContext(() => new AdminAccessPage());
     await coauthor.reload();
     // Give access finds people by email or username, so it is the owner's alone (DLV-969, 2026-11-03).
-    expect(coauthor.tabs().map(tab => tab.id)).toEqual(['saved', 'test', 'people']);
-    expect(coauthor.tab()).toBe('saved');
+    expect(coauthor.tabs().map(tab => tab.id)).toEqual(['test', 'saved', 'people']);
+    expect(coauthor.tab()).toBe('test'); // co-authors open on Test accounts (owner, 2026-11-06)
     expect(requests.some(row => row.path === '/admin/access/waiting')).toBe(false);
     expect(coauthor.assignments()).toHaveLength(1);
   });
@@ -936,7 +939,7 @@ describe('Waiting for access sub-tabs', () => {
     expect(page.canDecide()).toBe(false);
     expect(page.purchaseCount()).toBe(0);
     expect(page.waitingViews()).toEqual([]);
-    expect(page.tabs().map(tab => tab.id)).toEqual(['saved', 'test', 'people']);
+    expect(page.tabs().map(tab => tab.id)).toEqual(['test', 'saved', 'people']);
     expect(requests).not.toContain('/admin/access/waiting');
     await page.loadPurchases();
     expect(page.purchaseRows()).toEqual([]);
