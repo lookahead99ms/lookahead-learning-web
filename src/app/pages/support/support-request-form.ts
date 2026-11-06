@@ -56,19 +56,17 @@ const requestTypes = [
             ></textarea>
             <span class="hint">{{ message.length }} of 5000 characters</span>
           </label>
+          <!-- DLV-971 (owner, 2026-11-06): one slim row; the limits stay as they were. -->
           <div class="attach">
             <label class="file-picker"
-              ><span aria-hidden="true">📎</span> Screenshots<input
+              ><span aria-hidden="true">📎</span> Add screenshots<input
                 type="file"
                 accept="image/png,image/jpeg"
                 multiple
                 (change)="attach($event)"
                 [disabled]="busy()"
             /></label>
-            <p class="hint">
-              Up to three PNG or JPEG images; 2 MB each and 5 MB in total. Image metadata is removed
-              before sending.
-            </p>
+            <p class="hint">Up to three images, 2 MB each.</p>
           </div>
           @if (images().length) {
             <div class="image-previews">
@@ -240,10 +238,15 @@ export class SupportRequestForm implements OnDestroy {
       });
       const body = await result.json();
       if (body.data?.reference) {
+        // DLV-971 (owner, 2026-11-06): every request is also an item under Team Reviews, whatever the mail status.
+        // "recorded" (Domain, 202): kept for Team Reviews while support mail is not switched on, so no email was sent.
+        const status = body.data.status;
         this.receipt.set(
-          (body.data.status === 'accepted'
-            ? 'The mail server accepted your message. '
-            : 'Delivery could not be confirmed. This request will not be sent again automatically. ') +
+          (status === 'accepted'
+            ? 'The mail server accepted your message. Request recorded. The owner and admins see it under Team Reviews; we also reply by email. '
+            : status === 'recorded'
+              ? 'Request recorded. The owner and admins see it under Team Reviews. Email replies are not switched on yet, so there is no email for this one. '
+              : 'Delivery could not be confirmed. This request will not be sent again automatically. Request recorded. The owner and admins see it under Team Reviews; we also reply by email. ') +
             'Reference: ' +
             body.data.reference,
         );

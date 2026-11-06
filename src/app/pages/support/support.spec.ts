@@ -9,9 +9,12 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import {
   PLATFORM_REVIEW_CLIENT,
+  PlatformReviewClient,
   PlatformReviewError,
+  PlatformReviewItem,
   PlatformReviewViewer,
 } from '../admin-reviews/platform-review.model';
+import { ReviewEditIntent } from '../admin-reviews/review-edit-intent';
 
 @Component({ selector: 'app-platform-header', template: '' })
 class HeaderStub {}
@@ -54,40 +57,92 @@ const reviewer = async (): Promise<PlatformReviewViewer> => ({
   displayName: 'Reviewer',
 });
 
+const text = (node: Element | null | undefined) => node?.textContent?.replace(/\s+/g, ' ').trim();
+const lede =
+  'A broken page, an idea, or a question. We answer by email and every request gets a reference.';
+
 describe('Support and feedback page', () => {
-  it('shows only Contact support to an account without review access', async () => {
+  it('gives an account without review access one card: the tips, then the request form, and no aside', async () => {
     const harness = await open('/support?view=reviews', async () => {
       throw new PlatformReviewError('forbidden');
     });
     const root = harness.routeNativeElement!;
     expect(root.querySelector('[role="tablist"]')).toBeNull();
-    expect(root.textContent).toContain('contact form');
     expect(root.textContent).not.toContain('review items');
+    const cards = [...root.querySelectorAll('.support-body > *')];
+    expect(cards).toHaveLength(1);
+    const card = cards[0];
+    expect(card.querySelector('h2')?.id).toBe('contact-heading');
+    expect(text(card.querySelector('h2'))).toBe('Need a reply from us?');
+    expect(text(card.querySelector('.card-lede'))).toBe(lede);
+    expect(text(card.querySelector('app-report-tips .tips-label'))).toBe('A helpful report');
+    expect(card.querySelectorAll('app-report-tips li')).toHaveLength(4);
+    // The tips come before the request form (whose first control is the kind picker).
+    const tips = card.querySelector('app-report-tips')!;
+    const form = card.querySelector('app-support-request-form')!;
+    expect(tips.compareDocumentPosition(form) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(root.textContent).toContain('contact form');
+    expect(root.querySelector('aside')).toBeNull();
+    expect(root.querySelector('.tips')).toBeNull();
+    expect(root.querySelector('.request-fold')).toBeNull();
   });
 
-  it('shows only Contact support to a learner or test account the service answers with role "user" (DLV-971)', async () => {
+  it('gives a learner or test account the service answers with role "user" the same single card (DLV-971)', async () => {
     const harness = await open('/support?view=reviews', async () => ({ ...(await reviewer()), role: 'user' }));
     const root = harness.routeNativeElement!;
     expect(root.querySelector('[role="tablist"]')).toBeNull();
+    expect(root.querySelectorAll('.support-body > *')).toHaveLength(1);
+    expect(text(root.querySelector('#contact-heading'))).toBe('Need a reply from us?');
+    expect(root.querySelector('app-report-tips')).not.toBeNull();
     expect(root.textContent).toContain('contact form');
     expect(root.textContent).not.toContain('review items');
-    expect(root.querySelector('.tips-note')).toBeNull();
+    expect(root.querySelector('aside')).toBeNull();
   });
 
-  it('gives reviewers Write Review (form above the support form) and Team Reviews, and keeps the tab in the address', async () => {
+  it('gives reviewers Write Review (the review card, then a folded request) and Team Reviews, and keeps the tab in the address', async () => {
     const harness = await open('/support', reviewer);
     const root = harness.routeNativeElement!;
     const tabs = [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
-    expect(tabs.map((tab) => tab.textContent?.replace(/\s+/g, ' ').trim())).toEqual([
-      '📝 Write Review',
-      '🧪 Team Reviews Reviewer',
-    ]);
+    expect(tabs.map(text)).toEqual(['📝 Write Review', '🧪 Team Reviews Reviewer']);
     expect(tabs[0].getAttribute('aria-selected')).toBe('true');
-    // DLV-971: the add-item panel sits above the support form; the tips point at Team Reviews.
-    const panels = [...root.querySelectorAll('.support-body > section')].map((panel) => panel.getAttribute('aria-label') ?? panel.getAttribute('aria-labelledby'));
-    expect(panels).toEqual(['Write Review', 'contact-heading']);
+    // DLV-971: the review card comes first and full width; the support request is folded under it.
+    const children = [...root.querySelectorAll('.support-body > *')];
+    expect(children.map((child) => child.tagName.toLowerCase() + '.' + child.className.split(' ')[0])).toEqual([
+      'section.panel',
+      'button.request-fold',
+    ]);
+    expect(children[0].getAttribute('aria-label')).toBe('Write Review');
     expect(root.querySelector('.submit-panel app-admin-reviews')?.getAttribute('section')).toBe('submit');
-    expect(root.querySelector('.tips-note')?.textContent?.replace(/\s+/g, ' ')).toContain('Team Reviews');
+    expect(root.querySelector('aside')).toBeNull();
+    expect(root.querySelector('.tips-note')).toBeNull();
+    expect(root.querySelector('app-report-tips')).toBeNull(); // the stubbed review card carries them
+    const fold = root.querySelector<HTMLButtonElement>('.request-fold')!;
+    expect(fold.getAttribute('type')).toBe('button');
+    expect(fold.getAttribute('aria-expanded')).toBe('false');
+    expect(text(fold.querySelector('.fold-text'))).toBe('Not a review item? Send a request and get a reply by email.');
+    expect(text(fold.querySelector('.fold-text b'))).toBe('Not a review item?');
+    expect([...fold.querySelectorAll('.fold-chip')].map(text)).toEqual([
+      '🐞 Report a problem',
+      '💡 Share feedback',
+      '❓ Ask a question',
+    ]);
+    expect(fold.querySelector('.fold-chevron')).not.toBeNull();
+    expect(root.querySelector('#request-panel')).toBeNull();
+    expect(root.textContent).not.toContain('contact form');
+    fold.click();
+    harness.detectChanges();
+    expect(fold.getAttribute('aria-expanded')).toBe('true');
+    const request = root.querySelector('#request-panel')!;
+    expect(request.getAttribute('aria-labelledby')).toBe('contact-heading');
+    expect(text(request.querySelector('h2'))).toBe('Need a reply from us?');
+    expect(text(request.querySelector('.card-lede'))).toBe(lede);
+    expect(request.querySelector('app-report-tips')).toBeNull();
+    expect(request.querySelector('app-support-request-form')).not.toBeNull();
+    expect(root.textContent).toContain('contact form');
+    fold.click();
+    harness.detectChanges();
+    expect(fold.getAttribute('aria-expanded')).toBe('false');
+    expect(root.querySelector('#request-panel')).toBeNull();
     tabs[1].click();
     await harness.fixture.whenStable();
     harness.detectChanges();
@@ -110,5 +165,104 @@ describe('Support and feedback page', () => {
     expect(root.querySelector('#support-tab-reviews')?.textContent).toContain('Owner');
     expect(root.textContent).toContain('review items');
     expect(root.textContent).not.toContain('contact form');
+    expect(root.querySelector('.request-fold')).toBeNull();
+  });
+
+  it('names the role on the Team Reviews badge: Owner, Admin or Reviewer (DLV-971)', async () => {
+    for (const [role, badge] of [
+      ['owner', 'Owner'],
+      ['admin', 'Admin'],
+      ['reviewer', 'Reviewer'],
+    ] as const) {
+      TestBed.resetTestingModule();
+      const harness = await open('/support', async () => ({ ...(await reviewer()), role }));
+      const root = harness.routeNativeElement!;
+      expect(text(root.querySelector('#support-tab-reviews .role-badge'))).toBe(badge);
+      expect(root.querySelector('.submit-panel')).not.toBeNull();
+      expect(root.querySelector('.request-fold')?.getAttribute('aria-expanded')).toBe('false');
+    }
+  });
+
+  it('Edit from Team Reviews opens Write Review with that item in the form (DLV-971)', async () => {
+    const own: PlatformReviewItem = {
+      id: 'a',
+      reviewerId: 'r',
+      reviewerName: 'Reviewer',
+      category: 'change',
+      page: 'Search',
+      pageUrl: '/search',
+      title: 'Search misses lessons',
+      details: 'Searching for PKCE shows nothing.',
+      priority: 'high',
+      attachments: [],
+      status: 'new',
+      ownerNote: '',
+      kind: 'review',
+      requestType: null,
+      reference: null,
+      createdAt: '2026-10-11T10:00:00.000Z',
+      updatedAt: '2026-10-11T10:00:00.000Z',
+    };
+    const client: PlatformReviewClient = {
+      viewer: reviewer,
+      list: async () => ({
+        items: [{ ...own, attachmentCount: 0, ownerNote: false }],
+        nextBefore: null,
+      }),
+      item: vi.fn(async () => own),
+      save: async () => own,
+      remove: async () => {},
+      triage: async () => own,
+      attachmentUrl: async () => 'blob:test',
+      releaseAttachmentUrl: () => {},
+    };
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: 'support', component: SupportPage }]),
+        {
+          provide: StudyPlanAccount,
+          useValue: {
+            account: signal({ accountId: 'a' }),
+            sessionExpired: () => false,
+            initialize: async () => {},
+          },
+        },
+        { provide: PLATFORM_REVIEW_CLIENT, useValue: client },
+      ],
+    });
+    // The real review panel on both tabs; only the header and the request form are stubbed.
+    TestBed.overrideComponent(SupportPage, {
+      remove: { imports: [PlatformHeader, SupportRequestForm] },
+      add: { imports: [HeaderStub, FormStub] },
+    });
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/support?view=reviews', SupportPage);
+    const settle = async () => {
+      for (let pass = 0; pass < 3; pass++) {
+        await new Promise((resolve) => setTimeout(resolve));
+        await harness.fixture.whenStable();
+        harness.detectChanges();
+      }
+    };
+    await settle();
+    const root = harness.routeNativeElement!;
+    expect(root.querySelector('#support-tab-reviews')?.getAttribute('aria-selected')).toBe('true');
+    expect(root.querySelector('#review-form')).toBeNull();
+    (root.querySelector('.item-summary') as HTMLButtonElement).click();
+    await settle();
+    [...root.querySelectorAll<HTMLButtonElement>('.item-actions button')]
+      .find((button) => button.textContent?.includes('Edit'))!
+      .click();
+    await settle();
+    expect(TestBed.inject(Router).url).toBe('/support');
+    expect(root.querySelector('#support-tab-contact')?.getAttribute('aria-selected')).toBe('true');
+    expect(root.querySelector('.submit-panel #review-form')?.textContent?.trim()).toBe('Edit your review item');
+    expect((root.querySelector('input[name="title"]') as HTMLInputElement).value).toBe('Search misses lessons');
+    expect((root.querySelector('textarea[name="details"]') as HTMLTextAreaElement).value).toBe(
+      'Searching for PKCE shows nothing.',
+    );
+    expect((root.querySelector('select[name="category"]') as HTMLSelectElement).value).toBe('change');
+    expect(TestBed.inject(ReviewEditIntent).itemId()).toBeNull();
+    expect(root.querySelector('.request-fold')).not.toBeNull();
   });
 });

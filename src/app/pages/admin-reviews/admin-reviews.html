@@ -2,7 +2,7 @@
   <header>
     <p class="eyebrow">Private review</p>
     <h2 class="intro-heading">
-      @if (section() === 'submitted' && !isOwner()) {
+      @if (section() === 'submitted' && !seesAll()) {
         Your reviews, and where each one stands.
       } @else if (showAll() && section() !== 'submit') {
         See what reviewers want to change.
@@ -11,12 +11,17 @@
       }
     </h2>
     <p class="lede">
-      @if (section() === 'submitted' && !isOwner()) {
+      @if (section() === 'submitted' && !seesAll()) {
         Each item shows the status the owner set. Add new items under Write Review.
+      } @else if (showAll() && section() !== 'submit' && !isOwner()) {
+        Every reviewer's items and every learner request, newest day first. Open an item to read it
+        and see its images. The owner sets each review's status and note; you set the status of
+        learner requests.
       } @else if (showAll() && section() !== 'submit') {
-        Each reviewer sees only their own items. You see all of them, newest day first. Open an
-        item to read it, see its images and set a status the reviewer will see.
-      } @else if (isOwner()) {
+        Each reviewer sees only their own items. You see all of them and every learner request,
+        newest day first. Open an item to read it, see its images and set a status the reviewer
+        will see.
+      } @else if (seesAll()) {
         This is the view every reviewer gets. Items you add here also appear under Team Reviews
         with your name.
       } @else {
@@ -45,7 +50,11 @@
       <button type="button" class="secondary" (click)="load()">Try again</button>
     </section>
   } @else {
-    @if (isOwner() && section() !== 'submit') {
+    @if (section() === 'submit') {
+      <!-- DLV-971 (owner, 2026-11-06): the same tips a learner sees, inside the review card above the form. -->
+      <app-report-tips class="report-tips" />
+    }
+    @if (seesAll() && section() !== 'submit') {
       <div class="view-tabs" role="group" aria-label="Review view">
         <button
           type="button"
@@ -74,6 +83,7 @@
                   <tr>
                     <th scope="col">Reviewer</th>
                     <th scope="col">Items</th>
+                    <th scope="col">Requests</th>
                     @for (status of statuses; track status.id) {
                       <th scope="col">{{ status.label }}</th>
                     }
@@ -92,6 +102,7 @@
                         </button>
                       </th>
                       <td>{{ reviewer.items.length }}</td>
+                      <td>{{ countRequests(reviewer.items) }}</td>
                       @for (status of statuses; track status.id) {
                         <td>{{ countWith(reviewer.items, status.id) }}</td>
                       }
@@ -101,7 +112,7 @@
               </table>
             </div>
           } @else {
-            <p class="empty">No reviewer has added an item yet.</p>
+            <p class="empty">No reviews submitted yet.</p>
           }
         </section>
 
@@ -141,6 +152,9 @@
                 <option value="">All types</option>
                 @for (category of categories; track category.id) {
                   <option [value]="category.id">{{ category.label }}</option>
+                }
+                @for (type of requestTypes; track type.id) {
+                  <option [value]="requestFilterPrefix + type.id">Learner request: {{ type.label }}</option>
                 }
               </select>
             </label>
@@ -214,22 +228,22 @@
                 >{{ detailsText.length }} of {{ limits.detailsLength }} characters</span
               >
             </label>
+            <!-- DLV-971 (owner, 2026-11-06): one slim row; the limits and the paste path stay as they were. -->
             <fieldset class="attachments-field">
-              <legend>Screenshots and images</legend>
-              <p class="hint">
-                PNG, JPEG or WebP, up to {{ limits.attachmentsPerItem }} images and 5 MB each. You
-                can also paste a screenshot into this form. Location details stored in a photo are
-                removed when it is saved.
-              </p>
-              <label class="file-picker"
-                >Choose images
-                <input
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp"
-                  multiple
-                  (change)="onFileInput($event)"
-                />
-              </label>
+              <legend class="visually-hidden">Screenshots and images</legend>
+              <div class="attach">
+                <label class="file-picker"
+                  ><span aria-hidden="true">📎</span> Add screenshots<input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    multiple
+                    (change)="onFileInput($event)"
+                  />
+                </label>
+                <p class="hint">
+                  Up to {{ limits.attachmentsPerItem }} images, 5 MB each; or paste one into the form.
+                </p>
+              </div>
               @if (keptAttachments().length || pendingFiles().length) {
                 <ul class="thumbnails" aria-label="Images on this item">
                   @for (file of keptAttachments(); track file.id) {
@@ -279,7 +293,7 @@
           <ng-container
             *ngTemplateOutlet="
               dayList;
-              context: { $implicit: ownDays(), showReviewer: false, empty: 'You have not added an item yet.' }
+              context: { $implicit: ownDays(), showReviewer: false, empty: 'No reviews submitted yet.' }
             "
           />
         </section>
@@ -321,7 +335,12 @@
           >
             <span class="chevron" aria-hidden="true"></span>
             <span class="summary-main">
-              <span class="summary-title">{{ summary.title }}</span>
+              <span class="summary-head">
+                <span class="summary-title">{{ summary.title }}</span>
+                @if (isRequest(summary)) {
+                  <span class="kind-badge">{{ kindBadge(summary) }}</span>
+                }
+              </span>
               <span class="summary-meta">
                 @if (showReviewer) {
                   <strong>{{ summary.reviewerName }}</strong>
@@ -371,6 +390,15 @@
 
 <ng-template #itemBody let-item let-showReviewer="showReviewer">
 <article class="item" [attr.aria-label]="item.title">
+  @if (item.reference) {
+    <p class="item-reference">
+      Reference: <code>{{ item.reference }}</code>
+      <button type="button" class="link-button copy-reference" (click)="copyReference(item)">
+        Copy<span class="visually-hidden"> reference {{ item.reference }}</span>
+      </button>
+      <span role="status" class="copy-status">{{ copyStatus()[item.id] }}</span>
+    </p>
+  }
   @if (item.pageUrl) {
     <p class="item-url">Page address: <code>{{ item.pageUrl }}</code></p>
   }
@@ -395,7 +423,7 @@
   @if (item.ownerNote) {
     <p class="owner-note"><strong>Owner’s note:</strong> {{ item.ownerNote }}</p>
   }
-  @if (showReviewer) {
+  @if (showReviewer && canTriage(item)) {
     <form class="triage" (ngSubmit)="saveTriage(item)">
       <label
         >Status
@@ -424,7 +452,7 @@
         <span role="status">{{ triageMessage()[item.id] }}</span>
       </div>
     </form>
-  } @else if (item.status === 'new') {
+  } @else if (canEdit(item)) {
     <div class="item-actions">
       <button type="button" class="secondary" (click)="edit(item)">
         Edit<span class="visually-hidden"> {{ item.title }}</span>
@@ -433,7 +461,7 @@
         Delete<span class="visually-hidden"> {{ item.title }}</span>
       </button>
     </div>
-  } @else {
+  } @else if (isOwn(item) && !isRequest(item)) {
     <p class="hint">The owner has reviewed this item, so it can no longer be changed.</p>
   }
 </article>

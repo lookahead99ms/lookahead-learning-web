@@ -138,14 +138,10 @@ a:focus-visible {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px 16px;
-  padding: 14px 16px;
-  border: 1px dashed var(--border-strong, var(--line));
-  border-radius: 12px;
-  background: var(--surface-page);
+  gap: 6px 14px;
 }
 .attach .hint {
-  flex: 1 1 260px;
+  flex: 1 1 200px;
 }
 .file-picker {
   position: relative;

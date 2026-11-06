@@ -39,7 +39,7 @@
         (click)="show('reviews')"
       >
         <span aria-hidden="true">🧪</span> Team Reviews
-        <span class="role-badge">{{ reviewRole() === 'owner' ? 'Owner' : 'Reviewer' }}</span>
+        <span class="role-badge">{{ roleBadge() }}</span>
       </button>
     </div>
   }
@@ -47,7 +47,6 @@
   <div
     id="support-panel"
     class="support-body"
-    [class.reviews-body]="view() === 'reviews'"
     [attr.role]="reviewRole() ? 'tabpanel' : null"
     [attr.aria-labelledby]="reviewRole() ? 'support-tab-' + view() : null"
   >
@@ -58,46 +57,48 @@
       <section class="panel" aria-label="Team Reviews">
         <app-admin-reviews section="submitted" />
       </section>
-    } @else {
-      @if (reviewRole()) {
-        <!-- DLV-971 (owner, 2026-11-06): a reviewer submits review items here; the support form stays below. -->
-        <section class="panel submit-panel" aria-label="Write Review">
-          <app-admin-reviews section="submit" />
+    } @else if (reviewRole()) {
+      <!-- DLV-971 (owner, 2026-11-06): staff write review items here; the tips sit inside the review card. -->
+      <section class="panel submit-panel" aria-label="Write Review">
+        <app-admin-reviews section="submit" />
+      </section>
+      <!-- A support request is the exception for staff, so it folds away under the review card. -->
+      <button
+        type="button"
+        class="request-fold"
+        [attr.aria-expanded]="requestOpen()"
+        aria-controls="request-panel"
+        (click)="toggleRequest()"
+      >
+        <span class="fold-text"><b>Not a review item?</b> Send a request and get a reply by email.</span>
+        <span class="fold-kinds" aria-hidden="true">
+          <span class="fold-chip">🐞 Report a problem</span>
+          <span class="fold-chip">💡 Share feedback</span>
+          <span class="fold-chip">❓ Ask a question</span>
+        </span>
+        <span class="fold-chevron" aria-hidden="true"></span>
+      </button>
+      @if (requestOpen()) {
+        <section id="request-panel" class="panel form-panel" aria-labelledby="contact-heading">
+          <h2 id="contact-heading">Need a reply from us?</h2>
+          <p class="card-lede">
+            A broken page, an idea, or a question. We answer by email and every request gets a
+            reference.
+          </p>
+          <app-support-request-form />
         </section>
       }
+    } @else {
+      <!-- DLV-971 (owner, 2026-11-06): a learner gets one card: the tips, then the request form. -->
       <section class="panel form-panel" aria-labelledby="contact-heading">
-        <h2 id="contact-heading"><span aria-hidden="true">✉️</span> Contact support</h2>
+        <h2 id="contact-heading">Need a reply from us?</h2>
+        <p class="card-lede">
+          A broken page, an idea, or a question. We answer by email and every request gets a
+          reference.
+        </p>
+        <app-report-tips />
         <app-support-request-form />
       </section>
-      <aside class="tips" aria-labelledby="tips-heading">
-        <h2 id="tips-heading"><span aria-hidden="true">📝</span> A helpful report</h2>
-        <ol>
-          <li>
-            <span class="tip-icon" aria-hidden="true">👣</span>
-            <span><strong>Steps</strong> you took, in order.</span>
-          </li>
-          <li>
-            <span class="tip-icon" aria-hidden="true">🎯</span>
-            <span><strong>What you expected</strong> and what happened instead.</span>
-          </li>
-          <li>
-            <span class="tip-icon" aria-hidden="true">🔗</span>
-            <span><strong>The page address</strong>, such as /learn/core-java.</span>
-          </li>
-          <li>
-            <span class="tip-icon" aria-hidden="true">🖼️</span>
-            <span><strong>A screenshot</strong> when the screen looks wrong.</span>
-          </li>
-        </ol>
-        @if (reviewRole() && view() === 'contact') {
-          <p class="tips-note">
-            <span aria-hidden="true">🧪</span> Your submitted items and where each one stands are under
-            <button type="button" class="link-button" (click)="show('reviews')">
-              Team Reviews
-            </button>.
-          </p>
-        }
-      </aside>
     }
   </div>
 </main>
