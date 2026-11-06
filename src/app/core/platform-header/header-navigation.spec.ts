@@ -52,7 +52,9 @@ describe('Header curriculum navigation', () => {
     const panel = root.querySelector('#navigation-learn') as HTMLElement;
     expect(learn.getAttribute('aria-expanded')).toBe('true');
     expect(panel.querySelector('.panel-tagline')?.textContent).toContain('AI');
-    expect(panel.querySelector('.panel-close')).not.toBeNull();
+    // No Close button (owner, 2026-11-06): Escape, a click outside or the path button itself closes the panel.
+    expect(panel.querySelector('.panel-close')).toBeNull();
+    expect(panel.querySelector('button')).toBeNull();
     expect(panel.querySelector('.panel-explore')).toBeNull();
     expect(panel.textContent).not.toContain('temporarily unavailable');
     expect(panel.textContent).not.toContain('Loading courses');
@@ -250,10 +252,8 @@ describe('Header curriculum navigation', () => {
     expect(links[1].hasAttribute('aria-current')).toBe(false);
     expect(panel.textContent).toContain('More to explore');
     expect(panel.getAttribute('data-group-count')).toBe('2');
-    const close = panel.querySelector('.panel-close') as HTMLButtonElement;
-    expect(close.textContent?.replace(/\s+/g, ' ').trim()).toBe('× Close');
-    expect(close.querySelector('span')?.getAttribute('aria-hidden')).toBe('true');
-    close.click();
+    expect(panel.querySelector('.panel-close')).toBeNull();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     fixture.detectChanges();
     expect(document.activeElement).toBe(button('Browse Learn'));
     expect(fixture.nativeElement.querySelector('.navigation-panel')).toBeNull();
@@ -367,7 +367,7 @@ describe('Header hover and touch behavior', () => {
     expect(navigate).not.toHaveBeenCalled();
     fixture.destroy();
   });
-  it.each(['learn', 'grow', 'blaze'] as const)('shows the %s summary between Explore and Close as plain text', (path) => {
+  it.each(['learn', 'grow', 'blaze'] as const)('shows the %s summary after Explore as plain text, with no Close button', (path) => {
     const { fixture, http } = setup();
     expand(fixture.nativeElement.querySelector('#browse-' + path));
     http.expectOne('/content/' + path + '/navigation.json').flush({ courses: [] });
@@ -376,8 +376,9 @@ describe('Header hover and touch behavior', () => {
     const tagline = heading.querySelector('.panel-tagline') as HTMLElement;
     const kids = [...heading.children];
     expect(kids.indexOf(tagline)).toBe(1);
+    expect(kids.length).toBe(2);
     expect(kids[0].classList).toContain('panel-explore');
-    expect(kids[2].classList).toContain('panel-close');
+    expect(heading.querySelector('.panel-close')).toBeNull();
     const t = PATH_TAGLINES[path];
     expect(tagline.querySelector('.panel-tagline-head')?.textContent).toBe(t.headline);
     const ai = tagline.querySelector('.panel-tagline-ai') as HTMLElement;

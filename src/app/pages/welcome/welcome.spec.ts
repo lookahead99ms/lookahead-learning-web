@@ -7,6 +7,7 @@ import { ContentService } from '../../content/content.service';
 import { DevSession } from '../../core/dev-session-notice/dev-session';
 import { PageSidebarContext } from '../../core/page-sidebars/page-sidebar-context';
 import { WelcomePage } from './welcome';
+import { StudyPlanAccount } from '../study-plan/study-plan-account';
 
 function render(query: Record<string, string>) {
   TestBed.configureTestingModule({
@@ -32,9 +33,22 @@ describe('WelcomePage', () => {
     const notice = root.querySelector('aside.access-pending');
     expect(notice?.getAttribute('role')).toBe('status');
     expect(notice?.querySelector('h2')?.textContent?.trim()).toBe('Your sign-in worked');
-    expect(notice?.querySelector('p')?.textContent?.trim()).toBe(
-      'The owner has to approve your access before you can use Look Ahead. Sign in again once you hear back.',
-    );
+    // Two rows of three (owner, 2026-11-06): the steps of the way in, then what happens next with marks, no numbers.
+    const steps = [...notice!.querySelectorAll('.pending-steps li')];
+    expect(steps.map((step) => [...step.querySelectorAll('span')].map((part) => part.textContent?.trim()).join(' ').trim())).toEqual(['✓ Create your account', '✓ Confirm your email', 'Owner approval']);
+    expect(steps.map((step) => step.className)).toEqual(['done', 'done', 'current']);
+    expect(steps[2].getAttribute('aria-current')).toBe('step');
+    const points = [...notice!.querySelectorAll('.pending-points li')];
+    expect(points.map((point) => point.querySelector('strong')?.textContent)).toEqual([
+      'The owner approves each person.',
+      'Sign in again once you hear back.',
+      'Code or release work? We ask for your GitHub account.',
+    ]);
+    expect(points.every((point) => point.querySelector('.point-mark svg') !== null)).toBe(true);
+    expect(notice?.textContent).not.toMatch(/\b[123]\b/);
+    expect(points[0].textContent).toContain('Nothing opens until then.');
+    expect(points[0].textContent).not.toContain('DEV');
+    expect(points[1].textContent).toContain('lands you in Look Ahead.');
     const main = root.querySelector('main#main-content.welcome-page');
     expect([...(main?.children ?? [])].map((child) => child.tagName.toLowerCase())).toEqual(['aside', 'section', 'footer']);
     expect(main?.querySelector('section.brand-story.home-essence app-wordmark-key')).not.toBeNull();
@@ -43,6 +57,18 @@ describe('WelcomePage', () => {
     expect(story.componentInstance.autoplay()).toBe(true);
     expect(root.querySelector('.welcome-footer p')?.textContent?.trim()).toBe('Learn. Grow. Blaze.');
     expect(root.querySelectorAll('.welcome-footer .footer-statements > *')).toHaveLength(2);
+  });
+
+  it('greets by first name once the account is known, and names DEV in the points on DEV (owner, 2026-11-06)', () => {
+    const fixture = render({ access: 'pending' });
+    const root: HTMLElement = fixture.nativeElement;
+    TestBed.inject(StudyPlanAccount).account.set({ accountId: 'a1', username: 'mohiddin', displayName: 'Mohiddin Shaik', topicGrants: [] });
+    TestBed.inject(DevSession).gated.set(true);
+    fixture.detectChanges();
+    expect(root.querySelector('aside.access-pending h2')?.textContent?.trim()).toBe('Mohiddin, your sign-in worked');
+    const points = [...root.querySelectorAll('.pending-points li')];
+    expect(points[0].textContent).toContain('Look Ahead DEV is our internal preview for invited members.');
+    expect(points[1].textContent).toContain('lands you in Look Ahead DEV.');
   });
 
   it('says plainly when a page is not open to the account, above the Essence, instead of opening the Study Plan', () => {
@@ -77,16 +103,16 @@ describe('WelcomePage', () => {
       fixture.detectChanges();
       const notice: HTMLElement = fixture.nativeElement.querySelector('aside.access-pending');
       expect(notice.querySelector('h2')?.textContent?.trim()).toBe('Your sign-in worked');
-      expect(notice.querySelector('p')?.textContent?.trim()).toBe(
-        'This is Look Ahead DEV, our internal preview for invited members. The owner approves each person before DEV opens. Sign in again once you hear back.',
-      );
+      const points = [...notice.querySelectorAll('.pending-points li')].map((point) => point.textContent?.replace(/\s+/g, ' ').trim());
+      expect(points[0]).toBe('The owner approves each person. Look Ahead DEV is our internal preview for invited members. Nothing opens until then.');
+      expect(points[1]).toBe('Sign in again once you hear back. Your account is ready; the next sign-in lands you in Look Ahead DEV.');
     }
   });
 
   it('tells a waiting person that staff are asked for GitHub once admitted, with no form before sign-in', () => {
     const root: HTMLElement = render({ access: 'pending' }).nativeElement;
-    expect(root.querySelector('aside.access-pending .github-hint')?.textContent).toBe(
-      "If your work involves our code or release workflows, you'll be asked for your GitHub account once you're admitted.",
+    expect(root.querySelector('aside.access-pending .pending-points li:last-child')?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+      'Code or release work? We ask for your GitHub account. A short dialog asks once you are admitted. You can also add it later under Profiles and links in your account.',
     );
     expect(root.querySelector('app-github-access-card, input')).toBeNull();
   });

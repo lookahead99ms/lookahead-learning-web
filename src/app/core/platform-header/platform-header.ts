@@ -990,10 +990,15 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
   protected beforeAdmission(): boolean {
     return onGatePage(this.router.url) && this.devSession.outsideGate();
   }
-  /** Pages without the header's Sign in: the sign-in pages themselves, and /welcome, where a person waits for approval (DLV-969). */
+  /**
+   * Pages without the header's Sign in: the sign-in and sign-up pages with every one of their steps (choose, forgot,
+   * reset, new password, code, confirm your email), and /welcome, where a person waits for approval (DLV-969).
+   */
   protected onAuthenticationPage(): boolean {
-    return ['/sign-in', '/sign-in/choose', '/sign-up', '/welcome'].includes(
-      this.router.url.split(/[?#]/, 1)[0],
+    const route = this.router.url.split(/[?#]/, 1)[0];
+    return (
+      route === '/welcome' ||
+      ['/sign-in', '/sign-up'].some((page) => route === page || route.startsWith(page + '/'))
     );
   }
   protected accountReturn(): string {

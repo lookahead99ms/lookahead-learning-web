@@ -516,8 +516,12 @@ describe('Landing', () => {
     const root: HTMLElement = fixture.nativeElement;
     const essence = root.querySelector('.home-essence');
     expect(
-      [...(essence?.children ?? [])].map((child) => child.tagName.toLowerCase()).filter((tag) => tag.startsWith('app-')),
+      [...(essence?.querySelectorAll('app-platform-brand, app-wordmark-key, app-essence-steps') ?? [])].map((child) => child.tagName.toLowerCase()),
     ).toEqual(['app-platform-brand', 'app-wordmark-key', 'app-essence-steps']);
+    // The wordmark, steps and sentence play inside the stage, which is what pages scale to fit a screen (owner, 2026-11-06).
+    expect(essence?.querySelector('.essence-stage app-wordmark-key')).not.toBeNull();
+    expect(essence?.querySelector('.essence-stage app-essence-steps')).not.toBeNull();
+    expect(essence?.querySelector('.essence-stage .essence-sentence')).not.toBeNull();
     expect(essence?.querySelector('app-platform-brand.essence-corner-mark')?.getAttribute('aria-hidden')).toBe('true');
     expect(essence?.querySelector('app-platform-brand-illustration')).toBeNull();
     expect(essence?.querySelector('.brand-story-copy')).toBeNull();

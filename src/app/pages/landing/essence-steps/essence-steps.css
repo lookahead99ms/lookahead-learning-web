@@ -13,7 +13,11 @@
   --top-label: 64px;
   display: block;
   width: 100%;
+  /* The steps' own width (owner, 2026-11-06): as wide as the homepage card gives them, never wider, so when the card
+     is zoomed down to fit a screen they shrink with the wordmark instead of stretching across the card. */
+  max-width: 1136px;
   margin-top: 8px;
+  margin-inline: auto;
   container-type: inline-size;
   font-family: 'Avenir Next', 'Segoe UI', system-ui, sans-serif;
 }

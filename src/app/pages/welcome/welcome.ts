@@ -8,6 +8,7 @@ import { PageSidebarContextDirective, PageSidebarContextValue } from '../../core
 import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { LearningPrompt } from '../../core/platform-signature/learning-prompt';
 import { ReasoningPrompt } from '../../core/platform-signature/reasoning-prompt';
+import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import { EssenceStory } from '../landing/essence-story/essence-story';
 
 /**
@@ -32,6 +33,15 @@ export class WelcomePage {
   private readonly devSession = inject(DevSession);
   /** DEV behind the gate (admitted or still waiting): say plainly that this is the internal preview (user, 2026-11-02). */
   protected readonly dev = computed(() => this.devSession.status() !== null || this.devSession.gated());
+  /**
+   * Owner, 2026-11-06: the greeting carries the person's first name when the account is known (the header's check
+   * fills the store; a waiting account is known only once the Gateway reports it), otherwise it stays plain.
+   */
+  private readonly accounts = inject(StudyPlanAccount);
+  protected readonly greeting = computed(() => {
+    const first = this.accounts.account()?.displayName.trim().split(/\s+/)[0];
+    return first ? `${first}, your sign-in worked` : 'Your sign-in worked';
+  });
   /** No section navigation or page statements beside the card. */
   protected readonly sidebarContext: PageSidebarContextValue = { excluded: true };
 
