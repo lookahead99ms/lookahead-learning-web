@@ -117,8 +117,84 @@ button:focus-visible {
 }
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
+}
+/* DLV-971 (owner, 2026-11-06): the type as a row of cards, the same control as the ticket kinds on Support. */
+.type-picker {
+  margin: 0 0 16px;
+  padding: 0;
+  border: 0;
+}
+.type-picker legend {
+  margin-bottom: 10px;
+  color: var(--text-strong);
+  font-size: 14px;
+  font-weight: 700;
+}
+.type-options {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.type-option {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 10px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease;
+}
+.type-option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.type-icon {
+  display: grid;
+  grid-row: span 2;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--surface-muted);
+  font-size: 1.2rem;
+}
+.type-option strong {
+  font-size: 14px;
+}
+.type-option small {
+  color: var(--text-subtle);
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+.type-option:hover {
+  border-color: var(--accent-strong);
+}
+.type-option.selected {
+  border-color: var(--accent-strong);
+  background: color-mix(in srgb, var(--accent-strong) 8%, var(--surface));
+  box-shadow: inset 0 0 0 1px var(--accent-strong);
+}
+.type-option.selected .type-icon {
+  background: var(--surface);
+}
+.type-option:has(input:focus-visible) {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 2px;
+}
+@media (max-width: 900px) {
+  .type-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 fieldset {
   margin: 0;
@@ -347,6 +423,9 @@ button.danger {
   align-items: center;
   gap: 4px 8px;
   min-width: 0;
+}
+.kind-badge.ticket {
+  background: color-mix(in srgb, var(--accent-strong) 16%, transparent);
 }
 .kind-badge {
   display: inline-block;

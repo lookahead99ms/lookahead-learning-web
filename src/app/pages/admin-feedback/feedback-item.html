@@ -1,0 +1,151 @@
+@if (state() === 'loading') {
+  <p class="state" role="status">Loading the item…</p>
+} @else if (state() === 'missing') {
+  <section class="state" role="alert">
+    <h2>No such item</h2>
+    <p>There is no ticket or feedback with this key, or it is not yours to see.</p>
+    <a class="secondary" routerLink="/admin/feedback">Back to Support tickets and feedback</a>
+  </section>
+} @else if (state() === 'error') {
+  <section class="state" role="alert">
+    <h2>Tickets and feedback are unavailable</h2>
+    <p>The item could not be loaded. Nothing was lost; try again.</p>
+    <button type="button" class="secondary" (click)="load()">Try again</button>
+  </section>
+} @else if (item(); as item) {
+  <div class="item-columns">
+    <div class="item-main" data-scroll-lock-allow>
+      <div class="item-head">
+        <span class="status-pill" [attr.data-tone]="statusTone(item.status)">{{ statusLabel(item) }}</span>
+        <span class="hint">{{ isRequest(item) ? 'Learner support ticket' : 'Feedback' }}</span>
+      </div>
+      <h2 class="item-title">{{ item.title }}</h2>
+      <p class="item-meta">
+        {{ item.reviewerName }} · {{ typeLabel(item) }} · {{ item.page }}
+        @if (item.pageUrl) {
+          · <code>{{ item.pageUrl }}</code>
+        }
+        · created {{ momentLabel(item.createdAt) }}
+      </p>
+      <h3>Description</h3>
+      <p class="description">{{ item.details }}</p>
+      @if (item.attachments.length) {
+        <h3>Screenshots</h3>
+        <ul class="thumbnails" [attr.aria-label]="'Images for ' + item.title">
+          @for (attachment of item.attachments; track attachment.id) {
+            <li>
+              @if (attachmentUrls()[attachment.id]; as url) {
+                <button type="button" class="thumbnail-button" (click)="openImage(attachment, imageDialog)">
+                  <img [src]="url" alt="" />
+                  <span class="visually-hidden">Open image {{ attachment.name }}</span>
+                </button>
+              } @else {
+                <span class="thumbnail-placeholder" aria-hidden="true"></span>
+              }
+              <span>{{ attachment.name }} · {{ size(attachment.size) }}</span>
+            </li>
+          }
+        </ul>
+      }
+      <h3>History</h3>
+      <ol class="history">
+        @for (row of history(); track $index) {
+          <li>
+            <span class="dot" aria-hidden="true"></span>
+            <span
+              ><b>{{ row.what }}</b>
+              @if (row.who) {
+                by {{ row.who }}
+              }
+              · {{ row.when }}
+              @if (row.extra) {
+                · {{ row.extra }}
+              }
+            </span>
+          </li>
+        }
+      </ol>
+      @if (canTriage()) {
+        <form class="reply" (ngSubmit)="save()">
+          <h3>{{ isRequest(item) ? 'Note to the learner' : 'Owner’s note' }}</h3>
+          <textarea name="note" rows="3" maxlength="2000" [(ngModel)]="note"></textarea>
+          <div class="actions">
+            <button type="submit" class="primary" [disabled]="saving()">{{ saving() ? 'Saving…' : 'Save' }}</button>
+            <span class="hint">Sets the status chosen on the right{{ isRequest(item) ? ' and sends the note by email' : '' }}.</span>
+            <span role="status" class="message">{{ message() }}</span>
+          </div>
+        </form>
+      } @else if (item.ownerNote) {
+        <p class="owner-note"><strong>Owner’s note:</strong> {{ item.ownerNote }}</p>
+      }
+      @if (canEdit()) {
+        <div class="actions own-actions">
+          <button type="button" class="secondary" (click)="edit()">Edit</button>
+          <button type="button" class="secondary danger" (click)="remove()">Delete</button>
+          <span class="hint">Your own item; you can change or remove it until the owner reviews it. Edit opens Support with the item loaded.</span>
+          <span role="status" class="message">{{ message() }}</span>
+        </div>
+      }
+    </div>
+    <aside class="item-side" data-scroll-lock-allow aria-label="Details">
+      <section class="side-box">
+        <h3 class="side-heading">Status</h3>
+        @if (canTriage()) {
+          <select name="status" aria-label="Status" [(ngModel)]="status">
+            @for (option of statuses; track option.id) {
+              <option [value]="option.id">{{ isRequest(item) && option.id === 'declined' ? 'Closed' : option.label }}</option>
+            }
+          </select>
+        } @else {
+          <span class="status-pill" [attr.data-tone]="statusTone(item.status)">{{ statusLabel(item) }}</span>
+          @if (!isRequest(item)) {
+            <p class="hint lock">Only the owner sets the status of a feedback item.</p>
+          }
+        }
+        <dl class="details">
+          <dt>Kind</dt>
+          <dd>{{ isRequest(item) ? 'Support ticket' : 'Feedback' }}</dd>
+          <dt>Type</dt>
+          <dd>{{ typeLabel(item) }}</dd>
+          <dt>From</dt>
+          <dd>{{ item.reviewerName }}</dd>
+          <dt>Page</dt>
+          <dd>{{ item.page }}</dd>
+          @if (item.reference) {
+            <dt>Reference</dt>
+            <dd><code>{{ item.reference }}</code></dd>
+          }
+          <dt>Created</dt>
+          <dd>{{ momentLabel(item.createdAt) }}</dd>
+          <dt>Updated</dt>
+          <dd>{{ momentLabel(item.updatedAt) }}</dd>
+          @if (isRequest(item)) {
+            <dt>Auto-close</dt>
+            <dd>7 days after the last update</dd>
+          }
+        </dl>
+      </section>
+      <section class="side-box">
+        <h3 class="side-heading">Delivery Plan</h3>
+        @if (item.ticketId) {
+          <a class="ticket-link" routerLink="/delivery-plan" [fragment]="item.ticketId">🗺️ {{ ticketPill(item) }}</a>
+          <p class="hint">Opens the ticket on the Delivery Plan.</p>
+        } @else {
+          <p class="hint">Not a ticket yet.</p>
+          @if (canPromote()) {
+            <button type="button" class="secondary" [disabled]="promoting()" (click)="promote()">
+              {{ promoting() ? 'Promoting…' : '🗺️ Promote to ticket' }}
+            </button>
+          }
+        }
+        <span role="status" class="message">{{ promoteMessage() }}</span>
+      </section>
+    </aside>
+  </div>
+}
+<dialog appScrollLock #imageDialog class="image-dialog" aria-label="Image" (close)="viewing.set(null)">
+  @if (viewing(); as image) {
+    <img [src]="image.url" [alt]="image.name" />
+    <button type="button" class="secondary" (click)="imageDialog.close()">Close</button>
+  }
+</dialog>

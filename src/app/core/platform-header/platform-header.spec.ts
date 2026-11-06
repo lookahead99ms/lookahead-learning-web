@@ -526,6 +526,7 @@ describe('PlatformHeader account disclosure', () => {
     ).toEqual([
       ['Documentation', '/admin/docs'],
       ['Previews', '/admin/previews'],
+      ['Support tickets and feedback', '/admin/feedback'],
       ['Delivery Plan', '/delivery-plan'],
       ['People and access', '/admin/access'],
     ]);

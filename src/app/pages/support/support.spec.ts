@@ -1,8 +1,8 @@
-import { Component, signal } from '@angular/core';
+import { Component, input, output, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter, Router } from '@angular/router';
+import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import { SupportPage } from './support';
+import { SupportPage, supportKinds } from './support';
 import { SupportRequestForm } from './support-request-form';
 import { AdminReviewsPage } from '../admin-reviews/admin-reviews';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
@@ -18,19 +18,27 @@ import { ReviewEditIntent } from '../admin-reviews/review-edit-intent';
 
 @Component({ selector: 'app-platform-header', template: '' })
 class HeaderStub {}
-@Component({ selector: 'app-support-request-form', template: '<p>contact form</p>' })
-class FormStub {}
-@Component({ selector: 'app-admin-reviews', template: '<p>review items</p>' })
-class ReviewsStub {}
+@Component({ selector: 'app-support-request-form', template: '<p>ticket form {{ kind() }}</p>' })
+class FormStub {
+  readonly kind = input<string | null>(null);
+  readonly compact = input(false);
+}
+@Component({ selector: 'app-admin-reviews', template: '<p>feedback form {{ category() }}</p>' })
+class ReviewsStub {
+  readonly section = input<string>('all');
+  readonly category = input<string | null>(null);
+  readonly compact = input(false);
+  readonly editing = output<string | null>();
+}
 
-async function open(url: string, viewer: () => Promise<PlatformReviewViewer>) {
+async function open(url: string, viewer: () => Promise<PlatformReviewViewer>, prepare?: () => void) {
   TestBed.configureTestingModule({
     providers: [
       provideRouter([{ path: 'support', component: SupportPage }]),
       {
         provide: StudyPlanAccount,
         useValue: {
-          account: signal({ accountId: 'a' }),
+          account: signal({ accountId: 'a', username: 'me@example.test' }),
           sessionExpired: () => false,
           initialize: async () => {},
         },
@@ -42,13 +50,19 @@ async function open(url: string, viewer: () => Promise<PlatformReviewViewer>) {
     remove: { imports: [PlatformHeader, SupportRequestForm, AdminReviewsPage] },
     add: { imports: [HeaderStub, FormStub, ReviewsStub] },
   });
+  prepare?.();
   const harness = await RouterTestingHarness.create();
   await harness.navigateByUrl(url, SupportPage);
-  // Let the account and review-access checks settle.
-  await new Promise((resolve) => setTimeout(resolve));
-  await harness.fixture.whenStable();
-  harness.detectChanges();
+  await settle(harness);
   return harness;
+}
+
+async function settle(harness: RouterTestingHarness) {
+  for (let pass = 0; pass < 3; pass++) {
+    await new Promise((resolve) => setTimeout(resolve));
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+  }
 }
 
 const reviewer = async (): Promise<PlatformReviewViewer> => ({
@@ -57,138 +71,119 @@ const reviewer = async (): Promise<PlatformReviewViewer> => ({
   displayName: 'Reviewer',
 });
 
-const text = (node: Element | null | undefined) => node?.textContent?.replace(/\s+/g, ' ').trim();
-const lede =
-  'A broken page, an idea, or a question. We answer by email and every request gets a reference.';
+const text = (node: Node | null | undefined) => node?.textContent?.replace(/\s+/g, ' ').trim();
+const kindLabels = (root: HTMLElement) => [...root.querySelectorAll('.kind-option strong')].map(text);
+const kindHints = (root: HTMLElement) => [...root.querySelectorAll('.kind-option small')].map(text);
+const selectedKind = (root: HTMLElement) => text(root.querySelector('.kind-option.selected strong'));
+async function pick(harness: RouterTestingHarness, label: string) {
+  const root = harness.routeNativeElement!;
+  const card = [...root.querySelectorAll<HTMLLabelElement>('.kind-option')].find((option) => text(option.querySelector('strong')) === label)!;
+  const input = card.querySelector('input') as HTMLInputElement;
+  input.click();
+  input.dispatchEvent(new Event('change'));
+  await settle(harness);
+}
 
-describe('Support and feedback page', () => {
-  it('gives an account without review access one card: the tips, then the request form, and no aside', async () => {
-    const harness = await open('/support?view=reviews', async () => {
+describe('Support and feedback page (one card, owner 2026-11-06)', () => {
+  it('maps the five kinds to the two paths without touching the API values', () => {
+    expect(supportKinds.map((kind) => [kind.id, kind.path, kind.value])).toEqual([
+      ['problem', 'ticket', 'problem'],
+      ['question', 'ticket', 'question'],
+      ['idea', 'ticket', 'feedback'],
+      ['change', 'feedback', 'change'],
+      ['content', 'feedback', 'content'],
+    ]);
+  });
+
+  it('gives a learner one card: the heading, the tips, three ticket kinds and the ticket form, and never says "review"', async () => {
+    const harness = await open('/support', async () => {
       throw new PlatformReviewError('forbidden');
     });
     const root = harness.routeNativeElement!;
     expect(root.querySelector('[role="tablist"]')).toBeNull();
-    expect(root.textContent).not.toContain('review items');
+    expect(root.querySelector('.request-fold')).toBeNull();
+    // Two cards and no hero: the intro (headings, facts, tips) and the form (What is it?, the kinds, the fields).
     const cards = [...root.querySelectorAll('.support-body > *')];
-    expect(cards).toHaveLength(1);
-    const card = cards[0];
-    expect(card.querySelector('h2')?.id).toBe('contact-heading');
-    expect(text(card.querySelector('h2'))).toBe('Need a reply from us?');
-    expect(text(card.querySelector('.card-lede'))).toBe(lede);
-    expect(text(card.querySelector('app-report-tips .tips-label'))).toBe('A helpful report');
-    expect(card.querySelectorAll('app-report-tips li')).toHaveLength(4);
-    // The tips come before the request form (whose first control is the kind picker).
-    const tips = card.querySelector('app-report-tips')!;
-    const form = card.querySelector('app-support-request-form')!;
-    expect(tips.compareDocumentPosition(form) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(root.textContent).toContain('contact form');
-    expect(root.querySelector('aside')).toBeNull();
-    expect(root.querySelector('.tips')).toBeNull();
-    expect(root.querySelector('.request-fold')).toBeNull();
-  });
-
-  it('gives a learner or test account the service answers with role "user" the same single card (DLV-971)', async () => {
-    const harness = await open('/support?view=reviews', async () => ({ ...(await reviewer()), role: 'user' }));
-    const root = harness.routeNativeElement!;
+    expect(cards.map((card) => card.className)).toEqual(['panel intro-panel', 'panel form-panel']);
+    expect(root.querySelector('.support-hero')).toBeNull();
     expect(root.querySelector('[role="tablist"]')).toBeNull();
-    expect(root.querySelectorAll('.support-body > *')).toHaveLength(1);
-    expect(text(root.querySelector('#contact-heading'))).toBe('Need a reply from us?');
-    expect(root.querySelector('app-report-tips')).not.toBeNull();
-    expect(root.textContent).toContain('contact form');
-    expect(root.textContent).not.toContain('review items');
-    expect(root.querySelector('aside')).toBeNull();
-  });
-
-  it('gives reviewers Write Review (the review card, then a folded request) and Team Reviews, and keeps the tab in the address', async () => {
-    const harness = await open('/support', reviewer);
-    const root = harness.routeNativeElement!;
-    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
-    expect(tabs.map(text)).toEqual(['📝 Write Review', '🧪 Team Reviews Reviewer']);
-    expect(tabs[0].getAttribute('aria-selected')).toBe('true');
-    // DLV-971: the review card comes first and full width; the support request is folded under it.
-    const children = [...root.querySelectorAll('.support-body > *')];
-    expect(children.map((child) => child.tagName.toLowerCase() + '.' + child.className.split(' ')[0])).toEqual([
-      'section.panel',
-      'button.request-fold',
+    const [intro, form] = cards;
+    expect(intro.getAttribute('aria-labelledby')).toBe('contact-heading');
+    expect(form.getAttribute('aria-labelledby')).toBe('kind-heading');
+    // A learner gets the Support heading alone, at full width, as plain text (nothing in the intro card is a control).
+    const headings = [...intro.querySelectorAll('.intro-heading-block')];
+    expect(headings).toHaveLength(1);
+    expect(intro.querySelector('.intro-headings')?.classList.contains('alone')).toBe(true);
+    expect(text(headings[0].querySelector('.eyebrow'))).toBe('Support');
+    expect(text(headings[0].querySelector('h2'))).toBe('Tell us what happened.');
+    expect(text(headings[0].querySelector('.intro-text'))).toBe('A broken page, a question, or an idea. We answer by email.');
+    expect(intro.querySelectorAll('button, input, [aria-pressed]')).toHaveLength(0);
+    expect([...intro.querySelectorAll('.hero-facts li')].map(text)).toEqual([
+      '✉️ We reply to the email you give',
+      '🧾 Every item gets a reference',
+      '🔒 Never include passwords',
     ]);
-    expect(children[0].getAttribute('aria-label')).toBe('Write Review');
-    expect(root.querySelector('.submit-panel app-admin-reviews')?.getAttribute('section')).toBe('submit');
-    expect(root.querySelector('aside')).toBeNull();
-    expect(root.querySelector('.tips-note')).toBeNull();
-    expect(root.querySelector('app-report-tips')).toBeNull(); // the stubbed review card carries them
-    const fold = root.querySelector<HTMLButtonElement>('.request-fold')!;
-    expect(fold.getAttribute('type')).toBe('button');
-    expect(fold.getAttribute('aria-expanded')).toBe('false');
-    expect(text(fold.querySelector('.fold-text'))).toBe('Not a review item? Send a request and get a reply by email.');
-    expect(text(fold.querySelector('.fold-text b'))).toBe('Not a review item?');
-    expect([...fold.querySelectorAll('.fold-chip')].map(text)).toEqual([
-      '🐞 Report a problem',
-      '💡 Share feedback',
-      '❓ Ask a question',
-    ]);
-    expect(fold.querySelector('.fold-chevron')).not.toBeNull();
-    expect(root.querySelector('#request-panel')).toBeNull();
-    expect(root.textContent).not.toContain('contact form');
-    fold.click();
-    harness.detectChanges();
-    expect(fold.getAttribute('aria-expanded')).toBe('true');
-    const request = root.querySelector('#request-panel')!;
-    expect(request.getAttribute('aria-labelledby')).toBe('contact-heading');
-    expect(text(request.querySelector('h2'))).toBe('Need a reply from us?');
-    expect(text(request.querySelector('.card-lede'))).toBe(lede);
-    expect(request.querySelector('app-report-tips')).toBeNull();
-    expect(request.querySelector('app-support-request-form')).not.toBeNull();
-    expect(root.textContent).toContain('contact form');
-    fold.click();
-    harness.detectChanges();
-    expect(fold.getAttribute('aria-expanded')).toBe('false');
-    expect(root.querySelector('#request-panel')).toBeNull();
-    tabs[1].click();
-    await harness.fixture.whenStable();
-    harness.detectChanges();
-    expect(TestBed.inject(Router).url).toBe('/support?view=reviews');
-    expect(tabs[1].getAttribute('aria-selected')).toBe('true');
-    expect(root.querySelector('[role="tabpanel"]')?.getAttribute('aria-labelledby')).toBe(
-      'support-tab-reviews',
-    );
-    expect(root.textContent).toContain('review items');
-    expect(root.querySelector('[aria-label="Team Reviews"] app-admin-reviews')?.getAttribute('section')).toBe('submitted');
-    expect(root.textContent).not.toContain('contact form');
+    expect(text(intro.querySelector('app-report-tips .tips-label'))).toBe('A helpful report');
+    const order = ['.intro-headings', '.hero-facts', 'app-report-tips'].map((selector) => intro.querySelector(selector)!);
+    for (let index = 1; index < order.length; index++)
+      expect(order[index - 1].compareDocumentPosition(order[index]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(text(form.querySelector('.kind-heading'))).toBe('What is it?');
+    expect(form.querySelector('.kind-picker')!.compareDocumentPosition(form.querySelector('app-support-request-form')!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(kindLabels(root)).toEqual(['Report a problem', 'Ask a question', 'Share an idea']);
+    expect(kindHints(root)).toEqual(['Something broke or looks wrong', 'Not sure how something works', 'Something to add or improve']);
+    expect(selectedKind(root)).toBe('Report a problem');
+    expect(root.querySelector('.kind-options')?.classList.contains('five')).toBe(false);
+    expect(root.textContent).toContain('ticket form problem');
+    expect(root.textContent).not.toContain('feedback form');
+    expect(root.textContent).not.toMatch(/\breview/i);
+    await pick(harness, 'Share an idea');
+    expect(selectedKind(root)).toBe('Share an idea');
+    expect(root.textContent).toContain('ticket form feedback');
+    await pick(harness, 'Ask a question');
+    expect(root.textContent).toContain('ticket form question');
   });
 
-  it('opens the reviews tab directly from the former /admin/reviews address', async () => {
-    const harness = await open('/support?view=reviews', async () => ({
-      ...(await reviewer()),
-      role: 'owner',
-    }));
+  it('gives a learner or test account the service answers with role "user" the same three kinds (DLV-971)', async () => {
+    const harness = await open('/support', async () => ({ ...(await reviewer()), role: 'user' }));
     const root = harness.routeNativeElement!;
-    expect(root.querySelector('#support-tab-reviews')?.textContent).toContain('Owner');
-    expect(root.textContent).toContain('review items');
-    expect(root.textContent).not.toContain('contact form');
-    expect(root.querySelector('.request-fold')).toBeNull();
+    expect(kindLabels(root)).toHaveLength(3);
+    expect(root.textContent).toContain('ticket form problem');
+    expect(root.textContent).not.toContain('feedback form');
   });
 
-  it('names the role on the Team Reviews badge: Owner, Admin or Reviewer (DLV-971)', async () => {
-    for (const [role, badge] of [
-      ['owner', 'Owner'],
-      ['admin', 'Admin'],
-      ['reviewer', 'Reviewer'],
-    ] as const) {
-      TestBed.resetTestingModule();
-      const harness = await open('/support', async () => ({ ...(await reviewer()), role }));
-      const root = harness.routeNativeElement!;
-      expect(text(root.querySelector('#support-tab-reviews .role-badge'))).toBe(badge);
-      expect(root.querySelector('.submit-panel')).not.toBeNull();
-      expect(root.querySelector('.request-fold')?.getAttribute('aria-expanded')).toBe('false');
-    }
+  it.each(['reviewer', 'admin', 'owner'] as const)('gives staff (%s) five kinds; the last two open the feedback form with their category', async (role) => {
+    const harness = await open('/support', async () => ({ ...(await reviewer()), role }));
+    const root = harness.routeNativeElement!;
+    expect(kindLabels(root)).toEqual(['Report a problem', 'Ask a question', 'Share an idea', 'Change request', 'Content correction']);
+    expect(kindHints(root).slice(3)).toEqual(['Works, but should work differently', 'A lesson, text or example is wrong']);
+    expect(root.querySelector('.kind-options')?.classList.contains('five')).toBe(true);
+    expect(root.textContent).toContain('ticket form problem');
+    // Two headings side by side as plain text; the kinds are the only selectable thing.
+    const headings = [...root.querySelectorAll('.intro-heading-block')];
+    expect(headings.map((block) => text(block.querySelector('h2')))).toEqual(['Tell us what happened.', 'Tell us what should change.']);
+    expect(headings.map((block) => text(block.querySelector('.eyebrow')))).toEqual(['Support', 'Feedback']);
+    expect(text(headings[1].querySelector('.intro-text'))).toBe('A change to how something works, or a lesson that is wrong. The owner sets a status you can follow.');
+    expect(headings[1].classList.contains('feedback')).toBe(true);
+    expect(root.querySelector('.intro-headings')?.classList.contains('alone')).toBe(false);
+    expect(root.querySelector('.intro-panel')!.querySelectorAll('button, input, [aria-pressed]')).toHaveLength(0);
+    await pick(harness, 'Change request');
+    expect(root.textContent).toContain('feedback form');
+    expect(root.textContent).not.toContain('ticket form');
+    const page = harness.fixture.debugElement.query((node) => node.componentInstance instanceof SupportPage).componentInstance as SupportPage;
+    expect(page['feedbackCategory']()).toBe('change');
+    await pick(harness, 'Content correction');
+    expect(page['feedbackCategory']()).toBe('content');
+    await pick(harness, 'Report a problem');
+    expect(root.textContent).toContain('ticket form problem');
+    expect(page['path']()).toBe('ticket');
   });
 
-  it('Edit from Team Reviews opens Write Review with that item in the form (DLV-971)', async () => {
+  it('Edit from Support tickets and feedback lands here with the kind card and the fields loaded, whatever the item\'s older category (DLV-971)', async () => {
     const own: PlatformReviewItem = {
       id: 'a',
       reviewerId: 'r',
       reviewerName: 'Reviewer',
-      category: 'change',
+      category: 'content',
       page: 'Search',
       pageUrl: '/search',
       title: 'Search misses lessons',
@@ -205,10 +200,7 @@ describe('Support and feedback page', () => {
     };
     const client: PlatformReviewClient = {
       viewer: reviewer,
-      list: async () => ({
-        items: [{ ...own, attachmentCount: 0, ownerNote: false }],
-        nextBefore: null,
-      }),
+      list: async () => ({ items: [], nextBefore: null }),
       item: vi.fn(async () => own),
       save: async () => own,
       remove: async () => {},
@@ -223,7 +215,7 @@ describe('Support and feedback page', () => {
         {
           provide: StudyPlanAccount,
           useValue: {
-            account: signal({ accountId: 'a' }),
+            account: signal({ accountId: 'a', username: 'me@example.test' }),
             sessionExpired: () => false,
             initialize: async () => {},
           },
@@ -231,39 +223,40 @@ describe('Support and feedback page', () => {
         { provide: PLATFORM_REVIEW_CLIENT, useValue: client },
       ],
     });
-    // The real review panel on both tabs; only the header and the request form are stubbed.
+    // The real feedback form; only the header and the ticket form are stubbed.
     TestBed.overrideComponent(SupportPage, {
       remove: { imports: [PlatformHeader, SupportRequestForm] },
       add: { imports: [HeaderStub, FormStub] },
     });
+    TestBed.inject(ReviewEditIntent).set('a');
     const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/support?view=reviews', SupportPage);
-    const settle = async () => {
-      for (let pass = 0; pass < 3; pass++) {
-        await new Promise((resolve) => setTimeout(resolve));
-        await harness.fixture.whenStable();
-        harness.detectChanges();
-      }
-    };
-    await settle();
+    await harness.navigateByUrl('/support', SupportPage);
+    await settle(harness);
+    await settle(harness);
     const root = harness.routeNativeElement!;
-    expect(root.querySelector('#support-tab-reviews')?.getAttribute('aria-selected')).toBe('true');
-    expect(root.querySelector('#review-form')).toBeNull();
-    (root.querySelector('.item-summary') as HTMLButtonElement).click();
-    await settle();
-    [...root.querySelectorAll<HTMLButtonElement>('.item-actions button')]
-      .find((button) => button.textContent?.includes('Edit'))!
-      .click();
-    await settle();
-    expect(TestBed.inject(Router).url).toBe('/support');
-    expect(root.querySelector('#support-tab-contact')?.getAttribute('aria-selected')).toBe('true');
-    expect(root.querySelector('.submit-panel #review-form')?.textContent?.trim()).toBe('Edit your review item');
+    expect(selectedKind(root)).toBe('Content correction');
+    expect(root.querySelector<HTMLFieldSetElement>('.kind-picker')?.disabled).toBe(true);
+    expect(root.querySelector('#review-form')?.textContent?.trim()).toBe('Edit your feedback');
+    expect(root.querySelector('.type-picker')).toBeNull();
     expect((root.querySelector('input[name="title"]') as HTMLInputElement).value).toBe('Search misses lessons');
-    expect((root.querySelector('textarea[name="details"]') as HTMLTextAreaElement).value).toBe(
-      'Searching for PKCE shows nothing.',
-    );
-    expect((root.querySelector('select[name="category"]') as HTMLSelectElement).value).toBe('change');
+    expect((root.querySelector('textarea[name="details"]') as HTMLTextAreaElement).value).toBe('Searching for PKCE shows nothing.');
+    expect(root.querySelector('select[name="priority"]')).toBeNull();
     expect(TestBed.inject(ReviewEditIntent).itemId()).toBeNull();
-    expect(root.querySelector('.request-fold')).not.toBeNull();
+    expect(root.querySelector('button[type="submit"]')?.textContent?.trim()).toBe('Save changes');
+    // Cancel editing frees the kind cards again and the Clear button comes back.
+    [...root.querySelectorAll<HTMLButtonElement>('.form-actions button')].find((button) => button.textContent?.includes('Cancel editing'))!.click();
+    await settle(harness);
+    expect(root.querySelector<HTMLFieldSetElement>('.kind-picker')?.disabled).toBe(false);
+    expect(root.querySelector('button[type="submit"]')?.textContent?.trim()).toBe('Send');
+    expect([...root.querySelectorAll('.form-actions button')].map((button) => button.textContent?.trim())).toEqual(['Send', 'Clear']);
+  });
+
+  it('waits for the access check before showing a form when an Edit is pending', async () => {
+    const harness = await open('/support', async () => ({ ...(await reviewer()), role: 'owner' }), () => TestBed.inject(ReviewEditIntent).set('a'));
+    const root = harness.routeNativeElement!;
+    // The stubbed feedback form never takes the intent, so the page keeps the feedback path open on Change request.
+    expect(root.textContent).toContain('feedback form');
+    expect(selectedKind(root)).toBe('Change request');
+    TestBed.inject(ReviewEditIntent).take();
   });
 });

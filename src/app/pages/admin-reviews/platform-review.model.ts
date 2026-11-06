@@ -83,14 +83,14 @@ export function ticketPill(item: TicketLink): string {
   return item.ticketStatus ? `${item.ticketId} · ${item.ticketStatus}` : item.ticketId;
 }
 
-/** The row badge of a learner request: "Learner request · Problem"; empty for a review. */
+/** DLV-971 (owner, 2026-11-06): the kind marker on every row: "Ticket · Problem" for a learner support ticket, "Feedback" for a staff item. */
 export function kindBadge(item: {
   kind?: ReviewKind | null;
   requestType?: RequestType | null;
 }): string {
-  if (!isRequest(item)) return '';
+  if (!isRequest(item)) return 'Feedback';
   const type = item.requestType ? labelOf(requestTypes, item.requestType) : '';
-  return type ? `Learner request · ${type}` : 'Learner request';
+  return type ? `Ticket · ${type}` : 'Ticket';
 }
 
 export const reviewLimits = {

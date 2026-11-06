@@ -33,7 +33,7 @@ export interface DeliveryStage {
  */
 export type DeliveryEnvironment = 'local' | 'dev';
 
-/** The Team Reviews item a ticket was promoted from: a staff review (REV-000001) or a learner request (SUP-000001). */
+/** The Support tickets and feedback item a ticket was promoted from: a staff review (REV-000001) or a learner request (SUP-000001). */
 export interface DeliveryOrigin {
   id: string;
   kind: 'review' | 'request';

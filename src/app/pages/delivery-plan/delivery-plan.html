@@ -526,7 +526,7 @@
           </div>
           @if (item.origin; as origin) {
             <p class="ticket-origin">
-              <a routerLink="/support" [queryParams]="{ view: 'reviews' }" [fragment]="origin.id">
+              <a routerLink="/admin/feedback" [fragment]="origin.id">
                 {{ originLabel(origin) }}
               </a>
             </p>

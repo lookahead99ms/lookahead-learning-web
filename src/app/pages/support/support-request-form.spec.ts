@@ -71,9 +71,98 @@ describe('support request recovery', () => {
   });
 });
 
+describe('support ticket on the one-card Support page (owner, 2026-11-06)', () => {
+  function mount(kind: 'problem' | 'question' | 'feedback' | null, compact: boolean, transport = vi.fn()) {
+    TestBed.configureTestingModule({
+      imports: [SupportRequestForm],
+      providers: [
+        provideRouter([]),
+        { provide: ACCOUNT_FETCH, useValue: transport },
+        { provide: StudyPlanAccount, useValue: { account: () => ({ accountId: 'synthetic-owner', username: 'me@example.test' }), sessionExpired: () => false, apiPath: (path: string) => '/api/v1' + path } },
+      ],
+    });
+    const fixture = TestBed.createComponent(SupportRequestForm);
+    fixture.componentRef.setInput('kind', kind);
+    fixture.componentRef.setInput('compact', compact);
+    fixture.detectChanges();
+    return fixture;
+  }
+  const text = (node: Node | null | undefined) => node?.textContent?.replace(/\s+/g, ' ').trim();
+
+  it('prefills the reply email from an email sign-in name, from a learner test account as name@lookahead.dev, and leaves it empty otherwise', () => {
+    expect(SupportRequestForm.replyEmailFor('me@example.test')).toBe('me@example.test');
+    expect(SupportRequestForm.replyEmailFor('learner05')).toBe('learner05@lookahead.dev');
+    expect(SupportRequestForm.replyEmailFor('learner27')).toBe('learner27@lookahead.dev');
+    expect(SupportRequestForm.replyEmailFor('learner5')).toBe('');
+    expect(SupportRequestForm.replyEmailFor('owner')).toBe('');
+    expect(SupportRequestForm.replyEmailFor('')).toBe('');
+  });
+
+  it('takes the kind from the page, hides its own picker and shows the shared fields with the email prefilled', async () => {
+    const fixture = mount('question', true);
+    await fixture.whenStable();
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    expect(root.querySelector('.type-picker')).toBeNull();
+    expect((fixture.componentInstance as any).type).toBe('question');
+    expect([...root.querySelectorAll('label:not(.file-picker)')].map((label) => text(label.childNodes[0]))).toEqual([
+      'Page',
+      'Page address',
+      'Title',
+      'What you saw and what should change',
+      'Reply email',
+    ]);
+    expect(text(root.querySelector('.file-picker'))).toBe('📎 Add screenshots');
+    expect([...root.querySelectorAll('.field-row > label')].map((label) => text(label.childNodes[0]))).toEqual(['Page', 'Page address']);
+    expect((root.querySelector('select[name="page"]') as HTMLSelectElement).value).toBe('Whole platform');
+    expect((root.querySelector('input[name="email"]') as HTMLInputElement).value).toBe('me@example.test');
+    expect(root.querySelector('textarea[name="message"]')?.getAttribute('maxlength')).toBe('4000');
+    expect(text(root.querySelector('.hint'))).toBe('0 of 4000 characters');
+    expect(root.textContent).toContain('Prefilled from your account; shown for problems, questions and ideas.');
+    expect(root.textContent).toContain('Up to three images, 2 MB each.');
+    expect([...root.querySelectorAll('.form-actions button')].map((button) => text(button))).toEqual(['✉️ Send', 'Clear']);
+    expect(root.textContent).not.toMatch(/\breview/i);
+  });
+
+  it('keeps its own picker, Subject and Message, and the Send ticket button when used on its own', () => {
+    const root = mount(null, false).nativeElement as HTMLElement;
+    expect(root.querySelector('.type-picker')).not.toBeNull();
+    expect(root.querySelector('select[name="page"]')).toBeNull();
+    expect(root.querySelector('textarea[name="message"]')?.getAttribute('maxlength')).toBe('5000');
+    expect([...root.querySelectorAll('.form-actions button')].map((button) => text(button))).toEqual(['✉️ Send ticket']);
+  });
+
+  it('sends the page and its address inside the message only when they were given, and Clear empties the fields but keeps the kind and the email', async () => {
+    const transport = vi
+      .fn()
+      .mockResolvedValueOnce(token())
+      .mockResolvedValueOnce(response({ data: { reference: 'SUP-7', status: 'recorded' } }, 202));
+    const fixture = mount('problem', true, transport);
+    const page = fixture.componentInstance as any;
+    Object.assign(page, { subject: 'Lesson 4 locked', message: 'It says Planned.', page: 'Lesson Reader', pageUrl: '/learn/core-java/4' });
+    await page.submit();
+    const body = JSON.parse(transport.mock.calls[1][1].body);
+    expect(body).toEqual(expect.objectContaining({ type: 'problem', subject: 'Lesson 4 locked', replyTo: 'me@example.test' }));
+    expect(body.message).toBe('It says Planned.\n\nPage: Lesson Reader\nPage address: /learn/core-java/4');
+    TestBed.resetTestingModule();
+    const plain = mount('feedback', true).componentInstance as any;
+    Object.assign(plain, { subject: 'Idea', message: 'Rename a week.' });
+    expect(plain.messageBody()).toBe('Rename a week.');
+    plain.pageUrl = ' /study-plan ';
+    expect(plain.messageBody()).toBe('Rename a week.\n\nPage address: /study-plan');
+    plain.clear();
+    expect(plain.subject).toBe('');
+    expect(plain.message).toBe('');
+    expect(plain.pageUrl).toBe('');
+    expect(plain.page).toBe('Whole platform');
+    expect(plain.type).toBe('feedback');
+    expect(plain.replyTo).toBe('me@example.test');
+  });
+});
+
 describe('support request receipt (DLV-971)', () => {
-  const recorded = 'Request recorded. The owner and admins see it under Team Reviews; we also reply by email. ';
-  it('says the request is under Team Reviews after an accepted send', async () => {
+  const recorded = 'Ticket recorded. The owner and admins see it under Support tickets and feedback; we also reply by email. ';
+  it('says the request is under Support tickets and feedback after an accepted send', async () => {
     const transport = vi
       .fn()
       .mockResolvedValueOnce(token())
@@ -85,7 +174,7 @@ describe('support request receipt (DLV-971)', () => {
     );
     expect((page as any).error()).toBe('');
   });
-  it('says the request is under Team Reviews with no email when the Domain answers recorded (mail not configured)', async () => {
+  it('says the request is under Support tickets and feedback with no email when the Domain answers recorded (mail not configured)', async () => {
     const transport = vi
       .fn()
       .mockResolvedValueOnce(token())
@@ -93,10 +182,10 @@ describe('support request receipt (DLV-971)', () => {
     const page = setup(transport);
     await page.submit();
     expect((page as any).receipt()).toBe(
-      'Request recorded. The owner and admins see it under Team Reviews. Email replies are not switched on yet, so there is no email for this one. Reference: SUP-3',
+      'Ticket recorded. The owner and admins see it under Support tickets and feedback. Email replies are not switched on yet, so there is no email for this one. Reference: SUP-3',
     );
   });
-  it('says the request is under Team Reviews even when mail delivery is unconfirmed', async () => {
+  it('says the request is under Support tickets and feedback even when mail delivery is unconfirmed', async () => {
     const transport = vi
       .fn()
       .mockResolvedValueOnce(token())
@@ -104,7 +193,7 @@ describe('support request receipt (DLV-971)', () => {
     const page = setup(transport);
     await page.submit();
     expect((page as any).receipt()).toBe(
-      'Delivery could not be confirmed. This request will not be sent again automatically. ' +
+      'Delivery could not be confirmed. This ticket will not be sent again automatically. ' +
         recorded +
         'Reference: SUP-2',
     );

@@ -1,0 +1,199 @@
+<app-platform-header />
+<main id="main-content" class="feedback-page">
+  <aside class="workspace-sidebar">
+    <app-author-workspace-nav pageTitle="Support tickets and feedback" pageId="feedback" [outline]="outline" />
+  </aside>
+  <div class="workspace-content">
+    @if (!signedIn() || state() === 'signed-out') {
+      <section class="state-panel" role="alert">
+        <h2>Sign in again</h2>
+        <p>Your session ended. Sign in again to see the tickets and feedback.</p>
+      </section>
+    } @else if (state() === 'denied') {
+      <section class="state-panel" role="alert">
+        <h2>Feedback access required</h2>
+        <p>This account is not set up to see tickets and feedback. Ask the platform owner for access.</p>
+      </section>
+    } @else {
+      <section class="panel" id="feedback-backlog" aria-labelledby="feedback-heading">
+        <header class="list-head">
+          <div>
+            <p class="eyebrow">Admin</p>
+            <h1 id="feedback-heading">Support tickets and feedback</h1>
+          </div>
+          @if (seesAll()) {
+            <div class="view-tabs" role="group" aria-label="View">
+              <button type="button" [attr.aria-pressed]="view() === 'all' && !kindFilter()" (click)="showView('all')">
+                All <span class="tab-count">{{ items().length }}</span>
+              </button>
+              <button type="button" [attr.aria-pressed]="view() === 'all' && kindFilter() === 'ticket'" (click)="showView('all', 'ticket')">
+                Support tickets <span class="tab-count">{{ ticketItems().length }}</span>
+              </button>
+              <button type="button" [attr.aria-pressed]="view() === 'all' && kindFilter() === 'feedback'" (click)="showView('all', 'feedback')">
+                Feedback <span class="tab-count">{{ feedbackItems().length }}</span>
+              </button>
+              <button type="button" [attr.aria-pressed]="view() === 'mine'" (click)="showView('mine')">
+                Mine <span class="tab-count">{{ ownItems().length }}</span>
+              </button>
+            </div>
+          }
+        </header>
+        @if (state() === 'loading') {
+          <p class="state-panel" role="status">Loading tickets and feedback…</p>
+        } @else if (state() === 'error') {
+          <section class="state-panel" role="alert">
+            <h2>Tickets and feedback are unavailable</h2>
+            <p>The tickets and feedback could not be loaded. Nothing was lost; try again.</p>
+            <button type="button" class="secondary" (click)="load()">Try again</button>
+          </section>
+        } @else if (!items().length) {
+          <p class="empty">Nothing submitted yet.</p>
+        } @else {
+          <div class="filters">
+            <label class="search"
+              >Search
+              <input type="search" name="search" placeholder="Search by key or words…" [ngModel]="search()" (ngModelChange)="search.set($event)" />
+            </label>
+            <label
+              >Kind
+              <select name="kind" [ngModel]="kindFilter()" (ngModelChange)="kindFilter.set($event)">
+                <option value="">All kinds</option>
+                <option value="ticket">Support tickets</option>
+                <option value="feedback">Feedback</option>
+              </select>
+            </label>
+            <label
+              >From
+              <select name="from" [ngModel]="fromFilter()" (ngModelChange)="fromFilter.set($event)">
+                <option value="">Everyone</option>
+                @for (sender of senders(); track sender.id) {
+                  <option [value]="sender.id">{{ sender.name }}</option>
+                }
+              </select>
+            </label>
+            <label
+              >Status
+              <select name="status" [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
+                <option value="">All statuses</option>
+                @for (status of statuses; track status.id) {
+                  <option [value]="status.id">{{ status.label }}</option>
+                }
+              </select>
+            </label>
+            <label
+              >Type
+              <select name="type" [ngModel]="typeFilter()" (ngModelChange)="typeFilter.set($event)">
+                <option value="">All types</option>
+                @for (category of categories; track category.id) {
+                  <option [value]="category.id">{{ category.label }}</option>
+                }
+                @for (type of requestTypes; track type.id) {
+                  <option [value]="ticketTypePrefix + type.id">Support ticket: {{ type.label }}</option>
+                }
+              </select>
+            </label>
+          </div>
+          <p class="result-count" role="status">{{ rows().length }} of {{ items().length }} items · sorted by last update, newest first</p>
+          @if (rows().length) {
+            <div class="table-scroll" role="region" aria-label="Backlog" tabindex="0">
+              <table class="backlog">
+                <colgroup>
+                  <col class="c-key" />
+                  <col class="c-sum" />
+                  <col class="c-from" />
+                  <col class="c-type" />
+                  <col class="c-page" />
+                  <col class="c-status" />
+                  <col class="c-ticket" />
+                  <col class="c-updated" />
+                  <col class="c-act" />
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th scope="col">Key</th>
+                    <th scope="col">Summary</th>
+                    <th scope="col">From</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Page</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Ticket</th>
+                    <th scope="col" class="right">Updated</th>
+                    <th scope="col"><span class="visually-hidden">Open</span></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of rows(); track item.id) {
+                    <tr
+                      #row
+                      class="item-row"
+                      tabindex="0"
+                      [attr.data-key]="item.id"
+                      [attr.aria-selected]="openId() === item.id"
+                      (click)="onRowClick($event, item.id, row)"
+                      (keydown)="onRowKey($event, item.id, row)"
+                    >
+                      <td class="key">
+                        <span class="kind-badge" [class.ticket]="isRequest(item)">{{ kindLabel(item) }}</span>&ngsp;<span class="item-id">{{ item.id }}</span>
+                      </td>
+                      <td class="summary">{{ item.title }}</td>
+                      <td>{{ item.reviewerName }}</td>
+                      <td>{{ typeLabel(item) }}</td>
+                      <td>{{ item.page }}</td>
+                      <td><span class="status-pill" [attr.data-tone]="statusTone(item.status)">{{ statusLabel(item) }}</span></td>
+                      <td class="ticket">
+                        @if (item.ticketId) {
+                          {{ item.ticketId }}
+                        } @else {
+                          <span class="dim">—</span>
+                        }
+                      </td>
+                      <td class="updated">{{ updated(item.updatedAt) }}</td>
+                      <td class="act">
+                        <a class="new-tab" [routerLink]="['/admin/feedback', item.id]" target="_blank" rel="noopener" [attr.aria-label]="'Open ' + item.id + ' in a new tab'" title="Open in a new tab">↗</a>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <p class="empty">No items match these filters.</p>
+          }
+          @if (nextBefore()) {
+            <div class="older">
+              <button type="button" class="secondary" [disabled]="loadingOlder()" (click)="loadOlder()">
+                {{ loadingOlder() ? 'Loading older days…' : 'Show older days' }}
+              </button>
+            </div>
+          }
+        }
+      </section>
+    }
+  </div>
+  <app-author-admin-menu pageId="feedback" />
+</main>
+
+<!-- The item on top of the list; the page behind it does not scroll (html.feedback-dialog-open). -->
+<dialog
+  #itemDialog
+  appScrollLock
+  class="item-dialog"
+  role="dialog"
+  aria-modal="true"
+  [attr.aria-label]="openId() ? 'Item ' + openId() : 'Item'"
+  (close)="closed()"
+  (click)="onDialogClick($event)"
+>
+  @if (openId(); as id) {
+    <div class="dialog-box">
+      <div class="dialog-bar">
+        <span class="kind-badge" [class.ticket]="id.startsWith('SUP-')">{{ id.startsWith('SUP-') ? 'Ticket' : 'Feedback' }}</span>
+        <span class="item-key">{{ id }}</span>
+        <span class="grow"></span>
+        <a class="secondary small" [routerLink]="['/admin/feedback', id]" target="_blank" rel="noopener">Open in new tab ↗</a>
+        <button type="button" class="close" aria-label="Close" (click)="close()">✕</button>
+      </div>
+      <app-feedback-item [itemId]="id" [viewer]="viewer()" (changed)="onChanged($event)" />
+    </div>
+  }
+</dialog>

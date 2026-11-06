@@ -31,9 +31,9 @@ describe('staff navigation', () => {
   it('keeps assignment controls owner-only even for admins and reviewers', () => {
     // DLV-969 (owner, 2026-11-04): Previews is the owner's and co-authors' only, so other staff never see it listed.
     expect(visibleAdminLinks({ ...account, permissions: permissions({ previewDocuments: true, deliveryRead: true }) }).map(row => row.id))
-      .toEqual(['docs', 'delivery']);
+      .toEqual(['docs', 'feedback', 'delivery']);
     expect(visibleAdminLinks({ ...account, permissions: permissions({ previewDocuments: true, deliveryRead: true, feedbackRole: 'co-author' }) }).map(row => row.id))
-      .toEqual(['docs', 'previews', 'delivery', 'access']);
+      .toEqual(['docs', 'previews', 'feedback', 'delivery', 'access']);
     expect(visibleAdminLinks({ ...account, authorPreview: true, permissions: permissions({}) })).toEqual([]);
   });
 });
