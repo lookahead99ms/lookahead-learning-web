@@ -1,13 +1,4 @@
-import {
-  Component,
-  ElementRef,
-  OnDestroy,
-  OnInit,
-  computed,
-  inject,
-  signal,
-  viewChild,
-} from '@angular/core';
+import { Component, computed, ElementRef, inject, input, OnDestroy, OnInit, signal, viewChild } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
@@ -57,6 +48,12 @@ interface DayGroup {
 })
 export class AdminReviewsPage implements OnInit, OnDestroy {
   protected readonly accounts = inject(StudyPlanAccount);
+  /**
+   * DLV-971 (owner, 2026-11-06): the Support page shows this panel twice. "submit" is the add-item form under Submit a
+   * review; "submitted" is what was submitted and where each item stands under Reviews submitted (the owner's overview
+   * and every reviewer's items, a reviewer's own). "all" is the whole panel, as before.
+   */
+  readonly section = input<'submit' | 'submitted' | 'all'>('all');
   protected readonly client = inject(PLATFORM_REVIEW_CLIENT);
   protected readonly categories = reviewCategories;
   protected readonly priorities = reviewPriorities;

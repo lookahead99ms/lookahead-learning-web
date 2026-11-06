@@ -12,7 +12,9 @@ type SupportView = 'contact' | 'reviews';
 
 /**
  * Support and feedback: every signed-in learner can contact support. Accounts the review service
- * recognises as a reviewer or the owner also get the Platform reviews tab (formerly /admin/reviews).
+ * recognises as a reviewer or the owner get two tabs (owner, 2026-11-06): Submit a review, with the add-item form
+ * above the support form, and Reviews submitted, what was submitted and where each item stands (formerly
+ * /admin/reviews, then the Platform reviews tab).
  */
 @Component({
   selector: 'app-support',
@@ -48,7 +50,10 @@ export class SupportPage implements OnInit {
       if (!this.reviewClient) return;
       await this.accounts.initialize();
       if (!this.accounts.account() || this.accounts.sessionExpired()) return;
-      this.reviewRole.set((await this.reviewClient.viewer()).role);
+      // DLV-971 (owner, 2026-11-06): "user" is the service's answer for an account with no review role (a learner, a
+      // test account); it gets Contact support alone, like an account the service refuses.
+      const role = (await this.reviewClient.viewer()).role;
+      this.reviewRole.set(role === 'user' ? null : role);
     } catch {
       // Not a reviewer, or the review service is unavailable: Contact support still works.
       this.reviewRole.set(null);

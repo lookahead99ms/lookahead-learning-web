@@ -250,3 +250,8 @@ h2 {
     white-space: normal;
   }
 }
+
+/* DLV-971: the review form sits above the support form on the Submit a review tab. */
+.support-body:not(.reviews-body) .submit-panel {
+  grid-column: 1 / -1;
+}
