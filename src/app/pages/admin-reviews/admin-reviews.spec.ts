@@ -244,7 +244,7 @@ describe('Platform reviews page', () => {
     expect(root.textContent).toContain('You have not added an item yet.');
   });
 
-  it('splits into Submit a review (the form) and Reviews submitted (the items and their status) for a reviewer (DLV-971)', async () => {
+  it('splits into Write Review (the form) and Team Reviews (the items and their status) for a reviewer (DLV-971)', async () => {
     viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
     let root = await render('submit');
     expect(root.querySelector('.intro-heading')?.textContent?.trim()).toBe('Tell us what should change.');
@@ -255,13 +255,13 @@ describe('Platform reviews page', () => {
     current.destroy();
     root = await render('submitted');
     expect(root.querySelector('.intro-heading')?.textContent?.trim()).toBe('Your reviews, and where each one stands.');
-    expect(root.querySelector('.lede')?.textContent?.replace(/\s+/g, ' ').trim()).toBe('Each item shows the status the owner set. Add new items under Submit a review.');
+    expect(root.querySelector('.lede')?.textContent?.replace(/\s+/g, ' ').trim()).toBe('Each item shows the status the owner set. Add new items under Write Review.');
     expect(root.querySelector('#review-form')).toBeNull();
     expect(root.querySelector('#review-items')?.textContent?.trim()).toBe('Your review items');
     expect(titles(root)).toEqual(['Item a']);
   });
 
-  it('gives the owner the form alone under Submit a review, and the overview with every item under Reviews submitted (DLV-971)', async () => {
+  it('gives the owner the form alone under Write Review, and the overview with every item under Team Reviews (DLV-971)', async () => {
     viewer = { role: 'owner', reviewerId: 'owner', displayName: 'Owner' };
     let root = await render('submit');
     expect(root.querySelector('.intro-heading')?.textContent?.trim()).toBe('Tell us what should change.');
@@ -286,6 +286,14 @@ describe('Platform reviews page', () => {
     failing = true;
     const root = await render('submitted');
     expect(root.querySelector('.state-panel h2')?.textContent).toBe('Review items are unavailable');
+  });
+
+  it('denies an account the service answers with role "user" itself, wherever the page is embedded (DLV-971, audit finding 2)', async () => {
+    viewer = { role: 'user', reviewerId: 'learner-1', displayName: 'Learner 1' };
+    const root = await render('submit');
+    expect(root.textContent).toContain('Review access required');
+    expect(root.querySelector('#review-form')).toBeNull();
+    expect(root.querySelector('#review-items')).toBeNull();
   });
 
   it('tells an account without a review role that access is required', async () => {

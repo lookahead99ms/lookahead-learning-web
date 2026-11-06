@@ -9,7 +9,7 @@ import { AuthorOutlineItem, AuthorWorkspaceNav } from '../../core/author-workspa
 import { ACCOUNT_FETCH, StudyPlanAccount } from '../study-plan/study-plan-account';
 
 import { TestAccountRow, TestAccounts } from './test-accounts';
-import { PurchaseRequestsPanel, viewerRole } from './purchase-requests-panel';
+import { PurchaseRequestsPanel, canDecidePurchases, viewerRole } from './purchase-requests-panel';
 import { DevSession } from '../../core/dev-session-notice/dev-session';
 import { DirectoryAccount, DirectoryRow, accountName, loadDirectory, personLines, sameEmailCount, sameEmailText, signInLabels } from './user-directory';
 import { AccountSignInMethod } from '../account/account-settings-client';
@@ -54,7 +54,7 @@ export class AdminAccessPage implements OnInit {
   readonly canManage = computed(() => this.accounts.account()?.permissions?.manageAccess ?? this.accounts.account()?.authorPreview === true);
   readonly canReadAssignments = computed(() => this.canManage() || this.accounts.account()?.permissions?.feedbackRole === 'co-author');
   /** DLV-969 (owner, 2026-11-04): the owner and admins approve or decline DEV purchase requests; nobody else sees them. */
-  readonly canDecide = computed(() => ['owner', 'admin'].includes(viewerRole(this.accounts.account())));
+  readonly canDecide = computed(() => canDecidePurchases(this.accounts.account()));
   private readonly devSession = inject(DevSession);
   readonly dev = computed(() => this.devSession.status() !== null || this.devSession.gated());
   /** `GET /admin/test-accounts` for the purchase requests, loaded for the owner and admins only. */

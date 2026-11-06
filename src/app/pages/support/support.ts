@@ -12,9 +12,9 @@ type SupportView = 'contact' | 'reviews';
 
 /**
  * Support and feedback: every signed-in learner can contact support. Accounts the review service
- * recognises as a reviewer or the owner get two tabs (owner, 2026-11-06): Submit a review, with the add-item form
- * above the support form, and Reviews submitted, what was submitted and where each item stands (formerly
- * /admin/reviews, then the Platform reviews tab).
+ * recognises as a reviewer or the owner get two tabs (owner, 2026-11-06): Write Review, with the add-item form above
+ * the support form, and Team Reviews, what was submitted and where each item stands (formerly /admin/reviews, then
+ * the Platform reviews tab; the owner chose the two names the same day).
  */
 @Component({
   selector: 'app-support',

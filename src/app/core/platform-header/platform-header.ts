@@ -996,7 +996,9 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
   private readonly testSessionCheck = effect(() => {
     // Once per signed-in account inside DEV: is this a test session, and whose sign-in waits behind it.
     const accountId = this.accounts.account()?.accountId;
-    if (this.devSession.status() && accountId) untracked(() => void this.testSessions.refresh());
+    // DLV-971 (owner, 2026-11-06): any answer from the gate counts, a 503 too; before, a real test session was shown as a
+    // real account (no test bar, Sign out instead of Back to my account) whenever /dev/session was not a 200.
+    if ((this.devSession.status() || this.devSession.gated()) && accountId) untracked(() => void this.testSessions.refresh());
   });
   protected readonly accountLabel = computed(() =>
     accountTriggerLabel(this.accounts.account()?.displayName),

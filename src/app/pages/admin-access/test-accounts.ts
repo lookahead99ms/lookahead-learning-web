@@ -10,7 +10,7 @@ import { DevSession } from '../../core/dev-session-notice/dev-session';
 import { AccessRecord, AccessRecordView, accessRecordView } from '../account/account-membership';
 import { approvedLine, canResetOf, resetReserved, upgradeLine, upgradeMarkerOf } from '../../content/upgrade-markers';
 import { PendingPurchase, pendingPurchaseOf } from '../../content/purchase-requests';
-import { viewerRole } from './purchase-requests-panel';
+import { canDecidePurchases, viewerRole } from './purchase-requests-panel';
 import { githubDisplay } from '../../core/github-account/github-account';
 import {
   DirectoryAssignment,
@@ -55,20 +55,6 @@ export interface TestAccountRow {
   upgradedBy?: unknown;
   /** Whether this viewer may reset it (the upgrade marker reserves Reset); absent from an older Domain. */
   canReset?: boolean;
-}
-
-/** The test-account list's tabs, as in the account menu's switcher (owner, 2026-11-04). */
-export type ListTab = 'learners' | 'co-authors' | 'admins';
-const LIST_TABS: readonly { id: ListTab; title: string }[] = [
-  { id: 'learners', title: 'Learners' },
-  { id: 'co-authors', title: 'Co-authors' },
-  { id: 'admins', title: 'Admins' },
-];
-/** A co-author or admin test account goes under its role; every other one is a learner, as in the switcher. */
-export function listTabOf(row: Pick<DirectoryRow, 'roles'>): ListTab {
-  if (row.roles.includes('Co-author')) return 'co-authors';
-  if (row.roles.includes('Admin')) return 'admins';
-  return 'learners';
 }
 
 type History = { state: 'loading' } | { state: 'error' } | { state: 'ready'; items: AccessRecordView[] };
@@ -124,7 +110,7 @@ export class TestAccounts implements OnInit {
    * DLV-969 (owner, 2026-11-04): the owner and admins see which test accounts have a purchase request waiting (the
    * requests themselves are on Waiting for access → Purchase requests); co-authors and everyone else see nothing of them.
    */
-  readonly canDecide = computed(() => ['owner', 'admin'].includes(viewerRole(this.accounts.account())));
+  readonly canDecide = computed(() => canDecidePurchases(this.accounts.account()));
   readonly canCreate = computed(() => ['owner', 'co-author', 'admin'].includes(viewerRole(this.accounts.account())));
   readonly allowance = signal<TestAccountAllowance|null>(null);
   private readonly devSession = inject(DevSession);
@@ -206,8 +192,6 @@ export class TestAccounts implements OnInit {
 
   readonly query = signal('');
   readonly role = signal('');
-  /** The test-account list's tab, Learners first; `listTab` falls back to the first tab that has accounts. */
-  private readonly chosenListTab = signal<ListTab>('learners');
   readonly titles = signal<ReadonlyMap<string, string>>(new Map());
   readonly expanded = signal<string | null>(null);
   readonly history = signal<Record<string, History>>({});
@@ -232,26 +216,9 @@ export class TestAccounts implements OnInit {
   readonly roleFilters = computed(() =>
     ROLE_FILTERS.filter((name) => this.inView().some((row) => row.roles.includes(name))),
   );
-  /** Test accounts tab (owner, 2026-11-04): Learners, Co-authors and Admins with at least one account, as in the switcher. */
-  readonly listTabs = computed(() => {
-    if (this.view() !== 'test') return [];
-    const present = new Set(this.inView().map(listTabOf));
-    return LIST_TABS.filter((tab) => present.has(tab.id));
-  });
-  readonly listTab = computed<ListTab>(() => {
-    const tabs = this.listTabs();
-    return tabs.some((tab) => tab.id === this.chosenListTab()) ? this.chosenListTab() : (tabs[0]?.id ?? this.chosenListTab());
-  });
-  /** How many accounts in each tab match the search, so a match on another tab is easy to find. */
-  readonly listCounts = computed(() => {
-    const counts: Record<ListTab, number> = { learners: 0, 'co-authors': 0, admins: 0 };
-    for (const row of this.inView()) if (matchesFilter(row, this.query(), '')) counts[listTabOf(row)]++;
-    return counts;
-  });
-  /** The rows the search works on: the chosen tab on Test accounts, everyone on People. */
-  readonly inTab = computed(() => (this.view() === 'test' && this.listTabs().length ? this.inView().filter((row) => listTabOf(row) === this.listTab()) : this.inView()));
+  // Since 2026-11-06 (owner) every test account is a learner: the Learners / Co-authors / Admins tabs are gone.
   readonly visible = computed(() =>
-    this.inTab().filter((row) => matchesFilter(row, this.query(), this.view() === 'test' ? '' : this.role())),
+    this.inView().filter((row) => matchesFilter(row, this.query(), this.view() === 'test' ? '' : this.role())),
   );
   readonly selectedRow = computed(() => this.visible().find((row) => row.key === this.selectedKey()) ?? null);
 
@@ -317,26 +284,6 @@ export class TestAccounts implements OnInit {
     this.selectedKey.set(this.selectedKey() === row.key ? null : row.key);
     this.closeConfirmations();
     this.expanded.set(null);
-  }
-
-  /** Learners, Co-authors or Admins; a selection on the tab left behind is dropped with its confirmations. */
-  chooseListTab(tab: ListTab) {
-    if (this.busy() || this.pending() || tab === this.listTab()) return;
-    this.chosenListTab.set(tab);
-    this.selectedKey.set(null);
-    this.expanded.set(null);
-    this.closeConfirmations();
-  }
-
-  /** Arrow keys, Home and End move between the list's tabs (WAI-ARIA tabs pattern). */
-  listTabKey(event: KeyboardEvent) {
-    const ids = this.listTabs().map((tab) => tab.id), index = ids.indexOf(this.listTab());
-    const next = ({ ArrowRight: index + 1, ArrowLeft: index - 1, Home: 0, End: ids.length - 1 } as Record<string, number>)[event.key];
-    if (next === undefined || !ids.length) return;
-    event.preventDefault();
-    const id = ids[(next + ids.length) % ids.length];
-    this.chooseListTab(id);
-    (event.currentTarget as HTMLElement | null)?.querySelector<HTMLElement>('#list-tab-' + id)?.focus();
   }
 
   /** Create test account opens its panel under the button row, closing any other confirmation. */
@@ -423,8 +370,8 @@ export class TestAccounts implements OnInit {
         ? `${created.username} created. To use it, choose Switch to a test account in your account menu.`
         : `${created.username} created. Share its password through your local test setup.`);
     } catch (failure) {
-      // The panel stays open with the reason inside it. A refusal (403 TEST_ACCOUNT_LEARNER_ONLY: "Only learner test
-      // accounts can be created…") is said in the server's words, and the next try is a new request.
+      // The panel stays open with the reason inside it. A refusal (403, for example a creation limit reached) is said in
+      // the server's words, and the next try is a new request.
       if (failure instanceof MembershipRequestError && failure.status === 403) {
         this.createKey.set(null);
         this.panelError.set(failure.message);

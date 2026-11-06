@@ -12,12 +12,12 @@
     </h2>
     <p class="lede">
       @if (section() === 'submitted' && !isOwner()) {
-        Each item shows the status the owner set. Add new items under Submit a review.
+        Each item shows the status the owner set. Add new items under Write Review.
       } @else if (showAll() && section() !== 'submit') {
         Each reviewer sees only their own items. You see all of them, newest day first. Open an
         item to read it, see its images and set a status the reviewer will see.
       } @else if (isOwner()) {
-        This is the view every reviewer gets. Items you add here also appear under All reviews
+        This is the view every reviewer gets. Items you add here also appear under Team Reviews
         with your name.
       } @else {
         Add one item for each problem, change or idea. Attach screenshots when they help. Other

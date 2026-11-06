@@ -97,36 +97,6 @@
   color: var(--text-body);
   font: inherit;
 }
-/* Underlined tabs, as elsewhere on the platform. */
-.switcher-tabs {
-  display: flex;
-  gap: 4px;
-  border-bottom: 1px solid var(--line);
-}
-.switcher-tabs button {
-  margin-bottom: -1px;
-  padding: 10px 12px;
-  border: 0;
-  border-bottom: 2px solid transparent;
-  background: none;
-  color: var(--text-subtle);
-  font: inherit;
-  font-weight: 650;
-  cursor: pointer;
-}
-.switcher-tabs button[aria-selected='true'] {
-  border-bottom-color: var(--accent-strong);
-  color: var(--text-strong);
-}
-.tab-count {
-  margin-left: 4px;
-  padding: 1px 7px;
-  border-radius: 999px;
-  background: var(--surface-muted);
-  color: var(--text-subtle);
-  font-size: 0.75rem;
-  font-weight: 700;
-}
 .switcher-plans {
   display: flex;
   flex-wrap: wrap;
@@ -246,7 +216,6 @@
 .row-plan[data-plan='Grow'] { background: color-mix(in srgb, var(--path-grow) 22%, var(--surface)); }
 .row-plan[data-plan='Advance'] { background: color-mix(in srgb, var(--path-blaze) 22%, var(--surface)); }
 .row-plan[data-plan='Promo'] { background: color-mix(in srgb, var(--warning) 22%, var(--surface)); }
-.row-plan[data-plan='staff'] { background: color-mix(in srgb, var(--accent-strong) 18%, var(--surface)); }
 .row-action {
   padding: 6px 14px;
   border: 1px solid var(--accent-strong);

@@ -598,51 +598,6 @@ tr.self > * {
 .test-view > .notice {
   margin-top: 16px;
 }
-/* Learners, Co-authors and Admins, in the switcher's look: underlined tabs with a count pill. */
-.list-tabs {
-  display: flex;
-  gap: 4px;
-  margin: 20px 0 14px;
-  border-bottom: 1px solid var(--line);
-  overflow-x: auto;
-}
-.list-tabs button {
-  flex: none;
-  margin-bottom: -1px;
-  padding: 10px 12px;
-  border: 0;
-  border-bottom: 2px solid transparent;
-  background: none;
-  color: var(--text-subtle);
-  font: inherit;
-  font-weight: 650;
-  cursor: pointer;
-}
-.list-tabs button[aria-selected='true'] {
-  border-bottom-color: var(--accent-strong);
-  color: var(--text-strong);
-}
-.list-tabs button:focus-visible {
-  outline: 3px solid var(--accent-focus);
-  outline-offset: -3px;
-  border-radius: 6px 6px 0 0;
-}
-.list-tabs button:disabled {
-  cursor: not-allowed;
-}
-.tab-count {
-  margin-left: 4px;
-  padding: 1px 7px;
-  border-radius: 999px;
-  background: var(--surface-muted);
-  color: var(--text-subtle);
-  font-size: 0.75rem;
-  font-weight: 700;
-}
-.list-tabs button[aria-selected='true'] .tab-count {
-  background: color-mix(in srgb, var(--accent-strong) 14%, var(--surface));
-  color: var(--text-strong);
-}
 @container access-panel (max-width: 760px) {
   .test-cards {
     grid-template-columns: minmax(0, 1fr);

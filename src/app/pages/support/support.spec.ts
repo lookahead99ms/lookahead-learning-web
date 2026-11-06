@@ -74,20 +74,20 @@ describe('Support and feedback page', () => {
     expect(root.querySelector('.tips-note')).toBeNull();
   });
 
-  it('gives reviewers Submit a review (form above the support form) and Reviews submitted, and keeps the tab in the address', async () => {
+  it('gives reviewers Write Review (form above the support form) and Team Reviews, and keeps the tab in the address', async () => {
     const harness = await open('/support', reviewer);
     const root = harness.routeNativeElement!;
     const tabs = [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
     expect(tabs.map((tab) => tab.textContent?.replace(/\s+/g, ' ').trim())).toEqual([
-      '📝 Submit a review',
-      '🧪 Reviews submitted Reviewer',
+      '📝 Write Review',
+      '🧪 Team Reviews Reviewer',
     ]);
     expect(tabs[0].getAttribute('aria-selected')).toBe('true');
-    // DLV-971: the add-item panel sits above the support form; the tips point at Reviews submitted.
+    // DLV-971: the add-item panel sits above the support form; the tips point at Team Reviews.
     const panels = [...root.querySelectorAll('.support-body > section')].map((panel) => panel.getAttribute('aria-label') ?? panel.getAttribute('aria-labelledby'));
-    expect(panels).toEqual(['Submit a review', 'contact-heading']);
+    expect(panels).toEqual(['Write Review', 'contact-heading']);
     expect(root.querySelector('.submit-panel app-admin-reviews')?.getAttribute('section')).toBe('submit');
-    expect(root.querySelector('.tips-note')?.textContent?.replace(/\s+/g, ' ')).toContain('Reviews submitted');
+    expect(root.querySelector('.tips-note')?.textContent?.replace(/\s+/g, ' ')).toContain('Team Reviews');
     tabs[1].click();
     await harness.fixture.whenStable();
     harness.detectChanges();
@@ -97,7 +97,7 @@ describe('Support and feedback page', () => {
       'support-tab-reviews',
     );
     expect(root.textContent).toContain('review items');
-    expect(root.querySelector('[aria-label="Reviews submitted"] app-admin-reviews')?.getAttribute('section')).toBe('submitted');
+    expect(root.querySelector('[aria-label="Team Reviews"] app-admin-reviews')?.getAttribute('section')).toBe('submitted');
     expect(root.textContent).not.toContain('contact form');
   });
 

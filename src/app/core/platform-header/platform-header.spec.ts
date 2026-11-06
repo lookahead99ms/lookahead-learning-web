@@ -221,6 +221,18 @@ describe('PlatformHeader account disclosure', () => {
     expect(fixture.nativeElement.querySelector('[role="menuitem"]')).toBeNull();
   });
 
+  /** DLV-971 (owner, 2026-11-06, audit finding 1): any gate answer counts, a 503 too, so a test session is never shown as a real account. */
+  it('asks the Gateway whether this is a test session on any gate answer, not only a 200', () => {
+    const refresh = vi.spyOn(TestBed.inject(TestSessions), 'refresh').mockResolvedValue();
+    const store = TestBed.inject(StudyPlanAccount);
+    const dev = TestBed.inject(DevSession);
+    store.account.set({ accountId: 'learner', username: 'learner@example.test', displayName: 'Priya Raman', topicGrants: [] });
+    dev.gated.set(true);
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    expect(refresh).toHaveBeenCalledTimes(1);
+  });
+
   /**
    * DLV-969 (owner, 2026-11-04): anyone signed in to DEV switches to a test account from this menu, and comes back
    * from it. Owner decision 2026-11-04: the owner, co-authors and admins switch; learners, reviewers and testers never do.

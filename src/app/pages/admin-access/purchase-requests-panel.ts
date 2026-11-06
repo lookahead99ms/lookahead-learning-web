@@ -45,6 +45,19 @@ export interface PurchaseRequestItem {
   requested: string;
 }
 
+/**
+ * DLV-971 (owner, 2026-11-06): who approves or declines purchase requests, by the permission flags the Domain checks
+ * (manage access, or triage feedback, which admins have), not the one role label: a co-author who is also an admin is
+ * labelled co-author and would otherwise lose it. Without permissions, author preview counts as the owner, as elsewhere.
+ */
+export function canDecidePurchases(
+  account: { authorPreview?: boolean; permissions?: { manageAccess?: boolean; triageFeedback?: boolean } } | null | undefined,
+): boolean {
+  const permissions = account?.permissions;
+  if (permissions) return !!(permissions.manageAccess || permissions.triageFeedback);
+  return account?.authorPreview === true;
+}
+
 /** The role this viewer has on People and access; authorPreview without a role counts as the owner, as elsewhere. */
 export function viewerRole(account: { authorPreview?: boolean; permissions?: { feedbackRole?: string } } | null | undefined): string {
   return account?.permissions?.feedbackRole ?? (account?.authorPreview ? 'owner' : 'user');
@@ -84,7 +97,7 @@ export class PurchaseRequestsPanel {
 
   readonly dev = computed(() => this.devSession.status() !== null || this.devSession.gated());
   readonly isOwner = computed(() => viewerRole(this.accounts.account()) === 'owner');
-  readonly canDecide = computed(() => ['owner', 'admin'].includes(viewerRole(this.accounts.account())));
+  readonly canDecide = computed(() => canDecidePurchases(this.accounts.account()));
   /** Requests decided here: their cards go at once, before the page's fresh rows arrive. */
   private readonly decided = signal<ReadonlySet<string>>(new Set());
   /** Waiting purchase requests, oldest first, for the owner and admins; empty for anyone else. */

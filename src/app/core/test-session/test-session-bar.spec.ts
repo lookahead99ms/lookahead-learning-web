@@ -8,8 +8,8 @@ import { TestSessionStatus, TestSessions, UsableTestAccount } from './test-sessi
 const learner: UsableTestAccount = {
   accountId: 'id-learner05', username: 'learner05@lookahead.dev', displayName: 'Learner05', roles: [], scenario: 'Learn · active · ready-made plan · in progress',
 };
-const coauthor: UsableTestAccount = {
-  accountId: 'id-coauthor01', username: 'coauthor01@lookahead.dev', displayName: 'Coauthor01', roles: ['co-author'], scenario: 'Co-author with the full curriculum',
+const created: UsableTestAccount = {
+  accountId: 'id-created', username: 'test-1@lookahead.dev', displayName: 'Test Learner', roles: [], scenario: null,
 };
 
 /** DLV-969 (owner, 2026-11-04): the bar that says which test account is in use. */
@@ -46,7 +46,7 @@ describe('TestSessionBar', () => {
 
   it('names the learner and its scenario, with Switch and Back to my account', () => {
     status.set({ active: true, canReturn: true, holderName: 'Author' });
-    accounts.set([learner, coauthor]);
+    accounts.set([learner, created]);
     account.set({ accountId: 'id-learner05', displayName: 'Learner05' });
     const { fixture, root } = render();
     expect(root.querySelector('.test-bar-mark')?.textContent).toBe('Test account');
@@ -69,15 +69,13 @@ describe('TestSessionBar', () => {
     expect(root.querySelector('.test-bar-error')).toBeNull();
   });
 
-  it('describes staff by their scenario, and falls back to the signed-in name', () => {
+  it('calls a created account without a scenario a learner, and falls back to the signed-in name', () => {
     status.set({ active: true, canReturn: true, holderName: null });
-    accounts.set([coauthor, { ...coauthor, accountId: 'id-coauthor02', displayName: 'Coauthor02', scenario: null }]);
-    account.set({ accountId: 'id-coauthor01', displayName: 'Coauthor01' });
+    accounts.set([created]);
+    account.set({ accountId: 'id-created', displayName: 'Test Learner' });
     const { fixture, root } = render();
-    expect(root.querySelector('.test-bar-scenario')?.textContent).toBe('Co-author with the full curriculum');
-    account.set({ accountId: 'id-coauthor02', displayName: 'Coauthor02' });
-    fixture.detectChanges();
-    expect(root.querySelector('.test-bar-scenario')?.textContent).toBe('Co-author');
+    expect(root.querySelector('.test-bar-who strong')?.textContent).toBe('Test Learner');
+    expect(root.querySelector('.test-bar-scenario')?.textContent).toBe('Learner');
     // Not in the list (yet): the account's own name, no scenario.
     account.set({ accountId: 'id-unknown', displayName: 'Learner30' });
     fixture.detectChanges();
