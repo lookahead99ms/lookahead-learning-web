@@ -307,6 +307,34 @@ const HEADER_SUGGESTIONS: HeaderSuggestion[] = [
         visibility: hidden;
       }
 
+      .dev-exit-inline {
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+      .dev-exit-inline-button {
+        border: 0;
+        cursor: pointer;
+        font: inherit;
+      }
+      .dev-exit-inline-button:disabled {
+        cursor: default;
+        opacity: 0.7;
+      }
+      .dev-exit-inline-error {
+        position: absolute;
+        top: calc(100% + 6px);
+        right: 0;
+        margin: 0;
+        padding: 6px 10px;
+        border: 1px solid var(--danger);
+        border-radius: 8px;
+        background: var(--surface);
+        color: var(--danger);
+        font-size: 0.8rem;
+        white-space: nowrap;
+      }
+      .header-utilities > .dev-exit-inline > .sign-in-button,
       .header-utilities > .sign-in-button {
         min-height: 44px;
         display: inline-flex;
@@ -989,6 +1017,15 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
    */
   protected beforeAdmission(): boolean {
     return onGatePage(this.router.url) && this.devSession.outsideGate();
+  }
+  /**
+   * DLV-971 (owner, 2026-11-06): on the Welcome page while a sign-in waits for the owner, before admission (the gate
+   * answered, no DEV session): an Exit DEV button where Sign in would be, so nobody has to sit there waiting.
+   */
+  protected exitDevOffered(): boolean {
+    const url = this.router.parseUrl(this.router.url);
+    const route = this.router.url.split(/[?#]/, 1)[0];
+    return route === '/welcome' && url.queryParams['access'] === 'pending' && this.devSession.gated() && !this.devSession.status();
   }
   /**
    * Pages without the header's Sign in: the sign-in and sign-up pages with every one of their steps (choose, forgot,

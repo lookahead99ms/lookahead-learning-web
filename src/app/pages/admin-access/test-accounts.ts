@@ -1,4 +1,5 @@
 import { Component, computed, effect, inject, input, OnInit, output, signal, untracked } from '@angular/core';
+import { REMOVAL_TEXT } from './removal-text';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
@@ -182,11 +183,7 @@ export class TestAccounts implements OnInit {
   /** DLV-969: the owner's Disable or Delete for a DEV sign-in account, waiting for its typed confirmation. */
   readonly removing = signal<{ row: DirectoryRow; action: 'disable' | 'remove' } | null>(null);
   /** Shown beside each button and as its hover text (user, 2026-11-03). Disable is the strongest. */
-  readonly removalText = {
-    disable: 'Strongest. Blocks every sign-in, with email or Google, and closes their open DEV session within 5 minutes. They cannot ask for access again until you enable them.',
-    enable: 'Lets them sign in again with the same account, roles and progress.',
-    remove: 'Removes them from sign-in and erases their plans and progress. If they sign in again with the same email or Google account, they appear in Waiting for access as a new person.',
-  } as const;
+  readonly removalText = REMOVAL_TEXT;
   removalConfirmation = '';
   createPassword = '';
   deleteConfirmation = '';

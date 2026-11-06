@@ -498,6 +498,7 @@ describe('Waiting for access', () => {
   let waiting: unknown;
   let waitingStatus: number;
   let admitStatus: number;
+  let rejectStatus: number;
   const setup = (feedbackRole: 'owner' | 'co-author', tab: string | null = null) => {
     requests = [];
     TestBed.configureTestingModule({ providers: [
@@ -513,12 +514,15 @@ describe('Waiting for access', () => {
           ? Response.json({ data: { ...JSON.parse(init!.body as string), admittedAt: '2026-11-02T15:00:00Z' } })
           : new Response('', { status: admitStatus });
         if (path === '/admin/access') return Response.json({ data: [{ id: 's1', accountId: 'saved-id', pendingEmail: null, roles: ['reviewer'], topicGrants: [], fullCurriculum: false, revision: 1 }] });
+        if (/^\/admin\/accounts\/[^/]+\/(disable|remove)$/.test(path)) return rejectStatus === 200
+          ? Response.json({ data: { accountId: path.split('/')[3], state: path.endsWith('disable') ? 'disabled' : 'removed' } })
+          : new Response('', { status: rejectStatus });
         return Response.json({ data: [] });
       } },
     ] }).overrideComponent(AdminAccessPage, { remove: { imports: [PlatformHeader] }, add: { imports: [HeaderStub] } });
   };
   const admitCalls = () => requests.filter(row => row.path === '/admin/access/admit');
-  beforeEach(() => { waiting = { waiting: [alex, sam], expiryHours: 48 }; waitingStatus = 200; admitStatus = 200; });
+  beforeEach(() => { waiting = { waiting: [alex, sam], expiryHours: 48 }; waitingStatus = 200; admitStatus = 200; rejectStatus = 200; });
 
   it('sits after Saved assignments while nobody waits, first with a count once somebody does, and never for co-authors', async () => {
     waiting = { waiting: [] };
@@ -627,6 +631,100 @@ describe('Waiting for access', () => {
     expect(page.admitLabel('')).toBe('Learner');
     expect(page.admitLabel('co-author')).toBe('Co-author');
     expect(page.admitRoleOptions.map(option => option.label)).toEqual(['Co-author', 'Admin', 'Reviewer', 'Tester']);
+  });
+
+  it('rejects a waiting request with Disable or Delete through the same confirmed writes as People (DLV-971)', async () => {
+    setup('owner');
+    const page = TestBed.runInInjectionContext(() => new AdminAccessPage());
+    await page.reload();
+    const rejectCalls = () => requests.filter(row => /\/admin\/accounts\/.+\/(disable|remove)$/.test(row.path));
+    // Nothing is sent before a choice and the typed word.
+    page.startReject(alex);
+    expect(page.rejecting()).toEqual({ row: alex, action: null });
+    await page.confirmReject();
+    page.chooseReject('disable');
+    page.rejectConfirmation = 'DELETE';
+    await page.confirmReject();
+    expect(rejectCalls()).toHaveLength(0);
+    // Disable: the Domain's disable route with DISABLE, the row leaves the list, People's words.
+    page.rejectConfirmation = 'DISABLE';
+    await page.confirmReject();
+    const disable = rejectCalls()[0];
+    expect(disable.path).toBe('/admin/accounts/alex-id/disable');
+    expect(disable.init?.method).toBe('POST');
+    expect(disable.init?.headers).toMatchObject({ 'X-CSRF-TOKEN': 'synthetic-csrf' });
+    expect(JSON.parse(disable.init?.body as string)).toEqual({ confirmation: 'DISABLE' });
+    expect(page.waiting().map(row => row.accountId)).toEqual(['sam-id']);
+    expect(page.rejecting()).toBeNull();
+    expect(page.notice()).toBe('Alex Example is disabled. They cannot sign in or ask for access again until you enable them on People.');
+    // Delete: the remove route with DELETE.
+    page.startReject(sam); page.chooseReject('remove'); page.rejectConfirmation = 'DELETE';
+    await page.confirmReject();
+    expect(rejectCalls()[1].path).toBe('/admin/accounts/sam-id/remove');
+    expect(JSON.parse(rejectCalls()[1].init?.body as string)).toEqual({ confirmation: 'DELETE' });
+    expect(page.waiting()).toEqual([]);
+    expect(page.notice()).toBe("sam.k's request is deleted. If they sign in again, they appear here as a new person.");
+    expect(page.tab()).toBe('waiting');
+    expect(page.busy()).toBe(false);
+  });
+
+  it('names what a refused rejection means and leaves the row and the panel in place (DLV-971)', async () => {
+    setup('owner');
+    const page = TestBed.runInInjectionContext(() => new AdminAccessPage());
+    await page.reload();
+    for (const [status, text] of [[404, 'This request was already removed. Refresh the list.'], [409, 'Alex Example was already deleted.'], [422, 'Type DELETE exactly to confirm.'], [403, 'Only the owner can reject people.']] as const) {
+      rejectStatus = status;
+      page.startReject(alex); page.chooseReject('remove'); page.rejectConfirmation = 'DELETE';
+      await page.confirmReject();
+      expect(page.notice()).toBe(text);
+      expect(page.waiting().map(row => row.accountId)).toEqual(['alex-id', 'sam-id']);
+      expect(page.rejecting()?.row).toEqual(alex);
+    }
+    page.cancelReject();
+    expect(page.rejecting()).toBeNull();
+    // Co-authors never see the list and cannot start a rejection.
+    TestBed.resetTestingModule();
+    setup('co-author');
+    const other = TestBed.runInInjectionContext(() => new AdminAccessPage());
+    other.startReject(alex);
+    expect(other.rejecting()).toBeNull();
+  });
+
+  it('shows Reject beside Admit, then the two choices with their words and a typed confirmation (DLV-971)', async () => {
+    setup('owner');
+    const fixture = TestBed.createComponent(AdminAccessPage);
+    fixture.detectChanges(); await fixture.whenStable();
+    await fixture.componentInstance.reload(); fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const row = root.querySelector<HTMLTableRowElement>('#waiting-for-access tbody tr')!;
+    const buttons = [...row.querySelectorAll<HTMLButtonElement>('button')].map(button => button.textContent?.trim());
+    expect(buttons).toEqual(['Admit', 'Reject']);
+    expect(root.querySelector('#reject-panel')).toBeNull();
+    row.querySelectorAll<HTMLButtonElement>('button')[1].click(); fixture.detectChanges();
+    const panel = root.querySelector('#reject-panel')!;
+    expect(panel.getAttribute('aria-label')).toBe('Reject Alex Example');
+    expect(panel.querySelector('h3')?.textContent).toBe('Reject Alex Example');
+    expect(panel.querySelector('.danger-button')?.textContent?.replace(/\s+/g, ' ').trim()).toBe('⚠ Disable');
+    expect(panel.querySelector('.caution-button')?.textContent?.trim()).toBe('Delete');
+    expect(panel.querySelector('#reject-disable')?.textContent).toBe('Strongest. Blocks every sign-in, with email or Google. They cannot ask for access again until you enable them on People.');
+    expect(panel.querySelector('#reject-remove')?.textContent).toBe('Removes the request and their sign-in. If they sign in again with the same email or Google account, they appear here as a new person.');
+    expect(panel.querySelector('.reset-panel')).toBeNull();
+    panel.querySelector<HTMLButtonElement>('.caution-button')!.click(); fixture.detectChanges();
+    const confirmPanel = panel.querySelector('.reset-panel')!;
+    expect(confirmPanel.classList.contains('danger-panel')).toBe(false);
+    expect(confirmPanel.querySelector('h4')?.textContent).toBe("Delete Alex Example's request");
+    expect(confirmPanel.querySelector('label')?.textContent?.replace(/\s+/g, ' ').trim()).toBe('Type DELETE to confirm');
+    const confirm = confirmPanel.querySelector<HTMLButtonElement>('.caution-button')!;
+    expect(confirm.textContent?.trim()).toBe('Confirm deletion');
+    expect(confirm.disabled).toBe(true);
+    const input = confirmPanel.querySelector<HTMLInputElement>('input')!;
+    input.value = 'DELETE'; input.dispatchEvent(new Event('input')); fixture.detectChanges(); await fixture.whenStable(); fixture.detectChanges();
+    expect(confirm.disabled).toBe(false);
+    confirm.click(); await fixture.whenStable(); fixture.detectChanges();
+    expect(requests.filter(request => request.path === '/admin/accounts/alex-id/remove')).toHaveLength(1);
+    expect(root.querySelector('#reject-panel')).toBeNull();
+    expect([...root.querySelectorAll('#waiting-for-access tbody tr')].map(item => item.getAttribute('data-account'))).toEqual(['sam.k']);
+    expect(root.querySelector('.notice')?.textContent).toBe("Alex Example's request is deleted. If they sign in again, they appear here as a new person.");
   });
 
   it('renders the waiting people as rows with an Admit menu, and admits from the row', async () => {

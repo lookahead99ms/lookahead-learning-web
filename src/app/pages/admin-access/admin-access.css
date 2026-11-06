@@ -921,3 +921,122 @@ button:disabled {
     flex: 1 1 auto;
   }
 }
+
+/* DLV-971: Reject on a waiting row, the same panel and buttons as Remove access on People. */
+.reject {
+  display: grid;
+  gap: 12px;
+  margin: 16px 0 0;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+.reject h3,
+.reject h4 {
+  margin: 0;
+  font-size: 15px;
+}
+.reject .removal-option {
+  display: grid;
+  grid-template-columns: 9rem minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+.reject .removal-option p {
+  margin: 0;
+  color: var(--text-subtle);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.reject .removal-option > button {
+  width: 100%;
+}
+.reject .danger-button,
+.reject .caution-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+.reject .danger-button {
+  border: 1px solid var(--danger);
+  background: var(--danger);
+  color: var(--surface-page);
+}
+.reject .caution-button {
+  border: 1px solid var(--danger);
+  background: transparent;
+  color: var(--danger);
+}
+.reject .danger-button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--danger) 85%, var(--text-strong));
+}
+.reject .caution-button:hover:not(:disabled) {
+  background: var(--danger-surface);
+}
+.reject .danger-button:focus-visible,
+.reject .caution-button:focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 2px;
+}
+.reject .danger-button:disabled,
+.reject .caution-button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.reject .reset-panel {
+  display: grid;
+  gap: 10px;
+  margin: 4px 0 0;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--warning) 45%, var(--line));
+  border-radius: 14px;
+}
+.reject .danger-panel {
+  border-color: var(--danger);
+  background: var(--danger-surface);
+}
+.reject label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+}
+.reject input {
+  min-height: 40px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-page);
+  color: var(--text-strong);
+  font: inherit;
+}
+.reject .actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.reject .action-link {
+  padding: 8px 4px;
+  border: 0;
+  background: none;
+  color: var(--accent-strong);
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+  text-decoration: underline;
+}
+@media (max-width: 640px) {
+  .reject .removal-option {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

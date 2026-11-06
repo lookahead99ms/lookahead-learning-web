@@ -1,4 +1,5 @@
 import { Component, DestroyRef, ElementRef, afterRenderEffect, inject, signal, computed, OnInit, viewChild } from '@angular/core';
+import { REJECT_TEXT } from './removal-text';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Location } from '@angular/common';
@@ -105,6 +106,45 @@ export class AdminAccessPage implements OnInit {
   readonly admitRoleOptions = ['co-author', 'admin', 'reviewer', 'tester'].map(id => this.roleOptions.find(option => option.id === id)!);
   /** The role chosen in each waiting row's Admit menu, by account ID ('' = Learner). */
   admitRole: Record<string, string> = {};
+  /**
+   * DLV-971 (owner, 2026-11-06): Reject on a waiting row offers the same two choices as People, Disable or Delete, with
+   * the same typed confirmation; the Domain treats a request the way an expired one is treated on Delete.
+   */
+  readonly rejectText = REJECT_TEXT;
+  readonly rejecting = signal<{ row: WaitingRow; action: 'disable' | 'remove' | null } | null>(null);
+  rejectConfirmation = '';
+  startReject(row: WaitingRow) {
+    if (!this.canManage()) return;
+    this.rejecting.set({ row, action: null }); this.rejectConfirmation = ''; this.notice.set('');
+  }
+  chooseReject(action: 'disable' | 'remove') {
+    const pending = this.rejecting();
+    if (pending) { this.rejecting.set({ row: pending.row, action }); this.rejectConfirmation = ''; }
+  }
+  cancelReject() { this.rejecting.set(null); this.rejectConfirmation = ''; }
+  /** Disable needs DISABLE typed, Delete needs DELETE; the row leaves the list once the Domain confirms. */
+  async confirmReject() {
+    const pending = this.rejecting(), word = pending?.action === 'disable' ? 'DISABLE' : 'DELETE';
+    if (!pending?.action || !this.canManage() || this.busy() || this.rejectConfirmation !== word) return;
+    const { row, action } = pending;
+    this.busy.set(true); this.notice.set('');
+    try {
+      await this.request(`/admin/accounts/${row.accountId}/${action}`, { confirmation: word }, {
+        404: 'This request was already removed. Refresh the list.',
+        409: `${row.displayName} was already deleted.`,
+        422: `Type ${word} exactly to confirm.`,
+        403: 'Only the owner can reject people.',
+      });
+      this.chosenTab.set('waiting');
+      this.waiting.update(rows => rows.filter(item => item.accountId !== row.accountId));
+      delete this.admitRole[row.accountId];
+      this.rejecting.set(null); this.rejectConfirmation = '';
+      this.notice.set(action === 'disable'
+        ? `${row.displayName} is disabled. They cannot sign in or ask for access again until you enable them on People.`
+        : `${row.displayName}'s request is deleted. If they sign in again, they appear here as a new person.`);
+    } catch (error) { this.notice.set(this.message(error)); }
+    finally { this.busy.set(false); }
+  }
   private static readonly choose: AuthorOutlineItem = { label: 'Choose a person', href: '#choose-person' };
   private static readonly outlines: Record<AccessTab | 'review', readonly AuthorOutlineItem[]> = {
     assign: [AdminAccessPage.choose],

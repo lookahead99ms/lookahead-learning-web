@@ -1304,6 +1304,43 @@ describe('PlatformHeader DEV session (user decision 2026-11-02)', () => {
     },
   );
 
+  it('offers Exit DEV in the header only on the Welcome page while a sign-in waits before admission (DLV-971)', () => {
+    const urlSpy = vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue('/welcome?access=pending');
+    const session = TestBed.inject(DevSession);
+    session.gated.set(true);
+    const leave = vi.spyOn(session, 'leave').mockResolvedValue();
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const exit = root.querySelector('.dev-exit-inline-button') as HTMLButtonElement;
+    expect(exit.textContent?.trim()).toBe('Exit DEV');
+    expect(root.querySelector('.sign-in-button:not(.dev-exit-inline-button)')).toBeNull();
+    expect(root.querySelector('#' + exit.getAttribute('aria-describedby'))?.textContent).toBe(
+      'Signs you out of DEV and returns you to its gate. Sign in again once the owner has approved you.',
+    );
+    exit.click();
+    expect(leave).toHaveBeenCalledTimes(1);
+    session.leaving.set(true);
+    fixture.detectChanges();
+    expect(exit.textContent?.trim()).toBe('Exiting…');
+    expect(exit.disabled).toBe(true);
+    session.leaving.set(false);
+    session.error.set('Unable to confirm leaving DEV. Retry Exit DEV environment.');
+    fixture.detectChanges();
+    expect(root.querySelector('.dev-exit-inline-error')?.textContent).toBe('Unable to confirm leaving DEV. Retry Exit DEV environment.');
+    // Inside DEV the DEV mark's own menu carries the exit; on other gate pages there is nothing to exit yet.
+    session.error.set('');
+    session.status.set({ dev: true, deadline: '2026-11-05T00:00:00Z', warning: false, maintenance: false });
+    fixture.detectChanges();
+    expect(root.querySelector('.dev-exit-inline-button')).toBeNull();
+    session.status.set(null);
+    for (const url of ['/welcome', '/sign-in', '/sign-up/confirm', '/?access=pending']) {
+      urlSpy.mockReturnValue(url);
+      fixture.detectChanges();
+      expect(root.querySelector('.dev-exit-inline-button'), url).toBeNull();
+    }
+  });
+
   it('before admission, a signed-in visitor’s account menu holds only Sign out; after admission it has every link', () => {
     vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue('/welcome?access=pending');
     const session = TestBed.inject(DevSession);

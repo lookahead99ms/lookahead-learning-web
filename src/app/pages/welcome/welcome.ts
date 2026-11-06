@@ -1,4 +1,5 @@
-import { Component, ElementRef, computed, inject } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { Component, ElementRef, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
@@ -38,8 +39,14 @@ export class WelcomePage {
    * fills the store; a waiting account is known only once the Gateway reports it), otherwise it stays plain.
    */
   private readonly accounts = inject(StudyPlanAccount);
+  /**
+   * A waiting sign-in has no session, so the Gateway hands the first name over in a short-lived cookie (DLV-971). Read
+   * once and cleared here; it never reaches the URL. An account known on the page still wins.
+   */
+  private readonly welcomeName = signal(readWelcomeCookie(inject(DOCUMENT)));
   protected readonly greeting = computed(() => {
-    const first = this.accounts.account()?.displayName.trim().split(/\s+/)[0];
+    const known = this.accounts.account()?.displayName.trim().split(/\s+/)[0];
+    const first = known || this.welcomeName();
     return first ? `${first}, your sign-in worked` : 'Your sign-in worked';
   });
   /** No section navigation or page statements beside the card. */
@@ -48,5 +55,19 @@ export class WelcomePage {
   constructor() {
     // DLV-969 (owner, 2026-11-04): the page fits the screen without scrolling.
     keepEssenceFitted(inject<ElementRef<HTMLElement>>(ElementRef).nativeElement);
+  }
+}
+
+/** The Gateway's welcome cookie: letters only, at most 40 characters, cleared as soon as it is read. */
+export const WELCOME_COOKIE = 'lookahead-welcome';
+export function readWelcomeCookie(document: Document): string | null {
+  try {
+    const pair = document.cookie.split(';').map((part) => part.trim()).find((part) => part.startsWith(WELCOME_COOKIE + '='));
+    if (!pair) return null;
+    document.cookie = `${WELCOME_COOKIE}=; Max-Age=0; Path=/; SameSite=Strict`;
+    const value = decodeURIComponent(pair.slice(WELCOME_COOKIE.length + 1));
+    return /^[\p{L}\p{M}'’.-]{1,40}$/u.test(value) ? value : null;
+  } catch {
+    return null;
   }
 }
