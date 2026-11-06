@@ -1,0 +1,18 @@
+/* DLV-969: a small centred dialog over the page; the page behind stays visible but dimmed. */
+.github-dialog {
+  width: min(34rem, calc(100vw - 32px));
+  padding: 24px 28px;
+  border: 1px solid color-mix(in srgb, var(--accent-strong) 40%, var(--platform-edge, var(--line)));
+  border-radius: 18px;
+  background: var(--surface);
+  color: var(--text-body);
+  box-shadow: 0 24px 64px rgb(0 0 0 / 30%);
+}
+.github-dialog::backdrop {
+  background: rgb(12 24 30 / 55%);
+}
+@media (max-width: 480px) {
+  .github-dialog {
+    padding: 20px 16px;
+  }
+}

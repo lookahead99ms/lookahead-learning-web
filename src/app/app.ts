@@ -8,10 +8,11 @@ import { PageSidebars } from './core/page-sidebars/page-sidebars';
 import { PageReadiness } from './core/page-readiness/page-readiness';
 import { PlatformBrand } from './core/platform-brand/platform-brand';
 import { GithubPrompt } from './core/github-account/github-account';
+import { GithubAccessDialog } from './core/github-account/github-access-dialog';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, PageSidebars, DevSessionNotice, PlatformBrand],
+  imports: [RouterOutlet, PageSidebars, DevSessionNotice, PlatformBrand, GithubAccessDialog],
   templateUrl: './app.html',
   styleUrl: './app.css',
   encapsulation: ViewEncapsulation.None,
@@ -27,7 +28,7 @@ export class App {
     effect(() => root.toggleAttribute('data-page-loading', this.readiness.loading()));
     const account = inject(StudyPlanAccount);
     const router = inject(Router);
-    // DLV-969 (owner, 2026-11-05): staff without a GitHub account on file see the Welcome card once per browser session.
+    // DLV-969 (owner, 2026-11-06): staff without a GitHub account on file get the GitHub dialog after each sign-in.
     inject(GithubPrompt).start();
     effect(() => {
       if (!account.sessionExpired()) return;

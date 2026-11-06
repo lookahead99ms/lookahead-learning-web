@@ -1,5 +1,5 @@
 import { Injectable, effect, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
 import { TestSessions } from '../test-session/test-sessions';
 import { StudyPlanAccount, type StudyAccount } from '../../pages/study-plan/study-plan-account';
 
@@ -44,10 +44,14 @@ export function asksForGithub(account: StudyAccount | null): boolean {
 const DISMISSED = 'lookahead.github.notNow.';
 const SHOWN = 'lookahead.github.prompted';
 
-/** "Not now" in this browser for this account. Storage can be blocked; then the card simply shows again. */
+/**
+ * Both marks live in session storage and are cleared when the browser sees the person signed out, so every sign-in
+ * asks again until a GitHub account is on file (owner, 2026-11-05). Storage can be blocked; then the dialog simply
+ * shows again.
+ */
 export function githubDismissed(accountId: string): boolean {
   try {
-    return globalThis.localStorage?.getItem(DISMISSED + accountId) === '1';
+    return globalThis.sessionStorage?.getItem(DISMISSED + accountId) === '1';
   } catch {
     return false;
   }
@@ -55,42 +59,55 @@ export function githubDismissed(accountId: string): boolean {
 
 export function dismissGithub(accountId: string): void {
   try {
-    globalThis.localStorage?.setItem(DISMISSED + accountId, '1');
+    globalThis.sessionStorage?.setItem(DISMISSED + accountId, '1');
   } catch {
-    // Blocked storage: the card shows again next time, nothing else depends on it.
+    // Blocked storage: the dialog shows again next time, nothing else depends on it.
   }
 }
 
-/** Pages the prompt never interrupts: the Welcome page itself, sign-in and the account pages. */
+/** Pages the dialog never interrupts: sign-in, the Welcome page and the account pages (the field is there anyway). */
 export function promptSkips(url: string): boolean {
   const path = url.split(/[?#]/, 1)[0];
   return path === '/welcome' || path === '/sign-in' || path.startsWith('/sign-in/') || path === '/account' || path.startsWith('/account/');
 }
 
 /**
- * Sends a staff member without a GitHub account on file to `/welcome?setup=github&next=<page>` once per browser session.
- * Started from the app shell; does nothing for anyone else, and nothing after Save or Not now.
+ * Opens the GitHub dialog for a staff member without a GitHub account on file, once per sign-in, on whatever page they
+ * are on (owner, 2026-11-06: a dialog, not a card on the Welcome page, so it is seen after every sign-in). Started from
+ * the app shell; does nothing for anyone else, and nothing after Save or Not now until the next sign-in.
  */
 @Injectable({ providedIn: 'root' })
 export class GithubPrompt {
   private readonly accounts = inject(StudyPlanAccount);
   private readonly tests = inject(TestSessions);
   private readonly router = inject(Router);
-  /** The account this browser session already checked, so a check runs at most once per account. */
+  /** The account this app instance already checked, so a check runs at most once per account. */
   private checked: string | null = null;
-  readonly redirected = signal(false);
+  /** An eligible account that was on a page the dialog skips; it opens on the next page that is not skipped. */
+  private waiting: string | null = null;
+  /** The account the dialog is open for, or null. */
+  readonly open = signal<string | null>(null);
 
   start(): void {
     effect(() => {
       const account = this.accounts.account();
-      if (!this.accounts.sessionKnown() || this.accounts.sessionExpired() || !account || this.checked === account.accountId) return;
+      if (!this.accounts.sessionKnown() || this.accounts.sessionExpired()) return;
+      if (!account) {
+        this.forget();
+        return;
+      }
+      if (this.checked === account.accountId) return;
       this.checked = account.accountId;
       void this.check(account);
     });
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd && this.waiting && !promptSkips(event.urlAfterRedirects)) this.show(this.waiting);
+    });
   }
 
+  /** True when the dialog opened (or will open on the next page that allows it). */
   async check(account: StudyAccount): Promise<boolean> {
-    if (!asksForGithub(account) || githubDismissed(account.accountId) || this.alreadyPrompted()) return false;
+    if (!asksForGithub(account) || githubDismissed(account.accountId) || this.alreadyPrompted(account.accountId)) return false;
     if (this.tests.status() === null) await this.tests.refresh();
     if (this.tests.active()) return false;
     let github: string | null | undefined;
@@ -99,27 +116,55 @@ export class GithubPrompt {
     } catch {
       return false; // the profile is unavailable: never block the page over this
     }
-    const url = this.router.url;
-    if (github || this.accounts.account()?.accountId !== account.accountId || promptSkips(url)) return false;
-    this.markPrompted();
-    this.redirected.set(true);
-    await this.router.navigate(['/welcome'], { queryParams: { setup: 'github', next: url } });
+    if (github || this.accounts.account()?.accountId !== account.accountId) return false;
+    if (promptSkips(this.router.url)) {
+      this.waiting = account.accountId;
+      return true;
+    }
+    this.show(account.accountId);
     return true;
   }
 
-  private alreadyPrompted(): boolean {
+  /** Save or Not now closed the dialog; Not now is remembered for this sign-in. */
+  close(outcome: 'saved' | 'later'): void {
+    const accountId = this.open();
+    if (accountId && outcome === 'later') dismissGithub(accountId);
+    this.open.set(null);
+  }
+
+  private show(accountId: string): void {
+    this.waiting = null;
+    this.markPrompted(accountId);
+    this.open.set(accountId);
+  }
+
+  private alreadyPrompted(accountId: string): boolean {
     try {
-      return globalThis.sessionStorage?.getItem(SHOWN) === '1';
+      return globalThis.sessionStorage?.getItem(SHOWN) === accountId;
     } catch {
-      return true; // blocked storage: do not risk sending the person to Welcome on every page load
+      return true; // blocked storage: do not risk opening the dialog on every page load
     }
   }
 
-  private markPrompted(): void {
+  private markPrompted(accountId: string): void {
     try {
-      globalThis.sessionStorage?.setItem(SHOWN, '1');
+      globalThis.sessionStorage?.setItem(SHOWN, accountId);
     } catch {
       // see alreadyPrompted
+    }
+  }
+
+  /** Signed out: the next sign-in asks again. */
+  private forget(): void {
+    const previous = this.checked;
+    this.checked = null;
+    this.waiting = null;
+    this.open.set(null);
+    try {
+      globalThis.sessionStorage?.removeItem(SHOWN);
+      if (previous) globalThis.sessionStorage?.removeItem(DISMISSED + previous);
+    } catch {
+      // Blocked storage holds nothing to clear.
     }
   }
 }

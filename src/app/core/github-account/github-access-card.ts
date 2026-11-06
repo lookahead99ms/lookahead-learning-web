@@ -1,15 +1,13 @@
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { Component, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
-import { dismissGithub, normalizeGithub } from '../../core/github-account/github-account';
-import { sameSitePath } from '../../core/test-session/same-site-path';
-import { AccountSettingsError } from '../account/account-settings-client';
-import { StudyPlanAccount } from '../study-plan/study-plan-account';
+import { RouterLink } from '@angular/router';
+import { normalizeGithub } from './github-account';
+import { AccountSettingsError } from '../../pages/account/account-settings-client';
+import { StudyPlanAccount } from '../../pages/study-plan/study-plan-account';
 
 /**
- * DLV-969 (owner, 2026-11-05): the Welcome page asks staff for their GitHub account. Save stores it with the other
- * profile links (the other three stay as they are); Not now is remembered in this browser. Either way the person goes
- * on to `next`, the page they were opening, when it is a path on this site.
+ * DLV-969 (owner, 2026-11-05): asks staff for their GitHub account. Save stores it with the other profile links (the
+ * other three stay as they are). Save and Not now report `finished`; what to do next is the dialog's business.
  */
 @Component({
   selector: 'app-github-access-card',
@@ -19,14 +17,12 @@ import { StudyPlanAccount } from '../study-plan/study-plan-account';
 })
 export class GithubAccessCard {
   readonly accountId = input.required<string>();
-  readonly next = input<string | null>(null);
+  readonly finished = output<'saved' | 'later'>();
   private readonly accounts = inject(StudyPlanAccount);
-  private readonly router = inject(Router);
   protected value = '';
   protected readonly busy = signal(false);
   protected readonly error = signal('');
   protected readonly done = signal<'saved' | 'later' | null>(null);
-  protected readonly continueTo = computed(() => sameSitePath(this.next()));
 
   async save(): Promise<void> {
     if (this.busy()) return;
@@ -42,7 +38,7 @@ export class GithubAccessCard {
       const links = current.links ?? { github: null, linkedin: null, x: null, website: null };
       await this.accounts.updateProfileLinks({ ...links, github: parsed.url });
       this.done.set('saved');
-      await this.continue();
+      this.finished.emit('saved');
     } catch (error) {
       this.error.set(
         error instanceof AccountSettingsError && error.kind === 'invalid-link'
@@ -56,14 +52,8 @@ export class GithubAccessCard {
     }
   }
 
-  async later(): Promise<void> {
-    dismissGithub(this.accountId());
+  later(): void {
     this.done.set('later');
-    await this.continue();
-  }
-
-  private async continue(): Promise<void> {
-    const next = this.continueTo();
-    if (next) await this.router.navigateByUrl(next);
+    this.finished.emit('later');
   }
 }

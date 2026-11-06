@@ -7,10 +7,6 @@ import { ContentService } from '../../content/content.service';
 import { DevSession } from '../../core/dev-session-notice/dev-session';
 import { PageSidebarContext } from '../../core/page-sidebars/page-sidebar-context';
 import { WelcomePage } from './welcome';
-import { signal } from '@angular/core';
-import { TestSessions } from '../../core/test-session/test-sessions';
-import { StudyPlanAccount } from '../study-plan/study-plan-account';
-import { dismissGithub } from '../../core/github-account/github-account';
 
 function render(query: Record<string, string>) {
   TestBed.configureTestingModule({
@@ -125,63 +121,4 @@ afterEach(() => {
     if (descriptor) Object.defineProperty(globalThis, name, descriptor);
     else delete (globalThis as Record<string, unknown>)[name];
   }
-});
-
-describe('WelcomePage GitHub card (DLV-969, owner 2026-11-05)', () => {
-  const permissions = (manageAccess: boolean, previewDocuments: boolean) => ({ manageAccess, previewDocuments, deliveryRead: false,
-    deliveryCreate: false, deliveryReview: false, deliveryDone: false, triageFeedback: false, fullCurriculum: false, feedbackRole: 'reviewer' });
-  async function renderFor(options: { manageAccess?: boolean; previewDocuments?: boolean; github?: string | null; testActive?: boolean; signedIn?: boolean; profileFails?: boolean } = {}) {
-    const account = signal<any>(options.signedIn === false ? null : { accountId: 'staff-1', username: 'staff', displayName: 'Staff', topicGrants: [],
-      permissions: permissions(!!options.manageAccess, options.previewDocuments ?? true) });
-    const loadProfile = vi.fn(async () => {
-      if (options.profileFails) throw new Error('down');
-      return { displayName: 'Staff', username: 'staff', links: { github: options.github ?? null, linkedin: null, x: null, website: null } };
-    });
-    const query = { setup: 'github', next: '/learn' };
-    TestBed.configureTestingModule({
-      imports: [WelcomePage],
-      providers: [
-        provideRouter([]), provideHttpClient(), provideHttpClientTesting(),
-        { provide: ContentService, useValue: { getSearchIndex: () => of([]) } },
-        { provide: ActivatedRoute, useValue: { queryParamMap: of(convertToParamMap(query)), snapshot: { queryParamMap: convertToParamMap(query) } } },
-        { provide: StudyPlanAccount, useValue: { account, loadProfile, sessionExpired: signal(false), sessionKnown: signal(true), authOptions: signal(null),
-          headerHint: signal(null), initialize: async () => undefined, enabled: true, loadThemePreference: async () => null } },
-      ],
-    });
-    const tests = TestBed.inject(TestSessions);
-    vi.spyOn(tests, 'refresh').mockImplementation(async () => tests.status.set({ active: !!options.testActive, canReturn: false, holderName: null }));
-    const fixture = TestBed.createComponent(WelcomePage);
-    fixture.detectChanges();
-    await fixture.whenStable();
-    await new Promise((resolve) => setTimeout(resolve));
-    fixture.detectChanges();
-    return { root: fixture.nativeElement as HTMLElement, loadProfile, fixture };
-  }
-
-  it('shows staff without a GitHub account the card above the Essence, continuing to next', async () => {
-    const { root, fixture } = await renderFor();
-    const card = root.querySelector('app-github-access-card');
-    expect(card?.querySelector('h2')?.textContent).toBe('Your GitHub account');
-    expect(card?.nextElementSibling?.matches('section.home-essence')).toBe(true);
-    const component = fixture.debugElement.query((node) => node.name === 'app-github-access-card').componentInstance;
-    expect([component.accountId(), component.next()]).toEqual(['staff-1', '/learn']);
-  });
-
-  it('never shows it to the owner, a learner, a test session, someone with GitHub on file, after Not now, or signed out', async () => {
-    for (const options of [{ manageAccess: true }, { previewDocuments: false }, { testActive: true }, { github: 'https://github.com/staff' }, { signedIn: false }]) {
-      TestBed.resetTestingModule();
-      const { root } = await renderFor(options);
-      expect(root.querySelector('app-github-access-card')).toBeNull();
-    }
-    TestBed.resetTestingModule();
-    dismissGithub('staff-1');
-    const { root, loadProfile } = await renderFor();
-    expect(root.querySelector('app-github-access-card')).toBeNull();
-    expect(loadProfile).not.toHaveBeenCalled();
-  });
-
-  it('shows no card when the profile cannot be read', async () => {
-    const { root } = await renderFor({ profileFails: true });
-    expect(root.querySelector('app-github-access-card')).toBeNull();
-  });
 });

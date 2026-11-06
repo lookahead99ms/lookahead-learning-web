@@ -1,28 +1,27 @@
-/* DLV-969: the staff GitHub card on /welcome, in the same quiet style as the waiting notice. */
+/* DLV-969: the GitHub question, shown inside the dialog: title, one sentence, the field, two centred actions. */
 :host {
   display: block;
 }
 .github-card {
   display: grid;
   gap: 12px;
-  max-width: 44rem;
-  margin-inline: auto;
-  padding: 20px 24px;
-  border: 1px solid color-mix(in srgb, var(--accent-strong) 40%, var(--platform-edge, var(--line)));
-  border-inline-start-width: 4px;
-  border-radius: 14px;
-  background: color-mix(in srgb, var(--accent-strong) 8%, var(--surface));
   color: var(--text-strong);
 }
 .github-card h2 {
   margin: 0;
-  font-size: 18px;
+  font-size: 19px;
   letter-spacing: -0.01em;
 }
 .github-card p {
-  max-width: 72ch;
+  max-width: 60ch;
   margin: 0;
   color: var(--text-body);
+  font-size: 15px;
+  line-height: 1.5;
+}
+.github-card a {
+  color: var(--accent-strong);
+  font-weight: 650;
 }
 .github-form {
   display: grid;
@@ -30,6 +29,7 @@
 }
 .github-form label {
   font-weight: 650;
+  font-size: 14px;
 }
 .github-form input {
   min-height: 44px;
@@ -56,9 +56,6 @@
   margin-top: 4px;
 }
 @media (max-width: 480px) {
-  .github-card {
-    padding: 16px;
-  }
   .github-actions {
     flex-direction: column;
     align-items: stretch;

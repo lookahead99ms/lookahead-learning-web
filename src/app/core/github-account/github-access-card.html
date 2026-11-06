@@ -3,12 +3,11 @@
   @if (done() === 'saved') {
     <p role="status">Saved. The owner can now add you to the repositories and workflows you work on.</p>
   } @else if (done() === 'later') {
-    <p role="status">No problem. You can add it any time in <a routerLink="/account">Account settings</a>.</p>
+    <p role="status">No problem. You can add it any time under <a routerLink="/account" fragment="links">Profiles and links</a> in your account.</p>
   } @else {
     <p class="github-note">
-      Look Ahead's code, content and release workflows live in private GitHub repositories. If your role needs them, the
-      owner adds your GitHub account to the repositories and workflows you work on. No GitHub account? Choose Not now.
-      You can add it any time in Account settings, and the owner may ask for it later.
+      If your role needs our private repositories, the owner adds your GitHub account to them. You can also add it later
+      under <a routerLink="/account" fragment="links">Profiles and links</a> in your account.
     </p>
     <form class="github-form" (submit)="$event.preventDefault(); save()">
       <label for="github-account">GitHub username or profile address</label>
