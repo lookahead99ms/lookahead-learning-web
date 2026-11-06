@@ -13,12 +13,14 @@
     <p class="lede">
       @if (section() === 'submitted' && !seesAll()) {
         Each item shows the status the owner set. Add new items under Write Review.
-      } @else if (showAll() && section() !== 'submit' && !canTriage()) {
-        Every reviewer's items, newest day first. Open an item to read it and see its images. The
-        owner sets each status and note.
+      } @else if (showAll() && section() !== 'submit' && !isOwner()) {
+        Every reviewer's items and every learner request, newest day first. Open an item to read it
+        and see its images. The owner sets each review's status and note; you set the status of
+        learner requests.
       } @else if (showAll() && section() !== 'submit') {
-        Each reviewer sees only their own items. You see all of them, newest day first. Open an
-        item to read it, see its images and set a status the reviewer will see.
+        Each reviewer sees only their own items. You see all of them and every learner request,
+        newest day first. Open an item to read it, see its images and set a status the reviewer
+        will see.
       } @else if (seesAll()) {
         This is the view every reviewer gets. Items you add here also appear under Team Reviews
         with your name.
@@ -81,6 +83,7 @@
                   <tr>
                     <th scope="col">Reviewer</th>
                     <th scope="col">Items</th>
+                    <th scope="col">Requests</th>
                     @for (status of statuses; track status.id) {
                       <th scope="col">{{ status.label }}</th>
                     }
@@ -99,6 +102,7 @@
                         </button>
                       </th>
                       <td>{{ reviewer.items.length }}</td>
+                      <td>{{ countRequests(reviewer.items) }}</td>
                       @for (status of statuses; track status.id) {
                         <td>{{ countWith(reviewer.items, status.id) }}</td>
                       }
@@ -148,6 +152,9 @@
                 <option value="">All types</option>
                 @for (category of categories; track category.id) {
                   <option [value]="category.id">{{ category.label }}</option>
+                }
+                @for (type of requestTypes; track type.id) {
+                  <option [value]="requestFilterPrefix + type.id">Learner request: {{ type.label }}</option>
                 }
               </select>
             </label>
@@ -328,7 +335,12 @@
           >
             <span class="chevron" aria-hidden="true"></span>
             <span class="summary-main">
-              <span class="summary-title">{{ summary.title }}</span>
+              <span class="summary-head">
+                <span class="summary-title">{{ summary.title }}</span>
+                @if (isRequest(summary)) {
+                  <span class="kind-badge">{{ kindBadge(summary) }}</span>
+                }
+              </span>
               <span class="summary-meta">
                 @if (showReviewer) {
                   <strong>{{ summary.reviewerName }}</strong>
@@ -378,6 +390,15 @@
 
 <ng-template #itemBody let-item let-showReviewer="showReviewer">
 <article class="item" [attr.aria-label]="item.title">
+  @if (item.reference) {
+    <p class="item-reference">
+      Reference: <code>{{ item.reference }}</code>
+      <button type="button" class="link-button copy-reference" (click)="copyReference(item)">
+        Copy<span class="visually-hidden"> reference {{ item.reference }}</span>
+      </button>
+      <span role="status" class="copy-status">{{ copyStatus()[item.id] }}</span>
+    </p>
+  }
   @if (item.pageUrl) {
     <p class="item-url">Page address: <code>{{ item.pageUrl }}</code></p>
   }
@@ -402,7 +423,7 @@
   @if (item.ownerNote) {
     <p class="owner-note"><strong>Owner’s note:</strong> {{ item.ownerNote }}</p>
   }
-  @if (showReviewer && canTriage()) {
+  @if (showReviewer && canTriage(item)) {
     <form class="triage" (ngSubmit)="saveTriage(item)">
       <label
         >Status
@@ -431,7 +452,7 @@
         <span role="status">{{ triageMessage()[item.id] }}</span>
       </div>
     </form>
-  } @else if (isOwn(item) && item.status === 'new') {
+  } @else if (canEdit(item)) {
     <div class="item-actions">
       <button type="button" class="secondary" (click)="edit(item)">
         Edit<span class="visually-hidden"> {{ item.title }}</span>
@@ -440,7 +461,7 @@
         Delete<span class="visually-hidden"> {{ item.title }}</span>
       </button>
     </div>
-  } @else if (isOwn(item)) {
+  } @else if (isOwn(item) && !isRequest(item)) {
     <p class="hint">The owner has reviewed this item, so it can no longer be changed.</p>
   }
 </article>

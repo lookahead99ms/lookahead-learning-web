@@ -1,6 +1,7 @@
 import { Component, computed, ElementRef, inject, input, OnDestroy, OnInit, signal, viewChild } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import {
   PLATFORM_REVIEW_CLIENT,
@@ -14,15 +15,22 @@ import {
   ReviewPriority,
   ReviewStatus,
   draftProblem,
+  isRequest,
+  kindBadge,
   labelOf,
+  requestTypes,
   reviewCategories,
   reviewLimits,
   reviewPriorities,
   reviewStatuses,
   reviewedPages,
 } from './platform-review.model';
+import { ReviewEditIntent } from './review-edit-intent';
 import { ScrollLock } from '../../core/scroll-lock/scroll-lock';
 import { ReportTips } from '../support/report-tips';
+
+/** A Type filter value for learner requests: "request:problem", "request:feedback" or "request:question". */
+const requestFilterPrefix = 'request:';
 
 interface PendingFile {
   file: File;
@@ -56,7 +64,13 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
    */
   readonly section = input<'submit' | 'submitted' | 'all'>('all');
   protected readonly client = inject(PLATFORM_REVIEW_CLIENT);
+  private readonly router = inject(Router);
+  private readonly editIntent = inject(ReviewEditIntent);
   protected readonly categories = reviewCategories;
+  protected readonly requestTypes = requestTypes;
+  protected readonly requestFilterPrefix = requestFilterPrefix;
+  protected readonly isRequest = isRequest;
+  protected readonly kindBadge = kindBadge;
   protected readonly priorities = reviewPriorities;
   protected readonly statuses = reviewStatuses;
   protected readonly pages = reviewedPages;
@@ -71,10 +85,24 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
   protected readonly olderError = signal('');
   /**
    * DLV-971 (owner, 2026-11-06): the owner and admins see the overview, the filters and every reviewer's items;
-   * only the owner sets a status and writes the note. An admin reads the note like a reviewer does.
+   * only the owner sets a status and writes the note on a review. An admin reads the note like a reviewer does.
    */
   protected readonly seesAll = computed(() => this.viewer()?.role === 'owner' || this.viewer()?.role === 'admin');
-  protected readonly canTriage = computed(() => this.viewer()?.role === 'owner');
+  protected readonly isOwner = computed(() => this.viewer()?.role === 'owner');
+  /**
+   * Triage rule (owner, 2026-11-06): the owner sets the status of every item; an admin only of a learner request
+   * (kind "request"); nobody else.
+   */
+  protected canTriage(item: PlatformReviewItem | PlatformReviewSummary): boolean {
+    const role = this.viewer()?.role;
+    if (role === 'owner') return true;
+    if (role === 'admin') return isRequest(item);
+    return false;
+  }
+  /** Reviews are edited and deleted by their reviewer while New; a learner request is never editable here. */
+  protected canEdit(item: PlatformReviewItem): boolean {
+    return this.isOwn(item) && !isRequest(item) && item.status === 'new';
+  }
   /** The owner and admins switch between everyone's items and the reviewer view of their own. */
   protected readonly ownerView = signal<'all' | 'mine'>('all');
   protected readonly showAll = computed(() => this.seesAll() && this.ownerView() === 'all');
@@ -115,6 +143,8 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
     {},
   );
   protected readonly triageMessage = signal<Record<string, string>>({});
+  /** "Copied" or "Copy failed" after the reference copy button, per item. */
+  protected readonly copyStatus = signal<Record<string, string>>({});
 
   // Attachments
   protected readonly attachmentUrls = signal<Record<string, string>>({});
@@ -143,9 +173,20 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
       (item) =>
         (!this.reviewerFilter() || item.reviewerId === this.reviewerFilter()) &&
         (!this.statusFilter() || item.status === this.statusFilter()) &&
-        (!this.categoryFilter() || item.category === this.categoryFilter()),
+        this.matchesType(item),
     ),
   );
+  /** The Type filter holds a review category or a learner request type ("request:<type>"). */
+  private matchesType(item: PlatformReviewSummary): boolean {
+    const filter = this.categoryFilter();
+    if (!filter) return true;
+    if (filter.startsWith(requestFilterPrefix))
+      return isRequest(item) && item.requestType === filter.slice(requestFilterPrefix.length);
+    return item.category === filter;
+  }
+  protected countRequests(items: PlatformReviewSummary[]): number {
+    return items.filter(isRequest).length;
+  }
   protected readonly allDays = computed(() => this.byDay(this.visibleItems()));
   protected readonly ownDays = computed(() => this.byDay(this.ownItems()));
   ngOnInit(): void {
@@ -180,6 +221,8 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
         this.items.set([]);
         this.nextBefore.set(null);
         this.state.set('ready');
+        const pendingEdit = this.editIntent.take();
+        if (pendingEdit) await this.editById(pendingEdit);
         return;
       }
       const page = await this.client.list();
@@ -249,6 +292,9 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
               status: item.status,
               ownerNote: !!item.ownerNote,
               attachmentCount: item.attachments.length,
+              kind: item.kind,
+              requestType: item.requestType,
+              reference: item.reference,
               updatedAt: item.updatedAt,
             }
           : summary,
@@ -376,7 +422,31 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
     this.formStatus.set('');
   }
 
+  /**
+   * DLV-971 (owner, 2026-11-06): under Team Reviews the form is on the other tab, so Edit records the id and
+   * opens Write Review, whose instance loads the item on init.
+   */
   protected edit(item: PlatformReviewItem): void {
+    if (this.section() === 'submitted') {
+      this.editIntent.set(item.id);
+      void this.router.navigate(['/support'], { queryParams: { view: null }, queryParamsHandling: 'merge' });
+      return;
+    }
+    this.fillForm(item);
+  }
+
+  private async editById(id: string): Promise<void> {
+    try {
+      const item = await this.client.item(id);
+      if (isRequest(item)) throw new PlatformReviewError('forbidden');
+      this.fillForm(item);
+      void this.loadAttachmentUrls(item);
+    } catch {
+      this.formStatus.set('The item could not be opened for editing. Open it again under Team Reviews.');
+    }
+  }
+
+  private fillForm(item: PlatformReviewItem): void {
     this.resetForm();
     this.editingId.set(item.id);
     this.category = item.category;
@@ -386,8 +456,9 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
     this.detailsText = item.details;
     this.priority = item.priority;
     this.keptAttachments.set([...item.attachments]);
-    this.formHeading()?.nativeElement.scrollIntoView({ block: 'start' });
-    this.formHeading()?.nativeElement.focus();
+    const heading = this.formHeading()?.nativeElement;
+    heading?.scrollIntoView?.({ block: 'start' });
+    heading?.focus();
   }
 
   protected resetForm(): void {
@@ -437,6 +508,22 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
         [item.id]: 'Not saved. Try again.',
       }));
     }
+  }
+
+  /** Copies the support reference of a learner request; the status text says whether it worked. */
+  protected async copyReference(item: PlatformReviewItem): Promise<void> {
+    const reference = item.reference ?? '';
+    let copied = false;
+    try {
+      const clipboard = navigator.clipboard;
+      if (clipboard?.writeText) {
+        await clipboard.writeText(reference);
+        copied = true;
+      }
+    } catch {
+      copied = false;
+    }
+    this.copyStatus.update((status) => ({ ...status, [item.id]: copied ? 'Copied' : 'Copy failed' }));
   }
 
   protected countWith(items: PlatformReviewSummary[], status: ReviewStatus): number {

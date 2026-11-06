@@ -49,6 +49,31 @@ export const reviewedPages = [
   'Other',
 ] as const;
 
+/**
+ * DLV-971 (owner, 2026-11-06): a learner's support request (Report a problem / Share feedback / Ask a question) is
+ * stored as an item of kind "request" beside the reviews; absent or null means a review.
+ */
+export const reviewKinds = ['review', 'request'] as const;
+export type ReviewKind = (typeof reviewKinds)[number];
+
+export const requestTypes = [
+  { id: 'problem', label: 'Problem' },
+  { id: 'feedback', label: 'Feedback' },
+  { id: 'question', label: 'Question' },
+] as const;
+export type RequestType = (typeof requestTypes)[number]['id'];
+
+export function isRequest(item: { kind?: ReviewKind | null }): boolean {
+  return item.kind === 'request';
+}
+
+/** The row badge of a learner request: "Learner request · Problem"; empty for a review. */
+export function kindBadge(item: { kind?: ReviewKind | null; requestType?: RequestType | null }): string {
+  if (!isRequest(item)) return '';
+  const type = item.requestType ? labelOf(requestTypes, item.requestType) : '';
+  return type ? `Learner request · ${type}` : 'Learner request';
+}
+
 export const reviewLimits = {
   titleLength: 120,
   detailsLength: 5000,
@@ -80,6 +105,11 @@ export interface PlatformReviewItem {
   attachments: ReviewAttachment[];
   status: ReviewStatus;
   ownerNote: string;
+  /** "request" for a learner's support request; absent or null means a review. */
+  kind?: ReviewKind | null;
+  requestType?: RequestType | null;
+  /** The support receipt reference; present on requests. */
+  reference?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -98,6 +128,11 @@ export interface PlatformReviewSummary {
   attachmentCount: number;
   /** True when the owner has written a note. */
   ownerNote: boolean;
+  /** "request" for a learner's support request; absent or null means a review. */
+  kind?: ReviewKind | null;
+  requestType?: RequestType | null;
+  /** The support receipt reference; present on requests. */
+  reference?: string | null;
   createdAt: string;
   updatedAt: string;
 }

@@ -112,6 +112,29 @@ describe('ConnectedPlatformReviewClient', () => {
     expect((await client.list().catch((error) => error)).kind).toBe('unauthorized');
   });
 
+  it('passes the kind, request type and reference of a learner request through unchanged (DLV-971)', async () => {
+    const stored = {
+      id: itemId,
+      kind: 'request',
+      requestType: 'question',
+      reference: 'SUP-42',
+      submitterRole: 'user',
+      category: 'idea',
+      page: 'Support',
+      status: 'new',
+    };
+    responses.push(json(200, { data: stored }));
+    expect(await client.item(itemId)).toEqual(stored);
+    responses.push(json(200, { data: { items: [{ ...stored, attachmentCount: 0 }], nextBefore: null } }));
+    const page = await client.list();
+    expect(page.items[0]).toEqual(expect.objectContaining({ kind: 'request', requestType: 'question', reference: 'SUP-42' }));
+    // A review arrives without the fields; nothing is invented.
+    responses.push(json(200, { data: { id: itemId, category: 'problem' } }));
+    const review = await client.item(itemId);
+    expect(review.kind).toBeUndefined();
+    expect(review.reference).toBeUndefined();
+  });
+
   it('pages older days and shows images through blob URLs', async () => {
     responses.push(json(200, { data: { items: [], nextBefore: null } }));
     await client.list('2026-09-01');

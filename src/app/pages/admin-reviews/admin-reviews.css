@@ -341,6 +341,25 @@ button.danger {
   color: var(--text-subtle);
   font-size: 13px;
 }
+.summary-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  min-width: 0;
+}
+.kind-badge {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--path-learn, var(--accent-strong)) 16%, transparent);
+  color: var(--text-strong);
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
 .summary-status {
   color: var(--text-subtle);
   font-size: 13px;
@@ -373,6 +392,25 @@ button.danger {
 .item-url {
   color: var(--text-subtle);
   font-size: 13px;
+}
+.item-reference {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  color: var(--text-subtle);
+  font-size: 13px;
+}
+.item-reference code {
+  color: var(--text-strong);
+  font-weight: 650;
+}
+.copy-reference {
+  min-height: 24px;
+  display: inline;
+}
+.copy-status:empty {
+  display: none;
 }
 .item-details {
   white-space: pre-wrap;

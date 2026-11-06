@@ -9,9 +9,12 @@ import { PlatformHeader } from '../../core/platform-header/platform-header';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import {
   PLATFORM_REVIEW_CLIENT,
+  PlatformReviewClient,
   PlatformReviewError,
+  PlatformReviewItem,
   PlatformReviewViewer,
 } from '../admin-reviews/platform-review.model';
+import { ReviewEditIntent } from '../admin-reviews/review-edit-intent';
 
 @Component({ selector: 'app-platform-header', template: '' })
 class HeaderStub {}
@@ -178,5 +181,88 @@ describe('Support and feedback page', () => {
       expect(root.querySelector('.submit-panel')).not.toBeNull();
       expect(root.querySelector('.request-fold')?.getAttribute('aria-expanded')).toBe('false');
     }
+  });
+
+  it('Edit from Team Reviews opens Write Review with that item in the form (DLV-971)', async () => {
+    const own: PlatformReviewItem = {
+      id: 'a',
+      reviewerId: 'r',
+      reviewerName: 'Reviewer',
+      category: 'change',
+      page: 'Search',
+      pageUrl: '/search',
+      title: 'Search misses lessons',
+      details: 'Searching for PKCE shows nothing.',
+      priority: 'high',
+      attachments: [],
+      status: 'new',
+      ownerNote: '',
+      kind: 'review',
+      requestType: null,
+      reference: null,
+      createdAt: '2026-10-11T10:00:00.000Z',
+      updatedAt: '2026-10-11T10:00:00.000Z',
+    };
+    const client: PlatformReviewClient = {
+      viewer: reviewer,
+      list: async () => ({
+        items: [{ ...own, attachmentCount: 0, ownerNote: false }],
+        nextBefore: null,
+      }),
+      item: vi.fn(async () => own),
+      save: async () => own,
+      remove: async () => {},
+      triage: async () => own,
+      attachmentUrl: async () => 'blob:test',
+      releaseAttachmentUrl: () => {},
+    };
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: 'support', component: SupportPage }]),
+        {
+          provide: StudyPlanAccount,
+          useValue: {
+            account: signal({ accountId: 'a' }),
+            sessionExpired: () => false,
+            initialize: async () => {},
+          },
+        },
+        { provide: PLATFORM_REVIEW_CLIENT, useValue: client },
+      ],
+    });
+    // The real review panel on both tabs; only the header and the request form are stubbed.
+    TestBed.overrideComponent(SupportPage, {
+      remove: { imports: [PlatformHeader, SupportRequestForm] },
+      add: { imports: [HeaderStub, FormStub] },
+    });
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/support?view=reviews', SupportPage);
+    const settle = async () => {
+      for (let pass = 0; pass < 3; pass++) {
+        await new Promise((resolve) => setTimeout(resolve));
+        await harness.fixture.whenStable();
+        harness.detectChanges();
+      }
+    };
+    await settle();
+    const root = harness.routeNativeElement!;
+    expect(root.querySelector('#support-tab-reviews')?.getAttribute('aria-selected')).toBe('true');
+    expect(root.querySelector('#review-form')).toBeNull();
+    (root.querySelector('.item-summary') as HTMLButtonElement).click();
+    await settle();
+    [...root.querySelectorAll<HTMLButtonElement>('.item-actions button')]
+      .find((button) => button.textContent?.includes('Edit'))!
+      .click();
+    await settle();
+    expect(TestBed.inject(Router).url).toBe('/support');
+    expect(root.querySelector('#support-tab-contact')?.getAttribute('aria-selected')).toBe('true');
+    expect(root.querySelector('.submit-panel #review-form')?.textContent?.trim()).toBe('Edit your review item');
+    expect((root.querySelector('input[name="title"]') as HTMLInputElement).value).toBe('Search misses lessons');
+    expect((root.querySelector('textarea[name="details"]') as HTMLTextAreaElement).value).toBe(
+      'Searching for PKCE shows nothing.',
+    );
+    expect((root.querySelector('select[name="category"]') as HTMLSelectElement).value).toBe('change');
+    expect(TestBed.inject(ReviewEditIntent).itemId()).toBeNull();
+    expect(root.querySelector('.request-fold')).not.toBeNull();
   });
 });
