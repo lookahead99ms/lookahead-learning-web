@@ -38,8 +38,9 @@ describe('GithubAccessCard (DLV-969)', () => {
     const { root } = await render();
     expect(root.querySelector('h2')?.textContent).toBe('Your GitHub account');
     expect(root.querySelector('.github-note')?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
-      'If your role needs our private repositories, the owner adds your GitHub account to them. You can also add it later in Account settings.',
+      'If your role needs our private repositories, the owner adds your GitHub account to them. You can also add it later under Profiles and links in your account.',
     );
+    expect(root.querySelector('.github-note a')?.getAttribute('href')).toBe('/account#links');
     expect(root.querySelector('label')?.textContent).toBe('GitHub username or profile address');
     expect([...root.querySelectorAll('.github-actions button')].map((button) => [button.textContent?.trim(), button.className])).toEqual([
       ['Save', 'action-button'],
@@ -94,7 +95,7 @@ describe('GithubAccessCard (DLV-969)', () => {
     await press('Not now');
     expect(update).not.toHaveBeenCalled();
     expect(finished).toHaveBeenCalledWith('later');
-    expect(root.querySelector('[role="status"]')?.textContent?.trim()).toBe('No problem. You can add it any time in Account settings.');
-    expect(root.querySelector('[role="status"] a')?.getAttribute('href')).toBe('/account');
+    expect(root.querySelector('[role="status"]')?.textContent?.trim()).toBe('No problem. You can add it any time under Profiles and links in your account.');
+    expect(root.querySelector('[role="status"] a')?.getAttribute('href')).toBe('/account#links');
   });
 });
