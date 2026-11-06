@@ -56,6 +56,7 @@ export const routes: Routes = [
       ['admin/aws-candidate-files', 'aws-candidate-files'],
       ['admin/aws-candidate-commands', 'aws-candidate-commands'],
       ['admin/aws-candidate-updates', 'aws-candidate-updates'],
+      ['admin/runtime-stores', 'runtime-stores'],
       ['admin/release-gates', 'release-gates'],
       ['admin/production-support', 'production-support'],
       ['admin/support-runbooks', 'support-runbooks'],

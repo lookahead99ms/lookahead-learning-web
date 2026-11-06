@@ -42,6 +42,7 @@ const documentIds = new Set([
   'aws-candidate-files',
   'aws-candidate-commands',
   'aws-candidate-updates',
+  'runtime-stores',
   'release-gates',
   'production-support',
   'support-runbooks',

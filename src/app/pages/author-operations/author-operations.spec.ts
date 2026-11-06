@@ -157,7 +157,21 @@ describe('Operations author view', () => {
     expect(steps.querySelector('.section-next strong')!.textContent).toBe('DEV execution records');
   });
 
+  // DLV-971 (owner, 2026-11-06): Operations now has one sub-page, Runtime stores, so it is a section of two.
+  it('shows the Runtime stores sub-page as the section under Operations', async () => {
+    const fixture = await create();
+    const content = fixture.nativeElement.querySelector('.workspace-content') as HTMLElement;
+    expect(content.querySelector('nav.section-pages .section-label')!.textContent).toContain('page 1 of 2');
+    const steps = content.querySelector('nav.section-steps') as HTMLElement;
+    expect(steps.querySelector('.section-previous')).toBeNull();
+    expect(steps.querySelector('.section-next')!.getAttribute('href')).toBe('/admin/runtime-stores');
+    expect(steps.querySelector('.section-next strong')!.textContent).toBe('Runtime stores');
+  });
+
   it('shows no section row on a standalone reference', async () => {
+    TestBed.overrideProvider(ActivatedRoute, {
+      useValue: { snapshot: { data: { authorDocument: 'release-gates' } } },
+    });
     const fixture = await create();
     expect(fixture.nativeElement.querySelector('nav.section-pages')).toBeNull();
     expect(fixture.nativeElement.querySelector('nav.section-steps')).toBeNull();

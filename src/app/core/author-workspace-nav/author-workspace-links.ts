@@ -264,6 +264,17 @@ export const authorDocumentationGroups: readonly AuthorDocumentationGroup[] = [
         href: '/admin/operations',
         description: 'Local environments, deployment order, rollback and repositories.',
         icon: '🛠️',
+        children: [
+          {
+            // DLV-971 (owner, 2026-11-06): the assets bucket as the runtime stores: one live tar, the Delivery Plan,
+            // reviews and learner requests, the 4-hour sweeps, the cutover and recovery steps.
+            id: 'runtime-stores',
+            label: 'Runtime stores',
+            href: '/admin/runtime-stores',
+            description: 'The assets bucket: one live tar, the Delivery Plan store, reviews and requests, the sweeps.',
+            icon: '🗄️',
+          },
+        ],
       },
       {
         id: 'production-support',
