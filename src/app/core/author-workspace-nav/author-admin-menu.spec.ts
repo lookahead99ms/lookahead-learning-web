@@ -45,6 +45,7 @@ describe('AuthorAdminMenu', () => {
       '/admin/access-checks',
       '/admin/plans',
       '/admin/architecture',
+      '/admin/contracts',
       '/admin/authentication',
       '/admin/api',
       '/admin/local-development',

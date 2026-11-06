@@ -92,6 +92,13 @@ export const authorDocumentationGroups: readonly AuthorDocumentationGroup[] = [
         icon: '🏗️',
       },
       {
+        id: 'contracts',
+        label: 'Contracts',
+        href: '/admin/contracts',
+        description: 'The contract files the repositories keep in step: registry, content paths, release layout, Domain API.',
+        icon: '🤝',
+      },
+      {
         id: 'authentication',
         label: 'Sign-in & authentication',
         href: '/admin/authentication',

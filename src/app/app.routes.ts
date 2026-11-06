@@ -39,6 +39,7 @@ export const routes: Routes = [
       ['admin/access-checks', 'access-checks'],
       ['admin/authentication', 'authentication'],
       ['admin/authentication-walkthrough', 'authentication-walkthrough'],
+      ['admin/contracts', 'contracts'],
       ['admin/aws-deployment', 'aws-deployment'],
       ['admin/aws-environment-journey', 'aws-environment-journey'],
       ['admin/aws-dev-plan', 'aws-dev-plan'],

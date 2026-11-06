@@ -191,6 +191,26 @@ source, SMTP capture and lifecycle/probe scripts are local development and
 verification tools. They are separate from the Java/Spring product applications.
 They do not define production hosting or activate learner code execution.
 
+## Contracts with other repositories
+
+No repository clones or fetches another at build or deploy time. Every
+expectation between two repositories is a committed contract file owned by the
+producer, with a copy here; each side tests its own copy on its own pull request,
+and the Content repository is the registry of every contract (`docs/contracts/registry.json`)
+and runs the only cross-repository comparison. Contracts are public by nature; anything that would need to stay
+private is not a contract but configuration, and it belongs to Infra.
+
+| Contract file | Owner | Checked on this repo's PR by | Checked by the other side | Change order | What a failure means |
+| --- | --- | --- | --- | --- | --- |
+| `scripts/release/contracts/domain-api-v1.json` | Gateway (consumer of the Domain API; this file is Web's copy) | `npm run test:gateway-contract` after the build: every path under `webPaths` must be served by the built site under the container's nginx rules (a file, a route snapshot or the application shell; Gateway-owned prefixes are never served). Its own test runs first. | Domain's provider test and the Gateway's consumer test check their own copies; Content's registry check compares all three copies with the master | Change the Gateway's copy first, then copy it here with the Web change that serves the new path. | The Gateway would forward a browser path this site cannot answer; the built site is incomplete or the copy is stale. |
+| `scripts/release/contracts/web-content-paths.json` | Content (`docs/contracts/web-content-paths.json` there) | `npm run test:content-paths`: the committed copy must equal the `/content/…` paths found in `src/app` (`node scripts/release/web-content-paths.mjs --check`; `--write` regenerates it) | Content's registry check (`docs/contracts/registry.json` there) compares this copy with the master on Content pull requests; the Content release refuses to publish without every listed file | Add the file and the path to Content first, then open it in Web. | Web would open a content path that no protected release promises; the page would get a 404 in DEV. |
+
+Discovery of the content paths follows the rule the Content release used while
+it still cloned this repository: every quoted `/content/…` path with a file
+extension in a `src/app` TypeScript source (specs and fixtures excluded), with
+paths through a private segment (`delivery`, `evidence`, `access`) left out
+because a protected delivery never serves them.
+
 ## Learner flows
 
 Public demo:
