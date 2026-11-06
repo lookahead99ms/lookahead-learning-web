@@ -10,8 +10,9 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router } from '@angular/router';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { filter, firstValueFrom, timeout } from 'rxjs';
 import { ContentService } from '../../content/content.service';
 import { PROTECTED_CONTENT } from '../../content/content-delivery';
 import { DeliveryPublicationService } from '../../content/delivery-publication.service';
@@ -20,8 +21,11 @@ import {
   DeliverySnapshot,
   DeliveryWorkItemInput,
 } from '../../content/delivery-editor.service';
+import { DeliveryDevPlanService, DeliveryPlanApiError, DeliveryPlanWrite } from '../../content/delivery-dev-plan.service';
+import { DevSession } from '../../core/dev-session-notice/dev-session';
 import {
   DeliveryDecision,
+  DeliveryOrigin,
   DeliveryPlan,
   DeliveryPriority,
   DeliveryStage,
@@ -52,7 +56,7 @@ type WorkItemDraft = Omit<
 
 @Component({
   selector: 'app-delivery-plan',
-  imports: [PlatformHeader, AuthorWorkspaceNav, AuthorAdminMenu, FormsModule, ScrollLock],
+  imports: [PlatformHeader, AuthorWorkspaceNav, AuthorAdminMenu, FormsModule, ScrollLock, RouterLink],
   templateUrl: './delivery-plan.html',
   styleUrl: './delivery-plan.css',
   host: { '(window:beforeunload)': 'onBeforeUnload($event)' },
@@ -70,6 +74,9 @@ export class DeliveryPlanPage implements OnInit {
   private readonly content = inject(ContentService);
   private readonly editor = inject(DeliveryEditorService);
   private readonly publication = inject(DeliveryPublicationService);
+  private readonly devPlan = inject(DeliveryDevPlanService);
+  private readonly devSession = inject(DevSession);
+  private readonly devKnown = toObservable(this.devSession.known);
   private readonly protectedContent = inject(PROTECTED_CONTENT);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
@@ -85,6 +92,19 @@ export class DeliveryPlanPage implements OnInit {
   protected readonly editable = signal(false);
   /** The board shows the published staff copy; every editing control stays off. */
   protected readonly published = signal(false);
+  /**
+   * DLV-971 runtime stores (owner, 2026-11-06): the board shows the plan the Domain serves on DEV. Owner and admins
+   * edit it in place with the plan's version; readers (reviewers, co-authors) see it read-only.
+   */
+  protected readonly dev = signal(false);
+  /** The plan's version on DEV, sent back as `expectedVersion` with every write. */
+  private version = 0;
+  /** The local editor or the DEV plan: the controls that write are shown. */
+  protected readonly writable = computed(() => this.editable() || this.dev());
+  /** One line above the board when the DEV plan is not there yet and the published copy stands in. */
+  protected readonly planNotice = signal('');
+  /** The ticket a /delivery-plan#<id> link asked for: scrolled to and marked once the plan is in. */
+  protected readonly highlightedId = signal<string | null>(null);
   protected readonly saving = signal(false);
   protected readonly notice = signal('');
   protected readonly saveError = signal('');
@@ -192,14 +212,17 @@ export class DeliveryPlanPage implements OnInit {
         error: (error: HttpErrorResponse) => {
           if ([0, 200, 404, 502, 503, 504].includes(error.status)) {
             if (this.protectedContent) {
-              this.loadPublishedCopy();
+              void this.loadDevOrPublishedCopy();
               return;
             }
             this.content
               .getDeliveryPlan()
               .pipe(takeUntilDestroyed(this.destroyRef))
               .subscribe({
-                next: (plan) => this.plan.set(plan),
+                next: (plan) => {
+                  this.plan.set(plan);
+                  this.revealRequestedTicket();
+                },
                 error: () =>
                   this.error.set(
                     'The delivery plan could not be loaded. Sync private content and try again.',
@@ -212,6 +235,78 @@ export class DeliveryPlanPage implements OnInit {
           }
         },
       });
+  }
+
+  /**
+   * The protected build: on DEV the Domain serves the plan from the assets bucket; until the owner uploads the first
+   * one (404 DELIVERY_PLAN_MISSING), and outside DEV, the published copy stands in.
+   */
+  private async loadDevOrPublishedCopy(): Promise<void> {
+    if (await this.onDev()) {
+      try {
+        const plan = await this.devPlan.load();
+        if (!this.authorAccess()) return;
+        this.acceptDevPlan(plan);
+        return;
+      } catch (error) {
+        if (!this.authorAccess()) return;
+        if (!(error instanceof DeliveryPlanApiError) || !error.planMissing) {
+          this.errorTitle.set('The delivery plan on DEV is not available.');
+          this.error.set(
+            error instanceof DeliveryPlanApiError && error.status === 401
+              ? 'Sign in again to read the delivery plan on DEV.'
+              : error instanceof DeliveryPlanApiError && error.status === 403
+                ? 'Your role cannot read the delivery plan on DEV. Ask an owner or admin for delivery access.'
+                : 'The plan on DEV could not be loaded. Try again.',
+          );
+          return;
+        }
+        this.planNotice.set('The plan on DEV has not been uploaded yet; showing the published copy.');
+      }
+    }
+    this.loadPublishedCopy();
+  }
+
+  /** True behind the DEV gate; waits briefly for the first `/dev/session` answer on a direct link. */
+  private async onDev(): Promise<boolean> {
+    if (!this.devSession.known())
+      await firstValueFrom(this.devKnown.pipe(filter(Boolean), timeout(3000))).catch(() => undefined);
+    return this.devSession.gated() || !!this.devSession.status();
+  }
+
+  private acceptDevPlan(plan: DeliveryPlan): void {
+    this.dev.set(true);
+    this.published.set(false);
+    this.version = plan.version ?? 0;
+    this.acceptSnapshot({ plan, revision: `dev-${this.version}` });
+  }
+
+  /** A write's answer replaces (or adds) that ticket and moves the plan to the returned version. */
+  private applyWrite(result: DeliveryPlanWrite): void {
+    const plan = this.plan();
+    if (!plan) return;
+    const known = plan.workItems.some((item) => item.id === result.item.id);
+    const workItems = known
+      ? plan.workItems.map((item) => (item.id === result.item.id ? result.item : item))
+      : [...plan.workItems, result.item];
+    this.version = result.version;
+    this.acceptSnapshot({ plan: { ...plan, version: result.version, workItems }, revision: `dev-${result.version}` });
+  }
+
+  private async reloadDevPlan(quiet = false): Promise<void> {
+    if (this.refreshPending) return;
+    this.refreshPending = true;
+    try {
+      const plan = await this.devPlan.load();
+      if (!this.authorAccess()) return;
+      const changed = (plan.version ?? 0) !== this.version;
+      this.acceptDevPlan(plan);
+      if (!quiet) this.notice.set(changed ? 'Board refreshed from DEV.' : 'Board is up to date.');
+    } catch {
+      this.notice.set('The plan on DEV could not be refreshed. Current data is retained.');
+    } finally {
+      this.refreshPending = false;
+    }
   }
 
   /** No local editor in the protected build: read the staff copy Domain publishes. */
@@ -245,6 +340,7 @@ export class DeliveryPlanPage implements OnInit {
   private acceptSnapshot(snapshot: DeliverySnapshot): void {
     this.plan.set(snapshot.plan);
     this.revision = snapshot.revision;
+    this.revealRequestedTicket();
     const selected = this.selectedWorkItem();
     if (selected)
       this.selectedWorkItem.set(
@@ -260,8 +356,27 @@ export class DeliveryPlanPage implements OnInit {
     }
   }
 
+  /**
+   * A ticket pill on Team Reviews links to /delivery-plan#<ticketId>: once the plan is in, All tickets opens with the
+   * filters cleared, and the ticket is scrolled to and marked.
+   */
+  private revealRequestedTicket(): void {
+    const requested = this.route.snapshot.fragment;
+    if (!requested || this.highlightedId() || !this.plan()?.workItems.some((item) => item.id === requested)) return;
+    this.highlightedId.set(requested);
+    this.view.set('all-tickets');
+    this.resetView();
+    setTimeout(() =>
+      document.getElementById(`ticket-${requested}`)?.scrollIntoView?.({ block: 'center' }),
+    );
+  }
+
   protected refreshPlan(quiet = false): void {
     if (!this.authorAccess()) return;
+    if (this.dev()) {
+      if (!this.saving()) void this.reloadDevPlan(quiet);
+      return;
+    }
     if (!this.editable() || this.saving() || this.refreshPending) return;
     this.refreshPending = true;
     const generation = this.writeGeneration;
@@ -297,7 +412,82 @@ export class DeliveryPlanPage implements OnInit {
   protected canEdit(item?: DeliveryWorkItem): boolean {
     const account = this.accounts.account(), permissions = account?.permissions;
     if (!permissions) return account?.authorPreview === true;
-    return permissions.manageAccess || (!item && permissions.deliveryCreate);
+    // On DEV the roles that create tickets also edit their cards (owner and admins); readers stay read-only.
+    return permissions.manageAccess || ((!item || this.dev()) && permissions.deliveryCreate);
+  }
+  /** Whether this account may move the item to at least one other column; decides the move controls. */
+  protected canMoveAnywhere(item: DeliveryWorkItem): boolean {
+    return (this.plan()?.workflow ?? []).some(
+      (status) => status.id !== item.statusId && this.canMove(item, status.id),
+    );
+  }
+  protected canDrag(item: DeliveryWorkItem): boolean {
+    return this.writable() && !this.saving() && this.canMoveAnywhere(item);
+  }
+  /** In the DEV editor the status select offers the item's own status and the moves this account may make. */
+  protected statusAllowed(statusId: string): boolean {
+    if (!this.dev()) return true;
+    const item = this.plan()?.workItems.find((candidate) => candidate.id === this.draftId);
+    return !item || item.statusId === statusId || this.canMove(item, statusId);
+  }
+  protected originLabel(origin: DeliveryOrigin): string {
+    return origin.kind === 'request' ? `From learner request ${origin.id}` : `From review ${origin.id}`;
+  }
+  /** "updated on DEV · 6 Nov" for a stamped ticket; the plain date line for one without stamps. */
+  protected updatedLine(item: DeliveryWorkItem): string {
+    if (!item.updatedIn) return `Updated ${item.updatedAt}`;
+    const date = new Date(item.updatedAt);
+    const day = Number.isNaN(date.getTime())
+      ? item.updatedAt
+      : date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    return `updated ${item.updatedIn === 'dev' ? 'on DEV' : 'locally'} · ${day}`;
+  }
+  /** The fields where the unmerged local edit differs from the ticket on DEV. */
+  protected conflictFields(item: DeliveryWorkItem): { field: string; dev: string; local: string }[] {
+    const local = item.pendingLocal;
+    if (!local) return [];
+    const show = (value: unknown): string => (Array.isArray(value) ? value.join(', ') : String(value ?? ''));
+    const fields: [keyof DeliveryWorkItem, string][] = [
+      ['title', 'Title'],
+      ['summary', 'Outcome'],
+      ['type', 'Work type'],
+      ['stageId', 'Stage'],
+      ['statusId', 'Status'],
+      ['priorityId', 'Priority'],
+      ['labels', 'Labels'],
+      ['acceptanceCriteria', 'Acceptance criteria'],
+      ['dependencies', 'Depends on'],
+      ['blockedBy', 'Blocked by'],
+      ['notes', 'Notes'],
+    ];
+    return fields
+      .filter(([key]) => show(item[key]) !== show(local[key]))
+      .map(([key, field]) => ({ field, dev: show(item[key]), local: show(local[key]) }));
+  }
+  /** Keep DEV drops the local edit; Take local replaces the ticket with it. Either way the conflict is cleared. */
+  protected async resolveConflict(item: DeliveryWorkItem, keep: 'dev' | 'local'): Promise<void> {
+    if (!this.authorAccess() || !this.dev() || this.saving() || !this.canEdit(item)) return;
+    this.saving.set(true);
+    this.writeGeneration++;
+    try {
+      const result = await this.devPlan.resolveConflict(item.id, this.version, keep);
+      this.applyWrite(result);
+      this.notice.set(
+        keep === 'dev'
+          ? `${item.id}: kept the DEV version; the local edit was dropped.`
+          : `${item.id}: took the local edit.`,
+      );
+    } catch (error) {
+      if (error instanceof DeliveryPlanApiError && error.versionConflict) {
+        this.saving.set(false);
+        await this.reloadDevPlan(true);
+        this.notice.set('Someone changed the plan; reloaded, apply your change again.');
+      } else {
+        this.notice.set('The conflict could not be resolved. The ticket is unchanged; try again.');
+      }
+    } finally {
+      this.saving.set(false);
+    }
   }
   protected canMove(item: DeliveryWorkItem, next: string): boolean {
     const account = this.accounts.account(), permissions = account?.permissions;
@@ -306,7 +496,7 @@ export class DeliveryPlanPage implements OnInit {
       : permissions.deliveryReview && item.statusId !== 'done' && next === 'review');
   }
   protected openEditor(item?: DeliveryWorkItem): void {
-    if (!this.editable() || this.saving() || !this.canEdit(item)) return;
+    if (!this.writable() || this.saving() || !this.canEdit(item)) return;
     const plan = this.plan()!;
     this.closeWorkItem();
     this.draftId = item?.id;
@@ -422,6 +612,14 @@ export class DeliveryPlanPage implements OnInit {
       blockedBy: split(this.draft.blockedBy, ','),
       notes: split(this.draft.notes, '\n'),
     };
+    if (this.dev()) {
+      if (!input.title.trim() || !input.summary.trim()) {
+        this.saveError.set('Add a title and an outcome.');
+        return;
+      }
+      void this.saveDevDraft(input);
+      return;
+    }
     if (!input.title.trim() || !input.summary.trim() || !input.acceptanceCriteria.length) {
       this.saveError.set('Add a title, an outcome, and at least one acceptance criterion.');
       return;
@@ -452,9 +650,88 @@ export class DeliveryPlanPage implements OnInit {
       });
   }
 
+  /**
+   * The DEV form edits title, outcome, status, priority, stage, labels and notes; the fields it does not show keep the
+   * ticket's stored values. A 409 means the plan moved on: it is reloaded and the draft stays for a second Save.
+   */
+  private async saveDevDraft(input: DeliveryWorkItemInput): Promise<void> {
+    const id = this.draftId;
+    const existing = id ? this.plan()?.workItems.find((item) => item.id === id) : undefined;
+    const item: DeliveryWorkItemInput = existing
+      ? {
+          ...input,
+          acceptanceCriteria: existing.acceptanceCriteria,
+          dependencies: existing.dependencies,
+          blockedBy: existing.blockedBy,
+        }
+      : input;
+    this.saving.set(true);
+    this.saveError.set('');
+    this.writeGeneration++;
+    try {
+      const result = id
+        ? await this.devPlan.update(id, this.version, item)
+        : await this.devPlan.create(this.version, item);
+      this.applyWrite(result);
+      this.saving.set(false);
+      this.closeEditor(true);
+      this.notice.set(`${result.item.id} saved to the plan on DEV.`);
+    } catch (error) {
+      this.saving.set(false);
+      if (error instanceof DeliveryPlanApiError && error.versionConflict) {
+        await this.reloadDevPlan(true);
+        this.saveError.set('Someone changed the plan; reloaded, apply your change again.');
+      } else {
+        this.saveError.set(
+          error instanceof DeliveryPlanApiError && error.status === 403
+            ? 'Your role cannot make this change on DEV.'
+            : 'Save failed. Your draft is retained; try again.',
+        );
+      }
+    }
+  }
+
+  private async moveDevItem(item: DeliveryWorkItem, statusId: string): Promise<void> {
+    const { title, summary, type, stageId, priorityId, labels, acceptanceCriteria, dependencies, blockedBy } = item;
+    this.saving.set(true);
+    this.writeGeneration++;
+    try {
+      const result = await this.devPlan.update(item.id, this.version, {
+        title,
+        summary,
+        type,
+        stageId,
+        statusId,
+        priorityId,
+        labels,
+        acceptanceCriteria,
+        dependencies,
+        blockedBy,
+        notes: item.notes ?? [],
+      });
+      this.applyWrite(result);
+      const label = this.plan()?.workflow.find((status) => status.id === statusId)?.label ?? statusId;
+      this.notice.set(`${item.id} moved to ${label} on DEV.`);
+    } catch (error) {
+      if (error instanceof DeliveryPlanApiError && error.versionConflict) {
+        this.saving.set(false);
+        await this.reloadDevPlan(true);
+        this.notice.set('Someone changed the plan; reloaded, apply your change again.');
+      } else {
+        this.notice.set('Move could not be saved. The item stays in its original column.');
+      }
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
   protected moveItem(item: DeliveryWorkItem, statusId: string): void {
     if (!this.authorAccess()) return;
-    if (!this.editable() || this.saving() || item.statusId === statusId || !this.canMove(item, statusId)) return;
+    if (!this.writable() || this.saving() || item.statusId === statusId || !this.canMove(item, statusId)) return;
+    if (this.dev()) {
+      void this.moveDevItem(item, statusId);
+      return;
+    }
     const {
       title,
       summary,
@@ -514,7 +791,7 @@ export class DeliveryPlanPage implements OnInit {
   }
 
   protected startDrag(event: DragEvent, item: DeliveryWorkItem): void {
-    if (!this.editable() || this.saving()) {
+    if (!this.canDrag(item)) {
       event.preventDefault();
       return;
     }

@@ -213,6 +213,7 @@ describe('Support and feedback page', () => {
       save: async () => own,
       remove: async () => {},
       triage: async () => own,
+      promote: async () => ({ ticketId: 'DLV-0001', item: own }),
       attachmentUrl: async () => 'blob:test',
       releaseAttachmentUrl: () => {},
     };

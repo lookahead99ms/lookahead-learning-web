@@ -325,7 +325,12 @@
     </h3>
     <ol class="item-list">
       @for (summary of day.items; track summary.id) {
-        <li class="item-row" [class.open]="openId() === summary.id">
+        <li
+          class="item-row"
+          [id]="'review-' + summary.id"
+          [class.open]="openId() === summary.id"
+          [class.targeted]="targetId() === summary.id"
+        >
           <button
             type="button"
             class="item-summary"
@@ -339,6 +344,10 @@
                 <span class="summary-title">{{ summary.title }}</span>
                 @if (isRequest(summary)) {
                   <span class="kind-badge">{{ kindBadge(summary) }}</span>
+                }
+                @if (summary.ticketId) {
+                  <!-- The row is one button, so the pill is text here; the open item carries the link. -->
+                  <span class="ticket-pill">{{ ticketPill(summary) }}</span>
                 }
               </span>
               <span class="summary-meta">
@@ -422,6 +431,25 @@
   }
   @if (item.ownerNote) {
     <p class="owner-note"><strong>Owner’s note:</strong> {{ item.ownerNote }}</p>
+  }
+  @if (item.ticketId) {
+    <p class="item-ticket">
+      Ticket:
+      <a class="ticket-pill" routerLink="/delivery-plan" [fragment]="item.ticketId">{{ ticketPill(item) }}</a>
+      <span role="status" class="promote-status">{{ promoteMessage()[item.id] }}</span>
+    </p>
+  } @else if (canPromote(item)) {
+    <div class="promote">
+      <button
+        type="button"
+        class="secondary"
+        [disabled]="promoting() === item.id"
+        (click)="promote(item)"
+      >
+        {{ promoting() === item.id ? 'Promoting…' : 'Promote to ticket' }}<span class="visually-hidden"> {{ item.title }}</span>
+      </button>
+      <span role="status" class="promote-status">{{ promoteMessage()[item.id] }}</span>
+    </div>
   }
   @if (showReviewer && canTriage(item)) {
     <form class="triage" (ngSubmit)="saveTriage(item)">

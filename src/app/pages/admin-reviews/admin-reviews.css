@@ -360,6 +360,39 @@ button.danger {
   text-transform: uppercase;
   white-space: nowrap;
 }
+/* DLV-971 runtime stores: the ticket a promoted item became; a link in the open item, text in the row button. */
+.ticket-pill {
+  display: inline-block;
+  padding: 1px 8px;
+  border: 1px solid color-mix(in srgb, var(--accent-strong) 45%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-strong) 10%, transparent);
+  color: var(--text-strong);
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  white-space: nowrap;
+}
+a.ticket-pill:hover,
+a.ticket-pill:focus-visible {
+  background: color-mix(in srgb, var(--accent-strong) 20%, transparent);
+  text-decoration: underline;
+}
+.item-ticket,
+.promote {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 0 0 12px;
+}
+.promote-status:empty {
+  display: none;
+}
+.item-row.targeted {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-strong) 55%, transparent);
+}
 .summary-status {
   color: var(--text-subtle);
   font-size: 13px;

@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter, Router } from '@angular/router';
+import { ActivatedRoute, provideRouter, Router } from '@angular/router';
 import { AdminReviewsPage } from './admin-reviews';
 import { ReviewEditIntent } from './review-edit-intent';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
@@ -15,6 +15,7 @@ import {
   PlatformReviewViewer,
   draftProblem,
   kindBadge,
+  ticketPill,
 } from './platform-review.model';
 
 @Component({ selector: 'app-platform-header', template: '' })
@@ -97,6 +98,13 @@ describe('platform review rules', () => {
     expect(kindBadge({})).toBe('');
   });
 
+  it('writes the ticket pill as id and status, the id alone without a status, nothing before a promote (DLV-971)', () => {
+    expect(ticketPill({ ticketId: 'DLV-0042', ticketStatus: 'In progress' })).toBe('DLV-0042 · In progress');
+    expect(ticketPill({ ticketId: 'DLV-0042', ticketStatus: null })).toBe('DLV-0042');
+    expect(ticketPill({ ticketId: null, ticketStatus: null })).toBe('');
+    expect(ticketPill({})).toBe('');
+  });
+
   it('accepts a complete item and explains each rejected field', () => {
     expect(draftProblem(draft())).toBeNull();
     expect(draftProblem(draft({ title: ' ' }))).toBe('Add a short title.');
@@ -123,6 +131,7 @@ describe('Platform reviews page', () => {
   let client: PlatformReviewClient & {
     save: ReturnType<typeof vi.fn>;
     item: ReturnType<typeof vi.fn>;
+    promote: ReturnType<typeof vi.fn>;
   };
 
   beforeEach(() => {
@@ -157,6 +166,12 @@ describe('Platform reviews page', () => {
         ...stored.find((entry) => entry.id === id)!,
         status,
         ownerNote,
+      }),
+      // The Domain adds the ticket to the DEV plan and stamps the record; the page shows what comes back.
+      promote: vi.fn(async (id: string) => {
+        const promoted = { ...stored.find((entry) => entry.id === id)!, ticketId: 'DLV-0042', ticketStatus: 'Backlog' };
+        stored = stored.map((entry) => (entry.id === id ? promoted : entry));
+        return { ticketId: 'DLV-0042', item: promoted };
       }),
       attachmentUrl: async () => 'blob:test',
       releaseAttachmentUrl: () => {},
@@ -637,6 +652,100 @@ describe('Platform reviews page', () => {
     root = await render('submit');
     expect(root.querySelector('#review-form')?.textContent?.trim()).toBe('Add a review item');
     expect((root.querySelector('input[name="title"]') as HTMLInputElement).value).toBe('');
+  });
+
+  it('offers Promote to ticket to the owner on any item, to an admin on a learner request only, and shows the ticket pill once promoted (DLV-971)', async () => {
+    stored = [{ ...request('p', 'problem'), createdAt: '2026-10-12T16:00:00.000Z' }, ...stored];
+    viewer = { role: 'owner', reviewerId: 'owner', displayName: 'Owner' };
+    let root = await render('submitted');
+    let rows = [...root.querySelectorAll<HTMLButtonElement>('.item-summary')];
+    expect(root.querySelector('.ticket-pill')).toBeNull();
+    rows[1].click();
+    await settle();
+    const button = root.querySelector<HTMLButtonElement>('.promote button')!;
+    expect(button.textContent?.replace(/\s+/g, ' ').trim()).toBe('Promote to ticket Item a');
+    button.click();
+    await settle();
+    expect(client.promote).toHaveBeenCalledWith('a');
+    expect(root.querySelector('.promote')).toBeNull();
+    const pill = root.querySelector<HTMLAnchorElement>('.item-ticket a.ticket-pill')!;
+    expect(pill.textContent?.trim()).toBe('DLV-0042 · Backlog');
+    expect(pill.getAttribute('href')).toBe('/delivery-plan#DLV-0042');
+    expect(root.querySelector('.item-ticket .promote-status')?.textContent).toBe('Ticket DLV-0042 created.');
+    // The row carries the pill too, as text inside the row button.
+    expect(rows[1].querySelector('.summary-head .ticket-pill')?.textContent?.trim()).toBe('DLV-0042 · Backlog');
+    expect(rows[1].querySelector('a')).toBeNull();
+    // The status form stays: promoting does not replace triage.
+    expect(root.querySelector('.triage')).not.toBeNull();
+    current.destroy();
+
+    viewer = { role: 'admin', reviewerId: 'reviewer-2', displayName: 'Reviewer 2' };
+    root = await render('submitted');
+    rows = [...root.querySelectorAll<HTMLButtonElement>('.item-summary')];
+    rows[0].click();
+    await settle();
+    expect(root.querySelector('.promote button')).not.toBeNull();
+    rows[0].click();
+    await settle();
+    rows[2].click();
+    await settle();
+    expect(root.querySelector('.promote')).toBeNull();
+    expect(root.textContent).not.toContain('Promote to ticket');
+    current.destroy();
+
+    viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
+    root = await render('submitted');
+    (root.querySelector('.item-summary') as HTMLButtonElement).click();
+    await settle();
+    expect(root.querySelector('.promote')).toBeNull();
+    expect(root.querySelector('.item-ticket a.ticket-pill')?.textContent?.trim()).toBe('DLV-0042 · Backlog');
+  });
+
+  it('reports a refused promote, and reloads an item someone promoted first so its pill shows (DLV-971)', async () => {
+    viewer = { role: 'owner', reviewerId: 'owner', displayName: 'Owner' };
+    const root = await render('submitted');
+    const rows = [...root.querySelectorAll<HTMLButtonElement>('.item-summary')];
+    rows[0].click();
+    await settle();
+    const promote = () => {
+      root.querySelector<HTMLButtonElement>('.promote button')!.click();
+      return settle();
+    };
+    client.promote.mockRejectedValueOnce(new PlatformReviewError('unavailable'));
+    await promote();
+    expect(root.querySelector('.promote .promote-status')?.textContent).toBe('Not promoted. Try again.');
+    expect(root.querySelector('.ticket-pill')).toBeNull();
+    client.promote.mockRejectedValueOnce(new PlatformReviewError('forbidden'));
+    await promote();
+    expect(root.querySelector('.promote .promote-status')?.textContent).toBe('Your role cannot promote this item.');
+    // Promoted by someone else meanwhile: the Domain answers 409 and the reloaded item carries the ticket.
+    stored = stored.map((entry) => (entry.id === 'a' ? { ...entry, ticketId: 'DLV-0007', ticketStatus: 'Planned' } : entry));
+    client.item.mockClear();
+    client.promote.mockRejectedValueOnce(new PlatformReviewError('conflict', 'Already promoted.'));
+    await promote();
+    expect(client.item).toHaveBeenCalledWith('a');
+    expect(root.querySelector('.promote')).toBeNull();
+    expect(root.querySelector('.item-ticket a.ticket-pill')?.textContent?.trim()).toBe('DLV-0007 · Planned');
+    expect(root.querySelector('.item-ticket .promote-status')?.textContent).toBe('This item already has a ticket.');
+  });
+
+  it('opens and marks the item a /support?view=reviews#<id> link names, and ignores an unknown id (DLV-971)', async () => {
+    viewer = { role: 'owner', reviewerId: 'owner', displayName: 'Owner' };
+    const route = { snapshot: { fragment: 'b' as string | null } };
+    TestBed.overrideProvider(ActivatedRoute, { useValue: route });
+    let root = await render('submitted');
+    const open = root.querySelector('.item-row.open')!;
+    expect(open.id).toBe('review-b');
+    expect(open.classList.contains('targeted')).toBe(true);
+    expect(client.item).toHaveBeenCalledWith('b');
+    expect(open.querySelector('.item-detail .item-details')?.textContent).toContain('Results miss the Java lesson.');
+    expect(root.querySelectorAll('.item-row.open')).toHaveLength(1);
+    current.destroy();
+    route.snapshot.fragment = 'REV-999999';
+    client.item.mockClear();
+    root = await render('submitted');
+    expect(root.querySelector('.item-row.open')).toBeNull();
+    expect(client.item).not.toHaveBeenCalled();
   });
 
   it('tells an account without a review role that access is required', async () => {
