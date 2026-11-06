@@ -155,15 +155,24 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
     this.detailState.set({});
     this.triageMessage.set({});
     try {
-      const [viewer, page] = await Promise.all([this.client.viewer(), this.client.list()]);
-      // DLV-971 (owner, 2026-11-06): "user" is the service's word for an account with no review role; this page denies it
-      // itself, wherever it is embedded, instead of relying on the Support page's filter.
+      // DLV-971 (owner, 2026-11-06): the Write Review form needs only the viewer's role, so it no longer waits for, or
+      // fails with, the item list; a list that cannot load is reported where the list is shown (Team Reviews).
+      const viewer = await this.client.viewer();
+      // "user" is the service's word for an account with no review role; this page denies it itself, wherever it is
+      // embedded, instead of relying on the Support page's filter.
       if (viewer.role === 'user') {
         this.viewer.set(viewer);
         this.state.set('denied');
         return;
       }
       this.viewer.set(viewer);
+      if (this.section() === 'submit') {
+        this.items.set([]);
+        this.nextBefore.set(null);
+        this.state.set('ready');
+        return;
+      }
+      const page = await this.client.list();
       this.items.set(page.items);
       this.nextBefore.set(page.nextBefore);
       this.state.set('ready');

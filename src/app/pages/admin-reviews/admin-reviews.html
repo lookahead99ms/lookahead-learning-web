@@ -101,7 +101,7 @@
               </table>
             </div>
           } @else {
-            <p class="empty">No reviewer has added an item yet.</p>
+            <p class="empty">No reviews submitted yet.</p>
           }
         </section>
 
@@ -279,7 +279,7 @@
           <ng-container
             *ngTemplateOutlet="
               dayList;
-              context: { $implicit: ownDays(), showReviewer: false, empty: 'You have not added an item yet.' }
+              context: { $implicit: ownDays(), showReviewer: false, empty: 'No reviews submitted yet.' }
             "
           />
         </section>

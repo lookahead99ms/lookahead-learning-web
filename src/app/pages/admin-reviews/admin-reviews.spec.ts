@@ -241,7 +241,7 @@ describe('Platform reviews page', () => {
     expect(mine.getAttribute('aria-pressed')).toBe('true');
     expect(root.querySelector('#review-form')).not.toBeNull();
     expect(root.querySelector('.triage')).toBeNull();
-    expect(root.textContent).toContain('You have not added an item yet.');
+    expect(root.textContent).toContain('No reviews submitted yet.');
   });
 
   it('splits into Write Review (the form) and Team Reviews (the items and their status) for a reviewer (DLV-971)', async () => {
@@ -279,6 +279,29 @@ describe('Platform reviews page', () => {
     current.detectChanges();
     expect(root.querySelector('#review-form')).toBeNull();
     expect(root.querySelector('#review-items')?.textContent?.trim()).toBe('Your review items');
+  });
+
+  it('shows the Write Review form even when the item list cannot load, and never asks for the list there (DLV-971)', async () => {
+    viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
+    failing = true;
+    const listed = vi.spyOn(client, 'list');
+    const root = await render('submit');
+    expect(root.querySelector('#review-form')).not.toBeNull();
+    expect(root.querySelector('.state-panel')).toBeNull();
+    expect(root.textContent).not.toContain('Review items are unavailable');
+    expect(listed).not.toHaveBeenCalled();
+  });
+
+  it('says No reviews submitted yet for a reviewer or the owner with nothing recorded (DLV-971)', async () => {
+    stored = [];
+    viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
+    let root = await render('submitted');
+    expect(root.querySelector('.state-panel')).toBeNull();
+    expect(root.textContent).toContain('No reviews submitted yet.');
+    current.destroy();
+    viewer = { role: 'owner', reviewerId: 'owner', displayName: 'Owner' };
+    root = await render('submitted');
+    expect(root.textContent).toContain('No reviews submitted yet.');
   });
 
   it('names the unavailable state after the items, not the reviews (DLV-971)', async () => {
