@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict';
 import { readFile, realpath, stat } from 'node:fs/promises';
-import { join, resolve, sep } from 'node:path';
+import { basename, join, resolve, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { contractFile, missingContractMessage } from './fetch-contracts.mjs';
 
 /**
- * DLV-968 T13: every Web path the Gateway forwards (the `webPaths` of the Gateway's consumer contract,
- * contracts/domain-api-v1.json) must be served by the built site. The rules are the container's nginx rules
+ * DLV-968 T13: every Web path the Gateway forwards (the `webPaths` of the Gateway-owned Domain API contract,
+ * docs/contracts/domain-api-v1.json in the Content repository, fetched by `npm run contracts:fetch` to the git-ignored
+ * scripts/release/contracts/domain-api-v1.json) must be served by the built site. The rules are the container's nginx rules
  * (deployment/container/nginx.conf and nginx-lower-cost-dev.conf):
  * - Gateway-owned prefixes, dotfiles and key material answer 404, so a contract path there is an error;
  * - a path with an extension, or under /assets/ or /formatters/, must be an existing file (`try_files $uri =404`);
@@ -73,16 +75,28 @@ export function readWebPaths(text) {
   return contract.webPaths;
 }
 
-export async function checkGatewayContract(contractPath, root) {
-  const webPaths = readWebPaths(await readFile(contractPath, 'utf8'));
+export const CONTRACT_NAME = 'domain-api-v1.json';
+export const DEFAULT_CONTRACT = contractFile(CONTRACT_NAME);
+export const DEFAULT_OUTPUT = 'dist/lookahead-learning-web/browser';
+
+/** The fetched master's text, or an assertion error with the one sentence that names the fetch command when it is absent. */
+export async function readFetchedContract(contractPath) {
+  try { return await readFile(contractPath, 'utf8'); } catch (error) {
+    if (error?.code === 'ENOENT') throw new assert.AssertionError({ message: missingContractMessage(basename(contractPath)) });
+    throw error;
+  }
+}
+
+export async function checkGatewayContract(contractPath = DEFAULT_CONTRACT, root = DEFAULT_OUTPUT) {
+  const webPaths = readWebPaths(await readFetchedContract(contractPath));
   const resolved = [];
   for (const path of webPaths) resolved.push(await resolvePath(root, path));
   return { contract: contractPath, root, checked: resolved.length, resolved };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
-  assert(process.argv.length === 3 || process.argv.length === 4,
-    'Usage: node scripts/release/check-gateway-contract.mjs <contract.json> [browser-output=dist/lookahead-learning-web/browser]');
-  const result = await checkGatewayContract(process.argv[2], process.argv[3] ?? 'dist/lookahead-learning-web/browser');
+  assert(process.argv.length <= 4,
+    `Usage: node scripts/release/check-gateway-contract.mjs [contract.json=${contractFile(CONTRACT_NAME, '.')}] [browser-output=${DEFAULT_OUTPUT}]`);
+  const result = await checkGatewayContract(process.argv[2] ?? DEFAULT_CONTRACT, process.argv[3] ?? DEFAULT_OUTPUT);
   console.log(JSON.stringify(result));
 }

@@ -1,12 +1,14 @@
 import assert from 'node:assert/strict';
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import {
-  CONTRACT_PATH, SCHEMA_VERSION, WEB_ROOT, checkAgainstProducer, checkCommittedCopy, contractFile, contractText,
+  CONTRACT_NAME, CONTRACT_PATH, SCHEMA, WEB_ROOT, checkAgainstProducer, contractFile, contractText,
   discoverWebContentPaths, isApplicationSource, isPrivatePath, main, missingFromProducer, parseArguments, pathsInText, readContract,
+  readFetchedContract,
 } from './web-content-paths.mjs';
+import { missingContractMessage } from './fetch-contracts.mjs';
 
 /** A synthetic Web root: application sources, a spec, a fixture and a nested folder, like src/app. */
 async function fixture(run) {
@@ -31,6 +33,11 @@ async function fixture(run) {
 }
 
 const EXPECTED = ['/content/content-index-manifest.json', '/content/indexes/blaze.json', '/content/learn/visuals/binary-search-lab.html'];
+
+/** The master's shape as Content keeps it: schema, owner, consumer, note and the paths. */
+function master(paths) {
+  return JSON.stringify({ schema: SCHEMA, owner: 'lookahead-learning-content', consumer: 'lookahead-learning-web', note: 'synthetic', paths }, null, 2) + '\n';
+}
 
 test('takes only application TypeScript sources: no specs, no fixtures, no other files', () => {
   assert.equal(isApplicationSource('catalog.service.ts'), true);
@@ -57,59 +64,62 @@ test('discovers sorted unique paths from src/app, fragments and private segments
   assert.deepEqual(await discoverWebContentPaths(root), EXPECTED);
 }));
 
-test('writes and reads the contract shape Content publishes', () => {
+test('prints the contract shape and reads the master shape Content keeps', () => {
   const text = contractText(['/content/b.json', '/content/a.json', '/content/b.json']);
-  assert.equal(text, `{\n  "schemaVersion": "${SCHEMA_VERSION}",\n  "paths": [\n    "/content/a.json",\n    "/content/b.json"\n  ]\n}\n`);
+  assert.equal(text, `{\n  "schema": "${SCHEMA}",\n  "paths": [\n    "/content/a.json",\n    "/content/b.json"\n  ]\n}\n`);
   assert.deepEqual(readContract(text), ['/content/a.json', '/content/b.json']);
+  assert.deepEqual(readContract(master(['/content/a.json', '/content/b.json'])), ['/content/a.json', '/content/b.json']);
   assert.deepEqual(readContract(contractText([])), []);
   assert.throws(() => readContract('nope'), /is not JSON/);
   assert.throws(() => readContract('[]'), /must be an object/);
-  assert.throws(() => readContract(JSON.stringify({ schemaVersion: 'other', paths: [] })), /schemaVersion must be/);
-  assert.throws(() => readContract(JSON.stringify({ schemaVersion: SCHEMA_VERSION })), /must list paths/);
-  assert.throws(() => readContract(JSON.stringify({ schemaVersion: SCHEMA_VERSION, paths: ['/content/a.json', 1] })), /must be strings under/);
-  assert.throws(() => readContract(JSON.stringify({ schemaVersion: SCHEMA_VERSION, paths: ['/assets/a.json'] })), /must be strings under/);
-  assert.throws(() => readContract(JSON.stringify({ schemaVersion: SCHEMA_VERSION, paths: ['/content/a.json', '/content/a.json'] })), /repeat a path/);
-  assert.throws(() => readContract(JSON.stringify({ schemaVersion: SCHEMA_VERSION, paths: ['/content/b.json', '/content/a.json'] })), /must be sorted/);
-  assert.throws(() => readContract('{}', 'producer copy'), /producer copy schemaVersion/);
+  assert.throws(() => readContract(JSON.stringify({ schema: 'other', paths: [] })), /schema must be/);
+  assert.throws(() => readContract(JSON.stringify({ schemaVersion: SCHEMA, paths: [] })), /schema must be/, 'the old copy key is not the master key');
+  assert.throws(() => readContract(JSON.stringify({ schema: SCHEMA })), /must list paths/);
+  assert.throws(() => readContract(JSON.stringify({ schema: SCHEMA, paths: ['/content/a.json', 1] })), /must be strings under/);
+  assert.throws(() => readContract(JSON.stringify({ schema: SCHEMA, paths: ['/assets/a.json'] })), /must be strings under/);
+  assert.throws(() => readContract(JSON.stringify({ schema: SCHEMA, paths: ['/content/a.json', '/content/a.json'] })), /repeat a path/);
+  assert.throws(() => readContract(JSON.stringify({ schema: SCHEMA, paths: ['/content/b.json', '/content/a.json'] })), /must be sorted/);
+  assert.throws(() => readContract('{}', 'master x.json'), /master x.json schema/);
 });
 
-test('names the Web paths a producer list does not promise', () => {
+test('names the Web paths a master does not promise', () => {
   assert.deepEqual(missingFromProducer(['/content/a.json', '/content/b.json'], ['/content/a.json', '/content/b.json', '/content/extra.json']), []);
   assert.deepEqual(missingFromProducer(['/content/a.json', '/content/b.json'], ['/content/a.json']), ['/content/b.json']);
   assert.deepEqual(missingFromProducer([], []), []);
 });
 
-test('checks the committed copy against the discovery', () => fixture(async (root) => {
+test('reads the fetched master and, when it is absent, says to run the fetch in one sentence', () => fixture(async (root) => {
   const file = contractFile(root);
   assert.equal(file, join(root, 'scripts', 'release', 'contracts', 'web-content-paths.json'));
-  assert.deepEqual(await checkCommittedCopy(root), { ok: false, paths: 3, added: EXPECTED, removed: [], formatting: false });
-  await writeFile(file, contractText([...EXPECTED, '/content/stale.json']));
-  assert.deepEqual(await checkCommittedCopy(root), { ok: false, paths: 3, added: [], removed: ['/content/stale.json'], formatting: false });
-  await writeFile(file, JSON.stringify({ schemaVersion: SCHEMA_VERSION, paths: EXPECTED }));
-  assert.deepEqual(await checkCommittedCopy(root), { ok: false, paths: 3, added: [], removed: [], formatting: true });
-  await writeFile(file, contractText(EXPECTED));
-  assert.deepEqual(await checkCommittedCopy(root), { ok: true, paths: 3, added: [], removed: [] });
-  await writeFile(file, '{');
-  await assert.rejects(checkCommittedCopy(root), /is not JSON/);
+  assert.equal(contractFile(), join(WEB_ROOT, ...CONTRACT_PATH.split('/')));
+  await assert.rejects(readFetchedContract(file), { message: missingContractMessage(CONTRACT_NAME) });
+  assert.equal(missingContractMessage(CONTRACT_NAME), `${CONTRACT_PATH} is missing; run \`npm run contracts:fetch\` to fetch the contracts from the Content repository.`);
+  await assert.rejects(checkAgainstProducer(file, root), { message: missingContractMessage(CONTRACT_NAME) });
+  await writeFile(file, master(EXPECTED));
+  assert.equal(await readFetchedContract(file), master(EXPECTED));
+  assert.deepEqual(await checkAgainstProducer(file, root), { paths: 3, promised: 3, missing: [] });
+  await assert.rejects(readFetchedContract(join(root, 'other.json')), { message: missingContractMessage('other.json') }, 'the sentence names the file asked for');
+  await assert.rejects(readFetchedContract(join(root, 'scripts')), (error) => error.code === 'EISDIR', 'other read errors pass through');
 }));
 
-test('checks the discovery against the producer copy', () => fixture(async (root) => {
+test('checks the discovery against the master', () => fixture(async (root) => {
   const producer = join(root, 'producer.json');
-  await writeFile(producer, contractText([...EXPECTED, '/content/more.json']));
+  await writeFile(producer, master([...EXPECTED, '/content/more.json']));
   assert.deepEqual(await checkAgainstProducer(producer, root), { paths: 3, promised: 4, missing: [] });
-  await writeFile(producer, contractText(EXPECTED.slice(1)));
+  await writeFile(producer, master(EXPECTED.slice(1)));
   assert.deepEqual(await checkAgainstProducer(producer, root), { paths: 3, promised: 2, missing: [EXPECTED[0]] });
-  await writeFile(producer, JSON.stringify({ schemaVersion: 'other', paths: [] }));
-  await assert.rejects(checkAgainstProducer(producer, root), /producer copy .*schemaVersion must be/);
+  await writeFile(producer, JSON.stringify({ schema: 'other', paths: [] }));
+  await assert.rejects(checkAgainstProducer(producer, root), /master producer.json schema must be/);
 }));
 
 test('parses the command line', () => {
   assert.deepEqual(parseArguments([]), { root: WEB_ROOT, mode: 'print', producer: null });
-  assert.deepEqual(parseArguments(['--write']), { root: WEB_ROOT, mode: 'write', producer: null });
-  assert.deepEqual(parseArguments(['--root', '/x', '--check']), { root: '/x', mode: 'check', producer: null });
+  assert.deepEqual(parseArguments(['--root', '/x']), { root: '/x', mode: 'print', producer: null });
   assert.deepEqual(parseArguments(['--subset', 'p.json']), { root: WEB_ROOT, mode: 'subset', producer: 'p.json' });
+  assert.deepEqual(parseArguments(['--subset']), { root: WEB_ROOT, mode: 'subset', producer: contractFile(WEB_ROOT) });
+  assert.deepEqual(parseArguments(['--subset', '--root', '/x']), { root: '/x', mode: 'subset', producer: contractFile('/x') });
   assert.throws(() => parseArguments(['--root']), /--root needs a directory/);
-  assert.throws(() => parseArguments(['--subset']), /--subset needs the producer file/);
+  assert.throws(() => parseArguments(['--write']), /Unknown argument: --write/);
   assert.throws(() => parseArguments(['--bogus']), /Unknown argument: --bogus/);
 });
 
@@ -119,42 +129,24 @@ test('runs each mode with a clear message and exit code', () => fixture(async (r
   assert.equal(await main(['--root', root], log), 0);
   assert.equal(lines.join('\n') + '\n', contractText(EXPECTED));
   lines.length = 0;
-  assert.equal(await main(['--root', root, '--check'], log), 1);
-  assert.match(lines[0], /differs from the paths found in src\/app; run: node scripts\/release\/web-content-paths.mjs --write/);
-  assert.deepEqual(lines.slice(1), EXPECTED.map((path) => `  not in the committed copy: ${path}`));
-  lines.length = 0;
-  assert.equal(await main(['--root', root, '--write'], log), 0);
-  assert.deepEqual(lines, [`Wrote ${CONTRACT_PATH} with 3 paths`]);
-  assert.equal(await readFile(contractFile(root), 'utf8'), contractText(EXPECTED));
-  lines.length = 0;
-  assert.equal(await main(['--root', root, '--check'], log), 0);
-  assert.deepEqual(lines, [`${CONTRACT_PATH} matches the 3 paths found in src/app`]);
-  lines.length = 0;
-  await writeFile(contractFile(root), contractText(['/content/stale.json', ...EXPECTED]).replace(/\n/g, '\n '));
-  assert.equal(await main(['--root', root, '--check'], log), 1);
-  assert.deepEqual(lines.slice(1), ['  no longer opened by the source: /content/stale.json']);
-  lines.length = 0;
-  await writeFile(contractFile(root), JSON.stringify({ schemaVersion: SCHEMA_VERSION, paths: EXPECTED }));
-  assert.equal(await main(['--root', root, '--check'], log), 1);
-  assert.deepEqual(lines.slice(1), ['  same paths, different formatting']);
-  lines.length = 0;
-  const producer = join(root, 'producer.json');
-  await writeFile(producer, contractText(EXPECTED));
-  assert.equal(await main(['--root', root, '--subset', producer], log), 0);
+  await assert.rejects(main(['--root', root, '--subset'], log), { message: missingContractMessage(CONTRACT_NAME) });
+  await writeFile(contractFile(root), master(EXPECTED));
+  assert.equal(await main(['--root', root, '--subset'], log), 0);
   assert.deepEqual(lines, ['All 3 Web content paths are among the 3 paths Content promises to publish']);
   lines.length = 0;
-  await writeFile(producer, contractText([]));
+  const producer = join(root, 'producer.json');
+  await writeFile(producer, master([]));
   assert.equal(await main(['--root', root, '--subset', producer], log), 1);
   assert.match(lines[0], /3 Web content path\(s\) are not in Content's contract; add them to Content's docs\/contracts\/web-content-paths.json first/);
   assert.deepEqual(lines.slice(1), EXPECTED.map((path) => `  ${path}`));
 }));
 
-test('the committed contract copy equals what this source opens (run --write after changing a content path)', async () => {
-  const result = await checkCommittedCopy(WEB_ROOT);
-  assert.deepEqual(result, { ok: true, paths: result.paths, added: [], removed: [] },
-    `${CONTRACT_PATH} drifted from src/app: added ${JSON.stringify(result.added)}, removed ${JSON.stringify(result.removed)}; run node scripts/release/web-content-paths.mjs --write`);
+test('every content path this source opens is in the fetched Content master (run `npm run contracts:fetch` first)', async () => {
+  const result = await checkAgainstProducer(contractFile(WEB_ROOT), WEB_ROOT);
+  assert.deepEqual(result.missing, [],
+    `${result.missing.length} path(s) opened by src/app are not in Content's docs/contracts/web-content-paths.json: ${JSON.stringify(result.missing)}; add them to Content first`);
   assert(result.paths > 0, 'the application opens at least one fixed content path');
-  const committed = readContract(await readFile(contractFile(WEB_ROOT), 'utf8'));
-  assert.equal(committed.length, result.paths);
-  assert(committed.every((path) => !isPrivatePath(path)), 'no private segment is in the contract');
+  assert(result.promised >= result.paths, 'the master promises at least every path the source opens');
+  const promised = readContract(await readFetchedContract(contractFile(WEB_ROOT)));
+  assert(promised.every((path) => !isPrivatePath(path)), 'no private segment is in the master');
 });

@@ -1,30 +1,32 @@
 import assert from 'node:assert/strict';
-import { readdir, readFile, writeFile } from 'node:fs/promises';
-import { join, relative, resolve } from 'node:path';
+import { readdir, readFile } from 'node:fs/promises';
+import { basename, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { contractFile as fetchedContractFile, missingContractMessage } from './fetch-contracts.mjs';
 
 /**
  * DLV-968: the `/content/...` paths this application opens by a fixed path, as a contract with the private Content
- * repository (owner decision 2026-11-05: no repository clones another at build or deploy time; every cross-repo
- * expectation is a committed contract file owned by the producer and tested on each side's own pull request).
+ * repository (owner decision 2026-11-06: every cross-repository contract lives only in Content under docs/contracts/;
+ * a consumer fetches the master on its own pull request and tests against it; no repository keeps a copy).
  *
- * Content owns the contract (`docs/contracts/web-content-paths.json` there) and promises to publish every listed path in
- * each protected release. This file is Web's copy, generated from the Web source by the same discovery the Content
- * release used while it still cloned this repository (`webContentPaths` in Content's tools/utilities/content_release.py):
+ * Content owns the master (`docs/contracts/web-content-paths.json` there) and promises to publish every listed path in
+ * each protected release. `npm run contracts:fetch` (scripts/release/fetch-contracts.mjs) brings it to the git-ignored
+ * scripts/release/contracts/web-content-paths.json; this module discovers the paths the Web source opens, with the
+ * same rule the Content release used while it still cloned this repository:
  * - every `src/app/**\/*.ts` file except `*.spec.ts` and files with `fixture` in their name;
  * - a quoted string `/content/<segments>.<json|html|css|js|svg|png|jpg|jpeg|webp|woff2>`, with an optional `#fragment`
  *   inside the quotes that is not part of the path;
  * - paths through a private segment (`delivery`, `evidence`, `access`) are left out: Infra and Domain refuse them in a
  *   protected delivery, and only a Local build reads them.
+ * Every discovered path must be in the master; a listed path the Web no longer opens is Content's to remove.
  * A path with no published file is a Web feature that copes without it; the Content release decides that, not this list.
  *
- * Usage: node scripts/release/web-content-paths.mjs [--root <web-root>] [--write | --check | --subset <producer.json>]
- *   (no mode)   print the contract JSON for the discovered paths
- *   --write     write scripts/release/contracts/web-content-paths.json
- *   --check     fail when the committed copy differs from the discovery
- *   --subset    fail when a discovered path is missing from the producer's copy (Content's file, fetched on a PR)
+ * Usage: node scripts/release/web-content-paths.mjs [--root <web-root>] [--subset [<master.json>]]
+ *   (no mode)   print the discovered paths in the contract's shape
+ *   --subset    fail when a discovered path is missing from the master (default: the fetched scripts/release/contracts file)
  */
-export const SCHEMA_VERSION = 'web-content-paths/v1';
+export const SCHEMA = 'web-content-paths/v1';
+export const CONTRACT_NAME = 'web-content-paths.json';
 export const CONTRACT_PATH = 'scripts/release/contracts/web-content-paths.json';
 export const SOURCE_ROOT = 'src/app';
 export const WEB_CONTENT_PATH = /["'`](\/content\/[A-Za-z0-9_./-]+\.(?:json|html|css|js|svg|png|jpe?g|webp|woff2))(?:#[^"'`]*)?["'`]/g;
@@ -61,18 +63,18 @@ export async function discoverWebContentPaths(webRoot = WEB_ROOT) {
   return [...found].sort();
 }
 
-/** The contract file text for a list of paths: the shape Content publishes, sorted and unique. */
+/** The contract shape for a list of paths (schema and paths, sorted and unique): what the print mode shows. */
 export function contractText(paths) {
   const unique = [...new Set(paths)].sort();
-  return JSON.stringify({ schemaVersion: SCHEMA_VERSION, paths: unique }, null, 2) + '\n';
+  return JSON.stringify({ schema: SCHEMA, paths: unique }, null, 2) + '\n';
 }
 
-/** The paths of a well-formed contract text (either side's copy); anything else is an assertion error. */
+/** The paths of a well-formed master text; anything else is an assertion error naming the file. */
 export function readContract(text, name = 'web-content-paths contract') {
   let contract;
   try { contract = JSON.parse(text); } catch { throw new assert.AssertionError({ message: `${name} is not JSON` }); }
   assert(contract && typeof contract === 'object' && !Array.isArray(contract), `${name} must be an object`);
-  assert.equal(contract.schemaVersion, SCHEMA_VERSION, `${name} schemaVersion must be ${SCHEMA_VERSION}`);
+  assert.equal(contract.schema, SCHEMA, `${name} schema must be ${SCHEMA}`);
   assert(Array.isArray(contract.paths), `${name} must list paths`);
   assert(contract.paths.every((path) => typeof path === 'string' && path.startsWith('/content/')), `${name} paths must be strings under /content/`);
   assert.equal(new Set(contract.paths).size, contract.paths.length, `${name} paths repeat a path`);
@@ -80,38 +82,30 @@ export function readContract(text, name = 'web-content-paths contract') {
   return contract.paths;
 }
 
-/** The discovered paths the producer's list does not promise; empty when Web's paths are a subset of it. */
+/** The discovered paths the master does not promise; empty when Web's paths are a subset of it. */
 export function missingFromProducer(webPaths, producerPaths) {
   const promised = new Set(producerPaths);
   return webPaths.filter((path) => !promised.has(path));
 }
 
-/** The committed copy's location under a Web root. */
-export function contractFile(webRoot) {
-  return join(resolve(webRoot), ...CONTRACT_PATH.split('/'));
+/** The fetched master's location under a Web root (git-ignored; written by `npm run contracts:fetch`). */
+export function contractFile(webRoot = WEB_ROOT) {
+  return fetchedContractFile(CONTRACT_NAME, webRoot);
 }
 
-/** Compare the committed copy with the discovery; the result names the drift when there is one. */
-export async function checkCommittedCopy(webRoot = WEB_ROOT) {
-  const discovered = await discoverWebContentPaths(webRoot);
-  let committedText;
-  try { committedText = await readFile(contractFile(webRoot), 'utf8'); } catch { committedText = null; }
-  const expected = contractText(discovered);
-  if (committedText === expected) return { ok: true, paths: discovered.length, added: [], removed: [] };
-  const committed = committedText === null ? [] : readContract(committedText, CONTRACT_PATH);
-  return {
-    ok: false,
-    paths: discovered.length,
-    added: discovered.filter((path) => !committed.includes(path)),
-    removed: committed.filter((path) => !discovered.includes(path)),
-    formatting: committedText !== null && committed.join('\n') === discovered.join('\n'),
-  };
+/** The master's text, or an assertion error with the one sentence that names the fetch command when it is absent. */
+export async function readFetchedContract(file) {
+  try { return await readFile(file, 'utf8'); } catch (error) {
+    if (error?.code === 'ENOENT') throw new assert.AssertionError({ message: missingContractMessage(basename(file)) });
+    throw error;
+  }
 }
 
-/** Check Web's discovered paths against the producer's copy; the result lists what Content does not promise. */
-export async function checkAgainstProducer(producerFile, webRoot = WEB_ROOT) {
+/** Check Web's discovered paths against the master; the result lists what Content does not promise. */
+export async function checkAgainstProducer(producerFile = contractFile(), webRoot = WEB_ROOT) {
   const discovered = await discoverWebContentPaths(webRoot);
-  const producer = readContract(await readFile(producerFile, 'utf8'), `producer copy ${relative(resolve(webRoot), resolve(producerFile)) || producerFile}`);
+  const name = relative(resolve(webRoot), resolve(producerFile)) || producerFile;
+  const producer = readContract(await readFetchedContract(producerFile), `master ${name}`);
   return { paths: discovered.length, promised: producer.length, missing: missingFromProducer(discovered, producer) };
 }
 
@@ -120,10 +114,13 @@ export function parseArguments(argv) {
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
     if (argument === '--root') { options.root = argv[++index]; assert(options.root, '--root needs a directory'); }
-    else if (argument === '--write' || argument === '--check') { options.mode = argument.slice(2); }
-    else if (argument === '--subset') { options.mode = 'subset'; options.producer = argv[++index]; assert(options.producer, '--subset needs the producer file'); }
+    else if (argument === '--subset') {
+      options.mode = 'subset';
+      if (argv[index + 1] && !argv[index + 1].startsWith('--')) options.producer = argv[++index];
+    }
     else throw new assert.AssertionError({ message: `Unknown argument: ${argument}` });
   }
+  if (options.mode === 'subset' && options.producer === null) options.producer = contractFile(options.root);
   return options;
 }
 
@@ -133,21 +130,6 @@ export async function main(argv, log = console.log) {
   if (options.mode === 'print') {
     log(contractText(await discoverWebContentPaths(options.root)).trimEnd());
     return 0;
-  }
-  if (options.mode === 'write') {
-    const paths = await discoverWebContentPaths(options.root);
-    await writeFile(contractFile(options.root), contractText(paths));
-    log(`Wrote ${CONTRACT_PATH} with ${paths.length} paths`);
-    return 0;
-  }
-  if (options.mode === 'check') {
-    const result = await checkCommittedCopy(options.root);
-    if (result.ok) { log(`${CONTRACT_PATH} matches the ${result.paths} paths found in ${SOURCE_ROOT}`); return 0; }
-    log(`${CONTRACT_PATH} differs from the paths found in ${SOURCE_ROOT}; run: node scripts/release/web-content-paths.mjs --write`);
-    for (const path of result.added) log(`  not in the committed copy: ${path}`);
-    for (const path of result.removed) log(`  no longer opened by the source: ${path}`);
-    if (result.formatting) log('  same paths, different formatting');
-    return 1;
   }
   const result = await checkAgainstProducer(options.producer, options.root);
   if (result.missing.length === 0) {

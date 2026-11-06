@@ -193,17 +193,32 @@ They do not define production hosting or activate learner code execution.
 
 ## Contracts with other repositories
 
-No repository clones or fetches another at build or deploy time. Every
-expectation between two repositories is a committed contract file owned by the
-producer, with a copy here; each side tests its own copy on its own pull request,
-and the Content repository is the registry of every contract (`docs/contracts/registry.json`)
-and runs the only cross-repository comparison. Contracts are public by nature; anything that would need to stay
-private is not a contract but configuration, and it belongs to Infra.
+No repository clones another at build or deploy time. Every expectation between
+two repositories is a contract file, and every contract lives only in the Content
+repository under `docs/contracts/` (owner decision 2026-11-06): `registry.json`
+lists each contract with its owner, its master file and every consumer with the
+test that reads it. No other repository keeps a copy. This repository fetches the
+masters it needs from Content's `main` branch on each pull request, read-only,
+and runs its own tests against them. Contracts are public by nature; anything
+that would need to stay private is not a contract but configuration, and it
+belongs to Infra.
 
-| Contract file | Owner | Checked on this repo's PR by | Checked by the other side | Change order | What a failure means |
-| --- | --- | --- | --- | --- | --- |
-| `scripts/release/contracts/domain-api-v1.json` | Gateway (consumer of the Domain API; this file is Web's copy) | `npm run test:gateway-contract` after the build: every path under `webPaths` must be served by the built site under the container's nginx rules (a file, a route snapshot or the application shell; Gateway-owned prefixes are never served). Its own test runs first. | Domain's provider test and the Gateway's consumer test check their own copies; Content's registry check compares all three copies with the master | Change the Gateway's copy first, then copy it here with the Web change that serves the new path. | The Gateway would forward a browser path this site cannot answer; the built site is incomplete or the copy is stale. |
-| `scripts/release/contracts/web-content-paths.json` | Content (`docs/contracts/web-content-paths.json` there) | `npm run test:content-paths`: the committed copy must equal the `/content/…` paths found in `src/app` (`node scripts/release/web-content-paths.mjs --check`; `--write` regenerates it) | Content's registry check (`docs/contracts/registry.json` there) compares this copy with the master on Content pull requests; the Content release refuses to publish without every listed file | Add the file and the path to Content first, then open it in Web. | Web would open a content path that no protected release promises; the page would get a 404 in DEV. |
+`npm run contracts:fetch` (`scripts/release/fetch-contracts.mjs`, Node built-ins
+only) writes `web-content-paths.json` and `domain-api-v1.json` to the git-ignored
+directory `scripts/release/contracts/`. In CI the step "Fetch contracts from
+Content" runs before the contract tests with the repository secret
+`CONTENT_READ_TOKEN`, a fine-grained token with Contents: read on the Content
+repository alone; locally the script uses `CONTENT_READ_TOKEN`, then `GH_TOKEN`,
+and with neither set the developer's own `gh` login (`gh api`). The token is
+never printed. A failed fetch names the file and the fix; a test whose fetched
+file is absent says to run `npm run contracts:fetch`. Pull requests from forks
+have no secret and fail at the fetch step; every pull request comes from a branch
+of this repository.
+
+| Contract (master in Content `docs/contracts/`) | Owner | Read on this repo's PR by | Change order | What a failure means |
+| --- | --- | --- | --- | --- |
+| `domain-api-v1.json` | Gateway (consumer of the Domain API; Content holds the master) | `node --test scripts/release/check-gateway-contract.test.mjs` (the fetched master is well formed and forwards no path the container blocks), then `npm run test:gateway-contract` after the build: every path under `webPaths` must be served by the built site under the container's nginx rules (a file, a route snapshot or the application shell; Gateway-owned prefixes are never served). | The Gateway edits the master in Content first, then its own pull request; Domain and this repository follow with the change that serves the new path. | The Gateway would forward a browser path this site cannot answer: the built site is incomplete, or the master lists a path this repository does not serve yet. |
+| `web-content-paths.json` | Content | `npm run test:content-paths` (`scripts/release/web-content-paths.test.mjs`): every `/content/…` path found in `src/app` must be in the master (`node scripts/release/web-content-paths.mjs --subset`; no option prints the discovered paths). | Add the path to the master in Content and ship the file in a Content release first, then open it here. Removing a path: this repository first, then Content. | This repository would open a content path that no protected release promises; the page would get a 404 in DEV. |
 
 Discovery of the content paths follows the rule the Content release used while
 it still cloned this repository: every quoted `/content/…` path with a file
