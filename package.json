@@ -66,7 +66,8 @@
     "test:security-runtime": "node --test scripts/security/runtime/*.test.mjs",
     "test:gateway-contract": "node scripts/release/check-gateway-contract.mjs scripts/release/contracts/domain-api-v1.json dist/lookahead-learning-web/browser",
     "test:content-paths": "node --test --experimental-test-coverage --test-coverage-lines=85 --test-coverage-include=scripts/release/web-content-paths.mjs scripts/release/web-content-paths.test.mjs",
-    "contracts:content-paths": "node scripts/release/web-content-paths.mjs --write"
+    "test:contracts-fetch": "node --test --experimental-test-coverage --test-coverage-lines=85 --test-coverage-include=scripts/release/fetch-contracts.mjs scripts/release/fetch-contracts.test.mjs",
+    "contracts:fetch": "node scripts/release/fetch-contracts.mjs"
   },
   "private": true,
   "packageManager": "npm@11.17.0",

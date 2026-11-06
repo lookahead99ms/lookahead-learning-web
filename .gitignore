@@ -80,4 +80,7 @@ Thumbs.db
 # Generated at build time by scripts/generate-seo-files.mjs (DLV-941)
 /public/robots.txt
 /public/sitemap.xml
+
+# Contract masters fetched from the Content repository by `npm run contracts:fetch` (DLV-968); never committed
+/scripts/release/contracts/
 tools/release/__pycache__/

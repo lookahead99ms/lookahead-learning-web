@@ -3,7 +3,10 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-import { checkGatewayContract, classify, readWebPaths, resolvePath, ROUTE_RULE, routeRuleIssues } from './check-gateway-contract.mjs';
+import {
+  CONTRACT_NAME, DEFAULT_CONTRACT, DEFAULT_OUTPUT, checkGatewayContract, classify, readFetchedContract, readWebPaths, resolvePath, ROUTE_RULE, routeRuleIssues,
+} from './check-gateway-contract.mjs';
+import { WEB_ROOT, contractFile, missingContractMessage } from './fetch-contracts.mjs';
 
 function contract(webPaths) {
   return JSON.stringify({ schema: 'gateway-domain-contract/v1', calls: [{ id: 'auth-me', method: 'GET', path: '/api/v1/auth/me' }], webPaths });
@@ -75,6 +78,22 @@ test('checks every contract path against the built output', () => fixture(async 
   await writeFile(blocked, contract(['/bff/login']));
   await assert.rejects(checkGatewayContract(blocked, browser), /answered 404/);
 }));
+
+test('a missing fetched contract fails with the one sentence that names the fetch command', () => fixture(async (root, browser) => {
+  const absent = join(root, 'scripts', 'release', 'contracts', 'domain-api-v1.json');
+  await assert.rejects(readFetchedContract(absent), { message: 'scripts/release/contracts/domain-api-v1.json is missing; run `npm run contracts:fetch` to fetch the contracts from the Content repository.' });
+  await assert.rejects(checkGatewayContract(absent, browser), { message: missingContractMessage(CONTRACT_NAME) });
+  await assert.rejects(readFetchedContract(join(root, 'other.json')), { message: missingContractMessage('other.json') }, 'the sentence names the file asked for');
+  await assert.rejects(readFetchedContract(browser), (error) => error.code === 'EISDIR', 'other read errors pass through');
+  assert.equal(DEFAULT_CONTRACT, contractFile('domain-api-v1.json', WEB_ROOT));
+  assert.equal(DEFAULT_OUTPUT, 'dist/lookahead-learning-web/browser');
+}));
+
+test('the fetched Content master is a well-formed Gateway contract (run `npm run contracts:fetch` first)', async () => {
+  const webPaths = readWebPaths(await readFetchedContract(DEFAULT_CONTRACT));
+  assert(webPaths.includes('/'), 'the Gateway forwards the site root');
+  for (const path of webPaths) assert.notEqual(classify(path), 'blocked', `the Gateway forwards ${path}, which the Web container never serves`);
+});
 
 test('DLV-969: both container configs serve route snapshots without a redirect', async () => {
   // A bare $uri/ makes nginx answer 301 /learn -> /learn/; the DEV Gateway refuses redirects, so /learn opened by URL was a 502.
