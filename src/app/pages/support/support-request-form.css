@@ -97,12 +97,28 @@ label {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
 }
+.optional {
+  color: var(--text-subtle);
+  font-weight: 400;
+}
+.form-actions .secondary {
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-strong);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
 label {
   display: grid;
   gap: 6px;
   min-width: 0;
 }
 input:not([type='radio']):not([type='file']),
+select,
 textarea {
   box-sizing: border-box;
   width: 100%;

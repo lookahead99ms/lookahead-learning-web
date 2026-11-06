@@ -4,6 +4,8 @@ export const authorDocumentationHome = '/admin/docs';
 export const authorWorkspaceLinks = [
   { id: 'docs', label: 'Documentation', href: authorDocumentationHome, icon: '📚' },
   { id: 'previews', label: 'Previews', href: '/admin/previews', icon: '👀' },
+  // DLV-971 (owner, 2026-11-06): the former Team Reviews tab of Support, as its own admin page.
+  { id: 'feedback', label: 'Support tickets and feedback', href: '/admin/feedback', icon: '🗂️' },
   { id: 'delivery', label: 'Delivery Plan', href: '/delivery-plan', icon: '🗺️' },
   { id: 'access', label: 'People and access', href: '/admin/access', icon: '🔐' },
 ] as const;

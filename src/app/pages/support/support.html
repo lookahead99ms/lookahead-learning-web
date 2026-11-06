@@ -1,104 +1,54 @@
 <app-platform-header />
 <main id="main-content" class="support-page">
-  <header class="support-hero">
-    <div class="hero-copy">
-      <p class="eyebrow"><span aria-hidden="true">💬</span> Support and feedback</p>
-      <h1>Tell us what happened.</h1>
-      <p class="lede">
-        Include the steps we can follow. Attach screenshots only when you want to share them; avoid
-        private or sensitive information.
-      </p>
-    </div>
-    <ul class="hero-facts" aria-label="How support works">
-      <li><span aria-hidden="true">✉️</span> We reply to the email you give</li>
-      <li><span aria-hidden="true">🧾</span> Every request gets a reference</li>
-      <li><span aria-hidden="true">🔒</span> Never include passwords</li>
-    </ul>
-  </header>
+  <h1 class="visually-hidden">Support and feedback</h1>
+  <div class="support-body">
+    <!-- DLV-971 (owner, 2026-11-06): no hero, two cards. The intro card: the two headings as plain text (the
+         Feedback one for staff), the three facts, the tips. Nothing in it is selectable. -->
+    <section class="panel intro-panel" aria-labelledby="contact-heading">
+      <div class="intro-headings" [class.alone]="!reviewRole()">
+        <div class="intro-heading-block">
+          <p class="eyebrow">Support</p>
+          <h2 id="contact-heading" class="intro-heading">Tell us what happened.</h2>
+          <p class="intro-text">A broken page, a question, or an idea. We answer by email.</p>
+        </div>
+        @if (reviewRole()) {
+          <div class="intro-heading-block feedback">
+            <p class="eyebrow">Feedback</p>
+            <h2 class="intro-heading">Tell us what should change.</h2>
+            <p class="intro-text">A change to how something works, or a lesson that is wrong. The owner sets a status you can follow.</p>
+          </div>
+        }
+      </div>
+      <ul class="hero-facts" aria-label="How support works">
+        <li><span aria-hidden="true">✉️</span> We reply to the email you give</li>
+        <li><span aria-hidden="true">🧾</span> Every item gets a reference</li>
+        <li><span aria-hidden="true">🔒</span> Never include passwords</li>
+      </ul>
+      <app-report-tips />
+    </section>
 
-  @if (reviewRole()) {
-    <div class="support-tabs" role="tablist" aria-label="Support and feedback" (keydown)="moveTab($event)">
-      <button
-        type="button"
-        role="tab"
-        id="support-tab-contact"
-        aria-controls="support-panel"
-        [attr.aria-selected]="view() === 'contact'"
-        [attr.tabindex]="view() === 'contact' ? 0 : -1"
-        (click)="show('contact')"
-      >
-        <span aria-hidden="true">📝</span> Write Review
-      </button>
-      <button
-        type="button"
-        role="tab"
-        id="support-tab-reviews"
-        aria-controls="support-panel"
-        [attr.aria-selected]="view() === 'reviews'"
-        [attr.tabindex]="view() === 'reviews' ? 0 : -1"
-        (click)="show('reviews')"
-      >
-        <span aria-hidden="true">🧪</span> Team Reviews
-        <span class="role-badge">{{ roleBadge() }}</span>
-      </button>
-    </div>
-  }
-
-  <div
-    id="support-panel"
-    class="support-body"
-    [attr.role]="reviewRole() ? 'tabpanel' : null"
-    [attr.aria-labelledby]="reviewRole() ? 'support-tab-' + view() : null"
-  >
-    @if (waitingForReviews()) {
-      <p class="panel loading" role="status">Checking review access…</p>
-    } @else if (view() === 'reviews') {
-      <!-- DLV-971 (owner, 2026-11-06): what was submitted and where each item stands. -->
-      <section class="panel" aria-label="Team Reviews">
-        <app-admin-reviews section="submitted" />
-      </section>
-    } @else if (reviewRole()) {
-      <!-- DLV-971 (owner, 2026-11-06): staff write review items here; the tips sit inside the review card. -->
-      <section class="panel submit-panel" aria-label="Write Review">
-        <app-admin-reviews section="submit" />
-      </section>
-      <!-- A support request is the exception for staff, so it folds away under the review card. -->
-      <button
-        type="button"
-        class="request-fold"
-        [attr.aria-expanded]="requestOpen()"
-        aria-controls="request-panel"
-        (click)="toggleRequest()"
-      >
-        <span class="fold-text"><b>Not a review item?</b> Send a request and get a reply by email.</span>
-        <span class="fold-kinds" aria-hidden="true">
-          <span class="fold-chip">🐞 Report a problem</span>
-          <span class="fold-chip">💡 Share feedback</span>
-          <span class="fold-chip">❓ Ask a question</span>
-        </span>
-        <span class="fold-chevron" aria-hidden="true"></span>
-      </button>
-      @if (requestOpen()) {
-        <section id="request-panel" class="panel form-panel" aria-labelledby="contact-heading">
-          <h2 id="contact-heading">Need a reply from us?</h2>
-          <p class="card-lede">
-            A broken page, an idea, or a question. We answer by email and every request gets a
-            reference.
-          </p>
-          <app-support-request-form />
-        </section>
+    <!-- The form card: the kind cards are the only selectable thing; the kind decides the path and its fields. -->
+    <section class="panel form-panel" aria-labelledby="kind-heading">
+      <fieldset class="kind-picker" [disabled]="!!editingCategory()">
+        <legend id="kind-heading" class="kind-heading">What is it?</legend>
+        <div class="kind-options" [class.five]="kinds().length === 5">
+          @for (kind of kinds(); track kind.id) {
+            <label class="kind-option" [class.selected]="kindId === kind.id">
+              <input type="radio" name="kind" [value]="kind.id" [attr.value]="kind.id" [(ngModel)]="kindId" (ngModelChange)="select($event)" />
+              <span class="kind-icon" aria-hidden="true">{{ kind.icon }}</span>
+              <strong>{{ kind.label }}</strong>
+              <small>{{ kind.hint }}</small>
+            </label>
+          }
+        </div>
+      </fieldset>
+      @if (waitingForEdit()) {
+        <p class="loading" role="status">Loading your item…</p>
+      } @else if (path() === 'feedback') {
+        <app-admin-reviews section="submit" [compact]="true" [category]="feedbackCategory()" (editing)="onEditing($event)" />
+      } @else {
+        <app-support-request-form [compact]="true" [kind]="ticketKind()" />
       }
-    } @else {
-      <!-- DLV-971 (owner, 2026-11-06): a learner gets one card: the tips, then the request form. -->
-      <section class="panel form-panel" aria-labelledby="contact-heading">
-        <h2 id="contact-heading">Need a reply from us?</h2>
-        <p class="card-lede">
-          A broken page, an idea, or a question. We answer by email and every request gets a
-          reference.
-        </p>
-        <app-report-tips />
-        <app-support-request-form />
-      </section>
-    }
+    </section>
   </div>
 </main>

@@ -20,6 +20,7 @@ describe('AuthorAdminMenu', () => {
     expect(hrefs(root, 'nav[aria-label="Admin navigation"] a')).toEqual([
       '/admin/docs',
       '/admin/previews',
+      '/admin/feedback',
       '/delivery-plan',
       '/admin/access',
     ]);

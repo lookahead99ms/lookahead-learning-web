@@ -88,14 +88,15 @@ const draft = (change: Partial<PlatformReviewDraft> = {}): PlatformReviewDraft =
 });
 
 describe('platform review rules', () => {
-  it('names the kind badge of a learner request after its type and leaves a review without one (DLV-971)', () => {
-    expect(kindBadge(request('r', 'problem'))).toBe('Learner request · Problem');
-    expect(kindBadge(request('r', 'feedback'))).toBe('Learner request · Feedback');
-    expect(kindBadge(request('r', 'question'))).toBe('Learner request · Question');
-    expect(kindBadge({ kind: 'request', requestType: null })).toBe('Learner request');
-    expect(kindBadge(item('a', 'x', 'X'))).toBe('');
-    expect(kindBadge({ kind: null })).toBe('');
-    expect(kindBadge({})).toBe('');
+  it('marks a learner support ticket Ticket with its type and every staff item Feedback (DLV-971)', () => {
+    expect(kindBadge(request('r', 'problem'))).toBe('Ticket · Problem');
+    expect(kindBadge(request('r', 'feedback'))).toBe('Ticket · Feedback');
+    expect(kindBadge(request('r', 'question'))).toBe('Ticket · Question');
+    expect(kindBadge({ kind: 'request', requestType: null })).toBe('Ticket');
+    expect(kindBadge({ kind: 'review', requestType: null })).toBe('Feedback');
+    expect(kindBadge(item('a', 'x', 'X'))).toBe('Feedback');
+    expect(kindBadge({ kind: null })).toBe('Feedback');
+    expect(kindBadge({})).toBe('Feedback');
   });
 
   it('writes the ticket pill as id and status, the id alone without a status, nothing before a promote (DLV-971)', () => {
@@ -270,6 +271,130 @@ describe('Platform reviews page', () => {
     expect(titles(root)).toContain('Search misses lessons');
   });
 
+  it('offers the type as four cards like the ticket kinds, with no importance control, and sends the chosen type with the default priority (DLV-971)', async () => {
+    viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
+    const root = await render('submit');
+    expect(root.querySelector('.type-picker legend')?.textContent?.trim()).toBe('Type');
+    const cards = [...root.querySelectorAll<HTMLLabelElement>('.type-option')];
+    expect(cards.map((card) => card.querySelector('strong')?.textContent)).toEqual(['Problem', 'Change request', 'Idea', 'Content correction']);
+    expect(cards.map((card) => card.querySelector('small')?.textContent)).toEqual([
+      'Something broke or looks wrong',
+      'Works, but should work differently',
+      'Something new worth adding',
+      'A lesson, text or example is wrong',
+    ]);
+    expect(cards.map((card) => card.querySelector('input')?.getAttribute('type'))).toEqual(['radio', 'radio', 'radio', 'radio']);
+    expect(cards[0].classList.contains('selected')).toBe(true);
+    expect(root.querySelector('select[name="category"]')).toBeNull();
+    expect(root.querySelector('select[name="priority"]')).toBeNull();
+    expect(root.textContent).not.toContain('How important');
+    // Page and the optional Page address sit side by side under the cards.
+    expect([...root.querySelectorAll('.form-grid > label')].map((label) => label.childNodes[0].textContent?.trim())).toEqual(['Page', 'Page address']);
+    const idea = cards[2].querySelector('input') as HTMLInputElement;
+    idea.click();
+    idea.dispatchEvent(new Event('change'));
+    await settle();
+    expect(cards[2].classList.contains('selected')).toBe(true);
+    expect(cards[0].classList.contains('selected')).toBe(false);
+    expect((root.querySelector('input[name="category"]:checked') as HTMLInputElement).value).toBe('idea');
+    const title = root.querySelector('input[name="title"]') as HTMLInputElement;
+    const details = root.querySelector('textarea[name="details"]') as HTMLTextAreaElement;
+    title.value = 'Rename a week';
+    title.dispatchEvent(new Event('input'));
+    details.value = 'Let me rename a study-plan week.';
+    details.dispatchEvent(new Event('input'));
+    await settle();
+    expect(root.querySelector('button[type="submit"]')?.textContent?.trim()).toBe('Send feedback');
+    root.querySelector<HTMLFormElement>('form')!.dispatchEvent(new Event('submit'));
+    await settle();
+    expect(client.save.mock.calls[0][0]).toEqual(expect.objectContaining({ category: 'idea', priority: 'medium' }));
+    expect(root.querySelector('.form-status')?.textContent).toBe('Your feedback is sent.');
+  });
+
+  it('on the Support page (compact, category from the kind cards) shows no header, tips or type picker, says Send and Clear, and reports what it edits (DLV-971)', async () => {
+    viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
+    current = TestBed.createComponent(AdminReviewsPage);
+    current.componentRef.setInput('section', 'submit');
+    current.componentRef.setInput('compact', true);
+    current.componentRef.setInput('category', 'content');
+    const edits: (string | null)[] = [];
+    current.componentInstance.editing.subscribe((category) => edits.push(category));
+    current.detectChanges();
+    await settle();
+    const root = current.nativeElement as HTMLElement;
+    expect(root.querySelector('header')).toBeNull();
+    expect(root.querySelector('app-report-tips')).toBeNull();
+    expect(root.querySelector('.type-picker')).toBeNull();
+    expect(root.querySelector('#review-form')?.classList.contains('visually-hidden')).toBe(true);
+    expect([...root.querySelectorAll('.form-actions button')].map((button) => button.textContent?.trim())).toEqual(['Send', 'Clear']);
+    const title = root.querySelector('input[name="title"]') as HTMLInputElement;
+    const details = root.querySelector('textarea[name="details"]') as HTMLTextAreaElement;
+    title.value = 'Wrong output';
+    title.dispatchEvent(new Event('input'));
+    details.value = 'The second example prints 3, the text says 4.';
+    details.dispatchEvent(new Event('input'));
+    await settle();
+    // Clear empties the fields and keeps the page's category.
+    [...root.querySelectorAll<HTMLButtonElement>('.form-actions button')].find((button) => button.textContent?.trim() === 'Clear')!.click();
+    await settle();
+    expect((root.querySelector('input[name="title"]') as HTMLInputElement).value).toBe('');
+    title.value = 'Wrong output';
+    title.dispatchEvent(new Event('input'));
+    details.value = 'The second example prints 3, the text says 4.';
+    details.dispatchEvent(new Event('input'));
+    await settle();
+    root.querySelector<HTMLFormElement>('form')!.dispatchEvent(new Event('submit'));
+    await settle();
+    expect(client.save.mock.calls[0][0]).toEqual(expect.objectContaining({ category: 'content', priority: 'medium' }));
+    // The page switches the kind card: the category follows while nothing is being edited.
+    current.componentRef.setInput('category', 'change');
+    current.detectChanges();
+    await settle();
+    expect((current.componentInstance as any).category).toBe('change');
+    // Edit: the loaded item's category is reported, the heading shows, and clearing reports null.
+    (current.componentInstance as any).fillForm({ ...stored[0], category: 'idea' });
+    current.detectChanges();
+    await settle();
+    expect(edits).toEqual(['idea']);
+    expect(root.querySelector('#review-form')?.classList.contains('visually-hidden')).toBe(false);
+    expect(root.querySelector('#review-form')?.textContent?.trim()).toBe('Edit your feedback');
+    current.componentRef.setInput('category', 'content');
+    current.detectChanges();
+    expect((current.componentInstance as any).category).toBe('idea');
+    [...root.querySelectorAll<HTMLButtonElement>('.form-actions button')].find((button) => button.textContent?.includes('Cancel editing'))!.click();
+    await settle();
+    expect(edits).toEqual(['idea', null]);
+    expect((current.componentInstance as any).category).toBe('content');
+  });
+
+  it('preselects the type card of the item being edited and never carries its stored importance (DLV-971)', async () => {
+    viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
+    stored[0] = { ...stored[0], category: 'content', priority: 'high' };
+    TestBed.inject(ReviewEditIntent).set('a');
+    const root = await render('submit');
+    expect(root.querySelector('#review-form')?.textContent?.trim()).toBe('Edit your feedback');
+    expect(root.querySelector('.type-option.selected strong')?.textContent).toBe('Content correction');
+    expect((root.querySelector('input[name="category"]:checked') as HTMLInputElement).value).toBe('content');
+    expect(root.querySelector('select[name="priority"]')).toBeNull();
+    const title = root.querySelector('input[name="title"]') as HTMLInputElement;
+    title.value = 'Item a, corrected';
+    title.dispatchEvent(new Event('input'));
+    await settle();
+    root.querySelector<HTMLFormElement>('form')!.dispatchEvent(new Event('submit'));
+    await settle();
+    expect(client.save.mock.calls[0][0]).toEqual(expect.objectContaining({ category: 'content', priority: 'medium' }));
+    expect(client.save.mock.calls[0][1]).toBe('a');
+  });
+
+  it('shows no importance on a row and keeps the kind marker first (DLV-971)', async () => {
+    viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
+    const root = await render('submitted');
+    const row = root.querySelector('.item-summary')!;
+    expect(row.textContent).not.toMatch(/importance/i);
+    expect(row.querySelector('.summary-head')?.firstElementChild?.classList.contains('kind-badge')).toBe(true);
+    expect(row.querySelector('.kind-badge')?.textContent?.trim()).toBe('Feedback');
+  });
+
   it('shows the owner every reviewer, per-reviewer counts, filters and the reviewer view', async () => {
     viewer = { role: 'owner', reviewerId: 'owner', displayName: 'Owner' };
     const root = await render();
@@ -284,34 +409,34 @@ describe('Platform reviews page', () => {
     expect(root.querySelector('.result-count')?.textContent?.trim()).toBe('1 of 2 items');
     // The owner can switch to the reviewer view of their own items and add one.
     const mine = [...root.querySelectorAll('.view-tabs button')].find((button) =>
-      button.textContent?.includes('My reviews'),
+      button.textContent?.includes('Mine'),
     ) as HTMLButtonElement;
     mine.click();
     current.detectChanges();
     expect(mine.getAttribute('aria-pressed')).toBe('true');
     expect(root.querySelector('#review-form')).not.toBeNull();
     expect(root.querySelector('.triage')).toBeNull();
-    expect(root.textContent).toContain('No reviews submitted yet.');
+    expect(root.textContent).toContain('Nothing submitted yet.');
   });
 
-  it('splits into Write Review (the form) and Team Reviews (the items and their status) for a reviewer (DLV-971)', async () => {
+  it('splits into Give feedback (the form) and Support tickets and feedback (the items and their status) for a reviewer (DLV-971)', async () => {
     viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
     let root = await render('submit');
     expect(root.querySelector('.intro-heading')?.textContent?.trim()).toBe('Tell us what should change.');
-    expect(root.querySelector('.lede')?.textContent?.replace(/\s+/g, ' ').trim()).toBe('Add one item for each problem, change or idea. Attach screenshots when they help. Other reviewers cannot see your items.');
+    expect(root.querySelector('.lede')?.textContent?.replace(/\s+/g, ' ').trim()).toBe('One item for each problem, change or idea on the platform. Attach screenshots when they help. Other reviewers cannot see your items; the owner sets a status on each one under Support tickets and feedback.');
     expect(root.querySelector('#review-form')).not.toBeNull();
     expect(root.querySelector('#review-items')).toBeNull();
     expect(root.querySelector('.view-tabs')).toBeNull();
     current.destroy();
     root = await render('submitted');
-    expect(root.querySelector('.intro-heading')?.textContent?.trim()).toBe('Your reviews, and where each one stands.');
-    expect(root.querySelector('.lede')?.textContent?.replace(/\s+/g, ' ').trim()).toBe('Each item shows the status the owner set. Add new items under Write Review.');
+    expect(root.querySelector('.intro-heading')?.textContent?.trim()).toBe('Your feedback, and where each item stands.');
+    expect(root.querySelector('.lede')?.textContent?.replace(/\s+/g, ' ').trim()).toBe('Each item shows the status the owner set. Add new feedback under Give feedback on Support.');
     expect(root.querySelector('#review-form')).toBeNull();
-    expect(root.querySelector('#review-items')?.textContent?.trim()).toBe('Your review items');
+    expect(root.querySelector('#review-items')?.textContent?.trim()).toBe('Your feedback');
     expect(titles(root)).toEqual(['Item a']);
   });
 
-  it('gives the owner the form alone under Write Review, and the overview with every item under Team Reviews (DLV-971)', async () => {
+  it('gives the owner the form alone under Give feedback, and the overview with every item under Support tickets and feedback (DLV-971)', async () => {
     viewer = { role: 'owner', reviewerId: 'owner', displayName: 'Owner' };
     let root = await render('submit');
     expect(root.querySelector('.intro-heading')?.textContent?.trim()).toBe('Tell us what should change.');
@@ -324,47 +449,47 @@ describe('Platform reviews page', () => {
     expect(root.querySelector('.intro-heading')?.textContent?.trim()).toBe('See what reviewers want to change.');
     expect(root.querySelector('#review-overview')).not.toBeNull();
     expect(root.querySelector('#review-form')).toBeNull();
-    const mine = [...root.querySelectorAll('.view-tabs button')].find((button) => button.textContent?.includes('My reviews')) as HTMLButtonElement;
+    const mine = [...root.querySelectorAll('.view-tabs button')].find((button) => button.textContent?.includes('Mine')) as HTMLButtonElement;
     mine.click();
     current.detectChanges();
     expect(root.querySelector('#review-form')).toBeNull();
-    expect(root.querySelector('#review-items')?.textContent?.trim()).toBe('Your review items');
+    expect(root.querySelector('#review-items')?.textContent?.trim()).toBe('Your feedback');
   });
 
-  it('shows the Write Review form even when the item list cannot load, and never asks for the list there (DLV-971)', async () => {
+  it('shows the Give feedback form even when the item list cannot load, and never asks for the list there (DLV-971)', async () => {
     viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
     failing = true;
     const listed = vi.spyOn(client, 'list');
     const root = await render('submit');
     expect(root.querySelector('#review-form')).not.toBeNull();
     expect(root.querySelector('.state-panel')).toBeNull();
-    expect(root.textContent).not.toContain('Review items are unavailable');
+    expect(root.textContent).not.toContain('Tickets and feedback are unavailable');
     expect(listed).not.toHaveBeenCalled();
   });
 
-  it('says No reviews submitted yet for a reviewer or the owner with nothing recorded (DLV-971)', async () => {
+  it('says Nothing submitted yet for a reviewer or the owner with nothing recorded (DLV-971)', async () => {
     stored = [];
     viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
     let root = await render('submitted');
     expect(root.querySelector('.state-panel')).toBeNull();
-    expect(root.textContent).toContain('No reviews submitted yet.');
+    expect(root.textContent).toContain('Nothing submitted yet.');
     current.destroy();
     viewer = { role: 'owner', reviewerId: 'owner', displayName: 'Owner' };
     root = await render('submitted');
-    expect(root.textContent).toContain('No reviews submitted yet.');
+    expect(root.textContent).toContain('Nothing submitted yet.');
   });
 
   it('names the unavailable state after the items, not the reviews (DLV-971)', async () => {
     viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
     failing = true;
     const root = await render('submitted');
-    expect(root.querySelector('.state-panel h2')?.textContent).toBe('Review items are unavailable');
+    expect(root.querySelector('.state-panel h2')?.textContent).toBe('Tickets and feedback are unavailable');
   });
 
   it('denies an account the service answers with role "user" itself, wherever the page is embedded (DLV-971, audit finding 2)', async () => {
     viewer = { role: 'user', reviewerId: 'learner-1', displayName: 'Learner 1' };
     const root = await render('submit');
-    expect(root.textContent).toContain('Review access required');
+    expect(root.textContent).toContain('Feedback access required');
     expect(root.querySelector('#review-form')).toBeNull();
     expect(root.querySelector('#review-items')).toBeNull();
   });
@@ -376,14 +501,16 @@ describe('Platform reviews page', () => {
     const root = await render('submitted');
     expect(root.querySelector('.intro-heading')?.textContent?.trim()).toBe('See what reviewers want to change.');
     expect(root.querySelector('.lede')?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
-      "Every reviewer's items and every learner request, newest day first. Open an item to read it and see its images. The owner sets each review's status and note; you set the status of learner requests.",
+      "Every reviewer's feedback and every learner support ticket, newest day first. Open one to read it and see its images. You set the status of learner support tickets; the owner sets the status and note on feedback.",
     );
     expect(root.querySelector('#review-overview')).not.toBeNull();
     expect([...root.querySelectorAll('.view-tabs button')].map((b) => b.textContent?.replace(/\s+/g, ' ').trim())).toEqual([
-      'All reviews 3',
-      'My reviews 2',
+      'All 3',
+      'Support tickets 0',
+      'Feedback 3',
+      'Mine 2',
     ]);
-    expect(root.querySelectorAll('.filters select')).toHaveLength(3);
+    expect(root.querySelectorAll('.filters select')).toHaveLength(4);
     expect(titles(root)).toEqual(['Item a', 'Item b', 'Item d']);
     // Another reviewer's item: the owner's note is read-only, no status or note controls.
     const rows = [...root.querySelectorAll<HTMLButtonElement>('.item-summary')];
@@ -431,7 +558,7 @@ describe('Platform reviews page', () => {
     expect(root.querySelector('.owner-note')?.textContent).toContain('Thanks, scheduled.');
   });
 
-  it('carries the report tips inside the Write Review card and keeps the screenshots as one slim row (DLV-971)', async () => {
+  it('carries the report tips inside the Give feedback card and keeps the screenshots as one slim row (DLV-971)', async () => {
     viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
     let root = await render('submit');
     const tips = root.querySelector('app-report-tips')!;
@@ -464,9 +591,9 @@ describe('Platform reviews page', () => {
     ];
     const root = await render('submitted');
     expect([...root.querySelectorAll('thead th')].map((cell) => cell.textContent?.trim())).toEqual([
-      'Reviewer',
+      'From',
       'Items',
-      'Requests',
+      'Tickets',
       'New',
       'Accepted',
       'Planned',
@@ -482,22 +609,23 @@ describe('Platform reviews page', () => {
     expect([...rowOf('Reviewer 1')].map((cell) => cell.textContent?.trim())).toEqual(['1', '0', '1', '0', '0', '0', '0']);
     const badges = [...root.querySelectorAll('.item-row')].map((row) => row.querySelector('.kind-badge')?.textContent?.trim() ?? null);
     expect(badges).toEqual([
-      'Learner request · Problem',
-      'Learner request · Feedback',
-      'Learner request · Question',
-      null,
-      null,
+      'Ticket · Problem',
+      'Ticket · Feedback',
+      'Ticket · Question',
+      'Feedback',
+      'Feedback',
     ]);
-    const type = root.querySelectorAll<HTMLSelectElement>('.filters select')[2];
+    expect([...root.querySelectorAll('.item-row .kind-badge.ticket')]).toHaveLength(3);
+    const type = root.querySelectorAll<HTMLSelectElement>('.filters select')[3];
     expect([...type.options].map((option) => option.textContent?.trim())).toEqual([
       'All types',
       'Problem',
       'Change request',
       'Idea',
       'Content correction',
-      'Learner request: Problem',
-      'Learner request: Feedback',
-      'Learner request: Question',
+      'Support ticket: Problem',
+      'Support ticket: Feedback',
+      'Support ticket: Question',
     ]);
     type.value = 'request:feedback';
     type.dispatchEvent(new Event('change'));
@@ -587,7 +715,7 @@ describe('Platform reviews page', () => {
     const root = await render('submitted');
     expect(titles(root)).toEqual(['Request p', 'Item a']);
     const rows = [...root.querySelectorAll<HTMLButtonElement>('.item-summary')];
-    expect(rows[0].querySelector('.kind-badge')?.textContent?.trim()).toBe('Learner request · Problem');
+    expect(rows[0].querySelector('.kind-badge')?.textContent?.trim()).toBe('Ticket · Problem');
     rows[0].click();
     await settle();
     expect(root.querySelector('.item-actions')).toBeNull();
@@ -603,7 +731,7 @@ describe('Platform reviews page', () => {
     ]);
   });
 
-  it('Edit under Team Reviews records the item and opens Write Review, which loads it into the form (DLV-971)', async () => {
+  it('Edit on Support tickets and feedback records the item and opens the Give feedback tab, which loads it into the form (DLV-971)', async () => {
     viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     const intent = TestBed.inject(ReviewEditIntent);
@@ -616,26 +744,23 @@ describe('Platform reviews page', () => {
       .click();
     await settle();
     expect(intent.itemId()).toBe('a');
-    expect(navigate).toHaveBeenCalledWith(['/support'], {
-      queryParams: { view: null },
-      queryParamsHandling: 'merge',
-    });
+    expect(navigate).toHaveBeenCalledWith(['/support'], { queryParams: { view: null }, queryParamsHandling: 'merge' });
     current.destroy();
-    // The Write Review instance on the other tab takes the id on init and clears it.
+    // The Give feedback instance on /support takes the id on init and clears it.
     client.item.mockClear();
     root = await render('submit');
     expect(client.item).toHaveBeenCalledWith('a');
     expect(intent.itemId()).toBeNull();
-    expect(root.querySelector('#review-form')?.textContent?.trim()).toBe('Edit your review item');
+    expect(root.querySelector('#review-form')?.textContent?.trim()).toBe('Edit your feedback');
     expect((root.querySelector('input[name="title"]') as HTMLInputElement).value).toBe('Item a');
     expect((root.querySelector('textarea[name="details"]') as HTMLTextAreaElement).value).toBe('Results miss the Java lesson.');
     expect(root.querySelector('button[type="submit"]')?.textContent?.trim()).toBe('Save changes');
     current.destroy();
-    // A fresh Write Review instance with nothing pending opens the empty form.
+    // A fresh Give feedback instance with nothing pending opens the empty form.
     client.item.mockClear();
     root = await render('submit');
     expect(client.item).not.toHaveBeenCalled();
-    expect(root.querySelector('#review-form')?.textContent?.trim()).toBe('Add a review item');
+    expect(root.querySelector('#review-form')?.textContent?.trim()).toBe('New feedback');
   });
 
   it('tells the reviewer when a recorded edit cannot be opened, and never loads a request into the form (DLV-971)', async () => {
@@ -644,13 +769,13 @@ describe('Platform reviews page', () => {
     intent.set('missing');
     client.item.mockRejectedValueOnce(new PlatformReviewError('not-found'));
     let root = await render('submit');
-    expect(root.querySelector('#review-form')?.textContent?.trim()).toBe('Add a review item');
+    expect(root.querySelector('#review-form')?.textContent?.trim()).toBe('New feedback');
     expect(root.querySelector('.form-status')?.textContent).toContain('could not be opened for editing');
     current.destroy();
     stored = [request('p', 'problem', 'reviewer-1')];
     intent.set('p');
     root = await render('submit');
-    expect(root.querySelector('#review-form')?.textContent?.trim()).toBe('Add a review item');
+    expect(root.querySelector('#review-form')?.textContent?.trim()).toBe('New feedback');
     expect((root.querySelector('input[name="title"]') as HTMLInputElement).value).toBe('');
   });
 
@@ -729,7 +854,7 @@ describe('Platform reviews page', () => {
     expect(root.querySelector('.item-ticket .promote-status')?.textContent).toBe('This item already has a ticket.');
   });
 
-  it('opens and marks the item a /support?view=reviews#<id> link names, and ignores an unknown id (DLV-971)', async () => {
+  it('opens and marks the item an /admin/feedback#<id> link names, and ignores an unknown id (DLV-971)', async () => {
     viewer = { role: 'owner', reviewerId: 'owner', displayName: 'Owner' };
     const route = { snapshot: { fragment: 'b' as string | null } };
     TestBed.overrideProvider(ActivatedRoute, { useValue: route });
@@ -752,7 +877,7 @@ describe('Platform reviews page', () => {
     viewer = { role: 'reviewer', reviewerId: 'x', displayName: 'X' };
     denied = true;
     const root = await render();
-    expect(root.textContent).toContain('Review access required');
+    expect(root.textContent).toContain('Feedback access required');
     expect(root.querySelector('#review-form')).toBeNull();
   });
 });

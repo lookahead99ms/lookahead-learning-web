@@ -1181,3 +1181,9 @@ pre:has(> .learning-code[data-code-language='go']) { background:#14161a; }
     transition: none;
   }
 }
+
+/* DLV-971 (owner, 2026-11-06): while an item is open on Support tickets and feedback, the page behind the dialog does not scroll. */
+html.feedback-dialog-open,
+html.feedback-dialog-open body {
+  overflow: hidden;
+}

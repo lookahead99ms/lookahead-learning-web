@@ -1103,6 +1103,7 @@ export class PlatformHeader implements AfterViewInit, OnDestroy {
     if (id === 'docs') return isAuthorDocumentationRoute(path);
     if (id === 'previews') return path.startsWith('/admin/previews');
     if (id === 'access') return path === '/admin/access';
+    if (id === 'feedback') return path === '/admin/feedback';
     return path === '/delivery-plan';
   }
 

@@ -1,0 +1,19 @@
+<app-platform-header />
+<main id="main-content" class="feedback-page">
+  <aside class="workspace-sidebar">
+    <app-author-workspace-nav pageTitle="Support tickets and feedback" pageId="feedback" [outline]="outline" />
+  </aside>
+  <div class="workspace-content">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a routerLink="/admin/feedback">Support tickets and feedback</a> › <span>{{ itemId() }}</span>
+    </nav>
+    <section class="panel item-panel" id="feedback-item" [attr.aria-label]="kind() + ' ' + itemId()">
+      <div class="item-bar">
+        <span class="kind-badge" [class.ticket]="kind() === 'Ticket'">{{ kind() }}</span>
+        <span class="item-key">{{ itemId() }}</span>
+      </div>
+      <app-feedback-item [itemId]="itemId()" />
+    </section>
+  </div>
+  <app-author-admin-menu pageId="feedback" />
+</main>

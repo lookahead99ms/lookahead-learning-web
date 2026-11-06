@@ -357,7 +357,7 @@ export class DeliveryPlanPage implements OnInit {
   }
 
   /**
-   * A ticket pill on Team Reviews links to /delivery-plan#<ticketId>: once the plan is in, All tickets opens with the
+   * A ticket pill on Support tickets and feedback links to /delivery-plan#<ticketId>: once the plan is in, All tickets opens with the
    * filters cleared, and the ticket is scrolled to and marked.
    */
   private revealRequestedTicket(): void {

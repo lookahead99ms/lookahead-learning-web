@@ -1,9 +1,12 @@
 <div class="reviews-panel">
+  @if (!compact()) {
   <header>
-    <p class="eyebrow">Private review</p>
+    @if (section() === 'submit') {
+      <p class="eyebrow">Feedback</p>
+    }
     <h2 class="intro-heading">
       @if (section() === 'submitted' && !seesAll()) {
-        Your reviews, and where each one stands.
+        Your feedback, and where each item stands.
       } @else if (showAll() && section() !== 'submit') {
         See what reviewers want to change.
       } @else {
@@ -12,63 +15,64 @@
     </h2>
     <p class="lede">
       @if (section() === 'submitted' && !seesAll()) {
-        Each item shows the status the owner set. Add new items under Write Review.
+        Each item shows the status the owner set. Add new feedback under Give feedback on Support.
       } @else if (showAll() && section() !== 'submit' && !isOwner()) {
-        Every reviewer's items and every learner request, newest day first. Open an item to read it
-        and see its images. The owner sets each review's status and note; you set the status of
-        learner requests.
+        Every reviewer's feedback and every learner support ticket, newest day first. Open one to
+        read it and see its images. You set the status of learner support tickets; the owner sets the
+        status and note on feedback.
       } @else if (showAll() && section() !== 'submit') {
-        Each reviewer sees only their own items. You see all of them and every learner request,
-        newest day first. Open an item to read it, see its images and set a status the reviewer
+        Each reviewer sees only their own feedback. You see all of it and every learner support
+        ticket, newest day first. Open one to read it, see its images and set a status the sender
         will see.
       } @else if (seesAll()) {
-        This is the view every reviewer gets. Items you add here also appear under Team Reviews
-        with your name.
+        This is the view every reviewer gets. Feedback you give here also appears under Support
+        tickets and feedback with your name.
       } @else {
-        Add one item for each problem, change or idea. Attach screenshots when they help. Other
-        reviewers cannot see your items.
+        One item for each problem, change or idea on the platform. Attach screenshots when they
+        help. Other reviewers cannot see your items; the owner sets a status on each one under
+        Support tickets and feedback.
       }
     </p>
   </header>
+  }
 
   @if (state() === 'loading' && !viewer()) {
-    <p class="state-panel" role="status">Loading reviews…</p>
+    <p class="state-panel" role="status">Loading tickets and feedback…</p>
   } @else if (state() === 'signed-out' || accounts.sessionExpired()) {
     <section class="state-panel" role="alert">
       <h2>Sign in again</h2>
-      <p>Your session ended. Sign in again to see your review items.</p>
+      <p>Your session ended. Sign in again to see your feedback.</p>
     </section>
   } @else if (state() === 'denied') {
     <section class="state-panel" role="alert">
-      <h2>Review access required</h2>
-      <p>This account is not set up as a platform reviewer. Ask the platform owner for access.</p>
+      <h2>Feedback access required</h2>
+      <p>This account is not set up to give feedback. Ask the platform owner for access.</p>
     </section>
   } @else if (state() === 'error') {
     <section class="state-panel" role="alert">
-      <h2>Review items are unavailable</h2>
-      <p>The review items could not be loaded. Nothing was lost; try again.</p>
+      <h2>Tickets and feedback are unavailable</h2>
+      <p>The tickets and feedback could not be loaded. Nothing was lost; try again.</p>
       <button type="button" class="secondary" (click)="load()">Try again</button>
     </section>
   } @else {
-    @if (section() === 'submit') {
+    @if (section() === 'submit' && !compact()) {
       <!-- DLV-971 (owner, 2026-11-06): the same tips a learner sees, inside the review card above the form. -->
       <app-report-tips class="report-tips" />
     }
     @if (seesAll() && section() !== 'submit') {
-      <div class="view-tabs" role="group" aria-label="Review view">
-        <button
-          type="button"
-          [attr.aria-pressed]="ownerView() === 'all'"
-          (click)="showOwnerView('all')"
-        >
-          All reviews <span class="tab-count">{{ items().length }}</span>
+      <!-- DLV-971 (owner, 2026-11-06): All, the two kinds, and Mine (the reviewer view of your own feedback). -->
+      <div class="view-tabs" role="group" aria-label="View">
+        <button type="button" [attr.aria-pressed]="ownerView() === 'all' && !kindFilter()" (click)="showOwnerView('all')">
+          All <span class="tab-count">{{ items().length }}</span>
         </button>
-        <button
-          type="button"
-          [attr.aria-pressed]="ownerView() === 'mine'"
-          (click)="showOwnerView('mine')"
-        >
-          My reviews <span class="tab-count">{{ ownItems().length }}</span>
+        <button type="button" [attr.aria-pressed]="ownerView() === 'all' && kindFilter() === 'ticket'" (click)="showOwnerView('all', 'ticket')">
+          Support tickets <span class="tab-count">{{ ticketItems().length }}</span>
+        </button>
+        <button type="button" [attr.aria-pressed]="ownerView() === 'all' && kindFilter() === 'feedback'" (click)="showOwnerView('all', 'feedback')">
+          Feedback <span class="tab-count">{{ feedbackItems().length }}</span>
+        </button>
+        <button type="button" [attr.aria-pressed]="ownerView() === 'mine'" (click)="showOwnerView('mine')">
+          Mine <span class="tab-count">{{ ownItems().length }}</span>
         </button>
       </div>
     }
@@ -77,13 +81,13 @@
         <section aria-labelledby="review-overview">
           <h2 id="review-overview">Overview</h2>
           @if (reviewers().length) {
-            <div class="table-scroll" role="region" aria-label="Items by reviewer" tabindex="0">
+            <div class="table-scroll" role="region" aria-label="Items by sender" tabindex="0">
               <table>
                 <thead>
                   <tr>
-                    <th scope="col">Reviewer</th>
+                    <th scope="col">From</th>
                     <th scope="col">Items</th>
-                    <th scope="col">Requests</th>
+                    <th scope="col">Tickets</th>
                     @for (status of statuses; track status.id) {
                       <th scope="col">{{ status.label }}</th>
                     }
@@ -112,20 +116,28 @@
               </table>
             </div>
           } @else {
-            <p class="empty">No reviews submitted yet.</p>
+            <p class="empty">Nothing submitted yet.</p>
           }
         </section>
 
         <section aria-labelledby="review-items">
-          <h2 id="review-items">All review items</h2>
+          <h2 id="review-items">All items</h2>
           <div class="filters">
             <label
-              >Reviewer
+              >Kind
+              <select [value]="kindFilter()" (change)="kindFilter.set($any($event.target).value)">
+                <option value="">All kinds</option>
+                <option value="ticket">Support tickets</option>
+                <option value="feedback">Feedback</option>
+              </select>
+            </label>
+            <label
+              >From
               <select
                 [value]="reviewerFilter()"
                 (change)="reviewerFilter.set($any($event.target).value)"
               >
-                <option value="">All reviewers</option>
+                <option value="">Everyone</option>
                 @for (reviewer of reviewers(); track reviewer.id) {
                   <option [value]="reviewer.id">{{ reviewer.name }}</option>
                 }
@@ -154,7 +166,7 @@
                   <option [value]="category.id">{{ category.label }}</option>
                 }
                 @for (type of requestTypes; track type.id) {
-                  <option [value]="requestFilterPrefix + type.id">Learner request: {{ type.label }}</option>
+                  <option [value]="requestFilterPrefix + type.id">Support ticket: {{ type.label }}</option>
                 }
               </select>
             </label>
@@ -172,19 +184,28 @@
       } @else {
         @if (section() !== 'submitted') {
         <section aria-labelledby="review-form" class="form-section">
-          <h2 id="review-form" tabindex="-1" #formHeading>
-            {{ editingId() ? 'Edit your review item' : 'Add a review item' }}
+          <h2 id="review-form" tabindex="-1" #formHeading [class.visually-hidden]="compact() && !editingId()">
+            {{ editingId() ? 'Edit your feedback' : 'New feedback' }}
           </h2>
           <form (ngSubmit)="submit()" (paste)="onPaste($event)" novalidate>
+            <!-- DLV-971 (owner, 2026-11-06): the type is a row of cards like the ticket kinds; there is no importance field
+                 on the page (the record keeps its priority field with the default the Web always sent). -->
+            @if (!category$()) {
+            <fieldset class="type-picker">
+              <legend>Type</legend>
+              <div class="type-options">
+                @for (option of categoryCards; track option.id) {
+                  <label class="type-option" [class.selected]="category === option.id">
+                    <input type="radio" name="category" [value]="option.id" [attr.value]="option.id" [(ngModel)]="category" />
+                    <span class="type-icon" aria-hidden="true">{{ option.icon }}</span>
+                    <strong>{{ option.label }}</strong>
+                    <small>{{ option.hint }}</small>
+                  </label>
+                }
+              </div>
+            </fieldset>
+            }
             <div class="form-grid">
-              <label
-                >Type
-                <select name="category" [(ngModel)]="category">
-                  @for (option of categories; track option.id) {
-                    <option [value]="option.id">{{ option.label }}</option>
-                  }
-                </select>
-              </label>
               <label
                 >Page
                 <select name="page" [(ngModel)]="page">
@@ -194,23 +215,15 @@
                 </select>
               </label>
               <label
-                >How important
-                <select name="priority" [(ngModel)]="priority">
-                  @for (option of priorities; track option.id) {
-                    <option [value]="option.id">{{ option.label }}</option>
-                  }
-                </select>
+                >Page address <span class="optional">(optional)</span>
+                <input
+                  name="pageUrl"
+                  [(ngModel)]="pageUrl"
+                  placeholder="/learn/core-java"
+                  autocomplete="off"
+                />
               </label>
             </div>
-            <label
-              >Page address <span class="optional">(optional)</span>
-              <input
-                name="pageUrl"
-                [(ngModel)]="pageUrl"
-                placeholder="/learn/core-java"
-                autocomplete="off"
-              />
-            </label>
             <label
               >Title
               <input name="title" [(ngModel)]="title" [maxlength]="limits.titleLength" required />
@@ -274,12 +287,14 @@
             }
             <div class="form-actions">
               <button type="submit" class="primary" [disabled]="saving()">
-                {{ saving() ? 'Saving…' : editingId() ? 'Save changes' : 'Add item' }}
+                {{ saving() ? 'Sending…' : editingId() ? 'Save changes' : compact() ? 'Send' : 'Send feedback' }}
               </button>
               @if (editingId()) {
                 <button type="button" class="secondary" (click)="resetForm()">
                   Cancel editing
                 </button>
+              } @else if (compact()) {
+                <button type="button" class="secondary" (click)="resetForm()">Clear</button>
               }
               <span role="status" class="form-status">{{ formStatus() }}</span>
             </div>
@@ -289,11 +304,11 @@
 
         @if (section() !== 'submit') {
         <section aria-labelledby="review-items">
-          <h2 id="review-items">Your review items</h2>
+          <h2 id="review-items">Your feedback</h2>
           <ng-container
             *ngTemplateOutlet="
               dayList;
-              context: { $implicit: ownDays(), showReviewer: false, empty: 'No reviews submitted yet.' }
+              context: { $implicit: ownDays(), showReviewer: false, empty: 'Nothing submitted yet.' }
             "
           />
         </section>
@@ -341,10 +356,8 @@
             <span class="chevron" aria-hidden="true"></span>
             <span class="summary-main">
               <span class="summary-head">
+                <span class="kind-badge" [class.ticket]="isRequest(summary)">{{ kindBadge(summary) }}</span>
                 <span class="summary-title">{{ summary.title }}</span>
-                @if (isRequest(summary)) {
-                  <span class="kind-badge">{{ kindBadge(summary) }}</span>
-                }
                 @if (summary.ticketId) {
                   <!-- The row is one button, so the pill is text here; the open item carries the link. -->
                   <span class="ticket-pill">{{ ticketPill(summary) }}</span>
@@ -356,7 +369,6 @@
                   <span>{{ summary.submitterRole === 'legacy' || !summary.submitterRole ? 'Earlier feedback' : summary.submitterRole }}</span> ·
                 }
                 {{ labelOf(categories, summary.category) }} · {{ summary.page }} ·
-                {{ labelOf(priorities, summary.priority) }} importance ·
                 {{ time(summary.createdAt) }}
                 @if (summary.attachmentCount) {
                   · {{ images(summary.attachmentCount) }}

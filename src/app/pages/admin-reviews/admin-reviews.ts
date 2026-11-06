@@ -1,4 +1,4 @@
-import { Component, computed, ElementRef, inject, input, OnDestroy, OnInit, signal, viewChild } from '@angular/core';
+import { Component, computed, effect, ElementRef, inject, input, OnDestroy, OnInit, output, signal, viewChild } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -21,7 +21,6 @@ import {
   requestTypes,
   reviewCategories,
   reviewLimits,
-  reviewPriorities,
   reviewStatuses,
   reviewedPages,
   ticketPill,
@@ -46,7 +45,9 @@ interface DayGroup {
 
 /**
  * DLV-927/928: each reviewer records their own items; the owner and admins see everyone's, the owner alone triages.
- * Shown under the Write Review and Team Reviews tabs of /support, which owns the page header and layout.
+ * Shown under the Give feedback tab of /support and on the Support tickets and feedback admin page (/admin/feedback),
+ * which own the page header and layout. Two nouns on the page (owner, 2026-11-06): a ticket (kind "request", a
+ * learner needs a reply) and feedback (kind "review", staff say what should change); the ids and the API are unchanged.
  * Items are grouped by the day they were sent, newest first. A row shows the summary; opening it
  * loads the description, the owner's note and the images.
  */
@@ -59,11 +60,19 @@ interface DayGroup {
 export class AdminReviewsPage implements OnInit, OnDestroy {
   protected readonly accounts = inject(StudyPlanAccount);
   /**
-   * DLV-971 (owner, 2026-11-06): the Support page shows this panel twice. "submit" is the add-item form under Submit a
-   * review; "submitted" is what was submitted and where each item stands under Team Reviews (the owner's overview
-   * and every reviewer's items, a reviewer's own). "all" is the whole panel, as before.
+   * DLV-971 (owner, 2026-11-06): "submit" is the form under Give feedback on /support; "submitted" is what was
+   * submitted and where each item stands on Support tickets and feedback (the owner's overview and every reviewer's
+   * items, a reviewer's own). "all" is the whole panel, as before.
    */
   readonly section = input<'submit' | 'submitted' | 'all'>('all');
+  /**
+   * DLV-971 (owner, 2026-11-06): on Support the kind cards live in the page, so the form takes its category from here
+   * and shows no type picker; the page also owns the heading and the tips (compact), and the button says Send.
+   */
+  readonly category$ = input<ReviewCategory | null>(null, { alias: 'category' });
+  readonly compact = input(false);
+  /** The category of the item loaded for editing (Edit from the admin page), null when the form is cleared. */
+  readonly editing = output<ReviewCategory | null>();
   protected readonly client = inject(PLATFORM_REVIEW_CLIENT);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
@@ -74,7 +83,6 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
   protected readonly isRequest = isRequest;
   protected readonly kindBadge = kindBadge;
   protected readonly ticketPill = ticketPill;
-  protected readonly priorities = reviewPriorities;
   protected readonly statuses = reviewStatuses;
   protected readonly pages = reviewedPages;
   protected readonly limits = reviewLimits;
@@ -114,9 +122,20 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
   protected canEdit(item: PlatformReviewItem): boolean {
     return this.isOwn(item) && !isRequest(item) && item.status === 'new';
   }
-  /** The owner and admins switch between everyone's items and the reviewer view of their own. */
+  /** The owner and admins switch between everyone's items (all, or one kind) and the reviewer view of their own. */
   protected readonly ownerView = signal<'all' | 'mine'>('all');
   protected readonly showAll = computed(() => this.seesAll() && this.ownerView() === 'all');
+  /** DLV-971 (owner, 2026-11-06): the Kind filter and the Support tickets / Feedback pills share this value. */
+  protected readonly kindFilter = signal<'' | 'ticket' | 'feedback'>('');
+  protected readonly ticketItems = computed(() => this.items().filter(isRequest));
+  protected readonly feedbackItems = computed(() => this.items().filter((item) => !isRequest(item)));
+  /** The type cards of the feedback form: the review categories with an icon and a one-line hint, like the ticket kinds. */
+  protected readonly categoryCards = [
+    { id: 'problem', icon: '🐞', label: 'Problem', hint: 'Something broke or looks wrong' },
+    { id: 'change', icon: '🔧', label: 'Change request', hint: 'Works, but should work differently' },
+    { id: 'idea', icon: '💡', label: 'Idea', hint: 'Something new worth adding' },
+    { id: 'content', icon: '📖', label: 'Content correction', hint: 'A lesson, text or example is wrong' },
+  ] as const;
   /** The viewer may edit or delete their own item while it is still New, whichever list shows it. */
   protected isOwn(item: PlatformReviewItem): boolean {
     return item.reviewerId === this.viewer()?.reviewerId;
@@ -159,7 +178,7 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
   /** The item whose Promote is in flight, and the outcome text per item. */
   protected readonly promoting = signal<string | null>(null);
   protected readonly promoteMessage = signal<Record<string, string>>({});
-  /** The item a /support?view=reviews#<id> link asked for: opened on load and marked in the list. */
+  /** The item an /admin/feedback#<id> link asked for: opened on load and marked in the list. */
   protected readonly targetId = signal<string | null>(null);
 
   // Attachments
@@ -167,6 +186,10 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
   protected readonly viewing = signal<{ url: string; name: string } | null>(null);
   private readonly imageDialog = viewChild<ElementRef<HTMLDialogElement>>('imageDialog');
   private readonly formHeading = viewChild<ElementRef<HTMLElement>>('formHeading');
+  private readonly followCategory = effect(() => {
+    const chosen = this.category$();
+    if (chosen && !this.editingId()) this.category = chosen;
+  });
 
   protected readonly reviewers = computed(() => {
     const byReviewer = new Map<
@@ -187,6 +210,7 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
   protected readonly visibleItems = computed(() =>
     this.items().filter(
       (item) =>
+        (!this.kindFilter() || (this.kindFilter() === 'ticket') === isRequest(item)) &&
         (!this.reviewerFilter() || item.reviewerId === this.reviewerFilter()) &&
         (!this.statusFilter() || item.status === this.statusFilter()) &&
         this.matchesType(item),
@@ -222,8 +246,8 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
     this.detailState.set({});
     this.triageMessage.set({});
     try {
-      // DLV-971 (owner, 2026-11-06): the Write Review form needs only the viewer's role, so it no longer waits for, or
-      // fails with, the item list; a list that cannot load is reported where the list is shown (Team Reviews).
+      // DLV-971 (owner, 2026-11-06): the Give feedback form needs only the viewer's role, so it no longer waits for, or
+      // fails with, the item list; a list that cannot load is reported where the list is shown (Support tickets and feedback).
       const viewer = await this.client.viewer();
       // "user" is the service's word for an account with no review role; this page denies it itself, wherever it is
       // embedded, instead of relying on the Support page's filter.
@@ -253,7 +277,7 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
   }
 
   /**
-   * A ticket's "From review REV-000001" link on the Delivery Plan opens /support?view=reviews#<id>: the item named in
+   * A ticket's "From review REV-000001" link on the Delivery Plan opens /admin/feedback#<id>: the item named in
    * the fragment opens and scrolls into view when it is in the loaded list.
    */
   private openRequestedItem(): void {
@@ -436,7 +460,7 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
       await this.client.save(draft, editing ?? undefined);
       this.resetForm();
       await this.load();
-      this.formStatus.set(editing ? 'Your changes are saved.' : 'Your review item is saved.');
+      this.formStatus.set(editing ? 'Your changes are saved.' : 'Your feedback is sent.');
     } catch (error) {
       this.formError.set(
         error instanceof PlatformReviewError && error.message !== error.kind
@@ -448,19 +472,21 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
     }
   }
 
-  protected showOwnerView(view: 'all' | 'mine'): void {
+  protected showOwnerView(view: 'all' | 'mine', kind: '' | 'ticket' | 'feedback' = ''): void {
     this.ownerView.set(view);
+    this.kindFilter.set(kind);
     this.openId.set(null);
     this.formStatus.set('');
   }
 
   /**
-   * DLV-971 (owner, 2026-11-06): under Team Reviews the form is on the other tab, so Edit records the id and
-   * opens Write Review, whose instance loads the item on init.
+   * DLV-971 (owner, 2026-11-06): on Support tickets and feedback the form is on another page, so Edit records the id
+   * and opens /support, whose feedback form instance loads the item on init.
    */
   protected edit(item: PlatformReviewItem): void {
     if (this.section() === 'submitted') {
       this.editIntent.set(item.id);
+      // The Support page's final shape is pending (owner, 2026-11-06); until then Edit opens its default tab.
       void this.router.navigate(['/support'], { queryParams: { view: null }, queryParamsHandling: 'merge' });
       return;
     }
@@ -474,7 +500,7 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
       this.fillForm(item);
       void this.loadAttachmentUrls(item);
     } catch {
-      this.formStatus.set('The item could not be opened for editing. Open it again under Team Reviews.');
+      this.formStatus.set('The item could not be opened for editing. Open it again under Support tickets and feedback.');
     }
   }
 
@@ -482,11 +508,12 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
     this.resetForm();
     this.editingId.set(item.id);
     this.category = item.category;
+    this.editing.emit(item.category);
     this.page = item.page;
     this.pageUrl = item.pageUrl;
     this.title = item.title;
     this.detailsText = item.details;
-    this.priority = item.priority;
+    // DLV-971 (owner, 2026-11-06): no importance on the page; the stored value is ignored and the default sent back.
     this.keptAttachments.set([...item.attachments]);
     const heading = this.formHeading()?.nativeElement;
     heading?.scrollIntoView?.({ block: 'start' });
@@ -495,8 +522,10 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
 
   protected resetForm(): void {
     for (const pending of this.pendingFiles()) URL.revokeObjectURL(pending.url);
+    const wasEditing = this.editingId() !== null;
     this.editingId.set(null);
-    this.category = 'problem';
+    this.category = this.category$() ?? 'problem';
+    if (wasEditing) this.editing.emit(null);
     this.page = 'Whole platform';
     this.pageUrl = '';
     this.title = '';

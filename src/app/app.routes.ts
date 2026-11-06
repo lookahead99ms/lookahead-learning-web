@@ -2,8 +2,7 @@ import { AUTHOR_DOCUMENTS_CLIENT } from './core/author-documents-client';
 import { AuthorDocumentsApi } from './core/author-documents-api';
 import { AUTHOR_REVIEW_CLIENT } from './pages/author-previews/author-review-client';
 import { AuthorReviewApi } from './pages/author-previews/author-review-api';
-import { inject } from '@angular/core';
-import { Router, Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 import { PLATFORM_REVIEW_CLIENT } from './pages/admin-reviews/platform-review.model';
 import { ConnectedPlatformReviewClient } from './pages/admin-reviews/connected-platform-review-client';
 import { authorGuard, accessGuard, staffGuard, deliveryGuard, previewsGuard } from './core/author-access';
@@ -71,8 +70,24 @@ export const routes: Routes = [
         (page) => page.AuthorOperationsPage,
       ),
   })),
-  // Platform reviews are a tab of Support and feedback; the old address opens that tab.
-  { path: 'admin/reviews', redirectTo: () => inject(Router).parseUrl('/support?view=reviews') },
+  // DLV-971 (owner, 2026-11-06): Support tickets and feedback, the former Team Reviews tab of Support; the older
+  // /admin/reviews address opens it.
+  { path: 'admin/reviews', redirectTo: 'admin/feedback' },
+  {
+    path: 'admin/feedback',
+    canActivate: [staffGuard],
+    providers: [{ provide: PLATFORM_REVIEW_CLIENT, useClass: ConnectedPlatformReviewClient }],
+    loadComponent: () =>
+      import('./pages/admin-feedback/admin-feedback').then((page) => page.AdminFeedbackPage),
+  },
+  // The item's own page (the ↗ on a backlog row, "Open in new tab" in the dialog); a deep link works on reload.
+  {
+    path: 'admin/feedback/:id',
+    canActivate: [staffGuard],
+    providers: [{ provide: PLATFORM_REVIEW_CLIENT, useClass: ConnectedPlatformReviewClient }],
+    loadComponent: () =>
+      import('./pages/admin-feedback/admin-feedback-item').then((page) => page.AdminFeedbackItemPage),
+  },
   {
     path: 'admin/docs',
     canActivate: [staffGuard],

@@ -1314,7 +1314,7 @@ describe('DeliveryPlanPage', () => {
       let dialog = await openTicket(harness);
       let origin = dialog.querySelector<HTMLAnchorElement>('.ticket-origin a')!;
       expect(origin.textContent?.trim()).toBe('From review REV-000001');
-      expect(origin.getAttribute('href')).toBe('/support?view=reviews#REV-000001');
+      expect(origin.getAttribute('href')).toBe('/admin/feedback#REV-000001');
       const page = harness.fixture.debugElement.query((node) => node.componentInstance instanceof DeliveryPlanPage)
         .componentInstance as DeliveryPlanPage;
       page['closeWorkItem']();
@@ -1324,7 +1324,7 @@ describe('DeliveryPlanPage', () => {
       dialog = harness.routeNativeElement!.querySelector<HTMLDialogElement>('.work-item-dialog')!;
       origin = dialog.querySelector<HTMLAnchorElement>('.ticket-origin a')!;
       expect(origin.textContent?.trim()).toBe('From learner request SUP-000001');
-      expect(origin.getAttribute('href')).toBe('/support?view=reviews#SUP-000001');
+      expect(origin.getAttribute('href')).toBe('/admin/feedback#SUP-000001');
       // A ticket without stamps keeps the plain date line.
       expect(dialog.querySelector('.dialog-footer span')?.textContent).toBe('Updated 2026-09-03');
     });
