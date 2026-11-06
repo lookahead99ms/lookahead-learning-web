@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { SupportRequestForm } from './support-request-form';
 import { ACCOUNT_FETCH, StudyPlanAccount } from '../study-plan/study-plan-account';
 const response = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status });
@@ -68,5 +69,82 @@ describe('support request recovery', () => {
     expect((page as any).error()).toContain('account that started');
     expect(transport.mock.calls[1][1].headers['X-LookAhead-Account']).toBe('synthetic-owner');
   });
+});
 
+describe('support request form layout (DLV-971)', () => {
+  function render() {
+    TestBed.configureTestingModule({
+      imports: [SupportRequestForm],
+      providers: [
+        provideRouter([]),
+        { provide: ACCOUNT_FETCH, useValue: vi.fn() },
+        {
+          provide: StudyPlanAccount,
+          useValue: {
+            account: () => ({ accountId: 'synthetic-owner' }),
+            sessionExpired: () => false,
+            apiPath: (path: string) => '/api/v1' + path,
+          },
+        },
+      ],
+    });
+    const fixture = TestBed.createComponent(SupportRequestForm);
+    fixture.detectChanges();
+    return { fixture, root: fixture.nativeElement as HTMLElement };
+  }
+  const png = (name: string, size = 10) =>
+    Object.defineProperty(new File(['x'], name, { type: 'image/png' }), 'size', { value: size });
+  const choose = (input: HTMLInputElement, files: File[]) => {
+    Object.defineProperty(input, 'files', { value: files, configurable: true });
+    input.dispatchEvent(new Event('change'));
+  };
+
+  it('opens with the kind picker, then the fields, then one slim screenshots row', () => {
+    const { root } = render();
+    const fields = root.querySelector('.request-fields')!;
+    const picker = fields.querySelector('.type-picker')!;
+    expect(picker.previousElementSibling?.tagName).toBe('LEGEND'); // the hidden group name alone
+    expect(picker.compareDocumentPosition(fields.querySelector('.field-row')!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect([...fields.querySelectorAll('.type-option strong')].map((o) => o.textContent?.trim())).toEqual([
+      'Report a problem',
+      'Share feedback',
+      'Ask a question',
+    ]);
+    const attach = root.querySelector('.attach')!;
+    expect(attach.querySelector('.file-picker')?.textContent?.replace(/\s+/g, ' ').trim()).toBe('📎 Add screenshots');
+    expect(attach.querySelector('.hint')?.textContent?.replace(/\s+/g, ' ').trim()).toBe('Up to three images, 2 MB each.');
+    const input = attach.querySelector('input[type="file"]')!;
+    expect(input.getAttribute('accept')).toBe('image/png,image/jpeg');
+    expect(input.hasAttribute('multiple')).toBe(true);
+  });
+
+  it('keeps the attachment limits: three images, 2 MB each, PNG or JPEG', () => {
+    const createUrl = vi.fn((file: File) => 'blob:' + file.name);
+    const revoke = vi.fn();
+    Object.assign(URL, { createObjectURL: createUrl, revokeObjectURL: revoke });
+    const { fixture, root } = render();
+    const input = root.querySelector<HTMLInputElement>('.attach input[type="file"]')!;
+    choose(input, [png('too-big.png', 3 * 1024 * 1024)]);
+    fixture.detectChanges();
+    expect(root.querySelector('.banner-error')?.textContent).toContain('up to three PNG or JPEG images');
+    expect(root.querySelectorAll('figure')).toHaveLength(0);
+    choose(input, [png('one.png'), png('two.png'), png('three.png')]);
+    fixture.detectChanges();
+    expect(root.querySelector('.banner-error')).toBeNull();
+    expect([...root.querySelectorAll('figcaption')].map((c) => c.textContent?.trim())).toEqual([
+      'one.png',
+      'two.png',
+      'three.png',
+    ]);
+    choose(input, [png('four.png')]);
+    fixture.detectChanges();
+    expect(root.querySelector('.banner-error')).not.toBeNull();
+    expect(root.querySelectorAll('figure')).toHaveLength(3);
+    root.querySelector<HTMLButtonElement>('figure button')!.click();
+    fixture.detectChanges();
+    expect(revoke).toHaveBeenCalledWith('blob:one.png');
+    expect(root.querySelectorAll('figure')).toHaveLength(2);
+    fixture.destroy();
+    expect(revoke).toHaveBeenCalledTimes(3);
+  });
 });

@@ -2,7 +2,7 @@
   <header>
     <p class="eyebrow">Private review</p>
     <h2 class="intro-heading">
-      @if (section() === 'submitted' && !isOwner()) {
+      @if (section() === 'submitted' && !seesAll()) {
         Your reviews, and where each one stands.
       } @else if (showAll() && section() !== 'submit') {
         See what reviewers want to change.
@@ -11,12 +11,15 @@
       }
     </h2>
     <p class="lede">
-      @if (section() === 'submitted' && !isOwner()) {
+      @if (section() === 'submitted' && !seesAll()) {
         Each item shows the status the owner set. Add new items under Write Review.
+      } @else if (showAll() && section() !== 'submit' && !canTriage()) {
+        Every reviewer's items, newest day first. Open an item to read it and see its images. The
+        owner sets each status and note.
       } @else if (showAll() && section() !== 'submit') {
         Each reviewer sees only their own items. You see all of them, newest day first. Open an
         item to read it, see its images and set a status the reviewer will see.
-      } @else if (isOwner()) {
+      } @else if (seesAll()) {
         This is the view every reviewer gets. Items you add here also appear under Team Reviews
         with your name.
       } @else {
@@ -45,7 +48,11 @@
       <button type="button" class="secondary" (click)="load()">Try again</button>
     </section>
   } @else {
-    @if (isOwner() && section() !== 'submit') {
+    @if (section() === 'submit') {
+      <!-- DLV-971 (owner, 2026-11-06): the same tips a learner sees, inside the review card above the form. -->
+      <app-report-tips class="report-tips" />
+    }
+    @if (seesAll() && section() !== 'submit') {
       <div class="view-tabs" role="group" aria-label="Review view">
         <button
           type="button"
@@ -214,22 +221,22 @@
                 >{{ detailsText.length }} of {{ limits.detailsLength }} characters</span
               >
             </label>
+            <!-- DLV-971 (owner, 2026-11-06): one slim row; the limits and the paste path stay as they were. -->
             <fieldset class="attachments-field">
-              <legend>Screenshots and images</legend>
-              <p class="hint">
-                PNG, JPEG or WebP, up to {{ limits.attachmentsPerItem }} images and 5 MB each. You
-                can also paste a screenshot into this form. Location details stored in a photo are
-                removed when it is saved.
-              </p>
-              <label class="file-picker"
-                >Choose images
-                <input
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp"
-                  multiple
-                  (change)="onFileInput($event)"
-                />
-              </label>
+              <legend class="visually-hidden">Screenshots and images</legend>
+              <div class="attach">
+                <label class="file-picker"
+                  ><span aria-hidden="true">📎</span> Add screenshots<input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    multiple
+                    (change)="onFileInput($event)"
+                  />
+                </label>
+                <p class="hint">
+                  Up to {{ limits.attachmentsPerItem }} images, 5 MB each; or paste one into the form.
+                </p>
+              </div>
               @if (keptAttachments().length || pendingFiles().length) {
                 <ul class="thumbnails" aria-label="Images on this item">
                   @for (file of keptAttachments(); track file.id) {
@@ -395,7 +402,7 @@
   @if (item.ownerNote) {
     <p class="owner-note"><strong>Owner’s note:</strong> {{ item.ownerNote }}</p>
   }
-  @if (showReviewer) {
+  @if (showReviewer && canTriage()) {
     <form class="triage" (ngSubmit)="saveTriage(item)">
       <label
         >Status
@@ -424,7 +431,7 @@
         <span role="status">{{ triageMessage()[item.id] }}</span>
       </div>
     </form>
-  } @else if (item.status === 'new') {
+  } @else if (isOwn(item) && item.status === 'new') {
     <div class="item-actions">
       <button type="button" class="secondary" (click)="edit(item)">
         Edit<span class="visually-hidden"> {{ item.title }}</span>
@@ -433,7 +440,7 @@
         Delete<span class="visually-hidden"> {{ item.title }}</span>
       </button>
     </div>
-  } @else {
+  } @else if (isOwn(item)) {
     <p class="hint">The owner has reviewed this item, so it can no longer be changed.</p>
   }
 </article>

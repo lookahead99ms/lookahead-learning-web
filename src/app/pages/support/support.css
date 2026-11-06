@@ -126,8 +126,7 @@ h1 {
   background: var(--accent-strong);
   color: var(--accent-on-primary);
 }
-.support-tabs button:focus-visible,
-.link-button:focus-visible {
+.support-tabs button:focus-visible {
   outline: 3px solid var(--accent-focus);
   outline-offset: 2px;
 }
@@ -142,12 +141,9 @@ h1 {
 }
 .support-body {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
-  align-items: start;
-  gap: 24px;
-}
-.support-body.reviews-body {
   grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 20px;
 }
 .panel {
   min-width: 0;
@@ -159,76 +155,88 @@ h1 {
   box-shadow: 0 12px 32px var(--shadow);
 }
 .loading {
-  grid-column: 1 / -1;
   color: var(--text-subtle);
 }
 h2 {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 0 0 18px;
+  margin: 0 0 10px;
   color: var(--text-strong);
-  font-size: 20px;
-  letter-spacing: -0.02em;
+  font-size: clamp(22px, 2.4vw, 28px);
+  line-height: 1.15;
+  letter-spacing: -0.035em;
 }
-.tips {
-  position: sticky;
-  top: calc(var(--platform-header-height, 76px) + 20px);
-  padding: 22px;
+/* DLV-971: the request card reads heading → lede → tips → kind picker → fields. */
+.card-lede {
+  max-width: 72ch;
+  margin: 0 0 22px;
+  font-size: 17px;
+  line-height: 1.6;
+}
+.form-panel app-report-tips {
+  margin-bottom: 24px;
+}
+/* DLV-971: staff see the support request folded under the review card. */
+.request-fold {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px 18px;
+  width: 100%;
+  min-height: 64px;
+  padding: 14px clamp(18px, 3vw, 28px);
   border: 1px solid var(--line);
   border-radius: 18px;
-  background: linear-gradient(
-    160deg,
-    color-mix(in srgb, var(--path-learn) 9%, var(--surface)),
-    var(--surface)
-  );
+  background: var(--surface);
+  box-shadow: 0 12px 32px var(--shadow);
+  color: var(--text-body);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 140ms ease;
 }
-.tips h2 {
-  font-size: 16px;
+.request-fold:hover {
+  border-color: var(--accent-strong);
 }
-.tips ol {
-  display: grid;
-  gap: 12px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+.request-fold:focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 2px;
 }
-.tips li {
-  display: flex;
-  gap: 10px;
-  font-size: 14px;
+.fold-text {
+  font-size: 15px;
   line-height: 1.5;
 }
-.tip-icon {
-  display: grid;
-  flex: 0 0 30px;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  background: var(--surface);
-  box-shadow: inset 0 0 0 1px var(--line);
-}
-.tips strong {
+.fold-text b {
   color: var(--text-strong);
+  font-weight: 750;
 }
-.tips-note {
-  margin: 18px 0 0;
-  padding-top: 14px;
-  border-top: 1px solid var(--line);
-  color: var(--text-subtle);
-  font-size: 13.5px;
-  line-height: 1.55;
+.fold-kinds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
-.link-button {
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--accent-link);
-  font: inherit;
-  font-weight: 700;
-  text-decoration: underline;
-  cursor: pointer;
+.fold-chip {
+  padding: 5px 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-page);
+  color: var(--text-strong);
+  font-size: 12.5px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+.fold-chevron {
+  width: 10px;
+  height: 10px;
+  margin-right: 4px;
+  border-right: 2px solid var(--text-subtle);
+  border-bottom: 2px solid var(--text-subtle);
+  transform: rotate(45deg);
+  transition: transform 140ms ease;
+}
+.request-fold[aria-expanded='true'] .fold-chevron {
+  transform: rotate(-135deg);
 }
 @media (max-width: 900px) {
   .support-hero {
@@ -238,11 +246,11 @@ h2 {
     display: flex;
     flex-wrap: wrap;
   }
-  .support-body {
-    grid-template-columns: minmax(0, 1fr);
+  .request-fold {
+    grid-template-columns: minmax(0, 1fr) auto;
   }
-  .tips {
-    position: static;
+  .fold-kinds {
+    grid-column: 1 / -1;
   }
 }
 @media (max-width: 480px) {
@@ -250,8 +258,9 @@ h2 {
     white-space: normal;
   }
 }
-
-/* DLV-971: the review form sits above the support form on the Submit a review tab. */
-.support-body:not(.reviews-body) .submit-panel {
-  grid-column: 1 / -1;
+@media (prefers-reduced-motion: reduce) {
+  .request-fold,
+  .fold-chevron {
+    transition: none;
+  }
 }

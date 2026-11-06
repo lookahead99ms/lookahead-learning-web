@@ -98,7 +98,7 @@ describe('Platform reviews page', () => {
       item('b', 'reviewer-2', 'Reviewer 2'),
     ];
     const visible = () =>
-      viewer.role === 'owner'
+      viewer.role === 'owner' || viewer.role === 'admin'
         ? stored
         : stored.filter((entry) => entry.reviewerId === viewer.reviewerId);
     client = {
@@ -317,6 +317,91 @@ describe('Platform reviews page', () => {
     expect(root.textContent).toContain('Review access required');
     expect(root.querySelector('#review-form')).toBeNull();
     expect(root.querySelector('#review-items')).toBeNull();
+  });
+
+  it('shows an admin the overview and every item like the owner, but never the triage form (DLV-971)', async () => {
+    viewer = { role: 'admin', reviewerId: 'reviewer-2', displayName: 'Reviewer 2' };
+    stored[1] = { ...stored[1], status: 'planned', ownerNote: 'Scheduled for the next release.' };
+    stored.push({ ...item('d', 'reviewer-2', 'Reviewer 2'), createdAt: '2026-10-11T09:00:00.000Z' });
+    const root = await render('submitted');
+    expect(root.querySelector('.intro-heading')?.textContent?.trim()).toBe('See what reviewers want to change.');
+    expect(root.querySelector('.lede')?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+      "Every reviewer's items, newest day first. Open an item to read it and see its images. The owner sets each status and note.",
+    );
+    expect(root.querySelector('#review-overview')).not.toBeNull();
+    expect([...root.querySelectorAll('.view-tabs button')].map((b) => b.textContent?.replace(/\s+/g, ' ').trim())).toEqual([
+      'All reviews 3',
+      'My reviews 2',
+    ]);
+    expect(root.querySelectorAll('.filters select')).toHaveLength(3);
+    expect(titles(root)).toEqual(['Item a', 'Item b', 'Item d']);
+    // Another reviewer's item: the owner's note is read-only, no status or note controls.
+    const rows = [...root.querySelectorAll<HTMLButtonElement>('.item-summary')];
+    rows[0].click();
+    await settle();
+    expect(root.querySelector('.item-details')?.textContent).toContain('Results miss the Java lesson.');
+    expect(root.querySelector('.triage')).toBeNull();
+    expect(root.textContent).not.toContain('Save status');
+    expect(root.querySelector('.item-actions')).toBeNull();
+    rows[0].click();
+    await settle();
+    rows[1].click();
+    await settle();
+    expect(root.querySelector('.owner-note')?.textContent).toContain('Scheduled for the next release.');
+    expect(root.querySelector('.triage')).toBeNull();
+    expect(root.querySelector('.item-detail select')).toBeNull();
+    expect(root.querySelector('.item-detail textarea')).toBeNull();
+    expect(root.querySelector('.item-actions')).toBeNull();
+    rows[1].click();
+    await settle();
+    // The admin's own item, still New: Edit and Delete, as a reviewer has.
+    rows[2].click();
+    await settle();
+    expect(root.querySelector('.triage')).toBeNull();
+    expect([...root.querySelectorAll('.item-actions button')].map((b) => b.textContent?.replace(/\s+/g, ' ').trim())).toEqual([
+      'Edit Item d',
+      'Delete Item d',
+    ]);
+  });
+
+  it('keeps the triage form for the owner alone (DLV-971)', async () => {
+    viewer = { role: 'owner', reviewerId: 'owner', displayName: 'Owner' };
+    const root = await render('submitted');
+    (root.querySelector('.item-summary') as HTMLButtonElement).click();
+    await settle();
+    expect(root.querySelector('.triage')).not.toBeNull();
+    expect(root.querySelector('.triage button[type="submit"]')?.textContent?.trim()).toBe('Save status');
+    const note = root.querySelector('.triage textarea') as HTMLTextAreaElement;
+    note.value = 'Thanks, scheduled.';
+    note.dispatchEvent(new Event('input'));
+    await settle();
+    root.querySelector<HTMLFormElement>('.triage')!.dispatchEvent(new Event('submit'));
+    await settle();
+    expect(root.querySelector('.triage [role="status"]')?.textContent).toBe('Saved.');
+    expect(root.querySelector('.owner-note')?.textContent).toContain('Thanks, scheduled.');
+  });
+
+  it('carries the report tips inside the Write Review card and keeps the screenshots as one slim row (DLV-971)', async () => {
+    viewer = { role: 'reviewer', reviewerId: 'reviewer-1', displayName: 'Reviewer 1' };
+    let root = await render('submit');
+    const tips = root.querySelector('app-report-tips')!;
+    expect(tips).not.toBeNull();
+    expect(tips.querySelector('.tips-label')?.textContent?.trim()).toBe('A helpful report');
+    // Under the lede, above the form.
+    const header = root.querySelector('header')!;
+    const form = root.querySelector('form')!;
+    expect(header.compareDocumentPosition(tips) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(tips.compareDocumentPosition(form) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const attach = root.querySelector('.attachments-field .attach')!;
+    expect(attach.querySelector('.file-picker')?.textContent?.replace(/\s+/g, ' ').trim()).toBe('📎 Add screenshots');
+    expect(attach.querySelector('input[type="file"]')?.getAttribute('accept')).toBe('image/png,image/jpeg,image/webp');
+    expect(attach.querySelector('.hint')?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+      'Up to 6 images, 5 MB each; or paste one into the form.',
+    );
+    expect(root.querySelector('.attachments-field legend')?.classList.contains('visually-hidden')).toBe(true);
+    current.destroy();
+    root = await render('submitted');
+    expect(root.querySelector('app-report-tips')).toBeNull();
   });
 
   it('tells an account without a review role that access is required', async () => {

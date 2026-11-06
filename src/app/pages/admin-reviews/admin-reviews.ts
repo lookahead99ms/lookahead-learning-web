@@ -22,6 +22,7 @@ import {
   reviewedPages,
 } from './platform-review.model';
 import { ScrollLock } from '../../core/scroll-lock/scroll-lock';
+import { ReportTips } from '../support/report-tips';
 
 interface PendingFile {
   file: File;
@@ -35,14 +36,14 @@ interface DayGroup {
 }
 
 /**
- * DLV-927/928: each reviewer records their own items; the owner sees and triages everyone's.
- * Shown as the Platform reviews tab of /support, which owns the page header and layout.
+ * DLV-927/928: each reviewer records their own items; the owner and admins see everyone's, the owner alone triages.
+ * Shown under the Write Review and Team Reviews tabs of /support, which owns the page header and layout.
  * Items are grouped by the day they were sent, newest first. A row shows the summary; opening it
  * loads the description, the owner's note and the images.
  */
 @Component({
   selector: 'app-admin-reviews',
-  imports: [FormsModule, NgTemplateOutlet, ScrollLock],
+  imports: [FormsModule, NgTemplateOutlet, ScrollLock, ReportTips],
   templateUrl: './admin-reviews.html',
   styleUrl: './admin-reviews.css',
 })
@@ -68,10 +69,19 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
   protected readonly nextBefore = signal<string | null>(null);
   protected readonly loadingOlder = signal(false);
   protected readonly olderError = signal('');
-  protected readonly isOwner = computed(() => this.viewer()?.role === 'owner' || this.viewer()?.role === 'admin');
-  /** The owner switches between everyone's items and the reviewer view of their own. */
+  /**
+   * DLV-971 (owner, 2026-11-06): the owner and admins see the overview, the filters and every reviewer's items;
+   * only the owner sets a status and writes the note. An admin reads the note like a reviewer does.
+   */
+  protected readonly seesAll = computed(() => this.viewer()?.role === 'owner' || this.viewer()?.role === 'admin');
+  protected readonly canTriage = computed(() => this.viewer()?.role === 'owner');
+  /** The owner and admins switch between everyone's items and the reviewer view of their own. */
   protected readonly ownerView = signal<'all' | 'mine'>('all');
-  protected readonly showAll = computed(() => this.isOwner() && this.ownerView() === 'all');
+  protected readonly showAll = computed(() => this.seesAll() && this.ownerView() === 'all');
+  /** The viewer may edit or delete their own item while it is still New, whichever list shows it. */
+  protected isOwn(item: PlatformReviewItem): boolean {
+    return item.reviewerId === this.viewer()?.reviewerId;
+  }
   protected readonly ownItems = computed(() =>
     this.items().filter((item) => item.reviewerId === this.viewer()?.reviewerId),
   );

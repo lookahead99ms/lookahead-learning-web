@@ -131,19 +131,33 @@ legend {
   font-size: 14px;
   font-weight: 650;
 }
-.attachments-field .hint {
-  margin: 0 0 10px;
+/* DLV-971: the tips strip sits under the lede, above the form. */
+.report-tips {
+  margin-bottom: 24px;
+}
+.attach {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+}
+.attach .hint {
+  flex: 1 1 200px;
+  margin: 0;
 }
 .file-picker {
+  position: relative;
   display: inline-flex;
   flex-direction: row;
   align-items: center;
+  gap: 8px;
   width: fit-content;
   min-height: 44px;
   padding: 0 16px;
   border: 1px solid var(--accent-strong);
   border-radius: 8px;
   color: var(--accent-strong);
+  font-weight: 700;
   cursor: pointer;
 }
 .file-picker:focus-within {

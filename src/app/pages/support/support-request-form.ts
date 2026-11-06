@@ -56,19 +56,17 @@ const requestTypes = [
             ></textarea>
             <span class="hint">{{ message.length }} of 5000 characters</span>
           </label>
+          <!-- DLV-971 (owner, 2026-11-06): one slim row; the limits stay as they were. -->
           <div class="attach">
             <label class="file-picker"
-              ><span aria-hidden="true">📎</span> Screenshots<input
+              ><span aria-hidden="true">📎</span> Add screenshots<input
                 type="file"
                 accept="image/png,image/jpeg"
                 multiple
                 (change)="attach($event)"
                 [disabled]="busy()"
             /></label>
-            <p class="hint">
-              Up to three PNG or JPEG images; 2 MB each and 5 MB in total. Image metadata is removed
-              before sending.
-            </p>
+            <p class="hint">Up to three images, 2 MB each.</p>
           </div>
           @if (images().length) {
             <div class="image-previews">
