@@ -4,13 +4,13 @@ import { expect, it } from 'vitest';
 import { DevSession } from '../../core/dev-session-notice/dev-session';
 import { SignInBrand } from './sign-in-brand';
 
-for (const [status, label] of [[null, 'LookAhead'], [{ dev: true }, 'LookAhead DEV']] as const)
-  it('shows the logo, headline, signature and paths' + (status ? ' with the DEV mark' : ''), () => {
+for (const status of [null, { dev: true }] as const)
+  it('shows the headline, signature and paths, and no logo' + (status ? ' on DEV either' : '') + ' (owner, 2026-11-06: the header carries it)', () => {
     TestBed.configureTestingModule({ providers: [{ provide: DevSession, useValue: { status: signal(status) } }] });
     const fixture = TestBed.createComponent(SignInBrand);
     fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
-    expect(element.querySelector('app-platform-brand')!.getAttribute('aria-label')).toBe(label);
+    expect(element.querySelector('app-platform-brand')).toBeNull();
     expect(element.querySelector('.brand-headline')!.textContent).toBe('Become the engineer you can explain.');
     expect(element.querySelector('app-platform-signature')!.textContent!.replace(/\s+/g, ' ').trim()).toBe('Build with AI. Understand what you ship.');
     expect(element.querySelectorAll('app-path-marks li').length).toBe(3);
@@ -26,11 +26,11 @@ function render(variant: string, devSession: { status: ReturnType<typeof signal>
 }
 const text = (element: Element | null) => element?.textContent?.replace(/\s+/g, ' ').trim();
 
-it('gives every step its own panel and keeps the logo on all of them (DLV-969)', () => {
+it('gives every step its own panel, none of them with a logo (DLV-969; owner, 2026-11-06)', () => {
   const headlines = new Map<string, string>();
   for (const variant of ['sign-in', 'sign-up', 'confirm', 'forgot', 'reset', 'new-password', 'code']) {
     const element = render(variant, { status: signal(null), gated: signal(false) });
-    expect(element.querySelector('app-platform-brand')).not.toBeNull();
+    expect(element.querySelector('app-platform-brand')).toBeNull();
     headlines.set(variant, text(element.querySelector('.brand-headline'))!);
     expect(element.querySelector('app-path-marks') !== null).toBe(variant === 'sign-in');
   }

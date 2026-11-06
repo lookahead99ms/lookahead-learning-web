@@ -11,7 +11,7 @@ describe('fitEssence', () => {
 
   function essence(top: number, height: number, pageHeight: number) {
     const element = document.createElement('section');
-    element.getBoundingClientRect = () => ({ top, height } as DOMRect);
+    element.getBoundingClientRect = () => ({ top, height, width: 1216 } as DOMRect);
     Object.defineProperty(document.documentElement, 'scrollHeight', { configurable: true, value: pageHeight });
     return element;
   }
@@ -21,6 +21,39 @@ describe('fitEssence', () => {
     const card = essence(250, 740, 250 + 740 + 100);
     fitEssence(card);
     expect(Number(card.style.getPropertyValue('zoom'))).toBe(Math.floor(((900 - 250 - 100 - 2) / 740) * 1000) / 1000);
+  });
+
+  it('scales the stage inside the card, never the card itself (owner, 2026-11-06)', () => {
+    Object.assign(view, { innerWidth: 1440, innerHeight: 700 });
+    const card = essence(250, 740, 250 + 740 + 100);
+    const stage = document.createElement('div');
+    stage.className = 'essence-stage';
+    stage.getBoundingClientRect = () => ({ top: 310, height: 620, width: 1096 } as DOMRect);
+    card.append(stage);
+    fitEssence(card);
+    // Below the stage: the page's 1090px less the stage's bottom at 930px, so the card's padding and the footer.
+    expect(Number(stage.style.getPropertyValue('zoom'))).toBe(Math.floor(((700 - 310 - 160 - 2) / 620) * 1000) / 1000);
+    expect(card.style.getPropertyValue('zoom')).toBe('');
+    expect(card.style.getPropertyValue('width')).toBe('');
+    expect(stage.style.getPropertyValue('width')).toBe('');
+  });
+
+  it('in screen mode fits the window height below the header, whatever the page shows below (owner, 2026-11-06)', () => {
+    Object.assign(view, { innerWidth: 1512, innerHeight: 982 });
+    const header = document.createElement('div');
+    header.className = 'platform-header';
+    header.getBoundingClientRect = () => ({ height: 85 } as DOMRect);
+    document.body.append(header);
+    try {
+      const card = essence(2400, 1100, 4000);
+      fitEssence(card, { screen: true });
+      expect(Number(card.style.getPropertyValue('zoom'))).toBe(Math.floor(((982 - 85 - 40) / 1100) * 1000) / 1000);
+      expect(card.style.getPropertyValue('width')).toBe('');
+      fitEssence(card);
+      expect(card.style.getPropertyValue('zoom')).toBe('0.36');
+    } finally {
+      header.remove();
+    }
   });
 
   it('never grows it, never shrinks it below readable, and leaves phones and unmeasured cards alone', () => {

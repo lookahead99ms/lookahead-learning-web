@@ -24,6 +24,7 @@ import { CardScene } from '../../core/card-scene/card-scene';
 import { PathTaglineId, pathTaglineText } from '../../content/path-taglines';
 import { PathSceneTimeline } from './path-scene-timeline';
 import { EssenceStory } from './essence-story/essence-story';
+import { keepEssenceFitted } from '../../core/essence-fit/essence-fit';
 
 /** The path cards whose scenes share one timeline, in play order. */
 const PATH_SCENES = ['learn', 'grow', 'blaze'] as const;
@@ -188,6 +189,8 @@ export class Landing {
   ];
 
   constructor() {
+    // Owner, 2026-11-06: the Essence fits the screen below the header, scaled as one picture, instead of running past it.
+    keepEssenceFitted(inject<ElementRef<HTMLElement>>(ElementRef).nativeElement, { screen: true });
     afterNextRender(() => {
       const view = this.document.defaultView;
       const motion = view?.matchMedia?.('(prefers-reduced-motion: reduce)');

@@ -1,7 +1,6 @@
 import { Component, computed, inject, input } from '@angular/core';
 import { DevSession } from '../../core/dev-session-notice/dev-session';
 import { PathMarks } from '../../core/path-marks/path-marks';
-import { PlatformBrand } from '../../core/platform-brand/platform-brand';
 import { PlatformSignature } from '../../core/platform-signature/platform-signature';
 
 /** Which step of the sign-in or sign-up flow the panel sits beside. */
@@ -16,9 +15,9 @@ interface ProgressRow { label: string; state: 'done' | 'current' | 'next' }
  */
 @Component({
   selector: 'app-sign-in-brand',
-  imports: [PlatformBrand, PlatformSignature, PathMarks],
+  imports: [PlatformSignature, PathMarks],
   template: `
-    <app-platform-brand class="brand-logo" [mark]="dev() ? 'DEV' : null" />
+    <!-- No logo here (owner, 2026-11-06): the header above the card already carries it, with the DEV mark. -->
     <p class="brand-headline">{{ headline() }}</p>
     @switch (variant()) {
       @case ('sign-in') {

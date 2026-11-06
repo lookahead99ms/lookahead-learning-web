@@ -3,6 +3,9 @@
   <h2 id="brand-story-title" data-sidebar-label="The essence">The Essence of Look Ahead</h2>
 </div>
 <app-platform-brand class="symbol-only essence-corner-mark" aria-hidden="true" />
+<!-- The stage (owner, 2026-11-06): what plays. Pages that fit the Essence to the screen scale this, never the card,
+     so the card keeps the width and padding of every other card. -->
+<div class="essence-stage">
 <app-wordmark-key
   [stage]="stage"
   [settled]="settled()"
@@ -33,3 +36,4 @@
     </span>{{ ' ' }}
   }
 </p>
+</div>

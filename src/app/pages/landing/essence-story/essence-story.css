@@ -31,6 +31,14 @@ p {
   clip-path: inset(50%);
   white-space: nowrap;
 }
+/* Not positioned: the sentence and the play controls keep the card's corners and its bottom padding as their place. */
+.essence-stage {
+  display: grid;
+  justify-items: center;
+  gap: clamp(24px, 3vw, 32px);
+  width: 100%;
+  min-width: 0;
+}
 .essence-corner-mark {
   position: absolute;
   inset-block-start: 24px;

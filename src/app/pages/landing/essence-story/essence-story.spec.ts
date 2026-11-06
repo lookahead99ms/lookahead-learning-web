@@ -17,7 +17,7 @@ describe('EssenceStory', () => {
     expect(essence.classList.contains('brand-story')).toBe(true);
     expect(essence.classList.contains('home-essence')).toBe(true);
     expect(essence.getAttribute('aria-labelledby')).toBe('brand-story-title');
-    expect([...essence.children].map((child) => child.tagName.toLowerCase()).filter((tag) => tag.startsWith('app-'))).toEqual([
+    expect([...essence.querySelectorAll('app-platform-brand, app-wordmark-key, app-essence-steps')].map((child) => child.tagName.toLowerCase())).toEqual([
       'app-platform-brand',
       'app-wordmark-key',
       'app-essence-steps',

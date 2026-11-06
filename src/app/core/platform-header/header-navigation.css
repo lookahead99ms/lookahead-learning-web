@@ -159,19 +159,6 @@ button:focus-visible {
   vertical-align: -0.22em;
   fill: var(--accent-strong);
 }
-.panel-heading .panel-close {
-  gap: 7px;
-  color: var(--text-strong);
-  background: var(--surface);
-  border-color: var(--border-strong);
-}
-.panel-close:hover {
-  background: var(--surface-muted);
-}
-.panel-close-icon {
-  font-size: 20px;
-  line-height: 1;
-}
 .panel-explore:hover {
   background: var(--search-hover);
 }

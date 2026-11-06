@@ -166,7 +166,18 @@ describe('PlatformHeader account disclosure', () => {
     expect(fixture.nativeElement.querySelector('.avatar-trigger-btn')).not.toBeNull();
   });
 
-  it.each(['/sign-in/choose', '/sign-up', '/welcome', '/welcome?access=pending'])(
+  it.each([
+    '/sign-in/choose',
+    '/sign-up',
+    '/sign-up/confirm',
+    '/sign-up/confirm?returnTo=%2Flearn',
+    '/sign-in/forgot',
+    '/sign-in/reset',
+    '/sign-in/new-password',
+    '/sign-in/code',
+    '/welcome',
+    '/welcome?access=pending',
+  ])(
     'does not repeat authentication actions in the header on %s',
     (url) => {
       vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue(url);
