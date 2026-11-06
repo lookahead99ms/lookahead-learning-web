@@ -1,0 +1,5 @@
+@if (prompt.open(); as accountId) {
+  <dialog appScrollLock #dialog class="github-dialog" aria-labelledby="github-card-title" (close)="closed()" (cancel)="$event.preventDefault(); closed()">
+    <app-github-access-card [accountId]="accountId" (finished)="finished($event)" />
+  </dialog>
+}
