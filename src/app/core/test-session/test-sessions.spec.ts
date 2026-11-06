@@ -4,7 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 import { MembershipApi } from '../../content/membership-api';
 import { StudyPlanAccount } from '../../pages/study-plan/study-plan-account';
-import { TestSessions, UsableTestAccount, roleLabel, sameSitePath, scenarioDetail, scenarioPlan } from './test-sessions';
+import { TestSessions, UsableTestAccount, sameSitePath, scenarioDetail, scenarioPlan } from './test-sessions';
 
 const learner: UsableTestAccount = {
   accountId: 'id-learner05', username: 'learner05@lookahead.dev', displayName: 'Learner05', roles: [], scenario: 'Learn · active · ready-made plan · in progress',
@@ -204,17 +204,11 @@ describe('TestSessions', () => {
     expect(sessions.status()).toEqual({ active: true, canReturn: false, holderName: null });
   });
 
-  it('describes a scenario by its plan, the rest, and the role', () => {
+  it('describes a scenario by its plan and the rest; a created account has neither (every test account is a learner, owner 2026-11-06)', () => {
     expect(scenarioPlan(learner)).toBe('Learn');
     expect(scenarioDetail(learner)).toBe('active · ready-made plan · in progress');
-    expect(roleLabel(learner)).toBe('Learner');
-    expect(scenarioPlan(admin)).toBeNull();
-    expect(scenarioDetail(admin)).toBe('Admin with the full curriculum');
-    expect(roleLabel(admin)).toBe('Admin');
-    expect(roleLabel({ ...admin, roles: ['co-author'] })).toBe('Co-author');
     expect(scenarioPlan({ ...learner, scenario: null })).toBeNull();
     expect(scenarioPlan({ ...learner, scenario: ' · x' })).toBeNull();
     expect(scenarioDetail({ ...learner, scenario: null })).toBe('Created test account');
-    expect(scenarioDetail({ ...admin, scenario: null })).toBe('Full curriculum');
   });
 });

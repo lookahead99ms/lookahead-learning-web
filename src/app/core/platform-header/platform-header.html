@@ -199,6 +199,25 @@
       </form>
     }
 
+    @if (exitDevOffered()) {
+      <!-- DLV-971 (owner, 2026-11-06): a person waiting for the owner's approval is not left sitting at the Welcome page;
+           Exit DEV signs them out of DEV and returns to its gate, so the browser is free for the next sign-in. -->
+      <div class="dev-exit-inline">
+        <button
+          type="button"
+          class="sign-in-button dev-exit-inline-button"
+          [disabled]="devSession.leaving()"
+          [attr.aria-busy]="devSession.leaving()"
+          (click)="devSession.leave()"
+          appHeaderHint="Signs you out of DEV and returns you to its gate. Sign in again once the owner has approved you."
+        >
+          {{ devSession.leaving() ? 'Exiting…' : 'Exit DEV' }}
+        </button>
+        @if (devSession.error()) {
+          <p class="dev-exit-inline-error" role="alert">{{ devSession.error() }}</p>
+        }
+      </div>
+    }
     @if (!accounts.sessionKnown() && !onAuthenticationPage()) {
       <!-- DLV-969 S37 (user, 2026-11-03): while the identity check runs, show what this browser last knew at once: your
            name, or Sign in. The check replaces it. Without a hint, hold the slot invisibly as before (no flash). -->

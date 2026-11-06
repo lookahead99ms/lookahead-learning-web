@@ -27,7 +27,7 @@
         [attr.tabindex]="view() === 'contact' ? 0 : -1"
         (click)="show('contact')"
       >
-        <span aria-hidden="true">✉️</span> Contact support
+        <span aria-hidden="true">📝</span> Write Review
       </button>
       <button
         type="button"
@@ -38,7 +38,7 @@
         [attr.tabindex]="view() === 'reviews' ? 0 : -1"
         (click)="show('reviews')"
       >
-        <span aria-hidden="true">🧪</span> Platform reviews
+        <span aria-hidden="true">🧪</span> Team Reviews
         <span class="role-badge">{{ reviewRole() === 'owner' ? 'Owner' : 'Reviewer' }}</span>
       </button>
     </div>
@@ -54,10 +54,17 @@
     @if (waitingForReviews()) {
       <p class="panel loading" role="status">Checking review access…</p>
     } @else if (view() === 'reviews') {
-      <section class="panel" aria-label="Platform reviews">
-        <app-admin-reviews />
+      <!-- DLV-971 (owner, 2026-11-06): what was submitted and where each item stands. -->
+      <section class="panel" aria-label="Team Reviews">
+        <app-admin-reviews section="submitted" />
       </section>
     } @else {
+      @if (reviewRole()) {
+        <!-- DLV-971 (owner, 2026-11-06): a reviewer submits review items here; the support form stays below. -->
+        <section class="panel submit-panel" aria-label="Write Review">
+          <app-admin-reviews section="submit" />
+        </section>
+      }
       <section class="panel form-panel" aria-labelledby="contact-heading">
         <h2 id="contact-heading"><span aria-hidden="true">✉️</span> Contact support</h2>
         <app-support-request-form />
@@ -84,11 +91,10 @@
         </ol>
         @if (reviewRole() && view() === 'contact') {
           <p class="tips-note">
-            <span aria-hidden="true">🧪</span> Reviewing before release? Use
+            <span aria-hidden="true">🧪</span> Your submitted items and where each one stands are under
             <button type="button" class="link-button" (click)="show('reviews')">
-              Platform reviews
-            </button>
-            so the owner can track each item.
+              Team Reviews
+            </button>.
           </p>
         }
       </aside>

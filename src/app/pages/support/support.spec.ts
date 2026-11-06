@@ -65,15 +65,29 @@ describe('Support and feedback page', () => {
     expect(root.textContent).not.toContain('review items');
   });
 
-  it('adds a Platform reviews tab for reviewers and keeps it in the address', async () => {
+  it('shows only Contact support to a learner or test account the service answers with role "user" (DLV-971)', async () => {
+    const harness = await open('/support?view=reviews', async () => ({ ...(await reviewer()), role: 'user' }));
+    const root = harness.routeNativeElement!;
+    expect(root.querySelector('[role="tablist"]')).toBeNull();
+    expect(root.textContent).toContain('contact form');
+    expect(root.textContent).not.toContain('review items');
+    expect(root.querySelector('.tips-note')).toBeNull();
+  });
+
+  it('gives reviewers Write Review (form above the support form) and Team Reviews, and keeps the tab in the address', async () => {
     const harness = await open('/support', reviewer);
     const root = harness.routeNativeElement!;
     const tabs = [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
     expect(tabs.map((tab) => tab.textContent?.replace(/\s+/g, ' ').trim())).toEqual([
-      '✉️ Contact support',
-      '🧪 Platform reviews Reviewer',
+      '📝 Write Review',
+      '🧪 Team Reviews Reviewer',
     ]);
     expect(tabs[0].getAttribute('aria-selected')).toBe('true');
+    // DLV-971: the add-item panel sits above the support form; the tips point at Team Reviews.
+    const panels = [...root.querySelectorAll('.support-body > section')].map((panel) => panel.getAttribute('aria-label') ?? panel.getAttribute('aria-labelledby'));
+    expect(panels).toEqual(['Write Review', 'contact-heading']);
+    expect(root.querySelector('.submit-panel app-admin-reviews')?.getAttribute('section')).toBe('submit');
+    expect(root.querySelector('.tips-note')?.textContent?.replace(/\s+/g, ' ')).toContain('Team Reviews');
     tabs[1].click();
     await harness.fixture.whenStable();
     harness.detectChanges();
@@ -83,6 +97,8 @@ describe('Support and feedback page', () => {
       'support-tab-reviews',
     );
     expect(root.textContent).toContain('review items');
+    expect(root.querySelector('[aria-label="Team Reviews"] app-admin-reviews')?.getAttribute('section')).toBe('submitted');
+    expect(root.textContent).not.toContain('contact form');
   });
 
   it('opens the reviews tab directly from the former /admin/reviews address', async () => {

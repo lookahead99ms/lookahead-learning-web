@@ -161,12 +161,48 @@
                         </select>
                       </label>
                       <button class="primary-action" type="button" (click)="admit(row)" [disabled]="busy()">Admit</button>
+                      <!-- DLV-971 (owner, 2026-11-06): the same two choices as People, Disable or Delete, for a request. -->
+                      <button class="secondary-action" type="button" (click)="startReject(row)" [disabled]="busy()"
+                        [attr.aria-expanded]="rejecting()?.row?.accountId === row.accountId" aria-controls="reject-panel">Reject</button>
                     </div>
                   </td>
                 </tr>
               }
             </tbody>
           </table>
+          @if (rejecting(); as pending) {
+            <div class="removal reject" id="reject-panel" role="group" [attr.aria-label]="'Reject ' + pending.row.displayName">
+              <h3>Reject {{ pending.row.displayName }}</h3>
+              <div class="removal-option strongest">
+                <button type="button" class="danger-button" [title]="rejectText.disable" aria-describedby="reject-disable" [disabled]="busy()" (click)="chooseReject('disable')">
+                  <span class="warning-mark" aria-hidden="true">⚠</span> Disable
+                </button>
+                <p id="reject-disable">{{ rejectText.disable }}</p>
+              </div>
+              <div class="removal-option">
+                <button type="button" class="caution-button" [title]="rejectText.remove" aria-describedby="reject-remove" [disabled]="busy()" (click)="chooseReject('remove')">Delete</button>
+                <p id="reject-remove">{{ rejectText.remove }}</p>
+              </div>
+              @if (pending.action; as action) {
+                @let disabling = action === 'disable';
+                @let word = disabling ? 'DISABLE' : 'DELETE';
+                <div class="reset-panel" [class.danger-panel]="disabling">
+                  <h4>@if (disabling) {<span aria-hidden="true">⚠ </span>Disable {{ pending.row.displayName }}} @else {Delete {{ pending.row.displayName }}'s request}</h4>
+                  <label>Type {{ word }} to confirm <input [(ngModel)]="rejectConfirmation" autocomplete="off" /></label>
+                  <div class="actions">
+                    <button type="button" [class]="disabling ? 'danger-button' : 'caution-button'" [disabled]="busy() || rejectConfirmation !== word" (click)="confirmReject()">
+                      {{ disabling ? 'Confirm disable' : 'Confirm deletion' }}
+                    </button>
+                    <button type="button" class="action-link" [disabled]="busy()" (click)="cancelReject()">Cancel</button>
+                  </div>
+                </div>
+              } @else {
+                <div class="actions">
+                  <button type="button" class="action-link" [disabled]="busy()" (click)="cancelReject()">Cancel</button>
+                </div>
+              }
+            </div>
+          }
         } @else {
           <p class="empty">Nobody is waiting for access.</p>
         }

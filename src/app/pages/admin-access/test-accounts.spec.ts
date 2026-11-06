@@ -87,10 +87,10 @@ describe('Test account maintenance',()=>{
   expect(guide.textContent).toContain('Managed test accounts and saved plans');
   expect(guide.getAttribute('href')).toBe('/admin/local-development#managed-test-accounts-and-saved-plans');
   expect(root.querySelector('.row-actions')).toBeNull();
-  // DLV-969 (owner, 2026-11-04): Learners and Admins tabs with counts, no Role menu; Learners opens first.
-  expect([...root.querySelectorAll('.list-tabs [role="tab"]')].map(tab=>tab.textContent?.replace(/\s+/g,' ').trim())).toEqual(['Learners 1','Admins 1']);
+  // Owner, 2026-11-06: one list, no kind-of-account tabs and no Role menu on Test accounts.
+  expect(root.querySelector('.list-tabs')).toBeNull();
   expect(root.querySelector('.directory-tools select')).toBeNull();
-  expect(root.querySelectorAll('tbody input[type="checkbox"]')).toHaveLength(1);
+  expect(root.querySelectorAll('tbody tr[data-account]')).toHaveLength(2);
   expect(root.querySelector('.selection-toolbar')).toBeNull();
   const selectLearner=root.querySelector('tr[data-account="learner09"] input[type="checkbox"]') as HTMLInputElement;
   selectLearner.click();fixture.detectChanges();
@@ -125,10 +125,7 @@ describe('Test account maintenance',()=>{
   opensUnderTheToolbar('Delete learner09');
   expect(fixture.componentInstance.deleteConfirmation).toBe('');
   [...root.querySelectorAll<HTMLButtonElement>('.reset-panel button')].find(b=>b.textContent?.trim()==='Cancel')!.click();fixture.detectChanges();
-  // Another tab drops the selection and shows that tab's accounts.
-  root.querySelector<HTMLButtonElement>('#list-tab-admins')!.click();fixture.detectChanges();
-  expect(root.querySelector('.selection-toolbar')).toBeNull();
-  expect(root.querySelector('tr[data-account="learner09"]')).toBeNull();
+  // Owner, 2026-11-06: one list, so the admin-role row sits beside the learner; selecting it moves the selection.
   const selectAdmin=root.querySelector('tr[data-account="admin01"] input[type="checkbox"]') as HTMLInputElement;
   selectAdmin.click();fixture.detectChanges();
   expect(root.querySelector('.selection-toolbar')?.textContent).toContain('admin01 selected');
@@ -558,7 +555,7 @@ describe('Test account maintenance',()=>{
   /** DLV-969 (owner, 2026-11-04): two cards with their own actions, one panel under both, a tabbed list. */
   describe('layout',()=>{
    const roster=(name:string,roles:string[]=[])=>({...row,accountId:name+'-id',username:name+'@lookahead.dev',roles,initialization:'scenario',creatorId:'owner-1'});
-   const listed=[roster('learner01'),roster('learner02'),roster('learner03'),roster('coauthor01',['co-author']),roster('admin01',['admin']),roster('admin02',['admin'])];
+   const listed=[roster('learner01'),roster('learner02'),roster('learner03')];
    const allowance=(extra:Record<string,unknown>={})=>({limit:2147483647,used:4,remaining:2147483647,roster:{total:35,ready:33,deleted:2,changed:3,withoutPlan:0,...extra},scenarios});
    function layout(quota:Record<string,unknown>){
     const fixture=page(quota);
@@ -669,7 +666,7 @@ describe('Test account maintenance',()=>{
     action(root,'Reset all').click();fixture.detectChanges();
     component.rosterResetConfirmation='RESET ALL';await component.resetRoster();fixture.detectChanges();
     expect(panels()).toHaveLength(0);
-    expect(component.notice()).toBe('All 6 roster accounts are back to their scenarios.');
+    expect(component.notice()).toBe('All 3 roster accounts are back to their scenarios.');
    });
 
    it('keeps a failed panel open with the server message inside it',async()=>{
@@ -688,57 +685,21 @@ describe('Test account maintenance',()=>{
      return path==='/admin/test-accounts/allowance'?allowance():path==='/admin/test-accounts'?listed:body?{}:{accounts:[],page:0,hasNext:false};
     });
     component.rosterResetConfirmation='RESET ALL';await component.resetRoster();fixture.detectChanges();
-    expect(component.rosterReset()).toEqual({open:true,done:0,total:6});
+    expect(component.rosterReset()).toEqual({open:true,done:0,total:3});
     expect(root.querySelector('.roster-reset .panel-error')?.textContent).toContain('None reset. Not reset: learner01@lookahead.dev (Request body is not valid JSON)');
     expect(component.busy()).toBe(false);
    });
 
-   it('splits the list into Learners, Co-authors and Admins with counts, and searches within the tab',async()=>{
+   it('lists every test account in one list with no kind-of-account tabs (owner, 2026-11-06); People keeps its role filter',async()=>{
     const fixture=layout(allowance());
-    const root=await shown(fixture);const component=fixture.componentInstance;
-    const tabs=()=>[...root.querySelectorAll<HTMLButtonElement>('.list-tabs [role="tab"]')];
-    const names=()=>[...root.querySelectorAll('tbody tr[data-account]')].map(tr=>tr.getAttribute('data-account'));
-    expect(root.querySelector('.list-tabs')?.getAttribute('role')).toBe('tablist');
-    expect(tabs().map(tab=>tab.textContent?.replace(/\s+/g,' ').trim())).toEqual(['Learners 3','Co-authors 1','Admins 2']);
-    expect(tabs().map(tab=>tab.getAttribute('aria-selected'))).toEqual(['true','false','false']);
-    expect(root.querySelector('#test-account-list')?.getAttribute('aria-labelledby')).toBe('list-tab-learners');
-    expect(names()).toEqual(['learner01@lookahead.dev','learner02@lookahead.dev','learner03@lookahead.dev']);
-    expect(root.querySelector('.count')?.textContent).toBe('3 of 3');
-    tabs()[2].click();fixture.detectChanges();
-    expect(names()).toEqual(['admin01@lookahead.dev','admin02@lookahead.dev']);
-    expect(root.querySelector('#test-account-list')?.getAttribute('aria-labelledby')).toBe('list-tab-admins');
-    // The search works within the tab; the counts say how many match on each tab.
-    component.query.set('02');fixture.detectChanges();
-    expect(names()).toEqual(['admin02@lookahead.dev']);
-    expect(root.querySelector('.count')?.textContent).toBe('1 of 2');
-    expect(tabs().map(tab=>tab.textContent?.replace(/\s+/g,' ').trim())).toEqual(['Learners 1','Co-authors 0','Admins 1']);
-    component.query.set('coauthor');fixture.detectChanges();
-    expect(root.querySelector('.empty')?.textContent).toBe('Nobody matches this search.');
-    // Arrow keys move between tabs.
-    root.querySelector('.list-tabs')!.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowLeft'}));fixture.detectChanges();
-    expect(component.listTab()).toBe('co-authors');
-    expect(names()).toEqual(['coauthor01@lookahead.dev']);
-    root.querySelector('.list-tabs')!.dispatchEvent(new KeyboardEvent('keydown',{key:'Home'}));fixture.detectChanges();
-    expect(component.listTab()).toBe('learners');
-    root.querySelector('.list-tabs')!.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter'}));
-    expect(component.listTab()).toBe('learners');
-    // Selection and its actions stay under the selected row.
-    component.query.set('');fixture.detectChanges();
-    (root.querySelector('tr[data-account="learner02@lookahead.dev"] input[type="checkbox"]') as HTMLInputElement).click();fixture.detectChanges();
-    expect(root.querySelector('tr[data-account="learner02@lookahead.dev"]')!.nextElementSibling!.matches('tr.selection-row')).toBe(true);
-    // While a reset waits for its retry the tabs stay put.
-    component.pending.set({} as any);component.chooseListTab('admins');expect(component.listTab()).toBe('learners');
-   });
-
-   it('shows only the tabs that have accounts, and none in People',async()=>{
-    const fixture=page(allowance());
-    request.mockImplementation(async(path:string)=>path==='/admin/test-accounts/allowance'?allowance():path==='/admin/test-accounts'?[roster('learner01')]:{accounts:[],page:0,hasNext:false});
     const root=await shown(fixture);
-    expect([...root.querySelectorAll('.list-tabs [role="tab"]')].map(tab=>tab.textContent?.replace(/\s+/g,' ').trim())).toEqual(['Learners 1']);
-    fixture.componentInstance.chooseListTab('admins');expect(fixture.componentInstance.listTab()).toBe('learners');
-    fixture.componentRef.setInput('view','people');fixture.detectChanges();
     expect(root.querySelector('.list-tabs')).toBeNull();
-    expect(fixture.componentInstance.listTabs()).toEqual([]);
+    expect([...root.querySelectorAll('tbody tr[data-account]')].map(tr=>tr.getAttribute('data-account'))).toEqual(['learner01@lookahead.dev','learner02@lookahead.dev','learner03@lookahead.dev']);
+    expect(root.querySelector('.count')?.textContent).toBe('3 of 3');
+    expect(root.querySelector('#test-account-list')?.hasAttribute('role')).toBe(false);
+    fixture.componentInstance.query.set('02');fixture.detectChanges();
+    expect(root.querySelector('.count')?.textContent).toBe('1 of 3');
+    fixture.componentInstance.query.set('');fixture.componentRef.setInput('view','people');fixture.detectChanges();
     expect(root.querySelector('.directory-tools select')).not.toBeNull();
    });
 
@@ -914,7 +875,7 @@ describe('Purchase requests on Test accounts',()=>{
  let rows:TestAccountRow[];let request:ReturnType<typeof vi.fn>;
  async function render(feedbackRole:'owner'|'admin'|'co-author'|'user'){
   request=vi.fn(async(path:string)=>path==='/admin/test-accounts'?rows:path==='/admin/test-accounts/allowance'?{limit:10,used:0,remaining:10,roster:null,scenarios:[]}:{accounts:[],page:0,hasNext:false});
-  const account=signal<any>({accountId:'me',username:'staff',displayName:'Staff',topicGrants:[],permissions:{manageAccess:feedbackRole==='owner',feedbackRole}});
+  const account=signal<any>({accountId:'me',username:'staff',displayName:'Staff',topicGrants:[],permissions:{manageAccess:feedbackRole==='owner',triageFeedback:feedbackRole==='owner'||feedbackRole==='admin',feedbackRole}});
   TestBed.configureTestingModule({providers:[provideRouter([]),{provide:MembershipApi,useValue:{request}},{provide:StudyPlanAccount,useValue:{account}}]});
   TestBed.inject(DevSession).status.set({dev:true,deadline:'',warning:false,maintenance:false});
   const fixture=TestBed.createComponent(TestAccounts);fixture.componentRef.setInput('view','test');

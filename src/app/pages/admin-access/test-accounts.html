@@ -46,8 +46,8 @@
           </div>
           <div class="card-body">
             <p>
-              The 35 roster accounts, the same as Local: 27 learners, each in a different scenario, 2 co-authors and 6 admins, as
-              <code>learner01&#64;lookahead.dev</code> and so on.
+              The 27 roster accounts, the same as Local: one learner in each scenario, as
+              <code>learner01&#64;lookahead.dev</code> and so on. Every test account is a learner (owner, 2026-11-06).
             </p>
             @if (progress.withoutPlan) {
               <!-- DLV-969 S37: learners created before DEV had study plans; Reset all gives each its plan. -->
@@ -175,26 +175,7 @@
 
   <p class="notice" role="status">{{ notice() }}</p>
 
-  @if (testView && listTabs().length) {
-    <!-- DLV-969 (owner, 2026-11-04): Learners, Co-authors and Admins with counts, as in the account menu's switcher. -->
-    <div class="list-tabs" role="tablist" aria-label="Kind of test account" (keydown)="listTabKey($event)">
-      @for (item of listTabs(); track item.id) {
-        <button
-          type="button"
-          role="tab"
-          [id]="'list-tab-' + item.id"
-          aria-controls="test-account-list"
-          [attr.aria-selected]="listTab() === item.id"
-          [attr.tabindex]="listTab() === item.id ? 0 : -1"
-          [disabled]="busy() || !!pending()"
-          (click)="chooseListTab(item.id)"
-        >
-          {{ item.title }} <span class="tab-count">{{ listCounts()[item.id] }}</span>
-        </button>
-      }
-    </div>
-  }
-  <div class="list-panel" [attr.id]="testView ? 'test-account-list' : null" [attr.role]="testView && listTabs().length ? 'tabpanel' : null" [attr.aria-labelledby]="testView && listTabs().length ? 'list-tab-' + listTab() : null">
+  <div class="list-panel" [attr.id]="testView ? 'test-account-list' : null">
   <div class="directory-tools">
     <label class="tool">
       Search
@@ -211,13 +192,13 @@
         </select>
       </label>
     }
-    <p class="count" aria-live="polite">{{ visible().length }} of {{ inTab().length }}</p>
+    <p class="count" aria-live="polite">{{ visible().length }} of {{ inView().length }}</p>
   </div>
 
   @if (!loaded()) {
     <p class="empty">{{ testView ? 'Loading test accounts…' : 'Loading people…' }}</p>
   } @else if (!visible().length) {
-    <p class="empty">{{ inTab().length ? 'Nobody matches this search.' : 'No accounts to show.' }}</p>
+    <p class="empty">{{ inView().length ? 'Nobody matches this search.' : 'No accounts to show.' }}</p>
   } @else {
     <table class="directory-table">
       <caption class="visually-hidden">{{ testView ? 'Test accounts' : 'People' }}, their roles and their current access</caption>

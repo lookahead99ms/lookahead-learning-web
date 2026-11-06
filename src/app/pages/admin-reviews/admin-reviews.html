@@ -2,18 +2,22 @@
   <header>
     <p class="eyebrow">Private review</p>
     <h2 class="intro-heading">
-      @if (showAll()) {
+      @if (section() === 'submitted' && !isOwner()) {
+        Your reviews, and where each one stands.
+      } @else if (showAll() && section() !== 'submit') {
         See what reviewers want to change.
       } @else {
         Tell us what should change.
       }
     </h2>
     <p class="lede">
-      @if (showAll()) {
+      @if (section() === 'submitted' && !isOwner()) {
+        Each item shows the status the owner set. Add new items under Write Review.
+      } @else if (showAll() && section() !== 'submit') {
         Each reviewer sees only their own items. You see all of them, newest day first. Open an
         item to read it, see its images and set a status the reviewer will see.
       } @else if (isOwner()) {
-        This is the view every reviewer gets. Items you add here also appear under All reviews
+        This is the view every reviewer gets. Items you add here also appear under Team Reviews
         with your name.
       } @else {
         Add one item for each problem, change or idea. Attach screenshots when they help. Other
@@ -36,12 +40,12 @@
     </section>
   } @else if (state() === 'error') {
     <section class="state-panel" role="alert">
-      <h2>Reviews are unavailable</h2>
+      <h2>Review items are unavailable</h2>
       <p>The review items could not be loaded. Nothing was lost; try again.</p>
       <button type="button" class="secondary" (click)="load()">Try again</button>
     </section>
   } @else {
-    @if (isOwner()) {
+    @if (isOwner() && section() !== 'submit') {
       <div class="view-tabs" role="group" aria-label="Review view">
         <button
           type="button"
@@ -60,7 +64,7 @@
       </div>
     }
     <div id="review-view">
-      @if (showAll()) {
+      @if (showAll() && section() !== 'submit') {
         <section aria-labelledby="review-overview">
           <h2 id="review-overview">Overview</h2>
           @if (reviewers().length) {
@@ -152,6 +156,7 @@
           />
         </section>
       } @else {
+        @if (section() !== 'submitted') {
         <section aria-labelledby="review-form" class="form-section">
           <h2 id="review-form" tabindex="-1" #formHeading>
             {{ editingId() ? 'Edit your review item' : 'Add a review item' }}
@@ -266,7 +271,9 @@
             </div>
           </form>
         </section>
+        }
 
+        @if (section() !== 'submit') {
         <section aria-labelledby="review-items">
           <h2 id="review-items">Your review items</h2>
           <ng-container
@@ -276,8 +283,9 @@
             "
           />
         </section>
+        }
       }
-      @if (nextBefore()) {
+      @if (nextBefore() && section() !== 'submit') {
         <div class="older">
           <button
             type="button"

@@ -1,5 +1,6 @@
 <app-platform-header />
-<main id="main-content" class="welcome-page" [pageSidebarContext]="sidebarContext">
+<!-- Owner, 2026-11-06: with the waiting notice the page is two panels, the notice at 30% beside the Essence at 70%. -->
+<main id="main-content" class="welcome-page" [class.two-panels]="accessPending()" [pageSidebarContext]="sidebarContext">
   @if (accessPending()) {
     <!-- Owner, 2026-11-06: two rows of three. The greeting with the three steps of the way in, the third one current;
          below it the three things to know, each with a mark instead of a number. -->

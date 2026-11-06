@@ -24,7 +24,7 @@ describe('fitEssence', () => {
   });
 
   it('scales the stage inside the card, never the card itself (owner, 2026-11-06)', () => {
-    Object.assign(view, { innerWidth: 1440, innerHeight: 700 });
+    Object.assign(view, { innerWidth: 1440, innerHeight: 1000 });
     const card = essence(250, 740, 250 + 740 + 100);
     const stage = document.createElement('div');
     stage.className = 'essence-stage';
@@ -32,7 +32,7 @@ describe('fitEssence', () => {
     card.append(stage);
     fitEssence(card);
     // Below the stage: the page's 1090px less the stage's bottom at 930px, so the card's padding and the footer.
-    expect(Number(stage.style.getPropertyValue('zoom'))).toBe(Math.floor(((700 - 310 - 160 - 2) / 620) * 1000) / 1000);
+    expect(Number(stage.style.getPropertyValue('zoom'))).toBe(Math.floor(((1000 - 310 - 160 - 2) / 620) * 1000) / 1000);
     expect(card.style.getPropertyValue('zoom')).toBe('');
     expect(card.style.getPropertyValue('width')).toBe('');
     expect(stage.style.getPropertyValue('width')).toBe('');
@@ -50,7 +50,7 @@ describe('fitEssence', () => {
       expect(Number(card.style.getPropertyValue('zoom'))).toBe(Math.floor(((982 - 85 - 40) / 1100) * 1000) / 1000);
       expect(card.style.getPropertyValue('width')).toBe('');
       fitEssence(card);
-      expect(card.style.getPropertyValue('zoom')).toBe('0.36');
+      expect(card.style.getPropertyValue('zoom')).toBe('0.72');
     } finally {
       header.remove();
     }
@@ -63,7 +63,7 @@ describe('fitEssence', () => {
     expect(card.style.getPropertyValue('zoom')).toBe('1');
     Object.assign(view, { innerWidth: 1280, innerHeight: 300 });
     fitEssence(card);
-    expect(card.style.getPropertyValue('zoom')).toBe('0.36');
+    expect(card.style.getPropertyValue('zoom')).toBe('0.72');
     Object.assign(view, { innerWidth: 390, innerHeight: 844 });
     fitEssence(card);
     expect(card.style.getPropertyValue('zoom')).toBe('1');

@@ -1,13 +1,4 @@
-import {
-  Component,
-  ElementRef,
-  OnDestroy,
-  OnInit,
-  computed,
-  inject,
-  signal,
-  viewChild,
-} from '@angular/core';
+import { Component, computed, ElementRef, inject, input, OnDestroy, OnInit, signal, viewChild } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
@@ -57,6 +48,12 @@ interface DayGroup {
 })
 export class AdminReviewsPage implements OnInit, OnDestroy {
   protected readonly accounts = inject(StudyPlanAccount);
+  /**
+   * DLV-971 (owner, 2026-11-06): the Support page shows this panel twice. "submit" is the add-item form under Submit a
+   * review; "submitted" is what was submitted and where each item stands under Team Reviews (the owner's overview
+   * and every reviewer's items, a reviewer's own). "all" is the whole panel, as before.
+   */
+  readonly section = input<'submit' | 'submitted' | 'all'>('all');
   protected readonly client = inject(PLATFORM_REVIEW_CLIENT);
   protected readonly categories = reviewCategories;
   protected readonly priorities = reviewPriorities;
@@ -159,6 +156,13 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
     this.triageMessage.set({});
     try {
       const [viewer, page] = await Promise.all([this.client.viewer(), this.client.list()]);
+      // DLV-971 (owner, 2026-11-06): "user" is the service's word for an account with no review role; this page denies it
+      // itself, wherever it is embedded, instead of relying on the Support page's filter.
+      if (viewer.role === 'user') {
+        this.viewer.set(viewer);
+        this.state.set('denied');
+        return;
+      }
       this.viewer.set(viewer);
       this.items.set(page.items);
       this.nextBefore.set(page.nextBefore);

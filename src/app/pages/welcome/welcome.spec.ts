@@ -50,6 +50,8 @@ describe('WelcomePage', () => {
     expect(points[0].textContent).not.toContain('DEV');
     expect(points[1].textContent).toContain('lands you in Look Ahead.');
     const main = root.querySelector('main#main-content.welcome-page');
+    // Owner, 2026-11-06: with the notice the page is two panels (notice 30%, Essence 70%); the class drives the layout.
+    expect(main?.classList.contains('two-panels')).toBe(true);
     expect([...(main?.children ?? [])].map((child) => child.tagName.toLowerCase())).toEqual(['aside', 'section', 'footer']);
     expect(main?.querySelector('section.brand-story.home-essence app-wordmark-key')).not.toBeNull();
     // The Essence starts on load here, not after a scroll as on the homepage (user, 2026-11-03).
@@ -69,6 +71,19 @@ describe('WelcomePage', () => {
     const points = [...root.querySelectorAll('.pending-points li')];
     expect(points[0].textContent).toContain('Look Ahead DEV is our internal preview for invited members.');
     expect(points[1].textContent).toContain('lands you in Look Ahead DEV.');
+  });
+
+  it('greets by the first name the Gateway left in its cookie, reads it once and clears it (DLV-971)', () => {
+    document.cookie = 'lookahead-welcome=Zo%C3%AB; Path=/';
+    const root: HTMLElement = render({ access: 'pending' }).nativeElement;
+    expect(root.querySelector('aside.access-pending h2')?.textContent?.trim()).toBe('Zoë, your sign-in worked');
+    expect(document.cookie).not.toContain('lookahead-welcome=');
+    // Anything but a name is ignored.
+    document.cookie = 'lookahead-welcome=%3Cb%3Ex; Path=/';
+    TestBed.resetTestingModule();
+    const other: HTMLElement = render({ access: 'pending' }).nativeElement;
+    expect(other.querySelector('aside.access-pending h2')?.textContent?.trim()).toBe('Your sign-in worked');
+    expect(document.cookie).not.toContain('lookahead-welcome=');
   });
 
   it('says plainly when a page is not open to the account, above the Essence, instead of opening the Study Plan', () => {

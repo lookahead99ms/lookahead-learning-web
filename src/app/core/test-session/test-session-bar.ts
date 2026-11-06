@@ -1,6 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
 import { StudyPlanAccount } from '../../pages/study-plan/study-plan-account';
-import { TestSessions, roleLabel, scenarioDetail, scenarioPlan } from './test-sessions';
+import { TestSessions, scenarioDetail, scenarioPlan } from './test-sessions';
 
 /**
  * DLV-969 (owner, 2026-11-04): while a test account is in use, a slim bar under the header says which one, with Switch
@@ -99,7 +99,7 @@ export class TestSessionBar {
     const account = this.current();
     if (!account) return null;
     const plan = scenarioPlan(account);
-    // A learner reads "Learn · active · …"; staff read their scenario, which already names the role.
-    return plan ? [plan, scenarioDetail(account)].filter(Boolean).join(' · ') : account.scenario ?? roleLabel(account);
+    // A learner reads "Learn · active · …"; a created account without a scenario is simply a learner.
+    return plan ? [plan, scenarioDetail(account)].filter(Boolean).join(' · ') : account.scenario ?? 'Learner';
   });
 }

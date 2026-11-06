@@ -55,7 +55,7 @@ describe('Purchase requests on Waiting for access', () => {
       }
       return [];
     });
-    const account = signal<any>({ accountId: 'me', username: 'staff', displayName: 'Staff', topicGrants: [], permissions: { manageAccess: feedbackRole === 'owner', feedbackRole } });
+    const account = signal<any>({ accountId: 'me', username: 'staff', displayName: 'Staff', topicGrants: [], permissions: { manageAccess: feedbackRole === 'owner', triageFeedback: feedbackRole === 'owner' || feedbackRole === 'admin', feedbackRole } });
     TestBed.configureTestingModule({ providers: [provideRouter([]), { provide: MembershipApi, useValue: { request } }, { provide: StudyPlanAccount, useValue: { account } }] });
     if (options.dev ?? true) TestBed.inject(DevSession).status.set({ dev: true, deadline: '', warning: false, maintenance: false });
     const fixture = TestBed.createComponent(Host);

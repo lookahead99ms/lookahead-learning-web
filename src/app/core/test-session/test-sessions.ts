@@ -12,6 +12,7 @@ export interface UsableTestAccount {
   accountId: string;
   username: string;
   displayName: string;
+  /** Always empty since 2026-11-06 (owner): test accounts are learners only; kept because the Domain still sends it. */
   roles: string[];
   scenario: string | null;
   /** DLV-969 (owner, 2026-11-04): who upgraded this account through an approved request; null or absent when nobody did. */
@@ -153,23 +154,15 @@ function message(failure: unknown, fallback: string): string {
   return failure instanceof Error && failure.message ? failure.message : fallback;
 }
 
-/** The plan word a learner scenario starts with ("Learn · active · …" → "Learn"); null for staff and created accounts. */
+/** The plan word a learner scenario starts with ("Learn · active · …" → "Learn"); null for a created account. */
 export function scenarioPlan(account: UsableTestAccount): string | null {
-  if (account.roles.length || !account.scenario) return null;
+  if (!account.scenario) return null;
   const first = account.scenario.split(' · ')[0]?.trim();
   return first || null;
 }
 
 /** The rest of a scenario after its plan word, for the line under the name. */
 export function scenarioDetail(account: UsableTestAccount): string {
-  if (!account.scenario) return account.roles.length ? 'Full curriculum' : 'Created test account';
-  if (account.roles.length) return account.scenario;
+  if (!account.scenario) return 'Created test account';
   return account.scenario.split(' · ').slice(1).join(' · ');
-}
-
-/** A role or plan label as people say it. */
-export function roleLabel(account: UsableTestAccount): string {
-  if (account.roles.includes('co-author')) return 'Co-author';
-  if (account.roles.includes('admin')) return 'Admin';
-  return 'Learner';
 }

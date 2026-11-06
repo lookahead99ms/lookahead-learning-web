@@ -221,6 +221,18 @@ describe('PlatformHeader account disclosure', () => {
     expect(fixture.nativeElement.querySelector('[role="menuitem"]')).toBeNull();
   });
 
+  /** DLV-971 (owner, 2026-11-06, audit finding 1): any gate answer counts, a 503 too, so a test session is never shown as a real account. */
+  it('asks the Gateway whether this is a test session on any gate answer, not only a 200', () => {
+    const refresh = vi.spyOn(TestBed.inject(TestSessions), 'refresh').mockResolvedValue();
+    const store = TestBed.inject(StudyPlanAccount);
+    const dev = TestBed.inject(DevSession);
+    store.account.set({ accountId: 'learner', username: 'learner@example.test', displayName: 'Priya Raman', topicGrants: [] });
+    dev.gated.set(true);
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    expect(refresh).toHaveBeenCalledTimes(1);
+  });
+
   /**
    * DLV-969 (owner, 2026-11-04): anyone signed in to DEV switches to a test account from this menu, and comes back
    * from it. Owner decision 2026-11-04: the owner, co-authors and admins switch; learners, reviewers and testers never do.
@@ -1303,6 +1315,43 @@ describe('PlatformHeader DEV session (user decision 2026-11-02)', () => {
       expect(root.querySelector('.search-palette')).toBeNull();
     },
   );
+
+  it('offers Exit DEV in the header only on the Welcome page while a sign-in waits before admission (DLV-971)', () => {
+    const urlSpy = vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue('/welcome?access=pending');
+    const session = TestBed.inject(DevSession);
+    session.gated.set(true);
+    const leave = vi.spyOn(session, 'leave').mockResolvedValue();
+    const fixture = TestBed.createComponent(PlatformHeader);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const exit = root.querySelector('.dev-exit-inline-button') as HTMLButtonElement;
+    expect(exit.textContent?.trim()).toBe('Exit DEV');
+    expect(root.querySelector('.sign-in-button:not(.dev-exit-inline-button)')).toBeNull();
+    expect(root.querySelector('#' + exit.getAttribute('aria-describedby'))?.textContent).toBe(
+      'Signs you out of DEV and returns you to its gate. Sign in again once the owner has approved you.',
+    );
+    exit.click();
+    expect(leave).toHaveBeenCalledTimes(1);
+    session.leaving.set(true);
+    fixture.detectChanges();
+    expect(exit.textContent?.trim()).toBe('Exiting…');
+    expect(exit.disabled).toBe(true);
+    session.leaving.set(false);
+    session.error.set('Unable to confirm leaving DEV. Retry Exit DEV environment.');
+    fixture.detectChanges();
+    expect(root.querySelector('.dev-exit-inline-error')?.textContent).toBe('Unable to confirm leaving DEV. Retry Exit DEV environment.');
+    // Inside DEV the DEV mark's own menu carries the exit; on other gate pages there is nothing to exit yet.
+    session.error.set('');
+    session.status.set({ dev: true, deadline: '2026-11-05T00:00:00Z', warning: false, maintenance: false });
+    fixture.detectChanges();
+    expect(root.querySelector('.dev-exit-inline-button')).toBeNull();
+    session.status.set(null);
+    for (const url of ['/welcome', '/sign-in', '/sign-up/confirm', '/?access=pending']) {
+      urlSpy.mockReturnValue(url);
+      fixture.detectChanges();
+      expect(root.querySelector('.dev-exit-inline-button'), url).toBeNull();
+    }
+  });
 
   it('before admission, a signed-in visitor’s account menu holds only Sign out; after admission it has every link', () => {
     vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue('/welcome?access=pending');

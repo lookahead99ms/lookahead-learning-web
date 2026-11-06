@@ -2,8 +2,12 @@ import { DestroyRef, afterNextRender, inject } from '@angular/core';
 
 /** Narrower screens stack the Essence into a tall column; shrinking that to fit would make it unreadable. */
 export const FIT_FROM_WIDTH = 641;
-/** Never shrink the Essence below this, so its words stay readable on short screens. */
-export const SMALLEST = 0.36;
+/**
+ * Never shrink the Essence below this, so its words stay readable: the step labels are 18-19px at full size, so at
+ * this scale they keep about 14px (owner, 2026-11-06: at the old 0.36 floor a 14-inch screen showed unreadable letters).
+ * Below this the page scrolls instead.
+ */
+export const SMALLEST = 0.72;
 /** Screen mode: the room kept above and below the Essence inside the window. */
 export const SCREEN_GAP = 20;
 
