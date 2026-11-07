@@ -1,3 +1,5 @@
+import { DevSession } from '../../core/dev-session-notice/dev-session';
+import { environment } from '../../../environments/environment';
 import { Component, computed, effect, ElementRef, inject, input, OnDestroy, OnInit, output, signal, viewChild } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -77,6 +79,9 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly editIntent = inject(ReviewEditIntent);
+  private readonly devSession = inject(DevSession);
+  /** Owner decision 2026-11-07: promoting writes the DEV plan, so the button exists on DEV and local only. */
+  protected readonly devOrLocal = computed(() => !environment.production || this.devSession.status() !== null || this.devSession.gated());
   protected readonly categories = reviewCategories;
   protected readonly requestTypes = requestTypes;
   protected readonly requestFilterPrefix = requestFilterPrefix;
@@ -116,7 +121,7 @@ export class AdminReviewsPage implements OnInit, OnDestroy {
    * the ticket pill instead.
    */
   protected canPromote(item: PlatformReviewItem): boolean {
-    return this.canTriage(item) && !item.ticketId;
+    return this.devOrLocal() && this.canTriage(item) && !item.ticketId;
   }
   /** Reviews are edited and deleted by their reviewer while New; a learner request is never editable here. */
   protected canEdit(item: PlatformReviewItem): boolean {

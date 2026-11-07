@@ -1,5 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { DevSession } from '../../core/dev-session-notice/dev-session';
+import { environment } from '../../../environments/environment';
 import { ActivatedRoute, provideRouter, Router } from '@angular/router';
 import { AdminReviewsPage } from './admin-reviews';
 import { ReviewEditIntent } from './review-edit-intent';
@@ -778,6 +780,25 @@ describe('Platform reviews page', () => {
     root = await render('submit');
     expect(root.querySelector('#review-form')?.textContent?.trim()).toBe('New feedback');
     expect((root.querySelector('input[name="title"]') as HTMLInputElement).value).toBe('');
+  });
+
+  it('hides Promote to ticket on a production build without a DEV session; a DEV session brings it back (owner, 2026-11-07)', async () => {
+    stored = [{ ...request('p', 'problem'), createdAt: '2026-10-12T16:00:00.000Z' }, ...stored];
+    viewer = { role: 'owner', reviewerId: 'owner', displayName: 'Owner' };
+    const env = environment as { production: boolean };
+    env.production = true;
+    try {
+      const root = await render('submitted');
+      [...root.querySelectorAll<HTMLButtonElement>('.item-summary')][1].click();
+      await settle();
+      expect(root.querySelector('.promote button')).toBeNull();
+      TestBed.inject(DevSession).gated.set(true);
+      await settle();
+      expect(root.querySelector<HTMLButtonElement>('.promote button')?.textContent).toContain('Promote to ticket');
+    } finally {
+      env.production = false;
+      TestBed.inject(DevSession).gated.set(false);
+    }
   });
 
   it('offers Promote to ticket to the owner on any item, to an admin on a learner request only, and shows the ticket pill once promoted (DLV-971)', async () => {

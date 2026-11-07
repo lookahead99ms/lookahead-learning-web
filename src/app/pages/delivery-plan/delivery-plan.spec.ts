@@ -133,7 +133,7 @@ describe('DeliveryPlanPage', () => {
     save: vi.fn(),
   };
   const publication = { load: vi.fn<() => Observable<DeliverySnapshot>>() };
-  const devApi = { load: vi.fn(), create: vi.fn(), update: vi.fn(), resolveConflict: vi.fn() };
+  const devApi = { load: vi.fn(), create: vi.fn(), update: vi.fn(), resolveConflict: vi.fn(), uploadInbox: vi.fn(), syncInbox: vi.fn() };
   // Read lazily when the page first injects PROTECTED_CONTENT, so a nested beforeEach can flip it.
   let protectedBuild = false;
 
@@ -148,6 +148,8 @@ describe('DeliveryPlanPage', () => {
     devApi.create.mockReset();
     devApi.update.mockReset();
     devApi.resolveConflict.mockReset();
+    devApi.uploadInbox.mockReset();
+    devApi.syncInbox.mockReset();
     protectedBuild = false;
     HTMLDialogElement.prototype.showModal = function () {
       this.setAttribute('open', '');
@@ -1215,9 +1217,12 @@ describe('DeliveryPlanPage', () => {
       expect(root.textContent).toContain('Move could not be saved. The item stays in its original column.');
       // Refresh board reads DEV again and reports the version it found.
       devApi.load.mockResolvedValueOnce(devPlan([devItem({ statusId: 'done' }), structuredClone(plan.workItems[1])], 12));
-      root.querySelector<HTMLButtonElement>('.editor-toolbar .editor-secondary')!.click();
+      const refresh = root.querySelector<HTMLButtonElement>('.editor-toolbar .editor-secondary')!;
+      expect(refresh.textContent?.trim()).toBe('Refresh board');
+      expect(refresh.title).toBe('Reads the plan on DEV again and shows the version it found');
+      refresh.click();
       await settle(harness);
-      expect(root.textContent).toContain('Board is up to date. DEV plan version 12, 2 items, checked');
+      expect(root.textContent).toContain('Board is up to date. Nothing new to sync: DEV plan version 12, 2 items, checked');
       devApi.load.mockResolvedValueOnce(devPlan([devItem({ statusId: 'done' }), structuredClone(plan.workItems[1])], 13));
       root.querySelector<HTMLButtonElement>('.editor-toolbar .editor-secondary')!.click();
       await settle(harness);
@@ -1440,6 +1445,168 @@ describe('DeliveryPlanPage', () => {
       adminDialog.querySelector<HTMLButtonElement>('.dialog-footer .editor-primary')!.click();
       await settle(admin);
       expect([...adminRoot.querySelectorAll<HTMLOptionElement>('[name="status"] option')].map((option) => option.disabled)).toEqual([true, false, true]);
+    });
+
+    describe('inbox sync controls (owner, 2026-11-07)', () => {
+      const coAuthor = { ...reader, feedbackRole: 'co-author' };
+      const merged = {
+        synced: true,
+        version: 9,
+        reason: null,
+        counts: { added: 2, takenLocal: 1, keptDev: 3, conflicts: 1, unchanged: 4, deletedOnDev: 0 },
+      };
+      const uploadButton = (root: Element) => root.querySelector<HTMLButtonElement>('.editor-toolbar .upload-plan');
+      const syncButton = (root: Element) => root.querySelector<HTMLButtonElement>('.editor-toolbar .sync-inbox');
+      const fileInput = (root: Element) => root.querySelector<HTMLInputElement>('.editor-toolbar input[type="file"]')!;
+      const helpText = (root: Element) => root.querySelector('.refresh-help')!.textContent!.replace(/\s+/g, ' ').trim();
+      const notice = (root: Element) => root.querySelector('.save-notice')!.textContent!.trim();
+      const syncHelp =
+        'Upload plan file sends your local delivery-plan.json to DEV and merges it at once; Sync plan inbox merges a file already placed in delivery/inbox/.';
+      async function pickFile(harness: RouterTestingHarness, text: string) {
+        const input = fileInput(harness.routeNativeElement!);
+        const file = new File([text], 'delivery-plan.json', { type: 'application/json' });
+        Object.defineProperty(input, 'files', { value: [file], configurable: true });
+        input.dispatchEvent(new Event('change'));
+        await settle(harness);
+        return input;
+      }
+
+      it('hides Upload plan file and Sync plan inbox from a reviewer', async () => {
+        TestBed.inject(StudyPlanAccount).account.update((account) => ({ ...account!, permissions: reader }));
+        const harness = await devBoard();
+        const root = harness.routeNativeElement!;
+        expect(uploadButton(root)).toBeNull();
+        expect(syncButton(root)).toBeNull();
+        expect(root.querySelector('.editor-toolbar input[type="file"]')).toBeNull();
+        expect(helpText(root)).toBe('The plan on DEV, read-only for your role.');
+      });
+
+      it('shows both controls with their titles to the owner and to a co-author, and explains them under the toolbar', async () => {
+        const harness = await devBoard();
+        let root = harness.routeNativeElement!;
+        const labels = (node: Element) =>
+          [...node.querySelectorAll<HTMLButtonElement>('.editor-toolbar button:not([hidden])')].map((button) => button.textContent!.trim());
+        expect(labels(root)).toEqual(['Refresh board', 'Upload plan file', 'Sync plan inbox', '+ New ticket']);
+        expect(uploadButton(root)!.title).toBe('Sends your local delivery-plan.json to DEV and merges it at once');
+        expect(syncButton(root)!.title).toBe('Merges a plan file already placed in delivery/inbox/ on DEV');
+        expect(uploadButton(root)!.disabled).toBe(false);
+        expect(syncButton(root)!.disabled).toBe(false);
+        expect(fileInput(root).accept).toBe('.json,application/json');
+        expect(fileInput(root).classList.contains('plan-file-input')).toBe(true);
+        expect(helpText(root)).toBe(
+          `Editing the plan on DEV. Saves go to DEV at once; local edits reach it through the inbox sync. ${syncHelp}`,
+        );
+        // The button opens the hidden picker.
+        const click = vi.spyOn(fileInput(root), 'click');
+        uploadButton(root)!.click();
+        expect(click).toHaveBeenCalledOnce();
+        // A co-author reads the board but may sync it.
+        TestBed.inject(StudyPlanAccount).account.update((account) => ({ ...account!, permissions: coAuthor }));
+        root = await reopen(harness);
+        expect(root.querySelector('.editor-toolbar .editor-primary')?.hasAttribute('hidden')).toBe(true);
+        expect(uploadButton(root)).not.toBeNull();
+        expect(syncButton(root)).not.toBeNull();
+        expect(helpText(root)).toBe(`The plan on DEV, read-only for your role. ${syncHelp}`);
+        // A legacy owner account without permissions keeps the controls.
+        TestBed.inject(StudyPlanAccount).account.update((account) => ({ ...account!, permissions: undefined }));
+        root = await reopen(harness);
+        expect(uploadButton(root)).not.toBeNull();
+      });
+
+      it('uploads the chosen file as text, reports the merge counts, reloads the board and clears the picker', async () => {
+        let finish!: (value: typeof merged) => void;
+        devApi.uploadInbox.mockImplementationOnce(() => new Promise<typeof merged>((resolve) => (finish = resolve)));
+        const harness = await devBoard();
+        const root = harness.routeNativeElement!;
+        const text = '{ "schemaVersion": "delivery-plan/v1", "version": 7, "workItems": [] }';
+        const loads = devApi.load.mock.calls.length;
+        const input = await pickFile(harness, text);
+        expect(devApi.uploadInbox).toHaveBeenCalledExactlyOnceWith(text);
+        expect(uploadButton(root)!.disabled).toBe(true);
+        expect(syncButton(root)!.disabled).toBe(true);
+        devApi.load.mockResolvedValueOnce(devPlan([devItem(), structuredClone(plan.workItems[1])], 9));
+        finish(merged);
+        await settle(harness);
+        expect(notice(root)).toBe(
+          'Plan file uploaded and merged into DEV plan version 9: 2 added, 1 taken from local, 3 kept from DEV, 1 conflict(s).',
+        );
+        expect(devApi.load.mock.calls.length).toBe(loads + 1);
+        expect(input.value).toBe('');
+        expect(uploadButton(root)!.disabled).toBe(false);
+        expect(syncButton(root)!.disabled).toBe(false);
+        // Nothing chosen: nothing sent.
+        Object.defineProperty(input, 'files', { value: [], configurable: true });
+        input.dispatchEvent(new Event('change'));
+        await settle(harness);
+        expect(devApi.uploadInbox).toHaveBeenCalledOnce();
+      });
+
+      it('says when the file was stored but not merged, and names the Domain refusal', async () => {
+        devApi.uploadInbox.mockResolvedValueOnce({ synced: false, version: 7, reason: 'inbox version 7 is already the DEV plan', counts: null });
+        const harness = await devBoard();
+        const root = harness.routeNativeElement!;
+        const loads = devApi.load.mock.calls.length;
+        await pickFile(harness, '{}');
+        expect(notice(root)).toBe('Plan file uploaded but not merged: inbox version 7 is already the DEV plan.');
+        expect(devApi.load.mock.calls.length).toBe(loads);
+        devApi.uploadInbox.mockRejectedValueOnce(
+          new DeliveryPlanApiError(422, 'DELIVERY_INBOX_BASE_UNKNOWN', 'Base version 3 is neither the DEV plan nor an archived version.'),
+        );
+        await pickFile(harness, '{}');
+        expect(notice(root)).toBe(
+          'The plan file could not be uploaded: Base version 3 is neither the DEV plan nor an archived version.',
+        );
+        devApi.uploadInbox.mockRejectedValueOnce(new DeliveryPlanApiError(413, 'DELIVERY_PLAN_TOO_LARGE'));
+        await pickFile(harness, '{}');
+        expect(notice(root)).toBe('The plan file could not be uploaded: DELIVERY_PLAN_TOO_LARGE.');
+        devApi.uploadInbox.mockRejectedValueOnce(new Error('file vanished'));
+        await pickFile(harness, '{}');
+        expect(notice(root)).toBe('The plan file could not be uploaded: file vanished.');
+        expect(uploadButton(root)!.disabled).toBe(false);
+      });
+
+      it('Sync plan inbox merges the stored file and reloads, says when there is nothing, and names a failure', async () => {
+        devApi.syncInbox.mockResolvedValueOnce(merged);
+        devApi.load.mockResolvedValueOnce(devPlan([devItem(), structuredClone(plan.workItems[1])], 9));
+        const harness = await devBoard();
+        const root = harness.routeNativeElement!;
+        const loads = devApi.load.mock.calls.length;
+        syncButton(root)!.click();
+        await settle(harness);
+        expect(devApi.syncInbox).toHaveBeenCalledOnce();
+        expect(notice(root)).toBe(
+          'Sync plan inbox: merged into DEV plan version 9: 2 added, 1 taken from local, 3 kept from DEV, 1 conflict(s).',
+        );
+        expect(devApi.load.mock.calls.length).toBe(loads + 1);
+        devApi.syncInbox.mockResolvedValueOnce({ synced: false, version: 9, reason: 'no inbox file', counts: null });
+        syncButton(root)!.click();
+        await settle(harness);
+        expect(notice(root)).toBe('Sync plan inbox: nothing to sync (no inbox file).');
+        expect(devApi.load.mock.calls.length).toBe(loads + 1);
+        devApi.syncInbox.mockRejectedValueOnce(new DeliveryPlanApiError(403, 'DELIVERY_ACCESS_DENIED', 'Only the owner and co-authors may sync the plan.'));
+        syncButton(root)!.click();
+        await settle(harness);
+        expect(notice(root)).toBe('Sync plan inbox failed: Only the owner and co-authors may sync the plan.');
+        expect(syncButton(root)!.disabled).toBe(false);
+        // A merge with no counts still reads.
+        devApi.syncInbox.mockResolvedValueOnce({ synced: true, version: 10, reason: null, counts: null });
+        syncButton(root)!.click();
+        await settle(harness);
+        expect(notice(root)).toBe(
+          'Sync plan inbox: merged into DEV plan version 10: 0 added, 0 taken from local, 0 kept from DEV, 0 conflict(s).',
+        );
+      });
+
+      it('shows the notice as a status line the eye lands on, not a small green note', () => {
+        const fs = (globalThis as unknown as { process: { getBuiltinModule(id: string): unknown } }).process
+          .getBuiltinModule('node:fs') as { readFileSync(path: string, encoding: 'utf8'): string };
+        const css = fs.readFileSync('src/app/pages/delivery-plan/delivery-plan.css', 'utf8').replace(/\s+/g, ' ');
+        expect(css).toContain(
+          '.save-notice { margin: 8px 0; padding: 0 20px 0 10px; border-left: 3px solid var(--accent-strong); color: var(--text-strong); font-size: 0.9rem; font-weight: 600; }',
+        );
+        expect(css).toContain('.save-notice:empty { display: none; }');
+        expect(css).toContain('.plan-file-input { position: absolute; width: 1px; height: 1px;');
+      });
     });
   });
 });

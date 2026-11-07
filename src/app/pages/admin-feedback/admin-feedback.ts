@@ -19,7 +19,9 @@ import {
   reviewStatuses,
 } from '../admin-reviews/platform-review.model';
 import { FeedbackItemView } from './feedback-item';
-import { SWEEP_JOBS, jobLabel, jobsRanLine, kindLabel, matchesSearch, sortNewest, statusLabel, statusTone, typeLabel, updatedLabel } from './feedback-backlog';
+import { DevSession } from '../../core/dev-session-notice/dev-session';
+import { environment } from '../../../environments/environment';
+import { FEEDBACK_JOBS, jobLabel, jobsRanLine, kindLabel, matchesSearch, sortNewest, statusLabel, statusTone, typeLabel, updatedLabel } from './feedback-backlog';
 
 /** The html class that stops the page behind the dialog from scrolling. */
 export const DIALOG_OPEN_CLASS = 'feedback-dialog-open';
@@ -66,9 +68,15 @@ export class AdminFeedbackPage implements OnInit, OnDestroy {
   protected readonly nextBefore = signal<string | null>(null);
   protected readonly loadingOlder = signal(false);
   protected readonly seesAll = computed(() => this.viewer()?.role === 'owner' || this.viewer()?.role === 'admin');
-  /** The owner alone (the same role check as the triage of a review) has the Jobs buttons. */
+  /** The owner alone (the same role check as the triage of a review) has the Jobs strip: Close idle tickets. */
   protected readonly isOwner = computed(() => this.viewer()?.role === 'owner');
-  protected readonly jobs = SWEEP_JOBS;
+  private readonly devSession = inject(DevSession);
+  /**
+   * Owner, 2026-11-07: the jobs exist on DEV and local only, never on PROD. The protected DEV build is a production
+   * build, so the DEV session signals carry DEV; a plain local `ng serve` is not a production build.
+   */
+  protected readonly devOrLocal = computed(() => !environment.production || this.devSession.status() !== null || this.devSession.gated());
+  protected readonly jobs = FEEDBACK_JOBS;
   protected readonly runningJob = signal<SweepJob | null>(null);
   /** The line under the title after the last run: what the job did, or that it could not be run. */
   protected readonly jobsLine = signal<{ text: string; failed: boolean } | null>(null);
@@ -155,9 +163,9 @@ export class AdminFeedbackPage implements OnInit, OnDestroy {
   }
 
   /**
-   * DLV-971: one of the Jobs buttons. The Domain runs that 4-hour job now (stale support tickets closed, the delivery
-   * inbox merged, expired admissions removed, or all three) and answers what it did; the list is reloaded after a run
-   * that may have closed tickets.
+   * DLV-971: a Jobs button. The Domain runs that 4-hour job now (here Close idle tickets; the other jobs sit on the
+   * Delivery Plan and People & Access) and answers what it did; the list is reloaded after a run that may have closed
+   * tickets.
    */
   protected async runJob(job: SweepJob): Promise<void> {
     if (this.runningJob()) return;

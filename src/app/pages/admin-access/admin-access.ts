@@ -16,6 +16,8 @@ import { AccountSignInMethod } from '../account/account-settings-client';
 import { isProviderUsername } from '../study-plan/study-plan-account';
 import { AdminMemberships } from './admin-memberships';
 import { RequestReview, REVIEW_PARAMS, REVIEW_PATH, REVIEW_TAB, REVIEW_VIEW, REVIEW_VIEW_PARAM, pendingPurchaseOf, requestReviewOf } from '../../content/purchase-requests';
+import { PLATFORM_REVIEW_CLIENT, PlatformReviewError } from '../admin-reviews/platform-review.model';
+import { jobsRanLine } from '../admin-feedback/feedback-backlog';
 
 interface Assignment {
   id: string; accountId: string | null; pendingEmail: string | null;
@@ -91,6 +93,31 @@ export class AdminAccessPage implements OnInit {
   readonly topics = signal<string[]>([]);
   readonly notice = signal('');
   readonly busy = signal(false);
+  /**
+   * Owner, 2026-11-07: Clean up admissions on Waiting for access runs the Domain's 4-hour admissions job now (waiting
+   * rows older than 48 hours removed). DEV only, never PROD: the page's `dev` gate. The review client carries the job;
+   * the route provides it, a page without it shows no button.
+   */
+  private readonly reviewClient = inject(PLATFORM_REVIEW_CLIENT, { optional: true });
+  readonly canCleanUp = computed(() => this.canManage() && this.dev() && this.reviewClient !== null);
+  readonly cleaningUp = signal(false);
+  /** The line under the section note after a run: what the job did, or why it did not run. */
+  readonly cleanupLine = signal<{ text: string; failed: boolean } | null>(null);
+  async cleanUpAdmissions() {
+    if (!this.canCleanUp() || this.cleaningUp()) return;
+    this.cleaningUp.set(true);
+    try {
+      const result = await this.reviewClient!.runSweeps('admissions');
+      this.cleanupLine.set({ text: jobsRanLine(result), failed: false });
+      await this.loadWaiting();
+    } catch (error) {
+      const localOnly = error instanceof PlatformReviewError && error.kind === 'conflict';
+      this.cleanupLine.set({
+        text: localOnly ? 'The admission cleanup runs only on DEV.' : `Clean up admissions failed: ${error instanceof Error && error.message ? error.message : 'unknown error'}`,
+        failed: !localOnly,
+      });
+    } finally { this.cleaningUp.set(false); }
+  }
   readonly recipient = signal<Recipient | null>(null);
   readonly roleOptions = [
     { id: 'co-author', label: 'Co-author', description: 'Read all curriculum, admin documents, previews, Delivery Plan and the test accounts. Cannot publish, change roles or reset accounts.' },

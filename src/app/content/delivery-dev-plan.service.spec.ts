@@ -99,6 +99,49 @@ describe('DeliveryDevPlanService (DLV-971 runtime stores)', () => {
     expect(calls[7].url).toBe('/bff/api/v1/delivery/plan/work-items/a%2Fb');
   });
 
+  it('uploads the plan file as written and syncs the inbox already on DEV, both with the CSRF token and an Idempotency-Key', async () => {
+    const fileText = '{\n  "schemaVersion": "delivery-plan/v1",\n  "version": 7,\n  "workItems": []\n}\n';
+    const merged = {
+      synced: true,
+      version: 8,
+      reason: null,
+      counts: { added: 2, takenLocal: 1, keptDev: 0, conflicts: 0, unchanged: 5, deletedOnDev: 0 },
+    };
+    responses.push(csrf(), json(200, { data: merged }));
+    expect(await service.uploadInbox(fileText)).toEqual(merged);
+    expect(calls[0].url).toBe('/bff/api/v1/auth/csrf');
+    expect(calls[1].url).toBe('/bff/api/v1/delivery/plan/inbox');
+    expect(calls[1].init.method).toBe('PUT');
+    const headers = calls[1].init.headers as Record<string, string>;
+    expect(headers['X-CSRF-TOKEN']).toBe('t');
+    expect(headers['Content-Type']).toBe('application/json');
+    expect(headers['Idempotency-Key']).toMatch(/[0-9a-f-]{36}/);
+    // The file goes as written: the Domain reads its baseVersion itself; the page never re-serialises it.
+    expect(calls[1].init.body).toBe(fileText);
+
+    const nothing = { synced: false, version: 8, reason: 'no inbox file', counts: null };
+    responses.push(csrf(), json(200, { data: nothing }));
+    expect(await service.syncInbox()).toEqual(nothing);
+    expect(calls[3].url).toBe('/bff/api/v1/delivery/plan/inbox/sync');
+    expect(calls[3].init.method).toBe('POST');
+    expect(calls[3].init.body).toBeUndefined();
+    const syncHeaders = calls[3].init.headers as Record<string, string>;
+    expect(syncHeaders['X-CSRF-TOKEN']).toBe('t');
+    expect(syncHeaders['Content-Type']).toBeUndefined();
+    expect(syncHeaders['Idempotency-Key']).toMatch(/[0-9a-f-]{36}/);
+
+    responses.push(csrf(), json(422, { error: { code: 'DELIVERY_INBOX_BASE_UNKNOWN', message: 'Base version 3 is not known on DEV.' } }));
+    const rejected = (await service.uploadInbox('{}').catch((error) => error)) as DeliveryPlanApiError;
+    expect(rejected).toBeInstanceOf(DeliveryPlanApiError);
+    expect(rejected.status).toBe(422);
+    expect(rejected.code).toBe('DELIVERY_INBOX_BASE_UNKNOWN');
+    expect(rejected.message).toBe('Base version 3 is not known on DEV.');
+    responses.push(csrf(), json(403, { error: { code: 'DELIVERY_ACCESS_DENIED' } }));
+    const denied = (await service.syncInbox().catch((error) => error)) as DeliveryPlanApiError;
+    expect(denied.status).toBe(403);
+    expect(denied.code).toBe('DELIVERY_ACCESS_DENIED');
+  });
+
   it('names the Domain error code so the page can tell a missing plan from a version conflict', async () => {
     responses.push(json(404, { code: 'DELIVERY_PLAN_MISSING', message: 'No plan yet.' }));
     const missing = (await service.load().catch((error) => error)) as DeliveryPlanApiError;

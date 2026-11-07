@@ -7,6 +7,7 @@ import { DevSession } from '../../core/dev-session-notice/dev-session';
 import { AdminAccessPage } from './admin-access';
 import { ACCOUNT_FETCH, StudyPlanAccount, StaffPermissions } from '../study-plan/study-plan-account';
 import { canSeePreviews, visibleAdminLinks, visibleDocumentationGroups } from '../../core/author-workspace-nav/author-workspace-links';
+import { PLATFORM_REVIEW_CLIENT, PlatformReviewError, SweepRunResult } from '../admin-reviews/platform-review.model';
 
 const permissions = (overrides: Partial<StaffPermissions>): StaffPermissions => ({
   manageAccess: false, previewDocuments: false, deliveryRead: false, deliveryCreate: false,
@@ -502,10 +503,13 @@ describe('Waiting for access', () => {
   let waitingStatus: number;
   let admitStatus: number;
   let rejectStatus: number;
-  const setup = (feedbackRole: 'owner' | 'co-author', tab: string | null = null) => {
+  /** The review client that carries Clean up admissions (owner, 2026-11-07); the route provides it. */
+  const reviewClient = { runSweeps: vi.fn<(job: string) => Promise<SweepRunResult>>() };
+  const setup = (feedbackRole: 'owner' | 'co-author', tab: string | null = null, withReviewClient = true) => {
     requests = [];
     TestBed.configureTestingModule({ providers: [
       provideRouter([]),
+      ...(withReviewClient ? [{ provide: PLATFORM_REVIEW_CLIENT, useValue: reviewClient }] : []),
       { provide: StudyPlanAccount, useValue: { account: signal({ accountId: 'owner-id', username: 'author', displayName: 'Author', topicGrants: [], permissions: permissions({ manageAccess: feedbackRole === 'owner', feedbackRole }) }), apiPath: (path: string) => path } },
       { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: convertToParamMap(tab ? { tab } : {}) } } },
       { provide: Location, useValue: { replaceState: vi.fn() } },
@@ -525,7 +529,127 @@ describe('Waiting for access', () => {
     ] }).overrideComponent(AdminAccessPage, { remove: { imports: [PlatformHeader] }, add: { imports: [HeaderStub] } });
   };
   const admitCalls = () => requests.filter(row => row.path === '/admin/access/admit');
-  beforeEach(() => { waiting = { waiting: [alex, sam], expiryHours: 48 }; waitingStatus = 200; admitStatus = 200; rejectStatus = 200; });
+  beforeEach(() => { waiting = { waiting: [alex, sam], expiryHours: 48 }; waitingStatus = 200; admitStatus = 200; rejectStatus = 200; reviewClient.runSweeps.mockReset(); });
+
+  describe('Clean up admissions (owner, 2026-11-07)', () => {
+    const ranAt = '2026-11-07T10:05:00Z';
+    const ranTime = new Date(ranAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    const ran = (admissionsRemoved: number | null): SweepRunResult => ({ job: 'admissions', ranAt, supportRequestsClosed: null, inboxMerged: null, inboxResult: null, admissionsRemoved });
+    /** The Waiting for access list is DEV's; the DEV gate is on unless a test turns it off. */
+    async function render(dev = true) {
+      if (dev) TestBed.inject(DevSession).gated.set(true);
+      const fixture = TestBed.createComponent(AdminAccessPage);
+      fixture.detectChanges(); await fixture.whenStable();
+      await fixture.componentInstance.reload(); fixture.detectChanges();
+      return { fixture, root: fixture.nativeElement as HTMLElement };
+    }
+    /** Lets a reload that the job started finish before reading the list. */
+    async function settle(fixture: { whenStable(): Promise<unknown>; detectChanges(): void }) {
+      await fixture.whenStable(); await new Promise(resolve => setTimeout(resolve)); fixture.detectChanges();
+    }
+    afterEach(() => { TestBed.inject(DevSession).gated.set(false); TestBed.inject(DevSession).status.set(null); });
+    const cleanUp = (root: HTMLElement) => root.querySelector<HTMLButtonElement>('#waiting-for-access .heading-actions .clean-up-admissions');
+    const line = (root: HTMLElement) => root.querySelector<HTMLElement>('#waiting-for-access .cleanup-line');
+    const waitingLoads = () => requests.filter(row => row.path === '/admin/access/waiting').length;
+
+    it('sits beside Refresh for the owner with its title, and is not there for a co-author or without the review client', async () => {
+      setup('owner');
+      const { root, fixture } = await render();
+      const actions = [...root.querySelectorAll<HTMLButtonElement>('#waiting-for-access .heading-actions button')].map(button => button.textContent?.trim());
+      expect(actions).toEqual(['Refresh', 'Clean up admissions']);
+      expect(cleanUp(root)!.title).toBe('Removes waiting rows older than 48 hours now, the same as the 4-hour job');
+      expect(cleanUp(root)!.classList.contains('secondary-action')).toBe(true);
+      expect(cleanUp(root)!.disabled).toBe(false);
+      expect(line(root)).toBeNull();
+      // A DEV session (the status) carries DEV as well as the gate.
+      TestBed.inject(DevSession).gated.set(false);
+      TestBed.inject(DevSession).status.set({ ok: true } as never);
+      fixture.detectChanges();
+      expect(cleanUp(root)).not.toBeNull();
+
+      TestBed.resetTestingModule();
+      setup('owner', null, false);
+      const bare = await render();
+      expect(bare.root.querySelector('#waiting-for-access .heading-actions button')?.textContent?.trim()).toBe('Refresh');
+      expect(cleanUp(bare.root)).toBeNull();
+      expect(bare.fixture.componentInstance.canCleanUp()).toBe(false);
+      await bare.fixture.componentInstance.cleanUpAdmissions();
+      expect(reviewClient.runSweeps).not.toHaveBeenCalled();
+
+      TestBed.resetTestingModule();
+      setup('co-author');
+      const coauthor = await render();
+      // A co-author has no Waiting for access section at all; the method refuses as well.
+      expect(coauthor.root.querySelector('#waiting-for-access')).toBeNull();
+      expect(coauthor.fixture.componentInstance.canCleanUp()).toBe(false);
+      await coauthor.fixture.componentInstance.cleanUpAdmissions();
+      expect(reviewClient.runSweeps).not.toHaveBeenCalled();
+    });
+
+    it('never shows on PROD: without a DEV session the owner has Refresh alone (owner, 2026-11-07)', async () => {
+      setup('owner');
+      const { fixture, root } = await render(false);
+      expect(fixture.componentInstance.dev()).toBe(false);
+      expect([...root.querySelectorAll<HTMLButtonElement>('#waiting-for-access .heading-actions button')].map(button => button.textContent?.trim())).toEqual(['Refresh']);
+      expect(cleanUp(root)).toBeNull();
+      expect(fixture.componentInstance.canCleanUp()).toBe(false);
+      await fixture.componentInstance.cleanUpAdmissions();
+      expect(reviewClient.runSweeps).not.toHaveBeenCalled();
+      TestBed.inject(DevSession).gated.set(true);
+      fixture.detectChanges();
+      expect(cleanUp(root)).not.toBeNull();
+    });
+
+    it('runs the admissions job, waits while it runs, says how many were removed and reloads the waiting list', async () => {
+      let finish!: (result: SweepRunResult) => void;
+      reviewClient.runSweeps.mockImplementationOnce(() => new Promise<SweepRunResult>(resolve => (finish = resolve)));
+      setup('owner');
+      const { fixture, root } = await render();
+      const loadsBefore = waitingLoads();
+      cleanUp(root)!.click(); fixture.detectChanges();
+      expect(reviewClient.runSweeps).toHaveBeenCalledExactlyOnceWith('admissions');
+      expect(cleanUp(root)!.disabled).toBe(true);
+      expect(cleanUp(root)!.getAttribute('aria-busy')).toBe('true');
+      // A second click while it runs sends nothing.
+      await fixture.componentInstance.cleanUpAdmissions();
+      expect(reviewClient.runSweeps).toHaveBeenCalledTimes(1);
+      waiting = { waiting: [sam], expiryHours: 48 };
+      finish(ran(1));
+      await settle(fixture);
+      expect(line(root)!.textContent).toBe(`Clean up admissions ran at ${ranTime}: 1 removed`);
+      expect(line(root)!.getAttribute('role')).toBe('status');
+      expect(line(root)!.classList.contains('failed')).toBe(false);
+      expect(waitingLoads()).toBe(loadsBefore + 1);
+      expect(fixture.componentInstance.waiting().map(row => row.accountId)).toEqual(['sam-id']);
+      expect(cleanUp(root)!.disabled).toBe(false);
+      expect(cleanUp(root)!.hasAttribute('aria-busy')).toBe(false);
+      reviewClient.runSweeps.mockResolvedValueOnce(ran(0));
+      cleanUp(root)!.click(); await settle(fixture);
+      expect(line(root)!.textContent).toBe(`Clean up admissions ran at ${ranTime}: 0 removed`);
+    });
+
+    it('says the cleanup runs only on DEV when the Domain answers conflict, and names any other failure', async () => {
+      reviewClient.runSweeps.mockRejectedValueOnce(new PlatformReviewError('conflict', 'The admission cleanup runs only in cloud mode; this Domain has none.'));
+      setup('owner');
+      const { fixture, root } = await render();
+      const loadsBefore = waitingLoads();
+      cleanUp(root)!.click(); await fixture.whenStable(); fixture.detectChanges();
+      expect(line(root)!.textContent).toBe('The admission cleanup runs only on DEV.');
+      expect(line(root)!.getAttribute('role')).toBe('status');
+      expect(line(root)!.classList.contains('failed')).toBe(false);
+      expect(waitingLoads()).toBe(loadsBefore);
+      expect(cleanUp(root)!.disabled).toBe(false);
+      reviewClient.runSweeps.mockRejectedValueOnce(new PlatformReviewError('unavailable', 'The review service is unavailable.'));
+      cleanUp(root)!.click(); await fixture.whenStable(); fixture.detectChanges();
+      expect(line(root)!.textContent).toBe('Clean up admissions failed: The review service is unavailable.');
+      expect(line(root)!.getAttribute('role')).toBe('alert');
+      expect(line(root)!.classList.contains('failed')).toBe(true);
+      reviewClient.runSweeps.mockRejectedValueOnce('boom');
+      cleanUp(root)!.click(); await fixture.whenStable(); fixture.detectChanges();
+      expect(line(root)!.textContent).toBe('Clean up admissions failed: unknown error');
+      expect(waitingLoads()).toBe(loadsBefore);
+    });
+  });
 
   it('sits after Saved assignments while nobody waits, first with a count once somebody does, and never for co-authors', async () => {
     waiting = { waiting: [] };

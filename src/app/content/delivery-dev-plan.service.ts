@@ -9,6 +9,24 @@ export interface DeliveryPlanWrite {
   item: DeliveryWorkItem;
 }
 
+/**
+ * DLV-971 inbox sync: what the Domain did with an uploaded or already-stored inbox file. `synced` false leaves the plan
+ * as it was and `reason` says why (for example "no inbox file"); `counts` is filled when a merge ran.
+ */
+export interface DeliveryInboxSync {
+  synced: boolean;
+  version: number;
+  reason: string | null;
+  counts: {
+    added: number;
+    takenLocal: number;
+    keptDev: number;
+    conflicts: number;
+    unchanged: number;
+    deletedOnDev: number;
+  } | null;
+}
+
 /** A failed call; `code` is the Domain's error code when the body carried one (DELIVERY_PLAN_MISSING, VERSION_CONFLICT). */
 export class DeliveryPlanApiError extends Error {
   constructor(
@@ -68,15 +86,34 @@ export class DeliveryDevPlanService {
     });
   }
 
-  private async write<T>(path: string, body: unknown, method: 'POST' | 'PUT' = 'POST'): Promise<T> {
+  /**
+   * Sends the local delivery-plan.json as written (`PUT /delivery/plan/inbox`); the Domain stores it as the inbox and
+   * merges it at once. 422 DELIVERY_INBOX_INVALID (not a plan), 422 DELIVERY_INBOX_BASE_UNKNOWN (its base version is
+   * neither the DEV plan nor an archived one), 413 DELIVERY_PLAN_TOO_LARGE.
+   */
+  uploadInbox(fileText: string): Promise<DeliveryInboxSync> {
+    return this.send('/delivery/plan/inbox', 'PUT', fileText);
+  }
+
+  /** Merges an inbox file already placed in `delivery/inbox/` on DEV (`synced: false, reason: "no inbox file"` when none). */
+  syncInbox(): Promise<DeliveryInboxSync> {
+    return this.send('/delivery/plan/inbox/sync', 'POST');
+  }
+
+  private write<T>(path: string, body: unknown, method: 'POST' | 'PUT' = 'POST'): Promise<T> {
+    return this.send(path, method, JSON.stringify(body));
+  }
+
+  /** Every write: the CSRF token and an Idempotency-Key; the body, when there is one, goes as JSON text verbatim. */
+  private async send<T>(path: string, method: 'POST' | 'PUT', body?: string): Promise<T> {
     return this.json(path, {
       method,
       headers: {
         ...(await this.csrf()),
-        'Content-Type': 'application/json',
+        ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
         'Idempotency-Key': crypto.randomUUID(),
       },
-      body: JSON.stringify(body),
+      ...(body === undefined ? {} : { body }),
     });
   }
 

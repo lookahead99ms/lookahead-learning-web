@@ -82,6 +82,9 @@
               <p class="section-note">
                 People who signed in but are not admitted yet. A request that nobody admits is removed after {{ expiryHours() }} hours.
               </p>
+              @if (cleanupLine(); as line) {
+                <p class="cleanup-line" [class.failed]="line.failed" [attr.role]="line.failed ? 'alert' : 'status'">{{ line.text }}</p>
+              }
             } @else {
               <p class="section-note">
                 In DEV only test accounts can buy. Each Subscribe, Upgrade or Change waits here; Approve changes the plan exactly
@@ -90,7 +93,21 @@
             }
           </div>
           @if (view === 'access') {
-            <button class="secondary-action" type="button" (click)="loadWaiting()" [disabled]="busy()">Refresh</button>
+            <div class="heading-actions">
+              <button class="secondary-action" type="button" (click)="loadWaiting()" [disabled]="busy()">Refresh</button>
+              @if (canCleanUp()) {
+                <button
+                  class="secondary-action clean-up-admissions"
+                  type="button"
+                  title="Removes waiting rows older than 48 hours now, the same as the 4-hour job"
+                  (click)="cleanUpAdmissions()"
+                  [disabled]="cleaningUp()"
+                  [attr.aria-busy]="cleaningUp() || null"
+                >
+                  Clean up admissions
+                </button>
+              }
+            </div>
           } @else {
             <button class="secondary-action" type="button" (click)="loadPurchases()" [disabled]="purchasesBusy()">Refresh</button>
           }
