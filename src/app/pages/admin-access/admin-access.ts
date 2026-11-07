@@ -52,6 +52,8 @@ export class AdminAccessPage implements OnInit {
   private readonly transport = inject(ACCOUNT_FETCH);
   private readonly accounts = inject(StudyPlanAccount);
   readonly canManage = computed(() => this.accounts.account()?.permissions?.manageAccess ?? this.accounts.account()?.authorPreview === true);
+  /** The page's own name follows the menu entry: People & Access for the owner, Test Accounts for admins and co-authors (owner, 2026-11-06). */
+  protected readonly pageLabel = computed(() => (this.canManage() ? 'People & Access' : 'Test Accounts'));
   readonly canReadAssignments = computed(() => this.canManage() || this.accounts.account()?.permissions?.feedbackRole === 'co-author');
   /** DLV-969 (owner, 2026-11-04): the owner and admins approve or decline DEV purchase requests; nobody else sees them. */
   readonly canDecide = computed(() => canDecidePurchases(this.accounts.account()));
@@ -91,7 +93,7 @@ export class AdminAccessPage implements OnInit {
   readonly busy = signal(false);
   readonly recipient = signal<Recipient | null>(null);
   readonly roleOptions = [
-    { id: 'co-author', label: 'Co-author', description: 'Read all curriculum, admin documents, previews, Delivery Plan and People and access. Cannot publish, change roles or reset accounts.' },
+    { id: 'co-author', label: 'Co-author', description: 'Read all curriculum, admin documents, previews, Delivery Plan and the test accounts. Cannot publish, change roles or reset accounts.' },
     { id: 'tester', label: 'Tester', description: 'All courses and feedback submission. No admin pages or Delivery Plan.' },
     { id: 'reviewer', label: 'Reviewer', description: 'Admin documents and previews; read the Delivery Plan and mark reviewed stories Done.' },
     { id: 'admin', label: 'Admin', description: 'Triage feedback, read admin documents, create stories and move them to Review.' },

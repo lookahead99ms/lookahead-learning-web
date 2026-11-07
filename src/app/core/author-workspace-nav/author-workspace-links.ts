@@ -18,6 +18,11 @@ export const authorWorkspaceLinks = [
 /** The access entry as admins and co-authors see it: the test-account roster, not people. */
 export const testAccountsLink = { id: 'access', label: 'Test Accounts', href: '/admin/access', icon: '🧪' } as const;
 
+/** What the access page is called for this account: People & Access for whoever manages access, Test Accounts for admins and co-authors. */
+export function accessPageLabel(account: StudyAccount | null): string {
+  return account?.permissions && !account.permissions.manageAccess ? testAccountsLink.label : 'People & Access';
+}
+
 export interface AuthorDocumentationPage {
   id: string;
   label: string;
@@ -522,7 +527,7 @@ export function visibleAdminLinks(account: StudyAccount | null): readonly Author
       const permission = page.id === 'access' ? 'manageAccess' : page.id === 'delivery' ? 'deliveryRead' : 'previewDocuments';
       return account?.permissions?.[permission] ?? account?.authorPreview === true;
     })
-    .map(page => (page.id === 'access' && account?.permissions && !account.permissions.manageAccess ? testAccountsLink : page));
+    .map(page => (page.id === 'access' && accessPageLabel(account) === testAccountsLink.label ? testAccountsLink : page));
 }
 
 export type AuthorWorkspaceLink = (typeof authorWorkspaceLinks)[number] | typeof testAccountsLink;
