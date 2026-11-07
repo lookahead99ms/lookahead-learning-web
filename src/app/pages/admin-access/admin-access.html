@@ -1,7 +1,7 @@
 <app-platform-header />
 <main id="main-content" class="access-page">
   <aside class="workspace-sidebar">
-    <app-author-workspace-nav pageTitle="People and access" pageId="access" [outline]="outline()" />
+    <app-author-workspace-nav [pageTitle]="pageLabel()" pageId="access" [outline]="outline()" />
   </aside>
   <div class="workspace-content">
     <!-- How access works sits in the hero (user, 2026-10-16), so the tabs come straight after it. -->
@@ -9,7 +9,7 @@
       <div class="hero-top">
         <span class="hero-mark" aria-hidden="true">🔐</span>
         <div>
-          <p class="eyebrow">People and access</p>
+          <p class="eyebrow">{{ pageLabel() }}</p>
           <h2 class="intro-heading">Give people the access they need.</h2>
           <p class="lede">
             Only the owner changes roles and course access. A change applies the next time the
@@ -46,7 +46,7 @@
       <button type="button" class="tab-more left" [hidden]="!moreBefore()" aria-label="Scroll to earlier tabs" (click)="scrollTabs(-1)">
         <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8.5 4 4.5 8l4 4M12.5 4l-4 4 4 4" /></svg>
       </button>
-      <div #tabList class="access-tabs" role="tablist" aria-label="People and access" (keydown)="onTabKey($event)" (scroll)="updateTabEdges()">
+      <div #tabList class="access-tabs" role="tablist" [attr.aria-label]="pageLabel()" (keydown)="onTabKey($event)" (scroll)="updateTabEdges()">
         @for (item of tabs(); track item.id) {
           <button
             type="button"

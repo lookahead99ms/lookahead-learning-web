@@ -304,7 +304,7 @@
                       <strong>This is DEV, so no payment is taken.</strong>
                       {{ checkout.name }} is a test account. The owner or an admin completes this purchase: go back to your
                       own account, open
-                      <strong>People and access → Waiting for access → Purchase requests</strong>, and approve or decline it.
+                      <strong>People &amp; Access</strong> (admins: <strong>Test Accounts</strong>) <strong>→ Waiting for access → Purchase requests</strong>, and approve or decline it.
                     </p>
                   </div>
                   @if (testSessions.error()) {
@@ -393,7 +393,7 @@
               [attr.aria-busy]="testSessions.returning()"
               (click)="goToPeopleAndAccess(checkout)"
             >
-              Go to People and access
+              Go to Waiting for access
             </button>
             <button #noticeClose type="button" class="action-link" [disabled]="testSessions.returning()" (click)="closeNotice()">Close</button>
           </div>
