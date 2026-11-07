@@ -189,6 +189,24 @@ export interface PromoteResult {
   item: PlatformReviewItem;
 }
 
+/** DLV-971 (owner, 2026-11-06): one of the Domain's 4-hour jobs, or all three at once. */
+export type SweepJob = 'support-requests' | 'delivery-inbox' | 'admissions' | 'all';
+
+/**
+ * DLV-971 (owner, 2026-11-06): what one job run did (Domain `RuntimeSweeps.Result`): the job, when it ran, and the
+ * requested job's counts, the others null: the support tickets closed; whether the delivery inbox was merged and the
+ * plan version it wrote (else the reason it was left alone); the waiting admissions removed (null on a local Domain,
+ * which has no cleanup).
+ */
+export interface SweepRunResult {
+  job: SweepJob;
+  ranAt: string;
+  supportRequestsClosed: number | null;
+  inboxMerged: boolean | null;
+  inboxResult: string | null;
+  admissionsRemoved: number | null;
+}
+
 export type PlatformReviewFailure =
   'unauthorized' | 'forbidden' | 'not-found' | 'invalid' | 'conflict' | 'unavailable';
 export class PlatformReviewError extends Error {
@@ -214,6 +232,11 @@ export interface PlatformReviewClient {
    * `conflict` error when the item already has a ticket.
    */
   promote(id: string): Promise<PromoteResult>;
+  /**
+   * DLV-971: runs one of the Domain's 4-hour jobs now, or all three (owner only; anyone else gets a `forbidden`
+   * error; `conflict` when the job does not exist on this environment, the admission cleanup on a local Domain).
+   */
+  runSweeps(job: SweepJob): Promise<SweepRunResult>;
   /** A URL the browser can display; revoke it with `releaseAttachmentUrl`. */
   attachmentUrl(item: PlatformReviewItem, attachment: ReviewAttachment): Promise<string>;
   releaseAttachmentUrl(url: string): void;

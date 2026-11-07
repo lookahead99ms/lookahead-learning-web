@@ -4,7 +4,6 @@ import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { AdminFeedbackItemPage } from './admin-feedback-item';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
-import { AuthorAdminMenu } from '../../core/author-workspace-nav/author-admin-menu';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import { ReviewEditIntent } from '../admin-reviews/review-edit-intent';
 import {
@@ -17,8 +16,6 @@ import {
 
 @Component({ selector: 'app-platform-header', template: '' })
 class HeaderStub {}
-@Component({ selector: 'app-author-admin-menu', template: '<nav aria-label="Admin navigation"></nav>' })
-class MenuStub {}
 @Component({ template: '<p>backlog</p>' })
 class BacklogStub {}
 
@@ -83,6 +80,7 @@ describe('The item page /admin/feedback/:id (DLV-971)', () => {
       remove: vi.fn(async () => {}),
       triage: async (_id, status, ownerNote) => ({ ...ticket, status, ownerNote }),
       promote: async () => ({ ticketId: 'DLV-0042', item: { ...ticket, ticketId: 'DLV-0042' } }),
+      runSweeps: async (job) => ({ job, ranAt: '2026-11-06T18:30:00Z', supportRequestsClosed: null, inboxMerged: null, inboxResult: null, admissionsRemoved: null }),
       attachmentUrl: vi.fn(async () => 'blob:test'),
       releaseAttachmentUrl: vi.fn((_url: string) => {}),
     };
@@ -97,8 +95,8 @@ describe('The item page /admin/feedback/:id (DLV-971)', () => {
       ],
     });
     TestBed.overrideComponent(AdminFeedbackItemPage, {
-      remove: { imports: [PlatformHeader, AuthorAdminMenu] },
-      add: { imports: [HeaderStub, MenuStub] },
+      remove: { imports: [PlatformHeader] },
+      add: { imports: [HeaderStub] },
     });
   });
 
@@ -122,6 +120,16 @@ describe('The item page /admin/feedback/:id (DLV-971)', () => {
     const root = harness.routeNativeElement!;
     expect(text(root.querySelector('.crumbs'))).toBe('Support tickets and feedback › SUP-000014');
     expect(root.querySelector('.crumbs a')?.getAttribute('href')).toBe('/admin/feedback');
+    // The Admin sub-header instead of the side bars; one content column (owner, 2026-11-06).
+    const subheader = root.querySelector('app-admin-subheader')!;
+    expect(subheader.querySelector('nav')?.getAttribute('aria-label')).toBe('Admin navigation');
+    expect(subheader.querySelector('[aria-current="page"]')?.getAttribute('href')).toBe('/admin/feedback');
+    expect(subheader.compareDocumentPosition(root.querySelector('main')!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(root.querySelector('app-author-workspace-nav')).toBeNull();
+    expect(root.querySelector('app-author-admin-menu')).toBeNull();
+    expect(root.querySelector('.workspace-sidebar')).toBeNull();
+    expect(root.querySelectorAll('main > *')).toHaveLength(1);
+    expect(root.querySelector('main > .workspace-content > .crumbs')).not.toBeNull();
     expect(text(root.querySelector('.item-bar .kind-badge'))).toBe('Ticket');
     expect(root.querySelector('.item-bar .kind-badge')?.classList.contains('ticket')).toBe(true);
     expect(text(root.querySelector('.item-bar .item-key'))).toBe('SUP-000014');

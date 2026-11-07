@@ -4,7 +4,6 @@ import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { AdminFeedbackPage, DIALOG_OPEN_CLASS } from './admin-feedback';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
-import { AuthorAdminMenu } from '../../core/author-workspace-nav/author-admin-menu';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import {
   PLATFORM_REVIEW_CLIENT,
@@ -13,13 +12,13 @@ import {
   PlatformReviewItem,
   PlatformReviewSummary,
   PlatformReviewViewer,
+  SweepJob,
+  SweepRunResult,
 } from '../admin-reviews/platform-review.model';
 import { routes } from '../../app.routes';
 
 @Component({ selector: 'app-platform-header', template: '' })
 class HeaderStub {}
-@Component({ selector: 'app-author-admin-menu', template: '<nav aria-label="Admin navigation"></nav>' })
-class MenuStub {}
 
 const today = new Date();
 const at = (daysAgo: number, hour = 9, minute = 12) => {
@@ -73,14 +72,27 @@ const summaryOf = (full: PlatformReviewItem): PlatformReviewSummary => ({
   updatedAt: full.updatedAt,
 });
 
+/** What the Domain answers for each job (DLV-971): only that job's counts are filled. */
+const ran = (job: SweepJob): SweepRunResult => ({
+  job,
+  ranAt: '2026-11-06T18:30:00Z',
+  supportRequestsClosed: job === 'support-requests' || job === 'all' ? 2 : null,
+  inboxMerged: job === 'delivery-inbox' || job === 'all' ? true : null,
+  inboxResult: job === 'delivery-inbox' || job === 'all' ? '12' : null,
+  admissionsRemoved: job === 'admissions' || job === 'all' ? 1 : null,
+});
+const ranTime = new Date('2026-11-06T18:30:00Z').toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+
 describe('Support tickets and feedback backlog (DLV-971)', () => {
   let viewer: PlatformReviewViewer;
   let stored: PlatformReviewItem[];
   let failing: boolean;
-  let client: PlatformReviewClient & { promote: ReturnType<typeof vi.fn>; triage: ReturnType<typeof vi.fn> };
+  let client: PlatformReviewClient & { promote: ReturnType<typeof vi.fn>; triage: ReturnType<typeof vi.fn>; runSweeps: ReturnType<typeof vi.fn> };
+  let listCalls: number;
 
   beforeEach(() => {
     failing = false;
+    listCalls = 0;
     viewer = { role: 'owner', reviewerId: 'owner', displayName: 'Owner' };
     stored = [
       item({ id: 'REV-000001', updatedAt: at(2), createdAt: at(2) }),
@@ -92,6 +104,7 @@ describe('Support tickets and feedback backlog (DLV-971)', () => {
     client = {
       viewer: async () => viewer,
       list: async () => {
+        listCalls++;
         if (failing) throw new PlatformReviewError('unavailable');
         const mine = viewer.role === 'reviewer' ? stored.filter((entry) => entry.reviewerId === viewer.reviewerId) : stored;
         return { items: mine.map(summaryOf), nextBefore: null };
@@ -113,6 +126,7 @@ describe('Support tickets and feedback backlog (DLV-971)', () => {
         stored = stored.map((entry) => (entry.id === id ? promoted : entry));
         return { ticketId: 'DLV-0042', item: promoted };
       }),
+      runSweeps: vi.fn(async (job: SweepJob) => ran(job)),
       attachmentUrl: async () => 'blob:test',
       releaseAttachmentUrl: () => {},
     };
@@ -127,8 +141,8 @@ describe('Support tickets and feedback backlog (DLV-971)', () => {
       ],
     });
     TestBed.overrideComponent(AdminFeedbackPage, {
-      remove: { imports: [PlatformHeader, AuthorAdminMenu] },
-      add: { imports: [HeaderStub, MenuStub] },
+      remove: { imports: [PlatformHeader] },
+      add: { imports: [HeaderStub] },
     });
   });
 
@@ -156,26 +170,59 @@ describe('Support tickets and feedback backlog (DLV-971)', () => {
     const harness = await open();
     const root = harness.routeNativeElement!;
     expect(text(root.querySelector('h1'))).toBe('Support tickets and feedback');
-    expect([...root.querySelectorAll('thead th')].map(text)).toEqual(['Key', 'Summary', 'From', 'Type', 'Page', 'Status', 'Ticket', 'Updated', 'Open']);
-    expect(root.querySelectorAll('colgroup col')).toHaveLength(9);
+    expect([...root.querySelectorAll('thead th')].map(text)).toEqual(['ID', 'Summary', 'From', 'Type', 'Status', 'Ticket', 'Updated', 'Open']);
+    expect(root.querySelectorAll('colgroup col')).toHaveLength(8);
     expect(root.querySelector('thead th.right')?.textContent?.trim()).toBe('Updated');
+    // Sticky edges (owner, 2026-11-06): ID on the left; Ticket, Updated and the ↗ on the right, each with its own offset class.
+    expect([...root.querySelectorAll('thead th.sticky-left')].map(text)).toEqual(['ID']);
+    expect([...root.querySelectorAll('thead th.sticky-right')].map(text)).toEqual(['Ticket', 'Updated', 'Open']);
+    expect(root.querySelector('thead th.sticky-ticket')?.classList.contains('sticky-right')).toBe(true);
+    expect(root.querySelector('thead th.sticky-updated')?.classList.contains('right')).toBe(true);
+    expect(root.querySelector('thead th.sticky-act .visually-hidden')).not.toBeNull();
+    expect(root.querySelector('.table-scroll')?.getAttribute('role')).toBe('region');
     expect(keys(root)).toEqual(['SUP-000014', 'REV-000002', 'SUP-000011', 'REV-000001', 'REV-000003']);
     const first = root.querySelector('tbody tr')!;
     expect(first.getAttribute('tabindex')).toBe('0');
-    expect(cells(first)).toEqual(['Ticket SUP-000014', 'Cannot open lesson 4 of Core Java', 'learner07', 'Report a problem', 'Lesson Reader', 'New', '—', 'Today 09:12', '↗']);
+    // The page sits under the summary (one Summary column, no Page column; owner, 2026-11-06: the backlog reads tidier).
+    expect(cells(first)).toEqual(['Ticket SUP-000014', 'Cannot open lesson 4 of Core Java Lesson Reader', 'learner07', 'Report a problem', 'New', '—', 'Today 09:12', '↗']);
     expect(first.querySelector('.kind-badge')?.classList.contains('ticket')).toBe(true);
+    expect(first.querySelector('td.key')?.classList.contains('sticky-left')).toBe(true);
+    expect([...first.querySelectorAll('td.sticky-right')].map((cell) => cell.className)).toEqual([
+      'ticket sticky-right sticky-ticket',
+      'updated sticky-right sticky-updated',
+      'act sticky-right sticky-act',
+    ]);
+    expect(first.querySelectorAll('td.sticky-left, td.sticky-right')).toHaveLength(4);
     expect(first.querySelector('.status-pill')?.getAttribute('data-tone')).toBe('new');
     expect(first.querySelector('a.new-tab')?.getAttribute('href')).toBe('/admin/feedback/SUP-000014');
     expect(first.querySelector('a.new-tab')?.getAttribute('target')).toBe('_blank');
     const second = root.querySelectorAll('tbody tr')[1];
-    expect(cells(second)).toEqual(['Feedback REV-000002', 'Welcome page: the Essence text is hard to read', 'Admin 2', 'Change request', 'Welcome', 'Planned', 'DLV-1042', 'Today 08:02', '↗']);
+    expect(cells(second)).toEqual(['Feedback REV-000002', 'Welcome page: the Essence text is hard to read Welcome', 'Admin 2', 'Change request', 'Planned', 'DLV-1042', 'Today 08:02', '↗']);
     expect(second.querySelector('.status-pill')?.getAttribute('data-tone')).toBe('planned');
     const third = root.querySelectorAll('tbody tr')[2];
-    expect(cells(third).slice(5, 8)).toEqual(['Closed', '—', 'Yesterday']);
+    expect(cells(third).slice(4, 7)).toEqual(['Closed', '—', 'Yesterday']);
     expect(third.querySelector('.status-pill')?.getAttribute('data-tone')).toBe('muted');
     expect(text(root.querySelector('.result-count'))).toBe('5 of 5 items · sorted by last update, newest first');
     expect(root.querySelector('#review-overview')).toBeNull();
     expect(root.textContent).not.toMatch(/importance/i);
+  });
+
+  it('has the Admin sub-header under the platform header and one content column, no outline and no Admin menu', async () => {
+    const harness = await open();
+    const root = harness.routeNativeElement!;
+    const subheader = root.querySelector('app-admin-subheader')!;
+    expect(subheader).not.toBeNull();
+    // Directly under the header, before the page's main content.
+    expect(subheader.compareDocumentPosition(root.querySelector('main')!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(subheader.querySelector('nav')?.getAttribute('aria-label')).toBe('Admin navigation');
+    expect(subheader.querySelector('[aria-current="page"]')?.getAttribute('href')).toBe('/admin/feedback');
+    expect(root.querySelector('app-author-workspace-nav')).toBeNull();
+    expect(root.querySelector('app-author-admin-menu')).toBeNull();
+    expect(root.querySelector('.workspace-sidebar')).toBeNull();
+    expect(root.querySelector('main > .workspace-content')).not.toBeNull();
+    expect(root.querySelectorAll('main > *')).toHaveLength(1);
+    expect(root.querySelector('.title-row .eyebrow')?.textContent).toBe('Admin');
+    expect(text(root.querySelector('.title-row h1'))).toBe('Support tickets and feedback');
   });
 
   it('filters by the pills, the search and the Kind, From, Status and Type filters', async () => {
@@ -342,13 +389,13 @@ describe('Support tickets and feedback backlog (DLV-971)', () => {
     expect(text(box.querySelector('.reply .message'))).toBe('Saved.');
     // The row moved to the top (newest update) and shows the new status.
     expect(keys(root)[0]).toBe('REV-000001');
-    expect(cells(root.querySelector('tbody tr')!)[5]).toBe('Accepted');
+    expect(cells(root.querySelector('tbody tr')!)[4]).toBe('Accepted');
     (box.querySelector('.side-box:last-child button') as HTMLButtonElement).click();
     await settle(harness);
     expect(client.promote).toHaveBeenCalledWith('REV-000001');
     expect(box.querySelector('.ticket-link')?.getAttribute('href')).toBe('/delivery-plan#DLV-0042');
     expect(text(box.querySelector('.ticket-link'))).toBe('🗺️ DLV-0042 · Backlog');
-    expect(cells(root.querySelector('tbody tr')!)[6]).toBe('DLV-0042');
+    expect(cells(root.querySelector('tbody tr')!)[5]).toBe('DLV-0042');
   });
 
   it('gives an admin the controls on a learner ticket only, and the owner’s note read-only on feedback', async () => {
@@ -414,7 +461,7 @@ describe('Support tickets and feedback backlog (DLV-971)', () => {
         { provide: PLATFORM_REVIEW_CLIENT, useValue: client },
         { provide: StudyPlanAccount, useValue: { account: signal({ accountId: 'a' }), sessionExpired: () => false } },
       ],
-    }).overrideComponent(AdminFeedbackPage, { remove: { imports: [PlatformHeader, AuthorAdminMenu] }, add: { imports: [HeaderStub, MenuStub] } });
+    }).overrideComponent(AdminFeedbackPage, { remove: { imports: [PlatformHeader] }, add: { imports: [HeaderStub] } });
     harness = await open();
     let root = harness.routeNativeElement!;
     expect(text(root.querySelector('.state-panel h2'))).toBe('Tickets and feedback are unavailable');
@@ -429,11 +476,131 @@ describe('Support tickets and feedback backlog (DLV-971)', () => {
         { provide: PLATFORM_REVIEW_CLIENT, useValue: client },
         { provide: StudyPlanAccount, useValue: { account: signal({ accountId: 'a' }), sessionExpired: () => false } },
       ],
-    }).overrideComponent(AdminFeedbackPage, { remove: { imports: [PlatformHeader, AuthorAdminMenu] }, add: { imports: [HeaderStub, MenuStub] } });
+    }).overrideComponent(AdminFeedbackPage, { remove: { imports: [PlatformHeader] }, add: { imports: [HeaderStub] } });
     harness = await open('/admin/feedback#REV-000001');
     root = harness.routeNativeElement!;
     expect(dialog(root).hasAttribute('open')).toBe(true);
     expect(text(dialog(root).querySelector('.item-key'))).toBe('REV-000001');
+  });
+
+  const jobButtons = (root: HTMLElement) => [...root.querySelectorAll<HTMLButtonElement>('.title-row .jobs button.run-job')];
+  const jobButton = (root: HTMLElement, job: SweepJob) => root.querySelector<HTMLButtonElement>(`button.run-job[data-job="${job}"]`)!;
+
+  it('gives the owner the Jobs strip at the right of the title: Close stale tickets, Sync plan inbox, Clean up admissions, Run all', async () => {
+    const harness = await open();
+    const root = harness.routeNativeElement!;
+    expect(root.querySelector('.title-row h1')).not.toBeNull();
+    expect(root.querySelector('.title-row .jobs')?.getAttribute('aria-label')).toBe('Jobs');
+    expect(jobButtons(root).map(text)).toEqual(['Close stale tickets', 'Sync plan inbox', 'Clean up admissions', 'Run all']);
+    expect(jobButtons(root).map((button) => button.getAttribute('data-job'))).toEqual(['support-requests', 'delivery-inbox', 'admissions', 'all']);
+    expect(jobButtons(root).every((button) => !button.disabled)).toBe(true);
+    expect(root.querySelector('.jobs-line')).toBeNull();
+  });
+
+  it('shows an admin no Jobs strip', async () => {
+    viewer = { role: 'admin', reviewerId: 'a2', displayName: 'Admin 2' };
+    const harness = await open();
+    expect(harness.routeNativeElement!.querySelector('.jobs')).toBeNull();
+    expect(harness.routeNativeElement!.querySelectorAll('.view-tabs button')).toHaveLength(4);
+  });
+
+  it('shows a reviewer no Jobs strip', async () => {
+    viewer = { role: 'reviewer', reviewerId: 'r1', displayName: 'Priya Raman' };
+    const harness = await open();
+    expect(harness.routeNativeElement!.querySelector('.jobs')).toBeNull();
+  });
+
+  it('Close stale tickets: disables itself while it runs, says how many tickets closed and reloads the list', async () => {
+    let finish!: (result: SweepRunResult) => void;
+    client.runSweeps.mockImplementationOnce(() => new Promise<SweepRunResult>((resolve) => (finish = resolve)));
+    const harness = await open();
+    const root = harness.routeNativeElement!;
+    const loadsBefore = listCalls;
+    jobButton(root, 'support-requests').click();
+    await settle(harness);
+    expect(jobButton(root, 'support-requests').disabled).toBe(true);
+    expect(jobButton(root, 'support-requests').getAttribute('aria-busy')).toBe('true');
+    expect(jobButton(root, 'all').disabled).toBe(false);
+    expect(client.runSweeps).toHaveBeenCalledWith('support-requests');
+    finish(ran('support-requests'));
+    await settle(harness);
+    const line = root.querySelector('.jobs-line')!;
+    expect(text(line)).toBe(`Close stale tickets ran at ${ranTime}: 2 tickets closed`);
+    expect(line.getAttribute('role')).toBe('status');
+    expect(line.classList.contains('failed')).toBe(false);
+    expect(listCalls).toBe(loadsBefore + 1);
+    expect(jobButton(root, 'support-requests').disabled).toBe(false);
+    expect(keys(root)).toHaveLength(5);
+  });
+
+  it('Sync plan inbox: says the plan version written, or why the inbox was left alone, without reloading the list', async () => {
+    const harness = await open();
+    const root = harness.routeNativeElement!;
+    const loadsBefore = listCalls;
+    jobButton(root, 'delivery-inbox').click();
+    await settle(harness);
+    expect(client.runSweeps).toHaveBeenCalledWith('delivery-inbox');
+    expect(text(root.querySelector('.jobs-line'))).toBe(`Sync plan inbox ran at ${ranTime}: plan version 12`);
+    expect(listCalls).toBe(loadsBefore);
+    client.runSweeps.mockImplementationOnce(async () => ({ ...ran('delivery-inbox'), inboxMerged: false, inboxResult: 'no inbox file' }));
+    jobButton(root, 'delivery-inbox').click();
+    await settle(harness);
+    expect(text(root.querySelector('.jobs-line'))).toBe(`Sync plan inbox ran at ${ranTime}: inbox: no inbox file`);
+    expect(jobButton(root, 'delivery-inbox').disabled).toBe(false);
+  });
+
+  it('Clean up admissions: says how many were removed, or that the job is not available on this environment', async () => {
+    const harness = await open();
+    const root = harness.routeNativeElement!;
+    const loadsBefore = listCalls;
+    jobButton(root, 'admissions').click();
+    await settle(harness);
+    expect(client.runSweeps).toHaveBeenCalledWith('admissions');
+    expect(text(root.querySelector('.jobs-line'))).toBe(`Clean up admissions ran at ${ranTime}: 1 removed`);
+    // A local Domain answers 409: not an error, the environment has no such job.
+    client.runSweeps.mockImplementationOnce(async () => {
+      throw new PlatformReviewError('conflict', 'The admission cleanup runs only in cloud mode; this Domain has none.');
+    });
+    jobButton(root, 'admissions').click();
+    await settle(harness);
+    const line = root.querySelector('.jobs-line')!;
+    expect(text(line)).toBe('Clean up admissions: not available on this environment.');
+    expect(line.getAttribute('role')).toBe('status');
+    expect(line.classList.contains('failed')).toBe(false);
+    expect(listCalls).toBe(loadsBefore);
+  });
+
+  it('Run all: sums the three jobs and reloads the list', async () => {
+    const harness = await open();
+    const root = harness.routeNativeElement!;
+    const loadsBefore = listCalls;
+    jobButton(root, 'all').click();
+    await settle(harness);
+    expect(client.runSweeps).toHaveBeenCalledWith('all');
+    expect(text(root.querySelector('.jobs-line'))).toBe(`All jobs ran at ${ranTime}: 2 tickets closed, inbox merged (plan version 12), 1 admission removed`);
+    expect(listCalls).toBe(loadsBefore + 1);
+    expect(jobButton(root, 'all').disabled).toBe(false);
+  });
+
+  it('says the job could not be run when the Domain fails, leaves the list as it was, and the next click runs again', async () => {
+    client.runSweeps.mockImplementationOnce(async () => {
+      throw new PlatformReviewError('unavailable');
+    });
+    const harness = await open();
+    const root = harness.routeNativeElement!;
+    const loadsBefore = listCalls;
+    jobButton(root, 'all').click();
+    await settle(harness);
+    const line = root.querySelector('.jobs-line')!;
+    expect(text(line)).toBe('Run all could not be run. Nothing changed; try again.');
+    expect(line.getAttribute('role')).toBe('alert');
+    expect(line.classList.contains('failed')).toBe(true);
+    expect(listCalls).toBe(loadsBefore);
+    expect(jobButton(root, 'all').disabled).toBe(false);
+    jobButton(root, 'all').click();
+    await settle(harness);
+    expect(text(root.querySelector('.jobs-line'))).toMatch(/^All jobs ran at /);
+    expect(client.runSweeps).toHaveBeenCalledTimes(2);
   });
 
   it('is the target of the former /admin/reviews address and has the item route', () => {

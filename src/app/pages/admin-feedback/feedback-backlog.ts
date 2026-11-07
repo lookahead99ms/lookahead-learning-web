@@ -2,6 +2,8 @@ import {
   PlatformReviewItem,
   PlatformReviewSummary,
   ReviewStatus,
+  SweepJob,
+  SweepRunResult,
   isRequest,
   labelOf,
   requestTypes,
@@ -108,4 +110,42 @@ export function matchesSearch(item: BacklogItem, query: string): boolean {
     .join(' ')
     .toLowerCase();
   return words.every((word) => haystack.includes(word));
+}
+
+/** DLV-971 (owner, 2026-11-06): the owner's Jobs buttons on Support tickets and feedback, in order. */
+export const SWEEP_JOBS: readonly { job: SweepJob; label: string }[] = [
+  { job: 'support-requests', label: 'Close stale tickets' },
+  { job: 'delivery-inbox', label: 'Sync plan inbox' },
+  { job: 'admissions', label: 'Clean up admissions' },
+  { job: 'all', label: 'Run all' },
+];
+
+export function jobLabel(job: SweepJob): string {
+  return SWEEP_JOBS.find((entry) => entry.job === job)?.label ?? job;
+}
+
+const count = (n: number, noun: string) => `${n} ${noun}${n === 1 ? '' : 's'}`;
+
+/**
+ * The line under the title after a job ran: "Close stale tickets ran at 19:52: 0 tickets closed", "Sync plan inbox ran
+ * at 19:53: plan version 3" (or "inbox: no inbox file"), "Clean up admissions ran at 19:54: 0 removed", and for all
+ * three "All jobs ran at 19:55: 2 tickets closed, inbox merged (plan version 12), 1 admission removed" (a local Domain
+ * has no admission cleanup: that part is left out).
+ */
+export function jobsRanLine(result: SweepRunResult): string {
+  const time = new Date(result.ranAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  const inbox = result.inboxMerged ? `plan version ${result.inboxResult}` : `inbox: ${result.inboxResult}`;
+  switch (result.job) {
+    case 'support-requests':
+      return `Close stale tickets ran at ${time}: ${count(result.supportRequestsClosed ?? 0, 'ticket')} closed`;
+    case 'delivery-inbox':
+      return `Sync plan inbox ran at ${time}: ${inbox}`;
+    case 'admissions':
+      return `Clean up admissions ran at ${time}: ${result.admissionsRemoved ?? 0} removed`;
+    default: {
+      const parts = [`${count(result.supportRequestsClosed ?? 0, 'ticket')} closed`, result.inboxMerged ? `inbox merged (${inbox})` : inbox];
+      if (result.admissionsRemoved !== null) parts.push(`${count(result.admissionsRemoved, 'admission')} removed`);
+      return `All jobs ran at ${time}: ${parts.join(', ')}`;
+    }
+  }
 }

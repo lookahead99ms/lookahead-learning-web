@@ -153,6 +153,24 @@ describe('ConnectedPlatformReviewClient', () => {
     );
   });
 
+  it('runs one 4-hour job now with the CSRF token and relays the Domain refusals (DLV-971)', async () => {
+    const ran = { job: 'delivery-inbox', ranAt: '2026-11-06T18:30:00Z', supportRequestsClosed: null, inboxMerged: true, inboxResult: '12', admissionsRemoved: null };
+    responses.push(json(200, { data: { token: 't', headerName: 'X-CSRF-TOKEN' } }));
+    responses.push(json(200, { data: ran }));
+    expect(await client.runSweeps('delivery-inbox')).toEqual(ran);
+    expect(calls[1].url).toBe('/bff/api/v1/sweeps/run');
+    expect(calls[1].init.method).toBe('POST');
+    expect(calls[1].init.headers).toEqual({ 'X-CSRF-TOKEN': 't', 'Content-Type': 'application/json' });
+    expect(calls[1].init.body).toBe('{"job":"delivery-inbox"}');
+    // An admin: the Domain's 403 reaches the page as forbidden; a local Domain's 409 for the admission cleanup as conflict.
+    responses.push(json(200, { data: { token: 't', headerName: 'X-CSRF-TOKEN' } }));
+    responses.push(json(403, { code: 'PLATFORM_REVIEW_ACCESS_DENIED' }));
+    expect((await client.runSweeps('all').catch((error) => error)).kind).toBe('forbidden');
+    responses.push(json(200, { data: { token: 't', headerName: 'X-CSRF-TOKEN' } }));
+    responses.push(json(409, { code: 'SWEEP_NOT_AVAILABLE', message: 'The admission cleanup runs only in cloud mode; this Domain has none.' }));
+    expect((await client.runSweeps('admissions').catch((error) => error)).kind).toBe('conflict');
+  });
+
   it('accepts the numbered record ids of the runtime stores and still rejects anything else (DLV-971)', async () => {
     for (const id of ['REV-000001', 'SUP-000001']) {
       responses.push(json(200, { data: { id } }));

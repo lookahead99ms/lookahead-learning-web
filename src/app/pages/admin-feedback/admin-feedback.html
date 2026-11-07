@@ -1,8 +1,6 @@
 <app-platform-header />
+<app-admin-subheader pageId="feedback" />
 <main id="main-content" class="feedback-page">
-  <aside class="workspace-sidebar">
-    <app-author-workspace-nav pageTitle="Support tickets and feedback" pageId="feedback" [outline]="outline" />
-  </aside>
   <div class="workspace-content">
     @if (!signedIn() || state() === 'signed-out') {
       <section class="state-panel" role="alert">
@@ -17,9 +15,31 @@
     } @else {
       <section class="panel" id="feedback-backlog" aria-labelledby="feedback-heading">
         <header class="list-head">
-          <div>
-            <p class="eyebrow">Admin</p>
-            <h1 id="feedback-heading">Support tickets and feedback</h1>
+          <div class="title-row">
+            <div>
+              <p class="eyebrow">Admin</p>
+              <h1 id="feedback-heading">Support tickets and feedback</h1>
+              @if (jobsLine(); as line) {
+                <p class="jobs-line" [class.failed]="line.failed" [attr.role]="line.failed ? 'alert' : 'status'">{{ line.text }}</p>
+              }
+            </div>
+            @if (isOwner()) {
+              <div class="jobs" role="group" aria-label="Jobs">
+                <span class="jobs-label">Jobs</span>
+                @for (entry of jobs; track entry.job) {
+                  <button
+                    type="button"
+                    class="secondary small run-job"
+                    [attr.data-job]="entry.job"
+                    (click)="runJob(entry.job)"
+                    [disabled]="runningJob() === entry.job"
+                    [attr.aria-busy]="runningJob() === entry.job"
+                  >
+                    {{ entry.label }}
+                  </button>
+                }
+              </div>
+            }
           </div>
           @if (seesAll()) {
             <div class="view-tabs" role="group" aria-label="View">
@@ -102,7 +122,6 @@
                   <col class="c-sum" />
                   <col class="c-from" />
                   <col class="c-type" />
-                  <col class="c-page" />
                   <col class="c-status" />
                   <col class="c-ticket" />
                   <col class="c-updated" />
@@ -110,15 +129,14 @@
                 </colgroup>
                 <thead>
                   <tr>
-                    <th scope="col">Key</th>
+                    <th scope="col" class="sticky-left">ID</th>
                     <th scope="col">Summary</th>
                     <th scope="col">From</th>
                     <th scope="col">Type</th>
-                    <th scope="col">Page</th>
                     <th scope="col">Status</th>
-                    <th scope="col">Ticket</th>
-                    <th scope="col" class="right">Updated</th>
-                    <th scope="col"><span class="visually-hidden">Open</span></th>
+                    <th scope="col" class="sticky-right sticky-ticket">Ticket</th>
+                    <th scope="col" class="right sticky-right sticky-updated">Updated</th>
+                    <th scope="col" class="sticky-right sticky-act"><span class="visually-hidden">Open</span></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -132,23 +150,22 @@
                       (click)="onRowClick($event, item.id, row)"
                       (keydown)="onRowKey($event, item.id, row)"
                     >
-                      <td class="key">
+                      <td class="key sticky-left">
                         <span class="kind-badge" [class.ticket]="isRequest(item)">{{ kindLabel(item) }}</span>&ngsp;<span class="item-id">{{ item.id }}</span>
                       </td>
-                      <td class="summary">{{ item.title }}</td>
+                      <td class="summary"><span class="summary-text">{{ item.title }}</span>&ngsp;<span class="summary-meta">{{ item.page }}</span></td>
                       <td>{{ item.reviewerName }}</td>
                       <td>{{ typeLabel(item) }}</td>
-                      <td>{{ item.page }}</td>
                       <td><span class="status-pill" [attr.data-tone]="statusTone(item.status)">{{ statusLabel(item) }}</span></td>
-                      <td class="ticket">
+                      <td class="ticket sticky-right sticky-ticket">
                         @if (item.ticketId) {
                           {{ item.ticketId }}
                         } @else {
                           <span class="dim">—</span>
                         }
                       </td>
-                      <td class="updated">{{ updated(item.updatedAt) }}</td>
-                      <td class="act">
+                      <td class="updated sticky-right sticky-updated">{{ updated(item.updatedAt) }}</td>
+                      <td class="act sticky-right sticky-act">
                         <a class="new-tab" [routerLink]="['/admin/feedback', item.id]" target="_blank" rel="noopener" [attr.aria-label]="'Open ' + item.id + ' in a new tab'" title="Open in a new tab">↗</a>
                       </td>
                     </tr>
@@ -170,7 +187,6 @@
       </section>
     }
   </div>
-  <app-author-admin-menu pageId="feedback" />
 </main>
 
 <!-- The item on top of the list; the page behind it does not scroll (html.feedback-dialog-open). -->

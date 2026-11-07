@@ -1,0 +1,15 @@
+@if (links().length) {
+  <nav class="admin-subheader" aria-label="Admin navigation">
+    <span class="eyebrow">Admin</span>
+    <ul class="pills">
+      @for (page of links(); track page.id) {
+        <li>
+          <a [href]="page.href" [attr.aria-current]="page.id === pageId() ? 'page' : null"
+            ><span class="item-icon" aria-hidden="true">{{ page.icon }}</span
+            ><span>{{ page.label }}</span></a
+          >
+        </li>
+      }
+    </ul>
+  </nav>
+}

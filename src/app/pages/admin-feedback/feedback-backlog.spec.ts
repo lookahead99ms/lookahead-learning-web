@@ -1,5 +1,5 @@
-import { PlatformReviewSummary } from '../admin-reviews/platform-review.model';
-import { kindLabel, matchesSearch, momentLabel, sortNewest, statusLabel, statusTone, typeLabel, updatedLabel } from './feedback-backlog';
+import { PlatformReviewSummary, SweepRunResult } from '../admin-reviews/platform-review.model';
+import { SWEEP_JOBS, jobLabel, jobsRanLine, kindLabel, matchesSearch, momentLabel, sortNewest, statusLabel, statusTone, typeLabel, updatedLabel } from './feedback-backlog';
 
 const summary = (over: Partial<PlatformReviewSummary>): PlatformReviewSummary => ({
   id: 'REV-000001',
@@ -75,5 +75,30 @@ describe('Support tickets and feedback backlog helpers (DLV-971)', () => {
     expect(matchesSearch(row, 'priya question')).toBe(true);
     expect(matchesSearch(row, 'support')).toBe(true);
     expect(matchesSearch(row, 'lesson')).toBe(false);
+  });
+});
+
+describe('jobsRanLine (DLV-971)', () => {
+  const ranAt = '2026-11-06T18:30:00Z';
+  const time = new Date(ranAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  const ran = (over: Partial<SweepRunResult>): SweepRunResult => ({ job: 'all', ranAt, supportRequestsClosed: null, inboxMerged: null, inboxResult: null, admissionsRemoved: null, ...over });
+
+  it('names each job, the time and its count, singular or plural', () => {
+    expect(jobsRanLine(ran({ job: 'support-requests', supportRequestsClosed: 0 }))).toBe(`Close stale tickets ran at ${time}: 0 tickets closed`);
+    expect(jobsRanLine(ran({ job: 'support-requests', supportRequestsClosed: 1 }))).toBe(`Close stale tickets ran at ${time}: 1 ticket closed`);
+    expect(jobsRanLine(ran({ job: 'delivery-inbox', inboxMerged: true, inboxResult: '3' }))).toBe(`Sync plan inbox ran at ${time}: plan version 3`);
+    expect(jobsRanLine(ran({ job: 'delivery-inbox', inboxMerged: false, inboxResult: 'no inbox file' }))).toBe(`Sync plan inbox ran at ${time}: inbox: no inbox file`);
+    expect(jobsRanLine(ran({ job: 'admissions', admissionsRemoved: 0 }))).toBe(`Clean up admissions ran at ${time}: 0 removed`);
+    expect(SWEEP_JOBS.map((entry) => entry.label)).toEqual(['Close stale tickets', 'Sync plan inbox', 'Clean up admissions', 'Run all']);
+    expect(jobLabel('admissions')).toBe('Clean up admissions');
+  });
+
+  it('sums all three for Run all and leaves admissions out on a local Domain', () => {
+    expect(jobsRanLine(ran({ supportRequestsClosed: 2, inboxMerged: true, inboxResult: '12', admissionsRemoved: 1 }))).toBe(
+      `All jobs ran at ${time}: 2 tickets closed, inbox merged (plan version 12), 1 admission removed`,
+    );
+    expect(jobsRanLine(ran({ supportRequestsClosed: 0, inboxMerged: false, inboxResult: 'did not complete (IllegalStateException)', admissionsRemoved: null }))).toBe(
+      `All jobs ran at ${time}: 0 tickets closed, inbox: did not complete (IllegalStateException)`,
+    );
   });
 });

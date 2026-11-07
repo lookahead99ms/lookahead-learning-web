@@ -1,8 +1,6 @@
 <app-platform-header />
+<app-admin-subheader pageId="feedback" />
 <main id="main-content" class="feedback-page">
-  <aside class="workspace-sidebar">
-    <app-author-workspace-nav pageTitle="Support tickets and feedback" pageId="feedback" [outline]="outline" />
-  </aside>
   <div class="workspace-content">
     <nav class="crumbs" aria-label="Breadcrumb">
       <a routerLink="/admin/feedback">Support tickets and feedback</a> › <span>{{ itemId() }}</span>
@@ -15,5 +13,4 @@
       <app-feedback-item [itemId]="itemId()" />
     </section>
   </div>
-  <app-author-admin-menu pageId="feedback" />
 </main>

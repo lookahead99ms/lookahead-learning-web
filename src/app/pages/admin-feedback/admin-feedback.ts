@@ -3,8 +3,7 @@ import { Component, ElementRef, OnDestroy, OnInit, computed, inject, signal, vie
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
-import { AuthorWorkspaceNav } from '../../core/author-workspace-nav/author-workspace-nav';
-import { AuthorAdminMenu } from '../../core/author-workspace-nav/author-admin-menu';
+import { AdminSubheader } from '../../core/author-workspace-nav/admin-subheader';
 import { ScrollLock } from '../../core/scroll-lock/scroll-lock';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import {
@@ -13,13 +12,14 @@ import {
   PlatformReviewItem,
   PlatformReviewSummary,
   PlatformReviewViewer,
+  SweepJob,
   isRequest,
   requestTypes,
   reviewCategories,
   reviewStatuses,
 } from '../admin-reviews/platform-review.model';
 import { FeedbackItemView } from './feedback-item';
-import { kindLabel, matchesSearch, sortNewest, statusLabel, statusTone, typeLabel, updatedLabel } from './feedback-backlog';
+import { SWEEP_JOBS, jobLabel, jobsRanLine, kindLabel, matchesSearch, sortNewest, statusLabel, statusTone, typeLabel, updatedLabel } from './feedback-backlog';
 
 /** The html class that stops the page behind the dialog from scrolling. */
 export const DIALOG_OPEN_CLASS = 'feedback-dialog-open';
@@ -32,10 +32,14 @@ export const TICKET_TYPE_PREFIX = 'ticket:';
  * Feedback / Mine, the search and the filters. A row opens the item in a dialog on top of the list (the page behind it
  * stops scrolling); the ↗ opens the item's own page. The older /admin/reviews address and the former Team Reviews tab
  * of Support both arrive here. A reviewer sees only their own feedback; the owner and admins see everything.
+ *
+ * The page has no side bars: the Admin sub-header under the platform header carries the admin links, and the single
+ * content column gives the backlog table the whole width (owner, 2026-11-06). The ID column sticks on the left and
+ * Ticket, Updated and the ↗ on the right while the table scrolls sideways.
  */
 @Component({
   selector: 'app-admin-feedback',
-  imports: [PlatformHeader, AuthorWorkspaceNav, AuthorAdminMenu, FormsModule, RouterLink, ScrollLock, FeedbackItemView],
+  imports: [PlatformHeader, AdminSubheader, FormsModule, RouterLink, ScrollLock, FeedbackItemView],
   templateUrl: './admin-feedback.html',
   styleUrl: './admin-feedback.css',
 })
@@ -54,7 +58,6 @@ export class AdminFeedbackPage implements OnInit, OnDestroy {
   protected readonly statusLabel = statusLabel;
   protected readonly statusTone = statusTone;
   protected readonly isRequest = isRequest;
-  protected readonly outline = [{ label: 'Backlog', href: '#feedback-backlog' }] as const;
 
   protected readonly signedIn = computed(() => !!this.accounts.account() && !this.accounts.sessionExpired());
   protected readonly state = signal<'loading' | 'ready' | 'denied' | 'signed-out' | 'error'>('loading');
@@ -63,6 +66,12 @@ export class AdminFeedbackPage implements OnInit, OnDestroy {
   protected readonly nextBefore = signal<string | null>(null);
   protected readonly loadingOlder = signal(false);
   protected readonly seesAll = computed(() => this.viewer()?.role === 'owner' || this.viewer()?.role === 'admin');
+  /** The owner alone (the same role check as the triage of a review) has the Jobs buttons. */
+  protected readonly isOwner = computed(() => this.viewer()?.role === 'owner');
+  protected readonly jobs = SWEEP_JOBS;
+  protected readonly runningJob = signal<SweepJob | null>(null);
+  /** The line under the title after the last run: what the job did, or that it could not be run. */
+  protected readonly jobsLine = signal<{ text: string; failed: boolean } | null>(null);
 
   // Pills, search and filters
   protected readonly view = signal<'all' | 'mine'>('all');
@@ -142,6 +151,29 @@ export class AdminFeedbackPage implements OnInit, OnDestroy {
       // The button stays; the next click tries again.
     } finally {
       this.loadingOlder.set(false);
+    }
+  }
+
+  /**
+   * DLV-971: one of the Jobs buttons. The Domain runs that 4-hour job now (stale support tickets closed, the delivery
+   * inbox merged, expired admissions removed, or all three) and answers what it did; the list is reloaded after a run
+   * that may have closed tickets.
+   */
+  protected async runJob(job: SweepJob): Promise<void> {
+    if (this.runningJob()) return;
+    this.runningJob.set(job);
+    try {
+      const result = await this.client.runSweeps(job);
+      this.jobsLine.set({ text: jobsRanLine(result), failed: false });
+      if (job === 'support-requests' || job === 'all') await this.load();
+    } catch (error) {
+      const unavailable = error instanceof PlatformReviewError && error.kind === 'conflict';
+      this.jobsLine.set({
+        text: unavailable ? `${jobLabel(job)}: not available on this environment.` : `${jobLabel(job)} could not be run. Nothing changed; try again.`,
+        failed: !unavailable,
+      });
+    } finally {
+      this.runningJob.set(null);
     }
   }
 
