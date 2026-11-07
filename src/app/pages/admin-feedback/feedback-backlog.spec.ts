@@ -1,5 +1,5 @@
 import { PlatformReviewSummary, SweepRunResult } from '../admin-reviews/platform-review.model';
-import { SWEEP_JOBS, jobLabel, jobsRanLine, kindLabel, matchesSearch, momentLabel, sortNewest, statusLabel, statusTone, typeLabel, updatedLabel } from './feedback-backlog';
+import { FEEDBACK_JOBS, SWEEP_JOBS, jobLabel, jobsRanLine, kindLabel, matchesSearch, momentLabel, sortNewest, statusLabel, statusTone, typeLabel, updatedLabel } from './feedback-backlog';
 
 const summary = (over: Partial<PlatformReviewSummary>): PlatformReviewSummary => ({
   id: 'REV-000001',
@@ -84,13 +84,16 @@ describe('jobsRanLine (DLV-971)', () => {
   const ran = (over: Partial<SweepRunResult>): SweepRunResult => ({ job: 'all', ranAt, supportRequestsClosed: null, inboxMerged: null, inboxResult: null, admissionsRemoved: null, ...over });
 
   it('names each job, the time and its count, singular or plural', () => {
-    expect(jobsRanLine(ran({ job: 'support-requests', supportRequestsClosed: 0 }))).toBe(`Close stale tickets ran at ${time}: 0 tickets closed`);
-    expect(jobsRanLine(ran({ job: 'support-requests', supportRequestsClosed: 1 }))).toBe(`Close stale tickets ran at ${time}: 1 ticket closed`);
+    expect(jobsRanLine(ran({ job: 'support-requests', supportRequestsClosed: 0 }))).toBe(`Close idle tickets ran at ${time}: 0 tickets closed (a ticket closes after 7 days without an update)`);
+    expect(jobsRanLine(ran({ job: 'support-requests', supportRequestsClosed: 1 }))).toBe(`Close idle tickets ran at ${time}: 1 ticket closed (a ticket closes after 7 days without an update)`);
     expect(jobsRanLine(ran({ job: 'delivery-inbox', inboxMerged: true, inboxResult: '3' }))).toBe(`Sync plan inbox ran at ${time}: plan version 3`);
     expect(jobsRanLine(ran({ job: 'delivery-inbox', inboxMerged: false, inboxResult: 'no inbox file' }))).toBe(`Sync plan inbox ran at ${time}: inbox: no inbox file`);
     expect(jobsRanLine(ran({ job: 'admissions', admissionsRemoved: 0 }))).toBe(`Clean up admissions ran at ${time}: 0 removed`);
-    expect(SWEEP_JOBS.map((entry) => entry.label)).toEqual(['Close stale tickets', 'Sync plan inbox', 'Clean up admissions', 'Run all']);
+    expect(SWEEP_JOBS.map((entry) => entry.label)).toEqual(['Close idle tickets', 'Sync plan inbox', 'Clean up admissions', 'Run all']);
     expect(jobLabel('admissions')).toBe('Clean up admissions');
+    expect(jobLabel('support-requests')).toBe('Close idle tickets');
+    // Only the ticket job stays on Support tickets and feedback (owner, 2026-11-07).
+    expect(FEEDBACK_JOBS).toEqual([{ job: 'support-requests', label: 'Close idle tickets', title: 'Closes tickets with no update for 7 days' }]);
   });
 
   it('sums all three for Run all and leaves admissions out on a local Domain', () => {

@@ -807,13 +807,30 @@
   opacity: 0.55;
   cursor: wait;
 }
+/* The status line after a save, refresh, upload or inbox sync: readable at a glance (user, 2026-11-07). */
 .save-notice {
-  padding: 0 20px;
-  color: var(--success);
-  font-size: 0.85rem;
+  margin: 8px 0;
+  padding: 0 20px 0 10px;
+  border-left: 3px solid var(--accent-strong);
+  color: var(--text-strong);
+  font-size: 0.9rem;
+  font-weight: 600;
 }
 .save-notice:empty {
   display: none;
+}
+/* The file picker behind Upload plan file: present for the browser, out of sight. */
+.plan-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  border: 0;
+  white-space: nowrap;
 }
 /* DLV-971 runtime stores: the published copy standing in for a DEV plan not uploaded yet. */
 .plan-notice {

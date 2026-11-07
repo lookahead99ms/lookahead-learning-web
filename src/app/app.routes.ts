@@ -14,7 +14,13 @@ import { legacyInterviewSearchRedirect } from './content/search-route-compatibil
 import { retiredContentRedirect } from './content/retired-content-routes';
 
 export const routes: Routes = [
-  { path: 'admin/access', canActivate: [accessGuard], loadComponent: () => import('./pages/admin-access/admin-access').then(page => page.AdminAccessPage) },
+  // Owner, 2026-11-07: Clean up admissions on Waiting for access runs the Domain's admissions job through the review client.
+  {
+    path: 'admin/access',
+    canActivate: [accessGuard],
+    providers: [{ provide: PLATFORM_REVIEW_CLIENT, useClass: ConnectedPlatformReviewClient }],
+    loadComponent: () => import('./pages/admin-access/admin-access').then(page => page.AdminAccessPage),
+  },
   // DLV-209: plan catalog and purchase flow reference for authors and admins (staff).
   { path: 'admin/plans', canActivate: [staffGuard], loadComponent: () => import('./pages/admin-plans/admin-plans').then(page => page.AdminPlansPage) },
   // DLV-209: sale and price previews for authors and admins (this browser only; no server support yet).

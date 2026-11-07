@@ -112,13 +112,19 @@ export function matchesSearch(item: BacklogItem, query: string): boolean {
   return words.every((word) => haystack.includes(word));
 }
 
-/** DLV-971 (owner, 2026-11-06): the owner's Jobs buttons on Support tickets and feedback, in order. */
-export const SWEEP_JOBS: readonly { job: SweepJob; label: string }[] = [
-  { job: 'support-requests', label: 'Close stale tickets' },
-  { job: 'delivery-inbox', label: 'Sync plan inbox' },
-  { job: 'admissions', label: 'Clean up admissions' },
-  { job: 'all', label: 'Run all' },
+/** DLV-971 (owner, 2026-11-06): the Domain's 4-hour jobs the owner can run by hand, with the words the pages use. */
+export const SWEEP_JOBS: readonly { job: SweepJob; label: string; title: string }[] = [
+  { job: 'support-requests', label: 'Close idle tickets', title: 'Closes tickets with no update for 7 days' },
+  { job: 'delivery-inbox', label: 'Sync plan inbox', title: 'Merges a plan file already placed in delivery/inbox/ on DEV' },
+  { job: 'admissions', label: 'Clean up admissions', title: 'Removes waiting rows older than 48 hours now, the same as the 4-hour job' },
+  { job: 'all', label: 'Run all', title: 'Runs all three jobs now' },
 ];
+
+/**
+ * Owner, 2026-11-07: Support tickets and feedback keeps the one job about tickets; Sync plan inbox lives on the Delivery
+ * Plan (with Upload plan file) and Clean up admissions on People & Access, next to the waiting list it empties.
+ */
+export const FEEDBACK_JOBS = SWEEP_JOBS.filter((entry) => entry.job === 'support-requests');
 
 export function jobLabel(job: SweepJob): string {
   return SWEEP_JOBS.find((entry) => entry.job === job)?.label ?? job;
@@ -127,17 +133,17 @@ export function jobLabel(job: SweepJob): string {
 const count = (n: number, noun: string) => `${n} ${noun}${n === 1 ? '' : 's'}`;
 
 /**
- * The line under the title after a job ran: "Close stale tickets ran at 19:52: 0 tickets closed", "Sync plan inbox ran
- * at 19:53: plan version 3" (or "inbox: no inbox file"), "Clean up admissions ran at 19:54: 0 removed", and for all
- * three "All jobs ran at 19:55: 2 tickets closed, inbox merged (plan version 12), 1 admission removed" (a local Domain
- * has no admission cleanup: that part is left out).
+ * The line under the title after a job ran: "Close idle tickets ran at 19:52: 0 tickets closed (a ticket closes after 7
+ * days without an update)", "Sync plan inbox ran at 19:53: plan version 3" (or "inbox: no inbox file"), "Clean up
+ * admissions ran at 19:54: 0 removed", and for all three "All jobs ran at 19:55: 2 tickets closed, inbox merged (plan
+ * version 12), 1 admission removed" (a local Domain has no admission cleanup: that part is left out).
  */
 export function jobsRanLine(result: SweepRunResult): string {
   const time = new Date(result.ranAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
   const inbox = result.inboxMerged ? `plan version ${result.inboxResult}` : `inbox: ${result.inboxResult}`;
   switch (result.job) {
     case 'support-requests':
-      return `Close stale tickets ran at ${time}: ${count(result.supportRequestsClosed ?? 0, 'ticket')} closed`;
+      return `Close idle tickets ran at ${time}: ${count(result.supportRequestsClosed ?? 0, 'ticket')} closed (a ticket closes after 7 days without an update)`;
     case 'delivery-inbox':
       return `Sync plan inbox ran at ${time}: ${inbox}`;
     case 'admissions':

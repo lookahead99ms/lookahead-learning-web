@@ -1117,6 +1117,21 @@ describe('Shared page sidebars', () => {
     expect(root.querySelector('.standalone-signature')).toBeNull();
   });
 
+  it('keeps the outline rail and the taglines off a page with the Admin sub-header', () => {
+    const subheader = document.createElement('app-admin-subheader');
+    main.before(subheader);
+    try {
+      fixture.destroy();
+      fixture = TestBed.createComponent(PageSidebars);
+      root.append(fixture.nativeElement);
+      flush();
+      expect(root.querySelector('#page-sidebar-left')).toBeNull();
+      expect(root.querySelector('.standalone-signature')).toBeNull();
+    } finally {
+      subheader.remove();
+    }
+  });
+
   it('shows the AI statement, not the learning prompt, on catalogs before opening a lesson', () => {
     const previous = location.href;
     try {

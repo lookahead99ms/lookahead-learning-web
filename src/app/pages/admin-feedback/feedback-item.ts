@@ -1,3 +1,5 @@
+import { DevSession } from '../../core/dev-session-notice/dev-session';
+import { environment } from '../../../environments/environment';
 import { Component, OnDestroy, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -39,6 +41,9 @@ export class FeedbackItemView implements OnDestroy {
   protected readonly client = inject(PLATFORM_REVIEW_CLIENT);
   private readonly router = inject(Router);
   private readonly editIntent = inject(ReviewEditIntent);
+  private readonly devSession = inject(DevSession);
+  /** Owner decision 2026-11-07: promoting writes the DEV plan, so the button exists on DEV and local only. */
+  protected readonly devOrLocal = computed(() => !environment.production || this.devSession.status() !== null || this.devSession.gated());
   protected readonly statuses = reviewStatuses;
   protected readonly kindLabel = kindLabel;
   protected readonly typeLabel = typeLabel;
@@ -65,7 +70,7 @@ export class FeedbackItemView implements OnDestroy {
     if (!item) return false;
     return role === 'owner' || (role === 'admin' && isRequest(item));
   });
-  protected readonly canPromote = computed(() => this.canTriage() && !this.item()?.ticketId);
+  protected readonly canPromote = computed(() => this.devOrLocal() && this.canTriage() && !this.item()?.ticketId);
   protected readonly canEdit = computed(() => {
     const item = this.item();
     return !!item && item.reviewerId === this.who()?.reviewerId && !isRequest(item) && item.status === 'new';

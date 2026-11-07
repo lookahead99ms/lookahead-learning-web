@@ -21,7 +21,7 @@ import {
   DeliverySnapshot,
   DeliveryWorkItemInput,
 } from '../../content/delivery-editor.service';
-import { DeliveryDevPlanService, DeliveryPlanApiError, DeliveryPlanWrite } from '../../content/delivery-dev-plan.service';
+import { DeliveryDevPlanService, DeliveryInboxSync, DeliveryPlanApiError, DeliveryPlanWrite } from '../../content/delivery-dev-plan.service';
 import { DevSession } from '../../core/dev-session-notice/dev-session';
 import {
   DeliveryDecision,
@@ -106,6 +106,18 @@ export class DeliveryPlanPage implements OnInit {
   /** The ticket a /delivery-plan#<id> link asked for: scrolled to and marked once the plan is in. */
   protected readonly highlightedId = signal<string | null>(null);
   protected readonly saving = signal(false);
+  /**
+   * DLV-971 inbox sync (owner, 2026-11-07): the owner and co-authors push their local delivery-plan.json to DEV
+   * (Upload plan file) or merge one already placed in `delivery/inbox/` (Sync plan inbox). Legacy accounts without
+   * `permissions` but with authorPreview count as the owner.
+   */
+  protected readonly canSyncPlan = computed(() => {
+    const account = this.accounts.account(), permissions = account?.permissions;
+    if (!permissions) return account?.authorPreview === true;
+    return permissions.manageAccess || permissions.feedbackRole === 'co-author';
+  });
+  /** An upload or inbox sync is running: both controls wait for it. */
+  protected readonly syncing = signal(false);
   protected readonly notice = signal('');
   protected readonly saveError = signal('');
   protected readonly conflict = signal(false);
@@ -301,12 +313,75 @@ export class DeliveryPlanPage implements OnInit {
       if (!this.authorAccess()) return;
       const changed = (plan.version ?? 0) !== this.version;
       this.acceptDevPlan(plan);
-      if (!quiet) this.notice.set(changed ? 'Board refreshed from DEV.' : 'Board is up to date.');
+      // Say what was read (user, 2026-11-07: an unchanged board looked like a dead button).
+      if (!quiet) {
+        const checked = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const found = `DEV plan version ${plan.version ?? 0}, ${plan.workItems.length} items, checked ${checked}.`;
+        this.notice.set(changed ? `Board refreshed from DEV. ${found}` : `Board is up to date. Nothing new to sync: ${found}`);
+      }
     } catch {
       this.notice.set('The plan on DEV could not be refreshed. Current data is retained.');
     } finally {
       this.refreshPending = false;
     }
+  }
+
+  /**
+   * Upload plan file: the chosen delivery-plan.json goes to DEV as written and is merged at once; the board then reads
+   * the plan again. The input is cleared afterwards so the same file can be picked again after a fix.
+   */
+  protected async uploadPlanFile(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file || !this.dev() || !this.canSyncPlan() || this.saving() || this.syncing()) return;
+    this.syncing.set(true);
+    try {
+      const result = await this.devPlan.uploadInbox(await file.text());
+      if (result.synced) {
+        this.notice.set(`Plan file uploaded and merged into DEV plan version ${result.version}: ${this.mergeCounts(result)}.`);
+        await this.reloadDevPlan(true);
+      } else {
+        this.notice.set(`Plan file uploaded but not merged: ${result.reason ?? 'no reason given'}.`);
+      }
+    } catch (error) {
+      this.notice.set(`The plan file could not be uploaded: ${this.syncFailure(error)}.`);
+    } finally {
+      input.value = '';
+      this.syncing.set(false);
+    }
+  }
+
+  /** Sync plan inbox: merges a plan file already placed in `delivery/inbox/` on DEV, then reads the plan again. */
+  protected async syncPlanInbox(): Promise<void> {
+    if (!this.dev() || !this.canSyncPlan() || this.saving() || this.syncing()) return;
+    this.syncing.set(true);
+    try {
+      const result = await this.devPlan.syncInbox();
+      if (result.synced) {
+        this.notice.set(`Sync plan inbox: merged into DEV plan version ${result.version}: ${this.mergeCounts(result)}.`);
+        await this.reloadDevPlan(true);
+      } else {
+        this.notice.set(`Sync plan inbox: nothing to sync (${result.reason ?? 'no reason given'}).`);
+      }
+    } catch (error) {
+      this.notice.set(`Sync plan inbox failed: ${this.syncFailure(error)}.`);
+    } finally {
+      this.syncing.set(false);
+    }
+  }
+
+  /** "2 added, 1 taken from local, 0 kept from DEV, 0 conflict(s)" from a merge's counts. */
+  private mergeCounts(result: DeliveryInboxSync): string {
+    const counts = result.counts ?? { added: 0, takenLocal: 0, keptDev: 0, conflicts: 0 };
+    return `${counts.added} added, ${counts.takenLocal} taken from local, ${counts.keptDev} kept from DEV, ${counts.conflicts} conflict(s)`;
+  }
+
+  /** The Domain's message, else its error code, else what the browser said; the sentence's own full stop follows. */
+  private syncFailure(error: unknown): string {
+    const text = error instanceof DeliveryPlanApiError
+      ? error.message || error.code || `request failed (${error.status})`
+      : error instanceof Error && error.message ? error.message : 'unknown error';
+    return text.replace(/\.$/, '');
   }
 
   /** No local editor in the protected build: read the staff copy Domain publishes. */

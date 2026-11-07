@@ -23,7 +23,7 @@
                 <p class="jobs-line" [class.failed]="line.failed" [attr.role]="line.failed ? 'alert' : 'status'">{{ line.text }}</p>
               }
             </div>
-            @if (isOwner()) {
+            @if (isOwner() && devOrLocal()) {
               <div class="jobs" role="group" aria-label="Jobs">
                 <span class="jobs-label">Jobs</span>
                 @for (entry of jobs; track entry.job) {
@@ -31,6 +31,7 @@
                     type="button"
                     class="secondary small run-job"
                     [attr.data-job]="entry.job"
+                    [title]="entry.title"
                     (click)="runJob(entry.job)"
                     [disabled]="runningJob() === entry.job"
                     [attr.aria-busy]="runningJob() === entry.job"

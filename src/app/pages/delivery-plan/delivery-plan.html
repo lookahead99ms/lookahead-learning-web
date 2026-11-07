@@ -123,10 +123,40 @@
               type="button"
               class="editor-secondary"
               [disabled]="saving()"
+              title="Reads the plan on DEV again and shows the version it found"
               (click)="refreshPlan()"
             >
               Refresh board
             </button>
+            @if (canSyncPlan()) {
+              <input
+                #planFile
+                type="file"
+                class="plan-file-input"
+                accept=".json,application/json"
+                aria-label="Plan file"
+                tabindex="-1"
+                (change)="uploadPlanFile($event)"
+              />
+              <button
+                type="button"
+                class="editor-secondary upload-plan"
+                [disabled]="saving() || syncing()"
+                title="Sends your local delivery-plan.json to DEV and merges it at once"
+                (click)="planFile.click()"
+              >
+                Upload plan file
+              </button>
+              <button
+                type="button"
+                class="editor-secondary sync-inbox"
+                [disabled]="saving() || syncing()"
+                title="Merges a plan file already placed in delivery/inbox/ on DEV"
+                (click)="syncPlanInbox()"
+              >
+                Sync plan inbox
+              </button>
+            }
             <button
               type="button"
               class="editor-primary"
@@ -156,6 +186,9 @@
             Editing the plan on DEV. Saves go to DEV at once; local edits reach it through the inbox sync.
           } @else {
             The plan on DEV, read-only for your role.
+          }
+          @if (canSyncPlan()) {
+            Upload plan file sends your local delivery-plan.json to DEV and merges it at once; Sync plan inbox merges a file already placed in delivery/inbox/.
           }
         </p>
       }

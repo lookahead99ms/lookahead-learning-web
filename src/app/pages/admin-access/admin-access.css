@@ -177,6 +177,25 @@ h3 {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
 }
+/* Refresh and, for the owner, Clean up admissions side by side at the heading's right (owner, 2026-11-07). */
+.heading-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.clean-up-admissions[disabled] {
+  cursor: progress;
+}
+.cleanup-line {
+  margin: 6px 0 0;
+  color: var(--text-subtle);
+  font-size: 14px;
+}
+.cleanup-line.failed {
+  color: var(--text-strong);
+  font-weight: 600;
+}
 .section-icon {
   display: grid;
   flex: 0 0 auto;
@@ -542,9 +561,11 @@ button:disabled {
   .section-heading.with-action {
     grid-template-columns: auto minmax(0, 1fr);
   }
-  .section-heading.with-action > button {
+  .section-heading.with-action > button,
+  .section-heading.with-action > .heading-actions {
     grid-column: 2;
     justify-self: start;
+    justify-content: flex-start;
   }
 }
 
