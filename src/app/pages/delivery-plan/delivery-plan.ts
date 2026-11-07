@@ -301,7 +301,12 @@ export class DeliveryPlanPage implements OnInit {
       if (!this.authorAccess()) return;
       const changed = (plan.version ?? 0) !== this.version;
       this.acceptDevPlan(plan);
-      if (!quiet) this.notice.set(changed ? 'Board refreshed from DEV.' : 'Board is up to date.');
+      // Say what was read (user, 2026-11-07: an unchanged board looked like a dead button).
+      if (!quiet) {
+        const checked = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const found = `DEV plan version ${plan.version ?? 0}, ${plan.workItems.length} items, checked ${checked}.`;
+        this.notice.set(`${changed ? 'Board refreshed from DEV.' : 'Board is up to date.'} ${found}`);
+      }
     } catch {
       this.notice.set('The plan on DEV could not be refreshed. Current data is retained.');
     } finally {

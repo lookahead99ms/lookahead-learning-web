@@ -1217,11 +1217,11 @@ describe('DeliveryPlanPage', () => {
       devApi.load.mockResolvedValueOnce(devPlan([devItem({ statusId: 'done' }), structuredClone(plan.workItems[1])], 12));
       root.querySelector<HTMLButtonElement>('.editor-toolbar .editor-secondary')!.click();
       await settle(harness);
-      expect(root.textContent).toContain('Board is up to date.');
+      expect(root.textContent).toContain('Board is up to date. DEV plan version 12, 2 items, checked');
       devApi.load.mockResolvedValueOnce(devPlan([devItem({ statusId: 'done' }), structuredClone(plan.workItems[1])], 13));
       root.querySelector<HTMLButtonElement>('.editor-toolbar .editor-secondary')!.click();
       await settle(harness);
-      expect(root.textContent).toContain('Board refreshed from DEV.');
+      expect(root.textContent).toContain('Board refreshed from DEV. DEV plan version 13, 2 items, checked');
       devApi.load.mockRejectedValueOnce(new DeliveryPlanApiError(0, null));
       root.querySelector<HTMLButtonElement>('.editor-toolbar .editor-secondary')!.click();
       await settle(harness);
