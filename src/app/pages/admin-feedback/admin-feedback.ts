@@ -3,8 +3,7 @@ import { Component, ElementRef, OnDestroy, OnInit, computed, inject, signal, vie
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
-import { AuthorWorkspaceNav } from '../../core/author-workspace-nav/author-workspace-nav';
-import { AuthorAdminMenu } from '../../core/author-workspace-nav/author-admin-menu';
+import { AdminSubheader } from '../../core/author-workspace-nav/admin-subheader';
 import { ScrollLock } from '../../core/scroll-lock/scroll-lock';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import {
@@ -33,10 +32,14 @@ export const TICKET_TYPE_PREFIX = 'ticket:';
  * Feedback / Mine, the search and the filters. A row opens the item in a dialog on top of the list (the page behind it
  * stops scrolling); the ↗ opens the item's own page. The older /admin/reviews address and the former Team Reviews tab
  * of Support both arrive here. A reviewer sees only their own feedback; the owner and admins see everything.
+ *
+ * The page has no side bars: the Admin sub-header under the platform header carries the admin links, and the single
+ * content column gives the backlog table the whole width (owner, 2026-11-06). The ID column sticks on the left and
+ * Ticket, Updated and the ↗ on the right while the table scrolls sideways.
  */
 @Component({
   selector: 'app-admin-feedback',
-  imports: [PlatformHeader, AuthorWorkspaceNav, AuthorAdminMenu, FormsModule, RouterLink, ScrollLock, FeedbackItemView],
+  imports: [PlatformHeader, AdminSubheader, FormsModule, RouterLink, ScrollLock, FeedbackItemView],
   templateUrl: './admin-feedback.html',
   styleUrl: './admin-feedback.css',
 })
@@ -55,7 +58,6 @@ export class AdminFeedbackPage implements OnInit, OnDestroy {
   protected readonly statusLabel = statusLabel;
   protected readonly statusTone = statusTone;
   protected readonly isRequest = isRequest;
-  protected readonly outline = [{ label: 'Backlog', href: '#feedback-backlog' }] as const;
 
   protected readonly signedIn = computed(() => !!this.accounts.account() && !this.accounts.sessionExpired());
   protected readonly state = signal<'loading' | 'ready' | 'denied' | 'signed-out' | 'error'>('loading');

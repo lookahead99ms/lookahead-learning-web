@@ -4,20 +4,10 @@
   background: var(--surface-page);
   color: var(--text-body);
 }
+/* One content column under the Admin sub-header, no side bars (owner, 2026-11-06). */
 .feedback-page {
-  display: grid;
-  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr) minmax(220px, 260px);
-  align-items: start;
+  display: block;
   min-height: calc(100dvh - var(--platform-header-height, 76px));
-}
-.workspace-sidebar {
-  position: sticky;
-  top: var(--platform-header-height, 76px);
-  max-height: calc(100dvh - var(--platform-header-height, 76px));
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  padding: 24px;
-  border-inline-end: 1px solid var(--line);
 }
 .workspace-content {
   min-width: 0;
@@ -71,14 +61,8 @@
   font-weight: 800;
   letter-spacing: 0.02em;
 }
-@media (max-width: 1100px) {
-  .feedback-page {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .workspace-sidebar {
-    position: static;
-    max-height: none;
-    border-inline-end: 0;
-    border-bottom: 1px solid var(--line);
+@media (max-width: 900px) {
+  .workspace-content {
+    padding: 24px 16px 48px;
   }
 }

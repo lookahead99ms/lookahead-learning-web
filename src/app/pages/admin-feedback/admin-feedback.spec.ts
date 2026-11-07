@@ -4,7 +4,6 @@ import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { AdminFeedbackPage, DIALOG_OPEN_CLASS } from './admin-feedback';
 import { PlatformHeader } from '../../core/platform-header/platform-header';
-import { AuthorAdminMenu } from '../../core/author-workspace-nav/author-admin-menu';
 import { StudyPlanAccount } from '../study-plan/study-plan-account';
 import {
   PLATFORM_REVIEW_CLIENT,
@@ -20,8 +19,6 @@ import { routes } from '../../app.routes';
 
 @Component({ selector: 'app-platform-header', template: '' })
 class HeaderStub {}
-@Component({ selector: 'app-author-admin-menu', template: '<nav aria-label="Admin navigation"></nav>' })
-class MenuStub {}
 
 const today = new Date();
 const at = (daysAgo: number, hour = 9, minute = 12) => {
@@ -144,8 +141,8 @@ describe('Support tickets and feedback backlog (DLV-971)', () => {
       ],
     });
     TestBed.overrideComponent(AdminFeedbackPage, {
-      remove: { imports: [PlatformHeader, AuthorAdminMenu] },
-      add: { imports: [HeaderStub, MenuStub] },
+      remove: { imports: [PlatformHeader] },
+      add: { imports: [HeaderStub] },
     });
   });
 
@@ -173,15 +170,29 @@ describe('Support tickets and feedback backlog (DLV-971)', () => {
     const harness = await open();
     const root = harness.routeNativeElement!;
     expect(text(root.querySelector('h1'))).toBe('Support tickets and feedback');
-    expect([...root.querySelectorAll('thead th')].map(text)).toEqual(['Key', 'Summary', 'From', 'Type', 'Status', 'Ticket', 'Updated', 'Open']);
+    expect([...root.querySelectorAll('thead th')].map(text)).toEqual(['ID', 'Summary', 'From', 'Type', 'Status', 'Ticket', 'Updated', 'Open']);
     expect(root.querySelectorAll('colgroup col')).toHaveLength(8);
     expect(root.querySelector('thead th.right')?.textContent?.trim()).toBe('Updated');
+    // Sticky edges (owner, 2026-11-06): ID on the left; Ticket, Updated and the ↗ on the right, each with its own offset class.
+    expect([...root.querySelectorAll('thead th.sticky-left')].map(text)).toEqual(['ID']);
+    expect([...root.querySelectorAll('thead th.sticky-right')].map(text)).toEqual(['Ticket', 'Updated', 'Open']);
+    expect(root.querySelector('thead th.sticky-ticket')?.classList.contains('sticky-right')).toBe(true);
+    expect(root.querySelector('thead th.sticky-updated')?.classList.contains('right')).toBe(true);
+    expect(root.querySelector('thead th.sticky-act .visually-hidden')).not.toBeNull();
+    expect(root.querySelector('.table-scroll')?.getAttribute('role')).toBe('region');
     expect(keys(root)).toEqual(['SUP-000014', 'REV-000002', 'SUP-000011', 'REV-000001', 'REV-000003']);
     const first = root.querySelector('tbody tr')!;
     expect(first.getAttribute('tabindex')).toBe('0');
     // The page sits under the summary (one Summary column, no Page column; owner, 2026-11-06: the backlog reads tidier).
     expect(cells(first)).toEqual(['Ticket SUP-000014', 'Cannot open lesson 4 of Core Java Lesson Reader', 'learner07', 'Report a problem', 'New', '—', 'Today 09:12', '↗']);
     expect(first.querySelector('.kind-badge')?.classList.contains('ticket')).toBe(true);
+    expect(first.querySelector('td.key')?.classList.contains('sticky-left')).toBe(true);
+    expect([...first.querySelectorAll('td.sticky-right')].map((cell) => cell.className)).toEqual([
+      'ticket sticky-right sticky-ticket',
+      'updated sticky-right sticky-updated',
+      'act sticky-right sticky-act',
+    ]);
+    expect(first.querySelectorAll('td.sticky-left, td.sticky-right')).toHaveLength(4);
     expect(first.querySelector('.status-pill')?.getAttribute('data-tone')).toBe('new');
     expect(first.querySelector('a.new-tab')?.getAttribute('href')).toBe('/admin/feedback/SUP-000014');
     expect(first.querySelector('a.new-tab')?.getAttribute('target')).toBe('_blank');
@@ -194,6 +205,24 @@ describe('Support tickets and feedback backlog (DLV-971)', () => {
     expect(text(root.querySelector('.result-count'))).toBe('5 of 5 items · sorted by last update, newest first');
     expect(root.querySelector('#review-overview')).toBeNull();
     expect(root.textContent).not.toMatch(/importance/i);
+  });
+
+  it('has the Admin sub-header under the platform header and one content column, no outline and no Admin menu', async () => {
+    const harness = await open();
+    const root = harness.routeNativeElement!;
+    const subheader = root.querySelector('app-admin-subheader')!;
+    expect(subheader).not.toBeNull();
+    // Directly under the header, before the page's main content.
+    expect(subheader.compareDocumentPosition(root.querySelector('main')!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(subheader.querySelector('nav')?.getAttribute('aria-label')).toBe('Admin navigation');
+    expect(subheader.querySelector('[aria-current="page"]')?.getAttribute('href')).toBe('/admin/feedback');
+    expect(root.querySelector('app-author-workspace-nav')).toBeNull();
+    expect(root.querySelector('app-author-admin-menu')).toBeNull();
+    expect(root.querySelector('.workspace-sidebar')).toBeNull();
+    expect(root.querySelector('main > .workspace-content')).not.toBeNull();
+    expect(root.querySelectorAll('main > *')).toHaveLength(1);
+    expect(root.querySelector('.title-row .eyebrow')?.textContent).toBe('Admin');
+    expect(text(root.querySelector('.title-row h1'))).toBe('Support tickets and feedback');
   });
 
   it('filters by the pills, the search and the Kind, From, Status and Type filters', async () => {
@@ -432,7 +461,7 @@ describe('Support tickets and feedback backlog (DLV-971)', () => {
         { provide: PLATFORM_REVIEW_CLIENT, useValue: client },
         { provide: StudyPlanAccount, useValue: { account: signal({ accountId: 'a' }), sessionExpired: () => false } },
       ],
-    }).overrideComponent(AdminFeedbackPage, { remove: { imports: [PlatformHeader, AuthorAdminMenu] }, add: { imports: [HeaderStub, MenuStub] } });
+    }).overrideComponent(AdminFeedbackPage, { remove: { imports: [PlatformHeader] }, add: { imports: [HeaderStub] } });
     harness = await open();
     let root = harness.routeNativeElement!;
     expect(text(root.querySelector('.state-panel h2'))).toBe('Tickets and feedback are unavailable');
@@ -447,7 +476,7 @@ describe('Support tickets and feedback backlog (DLV-971)', () => {
         { provide: PLATFORM_REVIEW_CLIENT, useValue: client },
         { provide: StudyPlanAccount, useValue: { account: signal({ accountId: 'a' }), sessionExpired: () => false } },
       ],
-    }).overrideComponent(AdminFeedbackPage, { remove: { imports: [PlatformHeader, AuthorAdminMenu] }, add: { imports: [HeaderStub, MenuStub] } });
+    }).overrideComponent(AdminFeedbackPage, { remove: { imports: [PlatformHeader] }, add: { imports: [HeaderStub] } });
     harness = await open('/admin/feedback#REV-000001');
     root = harness.routeNativeElement!;
     expect(dialog(root).hasAttribute('open')).toBe(true);
