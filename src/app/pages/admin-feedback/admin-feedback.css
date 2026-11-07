@@ -73,12 +73,48 @@ h1 {
   font-size: 22px;
 }
 .list-head {
+  display: grid;
+  gap: 14px;
+  margin: 0 0 20px;
+}
+/* The title with, for the owner, the Jobs strip at its right (DLV-971); the result line sits under the title. */
+.title-row {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
-  margin: 0 0 16px;
+  gap: 12px 16px;
+}
+.title-row > div {
+  min-width: 0;
+}
+.jobs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+.jobs-label {
+  margin-right: 4px;
+  color: var(--text-subtle);
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.run-job[disabled] {
+  cursor: progress;
+  opacity: 0.6;
+}
+.jobs-line {
+  margin: 8px 0 0;
+  color: var(--text-subtle);
+  font-size: 14px;
+}
+.jobs-line.failed {
+  color: var(--text-strong);
+  font-weight: 600;
 }
 .view-tabs {
   display: flex;
@@ -110,9 +146,14 @@ h1 {
 }
 .filters {
   display: grid;
-  grid-template-columns: 2fr repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: minmax(220px, 1.6fr) repeat(4, minmax(120px, 1fr));
+  gap: 10px;
+  align-items: end;
   margin: 0 0 6px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-muted);
 }
 .filters label {
   display: grid;
@@ -154,21 +195,21 @@ h1 {
 }
 .backlog {
   width: 100%;
-  min-width: 1080px;
+  min-width: 960px;
   border-collapse: separate;
   border-spacing: 0;
   table-layout: fixed;
   font-size: 14px;
 }
-.c-key { width: 190px; }
+/* Fixed layout: every column but Summary has a set width, so Summary takes the rest (at least 330px at the table's minimum width). */
+.c-key { width: 128px; }
 .c-sum { width: auto; }
-.c-from { width: 130px; }
-.c-type { width: 150px; }
-.c-page { width: 150px; }
-.c-status { width: 130px; }
-.c-ticket { width: 120px; }
-.c-updated { width: 120px; }
-.c-act { width: 52px; }
+.c-from { width: 118px; }
+.c-type { width: 140px; }
+.c-status { width: 116px; }
+.c-ticket { width: 98px; }
+.c-updated { width: 88px; }
+.c-act { width: 44px; }
 .backlog th {
   position: sticky;
   top: 0;
@@ -190,8 +231,8 @@ h1 {
 }
 .backlog td {
   box-sizing: border-box;
-  height: 56px;
-  padding: 12px 14px;
+  height: 60px;
+  padding: 10px 14px;
   border-bottom: 1px solid var(--line);
   vertical-align: middle;
   white-space: nowrap;
@@ -202,22 +243,36 @@ h1 {
   border-bottom: 0;
 }
 .backlog td.summary {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
   color: var(--text-strong);
   font-weight: 650;
   line-height: 1.35;
   white-space: normal;
+}
+.summary-text {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.summary-meta {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-subtle);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+.backlog td.key {
+  display: grid;
+  gap: 4px;
+  justify-items: start;
 }
 .backlog td.key {
   font-variant-numeric: tabular-nums;
 }
 .kind-badge {
   display: inline-block;
-  width: 78px;
-  margin-right: 10px;
-  padding: 3px 0;
+  min-width: 70px;
+  padding: 2px 8px;
   border-radius: 6px;
   background: var(--surface-muted);
   color: var(--text-strong);

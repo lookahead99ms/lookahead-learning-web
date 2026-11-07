@@ -17,9 +17,31 @@
     } @else {
       <section class="panel" id="feedback-backlog" aria-labelledby="feedback-heading">
         <header class="list-head">
-          <div>
-            <p class="eyebrow">Admin</p>
-            <h1 id="feedback-heading">Support tickets and feedback</h1>
+          <div class="title-row">
+            <div>
+              <p class="eyebrow">Admin</p>
+              <h1 id="feedback-heading">Support tickets and feedback</h1>
+              @if (jobsLine(); as line) {
+                <p class="jobs-line" [class.failed]="line.failed" [attr.role]="line.failed ? 'alert' : 'status'">{{ line.text }}</p>
+              }
+            </div>
+            @if (isOwner()) {
+              <div class="jobs" role="group" aria-label="Jobs">
+                <span class="jobs-label">Jobs</span>
+                @for (entry of jobs; track entry.job) {
+                  <button
+                    type="button"
+                    class="secondary small run-job"
+                    [attr.data-job]="entry.job"
+                    (click)="runJob(entry.job)"
+                    [disabled]="runningJob() === entry.job"
+                    [attr.aria-busy]="runningJob() === entry.job"
+                  >
+                    {{ entry.label }}
+                  </button>
+                }
+              </div>
+            }
           </div>
           @if (seesAll()) {
             <div class="view-tabs" role="group" aria-label="View">
@@ -102,7 +124,6 @@
                   <col class="c-sum" />
                   <col class="c-from" />
                   <col class="c-type" />
-                  <col class="c-page" />
                   <col class="c-status" />
                   <col class="c-ticket" />
                   <col class="c-updated" />
@@ -114,7 +135,6 @@
                     <th scope="col">Summary</th>
                     <th scope="col">From</th>
                     <th scope="col">Type</th>
-                    <th scope="col">Page</th>
                     <th scope="col">Status</th>
                     <th scope="col">Ticket</th>
                     <th scope="col" class="right">Updated</th>
@@ -135,10 +155,9 @@
                       <td class="key">
                         <span class="kind-badge" [class.ticket]="isRequest(item)">{{ kindLabel(item) }}</span>&ngsp;<span class="item-id">{{ item.id }}</span>
                       </td>
-                      <td class="summary">{{ item.title }}</td>
+                      <td class="summary"><span class="summary-text">{{ item.title }}</span>&ngsp;<span class="summary-meta">{{ item.page }}</span></td>
                       <td>{{ item.reviewerName }}</td>
                       <td>{{ typeLabel(item) }}</td>
-                      <td>{{ item.page }}</td>
                       <td><span class="status-pill" [attr.data-tone]="statusTone(item.status)">{{ statusLabel(item) }}</span></td>
                       <td class="ticket">
                         @if (item.ticketId) {

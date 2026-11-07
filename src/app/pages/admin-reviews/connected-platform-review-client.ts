@@ -10,6 +10,8 @@ import {
   PromoteResult,
   ReviewAttachment,
   ReviewStatus,
+  SweepJob,
+  SweepRunResult,
 } from './platform-review.model';
 
 /**
@@ -86,6 +88,17 @@ export class ConnectedPlatformReviewClient implements PlatformReviewClient {
     });
   }
 
+  /** DLV-971: the owner's Jobs buttons; the Domain's 403 for anyone else arrives as `forbidden`, its 409 as `conflict`. */
+  async runSweeps(job: SweepJob): Promise<SweepRunResult> {
+    return this.data(
+      await this.request(this.accounts.apiPath('/sweeps/run'), {
+        method: 'POST',
+        headers: { ...(await this.csrf()), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ job }),
+      }),
+    );
+  }
+
   async attachmentUrl(item: PlatformReviewItem, attachment: ReviewAttachment): Promise<string> {
     const response = await this.send(
       `/${this.checked(item.id)}/attachments/${this.checked(attachment.id)}`,
@@ -111,7 +124,10 @@ export class ConnectedPlatformReviewClient implements PlatformReviewClient {
   }
 
   private async json<T>(path: string, init: RequestInit = {}): Promise<T> {
-    const response = await this.send(path, init);
+    return this.data(await this.send(path, init));
+  }
+
+  private async data<T>(response: Response): Promise<T> {
     try {
       return (await response.json()).data as T;
     } catch {

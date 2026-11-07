@@ -13,13 +13,14 @@ import {
   PlatformReviewItem,
   PlatformReviewSummary,
   PlatformReviewViewer,
+  SweepJob,
   isRequest,
   requestTypes,
   reviewCategories,
   reviewStatuses,
 } from '../admin-reviews/platform-review.model';
 import { FeedbackItemView } from './feedback-item';
-import { kindLabel, matchesSearch, sortNewest, statusLabel, statusTone, typeLabel, updatedLabel } from './feedback-backlog';
+import { SWEEP_JOBS, jobLabel, jobsRanLine, kindLabel, matchesSearch, sortNewest, statusLabel, statusTone, typeLabel, updatedLabel } from './feedback-backlog';
 
 /** The html class that stops the page behind the dialog from scrolling. */
 export const DIALOG_OPEN_CLASS = 'feedback-dialog-open';
@@ -63,6 +64,12 @@ export class AdminFeedbackPage implements OnInit, OnDestroy {
   protected readonly nextBefore = signal<string | null>(null);
   protected readonly loadingOlder = signal(false);
   protected readonly seesAll = computed(() => this.viewer()?.role === 'owner' || this.viewer()?.role === 'admin');
+  /** The owner alone (the same role check as the triage of a review) has the Jobs buttons. */
+  protected readonly isOwner = computed(() => this.viewer()?.role === 'owner');
+  protected readonly jobs = SWEEP_JOBS;
+  protected readonly runningJob = signal<SweepJob | null>(null);
+  /** The line under the title after the last run: what the job did, or that it could not be run. */
+  protected readonly jobsLine = signal<{ text: string; failed: boolean } | null>(null);
 
   // Pills, search and filters
   protected readonly view = signal<'all' | 'mine'>('all');
@@ -142,6 +149,29 @@ export class AdminFeedbackPage implements OnInit, OnDestroy {
       // The button stays; the next click tries again.
     } finally {
       this.loadingOlder.set(false);
+    }
+  }
+
+  /**
+   * DLV-971: one of the Jobs buttons. The Domain runs that 4-hour job now (stale support tickets closed, the delivery
+   * inbox merged, expired admissions removed, or all three) and answers what it did; the list is reloaded after a run
+   * that may have closed tickets.
+   */
+  protected async runJob(job: SweepJob): Promise<void> {
+    if (this.runningJob()) return;
+    this.runningJob.set(job);
+    try {
+      const result = await this.client.runSweeps(job);
+      this.jobsLine.set({ text: jobsRanLine(result), failed: false });
+      if (job === 'support-requests' || job === 'all') await this.load();
+    } catch (error) {
+      const unavailable = error instanceof PlatformReviewError && error.kind === 'conflict';
+      this.jobsLine.set({
+        text: unavailable ? `${jobLabel(job)}: not available on this environment.` : `${jobLabel(job)} could not be run. Nothing changed; try again.`,
+        failed: !unavailable,
+      });
+    } finally {
+      this.runningJob.set(null);
     }
   }
 

@@ -83,6 +83,7 @@ describe('The item page /admin/feedback/:id (DLV-971)', () => {
       remove: vi.fn(async () => {}),
       triage: async (_id, status, ownerNote) => ({ ...ticket, status, ownerNote }),
       promote: async () => ({ ticketId: 'DLV-0042', item: { ...ticket, ticketId: 'DLV-0042' } }),
+      runSweeps: async (job) => ({ job, ranAt: '2026-11-06T18:30:00Z', supportRequestsClosed: null, inboxMerged: null, inboxResult: null, admissionsRemoved: null }),
       attachmentUrl: vi.fn(async () => 'blob:test'),
       releaseAttachmentUrl: vi.fn((_url: string) => {}),
     };

@@ -174,6 +174,7 @@ describe('Platform reviews page', () => {
         stored = stored.map((entry) => (entry.id === id ? promoted : entry));
         return { ticketId: 'DLV-0042', item: promoted };
       }),
+      runSweeps: async (job) => ({ job, ranAt: '2026-11-06T18:30:00Z', supportRequestsClosed: null, inboxMerged: null, inboxResult: null, admissionsRemoved: null }),
       attachmentUrl: async () => 'blob:test',
       releaseAttachmentUrl: () => {},
     };
