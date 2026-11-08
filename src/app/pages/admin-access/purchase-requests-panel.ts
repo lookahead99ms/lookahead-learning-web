@@ -65,7 +65,7 @@ export function viewerRole(account: { authorPreview?: boolean; permissions?: { f
 
 /**
  * DLV-969 (owner, 2026-11-04, after testing DEV): the DEV test accounts' purchase requests, on People and access →
- * Waiting for access → Purchase requests. The owner and admins approve or decline them; co-authors and everyone else see
+ * Review requests → Purchase requests. The owner and admins approve or decline them; co-authors and everyone else see
  * nothing (the Domain sends `pendingPurchase` to the owner and admins only and refuses anyone else with 403
  * PURCHASE_APPROVAL_FORBIDDEN). The page loads the test-account rows (it needs the count for its tab label) and passes
  * them in; `reload` asks it for fresh rows after a decision or on Refresh.

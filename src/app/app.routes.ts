@@ -14,7 +14,7 @@ import { legacyInterviewSearchRedirect } from './content/search-route-compatibil
 import { retiredContentRedirect } from './content/retired-content-routes';
 
 export const routes: Routes = [
-  // Owner, 2026-11-07: Clean up admissions on Waiting for access runs the Domain's admissions job through the review client.
+  // Owner, 2026-11-07: Clean up admissions on Review requests runs the Domain's admissions job through the review client.
   {
     path: 'admin/access',
     canActivate: [accessGuard],

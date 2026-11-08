@@ -396,7 +396,7 @@ describe('Sample pricing page (DLV-209)', () => {
     let records: unknown[];
     let calls: { path: string; body: unknown }[];
     const OWNER_TEXT =
-      'This is DEV, so no payment is taken. Learner 07 is a test account. The owner or an admin completes this purchase: go back to your own account, open People & Access (admins: Test Accounts) → Waiting for access → Purchase requests, and approve or decline it.';
+      'This is DEV, so no payment is taken. Learner 07 is a test account. The owner or an admin completes this purchase: go back to your own account, open People & Access (admins: Test Accounts) → Review requests → Purchase requests, and approve or decline it.';
     async function open(options: { dev: boolean; testAccount: boolean }) {
       TestBed.resetTestingModule();
       calls = [];
@@ -624,7 +624,7 @@ describe('Sample pricing page (DLV-209)', () => {
       expect(title()).toBe('Your plan');
       await press('Continue');
       expect(title()).toBe('Review your order');
-      expect(text(dialog())).not.toMatch(/Review request|Send purchase request|purchase request/i);
+      expect(text(dialog())).not.toMatch(/Review request(?!s)|Send purchase request|purchase request/i);
       expect(purchases()).toHaveLength(0);
       await press('Continue to payment');
       // Behind the scenes the purchase is sent, and becomes a request; the DEV screen comes once it exists.
@@ -639,9 +639,9 @@ describe('Sample pricing page (DLV-209)', () => {
       const status = screen.querySelector('#checkout-notice-description')!;
       expect(status.getAttribute('role')).toBe('status');
       expect(text(status)).toBe(OWNER_TEXT);
-      expect(text(dialog())).not.toMatch(/Review request|Send purchase request|Simulated purchase completed|Pay \$/);
+      expect(text(dialog())).not.toMatch(/Review request(?!s)|Send purchase request|Simulated purchase completed|Pay \$/);
       expect(screen.querySelector('a')).toBeNull();
-      expect([...dialog().querySelectorAll('.checkout-foot button')].map(text)).toEqual(['Go to Waiting for access', 'Close']);
+      expect([...dialog().querySelectorAll('.checkout-foot button')].map(text)).toEqual(['Go to Review requests', 'Close']);
       expect(dialog().querySelector('.checkout-foot .foot-centred')).not.toBeNull();
 
       // Escape waits while the test session is ending.
@@ -653,11 +653,11 @@ describe('Sample pricing page (DLV-209)', () => {
       sessions.returning.set(false);
       fixture.detectChanges();
 
-      // Go to Waiting for access ends the test session with the menu's own back(), landing on the request. Nothing is stored.
+      // Go to Review requests ends the test session with the menu's own back(), landing on the request. Nothing is stored.
       const back = vi.spyOn(sessions, 'back').mockResolvedValue();
       const setItem = vi.spyOn(Storage.prototype, 'setItem');
       const address = window.location.href;
-      await press('Go to Waiting for access');
+      await press('Go to Review requests');
       expect(back).toHaveBeenCalledExactlyOnceWith('/admin/access?tab=waiting&view=purchases&request=pur-9&return=%2Fpricing&account=tester');
       expect(setItem).not.toHaveBeenCalled();
       expect(window.location.href).toBe(address);
@@ -678,14 +678,14 @@ describe('Sample pricing page (DLV-209)', () => {
       expect(text(dialog().querySelector('[data-dev-checkout] [role="alert"]'))).toBe('Could not go back to your account. Try again.');
     });
 
-    it('Go to Waiting for access leaves out a purchase id the answer did not send', async () => {
+    it('Go to Review requests leaves out a purchase id the answer did not send', async () => {
       purchase = () => new Response(JSON.stringify({ data: { status: 'pending', providerStatus: 'awaiting_owner_approval' } }));
       await open({ dev: true, testAccount: true });
       await choose('Choose Learn');
       await press('Continue');
       await press('Continue to payment');
       const back = vi.spyOn(TestBed.inject(TestSessions), 'back').mockResolvedValue();
-      await press('Go to Waiting for access');
+      await press('Go to Review requests');
       expect(back).toHaveBeenCalledExactlyOnceWith('/admin/access?tab=waiting&view=purchases&return=%2Fpricing&account=tester');
     });
 
@@ -747,9 +747,9 @@ describe('Sample pricing page (DLV-209)', () => {
       );
       // The waiting purchase may be for another plan, so this screen does not show the chosen plan as its order.
       expect(screen.querySelector('.order')).toBeNull();
-      expect([...dialog().querySelectorAll('.checkout-foot button')].map(text)).toEqual(['Go to Waiting for access', 'Close']);
+      expect([...dialog().querySelectorAll('.checkout-foot button')].map(text)).toEqual(['Go to Review requests', 'Close']);
       const back = vi.spyOn(TestBed.inject(TestSessions), 'back').mockResolvedValue();
-      await press('Go to Waiting for access');
+      await press('Go to Review requests');
       expect(back).toHaveBeenCalledExactlyOnceWith('/admin/access?tab=waiting&view=purchases&return=%2Fpricing&account=tester');
 
       // Another plan while it waits: the same steps, then the same screen, and nothing is sent.

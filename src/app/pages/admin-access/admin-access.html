@@ -69,22 +69,284 @@
     <p class="notice" role="status" aria-live="polite" [class.has-notice]="notice()">{{ notice() }}</p>
 
     <div class="access-panel" id="access-panel" role="tabpanel" [attr.aria-labelledby]="'access-tab-' + tab()">
-    @if (tab() === 'waiting') {
-      <!-- DLV-969 (2026-11-02): people who signed in to DEV but wait for the owner's admission. Owner, DEV test
-           2026-11-04: with the test accounts' purchase requests as a second sub-tab, for the owner and admins. -->
+    @if (person(); as who) {
+      <!-- Owner, 2026-11-08: Manage access on a row opens the person here, in place of the list: four numbered cards. -->
+      @let draftRow = draft!;
+      @let gate = admission();
+      <section class="person-panel" id="person-panel" aria-labelledby="person-heading">
+        <div class="person-crumbs">
+          <button type="button" class="action-link back-link" (click)="selectTab(fromTab())">← Back to {{ fromTab() === 'test' ? 'Test accounts' : fromTab() === 'waiting' ? 'Review requests' : 'People' }}</button>
+        </div>
+        <div class="person-head">
+          <div class="person-id">
+            <h2 id="person-heading">{{ who.name }}</h2>
+            <span class="state-pill" [attr.data-state]="gate.state">{{ gate.label }}</span>
+          </div>
+          <p class="person-sub">
+            @if (who.email && who.email !== who.name) {<span>{{ who.email }}</span>}
+            @if (who.username && who.username !== who.name && who.username !== who.email && !internalName(who.username)) {<span class="mono">{{ who.username }}</span>}
+            @if (who.accountId) {<span>Account ID <span class="mono">{{ who.accountId }}</span></span>}
+          </p>
+        </div>
+
+        <!-- Owner, 2026-11-08: the person's access as tabs, so each part uses the whole column: DEV admission (not for a
+             test account), Roles, Course access, Plans and purchases, then Review & confirm, where Save access lives. -->
+        @let personView = personTab();
+        <div class="waiting-tabs person-tabs" role="tablist" aria-label="Manage access" (keydown)="onPersonKey($event)">
+          @for (item of personTabs(); track item.id) {
+            <button
+              type="button"
+              role="tab"
+              [id]="'person-tab-' + item.id"
+              aria-controls="person-tabpanel"
+              [attr.aria-selected]="personView === item.id"
+              [attr.tabindex]="personView === item.id ? 0 : -1"
+              (click)="selectPersonTab(item.id)"
+            >
+              {{ item.label }}
+            </button>
+          }
+        </div>
+        <div class="cards" id="person-tabpanel" role="tabpanel" [attr.aria-labelledby]="'person-tab-' + personView">
+          @switch (personView) {
+            @case ('admission') {
+          <div class="panel admission-card" id="dev-admission">
+            <dl class="admission-facts">
+              <div><dt>Gate</dt><dd><span class="state-pill" [attr.data-state]="gate.state">{{ gate.label }}</span></dd></div>
+              @if (gate.methods.length) {
+                <div><dt>Signs in with</dt><dd>{{ gate.methods.join(', ') }}</dd></div>
+              }
+              @if (who.email) {
+                <div><dt>Email</dt><dd>{{ who.email }}</dd></div>
+              }
+            </dl>
+            @if (gate.sameEmail) {
+              <p class="same-email-flag"><span aria-hidden="true">⚠</span> {{ gate.sameEmail }}</p>
+            }
+            <p class="context-note">
+              @switch (gate.state) {
+                @case ('prepared') { No account yet: this is an invite. The first time this email signs in on DEV, the person is admitted at once with the roles and course access on the other tabs. It waits 14 days, and saving again renews the window. No email is sent, so tell the person yourself. }
+                @case ('test') { Test accounts never pass the DEV gate: staff use them from Switch to a test account in the account menu. Reset and Delete stay on the Test accounts tab. }
+                @case ('disabled') { Disabled: every sign-in is blocked. Manage DEV admission offers Enable, which reopens the gate with the same account, roles and progress, or Delete. }
+                @case ('admitted') { Admitted through the DEV gate. Admission is separate from the other tabs: a learner can be admitted with no role at all. Manage DEV admission offers Disable or Delete, each confirmed by typing its word. }
+                @default { This build does not report the sign-in state for this account. }
+              }
+            </p>
+            <div class="card-actions">
+              @if (gate.state === 'prepared') {
+                <button type="button" class="caution-button" [disabled]="busy()" (click)="withdraw()">Withdraw invite</button>
+              }
+              @if (canManageAdmission()) {
+                <button type="button" class="secondary-action" [disabled]="busy()" [attr.aria-expanded]="!!admissionDialog()" aria-controls="admission-dialog" (click)="openAdmission()">Manage DEV admission</button>
+              }
+            </div>
+          </div>
+
+            }
+            @case ('roles') {
+          <fieldset class="panel" [disabled]="busy() || !canManage()">
+            <legend class="visually-hidden">Roles</legend>
+            <div class="role-grid">
+              @for (role of roleOptions; track role.id) {
+                <label class="role-option">
+                  <input
+                    type="checkbox"
+                    [checked]="draftRow.roles.includes(role.id)"
+                    (change)="toggle('roles', role.id, $any($event.target).checked)"
+                  />
+                  <span class="role-text"><strong>{{ role.label }}</strong><span>{{ role.description }}</span></span>
+                </label>
+              }
+            </div>
+            <p class="context-note">
+              The owner role cannot be assigned here. Multiple selected roles combine their permissions.
+              Choosing Admin also selects the entire curriculum; you can clear it before saving.
+            </p>
+          </fieldset>
+
+            }
+            @case ('courses') {
+          <fieldset class="panel" [disabled]="busy() || !canManage()">
+            <legend class="visually-hidden">Course access</legend>
+            <label class="full-curriculum">
+              <input type="checkbox" [ngModel]="draftRow.fullCurriculum" (ngModelChange)="setFullCurriculum($event)" /> Entire curriculum, including future courses
+            </label>
+            @if (draftRow.roles.includes('tester')) {
+              <p class="context-note">Tester access includes the entire curriculum.</p>
+            }
+            <div class="courses" role="group" aria-label="Courses">
+              @for (topic of topics(); track topic) {
+                <label>
+                  <input
+                    type="checkbox"
+                    [checked]="draftRow.topicGrants.includes(topic)"
+                    [disabled]="draftRow.fullCurriculum || draftRow.roles.includes('tester')"
+                    (change)="toggle('topicGrants', topic, $any($event.target).checked)"
+                  />
+                  {{ topicLabel(topic) }}
+                </label>
+              }
+            </div>
+            <p class="context-note">
+              Private previews require access to the entire curriculum because they can contain course
+              material. A grant is not a purchase. Grants saved elsewhere remain in effect.
+            </p>
+          </fieldset>
+
+            }
+            @case ('review') {
+          <div class="panel review-panel" id="review-access">
+            <h3>Review &amp; confirm</h3>
+            <p class="context-note">
+              @if (who.accountId) { This is what changes for {{ who.name }}. Nothing is saved until you press Save access below. }
+              @else { {{ who.name }} will be admitted with this access at their first sign-in. Nothing is saved until you press Save access below. }
+            </p>
+            @if (changes().length) {
+              <ul class="change-list">
+                @for (change of changes(); track change.kind + change.text) {
+                  <li [class.added]="change.added" [class.removed]="!change.added">
+                    <span class="change-kind">{{ change.kind }}</span>
+                    <span class="change-text">{{ change.added ? '+ ' : '− ' }}{{ change.text }}</span>
+                  </li>
+                }
+              </ul>
+            } @else {
+              <p class="empty">No changes yet. Tick or clear roles and courses on the other tabs; they are listed here before you save.</p>
+            }
+          </div>
+            }
+            @default {
+          <div class="panel membership-panel">
+            @if (who.accountId) {
+              <app-admin-memberships [accountId]="who.accountId" [readOnly]="!canManage()" />
+              @if (gate.canDowngrade) {
+                <div class="card-actions">
+                  <button type="button" class="caution-button" [disabled]="busy()" [attr.aria-expanded]="downgrading()" aria-controls="downgrade-dialog" (click)="startDowngrade()">Downgrade to free</button>
+                </div>
+              }
+            } @else {
+              <p class="empty">Nothing yet. Plans appear once the account exists.</p>
+            }
+            <p class="context-note">Read only here apart from the staff upgrade: a plan or a pass is bought by the person. Course access above is a grant, not a purchase.</p>
+          </div>
+
+            }
+          }
+          <!-- Review & confirm is the last tab (owner, 2026-11-08): it lists the changes, and only its Save access writes. -->
+          @let pendingChanges = changes();
+          <!-- The same flow as the study plan builder: Back, Continue to the next tab, Save access on the last. -->
+          <div class="save-bar" role="group" aria-label="Manage access navigation">
+            <p class="save-message">
+              @if (pendingChanges.length) { {{ pendingChanges.length === 1 ? '1 change' : pendingChanges.length + ' changes' }} to review. }
+              @else { No changes yet. }
+              Roles and Course access save together as one assignment.
+            </p>
+            <div class="save-actions">
+              <button type="button" class="secondary-action" [disabled]="busy()" (click)="selectTab(fromTab())">Discard</button>
+              @if (previousPersonTab(); as previous) {
+                <button type="button" class="secondary-action" [disabled]="busy()" (click)="backPerson()">Back</button>
+              }
+              @if (nextPersonTab(); as next) {
+                <button type="button" class="primary-action" [disabled]="busy()" (click)="continuePerson()">Continue to {{ next.label }}</button>
+              } @else {
+                <button type="button" class="primary-action" [disabled]="busy() || !canManage() || !pendingChanges.length" (click)="save()">Save access</button>
+              }
+            </div>
+          </div>
+        </div>
+      </section>
+
+      @if (admissionDialog(); as pending) {
+        <div class="dialog-scrim" (click)="$event.target === $event.currentTarget && cancelAdmission()">
+          <div class="dialog" id="admission-dialog" role="dialog" aria-modal="true" aria-labelledby="admission-heading">
+            <h2 id="admission-heading">Manage DEV admission for {{ who.name }}</h2>
+            <p class="section-note">Enable is one click. Disable and Delete ask for the word that confirms them.</p>
+            <div class="removal" role="group" aria-label="Admission choices">
+              @if (gate.canEnable) {
+                <div class="removal-option">
+                  <button type="button" class="primary-action" [title]="admissionText.enable" aria-describedby="admission-enable" [disabled]="busy()" (click)="enable()">Enable</button>
+                  <p id="admission-enable">{{ admissionText.enable }}</p>
+                </div>
+              }
+              @if (gate.canDisable) {
+                <div class="removal-option strongest">
+                  <button type="button" class="danger-button" [title]="admissionText.disable" aria-describedby="admission-disable" [disabled]="busy()" [attr.aria-pressed]="pending.action === 'disable'" (click)="chooseAdmission('disable')">
+                    <span class="warning-mark" aria-hidden="true">⚠</span> Disable
+                  </button>
+                  <p id="admission-disable">{{ admissionText.disable }}</p>
+                </div>
+              }
+              @if (gate.deletePath) {
+                <div class="removal-option">
+                  <button type="button" class="caution-button" [title]="admissionText.remove" aria-describedby="admission-remove" [disabled]="busy()" [attr.aria-pressed]="pending.action === 'delete'" (click)="chooseAdmission('delete')">Delete</button>
+                  <p id="admission-remove">{{ admissionText.remove }}</p>
+                </div>
+              }
+            </div>
+            @if (pending.action; as action) {
+              @let disabling = action === 'disable';
+              @let word = disabling ? 'DISABLE' : 'DELETE';
+              <div class="reset-panel" [class.danger-panel]="disabling">
+                <h3>@if (disabling) {<span aria-hidden="true">⚠ </span>Disable {{ who.name }}} @else {Delete {{ who.name }}}</h3>
+                <p>{{ disabling ? admissionText.disable : admissionText.remove }}</p>
+                @if (!disabling) {
+                  <p>Purchase history stays for the audit.</p>
+                }
+                <label>Type {{ word }} to confirm <input [(ngModel)]="admissionConfirmation" autocomplete="off" /></label>
+                <div class="actions">
+                  <button type="button" [class]="disabling ? 'danger-button' : 'caution-button'" [disabled]="busy() || admissionConfirmation !== word" (click)="confirmAdmission()">
+                    {{ disabling ? 'Confirm disable' : 'Confirm deletion' }}
+                  </button>
+                  <button type="button" class="action-link" [disabled]="busy()" (click)="cancelAdmission()">Cancel</button>
+                </div>
+              </div>
+            } @else {
+              <div class="actions">
+                <button type="button" class="action-link" [disabled]="busy()" (click)="cancelAdmission()">Cancel</button>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      @if (downgrading()) {
+        <div class="dialog-scrim" (click)="$event.target === $event.currentTarget && cancelDowngrade()">
+          <div class="dialog" id="downgrade-dialog" role="dialog" aria-modal="true" aria-labelledby="downgrade-heading">
+            <h2 id="downgrade-heading">Downgrade {{ who.name }} to a free learner</h2>
+            <p>This removes staff roles and course grants, and ends current or scheduled paid access. The account, study plans and purchase history remain.</p>
+            <div class="reset-panel">
+              <label>Type DOWNGRADE to confirm <input [(ngModel)]="downgradeConfirmation" autocomplete="off" /></label>
+              <div class="actions">
+                <button type="button" class="caution-button" [disabled]="busy() || downgradeConfirmation !== 'DOWNGRADE'" (click)="confirmDowngrade()">Confirm downgrade</button>
+                <button type="button" class="action-link" [disabled]="busy()" (click)="cancelDowngrade()">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+    } @else if (tab() === 'waiting') {
+      <!-- Owner, 2026-11-08: Review requests has its own tab bar. DEV admissions (the gate) and Invites sent (prepared access,
+           last) are the owner's; Purchase requests is the owner's and the admins' (DLV-969, DEV test 2026-11-04). -->
       @let view = waitingView();
       <section class="access-section" id="waiting-for-access" aria-labelledby="waiting-for-access-heading">
         <div class="section-heading with-action">
           <span class="section-icon" aria-hidden="true">⏳</span>
           <div>
-            <h2 id="waiting-for-access-heading">Waiting for access</h2>
+            <h2 id="waiting-for-access-heading">Review requests</h2>
             @if (view === 'access') {
               <p class="section-note">
                 People who signed in but are not admitted yet. A request that nobody admits is removed after {{ expiryHours() }} hours.
+                Someone whose email has an invite is admitted as they sign in and never waits here.
               </p>
               @if (cleanupLine(); as line) {
                 <p class="cleanup-line" [class.failed]="line.failed" [attr.role]="line.failed ? 'alert' : 'status'">{{ line.text }}</p>
               }
+            } @else if (view === 'invites') {
+              <p class="section-note">
+                Emails you added before their first sign-in, from Add by email on People. Each is admitted with its roles and course
+                grants the moment it signs in, and expires after 14 days. No email goes out: tell the person yourself.
+              </p>
             } @else {
               <p class="section-note">
                 In DEV only test accounts can buy. Each Subscribe, Upgrade or Change waits here; Approve changes the plan exactly
@@ -108,28 +370,28 @@
                 </button>
               }
             </div>
+          } @else if (view === 'invites') {
+            <button class="secondary-action" type="button" (click)="reload()" [disabled]="busy()">Refresh</button>
           } @else {
             <button class="secondary-action" type="button" (click)="loadPurchases()" [disabled]="purchasesBusy()">Refresh</button>
           }
         </div>
-        @if (waitingViews().length > 1 || view === 'purchases') {
-          <div class="waiting-tabs" role="tablist" aria-label="Waiting for access" (keydown)="onWaitingKey($event)">
-            @for (item of waitingViews(); track item.id) {
-              <button
-                type="button"
-                role="tab"
-                [id]="'waiting-tab-' + item.id"
-                aria-controls="waiting-panel"
-                [attr.aria-selected]="view === item.id"
-                [attr.tabindex]="view === item.id ? 0 : -1"
-                (click)="selectWaitingView(item.id)"
-              >
-                {{ item.label }} <span class="tab-count">{{ item.count }}</span>
-              </button>
-            }
-          </div>
-        }
-        <div id="waiting-panel" [attr.role]="waitingViews().length > 1 || view === 'purchases' ? 'tabpanel' : null" [attr.aria-labelledby]="waitingViews().length > 1 || view === 'purchases' ? 'waiting-tab-' + view : null">
+        <div class="waiting-tabs" role="tablist" aria-label="Review requests" (keydown)="onWaitingKey($event)">
+          @for (item of waitingViews(); track item.id) {
+            <button
+              type="button"
+              role="tab"
+              [id]="'waiting-tab-' + item.id"
+              aria-controls="waiting-panel"
+              [attr.aria-selected]="view === item.id"
+              [attr.tabindex]="view === item.id ? 0 : -1"
+              (click)="selectWaitingView(item.id)"
+            >
+              {{ item.label }} <span class="tab-count">{{ item.count }}</span>
+            </button>
+          }
+        </div>
+        <div id="waiting-panel" role="tabpanel" [attr.aria-labelledby]="'waiting-tab-' + view">
         @if (view === 'purchases') {
           <app-purchase-requests
             [rows]="purchaseRows()"
@@ -139,6 +401,23 @@
             (reviewOpened)="requestReview.set(null)"
             (reload)="loadPurchases()"
           />
+        } @else if (view === 'invites') {
+          <div class="assignment-list" id="invites-sent">
+            @for (assignment of prepared(); track assignment.id) {
+              <article class="assignment pending">
+                <div class="assignment-text">
+                  <p class="assignment-who">{{ assignment.pendingEmail }}</p>
+                  <p class="assignment-state"><span class="state-dot" aria-hidden="true"></span>Admitted at first sign-in</p>
+                  <p class="assignment-grants">{{ roleNames(assignment.roles) }} · {{ courseText(assignment) }}</p>
+                </div>
+                <div class="assignment-actions">
+                  <button class="secondary-action" type="button" (click)="reviewPrepared(assignment)" [disabled]="busy()">Manage access</button>
+                </div>
+              </article>
+            } @empty {
+              <p class="empty">No invites yet. Add by email on People prepares access for someone who has not signed in.</p>
+            }
+          </div>
         } @else {
         @if (waiting().length) {
           <table class="waiting-table">
@@ -177,8 +456,10 @@
                           }
                         </select>
                       </label>
-                      <button class="primary-action" type="button" (click)="admit(row)" [disabled]="busy()">Admit</button>
-                      <!-- DLV-971 (owner, 2026-11-06): the same two choices as People, Disable or Delete, for a request. -->
+                      <!-- Owner, 2026-11-08: Admit and Reject both confirm in a dialog before anything is written. -->
+                      <button class="primary-action" type="button" (click)="startAdmit(row)" [disabled]="busy()"
+                        [attr.aria-expanded]="admitting()?.accountId === row.accountId" aria-controls="admit-dialog">Admit</button>
+                      <!-- DLV-971 (owner, 2026-11-06): the same two choices as Manage DEV admission on a person, Disable or Delete, for a request. -->
                       <button class="secondary-action" type="button" (click)="startReject(row)" [disabled]="busy()"
                         [attr.aria-expanded]="rejecting()?.row?.accountId === row.accountId" aria-controls="reject-panel">Reject</button>
                     </div>
@@ -187,24 +468,41 @@
               }
             </tbody>
           </table>
+          @if (admitting(); as row) {
+            <div class="dialog-scrim" (click)="$event.target === $event.currentTarget && cancelAdmit()">
+              <div class="dialog" id="admit-dialog" role="dialog" aria-modal="true" aria-labelledby="admit-heading">
+                <h2 id="admit-heading">Admit {{ row.displayName }} as {{ admitLabel(admitRole[row.accountId] ?? '') }}</h2>
+                <p class="section-note">
+                  They pass the DEV gate on their next sign-in{{ row.email ? ' with ' + row.email : '' }}. Roles and course access can be
+                  changed later from People → Manage access.
+                </p>
+                <div class="actions">
+                  <button type="button" class="primary-action" [disabled]="busy()" (click)="confirmAdmit()">Confirm admit</button>
+                  <button type="button" class="action-link" [disabled]="busy()" (click)="cancelAdmit()">Cancel</button>
+                </div>
+              </div>
+            </div>
+          }
           @if (rejecting(); as pending) {
-            <div class="removal reject" id="reject-panel" role="group" [attr.aria-label]="'Reject ' + pending.row.displayName">
-              <h3>Reject {{ pending.row.displayName }}</h3>
+            <div class="dialog-scrim" (click)="$event.target === $event.currentTarget && cancelReject()">
+            <div class="dialog removal reject" id="reject-panel" role="dialog" aria-modal="true" [attr.aria-label]="'Reject ' + pending.row.displayName">
+              <h2>Reject {{ pending.row.displayName }}</h2>
+              <p class="section-note">Choose what rejecting means, then type the word that confirms it.</p>
               <div class="removal-option strongest">
-                <button type="button" class="danger-button" [title]="rejectText.disable" aria-describedby="reject-disable" [disabled]="busy()" (click)="chooseReject('disable')">
+                <button type="button" class="danger-button" [title]="rejectText.disable" aria-describedby="reject-disable" [disabled]="busy()" [attr.aria-pressed]="pending.action === 'disable'" (click)="chooseReject('disable')">
                   <span class="warning-mark" aria-hidden="true">⚠</span> Disable
                 </button>
                 <p id="reject-disable">{{ rejectText.disable }}</p>
               </div>
               <div class="removal-option">
-                <button type="button" class="caution-button" [title]="rejectText.remove" aria-describedby="reject-remove" [disabled]="busy()" (click)="chooseReject('remove')">Delete</button>
+                <button type="button" class="caution-button" [title]="rejectText.remove" aria-describedby="reject-remove" [disabled]="busy()" [attr.aria-pressed]="pending.action === 'remove'" (click)="chooseReject('remove')">Delete</button>
                 <p id="reject-remove">{{ rejectText.remove }}</p>
               </div>
               @if (pending.action; as action) {
                 @let disabling = action === 'disable';
                 @let word = disabling ? 'DISABLE' : 'DELETE';
                 <div class="reset-panel" [class.danger-panel]="disabling">
-                  <h4>@if (disabling) {<span aria-hidden="true">⚠ </span>Disable {{ pending.row.displayName }}} @else {Delete {{ pending.row.displayName }}'s request}</h4>
+                  <h3>@if (disabling) {<span aria-hidden="true">⚠ </span>Disable {{ pending.row.displayName }}} @else {Delete {{ pending.row.displayName }}'s request}</h3>
                   <label>Type {{ word }} to confirm <input [(ngModel)]="rejectConfirmation" autocomplete="off" /></label>
                   <div class="actions">
                     <button type="button" [class]="disabling ? 'danger-button' : 'caution-button'" [disabled]="busy() || rejectConfirmation !== word" (click)="confirmReject()">
@@ -219,6 +517,7 @@
                 </div>
               }
             </div>
+            </div>
           }
         } @else {
           <p class="empty">Nobody is waiting for access.</p>
@@ -226,180 +525,13 @@
         }
         </div>
       </section>
-    } @else if (tab() === 'test' || tab() === 'people') {
+    } @else {
       <app-test-accounts
         [view]="tab() === 'test' ? 'test' : 'people'"
         [assignments]="assignments()"
-        [focusAccount]="tab() === 'people' ? focusAccount() : null"
         (giveAccess)="giveAccessTo($event)"
+        (prepareAccess)="invite($event)"
       />
-    } @else if (tab() === 'saved') {
-      <section class="access-section" id="saved-assignments" aria-labelledby="saved-assignments-heading">
-        <div class="section-heading with-action">
-          <span class="section-icon" aria-hidden="true">🗂️</span>
-          <div>
-            <h2 id="saved-assignments-heading">Saved assignments</h2>
-            <p class="section-note">
-              {{ assignments().length }} {{ assignments().length === 1 ? 'person has' : 'people have' }} a staff role or course access from this page.
-            </p>
-          </div>
-          <button class="secondary-action" type="button" (click)="reload()" [disabled]="busy()">Reload list</button>
-        </div>
-        <div class="assignment-list">
-          @for (assignment of sortedAssignments(); track assignment.id) {
-            <article class="assignment" [class.pending]="assignment.pendingEmail || assignment.pending">
-              <div class="assignment-text">
-                <div class="assignment-person">
-                  <p class="assignment-who">{{ nameOf(assignment) }}</p>
-                  @if (emailOf(assignment); as email) {
-                    <p class="assignment-email">{{ email }}</p>
-                  }
-                </div>
-                <p class="assignment-state">
-                  <span class="state-dot" aria-hidden="true"></span>
-                  {{ assignment.pendingEmail || assignment.pending ? 'Pending verified sign-in' : 'Assigned' }}
-                </p>
-                <p class="assignment-grants">
-                  {{ roleNames(assignment.roles) }} · {{ courseText(assignment) }}
-                </p>
-              </div>
-              @if (canManage()) {
-                <div class="assignment-actions">
-                  <button class="secondary-action" type="button" (click)="review(assignment)" [disabled]="busy()">
-                    Review assignment
-                  </button>
-                  @if (assignment.accountId && removable(assignment.accountId)) {
-                    <!-- DLV-969: Disable or Delete lives on People, with its explanations; this opens it on this person. -->
-                    <button class="secondary-action" type="button" (click)="openPerson(assignment.accountId)" [disabled]="busy()">
-                      Disable or delete
-                    </button>
-                  }
-                </div>
-              }
-            </article>
-          } @empty {
-            <p class="empty">No saved assignments.</p>
-          }
-        </div>
-      </section>
-    } @else {
-      <section class="access-section" id="choose-person" aria-labelledby="choose-person-heading">
-        <div class="section-heading">
-          <span class="section-icon" aria-hidden="true">👤</span>
-          <div>
-            <h2 id="choose-person-heading">Choose a person</h2>
-            <p class="section-note">Find an account that already exists, or prepare access for an email before signup.</p>
-          </div>
-        </div>
-        <fieldset class="choose-grid" [disabled]="busy()">
-          <legend class="visually-hidden">Choose a person</legend>
-          <div class="panel">
-            <h3>Existing account</h3>
-            <label>Exact email or username <input type="text" [(ngModel)]="query" autocomplete="off" /></label>
-            <button class="primary-action" type="button" (click)="find()">Find existing account</button>
-          </div>
-          <div class="panel">
-            <h3>Before signup</h3>
-            <label>Email before signup <input type="email" [(ngModel)]="pendingEmail" autocomplete="off" /></label>
-            <button class="secondary-action" type="button" [disabled]="!canManage()" (click)="invite()">Prepare pending access</button>
-          </div>
-        </fieldset>
-        <p class="context-note">
-          Pending access requires verified email ownership through Cognito. Local signup does not
-          verify email and cannot claim it. Pending access expires 14 days after it is saved. Saving it
-          again renews this window. No invitation email is sent. New cloud-account onboarding is not
-          active yet; a newly registered account cannot claim this access until that integration is
-          enabled.
-        </p>
-      </section>
-
-
-    @if (draft; as selection) {
-      <section class="access-section review" id="review-access" aria-labelledby="review-access-heading">
-        <div class="section-heading">
-          <span class="section-icon" aria-hidden="true">✅</span>
-          <div>
-            <h2 id="review-access-heading">
-              Review access for {{ recipient()?.displayName || nameOf(selection) }}
-              @if (selection.accountId && emailOf(selection); as email) {
-                <span class="review-email">{{ email }}</span>
-              }
-            </h2>
-            @if (selection.accountId) {
-              <p class="section-note">Account ID: <span class="mono">{{ selection.accountId }}</span></p>
-            } @else {
-              <p class="section-note">Pending verified sign-in</p>
-            }
-          </div>
-        </div>
-
-        <div class="review-grid">
-          <div class="review-main">
-            <fieldset class="panel" [disabled]="busy() || !canManage()">
-              <legend>Roles</legend>
-              <div class="role-grid">
-                @for (role of roleOptions; track role.id) {
-                  <label class="role-option">
-                    <input
-                      type="checkbox"
-                      [checked]="selection.roles.includes(role.id)"
-                      (change)="toggle('roles', role.id, $any($event.target).checked)"
-                    />
-                    <span class="role-text"><strong>{{ role.label }}</strong><span>{{ role.description }}</span></span>
-                  </label>
-                }
-              </div>
-              <p class="context-note">
-                The owner role cannot be assigned here. Multiple selected roles combine their permissions.
-                Choosing Admin also selects the entire curriculum; you can clear it before saving.
-              </p>
-            </fieldset>
-
-            <fieldset class="panel" [disabled]="busy() || !canManage()">
-              <legend>Course access grants</legend>
-              <label class="full-curriculum">
-                <input type="checkbox" [(ngModel)]="selection.fullCurriculum" /> Entire curriculum, including future courses
-              </label>
-              @if (selection.roles.includes('tester')) {
-                <p class="context-note">Tester access includes the entire curriculum.</p>
-              }
-              <div class="courses" role="group" aria-label="Courses">
-                @for (topic of topics(); track topic) {
-                  <label>
-                    <input
-                      type="checkbox"
-                      [checked]="selection.topicGrants.includes(topic)"
-                      [disabled]="selection.fullCurriculum || selection.roles.includes('tester')"
-                      (change)="toggle('topicGrants', topic, $any($event.target).checked)"
-                    />
-                    {{ topicLabel(topic) }}
-                  </label>
-                }
-              </div>
-              <p class="context-note">
-                Private previews require access to the entire curriculum because they can contain course
-                material. Grants saved elsewhere remain in effect.
-              </p>
-            </fieldset>
-          </div>
-          <div class="review-side">
-            <!-- DLV-209: purchases and plan assignments have no server records yet; say so plainly. -->
-            <div class="panel membership-panel">
-              <h3>Plans and purchases</h3>
-              @if(draft?.accountId){<app-admin-memberships [accountId]="draft!.accountId" [readOnly]="!canManage()" />} @else {<p>Purchases require an existing account.</p>}
-              <p class="context-note">Course access on this form is an access grant, not a purchase.</p>
-            </div>
-            <div class="save-row">
-              <button class="primary-action" type="button" (click)="save()" [disabled]="busy() || !canManage()">Save access</button>
-              <p class="context-note">
-                To remove this assignment’s access, clear its roles, entire-curriculum selection and
-                selected courses, then save.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-    }
     }
     </div>
 

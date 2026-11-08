@@ -169,8 +169,26 @@
       </div>
       <div class="heading-actions">
         <button type="button" class="action-link" [disabled]="busy()" (click)="load()">Refresh</button>
+        @if (canGive()) {
+          <!-- Owner, 2026-11-08: prepared access for an email before its first sign-in opens the same person panel. -->
+          <button type="button" class="action-button" [disabled]="busy()" [attr.aria-expanded]="addingEmail()" aria-controls="add-by-email" (click)="openAddByEmail()">Add by email</button>
+        }
       </div>
     </div>
+    @if (addingEmail()) {
+      <form class="reset-panel action-panel add-email" id="add-by-email" (submit)="$event.preventDefault(); submitAddByEmail()">
+        <h3>Add by email</h3>
+        <p>The address they will sign in with on DEV. Continue opens their access; once you save it, they are admitted the first time that email signs in. No email is sent.</p>
+        <label>Email they will sign in with <input type="email" name="email" [(ngModel)]="newEmail" autocomplete="off" required /></label>
+        @if (panelError()) {
+          <p class="panel-error" role="alert">{{ panelError() }}</p>
+        }
+        <div class="actions">
+          <button type="submit" class="action-button" [disabled]="busy()">Continue</button>
+          <button type="button" class="action-link" [disabled]="busy()" (click)="cancelAddByEmail()">Cancel</button>
+        </div>
+      </form>
+    }
   }
 
   <p class="notice" role="status">{{ notice() }}</p>
@@ -204,22 +222,29 @@
       <caption class="visually-hidden">{{ testView ? 'Test accounts' : 'People' }}, their roles and their current access</caption>
       <thead>
         <tr>
-          <th scope="col">Select</th>
+          @if (testView) {
+            <th scope="col">Select</th>
+          }
           <th scope="col">Person</th>
           <th scope="col">Role</th>
           <th scope="col">Access now</th>
           <th scope="col">Last changed</th>
+          @if (!testView) {
+            <th scope="col"><span class="visually-hidden">Actions</span></th>
+          }
         </tr>
       </thead>
       <tbody>
         @for (row of visible(); track row.key) {
           <tr [class.self]="row.isSelf" [class.selected-row]="selectedKey() === row.key" [attr.data-account]="row.name">
-            <td class="select-cell" data-label="Select">
-              <label>
-                <span class="visually-hidden">Select {{ row.name }}</span>
-                <input type="checkbox" [checked]="selectedKey() === row.key" [disabled]="busy() || !!pending()" (change)="choose(row)" />
-              </label>
-            </td>
+            @if (testView) {
+              <td class="select-cell" data-label="Select">
+                <label>
+                  <span class="visually-hidden">Select {{ row.name }}</span>
+                  <input type="checkbox" [checked]="selectedKey() === row.key" [disabled]="busy() || !!pending()" (change)="choose(row)" />
+                </label>
+              </td>
+            }
             <th scope="row" data-label="Person">
               <span class="person">{{ row.name }}</span>
               @if (row.isSelf) {
@@ -276,10 +301,20 @@
               </ul>
             </td>
             <td data-label="Last changed">{{ changedText(row) }}</td>
+            @if (!testView) {
+              <!-- Owner, 2026-11-08: one action per person; everything else lives in the person panel it opens. -->
+              <td class="row-actions" data-label="Actions">
+                @if (canGive() && row.accountId && !row.pending && !row.isSelf) {
+                  <button type="button" class="action-button" [disabled]="busy()" (click)="giveAccess.emit(row)">Manage access</button>
+                } @else if (row.isSelf) {
+                  <span class="sub">Your own access is set elsewhere</span>
+                }
+              </td>
+            }
           </tr>
-          <!-- DLV-969 (owner, 2026-11-04): the selected account's actions and confirmations open in the row under it,
+          <!-- DLV-969 (owner, 2026-11-04): the selected test account's actions and confirmations open in the row under it,
                so a pick near the bottom of a long list never sends you back to the top. -->
-          @if (selectedKey() === row.key) {
+          @if (testView && selectedKey() === row.key) {
             <tr class="selection-row">
               <td colspan="5">
                 @if (selectedRow(); as chosen) {
@@ -287,22 +322,16 @@
                     <p><strong>{{ chosen.name }}</strong> selected</p>
                     <div class="selection-actions">
                       @if (chosen.accountId && !chosen.pending) {
-                        <button type="button" class="action-link" [attr.aria-expanded]="expanded() === chosen.key" [attr.aria-controls]="'history-' + chosen.key" (click)="toggle(chosen)">{{ expanded() === chosen.key ? 'Hide details' : 'Details' }}</button>
+                        <button type="button" class="action-link" [attr.aria-expanded]="expanded() === chosen.key" [attr.aria-controls]="'history-' + chosen.key" (click)="toggle(chosen)">{{ expanded() === chosen.key ? 'Hide plans and purchases' : 'Plans and purchases' }}</button>
                       }
                       @if (canGive() && chosen.accountId && !chosen.pending && !chosen.isSelf) {
-                        <button type="button" class="action-link" (click)="giveAccess.emit(chosen)">Give access</button>
+                        <button type="button" class="action-link" (click)="giveAccess.emit(chosen)">Manage access</button>
                       }
                       @if (chosen.test && mayReset(chosen.test)) {
                         <button type="button" class="action-link" [disabled]="busy() || !!pending()" (click)="select(chosen.test)">{{ dev() ? 'Reset to its scenario' : 'Reset' }}</button>
                       }
                       @if (chosen.test && mayDelete(chosen.test)) {
                         <button type="button" class="action-link" [disabled]="busy() || !!pending()" (click)="startDelete(chosen.test)">Delete</button>
-                      }
-                      @if (!chosen.isTest && chosen.canDowngrade && !chosen.isSelf) {
-                        <button type="button" class="action-link" [disabled]="busy()" (click)="startDowngrade(chosen)">Downgrade to free</button>
-                      }
-                      @if (!chosen.isTest && chosen.canDelete && !chosen.isSelf) {
-                        <button type="button" class="action-link" [disabled]="busy()" (click)="startRealDelete(chosen)">Delete learner</button>
                       }
                     </div>
                   </div>
@@ -361,81 +390,6 @@
                       </div>
                     </div>
                   }
-                  @if (!testView && downgradingReal(); as row) {
-                    <div class="reset-panel">
-                      <h3>Downgrade {{ row.name }} to a free learner</h3>
-                      <p>This removes staff roles and course grants, and ends current or scheduled paid access. The account, study plans and purchase history remain.</p>
-                      <label>Type DOWNGRADE to confirm <input [(ngModel)]="realConfirmation" autocomplete="off" /></label>
-                      @if (panelError()) {
-                        <p class="panel-error" role="alert">{{ panelError() }}</p>
-                      }
-                      <div class="actions">
-                        <button type="button" class="action-button" [disabled]="busy() || realConfirmation !== 'DOWNGRADE'" (click)="downgradeReal()">Confirm downgrade</button>
-                        <button type="button" class="action-link" [disabled]="busy()" (click)="closeConfirmations()">Cancel</button>
-                      </div>
-                    </div>
-                  }
-                  @if (!testView && deletingReal(); as row) {
-                    <div class="reset-panel">
-                      <h3>Delete learner {{ row.name }}</h3>
-                      <p>This disables Local sign-in and erases saved plans and progress. Purchase history remains for audit. This cannot be undone.</p>
-                      <label>Type DELETE to confirm <input [(ngModel)]="realConfirmation" autocomplete="off" /></label>
-                      @if (panelError()) {
-                        <p class="panel-error" role="alert">{{ panelError() }}</p>
-                      }
-                      <div class="actions">
-                        <button type="button" class="action-button" [disabled]="busy() || realConfirmation !== 'DELETE'" (click)="deleteReal()">Confirm deletion</button>
-                        <button type="button" class="action-link" [disabled]="busy()" (click)="closeConfirmations()">Cancel</button>
-                      </div>
-                    </div>
-                  }
-                  @if (!chosen.isSelf && (chosen.canDisable || chosen.canEnable || chosen.canRemove)) {
-                    <!-- DLV-969 (user, 2026-11-03): each action says what it does beside the button and on hover. -->
-                    <div class="removal" role="group" [attr.aria-label]="'Remove access for ' + chosen.name">
-                      <h3>Remove access for {{ chosen.name }}</h3>
-                      @if (chosen.canDisable) {
-                        <div class="removal-option strongest">
-                          <button type="button" class="danger-button" [title]="removalText.disable" aria-describedby="removal-disable" [disabled]="busy()" (click)="startRemoval(chosen, 'disable')">
-                            <span class="warning-mark" aria-hidden="true">⚠</span> Disable
-                          </button>
-                          <p id="removal-disable">{{ removalText.disable }}</p>
-                        </div>
-                      }
-                      @if (chosen.canEnable) {
-                        <div class="removal-option">
-                          <button type="button" class="action-button" [title]="removalText.enable" aria-describedby="removal-enable" [disabled]="busy()" (click)="enable(chosen)">Enable</button>
-                          <p id="removal-enable">{{ removalText.enable }}</p>
-                        </div>
-                      }
-                      @if (chosen.canRemove) {
-                        <div class="removal-option">
-                          <button type="button" class="caution-button" [title]="removalText.remove" aria-describedby="removal-remove" [disabled]="busy()" (click)="startRemoval(chosen, 'remove')">Delete</button>
-                          <p id="removal-remove">{{ removalText.remove }}</p>
-                        </div>
-                      }
-                    </div>
-                  @if (!testView && removing()?.row?.key === chosen.key ? removing() : null; as pending) {
-                    @let disabling = pending.action === 'disable';
-                    @let word = disabling ? 'DISABLE' : 'DELETE';
-                    <div class="reset-panel" [class.danger-panel]="disabling">
-                      <h3>@if (disabling) {<span aria-hidden="true">⚠ </span>Disable {{ pending.row.name }}} @else {Delete {{ pending.row.name }}}</h3>
-                      <p>{{ disabling ? removalText.disable : removalText.remove }}</p>
-                      @if (!disabling) {
-                        <p>Purchase history stays for the audit.</p>
-                      }
-                      <label>Type {{ word }} to confirm <input [(ngModel)]="removalConfirmation" autocomplete="off" /></label>
-                      @if (panelError()) {
-                        <p class="panel-error" role="alert">{{ panelError() }}</p>
-                      }
-                      <div class="actions">
-                        <button type="button" [class]="disabling ? 'danger-button' : 'caution-button'" [disabled]="busy() || removalConfirmation !== word" (click)="confirmRemoval()">
-                          {{ disabling ? 'Confirm disable' : 'Confirm deletion' }}
-                        </button>
-                        <button type="button" class="action-link" [disabled]="busy()" (click)="closeConfirmations()">Cancel</button>
-                      </div>
-                    </div>
-                  }
-                  }
                 }
               </td>
             </tr>
@@ -464,7 +418,7 @@
                         }
                       </ul>
                     } @else {
-                      <p class="empty">No plans or passes. Access comes from roles or course grants only.</p>
+                      <p class="empty">{{ row.name }} has not bought a plan or a pass. Their access comes from their role and course grants, set with Manage access.</p>
                     }
                   }
                 }

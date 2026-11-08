@@ -1061,3 +1061,379 @@ button:disabled {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Owner, 2026-11-08: the person panel. Manage access on a row opens it in place of the list: a heading with the
+   gate state, Manage DEV admission (one card), Manage platform access (three numbered cards), then the save bar.
+   Manage admission, Downgrade and Review & confirm are dialogs over the page. */
+.person-panel {
+  display: grid;
+  gap: 8px;
+  scroll-margin-top: calc(var(--platform-header-height, 76px) + 16px);
+}
+.person-crumbs {
+  margin-bottom: 4px;
+}
+.action-link {
+  min-height: 40px;
+  padding: 8px 4px;
+  border: 0;
+  background: none;
+  color: var(--accent-link);
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.back-link {
+  text-decoration: none;
+}
+.back-link:hover {
+  text-decoration: underline;
+}
+.person-head {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 24px;
+}
+.person-id {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+}
+.person-id h2 {
+  margin: 0;
+  font-size: clamp(22px, 2.4vw, 28px);
+  letter-spacing: -0.03em;
+  overflow-wrap: anywhere;
+}
+.person-sub {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  color: var(--text-subtle);
+  font-size: 14px;
+}
+.state-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+}
+.state-pill::before {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  content: '';
+}
+.state-pill[data-state='admitted'] {
+  border-color: color-mix(in srgb, var(--success) 35%, transparent);
+  background: color-mix(in srgb, var(--success) 12%, var(--surface));
+  color: var(--success);
+}
+.state-pill[data-state='disabled'] {
+  border-color: color-mix(in srgb, var(--danger) 35%, transparent);
+  background: color-mix(in srgb, var(--danger) 10%, var(--surface));
+  color: var(--danger);
+}
+.state-pill[data-state='prepared'] {
+  border-color: color-mix(in srgb, var(--accent-link) 35%, transparent);
+  background: color-mix(in srgb, var(--accent-link) 12%, var(--surface));
+  color: var(--accent-link);
+}
+.state-pill[data-state='test'],
+.state-pill[data-state='unknown'] {
+  border-color: var(--line);
+  background: var(--surface-muted);
+  color: var(--text-subtle);
+}
+.admission-card {
+  gap: 10px;
+}
+.admission-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px 16px;
+  margin: 0;
+}
+.admission-facts > div {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+}
+.admission-facts dt {
+  color: var(--text-subtle);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.admission-facts dd {
+  margin: 0;
+  color: var(--text-strong);
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+.admission-card .same-email-flag {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--warning);
+  font-size: 14px;
+  font-weight: 650;
+}
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+/* The three platform cards carry their number in the legend. */
+.card-number {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  margin-right: 10px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent-strong) 14%, var(--surface));
+  color: var(--accent-strong);
+  font-size: 13px;
+  font-weight: 800;
+  vertical-align: middle;
+}
+.membership-panel h3 {
+  display: flex;
+  align-items: center;
+}
+.save-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 20px;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface) 92%, var(--surface-page));
+  backdrop-filter: blur(8px);
+}
+.save-message {
+  margin: 0;
+  color: var(--text-subtle);
+  font-size: 14px;
+}
+.save-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+/* Dialogs: a scrim over the page, the box centred (bottom sheet on phones). */
+.dialog-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: color-mix(in srgb, var(--text-strong) 45%, transparent);
+}
+.dialog {
+  display: grid;
+  gap: 12px;
+  width: min(560px, 100%);
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+}
+.dialog h2 {
+  margin: 0;
+  font-size: 20px;
+  overflow-wrap: anywhere;
+}
+.dialog h3 {
+  margin: 0;
+  font-size: 15px;
+}
+.dialog .section-note {
+  margin: 0;
+}
+.dialog .actions,
+.admission-card .actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.change-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.change-list li {
+  display: grid;
+  grid-template-columns: 90px minmax(0, 1fr);
+  gap: 8px 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-page);
+}
+.change-kind {
+  padding-top: 2px;
+  color: var(--text-subtle);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.change-text {
+  font-weight: 700;
+}
+.change-list .added .change-text {
+  color: var(--success);
+}
+.change-list .removed .change-text {
+  color: var(--danger);
+  text-decoration: line-through;
+}
+/* Manage admission and Reject share their buttons and panels (DLV-969 words, 2026-11-03). */
+.removal {
+  display: grid;
+  gap: 12px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+.removal h3 {
+  margin: 0;
+  font-size: 15px;
+}
+.removal-option {
+  display: grid;
+  grid-template-columns: 9rem minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+.removal-option p {
+  margin: 0;
+  color: var(--text-subtle);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.removal-option > button {
+  width: 100%;
+}
+.removal-option > button[aria-pressed='true'] {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 2px;
+}
+.danger-button,
+.caution-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+.danger-button {
+  border: 1px solid var(--danger);
+  background: var(--danger);
+  color: var(--surface-page);
+}
+.caution-button {
+  border: 1px solid var(--danger);
+  background: transparent;
+  color: var(--danger);
+}
+.danger-button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--danger) 85%, var(--text-strong));
+}
+.caution-button:hover:not(:disabled) {
+  background: var(--danger-surface);
+}
+.danger-button:focus-visible,
+.caution-button:focus-visible {
+  outline: 3px solid var(--accent-focus);
+  outline-offset: 2px;
+}
+.danger-button:disabled,
+.caution-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.warning-mark {
+  font-size: 1.1em;
+  line-height: 1;
+}
+.reset-panel {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--warning) 45%, var(--line));
+  border-radius: 14px;
+}
+.reset-panel label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+}
+.reset-panel input {
+  min-height: 40px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-page);
+  color: var(--text-strong);
+  font: inherit;
+}
+.reset-panel .actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.danger-panel {
+  border-color: var(--danger);
+  background: var(--danger-surface);
+}
+@media (max-width: 640px) {
+  .removal-option {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .dialog-scrim {
+    place-items: end center;
+    padding-bottom: 0;
+  }
+  .dialog {
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+  .save-actions,
+  .save-actions button {
+    width: 100%;
+  }
+}
